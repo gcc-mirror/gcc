@@ -2280,9 +2280,9 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 	    {
 	      if (nattrs)
 		pp_string (attrstr, ", ");
-	      pp_begin_quote (attrstr, pp_show_color (global_dc->printer));
+	      pp_begin_quote (attrstr, pp_show_color (global_dc->m_printer));
 	      pp_string (attrstr, blacklist[i]);
-	      pp_end_quote (attrstr, pp_show_color (global_dc->printer));
+	      pp_end_quote (attrstr, pp_show_color (global_dc->m_printer));
 	      ++nattrs;
 	    }
 
@@ -2674,7 +2674,7 @@ attr_access::array_as_string (tree type) const
 
   /* Format the type using the current pretty printer.  The generic tree
      printer does a terrible job.  */
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
   pp_printf (pp, "%qT", type);
   typstr = pp_formatted_text (pp);
   delete pp;

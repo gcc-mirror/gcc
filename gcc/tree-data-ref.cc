@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define INCLUDE_ALGORITHM
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -765,6 +766,14 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
   if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type))
     return false;
 
+  if (TREE_CODE (op0) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
+    return false;
+  if (op1
+      && TREE_CODE (op1) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op1))
+    return false;
+
   switch (code)
     {
     case INTEGER_CST:
@@ -860,9 +869,6 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
     case SSA_NAME:
       {
-	if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op0))
-	  return false;
-
 	gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
 	enum tree_code subcode;
 
@@ -5217,8 +5223,6 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  non_affine_dependence_relation (ddr);
 	  return false;
 	}
-      else
-	*init_b = true;
     }
 
   return true;
@@ -5541,21 +5545,6 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 						   DDR_NB_LOOPS (ddr), 0));
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      unsigned i;
-
-      fprintf (dump_file, "(build_classic_dist_vector\n");
-      for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
-	{
-	  fprintf (dump_file, "  dist_vector = (");
-	  print_lambda_vector (dump_file, DDR_DIST_VECT (ddr, i),
-			       DDR_NB_LOOPS (ddr));
-	  fprintf (dump_file, "  )\n");
-	}
-      fprintf (dump_file, ")\n");
-    }
-
   return true;
 }
 
@@ -5667,7 +5656,24 @@ subscript_dependence_tester (struct data_dependence_relation *ddr,
 
   compute_subscript_distance (ddr);
   if (build_classic_dist_vector (ddr, loop_nest))
-    build_classic_dir_vector (ddr);
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  unsigned i;
+
+	  fprintf (dump_file, "(build_classic_dist_vector\n");
+	  for (i = 0; i < DDR_NUM_DIST_VECTS (ddr); i++)
+	    {
+	      fprintf (dump_file, "  dist_vector = (");
+	      print_lambda_vector (dump_file, DDR_DIST_VECT (ddr, i),
+				   DDR_NB_LOOPS (ddr));
+	      fprintf (dump_file, "  )\n");
+	    }
+	  fprintf (dump_file, ")\n");
+	}
+
+      build_classic_dir_vector (ddr);
+    }
 }
 
 /* Returns true when all the access functions of A are affine or

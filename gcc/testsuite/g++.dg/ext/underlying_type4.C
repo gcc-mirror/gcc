@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-skip-if "requires hosted libstdc++ for tr1/type_traits" { ! hostedlib } }
 
 #include <tr1/type_traits>
 

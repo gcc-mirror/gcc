@@ -50,14 +50,6 @@ public:
   bool handle_cpu (const char *);
   bool handle_tune (const char *);
 
-  void set_loc (location_t loc) {
-    m_loc = loc;
-  }
-
-  riscv_subset_list* get_riscv_subset_list () {
-    return m_subset_list;
-  }
-
   void update_settings (struct gcc_options *opts) const;
 private:
   const char *m_raw_attr_str;
@@ -98,7 +90,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
   /* Check if it's setting full arch string.  */
   if (strncmp ("rv", str, strlen ("rv")) == 0)
     {
-      m_subset_list = riscv_subset_list::parse (str, location_t ());
+      m_subset_list = riscv_subset_list::parse (str, m_loc);
 
       if (m_subset_list == nullptr)
 	goto fail;
@@ -113,8 +105,13 @@ riscv_target_attr_parser::parse_arch (const char *str)
       char *str_to_check = buf.get ();
       strcpy (str_to_check, str);
       const char *token = strtok_r (str_to_check, ",", &str_to_check);
-      m_subset_list = riscv_cmdline_subset_list ()->clone ();
+      const char *local_arch_str = global_options.x_riscv_arch_string;
+      m_subset_list = local_arch_str
+		      ? riscv_subset_list::parse (local_arch_str, m_loc)
+		      : riscv_cmdline_subset_list ()->clone ();
       m_subset_list->set_loc (m_loc);
+      m_subset_list->set_allow_adding_dup (true);
+
       while (token)
 	{
 	  if (token[0] != '+')
@@ -125,22 +122,22 @@ riscv_target_attr_parser::parse_arch (const char *str)
 		"with + or rv");
 	      goto fail;
 	    }
-	  else
+
+	  const char *result = m_subset_list->parse_single_ext (token + 1);
+	  /* Check parse_single_ext has consume all string.  */
+	  if (*result != '\0')
 	    {
-	      const char *result = m_subset_list->parse_single_ext (token + 1);
-	      /* Check parse_single_ext has consume all string.  */
-	      if (*result != '\0')
-		{
-		  error_at (
-		    m_loc,
-		    "unexpected arch for %<target()%> attribute: bad "
-		    "string found %<%s%>", token);
-		  goto fail;
-		}
+	      error_at (
+		m_loc,
+		"unexpected arch for %<target()%> attribute: bad "
+		"string found %<%s%>", token);
+	      goto fail;
 	    }
+
 	  token = strtok_r (NULL, ",", &str_to_check);
 	}
 
+      m_subset_list->set_allow_adding_dup (false);
       m_subset_list->finalize ();
       return true;
     }
@@ -217,7 +214,17 @@ void
 riscv_target_attr_parser::update_settings (struct gcc_options *opts) const
 {
   if (m_subset_list)
-    riscv_set_arch_by_subset_list (m_subset_list, opts);
+    {
+      std::string local_arch = m_subset_list->to_string (true);
+      const char* local_arch_str = local_arch.c_str ();
+      struct cl_target_option *default_opts
+	= TREE_TARGET_OPTION (target_option_default_node);
+      if (opts->x_riscv_arch_string != default_opts->x_riscv_arch_string)
+	free (CONST_CAST (void *, (const void *) opts->x_riscv_arch_string));
+      opts->x_riscv_arch_string = xstrdup (local_arch_str);
+
+      riscv_set_arch_by_subset_list (m_subset_list, opts);
+    }
 
   if (m_cpu_info)
     opts->x_riscv_cpu_string = m_cpu_info->name;
@@ -274,8 +281,8 @@ riscv_process_one_target_attr (char *arg_str,
 
       return (&attr_parser->*attr.handler) (arg);
     }
-  error_at (loc, "Got unknown attribute %<target(\"%s\")%>", str_to_check);
 
+  error_at (loc, "Got unknown attribute %<target(\"%s\")%>", str_to_check);
   return false;
 }
 
@@ -283,7 +290,7 @@ riscv_process_one_target_attr (char *arg_str,
    NULL-terminated string STR.  */
 
 static unsigned int
-num_occurences_in_str (char c, char *str)
+num_occurrences_in_str (char c, char *str)
 {
   unsigned int res = 0;
   while (*str != '\0')
@@ -301,8 +308,7 @@ num_occurences_in_str (char c, char *str)
    and update the global target options space.  */
 
 static bool
-riscv_process_target_attr (tree fndecl, tree args, location_t loc,
-			   struct gcc_options *opts)
+riscv_process_target_attr (tree args, location_t loc)
 {
   if (TREE_CODE (args) == TREE_LIST)
     {
@@ -311,7 +317,7 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
 	  tree head = TREE_VALUE (args);
 	  if (head)
 	    {
-	      if (!riscv_process_target_attr (fndecl, head, loc, opts))
+	      if (!riscv_process_target_attr (head, loc))
 		return false;
 	    }
 	  args = TREE_CHAIN (args);
@@ -325,6 +331,7 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
       error_at (loc, "attribute %<target%> argument not a string");
       return false;
     }
+
   size_t len = strlen (TREE_STRING_POINTER (args));
 
   /* No need to emit warning or error on empty string here, generic code already
@@ -338,11 +345,11 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
   char *str_to_check = buf.get ();
   strcpy (str_to_check, TREE_STRING_POINTER (args));
 
-  /* Used to catch empty spaces between commas i.e.
+  /* Used to catch empty spaces between semi-colons i.e.
      attribute ((target ("attr1;;attr2"))).  */
-  unsigned int num_commas = num_occurences_in_str (';', str_to_check);
+  unsigned int num_semicolons = num_occurrences_in_str (';', str_to_check);
 
-  /* Handle multiple target attributes separated by ','.  */
+  /* Handle multiple target attributes separated by ';'.  */
   char *token = strtok_r (str_to_check, ";", &str_to_check);
 
   riscv_target_attr_parser attr_parser (loc);
@@ -350,11 +357,13 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
   while (token)
     {
       num_attrs++;
-      riscv_process_one_target_attr (token, loc, attr_parser);
+      if (!riscv_process_one_target_attr (token, loc, attr_parser))
+	return false;
+
       token = strtok_r (NULL, ";", &str_to_check);
     }
 
-  if (num_attrs != num_commas + 1)
+  if (num_attrs != num_semicolons + 1)
     {
       error_at (loc, "malformed %<target(\"%s\")%> attribute",
 		TREE_STRING_POINTER (args));
@@ -362,18 +371,16 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
     }
 
   /* Apply settings from target attribute.  */
-  attr_parser.update_settings (opts);
-
-  /* Add the string of the target attribute to the fndecl hash table.  */
-  riscv_subset_list *subset_list = attr_parser.get_riscv_subset_list ();
-  if (subset_list)
-    riscv_func_target_put (fndecl, subset_list->to_string (true));
+  attr_parser.update_settings (&global_options);
 
   return true;
 }
 
-/* Implement TARGET_OPTION_VALID_ATTRIBUTE_P.  This is used to
-   process attribute ((target ("..."))).  */
+/* Implement TARGET_OPTION_VALID_ATTRIBUTE_P.
+   This is used to process attribute ((target ("..."))).
+   Note, that riscv_set_current_function() has not been called before,
+   so we need must not mess with the current global_options, which
+   likely belong to another function.  */
 
 bool
 riscv_option_valid_attribute_p (tree fndecl, tree, tree args, int)
@@ -381,27 +388,39 @@ riscv_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   struct cl_target_option cur_target;
   bool ret;
   tree new_target;
+  tree existing_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
   location_t loc = DECL_SOURCE_LOCATION (fndecl);
 
   /* Save the current target options to restore at the end.  */
   cl_target_option_save (&cur_target, &global_options, &global_options_set);
 
-  ret = riscv_process_target_attr (fndecl, args, loc, &global_options);
+  /* If fndecl already has some target attributes applied to it, unpack
+     them so that we add this attribute on top of them, rather than
+     overwriting them.  */
+  if (existing_target)
+    {
+      struct cl_target_option *existing_options
+	= TREE_TARGET_OPTION (existing_target);
 
+      if (existing_options)
+	cl_target_option_restore (&global_options, &global_options_set,
+				  existing_options);
+    }
+  else
+    cl_target_option_restore (&global_options, &global_options_set,
+			      TREE_TARGET_OPTION (target_option_default_node));
+
+  /* Now we can parse the attributes and set &global_options accordingly.  */
+  ret = riscv_process_target_attr (args, loc);
   if (ret)
     {
       riscv_override_options_internal (&global_options);
-      new_target
-	= build_target_option_node (&global_options, &global_options_set);
-    }
-  else
-    new_target = NULL;
-
-  if (fndecl && ret)
-    {
+      new_target = build_target_option_node (&global_options,
+					     &global_options_set);
       DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
     }
 
+  /* Restore current target options to original state.  */
   cl_target_option_restore (&global_options, &global_options_set, &cur_target);
   return ret;
 }

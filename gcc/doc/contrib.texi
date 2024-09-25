@@ -646,6 +646,9 @@ Philip Martin for lots of libstdc++ string and vector iterator fixes and
 improvements, and string clean up and testsuites.
 
 @item
+Dhruv Matani for work on libstdc++ allocators.
+
+@item
 Michael Matz for his work on dominance tree discovery, the x86-64 port,
 link-time optimization framework and general optimization improvements.
 

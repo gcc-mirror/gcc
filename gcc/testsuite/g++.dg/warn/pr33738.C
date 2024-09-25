@@ -1,5 +1,6 @@
 // { dg-do run }
-// { dg-options "-O2 -Wtype-limits -fstrict-enums" }
+// { dg-prune-output "use of enum values across objects may fail" }
+// { dg-options "-O2 -Wtype-limits -fstrict-enums -fno-short-enums" }
 extern void link_error (void);
 
 enum Alpha {

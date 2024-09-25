@@ -14,12 +14,12 @@
   }
 
 #define TEST_ALL(T) \
-  T (int16_t, int8_t, 7) \
-  T (int32_t, int8_t, 3) \
-  T (int32_t, int16_t, 3) \
-  T (int64_t, int8_t, 5) \
-  T (int64_t, int16_t, 5) \
-  T (int64_t, int32_t, 5)
+  T (int16_t, int8_t, 70) \
+  T (int32_t, int8_t, 30) \
+  T (int32_t, int16_t, 30) \
+  T (int64_t, int8_t, 50) \
+  T (int64_t, int16_t, 50) \
+  T (int64_t, int32_t, 50)
 
 TEST_ALL (DEF_LOOP)
 

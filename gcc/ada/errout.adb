@@ -33,6 +33,7 @@ with Atree;          use Atree;
 with Casing;         use Casing;
 with Csets;          use Csets;
 with Debug;          use Debug;
+with Diagnostics.Converter; use Diagnostics.Converter;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -162,13 +163,6 @@ package body Errout is
    --  node to the current message. For N_Designator, N_Selected_Component,
    --  N_Defining_Program_Unit_Name, and N_Expanded_Name, the Prefix is
    --  included as well.
-
-   procedure Set_Msg_Text (Text : String; Flag : Source_Ptr);
-   --  Add a sequence of characters to the current message. The characters may
-   --  be one of the special insertion characters (see documentation in spec).
-   --  Flag is the location at which the error is to be posted, which is used
-   --  to determine whether or not the # insertion needs a file name. The
-   --  variables Msg_Buffer are set on return Msglen.
 
    procedure Set_Posted (N : Node_Id);
    --  Sets the Error_Posted flag on the given node, and all its parents that
@@ -2498,7 +2492,6 @@ package body Errout is
    --  Start of processing for Output_JSON_Message
 
    begin
-
       --  Print message kind
 
       Write_Str ("{""kind"":");
@@ -2564,6 +2557,10 @@ package body Errout is
 
       --  Local subprograms
 
+      procedure Emit_Error_Msgs;
+      --  Emit all error messages in the table use the pretty printed format if
+      --  -gnatdF is used otherwise use the brief format.
+
       procedure Write_Error_Summary;
       --  Write error summary
 
@@ -2602,6 +2599,108 @@ package body Errout is
       --
       --  SGR_Span is the SGR string to start the section of code in the span,
       --  that should be closed with SGR_Reset.
+
+      --------------------
+      -- Emit_Error_Msgs --
+      ---------------------
+
+      procedure Emit_Error_Msgs is
+         Use_Prefix : Boolean;
+         E          : Error_Msg_Id;
+      begin
+         Set_Standard_Error;
+
+         E := First_Error_Msg;
+         while E /= No_Error_Msg loop
+
+            --  If -gnatdF is used, separate main messages from previous
+            --  messages with a newline (unless it is an info message) and
+            --  make continuation messages follow the main message with only
+            --  an indentation of two space characters, without repeating
+            --  file:line:col: prefix.
+
+            Use_Prefix :=
+              not (Debug_Flag_FF and then Errors.Table (E).Msg_Cont);
+
+            if not Errors.Table (E).Deleted then
+
+               if Debug_Flag_FF then
+                  if Errors.Table (E).Msg_Cont then
+                     Write_Str ("  ");
+                  elsif not Errors.Table (E).Info then
+                     Write_Eol;
+                  end if;
+               end if;
+
+               if Use_Prefix then
+                  Write_Str (SGR_Locus);
+
+                  if Full_Path_Name_For_Brief_Errors then
+                     Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
+                  else
+                     Write_Name (Reference_Name (Errors.Table (E).Sfile));
+                  end if;
+
+                  Write_Char (':');
+                  Write_Int (Int (Physical_To_Logical
+                           (Errors.Table (E).Line,
+                              Errors.Table (E).Sfile)));
+                  Write_Char (':');
+
+                  if Errors.Table (E).Col < 10 then
+                     Write_Char ('0');
+                  end if;
+
+                  Write_Int (Int (Errors.Table (E).Col));
+                  Write_Str (": ");
+
+                  Write_Str (SGR_Reset);
+               end if;
+
+               Output_Msg_Text (E);
+               Write_Eol;
+
+               --  If -gnatdF is used, write the source code line
+               --  corresponding to the location of the main message (unless
+               --  it is an info message). Also write the source code line
+               --  corresponding to an insertion location inside
+               --  continuation messages.
+
+               if Debug_Flag_FF
+                 and then not Errors.Table (E).Info
+               then
+                  if Errors.Table (E).Msg_Cont then
+                     declare
+                        Loc : constant Source_Ptr :=
+                        Errors.Table (E).Insertion_Sloc;
+                     begin
+                        if Loc /= No_Location then
+                           Write_Source_Code_Lines
+                             (To_Span (Loc), SGR_Span => SGR_Note);
+                        end if;
+                     end;
+
+                  else
+                     declare
+                        SGR_Span : constant String :=
+                        (if Errors.Table (E).Info then SGR_Note
+                           elsif Errors.Table (E).Warn
+                             and then not Errors.Table (E).Warn_Err
+                           then SGR_Warning
+                           else SGR_Error);
+                     begin
+                        Write_Source_Code_Lines
+                          (Errors.Table (E).Optr, SGR_Span);
+                     end;
+                  end if;
+               end if;
+            end if;
+
+            E := Errors.Table (E).Next;
+         end loop;
+
+         Set_Standard_Output;
+      end Emit_Error_Msgs;
 
       -------------------------
       -- Write_Error_Summary --
@@ -3095,7 +3194,6 @@ package body Errout is
 
       E          : Error_Msg_Id;
       Err_Flag   : Boolean;
-      Use_Prefix : Boolean;
 
    --  Start of processing for Output_Messages
 
@@ -3156,100 +3254,25 @@ package body Errout is
 
          Set_Standard_Output;
 
+      --  Do not print any messages if all messages are killed -gnatdK
+
+      elsif Debug_Flag_KK then
+
+         null;
+
       --  Brief Error mode
 
       elsif Brief_Output or (not Full_List and not Verbose_Mode) then
-         Set_Standard_Error;
 
-         E := First_Error_Msg;
-         while E /= No_Error_Msg loop
+         --  Use updated diagnostic mechanism
 
-            --  If -gnatdF is used, separate main messages from previous
-            --  messages with a newline (unless it is an info message) and
-            --  make continuation messages follow the main message with only
-            --  an indentation of two space characters, without repeating
-            --  file:line:col: prefix.
+         if Debug_Flag_Underscore_DD then
+            Convert_Errors_To_Diagnostics;
 
-            Use_Prefix :=
-              not (Debug_Flag_FF and then Errors.Table (E).Msg_Cont);
-
-            if not Errors.Table (E).Deleted and then not Debug_Flag_KK then
-
-               if Debug_Flag_FF then
-                  if Errors.Table (E).Msg_Cont then
-                     Write_Str ("  ");
-                  elsif not Errors.Table (E).Info then
-                     Write_Eol;
-                  end if;
-               end if;
-
-               if Use_Prefix then
-                  Write_Str (SGR_Locus);
-
-                  if Full_Path_Name_For_Brief_Errors then
-                     Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
-                  else
-                     Write_Name (Reference_Name (Errors.Table (E).Sfile));
-                  end if;
-
-                  Write_Char (':');
-                  Write_Int (Int (Physical_To_Logical
-                             (Errors.Table (E).Line,
-                                Errors.Table (E).Sfile)));
-                  Write_Char (':');
-
-                  if Errors.Table (E).Col < 10 then
-                     Write_Char ('0');
-                  end if;
-
-                  Write_Int (Int (Errors.Table (E).Col));
-                  Write_Str (": ");
-
-                  Write_Str (SGR_Reset);
-               end if;
-
-               Output_Msg_Text (E);
-               Write_Eol;
-
-               --  If -gnatdF is used, write the source code line corresponding
-               --  to the location of the main message (unless it is an info
-               --  message). Also write the source code line corresponding to
-               --  an insertion location inside continuation messages.
-
-               if Debug_Flag_FF
-                 and then not Errors.Table (E).Info
-               then
-                  if Errors.Table (E).Msg_Cont then
-                     declare
-                        Loc : constant Source_Ptr :=
-                          Errors.Table (E).Insertion_Sloc;
-                     begin
-                        if Loc /= No_Location then
-                           Write_Source_Code_Lines
-                             (To_Span (Loc), SGR_Span => SGR_Note);
-                        end if;
-                     end;
-
-                  else
-                     declare
-                        SGR_Span : constant String :=
-                          (if Errors.Table (E).Info then SGR_Note
-                           elsif Errors.Table (E).Warn
-                             and then not Errors.Table (E).Warn_Err
-                           then SGR_Warning
-                           else SGR_Error);
-                     begin
-                        Write_Source_Code_Lines
-                          (Errors.Table (E).Optr, SGR_Span);
-                     end;
-                  end if;
-               end if;
-            end if;
-
-            E := Errors.Table (E).Next;
-         end loop;
-
-         Set_Standard_Output;
+            Emit_Diagnostics;
+         else
+            Emit_Error_Msgs;
+         end if;
       end if;
 
       --  Full source listing case
@@ -3867,18 +3890,13 @@ package body Errout is
    ----------------------------
 
    procedure Set_Msg_Insertion_Node is
+      pragma Assert (Present (Error_Msg_Node_1));
       K : Node_Kind;
 
    begin
-      Suppress_Message :=
-        Error_Msg_Node_1 = Error
-          or else Error_Msg_Node_1 = Any_Type;
+      Suppress_Message := Error_Msg_Node_1 in Error | Any_Type;
 
-      if Error_Msg_Node_1 = Empty then
-         Set_Msg_Blank_Conditional;
-         Set_Msg_Str ("<empty>");
-
-      elsif Error_Msg_Node_1 = Error then
+      if Error_Msg_Node_1 = Error then
          Set_Msg_Blank;
          Set_Msg_Str ("<error>");
 
@@ -3899,15 +3917,11 @@ package body Errout is
 
          K := Nkind (Error_Msg_Node_1);
 
-         --  If we have operator case, skip quotes since name of operator
-         --  itself will supply the required quotations. An operator can be an
-         --  applied use in an expression or an explicit operator symbol, or an
-         --  identifier whose name indicates it is an operator.
+         --  Skip quotes in the operator case, because the operator will supply
+         --  the required quotes.
 
-         if K in N_Op
-           or else K = N_Operator_Symbol
-           or else K = N_Defining_Operator_Symbol
-           or else ((K = N_Identifier or else K = N_Defining_Identifier)
+         if K in N_Op | N_Operator_Symbol | N_Defining_Operator_Symbol
+           or else (K in N_Identifier | N_Defining_Identifier
                       and then Is_Operator_Name (Chars (Error_Msg_Node_1)))
          then
             Set_Msg_Node (Error_Msg_Node_1);

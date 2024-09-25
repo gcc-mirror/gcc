@@ -16,7 +16,7 @@
 
 /* Explicitly use dwarf-5 which uses DW_FORM_implicit_const.  */
 /* { dg-do compile } */
-/* { dg-options "-O -g3 -gdwarf-5 -dA -fgnu89-inline" } */
+/* { dg-options "-O -g3 -gdwarf-5 -dA -fgnu89-inline -gno-as-loc-support" } */
 
 /* There are 6 inlined subroutines:
    - One for each subroutine inlined into main, that's 3.
@@ -29,6 +29,11 @@
    layout.  */
 /* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_lexical_block" 0 } } */
 
+/* Each inline instance should have DW_AT_entry_pc and DW_AT_GNU_entry_view. */
+/* { dg-final { scan-assembler-times " DW_AT_entry_pc" 6 } } */
+/* { dg-final { scan-assembler-times " DW_AT_GNU_entry_view" 6 } } */
+/* { dg-final { scan-assembler-times "uleb128\[^\n\]*LVU\[^\n\]* (View list|Location view) (begin|end)" 0 } } */
+/* { dg-final { scan-assembler-times "uleb128\[^\n\]*0xffffffff\[^\n\]* (View list|Location view) (begin|end)" 0 } } */
 
 /* There are 3 DW_AT_inline attributes: one per abstract inline instance.
    The value of the attribute must be 0x3, meaning the function was

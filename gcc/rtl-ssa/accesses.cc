@@ -19,6 +19,7 @@
 
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
+#define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -792,12 +793,12 @@ function_info::merge_clobber_groups (clobber_info *clobber1,
 }
 
 // GROUP spans INSN, and INSN now sets the resource that GROUP clobbers.
-// Split GROUP around INSN and return the clobber that comes immediately
-// before INSN.
+// Split GROUP around INSN, to form two new groups.  The first of the
+// returned groups comes before INSN and the second comes after INSN.
 //
-// The resource that GROUP clobbers is known to have an associated
-// splay tree.
-clobber_info *
+// The caller is responsible for updating the def_splay_tree and chaining
+// the defs together.
+std::array<clobber_group *, 2>
 function_info::split_clobber_group (clobber_group *group, insn_info *insn)
 {
   // Search for either the previous or next clobber in the group.
@@ -827,29 +828,18 @@ function_info::split_clobber_group (clobber_group *group, insn_info *insn)
       prev = as_a<clobber_info *> (next->prev_def ());
     }
 
-  // Use GROUP to hold PREV and earlier clobbers.  Create a new group for
-  // NEXT onwards.
+  // Create a new group for each side of the split.  We need to invalidate
+  // the old group so that clobber_info::group can tell whether a lazy
+  // update is needed.
+  clobber_info *first_clobber = group->first_clobber ();
   clobber_info *last_clobber = group->last_clobber ();
-  clobber_group *group1 = group;
-  clobber_group *group2 = allocate<clobber_group> (next);
+  auto *group1 = allocate<clobber_group> (first_clobber, prev, tree1.root ());
+  auto *group2 = allocate<clobber_group> (next, last_clobber, tree2.root ());
 
-  // Finish setting up GROUP1, making sure that the roots and extremities
-  // have a correct group pointer.  Leave the rest to be updated lazily.
-  group1->set_last_clobber (prev);
-  tree1->set_group (group1);
-  prev->set_group (group1);
+  // Invalidate the old group.
+  group->set_last_clobber (nullptr);
 
-  // Finish setting up GROUP2, with the same approach as for GROUP1.
-  group2->set_first_clobber (next);
-  group2->set_last_clobber (last_clobber);
-  next->set_group (group2);
-  tree2->set_group (group2);
-  last_clobber->set_group (group2);
-
-  // Insert GROUP2 into the splay tree as an immediate successor of GROUP1.
-  def_splay_tree::insert_child (group1, 1, group2);
-
-  return prev;
+  return { group1, group2 };
 }
 
 // Add DEF to the end of the function's list of definitions of
@@ -906,7 +896,7 @@ function_info::add_def (def_info *def)
   insn_info *insn = def->insn ();
 
   int comparison;
-  def_node *root = nullptr;
+  def_node *neighbor = nullptr;
   def_info *prev = nullptr;
   def_info *next = nullptr;
   if (*insn > *last->insn ())
@@ -916,8 +906,8 @@ function_info::add_def (def_info *def)
       if (def_splay_tree tree = last->splay_root ())
 	{
 	  tree.splay_max_node ();
-	  root = tree.root ();
-	  last->set_splay_root (root);
+	  last->set_splay_root (tree.root ());
+	  neighbor = tree.root ();
 	}
       prev = last;
     }
@@ -928,8 +918,8 @@ function_info::add_def (def_info *def)
       if (def_splay_tree tree = last->splay_root ())
 	{
 	  tree.splay_min_node ();
-	  root = tree.root ();
-	  last->set_splay_root (root);
+	  last->set_splay_root (tree.root ());
+	  neighbor = tree.root ();
 	}
       next = first;
     }
@@ -938,8 +928,8 @@ function_info::add_def (def_info *def)
       // Search the splay tree for an insertion point.
       def_splay_tree tree = need_def_splay_tree (last);
       comparison = lookup_def (tree, insn);
-      root = tree.root ();
-      last->set_splay_root (root);
+      last->set_splay_root (tree.root ());
+      neighbor = tree.root ();
 
       // Deal with cases in which we found an overlapping live range.
       if (comparison == 0)
@@ -950,19 +940,34 @@ function_info::add_def (def_info *def)
 	      add_clobber (clobber, group);
 	      return;
 	    }
-	  prev = split_clobber_group (group, insn);
-	  next = prev->next_def ();
+	  auto new_groups = split_clobber_group (group, insn);
+
+	  // Insert the two new groups immediately after GROUP.
+	  def_splay_tree::insert_child (group, 1, new_groups[1]);
+	  def_splay_tree::insert_child (group, 1, new_groups[0]);
+
+	  // Remove GROUP.
+	  tree.remove_root ();
+	  last->set_splay_root (tree.root ());
+
+	  prev = new_groups[0]->last_clobber ();
+	  next = new_groups[1]->first_clobber ();
+
+	  // DEF comes after the first group.  (new_groups[1] and -1 would
+	  // also work.)
+	  neighbor = new_groups[0];
+	  comparison = 1;
 	}
-      // COMPARISON is < 0 if DEF comes before ROOT or > 0 if DEF comes
-      // after ROOT.
+      // COMPARISON is < 0 if DEF comes before NEIGHBOR or > 0 if DEF comes
+      // after NEIGHBOR.
       else if (comparison < 0)
 	{
-	  next = first_def (root);
+	  next = first_def (neighbor);
 	  prev = next->prev_def ();
 	}
       else
 	{
-	  prev = last_def (root);
+	  prev = last_def (neighbor);
 	  next = prev->next_def ();
 	}
     }
@@ -977,12 +982,12 @@ function_info::add_def (def_info *def)
     append_clobber_to_group (clobber, need_clobber_group (prev_clobber));
   else if (clobber && next_clobber)
     prepend_clobber_to_group (clobber, need_clobber_group (next_clobber));
-  else if (root)
+  else if (neighbor)
     {
-      // If DEF comes before ROOT, insert DEF to ROOT's left,
-      // otherwise insert DEF to ROOT's right.
+      // If DEF comes before NEIGHBOR, insert DEF to NEIGHBOR's left,
+      // otherwise insert DEF to NEIGHBOR's right.
       def_node *node = need_def_node (def);
-      def_splay_tree::insert_child (root, comparison >= 0, node);
+      def_splay_tree::insert_child (neighbor, comparison >= 0, node);
     }
   if (prev)
     insert_def_after (def, prev);
@@ -1227,16 +1232,16 @@ function_info::add_use (use_info *use)
   need_use_splay_tree (def);
   int comparison = lookup_use (def->m_use_tree, insn);
   gcc_checking_assert (comparison != 0);
-  splay_tree_node<use_info *> *neighbor = def->m_use_tree.root ();
+  use_info *neighbor = def->m_use_tree.root ()->value ();
 
   // If USE comes before NEIGHBOR, insert USE to NEIGHBOR's left,
   // otherwise insert USE to NEIGHBOR's right.
   auto *use_node = allocate<splay_tree_node<use_info *>> (use);
-  def->m_use_tree.insert_child (neighbor, comparison > 0, use_node);
+  def->m_use_tree.insert_relative (comparison, use_node);
   if (comparison > 0)
-    insert_use_after (use, neighbor->value ());
+    insert_use_after (use, neighbor);
   else
-    insert_use_before (use, neighbor->value ());
+    insert_use_before (use, neighbor);
 }
 
 void
@@ -1750,6 +1755,13 @@ rtl_ssa::pp_def_lookup (pretty_printer *pp, def_lookup dl)
   pp_def_mux (pp, dl.mux);
 }
 
+// Print TREE to PP.
+void
+rtl_ssa::pp_def_splay_tree (pretty_printer *pp, def_splay_tree tree)
+{
+  tree.print (pp, pp_def_node);
+}
+
 // Dump RESOURCE to FILE.
 void
 dump (FILE *file, resource_info resource)
@@ -1792,6 +1804,13 @@ dump (FILE *file, def_lookup result)
   dump_using (file, pp_def_lookup, result);
 }
 
+// Print TREE to FILE.
+void
+dump (FILE *file, def_splay_tree tree)
+{
+  dump_using (file, pp_def_splay_tree, tree);
+}
+
 // Debug interfaces to the dump routines above.
 void debug (const resource_info &x) { dump (stderr, x); }
 void debug (const access_info *x) { dump (stderr, x); }
@@ -1799,3 +1818,4 @@ void debug (const access_array &x) { dump (stderr, x); }
 void debug (const def_node *x) { dump (stderr, x); }
 void debug (const def_mux &x) { dump (stderr, x); }
 void debug (const def_lookup &x) { dump (stderr, x); }
+void debug (const def_splay_tree &x) { dump (stderr, x); }

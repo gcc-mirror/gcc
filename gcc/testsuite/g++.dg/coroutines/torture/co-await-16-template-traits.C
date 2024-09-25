@@ -1,4 +1,5 @@
 //  { dg-do compile }
+//  { dg-skip-if "requires hosted libstdc++ for chrono" { ! hostedlib } }
 //  Test we create co_await_expr with dependent type rather than type of awaitable class
 
 #include "../coro.h"

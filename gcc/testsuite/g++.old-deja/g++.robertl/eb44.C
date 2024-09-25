@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // spurious 'const' in error.
 // For egcs-2.91.34, the warning message refers to
 // class ostream & operator <<(class ostream &, const class Vector<T> &)

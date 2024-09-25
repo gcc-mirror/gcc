@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Test modifying a local var across nested scopes containing vars
 // hiding those at outer scopes.
@@ -13,9 +14,9 @@ f (int start) noexcept
 {
   int value = start;
   {
-    int value = start + 5;
+    __attribute__((__unused__)) int value = start + 5;
     {
-	int value = start + 20;
+	__attribute__((__unused__)) int value = start + 20;
     }
     {
 	int value = start + 1;

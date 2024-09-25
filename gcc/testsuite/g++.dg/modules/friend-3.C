@@ -31,4 +31,3 @@ export void quux (); // { dg-error "conflicting export" }
 void toto (); // not exported
 
 }
-// { dg-prune-output "not writing module" }

@@ -39,6 +39,15 @@
 #include <bits/max_size_type.h>
 #include <bits/version.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
+
+#if __glibcxx_algorithm_default_value_type // C++ >= 26
+# define _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_I, _P) = projected_value_t<_I, _P>
+#else
+# define _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_I, _P)
+#endif
+
 #ifdef __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1073,5 +1082,6 @@ namespace ranges
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // library concepts
+#pragma GCC diagnostic pop
 #endif // C++20
 #endif // _GLIBCXX_RANGES_BASE_H

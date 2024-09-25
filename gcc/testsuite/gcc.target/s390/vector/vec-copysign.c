@@ -1,8 +1,8 @@
 /* { dg-do compile { target { s390*-*-* } } } */
 /* { dg-options "-O2 -ftree-vectorize -mzarch -fno-unroll-loops" } */
-/* { dg-final { scan-assembler-times "vgmg" 1 } } */
-/* { dg-final { scan-assembler-times "vgmf" 1 } } */
-/* { dg-final { scan-assembler-times "vsel" 2 } } */
+/* { dg-final { scan-assembler-times {vgm\t%v[0-9]+,[0-9]+,[0-9]+,3} 1 } } */
+/* { dg-final { scan-assembler-times {vgm\t%v[0-9]+,[0-9]+,[0-9]+,2} 1 } } */
+/* { dg-final { scan-assembler-times {vsel} 2 } } */
 
 #include <math.h>
 

@@ -50,7 +50,6 @@ extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern bool s390_return_addr_from_memory(void);
-extern rtx s390_gen_lowpart_subreg (machine_mode, rtx);
 extern bool s390_fma_allowed_p (machine_mode);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,
@@ -75,8 +74,9 @@ extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, machine_mode, machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, machine_mode, int);
 extern bool s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT, bool, int, int *, int *);
-extern bool s390_contiguous_bitmask_vector_p (rtx, int *, int *);
-extern bool s390_bytemask_vector_p (rtx, unsigned *);
+extern bool s390_constant_via_vgm_p (rtx, machine_mode *, int *, int *);
+extern bool s390_constant_via_vrepi_p (rtx, machine_mode *, short *);
+extern bool s390_constant_via_vgbm_p (rtx, unsigned *);
 extern bool s390_split_ok_p (rtx, rtx, machine_mode, int);
 extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);

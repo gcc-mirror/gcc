@@ -1,5 +1,6 @@
 // PR c++/17670
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib size_t" { ! hostedlib } }
 
 #include <cstdlib>
 #include <new>

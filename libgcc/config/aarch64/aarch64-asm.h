@@ -50,8 +50,8 @@
 
 #if __ARM_FEATURE_PAC_DEFAULT & 3
 # define PAC_FLAG FEATURE_1_PAC
-# define PACIASP hint	25; .cfi_window_save
-# define AUTIASP hint	29; .cfi_window_save
+# define PACIASP hint	25; .cfi_negate_ra_state
+# define AUTIASP hint	29; .cfi_negate_ra_state
 #else
 # define PAC_FLAG 0
 # define PACIASP

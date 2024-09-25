@@ -335,12 +335,13 @@
 ;; floating point store.  This also implies the operand could be used as
 ;; the source operand of a floating point load.  LO_SUM DLT and indexed
 ;; memory operands are not allowed.  Symbolic operands are accepted for
-;; PA 2.0 when TARGET_ELF32 is not true.  We accept reloading pseudos
-;; and other memory; operands.
+;; PA 2.0.  We accept reloading pseudos and other memory operands.
 
-;; FIXME: The GNU ELF32 linker clobbers the LSB of the FP register number
-;; in PA 2.0 {fldw,fstw} insns with long displacements.  This is because
-;; R_PARISC_DPREL14WR and other relocations like it are not supported.
+;; NOTE: The GNU ELF32 linker clobbered the least significant bit of
+;; the target floating-point register in PA 2.0 floating-point loads
+;; and stores with long displacements in ld versions prior to 2.42.
+;; The global pointer also was not double-word aligned.  This broke
+;; various DPREL relocations.
 
 (define_predicate "floating_point_store_memory_operand"
   (match_code "reg,mem")
@@ -366,8 +367,7 @@
     return false;
 
   return ((reload_in_progress || memory_address_p (mode, XEXP (op, 0)))
-	  && !((TARGET_ELF32 || !TARGET_PA_20)
-	       && symbolic_memory_operand (op, VOIDmode))
+	  && (INT14_OK_STRICT || !symbolic_memory_operand (op, VOIDmode))
 	  && !IS_LO_SUM_DLT_ADDR_P (XEXP (op, 0))
 	  && !IS_INDEX_ADDR_P (XEXP (op, 0)));
 })
@@ -467,9 +467,9 @@
   return memory_address_p (mode, XEXP (op, 0));
 })
 
-;; True iff OP is not a symbolic memory operand. 
+;; True iff OP is a valid memory operand. 
 
-(define_predicate "nonsymb_mem_operand"
+(define_predicate "mem_operand"
   (match_code "subreg,mem")
 {
   if (GET_CODE (op) == SUBREG)
@@ -488,8 +488,7 @@
       && REG_P (XEXP (XEXP (op, 0), 1)))
     return false;
 
-  return (!symbolic_memory_operand (op, mode)
-	  && memory_address_p (mode, XEXP (op, 0)));
+  return (memory_address_p (mode, XEXP (op, 0)));
 })
 
 ;; True iff OP is anything other than a hard register.
@@ -576,11 +575,11 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_0_operand")))
 
-;; True iff OP is either a register, zero, or a non-symbolic memory operand.
+;; True iff OP is either a register, zero, or a memory operand.
 
-(define_predicate "reg_or_0_or_nonsymb_mem_operand"
+(define_predicate "reg_or_0_or_mem_operand"
   (ior (match_operand 0 "reg_or_0_operand")
-       (match_operand 0 "nonsymb_mem_operand")))
+       (match_operand 0 "mem_operand")))
 
 ;; Accept REG and any CONST_INT that can be moved in one instruction
 ;; into a general register.

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-additional-options "-fstrict-aliasing" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib size_t" { ! hostedlib } } */
 
 #include <cstdlib>
 #include <array>

@@ -1,4 +1,5 @@
 // { dg-options "-fdump-tree-optimized -Os" }
+// { dg-skip-if "requires hosted libstdc++ for set" { ! hostedlib } }
 #include <set>
 #include <stdio.h>
 

@@ -8,8 +8,8 @@
 #include <math.h>
 #include <limits.h>
 #include <float.h>
-#include "avx512f-mask-type.h"
 #define SIZE (AVX512F_LEN / 16)
+#include "avx512f-mask-type.h"
 
 #ifndef __FPCLASSPH__
 #define __FPCLASSPH__

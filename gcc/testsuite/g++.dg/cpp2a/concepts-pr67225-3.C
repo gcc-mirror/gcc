@@ -1,9 +1,9 @@
 // PR c++/67225
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template <class>
-concept bool Dummy = true;
+concept Dummy = true;
 
 template <typename>
 class example {

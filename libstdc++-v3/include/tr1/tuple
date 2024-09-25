@@ -34,6 +34,9 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
+
 #include <bits/requires_hosted.h> // TR1
 
 #include <utility>
@@ -425,4 +428,5 @@ namespace tr1
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_TR1_TUPLE

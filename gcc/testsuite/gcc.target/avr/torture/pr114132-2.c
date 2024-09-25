@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-std=c99" } */
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 #ifdef __AVR_TINY__
 int func (int a, int b, char c)
 #else

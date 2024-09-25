@@ -52,7 +52,7 @@ class ResolveItem : public ResolverBase
 public:
   using Rust::Resolver::ResolverBase::visit;
 
-  static void go (AST::Item *item, const CanonicalPath &prefix,
+  static void go (AST::Item &item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::TypeAlias &alias) override;
@@ -76,10 +76,10 @@ public:
   void visit (AST::UseDeclaration &) override;
 
 protected:
-  void resolve_impl_item (AST::AssociatedItem *item,
+  void resolve_impl_item (AST::AssociatedItem &item,
 			  const CanonicalPath &prefix,
 			  const CanonicalPath &canonical_prefix);
-  void resolve_extern_item (AST::ExternalItem *item);
+  void resolve_extern_item (AST::ExternalItem &item);
 
   ResolveItem (const CanonicalPath &prefix,
 	       const CanonicalPath &canonical_prefix);
@@ -93,7 +93,7 @@ class ResolveImplItems : public ResolveItem
   using Rust::Resolver::ResolveItem::visit;
 
 public:
-  static void go (AST::AssociatedItem *item, const CanonicalPath &prefix,
+  static void go (AST::AssociatedItem &item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
   void visit (AST::TypeAlias &alias) override;
@@ -108,10 +108,10 @@ class ResolveExternItem : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::ExternalItem *item, const CanonicalPath &prefix,
+  static void go (AST::ExternalItem &item, const CanonicalPath &prefix,
 		  const CanonicalPath &canonical_prefix);
 
-  void visit (AST::ExternalFunctionItem &function) override;
+  void visit (AST::Function &function) override;
   void visit (AST::ExternalStaticItem &item) override;
 
 private:

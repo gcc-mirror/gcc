@@ -1,14 +1,15 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 #include <type_traits>
 
 template<typename T>
-  concept bool C() { return __is_class(T); }
+  concept C = __is_class(T);
 
 template<typename T>
-  concept bool Type() { return true; }
+  concept Type = true;
 
 struct S { };
 
@@ -16,36 +17,36 @@ int called;
 
 // Basic terse notation
 void f(auto x) { called = 1; }
-void g(C x) { called = 2; }
+void g(C auto x) { called = 2; }
 
 // Overloading generic functions
 void h(auto x) { called = 1; }
-void h(C x) { called = 2; }
+void h(C auto x) { called = 2; }
 
 void p(auto x);
-void p(C x);
+void p(C auto x);
 
 struct S1 {
   void f1(auto x) { called = 1; }
-  void f2(C x) { called = 2; }
+  void f2(C auto x) { called = 2; }
 
   void f3(auto x) { called = 1; }
-  void f3(C x) { called = 2; }
+  void f3(C auto x) { called = 2; }
 };
 
 template<C T>
   struct S2 {
     void f1(auto x) { called = 1; }
-    void f2(C x) { called = 2; }
+    void f2(C auto x) { called = 2; }
 
     void f3(auto x) { called = 1; }
-    void f3(C x) { called = 2; }
+    void f3(C auto x) { called = 2; }
 
     void h1(auto x);
-    void h2(C x);
+    void h2(C auto x);
 
     void h3(auto x);
-    void h3(C x);
+    void h3(C auto x);
 
     template<C U>
       void g1(T t, U u) { called = 1; }
@@ -55,27 +56,27 @@ template<C T>
   };
 
 
-void ptr(C*) { called = 1; }
-void ptr(const C*) { called = 2; }
+void ptr(C auto *) { called = 1; }
+void ptr(const C auto*) { called = 2; }
 
-void ref(C&) { called = 1; }
-void ref(const C&) { called = 2; }
+void ref(C auto &) { called = 1; }
+void ref(const C auto&) { called = 2; }
 
 void
-fwd_lvalue_ref(Type&& x) {
+fwd_lvalue_ref(Type auto&& x) {
   using T = decltype(x);
   static_assert(std::is_lvalue_reference<T>::value, "not an lvlaue reference");
 }
 
 void
-fwd_const_lvalue_ref(Type&& x) {
+fwd_const_lvalue_ref(Type auto&& x) {
   using T = decltype(x);
   static_assert(std::is_lvalue_reference<T>::value, "not an lvalue reference");
   using U = typename std::remove_reference<T>::type;
   static_assert(std::is_const<U>::value, "not const-qualified");
 }
 
-void fwd_rvalue_ref(Type&& x) {
+void fwd_rvalue_ref(Type auto&& x) {
   using T = decltype(x);
   static_assert(std::is_rvalue_reference<T>::value, "not an rvalue reference");
 }
@@ -83,10 +84,10 @@ void fwd_rvalue_ref(Type&& x) {
 // Make sure we can use nested names speicifers for concept names.
 namespace N {
   template<typename T>
-    concept bool C() { return true; }
-} // namesspace N
+    concept C = true;
+} // namespace N
 
-void foo(N::C x) { }
+void foo(N::C auto x) { }
 
 int main() {
   S s;
@@ -138,19 +139,19 @@ int main() {
 // Test that decl/def matching works.
 
 void p(auto x) { called = 1; }
-void p(C x) { called = 2; }
+void p(C auto x) { called = 2; }
 
 template<C T>
   void S2<T>::h1(auto x) { called = 1; }
 
 template<C T>
-  void S2<T>::h2(C x) { called = 2; }
+  void S2<T>::h2(C auto x) { called = 2; }
 
 template<C T>
   void S2<T>::h3(auto x) { called = 1; }
 
 template<C T>
-  void S2<T>::h3(C x) { called = 2; }
+  void S2<T>::h3(C auto x) { called = 2; }
 
 template<C T>
   template<C U>

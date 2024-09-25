@@ -437,7 +437,7 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
 void
 supergraph::dump_dot_to_file (FILE *fp, const dump_args_t &dump_args) const
 {
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
   pp_show_color (pp) = 0;
   /* %qE in logs for SSA_NAMEs should show the ssa names, rather than
      trying to prettify things by showing the underlying var.  */
@@ -723,18 +723,17 @@ supernode::to_json () const
 {
   json::object *snode_obj = new json::object ();
 
-  snode_obj->set ("idx", new json::integer_number (m_index));
-  snode_obj->set ("bb_idx", new json::integer_number (m_bb->index));
+  snode_obj->set_integer ("idx", m_index);
+  snode_obj->set_integer ("bb_idx", m_bb->index);
   if (function *fun = get_function ())
-    snode_obj->set ("fun", new json::string (function_name (fun)));
+    snode_obj->set_string ("fun", function_name (fun));
 
   if (m_returning_call)
     {
       pretty_printer pp;
       pp_format_decoder (&pp) = default_tree_printer;
       pp_gimple_stmt_1 (&pp, m_returning_call, 0, (dump_flags_t)0);
-      snode_obj->set ("returning_call",
-		      new json::string (pp_formatted_text (&pp)));
+      snode_obj->set_string ("returning_call", pp_formatted_text (&pp));
     }
 
   /* Phi nodes.  */
@@ -747,7 +746,7 @@ supernode::to_json () const
 	pretty_printer pp;
 	pp_format_decoder (&pp) = default_tree_printer;
 	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
-	phi_arr->append (new json::string (pp_formatted_text (&pp)));
+	phi_arr->append_string (pp_formatted_text (&pp));
       }
     snode_obj->set ("phis", phi_arr);
   }
@@ -762,7 +761,7 @@ supernode::to_json () const
 	pretty_printer pp;
 	pp_format_decoder (&pp) = default_tree_printer;
 	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
-	stmt_arr->append (new json::string (pp_formatted_text (&pp)));
+	stmt_arr->append_string (pp_formatted_text (&pp));
       }
     snode_obj->set ("stmts", stmt_arr);
   }
@@ -899,13 +898,9 @@ superedge::dump (pretty_printer *pp) const
 DEBUG_FUNCTION void
 superedge::dump () const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Implementation of dedge::dump_dot for superedges.
@@ -990,15 +985,15 @@ json::object *
 superedge::to_json () const
 {
   json::object *sedge_obj = new json::object ();
-  sedge_obj->set ("kind", new json::string (edge_kind_to_string (m_kind)));
-  sedge_obj->set ("src_idx", new json::integer_number (m_src->m_index));
-  sedge_obj->set ("dst_idx", new json::integer_number (m_dest->m_index));
+  sedge_obj->set_string ("kind", edge_kind_to_string (m_kind));
+  sedge_obj->set_integer ("src_idx", m_src->m_index);
+  sedge_obj->set_integer ("dst_idx", m_dest->m_index);
 
   {
     pretty_printer pp;
     pp_format_decoder (&pp) = default_tree_printer;
     dump_label_to_pp (&pp, false);
-    sedge_obj->set ("desc", new json::string (pp_formatted_text (&pp)));
+    sedge_obj->set_string ("desc", pp_formatted_text (&pp));
   }
 
   return sedge_obj;

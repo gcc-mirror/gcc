@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed visibility
 // visibility file
 // From: Gordon Joly <G.Joly@cs.ucl.ac.uk>

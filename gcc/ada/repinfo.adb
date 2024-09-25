@@ -521,7 +521,11 @@ package body Repinfo is
 
                elsif Is_Record_Type (E) then
                   if List_Representation_Info >= 1 then
-                     List_Record_Info (E, Bytes_Big_Endian);
+                     if Is_Private_Type (E) then
+                        List_Record_Info (Full_View (E), Bytes_Big_Endian);
+                     else
+                        List_Record_Info (E, Bytes_Big_Endian);
+                     end if;
 
                      --  Recurse into entities local to a record type
 

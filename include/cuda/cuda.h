@@ -201,6 +201,10 @@ typedef struct {
   size_t WidthInBytes, Height, Depth;
 } CUDA_MEMCPY3D_PEER;
 
+typedef struct {
+  char bytes[16];
+} CUuuid;
+
 #define cuCtxCreate cuCtxCreate_v2
 CUresult cuCtxCreate (CUcontext *, unsigned, CUdevice);
 #define cuCtxDestroy cuCtxDestroy_v2
@@ -214,6 +218,9 @@ CUresult cuCtxPushCurrent (CUcontext);
 CUresult cuCtxSynchronize (void);
 CUresult cuCtxSetLimit (CUlimit, size_t);
 CUresult cuDeviceGet (CUdevice *, int);
+/* _v2 was added in CUDA 11.4 and 'will supplant' the old one in 12.0.  */
+CUresult cuDeviceGetUuid (CUuuid*, CUdevice);
+CUresult cuDeviceGetUuid_v2 (CUuuid*, CUdevice);
 #define cuDeviceTotalMem cuDeviceTotalMem_v2
 CUresult cuDeviceTotalMem (size_t *, CUdevice);
 CUresult cuDeviceGetAttribute (int *, CUdevice_attribute, CUdevice);

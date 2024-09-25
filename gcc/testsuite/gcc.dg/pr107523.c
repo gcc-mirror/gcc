@@ -1,10 +1,12 @@
 /* { dg-do run } */
 /* { dg-options "-O2 " } */
 
-int a, b = 1;
-unsigned int c = 1;
+typedef __typeof__(465984011) i32;
+typedef __typeof__(465984011U) u32;
+i32 a, b = 1;
+u32 c = 1;
 int main() {
-  int d = 1, f;
+  i32 d = 1, f;
   if (b)
     d = 0;
   a = -1;
@@ -14,7 +16,7 @@ int main() {
     f = b;
   b = f;
   if (f <= a) {
-    int g = -(a && 1), h = g - f && a, i = ~(c / f) && 1 % (a | h);
+    i32 g = -(a && 1), h = g - f && a, i = ~(c / f) && 1 % (a | h);
     if (c) {
       g = f;
       if (i || (g && (g > -465984012)))

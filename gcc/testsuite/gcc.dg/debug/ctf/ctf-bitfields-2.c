@@ -8,7 +8,7 @@
    across targets with different BIT_PER_WORD.  Is there a way to add
    cts_offset related checks in the testcase?  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x6\[\t \]+\[^\n\]*cts_type" 3 } } */

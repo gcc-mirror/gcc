@@ -9,7 +9,7 @@
    so we cannot check them.
  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
 /* { dg-additional-options "-msdata=none" { target { { powerpc*-*-* } && ilp32 } } } */
 /* { dg-additional-options "-msmall-data-limit=0" { target { riscv*-*-* } } } */

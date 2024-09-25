@@ -34,6 +34,7 @@ extern tree rli_size_so_far (record_layout_info);
 extern void normalize_rli (record_layout_info);
 extern void place_field (record_layout_info, tree);
 extern void compute_record_mode (tree);
+extern void compute_array_mode (tree);
 extern void finish_bitfield_layout (tree);
 extern void finish_record_layout (record_layout_info, int);
 extern void finalize_size_functions (void);

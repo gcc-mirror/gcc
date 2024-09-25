@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=c++17 -fdump-tree-cddce-details -fdelete-null-pointer-checks" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } } */
 
 #include <cstdio>
 #include <cstdlib>

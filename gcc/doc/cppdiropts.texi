@@ -152,3 +152,12 @@ Do not search for header files in the C++-specific standard directories,
 but do still search the other standard directories.  (This option is
 used when building the C++ library.)
 
+@opindex embed-dir
+@item --embed-dir=@var{dir}
+Append @var{dir} directory to the list of searched directories for
+@code{#embed} preprocessing directive or @code{__has_embed} macro.
+There are no default directories for @code{#embed}.
+
+If @var{dir} begins with @samp{=} or @code{$SYSROOT}, then the @samp{=}
+or @code{$SYSROOT} is replaced by the sysroot prefix; see
+@option{--sysroot} and @option{-isysroot}.

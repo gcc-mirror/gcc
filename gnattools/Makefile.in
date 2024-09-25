@@ -223,6 +223,7 @@ gnattools-cross: $(GCC_DIR)/stamp-tools
 	# gnattools2
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_CROSS) common-tools
+	$(MAKE) -C $(GCC_DIR) gnattools-cross-mv
 
 # Other
 # -----

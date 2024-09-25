@@ -17,11 +17,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.3 filebuf member functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.8.1.3 filebuf member functions
 
-// Test that upon filebuf::close() 27.8.1.1,3 is enforced.
+// { dg-additional-files "filebuf_virtuals-1.txt" }
+
+// Test that upon filebuf::close() 27.8.1.1 p3 is enforced.
 
 #include <fstream>
 #include <testsuite_hooks.h>

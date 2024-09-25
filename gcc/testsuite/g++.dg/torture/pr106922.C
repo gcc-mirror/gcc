@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
 // { dg-additional-options "-Wall" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 // -O1 doesn't iterate VN and thus has bogus uninit diagnostics
 // { dg-skip-if "" { *-*-* } { "-O1" } { "" } }
 

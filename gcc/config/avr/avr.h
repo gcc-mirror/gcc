@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler,
-   for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
+   for AVR 8-bit microcontrollers.
    Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
@@ -308,11 +308,18 @@ enum reg_class {
 
 #define STATIC_CHAIN_REGNUM ((AVR_TINY) ? 18 :2)
 
-#define ELIMINABLE_REGS {					\
+#define RELOAD_ELIMINABLE_REGS {				\
     { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },               \
     { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },               \
     { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },             \
     { FRAME_POINTER_REGNUM + 1, STACK_POINTER_REGNUM + 1 } }
+
+#define ELIMINABLE_REGS						\
+  {								\
+    { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
+    { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },		\
+    { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM }		\
+  }
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   OFFSET = avr_initial_elimination_offset (FROM, TO)
@@ -548,14 +555,24 @@ struct GTY(()) machine_function
   /* 'true' - if current function is a naked function.  */
   int is_naked;
 
-  /* 'true' - if current function is an interrupt function 
-     as specified by the "interrupt" attribute.  */
+  /* 0 when no "interrupt" attribute is present.
+     1 when an "interrupt" attribute without arguments is present (and
+	    perhaps also "interrupt" attributes with argument(s)).
+     -1 when "interrupt" attribute(s) with arguments are present but none
+     without argument.  */
   int is_interrupt;
 
-  /* 'true' - if current function is a signal function 
-     as specified by the "signal" attribute.  */
+  /* 0 when no "signal" attribute is present.
+     1 when a "signal" attribute without arguments is present (and
+	    perhaps also "signal" attributes with argument(s)).
+     -1 when "signal" attribute(s) with arguments are present but none
+     without argument.  */
   int is_signal;
   
+  /* 'true' - if current function is a non-blocking interrupt service
+     routine as specified by the "isr_noblock" attribute.  */
+  int is_noblock;
+
   /* 'true' - if current function is a 'task' function 
      as specified by the "OS_task" attribute.  */
   int is_OS_task;

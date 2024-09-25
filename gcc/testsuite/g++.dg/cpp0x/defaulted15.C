@@ -48,7 +48,8 @@ struct F
 
 struct G: public F
 {
-  G(const G&) = default;
+  G(const G&) = default;  // { dg-error "implicitly deleted" "" { target c++17_down } }
+			  // { dg-warning "implicitly deleted" "" { target c++20 } .-1 }
 };
 
 struct H

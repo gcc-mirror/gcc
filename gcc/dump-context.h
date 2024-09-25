@@ -120,7 +120,7 @@ class dump_context
   void end_any_optinfo ();
 
   void emit_optinfo (const optinfo *info);
-  void emit_item (optinfo_item *item, dump_flags_t dump_kind);
+  void emit_item (const optinfo_item &item, dump_flags_t dump_kind);
 
   bool apply_dump_filter_p (dump_flags_t dump_kind, dump_flags_t filter) const;
 
@@ -154,47 +154,52 @@ class dump_context
 };
 
 /* A subclass of pretty_printer for implementing dump_context::dump_printf_va.
-   In particular, the formatted chunks are captured as optinfo_item instances,
-   thus retaining metadata about the entities being dumped (e.g. source
-   locations), rather than just as plain text.  */
+   In particular, the formatted chunks are captured as optinfo_item instances
+   as pp_token_custom_data, thus retaining metadata about the entities being
+   dumped (e.g. source locations), rather than just as plain text.
+   These custom items are retained through to the end of stage 3 of formatted
+   printing; the printer uses a custom token_printer subclass to emit them to
+   the active optinfo (if any).  */
 
 class dump_pretty_printer : public pretty_printer
 {
 public:
   dump_pretty_printer (dump_context *context, dump_flags_t dump_kind);
 
-  void emit_items (optinfo *dest);
+  void set_optinfo (optinfo *info) { m_token_printer.m_optinfo = info; }
 
 private:
-  /* Information on an optinfo_item that was generated during phase 2 of
-     formatting.  */
-  class stashed_item
+  struct custom_token_printer : public token_printer
   {
-  public:
-    stashed_item (const char **buffer_ptr_, optinfo_item *item_)
-      : buffer_ptr (buffer_ptr_), item (item_) {}
-    const char **buffer_ptr;
-    optinfo_item *item;
+    custom_token_printer (dump_pretty_printer &dump_pp)
+    : m_dump_pp (dump_pp),
+      m_optinfo (nullptr)
+    {}
+    void print_tokens (pretty_printer *pp,
+		       const pp_token_list &tokens) final override;
+    void emit_any_pending_textual_chunks ();
+
+    dump_pretty_printer &m_dump_pp;
+    optinfo *m_optinfo;
   };
 
   static bool format_decoder_cb (pretty_printer *pp, text_info *text,
 				 const char *spec, int /*precision*/,
 				 bool /*wide*/, bool /*set_locus*/,
 				 bool /*verbose*/, bool */*quoted*/,
-				 const char **buffer_ptr);
+				 pp_token_list &formatted_tok_list);
 
   bool decode_format (text_info *text, const char *spec,
-		      const char **buffer_ptr);
+		      pp_token_list &formatted_tok_list);
 
-  void stash_item (const char **buffer_ptr, optinfo_item *item);
+  void stash_item (pp_token_list &formatted_tok_list,
+		   std::unique_ptr<optinfo_item> item);
 
-  void emit_any_pending_textual_chunks (optinfo *dest);
-
-  void emit_item (optinfo_item *item, optinfo *dest);
+  void emit_item (std::unique_ptr<optinfo_item> item, optinfo *dest);
 
   dump_context *m_context;
   dump_flags_t m_dump_kind;
-  auto_vec<stashed_item> m_stashed_items;
+  custom_token_printer m_token_printer;
 };
 
 /* An RAII-style class for use in debug dumpers for temporarily using a

@@ -1,3 +1,11 @@
+2024-07-19  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Remove entry for gcc-11 branch.
+
+2024-07-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_git (BUGURL): Switch to https.
+
 2024-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Snapshots from trunk are now GCC 15 related.

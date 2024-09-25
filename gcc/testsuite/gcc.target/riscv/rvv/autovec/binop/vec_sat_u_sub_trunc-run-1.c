@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-std=c99" } */
 
-#include "vec_sat_arith.h"
+#include "../vec_sat_arith.h"
 
 #define OUT_T              uint8_t
 #define IN_T               uint16_t
@@ -71,4 +71,4 @@ IN_T op_2_data[] = {
   257,
 };
 
-#include "vec_sat_binary_scalar.h"
+#include "vec_sat_binary_vvx_run.h"

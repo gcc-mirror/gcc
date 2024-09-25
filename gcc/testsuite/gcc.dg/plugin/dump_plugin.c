@@ -1,5 +1,6 @@
 /* Plugin for testing dumpfile.c.  */
 
+#define INCLUDE_MEMORY
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"

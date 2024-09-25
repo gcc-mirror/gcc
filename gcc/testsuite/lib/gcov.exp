@@ -495,6 +495,48 @@ proc verify-calls { testname testcase file } {
     return $failed
 }
 
+# Verify that report filtering includes and excludes the right functions.
+proc verify-filters { testname testcase file expected unexpected } {
+    set fd [open $file r]
+
+    set seen {}
+    set ex [concat $expected $unexpected]
+
+    while { [gets $fd line] >= 0 } {
+	foreach sym $ex {
+	    if [regexp "$sym" "$line"] {
+		lappend seen $sym
+	    }
+	}
+    }
+
+    set seen [lsort -unique $seen]
+
+    set ex {}
+    foreach key $expected {
+	if { $key ni $seen } {
+	    lappend ex $key
+	}
+    }
+    set unex {}
+    foreach key $unexpected {
+	if { $key in $seen } {
+	    lappend unex $key
+	}
+    }
+
+    foreach sym $ex {
+	fail "Did not see expected symbol '$sym'"
+    }
+
+    foreach sym $unex {
+	fail "Found unexpected symbol '$sym'"
+    }
+
+    close $fd
+    return [expr [llength $ex] + [llength $unex]]
+}
+
 proc gcov-pytest-format-line { args } {
     global subdir
 
@@ -570,6 +612,7 @@ proc run-gcov { args } {
     set gcov_verify_conditions 0
     set gcov_verify_lines 1
     set gcov_verify_intermediate 0
+    set gcov_verify_filters 0
     set gcov_remove_gcda 0
     set xfailed 0
 
@@ -580,12 +623,17 @@ proc run-gcov { args } {
 	  set gcov_verify_branches 1
 	} elseif { $a == "conditions" } {
 	  set gcov_verify_conditions 1
+	} elseif { [lindex $a 0] == "filters" } {
+	  set gcov_verify_filters 1
+	  set verify_filters_expected [lindex $a 1]
+	  set verify_filters_unexpected [lindex $a 2]
 	} elseif { $a == "intermediate" } {
 	  set gcov_verify_intermediate 1
 	  set gcov_verify_calls 0
 	  set gcov_verify_branches 0
 	  set gcov_verify_conditions 0
 	  set gcov_verify_lines 0
+	  set gcov_verify_filters 0
 	} elseif { $a == "remove-gcda" } {
 	  set gcov_remove_gcda 1
 	} elseif { $gcov_args == "" } {
@@ -670,15 +718,20 @@ proc run-gcov { args } {
     } else {
 	set ifailed 0
     }
+    if { $gcov_verify_filters } {
+	set ffailed [verify-filters $testname $testcase $testcase.gcov $verify_filters_expected $verify_filters_unexpected]
+    } else {
+	set ffailed 0
+    }
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
-    set tfailed [expr $lfailed + $bfailed + $cdfailed + $cfailed + $ifailed]
+    set tfailed [expr $lfailed + $bfailed + $cdfailed + $cfailed + $ifailed + $ffailed]
     if { $xfailed } {
 	setup_xfail "*-*-*"
     }
     if { $tfailed > 0 } {
-	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $cfailed in return percentages, $ifailed in intermediate format"
+	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $cfailed in return percentages, $ifailed in intermediate format, $ffailed failed in filters"
 	if { $xfailed } {
 	    clean-gcov $testcase
 	}

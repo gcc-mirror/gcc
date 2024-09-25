@@ -1546,6 +1546,10 @@
   "&& 1"
   [(const_int 0)]
   {
+    rtx truncated = gen_reg_rtx (<V_QUAD_TRUNC>mode);
+    emit_insn (gen_trunc<mode><v_quad_trunc>2 (truncated, operands[2]));
+    operands[2] = truncated;
+
     insn_code icode = code_for_pred_vwsll (<V_DOUBLE_TRUNC>mode);
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
     DONE;

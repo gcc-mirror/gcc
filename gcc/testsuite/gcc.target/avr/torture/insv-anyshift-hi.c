@@ -14,7 +14,7 @@ typedef __UINT16_TYPE__ uint16_t;
     return (a >> LSR) & (1u << OBIT);					\
   }									\
 									\
-  __attribute__((__noinline__,__noclone__))				\
+  __attribute__((__noipa__))						\
   uint16_t fun1_lsr_##OBIT##_##LSR##_ni (int x, uint16_t a)		\
   {									\
     return fun1_lsr_##OBIT##_##LSR##_ai (x, a);				\
@@ -38,7 +38,7 @@ typedef __UINT16_TYPE__ uint16_t;
     return (a >> LSR) & (1u << OBIT);					\
   }									\
 									\
-  __attribute__((__noinline__,__noclone__))				\
+  __attribute__((__noipa__))						\
   uint16_t fun3_lsr_##OBIT##_##LSR##_ni (uint16_t a)			\
   {									\
     return fun3_lsr_##OBIT##_##LSR##_ai (a);				\
@@ -63,7 +63,7 @@ typedef __UINT16_TYPE__ uint16_t;
     return (a << LSL) & (1u << OBIT);					\
   }									\
 									\
-  __attribute__((__noinline__,__noclone__))				\
+  __attribute__((__noipa__))						\
   uint16_t fun2_lsl_##OBIT##_##LSL##_ni (uint16_t a)			\
   {									\
     return fun2_lsl_##OBIT##_##LSL##_ai (a);				\

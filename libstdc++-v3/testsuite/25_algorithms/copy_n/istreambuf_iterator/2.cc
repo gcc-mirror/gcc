@@ -1,5 +1,6 @@
 // { dg-do run { target c++11 } }
 // { dg-require-fileio "" }
+// { dg-additional-files "istream_unformatted-1.txt" }
 
 // Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //

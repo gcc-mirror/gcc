@@ -103,7 +103,7 @@ EXTERN tree m2statement_GetCurrentFunction (void);
 EXTERN void m2statement_SetBeginLocation (location_t location);
 EXTERN void m2statement_SetEndLocation (location_t location);
 EXTERN tree m2statement_GetParamTree (tree call, unsigned int i);
-EXTERN tree m2statement_BuildBuiltinCallTree (location_t location, tree func);
+EXTERN tree m2statement_BuildBuiltinCallTree (tree func);
 
 EXTERN tree m2statement_BuildTryFinally (location_t location, tree call,
                                          tree cleanups);

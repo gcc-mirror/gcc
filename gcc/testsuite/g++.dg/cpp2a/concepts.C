@@ -18,9 +18,9 @@ void f3(T)
 { }
 
 template<typename T>
-concept bool C1 = true; // { dg-error "bool" }
+concept bool C1 = true; // { dg-error "bool|variable concepts" }
 template<typename T>
-bool concept C2 = true; // { dg-error "concept definition syntax" }
+bool concept C2 = true; // { dg-error "concept definition syntax|variable concepts" }
 
 template<typename T>
 concept C3 = true; // OK

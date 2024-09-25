@@ -6,7 +6,7 @@ void loop (int * __restrict__ a, int * __restrict__ b, int * __restrict__ c,
 	   int * __restrict__ g, int * __restrict__ h)
 {
   int i = 0;
-  for (i = 0; i < 3; i++)
+  for (i = 0; i < 30; i++)
     {
       a[i] += i;
       b[i] += i;

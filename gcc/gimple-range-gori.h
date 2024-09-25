@@ -206,6 +206,7 @@ private:
 
   range_tracer tracer;
   int m_not_executable_flag;
+  int m_recompute_depth;
 };
 
 // These APIs are used to query GORI if there are ranges generated on an edge.

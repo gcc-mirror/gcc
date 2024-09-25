@@ -2030,19 +2030,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       fold_compare_helper (gsi, GT_EXPR, stmt);
       return true;
 
-    case RS6000_BIF_CMPLE_16QI:
-    case RS6000_BIF_CMPLE_U16QI:
-    case RS6000_BIF_CMPLE_8HI:
-    case RS6000_BIF_CMPLE_U8HI:
-    case RS6000_BIF_CMPLE_4SI:
-    case RS6000_BIF_CMPLE_U4SI:
-    case RS6000_BIF_CMPLE_2DI:
-    case RS6000_BIF_CMPLE_U2DI:
-    case RS6000_BIF_CMPLE_1TI:
-    case RS6000_BIF_CMPLE_U1TI:
-      fold_compare_helper (gsi, LE_EXPR, stmt);
-      return true;
-
     /* flavors of vec_splat_[us]{8,16,32}.  */
     case RS6000_BIF_VSPLTISB:
     case RS6000_BIF_VSPLTISH:
@@ -2113,20 +2100,16 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     /* vec_mergel (integrals).  */
     case RS6000_BIF_VMRGLH:
     case RS6000_BIF_VMRGLW:
-    case RS6000_BIF_XXMRGLW_4SI:
     case RS6000_BIF_VMRGLB:
     case RS6000_BIF_VEC_MERGEL_V2DI:
-    case RS6000_BIF_XXMRGLW_4SF:
     case RS6000_BIF_VEC_MERGEL_V2DF:
       fold_mergehl_helper (gsi, stmt, 1);
       return true;
     /* vec_mergeh (integrals).  */
     case RS6000_BIF_VMRGHH:
     case RS6000_BIF_VMRGHW:
-    case RS6000_BIF_XXMRGHW_4SI:
     case RS6000_BIF_VMRGHB:
     case RS6000_BIF_VEC_MERGEH_V2DI:
-    case RS6000_BIF_XXMRGHW_4SF:
     case RS6000_BIF_VEC_MERGEH_V2DF:
       fold_mergehl_helper (gsi, stmt, 0);
       return true;
@@ -2330,93 +2313,6 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
   return target;
 }
 
-/* Expand vec_init builtin.  */
-static rtx
-altivec_expand_vec_init_builtin (tree type, tree exp, rtx target)
-{
-  machine_mode tmode = TYPE_MODE (type);
-  machine_mode inner_mode = GET_MODE_INNER (tmode);
-  int i, n_elt = GET_MODE_NUNITS (tmode);
-
-  gcc_assert (VECTOR_MODE_P (tmode));
-  gcc_assert (n_elt == call_expr_nargs (exp));
-
-  if (!target || !register_operand (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  /* If we have a vector compromised of a single element, such as V1TImode, do
-     the initialization directly.  */
-  if (n_elt == 1 && GET_MODE_SIZE (tmode) == GET_MODE_SIZE (inner_mode))
-    {
-      rtx x = expand_normal (CALL_EXPR_ARG (exp, 0));
-      emit_move_insn (target, gen_lowpart (tmode, x));
-    }
-  else
-    {
-      rtvec v = rtvec_alloc (n_elt);
-
-      for (i = 0; i < n_elt; ++i)
-	{
-	  rtx x = expand_normal (CALL_EXPR_ARG (exp, i));
-	  RTVEC_ELT (v, i) = gen_lowpart (inner_mode, x);
-	}
-
-      rs6000_expand_vector_init (target, gen_rtx_PARALLEL (tmode, v));
-    }
-
-  return target;
-}
-
-/* Return the integer constant in ARG.  Constrain it to be in the range
-   of the subparts of VEC_TYPE; issue an error if not.  */
-
-static int
-get_element_number (tree vec_type, tree arg)
-{
-  unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
-
-  if (!tree_fits_uhwi_p (arg)
-      || (elt = tree_to_uhwi (arg), elt > max))
-    {
-      error ("selector must be an integer constant in the range [0, %wi]", max);
-      return 0;
-    }
-
-  return elt;
-}
-
-/* Expand vec_set builtin.  */
-static rtx
-altivec_expand_vec_set_builtin (tree exp)
-{
-  machine_mode tmode, mode1;
-  tree arg0, arg1, arg2;
-  int elt;
-  rtx op0, op1;
-
-  arg0 = CALL_EXPR_ARG (exp, 0);
-  arg1 = CALL_EXPR_ARG (exp, 1);
-  arg2 = CALL_EXPR_ARG (exp, 2);
-
-  tmode = TYPE_MODE (TREE_TYPE (arg0));
-  mode1 = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
-  gcc_assert (VECTOR_MODE_P (tmode));
-
-  op0 = expand_expr (arg0, NULL_RTX, tmode, EXPAND_NORMAL);
-  op1 = expand_expr (arg1, NULL_RTX, mode1, EXPAND_NORMAL);
-  elt = get_element_number (TREE_TYPE (arg0), arg2);
-
-  if (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode)
-    op1 = convert_modes (mode1, GET_MODE (op1), op1, true);
-
-  op0 = force_reg (tmode, op0);
-  op1 = force_reg (mode1, op1);
-
-  rs6000_expand_vector_set (op0, op1, GEN_INT (elt));
-
-  return op0;
-}
-
 /* Expand vec_ext builtin.  */
 static rtx
 altivec_expand_vec_ext_builtin (tree exp, rtx target)
@@ -2496,6 +2392,7 @@ static const struct
   const char *cpu;
   unsigned int cpuid;
 } cpu_is_info[] = {
+  { "power11",	   PPC_PLATFORM_POWER11 },
   { "power10",	   PPC_PLATFORM_POWER10 },
   { "power9",	   PPC_PLATFORM_POWER9 },
   { "power8",	   PPC_PLATFORM_POWER8 },
@@ -3357,8 +3254,8 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
       case CODE_FOR_xsiexpqpf_kf:
 	icode = CODE_FOR_xsiexpqpf_tf;
 	break;
-      case CODE_FOR_xststdcqp_kf:
-	icode = CODE_FOR_xststdcqp_tf;
+      case CODE_FOR_xststdc_kf:
+	icode = CODE_FOR_xststdc_tf;
 	break;
       case CODE_FOR_xscmpexpqp_eq_kf:
 	icode = CODE_FOR_xscmpexpqp_eq_tf;
@@ -3417,12 +3314,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 
   if (bif_is_cpu (*bifaddr))
     return cpu_expand_builtin (fcode, exp, target);
-
-  if (bif_is_init (*bifaddr))
-    return altivec_expand_vec_init_builtin (TREE_TYPE (exp), exp, target);
-
-  if (bif_is_set (*bifaddr))
-    return altivec_expand_vec_set_builtin (exp);
 
   if (bif_is_extract (*bifaddr))
     return altivec_expand_vec_ext_builtin (exp, target);

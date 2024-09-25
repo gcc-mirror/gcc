@@ -19,17 +19,6 @@ void bar ()
 /* Verify that some JSON was written to a file with the expected name.  */
 /* { dg-final { verify-sarif-file } } */
 
-/* We expect various properties.
-   The indentation here reflects the expected hierarchy, though these tests
-   don't check for that, merely the string fragments we expect.
-
-   { dg-final { scan-sarif-file {"version": "2.1.0"} } }
-     { dg-final { scan-sarif-file {"text": "deadlock due to inconsistent lock acquisition order"} } }
-     { dg-final { scan-sarif-file {"id": "Thread 1"} } }
-       { dg-final { scan-sarif-file {"executionOrder": 1} } }
-       { dg-final { scan-sarif-file {"executionOrder": 2} } }
-       { dg-final { scan-sarif-file {"executionOrder": 5} } }
-     { dg-final { scan-sarif-file {"id": "Thread 2"} } }
-       { dg-final { scan-sarif-file {"executionOrder": 3} } }
-       { dg-final { scan-sarif-file {"executionOrder": 4} } }
-       { dg-final { scan-sarif-file {"executionOrder": 6} } }  */
+/* Use a Python script to verify various properties about the generated
+   .sarif file:
+   { dg-final { run-sarif-pytest diagnostic-test-paths-multithreaded-sarif.c "diagnostic-test-paths-multithreaded-sarif.py" } } */

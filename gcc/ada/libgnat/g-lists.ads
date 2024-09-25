@@ -64,6 +64,8 @@ package GNAT.Lists is
       with procedure Destroy_Element (Elem : in out Element_Type);
       --  Element destructor
 
+      Check_Tampering : Boolean := True;
+
    package Doubly_Linked_Lists is
 
       ---------------------

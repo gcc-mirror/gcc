@@ -309,8 +309,10 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_ZERO_EXTEND_WITH_AND \
 	ix86_tune_features[X86_TUNE_ZERO_EXTEND_WITH_AND]
 #define TARGET_UNROLL_STRLEN	ix86_tune_features[X86_TUNE_UNROLL_STRLEN]
-#define TARGET_BRANCH_PREDICTION_HINTS \
-	ix86_tune_features[X86_TUNE_BRANCH_PREDICTION_HINTS]
+#define TARGET_BRANCH_PREDICTION_HINTS_NOT_TAKEN \
+	ix86_tune_features[X86_TUNE_BRANCH_PREDICTION_HINTS_NOT_TAKEN]
+#define TARGET_BRANCH_PREDICTION_HINTS_TAKEN \
+	ix86_tune_features[X86_TUNE_BRANCH_PREDICTION_HINTS_TAKEN]
 #define TARGET_DOUBLE_WITH_ADD	ix86_tune_features[X86_TUNE_DOUBLE_WITH_ADD]
 #define TARGET_USE_SAHF		ix86_tune_features[X86_TUNE_USE_SAHF]
 #define TARGET_MOVX		ix86_tune_features[X86_TUNE_MOVX]
@@ -428,6 +430,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS]
 #define TARGET_FUSE_ALU_AND_BRANCH \
 	ix86_tune_features[X86_TUNE_FUSE_ALU_AND_BRANCH]
+#define TARGET_FUSE_MOV_AND_ALU \
+	ix86_tune_features[X86_TUNE_FUSE_MOV_AND_ALU]
 #define TARGET_OPT_AGU ix86_tune_features[X86_TUNE_OPT_AGU]
 #define TARGET_AVOID_LEA_FOR_ADDR \
 	ix86_tune_features[X86_TUNE_AVOID_LEA_FOR_ADDR]
@@ -2087,9 +2091,9 @@ do {							\
 #define DEBUGGER_REGNO(N) \
   (TARGET_64BIT ? debugger64_register_map[(N)] : debugger_register_map[(N)])
 
-extern int const debugger_register_map[FIRST_PSEUDO_REGISTER];
-extern int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
@@ -2692,6 +2696,10 @@ struct GTY(()) machine_frame_state
      the frame pointer should be used for offsets <= sp_realigned_fp_last.
      The flags realigned and sp_realigned are mutually exclusive.  */
   BOOL_BITFIELD sp_realigned : 1;
+
+  /* When APX_PPX used in prologue, force epilogue to emit
+  popp instead of move and leave.  */
+  BOOL_BITFIELD apx_ppx_used : 1;
 
   /* If sp_realigned is set, this is the last valid offset from the CFA
      that can be used for access with the frame pointer.  */

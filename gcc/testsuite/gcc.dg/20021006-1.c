@@ -1,6 +1,7 @@
 /* PR target/7559
    This testcase was miscompiled on x86-64 due to wrong access to the struct
    members.  */
+/* { dg-do run } */
 
 extern void abort(void);
 

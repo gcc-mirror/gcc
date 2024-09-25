@@ -768,6 +768,7 @@ package body Exp_Ch2 is
                                    New_Occurrence_Of (Sink_Entity, Loc))));
 
          Actions  : constant List_Id := New_List;
+         U_Type   : constant Entity_Id := Underlying_Type (Etype (N));
          Elem_Typ : Entity_Id;
          Str_Elem : Node_Id;
 
@@ -809,6 +810,19 @@ package body Exp_Ch2 is
 
             Next (Str_Elem);
          end loop;
+
+         --  Add a type conversion to the result object declaration of custom
+         --  string types.
+
+         if not Is_Standard_String_Type (U_Type)
+           and then (not RTU_Loaded (Interfaces_C)
+                       or else Enclosing_Lib_Unit_Entity (U_Type)
+                                 /= RTU_Entity (Interfaces_C))
+         then
+            Set_Expression (Result_Decl,
+              Convert_To (Etype (N),
+                Relocate_Node (Expression (Result_Decl))));
+         end if;
 
          Append_To (Actions, Result_Decl);
 

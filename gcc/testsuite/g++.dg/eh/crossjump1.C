@@ -3,6 +3,7 @@
 // and one without REG_EH_REGION note.
 // { dg-do run }
 // { dg-options "-O2" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <exception>
 #include <string>

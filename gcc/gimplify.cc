@@ -3760,7 +3760,22 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location,
 	{
 	  tree init = TARGET_EXPR_INITIAL (*arg_p);
 	  if (init
-	      && !VOID_TYPE_P (TREE_TYPE (init)))
+	      && !VOID_TYPE_P (TREE_TYPE (init))
+	      /* Currently, due to c++/116015, it is not desirable to
+		 strip a TARGET_EXPR whose initializer is a {}.  The
+		 problem is that if we do elide it, we also have to
+		 replace all the occurrences of the slot temporary in the
+		 initializer with the temporary created for the argument.
+		 But we do not have that temporary yet so the replacement
+		 would be quite awkward and it might be needed to resort
+		 back to a PLACEHOLDER_EXPR.  Note that stripping the
+		 TARGET_EXPR wouldn't help anyway, as gimplify_expr would
+		 just allocate a temporary to store the CONSTRUCTOR into.
+		 (FIXME PR116375.)
+
+		 See convert_for_arg_passing for the C++ code that marks
+		 the TARGET_EXPR as eliding or not.  */
+	      && TREE_CODE (init) != CONSTRUCTOR)
 	    *arg_p = init;
 	}
     }
@@ -5549,7 +5564,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	struct gimplify_init_ctor_preeval_data preeval_data;
 	HOST_WIDE_INT num_ctor_elements, num_nonzero_elements;
 	HOST_WIDE_INT num_unique_nonzero_elements;
-	bool complete_p, valid_const_initializer;
+	int complete_p;
+	bool valid_const_initializer;
 
 	/* Aggregate types must lower constructors to initialization of
 	   individual elements.  The exception is that a CONSTRUCTOR node
@@ -5599,7 +5615,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    DECL_INITIAL (object) = ctor;
 	    TREE_STATIC (object) = 1;
-	    if (!DECL_NAME (object))
+	    if (!DECL_NAME (object) || DECL_NAMELESS (object))
 	      DECL_NAME (object) = create_tmp_var_name ("C");
 	    walk_tree (&DECL_INITIAL (object), force_labels_r, NULL, NULL);
 
@@ -5652,6 +5668,17 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	else if (ensure_single_access && num_nonzero_elements == 0)
 	  /* If a single access to the target must be ensured and all elements
 	     are zero, then it's optimal to clear whatever their number.  */
+	  cleared = true;
+	/* If the object is small enough to go in registers, and it's
+	   not required to be constructed in memory, clear it first.
+	   That will avoid wasting cycles preserving any padding bits
+	   that might be there, and if there aren't any, the compiler
+	   is smart enough to optimize the clearing out.  */
+	else if (complete_p <= 0
+		 && !TREE_ADDRESSABLE (ctor)
+		 && !TREE_THIS_VOLATILE (object)
+		 && (TYPE_MODE (type) != BLKmode || TYPE_NO_FORCE_BLK (type))
+		 && optimize)
 	  cleared = true;
 	else
 	  cleared = false;
@@ -6729,18 +6756,56 @@ gimplify_variable_sized_compare (tree *expr_p)
 static enum gimplify_status
 gimplify_scalar_mode_aggregate_compare (tree *expr_p)
 {
-  location_t loc = EXPR_LOCATION (*expr_p);
+  const location_t loc = EXPR_LOCATION (*expr_p);
+  const enum tree_code code = TREE_CODE (*expr_p);
   tree op0 = TREE_OPERAND (*expr_p, 0);
   tree op1 = TREE_OPERAND (*expr_p, 1);
-
   tree type = TREE_TYPE (op0);
   tree scalar_type = lang_hooks.types.type_for_mode (TYPE_MODE (type), 1);
 
   op0 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, scalar_type, op0);
   op1 = fold_build1_loc (loc, VIEW_CONVERT_EXPR, scalar_type, op1);
 
-  *expr_p
-    = fold_build2_loc (loc, TREE_CODE (*expr_p), TREE_TYPE (*expr_p), op0, op1);
+  /* We need to perform ordering comparisons in memory order like memcmp and,
+     therefore, may need to byte-swap operands for little-endian targets.  */
+  if (code != EQ_EXPR && code != NE_EXPR)
+    {
+      gcc_assert (BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN);
+      gcc_assert (TREE_CODE (scalar_type) == INTEGER_TYPE);
+      tree fndecl;
+
+      if (BYTES_BIG_ENDIAN)
+	fndecl = NULL_TREE;
+      else
+	switch (int_size_in_bytes (scalar_type))
+	  {
+	  case 1:
+	    fndecl = NULL_TREE;
+	    break;
+	  case 2:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP16);
+	    break;
+	  case 4:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP32);
+	    break;
+	  case 8:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP64);
+	    break;
+	  case 16:
+	    fndecl = builtin_decl_implicit (BUILT_IN_BSWAP128);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+
+      if (fndecl)
+	{
+	  op0 = build_call_expr_loc (loc, fndecl, 1, op0);
+	  op1 = build_call_expr_loc (loc, fndecl, 1, op1);
+	}
+    }
+
+  *expr_p = fold_build2_loc (loc, code, TREE_TYPE (*expr_p), op0, op1);
 
   return GS_OK;
 }
@@ -6942,7 +7007,8 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	*expr_p = build_fold_addr_expr (op0);
 
       /* Make sure TREE_CONSTANT and TREE_SIDE_EFFECTS are set properly.  */
-      recompute_tree_invariant_for_addr_expr (*expr_p);
+      if (TREE_CODE (*expr_p) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*expr_p);
 
       /* If we re-built the ADDR_EXPR add a conversion to the original type
          if required.  */
@@ -7040,6 +7106,14 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    error ("invalid lvalue in %<asm%> output %d", i);
 	  ret = tret;
 	}
+
+      /* If the gimplified operand is a register we do not allow memory.  */
+      if (allows_reg
+	  && allows_mem
+	  && (is_gimple_reg (TREE_VALUE (link))
+	      || (handled_component_p (TREE_VALUE (link))
+		  && is_gimple_reg (TREE_OPERAND (TREE_VALUE (link), 0)))))
+	allows_mem = 0;
 
       /* If the constraint does not allow memory make sure we gimplify
          it to a register if it is not already but its base is.  This
@@ -7278,7 +7352,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			       ASM_VOLATILE_P (expr)
 			       || noutputs == 0
 			       || labels);
-      gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+      gimple_asm_set_basic (stmt, ASM_BASIC_P (expr));
       gimple_asm_set_inline (stmt, ASM_INLINE_P (expr));
 
       gimplify_seq_add_stmt (pre_p, stmt);
@@ -7725,7 +7799,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
   /* When adding a variable-sized variable, we have to handle all sorts
      of additional bits of data: the pointer replacement variable, and
      the parameters of the type.  */
-  if (DECL_SIZE (decl) && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+  if (DECL_SIZE (decl) && !poly_int_tree_p (DECL_SIZE (decl)))
     {
       /* Add the pointer replacement variable as PRIVATE if the variable
 	 replacement is private, else FIRSTPRIVATE since we'll need the
@@ -14339,7 +14413,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		}
 	    }
 	  else if (DECL_SIZE (decl)
-		   && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
+		   && !poly_int_tree_p (DECL_SIZE (decl))
 		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_POINTER
 		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
 		   && (OMP_CLAUSE_MAP_KIND (c)
@@ -18412,7 +18486,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 						0), &n);
 		gimplify_and_add (TREE_OPERAND (TREE_OPERAND (*expr_p, 1),
 						1), &e);
-		if (!gimple_seq_empty_p (n) && !gimple_seq_empty_p (e))
+		if (!gimple_seq_empty_p (n) || !gimple_seq_empty_p (e))
 		  {
 		    geh_else *stmt = gimple_build_eh_else (n, e);
 		    gimple_seq_add_stmt (&cleanup, stmt);
@@ -18828,7 +18902,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		      else
 			goto expr_2;
 		    }
-		  else if (TYPE_MODE (type) != BLKmode)
+		  else if (SCALAR_INT_MODE_P (TYPE_MODE (type)))
 		    ret = gimplify_scalar_mode_aggregate_compare (expr_p);
 		  else
 		    ret = gimplify_variable_sized_compare (expr_p);
@@ -19376,7 +19450,7 @@ gimplify_body (tree fndecl, bool do_parms)
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
   /* If we had callee-copies statements, insert them at the beginning
-     of the function and clear DECL_VALUE_EXPR_P on the parameters.  */
+     of the function and clear DECL_HAS_VALUE_EXPR_P on the parameters.  */
   if (!gimple_seq_empty_p (parm_stmts))
     {
       tree parm;

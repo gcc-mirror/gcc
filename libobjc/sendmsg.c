@@ -126,11 +126,11 @@ __objc_get_forward_imp (id rcv, SEL sel)
           && objc_sizeof_type (t) > OBJC_MAX_STRUCT_BY_VALUE
 #endif
           )
-        return (IMP)__objc_block_forward;
+        return (IMP)(void*)__objc_block_forward;
       else if (t && (*t == 'f' || *t == 'd'))
-        return (IMP)__objc_double_forward;
+        return (IMP)(void*)__objc_double_forward;
       else
-        return (IMP)__objc_word_forward;
+        return (IMP)(void*)__objc_word_forward;
     }
 }
 
@@ -1007,7 +1007,7 @@ __objc_install_dtable_for_class (Class cls)
     return;
 
   /* We have this function cache the implementation pointers for
-     _objc_get_prepared_imp but the dispatch table won't be initilized
+     _objc_get_prepared_imp but the dispatch table won't be initialized
      until __objc_send_initialize completes.  */
   __objc_prepare_dtable_for_class (cls);
 

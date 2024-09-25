@@ -1,5 +1,6 @@
 // PR c++/110344
 // { dg-do compile { target c++26 } }
+// { dg-skip-if "requires hosted libstdc++ for cwchar" { ! hostedlib } }
 
 #include <string_view>
 struct Sheep {

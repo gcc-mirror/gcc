@@ -34,72 +34,78 @@ check_osxsave (void)
   return (ecx & bit_OSXSAVE) != 0;
 }
 
+__attribute__((noipa,target("no-avx")))
+int
+avx512_runtime_support_p ()
+{
+  /* Run AVX512 test only if host has ISA support.  */
+  if (__builtin_cpu_supports ("avx512f")
+#ifdef AVX512VL
+      && __builtin_cpu_supports ("avx512vl")
+#endif
+#ifdef AVX512ER
+      && __builtin_cpu_supports ("avx512er")
+#endif
+#ifdef AVX512CD
+      && __builtin_cpu_supports ("avx512cd")
+#endif
+#ifdef AVX512DQ
+      && __builtin_cpu_supports ("avx512dq")
+#endif
+#ifdef AVX512BW
+      && __builtin_cpu_supports ("avx512bw")
+#endif
+#ifdef AVX512IFMA
+      && __builtin_cpu_supports ("avx512ifma")
+#endif
+#ifdef AVX512VBMI
+      && __builtin_cpu_supports ("avx512vbmi")
+#endif
+#ifdef AVX5124FMAPS
+      && __builtin_cpu_supports ("avx5124fmaps")
+#endif
+#ifdef AVX5124VNNIW
+      && __builtin_cpu_supports ("avx5124vnniw")
+#endif
+#ifdef AVX512VPOPCNTDQ
+      && __builtin_cpu_supports ("avx512vpopcntdq")
+#endif
+#ifdef AVX512BITALG
+      && __builtin_cpu_supports ("avx512bitalg")
+#endif
+#ifdef GFNI
+      && __builtin_cpu_supports ("gfni")
+#endif
+#ifdef AVX512VBMI2
+      && __builtin_cpu_supports ("avx512vbmi2")
+#endif
+#ifdef AVX512VNNI
+      && __builtin_cpu_supports ("avx512vnni")
+#endif
+#ifdef AVX512FP16
+      && __builtin_cpu_supports ("avx512fp16")
+#endif
+#ifdef VAES
+      && __builtin_cpu_supports ("vaes")
+#endif
+#ifdef VPCLMULQDQ
+      && __builtin_cpu_supports ("vpclmulqdq")
+#endif
+#ifdef AVX512VP2INTERSECT
+      && __builtin_cpu_supports ("avx512vp2intersect")
+#endif
+      )
+    {
+      return 1;
+    }
+
+  return 0;
+}
+
 int
 main ()
 {
-  unsigned int eax, ebx, ecx, edx;
-
-  if (!__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx))
-    return 0;
-
-  /* Run AVX512 test only if host has ISA support.  */
-  if (check_osxsave ()
-      && (ebx & bit_AVX512F)
-#ifdef AVX512VL
-      && (ebx & bit_AVX512VL)
-#endif
-#ifdef AVX512ER
-      && (ebx & bit_AVX512ER)
-#endif
-#ifdef AVX512CD
-      && (ebx & bit_AVX512CD)
-#endif
-#ifdef AVX512DQ
-      && (ebx & bit_AVX512DQ)
-#endif
-#ifdef AVX512BW
-      && (ebx & bit_AVX512BW)
-#endif
-#ifdef AVX512IFMA
-      && (ebx & bit_AVX512IFMA)
-#endif
-#ifdef AVX512VBMI
-      && (ecx & bit_AVX512VBMI)
-#endif
-#ifdef AVX5124FMAPS
-      && (edx & bit_AVX5124FMAPS)
-#endif
-#ifdef AVX5124VNNIW
-      && (edx & bit_AVX5124VNNIW)
-#endif
-#ifdef AVX512VPOPCNTDQ
-      && (ecx & bit_AVX512VPOPCNTDQ)
-#endif
-#ifdef AVX512BITALG
-      && (ecx & bit_AVX512BITALG)
-#endif
-#ifdef GFNI
-      && (ecx & bit_GFNI)
-#endif
-#ifdef AVX512VBMI2
-      && (ecx & bit_AVX512VBMI2)
-#endif
-#ifdef AVX512VNNI
-      && (ecx & bit_AVX512VNNI)
-#endif
-#ifdef AVX512FP16
-      && (edx & bit_AVX512FP16)
-#endif
-#ifdef VAES
-      && (ecx & bit_VAES)
-#endif
-#ifdef VPCLMULQDQ
-      && (ecx & bit_VPCLMULQDQ)
-#endif
-#ifdef AVX512VP2INTERSECT
-      && (edx & bit_AVX512VP2INTERSECT)
-#endif
-      && avx512f_os_support ())
+  if (avx512_runtime_support_p ())
     {
       DO_TEST ();
 #ifdef DEBUG

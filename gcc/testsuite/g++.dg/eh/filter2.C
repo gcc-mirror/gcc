@@ -2,6 +2,7 @@
 // running destructors.  Original bug depended on a::~a being inlined.
 // { dg-do run }
 // { dg-options -O }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include <exception>
 #include <cstdlib>

@@ -473,6 +473,12 @@ Aspect No_Inline
 
 This boolean aspect is equivalent to :ref:`pragma No_Inline<Pragma-No_Inline>`.
 
+Aspect No_Raise
+===============
+.. index:: No_Raise
+
+This boolean aspect is equivalent to :ref:`pragma No_Raise<Pragma-No_Raise>`.
+
 Aspect No_Tagged_Streams
 ========================
 .. index:: No_Tagged_Streams

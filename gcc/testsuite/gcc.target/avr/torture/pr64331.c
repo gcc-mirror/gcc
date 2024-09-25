@@ -6,7 +6,7 @@ typedef struct
 } T2;
 
 
-__attribute__((__noinline__, __noclone__))
+__attribute__((__noipa__))
 void foo2 (T2 *t, int x)
 {
   if (x != t->a)

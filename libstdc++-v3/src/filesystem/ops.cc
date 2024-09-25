@@ -257,6 +257,20 @@ namespace
 
 } // namespace
 
+#ifdef _GLIBCXX_HAVE_SYS_STAT_H
+#ifdef NEED_DO_COPY_FILE // Only define this once, not in cow-ops.o too
+bool
+fs::equiv_files([[maybe_unused]] const char_type* p1, const stat_type& st1,
+		[[maybe_unused]] const char_type* p2, const stat_type& st2,
+		[[maybe_unused]] error_code& ec)
+{
+  // For POSIX the device ID and inode number uniquely identify a file.
+  // This doesn't work on Windows (see equiv_files in src/c++17/fs_ops.cc).
+  return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
+}
+#endif
+#endif
+
 void
 fs::copy(const path& from, const path& to, copy_options options,
 	 error_code& ec) noexcept
@@ -293,7 +307,7 @@ fs::copy(const path& from, const path& to, copy_options options,
   f = make_file_status(from_st);
 
   if (exists(t) && !is_other(t) && !is_other(f)
-      && to_st.st_dev == from_st.st_dev && to_st.st_ino == from_st.st_ino)
+      && fs::equiv_files(from.c_str(), from_st, to.c_str(), to_st, ec))
     {
       ec = std::make_error_code(std::errc::file_exists);
       return;
@@ -763,7 +777,7 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
       ec.clear();
       if (is_other(s1) || is_other(s2))
 	return false;
-      return st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino;
+      return fs::equiv_files(p1.c_str(), st1, p2.c_str(), st2, ec);
     }
   else if (!exists(s1) || !exists(s2))
     ec = std::make_error_code(std::errc::no_such_file_or_directory);

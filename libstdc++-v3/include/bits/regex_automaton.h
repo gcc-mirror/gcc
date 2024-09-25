@@ -33,6 +33,9 @@
 #define _GLIBCXX_REGEX_STATE_LIMIT 100000
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // anon struct
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -396,5 +399,7 @@ namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #include <bits/regex_automaton.tcc>

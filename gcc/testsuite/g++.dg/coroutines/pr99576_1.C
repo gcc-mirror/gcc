@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 /*
   Test that instances created in capture clauses within co_await statements do not get
   'promoted'. This would lead to their members destructors getting called more

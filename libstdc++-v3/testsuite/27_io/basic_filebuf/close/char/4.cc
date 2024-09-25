@@ -18,10 +18,9 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-fileio "" }
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
-// 27.8.1.3 filebuf member functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.8.1.3 filebuf member functions
 
 // Test that upon filebuf::close() 27.8.1.1,3 is enforced.
 

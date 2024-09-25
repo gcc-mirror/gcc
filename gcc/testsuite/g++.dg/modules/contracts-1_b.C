@@ -1,5 +1,7 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodules-ts -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
+
 #include <cstdio>
 import foo;
 

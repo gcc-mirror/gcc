@@ -1,3 +1,16 @@
+2024-08-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR lto/116361
+	* lto-plugin.c (claim_file_handler_v2): Don't check obj.found
+	for the offload section.
+
+2024-08-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR lto/116361
+	* lto-plugin.c (claim_file_handler_v2): Rename claimed to
+	can_be_claimed.  Include the LTO object only if it is known to
+	be included in link output.
+
 2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

@@ -19,6 +19,7 @@
  
 // { dg-require-fileio "" }
 // { dg-require-binary-io "" }
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
 #include <iostream>
 #include <cstdio>

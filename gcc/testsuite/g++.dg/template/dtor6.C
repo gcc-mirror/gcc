@@ -3,6 +3,7 @@
 template<int> struct A
 {
   static int i;
+  ~A();
 };
 
 template<int N> int A<N>::i = { A::~A }; // { dg-error "36:invalid use of non-static member function" }

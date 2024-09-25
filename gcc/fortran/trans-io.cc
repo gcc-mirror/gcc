@@ -117,6 +117,8 @@ enum iocall
   IOCALL_WRITE_DONE,
   IOCALL_X_INTEGER,
   IOCALL_X_INTEGER_WRITE,
+  IOCALL_X_UNSIGNED,
+  IOCALL_X_UNSIGNED_WRITE,
   IOCALL_X_LOGICAL,
   IOCALL_X_LOGICAL_WRITE,
   IOCALL_X_CHARACTER,
@@ -333,6 +335,14 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_INTEGER_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_integer_write")), ". w R . ",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_UNSIGNED] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_unsigned")), ". w W . ",
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+
+  iocall[IOCALL_X_UNSIGNED_WRITE] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_unsigned_write")), ". w R . ",
 	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
 
   iocall[IOCALL_X_LOGICAL] = gfc_build_library_function_decl_with_spec (
@@ -1692,7 +1702,8 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   gcc_assert (sym || c);
 
   /* Build the namelist object name.  */
-  if (sym && !sym->attr.use_only && sym->attr.use_rename)
+  if (sym && !sym->attr.use_only && sym->attr.use_rename
+      && sym->ns->use_stmts->rename)
     string = gfc_build_cstring_const (sym->ns->use_stmts->rename->local_name);
   else
     string = gfc_build_cstring_const (var_name);
@@ -2341,6 +2352,15 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 
       break;
 
+    case BT_UNSIGNED:
+      arg2 = build_int_cst (unsigned_type_node, kind);
+      if (last_dt == READ)
+	function = iocall[IOCALL_X_UNSIGNED];
+      else
+	function = iocall[IOCALL_X_UNSIGNED_WRITE];
+
+      break;
+
     case BT_REAL:
       arg2 = build_int_cst (integer_type_node, kind);
       if (last_dt == READ)
@@ -2462,8 +2482,8 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 		  || (ts->type == BT_CLASS
 		      && !GFC_CLASS_TYPE_P (TREE_TYPE (decl))))
 		gfc_conv_derived_to_class (se, code->expr1,
-					   dtio_sub->formal->sym->ts,
-					   vptr, false, false);
+					   dtio_sub->formal->sym, vptr, false,
+					   false, "transfer");
 	      addr_expr = se->expr;
 	      function = iocall[IOCALL_X_DERIVED];
 	      break;

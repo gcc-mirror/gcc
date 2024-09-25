@@ -1431,6 +1431,7 @@ add_method (tree type, tree method, bool via_using)
 		continue;
 	    }
 
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (method),
 		    "%q#D conflicts with version inherited from %qT",
 		    method, basef);
@@ -1453,6 +1454,7 @@ add_method (tree type, tree method, bool via_using)
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  error_at (DECL_SOURCE_LOCATION (method),
 		    "%q#D cannot be overloaded with %q#D", method, fn);
 	  inform (DECL_SOURCE_LOCATION (fn),
@@ -1604,6 +1606,7 @@ handle_using_decl (tree using_decl, tree t)
     ;
   else if (is_overloaded_fn (old_value))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
 		"because of local method %q#D with same name",
 		using_decl, t, old_value);
@@ -1613,6 +1616,7 @@ handle_using_decl (tree using_decl, tree t)
     }
   else if (!DECL_ARTIFICIAL (old_value))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (using_decl), "%qD invalid in %q#T "
 		"because of local member %q#D with same name",
 		using_decl, t, old_value);
@@ -2312,6 +2316,7 @@ fixup_type_variants (tree type)
       TYPE_PRECISION (variant) = TYPE_PRECISION (type);
       TYPE_MODE_RAW (variant) = TYPE_MODE_RAW (type);
       TYPE_EMPTY_P (variant) = TYPE_EMPTY_P (type);
+      TREE_ADDRESSABLE (variant) = TREE_ADDRESSABLE (type);
     }
 }
 
@@ -2378,8 +2383,17 @@ fixup_attribute_variants (tree t)
 static void
 finish_struct_bits (tree t)
 {
-  /* Fix up variants (if any).  */
-  fixup_type_variants (t);
+  /* If this type has a copy constructor or a destructor, force its
+     mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
+     nonzero.  This will cause it to be passed by invisible reference
+     and prevent it from being returned in a register.  */
+  if (type_has_nontrivial_copy_init (t)
+      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+    {
+      SET_DECL_MODE (TYPE_MAIN_DECL (t), BLKmode);
+      SET_TYPE_MODE (t, BLKmode);
+      TREE_ADDRESSABLE (t) = 1;
+    }
 
   if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)) && TYPE_POLYMORPHIC_P (t))
     /* For a class w/o baseclasses, 'finish_struct' has set
@@ -2392,21 +2406,8 @@ finish_struct_bits (tree t)
        looking in the vtables).  */
     get_pure_virtuals (t);
 
-  /* If this type has a copy constructor or a destructor, force its
-     mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
-     nonzero.  This will cause it to be passed by invisible reference
-     and prevent it from being returned in a register.  */
-  if (type_has_nontrivial_copy_init (t)
-      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
-    {
-      tree variants;
-      SET_DECL_MODE (TYPE_MAIN_DECL (t), BLKmode);
-      for (variants = t; variants; variants = TYPE_NEXT_VARIANT (variants))
-	{
-	  SET_TYPE_MODE (variants, BLKmode);
-	  TREE_ADDRESSABLE (variants) = 1;
-	}
-    }
+  /* Fix up variants (if any).  */
+  fixup_type_variants (t);
 }
 
 /* Issue warnings about T having private constructors, but no friends,
@@ -2550,6 +2551,7 @@ maybe_warn_about_overly_private_class (tree t)
 
       if (!nonprivate_ctor)
 	{
+	  auto_diagnostic_group d;
 	  bool w = warning (OPT_Wctor_dtor_privacy,
 			    "%q#T only defines private constructors and has "
 			    "no friends", t);
@@ -3818,6 +3820,7 @@ check_field_decl (tree field,
       if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx11)
 	{
 	  static bool warned;
+	  auto_diagnostic_group d;
 	  int oldcount = errorcount;
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
 	    error ("member %q+#D with constructor not allowed in union",
@@ -4134,6 +4137,7 @@ check_field_decls (tree t, tree *access_decls,
 	  if (default_init_member
 	      && TREE_CODE (t) == UNION_TYPE)
 	    {
+	      auto_diagnostic_group d;
 	      error ("multiple fields in union %qT initialized", t);
 	      inform (DECL_SOURCE_LOCATION (default_init_member),
 		      "initialized member %q+D declared here",
@@ -4212,6 +4216,7 @@ check_field_decls (tree t, tree *access_decls,
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
       && !(TYPE_HAS_COPY_CTOR (t) && TYPE_HAS_COPY_ASSIGN (t)))
     {
+      auto_diagnostic_group d;
       if (warning (OPT_Weffc__, "%q#T has pointer data members", t))
 	{
 	  if (! TYPE_HAS_COPY_CTOR (t))
@@ -5918,7 +5923,8 @@ type_has_virtual_destructor (tree type)
 /* True iff class TYPE has a non-deleted trivial default
    constructor.  */
 
-bool type_has_non_deleted_trivial_default_ctor (tree type)
+bool
+type_has_non_deleted_trivial_default_ctor (tree type)
 {
   return TYPE_HAS_TRIVIAL_DFLT (type) && locate_ctor (type);
 }
@@ -6482,27 +6488,14 @@ check_bases_and_members (tree t)
   for (fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
     if (DECL_DECLARES_FUNCTION_P (fn)
 	&& !DECL_ARTIFICIAL (fn)
-	&& DECL_DEFAULTED_IN_CLASS_P (fn))
-      {
+	&& DECL_DEFAULTED_IN_CLASS_P (fn)
 	/* ...except handle comparisons later, in finish_struct_1.  */
-	if (special_function_p (fn) == sfk_comparison)
-	  continue;
-
-	int copy = copy_fn_p (fn);
-	if (copy > 0)
-	  {
-	    bool imp_const_p
-	      = (DECL_CONSTRUCTOR_P (fn) ? !cant_have_const_ctor
-		 : !no_const_asn_ref);
-	    bool fn_const_p = (copy == 2);
-
-	    if (fn_const_p && !imp_const_p)
-	      /* If the function is defaulted outside the class, we just
-		 give the synthesis error.  Core Issue #1331 says this is
-		 no longer ill-formed, it is defined as deleted instead.  */
-	      DECL_DELETED_FN (fn) = true;
-	  }
-	defaulted_late_check (fn);
+	&& special_function_p (fn) != sfk_comparison)
+      {
+	bool imp_const_p
+	  = (DECL_CONSTRUCTOR_P (fn) ? !cant_have_const_ctor
+	     : !no_const_asn_ref);
+	defaulted_late_check (fn, imp_const_p);
       }
 
   if (LAMBDA_TYPE_P (t))
@@ -8915,6 +8908,7 @@ resolve_address_of_overloaded_function (tree target_type,
       /* There were *no* matches.  */
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("no matches converting function %qD to type %q#T",
 		 OVL_NAME (overload), target_type);
 
@@ -8942,6 +8936,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("converting overloaded function %qD to type %q#T is ambiguous",
 		     OVL_NAME (overload), target_type);
 
@@ -9399,6 +9394,8 @@ note_name_declared_in_class (tree name, tree decl)
       else
 	/* Make it an error.  */
 	global_dc->m_pedantic_errors = 1;
+
+      auto_diagnostic_group d;
       if (pedwarn (location_of (decl), OPT_Wchanges_meaning,
 		   "declaration of %q#D changes meaning of %qD",
 		   decl, OVL_NAME (decl)))

@@ -30,15 +30,16 @@ namespace BIR {
  * See AbstractExprBuilder for API usage docs (mainly `return_place` and
  * `return_expr`).
  */
-class ExprStmtBuilder : public AbstractExprBuilder, public HIR::HIRStmtVisitor
+class ExprStmtBuilder final : public AbstractExprBuilder,
+			      public HIR::HIRStmtVisitor
 {
 public:
   explicit ExprStmtBuilder (BuilderContext &ctx) : AbstractExprBuilder (ctx) {}
 
   /** Entry point. */
-  PlaceId build (HIR::Expr &expr, PlaceId place = INVALID_PLACE)
+  PlaceId build (HIR::Expr &expr, PlaceId destination = INVALID_PLACE)
   {
-    return visit_expr (expr, place);
+    return visit_expr (expr, destination);
   }
 
 private:

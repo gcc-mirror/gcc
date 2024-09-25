@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 //  Make sure embedded quotes are not a problem for string and char literals.
 

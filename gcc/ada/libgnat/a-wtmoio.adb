@@ -36,12 +36,15 @@ with System.Img_LLB; use System.Img_LLB;
 with System.Img_LLU; use System.Img_LLU;
 with System.Img_LLW; use System.Img_LLW;
 with System.Img_WIU; use System.Img_WIU;
+with System.Unsigned_Types;
 with System.Val_Uns; use System.Val_Uns;
 with System.Val_LLU; use System.Val_LLU;
 with System.WCh_Con; use System.WCh_Con;
 with System.WCh_WtS; use System.WCh_WtS;
 
 package body Ada.Wide_Text_IO.Modular_IO is
+
+   subtype Unsigned is System.Unsigned_Types.Unsigned;
 
    package Aux_Uns is new
      Ada.Wide_Text_IO.Integer_Aux
@@ -50,6 +53,8 @@ package body Ada.Wide_Text_IO.Modular_IO is
         Set_Image_Unsigned,
         Set_Image_Width_Unsigned,
         Set_Image_Based_Unsigned);
+
+   subtype Long_Long_Unsigned is System.Unsigned_Types.Long_Long_Unsigned;
 
    package Aux_LLU is new
      Ada.Wide_Text_IO.Integer_Aux

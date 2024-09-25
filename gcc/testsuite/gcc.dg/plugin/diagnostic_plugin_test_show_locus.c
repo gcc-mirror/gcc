@@ -61,6 +61,8 @@
 #include "context.h"
 #include "print-tree.h"
 #include "gcc-rich-location.h"
+#include "text-range-label.h"
+#include "diagnostic-format-text.h"
 
 int plugin_is_GPL_compatible;
 
@@ -123,25 +125,27 @@ static bool force_show_locus_color = false;
 /* We want to verify the colorized output of diagnostic_show_locus,
    but turning on colorization for everything confuses "dg-warning" etc.
    Hence we special-case it within this plugin by using this modified
-   version of default_diagnostic_finalizer, which, if "color" is
+   version of default_diagnostic_text_finalizer, which, if "color" is
    passed in as a plugin argument turns on colorization, but just
    for diagnostic_show_locus.  */
 
 static void
-custom_diagnostic_finalizer (diagnostic_context *context,
-			     const diagnostic_info *diagnostic,
-			     diagnostic_t)
+custom_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+				  const diagnostic_info *diagnostic,
+				  diagnostic_t)
 {
-  bool old_show_color = pp_show_color (context->printer);
+  pretty_printer *const pp = text_output.get_printer ();
+  bool old_show_color = pp_show_color (pp);
   if (force_show_locus_color)
-    pp_show_color (context->printer) = true;
-  char *saved_prefix = pp_take_prefix (context->printer);
-  pp_set_prefix (context->printer, NULL);
-  pp_newline (context->printer);
-  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
-  pp_show_color (context->printer) = old_show_color;
-  pp_set_prefix (context->printer, saved_prefix);
-  pp_flush (context->printer);
+    pp_show_color (pp) = true;
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, NULL);
+  pp_newline (pp);
+  diagnostic_show_locus (&text_output.get_context (),
+			 diagnostic->richloc, diagnostic->kind, pp);
+  pp_show_color (pp) = old_show_color;
+  pp_set_prefix (pp, saved_prefix);
+  pp_flush (pp);
 }
 
 /* Add a location to RICHLOC with caret==start at START, ranging to FINISH.  */
@@ -171,7 +175,7 @@ test_show_locus (function *fun)
   location_t fnstart = fun->function_start_locus;
   int fnstart_line = LOCATION_LINE (fnstart);
 
-  diagnostic_finalizer (global_dc) = custom_diagnostic_finalizer;
+  diagnostic_text_finalizer (global_dc) = custom_diagnostic_text_finalizer;
 
   /* Hardcode the "terminal width", to verify the behavior of
      very wide lines.  */

@@ -13,7 +13,7 @@ typedef __UINT32_TYPE__ uint32_t;
     return (a >> LSR) & (1ul << OBIT);					\
   }									\
 									\
-  __attribute__((__noinline__,__noclone__))				\
+  __attribute__((__noipa__))						\
   uint32_t fun1_lsr_##OBIT##_##LSR##_ni (int x, uint32_t a)		\
   {									\
     return fun1_lsr_##OBIT##_##LSR##_ai (x, a);				\
@@ -39,7 +39,7 @@ typedef __UINT32_TYPE__ uint32_t;
     return (a << LSL) & (1ul << OBIT);					\
   }									\
 									\
-  __attribute__((__noinline__,__noclone__))				\
+  __attribute__((__noipa__))						\
   uint32_t fun2_lsl_##OBIT##_##LSL##_ni (int x, uint32_t a)		\
   {									\
     return fun2_lsl_##OBIT##_##LSL##_ai (x, a);				\

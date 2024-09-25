@@ -1,5 +1,6 @@
 // PR c++/36870
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 #include <cassert>
 
 struct S { S (); };

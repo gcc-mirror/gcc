@@ -1531,6 +1531,9 @@ package Sem_Util is
    function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean;
    --  Return whether an array type has static bounds
 
+   function Has_Static_Empty_Array_Bounds (Typ : Node_Id) return Boolean;
+   --  Return whether array type Typ has static empty bounds
+
    function Has_Static_Non_Empty_Array_Bounds (Typ : Node_Id) return Boolean;
    --  Determine whether array type Typ has static non-empty bounds
 

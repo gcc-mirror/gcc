@@ -1005,24 +1005,6 @@ DefaultASTVisitor::visit (AST::NamedFunctionParam &param)
 }
 
 void
-DefaultASTVisitor::visit (AST::ExternalFunctionItem &item)
-{
-  visit_outer_attrs (item);
-  visit (item.get_visibility ());
-  for (auto &generic : item.get_generic_params ())
-    visit (generic);
-
-  if (item.has_where_clause ())
-    visit (item.get_where_clause ());
-
-  for (auto &param : item.get_function_params ())
-    visit (param);
-
-  if (item.has_return_type ())
-    visit (item.get_return_type ());
-}
-
-void
 DefaultASTVisitor::visit (AST::ExternBlock &block)
 {
   visit_outer_attrs (block);
@@ -1225,8 +1207,7 @@ void
 DefaultASTVisitor::visit (AST::TupleStructPattern &pattern)
 {
   visit (pattern.get_path ());
-  if (pattern.has_items ())
-    visit (pattern.get_items ());
+  visit (pattern.get_items ());
 }
 
 void
@@ -1393,6 +1374,12 @@ DefaultASTVisitor::visit (AST::BareFunctionType &type)
       visit (attr);
   if (type.has_return_type ())
     visit (type.get_return_type ());
+}
+
+void
+DefaultASTVisitor::visit (AST::FormatArgs &)
+{
+  // FIXME: Do we have anything to do? any subnodes to visit? Probably, right?
 }
 
 void

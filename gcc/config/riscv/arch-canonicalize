@@ -40,8 +40,13 @@ LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
 #
 IMPLIED_EXT = {
   "d" : ["f", "zicsr"],
+
   "a" : ["zaamo", "zalrsc"],
+  "zabha" : ["zaamo"],
+  "zacas" : ["zaamo"],
+
   "f" : ["zicsr"],
+  "b" : ["zba", "zbb", "zbs"],
   "zdinx" : ["zfinx", "zicsr"],
   "zfinx" : ["zicsr"],
   "zhinx" : ["zhinxmin", "zfinx", "zicsr"],
@@ -135,7 +140,7 @@ def arch_canonicalize(arch, isa_spec):
             any_change = True
 
   # Single letter extension might appear in the long_exts list,
-  # becasue we just append extensions list to the arch string.
+  # because we just append extensions list to the arch string.
   std_exts += list(filter(lambda x:len(x) == 1, long_exts))
 
   def longext_sort (exts):

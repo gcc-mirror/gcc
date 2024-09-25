@@ -10,7 +10,7 @@
 
 #define PSTR(s) (__extension__({ static const char __c[] PM = (s); &__c[0];}))
 
-#define NI __attribute__((noinline,noclone))
+#define NI __attribute__((noipa))
 
 const volatile int data[] PM = { 1234, 5678 };
 const volatile int * volatile pdata = &data[1];

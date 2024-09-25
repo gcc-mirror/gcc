@@ -47,10 +47,16 @@ public:
 
   using AST::DefaultASTVisitor::visit;
 
-  /* Maybe expand a macro invocation in lieu of an expression */
+  /*
+     Maybe expand a macro invocation in lieu of an expression
+     expr : Core guidelines R33, this function reseat the pointer.
+  */
   void maybe_expand_expr (std::unique_ptr<AST::Expr> &expr);
 
-  /* Maybe expand a macro invocation in lieu of a type */
+  /*
+     Maybe expand a macro invocation in lieu of a type
+     type : Core guidelines R33, this function reseat the pointer.
+   */
   void maybe_expand_type (std::unique_ptr<AST::Type> &type);
 
   /**
@@ -252,7 +258,6 @@ public:
   void visit (AST::TraitImpl &impl) override;
   void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternalStaticItem &item) override;
-  void visit (AST::ExternalFunctionItem &item) override;
   void visit (AST::ExternBlock &block) override;
 
   // I don't think it would be possible to strip macros without expansion

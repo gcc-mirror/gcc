@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 
 // Test passing to ellipisis
 

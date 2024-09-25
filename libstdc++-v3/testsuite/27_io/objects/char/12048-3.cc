@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-fileio "" }
+// { dg-additional-files "cin_unget-1.txt" }
 
 #include <iostream>
 #include <cstdio>

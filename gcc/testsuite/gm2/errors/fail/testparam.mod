@@ -19,10 +19,15 @@ MODULE testparam ;
 
 FROM FIO IMPORT IsNoError, Close, EOF ;
 
+PROCEDURE init ;
 VAR
    i: INTEGER ;
 BEGIN
    IF EOF(i)
    THEN
    END
+END init ;
+
+BEGIN
+   init
 END testparam.

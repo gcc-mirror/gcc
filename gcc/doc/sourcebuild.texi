@@ -1328,15 +1328,16 @@ to @var{var_value} before execution of the program created by the test.
 Specify additional files, other than source files, that must be copied
 to the system where the compiler runs.
 
-@item @{ dg-additional-sources "@var{filelist}" [@{ target @var{selector} @}] @}
+@item @{ dg-additional-sources "@var{filelist}" [@{ \[linkonly\] \[target @var{selector}\] @}] @}
 Specify additional source files to appear in the compile line
 following the main test file.
 If the directive includes the optional @samp{@{ @var{selector} @}}
 then the additional sources are only added if the target system
 matches the @var{selector}.
-Additional sources are generally used only in @samp{link} and @samp{run}
-tests; they are reported as unsupported and discarded in other kinds of
-tests that direct the compiler to output to a single file.
+If @samp{linkonly} is specified, additional sources are used only in
+@samp{link} and @samp{run} tests; they are reported as unsupported and
+discarded in other kinds of tests that direct the compiler to output to
+a single file.
 @end table
 
 @subsubsection Add checks at the end of a test
@@ -2423,6 +2424,17 @@ MSP430 target has the small memory model enabled (@code{-msmall}).
 MSP430 target has the large memory model enabled (@code{-mlarge}).
 @end table
 
+@subsubsection nvptx-specific attributes
+
+@table @code
+@item nvptx_default_ptx_isa_version_at_least_6_0
+nvptx code by default compiles for at least PTX ISA version 6.0.
+
+@item nvptx_runtime_alias_ptx
+The nvptx runtime environment supports the PTX ISA directive
+@code{.alias}.
+@end table
+
 @subsubsection PowerPC-specific attributes
 
 @table @code
@@ -2527,7 +2539,13 @@ Test target architecture has support for the A extension.
 @item riscv_zaamo
 Test target architecture has support for the zaamo extension.
 
-@item riscv_zlrsc
+@item riscv_zabha
+Test target architecture has support for the zabha extension.
+
+@item riscv_zacas
+Test target architecture has support for the zacas extension.
+
+@item riscv_zalrsc
 Test target architecture has support for the zalrsc extension.
 
 @item riscv_ztso
@@ -2577,6 +2595,15 @@ Target supports the execution of @code{avx10.1} instructions.
 
 @item avx10.1-512
 Target supports the execution of @code{avx10.1-512} instructions.
+
+@item avx10.2
+Target supports the execution of @code{avx10.2} instructions.
+
+@item avx10.2-256
+Target supports the execution of @code{avx10.2} instructions.
+
+@item avx10.2-512
+Target supports the execution of @code{avx10.2-512} instructions.
 
 @item avx2
 Target supports compiling @code{avx2} instructions.
@@ -2791,6 +2818,10 @@ they fail at runtime, the requirement is still regarded as satisfied.
 Target is @samp{freestanding} as defined in section 4 of the C99 standard.
 Effectively, it is a target which supports no extra headers or libraries
 other than what is considered essential.
+
+@item hostedlib
+Target is not @samp{freestanding}, and, if the language is C++,
+@code{libstdc++}'s hosted mode is not disabled.
 
 @item gettimeofday
 Target supports @code{gettimeofday}.
@@ -3286,11 +3317,20 @@ compliance mode.
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
 
+@item nvptx_alias_ptx
+Enable using the PTX ISA directive @code{.alias} on nvptx targets.
+
 @item riscv_a
 Add the 'A' extension to the -march string on RISC-V targets.
 
 @item riscv_zaamo
 Add the zaamo extension to the -march string on RISC-V targets.
+
+@item riscv_zabha
+Add the zabha extension to the -march string on RISC-V targets.
+
+@item riscv_zacas
+Add the zacas extension to the -march string on RISC-V targets.
 
 @item riscv_zalrsc
 Add the zalrsc extension to the -march string on RISC-V targets.
@@ -3334,6 +3374,14 @@ RISC-V targets.
 @item riscv_zaamo
 Remove the zaamo extension from the -march string on RISC-V. If the 'A'
 extension is present downgrade it to zalrsc.
+
+@item riscv_zabha
+Remove the zabha extension and implied zaamo extension from the -march string
+on RISC-V.
+
+@item riscv_zacas
+Remove the zacas extension and implied zaamo extension from the -march string
+on RISC-V.
 
 @item riscv_zalrsc
 Remove the zalrsc extension from the -march string on RISC-V. If the 'A'
@@ -3501,7 +3549,7 @@ assembly output.
 Passes if @var{symbol} is not defined as a hidden symbol in the test's
 assembly output.
 
-@item check-function-bodies @var{prefix} @var{terminator} [@var{options} [@{ target/xfail @var{selector} @}]]
+@item check-function-bodies @var{prefix} @var{terminator} [@var{options} [@{ target/xfail @var{selector} @} [@var{matched}]]]
 Looks through the source file for comments that give the expected assembly
 output for selected functions.  Each line of expected output starts with the
 prefix string @var{prefix} and the expected output for a function as a whole
@@ -3528,8 +3576,11 @@ Depending on the configuration (see
 @code{configure_check-function-bodies} in
 @file{gcc/testsuite/lib/scanasm.exp}), the test may discard from the
 compiler's assembly output directives such as @code{.cfi_startproc},
-local label definitions such as @code{.LFB0}, and more.
-It then matches the result against the expected
+local label definitions such as @code{.LFB0}, and more.  This behavior
+can be overridden using the optional @var{matched} argument, which
+specifies a regexp for lines that should not be discarded in this way.
+
+The test then matches the result against the expected
 output for a function as a single regular expression.  This means that
 later lines can use backslashes to refer back to @samp{(@dots{})}
 captures on earlier lines.  For example:
@@ -3595,8 +3646,8 @@ stands for zero or more unmatched lines; the whitespace after
 @subsubsection Scan optimization dump files
 
 These commands are available for @var{kind} of @code{tree}, @code{ltrans-tree},
-@code{offload-tree}, @code{rtl}, @code{offload-rtl}, @code{ipa},
-@code{offload-ipa}, and @code{wpa-ipa}.
+@code{offload-tree}, @code{rtl}, @code{ltrans-rtl}, @code{offload-rtl},
+@code{ipa}, @code{offload-ipa}, and @code{wpa-ipa}.
 
 @table @code
 @item scan-@var{kind}-dump @var{regex} @var{suffix} [@{ target/xfail @var{selector} @}]

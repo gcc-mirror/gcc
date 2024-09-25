@@ -1486,6 +1486,14 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       tree equiv_name;
       relation_kind rel;
       int prec = TYPE_PRECISION (type);
+      // If there are too many basic blocks, do not attempt to process
+      // equivalencies.
+      if (last_basic_block_for_fn (cfun) > param_vrp_sparse_threshold)
+	{
+	  m_on_entry.set_bb_range (name, bb, block_result);
+	  gcc_checking_assert (m_workback.length () == start_length);
+	  return;
+	}
       FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_relation, bb, name, equiv_name, rel)
 	{
 	  basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));

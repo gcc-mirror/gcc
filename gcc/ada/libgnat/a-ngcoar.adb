@@ -1105,8 +1105,8 @@ package body Ada.Numerics.Generic_Complex_Arrays is
                declare
                   Row : constant Integer := Vectors'First (2) + (K - 1);
                begin
-                  Vectors (Row, Col)
-                     := (Vecs (J * 2, Col), Vecs (J * 2, Col + N));
+                  Vectors (Row, Col) :=
+                    (Vecs (J * 2, Col), Vecs (J * 2, Col + N));
                end;
             end loop;
          end;

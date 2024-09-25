@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // Origin: Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>
 
 #include <iostream>

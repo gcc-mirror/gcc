@@ -4,7 +4,7 @@
 
 char c = 42;
 
-void __attribute__((noinline,noclone))
+void __attribute__((noipa))
 pr39633 (char a)
 {
   a >>= 7;

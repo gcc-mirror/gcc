@@ -38,6 +38,7 @@ load_lib gcc.exp
 load_lib g++.exp
 load_lib dejagnu.exp
 load_lib target-supports-dg.exp
+load_lib valgrind.exp
 
 # Skip these tests for targets that don't support -lgccjit
 if { ![check_effective_target_lgccjit] } {
@@ -46,48 +47,6 @@ if { ![check_effective_target_lgccjit] } {
 
 # The default do-what keyword.
 set dg-do-what-default compile
-
-# Look for lines of the form:
-#   definitely lost: 11,316 bytes in 235 blocks
-#   indirectly lost: 352 bytes in 4 blocks
-# Ideally these would report zero bytes lost (which is a PASS);
-# for now, report non-zero leaks as XFAILs.
-proc report_leak {kind name logfile line} {
-    set match [regexp "$kind lost: .*" $line result]
-    if $match {
-	verbose "Saw \"$result\" within \"$line\"" 4
-	# Extract bytes and blocks.
-	# These can contain commas as well as numerals,
-	# but we only care about whether we have zero.
-	regexp "$kind lost: (.+) bytes in (.+) blocks" \
-	    $result -> bytes blocks
-	verbose "bytes: '$bytes'" 4
-	verbose "blocks: '$blocks'" 4
-	if { $bytes == 0 } {
-	    pass "$name: $logfile: $result"
-	} else {
-	    xfail "$name: $logfile: $result"
-	}
-    }
-}
-
-proc parse_valgrind_logfile {name logfile} {
-    verbose "parse_valgrind_logfile: $logfile" 2
-    if [catch {set f [open $logfile]}] {
-	fail "$name: unable to read $logfile"
-	return
-    }
-
-    while { [gets $f line] >= 0 } {
-	# Strip off the PID prefix e.g. ==7675==
-	set line [regsub "==\[0-9\]*== " $line ""]
-	verbose $line 2
-
-	report_leak "definitely" $name $logfile $line
-	report_leak "indirectly" $name $logfile $line
-    }
-    close $f
-}
 
 # Given WRES, the result from "wait", issue a PASS
 # if the spawnee exited cleanly, or a FAIL for various kinds of
@@ -327,7 +286,9 @@ proc fixed_host_execute {args} {
  
     if $run_under_valgrind {
 	upvar 2 name name
-	parse_valgrind_logfile $name $valgrind_logfile
+	# Use xfail to report leaks, as libgccjit isn't yet clean of
+	# memory leaks (PR jit/63854)
+	parse_valgrind_logfile $name $valgrind_logfile xfail
     }
 
     # force a close of the executable to be safe.

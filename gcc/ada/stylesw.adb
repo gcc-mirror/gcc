@@ -537,7 +537,8 @@ package body Stylesw is
                Style_Check_Layout                 := False;
 
             when 'L' =>
-               Style_Max_Nesting_Level := 0;
+               Style_Max_Nesting_Level            := 0;
+               Style_Check_Max_Nesting_Level      := False;
 
             when 'm' =>
                Style_Check_Max_Line_Length        := False;

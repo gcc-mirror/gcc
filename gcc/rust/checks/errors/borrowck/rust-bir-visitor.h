@@ -22,7 +22,7 @@
 namespace Rust {
 namespace BIR {
 
-class Node;
+class Statement;
 class InitializerExpr;
 template <unsigned N> class Operator;
 class Assignment;
@@ -32,13 +32,13 @@ class CallExpr;
 class Visitor
 {
 public:
-  virtual void visit (Node &node) = 0;
-  virtual void visit (InitializerExpr &expr) = 0;
-  virtual void visit (Operator<1> &expr) = 0;
-  virtual void visit (Operator<2> &expr) = 0;
-  virtual void visit (BorrowExpr &expr) = 0;
-  virtual void visit (Assignment &expr) = 0;
-  virtual void visit (CallExpr &expr) = 0;
+  virtual void visit (const Statement &stmt) = 0;
+  virtual void visit (const InitializerExpr &expr) = 0;
+  virtual void visit (const Operator<1> &expr) = 0;
+  virtual void visit (const Operator<2> &expr) = 0;
+  virtual void visit (const BorrowExpr &expr) = 0;
+  virtual void visit (const Assignment &expr) = 0;
+  virtual void visit (const CallExpr &expr) = 0;
 };
 
 class Visitable
@@ -50,6 +50,10 @@ public:
 template <typename BASE, typename T> class VisitableImpl : public BASE
 {
 public:
+  template <typename... Args>
+  explicit VisitableImpl (Args &&... args) : BASE (std::forward<Args> (args)...)
+  {}
+
   void accept_vis (Visitor &visitor) override
   {
     visitor.visit (static_cast<T &> (*this));

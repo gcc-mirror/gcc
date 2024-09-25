@@ -50,11 +50,6 @@ However, you must double-check to make sure, because you may have a
 program whose behavior is undefined, which happened by chance to give
 the desired results with another C or C++ compiler.
 
-For example, in many nonoptimizing compilers, you can write @samp{x;}
-at the end of a function instead of @samp{return x;}, with the same
-results.  But the value of the function is undefined if @code{return}
-is omitted; it is not a bug when GCC produces different results.
-
 Problems often result from expressions with two increment operators,
 as in @code{f (*p++, *p++)}.  Your previous compiler might have
 interpreted that expression the way you intended; GCC might

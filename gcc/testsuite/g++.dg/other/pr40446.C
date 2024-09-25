@@ -2,6 +2,7 @@
 // { dg-do run { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O1 -msse2" }
 // { dg-require-effective-target sse2_runtime }
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <emmintrin.h>
 

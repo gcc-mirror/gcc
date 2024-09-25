@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 #include <string>
 typedef struct _ts { } PyThreadState;
 PyThreadState * Py_NewInterpreter(void);

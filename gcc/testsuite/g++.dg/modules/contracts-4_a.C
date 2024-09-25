@@ -2,6 +2,7 @@
 // contracts flag is not set, regardless of the current TU's contract
 // configuration.
 // { dg-additional-options "-fmodules-ts -fcontracts -fcontract-role=default:maybe,maybe,ignore" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 module;
 #include <cstdio>
 #include <experimental/contract>

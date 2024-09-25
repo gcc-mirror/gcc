@@ -2623,7 +2623,7 @@ format_string (const directive &dir, tree arg, pointer_query &ptr_qry)
 	  if (slen.range.likely < target_int_max ())
 	    slen.range.likely *= 2;
 
-	  if (slen.range.likely < target_int_max ())
+	  if (slen.range.unlikely < target_int_max ())
 	    slen.range.unlikely *= target_mb_len_max ();
 
 	  /* A non-empty wide character conversion may fail.  */

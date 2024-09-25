@@ -1,7 +1,6 @@
 /* PR preprocessor/57824 */
-/* { dg-do run } */
+/* { dg-do run { target { c || c++11 } } } */
 /* { dg-options "-std=gnu99" { target c } } */
-/* { dg-options "-std=c++11" { target c++ } } */
 
 #define S(s) s
 #define T(s) s "\n"

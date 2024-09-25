@@ -29,7 +29,7 @@
       10: void (*) (size_t, int *restrict, const int *restrict) (size 0x0)
     */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 /* { dg-options "-O0 -gctf -gdwarf-4 -dA" { target { *-*-darwin* } } } */
 

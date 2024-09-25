@@ -16,7 +16,7 @@
 
 # This Awk script takes passes.def and writes pass-instances.def,
 # counting the instances of each kind of pass, adding an instance number
-# to everywhere that NEXT_PASS is used.
+# to everywhere that NEXT_PASS or PUSH_INSERT_PASSES_WITHIN are used.
 # Also handle INSERT_PASS_AFTER, INSERT_PASS_BEFORE and REPLACE_PASS
 # directives.
 #
@@ -222,9 +222,31 @@ END {
 	  if (with_arg)
 	    printf ",%s", with_arg;
 	  printf ")%s\n", postfix;
+
+	  continue;
 	}
-      else
-	print lines[i];
+
+      ret = parse_line(lines[i], "PUSH_INSERT_PASSES_WITHIN");
+      if (ret)
+	{
+	  pass_name = args[1];
+
+	  pass_num = pass_final_counts[pass_name];
+	  if (!pass_num)
+	    {
+	      print "ERROR: Can't locate instance of the pass mentioned in " pass_name;
+	      exit 1;
+	    }
+
+	  printf "%s", prefix;
+	  printf "PUSH_INSERT_PASSES_WITHIN";
+	  printf " (%s, %s", pass_name, pass_num;
+	  printf ")%s\n", postfix;
+
+	  continue;
+	}
+
+      print lines[i];
     }
 }
 

@@ -12,14 +12,14 @@ foo1 ()
 {
   return (uv2di){ 0x7f0f, 0x7f0f };
 }
-/* { dg-final { scan-assembler-times "vrepig\t%v24,32527" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v24,32527,3" 1 } } */
 
 uv4si __attribute__((noinline))
 foo2 ()
 {
   return (uv4si){ 0x7f0f, 0x7f0f, 0x7f0f, 0x7f0f };
 }
-/* { dg-final { scan-assembler-times "vrepif\t%v24,32527" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v24,32527,2" 1 } } */
 
 uv8hi __attribute__((noinline))
 foo3 ()
@@ -27,7 +27,7 @@ foo3 ()
   return (uv8hi){ 0x7f0f, 0x7f0f, 0x7f0f, 0x7f0f,
       0x7f0f, 0x7f0f, 0x7f0f, 0x7f0f };
 }
-/* { dg-final { scan-assembler-times "vrepih\t%v24,32527" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v24,32527,1" 1 } } */
 
 uv16qi __attribute__((noinline))
 foo4 ()
@@ -37,7 +37,7 @@ foo4 ()
       0x77, 0x77, 0x77, 0x77,
       0x77, 0x77, 0x77, 0x77 };
 }
-/* { dg-final { scan-assembler-times "vrepib\t%v24,119" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v24,119,0" 1 } } */
 
 int
 main ()

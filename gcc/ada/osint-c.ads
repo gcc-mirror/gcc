@@ -167,18 +167,18 @@ package Osint.C is
 
    procedure Create_C_File;
    procedure Create_H_File;
-   --  Creates the *.c or *.h file for the source file which is currently
-   --  being compiled (i.e. the file which was most recently returned by
+   --  Creates the *.c/*.h file for the source file which is currently being
+   --  compiled (i.e. the file which was most recently returned by
    --  Next_Main_Source).
 
    procedure Close_C_File;
    procedure Close_H_File;
-   --  Closes the file created by Create_C_File or Create_H file, flushing any
-   --  buffers etc. from writes by Write_C_File and Write_H_File;
+   --  Closes the file created by Create_C/H file, flushing any buffers, etc.
+   --  from writes by Write_C_File and Write_H_File;
 
    procedure Delete_C_File;
    procedure Delete_H_File;
-   --  Deletes the .c or .h file corresponding to the source file which is
+   --  Deletes the .c/.h file corresponding to the source file which is
    --  currently being compiled.
 
    ----------------------

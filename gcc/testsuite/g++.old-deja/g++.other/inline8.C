@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-options "-O1" }
+// { dg-skip-if "requires hosted libstdc++ for map" { ! hostedlib } }
 // Origin: Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>
 
 #include <map>

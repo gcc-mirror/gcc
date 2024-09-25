@@ -1,5 +1,7 @@
 // We use 'auto' without a function return type, so specify dialect here
 // { dg-additional-options "-std=c++14 -fdump-tree-gimple" }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
+
 #include <cstdlib>
 #include <cstring>
 

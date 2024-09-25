@@ -263,6 +263,7 @@ host_openacc_destroy_thread_data (void *tls_data __attribute__ ((unused)))
 static struct gomp_device_descr host_dispatch =
   {
     .name = "host",
+    .uid = NULL,
     .capabilities = (GOMP_OFFLOAD_CAP_SHARED_MEM
 		     | GOMP_OFFLOAD_CAP_NATIVE_EXEC
 		     | GOMP_OFFLOAD_CAP_OPENACC_200),
@@ -270,6 +271,7 @@ static struct gomp_device_descr host_dispatch =
     .type = OFFLOAD_TARGET_TYPE_HOST,
 
     .get_name_func = host_get_name,
+    .get_uid_func = NULL,
     .get_caps_func = host_get_caps,
     .get_type_func = host_get_type,
     .get_num_devices_func = host_get_num_devices,

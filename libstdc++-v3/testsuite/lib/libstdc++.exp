@@ -158,11 +158,6 @@ proc libstdc++_init { testfile } {
     global dg-do-what-default
     set dg-do-what-default run
 
-    # Copy all required data files.
-    # TODO: Use dg-additional-files in individual tests instead of doing this.
-    v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"]
-    v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"]
-
     set ld_library_path_tmp ""
 
     # Locate libgcc.a so we don't need to account for different values of
@@ -644,10 +639,12 @@ proc v3_target_compile { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     global v3_additional_files
-    foreach file [split $v3_additional_files " "] {
+    # There will be an empty file at the begining of the list so trim it off.
+    foreach file [split [string trim $v3_additional_files] " "] {
 	global srcdir
 	v3-copy-file "$srcdir/data/$file" $file
     }
+    set v3_additional_files {}
 
     set comp_output [target_compile $source $dest $type $options]
     if { $type == "executable" && $file_to_delete != "" } {
@@ -1035,7 +1032,7 @@ proc check_v3_target_namedlocale { args } {
 	puts $f "    strcpy(result, name);"
 	puts $f "#if defined __FreeBSD__ || defined __DragonFly__ || defined __NetBSD__"
 	puts $f "    /* fall-through */"
-	puts $f "#else"
+	puts $f "#elif defined __GLIBC__"
 	puts $f "    if (strstr(result, \"ISO8859-15\")) {"
 	puts $f "        strcat(result, \"@euro\");"
 	puts $f "    }"
@@ -1672,4 +1669,39 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
     proc gcc_parallel_test_enable { val } {
     }
 
+}
+
+# Utility functions, invoked via dg-final.
+
+# Compare output file written by test to expected result.
+# With two arguments the comparison is done via 'diff arg1 arg2'.
+# With one argument the comparison is done via 'diff arg1.tst arg1.txt'.
+proc file-io-diff { args } {
+    set nargs [llength $args]
+    if { $nargs < 1 } {
+	error "too few arguments to file-io-diff"
+    }
+    if { $nargs > 2 } {
+	error "too many arguments to file-io-diff"
+    }
+
+    set testcase [testname-for-summary]
+    set description "$testcase file-io-diff $args"
+
+    if { $nargs == 1 } {
+	set file1 [lindex $args 0]
+	set file2 "${file1}.txt"
+	append file1 ".tst"
+    } else {
+	set file1 [lindex $args 0]
+	set file2 [lindex $args 1]
+    }
+
+    if { [catch { exec diff -u $file1 $file2 } msg] } {
+	fail $description
+	verbose -log "'diff':\n$msg"
+    } else {
+	pass $description
+    }
+    return
 }

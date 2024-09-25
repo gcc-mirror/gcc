@@ -129,7 +129,7 @@ by type.  Explanations are in the following sections.
 -fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp
 -fopenmp-allocators -fopenmp-simd -freal-4-real-10 -freal-4-real-16
 -freal-4-real-8 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4
--std=@var{std} -ftest-forall-temp
+-std=@var{std} -ftest-forall-temp -funsigned
 }
 
 @item Preprocessing Options
@@ -194,6 +194,7 @@ and warnings}.
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero
 -finit-derived -finit-logical=@var{<true|false>}
 -finit-real=@var{<zero|inf|-inf|nan|snan>}
+-finline-intrinsics[=<@var{minloc},@var{maxloc}>]
 -finline-matmul-limit=@var{n}
 -finline-arg-packing -fmax-array-constructor=@var{n}
 -fmax-stack-var-size=@var{n} -fno-align-commons -fno-automatic
@@ -611,6 +612,9 @@ earlier gfortran versions and should not be used any more.
 @item -ftest-forall-temp
 Enhance test coverage by forcing most forall assignments to use temporary.
 
+@opindex @code{funsigned}
+@item -funsigned
+Allow the experimental unsigned extension.
 @end table
 
 @node Preprocessing Options
@@ -1994,6 +1998,34 @@ geometric mean of the dimensions of the argument and result matrices.
 
 The default value for @var{n} is 30.
 
+@opindex @code{finline-intrinsics}
+@item -finline-intrinsics
+@itemx -finline-intrinsics=@var{intr1},@var{intr2},...
+Prefer generating inline code over calls to libgfortran functions to implement
+intrinsics.
+
+Usage of intrinsics can be implemented either by generating a call to the
+libgfortran library function or by directly generating inline code.  For most
+intrinsics, only a single variant is available, and there is no choice of
+implementation.  However, some intrinsics can use a library function or inline
+code, where inline code typically offers opportunities for additional
+optimization over a library function.  With @code{-finline-intrinsics=...} or
+@code{-fno-inline-intrinsics=...}, the choice applies only to the intrinsics
+present in the comma-separated list provided as argument.
+
+For each intrinsic, if no choice of implementation was made through either of
+the flag variants, a default behaviour is chosen depending on optimization:
+library calls are generated when not optimizing or when optimizing for size;
+otherwise inline code is preferred.
+
+The set of intrinsics allowed as argument to @code{-finline-intrinsics=}
+is currently limited to @code{MAXLOC} and @code{MINLOC}.  The effect of
+the flag is moreover limited to calls of those intrinsics without
+@code{DIM} argument and with @code{ARRAY} of a non-@code{CHARACTER} type.
+The case of rank-1 argument and @code{DIM} argument present, i.e.
+@code{MAXLOC(A(:),DIM=1)} or @code{MINLOC(A(:),DIM=1)} is inlined
+unconditionally for numeric rank-1 array argument @code{A}.
+
 @opindex @code{finline-matmul-limit}
 @item -finline-matmul-limit=@var{n}
 When front-end optimization is active, some calls to the @code{MATMUL}
@@ -2117,7 +2149,7 @@ if @option{-ffrontend-optimize} is in effect.
 @cindex Front-end optimization
 @item -ffrontend-optimize
 This option performs front-end optimization, based on manipulating
-parts the Fortran parse tree.  Enabled by default by any @option{-O} option
+parts of the Fortran parse tree.  Enabled by default by any @option{-O} option
 except @option{-O0} and @option{-Og}.  Optimizations enabled by this option
 include:
 @itemize @bullet

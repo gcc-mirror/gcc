@@ -32,10 +32,18 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
+#if __cplusplus
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
+#pragma GCC diagnostic ignored "-Wc++23-extensions" // bf16
+#endif
+
 // The major release number for the GCC release the C++ library belongs to.
 #define _GLIBCXX_RELEASE
 
 // The datestamp of the C++ library in compressed ISO date format.
+#undef __GLIBCXX__ /* The testsuite defines it to 99999999 to block PCH.  */
 #define __GLIBCXX__
 
 // Macros for various attributes.
@@ -90,6 +98,8 @@
 //   _GLIBCXX20_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX23_DEPRECATED
 //   _GLIBCXX23_DEPRECATED_SUGGEST( string-literal )
+//   _GLIBCXX26_DEPRECATED
+//   _GLIBCXX26_DEPRECATED_SUGGEST( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
@@ -141,6 +151,14 @@
 #else
 # define _GLIBCXX23_DEPRECATED
 # define _GLIBCXX23_DEPRECATED_SUGGEST(ALT)
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 202400L)
+# define _GLIBCXX26_DEPRECATED [[__deprecated__]]
+# define _GLIBCXX26_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#else
+# define _GLIBCXX26_DEPRECATED
+# define _GLIBCXX26_DEPRECATED_SUGGEST(ALT)
 #endif
 
 // Macros for ABI tag attributes.
@@ -898,5 +916,7 @@ namespace __gnu_cxx
 #include <pstl/pstl_config.h>
 #endif // __has_include
 #endif // C++17
+
+#pragma GCC diagnostic pop
 
 // End of prewritten config; the settings discovered at configure time follow.

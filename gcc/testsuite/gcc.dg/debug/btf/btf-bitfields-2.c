@@ -3,7 +3,7 @@
    We expect a struct with 2 members to be generated. The size 0 bitfield
    should not have any entry in the member list.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gbtf -dA" } */
 
 /* Struct with bitfield members, and 2 members.  */

@@ -12,7 +12,7 @@ bool func1a (bool p1, uint8_t p2)
   return p2 <= 2;
 }
 
-__attribute__((__noinline__, __noclone__))
+__attribute__((__noipa__))
 bool func1b (bool p1, uint8_t p2)
 {
   return func1a (p1, p2);
@@ -26,7 +26,7 @@ bool func2a (bool p1, unsigned p2)
   return p2 <= 2;
 }
 
-__attribute__((__noinline__, __noclone__))
+__attribute__((__noipa__))
 bool func2b (bool p1, unsigned p2)
 {
   return func2a (p1, p2);

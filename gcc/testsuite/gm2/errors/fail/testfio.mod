@@ -22,12 +22,16 @@ FROM StdIO IMPORT Write ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM FIO IMPORT Exists, OpenToRead, Close, File, IsNoError, EOF, ReadChar ;
 
+PROCEDURE init ;
 VAR
    i: INTEGER ;
    f: File ;
    c: CARDINAL ;
    a: ARRAY [0..20] OF CHAR ;
 BEGIN
+   IF f = 0
+   THEN
+   END ;
    WriteString('testfio starting') ; WriteLn ;
    c := 1 ;
    WHILE GetArg(a, c) DO
@@ -45,4 +49,8 @@ BEGIN
       END ;
       INC(c)
    END
+END init ;
+
+BEGIN
+   init
 END testfio.

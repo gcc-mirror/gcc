@@ -253,7 +253,8 @@ private:
   parse_use_decl (AST::Visibility vis, AST::AttrVec outer_attrs);
   std::unique_ptr<AST::UseTree> parse_use_tree ();
   std::unique_ptr<AST::Function> parse_function (AST::Visibility vis,
-						 AST::AttrVec outer_attrs);
+						 AST::AttrVec outer_attrs,
+						 bool is_external = false);
   AST::FunctionQualifiers parse_function_qualifiers ();
   std::vector<std::unique_ptr<AST::GenericParam>>
   parse_generic_params_in_angles ();
@@ -309,8 +310,6 @@ private:
   AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::ExternalFunctionItem>
-  parse_external_function_item (AST::Visibility vis, AST::AttrVec outer_attrs);
   AST::NamedFunctionParam parse_named_function_param ();
   template <typename EndTokenPred>
   std::vector<AST::NamedFunctionParam>
@@ -725,6 +724,7 @@ public:
   const ManagedTokenSource &get_token_source () const { return lexer; }
 
   const_TokenPtr peek_current_token () { return lexer.peek_token (0); }
+  const_TokenPtr peek (int n) { return lexer.peek_token (n); }
 
 private:
   // The token source (usually lexer) associated with the parser.

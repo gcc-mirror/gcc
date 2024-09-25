@@ -30,5 +30,10 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
+
 #include <bits/c++config.h>
 #include_next <assert.h>
+
+#pragma GCC diagnostic pop

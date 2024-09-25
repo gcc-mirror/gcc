@@ -68,6 +68,9 @@ gomp_gcn_enter_kernel (void)
       /* Starting additional threads is not supported.  */
       gomp_global_icv.dyn_var = true;
 
+      int __lds *gomp_team_num = (int __lds *) GOMP_TEAM_NUM;
+      *gomp_team_num = 0;
+
       /* Initialize the team arena for optimized memory allocation.
          The arena has been allocated on the host side, and the address
          passed in via the kernargs.  Each team takes a small slice of it.  */

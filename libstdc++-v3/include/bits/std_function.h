@@ -698,6 +698,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { using type = _Res(_Args...); };
 
 #if __cpp_explicit_this_parameter >= 202110L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3617. function/packaged_task deduction guides and deducing this
   template<typename _Res, typename _Tp, bool _Nx, typename... _Args>
     struct __function_guide_helper<_Res (*) (_Tp, _Args...) noexcept(_Nx)>
     { using type = _Res(_Args...); };

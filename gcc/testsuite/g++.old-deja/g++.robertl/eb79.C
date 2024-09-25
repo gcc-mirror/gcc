@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-prune-output "note" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // Makes bogus x86 assembly code.
 #include <iostream>
 

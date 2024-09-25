@@ -96,10 +96,9 @@ public:
   }
 
 protected:
-  bool
-  resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
-			     HIR::OperatorExprMeta expr, TyTy::BaseType *lhs,
-			     TyTy::BaseType *rhs);
+  bool resolve_operator_overload (LangItem::Kind lang_item_type,
+				  HIR::OperatorExprMeta expr,
+				  TyTy::BaseType *lhs, TyTy::BaseType *rhs);
 
   bool resolve_fn_trait_call (HIR::CallExpr &expr,
 			      TyTy::BaseType *function_tyty,

@@ -25,8 +25,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
+// { dg-additional-files "sgetc.txt" }
 
 const char name_01[] = "sgetc.txt"; // file with data in it
 

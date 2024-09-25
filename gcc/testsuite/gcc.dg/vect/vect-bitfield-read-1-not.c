@@ -55,6 +55,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "Bitfield OK to lower." "ifcvt" } } */
+/* { dg-final { scan-tree-dump-times "Bitfield OK to lower." 0 "ifcvt" { xfail *-*-* } } } */
 
 

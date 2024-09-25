@@ -171,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Turn this on without causing an ios::failure to be thrown.
 	_M_streambuf_state |= __state;
 	if (this->exceptions() & __state)
-	  __throw_exception_again;
+	  { __throw_exception_again; }
       }
 
       /**

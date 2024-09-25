@@ -281,6 +281,12 @@ get_tree_node_for_type (enum gcc_jit_types type_)
 
     case GCC_JIT_TYPE_FLOAT:
       return float_type_node;
+    case GCC_JIT_TYPE_BFLOAT16:
+#ifndef HAVE_BFmode
+      add_error (NULL, "gcc_jit_types value unsupported on this target: %i",
+		 type_);
+#endif
+      return bfloat16_type_node;
     case GCC_JIT_TYPE_DOUBLE:
       return double_type_node;
     case GCC_JIT_TYPE_LONG_DOUBLE:
@@ -2452,7 +2458,7 @@ playback::block::add_extended_asm (location *loc,
   /* asm statements without outputs, including simple ones, are treated
      as volatile.  */
   ASM_VOLATILE_P (asm_stmt) = (outputs->length () == 0);
-  ASM_INPUT_P (asm_stmt) = 0; /* extended asm stmts are not "simple".  */
+  ASM_BASIC_P (asm_stmt) = 0;
   ASM_INLINE_P (asm_stmt) = is_inline;
   if (is_volatile)
     ASM_VOLATILE_P (asm_stmt) = 1;
@@ -2562,7 +2568,11 @@ compile ()
   if (get_logger ())
     for (unsigned i = 0; i < fake_args.length (); i++)
       get_logger ()->log ("argv[%i]: %s", i, fake_args[i]);
-  toplev.main (fake_args.length (),
+
+  /* Add a trailing null to argvec; this is not counted in argc.  */
+  fake_args.safe_push (nullptr);
+  toplev.main (/* The trailing null is not counted in argv.  */
+	       fake_args.length () - 1,
 	       const_cast <char **> (fake_args.address ()));
   exit_scope ("toplev::main");
 
@@ -3681,7 +3691,7 @@ add_diagnostic (diagnostic_context *diag_context,
 {
   /* At this point the text has been formatted into the pretty-printer's
      output buffer.  */
-  pretty_printer *pp = diag_context->printer;
+  pretty_printer *pp = diag_context->m_printer;
   const char *text = pp_formatted_text (pp);
 
   /* Get location information (if any) from the diagnostic.

@@ -585,6 +585,12 @@ Target Undocumented Var(rs6000_speculate_indirect_jumps) Init(1) Save
 mpower10
 Target Undocumented Mask(POWER10) Var(rs6000_isa_flags) WarnRemoved
 
+;; Users should not use -mpower11, but we need to use a bit to identify when
+;; the user changes the default cpu via  #pragma GCC target("cpu=power11")
+;; and then resets it later.
+mpower11
+Target Undocumented Mask(POWER11) Var(rs6000_isa_flags) WarnRemoved
+
 mprefixed
 Target Mask(PREFIXED) Var(rs6000_isa_flags)
 Generate (do not generate) prefixed memory instructions.

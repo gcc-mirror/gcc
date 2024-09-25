@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_double } */
+/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 
 #include "tree-vect.h"
 
@@ -132,4 +133,4 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 6 "vect" { target vect_call_lrint } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" { target vect_call_lrint } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 6 "vect" { target vect_call_lrint } } } */

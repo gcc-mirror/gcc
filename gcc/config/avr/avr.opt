@@ -1,4 +1,4 @@
-; Options for the ATMEL AVR port of the compiler.
+; Options for AVR 8-bit microcontrollers.
 
 ; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
@@ -17,6 +17,10 @@
 ; You should have received a copy of the GNU General Public License
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
+
+mlra
+Target Var(avr_lra_p) UInteger Init(0) Optimization Undocumented
+Usa LRA for reload instead of the old reload framework.  This option is experimental, and it may be removed in future versions of the compiler.
 
 mcall-prologues
 Target Mask(CALL_PROLOGUES) Optimization

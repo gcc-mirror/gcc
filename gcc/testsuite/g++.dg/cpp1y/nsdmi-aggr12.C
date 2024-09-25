@@ -1,5 +1,6 @@
 // PR c++/90926
 // { dg-do run { target c++14 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 

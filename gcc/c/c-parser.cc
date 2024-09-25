@@ -1621,6 +1621,12 @@ struct omp_for_parse_data {
   bool fail : 1;
 };
 
+struct attr_state
+{
+  /* True if we parsed a musttail attribute for return.  */
+  bool musttail_p;
+};
+
 static bool c_parser_nth_token_starts_std_attributes (c_parser *,
 						      unsigned int);
 static tree c_parser_std_attribute_specifier_sequence (c_parser *);
@@ -1665,7 +1671,8 @@ static location_t c_parser_compound_statement_nostart (c_parser *);
 static void c_parser_label (c_parser *, tree);
 static void c_parser_statement (c_parser *, bool *, location_t * = NULL);
 static void c_parser_statement_after_labels (c_parser *, bool *,
-					     vec<tree> * = NULL);
+					     vec<tree> * = NULL,
+					     attr_state = {});
 static tree c_parser_c99_block_statement (c_parser *, bool *,
 					  location_t * = NULL);
 static void c_parser_if_statement (c_parser *, bool *, vec<tree> *);
@@ -2670,8 +2677,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		      /* Postfix [[]] attributes are valid with C23
 			 auto, although not with __auto_type, and
 			 modify the type given by the initializer.  */
-		      specs->postfix_attrs =
-			c_warn_type_attributes (specs->postfix_attrs);
+		      specs->postfix_attrs
+			= c_warn_type_attributes (specs->type,
+						  specs->postfix_attrs);
 		      decl_attributes (&specs->type, specs->postfix_attrs, 0);
 		      specs->postfix_attrs = NULL_TREE;
 		    }
@@ -6982,6 +6990,29 @@ c_parser_handle_directive_omp_attributes (tree &attrs,
     }
 }
 
+/* Check if STD_ATTR contains a musttail attribute and remove if it
+   precedes a return.  PARSER is the parser and ATTR is the output
+   attr_state.  */
+
+static tree
+c_parser_handle_musttail (c_parser *parser, tree std_attrs, attr_state &attr)
+{
+  if (c_parser_next_token_is_keyword (parser, RID_RETURN))
+    {
+      if (lookup_attribute ("gnu", "musttail", std_attrs))
+	{
+	  std_attrs = remove_attribute ("gnu", "musttail", std_attrs);
+	  attr.musttail_p = true;
+	}
+      if (lookup_attribute ("clang", "musttail", std_attrs))
+	{
+	  std_attrs = remove_attribute ("clang", "musttail", std_attrs);
+	  attr.musttail_p = true;
+	}
+    }
+  return std_attrs;
+}
+
 /* Parse a compound statement except for the opening brace.  This is
    used for parsing both compound statements and statement expressions
    (which follow different paths to handling the opening).  */
@@ -6998,6 +7029,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
   bool in_omp_loop_block
     = omp_for_parse_state ? omp_for_parse_state->want_nested_loop : false;
   tree sl = NULL_TREE;
+  attr_state a = {};
 
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
@@ -7138,7 +7170,10 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	= c_parser_nth_token_starts_std_attributes (parser, 1);
       tree std_attrs = NULL_TREE;
       if (have_std_attrs)
-	std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+	{
+	  std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+	  std_attrs = c_parser_handle_musttail (parser, std_attrs, a);
+	}
       if (c_parser_next_token_is_keyword (parser, RID_CASE)
 	  || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
 	  || (c_parser_next_token_is (parser, CPP_NAME)
@@ -7286,7 +7321,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  last_stmt = true;
 	  mark_valid_location_for_stdc_pragma (false);
 	  if (!omp_for_parse_state)
-	    c_parser_statement_after_labels (parser, NULL);
+	    c_parser_statement_after_labels (parser, NULL, NULL, a);
 	  else
 	    {
 	      /* In canonical loop nest form, nested loops can only appear
@@ -7328,15 +7363,20 @@ c_parser_compound_statement_nostart (c_parser *parser)
 /* Parse all consecutive labels, possibly preceded by standard
    attributes.  In this context, a statement is required, not a
    declaration, so attributes must be followed by a statement that is
-   not just a semicolon.  */
+   not just a semicolon.  Returns an attr_state.  */
 
-static void
+static attr_state
 c_parser_all_labels (c_parser *parser)
 {
+  attr_state attr = {};
   bool have_std_attrs;
   tree std_attrs = NULL;
   if ((have_std_attrs = c_parser_nth_token_starts_std_attributes (parser, 1)))
-    std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+    {
+      std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+      std_attrs = c_parser_handle_musttail (parser, std_attrs, attr);
+    }
+
   while (c_parser_next_token_is_keyword (parser, RID_CASE)
 	 || c_parser_next_token_is_keyword (parser, RID_DEFAULT)
 	 || (c_parser_next_token_is (parser, CPP_NAME)
@@ -7346,7 +7386,10 @@ c_parser_all_labels (c_parser *parser)
       std_attrs = NULL;
       if ((have_std_attrs = c_parser_nth_token_starts_std_attributes (parser,
 								      1)))
-	std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+	{
+	  std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+	  std_attrs = c_parser_handle_musttail (parser, std_attrs, attr);
+	}
     }
   if (std_attrs
       && (!c_parser_handle_statement_omp_attributes (parser, std_attrs, &have_std_attrs)
@@ -7358,6 +7401,7 @@ c_parser_all_labels (c_parser *parser)
     }
   else if (have_std_attrs && c_parser_next_token_is (parser, CPP_SEMICOLON))
     c_parser_error (parser, "expected statement");
+  return attr;
 }
 
 /* Parse a label (C90 6.6.1, C99 6.8.1, C11 6.8.1).
@@ -7601,11 +7645,11 @@ c_parser_label (c_parser *parser, tree std_attrs)
 static void
 c_parser_statement (c_parser *parser, bool *if_p, location_t *loc_after_labels)
 {
-  c_parser_all_labels (parser);
+  attr_state a = c_parser_all_labels (parser);
   if (loc_after_labels)
     *loc_after_labels = c_parser_peek_token (parser)->location;
   parser->omp_attrs_forbidden_p = false;
-  c_parser_statement_after_labels (parser, if_p, NULL);
+  c_parser_statement_after_labels (parser, if_p, NULL, a);
 }
 
 /* Parse a statement, other than a labeled statement.  CHAIN is a vector
@@ -7614,11 +7658,11 @@ c_parser_statement (c_parser *parser, bool *if_p, location_t *loc_after_labels)
 
    IF_P is used to track whether there's a (possibly labeled) if statement
    which is not enclosed in braces and has an else clause.  This is used to
-   implement -Wparentheses.  */
+   implement -Wparentheses.  ASTATE is an earlier parsed attribute state.  */
 
 static void
 c_parser_statement_after_labels (c_parser *parser, bool *if_p,
-				 vec<tree> *chain)
+				 vec<tree> *chain, attr_state astate)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   tree stmt = NULL_TREE;
@@ -7686,7 +7730,8 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	  c_parser_consume_token (parser);
 	  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      stmt = c_finish_return (loc, NULL_TREE, NULL_TREE);
+	      stmt = c_finish_return (loc, NULL_TREE, NULL_TREE,
+				      astate.musttail_p);
 	      c_parser_consume_token (parser);
 	    }
 	  else
@@ -7695,7 +7740,8 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
 	      struct c_expr expr = c_parser_expression_conv (parser);
 	      mark_exp_read (expr.value);
 	      stmt = c_finish_return (EXPR_LOC_OR_LOC (expr.value, xloc),
-				      expr.value, expr.original_type);
+				      expr.value, expr.original_type,
+				      astate.musttail_p);
 	      goto expect_semicolon;
 	    }
 	  break;
@@ -26162,6 +26208,8 @@ c_parser_omp_requires (c_parser *parser)
 	    this_req = OMP_REQUIRES_UNIFIED_ADDRESS;
 	  else if (!strcmp (p, "unified_shared_memory"))
 	    this_req = OMP_REQUIRES_UNIFIED_SHARED_MEMORY;
+	  else if (!strcmp (p, "self_maps"))
+	    this_req = OMP_REQUIRES_SELF_MAPS;
 	  else if (!strcmp (p, "dynamic_allocators"))
 	    this_req = OMP_REQUIRES_DYNAMIC_ALLOCATORS;
 	  else if (!strcmp (p, "reverse_offload"))
@@ -26228,6 +26276,7 @@ c_parser_omp_requires (c_parser *parser)
 	    {
 	      error_at (cloc, "expected %<unified_address%>, "
 			      "%<unified_shared_memory%>, "
+			      "%<self_maps%>, "
 			      "%<dynamic_allocators%>, "
 			       "%<reverse_offload%> "
 			       "or %<atomic_default_mem_order%> clause");
@@ -26431,23 +26480,19 @@ c_parser_omp_tile_sizes (c_parser *parser, location_t loc)
   if (!parens.require_open (parser))
     return error_mark_node;
 
-  do
+  vec<tree, va_gc> *sizes_vec
+    = c_parser_expr_list (parser, true, true, NULL, NULL, NULL, NULL);
+  sizes = build_tree_list_vec (sizes_vec);
+  release_tree_vector (sizes_vec);
+
+  for (tree s = sizes; s; s = TREE_CHAIN (s))
     {
-      if (sizes && !c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
-	return error_mark_node;
-
-      location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr cexpr = c_parser_expr_no_commas (parser, NULL);
-      cexpr = convert_lvalue_to_rvalue (expr_loc, cexpr, false, true);
-      tree expr = cexpr.value;
-
+      tree expr = TREE_VALUE (s);
       if (expr == error_mark_node)
 	{
 	  parens.skip_until_found_close (parser);
 	  return error_mark_node;
 	}
-
-      expr = c_fully_fold (expr, false, NULL);
 
       HOST_WIDE_INT n;
       if (!INTEGRAL_TYPE_P (TREE_TYPE (expr))
@@ -26457,17 +26502,14 @@ c_parser_omp_tile_sizes (c_parser *parser, location_t loc)
 	{
 	  c_parser_error (parser, "%<sizes%> argument needs positive"
 				  " integral constant");
-	  expr = integer_one_node;
+	  TREE_VALUE (s) = integer_one_node;
 	}
-
-      sizes = tree_cons (NULL_TREE, expr, sizes);
     }
-  while (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN));
   parens.require_close (parser);
 
   gcc_assert (sizes);
   tree c = build_omp_clause (loc, OMP_CLAUSE_SIZES);
-  OMP_CLAUSE_SIZES_LIST (c) = nreverse (sizes);
+  OMP_CLAUSE_SIZES_LIST (c) = sizes;
 
   return c;
 }

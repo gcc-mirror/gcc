@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-std=c++17 -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 
 //  C++98 features:
 

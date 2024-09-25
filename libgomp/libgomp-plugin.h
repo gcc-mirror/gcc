@@ -127,6 +127,7 @@ extern void GOMP_PLUGIN_target_rev (uint64_t, uint64_t, uint64_t, uint64_t,
 
 /* Prototypes for functions implemented by libgomp plugins.  */
 extern const char *GOMP_OFFLOAD_get_name (void);
+extern const char *GOMP_OFFLOAD_get_uid (int);
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
 extern int GOMP_OFFLOAD_get_type (void);
 extern int GOMP_OFFLOAD_get_num_devices (unsigned int);

@@ -140,7 +140,7 @@ th_mempair_output_move (rtx operands[4], bool load_p,
   return "";
 }
 
-/* Analyse if a pair of loads/stores MEM1 and MEM2 with given MODE
+/* Analyze if a pair of loads/stores MEM1 and MEM2 with given MODE
    are consecutive so they can be merged into a mempair instruction.
    RESERVED will be set to true, if a reversal of the accesses is
    required (false otherwise). Returns true if the accesses can be
@@ -453,10 +453,8 @@ th_memidx_classify_address_modify (struct riscv_address_info *info, rtx x,
   if (!TARGET_XTHEADMEMIDX)
     return false;
 
-  if (!TARGET_64BIT && mode == DImode)
-    return false;
-
-  if (!(INTEGRAL_MODE_P (mode) && GET_MODE_SIZE (mode).to_constant () <= 8))
+  if (GET_MODE_CLASS (mode) != MODE_INT
+      || GET_MODE_SIZE (mode).to_constant () > UNITS_PER_WORD)
     return false;
 
   if (GET_CODE (x) != POST_MODIFY
@@ -611,30 +609,69 @@ th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
   if (GET_CODE (x) != PLUS)
     return false;
 
-  rtx reg = XEXP (x, 0);
+  rtx op0 = XEXP (x, 0);
+  rtx op1 = XEXP (x, 1);
   enum riscv_address_type type;
-  rtx offset = XEXP (x, 1);
   int shift;
+  rtx reg = op0;
+  rtx offset = op1;
 
   if (!riscv_valid_base_register_p (reg, mode, strict_p))
-    return false;
+    {
+      reg = op1;
+      offset = op0;
+      if (!riscv_valid_base_register_p (reg, mode, strict_p))
+	return false;
+    }
 
   /* (reg:X) */
-  if (REG_P (offset)
+  if ((REG_P (offset) || SUBREG_P (offset))
       && GET_MODE (offset) == Xmode)
     {
       type = ADDRESS_REG_REG;
       shift = 0;
       offset = offset;
     }
-  /* (zero_extend:DI (reg:SI)) */
-  else if (GET_CODE (offset) == ZERO_EXTEND
+  /* (any_extend:DI (reg:SI)) */
+  else if (TARGET_64BIT
+	   && (GET_CODE (offset) == SIGN_EXTEND
+	       || GET_CODE (offset) == ZERO_EXTEND)
 	   && GET_MODE (offset) == DImode
 	   && GET_MODE (XEXP (offset, 0)) == SImode)
     {
-      type = ADDRESS_REG_UREG;
+      type = (GET_CODE (offset) == SIGN_EXTEND)
+	     ? ADDRESS_REG_REG : ADDRESS_REG_UREG;
       shift = 0;
       offset = XEXP (offset, 0);
+    }
+  /* (mult:X (reg:X) (const_int scale)) */
+  else if (GET_CODE (offset) == MULT
+	   && GET_MODE (offset) == Xmode
+	   && REG_P (XEXP (offset, 0))
+	   && GET_MODE (XEXP (offset, 0)) == Xmode
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && pow2p_hwi (INTVAL (XEXP (offset, 1)))
+	   && IN_RANGE (exact_log2 (INTVAL (XEXP (offset, 1))), 1, 3))
+    {
+      type = ADDRESS_REG_REG;
+      shift = exact_log2 (INTVAL (XEXP (offset, 1)));
+      offset = XEXP (offset, 0);
+    }
+  /* (mult:DI (any_extend:DI (reg:SI)) (const_int scale)) */
+  else if (TARGET_64BIT
+	   && GET_CODE (offset) == MULT
+	   && GET_MODE (offset) == DImode
+	   && (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND
+	       || GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND)
+	   && GET_MODE (XEXP (offset, 0)) == DImode
+	   && REG_P (XEXP (XEXP (offset, 0), 0))
+	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == SImode
+	   && CONST_INT_P (XEXP (offset, 1)))
+    {
+      type = (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND)
+	     ? ADDRESS_REG_REG : ADDRESS_REG_UREG;
+      shift = exact_log2 (INTVAL (XEXP (x, 1)));
+      offset = XEXP (XEXP (x, 0), 0);
     }
   /* (ashift:X (reg:X) (const_int shift)) */
   else if (GET_CODE (offset) == ASHIFT
@@ -648,23 +685,46 @@ th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
       shift = INTVAL (XEXP (offset, 1));
       offset = XEXP (offset, 0);
     }
-  /* (ashift:DI (zero_extend:DI (reg:SI)) (const_int shift)) */
-  else if (GET_CODE (offset) == ASHIFT
+  /* (ashift:DI (any_extend:DI (reg:SI)) (const_int shift)) */
+  else if (TARGET_64BIT
+	   && GET_CODE (offset) == ASHIFT
 	   && GET_MODE (offset) == DImode
-	   && GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND
+	   && (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND
+	       || GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND)
 	   && GET_MODE (XEXP (offset, 0)) == DImode
 	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == SImode
 	   && CONST_INT_P (XEXP (offset, 1))
 	   && IN_RANGE(INTVAL (XEXP (offset, 1)), 0, 3))
     {
-      type = ADDRESS_REG_UREG;
+      type = (GET_CODE (XEXP (offset, 0)) == SIGN_EXTEND)
+	     ? ADDRESS_REG_REG : ADDRESS_REG_UREG;
       shift = INTVAL (XEXP (offset, 1));
+      offset = XEXP (XEXP (offset, 0), 0);
+    }
+  /* (and:X (mult:X (reg:X) (const_int scale)) (const_int mask)) */
+  else if (TARGET_64BIT
+	   && GET_CODE (offset) == AND
+	   && GET_MODE (offset) == DImode
+	   && GET_CODE (XEXP (offset, 0)) == MULT
+	   && GET_MODE (XEXP (offset, 0)) == DImode
+	   && REG_P (XEXP (XEXP (offset, 0), 0))
+	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == DImode
+	   && CONST_INT_P (XEXP (XEXP (offset, 0), 1))
+	   && pow2p_hwi (INTVAL (XEXP (XEXP (offset, 0), 1)))
+	   && IN_RANGE (exact_log2 (INTVAL (XEXP (XEXP (offset, 0), 1))), 1, 3)
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && INTVAL (XEXP (offset, 1))
+	      >> exact_log2 (INTVAL (XEXP (XEXP (offset, 0), 1))) == 0xffffffff)
+    {
+      type = ADDRESS_REG_UREG;
+      shift = exact_log2 (INTVAL (XEXP (XEXP (offset, 0), 1)));
       offset = XEXP (XEXP (offset, 0), 0);
     }
   else
     return false;
 
-  if (!strict_p && GET_CODE (offset) == SUBREG)
+  if (!strict_p && SUBREG_P (offset)
+      && GET_MODE (SUBREG_REG (offset)) == SImode)
     offset = SUBREG_REG (offset);
 
   if (!REG_P (offset)
@@ -776,7 +836,7 @@ th_fmemidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
   rtx x = th_get_move_mem_addr (dest, src, load);
 
   /* Validate x.  */
-  if (!th_memidx_classify_address_index (&info, x, mode, false))
+  if (!th_memidx_classify_address_index (&info, x, mode, reload_completed))
     return NULL;
 
   int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ()) - 2;
@@ -900,11 +960,11 @@ th_asm_output_opcode (FILE *asm_out_file, const char *p)
 	      if (strstr (p, "zero,zero"))
 		return "th.vsetvli\tzero,zero,e%0,%m1";
 	      else
-		return "th.vsetvli\tzero,%0,e%1,%m2";
+		return "th.vsetvli\tzero,%z0,e%1,%m2";
 	    }
 	  else
 	    {
-	      return "th.vsetvli\t%0,%1,e%2,%m3";
+	      return "th.vsetvli\t%z0,%z1,e%2,%m3";
 	    }
 	}
 

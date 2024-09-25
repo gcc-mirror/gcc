@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-flto -O -ftree-vectorize --param=aarch64-autovec-preference=3" } */
+/* { dg-options "-flto -O -ftree-vectorize --param=aarch64-autovec-preference=prefer-asimd" } */
 /* { dg-additional-sources "pr98268-2.c" } */
 
 short d, e;

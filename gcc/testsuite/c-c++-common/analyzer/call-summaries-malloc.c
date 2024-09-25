@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fanalyzer-call-summaries --param analyzer-min-snodes-for-call-summary=0" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 /* There need to be at least two calls to a function for the
    call-summarization code to be used.

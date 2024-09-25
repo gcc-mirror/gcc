@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+
 #include <stdlib.h>
 
 #define N 10

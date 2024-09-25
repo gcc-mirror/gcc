@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -Wall -maltivec" } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-require-effective-target vmx_hw } */
 
 /*
  * Based on test created by sjmunroe for pr96139

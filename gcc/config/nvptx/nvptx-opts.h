@@ -22,6 +22,7 @@
 
 enum ptx_isa
 {
+  PTX_ISA_unset,
 #define NVPTX_SM(XX, SEP) PTX_ISA_SM ## XX SEP
 #define NVPTX_SM_SEP ,
 #include "nvptx-sm.def"
@@ -31,7 +32,8 @@ enum ptx_isa
 
 enum ptx_version
 {
-  PTX_VERSION_default,
+  PTX_VERSION_unset,
+  PTX_VERSION_default = PTX_VERSION_unset,
   PTX_VERSION_3_0,
   PTX_VERSION_3_1,
   PTX_VERSION_4_2,

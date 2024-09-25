@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-std=gnu99 -O0" } */
+/* { dg-require-effective-target size20plus } */
 
 /* C99 6.3 Conversions.
 

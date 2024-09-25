@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 #include <stdlib.h>
 
 static void calls_free(int *q)

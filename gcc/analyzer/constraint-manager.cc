@@ -182,13 +182,9 @@ range::dump_to_pp (pretty_printer *pp) const
 DEBUG_FUNCTION void
 range::dump () const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Determine if there is only one possible value for this range.
@@ -445,13 +441,9 @@ bounded_range::dump_to_pp (pretty_printer *pp, bool show_types) const
 void
 bounded_range::dump (bool show_types) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 json::object *
@@ -479,7 +471,7 @@ bounded_range::set_json_attr (json::object *obj, const char *name, tree value)
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_printf (&pp, "%E", value);
-  obj->set (name, new json::string (pp_formatted_text (&pp)));
+  obj->set_string (name, pp_formatted_text (&pp));
 }
 
 
@@ -718,13 +710,9 @@ bounded_ranges::dump_to_pp (pretty_printer *pp, bool show_types) const
 DEBUG_FUNCTION void
 bounded_ranges::dump (bool show_types) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 json::value *
@@ -1140,7 +1128,7 @@ equiv_class::to_json () const
       pretty_printer pp;
       pp_format_decoder (&pp) = default_tree_printer;
       pp_printf (&pp, "%qE", m_constant);
-      ec_obj->set ("constant", new json::string (pp_formatted_text (&pp)));
+      ec_obj->set_string ("constant", pp_formatted_text (&pp));
     }
 
   return ec_obj;
@@ -1397,9 +1385,9 @@ constraint::to_json () const
 {
   json::object *con_obj = new json::object ();
 
-  con_obj->set ("lhs", new json::integer_number (m_lhs.as_int ()));
-  con_obj->set ("op", new json::string (constraint_op_code (m_op)));
-  con_obj->set ("rhs", new json::integer_number (m_rhs.as_int ()));
+  con_obj->set_integer ("lhs", m_lhs.as_int ());
+  con_obj->set_string ("op", constraint_op_code (m_op));
+  con_obj->set_integer ("rhs", m_rhs.as_int ());
 
   return con_obj;
 }
@@ -1485,7 +1473,7 @@ bounded_ranges_constraint::to_json () const
 {
   json::object *con_obj = new json::object ();
 
-  con_obj->set ("ec", new json::integer_number (m_ec_id.as_int ()));
+  con_obj->set_integer ("ec", m_ec_id.as_int ());
   con_obj->set ("ranges", m_ranges->to_json ());
 
   return con_obj;
@@ -1769,12 +1757,8 @@ constraint_manager::dump_to_pp (pretty_printer *pp, bool multiline) const
 void
 constraint_manager::dump (FILE *fp) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, true);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this constraint_manager to stderr.  */

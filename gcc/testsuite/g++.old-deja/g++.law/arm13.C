@@ -1,4 +1,6 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } }
+
 // GROUPS passed ARM-compliance
 #include <stdio.h>
 #include <stdlib.h>

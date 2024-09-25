@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv32i_zvfbfwma -mabi=ilp32f -mcmodel=medlow -misa-spec=20191213" } */
+/* { dg-options "-O2 -march=rv32im_zvfbfwma -mabi=ilp32f -mcmodel=medlow -misa-spec=20191213" } */
 
 int
 main ()
@@ -14,6 +14,10 @@ main ()
 
 #if !defined(__riscv_i)
 #error "__riscv_i"
+#endif
+
+#if !defined(__riscv_m)
+#error "__riscv_m"
 #endif
 
 #if !defined(__riscv_f)

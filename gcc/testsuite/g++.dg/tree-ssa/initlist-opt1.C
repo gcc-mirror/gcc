@@ -1,6 +1,7 @@
 // PR c++/105838
 // { dg-additional-options -fdump-tree-gimple }
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 // Test that we do range-initialization from const char *.
 // { dg-final { scan-tree-dump {_M_range_initialize<const char\* const\*>} "gimple" } }

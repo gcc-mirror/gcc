@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_float} */
+/* { dg-require-effective-target vect_float } */
 /* { dg-additional-options "-w -Wno-psabi -ffast-math" } */
 
 #include "tree-vect.h"

@@ -3,6 +3,91 @@
 #include <format>
 #include <testsuite_hooks.h>
 
+static_assert(std::is_constructible_v<std::format_parse_context,
+				      std::string_view>);
+static_assert(std::is_constructible_v<std::wformat_parse_context,
+				      std::wstring_view>);
+
+#if __cpp_lib_format < 202305
+constexpr bool construct_with_num_args = true;
+#else
+constexpr bool construct_with_num_args = false;
+#endif
+
+static_assert(std::is_constructible_v<std::format_parse_context,
+				      std::string_view, std::size_t>
+				      == construct_with_num_args);
+static_assert(std::is_constructible_v<std::wformat_parse_context,
+				      std::wstring_view, std::size_t>
+				      == construct_with_num_args);
+
+static_assert( ! std::is_constructible_v<std::format_parse_context,
+					 std::wstring_view>);
+static_assert( ! std::is_constructible_v<std::wformat_parse_context,
+					 std::string_view>);
+
+static_assert( ! std::is_convertible_v<std::string_view,
+				       std::format_parse_context> );
+static_assert( ! std::is_convertible_v<std::wstring_view,
+				       std::wformat_parse_context> );
+
+static_assert( ! std::is_default_constructible_v<std::format_parse_context> );
+static_assert( ! std::is_copy_constructible_v<std::format_parse_context> );
+static_assert( ! std::is_move_constructible_v<std::format_parse_context> );
+static_assert( ! std::is_copy_assignable_v<std::format_parse_context> );
+static_assert( ! std::is_move_assignable_v<std::format_parse_context> );
+
+// This concept is satisfied if the next_arg_id() call is a constant expression
+template<typename Ch, typename PC = std::basic_format_parse_context<Ch>>
+concept arg_id_available = requires {
+  typename std::integral_constant<std::size_t,
+				  PC({}).next_arg_id()>::type;
+};
+
+void
+test_members()
+{
+  std::string_view s = "spec string";
+
+  std::format_parse_context pc(s);
+
+  VERIFY( pc.begin() == s.begin() );
+  VERIFY( pc.end() == s.end() );
+  pc.advance_to(s.begin() + 5);
+  VERIFY( pc.begin() == s.begin() + 5 );
+
+  // Runtime calls to these do not check for the correct number of args.
+  VERIFY( pc.next_arg_id() == 0 );
+  VERIFY( pc.next_arg_id() == 1 );
+  VERIFY( pc.next_arg_id() == 2 );
+  try
+  {
+    // Cannot mix manual and automatic indexing.
+    pc.check_arg_id(0);
+    VERIFY( false );
+  }
+  catch (const std::format_error&)
+  {
+  }
+  // But they do check during constant evaluation:
+  VERIFY( ! arg_id_available<char> );
+  VERIFY( ! arg_id_available<wchar_t> );
+
+  std::format_parse_context pc2("");
+  pc2.check_arg_id(2);
+  pc2.check_arg_id(1);
+  pc2.check_arg_id(3);
+  try
+  {
+    // Cannot mix manual and automatic indexing.
+    (void) pc2.next_arg_id();
+    VERIFY( false );
+  }
+  catch (const std::format_error&)
+  {
+  }
+}
+
 template<typename T, bool auto_indexing = true>
 bool
 is_std_format_spec_for(std::string_view spec)
@@ -266,8 +351,8 @@ test_pointer()
   VERIFY( ! is_std_format_spec_for<void*>("G") );
   VERIFY( ! is_std_format_spec_for<void*>("+p") );
 
-#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
-  // As an extension, we support P2510R3 Formatting pointers
+#if __cpp_lib_format >= 202304L
+  // P2510R3 Formatting pointers
   VERIFY( is_std_format_spec_for<void*>("P") );
   VERIFY( is_std_format_spec_for<void*>("0p") );
   VERIFY( is_std_format_spec_for<void*>("0P") );
@@ -357,6 +442,65 @@ test_custom()
   VERIFY( ! is_std_format_spec_for<S>("") );
 }
 
+#if __cpp_lib_format >= 202305
+struct X { };
+
+template<>
+struct std::formatter<X, char>
+{
+  constexpr std::format_parse_context::iterator
+  parse(std::format_parse_context& pc)
+  {
+    std::string_view spec(pc.begin(), pc.end());
+    auto p = spec.find('}');
+    if (p != std::string_view::npos)
+      spec = spec.substr(0, p); // truncate to closing brace
+    if (spec == "int")
+    {
+      pc.check_dynamic_spec_integral(pc.next_arg_id());
+      integer = true;
+    }
+    else if (spec == "str")
+    {
+      pc.check_dynamic_spec_string(pc.next_arg_id());
+      integer = false;
+    }
+    else
+      throw std::format_error("invalid format-spec");
+    return pc.begin() + spec.size();
+  }
+
+  std::format_context::iterator
+  format(X, std::format_context& c) const
+  {
+    std::visit_format_arg([this]<typename T>(T) { // { dg-warning "deprecated" "" { target c++26 } }
+      if (is_integral_v<T> != this->integer)
+	throw std::format_error("invalid argument type");
+    }, c.arg(1));
+    return c.out();
+  }
+private:
+  bool integer = false;
+};
+#endif
+
+void
+test_dynamic_type_check()
+{
+#if __cpp_lib_format >= 202305
+  std::format_parse_context pc("{1}.{2}");
+
+  // None of these calls should do anything at runtime, only during consteval:
+  pc.check_dynamic_spec<>(0);
+  pc.check_dynamic_spec<int, const char*>(0);
+  pc.check_dynamic_spec_integral(0);
+  pc.check_dynamic_spec_string(0);
+
+  (void) std::format("{:int}", X{}, 42L);
+  (void) std::format("{:str}", X{}, "H2G2");
+#endif
+}
+
 int main()
 {
   test_char();
@@ -366,4 +510,5 @@ int main()
   test_string();
   test_pointer();
   test_custom();
+  test_dynamic_type_check();
 }

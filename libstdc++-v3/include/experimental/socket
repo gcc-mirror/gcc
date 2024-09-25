@@ -493,7 +493,7 @@ inline namespace v1
     bool non_blocking() const { return _M_bits.non_blocking; }
 
     void
-    native_non_blocking(bool __mode, error_code& __ec)
+    native_non_blocking([[maybe_unused]] bool __mode, error_code& __ec)
     {
 #if defined _GLIBCXX_HAVE_FCNTL_H && defined _GLIBCXX_HAVE_DECL_O_NONBLOCK
       int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
@@ -2450,7 +2450,7 @@ inline namespace v1
 	// XXX ???     ^^^^^^^
       {
 	// XXX ??? this->init(std::addressof(_M_sb));
-	this->set_rbduf(std::addressof(_M_sb));
+	this->set_rdbuf(std::addressof(_M_sb));
       }
 
       template<typename... _Args>

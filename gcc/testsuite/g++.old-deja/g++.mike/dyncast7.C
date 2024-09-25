@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-options "-fexceptions" }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <typeinfo>
 #include <stdexcept>

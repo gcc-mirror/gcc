@@ -1,5 +1,7 @@
 // PR c++/113191
-// { dg-do compile { target c++23 } }
+// CWG 2789
+// { dg-do compile { target c++20 } }
+// { dg-additional-options "-Wno-error=c++23-extensions" { target c++20_only } }
 
 template<typename> struct S;
 
@@ -8,6 +10,7 @@ struct B {
   constexpr int f() const requires true { return 5; }
   constexpr operator int () const requires true { return 5; }
   constexpr int g(this S<T>&&) requires true { return 5; }
+  // { dg-warning "explicit object" "" { target c++20_only } .-1 }
   constexpr int h() requires true { return 5; }
 };
 
@@ -20,12 +23,14 @@ struct S : B<> {
   constexpr operator int () const { return 10; }
   constexpr int g() { return 10; }
   constexpr int h(this S&&) { return 10; }
+  // { dg-warning "explicit object" "" { target c++20_only } .-1 }
 };
 
-// implicit object parms match, B::f is more constrained
-static_assert(S<>{}.f() == 5);
-static_assert(S<>{}.g() == 5);
-static_assert(S<>{}.h() == 5);
+// ambiguous, constraints aren't considered since the candidates
+// come from different classes
+static_assert(S<>{}.f() == 5); // { dg-error "ambiguous" }
+static_assert(S<>{}.g() == 5); // { dg-error "ambiguous" }
+static_assert(S<>{}.h() == 5); // { dg-error "ambiguous" }
 
 template <typename = void>
 struct C {
@@ -36,9 +41,8 @@ struct C {
 template <typename = void>
 struct S2: B<>, C<> { };
 
-// implicit object parms for conversion functions are all considered to be from
-// the class of the object argument
-static_assert(S2<>{} == 5);
+// ambiguous as above
+static_assert(S2<>{} == 5); // { dg-error "ambiguous" }
 
 // ambiguous lookup, so we never actually compare the candidates
 // if we did, implicit object parms don't match due to different classes
@@ -51,7 +55,6 @@ struct S3 : B<> {
   constexpr int f() volatile { return 10; }
 };
 
-// implicit object parms don't match due to different cv-quals
 static_assert(S3<>{}.f() == 5);	// { dg-error "ambiguous" }
 
 template <typename = void>
@@ -60,8 +63,7 @@ struct S4 : B<> {
   constexpr int f() const & { return 10; }
 };
 
-// no ref-qual matches any ref-qual
-static_assert(S4<>{}.f() == 5);
+static_assert(S4<>{}.f() == 5); // { dg-error "ambiguous" }
 
 template <typename = void>
 struct C2 {
@@ -89,7 +91,7 @@ namespace N1 {
 
   A<> a;
   B<> b;
-  // when comparing the A op== to the reversed B op==, we compare them in
-  // reverse order, so they match, and we choose the more constrained.
-  static_assert (a == b);
+  // A op== and B op== are defined in different classes so constraints
+  // aren't considered, and the tie is broken via reversedness.
+  static_assert (!(a == b));
 }

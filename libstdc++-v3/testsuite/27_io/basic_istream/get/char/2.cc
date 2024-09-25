@@ -17,11 +17,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.1.3 unformatted input functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.6.1.3 unformatted input functions
 
 // { dg-require-fileio "" }
+// { dg-additional-files "istream_unformatted-1.tst" }
+// { dg-additional-files "istream_unformatted-1.txt" }
+// Reading the .txt file should not alter it:
+// { dg-final { file-io-diff "istream_unformatted-1" } }
 
 #include <istream>
 #include <sstream>

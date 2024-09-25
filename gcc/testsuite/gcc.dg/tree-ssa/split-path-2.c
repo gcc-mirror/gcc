@@ -17,5 +17,5 @@ foo(signed char *p, int n)
   return s;
 }
 
-/* { dg-final { scan-tree-dump "appears to be a join point for if-convertable diamond" "split-paths" } } */
+/* { dg-final { scan-tree-dump "appears to be a join point for if-convertable" "split-paths" } } */
 

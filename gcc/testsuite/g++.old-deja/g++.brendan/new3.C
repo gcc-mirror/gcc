@@ -7,6 +7,8 @@
 // { dg-options "-flat_namespace" { target *-*-darwin[67]* } }
 // Avoid use of none-overridable new/delete operators in shared
 // { dg-options "-static" { target *-*-mingw* } }
+// { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } }
+
 // GROUPS passed operator-new
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 // Test the case where the awaitables are local vars, and therefore already
 // have a frame representation - and should not be copied to a second frame

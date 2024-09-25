@@ -527,6 +527,9 @@ begin
                                                   "primitives");
    Write_Line ("        .J*  turn off warnings for late dispatching " &
                                                   "primitives");
+   Write_Line ("        _j   turn on warnings for First_Controlling_" &
+                                                  "Parameter aspect");
+
    Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        .k   turn on warnings for standard redefinition");
@@ -535,6 +538,8 @@ begin
    Write_Line ("        L*   turn off warnings for elaboration problems");
    Write_Line ("        .l   turn on info messages for inherited aspects");
    Write_Line ("        .L*  turn off info messages for inherited aspects");
+   Write_Line ("        _l   turn on warnings for implicitly limited types");
+   Write_Line ("        _L*  turn off warnings for implicitly limited types");
    Write_Line ("        m+   turn on warnings for variable assigned " &
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &

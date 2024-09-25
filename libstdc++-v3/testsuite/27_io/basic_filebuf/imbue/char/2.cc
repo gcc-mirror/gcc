@@ -19,7 +19,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.4 Overridden virtual functions
+// C++98 27.8.1.4 Overridden virtual functions
+
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
 #include <fstream>
 #include <locale>

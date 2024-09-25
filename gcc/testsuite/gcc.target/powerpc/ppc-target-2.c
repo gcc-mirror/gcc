@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_altivec } */
+/* { dg-require-effective-target powerpc_fprs } */
 /* { dg-options "-O2 -ffast-math -mdejagnu-cpu=power5 -mabi=altivec" } */
 /* { dg-final { scan-assembler-times "fabs" 3 } } */
 /* { dg-final { scan-assembler-times "fnabs" 3 } } */

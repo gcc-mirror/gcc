@@ -52,7 +52,7 @@ public:
 
   bool inherited_state_p () const final override { return true; }
 
-  bool on_stmt (sm_context *sm_ctxt,
+  bool on_stmt (sm_context &sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const final override;
 
@@ -65,7 +65,7 @@ public:
   state_t m_stop;
 
 private:
-  void warn_for_any_exposure (sm_context *sm_ctxt,
+  void warn_for_any_exposure (sm_context &sm_ctxt,
 			      const supernode *node,
 			      const gimple *stmt,
 			      tree arg) const;
@@ -171,17 +171,17 @@ sensitive_state_machine::sensitive_state_machine (logger *logger)
    state.  */
 
 void
-sensitive_state_machine::warn_for_any_exposure (sm_context *sm_ctxt,
+sensitive_state_machine::warn_for_any_exposure (sm_context &sm_ctxt,
 						const supernode *node,
 						const gimple *stmt,
 						tree arg) const
 {
-  if (sm_ctxt->get_state (stmt, arg) == m_sensitive)
+  if (sm_ctxt.get_state (stmt, arg) == m_sensitive)
     {
-      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-      sm_ctxt->warn (node, stmt, arg,
-		     make_unique<exposure_through_output_file> (*this,
-								diag_arg));
+      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
+      sm_ctxt.warn (node, stmt, arg,
+		    make_unique<exposure_through_output_file> (*this,
+							       diag_arg));
     }
 }
 
@@ -189,18 +189,18 @@ sensitive_state_machine::warn_for_any_exposure (sm_context *sm_ctxt,
    sensitive_state_machine.  */
 
 bool
-sensitive_state_machine::on_stmt (sm_context *sm_ctxt,
+sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 				  const supernode *node,
 				  const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
       {
 	if (is_named_call_p (callee_fndecl, "getpass", call, 1))
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_sensitive);
+	      sm_ctxt.on_transition (node, stmt, lhs, m_start, m_sensitive);
 	    return true;
 	  }
 	else if (is_named_call_p (callee_fndecl, "fprintf")

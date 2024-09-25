@@ -58,7 +58,7 @@ Thread: 'Thread 1'
            |   NN |   acquire_lock_b ();
            |      |   ^~~~~~~~~~~~~~~~~
            |      |   |
-           |      |   (5) deadlocked due to waiting for lock b in thread 1...
+           |      |   (5) deadlocked due to waiting for lock b in thread 1 (acquired by thread 2 at (4))...
            |
 
 Thread: 'Thread 2'
@@ -67,6 +67,6 @@ Thread: 'Thread 2'
            |   NN |   acquire_lock_a ();
            |      |   ^~~~~~~~~~~~~~~~~
            |      |   |
-           |      |   (6) ...whilst waiting for lock a in thread 2
+           |      |   (6) ...whilst waiting for lock a in thread 2 (acquired by thread 1 at (2))
            |
      { dg-end-multiline-output "" } */

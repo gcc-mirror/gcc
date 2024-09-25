@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 #include "tree-diagnostic.h" /* tree_diagnostics_defaults */
+#include "diagnostic-format-text.h"
 
 static int suppress_errors = 0;
 
@@ -923,7 +924,7 @@ error_printf (const char *gmsgid, ...)
 static void
 gfc_clear_pp_buffer (output_buffer *this_buffer)
 {
-  pretty_printer *pp = global_dc->printer;
+  pretty_printer *pp = global_dc->m_printer;
   output_buffer *tmp_buffer = pp_buffer (pp);
   pp_buffer (pp) = this_buffer;
   pp_clear_output_area (pp);
@@ -963,7 +964,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->m_fatal_errors;
-  pretty_printer *pp = global_dc->printer;
+  pretty_printer *pp = global_dc->m_printer;
   output_buffer *tmp_buffer = pp_buffer (pp);
 
   gfc_clear_pp_buffer (pp_warning_buffer);
@@ -978,7 +979,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   bool ret = gfc_report_diagnostic (&diagnostic);
 
   if (buffered_p)
@@ -1125,7 +1126,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 static bool
 gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 		    int precision, bool wide, bool set_locus, bool hash,
-		    bool *quoted, const char **buffer_ptr)
+		    bool *quoted, pp_token_list &formatted_token_list)
 {
   switch (*spec)
     {
@@ -1170,7 +1171,8 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	 etc. diagnostics can use the FE printer while the FE is still
 	 active.  */
       return default_tree_printer (pp, text, spec, precision, wide,
-				   set_locus, hash, quoted, buffer_ptr);
+				   set_locus, hash, quoted,
+				   formatted_token_list);
     }
 }
 
@@ -1195,7 +1197,7 @@ gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
   const char *text_cs = "", *text_ce = "";
-  pretty_printer *pp = context->printer;
+  pretty_printer *const pp = context->m_printer;
 
   if (diagnostic_kind_color[diagnostic->kind])
     {
@@ -1212,7 +1214,7 @@ static char *
 gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 				   expanded_location s)
 {
-  pretty_printer *pp = context->printer;
+  pretty_printer *const pp = context->m_printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   return (s.file == NULL
@@ -1231,7 +1233,7 @@ static char *
 gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 				   expanded_location s, expanded_location s2)
 {
-  pretty_printer *pp = context->printer;
+  pretty_printer *const pp = context->m_printer;
   const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
   const char *locus_ce = colorize_stop (pp_show_color (pp));
 
@@ -1265,9 +1267,11 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
        [locus of primary range]: Error: Some error at (1) and (2)
 */
 static void
-gfc_diagnostic_starter (diagnostic_context *context,
-			const diagnostic_info *diagnostic)
+gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
+			     const diagnostic_info *diagnostic)
 {
+  diagnostic_context *const context = &text_output.get_context ();
+  pretty_printer *const pp = text_output.get_printer ();
   char * kind_prefix = gfc_diagnostic_build_kind_prefix (context, diagnostic);
 
   expanded_location s1 = diagnostic_expand_location (diagnostic);
@@ -1289,7 +1293,7 @@ gfc_diagnostic_starter (diagnostic_context *context,
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
       || diagnostic_location (diagnostic, 0) == context->m_last_location)
     {
-      pp_set_prefix (context->printer,
+      pp_set_prefix (pp,
 		     concat (locus_prefix, " ", kind_prefix, NULL));
       free (locus_prefix);
 
@@ -1303,26 +1307,27 @@ gfc_diagnostic_starter (diagnostic_context *context,
 	  [locus]:[prefix]: (1)
 
 	 and we flush with a new line before setting the new prefix.  */
-      pp_string (context->printer, "(1)");
-      pp_newline (context->printer);
+      pp_string (pp, "(1)");
+      pp_newline (pp);
       locus_prefix = gfc_diagnostic_build_locus_prefix (context, s2);
-      pp_set_prefix (context->printer,
+      pp_set_prefix (pp,
 		     concat (locus_prefix, " ", kind_prefix, NULL));
       free (kind_prefix);
       free (locus_prefix);
     }
   else
     {
-      pp_verbatim (context->printer, "%s", locus_prefix);
+      pp_verbatim (pp, "%s", locus_prefix);
       free (locus_prefix);
       /* Fortran uses an empty line between locus and caret line.  */
-      pp_newline (context->printer);
-      pp_set_prefix (context->printer, NULL);
-      pp_newline (context->printer);
-      diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
+      pp_newline (pp);
+      pp_set_prefix (pp, NULL);
+      pp_newline (pp);
+      diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind,
+			     pp);
       /* If the caret line was shown, the prefix does not contain the
 	 locus.  */
-      pp_set_prefix (context->printer, kind_prefix);
+      pp_set_prefix (pp, kind_prefix);
     }
 }
 
@@ -1332,21 +1337,23 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 {
   char *locus_prefix;
   locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
-  pp_verbatim (context->printer, "%s", locus_prefix);
+  pretty_printer * const pp = context->m_printer;
+  pp_verbatim (pp, "%s", locus_prefix);
   free (locus_prefix);
-  pp_newline (context->printer);
+  pp_newline (pp);
   /* Fortran uses an empty line between locus and caret line.  */
-  pp_newline (context->printer);
+  pp_newline (pp);
 }
 
 
 static void
-gfc_diagnostic_finalizer (diagnostic_context *context,
-			  const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
-			  diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
+gfc_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+			       const diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
+			       diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
 {
-  pp_destroy_prefix (context->printer);
-  pp_newline_and_flush (context->printer);
+  pretty_printer *const pp = text_output.get_printer ();
+  pp_destroy_prefix (pp);
+  pp_newline_and_flush (pp);
 }
 
 /* Immediate warning (i.e. do not buffer the warning) with an explicit
@@ -1362,7 +1369,7 @@ gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -1381,7 +1388,7 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -1400,7 +1407,7 @@ gfc_warning_internal (int opt, const char *gmsgid, ...)
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc,
 		       DK_WARNING);
-  diagnostic.option_index = opt;
+  diagnostic.option_id = opt;
   ret = gfc_report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;
@@ -1460,7 +1467,7 @@ gfc_warning_check (void)
 {
   if (! gfc_output_buffer_empty_p (pp_warning_buffer))
     {
-      pretty_printer *pp = global_dc->printer;
+      pretty_printer *pp = global_dc->m_printer;
       output_buffer *tmp_buffer = pp_buffer (pp);
       pp_buffer (pp) = pp_warning_buffer;
       pp_really_flush (pp);
@@ -1501,7 +1508,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
   diagnostic_info diagnostic;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->m_fatal_errors;
-  pretty_printer *pp = global_dc->printer;
+  pretty_printer *pp = global_dc->m_printer;
   output_buffer *tmp_buffer = pp_buffer (pp);
 
   gfc_clear_pp_buffer (pp_error_buffer);
@@ -1608,7 +1615,7 @@ gfc_error_check (void)
       || ! gfc_output_buffer_empty_p (pp_error_buffer))
     {
       error_buffer.flag = false;
-      pretty_printer *pp = global_dc->printer;
+      pretty_printer *pp = global_dc->m_printer;
       output_buffer *tmp_buffer = pp_buffer (pp);
       pp_buffer (pp) = pp_error_buffer;
       pp_really_flush (pp);
@@ -1639,7 +1646,7 @@ gfc_move_error_buffer_from_to (gfc_error_buffer * buffer_from,
 
   gfc_clear_pp_buffer (to);
   /* We make sure this is always buffered.  */
-  to->flush_p = false;
+  to->m_flush_p = false;
 
   if (! gfc_output_buffer_empty_p (from))
     {
@@ -1699,18 +1706,18 @@ gfc_errors_to_warnings (bool f)
 void
 gfc_diagnostics_init (void)
 {
-  diagnostic_starter (global_dc) = gfc_diagnostic_starter;
+  diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
   diagnostic_start_span (global_dc) = gfc_diagnostic_start_span;
-  diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
+  diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   diagnostic_format_decoder (global_dc) = gfc_format_decoder;
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
   pp_warning_buffer = new (XNEW (output_buffer)) output_buffer ();
-  pp_warning_buffer->flush_p = false;
+  pp_warning_buffer->m_flush_p = false;
   /* pp_error_buffer is statically allocated.  This simplifies memory
      management when using gfc_push/pop_error. */
   pp_error_buffer = &(error_buffer.buffer);
-  pp_error_buffer->flush_p = false;
+  pp_error_buffer->m_flush_p = false;
 }
 
 void
@@ -1719,8 +1726,8 @@ gfc_diagnostics_finish (void)
   tree_diagnostics_defaults (global_dc);
   /* We still want to use the gfc starter and finalizer, not the tree
      defaults.  */
-  diagnostic_starter (global_dc) = gfc_diagnostic_starter;
-  diagnostic_finalizer (global_dc) = gfc_diagnostic_finalizer;
+  diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
+  diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   global_dc->m_source_printing.caret_chars[0] = '^';
   global_dc->m_source_printing.caret_chars[1] = '^';
 }

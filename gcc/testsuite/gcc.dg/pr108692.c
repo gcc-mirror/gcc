@@ -1,5 +1,5 @@
 /* PR tree-optimization/108692 */
-/* { dg-do compile } */
+/* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize" } */
 
 __attribute__((noipa)) int

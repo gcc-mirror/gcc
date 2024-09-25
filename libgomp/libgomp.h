@@ -1387,6 +1387,7 @@ struct gomp_device_descr
 
   /* The name of the device.  */
   const char *name;
+  const char *uid;
 
   /* Capabilities of device (supports OpenACC, OpenMP).  */
   unsigned int capabilities;
@@ -1399,6 +1400,7 @@ struct gomp_device_descr
 
   /* Function handlers.  */
   __typeof (GOMP_OFFLOAD_get_name) *get_name_func;
+  __typeof (GOMP_OFFLOAD_get_uid) *get_uid_func;
   __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
   __typeof (GOMP_OFFLOAD_get_type) *get_type_func;
   __typeof (GOMP_OFFLOAD_get_num_devices) *get_num_devices_func;

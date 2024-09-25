@@ -1,4 +1,6 @@
 /* { dg-options "-O2 -Wall" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstddef NULL" { ! hostedlib } } */
+
 #include <algorithm>
 
 static inline bool

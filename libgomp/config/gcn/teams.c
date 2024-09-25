@@ -44,10 +44,11 @@ omp_get_num_teams (void)
   return gomp_num_teams_var + 1;
 }
 
-int __attribute__ ((__optimize__ ("O2")))
+int
 omp_get_team_num (void)
 {
-  return __builtin_gcn_dim_pos (0);
+  int __lds *gomp_team_num = (int __lds *) GOMP_TEAM_NUM;
+  return *gomp_team_num;
 }
 
 ialias (omp_get_num_teams)

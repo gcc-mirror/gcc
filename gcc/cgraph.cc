@@ -2434,7 +2434,9 @@ cgraph_node_cannot_be_local_p_1 (cgraph_node *node, void *)
 		&& !node->forced_by_abi
 		&& !node->used_from_object_file_p ()
 		&& !node->same_comdat_group)
-	       || !node->externally_visible));
+	       || !node->externally_visible)
+	   && !DECL_STATIC_CONSTRUCTOR (node->decl)
+	   && !DECL_STATIC_DESTRUCTOR (node->decl));
 }
 
 /* Return true if cgraph_node can be made local for API change.

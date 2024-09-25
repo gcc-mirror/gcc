@@ -257,7 +257,8 @@ private:
   void append_clobber_to_group (clobber_info *, clobber_group *);
   void merge_clobber_groups (clobber_info *, clobber_info *,
 			     def_info *);
-  clobber_info *split_clobber_group (clobber_group *, insn_info *);
+  std::array<clobber_group *, 2> split_clobber_group (clobber_group *,
+						      insn_info *);
 
   void append_def (def_info *);
   void add_def (def_info *);
@@ -274,6 +275,7 @@ private:
   insn_info::order_node *need_order_node (insn_info *);
 
   void add_insn_after (insn_info *, insn_info *);
+  void replace_nondebug_insn (insn_info *, insn_info *);
   void append_insn (insn_info *);
   void remove_insn (insn_info *);
 

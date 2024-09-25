@@ -569,8 +569,8 @@ am__objects_58 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/selected_int_kind.lo \
 	intrinsics/selected_real_kind.lo intrinsics/trigd.lo \
 	intrinsics/unpack_generic.lo runtime/in_pack_generic.lo \
-	runtime/in_unpack_generic.lo $(am__objects_56) \
-	$(am__objects_57)
+	runtime/in_unpack_generic.lo runtime/in_pack_class.lo \
+	runtime/in_unpack_class.lo $(am__objects_56) $(am__objects_57)
 @IEEE_SUPPORT_TRUE@am__objects_59 = ieee/ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee/ieee_exceptions.lo \
 @IEEE_SUPPORT_TRUE@	ieee/ieee_features.lo
@@ -985,7 +985,8 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/selected_int_kind.f90 \
 	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
 	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
-	runtime/in_unpack_generic.c $(am__append_4) $(am__append_5)
+	runtime/in_unpack_generic.c runtime/in_pack_class.c \
+	runtime/in_unpack_class.c $(am__append_4) $(am__append_5)
 @IEEE_SUPPORT_TRUE@gfor_ieee_helper_src = ieee/ieee_helper.c
 @IEEE_SUPPORT_FALSE@gfor_ieee_src = 
 @IEEE_SUPPORT_TRUE@gfor_ieee_src = \
@@ -3174,6 +3175,10 @@ runtime/in_pack_generic.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/in_unpack_generic.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/in_pack_class.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/in_unpack_class.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
 intrinsics/access.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/c99_functions.lo: intrinsics/$(am__dirstamp) \
@@ -4223,7 +4228,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/environ.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/error.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/fpu.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/in_pack_class.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/in_pack_generic.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/in_unpack_class.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/in_unpack_generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/main.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/memory.Plo@am__quote@

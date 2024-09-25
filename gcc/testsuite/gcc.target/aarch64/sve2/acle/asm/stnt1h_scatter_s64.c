@@ -177,7 +177,7 @@ TEST_STORE_SCATTER_SZ (stnt1h_scatter_s64_u64offset, svint64_t, int16_t, svuint6
 
 /*
 ** stnt1h_scatter_x0_s64_s64index:
-**	lsl	(z[0-9]+\.d), z1\.d, #1
+**	add	(z[0-9]+\.d), z1\.d, z1\.d
 **	stnt1h	z0\.d, p0, \[\1, x0\]
 **	ret
 */
@@ -187,7 +187,7 @@ TEST_STORE_SCATTER_SZ (stnt1h_scatter_x0_s64_s64index, svint64_t, int16_t, svint
 
 /*
 ** stnt1h_scatter_s64_s64index:
-**	lsl	(z[0-9]+\.d), z1\.d, #1
+**	add	(z[0-9]+\.d), z1\.d, z1\.d
 **	stnt1h	z0\.d, p0, \[\1, x0\]
 **	ret
 */
@@ -197,7 +197,7 @@ TEST_STORE_SCATTER_SZ (stnt1h_scatter_s64_s64index, svint64_t, int16_t, svint64_
 
 /*
 ** stnt1h_scatter_x0_s64_u64index:
-**	lsl	(z[0-9]+\.d), z1\.d, #1
+**	add	(z[0-9]+\.d), z1\.d, z1\.d
 **	stnt1h	z0\.d, p0, \[\1, x0\]
 **	ret
 */
@@ -207,7 +207,7 @@ TEST_STORE_SCATTER_SZ (stnt1h_scatter_x0_s64_u64index, svint64_t, int16_t, svuin
 
 /*
 ** stnt1h_scatter_s64_u64index:
-**	lsl	(z[0-9]+\.d), z1\.d, #1
+**	add	(z[0-9]+\.d), z1\.d, z1\.d
 **	stnt1h	z0\.d, p0, \[\1, x0\]
 **	ret
 */

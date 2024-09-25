@@ -145,7 +145,7 @@ DEF_RET1_ARG9 (v4096qi)
 
 // RET1_ARG0 tests
 /* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 9 } } */
-/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
 
 // v1qi tests: return value (lbu) and function prologue (sb)
 // 1 lbu per test, argnum sb's when args > 1

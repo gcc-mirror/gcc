@@ -1,9 +1,9 @@
 // PR c++/66712
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template <class T, class...Args>
-concept bool _Constructible_ =
+concept _Constructible_ =
   requires (Args&&...args)
   {
     T{ ((Args&&)(args))... };
@@ -12,7 +12,8 @@ concept bool _Constructible_ =
 template <class T, class...Args>
 constexpr bool _constructible_() { return false; }
 
-_Constructible_{T, ...Args}
+template<typename T, typename... Args>
+  requires _Constructible_<T, Args...>
 constexpr bool _constructible_() { return true; }
 
 struct S

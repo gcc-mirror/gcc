@@ -1,3 +1,4 @@
+/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 
 #include <stdlib.h>
@@ -10,11 +11,13 @@ __attribute__((noinline, noclone)) void foo (int x)
     c++;
 }
 
+volatile int t = 1;
+
 int
 main (int argc, char* argv[])
 {
   int j, k, b = 0;
-  if (argc == 0)
+  if (t == 0)
     b = 1;
   for (j = 0; j < 3; j++)
     for (k = 0; k < 1; k++)

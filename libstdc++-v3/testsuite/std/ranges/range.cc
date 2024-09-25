@@ -56,6 +56,7 @@ static_assert( std::ranges::range<test_output_sized_range<int>&> );
 using std::same_as;
 
 using C = test_contiguous_range<char>;
+using R = test_random_access_range<char>;
 using I = test_input_range<char>;
 using O = test_output_range<char>;
 
@@ -69,7 +70,9 @@ static_assert( same_as<std::ranges::sentinel_t<C>,
 static_assert( same_as<std::ranges::sentinel_t<O>,
 		       decltype(std::declval<O&>().end())> );
 
-static_assert( same_as<std::ranges::range_difference_t<C>,
+static_assert( ! same_as<std::ranges::range_difference_t<C>,
+			 std::ptrdiff_t> ); // __detail::__max_diff_type
+static_assert( same_as<std::ranges::range_difference_t<R>,
 		       std::ptrdiff_t> );
 static_assert( same_as<std::ranges::range_difference_t<O>,
 		       std::ptrdiff_t> );

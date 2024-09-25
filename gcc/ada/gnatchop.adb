@@ -984,7 +984,6 @@ procedure Gnatchop is
       Read_Ptr    : File_Offset := 1;
 
    begin
-
       loop
          This_Read := Read (FD,
            A => Buffer (Read_Ptr)'Address,

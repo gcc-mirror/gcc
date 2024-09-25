@@ -1,4 +1,5 @@
 /* PR tree-optimization/102124 */
+/* { dg-do run } */
 
 int
 foo (const unsigned char *a, const unsigned char *b, unsigned long len)

@@ -1,5 +1,6 @@
 // { dg-do compile { target i?86-*-* x86_64-*-* } }
 // { dg-additional-options "-fvect-cost-model=cheap -mavx2" }
+// { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } }
 
 #include <stdint.h>
 #include <stdlib.h>

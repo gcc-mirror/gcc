@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wstrict-aliasing" } */
+/* { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } } */
 
 #include<list>
 

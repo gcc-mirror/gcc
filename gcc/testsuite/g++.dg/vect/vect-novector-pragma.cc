@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 
 #include <vector>
 

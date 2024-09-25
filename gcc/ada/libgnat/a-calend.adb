@@ -110,6 +110,17 @@ is
      new Ada.Unchecked_Conversion (Duration, Time_Rep);
    --  Convert a duration value into a time representation value
 
+   function Elapsed_Leaps (Start_Time, End_Time : Time_Rep) return Natural
+      with Pre => (End_Time >= Start_Time);
+   --  If the target supports leap seconds, determine the number of leap
+   --  seconds elapsed between start_time and end_time.
+   --
+   --  NB! This function assumes that End_Time is not smaller than
+   --  Start_Time. There are usages of the function that correct the time
+   --  by passed leap seconds and use the results for another seach.
+   --  If negative leap seconds are introduced eventually, then such
+   --  calls should be revised as the correction can go to either direction.
+
    function Time_Rep_To_Duration is
      new Ada.Unchecked_Conversion (Time_Rep, Duration);
    --  Convert a time representation value into a duration value
@@ -355,13 +366,34 @@ is
       end if;
    end Check_Within_Time_Bounds;
 
+   -------------------
+   -- Elapsed_Leaps --
+   -------------------
+
+   function Elapsed_Leaps (Start_Time, End_Time : Time_Rep) return Natural
+   is
+      Elapsed       : Natural := 0;
+      Next_Leap_N   : Time_Rep;
+   begin
+      if Leap_Support then
+         Cumulative_Leap_Seconds
+           (Start_Time, End_Time, Elapsed, Next_Leap_N);
+
+         --  The system clock may fall exactly on a leap second
+
+         if End_Time >= Next_Leap_N then
+            Elapsed := Elapsed + 1;
+         end if;
+      end if;
+
+      return Elapsed;
+   end Elapsed_Leaps;
+
    -----------
    -- Clock --
    -----------
 
    function Clock return Time is
-      Elapsed_Leaps : Natural;
-      Next_Leap_N   : Time_Rep;
 
       --  The system clock returns the time in UTC since the Unix Epoch of
       --  1970-01-01 00:00:00.0. We perform an origin shift to the Ada Epoch
@@ -371,26 +403,7 @@ is
         Duration_To_Time_Rep (System.OS_Primitives.Clock) + Unix_Min;
 
    begin
-      --  If the target supports leap seconds, determine the number of leap
-      --  seconds elapsed until this moment.
-
-      if Leap_Support then
-         Cumulative_Leap_Seconds
-           (Start_Of_Time, Res_N, Elapsed_Leaps, Next_Leap_N);
-
-         --  The system clock may fall exactly on a leap second
-
-         if Res_N >= Next_Leap_N then
-            Elapsed_Leaps := Elapsed_Leaps + 1;
-         end if;
-
-      --  The target does not support leap seconds
-
-      else
-         Elapsed_Leaps := 0;
-      end if;
-
-      Res_N := Res_N + Time_Rep (Elapsed_Leaps) * Nano;
+      Res_N := Res_N + Time_Rep (Elapsed_Leaps (Start_Of_Time, Res_N)) * Nano;
 
       return Time (Res_N);
    end Clock;
@@ -806,10 +819,8 @@ is
       is
          Res_Dur       : Time_Dur;
          Earlier       : Time_Rep;
-         Elapsed_Leaps : Natural;
          Later         : Time_Rep;
          Negate        : Boolean := False;
-         Next_Leap_N   : Time_Rep;
          Sub_Secs      : Duration;
          Sub_Secs_Diff : Time_Rep;
 
@@ -823,22 +834,6 @@ is
             Later   := Time_Rep (Right);
             Earlier := Time_Rep (Left);
             Negate  := True;
-         end if;
-
-         --  If the target supports leap seconds, process them
-
-         if Leap_Support then
-            Cumulative_Leap_Seconds
-              (Earlier, Later, Elapsed_Leaps, Next_Leap_N);
-
-            if Later >= Next_Leap_N then
-               Elapsed_Leaps := Elapsed_Leaps + 1;
-            end if;
-
-         --  The target does not support leap seconds
-
-         else
-            Elapsed_Leaps := 0;
          end if;
 
          --  Sub seconds processing. We add the resulting difference to one
@@ -856,12 +851,14 @@ is
          --  either add or drop a second. We compensate for this issue in the
          --  previous step.
 
+         Leap_Seconds := Elapsed_Leaps (Earlier, Later);
+
          Res_Dur :=
-           Time_Dur (Later / Nano - Earlier / Nano) - Time_Dur (Elapsed_Leaps);
+           Time_Dur (Later / Nano - Earlier / Nano) -
+           Time_Dur (Leap_Seconds);
 
          Days         := Long_Integer (Res_Dur / Secs_In_Day);
          Seconds      := Duration (Res_Dur mod Secs_In_Day) + Sub_Secs;
-         Leap_Seconds := Integer (Elapsed_Leaps);
 
          if Negate then
             Days    := -Days;
@@ -901,9 +898,33 @@ is
 
       function To_Ada_Time (Unix_Time : Long_Integer) return Time is
          pragma Unsuppress (Overflow_Check);
-         Unix_Rep : constant Time_Rep := Time_Rep (Unix_Time) * Nano;
+         Ada_Rep : Time_Rep := Time_Rep (Unix_Time * Nano) - Epoch_Offset;
+
+         --  Count leaps passed until the converted time.
+
+         Leaps : constant Natural :=
+            Elapsed_Leaps (Start_Of_Time, Ada_Rep);
       begin
-         return Time (Unix_Rep - Epoch_Offset);
+
+         --  If leap seconds were found then update the result accordingly
+
+         if Leaps /= 0 then
+            declare
+               --  adjust the time by the number of leap seconds
+               Corrected_Ada_Rep : constant Time_Rep :=
+                  Ada_Rep + Time_Rep ((Leaps) * Nano);
+
+               --  Check if the corrected time passed the boundary
+               --  of another leap second
+               Extra_Leaps : constant Natural :=
+                  Elapsed_Leaps (Ada_Rep, Corrected_Ada_Rep);
+            begin
+               Ada_Rep := Corrected_Ada_Rep + Time_Rep (Extra_Leaps * Nano);
+            end;
+         end if;
+
+         return Time (Ada_Rep);
+
       exception
          when Constraint_Error =>
             raise Time_Error;
@@ -1085,7 +1106,8 @@ is
          pragma Unsuppress (Overflow_Check);
          Ada_Rep : constant Time_Rep := Time_Rep (Ada_Time);
       begin
-         return Long_Integer ((Ada_Rep + Epoch_Offset) / Nano);
+         return Long_Integer ((Ada_Rep + Epoch_Offset) / Nano) -
+            Long_Integer (Elapsed_Leaps (Start_Of_Time, Ada_Rep));
       exception
          when Constraint_Error =>
             raise Time_Error;
@@ -1112,9 +1134,7 @@ is
          --  failure. To prevent this, the function returns the "safe" end of
          --  time (roughly 2219) which is still distant enough.
 
-         Elapsed_Leaps : Natural;
-         Next_Leap_N   : Time_Rep;
-         Res_N         : Time_Rep;
+         Res_N : Time_Rep;
 
       begin
          Res_N := Time_Rep (Date);
@@ -1122,23 +1142,8 @@ is
          --  Step 1: If the target supports leap seconds, remove any leap
          --  seconds elapsed up to the input date.
 
-         if Leap_Support then
-            Cumulative_Leap_Seconds
-              (Start_Of_Time, Res_N, Elapsed_Leaps, Next_Leap_N);
-
-            --  The input time value may fall on a leap second occurrence
-
-            if Res_N >= Next_Leap_N then
-               Elapsed_Leaps := Elapsed_Leaps + 1;
-            end if;
-
-         --  The target does not support leap seconds
-
-         else
-            Elapsed_Leaps := 0;
-         end if;
-
-         Res_N := Res_N - Time_Rep (Elapsed_Leaps) * Nano;
+         Res_N := Res_N -
+            Time_Rep (Elapsed_Leaps (Start_Of_Time, Res_N)) * Nano;
 
          --  Step 2: Perform a shift in origins to obtain a Unix equivalent of
          --  the input. Guard against very large delay values such as the end

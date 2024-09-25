@@ -1262,7 +1262,7 @@ package body Restrict is
          --  Set as warning if warning case
 
          if Restriction_Warnings (R) then
-            Add_Str ("??");
+            Add_Str ("?*?");
          end if;
 
          --  Set main message

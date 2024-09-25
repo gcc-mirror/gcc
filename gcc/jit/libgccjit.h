@@ -21,6 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCCJIT_H
 
 #include <stdio.h>
+#ifdef __has_include
+#if __has_include (<sys/types.h>)
+#include <sys/types.h>
+#endif
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -604,7 +609,9 @@ enum gcc_jit_types
   GCC_JIT_TYPE_INT16_T,
   GCC_JIT_TYPE_INT32_T,
   GCC_JIT_TYPE_INT64_T,
-  GCC_JIT_TYPE_INT128_T
+  GCC_JIT_TYPE_INT128_T,
+
+  GCC_JIT_TYPE_BFLOAT16,
 };
 
 extern gcc_jit_type *

@@ -4,6 +4,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+#if __cpp_lib_ranges_iota != 202202L
+# error "Feature-test macro __cpp_lib_ranges_iota has wrong value in <numeric>"
+#endif
+
 namespace ranges = std::ranges;
 
 void

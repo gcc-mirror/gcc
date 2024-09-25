@@ -1,4 +1,6 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } }
+
 // GROUPS passed delete
 /*
   Bug Id: 

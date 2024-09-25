@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { do-options "-O1" } */
+/* { dg-options "-O1" } */
 
 int x;
 void andsi3(void) { x &= ~(1 << 16); }

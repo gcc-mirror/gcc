@@ -312,6 +312,22 @@ estimated_poly_value (poly_int64 x,
     return targetm.estimated_poly_value (x, kind);
 }
 
+/* Return true when MODE can be used to copy GET_MODE_BITSIZE bits
+   unchanged.  */
+
+inline bool
+mode_can_transfer_bits (machine_mode mode)
+{
+  if (mode == BLKmode)
+    return true;
+  if (maybe_ne (GET_MODE_BITSIZE (mode),
+		GET_MODE_UNIT_PRECISION (mode) * GET_MODE_NUNITS (mode)))
+    return false;
+  if (targetm.mode_can_transfer_bits)
+    return targetm.mode_can_transfer_bits (mode);
+  return true;
+}
+
 #ifdef GCC_TM_H
 
 #ifndef CUMULATIVE_ARGS_MAGIC

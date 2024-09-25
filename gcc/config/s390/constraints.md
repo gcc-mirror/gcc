@@ -34,8 +34,7 @@
 ;;         jm1: constant scalar or vector with all bits set
 ;;         jxx: contiguous bitmask of 0 or 1 in all vector elements
 ;;         jyy: constant consisting of byte chunks being either 0 or 0xff
-;;         jKK: constant vector with all elements having the same value and
-;;              matching K constraint
+;;         jzz: constant consisting of 16-bit chunks which may be sign-extended
 ;;         jm6: An integer operand with the lowest order 6 bits all ones.
 ;;         jdd: A constant operand that fits into the data section.
 ;;         j>f: An integer operand whose lower 32 bits are greater than or equal to 15
@@ -438,27 +437,21 @@
   "All one bit scalar or vector constant"
   (match_test "op == CONSTM1_RTX (GET_MODE (op))"))
 
-; vector generate mask operand - support for up to 64 bit elements
+; vector generate mask operand
 (define_constraint "jxx"
   "@internal"
-  (and (match_code "const_vector")
-       (match_test "s390_contiguous_bitmask_vector_p (op, NULL, NULL)")))
+  (match_test "s390_constant_via_vgm_p (op, NULL, NULL, NULL)"))
 
-; vector generate byte mask operand - this is only supposed to deal
-; with real vectors 128 bit values of being either 0 or -1 are handled
-; with j00 and jm1
+; vector generate byte mask operand - constant 0 and -1 vectors are handled
+; by j00 and jm1, respectively.
 (define_constraint "jyy"
   "@internal"
-  (and (match_code "const_vector")
-       (match_test "s390_bytemask_vector_p (op, NULL)")))
+  (match_test "s390_constant_via_vgbm_p (op, NULL)"))
 
-; vector replicate immediate operand - support for up to 64 bit elements
-(define_constraint "jKK"
+; vector replicate immediate operand
+(define_constraint "jzz"
   "@internal"
-  (and (and (and (match_code "const_vector")
-		 (match_test "const_vec_duplicate_p (op)"))
-	    (match_test "GET_MODE_UNIT_SIZE (GET_MODE (op)) <= 8"))
-       (match_test "satisfies_constraint_K (XVECEXP (op, 0, 0))")))
+  (match_test "s390_constant_via_vrepi_p (op, NULL, NULL)"))
 
 (define_constraint "jm6"
   "@internal An integer operand with the lowest order 6 bits all ones."

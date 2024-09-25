@@ -2039,21 +2039,22 @@ AC_SUBST(PICFLAG)
 
 # Rust requires -ldl and -lpthread if you are using an old glibc that does not include them by
 # default, so we check for them here
-
+# We are doing the test here and not in the gcc/configure to be able to nicely disable the
+# build of the Rust frontend in case a dep is missing.
 missing_rust_dynlibs=none
 
+save_LIBS="$LIBS"
+LIBS=
 AC_SEARCH_LIBS([dlopen], [dl])
 AC_SEARCH_LIBS([pthread_create], [pthread])
+CRAB1_LIBS="$LIBS"
+LIBS="$save_LIBS"
 
-if test "$ac_cv_search_dlopen" = -ldl; then
-    CRAB1_LIBS="$CRAB1_LIBS -ldl"
-elif test "$ac_cv_search_dlopen" = no; then
+if test "$ac_cv_search_dlopen" = no; then
     missing_rust_dynlibs="libdl"
 fi
 
-if test "$ac_cv_search_pthread_create" = -lpthread; then
-    CRAB1_LIBS="$CRAB1_LIBS -lpthread"
-elif test "$ac_cv_search_pthread_create" = no; then
+if test "$ac_cv_search_pthread_create" = no; then
     missing_rust_dynlibs="$missing_rust_dynlibs, libpthread"
 fi
 
@@ -2135,7 +2136,7 @@ if test -d ${srcdir}/gcc; then
         lang_requires_boot_languages=
         # set srcdir during sourcing lang_frag to the gcc dir.
         # Sadly overriding srcdir on the . line doesn't work in plain sh as it
-        # polutes this shell
+        # pollutes this shell
         saved_srcdir=${srcdir}
         srcdir=${srcdir}/gcc . ${lang_frag}
         srcdir=${saved_srcdir}

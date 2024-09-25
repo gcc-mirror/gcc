@@ -1,5 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options -fmodules-ts }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 module;
 #include <iostream>

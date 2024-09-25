@@ -2,6 +2,7 @@
 // { dg-do run }
 // { dg-options "-Wno-deprecated" }
 // { dg-options "-fuse-cxa-get-exception-ptr -Wno-deprecated" { target powerpc*-*-darwin* } }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include <exception>
 #include <cstdlib>

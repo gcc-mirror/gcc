@@ -135,9 +135,9 @@ namespace coro = std;
 
 #ifndef OUTPUT
 #  define PRINT(X)
-#  define PRINTF (void)
+#  define PRINTF(...)
 #else
 #include <stdio.h>
 #  define PRINT(X) puts(X)
-#  define PRINTF printf
+#  define PRINTF(...) printf(__VA_ARGS__)
 #endif

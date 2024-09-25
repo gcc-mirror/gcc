@@ -125,7 +125,7 @@ DEF_RET1_ARG9 (v1024si)
 
 // RET1_ARG0 tests
 /* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 7 } } */
-/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
 
 // v1si tests: return value (lw) and function prologue (sw)
 // 1 lw per test, argnum sw's when args > 1

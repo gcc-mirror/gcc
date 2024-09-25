@@ -62,7 +62,7 @@ list_remove_head (struct objc_list** list)
     }
   else
     {
-      /* Inly one element in list.  */
+      /* Only one element in list.  */
       objc_free (*list);
       (*list) = 0;
     }

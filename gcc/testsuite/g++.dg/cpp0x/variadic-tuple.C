@@ -1,5 +1,6 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-fexcess-precision=fast" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 // An implementation of TR1's <tuple> using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 

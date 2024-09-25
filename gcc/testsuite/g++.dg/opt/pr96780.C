@@ -29,6 +29,10 @@ void f() {
   auto&& x11 = std::as_const(a);
   auto&& x12 = std::as_const(ca);
 #endif
+#if __cpp_lib_forward_like
+  auto&& x13 = std::forward_like<int&&>(a);
+  auto&& x14 = std::forward_like<int&&>(ca);
+#endif
 }
 
 // { dg-final { scan-tree-dump-not "= std::move" "gimple" } }
@@ -36,3 +40,4 @@ void f() {
 // { dg-final { scan-tree-dump-not "= std::addressof" "gimple" } }
 // { dg-final { scan-tree-dump-not "= std::__addressof" "gimple" } }
 // { dg-final { scan-tree-dump-not "= std::as_const" "gimple" } }
+// { dg-final { scan-tree-dump-not "= std::forward_like" "gimple" } }

@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts" }
+/* { dg-skip-if "requires hosted libstdc++ for cwchar" { ! hostedlib } } */
 
 #include <experimental/contract>
 

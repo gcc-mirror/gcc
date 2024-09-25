@@ -366,7 +366,7 @@ package body Switch.B is
 
          when 'G' =>
             Ptr := Ptr + 1;
-            Generate_C_Code := True;
+            CCG_Mode := True;
 
          --  Processing for h switch
 

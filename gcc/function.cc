@@ -2231,6 +2231,7 @@ use_register_for_decl (const_tree decl)
       /* We don't set DECL_IGNORED_P for the function_result_decl.  */
       if (optimize)
 	return true;
+      /* Needed for [[musttail]] which can operate even at -O0 */
       if (cfun->tail_call_marked)
 	return true;
       /* We don't set DECL_REGISTER for the function_result_decl.  */
@@ -6259,8 +6260,11 @@ thread_prologue_and_epilogue_insns (void)
     }
 
   /* Threading the prologue and epilogue changes the artificial refs in the
-     entry and exit blocks, and may invalidate DF info for tail calls.  */
+     entry and exit blocks, and may invalidate DF info for tail calls.
+     This is also needed for [[musttail]] conversion even when not
+     optimizing.  */
   if (optimize
+      || cfun->tail_call_marked
       || flag_optimize_sibling_calls
       || flag_ipa_icf_functions
       || in_lto_p)
@@ -6557,7 +6561,7 @@ rest_of_handle_thread_prologue_and_epilogue (function *fun)
 {
   /* prepare_shrink_wrap is sensitive to the block structure of the control
      flow graph, so clean it up first.  */
-  if (optimize)
+  if (cfun->tail_call_marked || optimize)
     cleanup_cfg (0);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,

@@ -1254,6 +1254,7 @@ void test (HasConstData *p, const HasConstData &x,
 
   // Reallocating is not diagnosed except in C++ 98 due to a bug.
   T (q = realloc, (p, 1));          // { dg-warning "moving an object of non-trivially copyable type .struct HasConstData.; use .new. and .delete. instead" "c++98" { target { c++98_only } } }
+// { dg-warning "moving an object of non-trivial type" "" { target c++11 } .-1 }
   T (q = realloc, (p, n));          // { dg-warning "realloc" "c++98" { target { c++98_only } } }
   T (q = realloc, (p, sizeof *p));  // { dg-warning "realloc" "c++98" { target { c++98_only } } }
 }
@@ -1333,6 +1334,7 @@ void test (HasReference *p, const HasReference &x,
   // in C++ 98 because of a bug, but it seems like it should be
   // diagnosed in all modes.
   T (q = realloc, (p, 1));          // { dg-warning "realloc" "c++ 98" { target { c++98_only } } }
+// { dg-warning "moving an object of non-trivial type" "" { target c++11 } .-1 }
   T (q = realloc, (p, n));          // { dg-warning "realloc" "c++ 98" { target { c++98_only } } }
   T (q = realloc, (p, sizeof *p));  // { dg-warning "realloc" "c++ 98" { target { c++98_only } } }
 }

@@ -2,6 +2,7 @@
 // { dg-do run }
 // { dg-require-profiling "" }
 // { dg-options "-fnon-call-exceptions -fprofile-arcs" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 

@@ -444,6 +444,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define STRING_ASM_OP	"\t.string\t"
 
+#ifdef HAVE_GAS_BASE64
+#define BASE64_ASM_OP	"\t.base64\t"
+#endif
+
 /* The routine used to output NUL terminated strings.  We use a special
    version of this for most svr4 targets because doing so makes the
    generated assembly code more compact (and thus faster to assemble)

@@ -1121,6 +1121,10 @@ package body Exp_Pakd is
    begin
       pragma Assert (Is_Bit_Packed_Array (Etype (Prefix (Lhs))));
 
+      if CodePeer_Mode then
+         return;
+      end if;
+
       Obj := Relocate_Node (Prefix (Lhs));
       Convert_To_Actual_Subtype (Obj);
       Atyp := Etype (Obj);
@@ -1507,6 +1511,10 @@ package body Exp_Pakd is
       Offset : Node_Id;
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       --  We build an expression that has the form
 
       --    outer_object'Address
@@ -1546,6 +1554,10 @@ package body Exp_Pakd is
       Offset : Node_Id;
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       --  We build an expression that has the form
 
       --    (linear-subscript * component_size      for each array reference
@@ -1581,6 +1593,10 @@ package body Exp_Pakd is
       PAT  : Entity_Id;
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       Convert_To_Actual_Subtype (L);
       Convert_To_Actual_Subtype (R);
 
@@ -1744,6 +1760,10 @@ package body Exp_Pakd is
       Arg   : Node_Id;
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       --  If the node is an actual in a call, the prefix has not been fully
       --  expanded, to account for the additional expansion for in-out actuals
       --  (see expand_actuals for details). If the prefix itself is a packed
@@ -1907,6 +1927,10 @@ package body Exp_Pakd is
       PAT  : Entity_Id;
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       Convert_To_Actual_Subtype (L);
       Convert_To_Actual_Subtype (R);
       Ltyp := Underlying_Type (Etype (L));
@@ -2004,6 +2028,10 @@ package body Exp_Pakd is
       Size : Unat;
 
    begin
+      if CodePeer_Mode then
+         return;
+      end if;
+
       Convert_To_Actual_Subtype (Opnd);
       Rtyp := Etype (Opnd);
 

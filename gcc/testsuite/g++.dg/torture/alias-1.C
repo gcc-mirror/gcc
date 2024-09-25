@@ -3,6 +3,7 @@
 // from inlined destructor, the buf1 variable doesn't go out of scope
 // until after the baz call.
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <new>
 #include <cstring>

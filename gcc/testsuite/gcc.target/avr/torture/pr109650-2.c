@@ -3,7 +3,7 @@
 typedef __UINT8_TYPE__ uint8_t;
 
 #define AI static __inline__ __attribute__((__always_inline__))
-#define NI __attribute__((__noinline__,__noclone__))
+#define NI __attribute__((__noipa__))
 
 AI uint8_t func1_eq (uint8_t c, unsigned x)
 {

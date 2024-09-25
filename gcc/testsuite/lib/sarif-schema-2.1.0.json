@@ -1,7 +1,7 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "title": "Static Analysis Results Format (SARIF) Version 2.1.0 JSON Schema",
-  "$id": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "id": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
   "description": "Static Analysis Results Format (SARIF) Version 2.1.0 JSON Schema: a standard format for the output of static analysis tools.",
   "additionalProperties": false,
   "type": "object",
@@ -15,12 +15,13 @@
 
     "version": {
       "description": "The SARIF format version of this log file.",
-      "enum": [ "2.1.0" ]
+      "enum": [ "2.1.0" ],
+      "type": "string"
     },
 
     "runs": {
       "description": "The set of runs contained in this log file.",
-      "type": "array",
+      "type": [ "array", "null" ],
       "minItems": 0,
       "uniqueItems": false,
       "items": {
@@ -181,7 +182,8 @@
               "userSpecifiedConfiguration",
               "toolSpecifiedConfiguration",
               "debugOutputFile"
-            ]
+            ],
+            "type": "string"
           }
         },
 
@@ -587,17 +589,18 @@
 
         "version": {
           "description": "The SARIF format version of this external properties object.",
-          "enum": [ "2.1.0" ]
+          "enum": [ "2.1.0" ],
+          "type": "string"
         },
 
         "guid": {
-          "description": "A stable, unique identifer for this external properties object, in the form of a GUID.",
+          "description": "A stable, unique identifier for this external properties object, in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
 
         "runGuid": {
-          "description": "A stable, unique identifer for the run associated with this external properties object, in the form of a GUID.",
+          "description": "A stable, unique identifier for the run associated with this external properties object, in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -778,7 +781,7 @@
         },
 
         "guid": {
-          "description": "A stable, unique identifer for the external property file in the form of a GUID.",
+          "description": "A stable, unique identifier for the external property file in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -1563,7 +1566,8 @@
         "level": {
           "description": "A value specifying the severity level of the notification.",
           "default": "warning",
-          "enum": [ "none", "note", "warning", "error" ]
+          "enum": [ "none", "note", "warning", "error" ],
+          "type": "string"
         },
 
         "threadId": {
@@ -1775,7 +1779,13 @@
           "description": "Key/value pairs that provide additional information about the region.",
           "$ref": "#/definitions/propertyBag"
         }
-      }
+      },
+
+      "anyOf": [
+        { "required": [ "startLine" ] },
+        { "required": [ "charOffset" ] },
+        { "required": [ "byteOffset" ] }
+      ]
     },
 
     "replacement": {
@@ -1825,7 +1835,7 @@
         },
 
         "guid": {
-          "description": "A unique identifer for the reporting descriptor in the form of a GUID.",
+          "description": "A unique identifier for the reporting descriptor in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -1924,7 +1934,8 @@
         "level": {
           "description": "Specifies the failure level for the report.",
           "default": "warning",
-          "enum": [ "none", "note", "warning", "error" ]
+          "enum": [ "none", "note", "warning", "error" ],
+          "type": "string"
         },
 
         "rank": {
@@ -2048,13 +2059,15 @@
         "kind": {
           "description": "A value that categorizes results by evaluation state.",
           "default": "fail",
-          "enum": [ "notApplicable", "pass", "fail", "review", "open", "informational" ]
+          "enum": [ "notApplicable", "pass", "fail", "review", "open", "informational" ],
+          "type": "string"
         },
 
         "level": {
           "description": "A value specifying the severity level of the result.",
           "default": "warning",
-          "enum": [ "none", "note", "warning", "error" ]
+          "enum": [ "none", "note", "warning", "error" ],
+          "type": "string"
         },
 
         "message": {
@@ -2079,7 +2092,7 @@
         },
 
         "guid": {
-          "description": "A stable, unique identifer for the result in the form of a GUID.",
+          "description": "A stable, unique identifier for the result in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -2184,7 +2197,8 @@
             "unchanged",
             "updated",
             "absent"
-          ]
+          ],
+          "type": "string"
         },
 
         "rank": {
@@ -2354,7 +2368,7 @@
           "description": "The language of the messages emitted into the log file during this run (expressed as an ISO 639-1 two-letter lowercase culture code) and an optional region (expressed as an ISO 3166-1 two-letter uppercase subculture code associated with a country or region). The casing is recommended but not required (in order for this data to conform to RFC5646).",
           "type": "string",
           "default": "en-US",
-          "pattern": "^[a-zA-Z]{2}|^[a-zA-Z]{2}-[a-zA-Z]{2}]?$"
+          "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$"
         },
 
         "versionControlProvenance": {
@@ -2474,7 +2488,8 @@
 
         "columnKind": {
           "description": "Specifies the unit in which the tool measures columns.",
-          "enum": [ "utf16CodeUnits", "unicodeCodePoints" ]
+          "enum": [ "utf16CodeUnits", "unicodeCodePoints" ],
+          "type": "string"
         },
 
         "externalPropertyFileReferences": {
@@ -2590,7 +2605,7 @@
         },
 
         "guid": {
-          "description": "A stable, unique identifer for this object's containing run object in the form of a GUID.",
+          "description": "A stable, unique identifier for this object's containing run object in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -2702,7 +2717,7 @@
       "properties": {
 
         "guid": {
-          "description": "A stable, unique identifer for the suprression in the form of a GUID.",
+          "description": "A stable, unique identifier for the suprression in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -2712,7 +2727,8 @@
           "enum": [
             "inSource",
             "external"
-          ]
+          ],
+          "type": "string"
         },
 
         "status": {
@@ -2721,7 +2737,8 @@
             "accepted",
             "underReview",
             "rejected"
-          ]
+          ],
+          "type": "string"
         },
 
         "justification": {
@@ -2874,7 +2891,8 @@
         "importance": {
           "description": "Specifies the importance of this location in understanding the code flow in which it occurs. The order from most to least important is \"essential\", \"important\", \"unimportant\". Default: \"important\".",
           "enum": [ "important", "essential", "unimportant" ],
-          "default": "important"
+          "default": "important",
+          "type": "string"
         },
 
         "webRequest": {
@@ -2932,7 +2950,7 @@
       "properties": {
 
         "guid": {
-          "description": "A unique identifer for the tool component in the form of a GUID.",
+          "description": "A unique identifier for the tool component in the form of a GUID.",
           "type": "string",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
         },
@@ -3060,7 +3078,7 @@
           "description": "The language of the messages emitted into the log file during this run (expressed as an ISO 639-1 two-letter lowercase language code) and an optional region (expressed as an ISO 3166-1 two-letter uppercase subculture code associated with a country or region). The casing is recommended but not required (in order for this data to conform to RFC5646).",
           "type": "string",
           "default": "en-US",
-          "pattern": "^[a-zA-Z]{2}|^[a-zA-Z]{2}-[a-zA-Z]{2}]?$"
+          "pattern": "^[a-zA-Z]{2}(-[a-zA-Z]{2})?$"
         },
 
         "contents": {
@@ -3072,7 +3090,8 @@
             "enum": [
               "localizedData",
               "nonLocalizedData"
-            ]
+            ],
+            "type": "string"
           }
         },
 

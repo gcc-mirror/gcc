@@ -2335,6 +2335,19 @@ same_access_path_p (tree exp1, tree exp2)
   return true;
 }
 
+/* Return true when either T1 is a type that, when loaded into a register and
+   stored back to memory will yield the same bits or when both T1 and T2 are
+   compatible.  */
+
+static bool
+types_risk_mangled_binary_repr_p (tree t1, tree t2)
+{
+  if (mode_can_transfer_bits (TYPE_MODE (t1)))
+    return false;
+
+  return !types_compatible_p (t1, t2);
+}
+
 /* Sort all accesses for the given variable, check for partial overlaps and
    return NULL if there are any.  If there are none, pick a representative for
    each combination of offset and size and create a linked list out of them.
@@ -2457,6 +2470,17 @@ sort_and_splice_var_accesses (tree var)
 		  fprintf (dump_file, "Cannot scalarize the following access "
 			   "because insufficient precision integer type was "
 			   "selected.\n  ");
+		  dump_access (dump_file, access, false);
+		}
+	      unscalarizable_region = true;
+	    }
+	  else if (types_risk_mangled_binary_repr_p (access->type, ac2->type))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Cannot scalarize the following access "
+			   "because data would be held in a mode which is not "
+			   "guaranteed to preserve all bits.\n  ");
 		  dump_access (dump_file, access, false);
 		}
 	      unscalarizable_region = true;
@@ -3127,7 +3151,9 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	  ret = true;
 	  subtree_mark_written_and_rhs_enqueue (lacc);
 	}
-      if (!lacc->first_child && !racc->first_child)
+      if (!lacc->first_child
+	  && !racc->first_child
+	  && !types_risk_mangled_binary_repr_p (racc->type, lacc->type))
 	{
 	  /* We are about to change the access type from aggregate to scalar,
 	     so we need to put the reverse flag onto the access, if any.  */

@@ -87,6 +87,12 @@ struct _cpp_file
   /* As filled in by stat(2) for the file.  */
   struct stat st;
 
+  /* Size for #embed, perhaps smaller than st.st_size.  */
+  size_t limit;
+
+  /* Offset for #embed.  */
+  off_t offset;
+
   /* File descriptor.  Invalid if -1, otherwise open.  */
   int fd;
 
@@ -112,6 +118,9 @@ struct _cpp_file
   /* Set if a header wasn't found with __has_include or __has_include_next
      and error should be emitted if it is included normally.  */
   bool deferred_error : 1;
+
+  /* File loaded from #embed.  */
+  bool embed : 1;
 
   /* > 0: Known C++ Module header unit, <0: known not.  ==0, unknown  */
   int header_unit : 2;
@@ -187,7 +196,8 @@ static const char *dir_name_of_file (_cpp_file *file);
 static void open_file_failed (cpp_reader *pfile, _cpp_file *file, int,
 			      location_t);
 static struct cpp_file_hash_entry *search_cache (struct cpp_file_hash_entry *head,
-					     const cpp_dir *start_dir);
+						 const cpp_dir *start_dir,
+						 bool is_embed);
 static _cpp_file *make_cpp_file (cpp_dir *, const char *fname);
 static void destroy_cpp_file (_cpp_file *);
 static cpp_dir *make_cpp_dir (cpp_reader *, const char *dir_name, int sysp);
@@ -425,7 +435,7 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch,
 	}
 
       file->path = path;
-      if (pch_open_file (pfile, file, invalid_pch))
+      if (!file->embed && pch_open_file (pfile, file, invalid_pch))
 	return true;
 
       if (open_file (file))
@@ -514,7 +524,9 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
   bool invalid_pch = false;
   bool saw_bracket_include = false;
   bool saw_quote_include = false;
+  bool saw_embed_include = false;
   struct cpp_dir *found_in_cache = NULL;
+  bool is_embed = kind == _cpp_FFK_EMBED || kind == _cpp_FFK_HAS_EMBED;
 
   /* Ensure we get no confusion between cached files and directories.  */
   if (start_dir == NULL)
@@ -526,10 +538,12 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
   /* First check the cache before we resort to memory allocation.  */
   cpp_file_hash_entry *entry
-    = search_cache ((struct cpp_file_hash_entry *) *hash_slot, start_dir);
+    = search_cache ((struct cpp_file_hash_entry *) *hash_slot, start_dir,
+		    is_embed);
   if (entry)
     {
-      if (entry->u.file->deferred_error && kind == _cpp_FFK_NORMAL)
+      if (entry->u.file->deferred_error
+	  && (kind == _cpp_FFK_NORMAL || kind == _cpp_FFK_EMBED))
 	{
 	  open_file_failed (pfile, entry->u.file, angle_brackets, loc);
 	  entry->u.file->deferred_error = false;
@@ -541,6 +555,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
   file->implicit_preinclude
     = (kind == _cpp_FFK_PRE_INCLUDE
        || (pfile->buffer && pfile->buffer->file->implicit_preinclude));
+  file->embed = is_embed;
 
   if (kind == _cpp_FFK_FAKE)
     file->dont_read = true;
@@ -551,10 +566,17 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 	if (find_file_in_dir (pfile, file, &invalid_pch, loc))
 	  break;
 
-	file->dir = file->dir->next;
+	if (is_embed
+	    && file->dir == start_dir
+	    && start_dir != pfile->embed_include
+	    && start_dir != &pfile->no_search_path)
+	  file->dir = pfile->embed_include;
+	else
+	  file->dir = file->dir->next;
 	if (file->dir == NULL)
 	  {
-	    if (search_path_exhausted (pfile, fname, file))
+	    if (!is_embed
+		&& search_path_exhausted (pfile, fname, file))
 	      {
 		/* Although this file must not go in the cache,
 		   because the file found might depend on things (like
@@ -601,7 +623,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 		return NULL;
 	      }
 
-	    if (kind != _cpp_FFK_HAS_INCLUDE)
+	    if (kind != _cpp_FFK_HAS_INCLUDE && kind != _cpp_FFK_HAS_EMBED)
 	      open_file_failed (pfile, file, angle_brackets, loc);
 	    else
 	      file->deferred_error = true;
@@ -615,11 +637,14 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 	  saw_bracket_include = true;
 	else if (file->dir == pfile->quote_include)
 	  saw_quote_include = true;
+	else if (file->dir == pfile->embed_include)
+	  saw_embed_include = true;
 	else
 	  continue;
 
 	entry
-	  = search_cache ((struct cpp_file_hash_entry *) *hash_slot, file->dir);
+	  = search_cache ((struct cpp_file_hash_entry *) *hash_slot,
+			  file->dir, is_embed);
 	if (entry)
 	  {
 	    found_in_cache = file->dir;
@@ -673,6 +698,17 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
       entry->u.file = file;
       *hash_slot = (void *) entry;
     }
+  if (saw_embed_include
+      && pfile->embed_include != start_dir
+      && found_in_cache != pfile->embed_include)
+    {
+      entry = new_file_hash_entry (pfile);
+      entry->next = (struct cpp_file_hash_entry *) *hash_slot;
+      entry->start_dir = pfile->embed_include;
+      entry->location = loc;
+      entry->u.file = file;
+      *hash_slot = (void *) entry;
+    }
 
   return file;
 }
@@ -693,7 +729,7 @@ static bool
 read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
 		const char *input_charset)
 {
-  ssize_t size, total, count;
+  ssize_t size, pad, total, count;
   uchar *buf;
   bool regular;
 
@@ -732,11 +768,10 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
        the majority of C source files.  */
     size = 8 * 1024;
 
-  /* The + 16 here is space for the final '\n' and 15 bytes of padding,
-     used to quiet warnings from valgrind or Address Sanitizer, when the
-     optimized lexer accesses aligned 16-byte memory chunks, including
-     the bytes after the malloced, area, and stops lexing on '\n'.  */
-  buf = XNEWVEC (uchar, size + 16);
+  pad = CPP_BUFFER_PADDING;
+  /* The '+ PAD' here is space for the final '\n' and PAD-1 bytes of padding,
+     allowing search_line_fast to use (possibly misaligned) vector loads.  */
+  buf = XNEWVEC (uchar, size + pad);
   total = 0;
   while ((count = read (file->fd, buf + total, size - total)) > 0)
     {
@@ -747,7 +782,7 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
 	  if (regular)
 	    break;
 	  size *= 2;
-	  buf = XRESIZEVEC (uchar, buf, size + 16);
+	  buf = XRESIZEVEC (uchar, buf, size + pad);
 	}
     }
 
@@ -761,11 +796,11 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
 
   if (pfile && regular && total != size && STAT_SIZE_RELIABLE (file->st))
     cpp_error_at (pfile, CPP_DL_WARNING, loc,
-	       "%s is shorter than expected", file->path);
+		  "%s is shorter than expected", file->path);
 
   file->buffer = _cpp_convert_input (pfile,
 				     input_charset,
-				     buf, size + 16, total,
+				     buf, size + pad, total,
 				     &file->buffer_start,
 				     &file->st.st_size);
   file->buffer_valid = file->buffer;
@@ -871,6 +906,9 @@ has_unique_contents (cpp_reader *pfile, _cpp_file *file, bool import,
     {
       if (f == file)
 	continue; /* It'sa me!  */
+
+      if (f->embed)
+	continue;
 
       if ((import || f->once_only)
 	  && f->err_no == 0
@@ -1063,12 +1101,12 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
       && file->dir != &pfile->no_search_path)
     dir = file->dir->next;
   else if (angle_brackets)
-    dir = pfile->bracket_include;
+    dir = type == IT_EMBED ? pfile->embed_include : pfile->bracket_include;
   else if (type == IT_CMDLINE)
     /* -include and -imacros use the #include "" chain with the
        preprocessor's cwd prepended.  */
     return make_cpp_dir (pfile, "./", false);
-  else if (pfile->quote_ignores_source_dir)
+  else if (pfile->quote_ignores_source_dir && type != IT_EMBED)
     dir = pfile->quote_include;
   else
     return make_cpp_dir (pfile, dir_name_of_file (file),
@@ -1182,6 +1220,554 @@ cpp_probe_header_unit (cpp_reader *pfile, const char *name, bool angle,
   return nullptr;
 }
 
+/* Helper function for _cpp_stack_embed.  Finish #embed/__has_embed processing
+   after a file is found and data loaded into buffer.  */
+
+static int
+finish_embed (cpp_reader *pfile, _cpp_file *file,
+	      struct cpp_embed_params *params)
+{
+  const uchar *buffer = file->buffer;
+  size_t limit = file->limit;
+  if (params->offset - file->offset > limit)
+    limit = 0;
+  else
+    {
+      buffer += params->offset - file->offset;
+      limit -= params->offset - file->offset;
+    }
+  if (params->limit < limit)
+    limit = params->limit;
+
+  /* For sizes larger than say 64 bytes, this is just a temporary
+     solution, we should emit a single new token which the FEs will
+     handle as an optimization.  */
+  size_t max = INTTYPE_MAXIMUM (size_t) / sizeof (cpp_token);
+  if (limit > max / 2
+      || (limit
+	  ? (params->prefix.count > max
+	     || params->suffix.count > max
+	     || (limit * 2 - 1 + params->prefix.count
+		 + params->suffix.count > max))
+	  : params->if_empty.count > max))
+    {
+      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+		    "%s is too large", file->path);
+      return 0;
+    }
+
+  size_t len = 0;
+  for (size_t i = 0; i < limit; ++i)
+    {
+      if (buffer[i] < 10)
+	len += 2;
+      else if (buffer[i] < 100)
+	len += 3;
+#if UCHAR_MAX == 255
+      else
+	len += 4;
+#else
+      else if (buffer[i] < 1000)
+	len += 4;
+      else
+	{
+	  char buf[64];
+	  len += sprintf (buf, "%d", buffer[i]) + 1;
+	}
+#endif
+      if (len > INTTYPE_MAXIMUM (ssize_t))
+	{
+	  cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+			"%s is too large", file->path);
+	  return 0;
+	}
+    }
+  uchar *s = len ? _cpp_unaligned_alloc (pfile, len) : NULL;
+  _cpp_buff *tok_buff = NULL;
+  cpp_token *tok = &pfile->directive_result, *toks = tok;
+  size_t count = 0;
+  if (limit)
+    count = (params->prefix.count + limit * 2 - 1
+	     + params->suffix.count) - 1;
+  else if (params->if_empty.count)
+    count = params->if_empty.count - 1;
+  if (count)
+    {
+      tok_buff = _cpp_get_buff (pfile, count * sizeof (cpp_token));
+      toks = (cpp_token *) tok_buff->base;
+    }
+  cpp_embed_params_tokens *prefix
+    = limit ? &params->prefix : &params->if_empty;
+  if (prefix->count)
+    {
+      *tok = *prefix->base_run.base;
+      tok = toks;
+      tokenrun *cur_run = &prefix->base_run;
+      while (cur_run)
+	{
+	  size_t cnt = (cur_run->next ? cur_run->limit
+			: prefix->cur_token) - cur_run->base;
+	  cpp_token *t = cur_run->base;
+	  if (cur_run == &prefix->base_run)
+	    {
+	      t++;
+	      cnt--;
+	    }
+	  memcpy (tok, t, cnt * sizeof (cpp_token));
+	  tok += cnt;
+	  cur_run = cur_run->next;
+	}
+    }
+  for (size_t i = 0; i < limit; ++i)
+    {
+      tok->src_loc = params->loc;
+      tok->type = CPP_NUMBER;
+      tok->flags = NO_EXPAND;
+      if (i == 0)
+	tok->flags |= PREV_WHITE;
+      tok->val.str.text = s;
+      tok->val.str.len = sprintf ((char *) s, "%d", buffer[i]);
+      s += tok->val.str.len + 1;
+      if (tok == &pfile->directive_result)
+	tok = toks;
+      else
+	tok++;
+      if (i < limit - 1)
+	{
+	  tok->src_loc = params->loc;
+	  tok->type = CPP_COMMA;
+	  tok->flags = NO_EXPAND;
+	  tok++;
+	}
+    }
+  if (limit && params->suffix.count)
+    {
+      tokenrun *cur_run = &params->suffix.base_run;
+      cpp_token *orig_tok = tok;
+      while (cur_run)
+	{
+	  size_t cnt = (cur_run->next ? cur_run->limit
+			: params->suffix.cur_token) - cur_run->base;
+	  cpp_token *t = cur_run->base;
+	  memcpy (tok, t, cnt * sizeof (cpp_token));
+	  tok += cnt;
+	  cur_run = cur_run->next;
+	}
+      orig_tok->flags |= PREV_WHITE;
+    }
+  pfile->directive_result.flags |= PREV_WHITE;
+  if (count)
+    {
+      _cpp_push_token_context (pfile, NULL, toks, count);
+      pfile->context->buff = tok_buff;
+    }
+  return limit ? 1 : 2;
+}
+
+/* Helper function for initialization of base64_dec table.
+   Can't rely on ASCII compatibility, so check each letter
+   separately.  */
+
+constexpr signed char
+base64_dec_fn (unsigned char c)
+{
+  return (c == 'A' ? 0 : c == 'B' ? 1 : c == 'C' ? 2 : c == 'D' ? 3
+	  : c == 'E' ? 4 : c == 'F' ? 5 : c == 'G' ? 6 : c == 'H' ? 7
+	  : c == 'I' ? 8 : c == 'J' ? 9 : c == 'K' ? 10 : c == 'L' ? 11
+	  : c == 'M' ? 12 : c == 'N' ? 13 : c == 'O' ? 14 : c == 'P' ? 15
+	  : c == 'Q' ? 16 : c == 'R' ? 17 : c == 'S' ? 18 : c == 'T' ? 19
+	  : c == 'U' ? 20 : c == 'V' ? 21 : c == 'W' ? 22 : c == 'X' ? 23
+	  : c == 'Y' ? 24 : c == 'Z' ? 25
+	  : c == 'a' ? 26 : c == 'b' ? 27 : c == 'c' ? 28 : c == 'd' ? 29
+	  : c == 'e' ? 30 : c == 'f' ? 31 : c == 'g' ? 32 : c == 'h' ? 33
+	  : c == 'i' ? 34 : c == 'j' ? 35 : c == 'k' ? 36 : c == 'l' ? 37
+	  : c == 'm' ? 38 : c == 'n' ? 39 : c == 'o' ? 40 : c == 'p' ? 41
+	  : c == 'q' ? 42 : c == 'r' ? 43 : c == 's' ? 44 : c == 't' ? 45
+	  : c == 'u' ? 46 : c == 'v' ? 47 : c == 'w' ? 48 : c == 'x' ? 49
+	  : c == 'y' ? 50 : c == 'z' ? 51
+	  : c == '0' ? 52 : c == '1' ? 53 : c == '2' ? 54 : c == '3' ? 55
+	  : c == '4' ? 56 : c == '5' ? 57 : c == '6' ? 58 : c == '7' ? 59
+	  : c == '8' ? 60 : c == '9' ? 61 : c == '+' ? 62 : c == '/' ? 63
+	  : -1);
+}
+
+/* base64 decoding table.  */
+
+static constexpr signed char base64_dec[] = {
+#define B64D0(x) base64_dec_fn (x)
+#define B64D1(x) B64D0 (x), B64D0 (x + 1), B64D0 (x + 2), B64D0 (x + 3)
+#define B64D2(x) B64D1 (x), B64D1 (x + 4), B64D1 (x + 8), B64D1 (x + 12)
+#define B64D3(x) B64D2 (x), B64D2 (x + 16), B64D2 (x + 32), B64D2 (x + 48)
+  B64D3 (0), B64D3 (64), B64D3 (128), B64D3 (192)
+};
+
+/* Helper function for _cpp_stack_embed.  Handle #embed/__has_embed with
+   gnu::base64 parameter.  */
+
+static int
+finish_base64_embed (cpp_reader *pfile, const char *fname, bool angle,
+		     struct cpp_embed_params *params)
+{
+  size_t len, end, i, j, base64_len = 0, cnt;
+  uchar *buf = NULL, *q, pbuf[4], qbuf[3];
+  const uchar *base64_str;
+  if (angle || strcmp (fname, "."))
+    {
+      if (!params->has_embed)
+	cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+		      "'gnu::base64' parameter can be only used with \".\"");
+      return 0;
+    }
+  tokenrun *cur_run = &params->base64.base_run;
+  cpp_token *tend, *tok;
+  while (cur_run)
+    {
+      tend = cur_run->next ? cur_run->limit : params->base64.cur_token;
+      for (tok = cur_run->base; tok < tend; ++tok)
+	{
+	  if (tok->val.str.len < 2
+	      || tok->val.str.text[0] != '"'
+	      || tok->val.str.text[tok->val.str.len - 1] != '"')
+	    {
+	    fail:
+	      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+			    "'gnu::base64' argument not valid base64 "
+			    "encoded string");
+	      free (buf);
+	      return 0;
+	    }
+	  if (tok->val.str.len - 2 > (~(size_t) 0) - base64_len)
+	    goto fail;
+	  base64_len += tok->val.str.len - 2;
+	}
+      cur_run = cur_run->next;
+    }
+  if ((base64_len & 3) != 0)
+    goto fail;
+  len = base64_len / 4 * 3;
+  end = len;
+
+  if (params->has_embed)
+    q = qbuf;
+  else
+    {
+      buf = XNEWVEC (uchar, len ? len : 1);
+      q = buf;
+    }
+  cur_run = &params->base64.base_run;
+  tend = cur_run->next ? cur_run->limit : params->base64.cur_token;
+  tok = cur_run->base;
+  base64_str = tok->val.str.text + 1;
+  cnt = tok->val.str.len - 2;
+  ++tok;
+  for (i = 0; i < end; i += 3)
+    {
+      for (j = 0; j < 4; ++j)
+	{
+	  while (cnt == 0)
+	    {
+	      if (tok == tend)
+		{
+		  cur_run = cur_run->next;
+		  tend = (cur_run->next ? cur_run->limit
+			  : params->base64.cur_token);
+		  tok = cur_run->base;
+		}
+	      base64_str = tok->val.str.text + 1;
+	      cnt = tok->val.str.len - 2;
+	      ++tok;
+	    }
+	  pbuf[j] = *base64_str;
+	  base64_str++;
+	  --cnt;
+	}
+      if (pbuf[3] == '=' && i + 3 >= end)
+	{
+	  end = len - 3;
+	  --len;
+	  if (pbuf[2] == '=')
+	    --len;
+	  break;
+	}
+      int a = base64_dec[pbuf[0]];
+      int b = base64_dec[pbuf[1]];
+      int c = base64_dec[pbuf[2]];
+      int d = base64_dec[pbuf[3]];
+      if (a == -1 || b == -1 || c == -1 || d == -1)
+	goto fail;
+      q[0] = (a << 2) | (b >> 4);
+      q[1] = (b << 4) | (c >> 2);
+      q[2] = (c << 6) | d;
+      if (!params->has_embed)
+	q += 3;
+    }
+  if (len != end)
+    {
+      int a = base64_dec[pbuf[0]];
+      int b = base64_dec[pbuf[1]];
+      if (a == -1 || b == -1)
+	goto fail;
+      q[0] = (a << 2) | (b >> 4);
+      if (len - end == 2)
+	{
+	  int c = base64_dec[pbuf[2]];
+	  if (c == -1)
+	    goto fail;
+	  q[1] = (b << 4) | (c >> 2);
+	  if ((c & 3) != 0)
+	    goto fail;
+	}
+      else if ((b & 15) != 0)
+	goto fail;
+    }
+  if (params->has_embed)
+    return len ? 1 : 2;
+  _cpp_file *file = make_cpp_file (NULL, "");
+  file->embed = 1;
+  file->next_file = pfile->all_files;
+  pfile->all_files = file;
+  params->limit = -1;
+  params->offset = 0;
+  file->limit = len;
+  file->buffer = buf;
+  file->path = xstrdup ("<base64>");
+  return finish_embed (pfile, file, params);
+}
+
+/* Try to load FNAME with #embed/__has_embed parameters PARAMS.
+   If !PARAMS->has_embed, return new token in pfile->directive_result
+   (first token) and rest in a pushed non-macro context.
+   Returns 0 for not found/errors, 1 for non-empty resource and 2
+   for empty resource.  */
+
+int
+_cpp_stack_embed (cpp_reader *pfile, const char *fname, bool angle,
+		  struct cpp_embed_params *params)
+{
+  if (params->base64.count)
+    return finish_base64_embed (pfile, fname, angle, params);
+  cpp_dir *dir = search_path_head (pfile, fname, angle, IT_EMBED,
+				   params->has_embed);
+  if (!dir)
+    return 0;
+  _cpp_file *file = _cpp_find_file (pfile, fname, dir, angle,
+				    params->has_embed
+				    ? _cpp_FFK_HAS_EMBED : _cpp_FFK_EMBED,
+				    params->loc);
+  if (!file)
+    return 0;
+  if (file->dont_read || file->err_no)
+    return 0;
+  _cpp_file *orig_file = file;
+  if (file->buffer_valid
+      && (!S_ISREG (file->st.st_mode)
+	  || file->offset + (cpp_num_part) 0 > params->offset
+	  || (file->limit < file->st.st_size - file->offset + (size_t) 0
+	      && (params->offset - file->offset > (cpp_num_part) file->limit
+		  || file->limit - (params->offset
+				    - file->offset) < params->limit))))
+    {
+      bool found = false;
+      if (S_ISREG (file->st.st_mode))
+	{
+	  while (file->next_file
+		 && file->next_file->embed
+		 && file->next_file->buffer_valid
+		 && file->next_file->dir == file->dir
+		 && strcmp (file->name, file->next_file->name) == 0
+		 && strcmp (file->path, file->next_file->path) == 0)
+	    {
+	      file = file->next_file;
+	      if (file->offset + (cpp_num_part) 0 <= params->offset
+		  && (file->limit >= (file->st.st_size - file->offset
+				      + (size_t) 0)
+		      || (params->offset
+			  - file->offset <= (cpp_num_part) file->limit
+			  && file->limit - (params->offset
+					    - file->offset) >= params->limit)))
+		{
+		  found = true;
+		  break;
+		}
+	    }
+	}
+      if (!found)
+	{
+	  _cpp_file *file2 = make_cpp_file (file->dir, file->name);
+	  file2->path = xstrdup (file->path);
+	  file2->next_file = file->next_file;
+	  file2->embed = true;
+	  file->next_file = file2;
+	  file = file2;
+	}
+    }
+  if (!file->buffer_valid)
+    {
+      if (file->fd == -1 && !open_file (file))
+	{
+	  if (params->has_embed)
+	    file->deferred_error = true;
+	  else
+	    open_file_failed (pfile, file, 0, params->loc);
+	  return 0;
+	}
+      if (S_ISBLK (file->st.st_mode))
+	{
+	  if (params->has_embed)
+	    {
+	      close (file->fd);
+	      file->fd = -1;
+	      return 0;
+	    }
+	  cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+			"%s is a block device", file->path);
+	fail:
+	  close (file->fd);
+	  file->fd = -1;
+	  file->dont_read = true;
+	  return 0;
+	}
+
+      if (CPP_OPTION (pfile, deps.style)
+	  && !params->has_embed
+	  && file == orig_file
+	  && file->path[0])
+	deps_add_dep (pfile->deps, file->path);
+
+      bool regular = S_ISREG (file->st.st_mode) != 0;
+      ssize_t size, total, count;
+      uchar *buf;
+      if (regular)
+	{
+	  cpp_num_part limit;
+	  if (file->st.st_size + (cpp_num_part) 0 < params->offset)
+	    limit = 0;
+	  else if (file->st.st_size - params->offset < params->limit)
+	    limit = file->st.st_size - params->offset;
+	  else
+	    limit = params->limit;
+	  if (params->has_embed)
+	    return limit != 0 ? 1 : 2;
+	  if (limit > INTTYPE_MAXIMUM (ssize_t))
+	    {
+	      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+			    "%s is too large", file->path);
+	      goto fail;
+	    }
+	  if (lseek (file->fd, params->offset, SEEK_CUR)
+	      != (off_t) params->offset)
+	    {
+	      cpp_errno_filename (pfile, CPP_DL_ERROR, file->path,
+				  params->loc);
+	      goto fail;
+	    }
+	  file->offset = params->offset;
+	  file->limit = limit;
+	  size = limit;
+	}
+      else if (params->has_embed)
+	return 2;
+      else if (params->limit > 8 * 1024)
+	size = 8 * 1024;
+      else
+	size = params->limit;
+      buf = XNEWVEC (uchar, size ? size : 1);
+      total = 0;
+
+      if (!regular && params->offset)
+	{
+	  uchar *buf2 = buf;
+	  ssize_t size2 = size;
+	  cpp_num_part total2 = params->offset;
+
+	  if (params->offset > 8 * 1024 && size < 8 * 1024)
+	    {
+	      size2 = 32 * 1024;
+	      buf2 = XNEWVEC (uchar, size2);
+	    }
+	  do
+	    {
+	      if ((cpp_num_part) size2 > total2)
+		size2 = total2;
+	      count = read (file->fd, buf2, size2);
+	      if (count < 0)
+		{
+		  cpp_errno_filename (pfile, CPP_DL_ERROR, file->path,
+				      params->loc);
+		  if (buf2 != buf)
+		    free (buf2);
+		  free (buf);
+		  goto fail;
+		}
+	      total2 -= count;
+	    }
+	  while (total2);
+	  if (buf2 != buf)
+	    free (buf2);
+	}
+
+      while ((count = read (file->fd, buf + total, size - total)) > 0)
+	{
+	  total += count;
+	  if (total == size)
+	    {
+	      if (regular || size + (cpp_num_part) 0 == params->limit)
+		break;
+	      size = (size_t) size * 2;
+	      if (size < 0)
+		{
+		  if (params->limit <= INTTYPE_MAXIMUM (ssize_t))
+		    size = params->limit;
+		  else
+		    {
+		      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
+				    "%s is too large", file->path);
+		      free (buf);
+		      goto fail;
+		    }
+		}
+	      else if (size + (cpp_num_part) 0 > params->limit)
+		size = params->limit;
+	      buf = XRESIZEVEC (uchar, buf, size);
+	    }
+	}
+
+      if (count < 0)
+	{
+	  cpp_errno_filename (pfile, CPP_DL_ERROR, file->path, params->loc);
+	  free (buf);
+	  goto fail;
+	}
+
+      if (regular && total != size && STAT_SIZE_RELIABLE (file->st))
+	{
+	  cpp_error_at (pfile, CPP_DL_WARNING, params->loc,
+			"%s is shorter than expected", file->path);
+	  file->limit = total;
+	}
+      else if (!regular)
+	{
+	  file->offset = params->offset;
+	  file->limit = total;
+	}
+
+      file->buffer_start = buf;
+      file->buffer = buf;
+      file->buffer_valid = 1;
+      close (file->fd);
+      file->fd = -1;
+    }
+  else if (params->has_embed)
+    {
+      if (params->offset - file->offset > file->limit)
+	return 2;
+      size_t limit = file->limit - (params->offset - file->offset);
+      return limit && params->limit ? 1 : 2;
+    }
+
+  return finish_embed (pfile, file, params);
+}
+
 /* Retrofit the just-entered main file asif it was an include.  This
    will permit correct include_next use, and mark it as a system
    header if that's where it resides.  We use filesystem-appropriate
@@ -1257,9 +1843,11 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file, int angle_brackets,
 /* Search in the chain beginning at HEAD for a file whose search path
    started at START_DIR != NULL.  */
 static struct cpp_file_hash_entry *
-search_cache (struct cpp_file_hash_entry *head, const cpp_dir *start_dir)
+search_cache (struct cpp_file_hash_entry *head, const cpp_dir *start_dir,
+	      bool is_embed)
 {
-  while (head && head->start_dir != start_dir)
+  while (head && (head->start_dir != start_dir
+		  || head->u.file->embed != is_embed))
     head = head->next;
 
   return head;
@@ -1693,21 +2281,24 @@ _cpp_get_file_name (_cpp_file *file)
 struct stat *
 _cpp_get_file_stat (_cpp_file *file)
 {
-    return &file->st;
+  return &file->st;
 }
 
 /* Set the include chain for "" to QUOTE, for <> to BRACKET.  If
    QUOTE_IGNORES_SOURCE_DIR, then "" includes do not look in the
    directory of the including file.
 
-   If BRACKET does not lie in the QUOTE chain, it is set to QUOTE.  */
+   If BRACKET does not lie in the QUOTE chain, it is set to QUOTE.
+
+   EMBED is include chain for #embed <>.  */
 void
 cpp_set_include_chains (cpp_reader *pfile, cpp_dir *quote, cpp_dir *bracket,
-			int quote_ignores_source_dir)
+			cpp_dir *embed, int quote_ignores_source_dir)
 {
   pfile->quote_include = quote;
   pfile->bracket_include = quote;
   pfile->quote_ignores_source_dir = quote_ignores_source_dir;
+  pfile->embed_include = embed;
 
   for (; quote; quote = quote->next)
     {
@@ -1715,6 +2306,11 @@ cpp_set_include_chains (cpp_reader *pfile, cpp_dir *quote, cpp_dir *bracket,
       quote->len = strlen (quote->name);
       if (quote == bracket)
 	pfile->bracket_include = bracket;
+    }
+  for (; embed; embed = embed->next)
+    {
+      embed->name_map = NULL;
+      embed->len = strlen (embed->name);
     }
 }
 

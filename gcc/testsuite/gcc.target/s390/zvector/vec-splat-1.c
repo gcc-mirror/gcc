@@ -29,14 +29,14 @@ foo ()
   uv2di = vec_splats ((unsigned long long)0x7f0f);
 }
 
-/* { dg-final { scan-assembler-times "vrepib\t%v.*,119" 1 } } */
-/* { dg-final { scan-assembler-times "vrepib\t%v.*,119" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,119,0" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,119,0" 1 } } */
 
-/* { dg-final { scan-assembler-times "vrepih\t%v.*,32527" 1 } } */
-/* { dg-final { scan-assembler-times "vrepih\t%v.*,32527" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,32527,1" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,32527,1" 1 } } */
 
-/* { dg-final { scan-assembler-times "vrepif\t%v.*,32527" 1 } } */
-/* { dg-final { scan-assembler-times "vrepif\t%v.*,32527" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,32527,2" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,32527,2" 1 } } */
 
-/* { dg-final { scan-assembler-times "vrepig\t%v.*,32527" 1 } } */
-/* { dg-final { scan-assembler-times "vrepig\t%v.*,32527" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,32527,3" 1 } } */
+/* { dg-final { scan-assembler-times "vrepi\t%v.*,32527,3" 1 } } */

@@ -582,6 +582,9 @@ UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show
 fdiagnostics-show-rules
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-rules)
 
+fdiagnostics-show-highlight-colors
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-highlight-colors)
+
 fdiagnostics-path-format=
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-path-format)
 

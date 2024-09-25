@@ -464,8 +464,9 @@ bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
 void gfc_finalize_tree_expr (gfc_se *, gfc_symbol *, symbol_attribute, int);
 bool gfc_assignment_finalizer_call (gfc_se *, gfc_expr *, bool);
 
-void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree, bool,
-				bool, tree *derived_array = NULL);
+void gfc_class_array_data_assign (stmtblock_t *, tree, tree, bool);
+void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_symbol *fsym, tree,
+				bool, bool, const char *, tree * = nullptr);
 void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool, bool,
 			      bool, bool);
 
@@ -569,8 +570,9 @@ void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool,
 void gfc_conv_is_contiguous_expr (gfc_se *, gfc_expr *);
 
 /* Generate code for a scalar assignment.  */
-tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,
-			      bool c = false);
+tree
+gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,
+			 bool = false, bool = false);
 
 /* Translate COMMON blocks.  */
 void gfc_trans_common (gfc_namespace *);
@@ -872,6 +874,8 @@ extern GTY(()) tree gfor_fndecl_ctime;
 extern GTY(()) tree gfor_fndecl_fdate;
 extern GTY(()) tree gfor_fndecl_in_pack;
 extern GTY(()) tree gfor_fndecl_in_unpack;
+extern GTY(()) tree gfor_fndecl_in_pack_class;
+extern GTY(()) tree gfor_fndecl_in_unpack_class;
 extern GTY(()) tree gfor_fndecl_associated;
 extern GTY(()) tree gfor_fndecl_system_clock4;
 extern GTY(()) tree gfor_fndecl_system_clock8;

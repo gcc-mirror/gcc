@@ -33,7 +33,7 @@ DEFINITION MODULE m2flex ;
 *)
 
 FROM SYSTEM IMPORT ADDRESS ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 
 EXPORT QUALIFIED GetToken, M2Error, OpenSource, CloseSource, GetLineNo,
                  GetColumnNo, GetLocation, GetTotalLines ;

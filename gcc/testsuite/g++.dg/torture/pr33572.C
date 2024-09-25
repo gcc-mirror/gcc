@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=c++98" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 #include <memory>

@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 /* Verify that we emit sane paths for state machine errors.  */
 
 #include <stdlib.h>

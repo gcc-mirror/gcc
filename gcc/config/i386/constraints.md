@@ -187,7 +187,7 @@
   "@internal Vector memory operand."
   (match_operand 0 "vector_memory_operand"))
 
-(define_memory_constraint "Bk"
+(define_special_memory_constraint "Bk"
   "@internal TLS address that allows insn using non-integer registers."
   (and (match_operand 0 "memory_operand")
        (not (match_test "ix86_gpr_tls_address_pattern_p (op)"))))
@@ -253,6 +253,12 @@
   "Integer constant in the range 0 @dots{} 7, for 8-bit shifts."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, 7)")))
+
+(define_constraint "Wc"
+  "Integer constant -1 or 1."
+  (and (match_code "const_int")
+       (ior (match_test "op == constm1_rtx")
+	    (match_test "op == const1_rtx"))))
 
 (define_constraint "Ww"
   "Integer constant in the range 0 @dots{} 15, for 16-bit shifts."
@@ -457,14 +463,15 @@
  "TARGET_APX_EGPR && !TARGET_AVX ? GENERAL_GPR16 : GENERAL_REGS")
 
 (define_memory_constraint "je"
-  "@internal Memory operand for APX NDD ADD."
-  (match_operand 0 "apx_ndd_add_memory_operand"))
+  "@internal Memory operand for APX EVEX-encoded ADD (i.e. APX NDD/NF)."
+  (match_operand 0 "apx_evex_add_memory_operand"))
 
 (define_memory_constraint "jM"
-  "@internal Memory operand, with APX NDD check."
-  (match_operand 0 "apx_ndd_memory_operand"))
+  "@internal Memory operand, with APX EVEX-encoded (i.e. APX NDD/NF) check."
+  (match_operand 0 "apx_evex_memory_operand"))
 
 (define_memory_constraint "jO"
-  "@internal Offsettable memory operand, with APX NDD check."
-  (and (match_operand 0 "apx_ndd_memory_operand")
+  "@internal Offsettable memory operand, with APX EVEX-encoded
+   (i.e. APX NDD/NF) check."
+  (and (match_operand 0 "apx_evex_memory_operand")
 	   (match_test "offsettable_nonstrict_memref_p (op)")))

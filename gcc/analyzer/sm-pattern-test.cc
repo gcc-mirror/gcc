@@ -58,11 +58,11 @@ public:
 
   bool inherited_state_p () const final override { return false; }
 
-  bool on_stmt (sm_context *sm_ctxt,
+  bool on_stmt (sm_context &sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const final override;
 
-  void on_condition (sm_context *sm_ctxt,
+  void on_condition (sm_context &sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
 		     const svalue *lhs,
@@ -110,7 +110,7 @@ pattern_test_state_machine::pattern_test_state_machine (logger *logger)
 }
 
 bool
-pattern_test_state_machine::on_stmt (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
+pattern_test_state_machine::on_stmt (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
 				     const supernode *node ATTRIBUTE_UNUSED,
 				     const gimple *stmt ATTRIBUTE_UNUSED) const
 {
@@ -124,7 +124,7 @@ pattern_test_state_machine::on_stmt (sm_context *sm_ctxt ATTRIBUTE_UNUSED,
    constant.  */
 
 void
-pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
+pattern_test_state_machine::on_condition (sm_context &sm_ctxt,
 					  const supernode *node,
 					  const gimple *stmt,
 					  const svalue *lhs,
@@ -138,10 +138,10 @@ pattern_test_state_machine::on_condition (sm_context *sm_ctxt,
   if (!rhs_cst)
     return;
 
-  if (tree lhs_expr = sm_ctxt->get_diagnostic_tree (lhs))
+  if (tree lhs_expr = sm_ctxt.get_diagnostic_tree (lhs))
     {
-      sm_ctxt->warn (node, stmt, lhs_expr,
-		     make_unique<pattern_match> (lhs_expr, op, rhs_cst));
+      sm_ctxt.warn (node, stmt, lhs_expr,
+		    make_unique<pattern_match> (lhs_expr, op, rhs_cst));
     }
 }
 

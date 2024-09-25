@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O" }
+-- { dg-options "-O -gnatws" }
 
 with Unchecked_Conversion;
 with System; use System;

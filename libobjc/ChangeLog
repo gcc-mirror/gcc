@@ -1,3 +1,22 @@
+2024-09-23  Andrew Kreimer  <algonell@gmail.com>
+
+	* Makefile.in: s/overrridden/overridden.
+	* encoding.c (_darwin_rs6000_special_round_type_align): Fix typo
+	in comment.
+	(rs6000_special_round_type_align): Likewise.
+	* exception.c (is_kind_of_exception_matcher): Likewise.
+	(PERSONALITY_FUNCTION): Likewise.
+	* hash.c (objc_hash_next): Likewise.
+	* init.c (__objc_create_classes_tree): Likewise.
+	* objc-private/objc-list.h (list_remove_head): Likewise.
+	* sendmsg.c (__objc_install_dtable_for_class): Likewise.
+	* thr.c (objc_thread_yield): Likewise.
+
+2024-08-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR libobjc/89586
+	* sendmsg.c (__objc_get_forward_imp): Add cast to `void*` before casting to IMP.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (duplicate_classes): Fix duplicated words in comment; in in

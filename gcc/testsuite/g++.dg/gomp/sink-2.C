@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } } */
 
 /* Tests iterators are allowed in ordered loops and that we keep track
    of the original iterator DECL for diagnostic purposes.  */

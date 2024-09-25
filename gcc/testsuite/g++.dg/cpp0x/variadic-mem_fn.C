@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 // A basic implementation of TR1's mem_fn using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 #include <cassert>

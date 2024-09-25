@@ -1,5 +1,5 @@
 /* Test -fstrict-flex-arrays + -Warray-bounds + -Wstrict-flex-arrays.  */
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-O2 -Wstrict-flex-arrays -fstrict-flex-arrays=1 -Warray-bounds" } */
 
 struct trailing_array_1 {

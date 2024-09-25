@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -4354,10 +4355,10 @@ void
 loongarch_vector_costs::finish_cost (const vector_costs *scalar_costs)
 {
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
+
   if (loop_vinfo)
-    {
-      m_suggested_unroll_factor = determine_suggested_unroll_factor (loop_vinfo);
-    }
+    m_suggested_unroll_factor
+      = determine_suggested_unroll_factor (loop_vinfo);
 
   vector_costs::finish_cost (scalar_costs);
 }
@@ -4423,6 +4424,7 @@ loongarch_subword (rtx op, bool high_p)
   return simplify_gen_subreg (word_mode, op, mode, byte);
 }
 
+static bool loongarch_split_vector_move_p (rtx dest, rtx src);
 /* Return true if a move from SRC to DEST should be split into two.
    SPLIT_TYPE describes the split condition.  */
 
@@ -4444,13 +4446,11 @@ loongarch_split_move_p (rtx dest, rtx src)
 	return false;
     }
 
-  /* Check if LSX moves need splitting.  */
-  if (LSX_SUPPORTED_MODE_P (GET_MODE (dest)))
-    return loongarch_split_128bit_move_p (dest, src);
 
-  /* Check if LASX moves need splitting.  */
-  if (LASX_SUPPORTED_MODE_P (GET_MODE (dest)))
-    return loongarch_split_256bit_move_p (dest, src);
+  /* Check if vector moves need splitting.  */
+  if (LSX_SUPPORTED_MODE_P (GET_MODE (dest))
+      || LASX_SUPPORTED_MODE_P (GET_MODE (dest)))
+    return loongarch_split_vector_move_p (dest, src);
 
   /* Otherwise split all multiword moves.  */
   return size > UNITS_PER_WORD;
@@ -4462,42 +4462,12 @@ loongarch_split_move_p (rtx dest, rtx src)
 void
 loongarch_split_move (rtx dest, rtx src)
 {
-  rtx low_dest;
-
   gcc_checking_assert (loongarch_split_move_p (dest, src));
-  if (LSX_SUPPORTED_MODE_P (GET_MODE (dest)))
-    loongarch_split_128bit_move (dest, src);
-  else if (LASX_SUPPORTED_MODE_P (GET_MODE (dest)))
-    loongarch_split_256bit_move (dest, src);
-  else if (FP_REG_RTX_P (dest) || FP_REG_RTX_P (src))
-    {
-      if (!TARGET_64BIT && GET_MODE (dest) == DImode)
-	emit_insn (gen_move_doubleword_fprdi (dest, src));
-      else if (!TARGET_64BIT && GET_MODE (dest) == DFmode)
-	emit_insn (gen_move_doubleword_fprdf (dest, src));
-      else if (TARGET_64BIT && GET_MODE (dest) == TFmode)
-	emit_insn (gen_move_doubleword_fprtf (dest, src));
-      else
-	gcc_unreachable ();
-    }
+  if (LSX_SUPPORTED_MODE_P (GET_MODE (dest))
+      || LASX_SUPPORTED_MODE_P (GET_MODE (dest)))
+    loongarch_split_vector_move (dest, src);
   else
-    {
-      /* The operation can be split into two normal moves.  Decide in
-	 which order to do them.  */
-      low_dest = loongarch_subword (dest, false);
-      if (REG_P (low_dest) && reg_overlap_mentioned_p (low_dest, src))
-	{
-	  loongarch_emit_move (loongarch_subword (dest, true),
-			       loongarch_subword (src, true));
-	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
-	}
-      else
-	{
-	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
-	  loongarch_emit_move (loongarch_subword (dest, true),
-			       loongarch_subword (src, true));
-	}
-    }
+    gcc_unreachable ();
 }
 
 /* Check if adding an integer constant value for a specific mode can be
@@ -4617,224 +4587,117 @@ loongarch_output_move_index_float (rtx x, machine_mode mode, bool ldr)
 
   return insn[ldr][index-2];
 }
-/* Return true if a 128-bit move from SRC to DEST should be split.  */
+/* Return true if a vector move from SRC to DEST should be split.  */
 
-bool
-loongarch_split_128bit_move_p (rtx dest, rtx src)
+static bool
+loongarch_split_vector_move_p (rtx dest, rtx src)
 {
-  /* LSX-to-LSX moves can be done in a single instruction.  */
+  /* Vector moves can be done in a single instruction.  */
   if (FP_REG_RTX_P (src) && FP_REG_RTX_P (dest))
     return false;
 
-  /* Check for LSX loads and stores.  */
+  /* Check for vector loads and stores.  */
   if (FP_REG_RTX_P (dest) && MEM_P (src))
     return false;
   if (FP_REG_RTX_P (src) && MEM_P (dest))
     return false;
 
-  /* Check for LSX set to an immediate const vector with valid replicated
+  /* Check for vector set to an immediate const vector with valid replicated
      element.  */
   if (FP_REG_RTX_P (dest)
       && loongarch_const_vector_same_int_p (src, GET_MODE (src), -512, 511))
     return false;
 
-  /* Check for LSX load zero immediate.  */
+  /* Check for vector load zero immediate.  */
   if (FP_REG_RTX_P (dest) && src == CONST0_RTX (GET_MODE (src)))
     return false;
 
   return true;
 }
 
-/* Return true if a 256-bit move from SRC to DEST should be split.  */
-
-bool
-loongarch_split_256bit_move_p (rtx dest, rtx src)
-{
-  /* LSX-to-LSX moves can be done in a single instruction.  */
-  if (FP_REG_RTX_P (src) && FP_REG_RTX_P (dest))
-    return false;
-
-  /* Check for LSX loads and stores.  */
-  if (FP_REG_RTX_P (dest) && MEM_P (src))
-    return false;
-  if (FP_REG_RTX_P (src) && MEM_P (dest))
-    return false;
-
-  /* Check for LSX set to an immediate const vector with valid replicated
-     element.  */
-  if (FP_REG_RTX_P (dest)
-      && loongarch_const_vector_same_int_p (src, GET_MODE (src), -512, 511))
-    return false;
-
-  /* Check for LSX load zero immediate.  */
-  if (FP_REG_RTX_P (dest) && src == CONST0_RTX (GET_MODE (src)))
-    return false;
-
-  return true;
-}
-
-/* Split a 128-bit move from SRC to DEST.  */
+/* Split a vector move from SRC to DEST.  */
 
 void
-loongarch_split_128bit_move (rtx dest, rtx src)
+loongarch_split_vector_move (rtx dest, rtx src)
 {
   int byte, index;
-  rtx low_dest, low_src, d, s;
+  rtx s, d;
+  machine_mode mode = GET_MODE (dest);
+  bool lsx_p = LSX_SUPPORTED_MODE_P (mode);
 
   if (FP_REG_RTX_P (dest))
     {
       gcc_assert (!MEM_P (src));
 
-      rtx new_dest = dest;
-      if (!TARGET_64BIT)
+      rtx (*gen_vinsgr2vr_d) (rtx, rtx, rtx, rtx);
+
+      if (lsx_p)
 	{
-	  if (GET_MODE (dest) != V4SImode)
-	    new_dest = simplify_gen_subreg (V4SImode, dest, GET_MODE (dest), 0);
+	  mode = V2DImode;
+	  gen_vinsgr2vr_d = gen_lsx_vinsgr2vr_d;
 	}
       else
 	{
-	  if (GET_MODE (dest) != V2DImode)
-	    new_dest = simplify_gen_subreg (V2DImode, dest, GET_MODE (dest), 0);
+	  mode = V4DImode;
+	  gen_vinsgr2vr_d = gen_lasx_xvinsgr2vr_d;
 	}
-
-      for (byte = 0, index = 0; byte < GET_MODE_SIZE (TImode);
-	   byte += UNITS_PER_WORD, index++)
-	{
-	  s = loongarch_subword_at_byte (src, byte);
-	  if (!TARGET_64BIT)
-	    emit_insn (gen_lsx_vinsgr2vr_w (new_dest, s, new_dest,
-					    GEN_INT (1 << index)));
-	  else
-	    emit_insn (gen_lsx_vinsgr2vr_d (new_dest, s, new_dest,
-					    GEN_INT (1 << index)));
-	}
-    }
-  else if (FP_REG_RTX_P (src))
-    {
-      gcc_assert (!MEM_P (dest));
-
-      rtx new_src = src;
-      if (!TARGET_64BIT)
-	{
-	  if (GET_MODE (src) != V4SImode)
-	    new_src = simplify_gen_subreg (V4SImode, src, GET_MODE (src), 0);
-	}
-      else
-	{
-	  if (GET_MODE (src) != V2DImode)
-	    new_src = simplify_gen_subreg (V2DImode, src, GET_MODE (src), 0);
-	}
-
-      for (byte = 0, index = 0; byte < GET_MODE_SIZE (TImode);
-	   byte += UNITS_PER_WORD, index++)
-	{
-	  d = loongarch_subword_at_byte (dest, byte);
-	  if (!TARGET_64BIT)
-	    emit_insn (gen_lsx_vpickve2gr_w (d, new_src, GEN_INT (index)));
-	  else
-	    emit_insn (gen_lsx_vpickve2gr_d (d, new_src, GEN_INT (index)));
-	}
-    }
-  else
-    {
-      low_dest = loongarch_subword_at_byte (dest, 0);
-      low_src = loongarch_subword_at_byte (src, 0);
-      gcc_assert (REG_P (low_dest) && REG_P (low_src));
-      /* Make sure the source register is not written before reading.  */
-      if (REGNO (low_dest) <= REGNO (low_src))
-	{
-	  for (byte = 0; byte < GET_MODE_SIZE (TImode);
-	       byte += UNITS_PER_WORD)
-	    {
-	      d = loongarch_subword_at_byte (dest, byte);
-	      s = loongarch_subword_at_byte (src, byte);
-	      loongarch_emit_move (d, s);
-	    }
-	}
-      else
-	{
-	  for (byte = GET_MODE_SIZE (TImode) - UNITS_PER_WORD; byte >= 0;
-	       byte -= UNITS_PER_WORD)
-	    {
-	      d = loongarch_subword_at_byte (dest, byte);
-	      s = loongarch_subword_at_byte (src, byte);
-	      loongarch_emit_move (d, s);
-	    }
-	}
-    }
-}
-
-/* Split a 256-bit move from SRC to DEST.  */
-
-void
-loongarch_split_256bit_move (rtx dest, rtx src)
-{
-  int byte, index;
-  rtx low_dest, low_src, d, s;
-
-  if (FP_REG_RTX_P (dest))
-    {
-      gcc_assert (!MEM_P (src));
 
       rtx new_dest = dest;
-      if (!TARGET_64BIT)
-	{
-	  if (GET_MODE (dest) != V8SImode)
-	    new_dest = simplify_gen_subreg (V8SImode, dest, GET_MODE (dest), 0);
-	}
-      else
-	{
-	  if (GET_MODE (dest) != V4DImode)
-	    new_dest = simplify_gen_subreg (V4DImode, dest, GET_MODE (dest), 0);
-	}
+
+      if (GET_MODE (dest) != mode)
+	new_dest = simplify_gen_subreg (mode, dest, GET_MODE (dest), 0);
 
       for (byte = 0, index = 0; byte < GET_MODE_SIZE (GET_MODE (dest));
 	   byte += UNITS_PER_WORD, index++)
 	{
 	  s = loongarch_subword_at_byte (src, byte);
-	  if (!TARGET_64BIT)
-	    emit_insn (gen_lasx_xvinsgr2vr_w (new_dest, s, new_dest,
-					      GEN_INT (1 << index)));
-	  else
-	    emit_insn (gen_lasx_xvinsgr2vr_d (new_dest, s, new_dest,
-					      GEN_INT (1 << index)));
+	  emit_insn (gen_vinsgr2vr_d (new_dest, s, new_dest,
+					  GEN_INT (1 << index)));
 	}
     }
   else if (FP_REG_RTX_P (src))
     {
       gcc_assert (!MEM_P (dest));
 
-      rtx new_src = src;
-      if (!TARGET_64BIT)
+      rtx (*gen_vpickve2gr_d) (rtx, rtx, rtx);
+
+      if (lsx_p)
 	{
-	  if (GET_MODE (src) != V8SImode)
-	    new_src = simplify_gen_subreg (V8SImode, src, GET_MODE (src), 0);
+	  mode = V2DImode;
+	  gen_vpickve2gr_d = gen_lsx_vpickve2gr_d;
 	}
       else
 	{
-	  if (GET_MODE (src) != V4DImode)
-	    new_src = simplify_gen_subreg (V4DImode, src, GET_MODE (src), 0);
+	  mode = V4DImode;
+	  gen_vpickve2gr_d = gen_lasx_xvpickve2gr_d;
 	}
+
+      rtx new_src = src;
+      if (GET_MODE (src) != mode)
+	new_src = simplify_gen_subreg (mode, src, GET_MODE (src), 0);
 
       for (byte = 0, index = 0; byte < GET_MODE_SIZE (GET_MODE (src));
 	   byte += UNITS_PER_WORD, index++)
 	{
 	  d = loongarch_subword_at_byte (dest, byte);
-	  if (!TARGET_64BIT)
-	    emit_insn (gen_lsx_vpickve2gr_w (d, new_src, GEN_INT (index)));
-	  else
-	    emit_insn (gen_lsx_vpickve2gr_d (d, new_src, GEN_INT (index)));
+	  emit_insn (gen_vpickve2gr_d (d, new_src, GEN_INT (index)));
 	}
     }
   else
     {
+      /* This part of the code is designed to handle the following situations:
+	 (set (reg:V2DI 4 $r4)
+	      (reg:V2DI 6 $r6))
+	 The trigger test case is lsx-mov-1.c.  */
+      rtx low_dest, low_src;
+
       low_dest = loongarch_subword_at_byte (dest, 0);
       low_src = loongarch_subword_at_byte (src, 0);
       gcc_assert (REG_P (low_dest) && REG_P (low_src));
       /* Make sure the source register is not written before reading.  */
       if (REGNO (low_dest) <= REGNO (low_src))
 	{
-	  for (byte = 0; byte < GET_MODE_SIZE (TImode);
+	  for (byte = 0; byte < GET_MODE_SIZE (GET_MODE (dest));
 	       byte += UNITS_PER_WORD)
 	    {
 	      d = loongarch_subword_at_byte (dest, byte);
@@ -4844,8 +4707,8 @@ loongarch_split_256bit_move (rtx dest, rtx src)
 	}
       else
 	{
-	  for (byte = GET_MODE_SIZE (TImode) - UNITS_PER_WORD; byte >= 0;
-	       byte -= UNITS_PER_WORD)
+	  for (byte = GET_MODE_SIZE (GET_MODE (dest)) - UNITS_PER_WORD;
+	       byte >= 0; byte -= UNITS_PER_WORD)
 	    {
 	      d = loongarch_subword_at_byte (dest, byte);
 	      s = loongarch_subword_at_byte (src, byte);
@@ -6746,24 +6609,22 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
   size = GET_MODE_SIZE (mode);
   mclass = GET_MODE_CLASS (mode);
 
-  if (GP_REG_P (regno) && !LSX_SUPPORTED_MODE_P (mode)
+  if (GP_REG_P (regno)
+      && !LSX_SUPPORTED_MODE_P (mode)
       && !LASX_SUPPORTED_MODE_P (mode))
     return ((regno - GP_REG_FIRST) & 1) == 0 || size <= UNITS_PER_WORD;
 
-  /* For LSX, allow TImode and 128-bit vector modes in all FPR.  */
-  if (FP_REG_P (regno) && LSX_SUPPORTED_MODE_P (mode))
-    return true;
-
-  /* FIXED ME: For LASX, allow TImode and 256-bit vector modes in all FPR.  */
-  if (FP_REG_P (regno) && LASX_SUPPORTED_MODE_P (mode))
-    return true;
-
   if (FP_REG_P (regno))
     {
+      /* Allow 128-bit or 256-bit vector modes in all FPR.  */
+      if (LSX_SUPPORTED_MODE_P (mode)
+	  || LASX_SUPPORTED_MODE_P (mode))
+	return true;
+
       if (mclass == MODE_FLOAT
 	  || mclass == MODE_COMPLEX_FLOAT
 	  || mclass == MODE_VECTOR_FLOAT)
-	return size <= UNITS_PER_FPVALUE;
+	return size <= UNITS_PER_HWFPVALUE;
 
       /* Allow integer modes that fit into a single register.  We need
 	 to put integers into FPRs when using instructions like CVT
@@ -7637,7 +7498,7 @@ loongarch_global_init (void)
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &loongarch_init_machine_status;
-};
+}
 
 static void
 loongarch_reg_init (void)

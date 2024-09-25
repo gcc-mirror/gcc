@@ -29,15 +29,15 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif
 
 EXTERN
-int
-libc_read (int fd, void *a, int nbytes)
+size_t
+libc_read (int fd, void *a, size_t nbytes)
 {
   return read (fd, a, nbytes);
 }
 
 EXTERN
-int
-libc_write (int fd, void *a, int nbytes)
+size_t
+libc_write (int fd, void *a, size_t nbytes)
 {
   return write (fd, a, nbytes);
 }
@@ -58,7 +58,7 @@ libc_exit (int code)
 
 EXTERN
 void
-libc_perror (char *s)
+libc_perror (const char *s)
 {
   perror (s);
 }
@@ -71,7 +71,7 @@ libc_abort ()
 }
 
 EXTERN
-int
+size_t
 libc_strlen (char *s)
 {
   return strlen (s);
@@ -79,7 +79,7 @@ libc_strlen (char *s)
 
 EXTERN
 int
-libc_printf (char *_format, unsigned int _format_high, ...)
+libc_printf (const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
@@ -90,7 +90,7 @@ libc_printf (char *_format, unsigned int _format_high, ...)
 
   do
     {
-      c = index (&_format[i], '\\');
+      c = index (&const_cast <char *> (_format)[i], '\\');
       if (c == NULL)
         strcpy (&format[j], &_format[i]);
       else
@@ -117,7 +117,7 @@ libc_printf (char *_format, unsigned int _format_high, ...)
 
 EXTERN
 int
-libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_high, ...)
+libc_snprintf (void *dest, size_t length, const char *_format, unsigned int _format_high, ...)
 {
   va_list arg;
   int done;
@@ -128,7 +128,7 @@ libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_hi
 
   do
     {
-      c = index (&_format[i], '\\');
+      c = index (&const_cast <char *> (_format)[i], '\\');
       if (c == NULL)
         strcpy (&format[j], &_format[i]);
       else
@@ -147,14 +147,14 @@ libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_hi
   while (c != NULL);
 
   va_start (arg, _format_high);
-  done = vsnprintf (dest, length, format, arg);
+  done = vsnprintf (reinterpret_cast<char *> (dest), length, format, arg);
   va_end (arg);
   return done;
 }
 
 EXTERN
 void *
-libc_malloc (unsigned int size)
+libc_malloc (size_t size)
 {
   return malloc (size);
 }
@@ -196,9 +196,9 @@ libc_system (char *command)
 
 EXTERN
 void *
-libc_memcpy (void *dest, void *src, int n)
+libc_memcpy (void *dest, void *src, size_t nbytes)
 {
-  return memcpy (dest, src, n);
+  return memcpy (dest, src, nbytes);
 }
 
 EXTERN
@@ -224,9 +224,9 @@ libc_creat (char *p, mode_t mode)
 
 EXTERN
 int
-libc_open (char *p, int flags, mode_t mode)
+libc_open (void *p, int oflag, int mode)
 {
-  return open (p, flags, mode);
+  return open (reinterpret_cast <char *> (p), oflag, mode);
 }
 
 EXTERN

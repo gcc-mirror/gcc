@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fno-tree-loop-distribute-patterns -mfpmath=sse -msse2 -mtune=atom -fdump-tree-vect-stats" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-tree-loop-distribute-patterns -mfpmath=sse -msse2 -mtune=atom -fdump-tree-vect-stats -mno-sse4" } */
 
 extern void abort (void);
 

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target int32 } */
 /* { dg-options "-O2 -fdump-tree-pre-details" } */
+/* { dg-additional-options "-msse -mfpmath=sse" { target { x86_64-*-* i?86-*-* } } } */
 
 int f;
 int g;

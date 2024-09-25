@@ -1,5 +1,4 @@
-/* Definitions of types that are used to store AVR architecture and
-   device information.
+/* Device information for AVR 8-bit microcontrollers.
    Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 

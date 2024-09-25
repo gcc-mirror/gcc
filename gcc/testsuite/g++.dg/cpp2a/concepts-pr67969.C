@@ -1,5 +1,5 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 template <class, class>
 class NumericArray {};
 
@@ -10,21 +10,19 @@ constexpr bool
     match_numeric_array<NumericArray<Scalar, Shape>> =
         true;
 template <class T>
-concept bool cpt_NumericArrayContainer() {
-  return match_numeric_array<T>;
-}
+concept cpt_NumericArrayContainer =
+  match_numeric_array<T>;
 
 template <class X>
-concept bool cpt_NumericArray() {
-  return requires{requires cpt_NumericArrayContainer<X>();};
-}
+concept cpt_NumericArray =
+  requires{requires cpt_NumericArrayContainer<X>;};
 
 
 template <class X>
-requires !cpt_NumericArray<X>() auto func(int, X) {}
+requires (!cpt_NumericArray<X>) auto func(int, X) {}
 
 template <class X>
-requires cpt_NumericArray<X>() auto func(int, X) {}
+requires (cpt_NumericArray<X>) auto func(int, X) {}
 
 int main() {
   NumericArray<double, int> v5;

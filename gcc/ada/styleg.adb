@@ -38,6 +38,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;         use Sinput;
 with Stylesw;        use Stylesw;
+with Uintp;          use Uintp;
 
 package body Styleg is
 
@@ -672,8 +673,9 @@ package body Styleg is
    begin
       if Style_Check_Max_Line_Length then
          if Len > Style_Max_Line_Length then
+            Error_Msg_Uint_1 := UI_From_Int (Len);
             Error_Msg
-              ("(style) this line is too long?M?",
+              ("(style) this line is too long: ^?M?",
                Current_Line_Start + Source_Ptr (Style_Max_Line_Length));
          end if;
       end if;

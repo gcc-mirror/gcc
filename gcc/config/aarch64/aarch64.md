@@ -107,10 +107,14 @@
     (P14_REGNUM		82)
     (P15_REGNUM		83)
     (LAST_SAVED_REGNUM	83)
-    (FFR_REGNUM		84)
+
+    ;; Floating Point Mode Register, used in FP8 insns.
+    (FPM_REGNUM		84)
+
+    (FFR_REGNUM		85)
     ;; "FFR token": a fake register used for representing the scheduling
     ;; restrictions on FFR-related operations.
-    (FFRT_REGNUM	85)
+    (FFRT_REGNUM	86)
 
     ;; ----------------------------------------------------------------
     ;; Fake registers
@@ -122,17 +126,17 @@
     ;; ABI-related lowering is needed.  These placeholders read and
     ;; write this register.  Instructions that depend on the lowering
     ;; read the register.
-    (LOWERING_REGNUM 86)
+    (LOWERING_REGNUM 87)
 
     ;; Represents the contents of the current function's TPIDR2 block,
     ;; in abstract form.
-    (TPIDR2_BLOCK_REGNUM 87)
+    (TPIDR2_BLOCK_REGNUM 88)
 
     ;; Holds the value that the current function wants PSTATE.ZA to be.
     ;; The actual value can sometimes vary, because it does not track
     ;; changes to PSTATE.ZA that happen during a lazy save and restore.
     ;; Those effects are instead tracked by ZA_SAVED_REGNUM.
-    (SME_STATE_REGNUM 88)
+    (SME_STATE_REGNUM 89)
 
     ;; Instructions write to this register if they set TPIDR2_EL0 to a
     ;; well-defined value.  Instructions read from the register if they
@@ -140,14 +144,14 @@
     ;;
     ;; The register does not model the architected TPIDR2_ELO, just the
     ;; current function's management of it.
-    (TPIDR2_SETUP_REGNUM 89)
+    (TPIDR2_SETUP_REGNUM 90)
 
     ;; Represents the property "has an incoming lazy save been committed?".
-    (ZA_FREE_REGNUM 90)
+    (ZA_FREE_REGNUM 91)
 
     ;; Represents the property "are the current function's ZA contents
     ;; stored in the lazy save buffer, rather than in ZA itself?".
-    (ZA_SAVED_REGNUM 91)
+    (ZA_SAVED_REGNUM 92)
 
     ;; Represents the contents of the current function's ZA state in
     ;; abstract form.  At various times in the function, these contents
@@ -155,10 +159,10 @@
     ;;
     ;; The contents persist even when the architected ZA is off.  Private-ZA
     ;; functions have no effect on its contents.
-    (ZA_REGNUM 92)
+    (ZA_REGNUM 93)
 
     ;; Similarly represents the contents of the current function's ZT0 state.
-    (ZT0_REGNUM 93)
+    (ZT0_REGNUM 94)
 
     (FIRST_FAKE_REGNUM	LOWERING_REGNUM)
     (LAST_FAKE_REGNUM	ZT0_REGNUM)
@@ -477,7 +481,7 @@
 	(eq_attr "arch" "any")
 
 	(and (eq_attr "arch" "rcpc8_4")
-	     (match_test "AARCH64_ISA_RCPC8_4"))
+	     (match_test "TARGET_RCPC2"))
 
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))
@@ -1405,6 +1409,8 @@
      [w, r Z  ; neon_from_gp<q>, nosimd     ] fmov\t%s0, %w1
      [w, w    ; neon_dup       , simd       ] dup\t%<Vetype>0, %1.<v>[0]
      [w, w    ; neon_dup       , nosimd     ] fmov\t%s0, %s1
+     [Umv, r  ; mrs            , *          ] msr\t%0, %x1
+     [r, Umv  ; mrs            , *          ] mrs\t%x0, %1
   }
 )
 
@@ -1467,6 +1473,8 @@
      [r  , w  ; f_mrc    , fp  , 4] fmov\t%w0, %s1
      [w  , w  ; fmov     , fp  , 4] fmov\t%s0, %s1
      [w  , Ds ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
+     [Umv, r  ; mrs      , *   , 4] msr\t%0, %x1
+     [r, Umv  ; mrs      , *   , 4] mrs\t%x0, %1
   }
   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
     && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
@@ -1505,6 +1513,8 @@
      [w, w  ; fmov     , fp  , 4] fmov\t%d0, %d1
      [w, Dd ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
      [w, Dx ; neon_move, simd, 8] #
+     [Umv, r; mrs      , *   , 4] msr\t%0, %1
+     [r, Umv; mrs      , *   , 4] mrs\t%0, %1
   }
   "CONST_INT_P (operands[1])
    && REG_P (operands[0])
@@ -5069,18 +5079,18 @@
 
 ;; Binary logical operators negating one operand, i.e. (a & !b), (a | !b).
 
-(define_insn "*<NLOGICAL:optab>_one_cmpl<mode>3"
+(define_insn "<NLOGICAL:optab>n<mode>3"
   [(set (match_operand:GPI 0 "register_operand")
-	(NLOGICAL:GPI (not:GPI (match_operand:GPI 1 "register_operand"))
-		     (match_operand:GPI 2 "register_operand")))]
+	(NLOGICAL:GPI (not:GPI (match_operand:GPI 2 "register_operand"))
+		     (match_operand:GPI 1 "register_operand")))]
   ""
   {@ [ cons: =0 , 1 , 2 ; attrs: type , arch  ]
-     [ r        , r , r ; logic_reg   , *     ] <NLOGICAL:nlogical>\t%<w>0, %<w>2, %<w>1
-     [ w        , w , w ; neon_logic  , simd  ] <NLOGICAL:nlogical>\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
+     [ r        , r , r ; logic_reg   , *     ] <NLOGICAL:nlogical>\t%<w>0, %<w>1, %<w>2
+     [ w        , w , w ; neon_logic  , simd  ] <NLOGICAL:nlogical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
   }
 )
 
-(define_insn "*<NLOGICAL:optab>_one_cmplsidi3_ze"
+(define_insn "*<NLOGICAL:optab>nsidi3_ze"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI
 	  (NLOGICAL:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
@@ -5331,9 +5341,9 @@
 ;; MOV	w0, v2.b[0]
 
 (define_expand "popcount<mode>2"
-  [(set (match_operand:GPI 0 "register_operand")
-	(popcount:GPI (match_operand:GPI 1 "register_operand")))]
-  "TARGET_CSSC || TARGET_SIMD"
+  [(set (match_operand:ALLI 0 "register_operand")
+	(popcount:ALLI (match_operand:ALLI 1 "register_operand")))]
+  "TARGET_CSSC ? GET_MODE_BITSIZE (<MODE>mode) >= 32 : TARGET_SIMD"
 {
   if (!TARGET_CSSC)
     {
@@ -5341,20 +5351,44 @@
       rtx v1 = gen_reg_rtx (V8QImode);
       rtx in = operands[1];
       rtx out = operands[0];
-      if(<MODE>mode == SImode)
-	{
-	  rtx tmp;
-	  tmp = gen_reg_rtx (DImode);
-	  /* If we have SImode, zero extend to DImode, pop count does
-	     not change if we have extra zeros. */
-	  emit_insn (gen_zero_extendsidi2 (tmp, in));
-	  in = tmp;
-	}
+      /* SImode and HImode should be zero extended to DImode.
+	 popcount does not change if we have extra zeros.  */
+      if (<MODE>mode == SImode || <MODE>mode == HImode)
+	in = convert_to_mode (DImode, in, true);
+
       emit_move_insn (v, gen_lowpart (V8QImode, in));
       emit_insn (gen_popcountv8qi2 (v1, v));
-      emit_insn (gen_aarch64_zero_extend<mode>_reduc_plus_v8qi (out, v1));
+      /* QImode, just extract from the v8qi vector.  */
+      if (<MODE>mode == QImode)
+	emit_move_insn (out, gen_lowpart (QImode, v1));
+      /* HI and SI, reduction is zero extended to SImode. */
+      else if (<MODE>mode == SImode || <MODE>mode == HImode)
+	{
+	  rtx out1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_aarch64_zero_extendsi_reduc_plus_v8qi (out1, v1));
+	  emit_move_insn (out, gen_lowpart (<MODE>mode, out1));
+	}
+      /* DImode, reduction is zero extended to DImode. */
+      else
+	{
+	  gcc_assert (<MODE>mode == DImode);
+	  emit_insn (gen_aarch64_zero_extenddi_reduc_plus_v8qi (out, v1));
+	}
       DONE;
     }
+})
+
+(define_expand "popcountti2"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:TI 1 "register_operand")]
+  "TARGET_SIMD && !TARGET_CSSC"
+{
+  rtx v = gen_reg_rtx (V16QImode);
+  rtx v1 = gen_reg_rtx (V16QImode);
+  emit_move_insn (v, gen_lowpart (V16QImode, operands[1]));
+  emit_insn (gen_popcountv16qi2 (v1, v));
+  emit_insn (gen_aarch64_zero_extenddi_reduc_plus_v16qi (operands[0], v1));
+  DONE;
 })
 
 (define_insn "clrsb<mode>2"
@@ -5398,7 +5432,7 @@
 	 (const_int 0)))]
   ""
   "tst\\t%<w>0, <short_mask>"
-  [(set_attr "type" "alus_imm")]
+  [(set_attr "type" "logics_imm")]
 )
 
 (define_insn "*ands<GPI:mode>_compare0"

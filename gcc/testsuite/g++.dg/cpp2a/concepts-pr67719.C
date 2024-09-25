@@ -1,9 +1,8 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
-template<class X> concept bool C() {
-  return __is_same_as(X, int) || __is_same_as(X, long);
-}
+template<class X> concept C =
+  __is_same_as(X, int) || __is_same_as(X, long);
 
 template<C... Tx>
 struct Ax {};

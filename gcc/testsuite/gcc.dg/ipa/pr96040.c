@@ -3,8 +3,8 @@
 
 
 int puts(const char *);
-int snprintf(char *, unsigned long, const char *, ...);
-unsigned long strspn(const char *, const char *);
+int snprintf(char *, __SIZE_TYPE__, const char *, ...);
+__SIZE_TYPE__ strspn(const char *, const char *);
 
 struct TValue {
   union {

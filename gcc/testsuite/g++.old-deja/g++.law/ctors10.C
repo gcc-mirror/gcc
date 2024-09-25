@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed constructors
 // ctor file
 // Message-Id: <9302052351.AA10789@harvey>

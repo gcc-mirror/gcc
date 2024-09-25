@@ -23,5 +23,5 @@ FROM libc IMPORT open ;
 VAR
    fd: INTEGER ;
 BEGIN
-   fd := open(ADR(__FILE__), 0)
+   fd := open(ADR(__FILE__), 0, 0)
 END testaddr3.

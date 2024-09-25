@@ -31,7 +31,7 @@ void t3 (long long *p, int x)
     atomic_store_explicit (p, x, memory_order_relaxed);
 }
 
-/* { dg-final { scan-assembler-times "ldrexd\tr\[0-9\]+, r\[0-9\]+, \\\[r\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "ldrexd\t" 2 } } */
 /* { dg-final { scan-assembler-not "ldrgt" } } */
 /* { dg-final { scan-assembler-not "ldrdgt" } } */
 /* { dg-final { scan-assembler-not "ldrexdgt" } } */

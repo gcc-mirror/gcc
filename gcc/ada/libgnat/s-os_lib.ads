@@ -130,12 +130,12 @@ package System.OS_Lib is
    --  Returns current local time in the form YYYY-MM-DD HH:MM:SS. The result
    --  has bounds 1 .. 19.
 
-   function GM_Year    (Date : OS_Time) return Year_Type;
-   function GM_Month   (Date : OS_Time) return Month_Type;
-   function GM_Day     (Date : OS_Time) return Day_Type;
-   function GM_Hour    (Date : OS_Time) return Hour_Type;
-   function GM_Minute  (Date : OS_Time) return Minute_Type;
-   function GM_Second  (Date : OS_Time) return Second_Type;
+   function GM_Year   (Date : OS_Time) return Year_Type;
+   function GM_Month  (Date : OS_Time) return Month_Type;
+   function GM_Day    (Date : OS_Time) return Day_Type;
+   function GM_Hour   (Date : OS_Time) return Hour_Type;
+   function GM_Minute (Date : OS_Time) return Minute_Type;
+   function GM_Second (Date : OS_Time) return Second_Type;
    --  Functions to extract information from OS_Time value in GMT form
 
    procedure GM_Split

@@ -8,5 +8,3 @@ export module foo;
 import baz; // { dg-error "must be contiguous" }
 
 int i;
-
-// { dg-prune-output "not writing module" }

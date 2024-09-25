@@ -229,10 +229,6 @@ Set the branch costs for conditional branch instructions.  Reasonable
 values are small, non-negative integers.  The default branch cost is
 1.
 
-mlra
-Target Var(s390_lra_flag) Init(1) Save
-Use LRA instead of reload.
-
 mpic-data-is-text-relative
 Target Var(s390_pic_data_is_text_relative) Init(TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE)
 Assume data segments are relative to text segment.

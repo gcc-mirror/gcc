@@ -8,7 +8,11 @@
 #ifndef AVX512F_HELPER_INCLUDED
 #define AVX512F_HELPER_INCLUDED
 
+#if defined(AVX10)
+#include "avx10-check.h"
+#else
 #include "avx512-check.h"
+#endif
 
 /* Macros expansion.  */
 #define CONCAT(a,b,c) a ## b ## c
@@ -37,12 +41,15 @@ MAKE_MASK_MERGE(i_b, char)
 MAKE_MASK_MERGE(i_w, short)
 MAKE_MASK_MERGE(i_d, int)
 MAKE_MASK_MERGE(i_q, long long)
+MAKE_MASK_MERGE(h, _Float16)
 MAKE_MASK_MERGE(, float)
 MAKE_MASK_MERGE(d, double)
 MAKE_MASK_MERGE(i_ub, unsigned char)
 MAKE_MASK_MERGE(i_uw, unsigned short)
+MAKE_MASK_MERGE(bf16_uw, unsigned short)
 MAKE_MASK_MERGE(i_ud, unsigned int)
 MAKE_MASK_MERGE(i_uq, unsigned long long)
+MAKE_MASK_MERGE(bf16_bf, __bf16)
 
 #define MASK_MERGE(TYPE) merge_masking_##TYPE
 
@@ -62,12 +69,15 @@ MAKE_MASK_ZERO(i_b, char)
 MAKE_MASK_ZERO(i_w, short)
 MAKE_MASK_ZERO(i_d, int)
 MAKE_MASK_ZERO(i_q, long long)
+MAKE_MASK_ZERO(h, _Float16)
 MAKE_MASK_ZERO(, float)
 MAKE_MASK_ZERO(d, double)
 MAKE_MASK_ZERO(i_ub, unsigned char)
 MAKE_MASK_ZERO(i_uw, unsigned short)
+MAKE_MASK_ZERO(bf16_uw, unsigned short)
 MAKE_MASK_ZERO(i_ud, unsigned int)
 MAKE_MASK_ZERO(i_uq, unsigned long long)
+MAKE_MASK_ZERO(bf16_bf, __bf16)
 
 
 #define MASK_ZERO(TYPE) zero_masking_##TYPE
@@ -87,7 +97,7 @@ MAKE_MASK_ZERO(i_uq, unsigned long long)
 /* Function which calculates result.  */
 #define CALC EVAL(calc_, AVX512F_LEN,)
 
-#ifndef AVX512VL
+#if !defined(AVX512VL) || defined(AVX10_512BIT)
 #define AVX512F_LEN 512
 #define AVX512F_LEN_HALF 256
 #endif

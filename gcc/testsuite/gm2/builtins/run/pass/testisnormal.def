@@ -1,0 +1,5 @@
+DEFINITION MODULE testisnormal ;
+
+PROCEDURE test ;
+
+END testisnormal.

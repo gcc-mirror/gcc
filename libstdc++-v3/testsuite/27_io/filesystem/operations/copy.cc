@@ -216,6 +216,15 @@ test_pr99290()
   }
 #endif
 
+  // https://github.com/msys2/MSYS2-packages/issues/1937
+  auto copy_opts
+    = fs::copy_options::overwrite_existing | fs::copy_options::recursive;
+  copy(source, dest, copy_opts, ec);
+  VERIFY( !ec );
+
+  auto ch = std::ifstream{dest/"file"}.get();
+  VERIFY( ch == 'a' );
+
   remove_all(dir);
 }
 

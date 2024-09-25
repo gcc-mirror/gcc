@@ -4,11 +4,18 @@
 
 namespace N
 {
-    int i; // { dg-warning "unused variable" }
+    int i;
 }
 
 void
 f ()
 {
-    using N::i;
+    using N::i; // { dg-warning "unused using" }
+}
+
+void
+g ()
+{
+    using N::i; // { dg-bogus "set but not used" }
+    i = 10;
 }

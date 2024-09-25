@@ -218,6 +218,8 @@ package body Ch4 is
       Arg_List  : List_Id := No_List; -- kill junk warning
       Attr_Name : Name_Id := No_Name; -- kill junk warning
 
+      Error_Loc : Source_Ptr;
+
    begin
       --  Case of not a name
 
@@ -889,13 +891,16 @@ package body Ch4 is
          ("positional parameter association " &
            "not allowed after named one");
 
+      Error_Loc := Token_Ptr;
+
       Expr_Node := P_Expression_If_OK;
 
       --  Leaving the '>' in an association is not unusual, so suggest
       --  a possible fix.
 
       if Nkind (Expr_Node) = N_Op_Eq then
-         Error_Msg_N ("\maybe `='>` was intended", Expr_Node);
+         Error_Msg_Sloc := Sloc (Expr_Node);
+         Error_Msg ("\maybe `='>` was intended #", Error_Loc);
       end if;
 
       --  We go back to scanning out expressions, so that we do not get
@@ -3584,6 +3589,7 @@ package body Ch4 is
       Iter_Spec  : Node_Id;
       Loop_Spec  : Node_Id;
       State      : Saved_Scan_State;
+      In_Reverse : Boolean := False;
 
       procedure Build_Iterated_Element_Association;
       --  If the iterator includes a key expression or a filter, it is
@@ -3601,6 +3607,8 @@ package body Ch4 is
          Loop_Spec :=
            New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
          Set_Defining_Identifier (Loop_Spec, Id);
+
+         Set_Reverse_Present (Loop_Spec, In_Reverse);
 
          Choice := First (Discrete_Choices (Assoc_Node));
          Assoc_Node :=
@@ -3644,6 +3652,13 @@ package body Ch4 is
          when Tok_In =>
             Set_Defining_Identifier (Assoc_Node, Id);
             T_In;
+
+            if Token = Tok_Reverse then
+               Scan; -- past REVERSE
+               Set_Reverse_Present (Assoc_Node, True);
+               In_Reverse := True;
+            end if;
+
             Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
 
             --  The iterator may include a filter
@@ -3673,7 +3688,7 @@ package body Ch4 is
             TF_Arrow;
             Set_Expression (Assoc_Node, P_Expression);
 
-         when Tok_Of =>
+         when Tok_Colon | Tok_Of =>
             Restore_Scan_State (State);
             Scan;  -- past OF
             Iter_Spec := P_Iterator_Specification (Id);

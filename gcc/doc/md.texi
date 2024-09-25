@@ -5543,6 +5543,28 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
 
+@cindex @code{ustrunc@var{m}@var{n}2} instruction pattern
+@item @samp{ustrunc@var{m}@var{n}2}
+Truncate the operand 1, and storing the result in operand 0.  There will
+be saturation during the trunction.  The result will be saturated to the
+maximal value of operand 0 type if there is overflow when truncation.  The
+operand 1 must have mode @var{n},  and the operand 0 must have mode @var{m}.
+Both scalar and vector integer modes are allowed.
+
+@cindex @code{sstrunc@var{m}@var{n}2} instruction pattern
+@item @samp{sstrunc@var{m}@var{n}2}
+Similar but for signed.
+
+@cindex @code{andn@var{m}3} instruction pattern
+@item @samp{andn@var{m}3}
+Like @code{and@var{m}3}, but it uses bitwise-complement of operand 2
+rather than operand 2 itself.
+
+@cindex @code{iorn@var{m}3} instruction pattern
+@item @samp{iorn@var{m}3}
+Like @code{ior@var{m}3}, but it uses bitwise-complement of operand 2
+rather than operand 2 itself.
+
 @cindex @code{addv@var{m}4} instruction pattern
 @item @samp{addv@var{m}4}
 Like @code{add@var{m}3} but takes a @code{code_label} as operand 3 and
@@ -12054,6 +12076,11 @@ The signed version of the instruction uses @code{smax} and @code{smin}
 while the unsigned version uses @code{umax} and @code{umin}.  There
 are no versions that pair @code{smax} with @code{umin} or @code{umax}
 with @code{smin}.
+
+It is also possible to use other types of attributes as codes,
+in a similar way.  For example, an int iterator could be used to
+iterate over @code{unspec} numbers, with an int attribute specifying
+an associated rtx code.  @xref{Int Iterators}.
 
 Here's an example of code iterators in action, taken from the MIPS port:
 

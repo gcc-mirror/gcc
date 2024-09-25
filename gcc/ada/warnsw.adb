@@ -92,12 +92,14 @@ package body Warnsw is
           'z' => X.Warn_On_Size_Alignment),
 
         '_' =>
-         ('b' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' |
+         ('b' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'k' | 'm' |
           'n' | 'o' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' =>
            No_Such_Warning,
 
           'a' => X.Warn_On_Anonymous_Allocators,
           'c' => X.Warn_On_Unknown_Compile_Time_Warning,
+          'j' => X.Warn_On_Non_Dispatching_Primitives,
+          'l' => X.Warn_On_Inherently_Limited_Type,
           'p' => X.Warn_On_Pedantic_Checks,
           'q' => X.Warn_On_Ignored_Equality,
           'r' => X.Warn_On_Component_Order,
@@ -190,6 +192,7 @@ package body Warnsw is
       --  These warnings are removed from the -gnatwa set
 
       Implementation_Unit_Warnings        := False;
+      Warn_On_Non_Dispatching_Primitives  := False;
       Warn_On_Non_Local_Exception         := False;
       No_Warn_On_Non_Local_Exception      := True;
       Warn_On_Reverse_Bit_Order           := False;

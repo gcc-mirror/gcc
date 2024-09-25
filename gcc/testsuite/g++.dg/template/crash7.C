@@ -7,9 +7,7 @@
 
 template <typename> struct A
 {
-    template <typename> A(typename A::X) {} // { dg-error "incomplete" }
+    template <typename> A(typename A::X) {} // { dg-error "does not name a type" }
 };
 
-// We currently don't give the "no match" error because we don't add the
-// invalid constructor template to TYPE_METHODS.
-A<void> a;			// { dg-message "required" }
+A<void> a;			// { dg-error "no match" }

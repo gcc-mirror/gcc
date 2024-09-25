@@ -83,12 +83,8 @@ extrinsic_state::dump_to_pp (pretty_printer *pp) const
 void
 extrinsic_state::dump_to_file (FILE *outf) const
 {
-  pretty_printer pp;
-  if (outf == stderr)
-    pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (outf);
+  tree_dump_pretty_printer pp (outf);
   dump_to_pp (&pp);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this state to stderr.  */
@@ -271,13 +267,9 @@ sm_state_map::print (const region_model *model,
 DEBUG_FUNCTION void
 sm_state_map::dump (bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   print (NULL, simple, true, &pp);
   pp_newline (&pp);
-  pp_flush (&pp);
 }
 
 /* Return a new json::object of the form
@@ -1165,13 +1157,8 @@ program_state::dump_to_file (const extrinsic_state &ext_state,
 			     bool summarize, bool multiline,
 			     FILE *outf) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  if (outf == stderr)
-    pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (outf);
+  tree_dump_pretty_printer pp (outf);
   dump_to_pp (ext_state, summarize, multiline, &pp);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this state to stderr.  */
@@ -1223,7 +1210,7 @@ program_state::to_json (const extrinsic_state &ext_state) const
     state_obj->set ("checkers", checkers_obj);
   }
 
-  state_obj->set ("valid", new json::literal (m_valid));
+  state_obj->set_bool ("valid", m_valid);
 
   return state_obj;
 }

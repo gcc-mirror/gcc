@@ -1,6 +1,6 @@
 /* The bool bitfield type.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x2\[\t \]+\[^\n\]*cts_type" 2 } } */

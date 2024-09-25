@@ -662,7 +662,6 @@ enum tree_index : unsigned {
 
   TI_INTEGER_ZERO,
   TI_INTEGER_ONE,
-  TI_INTEGER_THREE,
   TI_INTEGER_MINUS_ONE,
   TI_NULL_POINTER,
 
@@ -1214,7 +1213,7 @@ struct GTY(()) tree_base {
        TRY_CATCH_IS_CLEANUP in
            TRY_CATCH_EXPR
 
-       ASM_INPUT_P in
+       ASM_BASIC_P in
            ASM_EXPR
 
        TYPE_REF_CAN_ALIAS_ALL in

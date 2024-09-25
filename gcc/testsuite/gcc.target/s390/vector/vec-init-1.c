@@ -30,7 +30,7 @@ h ()
 {
   return G == 1;
 }
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,31,31" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v.*,31,31,2" 1 } } */
 
 v4si
 i ()
@@ -51,14 +51,14 @@ k ()
 {
   return G == (v4si){ 0xff80, 0xff80, 0xff80, 0xff80 };
 }
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,16,24" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v.*,16,24,2" 1 } } */
 
 v4si
 l ()
 {
   return G == (v4si){ 0xf000000f, 0xf000000f, 0xf000000f, 0xf000000f };
 }
-/* { dg-final { scan-assembler-times "vgmf\t%v.*,28,3" 1 } } */
+/* { dg-final { scan-assembler-times "vgm\t%v.*,28,3,2" 1 } } */
 
 v4si
 m ()

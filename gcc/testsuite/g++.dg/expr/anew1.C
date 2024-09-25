@@ -1,4 +1,6 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } }
+
 // PR 11228: array operator new, with zero-initialization and a variable sized array.
 // Regression test for PR 
 // Author: Matt Austern <austern@apple.com>

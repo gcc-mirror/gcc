@@ -199,6 +199,7 @@ static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 static void m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int);
 static HARD_REG_SET m68k_zero_call_used_regs (HARD_REG_SET);
 static machine_mode m68k_c_mode_for_floating_type (enum tree_index);
+static bool m68k_use_lra_p (void);
 
 /* Initialize the GCC target structure.  */
 
@@ -307,7 +308,7 @@ static machine_mode m68k_c_mode_for_floating_type (enum tree_index);
 #endif
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P m68k_use_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	m68k_legitimate_address_p
@@ -1502,12 +1503,14 @@ m68k_legitimize_address (rtx x, rtx oldx, machine_mode mode)
 
 #define COPY_ONCE(Y) if (!copied) { Y = copy_rtx (Y); copied = ch = 1; }
 
-      if (GET_CODE (XEXP (x, 0)) == MULT)
+      if (GET_CODE (XEXP (x, 0)) == MULT
+	  || GET_CODE (XEXP (x, 0)) == ASHIFT)
 	{
 	  COPY_ONCE (x);
 	  XEXP (x, 0) = force_operand (XEXP (x, 0), 0);
 	}
-      if (GET_CODE (XEXP (x, 1)) == MULT)
+      if (GET_CODE (XEXP (x, 1)) == MULT
+	  || GET_CODE (XEXP (x, 1)) == ASHIFT)
 	{
 	  COPY_ONCE (x);
 	  XEXP (x, 1) = force_operand (XEXP (x, 1), 0);
@@ -2068,16 +2071,29 @@ m68k_decompose_index (rtx x, bool strict_p, struct m68k_address *address)
 
   /* Check for a scale factor.  */
   scale = 1;
-  if ((TARGET_68020 || TARGET_COLDFIRE)
-      && GET_CODE (x) == MULT
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (INTVAL (XEXP (x, 1)) == 2
-	  || INTVAL (XEXP (x, 1)) == 4
-	  || (INTVAL (XEXP (x, 1)) == 8
-	      && (TARGET_COLDFIRE_FPU || !TARGET_COLDFIRE))))
+  if (TARGET_68020 || TARGET_COLDFIRE)
     {
-      scale = INTVAL (XEXP (x, 1));
-      x = XEXP (x, 0);
+      if (GET_CODE (x) == MULT
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && (INTVAL (XEXP (x, 1)) == 2
+	      || INTVAL (XEXP (x, 1)) == 4
+	      || (INTVAL (XEXP (x, 1)) == 8
+		  && (TARGET_COLDFIRE_FPU || !TARGET_COLDFIRE))))
+	{
+	  scale = INTVAL (XEXP (x, 1));
+	  x = XEXP (x, 0);
+	}
+      /* LRA uses ASHIFT instead of MULT outside of MEM.  */
+      else if (GET_CODE (x) == ASHIFT
+	       && GET_CODE (XEXP (x, 1)) == CONST_INT
+	       && (INTVAL (XEXP (x, 1)) == 1
+		   || INTVAL (XEXP (x, 1)) == 2
+		   || (INTVAL (XEXP (x, 1)) == 3
+		       && (TARGET_COLDFIRE_FPU || !TARGET_COLDFIRE))))
+	{
+	  scale = 1 << INTVAL (XEXP (x, 1));
+	  x = XEXP (x, 0);
+	}
     }
 
   /* Check for a word extension.  */
@@ -2245,8 +2261,10 @@ m68k_decompose_address (machine_mode mode, rtx x,
      ??? do_tablejump creates these addresses before placing the target
      label, so we have to assume that unplaced labels are jump table
      references.  It seems unlikely that we would ever generate indexed
-     accesses to unplaced labels in other cases.  */
+     accesses to unplaced labels in other cases.  Do not accept it in
+     PIC mode, since the label address will need to be loaded from memory.  */
   if (GET_CODE (x) == PLUS
+      && !flag_pic
       && m68k_jump_table_ref_p (XEXP (x, 1))
       && m68k_decompose_index (XEXP (x, 0), strict_p, address))
     {
@@ -3067,12 +3085,17 @@ m68k_rtx_costs (rtx x, machine_mode mode, int outer_code,
       /* An lea costs about three times as much as a simple add.  */
       if (mode == SImode
 	  && GET_CODE (XEXP (x, 1)) == REG
-	  && GET_CODE (XEXP (x, 0)) == MULT
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && (INTVAL (XEXP (XEXP (x, 0), 1)) == 2
-	      || INTVAL (XEXP (XEXP (x, 0), 1)) == 4
-	      || INTVAL (XEXP (XEXP (x, 0), 1)) == 8))
+	  && ((GET_CODE (XEXP (x, 0)) == MULT
+	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	       && (INTVAL (XEXP (XEXP (x, 0), 1)) == 2
+		   || INTVAL (XEXP (XEXP (x, 0), 1)) == 4
+		   || INTVAL (XEXP (XEXP (x, 0), 1)) == 8))
+	      || (GET_CODE (XEXP (x, 0)) == ASHIFT
+		  && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+		  && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (x, 0), 1))
+		      <= 3))))
 	{
 	    /* lea an@(dx:l:i),am */
 	    *total = COSTS_N_INSNS (TARGET_COLDFIRE ? 2 : 3);
@@ -7226,6 +7249,14 @@ m68k_c_mode_for_floating_type (enum tree_index ti)
   if (ti == TI_LONG_DOUBLE_TYPE)
     return LONG_DOUBLE_TYPE_MODE;
   return default_mode_for_floating_type (ti);
+}
+
+/* Implement TARGET_LRA_P.  */
+
+static bool
+m68k_use_lra_p ()
+{
+  return m68k_lra_p;
 }
 
 #include "gt-m68k.h"

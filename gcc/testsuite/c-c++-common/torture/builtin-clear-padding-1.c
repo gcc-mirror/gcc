@@ -1,4 +1,5 @@
 /* PR libstdc++/88101 */
+/* { dg-do run } */
 
 int i1, i2;
 long double l1, l2;

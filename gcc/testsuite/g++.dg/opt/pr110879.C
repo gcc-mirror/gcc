@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-O3 -fdump-tree-optimized" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

@@ -380,6 +380,20 @@ inline clobber_group::clobber_group (clobber_info *clobber)
   clobber->m_group = this;
 }
 
+// Construct a new group of clobber_infos that spans [FIRST_CLOBBER,
+// LAST_CLOBBER].  Set the root of the splay tree to CLOBBER_TREE.
+inline clobber_group::clobber_group (clobber_info *first_clobber,
+				     clobber_info *last_clobber,
+				     clobber_info *clobber_tree)
+  : def_node (first_clobber),
+    m_last_clobber (last_clobber),
+    m_clobber_tree (clobber_tree)
+{
+  first_clobber->m_group = this;
+  last_clobber->m_group = this;
+  clobber_tree->m_group = this;
+}
+
 // Construct a node for the instruction with uid UID.
 inline insn_info::order_node::order_node (int uid)
   : insn_note (kind),
@@ -403,7 +417,7 @@ inline insn_call_clobbers_note::insn_call_clobbers_note (unsigned int abi_id,
 // If the instruction is real, COST_OR_UID is the value of cost (),
 // otherwise it is the value of uid ().
 inline insn_info::insn_info (bb_info *bb, rtx_insn *rtl, int cost_or_uid)
-  : m_prev_insn_or_last_debug_insn (nullptr),
+  : m_prev_sametype_or_last_debug_insn (nullptr),
     m_next_nondebug_or_debug_insn (nullptr),
     m_bb (bb),
     m_rtl (rtl),
@@ -486,7 +500,8 @@ insn_info::get_known_order_node () const
 inline void
 insn_info::copy_prev_from (insn_info *other)
 {
-  m_prev_insn_or_last_debug_insn = other->m_prev_insn_or_last_debug_insn;
+  m_prev_sametype_or_last_debug_insn
+    = other->m_prev_sametype_or_last_debug_insn;
 }
 
 // Copy the overloaded next link from OTHER.
@@ -504,7 +519,7 @@ insn_info::copy_next_from (insn_info *other)
 inline void
 insn_info::set_prev_sametype_insn (insn_info *prev)
 {
-  m_prev_insn_or_last_debug_insn.set_first (prev);
+  m_prev_sametype_or_last_debug_insn.set_first (prev);
 }
 
 // Only valid for debug instructions.  Record that this instruction starts
@@ -512,7 +527,7 @@ insn_info::set_prev_sametype_insn (insn_info *prev)
 inline void
 insn_info::set_last_debug_insn (insn_info *last)
 {
-  m_prev_insn_or_last_debug_insn.set_second (last);
+  m_prev_sametype_or_last_debug_insn.set_second (last);
 }
 
 // Record that the next instruction of any kind is NEXT.
@@ -529,7 +544,7 @@ insn_info::set_next_any_insn (insn_info *next)
 inline void
 insn_info::clear_insn_links ()
 {
-  m_prev_insn_or_last_debug_insn = nullptr;
+  m_prev_sametype_or_last_debug_insn = nullptr;
   m_next_nondebug_or_debug_insn = nullptr;
   m_point = 0;
 }
@@ -539,7 +554,7 @@ insn_info::clear_insn_links ()
 inline bool
 insn_info::has_insn_links ()
 {
-  return (m_prev_insn_or_last_debug_insn
+  return (m_prev_sametype_or_last_debug_insn
 	  || m_next_nondebug_or_debug_insn
 	  || m_point);
 }

@@ -30,11 +30,6 @@
 #include "config/rs6000/rs6000-opts.h"
 #endif
 
-/* 128-bit floating point precision values.  */
-#ifndef RS6000_MODES_H
-#include "config/rs6000/rs6000-modes.h"
-#endif
-
 /* Definitions for the object file format.  These are set at
    compile-time.  */
 
@@ -106,6 +101,7 @@
    you make changes here, make them also there.  */
 #define ASM_CPU_SPEC \
 "%{mcpu=native: %(asm_cpu_native); \
+  mcpu=power11: -mpower11; \
   mcpu=power10: -mpower10; \
   mcpu=power9: -mpower9; \
   mcpu=power8|mcpu=powerpc64le: -mpower8; \
@@ -989,6 +985,8 @@ enum data_align { align_abi, align_opt, align_both };
 #define ALTIVEC_OR_VSX_VECTOR_MODE(MODE)				\
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
    || (MODE) == V2DImode || (MODE) == V1TImode)
+
+#define TI_OR_PTI_MODE(mode) ((mode) == TImode || (mode) == PTImode)
 
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */

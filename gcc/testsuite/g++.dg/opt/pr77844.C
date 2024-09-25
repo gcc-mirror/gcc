@@ -1,6 +1,7 @@
 // PR debug/77844
 // { dg-do compile }
 // { dg-options "-O3 -g" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

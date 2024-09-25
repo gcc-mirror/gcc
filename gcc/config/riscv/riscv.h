@@ -316,7 +316,7 @@ ASM_MISA_SPEC
 
 #define FIRST_PSEUDO_REGISTER 128
 
-/* x0, sp, gp, and tp are fixed.  */
+/* x0, ra, sp, gp, and tp are fixed.  */
 
 #define FIXED_REGISTERS							\
 { /* General registers.  */						\
@@ -428,6 +428,11 @@ ASM_MISA_SPEC
 #define RISCV_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP_REGNUM)
 #define RISCV_PROLOGUE_TEMP2_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_PROLOGUE_TEMP2(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP2_REGNUM)
+
+/* Both prologue temp registers are used in the vector probe loop for when
+   stack-clash protection is enabled, so we need to copy SP to a new register
+   and set it as CFA during the loop, we are using T3 for that.  */
+#define RISCV_STACK_CLASH_VECTOR_CFA_REGNUM (GP_TEMP_FIRST + 23)
 
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
@@ -1234,8 +1239,6 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 #define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
 
-#define RISCV_DWARF_VLENB (4096 + 0xc22)
-
 #define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER + 1 /* VLENB */)
 
 #define DWARF_REG_TO_UNWIND_COLUMN(REGNO) \
@@ -1259,5 +1262,30 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 
 /* Check TLS Descriptors mechanism is selected.  */
 #define TARGET_TLSDESC (riscv_tls_dialect == TLS_DESCRIPTORS)
+
+/* This value is the amount of bytes a caller is allowed to drop the stack
+   before probing has to be done for stack clash protection.  */
+#define STACK_CLASH_CALLER_GUARD 1024
+
+/* This value controls how many pages we manually unroll the loop for when
+   generating stack clash probes.  */
+#define STACK_CLASH_MAX_UNROLL_PAGES 4
+
+/* This value represents the minimum amount of bytes we expect the function's
+   outgoing arguments to be when stack-clash is enabled.  */
+#define STACK_CLASH_MIN_BYTES_OUTGOING_ARGS 8
+
+/* Allocate a minimum of STACK_CLASH_MIN_BYTES_OUTGOING_ARGS bytes for the
+   outgoing arguments if stack clash protection is enabled.  This is essential
+   as the extra arg space allows us to skip a check in alloca.  */
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)			   \
+   ((flag_stack_clash_protection			   \
+     && cfun->calls_alloca				   \
+     && known_lt (crtl->outgoing_args_size,		   \
+		  STACK_CLASH_MIN_BYTES_OUTGOING_ARGS))    \
+    ? ROUND_UP (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,       \
+		STACK_BOUNDARY / BITS_PER_UNIT)		   \
+    : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
 
 #endif /* ! GCC_RISCV_H */

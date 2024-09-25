@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fanalyzer-verbosity=1" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 
 #include <stdlib.h>
 

@@ -2,6 +2,7 @@
 /* { dg-require-effective-target avx512bw } */
 /* { dg-require-effective-target avx512vl } */
 /* { dg-options "-O2 -std=c++17 -mavx512bw -mavx512vl" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <cstdint>
 #include <x86intrin.h>

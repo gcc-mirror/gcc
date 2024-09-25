@@ -1,7 +1,7 @@
 // PR preprocessor/48740
+// { dg-do run { target { c || c++11 } } }
 // { dg-options "-std=gnu99 -trigraphs -save-temps" { target c } }
-// { dg-options "-std=c++0x -save-temps" { target c++ } }
-// { dg-do run }
+// { dg-options "-save-temps" { target c++ } }
 
 int main ()
 {
@@ -9,4 +9,3 @@ int main ()
 			   "foo%sbar%sfred%sbob?""?""?""?""?",
 			   sizeof ("foo%sbar%sfred%sbob?""?""?""?""?"));
 }
-

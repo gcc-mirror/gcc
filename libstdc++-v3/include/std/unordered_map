@@ -46,6 +46,7 @@
 # include <debug/unordered_map>
 #endif
 
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_generic_unordered_lookup
 #define __glibcxx_want_node_extract

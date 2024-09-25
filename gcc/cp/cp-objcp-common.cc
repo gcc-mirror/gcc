@@ -701,7 +701,6 @@ cp_common_init_ts (void)
   MARK_TS_EXP (UNARY_RIGHT_FOLD_EXPR);
 
   /* Constraints.  */
-  MARK_TS_EXP (CHECK_CONSTR);
   MARK_TS_EXP (COMPOUND_REQ);
   MARK_TS_EXP (CONJ_CONSTR);
   MARK_TS_EXP (DISJ_CONSTR);

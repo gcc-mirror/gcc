@@ -27,7 +27,7 @@
     return x;                                           \
   }                                                     \
                                                         \
-  __attribute__((noinline,noclone))                     \
+  __attribute__((noipa))                                \
   unsigned char select_## NAME (TYP x, unsigned char y) \
   {                                                     \
     return value_## NAME (x, y);                        \

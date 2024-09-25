@@ -65,10 +65,10 @@ ResolveTraitItems::visit (AST::Function &function)
 
   if (function.has_generics ())
     for (auto &generic : function.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   if (function.has_return_type ())
-    ResolveType::go (function.get_return_type ().get ());
+    ResolveType::go (function.get_return_type ());
 
   // self turns into (self: Self) as a function param
   std::vector<PatternBinding> bindings
@@ -80,45 +80,45 @@ ResolveTraitItems::visit (AST::Function &function)
     {
       if (p->is_variadic ())
 	{
-	  auto param = static_cast<AST::VariadicParam *> (p.get ());
-	  PatternDeclaration::go (param->get_pattern ().get (),
-				  Rib::ItemType::Param, bindings);
+	  auto param = static_cast<AST::VariadicParam &> (*p);
+	  PatternDeclaration::go (param.get_pattern (), Rib::ItemType::Param,
+				  bindings);
 	}
       else if (p->is_self ())
 	{
-	  auto param = static_cast<AST::SelfParam *> (p.get ());
+	  auto &param = static_cast<AST::SelfParam &> (*p);
 	  // FIXME: which location should be used for Rust::Identifier `self`?
 	  AST::IdentifierPattern self_pattern (
-	    param->get_node_id (), {"self"}, param->get_locus (),
-	    param->get_has_ref (), param->get_is_mut (),
+	    param.get_node_id (), {"self"}, param.get_locus (),
+	    param.get_has_ref (), param.get_is_mut (),
 	    std::unique_ptr<AST::Pattern> (nullptr));
 
-	  PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+	  PatternDeclaration::go (self_pattern, Rib::ItemType::Param);
 
-	  if (param->has_type ())
+	  if (param.has_type ())
 	    {
 	      // This shouldn't happen the parser should already error for this
-	      rust_assert (!param->get_has_ref ());
-	      ResolveType::go (param->get_type ().get ());
+	      rust_assert (!param.get_has_ref ());
+	      ResolveType::go (param.get_type ());
 	    }
 	  else
 	    {
 	      // here we implicitly make self have a type path of Self
 	      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
 	      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-		new AST::TypePathSegment ("Self", false, param->get_locus ())));
+		new AST::TypePathSegment ("Self", false, param.get_locus ())));
 
 	      AST::TypePath self_type_path (std::move (segments),
-					    param->get_locus ());
-	      ResolveType::go (&self_type_path);
+					    param.get_locus ());
+	      ResolveType::go (self_type_path);
 	    }
 	}
       else
 	{
-	  auto param = static_cast<AST::FunctionParam *> (p.get ());
-	  ResolveType::go (param->get_type ().get ());
-	  PatternDeclaration::go (param->get_pattern ().get (),
-				  Rib::ItemType::Param, bindings);
+	  auto &param = static_cast<AST::FunctionParam &> (*p);
+	  ResolveType::go (param.get_type ());
+	  PatternDeclaration::go (param.get_pattern (), Rib::ItemType::Param,
+				  bindings);
 	}
     }
 
@@ -127,7 +127,7 @@ ResolveTraitItems::visit (AST::Function &function)
 
   // trait items have an optional body
   if (function.has_body ())
-    ResolveExpr::go (function.get_definition ()->get (), path, cpath);
+    ResolveExpr::go (*function.get_definition ().value (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -143,7 +143,7 @@ ResolveTraitItems::visit (AST::TraitItemType &type)
   mappings->insert_canonical_path (type.get_node_id (), cpath);
 
   for (auto &bound : type.get_type_param_bounds ())
-    ResolveTypeBound::go (bound.get ());
+    ResolveTypeBound::go (*bound);
 }
 
 void
@@ -155,10 +155,10 @@ ResolveTraitItems::visit (AST::TraitItemConst &constant)
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (constant.get_node_id (), cpath);
 
-  ResolveType::go (constant.get_type ().get ());
+  ResolveType::go (constant.get_type ());
 
   if (constant.has_expr ())
-    ResolveExpr::go (constant.get_expr ().get (), path, cpath);
+    ResolveExpr::go (constant.get_expr (), path, cpath);
 }
 
 ResolveItem::ResolveItem (const CanonicalPath &prefix,
@@ -167,11 +167,11 @@ ResolveItem::ResolveItem (const CanonicalPath &prefix,
 {}
 
 void
-ResolveItem::go (AST::Item *item, const CanonicalPath &prefix,
+ResolveItem::go (AST::Item &item, const CanonicalPath &prefix,
 		 const CanonicalPath &canonical_prefix)
 {
   ResolveItem resolver (prefix, canonical_prefix);
-  item->accept_vis (resolver);
+  item.accept_vis (resolver);
 }
 
 void
@@ -189,12 +189,12 @@ ResolveItem::visit (AST::TypeAlias &alias)
 
   if (alias.has_generics ())
     for (auto &generic : alias.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   if (alias.has_where_clause ())
     ResolveWhereClause::Resolve (alias.get_where_clause ());
 
-  ResolveType::go (alias.get_type_aliased ().get ());
+  ResolveType::go (alias.get_type_aliased ());
 
   resolver->get_type_scope ().pop ();
 }
@@ -221,11 +221,11 @@ ResolveItem::visit (AST::Module &module)
   // FIXME: Should we reinsert a child here? Any reason we ResolveTopLevel::go
   // in ResolveTopLevel::visit (AST::Module) as well as here?
   for (auto &item : module.get_items ())
-    ResolveTopLevel::go (item.get (), CanonicalPath::create_empty (), cpath);
+    ResolveTopLevel::go (*item, CanonicalPath::create_empty (), cpath);
 
   resolver->push_new_module_scope (module.get_node_id ());
   for (auto &item : module.get_items ())
-    ResolveItem::go (item.get (), path, cpath);
+    ResolveItem::go (*item, path, cpath);
 
   resolver->pop_module_scope ();
 
@@ -251,19 +251,19 @@ ResolveItem::visit (AST::TupleStruct &struct_decl)
 
   if (struct_decl.has_generics ())
     for (auto &generic : struct_decl.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   if (struct_decl.has_where_clause ())
     ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
 
   for (AST::TupleField &field : struct_decl.get_fields ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
       resolve_visibility (field.get_visibility ());
 
-      ResolveType::go (field.get_field_type ().get ());
+      ResolveType::go (field.get_field_type ());
     }
 
   resolver->get_type_scope ().pop ();
@@ -285,14 +285,14 @@ ResolveItem::visit (AST::Enum &enum_decl)
 
   if (enum_decl.has_generics ())
     for (auto &generic : enum_decl.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, cpath);
+      ResolveGenericParam::go (*generic, prefix, cpath);
 
   if (enum_decl.has_where_clause ())
     ResolveWhereClause::Resolve (enum_decl.get_where_clause ());
 
   /* The actual fields are inside the variants.  */
   for (auto &variant : enum_decl.get_variants ())
-    ResolveItem::go (variant.get (), path, cpath);
+    ResolveItem::go (*variant, path, cpath);
 
   resolver->get_type_scope ().pop ();
 }
@@ -322,10 +322,10 @@ ResolveItem::visit (AST::EnumItemTuple &item)
 
   for (auto &field : item.get_tuple_fields ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
-      ResolveType::go (field.get_field_type ().get ());
+      ResolveType::go (field.get_field_type ());
     }
 }
 
@@ -340,10 +340,10 @@ ResolveItem::visit (AST::EnumItemStruct &item)
 
   for (auto &field : item.get_struct_fields ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
-      ResolveType::go (field.get_field_type ().get ());
+      ResolveType::go (field.get_field_type ());
     }
 }
 
@@ -375,19 +375,19 @@ ResolveItem::visit (AST::StructStruct &struct_decl)
 
   if (struct_decl.has_generics ())
     for (auto &generic : struct_decl.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   if (struct_decl.has_where_clause ())
     ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
 
   for (AST::StructField &field : struct_decl.get_fields ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
       resolve_visibility (field.get_visibility ());
 
-      ResolveType::go (field.get_field_type ().get ());
+      ResolveType::go (field.get_field_type ());
     }
 
   resolver->get_type_scope ().pop ();
@@ -410,17 +410,17 @@ ResolveItem::visit (AST::Union &union_decl)
 
   if (union_decl.has_generics ())
     for (auto &generic : union_decl.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   if (union_decl.has_where_clause ())
     ResolveWhereClause::Resolve (union_decl.get_where_clause ());
 
   for (AST::StructField &field : union_decl.get_variants ())
     {
-      if (field.get_field_type ()->is_marked_for_strip ())
+      if (field.get_field_type ().is_marked_for_strip ())
 	continue;
 
-      ResolveType::go (field.get_field_type ().get ());
+      ResolveType::go (field.get_field_type ());
     }
 
   resolver->get_type_scope ().pop ();
@@ -435,8 +435,8 @@ ResolveItem::visit (AST::StaticItem &var)
   auto cpath = canonical_prefix.append (decl);
   mappings->insert_canonical_path (var.get_node_id (), cpath);
 
-  ResolveType::go (var.get_type ().get ());
-  ResolveExpr::go (var.get_expr ().get (), path, cpath);
+  ResolveType::go (var.get_type ());
+  ResolveExpr::go (var.get_expr (), path, cpath);
 }
 
 void
@@ -450,8 +450,8 @@ ResolveItem::visit (AST::ConstantItem &constant)
 
   resolve_visibility (constant.get_visibility ());
 
-  ResolveType::go (constant.get_type ().get ());
-  ResolveExpr::go (constant.get_expr ().get (), path, cpath);
+  ResolveType::go (constant.get_type ());
+  ResolveExpr::go (constant.get_expr (), path, cpath);
 }
 
 void
@@ -477,45 +477,44 @@ ResolveItem::visit (AST::Function &function)
 
   if (function.has_generics ())
     for (auto &generic : function.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   // resolve any where clause items
   if (function.has_where_clause ())
     ResolveWhereClause::Resolve (function.get_where_clause ());
 
   if (function.has_return_type ())
-    ResolveType::go (function.get_return_type ().get ());
+    ResolveType::go (function.get_return_type ());
 
   if (function.has_self_param ())
     {
       // self turns into (self: Self) as a function param
-      std::unique_ptr<AST::Param> &s_param = function.get_self_param ();
-      auto self_param = static_cast<AST::SelfParam *> (s_param.get ());
+      AST::Param &s_param = function.get_self_param ();
+      auto &self_param = static_cast<AST::SelfParam &> (s_param);
 
       // FIXME: which location should be used for Rust::Identifier `self`?
       AST::IdentifierPattern self_pattern (
-	self_param->get_node_id (), {"self"}, self_param->get_locus (),
-	self_param->get_has_ref (), self_param->get_is_mut (),
+	self_param.get_node_id (), {"self"}, self_param.get_locus (),
+	self_param.get_has_ref (), self_param.get_is_mut (),
 	std::unique_ptr<AST::Pattern> (nullptr));
-      PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+      PatternDeclaration::go (self_pattern, Rib::ItemType::Param);
 
-      if (self_param->has_type ())
+      if (self_param.has_type ())
 	{
 	  // This shouldn't happen the parser should already error for this
-	  rust_assert (!self_param->get_has_ref ());
-	  ResolveType::go (self_param->get_type ().get ());
+	  rust_assert (!self_param.get_has_ref ());
+	  ResolveType::go (self_param.get_type ());
 	}
       else
 	{
 	  // here we implicitly make self have a type path of Self
 	  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
 	  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-	    new AST::TypePathSegment ("Self", false,
-				      self_param->get_locus ())));
+	    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
 
 	  AST::TypePath self_type_path (std::move (segments),
-					self_param->get_locus ());
-	  ResolveType::go (&self_type_path);
+					self_param.get_locus ());
+	  ResolveType::go (self_type_path);
 	}
     }
 
@@ -528,28 +527,28 @@ ResolveItem::visit (AST::Function &function)
     {
       if (p->is_variadic ())
 	{
-	  auto param = static_cast<AST::VariadicParam *> (p.get ());
-	  if (param->has_pattern ())
-	    PatternDeclaration::go (param->get_pattern ().get (),
-				    Rib::ItemType::Param, bindings);
+	  auto &param = static_cast<AST::VariadicParam &> (*p);
+	  if (param.has_pattern ())
+	    PatternDeclaration::go (param.get_pattern (), Rib::ItemType::Param,
+				    bindings);
 	}
       else if (p->is_self ())
 	{
-	  auto param = static_cast<AST::SelfParam *> (p.get ());
-	  if (param->has_type ())
-	    ResolveType::go (param->get_type ().get ());
+	  auto &param = static_cast<AST::SelfParam &> (*p);
+	  if (param.has_type ())
+	    ResolveType::go (param.get_type ());
 	}
       else
 	{
-	  auto param = static_cast<AST::FunctionParam *> (p.get ());
-	  ResolveType::go (param->get_type ().get ());
-	  PatternDeclaration::go (param->get_pattern ().get (),
-				  Rib::ItemType::Param, bindings);
+	  auto &param = static_cast<AST::FunctionParam &> (*p);
+	  ResolveType::go (param.get_type ());
+	  PatternDeclaration::go (param.get_pattern (), Rib::ItemType::Param,
+				  bindings);
 	}
     }
 
   // resolve the function body
-  ResolveExpr::go (function.get_definition ()->get (), path, cpath);
+  ResolveExpr::go (*function.get_definition ().value (), path, cpath);
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -569,7 +568,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
 
   if (impl_block.has_generics ())
     for (auto &generic : impl_block.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   // resolve any where clause items
   if (impl_block.has_where_clause ())
@@ -578,12 +577,11 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   // FIXME this needs to be protected behind nominal type-checks see:
   // rustc --explain E0118
   // issue #2634
-  ResolveType::go (impl_block.get_type ().get ());
+  ResolveType::go (impl_block.get_type ());
 
   // Setup paths
   CanonicalPath self_cpath = CanonicalPath::create_empty ();
-  bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_type ().get (),
-					    self_cpath);
+  bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_type (), self_cpath);
   rust_assert (ok);
   rust_debug ("AST::InherentImpl resolve Self: {%s}",
 	      self_cpath.get ().c_str ());
@@ -610,22 +608,22 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
   // done setup paths
 
   auto Self
-    = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
+    = CanonicalPath::get_big_self (impl_block.get_type ().get_node_id ());
 
   resolver->get_type_scope ().insert (Self,
-				      impl_block.get_type ()->get_node_id (),
-				      impl_block.get_type ()->get_locus ());
+				      impl_block.get_type ().get_node_id (),
+				      impl_block.get_type ().get_locus ());
 
   for (auto &impl_item : impl_block.get_impl_items ())
     {
       rust_debug (
 	"AST::InherentImpl resolve_impl_item: impl_prefix={%s} cpath={%s}",
 	impl_prefix.get ().c_str (), cpath.get ().c_str ());
-      resolve_impl_item (impl_item.get (), impl_prefix, cpath);
+      resolve_impl_item (*impl_item, impl_prefix, cpath);
     }
 
   resolver->get_type_scope ().peek ()->clear_name (
-    Self, impl_block.get_type ()->get_node_id ());
+    Self, impl_block.get_type ().get_node_id ());
 
   resolver->get_type_scope ().pop ();
   resolver->get_name_scope ().pop ();
@@ -647,14 +645,14 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   if (impl_block.has_generics ())
     for (auto &generic : impl_block.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   // resolve any where clause items
   if (impl_block.has_where_clause ())
     ResolveWhereClause::Resolve (impl_block.get_where_clause ());
 
   // CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
-  NodeId trait_resolved_node = ResolveType::go (&impl_block.get_trait_path ());
+  NodeId trait_resolved_node = ResolveType::go (impl_block.get_trait_path ());
   if (trait_resolved_node == UNKNOWN_NODEID)
     {
       resolver->get_name_scope ().pop ();
@@ -664,7 +662,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
     }
 
   //   CanonicalPath canonical_impl_type = CanonicalPath::create_empty ();
-  NodeId type_resolved_node = ResolveType::go (impl_block.get_type ().get ());
+  NodeId type_resolved_node = ResolveType::go (impl_block.get_type ());
   if (type_resolved_node == UNKNOWN_NODEID)
     {
       resolver->get_name_scope ().pop ();
@@ -676,7 +674,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   bool ok;
   // setup paths
   CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
-  ok = ResolveTypeToCanonicalPath::go (&impl_block.get_trait_path (),
+  ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path (),
 				       canonical_trait_type);
   rust_assert (ok);
 
@@ -684,7 +682,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 	      canonical_trait_type.get ().c_str ());
 
   CanonicalPath canonical_impl_type = CanonicalPath::create_empty ();
-  ok = ResolveTypeToCanonicalPath::go (impl_block.get_type ().get (),
+  ok = ResolveTypeToCanonicalPath::go (impl_block.get_type (),
 				       canonical_impl_type);
   rust_assert (ok);
 
@@ -723,22 +721,22 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
   // DONE setup canonical-path
 
   auto Self
-    = CanonicalPath::get_big_self (impl_block.get_type ()->get_node_id ());
+    = CanonicalPath::get_big_self (impl_block.get_type ().get_node_id ());
 
   resolver->get_type_scope ().insert (Self,
-				      impl_block.get_type ()->get_node_id (),
-				      impl_block.get_type ()->get_locus ());
+				      impl_block.get_type ().get_node_id (),
+				      impl_block.get_type ().get_locus ());
 
   for (auto &impl_item : impl_block.get_impl_items ())
     {
       rust_debug (
 	"AST::TraitImpl resolve_impl_item: impl_prefix={%s} cpath={%s}",
 	impl_prefix.get ().c_str (), cpath.get ().c_str ());
-      resolve_impl_item (impl_item.get (), impl_prefix, cpath);
+      resolve_impl_item (*impl_item, impl_prefix, cpath);
     }
 
   Rib *r = resolver->get_type_scope ().peek ();
-  r->clear_name (Self, impl_block.get_type ()->get_node_id ());
+  r->clear_name (Self, impl_block.get_type ().get_node_id ());
 
   resolver->get_name_scope ().pop ();
   resolver->get_type_scope ().pop ();
@@ -766,7 +764,7 @@ ResolveItem::visit (AST::Trait &trait)
   CanonicalPath Self = CanonicalPath::get_big_self (trait.get_node_id ());
 
   for (auto &generic : trait.get_generic_params ())
-    ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+    ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   // Self is an implicit TypeParam so lets mark it as such
   resolver->get_type_scope ().append_reference_for_def (
@@ -776,7 +774,7 @@ ResolveItem::visit (AST::Trait &trait)
     {
       for (auto &bound : trait.get_type_param_bounds ())
 	{
-	  ResolveTypeBound::go (bound.get ());
+	  ResolveTypeBound::go (*bound);
 	}
     }
 
@@ -805,12 +803,12 @@ ResolveItem::visit (AST::ExternBlock &extern_block)
 
   for (auto &item : extern_block.get_extern_items ())
     {
-      resolve_extern_item (item.get ());
+      resolve_extern_item (*item);
     }
 }
 
 void
-ResolveItem::resolve_impl_item (AST::AssociatedItem *item,
+ResolveItem::resolve_impl_item (AST::AssociatedItem &item,
 				const CanonicalPath &prefix,
 				const CanonicalPath &canonical_prefix)
 {
@@ -818,7 +816,7 @@ ResolveItem::resolve_impl_item (AST::AssociatedItem *item,
 }
 
 void
-ResolveItem::resolve_extern_item (AST::ExternalItem *item)
+ResolveItem::resolve_extern_item (AST::ExternalItem &item)
 {
   ResolveExternItem::go (item, prefix, canonical_prefix);
 }
@@ -954,7 +952,7 @@ ResolveItem::visit (AST::UseDeclaration &use_item)
       auto &path = import.get_path ();
 
       rust_debug ("resolving use-decl path: [%s]", path.as_string ().c_str ());
-      NodeId resolved_node_id = ResolvePath::go (&path);
+      NodeId resolved_node_id = ResolvePath::go (path);
       bool ok = resolved_node_id != UNKNOWN_NODEID;
       if (!ok)
 	continue;
@@ -978,14 +976,14 @@ ResolveImplItems::ResolveImplItems (const CanonicalPath &prefix,
 {}
 
 void
-ResolveImplItems::go (AST::AssociatedItem *item, const CanonicalPath &prefix,
+ResolveImplItems::go (AST::AssociatedItem &item, const CanonicalPath &prefix,
 		      const CanonicalPath &canonical_prefix)
 {
-  if (item->is_marked_for_strip ())
+  if (item.is_marked_for_strip ())
     return;
 
   ResolveImplItems resolver (prefix, canonical_prefix);
-  item->accept_vis (resolver);
+  item.accept_vis (resolver);
 }
 
 void
@@ -1001,19 +999,20 @@ ResolveImplItems::visit (AST::TypeAlias &alias)
 }
 
 void
-ResolveExternItem::go (AST::ExternalItem *item, const CanonicalPath &prefix,
+ResolveExternItem::go (AST::ExternalItem &item, const CanonicalPath &prefix,
 		       const CanonicalPath &canonical_prefix)
 {
   ResolveExternItem resolver (prefix, canonical_prefix);
-  item->accept_vis (resolver);
+  item.accept_vis (resolver);
 }
 
 void
-ResolveExternItem::visit (AST::ExternalFunctionItem &function)
+ResolveExternItem::visit (AST::Function &function)
 {
   NodeId scope_node_id = function.get_node_id ();
-  auto decl = CanonicalPath::new_seg (function.get_node_id (),
-				      function.get_identifier ().as_string ());
+  auto decl
+    = CanonicalPath::new_seg (function.get_node_id (),
+			      function.get_function_name ().as_string ());
   auto path = prefix.append (decl);
   auto cpath = canonical_prefix.append (decl);
 
@@ -1031,16 +1030,19 @@ ResolveExternItem::visit (AST::ExternalFunctionItem &function)
   // resolve the generics
   if (function.has_generics ())
     for (auto &generic : function.get_generic_params ())
-      ResolveGenericParam::go (generic.get (), prefix, canonical_prefix);
+      ResolveGenericParam::go (*generic, prefix, canonical_prefix);
 
   if (function.has_return_type ())
-    ResolveType::go (function.get_return_type ().get ());
+    ResolveType::go (function.get_return_type ());
 
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
-    if (!param.is_variadic ())
-      ResolveType::go (param.get_type ().get ());
+    if (!param->is_variadic ())
+      {
+	auto &p = static_cast<AST::FunctionParam &> (*param);
+	ResolveType::go (p.get_type ());
+      }
 
   // done
   resolver->get_name_scope ().pop ();
@@ -1053,7 +1055,7 @@ ResolveExternItem::visit (AST::ExternalStaticItem &item)
 {
   resolve_visibility (item.get_visibility ());
 
-  ResolveType::go (item.get_type ().get ());
+  ResolveType::go (item.get_type ());
 }
 
 } // namespace Resolver

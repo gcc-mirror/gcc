@@ -464,6 +464,23 @@ namespace __detail
 	this->_M_incr();
 	return __tmp;
       }
+
+#if __cpp_impl_three_way_comparison >= 201907L
+      friend bool
+      operator==(const _Node_iterator&, const _Node_iterator&) = default;
+#else
+      friend bool
+      operator==(const _Node_iterator& __x, const _Node_iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const _Node_iterator& __x, const _Node_iterator& __y) noexcept
+      { return !(__x == __y); }
+#endif
     };
 
   /// Node const_iterators, used to iterate through all the hashtable.
@@ -474,6 +491,10 @@ namespace __detail
     private:
       using __base_type = _Node_iterator_base<_Value, __cache>;
       using __node_type = typename __base_type::__node_type;
+
+      // The corresponding non-const iterator.
+      using __iterator
+	= _Node_iterator<_Value, __constant_iterators, __cache>;
 
     public:
       typedef _Value					value_type;
@@ -489,8 +510,7 @@ namespace __detail
       _Node_const_iterator(__node_type* __p) noexcept
       : __base_type(__p) { }
 
-      _Node_const_iterator(const _Node_iterator<_Value, __constant_iterators,
-			   __cache>& __x) noexcept
+      _Node_const_iterator(const __iterator& __x) noexcept
       : __base_type(__x._M_cur) { }
 
       reference
@@ -515,6 +535,62 @@ namespace __detail
 	this->_M_incr();
 	return __tmp;
       }
+
+#if __cpp_impl_three_way_comparison >= 201907L
+      friend bool
+      operator==(const _Node_const_iterator&,
+		 const _Node_const_iterator&) = default;
+
+      friend bool
+      operator==(const _Node_const_iterator& __x, const __iterator& __y)
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+#else
+      friend bool
+      operator==(const _Node_const_iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const _Node_const_iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      { return !(__x == __y); }
+
+      friend bool
+      operator==(const _Node_const_iterator& __x,
+		 const __iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const _Node_const_iterator& __x,
+		 const __iterator& __y) noexcept
+      { return !(__x == __y); }
+
+      friend bool
+      operator==(const __iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      {
+	const __base_type& __bx = __x;
+	const __base_type& __by = __y;
+	return __bx == __by;
+      }
+
+      friend bool
+      operator!=(const __iterator& __x,
+		 const _Node_const_iterator& __y) noexcept
+      { return !(__x == __y); }
+#endif
     };
 
   // Many of class template _Hashtable's template parameters are policy

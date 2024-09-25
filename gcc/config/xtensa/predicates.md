@@ -159,6 +159,26 @@
   return real_equal (CONST_DOUBLE_REAL_VALUE (op), &dconst1);
 })
 
+(define_predicate "fix_scaling_operand"
+  (match_code "const_double")
+{
+  REAL_VALUE_TYPE r = *CONST_DOUBLE_REAL_VALUE (op);
+  int exp = REAL_EXP (&r) - 1;
+
+  SET_REAL_EXP (&r, 1);
+  return real_equal (&r, &dconst1) && IN_RANGE (exp, 2, 15);
+})
+
+(define_predicate "float_scaling_operand"
+  (match_code "const_double")
+{
+  REAL_VALUE_TYPE r = *CONST_DOUBLE_REAL_VALUE (op);
+  int exp = REAL_EXP (&r) - 1;
+
+  SET_REAL_EXP (&r, 1);
+  return real_equal (&r, &dconst1) && IN_RANGE (-exp, 1, 15);
+})
+
 (define_predicate "fpmem_offset_operand"
   (and (match_code "const_int")
        (match_test "xtensa_mem_offset (INTVAL (op), SFmode)")))

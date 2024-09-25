@@ -1,6 +1,7 @@
 /* Test path-printing in the face of macros.  */
 
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 /* { dg-enable-nn-line-numbers "" } */
 
 #include "malloc-macro.h"

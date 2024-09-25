@@ -93,7 +93,7 @@ interesting_t::dump_to_pp (pretty_printer *pp, bool simple) const
 label_text
 evdesc::event_desc::formatted_print (const char *fmt, ...) const
 {
-  pretty_printer *pp = global_dc->printer->clone ();
+  pretty_printer *pp = global_dc->m_printer->clone ();
 
   pp_show_color (pp) = m_colorize;
 

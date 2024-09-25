@@ -14,22 +14,22 @@ SS_FUN (ss_add, +, fx_t, hr)
 SS_FUN (ss_sub, -, fx_t, hr)
 
 #define VAL(N, X)                               \
-    __attribute__((noinline,noclone))           \
+    __attribute__((noipa))                      \
     satfx_t ss_add2_##N (satfx_t a)             \
     {                                           \
         return ss_add_hr (a, X##P##-##7hr);     \
     }                                           \
-    __attribute__((noinline,noclone))           \
+    __attribute__((noipa))                      \
     satfx_t ss_add_##N (satfx_t a)              \
     {                                           \
         return a + X##P##-##7hr;                \
     }                                           \
-    __attribute__((noinline,noclone))           \
+    __attribute__((noipa))                      \
     satfx_t ss_sub2_##N (satfx_t a)             \
     {                                           \
         return ss_sub_hr (a, X##P##-##7hr);     \
     }                                           \
-    __attribute__((noinline,noclone))           \
+    __attribute__((noipa))                      \
     satfx_t ss_sub_##N (satfx_t a)              \
     {                                           \
         return a - X##P##-##7hr;                \
@@ -37,25 +37,25 @@ SS_FUN (ss_sub, -, fx_t, hr)
 #include "vals-hr.def"
 #undef VAL
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_add2_99 (satfx_t a)
 {
   return ss_add_hr (a, __FRACT_MIN__);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_add_99 (satfx_t a)
 {
   return a + __FRACT_MIN__;
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_sub2_99 (satfx_t a)
 {
   return ss_sub_hr (a, __FRACT_MIN__);
 }
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 satfx_t ss_sub_99 (satfx_t a)
 {
   return a - __FRACT_MIN__;

@@ -36,6 +36,9 @@
 
 #pragma GCC system_header
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
+
 #include <bits/cxxabi_forced.h>
 #include <bits/move.h>   // for swap
 #include <cerrno>
@@ -1094,4 +1097,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#pragma GCC diagnostic pop
 #endif

@@ -5,7 +5,7 @@ typedef __UINT32_TYPE__ uint32_t;
 
 typedef uint32_t T;
 
-#define NI __attribute__((noinline,noclone))
+#define NI __attribute__((noipa))
 
 
 #ifndef __AVR_TINY__

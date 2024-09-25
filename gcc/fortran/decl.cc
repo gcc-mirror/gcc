@@ -912,6 +912,7 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
 
       /* Set the rank/shape to match the LHS as auto-reshape is implied. */
       expr->rank = as->rank;
+      expr->corank = as->corank;
       expr->shape = gfc_get_shape (as->rank);
       for (int i = 0; i < as->rank; ++i)
 	spec_dimen_size (as, i, &expr->shape[i]);
@@ -2277,6 +2278,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      mpz_clear (size);
 	    }
 	  init->rank = sym->as->rank;
+	  init->corank = sym->as->corank;
 	}
 
       sym->value = init;
@@ -4340,6 +4342,17 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       ts->type = BT_INTEGER;
       ts->kind = gfc_default_integer_kind;
       goto get_kind;
+    }
+
+  if (flag_unsigned)
+    {
+      if ((matched_type && strcmp ("unsigned", name) == 0)
+	  || (!matched_type && gfc_match (" unsigned") == MATCH_YES))
+	{
+	  ts->type = BT_UNSIGNED;
+	  ts->kind = gfc_default_integer_kind;
+	  goto get_kind;
+	}
     }
 
   if ((matched_type && strcmp ("character", name) == 0)

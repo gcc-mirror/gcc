@@ -7,7 +7,7 @@
    
    In this testcase, CTF for enumerator GFS_MONOTONIC will not be generated.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "ascii \"GFS_MONOTONIC.0\"\[\t \]+\[^\n\]*ctf_string" 0 } } */

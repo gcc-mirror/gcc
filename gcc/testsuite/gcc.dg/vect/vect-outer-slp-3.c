@@ -30,6 +30,7 @@ int main ()
 {
   check_vect ();
 
+#pragma GCC novector
   for (int i = 0; i < 40; ++i)
     image[i] = 1.;
 

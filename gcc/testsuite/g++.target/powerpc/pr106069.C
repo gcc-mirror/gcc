@@ -1,6 +1,6 @@
+/* { dg-do run } */
 /* { dg-options "-O -fno-tree-forwprop -maltivec" } */
 /* { dg-require-effective-target vmx_hw } */
-/* { dg-do run } */
 
 typedef __attribute__ ((altivec (vector__))) unsigned native_simd_type;
 

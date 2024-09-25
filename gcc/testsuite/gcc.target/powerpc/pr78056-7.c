@@ -1,6 +1,4 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* dfp_hw represents power 6 */
-/* { dg-require-effective-target dfp_hw } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-options "-mdejagnu-cpu=power5" } */
 

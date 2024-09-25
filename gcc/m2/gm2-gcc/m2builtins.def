@@ -21,9 +21,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2builtins ;
 
-FROM SYSTEM IMPORT ADDRESS ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM CDataTypes IMPORT CharStar, ConstCharStar ;
+FROM gcctypes IMPORT location_t, tree ;
 
 EXPORT QUALIFIED GetBuiltinConst, GetBuiltinConstType,
                  GetBuiltinTypeInfoType, GetBuiltinTypeInfo,
@@ -37,7 +36,7 @@ EXPORT QUALIFIED GetBuiltinConst, GetBuiltinConstType,
                      NIL is returned if the constant is unknown.
 *)
 
-PROCEDURE GetBuiltinConst (name: ADDRESS) : Tree ;
+PROCEDURE GetBuiltinConst (name: CharStar) : tree ;
 
 
 (*
@@ -48,7 +47,7 @@ PROCEDURE GetBuiltinConst (name: ADDRESS) : Tree ;
                          2 = real
 *)
 
-PROCEDURE GetBuiltinConstType (name: ADDRESS) : CARDINAL ;
+PROCEDURE GetBuiltinConstType (name: CharStar) : CARDINAL ;
 
 
 
@@ -62,21 +61,21 @@ PROCEDURE GetBuiltinConstType (name: ADDRESS) : CARDINAL ;
                             3    if ident is large, small.
 *)
 
-PROCEDURE GetBuiltinTypeInfoType (ident: ADDRESS) : CARDINAL ;
+PROCEDURE GetBuiltinTypeInfoType (ident: ConstCharStar) : CARDINAL ;
 
 
 (*
-   GetBuiltinTypeInfo - returns a Tree value:
+   GetBuiltinTypeInfo - returns a tree value:
 
                         NULL_TREE        if ident is unknown.
-                        boolean Tree     if ident is IEC559, LIA1, ISO, IEEE, rounds, underflow,
+                        boolean tree     if ident is IEC559, LIA1, ISO, IEEE, rounds, underflow,
                                          exception, extend.
-                        ZType Tree       if ident is radix, places, exponentmin, exponentmax,
+                        ZType tree       if ident is radix, places, exponentmin, exponentmax,
                                          noofmodes.
-                        RType Tree       if ident is large, small.
+                        RType tree       if ident is large, small.
 *)
 
-PROCEDURE GetBuiltinTypeInfo (location: location_t; type: Tree; ident: ADDRESS) : Tree ;
+PROCEDURE GetBuiltinTypeInfo (location: location_t; type: tree; ident: ConstCharStar) : tree ;
 
 
 (*
@@ -84,28 +83,28 @@ PROCEDURE GetBuiltinTypeInfo (location: location_t; type: Tree; ident: ADDRESS) 
                    for this target architecture.
 *)
 
-PROCEDURE BuiltinExists (name: ADDRESS) : BOOLEAN ;
+PROCEDURE BuiltinExists (name: CharStar) : BOOLEAN ;
 
 
 (*
-   BuildBuiltinTree - returns a Tree containing the builtin function, name.
+   BuildBuiltinTree - returns a tree containing the builtin function, name.
 *)
 
-PROCEDURE BuildBuiltinTree (location: location_t; name: ADDRESS) : Tree ;
+PROCEDURE BuildBuiltinTree (location: location_t; name: CharStar) : tree ;
 
 
 (*
    BuiltinMemCopy and BuiltinAlloca - are called by M2GenGCC to implement open arrays.
 *)
 
-PROCEDURE BuiltinMemCopy (location: location_t; dest, src, n: Tree) : Tree ;
+PROCEDURE BuiltinMemCopy (location: location_t; dest, src, n: tree) : tree ;
 
 
 (*
    BuiltinMemSet is called by M2GenGCC to implement the set type.
 *)
 
-PROCEDURE BuiltinMemSet (location: location_t; dest, bytevalue, nbytes: Tree) : Tree ;
+PROCEDURE BuiltinMemSet (location: location_t; dest, bytevalue, nbytes: tree) : tree ;
 
 
 (*
@@ -113,16 +112,16 @@ PROCEDURE BuiltinMemSet (location: location_t; dest, bytevalue, nbytes: Tree) : 
                    of the current function.
 *)
 
-PROCEDURE BuiltInAlloca (location: location_t; n: Tree) : Tree ;
+PROCEDURE BuiltInAlloca (location: location_t; n: tree) : tree ;
 
 
 (*
-   BuiltInIsfinite - given an expression, e, return an integer Tree of 1 if the
-                     value is finite.  Return an integer Tree 0 if the value is
+   BuiltInIsfinite - given an expression, e, return an integer tree of 1 if the
+                     value is finite.  Return an integer tree 0 if the value is
                      not finite.
 *)
 
-PROCEDURE BuiltInIsfinite (location: location_t; e: Tree) : Tree ;
+PROCEDURE BuiltInIsfinite (location: location_t; e: tree) : tree ;
 
 
 END m2builtins.

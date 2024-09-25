@@ -1,4 +1,5 @@
 //  { dg-additional-options "-fno-exceptions" }
+//  { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <coroutine>
 #include <string>

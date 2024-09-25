@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fanalyzer-fine-grained" }
+   { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } }
    -fanalyzer-fine-grained is currently required; see PR analyzer/107851.  */
 
 #include <stdlib.h>

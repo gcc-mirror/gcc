@@ -12,11 +12,11 @@ namespace std {
 
 bool frame_live = false;
 bool promise_live = false;
-bool gro_live = false;
 
 struct X {};
 
 int Y_live = 0;
+int task_live = 0;
 
 struct Y
 {
@@ -85,7 +85,6 @@ struct task {
 #if GET_RETURN_OBJECT_THROWS
             throw X{};
 #endif
-	    bool gro_live = true;
             return task{};
         }
 
@@ -96,12 +95,12 @@ struct task {
         }
     };
 
-    task() { std::puts("task()"); }
-    ~task() { std::puts("~task()"); }
-    task(task&&) { std::puts("task(task&&)"); }
+    task() { std::puts("task()");  task_live++; }
+    ~task() { std::puts("~task()"); task_live--; }
+    task(task&&) { std::puts("task(task&&)"); task_live++;  }
 };
 
-task f(Y Val) {
+task f(Y Val __attribute__((__unused__))) {
     co_return;
 }
 
@@ -112,8 +111,8 @@ int main() {
         f(Val);
     } catch (X) {
         std::puts("caught X");
-        if (gro_live)
-          std::puts("gro live"), failed = true;
+        if (task_live)
+          std::puts("task live"), failed = true;
         if (promise_live)
           std::puts("promise live"), failed = true;
         if (frame_live)

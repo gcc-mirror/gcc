@@ -25,7 +25,7 @@
 import locale
 import sys
 from difflib import ndiff
-from itertools import dropwhile, takewhile
+from itertools import groupby
 
 import unidecode
 
@@ -38,8 +38,7 @@ if len(sys.argv) != 2:
     sys.exit(1)
 
 
-def sort_by_surname(line):
-    name = line.split('\t')[0]
+def get_surname(name):
     parts = name.split()
     surname = parts[-1]
 
@@ -52,35 +51,61 @@ def sort_by_surname(line):
         surname = 'Humieres'
 
     # Remove accents
-    return (unidecode.unidecode(surname), line)
+    return unidecode.unidecode(surname)
 
 
-def has_tab(line):
-    return '\t' in line
-
-
-def is_empty(line):
-    return line
-
-
-def check_group(name, lines):
+def check_group(name, lines, columns):
     global exit_code
 
+    named_lines = []
     for line in lines:
         if line.startswith(' '):
             print(f'Line should not start with space: "{line}"')
             exit_code = 2
+            continue
+
+        if line.endswith(' '):
+            print(f'Line should not end with space: "{line}"')
+            exit_code = 3
+            continue
 
         # Special-case some names
         if line == 'James Norris':
+            named_lines.append((get_surname(line), line + "\n"))
             continue
 
-        if '\t' not in line:
-            print(f'Name and email should be separated by tabs: "{line}"')
-            exit_code = 2
+        pieces = []
+        for i, column in enumerate(columns):
+            piece = ""
+            if len(line) <= column:
+                print(f'Line too short: "{line}"')
+                exit_code = 4
+            elif column > 0 and line[column - 1] != ' ':
+                print(f'Column {column - 1} should be empty: "{line}"')
+                exit_code = 5
+            elif line[column] == ' ':
+                print(f'Column {column} should be nonempty: "{line}"')
+                exit_code = 6
+            elif i == len(columns) - 1:
+                piece = line[column:].rstrip()
+            else:
+                piece = line[column:columns[i + 1]].rstrip()
 
-    lines = [line + '\n' for line in lines]
-    sorted_lines = sorted(lines, key=sort_by_surname)
+            if "  " in piece:
+                print(f'Malformed field at column {column}: "{line}"')
+                exit_code = 7
+
+            pieces.append(piece)
+
+        named_lines.append((get_surname(pieces[0]), line + "\n"))
+
+        email = pieces[-1]
+        if email and (not email.startswith('<') or not email.endswith('>')):
+            print(f'Malformed email address: "{line}"')
+            exit_code = 8
+
+    lines = [line + "\n" for line in lines]
+    sorted_lines = [line for _, line in sorted(named_lines)]
     if lines != sorted_lines:
         exit_code = 1
         diff = ndiff(lines, sorted_lines)
@@ -90,32 +115,35 @@ def check_group(name, lines):
         print(f'{name} are fine!')
 
 
-lines = open(sys.argv[1]).read().splitlines()
+text = open(sys.argv[1]).read()
+if '\t' in text:
+    print('The file should not contain tabs')
+    exit_code = 9
 
-needle = 'Global Reviewers'
-lines = list(dropwhile(lambda x: x.strip() != needle, lines))
-lines = lines[2:]
+sections = [
+    # heading, paragraph index, column numbers
+    ('Global Reviewers', 1, [0, 48]),
+    ('Write After Approval', 2, [0, 32, 48]),
+    ('Bug database only accounts', 1, [0, 48]),
+    ('Contributing under the DCO', 2, [0, 48])
+]
 
-chunk = list(takewhile(is_empty, lines))
-check_group(needle, chunk)
+i = 0
+count = 0
+for is_empty, lines in groupby(text.splitlines(), lambda x: not x):
+    if is_empty:
+        continue
+    lines = list(lines)
+    if count > 0:
+        count -= 1
+        if count == 0:
+            check_group(sections[i][0], lines, sections[i][2])
+            i += 1
+    elif len(lines) == 1 and i < len(sections) and sections[i][0] in lines[0]:
+        count = sections[i][1]
 
-needle = 'Write After Approval'
-lines = list(dropwhile(lambda x: needle not in x, lines))
-lines = lines[2:]
-
-chunk = list(takewhile(is_empty, lines))
-check_group(needle, chunk)
-
-needle = 'Bug database only accounts'
-lines = list(dropwhile(lambda x: needle not in x, lines))
-lines = lines[2:]
-
-chunk = list(takewhile(is_empty, lines))
-check_group(needle, chunk)
-
-needle = 'Contributing under the DCO'
-lines = list(dropwhile(lambda x: needle not in x, lines))[1:]
-lines = list(dropwhile(lambda x: not has_tab(x), lines))
-check_group(needle, lines)
+if i < len(sections):
+    print(f'Missing "{sections[i][0]}" section')
+    exit_code = 10
 
 sys.exit(exit_code)

@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-options "-O -mdejagnu-cpu=power7 -mno-altivec" } */
 
 /* { dg-warning "'-mno-altivec' disables vsx" "" { target *-*-* } 0 } */

@@ -60,18 +60,6 @@ package body System.Finalization_Primitives is
    --  Unlock the finalization collection, i.e. relinquish ownership of the
    --  lock to the collection.
 
-   ---------------------------
-   -- Add_Offset_To_Address --
-   ---------------------------
-
-   function Add_Offset_To_Address
-     (Addr   : System.Address;
-      Offset : System.Storage_Elements.Storage_Offset) return System.Address
-   is
-   begin
-      return System.Storage_Elements."+" (Addr, Offset);
-   end Add_Offset_To_Address;
-
    ---------------------------------
    -- Attach_Object_To_Collection --
    ---------------------------------
@@ -150,7 +138,7 @@ package body System.Finalization_Primitives is
       Node             : in out Master_Node)
    is
    begin
-      pragma Assert (Node.Object_Address = System.Null_Address
+      pragma Assert (Node.Object_Address = Null_Address
         and then Node.Finalize_Address = null);
 
       Node.Object_Address   := Object_Address;
@@ -322,7 +310,7 @@ package body System.Finalization_Primitives is
       if Master.Exceptions_OK then
          while Node /= null loop
             begin
-               Finalize_Object (Node.all);
+               Finalize_Object (Node.all, Node.Finalize_Address);
 
             exception
                when Exc : others =>
@@ -349,7 +337,7 @@ package body System.Finalization_Primitives is
 
       else
          while Node /= null loop
-            Finalize_Object (Node.all);
+            Finalize_Object (Node.all, Node.Finalize_Address);
 
             Node := Node.Next;
          end loop;
@@ -373,16 +361,18 @@ package body System.Finalization_Primitives is
    -- Finalize_Object --
    ---------------------
 
-   procedure Finalize_Object (Node : in out Master_Node) is
-      FA : constant Finalize_Address_Ptr := Node.Finalize_Address;
+   procedure Finalize_Object
+     (Node             : in out Master_Node;
+      Finalize_Address : Finalize_Address_Ptr)
+   is
+      Addr : constant System.Address := Node.Object_Address;
 
    begin
-      if FA /= null then
-         pragma Assert (Node.Object_Address /= System.Null_Address);
+      if Addr /= Null_Address then
+         Node.Object_Address := Null_Address;
 
-         Node.Finalize_Address := null;
-
-         FA (Node.Object_Address);
+         pragma Assert (Node.Finalize_Address = Finalize_Address);
+         Finalize_Address (Addr);
       end if;
    end Finalize_Object;
 
@@ -419,7 +409,7 @@ package body System.Finalization_Primitives is
 
    procedure Suppress_Object_Finalize_At_End (Node : in out Master_Node) is
    begin
-      Node.Finalize_Address := null;
+      Node.Object_Address := Null_Address;
    end Suppress_Object_Finalize_At_End;
 
    -----------------------

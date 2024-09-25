@@ -352,6 +352,7 @@ extern void mips_expand_atomic_qihi (union mips_gen_fn_ptrs,
 extern void mips_expand_vector_init (rtx, rtx);
 extern void mips_expand_vec_unpack (rtx op[2], bool, bool);
 extern void mips_expand_vec_reduc (rtx, rtx, rtx (*)(rtx, rtx, rtx));
+extern void mips_expand_msa_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 extern void mips_expand_vec_minmax (rtx, rtx, rtx,
 				    rtx (*) (rtx, rtx, rtx), bool);
 
@@ -387,6 +388,7 @@ extern mulsidi3_gen_fn mips_mulsidi3_gen_fn (enum rtx_code);
 extern void mips_register_frame_header_opt (void);
 extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *, bool);
 extern void mips_expand_vec_cmp_expr (rtx *);
+extern HOST_WIDE_INT mips_msa_shf_i8 (rtx *);
 
 extern void mips_emit_speculation_barrier_function (void);
 

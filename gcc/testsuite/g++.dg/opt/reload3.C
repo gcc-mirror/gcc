@@ -1,6 +1,7 @@
 // PR target/38287
 // { dg-do run }
 // { dg-options "-O2 -mcpu=v8 -fPIC" { target { { sparc*-*-* } && { ilp32 && fpic } } } }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include <cstdlib>
 

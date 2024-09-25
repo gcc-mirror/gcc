@@ -69,7 +69,8 @@ package body Ada.Numerics.Big_Numbers.Big_Integers is
    package Bignums is new System.Generic_Bignums
      (Bignum, Allocate_Bignum, Free_Bignum, To_Bignum);
 
-   use Bignums, System;
+   use System, Bignums;
+   subtype Bignum is Bignums.Bignum;
 
    function Get_Bignum (Arg : Big_Integer) return Bignum is
      (if Arg.Value.C = System.Null_Address

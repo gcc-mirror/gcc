@@ -73,52 +73,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     _M_acquire() noexcept
     {
-      for (;;)
-	{
-	  auto __err = sem_wait(&_M_semaphore);
-	  if (__err && (errno == EINTR))
-	    continue;
-	  else if (__err)
-	    std::__terminate();
-	  else
-	    break;
-	}
+      while (sem_wait(&_M_semaphore))
+	if (errno != EINTR)
+	  std::__terminate();
     }
 
     _GLIBCXX_ALWAYS_INLINE bool
     _M_try_acquire() noexcept
     {
-      for (;;)
+      while (sem_trywait(&_M_semaphore))
 	{
-	  auto __err = sem_trywait(&_M_semaphore);
-	  if (__err && (errno == EINTR))
-	    continue;
-	  else if (__err && (errno == EAGAIN))
+	  if (errno == EAGAIN) // already locked
 	    return false;
-	  else if (__err)
+	  else if (errno != EINTR)
 	    std::__terminate();
-	  else
-	    break;
+	  // else got EINTR so retry
 	}
       return true;
     }
 
     _GLIBCXX_ALWAYS_INLINE void
-    _M_release(std::ptrdiff_t __update) noexcept
+    _M_release(ptrdiff_t __update) noexcept
     {
       for(; __update != 0; --__update)
-	{
-	   auto __err = sem_post(&_M_semaphore);
-	   if (__err)
-	     std::__terminate();
-	}
+	if (sem_post(&_M_semaphore))
+	  std::__terminate();
     }
 
     bool
     _M_try_acquire_until_impl(const chrono::time_point<__clock_t>& __atime)
       noexcept
     {
-
       auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
       auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
 
@@ -128,19 +113,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static_cast<long>(__ns.count())
       };
 
-      for (;;)
+      while (sem_timedwait(&_M_semaphore, &__ts))
 	{
-	  if (auto __err = sem_timedwait(&_M_semaphore, &__ts))
-	    {
-	      if (errno == EINTR)
-		continue;
-	      else if (errno == ETIMEDOUT || errno == EINVAL)
-		return false;
-	      else
-		std::__terminate();
-	    }
-	  else
-	    break;
+	  if (errno == ETIMEDOUT)
+	    return false;
+	  else if (errno != EINTR)
+	    std::__terminate();
 	}
       return true;
     }
@@ -152,10 +130,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if constexpr (std::is_same_v<__clock_t, _Clock>)
 	  {
-	    return _M_try_acquire_until_impl(__atime);
+	    using _Dur = __clock_t::duration;
+	    return _M_try_acquire_until_impl(chrono::ceil<_Dur>(__atime));
 	  }
 	else
 	  {
+	    // TODO: if _Clock is monotonic_clock we could use
+	    // sem_clockwait with CLOCK_MONOTONIC.
+
 	    const typename _Clock::time_point __c_entry = _Clock::now();
 	    const auto __s_entry = __clock_t::now();
 	    const auto __delta = __atime - __c_entry;

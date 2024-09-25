@@ -1,5 +1,6 @@
-/* { dg-options "-O1 -fno-strict-aliasing" } */
 /* PR rtl-optimization/41033 */
+/* { dg-do run } */
+/* { dg-options "-O1 -fno-strict-aliasing" } */
 
 struct X {
   int i;

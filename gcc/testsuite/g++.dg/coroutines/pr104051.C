@@ -1,4 +1,5 @@
 // { dg-additional-options "-fsyntax-only" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 #include <coroutine>
 #include <vector>
 template <typename> struct promise {

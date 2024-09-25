@@ -23,9 +23,6 @@
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
 
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
-
 const char name_01[] = "tmp_sungetc_1out.tst"; // empty file, need to create
 
 // Test overloaded virtual functions.

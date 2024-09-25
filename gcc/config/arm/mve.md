@@ -6505,7 +6505,7 @@
   if (elt == 0)
    return "vmov\t%e0, %Q1, %R1";
   else
-   return "vmov\t%f0, %J1, %K1";
+   return "vmov\t%f0, %Q1, %R1";
 }
  [(set_attr "type" "mve_move")])
 

@@ -35,7 +35,7 @@
 #ifdef __cpp_lib_stdatomic_h // C++ >= 23
 #include <atomic>
 
-#define _Atomic(_Tp) std::atomic<_Tp>
+#define _Atomic(_Tp) ::std::atomic<_Tp>
 
 using std::memory_order;
 using std::memory_order_relaxed;

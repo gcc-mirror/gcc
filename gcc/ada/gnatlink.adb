@@ -1259,8 +1259,10 @@ procedure Gnatlink is
                                 Value (Libgcc_Subdir_Ptr);
 
                            begin
-                              Path (GCC_Index + 1 .. GCC_Index + Subdir'Length)
-                                := Subdir;
+                              Path
+                                (GCC_Index + 1
+                                 ..
+                                 GCC_Index + Subdir'Length) := Subdir;
                               GCC_Index := GCC_Index + Subdir'Length;
                            end;
                         end if;

@@ -78,7 +78,6 @@ static void df_get_eh_block_artificial_uses (bitmap);
 
 static void df_record_entry_block_defs (bitmap);
 static void df_record_exit_block_uses (bitmap);
-static void df_get_exit_block_use_set (bitmap);
 static void df_get_entry_block_def_set (bitmap);
 static void df_grow_ref_info (struct df_ref_info *, unsigned int);
 static void df_ref_chain_delete_du_chain (df_ref);
@@ -3642,7 +3641,7 @@ df_epilogue_uses_p (unsigned int regno)
 
 /* Set the bit for regs that are considered being used at the exit. */
 
-static void
+void
 df_get_exit_block_use_set (bitmap exit_block_uses)
 {
   unsigned int i;

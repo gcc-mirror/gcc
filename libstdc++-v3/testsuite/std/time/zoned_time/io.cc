@@ -37,6 +37,7 @@ test_format()
 	       " | 25.708 | 12:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
 	       " | 12:26:25 | 22 | 2022 | -0500 | EST" );
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring ws = std::format(L"{:%a | %A | %b | %B | %c"
 				 " | %C | %d | %D | %e | %F | %g | %G | %h"
 				 " | %H | %I | %j | %m | %M | %p | %r | %R"
@@ -47,6 +48,7 @@ test_format()
 		 " | 12 | 12 | 353 | 12 | 26 | PM | 12:26:25 PM | 12:26"
 		 " | 25.708 | 12:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
 		 " | 12:26:25 | 22 | 2022 | -0500 | EST" );
+#endif
 
   auto loc = std::locale::classic();
   auto smod = std::format(loc, "{:%Ec %EC %Od %Oe %OH %OI %Om %OM %OS %Ou %OU"
@@ -55,6 +57,19 @@ test_format()
 		  " %w %W %x %X %y %y %Y -05:00 -05:00}",
 		  zoned_time<seconds>(zone, time_point_cast<seconds>(t)));
   VERIFY( smod == s );
+
+  s = std::format("{}", zt);
+  VERIFY( s == "2022-12-19 12:26:25.708 EST" );
+  s = std::format("{1:=>30}", 1, zt);
+  VERIFY( s == "===2022-12-19 12:26:25.708 EST" );
+#ifdef _GLIBCXX_USE_WCHAR_T
+  ws = std::format(L"{:+^34}", zoned_time<microseconds>(zone, t));
+  VERIFY( ws == L"++2022-12-19 12:26:25.708000 EST++" );
+#endif
+
+  // LWG 4124. Cannot format zoned_time with resolution coarser than seconds
+  s = std::format("{}", zoned_time<minutes>(zone, time_point_cast<minutes>(t)));
+  VERIFY( s == "2022-12-19 12:26:00 EST" );
 }
 
 int main()

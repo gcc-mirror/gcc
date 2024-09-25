@@ -78,8 +78,21 @@ void test02()
   b.wait(1);
 }
 
+void
+test03()
+{
+  using tick = std::chrono::system_clock::duration::period;
+  using halftick = std::ratio<tick::num, 2 * tick::den>;
+  std::chrono::duration<long long, halftick> timeout(1);
+  std::binary_semaphore s(1);
+
+  // Using higher resolution than chrono::system_clock should compile:
+  s.try_acquire_for(timeout);
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
 }

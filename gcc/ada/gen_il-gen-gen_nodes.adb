@@ -444,6 +444,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_String_Literal, N_Numeric_Or_String_Literal,
        (Sy (Strval, String_Id),
         Sy (Is_Folded_In_Parser, Flag),
+        Sy (Is_Interpolated_String_Literal, Flag),
         Sm (Has_Wide_Character, Flag),
         Sm (Has_Wide_Wide_Character, Flag)));
 
@@ -1488,6 +1489,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Iterator_Specification, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sy (Discrete_Choices, List_Id),
+        Sy (Reverse_Present, Flag),
         Sy (Box_Present, Flag),
         Sm (Loop_Actions, List_Id)));
 

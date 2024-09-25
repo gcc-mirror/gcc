@@ -307,6 +307,15 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
   (GFC_INTEGER_16)((((GFC_UINTEGER_16)1) << 127) - 1)
 #endif
 
+#define GFC_UINTEGER_1_HUGE ((GFC_UINTEGER_1) -1)
+#define GFC_UINTEGER_2_HUGE ((GFC_UINTEGER_2) -1)
+#define GFC_UINTEGER_4_HUGE ((GFC_UINTEGER_4) -1)
+#define GFC_UINTEGER_8_HUGE ((GFC_UINTEGER_8) -1)
+#ifdef HAVE_GFC_UINTEGER_16
+#define GFC_UINTEGER_16_HUGE ((GFC_UINTEGER_16) -1)
+#endif
+
+
 /* M{IN,AX}{LOC,VAL} need also infinities and NaNs if supported.  */
 
 #if __FLT_HAS_INFINITY__
@@ -569,6 +578,29 @@ typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_a
 
 #define GFC_UNALIGNED_C8(x) (((uintptr_t)(x)) & \
 			     (__alignof__(GFC_COMPLEX_8) - 1))
+
+/* Generic vtab structure.  */
+typedef struct
+{
+  GFC_INTEGER_4 _hash;
+  size_t _size;
+  struct gfc_vtype_generic_t *_extends;
+  void *_def_init;
+  void (*_copy) (const void *, void *);
+  void *(*_final);
+  void (*_deallocate) (void *);
+} gfc_vtype_generic_t;
+
+/* Generic class structure.  */
+#define GFC_CLASS_T(type) \
+  struct \
+  { \
+    type _data; \
+    gfc_vtype_generic_t *_vptr; \
+    size_t _len; \
+  }
+
+typedef GFC_CLASS_T (GFC_ARRAY_DESCRIPTOR (void)) gfc_class_array_t;
 
 /* Runtime library include.  */
 #define stringize(x) expand_macro(x)
@@ -2018,10 +2050,5 @@ extern int __snprintfieee128 (char *, size_t, const char *, ...)
   __attribute__ ((__nothrow__));
 
 #endif
-
-/* We always have these.  */
-
-#define HAVE_GFC_UINTEGER_1 1
-#define HAVE_GFC_UINTEGER_4 1
 
 #endif  /* LIBGFOR_H  */

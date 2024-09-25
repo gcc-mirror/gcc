@@ -367,7 +367,7 @@
     case 8:
       return \"vmov%?\\t%Q0, %R0, %P1\\t%@ int\";
     case 9:
-      if (TARGET_VFP_SINGLE || TARGET_HAVE_MVE)
+      if (TARGET_VFP_SINGLE && !TARGET_HAVE_MVE)
 	return \"vmov%?.f32\\t%0, %1\\t%@ int\;vmov%?.f32\\t%p0, %p1\\t%@ int\";
       else
 	return \"vmov%?.f64\\t%P0, %P1\\t%@ int\";
@@ -385,7 +385,7 @@
 			       (symbol_ref "arm_count_output_move_double_insns (operands) * 4")
                               (eq_attr "alternative" "9")
                                (if_then_else
-                                 (match_test "TARGET_VFP_SINGLE")
+                                 (match_test "TARGET_VFP_SINGLE && !TARGET_HAVE_MVE")
                                  (const_int 8)
                                  (const_int 4))]
                               (const_int 4)))
@@ -744,7 +744,7 @@
       case 6: case 7: case 9:
 	return output_move_double (operands, true, NULL);
       case 8:
-	if (TARGET_VFP_SINGLE)
+	if (TARGET_VFP_SINGLE && !TARGET_HAVE_MVE)
 	  return \"vmov%?.f32\\t%0, %1\;vmov%?.f32\\t%p0, %p1\";
 	else
 	  return \"vmov%?.f64\\t%P0, %P1\";
@@ -758,7 +758,7 @@
    (set (attr "length") (cond [(eq_attr "alternative" "6,7,9") (const_int 8)
 			       (eq_attr "alternative" "8")
 				(if_then_else
-				 (match_test "TARGET_VFP_SINGLE")
+				 (match_test "TARGET_VFP_SINGLE && !TARGET_HAVE_MVE")
 				 (const_int 8)
 				 (const_int 4))]
 			      (const_int 4)))

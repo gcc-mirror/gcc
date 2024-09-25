@@ -10,7 +10,7 @@ const long double vals[] =
 
 #define ARRAY_SIZE(X) ((int) (sizeof(X) / sizeof(*X)))
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 void test1 (long double x)
 {
   int i;

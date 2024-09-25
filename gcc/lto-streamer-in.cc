@@ -1325,6 +1325,8 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
   fn->calls_eh_return = bp_unpack_value (&bp, 1);
   fn->has_force_vectorize_loops = bp_unpack_value (&bp, 1);
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
+  fn->has_musttail = bp_unpack_value (&bp, 1);
+  fn->has_unroll = bp_unpack_value (&bp, 1);
   fn->assume_function = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
@@ -1751,6 +1753,15 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
 	 with -g1, see for example PR113488.  */
       else if (DECL_P (expr) && DECL_ABSTRACT_ORIGIN (expr) == expr)
 	DECL_ABSTRACT_ORIGIN (expr) = NULL_TREE;
+
+#ifdef ACCEL_COMPILER
+      if ((VAR_P (expr)
+	   || TREE_CODE (expr) == PARM_DECL
+	   || TREE_CODE (expr) == FIELD_DECL)
+	  && AGGREGATE_TYPE_P (TREE_TYPE (expr))
+	  && DECL_MODE (expr) == VOIDmode)
+	SET_DECL_MODE (expr, TYPE_MODE (TREE_TYPE (expr)));
+#endif
     }
 }
 
@@ -2011,6 +2022,11 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
   data_in = lto_data_in_create (file_data, data + string_offset,
 				header->string_size, vNULL);
   bitpack_d bp = streamer_read_bitpack (&ib);
+
+#ifdef ACCEL_COMPILER
+  host_num_poly_int_coeffs
+    = bp_unpack_value (&bp, MAX_NUM_POLY_INT_COEFFS_BITS);
+#endif
 
   unsigned mode_bits = bp_unpack_value (&bp, 5);
   unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << mode_bits);

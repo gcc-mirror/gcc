@@ -51,6 +51,7 @@
 #include <bits/ranges_util.h>
 #include <bits/refwrap.h>
 
+#define __glibcxx_want_algorithm_default_value_type
 #define __glibcxx_want_ranges
 #define __glibcxx_want_ranges_as_const
 #define __glibcxx_want_ranges_as_rvalue
@@ -1033,7 +1034,7 @@ namespace views::__adaptor
 	    return _Adaptor{}(std::forward<_Range>(__r),
 			      std::forward<decltype(__args)>(__args)...);
 	  };
-	  return std::apply(__forwarder, std::forward<_Self>(__self)._M_args);
+	  return std::apply(__forwarder, __like_t<_Self, _Partial>(__self)._M_args);
 	}
 #else
       template<typename _Range>
@@ -1082,7 +1083,10 @@ namespace views::__adaptor
 	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Arg>>
 	constexpr auto
 	operator()(this _Self&& __self, _Range&& __r)
-	{ return _Adaptor{}(std::forward<_Range>(__r), std::forward<_Self>(__self)._M_arg); }
+	{
+	  return _Adaptor{}(std::forward<_Range>(__r),
+			    __like_t<_Self, _Partial>(__self)._M_arg);
+	}
 #else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
@@ -1185,8 +1189,8 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(this _Self&& __self, _Range&& __r)
 	{
-	  return (std::forward<_Self>(__self)._M_rhs
-		  (std::forward<_Self>(__self)._M_lhs
+	  return (__like_t<_Self, _Pipe>(__self)._M_rhs
+		  (__like_t<_Self, _Pipe>(__self)._M_lhs
 		   (std::forward<_Range>(__r))));
 	}
 #else
@@ -9324,7 +9328,6 @@ namespace __detail
 			 std::forward<_Args>(__args)...);
 	  else
 	    {
-	      using _RefT = range_reference_t<_Rg>;
 	      static_assert(constructible_from<_Cont, _Args...>);
 	      _Cont __c(std::forward<_Args>(__args)...);
 	      if constexpr (sized_range<_Rg>

@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
+
 #include <cassert>
 
 int main (int argc, char *argv[])

@@ -72,7 +72,7 @@ typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
 
 /* Unaligned version of the same type.  */
 typedef float __m128_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
-typedef float __float_u __attribute__ ((__may_alias__, __aligned__ (1)));
+typedef float __x86_float_u __attribute__ ((__may_alias__, __aligned__ (1)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef float __v4sf __attribute__ ((__vector_size__ (16)));
@@ -951,7 +951,7 @@ _mm_set_ps1 (float __F)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_load_ss (float const *__P)
 {
-  return __extension__ (__m128) (__v4sf){ *(__float_u *)__P, 0.0f, 0.0f, 0.0f };
+  return __extension__ (__m128) (__v4sf){ *(__x86_float_u *)__P, 0.0f, 0.0f, 0.0f };
 }
 
 /* Create a vector with all four elements equal to *P.  */
@@ -1007,7 +1007,7 @@ _mm_setr_ps (float __Z, float __Y, float __X, float __W)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_ss (float *__P, __m128 __A)
 {
-  *(__float_u *)__P = ((__v4sf)__A)[0];
+  *(__x86_float_u *)__P = ((__v4sf)__A)[0];
 }
 
 extern __inline float __attribute__((__gnu_inline__, __always_inline__, __artificial__))

@@ -743,7 +743,7 @@ expand_cmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 	      rtx cmp_combined = gen_reg_rtx (load_mode);
 	      emit_insn (gen_altivec_eqv16qi (cmp_res, s1data, s2data));
 	      emit_insn (gen_altivec_eqv16qi (cmp_zero, s1data, zero_reg));
-	      emit_insn (gen_orcv16qi3 (vec_result, cmp_zero, cmp_res));
+	      emit_insn (gen_iornv16qi3 (vec_result, cmp_zero, cmp_res));
 	      emit_insn (gen_altivec_vcmpequb_p (cmp_combined, vec_result, zero_reg));
 	    }
 	}
@@ -964,6 +964,7 @@ expand_compare_loop (rtx operands[])
       break;
     case PROCESSOR_POWER9:
     case PROCESSOR_POWER10:
+    case PROCESSOR_POWER11:
       if (bytes_is_const)
 	max_bytes = 191;
       else

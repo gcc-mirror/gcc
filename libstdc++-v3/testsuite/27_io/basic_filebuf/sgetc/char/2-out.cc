@@ -17,14 +17,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.4 Overridden virtual functions
+// C++98 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
 #include <testsuite_hooks.h>
 #include <testsuite_io.h>
-
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %*.txt
 
 const char name_02[] = "tmp_sgetc_2out.tst"; // empty file, need to create
 

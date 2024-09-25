@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // GROUPS passed constructors
 #include <cstdio>
 #include <cstdlib>

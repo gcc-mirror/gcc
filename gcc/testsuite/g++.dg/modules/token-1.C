@@ -4,4 +4,3 @@ module ; // { dg-error "cannot be in included file" }
 export module bob; // { dg-error "cannot be in included file" }
 # 6 "" 2
 // { dg-module-cmi !bob }
-// { dg-prune-output "not writing module" }

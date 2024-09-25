@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-vectorize --param=aarch64-autovec-preference=3" } */
+/* { dg-options "-O -ftree-vectorize --param=aarch64-autovec-preference=prefer-asimd" } */
 
 extern short d[], e[];
 void f(char a, long *b) {

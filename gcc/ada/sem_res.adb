@@ -144,10 +144,10 @@ package body Sem_Res is
    --  for restriction No_Direct_Boolean_Operators. This procedure also handles
    --  the style check for Style_Check_Boolean_And_Or.
 
-   function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean;
-   --  N is either an indexed component or a selected component. This function
-   --  returns true if the prefix denotes an atomic object that has an address
-   --  clause (the case in which we may want to issue a warning).
+   function Is_Atomic_Non_VFA_Ref_With_Address (N : Node_Id) return Boolean;
+   --  N is either an indexed component or a selected component. Return true
+   --  if the prefix denotes an Atomic but not Volatile_Full_Access object that
+   --  has an address clause (the case in which we may want to give a warning).
 
    function Is_Definite_Access_Type (E : N_Entity_Id) return Boolean;
    --  Determine whether E is an access type declared by an access declaration,
@@ -1486,28 +1486,42 @@ package body Sem_Res is
       end if;
    end Check_Parameterless_Call;
 
-   --------------------------------
-   -- Is_Atomic_Ref_With_Address --
-   --------------------------------
+   ----------------------------------------
+   -- Is_Atomic_Non_VFA_Ref_With_Address --
+   ----------------------------------------
 
-   function Is_Atomic_Ref_With_Address (N : Node_Id) return Boolean is
+   function Is_Atomic_Non_VFA_Ref_With_Address (N : Node_Id) return Boolean is
       Pref : constant Node_Id := Prefix (N);
 
-   begin
-      if not Is_Entity_Name (Pref) then
-         return False;
+      function Is_Atomic_Non_VFA (E : Entity_Id) return Boolean;
+      --  Return true if E is Atomic but not Volatile_Full_Access
 
-      else
+      -----------------------
+      -- Is_Atomic_Non_VFA --
+      -----------------------
+
+      function Is_Atomic_Non_VFA (E : Entity_Id) return Boolean is
+      begin
+         return Is_Atomic (E) and then not Is_Volatile_Full_Access (E);
+      end Is_Atomic_Non_VFA;
+
+   begin
+      if Is_Entity_Name (Pref) then
          declare
             Pent : constant Entity_Id := Entity (Pref);
             Ptyp : constant Entity_Id := Etype (Pent);
+
          begin
             return not Is_Access_Type (Ptyp)
-              and then (Is_Atomic (Ptyp) or else Is_Atomic (Pent))
+              and then (Is_Atomic_Non_VFA (Ptyp)
+                         or else Is_Atomic_Non_VFA (Pent))
               and then Present (Address_Clause (Pent));
          end;
+
+      else
+         return False;
       end if;
-   end Is_Atomic_Ref_With_Address;
+   end Is_Atomic_Non_VFA_Ref_With_Address;
 
    -----------------------------
    -- Is_Definite_Access_Type --
@@ -7687,7 +7701,6 @@ package body Sem_Res is
    --  Start of processing for Resolve_Declare_Expression
 
    begin
-
       Decl := First (Actions (N));
 
       while Present (Decl) loop
@@ -9659,7 +9672,7 @@ package body Sem_Res is
       --  object, or partial word accesses, both of which may be unexpected.
 
       if Nkind (N) = N_Indexed_Component
-        and then Is_Atomic_Ref_With_Address (N)
+        and then Is_Atomic_Non_VFA_Ref_With_Address (N)
         and then not (Has_Atomic_Components (Array_Type)
                        or else (Is_Entity_Name (Pref)
                                  and then Has_Atomic_Components
@@ -9703,8 +9716,19 @@ package body Sem_Res is
          --  image function because under Ada 2022 all the types have such
          --  function available.
 
-         if Etype (Str_Elem) = Any_String then
+         if Nkind (Str_Elem) = N_String_Literal
+           and then Is_Interpolated_String_Literal (Str_Elem)
+         then
             Resolve (Str_Elem, Typ);
+
+         --  Must have been rejected during analysis
+
+         elsif Nkind (Str_Elem) in N_Character_Literal
+                                 | N_Integer_Literal
+                                 | N_Real_Literal
+                                 | N_String_Literal
+         then
+            pragma Assert (Error_Posted (Str_Elem));
          end if;
 
          Next (Str_Elem);
@@ -11424,7 +11448,7 @@ package body Sem_Res is
          --  the atomic object, or partial word accesses, both of which may be
          --  unexpected.
 
-         if Is_Atomic_Ref_With_Address (N)
+         if Is_Atomic_Non_VFA_Ref_With_Address (N)
            and then not Is_Atomic (Entity (S))
            and then not Is_Atomic (Etype (Entity (S)))
            and then Ada_Version < Ada_2022
@@ -11479,10 +11503,10 @@ package body Sem_Res is
       --  Ensure all actions associated with the left operand (e.g.
       --  finalization of transient objects) are fully evaluated locally within
       --  an expression with actions. This is particularly helpful for coverage
-      --  analysis. However this should not happen in generics or if option
-      --  Minimize_Expression_With_Actions is set.
+      --  analysis at the object level. However this should not happen in
+      --  generics.
 
-      if Expander_Active and not Minimize_Expression_With_Actions then
+      if Expander_Active then
          declare
             Reloc_L : constant Node_Id := Relocate_Node (L);
          begin
@@ -12513,23 +12537,6 @@ package body Sem_Res is
         and then not Range_Checks_Suppressed (Operand_Typ)
       then
          Set_Do_Range_Check (Operand);
-      end if;
-
-      --  Generating C code a type conversion of an access to constrained
-      --  array type to access to unconstrained array type involves building
-      --  a fat pointer which in general cannot be generated on the fly. We
-      --  remove side effects in order to store the result of the conversion
-      --  into a temporary.
-
-      if Modify_Tree_For_C
-        and then Nkind (N) = N_Type_Conversion
-        and then Nkind (Parent (N)) /= N_Object_Declaration
-        and then Is_Access_Type (Etype (N))
-        and then Is_Array_Type (Designated_Type (Etype (N)))
-        and then not Is_Constrained (Designated_Type (Etype (N)))
-        and then Is_Constrained (Designated_Type (Etype (Expression (N))))
-      then
-         Remove_Side_Effects (N);
       end if;
    end Resolve_Type_Conversion;
 
@@ -14715,7 +14722,7 @@ package body Sem_Res is
 
       --  If it was legal in the generic, it's legal in the instance
 
-      elsif In_Instance_Body then
+      elsif In_Instance then
          return True;
 
       --  Ignore privacy for streaming or Put_Image routines

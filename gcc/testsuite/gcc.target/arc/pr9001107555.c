@@ -1,4 +1,4 @@
-/* { dg-do assemble } *
+/* { dg-do assemble } */
 /* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-options "-O3 -funroll-loops -mno-sdata -mcpu=arc700" } */
 

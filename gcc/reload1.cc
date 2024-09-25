@@ -283,7 +283,13 @@ static const struct elim_table_1
   const int to;
 } reg_eliminate_1[] =
 
+  /* Reload and LRA don't agree on how a multi-register frame pointer
+     is represented for elimination.  See avr.h for a use case.  */
+#ifdef RELOAD_ELIMINABLE_REGS
+  RELOAD_ELIMINABLE_REGS;
+#else
   ELIMINABLE_REGS;
+#endif
 
 #define NUM_ELIMINABLE_REGS ARRAY_SIZE (reg_eliminate_1)
 

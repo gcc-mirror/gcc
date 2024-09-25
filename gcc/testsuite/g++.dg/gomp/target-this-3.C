@@ -1,5 +1,7 @@
 // { dg-do compile }
 // { dg-additional-options "-fdump-tree-gimple" }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
+
 #include <cstdlib>
 #include <cstring>
 extern "C" void abort ();

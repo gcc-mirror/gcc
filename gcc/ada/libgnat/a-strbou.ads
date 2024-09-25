@@ -127,6 +127,9 @@ is
       --  * If Drop=Error, then Strings.Length_Error is propagated.
 
       function To_String (Source : Bounded_String) return String with
+        Post   =>
+          To_String'Result'First = 1
+            and then To_String'Result'Length = Length (Source),
         Global => null;
       --  To_String returns the String value with lower bound 1
       --  represented by Source. If B is a Bounded_String, then

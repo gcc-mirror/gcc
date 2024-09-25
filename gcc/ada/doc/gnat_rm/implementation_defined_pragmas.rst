@@ -3923,6 +3923,25 @@ in particular it is not subject to the use of option *-gnatn* or
 *-gnatN*.  It is illegal to specify both pragma ``No_Inline`` and
 pragma ``Inline_Always`` for the same ``NAME``.
 
+.. _Pragma-No_Raise:
+
+Pragma No_Raise
+===============
+
+Syntax:
+
+
+::
+
+  pragma No_Raise (subprogram_LOCAL_NAME {, subprogram_LOCAL_NAME});
+
+
+Each ``subprogram_LOCAL_NAME`` argument must refer to one or more subprogram
+declarations in the current declarative part.  A subprogram to which this
+pragma is applied may not raise an exception that is not caught within it.
+An implementation-defined check named `Raise_Check` is associated with the
+pragma, and `Program_Error` is raised upon its failure (see RM 11.5(19/5)).
+
 Pragma No_Return
 ================
 
@@ -6309,21 +6328,91 @@ activated.  These are additive, so they apply in addition to any previously
 set style check options.  The codes for the options are the same as those
 used in the *-gnaty* switch to *gcc* or *gnatmake*.
 For example the following two methods can be used to enable
-layout checking:
+layout checking and to change the maximum nesting level value:
 
 *
 
-  ::
+  .. code-block:: ada
 
+    --  switch on layout checks
     pragma Style_Checks ("l");
-
+    --  set the number of maximum allowed nesting levels to 15
+    pragma Style_Checks ("L15");
 
 *
 
   ::
 
-    gcc -c -gnatyl ...
+    gcc -c -gnatyl -gnatyL15 ...
 
+
+The string literal values can be cumulatively switched on and off by prefixing
+the value with ``+`` or ``-``, where:
+
+* ``+`` is equivalent to no prefix. It applies the check referenced by the
+  literal value;
+* ``-`` switches the referenced check off.
+
+
+.. code-block:: ada
+  :linenos:
+  :emphasize-lines: 15
+
+  --  allow misaligned block by disabling layout check
+  pragma Style_Checks ("-l");
+  declare
+      msg : constant String := "Hello";
+  begin
+      Put_Line (msg);
+      end;
+
+  --  enable the layout check again
+  pragma Style_Checks ("l");
+  declare
+      msg : constant String := "Hello";
+  begin
+      Put_Line (msg);
+      end;
+
+The code above contains two layout errors, however, only
+the last line is picked up by the compiler.
+
+Similarly, the switches containing a numeric value can be applied in sequence.
+In the example below, the permitted nesting level is reduced in in the middle
+block and the compiler raises a warning on the highlighted line.
+
+.. code-block:: ada
+  :linenos:
+  :emphasize-lines: 15
+
+  -- Permit 3 levels of nesting
+  pragma Style_Checks ("L3");
+
+  procedure Main is
+  begin
+      if True then
+        if True then
+            null;
+        end if;
+      end if;
+      --  Reduce permitted nesting levels to 2.
+      --  Note that "+L2" and "L2" are equivalent.
+      pragma Style_Checks ("+L2");
+      if True then
+        if True then
+            null;
+        end if;
+      end if;
+      --  Disable checking permitted nesting levels.
+      --  Note that the number after "-L" is insignificant,
+      --  "-L", "-L3" and "-Lx" are all equivalent.
+      pragma Style_Checks ("-L3");
+      if True then
+        if True then
+            null;
+        end if;
+      end if;
+  end Main;
 
 The form ``ALL_CHECKS`` activates all standard checks (its use is equivalent
 to the use of the :switch:`gnaty` switch with no options.
@@ -6336,7 +6425,6 @@ options (i.e. equivalent to :switch:`-gnatyg`).
 The forms with ``Off`` and ``On``
 can be used to temporarily disable style checks
 as shown in the following example:
-
 
 .. code-block:: ada
 

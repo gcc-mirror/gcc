@@ -1043,7 +1043,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 	  wi = -wi;
 	}
       unsigned int prec = wi.get_precision ();
-      if ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3)
+      if ((prec + 3) / 4 > sizeof (pp_buffer (pp)->m_digit_buffer) - 3)
 	{
 	  char *buf = XALLOCAVEC (char, (prec + 3) / 4 + 3);
 	  print_hex (wi, buf);
@@ -1051,8 +1051,8 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 	}
       else
 	{
-	  print_hex (wi, pp_buffer (pp)->digit_buffer);
-	  pp_string (pp, pp_buffer (pp)->digit_buffer);
+	  print_hex (wi, pp_buffer (pp)->m_digit_buffer);
+	  pp_string (pp, pp_buffer (pp)->m_digit_buffer);
 	}
     }
 }
@@ -1138,11 +1138,11 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
      log10(2) to 7 significant digits.  */
   int max_digits10 = 2 + (is_decimal ? fmt->p : fmt->p * 643L / 2136);
 
-  real_to_decimal (pp_buffer (pp)->digit_buffer, &TREE_REAL_CST (r),
-		   sizeof (pp_buffer (pp)->digit_buffer),
+  real_to_decimal (pp_buffer (pp)->m_digit_buffer, &TREE_REAL_CST (r),
+		   sizeof (pp_buffer (pp)->m_digit_buffer),
 		   max_digits10, 1);
 
-  pp_string (pp, pp_buffer(pp)->digit_buffer);
+  pp_string (pp, pp_buffer(pp)->m_digit_buffer);
   if (TREE_TYPE (r) == float_type_node)
     pp_character (pp, 'f');
   else if (TREE_TYPE (r) == long_double_type_node)
@@ -1170,9 +1170,9 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
 static void
 pp_c_fixed_constant (c_pretty_printer *pp, tree r)
 {
-  fixed_to_decimal (pp_buffer (pp)->digit_buffer, &TREE_FIXED_CST (r),
-		   sizeof (pp_buffer (pp)->digit_buffer));
-  pp_string (pp, pp_buffer(pp)->digit_buffer);
+  fixed_to_decimal (pp_buffer (pp)->m_digit_buffer, &TREE_FIXED_CST (r),
+		   sizeof (pp_buffer (pp)->m_digit_buffer));
+  pp_string (pp, pp_buffer(pp)->m_digit_buffer);
 }
 
 /* Pretty-print a compound literal expression.  GNU extensions include

@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } }
 // Gives ICE on EGCS release branch as of 98/06/08 on i686-pc-linux-gnulibc1)
 // From: Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>    
 // Message-Id: <199806081358.PAA02505@achibm5.chemie.uni-karlsruhe.de> 

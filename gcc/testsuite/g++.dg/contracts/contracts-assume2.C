@@ -10,6 +10,7 @@
 // main -- unlike contracts-ignore2 which expects a failing return code
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-role=default:never,assume,ignore -O1" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 #include <cstdio>
 
 int fun(int x) {

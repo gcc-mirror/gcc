@@ -1,5 +1,5 @@
 /* PR rtl-optimization/96539 */
-/* { dg-do compile } *
+/* { dg-do compile } */
 /* { dg-options "-Os" } */
 /* The need to restore the PIC register prevents PLT tail-calls on ia32,
    so S has to be copied to call baz.  */

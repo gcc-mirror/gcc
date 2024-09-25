@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
-const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_INT128_T + 1;
+const int NUM_GCC_JIT_TYPES = GCC_JIT_TYPE_BFLOAT16 + 1;
 
 /* This comment is included by the docs.
 
@@ -118,6 +118,7 @@ namespace recording {
         class struct_;
 	class union_;
       class vector_type;
+      class array_type;
     class field;
       class bitfield;
     class fields;

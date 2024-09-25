@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <ctime>
-
 #ifndef _GLIBCXX_TIME_H
 #define _GLIBCXX_TIME_H 1
+
+#include <ctime>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 // Get rid of those macros defined in <time.h> in lieu of real functions.

@@ -66,14 +66,23 @@ texi = takewhile(lambda x: '@node Instrumentation Options' not in x, texi)
 texi = list(texi)[1:]
 
 texi_params = []
+skip = False
 for line in texi:
+    # Skip @table @samp sections of manual where values of a param are usually
+    # listed
+    if skip:
+        if line.startswith('@end table'):
+            skip = False
+        continue
+    elif line.startswith('@table @samp'):
+        skip = True
+        continue
+
     for token in ('@item ', '@itemx '):
         if line.startswith(token):
             texi_params.append(line[len(token):])
             break
 
-# Skip digits
-texi_params = [x for x in texi_params if not x[0].isdigit()]
 # Skip target-specific params
 texi_params = [x for x in texi_params if not target_specific(x)]
 

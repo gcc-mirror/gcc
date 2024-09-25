@@ -11,12 +11,14 @@ struct S
 
 struct T
 {
-  constexpr T(volatile T &) = default; // { dg-error "defaulted" }
+  constexpr T(volatile T &) = default; // { dg-error "defaulted" "" { target c++17_down } }
+				       // { dg-warning "implicitly deleted" "" { target c++20 } .-1 }
 };
 
 struct U
 {
-  constexpr U(const volatile U &) = default; // { dg-error "defaulted" }
+  constexpr U(const volatile U &) = default; // { dg-error "defaulted" "" { target c++17_down } }
+					     // { dg-warning "implicitly deleted" "" { target c++20 } .-1 }
 };
 
 struct V

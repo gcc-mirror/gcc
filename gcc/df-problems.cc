@@ -1054,37 +1054,10 @@ df_lr_transfer_function (int bb_index)
 }
 
 
-/* Run the fast dce as a side effect of building LR.  */
-
 static void
-df_lr_finalize (bitmap all_blocks)
+df_lr_finalize (bitmap)
 {
   df_lr->solutions_dirty = false;
-  if (df->changeable_flags & DF_LR_RUN_DCE)
-    {
-      run_fast_df_dce ();
-
-      /* If dce deletes some instructions, we need to recompute the lr
-	 solution before proceeding further.  The problem is that fast
-	 dce is a pessimestic dataflow algorithm.  In the case where
-	 it deletes a statement S inside of a loop, the uses inside of
-	 S may not be deleted from the dataflow solution because they
-	 were carried around the loop.  While it is conservatively
-	 correct to leave these extra bits, the standards of df
-	 require that we maintain the best possible (least fixed
-	 point) solution.  The only way to do that is to redo the
-	 iteration from the beginning.  See PR35805 for an
-	 example.  */
-      if (df_lr->solutions_dirty)
-	{
-	  df_clear_flags (DF_LR_RUN_DCE);
-	  df_lr_alloc (all_blocks);
-	  df_lr_local_compute (all_blocks);
-	  df_worklist_dataflow (df_lr, all_blocks, df->postorder, df->n_blocks);
-	  df_lr_finalize (all_blocks);
-	  df_set_flags (DF_LR_RUN_DCE);
-	}
-    }
 }
 
 
@@ -1266,6 +1239,69 @@ static const struct df_problem problem_LR =
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
 
+/* Run the fast DCE after building LR.  This is a separate problem so that
+   the "dirty" flag is only cleared after a DCE pass is actually run.  */
+
+static void
+df_lr_dce_finalize (bitmap all_blocks)
+{
+  if (!(df->changeable_flags & DF_LR_RUN_DCE))
+    return;
+
+  /* Also clears df_lr_dce->solutions_dirty.  */
+  run_fast_df_dce ();
+
+  /* If dce deletes some instructions, we need to recompute the lr
+     solution before proceeding further.  The problem is that fast
+     dce is a pessimestic dataflow algorithm.  In the case where
+     it deletes a statement S inside of a loop, the uses inside of
+     S may not be deleted from the dataflow solution because they
+     were carried around the loop.  While it is conservatively
+     correct to leave these extra bits, the standards of df
+     require that we maintain the best possible (least fixed
+     point) solution.  The only way to do that is to redo the
+     iteration from the beginning.  See PR35805 for an
+     example.  */
+  if (df_lr->solutions_dirty)
+    {
+      df_clear_flags (DF_LR_RUN_DCE);
+      df_lr_alloc (all_blocks);
+      df_lr_local_compute (all_blocks);
+      df_worklist_dataflow (df_lr, all_blocks, df->postorder, df->n_blocks);
+      df_lr_finalize (all_blocks);
+      df_set_flags (DF_LR_RUN_DCE);
+    }
+}
+
+static const struct df_problem problem_LR_DCE
+{
+  DF_LR_DCE,                  /* Problem id.  */
+  DF_BACKWARD,                /* Direction (arbitrary).  */
+  NULL,                       /* Allocate the problem specific data.  */
+  NULL,                       /* Reset global information.  */
+  NULL,                       /* Free basic block info.  */
+  NULL,                       /* Local compute function.  */
+  NULL,                       /* Init the solution specific data.  */
+  NULL,                       /* Worklist solver.  */
+  NULL,                       /* Confluence operator 0.  */
+  NULL,                       /* Confluence operator n.  */
+  NULL,                       /* Transfer function.  */
+  df_lr_dce_finalize,         /* Finalize function.  */
+  NULL,                       /* Free all of the problem information.  */
+  NULL,                       /* Remove this problem from the stack of dataflow problems.  */
+  NULL,                       /* Debugging.  */
+  NULL,                       /* Debugging start block.  */
+  NULL,                       /* Debugging end block.  */
+  NULL,                       /* Debugging start insn.  */
+  NULL,                       /* Debugging end insn.  */
+  NULL,                       /* Incremental solution verify start.  */
+  NULL,                       /* Incremental solution verify end.  */
+  &problem_LR,                /* Dependent problem.  */
+  0,                          /* Size of entry of block_info array.  */
+  TV_DF_LR,                   /* Timing variable.  */
+  false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
+};
+
 
 /* Create a new DATAFLOW instance and add it to an existing instance
    of DF.  The returned structure is what is used to get at the
@@ -1274,7 +1310,9 @@ static const struct df_problem problem_LR =
 void
 df_lr_add_problem (void)
 {
-  df_add_problem (&problem_LR);
+  /* Also add the fast DCE problem.  It is then conditionally enabled by
+     the DF_LR_RUN_DCE flag.  */
+  df_add_problem (&problem_LR_DCE);
   /* These will be initialized when df_scan_blocks processes each
      block.  */
   df_lr->out_of_date_transfer_functions = BITMAP_ALLOC (&df_bitmap_obstack);

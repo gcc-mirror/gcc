@@ -14,7 +14,7 @@ xsqrt (long double x)
 
 /* Check that the generated code is very small and straightforward.  In
    particular, there must be no unnecessary copying and no stack frame.  */
-/* { dg-final { scan-assembler {\n\tld\t[^\n]*\n\tld\t[^\n]*\n(#[^\n]*\n)*\tsqxbr\t.*\n(#[^\n]*\n)*\tstd\t[^\n]*\n\tstd\t[^\n]*\n\tbr\t%r14\n} } } */
+/* { dg-final { scan-assembler {\n\tld\t[^\n]*;ld\t[^\n]*\n(#[^\n]*\n)*\tsqxbr\t.*\n(#[^\n]*\n)*\tstd\t[^\n]*\n\tstd\t[^\n]*\n\tbr\t%r14\n} } } */
 
 int
 main (void)

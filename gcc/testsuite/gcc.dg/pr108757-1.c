@@ -13,6 +13,6 @@ typedef int INT;
 #define IMIN INT_MIN
 #include "pr108757.h"
 
-/* { dg-final { scan-tree-dump-not " = x_\[0-9\]+\\(D\\) \\+ " "optimized" } } *
+/* { dg-final { scan-tree-dump-not " = x_\[0-9\]+\\(D\\) \\+ " "optimized" } } */
 /* { dg-final { scan-tree-dump-not " = x_\[0-9\]+\\(D\\) \\- " "optimized" } } */
 /* { dg-final { scan-tree-dump-not " = b_\[0-9\]+ \\+ " "optimized" } } */

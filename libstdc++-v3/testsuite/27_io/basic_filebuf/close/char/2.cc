@@ -16,10 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-fileio "" }
+// { dg-additional-files "filebuf_virtuals-1.txt" }
 
-// 27.8.1.3 filebuf member functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.8.1.3 filebuf member functions
 
 // various tests for filebuf::open() and filebuf::close() including
 // the non-portable functionality in the libstdc++-v3 IO library
@@ -39,7 +38,6 @@
 // this bug/situation. 
 
 const char name_01[] = "filebuf_virtuals-1.txt"; // file with data in it
-const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 
 void test_02()
 {

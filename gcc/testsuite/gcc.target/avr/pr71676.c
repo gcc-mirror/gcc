@@ -5,7 +5,7 @@
 
 volatile unsigned char y;
 
-__attribute__((noinline,noclone))
+__attribute__((noipa))
 unsigned char foo (unsigned long x) 
 {
   switch (x)

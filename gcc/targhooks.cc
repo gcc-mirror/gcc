@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
    comment can thus be removed at that point.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -1604,6 +1605,14 @@ opt_machine_mode
 default_get_mask_mode (machine_mode mode)
 {
   return related_int_vector_mode (mode);
+}
+
+/* By default consider masked stores to be expensive.  */
+
+bool
+default_conditional_operation_is_expensive (unsigned ifn)
+{
+  return ifn == IFN_MASK_STORE;
 }
 
 /* By default consider masked stores to be expensive.  */

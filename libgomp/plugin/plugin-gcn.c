@@ -3316,6 +3316,28 @@ GOMP_OFFLOAD_get_name (void)
   return "gcn";
 }
 
+/* Return the UID; if not available return NULL.
+   Returns freshly allocated memoy.  */
+
+const char *
+GOMP_OFFLOAD_get_uid (int ord)
+{
+  char *str;
+  hsa_status_t status;
+  struct agent_info *agent = get_agent_info (ord);
+
+  /* HSA documentation states: maximally 21 characters including NUL.  */
+  str = GOMP_PLUGIN_malloc (21 * sizeof (char));
+  status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AMD_AGENT_INFO_UUID,
+					  str);
+  if (status != HSA_STATUS_SUCCESS)
+    {
+      free (str);
+      return NULL;
+    }
+  return str;
+}
+
 /* Return the specific capabilities the HSA accelerator have.  */
 
 unsigned int
@@ -3356,13 +3378,15 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
       && ((omp_requires_mask
 	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
 	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
+	       | GOMP_REQUIRES_SELF_MAPS
 	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
   /* Check whether host page access is supported; this is per system level
      (all GPUs supported by HSA).  While intrinsically true for APUs, it
      requires XNACK support for discrete GPUs.  */
   if (hsa_context.agent_count > 0
-      && (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+      && (omp_requires_mask
+	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
     {
       bool b;
       hsa_system_info_t type = HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT;

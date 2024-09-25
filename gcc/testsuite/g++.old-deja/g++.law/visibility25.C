@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed visibility
 // visibility file
 // From: gfm@mencon.mencon.oz.au (Graham Menhennitt)

@@ -1,11 +1,11 @@
 // PR c++/73456
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename...> struct list {};
 
 template<typename Seq>
-concept bool Sequence = true;
+concept Sequence = true;
 
 template<Sequence... Seqs> // requires (Sequence<Seqs> && ...)
 struct zip;

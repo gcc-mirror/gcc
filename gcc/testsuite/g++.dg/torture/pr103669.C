@@ -1,5 +1,6 @@
 // { dg-do run }
 /* { dg-additional-options "--param=modref-max-depth=1" } */
+/* { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } } */
 #include <list>
 
 typedef std::list<void *> PtrList;

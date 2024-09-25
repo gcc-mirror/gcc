@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for iostream in system-2.H" { ! hostedlib } }
+
 #include "system-2.H"
 
 int main() 

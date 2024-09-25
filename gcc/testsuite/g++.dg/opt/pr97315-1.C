@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-exceptions" } */
+/* { dg-options "-O3 -fno-exceptions -fno-short-enums" } */
 
 typedef struct tree_node *tree;
 enum tree_code { RECORD_TYPE, QUAL_UNION_TYPE };

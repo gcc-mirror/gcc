@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-Os -fno-dce -fno-tree-dce -g" } */
+/* { dg-require-effective-target int32plus } */
 
 /* This tests that when IPA-SRA removes a LHS of a call statement which, in the
    original source, is fed into a useless operation which however can trap when

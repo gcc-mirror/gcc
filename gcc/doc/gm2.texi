@@ -108,7 +108,7 @@ PIM3: 'Programming in Modula-2', 3rd Corrected Edition, Springer Verlag,
 1985 (PIM3).
 
 PIM4: 'Programming in Modula-2', 4th Edition, Springer Verlag, 1988
-(@uref{http://freepages.modula2.org/report4/modula-2.html, PIM4}).
+(@uref{https://freepages.modula2.org/report4/modula-2.html, PIM4}).
 
 ISO: the ISO Modula-2 language as defined in 'ISO/IEC Information
 technology - programming languages - part 1: Modula-2 Language,
@@ -2970,10 +2970,9 @@ $ @samp{directory to the sources}/contrib/test_summary
 @node Limitations, Objectives, Regression tests, Using
 @section Limitations
 
-Logitech compatibility library is incomplete.  The principle modules
-for this platform exist however for a comprehensive list of completed
-modules please check the documentation
-@url{gm2.html}.
+The Logitech compatibility library is incomplete.  The primary
+modules for this platform exist, though for a comprehensive list
+of completed modules please check the documentation.
 
 @node Objectives, FAQ, Limitations, Using
 @section Objectives
@@ -3014,9 +3013,9 @@ You can subscribe to the GNU Modula-2 mailing by sending an
 email to:
 @email{gm2-subscribe@@nongnu.org}
 or by
-@url{http://lists.nongnu.org/mailman/listinfo/gm2}.
+@url{https://lists.nongnu.org/mailman/listinfo/gm2}.
 The mailing list contents can be viewed
-@url{http://lists.gnu.org/archive/html/gm2}.
+@url{https://lists.gnu.org/archive/html/gm2/}.
 
 @node Other languages, , Community, Using
 @section Other languages for GCC
@@ -3028,7 +3027,7 @@ These exist and can be found on the frontends web page on the
 @section License of GNU Modula-2
 
 GNU Modula-2 is free software, the compiler is held under the GPL v3
-@uref{http://www.gnu.org/licenses/gpl.txt},
+@uref{http://www.gnu.org/licenses/gpl-3.0.txt},
 its libraries (pim, iso and Logitech compatible) are under the
 GPL v3 with the GCC run time library exception clause.
 
@@ -3061,7 +3060,7 @@ Please do and please read the GNU Emacs info under
 
 You might consider joining the GM2 Mailing list before you start
 coding.  The mailing list may be subscribed via a web interface
-@uref{http://lists.nongnu.org/mailman/listinfo/gm2} or via email
+@uref{https://lists.nongnu.org/mailman/listinfo/gm2} or via email
 @email{gm2-subscribe@@nongnu.org}.
 
 Many thanks and enjoy your coding!

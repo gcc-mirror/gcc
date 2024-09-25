@@ -151,7 +151,7 @@ static int __attribute__ ((__unused__)) not_target_flags = 0;
 #  undef TARGET_ALIGN_NATURAL
 #  define TARGET_ALIGN_NATURAL 1
 # endif
-/* On Darwin32, we need to recurse until we find the starting stuct type.  */
+/* On Darwin32, we need to recurse until we find the starting struct type.  */
 static int 
 _darwin_rs6000_special_round_type_align (const char *struc, int comp, int spec)
 {
@@ -186,7 +186,7 @@ _darwin_rs6000_special_round_type_align (const char *struc, int comp, int spec)
 
 /*  FIXME: while this file has no business including tm.h, this
     definitely has no business defining this macro but it
-    is only way around without really rewritting this file,
+    is only way around without really rewriting this file,
     should look after the branch of 3.4 to fix this.   */
 #define rs6000_special_round_type_align(STRUCT, COMPUTED, SPECIFIED)	\
   ({ const char *_fields = TYPE_FIELDS (STRUCT);			\

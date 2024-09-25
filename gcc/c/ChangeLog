@@ -1,3 +1,162 @@
+2024-09-20  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116726
+	* c-typeck.cc (tagged_types_tu_compatible_p): Restore value
+	of the cache after recursing into comptypes_internal.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-errors.cc (pedwarn_c23): Use "diagnostic_option_id option_id"
+	rather than "int opt".  Update for renaming of diagnostic_info
+	field.
+	(pedwarn_c11): Likewise.
+	(pedwarn_c99): Likewise.
+	(pedwarn_c90): Likewise.
+	* c-tree.h (pedwarn_c90): Likewise for decl.
+	(pedwarn_c99): Likewise.
+	(pedwarn_c11): Likewise.
+	(pedwarn_c23): Likewise.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-objc-common.cc (c_initialize_diagnostics): Rename
+	diagnostic_context's "printer" field to "m_printer".
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* c-objc-common.h (c_objc_attribute_table): Add
+	c_common_clang_attribute_table.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc (print_type): Prefix all output_buffer fields
+	with "m_".
+
+2024-09-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-typeck.cc (build_asm_expr): Rename ASM_INPUT_P to ASM_BASIC_P.
+
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116130
+	* c-decl.cc (handle_std_unsequenced_attribute): New function.
+	(handle_std_reproducible_attribute): Likewise.
+	(std_attributes): Add entries for "unsequenced" and "reproducible"
+	attributes.
+	(c_warn_type_attributes): Add TYPE argument.  Allow unsequenced
+	or reproducible attributes if it is FUNCTION_TYPE.
+	(groktypename): Adjust c_warn_type_attributes caller.
+	(grokdeclarator): Likewise.
+	(finish_declspecs): Likewise.
+	* c-parser.cc (c_parser_declaration_or_fndef): Likewise.
+	* c-tree.h (c_warn_type_attributes): Add TYPE argument.
+
+2024-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc (c_tree_printer): Convert final param from
+	const char ** to pp_token_list &.
+
+2024-08-02  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (grokdeclarator, finish_struct): Set and
+	propagate TYPE_TYPELESS_STORAGE.
+
+2024-07-23  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* c-parser.cc (struct attr_state): Define with musttail_p.
+	(c_parser_statement_after_labels): Handle [[musttail]].
+	(c_parser_std_attribute): Dito.
+	(c_parser_handle_musttail): Dito.
+	(c_parser_compound_statement_nostart): Dito.
+	(c_parser_all_labels): Dito.
+	(c_parser_statement): Dito.
+	* c-tree.h (c_finish_return): Add musttail_p flag.
+	* c-typeck.cc (c_finish_return): Handle musttail_p flag.
+
+2024-07-20  Andi Kleen  <ak@gcc.gnu.org>
+
+	Revert:
+	2024-07-20  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* c-parser.cc (struct attr_state): Define with musttail_p.
+	(c_parser_statement_after_labels): Handle [[musttail]].
+	(c_parser_std_attribute): Dito.
+	(c_parser_handle_musttail): Dito.
+	(c_parser_compound_statement_nostart): Dito.
+	(c_parser_all_labels): Dito.
+	(c_parser_statement): Dito.
+	* c-tree.h (c_finish_return): Add musttail_p flag.
+	* c-typeck.cc (c_finish_return): Handle musttail_p flag.
+
+2024-07-20  Andi Kleen  <ak@linux.intel.com>
+
+	PR c/83324
+	* c-parser.cc (struct attr_state): Define with musttail_p.
+	(c_parser_statement_after_labels): Handle [[musttail]].
+	(c_parser_std_attribute): Dito.
+	(c_parser_handle_musttail): Dito.
+	(c_parser_compound_statement_nostart): Dito.
+	(c_parser_all_labels): Dito.
+	(c_parser_statement): Dito.
+	* c-tree.h (c_finish_return): Add musttail_p flag.
+	* c-typeck.cc (c_finish_return): Handle musttail_p flag.
+
+2024-07-14  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/115185
+	* c-typeck.cc (digest_init): Separate warnings about character
+	arrays being initialized as unterminated character sequences
+	with string literals, from -Wc++-compat, into a new warning,
+	-Wunterminated-string-initialization.
+
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc: Include "tree-pretty-print-markup.h".
+	(print_type): Add optional "highlight_color" param and use it
+	to show highlight colors in "aka" text.
+	(pp_markup::element_quoted_type::print_type): New.
+	* c-typeck.cc: Include "tree-pretty-print-markup.h".
+	(comp_parm_types): New.
+	(build_function_call_vec): Pass it to check_function_arguments.
+	(inform_for_arg): Use %e and highlight colors to contrast actual
+	versus expected.
+	(convert_for_assignment): Use highlight_colors::actual for the
+	rhs_label.
+	(build_binary_op): Use highlight_colors::lhs and highlight_colors::rhs
+	for the ranges.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/115642
+	* c-typeck.cc (c_cast_expr): Return error_mark_node if build_c_cast
+	failed.
+
+2024-07-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c/115549
+	* c-decl.cc (c_decl_attributes): If lookup_last_decl returns
+	error_mark_node, use NULL_TREE as last_decl.
+
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114727
+	* c-typeck.cc (tagged_types_tu_compatible): Add test.
+
+2024-07-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/115696
+	* c-typeck.cc (comptypes_verify): Bail out for
+	identical, empty, and erroneous input types.
+
+2024-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_tile_sizes): Use c_parser_expr_list.
+
 2024-06-27  Martin Uecker  <uecker@tugraz.at>
 
 	* c-parser.cc (c_parser_direct_declarator_inner): Add

@@ -1,4 +1,5 @@
-/* Copyright (C) 2009-2024 Free Software Foundation, Inc.
+/* Code for the C/C++ front end for AVR 8-bit microcontrollers.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.
@@ -50,7 +51,7 @@ static tree
 avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
 {
   tree type0, type1, fold = NULL_TREE;
-  enum avr_builtin_id id = AVR_BUILTIN_COUNT;
+  avr_builtin_id id = AVR_BUILTIN_COUNT;
   location_t loc = (location_t) iloc;
   vec<tree, va_gc> &args = * (vec<tree, va_gc>*) vargs;
 
@@ -290,7 +291,7 @@ avr_toupper (char *up, const char *lo)
 /* Worker function for TARGET_CPU_CPP_BUILTINS.  */
 
 void
-avr_cpu_cpp_builtins (struct cpp_reader *pfile)
+avr_cpu_cpp_builtins (cpp_reader *pfile)
 {
   builtin_define_std ("AVR");
 
@@ -390,6 +391,10 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 #ifdef WITH_AVRLIBC
   cpp_define (pfile, "__WITH_AVRLIBC__");
 #endif /* WITH_AVRLIBC */
+
+  // We support __attribute__((signal/interrupt (n1, n2, ...)[, noblock]))
+  cpp_define (pfile, "__HAVE_SIGNAL_N__");
+
 
   // From configure --with-libf7={|libgcc|math|math-symbols|yes|no}
 

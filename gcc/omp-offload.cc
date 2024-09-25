@@ -2884,8 +2884,9 @@ public:
 /* Callback for walk_gimple_stmt used to scan for link var operands.  */
 
 static tree
-find_link_var_op (tree *tp, int *walk_subtrees, void *)
+process_link_var_op (tree *tp, int *walk_subtrees, void *data)
 {
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
   tree t = *tp;
 
   if (VAR_P (t)
@@ -2893,8 +2894,9 @@ find_link_var_op (tree *tp, int *walk_subtrees, void *)
       && is_global_var (t)
       && lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t)))
     {
+      wi->info = *tp = unshare_expr (DECL_VALUE_EXPR (t));
       *walk_subtrees = 0;
-      return t;
+      return NULL_TREE;
     }
 
   return NULL_TREE;
@@ -2924,7 +2926,10 @@ pass_omp_target_link::execute (function *fun)
 	      gimple_call_set_arg (gsi_stmt (gsi), 1, null_pointer_node);
 	      update_stmt (gsi_stmt (gsi));
 	    }
-	  if (walk_gimple_stmt (&gsi, NULL, find_link_var_op, NULL))
+	  struct walk_stmt_info wi;
+	  memset (&wi, 0, sizeof (wi));
+	  walk_gimple_stmt (&gsi, NULL, process_link_var_op, &wi);
+	  if (wi.info)
 	    gimple_regimplify_operands (gsi_stmt (gsi), &gsi);
 	}
     }

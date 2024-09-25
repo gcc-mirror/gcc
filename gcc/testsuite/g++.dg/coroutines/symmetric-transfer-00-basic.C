@@ -4,6 +4,7 @@
 
 // { dg-do run { target { i?86-*-linux-gnu x86_64-*-linux-gnu *-*-darwin* } } }
 // { dg-additional-options "-O2" }
+// { dg-skip-if "requires hosted libstdc++ for chrono" { ! hostedlib } }
 
 #if __has_include(<coroutine>)
 

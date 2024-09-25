@@ -19,5 +19,5 @@ nr (unsigned int xe, unsigned int qqn)
   return xe;
 }
 
-/* { dg-final { scan-tree-dump "reduction used in loop" "vect" { target vect_int } } } */
+/* { dg-final { scan-tree-dump "Unknown def-use cycle pattern" "vect" { target vect_int } } } */
 /* { dg-final { scan-tree-dump-not "OUTER LOOP VECTORIZED" "vect" } } */

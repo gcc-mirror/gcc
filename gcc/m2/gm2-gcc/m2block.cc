@@ -711,7 +711,7 @@ flush_pending_note (void)
       tree note = build_stmt (pending_location, ASM_EXPR, string, NULL_TREE,
                               NULL_TREE, NULL_TREE, NULL_TREE);
 
-      ASM_INPUT_P (note) = false;
+      ASM_BASIC_P (note) = false;
       ASM_VOLATILE_P (note) = false;
 #else
       tree note = build_empty_stmt (pending_location);

@@ -42,6 +42,9 @@
 #include <type_traits>
 #include <bits/utility.h> // in_place_type_t
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // aligned_storage
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -90,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Storage& operator=(const _Storage&) = delete;
 
       void* _M_ptr;
-      aligned_storage<sizeof(_M_ptr), alignof(void*)>::type _M_buffer;
+      unsigned char _M_buffer[sizeof(_M_ptr)];
     };
 
     template<typename _Tp, typename _Safe = is_nothrow_move_constructible<_Tp>,
@@ -660,6 +663,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #endif // __cpp_lib_any
 #endif // _GLIBCXX_ANY

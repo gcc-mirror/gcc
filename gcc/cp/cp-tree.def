@@ -412,17 +412,17 @@ DEFTREECODE (ARGUMENT_PACK_SELECT, "argument_pack_select", tcc_exceptional, 0)
 /* Fold expressions allow the expansion of a template argument pack
    over a binary operator.
 
-   FOLD_EXPR_MOD_P is true when the fold operation is a compound assignment
+   FOLD_EXPR_MODIFY_P is true when the fold operation is a compound assignment
    operator.
 
    FOLD_EXPR_OP is an INTEGER_CST storing the tree code for the folded
-   expression. Note that when FOLDEXPR_MOD_P is true, the operator is
+   expression.  Note that when FOLD_EXPR_MODIFY_P is true, the operator is
    a compound assignment operator for that kind of expression.
 
    FOLD_EXPR_PACK is an expression containing an unexpanded parameter pack;
    when expanded, each term becomes an argument of the folded expression.
 
-   In a BINARY_FOLD_EXPRESSION, FOLD_EXPR_INIT is the non-pack argument. */
+   In a BINARY_FOLD_EXPRESSION, FOLD_EXPR_INIT is the non-pack argument.  */
 DEFTREECODE (UNARY_LEFT_FOLD_EXPR, "unary_left_fold_expr", tcc_expression, 2)
 DEFTREECODE (UNARY_RIGHT_FOLD_EXPR, "unary_right_fold_expr", tcc_expression, 2)
 DEFTREECODE (BINARY_LEFT_FOLD_EXPR, "binary_left_fold_expr", tcc_expression, 3)
@@ -518,34 +518,25 @@ DEFTREECODE (NESTED_REQ, "nested_req", tcc_expression, 1)
 
 /* Constraints are modeled as kinds of expressions.
    The operands of a constraint can be either types or expressions.
-   Unlike expressions, constraints do not have a type. */
+   Unlike expressions, constraints do not have a type.  */
 
 /* An atomic constraint evaluates an expression E. The operand of the
-   constraint is its parameter mapping. The actual expression is stored
+   constraint is its parameter mapping.  The actual expression is stored
    in the context.
 
-   ATOMIC_CONSTR_INFO provides source info to support diagnostics.
+   CONSTR_INFO provides source info to support diagnostics.
    ATOMIC_CONSTR_EXPR has the expression to be evaluated.
-   ATOMIC_CONSTR_PARMS is the parameter mapping for the atomic constraint
+   ATOMIC_CONSTR_MAP is the parameter mapping for the atomic constraint
    and is stored in the type field.  */
 DEFTREECODE (ATOMIC_CONSTR, "atomic_constr", tcc_expression, 1)
 
 /* The conjunction and disjunction of two constraints, respectively.
-   Operands are accessed using TREE_OPERAND. The third operand provides
-   source info for diagnostics.
+   Operands are accessed using TREE_OPERAND.
 
-   CONJ_CONSTR_INFO and DISJ_CONSTR_INFO provide access to the source
-   information of constraints, which is stored in the TREE_TYPE.  */
+   CONSTR_INFO provides access to the source information of constraints,
+   which is stored in the TREE_TYPE.  */
 DEFTREECODE (CONJ_CONSTR, "conj_constr", tcc_expression, 2)
 DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
-
-/* A check constraint represents the checking of a concept
-   C. It has two operands: the template defining the concept
-   and a sequence of template arguments.
-
-   CHECK_CONSTR_CONCEPT has the concept definition
-   CHECK_CONSTR_ARGUMENTS are the template arguments */
-DEFTREECODE (CHECK_CONSTR, "check_constr", tcc_expression, 2)
 
 /* The co_await expression is used to support coroutines.
 

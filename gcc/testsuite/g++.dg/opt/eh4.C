@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-O3" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Make sure that the call to terminate within F2 is not eliminated
 // by incorrect MUST_NOT_THROW optimization.  Note that we expect F1

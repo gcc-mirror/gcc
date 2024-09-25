@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-final { scan-assembler-not "__cxa_get_exception" } }
 // { dg-options "-fno-use-cxa-get-exception-ptr -Wno-deprecated" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include <exception>
 #include <cstdlib>

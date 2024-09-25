@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cpplib.h"
 #include "diagnostic.h"
+#include "diagnostic-highlight-colors.h"
 
 /* Implementation of range_label::get_text for
    maybe_range_label_for_tree_type_mismatch.
@@ -72,7 +73,8 @@ maybe_range_label_for_tree_type_mismatch::get_text (unsigned range_idx) const
        |        arg1 type
        arg0 type
 
-   labelling the types of the arguments if SHOW_TYPES is true.
+   labelling the types of the arguments if SHOW_TYPES is true,
+   and using highlight_colors::lhs and highlight_colors::rhs for the ranges.
 
    Otherwise, make a 1-location rich_location using the compound
    location within LOC:
@@ -96,8 +98,10 @@ binary_op_rich_location::binary_op_rich_location (const op_location_t &loc,
   if (use_operator_loc_p (loc, arg0, arg1))
     {
       set_range (0, loc.m_operator_loc, SHOW_RANGE_WITH_CARET);
-      maybe_add_expr (arg0, show_types ? &m_label_for_arg0 : NULL);
-      maybe_add_expr (arg1, show_types ? &m_label_for_arg1 : NULL);
+      maybe_add_expr (arg0, show_types ? &m_label_for_arg0 : NULL,
+		      highlight_colors::lhs);
+      maybe_add_expr (arg1, show_types ? &m_label_for_arg1 : NULL,
+		      highlight_colors::rhs);
     }
 }
 

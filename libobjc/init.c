@@ -851,7 +851,7 @@ __objc_create_classes_tree (struct objc_module *module)
 
   /* Now iterate over "claimed" categories too (ie, categories that
      extend a class that has already been loaded by the runtime), and
-     insert them in the classes tree hiearchy too.  Otherwise, if you
+     insert them in the classes tree hierarchy too.  Otherwise, if you
      add a category, its +load method would not be called if the class
      is already loaded in the runtime.  It the category is
      "unclaimed", ie, we haven't loaded the main class yet, postpone

@@ -199,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __ret;
   }
 
-#ifdef _GLIBCXX_SYMVER_GNU
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(__ELF__)
 #pragma GCC diagnostic ignored "-Wattribute-alias"
 
   void ios_base_library_init (void)

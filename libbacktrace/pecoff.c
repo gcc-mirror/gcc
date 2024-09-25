@@ -83,10 +83,10 @@ struct dll_notification_data
 #define LDR_DLL_NOTIFICATION_REASON_LOADED 1
 
 typedef LONG NTSTATUS;
-typedef VOID CALLBACK (*LDR_DLL_NOTIFICATION)(ULONG,
+typedef VOID (CALLBACK *LDR_DLL_NOTIFICATION)(ULONG,
 					      struct dll_notification_data*,
 					      PVOID);
-typedef NTSTATUS NTAPI (*LDR_REGISTER_FUNCTION)(ULONG,
+typedef NTSTATUS (NTAPI *LDR_REGISTER_FUNCTION)(ULONG,
 						LDR_DLL_NOTIFICATION, PVOID,
 						PVOID*);
 #endif
@@ -240,7 +240,7 @@ coff_nodebug (struct backtrace_state *state ATTRIBUTE_UNUSED,
 	      backtrace_full_callback callback ATTRIBUTE_UNUSED,
 	      backtrace_error_callback error_callback, void *data)
 {
-  error_callback (data, "no debug info in PE/COFF executable", -1);
+  error_callback (data, "no debug info in PE/COFF executable (make sure to compile with -g)", -1);
   return 0;
 }
 
@@ -382,10 +382,11 @@ coff_is_function_symbol (const b_coff_internal_symbol *isym)
 
 static int
 coff_initialize_syminfo (struct backtrace_state *state,
-			 uintptr_t base_address, int is_64,
-			 const b_coff_section_header *sects, size_t sects_num,
-			 const b_coff_external_symbol *syms, size_t syms_size,
-			 const unsigned char *strtab, size_t strtab_size,
+			 struct libbacktrace_base_address base_address,
+			 int is_64, const b_coff_section_header *sects,
+			 size_t sects_num, const b_coff_external_symbol *syms,
+			 size_t syms_size, const unsigned char *strtab,
+			 size_t strtab_size,
 			 backtrace_error_callback error_callback,
 			 void *data, struct coff_syminfo_data *sdata)
 {
@@ -490,9 +491,10 @@ coff_initialize_syminfo (struct backtrace_state *state,
 	  secnum = coff_read2 (asym->section_number);
 
 	  coff_sym->name = name;
-	  coff_sym->address = (coff_read4 (asym->value)
-			       + sects[secnum - 1].virtual_address
-			       + base_address);
+	  coff_sym->address =
+	    libbacktrace_add_base ((coff_read4 (asym->value)
+				    + sects[secnum - 1].virtual_address),
+				   base_address);
 	  coff_sym++;
 	}
 
@@ -662,8 +664,8 @@ coff_add (struct backtrace_state *state, int descriptor,
   struct backtrace_view debug_view;
   int debug_view_valid;
   int is_64;
-  uintptr_t image_base;
-  uintptr_t base_address = 0;
+  struct libbacktrace_base_address image_base;
+  struct libbacktrace_base_address base_address;
   struct dwarf_sections dwarf_sections;
 
   *found_sym = 0;
@@ -702,7 +704,7 @@ coff_add (struct backtrace_state *state, int descriptor,
       magic_ok = memcmp (magic, "PE\0", 4) == 0;
       fhdr_off += 4;
 
-      memcpy (&fhdr, fhdr_view.data + 4, sizeof fhdr);
+      memcpy (&fhdr, (const unsigned char *) fhdr_view.data + 4, sizeof fhdr);
     }
   else
     {
@@ -736,16 +738,17 @@ coff_add (struct backtrace_state *state, int descriptor,
   sects_view_valid = 1;
   opt_hdr = (const b_coff_optional_header *) sects_view.data;
   sects = (const b_coff_section_header *)
-    (sects_view.data + fhdr.size_of_optional_header);
+    ((const unsigned char *) sects_view.data + fhdr.size_of_optional_header);
 
   is_64 = 0;
+  memset (&image_base, 0, sizeof image_base);
   if (fhdr.size_of_optional_header > sizeof (*opt_hdr))
     {
       if (opt_hdr->magic == PE_MAGIC)
-	image_base = opt_hdr->u.pe.image_base;
+	image_base.m = opt_hdr->u.pe.image_base;
       else if (opt_hdr->magic == PEP_MAGIC)
 	{
-	  image_base = opt_hdr->u.pep.image_base;
+	  image_base.m = opt_hdr->u.pep.image_base;
 	  is_64 = 1;
 	}
       else
@@ -754,8 +757,6 @@ coff_add (struct backtrace_state *state, int descriptor,
 	  goto fail;
 	}
     }
-  else
-    image_base = 0;
 
   /* Read the symbol table and the string table.  */
 
@@ -780,7 +781,8 @@ coff_add (struct backtrace_state *state, int descriptor,
 	goto fail;
       syms_view_valid = 1;
 
-      str_size = coff_read4 (syms_view.data + syms_size);
+      str_size = coff_read4 ((const unsigned char *) syms_view.data
+			     + syms_size);
 
       str_off = syms_off + syms_size;
 
@@ -910,8 +912,9 @@ coff_add (struct backtrace_state *state, int descriptor,
 				  + (sections[i].offset - min_offset));
     }
 
+  memset (&base_address, 0, sizeof base_address);
 #ifdef HAVE_WINDOWS_H
-  base_address = module_handle - image_base;
+  base_address.m = module_handle - image_base.m;
 #endif
 
   if (!backtrace_dwarf_add (state, base_address, &dwarf_sections,

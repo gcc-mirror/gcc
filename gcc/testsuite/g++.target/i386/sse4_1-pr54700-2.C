@@ -1,6 +1,7 @@
 /* PR target/54700 */
 /* { dg-do run { target sse4 } } */
 /* { dg-options "-O2 -std=c++14 -msse4 -mno-avx -mno-xop" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse4_1-check.h"

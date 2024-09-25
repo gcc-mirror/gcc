@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-require-fileio "" }
+// { dg-additional-files "istream_unformatted-1.txt" }
 
 #include <iterator>
 #include <fstream>

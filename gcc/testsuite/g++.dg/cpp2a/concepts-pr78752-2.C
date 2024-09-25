@@ -1,14 +1,14 @@
-// { dg-do compile { target c++2a } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-do compile { target c++20 } }
+// { dg-additional-options "-fconcepts" }
 
 template <class T, class U>
-concept bool Same = __is_same(T, U);
+concept Same = __is_same(T, U);
 
 struct test {
-  void func(Same<int>... ints) {}
+  void func(Same<int> auto... ints) {}
 };
 
-void func(Same<int>... ints) {}
+void func(Same<int> auto... ints) {}
 
 int main()
 {

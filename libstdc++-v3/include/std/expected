@@ -79,10 +79,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     protected:
       bad_expected_access() noexcept { }
-      bad_expected_access(const bad_expected_access&) = default;
-      bad_expected_access(bad_expected_access&&) = default;
-      bad_expected_access& operator=(const bad_expected_access&) = default;
-      bad_expected_access& operator=(bad_expected_access&&) = default;
+      bad_expected_access(const bad_expected_access&) noexcept = default;
+      bad_expected_access(bad_expected_access&&) noexcept = default;
+      bad_expected_access& operator=(const bad_expected_access&) noexcept = default;
+      bad_expected_access& operator=(bad_expected_access&&) noexcept = default;
       ~bad_expected_access() = default;
 
     public:
@@ -314,6 +314,17 @@ namespace __expected
 	  __guard.release();
 	}
     }
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3836. std::expected<bool, E1> conversion constructor
+  // expected(const expected<U, G>&) should take precedence over
+  // expected(U&&) with operator bool
+
+  // If T is cv bool, remove_cvref_t<U> is not a specialization of expected.
+  template<typename _Tp, typename _Up>
+    concept __not_constructing_bool_from_expected
+      = ! is_same_v<remove_cv_t<_Tp>, bool>
+	  || ! __is_expected<remove_cvref_t<_Up>>;
 }
 /// @endcond
 
@@ -327,26 +338,41 @@ namespace __expected
       static_assert( ! __expected::__is_unexpected<remove_cv_t<_Tp>> );
       static_assert( __expected::__can_be_unexpected<_Er> );
 
-      template<typename _Up, typename _Err, typename _Unex = unexpected<_Er>>
+      // If T is not cv bool, converts-from-any-cvref<T, expected<U, G>> and
+      // is_constructible<unexpected<E>, cv expected<U, G> ref-qual> are false.
+      template<typename _Up, typename _Gr, typename _Unex = unexpected<_Er>,
+	       typename = remove_cv_t<_Tp>>
 	static constexpr bool __cons_from_expected
-	  = __or_v<is_constructible<_Tp, expected<_Up, _Err>&>,
-		   is_constructible<_Tp, expected<_Up, _Err>>,
-		   is_constructible<_Tp, const expected<_Up, _Err>&>,
-		   is_constructible<_Tp, const expected<_Up, _Err>>,
-		   is_convertible<expected<_Up, _Err>&, _Tp>,
-		   is_convertible<expected<_Up, _Err>, _Tp>,
-		   is_convertible<const expected<_Up, _Err>&, _Tp>,
-		   is_convertible<const expected<_Up, _Err>, _Tp>,
-		   is_constructible<_Unex, expected<_Up, _Err>&>,
-		   is_constructible<_Unex, expected<_Up, _Err>>,
-		   is_constructible<_Unex, const expected<_Up, _Err>&>,
-		   is_constructible<_Unex, const expected<_Up, _Err>>
+	  = __or_v<is_constructible<_Tp, expected<_Up, _Gr>&>,
+		   is_constructible<_Tp, expected<_Up, _Gr>>,
+		   is_constructible<_Tp, const expected<_Up, _Gr>&>,
+		   is_constructible<_Tp, const expected<_Up, _Gr>>,
+		   is_convertible<expected<_Up, _Gr>&, _Tp>,
+		   is_convertible<expected<_Up, _Gr>, _Tp>,
+		   is_convertible<const expected<_Up, _Gr>&, _Tp>,
+		   is_convertible<const expected<_Up, _Gr>, _Tp>,
+		   is_constructible<_Unex, expected<_Up, _Gr>&>,
+		   is_constructible<_Unex, expected<_Up, _Gr>>,
+		   is_constructible<_Unex, const expected<_Up, _Gr>&>,
+		   is_constructible<_Unex, const expected<_Up, _Gr>>
 		  >;
 
-      template<typename _Up, typename _Err>
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // If t is cv bool, we know it can be constructed from expected<U, G>,
+      // but we don't want to cause the expected(U&&) constructor to be used,
+      // so we only check the is_constructible<unexpected<E>, ...> cases.
+      template<typename _Up, typename _Gr, typename _Unex>
+	static constexpr bool __cons_from_expected<_Up, _Gr, _Unex, bool>
+	  = __or_v<is_constructible<_Unex, expected<_Up, _Gr>&>,
+		   is_constructible<_Unex, expected<_Up, _Gr>>,
+		   is_constructible<_Unex, const expected<_Up, _Gr>&>,
+		   is_constructible<_Unex, const expected<_Up, _Gr>>
+		  >;
+
+      template<typename _Up, typename _Gr>
 	constexpr static bool __explicit_conv
 	  = __or_v<__not_<is_convertible<_Up, _Tp>>,
-		   __not_<is_convertible<_Err, _Er>>
+		   __not_<is_convertible<_Gr, _Er>>
 		  >;
 
       template<typename _Up>
@@ -442,11 +468,12 @@ namespace __expected
 			      std::move(__x)._M_unex);
 	}
 
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<remove_cvref_t<_Up>, expected>)
 	  && (!is_same_v<remove_cvref_t<_Up>, in_place_t>)
-	  && (!__expected::__is_unexpected<remove_cvref_t<_Up>>)
 	  && is_constructible_v<_Tp, _Up>
+	  && (!__expected::__is_unexpected<remove_cvref_t<_Up>>)
+	  && __expected::__not_constructing_bool_from_expected<_Tp, _Up>
 	constexpr explicit(!is_convertible_v<_Up, _Tp>)
 	expected(_Up&& __v)
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
@@ -555,7 +582,7 @@ namespace __expected
 	return *this;
       }
 
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<expected, remove_cvref_t<_Up>>)
 	      && (!__expected::__is_unexpected<remove_cvref_t<_Up>>)
 	      && is_constructible_v<_Tp, _Up> && is_assignable_v<_Tp&, _Up>
@@ -727,6 +754,7 @@ namespace __expected
       constexpr const _Tp&
       value() const &
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return _M_val;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(_M_unex));
@@ -735,6 +763,7 @@ namespace __expected
       constexpr _Tp&
       value() &
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return _M_val;
 	const auto& __unex = _M_unex;
@@ -744,6 +773,8 @@ namespace __expected
       constexpr const _Tp&&
       value() const &&
       {
+	static_assert( is_copy_constructible_v<_Er> );
+	static_assert( is_constructible_v<_Er, const _Er&&> );
 	if (_M_has_value) [[likely]]
 	  return std::move(_M_val);
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));
@@ -752,6 +783,8 @@ namespace __expected
       constexpr _Tp&&
       value() &&
       {
+	static_assert( is_copy_constructible_v<_Er> );
+	static_assert( is_constructible_v<_Er, _Er&&> );
 	if (_M_has_value) [[likely]]
 	  return std::move(_M_val);
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));
@@ -785,7 +818,7 @@ namespace __expected
 	return std::move(_M_unex);
       }
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __v) const &
 	noexcept(__and_v<is_nothrow_copy_constructible<_Tp>,
@@ -799,7 +832,7 @@ namespace __expected
 	  return static_cast<_Tp>(std::forward<_Up>(__v));
 	}
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __v) &&
 	noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
@@ -1483,6 +1516,7 @@ namespace __expected
       constexpr void
       value() const&
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(_M_unex));
@@ -1491,6 +1525,7 @@ namespace __expected
       constexpr void
       value() &&
       {
+	static_assert( is_copy_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));

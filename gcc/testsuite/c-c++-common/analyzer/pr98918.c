@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 
 #include <stdlib.h>
 

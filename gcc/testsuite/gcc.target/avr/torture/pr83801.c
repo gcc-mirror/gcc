@@ -1,7 +1,7 @@
 /* { dg-options { "-std=gnu99" } } */
 /* { dg-do run { target { ! avr_tiny } } } */
 
-__attribute((noinline,noclone))
+__attribute((noipa))
 char to_ascii (unsigned i)
 {
     static const char __flash code_tab[] = "0123456789";

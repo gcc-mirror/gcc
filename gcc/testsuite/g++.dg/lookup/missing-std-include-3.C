@@ -3,6 +3,7 @@
    For this case, expect to insert the #include at the top of the file. */
 
 /* { dg-options "-fdiagnostics-generate-patch" } */
+/* { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } } */
 
 void test ()
 {

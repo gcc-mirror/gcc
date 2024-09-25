@@ -38,10 +38,10 @@ DEFINITION MODULE M2Range ;
                  time, post optimization.
 *)
 
-FROM SYSTEM IMPORT ADDRESS ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM CDataTypes IMPORT ConstCharStar ;
+FROM gcctypes IMPORT location_t, tree ;
 FROM DynamicStrings IMPORT String ;
+
 
 
 (*
@@ -315,7 +315,7 @@ PROCEDURE FoldRangeCheck (tokenno: CARDINAL; q: CARDINAL; r: CARDINAL) ;
    CodeErrorCheck - returns a Tree calling the approprate exception handler.
 *)
 
-PROCEDURE CodeErrorCheck (r: CARDINAL; function, message: String) : Tree ;
+PROCEDURE CodeErrorCheck (r: CARDINAL; function, message: String) : tree ;
 
 
 (*
@@ -348,51 +348,51 @@ PROCEDURE WriteRangeCheck (r: CARDINAL) ;
    OverlapsRange - returns TRUE if a1..a2 overlaps with b1..b2.
 *)
 
-PROCEDURE OverlapsRange (a1, a2, b1, b2: Tree) : BOOLEAN ;
+PROCEDURE OverlapsRange (a1, a2, b1, b2: tree) : BOOLEAN ;
 
 
 (*
    IsEqual - returns TRUE if a=b.
 *)
 
-PROCEDURE IsEqual (a, b: Tree) : BOOLEAN ;
+PROCEDURE IsEqual (a, b: tree) : BOOLEAN ;
 
 
 (*
    IsGreaterOrEqual - returns TRUE if a>=b.
 *)
 
-PROCEDURE IsGreaterOrEqual (a, b: Tree) : BOOLEAN ;
+PROCEDURE IsGreaterOrEqual (a, b: tree) : BOOLEAN ;
 
 
 (*
    IsGreater - returns TRUE if a>b.
 *)
 
-PROCEDURE IsGreater (a, b: Tree) : BOOLEAN ;
+PROCEDURE IsGreater (a, b: tree) : BOOLEAN ;
 
 
 (*
    BuildIfCallWholeHandlerLoc - return a Tree containing a runtime test whether, condition, is true.
 *)
 
-PROCEDURE BuildIfCallWholeHandlerLoc (location: location_t; condition: Tree;
-                                      scope, message: ADDRESS) : Tree ;
+PROCEDURE BuildIfCallWholeHandlerLoc (location: location_t; condition: tree;
+                                      scope, message: ConstCharStar) : tree ;
 
 
 (*
    BuildIfCallRealHandlerLoc - return a Tree containing a runtime test whether, condition, is true.
 *)
 
-PROCEDURE BuildIfCallRealHandlerLoc (location: location_t; condition: Tree;
-                                     scope, message: ADDRESS) : Tree ;
+PROCEDURE BuildIfCallRealHandlerLoc (location: location_t; condition: tree;
+                                     scope, message: ConstCharStar) : tree ;
 
 
 (*
    GetMinMax - returns TRUE if we know the max and min of a type, t.
 *)
 
-PROCEDURE GetMinMax (tokenno: CARDINAL; type: CARDINAL; VAR min, max: Tree) : BOOLEAN ;
+PROCEDURE GetMinMax (tokenno: CARDINAL; type: CARDINAL; VAR min, max: tree) : BOOLEAN ;
 
 
 END M2Range.

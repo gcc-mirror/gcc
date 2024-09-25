@@ -594,6 +594,39 @@ MAKETESTS += mtest_minidebug
 	$(OBJCOPY) --add-section .gnu_debugdata=$<.mdbg.xz $<.strip
 	mv $<.strip $@
 
+if HAVE_ELF
+if HAVE_BUILDID
+if HAVE_OBJCOPY_DEBUGLINK
+
+m2test_SOURCES = $(mtest_SOURCES)
+m2test_CFLAGS = $(libbacktrace_TEST_CFLAGS) -O
+m2test_LDFLAGS = -Wl,--build-id $(libbacktrace_testing_ldflags)
+m2test_LDADD = libbacktrace_elf_for_test.la
+
+check_PROGRAMS += m2test
+MAKETESTS += m2test_minidebug2
+
+# minidebug2 is like minidebug but also adds the gnu_debugdata section
+# to the debug file, and uses a build ID file.  There is no reason to do
+# this but it was causing an infinite recursion.
+%_minidebug2: %
+	$(NM) -D $< -P --defined-only | $(AWK) '{ print $$1 }' | sort > $<.dsyms2
+	$(NM) $< -P --defined-only | $(AWK) '{ if ($$2 == "T" || $$2 == "t" || $$2 == "D") print $$1 }' | sort > $<.fsyms2
+	$(COMM) -13 $<.dsyms2 $<.fsyms2 > $<.keepsyms2
+	$(OBJCOPY) --only-keep-debug $< $<.dbg2
+	$(OBJCOPY) -S --remove-section .gdb_index --remove-section .comment --keep-symbols=$<.keepsyms2 $<.dbg2 $<.mdbg2
+	$(OBJCOPY) --strip-all --remove-section ..comment $< $<.strip2
+	rm -f $<.mdbg2.xz
+	$(XZ) $<.mdbg2
+	$(OBJCOPY) --add-section .gnu_debugdata=$<.mdbg2.xz $<.dbg2
+	$(OBJCOPY) --add-section .gnu_debugdata=$<.mdbg2.xz $<.strip2
+	$(SHELL) ./install-debuginfo-for-buildid.sh $(TEST_BUILD_ID_DIR) $<.dbg2
+	mv $<.strip2 $@
+
+endif HAVE_OBJCOPY_DEBUGLINK
+endif HAVE_BUILDID
+endif HAVE_ELF
+
 endif HAVE_MINIDEBUG
 
 endif NATIVE
@@ -629,7 +662,8 @@ TESTS += $(MAKETESTS) $(BUILDTESTS)
 CLEANFILES = \
 	$(MAKETESTS) $(BUILDTESTS) *.debug elf_for_test.c edtest2_build.c \
 	gen_edtest2_build \
-	*.dsyms *.fsyms *.keepsyms *.dbg *.mdbg *.mdbg.xz *.strip
+	*.dsyms *.fsyms *.keepsyms *.dbg *.mdbg *.mdbg.xz *.strip \
+	*.dsyms2 *.fsyms2 *.keepsyms2 *.dbg2 *.mdbg2 *.mdbg2.xz *.strip2
 
 clean-local:
 	-rm -rf usr
@@ -668,7 +702,8 @@ sort.lo: config.h backtrace.h internal.h
 stest.lo: config.h backtrace.h internal.h
 state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
-xcoff.lo: config.h backtrace.h internal.h
+xcoff_32.lo: config.h backtrace.h internal.h
+xcoff_64.lo: config.h backtrace.h internal.h
 xztest.lo: config.h backtrace.h backtrace-supported.h internal.h testlib.h
 ztest.lo: config.h backtrace.h backtrace-supported.h internal.h testlib.h
 

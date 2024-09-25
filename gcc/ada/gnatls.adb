@@ -1573,7 +1573,6 @@ procedure Gnatls is
          Last  : Natural;
 
       begin
-
          if Is_Absolute_Path (Path) then
             if Is_Directory (Path) then
                return new String'(Path);

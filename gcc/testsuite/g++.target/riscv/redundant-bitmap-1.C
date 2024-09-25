@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv64gc_zba_zbb_zbs -mabi=lp64" } */
+/* { dg-options "-O2 -march=rv64gcb -mabi=lp64" } */
 
 void setBit(char &a, int b) {
     char c = 0x1UL << b;

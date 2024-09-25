@@ -401,8 +401,8 @@ Pass -marclinux_prof option through to linker.
 
 ;; lra is still unproven for ARC, so allow to fall back to reload with -mno-lra.
 mlra
-Target Var(arc_lra_flag) Init(1) Save
-Use LRA instead of reload.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mlra-priority-none
 Target RejectNegative Var(arc_lra_priority_tag, ARC_LRA_PRIORITY_NONE)

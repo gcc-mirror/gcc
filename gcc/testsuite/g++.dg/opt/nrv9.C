@@ -1,4 +1,5 @@
 // PR c++/19317
+// { dg-do run }
 // If we do both NRV and caller-side return slot opt for ga = f()
 // constructing la sets ga.i to 0 too soon.
 

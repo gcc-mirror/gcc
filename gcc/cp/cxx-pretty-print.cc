@@ -1257,7 +1257,6 @@ cxx_pretty_printer::expression (tree t)
       break;
 
     case ATOMIC_CONSTR:
-    case CHECK_CONSTR:
     case CONJ_CONSTR:
     case DISJ_CONSTR:
       pp_cxx_constraint (this, t);
@@ -2815,29 +2814,6 @@ pp_cxx_nested_requirement (cxx_pretty_printer *pp, tree t)
   pp_cxx_semicolon (pp);
 }
 
-void
-pp_cxx_check_constraint (cxx_pretty_printer *pp, tree t)
-{
-  tree decl = CHECK_CONSTR_CONCEPT (t);
-  tree tmpl = DECL_TI_TEMPLATE (decl);
-  tree args = CHECK_CONSTR_ARGS (t);
-  tree id = build_nt (TEMPLATE_ID_EXPR, tmpl, args);
-
-  if (TREE_CODE (decl) == CONCEPT_DECL)
-    pp->expression (id);
-  else if (VAR_P (decl))
-    pp->expression (id);
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      tree call = build_vl_exp (CALL_EXPR, 2);
-      TREE_OPERAND (call, 0) = integer_two_node;
-      TREE_OPERAND (call, 1) = id;
-      pp->expression (call);
-    }
-  else
-    gcc_unreachable ();
-}
-
 /* Output the "[with ...]" clause for a parameter mapping of an atomic
    constraint.   */
 
@@ -2915,10 +2891,6 @@ pp_cxx_constraint (cxx_pretty_printer *pp, tree t)
     {
     case ATOMIC_CONSTR:
       pp_cxx_atomic_constraint (pp, t);
-      break;
-
-    case CHECK_CONSTR:
-      pp_cxx_check_constraint (pp, t);
       break;
 
     case CONJ_CONSTR:

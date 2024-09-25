@@ -23,6 +23,7 @@
 #define IN_TARGET_CODE 1
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
@@ -117,7 +118,6 @@ static bool arm_assemble_integer (rtx, unsigned int, int);
 static void arm_print_operand (FILE *, rtx, int);
 static void arm_print_operand_address (FILE *, machine_mode, rtx);
 static bool arm_print_operand_punct_valid_p (unsigned char code);
-static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
 static bool arm_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static const char *output_multi_immediate (rtx *, const char *, const char *,
@@ -209,9 +209,7 @@ static int aapcs_select_return_coproc (const_tree, const_tree);
 static void arm_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void arm_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 #endif
-#ifndef ARM_PE
 static void arm_encode_section_info (tree, rtx, int);
-#endif
 
 static void arm_file_end (void);
 static void arm_file_start (void);
@@ -353,21 +351,7 @@ static const attribute_spec arm_gnu_attributes[] =
     NULL },
   { "naked",        0, 0, true,  false, false, false,
     arm_handle_fndecl_attribute, NULL },
-#ifdef ARM_PE
-  /* ARM/PE has three new attributes:
-     interfacearm - ?
-     dllexport - for exporting a function/variable that will live in a dll
-     dllimport - for importing a function/variable from a dll
-
-     Microsoft allows multiple declspecs in one __declspec, separating
-     them with spaces.  We do NOT support this.  Instead, use __declspec
-     multiple times.
-  */
-  { "dllimport",    0, 0, true,  false, false, false, NULL, NULL },
-  { "dllexport",    0, 0, true,  false, false, false, NULL, NULL },
-  { "interfacearm", 0, 0, true,  false, false, false,
-    arm_handle_fndecl_attribute, NULL },
-#elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
   { "dllimport",    0, 0, false, false, false, false, handle_dll_attribute,
     NULL },
   { "dllexport",    0, 0, false, false, false, false, handle_dll_attribute,
@@ -489,11 +473,7 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 #define TARGET_MEMORY_MOVE_COST arm_memory_move_cost
 
 #undef TARGET_ENCODE_SECTION_INFO
-#ifdef ARM_PE
-#define TARGET_ENCODE_SECTION_INFO  arm_pe_encode_section_info
-#else
 #define TARGET_ENCODE_SECTION_INFO  arm_encode_section_info
-#endif
 
 #undef  TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING arm_strip_name_encoding
@@ -8027,10 +8007,11 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
       && DECL_WEAK (decl))
     return false;
 
-  /* We cannot tailcall an indirect call by descriptor if all the call-clobbered
-     general registers are live (r0-r3 and ip).  This can happen when:
-      - IP contains the static chain, or
-      - IP is needed for validating the PAC signature.  */
+  /* Indirect tailcalls need a call-clobbered register to hold the function
+     address.  But we only have r0-r3 and ip in that class.  If r0-r3 all hold
+     function arguments, then we can only use IP.  But IP may be needed in the
+     epilogue (for PAC validation), or for passing the static chain.  We have
+     to disable the tail call if nothing is available.  */
   if (!decl
       && ((CALL_EXPR_BY_DESCRIPTOR (exp) && !flag_trampolines)
 	  || arm_current_function_pac_enabled_p()))
@@ -8042,18 +8023,33 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
       arm_init_cumulative_args (&cum, fntype, NULL_RTX, NULL_TREE);
       cum_v = pack_cumulative_args (&cum);
 
-      for (tree t = TYPE_ARG_TYPES (fntype); t; t = TREE_CHAIN (t))
+      tree arg;
+      call_expr_arg_iterator iter;
+      unsigned used_regs = 0;
+
+      /* Layout each actual argument in turn.  If it is allocated to
+	 core regs, note which regs have been allocated.  */
+      FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
 	{
-	  tree type = TREE_VALUE (t);
-	  if (!VOID_TYPE_P (type))
+	  tree type = TREE_TYPE (arg);
+	  function_arg_info arg_info (type, /*named=*/true);
+	  rtx reg = arm_function_arg (cum_v, arg_info);
+	  if (reg && REG_P (reg)
+	      && REGNO (reg) <= LAST_ARG_REGNUM)
 	    {
-	      function_arg_info arg (type, /*named=*/true);
-	      arm_function_arg_advance (cum_v, arg);
+	      /* Avoid any chance of UB here.  We don't care if TYPE
+		 is very large since it will use up all the argument regs.  */
+	      unsigned nregs = MIN (ARM_NUM_REGS2 (GET_MODE (reg), type),
+				    LAST_ARG_REGNUM + 1);
+	      used_regs |= ((1 << nregs) - 1) << REGNO (reg);
 	    }
+	  arm_function_arg_advance (cum_v, arg_info);
 	}
 
-      function_arg_info arg (integer_type_node, /*named=*/true);
-      if (!arm_function_arg (cum_v, arg))
+      /* We've used all the argument regs, and we know IP is live during the
+	 epilogue for some reason, so we can't tailcall.  */
+      if ((used_regs & ((1 << (LAST_ARG_REGNUM + 1)) - 1))
+	  == ((1 << (LAST_ARG_REGNUM + 1)) - 1))
 	return false;
     }
 
@@ -8858,35 +8854,11 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
 
-  /* For quad modes, we restrict the constant offset to be slightly less
-     than what the instruction format permits.  We do this because for
-     quad mode moves, we will actually decompose them into two separate
-     double-mode reads or writes.  INDEX must therefore be a valid
-     (double-mode) offset and so should INDEX+8.  */
-  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1016
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
-  /* We have no such constraint on double mode offsets, so we permit the
-     full range of the instruction format.  */
-  if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1024
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
-  if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
-    return (code == CONST_INT
-	    && INTVAL (index) < 1024
-	    && INTVAL (index) > -1024
-	    && (INTVAL (index) & 3) == 0);
-
   if (arm_address_register_rtx_p (index, strict_p)
       && (GET_MODE_SIZE (mode) <= 4))
     return 1;
 
+  /* This handles DFmode only if !TARGET_HARD_FLOAT.  */
   if (mode == DImode || mode == DFmode)
     {
       if (code == CONST_INT)
@@ -8903,6 +8875,31 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 
       return TARGET_LDRD && arm_address_register_rtx_p (index, strict_p);
     }
+
+  /* For quad modes, we restrict the constant offset to be slightly less
+     than what the instruction format permits.  We do this because for
+     quad mode moves, we will actually decompose them into two separate
+     double-mode reads or writes.  INDEX must therefore be a valid
+     (double-mode) offset and so should INDEX+8.  */
+  if (TARGET_NEON && VALID_NEON_QREG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1016
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  /* We have no such constraint on double mode offsets, so we permit the
+     full range of the instruction format.  Note DImode is included here.  */
+  if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1024
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  if (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (mode))
+    return (code == CONST_INT
+	    && INTVAL (index) < 1024
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
 
   if (GET_MODE_SIZE (mode) <= 4
       && ! (arm_arch4
@@ -9006,7 +9003,7 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
 	    && (INTVAL (index) & 3) == 0);
 
   /* We have no such constraint on double mode offsets, so we permit the
-     full range of the instruction format.  */
+     full range of the instruction format.  Note DImode is included here.  */
   if (TARGET_NEON && VALID_NEON_DREG_MODE (mode))
     return (code == CONST_INT
 	    && INTVAL (index) < 1024
@@ -9017,6 +9014,7 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
       && (GET_MODE_SIZE (mode) <= 4))
     return 1;
 
+  /* This handles DImode if !TARGET_NEON, and DFmode if !TARGET_VFP_BASE.  */
   if (mode == DImode || mode == DFmode)
     {
       if (code == CONST_INT)
@@ -12820,37 +12818,12 @@ arm_cortex_m7_branch_cost (bool speed_p, bool predictable_p)
   return speed_p ? 0 : arm_default_branch_cost (speed_p, predictable_p);
 }
 
-static bool fp_consts_inited = false;
-
-static REAL_VALUE_TYPE value_fp0;
-
-static void
-init_fp_table (void)
-{
-  REAL_VALUE_TYPE r;
-
-  r = REAL_VALUE_ATOF ("0", DFmode);
-  value_fp0 = r;
-  fp_consts_inited = true;
-}
-
 /* Return TRUE if rtx X is a valid immediate FP constant.  */
 int
 arm_const_double_rtx (rtx x)
 {
-  const REAL_VALUE_TYPE *r;
-
-  if (!fp_consts_inited)
-    init_fp_table ();
-
-  r = CONST_DOUBLE_REAL_VALUE (x);
-  if (REAL_VALUE_MINUS_ZERO (*r))
-    return 0;
-
-  if (real_equal (r, &value_fp0))
-    return 1;
-
-  return 0;
+  return (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+	  && x == CONST0_RTX (GET_MODE (x)));
 }
 
 /* VFPv3 has a fairly wide range of representable immediates, formed from
@@ -19791,17 +19764,6 @@ arm_reorg (void)
 
 /* Routines to output assembly language.  */
 
-/* Return string representation of passed in real value.  */
-static const char *
-fp_const_from_val (REAL_VALUE_TYPE *r)
-{
-  if (!fp_consts_inited)
-    init_fp_table ();
-
-  gcc_assert (real_equal (r, &value_fp0));
-  return "0";
-}
-
 /* OPERANDS[0] is the entire list of insns that constitute pop,
    OPERANDS[1] is the base register, RETURN_PC is true iff return insn
    is in the list, UPDATE is true iff the list contains explicit
@@ -20865,10 +20827,9 @@ output_move_neon (rtx *operands)
 	int overlap = -1;
 	for (i = 0; i < nregs; i++)
 	  {
-	    /* We're only using DImode here because it's a convenient
-	       size.  */
-	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * i);
-	    ops[1] = adjust_address (mem, DImode, 8 * i);
+	    /* Use DFmode for vldr/vstr.  */
+	    ops[0] = gen_rtx_REG (DFmode, REGNO (reg) + 2 * i);
+	    ops[1] = adjust_address_nv (mem, DFmode, 8 * i);
 	    if (reg_overlap_mentioned_p (ops[0], mem))
 	      {
 		gcc_assert (overlap == -1);
@@ -20885,8 +20846,8 @@ output_move_neon (rtx *operands)
 	  }
 	if (overlap != -1)
 	  {
-	    ops[0] = gen_rtx_REG (DImode, REGNO (reg) + 2 * overlap);
-	    ops[1] = adjust_address (mem, SImode, 8 * overlap);
+	    ops[0] = gen_rtx_REG (DFmode, REGNO (reg) + 2 * overlap);
+	    ops[1] = adjust_address_nv (mem, DFmode, 8 * overlap);
 	    if (TARGET_HAVE_MVE && LABEL_REF_P (addr))
 	      sprintf (buff, "v%sr.32\t%%P0, %%1", load ? "ld" : "st");
 	    else
@@ -24159,8 +24120,8 @@ arm_print_condition (FILE *stream)
 /* Globally reserved letters: acln
    Puncutation letters currently used: @_|?().!#
    Lower case letters currently used: bcdefhimpqtvwxyz
-   Upper case letters currently used: ABCDEFGHIJKLMNOPQRSTUV
-   Letters previously used, but now deprecated/obsolete: sWXYZ.
+   Upper case letters currently used: ABCDEFGHIJKLMOPQRSTUV
+   Letters previously used, but now deprecated/obsolete: sNWXYZ.
 
    Note that the global reservation for 'c' is only for CONSTANT_ADDRESS_P.
 
@@ -24173,8 +24134,6 @@ arm_print_condition (FILE *stream)
    in these cases the instruction pattern will take care to make sure that
    an instruction containing %d will follow, thereby undoing the effects of
    doing this instruction unconditionally.
-   If CODE is 'N' then X is a floating point operand that must be negated
-   before output.
    If CODE is 'B' then output a bitwise inverted value of X (a const int).
    If X is a REG and CODE is `M', output a ldm/stm style multi-reg.
    If CODE is 'V', then the operand must be a CONST_INT representing
@@ -24223,14 +24182,6 @@ arm_print_operand (FILE *stream, rtx x, int code)
        of further digits which we don't want to be part of the operand
        number.  */
     case '#':
-      return;
-
-    case 'N':
-      {
-	REAL_VALUE_TYPE r;
-	r = real_value_negate (CONST_DOUBLE_REAL_VALUE (x));
-	fprintf (stream, "%s", fp_const_from_val (&r));
-      }
       return;
 
     /* An integer or symbol address without a preceding # sign.  */
@@ -24507,6 +24458,12 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	asm_fprintf (stream, "#%d, #%d", lsb,
 		     (exact_log2 (val + (val & -val)) - lsb));
       }
+      return;
+
+    case 'N':
+      /* Former FPA support, effectively unused after GCC-4.7, but not
+	 removed until gcc-15.  */
+      output_operand_lossage ("obsolete FPA format code '%c'", code);
       return;
 
     case 's':
@@ -26861,11 +26818,7 @@ is_called_in_ARM_mode (tree func)
   if (TARGET_CALLEE_INTERWORKING && TREE_PUBLIC (func))
     return true;
 
-#ifdef ARM_PE
-  return lookup_attribute ("interfacearm", DECL_ATTRIBUTES (func)) != NULL_TREE;
-#else
   return false;
-#endif
 }
 
 /* Given the stack offsets and register mask in OFFSETS, decide how
@@ -28341,10 +28294,6 @@ thumb1_output_interwork (void)
 #define STUB_NAME ".real_start_of"
 
   fprintf (f, "\t.code\t16\n");
-#ifdef ARM_PE
-  if (arm_dllexport_name_p (name))
-    name = arm_strip_name_encoding (name);
-#endif
   asm_fprintf (f, "\t.globl %s%U%s\n", STUB_NAME, name);
   fprintf (f, "\t.thumb_func\n");
   asm_fprintf (f, "%s%U%s:\n", STUB_NAME, name);
@@ -28374,15 +28323,11 @@ thumb_load_double_from_address (rtx *operands)
   switch (GET_CODE (addr))
     {
     case REG:
-      operands[2] = adjust_address (operands[1], SImode, 4);
-
-      if (REGNO (operands[0]) == REGNO (addr))
-	{
-	  output_asm_insn ("ldr\t%H0, %2", operands);
-	  output_asm_insn ("ldr\t%0, %1", operands);
-	}
+      if (reg_overlap_mentioned_p (addr, operands[0]))
+	output_asm_insn ("ldmia\t%m1, {%0, %H0}", operands);
       else
 	{
+	  operands[2] = adjust_address (operands[1], SImode, 4);
 	  output_asm_insn ("ldr\t%0, %1", operands);
 	  output_asm_insn ("ldr\t%H0, %2", operands);
 	}
@@ -28937,7 +28882,6 @@ arm_file_end (void)
     }
 }
 
-#ifndef ARM_PE
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
    faster than indirecting via memory.  Don't do this when not optimizing,
@@ -28952,7 +28896,6 @@ arm_encode_section_info (tree decl, rtx rtl, int first)
 
   default_encode_section_info (decl, rtl, first);
 }
-#endif /* !ARM_PE */
 
 static void
 arm_internal_label (FILE *stream, const char *prefix, unsigned long labelno)
@@ -34406,7 +34349,7 @@ arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
     gcc_assert (!TARGET_IDIV);
 
   scalar_int_mode libval_mode
-    = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
+    = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode)).require ();
 
   rtx libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 					libval_mode, op0, mode, op1, mode);

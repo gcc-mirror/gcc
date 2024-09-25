@@ -32,5 +32,5 @@ struct S {
 
 template<int> void foo()
 {
-    typedef int i = 0; /* { dg-error "is initialized" } */
+    typedef int i = 0; /* { dg-warning "is initialized" } */
 }

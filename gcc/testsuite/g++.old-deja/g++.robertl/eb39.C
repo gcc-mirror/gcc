@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for cctype" { ! hostedlib } }
 #include <cctype>
 #include <iostream>
 #include <sstream>

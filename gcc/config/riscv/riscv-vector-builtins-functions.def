@@ -653,7 +653,7 @@ DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_p
 DEF_RVV_FUNCTION (vlsegff, seg_fault_load, full_preds, tuple_v_scalar_const_ptr_size_ptr_ops)
 #undef REQUIRED_EXTENSIONS
 
-/* Definiation of crypto vector intrinsic functions */
+/* Definition of crypto vector intrinsic functions */
 // ZVBB and ZVKB
 #define REQUIRED_EXTENSIONS ZVBB_EXT
 DEF_RVV_FUNCTION (vbrev,  alu, full_preds, u_vv_ops)
@@ -746,5 +746,20 @@ DEF_RVV_FUNCTION (vsm4r, crypto_vv, none_tu_preds, u_vvs_crypto_sew32_lmul_x16_o
 #define REQUIRED_EXTENSIONS ZVKSH_EXT
 DEF_RVV_FUNCTION (vsm3me, no_mask_policy,    none_tu_preds, u_vvv_crypto_sew32_ops)
 DEF_RVV_FUNCTION (vsm3c,  crypto_vi,    none_tu_preds, u_vvv_size_crypto_sew32_ops)
+#undef REQUIRED_EXTENSIONS
+
+//Zvfbfmin
+#define REQUIRED_EXTENSIONS ZVFBFMIN_EXT
+DEF_RVV_FUNCTION (vfncvtbf16_f, narrow_alu, full_preds, f32_to_bf16_f_w_ops)
+DEF_RVV_FUNCTION (vfncvtbf16_f_frm, narrow_alu_frm, full_preds, f32_to_bf16_f_w_ops)
+DEF_RVV_FUNCTION (vfwcvtbf16_f, alu, full_preds, bf16_to_f32_f_v_ops)
+#undef REQUIRED_EXTENSIONS
+
+/* Zvfbfwma */
+#define REQUIRED_EXTENSIONS ZVFBFWMA_EXT
+DEF_RVV_FUNCTION (vfwmaccbf16, alu, full_preds, f32_wwvv_ops)
+DEF_RVV_FUNCTION (vfwmaccbf16, alu, full_preds, f32_wwfv_ops)
+DEF_RVV_FUNCTION (vfwmaccbf16_frm, alu_frm, full_preds, f32_wwvv_ops)
+DEF_RVV_FUNCTION (vfwmaccbf16_frm, alu_frm, full_preds, f32_wwfv_ops)
 #undef REQUIRED_EXTENSIONS
 #undef DEF_RVV_FUNCTION

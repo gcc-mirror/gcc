@@ -15,16 +15,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.7 ifstream member functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.8.1.7 ifstream member functions
 
 #include <istream>
 #include <fstream>
 #include <testsuite_hooks.h>
-
-const char name_01[] = "ifstream_members-1.tst";
-const char name_02[] = "ifstream_members-1.txt";
 
 void 
 redirect_buffer(std::ios& stream, std::streambuf* new_buf) 
@@ -37,10 +32,6 @@ active_buffer(std::ios& stream)
 // libstdc++/2832
 void test03()
 {
-  const char* strlit01 = "fuck war";
-  const std::string str00;
-  const std::string str01(strlit01);
-  std::string str02;
   std::filebuf fbuf;
   std::streambuf* pbasebuf0 = &fbuf;
 

@@ -1,7 +1,7 @@
 /* { dg-do link } */
-/* { dg-do run { target runtime_ptx_alias } } */
+/* { dg-do run { target nvptx_runtime_alias_ptx } } */
 /* { dg-options "-save-temps" } */
-/* { dg-add-options ptx_alias } */
+/* { dg-add-options nvptx_alias_ptx } */
 
 /* Copy of alias-1.c, with static __f and f.  */
 
@@ -25,6 +25,15 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "\\.alias f,__f;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.func __f;" 1 } } */
-/* { dg-final { scan-assembler-times "\\.func f;" 1 } } */
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DECL: __f$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.func __f;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DEF: __f$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.func __f$} 1 } } */
+
+/* { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DECL: f$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.func f;$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^// BEGIN FUNCTION DEF: f$} 1 } }
+   { dg-final { scan-assembler-times {(?n)^\.alias f,__f;$} 1 } } */
+
+/* { dg-final { scan-assembler-times {(?n)\tcall __f;$} 0 } }
+   { dg-final { scan-assembler-times {(?n)\tcall f;$} 1 } } */

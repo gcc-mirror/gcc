@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "-fexceptions" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed exceptions
 // except file
 // Message-Id: <199311101607.AA11803@hsi86.hsi.com>

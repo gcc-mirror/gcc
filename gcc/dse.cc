@@ -1717,12 +1717,12 @@ dump_insn_info (const char * start, insn_info_t insn_info)
    line up, we need to extract the value from lower part of the rhs of
    the store, shift it, and then put it into a form that can be shoved
    into the read_insn.  This function generates a right SHIFT of a
-   value that is at least ACCESS_SIZE bytes wide of READ_MODE.  The
+   value that is at least ACCESS_BYTES bytes wide of READ_MODE.  The
    shift sequence is returned or NULL if we failed to find a
    shift.  */
 
 static rtx
-find_shift_sequence (poly_int64 access_size,
+find_shift_sequence (poly_int64 access_bytes,
 		     store_info *store_info,
 		     machine_mode read_mode,
 		     poly_int64 shift, bool speed, bool require_cst)
@@ -1734,10 +1734,11 @@ find_shift_sequence (poly_int64 access_size,
   /* If a constant was stored into memory, try to simplify it here,
      otherwise the cost of the shift might preclude this optimization
      e.g. at -Os, even when no actual shift will be needed.  */
+  auto access_bits = access_bytes * BITS_PER_UNIT;
   if (store_info->const_rhs
-      && known_le (access_size, GET_MODE_SIZE (MAX_MODE_INT)))
+      && known_le (access_bytes, GET_MODE_SIZE (MAX_MODE_INT))
+      && smallest_int_mode_for_size (access_bits).exists (&new_mode))
     {
-      auto new_mode = smallest_int_mode_for_size (access_size * BITS_PER_UNIT);
       auto byte = subreg_lowpart_offset (new_mode, store_mode);
       rtx ret
 	= simplify_subreg (new_mode, store_info->const_rhs, store_mode, byte);
@@ -1809,7 +1810,7 @@ find_shift_sequence (poly_int64 access_size,
 	    }
 	}
 
-      if (maybe_lt (GET_MODE_SIZE (new_mode), access_size))
+      if (maybe_lt (GET_MODE_SIZE (new_mode), access_bytes))
 	continue;
 
       new_reg = gen_reg_rtx (new_mode);
@@ -1838,8 +1839,8 @@ find_shift_sequence (poly_int64 access_size,
 	 of the arguments and could be precomputed.  It may
 	 not be worth doing so.  We could precompute if
 	 worthwhile or at least cache the results.  The result
-	 technically depends on both SHIFT and ACCESS_SIZE,
-	 but in practice the answer will depend only on ACCESS_SIZE.  */
+	 technically depends on both SHIFT and ACCESS_BYTES,
+	 but in practice the answer will depend only on ACCESS_BYTES.  */
 
       if (cost > COSTS_N_INSNS (1))
 	continue;

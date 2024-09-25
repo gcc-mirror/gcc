@@ -1,26 +1,26 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-concept bool C = requires (T t) { t.mf(); };
+concept C = requires (T t) { t.mf(); };
 
 template<typename T>
-concept bool CA1 = C<typename T::ca1_type>;
+concept CA1 = C<typename T::ca1_type>;
 
 template<typename T>
-concept bool CA2 = CA1<T> && requires () { typename T::ca2_type; };
+concept CA2 = CA1<T> && requires () { typename T::ca2_type; };
 
 template<typename T>
-concept bool CA3 = CA2<T> && requires () { typename T::ca3_type; };
+concept CA3 = CA2<T> && requires () { typename T::ca3_type; };
 
 template<typename T>
-concept bool CB1 = requires () { typename T::cb1_type; };
+concept CB1 = requires () { typename T::cb1_type; };
 
 template<typename T>
-concept bool CB2 = CB1<T> && requires () { typename T::cb2_type; };
+concept CB2 = CB1<T> && requires () { typename T::cb2_type; };
 
 template<typename T>
-concept bool CB3 = CB2<T> && requires () { typename T::cb3_type; };
+concept CB3 = CB2<T> && requires () { typename T::cb3_type; };
 
 
 struct MC { void mf(); };

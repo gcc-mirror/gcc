@@ -4,7 +4,7 @@
    In this testcase, it is expected to have const and volatile CTF
    records.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "ascii \"unsigned char.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

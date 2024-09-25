@@ -32,6 +32,14 @@ test_format()
   auto ft = clock_cast<file_clock>(sys_days(2024y/January/21)) + 0ms + 2.5s;
   s = std::format("{}", ft);
   VERIFY( s == "2024-01-21 00:00:02.500");
+
+  const std::chrono::file_time<std::chrono::seconds> t0{};
+  s = std::format("{:%Z %z %Ez %Oz}", t0);
+  VERIFY( s == "UTC +0000 +00:00 +00:00" );
+
+  s = std::format("{}", t0);
+  // chrono::file_clock epoch is unspecified, so this is libstdc++-specific.
+  VERIFY( s == "2174-01-01 00:00:00" );
 }
 
 void
@@ -49,6 +57,21 @@ test_parse()
   VERIFY( tp == clock_cast<file_clock>(expected) );
   VERIFY( abbrev == "BST" );
   VERIFY( offset == 60min );
+
+  // Test round trip
+  std::stringstream ss;
+  ss << clock_cast<file_clock>(expected) << " 0123456";
+  VERIFY( ss >> parse("%F %T %z%Z", tp, abbrev, offset) );
+  VERIFY( ss.eof() );
+  VERIFY( (tp + offset) == clock_cast<file_clock>(expected) );
+  VERIFY( abbrev == "456" );
+  VERIFY( offset == (1h + 23min) );
+
+  ss.str("");
+  ss.clear();
+  ss << file_time<seconds>{};
+  VERIFY( ss >> parse("%F %T", tp) );
+  VERIFY( tp.time_since_epoch() == 0s );
 }
 
 int main()

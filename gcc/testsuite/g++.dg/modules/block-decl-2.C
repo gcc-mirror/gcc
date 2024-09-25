@@ -17,5 +17,3 @@ export extern "C++" auto foo() {
   };
   return X{};
 }
-
-// { dg-prune-output "failed to write compiled module" }

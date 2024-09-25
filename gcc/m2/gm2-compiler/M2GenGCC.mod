@@ -210,8 +210,8 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    BuildAddAddress,
                    BuildIfInRangeGoto, BuildIfNotInRangeGoto ;
 
-FROM m2tree IMPORT Tree, debug_tree, skip_const_decl ;
-FROM m2linemap IMPORT location_t ;
+FROM m2tree IMPORT debug_tree, skip_const_decl ;
+FROM gcctypes IMPORT location_t, tree ;
 
 FROM m2decl IMPORT BuildStringConstant, BuildCStringConstant,
                    DeclareKnownConstant, GetBitsPerBitset,
@@ -673,7 +673,7 @@ END ResolveConstantExpressions ;
               constant representing the storage size in bytes.
 *)
 
-PROCEDURE FindSize (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
+PROCEDURE FindSize (tokenno: CARDINAL; sym: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -728,7 +728,7 @@ END FindType ;
    BuildTreeFromInterface - generates a GCC tree from an interface definition.
 *)
 
-PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : Tree ;
+PROCEDURE BuildTreeFromInterface (sym: CARDINAL) : tree ;
 CONST
    DebugTokPos = FALSE ;
 VAR
@@ -738,9 +738,9 @@ VAR
    str,
    obj     : CARDINAL ;
    gccName,
-   tree    : Tree ;
+   asmTree : tree ;
 BEGIN
-   tree := Tree (NIL) ;
+   asmTree := tree (NIL) ;
    IF sym#NulSym
    THEN
       i := 1 ;
@@ -757,8 +757,8 @@ BEGIN
                ELSE
                   gccName := BuildCStringConstant (KeyToCharStar (name), LengthKey (name))
                END ;
-               tree := ChainOnParamValue (tree, gccName, PromoteToCString (tok, str),
-                                          skip_const_decl (Mod2Gcc (obj))) ;
+               asmTree := ChainOnParamValue (asmTree, gccName, PromoteToCString (tok, str),
+                                             skip_const_decl (Mod2Gcc (obj))) ;
                IF DebugTokPos
                THEN
                   WarnStringAt (InitString ('input expression'), tok)
@@ -772,7 +772,7 @@ BEGIN
          INC(i)
       UNTIL (str = NulSym) AND (obj = NulSym) ;
    END ;
-   RETURN tree
+   RETURN asmTree
 END BuildTreeFromInterface ;
 
 
@@ -780,18 +780,18 @@ END BuildTreeFromInterface ;
    BuildTrashTreeFromInterface - generates a GCC string tree from an interface definition.
 *)
 
-PROCEDURE BuildTrashTreeFromInterface (sym: CARDINAL) : Tree ;
+PROCEDURE BuildTrashTreeFromInterface (sym: CARDINAL) : tree ;
 CONST
    DebugTokPos = FALSE ;
 VAR
-   tok : CARDINAL ;
-   i   : CARDINAL ;
+   tok    : CARDINAL ;
+   i      : CARDINAL ;
    str,
-   obj : CARDINAL ;
-   name: Name ;
-   tree: Tree ;
+   obj    : CARDINAL ;
+   name   : Name ;
+   asmTree: tree ;
 BEGIN
-   tree := Tree (NIL) ;
+   asmTree := tree (NIL) ;
    IF sym # NulSym
    THEN
       i := 1 ;
@@ -801,7 +801,7 @@ BEGIN
          THEN
             IF IsConstString (str)
             THEN
-               tree := AddStringToTreeList (tree, PromoteToCString (tok, str)) ;
+               asmTree := AddStringToTreeList (asmTree, PromoteToCString (tok, str)) ;
                IF DebugTokPos
                THEN
                   WarnStringAt (InitString ('trash expression'), tok)
@@ -821,7 +821,7 @@ BEGIN
          INC (i)
       UNTIL (str = NulSym) AND (obj = NulSym)
    END ;
-   RETURN tree
+   RETURN asmTree
 END BuildTrashTreeFromInterface ;
 
 
@@ -843,7 +843,7 @@ VAR
    inputs,
    outputs,
    trash,
-   labels          : Tree ;
+   labels          : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, asmpos, op, op1, op2, GnuAsm,
@@ -902,7 +902,7 @@ END FoldRange ;
 
 PROCEDURE CodeSaveException (des, exceptionProcedure: CARDINAL) ;
 VAR
-   functValue: Tree ;
+   functValue: tree ;
    location  : location_t;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -921,7 +921,7 @@ END CodeSaveException ;
 
 PROCEDURE CodeRestoreException (des, exceptionProcedure: CARDINAL) ;
 VAR
-   functValue: Tree ;
+   functValue: tree ;
    location  : location_t;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -1228,7 +1228,7 @@ END CodeFinallyEnd ;
    GetAddressOfUnbounded - returns the address of the unbounded array contents.
 *)
 
-PROCEDURE GetAddressOfUnbounded (location: location_t; param: CARDINAL) : Tree ;
+PROCEDURE GetAddressOfUnbounded (location: location_t; param: CARDINAL) : tree ;
 VAR
    UnboundedType: CARDINAL ;
 BEGIN
@@ -1247,12 +1247,12 @@ END GetAddressOfUnbounded ;
                           param.HIGH.
 *)
 
-PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : Tree ;
+PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : tree ;
 VAR
    UnboundedType,
    ArrayType,
    HighField    : CARDINAL ;
-   HighTree     : Tree ;
+   HighTree     : tree ;
    accessibleDim: CARDINAL ;
    (* remainingDim : CARDINAL ;  *)
 BEGIN
@@ -1296,9 +1296,9 @@ END GetHighFromUnbounded ;
                                 occupies.
 *)
 
-PROCEDURE GetSizeOfHighFromUnbounded (tokenno: CARDINAL; param: CARDINAL) : Tree ;
+PROCEDURE GetSizeOfHighFromUnbounded (tokenno: CARDINAL; param: CARDINAL) : tree ;
 VAR
-   t            : Tree ;
+   t            : tree ;
    UnboundedType,
    ArrayType    : CARDINAL ;
    i, n         : CARDINAL ;
@@ -1338,11 +1338,11 @@ END GetSizeOfHighFromUnbounded ;
                              else call Builtins.alloca.
 *)
 
-PROCEDURE MaybeDebugBuiltinAlloca (location: location_t; tok: CARDINAL; high: Tree) : Tree ;
+PROCEDURE MaybeDebugBuiltinAlloca (location: location_t; tok: CARDINAL; high: tree) : tree ;
 VAR
    call,
    memptr,
-   func  : Tree ;
+   func  : tree ;
 BEGIN
    IF DebugBuiltins
    THEN
@@ -1368,10 +1368,10 @@ END MaybeDebugBuiltinAlloca ;
                              else call Builtins.memcpy.
 *)
 
-PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; src, dest, nbytes: Tree) : Tree ;
+PROCEDURE MaybeDebugBuiltinMemcpy (location: location_t; src, dest, nbytes: tree) : tree ;
 VAR
    call,
-   func: Tree ;
+   func: tree ;
 BEGIN
    IF DebugBuiltins
    THEN
@@ -1405,7 +1405,7 @@ VAR
    UnboundedType: CARDINAL ;
    Addr,
    High,
-   NewArray     : Tree ;
+   NewArray     : tree ;
 BEGIN
    location := TokenToLocation (tokenno) ;
    UnboundedType := GetType (param) ;
@@ -1431,7 +1431,7 @@ END MakeCopyUse ;
    GetParamAddress - returns the address of parameter, param.
 *)
 
-PROCEDURE GetParamAddress (location: location_t; proc, param: CARDINAL) : Tree ;
+PROCEDURE GetParamAddress (location: location_t; proc, param: CARDINAL) : tree ;
 VAR
    sym,
    type: CARDINAL ;
@@ -1496,7 +1496,7 @@ END IsUnboundedWrittenTo ;
    GetParamSize - returns the size in bytes of, param.
 *)
 
-PROCEDURE GetParamSize (tokenno: CARDINAL; param: CARDINAL) : Tree ;
+PROCEDURE GetParamSize (tokenno: CARDINAL; param: CARDINAL) : tree ;
 BEGIN
    Assert(IsVar(param) OR IsParameter(param)) ;
    IF IsUnbounded(param)
@@ -1513,7 +1513,7 @@ END GetParamSize ;
                       else jump to, fLabel.
 *)
 
-PROCEDURE DoIsIntersection (tokenno: CARDINAL; ta, tb, tc, td: Tree; tLabel, fLabel: String) ;
+PROCEDURE DoIsIntersection (tokenno: CARDINAL; ta, tb, tc, td: tree; tLabel, fLabel: String) ;
 VAR
    location: location_t ;
 BEGIN
@@ -1549,7 +1549,7 @@ PROCEDURE BuildCascadedIfThenElsif (tokenno: CARDINAL;
                                     proc, param: CARDINAL) ;
 VAR
    ta, tb,
-   tc, td  : Tree ;
+   tc, td  : tree ;
    n, j    : CARDINAL ;
    tLabel,
    fLabel,
@@ -1852,7 +1852,7 @@ END CodeNewLocalVar ;
 PROCEDURE CodeKillLocalVar (CurrentProcedure: CARDINAL) ;
 VAR
    begin, end: CARDINAL ;
-   proc      : Tree ;
+   proc      : tree ;
 BEGIN
    GetProcedureBeginEnd (CurrentProcedure, begin, end) ;
    CurrentQuadToken := end ;
@@ -1907,7 +1907,7 @@ VAR
    expr, none, procedure               : CARDINAL ;
    combinedpos,
    returnpos, exprpos, nonepos, procpos: CARDINAL ;
-   value, length                       : Tree ;
+   value, length                       : tree ;
    location                            : location_t ;
 BEGIN
    GetQuadOtok (quad, returnpos, op, expr, none, procedure,
@@ -1942,17 +1942,17 @@ END CodeReturnValue ;
 
 PROCEDURE CodeCall (tokenno: CARDINAL; procedure: CARDINAL) ;
 VAR
-   tree    : Tree ;
+   callTree: tree ;
    location: location_t ;
 BEGIN
    IF IsProcedure (procedure)
    THEN
       DeclareParameters (procedure) ;
-      tree := CodeDirectCall (tokenno, procedure)
+      callTree := CodeDirectCall (tokenno, procedure)
    ELSIF IsProcType (SkipType (GetType (procedure)))
    THEN
       DeclareParameters (SkipType (GetType (procedure))) ;
-      tree := CodeIndirectCall (tokenno, procedure) ;
+      callTree := CodeIndirectCall (tokenno, procedure) ;
       procedure := SkipType (GetType (procedure))
    ELSE
       InternalError ('expecting Procedure or ProcType')
@@ -1960,7 +1960,7 @@ BEGIN
    IF GetType (procedure) = NulSym
    THEN
       location := TokenToLocation (tokenno) ;
-      AddStatement (location, tree)
+      AddStatement (location, callTree)
    ELSE
       (* leave tree alone - as it will be picked up when processing FunctValue *)
    END
@@ -1973,7 +1973,7 @@ END CodeCall ;
                 CanUseBuiltin or IsProcedureBuiltinAvailable returns TRUE.
 *)
 
-PROCEDURE UseBuiltin (tokenno: CARDINAL; Sym: CARDINAL) : Tree ;
+PROCEDURE UseBuiltin (tokenno: CARDINAL; Sym: CARDINAL) : tree ;
 BEGIN
    IF BuiltinExists(KeyToCharStar(GetProcedureBuiltin(Sym)))
    THEN
@@ -1988,10 +1988,10 @@ END UseBuiltin ;
    CodeDirectCall - calls a function/procedure.
 *)
 
-PROCEDURE CodeDirectCall (tokenno: CARDINAL; procedure: CARDINAL) : Tree ;
+PROCEDURE CodeDirectCall (tokenno: CARDINAL; procedure: CARDINAL) : tree ;
 VAR
    location: location_t ;
-   call    : Tree ;
+   call    : tree ;
 BEGIN
    location := TokenToLocation (tokenno) ;
    IF IsProcedureBuiltinAvailable (procedure)
@@ -1999,7 +1999,7 @@ BEGIN
       call := UseBuiltin (tokenno, procedure) ;
       IF call # NIL
       THEN
-         call := BuildBuiltinCallTree (location, call)
+         call := BuildBuiltinCallTree (call)
       END
    ELSE
       call := NIL
@@ -2027,9 +2027,9 @@ END CodeDirectCall ;
    CodeIndirectCall - calls a function/procedure indirectly.
 *)
 
-PROCEDURE CodeIndirectCall (tokenno: CARDINAL; ProcVar: CARDINAL) : Tree ;
+PROCEDURE CodeIndirectCall (tokenno: CARDINAL; ProcVar: CARDINAL) : tree ;
 VAR
-   ReturnType: Tree ;
+   ReturnType: tree ;
    proc      : CARDINAL ;
    location  : location_t ;
 BEGIN
@@ -2037,9 +2037,9 @@ BEGIN
    proc := SkipType(GetType(ProcVar)) ;
    IF GetType(proc)=NulSym
    THEN
-      ReturnType := Tree(NIL)
+      ReturnType := tree(NIL)
    ELSE
-      ReturnType := Tree(Mod2Gcc(GetType(proc)))
+      ReturnType := tree(Mod2Gcc(GetType(proc)))
    END ;
 
    (* now we dereference the lvalue if necessary *)
@@ -2060,7 +2060,7 @@ END CodeIndirectCall ;
                   then convert the string into a character constant.
 *)
 
-PROCEDURE StringToChar (t: Tree; type, str: CARDINAL) : Tree ;
+PROCEDURE StringToChar (t: tree; type, str: CARDINAL) : tree ;
 VAR
    s: String ;
    n: Name ;
@@ -2099,7 +2099,7 @@ END StringToChar ;
                a symbol of, type.
 *)
 
-PROCEDURE ConvertTo (t: Tree; type, op3: CARDINAL) : Tree ;
+PROCEDURE ConvertTo (t: tree; type, op3: CARDINAL) : tree ;
 BEGIN
    IF SkipType(type)#SkipType(GetType(op3))
    THEN
@@ -2121,7 +2121,7 @@ END ConvertTo ;
                 first and then the remaining types.
 *)
 
-PROCEDURE ConvertRHS (t: Tree; type, rhs: CARDINAL) : Tree ;
+PROCEDURE ConvertRHS (t: tree; type, rhs: CARDINAL) : tree ;
 BEGIN
    t := StringToChar (Mod2Gcc (rhs), type, rhs) ;
    RETURN ConvertTo (t, type, rhs)
@@ -2168,7 +2168,7 @@ END IsConstant ;
    CheckConvertCoerceParameter -
 *)
 
-PROCEDURE CheckConvertCoerceParameter (tokenno: CARDINAL; op1, op2, op3: CARDINAL) : Tree ;
+PROCEDURE CheckConvertCoerceParameter (tokenno: CARDINAL; op1, op2, op3: CARDINAL) : tree ;
 VAR
    OperandType,
    ParamType  : CARDINAL ;
@@ -2221,7 +2221,7 @@ END CheckConvertCoerceParameter ;
    CheckConstant - checks to see whether we should declare the constant.
 *)
 
-PROCEDURE CheckConstant (tokenno: CARDINAL; des, expr: CARDINAL) : Tree ;
+PROCEDURE CheckConstant (tokenno: CARDINAL; des, expr: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -2249,7 +2249,7 @@ VAR
    max,
    tmp,
    res,
-   val     : Tree ;
+   val     : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -2334,7 +2334,7 @@ VAR
    bits,
    max,
    tmp,
-   val     : Tree ;
+   val     : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (tokenno) ;
@@ -2427,7 +2427,7 @@ VAR
    op1, op2,
    op3       : CARDINAL ;
    op        : QuadOperator ;
-   val, call : Tree ;
+   val, call : tree ;
    location  : location_t ;
 BEGIN
    GetQuad (q, op, op1, op2, op3) ;
@@ -2571,13 +2571,13 @@ END CodeParam ;
    Replace - replace the entry for sym in the double entry bookkeeping with sym/tree.
 *)
 
-PROCEDURE Replace (sym: CARDINAL; tree: Tree) ;
+PROCEDURE Replace (sym: CARDINAL; gcc: tree) ;
 BEGIN
    IF GccKnowsAbout (sym)
    THEN
       RemoveMod2Gcc (sym)
    END ;
-   AddModGcc (sym, tree)
+   AddModGcc (sym, gcc)
 END Replace ;
 
 
@@ -2589,7 +2589,7 @@ END Replace ;
 PROCEDURE CodeFunctValue (location: location_t; op1: CARDINAL) ;
 VAR
    call,
-   value: Tree ;
+   value: tree ;
 BEGIN
    (*
       operator : FunctValueOp
@@ -2710,7 +2710,7 @@ END FoldStringConvertCnul ;
 
 PROCEDURE CodeAddr (tokenno: CARDINAL; quad: CARDINAL; op1, op3: CARDINAL) ;
 VAR
-   value   : Tree ;
+   value   : tree ;
    type    : CARDINAL ;
    location: location_t ;
 BEGIN
@@ -2973,9 +2973,9 @@ END PerformFoldBecomes ;
 
 
 VAR
-   tryBlock: Tree ;    (* this must be placed into gccgm2 and it must follow the
+   tryBlock: tree ;    (* this must be placed into gccgm2 and it must follow the
                           current function scope - ie it needs work with nested procedures *)
-   handlerBlock: Tree ;
+   handlerBlock: tree ;
 
 
 (*
@@ -3003,7 +3003,7 @@ BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
    IF value = NulSym
    THEN
-      AddStatement (location, BuildThrow (location, Tree (NIL)))
+      AddStatement (location, BuildThrow (location, tree (NIL)))
    ELSE
       DeclareConstant (CurrentQuadToken, value) ;  (* checks to see whether it is a constant and declares it *)
       AddStatement (location, BuildThrow (location, BuildConvert (location,
@@ -3061,7 +3061,7 @@ END DescribeTypeError ;
                        typed constants.
 *)
 
-PROCEDURE DefaultConvertGM2 (sym: CARDINAL) : Tree ;
+PROCEDURE DefaultConvertGM2 (sym: CARDINAL) : tree ;
 BEGIN
    sym := SkipType (sym) ;
    IF sym=Bitset
@@ -3080,9 +3080,9 @@ END DefaultConvertGM2 ;
 *)
 
 PROCEDURE FoldConstBecomes (tokenno: CARDINAL;
-                            op1, op3: CARDINAL) : Tree ;
+                            op1, op3: CARDINAL) : tree ;
 VAR
-   t, type : Tree ;
+   t, type : tree ;
    location: location_t ;
 BEGIN
    IF IsConstSet(op3) OR ((SkipType(GetType(op3))#NulSym) AND
@@ -3144,7 +3144,7 @@ END FoldConstBecomes ;
                                             which fits in dest.
 *)
 
-PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: Tree;
+PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: tree;
                              src, destStrType: CARDINAL) : BOOLEAN ;
 VAR
    location : location_t ;
@@ -3216,7 +3216,7 @@ END PrepareCopyString ;
 
 PROCEDURE checkArrayElements (des, expr: CARDINAL; virtpos, despos, exprpos: CARDINAL) : BOOLEAN ;
 VAR
-   e1, e3: Tree ;
+   e1, e3: tree ;
    t1, t3: CARDINAL ;
 BEGIN
    t1 := GetType (des) ;
@@ -3383,7 +3383,7 @@ VAR
    op2pos,
    exprpos          : CARDINAL ;
    length,
-   exprt            : Tree ;
+   exprt            : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, becomespos, op, des, op2, expr,
@@ -3463,9 +3463,9 @@ END CodeBecomes ;
                         It coerces a lvalue into an internal pointer type
 *)
 
-PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : Tree ;
+PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : tree ;
 VAR
-   t: Tree ;
+   t: tree ;
 BEGIN
    t := Mod2Gcc (sym) ;
    IF t = NIL
@@ -3485,9 +3485,9 @@ END LValueToGenericPtr ;
                                  else convert to type, type. Return the converted tree.
 *)
 
-PROCEDURE LValueToGenericPtrOrConvert (sym: CARDINAL; type: Tree) : Tree ;
+PROCEDURE LValueToGenericPtrOrConvert (sym: CARDINAL; type: tree) : tree ;
 VAR
-   n       : Tree ;
+   n       : tree ;
    location: location_t ;
 BEGIN
    n := Mod2Gcc (sym) ;
@@ -3511,7 +3511,7 @@ END LValueToGenericPtrOrConvert ;
                         coerces, t, appropriately.
 *)
 
-PROCEDURE ZConstToTypedConst (t: Tree; op1, op2: CARDINAL) : Tree ;
+PROCEDURE ZConstToTypedConst (t: tree; op1, op2: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -3554,7 +3554,7 @@ END ZConstToTypedConst ;
 PROCEDURE FoldBinary (tokenno: CARDINAL; p: WalkAction; binop: BuildBinProcedure;
                       quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   tl, tr, tv, resType: Tree ;
+   tl, tr, tv, resType: tree ;
    location           : location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared *)
@@ -3606,7 +3606,7 @@ END FoldBinary ;
    ConvertBinaryOperands -
 *)
 
-PROCEDURE ConvertBinaryOperands (location: location_t; VAR tl, tr: Tree; type, op2, op3: CARDINAL) ;
+PROCEDURE ConvertBinaryOperands (location: location_t; VAR tl, tr: tree; type, op2, op3: CARDINAL) ;
 BEGIN
    tl := NIL ;
    tr := NIL ;
@@ -3651,7 +3651,7 @@ VAR
    min, max,
    lowest,
    tv,
-   tl, tr    : Tree ;
+   tl, tr    : tree ;
    location  : location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared.  *)
@@ -3721,7 +3721,7 @@ VAR
    op3pos,
    type    : CARDINAL ;
    tv,
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared *)
@@ -4638,7 +4638,7 @@ END CodeModFloor ;
 PROCEDURE FoldBuiltinConst (tokenno: CARDINAL; p: WalkAction;
                             quad: CARDINAL; result, constDesc: CARDINAL) ;
 VAR
-   value: Tree ;
+   value: tree ;
 BEGIN
    value := GetBuiltinConst (KeyToCharStar (Name (constDesc))) ;
    IF value = NIL
@@ -4660,7 +4660,7 @@ END FoldBuiltinConst ;
 PROCEDURE FoldBuiltinTypeInfo (tokenno: CARDINAL; p: WalkAction;
                                quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    IF GccKnowsAbout(op2) AND CompletelyResolved(op2)
@@ -4919,7 +4919,7 @@ END CodeStandardFunction ;
 
 PROCEDURE CodeSavePriority (oldValue, scopeSym, procedureSym: CARDINAL) ;
 VAR
-   funcTree: Tree ;
+   funcTree: tree ;
    mod     : CARDINAL ;
    n       : Name ;
    location: location_t ;
@@ -4963,7 +4963,7 @@ END CodeSavePriority ;
 
 PROCEDURE CodeRestorePriority (oldValue, scopeSym, procedureSym: CARDINAL) ;
 VAR
-   funcTree: Tree ;
+   funcTree: tree ;
    mod     : CARDINAL ;
    n       : Name ;
    location: location_t ;
@@ -5104,7 +5104,7 @@ VAR
    unbounded,
    leftproc,
    rightproc,
-   varproc  : Tree ;
+   varproc  : tree ;
    location : location_t ;
 BEGIN
    (* firstly ensure that constant literals are declared *)
@@ -5608,7 +5608,7 @@ END GetSetLimits ;
    GetFieldNo - returns the field number in the, set, which contains, element.
 *)
 
-PROCEDURE GetFieldNo (tokenno: CARDINAL; element: CARDINAL; set: CARDINAL; VAR offset: Tree) : INTEGER ;
+PROCEDURE GetFieldNo (tokenno: CARDINAL; element: CARDINAL; set: CARDINAL; VAR offset: tree) : INTEGER ;
 VAR
    low, high, bpw, c: CARDINAL ;
    location         : location_t ;
@@ -5673,7 +5673,7 @@ PROCEDURE CodeIncl (result, expr: CARDINAL) ;
 VAR
    low,
    high    : CARDINAL ;
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location: location_t ;
 BEGIN
@@ -5750,7 +5750,7 @@ PROCEDURE CodeExcl (result, expr: CARDINAL) ;
 VAR
    low,
    high    : CARDINAL ;
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location: location_t ;
 BEGIN
@@ -5792,10 +5792,10 @@ END CodeExcl ;
 *)
 
 PROCEDURE FoldUnary (tokenno: CARDINAL; p: WalkAction;
-                     unop: BuildUnaryProcedure; ZConstToTypedConst: Tree;
+                     unop: BuildUnaryProcedure; ZConstToTypedConst: tree;
                      quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
-   tv      : Tree ;
+   tv      : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -5809,7 +5809,7 @@ BEGIN
          (* fine, we can take advantage of this and fold constants *)
          IF IsConst (result)
          THEN
-            IF ZConstToTypedConst = Tree(NIL)
+            IF ZConstToTypedConst = tree(NIL)
             THEN
                IF (GetType (expr) = NulSym) OR IsOrdinalType (SkipType (GetType (expr)))
                THEN
@@ -5884,13 +5884,13 @@ END FoldUnarySet ;
    CodeUnaryCheck - encode a unary arithmetic operation.
 *)
 
-PROCEDURE CodeUnaryCheck (unop: BuildUnaryCheckProcedure; ZConstToTypedConst: Tree;
+PROCEDURE CodeUnaryCheck (unop: BuildUnaryCheckProcedure; ZConstToTypedConst: tree;
                           quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
    lowestType: CARDINAL ;
    min, max,
    lowest,
-   tv        : Tree ;
+   tv        : tree ;
    location  : location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -5914,9 +5914,9 @@ BEGIN
    CheckOrResetOverflow (CurrentQuadToken, tv, MustCheckOverflow(quad)) ;
    IF IsConst (result)
    THEN
-      IF ZConstToTypedConst = Tree (NIL)
+      IF ZConstToTypedConst = tree (NIL)
       THEN
-         ZConstToTypedConst := Tree (Mod2Gcc( GetType (expr)))
+         ZConstToTypedConst := tree (Mod2Gcc( GetType (expr)))
       END ;
       (* still have a constant which was not resolved, pass it to gcc *)
       PutConst (result, FindType (expr)) ;
@@ -5936,10 +5936,10 @@ END CodeUnaryCheck ;
    CodeUnary - encode a unary arithmetic operation.
 *)
 
-PROCEDURE CodeUnary (unop: BuildUnaryProcedure; ZConstToTypedConst: Tree;
+PROCEDURE CodeUnary (unop: BuildUnaryProcedure; ZConstToTypedConst: tree;
                      quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
-   tv      : Tree ;
+   tv      : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -5951,9 +5951,9 @@ BEGIN
    CheckOrResetOverflow (CurrentQuadToken, tv, MustCheckOverflow (quad)) ;
    IF IsConst(result)
    THEN
-      IF ZConstToTypedConst=Tree(NIL)
+      IF ZConstToTypedConst=tree(NIL)
       THEN
-         ZConstToTypedConst := Tree(Mod2Gcc(GetType(expr)))
+         ZConstToTypedConst := tree(Mod2Gcc(GetType(expr)))
       END ;
       (* still have a constant which was not resolved, pass it to gcc *)
       PutConst (result, FindType (expr)) ;
@@ -6014,7 +6014,7 @@ END CodeNegateChecked ;
 PROCEDURE FoldSize (tokenno: CARDINAL; p: WalkAction;
                     quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
@@ -6083,7 +6083,7 @@ PROCEDURE FoldRecordField (tokenno: CARDINAL; p: WalkAction;
 VAR
    recordType,
    fieldType : CARDINAL ;
-   ptr       : Tree ;
+   ptr       : tree ;
    location  : location_t ;
 BEGIN
    RETURN ;  (* this procedure should no longer be called *)
@@ -6131,7 +6131,7 @@ PROCEDURE CodeRecordField (result, record, field: CARDINAL) ;
 VAR
    recordType,
    fieldType : CARDINAL ;
-   ptr       : Tree ;
+   ptr       : tree ;
    location  : location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -6166,7 +6166,7 @@ END CodeRecordField ;
    BuildHighFromChar -
 *)
 
-PROCEDURE BuildHighFromChar (operand: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromChar (operand: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -6204,7 +6204,7 @@ END SkipToArray ;
    BuildHighFromArray -
 *)
 
-PROCEDURE BuildHighFromArray (tokenno: CARDINAL; dim, operand: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromArray (tokenno: CARDINAL; dim, operand: CARDINAL) : tree ;
 VAR
    Type    : CARDINAL ;
    location: location_t ;
@@ -6219,7 +6219,7 @@ END BuildHighFromArray ;
    BuildHighFromStaticArray -
 *)
 
-PROCEDURE BuildHighFromStaticArray (location: location_t; (* dim, *) Type: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromStaticArray (location: location_t; (* dim, *) Type: CARDINAL) : tree ;
 VAR
    High, Low: CARDINAL ;
    Subscript,
@@ -6233,7 +6233,7 @@ BEGIN
       GetBaseTypeMinMax (Subrange, Low, High) ;
       IF GccKnowsAbout (High)
       THEN
-         RETURN Tree (Mod2Gcc (High))
+         RETURN tree (Mod2Gcc (High))
       END
    ELSIF IsSubrange(Subrange)
    THEN
@@ -6244,13 +6244,13 @@ BEGIN
       END
    ELSE
       MetaError1 ('array subscript {%1EDad:for} must be a subrange or enumeration type', Type) ;
-      RETURN Tree(NIL)
+      RETURN tree(NIL)
    END ;
    IF GccKnowsAbout (High)
    THEN
-      RETURN Tree (Mod2Gcc (High))
+      RETURN tree (Mod2Gcc (High))
    ELSE
-      RETURN Tree (NIL)
+      RETURN tree (NIL)
    END
 END BuildHighFromStaticArray ;
 
@@ -6259,7 +6259,7 @@ END BuildHighFromStaticArray ;
    BuildHighFromString -
 *)
 
-PROCEDURE BuildHighFromString (operand: CARDINAL) : Tree ;
+PROCEDURE BuildHighFromString (operand: CARDINAL) : tree ;
 VAR
    location: location_t ;
 BEGIN
@@ -6279,7 +6279,7 @@ END BuildHighFromString ;
                  HIGH(operand).
 *)
 
-PROCEDURE ResolveHigh (tokenno: CARDINAL; dim, operand: CARDINAL) : Tree ;
+PROCEDURE ResolveHigh (tokenno: CARDINAL; dim, operand: CARDINAL) : tree ;
 VAR
    Type    : CARDINAL ;
    location: location_t ;
@@ -6317,7 +6317,7 @@ END ResolveHigh ;
 PROCEDURE FoldHigh (tokenno: CARDINAL; p: WalkAction;
                     quad: CARDINAL; op1, dim, op3: CARDINAL) ;
 VAR
-   t       : Tree ;
+   t       : tree ;
    location: location_t ;
 BEGIN
    (* firstly ensure that any constant literal is declared *)
@@ -6327,7 +6327,7 @@ BEGIN
    THEN
       t := ResolveHigh(tokenno, dim, op3) ;
       (* fine, we can take advantage of this and fold constants *)
-      IF IsConst(op1) AND (t#Tree(NIL))
+      IF IsConst(op1) AND (t#tree(NIL))
       THEN
          PutConst(op1, Cardinal) ;
          AddModGcc(op1,
@@ -6382,7 +6382,7 @@ END CodeHigh ;
 
 PROCEDURE CodeUnbounded (result, array: CARDINAL) ;
 VAR
-   Addr    : Tree ;
+   Addr    : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -6452,7 +6452,7 @@ VAR
    low,
    subscript  : CARDINAL ;
    a, ta,
-   ti, tl     : Tree ;
+   ti, tl     : tree ;
    location   : location_t ;
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
@@ -6604,7 +6604,7 @@ END FoldElementSize ;
    PopKindTree - returns a Tree from M2ALU of the type implied by, op.
 *)
 
-PROCEDURE PopKindTree (op: CARDINAL; tokenno: CARDINAL) : Tree ;
+PROCEDURE PopKindTree (op: CARDINAL; tokenno: CARDINAL) : tree ;
 VAR
    type: CARDINAL ;
 BEGIN
@@ -6632,7 +6632,7 @@ PROCEDURE FoldConvert (tokenno: CARDINAL; p: WalkAction;
                        quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 
 VAR
-   tl      : Tree ;
+   tl      : tree ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
@@ -6712,7 +6712,7 @@ END FoldConvert ;
 
 PROCEDURE CodeConvert (quad: CARDINAL; lhs, type, rhs: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location: location_t ;
 BEGIN
    CheckStop(quad) ;
@@ -7053,7 +7053,7 @@ END CodeIfSetLess ;
 
 PROCEDURE PerformCodeIfLess (quad: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7166,7 +7166,7 @@ END CodeIfSetGre ;
 
 PROCEDURE PerformCodeIfGre (quad: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7276,7 +7276,7 @@ END CodeIfSetLessEqu ;
 
 PROCEDURE PerformCodeIfLessEqu (quad: CARDINAL) ;
 VAR
-   tl, tr  : Tree ;
+   tl, tr  : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7388,7 +7388,7 @@ END CodeIfSetGreEqu ;
 
 PROCEDURE PerformCodeIfGreEqu (quad: CARDINAL) ;
 VAR
-   tl, tr: Tree ;
+   tl, tr: tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7575,7 +7575,7 @@ END ComparisonMixTypes ;
 
 PROCEDURE PerformCodeIfEqu (quad: CARDINAL) ;
 VAR
-   tl, tr                     : Tree ;
+   tl, tr                     : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7627,7 +7627,7 @@ END PerformCodeIfEqu ;
 
 PROCEDURE PerformCodeIfNotEqu (quad: CARDINAL) ;
 VAR
-   tl, tr                     : Tree ;
+   tl, tr                     : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7760,7 +7760,7 @@ END MixTypes3 ;
 PROCEDURE BuildIfVarInConstValue (location: location_t; tokenno: CARDINAL;
                                   constsetvalue: PtrToValue; var, trueexit: CARDINAL) ;
 VAR
-   vt, lt, ht  : Tree ;
+   vt, lt, ht  : tree ;
    type,
    low, high, n: CARDINAL ;
    truelabel   : String ;
@@ -7783,7 +7783,7 @@ END BuildIfVarInConstValue ;
 
 PROCEDURE BuildIfNotVarInConstValue (quad: CARDINAL; constsetvalue: PtrToValue; var, trueexit: CARDINAL) ;
 VAR
-   vt, lt, ht  : Tree ;
+   vt, lt, ht  : tree ;
    type,
    low, high, n: CARDINAL ;
    falselabel,
@@ -7830,7 +7830,7 @@ VAR
    high    : CARDINAL ;
    lowtree,
    hightree,
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location                   : location_t ;
    left, right, dest, combined,
@@ -7900,7 +7900,7 @@ VAR
    high    : CARDINAL ;
    lowtree,
    hightree,
-   offset  : Tree ;
+   offset  : tree ;
    fieldno : INTEGER ;
    location                   : location_t ;
    left, right, dest, combined,
@@ -8039,7 +8039,7 @@ VAR
    typepos,
    xindrpos        : CARDINAL ;
    length,
-   newstr          : Tree ;
+   newstr          : tree ;
    location        : location_t ;
 BEGIN
    GetQuadOtok (quad, xindrpos, op, left, type, right,

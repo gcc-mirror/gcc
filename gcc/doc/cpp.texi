@@ -82,6 +82,7 @@ useful on its own.
 * Diagnostics::
 * Line Control::
 * Pragmas::
+* Binary Resource Inclusion::
 * Other Directives::
 * Preprocessor Output::
 * Traditional Mode::
@@ -3204,6 +3205,7 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * @code{__has_feature}::
 * @code{__has_extension}::
 * @code{__has_include}::
+* @code{__has_embed}::
 @end menu
 
 @node Ifdef
@@ -3643,6 +3645,36 @@ but not with others that don't.
 #endif
 @end smallexample
 
+@node @code{__has_embed}
+@subsection @code{__has_embed}
+@cindex @code{__has_embed}
+
+The special operator @code{__has_embed (@var{operands})} may be used in
+@samp{#if} and @samp{#elif} expressions to test whether a binary resource
+specified by the first operand with optional @samp{#embed} parameters can
+be included using the @samp{#embed} directive (@pxref{Binary Resource
+Inclusion}) with the same parameters.  The operator returns
+@code{__STDC_EMBED_NOT_FOUND__} if either the binary resource does not exist
+or at least one of the parameters is not supported by the implementation,
+@code{__STDC_EMBED_FOUND__} if all the parameters are supported and the
+resource is not empty and finally @code{__STDC_EMBED_EMPTY__} if all the
+parameters are supported and the resource is empty.
+The support of @code{__has_embed} operator can be tested with @samp{#ifdef}
+etc. similarly to @code{__has_include} and the same rules on how to
+test it apply.  @code{__FILE__} can be often used to test if an
+implementation supports some implementation defined parameter, e.g.@:
+
+@smallexample
+#ifdef __has_embed
+#if __has_embed (__FILE__ limit (4) myvendor::myattr (42)) != __STDC_EMBED_NOT_FOUND__
+#embed "foo.dat" limit (4) myvendor::myattr (42)
+#endif
+#endif
+@end smallexample
+
+The @code{__has_embed} operator is not supported in the Traditional Mode
+(@pxref{Traditional Mode}).
+
 @node Deleted Code
 @section Deleted Code
 @cindex commenting out code
@@ -3892,6 +3924,77 @@ against multiple inclusions.
 These pragmas are accepted, but have no effect.
 
 @end ftable
+
+@node Binary Resource Inclusion
+@chapter Binary Resource Inclusion
+
+@cindex embed directive
+
+The @samp{#embed} directive as specified in the C23 standard allows
+efficient inclusion of binary data, usually in initializers of arrays.
+GCC supports this directive in C23 mode and as an extension in older C
+versions and in C++.
+
+Similarly to the @samp{#include} directive (@pxref{Include Syntax})
+the first argument of the directive is a filename in the same forms
+as @samp{#include}.
+
+@table @code
+@item #embed <@var{file}>
+If @var{file} is an absolute filename, this includes the mentioned
+file, otherwise searches it in directories specified by the
+@option{--embed-dir=} command line option for the @var{file}.
+
+@item #embed "@var{file}"
+This variant searches @var{file} in the same directory as the source
+file which uses the @code{#embed} directive and only if not found there
+continues searching directories specified by the @option{--embed-dir=}
+command line option.
+@end table
+
+The @code{#embed} directive is expanded as if it was a sequence of
+integer literals from 0 to @code{UCHAR_MAX} separated by commas, e.g.@:
+@code{#embed __FILE__ limit(4)}
+could act as if it expanded to
+@code{35,101,109,98}.  No character set conversion is performed.
+
+Optional embed parameters can be specified after the required filename
+argument.  There are either standard attributes, specified by an
+identifier or identifier prefixed and suffixed by 2 underscores (both
+treated the same), followed by parameter argument in parentheses, like
+@code{#embed "foo.dat" limit(1) __prefix__(32, ) suffix(, 0)}
+with currently supported standard parameters @code{limit}, @code{prefix},
+@code{suffix} and @code{if_empty}, or implementation defined parameters
+specified by a unique vendor prefix followed by @code{::} followed by
+name of the parameter.  GCC uses the @code{gnu} prefix for vendor
+parameters and currently supports the @code{gnu::offset} and
+@code{gnu::base64} parameters.
+
+The @code{limit} parameter argument is a constant expression which
+specifies the maximum number of bytes included by the directive,
+@code{prefix} and @code{suffix} arguments are balanced token sequences
+which are prepended and appended to the integer literal sequence if
+that sequence is not empty and @code{if_empty} argument is balanced token
+sequence which is used as expansion for @code{#embed} directive if the
+resource is empty.
+
+The @code{gnu::offset} parameter argument is a constant expression
+which specifies how many bytes to skip from the start of the resource.
+@code{limit} is then counted from that position.
+
+The @code{gnu::base64} parameter argument is a possibly concatenated
+character string literal with base64 encoded data.  See
+@uref{https://datatracker.ietf.org/doc/html/rfc4648#section-4}.  There
+should be no newlines in the string literal and because this parameter
+is meant namely for use by the preprocessor itself, there is no support
+for any escape sequences in the string literal argument.  If @code{gnu::base64}
+parameter is specified, the @code{limit} and @code{gnu::offset} parameters
+should not be specified and the filename should be always @code{"."}.
+Instead of reading a file the directive will decode the base64 encoded
+data and use that as the data to include.
+
+The @code{#embed} directive is not supported in the Traditional Mode
+(@pxref{Traditional Mode}).
 
 @node Other Directives
 @chapter Other Directives

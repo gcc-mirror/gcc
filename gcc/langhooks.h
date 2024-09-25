@@ -514,8 +514,10 @@ struct lang_hooks
      in contexts where erroneously returning 0 causes problems.  */
   int (*types_compatible_p) (tree x, tree y);
 
-  /* Called by report_error_function to print out function name.  */
-  void (*print_error_function) (diagnostic_context *, const char *,
+  /* Called by diagnostic_report_current_function to print out function name
+     for textual diagnostic output.  */
+  void (*print_error_function) (diagnostic_text_output_format &,
+				const char *,
 				const struct diagnostic_info *);
 
   /* Convert a character from the host's to the target's character

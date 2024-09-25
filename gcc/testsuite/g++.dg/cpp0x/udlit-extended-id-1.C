@@ -1,6 +1,8 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-Wno-error=normalized" }
 // { dg-require-effective-target ucn }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
+
 #include <cstring>
 #include <cstddef>
 using namespace std;

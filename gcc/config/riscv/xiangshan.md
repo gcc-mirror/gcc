@@ -70,12 +70,17 @@
 
 (define_insn_reservation "xiangshan_jump" 1
   (and (eq_attr "tune" "xiangshan")
-       (eq_attr "type" "jump,call,auipc,unknown,branch,jalr,ret,sfb_alu"))
+       (eq_attr "type" "jump,call,auipc,unknown,branch,jalr,ret,sfb_alu,trap"))
   "xs_jmp_rs")
 
 (define_insn_reservation "xiangshan_i2f" 3
   (and (eq_attr "tune" "xiangshan")
-       (eq_attr "type" "mtc"))
+       (eq_attr "type" "mtc,fcvt_i2f"))
+  "xs_jmp_rs")
+
+(define_insn_reservation "xiangshan_atomic" 1
+  (and (eq_attr "tune" "xiangshan")
+       (eq_attr "type" "atomic"))
   "xs_jmp_rs")
 
 (define_insn_reservation "xiangshan_mul" 3
@@ -115,7 +120,7 @@
 
 (define_insn_reservation "xiangshan_f2f" 3
   (and (eq_attr "tune" "xiangshan")
-       (eq_attr "type" "fcvt,fmove"))
+       (eq_attr "type" "fcvt,fcvt_f2i,fmove"))
   "xs_fmisc_rs")
 
 (define_insn_reservation "xiangshan_f2i" 3

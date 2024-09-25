@@ -1,3 +1,8 @@
+2024-07-07  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* Makefile.in (gnattools-cross): Also build 'gnattools-cross-mv'
+	in GCC_DIR.
+
 2023-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (TOOLS_TARGET_PAIRS): Remove obsolete settings.

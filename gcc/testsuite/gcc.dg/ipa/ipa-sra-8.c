@@ -11,7 +11,7 @@ typedef SS __attribute__((aligned(1))) SSS;
 
 
 static unsigned int __attribute__ ((noinline))
-get_a (SS s)
+get_a (SSS s)
 {
   return s.a;
 };

@@ -69,5 +69,3 @@ namespace t {
   export using t::b;  // { dg-error "does not have external linkage" }
   export using t::c;  // { dg-error "does not have external linkage" }
 }
-
-// { dg-prune-output "not writing module" }

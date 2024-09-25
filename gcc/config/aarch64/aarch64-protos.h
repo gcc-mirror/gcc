@@ -262,6 +262,8 @@ struct sve_vec_cost : simd_vec_cost
 			  unsigned int fadda_f64_cost,
 			  unsigned int gather_load_x32_cost,
 			  unsigned int gather_load_x64_cost,
+			  unsigned int gather_load_x32_init_cost,
+			  unsigned int gather_load_x64_init_cost,
 			  unsigned int scatter_store_elt_cost)
     : simd_vec_cost (base),
       clast_cost (clast_cost),
@@ -270,6 +272,8 @@ struct sve_vec_cost : simd_vec_cost
       fadda_f64_cost (fadda_f64_cost),
       gather_load_x32_cost (gather_load_x32_cost),
       gather_load_x64_cost (gather_load_x64_cost),
+      gather_load_x32_init_cost (gather_load_x32_init_cost),
+      gather_load_x64_init_cost (gather_load_x64_init_cost),
       scatter_store_elt_cost (scatter_store_elt_cost)
   {}
 
@@ -288,6 +292,12 @@ struct sve_vec_cost : simd_vec_cost
      of 32-bit elements and the x64 value is for loads of 64-bit elements.  */
   const int gather_load_x32_cost;
   const int gather_load_x64_cost;
+
+  /* Additional loop initialization cost of using a gather load instruction.  The x32
+     value is for loads of 32-bit elements and the x64 value is for loads of
+     64-bit elements.  */
+  const int gather_load_x32_init_cost;
+  const int gather_load_x64_init_cost;
 
   /* The per-element cost of a scatter store.  */
   const int scatter_store_elt_cost;
@@ -767,7 +777,7 @@ bool aarch64_constant_address_p (rtx);
 bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
 tree aarch64_vector_load_decl (tree);
-rtx aarch64_gen_callee_cookie (aarch64_feature_flags, arm_pcs);
+rtx aarch64_gen_callee_cookie (aarch64_isa_mode, arm_pcs);
 void aarch64_expand_call (rtx, rtx, rtx, bool);
 bool aarch64_expand_cpymem_mops (rtx *, bool);
 bool aarch64_expand_cpymem (rtx *, bool);
@@ -808,7 +818,7 @@ int aarch64_add_offset_temporaries (rtx);
 void aarch64_split_add_offset (scalar_int_mode, rtx, rtx, rtx, rtx, rtx);
 bool aarch64_rdsvl_immediate_p (const_rtx);
 rtx aarch64_sme_vq_immediate (machine_mode mode, HOST_WIDE_INT,
-			      aarch64_feature_flags);
+			      aarch64_isa_mode);
 char *aarch64_output_rdsvl (const_rtx);
 bool aarch64_addsvl_addspl_immediate_p (const_rtx);
 char *aarch64_output_addsvl_addspl (rtx);
@@ -1008,6 +1018,8 @@ tree aarch64_general_builtin_rsqrt (unsigned int);
 void handle_arm_acle_h (void);
 void handle_arm_neon_h (void);
 
+bool aarch64_check_required_extensions (location_t, tree,
+					aarch64_feature_flags);
 bool aarch64_general_check_builtin_call (location_t, vec<location_t>,
 					 unsigned int, tree, unsigned int,
 					 tree *);

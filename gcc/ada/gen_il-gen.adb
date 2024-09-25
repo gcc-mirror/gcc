@@ -1022,7 +1022,6 @@ package body Gen_IL.Gen is
       --  Start of processing for Compute_Field_Offsets
 
       begin
-
          --  Compute the number of types that have each field, weighted by the
          --  frequency of such nodes.
 

@@ -46,6 +46,7 @@
 # define cfi_remember_state		.cfi_remember_state
 # define cfi_restore_state		.cfi_restore_state
 # define cfi_window_save		.cfi_window_save
+# define cfi_negate_ra_state		.cfi_negate_ra_state
 # define cfi_personality(enc, exp)	.cfi_personality enc, exp
 # define cfi_lsda(enc, exp)		.cfi_lsda enc, exp
 # define cfi_escape(...)		.cfi_escape __VA_ARGS__
@@ -68,6 +69,7 @@
 # define cfi_remember_state
 # define cfi_restore_state
 # define cfi_window_save
+# define cfi_negate_ra_state
 # define cfi_personality(enc, exp)
 # define cfi_lsda(enc, exp)
 # define cfi_escape(...)

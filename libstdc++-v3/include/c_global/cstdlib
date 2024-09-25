@@ -36,12 +36,12 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
+#ifndef _GLIBCXX_CSTDLIB
+#define _GLIBCXX_CSTDLIB 1
+
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-
-#ifndef _GLIBCXX_CSTDLIB
-#define _GLIBCXX_CSTDLIB 1
 
 #if !_GLIBCXX_HOSTED
 // The C standard does not require a freestanding implementation to
@@ -75,9 +75,13 @@ namespace std
 
 // Need to ensure this finds the C library's <stdlib.h> not a libstdc++
 // wrapper that might already be installed later in the include search path.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 #include_next <stdlib.h>
 #undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+#pragma GCC diagnostic pop
+
 #include <bits/std_abs.h>
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.

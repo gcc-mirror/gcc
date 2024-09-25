@@ -175,7 +175,7 @@ static void compare_reginfo (unsigned long gpr_ignore)
   ST(24,M)    ST(25,M)    ST(26,M)    ST(27,M)  \
   ST(28,M)    ST(29,M)    ST(30,M)    ST(31,M)
 
-__attribute__((unused,naked,noinline,noclone))
+__attribute__((unused,naked,noipa))
 static void host_store1 (void)
 {
   __asm __volatile__
@@ -217,7 +217,7 @@ static void host_store1 (void)
    : "memory", "r31");
 }
 
-__attribute__((unused,naked,noinline,noclone))
+__attribute__((unused,naked,noipa))
 static void host_store2 (void)
 {
   __asm __volatile__
@@ -271,7 +271,7 @@ static void host_store2 (void)
 
 #define MK_RUN_ISR(N, IGMSK)                    \
                                                 \
-__attribute__((noinline,noclone))               \
+__attribute__((noipa))                          \
 void run_isr_ ## N (void)                       \
 {                                               \
   clear_reginfo();                              \

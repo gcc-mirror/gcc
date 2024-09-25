@@ -141,7 +141,13 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type != nullptr);
     return type;
@@ -288,7 +294,13 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (bound_type != nullptr);
+    return *bound_type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (bound_type != nullptr);
     return bound_type;
@@ -516,7 +528,13 @@ public:
   NodeId get_node_id () const { return node_id; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (has_type ());
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (has_type ());
     return type;
@@ -611,16 +629,16 @@ public:
     return new VariadicParam (*this);
   }
 
-  std::unique_ptr<Pattern> &get_pattern ()
+  Pattern &get_pattern ()
   {
     rust_assert (param_name != nullptr);
-    return param_name;
+    return *param_name;
   }
 
-  const std::unique_ptr<Pattern> &get_pattern () const
+  const Pattern &get_pattern () const
   {
     rust_assert (param_name != nullptr);
-    return param_name;
+    return *param_name;
   }
 
   bool has_pattern () const { return param_name != nullptr; }
@@ -694,16 +712,22 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Pattern> &get_pattern ()
+  Pattern &get_pattern ()
   {
     rust_assert (param_name != nullptr);
-    return param_name;
+    return *param_name;
   }
 
   bool has_name () const { return param_name != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type != nullptr);
     return type;
@@ -1289,7 +1313,7 @@ protected:
 class LetStmt;
 
 // Rust function declaration AST node
-class Function : public VisItem, public AssociatedItem
+class Function : public VisItem, public AssociatedItem, public ExternalItem
 {
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -1300,6 +1324,7 @@ class Function : public VisItem, public AssociatedItem
   tl::optional<std::unique_ptr<BlockExpr>> function_body;
   location_t locus;
   bool is_default;
+  bool is_external_function;
 
 public:
   std::string as_string () const override;
@@ -1330,16 +1355,17 @@ public:
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    tl::optional<std::unique_ptr<BlockExpr>> function_body,
 	    Visibility vis, std::vector<Attribute> outer_attrs,
-	    location_t locus, bool is_default = false)
+	    location_t locus, bool is_default = false,
+	    bool is_external_function = false)
     : VisItem (std::move (vis), std::move (outer_attrs)),
-      qualifiers (std::move (qualifiers)),
+      ExternalItem (Stmt::node_id), qualifiers (std::move (qualifiers)),
       function_name (std::move (function_name)),
       generic_params (std::move (generic_params)),
       function_params (std::move (function_params)),
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_body (std::move (function_body)), locus (locus),
-      is_default (is_default)
+      is_default (is_default), is_external_function (is_external_function)
   {}
 
   // TODO: add constructor with less fields
@@ -1363,6 +1389,8 @@ public:
     return function_params.size () != 0
 	   && function_params.back ()->is_variadic ();
   }
+
+  bool is_external () const { return is_external_function; }
 
   // Invalid if block is null, so base stripping on that.
   void mark_for_strip () override { function_body = nullptr; }
@@ -1405,22 +1433,31 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
+  Type &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return *return_type;
+  }
+
+  std::unique_ptr<Type> &get_return_type_ptr ()
   {
     rust_assert (has_return_type ());
     return return_type;
   }
 
-  std::unique_ptr<Param> &get_self_param ()
+  Param &get_self_param ()
   {
     rust_assert (has_self_param ());
-    return function_params[0];
+    return *function_params[0];
   }
-  const std::unique_ptr<Param> &get_self_param () const
+  const Param &get_self_param () const
   {
     rust_assert (has_self_param ());
-    return function_params[0];
+    return *function_params[0];
   }
+
+  // ExternalItem::node_id is same as Stmt::node_id
+  NodeId get_node_id () const override { return Stmt::node_id; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1430,6 +1467,13 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Function *clone_associated_item_impl () const override
+  {
+    return new Function (*this);
+  }
+
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
+  Function *clone_external_item_impl () const override
   {
     return new Function (*this);
   }
@@ -1538,10 +1582,10 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type_aliased ()
+  Type &get_type_aliased ()
   {
     rust_assert (existing_type != nullptr);
-    return existing_type;
+    return *existing_type;
   }
 
   Identifier get_new_type_name () const { return new_type_name; }
@@ -1736,7 +1780,13 @@ public:
   location_t get_locus () const { return locus; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_field_type ()
+  Type &get_field_type ()
+  {
+    rust_assert (field_type != nullptr);
+    return *field_type;
+  }
+
+  std::unique_ptr<Type> &get_field_type_ptr ()
   {
     rust_assert (field_type != nullptr);
     return field_type;
@@ -1887,7 +1937,13 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_field_type ()
+  Type &get_field_type ()
+  {
+    rust_assert (field_type != nullptr);
+    return *field_type;
+  }
+
+  std::unique_ptr<Type> &get_field_type_ptr ()
   {
     rust_assert (field_type != nullptr);
     return field_type;
@@ -2081,8 +2137,16 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  bool has_expr () { return expression != nullptr; }
+
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr ()
+  Expr &get_expr ()
+  {
+    rust_assert (expression != nullptr);
+    return *expression;
+  }
+
+  std::unique_ptr<Expr> &get_expr_ptr ()
   {
     rust_assert (expression != nullptr);
     return expression;
@@ -2398,14 +2462,26 @@ public:
   bool has_expr () { return const_expr != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr ()
+  Expr &get_expr ()
+  {
+    rust_assert (const_expr != nullptr);
+    return *const_expr;
+  }
+
+  std::unique_ptr<Expr> &get_expr_ptr ()
   {
     rust_assert (const_expr != nullptr);
     return const_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type != nullptr);
     return type;
@@ -2505,14 +2581,26 @@ public:
   bool has_expr () { return expr != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr ()
+  Expr &get_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return *expr;
+  }
+
+  std::unique_ptr<Expr> &get_expr_ptr ()
   {
     rust_assert (expr != nullptr);
     return expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type != nullptr);
     return type;
@@ -2613,14 +2701,26 @@ public:
   bool has_expr () const { return expr != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr ()
+  Expr &get_expr ()
+  {
+    rust_assert (has_expr ());
+    return *expr;
+  }
+
+  std::unique_ptr<Expr> &get_expr_ptr ()
   {
     rust_assert (has_expr ());
     return expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (type != nullptr);
     return type;
@@ -2942,7 +3042,13 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (trait_type != nullptr);
+    return *trait_type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (trait_type != nullptr);
     return trait_type;
@@ -3255,10 +3361,11 @@ public:
       item_name (std::move (item_name)), locus (locus), marked_for_strip (false)
   {}
 
+  // copy constructor
   ExternalTypeItem (ExternalTypeItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus),
-      marked_for_strip (other.marked_for_strip)
+    : ExternalItem (other.get_node_id ()), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus), marked_for_strip (other.marked_for_strip)
   {
     node_id = other.node_id;
   }
@@ -3338,8 +3445,9 @@ public:
 
   // Copy constructor
   ExternalStaticItem (ExternalStaticItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus), has_mut (other.has_mut)
+    : ExternalItem (other.get_node_id ()), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus), has_mut (other.has_mut)
   {
     node_id = other.node_id;
     // guard to prevent null dereference (only required if error state)
@@ -3391,7 +3499,13 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (item_type != nullptr);
+    return *item_type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (item_type != nullptr);
     return item_type;
@@ -3524,7 +3638,13 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (param_type != nullptr);
+    return *param_type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (param_type != nullptr);
     return param_type;
@@ -3605,9 +3725,10 @@ public:
 
   // Copy constructor with clone
   ExternalFunctionItem (ExternalFunctionItem const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      item_name (other.item_name), locus (other.locus),
-      where_clause (other.where_clause), function_params (other.function_params)
+    : ExternalItem (other.get_node_id ()), outer_attrs (other.outer_attrs),
+      visibility (other.visibility), item_name (other.item_name),
+      locus (other.locus), where_clause (other.where_clause),
+      function_params (other.function_params)
   {
     node_id = other.node_id;
     // guard to prevent null pointer dereference
@@ -3681,7 +3802,13 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
+  Type &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return *return_type;
+  }
+
+  std::unique_ptr<Type> &get_return_type_ptr ()
   {
     rust_assert (has_return_type ());
     return return_type;

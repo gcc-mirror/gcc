@@ -294,7 +294,7 @@ bool values_equal_for_ipcp_p (tree x, tree y);
 /* Return TRUE if IPA supports ranges of TYPE.  */
 
 static inline bool
-ipa_supports_p (tree type)
+ipa_vr_supported_type_p (tree type)
 {
   return irange::supports_p (type) || prange::supports_p (type);
 }

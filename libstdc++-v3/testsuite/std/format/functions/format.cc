@@ -8,6 +8,8 @@
 # error "Feature test macro for std::format is missing in <format>"
 #elif __cpp_lib_format < 202110L
 # error "Feature test macro for std::format has wrong value in <format>"
+#elif __cplusplus > 202302L && __cpp_lib_format < 202311L
+# error "Feature test macro for std::format has wrong value in <format>"
 #endif
 
 #ifndef __cpp_lib_format_uchar
@@ -21,6 +23,8 @@
 #ifndef __cpp_lib_format
 # error "Feature test macro for std::format is missing in <version>"
 #elif __cpp_lib_format < 202110L
+# error "Feature test macro for std::format has wrong value in <version>"
+#elif __cplusplus > 202302L && __cpp_lib_format < 202311L
 # error "Feature test macro for std::format has wrong value in <version>"
 #endif
 
@@ -458,7 +462,7 @@ test_pointer()
   s = std::format("{:20} {:20p}", p, pc);
   VERIFY( s == (str_int + ' ' + str_int) );
 
-#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
+#if __cpp_lib_format >= 202304L
   // P2510R3 Formatting pointers
   s = std::format("{:06} {:07P} {:08p}", (void*)0, (const void*)0, nullptr);
   VERIFY( s == "0x0000 0X00000 0x000000" );

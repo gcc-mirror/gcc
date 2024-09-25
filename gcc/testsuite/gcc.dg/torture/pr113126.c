@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-Wno-psabi" } */
 
-typedef float __attribute__((__vector_size__ (8))) F;
-typedef double __attribute__((__vector_size__ (16))) G;
+typedef float __attribute__((__vector_size__ (2 * sizeof(float)))) F;
+typedef double __attribute__((__vector_size__ (2 * sizeof(double)))) G;
 
 F f;
 G g;

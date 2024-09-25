@@ -7,4 +7,3 @@ import kevin; // { dg-error "not be from header" }
 # 8 "" 2
 
 import kevin; // ok
-// { dg-prune-output "not writing module" }

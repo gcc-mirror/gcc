@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 // Based on a testcase submitted by Tudor Hulubei <tudor@cs.unh.edu>
 

@@ -119,7 +119,7 @@ package body System.Task_Primitives.Operations is
 
    function Initialize_Lock
      (L    : not null access RTS_Lock;
-      Prio : Any_Priority) return int;
+      Prio : Any_Priority) return Interfaces.C.int;
    --  Initialize the lock L. If Ceiling_Support is True, then set the ceiling
    --  to Prio. Returns 0 for success, or ENOMEM for out-of-memory.
 
@@ -220,7 +220,7 @@ package body System.Task_Primitives.Operations is
      new Ada.Unchecked_Conversion (Task_Id, System.Address);
 
    function GNAT_pthread_condattr_setup
-     (attr : access pthread_condattr_t) return int;
+     (attr : access pthread_condattr_t) return Interfaces.C.int;
    pragma Import (C,
      GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
@@ -300,7 +300,7 @@ package body System.Task_Primitives.Operations is
          Res :=
            mprotect
              (Stack_Base - (Stack_Base mod Page_Size) + Page_Size,
-              size_t (Page_Size),
+              Interfaces.C.size_t (Page_Size),
               prot => (if On then PROT_ON else PROT_OFF));
          pragma Assert (Res = 0);
       end if;
@@ -333,11 +333,11 @@ package body System.Task_Primitives.Operations is
 
    function Initialize_Lock
      (L    : not null access RTS_Lock;
-      Prio : Any_Priority) return int
+      Prio : Any_Priority) return Interfaces.C.int
    is
       Attributes : aliased pthread_mutexattr_t;
-      Result     : int;
-      Result_2   : aliased int;
+      Result     : Interfaces.C.int;
+      Result_2   : aliased Interfaces.C.int;
 
    begin
       Result := pthread_mutexattr_init (Attributes'Access);
@@ -425,9 +425,9 @@ package body System.Task_Primitives.Operations is
      (L : not null access Lock; Ceiling_Violation : out Boolean)
    is
       Self    : constant pthread_t := pthread_self;
-      Result  : int;
-      Policy  : aliased int;
-      Ceiling : aliased int;
+      Result  : Interfaces.C.int;
+      Policy  : aliased Interfaces.C.int;
+      Ceiling : aliased Interfaces.C.int;
       Sched   : aliased struct_sched_param;
 
    begin

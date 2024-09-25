@@ -32,8 +32,8 @@ DEFINITION MODULE M2ALU ;
 *)
 
 FROM NameKey IMPORT Name ;
-FROM m2tree IMPORT Tree ;
 FROM M2GCCDeclare IMPORT WalkAction, IsAction ;
+FROM gcctypes IMPORT tree ;
 
 EXPORT QUALIFIED PtrToValue,
                  InitValue,
@@ -163,42 +163,42 @@ PROCEDURE GetSetValueType () : CARDINAL ;
    PushIntegerTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushIntegerTree (t: Tree) ;
+PROCEDURE PushIntegerTree (t: tree) ;
 
 
 (*
    PopIntegerTree - pops a gcc tree value from the ALU stack.
 *)
 
-PROCEDURE PopIntegerTree () : Tree ;
+PROCEDURE PopIntegerTree () : tree ;
 
 
 (*
    PushRealTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushRealTree (t: Tree) ;
+PROCEDURE PushRealTree (t: tree) ;
 
 
 (*
    PopRealTree - pops a gcc tree value from the ALU stack.
 *)
 
-PROCEDURE PopRealTree () : Tree ;
+PROCEDURE PopRealTree () : tree ;
 
 
 (*
    PushComplexTree - pushes a gcc tree value onto the ALU stack.
 *)
 
-PROCEDURE PushComplexTree (t: Tree) ;
+PROCEDURE PushComplexTree (t: tree) ;
 
 
 (*
    PopComplexTree - pops a gcc tree value from the ALU stack.
 *)
 
-PROCEDURE PopComplexTree () : Tree ;
+PROCEDURE PopComplexTree () : tree ;
 
 
 (*
@@ -209,21 +209,21 @@ PROCEDURE PopComplexTree () : Tree ;
 *)
 
 PROCEDURE PushSetTree (tokenno: CARDINAL;
-                       t: Tree; sym: CARDINAL) ;
+                       t: tree; sym: CARDINAL) ;
 
 
 (*
    PopSetTree - pops a gcc tree from the ALU stack.
 *)
 
-PROCEDURE PopSetTree (tokenno: CARDINAL) : Tree ;
+PROCEDURE PopSetTree (tokenno: CARDINAL) : tree ;
 
 
 (*
    PopConstructorTree - returns a tree containing the compound literal.
 *)
 
-PROCEDURE PopConstructorTree (tokenno: CARDINAL) : Tree ;
+PROCEDURE PopConstructorTree (tokenno: CARDINAL) : tree ;
 
 
 (*
@@ -832,7 +832,7 @@ PROCEDURE GetRange (v: PtrToValue; n: CARDINAL; VAR low, high: CARDINAL) : BOOLE
                           set const, sym.
 *)
 
-PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
+PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : tree ;
 
 
 (*
@@ -840,7 +840,7 @@ PROCEDURE ConstructSetConstant (tokenno: CARDINAL; v: PtrToValue) : Tree ;
                 value  {e1..e2}.
 *)
 
-PROCEDURE BuildRange (tokenno: CARDINAL; e1, e2: Tree) : Tree ;
+PROCEDURE BuildRange (tokenno: CARDINAL; e1, e2: tree) : tree ;
 
 
 (*
@@ -882,7 +882,7 @@ PROCEDURE IsValueAndTreeKnown () : BOOLEAN ;
                           error message.
 *)
 
-PROCEDURE CheckOrResetOverflow (tokenno: CARDINAL; t: Tree; check: BOOLEAN) ;
+PROCEDURE CheckOrResetOverflow (tokenno: CARDINAL; t: tree; check: BOOLEAN) ;
 
 
 (*
@@ -991,7 +991,7 @@ PROCEDURE IsValueConst (v: PtrToValue) : BOOLEAN ;
                     front end type.
 *)
 
-PROCEDURE PushTypeOfTree (sym: CARDINAL; gcc: Tree) ;
+PROCEDURE PushTypeOfTree (sym: CARDINAL; gcc: tree) ;
 
 
 END M2ALU.

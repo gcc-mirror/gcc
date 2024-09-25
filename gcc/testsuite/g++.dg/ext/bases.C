@@ -1,5 +1,6 @@
 // { dg-options "-w" }
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include<typeinfo>
 #include<cassert>

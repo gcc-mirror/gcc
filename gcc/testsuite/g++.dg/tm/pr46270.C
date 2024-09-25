@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fgnu-tm" }
+// { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } }
 
 #include <list>
 class Game

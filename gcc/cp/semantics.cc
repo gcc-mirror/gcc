@@ -952,6 +952,86 @@ maybe_warn_unparenthesized_assignment (tree t, bool nested_p,
     }
 }
 
+/* Helper class for saving/restoring ANNOTATE_EXPRs.  For a tree node t, users
+   can construct one of these like so:
+
+     annotate_saver s (&t);
+
+   and t will be updated to have any annotations removed.  The user can then
+   transform t, and later restore the ANNOTATE_EXPRs with:
+
+     t = s.restore (t).
+
+   The intent is to ensure that any ANNOTATE_EXPRs remain the outermost
+   expressions following any operations on t.  */
+
+class annotate_saver {
+  /* The chain of saved annotations, if there were any.  Otherwise null.  */
+  tree m_annotations;
+
+  /* If M_ANNOTATIONS is non-null, then M_INNER points to TREE_OPERAND (A, 0)
+     for the innermost annotation A.  */
+  tree *m_inner;
+
+public:
+  annotate_saver (tree *);
+  tree restore (tree);
+};
+
+/* If *COND is an ANNOTATE_EXPR, walk through the chain of annotations, and set
+   *COND equal to the first non-ANNOTATE_EXPR (saving a pointer to the
+   original chain of annotations for later use in restore).  */
+
+annotate_saver::annotate_saver (tree *cond) : m_annotations (nullptr)
+{
+  tree *t = cond;
+  while (TREE_CODE (*t) == ANNOTATE_EXPR)
+    t = &TREE_OPERAND (*t, 0);
+
+  if (t != cond)
+    {
+      m_annotations = *cond;
+      *cond = *t;
+      m_inner = t;
+    }
+}
+
+/* If we didn't strip any annotations on construction, return NEW_INNER
+   unmodified.  Otherwise, wrap the saved annotations around NEW_INNER (updating
+   the types and flags of the annotations if needed) and return the resulting
+   expression.  */
+
+tree
+annotate_saver::restore (tree new_inner)
+{
+  if (!m_annotations)
+    return new_inner;
+
+  /* If the type of the inner expression changed, we need to update the types
+     of all the ANNOTATE_EXPRs.  We may need to update the flags too, but we
+     assume they only change if the type of the inner expression changes.
+     The flag update logic assumes that the other operands to the
+     ANNOTATE_EXPRs are always INTEGER_CSTs.  */
+  if (TREE_TYPE (new_inner) != TREE_TYPE (*m_inner))
+    {
+      const bool new_readonly
+	= TREE_READONLY (new_inner) || CONSTANT_CLASS_P (new_inner);
+
+      for (tree c = m_annotations; c != *m_inner; c = TREE_OPERAND (c, 0))
+	{
+	  gcc_checking_assert (TREE_CODE (c) == ANNOTATE_EXPR
+			       && TREE_CODE (TREE_OPERAND (c, 1)) == INTEGER_CST
+			       && TREE_CODE (TREE_OPERAND (c, 2)) == INTEGER_CST);
+	  TREE_TYPE (c) = TREE_TYPE (new_inner);
+	  TREE_SIDE_EFFECTS (c) = TREE_SIDE_EFFECTS (new_inner);
+	  TREE_READONLY (c) = new_readonly;
+	}
+    }
+
+  *m_inner = new_inner;
+  return m_annotations;
+}
+
 /* COND is the condition-expression for an if, while, etc.,
    statement.  Convert it to a boolean value, if appropriate.
    In addition, verify sequence points if -Wsequence-point is enabled.  */
@@ -967,12 +1047,16 @@ maybe_convert_cond (tree cond)
   if (type_dependent_expression_p (cond))
     return cond;
 
+  /* Strip any ANNOTATE_EXPRs from COND.  */
+  annotate_saver annotations (&cond);
+
   /* For structured binding used in condition, the conversion needs to be
      evaluated before the individual variables are initialized in the
      std::tuple_{size,elemenet} case.  cp_finish_decomp saved the conversion
      result in a TARGET_EXPR, pick it up from there.  */
   if (DECL_DECOMPOSITION_P (cond)
       && DECL_DECOMP_IS_BASE (cond)
+      && DECL_DECOMP_BASE (cond)
       && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
     cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
 
@@ -984,7 +1068,10 @@ maybe_convert_cond (tree cond)
 
   /* Do the conversion.  */
   cond = convert_from_reference (cond);
-  return condition_conversion (cond);
+  cond = condition_conversion (cond);
+
+  /* Restore any ANNOTATE_EXPRs around COND.  */
+  return annotations.restore (cond);
 }
 
 /* Finish an expression-statement, whose EXPRESSION is as indicated.  */
@@ -1511,7 +1598,7 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep, tree unroll,
 				  build_int_cst (integer_type_node,
 						 annot_expr_unroll_kind),
 				  unroll);
-  if (novector && cond != error_mark_node)
+  if (novector && cond && cond != error_mark_node)
     FOR_COND (for_stmt) = build3 (ANNOTATE_EXPR,
 				  TREE_TYPE (FOR_COND (for_stmt)),
 				  FOR_COND (for_stmt),
@@ -1715,6 +1802,7 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	 conversion result in a TARGET_EXPR, pick it up from there.  */
       if (DECL_DECOMPOSITION_P (cond)
 	  && DECL_DECOMP_IS_BASE (cond)
+	  && DECL_DECOMP_BASE (cond)
 	  && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
 	cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
@@ -2382,6 +2470,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  if (current_function_decl
 	      && DECL_STATIC_FUNCTION_P (current_function_decl))
 	    error ("invalid use of member %qD in static member function", decl);
@@ -2515,9 +2604,14 @@ check_accessibility_of_qualified_id (tree decl,
 	 OBJECT_TYPE.  */
       && CLASS_TYPE_P (object_type)
       && DERIVED_FROM_P (scope, object_type))
-    /* If we are processing a `->' or `.' expression, use the type of the
-       left-hand side.  */
-    qualifying_type = object_type;
+    {
+      /* If we are processing a `->' or `.' expression, use the type of the
+	 left-hand side.  */
+      if (tree open = currently_open_class (object_type))
+	qualifying_type = open;
+      else
+	qualifying_type = object_type;
+    }
   else if (nested_name_specifier)
     {
       /* If the reference is to a non-static member of the
@@ -2969,7 +3063,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	     -Wredundant-move warning.  */
 	  suppress_warning (result, OPT_Wpessimizing_move);
 
-	  if (cfun)
+	  if (cfun && cp_function_chain && !cp_unevaluated_operand)
 	    {
 	      bool abnormal = true;
 	      for (lkp_iterator iter (maybe_get_fns (fn)); iter; ++iter)
@@ -3066,20 +3160,9 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
     }
   else if (concept_check_p (fn))
     {
-      /* FN is actually a template-id referring to a concept definition.  */
-      tree id = unpack_concept_check (fn);
-      tree tmpl = TREE_OPERAND (id, 0);
-      tree args = TREE_OPERAND (id, 1);
-
-      if (!function_concept_p (tmpl))
-	{
-	  error_at (EXPR_LOC_OR_LOC (fn, input_location),
-		    "cannot call a concept as a function");
-	  return error_mark_node;
-	}
-
-      /* Ensure the result is wrapped as a call expression.  */
-      result = build_concept_check (tmpl, args, tf_warning_or_error);
+      error_at (EXPR_LOC_OR_LOC (fn, input_location),
+		"cannot call a concept as a function");
+      return error_mark_node;
     }
   else if (is_overloaded_fn (fn))
     {
@@ -4253,6 +4336,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("%qD is not captured", decl);
 	  tree closure = LAMBDA_EXPR_CLOSURE (lambda_expr);
 	  if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_NONE)
@@ -4273,6 +4357,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error (VAR_P (decl)
 		 ? G_("use of local variable with automatic storage from "
 		      "containing function")
@@ -4354,7 +4439,7 @@ finish_id_expression_1 (tree id_expression,
 	  /* Name lookup failed.  */
 	  if (scope
 	      && (!TYPE_P (scope)
-		  || (!dependent_type_p (scope)
+		  || (!dependentish_scope_p (scope)
 		      && !(identifier_p (id_expression)
 			   && IDENTIFIER_CONV_OP_P (id_expression)
 			   && dependent_type_p (TREE_TYPE (id_expression))))))
@@ -4508,6 +4593,7 @@ finish_id_expression_1 (tree id_expression,
       if (TREE_CODE (decl) == TREE_LIST)
 	{
 	  /* Ambiguous reference to base members.  */
+	  auto_diagnostic_group d;
 	  error ("request for member %qD is ambiguous in "
 		 "multiple inheritance lattice", id_expression);
 	  print_candidates (decl);
@@ -4921,6 +5007,7 @@ finish_offsetof (tree object_ptr, tree expr, location_t loc)
 
       if (DECL_P (expr))
 	{
+	  auto_diagnostic_group d;
 	  error ("cannot apply %<offsetof%> to member function %qD", expr);
 	  inform (DECL_SOURCE_LOCATION (expr), "declared here");
 	}
@@ -4987,6 +5074,7 @@ simplify_aggr_init_expr (tree *tp)
     = CALL_EXPR_OPERATOR_SYNTAX (aggr_init_expr);
   CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (aggr_init_expr);
   CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (aggr_init_expr);
+  CALL_EXPR_MUST_TAIL_CALL (call_expr) = AGGR_INIT_EXPR_MUST_TAIL (aggr_init_expr);
 
   if (style == ctor)
     {
@@ -6332,6 +6420,7 @@ omp_reduction_lookup (location_t loc, tree id, tree type, tree *baselinkp,
 	return ret;
       if (!ambiguous.is_empty ())
 	{
+	  auto_diagnostic_group d;
 	  const char *str = _("candidates are:");
 	  unsigned int idx;
 	  tree udr;
@@ -8404,6 +8493,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			&& !type_dependent_expression_p (t)
 			&& !omp_mappable_type (TREE_TYPE (t)))
 		      {
+			auto_diagnostic_group d;
 			error_at (OMP_CLAUSE_LOCATION (c),
 				  "array section does not have mappable type "
 				  "in %qs clause",
@@ -8626,6 +8716,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 					    ? TREE_TYPE (TREE_TYPE (t))
 					    : TREE_TYPE (t)))
 	      {
+		auto_diagnostic_group d;
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD does not have a mappable type in %qs clause", t,
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
@@ -8793,6 +8884,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else if (!omp_mappable_type (TREE_TYPE (t)))
 	    {
+	      auto_diagnostic_group d;
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qD does not have a mappable type in %qs clause", t,
 			cname);
@@ -13398,10 +13490,10 @@ finish_builtin_launder (location_t loc, tree arg, tsubst_flags_t complain)
     arg = decay_conversion (arg, complain);
   if (error_operand_p (arg))
     return error_mark_node;
-  if (!type_dependent_expression_p (arg)
-      && !TYPE_PTR_P (TREE_TYPE (arg)))
+  if (!type_dependent_expression_p (arg) && !TYPE_PTROB_P (TREE_TYPE (arg)))
     {
-      error_at (loc, "non-pointer argument to %<__builtin_launder%>");
+      error_at (loc, "type %qT of argument to %<__builtin_launder%> "
+		"is not a pointer to object type", TREE_TYPE (arg));
       return error_mark_node;
     }
   if (processing_template_decl)

@@ -1,3 +1,207 @@
+2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* files.cc (finish_embed): Initialize toks to tok rather
+	than NULL.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal.h (struct cpp_embed_params): Add base64 member.
+	(_cpp_free_embed_params_tokens): Declare.
+	* directives.cc (DIRECTIVE_TABLE): Add IN_I flag to T_EMBED.
+	(save_token_for_embed, _cpp_free_embed_params_tokens): New functions.
+	(EMBED_PARAMS): Add gnu::base64 entry.
+	(_cpp_parse_embed_params): Parse gnu::base64 parameter.  If
+	-fpreprocessed without -fdirectives-only, require #embed to have
+	gnu::base64 parameter.  Diagnose conflict between gnu::base64 and
+	limit or gnu::offset parameters.
+	(do_embed): Use _cpp_free_embed_params_tokens.
+	* files.cc (finish_embed, base64_dec_fn): New functions.
+	(base64_dec): New array.
+	(B64D0, B64D1, B64D2, B64D3): Define.
+	(finish_base64_embed): New function.
+	(_cpp_stack_embed): Use finish_embed.  Handle params->base64
+	using finish_base64_embed.
+	* macro.cc (builtin_has_embed): Call _cpp_free_embed_params_tokens.
+
+2024-09-12  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (enum cpp_warning_reason): Add
+	CPP_W_CXX{14,17,20,23}_EXTENSIONS.
+	* charset.cc (_cpp_valid_ucn, convert_hex, convert_oct)
+	(convert_escape, narrow_str_to_charconst): Use cpp_pedwarning
+	instead of cpp_error for pedwarns.
+	* directives.cc (directive_diagnostics, _cpp_handle_directive)
+	(do_line, do_elif): Likewise.
+	* expr.cc (cpp_classify_number, eval_token): Likewise.
+	* lex.cc (skip_whitespace, maybe_va_opt_error)
+	(_cpp_lex_direct): Likewise.
+	* macro.cc (_cpp_arguments_ok): Likewise.
+	(replace_args): Use -Wvariadic-macros for pedwarn about
+	empty macro arguments.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal.h (struct cpp_embed_params): Add offset member.
+	* directives.cc (EMBED_PARAMS): Add gnu::offset entry.
+	(enum embed_param_kind): Add NUM_EMBED_STD_PARAMS.
+	(_cpp_parse_embed_params): Use NUM_EMBED_STD_PARAMS rather than
+	NUM_EMBED_PARAMS when parsing standard parameters.  Parse gnu::offset
+	parameter.
+	* files.cc (struct _cpp_file): Add offset member.
+	(_cpp_stack_embed): Handle params->offset.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105863
+	* include/cpplib.h: Implement C23 N3017 #embed - a scannable,
+	tooling-friendly binary resource inclusion mechanism paper.
+	(struct cpp_options): Add embed member.
+	(enum cpp_builtin_type): Add BT_HAS_EMBED.
+	(cpp_set_include_chains): Add another cpp_dir * argument to
+	the declaration.
+	* internal.h (enum include_type): Add IT_EMBED.
+	(struct cpp_reader): Add embed_include member.
+	(struct cpp_embed_params_tokens): New type.
+	(struct cpp_embed_params): New type.
+	(_cpp_get_token_no_padding): Declare.
+	(enum _cpp_find_file_kind): Add _cpp_FFK_EMBED and _cpp_FFK_HAS_EMBED.
+	(_cpp_stack_embed): Declare.
+	(_cpp_parse_expr): Change return type to cpp_num_part instead of
+	bool, change second argument from bool to const char * and add third
+	argument.
+	(_cpp_parse_embed_params): Declare.
+	* directives.cc (DIRECTIVE_TABLE): Add embed entry.
+	(end_directive): Don't call skip_rest_of_line for T_EMBED directive.
+	(_cpp_handle_directive): Return 2 rather than 1 for T_EMBED in
+	directives-only mode.
+	(parse_include): Don't Call check_eol for T_EMBED directive.
+	(skip_balanced_token_seq): New function.
+	(EMBED_PARAMS): Define.
+	(enum embed_param_kind): New type.
+	(embed_params): New variable.
+	(_cpp_parse_embed_params): New function.
+	(do_embed): New function.
+	(do_if): Adjust _cpp_parse_expr caller.
+	(do_elif): Likewise.
+	* expr.cc (parse_defined): Diagnose defined in #embed or __has_embed
+	parameters.
+	(_cpp_parse_expr): Change return type to cpp_num_part instead of
+	bool, change second argument from bool to const char * and add third
+	argument.  Adjust function comment.  For #embed/__has_embed parameters
+	add an artificial CPP_OPEN_PAREN.  Use the second argument DIR
+	directly instead of string literals conditional on IS_IF.
+	For #embed/__has_embed parameter, stop on reaching CPP_CLOSE_PAREN
+	matching the artificial one.  Diagnose negative or too large embed
+	parameter operands.
+	(num_binary_op): Use #embed instead of #if for diagnostics if inside
+	#embed/__has_embed parameter.
+	(num_div_op): Likewise.
+	* files.cc (struct _cpp_file): Add limit member and embed bitfield.
+	(search_cache): Add IS_EMBED argument, formatting fix.  Skip over
+	files with different file->embed from the argument.
+	(find_file_in_dir): Don't call pch_open_file if file->embed.
+	(_cpp_find_file): Handle _cpp_FFK_EMBED and _cpp_FFK_HAS_EMBED.
+	(read_file_guts): Formatting fix.
+	(has_unique_contents): Ignore file->embed files.
+	(search_path_head): Handle IT_EMBED type.
+	(_cpp_stack_embed): New function.
+	(_cpp_get_file_stat): Formatting fix.
+	(cpp_set_include_chains): Add embed argument, save it to
+	pfile->embed_include and compute lens for the chain.
+	* init.cc (struct lang_flags): Add embed member.
+	(lang_defaults): Add embed initializers.
+	(cpp_set_lang): Initialize CPP_OPTION (pfile, embed).
+	(builtin_array): Add __has_embed entry.
+	(cpp_init_builtins): Predefine __STDC_EMBED_NOT_FOUND__,
+	__STDC_EMBED_FOUND__ and __STDC_EMBED_EMPTY__.
+	* lex.cc (cpp_directive_only_process): Handle #embed.
+	* macro.cc (cpp_get_token_no_padding): Rename to ...
+	(_cpp_get_token_no_padding): ... this.  No longer static.
+	(builtin_has_include_1): New function.
+	(builtin_has_include): Use it.  Use _cpp_get_token_no_padding
+	instead of cpp_get_token_no_padding.
+	(builtin_has_embed): New function.
+	(_cpp_builtin_macro_text): Handle BT_HAS_EMBED.
+
+2024-08-26  Alexander Monakov  <amonakov@ispras.ru>
+
+	* internal.h (CPP_BUFFER_PADDING): New macro; use it ...
+	* charset.cc (_cpp_convert_input): ...here, and ...
+	* files.cc (read_file_guts): ...here, and ...
+	* lex.cc (search_line_ssse3): here.
+
+2024-08-23  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR preprocessor/116458
+	* charset.cc (_cpp_convert_input): Bump padding to 64 if
+	HAVE_SSSE3.
+
+2024-08-22  Marc Poulhiès  <poulhies@adacore.com>
+
+	* lex.cc(search_line_ssse3): fix static_assert to use 2 arguments.
+
+2024-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.cc (struct lang_flags): Change all members from char
+	typed fields to unsigned bit-fields.
+	(lang_defaults): Change formatting of the initializer so that it
+	fits to 68 columns rather than 147.
+
+2024-08-20  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for SSSE3 instead of SSE4.2.
+	* files.cc (read_file_guts): Bump padding to 64 if HAVE_SSSE3.
+	* lex.cc (search_line_acc_char): Mark inline, not "unused".
+	(search_line_sse2): Mark inline.
+	(search_line_sse42): Replace with...
+	(search_line_ssse3): ... this new function.  Adjust the use...
+	(init_vectorized_lexer): ... here.  Simplify.
+
+2024-08-06  Andi Kleen  <ak@gcc.gnu.org>
+
+	* lex.cc (search_line_mmx): Remove function.
+	(init_vectorized_lexer): Remove search_line_mmx.
+
+2024-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110343
+	* lex.cc: C++26 P2558R2 - Add @, $, and ` to the basic character set.
+	(lex_raw_string): For C++26 allow $@` characters in prefix.
+	* charset.cc (_cpp_valid_ucn): For C++26 reject \u0024 in identifiers.
+
+2024-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h
+	(semi_embedded_vec::semi_embedded_vec): Add copy ctor.
+	(rich_location::rich_location): Remove "= delete" from decl of
+	copy ctor.  Add deleted decl of move ctor.
+	(rich_location::operator=): Remove "= delete" from decl of
+	copy assignment.  Add deleted decl of move assignment.
+	(fixit_hint::fixit_hint): Add copy ctor decl.  Add deleted decl of
+	move.
+	(fixit_hint::operator=): Add copy assignment decl.  Add deleted
+	decl of move assignment.
+	* line-map.cc (rich_location::rich_location): New copy ctor.
+	(fixit_hint::fixit_hint): New copy ctor.
+
+2024-07-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h (location_range::m_highlight_color): New
+	field.
+	(rich_location::rich_location): Add optional label_highlight_color
+	param.
+	(rich_location::set_highlight_color): New decl.
+	(rich_location::add_range): Add optional label_highlight_color
+	param.
+	(rich_location::set_range): Likewise.
+	* line-map.cc (rich_location::rich_location): Add
+	"label_highlight_color" param and pass it to add_range.
+	(rich_location::set_highlight_color): New.
+	(rich_location::add_range): Add "label_highlight_color" param.
+	(rich_location::set_range): Add "highlight_color" param.
+
 2024-06-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/109360

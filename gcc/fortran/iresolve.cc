@@ -152,13 +152,21 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
 
   if (dim == NULL)
     {
-      f->rank = 1;
       if (array->rank != -1)
 	{
-	  f->shape = gfc_get_shape (1);
-	  mpz_init_set_ui (f->shape[0], coarray ? gfc_get_corank (array)
-						: array->rank);
+	  /* Assume f->rank gives the size of the shape, because there is no
+	     other way to determine the size.  */
+	  if (!f->shape || f->rank != 1)
+	    {
+	      if (f->shape)
+		gfc_free_shape (&f->shape, f->rank);
+	      f->shape = gfc_get_shape (1);
+	    }
+	  mpz_init_set_ui (f->shape[0], coarray ? array->corank : array->rank);
 	}
+      /* Applying bound to a coarray always results in a regular array.  */
+      f->rank = 1;
+      f->corank = 0;
     }
 
   f->value.function.name = gfc_get_string ("%s", name);
@@ -748,6 +756,7 @@ gfc_resolve_cshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 
   f->ts = array->ts;
   f->rank = array->rank;
+  f->corank = array->corank;
   f->shape = gfc_copy_shape (array->shape, array->rank);
 
   if (shift->rank > 0)
@@ -895,11 +904,13 @@ void
 gfc_resolve_dshift (gfc_expr *f, gfc_expr *i, gfc_expr *j ATTRIBUTE_UNUSED,
 		    gfc_expr *shift ATTRIBUTE_UNUSED)
 {
+  char c = i->ts.type == BT_INTEGER ? 'i' : 'u';
+
   f->ts = i->ts;
   if (f->value.function.isym->id == GFC_ISYM_DSHIFTL)
-    f->value.function.name = gfc_get_string ("dshiftl_i%d", f->ts.kind);
+    f->value.function.name = gfc_get_string ("dshiftl_%c%d", c, f->ts.kind);
   else if (f->value.function.isym->id == GFC_ISYM_DSHIFTR)
-    f->value.function.name = gfc_get_string ("dshiftr_i%d", f->ts.kind);
+    f->value.function.name = gfc_get_string ("dshiftr_%c%d", c, f->ts.kind);
   else
     gcc_unreachable ();
 }
@@ -916,6 +927,7 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 
   f->ts = array->ts;
   f->rank = array->rank;
+  f->corank = array->corank;
   f->shape = gfc_copy_shape (array->shape, array->rank);
 
   n = 0;
@@ -1182,6 +1194,7 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
   /* If the kind of i and j are different, then g77 cross-promoted the
      kinds to the largest value.  The Fortran 95 standard requires the
      kinds to match.  */
+
   if (i->ts.kind != j->ts.kind)
     {
       if (i->ts.kind == gfc_kind_max (i, j))
@@ -1191,7 +1204,8 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
     }
 
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__iand_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__iand_m_%d" : "__iand_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1206,7 +1220,8 @@ void
 gfc_resolve_ibclr (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ibclr_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ibclr_m_%d" : "__ibclr_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1215,7 +1230,8 @@ gfc_resolve_ibits (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED,
 		   gfc_expr *len ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ibits_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ibits_m_%d" : "__ibits_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1223,7 +1239,8 @@ void
 gfc_resolve_ibset (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ibset_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ibset_m_%d" : "__ibset_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1273,6 +1290,7 @@ gfc_resolve_ieor (gfc_expr *f, gfc_expr *i, gfc_expr *j)
   /* If the kind of i and j are different, then g77 cross-promoted the
      kinds to the largest value.  The Fortran 95 standard requires the
      kinds to match.  */
+
   if (i->ts.kind != j->ts.kind)
     {
       if (i->ts.kind == gfc_kind_max (i, j))
@@ -1281,8 +1299,9 @@ gfc_resolve_ieor (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 	gfc_convert_type (i, &j->ts, 2);
     }
 
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ieor_m_%d" : "__ieor_%d";
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ieor_%d", i->ts.kind);
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1292,6 +1311,7 @@ gfc_resolve_ior (gfc_expr *f, gfc_expr *i, gfc_expr *j)
   /* If the kind of i and j are different, then g77 cross-promoted the
      kinds to the largest value.  The Fortran 95 standard requires the
      kinds to match.  */
+
   if (i->ts.kind != j->ts.kind)
     {
       if (i->ts.kind == gfc_kind_max (i, j))
@@ -1300,8 +1320,9 @@ gfc_resolve_ior (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 	gfc_convert_type (i, &j->ts, 2);
     }
 
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__ior_m_%d" : "__ior_%d";
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__ior_%d", i->ts.kind);
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 
@@ -1341,6 +1362,18 @@ gfc_resolve_int (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 	     ? gfc_default_integer_kind : mpz_get_si (kind->value.integer);
   f->value.function.name
     = gfc_get_string ("__int_%d_%c%d", f->ts.kind,
+		      gfc_type_letter (a->ts.type),
+		      gfc_type_abi_kind (&a->ts));
+}
+
+void
+gfc_resolve_uint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
+{
+  f->ts.type = BT_UNSIGNED;
+  f->ts.kind = (kind == NULL)
+	     ? gfc_default_integer_kind : mpz_get_si (kind->value.integer);
+  f->value.function.name
+    = gfc_get_string ("__uint_%d_%c%d", f->ts.kind,
 		      gfc_type_letter (a->ts.type),
 		      gfc_type_abi_kind (&a->ts));
 }
@@ -1554,6 +1587,7 @@ gfc_resolve_logical (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
   f->ts.kind = (kind == NULL)
 	     ? gfc_default_logical_kind : mpz_get_si (kind->value.integer);
   f->rank = a->rank;
+  f->corank = a->corank;
 
   f->value.function.name
     = gfc_get_string ("__logical_%d_%c%d", f->ts.kind,
@@ -1584,6 +1618,7 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
     }
 
   f->rank = (a->rank == 2 && b->rank == 2) ? 2 : 1;
+  f->corank = a->corank;
 
   if (a->rank == 2 && b->rank == 2)
     {
@@ -1977,7 +2012,10 @@ gfc_resolve_merge_bits (gfc_expr *f, gfc_expr *i,
 			gfc_expr *mask ATTRIBUTE_UNUSED)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__merge_bits_i%d", i->ts.kind);
+
+  f->value.function.name
+    = gfc_get_string ("__merge_bits_%c%d", gfc_type_letter (i->ts.type),
+		    i->ts.kind);
 }
 
 
@@ -2213,7 +2251,8 @@ void
 gfc_resolve_not (gfc_expr *f, gfc_expr *i)
 {
   f->ts = i->ts;
-  f->value.function.name = gfc_get_string ("__not_%d", i->ts.kind);
+  const char *name = i->ts.kind == BT_UNSIGNED ? "__not_u_%d" : "__not_%d";
+  f->value.function.name = gfc_get_string (name, i->ts.kind);
 }
 
 

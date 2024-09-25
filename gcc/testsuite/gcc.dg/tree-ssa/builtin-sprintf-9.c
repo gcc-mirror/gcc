@@ -1,5 +1,6 @@
 /* PR tree-optimization/86274 - SEGFAULT when logging std::to_string(NAN)
    { dg-do compile }
+   { dg-require-effective-target double64 }
    { dg-skip-if "not IEEE float layout" { "pdp11-*-*" } }
    { dg-options "-O2 -Wall -fdump-tree-optimized" }  */
 

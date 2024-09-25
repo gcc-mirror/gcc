@@ -959,10 +959,10 @@ class auto_bitmap
 
  private:
   // Prevent making a copy that references our bitmap.
-  auto_bitmap (const auto_bitmap &);
-  auto_bitmap &operator = (const auto_bitmap &);
-  auto_bitmap (auto_bitmap &&);
-  auto_bitmap &operator = (auto_bitmap &&);
+  auto_bitmap (const auto_bitmap &) = delete;
+  auto_bitmap &operator = (const auto_bitmap &) = delete;
+  auto_bitmap (auto_bitmap &&) = delete;
+  auto_bitmap &operator = (auto_bitmap &&) = delete;
 
   bitmap_head m_bits;
 };

@@ -126,10 +126,6 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef unsigned char	lto_decl_flags_t;
 
-/* Stream additional data to LTO object files to make it easier to debug
-   streaming code.  This changes object files.  */
-static const bool streamer_debugging = false;
-
 /* Tags representing the various IL objects written to the bytecode file
    (GIMPLE statements, basic blocks, EH regions, tree nodes, etc).
 
@@ -535,6 +531,9 @@ struct lto_out_decl_state
 
   /* True if decl state is compressed.  */
   bool compressed;
+
+  /* True if offload tables should be output. */
+  bool output_offload_tables_p;
 };
 
 typedef struct lto_out_decl_state *lto_out_decl_state_ptr;

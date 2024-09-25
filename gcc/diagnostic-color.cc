@@ -102,7 +102,9 @@ static const color_default gcc_color_defaults[] =
   { "diff-insert", SGR_SEQ (COLOR_FG_GREEN) },
   { "type-diff", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN) },
   { "valid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN) },
-  { "invalid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED) }
+  { "invalid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED) },
+  { "highlight-a", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN) },
+  { "highlight-b", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_BLUE) }
 };
 
 class diagnostic_color_dict

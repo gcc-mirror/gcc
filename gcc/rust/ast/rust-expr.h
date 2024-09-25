@@ -387,10 +387,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_borrowed_expr ()
+  Expr &get_borrowed_expr ()
   {
     rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
+    return *main_or_left_expr;
   }
 
   bool get_is_mut () const { return is_mut; }
@@ -421,10 +421,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_dereferenced_expr ()
+  Expr &get_dereferenced_expr ()
   {
     rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
+    return *main_or_left_expr;
   }
 
 protected:
@@ -452,10 +452,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_propagating_expr ()
+  Expr &get_propagating_expr ()
   {
     rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
+    return *main_or_left_expr;
   }
 
 protected:
@@ -495,10 +495,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_negated_expr ()
+  Expr &get_negated_expr ()
   {
     rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
+    return *main_or_left_expr;
   }
 
 protected:
@@ -561,14 +561,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr ()
+  Expr &get_left_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return *main_or_left_expr;
+  }
+
+  std::unique_ptr<Expr> &get_left_expr_ptr ()
   {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr ()
+  Expr &get_right_expr ()
+  {
+    rust_assert (right_expr != nullptr);
+    return *right_expr;
+  }
+
+  std::unique_ptr<Expr> &get_right_expr_ptr ()
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
@@ -637,14 +649,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr ()
+  Expr &get_left_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return *main_or_left_expr;
+  }
+
+  std::unique_ptr<Expr> &get_left_expr_ptr ()
   {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr ()
+  Expr &get_right_expr ()
+  {
+    rust_assert (right_expr != nullptr);
+    return *right_expr;
+  }
+
+  std::unique_ptr<Expr> &get_right_expr_ptr ()
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
@@ -713,14 +737,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr ()
+  Expr &get_left_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return *main_or_left_expr;
+  }
+
+  std::unique_ptr<Expr> &get_left_expr_ptr ()
   {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr ()
+  Expr &get_right_expr ()
+  {
+    rust_assert (right_expr != nullptr);
+    return *right_expr;
+  }
+
+  std::unique_ptr<Expr> &get_right_expr_ptr ()
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
@@ -777,17 +813,17 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_casted_expr ()
+  Expr &get_casted_expr ()
   {
     rust_assert (main_or_left_expr != nullptr);
-    return main_or_left_expr;
+    return *main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<TypeNoBounds> &get_type_to_cast_to ()
+  TypeNoBounds &get_type_to_cast_to ()
   {
     rust_assert (type_to_convert_to != nullptr);
-    return type_to_convert_to;
+    return *type_to_convert_to;
   }
 
 protected:
@@ -843,17 +879,29 @@ public:
   void visit_rhs (ASTVisitor &vis) { right_expr->accept_vis (vis); }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr ()
+  Expr &get_left_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return *main_or_left_expr;
+  }
+
+  std::unique_ptr<Expr> &get_left_expr_ptr ()
   {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
-  // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr ()
+  std::unique_ptr<Expr> &get_right_expr_ptr ()
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  Expr &get_right_expr ()
+  {
+    rust_assert (right_expr != nullptr);
+    return *right_expr;
   }
 
 protected:
@@ -917,14 +965,26 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_left_expr ()
+  Expr &get_left_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return *main_or_left_expr;
+  }
+
+  std::unique_ptr<Expr> &get_left_expr_ptr ()
   {
     rust_assert (main_or_left_expr != nullptr);
     return main_or_left_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_right_expr ()
+  Expr &get_right_expr ()
+  {
+    rust_assert (right_expr != nullptr);
+    return *right_expr;
+  }
+
+  std::unique_ptr<Expr> &get_right_expr_ptr ()
   {
     rust_assert (right_expr != nullptr);
     return right_expr;
@@ -1012,7 +1072,13 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr_in_parens ()
+  Expr &get_expr_in_parens ()
+  {
+    rust_assert (expr_in_parens != nullptr);
+    return *expr_in_parens;
+  }
+
+  std::unique_ptr<Expr> &get_expr_in_parens_ptr ()
   {
     rust_assert (expr_in_parens != nullptr);
     return expr_in_parens;
@@ -1147,17 +1213,17 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_elem_to_copy ()
+  Expr &get_elem_to_copy ()
   {
     rust_assert (elem_to_copy != nullptr);
-    return elem_to_copy;
+    return *elem_to_copy;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_num_copies ()
+  Expr &get_num_copies ()
   {
     rust_assert (num_copies != nullptr);
-    return num_copies;
+    return *num_copies;
   }
 
 protected:
@@ -1331,17 +1397,17 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_array_expr ()
+  Expr &get_array_expr ()
   {
     rust_assert (array_expr != nullptr);
-    return array_expr;
+    return *array_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_index_expr ()
+  Expr &get_index_expr ()
   {
     rust_assert (index_expr != nullptr);
-    return index_expr;
+    return *index_expr;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -1521,10 +1587,10 @@ public:
   bool is_marked_for_strip () const override { return tuple_expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_tuple_expr ()
+  Expr &get_tuple_expr ()
   {
     rust_assert (tuple_expr != nullptr);
-    return tuple_expr;
+    return *tuple_expr;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -1664,10 +1730,10 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_base_struct ()
+  Expr &get_base_struct ()
   {
     rust_assert (base_struct != nullptr);
-    return base_struct;
+    return *base_struct;
   }
 };
 
@@ -1763,10 +1829,10 @@ public:
   std::string as_string () const override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_value ()
+  Expr &get_value ()
   {
     rust_assert (value != nullptr);
-    return value;
+    return *value;
   }
 };
 
@@ -2021,10 +2087,10 @@ public:
   std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_function_expr ()
+  Expr &get_function_expr ()
   {
     rust_assert (function != nullptr);
-    return function;
+    return *function;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -2121,10 +2187,10 @@ public:
   std::vector<std::unique_ptr<Expr> > &get_params () { return params; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_receiver_expr ()
+  Expr &get_receiver_expr ()
   {
     rust_assert (receiver != nullptr);
-    return receiver;
+    return *receiver;
   }
 
   const PathExprSegment &get_method_name () const { return method_name; }
@@ -2207,10 +2273,10 @@ public:
   bool is_marked_for_strip () const override { return receiver == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_receiver_expr ()
+  Expr &get_receiver_expr ()
   {
     rust_assert (receiver != nullptr);
-    return receiver;
+    return *receiver;
   }
 
   Identifier get_field_name () const { return field; }
@@ -2304,13 +2370,19 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  std::unique_ptr<Pattern> &get_pattern ()
+  Pattern &get_pattern ()
   {
     rust_assert (pattern != nullptr);
-    return pattern;
+    return *pattern;
   }
 
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (has_type_given ());
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (has_type_given ());
     return type;
@@ -2411,10 +2483,10 @@ public:
     return closure_inner == nullptr;
   }
 
-  std::unique_ptr<Expr> &get_definition_expr ()
+  Expr &get_definition_expr ()
   {
     rust_assert (closure_inner != nullptr);
-    return closure_inner;
+    return *closure_inner;
   }
 
 protected:
@@ -2532,7 +2604,13 @@ public:
   std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_tail_expr ()
+  Expr &get_tail_expr ()
+  {
+    rust_assert (has_tail_expr ());
+    return *expr;
+  }
+
+  std::unique_ptr<Expr> &get_tail_expr_ptr ()
   {
     rust_assert (has_tail_expr ());
     return expr;
@@ -2651,14 +2729,20 @@ public:
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition_block ()
+  BlockExpr &get_definition_block ()
   {
     rust_assert (expr != nullptr);
-    return expr;
+    return *expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
+  Type &get_return_type ()
+  {
+    rust_assert (return_type != nullptr);
+    return *return_type;
+  }
+
+  std::unique_ptr<Type> &get_return_type_ptr ()
   {
     rust_assert (return_type != nullptr);
     return return_type;
@@ -2794,10 +2878,10 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_break_expr ()
+  Expr &get_break_expr ()
   {
     rust_assert (has_break_expr ());
-    return break_expr;
+    return *break_expr;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -2906,17 +2990,17 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_from_expr ()
+  Expr &get_from_expr ()
   {
     rust_assert (from != nullptr);
-    return from;
+    return *from;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr ()
+  Expr &get_to_expr ()
   {
     rust_assert (to != nullptr);
-    return to;
+    return *to;
   }
 
 protected:
@@ -2974,10 +3058,10 @@ public:
   bool is_marked_for_strip () const override { return from == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_from_expr ()
+  Expr &get_from_expr ()
   {
     rust_assert (from != nullptr);
-    return from;
+    return *from;
   }
 
 protected:
@@ -3036,10 +3120,10 @@ public:
   bool is_marked_for_strip () const override { return to == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr ()
+  Expr &get_to_expr ()
   {
     rust_assert (to != nullptr);
-    return to;
+    return *to;
   }
 
 protected:
@@ -3142,17 +3226,17 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_from_expr ()
+  Expr &get_from_expr ()
   {
     rust_assert (from != nullptr);
-    return from;
+    return *from;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr ()
+  Expr &get_to_expr ()
   {
     rust_assert (to != nullptr);
-    return to;
+    return *to;
   }
 
 protected:
@@ -3211,10 +3295,10 @@ public:
   bool is_marked_for_strip () const override { return to == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_to_expr ()
+  Expr &get_to_expr ()
   {
     rust_assert (to != nullptr);
-    return to;
+    return *to;
   }
 
 protected:
@@ -3290,10 +3374,10 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_returned_expr ()
+  Expr &get_returned_expr ()
   {
     rust_assert (return_expr != nullptr);
-    return return_expr;
+    return *return_expr;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -3372,10 +3456,10 @@ public:
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_block_expr ()
+  BlockExpr &get_block_expr ()
   {
     rust_assert (expr != nullptr);
-    return expr;
+    return *expr;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -3461,10 +3545,10 @@ public:
   bool is_marked_for_strip () const override { return loop_block == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_loop_block ()
+  BlockExpr &get_loop_block ()
   {
     rust_assert (loop_block != nullptr);
-    return loop_block;
+    return *loop_block;
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -3544,10 +3628,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_predicate_expr ()
+  Expr &get_predicate_expr ()
   {
     rust_assert (condition != nullptr);
-    return condition;
+    return *condition;
   }
 
 protected:
@@ -3617,10 +3701,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_scrutinee_expr ()
+  Expr &get_scrutinee_expr ()
   {
     rust_assert (scrutinee != nullptr);
-    return scrutinee;
+    return *scrutinee;
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -3689,17 +3773,17 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_iterator_expr ()
+  Expr &get_iterator_expr ()
   {
     rust_assert (iterator_expr != nullptr);
-    return iterator_expr;
+    return *iterator_expr;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Pattern> &get_pattern ()
+  Pattern &get_pattern ()
   {
     rust_assert (pattern != nullptr);
-    return pattern;
+    return *pattern;
   }
 
 protected:
@@ -3786,17 +3870,23 @@ public:
   void vis_if_block (ASTVisitor &vis) { if_block->accept_vis (vis); }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_condition_expr ()
+  Expr &get_condition_expr ()
+  {
+    rust_assert (condition != nullptr);
+    return *condition;
+  }
+
+  std::unique_ptr<Expr> &get_condition_expr_ptr ()
   {
     rust_assert (condition != nullptr);
     return condition;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_if_block ()
+  BlockExpr &get_if_block ()
   {
     rust_assert (if_block != nullptr);
-    return if_block;
+    return *if_block;
   }
 
   // Invalid if if block or condition is null, so base stripping on that.
@@ -3874,10 +3964,10 @@ public:
   void vis_else_block (ASTVisitor &vis) { else_block->accept_vis (vis); }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ExprWithBlock> &get_else_block ()
+  ExprWithBlock &get_else_block ()
   {
     rust_assert (else_block != nullptr);
-    return else_block;
+    return *else_block;
   }
 
 protected:
@@ -3975,17 +4065,23 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_value_expr ()
+  Expr &get_value_expr ()
+  {
+    rust_assert (value != nullptr);
+    return *value;
+  }
+
+  std::unique_ptr<Expr> &get_value_expr_ptr ()
   {
     rust_assert (value != nullptr);
     return value;
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_if_block ()
+  BlockExpr &get_if_block ()
   {
     rust_assert (if_block != nullptr);
-    return if_block;
+    return *if_block;
   }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
@@ -4067,10 +4163,10 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ExprWithBlock> &get_else_block ()
+  ExprWithBlock &get_else_block ()
   {
     rust_assert (else_block != nullptr);
-    return else_block;
+    return *else_block;
   }
 
 protected:
@@ -4159,7 +4255,13 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_guard_expr ()
+  Expr &get_guard_expr ()
+  {
+    rust_assert (has_match_arm_guard ());
+    return *guard_expr;
+  }
+
+  std::unique_ptr<Expr> &get_guard_expr_ptr ()
   {
     rust_assert (has_match_arm_guard ());
     return guard_expr;
@@ -4220,7 +4322,13 @@ public:
   std::string as_string () const;
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr ()
+  Expr &get_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return *expr;
+  }
+
+  std::unique_ptr<Expr> &get_expr_ptr ()
   {
     rust_assert (expr != nullptr);
     return expr;
@@ -4315,10 +4423,10 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_scrutinee_expr ()
+  Expr &get_scrutinee_expr ()
   {
     rust_assert (branch_value != nullptr);
-    return branch_value;
+    return *branch_value;
   }
 
   const std::vector<MatchCase> &get_match_cases () const { return match_arms; }

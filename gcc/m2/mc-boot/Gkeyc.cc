@@ -14,10 +14,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -74,6 +73,8 @@ static symbolKey_symbolTree keywords;
 static symbolKey_symbolTree macros;
 static bool initializedCP;
 static bool initializedGCC;
+static bool seenGccTree;
+static bool seenGccLocation;
 static bool seenIntMin;
 static bool seenUIntMin;
 static bool seenLongMin;
@@ -108,6 +109,18 @@ static bool seenComplex;
 static bool seenM2RTS;
 static bool seenStrlen;
 static bool seenCtype;
+
+/*
+   useGccTree - indicate we have imported tree from gcctypes.
+*/
+
+extern "C" void keyc_useGccTree (void);
+
+/*
+   useGccLocation - indicate we have imported tree from gcctypes.
+*/
+
+extern "C" void keyc_useGccLocation (void);
 
 /*
    useUnistd - need to use unistd.h call using open/close/read/write require this header.
@@ -371,6 +384,13 @@ extern "C" void keyc_cp (void);
 static void checkGccConfigSystem (mcPretty_pretty p);
 
 /*
+   checkGccTypes - if we have imported tree or location_t from gcctypes
+                   then we include the gcc headers.
+*/
+
+static void checkGccTypes (mcPretty_pretty p);
+
+/*
    checkCtype -
 */
 
@@ -557,7 +577,22 @@ static void checkGccConfigSystem (mcPretty_pretty p)
           initializedGCC = true;
           mcPretty_print (p, (const char *) "#include \"config.h\"\\n", 21);
           mcPretty_print (p, (const char *) "#include \"system.h\"\\n", 21);
+          checkGccTypes (p);
         }
+    }
+}
+
+
+/*
+   checkGccTypes - if we have imported tree or location_t from gcctypes
+                   then we include the gcc headers.
+*/
+
+static void checkGccTypes (mcPretty_pretty p)
+{
+  if (seenGccTree || seenGccLocation)
+    {
+      mcPretty_print (p, (const char *) "#include \"gcc-consolidation.h\"\\n\\n", 34);
     }
 }
 
@@ -977,7 +1012,7 @@ static void add (symbolKey_symbolTree s, const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  symbolKey_putSymKey (s, nameKey_makeKey ((const char *) a, _a_high), reinterpret_cast<void *> (DynamicStrings_InitString ((const char *) a, _a_high)));
+  symbolKey_putSymKey (s, nameKey_makeKey ((const char *) a, _a_high), reinterpret_cast <void *> (DynamicStrings_InitString ((const char *) a, _a_high)));
 }
 
 
@@ -1105,12 +1140,34 @@ static void init (void)
   seenSize_t = false;
   seenSSize_t = false;
   seenSysTypes = false;
+  seenGccTree = false;
+  seenGccLocation = false;
   initializedCP = false;
   initializedGCC = false;
   stack = NULL;
   freeList = NULL;
   initKeywords ();
   initMacros ();
+}
+
+
+/*
+   useGccTree - indicate we have imported tree from gcctypes.
+*/
+
+extern "C" void keyc_useGccTree (void)
+{
+  seenGccTree = true;
+}
+
+
+/*
+   useGccLocation - indicate we have imported tree from gcctypes.
+*/
+
+extern "C" void keyc_useGccLocation (void)
+{
+  seenGccLocation = true;
 }
 
 
@@ -1548,7 +1605,7 @@ extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, bool scopes)
             {
               /* no longer a clash with, m, so add it to the current scope.  */
               n = nameKey_makekey (DynamicStrings_string (m));
-              symbolKey_putSymKey (stack->symbols, n, reinterpret_cast<void *> (m));
+              symbolKey_putSymKey (stack->symbols, n, reinterpret_cast <void *> (m));
             }
         }
       else
@@ -1562,7 +1619,7 @@ extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, bool scopes)
     {
       /* avoid dangling else.  */
       /* no clash, add it to the current scope.  */
-      symbolKey_putSymKey (stack->symbols, n, reinterpret_cast<void *> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      symbolKey_putSymKey (stack->symbols, n, reinterpret_cast <void *> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
     }
   return m;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1594,7 +1651,7 @@ extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, bool scopes)
           if (scopes)
             {
               /* no longer a clash with, m, so add it to the current scope.  */
-              symbolKey_putSymKey (stack->symbols, n, reinterpret_cast<void *> (m));
+              symbolKey_putSymKey (stack->symbols, n, reinterpret_cast <void *> (m));
             }
         }
       else
@@ -1608,7 +1665,7 @@ extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, bool scopes)
     {
       /* avoid dangling else.  */
       /* no clash, add it to the current scope.  */
-      symbolKey_putSymKey (stack->symbols, n, reinterpret_cast<void *> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
+      symbolKey_putSymKey (stack->symbols, n, reinterpret_cast <void *> (DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n))));
     }
   m = DynamicStrings_KillString (m);
   return n;

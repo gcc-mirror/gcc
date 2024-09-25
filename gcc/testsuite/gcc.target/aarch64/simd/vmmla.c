@@ -1,6 +1,6 @@
-/* { dg-do assemble} */
+/* { dg-do assemble } */
 /* { dg-require-effective-target arm_v8_2a_i8mm_ok } */
-/* { dg-additional-options "-march=armv8.2-a+i8mm" } */
+/* { dg-additional-options "-march=armv8.2-a+i8mm -save-temps" } */
 
 #include "arm_neon.h"
 

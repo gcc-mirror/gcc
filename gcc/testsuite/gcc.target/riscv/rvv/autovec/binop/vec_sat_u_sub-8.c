@@ -3,15 +3,13 @@
 /* { dg-skip-if "" { *-*-* } { "-flto" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include "vec_sat_arith.h"
+#include "../vec_sat_arith.h"
 
 /*
 ** vec_sat_u_sub_uint64_t_fmt_2:
 ** ...
 ** vsetvli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*e64,\s*m1,\s*ta,\s*ma
 ** ...
-** vle64\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
-** vle64\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
 ** vssubu\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
 ** ...
 */

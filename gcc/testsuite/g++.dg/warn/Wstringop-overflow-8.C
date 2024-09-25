@@ -1,5 +1,6 @@
 // PR c++/103534
 // { dg-additional-options "-O -Wall" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <string>
 

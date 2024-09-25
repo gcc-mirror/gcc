@@ -199,6 +199,58 @@ const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
   not_direct
 };
 
+/* Like create_output_operand, but for callers that will use
+   assign_call_lhs afterwards.  */
+
+static void
+create_call_lhs_operand (expand_operand *op, rtx lhs_rtx, machine_mode mode)
+{
+  /* Do not assign directly to a promoted subreg, since there is no
+     guarantee that the instruction will leave the upper bits of the
+     register in the state required by SUBREG_PROMOTED_SIGN.  */
+  rtx dest = lhs_rtx;
+  if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
+    dest = NULL_RTX;
+  create_output_operand (op, dest, mode);
+}
+
+/* Move the result of an expanded instruction into the lhs of a gimple call.
+   LHS is the lhs of the call, LHS_RTX is its expanded form, and OP is the
+   result of the expanded instruction.  OP should have been set up by
+   create_call_lhs_operand.  */
+
+static void
+assign_call_lhs (tree lhs, rtx lhs_rtx, expand_operand *op)
+{
+  if (rtx_equal_p (lhs_rtx, op->value))
+    return;
+
+  /* If the return value has an integral type, convert the instruction
+     result to that type.  This is useful for things that return an
+     int regardless of the size of the input.  If the instruction result
+     is smaller than required, assume that it is signed.
+
+     If the return value has a nonintegral type, its mode must match
+     the instruction result.  */
+  if (GET_CODE (lhs_rtx) == SUBREG && SUBREG_PROMOTED_VAR_P (lhs_rtx))
+    {
+      /* If this is a scalar in a register that is stored in a wider
+	 mode than the declared mode, compute the result into its
+	 declared mode and then convert to the wider mode.  */
+      gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
+      rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), op->value, 0);
+      convert_move (SUBREG_REG (lhs_rtx), tmp,
+		    SUBREG_PROMOTED_SIGN (lhs_rtx));
+    }
+  else if (GET_MODE (lhs_rtx) == GET_MODE (op->value))
+    emit_move_insn (lhs_rtx, op->value);
+  else
+    {
+      gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
+      convert_move (lhs_rtx, op->value, 0);
+    }
+}
+
 /* Expand STMT using instruction ICODE.  The instruction has NOUTPUTS
    output operands and NINPUTS input operands, where NOUTPUTS is either
    0 or 1.  The output operand (if any) comes first, followed by the
@@ -220,15 +272,8 @@ expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
       gcc_assert (noutputs == 1);
       if (lhs)
 	lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-
-      /* Do not assign directly to a promoted subreg, since there is no
-	 guarantee that the instruction will leave the upper bits of the
-	 register in the state required by SUBREG_PROMOTED_SIGN.  */
-      rtx dest = lhs_rtx;
-      if (dest && GET_CODE (dest) == SUBREG && SUBREG_PROMOTED_VAR_P (dest))
-	dest = NULL_RTX;
-      create_output_operand (&ops[opno], dest,
-			     insn_data[icode].operand[opno].mode);
+      create_call_lhs_operand (&ops[opno], lhs_rtx,
+			       insn_data[icode].operand[opno].mode);
       opno += 1;
     }
   else
@@ -266,33 +311,8 @@ expand_fn_using_insn (gcall *stmt, insn_code icode, unsigned int noutputs,
 
   gcc_assert (opno == noutputs + ninputs);
   expand_insn (icode, opno, ops);
-  if (lhs_rtx && !rtx_equal_p (lhs_rtx, ops[0].value))
-    {
-      /* If the return value has an integral type, convert the instruction
-	 result to that type.  This is useful for things that return an
-	 int regardless of the size of the input.  If the instruction result
-	 is smaller than required, assume that it is signed.
-
-	 If the return value has a nonintegral type, its mode must match
-	 the instruction result.  */
-      if (GET_CODE (lhs_rtx) == SUBREG && SUBREG_PROMOTED_VAR_P (lhs_rtx))
-	{
-	  /* If this is a scalar in a register that is stored in a wider
-	     mode than the declared mode, compute the result into its
-	     declared mode and then convert to the wider mode.  */
-	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
-	  rtx tmp = convert_to_mode (GET_MODE (lhs_rtx), ops[0].value, 0);
-	  convert_move (SUBREG_REG (lhs_rtx), tmp,
-			SUBREG_PROMOTED_SIGN (lhs_rtx));
-	}
-      else if (GET_MODE (lhs_rtx) == GET_MODE (ops[0].value))
-	emit_move_insn (lhs_rtx, ops[0].value);
-      else
-	{
-	  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (lhs)));
-	  convert_move (lhs_rtx, ops[0].value, 0);
-	}
-    }
+  if (lhs_rtx)
+    assign_call_lhs (lhs, lhs_rtx, &ops[0]);
 }
 
 /* ARRAY_TYPE is an array of vector modes.  Return the associated insn
@@ -376,11 +396,10 @@ expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   gcc_assert (MEM_P (mem));
   PUT_MODE (mem, TYPE_MODE (type));
 
-  create_output_operand (&ops[0], target, TYPE_MODE (type));
+  create_call_lhs_operand (&ops[0], target, TYPE_MODE (type));
   create_fixed_operand (&ops[1], mem);
   expand_insn (get_multi_vector_move (type, optab), 2, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Expand STORE_LANES call STMT using optab OPTAB.  */
@@ -443,13 +462,12 @@ expand_GOMP_SIMT_ENTER_ALLOC (internal_fn, gcall *stmt)
   rtx size = expand_normal (gimple_call_arg (stmt, 0));
   rtx align = expand_normal (gimple_call_arg (stmt, 1));
   class expand_operand ops[3];
-  create_output_operand (&ops[0], target, Pmode);
+  create_call_lhs_operand (&ops[0], target, Pmode);
   create_input_operand (&ops[1], size, Pmode);
   create_input_operand (&ops[2], align, Pmode);
   gcc_assert (targetm.have_omp_simt_enter ());
   expand_insn (targetm.code_for_omp_simt_enter, 3, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Deallocate per-lane storage and leave non-uniform execution region.  */
@@ -511,12 +529,11 @@ expand_GOMP_SIMT_LAST_LANE (internal_fn, gcall *stmt)
   rtx cond = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
   class expand_operand ops[2];
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_last_lane ());
   expand_insn (targetm.code_for_omp_simt_last_lane, 2, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Non-transparent predicate used in SIMT lowering of OpenMP "ordered".  */
@@ -532,12 +549,11 @@ expand_GOMP_SIMT_ORDERED_PRED (internal_fn, gcall *stmt)
   rtx ctr = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
   class expand_operand ops[2];
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], ctr, mode);
   gcc_assert (targetm.have_omp_simt_ordered ());
   expand_insn (targetm.code_for_omp_simt_ordered, 2, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* "Or" boolean reduction across SIMT lanes: return non-zero in all lanes if
@@ -554,12 +570,11 @@ expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
   rtx cond = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
   class expand_operand ops[2];
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_vote_any ());
   expand_insn (targetm.code_for_omp_simt_vote_any, 2, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Exchange between SIMT lanes with a "butterfly" pattern: source lane index
@@ -577,13 +592,12 @@ expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
   rtx idx = expand_normal (gimple_call_arg (stmt, 1));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
   class expand_operand ops[3];
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
   create_input_operand (&ops[2], idx, SImode);
   gcc_assert (targetm.have_omp_simt_xchg_bfly ());
   expand_insn (targetm.code_for_omp_simt_xchg_bfly, 3, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Exchange between SIMT lanes according to given source lane index.  */
@@ -600,13 +614,12 @@ expand_GOMP_SIMT_XCHG_IDX (internal_fn, gcall *stmt)
   rtx idx = expand_normal (gimple_call_arg (stmt, 1));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
   class expand_operand ops[3];
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
   create_input_operand (&ops[2], idx, SImode);
   gcc_assert (targetm.have_omp_simt_xchg_idx ());
   expand_insn (targetm.code_for_omp_simt_xchg_idx, 3, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* This should get expanded in adjust_simduid_builtins.  */
@@ -2811,7 +2824,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       if (orig_precres == precres && precop <= BITS_PER_WORD)
 	{
 	  int p = MAX (min_precision, precop);
-	  scalar_int_mode m = smallest_int_mode_for_size (p);
+	  scalar_int_mode m = smallest_int_mode_for_size (p).require ();
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p
 							&& unsr_p);
@@ -2854,7 +2867,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
       if (orig_precres == precres)
 	{
 	  int p = MAX (prec0, prec1);
-	  scalar_int_mode m = smallest_int_mode_for_size (p);
+	  scalar_int_mode m = smallest_int_mode_for_size (p).require ();
 	  tree optype = build_nonstandard_integer_type (GET_MODE_PRECISION (m),
 							uns0_p && uns1_p
 							&& unsr_p);
@@ -3029,13 +3042,12 @@ expand_partial_load_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
   set_mem_expr (mem, NULL_TREE);
   clear_mem_offset (mem);
   target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[i++], target, TYPE_MODE (type));
+  create_call_lhs_operand (&ops[i++], target, TYPE_MODE (type));
   create_fixed_operand (&ops[i++], mem);
   i = add_mask_and_len_args (ops, i, stmt);
   expand_insn (icode, i, ops);
 
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 #define expand_mask_load_optab_fn expand_partial_load_optab_fn
@@ -3129,15 +3141,14 @@ expand_vec_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     rtx_op2 = expand_normal (op2);
 
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], rtx_op1, mode);
   create_input_operand (&ops[2], rtx_op2, mode);
   create_fixed_operand (&ops[3], comparison);
   create_fixed_operand (&ops[4], XEXP (comparison, 0));
   create_fixed_operand (&ops[5], XEXP (comparison, 1));
   expand_insn (icode, 6, ops);
-  if (!rtx_equal_p (ops[0].value, target))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Expand VCOND_MASK optab internal function.
@@ -3166,13 +3177,12 @@ expand_vec_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   rtx_op2 = expand_normal (op2);
 
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], target, mode);
+  create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], rtx_op1, mode);
   create_input_operand (&ops[2], rtx_op2, mode);
   create_input_operand (&ops[3], mask, mask_mode);
   expand_insn (icode, 4, ops);
-  if (!rtx_equal_p (ops[0].value, target))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 /* Expand VEC_SET internal functions.  */
@@ -3266,7 +3276,7 @@ expand_RAWMEMCHR (internal_fn, gcall *stmt)
     return;
   machine_mode lhs_mode = TYPE_MODE (TREE_TYPE (lhs));
   rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], lhs_rtx, lhs_mode);
+  create_call_lhs_operand (&ops[0], lhs_rtx, lhs_mode);
 
   tree mem = gimple_call_arg (stmt, 0);
   rtx mem_rtx = get_memory_rtx (mem, NULL);
@@ -3280,8 +3290,7 @@ expand_RAWMEMCHR (internal_fn, gcall *stmt)
   insn_code icode = direct_optab_handler (rawmemchr_optab, mode);
 
   expand_insn (icode, 3, ops);
-  if (!rtx_equal_p (lhs_rtx, ops[0].value))
-    emit_move_insn (lhs_rtx, ops[0].value);
+  assign_call_lhs (lhs, lhs_rtx, &ops[0]);
 }
 
 /* Expand the IFN_UNIQUE function according to its first argument.  */
@@ -3691,7 +3700,7 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
 
   int i = 0;
   class expand_operand ops[8];
-  create_output_operand (&ops[i++], lhs_rtx, TYPE_MODE (TREE_TYPE (lhs)));
+  create_call_lhs_operand (&ops[i++], lhs_rtx, TYPE_MODE (TREE_TYPE (lhs)));
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
   create_integer_operand (&ops[i++], TYPE_UNSIGNED (TREE_TYPE (offset)));
@@ -3700,8 +3709,7 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   insn_code icode = convert_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)),
 					   TYPE_MODE (TREE_TYPE (offset)));
   expand_insn (icode, i, ops);
-  if (!rtx_equal_p (lhs_rtx, ops[0].value))
-    emit_move_insn (lhs_rtx, ops[0].value);
+  assign_call_lhs (lhs, lhs_rtx, &ops[0]);
 }
 
 /* Helper for expand_DIVMOD.  Return true if the sequence starting with
@@ -3909,7 +3917,7 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   tree lhs = gimple_call_lhs (stmt);
   tree lhs_type = TREE_TYPE (lhs);
   rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  create_output_operand (&ops[0], lhs_rtx, TYPE_MODE (lhs_type));
+  create_call_lhs_operand (&ops[0], lhs_rtx, TYPE_MODE (lhs_type));
 
   for (unsigned int i = 0; i < 2; ++i)
     {
@@ -3937,8 +3945,7 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 					   TYPE_MODE (lhs_type));
 
   expand_insn (icode, opcnt, ops);
-  if (!rtx_equal_p (lhs_rtx, ops[0].value))
-    emit_move_insn (lhs_rtx, ops[0].value);
+  assign_call_lhs (lhs, lhs_rtx, &ops[0]);
 }
 
 /* Expand a call to a convert-like optab using the operands in STMT.
@@ -4157,6 +4164,45 @@ direct_internal_fn_optab (internal_fn fn)
   gcc_unreachable ();
 }
 
+/* Return true if TYPE's mode has the same format as TYPE, and if there is
+   a 1:1 correspondence between the values that the mode can store and the
+   values that the type can store.  */
+
+static bool
+type_strictly_matches_mode_p (const_tree type)
+{
+  /* The masked vector operations have both vector data operands and vector
+     boolean operands.  The vector data operands are expected to have a vector
+     mode,  but the vector boolean operands can be an integer mode rather than
+     a vector mode,  depending on how TARGET_VECTORIZE_GET_MASK_MODE is
+     defined.  PR116103.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && SCALAR_INT_MODE_P (TYPE_MODE (type))
+      && TYPE_PRECISION (TREE_TYPE (type)) == 1)
+    return true;
+
+  if (VECTOR_TYPE_P (type))
+    return VECTOR_MODE_P (TYPE_MODE (type));
+
+  if (INTEGRAL_TYPE_P (type))
+    return type_has_mode_precision_p (type);
+
+  if (SCALAR_FLOAT_TYPE_P (type) || COMPLEX_FLOAT_TYPE_P (type))
+    return true;
+
+  return false;
+}
+
+/* Returns true if both types of TYPE_PAIR strictly match their modes,
+   else returns false.  */
+
+static bool
+type_pair_strictly_matches_mode_p (tree_pair type_pair)
+{
+  return type_strictly_matches_mode_p (type_pair.first)
+    && type_strictly_matches_mode_p (type_pair.second);
+}
+
 /* Return true if FN is supported for the types in TYPES when the
    optimization type is OPT_TYPE.  The types are those associated with
    the "type0" and "type1" fields of FN's direct_internal_fn_info
@@ -4166,6 +4212,9 @@ bool
 direct_internal_fn_supported_p (internal_fn fn, tree_pair types,
 				optimization_type opt_type)
 {
+  if (!type_pair_strictly_matches_mode_p (types))
+    return false;
+
   switch (fn)
     {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
@@ -5067,13 +5116,12 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   rtx op2 = expand_normal (rhs2);
 
   class expand_operand ops[3];
-  create_output_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (lhs)));
+  create_call_lhs_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (lhs)));
   create_input_operand (&ops[1], op1, TYPE_MODE (type));
   create_input_operand (&ops[2], op2, TYPE_MODE (type));
   insn_code icode = optab_handler (spaceship_optab, TYPE_MODE (type));
   expand_insn (icode, 3, ops);
-  if (!rtx_equal_p (target, ops[0].value))
-    emit_move_insn (target, ops[0].value);
+  assign_call_lhs (lhs, target, &ops[0]);
 }
 
 void
@@ -5256,13 +5304,19 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
      Use rtx costs in that case to determine if .POPCOUNT (arg) == 1
      or (arg ^ (arg - 1)) > arg - 1 is cheaper.
      If .POPCOUNT second argument is 0, we additionally know that arg
-     is non-zero, so use arg & (arg - 1) == 0 instead.  */
+     is non-zero, so use arg & (arg - 1) == 0 instead.
+     If .POPCOUNT second argument is -1, the comparison was either `<= 1`
+     or `> 1`.  */
   bool speed_p = optimize_insn_for_speed_p ();
   tree lhs = gimple_call_lhs (stmt);
   tree arg = gimple_call_arg (stmt, 0);
   bool nonzero_arg = integer_zerop (gimple_call_arg (stmt, 1));
+  bool was_le = integer_minus_onep (gimple_call_arg (stmt, 1));
+  if (was_le)
+    nonzero_arg = true;
   tree type = TREE_TYPE (arg);
   machine_mode mode = TYPE_MODE (type);
+  machine_mode lhsmode = TYPE_MODE (TREE_TYPE (lhs));
   do_pending_stack_adjust ();
   start_sequence ();
   expand_unary_optab_fn (fn, stmt, popcount_optab);
@@ -5270,7 +5324,7 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   end_sequence ();
   start_sequence ();
   rtx plhs = expand_normal (lhs);
-  rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, mode, 0, 0);
+  rtx pcmp = emit_store_flag (NULL_RTX, EQ, plhs, const1_rtx, lhsmode, 0, 0);
   if (pcmp == NULL_RTX)
     {
     fail:
@@ -5283,11 +5337,11 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   start_sequence ();
   rtx op0 = expand_normal (arg);
   rtx argm1 = expand_simple_binop (mode, PLUS, op0, constm1_rtx, NULL_RTX,
-				   1, OPTAB_DIRECT);
+				   1, OPTAB_WIDEN);
   if (argm1 == NULL_RTX)
     goto fail;
   rtx argxorargm1 = expand_simple_binop (mode, nonzero_arg ? AND : XOR, op0,
-					 argm1, NULL_RTX, 1, OPTAB_DIRECT);
+					 argm1, NULL_RTX, 1, OPTAB_WIDEN);
   if (argxorargm1 == NULL_RTX)
     goto fail;
   rtx cmp;
@@ -5302,14 +5356,32 @@ expand_POPCOUNT (internal_fn fn, gcall *stmt)
   unsigned popcount_cost = (seq_cost (popcount_insns, speed_p)
 			    + seq_cost (popcount_cmp_insns, speed_p));
   unsigned cmp_cost = seq_cost (cmp_insns, speed_p);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf(dump_file, "popcount == 1: popcount cost: %u; cmp cost: %u\n",
+	    popcount_cost, cmp_cost);
+
   if (popcount_cost <= cmp_cost)
     emit_insn (popcount_insns);
   else
     {
+      start_sequence ();
       emit_insn (cmp_insns);
       plhs = expand_normal (lhs);
       if (GET_MODE (cmp) != GET_MODE (plhs))
 	cmp = convert_to_mode (GET_MODE (plhs), cmp, 1);
+      /* For `<= 1`, we need to produce `2 - cmp` or `cmp ? 1 : 2` as that
+	 then gets compared against 1 and we need the false case to be 2.  */
+      if (was_le)
+	{
+	  cmp = expand_simple_binop (GET_MODE (cmp), MINUS, const2_rtx,
+				     cmp, NULL_RTX, 1, OPTAB_WIDEN);
+	  if (!cmp)
+	    goto fail;
+	}
       emit_move_insn (plhs, cmp);
+      rtx_insn *all_insns = get_insns ();
+      end_sequence ();
+      emit_insn (all_insns);
     }
 }

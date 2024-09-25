@@ -1,5 +1,5 @@
 /* PR bootstrap/71071 */
-/* { dg-do compile } *
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 struct S { unsigned b : 1; } a;

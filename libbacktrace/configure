@@ -12384,7 +12384,9 @@ WARN_FLAGS=
 save_CFLAGS="$CFLAGS"
 for real_option in -W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wold-style-definition \
-			  -Wmissing-format-attribute -Wcast-qual; do
+			  -Wmissing-format-attribute -Wcast-qual \
+			  -Wno-attributes -Wno-unknown-attributes \
+			  -Wpointer-arith; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in

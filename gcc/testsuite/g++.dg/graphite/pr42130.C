@@ -1,4 +1,7 @@
 /* { dg-options "-O2 -fgraphite-identity -fno-tree-ch" } */
+/* { dg-do run  } */
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
+
 #include <vector>
 
 using std::vector;
@@ -14,6 +17,4 @@ int main()
   foo(0);
   return 0;
 }
-
-/* { dg-do run  } */
 

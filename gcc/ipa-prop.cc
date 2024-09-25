@@ -1370,9 +1370,9 @@ unadjusted_ptr_and_unit_offset (tree op, tree *ret, poly_int64 *offset_ret)
     {
       if (TREE_CODE (op) == ADDR_EXPR)
 	{
-	  poly_int64 extra_offset = 0;
+	  poly_int64 extra_offset;
 	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (op, 0),
-						     &offset);
+						     &extra_offset);
 	  if (!base)
 	    {
 	      base = get_base_address (TREE_OPERAND (op, 0));
@@ -2392,8 +2392,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
       else
 	{
 	  if (param_type
-	      && ipa_supports_p (TREE_TYPE (arg))
-	      && ipa_supports_p (param_type)
+	      && ipa_vr_supported_type_p (TREE_TYPE (arg))
+	      && ipa_vr_supported_type_p (param_type)
 	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
 	      && !vr.undefined_p ())
 	    {
@@ -5761,7 +5761,7 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   ipcp_transformation *ts = ipcp_get_transformation_summary (cnode);
   if (!ts
       || vec_safe_length (ts->m_vr) == 0
-      || !ipa_supports_p (TREE_TYPE (parm)))
+      || !ipa_vr_supported_type_p (TREE_TYPE (parm)))
     return false;
 
   int i = ts->get_param_index (current_function_decl, parm);

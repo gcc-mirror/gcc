@@ -4,9 +4,9 @@
 /* { dg-additional-options "-DLARGE_LONG_DOUBLE" { target large_long_double } } */
 /* { dg-additional-options "-DGNU_EXTENSION" { target pow10 } } */
 /* { dg-add-options ieee } */
-/* { dg-final { scan-tree-dump  "cdce3.C:91: .* function call is shrink-wrapped into error conditions\." "cdce" { target pow10 } } } */
+/* { dg-skip-if "requires hosted libstdc++ for cmath" { ! hostedlib } } */
 /* { dg-final { scan-tree-dump  "cdce3.C:92: .* function call is shrink-wrapped into error conditions\." "cdce" { target pow10 } } } */
-/* { dg-final { scan-tree-dump  "cdce3.C:94: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:93: .* function call is shrink-wrapped into error conditions\." "cdce" { target pow10 } } } */
 /* { dg-final { scan-tree-dump  "cdce3.C:95: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
 /* { dg-final { scan-tree-dump  "cdce3.C:96: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
 /* { dg-final { scan-tree-dump  "cdce3.C:97: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
@@ -20,6 +20,7 @@
 /* { dg-final { scan-tree-dump  "cdce3.C:105: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
 /* { dg-final { scan-tree-dump  "cdce3.C:106: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
 /* { dg-final { scan-tree-dump  "cdce3.C:107: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump  "cdce3.C:108: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
 
 #include <stdlib.h>
 #include <math.h>

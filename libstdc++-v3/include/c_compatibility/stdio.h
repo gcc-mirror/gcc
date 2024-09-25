@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cstdio>
-
 #ifndef _GLIBCXX_STDIO_H
 #define _GLIBCXX_STDIO_H 1
+
+#include <cstdio>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 using std::FILE;

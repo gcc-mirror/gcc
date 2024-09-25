@@ -2160,8 +2160,9 @@ line_table_dump (FILE *stream, const line_maps *set, unsigned int num_ordinary,
 /* Construct a rich_location with location LOC as its initial range.  */
 
 rich_location::rich_location (line_maps *set, location_t loc,
-			      const range_label *label) :
-  m_line_table (set),
+			      const range_label *label,
+			      const char *label_highlight_color)
+: m_line_table (set),
   m_ranges (),
   m_column_override (0),
   m_have_expanded_location (false),
@@ -2171,7 +2172,27 @@ rich_location::rich_location (line_maps *set, location_t loc,
   m_fixit_hints (),
   m_path (NULL)
 {
-  add_range (loc, SHOW_RANGE_WITH_CARET, label);
+  add_range (loc, SHOW_RANGE_WITH_CARET, label, label_highlight_color);
+}
+
+/* Copy ctor for rich_location.
+   Take a deep copy of the fixit hints, which are owneed;
+   everything else is borrowed.  */
+
+rich_location::rich_location (const rich_location &other)
+: m_line_table (other.m_line_table),
+  m_ranges (other.m_ranges),
+  m_column_override (other.m_column_override),
+  m_have_expanded_location (other.m_have_expanded_location),
+  m_seen_impossible_fixit (other.m_seen_impossible_fixit),
+  m_fixits_cannot_be_auto_applied (other.m_fixits_cannot_be_auto_applied),
+  m_escape_on_output (other.m_escape_on_output),
+  m_expanded_location (other.m_expanded_location),
+  m_fixit_hints (),
+  m_path (other.m_path)
+{
+  for (unsigned i = 0; i < other.m_fixit_hints.count (); i++)
+    m_fixit_hints.push (new fixit_hint (*other.m_fixit_hints[i]));
 }
 
 /* The destructor for class rich_location.  */
@@ -2244,22 +2265,34 @@ rich_location::override_column (int column)
   m_have_expanded_location = false;
 }
 
+/* Set (or clear) the highlight color of the primary location.  */
+
+void
+rich_location::set_highlight_color (const char *highlight_color)
+{
+  location_range *locrange = get_range (0);
+  locrange->m_highlight_color = highlight_color;
+}
+
 /* Add the given range.  */
 
 void
 rich_location::add_range (location_t loc,
 			  enum range_display_kind range_display_kind,
-			  const range_label *label)
+			  const range_label *label,
+			  const char *label_highlight_color)
 {
   location_range range;
   range.m_loc = loc;
   range.m_range_display_kind = range_display_kind;
   range.m_label = label;
+  range.m_highlight_color = label_highlight_color;
   m_ranges.push (range);
 }
 
 /* Add or overwrite the location given by IDX, setting its location to LOC,
-   and setting its m_range_display_kind to RANGE_DISPLAY_KIND.
+   setting its m_range_display_kind to RANGE_DISPLAY_KIND, and setting
+   its m_highlight_color to HIGHLIGHT_COLOR (which may be nullptr).
 
    It must either overwrite an existing location, or add one *exactly* on
    the end of the array.
@@ -2273,19 +2306,21 @@ rich_location::add_range (location_t loc,
 
 void
 rich_location::set_range (unsigned int idx, location_t loc,
-			  enum range_display_kind range_display_kind)
+			  enum range_display_kind range_display_kind,
+			  const char *highlight_color)
 {
   /* We can either overwrite an existing range, or add one exactly
      on the end of the array.  */
   linemap_assert (idx <= m_ranges.count ());
 
   if (idx == m_ranges.count ())
-    add_range (loc, range_display_kind);
+    add_range (loc, range_display_kind, nullptr, highlight_color);
   else
     {
       location_range *locrange = get_range (idx);
       locrange->m_loc = loc;
       locrange->m_range_display_kind = range_display_kind;
+      locrange->m_highlight_color = highlight_color;
     }
 
   if (idx == 0)
@@ -2577,6 +2612,14 @@ fixit_hint::fixit_hint (location_t start,
   m_next_loc (next_loc),
   m_bytes (xstrdup (new_content)),
   m_len (strlen (new_content))
+{
+}
+
+fixit_hint::fixit_hint (const fixit_hint &other)
+: m_start (other.m_start),
+  m_next_loc (other.m_next_loc),
+  m_bytes (xstrdup (other.m_bytes)),
+  m_len (other.m_len)
 {
 }
 

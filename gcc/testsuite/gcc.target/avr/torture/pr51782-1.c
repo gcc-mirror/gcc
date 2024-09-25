@@ -14,27 +14,27 @@ struct RGB { char r,g,b; };
 __flash const struct R r1 = { 12 };
 __flash const struct RGB r3 = { 23, 56, 78 };
 
-char __attribute__((noinline,noclone))
+char __attribute__((noipa))
 read1_bug (const __flash struct R *s)
 {
   struct R t = *s;
   return t.r;
 }
 
-char __attribute__((noinline,noclone))
+char __attribute__((noipa))
 read1_ok (const __flash struct R *s)
 {
   return s->r;
 }
 
-char __attribute__((noinline,noclone))
+char __attribute__((noipa))
 read3_bug (const __flash struct RGB *s)
 {
   struct RGB t = *s;
   return t.r + t.g + t.b;
 }
 
-char __attribute__((noinline,noclone))
+char __attribute__((noipa))
 read3_ok (const __flash struct RGB *s)
 {
   return s->r + s->g + s->b;

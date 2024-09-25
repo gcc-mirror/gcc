@@ -9,7 +9,7 @@ impl Foo {
         test()
     }
 
-    fn test() -> bool { // { dg-error "redefined multiple times" }
+    fn test() -> bool { // { dg-error "defined multiple times" }
         true
     }
 }

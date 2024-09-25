@@ -127,11 +127,14 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-g}|@option{--conditions}]
      [@option{-d}|@option{--display-progress}]
      [@option{-f}|@option{--function-summaries}]
+     [@option{--include} @var{regex}]
+     [@option{--exclude} @var{regex}]
      [@option{-j}|@option{--json-format}]
      [@option{-H}|@option{--human-readable}]
      [@option{-k}|@option{--use-colors}]
      [@option{-l}|@option{--long-file-names}]
      [@option{-m}|@option{--demangled-names}]
+     [@option{-M}|@option{--filter-on-demangled}]
      [@option{-n}|@option{--no-output}]
      [@option{-o}|@option{--object-directory} @var{directory|file}]
      [@option{-p}|@option{--preserve-paths}]
@@ -185,6 +188,24 @@ Display the progress on the standard output.
 @item -f
 @itemx --function-summaries
 Output summaries for each function in addition to the file level summary.
+
+@item --include @var{regex}
+Include functions matching @var{regex}.  This option makes
+@command{gcov} only report on functions that match the extended
+regular expression @var{regex}.  This flag can be combined with
+@option{--exclude}.  If a function matches both includes and excludes,
+the last include/exclude applies.  By default @command{gcov} reports
+on all functions, but if a @command{--include} is used then only
+functions matching the include will be reported.
+
+@item --exclude @var{regex}
+Exclude functions matching @var{regex}.  This option makes
+@command{gcov} not report on functions that match the extended regular
+expression @var{regex}.  This flag can be combined with
+@option{--include}.  If a function matches both includes and excludes,
+the last include/exclude applies.  By default @command{gcov} reports
+on all functions, and if @option{--exclude} is used then functions
+matching it will be omitted.
 
 @item -h
 @itemx --help
@@ -448,6 +469,12 @@ and included file names will be complete path names.
 @itemx --demangled-names
 Display demangled function names in output. The default is to show
 mangled function names.
+
+@item -M
+@itemx --filter-on-demangled
+Make @option{--include} and @option{--exclude} match demangled names.
+This does only affects the matching and does not imply
+@option{--demangled-names}, but it can safely be combined with it.
 
 @item -n
 @itemx --no-output
@@ -977,6 +1004,92 @@ profiling code first attempts to read in an existing @file{.gcda} file; if
 the file doesn't match the executable (differing number of basic block
 counts) it will ignore the contents of the file.  It then adds in the
 new execution counts and finally writes the data to the file.
+
+You can report on a subset of functions by using @option{--include}
+and @option{--exclude}.  This is very useful when combined with
+@option{--stdout} trying to understand behavior and coverage for a
+particular function by running a test, looking at @command{gcov}
+output, testing another input, and running @command{gcov} again.
+
+@smallexample
+$ gcov -m --stdout --include inc tmp
+        -:    0:Source:tmp.cpp
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+       2*:    8:  void inc () @{ b++; @}
+------------------
+Foo<char>::inc():
+    #####:    8:  void inc () @{ b++; @}
+------------------
+Foo<int>::inc():
+        2:    8:  void inc () @{ b++; @}
+------------------
+@end smallexample
+
+@command{gcov} will match on mangled names by default, which you can
+control with the @option{-M} flag.  Note that matching and reporting
+are independent, so you can match on mangled names while printing
+demangled names, and vice versa.  To report on the @code{int}
+instantiation of @code{Foo} matching on mangled and demangled names:
+
+@smallexample
+$ gcov -t -m -M tmp --include 'Foo<int>'
+        -:    0:Source:tmp.cpp
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        1:    7:  Foo(): b (1000) @{@}
+        2:    8:  void inc () @{ b++; @}
+@end smallexample
+
+@smallexample
+$ gcov -t -m tmp --include 'FooIi'
+        -:    0:Source:tmp.cpp
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        1:    7:  Foo(): b (1000) @{@}
+        2:    8:  void inc () @{ b++; @}
+@end smallexample
+
+The arguments to @option{--include} and @option{--exclude} are
+extended regular expressions (like @command{grep -E}), so the pattern
+@code{in.?} matches both @code{inc} and @code{main}.  If used with
+@option{-M} then all @code{int} instantiations of @code{Foo} would
+match too.  @option{--include} and @option{--exclude} can be used
+multiple times, and if a name matches multiple filters it is the last
+one to match which takes preference.  For example, to match
+@code{main} and the @code{int} instatiation of @code{inc}, while
+omitting the @code{Foo} constructor:
+
+@smallexample
+$ gcov -t -m -M --include in --exclude Foo --include '<int>::inc' tmp
+        -:    0:Source:tmp.cpp
+        -:    0:Graph:tmp.gcno
+        -:    0:Data:tmp.gcda
+        -:    0:Runs:1
+        2:    8:  void inc () @{ b++; @}
+        1:   18:main (void)
+        -:   19:@{
+        -:   20:  int i, total;
+        1:   21:  Foo<int> counter;
+        -:   22:
+        1:   23:  counter.inc();
+        1:   24:  counter.inc();
+        1:   25:  total = 0;
+        -:   26:
+       11:   27:  for (i = 0; i < 10; i++)
+       10:   28:    total += i;
+        -:   29:
+       1*:   30:  int v = total > 100 ? 1 : 2;
+        -:   31:
+        1:   32:  if (total != 45)
+    #####:   33:    printf ("Failure\n");
+        -:   34:  else
+        1:   35:    printf ("Success\n");
+        1:   36:  return 0;
+@end smallexample
 
 @node Gcov and Optimization
 @section Using @command{gcov} with GCC Optimization

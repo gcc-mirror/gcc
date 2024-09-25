@@ -289,7 +289,7 @@
 #undef __glibcxx_want_to_chars
 
 #if !defined(__cpp_lib_chrono_udls)
-# if (__cplusplus >= 201402L) && _GLIBCXX_HOSTED
+# if (__cplusplus >= 201402L)
 #  define __glibcxx_chrono_udls 201304L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_udls)
 #   define __cpp_lib_chrono_udls 201304L
@@ -529,7 +529,12 @@
 #undef __glibcxx_want_type_trait_variable_templates
 
 #if !defined(__cpp_lib_variant)
-# if (__cplusplus >= 202002L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L)
+# if (__cplusplus >  202302L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L && __cpp_explicit_this_parameter)
+#  define __glibcxx_variant 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_variant)
+#   define __cpp_lib_variant 202306L
+#  endif
+# elif (__cplusplus >= 202002L) && (__cpp_concepts >= 202002L && __cpp_constexpr >= 201811L)
 #  define __glibcxx_variant 202106L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_variant)
 #   define __cpp_lib_variant 202106L
@@ -1199,10 +1204,15 @@
 #undef __glibcxx_want_shift
 
 #if !defined(__cpp_lib_ranges)
-# if (__cplusplus >= 202100L) && (__glibcxx_concepts)
-#  define __glibcxx_ranges 202211L
+# if (__cplusplus >  202302L) && (__glibcxx_concepts)
+#  define __glibcxx_ranges 202406L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges)
-#   define __cpp_lib_ranges 202211L
+#   define __cpp_lib_ranges 202406L
+#  endif
+# elif (__cplusplus >= 202100L) && (__glibcxx_concepts)
+#  define __glibcxx_ranges 202302L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges)
+#   define __cpp_lib_ranges 202302L
 #  endif
 # elif (__cplusplus >= 202002L) && (__glibcxx_concepts)
 #  define __glibcxx_ranges 202110L
@@ -1304,10 +1314,15 @@
 #undef __glibcxx_want_barrier
 
 #if !defined(__cpp_lib_format)
-# if (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
-#  define __glibcxx_format 202110L
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_format 202311L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_format)
-#   define __cpp_lib_format 202110L
+#   define __cpp_lib_format 202311L
+#  endif
+# elif (__cplusplus >= 202002L) && _GLIBCXX_HOSTED
+#  define __glibcxx_format 202304L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_format)
+#   define __cpp_lib_format 202304L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_format) && defined(__glibcxx_want_format) */
@@ -1953,6 +1968,26 @@
 #endif /* !defined(__cpp_lib_unreachable) && defined(__glibcxx_want_unreachable) */
 #undef __glibcxx_want_unreachable
 
+#if !defined(__cpp_lib_algorithm_default_value_type)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_algorithm_default_value_type 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_algorithm_default_value_type)
+#   define __cpp_lib_algorithm_default_value_type 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_algorithm_default_value_type) && defined(__glibcxx_want_algorithm_default_value_type) */
+#undef __glibcxx_want_algorithm_default_value_type
+
+#if !defined(__cpp_lib_constexpr_new)
+# if (__cplusplus >  202302L) && (__cpp_constexpr >= 202406L)
+#  define __glibcxx_constexpr_new 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_new)
+#   define __cpp_lib_constexpr_new 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constexpr_new) && defined(__glibcxx_want_constexpr_new) */
+#undef __glibcxx_want_constexpr_new
+
 #if !defined(__cpp_lib_fstream_native_handle)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_fstream_native_handle 202306L
@@ -1962,6 +1997,16 @@
 # endif
 #endif /* !defined(__cpp_lib_fstream_native_handle) && defined(__glibcxx_want_fstream_native_handle) */
 #undef __glibcxx_want_fstream_native_handle
+
+#if !defined(__cpp_lib_ranges_concat)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_ranges_concat 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_concat)
+#   define __cpp_lib_ranges_concat 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_ranges_concat) && defined(__glibcxx_want_ranges_concat) */
+#undef __glibcxx_want_ranges_concat
 
 #if !defined(__cpp_lib_ratio)
 # if (__cplusplus >  202302L)
@@ -2012,15 +2057,5 @@
 # endif
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
-
-#if !defined(__cpp_lib_ranges_concat)
-# if (__cplusplus >  202302L)
-#  define __glibcxx_ranges_concat 202403L
-#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_concat)
-#   define __cpp_lib_ranges_concat 202403L
-#  endif
-# endif
-#endif /* !defined(__cpp_lib_ranges_concat) && defined(__glibcxx_want_ranges_concat) */
-#undef __glibcxx_want_ranges_concat
 
 #undef __glibcxx_want_all

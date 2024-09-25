@@ -1,6 +1,7 @@
 // Basic test to ensure that guarded templates correctly serialize and
 // deserialize their contracts through the CMI.
 // { dg-additional-options "-fmodules-ts -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 module;
 #include <cstdio>
 #include <experimental/contract>

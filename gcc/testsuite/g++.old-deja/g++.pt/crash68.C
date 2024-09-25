@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-prune-output "mangled name" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 25 Jul 2001 <nathan@codesourcery.com>

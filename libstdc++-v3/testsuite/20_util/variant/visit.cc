@@ -18,7 +18,7 @@
 // { dg-do run { target c++17 } }
 
 #include <variant>
-#include <functional>
+#include <functional> // reference_wrapper
 #include <testsuite_hooks.h>
 
 // N.B. there are more std::visit tests in ./compile.cc and ./run.cc
@@ -84,6 +84,9 @@ test02()
   // Visit should not need arguments to be copyable:
   int res = std::visit(f, v);
   VERIFY( res == 1 );
+  v.emplace<NoCopy>();
+  res = std::visit(f, v);
+  VERIFY( res == 0 );
 }
 
 int

@@ -31,10 +31,16 @@ TargetVariable
 enum aarch64_arch selected_arch = aarch64_no_arch
 
 TargetVariable
-aarch64_feature_flags aarch64_asm_isa_flags = 0
+uint64_t aarch64_asm_isa_flags_0 = 0
 
 TargetVariable
-aarch64_feature_flags aarch64_isa_flags = 0
+uint64_t aarch64_asm_isa_flags_1 = 0
+
+TargetVariable
+uint64_t aarch64_isa_flags_0 = 0
+
+TargetVariable
+uint64_t aarch64_isa_flags_1 = 0
 
 TargetVariable
 unsigned aarch_enable_bti = 2
@@ -250,7 +256,7 @@ EnumValue
 Enum(early_ra_scope) String(none) Value(AARCH64_EARLY_RA_NONE)
 
 mearly-ra=
-Target RejectNegative Joined Enum(early_ra_scope) Var(aarch64_early_ra) Init(AARCH64_EARLY_RA_NONE) Save
+Target RejectNegative Joined Enum(early_ra_scope) Var(aarch64_early_ra) Init(AARCH64_EARLY_RA_NONE) Optimization
 Specify when to enable an early register allocation pass.  The possibilities
 are: all functions, functions that have access to strided multi-register
 instructions, and no functions.
@@ -346,7 +352,27 @@ Target Joined UInteger Var(aarch64_double_recp_precision) Init(2) IntegerRange(1
 The number of Newton iterations for calculating the reciprocal for double type.  The precision of division is proportional to this param when division approximation is enabled.  The default value is 2.
 
 -param=aarch64-autovec-preference=
-Target Joined UInteger Var(aarch64_autovec_preference) Init(0) IntegerRange(0, 4) Param
+Target Joined Var(aarch64_autovec_preference) Enum(aarch64_autovec_preference) Init(AARCH64_AUTOVEC_DEFAULT) Param
+--param=aarch64-autovec-preference=[default|asimd-only|sve-only|prefer-asimd|prefer-sve]
+Force an ISA selection strategy for auto-vectorization.
+
+Enum
+Name(aarch64_autovec_preference) Type(enum aarch64_autovec_preference_enum) UnknownError(unknown autovec preference %qs)
+
+EnumValue
+Enum(aarch64_autovec_preference) String(default) Value(AARCH64_AUTOVEC_DEFAULT)
+
+EnumValue
+Enum(aarch64_autovec_preference) String(asimd-only) Value(AARCH64_AUTOVEC_ASIMD_ONLY)
+
+EnumValue
+Enum(aarch64_autovec_preference) String(sve-only) Value(AARCH64_AUTOVEC_SVE_ONLY)
+
+EnumValue
+Enum(aarch64_autovec_preference) String(prefer-asimd) Value(AARCH64_AUTOVEC_PREFER_ASIMD)
+
+EnumValue
+Enum(aarch64_autovec_preference) String(prefer-sve) Value(AARCH64_AUTOVEC_PREFER_SVE)
 
 -param=aarch64-loop-vect-issue-rate-niters=
 Target Joined UInteger Var(aarch64_loop_vect_issue_rate_niters) Init(6) IntegerRange(0, 65536) Param

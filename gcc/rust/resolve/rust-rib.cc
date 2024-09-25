@@ -17,9 +17,47 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-rib.h"
+#include "rust-name-resolution-context.h"
 
 namespace Rust {
 namespace Resolver2_0 {
+
+Rib::Definition::Definition (NodeId id, bool shadowable)
+  : ids ({id}), shadowable (shadowable)
+{}
+
+bool
+Rib::Definition::is_ambiguous () const
+{
+  return shadowable && ids.size () > 1;
+}
+
+std::string
+Rib::Definition::to_string () const
+{
+  std::stringstream out;
+  out << (shadowable ? "(S)" : "(NS)") << "[";
+  std::string sep;
+  for (auto id : ids)
+    {
+      out << sep << id;
+      sep = ",";
+    }
+  out << "]";
+  return out.str ();
+}
+
+Rib::Definition
+Rib::Definition::Shadowable (NodeId id)
+{
+  return Definition (id, true);
+}
+
+Rib::Definition
+Rib::Definition::NonShadowable (NodeId id)
+{
+  return Definition (id, false);
+}
 
 DuplicateNameError::DuplicateNameError (std::string name, NodeId existing)
   : name (name), existing (existing)
@@ -31,38 +69,59 @@ Rib::Rib (Kind kind, std::string identifier, NodeId id)
   : Rib (kind, {{identifier, id}})
 {}
 
-Rib::Rib (Kind kind, std::unordered_map<std::string, NodeId> values)
-  : kind (kind), values (std::move (values))
-{}
-
-tl::expected<NodeId, DuplicateNameError>
-Rib::insert (std::string name, NodeId id, bool can_shadow)
+Rib::Rib (Kind kind, std::unordered_map<std::string, NodeId> to_insert)
+  : kind (kind)
 {
-  auto res = values.insert ({name, id});
-  auto inserted_id = res.first->second;
-  auto existed = !res.second;
-
-  // if we couldn't insert, the element already exists - exit with an error,
-  // unless shadowing is allowed
-  if (existed && !can_shadow)
-    return tl::make_unexpected (DuplicateNameError (name, inserted_id));
-
-  // return the NodeId
-  return inserted_id;
+  for (auto &value : to_insert)
+    values.insert ({value.first, Definition::NonShadowable (value.second)});
 }
 
-tl::optional<NodeId>
+tl::expected<NodeId, DuplicateNameError>
+Rib::insert (std::string name, Definition def)
+{
+  auto it = values.find (name);
+  if (it == values.end ())
+    {
+      /* No old value */
+      values[name] = def;
+    }
+  else if (it->second.shadowable && def.shadowable)
+    { /* Both shadowable */
+      auto &current = values[name];
+      for (auto id : def.ids)
+	{
+	  if (std::find (current.ids.cbegin (), current.ids.cend (), id)
+	      == current.ids.cend ())
+	    {
+	      current.ids.push_back (id);
+	    }
+	}
+    }
+  else if (it->second.shadowable)
+    { /* Only old shadowable : replace value */
+      values[name] = def;
+    }
+  else /* Neither are shadowable */
+    {
+      return tl::make_unexpected (
+	DuplicateNameError (name, it->second.ids.back ()));
+    }
+
+  return def.ids.back ();
+}
+
+tl::optional<Rib::Definition>
 Rib::get (const std::string &name)
 {
   auto it = values.find (name);
 
   if (it == values.end ())
-    return {};
+    return tl::nullopt;
 
   return it->second;
 }
 
-const std::unordered_map<std::string, NodeId> &
+const std::unordered_map<std::string, Rib::Definition> &
 Rib::get_values () const
 {
   return values;

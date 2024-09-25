@@ -66,7 +66,7 @@ namespace regex_constants
    * elements @c ECMAScript, @c basic, @c extended, @c awk, @c grep, @c egrep
    * %set.
    */
-  enum syntax_option_type : unsigned int
+  enum [[__gnu__::__flag_enum__]] syntax_option_type : unsigned int
   {
     _S_icase		= 1 << 0,
     _S_nosubs		= 1 << 1,

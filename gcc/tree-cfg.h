@@ -45,7 +45,7 @@ extern void clear_special_calls (void);
 extern edge find_taken_edge (basic_block, tree);
 extern void gimple_debug_bb (basic_block);
 extern basic_block gimple_debug_bb_n (int);
-extern void gimple_debug_cfg (int);
+extern void gimple_debug_cfg (dump_flags_t);
 extern void gimple_dump_cfg (FILE *, dump_flags_t);
 extern void dump_cfg_stats (FILE *);
 extern void debug_cfg_stats (void);

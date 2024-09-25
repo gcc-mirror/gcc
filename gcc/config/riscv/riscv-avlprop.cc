@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 	  vadd.vv (use VLMAX)     --- PLUS_EXPR
 	  vse8.v (use avl = r136) --- IFN_MASK_LEN_STORE
 
-	NO AVL propation:
+	NO AVL propagation:
 
 	  vsetvli a5, a4, ta
 	  vle8.v v1
@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #define IN_TARGET_CODE 1
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
+#define INCLUDE_ARRAY
 
 #include "config.h"
 #include "system.h"
@@ -135,7 +136,7 @@ avl_can_be_propagated_p (rtx_insn *rinsn)
 	   vcompress v1, v2, v0 with avl = 4, v1 = {0x8, 0x2, 0x3, 0x4}.
 	   vcompress v1, v2, v0 with avl = 2, v1 will be unchanged.
 	   Thus, we cannot propagate avl of vcompress because it may has
-	   senmatics change to the result.  */
+	   semantics change to the result.  */
   return get_attr_type (rinsn) != TYPE_VGATHER
 	 && get_attr_type (rinsn) != TYPE_VSLIDEDOWN
 	 && get_attr_type (rinsn) != TYPE_VISLIDE1DOWN
@@ -295,7 +296,7 @@ pass_avlprop::get_preferred_avl (
   return NULL_RTX;
 }
 
-/* This is a straight forward pattern ALWAYS in paritial auto-vectorization:
+/* This is a straight forward pattern ALWAYS in partial auto-vectorization:
 
      VL = SELECT_AVL (AVL, ...)
      V0 = MASK_LEN_LOAD (..., VL)
@@ -393,7 +394,7 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	      if (!def1->insn ()->is_real ())
 		return NULL_RTX;
 
-	      /* FIXME: We only all AVL propation within a block which should
+	      /* FIXME: We only all AVL propagation within a block which should
 		 be totally enough for vectorized codes.
 
 		 TODO: We can enhance it here for intrinsic codes in the future

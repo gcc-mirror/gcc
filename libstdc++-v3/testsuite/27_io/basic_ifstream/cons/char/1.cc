@@ -15,11 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.7 ifstream member functions
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// C++98 27.8.1.7 ifstream member functions
 
 // { dg-require-fileio "" }
+// { dg-additional-files "ifstream_members-1.tst" }
 
 #include <istream>
 #include <fstream>

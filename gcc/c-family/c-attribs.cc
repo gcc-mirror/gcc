@@ -184,6 +184,7 @@ static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
 static tree handle_hardbool_attribute (tree *, tree, tree, int, bool *);
 static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fd_arg_attribute (tree *, tree, tree, int, bool *);
+static tree handle_flag_enum_attribute (tree *, tree, tree, int, bool *);
 static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
@@ -340,6 +341,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "common",                 0, 0, true,  false, false, false,
 			      handle_common_attribute,
 	                      attr_common_exclusions },
+  { "musttail",		      0, 0, false, false, false,
+			      false, handle_musttail_attribute, NULL },
   /* FIXME: logically, noreturn attributes should be listed as
      "false, true, true" and apply to function types.  But implementing this
      would require all the places in the compiler that use TREE_THIS_VOLATILE
@@ -442,6 +445,14 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "pure",                   0, 0, true,  false, false, false,
 			      handle_pure_attribute,
 	                      attr_const_pure_exclusions },
+  { "reproducible",           0, 0, false, true,  true,  false,
+			      handle_reproducible_attribute, NULL },
+  { "unsequenced",            0, 0, false, true,  true,  false,
+			      handle_unsequenced_attribute, NULL },
+  { "reproducible noptr",     0, 0, false, true,  true,  false,
+			      handle_reproducible_attribute, NULL },
+  { "unsequenced noptr",      0, 0, false, true,  true,  false,
+			      handle_unsequenced_attribute, NULL },
   { "transaction_callable",   0, 0, false, true,  false, false,
 			      handle_tm_attribute, NULL },
   { "transaction_unsafe",     0, 0, false, true,  false, true,
@@ -621,6 +632,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
             handle_fd_arg_attribute, NULL},
   { "fd_arg_write",       1, 1, false, true, true, false,
             handle_fd_arg_attribute, NULL},         
+  { "flag_enum",	      0, 0, false, true, false, false,
+			      handle_flag_enum_attribute, NULL },
   { "null_terminated_string_arg", 1, 1, false, true, true, false,
 			      handle_null_terminated_string_arg_attribute, NULL}
 };
@@ -628,6 +641,17 @@ const struct attribute_spec c_common_gnu_attributes[] =
 const struct scoped_attribute_specs c_common_gnu_attribute_table =
 {
   "gnu", { c_common_gnu_attributes }
+};
+
+/* Attributes also recognized in the clang:: namespace.  */
+const struct attribute_spec c_common_clang_attributes[] = {
+  { "flag_enum",	      0, 0, false, true, false, false,
+			      handle_flag_enum_attribute, NULL }
+};
+
+const struct scoped_attribute_specs c_common_clang_attribute_table =
+{
+  "clang", { c_common_clang_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -668,6 +692,26 @@ attribute_takes_identifier_p (const_tree attr_id)
     return true;
   else
     return targetm.attribute_takes_identifier_p (attr_id);
+}
+
+/* Set a musttail attribute MUSTTAIL_P on return expression RETVAL
+   at LOC.  */
+
+void
+set_musttail_on_return (tree retval, location_t loc, bool musttail_p)
+{
+  if (retval && musttail_p)
+    {
+      tree t = retval;
+      if (TREE_CODE (t) == TARGET_EXPR)
+	t = TARGET_EXPR_INITIAL (t);
+      if (TREE_CODE (t) != CALL_EXPR)
+	error_at (loc, "cannot tail-call: return value must be a call");
+      else
+	CALL_EXPR_MUST_TAIL_CALL (t) = 1;
+    }
+  else if (musttail_p && !retval)
+    error_at (loc, "cannot tail-call: return value must be a call");
 }
 
 /* Verify that argument value POS at position ARGNO to attribute NAME
@@ -1219,6 +1263,19 @@ handle_common_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       *no_add_attrs = true;
     }
 
+  return NULL_TREE;
+}
+
+/* Handle a "musttail" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_musttail_attribute (tree ARG_UNUSED (*node), tree name, tree ARG_UNUSED (args),
+			   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  /* Currently only a statement attribute, handled directly in parser.  */
+  warning (OPT_Wattributes, "%qE attribute ignored", name);
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 
@@ -2824,8 +2881,16 @@ handle_counted_by_attribute (tree *node, tree name,
   tree argval = TREE_VALUE (args);
   tree old_counted_by = lookup_attribute ("counted_by", DECL_ATTRIBUTES (decl));
 
+  /* This attribute is not supported in C++.  */
+  if (c_dialect_cxx ())
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE attribute is not supported for C++ for now, ignored",
+		  name);
+      *no_add_attrs = true;
+    }
   /* This attribute only applies to field decls of a structure.  */
-  if (TREE_CODE (decl) != FIELD_DECL)
+  else if (TREE_CODE (decl) != FIELD_DECL)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
 		"%qE attribute is not allowed for a non-field"
@@ -4245,6 +4310,53 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   return NULL_TREE;
 }
 
+/* Handle an "unsequenced" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_unsequenced_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			      int flags, bool *no_add_attrs)
+{
+  tree fntype = *node;
+  for (tree argtype = TYPE_ARG_TYPES (fntype); argtype;
+       argtype = TREE_CHAIN (argtype))
+    /* If any of the arguments have pointer or reference type, just
+       add the attribute alone.  */
+    if (POINTER_TYPE_P (TREE_VALUE (argtype)))
+      return NULL_TREE;
+
+  if (VOID_TYPE_P (TREE_TYPE (fntype)))
+    warning (OPT_Wattributes, "%qE attribute on function type "
+	     "without pointer arguments returning %<void%>", name);
+  const char *name2;
+  if (IDENTIFIER_LENGTH (name) == sizeof ("unsequenced") - 1)
+    name2 = "unsequenced noptr";
+  else
+    name2 = "reproducible noptr";
+  if (!lookup_attribute (name2, TYPE_ATTRIBUTES (fntype)))
+    {
+      *no_add_attrs = true;
+      gcc_assert ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE) == 0);
+      tree attr = tree_cons (get_identifier (name2), NULL_TREE,
+			     TYPE_ATTRIBUTES (fntype));
+      if (!lookup_attribute (IDENTIFIER_POINTER (name),
+			     TYPE_ATTRIBUTES (fntype)))
+	attr = tree_cons (name, NULL_TREE, attr);
+      *node = build_type_attribute_variant (*node, attr);
+    }
+  return NULL_TREE;
+}
+
+/* Handle a "reproducible" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_reproducible_attribute (tree *node, tree name, tree args, int flags,
+			       bool *no_add_attrs)
+{
+  return handle_unsequenced_attribute (node, name, args, flags, no_add_attrs);
+}
+
 /* Digest an attribute list destined for a transactional memory statement.
    ALLOWED is the set of attributes that are allowed for this statement;
    return the attribute we parsed.  Multiple attributes are never allowed.  */
@@ -4924,6 +5036,22 @@ handle_fd_arg_attribute (tree *node, tree name, tree args,
       return NULL_TREE;
 
   *no_add_attrs = true;  
+  return NULL_TREE;
+}
+
+/* Handle the "flag_enum" attribute.  */
+
+static tree
+handle_flag_enum_attribute (tree *node, tree ARG_UNUSED (name),
+			    tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			    bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != ENUMERAL_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored on non-enum", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 

@@ -333,6 +333,15 @@ package body Sem_Ch6 is
       New_Spec := Copy_Subprogram_Spec (Spec);
       Prev     := Current_Entity_In_Scope (Defining_Entity (Spec));
 
+      --  Copy SPARK pragma from expression function
+
+      Set_SPARK_Pragma
+        (Defining_Unit_Name (New_Spec),
+         SPARK_Pragma (Defining_Unit_Name (Spec)));
+      Set_SPARK_Pragma_Inherited
+        (Defining_Unit_Name (New_Spec),
+         SPARK_Pragma_Inherited (Defining_Unit_Name (Spec)));
+
       --  If there are previous overloadable entities with the same name,
       --  check whether any of them is completed by the expression function.
       --  In a generic context a formal subprogram has no completion.
@@ -1937,8 +1946,8 @@ package body Sem_Ch6 is
       --  Check that pragma No_Return is obeyed. Don't complain about the
       --  implicitly-generated return that is placed at the end.
 
-      if No_Return (Scope_Id)
-        and then Kind in E_Procedure | E_Generic_Procedure
+      if Kind in E_Procedure | E_Generic_Procedure
+        and then No_Return (Scope_Id)
         and then Comes_From_Source (N)
       then
          Error_Msg_N
@@ -2685,22 +2694,6 @@ package body Sem_Ch6 is
          Copy_SPARK_Mode_Aspect (Subp_Decl, To => N);
 
          Analyze (Subp_Decl);
-
-         --  Propagate the attributes Rewritten_For_C and Corresponding_Proc to
-         --  the body since the expander may generate calls using that entity.
-         --  Required to ensure that Expand_Call rewrites calls to this
-         --  function by calls to the built procedure.
-
-         if Transform_Function_Array
-           and then Nkind (Body_Spec) = N_Function_Specification
-           and then
-             Rewritten_For_C (Defining_Entity (Specification (Subp_Decl)))
-         then
-            Set_Rewritten_For_C (Defining_Entity (Body_Spec));
-            Set_Corresponding_Procedure (Defining_Entity (Body_Spec),
-              Corresponding_Procedure
-                (Defining_Entity (Specification (Subp_Decl))));
-         end if;
 
          --  Analyze any relocated source pragmas or pragmas created for aspect
          --  specifications.
@@ -3740,18 +3733,6 @@ package body Sem_Ch6 is
                  and then not Inside_A_Generic
                then
                   Build_Subprogram_Declaration;
-
-               --  If this is a function that returns a constrained array, and
-               --  Transform_Function_Array is set, create subprogram
-               --  declaration to simplify e.g. subsequent C generation.
-
-               elsif No (Spec_Id)
-                 and then Transform_Function_Array
-                 and then Nkind (Body_Spec) = N_Function_Specification
-                 and then Is_Array_Type (Etype (Body_Id))
-                 and then Is_Constrained (Etype (Body_Id))
-               then
-                  Build_Subprogram_Declaration;
                end if;
             end if;
 
@@ -3828,60 +3809,6 @@ package body Sem_Ch6 is
         and then Is_Protected_Type (Current_Scope)
       then
          Spec_Id := Build_Internal_Protected_Declaration (N);
-      end if;
-
-      --  If Transform_Function_Array is set and this is a function returning a
-      --  constrained array type for which we must create a procedure with an
-      --  extra out parameter, build and analyze the body now. The procedure
-      --  declaration has already been created. We reuse the source body of the
-      --  function, because in an instance it may contain global references
-      --  that cannot be reanalyzed. The source function itself is not used any
-      --  further, so we mark it as having a completion. If the subprogram is a
-      --  stub the transformation is done later, when the proper body is
-      --  analyzed.
-
-      if Expander_Active
-        and then Transform_Function_Array
-        and then Nkind (N) /= N_Subprogram_Body_Stub
-      then
-         declare
-            S         : constant Entity_Id :=
-                          (if Present (Spec_Id)
-                           then Spec_Id
-                           else Defining_Unit_Name (Specification (N)));
-            Proc_Body : Node_Id;
-
-         begin
-            if Ekind (S) = E_Function and then Rewritten_For_C (S) then
-               Set_Has_Completion (S);
-               Proc_Body := Build_Procedure_Body_Form (S, N);
-
-               if Present (Spec_Id) then
-                  Rewrite (N, Proc_Body);
-                  Analyze (N);
-
-                  --  The entity for the created procedure must remain
-                  --  invisible, so it does not participate in resolution of
-                  --  subsequent references to the function.
-
-                  Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
-
-               --  If we do not have a separate spec for N, build one and
-               --  insert the new body right after.
-
-               else
-                  Rewrite (N,
-                    Make_Subprogram_Declaration (Loc,
-                      Specification => Relocate_Node (Specification (N))));
-                  Analyze (N);
-                  Insert_After_And_Analyze (N, Proc_Body);
-                  Set_Is_Immediately_Visible
-                    (Corresponding_Spec (Proc_Body), False);
-               end if;
-
-               goto Leave;
-            end if;
-         end;
       end if;
 
       --  If a separate spec is present, then deal with freezing issues
@@ -6505,6 +6432,25 @@ package body Sem_Ch6 is
             OldD : constant Boolean :=
                      Present (Expression (Parent (Old_Discr)));
 
+            function Has_Tagged_Limited_Partial_View
+              (Typ : Entity_Id) return Boolean;
+            --  Returns True iff Typ has a tagged limited partial view.
+
+            -------------------------------------
+            -- Has_Tagged_Limited_Partial_View --
+            -------------------------------------
+
+            function Has_Tagged_Limited_Partial_View
+              (Typ : Entity_Id) return Boolean
+            is
+               Priv : constant Entity_Id := Incomplete_Or_Partial_View (Typ);
+            begin
+               return Present (Priv)
+                 and then not Is_Incomplete_Type (Priv)
+                 and then Is_Tagged_Type (Priv)
+                 and then Limited_Present (Parent (Priv));
+            end Has_Tagged_Limited_Partial_View;
+
          begin
             if NewD or OldD then
 
@@ -6527,6 +6473,27 @@ package body Sem_Ch6 is
                   Conformance_Error
                     ("default expression for & does not match!",
                      New_Discr_Id);
+                  return;
+               end if;
+
+               if NewD
+                 and then Ada_Version >= Ada_2005
+                 and then Nkind (Discriminant_Type (New_Discr)) =
+                            N_Access_Definition
+                 and then not Is_Immutably_Limited_Type
+                                (Defining_Identifier (N))
+
+                 --  Check for a case that would be awkward to handle in
+                 --  Is_Immutably_Limited_Type (because sem_aux can't
+                 --  "with" sem_util).
+
+                 and then not Has_Tagged_Limited_Partial_View
+                                (Defining_Identifier (N))
+               then
+                  Error_Msg_N
+                    ("(Ada 2005) default value for access discriminant "
+                     & "requires immutably limited type",
+                     Expression (New_Discr));
                   return;
                end if;
             end if;
@@ -7185,6 +7152,10 @@ package body Sem_Ch6 is
                and then Exception_Junk (Last_Stm))
            or else Nkind (Last_Stm) in N_Push_xxx_Label | N_Pop_xxx_Label
 
+           --  Don't count subprogram bodies, for example finalizers
+
+           or else Nkind (Last_Stm) = N_Subprogram_Body
+
            --  Inserted code, such as finalization calls, is irrelevant; we
            --  only need to check original source. If we see a transfer of
            --  control, we stop.
@@ -7416,6 +7387,8 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("implied return after this statement would have raised "
                      & "Program_Error", Last_Stm);
+                  Error_Msg_NE
+                    ("\procedure & is marked as No_Return!", Last_Stm, Proc);
 
                --  In normal compilation mode, do not warn on a generated call
                --  (e.g. in the body of a renaming as completion).
@@ -7424,11 +7397,15 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("implied return after this statement will raise "
                      & "Program_Error??", Last_Stm);
+
+                  Error_Msg_NE
+                    ("\procedure & is marked as No_Return??!", Last_Stm, Proc);
+               else
+
+                  Error_Msg_NE
+                    ("procedure & is marked as No_Return!", Last_Stm, Proc);
                end if;
 
-               Error_Msg_Warn := SPARK_Mode /= On;
-               Error_Msg_NE
-                 ("\procedure & is marked as No_Return<<!", Last_Stm, Proc);
             end if;
 
             declare
@@ -11403,11 +11380,6 @@ package body Sem_Ch6 is
          --  replace the overridden primitive in Typ's primitives list with
          --  the new subprogram.
 
-         function Visible_Part_Type (T : Entity_Id) return Boolean;
-         --  Returns true if T is declared in the visible part of the current
-         --  package scope; otherwise returns false. Assumes that T is declared
-         --  in a package.
-
          procedure Check_Private_Overriding (T : Entity_Id);
          --  Checks that if a primitive abstract subprogram of a visible
          --  abstract type is declared in a private part, then it must override
@@ -11415,6 +11387,17 @@ package body Sem_Ch6 is
          --  that if a primitive function with a controlling result is declared
          --  in a private part, then it must override a function declared in
          --  the visible part.
+
+         function Is_A_Primitive
+           (Typ  : Entity_Id;
+            Subp : Entity_Id) return Boolean;
+         --  Typ is either the return type of function Subp or the type of one
+         --  of its formals; determine if Subp is a primitive of type Typ.
+
+         function Visible_Part_Type (T : Entity_Id) return Boolean;
+         --  Returns true if T is declared in the visible part of the current
+         --  package scope; otherwise returns false. Assumes that T is declared
+         --  in a package.
 
          ---------------------------------------
          -- Add_Or_Replace_Untagged_Primitive --
@@ -11584,7 +11567,17 @@ package body Sem_Ch6 is
                         --  operation. That's illegal in the tagged case
                         --  (but not if the private type is untagged).
 
-                        if T = Base_Type (Etype (S)) then
+                        --  Do not report this error when the tagged type has
+                        --  the First_Controlling_Parameter aspect, unless the
+                        --  function has a controlling result (which is only
+                        --  possible if the function overrides an inherited
+                        --  primitive).
+
+                        if T = Base_Type (Etype (S))
+                          and then
+                            (not Has_First_Controlling_Parameter_Aspect (T)
+                               or else Has_Controlling_Result (S))
+                        then
                            Error_Msg_N
                              ("private function with controlling result must"
                               & " override visible-part function", S);
@@ -11597,6 +11590,9 @@ package body Sem_Ch6 is
 
                         elsif Ekind (Etype (S)) = E_Anonymous_Access_Type
                           and then T = Base_Type (Designated_Type (Etype (S)))
+                          and then
+                            (not Has_First_Controlling_Parameter_Aspect (T)
+                               or else Has_Controlling_Result (S))
                           and then Ada_Version >= Ada_2012
                         then
                            Error_Msg_N
@@ -11612,6 +11608,58 @@ package body Sem_Ch6 is
                end if;
             end if;
          end Check_Private_Overriding;
+
+         --------------------
+         -- Is_A_Primitive --
+         --------------------
+
+         function Is_A_Primitive
+           (Typ  : Entity_Id;
+            Subp : Entity_Id) return Boolean is
+         begin
+            if Scope (Typ) /= Current_Scope
+              or else Is_Class_Wide_Type (Typ)
+              or else Is_Generic_Type (Typ)
+            then
+               return False;
+
+            --  Untagged type primitive
+
+            elsif not Is_Tagged_Type (Typ) then
+               return True;
+
+            --  Primitive of a tagged type without the First_Controlling_Param
+            --  aspect.
+
+            elsif not Has_First_Controlling_Parameter_Aspect (Typ) then
+               return True;
+
+            --  Non-overriding primitive of a tagged type with the
+            --  First_Controlling_Parameter aspect
+
+            elsif No (Overridden_Operation (Subp)) then
+               return Present (First_Formal (Subp))
+                 and then Etype (First_Formal (Subp)) = Typ;
+
+            --  Primitive of a tagged type with the First_Controlling_Parameter
+            --  aspect, overriding an inherited primitive of a tagged type
+            --  without this aspect.
+
+            else
+               if Ekind (Subp) = E_Function
+                 and then Has_Controlling_Result (Overridden_Operation (Subp))
+               then
+                  return True;
+
+               elsif Is_Dispatching_Operation
+                       (Overridden_Operation (Subp))
+               then
+                  return True;
+               end if;
+            end if;
+
+            return False;
+         end Is_A_Primitive;
 
          -----------------------
          -- Visible_Part_Type --
@@ -11685,10 +11733,7 @@ package body Sem_Ch6 is
 
                B_Typ := Base_Type (F_Typ);
 
-               if Scope (B_Typ) = Current_Scope
-                 and then not Is_Class_Wide_Type (B_Typ)
-                 and then not Is_Generic_Type (B_Typ)
-               then
+               if Is_A_Primitive (B_Typ, S) then
                   Is_Primitive := True;
                   Set_Has_Primitive_Operations (B_Typ);
                   Set_Is_Primitive (S);
@@ -11728,10 +11773,7 @@ package body Sem_Ch6 is
                   B_Typ := Base_Type (B_Typ);
                end if;
 
-               if Scope (B_Typ) = Current_Scope
-                 and then not Is_Class_Wide_Type (B_Typ)
-                 and then not Is_Generic_Type (B_Typ)
-               then
+               if Is_A_Primitive (B_Typ, S) then
                   Is_Primitive := True;
                   Set_Is_Primitive (S);
                   Set_Has_Primitive_Operations (B_Typ);
@@ -12533,8 +12575,8 @@ package body Sem_Ch6 is
 
                            if Chars (E) = Name_Op_Eq then
                               declare
-                                 Typ : constant Entity_Id
-                                         := Etype (First_Entity (E));
+                                 Typ : constant Entity_Id :=
+                                   Etype (First_Entity (E));
                                  H   : Entity_Id := Homonym (E);
 
                               begin

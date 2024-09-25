@@ -206,6 +206,14 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
   return wide_int_to_tree (gfc_get_int_type (kind), val);
 }
 
+/* Same, but for unsigned.  */
+
+tree
+gfc_conv_mpz_unsigned_to_tree (mpz_t i, int kind)
+{
+  wide_int val = wi:: from_mpz (gfc_get_unsigned_type (kind), i, true);
+  return wide_int_to_tree (gfc_get_unsigned_type (kind), val);
+}
 
 /* Convert a GMP integer into a tree node of type given by the type
    argument.  */
@@ -314,6 +322,9 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 						 expr->representation.string));
       else
 	return gfc_conv_mpz_to_tree (expr->value.integer, expr->ts.kind);
+
+    case BT_UNSIGNED:
+      return gfc_conv_mpz_unsigned_to_tree (expr->value.integer, expr->ts.kind);
 
     case BT_REAL:
       if (expr->representation.string)

@@ -224,7 +224,6 @@ package body Ch2 is
 
    function P_Interpolated_String_Literal return Node_Id is
       Elements_List : constant List_Id := New_List;
-      NL_Node       : Node_Id;
       Saved_State   : constant Boolean := Inside_Interpolated_String_Literal;
       String_Node   : Node_Id;
 
@@ -238,6 +237,7 @@ package body Ch2 is
          Error_Msg_SC ("string literal expected");
 
       else
+         Set_Is_Interpolated_String_Literal (Token_Node);
          Append_To (Elements_List, Token_Node);
          Scan;  --  past string_literal
 
@@ -258,17 +258,11 @@ package body Ch2 is
                   T_Right_Curly_Bracket;
                end;
             else
-               if Prev_Token = Tok_String_Literal then
-                  NL_Node := New_Node (N_String_Literal, Token_Ptr);
-                  Set_Has_Wide_Character (NL_Node, False);
-                  Set_Has_Wide_Wide_Character (NL_Node, False);
-
-                  Start_String;
-                  Store_String_Char (Get_Char_Code (ASCII.LF));
-                  Set_Strval (NL_Node, End_String);
-                  Append_To (Elements_List, NL_Node);
+               if Prev_Token /= Tok_Right_Curly_Bracket then
+                  Error_Msg_SC ("unexpected string literal");
                end if;
 
+               Set_Is_Interpolated_String_Literal (Token_Node);
                Append_To (Elements_List, Token_Node);
                Scan; --  past string_literal
             end if;

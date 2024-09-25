@@ -2,7 +2,7 @@
 
 #include "noexcept-type19.h"
 
-extern "C" void *malloc (size_t);
+extern "C" void *malloc (size_t); // silently discard throw() from system header
 
 template<class T> void f(T*);
 

@@ -114,8 +114,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   operator^=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b) _GLIBCXX_NOTHROW
   { return __a = __a ^ __b; }
 
+  // If std::ios_base::noreplace isn't available, -Wswitch should ignore
+  // _S_noreplace.
+#ifdef __glibcxx_ios_noreplace
+#define _NOREPLACE_UNUSED
+#else
+#define _NOREPLACE_UNUSED __attribute__((__unused__))
+#endif
 
-  enum _Ios_Openmode 
+  enum __attribute__((__flag_enum__)) _Ios_Openmode
     { 
       _S_app 		= 1L << 0,
       _S_ate 		= 1L << 1,
@@ -123,11 +130,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_in 		= 1L << 3,
       _S_out 		= 1L << 4,
       _S_trunc 		= 1L << 5,
-      _S_noreplace 	= 1L << 6,
-      _S_ios_openmode_end = 1L << 16,
-      _S_ios_openmode_max = __INT_MAX__,
-      _S_ios_openmode_min = ~__INT_MAX__
+      _S_noreplace _NOREPLACE_UNUSED = 1L << 6,
+      _S_ios_openmode_end __attribute__((__unused__)) = 1L << 16,
+      _S_ios_openmode_max __attribute__((__unused__)) = __INT_MAX__,
+      _S_ios_openmode_min __attribute__((__unused__)) = ~__INT_MAX__
     };
+
+#undef _NOREPLACE_UNUSED
 
   _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
   inline _Ios_Openmode

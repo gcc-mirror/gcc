@@ -629,6 +629,12 @@
 #endif
 
 
+/* Define if the assembler understands -march=rv*_b. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MARCH_B
+#endif
+
+
 /* Define if the assembler understands -march=rv*_zaamo_zalrsc. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MARCH_ZAAMO_ZALRSC
@@ -1428,6 +1434,12 @@
 /* Define if your assembler supports .balign and .p2align. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN
+#endif
+
+
+/* Define if your assembler supports .base64. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_BASE64
 #endif
 
 

@@ -1354,8 +1354,8 @@ END Mult ;
 
 PROCEDURE Slice (s: String; low, high: INTEGER) : String ;
 VAR
-   d, t         : String ;
-   start, end, o: INTEGER ;
+   d, t          : String ;
+   start, stop, o: INTEGER ;
 BEGIN
    IF PoisonOn
    THEN
@@ -1390,7 +1390,7 @@ BEGIN
             ELSE
                start := low - o
             END ;
-            end := Max (Min (MaxBuf, high - o), 0) ;
+            stop := Max (Min (MaxBuf, high - o), 0) ;
             WHILE t^.contents.len = MaxBuf DO
                IF t^.contents.next = NIL
                THEN
@@ -1408,7 +1408,7 @@ BEGIN
                t := t^.contents.next
             END ;
             ConcatContentsAddress (t^.contents,
-                                   ADR (s^.contents.buf[start]), end - start) ;
+                                   ADR (s^.contents.buf[start]), stop - start) ;
             INC (o, s^.contents.len) ;
             s := s^.contents.next
          END

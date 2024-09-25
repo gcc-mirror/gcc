@@ -130,7 +130,6 @@ public:
   void visit (AST::Trait &trait) override {}
   void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternalStaticItem &item) override {}
-  void visit (AST::ExternalFunctionItem &item) override {}
   void visit (AST::ExternBlock &block) override;
   void visit (AST::MacroMatchFragment &match) override {}
   void visit (AST::MacroMatchRepetition &match) override {}

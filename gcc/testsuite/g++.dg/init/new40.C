@@ -4,6 +4,7 @@
 // { dg-options -std=c++03 }
 // { dg-do run }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <assert.h>
 #include <stdlib.h>

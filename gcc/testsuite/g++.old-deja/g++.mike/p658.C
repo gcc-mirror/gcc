@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // prms-id: 658
 
 #include <iostream>

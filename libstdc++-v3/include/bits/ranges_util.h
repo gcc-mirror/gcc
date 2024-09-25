@@ -34,6 +34,7 @@
 # include <bits/ranges_base.h>
 # include <bits/utility.h>
 # include <bits/invoke.h>
+# include <bits/cpp_type_traits.h> // __can_use_memchr_for_find
 
 #ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -486,21 +487,44 @@ namespace ranges
 {
   struct __find_fn
   {
-    template<input_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp,
-	     typename _Proj = identity>
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     typename _Proj = identity,
+	     typename _Tp _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(_Iter, _Proj)>
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<_Iter, _Proj>, const _Tp*>
       constexpr _Iter
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Proj __proj = {}) const
       {
+	if constexpr (is_same_v<_Proj, identity>)
+	  if constexpr(__can_use_memchr_for_find<iter_value_t<_Iter>, _Tp>)
+	    if constexpr (sized_sentinel_for<_Sent, _Iter>)
+	      if constexpr (contiguous_iterator<_Iter>)
+		if (!is_constant_evaluated())
+		  {
+		    using _Vt = iter_value_t<_Iter>;
+		    auto __n = __last - __first;
+		    if (static_cast<_Vt>(__value) == __value) [[likely]]
+		      if (__n > 0)
+			{
+			  const size_t __nu = static_cast<size_t>(__n);
+			  const int __ival = static_cast<int>(__value);
+			  const void* __p0 = std::to_address(__first);
+			  if (auto __p1 = __builtin_memchr(__p0, __ival, __nu))
+			    __n = (const char*)__p1 - (const char*)__p0;
+			}
+		    return __first + __n;
+		  }
+
 	while (__first != __last
 	    && !(std::__invoke(__proj, *__first) == __value))
 	  ++__first;
 	return __first;
       }
 
-    template<input_range _Range, typename _Tp, typename _Proj = identity>
+    template<input_range _Range, typename _Proj = identity,
+	     typename _Tp
+	     _GLIBCXX26_RANGE_ALGO_DEF_VAL_T(iterator_t<_Range>, _Proj)>
       requires indirect_binary_predicate<ranges::equal_to,
 					 projected<iterator_t<_Range>, _Proj>,
 					 const _Tp*>

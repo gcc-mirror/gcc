@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-options "-O2" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 26 May 2001 <nathan@codesourcery.com>

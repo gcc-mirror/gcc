@@ -76,9 +76,25 @@ inline bool
 canonicalize_move_range (insn_range_info &move_range, insn_info *insn)
 {
   while (move_range.first != insn && !can_insert_after (move_range.first))
-    move_range.first = move_range.first->next_nondebug_insn ();
+    if (auto *next = move_range.first->next_nondebug_insn ())
+      move_range.first = next;
+    else
+      {
+	// Invalidate the range.  prev_nondebug_insn is always nonnull
+	// if next_nondebug_insn is null.
+	move_range.last = move_range.first->prev_nondebug_insn ();
+	return false;
+      }
   while (move_range.last != insn && !can_insert_after (move_range.last))
-    move_range.last = move_range.last->prev_nondebug_insn ();
+    if (auto *prev = move_range.last->prev_nondebug_insn ())
+      move_range.last = prev;
+    else
+      {
+	// Invalidate the range.  next_nondebug_insn is always nonnull
+	// if prev_nondebug_insn is null.
+	move_range.first = move_range.last->next_nondebug_insn ();
+	return false;
+      }
   return bool (move_range);
 }
 
