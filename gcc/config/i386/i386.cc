@@ -18514,6 +18514,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	= (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
       bool is_vshift;
+      enum tree_code tcode;
+      bool is_scalar;
       unsigned HOST_WIDE_INT mask;
 
       switch (fn_code)
@@ -18962,6 +18964,131 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	      return builder.build ();
 	    }
 	  break;
+
+	case IX86_BUILTIN_MINSS:
+	case IX86_BUILTIN_MINSH_MASK:
+	  tcode = LT_EXPR;
+	  is_scalar = true;
+	  goto do_minmax;
+
+	case IX86_BUILTIN_MAXSS:
+	case IX86_BUILTIN_MAXSH_MASK:
+	  tcode = GT_EXPR;
+	  is_scalar = true;
+	  goto do_minmax;
+
+	case IX86_BUILTIN_MINPS:
+	case IX86_BUILTIN_MINPD:
+	case IX86_BUILTIN_MINPS256:
+	case IX86_BUILTIN_MINPD256:
+	case IX86_BUILTIN_MINPS512:
+	case IX86_BUILTIN_MINPD512:
+	case IX86_BUILTIN_MINPS128_MASK:
+	case IX86_BUILTIN_MINPD128_MASK:
+	case IX86_BUILTIN_MINPS256_MASK:
+	case IX86_BUILTIN_MINPD256_MASK:
+	case IX86_BUILTIN_MINPH128_MASK:
+	case IX86_BUILTIN_MINPH256_MASK:
+	case IX86_BUILTIN_MINPH512_MASK:
+	  tcode = LT_EXPR;
+	  is_scalar = false;
+	  goto do_minmax;
+
+	case IX86_BUILTIN_MAXPS:
+	case IX86_BUILTIN_MAXPD:
+	case IX86_BUILTIN_MAXPS256:
+	case IX86_BUILTIN_MAXPD256:
+	case IX86_BUILTIN_MAXPS512:
+	case IX86_BUILTIN_MAXPD512:
+	case IX86_BUILTIN_MAXPS128_MASK:
+	case IX86_BUILTIN_MAXPD128_MASK:
+	case IX86_BUILTIN_MAXPS256_MASK:
+	case IX86_BUILTIN_MAXPD256_MASK:
+	case IX86_BUILTIN_MAXPH128_MASK:
+	case IX86_BUILTIN_MAXPH256_MASK:
+	case IX86_BUILTIN_MAXPH512_MASK:
+	  tcode = GT_EXPR;
+	  is_scalar = false;
+	do_minmax:
+	  gcc_assert (n_args >= 2);
+	  if (TREE_CODE (args[0]) != VECTOR_CST
+	      || TREE_CODE (args[1]) != VECTOR_CST)
+	    break;
+	  mask = HOST_WIDE_INT_M1U;
+	  if (n_args > 2)
+	    {
+	      gcc_assert (n_args >= 4);
+	      /* This is masked minmax.  */
+	      if (TREE_CODE (args[3]) != INTEGER_CST
+		  || TREE_SIDE_EFFECTS (args[2]))
+		break;
+	      mask = TREE_INT_CST_LOW (args[3]);
+	      unsigned elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
+	      mask |= HOST_WIDE_INT_M1U << elems;
+	      if (mask != HOST_WIDE_INT_M1U
+		  && TREE_CODE (args[2]) != VECTOR_CST)
+		break;
+	      if (n_args >= 5)
+		{
+		  if (!tree_fits_uhwi_p (args[4]))
+		    break;
+		  if (tree_to_uhwi (args[4]) != 4
+		      && tree_to_uhwi (args[4]) != 8)
+		    break;
+		}
+	      if (mask == (HOST_WIDE_INT_M1U << elems))
+		return args[2];
+	    }
+	  /* Punt on NaNs, unless exceptions are disabled.  */
+	  if (HONOR_NANS (args[0])
+	      && (n_args < 5 || tree_to_uhwi (args[4]) != 8))
+	    for (int i = 0; i < 2; ++i)
+	      {
+		unsigned count = vector_cst_encoded_nelts (args[i]);
+		for (unsigned j = 0; j < count; ++j)
+		  if (tree_expr_nan_p (VECTOR_CST_ENCODED_ELT (args[i], j)))
+		    return NULL_TREE;
+	      }
+	  {
+	    tree res = const_binop (tcode,
+				    truth_type_for (TREE_TYPE (args[0])),
+				    args[0], args[1]);
+	    if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+	      break;
+	    res = fold_ternary (VEC_COND_EXPR, TREE_TYPE (args[0]), res,
+				args[0], args[1]);
+	    if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+	      break;
+	    if (mask != HOST_WIDE_INT_M1U)
+	      {
+		unsigned nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
+		vec_perm_builder sel (nelts, nelts, 1);
+		for (unsigned int i = 0; i < nelts; i++)
+		  if (mask & (HOST_WIDE_INT_1U << i))
+		    sel.quick_push (i);
+		  else
+		    sel.quick_push (nelts + i);
+		vec_perm_indices indices (sel, 2, nelts);
+		res = fold_vec_perm (TREE_TYPE (args[0]), res, args[2],
+				     indices);
+		if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+		  break;
+	      }
+	    if (is_scalar)
+	      {
+		unsigned nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
+		vec_perm_builder sel (nelts, nelts, 1);
+		sel.quick_push (0);
+		for (unsigned int i = 1; i < nelts; i++)
+		  sel.quick_push (nelts + i);
+		vec_perm_indices indices (sel, 2, nelts);
+		res = fold_vec_perm (TREE_TYPE (args[0]), res, args[0],
+				     indices);
+		if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+		  break;
+	      }
+	    return res;
+	  }
 
 	default:
 	  break;
@@ -19504,6 +19631,74 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg0), ures);
 	g = gimple_build_assign (gimple_call_lhs (stmt),
 				 VIEW_CONVERT_EXPR, vce);
+	gsi_replace (gsi, g, false);
+      }
+      return true;
+
+    case IX86_BUILTIN_MINPS:
+    case IX86_BUILTIN_MINPD:
+    case IX86_BUILTIN_MINPS256:
+    case IX86_BUILTIN_MINPD256:
+    case IX86_BUILTIN_MINPS512:
+    case IX86_BUILTIN_MINPD512:
+    case IX86_BUILTIN_MINPS128_MASK:
+    case IX86_BUILTIN_MINPD128_MASK:
+    case IX86_BUILTIN_MINPS256_MASK:
+    case IX86_BUILTIN_MINPD256_MASK:
+    case IX86_BUILTIN_MINPH128_MASK:
+    case IX86_BUILTIN_MINPH256_MASK:
+    case IX86_BUILTIN_MINPH512_MASK:
+      tcode = LT_EXPR;
+      goto do_minmax;
+
+    case IX86_BUILTIN_MAXPS:
+    case IX86_BUILTIN_MAXPD:
+    case IX86_BUILTIN_MAXPS256:
+    case IX86_BUILTIN_MAXPD256:
+    case IX86_BUILTIN_MAXPS512:
+    case IX86_BUILTIN_MAXPD512:
+    case IX86_BUILTIN_MAXPS128_MASK:
+    case IX86_BUILTIN_MAXPD128_MASK:
+    case IX86_BUILTIN_MAXPS256_MASK:
+    case IX86_BUILTIN_MAXPD256_MASK:
+    case IX86_BUILTIN_MAXPH128_MASK:
+    case IX86_BUILTIN_MAXPH256_MASK:
+    case IX86_BUILTIN_MAXPH512_MASK:
+      tcode = GT_EXPR;
+    do_minmax:
+      gcc_assert (n_args >= 2);
+      /* Without SSE4.1 we often aren't able to pattern match it back to the
+	 desired instruction.  */
+      if (!gimple_call_lhs (stmt) || !optimize || !TARGET_SSE4_1)
+	break;
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* For masked minmax, only optimize if the mask is all ones.  */
+      if (n_args > 2
+	  && !ix86_masked_all_ones (elems, gimple_call_arg (stmt, 3)))
+	break;
+      if (n_args >= 5)
+	{
+	  tree arg4 = gimple_call_arg (stmt, 4);
+	  if (!tree_fits_uhwi_p (arg4))
+	    break;
+	  if (tree_to_uhwi (arg4) == 4)
+	    /* Ok.  */;
+	  else if (tree_to_uhwi (arg4) != 8)
+	    /* Invalid round argument.  */
+	    break;
+	  else if (HONOR_NANS (arg0))
+	    /* Lowering to comparison would raise exceptions which
+	       shouldn't be raised.  */
+	    break;
+	}
+      {
+	tree type = truth_type_for (TREE_TYPE (arg0));
+	tree cmpres = gimple_build (&stmts, tcode, type, arg0, arg1);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	g = gimple_build_assign (gimple_call_lhs (stmt),
+				 VEC_COND_EXPR, cmpres, arg0, arg1);
 	gsi_replace (gsi, g, false);
       }
       return true;
