@@ -23746,6 +23746,11 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 
+  if (kind == vec_perm && vectype
+      && GET_MODE_SIZE (TYPE_MODE (vectype)) == 32
+      && TARGET_AVX256_AVOID_VEC_PERM)
+    stmt_cost += 1000;
+
   /* Penalize DFmode vector operations for Bonnell.  */
   if (TARGET_CPU_P (BONNELL) && kind == vector_stmt
       && vectype && GET_MODE_INNER (TYPE_MODE (vectype)) == DFmode)
