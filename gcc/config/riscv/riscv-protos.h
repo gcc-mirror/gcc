@@ -136,6 +136,7 @@ extern void riscv_legitimize_poly_move (machine_mode, rtx, rtx, rtx);
 extern void riscv_expand_usadd (rtx, rtx, rtx);
 extern void riscv_expand_ssadd (rtx, rtx, rtx);
 extern void riscv_expand_ussub (rtx, rtx, rtx);
+extern void riscv_expand_sssub (rtx, rtx, rtx);
 extern void riscv_expand_ustrunc (rtx, rtx);
 
 #ifdef RTX_CODE
