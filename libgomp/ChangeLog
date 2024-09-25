@@ -1,3 +1,30 @@
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* testsuite/libgomp.c++/range-for-1.C: New test.
+	* testsuite/libgomp.c++/range-for-2.C: New test.
+	* testsuite/libgomp.c++/range-for-3.C: New test.
+	* testsuite/libgomp.c++/range-for-4.C: New test.
+	* testsuite/libgomp.c++/range-for-5.C: New test.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_load_image_to_device): For requires
+	unified_shared_memory, update 'link' vars to point to the host var.
+	* testsuite/libgomp.c-c++-common/target-link-3.c: New test.
+	* testsuite/libgomp.c-c++-common/target-link-4.c: New test.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices):
+	Accept self_maps clause.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices):
+	Likewise.
+	* libgomp.texi (TR13 Impl. Status): Set to 'Y'.
+	* target.c (gomp_requires_to_name, GOMP_offload_register_ver,
+	gomp_target_init): Handle self_maps clause.
+	* testsuite/libgomp.fortran/self_maps.f90: New test.
+
 2024-09-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	* fortran.c (omp_get_device_from_uid_): New function.

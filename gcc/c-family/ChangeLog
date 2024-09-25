@@ -1,3 +1,20 @@
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* c.opt (frange-for-ext-temps): New option.
+	* c-opts.cc (c_common_post_options): Set flag_range_for_ext_temps
+	for C++23 or later or for C++11 or later in !flag_iso mode if
+	the option wasn't set by user.
+	* c-cppbuiltin.cc (c_cpp_builtins): Change __cpp_range_based_for
+	value for flag_range_for_ext_temps from 201603L to 202212L in C++17
+	or later.
+	* c-omp.cc (c_find_nested_loop_xform_r): Handle CLEANUP_POINT_EXPR
+	like TRY_FINALLY_EXPR.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

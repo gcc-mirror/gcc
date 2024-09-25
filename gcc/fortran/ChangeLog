@@ -1,3 +1,69 @@
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.cc (gfc_check_random_number): Adjust for unsigned.
+	* iresolve.cc (gfc_resolve_random_number): Handle unsigned.
+	* trans-expr.cc (gfc_conv_expr_op): Handle BT_UNSIGNED for divide.
+	* trans-types.cc (gfc_get_dtype_rank_type): Handle BT_UNSIGNED.
+	* gfortran.texi: Add RANDOM_NUMBER for UNSIGNED.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.cc (gfc_check_transf_bit_intrins): Handle unsigned.
+	* gfortran.texi: Docment IANY, IALL and IPARITY for unsigned.
+	* iresolve.cc (gfc_resolve_iall): Set flag to use integer
+	if type is BT_UNSIGNED.
+	(gfc_resolve_iany): Likewise.
+	(gfc_resolve_iparity): Likewise.
+	* simplify.cc (do_bit_and): Adjust asserts for BT_UNSIGNED.
+	(do_bit_ior): Likewise.
+	(do_bit_xor): Likewise
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Document SUM and PRODUCT.
+	* iresolve.cc (resolve_transformational): New argument,
+	use_integer, to translate calls to unsigned to calls to
+	integer.
+	(gfc_resolve_product): Use it
+	(gfc_resolve_sum): Use it.
+	* simplify.cc (init_result_expr): Handle BT_UNSIGNED.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* arith.cc (gfc_arith_uminus): Fix warning.
+	(gfc_arith_minus): Correctly truncate unsigneds.
+	* check.cc (gfc_check_dot_product): Handle unsigned arguments.
+	(gfc_check_matmul): Likewise.
+	* expr.cc (gfc_get_unsigned_expr): New function.
+	* gfortran.h (gfc_get_unsigned_expr): Add prototype.
+	* iresolve.cc (gfc_resolve_matmul): If using UNSIGNED, use the
+	signed integer version.
+	* gfortran.texi: Document MATMUL and DOT_PRODUCT for unsigned.
+	* simplify.cc (compute_dot_product): Handle unsigneds.
+
+2024-09-24  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/101100
+	* trans-expr.cc (trans_caf_token_assign): Take caf-token from
+	decl for non ultimate coarray components.
+
+2024-09-24  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/84870
+	* trans-array.cc (duplicate_allocatable_coarray): For scalar
+	allocatable components the memory allocated is now assigned to
+	the component's pointer.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (enum gfc_omp_requires_kind): Add OMP_REQ_SELF_MAPS.
+	(gfc_namespace): Enlarge omp_requires bitfield.
+	* module.cc (enum ab_attribute, attr_bits): Add AB_OMP_REQ_SELF_MAPS.
+	(mio_symbol_attribute): Handle it.
+	* openmp.cc (gfc_check_omp_requires, gfc_match_omp_requires): Handle
+	self_maps clause.
+	* parse.cc (gfc_parse_file): Handle self_maps clause.
+
 2024-09-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/90608

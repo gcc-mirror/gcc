@@ -1,3 +1,7 @@
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_requires): Handle self_maps clause.
+
 2024-09-20  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/116726

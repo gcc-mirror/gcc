@@ -1,3 +1,124 @@
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* omp-general.cc (find_combined_omp_for, find_nested_loop_xform):
+	Handle CLEANUP_POINT_EXPR like TRY_FINALLY_EXPR.
+	* doc/invoke.texi (frange-for-ext-temps): Document.  Add
+	-fconcepts to the C++ option list.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_round_builtin): Fix comment
+	typo, insead -> instead.
+
+2024-09-24  Yixuan Chen  <chenyixuan@iscas.ac.cn>
+
+	* config/riscv/riscv.h: Fix FIXED_REGISTERS comment missing return
+	address register.
+
+2024-09-24  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_check_context_selector): Reject other
+	properties in the same selector set with kind(any).  Also reject
+	duplicate name-list properties.
+
+2024-09-24  Richard Biener  <rguenther@suse.de>
+
+	* range-op.cc (operator_rshift::op1_range): Use wi::mask instead
+	of shift and not.
+
+2024-09-24  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/116814
+	* tree-ssa-math-opts.cc (build_saturation_binary_arith_call): Make
+	ifn is_supported type check based on operand instead of lhs.
+
+2024-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116819
+	* tree-vect-stmts.cc (vect_analyze_stmt): When the SLP
+	representative isn't relevant signal failure instead of
+	success.
+
+2024-09-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (vec_extract<mode><vls_quarter>):
+	Add quarter vec-vec extract.
+	* config/riscv/vector-iterators.md: New iterators.
+
+2024-09-24  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac (CXX_WARNING_OPTS): Change -Wno-narrowing
+	to -Wno-error=narrowing.
+	* configure: Regenerate.
+	* config/i386/i386.h (debugger_register_map)
+	(debugger64_register_map)
+	(svr4_debugger_register_map): Make unsigned.
+	* config/i386/i386.cc: Likewise.
+	* diagnostic-event-id.h (diagnostic_thread_id_t): Make int.
+	* vec.h (vec::size): Make unsigned int.
+	* ipa-modref.cc (escape_point::arg): Make unsigned.
+	(modref_lattice::add_escape_point): Use eaf_flags_t.
+	(update_escape_summary_1): Use eaf_flags_t, && for bool.
+	* pair-fusion.cc (pair_fusion_bb_info::track_access):
+	Make mem_size unsigned int.
+	* pretty-print.cc (format_phase_2): Cast va_arg to char.
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Make nheaders
+	unsigned, remove cast.
+	* tree-ssa-structalias.cc (bitpos_of_field): Return unsigned.
+	(push_fields_onto_fieldstack):Make offset unsigned, remove cast.
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Use nelt_limit.
+	* tree-vect-stmts.cc (vect_truncate_gather_scatter_offset):
+	Make scale unsigned.
+	(vectorizable_operation): Make ncopies unsigned.
+	* rtl-ssa/member-fns.inl: Make num_accesses unsigned int.
+
+2024-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114855
+	* tree-into-ssa.cc (update_ssa): Use tree view for the
+	initial population of blocks_to_update.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* lto-cgraph.cc (output_offload_tables, omp_requires_to_name): Handle
+	self_maps clause.
+	* omp-general.cc (struct omp_ts_info, omp_context_selector_matches):
+	Likewise for the associated trait.
+	* omp-general.h (enum omp_requires): Add OMP_REQUIRES_SELF_MAPS.
+	* omp-selectors.h (enum omp_ts_code): Add
+	OMP_TRAIT_IMPLEMENTATION_SELF_MAPS.
+
+2024-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115372
+	* tree-vect-slp.cc (vect_build_slp_instance): Compute the
+	uniform, if, number of lanes of the RHS sub-graphs feeding
+	the store and if uniformly one, use store-lanes if the target
+	supports that.
+
+2024-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114855
+	* tree-into-ssa.cc (phis_to_rewrite): Remove global var.
+	(mark_phi_for_rewrite): Simplify.
+	(rewrite_update_phi_arguments): Walk all PHIs, process
+	those satisfying rewrite_uses_p.
+	(delete_update_ssa): Simplify.
+	(update_ssa): Likewise.  Switch blocks_with_phis_to_rewrite
+	to tree view.
+
+2024-09-24  Yangyu Chen  <chenyangyu@isrc.iscas.ac.cn>
+
+	* hosthooks.h (struct host_hooks): Fix GCC_HOST_HOOKS_H typo.
+
+2024-09-24  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/104957
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls): Use
+	cgraph_node::get(name)->ultimate_alias_target instead of value.
+
 2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
 
 	* config/aarch64/aarch64-simd.md

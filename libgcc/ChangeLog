@@ -1,3 +1,11 @@
+2024-09-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/116809
+	* config.host: Build legacy libgcc_s.1 on hosts before macOS 15.
+	* config/i386/t-darwin: Remove reference to legacy libgcc_s.1
+	* config/rs6000/t-darwin: Likewise.
+	* config/t-darwin-libgccs1: New file.
+
 2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* config/aarch64/aarch64-asm.h (PACIASP): Replace SPARC CFI

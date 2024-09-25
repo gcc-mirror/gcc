@@ -1,3 +1,7 @@
+2024-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* MAINTAINERS: Move my entry in DCO list into alphabetical order.
+
 2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
 
 	* MAINTAINERS: Fix sort order and add username.

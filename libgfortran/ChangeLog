@@ -1,3 +1,77 @@
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.map: Add _gfortran_random_m1, _gfortran_random_m2,
+	_gfortran_random_m4, _gfortran_random_m8 and _gfortran_random_m16.
+	* intrinsics/random.c (random_m1): New function.
+	(random_m2): New function.
+	(random_m4): New function.
+	(random_m8): New function.
+	(random_m16): New function.
+	(arandom_m1): New function.
+	(arandom_m2): New function.
+	(arandom_m4): New function.
+	(arandom_m8): New funciton.
+	(arandom_m16): New function.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* generated/product_c10.c: Regenerated.
+	* generated/product_c16.c: Regenerated.
+	* generated/product_c17.c: Regenerated.
+	* generated/product_c4.c: Regenerated.
+	* generated/product_c8.c: Regenerated.
+	* generated/product_i1.c: Regenerated.
+	* generated/product_i16.c: Regenerated.
+	* generated/product_i2.c: Regenerated.
+	* generated/product_i4.c: Regenerated.
+	* generated/product_i8.c: Regenarated.
+	* generated/product_r10.c: Regenerated.
+	* generated/product_r16.c: Regenerated.
+	* generated/product_r17.c: Regenerated.
+	* generated/product_r4.c: Regenerated.
+	* generated/product_r8.c: Regenarated.
+	* generated/sum_c10.c: Regenerated.
+	* generated/sum_c16.c: Regenerated.
+	* generated/sum_c17.c: Regenerated.
+	* generated/sum_c4.c: Regenerated.
+	* generated/sum_c8.c: Regenerated.
+	* generated/sum_i1.c: Regenerated.
+	* generated/sum_i16.c: Regenerated.
+	* generated/sum_i2.c: Regenerated.
+	* generated/sum_i4.c: Regenerated.
+	* generated/sum_i8.c: Regenerated.
+	* generated/sum_r10.c: Regenerated.
+	* generated/sum_r16.c: Regenerated.
+	* generated/sum_r17.c: Regenerated.
+	* generated/sum_r4.c: Regenerated.
+	* generated/sum_r8.c: Regenerated.
+	* m4/ifunction.m4: Whitespace fix.
+	* m4/product.m4: If type is integer, change to unsigned.
+	* m4/sum.m4: Likewise.
+
+2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* m4/iparm.m4: Add UNSIGED if type is m.
+	* m4/matmul.m4: If type is GFC_INTEGER, use GFC_UINTEGER instead.
+	Whitespace fixes.
+	* m4/matmul_internal.m4: Whitespace fixes.
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Regenerated.
+	* generated/matmul_c17.c: Regenerated.
+	* generated/matmul_c4.c: Regenerated.
+	* generated/matmul_c8.c: Regeneraated.
+	* generated/matmul_i1.c: Regenerated.
+	* generated/matmul_i16.c: Regenerated.
+	* generated/matmul_i2.c: Regenerated.
+	* generated/matmul_i4.c: Regenerated.
+	* generated/matmul_i8.c: Regenerated.
+	* generated/matmul_r10.c: Regenerated.
+	* generated/matmul_r16.c: Regenerated.
+	* generated/matmul_r17.c: Regenerated.
+	* generated/matmul_r4.c: Regenerated.
+	* generated/matmul_r8.c: Regenerated.
+	* libgfortran.h: Add array types for unsiged.
+
 2024-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.map: Add _gfortran_transfer_unsgned and

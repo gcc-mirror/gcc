@@ -1,3 +1,7 @@
+2024-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* include/std/format: Remove unnecessary 'static'.
+
 2024-09-23  Jason Merrill  <jason@redhat.com>
 
 	* include/bits/c++config: Don't try to disable -Wc++??-extensions

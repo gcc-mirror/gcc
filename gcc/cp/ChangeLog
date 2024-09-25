@@ -1,3 +1,51 @@
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* cp-tree.h: Implement C++23 P2718R0 - Wording for P2644R1 Fix for
+	Range-based for Loop.
+	(cp_convert_omp_range_for): Add bool tmpl_p argument.
+	(find_range_for_decls): Declare.
+	* parser.cc (cp_convert_range_for): For flag_range_for_ext_temps call
+	push_stmt_list () before cp_finish_decl for range_temp and save it
+	temporarily to FOR_INIT_STMT.
+	(cp_convert_omp_range_for): Add tmpl_p argument.  If set, remember
+	DECL_NAME of range_temp and for cp_finish_decl call restore it before
+	clearing it again, if unset, don't adjust DECL_NAME of range_temp at
+	all.
+	(cp_parser_omp_loop_nest): For flag_range_for_ext_temps range for add
+	CLEANUP_POINT_EXPR around sl.  Call find_range_for_decls and adjust
+	DECL_NAMEs for range fors if not processing_template_decl.  Adjust
+	cp_convert_omp_range_for caller.  Remove superfluous backslash at the
+	end of line.
+	* decl.cc (initialize_local_var): For flag_range_for_ext_temps
+	temporarily clear stmts_are_full_exprs_p rather than set for
+	for_range__identifier decls.
+	* call.cc (extend_ref_init_temps): For flag_range_for_ext_temps return
+	init early for for_range__identifier decls.
+	* semantics.cc (find_range_for_decls): New function.
+	(finish_for_stmt): Use it.  For flag_range_for_ext_temps if
+	cp_convert_range_for set FOR_INIT_STMT, pop_stmt_list it and wrap
+	into CLEANUP_POINT_EXPR.
+	* pt.cc (tsubst_omp_for_iterator): Adjust tsubst_omp_for_iterator
+	caller.
+	(tsubst_stmt) <case OMP_FOR>: For flag_range_for_ext_temps if there
+	are any range fors in the loop nest, add push_stmt_list starting
+	before the initializations, pop_stmt_list it after the body and wrap
+	into CLEANUP_POINT_EXPR.  Change DECL_NAME of range for temps from
+	NULL to for_range_identifier.
+
+2024-09-24  Nina Dinka Ranns  <dinka.ranns@googlemail.com>
+
+	PR c++/116490
+	* contracts.cc (build_contract_condition_function): added
+	a check for comdat group of the guarded function. If set,
+	the condition check function is added to the same comdat
+	group.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_requires): Handle self_maps clause.
+
 2024-09-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116798
