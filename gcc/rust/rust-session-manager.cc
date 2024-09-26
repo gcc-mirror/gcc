@@ -925,9 +925,6 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
     {
       CfgStrip ().go (crate);
       // Errors might happen during cfg strip pass
-      if (saw_errors ())
-	break;
-
       bool visitor_dirty = false;
 
       if (flag_name_resolution_2_0)
@@ -939,6 +936,9 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
 	}
       else
 	Resolver::EarlyNameResolver ().go (crate);
+
+      if (saw_errors ())
+	break;
 
       ExpandVisitor (expander).go (crate);
 
