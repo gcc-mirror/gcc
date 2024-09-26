@@ -1587,7 +1587,7 @@ public:
 
   virtual Kind get_kind () const = 0;
 
-  NodeId get_node_id () { return node_id; }
+  NodeId get_node_id () const { return node_id; }
 
 protected:
   GenericParam () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
