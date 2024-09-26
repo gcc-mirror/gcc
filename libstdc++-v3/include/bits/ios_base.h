@@ -689,6 +689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @brief  Access to format flags.
      *  @return  The format control flags for both input and output.
     */
+    _GLIBCXX_NODISCARD
     fmtflags
     flags() const
     { return _M_flags; }
@@ -759,6 +760,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  Be careful if you try to give a definition of @a precision here; see
      *  DR 189.
     */
+    _GLIBCXX_NODISCARD
     streamsize
     precision() const
     { return _M_precision; }
@@ -782,6 +784,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *
      *  <em>Minimum field width</em> refers to the number of characters.
     */
+    _GLIBCXX_NODISCARD
     streamsize
     width() const
     { return _M_width; }
@@ -833,6 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  returns @c loc.  Otherwise, it returns a copy of @c std::locale(),
      *  the global C++ locale.
     */
+    _GLIBCXX_NODISCARD
     locale
     getloc() const
     { return _M_ios_locale; }

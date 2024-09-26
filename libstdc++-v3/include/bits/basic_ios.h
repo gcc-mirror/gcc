@@ -120,6 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  <code>if (!a_stream) ...</code> and <code>while (a_stream) ...</code>
       */
 #if __cplusplus >= 201103L
+      _GLIBCXX_NODISCARD
       explicit operator bool() const
       { return !this->fail(); }
 #else
@@ -127,6 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->fail() ? 0 : const_cast<basic_ios*>(this); }
 #endif
 
+      _GLIBCXX_NODISCARD
       bool
       operator!() const
       { return this->fail(); }
@@ -139,6 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  See std::ios_base::iostate for the possible bit values.  Most
        *  users will call one of the interpreting wrappers, e.g., good().
       */
+      _GLIBCXX_NODISCARD
       iostate
       rdstate() const
       { return _M_streambuf_state; }
@@ -182,6 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  A wrapper around rdstate.
       */
+      _GLIBCXX_NODISCARD
       bool
       good() const
       { return this->rdstate() == 0; }
@@ -192,6 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Note that other iostate flags may also be set.
       */
+      _GLIBCXX_NODISCARD
       bool
       eof() const
       { return (this->rdstate() & eofbit) != 0; }
@@ -203,6 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  Checking the badbit in fail() is historical practice.
        *  Note that other iostate flags may also be set.
       */
+      _GLIBCXX_NODISCARD
       bool
       fail() const
       { return (this->rdstate() & (badbit | failbit)) != 0; }
@@ -213,6 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  Note that other iostate flags may also be set.
       */
+      _GLIBCXX_NODISCARD
       bool
       bad() const
       { return (this->rdstate() & badbit) != 0; }
@@ -224,6 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  This changes nothing in the stream.  See the one-argument version
        *  of exceptions(iostate) for the meaning of the return value.
       */
+      _GLIBCXX_NODISCARD
       iostate
       exceptions() const
       { return _M_exception; }
@@ -297,6 +305,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  stream.  When this stream performs any I/O, the tied stream is
        *  first flushed.  For example, @c std::cin is tied to @c std::cout.
       */
+      _GLIBCXX_NODISCARD
       basic_ostream<_CharT, _Traits>*
       tie() const
       { return _M_tie; }
@@ -323,6 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This does not change the state of the stream.
       */
+      _GLIBCXX_NODISCARD
       basic_streambuf<_CharT, _Traits>*
       rdbuf() const
       { return _M_streambuf; }
@@ -372,6 +382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  It defaults to a space (' ') in the current locale.
       */
+      _GLIBCXX_NODISCARD
       char_type
       fill() const
       {
