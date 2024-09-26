@@ -367,8 +367,23 @@ sat_s_sub_##T##_fmt_1 (T x, T y)             \
 #define DEF_SAT_S_SUB_FMT_1_WRAP(T, UT, MIN, MAX) \
   DEF_SAT_S_SUB_FMT_1(T, UT, MIN, MAX)
 
+#define DEF_SAT_S_SUB_FMT_2(T, UT, MIN, MAX) \
+T __attribute__((noinline))                  \
+sat_s_sub_##T##_fmt_2 (T x, T y)             \
+{                                            \
+  T minus = (UT)x - (UT)y;                   \
+  if ((x ^ y) >= 0 || (minus ^ x) >= 0)      \
+    return minus;                            \
+  return x < 0 ? MIN : MAX;                  \
+}
+#define DEF_SAT_S_SUB_FMT_2_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_2(T, UT, MIN, MAX)
+
 #define RUN_SAT_S_SUB_FMT_1(T, x, y) sat_s_sub_##T##_fmt_1(x, y)
 #define RUN_SAT_S_SUB_FMT_1_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_1(T, x, y)
+
+#define RUN_SAT_S_SUB_FMT_2(T, x, y) sat_s_sub_##T##_fmt_2(x, y)
+#define RUN_SAT_S_SUB_FMT_2_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_2(T, x, y)
 
 /******************************************************************************/
 /* Saturation Truncate (unsigned and signed)                                  */
