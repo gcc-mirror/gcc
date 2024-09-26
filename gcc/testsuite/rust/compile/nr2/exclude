@@ -19,7 +19,6 @@ macros/builtin/recurse2.rs
 macros/builtin/include3.rs
 macros/builtin/include4.rs
 canonical_paths1.rs
-cast_generics.rs
 cfg1.rs
 cfg3.rs
 cfg4.rs
@@ -71,14 +70,12 @@ issue-1089.rs
 issue-1128.rs
 issue-1129-2.rs
 issue-1130.rs
-issue-1131.rs
 issue-1165.rs
 issue-1173.rs
 issue-1235.rs
 issue-1237.rs
 issue-1272.rs
 issue-1289.rs
-issue-1383.rs
 issue-1447.rs
 issue-1483.rs
 issue-1589.rs
@@ -221,7 +218,6 @@ type-bindings1.rs
 unconstrained_type_param.rs
 undeclared_label.rs
 unsafe1.rs
-unsafe10.rs
 unsafe11.rs
 unsafe2.rs
 unsafe3.rs
