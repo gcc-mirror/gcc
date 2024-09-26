@@ -313,6 +313,21 @@ struct lang_hooks_for_decls
   /* Do language specific checking on an implicitly determined clause.  */
   void (*omp_finish_clause) (tree clause, gimple_seq *pre_p, bool);
 
+  /* Additional language-specific mappings for a decl; returns true
+     if those may occur.  */
+  bool (*omp_deep_mapping_p) (const gimple *ctx_stmt, tree clause);
+
+  /* Additional language-specific mappings for a decl; returns the
+     number of additional mappings needed.  */
+  tree (*omp_deep_mapping_cnt) (const gimple *ctx_stmt, tree clause,
+				gimple_seq *seq);
+
+  /* Do the actual additional language-specific mappings for a decl. */
+  void (*omp_deep_mapping) (const gimple *stmt, tree clause,
+			    unsigned HOST_WIDE_INT tkind,
+			    tree data, tree sizes, tree kinds,
+			    tree offset_data, tree offset, gimple_seq *seq);
+
   /* Return true if DECL is an allocatable variable (for the purpose of
      implicit mapping).  */
   bool (*omp_allocatable_p) (tree decl);
