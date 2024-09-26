@@ -3755,7 +3755,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
   template<typename _Operation>
     [[__gnu__::__always_inline__]]
-    void
+    inline void
     basic_string<_CharT, _Traits, _Alloc>::
     __resize_and_overwrite(const size_type __n, _Operation __op)
     { resize_and_overwrite<_Operation&>(__n, __op); }
