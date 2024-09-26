@@ -224,12 +224,21 @@ Late::visit (AST::TypePath &type)
   // maybe we can overload `resolve_path<Namespace::Types>` to only do
   // typepath-like path resolution? that sounds good
 
-  auto resolved = ctx.types.get (type.get_segments ().back ()->as_string ());
-  if (resolved)
+  auto str = type.get_segments ().back ()->get_ident_segment ().as_string ();
+  auto values = ctx.types.peek ().get_values ();
+
+  if (auto resolved = ctx.types.get (str))
     ctx.map_usage (Usage (type.get_node_id ()),
 		   Definition (resolved->get_node_id ()));
   else
     rust_unreachable ();
+}
+
+void
+Late::visit (AST::StructStruct &s)
+{
+  auto s_vis = [this, &s] () { AST::DefaultASTVisitor::visit (s); };
+  ctx.scoped (Rib::Kind::Item, s.get_node_id (), s_vis);
 }
 
 void
