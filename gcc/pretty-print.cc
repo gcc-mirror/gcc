@@ -1180,7 +1180,7 @@ allocate_object (size_t sz, obstack &s)
   /* We must not be half-way through an object.  */
   gcc_assert (obstack_base (&s) == obstack_next_free (&s));
 
-  obstack_grow (&s, obstack_base (&s), sz);
+  obstack_blank (&s, sz);
   void *buf = obstack_finish (&s);
   return buf;
 }
