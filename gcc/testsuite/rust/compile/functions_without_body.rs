@@ -1,3 +1,4 @@
+// { dg-additional-options "-frust-compile-until=nameresolution" }
 struct MyStruct;
 
 trait X {}
