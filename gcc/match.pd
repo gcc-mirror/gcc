@@ -6467,31 +6467,45 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && bitwise_equal_p (@0, @1))
      @1))
  )
- /* A >=/> 0 ? A : -A    same as abs (A) */
+ /* (type)A >=/> 0 ? A : -A    same as abs (A) */
  (for cmp (ge gt)
   (simplify
-   (cnd (cmp @0 zerop) @1 (negate @1))
-    (if (!HONOR_SIGNED_ZEROS (TREE_TYPE(@0))
-	 && !TYPE_UNSIGNED (TREE_TYPE(@0))
-	 && bitwise_equal_p (@0, @1))
-     (if (TYPE_UNSIGNED (type))
-      (absu:type @0)
-      (abs @0)))))
- /* A <=/< 0 ? A : -A    same as -abs (A) */
+   (cnd (cmp (convert?@0 @1) zerop) @2 (negate @2))
+    (if (!HONOR_SIGNED_ZEROS (TREE_TYPE (@1))
+	 /* Support SEXT of @0 only.  */
+	 && !TYPE_UNSIGNED (TREE_TYPE (@1))
+	 && element_precision (@1)
+	      <= element_precision (@0)
+	 && bitwise_equal_p (@1, @2))
+    (if (TYPE_UNSIGNED (TREE_TYPE (@2)))
+      (with {
+	tree stype = signed_type_for (TREE_TYPE (@2));
+       }
+      (if (types_match (@0, stype))
+       (absu @0)
+       (absu (convert:stype @2))))
+      (abs @2)))))
+ /* (type)A <=/< 0 ? A : -A    same as -abs (A) */
  (for cmp (le lt)
   (simplify
-   (cnd (cmp @0 zerop) @1 (negate @1))
-    (if (!HONOR_SIGNED_ZEROS (TREE_TYPE(@0))
-	 && !TYPE_UNSIGNED (TREE_TYPE(@0))
-	 && bitwise_equal_p (@0, @1))
-     (if ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	   && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
-	  || TYPE_UNSIGNED (type))
-      (with {
-	tree utype = unsigned_type_for (TREE_TYPE(@0));
-       }
-       (convert (negate (absu:utype @0))))
-       (negate (abs @0)))))
+   (cnd (cmp (convert?@0 @1) zerop) @2 (negate @2))
+    (if (!HONOR_SIGNED_ZEROS (TREE_TYPE (@1))
+	 /* Support SEXT of @0 only.  */
+	 && !TYPE_UNSIGNED (TREE_TYPE (@1))
+	 && element_precision (@1)
+	      <= element_precision (@0)
+	 && bitwise_equal_p (@1, @2))
+      (if ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (@2))
+	      && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (@2)))
+	    || TYPE_UNSIGNED (TREE_TYPE (@2)))
+	(with {
+	  tree stype = signed_type_for (TREE_TYPE (@2));
+	  tree utype = unsigned_type_for (TREE_TYPE (@2));
+	 }
+	(if (types_match (@0, stype))
+	 (convert (negate (absu:utype @0)))
+	 (convert (negate (absu:utype (convert:stype @2))))))
+	(convert (negate (abs @2))))))
  )
 
  /* (A - B) == 0 ? (A - B) : (B - A)    same as (B - A) */
