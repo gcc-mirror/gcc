@@ -687,12 +687,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __pointer_type 	_M_p _GLIBCXX20_INIT(nullptr);
 
-      // Factored out to facilitate explicit specialization.
-      constexpr ptrdiff_t
-      _M_type_size(ptrdiff_t __d) const { return __d * sizeof(_PTp); }
-
-      constexpr ptrdiff_t
-      _M_type_size(ptrdiff_t __d) const volatile { return __d * sizeof(_PTp); }
+      static constexpr ptrdiff_t
+      _S_type_size(ptrdiff_t __d)
+      { return __d * sizeof(_PTp); }
 
     public:
       __atomic_base() noexcept = default;
@@ -742,42 +739,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __pointer_type
       operator++() noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator++() volatile noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator--() noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator--() volatile noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator+=(ptrdiff_t __d) noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator+=(ptrdiff_t __d) volatile noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator-=(ptrdiff_t __d) noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator-=(ptrdiff_t __d) volatile noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       bool
@@ -932,22 +929,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
-      { return __atomic_fetch_add(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_add(&_M_p, _S_type_size(__d), int(__m)); }
 
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
-      { return __atomic_fetch_add(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_add(&_M_p, _S_type_size(__d), int(__m)); }
 
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
-      { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_sub(&_M_p, _S_type_size(__d), int(__m)); }
 
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
-      { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_sub(&_M_p, _S_type_size(__d), int(__m)); }
     };
 
   namespace __atomic_impl
