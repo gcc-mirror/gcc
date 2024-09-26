@@ -25,6 +25,7 @@ short *use_find(short *p)
 int main(void)
 {
   short a[1024];
+#pragma GCC unroll 0
   for (int i = 0; i < 1024; i++)
     a[i] = rand ();
 
