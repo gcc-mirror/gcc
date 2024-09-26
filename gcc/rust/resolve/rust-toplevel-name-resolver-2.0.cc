@@ -253,6 +253,15 @@ TopLevel::visit (AST::StaticItem &static_item)
 void
 TopLevel::visit (AST::StructStruct &struct_item)
 {
+  auto generic_vis = [this, &struct_item] () {
+    for (auto &g : struct_item.get_generic_params ())
+      {
+	g->accept_vis (*this);
+      }
+  };
+
+  ctx.scoped (Rib::Kind::Item, struct_item.get_node_id (), generic_vis);
+
   insert_or_error_out (struct_item.get_struct_name (), struct_item,
 		       Namespace::Types);
 
@@ -262,6 +271,16 @@ TopLevel::visit (AST::StructStruct &struct_item)
   if (struct_item.is_unit_struct ())
     insert_or_error_out (struct_item.get_struct_name (), struct_item,
 			 Namespace::Values);
+}
+
+void
+TopLevel::visit (AST::TypeParam &type_param)
+{
+  // Hacky and weird, find a better solution
+  // We should probably not even insert self in the first place ?
+  if (type_param.get_type_representation ().as_string () != "Self")
+    insert_or_error_out (type_param.get_type_representation (), type_param,
+			 Namespace::Types);
 }
 
 void
