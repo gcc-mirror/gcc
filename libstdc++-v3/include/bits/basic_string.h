@@ -4399,6 +4399,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 #elif _GLIBCXX_USE_C99_STDIO
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
   // NB: (v)snprintf vs sprintf.
 
   _GLIBCXX_NODISCARD
@@ -4430,6 +4432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%Lf", __val);
   }
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_USE_C99_STDIO
 
 #if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_WCHAR
