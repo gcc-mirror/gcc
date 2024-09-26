@@ -2006,7 +2006,7 @@ maybe_reject_param_in_postcondition(tree decl)
 {
   if (flag_contracts_nonattr
       && processing_contract_postcondition
-      && !TREE_READONLY (decl)
+      && !TREE_READONLY (decl) && !CP_TYPE_CONST_P (TREE_TYPE (decl))
       && TREE_CODE (decl) == PARM_DECL
       && !(REFERENCE_REF_P (decl) &&
 	   TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
