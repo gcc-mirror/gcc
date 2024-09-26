@@ -9972,6 +9972,13 @@ package body Sem_Res is
       Arg2 : Node_Id;
 
    begin
+      --  We must preserve the original entity in a generic setting, so that
+      --  the legality of the operation can be verified in an instance.
+
+      if not Expander_Active then
+         return;
+      end if;
+
       Op := Entity (N);
       while Scope (Op) /= Standard_Standard loop
          Op := Homonym (Op);
