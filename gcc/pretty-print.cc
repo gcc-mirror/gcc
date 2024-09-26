@@ -679,7 +679,11 @@ mingw_ansi_fputs (const char *str, FILE *fp)
   /* Don't mess up stdio functions with Windows APIs.  */
   fflush (fp);
 
-  if (GetConsoleMode (h, &mode) && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+  if (GetConsoleMode (h, &mode)
+#ifdef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+      && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+#endif
+      )
     /* If it is a console, and doesn't support ANSI escape codes, translate
        them as needed.  */
     for (;;)
