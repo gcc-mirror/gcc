@@ -517,6 +517,16 @@ struct edge_prediction {
 
 static hash_map<const_basic_block, edge_prediction *> *bb_predictions;
 
+/* Global cache for expr_expected_value.  */
+
+struct expected_value
+{
+  tree val;
+  enum br_predictor predictor;
+  HOST_WIDE_INT probability;
+};
+static hash_map<int_hash<unsigned, 0>, expected_value> *ssa_expected_value;
+
 /* Return true if the one of outgoing edges is already predicted by
    PREDICTOR.  */
 
@@ -2356,14 +2366,14 @@ guess_outgoing_edge_probabilities (basic_block bb)
   combine_predictions_for_insn (BB_END (bb), bb);
 }
 
-static tree expr_expected_value (tree, bitmap, enum br_predictor *predictor,
+static tree expr_expected_value (tree, enum br_predictor *predictor,
 				 HOST_WIDE_INT *probability);
 
 /* Helper function for expr_expected_value.  */
 
 static tree
 expr_expected_value_1 (tree type, tree op0, enum tree_code code,
-		       tree op1, bitmap visited, enum br_predictor *predictor,
+		       tree op1, enum br_predictor *predictor,
 		       HOST_WIDE_INT *probability)
 {
   gimple *def;
@@ -2401,8 +2411,19 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
       def = SSA_NAME_DEF_STMT (op0);
 
       /* If we were already here, break the infinite cycle.  */
-      if (!bitmap_set_bit (visited, SSA_NAME_VERSION (op0)))
-	return NULL;
+      bool existed_p;
+      expected_value *res
+	= &ssa_expected_value->get_or_insert (SSA_NAME_VERSION (op0),
+					      &existed_p);
+      if (existed_p)
+	{
+	  *probability = res->probability;
+	  *predictor = res->predictor;
+	  return res->val;
+	}
+      res->val = NULL_TREE;
+      res->predictor = *predictor;
+      res->probability = *probability;
 
       if (gphi *phi = dyn_cast <gphi *> (def))
 	{
@@ -2443,7 +2464,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    continue;
 		}
 	      HOST_WIDE_INT probability2;
-	      tree new_val = expr_expected_value (arg, visited, &predictor2,
+	      tree new_val = expr_expected_value (arg, &predictor2,
 						  &probability2);
 	      /* If we know nothing about value, give up.  */
 	      if (!new_val)
@@ -2477,6 +2498,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      *predictor = PRED_COMBINED_VALUE_PREDICTIONS_PHI;
 	      *probability = MIN (p1, p2);
 	    }
+
+	  res = ssa_expected_value->get (SSA_NAME_VERSION (op0));
+	  res->val = val;
+	  res->predictor = *predictor;
+	  res->probability = *probability;
 	  return val;
 	}
       if (is_gimple_assign (def))
@@ -2484,11 +2510,19 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	  if (gimple_assign_lhs (def) != op0)
 	    return NULL;
 
-	  return expr_expected_value_1 (TREE_TYPE (gimple_assign_lhs (def)),
-					gimple_assign_rhs1 (def),
-					gimple_assign_rhs_code (def),
-					gimple_assign_rhs2 (def),
-					visited, predictor, probability);
+	  tree val = expr_expected_value_1 (TREE_TYPE (gimple_assign_lhs (def)),
+					    gimple_assign_rhs1 (def),
+					    gimple_assign_rhs_code (def),
+					    gimple_assign_rhs2 (def),
+					    predictor, probability);
+	  if (val)
+	    {
+	      res = ssa_expected_value->get (SSA_NAME_VERSION (op0));
+	      res->val = val;
+	      res->predictor = *predictor;
+	      res->probability = *probability;
+	    }
+	  return val;
 	}
 
       if (is_gimple_call (def))
@@ -2511,7 +2545,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  if (*predictor == PRED_BUILTIN_EXPECT)
 		    *probability
 		      = HITRATE (param_builtin_expect_probability);
-		  return gimple_call_arg (def, 1);
+		  val = gimple_call_arg (def, 1);
+		  res->val = val;
+		  res->predictor = *predictor;
+		  res->probability = *probability;
+		  return val;
 		}
 	      return NULL;
 	    }
@@ -2524,7 +2562,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		 to value ranges.  This makes predictor to assume that
 		 malloc always returns (size_t)1 which is not the same
 		 as returning non-NULL.  */
-	      return fold_convert (type, boolean_true_node);
+	      tree val = fold_convert (type, boolean_true_node);
+	      res->val = val;
+	      res->predictor = *predictor;
+	      res->probability = *probability;
+	      return val;
 	    }
 
 	  if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
@@ -2541,7 +2583,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  *predictor = PRED_BUILTIN_EXPECT;
 		  *probability
 		    = HITRATE (param_builtin_expect_probability);
-		  return gimple_call_arg (def, 1);
+		  val = gimple_call_arg (def, 1);
+		  res->val = val;
+		  res->predictor = *predictor;
+		  res->probability = *probability;
+		  return val;
 		}
 	      case BUILT_IN_EXPECT_WITH_PROBABILITY:
 		{
@@ -2550,7 +2596,12 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    return NULL;
 		  val = gimple_call_arg (def, 0);
 		  if (TREE_CONSTANT (val))
-		    return val;
+		    {
+		      res->val = val;
+		      res->predictor = *predictor;
+		      res->probability = *probability;
+		      return val;
+		    }
 		  /* Compute final probability as:
 		     probability * REG_BR_PROB_BASE.  */
 		  tree prob = gimple_call_arg (def, 2);
@@ -2579,7 +2630,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 			      "probability %qE is outside "
 			      "the range [0.0, 1.0]", prob);
 
-		  return gimple_call_arg (def, 1);
+		  val = gimple_call_arg (def, 1);
+		  res->val = val;
+		  res->predictor = *predictor;
+		  res->probability = *probability;
+		  return val;
 		}
 
 	      case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_N:
@@ -2598,6 +2653,9 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		/* Assume that any given atomic operation has low contention,
 		   and thus the compare-and-swap operation succeeds.  */
 		*predictor = PRED_COMPARE_AND_SWAP;
+		res->val = boolean_true_node;
+		res->predictor = *predictor;
+		res->probability = *probability;
 		return boolean_true_node;
 	      case BUILT_IN_REALLOC:
 	      case BUILT_IN_GOMP_REALLOC:
@@ -2605,7 +2663,10 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  *predictor = PRED_MALLOC_NONNULL;
 		/* FIXME: This is wrong and we need to convert the logic
 		   to value ranges.  */
-		return fold_convert (type, boolean_true_node);
+		res->val = fold_convert (type, boolean_true_node);
+		res->predictor = *predictor;
+		res->probability = *probability;
+		return res->val;
 	      default:
 		break;
 	    }
@@ -2626,7 +2687,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
       if (TREE_CODE (op0) != INTEGER_CST)
 	{
 	  /* See if expected value of op0 is good enough to determine the result.  */
-	  nop0 = expr_expected_value (op0, visited, predictor, probability);
+	  nop0 = expr_expected_value (op0, predictor, probability);
 	  if (nop0
 	      && (res = fold_build2 (code, type, nop0, op1)) != NULL
 	      && TREE_CODE (res) == INTEGER_CST)
@@ -2645,7 +2706,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
       if (TREE_CODE (op1) != INTEGER_CST)
 	{
 	  /* See if expected value of op1 is good enough to determine the result.  */
-	  nop1 = expr_expected_value (op1, visited, &predictor2, &probability2);
+	  nop1 = expr_expected_value (op1, &predictor2, &probability2);
 	  if (nop1
 	      && (res = fold_build2 (code, type, op0, nop1)) != NULL
 	      && TREE_CODE (res) == INTEGER_CST)
@@ -2700,7 +2761,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
   if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS)
     {
       tree res;
-      op0 = expr_expected_value (op0, visited, predictor, probability);
+      op0 = expr_expected_value (op0, predictor, probability);
       if (!op0)
 	return NULL;
       res = fold_build1 (code, type, op0);
@@ -2720,8 +2781,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
    implementation.  */
 
 static tree
-expr_expected_value (tree expr, bitmap visited,
-		     enum br_predictor *predictor,
+expr_expected_value (tree expr, enum br_predictor *predictor,
 		     HOST_WIDE_INT *probability)
 {
   enum tree_code code;
@@ -2736,8 +2796,7 @@ expr_expected_value (tree expr, bitmap visited,
 
   extract_ops_from_tree (expr, &code, &op0, &op1);
   return expr_expected_value_1 (TREE_TYPE (expr),
-				op0, code, op1, visited, predictor,
-				probability);
+				op0, code, op1, predictor, probability);
 }
 
 
@@ -2781,8 +2840,7 @@ tree_predict_by_opcode (basic_block bb)
   if (gswitch *sw = dyn_cast <gswitch *> (stmt))
     {
       tree index = gimple_switch_index (sw);
-      tree val = expr_expected_value (index, auto_bitmap (),
-				      &predictor, &probability);
+      tree val = expr_expected_value (index, &predictor, &probability);
       if (val && TREE_CODE (val) == INTEGER_CST)
 	{
 	  edge e = find_taken_edge_switch_expr (sw, val);
@@ -2807,7 +2865,7 @@ tree_predict_by_opcode (basic_block bb)
   op1 = gimple_cond_rhs (stmt);
   cmp = gimple_cond_code (stmt);
   type = TREE_TYPE (op0);
-  val = expr_expected_value_1 (boolean_type_node, op0, cmp, op1, auto_bitmap (),
+  val = expr_expected_value_1 (boolean_type_node, op0, cmp, op1,
 			       &predictor, &probability);
   if (val && TREE_CODE (val) == INTEGER_CST)
     {
@@ -3215,6 +3273,8 @@ tree_estimate_probability (bool dry_run)
   determine_unlikely_bbs ();
 
   bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
+  ssa_expected_value = new hash_map<int_hash<unsigned, 0>, expected_value>;
+
   tree_bb_level_predictions ();
   record_loop_exits ();
 
@@ -3232,6 +3292,8 @@ tree_estimate_probability (bool dry_run)
 
   delete bb_predictions;
   bb_predictions = NULL;
+  delete ssa_expected_value;
+  ssa_expected_value = NULL;
 
   if (!dry_run
       && profile_status_for_fn (cfun) != PROFILE_READ)
@@ -3245,12 +3307,15 @@ void
 tree_guess_outgoing_edge_probabilities (basic_block bb)
 {
   bb_predictions = new hash_map<const_basic_block, edge_prediction *>;
+  ssa_expected_value = new hash_map<int_hash<unsigned, 0>, expected_value>;
   tree_estimate_probability_bb (bb, true);
   combine_predictions_for_bb (bb, false);
   if (flag_checking)
     bb_predictions->traverse<void *, assert_is_empty> (NULL);
   delete bb_predictions;
   bb_predictions = NULL;
+  delete ssa_expected_value;
+  ssa_expected_value = NULL;
 }
 
 /* Filter function predicate that returns true for a edge predicate P
