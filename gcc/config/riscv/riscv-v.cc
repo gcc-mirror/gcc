@@ -3101,9 +3101,27 @@ shuffle_merge_patterns (struct expand_vec_perm_d *d)
   machine_mode mask_mode = get_mask_mode (vmode);
   rtx mask = gen_reg_rtx (mask_mode);
 
-  if (indices_fit_selector_p)
+  if (indices_fit_selector_p && vec_len.is_constant ())
     {
-      /* MASK = SELECTOR < NUNITS ? 1 : 0.  */
+      /* For a constant vector length we can generate the needed mask at
+	 compile time and load it as mask at runtime.
+	 This saves a compare at runtime.  */
+      rtx_vector_builder sel (mask_mode, d->perm.encoding ().npatterns (),
+			      d->perm.encoding ().nelts_per_pattern ());
+      unsigned int encoded_nelts = sel.encoded_nelts ();
+      for (unsigned int i = 0; i < encoded_nelts; i++)
+	sel.quick_push (gen_int_mode (d->perm[i].to_constant ()
+				      < vec_len.to_constant (),
+				      GET_MODE_INNER (mask_mode)));
+      mask = sel.build ();
+    }
+  else if (indices_fit_selector_p)
+    {
+      /* For a dynamic vector length < 256 we keep the permutation
+	 indices in the literal pool, load it at runtime and create the
+	 mask by selecting either OP0 or OP1 by
+
+	    INDICES < NUNITS ? 1 : 0.  */
       rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
       rtx x = gen_int_mode (vec_len, GET_MODE_INNER (sel_mode));
       insn_code icode = code_for_pred_cmp_scalar (sel_mode);
