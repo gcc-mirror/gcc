@@ -36,22 +36,22 @@
 namespace __cxxabiv1 {
 
 extern "C" int
-__cxa_guard_acquire (__guard* g) _GLIBCXX_NOTHROW
-  {
-    return __MCF_cxa_guard_acquire(g);
-  }
+__cxa_guard_acquire (__guard* g)
+{
+  return __MCF_cxa_guard_acquire(g);
+}
 
 extern "C" void
 __cxa_guard_release (__guard* g) _GLIBCXX_NOTHROW
-  {
-    __MCF_cxa_guard_release(g);
-  }
+{
+  __MCF_cxa_guard_release(g);
+}
 
 extern "C" void
 __cxa_guard_abort (__guard* g) _GLIBCXX_NOTHROW
-  {
-    __MCF_cxa_guard_abort(g);
-  }
+{
+  __MCF_cxa_guard_abort(g);
+}
 
 }  // namespace __cxxabiv1
 
