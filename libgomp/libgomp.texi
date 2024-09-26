@@ -937,7 +937,7 @@ active nested regions to the maximum supported.  Disabling nested parallel
 regions sets the maximum number of active nested regions to one.
 
 Note that the @code{omp_set_nested} API routine was deprecated
-in the OpenMP specification 5.2 in favor of @code{omp_set_max_active_levels}.
+in the OpenMP specification 5.0 in favor of @code{omp_set_max_active_levels}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -984,7 +984,7 @@ regions with @code{omp_set_max_active_levels} to one to disable, or
 above one to enable.
 
 Note that the @code{omp_get_nested} API routine was deprecated
-in the OpenMP specification 5.2 in favor of @code{omp_get_max_active_levels}.
+in the OpenMP specification 5.0 in favor of @code{omp_get_max_active_levels}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -3934,7 +3934,7 @@ setting.  If both are undefined, nested parallel regions are enabled if
 more than one item, otherwise they are disabled by default.
 
 Note that the @code{OMP_NESTED} environment variable was deprecated in
-the OpenMP specification 5.2 in favor of @code{OMP_MAX_ACTIVE_LEVELS}.
+the OpenMP specification 5.0 in favor of @code{OMP_MAX_ACTIVE_LEVELS}.
 
 @item @emph{See also}:
 @ref{omp_set_max_active_levels}, @ref{omp_set_nested},
