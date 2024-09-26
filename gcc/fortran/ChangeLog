@@ -1,3 +1,18 @@
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* invoke.texi: Remove @code wrapping in arguments to @opindex.
+	(std=): Remove spurious 'option' in index.
+	(idirafter, imultilib, iprefix, isysroot, iquote, isystem,
+	fintrinsic-modules-path): Remove variable from index.
+	* lang.opt.urls: Regenerate.
+
+2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parse.cc (decode_omp_directive): Set target-used bit of
+	omp_requires_mask when encountering the declare_target or interop
+	directive.
+
 2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* check.cc (gfc_check_random_number): Adjust for unsigned.

@@ -1,3 +1,8 @@
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* lang.opt.urls: Regenerate.
+
 2024-09-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Update for

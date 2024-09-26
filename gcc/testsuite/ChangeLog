@@ -1,3 +1,229 @@
+2024-09-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/116701
+	* lib/fortran-modules.exp (fortran-delete-unit-files): New proc.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Call
+	fortran-delete-unit-files after executing test.
+	* lib/fortran-torture.exp (fortran-torture-execute): Ditto.
+
+2024-09-25  Sam James  <sam@gentoo.org>
+
+	PR c++/116846
+	* g++.dg/modules/indirect-1_b.C: Add XFAIL.
+
+2024-09-25  Sam James  <sam@gentoo.org>
+
+	PR debug/30161
+	PR c++/91826
+	PR c++/116846
+	* g++.dg/debug/dwarf2/template-func-params-7.C: Fix errant underscore.
+	Cleanup whitespace in directives too.
+	* g++.dg/lookup/pr91826.C: Fix errant underscore.
+	* g++.dg/modules/indirect-1_b.C: Ditto.
+	* gcc.target/powerpc/vsx-builtin-msum.c: Ditto.
+
+2024-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* gcc.target/i386/avx512f-pr116738-1.c: New test.
+	* gcc.target/i386/avx512f-pr116738-2.c: New test.
+
+2024-09-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116839
+	* gcc.target/i386/pr116839.c: New file.
+
+2024-09-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_25.f90: Change KIND=16 to KIND=8.
+
+2024-09-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/70740
+	* gcc.dg/torture/pr70740-1.c: New test.
+
+2024-09-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116772
+	* gcc.dg/torture/pr116772-1.c: New test.
+
+2024-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr2874.C: New test.
+
+2024-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr2836.C: New test.
+
+2024-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr2728.C: New test.
+
+2024-09-25  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/114326
+	* gcc.dg/tree-ssa/fold-xor-and-or.c: New test.
+	* gcc.dg/tree-ssa/fold-xor-or.c: New test.
+
+2024-09-25  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/109393
+	* gcc.dg/pr109393.c: New test.
+
+2024-09-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-default.C
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-no.C
+	* g++.dg/diagnostic/disable.C: #define _GLIBCXX_SYSHDR.
+
+2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/interop-1.f90: Add dg-error for missing
+	omp requires requirement and declare_variant usage.
+	* gfortran.dg/gomp/requires-8.f90: Likewise.
+
+2024-09-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/scalar_sat_binary_run_xxx.h: Remove printf
+	code for debugging.
+
+2024-09-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-1.c: Remove
+	func body check and take scan asm times instead.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-13.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-14.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-20.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-21.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-22.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-23.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-24.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-9.c: Ditto.
+
+2024-09-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-1.c: Remove
+	func body check and take scan asm times instead.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-13.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-14.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-20.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-21.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-22.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-23.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-24.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-25.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-26.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-27.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-28.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-29.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-30.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-31.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-33.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-34.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-35.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-36.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-37.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-38.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-39.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-40.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_trunc-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_trunc-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_trunc-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_zip.c: Ditto.
+
+2024-09-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-1.c: Remove
+	func body check and take scan asm times instead.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-13.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-14.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-17.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-18.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-19.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-20.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-21.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-22.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-23.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-24.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-25.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-26.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-27.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-28.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-29.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-30.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-31.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-13.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-14.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-9.c: Ditto.
+
+2024-09-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/declare-variant-duplicates.c: Avoid using
+	"i386" as an identifier.
+
 2024-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/unsigned_30.f90: New test.

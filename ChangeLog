@@ -1,3 +1,7 @@
+2024-09-25  Sam James  <sam@gentoo.org>
+
+	* ltmain.sh (func_mode_link): Allow various flags through filter.
+
 2024-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* MAINTAINERS: Move my entry in DCO list into alphabetical order.

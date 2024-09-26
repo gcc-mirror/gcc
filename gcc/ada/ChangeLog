@@ -1,3 +1,8 @@
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* gcc-interface/lang.opt.urls: Regenerate.
+
 2024-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.cc: Include memmodel.h before tm_p.h.

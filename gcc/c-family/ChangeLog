@@ -1,3 +1,14 @@
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* c.opt.urls: Regenerate.
+
+2024-09-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-pretty-print.cc (c_pretty_printer::primary_expression): Use
+	TARGET_EXPR accessors.
+	(c_pretty_printer::expression): Likewise.
+
 2024-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt.urls: Regenerate.

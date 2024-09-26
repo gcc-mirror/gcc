@@ -1,3 +1,24 @@
+2024-09-25  Marek Polacek  <polacek@redhat.com>
+
+	* coroutines.cc (build_co_await): Use TARGET_EXPR accessors.
+	(finish_co_yield_expr): Likewise.
+	(register_awaits): Likewise.
+	(tmp_target_expr_p): Likewise.
+	(flatten_await_stmt): Likewise.
+	* error.cc (dump_expr): Likewise.
+	* semantics.cc (finish_omp_target_clauses): Likewise.
+	* tree.cc (bot_manip): Likewise.
+	(cp_tree_equal): Likewise.
+	* typeck.cc (cxx_mark_addressable): Likewise.
+	(cp_build_compound_expr): Likewise.
+	(cp_build_modify_expr): Likewise.
+	(check_return_expr): Likewise.
+
+2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_declare_target): Set target-used bit
+	in omp_requires_mask.
+
 2024-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107637

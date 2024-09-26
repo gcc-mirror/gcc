@@ -1,3 +1,89 @@
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* common.opt.urls: Regenerate.
+
+2024-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* config/i386/i386.cc (ix86_fold_builtin): Handle
+	IX86_BUILTIN_M{IN,AX}{S,P}{S,H,D}*.
+	(ix86_gimple_fold_builtin): Handle IX86_BUILTIN_M{IN,AX}P{S,H,D}*.
+
+2024-09-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116839
+	* config/i386/i386.cc (ix86_rewrite_tls_address_1): Make it
+	static.  Return if TLS address is thread register plus an integer
+	register.
+
+2024-09-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116772
+	* generic-match-head.cc (expr_no_side_effects_p): New function
+	* gimple-match-head.cc (expr_no_side_effects_p): New function
+	* match.pd (`a != 0 ? a / b : 0`): Check expr_no_side_effects_p.
+	(`a != 0 ? a * b : 0`, `a != 0 ? a & b : 0`): Likewise.
+
+2024-09-25  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/114326
+	* match.pd: Add two patterns to fold a ^ b to 0, when a == b.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	* value-range.cc (get_bitmask_from_range): Remove redundant
+	compare of xorv with zero.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	* wide-int.h (wide_int_storage::wide_int_storage): Branch
+	on source precision to avoid data dependence on memcpy
+	destination.
+	(wide_int_storage::operator=): Likewise.
+
+2024-09-25  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/109393
+	* match.pd: (A * B) + (-C) -> (B - C/A) * A, if C a multiple of A.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-reassoc.cc (break_up_subtract_bb): Remove recursion.
+	(reassociate_bb): Likewise.
+	(do_reassoc): Implement worklist based dominator walks for
+	both break_up_subtract_bb and reassociate_bb.
+
+2024-09-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/114855
+	* tree-ssa-threadedge.cc: Remove unneeded recursion.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	* ipa-utils.cc (find_always_executed_bbs): Switch result
+	bitmap to tree view.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/114855
+	* ira.cc (add_store_equivs): Use sbitmap for tracking
+	visited insns.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	* ira.cc (ira): Gate add_store_equivs on flag_expensive_optimizations.
+
+2024-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114855
+	* value-relation.cc (equiv_oracle::equiv_oracle): Switch
+	m_equiv_set to tree view.
+
+2024-09-25  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.opt: Update the features included in apxf.
+
 2024-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107637

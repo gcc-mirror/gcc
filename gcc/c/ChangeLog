@@ -1,3 +1,8 @@
+2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_declare_target): Set target-used bit
+	in omp_requires_mask.
+
 2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_requires): Handle self_maps clause.
