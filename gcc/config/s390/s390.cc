@@ -3552,6 +3552,18 @@ s390_mem_constraint (const char *str, rtx op)
       if ((reload_completed || reload_in_progress)
 	  ? !offsettable_memref_p (op) : !offsettable_nonstrict_memref_p (op))
 	return 0;
+      /* offsettable_memref_p ensures only that any positive offset added to
+	 the address forms a valid general address.  For AQ and AR constraints
+	 we also have to verify that the resulting displacement after adding
+	 any positive offset less than the size of the object being referenced
+	 is still valid.  */
+      if (str[1] == 'Q' || str[1] == 'R')
+	{
+	  int o = GET_MODE_SIZE (GET_MODE (op)) - 1;
+	  rtx tmp = adjust_address (op, QImode, o);
+	  if (!s390_check_qrst_address (str[1], XEXP (tmp, 0), true))
+	    return 0;
+	}
       return s390_check_qrst_address (str[1], XEXP (op, 0), true);
     case 'B':
       /* Check for non-literal-pool variants of memory constraints.  */
