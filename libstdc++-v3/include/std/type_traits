@@ -2244,39 +2244,74 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using add_pointer_t = typename add_pointer<_Tp>::type;
 #endif
 
-  template<std::size_t _Len>
-    struct __aligned_storage_msa
-    {
-      union __type
-      {
-	unsigned char __data[_Len];
-	struct __attribute__((__aligned__)) { } __align;
-      };
-    };
+  /// @cond undocumented
+
+  // Aligned to maximum fundamental alignment
+  struct __attribute__((__aligned__)) __aligned_storage_max_align_t
+  { };
+
+  constexpr size_t
+  __aligned_storage_default_alignment([[__maybe_unused__]] size_t __len)
+  {
+#if _GLIBCXX_INLINE_VERSION
+    using _Max_align
+      = integral_constant<size_t, alignof(__aligned_storage_max_align_t)>;
+
+    return __len > (_Max_align::value / 2)
+	     ? _Max_align::value
+# if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_clzg)
+	     : 1 << (__SIZE_WIDTH__ - __builtin_clzg(__len - 1u));
+# else
+	     : 1 << (__LLONG_WIDTH__ - __builtin_clzll(__len - 1ull));
+# endif
+#else
+    // Returning a fixed value is incorrect, but kept for ABI compatibility.
+    // XXX GLIBCXX_ABI Deprecated
+    return alignof(__aligned_storage_max_align_t);
+#endif
+  }
+  /// @endcond
 
   /**
-   *  @brief Alignment type.
+   *  @brief Aligned storage
    *
-   *  The value of _Align is a default-alignment which shall be the
-   *  most stringent alignment requirement for any C++ object type
-   *  whose size is no greater than _Len (3.9). The member typedef
-   *  type shall be a POD type suitable for use as uninitialized
-   *  storage for any object whose size is at most _Len and whose
-   *  alignment is a divisor of _Align.
+   *  The member typedef `type` is be a POD type suitable for use as
+   *  uninitialized storage for any object whose size is at most `_Len`
+   *  and whose alignment is a divisor of `_Align`.
+   *
+   *  It is important to use the nested `type` as uninitialized storage,
+   *  not the `std::aligned_storage` type itself which is an empty class
+   *  with 1-byte alignment. So this is correct:
+   *
+   *  `typename std::aligned_storage<sizeof(X), alignof(X)>::type m_xobj;`
+   *
+   *  This is wrong:
+   *
+   *  `std::aligned_storage<sizeof(X), alignof(X)> m_xobj;`
+   *
+   *  In C++14 and later `std::aligned_storage_t<sizeof(X), alignof(X)>`
+   *  can be used to refer to the `type` member typedef.
+   *
+   *  The default value of _Align is supposed to be the most stringent
+   *  fundamental alignment requirement for any C++ object type whose size
+   *  is no greater than `_Len` (see [basic.align] in the C++ standard).
+   *
+   *  @bug In this implementation the default value for _Align is always the
+   *  maximum fundamental alignment, i.e. `alignof(max_align_t)`, which is
+   *  incorrect. It should be an alignment value no greater than `_Len`.
    *
    *  @deprecated Deprecated in C++23. Uses can be replaced by an
-   *  array std::byte[_Len] declared with alignas(_Align).
+   *  array `std::byte[_Len]` declared with `alignas(_Align)`.
   */
-  template<std::size_t _Len, std::size_t _Align =
-	   __alignof__(typename __aligned_storage_msa<_Len>::__type)>
+  template<size_t _Len,
+	   size_t _Align = __aligned_storage_default_alignment(_Len)>
     struct
     _GLIBCXX23_DEPRECATED
     aligned_storage
     {
-      union type
+      struct type
       {
-	unsigned char __data[_Len];
-	struct __attribute__((__aligned__((_Align)))) { } __align;
+	alignas(_Align) unsigned char __data[_Len];
       };
     };
 
@@ -2776,8 +2811,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   /// Alias template for aligned_storage
-  template<size_t _Len, size_t _Align =
-	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
+  template<size_t _Len,
+	   size_t _Align = __aligned_storage_default_alignment(_Len)>
     using aligned_storage_t _GLIBCXX23_DEPRECATED = typename aligned_storage<_Len, _Align>::type;
 
   template <size_t _Len, typename... _Types>
