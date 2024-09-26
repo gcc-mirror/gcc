@@ -1414,7 +1414,6 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @option{-I} option.
 
 @opindex J@var{dir}
-@opindex M@var{dir}
 @cindex paths, search
 @cindex module search path
 @item -J@var{dir}
