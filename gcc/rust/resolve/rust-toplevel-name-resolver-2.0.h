@@ -162,6 +162,7 @@ private:
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
   void visit (AST::ExternCrate &crate) override;
+  void visit (AST::TypeParam &type_param) override;
 
   void visit (AST::UseDeclaration &use) override;
 };
