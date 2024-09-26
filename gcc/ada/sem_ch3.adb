@@ -23074,6 +23074,23 @@ package body Sem_Ch3 is
          if Present (Variant_Part (Component_List (Def))) then
             Analyze (Variant_Part (Component_List (Def)));
          end if;
+
+         --  For tagged types, when compiling in Generate_Code mode, the _Tag
+         --  component is added before the creation of the class-wide entity
+         --  and it is shared by that entity once it is built.
+
+         --  However, when compiling in Check_Syntax or Check_Semantics modes,
+         --  since the _Tag component is not added to the tagged type entity,
+         --  the First_Entity of its class-wide type remains empty, and must
+         --  be explicitly set to prevent spurious errors from being reported.
+
+         if Operating_Mode <= Check_Semantics
+           and then Is_Tagged_Type (T)
+           and then Present (First_Entity (T))
+           and then No (First_Entity (Class_Wide_Type (T)))
+         then
+            Set_First_Entity (Class_Wide_Type (T), First_Entity (T));
+         end if;
       end if;
 
       --  After completing the semantic analysis of the record definition,
