@@ -663,10 +663,7 @@ split_loop (class loop *loop1)
 		gsi = gsi_start (stmts2);
 		while (!gsi_end_p (gsi))
 		  {
-		    gimple *stmt = gsi_stmt (gsi);
-		    if (is_gimple_assign (stmt)
-			&& arith_code_with_undefined_signed_overflow
-						(gimple_assign_rhs_code (stmt)))
+		    if (gimple_with_undefined_signed_overflow (gsi_stmt (gsi)))
 		      rewrite_to_defined_overflow (&gsi);
 		    gsi_next (&gsi);
 		  }

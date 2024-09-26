@@ -2925,30 +2925,22 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
-	if (is_gimple_assign (stmt))
-	  if (tree lhs = gimple_assign_lhs (stmt))
-	    if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-		 || POINTER_TYPE_P (TREE_TYPE (lhs)))
-		&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (lhs)))
-	      {
-		enum tree_code code = gimple_assign_rhs_code (stmt);
-		if (arith_code_with_undefined_signed_overflow (code))
-		  {
-		    gimple_stmt_iterator gsip = gsi;
-		    gimple_stmt_iterator gsin = gsi;
-		    gsi_prev (&gsip);
-		    gsi_next (&gsin);
-		    rewrite_to_defined_overflow (&gsi);
-		    unsigned uid = gimple_uid (stmt);
-		    if (gsi_end_p (gsip))
-		      gsip = gsi_after_labels (bb);
-		    else
-		      gsi_next (&gsip);
-		    for (; gsi_stmt (gsip) != gsi_stmt (gsin);
-			 gsi_next (&gsip))
-		      gimple_set_uid (gsi_stmt (gsip), uid);
-		  }
-	      }
+	if (gimple_with_undefined_signed_overflow (stmt))
+	  {
+	    gimple_stmt_iterator gsip = gsi;
+	    gimple_stmt_iterator gsin = gsi;
+	    gsi_prev (&gsip);
+	    gsi_next (&gsin);
+	    rewrite_to_defined_overflow (&gsi);
+	    unsigned uid = gimple_uid (stmt);
+	    if (gsi_end_p (gsip))
+	      gsip = gsi_after_labels (bb);
+	    else
+	      gsi_next (&gsip);
+	    for (; gsi_stmt (gsip) != gsi_stmt (gsin);
+		 gsi_next (&gsip))
+	      gimple_set_uid (gsi_stmt (gsip), uid);
+	  }
       }
 
   if (opcode == BIT_IOR_EXPR

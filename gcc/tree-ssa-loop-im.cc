@@ -1419,11 +1419,7 @@ move_computations_worker (basic_block bb)
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
 	 unsigned arithmetic.  */
-      if (is_gimple_assign (stmt)
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (stmt)))
-	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (gimple_assign_lhs (stmt)))
-	  && arith_code_with_undefined_signed_overflow
-	       (gimple_assign_rhs_code (stmt))
+      if (gimple_with_undefined_signed_overflow (stmt)
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))

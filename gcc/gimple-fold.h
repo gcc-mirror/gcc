@@ -59,7 +59,7 @@ extern tree gimple_get_virt_method_for_vtable (HOST_WIDE_INT, tree,
 extern tree gimple_fold_indirect_ref (tree);
 extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
 extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
-extern bool arith_code_with_undefined_signed_overflow (tree_code);
+extern bool gimple_with_undefined_signed_overflow (gimple *);
 extern void rewrite_to_defined_overflow (gimple_stmt_iterator *);
 extern gimple_seq rewrite_to_defined_overflow (gimple *);
 extern void replace_call_with_value (gimple_stmt_iterator *, tree);

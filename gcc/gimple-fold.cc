@@ -10573,7 +10573,7 @@ gimple_fold_indirect_ref (tree t)
    integer types involves undefined behavior on overflow and the
    operation can be expressed with unsigned arithmetic.  */
 
-bool
+static bool
 arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)
@@ -10588,6 +10588,30 @@ arith_code_with_undefined_signed_overflow (tree_code code)
     default:
       return false;
     }
+}
+
+/* Return true if STMT has an operation that operates on a signed
+   integer types involves undefined behavior on overflow and the
+   operation can be expressed with unsigned arithmetic.  */
+
+bool
+gimple_with_undefined_signed_overflow (gimple *stmt)
+{
+  if (!is_gimple_assign (stmt))
+    return false;
+  tree lhs = gimple_assign_lhs (stmt);
+  if (!lhs)
+    return false;
+  tree lhs_type = TREE_TYPE (lhs);
+  if (!INTEGRAL_TYPE_P (lhs_type)
+      && !POINTER_TYPE_P (lhs_type))
+    return false;
+  if (!TYPE_OVERFLOW_UNDEFINED (lhs_type))
+    return false;
+  if (!arith_code_with_undefined_signed_overflow
+	(gimple_assign_rhs_code (stmt)))
+    return false;
+  return true;
 }
 
 /* Rewrite STMT, an assignment with a signed integer or pointer arithmetic
