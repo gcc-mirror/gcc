@@ -62,6 +62,8 @@ check_loadstore (gimple *stmt, tree op, tree, void *data)
   return false;
 }
 
+static vec<gimple *> *bb_split_points;
+
 /* Insert a trap after SI and split the block after the trap.  */
 
 static void
@@ -104,14 +106,20 @@ insert_trap (gimple_stmt_iterator *si_p, tree op)
       gsi_insert_after (si_p, seq, GSI_NEW_STMT);
       if (stmt_ends_bb_p (stmt))
 	{
-	  split_block (gimple_bb (stmt), stmt);
+	  if (dom_info_available_p (CDI_POST_DOMINATORS))
+	    bb_split_points->safe_push (stmt);
+	  else
+	    split_block (gimple_bb (stmt), stmt);
 	  return;
 	}
     }
   else
     gsi_insert_before (si_p, seq, GSI_NEW_STMT);
 
-  split_block (gimple_bb (new_stmt), new_stmt);
+  if (dom_info_available_p (CDI_POST_DOMINATORS))
+    bb_split_points->safe_push (new_stmt);
+  else
+    split_block (gimple_bb (new_stmt), new_stmt);
   *si_p = gsi_for_stmt (stmt);
 }
 
@@ -842,6 +850,8 @@ static void
 find_explicit_erroneous_behavior (void)
 {
   basic_block bb;
+  auto_vec<gimple *> local_bb_split_points;
+  bb_split_points = &local_bb_split_points;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -883,6 +893,14 @@ find_explicit_erroneous_behavior (void)
 	    warn_return_addr_local (bb, return_stmt);
 	}
     }
+
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Perform delayed splitting of blocks.  */
+  for (gimple *stmt : local_bb_split_points)
+    split_block (gimple_bb (stmt), stmt);
+
+  bb_split_points = NULL;
 }
 
 /* Search the function for statements which, if executed, would cause
@@ -939,7 +957,6 @@ gimple_ssa_isolate_erroneous_paths (void)
   /* We scramble the CFG and loop structures a bit, clean up
      appropriately.  We really should incrementally update the
      loop structures, in theory it shouldn't be that hard.  */
-  free_dominance_info (CDI_POST_DOMINATORS);
   if (cfg_altered)
     {
       free_dominance_info (CDI_DOMINATORS);
