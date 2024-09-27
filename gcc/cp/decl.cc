@@ -2528,6 +2528,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	    }
 	}
 
+      /* Propagate purviewness and importingness as with
+	 set_instantiating_module.  */
+      if (modules_p ())
+	{
+	  if (DECL_MODULE_PURVIEW_P (new_result))
+	    DECL_MODULE_PURVIEW_P (old_result) = true;
+	  if (!DECL_MODULE_IMPORT_P (new_result))
+	    DECL_MODULE_IMPORT_P (old_result) = false;
+	}
+
       /* If the new declaration is a definition, update the file and
 	 line information on the declaration, and also make
 	 the old declaration the same definition.  */
