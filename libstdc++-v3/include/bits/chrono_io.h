@@ -794,8 +794,8 @@ namespace __format
 	  const _CharT* __formats[2];
 	  __tp._M_date_time_formats(__formats);
 	  const _CharT* __rep = __formats[__mod];
-	  if (!*__rep)
-	    __rep = _GLIBCXX_WIDEN("%a %b %e %H:%M:%S %Y");
+	  if (!*__rep) [[unlikely]]
+	    __rep = _GLIBCXX_WIDEN("%a %b %e %T %Y");
 	  basic_string<_CharT> __fmt(_S_empty_spec);
 	  __fmt.insert(1u, 1u, _S_colon);
 	  __fmt.insert(2u, __rep);
