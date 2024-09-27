@@ -272,6 +272,7 @@ check in changes outside of the parts of the compiler they maintain.
 
                         Reviewers
 
+arm port (MVE)          Christophe Lyon         <christophe.lyon@arm.com>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
