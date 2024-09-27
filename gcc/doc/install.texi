@@ -1275,13 +1275,13 @@ sysv, aix.
 
 @end table
 
-@item --with-multilib-list=@var{list}
+@item @anchor{with-multilib-list}--with-multilib-list=@var{list}
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, amdgcn*-*-*, arm*-*-*, loongarch*-*-*, riscv*-*-*, sh*-*-*
-and x86-64-*-linux*.  The accepted values and meaning for each target is given
-below.
+for aarch64*-*-*, amdgcn*-*-*, arm*-*-*, loongarch*-*-*, nvptx-*, riscv*-*-*,
+sh*-*-* and x86-64-*-linux*.
+The accepted values and meaning for each target is given below.
 
 @table @code
 @item aarch64*-*-*
@@ -1406,6 +1406,28 @@ for @code{loongarch64-*} targets).
 If @var{list} is empty or @code{default}, or if @option{--with-multilib-list}
 is not specified, then only the default variant of the libraries are built,
 where the default ABI is implied by the configured target triplet.
+
+@item nvptx-*
+The target libraries corresponding to the default value of the
+@option{-march} option are always built,
+@ifnothtml
+@pxref{nvptx-x-none,,host/target specific installation notes}.
+@end ifnothtml
+@ifhtml
+see
+@uref{specific.html#nvptx-x-none,,host/target specific installation notes}.
+@end ifhtml
+If @var{list} is empty, @samp{no}, or @option{--without-multilib-list}
+is specified, then no additional multilibs are built.
+Otherwise, @var{list} is a comma separated list specifying which
+multilibs to build.
+List items are either @samp{sm_SM}, or @samp{default}, which is a
+placeholder specifying a default set of multilibs: @samp{sm_30}.
+Any duplicates are filtered out.
+If @option{--with-multilib-list} is not specified, then
+@option{--with-multilib-list=default} is assumed.
+For @samp{sm_30}, @samp{sm_35} target libraries, @option{-mptx-3.1}
+sub-variants are additionally built.
 
 @item riscv*-*-*
 @var{list} is a single ABI name.  The target architecture must be either
@@ -4609,8 +4631,16 @@ corresponding target libraries.
 The default is @option{--with-arch=sm_30}.
 
 For example, if @option{--with-arch=sm_70} is specified,
-@option{-march=sm_30} and @option{-march=sm_70} target libraries are
-built, and code generation defaults to @option{-march=sm_70}.
+code generation defaults to @option{-march=sm_70} and
+corresponding target libraries are built, in addition to those
+mandated by @option{--with-multilib-list}, if any,
+@ifnothtml
+@pxref{with-multilib-list,,@option{--with-multilib-list}}.
+@end ifnothtml
+@ifhtml
+see
+@uref{configure.html#with-multilib-list,,@option{--with-multilib-list}}.
+@end ifhtml
 
 @html
 <hr />

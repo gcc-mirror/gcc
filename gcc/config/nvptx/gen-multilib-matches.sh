@@ -34,8 +34,17 @@ sms=$(grep ^NVPTX_SM $nvptx_sm_def | sed 's/.*(//;s/,.*//')
 
 # Every variant in 'sms' has to either be remapped to the default variant
 # ('.', which is always built), or does get built as non-default variant
-# ('misa=sm_SM'; thus not remapped), or has to be remapped to the "next lower"
-# variant that does get built.
+# ('misa=sm_SM'; thus not remapped), or gets remapped to a suitable variant,
+# typically the "next lower" one that does get built.  If no "next lower" one
+# does get built, then remap to the "lowest" one that does get built.  This
+# increases chances that the linked code is compatible with more GPU hardware
+# (backward compatibility).  For example, for GCC built '--with-arch=sm_80',
+# '--with-multilib-list=sm_53', only 'sm_53' and 'sm_80' target libraries get
+# built.  If now requesting a '-march=[...]' where no corresponding or "next
+# lower" variant of the target libraries have been built, GCC's default
+# behavior is to link in the default variant, 'sm_80'.  However, if compiling
+# user code with '-march=sm_35', for example, linking in the 'sm_53' variant is
+# supposedly more useful in terms of compatibility with GPU hardware.
 
 print_multilib_matches() {
     local sms
@@ -52,8 +61,18 @@ print_multilib_matches() {
     local multilib_matches
     multilib_matches=
 
+    # Determine the "lowest" variant that does get built.
     local sm_next_lower
-    unset sm_next_lower
+    sm_next_lower=.
+    local sm
+    for sm in $sms; do
+	if [ x"sm_$sm" = x"$multilib_options_isa_default" ]; then
+	    continue
+	elif expr " $multilib_options_isa_list " : ".* sm_$sm " > /dev/null; then
+	    sm_next_lower=$sm
+	    break
+	fi
+    done
 
     local sm
     for sm in $sms; do
@@ -64,9 +83,7 @@ print_multilib_matches() {
 	elif expr " $multilib_options_isa_list " : ".* sm_$sm " > /dev/null; then
 	    sm_map=
 	else
-	    # Assert here that a "next lower" variant is available; the
-	    # "lowest" variant always does get built.
-	    sm_map=${sm_next_lower?}
+	    sm_map=$sm_next_lower
 	fi
 
 	if [ x"${sm_map?}" = x ]; then
