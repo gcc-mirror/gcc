@@ -85,8 +85,7 @@ svint64_t s64_z_pg_op2 (svbool_t pg, svint64_t op1)
 
 /*
 ** s64_m_pg_op2:
-**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
-**	sdiv	(z[0-9]\.d), p[0-7]/m, \2, z\1\.d
+**	mov	z0\.d, p0/m, #0
 **	ret
 */
 svint64_t s64_m_pg_op2 (svbool_t pg, svint64_t op1)
@@ -146,8 +145,7 @@ svint64_t s64_n_z_pg_op2 (svbool_t pg, svint64_t op1)
 
 /*
 ** s64_n_m_pg_op2:
-**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
-**	sdiv	(z[0-9]+\.d), p[0-7]/m, \2, z\1\.d
+**	mov	z0\.d, p0/m, #0
 **	ret
 */
 svint64_t s64_n_m_pg_op2 (svbool_t pg, svint64_t op1)
@@ -267,8 +265,7 @@ svuint64_t u64_z_pg_op2 (svbool_t pg, svuint64_t op1)
 
 /*
 ** u64_m_pg_op2:
-**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
-**	udiv	(z[0-9]+\.d), p[0-7]/m, \2, z\1\.d
+**	mov	z0\.d, p0/m, #0
 **	ret
 */
 svuint64_t u64_m_pg_op2 (svbool_t pg, svuint64_t op1)
@@ -328,8 +325,7 @@ svuint64_t u64_n_z_pg_op2 (svbool_t pg, svuint64_t op1)
 
 /*
 ** u64_n_m_pg_op2:
-**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
-**	udiv	(z[0-9]+\.d), p[0-7]/m, \2, z\1\.d
+**	mov	z0\.d, p0/m, #0
 **	ret
 */
 svuint64_t u64_n_m_pg_op2 (svbool_t pg, svuint64_t op1)

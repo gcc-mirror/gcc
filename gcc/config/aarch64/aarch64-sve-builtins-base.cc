@@ -758,18 +758,15 @@ public:
     if (auto *res = f.fold_const_binary (TRUNC_DIV_EXPR))
       return res;
 
-    /* If the dividend is all zeros, fold to zero vector.  */
+    /* If the divisor is all ones, fold to dividend.  */
     tree op1 = gimple_call_arg (f.call, 1);
-    if (integer_zerop (op1))
-      return gimple_build_assign (f.lhs, op1);
-
-    /* If the divisor is all zeros, fold to zero vector.  */
-    tree pg = gimple_call_arg (f.call, 0);
     tree op2 = gimple_call_arg (f.call, 2);
-    if (integer_zerop (op2)
-	&& (f.pred != PRED_m
-	    || is_ptrue (pg, f.type_suffix (0).element_bytes)))
-      return gimple_build_assign (f.lhs, build_zero_cst (TREE_TYPE (f.lhs)));
+    if (integer_onep (op2))
+      return f.fold_active_lanes_to (op1);
+
+    /* If one of the operands is all zeros, fold to zero vector.  */
+    if (integer_zerop (op1) || integer_zerop (op2))
+      return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
 
     /* If the divisor is a uniform power of 2, fold to a shift
        instruction.  */
@@ -2024,20 +2021,21 @@ public:
     if (auto *res = f.fold_const_binary (MULT_EXPR))
       return res;
 
-    /* If one of the operands is all zeros, fold to zero vector.  */
+    /* If one of the operands is all ones, fold to other operand.  */
     tree op1 = gimple_call_arg (f.call, 1);
-    if (integer_zerop (op1))
-      return gimple_build_assign (f.lhs, op1);
-
-    tree pg = gimple_call_arg (f.call, 0);
     tree op2 = gimple_call_arg (f.call, 2);
-    if (integer_zerop (op2)
-	&& (f.pred != PRED_m
-	    || is_ptrue (pg, f.type_suffix (0).element_bytes)))
-      return gimple_build_assign (f.lhs, build_zero_cst (TREE_TYPE (f.lhs)));
+    if (integer_onep (op1))
+      return f.fold_active_lanes_to (op2);
+    if (integer_onep (op2))
+      return f.fold_active_lanes_to (op1);
+
+    /* If one of the operands is all zeros, fold to zero vector.  */
+    if (integer_zerop (op1) || integer_zerop (op2))
+      return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
 
     /* If one of the operands is a uniform power of 2, fold to a left shift
        by immediate.  */
+    tree pg = gimple_call_arg (f.call, 0);
     tree op1_cst = uniform_integer_cst_p (op1);
     tree op2_cst = uniform_integer_cst_p (op2);
     tree shift_op1, shift_op2;
@@ -2054,9 +2052,6 @@ public:
 	shift_op2 = op2_cst;
       }
     else
-      return NULL;
-
-    if (integer_onep (shift_op2))
       return NULL;
 
     shift_op2 = wide_int_to_tree (unsigned_type_for (TREE_TYPE (shift_op2)),

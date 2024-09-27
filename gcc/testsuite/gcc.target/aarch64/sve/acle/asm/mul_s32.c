@@ -114,12 +114,21 @@ TEST_UNIFORM_Z (mul_intminnop2_s32_m_tied1, svint32_t,
 
 /*
 ** mul_1_s32_m_tied1:
-**	sel	z0\.s, p0, z0\.s, z0\.s
 **	ret
 */
 TEST_UNIFORM_Z (mul_1_s32_m_tied1, svint32_t,
 		z0 = svmul_n_s32_m (p0, z0, 1),
 		z0 = svmul_m (p0, z0, 1))
+
+/*
+** mul_1op1_s32_m_tied2:
+**	mov	(z[0-9]+\.s), #1
+**	sel	z0\.s, p0, z0\.s, \1
+**	ret
+*/
+TEST_UNIFORM_Z (mul_1op1_s32_m_tied2, svint32_t,
+		z0 = svmul_s32_m (p0, svdup_s32 (1), z0),
+		z0 = svmul_m (p0, svdup_s32 (1), z0))
 
 /*
 ** mul_3_s32_m_tied1:
@@ -305,14 +314,23 @@ TEST_UNIFORM_Z (mul_intminnop2_s32_z_tied1, svint32_t,
 
 /*
 ** mul_1_s32_z_tied1:
-**	mov	z31.s, #1
-**	movprfx	z0.s, p0/z, z0.s
-**	mul	z0.s, p0/m, z0.s, z31.s
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
+**	sel	z0\.s, p0, z0\.s, z\1.s
 **	ret
 */
 TEST_UNIFORM_Z (mul_1_s32_z_tied1, svint32_t,
 		z0 = svmul_n_s32_z (p0, z0, 1),
 		z0 = svmul_z (p0, z0, 1))
+
+/*
+** mul_1op1_s32_z_tied2:
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
+**	sel	z0\.s, p0, z0\.s, z\1.s
+**	ret
+*/
+TEST_UNIFORM_Z (mul_1op1_s32_z_tied2, svint32_t,
+		z0 = svmul_s32_z (p0, svdup_s32 (1), z0),
+		z0 = svmul_z (p0, svdup_s32 (1), z0))
 
 /*
 ** mul_3_s32_z_tied1:
@@ -485,6 +503,23 @@ TEST_UNIFORM_Z (mul_intminnop2_s32_x_tied1, svint32_t,
 TEST_UNIFORM_Z (mul_1_s32_x_tied1, svint32_t,
 		z0 = svmul_n_s32_x (p0, z0, 1),
 		z0 = svmul_x (p0, z0, 1))
+
+/*
+** mul_1op1_s32_x_tied2:
+**	ret
+*/
+TEST_UNIFORM_Z (mul_1op1_s32_x_tied2, svint32_t,
+		z0 = svmul_s32_x (p0, svdup_s32 (1), z0),
+		z0 = svmul_x (p0, svdup_s32 (1), z0))
+
+/*
+** mul_1op1_s32_x_untied:
+**	mov	z0\.d, z1\.d
+**	ret
+*/
+TEST_UNIFORM_Z (mul_1op1_s32_x_untied, svint32_t,
+		z0 = svmul_s32_x (p0, svdup_s32 (1), z1),
+		z0 = svmul_x (p0, svdup_s32 (1), z1))
 
 /*
 ** mul_3_s32_x_tied1:

@@ -10,6 +10,8 @@ typedef svfloat32_t svfloat32_ __attribute__((arm_sve_vector_bits(128)));
 typedef svfloat64_t svfloat64_ __attribute__((arm_sve_vector_bits(128)));
 typedef svint32_t svint32_ __attribute__((arm_sve_vector_bits(128)));
 typedef svint64_t svint64_ __attribute__((arm_sve_vector_bits(128)));
+typedef svuint8_t svuint8_ __attribute__((arm_sve_vector_bits(128)));
+typedef svuint16_t svuint16_ __attribute__((arm_sve_vector_bits(128)));
 typedef svuint32_t svuint32_ __attribute__((arm_sve_vector_bits(128)));
 typedef svuint64_t svuint64_ __attribute__((arm_sve_vector_bits(128)));
 
@@ -84,6 +86,10 @@ typedef svuint64_t svuint64_ __attribute__((arm_sve_vector_bits(128)));
   TEST_VALUES_U_1 (64, 4, 7)						\
   TEST_VALUES_U_1 (32, 7, 3)						\
   TEST_VALUES_U_1 (64, 7, 3)						\
+  TEST_VALUES_U_1 (8, 1, 11)						\
+  TEST_VALUES_U_1 (16, 1, UINT16_MAX)					\
+  TEST_VALUES_U_1 (32, 1, 0)						\
+  TEST_VALUES_U_1 (64, 1, (1ULL << 63))					\
   TEST_VALUES_U_1 (32, 11, 1)						\
   TEST_VALUES_U_1 (64, 11, 1)
 
