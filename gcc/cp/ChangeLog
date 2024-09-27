@@ -1,3 +1,9 @@
+2024-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116731
+	* parser.cc (warn_for_range_copy): Check if TYPE is trivially
+	constructible, not copyable.
+
 2024-09-25  Marek Polacek  <polacek@redhat.com>
 
 	* coroutines.cc (build_co_await): Use TARGET_EXPR accessors.

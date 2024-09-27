@@ -1,3 +1,119 @@
+2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (__resize_for_overwrite): Add
+	inline keyword to function with always_inline attribute.
+
+2024-09-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR libstdc++/115126
+	* include/bits/shared_ptr.h (std::__is_shared_ptr): Remove
+	unnecessary 'static'.
+	* include/bits/unique_ptr.h (std::__is_unique_ptr): Likewise.
+	* include/std/future (std::__create_task_state): Likewise.
+	* include/std/shared_mutex (_GLIBCXX_GTRHW): Likewise.
+	(__glibcxx_rwlock_init): Likewise.
+	(__glibcxx_rwlock_timedrdlock): Likewise.
+	(__glibcxx_rwlock_timedwrlock): Likewise.
+	(__glibcxx_rwlock_rdlock): Likewise.
+	(__glibcxx_rwlock_tryrdlock): Likewise.
+	(__glibcxx_rwlock_wrlock): Likewise.
+	(__glibcxx_rwlock_trywrlock): Likewise.
+	(__glibcxx_rwlock_unlock): Likewise.
+	(__glibcxx_rwlock_destroy): Likewise.
+	(__glibcxx_rwlock_init): Likewise.
+	* include/pstl/algorithm_impl.h
+	(__pstl::__internal::__set_algo_cut_off): Mark inline.
+	* include/pstl/unseq_backend_simd.h
+	(__pstl::__unseq_backend::__lane_size): Mark inline.
+
+2024-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116859
+	* config/os/bsd/freebsd/os_defines.h
+	(_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC,
+	_GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC): Avoid
+	-Wexpansion-to-defined warnings.
+	* config/os/bsd/dragonfly/os_defines.h
+	(_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC): Likewise.
+
+2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+	    Andrew Waterman  <andrew@sifive.com>
+
+	PR libstdc++/113578
+	* include/std/ostream (_S_cast_flt): New static member function
+	to restore signbit after casting to double or long double.
+	(operator<<(float), operator<<(_Float16), operator<<(_Float32))
+	(operator<<(_Float64), operator(_Float128))
+	(operator<<(__bfloat16_t)): Use _S_cast_flt.
+	testsuite/27_io/basic_ostream/inserters_arithmetic/lwg4101.cc:
+	New test.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/lwg4101.cc: New file.
+
+2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istringstream/cons/2020.cc: Fix comment
+	referring to basic_filebuf.
+	* testsuite/27_io/basic_istringstream/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/requirements/base_classes.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/requirements/explicit_instantiation/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringbuf/requirements/explicit_instantiation/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/requirements/base_classes.cc:
+	Likewise.
+
+2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_ios.h (basic_ios::operator bool()):
+	Add [[nodiscard]] attribute.
+	(basic_ios::operator!(), basic_ios::rdstate())
+	(basic_ios::good(), basic_ios::eof(), basic_ios::fail())
+	(basic_ios::bad(), basic_ios::exceptions(), basic_ios::tie())
+	(basic_ios::rdbuf(), basic_ios::fill()): Likewise.
+	* include/bits/ios_base.h (ios_base::flags()): Likewise.
+	(ios_base::precision(), ios_base::width(), ios_base::getloc()):
+	Likewise.
+	* include/std/fstream (basic_filebuf::is_open)
+	(basic_ifstream::rdbuf(), basic_ifstream::is_open)
+	(basic_ofstream::rdbuf(), basic_ofstream::is_open)
+	(basic_fstream::rdbuf(), basic_fstream::is_open): Likewise.
+	* include/std/spanstream (basic_spanbuf::span())
+	(basic_ispanstream::span(), basic_ispanstream::rdbuf())
+	(basic_ospanstream::span(), basic_ospanstream::rdbuf())
+	(basic_spanstream::span(), basic_spanstream::rdbuf()):
+	Likewise.
+	* include/std/sstream (basic_stringbuf::str())
+	(basic_istringstream::rdbuf(), basic_istringstream::str())
+	(basic_ostringstream::rdbuf(), basic_ostringstream::str())
+	(basic_stringstream::rdbuf(), basic_stringstream::str()):
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Suppress -Wunused-result warnings.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/01.cc:
+	Likewise.
+
+2024-09-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/116853
+	* include/bits/basic_string.h: Ignore suggest-attribute=format
+	warning when using posix vsnprintf in to_string() implementations.
+
+2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
+	Do not assume allocators only throw std::bad_alloc.
+
+2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116857
+	* libsupc++/guard.cc (__cxa_guard_acquire): Remove
+	_GLIBCXX_NOTHROW to match declaration in <cxxabi.h>.
+
 2024-09-25  Sam James  <sam@gentoo.org>
 
 	PR libstdc++/101831

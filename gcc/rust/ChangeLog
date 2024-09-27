@@ -1,3 +1,8 @@
+2024-09-26  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/borrowck/rust-bir.h
+	(class AbstractExpr): Add virtual destructor.
+
 2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/116801

@@ -1,3 +1,8 @@
+2024-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (omp_get_nested,omp_set_nested, OMP_NESTED): Fix
+	note about deprecation - correct is 5.0 not 5.2.
+
 2024-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107637

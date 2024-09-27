@@ -1,3 +1,56 @@
+2024-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116731
+	* g++.dg/warn/Wrange-loop-construct3.C: New test.
+
+2024-09-26  Sam James  <sam@gentoo.org>
+
+	PR fortran/35779
+	PR fortran/116858
+	* gfortran.dg/initialization_25.f90: Mark as XFAIL.
+
+2024-09-26  Sam James  <sam@gentoo.org>
+
+	* g++.dg/modules/reparent-1_c.C: Fix whitespace around '-' in dg directive.
+	* gfortran.dg/initialization_25.f90: Ditto.
+
+2024-09-26  Sam James  <sam@gentoo.org>
+
+	* gfortran.dg/coarray/caf.exp: Fix 'dg-do-run' typo.
+	* lib/gfortran-dg.exp: Ditto.
+	* lib/gm2-dg.exp: Ditto.
+	* lib/go-dg.exp: Ditto.
+
+2024-09-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* g++.dg/absvect.C: New test.
+	* gcc.dg/tree-ssa/absfloat16.c: New test.
+
+2024-09-26  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/part-vect-popcount-1.c: New test.
+
+2024-09-26  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/rtl/x86_64/vector_eq.c: New test.
+
+2024-09-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116846
+	* g++.dg/modules/indirect-1_b.C: Fix testcase.
+
+2024-09-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-9.c: New test.
+
 2024-09-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR testsuite/116701

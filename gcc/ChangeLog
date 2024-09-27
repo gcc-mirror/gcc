@@ -1,3 +1,64 @@
+2024-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114855
+	* params.opt (--param transitive-relations-work-bound): New.
+	* doc/invoke.texi (--param transitive-relations-work-bound):
+	Document.
+	* value-relation.cc (dom_oracle::register_transitives):
+	Assing an overall work budget, bounding the dominator walk and
+	the number of relations processed.
+	(dom_oracle::record): Only register_transitives when the
+	number of already registered relations does not yet exceed
+	the per-BB limit.
+
+2024-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* langhooks-def.h (lhd_omp_deep_mapping_p,
+	lhd_omp_deep_mapping_cnt, lhd_omp_deep_mapping): New.
+	(LANG_HOOKS_OMP_DEEP_MAPPING_P, LANG_HOOKS_OMP_DEEP_MAPPING_CNT,
+	LANG_HOOKS_OMP_DEEP_MAPPING): Define.
+	(LANG_HOOKS_DECLS): Use it.
+	* langhooks.cc (lhd_omp_deep_mapping_p, lhd_omp_deep_mapping_cnt,
+	lhd_omp_deep_mapping): New stubs.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hooks
+	* omp-expand.cc (expand_omp_target): Handle dynamic-size
+	addr/sizes/kinds arrays.
+	* omp-low.cc (build_sender_ref, fixup_child_record_type,
+	scan_sharing_clauses, lower_omp_target): Update to handle
+	new hooks and dynamic-size addr/sizes/kinds arrays.
+
+2024-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* pretty-print.cc (allocate_object): Use obstack_blank rather than
+	obstack_grow.
+
+2024-09-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <*-*-mingw32>: Remove note regarding
+	binutils 2.16.
+
+2024-09-26  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* match.pd: Extend A CMP 0 ? A : -A into (type)A CMP 0 ? A : -A.
+	Extend A CMP 0 ? A : -A into (type) A CMP 0 ? A : -A.
+
+2024-09-26  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/mmx.md:
+	(VQI_16_32_64): New mode iterator for 8-byte, 4-byte, and 2-byte QImode.
+	(popcount<mode>2): New pattern for popcount of V2QI/V4QI/V8QI mode.
+	(popcount<mode>2): New pattern for popcount of V2HI/V4HI mode.
+	(popcountv2si2): New pattern for popcount of V2SI mode.
+
+2024-09-26  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.h (VECTOR_STORE_FLAG_VALUE): New macro.
+
+2024-09-26  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add optional nop_convert for signed SAT_ADD case 4.
+
 2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/116801

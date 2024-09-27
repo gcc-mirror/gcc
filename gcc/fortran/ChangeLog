@@ -1,3 +1,7 @@
+2024-09-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* invoke.texi (-M): Remove index reference to removed documentation.
+
 2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/116801
