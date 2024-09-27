@@ -96,6 +96,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zabha", "zaamo"},
   {"zacas", "zaamo"},
+  {"zawrs", "zalrsc"},
 
   {"zcmop", "zca"},
 
