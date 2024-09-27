@@ -511,7 +511,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
       @tab N @tab
 @item @code{ref} modifier to the @code{map} clause @tab N @tab
 @item New @code{storage} map-type modifier; context-dependent @code{alloc} and
-      @code{release} are aliases. Update to map decay @tab N @tab
+      @code{release} are aliases @tab N @tab
 @item Update of the map-type decay for mapping and @code{declare_mapper}
       @tab N @tab
 @item Change of the @emph{map-type} property from @emph{ultimate} to
@@ -633,8 +633,6 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item Multi-word directive names are now permitted with underscore @tab N @tab
 @item In Fortran (fixed + free), space between directive names is mandatory
       @tab N @tab
-@item @code{map(release: ...)} on @code{target} and @code{target_data} (map-type
-      decay changes) @tab N @tab post-TR13 item
 @end multitable
 
 
