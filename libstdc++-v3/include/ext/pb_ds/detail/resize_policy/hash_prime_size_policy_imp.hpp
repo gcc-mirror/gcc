@@ -60,6 +60,8 @@ namespace detail
 #endif
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   // Originally taken from the SGI implementation; acknowledged in the docs.
   // Further modified (for 64 bits) from tr1's hashtable.
   static const std::size_t g_a_sizes[num_distinct_sizes] =
@@ -131,6 +133,7 @@ namespace detail
 #endif
 #endif
     };
+#pragma GCC diagnostic pop
 
 } // namespace detail
 

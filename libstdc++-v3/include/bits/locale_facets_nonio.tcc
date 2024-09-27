@@ -1677,6 +1677,9 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
 #if _GLIBCXX_EXTERN_TEMPLATE
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
+#pragma GCC diagnostic ignored "-Wlong-long"
   extern template class moneypunct<char, false>;
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
@@ -1890,6 +1893,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     bool
     has_facet<messages<wchar_t> >(const locale&);
 #endif
+#pragma GCC diagnostic pop
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
