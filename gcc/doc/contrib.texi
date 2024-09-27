@@ -64,6 +64,10 @@ improved alias analysis, plus migrating GCC to Bugzilla.
 Geoff Berry for his Java object serialization work and various patches.
 
 @item
+Richard Biener for his ongoing middle-end contributions and bug fixes
+and for release management.
+
+@item
 David Binderman for testing GCC trunk against Fedora Rawhide
 and csmith.
 
@@ -363,10 +367,6 @@ Stu Grossman for gdb hacking, allowing GCJ developers to debug Java code.
 
 @item
 Michael K. Gschwind contributed the port to the PDP-11.
-
-@item
-Richard Biener for his ongoing middle-end contributions and bug fixes
-and for release management.
 
 @item
 Ron Guilmette implemented the @command{protoize} and @command{unprotoize}
