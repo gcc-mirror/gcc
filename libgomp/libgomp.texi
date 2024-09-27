@@ -476,6 +476,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
       specifiers @tab Y @tab
 @item Support for pure directives in Fortran's @code{do concurrent} @tab N @tab
 @item All inarguable clauses take now an optional Boolean argument @tab N @tab
+@item The @code{adjust_args} clause was extended to specify the argument by position
 @item For Fortran, @emph{locator list} can be also function reference with
       data pointer result @tab N @tab
 @item Concept of @emph{assumed-size arrays} in C and C++
@@ -496,7 +497,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
       clauses @tab P @tab @code{private} not supported
 @item For Fortran, rejecting polymorphic types in data-mapping clauses
       @tab N @tab not diagnosed (and mostly unsupported)
-@item New @code{taskgraph} construct including @emph{saved} modifier and
+@item New @code{taskgraph} construct including @code{saved} modifier and
       @code{replayable} clause @tab N @tab
 @item @code{default} clause on the @code{target} directive @tab N @tab
 @item Ref-count change for @code{use_device_ptr} and @code{use_device_addr}
@@ -509,6 +510,10 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item New @code{init_complete} clause to the @code{scan} directive
       @tab N @tab
 @item @code{ref} modifier to the @code{map} clause @tab N @tab
+@item New @code{storage} map-type modifier; context-dependent @code{alloc} and
+      @code{release} are aliases. Update to map decay @tab N @tab
+@item Update of the map-type decay for mapping and @code{declare_mapper}
+      @tab N @tab
 @item Change of the @emph{map-type} property from @emph{ultimate} to
       @emph{default} @tab N @tab
 @item @code{self} modifier to @code{map} and @code{self} as
@@ -516,7 +521,6 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item Mapping of @emph{assumed-size arrays} in C, C++ and Fortran
       @tab N @tab
 @item @code{delete} as delete-modifier not as map type @tab N @tab
-@item @code{release} map-type modifier in @code{declare_mapper} @tab N @tab
 @item For Fortran, the @code{automap} modifier to the @code{enter} clause
       of @code{declare_target} @tab N @tab
 @item @code{groupprivate} directive @tab N @tab
