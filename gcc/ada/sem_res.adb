@@ -1637,11 +1637,9 @@ package body Sem_Res is
 
          function In_Decl return Boolean is
             Decl_Node : constant Node_Id := Parent (E);
-            N2        : Node_Id;
+            Context   : Node_Id;
 
          begin
-            N2 := N;
-
             if Etype (E) = Any_Type then
                return True;
 
@@ -1649,13 +1647,15 @@ package body Sem_Res is
                return False;
 
             else
-               while Present (N2)
-                 and then Nkind (N2) /= N_Compilation_Unit
+               Context := N;
+
+               while Present (Context)
+                 and then Nkind (Context) /= N_Compilation_Unit
                loop
-                  if N2 = Decl_Node then
+                  if Context = Decl_Node then
                      return True;
                   else
-                     N2 := Parent (N2);
+                     Context := Parent (Context);
                   end if;
                end loop;
 
@@ -1912,7 +1912,7 @@ package body Sem_Res is
          end if;
       end if;
 
-      Set_Chars  (Op_Node, Op_Name);
+      Set_Chars (Op_Node, Op_Name);
 
       if not Is_Private_Type (Etype (N)) then
          Set_Etype (Op_Node, Base_Type (Etype (N)));
