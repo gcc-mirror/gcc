@@ -1589,7 +1589,7 @@ package body Sem_Res is
       --  expanded name, verify that the operand has an interpretation with a
       --  type defined in the given scope of the operator.
 
-      function Type_In_P (Test : Kind_Test) return Entity_Id;
+      function Type_In_P (Test : not null Kind_Test) return Entity_Id;
       --  Find a type of the given class in package Pack that contains the
       --  operator.
 
@@ -1624,7 +1624,7 @@ package body Sem_Res is
       -- Type_In_P --
       ---------------
 
-      function Type_In_P (Test : Kind_Test) return Entity_Id is
+      function Type_In_P (Test : not null Kind_Test) return Entity_Id is
          E : Entity_Id;
 
          function In_Decl return Boolean;
