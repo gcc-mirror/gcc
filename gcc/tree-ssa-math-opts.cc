@@ -6129,10 +6129,15 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
   fma_deferring_state fma_state (param_avoid_fma_max_bits > 0);
 
-  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
-    gsi_next (&psi))
+  for (gphi_iterator psi_next, psi = gsi_start_phis (bb); !gsi_end_p (psi);
+       psi = psi_next)
     {
+      psi_next = psi;
+      gsi_next (&psi_next);
+
       gimple_stmt_iterator gsi = gsi_after_labels (bb);
+
+      /* The match_* may remove phi node.  */
       match_saturation_add (&gsi, psi.phi ());
       match_unsigned_saturation_sub (&gsi, psi.phi ());
     }
