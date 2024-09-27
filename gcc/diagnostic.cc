@@ -156,6 +156,46 @@ diagnostic_option_classifier::fini ()
   m_push_list.release ();
 }
 
+/* Save the diagnostic_option_classifier state to F for PCH
+   output.  Returns 0 on success, -1 on error.  */
+
+int
+diagnostic_option_classifier::pch_save (FILE *f)
+{
+  unsigned int lengths[2] = { m_classification_history.length (),
+			      m_push_list.length () };
+  if (fwrite (lengths, sizeof (lengths), 1, f) != 1
+      || fwrite (m_classification_history.address (),
+		 sizeof (diagnostic_classification_change_t),
+		 lengths[0], f) != lengths[0]
+      || fwrite (m_push_list.address (), sizeof (int),
+		 lengths[1], f) != lengths[1])
+    return -1;
+  return 0;
+}
+
+/* Read the diagnostic_option_classifier state from F for PCH
+   read.  Returns 0 on success, -1 on error.  */
+
+int
+diagnostic_option_classifier::pch_restore (FILE *f)
+{
+  unsigned int lengths[2];
+  if (fread (lengths, sizeof (lengths), 1, f) != 1)
+    return -1;
+  gcc_checking_assert (m_classification_history.is_empty ());
+  gcc_checking_assert (m_push_list.is_empty ());
+  m_classification_history.safe_grow (lengths[0]);
+  m_push_list.safe_grow (lengths[1]);
+  if (fread (m_classification_history.address (),
+	     sizeof (diagnostic_classification_change_t),
+	     lengths[0], f) != lengths[0]
+      || fread (m_push_list.address (), sizeof (int),
+		lengths[1], f) != lengths[1])
+    return -1;
+  return 0;
+}
+
 /* Save all diagnostic classifications in a stack.  */
 
 void
