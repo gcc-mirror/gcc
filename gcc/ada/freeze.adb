@@ -8438,6 +8438,14 @@ package body Freeze is
          then
             return True;
 
+         --  This is the body of a helper/wrapper built for CW preconditions
+
+         elsif Present (Corresponding_Spec (P))
+           and then
+             Present (Class_Preconditions_Subprogram (Corresponding_Spec (P)))
+         then
+            return True;
+
          else
             Id := Defining_Unit_Name (Specification (P));
 
