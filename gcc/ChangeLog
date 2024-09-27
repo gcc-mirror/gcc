@@ -1,3 +1,24 @@
+2024-09-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/115860
+	* config/s390/s390.cc (print_operand): Remove operand specifier
+	%V.
+	* config/s390/s390.md (UNSPEC_TF_TO_FPRX2): New.
+	* config/s390/vector.md (*tf_to_fprx2_0): Remove.
+	(*tf_to_fprx2_1): Remove.
+	(tf_to_fprx2): New.
+
+2024-09-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_mem_constraint): Check displacement
+	for AQ and AR constraints.
+
 2024-09-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

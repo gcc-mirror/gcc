@@ -1,3 +1,14 @@
+2024-09-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2024-09-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/long-double-asm-abi.c: Adapt
+	scan-assembler directive.
+	* gcc.target/s390/vector/long-double-to-i64.c: Adapt
+	scan-assembler directive.
+	* gcc.target/s390/pr115860-1.c: New test.
+
 2024-09-20  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
