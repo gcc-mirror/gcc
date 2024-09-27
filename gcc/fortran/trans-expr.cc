@@ -6438,11 +6438,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     {
       bool finalized = false;
       tree derived_array = NULL_TREE;
+      symbol_attribute *attr;
 
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
 
+      attr = fsym ? &(fsym->ts.type == BT_CLASS ? CLASS_DATA (fsym)->attr
+						: fsym->attr)
+		  : nullptr;
       /* If the procedure requires an explicit interface, the actual
 	 argument is passed according to the corresponding formal
 	 argument.  If the corresponding formal argument is a POINTER,
@@ -6458,7 +6462,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (comp)
 	nodesc_arg = nodesc_arg || !comp->attr.always_explicit;
       else
-	nodesc_arg = nodesc_arg || !sym->attr.always_explicit;
+	nodesc_arg
+	  = nodesc_arg
+	    || !(sym->attr.always_explicit || (attr && attr->codimension));
 
       /* Class array expressions are sometimes coming completely unadorned
 	 with either arrayspec or _data component.  Correct that here.
