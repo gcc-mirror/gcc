@@ -397,7 +397,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __streambuf_type* __this_sb = this->rdbuf();
 	      int_type __c = __this_sb->sgetc();
 	      char_type __c2 = traits_type::to_char_type(__c);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
 	      unsigned long long __gcount = 0;
+#pragma GCC diagnostic pop
 
 	      while (!traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim)
@@ -1122,6 +1125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
 #if _GLIBCXX_EXTERN_TEMPLATE
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
+#pragma GCC diagnostic ignored "-Wlong-long"
   extern template class basic_istream<char>;
   extern template istream& ws(istream&);
   extern template istream& operator>>(istream&, char&);
@@ -1134,8 +1140,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   extern template istream& istream::_M_extract(unsigned long&);
   extern template istream& istream::_M_extract(bool&);
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   extern template istream& istream::_M_extract(long long&);
   extern template istream& istream::_M_extract(unsigned long long&);
+#pragma GCC diagnostic pop
 #endif
   extern template istream& istream::_M_extract(float&);
   extern template istream& istream::_M_extract(double&);
@@ -1166,6 +1175,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   extern template class basic_iostream<wchar_t>;
 #endif
+#pragma GCC diagnostic pop
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

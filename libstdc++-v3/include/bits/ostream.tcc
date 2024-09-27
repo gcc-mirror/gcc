@@ -361,8 +361,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   extern template ostream& ostream::_M_insert(unsigned long);
   extern template ostream& ostream::_M_insert(bool);
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   extern template ostream& ostream::_M_insert(long long);
   extern template ostream& ostream::_M_insert(unsigned long long);
+#pragma GCC diagnostic pop
 #endif
   extern template ostream& ostream::_M_insert(double);
   extern template ostream& ostream::_M_insert(long double);
@@ -382,8 +385,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   extern template wostream& wostream::_M_insert(unsigned long);
   extern template wostream& wostream::_M_insert(bool);
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   extern template wostream& wostream::_M_insert(long long);
   extern template wostream& wostream::_M_insert(unsigned long long);
+#pragma GCC diagnostic pop
 #endif
   extern template wostream& wostream::_M_insert(double);
   extern template wostream& wostream::_M_insert(long double);

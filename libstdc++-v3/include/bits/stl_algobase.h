@@ -937,6 +937,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __fill_a1(_ForwardIterator __first, _ForwardIterator __last,
 	      const _Tp& __value)
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       // We can optimize this loop by moving the load from __value outside
       // the loop, but only if we know that making that copy is trivial,
       // and the assignment in the loop is also trivial (so that the identity
@@ -951,6 +953,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	    && __is_same(_Tp, __typeof__(*__first))
 #endif
 	    && sizeof(_Tp) <= sizeof(long long);
+#pragma GCC diagnostic pop
 
       // When the condition is true, we use a copy of __value,
       // otherwise we just use another reference.
@@ -1040,6 +1043,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       std::__fill_a(__first, __last, __value);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   // Used by fill_n, generate_n, etc. to convert _Size to an integral type:
   inline _GLIBCXX_CONSTEXPR int
   __size_to_integer(int __n) { return __n; }
@@ -1089,9 +1094,11 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   __extension__ inline _GLIBCXX_CONSTEXPR long long
   __size_to_integer(__float128 __n) { return (long long)__n; }
 #endif
+#pragma GCC diagnostic pop
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wlong-long"
   template<typename _OutputIterator, typename _Size, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
@@ -1574,6 +1581,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #if __cplusplus >= 201402L
       return std::__bit_width(make_unsigned_t<_Tp>(__n)) - 1;
 #else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       // Use +__n so it promotes to at least int.
       return (sizeof(+__n) * __CHAR_BIT__ - 1)
 	       - (sizeof(+__n) == sizeof(long long)
@@ -1581,6 +1590,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 		    : (sizeof(+__n) == sizeof(long)
 			 ? __builtin_clzl(+__n)
 			 : __builtin_clz(+__n)));
+#pragma GCC diagnostic pop
 #endif
     }
 

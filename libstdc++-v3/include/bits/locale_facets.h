@@ -2063,6 +2063,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       { return this->do_get(__in, __end, __io, __err, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long long& __v) const
@@ -2072,6 +2074,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, unsigned long long& __v)  const
       { return this->do_get(__in, __end, __io, __err, __v); }
+#pragma GCC diagnostic pop
 #endif
       ///@}
 
@@ -2242,6 +2245,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       virtual iter_type
       do_get(iter_type __beg, iter_type __end, ios_base& __io,
 	     ios_base::iostate& __err, long long& __v) const
@@ -2251,6 +2256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       do_get(iter_type __beg, iter_type __end, ios_base& __io,
 	     ios_base::iostate& __err, unsigned long long& __v) const
       { return _M_extract_int(__beg, __end, __io, __err, __v); }
+#pragma GCC diagnostic pop
 #endif
 
       virtual iter_type
@@ -2407,6 +2413,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       { return this->do_put(__s, __io, __fill, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       iter_type
       put(iter_type __s, ios_base& __io, char_type __fill, long long __v) const
       { return this->do_put(__s, __io, __fill, __v); }
@@ -2415,6 +2423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       put(iter_type __s, ios_base& __io, char_type __fill,
 	  unsigned long long __v) const
       { return this->do_put(__s, __io, __fill, __v); }
+#pragma GCC diagnostic pop
 #endif
       ///@}
 
@@ -2546,6 +2555,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       { return _M_insert_int(__s, __io, __fill, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       virtual iter_type
       do_put(iter_type __s, ios_base& __io, char_type __fill,
 	     long long __v) const
@@ -2555,6 +2566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       do_put(iter_type __s, ios_base& __io, char_type __fill,
 	     unsigned long long __v) const
       { return _M_insert_int(__s, __io, __fill, __v); }
+#pragma GCC diagnostic pop
 #endif
 
       virtual iter_type

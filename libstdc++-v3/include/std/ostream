@@ -207,6 +207,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       __ostream_type&
       operator<<(long long __n)
       { return _M_insert(__n); }
@@ -214,6 +216,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(unsigned long long __n)
       { return _M_insert(__n); }
+#pragma GCC diagnostic pop
 #endif
       ///@}
 
