@@ -9885,11 +9885,30 @@ package body Sem_Res is
          return;
       end if;
 
-      Op := Entity (N);
-      while Scope (Op) /= Standard_Standard loop
-         Op := Homonym (Op);
-         pragma Assert (Present (Op));
-      end loop;
+      case N_Binary_Op'(Nkind (N)) is
+         when N_Op_Add =>
+            Op := Standard_Op_Add;
+         when N_Op_Expon =>
+            Op := Standard_Op_Expon;
+         when N_Op_Subtract =>
+            Op := Standard_Op_Subtract;
+         when N_Op_Divide =>
+            Op := Standard_Op_Divide;
+         when N_Op_Mod =>
+            Op := Standard_Op_Mod;
+         when N_Op_Multiply =>
+            Op := Standard_Op_Multiply;
+         when N_Op_Rem =>
+            Op := Standard_Op_Rem;
+
+         --  Non-arithmetic operators are handled elsewhere
+
+         when N_Op_Boolean
+            | N_Op_Concat
+            | N_Op_Shift
+         =>
+            raise Program_Error;
+      end case;
 
       Set_Entity (N, Op);
       Set_Is_Overloaded (N, False);
@@ -9979,11 +9998,19 @@ package body Sem_Res is
          return;
       end if;
 
-      Op := Entity (N);
-      while Scope (Op) /= Standard_Standard loop
-         Op := Homonym (Op);
-         pragma Assert (Present (Op));
-      end loop;
+      case N_Unary_Op'(Nkind (N)) is
+         when N_Op_Abs =>
+            Op := Standard_Op_Abs;
+         when N_Op_Minus =>
+            Op := Standard_Op_Minus;
+         when N_Op_Plus =>
+            Op := Standard_Op_Plus;
+
+         --  Non-arithmetic operators are handled elsewhere
+
+         when N_Op_Not =>
+            raise Program_Error;
+      end case;
 
       Set_Entity (N, Op);
 
