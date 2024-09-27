@@ -143,8 +143,8 @@ diagnostic_option_classifier::init (int n_opts)
   m_classify_diagnostic = XNEWVEC (diagnostic_t, n_opts);
   for (int i = 0; i < n_opts; i++)
     m_classify_diagnostic[i] = DK_UNSPECIFIED;
-  m_push_list = nullptr;
-  m_n_push = 0;
+  m_push_list = vNULL;
+  m_classification_history = vNULL;
 }
 
 void
@@ -152,8 +152,8 @@ diagnostic_option_classifier::fini ()
 {
   XDELETEVEC (m_classify_diagnostic);
   m_classify_diagnostic = nullptr;
-  free (m_push_list);
-  m_n_push = 0;
+  m_classification_history.release ();
+  m_push_list.release ();
 }
 
 /* Save all diagnostic classifications in a stack.  */
@@ -161,8 +161,7 @@ diagnostic_option_classifier::fini ()
 void
 diagnostic_option_classifier::push ()
 {
-  m_push_list = (int *) xrealloc (m_push_list, (m_n_push + 1) * sizeof (int));
-  m_push_list[m_n_push ++] = m_n_classification_history;
+  m_push_list.safe_push (m_classification_history.length ());
 }
 
 /* Restore the topmost classification set off the stack.  If the stack
@@ -173,19 +172,13 @@ diagnostic_option_classifier::pop (location_t where)
 {
   int jump_to;
 
-  if (m_n_push)
-    jump_to = m_push_list [-- m_n_push];
+  if (!m_push_list.is_empty ())
+    jump_to = m_push_list.pop ();
   else
     jump_to = 0;
 
-  const int i = m_n_classification_history;
-  m_classification_history =
-    (diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
-						     * sizeof (diagnostic_classification_change_t));
-  m_classification_history[i].location = where;
-  m_classification_history[i].option = jump_to;
-  m_classification_history[i].kind = DK_POP;
-  m_n_classification_history ++;
+  diagnostic_classification_change_t v = { where, jump_to, DK_POP };
+  m_classification_history.safe_push (v);
 }
 
 /* Initialize the diagnostic message outputting machinery.  */
@@ -880,31 +873,27 @@ classify_diagnostic (const diagnostic_context *context,
      the pragmas were.  */
   if (where != UNKNOWN_LOCATION)
     {
-      int i;
+      unsigned i;
 
       /* Record the command-line status, so we can reset it back on DK_POP. */
       if (old_kind == DK_UNSPECIFIED)
 	{
-	  old_kind = !context->option_enabled_p (option_id)
-	    ? DK_IGNORED : DK_ANY;
+	  old_kind = (!context->option_enabled_p (option_id)
+		      ? DK_IGNORED : DK_ANY);
 	  m_classify_diagnostic[option_id.m_idx] = old_kind;
 	}
 
-      for (i = m_n_classification_history - 1; i >= 0; i --)
-	if (m_classification_history[i].option == option_id.m_idx)
+      diagnostic_classification_change_t *p;
+      FOR_EACH_VEC_ELT_REVERSE (m_classification_history, i, p)
+	if (p->option == option_id.m_idx)
 	  {
-	    old_kind = m_classification_history[i].kind;
+	    old_kind = p->kind;
 	    break;
 	  }
 
-      i = m_n_classification_history;
-      m_classification_history =
-	(diagnostic_classification_change_t *) xrealloc (m_classification_history, (i + 1)
-							 * sizeof (diagnostic_classification_change_t));
-      m_classification_history[i].location = where;
-      m_classification_history[i].option = option_id.m_idx;
-      m_classification_history[i].kind = new_kind;
-      m_n_classification_history ++;
+      diagnostic_classification_change_t v
+	= { where, option_id.m_idx, new_kind };
+      m_classification_history.safe_push (v);
     }
   else
     m_classify_diagnostic[option_id.m_idx] = new_kind;
@@ -1033,7 +1022,7 @@ diagnostic_t
 diagnostic_option_classifier::
 update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
 {
-  if (m_n_classification_history <= 0)
+  if (m_classification_history.is_empty ())
     return DK_UNSPECIFIED;
 
   /* Iterate over the locations, checking the diagnostic disposition
@@ -1043,27 +1032,26 @@ update_effective_level_from_pragmas (diagnostic_info *diagnostic) const
   for (location_t loc: diagnostic->m_iinfo.m_ilocs)
     {
       /* FIXME: Stupid search.  Optimize later. */
-      for (int i = m_n_classification_history - 1; i >= 0; i --)
+      unsigned int i;
+      diagnostic_classification_change_t *p;
+      FOR_EACH_VEC_ELT_REVERSE (m_classification_history, i, p)
 	{
-	  const diagnostic_classification_change_t &hist
-	    = m_classification_history[i];
-
-	  location_t pragloc = hist.location;
+	  location_t pragloc = p->location;
 	  if (!linemap_location_before_p (line_table, pragloc, loc))
 	    continue;
 
-	  if (hist.kind == (int) DK_POP)
+	  if (p->kind == (int) DK_POP)
 	    {
 	      /* Move on to the next region.  */
-	      i = hist.option;
+	      i = p->option;
 	      continue;
 	    }
 
-	  diagnostic_option_id option = hist.option;
+	  diagnostic_option_id option = p->option;
 	  /* The option 0 is for all the diagnostics.  */
 	  if (option == 0 || option == diagnostic->option_id)
 	    {
-	      diagnostic_t kind = hist.kind;
+	      diagnostic_t kind = p->kind;
 	      if (kind != DK_UNSPECIFIED)
 		diagnostic->kind = kind;
 	      return kind;
