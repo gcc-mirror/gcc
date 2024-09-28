@@ -1,3 +1,8 @@
+2024-09-27  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* MAINTAINERS: Add myself as MVE Reviewer for the AArch32 (arm)
+	port.
+
 2024-09-25  Sam James  <sam@gentoo.org>
 
 	* ltmain.sh (func_mode_link): Allow various flags through filter.

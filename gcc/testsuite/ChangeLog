@@ -1,3 +1,78 @@
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116160
+	* g++.dg/cpp0x/using-enum-3.C: No longer expect an error.
+	* g++.dg/lookup/using53.C: Remove XFAIL.
+	* g++.dg/cpp2a/using-enum-11.C: New test.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116748
+	* g++.dg/lookup/using59.C: Update location.
+	* g++.dg/lookup/using69.C: New test.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116803
+	* g++.dg/modules/merge-18_a.H: New test.
+	* g++.dg/modules/merge-18_b.H: New test.
+	* g++.dg/modules/merge-18_c.C: New test.
+
+2024-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102594
+	* g++.dg/cpp1z/decomp61.C: New test.
+
+2024-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116847
+	* g++.dg/pch/pr116847.C: New test.
+	* g++.dg/pch/pr116847.Hs: New test.
+
+2024-09-27  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/116861
+	* gcc.dg/torture/pr116861-1.c: New test.
+
+2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116793
+	* g++.dg/coroutines/pr116793-1.C: New test.
+
+2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* g++.dg/coroutines/nodiscard-1.C: New test.
+
+2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116502
+	* g++.dg/coroutines/maybe-unused-1.C: New test.
+	* g++.dg/coroutines/pr116502.C: New test.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/cexpr-5_a.C: New test.
+	* g++.dg/modules/cexpr-5_b.C: New test.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/using-10.C: Add tests for no-linkage, fix
+	expected linkage of aliases.
+	* g++.dg/modules/using-12.C: Likewise.
+	* g++.dg/modules/using-27.C: New test.
+	* g++.dg/modules/using-28_a.C: New test.
+	* g++.dg/modules/using-28_b.C: New test.
+	* g++.dg/modules/using-29.H: New test.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/mod-sym-4.C: Update test to account for
+	non-static internal-linkage variables new mangling.
+
+2024-09-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/open_errors_2.f90: Remove now-redundant file deletion.
+
 2024-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116731

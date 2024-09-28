@@ -1,3 +1,17 @@
+2024-09-27  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64-unwind.h: Fix header path.
+
+2024-09-27  Mark Mentovai  <mark@mentovai.com>
+
+	PR target/116809
+	* config.host: Don't build legacy libgcc_s.1 on macOS 14.
+
+2024-09-27  Jim Lin  <jim@andestech.com>
+
+	* config/riscv/save-restore.S: Check with __riscv_abi_rve rather than
+	__riscv_32e.
+
 2024-09-26  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR libstdc++/115126

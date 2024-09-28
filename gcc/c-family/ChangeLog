@@ -1,3 +1,10 @@
+2024-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116847
+	* c-pch.cc: Include diagnostic.h.
+	(c_common_write_pch): Call global_dc->pch_save.
+	(c_common_read_pch): Call global_dc->pch_restore.
+
 2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/116801

@@ -1,3 +1,72 @@
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116160
+	* name-lookup.cc (supplement_binding): Allow redeclaration via
+	USING_DECL if not in class scope.
+	(do_nonmember_using_decl): Remove function-scope exemption.
+	(push_using_decl_bindings): Remove outdated comment.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116748
+	* name-lookup.cc (update_binding): Maintain USING_DECLs in the
+	binding slots.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116803
+	* decl.cc (duplicate_decls): Propagate DECL_MODULE_PURVIEW_P and
+	DECL_MODULE_IMPORT_P for template redeclarations.
+
+2024-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102594
+	* init.cc (build_vec_init): Build up a CONSTRUCTOR to signal
+	direct-initialization rather than a TREE_LIST.
+
+2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116793
+	* coroutines.cc (await_statement_expander): Just process
+	subtrees if encountering a CLEANUP_POINT_EXPR.
+
+2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	* coroutines.cc (co_await_get_resume_call): Return a tree
+	directly, rather than a tree pointer.
+	* cp-tree.h (co_await_get_resume_call): Adjust signature
+	accordingly.
+	* cvt.cc (convert_to_void): Do not alter CO_AWAIT_EXPRs when
+	discarding them.  Simplify handling implicit INDIRECT_REFs.
+
+2024-09-27  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/116502
+	* coroutines.cc (maybe_promote_temps): Convert temporary
+	initializers to void without complaining.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (has_definition): Use decl_maybe_constant_var
+	instead of TREE_CONSTANT.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (check_can_export_using_decl): Handle internal
+	linkage GM entities (but ignore in header units); use linkage
+	of entity ultimately referred to by aliases.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (maybe_record_mergeable_decl): Use decl_linkage
+	instead of ad-hoc checks.
+
+2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (do_namespace_alias): Propagate TREE_PUBLIC for
+	namespace aliases.
+	* tree.cc (decl_linkage): Update rules for C++11.
+
 2024-09-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/116731

@@ -1,3 +1,79 @@
+2024-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116847
+	* diagnostic.h (diagnostic_option_classifier): Add pch_save and
+	pch_restore method declarations.
+	(diagnostic_context): Add pch_save and pch_restore inline method
+	definitions.
+	* diagnostic.cc (diagnostic_option_classifier::pch_save): New method.
+	(diagnostic_option_classifier::pch_restore): Likewise.
+
+2024-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116847
+	* diagnostic.h (diagnostic_option_classifier): Change type
+	of m_classification_history from diagnostic_classification_change_t *
+	to vec<diagnostic_classification_change_t>.  Change type of
+	m_push_list from int * to vec<int>.  Remove m_n_classification_history
+	and m_n_push members.
+	* diagnostic.cc (diagnostic_option_classifier::init): Set m_push_list
+	to vNULL rather than nullptr.  Don't initialize m_n_push.  Initialize
+	m_classification_history to vNULL.
+	(diagnostic_option_classifier::fini): Call release () method on
+	m_push_list instead of free on it.  Call release () on
+	m_classification_history.  Don't clear m_n_push.
+	(diagnostic_option_classifier::push): Adjust for m_push_list and
+	m_classification_history being vectors rather than custom allocated
+	arrays with counter.
+	(diagnostic_option_classifier::pop): Likewise.
+	(classify_diagnostic): Adjust for m_classification_history being
+	vector rather than custom allocated array with counter.
+	(update_effective_level_from_pragmas): Likewise.
+
+2024-09-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h: Add PTA_BDVER1, PTA_BDVER2, PTA_BDVER3,
+	PTA_BDVER4, PTA_BTVER1 and PTA_BTVER2.
+	* common/config/i386/i386-common.cc (processor_alias_table)
+	<"bdver1">: Use PTA_BDVER1.
+	<"bdver2">: Use PTA_BDVER2.
+	<"bdver3">: Use PTA_BDVER3.
+	<"bdver4">: Use PTA_BDVER4.
+	<"btver1">: Use PTA_BTVER1.  Use M_CPU_TYPE (AMD_BTVER1).
+	<"btver2">: Use PTA_BTVER2.
+	<"shanghai>: Use M_CPU_SUBTYPE (AMDFAM10H_SHANGHAI).
+	<"istanbul>: Use M_CPU_SUBTYPE (AMDFAM10H_ISTANBUL).
+
+2024-09-27  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/116861
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children): Backup
+	the next psi iterator before remove the phi node.
+
+2024-09-27  Richard Biener  <rguenther@suse.de>
+
+	* doc/contrib.texi (Richard Biener): Move entry.
+
+2024-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116818
+	* tree-vect-stmts.cc (get_group_load_store_type): Consider
+	VMAT_GATHER_SCATTER instead of VMAT_ELEMENTWISE also for SLP.
+	(vectorizable_load): For single-lane VMAT_GATHER_SCATTER also
+	ignore permutations.
+
+2024-09-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Use the new vect_get_num_copies overload.  Only divide by
+	group_size for SLP for load-store lanes.
+
+2024-09-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116848
+	* tree-ssa-loop-unswitch.cc (tree_ssa_unswitch_loops): Call mark_ssa_maybe_undefs.
+	(is_maybe_undefined): Call ssa_name_maybe_undef_p instead of ondemand undef.
+
 2024-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/114855

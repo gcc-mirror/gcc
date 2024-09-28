@@ -1,3 +1,54 @@
+2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/istream.tcc: Add diagnostic pragmas around uses
+	of long long and extern template.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp:
+	Likewise.
+	* include/ext/pointer.h: Likewise.
+	* include/ext/stdio_sync_filebuf.h: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/ostream: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/functional_hash.h: Likewise. Remove semi-colons
+	at namespace scope that aren't needed after macro expansion.
+	* include/tr1/tuple: Remove semi-colon at namespace scope.
+	* include/bits/vector.tcc: Change LL suffix to just L.
+
+2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/fs_path.h (path::_Cvt): Refactor to
+	use if-constexpr.
+	(path::string(const Allocator&)): Likewise.
+
+2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (resize_for_overwrite): Fix
+	-Wsign-compare warning.
+	* include/bits/cow_string.h (resize_for_overwrite): Likewise.
+
+2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/bind/dangling_ref.cc: Add an additional
+	dg-warning for -Wreturn-local-addr warning.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc:
+	Likewise.
+
+2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_base<T*>::_M_type_size):
+	Replace overloaded functions with static _S_type_size.
+	* include/std/atomic (atomic<T*>): Use is_object_v instead of
+	is_object.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Add dg-warning for -Wpointer-arith warning.
+
 2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/cow_string.h (__resize_for_overwrite): Add

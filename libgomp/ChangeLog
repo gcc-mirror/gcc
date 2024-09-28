@@ -1,3 +1,13 @@
+2024-09-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (TR13 status): Update semi-duplicated, semi-obsoleted
+	item; remove left-over half-sentence.
+
+2024-09-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Change @emph to @code;
+	add two post-TR13 OpenMP 6.0 items.
+
 2024-09-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (omp_get_nested,omp_set_nested, OMP_NESTED): Fix
