@@ -1819,6 +1819,7 @@ gfc_resolve_findloc (gfc_expr *f, gfc_expr *array, gfc_expr *value,
   int i, j, idim;
   int fkind;
   int d_num;
+  bt type;
 
   /* See at the end of the function for why this is necessary.  */
 
@@ -1897,9 +1898,15 @@ gfc_resolve_findloc (gfc_expr *f, gfc_expr *array, gfc_expr *value,
       gfc_convert_type_warn (back, &ts, 2, 0);
     }
 
+  /* Use the INTEGER library function for UNSIGNED.  */
+  if (array->ts.type != BT_UNSIGNED)
+    type = array->ts.type;
+  else
+    type = BT_INTEGER;
+
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%c%d"), name, d_num,
-		      gfc_type_letter (array->ts.type, true),
+		      gfc_type_letter (type, true),
 		      gfc_type_abi_kind (&array->ts));
 
   /* We only have a single library function, so we need to convert

@@ -643,7 +643,7 @@ intrinsic_type_check (gfc_expr *e, int n)
 {
   if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
       && e->ts.type != BT_COMPLEX && e->ts.type != BT_CHARACTER
-      && e->ts.type != BT_LOGICAL)
+      && e->ts.type != BT_LOGICAL && e->ts.type != BT_UNSIGNED)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be of intrinsic type",
 		 gfc_current_intrinsic_arg[n]->name,
@@ -4265,6 +4265,9 @@ gfc_check_findloc (gfc_actual_arglist *ap)
   a1 = a->ts.type == BT_CHARACTER;
   v1 = v->ts.type == BT_CHARACTER;
   if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
+
+  if (flag_unsigned && gfc_invalid_unsigned_ops (a,v))
     goto incompat;
 
   /* Check the kind of the characters argument match.  */
