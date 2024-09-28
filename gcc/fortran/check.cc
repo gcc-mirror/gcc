@@ -3073,6 +3073,12 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	case BT_CHARACTER:
 	  break;
 
+	case BT_UNSIGNED:
+	  if (flag_unsigned)
+	    break;
+
+	  gcc_fallthrough();
+
 	default:
 	  gfc_error ("Missing %qs argument to %qs intrinsic at %L for %qs "
 		     "of type %qs", gfc_current_intrinsic_arg[2]->name,

@@ -2630,6 +2630,10 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	  bnd = gfc_get_int_expr (array->ts.kind, NULL, 0);
 	  break;
 
+	case BT_UNSIGNED:
+	  bnd = gfc_get_unsigned_expr (array->ts.kind, NULL, 0);
+	  break;
+
 	case BT_LOGICAL:
 	  bnd = gfc_get_logical_expr (array->ts.kind, NULL, 0);
 	  break;
