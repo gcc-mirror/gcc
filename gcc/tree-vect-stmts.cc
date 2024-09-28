@@ -9788,6 +9788,20 @@ permute_vec_elements (vec_info *vinfo,
   return data_ref;
 }
 
+/* Comparator for qsort, sorting after GIMPLE UID.  */
+
+static int
+sort_after_uid (const void *a_, const void *b_)
+{
+  const gimple *a = *(const gimple * const *)a_;
+  const gimple *b = *(const gimple * const *)b_;
+  if (gimple_uid (a) < gimple_uid (b))
+    return -1;
+  else if (gimple_uid (a) > gimple_uid (b))
+    return 1;
+  return 0;
+}
+
 /* Hoist the definitions of all SSA uses on STMT_INFO out of the loop LOOP,
    inserting them on the loops preheader edge.  Returns true if we
    were successful in doing so (and thus STMT_INFO can be moved then),
@@ -9799,7 +9813,7 @@ hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
 {
   ssa_op_iter i;
   tree op;
-  bool any = false;
+  auto_vec<gimple *, 8> to_hoist;
 
   FOR_EACH_SSA_TREE_OPERAND (op, stmt_info->stmt, i, SSA_OP_USE)
     {
@@ -9822,26 +9836,24 @@ hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
 		  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt2)))
 		return false;
 	    }
-	  any = true;
+	  to_hoist.safe_push (def_stmt);
 	}
     }
 
-  if (!any)
+  if (to_hoist.is_empty ())
     return true;
 
   if (!hoist_p)
     return true;
 
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt_info->stmt, i, SSA_OP_USE)
+  /* Preserve UID order, otherwise we break dominance checks.  */
+  to_hoist.qsort (sort_after_uid);
+
+  for (gimple *def_stmt : to_hoist)
     {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
-      if (!gimple_nop_p (def_stmt)
-	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
-	{
-	  gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
-	  gsi_remove (&gsi, false);
-	  gsi_insert_on_edge_immediate (loop_preheader_edge (loop), def_stmt);
-	}
+      gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
+      gsi_remove (&gsi, false);
+      gsi_insert_on_edge_immediate (loop_preheader_edge (loop), def_stmt);
     }
 
   return true;
