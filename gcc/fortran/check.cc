@@ -637,6 +637,39 @@ int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is integer or real or unsigned; allow character for
+   F2003 or later.  */
+
+static bool
+int_or_real_or_char_or_unsigned_check_f2003 (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
+      && e->ts.type != BT_UNSIGNED)
+    {
+      if (e->ts.type == BT_CHARACTER)
+	return gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Character for "
+			       "%qs argument of %qs intrinsic at %L",
+			       gfc_current_intrinsic_arg[n]->name,
+			       gfc_current_intrinsic, &e->where);
+      else
+	{
+	  if (gfc_option.allow_std & GFC_STD_F2003)
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or CHARACTER or UNSIGNED",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	  else
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or UNSIGNED",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	}
+      return false;
+    }
+
+  return true;
+}
+
 /* Check that an expression is an intrinsic type.  */
 static bool
 intrinsic_type_check (gfc_expr *e, int n)
@@ -4389,8 +4422,15 @@ check_reduction (gfc_actual_arglist *ap)
 bool
 gfc_check_minval_maxval (gfc_actual_arglist *ap)
 {
-  if (!int_or_real_or_char_check_f2003 (ap->expr, 0)
-      || !array_check (ap->expr, 0))
+  if (flag_unsigned)
+    {
+      if (!int_or_real_or_char_or_unsigned_check_f2003 (ap->expr, 0))
+	return false;
+    }
+  else if (!int_or_real_or_char_check_f2003 (ap->expr, 0))
+    return false;
+
+  if (!array_check (ap->expr, 0))
     return false;
 
   return check_reduction (ap);

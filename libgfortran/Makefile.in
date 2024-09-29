@@ -270,9 +270,12 @@ am__objects_8 = generated/maxloc1_4_i1.lo generated/maxloc1_8_i1.lo \
 	generated/maxloc1_8_r17.lo generated/maxloc1_16_r17.lo
 am__objects_9 = generated/maxval_i1.lo generated/maxval_i2.lo \
 	generated/maxval_i4.lo generated/maxval_i8.lo \
-	generated/maxval_i16.lo generated/maxval_r4.lo \
-	generated/maxval_r8.lo generated/maxval_r10.lo \
-	generated/maxval_r16.lo generated/maxval_r17.lo
+	generated/maxval_i16.lo generated/maxval_m1.lo \
+	generated/maxval_m2.lo generated/maxval_m4.lo \
+	generated/maxval_m8.lo generated/maxval_m16.lo \
+	generated/maxval_r4.lo generated/maxval_r8.lo \
+	generated/maxval_r10.lo generated/maxval_r16.lo \
+	generated/maxval_r17.lo
 am__objects_10 = generated/minloc0_4_i1.lo generated/minloc0_8_i1.lo \
 	generated/minloc0_16_i1.lo generated/minloc0_4_i2.lo \
 	generated/minloc0_8_i2.lo generated/minloc0_16_i2.lo \
@@ -305,9 +308,12 @@ am__objects_11 = generated/minloc1_4_i1.lo generated/minloc1_8_i1.lo \
 	generated/minloc1_8_r17.lo generated/minloc1_16_r17.lo
 am__objects_12 = generated/minval_i1.lo generated/minval_i2.lo \
 	generated/minval_i4.lo generated/minval_i8.lo \
-	generated/minval_i16.lo generated/minval_r4.lo \
-	generated/minval_r8.lo generated/minval_r10.lo \
-	generated/minval_r16.lo generated/minval_r17.lo
+	generated/minval_i16.lo generated/minval_m1.lo \
+	generated/minval_m2.lo generated/minval_m4.lo \
+	generated/minval_m8.lo generated/minval_m16.lo \
+	generated/minval_r4.lo generated/minval_r8.lo \
+	generated/minval_r10.lo generated/minval_r16.lo \
+	generated/minval_r17.lo
 am__objects_13 = generated/product_i1.lo generated/product_i2.lo \
 	generated/product_i4.lo generated/product_i8.lo \
 	generated/product_i16.lo generated/product_r4.lo \
@@ -1186,6 +1192,11 @@ generated/maxval_i2.c \
 generated/maxval_i4.c \
 generated/maxval_i8.c \
 generated/maxval_i16.c \
+generated/maxval_m1.c \
+generated/maxval_m2.c \
+generated/maxval_m4.c \
+generated/maxval_m8.c \
+generated/maxval_m16.c \
 generated/maxval_r4.c \
 generated/maxval_r8.c \
 generated/maxval_r10.c \
@@ -1294,6 +1305,11 @@ generated/minval_i2.c \
 generated/minval_i4.c \
 generated/minval_i8.c \
 generated/minval_i16.c \
+generated/minval_m1.c \
+generated/minval_m2.c \
+generated/minval_m4.c \
+generated/minval_m8.c \
+generated/minval_m16.c \
 generated/minval_r4.c \
 generated/minval_r8.c \
 generated/minval_r10.c \
@@ -2194,6 +2210,16 @@ generated/maxval_i8.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxval_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxval_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxval_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxval_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxval_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxval_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxval_r4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxval_r8.lo: generated/$(am__dirstamp) \
@@ -2333,6 +2359,16 @@ generated/minval_i4.lo: generated/$(am__dirstamp) \
 generated/minval_i8.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minval_i16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minval_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minval_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minval_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minval_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minval_m16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minval_r4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
@@ -3910,6 +3946,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxval_r17.Plo@am__quote@
@@ -4002,6 +4043,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minval_r17.Plo@am__quote@

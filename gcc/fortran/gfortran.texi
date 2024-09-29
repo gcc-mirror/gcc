@@ -2792,7 +2792,8 @@ As of now, the following intrinsics take unsigned arguments:
 @item @code{IANY}, @code{IALL} and @code{IPARITY}
 @item @code{RANDOM_NUMBER}
 @item @code{CSHIFT} and @code{EOSHIFT}
-@item @code{FINDLOC}.
+@item @code{FINDLOC}
+@item @code{MAXVAL} and @code{MINVAL}.
 @end itemize
 This list will grow in the near future.
 @c ---------------------------------------------------------------------

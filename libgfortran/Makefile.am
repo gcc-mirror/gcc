@@ -428,6 +428,11 @@ generated/maxval_i2.c \
 generated/maxval_i4.c \
 generated/maxval_i8.c \
 generated/maxval_i16.c \
+generated/maxval_m1.c \
+generated/maxval_m2.c \
+generated/maxval_m4.c \
+generated/maxval_m8.c \
+generated/maxval_m16.c \
 generated/maxval_r4.c \
 generated/maxval_r8.c \
 generated/maxval_r10.c \
@@ -536,6 +541,11 @@ generated/minval_i2.c \
 generated/minval_i4.c \
 generated/minval_i8.c \
 generated/minval_i16.c \
+generated/minval_m1.c \
+generated/minval_m2.c \
+generated/minval_m4.c \
+generated/minval_m8.c \
+generated/minval_m16.c \
 generated/minval_r4.c \
 generated/minval_r8.c \
 generated/minval_r10.c \
