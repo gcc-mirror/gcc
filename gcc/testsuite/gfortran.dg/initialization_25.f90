@@ -8,5 +8,5 @@
 ! XFAIL is for PR35779
 
 !   INTEGER :: J1
-!   INTEGER,PARAMETER :: I2(10) = (/(J1,J1=its_bad,1,-1)/) ! { dg-error "does not reduce" { xfail *-*-* } }
+!   INTEGER,PARAMETER :: I2(10) = (/(J1,J1=its_bad,1,-1)/) ! { dg-error "does not reduce" "PR35779" { xfail *-*-* } }
 END
