@@ -1,3 +1,17 @@
+2024-09-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.cc (intrinsic_type_check): Handle unsigned.
+	(gfc_check_findloc): Likewise.
+	* gfortran.texi: Include FINDLOC in unsigned documentation.
+	* iresolve.cc (gfc_resolve_findloc): Use INTEGER version
+	for UNSIGNED.
+
+2024-09-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.cc (gfc_check_eoshift): Handle BT_UNSIGNED.
+	* simplify.cc (gfc_simplify_eoshift): Likewise.
+	* gfortran.texi: Document CSHIFT and EOSHIFT for UNSIGNED.
+
 2024-09-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* invoke.texi (-M): Remove index reference to removed documentation.
