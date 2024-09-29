@@ -1,3 +1,91 @@
+2024-09-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Re-add m_ZNVER4
+	accidentally removed during znver5 merge.
+
+2024-09-29  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_128FMA_CHAINS): Enable for
+	znver5.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Likewise.
+	(X86_TUNE_AVOID_512FMA_CHAINS): Likewise.
+
+2024-09-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-16  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (znver5_cost): Update unaligned
+	load and store cost from the aligned costs.
+
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-03-18  Jan Hubicka  <jh@suse.cz>
+		    Karthiban Anbazhagan  <Karthiban.Anbazhagan@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Recognize znver5.
+	* common/config/i386/i386-common.cc (processor_names): Add znver5.
+	(processor_alias_table): Likewise.
+	* common/config/i386/i386-cpuinfo.h (processor_types): Add new zen
+	family.
+	(processor_subtypes): Add znver5.
+	* config.gcc (x86_64-*-* |...): Likewise.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Let
+	march=native detect znver5 cpu's.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add
+	znver5.
+	* config/i386/i386-options.cc (m_ZNVER5): New definition
+	(processor_cost_table): Add znver5.
+	* config/i386/i386.cc (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (processor_type): Add PROCESSOR_ZNVER5
+	(PTA_ZNVER5): New definition.
+	* config/i386/i386.md (define_attr "cpu"): Add znver5.
+	(Scheduling descriptions) Add znver5.md.
+	* config/i386/x86-tune-costs.h (znver5_cost): New definition.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add znver5.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/x86-tune.def (avx512_move_by_pieces): Add m_ZNVER5.
+	(avx512_store_by_pieces): Add m_ZNVER5.
+	* doc/extend.texi: Add znver5.
+	* doc/invoke.texi: Likewise.
+	* config/i386/znver4.md: Rename to zn4zn5.md; combine znver4 and znver5 Scheduler.
+	* config/i386/zn4zn5.md: New file.
+
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-05-14  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/113291
+	* ipa-inline.cc (enum can_inline_edge_by_limits_flags): New enum.
+	(can_inline_edge_by_limits_p): Take flags instead of multiple bools; add flag
+	for forcing inlinie limits.
+	(can_early_inline_edge_p): Update.
+	(want_inline_self_recursive_call_p): Update; use FORCE_LIMITS mode.
+	(check_callers): Update.
+	(update_caller_keys): Update.
+	(update_callee_keys): Update.
+	(recursive_inlining): Update.
+	(add_new_edges_to_heap): Update.
+	(speculation_useful_p): Update.
+	(inline_small_functions): Clear DECL_DISREGARD_INLINE_LIMITS on self recursion.
+	(flatten_function): Update.
+	(inline_to_all_callers_1): Update.
+
+2024-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-09-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116839
+	* config/i386/i386.cc (ix86_rewrite_tls_address_1): Make it
+	static.  Return if TLS address is thread register plus an integer
+	register.
+
 2024-09-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
