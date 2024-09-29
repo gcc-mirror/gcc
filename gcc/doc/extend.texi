@@ -12548,6 +12548,35 @@ The list below describes the supported modifiers and their effects for RISC-V.
 @item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
 @end multitable
 
+@anchor{shOperandmodifiers}
+@subsubsection SH Operand Modifiers
+
+The list below describes the supported modifiers and their effects for the SH family of processors.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{.} @tab Print ''@code{.s}'' if the instruction needs a delay slot.
+@item @code{,} @tab Print ''@code{LOCAL_LABEL_PREFIX}''.
+@item @code{@@} @tab Print ''@code{trap}'', ''@code{rte}'' or ''@code{rts}'' depending on the interrupt pragma used.
+@item @code{#} @tab Print ''@code{nop}'' if there is nothing to put in the delay slot.
+@item @code{'} @tab Print likelihood suffix (''@code{/u}'' for unlikely).
+@item @code{>} @tab Print branch target if ''@code{-fverbose-asm}''.
+@item @code{O} @tab Require a constant operand and print the constant expression with no punctuation.
+@item @code{R} @tab Print the ''@code{LSW}'' of a dp value - changes if in little endian.
+@item @code{S} @tab Print the ''@code{MSW}'' of a dp value - changes if in little endian.
+@item @code{T} @tab Print the next word of a dp value - same as ''@code{R}'' in big endian mode.
+@item @code{M} @tab Print ''@code{.b }'', ''@code{.w}'', ''@code{.l}'', ''@code{.s}'', ''@code{.d}'', suffix if operand is a MEM.
+@item @code{N} @tab Print ''@code{r63}'' if the operand is ''@code{const_int 0}''.
+@item @code{d} @tab Print a ''@code{V2SF}'' as ''@code{dN}'' instead of ''@code{fpN}''.
+@item @code{m} @tab Print the pair ''@code{base,offset}'' or ''@code{base,index}'' for LD and ST.
+@item @code{U} @tab Like ''@code{%m}'' for ''@code{LD}'' and ''@code{ST}'', ''@code{HI}'' and ''@code{LO}''.
+@item @code{V} @tab Print the position of a single bit set.
+@item @code{W} @tab Print the position of a single bit cleared.
+@item @code{t} @tab Print a memory address which is a register.
+@item @code{u} @tab Print the lowest 16 bits of ''@code{CONST_INT}'', as an unsigned value.
+@item @code{o} @tab Print an operator.
+@end multitable
+
 @lowersections
 @include md.texi
 @raisesections
