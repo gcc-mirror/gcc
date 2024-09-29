@@ -1,3 +1,66 @@
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.cc (ix86_reassociation_width): Update for Znver5.
+	* config/i386/x86-tune-costs.h (znver5_costs): Update reassociation
+	widths.
+
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune-sched.cc (ix86_fuse_mov_alu_p): Fix
+	typo.
+
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.h (TARGET_FUSE_MOV_AND_ALU): New tune.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Updat for znver5.
+	(ix86_adjust_cost): Add TODO about znver5 memory latency.
+	(ix86_fuse_mov_alu_p): New.
+	(ix86_macro_fusion_pair_p): Use it.
+	* config/i386/x86-tune.def (X86_TUNE_FUSE_ALU_AND_BRANCH): Add ZNVER5.
+	(X86_TUNE_FUSE_MOV_AND_ALU): New tune;
+
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Disable for
+	ZNVER5.
+	(X86_TUNE_USE_SCATTER_2PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_GATHER_4PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_SCATTER_4PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_GATHER_8PARTS): Disable for ZNVER5.
+	(X86_TUNE_USE_SCATTER_8PARTS): Disable for ZNVER5.
+
+2024-09-28  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_128FMA_CHAINS): Enable for
+	znver5.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Likewise.
+	(X86_TUNE_AVOID_512FMA_CHAINS): Likewise.
+
+2024-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-09-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116839
+	* config/i386/i386.cc (ix86_rewrite_tls_address_1): Make it
+	static.  Return if TLS address is thread register plus an integer
+	register.
+
 2024-09-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:

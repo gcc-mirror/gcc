@@ -1,3 +1,11 @@
+2024-09-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-09-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116839
+	* gcc.target/i386/pr116839.c: New file.
+
 2024-09-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
