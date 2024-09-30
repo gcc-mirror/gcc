@@ -528,7 +528,7 @@ public:
 
   void maybe_show_locus (const rich_location &richloc,
 			 diagnostic_t diagnostic_kind,
-			 pretty_printer *pp,
+			 pretty_printer &pp,
 			 diagnostic_source_effect_info *effect_info);
 
   void emit_diagram (const diagnostic_diagram &diagram);
@@ -981,11 +981,13 @@ inline void
 diagnostic_show_locus (diagnostic_context *context,
 		       rich_location *richloc,
 		       diagnostic_t diagnostic_kind,
-		       pretty_printer *pp = nullptr,
+		       pretty_printer *pp,
 		       diagnostic_source_effect_info *effect_info = nullptr)
 {
+  gcc_assert (context);
   gcc_assert (richloc);
-  context->maybe_show_locus (*richloc, diagnostic_kind, pp, effect_info);
+  gcc_assert (pp);
+  context->maybe_show_locus (*richloc, diagnostic_kind, *pp, effect_info);
 }
 
 /* Because we read source files a second time after the frontend did it the

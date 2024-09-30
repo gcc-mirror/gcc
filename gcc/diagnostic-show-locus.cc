@@ -3265,7 +3265,7 @@ add_location_if_nearby (const diagnostic_context &dc,
 void
 diagnostic_context::maybe_show_locus (const rich_location &richloc,
 				      diagnostic_t diagnostic_kind,
-				      pretty_printer *pp,
+				      pretty_printer &pp,
 				      diagnostic_source_effect_info *effects)
 {
   const location_t loc = richloc.get_loc ();
@@ -3287,12 +3287,8 @@ diagnostic_context::maybe_show_locus (const rich_location &richloc,
 
   m_last_location = loc;
 
-  if (!pp)
-    pp = m_printer;
-  gcc_assert (pp);
-
   diagnostic_source_print_policy source_policy (*this);
-  source_policy.print (*pp, richloc, diagnostic_kind, effects);
+  source_policy.print (pp, richloc, diagnostic_kind, effects);
 }
 
 diagnostic_source_print_policy::
