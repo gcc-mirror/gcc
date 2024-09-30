@@ -265,13 +265,12 @@ class xhtml_builder
 {
 public:
   xhtml_builder (diagnostic_context &context,
+		 pretty_printer &pp,
 		 const line_maps *line_maps);
 
-  void on_report_diagnostic (diagnostic_context &context,
-			     const diagnostic_info &diagnostic,
+  void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind);
-  void emit_diagram (diagnostic_context &context,
-		     const diagnostic_diagram &diagram);
+  void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
   std::unique_ptr<xml::element> take_current_diagnostic ()
@@ -285,11 +284,11 @@ public:
 
 private:
   std::unique_ptr<xml::element>
-  make_element_for_diagnostic (diagnostic_context &context,
-			       const diagnostic_info &diagnostic,
+  make_element_for_diagnostic (const diagnostic_info &diagnostic,
 			       diagnostic_t orig_diag_kind);
 
   diagnostic_context &m_context;
+  pretty_printer &m_printer;
   const line_maps *m_line_maps;
 
   std::unique_ptr<xml::document> m_document;
@@ -318,8 +317,10 @@ make_span (label_text class_)
 /* xhtml_builder's ctor.  */
 
 xhtml_builder::xhtml_builder (diagnostic_context &context,
+			      pretty_printer &pp,
 			      const line_maps *line_maps)
 : m_context (context),
+  m_printer (pp),
   m_line_maps (line_maps)
 {
   gcc_assert (m_line_maps);
@@ -358,14 +359,13 @@ xhtml_builder::xhtml_builder (diagnostic_context &context,
 /* Implementation of "on_report_diagnostic" for XHTML output.  */
 
 void
-xhtml_builder::on_report_diagnostic (diagnostic_context &context,
-				     const diagnostic_info &diagnostic,
+xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 				     diagnostic_t orig_diag_kind)
 {
   // TODO: handle (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
 
   auto diag_element
-    = make_element_for_diagnostic (context, diagnostic, orig_diag_kind);
+    = make_element_for_diagnostic (diagnostic, orig_diag_kind);
   if (m_cur_diagnostic_element)
     /* Nested diagnostic.  */
     m_cur_diagnostic_element->add_child (std::move (diag_element));
@@ -375,8 +375,7 @@ xhtml_builder::on_report_diagnostic (diagnostic_context &context,
 }
 
 std::unique_ptr<xml::element>
-xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
-					    const diagnostic_info &diagnostic,
+xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 					    diagnostic_t orig_diag_kind)
 {
   class xhtml_token_printer : public token_printer
@@ -469,10 +468,10 @@ xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
 
   auto message_span = make_span (label_text::borrow ("gcc-message"));
   xhtml_token_printer tok_printer (*this, *message_span.get ());
-  context.m_printer->set_token_printer (&tok_printer);
-  pp_output_formatted_text (context.m_printer, context.get_urlifier ());
-  context.m_printer->set_token_printer (nullptr);
-  pp_clear_output_area (context.m_printer);
+  m_printer.set_token_printer (&tok_printer);
+  pp_output_formatted_text (&m_printer, m_context.get_urlifier ());
+  m_printer.set_token_printer (nullptr);
+  pp_clear_output_area (&m_printer);
   diag_element->add_child (std::move (message_span));
 
   if (diagnostic.metadata)
@@ -529,10 +528,11 @@ xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
     auto pre = ::make_unique<xml::element> ("pre", true);
     pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
     // TODO: ideally we'd like to capture elements within the following:
-    diagnostic_show_locus (&context, diagnostic.richloc, diagnostic.kind);
+    diagnostic_show_locus (&m_context, diagnostic.richloc, diagnostic.kind,
+			   &m_printer);
     pre->add_text
-      (label_text::take (xstrdup (pp_formatted_text (context.m_printer))));
-    pp_clear_output_area (context.m_printer);
+      (label_text::take (xstrdup (pp_formatted_text (&m_printer))));
+    pp_clear_output_area (&m_printer);
     diag_element->add_child (std::move (pre));
   }
 
@@ -543,8 +543,7 @@ xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
    for XHTML output.  */
 
 void
-xhtml_builder::emit_diagram (diagnostic_context &/*context*/,
-			     const diagnostic_diagram &/*diagram*/)
+xhtml_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_diagnostic_element);
@@ -616,11 +615,11 @@ public:
   on_report_diagnostic (const diagnostic_info &diagnostic,
 			    diagnostic_t orig_diag_kind) final override
   {
-    m_builder.on_report_diagnostic (m_context, diagnostic, orig_diag_kind);
+    m_builder.on_report_diagnostic (diagnostic, orig_diag_kind);
   }
   void on_diagram (const diagnostic_diagram &diagram) final override
   {
-    m_builder.emit_diagram (m_context, diagram);
+    m_builder.emit_diagram (diagram);
   }
   void after_diagnostic (const diagnostic_info &)
   {
@@ -636,7 +635,7 @@ protected:
   xhtml_output_format (diagnostic_context &context,
 		       const line_maps *line_maps)
   : diagnostic_output_format (context),
-    m_builder (context, line_maps)
+    m_builder (context, *get_printer (), line_maps)
   {}
 
   xhtml_builder m_builder;
@@ -712,7 +711,7 @@ diagnostic_output_format_init_xhtml (diagnostic_context &context,
   context.set_ice_handler_callback (xhtml_ice_handler);
 
   /* Don't colorize the text.  */
-  pp_show_color (context.m_printer) = false;
+  pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
 
   context.set_output_format (fmt.release ());

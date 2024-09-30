@@ -194,17 +194,19 @@ class test_output_format : public diagnostic_text_output_format
   void on_begin_group () final override
   {
     /* Loudly announce a new diagnostic group.  */
-    pp_string (m_context.m_printer,
+    pretty_printer *const pp = get_printer ();
+    pp_string (pp,
 	       "================================= BEGIN GROUP ==============================");
-    pp_newline (m_context.m_printer);
+    pp_newline (pp);
   }
   void on_end_group () final override
   {
     /* Loudly announce the end of a diagnostic group.  */
-    pp_set_prefix (m_context.m_printer, NULL);
-    pp_string (m_context.m_printer,
+    pretty_printer *const pp = get_printer ();
+    pp_set_prefix (pp, NULL);
+    pp_string (pp,
 	       "---------------------------------- END GROUP -------------------------------");
-    pp_newline_and_flush (m_context.m_printer);
+    pp_newline_and_flush (pp);
   }
 };
 

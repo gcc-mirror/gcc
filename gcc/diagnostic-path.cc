@@ -1180,7 +1180,7 @@ test_empty_path (pretty_printer *event_pp)
 
   print_path_summary_as_text (summary, text_output, true);
   ASSERT_STREQ ("",
-		pp_formatted_text (dc.m_printer));
+		pp_formatted_text (text_output.get_printer ()));
 }
 
 /* Verify that print_path_summary works on a purely intraprocedural path.  */
@@ -1204,7 +1204,7 @@ test_intraprocedural_path (pretty_printer *event_pp)
   ASSERT_STREQ ("  `foo': events 1-2 (depth 0)\n"
 		" (1): first `free'\n"
 		" (2): double `free'\n",
-		pp_formatted_text (dc.m_printer));
+		pp_formatted_text (text_output.get_printer ()));
 }
 
 /* Verify that print_path_summary works on an interprocedural path.  */
@@ -1288,7 +1288,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
        "                  | (17): entering `wrapped_free'\n"
        "                  | (18): calling free\n"
        "                  |\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1346,7 +1346,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
        "                  │ (17): entering `wrapped_free'\n"
        "                  │ (18): calling free\n"
        "                  │\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 
 }
@@ -1400,7 +1400,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
        "                  |\n"
        "                  | (8): entering `baz'\n"
        "                  |\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1434,7 +1434,7 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
        "                  │\n"
        "                  │ (8): entering `baz'\n"
        "                  │\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 
@@ -1481,7 +1481,7 @@ test_recursion (pretty_printer *event_pp)
        "                         |\n"
        "                         | (7): entering `factorial'\n"
        "                         |\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1510,7 +1510,7 @@ test_recursion (pretty_printer *event_pp)
        "                         │\n"
        "                         │ (7): entering `factorial'\n"
        "                         │\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 
@@ -1627,7 +1627,7 @@ test_control_flow_1 (const line_table_case &case_,
        "|         |\n"
        "+-------->(2) ...to here\n"
        "          (3) dereference of NULL `p'\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1649,7 +1649,7 @@ test_control_flow_1 (const line_table_case &case_,
        "          |\n"
        "          (2) ...to here\n"
        "          (3) dereference of NULL `p'\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1675,7 +1675,7 @@ test_control_flow_1 (const line_table_case &case_,
        "      ||         |\n"
        "      |+-------->(2) ...to here\n"
        "      |          (3) dereference of NULL `p'\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1698,7 +1698,7 @@ test_control_flow_1 (const line_table_case &case_,
        "      |          |\n"
        "      |          (2) ...to here\n"
        "      |          (3) dereference of NULL `p'\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1723,7 +1723,7 @@ test_control_flow_1 (const line_table_case &case_,
        "│         |\n"
        "└────────>(2) ...to here\n"
        "          (3) dereference of NULL `p'\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
   {
     test_diagnostic_context dc;
@@ -1749,7 +1749,7 @@ test_control_flow_1 (const line_table_case &case_,
        "      |│         |\n"
        "      |└────────>(2) ...to here\n"
        "      |          (3) dereference of NULL `p'\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 
@@ -1836,7 +1836,7 @@ test_control_flow_2 (const line_table_case &case_,
        "      ||                              ^~~~\n"
        "      ||                              |\n"
        "      |+----------------------------->(5) ...to here\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 
@@ -1917,7 +1917,7 @@ test_control_flow_3 (const line_table_case &case_,
        "      ||                  ^\n"
        "      ||                  |\n"
        "      |+----------------->(5) ...to here\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 
@@ -1947,7 +1947,7 @@ assert_cfg_edge_path_streq (const location &loc,
   path_summary summary (text_output, path, true);
   print_path_summary_as_text (summary, text_output, false);
   ASSERT_STREQ_AT (loc, expected_str,
-		   pp_formatted_text (dc.m_printer));
+		   pp_formatted_text (text_output.get_printer ()));
 }
 
 /* Assert that if we make a path with an event with "from here..." at SRC_LOC
@@ -2292,7 +2292,7 @@ test_control_flow_5 (const line_table_case &case_,
        "      ||            ~                   ~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
        "      ||            |                   |\n"
        "      |+----------->(4) ...to here      (5) allocated here\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 
@@ -2388,7 +2388,7 @@ test_control_flow_6 (const line_table_case &case_,
        "      ||    ~~~~~~~~~~~~~\n"
        "      ||              |\n"
        "      |+------------->(5) ...to here\n",
-       pp_formatted_text (dc.m_printer));
+       pp_formatted_text (text_output.get_printer ()));
   }
 }
 

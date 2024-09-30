@@ -393,14 +393,17 @@ private:
    to a file).  */
 
 static void
-diagnostic_output_format_init_json (diagnostic_context &context)
+diagnostic_output_format_init_json (diagnostic_context &context,
+				    std::unique_ptr<json_output_format> fmt)
 {
   /* Suppress normal textual path output.  */
   context.set_path_format (DPF_NONE);
 
   /* Don't colorize the text.  */
-  pp_show_color (context.m_printer) = false;
+  pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
+
+  context.set_output_format (fmt.release ());
 }
 
 /* Populate CONTEXT in preparation for JSON output to stderr.  */
@@ -409,9 +412,10 @@ void
 diagnostic_output_format_init_json_stderr (diagnostic_context &context,
 					   bool formatted)
 {
-  diagnostic_output_format_init_json (context);
-  context.set_output_format (new json_stderr_output_format (context,
-							    formatted));
+  diagnostic_output_format_init_json
+    (context,
+     ::make_unique<json_stderr_output_format> (context,
+					       formatted));
 }
 
 /* Populate CONTEXT in preparation for JSON output to a file named
@@ -422,10 +426,11 @@ diagnostic_output_format_init_json_file (diagnostic_context &context,
 					 bool formatted,
 					 const char *base_file_name)
 {
-  diagnostic_output_format_init_json (context);
-  context.set_output_format (new json_file_output_format (context,
-							  formatted,
-							  base_file_name));
+  diagnostic_output_format_init_json
+    (context,
+     ::make_unique<json_file_output_format> (context,
+					     formatted,
+					     base_file_name));
 }
 
 #if CHECKING_P

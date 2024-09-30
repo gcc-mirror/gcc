@@ -3349,7 +3349,7 @@ diagnostic_output_format_init_sarif (diagnostic_context &context,
   context.set_ice_handler_callback (sarif_ice_handler);
 
   /* Don't colorize the text.  */
-  pp_show_color (context.m_printer) = false;
+  pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
 
   context.m_printer->set_token_printer
