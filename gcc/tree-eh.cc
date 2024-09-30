@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "print-tree.h"
 #include "ipa-utils.h"
+#include "hash-set.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,
    i.e. in hash tables. This is a structure to do this. */
@@ -2345,13 +2346,19 @@ void update_stmt_eh_region (gimple *stmt) {
     while (region) {
         switch (region->type) {
             case ERT_CLEANUP:
+                if(gimple_code (stmt) == GIMPLE_RESX){
+                  gimple_resx_set_region(stmt, region->index);
+                }
                 *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
                 return;
 
             case ERT_TRY:
                 if (match_lp (lp, &exception_types)) {
-                    *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
-                    return;
+                  if(gimple_code (stmt) == GIMPLE_RESX){
+                    gimple_resx_set_region(stmt, region->index);
+                  }
+                  *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
+                  return;
                 }
                 break;
 
@@ -2371,7 +2378,10 @@ void update_stmt_eh_region (gimple *stmt) {
         region = region->outer;
     }
 
-    remove_stmt_from_eh_lp_fn (cfun, stmt);
+    if(gimple_code (stmt) == GIMPLE_RESX){
+      gimple_resx_set_region(stmt, -1);
+    }
+    else remove_stmt_from_eh_lp_fn (cfun, stmt);
 }
 
 /* Create the single EH edge from STMT to its nearest landing pad,
@@ -3044,10 +3054,14 @@ bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
     }
 
     switch (gimple_code (stmt)) {
+        case GIMPLE_RESX:
+            extract_fun_resx_types (fun, ret_vector);
+            return !ret_vector->is_empty ();
+
         case GIMPLE_CALL:
             extract_types_for_call (as_a<gcall*> (stmt), ret_vector);
             return !ret_vector->is_empty ();
-
+          
         default:
             return false;
     }
@@ -3089,10 +3103,10 @@ void extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector) {
 }
 
 // To get the types being thrown outside of a function
-void extract_fun_resx_types (function *fun){
+void extract_fun_resx_types (function *fun, vec<tree> *ret_vector) {
 	basic_block bb;
 	gimple_stmt_iterator gsi;
-	vec<tree> *exception_types;
+  hash_set<tree> *types;
 
 	FOR_EACH_BB_FN (bb, fun)
 	{
@@ -3113,9 +3127,15 @@ void extract_fun_resx_types (function *fun){
 
 		for (unsigned i = 0;i<ret_vector->length ();++i){
 			tree type = (*ret_vector)[i];
-			exception_types->safe_push (type);
+		  types->add (type);
 		}
 	}
+
+  for (auto it = types->begin(); it != types->end(); ++it) {
+        ret_vector->safe_push(*it);
+  }
+
+  clear_aux_for_blocks ();
 }
 
 /* Return true if statement STMT within FUN could throw an exception.  */
