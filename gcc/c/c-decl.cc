@@ -9502,14 +9502,17 @@ verify_counted_by_attribute (tree struct_type, tree field_decl)
 
   tree counted_by_field = lookup_field (struct_type, fieldname);
 
-  /* Error when the field is not found in the containing structure.  */
+  /* Error when the field is not found in the containing structure and
+     remove the corresponding counted_by attribute from the field_decl.  */
   if (!counted_by_field)
-    error_at (DECL_SOURCE_LOCATION (field_decl),
-	      "argument %qE to the %qE attribute is not a field declaration"
-	      " in the same structure as %qD", fieldname,
-	      (get_attribute_name (attr_counted_by)),
-	      field_decl);
-
+    {
+      error_at (DECL_SOURCE_LOCATION (field_decl),
+		"argument %qE to the %<counted_by%> attribute"
+		" is not a field declaration in the same structure"
+		" as %qD", fieldname, field_decl);
+      DECL_ATTRIBUTES (field_decl)
+	= remove_attribute ("counted_by", DECL_ATTRIBUTES (field_decl));
+    }
   else
   /* Error when the field is not with an integer type.  */
     {
@@ -9518,14 +9521,15 @@ verify_counted_by_attribute (tree struct_type, tree field_decl)
       tree real_field = TREE_VALUE (counted_by_field);
 
       if (!INTEGRAL_TYPE_P (TREE_TYPE (real_field)))
-	error_at (DECL_SOURCE_LOCATION (field_decl),
-		  "argument %qE to the %qE attribute is not a field declaration"
-		  " with an integer type", fieldname,
-		  (get_attribute_name (attr_counted_by)));
-
+	{
+	  error_at (DECL_SOURCE_LOCATION (field_decl),
+		    "argument %qE to the %<counted_by%> attribute"
+		    " is not a field declaration with an integer type",
+		    fieldname);
+	  DECL_ATTRIBUTES (field_decl)
+	    = remove_attribute ("counted_by", DECL_ATTRIBUTES (field_decl));
+	}
     }
-
-  return;
 }
 
 /* TYPE is a struct or union that we're applying may_alias to after the body is
