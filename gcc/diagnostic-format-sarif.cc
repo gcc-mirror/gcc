@@ -1903,8 +1903,9 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
       rich_location my_rich_loc (m_richloc);
       my_rich_loc.set_escape_on_output (true);
 
+      diagnostic_source_print_policy source_policy (dc);
       dc.set_escape_format (m_escape_format);
-      diagnostic_show_locus (&dc, &my_rich_loc, DK_ERROR);
+      source_policy.print (*dc.m_printer, my_rich_loc, DK_ERROR, nullptr);
 
       std::unique_ptr<sarif_multiformat_message_string> result
 	= builder.make_multiformat_message_string

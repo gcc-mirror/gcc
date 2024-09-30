@@ -34,6 +34,7 @@ class diagnostic_text_output_format : public diagnostic_output_format
 public:
   diagnostic_text_output_format (diagnostic_context &context)
   : diagnostic_output_format (context),
+    m_column_policy (context),
     m_last_module (nullptr),
     m_includes_seen (nullptr)
   {}
@@ -62,6 +63,12 @@ public:
 
   bool show_column_p () const { return get_context ().m_show_column; }
 
+  const diagnostic_column_policy &get_column_policy () const
+  {
+    return m_column_policy;
+  }
+  diagnostic_location_print_policy get_location_print_policy () const;
+
 private:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);
@@ -72,6 +79,8 @@ private:
   bool includes_seen_p (const line_map_ordinary *map);
 
   void show_any_path (const diagnostic_info &diagnostic);
+
+  diagnostic_column_policy m_column_policy;
 
   /* Used to detect when the input file stack has changed since last
      described.  */

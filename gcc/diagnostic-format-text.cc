@@ -263,9 +263,11 @@ label_text
 diagnostic_text_output_format::
 get_location_text (const expanded_location &s) const
 {
-  return get_context ().get_location_text (s, pp_show_color (get_printer ()));
+  diagnostic_column_policy column_policy (get_context ());
+  return column_policy.get_location_text (s,
+					  show_column_p (),
+					  pp_show_color (get_printer ()));
 }
-
 
 /* Helpers for writing lang-specific starters/finalizers for text output.  */
 
@@ -294,7 +296,6 @@ maybe_line_and_column (int line, int col)
 void
 diagnostic_text_output_format::report_current_module (location_t where)
 {
-  const diagnostic_context &context = get_context ();
   pretty_printer *pp = get_printer ();
   const line_map_ordinary *map = NULL;
 
@@ -329,7 +330,7 @@ diagnostic_text_output_format::report_current_module (location_t where)
 	      if (first && show_column_p ())
 		{
 		  s.column = SOURCE_COLUMN (map, where);
-		  col = context.converted_column (s);
+		  col = get_column_policy ().converted_column (s);
 		}
 	      const char *line_col = maybe_line_and_column (s.line, col);
 	      static const char *const msgs[] =

@@ -277,7 +277,9 @@ function_point::print_source_line (pretty_printer *pp) const
   // TODO: monospace font
   debug_diagnostic_context tmp_dc;
   gcc_rich_location richloc (stmt->location);
-  diagnostic_show_locus (&tmp_dc, &richloc, DK_ERROR);
+  diagnostic_source_print_policy source_policy (tmp_dc);
+  gcc_assert (pp);
+  source_policy.print (*pp, richloc, DK_ERROR, nullptr);
   pp_string (pp, pp_formatted_text (tmp_dc.m_printer));
 }
 

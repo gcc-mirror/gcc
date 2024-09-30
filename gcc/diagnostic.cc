@@ -566,13 +566,22 @@ convert_column_unit (file_cache &fc,
     }
 }
 
+diagnostic_column_policy::
+diagnostic_column_policy (const diagnostic_context &dc)
+: m_file_cache (dc.get_file_cache ()),
+  m_column_unit (dc.m_column_unit),
+  m_column_origin (dc.m_column_origin),
+  m_tabstop (dc.m_tabstop)
+{
+}
+
 /* Given an expanded_location, convert the column (which is in 1-based bytes)
    to the requested units and origin.  Return -1 if the column is
    invalid (<= 0).  */
 int
-diagnostic_context::converted_column (expanded_location s) const
+diagnostic_column_policy::converted_column (expanded_location s) const
 {
-  int one_based_col = convert_column_unit (get_file_cache (),
+  int one_based_col = convert_column_unit (m_file_cache,
 					   m_column_unit, m_tabstop, s);
   if (one_based_col <= 0)
     return -1;
@@ -582,8 +591,9 @@ diagnostic_context::converted_column (expanded_location s) const
 /* Return a string describing a location e.g. "foo.c:42:10".  */
 
 label_text
-diagnostic_context::get_location_text (const expanded_location &s,
-				       bool colorize) const
+diagnostic_column_policy::get_location_text (const expanded_location &s,
+					     bool show_column,
+					     bool colorize) const
 {
   const char *locus_cs = colorize_start (colorize, "locus");
   const char *locus_ce = colorize_stop (colorize);
@@ -593,13 +603,28 @@ diagnostic_context::get_location_text (const expanded_location &s,
   if (strcmp (file, special_fname_builtin ()))
     {
       line = s.line;
-      if (m_show_column)
-	col = this->converted_column (s);
+      if (show_column)
+	col = converted_column (s);
     }
 
   const char *line_col = maybe_line_and_column (line, col);
   return label_text::take (build_message_string ("%s%s%s:%s", locus_cs, file,
 						 line_col, locus_ce));
+}
+
+diagnostic_location_print_policy::
+diagnostic_location_print_policy (const diagnostic_context &dc)
+: m_column_policy (dc),
+  m_show_column (dc.m_show_column)
+{
+}
+
+diagnostic_location_print_policy::
+diagnostic_location_print_policy (const diagnostic_text_output_format &text_output)
+:
+  m_column_policy (text_output.get_context ()),
+  m_show_column (text_output.get_context ().m_show_column)
+{
 }
 
 static const char *const diagnostic_kind_text[] = {
@@ -880,11 +905,16 @@ logical_location::function_p () const
 }
 
 void
-default_diagnostic_start_span_fn (diagnostic_context *context,
+default_diagnostic_start_span_fn (const diagnostic_location_print_policy &loc_policy,
+				  pretty_printer *pp,
 				  expanded_location exploc)
 {
-  pretty_printer *pp = context->m_printer;
-  label_text text = context->get_location_text (exploc, pp_show_color (pp));
+  const diagnostic_column_policy &column_policy
+    = loc_policy.get_column_policy ();
+  label_text text
+    = column_policy.get_location_text (exploc,
+				       loc_policy.show_column_p (),
+				       pp_show_color (pp));
   pp_string (pp, text.get ());
   pp_newline (pp);
 }
@@ -1842,7 +1872,7 @@ test_print_parseable_fixits_bytes_vs_display_columns ()
 }
 
 /* Verify that
-     diagnostic_get_location_text (..., SHOW_COLUMN)
+     diagnostic_column_policy::get_location_text (..., SHOW_COLUMN, ...)
    generates EXPECTED_LOC_TEXT, given FILENAME, LINE, COLUMN, with
    colorization disabled.  */
 
@@ -1855,7 +1885,6 @@ assert_location_text (const char *expected_loc_text,
 			= DIAGNOSTICS_COLUMN_UNIT_BYTE)
 {
   test_diagnostic_context dc;
-  dc.m_show_column = show_column;
   dc.m_column_unit = column_unit;
   dc.m_column_origin = origin;
 
@@ -1866,14 +1895,16 @@ assert_location_text (const char *expected_loc_text,
   xloc.data = NULL;
   xloc.sysp = false;
 
-  label_text actual_loc_text = dc.get_location_text (xloc, false);
+  diagnostic_column_policy column_policy (dc);
+  label_text actual_loc_text
+    = column_policy.get_location_text (xloc, show_column, false);
   ASSERT_STREQ (expected_loc_text, actual_loc_text.get ());
 }
 
-/* Verify that diagnostic_get_location_text works as expected.  */
+/* Verify that get_location_text works as expected.  */
 
 static void
-test_diagnostic_get_location_text ()
+test_get_location_text ()
 {
   const char *old_progname = progname;
   progname = "PROGNAME";
@@ -1966,7 +1997,7 @@ c_diagnostic_cc_tests ()
   test_print_parseable_fixits_remove ();
   test_print_parseable_fixits_replace ();
   test_print_parseable_fixits_bytes_vs_display_columns ();
-  test_diagnostic_get_location_text ();
+  test_get_location_text ();
   test_num_digits ();
 
 }

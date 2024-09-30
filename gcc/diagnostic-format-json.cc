@@ -117,7 +117,8 @@ json_from_expanded_location (diagnostic_context &context, location_t loc)
   for (int i = 0; i != ARRAY_SIZE (column_fields); ++i)
     {
       context.m_column_unit = column_fields[i].unit;
-      const int col = context.converted_column (exploc);
+      diagnostic_column_policy col_policy (context);
+      const int col = col_policy.converted_column (exploc);
       result->set_integer (column_fields[i].name, col);
       if (column_fields[i].unit == orig_unit)
 	the_column = col;

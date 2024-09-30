@@ -1211,17 +1211,17 @@ gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 static char *
-gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
-				   expanded_location s)
+gfc_diagnostic_build_locus_prefix (const diagnostic_location_print_policy &loc_policy,
+				   expanded_location s,
+				   bool colorize)
 {
-  pretty_printer *const pp = context->m_printer;
-  const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
-  const char *locus_ce = colorize_stop (pp_show_color (pp));
+  const char *locus_cs = colorize_start (colorize, "locus");
+  const char *locus_ce = colorize_stop (colorize);
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
 	  : !strcmp (s.file, special_fname_builtin ())
 	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
-	  : context->m_show_column
+	  : loc_policy.show_column_p ()
 	  ? build_message_string ("%s%s:%d:%d:%s", locus_cs, s.file, s.line,
 				  s.column, locus_ce)
 	  : build_message_string ("%s%s:%d:%s", locus_cs, s.file, s.line, locus_ce));
@@ -1230,18 +1230,18 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 /* Return a malloc'd string describing two locations.  The caller is
    responsible for freeing the memory.  */
 static char *
-gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
-				   expanded_location s, expanded_location s2)
+gfc_diagnostic_build_locus_prefix (const diagnostic_location_print_policy &loc_policy,
+				   expanded_location s, expanded_location s2,
+				   bool colorize)
 {
-  pretty_printer *const pp = context->m_printer;
-  const char *locus_cs = colorize_start (pp_show_color (pp), "locus");
-  const char *locus_ce = colorize_stop (pp_show_color (pp));
+  const char *locus_cs = colorize_start (colorize, "locus");
+  const char *locus_ce = colorize_stop (colorize);
 
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
 	  : !strcmp (s.file, special_fname_builtin ())
 	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
-	  : context->m_show_column
+	  : loc_policy.show_column_p ()
 	  ? build_message_string ("%s%s:%d:%d-%d:%s", locus_cs, s.file, s.line,
 				  MIN (s.column, s2.column),
 				  MAX (s.column, s2.column), locus_ce)
@@ -1285,9 +1285,11 @@ gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
       same_locus = diagnostic_same_line (context, s1, s2);
     }
 
+  diagnostic_location_print_policy loc_policy (text_output);
+  const bool colorize = pp_show_color (pp);
   char * locus_prefix = (one_locus || !same_locus)
-    ? gfc_diagnostic_build_locus_prefix (context, s1)
-    : gfc_diagnostic_build_locus_prefix (context, s1, s2);
+    ? gfc_diagnostic_build_locus_prefix (loc_policy, s1, colorize)
+    : gfc_diagnostic_build_locus_prefix (loc_policy, s1, s2, colorize);
 
   if (!context->m_source_printing.enabled
       || diagnostic_location (diagnostic, 0) <= BUILTINS_LOCATION
@@ -1309,7 +1311,7 @@ gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 	 and we flush with a new line before setting the new prefix.  */
       pp_string (pp, "(1)");
       pp_newline (pp);
-      locus_prefix = gfc_diagnostic_build_locus_prefix (context, s2);
+      locus_prefix = gfc_diagnostic_build_locus_prefix (loc_policy, s2, colorize);
       pp_set_prefix (pp,
 		     concat (locus_prefix, " ", kind_prefix, NULL));
       free (kind_prefix);
@@ -1332,12 +1334,13 @@ gfc_diagnostic_text_starter (diagnostic_text_output_format &text_output,
 }
 
 static void
-gfc_diagnostic_start_span (diagnostic_context *context,
+gfc_diagnostic_start_span (const diagnostic_location_print_policy &loc_policy,
+			   pretty_printer *pp,
 			   expanded_location exploc)
 {
-  char *locus_prefix;
-  locus_prefix = gfc_diagnostic_build_locus_prefix (context, exploc);
-  pretty_printer * const pp = context->m_printer;
+  const bool colorize = pp_show_color (pp);
+  char *locus_prefix
+    = gfc_diagnostic_build_locus_prefix (loc_policy, exploc, colorize);
   pp_verbatim (pp, "%s", locus_prefix);
   free (locus_prefix);
   pp_newline (pp);

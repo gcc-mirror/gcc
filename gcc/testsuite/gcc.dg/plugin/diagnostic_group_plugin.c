@@ -175,11 +175,12 @@ test_diagnostic_text_starter (diagnostic_text_output_format &text_output,
    expected output.  */
 
 void
-test_diagnostic_start_span_fn (diagnostic_context *context,
-			       expanded_location exploc)
+test_diagnostic_start_span_fn (const diagnostic_location_print_policy &,
+			       pretty_printer *pp,
+			       expanded_location)
 {
-  pp_string (context->m_printer, "START_SPAN_FN: ");
-  pp_newline (context->m_printer);
+  pp_string (pp, "START_SPAN_FN: ");
+  pp_newline (pp);
 }
 
 /* Custom output format subclass.  */
