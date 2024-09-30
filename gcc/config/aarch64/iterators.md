@@ -881,6 +881,8 @@
     UNSPEC_COND_FSQRT	; Used in aarch64-sve.md.
     UNSPEC_COND_FSUB	; Used in aarch64-sve.md.
     UNSPEC_COND_SCVTF	; Used in aarch64-sve.md.
+    UNSPEC_COND_SMAX	; Used in aarch64-sve.md.
+    UNSPEC_COND_SMIN	; Used in aarch64-sve.md.
     UNSPEC_COND_UCVTF	; Used in aarch64-sve.md.
     UNSPEC_LASTA	; Used in aarch64-sve.md.
     UNSPEC_LASTB	; Used in aarch64-sve.md.
@@ -3081,15 +3083,18 @@
 (define_int_iterator SVE_COND_FCVTI [UNSPEC_COND_FCVTZS UNSPEC_COND_FCVTZU])
 (define_int_iterator SVE_COND_ICVTF [UNSPEC_COND_SCVTF UNSPEC_COND_UCVTF])
 
-(define_int_iterator SVE_COND_FP_BINARY [UNSPEC_COND_FADD
-					 UNSPEC_COND_FDIV
-					 UNSPEC_COND_FMAX
-					 UNSPEC_COND_FMAXNM
-					 UNSPEC_COND_FMIN
-					 UNSPEC_COND_FMINNM
-					 UNSPEC_COND_FMUL
-					 UNSPEC_COND_FMULX
-					 UNSPEC_COND_FSUB])
+(define_int_iterator SVE_COND_FP_BINARY
+  [UNSPEC_COND_FADD
+   UNSPEC_COND_FDIV
+   UNSPEC_COND_FMAX
+   UNSPEC_COND_FMAXNM
+   UNSPEC_COND_FMIN
+   UNSPEC_COND_FMINNM
+   UNSPEC_COND_FMUL
+   UNSPEC_COND_FMULX
+   UNSPEC_COND_FSUB
+   UNSPEC_COND_SMAX
+   UNSPEC_COND_SMIN])
 
 ;; Same as SVE_COND_FP_BINARY, but without codes that have a dedicated
 ;; <optab><mode>3 expander.
@@ -3100,7 +3105,9 @@
 					       UNSPEC_COND_FMINNM
 					       UNSPEC_COND_FMUL
 					       UNSPEC_COND_FMULX
-					       UNSPEC_COND_FSUB])
+					       UNSPEC_COND_FSUB
+					       UNSPEC_COND_SMAX
+					       UNSPEC_COND_SMIN])
 
 (define_int_iterator SVE_COND_FP_BINARY_INT [UNSPEC_COND_FSCALE])
 
@@ -3112,10 +3119,15 @@
 					    UNSPEC_COND_FMAXNM
 					    UNSPEC_COND_FMIN
 					    UNSPEC_COND_FMINNM
-					    UNSPEC_COND_FMUL])
+					    UNSPEC_COND_FMUL
+					    UNSPEC_COND_SMAX
+					    UNSPEC_COND_SMIN])
 
-(define_int_iterator SVE_COND_FP_BINARY_REG [UNSPEC_COND_FDIV
-					     UNSPEC_COND_FMULX])
+(define_int_iterator SVE_COND_FP_BINARY_REG
+  [UNSPEC_COND_FDIV
+   UNSPEC_COND_FMULX
+   UNSPEC_COND_SMAX
+   UNSPEC_COND_SMIN])
 
 (define_int_iterator SVE_COND_FCADD [UNSPEC_COND_FCADD90
 				     UNSPEC_COND_FCADD270])
@@ -3124,11 +3136,6 @@
 					 UNSPEC_COND_FMAXNM
 					 UNSPEC_COND_FMIN
 					 UNSPEC_COND_FMINNM])
-
-;; Floating-point max/min operations that correspond to optabs,
-;; as opposed to those that are internal to the port.
-(define_int_iterator SVE_COND_FP_MAXMIN_PUBLIC [UNSPEC_COND_FMAXNM
-						UNSPEC_COND_FMINNM])
 
 (define_int_iterator SVE_COND_FP_TERNARY [UNSPEC_COND_FMLA
 					  UNSPEC_COND_FMLS
@@ -3705,9 +3712,9 @@
 			(UNSPEC_COND_FCVTZU "fixuns_trunc")
 			(UNSPEC_COND_FDIV "div")
 			(UNSPEC_COND_FMAX "fmax_nan")
-			(UNSPEC_COND_FMAXNM "smax")
+			(UNSPEC_COND_FMAXNM "fmax")
 			(UNSPEC_COND_FMIN "fmin_nan")
-			(UNSPEC_COND_FMINNM "smin")
+			(UNSPEC_COND_FMINNM "fmin")
 			(UNSPEC_COND_FMLA "fma")
 			(UNSPEC_COND_FMLS "fnma")
 			(UNSPEC_COND_FMUL "mul")
@@ -3727,6 +3734,8 @@
 			(UNSPEC_COND_FSQRT "sqrt")
 			(UNSPEC_COND_FSUB "sub")
 			(UNSPEC_COND_SCVTF "float")
+			(UNSPEC_COND_SMAX "smax")
+			(UNSPEC_COND_SMIN "smin")
 			(UNSPEC_COND_UCVTF "floatuns")])
 
 (define_int_attr fmaxmin [(UNSPEC_FMAX "fmax_nan")
@@ -3734,9 +3743,7 @@
 			  (UNSPEC_FMAXNMV "fmax")
 			  (UNSPEC_FMIN "fmin_nan")
 			  (UNSPEC_FMINNM "fmin")
-			  (UNSPEC_FMINNMV "fmin")
-			  (UNSPEC_COND_FMAXNM "fmax")
-			  (UNSPEC_COND_FMINNM "fmin")])
+			  (UNSPEC_FMINNMV "fmin")])
 
 (define_int_attr  maxmin_uns_op [(UNSPEC_UMAXV "umax")
 				 (UNSPEC_UMINV "umin")
@@ -4251,7 +4258,9 @@
 			    (UNSPEC_COND_FRINTZ "frintz")
 			    (UNSPEC_COND_FSCALE "fscale")
 			    (UNSPEC_COND_FSQRT "fsqrt")
-			    (UNSPEC_COND_FSUB "fsub")])
+			    (UNSPEC_COND_FSUB "fsub")
+			    (UNSPEC_COND_SMAX "fmaxnm")
+			    (UNSPEC_COND_SMIN "fminnm")])
 
 (define_int_attr sve_fp_op_rev [(UNSPEC_COND_FADD "fadd")
 				(UNSPEC_COND_FDIV "fdivr")
@@ -4261,7 +4270,9 @@
 				(UNSPEC_COND_FMINNM "fminnm")
 				(UNSPEC_COND_FMUL "fmul")
 				(UNSPEC_COND_FMULX "fmulx")
-				(UNSPEC_COND_FSUB "fsubr")])
+				(UNSPEC_COND_FSUB "fsubr")
+				(UNSPEC_COND_SMAX "fmaxnm")
+				(UNSPEC_COND_SMIN "fminnm")])
 
 (define_int_attr sme_int_op [(UNSPEC_SME_ADD_WRITE "add")
 			     (UNSPEC_SME_SUB_WRITE "sub")])
@@ -4397,7 +4408,9 @@
    (UNSPEC_COND_FMINNM "register_operand")
    (UNSPEC_COND_FMUL "register_operand")
    (UNSPEC_COND_FMULX "register_operand")
-   (UNSPEC_COND_FSUB "aarch64_sve_float_arith_operand")])
+   (UNSPEC_COND_FSUB "aarch64_sve_float_arith_operand")
+   (UNSPEC_COND_SMAX "register_operand")
+   (UNSPEC_COND_SMIN "register_operand")])
 
 ;; The predicate to use for the second input operand in a floating-point
 ;; <optab><mode>3 pattern.
@@ -4410,7 +4423,9 @@
    (UNSPEC_COND_FMINNM "aarch64_sve_float_maxmin_operand")
    (UNSPEC_COND_FMUL "aarch64_sve_float_mul_operand")
    (UNSPEC_COND_FMULX "register_operand")
-   (UNSPEC_COND_FSUB "register_operand")])
+   (UNSPEC_COND_FSUB "register_operand")
+   (UNSPEC_COND_SMAX "aarch64_sve_float_maxmin_operand")
+   (UNSPEC_COND_SMIN "aarch64_sve_float_maxmin_operand")])
 
 ;; Likewise for immediates only.
 (define_int_attr sve_pred_fp_rhs2_immediate
@@ -4418,7 +4433,9 @@
    (UNSPEC_COND_FMAXNM "aarch64_sve_float_maxmin_immediate")
    (UNSPEC_COND_FMIN "aarch64_sve_float_maxmin_immediate")
    (UNSPEC_COND_FMINNM "aarch64_sve_float_maxmin_immediate")
-   (UNSPEC_COND_FMUL "aarch64_sve_float_mul_immediate")])
+   (UNSPEC_COND_FMUL "aarch64_sve_float_mul_immediate")
+   (UNSPEC_COND_SMAX "aarch64_sve_float_maxmin_immediate")
+   (UNSPEC_COND_SMIN "aarch64_sve_float_maxmin_immediate")])
 
 ;; The maximum number of element bits that an instruction can handle.
 (define_int_attr max_elem_bits [(UNSPEC_UADDV "64") (UNSPEC_SADDV "32")
