@@ -13,16 +13,13 @@ static void test_1 (void)
   __analyzer_dump_escaped (); /* { dg-warning "escaped: 0: " } */
 
   unknown_fn (&local_1);
-  __analyzer_dump_escaped (); /* { dg-warning "escaped: 1: 'local_1'" "" { target c } } */
-  /* { dg-warning "escaped: 1: 'int local_1'" "" { target c++ } .-1 } */
+  __analyzer_dump_escaped (); /* { dg-warning "escaped: 1: 'local_1'" } */
 
   /* Should be idempotent.  */
   unknown_fn (&local_1);
-  __analyzer_dump_escaped (); /* { dg-warning "escaped: 1: 'local_1'" "" { target c } } */
-  /* { dg-warning "escaped: 1: 'int local_1'" "" { target c++ } .-1 } */
+  __analyzer_dump_escaped (); /* { dg-warning "escaped: 1: 'local_1'" } */
 
   /* Escape a static global.  */
   unknown_fn (&only_used_by_test_1);
-  __analyzer_dump_escaped (); /* { dg-warning "escaped: 2: 'local_1', 'only_used_by_test_1'" "" { target c } } */
-  /* { dg-warning "escaped: 2: 'int local_1', 'int only_used_by_test_1'" "" { target c++ } .-1 } */
+  __analyzer_dump_escaped (); /* { dg-warning "escaped: 2: 'local_1', 'only_used_by_test_1'" } */
 }

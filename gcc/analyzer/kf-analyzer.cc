@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/call-details.h"
 #include "make-unique.h"
+#include "pretty-print-markup.h"
 
 #if ENABLE_ANALYZER
 
@@ -176,23 +177,40 @@ public:
        probably most user-friendly.  */
     escaped_decls.qsort (cmp_decls_ptr_ptr);
 
-    pretty_printer pp;
-    pp_format_decoder (&pp) = default_tree_printer;
-    pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
-    bool first = true;
-    for (auto iter : escaped_decls)
+    class escaped_list_element : public pp_element
+    {
+    public:
+      escaped_list_element (auto_vec<tree> &escaped_decls)
+      : m_escaped_decls (escaped_decls)
       {
-	if (first)
-	  first = false;
-	else
-	  pp_string (&pp, ", ");
-	pp_printf (&pp, "%qD", iter);
       }
+
+      void add_to_phase_2 (pp_markup::context &ctxt) final override
+      {
+	/* We can't call pp_printf directly on ctxt.m_pp from within
+	   formatting.  As a workaround, work with a clone of the pp.  */
+	std::unique_ptr<pretty_printer> pp (ctxt.m_pp.clone ());
+	bool first = true;
+	for (auto iter : m_escaped_decls)
+	  {
+	    if (first)
+	      first = false;
+	    else
+	      pp_string (pp.get (), ", ");
+	    pp_printf (pp.get (), "%qD", iter);
+	  }
+	pp_string (&ctxt.m_pp, pp_formatted_text (pp.get ()));
+      }
+
+    private:
+      auto_vec<tree> &m_escaped_decls;
+    } e_escaped (escaped_decls);
+
     /* Print the number to make it easier to write DejaGnu tests for
        the "nothing has escaped" case.  */
-    warning_at (cd.get_location (), 0, "escaped: %i: %s",
+    warning_at (cd.get_location (), 0, "escaped: %i: %e",
 		escaped_decls.length (),
-		pp_formatted_text (&pp));
+		&e_escaped);
   }
 };
 

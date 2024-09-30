@@ -3092,6 +3092,19 @@ pp_markup::context::push_back_any_text ()
 				    const char *)));
 }
 
+void
+pp_markup::comma_separated_quoted_strings::add_to_phase_2 (context &ctxt)
+{
+  for (unsigned i = 0; i < m_strings.length (); i++)
+    {
+      if (i > 0)
+	pp_string (&ctxt.m_pp, ", ");
+      ctxt.begin_quote ();
+      pp_string (&ctxt.m_pp, m_strings[i]);
+      ctxt.end_quote ();
+    }
+}
+
 /* Color names for expressing "expected" vs "actual" values.  */
 const char *const highlight_colors::expected = "highlight-a";
 const char *const highlight_colors::actual   = "highlight-b";
@@ -3669,6 +3682,54 @@ test_pp_format_stack ()
 		"In function: `test_fn'\nunexpected foo: 42 bar: `test'");
 }
 
+/* Verify usage of pp_printf from within a pp_element's
+   add_to_phase_2 vfunc.  */
+static void
+test_pp_printf_within_pp_element ()
+{
+  class kv_element : public pp_element
+  {
+  public:
+    kv_element (const char *key, int value)
+    : m_key (key), m_value (value)
+    {
+    }
+
+    void add_to_phase_2 (pp_markup::context &ctxt) final override
+    {
+      /* We can't call pp_printf directly on ctxt.m_pp from within
+	 formatting.  As a workaround, work with a clone of the pp.  */
+      std::unique_ptr<pretty_printer> pp (ctxt.m_pp.clone ());
+      pp_printf (pp.get (), "(%qs: %qi)", m_key, m_value);
+      pp_string (&ctxt.m_pp, pp_formatted_text (pp.get ()));
+    }
+
+  private:
+    const char *m_key;
+    int m_value;
+  };
+
+  auto_fix_quotes fix_quotes;
+
+  kv_element e1 ("foo", 42);
+  kv_element e2 ("bar", 1066);
+  ASSERT_PP_FORMAT_2 ("before (`foo': `42') (`bar': `1066') after",
+		      "before %e %e after",
+		      &e1, &e2);
+  assert_pp_format_colored (SELFTEST_LOCATION,
+			    ("before "
+			     "(`\33[01m\33[Kfoo\33[m\33[K'"
+			     ": "
+			     "`\33[01m\33[K42\33[m\33[K')"
+			     " "
+			     "(`\33[01m\33[Kbar\33[m\33[K'"
+			     ": "
+			     "`\33[01m\33[K1066\33[m\33[K')"
+			     " after"),
+			    "before %e %e after",
+			    &e1, &e2);
+}
+
 /* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
 
 class test_pretty_printer : public pretty_printer
@@ -4088,6 +4149,35 @@ static void test_utf8 ()
 
 }
 
+/* Verify that class comma_separated_quoted_strings works as expected.  */
+
+static void
+test_comma_separated_quoted_strings ()
+{
+  auto_fix_quotes fix_quotes;
+
+  auto_vec<const char *> none;
+  pp_markup::comma_separated_quoted_strings e_none (none);
+
+  auto_vec<const char *> one;
+  one.safe_push ("one");
+  pp_markup::comma_separated_quoted_strings e_one (one);
+
+  auto_vec<const char *> many;
+  many.safe_push ("0");
+  many.safe_push ("1");
+  many.safe_push ("2");
+  pp_markup::comma_separated_quoted_strings e_many (many);
+
+  ASSERT_PP_FORMAT_3 ("none: () one: (`one') many: (`0', `1', `2')",
+		      "none: (%e) one: (%e) many: (%e)",
+		      &e_none, &e_one, &e_many);
+  assert_pp_format_colored (SELFTEST_LOCATION,
+			    "one: (`[01m[Kone[m[K')",
+			    "one: (%e)",
+			    &e_one);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -4099,12 +4189,14 @@ pretty_print_cc_tests ()
   test_custom_tokens_1 ();
   test_custom_tokens_2 ();
   test_pp_format_stack ();
+  test_pp_printf_within_pp_element ();
   test_prefixes_and_wrapping ();
   test_urls ();
   test_urls_from_braces ();
   test_null_urls ();
   test_urlification ();
   test_utf8 ();
+  test_comma_separated_quoted_strings ();
 }
 
 } // namespace selftest

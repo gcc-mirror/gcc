@@ -70,6 +70,23 @@ private:
   DISABLE_COPY_AND_ASSIGN (element);
 };
 
+/* Concrete subclass: handle "%e" by printing a comma-separated list
+   of quoted strings.  */
+
+class comma_separated_quoted_strings : public element
+{
+public:
+  comma_separated_quoted_strings (const auto_vec<const char *> &strings)
+  : m_strings (strings)
+  {
+  }
+
+  void add_to_phase_2 (context &ctxt) final override;
+
+private:
+  const auto_vec<const char *> &m_strings;
+};
+
 } // namespace pp_markup
 
 #endif /* GCC_PRETTY_PRINT_MARKUP_H */
