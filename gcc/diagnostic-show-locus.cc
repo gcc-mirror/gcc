@@ -3742,8 +3742,7 @@ test_diagnostic_show_locus_unknown_location ()
 {
   test_diagnostic_context dc;
   rich_location richloc (line_table, UNKNOWN_LOCATION);
-  dc.test_show_locus (richloc);
-  ASSERT_STREQ ("", pp_formatted_text (dc.m_printer));
+  ASSERT_STREQ ("", dc.test_show_locus (richloc));
 }
 
 /* Verify that diagnostic_show_locus works sanely for various
@@ -3764,10 +3763,9 @@ test_one_liner_simple_caret ()
   test_diagnostic_context dc;
   location_t caret = linemap_position_for_column (line_table, 10);
   rich_location richloc (line_table, caret);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"          ^\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* No column information (column == 0).
@@ -3779,9 +3777,8 @@ test_one_liner_no_column ()
   test_diagnostic_context dc;
   location_t caret = linemap_position_for_column (line_table, 0);
   rich_location richloc (line_table, caret);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Caret and range.  */
@@ -3795,10 +3792,9 @@ test_one_liner_caret_and_range ()
   location_t finish = linemap_position_for_column (line_table, 15);
   location_t loc = make_location (caret, start, finish);
   rich_location richloc (line_table, loc);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"       ~~~^~~~~~\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Multiple ranges and carets.  */
@@ -3828,10 +3824,9 @@ test_one_liner_multiple_carets_and_ranges ()
   rich_location richloc (line_table, foo);
   richloc.add_range (bar, SHOW_RANGE_WITH_CARET);
   richloc.add_range (field, SHOW_RANGE_WITH_CARET);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		" ~A~   ~B~ ~~C~~\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Insertion fix-it hint: adding an "&" to the front of "bar.field". */
@@ -3843,11 +3838,10 @@ test_one_liner_fixit_insert_before ()
   location_t caret = linemap_position_for_column (line_table, 7);
   rich_location richloc (line_table, caret);
   richloc.add_fixit_insert_before ("&");
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"       ^\n"
 		"       &\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Insertion fix-it hint: adding a "[0]" after "foo". */
@@ -3861,11 +3855,10 @@ test_one_liner_fixit_insert_after ()
   location_t foo = make_location (start, start, finish);
   rich_location richloc (line_table, foo);
   richloc.add_fixit_insert_after ("[0]");
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		" ^~~\n"
 		"    [0]\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Removal fix-it hint: removal of the ".field".
@@ -3884,11 +3877,10 @@ test_one_liner_fixit_remove ()
   /* Normal.  */
   {
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "          ^~~~~~\n"
 		  "          ------\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Test of adding a prefix.  */
@@ -3896,11 +3888,10 @@ test_one_liner_fixit_remove ()
     test_diagnostic_context dc;
     pp_prefixing_rule (dc.m_printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.m_printer, xstrdup ("TEST PREFIX:"));
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("TEST PREFIX: foo = bar.field;\n"
 		  "TEST PREFIX:          ^~~~~~\n"
 		  "TEST PREFIX:          ------\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Normal, with ruler.  */
@@ -3908,14 +3899,13 @@ test_one_liner_fixit_remove ()
     test_diagnostic_context dc;
     dc.m_source_printing.show_ruler_p = true;
     dc.m_source_printing.max_width = 104;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("          0         0         0         0         0         0         0         0         0         1    \n"
 		  "          1         2         3         4         5         6         7         8         9         0    \n"
 		  " 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234\n"
 		  " foo = bar.field;\n"
 		  "          ^~~~~~\n"
 		  "          ------\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Test of adding a prefix, with ruler.  */
@@ -3925,13 +3915,12 @@ test_one_liner_fixit_remove ()
     dc.m_source_printing.max_width = 50;
     pp_prefixing_rule (dc.m_printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.m_printer, xstrdup ("TEST PREFIX:"));
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("TEST PREFIX:          1         2         3         4         5\n"
 		  "TEST PREFIX: 12345678901234567890123456789012345678901234567890\n"
 		  "TEST PREFIX: foo = bar.field;\n"
 		  "TEST PREFIX:          ^~~~~~\n"
 		  "TEST PREFIX:          ------\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Test of adding a prefix, with ruler and line numbers.  */
@@ -3942,13 +3931,12 @@ test_one_liner_fixit_remove ()
     dc.m_source_printing.show_line_numbers_p = true;
     pp_prefixing_rule (dc.m_printer) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
     pp_set_prefix (dc.m_printer, xstrdup ("TEST PREFIX:"));
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("TEST PREFIX:      |          1         2         3         4         5\n"
 		  "TEST PREFIX:      | 12345678901234567890123456789012345678901234567890\n"
 		  "TEST PREFIX:    1 | foo = bar.field;\n"
 		  "TEST PREFIX:      |          ^~~~~~\n"
 		  "TEST PREFIX:      |          ------\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -3963,11 +3951,10 @@ test_one_liner_fixit_replace ()
   location_t field = make_location (start, start, finish);
   rich_location richloc (line_table, field);
   richloc.add_fixit_replace ("m_field");
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"           ^~~~~\n"
 		"           m_field\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Replace fix-it hint: replacing "field" with "m_field",
@@ -3985,14 +3972,13 @@ test_one_liner_fixit_replace_non_equal_range ()
   range.m_start = start;
   range.m_finish = finish;
   richloc.add_fixit_replace (range, "m_field");
-  dc.test_show_locus (richloc);
   /* The replacement range is not indicated in the annotation line, so
      it should be indicated via an additional underline.  */
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		"           -----\n"
 		"           m_field\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Replace fix-it hint: replacing "field" with "m_field",
@@ -4010,13 +3996,12 @@ test_one_liner_fixit_replace_equal_secondary_range ()
   location_t field = make_location (start, start, finish);
   richloc.add_range (field);
   richloc.add_fixit_replace (field, "m_field");
-  dc.test_show_locus (richloc);
   /* The replacement range is indicated in the annotation line,
      so it shouldn't be indicated via an additional underline.  */
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^     ~~~~~\n"
 		"           m_field\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Verify that we can use ad-hoc locations when adding fixits to a
@@ -4045,11 +4030,10 @@ test_one_liner_fixit_validation_adhoc_locations ()
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       test\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Remove.  */
@@ -4061,11 +4045,10 @@ test_one_liner_fixit_validation_adhoc_locations ()
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       -----------------------------------------\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Replace.  */
@@ -4077,11 +4060,10 @@ test_one_liner_fixit_validation_adhoc_locations ()
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~~~~~~~~                               \n"
 		  "       test\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -4096,11 +4078,10 @@ test_one_liner_many_fixits_1 ()
   for (int i = 0; i < 19; i++)
     richloc.add_fixit_insert_before ("a");
   ASSERT_EQ (1, richloc.get_num_fixit_hints ());
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		"     aaaaaaaaaaaaaaaaaaa\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Ensure that we can add an arbitrary number of fix-it hints to a
@@ -4118,11 +4099,10 @@ test_one_liner_many_fixits_2 ()
       richloc.add_fixit_insert_before (loc, "a");
     }
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
 		" a a a a a a a a a a a a a a a a a a a\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Test of labeling the ranges within a rich_location.  */
@@ -4154,22 +4134,20 @@ test_one_liner_labels ()
 
     {
       test_diagnostic_context dc;
-      dc.test_show_locus (richloc);
       ASSERT_STREQ (" foo = bar.field;\n"
 		    " ^~~   ~~~ ~~~~~\n"
 		    " |     |   |\n"
 		    " 0     1   2\n",
-		    pp_formatted_text (dc.m_printer));
+		    dc.test_show_locus (richloc));
     }
 
     /* Verify that we can disable label-printing.  */
     {
       test_diagnostic_context dc;
       dc.m_source_printing.show_labels_p = false;
-      dc.test_show_locus (richloc);
       ASSERT_STREQ (" foo = bar.field;\n"
 		    " ^~~   ~~~ ~~~~~\n",
-		    pp_formatted_text (dc.m_printer));
+		    dc.test_show_locus (richloc));
     }
   }
 
@@ -4183,14 +4161,13 @@ test_one_liner_labels ()
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  " ^~~   ~~~ ~~~~~\n"
 		  " |     |   |\n"
 		  " |     |   label 2\n"
 		  " |     label 1\n"
 		  " label 0\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of boundary conditions: label 0 and 1 have just enough clearance,
@@ -4204,13 +4181,12 @@ test_one_liner_labels ()
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  " ^~~   ~~~ ~~~~~\n"
 		  " |     |   |\n"
 		  " |     |   c\n"
 		  " aaaaa bbbb\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of out-of-order ranges (thus requiring a sort).  */
@@ -4223,12 +4199,11 @@ test_one_liner_labels ()
     richloc.add_range (foo, SHOW_RANGE_WITHOUT_CARET, &label2);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  " ~~~   ~~~ ^~~~~\n"
 		  " |     |   |\n"
 		  " 2     1   0\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Ensure we don't ICE if multiple ranges with labels are on
@@ -4242,14 +4217,13 @@ test_one_liner_labels ()
     richloc.add_range (bar, SHOW_RANGE_WITHOUT_CARET, &label2);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~\n"
 		  "       |\n"
 		  "       label 0\n"
 		  "       label 1\n"
 		  "       label 2\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of out-of-order ranges (thus requiring a sort), where
@@ -4277,7 +4251,6 @@ test_one_liner_labels ()
     richloc.add_range (foo, SHOW_RANGE_WITHOUT_CARET, &label_2c);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  " ~~~   ~~~ ^~~~~\n"
 		  " |     |   |\n"
@@ -4290,7 +4263,7 @@ test_one_liner_labels ()
 		  " label 2a\n"
 		  " label 2b\n"
 		  " label 2c\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Verify that a NULL result from range_label::get_text is
@@ -4300,10 +4273,9 @@ test_one_liner_labels ()
     gcc_rich_location richloc (bar, &label, nullptr);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" foo = bar.field;\n"
 		  "       ^~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
    }
 
   /* TODO: example of formatted printing (needs to be in
@@ -4368,14 +4340,13 @@ test_one_liner_simple_caret_utf8 ()
   test_diagnostic_context dc;
   location_t caret = linemap_position_for_column (line_table, 18);
   rich_location richloc (line_table, caret);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
 					 ";\n"
 		"               ^\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Caret and range.  */
@@ -4388,14 +4359,13 @@ test_one_liner_caret_and_range_utf8 ()
   location_t finish = linemap_position_for_column (line_table, 30);
   location_t loc = make_location (caret, start, finish);
   rich_location richloc (line_table, loc);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
 					 ";\n"
 		"          ~~~~~^~~~~~~~~~\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Multiple ranges and carets.  */
@@ -4424,14 +4394,13 @@ test_one_liner_multiple_carets_and_ranges_utf8 ()
   rich_location richloc (line_table, foo);
   richloc.add_range (bar, SHOW_RANGE_WITH_CARET);
   richloc.add_range (field, SHOW_RANGE_WITH_CARET);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
 				  "_field\xcf\x80"
 					 ";\n"
 		" ~~~~A~   ~~~B~ ~~~~~C~~~\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Insertion fix-it hint: adding an "&" to the front of "P_bar.field". */
@@ -4443,7 +4412,6 @@ test_one_liner_fixit_insert_before_utf8 ()
   location_t caret = linemap_position_for_column (line_table, 12);
   rich_location richloc (line_table, caret);
   richloc.add_fixit_insert_before ("&");
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
@@ -4451,7 +4419,7 @@ test_one_liner_fixit_insert_before_utf8 ()
 					 ";\n"
 		"          ^\n"
 		"          &\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Insertion fix-it hint: adding a "[0]" after "SS_foo". */
@@ -4465,7 +4433,6 @@ test_one_liner_fixit_insert_after_utf8 ()
   location_t foo = make_location (start, start, finish);
   rich_location richloc (line_table, foo);
   richloc.add_fixit_insert_after ("[0]");
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
@@ -4473,7 +4440,7 @@ test_one_liner_fixit_insert_after_utf8 ()
 					 ";\n"
 		" ^~~~~~\n"
 		"       [0]\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Removal fix-it hint: removal of the ".SS_fieldP". */
@@ -4487,7 +4454,6 @@ test_one_liner_fixit_remove_utf8 ()
   location_t dot = make_location (start, start, finish);
   rich_location richloc (line_table, dot);
   richloc.add_fixit_remove ();
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
@@ -4495,7 +4461,7 @@ test_one_liner_fixit_remove_utf8 ()
 					 ";\n"
 		"               ^~~~~~~~~~\n"
 		"               ----------\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Replace fix-it hint: replacing "SS_fieldP" with "m_SSfieldP". */
@@ -4509,7 +4475,6 @@ test_one_liner_fixit_replace_utf8 ()
   location_t field = make_location (start, start, finish);
   rich_location richloc (line_table, field);
   richloc.add_fixit_replace ("m_\xf0\x9f\x98\x82_field\xcf\x80");
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
@@ -4518,7 +4483,7 @@ test_one_liner_fixit_replace_utf8 ()
 		"                ^~~~~~~~~\n"
 		"                m_\xf0\x9f\x98\x82"
 				    "_field\xcf\x80\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Replace fix-it hint: replacing "SS_fieldP" with "m_SSfieldP",
@@ -4536,7 +4501,6 @@ test_one_liner_fixit_replace_non_equal_range_utf8 ()
   range.m_start = start;
   range.m_finish = finish;
   richloc.add_fixit_replace (range, "m_\xf0\x9f\x98\x82_field\xcf\x80");
-  dc.test_show_locus (richloc);
   /* The replacement range is not indicated in the annotation line, so
      it should be indicated via an additional underline.  */
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
@@ -4548,7 +4512,7 @@ test_one_liner_fixit_replace_non_equal_range_utf8 ()
 		"                ---------\n"
 		"                m_\xf0\x9f\x98\x82"
 				    "_field\xcf\x80\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Replace fix-it hint: replacing "SS_fieldP" with "m_SSfieldP",
@@ -4566,7 +4530,6 @@ test_one_liner_fixit_replace_equal_secondary_range_utf8 ()
   location_t field = make_location (start, start, finish);
   richloc.add_range (field);
   richloc.add_fixit_replace (field, "m_\xf0\x9f\x98\x82_field\xcf\x80");
-  dc.test_show_locus (richloc);
   /* The replacement range is indicated in the annotation line,
      so it shouldn't be indicated via an additional underline.  */
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
@@ -4577,7 +4540,7 @@ test_one_liner_fixit_replace_equal_secondary_range_utf8 ()
 		"        ^       ~~~~~~~~~\n"
 		"                m_\xf0\x9f\x98\x82"
 				    "_field\xcf\x80\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Verify that we can use ad-hoc locations when adding fixits to a
@@ -4606,7 +4569,6 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
@@ -4614,7 +4576,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 					   ";\n"
 		  "          ^~~~~~~~~~~~~~~~                     \n"
 		  "          test\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
   }
 
   /* Remove.  */
@@ -4626,7 +4588,6 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
@@ -4634,7 +4595,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 					   ";\n"
 		  "          ^~~~~~~~~~~~~~~~                     \n"
 		  "          -------------------------------------\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
   }
 
   /* Replace.  */
@@ -4646,7 +4607,6 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
@@ -4654,7 +4614,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 					   ";\n"
 		  "          ^~~~~~~~~~~~~~~~                     \n"
 		  "          test\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
   }
 }
 
@@ -4669,7 +4629,6 @@ test_one_liner_many_fixits_1_utf8 ()
   for (int i = 0; i < 19; i++)
     richloc.add_fixit_insert_before (i & 1 ? "@" : "\xcf\x80");
   ASSERT_EQ (1, richloc.get_num_fixit_hints ());
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
@@ -4678,7 +4637,7 @@ test_one_liner_many_fixits_1_utf8 ()
 		"        ^\n"
 		"        \xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80@"
 		"\xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80@\xcf\x80\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Ensure that we can add an arbitrary number of fix-it hints to a
@@ -4700,7 +4659,6 @@ test_one_liner_many_fixits_2_utf8 ()
     }
 
   ASSERT_EQ (nlocs, richloc.get_num_fixit_hints ());
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		   "_foo = \xcf\x80"
 			   "_bar.\xf0\x9f\x98\x82"
@@ -4709,7 +4667,7 @@ test_one_liner_many_fixits_2_utf8 ()
 		"        ^\n"
 		" \xcf\x80 @ \xcf\x80 @ \xcf\x80 @ \xcf\x80 @  \xcf\x80 @"
 		" \xcf\x80 @ \xcf\x80 @ \xcf\x80 @ \xcf\x80 @ \xcf\x80\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Test of labeling the ranges within a rich_location.  */
@@ -4750,7 +4708,6 @@ test_one_liner_labels_utf8 ()
 
     {
       test_diagnostic_context dc;
-      dc.test_show_locus (richloc);
       ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		       "_foo = \xcf\x80"
 			       "_bar.\xf0\x9f\x98\x82"
@@ -4762,7 +4719,7 @@ test_one_liner_labels_utf8 ()
 			   "   \xf0\x9f\x98\x82\xf0\x9f\x98\x82\xcf\x80"
 				   " \xf0\x9f\x98\x82\xcf\x80\xf0\x9f\x98\x82"
 					 "\xf0\x9f\x98\x82\xcf\x80\xcf\x80\n",
-		    pp_formatted_text (dc.m_printer));
+		    dc.test_show_locus (richloc));
     }
 
   }
@@ -4777,8 +4734,6 @@ test_one_liner_labels_utf8 ()
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
-
     ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
@@ -4789,7 +4744,7 @@ test_one_liner_labels_utf8 ()
 		  " |        |     label 2\xcf\x80\n"
 		  " |        label 1\xcf\x80\n"
 		  " label 0\xf0\x9f\x98\x82\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of boundary conditions: label 0 and 1 have just enough clearance,
@@ -4803,7 +4758,6 @@ test_one_liner_labels_utf8 ()
     richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
 
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" \xf0\x9f\x98\x82"
 		     "_foo = \xcf\x80"
 			     "_bar.\xf0\x9f\x98\x82"
@@ -4814,7 +4768,7 @@ test_one_liner_labels_utf8 ()
 		  " |        |     c\n"
 		  " aaaaa\xf0\x9f\x98\x82\xcf\x80"
 			   " bb\xf0\x9f\x98\x82\xf0\x9f\x98\x82\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of escaping the source lines.  */
@@ -4830,19 +4784,17 @@ test_one_liner_labels_utf8 ()
     {
       test_diagnostic_context dc;
       dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
-      dc.test_show_locus (richloc);
       ASSERT_STREQ (" <U+1F602>_foo = <U+03C0>_bar.<U+1F602>_field<U+03C0>;\n"
 		    " ^~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~\n"
 		    " |               |            |\n"
 		    " label 0\xf0\x9f\x98\x82"
 		    /* ... */ "       label 1\xcf\x80"
 		    /* ...................*/ "     label 2\xcf\x80\n",
-		    pp_formatted_text (dc.m_printer));
+		    dc.test_show_locus (richloc));
     }
     {
       test_diagnostic_context dc;
       dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
-      dc.test_show_locus (richloc);
       ASSERT_STREQ
 	(" <f0><9f><98><82>_foo = <cf><80>_bar.<f0><9f><98><82>_field<cf><80>;\n"
 	 " ^~~~~~~~~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
@@ -4850,7 +4802,7 @@ test_one_liner_labels_utf8 ()
 	 " label 0\xf0\x9f\x98\x82"
 	 /* ... */ "              label 1\xcf\x80"
 	 /* ..........................*/ "     label 2\xcf\x80\n",
-	 pp_formatted_text (dc.m_printer));
+	 dc.test_show_locus (richloc));
     }
   }
 }
@@ -4865,11 +4817,10 @@ test_one_liner_colorized_utf8 ()
   diagnostic_color_init (&dc, DIAGNOSTICS_COLOR_YES);
   const location_t pi = linemap_position_for_column (line_table, 12);
   rich_location richloc (line_table, pi);
-  dc.test_show_locus (richloc);
 
   /* In order to avoid having the test depend on exactly how the colorization
      was effected, just confirm there are two pi characters in the output.  */
-  const char *result = pp_formatted_text (dc.m_printer);
+  const char *result = dc.test_show_locus (richloc);
   const char *null_term = result + strlen (result);
   const char *first_pi = strstr (result, "\xcf\x80");
   ASSERT_TRUE (first_pi && first_pi <= null_term - 2);
@@ -4975,10 +4926,9 @@ test_add_location_if_nearby (const line_table_case &case_)
 						 matching_open_brace_1_18);
     ASSERT_TRUE (added);
     ASSERT_EQ (2, richloc.get_num_locations ());
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" struct same_line { double x; double y; ;\n"
 		  "                  ~                    ^\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Test of add_location_if_nearby on a different line to the
@@ -5041,11 +4991,10 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     rich_location richloc (line_table, colon);
     richloc.add_fixit_insert_before (x, ".");
     richloc.add_fixit_replace (colon, "=");
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" struct point origin = {x: 0.0,\n"
 		  "                         ^\n"
 		  "                        .=\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* The multiline case.  The caret for the rich_location is on line 6;
@@ -5061,7 +5010,6 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     rich_location richloc (line_table, colon);
     richloc.add_fixit_insert_before (y, ".");
     richloc.add_fixit_replace (colon, "=");
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("FILENAME:3:24:\n"
 		  "                        y\n"
 		  "                        .\n"
@@ -5069,7 +5017,7 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
 		  "                         : 0.0};\n"
 		  "                         ^\n"
 		  "                         =\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* As above, but verify the behavior of multiple line spans
@@ -5084,14 +5032,13 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     richloc.add_fixit_replace (colon, "=");
     test_diagnostic_context dc;
     dc.m_source_printing.show_line_numbers_p = true;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("    3 |                        y\n"
 		  "      |                        .\n"
 		  "......\n"
 		  "    6 |                         : 0.0};\n"
 		  "      |                         ^\n"
 		  "      |                         =\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -5295,12 +5242,11 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     richloc.add_fixit_replace (close_paren, "> (");
     richloc.add_fixit_insert_after (")");
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -----------------\n"
 		  "            const_cast<foo *> (ptr->field)\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
 
     /* Unit-test the line_corrections machinery.  */
     char_display_policy policy (make_char_policy (dc, richloc));
@@ -5365,13 +5311,12 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     richloc.add_fixit_replace (close_paren, ") (");
     richloc.add_fixit_insert_after (")");
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -\n"
 		  "            CAST (-\n"
 		  "                  ) (        )\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example where none are consolidated during printing.  */
@@ -5382,13 +5327,12 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     richloc.add_fixit_replace (close_paren, ") (");
     richloc.add_fixit_insert_after (")");
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -\n"
 		  "            CST ( -\n"
 		  "                  ) (        )\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of deletion fix-it hints.  */
@@ -5403,12 +5347,11 @@ test_overlapped_fixit_printing (const line_table_case &case_)
        rather than by line_corrections.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -------\n"
 		  "            (bar *)\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of deletion fix-it hints that would overlap.  */
@@ -5423,12 +5366,11 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     ASSERT_EQ (2, richloc.get_num_fixit_hints ());
 
     /* But the corrections are.  */
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -----------------\n"
 		  "            (longer *)(foo *)\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of insertion fix-it hints that would overlap.  */
@@ -5441,12 +5383,11 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     /* The first insertion is long enough that if printed naively,
        it would overlap with the second.
        Verify that they are printed as a single replacement.  */
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   foo *f = (foo *)ptr->field;\n"
 		  "                   ^~~~~~~~~~\n"
 		  "            -------\n"
 		  "            LONGER THAN THE CAST(foo *)TEST\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -5507,7 +5448,6 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     richloc.add_fixit_replace (close_paren, "> (");
     richloc.add_fixit_insert_after (")");
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
@@ -5517,7 +5457,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            const_cast<f\xf0\x9f\x98\x82"
 					    " *> (ptr->field\xcf\x80"
 							    ")\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
 
     /* Unit-test the line_corrections machinery.  */
     char_display_policy policy (make_char_policy (dc, richloc));
@@ -5583,7 +5523,6 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     richloc.add_fixit_replace (close_paren, ") (");
     richloc.add_fixit_insert_after (")");
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
@@ -5592,7 +5531,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            -\n"
 		  "            CAST (-\n"
 		  "                  ) (         )\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example where none are consolidated during printing.  */
@@ -5603,7 +5542,6 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     richloc.add_fixit_replace (close_paren, ") (");
     richloc.add_fixit_insert_after (")");
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
@@ -5612,7 +5550,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            -\n"
 		  "            CST ( -\n"
 		  "                  ) (         )\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of deletion fix-it hints.  */
@@ -5627,7 +5565,6 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
        rather than by line_corrections.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
@@ -5636,7 +5573,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            -------\n"
 		  "            (bar\xf0\x9f\x98\x82"
 				    " *)\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of deletion fix-it hints that would overlap.  */
@@ -5651,7 +5588,6 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     ASSERT_EQ (2, richloc.get_num_fixit_hints ());
 
     /* But the corrections are.  */
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
@@ -5661,7 +5597,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            (long\xf0\x9f\x98\x82"
 				     " *)(f\xf0\x9f\x98\x82"
 					    " *)\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Example of insertion fix-it hints that would overlap.  */
@@ -5675,7 +5611,6 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     /* The first insertion is long enough that if printed naively,
        it would overlap with the second.
        Verify that they are printed as a single replacement.  */
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("   f\xf0\x9f\x98\x82"
 			" *f = (f\xf0\x9f\x98\x82"
 				  " *)ptr->field\xcf\x80"
@@ -5685,7 +5620,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
 		  "            L\xf0\x9f\x98\x82"
 				 "NGER THAN THE CAST(f\xf0\x9f\x98\x82"
 						       " *)TEST\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -5751,11 +5686,10 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     ASSERT_EQ (column_range (21, 21), get_printed_columns (fc, policy, hint_1));
 
     /* Verify that they're printed correctly.  */
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" int a5[][0][0] = { 1, 2 };\n"
 		  "                    ^\n"
 		  "                     } {\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Various overlapping insertions, some occurring "out of order"
@@ -5773,12 +5707,12 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     richloc.add_fixit_insert_before (col_21, "}");
     richloc.add_fixit_insert_before (col_1, "{");
     richloc.add_fixit_insert_before (col_25, "}");
-    dc.test_show_locus (richloc);
+
     ASSERT_STREQ (" int a5[][0][0] = { 1, 2 };\n"
 		  "                    ^\n"
 		  " {                  -----\n"
 		  "                    {{1}}}}, {{{2 }}\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -5816,24 +5750,22 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
     /* Without line numbers.  */
     {
       test_diagnostic_context dc;
-      dc.test_show_locus (richloc);
       ASSERT_STREQ ("       x = a;\n"
 		    "+      break;\n"
 		    "     case 'b':\n"
 		    "     ^~~~~~~~~\n",
-		    pp_formatted_text (dc.m_printer));
+		    dc.test_show_locus (richloc));
     }
 
     /* With line numbers.  */
     {
       test_diagnostic_context dc;
       dc.m_source_printing.show_line_numbers_p = true;
-      dc.test_show_locus (richloc);
       ASSERT_STREQ ("    2 |       x = a;\n"
 		    "  +++ |+      break;\n"
 		    "    3 |     case 'b':\n"
 		    "      |     ^~~~~~~~~\n",
-		    pp_formatted_text (dc.m_printer));
+		    dc.test_show_locus (richloc));
     }
   }
 
@@ -5844,10 +5776,9 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
     richloc.add_fixit_insert_before (case_start, "break;\n");
     ASSERT_TRUE (richloc.seen_impossible_fixit_p ());
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("     case 'b':\n"
 		  "     ^~~~~~~~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -5892,14 +5823,13 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
 
   {
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("FILENAME:1:1:\n"
 		  "+#include <stdio.h>\n"
 		  " test (int ch)\n"
 		  "FILENAME:3:2:\n"
 		  "  putchar (ch);\n"
 		  "  ^~~~~~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* With line-numbering, the line spans are close enough to be
@@ -5907,13 +5837,12 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
   {
     test_diagnostic_context dc;
     dc.m_source_printing.show_line_numbers_p = true;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("  +++ |+#include <stdio.h>\n"
 		  "    1 | test (int ch)\n"
 		  "    2 | {\n"
 		  "    3 |  putchar (ch);\n"
 		  "      |  ^~~~~~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -5950,10 +5879,9 @@ test_fixit_replace_containing_newline (const line_table_case &case_)
     return;
 
   test_diagnostic_context dc;
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar ();\n"
 		"             ^\n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Fix-it hint, attempting to delete a newline.
@@ -5994,12 +5922,11 @@ test_fixit_deletion_affecting_newline (const line_table_case &case_)
     return;
 
   test_diagnostic_context dc;
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" foo = bar (\n"
 		"          ~^\n"
 		"       );\n"
 		"       ~    \n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 static void
@@ -6039,10 +5966,9 @@ test_tab_expansion (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							first_non_ws_byte_col));
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "            ^\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 
   /* Confirm the display width was tracked correctly across the internal tab
@@ -6053,10 +5979,9 @@ test_tab_expansion (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							right_quote_byte_col));
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "                         ^\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -6091,28 +6016,25 @@ test_escaping_bytes_1 (const line_table_case &case_)
 
   {
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" before \1\2\3\v\x80\xff""after\n"
 		  "       ^   ~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
   richloc.set_escape_on_output (true);
   {
     test_diagnostic_context dc;
     dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
-    dc.test_show_locus (richloc);
     ASSERT_STREQ
       (" before<U+0000><U+0001><U+0002><U+0003><U+000B><80><ff>after\n"
        "       ^~~~~~~~                        ~~~~~~~~\n",
-       pp_formatted_text (dc.m_printer));
+       dc.test_show_locus (richloc));
   }
   {
     test_diagnostic_context dc;
     dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" before<00><01><02><03><0b><80><ff>after\n"
 		  "       ^~~~            ~~~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -6144,27 +6066,24 @@ test_escaping_bytes_2 (const line_table_case &case_)
 
   {
     test_diagnostic_context dc;
-    dc.test_show_locus (richloc);
     ASSERT_STREQ ("  after\n"
 		  " ^\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
   richloc.set_escape_on_output (true);
   {
     test_diagnostic_context dc;
     dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" <U+0000>after\n"
 		  " ^~~~~~~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
   {
     test_diagnostic_context dc;
     dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
-    dc.test_show_locus (richloc);
     ASSERT_STREQ (" <00>after\n"
 		  " ^~~~\n",
-		  pp_formatted_text (dc.m_printer));
+		  dc.test_show_locus (richloc));
   }
 }
 
@@ -6203,14 +6122,13 @@ test_line_numbers_multiline_range ()
   dc.m_source_printing.show_line_numbers_p = true;
   dc.m_source_printing.min_margin_width = 0;
   gcc_rich_location richloc (loc);
-  dc.test_show_locus (richloc);
   ASSERT_STREQ (" 9 | this is line 9\n"
 		"   |         ~~~~~~\n"
 		"10 | this is line 10\n"
 		"   | ~~~~~^~~~~~~~~~\n"
 		"11 | this is line 11\n"
 		"   | ~~~~  \n",
-		pp_formatted_text (dc.m_printer));
+		dc.test_show_locus (richloc));
 }
 
 /* Run all of the selftests within this file.  */

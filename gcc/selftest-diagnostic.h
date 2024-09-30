@@ -53,7 +53,7 @@ class test_diagnostic_context : public diagnostic_context
 	  int option,
 	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
 
-  void test_show_locus (rich_location &richloc);
+  const char *test_show_locus (rich_location &richloc);
 };
 
 } // namespace selftest

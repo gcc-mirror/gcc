@@ -79,14 +79,16 @@ test_diagnostic_context::report (diagnostic_t kind,
   return result;
 }
 
-/* Print RICHLOC's source and annotations to this context's m_printer.  */
+/* Print RICHLOC's source and annotations to this context's m_printer.
+   Return the text buffer from the printer.  */
 
-void
+const char *
 test_diagnostic_context::test_show_locus (rich_location &richloc)
 {
   gcc_assert (m_printer);
   diagnostic_source_print_policy source_policy (*this);
   source_policy.print (*m_printer, richloc, DK_ERROR, nullptr);
+  return pp_formatted_text (m_printer);
 }
 
 } // namespace selftest
