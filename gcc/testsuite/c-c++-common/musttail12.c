@@ -1,4 +1,4 @@
-/* { dg-do compile { target { struct_tail_call && { c || c++11 } } } } */
+/* { dg-do compile { target { struct_musttail && { c || c++11 } } } } */
 /* { dg-additional-options "-fdelayed-branch" { target sparc*-*-* } } */
 
 struct str

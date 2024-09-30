@@ -511,11 +511,11 @@ END GetDumpFile ;
    IsDumpRequiredTree - return TRUE if the gcc tree should be dumped.
 *)
 
-PROCEDURE IsDumpRequiredTree (tree: Tree; default: BOOLEAN) : BOOLEAN ;
+PROCEDURE IsDumpRequiredTree (gcctree: tree; default: BOOLEAN) : BOOLEAN ;
 VAR
    sym: CARDINAL ;
 BEGIN
-   sym := Gcc2Mod (tree) ;
+   sym := Gcc2Mod (gcctree) ;
    IF sym = NulSym
    THEN
       RETURN default

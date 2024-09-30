@@ -4,10 +4,10 @@ A
 UrlSuffix(gcc/Preprocessor-Options.html#index-A)
 
 C
-UrlSuffix(gcc/Preprocessor-Options.html#index-C)
+UrlSuffix(gcc/Preprocessor-Options.html#index-C) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-C)
 
 CC
-UrlSuffix(gcc/Preprocessor-Options.html#index-CC)
+UrlSuffix(gcc/Preprocessor-Options.html#index-CC) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-CC)
 
 D
 UrlSuffix(gcc/Preprocessor-Options.html#index-D-1)
@@ -17,7 +17,7 @@ UrlSuffix(gcc/Preprocessor-Options.html#index-D-1)
 ;   duplicate: 'gcc/Overall-Options.html#index-E'
 
 H
-UrlSuffix(gcc/Preprocessor-Options.html#index-H) LangUrlSuffix_D(gdc/Code-Generation.html#index-H)
+UrlSuffix(gcc/Preprocessor-Options.html#index-H) LangUrlSuffix_D(gdc/Code-Generation.html#index-H) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-H)
 
 I
 UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I)
@@ -53,7 +53,7 @@ MQ
 UrlSuffix(gcc/Preprocessor-Options.html#index-MQ) LangUrlSuffix_D(gdc/Code-Generation.html#index-MQ)
 
 P
-UrlSuffix(gcc/Preprocessor-Options.html#index-P)
+UrlSuffix(gcc/Preprocessor-Options.html#index-P) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-P)
 
 U
 UrlSuffix(gcc/Preprocessor-Options.html#index-U)
@@ -62,22 +62,73 @@ UrlSuffix(gcc/Preprocessor-Options.html#index-U)
 ;   duplicate: 'gcc/Standard-Libraries.html#index-Wall-1'
 ;   duplicate: 'gcc/Warning-Options.html#index-Wall'
 Wall
-LangUrlSuffix_D(gdc/Warnings.html#index-Wall)
+LangUrlSuffix_D(gdc/Warnings.html#index-Wall) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wall)
+
+Waliasing
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Waliasing)
+
+Walign-commons
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Walign-commons)
+
+Wampersand
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wampersand)
+
+Warray-temporaries
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Warray-temporaries)
+
+Wc-binding-type
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wc-binding-type)
 
 Wdate-time
 UrlSuffix(gcc/Warning-Options.html#index-Wdate-time)
 
+Wcharacter-truncation
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wcharacter-truncation)
+
+Wcompare-reals
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wcompare-reals)
+
 Wconversion
-UrlSuffix(gcc/Warning-Options.html#index-Wconversion)
+UrlSuffix(gcc/Warning-Options.html#index-Wconversion) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wconversion)
+
+Wconversion-extra
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wconversion-extra)
+
+Wdo-subscript
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wdo-subscript)
 
 Wextra
-UrlSuffix(gcc/Warning-Options.html#index-Wextra) LangUrlSuffix_D(gdc/Warnings.html#index-Wextra)
+UrlSuffix(gcc/Warning-Options.html#index-Wextra) LangUrlSuffix_D(gdc/Warnings.html#index-Wextra) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wextra)
+
+Wfrontend-loop-interchange
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wfrontend-loop-interchange)
+
+Wfunction-elimination
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wfunction-elimination)
+
+Wimplicit-interface
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wimplicit-interface)
+
+Wimplicit-procedure
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wimplicit-procedure)
+
+Winteger-division
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Winteger-division)
+
+Wline-truncation
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wline-truncation)
+
+Wintrinsics-std
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wintrinsics-std)
 
 Wmaybe-uninitialized
 UrlSuffix(gcc/Warning-Options.html#index-Wmaybe-uninitialized)
 
 Wmissing-include-dirs
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-include-dirs)
+
+Wuse-without-only
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wuse-without-only)
 
 Wopenacc-parallelism
 UrlSuffix(gcc/Warning-Options.html#index-Wno-openacc-parallelism)
@@ -88,17 +139,56 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-openmp)
 Wopenmp-simd
 UrlSuffix(gcc/Warning-Options.html#index-Wno-openmp-simd)
 
+Woverwrite-recursive
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Woverwrite-recursive)
+
 Wpedantic
-UrlSuffix(gcc/Warning-Options.html#index-Wno-pedantic)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-pedantic) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wpedantic)
+
+Wreal-q-constant
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wreal-q-constant)
+
+Wrealloc-lhs
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wrealloc-lhs)
+
+Wrealloc-lhs-all
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wrealloc-lhs-all)
 
 Wreturn-type
 UrlSuffix(gcc/Warning-Options.html#index-Wno-return-type)
 
+Wsurprising
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wsurprising)
+
+Wtabs
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wtabs)
+
+Wundefined-do-loop
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wundefined-do-loop)
+
+Wunderflow
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wunderflow)
+
 Wuninitialized
 UrlSuffix(gcc/Warning-Options.html#index-Wno-uninitialized)
 
+Wintrinsic-shadow
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wintrinsic-shadow)
+
 Wunused
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused)
+
+Wunused-dummy-argument
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wunused-dummy-argument)
+
+Wzerotrip
+LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wzerotrip)
+
+cpp
+LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-cpp)
+
+cpp=
+LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-cpp)
 
 ; skipping UrlSuffix for 'nocpp' due to finding no URLs
 
@@ -106,8 +196,170 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-unused)
 ;   duplicate: 'gcc/Developer-Options.html#index-d-1'
 ;   duplicate: 'gcc/Preprocessor-Options.html#index-d'
 
+fallow-argument-mismatch
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fallow-argument-mismatch)
+
+faggressive-function-elimination
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-faggressive-function-elimination)
+
+falign-commons
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-falign-commons)
+
+fall-intrinsics
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fall-intrinsics)
+
+fautomatic
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fno-automatic)
+
+fbacktrace
+LangUrlSuffix_Fortran(gfortran/Debugging-Options.html#index-fno-backtrace)
+
+fblas-matmul-limit=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fblas-matmul-limit)
+
+fcheck-array-temporaries
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fcheck-array-temporaries)
+
+fcray-pointer
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fcray-pointer)
+
+fd-lines-as-code
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fd-lines-as-code)
+
+fd-lines-as-comments
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fd-lines-as-comments)
+
+fdebug-aux-vars
+LangUrlSuffix_Fortran(gfortran/Debugging-Options.html#index-fdebug-aux-vars)
+
+fdec
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec)
+
+fdec-blank-format-item
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-blank-format-item)
+
+fdec-char-conversions
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-char-conversions)
+
+fdec-include
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-include)
+
+fdec-format-defaults
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-format-defaults)
+
+fdec-intrinsic-ints
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-intrinsic-ints)
+
+fdec-math
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-math)
+
+fdec-structure
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-structure)
+
+fdec-static
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdec-static)
+
+fdefault-double-8
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdefault-double-8)
+
+fdefault-integer-8
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdefault-integer-8)
+
+fdefault-real-8
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdefault-real-8)
+
+fdefault-real-10
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdefault-real-10)
+
+fdefault-real-16
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdefault-real-16)
+
+fdollar-ok
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fdollar-ok)
+
+fdump-fortran-original
+LangUrlSuffix_Fortran(gfortran/Developer-Options.html#index-fdump-fortran-original)
+
+fdump-fortran-optimized
+LangUrlSuffix_Fortran(gfortran/Developer-Options.html#index-fdump-fortran-optimized)
+
+fdump-fortran-global
+LangUrlSuffix_Fortran(gfortran/Developer-Options.html#index-fdump-fortran-global)
+
+fdump-parse-tree
+LangUrlSuffix_Fortran(gfortran/Developer-Options.html#index-fdump-parse-tree)
+
+fexternal-blas
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fexternal-blas)
+
 ff2c
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-ff2c)
+
+ffixed-form
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffixed-form)
+
+ftest-forall-temp
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ftest-forall-temp)
+
+finteger-4-integer-8
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-finteger-4-integer-8)
+
+fintrinsic-modules-path
+LangUrlSuffix_Fortran(gfortran/Directory-Options.html#index-fintrinsic-modules-path)
+
+fintrinsic-modules-path=
+LangUrlSuffix_Fortran(gfortran/Directory-Options.html#index-fintrinsic-modules-path)
+
+fpad-source
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fpad-source)
+
+ffree-form
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffree-form)
+
+fimplicit-none
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fimplicit-none)
+
+finit-character=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finit-character)
+
+finit-derived
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finit-derived)
+
+finit-integer=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finit-integer)
+
+finit-local-zero
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finit-local-zero)
+
+finit-logical=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finit-logical)
+
+finit-real=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finit-real)
+
+finline-arg-packing
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finline-arg-packing)
+
+finline-intrinsics
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finline-intrinsics)
+
+finline-intrinsics=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finline-intrinsics)
+
+finline-matmul-limit=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-finline-matmul-limit)
+
+fmax-array-constructor=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fmax-array-constructor)
+
+fmax-stack-var-size=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fmax-stack-var-size)
+
+fstack-arrays
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fstack-arrays)
+
+fmodule-private
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fmodule-private)
 
 fopenacc
 UrlSuffix(gcc/C-Dialect-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
@@ -124,43 +376,105 @@ UrlSuffix(gcc/C-Dialect-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(g
 fopenmp-allocators
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-allocators)
 
+fpack-derived
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fpack-derived)
+
 fpreprocessed
 UrlSuffix(gcc/Preprocessor-Options.html#index-fpreprocessed)
+
+fprotect-parens
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fno-protect-parens)
+
+frange-check
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-frange-check)
+
+freal-4-real-8
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-freal-4-real-8)
+
+freal-4-real-10
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-freal-4-real-10)
+
+freal-4-real-16
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-freal-4-real-16)
+
+freal-8-real-4
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-freal-8-real-4)
+
+freal-8-real-10
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-freal-8-real-10)
+
+freal-8-real-16
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-freal-8-real-16)
+
+frealloc-lhs
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-frealloc-lhs)
+
+frecursive
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-frecursive)
+
+frepack-arrays
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-frepack-arrays)
+
+funsigned
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-funsigned)
+
+fcoarray=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fcoarray)
+
+fcheck=
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fcheck)
+
+fsecond-underscore
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fsecond-underscore)
 
 ; skipping UrlSuffix for 'fshort-enums' due to multiple URLs:
 ;   duplicate: 'gcc/Code-Gen-Options.html#index-fshort-enums'
 ;   duplicate: 'gcc/Non-bugs.html#index-fshort-enums-3'
 ;   duplicate: 'gcc/Structures-unions-enumerations-and-bit-fields-implementation.html#index-fshort-enums-1'
+fshort-enums
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fshort-enums)
+
+fsign-zero
+LangUrlSuffix_Fortran(gfortran/Runtime-Options.html#index-fsign-zero)
+
+funderscoring
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fno-underscoring)
 
 fworking-directory
-UrlSuffix(gcc/Preprocessor-Options.html#index-fno-working-directory)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-working-directory) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-fworking-directory)
 
 idirafter
-UrlSuffix(gcc/Directory-Options.html#index-idirafter)
+UrlSuffix(gcc/Directory-Options.html#index-idirafter) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-idirafter)
 
 imultilib
-UrlSuffix(gcc/Directory-Options.html#index-imultilib) LangUrlSuffix_D(gdc/Directory-Options.html#index-imultilib)
+UrlSuffix(gcc/Directory-Options.html#index-imultilib) LangUrlSuffix_D(gdc/Directory-Options.html#index-imultilib) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-imultilib)
 
 iprefix
-UrlSuffix(gcc/Directory-Options.html#index-iprefix) LangUrlSuffix_D(gdc/Directory-Options.html#index-iprefix)
+UrlSuffix(gcc/Directory-Options.html#index-iprefix) LangUrlSuffix_D(gdc/Directory-Options.html#index-iprefix) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-iprefix)
 
 iquote
-UrlSuffix(gcc/Directory-Options.html#index-iquote)
+UrlSuffix(gcc/Directory-Options.html#index-iquote) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-iquote)
 
 isysroot
-UrlSuffix(gcc/Directory-Options.html#index-isysroot)
+UrlSuffix(gcc/Directory-Options.html#index-isysroot) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-isysroot)
 
 isystem
-UrlSuffix(gcc/Directory-Options.html#index-isystem)
+UrlSuffix(gcc/Directory-Options.html#index-isystem) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-isystem)
 
 nostdinc
-UrlSuffix(gcc/Directory-Options.html#index-nostdinc) LangUrlSuffix_D(gdc/Directory-Options.html#index-nostdinc)
+UrlSuffix(gcc/Directory-Options.html#index-nostdinc) LangUrlSuffix_D(gdc/Directory-Options.html#index-nostdinc) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-nostdinc)
 
 o
 UrlSuffix(gcc/Overall-Options.html#index-o)
 
+static-libgfortran
+LangUrlSuffix_Fortran(gfortran/Link-Options.html#index-static-libgfortran)
+
+static-libquadmath
+LangUrlSuffix_Fortran(gfortran/Link-Options.html#index-static-libquadmath)
+
 undef
-UrlSuffix(gcc/Preprocessor-Options.html#index-undef)
+UrlSuffix(gcc/Preprocessor-Options.html#index-undef) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-undef)
 
 v
 UrlSuffix(gcc/Overall-Options.html#index-v) LangUrlSuffix_D(gdc/Developer-Options.html#index-v)

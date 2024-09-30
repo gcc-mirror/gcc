@@ -2859,6 +2859,7 @@ public:
   {
     Static,
     Function,
+    Type,
   };
 
   virtual ~ExternalItem () {}
@@ -3084,11 +3085,13 @@ public:
 
   // Copy constructor with clone
   ExternalFunctionItem (ExternalFunctionItem const &other)
-    : ExternalItem (other), return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause),
+    : ExternalItem (other), where_clause (other.where_clause),
       function_params (other.function_params),
       has_variadics (other.has_variadics)
   {
+    if (other.return_type)
+      return_type = other.return_type->clone_type ();
+
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
       generic_params.push_back (e->clone_generic_param ());
@@ -3098,10 +3101,13 @@ public:
   ExternalFunctionItem &operator= (ExternalFunctionItem const &other)
   {
     ExternalItem::operator= (other);
-    return_type = other.return_type->clone_type ();
+
     where_clause = other.where_clause;
     function_params = other.function_params;
     has_variadics = other.has_variadics;
+
+    if (other.return_type)
+      return_type = other.return_type->clone_type ();
 
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -3141,6 +3147,39 @@ protected:
   ExternalFunctionItem *clone_external_item_impl () const override
   {
     return new ExternalFunctionItem (*this);
+  }
+};
+
+class ExternalTypeItem : public ExternalItem
+{
+public:
+  ExternalTypeItem (Analysis::NodeMapping mappings, Identifier item_name,
+		    Visibility vis, location_t locus)
+    : ExternalItem (std::move (mappings), std::move (item_name),
+		    Visibility (std::move (vis)),
+		    /* FIXME: Is that correct? */
+		    {}, locus)
+  {}
+
+  ExternalTypeItem (ExternalTypeItem const &other) : ExternalItem (other) {}
+
+  ExternalTypeItem (ExternalTypeItem &&other) = default;
+  ExternalTypeItem &operator= (ExternalTypeItem &&other) = default;
+  ExternalTypeItem &operator= (ExternalTypeItem const &other) = default;
+
+  std::string as_string () const override;
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExternalItemVisitor &vis) override;
+
+  ExternKind get_extern_kind () override { return ExternKind::Type; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
+  ExternalTypeItem *clone_external_item_impl () const override
+  {
+    return new ExternalTypeItem (*this);
   }
 };
 

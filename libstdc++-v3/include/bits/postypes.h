@@ -35,7 +35,9 @@
 #ifndef _GLIBCXX_POSTYPES_H
 #define _GLIBCXX_POSTYPES_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <cwchar> // For mbstate_t
 

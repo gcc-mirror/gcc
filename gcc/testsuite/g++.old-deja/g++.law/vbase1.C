@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed vbase
 // vbase file
 // From: pino@hubble.eecs.berkeley.edu (Jose Luis Pino)

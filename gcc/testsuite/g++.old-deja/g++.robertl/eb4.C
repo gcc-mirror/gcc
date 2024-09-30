@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // Error: Internal Compiler Error in GCC 2.7.2 and EGCS 1998/05/28 snapshot.
 
 #include <iostream>

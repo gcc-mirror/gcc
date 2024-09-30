@@ -42,6 +42,11 @@ size_integer (int kind)
   return GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (gfc_get_int_type (kind)));
 }
 
+static size_t
+size_unsigned (int kind)
+{
+  return GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (gfc_get_unsigned_type (kind)));
+}
 
 static size_t
 size_float (int kind)
@@ -84,6 +89,9 @@ gfc_element_size (gfc_expr *e, size_t *siz)
     {
     case BT_INTEGER:
       *siz = size_integer (e->ts.kind);
+      return true;
+    case BT_UNSIGNED:
+      *siz = size_unsigned (e->ts.kind);
       return true;
     case BT_REAL:
       *siz = size_float (e->ts.kind);
@@ -158,6 +166,8 @@ gfc_target_expr_size (gfc_expr *e, size_t *size)
 	asz = mpz_get_ui (tmp);
       else
 	return false;
+
+      mpz_clear (tmp);
     }
   else
     asz = 1;

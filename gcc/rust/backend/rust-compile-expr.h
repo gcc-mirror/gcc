@@ -97,10 +97,10 @@ protected:
 			      TyTy::BaseType *receiver, TyTy::FnType *fntype,
 			      tree receiver_ref, location_t expr_locus);
 
-  tree
-  resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
-			     HIR::OperatorExprMeta expr, tree lhs, tree rhs,
-			     HIR::Expr *lhs_expr, HIR::Expr *rhs_expr);
+  tree resolve_operator_overload (LangItem::Kind lang_item_type,
+				  HIR::OperatorExprMeta expr, tree lhs,
+				  tree rhs, HIR::Expr *lhs_expr,
+				  HIR::Expr *rhs_expr);
 
   tree compile_bool_literal (const HIR::LiteralExpr &expr,
 			     const TyTy::BaseType *tyty);

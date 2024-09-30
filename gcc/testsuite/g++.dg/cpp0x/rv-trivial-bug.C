@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 // PR c++/33235
 #include <cassert>
 

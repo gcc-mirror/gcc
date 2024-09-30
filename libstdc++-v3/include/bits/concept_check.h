@@ -30,9 +30,14 @@
 #ifndef _CONCEPT_CHECK_H
 #define _CONCEPT_CHECK_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 
 // All places in libstdc++-v3 where these are used, or /might/ be used, or
 // don't need to be used, or perhaps /should/ be used, are commented with
@@ -78,4 +83,5 @@
 
 #endif // enable/disable
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_CONCEPT_CHECK

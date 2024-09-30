@@ -6,7 +6,7 @@
 
    In this testcase, 2 records in the function index section are expected.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "funcinfo_name" 2 } } */

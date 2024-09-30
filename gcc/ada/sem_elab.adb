@@ -1778,11 +1778,6 @@ package body Sem_Elab is
       --  Determine whether arbitrary entity Id denotes internally generated
       --  routine Default_Initial_Condition.
 
-      function Is_Finalizer_Proc (Id : Entity_Id) return Boolean;
-      pragma Inline (Is_Finalizer_Proc);
-      --  Determine whether arbitrary entity Id denotes internally generated
-      --  routine _Finalizer.
-
       function Is_Initial_Condition_Proc (Id : Entity_Id) return Boolean;
       pragma Inline (Is_Initial_Condition_Proc);
       --  Determine whether arbitrary entity Id denotes internally generated
@@ -2438,7 +2433,7 @@ package body Sem_Elab is
          --  Calls to _Finalizer procedures must not appear in the output
          --  because this creates confusing noise.
 
-         elsif Is_Finalizer_Proc (Subp_Id) then
+         elsif Is_Finalizer (Subp_Id) then
             null;
 
          --  Initial_Condition
@@ -5338,7 +5333,7 @@ package body Sem_Elab is
 
             return
               (Is_Controlled_Procedure (Subp_Id, Name_Finalize)
-                 or else Is_Finalizer_Proc (Subp_Id)
+                 or else Is_Finalizer (Subp_Id)
                  or else Is_TSS (Subp_Id, TSS_Deep_Finalize))
                and then In_Initialization_Context (Call);
          end Is_Partial_Finalization_Proc;
@@ -6607,7 +6602,7 @@ package body Sem_Elab is
             --  Calls to _Finalizer procedures must not appear in the output
             --  because this creates confusing noise.
 
-            elsif Is_Finalizer_Proc (Subp_Id) then
+            elsif Is_Finalizer (Subp_Id) then
                null;
 
             --  Initial_Condition
@@ -10881,20 +10876,7 @@ package body Sem_Elab is
          Spec_Id : Entity_Id;
 
       begin
-         Spec_Id := Subp_Id;
-
-         --  The elaboration target denotes an internal function that returns a
-         --  constrained array type in a SPARK-to-C compilation. In this case
-         --  the function receives a corresponding procedure which has an out
-         --  parameter. The proper body for ABE checks and diagnostics is that
-         --  of the procedure.
-
-         if Ekind (Spec_Id) = E_Function
-           and then Rewritten_For_C (Spec_Id)
-         then
-            Spec_Id := Corresponding_Procedure (Spec_Id);
-         end if;
-
+         Spec_Id  := Subp_Id;
          Rec.Kind := Subprogram_Target;
 
          Spec_And_Body_From_Entity
@@ -13111,7 +13093,7 @@ package body Sem_Elab is
             --  Controlled finalization actions
 
             elsif Is_Controlled_Procedure (Targ_Id, Name_Finalize)
-              or else Is_Finalizer_Proc (Targ_Id)
+              or else Is_Finalizer (Targ_Id)
             then
                Extra := First_Formal_Type (Targ_Id);
                Kind  := Controlled_Finalization;
@@ -14480,7 +14462,7 @@ package body Sem_Elab is
       begin
          return
            Is_Accept_Alternative_Proc (Id)
-             or else Is_Finalizer_Proc (Id)
+             or else Is_Finalizer (Id)
              or else Is_Partial_Invariant_Proc (Id)
              or else Is_TSS (Id, TSS_Deep_Adjust)
              or else Is_TSS (Id, TSS_Deep_Finalize)
@@ -14500,17 +14482,6 @@ package body Sem_Elab is
 
          return Ekind (Id) = E_Procedure and then Is_DIC_Procedure (Id);
       end Is_Default_Initial_Condition_Proc;
-
-      -----------------------
-      -- Is_Finalizer_Proc --
-      -----------------------
-
-      function Is_Finalizer_Proc (Id : Entity_Id) return Boolean is
-      begin
-         --  To qualify, the entity must denote a _Finalizer procedure
-
-         return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
-      end Is_Finalizer_Proc;
 
       -------------------------------
       -- Is_Initial_Condition_Proc --

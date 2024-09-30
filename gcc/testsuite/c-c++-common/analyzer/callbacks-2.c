@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
+
 /* Reproducer for PR analyzer/97258: we should report the double-free
    inside a static callback if the callback is accessible via a global
    initializer.  */

@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_STD_FUNCTION_H
 #define _GLIBCXX_STD_FUNCTION_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>

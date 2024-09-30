@@ -30,11 +30,12 @@
 #ifndef _GLIBCXX_ATOMIC_BASE_H
 #define _GLIBCXX_ATOMIC_BASE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <new> // For placement new
-#include <stdint.h>
 #include <bits/atomic_lockfree_defines.h>
 #include <bits/move.h>
 
@@ -686,12 +687,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __pointer_type 	_M_p _GLIBCXX20_INIT(nullptr);
 
-      // Factored out to facilitate explicit specialization.
-      constexpr ptrdiff_t
-      _M_type_size(ptrdiff_t __d) const { return __d * sizeof(_PTp); }
-
-      constexpr ptrdiff_t
-      _M_type_size(ptrdiff_t __d) const volatile { return __d * sizeof(_PTp); }
+      static constexpr ptrdiff_t
+      _S_type_size(ptrdiff_t __d)
+      { return __d * sizeof(_PTp); }
 
     public:
       __atomic_base() noexcept = default;
@@ -741,42 +739,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __pointer_type
       operator++() noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator++() volatile noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator--() noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator--() volatile noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(1),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(1),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator+=(ptrdiff_t __d) noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator+=(ptrdiff_t __d) volatile noexcept
-      { return __atomic_add_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_add_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator-=(ptrdiff_t __d) noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       __pointer_type
       operator-=(ptrdiff_t __d) volatile noexcept
-      { return __atomic_sub_fetch(&_M_p, _M_type_size(__d),
+      { return __atomic_sub_fetch(&_M_p, _S_type_size(__d),
 				  int(memory_order_seq_cst)); }
 
       bool
@@ -931,22 +929,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
-      { return __atomic_fetch_add(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_add(&_M_p, _S_type_size(__d), int(__m)); }
 
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
-      { return __atomic_fetch_add(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_add(&_M_p, _S_type_size(__d), int(__m)); }
 
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
-      { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_sub(&_M_p, _S_type_size(__d), int(__m)); }
 
       _GLIBCXX_ALWAYS_INLINE __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
-      { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
+      { return __atomic_fetch_sub(&_M_p, _S_type_size(__d), int(__m)); }
     };
 
   namespace __atomic_impl
@@ -1118,8 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE bool
       compare_exchange_weak(_Tp* __ptr, _Val<_Tp>& __expected,
 			    _Val<_Tp> __desired, memory_order __success,
-			    memory_order __failure,
-			    bool __check_padding = false) noexcept
+			    memory_order __failure) noexcept
       {
 	return __atomic_impl::__compare_exchange<_AtomicRef>(
 		   *__ptr, __expected, __desired, true, __success, __failure);
@@ -1129,8 +1126,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_ALWAYS_INLINE bool
       compare_exchange_strong(_Tp* __ptr, _Val<_Tp>& __expected,
 			      _Val<_Tp> __desired, memory_order __success,
-			      memory_order __failure,
-			      bool __ignore_padding = false) noexcept
+			      memory_order __failure) noexcept
       {
 	return __atomic_impl::__compare_exchange<_AtomicRef>(
 		   *__ptr, __expected, __desired, false, __success, __failure);
@@ -1506,7 +1502,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Tp& __t) : _M_ptr(std::__addressof(__t))
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 
@@ -1617,7 +1615,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Tp& __t) : _M_ptr(&__t)
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 
@@ -1790,7 +1790,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Fp& __t) : _M_ptr(&__t)
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 
@@ -1917,7 +1919,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       __atomic_ref(_Tp*& __t) : _M_ptr(std::__addressof(__t))
-      { __glibcxx_assert(((uintptr_t)_M_ptr % required_alignment) == 0); }
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
+      }
 
       __atomic_ref(const __atomic_ref&) noexcept = default;
 

@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_CONCEPTS
 #define _GLIBCXX_CONCEPTS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_concepts
 #include <bits/version.h>

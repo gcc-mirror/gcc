@@ -90,13 +90,13 @@ EarlyNameResolver::resolve_generic_args (AST::GenericArgs &generic_args)
     arg.accept_vis (*this);
 
   for (auto &arg : generic_args.get_binding_args ())
-    arg.get_type ()->accept_vis (*this);
+    arg.get_type ().accept_vis (*this);
 }
 
 void
 EarlyNameResolver::resolve_qualified_path_type (AST::QualifiedPathType &path)
 {
-  path.get_type ()->accept_vis (*this);
+  path.get_type ().accept_vis (*this);
 
   if (path.has_as_clause ())
     path.get_as_type_path ().accept_vis (*this);
@@ -227,7 +227,7 @@ EarlyNameResolver::visit (AST::BlockExpr &expr)
       stmt->accept_vis (*this);
 
     if (expr.has_tail_expr ())
-      expr.get_tail_expr ()->accept_vis (*this);
+      expr.get_tail_expr ().accept_vis (*this);
   });
 }
 
@@ -243,37 +243,37 @@ void
 EarlyNameResolver::visit (AST::ForLoopExpr &expr)
 {
   scoped (expr.get_node_id (), [&expr, this] () {
-    expr.get_pattern ()->accept_vis (*this);
-    expr.get_iterator_expr ()->accept_vis (*this);
-    expr.get_loop_block ()->accept_vis (*this);
+    expr.get_pattern ().accept_vis (*this);
+    expr.get_iterator_expr ().accept_vis (*this);
+    expr.get_loop_block ().accept_vis (*this);
   });
 }
 
 void
 EarlyNameResolver::visit (AST::IfLetExpr &expr)
 {
-  expr.get_value_expr ()->accept_vis (*this);
+  expr.get_value_expr ().accept_vis (*this);
 
   scoped (expr.get_node_id (),
-	  [&expr, this] () { expr.get_if_block ()->accept_vis (*this); });
+	  [&expr, this] () { expr.get_if_block ().accept_vis (*this); });
 }
 
 void
 EarlyNameResolver::visit (AST::MatchExpr &expr)
 {
-  expr.get_scrutinee_expr ()->accept_vis (*this);
+  expr.get_scrutinee_expr ().accept_vis (*this);
 
   scoped (expr.get_node_id (), [&expr, this] () {
     for (auto &arm : expr.get_match_cases ())
       {
 	scoped (arm.get_node_id (), [&arm, this] () {
 	  if (arm.get_arm ().has_match_arm_guard ())
-	    arm.get_arm ().get_guard_expr ()->accept_vis (*this);
+	    arm.get_arm ().get_guard_expr ().accept_vis (*this);
 
 	  for (auto &pattern : arm.get_arm ().get_patterns ())
 	    pattern->accept_vis (*this);
 
-	  arm.get_expr ()->accept_vis (*this);
+	  arm.get_expr ().accept_vis (*this);
 	});
       }
   });
@@ -365,7 +365,7 @@ EarlyNameResolver::visit (AST::Trait &trait)
 void
 EarlyNameResolver::visit (AST::InherentImpl &impl)
 {
-  impl.get_type ()->accept_vis (*this);
+  impl.get_type ().accept_vis (*this);
 
   for (auto &generic : impl.get_generic_params ())
     generic->accept_vis (*this);
@@ -379,7 +379,7 @@ EarlyNameResolver::visit (AST::InherentImpl &impl)
 void
 EarlyNameResolver::visit (AST::TraitImpl &impl)
 {
-  impl.get_type ()->accept_vis (*this);
+  impl.get_type ().accept_vis (*this);
 
   for (auto &generic : impl.get_generic_params ())
     generic->accept_vis (*this);
@@ -497,7 +497,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
     {
       auto builtin_kind
 	= builtin_macro_from_string (rules_def->get_rule_name ().as_string ());
-      invoc.map_to_builtin (builtin_kind);
+      invoc.map_to_builtin (builtin_kind.value ());
     }
 
   auto attributes = rules_def->get_outer_attrs ();
@@ -558,17 +558,7 @@ EarlyNameResolver::visit (AST::StructPattern &)
 void
 EarlyNameResolver::visit (AST::TupleStructPattern &pattern)
 {
-  if (!pattern.has_items ())
-    {
-      rich_location rich_locus (line_table, pattern.get_locus ());
-      rich_locus.add_fixit_replace (
-	"function calls are not allowed in patterns");
-      rust_error_at (
-	rich_locus, ErrorCode::E0164,
-	"expected tuple struct or tuple variant, found associated function");
-      return;
-    }
-  pattern.get_items ()->accept_vis (*this);
+  pattern.get_items ().accept_vis (*this);
 }
 
 void

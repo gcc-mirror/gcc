@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_SAT_ARITH_H
 #define _GLIBCXX_SAT_ARITH_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/version.h>
 

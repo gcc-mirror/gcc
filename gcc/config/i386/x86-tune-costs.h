@@ -2034,6 +2034,7 @@ struct processor_costs znver5_cost = {
   COSTS_N_INSNS (1),			/* cost of a lea instruction.  */
   COSTS_N_INSNS (1),			/* variable shift costs.  */
   COSTS_N_INSNS (1),			/* constant shift costs.  */
+  /* mul has latency 3, executes in 3 integer units.  */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI.  */
    COSTS_N_INSNS (3),			/* 				 HI.  */
    COSTS_N_INSNS (3),			/*				 SI.  */
@@ -2041,6 +2042,8 @@ struct processor_costs znver5_cost = {
    COSTS_N_INSNS (3)},			/*			other.  */
   0,					/* cost of multiply per each bit
 					   set.  */
+  /* integer divide has latency of 8 cycles
+     plus 1 for every 9 bits of quotient.  */
   {COSTS_N_INSNS (10),			/* cost of a divide/mod for QI.  */
    COSTS_N_INSNS (11),			/* 			    HI.  */
    COSTS_N_INSNS (13),			/*			    SI.  */
@@ -2048,7 +2051,7 @@ struct processor_costs znver5_cost = {
    COSTS_N_INSNS (16)},			/*			    other.  */
   COSTS_N_INSNS (1),			/* cost of movsx.  */
   COSTS_N_INSNS (1),			/* cost of movzx.  */
-  8,					/* "large" insn.  */
+  15,					/* "large" insn.  */
   9,					/* MOVE_RATIO.  */
   6,					/* CLEAR_RATIO */
   {6, 6, 6},				/* cost of loading integer registers
@@ -2065,12 +2068,13 @@ struct processor_costs znver5_cost = {
   2, 2, 2,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
-  /* VGATHERDPD is 17 uops and throughput is 4, VGATHERDPS is 24 uops,
-     throughput 5.  Approx 7 uops do not depend on vector size and every load
-     is 5 uops.  */
+
+  /* TODO: gather and scatter instructions are currently disabled in
+     x86-tune.def.  In some cases they are however a win, see PR116582
+     We however need good cost model for them.  */
   14, 10,				/* Gather load static, per_elt.  */
   14, 20,				/* Gather store static, per_elt.  */
-  32,					/* size of l1 cache.  */
+  48,					/* size of l1 cache.  */
   1024,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
   /* New AMD processors never drop prefetches; if they cannot be performed
@@ -2080,6 +2084,8 @@ struct processor_costs znver5_cost = {
      time).  */
   100,					/* number of parallel prefetches.  */
   3,					/* Branch cost.  */
+  /* TODO x87 latencies are still based on znver4.
+     Probably not very important these days.  */
   COSTS_N_INSNS (7),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (7),			/* cost of FMUL instruction.  */
   /* Latency of fdiv is 8-15.  */
@@ -2089,27 +2095,38 @@ struct processor_costs znver5_cost = {
   /* Latency of fsqrt is 4-10.  */
   COSTS_N_INSNS (25),			/* cost of FSQRT instruction.  */
 
+  /* SSE instructions have typical throughput 4 and latency 1.  */
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
-  COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  /* ADDSS has throughput 2 and latency 2
+     (in some cases when source is another addition).  */
+  COSTS_N_INSNS (2),			/* cost of ADDSS/SD SUBSS/SD insns.  */
+  /* MULSS has throughput 2 and latency 3.  */
   COSTS_N_INSNS (3),			/* cost of MULSS instruction.  */
   COSTS_N_INSNS (3),			/* cost of MULSD instruction.  */
+  /* FMA had throughput 2 and latency 4.  */
   COSTS_N_INSNS (4),			/* cost of FMA SS instruction.  */
   COSTS_N_INSNS (4),			/* cost of FMA SD instruction.  */
+  /* DIVSS has throughtput 0.4 and latency 10.  */
   COSTS_N_INSNS (10),			/* cost of DIVSS instruction.  */
-  /* 9-13.  */
+  /* DIVSD has throughtput 0.25 and latency 13.  */
   COSTS_N_INSNS (13),			/* cost of DIVSD instruction.  */
+  /* DIVSD has throughtput 0.22 and latency 14.  */
   COSTS_N_INSNS (14),			/* cost of SQRTSS instruction.  */
+  /* DIVSD has throughtput 0.13 and latency 20.  */
   COSTS_N_INSNS (20),			/* cost of SQRTSD instruction.  */
-  /* Zen can execute 4 integer operations per cycle.  FP operations
-     take 3 cycles and it can execute 2 integer additions and 2
-     multiplications thus reassociation may make sense up to with of 6.
-     SPEC2k6 bencharks suggests
-     that 4 works better than 6 probably due to register pressure.
+  /* Zen5 can execute:
+      - integer ops: 6 per cycle, at most 3 multiplications.
+	latency 1 for additions, 3 for multiplications (pipelined)
 
-     Integer vector operations are taken by FP unit and execute 3 vector
-     plus/minus operations per cycle but only one multiply.  This is adjusted
-     in ix86_reassociation_width.  */
-  4, 4, 3, 6,				/* reassoc int, fp, vec_int, vec_fp.  */
+	Setting width of 9 for multiplication is probably excessive
+	for register pressure.
+      - fp ops: 2 additions per cycle, latency 2-3
+		2 multiplicaitons per cycle, latency 3
+      - vector intger ops: 4 additions, latency 1
+			   2 multiplications, latency 4
+	We increase width to 6 for multiplications
+	in ix86_reassociation_width.  */
+  6, 6, 4, 6,				/* reassoc int, fp, vec_int, vec_fp.  */
   znver2_memcpy,
   znver2_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */

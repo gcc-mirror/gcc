@@ -100,12 +100,10 @@ void to_uns_short_store_n (TYPE a, unsigned short *p, long n) { p[n] = (unsigned
 void to_uns_int_store_n (TYPE a, unsigned int *p, long n) { p[n] = (unsigned int)a; }
 void to_uns_long_store_n (TYPE a, unsigned long *p, long n) { p[n] = (unsigned long)a; }
 
-/* On targets with 64-bit long double, some opcodes to deal with __float128 are
-   disabled, see PR target/105359.  */
-/* { dg-final { scan-assembler-not {\mbl __}       { xfail longdouble64 } } } */
-/* { dg-final { scan-assembler     {\mxscvdpqp\M}  { xfail longdouble64 } } } */
-/* { dg-final { scan-assembler     {\mxscvqpdp\M}  { xfail longdouble64 } } } */
-/* { dg-final { scan-assembler     {\mxscvqpdpo\M} { xfail longdouble64 } } } */
+/* { dg-final { scan-assembler-not {\mbl __}       } } */
+/* { dg-final { scan-assembler     {\mxscvdpqp\M}  } } */
+/* { dg-final { scan-assembler     {\mxscvqpdp\M}  } } */
+/* { dg-final { scan-assembler     {\mxscvqpdpo\M} } } */
 /* { dg-final { scan-assembler     {\mxscvqpsdz\M} } } */
 /* { dg-final { scan-assembler     {\mxscvqpswz\M} } } */
 /* { dg-final { scan-assembler     {\mxscvsdqp\M}  } } */
@@ -113,7 +111,7 @@ void to_uns_long_store_n (TYPE a, unsigned long *p, long n) { p[n] = (unsigned l
 /* { dg-final { scan-assembler     {\mlxsd\M}      } } */
 /* { dg-final { scan-assembler     {\mlxsiwax\M}   } } */
 /* { dg-final { scan-assembler     {\mlxsiwzx\M}   } } */
-/* { dg-final { scan-assembler     {\mlxssp\M}     { xfail longdouble64 } } } */
+/* { dg-final { scan-assembler     {\mlxssp\M}     } } */
 /* { dg-final { scan-assembler     {\mstxsd\M}     } } */
 /* { dg-final { scan-assembler     {\mstxsiwx\M}   } } */
-/* { dg-final { scan-assembler     {\mstxssp\M}    { xfail longdouble64 } } } */
+/* { dg-final { scan-assembler     {\mstxssp\M}    } } */

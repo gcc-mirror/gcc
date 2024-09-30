@@ -296,7 +296,7 @@ TEST_UNIFORM_ZX (lsl_w0_u32_x_untied, svuint32_t, uint32_t,
 
 /*
 ** lsl_1_u32_x_tied1:
-**	lsl	z0\.s, z0\.s, #1
+**	add	z0\.s, z0\.s, z0\.s
 **	ret
 */
 TEST_UNIFORM_Z (lsl_1_u32_x_tied1, svuint32_t,
@@ -305,7 +305,7 @@ TEST_UNIFORM_Z (lsl_1_u32_x_tied1, svuint32_t,
 
 /*
 ** lsl_1_u32_x_untied:
-**	lsl	z0\.s, z1\.s, #1
+**	add	z0\.s, z1\.s, z1\.s
 **	ret
 */
 TEST_UNIFORM_Z (lsl_1_u32_x_untied, svuint32_t,

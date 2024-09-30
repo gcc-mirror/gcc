@@ -74,8 +74,6 @@ UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mzarch)
 
 ; skipping UrlSuffix for 'mbranch-cost=' due to finding no URLs
 
-; skipping UrlSuffix for 'mlra' due to finding no URLs
-
 ; skipping UrlSuffix for 'mpic-data-is-text-relative' due to finding no URLs
 
 ; skipping UrlSuffix for 'mindirect-branch=' due to finding no URLs

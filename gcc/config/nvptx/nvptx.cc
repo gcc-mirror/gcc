@@ -231,8 +231,7 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
 static enum ptx_version
 default_ptx_version_option (void)
 {
-  enum ptx_version first
-    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+  enum ptx_version first = first_ptx_version_supporting_sm (ptx_isa_option);
 
   /* Pick a version that supports the sm.  */
   enum ptx_version res = first;
@@ -311,20 +310,21 @@ sm_version_to_string (enum ptx_isa sm)
 static void
 handle_ptx_version_option (void)
 {
-  if (!OPTION_SET_P (ptx_version_option)
-      || ptx_version_option == PTX_VERSION_default)
+  if (!OPTION_SET_P (ptx_version_option))
+    gcc_checking_assert (ptx_version_option == PTX_VERSION_default);
+
+  if (ptx_version_option == PTX_VERSION_default)
     {
       ptx_version_option = default_ptx_version_option ();
       return;
     }
 
-  enum ptx_version first
-    = first_ptx_version_supporting_sm ((enum ptx_isa) ptx_isa_option);
+  enum ptx_version first = first_ptx_version_supporting_sm (ptx_isa_option);
 
   if (ptx_version_option < first)
     error ("PTX version (%<-mptx%>) needs to be at least %s to support selected"
 	   " %<-misa%> (sm_%s)", ptx_version_to_string (first),
-	   sm_version_to_string ((enum ptx_isa)ptx_isa_option));
+	   sm_version_to_string (ptx_isa_option));
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -336,7 +336,9 @@ nvptx_option_override (void)
 
   /* Via nvptx 'OPTION_DEFAULT_SPECS', '-misa' always appears on the command
      line; but handle the case that the compiler is not run via the driver.  */
-  if (!OPTION_SET_P (ptx_isa_option))
+  gcc_checking_assert ((ptx_isa_option == PTX_ISA_unset)
+		       == (!OPTION_SET_P (ptx_isa_option)));
+  if (ptx_isa_option == PTX_ISA_unset)
     fatal_error (UNKNOWN_LOCATION, "%<-march=%> must be specified");
 
   handle_ptx_version_option ();
@@ -995,8 +997,7 @@ static void
 write_fn_proto_1 (std::stringstream &s, bool is_defn,
 		  const char *name, const_tree decl, bool force_public)
 {
-  if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) == NULL)
-    write_fn_marker (s, is_defn, TREE_PUBLIC (decl) || force_public, name);
+  write_fn_marker (s, is_defn, TREE_PUBLIC (decl) || force_public, name);
 
   /* PTX declaration.  */
   if (DECL_EXTERNAL (decl))
@@ -5953,13 +5954,11 @@ nvptx_file_start (void)
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
 
   fputs ("\t.version\t", asm_out_file);
-  fputs (ptx_version_to_string ((enum ptx_version)ptx_version_option),
-	 asm_out_file);
+  fputs (ptx_version_to_string (ptx_version_option), asm_out_file);
   fputs ("\n", asm_out_file);
 
   fputs ("\t.target\tsm_", asm_out_file);
-  fputs (sm_version_to_string ((enum ptx_isa)ptx_isa_option),
-	 asm_out_file);
+  fputs (sm_version_to_string (ptx_isa_option), asm_out_file);
   fputs ("\n", asm_out_file);
 
   fprintf (asm_out_file, "\t.address_size %d\n", GET_MODE_BITSIZE (Pmode));
@@ -7583,7 +7582,8 @@ nvptx_mem_local_p (rtx mem)
   while (0)
 
 void
-nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
+nvptx_asm_output_def_from_decls (FILE *stream, tree name,
+				 tree value ATTRIBUTE_UNUSED)
 {
   if (nvptx_alias == 0 || !TARGET_PTX_6_3)
     {
@@ -7618,7 +7618,8 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
       return;
     }
 
-  if (!cgraph_node::get (name)->referred_to_p ())
+  cgraph_node *cnode = cgraph_node::get (name);
+  if (!cnode->referred_to_p ())
     /* Prevent "Internal error: reference to deleted section".  */
     return;
 
@@ -7627,8 +7628,27 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
   fputs (s.str ().c_str (), stream);
 
   tree id = DECL_ASSEMBLER_NAME (name);
+
+  /* Walk alias chain to get reference callgraph node.
+     The rationale of using ultimate_alias_target here is that
+     PTX's .alias directive only supports 1-level aliasing where
+     aliasee is function defined in same module.
+
+     So for the following case:
+     int foo() { return 42; }
+     int bar () __attribute__((alias ("foo")));
+     int baz () __attribute__((alias ("bar")));
+
+     should resolve baz to foo:
+     .visible .func (.param.u32 %value_out) baz;
+     .alias baz,foo;  */
+  symtab_node *alias_target_node = cnode->ultimate_alias_target ();
+  tree alias_target_id = DECL_ASSEMBLER_NAME (alias_target_node->decl);
+  std::stringstream s_def;
+  write_fn_marker (s_def, true, TREE_PUBLIC (name), IDENTIFIER_POINTER (id));
+  fputs (s_def.str ().c_str (), stream);
   NVPTX_ASM_OUTPUT_DEF (stream, IDENTIFIER_POINTER (id),
-			IDENTIFIER_POINTER (value));
+			IDENTIFIER_POINTER (alias_target_id));
 }
 
 #undef NVPTX_ASM_OUTPUT_DEF

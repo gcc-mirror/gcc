@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "diagnostic-format-text.h"
 
 #include "gcc-interface.h"
 
@@ -62,7 +63,8 @@ cc1_plugin::plugin_context *cc1_plugin::current_context;
 // This is put into the lang hooks when the plugin starts.
 
 static void
-plugin_print_error_function (diagnostic_context *context, const char *file,
+plugin_print_error_function (diagnostic_text_output_format &text_output,
+			     const char *file,
 			     const diagnostic_info *diagnostic)
 {
   if (current_function_decl != NULL_TREE
@@ -70,7 +72,7 @@ plugin_print_error_function (diagnostic_context *context, const char *file,
       && strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
 		 GCC_FE_WRAPPER_FUNCTION) == 0)
     return;
-  lhd_print_error_function (context, file, diagnostic);
+  lhd_print_error_function (text_output, file, diagnostic);
 }
 
 

@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
-			    int, bool, bool, bool, bool *, const char **);
+			    int, bool, bool, bool, bool *, pp_token_list &);
 
 /* Info for C language features which can be queried through
    __has_{feature,extension}.  */
@@ -236,7 +236,7 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted,
     highlight_color = nullptr;
 
   gcc_assert (TYPE_P (t));
-  struct obstack *ob = pp_buffer (cpp)->obstack;
+  struct obstack *ob = pp_buffer (cpp)->m_obstack;
   char *p = (char *) obstack_base (ob);
   /* Remember the end of the initial dump.  */
   int len = obstack_object_size (ob);
@@ -258,7 +258,7 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted,
       c_pretty_printer cpp2;
       /* Print the stripped version into a temporary printer.  */
       cpp2.type_id (aka_type);
-      struct obstack *ob2 = pp_buffer (&cpp2)->obstack;
+      struct obstack *ob2 = pp_buffer (&cpp2)->m_obstack;
       /* Get the stripped version from the temporary printer.  */
       const char *aka = (char *) obstack_base (ob2);
       int aka_len = obstack_object_size (ob2);
@@ -318,7 +318,7 @@ pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
 static bool
 c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		int precision, bool wide, bool set_locus, bool hash,
-		bool *quoted, const char **)
+		bool *quoted, pp_token_list &)
 {
   tree t = NULL_TREE;
   // FIXME: the next cast should be a dynamic_cast, when it is permitted.
@@ -411,9 +411,9 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->printer;
+  pretty_printer *base = context->m_printer;
   c_pretty_printer *pp = XNEW (c_pretty_printer);
-  context->printer = new (pp) c_pretty_printer ();
+  context->m_printer = new (pp) c_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
   base->~pretty_printer ();

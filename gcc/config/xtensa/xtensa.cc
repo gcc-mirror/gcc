@@ -114,6 +114,7 @@ struct GTY(()) machine_function
 };
 
 static void xtensa_option_override (void);
+static void xtensa_option_override_after_change (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
@@ -302,6 +303,9 @@ static rtx xtensa_delegitimize_address (rtx);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE xtensa_option_override
+
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE xtensa_option_override_after_change
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA xtensa_output_addr_const_extra
@@ -790,11 +794,7 @@ gen_int_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
 
     }
   else if (p_info->reverse_regs)
-    {
-      rtx temp = cmp0;
-      cmp0 = cmp1;
-      cmp1 = temp;
-    }
+    std::swap (cmp0, cmp1);
 
   return gen_rtx_fmt_ee (invert ? reverse_condition (p_info->test_code)
 				: p_info->test_code,
@@ -838,11 +838,7 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
     }
 
   if (reverse_regs)
-    {
-      rtx temp = cmp0;
-      cmp0 = cmp1;
-      cmp1 = temp;
-    }
+    std::swap (cmp0, cmp1);
 
   brtmp = gen_rtx_REG (CCmode, FPCC_REGNUM);
   emit_insn (gen_fn (brtmp, cmp0, cmp1));
@@ -2301,7 +2297,7 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 
 
 void
-xtensa_expand_call (int callop, rtx *operands, bool sibcall_p)
+xtensa_expand_call (int callop, rtx *operands)
 {
   rtx call;
   rtx_insn *call_insn;
@@ -2342,14 +2338,6 @@ xtensa_expand_call (int callop, rtx *operands, bool sibcall_p)
       rtx clob = gen_rtx_CLOBBER (Pmode, xtensa_static_chain (NULL, false));
       CALL_INSN_FUNCTION_USAGE (call_insn) =
 	gen_rtx_EXPR_LIST (Pmode, clob, CALL_INSN_FUNCTION_USAGE (call_insn));
-    }
-  else if (sibcall_p)
-    {
-      /* Sibling call requires a return address to the caller, similar to
-	 "return" insn.  */
-      rtx use = gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, A0_REG));
-      CALL_INSN_FUNCTION_USAGE (call_insn) =
-	gen_rtx_EXPR_LIST (Pmode, use, CALL_INSN_FUNCTION_USAGE (call_insn));
     }
 }
 
@@ -2986,6 +2974,15 @@ xtensa_option_override (void)
      can_create_pseudo_p, and so matching after RA will give an
      unsplittable instruction.  Disable late-combine by default until
      the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
+
+  xtensa_option_override_after_change ();
+}
+
+static void
+xtensa_option_override_after_change (void)
+{
   if (!OPTION_SET_P (flag_late_combine_instructions))
     flag_late_combine_instructions = 0;
 }
@@ -4726,6 +4723,7 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
 	    case TYPE_ARITH:
 	    case TYPE_MULTI:
 	    case TYPE_NOP:
+	    case TYPE_FARITH:
 	    case TYPE_FSTORE:
 	      return COSTS_N_INSNS (n);
 

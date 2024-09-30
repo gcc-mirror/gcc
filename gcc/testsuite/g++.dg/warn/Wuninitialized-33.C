@@ -2,6 +2,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
 // { dg-options "-O2 -Wall" }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <algorithm>
 #include <memory>

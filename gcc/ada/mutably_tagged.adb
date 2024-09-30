@@ -272,15 +272,22 @@ package body Mutably_Tagged is
       if Force
 
         --  Otherwise, don't make the conversion when N is on the left-hand
-        --  side of the assignment, is already part of an unchecked conversion,
-        --  or is part of a renaming.
+        --  side of the assignment, in cases where we need the actual type
+        --  such as a subtype or object renaming declaration, or a generic or
+        --  parameter specification.
+
+        --  Additionally, prevent generation of the conversion if N is already
+        --  part of an unchecked conversion or a part of a selected component.
 
         or else (not Known_To_Be_Assigned (N, Only_LHS => True)
-        and then (No (Parent (N))
-                    or else Nkind (Parent (N))
-                              not in N_Selected_Component
-                                   | N_Unchecked_Type_Conversion
-                                   | N_Object_Renaming_Declaration))
+                  and then (No (Parent (N))
+                             or else Nkind (Parent (N))
+                               not in N_Selected_Component
+                                    | N_Subtype_Declaration
+                                    | N_Parameter_Specification
+                                    | N_Generic_Association
+                                    | N_Unchecked_Type_Conversion
+                                    | N_Object_Renaming_Declaration))
       then
          --  Exclude the case where we have a 'Size so that we get the proper
          --  size of the class-wide equivalent type. Are there other cases ???

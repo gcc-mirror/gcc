@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_SCOPE
 #define _GLIBCXX_EXPERIMENTAL_SCOPE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // experimental is currently omitted
 

@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret -fanalyzer-verbosity=1" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 /* { dg-enable-nn-line-numbers "" } */
 
 #include <stdlib.h>

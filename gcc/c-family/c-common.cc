@@ -6787,7 +6787,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
 /* Return the gcc option code associated with the reason for a cpp
    message, or 0 if none.  */
 
-static int
+static diagnostic_option_id
 c_option_controlling_cpp_diagnostic (enum cpp_warning_reason reason)
 {
   const struct cpp_reason_option_codes_t *entry;
@@ -6870,9 +6870,8 @@ c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
     richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
-  diagnostic_override_option_index
-    (&diagnostic,
-     c_option_controlling_cpp_diagnostic (reason));
+  diagnostic_set_option_id (&diagnostic,
+			    c_option_controlling_cpp_diagnostic (reason));
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
     global_dc->m_warn_system_headers = save_warn_system_headers;

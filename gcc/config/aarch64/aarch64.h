@@ -156,6 +156,16 @@
 
 #define PCC_BITFIELD_TYPE_MATTERS	1
 
+/* Use the same RTL truth representation for vector elements as we do
+   for scalars.  This maintains the property that a comparison like
+   eq:V4SI is a composition of 4 individual eq:SIs, just like plus:V4SI
+   is a composition of 4 individual plus:SIs.
+
+   This means that Advanced SIMD comparisons are represented in RTL as
+   (neg (op ...)).  */
+
+#define VECTOR_STORE_FLAG_VALUE(MODE) CONST1_RTX (GET_MODE_INNER (MODE))
+
 #ifndef USED_FOR_TARGET
 
 /* Define an enum of all features (ISA modes, architectures and extensions).
@@ -457,11 +467,18 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     enabled through +gcs.  */
 #define TARGET_GCS AARCH64_HAVE_ISA (GCS)
 
+/* Floating Point Absolute Maximum/Minimum extension instructions are
+   enabled through +faminmax.  */
+#define TARGET_FAMINMAX AARCH64_HAVE_ISA (FAMINMAX)
+
 /* Prefer different predicate registers for the output of a predicated
    operation over re-using an existing input predicate.  */
 #define TARGET_SVE_PRED_CLOBBER (TARGET_SVE \
 				 && (aarch64_tune_params.extra_tuning_flags \
 				     & AARCH64_EXTRA_TUNE_AVOID_PRED_RMW))
+
+/* fp8 instructions are enabled through +fp8.  */
+#define TARGET_FP8 AARCH64_HAVE_ISA (FP8)
 
 /* Standard register usage.  */
 
@@ -520,6 +537,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     1, 1, 1, 1,			/* SFP, AP, CC, VG */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* P0 - P7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* P8 - P15 */          \
+    1,				/* FPMR */		\
     1, 1,			/* FFR and FFRT */	\
     1, 1, 1, 1, 1, 1, 1, 1	/* Fake registers */	\
   }
@@ -544,6 +562,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     1, 1, 1, 0,			/* SFP, AP, CC, VG */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P0 - P7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* P8 - P15 */		\
+    1,				/* FPMR */		\
     1, 1,			/* FFR and FFRT */	\
     0, 0, 0, 0, 0, 0, 0, 0	/* Fake registers */	\
   }
@@ -561,6 +580,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
     "sfp", "ap",  "cc",  "vg",					\
     "p0",  "p1",  "p2",  "p3",  "p4",  "p5",  "p6",  "p7",	\
     "p8",  "p9",  "p10", "p11", "p12", "p13", "p14", "p15",	\
+    "fpmr",							\
     "ffr", "ffrt",						\
     "lowering", "tpidr2_block", "sme_state", "tpidr2_setup",	\
     "za_free", "za_saved", "za", "zt0"				\
@@ -772,6 +792,7 @@ enum reg_class
   PR_REGS,
   FFR_REGS,
   PR_AND_FFR_REGS,
+  MOVEABLE_SYSREGS,
   FAKE_REGS,
   ALL_REGS,
   LIM_REG_CLASSES		/* Last */
@@ -798,6 +819,7 @@ enum reg_class
   "PR_REGS",					\
   "FFR_REGS",					\
   "PR_AND_FFR_REGS",				\
+  "MOVEABLE_SYSREGS",				\
   "FAKE_REGS",					\
   "ALL_REGS"					\
 }
@@ -819,10 +841,11 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* PR_LO_REGS */	\
   { 0x00000000, 0x00000000, 0x000ff000 },	/* PR_HI_REGS */	\
   { 0x00000000, 0x00000000, 0x000ffff0 },	/* PR_REGS */		\
-  { 0x00000000, 0x00000000, 0x00300000 },	/* FFR_REGS */		\
-  { 0x00000000, 0x00000000, 0x003ffff0 },	/* PR_AND_FFR_REGS */	\
-  { 0x00000000, 0x00000000, 0x3fc00000 },	/* FAKE_REGS */		\
-  { 0xffffffff, 0xffffffff, 0x000fffff }	/* ALL_REGS */		\
+  { 0x00000000, 0x00000000, 0x00600000 },	/* FFR_REGS */		\
+  { 0x00000000, 0x00000000, 0x006ffff0 },	/* PR_AND_FFR_REGS */	\
+  { 0x00000000, 0x00000000, 0x00100000 },	/* MOVEABLE_SYSREGS */	\
+  { 0x00000000, 0x00000000, 0x7f800000 },	/* FAKE_REGS */		\
+  { 0xffffffff, 0xffffffff, 0x001fffff }	/* ALL_REGS */		\
 }
 
 #define REGNO_REG_CLASS(REGNO)	aarch64_regno_regclass (REGNO)

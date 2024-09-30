@@ -986,6 +986,8 @@ enum data_align { align_abi, align_opt, align_both };
   (ALTIVEC_VECTOR_MODE (MODE) || VSX_VECTOR_MODE (MODE)			\
    || (MODE) == V2DImode || (MODE) == V1TImode)
 
+#define TI_OR_PTI_MODE(mode) ((mode) == TImode || (mode) == PTImode)
+
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */
 

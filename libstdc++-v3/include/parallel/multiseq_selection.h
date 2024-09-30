@@ -48,6 +48,10 @@
 
 namespace __gnu_parallel
 {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // *nary_function
+
   /** @brief Compare __a pair of types lexicographically, ascending. */
   template<typename _T1, typename _T2, typename _Compare>
     class _Lexicographic
@@ -99,6 +103,8 @@ namespace __gnu_parallel
         return __p2.second < __p1.second;
       }
     };
+
+#pragma GCC diagnostic pop // -Wdeprecated-declarations
 
   /** 
    *  @brief Splits several sorted sequences at a certain global __rank,

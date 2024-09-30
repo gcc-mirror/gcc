@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fschedule-insns" } */
+/* { dg-require-effective-target scheduling } */
 
 int a, b, c, d, e, f;
 int main() {

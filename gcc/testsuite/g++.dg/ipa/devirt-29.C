@@ -1,4 +1,5 @@
 /* { dg-do run { target c++11 } } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 /* There is a devirtualizable call. In PR60306 we deduced wrong target to cxa_pure_virtual.
    For gcc 4.10 we temporarily disable the devirtualization.  */
 /* { dg-options "-O3"  } */

@@ -1,0 +1,5 @@
+DEFINITION MODULE testsinl ;
+
+PROCEDURE test ;
+
+END testsinl.

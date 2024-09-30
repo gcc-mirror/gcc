@@ -907,6 +907,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
      exit block.  */
 
   bitmap ret = BITMAP_ALLOC (NULL);
+  bitmap_tree_view (ret);
   /* A degenerated case when there is no path to exit.  */
   if (!visited.contains (EXIT_BLOCK_PTR_FOR_FN (fun)))
     {

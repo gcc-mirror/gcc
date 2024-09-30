@@ -1,4 +1,5 @@
-/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
+/* Build texi documentation for option -mmcu for AVR 8-bit microcontrollers.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.

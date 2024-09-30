@@ -185,6 +185,21 @@ public:
   template<typename Comparator>
   bool insert (node_type new_node, Comparator compare);
 
+  // Insert NEW_NODE into the splay tree.  If the tree is currently non-empty,
+  // COMPARISON is < 0 if NEW_NODE comes immediate before the current root,
+  // or > 0 if NEW_NODE comes immediately after the current root.
+  //
+  // On return, NEW_NODE is the root of the tree.
+  //
+  // For example, this can be used in the construct:
+  //
+  //    int comparison = tree.lookup (...);
+  //    if (comparison != 0)
+  //      tree.insert_relative (comparison, create_new_node ());
+  //
+  // Complexity: O(1)
+  void insert_relative (int comparison, node_type new_node);
+
   // Insert NEW_NODE into the splay tree, given that NEW_NODE is the
   // maximum node of the new tree.  On return, NEW_NODE is also the
   // root of the tree.
@@ -211,6 +226,14 @@ public:
   // Complexity: O(1) if removing the maximum or minimum node.
   // Otherwise amortized O(log N), worst-cast O(N).
   void remove_root ();
+
+  // Remove the root node of the splay tree.  If the root node was not
+  // the maximum node, bring the next node to the root and return true.
+  // Return false otherwise.
+  //
+  // Complexity: O(1) if removing the maximum node.  Otherwise amortized
+  // O(log N), worst-cast O(N).
+  bool remove_root_and_splay_next ();
 
   // Split the left child of the current root out into a separate tree
   // and return the new tree.
@@ -325,6 +348,12 @@ public:
   template<typename LeftPredicate, typename RightPredicate>
   int lookup (LeftPredicate want_something_smaller,
 	      RightPredicate want_something_bigger);
+
+  // Like lookup, but always pick a node that is no bigger than the one
+  // being searched for, if such a node exists.
+  template<typename LeftPredicate, typename RightPredicate>
+  int lookup_le (LeftPredicate want_something_smaller,
+		 RightPredicate want_something_bigger);
 
   // Keep the ability to print subtrees.
   using parent::print;

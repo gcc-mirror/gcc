@@ -24,7 +24,7 @@
 
 /** @file bits/cpp_type_traits.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{ext/type_traits}
+ *  Do not attempt to use it directly. @headername{ext/type_traits.h}
  */
 
 // Written by Gabriel Dos Reis <dosreis@cmla.ens-cachan.fr>
@@ -32,13 +32,18 @@
 #ifndef _CPP_TYPE_TRAITS_H
 #define _CPP_TYPE_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/version.h>
 #if __glibcxx_type_trait_variable_templates
 # include <type_traits> // is_same_v, is_integral_v
 #endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
 
 //
 // This file provides some compile-time information about various types.
@@ -581,5 +586,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 } // extern "C++"
+
+#pragma GCC diagnostic pop
 
 #endif //_CPP_TYPE_TRAITS_H

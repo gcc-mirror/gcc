@@ -205,7 +205,7 @@ objc_thread_yield (void)
   __gthread_objc_thread_yield ();
 }
 
-/* Terminate the current tread.  Doesn't return.  Actually, if it
+/* Terminate the current thread.  Doesn't return.  Actually, if it
    failed returns -1.  */
 int
 objc_thread_exit (void)

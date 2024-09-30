@@ -31,7 +31,9 @@
 #ifndef _GLIBCXX_TR1_HASHTABLE_H
 #define _GLIBCXX_TR1_HASHTABLE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <tr1/hashtable_policy.h>
 #include <ext/alloc_traits.h>

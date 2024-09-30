@@ -11137,6 +11137,12 @@ Builtin_call_expression::do_determine_type(Gogo* gogo,
       is_print = false;
       break;
 
+    case BUILTIN_PANIC:
+      arg_type =
+	Type::make_empty_interface_type(Linemap::predeclared_location());
+      is_print = false;
+      break;
+
     case BUILTIN_PRINT:
     case BUILTIN_PRINTLN:
       // Do not force a large integer constant to "int".

@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for stdlib calloc" { ! hostedlib } } */
+
 #include <stdlib.h>
 #include <string.h>
 

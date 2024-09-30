@@ -1404,11 +1404,12 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2,
          ref->next = NULL;
        }
 
-  if (expr->ts.type == BT_CLASS
-      && !expr2->rank
-      && !expr2->ref
-      && CLASS_DATA (expr2->symtree->n.sym)->as)
-    expr->rank = CLASS_DATA (expr2->symtree->n.sym)->as->rank;
+  if (expr->ts.type == BT_CLASS && (!expr2->rank || !expr2->corank)
+      && !expr2->ref && CLASS_DATA (expr2->symtree->n.sym)->as)
+    {
+      expr->rank = CLASS_DATA (expr2->symtree->n.sym)->as->rank;
+      expr->corank = CLASS_DATA (expr2->symtree->n.sym)->as->corank;
+    }
 
   stmtblock_t tmp_block;
   gfc_start_block (&tmp_block);
@@ -2605,9 +2606,10 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_DISTRIBUTE_SIMD:
 	case EXEC_OMP_DO:
 	case EXEC_OMP_DO_SIMD:
-	case EXEC_OMP_LOOP:
 	case EXEC_OMP_ERROR:
 	case EXEC_OMP_FLUSH:
+	case EXEC_OMP_INTEROP:
+	case EXEC_OMP_LOOP:
 	case EXEC_OMP_MASKED:
 	case EXEC_OMP_MASKED_TASKLOOP:
 	case EXEC_OMP_MASKED_TASKLOOP_SIMD:

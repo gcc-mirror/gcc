@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #define IN_TARGET_CODE 1
 
@@ -180,7 +181,7 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 32bit mode.  */
 
-int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 4, 5,
@@ -211,7 +212,7 @@ int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
 
 /* The "default" register map used in 64bit mode.  */
 
-int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 1, 2, 3, 4, 5, 6, 7,
@@ -293,7 +294,7 @@ int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
 	17 for %st(6) (gcc regno = 14)
 	18 for %st(7) (gcc regno = 15)
 */
-int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
 {
   /* general regs */
   0, 2, 1, 3, 6, 7, 5, 4,
@@ -4907,13 +4908,31 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
       examine_argument (nat_mode, type, 0, &needed_intregs, &needed_sseregs);
 
-      need_temp = (!REG_P (container)
+      bool container_in_reg = false;
+      if (REG_P (container))
+	container_in_reg = true;
+      else if (GET_CODE (container) == PARALLEL
+	       && GET_MODE (container) == BLKmode
+	       && XVECLEN (container, 0) == 1)
+	{
+	  /* Check if it is a PARALLEL BLKmode container of an EXPR_LIST
+	     expression in a TImode register.  In this case, temp isn't
+	     needed.  Otherwise, the TImode variable will be put in the
+	     GPR save area which guarantees only 8-byte alignment.   */
+	  rtx x = XVECEXP (container, 0, 0);
+	  if (GET_CODE (x) == EXPR_LIST
+	      && REG_P (XEXP (x, 0))
+	      && XEXP (x, 1) == const0_rtx)
+	    container_in_reg = true;
+	}
+
+      need_temp = (!container_in_reg
 		   && ((needed_intregs && TYPE_ALIGN (type) > 64)
 		       || TYPE_ALIGN (type) > 128));
 
       /* In case we are passing structure, verify that it is consecutive block
          on the register save area.  If not we need to do moves.  */
-      if (!need_temp && !REG_P (container))
+      if (!need_temp && !container_in_reg)
 	{
 	  /* Verify that all registers are strictly consecutive  */
 	  if (SSE_REGNO_P (REGNO (XEXP (XVECEXP (container, 0, 0), 0))))
@@ -12450,7 +12469,7 @@ ix86_tls_address_pattern_p (rtx op)
 }
 
 /* Rewrite *LOC so that it refers to a default TLS address space.  */
-void
+static void
 ix86_rewrite_tls_address_1 (rtx *loc)
 {
   subrtx_ptr_iterator::array_type array;
@@ -12472,6 +12491,13 @@ ix86_rewrite_tls_address_1 (rtx *loc)
 		  if (GET_CODE (u) == UNSPEC
 		      && XINT (u, 1) == UNSPEC_TP)
 		    {
+		      /* NB: Since address override only applies to the
+			 (reg32) part in fs:(reg32), return if address
+			 override is used.  */
+		      if (Pmode != word_mode
+			  && REG_P (XEXP (*x, 1 - i)))
+			return;
+
 		      addr_space_t as = DEFAULT_TLS_SEG_REG;
 
 		      *x = XEXP (*x, 1 - i);
@@ -14881,9 +14907,19 @@ ix86_dirflag_mode_needed (rtx_insn *insn)
 static bool
 ix86_check_avx_upper_register (const_rtx exp)
 {
-  return (SSE_REG_P (exp)
-	  && !EXT_REX_SSE_REG_P (exp)
-	  && GET_MODE_BITSIZE (GET_MODE (exp)) > 128);
+  /* construct_container may return a parallel with expr_list
+     which contains the real reg and mode  */
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, exp, NONCONST)
+    {
+      const_rtx x = *iter;
+      if (SSE_REG_P (x)
+	  && !EXT_REX_SSE_REG_P (x)
+	  && GET_MODE_BITSIZE (GET_MODE (x)) > 128)
+	return true;
+    }
+
+  return false;
 }
 
 /* Check if a 256bit or 512bit AVX register is referenced in stores.   */
@@ -14891,7 +14927,9 @@ ix86_check_avx_upper_register (const_rtx exp)
 static void
 ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
 {
-  if (ix86_check_avx_upper_register (dest))
+  if (SSE_REG_P (dest)
+      && !EXT_REX_SSE_REG_P (dest)
+      && GET_MODE_BITSIZE (GET_MODE (dest)) > 128)
     {
       bool *used = (bool *) data;
       *used = true;
@@ -14950,14 +14988,14 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
       return AVX_U128_CLEAN;
     }
 
-  subrtx_iterator::array_type array;
-
   rtx set = single_set (insn);
   if (set)
     {
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
-      if (ix86_check_avx_upper_register (dest))
+      if (SSE_REG_P (dest)
+	  && !EXT_REX_SSE_REG_P (dest)
+	  && GET_MODE_BITSIZE (GET_MODE (dest)) > 128)
 	{
 	  /* This is an YMM/ZMM load.  Return AVX_U128_DIRTY if the
 	     source isn't zero.  */
@@ -14968,9 +15006,8 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
 	}
       else
 	{
-	  FOR_EACH_SUBRTX (iter, array, src, NONCONST)
-	    if (ix86_check_avx_upper_register (*iter))
-	      return AVX_U128_DIRTY;
+	  if (ix86_check_avx_upper_register (src))
+	    return AVX_U128_DIRTY;
 	}
 
       /* This isn't YMM/ZMM load/store.  */
@@ -14981,9 +15018,8 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
      Hardware changes state only when a 256bit register is written to,
      but we need to prevent the compiler from moving optimal insertion
      point above eventual read from 256bit or 512 bit register.  */
-  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
-    if (ix86_check_avx_upper_register (*iter))
-      return AVX_U128_DIRTY;
+  if (ix86_check_avx_upper_register (PATTERN (insn)))
+    return AVX_U128_DIRTY;
 
   return AVX_U128_ANY;
 }
@@ -16176,6 +16212,8 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V32BFmode:
     case E_V16BFmode:
     case E_V8BFmode:
+    case E_V4BFmode:
+    case E_V2BFmode:
       n_elt = GET_MODE_NUNITS (mode);
       v = rtvec_alloc (n_elt);
       scalar_mode = GET_MODE_INNER (mode);
@@ -16215,6 +16253,8 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V32BFmode:
     case E_V16BFmode:
     case E_V8BFmode:
+    case E_V4BFmode:
+    case E_V2BFmode:
       vec_mode = mode;
       imode = HImode;
       break;
@@ -16623,6 +16663,11 @@ ix86_fp_compare_code_to_integer (enum rtx_code code)
       return LEU;
     case LTGT:
       return NE;
+    case EQ:
+    case NE:
+      if (TARGET_AVX10_2_256)
+	return code;
+      /* FALLTHRU.  */
     default:
       return UNKNOWN;
     }
@@ -18469,6 +18514,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	= (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
       enum rtx_code rcode;
       bool is_vshift;
+      enum tree_code tcode;
+      bool is_scalar;
       unsigned HOST_WIDE_INT mask;
 
       switch (fn_code)
@@ -18549,9 +18596,11 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	      unsigned int prec = TYPE_PRECISION (TREE_TYPE (args[0]));
 	      unsigned int start = tree_to_uhwi (args[1]);
 	      unsigned int len = (start & 0xff00) >> 8;
+	      tree lhs_type = TREE_TYPE (TREE_TYPE (fndecl));
 	      start &= 0xff;
 	      if (start >= prec || len == 0)
-		res = 0;
+		return omit_one_operand (lhs_type, build_zero_cst (lhs_type),
+					 args[0]);
 	      else if (!tree_fits_uhwi_p (args[0]))
 		break;
 	      else
@@ -18560,7 +18609,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 		len = prec;
 	      if (len < HOST_BITS_PER_WIDE_INT)
 		res &= (HOST_WIDE_INT_1U << len) - 1;
-	      return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	      return build_int_cstu (lhs_type, res);
 	    }
 	  break;
 
@@ -18570,15 +18619,17 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	  if (tree_fits_uhwi_p (args[1]))
 	    {
 	      unsigned int idx = tree_to_uhwi (args[1]) & 0xff;
+	      tree lhs_type = TREE_TYPE (TREE_TYPE (fndecl));
 	      if (idx >= TYPE_PRECISION (TREE_TYPE (args[0])))
 		return args[0];
 	      if (idx == 0)
-		return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), 0);
+		return omit_one_operand (lhs_type, build_zero_cst (lhs_type),
+					 args[0]);
 	      if (!tree_fits_uhwi_p (args[0]))
 		break;
 	      unsigned HOST_WIDE_INT res = tree_to_uhwi (args[0]);
 	      res &= ~(HOST_WIDE_INT_M1U << idx);
-	      return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	      return build_int_cstu (lhs_type, res);
 	    }
 	  break;
 
@@ -18913,6 +18964,131 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	      return builder.build ();
 	    }
 	  break;
+
+	case IX86_BUILTIN_MINSS:
+	case IX86_BUILTIN_MINSH_MASK:
+	  tcode = LT_EXPR;
+	  is_scalar = true;
+	  goto do_minmax;
+
+	case IX86_BUILTIN_MAXSS:
+	case IX86_BUILTIN_MAXSH_MASK:
+	  tcode = GT_EXPR;
+	  is_scalar = true;
+	  goto do_minmax;
+
+	case IX86_BUILTIN_MINPS:
+	case IX86_BUILTIN_MINPD:
+	case IX86_BUILTIN_MINPS256:
+	case IX86_BUILTIN_MINPD256:
+	case IX86_BUILTIN_MINPS512:
+	case IX86_BUILTIN_MINPD512:
+	case IX86_BUILTIN_MINPS128_MASK:
+	case IX86_BUILTIN_MINPD128_MASK:
+	case IX86_BUILTIN_MINPS256_MASK:
+	case IX86_BUILTIN_MINPD256_MASK:
+	case IX86_BUILTIN_MINPH128_MASK:
+	case IX86_BUILTIN_MINPH256_MASK:
+	case IX86_BUILTIN_MINPH512_MASK:
+	  tcode = LT_EXPR;
+	  is_scalar = false;
+	  goto do_minmax;
+
+	case IX86_BUILTIN_MAXPS:
+	case IX86_BUILTIN_MAXPD:
+	case IX86_BUILTIN_MAXPS256:
+	case IX86_BUILTIN_MAXPD256:
+	case IX86_BUILTIN_MAXPS512:
+	case IX86_BUILTIN_MAXPD512:
+	case IX86_BUILTIN_MAXPS128_MASK:
+	case IX86_BUILTIN_MAXPD128_MASK:
+	case IX86_BUILTIN_MAXPS256_MASK:
+	case IX86_BUILTIN_MAXPD256_MASK:
+	case IX86_BUILTIN_MAXPH128_MASK:
+	case IX86_BUILTIN_MAXPH256_MASK:
+	case IX86_BUILTIN_MAXPH512_MASK:
+	  tcode = GT_EXPR;
+	  is_scalar = false;
+	do_minmax:
+	  gcc_assert (n_args >= 2);
+	  if (TREE_CODE (args[0]) != VECTOR_CST
+	      || TREE_CODE (args[1]) != VECTOR_CST)
+	    break;
+	  mask = HOST_WIDE_INT_M1U;
+	  if (n_args > 2)
+	    {
+	      gcc_assert (n_args >= 4);
+	      /* This is masked minmax.  */
+	      if (TREE_CODE (args[3]) != INTEGER_CST
+		  || TREE_SIDE_EFFECTS (args[2]))
+		break;
+	      mask = TREE_INT_CST_LOW (args[3]);
+	      unsigned elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
+	      mask |= HOST_WIDE_INT_M1U << elems;
+	      if (mask != HOST_WIDE_INT_M1U
+		  && TREE_CODE (args[2]) != VECTOR_CST)
+		break;
+	      if (n_args >= 5)
+		{
+		  if (!tree_fits_uhwi_p (args[4]))
+		    break;
+		  if (tree_to_uhwi (args[4]) != 4
+		      && tree_to_uhwi (args[4]) != 8)
+		    break;
+		}
+	      if (mask == (HOST_WIDE_INT_M1U << elems))
+		return args[2];
+	    }
+	  /* Punt on NaNs, unless exceptions are disabled.  */
+	  if (HONOR_NANS (args[0])
+	      && (n_args < 5 || tree_to_uhwi (args[4]) != 8))
+	    for (int i = 0; i < 2; ++i)
+	      {
+		unsigned count = vector_cst_encoded_nelts (args[i]);
+		for (unsigned j = 0; j < count; ++j)
+		  if (tree_expr_nan_p (VECTOR_CST_ENCODED_ELT (args[i], j)))
+		    return NULL_TREE;
+	      }
+	  {
+	    tree res = const_binop (tcode,
+				    truth_type_for (TREE_TYPE (args[0])),
+				    args[0], args[1]);
+	    if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+	      break;
+	    res = fold_ternary (VEC_COND_EXPR, TREE_TYPE (args[0]), res,
+				args[0], args[1]);
+	    if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+	      break;
+	    if (mask != HOST_WIDE_INT_M1U)
+	      {
+		unsigned nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
+		vec_perm_builder sel (nelts, nelts, 1);
+		for (unsigned int i = 0; i < nelts; i++)
+		  if (mask & (HOST_WIDE_INT_1U << i))
+		    sel.quick_push (i);
+		  else
+		    sel.quick_push (nelts + i);
+		vec_perm_indices indices (sel, 2, nelts);
+		res = fold_vec_perm (TREE_TYPE (args[0]), res, args[2],
+				     indices);
+		if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+		  break;
+	      }
+	    if (is_scalar)
+	      {
+		unsigned nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (args[0]));
+		vec_perm_builder sel (nelts, nelts, 1);
+		sel.quick_push (0);
+		for (unsigned int i = 1; i < nelts; i++)
+		  sel.quick_push (nelts + i);
+		vec_perm_indices indices (sel, 2, nelts);
+		res = fold_vec_perm (TREE_TYPE (args[0]), res, args[0],
+				     indices);
+		if (res == NULL_TREE || TREE_CODE (res) != VECTOR_CST)
+		  break;
+	      }
+	    return res;
+	  }
 
 	default:
 	  break;
@@ -19455,6 +19631,74 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (arg0), ures);
 	g = gimple_build_assign (gimple_call_lhs (stmt),
 				 VIEW_CONVERT_EXPR, vce);
+	gsi_replace (gsi, g, false);
+      }
+      return true;
+
+    case IX86_BUILTIN_MINPS:
+    case IX86_BUILTIN_MINPD:
+    case IX86_BUILTIN_MINPS256:
+    case IX86_BUILTIN_MINPD256:
+    case IX86_BUILTIN_MINPS512:
+    case IX86_BUILTIN_MINPD512:
+    case IX86_BUILTIN_MINPS128_MASK:
+    case IX86_BUILTIN_MINPD128_MASK:
+    case IX86_BUILTIN_MINPS256_MASK:
+    case IX86_BUILTIN_MINPD256_MASK:
+    case IX86_BUILTIN_MINPH128_MASK:
+    case IX86_BUILTIN_MINPH256_MASK:
+    case IX86_BUILTIN_MINPH512_MASK:
+      tcode = LT_EXPR;
+      goto do_minmax;
+
+    case IX86_BUILTIN_MAXPS:
+    case IX86_BUILTIN_MAXPD:
+    case IX86_BUILTIN_MAXPS256:
+    case IX86_BUILTIN_MAXPD256:
+    case IX86_BUILTIN_MAXPS512:
+    case IX86_BUILTIN_MAXPD512:
+    case IX86_BUILTIN_MAXPS128_MASK:
+    case IX86_BUILTIN_MAXPD128_MASK:
+    case IX86_BUILTIN_MAXPS256_MASK:
+    case IX86_BUILTIN_MAXPD256_MASK:
+    case IX86_BUILTIN_MAXPH128_MASK:
+    case IX86_BUILTIN_MAXPH256_MASK:
+    case IX86_BUILTIN_MAXPH512_MASK:
+      tcode = GT_EXPR;
+    do_minmax:
+      gcc_assert (n_args >= 2);
+      /* Without SSE4.1 we often aren't able to pattern match it back to the
+	 desired instruction.  */
+      if (!gimple_call_lhs (stmt) || !optimize || !TARGET_SSE4_1)
+	break;
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* For masked minmax, only optimize if the mask is all ones.  */
+      if (n_args > 2
+	  && !ix86_masked_all_ones (elems, gimple_call_arg (stmt, 3)))
+	break;
+      if (n_args >= 5)
+	{
+	  tree arg4 = gimple_call_arg (stmt, 4);
+	  if (!tree_fits_uhwi_p (arg4))
+	    break;
+	  if (tree_to_uhwi (arg4) == 4)
+	    /* Ok.  */;
+	  else if (tree_to_uhwi (arg4) != 8)
+	    /* Invalid round argument.  */
+	    break;
+	  else if (HONOR_NANS (arg0))
+	    /* Lowering to comparison would raise exceptions which
+	       shouldn't be raised.  */
+	    break;
+	}
+      {
+	tree type = truth_type_for (TREE_TYPE (arg0));
+	tree cmpres = gimple_build (&stmts, tcode, type, arg0, arg1);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	g = gimple_build_assign (gimple_call_lhs (stmt),
+				 VEC_COND_EXPR, cmpres, arg0, arg1);
 	gsi_replace (gsi, g, false);
       }
       return true;
@@ -20288,6 +20532,18 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (!(INTEGER_CLASS_P (class1) || INTEGER_CLASS_P (class2)))
 	return true;
 
+      /* If the target says that inter-unit moves are more expensive
+	 than moving through memory, then don't generate them.  */
+      if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
+	return true;
+
+      /* With SSE4.1, *mov{ti,di}_internal supports moves between
+	 SSE_REGS and GENERAL_REGS using pinsr{q,d} or pextr{q,d}.  */
+      if (TARGET_SSE4_1
+	  && (TARGET_64BIT ? mode == TImode : mode == DImode))
+	return false;
+
       int msize = GET_MODE_SIZE (mode);
 
       /* Between SSE and general, we have moves no larger than word size.  */
@@ -20299,12 +20555,6 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       int minsize = GET_MODE_SIZE (TARGET_SSE2 ? HImode : SImode);
 
       if (msize < minsize)
-	return true;
-
-      /* If the target says that inter-unit moves are more expensive
-	 than moving through memory, then don't generate them.  */
-      if ((SSE_CLASS_P (class1) && !TARGET_INTER_UNIT_MOVES_FROM_VEC)
-	  || (SSE_CLASS_P (class2) && !TARGET_INTER_UNIT_MOVES_TO_VEC))
 	return true;
     }
 
@@ -23399,150 +23649,6 @@ ix86_split_stlf_stall_load ()
     }
 }
 
-/* When a hot loop can be fit into one cacheline,
-   force align the loop without considering the max skip.  */
-static void
-ix86_align_loops ()
-{
-  basic_block bb;
-
-  /* Don't do this when we don't know cache line size.  */
-  if (ix86_cost->prefetch_block == 0)
-    return;
-
-  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  profile_count count_threshold = cfun->cfg->count_max / param_align_threshold;
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      rtx_insn *label = BB_HEAD (bb);
-      bool has_fallthru = 0;
-      edge e;
-      edge_iterator ei;
-
-      if (!LABEL_P (label))
-	continue;
-
-      profile_count fallthru_count = profile_count::zero ();
-      profile_count branch_count = profile_count::zero ();
-
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  if (e->flags & EDGE_FALLTHRU)
-	    has_fallthru = 1, fallthru_count += e->count ();
-	  else
-	    branch_count += e->count ();
-	}
-
-      if (!fallthru_count.initialized_p () || !branch_count.initialized_p ())
-	continue;
-
-      if (bb->loop_father
-	  && bb->loop_father->latch != EXIT_BLOCK_PTR_FOR_FN (cfun)
-	  && (has_fallthru
-	      ? (!(single_succ_p (bb)
-		   && single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun))
-		 && optimize_bb_for_speed_p (bb)
-		 && branch_count + fallthru_count > count_threshold
-		 && (branch_count > fallthru_count * param_align_loop_iterations))
-	      /* In case there'no fallthru for the loop.
-		 Nops inserted won't be executed.  */
-	      : (branch_count > count_threshold
-		 || (bb->count > bb->prev_bb->count * 10
-		     && (bb->prev_bb->count
-			 <= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count / 2)))))
-	{
-	  rtx_insn* insn, *end_insn;
-	  HOST_WIDE_INT size = 0;
-	  bool padding_p = true;
-	  basic_block tbb = bb;
-	  unsigned cond_branch_num = 0;
-	  bool detect_tight_loop_p = false;
-
-	  for (unsigned int i = 0; i != bb->loop_father->num_nodes;
-	       i++, tbb = tbb->next_bb)
-	    {
-	      /* Only handle continuous cfg layout. */
-	      if (bb->loop_father != tbb->loop_father)
-		{
-		  padding_p = false;
-		  break;
-		}
-
-	      FOR_BB_INSNS (tbb, insn)
-		{
-		  if (!NONDEBUG_INSN_P (insn))
-		    continue;
-		  size += ix86_min_insn_size (insn);
-
-		  /* We don't know size of inline asm.
-		     Don't align loop for call.  */
-		  if (asm_noperands (PATTERN (insn)) >= 0
-		      || CALL_P (insn))
-		    {
-		      size = -1;
-		      break;
-		    }
-		}
-
-	      if (size == -1 || size > ix86_cost->prefetch_block)
-		{
-		  padding_p = false;
-		  break;
-		}
-
-	      FOR_EACH_EDGE (e, ei, tbb->succs)
-		{
-		  /* It could be part of the loop.  */
-		  if (e->dest == bb)
-		    {
-		      detect_tight_loop_p = true;
-		      break;
-		    }
-		}
-
-	      if (detect_tight_loop_p)
-		break;
-
-	      end_insn = BB_END (tbb);
-	      if (JUMP_P (end_insn))
-		{
-		  /* For decoded icache:
-		     1. Up to two branches are allowed per Way.
-		     2. A non-conditional branch is the last micro-op in a Way.
-		  */
-		  if (onlyjump_p (end_insn)
-		      && (any_uncondjump_p (end_insn)
-			  || single_succ_p (tbb)))
-		    {
-		      padding_p = false;
-		      break;
-		    }
-		  else if (++cond_branch_num >= 2)
-		    {
-		      padding_p = false;
-		      break;
-		    }
-		}
-
-	    }
-
-	  if (padding_p && detect_tight_loop_p)
-	    {
-	      emit_insn_before (gen_max_skip_align (GEN_INT (ceil_log2 (size)),
-						    GEN_INT (0)), label);
-	      /* End of function.  */
-	      if (!tbb || tbb == EXIT_BLOCK_PTR_FOR_FN (cfun))
-		break;
-	      /* Skip bb which already fits into one cacheline.  */
-	      bb = tbb;
-	    }
-	}
-    }
-
-  loop_optimizer_finalize ();
-  free_dominance_info (CDI_DOMINATORS);
-}
-
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -23566,8 +23672,6 @@ ix86_reorg (void)
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       if (TARGET_FOUR_JUMP_LIMIT)
 	ix86_avoid_jump_mispredicts ();
-
-      ix86_align_loops ();
 #endif
     }
 }
@@ -24603,13 +24707,17 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
       if (width == 1)
 	return 1;
 
-      /* Integer vector instructions execute in FP unit
+      /* Znver1-4 Integer vector instructions execute in FP unit
 	 and can execute 3 additions and one multiplication per cycle.  */
       if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2
-	   || ix86_tune == PROCESSOR_ZNVER3 || ix86_tune == PROCESSOR_ZNVER4
-	   || ix86_tune == PROCESSOR_ZNVER5)
+	   || ix86_tune == PROCESSOR_ZNVER3 || ix86_tune == PROCESSOR_ZNVER4)
    	  && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	return 1;
+      /* Znver5 can do 2 integer multiplications per cycle with latency
+	 of 3.  */
+      if (ix86_tune == PROCESSOR_ZNVER5
+	  && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
+	width = 6;
 
       /* Account for targets that splits wide vectors into multiple parts.  */
       if (TARGET_AVX512_SPLIT_REGS && GET_MODE_BITSIZE (mode) > 256)
@@ -24690,6 +24798,14 @@ ix86_preferred_simd_mode (scalar_mode mode)
 	}
       return word_mode;
 
+    case E_BFmode:
+      if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
+	return V32BFmode;
+      else if (TARGET_AVX && !TARGET_PREFER_AVX128)
+	return V16BFmode;
+      else
+	return V8BFmode;
+
     case E_SFmode:
       if (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)
 	return V16SFmode;
@@ -24768,16 +24884,17 @@ ix86_get_mask_mode (machine_mode data_mode)
       /* AVX512FP16 only supports vector comparison
 	 to kmask for _Float16.  */
       || (TARGET_AVX512VL && TARGET_AVX512FP16
-	  && GET_MODE_INNER (data_mode) == E_HFmode))
+	  && GET_MODE_INNER (data_mode) == E_HFmode)
+      || (TARGET_AVX10_2_256 && GET_MODE_INNER (data_mode) == E_BFmode))
     {
       if (elem_size == 4
 	  || elem_size == 8
 	  || (TARGET_AVX512BW && (elem_size == 1 || elem_size == 2)))
-	return smallest_int_mode_for_size (nunits);
+	return smallest_int_mode_for_size (nunits).require ();
     }
 
   scalar_int_mode elem_mode
-    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
+    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT).require ();
 
   gcc_assert (elem_size * nunits == vector_size);
 
@@ -26105,6 +26222,25 @@ ix86_have_ccmp ()
   return (bool) TARGET_APX_CCMP;
 }
 
+/* Implement TARGET_MODE_CAN_TRANSFER_BITS.  */
+static bool
+ix86_mode_can_transfer_bits (machine_mode mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+    switch (GET_MODE_INNER (mode))
+      {
+      case E_SFmode:
+      case E_DFmode:
+	/* These suffer from normalization upon load when not using SSE.  */
+	return !(ix86_fpmath & FPMATH_387);
+      default:
+	return true;
+      }
+
+  return true;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -26950,6 +27086,9 @@ ix86_libgcc_floating_mode_supported_p
 
 #undef TARGET_HAVE_CCMP
 #define TARGET_HAVE_CCMP ix86_have_ccmp
+
+#undef TARGET_MODE_CAN_TRANSFER_BITS
+#define TARGET_MODE_CAN_TRANSFER_BITS ix86_mode_can_transfer_bits
 
 static bool
 ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)

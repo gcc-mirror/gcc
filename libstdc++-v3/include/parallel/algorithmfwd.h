@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_PARALLEL_ALGORITHMFWD_H
 #define _GLIBCXX_PARALLEL_ALGORITHMFWD_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <parallel/tags.h>
 #include <parallel/settings.h>

@@ -278,7 +278,7 @@ function_point::print_source_line (pretty_printer *pp) const
   debug_diagnostic_context tmp_dc;
   gcc_rich_location richloc (stmt->location);
   diagnostic_show_locus (&tmp_dc, &richloc, DK_ERROR);
-  pp_string (pp, pp_formatted_text (tmp_dc.printer));
+  pp_string (pp, pp_formatted_text (tmp_dc.m_printer));
 }
 
 /* class program_point.  */
@@ -300,11 +300,8 @@ program_point::print (pretty_printer *pp, const format &f) const
 DEBUG_FUNCTION void
 program_point::dump () const
 {
-  pretty_printer pp;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (stderr);
+  tree_dump_pretty_printer pp (stderr);
   print (&pp, format (true));
-  pp_flush (&pp);
 }
 
 /* Return a new json::object of the form

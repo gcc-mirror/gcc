@@ -1,4 +1,5 @@
 /* { dg-options "-std=c++14"  } */
+
 #include <map>
 
 void test()

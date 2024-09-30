@@ -1,6 +1,7 @@
 /* PR target/pr100648 */
 /* { dg-do run { target sse4 } } */
 /* { dg-options "-O2 -std=c++14 -msse4 -mavx512vl -mavx512bw -mno-xop" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #ifndef CHECK_H
 #define CHECK_H "avx512f-helper.h"

@@ -32,7 +32,9 @@
 #ifndef _GSLICE_ARRAY_H
 #define _GSLICE_ARRAY_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -1,5 +1,5 @@
 /* Test __atomic routines for existence on 2 byte values with each valid memory model.  */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-Wno-address-of-packed-member" } */
 /* { dg-add-options riscv_zabha } */
 /* { dg-remove-options riscv_ztso } */

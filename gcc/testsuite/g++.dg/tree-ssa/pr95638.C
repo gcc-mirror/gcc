@@ -1,6 +1,7 @@
 // PR tree-optimization/95638
 // { dg-do run }
 // { dg-options "-O2 -std=c++14" }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 
 #include <cassert>
 #include <cstdio>

@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_NUMBERS
 #define _GLIBCXX_NUMBERS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_math_constants
 #include <bits/version.h>
@@ -37,6 +39,9 @@
 #ifdef __cpp_lib_math_constants // C++ >= 20
 
 #include <type_traits>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // Q extension
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -231,6 +236,8 @@ __glibcxx_numbers (__float128, Q);
 /// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #endif // __cpp_lib_math_constants
 #endif // _GLIBCXX_NUMBERS

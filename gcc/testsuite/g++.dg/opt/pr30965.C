@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fno-ipa-icf -fdump-tree-optimized" } */
+/* { dg-skip-if "requires hosted libstdc++ for tr1/functional" { ! hostedlib } } */
 
 #include <tr1/functional>
 #include <algorithm>

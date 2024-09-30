@@ -37,7 +37,14 @@
 #ifndef _GLIBCXX_NUMERIC_LIMITS
 #define _GLIBCXX_NUMERIC_LIMITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // Q suffix
+#pragma GCC diagnostic ignored "-Wlong-long"
+#pragma GCC diagnostic ignored "-Wc++23-extensions"
 
 #include <bits/c++config.h>
 
@@ -2229,4 +2236,5 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #undef __glibcxx_digits10
 #undef __glibcxx_max_digits10
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_NUMERIC_LIMITS

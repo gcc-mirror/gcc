@@ -135,7 +135,23 @@ proc run-sarif-pytest { args } {
     }
 
     setenv SARIF_PATH $testcase
+    set libdir "${srcdir}/lib"
+
+    # Set/prepend libdir to PYTHONPATH
+    if [info exists ::env(PYTHONPATH)] {
+	set old_PYTHONPATH $::env(PYTHONPATH)
+	setenv PYTHONPATH "${libdir}:${old_PYTHONPATH}"
+    } else {
+	setenv PYTHONPATH "${libdir}"
+    }
+    
+    verbose "PYTHONPATH=[getenv PYTHONPATH]" 2
+
     spawn -noecho python3 -m pytest --color=no -rap -s --tb=no $srcdir/$subdir/$pytest_script
+
+    if [info exists old_PYTHONPATH] {
+	setenv PYTHONPATH ${old_PYTHONPATH}
+    }
 
     set prefix "\[^\r\n\]*"
     expect {

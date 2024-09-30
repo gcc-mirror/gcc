@@ -307,6 +307,15 @@ typedef GFC_UINTEGER_4 gfc_char4_t;
   (GFC_INTEGER_16)((((GFC_UINTEGER_16)1) << 127) - 1)
 #endif
 
+#define GFC_UINTEGER_1_HUGE ((GFC_UINTEGER_1) -1)
+#define GFC_UINTEGER_2_HUGE ((GFC_UINTEGER_2) -1)
+#define GFC_UINTEGER_4_HUGE ((GFC_UINTEGER_4) -1)
+#define GFC_UINTEGER_8_HUGE ((GFC_UINTEGER_8) -1)
+#ifdef HAVE_GFC_UINTEGER_16
+#define GFC_UINTEGER_16_HUGE ((GFC_UINTEGER_16) -1)
+#endif
+
+
 /* M{IN,AX}{LOC,VAL} need also infinities and NaNs if supported.  */
 
 #if __FLT_HAS_INFINITY__
@@ -393,6 +402,13 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_8) gfc_array_i8;
 typedef GFC_ARRAY_DESCRIPTOR (index_type) gfc_array_index_type;
 #ifdef HAVE_GFC_INTEGER_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_16) gfc_array_i16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_1) gfc_array_m1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_2) gfc_array_m2;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_4) gfc_array_m4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_8) gfc_array_m8;
+#ifdef HAVE_GFC_UINTEGER_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_16) gfc_array_m16;
 #endif
 typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_4) gfc_array_r4;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_8) gfc_array_r8;
@@ -2041,10 +2057,5 @@ extern int __snprintfieee128 (char *, size_t, const char *, ...)
   __attribute__ ((__nothrow__));
 
 #endif
-
-/* We always have these.  */
-
-#define HAVE_GFC_UINTEGER_1 1
-#define HAVE_GFC_UINTEGER_4 1
 
 #endif  /* LIBGFOR_H  */

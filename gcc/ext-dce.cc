@@ -207,7 +207,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	     wider than DImode.  */
 	  scalar_int_mode outer_mode;
 	  if (!is_a <scalar_int_mode> (GET_MODE (x), &outer_mode)
-	      || GET_MODE_BITSIZE (outer_mode) > 64)
+	      || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* Skip the subrtxs of this destination.  There is
 		 little value in iterating into the subobjects, so
@@ -239,7 +239,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 that case.  Remember, we can not just continue to process
 		 the inner RTXs due to the STRICT_LOW_PART.  */
 	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
-		  || GET_MODE_BITSIZE (outer_mode) > 64)
+		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 		{
 		  /* Skip the subrtxs of the STRICT_LOW_PART.  We can't
 		     process them because it'll set objects as no longer
@@ -293,7 +293,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 		 the top of the loop which just complicates the flow even
 		 more.  */
 	      if (!is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &outer_mode)
-		  || GET_MODE_BITSIZE (outer_mode) > 64)
+		  || GET_MODE_BITSIZE (outer_mode) > HOST_BITS_PER_WIDE_INT)
 		{
 		  skipped_dest = true;
 		  iter.skip_subrtxes ();
@@ -329,7 +329,7 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
 	    }
 
 	  /* BIT >= 64 indicates something went horribly wrong.  */
-	  gcc_assert (bit <= 63);
+	  gcc_assert (bit <= HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Now handle the actual object that was changed.  */
 	  if (REG_P (x))
@@ -422,8 +422,13 @@ ext_dce_try_optimize_insn (rtx_insn *insn, rtx set)
     {
       int ok = validate_change (insn, &SET_SRC (set), new_pattern, false);
 
+      rtx x = SET_DEST (set);
+      while (SUBREG_P (x) || GET_CODE (x) == ZERO_EXTRACT)
+	x = XEXP (x, 0);
+
+      gcc_assert (REG_P (x));
       if (ok)
-	bitmap_set_bit (changed_pseudos, REGNO (SET_DEST (set)));
+	bitmap_set_bit (changed_pseudos, REGNO (x));
 
       if (dump_file)
 	{
@@ -483,6 +488,17 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 
   enum machine_mode mode = GET_MODE_INNER (GET_MODE (x));
   unsigned HOST_WIDE_INT mmask = GET_MODE_MASK (mode);
+
+  /* While we don't try to optimize operations on types larger
+     than 64 bits, we do want to make sure not to invoke undefined
+     behavior when presented with such operations during use
+     processing.  The safe thing to do is to just return mmask
+     for that scenario indicating every possible chunk is life.  */
+  scalar_int_mode smode;
+  if (!is_a <scalar_int_mode> (mode, &smode)
+      || GET_MODE_BITSIZE (smode) > HOST_BITS_PER_WIDE_INT)
+    return mmask;
+
   switch (code)
     {
     case PLUS:
@@ -493,7 +509,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case ASHIFT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
 	return (HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1));
       return (2ULL << floor_log2 (mask)) - 1;
@@ -501,7 +517,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case LSHIFTRT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
 	return mmask & (mask << INTVAL (XEXP (x, 1)));
       return mmask;
@@ -509,7 +525,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
     case ASHIFTRT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && known_lt (UINTVAL (XEXP (x, 1)), GET_MODE_BITSIZE (mode)))
 	{
 	  HOST_WIDE_INT sign = 0;
@@ -526,7 +542,7 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
 	return 0;
       if (XEXP (x, 1) == const1_rtx)
 	return mmask;
-      if (CONSTANT_P (XEXP (x, 1)))
+      if (CONST_INT_P (XEXP (x, 1)))
 	{
 	  if (pow2p_hwi (INTVAL (XEXP (x, 1))))
 	    return mmask & (mask << (GET_MODE_BITSIZE (mode).to_constant ()
@@ -549,14 +565,14 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
        count.  The count is handled specially.  */
     case SS_ASHIFT:
     case US_ASHIFT:
-      if (CONSTANT_P (XEXP (x, 1))
+      if (CONST_INT_P (XEXP (x, 1))
 	  && UINTVAL (XEXP (x, 1)) < GET_MODE_BITSIZE (mode).to_constant ())
 	{
 	  return ((mmask & ~((unsigned HOST_WIDE_INT)mmask
 			     >> (INTVAL (XEXP (x, 1))
 				 + (XEXP (x, 1) != const0_rtx
 				    && code == SS_ASHIFT))))
-		  | (mask >> INTVAL (XEXP (x, 1))));
+		  | ((HOST_WIDE_INT)mask >> INTVAL (XEXP (x, 1))));
 	}
       return mmask;
 
@@ -733,8 +749,17 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 				      && SUBREG_PROMOTED_UNSIGNED_P (y)))))
 			break;
 
-		      /* The SUBREG's mode determine the live width.  */
 		      bit = subreg_lsb (y).to_constant ();
+
+		      /* If this is a wide object (more bits than we can fit
+			 in a HOST_WIDE_INT), then just break from the SET
+			 context.   That will cause the iterator to walk down
+			 into the subrtx and if we land on a REG we'll mark
+			 the whole think live.  */
+		      if (bit >= HOST_BITS_PER_WIDE_INT)
+			break;
+
+		      /* The SUBREG's mode determines the live width.  */
 		      if (dst_mask)
 			{
 			  dst_mask <<= bit;
@@ -821,7 +846,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	    bitmap_set_bit (livenow, rn + 1);
 	  if (size > 16)
 	    bitmap_set_bit (livenow, rn + 2);
-	  if (size == 32)
+	  if (size >= 32)
 	    bitmap_set_bit (livenow, rn + 3);
 	  iter.skip_subrtxes ();
 	}
@@ -963,7 +988,7 @@ ext_dce_init (void)
   all_blocks = BITMAP_ALLOC (NULL);
   changed_pseudos = BITMAP_ALLOC (NULL);
 
-  for (int i = 0; i < n_basic_blocks_for_fn (cfun); i++)
+  for (int i = 0; i < last_basic_block_for_fn (cfun); i++)
     if (i != ENTRY_BLOCK && i != EXIT_BLOCK)
       bitmap_set_bit (all_blocks, i);
 

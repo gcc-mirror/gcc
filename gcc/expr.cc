@@ -596,7 +596,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
   if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT)
     {
       scalar_int_mode full_mode
-	= smallest_int_mode_for_size (GET_MODE_BITSIZE (to_mode));
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (to_mode)).require ();
 
       gcc_assert (convert_optab_handler (trunc_optab, to_mode, full_mode)
 		  != CODE_FOR_nothing);
@@ -611,7 +611,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
     {
       rtx new_from;
       scalar_int_mode full_mode
-	= smallest_int_mode_for_size (GET_MODE_BITSIZE (from_mode));
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (from_mode)).require ();
       convert_optab ctab = unsignedp ? zext_optab : sext_optab;
       enum insn_code icode;
 
@@ -1492,7 +1492,7 @@ op_by_pieces_d::smallest_fixed_size_mode_for_size (unsigned int size)
 	  }
     }
 
-  return smallest_int_mode_for_size (size * BITS_PER_UNIT);
+  return smallest_int_mode_for_size (size * BITS_PER_UNIT).require ();
 }
 
 /* This function contains the main loop used for expanding a block
@@ -2385,10 +2385,10 @@ emit_block_move_via_oriented_loop (rtx x, rtx y, rtx size,
   if (mode != GET_MODE (y_addr))
     {
       scalar_int_mode xmode
-	= smallest_int_mode_for_size (GET_MODE_BITSIZE (mode));
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (mode)).require ();
       scalar_int_mode ymode
 	= smallest_int_mode_for_size (GET_MODE_BITSIZE
-				      (GET_MODE (y_addr)));
+				      (GET_MODE (y_addr))).require ();
       if (GET_MODE_BITSIZE (xmode) < GET_MODE_BITSIZE (ymode))
 	mode = ymode;
       else
@@ -3667,7 +3667,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
   n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   dst_words = XALLOCAVEC (rtx, n_regs);
   bitsize = MIN (TYPE_ALIGN (TREE_TYPE (src)), BITS_PER_WORD);
-  min_mode = smallest_int_mode_for_size (bitsize);
+  min_mode = smallest_int_mode_for_size (bitsize).require ();
 
   /* Copy the structure BITSIZE bits at a time.  */
   for (bitpos = 0, xbitpos = padding_correction;
@@ -7096,7 +7096,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
 static bool
 categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 			    HOST_WIDE_INT *p_unique_nz_elts,
-			    HOST_WIDE_INT *p_init_elts, bool *p_complete)
+			    HOST_WIDE_INT *p_init_elts, int *p_complete)
 {
   unsigned HOST_WIDE_INT idx;
   HOST_WIDE_INT nz_elts, unique_nz_elts, init_elts, num_fields;
@@ -7218,7 +7218,10 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
   if (*p_complete && !complete_ctor_at_level_p (TREE_TYPE (ctor),
 						num_fields, elt_type))
-    *p_complete = false;
+    *p_complete = 0;
+  else if (*p_complete > 0
+	   && type_has_padding_at_level_p (TREE_TYPE (ctor)))
+    *p_complete = -1;
 
   *p_nz_elts += nz_elts;
   *p_unique_nz_elts += unique_nz_elts;
@@ -7239,7 +7242,10 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
      and place it in *P_ELT_COUNT.
    * whether the constructor is complete -- in the sense that every
      meaningful byte is explicitly given a value --
-     and place it in *P_COMPLETE.
+     and place it in *P_COMPLETE:
+     -  0 if any field is missing
+     -  1 if all fields are initialized, and there's no padding
+     - -1 if all fields are initialized, but there's padding
 
    Return whether or not CTOR is a valid static constant initializer, the same
    as "initializer_constant_valid_p (CTOR, TREE_TYPE (CTOR)) != 0".  */
@@ -7247,12 +7253,12 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 bool
 categorize_ctor_elements (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 			  HOST_WIDE_INT *p_unique_nz_elts,
-			  HOST_WIDE_INT *p_init_elts, bool *p_complete)
+			  HOST_WIDE_INT *p_init_elts, int *p_complete)
 {
   *p_nz_elts = 0;
   *p_unique_nz_elts = 0;
   *p_init_elts = 0;
-  *p_complete = true;
+  *p_complete = 1;
 
   return categorize_ctor_elements_1 (ctor, p_nz_elts, p_unique_nz_elts,
 				     p_init_elts, p_complete);
@@ -7313,7 +7319,7 @@ mostly_zeros_p (const_tree exp)
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
       HOST_WIDE_INT nz_elts, unz_elts, init_elts;
-      bool complete_p;
+      int complete_p;
 
       categorize_ctor_elements (exp, &nz_elts, &unz_elts, &init_elts,
 				&complete_p);
@@ -7331,7 +7337,7 @@ all_zeros_p (const_tree exp)
   if (TREE_CODE (exp) == CONSTRUCTOR)
     {
       HOST_WIDE_INT nz_elts, unz_elts, init_elts;
-      bool complete_p;
+      int complete_p;
 
       categorize_ctor_elements (exp, &nz_elts, &unz_elts, &init_elts,
 				&complete_p);
@@ -8205,7 +8211,8 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
 	  machine_mode temp_mode = GET_MODE (temp);
 	  if (temp_mode == BLKmode || temp_mode == VOIDmode)
-	    temp_mode = smallest_int_mode_for_size (size * BITS_PER_UNIT);
+	    temp_mode
+	      = smallest_int_mode_for_size (size * BITS_PER_UNIT).require ();
 	  rtx temp_target = gen_reg_rtx (temp_mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;
@@ -8279,7 +8286,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	 word size, we need to load the value (see again store_bit_field).  */
       if (GET_MODE (temp) == BLKmode && known_le (bitsize, BITS_PER_WORD))
 	{
-	  temp_mode = smallest_int_mode_for_size (bitsize);
+	  temp_mode = smallest_int_mode_for_size (bitsize).require ();
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
 				    temp_mode, false, NULL);
 	}
@@ -9641,6 +9648,7 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
       end_sequence ();
       unsigned uns_cost = seq_cost (uns_insns, speed_p);
       unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+      bool was_tie = false;
 
       /* If costs are the same then use as tie breaker the other other
 	 factor.  */
@@ -9648,7 +9656,13 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 	{
 	  uns_cost = seq_cost (uns_insns, !speed_p);
 	  sgn_cost = seq_cost (sgn_insns, !speed_p);
+	  was_tie = true;
 	}
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf(dump_file, "positive division:%s unsigned cost: %u; "
+		  "signed cost: %u\n", was_tie ? "(needed tie breaker)":"",
+		  uns_cost, sgn_cost);
 
       if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
 	{

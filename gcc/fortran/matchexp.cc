@@ -133,6 +133,7 @@ gfc_get_parentheses (gfc_expr *e)
   e2 = gfc_get_operator_expr (&e->where, INTRINSIC_PARENTHESES, e, NULL);
   e2->ts = e->ts;
   e2->rank = e->rank;
+  e2->corank = e->corank;
 
   return e2;
 }

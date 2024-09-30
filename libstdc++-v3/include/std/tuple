@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TUPLE
 #define _GLIBCXX_TUPLE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
@@ -66,6 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _Elements>
     class tuple;
 
+  /// @cond undocumented
   template<typename _Tp>
     struct __is_empty_non_tuple : is_empty<_Tp> { };
 
@@ -823,6 +826,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static constexpr bool __is_explicitly_constructible()
 	{ return false; }
     };
+  /// @endcond
 
   /// Primary class template, tuple
   template<typename... _Elements>

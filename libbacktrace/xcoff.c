@@ -1203,7 +1203,9 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 	goto fail;
       syms_view_valid = 1;
 
-      memcpy (&str_size, syms_view.data + syms_size, 4);
+      memcpy (&str_size,
+	      (const unsigned char *) syms_view.data + syms_size,
+	      4);
 
       str_off = fhdr.f_symptr + syms_size;
 

@@ -56,7 +56,9 @@
 #ifndef _EXT_ITERATOR
 #define _EXT_ITERATOR 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/concept_check.h>
 #include <iterator>

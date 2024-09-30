@@ -1,6 +1,6 @@
+/* { dg-do compile } */
 /* { dg-require-effective-target arm_hard_vfp_ok }  */
 /* { dg-require-effective-target arm_arch_v7a_ok } */
-/* { dg-do compile } */
 /* { dg-options "-march=armv7-a -mfpu=vfp -fstack-protector-all -Os -mstack-protector-guard=tls -mstack-protector-guard-offset=1296 -mtp=cp15" } */
 
 #include "stack-protector-5.c"

@@ -8358,6 +8358,9 @@ gfc_trans_omp_directive (gfc_code *code)
       return gfc_trans_omp_teams (code, NULL, NULL_TREE);
     case EXEC_OMP_WORKSHARE:
       return gfc_trans_omp_workshare (code, code->ext.omp_clauses);
+    case EXEC_OMP_INTEROP:
+      sorry ("%<!$OMP INTEROP%>");
+      return build_empty_stmt (input_location);
     default:
       gcc_unreachable ();
     }

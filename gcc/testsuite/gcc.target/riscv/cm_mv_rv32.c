@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options " -Os -march=rv32i_zca_zcmp -mabi=ilp32 " } */
+/* { dg-options " -Os -march=rv32i_zca_zcmp -mabi=ilp32 -fno-late-combine-instructions " } */
 /* { dg-skip-if "" { *-*-* } {"-O0" "-O1" "-O2" "-Og" "-O3" "-Oz" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

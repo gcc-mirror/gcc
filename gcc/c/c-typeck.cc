@@ -1686,8 +1686,11 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	    data->anon_field = !DECL_NAME (s1);
 	    data->pointedto = false;
 
+	    const struct tagged_tu_seen_cache *cache = data->cache;
 	    data->cache = &entry;
-	    if (!comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data))
+	    bool ret = comptypes_internal (TREE_TYPE (s1), TREE_TYPE (s2), data);
+	    data->cache = cache;
+	    if (!ret)
 	      return false;
 
 	    tree st1 = TYPE_SIZE (TREE_TYPE (s1));
@@ -11672,7 +11675,7 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 
   /* asm statements without outputs, including simple ones, are treated
      as volatile.  */
-  ASM_INPUT_P (args) = simple;
+  ASM_BASIC_P (args) = simple;
   ASM_VOLATILE_P (args) = (noutputs == 0);
   ASM_INLINE_P (args) = is_inline;
 

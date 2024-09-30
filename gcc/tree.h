@@ -1428,13 +1428,14 @@ class auto_suppress_location_wrappers
 #define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_EXPR_CHECK (NODE), 2)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_EXPR_CHECK (NODE), 3)
 #define ASM_LABELS(NODE)	TREE_OPERAND (ASM_EXPR_CHECK (NODE), 4)
-/* Nonzero if we want to create an ASM_INPUT instead of an
-   ASM_OPERAND with no operands.  */
-#define ASM_INPUT_P(NODE) (ASM_EXPR_CHECK (NODE)->base.static_flag)
-#define ASM_VOLATILE_P(NODE) (ASM_EXPR_CHECK (NODE)->base.public_flag)
+/* Nonzero if the asm is a basic asm, zero if it is an extended asm.
+   Basic asms use a plain ASM_INPUT insn pattern whereas extended asms
+   use an ASM_OPERANDS insn pattern.  */
+#define ASM_BASIC_P(NODE)	(ASM_EXPR_CHECK (NODE)->base.static_flag)
+#define ASM_VOLATILE_P(NODE)	(ASM_EXPR_CHECK (NODE)->base.public_flag)
 /* Nonzero if we want to consider this asm as minimum length and cost
    for inlining decisions.  */
-#define ASM_INLINE_P(NODE) (ASM_EXPR_CHECK (NODE)->base.protected_flag)
+#define ASM_INLINE_P(NODE)	(ASM_EXPR_CHECK (NODE)->base.protected_flag)
 
 /* COND_EXPR accessors.  */
 #define COND_EXPR_COND(NODE)	(TREE_OPERAND (COND_EXPR_CHECK (NODE), 0))
@@ -4443,7 +4444,6 @@ tree_strip_any_location_wrapper (tree exp)
 
 #define integer_zero_node		global_trees[TI_INTEGER_ZERO]
 #define integer_one_node		global_trees[TI_INTEGER_ONE]
-#define integer_three_node              global_trees[TI_INTEGER_THREE]
 #define integer_minus_one_node		global_trees[TI_INTEGER_MINUS_ONE]
 #define size_zero_node			global_trees[TI_SIZE_ZERO]
 #define size_one_node			global_trees[TI_SIZE_ONE]

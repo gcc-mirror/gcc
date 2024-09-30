@@ -72,8 +72,13 @@
 #define DW_FIRST_ATE(name, value) enum dwarf_type { \
   name = value
 #define DW_END_ATE };
+#ifdef __cplusplus
+#define DW_FIRST_CFA(name, value) enum dwarf_call_frame_info: int { \
+  name = value
+#else
 #define DW_FIRST_CFA(name, value) enum dwarf_call_frame_info { \
   name = value
+#endif
 #define DW_END_CFA };
 #define DW_FIRST_IDX(name, value) enum dwarf_name_index_attribute { \
   name = value

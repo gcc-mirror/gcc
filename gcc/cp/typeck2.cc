@@ -302,6 +302,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
   if (TREE_CODE (type) == ERROR_MARK)
     return false;
 
+  auto_diagnostic_group d;
   if (value)
     {
       STRIP_ANY_LOCATION_WRAPPER (value);
@@ -1774,13 +1775,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    {
 	      gcc_assert (ce->value);
 	      next = massage_init_elt (fldtype, next, nested, flags, complain);
-	      /* We can't actually elide the temporary when initializing a
-		 potentially-overlapping field from a function that returns by
-		 value.  */
-	      if (ce->index
-		  && TREE_CODE (next) == TARGET_EXPR
-		  && unsafe_copy_elision_p (ce->index, next))
-		TARGET_EXPR_ELIDING_P (next) = false;
 	      ++idx;
 	    }
 	}
@@ -1872,6 +1866,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	      continue;
 	    }
 	}
+
+      /* We can't actually elide the temporary when initializing a
+	 potentially-overlapping field from a function that returns by
+	 value.  */
+      if (TREE_CODE (next) == TARGET_EXPR
+	  && unsafe_copy_elision_p (field, next))
+	TARGET_EXPR_ELIDING_P (next) = false;
 
       if (is_empty_field (field)
 	  && !TREE_SIDE_EFFECTS (next))

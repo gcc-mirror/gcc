@@ -19,7 +19,7 @@ foo2 (unsigned int a, unsigned int b)
 }
 
 /* { dg-final { scan-assembler "mov.u32.*\\.x;" } } */
-/* { dg-final { scan-assembler "mov.u32.*\\.y;" } } *
+/* { dg-final { scan-assembler "mov.u32.*\\.y;" } } */
 
 /* { dg-final { scan-assembler "mov.u32\[\t\]%r\[0-9\]\[0-9\]*\\.x, " } } */
 /* { dg-final { scan-assembler "mov.u32\[\t\]%r\[0-9\]\[0-9\]*\\.y, " } } */

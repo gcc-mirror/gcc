@@ -33,7 +33,7 @@ FROM Lists IMPORT InitList, IncludeItemIntoList, RemoveItemFromList, NoOfItemsIn
 FROM NameKey IMPORT KeyToCharStar ;
 FROM SymbolConversion IMPORT GccKnowsAbout, Mod2Gcc, AddModGcc ;
 FROM DynamicStrings IMPORT InitString, InitStringCharStar, InitStringChar, ConCat, Mark, KillString ;
-FROM m2tree IMPORT Tree ;
+FROM gcctypes IMPORT tree ;
 FROM m2block IMPORT RememberType ;
 FROM m2type IMPORT GetMinFrom ;
 FROM m2expr IMPORT GetIntegerOne, CSTIntToString, CSTIntToChar ;
@@ -76,7 +76,7 @@ TYPE
                     END ;
 
    SetRange = POINTER TO RECORD
-                 low, high: Tree ;
+                 low, high: tree ;
                  next     : SetRange ;
               END ;
 
@@ -608,7 +608,7 @@ END RemoveRange ;
    SubBitRange - subtracts bits, lo..hi, from, set.
 *)
 
-PROCEDURE SubBitRange (set: SetRange; lo, hi: Tree; tokenno: CARDINAL) : SetRange ;
+PROCEDURE SubBitRange (set: SetRange; lo, hi: tree; tokenno: CARDINAL) : SetRange ;
 VAR
    h, i: SetRange ;
 BEGIN
@@ -681,7 +681,7 @@ END SubBitRange ;
 
 PROCEDURE CheckLowHigh (rp: RangePair) ;
 VAR
-   lo, hi: Tree ;
+   lo, hi: tree ;
    temp  : CARDINAL ;
 BEGIN
    lo := Mod2Gcc (rp^.low) ;
@@ -741,9 +741,9 @@ VAR
    IncludeElement - only include enumeration field into errorString if it lies between low..high.
 *)
 
-PROCEDURE IncludeElement (enumList: List; field: CARDINAL; low, high: Tree) ;
+PROCEDURE IncludeElement (enumList: List; field: CARDINAL; low, high: tree) ;
 VAR
-   fieldTree: Tree ;
+   fieldTree: tree ;
 BEGIN
    IF field # NulSym
    THEN
@@ -760,7 +760,7 @@ END IncludeElement ;
    IncludeElements - only include enumeration field values low..high in errorString.
 *)
 
-PROCEDURE IncludeElements (type: CARDINAL; enumList: List; low, high: Tree) ;
+PROCEDURE IncludeElements (type: CARDINAL; enumList: List; low, high: tree) ;
 VAR
    field     : CARDINAL ;
    i,
@@ -782,7 +782,7 @@ END IncludeElements ;
 
 PROCEDURE ErrorRangeEnum (type: CARDINAL; set: SetRange; enumList: List) ;
 VAR
-   Low, High: Tree ;
+   Low, High: tree ;
 BEGIN
    Low := set^.low ;
    High := set^.high ;
@@ -894,7 +894,7 @@ END EnumerateErrors ;
    NoOfSetElements - return the number of set elements.
 *)
 
-PROCEDURE NoOfSetElements (set: SetRange) : Tree ;
+PROCEDURE NoOfSetElements (set: SetRange) : tree ;
 BEGIN
    PushInt (0) ;
    WHILE set # NIL DO
@@ -922,7 +922,7 @@ END NoOfSetElements ;
    isPrintableChar - a cautious isprint.
 *)
 
-PROCEDURE isPrintableChar (value: Tree) : BOOLEAN ;
+PROCEDURE isPrintableChar (value: tree) : BOOLEAN ;
 BEGIN
    CASE CSTIntToChar (value) OF
 
@@ -958,7 +958,7 @@ END isPrintableChar ;
                 CHAR constants and will fall back to CHR (x) if necessary.
 *)
 
-PROCEDURE appendTree (value: Tree; type: CARDINAL) ;
+PROCEDURE appendTree (value: tree; type: CARDINAL) ;
 BEGIN
     IF SkipType (GetType (type)) = Char
     THEN
@@ -994,7 +994,7 @@ VAR
    sr       : SetRange ;
    rangeNo  : CARDINAL ;
    nMissing,
-   zero, one: Tree ;
+   zero, one: tree ;
 BEGIN
    nMissing := NoOfSetElements (set) ;
    PushInt (0) ;
@@ -1157,7 +1157,7 @@ procedure InRangeList (cl: CaseList; tag: cardinal) : boolean ;
 var
    i, h: cardinal ;
    r   : RangePair ;
-   a   : Tree ;
+   a   : tree ;
 begin
    with cl^ do
       i := 1 ;

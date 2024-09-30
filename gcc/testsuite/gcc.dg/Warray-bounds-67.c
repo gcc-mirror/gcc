@@ -2,7 +2,7 @@
    of a struct that's a member of either a struct or a union.  Both
    are obviously undefined but GCC relies on these hacks so the test
    verifies that -Warray-bounds doesn't trigger for it.
-   { do-do compile }
+   { dg-do compile }
    { dg-options "-O2 -Wall" } */
 
 

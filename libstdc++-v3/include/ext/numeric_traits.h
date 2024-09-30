@@ -29,7 +29,9 @@
 #ifndef _EXT_NUMERIC_TRAITS
 #define _EXT_NUMERIC_TRAITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>

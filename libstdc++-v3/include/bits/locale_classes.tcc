@@ -34,7 +34,12 @@
 #ifndef _LOCALE_CLASSES_TCC
 #define _LOCALE_CLASSES_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
+#pragma GCC diagnostic ignored "-Wvariadic-macros"
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -71,6 +76,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     locale::
     combine(const locale& __other) const
     {
+#if __cpp_lib_type_trait_variable_templates // C++ >= 17
+      static_assert(__is_facet<_Facet>, "Template argument must be a facet");
+#endif
+
       _Impl* __tmp = new _Impl(*_M_impl, 1);
       __try
 	{
@@ -110,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // We know these standard facets are always installed in every locale
       // so dynamic_cast always succeeds, just use static_cast instead.
 #define _GLIBCXX_STD_FACET(...) \
-      if _GLIBCXX_CONSTEXPR (__is_same(_Facet, __VA_ARGS__)) \
+      if _GLIBCXX_CONSTEXPR (__is_same(const _Facet, const __VA_ARGS__)) \
 	return static_cast<const _Facet*>(__facets[__i])
 
       _GLIBCXX_STD_FACET(ctype<char>);
@@ -380,4 +389,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#pragma GCC diagnostic pop
 #endif

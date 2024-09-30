@@ -58,7 +58,9 @@
 #ifndef _STL_TREE_H
 #define _STL_TREE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>

@@ -77,6 +77,7 @@ int main(int, char**)
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output "contract violation in function Base::f at .*.C:7: .*(\n|\r\n|\r)" }
 // { dg-output "Base: 0(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*.C:7: .*(\n|\r\n|\r)" }

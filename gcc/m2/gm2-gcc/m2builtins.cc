@@ -1431,8 +1431,8 @@ define_builtin (enum built_in_function val, const char *name, tree prototype,
   tree decl;
   builtin_macro_definition bmd;
 
-  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL, get_identifier (name),
-                     prototype);
+  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+		     get_identifier (libname), prototype);
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));

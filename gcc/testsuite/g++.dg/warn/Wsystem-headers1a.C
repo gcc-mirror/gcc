@@ -1,5 +1,6 @@
 // { dg-do compile { target *-*-*gnu } }
 // { dg-options "-Wsystem-headers" }
+// { dg-skip-if "requires hosted libstdc++ for stdlib atof" { ! hostedlib } }
 
 #include <stdlib.h>
 

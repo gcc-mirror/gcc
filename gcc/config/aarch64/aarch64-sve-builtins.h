@@ -636,6 +636,7 @@ public:
   gimple *fold_to_pfalse ();
   gimple *fold_to_ptrue ();
   gimple *fold_to_vl_pred (unsigned int);
+  gimple *fold_const_binary (enum tree_code);
 
   gimple *fold ();
 

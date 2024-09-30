@@ -1593,7 +1593,7 @@ locates data in flash but
 accesses to these data read from generic address space, i.e.@:
 from RAM,
 so that you need special accessors like @code{pgm_read_byte}
-from @w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC}}
+from @w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @noindent
@@ -4024,6 +4024,69 @@ diagnosed.  Because a pure function cannot have any observable side
 effects it does not make sense for such a function to return @code{void}.
 Declaring such a function is diagnosed.
 
+@cindex @code{unsequenced} function type attribute
+@cindex functions that have no side effects
+@item unsequenced
+
+This attribute is a GNU counterpart of the C23 @code{[[unsequenced]]}
+attribute, used to specify function pointers to effectless, idempotent,
+stateless and independent functions according to the C23 definition.
+
+Unlike the standard C23 attribute it can be also specified in attributes
+which appertain to function declarations and applies to the their function
+type even in that case.
+
+Unsequenced functions without pointer or reference arguments are similar
+to functions with the @code{const} attribute, except that @code{const}
+attribute also requires finiteness.  So, both functions with @code{const}
+and with @code{unsequenced} attributes can be optimized by common
+subexpression elimination, but only functions with @code{const}
+attribute can be optimized by dead code elimination if their result is
+unused or is used only by dead code.  Unsequenced functions without pointer
+or reference arguments with @code{void} return type are diagnosed because
+they can't store any results and don't have other observable side-effects
+either.
+
+Unsequenced functions with pointer or reference arguments can inspect
+objects through the passed pointers or references or references to pointers
+or can store additional results through those pointers or references or
+references to pointers.
+
+The @code{unsequenced} attribute imposes greater restrictions than
+the similar @code{reproducible} attribute and fewer restrictions than
+the @code{const} attribute, so during optimization @code{const} has
+precedence over @code{unsequenced} which has precedence over
+@code{reproducible}.
+
+@cindex @code{reproducible} function type attribute
+@cindex functions that have no side effects
+@item reproducible
+
+This attribute is a GNU counterpart of the C23 @code{[[reproducible]]}
+attribute, used to specify function pointers to effectless and idempotent
+functions according to the C23 definition.
+
+Unlike the standard C23 attribute it can be also specified in attributes
+which appertain to function declarations and applies to the their function
+type even in that case.
+
+Reproducible functions without pointer or reference arguments or which do
+not modify objects referenced by those pointer/reference arguments are
+similar to functions with the @code{pure} attribute, except that
+@code{pure} attribute also requires finiteness.  So, both functions with
+@code{pure} and with @code{reproducible} attributes can be optimized by common
+subexpression elimination if the global state or anything reachable through
+the pointer/reference arguments isn't modified, but only functions with
+@code{pure} attribute can be optimized by dead code elimination if their result is
+unused or is used only by dead code.  Reproducible functions without pointer
+or reference arguments with @code{void} return type are diagnosed because
+they can't store any results and don't have other observable side-effects
+either.
+
+Reproducible functions with pointer or reference arguments can store
+additional results through those pointers or references or references to
+pointers.
+
 @cindex @code{retain} function attribute
 @item retain
 For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
@@ -5118,7 +5181,7 @@ globally enable interrupts.
 
 The recommended way to use these attributes is by means of the
 @code{ISR} macro provided by @code{avr/interrupt.h} from
-@w{@uref{https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html,,AVR-LibC}}:
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/group__avr__interrupts.html,,AVR-LibC}}:
 @example
 #include <avr/interrupt.h>
 
@@ -5135,6 +5198,60 @@ ISR (ADC_vect, ISR_NOBLOCK) // Uses the "interrupt" attribute.
 
 When both @code{signal} and @code{interrupt} are specified for the same
 function, then @code{signal} is silently ignored.
+
+@cindex @code{signal(@var{num})} function attribute, AVR
+@cindex @code{interrupt(@var{num})} function attribute, AVR
+@item signal(@var{num})
+@itemx interrupt(@var{num})
+
+Similar to the @code{signal} resp. @code{interrupt} attribute without
+argument, but the IRQ number is supplied as an argument @var{num} to
+the attribute, rather than providing the ISR name itself as the function name:
+
+@example
+__attribute__((signal(1)))
+static void my_handler (void)
+@{
+   // Code for __vector_1
+@}
+@end example
+
+Notice that the handler function needs not to be externally visible.
+The recommended way to use these attributes is by means of the
+@code{ISR_N} macro provided by @code{avr/interrupt.h} from
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/group__avr__interrupts.html,,AVR-LibC}}:
+
+@example
+#include <avr/interrupt.h>
+
+ISR_N (PCINT0_vect_num)
+static void my_pcint0_handler (void)
+@{
+   // Code
+@}
+
+ISR_N (ADC_vect_num, ISR_NOBLOCK)
+static void my_adc_handler (void)
+@{
+    // Code
+@}
+@end example
+
+@code{ISR_N} can be specified more than once, in which case several
+interrupt vectors are pointing to the same handler function.  This
+is similar to the @code{ISR_ALIASOF} macro provided by AVR-LibC, but
+without the overhead introduced by @code{ISR_ALIASOF}.
+
+
+@cindex @code{noblock} function attribute, AVR
+@item noblock
+
+This attribute can be used together with the @code{signal} attribute
+to indicate that an interrupt service routine should start with a @code{SEI}
+instruction to globally re-enable interrupts. Using attributes @code{signal}
+and @code{noblock} together has the same effect like using the @code{interrupt}
+attribute.  Using the @code{noblock} attribute without @code{signal} has no
+effect.
 
 @cindex @code{naked} function attribute, AVR
 @item naked
@@ -7412,6 +7529,21 @@ Enable/disable the generation of the AVX10.1 instructions.
 @itemx no-avx10.1-512
 Enable/disable the generation of the AVX10.1 512 bit instructions.
 
+@cindex @code{target("avx10.2")} function attribute, x86
+@item avx10.2
+@itemx no-avx10.2
+Enable/disable the generation of the AVX10.2 instructions.
+
+@cindex @code{target("avx10.2-256")} function attribute, x86
+@item avx10.2-256
+@itemx no-avx10.2-256
+Enable/disbale the generation of the AVX10.2 instructions.
+
+@cindex @code{target("avx10.2-512")} function attribute, x86
+@item avx10.2-512
+@itemx no-avx10.2-512
+Enable/disable the generation of the AVX10.2 512 bit instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
@@ -7794,6 +7926,10 @@ The @code{counted_by} attribute may be attached to the C99 flexible array
 member of a structure.  It indicates that the number of the elements of the
 array is given by the field "@var{count}" in the same structure as the
 flexible array member.
+
+This attribute is available only in C for now.
+In C++ this attribute is ignored.
+
 GCC may use this information to improve detection of object size information
 for such structures and provide better results in compile-time diagnostics
 and runtime features like the array bound sanitizer and
@@ -9054,6 +9190,13 @@ initialization will result in future breakage.
 
 GCC emits warnings based on this attribute by default; use
 @option{-Wno-designated-init} to suppress them.
+
+@cindex @code{flag_enum} type attribute
+@item flag_enum
+This attribute may be applied to an enumerated type to indicate that
+its enumerators are used in bitwise operations, so e.g. @option{-Wswitch}
+should not warn about a @code{case} that corresponds to a bitwise
+combination of enumerators.
 
 @cindex @code{hardbool} type attribute
 @item hardbool
@@ -12403,6 +12546,35 @@ The list below describes the supported modifiers and their effects for RISC-V.
 @headitem Modifier @tab Description
 @item @code{z} @tab Print ''@code{zero}'' instead of 0 if the operand is an immediate with a value of zero.
 @item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
+@end multitable
+
+@anchor{shOperandmodifiers}
+@subsubsection SH Operand Modifiers
+
+The list below describes the supported modifiers and their effects for the SH family of processors.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{.} @tab Print ''@code{.s}'' if the instruction needs a delay slot.
+@item @code{,} @tab Print ''@code{LOCAL_LABEL_PREFIX}''.
+@item @code{@@} @tab Print ''@code{trap}'', ''@code{rte}'' or ''@code{rts}'' depending on the interrupt pragma used.
+@item @code{#} @tab Print ''@code{nop}'' if there is nothing to put in the delay slot.
+@item @code{'} @tab Print likelihood suffix (''@code{/u}'' for unlikely).
+@item @code{>} @tab Print branch target if ''@code{-fverbose-asm}''.
+@item @code{O} @tab Require a constant operand and print the constant expression with no punctuation.
+@item @code{R} @tab Print the ''@code{LSW}'' of a dp value - changes if in little endian.
+@item @code{S} @tab Print the ''@code{MSW}'' of a dp value - changes if in little endian.
+@item @code{T} @tab Print the next word of a dp value - same as ''@code{R}'' in big endian mode.
+@item @code{M} @tab Print ''@code{.b }'', ''@code{.w}'', ''@code{.l}'', ''@code{.s}'', ''@code{.d}'', suffix if operand is a MEM.
+@item @code{N} @tab Print ''@code{r63}'' if the operand is ''@code{const_int 0}''.
+@item @code{d} @tab Print a ''@code{V2SF}'' as ''@code{dN}'' instead of ''@code{fpN}''.
+@item @code{m} @tab Print the pair ''@code{base,offset}'' or ''@code{base,index}'' for LD and ST.
+@item @code{U} @tab Like ''@code{%m}'' for ''@code{LD}'' and ''@code{ST}'', ''@code{HI}'' and ''@code{LO}''.
+@item @code{V} @tab Print the position of a single bit set.
+@item @code{W} @tab Print the position of a single bit cleared.
+@item @code{t} @tab Print a memory address which is a register.
+@item @code{u} @tab Print the lowest 16 bits of ''@code{CONST_INT}'', as an unsigned value.
+@item @code{o} @tab Print an operator.
 @end multitable
 
 @lowersections
@@ -16998,7 +17170,7 @@ __builtin_avr_insert_bits (0x01234567, bits, 0);
 @defbuiltin{uint8_t __builtin_avr_mask1 (uint8_t @var{mask}, uint8_t @var{offs})}
 Rotate the 8-bit constant value @var{mask} by an offset of @var{offs},
 where @var{mask} is in @{ 0x01, 0xfe, 0x7f, 0x80 @}.
-This built-in can be use as an alternative to 8-bit expressions like
+This built-in can be used as an alternative to 8-bit expressions like
 @code{1 << offs} when their computation consumes too much
 time, and @var{offs} is known to be in the range 0@dots{}7.
 @example
@@ -23278,6 +23450,25 @@ signed long long will sign extend the rightmost byte of each doubleword.
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.1 (@option{-mcpu=power10}):
 
+@smallexample
+@exdent int vec_test_lsbb_all_ones (vector signed char);
+@exdent int vec_test_lsbb_all_ones (vector unsigned char);
+@exdent int vec_test_lsbb_all_ones (vector bool char);
+@end smallexample
+@findex vec_test_lsbb_all_ones
+
+The builtin @code{vec_test_lsbb_all_ones} returns 1 if the least significant
+bit in each byte is equal to 1.  It returns 0 otherwise.
+
+@smallexample
+@exdent int vec_test_lsbb_all_zeros (vector signed char);
+@exdent int vec_test_lsbb_all_zeros (vector unsigned char);
+@exdent int vec_test_lsbb_all_zeros (vector bool char);
+@end smallexample
+@findex vec_test_lsbb_all_zeros
+
+The builtin @code{vec_test_lsbb_all_zeros} returns 1 if the least significant
+bit in each byte is equal to zero.  It returns 0 otherwise.
 
 @smallexample
 @exdent vector unsigned long long int
@@ -23542,6 +23733,10 @@ const unsigned int);
 vector signed long long, const unsigned int);
 @exdent vector unsigned long long vec_sldb (vector unsigned long long,
 vector unsigned long long, const unsigned int);
+@exdent vector signed __int128 vec_sldb (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_sldb (vector unsigned __int128,
+vector unsigned __int128, const unsigned int);
 @end smallexample
 
 Shift the combined input vectors left by the amount specified by the low-order
@@ -23569,6 +23764,10 @@ const unsigned int);
 vector signed long long, const unsigned int);
 @exdent vector unsigned long long vec_srdb (vector unsigned long long,
 vector unsigned long long, const unsigned int);
+@exdent vector signed __int128 vec_srdb (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_srdb (vector unsigned __int128,
+vector unsigned __int128, const unsigned int);
 @end smallexample
 
 Shift the combined input vectors right by the amount specified by the low-order
@@ -24063,6 +24262,41 @@ int vec_any_le (vector signed __int128, vector signed __int128);
 int vec_any_le (vector unsigned __int128, vector unsigned __int128);
 @end smallexample
 
+
+The following instances are extension of the existing overloaded built-ins
+@code{vec_sld}, @code{vec_sldw}, @code{vec_slo}, @code{vec_sro}, @code{vec_srl}
+that are documented in the PVIPR.
+
+@smallexample
+@exdent vector signed __int128 vec_sld (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_sld (vector unsigned __int128,
+vector unsigned __int128, const unsigned int);
+@exdent vector signed __int128 vec_sldw (vector signed __int128,
+vector signed __int128, const unsigned int);
+@exdent vector unsigned __int128 vec_sldw (vector unsigned __int,
+vector unsigned __int128, const unsigned int);
+@exdent vector signed __int128 vec_slo (vector signed __int128,
+vector signed char);
+@exdent vector signed __int128 vec_slo (vector signed __int128,
+vector unsigned char);
+@exdent vector unsigned __int128 vec_slo (vector unsigned __int128,
+vector signed char);
+@exdent vector unsigned __int128 vec_slo (vector unsigned __int128,
+vector unsigned char);
+@exdent vector signed __int128 vec_sro (vector signed __int128,
+vector signed char);
+@exdent vector signed __int128 vec_sro (vector signed __int128,
+vector unsigned char);
+@exdent vector unsigned __int128 vec_sro (vector unsigned __int128,
+vector signed char);
+@exdent vector unsigned __int128 vec_sro (vector unsigned __int128,
+vector unsigned char);
+@exdent vector signed __int128 vec_srl (vector signed __int128,
+vector unsigned char);
+@exdent vector unsigned __int128 vec_srl (vector unsigned __int128,
+vector unsigned char);
+@end smallexample
 
 @node PowerPC Hardware Transactional Memory Built-in Functions
 @subsection PowerPC Hardware Transactional Memory Built-in Functions

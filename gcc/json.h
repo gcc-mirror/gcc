@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    json.h.  */
 
 #ifndef INCLUDE_MEMORY
-# error "You must define INCLUDE_MEMORY before including system.h to use make-unique.h"
+# error "You must define INCLUDE_MEMORY before including system.h to use json.h"
 #endif
 
 /* Implementation of JSON, a lightweight data-interchange format.

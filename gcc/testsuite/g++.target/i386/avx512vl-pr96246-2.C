@@ -3,6 +3,7 @@
 /* { dg-require-effective-target avx512bw } */
 /* { dg-require-effective-target avx512vl } */
 /* { dg-options "-O2 -std=c++14 -mavx512bw -mavx512vl" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #define AVX512VL
 #define AVX512BW

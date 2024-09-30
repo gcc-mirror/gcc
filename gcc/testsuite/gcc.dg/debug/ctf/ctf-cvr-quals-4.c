@@ -5,7 +5,7 @@
    is 1 const qualifier. 1 more no-name CTF record corresponds to the CTF
    pointer record.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*ctt_name" 2 } } */

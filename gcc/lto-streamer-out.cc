@@ -2283,6 +2283,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_force_vectorize_loops, 1);
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->has_musttail, 1);
+  bp_pack_value (&bp, fn->has_unroll, 1);
   bp_pack_value (&bp, fn->assume_function, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
@@ -2829,7 +2830,8 @@ lto_output (void)
      statements using the statement UIDs.  */
   output_symtab ();
 
-  output_offload_tables ();
+  if (lto_get_out_decl_state ()->output_offload_tables_p)
+    output_offload_tables ();
 
   if (flag_checking)
     {
@@ -3191,6 +3193,9 @@ lto_write_mode_table (void)
   struct output_block *ob;
   ob = create_output_block (LTO_section_mode_table);
   bitpack_d bp = bitpack_create (ob->main_stream);
+
+  if (lto_stream_offload_p)
+    bp_pack_value (&bp, NUM_POLY_INT_COEFFS, MAX_NUM_POLY_INT_COEFFS_BITS);
 
   /* Ensure that for GET_MODE_INNER (m) != m we have
      also the inner mode marked.  */

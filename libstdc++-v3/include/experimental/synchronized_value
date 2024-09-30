@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_SYNCVAL
 #define _GLIBCXX_EXPERIMENTAL_SYNCVAL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // for std::mutex
 

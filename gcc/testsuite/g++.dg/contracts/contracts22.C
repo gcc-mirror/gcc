@@ -3,6 +3,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-mode=off" }
 // { dg-output "returning from main" }
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 #include <cstdio>
 
 int constexpr f()

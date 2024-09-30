@@ -13404,7 +13404,7 @@ _mm256_permutex_pd (__m256d __X, const int __M)
 
 #define _mm_mask_alignr_epi64(W, U, X, Y, C)                                \
     ((__m128i)__builtin_ia32_alignq128_mask ((__v2di)(__m128i)(X),          \
-        (__v2di)(__m128i)(Y), (int)(C), (__v2di)(__m128i)(X), (__mmask8)-1))
+        (__v2di)(__m128i)(Y), (int)(C), (__v2di)(__m128i)(W), (__mmask8)(U)))
 
 #define _mm_maskz_alignr_epi64(U, X, Y, C)                                  \
     ((__m128i)__builtin_ia32_alignq128_mask ((__v2di)(__m128i)(X),          \

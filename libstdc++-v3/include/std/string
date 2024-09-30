@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_STRING
 #define _GLIBCXX_STRING	1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // containers
 
@@ -54,6 +56,8 @@
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
 
+#define __glibcxx_want_algorithm_default_value_type
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_constexpr_char_traits
 #define __glibcxx_want_constexpr_string
 #define __glibcxx_want_erase_if
@@ -104,7 +108,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __osz - __cont.size();
     }
 
-  template<typename _CharT, typename _Traits, typename _Alloc, typename _Up>
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _Up _GLIBCXX26_DEF_VAL_T(_CharT)>
     _GLIBCXX20_CONSTEXPR
     inline typename basic_string<_CharT, _Traits, _Alloc>::size_type
     erase(basic_string<_CharT, _Traits, _Alloc>& __cont, const _Up& __value)

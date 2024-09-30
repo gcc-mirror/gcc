@@ -659,7 +659,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:VSX_D 1 "vsx_register_operand" "+wa"))]
+        (match_operand:VSX_D 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -703,8 +703,8 @@
       /* Otherwise, fall through to transform into a swapping store.  */
     }
 
-  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
-                                       : operands[1];
+  gcc_assert (can_create_pseudo_p ());
+  operands[2] = gen_reg_rtx_and_attrs (operands[1]);
 })
 
 ;; The post-reload split requires that we re-permute the source
@@ -729,7 +729,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:VSX_W 1 "vsx_register_operand" "+wa"))]
+        (match_operand:VSX_W 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -775,8 +775,8 @@
       /* Otherwise, fall through to transform into a swapping store.  */
     }
 
-  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
-                                       : operands[1];
+  gcc_assert (can_create_pseudo_p ());
+  operands[2] = gen_reg_rtx_and_attrs (operands[1]);
 })
 
 ;; The post-reload split requires that we re-permute the source
@@ -804,7 +804,7 @@
 
 (define_insn "*vsx_le_perm_store_v8hi"
   [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:V8HI 1 "vsx_register_operand" "+wa"))]
+        (match_operand:V8HI 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -854,8 +854,8 @@
       /* Otherwise, fall through to transform into a swapping store.  */
     }
 
-  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
-                                       : operands[1];
+  gcc_assert (can_create_pseudo_p ());
+  operands[2] = gen_reg_rtx_and_attrs (operands[1]);
 })
 
 ;; The post-reload split requires that we re-permute the source
@@ -889,7 +889,7 @@
 
 (define_insn "*vsx_le_perm_store_v16qi"
   [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "=Z")
-        (match_operand:V16QI 1 "vsx_register_operand" "+wa"))]
+        (match_operand:V16QI 1 "vsx_register_operand" "wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
   [(set_attr "type" "vecstore")
@@ -947,8 +947,8 @@
       /* Otherwise, fall through to transform into a swapping store.  */
     }
 
-  operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
-                                       : operands[1];
+  gcc_assert (can_create_pseudo_p ());
+  operands[2] = gen_reg_rtx_and_attrs (operands[1]);
 })
 
 ;; The post-reload split requires that we re-permute the source
@@ -1059,7 +1059,7 @@
 
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z,Q")
-        (match_operand:VSX_LE_128 1 "vsx_register_operand" "+wa,r"))]
+        (match_operand:VSX_LE_128 1 "vsx_register_operand" "wa,r"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   "@
@@ -1076,9 +1076,8 @@
    && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   [(const_int 0)]
 {
-  rtx tmp = (can_create_pseudo_p ()
-	     ? gen_reg_rtx_and_attrs (operands[0])
-	     : operands[0]);
+  gcc_assert (can_create_pseudo_p ());
+  rtx tmp = gen_reg_rtx_and_attrs (operands[1]);
   rs6000_emit_le_vsx_permute (tmp, operands[1], <MODE>mode);
   rs6000_emit_le_vsx_permute (operands[0], tmp, <MODE>mode);
   DONE;
@@ -5196,7 +5195,7 @@
 	(unspec:V2DI_DI
 	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXEXPDP))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsxexpqp %0,%1"
   [(set_attr "type" "vecmove")])
 
@@ -5215,7 +5214,7 @@
 	(unspec:VEC_TI [(match_operand:IEEE128 1
 			    "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SXSIG))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsxsigqp %0,%1"
   [(set_attr "type" "vecmove")])
 
@@ -5235,7 +5234,7 @@
 	 [(match_operand:IEEE128 1 "altivec_register_operand" "v")
 	  (match_operand:DI 2 "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsiexpqp %0,%1,%2"
   [(set_attr "type" "vecmove")])
 
@@ -5247,7 +5246,7 @@
 			 (match_operand:V2DI_DI 2
 			  "altivec_register_operand" "v")]
 	 UNSPEC_VSX_SIEXPQP))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xsiexpqp %0,%1,%2"
   [(set_attr "type" "vecmove")])
 
@@ -5317,7 +5316,7 @@
    (set (match_operand:SI 0 "register_operand" "=r")
 	(CMP_TEST:SI (match_dup 3)
 		     (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
 {
   if (<CODE> == UNORDERED && !HONOR_NANS (<MODE>mode))
     {
@@ -5335,50 +5334,74 @@
 		          (match_operand:IEEE128 2 "altivec_register_operand" "v")]
 	  UNSPEC_VSX_SCMPEXPQP)
 	 (match_operand:SI 3 "zero_constant" "j")))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
   "xscmpexpqp %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
-;; VSX Scalar Test Data Class Quad-Precision
-;;  (Expansion for scalar_test_data_class (__ieee128, int))
-;;   (Has side effect of setting the lt bit if operand 1 is negative,
-;;    setting the eq bit if any of the conditions tested by operand 2
-;;    are satisfied, and clearing the gt and undordered bits to zero.)
-(define_expand "xststdcqp_<mode>"
-  [(set (match_dup 3)
-	(compare:CCFP
-	 (unspec:IEEE128
-	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
-	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
-	  UNSPEC_VSX_STSTDC)
-	 (const_int 0)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-	(eq:SI (match_dup 3)
-	       (const_int 0)))]
-  "TARGET_P9_VECTOR"
-{
-  operands[3] = gen_reg_rtx (CCFPmode);
-})
-
-;; VSX Scalar Test Data Class Double- and Single-Precision
+;; VSX Scalar Test Data Class Quad-/Double-/Single-Precision
 ;;  (The lt bit is set if operand 1 is negative.  The eq bit is set
 ;;   if any of the conditions tested by operand 2 are satisfied.
 ;;   The gt and unordered bits are cleared to zero.)
-(define_expand "xststdc<sd>p"
+(define_expand "xststdc_<mode>"
   [(set (match_dup 3)
 	(compare:CCFP
-	 (unspec:SFDF
-	  [(match_operand:SFDF 1 "vsx_register_operand" "wa")
+	 (unspec:IEEE_FP
+	  [(match_operand:IEEE_FP 1 "<fp_register_op>" "<wa_v>")
 	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (match_dup 4)))
    (set (match_operand:SI 0 "register_operand" "=r")
 	(eq:SI (match_dup 3)
 	       (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
 {
   operands[3] = gen_reg_rtx (CCFPmode);
   operands[4] = CONST0_RTX (SImode);
+})
+
+(define_expand "isinf<mode>2"
+  [(use (match_operand:SI 0 "gpc_reg_operand"))
+   (use (match_operand:IEEE_FP 1 "<fp_register_op>"))]
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
+{
+  int mask = VSX_TEST_DATA_CLASS_POS_INF | VSX_TEST_DATA_CLASS_NEG_INF;
+  emit_insn (gen_xststdc_<mode> (operands[0], operands[1], GEN_INT (mask)));
+  DONE;
+})
+
+(define_expand "isfinite<mode>2"
+  [(use (match_operand:SI 0 "gpc_reg_operand"))
+   (use (match_operand:IEEE_FP 1 "<fp_register_op>"))]
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  /* It is neither infinite nor NAN.  */
+  int mask = VSX_TEST_DATA_CLASS_POS_INF | VSX_TEST_DATA_CLASS_NEG_INF
+	     | VSX_TEST_DATA_CLASS_NAN;
+  emit_insn (gen_xststdc_<mode> (tmp, operands[1], GEN_INT (mask)));
+  emit_insn (gen_xorsi3 (operands[0], tmp, const1_rtx));
+  DONE;
+})
+
+(define_expand "isnormal<mode>2"
+  [(use (match_operand:SI 0 "gpc_reg_operand"))
+   (use (match_operand:IEEE_FP 1 "<fp_register_op>"))]
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  /* It is neither NAN, infinite, zero, nor denormal.  */
+  int mask = VSX_TEST_DATA_CLASS_NAN
+	     | VSX_TEST_DATA_CLASS_POS_INF | VSX_TEST_DATA_CLASS_NEG_INF
+	     | VSX_TEST_DATA_CLASS_POS_ZERO | VSX_TEST_DATA_CLASS_NEG_ZERO
+	     | VSX_TEST_DATA_CLASS_POS_DENORMAL
+	     | VSX_TEST_DATA_CLASS_NEG_DENORMAL;
+  emit_insn (gen_xststdc_<mode> (tmp, operands[1], GEN_INT (mask)));
+  emit_insn (gen_xorsi3 (operands[0], tmp, const1_rtx));
+  DONE;
 })
 
 ;; The VSX Scalar Test Negative Quad-Precision
@@ -5393,7 +5416,7 @@
    (set (match_operand:SI 0 "register_operand" "=r")
 	(lt:SI (match_dup 2)
 	       (const_int 0)))]
-  "TARGET_P9_VECTOR"
+  "TARGET_FLOAT128_HW"
 {
   operands[2] = gen_reg_rtx (CCFPmode);
 })
@@ -5416,27 +5439,17 @@
   operands[3] = CONST0_RTX (SImode);
 })
 
-(define_insn "*xststdcqp_<mode>"
+(define_insn "*xststdc_<mode>"
   [(set (match_operand:CCFP 0 "" "=y")
 	(compare:CCFP
-	 (unspec:IEEE128
-	  [(match_operand:IEEE128 1 "altivec_register_operand" "v")
+	 (unspec:IEEE_FP
+	  [(match_operand:IEEE_FP 1 "<fp_register_op>" "<wa_v>")
 	   (match_operand:SI 2 "u7bit_cint_operand" "n")]
 	  UNSPEC_VSX_STSTDC)
 	 (const_int 0)))]
-  "TARGET_P9_VECTOR"
-  "xststdcqp %0,%1,%2"
-  [(set_attr "type" "fpcompare")])
-
-(define_insn "*xststdc<sd>p"
-  [(set (match_operand:CCFP 0 "" "=y")
-	(compare:CCFP
-	 (unspec:SFDF [(match_operand:SFDF 1 "vsx_register_operand" "wa")
-		       (match_operand:SI 2 "u7bit_cint_operand" "n")]
-	  UNSPEC_VSX_STSTDC)
-	 (match_operand:SI 3 "zero_constant" "j")))]
-  "TARGET_P9_VECTOR"
-  "xststdc<sd>p %0,%x1,%2"
+  "TARGET_P9_VECTOR
+   && (!FLOAT128_IEEE_P (<MODE>mode) || TARGET_FLOAT128_HW)"
+  "xststdc<sdq>p %0,%<x>1,%2"
   [(set_attr "type" "fpcompare")])
 
 ;; VSX Vector Extract Exponent Double and Single Precision

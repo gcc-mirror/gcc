@@ -90,18 +90,24 @@ class format_string_diagnostic_t
 
   /* Functions for emitting a warning about a format string.  */
 
-  bool emit_warning_va (int opt, const char *gmsgid, va_list *ap) const
+  bool emit_warning_va (diagnostic_option_id option_id,
+			const char *gmsgid,
+			va_list *ap) const
     ATTRIBUTE_GCC_DIAG (3, 0);
 
-  bool emit_warning_n_va (int opt, unsigned HOST_WIDE_INT n,
+  bool emit_warning_n_va (diagnostic_option_id option_id,
+			  unsigned HOST_WIDE_INT n,
 			  const char *singular_gmsgid,
-			  const char *plural_gmsgid, va_list *ap) const
+			  const char *plural_gmsgid,
+			  va_list *ap) const
   ATTRIBUTE_GCC_DIAG (4, 0) ATTRIBUTE_GCC_DIAG (5, 0);
 
-  bool emit_warning (int opt, const char *gmsgid, ...) const
+  bool emit_warning (diagnostic_option_id option_id,
+		     const char *gmsgid, ...) const
     ATTRIBUTE_GCC_DIAG (3, 4);
 
-  bool emit_warning_n (int opt, unsigned HOST_WIDE_INT n,
+  bool emit_warning_n (diagnostic_option_id option_id,
+		       unsigned HOST_WIDE_INT n,
 		       const char *singular_gmsgid,
 		       const char *plural_gmsgid, ...) const
   ATTRIBUTE_GCC_DIAG (4, 6) ATTRIBUTE_GCC_DIAG (5, 6);

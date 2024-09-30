@@ -1,4 +1,5 @@
 // { dg-do compile { target c++17 } }
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 
 #include <memory>
 #include <tuple>

@@ -62,4 +62,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_short_mult && { vect_widen_sum_hi_to_si  && vect_unpack } } } } } */ 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_widen_sum_hi_to_si_pattern || { ! { vect_short_mult && { vect_widen_sum_hi_to_si  && vect_unpack } } } } } } } */
 /* Check we can elide permutes if SLP vectorizing the reduction.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 0 "vect" { xfail { { { vect_widen_sum_hi_to_si_pattern || { ! vect_unpack } } && { ! vect_load_lanes } } && { vect_short_mult && { vect_widen_sum_hi_to_si  && vect_unpack } } } } } } */
+/* { dg-final { scan-tree-dump-times " = VEC_PERM_EXPR" 0 "vect" { xfail { { { vect_widen_sum_hi_to_si_pattern || { ! vect_unpack } } && { ! vect_load_lanes } } && { vect_short_mult && { vect_widen_sum_hi_to_si  && vect_unpack } } } } } } */

@@ -116,7 +116,7 @@ riscv port              Jim Wilson              <jim.wilson.gcc@gmail.com>
 rs6000/powerpc port     David Edelsohn          <dje.gcc@gmail.com>
 rs6000/powerpc port     Segher Boessenkool      <segher@kernel.crashing.org>
 rs6000/powerpc port     Kewen Lin               <linkw@gcc.gnu.org>
-rs6000 vector extns     Aldy Hernandez          <aldyh@redhat.com>
+rs6000 vector extns     Aldy Hernandez          <aldy@quesejoda.com>
 rx port                 Nick Clifton            <nickc@redhat.com>
 s390 port               Ulrich Weigand          <uweigand@de.ibm.com>
 s390 port               Andreas Krebbel         <krebbel@linux.ibm.com>
@@ -213,7 +213,7 @@ c++ runtime libs        Jonathan Wakely         <jwakely@redhat.com>
 c++ runtime libs special modes  François Dumont <fdumont@gcc.gnu.org>
 fixincludes             Bruce Korb              <bkorb@gnu.org>
 *gimpl*                 Jakub Jelinek           <jakub@redhat.com>
-*gimpl*                 Aldy Hernandez          <aldyh@redhat.com>
+*gimpl*                 Aldy Hernandez          <aldy@quesejoda.com>
 *gimpl*                 Jason Merrill           <jason@redhat.com>
 gcse.cc                 Jeff Law                <jeffreyalaw@gmail.com>
 global opt framework    Jeff Law                <jeffreyalaw@gmail.com>
@@ -240,7 +240,7 @@ option handling         Joseph Myers            <josmyers@redhat.com>
 middle-end              Jeff Law                <jeffreyalaw@gmail.com>
 middle-end              Ian Lance Taylor        <ian@airs.com>
 middle-end              Richard Biener          <rguenther@suse.de>
-*vrp, ranger            Aldy Hernandez          <aldyh@redhat.com>
+*vrp, ranger            Aldy Hernandez          <aldy@quesejoda.com>
 *vrp, ranger            Andrew MacLeod          <amacleod@redhat.com>
 tree-ssa                Andrew MacLeod          <amacleod@redhat.com>
 tree browser/unparser   Sebastian Pop           <sebpop@gmail.com>
@@ -272,6 +272,7 @@ check in changes outside of the parts of the compiler they maintain.
 
                         Reviewers
 
+arm port (MVE)          Christophe Lyon         <christophe.lyon@arm.com>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
@@ -518,7 +519,7 @@ Daniel Hellstrom                danielh         <daniel@gaisler.com>
 Fergus Henderson                -               <fjh@cs.mu.oz.au>
 Richard Henderson               rth             <rth@gcc.gnu.org>
 Stuart Henderson                shenders        <shenders@gcc.gnu.org>
-Aldy Hernandez                  aldyh           <aldyh@redhat.com>
+Aldy Hernandez                  aldyh           <aldy@quesejoda.com>
 Philip Herron                   redbrain        <herron.philip@googlemail.com>
 Marius Hillenbrand              -               <mhillen@linux.ibm.com>
 Matthew Hiller                  -               <hiller@redhat.com>
@@ -554,6 +555,7 @@ Sam James                       sjames          <sam@gentoo.org>
 Surya Kumari Jangala            jskumari        <jskumari@linux.ibm.com>
 Jakub Jelinek                   jakub           <jakub@redhat.com>
 Andrew Jenner                   andrewjenner    <andrew@codesourcery.com>
+Saurabh Jha                     saurabhjha      <saurabh.jha@arm.com>
 Haochen Jiang                   -               <haochen.jiang@intel.com>
 Qian Jianhua                    -               <qianjh@fujitsu.com>
 Michal Jires                    mjires          <mjires@suse.cz>
@@ -676,7 +678,7 @@ Christoph Müllner               cmuellner       <christoph.muellner@vrull.eu>
 Steven Munroe                   munroesj        <munroesj52@gmail.com>
 Philippe De Muyter              -               <phdm@macqel.be>
 Joseph Myers                    jsm28           <josmyers@redhat.com>
-Szabolcs Nagy                   nsz             <szabolcs.nagy@arm.com>
+Szabolcs Nagy                   nsz             <nsz@gcc.gnu.org>
 Victor Do Nascimento            victorldn       <victor.donascimento@arm.com>
 Quentin Neill                   qneill          <quentin.neill.gnu@gmail.com>
 Adam Nemet                      nemet           <adambnemet@gmail.com>
@@ -729,7 +731,7 @@ Yao Qi                          qiyao           <yao@codesourcery.com>
 Xianmiao Qu                     -               <cooper.qu@linux.alibaba.com>
 Jerry Quinn                     jlquinn         <jlquinn@optonline.net>
 Ramana Radhakrishnan            ramana          <ramanara@nvidia.com>
-Navid Rahimi                    navidr          <navidrahimi@microsoft.com>
+Navid Rahimi                    navidr          <navidr@gcc.gnu.org>
 Rishi Raj                       -               <rishiraj45035@gmail.com>
 Easwaran Raman                  eraman          <eraman@google.com>
 Joe Ramsay                      joeramsay       <joe.ramsay@arm.com>
@@ -763,6 +765,7 @@ Roger Sayle                     sayle           <roger@nextmovesoftware.com>
 Tobias Schlüter                 tobi            <tobias.schlueter@physik.uni-muenchen.de>
 Bernd Schmidt                   bernds          <bernds_cb1@t-online.de>
 Will Schmidt                    willschm        <will_schmidt@vnet.ibm.com>
+Jennifer Schmitz                jschmitz        <jschmitz@nvidia.com>
 Stefan Schulze Frielinghaus     stefansf        <stefansf@linux.ibm.com>
 Andreas Schwab                  schwab          <schwab@linux-m68k.org>
 Tilo Schwarz                    tiloschwarz     <tilo@tilo-schwarz.de>
@@ -915,7 +918,7 @@ information.
 Juergen Christ                                  <jchrist@linux.ibm.com>
 Robin Dapp                                      <rdapp.gcc@gmail.com>
 Robin Dapp                                      <rdapp@ventanamicro.com>
-Pranil Dey                                      <mkdeyp@gmail.com>
+Aldy Hernandez                                  <aldy@quesejoda.com>
 Michal Jires                                    <mjires@suse.cz>
 Matthias Kretz                                  <m.kretz@gsi.de>
 Prathamesh Kulkarni                             <prathameshk@nvidia.com>
@@ -927,13 +930,15 @@ H.J. Lu                                         <hjl.tools@gmail.com>
 Matthew Malcomson                               <mmalcomson@nvidia.com>
 Immad Mir                                       <mir@sourceware.org>
 Gaius Mulley                                    <gaiusmod2@gmail.com>
+Szabolcs Nagy                                   <nsz@gcc.gnu.org>
 Andrew Pinski                                   <quic_apinski@quicinc.com>
 Siddhesh Poyarekar                              <siddhesh@gotplt.org>
 Ramana Radhakrishnan                            <ramanara@nvidia.com>
-Navid Rahimi                                    <navidrahimi@microsoft.com>
+Navid Rahimi                                    <navidr@gcc.gnu.org>
 Rishi Raj                                       <rishiraj45035@gmail.com>
 Trevor Saunders                                 <tbsaunde+gcc@tbsaunde.org>
 Bill Schmidt                                    <bill.schmidt@fastmail.com>
+Jennifer Schmitz                                <jschmitz@nvidia.com>
 Nathaniel Shead                                 <nathanieloshead@gmail.org>
 Nathan Sidwell                                  <nathan@acm.org>
 Edward Smith-Rowland                            <esmithrowland@gmail.com>

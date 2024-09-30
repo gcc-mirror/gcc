@@ -185,77 +185,6 @@ package body Freeze is
    --  the designated type. Otherwise freezing the access type does not freeze
    --  the designated type.
 
-   function Should_Freeze_Type
-     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean;
-   --  If Typ is in the current scope, then return True.
-   --  N is a node whose source location corresponds to the freeze point.
-   --  ??? Expression functions (represented by E) shouldn't freeze types in
-   --  general, but our current expansion and freezing model requires an early
-   --  freezing when the dispatch table is needed or when building an aggregate
-   --  with a subtype of Typ, so return True also in this case.
-   --  Note that expression function completions do freeze and are
-   --  handled in Sem_Ch6.Analyze_Expression_Function.
-
-   ------------------------
-   -- Should_Freeze_Type --
-   ------------------------
-
-   function Should_Freeze_Type
-     (Typ : Entity_Id; E : Entity_Id; N : Node_Id) return Boolean
-   is
-      function Is_Dispatching_Call_Or_Aggregate
-        (N : Node_Id) return Traverse_Result;
-      --  Return Abandon if N is a dispatching call to a subprogram
-      --  declared in the same scope as Typ or an aggregate whose type
-      --  is Typ.
-
-      --------------------------------------
-      -- Is_Dispatching_Call_Or_Aggregate --
-      --------------------------------------
-
-      function Is_Dispatching_Call_Or_Aggregate
-        (N : Node_Id) return Traverse_Result is
-      begin
-         if Nkind (N) = N_Function_Call
-           and then Present (Controlling_Argument (N))
-           and then Scope (Entity (Original_Node (Name (N))))
-                      = Scope (Typ)
-         then
-            return Abandon;
-         elsif Nkind (N) in N_Aggregate
-                          | N_Extension_Aggregate
-                          | N_Delta_Aggregate
-           and then Base_Type (Etype (N)) = Base_Type (Typ)
-         then
-            return Abandon;
-         else
-            return OK;
-         end if;
-      end Is_Dispatching_Call_Or_Aggregate;
-
-      -------------------------
-      -- Need_Dispatch_Table --
-      -------------------------
-
-      function Need_Dispatch_Table is new
-        Traverse_Func (Is_Dispatching_Call_Or_Aggregate);
-      --  Return Abandon if the input expression requires access to
-      --  Typ's dispatch table.
-
-      Decl : constant Node_Id :=
-        (if No (E) then E else Original_Node (Unit_Declaration_Node (E)));
-
-   --  Start of processing for Should_Freeze_Type
-
-   begin
-      return Within_Scope (Typ, Current_Scope)
-        or else (Nkind (N) = N_Subprogram_Renaming_Declaration
-                 and then Present (Corresponding_Formal_Spec (N)))
-        or else (Present (Decl)
-                 and then Nkind (Decl) = N_Expression_Function
-                 and then Need_Dispatch_Table (Expression (Decl)) = Abandon);
-   end Should_Freeze_Type;
-
    procedure Process_Default_Expressions
      (E     : Entity_Id;
       After : in out Node_Id);
@@ -281,6 +210,17 @@ package body Freeze is
    --  Scalar_Storage_Order or an explicit setting of this aspect with an
    --  attribute definition clause occurs, then these two flags are reset in
    --  any case, so call will have no effect.
+
+   function Should_Freeze_Type
+     (Typ : Entity_Id;
+      E   : Entity_Id;
+      N   : Node_Id) return Boolean;
+   --  True if Typ should be frozen when the profile of E is being frozen at N.
+
+   --  ??? Expression functions that are not completions shouldn't freeze types
+   --  but our current expansion and freezing model requires an early freezing
+   --  when the tag of Typ is needed or for an aggregate with a subtype of Typ,
+   --  so we return True in these cases.
 
    procedure Undelay_Type (T : Entity_Id);
    --  T is a type of a component that we know to be an Itype. We don't want
@@ -645,6 +585,13 @@ package body Freeze is
              Chars => Chars (Defining_Identifier (Param_Spec))));
          Next (Param_Spec);
       end loop;
+
+      --  Copy SPARK pragma from renaming declaration
+
+      Set_SPARK_Pragma
+        (Defining_Unit_Name (Spec), SPARK_Pragma (New_S));
+      Set_SPARK_Pragma_Inherited
+        (Defining_Unit_Name (Spec), SPARK_Pragma_Inherited (New_S));
 
       --  In GNATprove, prefer to generate an expression function whenever
       --  possible, to benefit from the more precise analysis in that case
@@ -3168,7 +3115,6 @@ package body Freeze is
               Find_Aspect (Typ, Aspect_No_Parts);
             Curr_Aspect_Spec : Entity_Id;
          begin
-
             --  Examine Typ's associated node, when present, since aspect
             --  specifications do not get transferred when nodes get rewritten.
 
@@ -3235,7 +3181,6 @@ package body Freeze is
             Aspect_Spec : constant Entity_Id :=
               Find_Aspect_No_Parts (Typ);
          begin
-
             --  Return the value of the aspect when present
 
             if Present (Aspect_Spec) then
@@ -3342,7 +3287,7 @@ package body Freeze is
                     ("aspect % applied to task type &", Typ);
                   Error_Msg_N
                     ("\replace task components with access-to-task-type "
-                     & "components??", Typ);
+                     & "components", Typ);
                end if;
 
             else
@@ -5121,6 +5066,11 @@ package body Freeze is
          --  variants referenceed by the Variant_Part VP are frozen. This is
          --  a recursive routine to deal with nested variants.
 
+         procedure Warn_If_Implicitly_Inherited_Aspects (Tag_Typ : Entity_Id);
+         --  Report a warning for Tag_Typ when it implicitly inherits the
+         --  First_Controlling_Parameter aspect but does not explicitly
+         --  specify it.
+
          -----------------
          -- Check_Itype --
          -----------------
@@ -5198,6 +5148,193 @@ package body Freeze is
                Next_Non_Pragma (Variant);
             end loop;
          end Freeze_Choices_In_Variant_Part;
+
+         ------------------------------------------
+         -- Warn_If_Implicitly_Inherited_Aspects --
+         ------------------------------------------
+
+         procedure Warn_If_Implicitly_Inherited_Aspects (Tag_Typ : Entity_Id)
+         is
+            function Has_First_Ctrl_Param_Aspect return Boolean;
+            --  Determines if Tag_Typ explicitly has the aspect/pragma
+            --  First_Controlling_Parameter.
+
+            ---------------------------------
+            -- Has_First_Ctrl_Param_Aspect --
+            ---------------------------------
+
+            function Has_First_Ctrl_Param_Aspect return Boolean is
+               Decl_Nod   : constant Node_Id := Parent (Tag_Typ);
+               Asp_Nod    : Node_Id;
+               Nod        : Node_Id;
+               Pragma_Arg : Node_Id;
+               Pragma_Ent : Entity_Id;
+
+            begin
+               pragma Assert (Nkind (Decl_Nod) = N_Full_Type_Declaration);
+
+               if Present (Aspect_Specifications (Decl_Nod)) then
+                  Asp_Nod := First (Aspect_Specifications (Decl_Nod));
+                  while Present (Asp_Nod) loop
+                     if Chars (Identifier (Asp_Nod))
+                       = Name_First_Controlling_Parameter
+                     then
+                        return True;
+                     end if;
+
+                     Next (Asp_Nod);
+                  end loop;
+               end if;
+
+               --  Search for the occurrence of the pragma
+
+               Nod := Next (Decl_Nod);
+               while Present (Nod) loop
+                  if Nkind (Nod) = N_Pragma
+                    and then Chars (Pragma_Identifier (Nod))
+                               = Name_First_Controlling_Parameter
+                    and then Present (Pragma_Argument_Associations (Nod))
+                  then
+                     Pragma_Arg :=
+                       Expression (First (Pragma_Argument_Associations (Nod)));
+
+                     if Nkind (Pragma_Arg) = N_Identifier
+                       and then Present (Entity (Pragma_Arg))
+                     then
+                        Pragma_Ent := Entity (Pragma_Arg);
+
+                        if Pragma_Ent = Tag_Typ
+                          or else
+                            (Is_Concurrent_Type (Pragma_Ent)
+                               and then
+                                 Corresponding_Record_Type (Pragma_Ent)
+                                   = Tag_Typ)
+                        then
+                           return True;
+                        end if;
+                     end if;
+                  end if;
+
+                  Next (Nod);
+               end loop;
+
+               return False;
+            end Has_First_Ctrl_Param_Aspect;
+
+            --  Local Variables
+
+            Has_Aspect_First_Ctrl_Param : constant Boolean :=
+                                            Has_First_Ctrl_Param_Aspect;
+
+         --  Start of processing for Warn_Implicitly_Inherited_Aspects
+
+         begin
+            --  Handle cases where reporting the warning is not needed
+
+            if not Warn_On_Non_Dispatching_Primitives then
+               return;
+
+            --  No check needed when this is the full view of a private type
+            --  declaration since the pragma/aspect must be placed and checked
+            --  in the partial view, and it is implicitly propagated to the
+            --  full view.
+
+            elsif Has_Private_Declaration (Tag_Typ)
+              and then Is_Tagged_Type (Incomplete_Or_Partial_View (Tag_Typ))
+            then
+               return;
+
+            --  Similar case but applied to concurrent types
+
+            elsif Is_Concurrent_Record_Type (Tag_Typ)
+              and then Has_Private_Declaration
+                         (Corresponding_Concurrent_Type (Tag_Typ))
+              and then Is_Tagged_Type
+                         (Incomplete_Or_Partial_View
+                           (Corresponding_Concurrent_Type (Tag_Typ)))
+            then
+               return;
+            end if;
+
+            if Etype (Tag_Typ) /= Tag_Typ
+              and then Has_First_Controlling_Parameter_Aspect (Etype (Tag_Typ))
+            then
+               --  The attribute was implicitly inherited
+               pragma Assert
+                 (Has_First_Controlling_Parameter_Aspect (Tag_Typ));
+
+               --  No warning needed when the current tagged type is not
+               --  an interface type since by definition the aspect is
+               --  implicitly propagated from its parent type; the warning
+               --  is reported on interface types since it may not be so
+               --  clear when some implemented interface types have the
+               --  aspect and other interface types don't have it. For
+               --  interface types, we don't report the warning when the
+               --  interface type is an extension of a single interface
+               --  type (for similarity with the behavior with regular
+               --  tagged types).
+
+               if not Has_Aspect_First_Ctrl_Param
+                 and then Is_Interface (Tag_Typ)
+                 and then not Is_Empty_Elmt_List (Interfaces (Tag_Typ))
+               then
+                  Error_Msg_N
+                    ("?_j?implicitly inherits aspect 'First_'Controlling_'"
+                     & "Parameter!", Tag_Typ);
+                  Error_Msg_NE
+                    ("\?_j?from & and must be confirmed explicitly!",
+                     Tag_Typ, Etype (Tag_Typ));
+               end if;
+
+            elsif Present (Interfaces (Tag_Typ))
+              and then not Is_Empty_Elmt_List (Interfaces (Tag_Typ))
+            then
+               --  To maintain consistency with the behavior when the aspect
+               --  is implicitly inherited from its parent type, we do not
+               --  report a warning for concurrent record types that implement
+               --  a single interface type. By definition, the aspect is
+               --  propagated from that interface type as if it were the parent
+               --  type. For example:
+
+               --     type Iface is interface with First_Controlling_Parameter;
+               --     task type T is new Iface with ...
+
+               if Is_Concurrent_Record_Type (Tag_Typ)
+                 and then No (Next_Elmt (First_Elmt (Interfaces (Tag_Typ))))
+               then
+                  null;
+
+               else
+                  declare
+                     Elmt  : Elmt_Id := First_Elmt (Interfaces (Tag_Typ));
+                     Iface : Entity_Id;
+
+                  begin
+                     while Present (Elmt) loop
+                        Iface := Node (Elmt);
+                        pragma Assert (Present (Iface));
+
+                        if Has_First_Controlling_Parameter_Aspect (Iface)
+                          and then not Has_Aspect_First_Ctrl_Param
+                        then
+                           pragma Assert
+                             (Has_First_Controlling_Parameter_Aspect
+                               (Tag_Typ));
+                           Error_Msg_N
+                             ("?_j?implicitly inherits aspect 'First_'"
+                              & "Controlling_'Parameter", Tag_Typ);
+                           Error_Msg_NE
+                             ("\?_j?from & and must be confirmed explicitly!",
+                              Tag_Typ, Iface);
+                           exit;
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end;
+               end if;
+            end if;
+         end Warn_If_Implicitly_Inherited_Aspects;
 
       --  Start of processing for Freeze_Record_Type
 
@@ -5973,6 +6110,13 @@ package body Freeze is
                   Next_Elmt (Elmt);
                end loop;
             end;
+         end if;
+
+         --  For tagged types, warn on an implicitly inherited aspect/pragma
+         --  First_Controlling_Parameter that is not explicitly set.
+
+         if Is_Tagged_Type (Rec) then
+            Warn_If_Implicitly_Inherited_Aspects (Rec);
          end if;
       end Freeze_Record_Type;
 
@@ -7473,16 +7617,16 @@ package body Freeze is
 
                if Ada_Version >= Ada_2005 then
                   Error_Msg_N
-                    ("\would be legal if Storage_Size of 0 given??", E);
+                    ("\would be legal if Storage_Size of 0 given", E);
 
                elsif No_Pool_Assigned (E) then
                   Error_Msg_N
-                    ("\would be legal in Ada 2005??", E);
+                    ("\would be legal in Ada 2005", E);
 
                else
                   Error_Msg_N
                     ("\would be legal in Ada 2005 if "
-                     & "Storage_Size of 0 given??", E);
+                     & "Storage_Size of 0 given", E);
                end if;
             end if;
          end if;
@@ -7875,7 +8019,24 @@ package body Freeze is
          --  type itself, and we treat Default_Component_Value similarly for
          --  the sake of uniformity).
 
-         if Is_First_Subtype (E) and then Has_Default_Aspect (E) then
+         --  But for an inherited Default_Value aspect specification, the type
+         --  of the aspect remains the parent type. RM 3.3.1(11.1), a dynamic
+         --  semantics rule, says "The implicit initial value for a scalar
+         --  subtype that has the Default_Value aspect specified is the value
+         --  of that aspect converted to the nominal subtype". For an inherited
+         --  Default_Value aspect specification, no conversion is evaluated at
+         --  the point of the derived type declaration.
+
+         if Is_First_Subtype (E)
+           and then Has_Default_Aspect (E)
+           and then
+             (not Is_Scalar_Type (E)
+                or else
+              not Is_Derived_Type (E)
+                or else
+              Default_Aspect_Value (E)
+                /= Default_Aspect_Value (Etype (Base_Type (E))))
+         then
             declare
                Nam : Name_Id;
                Exp : Node_Id;
@@ -10315,16 +10476,84 @@ package body Freeze is
          Check_Overriding_Indicator (E, Empty, Is_Primitive (E));
       end if;
 
-      Retype := Get_Fullest_View (Etype (E));
+      --  Check illegal subprograms of tagged types and interface types that
+      --  have aspect/pragma First_Controlling_Parameter.
 
-      if Transform_Function_Array
-        and then Nkind (Parent (E)) = N_Function_Specification
-        and then Is_Array_Type (Retype)
-        and then Is_Constrained (Retype)
-        and then not Is_Unchecked_Conversion_Instance (E)
-        and then not Rewritten_For_C (E)
+      if Comes_From_Source (E)
+        and then Is_Abstract_Subprogram (E)
       then
-         Build_Procedure_Form (Unit_Declaration_Node (E));
+         if Is_Dispatching_Operation (E) then
+            if Ekind (E) = E_Function
+              and then Is_Interface (Etype (E))
+              and then not Is_Class_Wide_Type (Etype (E))
+              and then Has_First_Controlling_Parameter_Aspect
+                         (Find_Dispatching_Type (E))
+            then
+               Error_Msg_NE
+                 ("'First_'Controlling_'Parameter disallows returning a "
+                  & "non-class-wide interface type",
+                  E, Etype (E));
+            end if;
+
+         else
+            --  The type of the formals cannot be an interface type
+
+            if Present (First_Formal (E)) then
+               declare
+                  Formal     : Entity_Id := First_Formal (E);
+                  Has_Aspect : Boolean := False;
+
+               begin
+                  --  Check if some formal has the aspect
+
+                  while Present (Formal) loop
+                     if Is_Tagged_Type (Etype (Formal))
+                       and then
+                         Has_First_Controlling_Parameter_Aspect
+                           (Etype (Formal))
+                     then
+                        Has_Aspect := True;
+                     end if;
+
+                     Next_Formal (Formal);
+                  end loop;
+
+                  --  If the aspect is present then report the error
+
+                  if Has_Aspect then
+                     Formal := First_Formal (E);
+
+                     while Present (Formal) loop
+                        if Is_Interface (Etype (Formal))
+                          and then not Is_Class_Wide_Type (Etype (Formal))
+                        then
+                           Error_Msg_NE
+                             ("not a dispatching primitive of interface type&",
+                              E, Etype (Formal));
+                           Error_Msg_N
+                             ("\disallowed by 'First_'Controlling_'Parameter "
+                              & "aspect", E);
+                        end if;
+
+                        Next_Formal (Formal);
+                     end loop;
+                  end if;
+               end;
+            end if;
+
+            if Ekind (E) = E_Function
+              and then Is_Interface (Etype (E))
+              and then not Is_Class_Wide_Type (Etype (E))
+              and then Has_First_Controlling_Parameter_Aspect (Etype (E))
+            then
+               Error_Msg_NE
+                 ("not a dispatching primitive of interface type&",
+                  E, Etype (E));
+               Error_Msg_N
+                 ("\disallowed by 'First_'Controlling_'Parameter "
+                  & "aspect", E);
+            end if;
+         end if;
       end if;
    end Freeze_Subprogram;
 
@@ -10606,6 +10835,104 @@ package body Freeze is
       end if;
    end Set_SSO_From_Default;
 
+   ------------------------
+   -- Should_Freeze_Type --
+   ------------------------
+
+   function Should_Freeze_Type
+     (Typ : Entity_Id;
+      E   : Entity_Id;
+      N   : Node_Id) return Boolean
+   is
+      Decl : constant Node_Id := Original_Node (Unit_Declaration_Node (E));
+
+      function Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate
+        (N : Node_Id) return Traverse_Result;
+      --  Return Abandon if N is a dispatching call to a subprogram
+      --  declared in the same scope as Typ, or a tagged result that
+      --  needs specific expansion, or an aggregate whose type is Typ.
+
+      function Check_Freezing is new
+        Traverse_Func (Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate);
+      --  Return Abandon if the input expression requires freezing Typ
+
+      function Within_Simple_Return_Statement (N : Node_Id) return Boolean;
+      --  Determine whether N is the expression of a simple return statement,
+      --  or the dependent expression of a conditional expression which is
+      --  the expression of a simple return statement, including recursively.
+
+      -------------------------------------------------------
+      -- Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate --
+      -------------------------------------------------------
+
+      function Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate
+        (N : Node_Id) return Traverse_Result
+      is
+      begin
+         if Nkind (N) = N_Function_Call
+           and then Present (Controlling_Argument (N))
+           and then Scope (Entity (Original_Node (Name (N)))) = Scope (Typ)
+         then
+            return Abandon;
+
+         --  The expansion done in Expand_Simple_Function_Return will assign
+         --  the tag to the result in this case.
+
+         elsif Is_Conversion_Or_Reference_To_Formal (N)
+           and then Within_Simple_Return_Statement (N)
+           and then Etype (N) = Typ
+           and then Is_Tagged_Type (Typ)
+           and then not Is_Class_Wide_Type (Typ)
+         then
+            return Abandon;
+
+         elsif Nkind (N) in N_Aggregate
+                          | N_Delta_Aggregate
+                          | N_Extension_Aggregate
+           and then Base_Type (Etype (N)) = Base_Type (Typ)
+         then
+            return Abandon;
+
+         else
+            return OK;
+         end if;
+      end Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate;
+
+      ------------------------------------
+      -- Within_Simple_Return_Statement --
+      ------------------------------------
+
+      function Within_Simple_Return_Statement (N : Node_Id) return Boolean is
+         Par : constant Node_Id := Parent (N);
+
+      begin
+         if Nkind (Par) = N_Simple_Return_Statement then
+            return True;
+
+         elsif Nkind (Par) = N_Case_Expression_Alternative then
+            return Within_Simple_Return_Statement (Parent (Par));
+
+         elsif Nkind (Par) = N_If_Expression
+           and then N /= First (Expressions (Par))
+         then
+            return Within_Simple_Return_Statement (Par);
+
+         else
+            return False;
+         end if;
+      end Within_Simple_Return_Statement;
+
+   --  Start of processing for Should_Freeze_Type
+
+   begin
+      return Within_Scope (Typ, Current_Scope)
+        or else (Nkind (N) = N_Subprogram_Renaming_Declaration
+                  and then Present (Corresponding_Formal_Spec (N)))
+        or else (Present (Decl)
+                  and then Nkind (Decl) = N_Expression_Function
+                  and then Check_Freezing (Expression (Decl)) = Abandon);
+   end Should_Freeze_Type;
+
    ------------------
    -- Undelay_Type --
    ------------------
@@ -10773,7 +11100,7 @@ package body Freeze is
                   then
                      Error_Msg_NE
                        ("\packed array component& " &
-                        "will be initialized to zero??",
+                        "will be initialized to zero?o?",
                         Nam, Comp);
                      exit;
                   else
@@ -10785,7 +11112,7 @@ package body Freeze is
 
          Error_Msg_N
            ("\use pragma Import for & to " &
-            "suppress initialization (RM B.1(24))??",
+            "suppress initialization (RM B.1(24))?o?",
             Nam);
       end if;
    end Warn_Overlay;

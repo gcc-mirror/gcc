@@ -12,7 +12,7 @@
    total number of instructions.
 
    This isn't expected to change much and any change is worthy of a look.  */
-/* { dg-final { scan-assembler-times "\\t(add|addi|bseti|li|ret|sh1add|sh2add|sh3add|slli)" 7571 } } */
+/* { dg-final { scan-assembler-times "\\t(add|addi|bseti|li|ret|sh1add|sh2add|sh3add|slli|bclri)" 7575 } } */
 
 unsigned long foo_0xfffff7fe7ffff7ff(void) { return 0xfffff7fe7ffff7ffUL; }
 unsigned long foo_0xffffeffe7ffff7ff(void) { return 0xffffeffe7ffff7ffUL; }

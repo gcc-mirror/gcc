@@ -229,7 +229,7 @@ announce_function (tree decl)
 	fprintf (stderr, " %s",
 		 identifier_to_locale (lang_hooks.decl_printable_name (decl, 2)));
       fflush (stderr);
-      pp_needs_newline (global_dc->printer) = true;
+      pp_needs_newline (global_dc->m_printer) = true;
       diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
     }
 }
@@ -914,6 +914,37 @@ dump_final_callee_vcg (FILE *f, location_t location, tree callee)
   fputs ("\" }\n", f);
 }
 
+/* Callback for cgraph_node::call_for_symbol_thunks_and_aliases to dump to F_ a
+   node and an edge from ALIAS->DECL to CURRENT_FUNCTION_DECL.  */
+
+static bool
+dump_final_alias_vcg (cgraph_node *alias, void *f_)
+{
+  FILE *f = (FILE *)f_;
+
+  if (alias->decl == current_function_decl)
+    return false;
+
+  dump_final_node_vcg_start (f, alias->decl);
+  fputs ("\" shape : triangle }\n", f);
+
+  fputs ("edge: { sourcename: \"", f);
+  print_decl_identifier (f, alias->decl, PRINT_DECL_UNIQUE_NAME);
+  fputs ("\" targetname: \"", f);
+  print_decl_identifier (f, current_function_decl, PRINT_DECL_UNIQUE_NAME);
+  location_t location = DECL_SOURCE_LOCATION (alias->decl);
+  if (LOCATION_LOCUS (location) != UNKNOWN_LOCATION)
+    {
+      expanded_location loc;
+      fputs ("\" label: \"", f);
+      loc = expand_location (location);
+      fprintf (f, "%s:%d:%d", loc.file, loc.line, loc.column);
+    }
+  fputs ("\" }\n", f);
+
+  return false;
+}
+
 /* Dump final cgraph node in VCG format.  */
 
 static void
@@ -950,6 +981,12 @@ dump_final_node_vcg (FILE *f)
     dump_final_callee_vcg (f, c->location, c->decl);
   vec_free (cfun->su->callees);
   cfun->su->callees = NULL;
+
+  cgraph_node *node = cgraph_node::get (current_function_decl);
+  if (!node)
+    return;
+  node->call_for_symbol_thunks_and_aliases (dump_final_alias_vcg, f,
+					    true, false);
 }
 
 /* Output stack usage and callgraph info, as requested.  */
@@ -1056,11 +1093,11 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
     (global_options_init.x_flag_diagnostics_show_highlight_colors);
   global_dc->m_internal_error = internal_error_function;
   const unsigned lang_mask = lang_hooks.option_lang_mask ();
-  global_dc->set_option_hooks (option_enabled,
-			       &global_options,
-			       option_name,
-			       get_option_url,
-			       lang_mask);
+  global_dc->set_option_manager
+    (new compiler_diagnostic_option_manager (*global_dc,
+					     lang_mask,
+					     &global_options),
+     lang_mask);
   global_dc->set_urlifier (make_gcc_urlifier (lang_mask));
 
   if (init_signals)
@@ -1468,6 +1505,14 @@ process_options ()
     dwarf2out_as_loc_support = dwarf2out_default_as_loc_support ();
   if (!OPTION_SET_P (dwarf2out_as_locview_support))
     dwarf2out_as_locview_support = dwarf2out_default_as_locview_support ();
+  if (dwarf2out_as_locview_support && !dwarf2out_as_loc_support)
+    {
+      if (OPTION_SET_P (dwarf2out_as_locview_support))
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "%<-gas-locview-support%> is forced disabled "
+		    "without %<-gas-loc-support%>");
+      dwarf2out_as_locview_support = false;
+    }
 
   if (!OPTION_SET_P (debug_variable_location_views))
     {
@@ -1475,9 +1520,7 @@ process_options ()
 	= (flag_var_tracking
 	   && debug_info_level >= DINFO_LEVEL_NORMAL
 	   && dwarf_debuginfo_p ()
-	   && !dwarf_strict
-	   && dwarf2out_as_loc_support
-	   && dwarf2out_as_locview_support);
+	   && !dwarf_strict);
     }
   else if (debug_variable_location_views == -1 && dwarf_version != 5)
     {
@@ -2344,7 +2387,7 @@ toplev::main (int argc, char **argv)
   if (auto edit_context_ptr = global_dc->get_edit_context ())
     {
       pretty_printer pp;
-      pp_show_color (&pp) = pp_show_color (global_dc->printer);
+      pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
       edit_context_ptr->print_diff (&pp, true);
       pp_flush (&pp);
     }
@@ -2355,7 +2398,7 @@ toplev::main (int argc, char **argv)
 
   after_memory_report = true;
 
-  if (seen_error () || werrorcount)
+  if (global_dc->execution_failed_p ())
     return (FATAL_EXIT_CODE);
 
   return (SUCCESS_EXIT_CODE);

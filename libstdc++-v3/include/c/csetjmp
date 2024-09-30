@@ -29,9 +29,16 @@
 #ifndef _GLIBCXX_CSETJMP
 #define _GLIBCXX_CSETJMP 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 
 #include_next <setjmp.h>
+
+#pragma GCC diagnostic pop
 
 // Get rid of those macros defined in <setjmp.h> in lieu of real functions.
 #undef longjmp

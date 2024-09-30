@@ -1,4 +1,4 @@
-(* m2linemap.def provides access to GCC location_t.
+(* m2linemap.def provides access to GCC location_t functions.
 
 Copyright (C) 2011-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -22,15 +22,13 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 DEFINITION MODULE FOR "C" m2linemap ;
 
 FROM SYSTEM IMPORT ADDRESS ;
+FROM gcctypes IMPORT location_t ;
 
 EXPORT QUALIFIED StartFile, EndFile, StartLine, GetLocationColumn, GetLocationRange,
                  GetLocationBinary, UnknownLocation, BuiltinsLocation,
                  GetLineNoFromLocation, GetColumnNoFromLocation,
                  GetFilenameFromLocation, ErrorAt, ErrorAtf,
-                 WarningAtf, NoteAtf, internal_error, location_t ;
-
-TYPE
-   location_t = CARDINAL ;
+                 WarningAtf, NoteAtf, internal_error ;
 
 
 PROCEDURE StartFile (filename: ADDRESS; linebegin: CARDINAL) ;

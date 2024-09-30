@@ -20,7 +20,6 @@
 /* Which processor to generate code or schedule for.  */
 enum processor_type
 {
-  PROCESSOR_FIJI,    // gfx803
   PROCESSOR_VEGA10,  // gfx900
   PROCESSOR_VEGA20,  // gfx906
   PROCESSOR_GFX908,
@@ -32,7 +31,6 @@ enum processor_type
   PROCESSOR_GFX1103
 };
 
-#define TARGET_FIJI (gcn_arch == PROCESSOR_FIJI)
 #define TARGET_VEGA10 (gcn_arch == PROCESSOR_VEGA10)
 #define TARGET_VEGA20 (gcn_arch == PROCESSOR_VEGA20)
 #define TARGET_GFX908 (gcn_arch == PROCESSOR_GFX908)
@@ -46,7 +44,6 @@ enum processor_type
 /* Set in gcn_option_override.  */
 extern enum gcn_isa {
   ISA_UNKNOWN,
-  ISA_GCN3,
   ISA_GCN5,
   ISA_RDNA2,
   ISA_RDNA3,
@@ -54,10 +51,7 @@ extern enum gcn_isa {
   ISA_CDNA2
 } gcn_isa;
 
-#define TARGET_GCN3 (gcn_isa == ISA_GCN3)
-#define TARGET_GCN3_PLUS (gcn_isa >= ISA_GCN3)
 #define TARGET_GCN5 (gcn_isa == ISA_GCN5)
-#define TARGET_GCN5_PLUS (gcn_isa >= ISA_GCN5)
 #define TARGET_CDNA1 (gcn_isa == ISA_CDNA1)
 #define TARGET_CDNA1_PLUS (gcn_isa >= ISA_CDNA1)
 #define TARGET_CDNA2 (gcn_isa == ISA_CDNA2)
@@ -67,7 +61,6 @@ extern enum gcn_isa {
 #define TARGET_RDNA3 (gcn_isa == ISA_RDNA3)
 
 
-#define TARGET_M0_LDS_LIMIT (TARGET_GCN3)
 #define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS || TARGET_RDNA3)
 
 #define TARGET_XNACK (flag_xnack != HSACO_ATTR_OFF)
@@ -80,22 +73,16 @@ enum hsaco_attr_type
   HSACO_ATTR_DEFAULT
 };
 
-/* There are global address instructions.  */
-#define TARGET_GLOBAL_ADDRSPACE TARGET_GCN5_PLUS
 /* Device has an AVGPR register file.  */
 #define TARGET_AVGPRS TARGET_CDNA1_PLUS
 /* There are load/store instructions for AVGPRS.  */
 #define TARGET_AVGPR_MEMOPS TARGET_CDNA2_PLUS
 /* AVGPRS may have their own register file, or be combined with VGPRS.  */
 #define TARGET_AVGPR_COMBINED TARGET_CDNA2_PLUS
-/* flat_load/store allows offsets.  */
-#define TARGET_FLAT_OFFSETS TARGET_GCN5_PLUS
 /* global_load/store has reduced offset.  */
 #define TARGET_11BIT_GLOBAL_OFFSET TARGET_RDNA2_PLUS
 /* The work item details are all encoded into v0.  */
 //#define TARGET_PACKED_WORK_ITEMS TARGET_PACKED_WORK_ITEMS
-/* m0 must be initialized in order to use LDS.  */
-//#define TARGET_M0_LDS_LIMIT TARGET_M0_LDS_LIMIT
 /* CDNA2 load/store costs are reduced.
  * TODO: what does this mean?  */
 #define TARGET_CDNA2_MEM_COSTS TARGET_CDNA2_PLUS
@@ -114,10 +101,6 @@ enum hsaco_attr_type
    : 4)
 /* This mostly affects the metadata.  */
 #define TARGET_ARCHITECTED_FLAT_SCRATCH TARGET_RDNA3
-/* Assembler uses s_add_co not just s_add.  */
-#define TARGET_EXPLICIT_CARRY TARGET_GCN5_PLUS
-/* mulsi3 permits immediate.  */
-#define TARGET_MULTIPLY_IMMEDIATE TARGET_GCN5_PLUS
 /* Device has Sub-DWord Addressing instrucions.  */
 #define TARGET_SDWA (!TARGET_RDNA3)
 /* Different devices uses different cache control instructions.  */

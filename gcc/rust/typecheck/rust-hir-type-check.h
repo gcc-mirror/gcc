@@ -24,8 +24,8 @@
 #include "rust-hir-trait-reference.h"
 #include "rust-autoderef.h"
 #include "rust-tyty-region.h"
-
-#include <stack>
+#include "rust-tyty-variance-analysis.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace Resolver {
@@ -233,6 +233,8 @@ public:
 
   void compute_inference_variables (bool error);
 
+  TyTy::VarianceAnalysis::CrateCtx &get_variance_analysis_ctx ();
+
 private:
   TypeCheckContext ();
 
@@ -271,6 +273,9 @@ private:
   // query context lookups
   std::set<HirId> querys_in_progress;
   std::set<DefId> trait_queries_in_progress;
+
+  // variance analysis
+  TyTy::VarianceAnalysis::CrateCtx variance_analysis_ctx;
 
   /** Used to resolve (interned) lifetime names to their bounding scope. */
   class LifetimeResolver

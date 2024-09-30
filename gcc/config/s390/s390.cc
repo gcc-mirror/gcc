@@ -516,31 +516,6 @@ s390_return_addr_from_memory ()
   return cfun_gpr_save_slot(RETURN_REGNUM) == SAVE_SLOT_STACK;
 }
 
-/* Generate a SUBREG for the MODE lowpart of EXPR.
-
-   In contrast to gen_lowpart it will always return a SUBREG
-   expression.  This is useful to generate STRICT_LOW_PART
-   expressions.  */
-rtx
-s390_gen_lowpart_subreg (machine_mode mode, rtx expr)
-{
-  rtx lowpart = gen_lowpart (mode, expr);
-
-  /* There might be no SUBREG in case it could be applied to the hard
-     REG rtx or it could be folded with a paradoxical subreg.  Bring
-     it back.  */
-  if (!SUBREG_P (lowpart))
-    {
-      machine_mode reg_mode = TARGET_ZARCH ? DImode : SImode;
-      gcc_assert (REG_P (lowpart));
-      lowpart = gen_lowpart_SUBREG (mode,
-				    gen_rtx_REG (reg_mode,
-						 REGNO (lowpart)));
-    }
-
-  return lowpart;
-}
-
 /* Return nonzero if it's OK to use fused multiply-add for MODE.  */
 bool
 s390_fma_allowed_p (machine_mode mode)
@@ -3714,6 +3689,18 @@ s390_mem_constraint (const char *str, rtx op)
       if ((reload_completed || reload_in_progress)
 	  ? !offsettable_memref_p (op) : !offsettable_nonstrict_memref_p (op))
 	return 0;
+      /* offsettable_memref_p ensures only that any positive offset added to
+	 the address forms a valid general address.  For AQ and AR constraints
+	 we also have to verify that the resulting displacement after adding
+	 any positive offset less than the size of the object being referenced
+	 is still valid.  */
+      if (str[1] == 'Q' || str[1] == 'R')
+	{
+	  int o = GET_MODE_SIZE (GET_MODE (op)) - 1;
+	  rtx tmp = adjust_address (op, QImode, o);
+	  if (!s390_check_qrst_address (str[1], XEXP (tmp, 0), true))
+	    return 0;
+	}
       return s390_check_qrst_address (str[1], XEXP (op, 0), true);
     case 'B':
       /* Check for non-literal-pool variants of memory constraints.  */
@@ -7042,7 +7029,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       return true;
     }
 
-  smode = smallest_int_mode_for_size (bitsize);
+  smode = smallest_int_mode_for_size (bitsize).require ();
   smode_bsize = GET_MODE_BITSIZE (smode);
   mode_bsize = GET_MODE_BITSIZE (mode);
 
@@ -7112,15 +7099,21 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
       /* Emit a strict_low_part pattern if possible.  */
       if (smode_bsize == bitsize && bitpos == mode_bsize - smode_bsize)
 	{
-	  rtx low_dest = s390_gen_lowpart_subreg (smode, dest);
-	  rtx low_src = gen_lowpart (smode, src);
-
-	  switch (smode)
+	  rtx low_dest = gen_lowpart (smode, dest);
+	  if (SUBREG_P (low_dest) && !paradoxical_subreg_p (low_dest))
 	    {
-	    case E_QImode: emit_insn (gen_movstrictqi (low_dest, low_src)); return true;
-	    case E_HImode: emit_insn (gen_movstricthi (low_dest, low_src)); return true;
-	    case E_SImode: emit_insn (gen_movstrictsi (low_dest, low_src)); return true;
-	    default: break;
+	      poly_int64 offset = GET_MODE_SIZE (mode) - GET_MODE_SIZE (smode);
+	      rtx low_src = adjust_address (src, smode, offset);
+	      switch (smode)
+		{
+		case E_QImode: emit_insn (gen_movstrictqi (low_dest, low_src));
+			       return true;
+		case E_HImode: emit_insn (gen_movstricthi (low_dest, low_src));
+			       return true;
+		case E_SImode: emit_insn (gen_movstrictsi (low_dest, low_src));
+			       return true;
+		default: break;
+		}
 	    }
 	}
 
@@ -8607,7 +8600,6 @@ print_operand_address (FILE *file, rtx addr)
     't': CONST_INT: "start" of contiguous bitmask X in SImode.
     'x': print integer X as if it's an unsigned halfword.
     'v': print register number as vector register (v1 instead of f1).
-    'V': print the second word of a TFmode operand as vector register.
 */
 
 void
@@ -8861,13 +8853,13 @@ print_operand (FILE *file, rtx x, int code)
     case REG:
       /* Print FP regs as fx instead of vx when they are accessed
 	 through non-vector mode.  */
-      if ((code == 'v' || code == 'V')
+      if (code == 'v'
 	  || VECTOR_NOFP_REG_P (x)
 	  || (FP_REG_P (x) && VECTOR_MODE_P (GET_MODE (x)))
 	  || (VECTOR_REG_P (x)
 	      && (GET_MODE_SIZE (GET_MODE (x)) /
 		  s390_class_max_nregs (FP_REGS, GET_MODE (x))) > 8))
-	fprintf (file, "%%v%s", reg_names[REGNO (x) + (code == 'V')] + 2);
+	fprintf (file, "%%v%s", reg_names[REGNO (x)] + 2);
       else
 	fprintf (file, "%s", reg_names[REGNO (x)]);
       break;
@@ -11348,13 +11340,6 @@ s390_can_change_mode_class (machine_mode from_mode,
     return false;
 
   return true;
-}
-
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-s390_lra_p (void)
-{
-  return s390_lra_flag;
 }
 
 /* Return true if register FROM can be eliminated via register TO.  */
@@ -18451,9 +18436,6 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P s390_legitimate_constant_p
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P s390_lra_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate

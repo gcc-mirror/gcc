@@ -295,7 +295,7 @@ FUNC_END (__riscv_restore_0)
 
 #else
 
-#ifdef __riscv_32e
+#ifdef __riscv_abi_rve
 FUNC_BEGIN(__riscv_save_2)
 FUNC_BEGIN(__riscv_save_1)
 FUNC_BEGIN(__riscv_save_0)
@@ -529,6 +529,6 @@ FUNC_END (__riscv_restore_2)
 FUNC_END (__riscv_restore_1)
 FUNC_END (__riscv_restore_0)
 
-#endif /* __riscv_32e */
+#endif /* __riscv_abi_rve */
 
 #endif /* __riscv_xlen == 64 */

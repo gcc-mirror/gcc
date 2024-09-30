@@ -1617,6 +1617,7 @@ c_find_nested_loop_xform_r (tree *tp, int *walk_subtrees, void *)
       *walk_subtrees = 1;
       break;
     case TRY_FINALLY_EXPR:
+    case CLEANUP_POINT_EXPR:
       *walk_subtrees = 1;
       break;
     default:

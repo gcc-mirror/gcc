@@ -145,7 +145,6 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
-
       --  -gnatd_U disables prepending error messages with "error:"
 
       if Debug_Flag_Underscore_UU then
@@ -164,40 +163,16 @@ procedure Gnat1drv is
          Unnest_Subprogram_Mode := True;
       end if;
 
-      --  -gnatd.u enables special C expansion mode
+      --  Force pseudo code generation with -gnatceg
 
-      if Debug_Flag_Dot_U then
-         Modify_Tree_For_C := True;
-         Transform_Function_Array := True;
+      if Generate_C_Header then
+         Operating_Mode := Generate_Code;
       end if;
 
       --  -gnatd_A disables generation of ALI files
 
       if Debug_Flag_Underscore_AA then
          Disable_ALI_File := True;
-      end if;
-
-      --  Set all flags required when generating C code
-
-      if Generate_C_Code then
-         CCG_Mode := True;
-         Modify_Tree_For_C := True;
-         Transform_Function_Array := True;
-         Unnest_Subprogram_Mode := True;
-         Building_Static_Dispatch_Tables := False;
-         Minimize_Expression_With_Actions := True;
-         Expand_Nonbinary_Modular_Ops := True;
-         Back_End_Return_Slot := False;
-
-         --  Set operating mode to Generate_Code to benefit from full front-end
-         --  expansion (e.g. generics).
-
-         Operating_Mode := Generate_Code;
-
-         --  Suppress alignment checks since we do not have access to alignment
-         --  info on the target.
-
-         Suppress_Options.Suppress (Alignment_Check) := False;
       end if;
 
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
@@ -238,16 +213,9 @@ procedure Gnat1drv is
 
          Debug_Flag_Dot_PP := True;
 
-         --  Turn off C tree generation, not compatible with CodePeer mode. We
-         --  do not expect this to happen in normal use, since both modes are
-         --  enabled by special tools, but it is useful to turn off these flags
-         --  this way when we are doing CodePeer tests on existing test suites
-         --  that may have -gnateg set, to avoid the need for special casing.
+         --  Turn off front-end unnesting to be safe
 
-         Modify_Tree_For_C        := False;
-         Transform_Function_Array := False;
-         Generate_C_Code          := False;
-         Unnest_Subprogram_Mode   := False;
+         Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
@@ -457,16 +425,9 @@ procedure Gnat1drv is
          CodePeer_Mode := False;
          Generate_SCIL := False;
 
-         --  Turn off C tree generation, not compatible with GNATprove mode. We
-         --  do not expect this to happen in normal use, since both modes are
-         --  enabled by special tools, but it is useful to turn off these flags
-         --  this way when we are doing GNATprove tests on existing test suites
-         --  that may have -gnateg set, to avoid the need for special casing.
+         --  Turn off front-end unnesting to be safe
 
-         Modify_Tree_For_C        := False;
-         Transform_Function_Array := False;
-         Generate_C_Code          := False;
-         Unnest_Subprogram_Mode   := False;
+         Unnest_Subprogram_Mode := False;
 
          --  Turn off inlining, which would confuse formal verification output
          --  and gain nothing.
@@ -726,29 +687,14 @@ procedure Gnat1drv is
          end if;
       end if;
 
-      --  Treat -gnatn as equivalent to -gnatN for non-GCC targets
-
-      if Inline_Active and not Front_End_Inlining then
-
-         --  We really should have a tag for this, what if we added a new
-         --  back end some day, it would not be true for this test, but it
-         --  would be non-GCC, so this is a bit troublesome ???
-
-         Front_End_Inlining := Generate_C_Code;
-      end if;
-
       --  Set back-end inlining indication
 
       Back_End_Inlining :=
 
-        --  No back-end inlining available on C generation
-
-        not Generate_C_Code
-
         --  No back-end inlining in GNATprove mode, since it just confuses
         --  the formal verification process.
 
-        and then not GNATprove_Mode
+        not GNATprove_Mode
 
         --  No back-end inlining if front-end inlining explicitly enabled.
         --  Done to minimize the output differences to customers still using
@@ -1234,8 +1180,7 @@ begin
 
       --  Ditto for old C files before regenerating new ones
 
-      if Generate_C_Code then
-         Delete_C_File;
+      if Generate_C_Header then
          Delete_H_File;
       end if;
 
@@ -1340,20 +1285,10 @@ begin
       elsif CodePeer_Mode then
          Back_End_Mode := Generate_Object;
 
-      --  Differentiate use of -gnatceg to generate a C header from an Ada spec
-      --  to the CCG case (standard.h found) where C code generation should
-      --  only be performed on full units.
+      --  Force pseudo code generation with -gnatceg
 
-      elsif Generate_C_Code then
-         Name_Len := 10;
-         Name_Buffer (1 .. Name_Len) := "standard.h";
-
-         if Find_File (Name_Find, Osint.Source, Full_Name => True) = No_File
-         then
-            Back_End_Mode := Generate_Object;
-         else
-            Back_End_Mode := Skip;
-         end if;
+      elsif Generate_C_Header then
+         Back_End_Mode := Generate_Object;
 
       --  It is not an error to analyze in GNATprove mode a spec which requires
       --  a body, when the body is not available. During frame condition

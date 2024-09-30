@@ -36,20 +36,27 @@
 // ISO C++ 14882: 26.5  C library
 //
 
+#ifndef _GLIBCXX_CMATH
+#define _GLIBCXX_CMATH 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h>
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 #define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
 #include_next <math.h>
 #undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
-#include <bits/std_abs.h>
+#pragma GCC diagnostic pop
 
-#ifndef _GLIBCXX_CMATH
-#define _GLIBCXX_CMATH 1
+#include <bits/std_abs.h>
 
 #define __glibcxx_want_hypot
 #define __glibcxx_want_interpolate

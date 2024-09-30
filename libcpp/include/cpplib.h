@@ -545,6 +545,9 @@ struct cpp_options
   /* Nonzero for 'true' and 'false' in #if expressions.  */
   unsigned char true_false;
 
+  /* Nonzero for the '#embed' directive.  */
+  unsigned char embed;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -699,6 +702,10 @@ enum cpp_warning_reason {
   CPP_W_C11_C23_COMPAT,
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
+  CPP_W_CXX14_EXTENSIONS,
+  CPP_W_CXX17_EXTENSIONS,
+  CPP_W_CXX20_EXTENSIONS,
+  CPP_W_CXX23_EXTENSIONS,
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL,
   CPP_W_INVALID_UTF8,
@@ -974,6 +981,7 @@ enum cpp_builtin_type
   BT_HAS_BUILTIN,		/* `__has_builtin(x)' */
   BT_HAS_INCLUDE,		/* `__has_include(x)' */
   BT_HAS_INCLUDE_NEXT,		/* `__has_include_next(x)' */
+  BT_HAS_EMBED,			/* `__has_embed(x)' */
   BT_HAS_FEATURE,		/* `__has_feature(x)' */
   BT_HAS_EXTENSION		/* `__has_extension(x)' */
 };
@@ -1092,7 +1100,8 @@ extern void cpp_set_line_map (cpp_reader *, class line_maps *);
 extern void cpp_set_lang (cpp_reader *, enum c_lang);
 
 /* Set the include paths.  */
-extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
+extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *,
+				    cpp_dir *, int);
 
 /* Call these to get pointers to the options, callback, and deps
    structures for a given reader.  These pointers are good until you

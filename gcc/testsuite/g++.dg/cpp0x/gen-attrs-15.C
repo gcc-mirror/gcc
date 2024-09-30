@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-c++11-extensions" }
 // PR c++/15317
 
 struct A

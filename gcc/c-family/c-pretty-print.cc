@@ -1043,7 +1043,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 	  wi = -wi;
 	}
       unsigned int prec = wi.get_precision ();
-      if ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3)
+      if ((prec + 3) / 4 > sizeof (pp_buffer (pp)->m_digit_buffer) - 3)
 	{
 	  char *buf = XALLOCAVEC (char, (prec + 3) / 4 + 3);
 	  print_hex (wi, buf);
@@ -1051,8 +1051,8 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
 	}
       else
 	{
-	  print_hex (wi, pp_buffer (pp)->digit_buffer);
-	  pp_string (pp, pp_buffer (pp)->digit_buffer);
+	  print_hex (wi, pp_buffer (pp)->m_digit_buffer);
+	  pp_string (pp, pp_buffer (pp)->m_digit_buffer);
 	}
     }
 }
@@ -1138,11 +1138,11 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
      log10(2) to 7 significant digits.  */
   int max_digits10 = 2 + (is_decimal ? fmt->p : fmt->p * 643L / 2136);
 
-  real_to_decimal (pp_buffer (pp)->digit_buffer, &TREE_REAL_CST (r),
-		   sizeof (pp_buffer (pp)->digit_buffer),
+  real_to_decimal (pp_buffer (pp)->m_digit_buffer, &TREE_REAL_CST (r),
+		   sizeof (pp_buffer (pp)->m_digit_buffer),
 		   max_digits10, 1);
 
-  pp_string (pp, pp_buffer(pp)->digit_buffer);
+  pp_string (pp, pp_buffer(pp)->m_digit_buffer);
   if (TREE_TYPE (r) == float_type_node)
     pp_character (pp, 'f');
   else if (TREE_TYPE (r) == long_double_type_node)
@@ -1170,9 +1170,9 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
 static void
 pp_c_fixed_constant (c_pretty_printer *pp, tree r)
 {
-  fixed_to_decimal (pp_buffer (pp)->digit_buffer, &TREE_FIXED_CST (r),
-		   sizeof (pp_buffer (pp)->digit_buffer));
-  pp_string (pp, pp_buffer(pp)->digit_buffer);
+  fixed_to_decimal (pp_buffer (pp)->m_digit_buffer, &TREE_FIXED_CST (r),
+		   sizeof (pp_buffer (pp)->m_digit_buffer));
+  pp_string (pp, pp_buffer(pp)->m_digit_buffer);
 }
 
 /* Pretty-print a compound literal expression.  GNU extensions include
@@ -1376,14 +1376,14 @@ c_pretty_printer::primary_expression (tree e)
       pp_c_ws_string (this, "__builtin_memcpy");
       pp_c_left_paren (this);
       pp_ampersand (this);
-      primary_expression (TREE_OPERAND (e, 0));
+      primary_expression (TARGET_EXPR_SLOT (e));
       pp_separate_with (this, ',');
       pp_ampersand (this);
-      initializer (TREE_OPERAND (e, 1));
-      if (TREE_OPERAND (e, 2))
+      initializer (TARGET_EXPR_INITIAL (e));
+      if (TARGET_EXPR_CLEANUP (e))
 	{
 	  pp_separate_with (this, ',');
-	  expression (TREE_OPERAND (e, 2));
+	  expression (TARGET_EXPR_CLEANUP (e));
 	}
       pp_c_right_paren (this);
       break;
@@ -2838,7 +2838,7 @@ c_pretty_printer::expression (tree e)
       break;
 
     case TARGET_EXPR:
-      postfix_expression (TREE_OPERAND (e, 1));
+      postfix_expression (TARGET_EXPR_INITIAL (e));
       break;
 
     case BIND_EXPR:

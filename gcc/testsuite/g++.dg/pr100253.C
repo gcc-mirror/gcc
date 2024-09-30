@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-tree-bit-ccp -ftree-slp-vectorize" } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 
 #include <vector>
 

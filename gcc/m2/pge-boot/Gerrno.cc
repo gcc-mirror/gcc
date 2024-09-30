@@ -38,14 +38,14 @@ errno_geterrno (void)
 /* init constructor for the module.  */
 
 void
-_M2_errno_init (int argc, char *p)
+_M2_errno_init (int argc, char *argv[], char *envp[])
 {
 }
 
 /* finish deconstructor for the module.  */
 
 void
-_M2_errno_fini (int argc, char *p)
+_M2_errno_fini (int argc, char *argv[], char *envp[])
 {
 }
 

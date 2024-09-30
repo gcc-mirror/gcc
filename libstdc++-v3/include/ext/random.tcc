@@ -30,7 +30,9 @@
 #ifndef _EXT_RANDOM_TCC
 #define _EXT_RANDOM_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

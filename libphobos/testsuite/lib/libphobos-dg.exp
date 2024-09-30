@@ -17,7 +17,7 @@
 load_gcc_lib multiline.exp
 load_gcc_lib prune.exp
 load_gcc_lib scandump.exp
-load_gcc_lib scanltranstree.exp
+load_gcc_lib scanltrans.exp
 load_gcc_lib scanwpaipa.exp
 load_gcc_lib file-format.exp
 load_gcc_lib scanasm.exp

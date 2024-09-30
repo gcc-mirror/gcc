@@ -32,7 +32,9 @@
 #ifndef _POD_CHAR_TRAITS_H
 #define _POD_CHAR_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

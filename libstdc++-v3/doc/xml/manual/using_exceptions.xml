@@ -282,8 +282,8 @@ exception neutrality and exception safety.
     implicitly generated magic necessary to
     support <literal>try</literal> and <literal>catch</literal> blocks
     and thrown objects. (Language support
-    for <literal>-fno-exceptions</literal> is documented in the GNU
-    GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">manual</link>.)
+    for <literal>-fno-exceptions</literal> is documented in the GCC 
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">manual</link>.)
   </para>
 
   <para>Before detailing the library support

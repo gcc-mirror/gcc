@@ -36,13 +36,15 @@
 // ISO C++ 14882: 20.5  Date and time
 //
 
+#ifndef _GLIBCXX_CTIME
+#define _GLIBCXX_CTIME 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <time.h>
-
-#ifndef _GLIBCXX_CTIME
-#define _GLIBCXX_CTIME 1
 
 // Get rid of those macros defined in <time.h> in lieu of real functions.
 #undef clock

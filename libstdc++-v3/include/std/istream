@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_ISTREAM
 #define _GLIBCXX_ISTREAM 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // iostreams
 
@@ -193,6 +195,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_extract(__n); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       __istream_type&
       operator>>(long long& __n)
       { return _M_extract(__n); }
@@ -200,6 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __istream_type&
       operator>>(unsigned long long& __n)
       { return _M_extract(__n); }
+#pragma GCC diagnostic pop
 #endif
       ///@}
 
@@ -909,7 +914,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __n /= sizeof(_CharT);
 	  streamsize __w = __in.width();
 	  std::__istream_extract(__in, __s, __n);
-	  if (__in.good() && (__w <= 0 || __n < __w))
+	  if (__in.good() && (__w <= 0 || __n < (size_t)__w))
 	    {
 	      // Stopped extracting early to avoid overflowing the buffer,
 	      // but might have stopped anyway (and set eofbit) if at EOF.

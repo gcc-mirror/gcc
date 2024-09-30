@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-additional-options "-fexcess-precision=fast" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed copy-ctors
 #include <iostream>
 

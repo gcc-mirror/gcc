@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 
 int
 foo (char* p)

@@ -81,6 +81,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   struct _Bit_reference
   {
+  private:
+    template<typename, typename> friend class vector;
+    friend struct _Bit_iterator;
+    friend struct _Bit_const_iterator;
+
+    _GLIBCXX20_CONSTEXPR
+    _Bit_reference() _GLIBCXX_NOEXCEPT : _M_p(0), _M_mask(0) { }
+
     _Bit_type * _M_p;
     _Bit_type _M_mask;
 
@@ -88,9 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _Bit_reference(_Bit_type * __x, _Bit_type __y)
     : _M_p(__x), _M_mask(__y) { }
 
-    _GLIBCXX20_CONSTEXPR
-    _Bit_reference() _GLIBCXX_NOEXCEPT : _M_p(0), _M_mask(0) { }
-
+  public:
 #if __cplusplus >= 201103L
     _Bit_reference(const _Bit_reference&) = default;
 #endif

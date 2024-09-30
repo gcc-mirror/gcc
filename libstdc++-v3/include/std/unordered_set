@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_UNORDERED_SET
 #define _GLIBCXX_UNORDERED_SET 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // containers
 
@@ -46,6 +48,7 @@
 # include <debug/unordered_set>
 #endif
 
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_generic_unordered_lookup
 #define __glibcxx_want_node_extract

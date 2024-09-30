@@ -32,7 +32,9 @@
 #ifndef _VALARRAY_ARRAY_H
 #define _VALARRAY_ARRAY_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>

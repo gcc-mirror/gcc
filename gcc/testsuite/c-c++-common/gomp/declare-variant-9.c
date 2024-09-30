@@ -7,7 +7,7 @@ void f01 (void);
 #pragma omp declare variant (f01) match (device={isa("avx512f",avx512bw)})
 void f02 (void);
 void f03 (void);
-#pragma omp declare variant (f03) match (device={kind(any),arch(x86_64),isa("avx512f","avx512bw")})
+#pragma omp declare variant (f03) match (device={arch(x86_64),isa("avx512f","avx512bw")})
 void f04 (void);
 void f05 (void);
 #pragma omp declare variant (f05) match (device={kind(gpu)})
@@ -28,7 +28,7 @@ void f15 (void);
 #pragma omp declare variant (f15) match (device={isa(sse4,ssse3),arch(i386)})
 void f16 (void);
 void f17 (void);
-#pragma omp declare variant (f17) match (device={kind("any","fpga")})
+#pragma omp declare variant (f17) match (device={kind("fpga")})
 void f18 (void);
 
 void

@@ -48,10 +48,7 @@ get_bitmask_from_range (tree type,
     }
 
   wide_int xorv = min ^ max;
-
-  if (xorv != 0)
-    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-
+  xorv = wi::mask (prec - wi::clz (xorv), false, prec);
   return irange_bitmask (wi::zero (prec), min | xorv);
 }
 

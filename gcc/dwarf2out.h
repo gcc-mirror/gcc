@@ -37,8 +37,7 @@ typedef struct dw_wide_int *dw_wide_int_ptr;
    Information instructions.  The register number, offset
    and address fields are provided as possible operands;
    their use is selected by the opcode field.  */
-
-enum dw_cfi_oprnd_type {
+enum dw_cfi_oprnd_type: int {
   dw_cfi_oprnd_unused,
   dw_cfi_oprnd_reg_num,
   dw_cfi_oprnd_offset,
@@ -235,6 +234,43 @@ struct GTY(()) dw_discr_value {
 
 struct addr_table_entry;
 
+typedef unsigned int var_loc_view;
+
+/* Location lists are ranges + location descriptions for that range,
+   so you can track variables that are in different places over
+   their entire life.  */
+typedef struct GTY(()) dw_loc_list_struct {
+  dw_loc_list_ref dw_loc_next;
+  const char *begin; /* Label and addr_entry for start of range */
+  addr_table_entry *begin_entry;
+  const char *end;  /* Label for end of range */
+  addr_table_entry *end_entry;
+  char *ll_symbol; /* Label for beginning of location list.
+		      Only on head of list.  */
+  char *vl_symbol; /* Label for beginning of view list.  Ditto.  */
+  const char *section; /* Section this loclist is relative to */
+  dw_loc_descr_ref expr;
+  var_loc_view vbegin, vend;
+  hashval_t hash;
+  /* True if all addresses in this and subsequent lists are known to be
+     resolved.  */
+  bool resolved_addr;
+  /* True if this list has been replaced by dw_loc_next.  */
+  bool replaced;
+  /* True if it has been emitted into .debug_loc* / .debug_loclists*
+     section.  */
+  unsigned char emitted : 1;
+  /* True if hash field is index rather than hash value.  */
+  unsigned char num_assigned : 1;
+  /* True if .debug_loclists.dwo offset has been emitted for it already.  */
+  unsigned char offset_emitted : 1;
+  /* True if note_variable_value_in_expr has been called on it.  */
+  unsigned char noted_variable_value : 1;
+  /* True if the range should be emitted even if begin and end
+     are the same.  */
+  bool force;
+} dw_loc_list_node;
+
 /* The dw_val_node describes an attribute's value, as it is
    represented internally.  */
 
@@ -368,12 +404,10 @@ extern void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 extern GTY(()) cfi_vec cie_cfi_vec;
 
 /* Interface from dwarf2*.c to the rest of the compiler.  */
-extern enum dw_cfi_oprnd_type dw_cfi_oprnd1_desc
-  (enum dwarf_call_frame_info cfi);
-extern enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc
-  (enum dwarf_call_frame_info cfi);
+extern enum dw_cfi_oprnd_type dw_cfi_oprnd1_desc (dwarf_call_frame_info cfi);
+extern enum dw_cfi_oprnd_type dw_cfi_oprnd2_desc (dwarf_call_frame_info cfi);
 
-extern void output_cfi_directive (FILE *f, struct dw_cfi_node *cfi);
+extern void output_cfi_directive (FILE *f, dw_cfi_ref cfi);
 
 extern void dwarf2out_emit_cfi (dw_cfi_ref cfi);
 
@@ -485,6 +519,7 @@ extern dw_die_ref lookup_type_die (tree);
 
 extern dw_die_ref dw_get_die_child (dw_die_ref);
 extern dw_die_ref dw_get_die_sib (dw_die_ref);
+extern dw_die_ref dw_get_die_parent (dw_die_ref);
 extern enum dwarf_tag dw_get_die_tag (dw_die_ref);
 
 /* Data about a single source file.  */

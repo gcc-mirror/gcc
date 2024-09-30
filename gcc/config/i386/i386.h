@@ -430,6 +430,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH_SOFLAGS]
 #define TARGET_FUSE_ALU_AND_BRANCH \
 	ix86_tune_features[X86_TUNE_FUSE_ALU_AND_BRANCH]
+#define TARGET_FUSE_MOV_AND_ALU \
+	ix86_tune_features[X86_TUNE_FUSE_MOV_AND_ALU]
 #define TARGET_OPT_AGU ix86_tune_features[X86_TUNE_OPT_AGU]
 #define TARGET_AVOID_LEA_FOR_ADDR \
 	ix86_tune_features[X86_TUNE_AVOID_LEA_FOR_ADDR]
@@ -897,7 +899,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    and give entire struct the alignment of an int.  */
 /* Required on the 386 since it doesn't have bit-field insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
+
+#define VECTOR_STORE_FLAG_VALUE(MODE) \
+  (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT ? constm1_rtx : NULL_RTX)
+
 /* Standard register usage.  */
 
 /* This processor has special stack-like registers.  See reg-stack.cc
@@ -2089,9 +2094,9 @@ do {							\
 #define DEBUGGER_REGNO(N) \
   (TARGET_64BIT ? debugger64_register_map[(N)] : debugger_register_map[(N)])
 
-extern int const debugger_register_map[FIRST_PSEUDO_REGISTER];
-extern int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
-extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const debugger_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const debugger64_register_map[FIRST_PSEUDO_REGISTER];
+extern unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
@@ -2424,6 +2429,18 @@ constexpr wide_int_bitmask PTA_CLEARWATERFOREST = PTA_SIERRAFOREST
   | PTA_AVXVNNIINT16 | PTA_SHA512 | PTA_SM3 | PTA_SM4 | PTA_USER_MSR
   | PTA_PREFETCHI;
 constexpr wide_int_bitmask PTA_PANTHERLAKE = PTA_ARROWLAKE_S | PTA_PREFETCHI;
+
+constexpr wide_int_bitmask PTA_BDVER1 = PTA_64BIT | PTA_MMX | PTA_SSE
+  | PTA_SSE2 | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3
+  | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
+  | PTA_XOP | PTA_LWP | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE;
+constexpr wide_int_bitmask PTA_BDVER2 = PTA_BDVER1 | PTA_BMI | PTA_TBM
+  | PTA_F16C | PTA_FMA;
+constexpr wide_int_bitmask PTA_BDVER3 = PTA_BDVER2 | PTA_XSAVEOPT
+  | PTA_FSGSBASE;
+constexpr wide_int_bitmask PTA_BDVER4 = PTA_BDVER3 | PTA_AVX2 | PTA_BMI2
+  | PTA_RDRND | PTA_MOVBE | PTA_MWAITX;
+
 constexpr wide_int_bitmask PTA_ZNVER1 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
   | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2 | PTA_BMI | PTA_BMI2
@@ -2441,13 +2458,21 @@ constexpr wide_int_bitmask PTA_ZNVER4 = PTA_ZNVER3 | PTA_AVX512F | PTA_AVX512DQ
   | PTA_AVX512VNNI | PTA_AVX512BITALG | PTA_AVX512VPOPCNTDQ | PTA_EVEX512;
 constexpr wide_int_bitmask PTA_ZNVER5 = PTA_ZNVER4 | PTA_AVXVNNI
   | PTA_MOVDIRI | PTA_MOVDIR64B | PTA_AVX512VP2INTERSECT | PTA_PREFETCHI;
-constexpr wide_int_bitmask PTA_LUJIAZUI = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
-  | PTA_SSE3 | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_AES
-  | PTA_PCLMUL | PTA_BMI | PTA_BMI2 | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT
-  | PTA_FSGSBASE | PTA_RDRND | PTA_MOVBE | PTA_ADX | PTA_RDSEED | PTA_POPCNT;
 
-constexpr wide_int_bitmask PTA_YONGFENG = PTA_LUJIAZUI | PTA_AVX | PTA_AVX2 | PTA_F16C
-  | PTA_FMA | PTA_SHA | PTA_LZCNT;
+constexpr wide_int_bitmask PTA_BTVER1 = PTA_64BIT | PTA_MMX | PTA_SSE
+  | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 | PTA_SSE4A | PTA_ABM | PTA_CX16
+  | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE;
+constexpr wide_int_bitmask PTA_BTVER2 = PTA_BTVER1 | PTA_SSE4_1 | PTA_SSE4_2
+  | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_BMI | PTA_F16C | PTA_MOVBE
+  | PTA_XSAVEOPT;
+
+constexpr wide_int_bitmask PTA_LUJIAZUI = PTA_64BIT | PTA_MMX | PTA_SSE
+  | PTA_SSE2 | PTA_SSE3 | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+  | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_BMI | PTA_BMI2 | PTA_PRFCHW
+  | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE | PTA_RDRND | PTA_MOVBE
+  | PTA_ADX | PTA_RDSEED | PTA_POPCNT;
+constexpr wide_int_bitmask PTA_YONGFENG = PTA_LUJIAZUI | PTA_AVX | PTA_AVX2
+  | PTA_F16C | PTA_FMA | PTA_SHA | PTA_LZCNT;
 
 #ifndef GENERATOR_FILE
 

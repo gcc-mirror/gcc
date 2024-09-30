@@ -559,6 +559,9 @@
 ;; element modes
 (define_mode_iterator SVE_I_SIMD_DI [SVE_I V2DI])
 
+;; All SVE and Advanced SIMD integer vector modes.
+(define_mode_iterator SVE_VDQ_I [SVE_I VDQ_I])
+
 ;; SVE integer vector modes whose elements are 16 bits or wider.
 (define_mode_iterator SVE_HSDI [VNx8HI VNx4HI VNx2HI
 				VNx4SI VNx2SI
@@ -686,6 +689,7 @@
     UNSPEC_FMINNMV	; Used in aarch64-simd.md.
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
+    UNSPEC_FNEG		; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
@@ -1053,6 +1057,8 @@
     UNSPEC_BFCVTN2     ; Used in aarch64-simd.md.
     UNSPEC_BFCVT       ; Used in aarch64-simd.md.
     UNSPEC_FCVTXN	; Used in aarch64-simd.md.
+    UNSPEC_FAMAX       ; Used in aarch64-simd.md.
+    UNSPEC_FAMIN       ; Used in aarch64-simd.md.
 
     ;; All used in aarch64-sve2.md
     UNSPEC_FCVTN
@@ -2278,6 +2284,8 @@
 			 (VNx32BF "VNx8BI")
 			 (VNx16SI "VNx4BI") (VNx16SF "VNx4BI")
 			 (VNx8DI "VNx2BI") (VNx8DF "VNx2BI")
+			 (V8QI "VNx8BI") (V16QI "VNx16BI")
+			 (V4HI "VNx4BI") (V8HI "VNx8BI") (V2SI "VNx2BI")
 			 (V4SI "VNx4BI") (V2DI "VNx2BI")])
 
 ;; ...and again in lower case.
@@ -4457,3 +4465,13 @@
    (UNSPECV_SET_FPCR "fpcr")])
 
 (define_int_attr bits_etype [(8 "b") (16 "h") (32 "s") (64 "d")])
+
+;; Iterators and attributes for faminmax
+
+(define_int_iterator FAMINMAX_UNS [UNSPEC_FAMAX UNSPEC_FAMIN])
+
+(define_int_attr faminmax_uns_op
+  [(UNSPEC_FAMAX "famax") (UNSPEC_FAMIN "famin")])
+
+(define_code_attr faminmax_op
+  [(smax "famax") (smin "famin")])

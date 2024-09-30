@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jun 24, 2024
+GNAT User's Guide for Native Platforms , Aug 30, 2024
 
 AdaCore
 
@@ -11671,6 +11671,31 @@ Pre’Class, and Post’Class aspects. Also list inherited subtype predicates.
 This switch suppresses listing of inherited aspects.
 @end table
 
+@geindex -gnatw_l (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_l}
+
+`Activate warnings on implicitly limited types.'
+
+This switch causes the compiler trigger warnings on record types that do not
+have a limited keyword but contain a component that is a limited type.
+@end table
+
+@geindex -gnatw_L (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_L}
+
+`Suppress warnings on implicitly limited types.'
+
+This switch suppresses warnings on implicitly limited types.
+@end table
+
 @geindex -gnatwm (gcc)
 
 
@@ -13456,7 +13481,7 @@ in the string after @code{-gnaty}
 then proper indentation is checked, with the digit indicating the
 indentation level required. A value of zero turns off this style check.
 The rule checks that the following constructs start on a column that is
-a multiple of the alignment level:
+one plus a multiple of the alignment level:
 
 
 @itemize *
@@ -13474,10 +13499,10 @@ or body or that completes a compound statement.
 @end itemize
 
 Full line comments must be
-aligned with the @code{--} starting on a column that is a multiple of
+aligned with the @code{--} starting on a column that is one plus a multiple of
 the alignment level, or they may be aligned the same way as the following
 non-blank line (this is useful when full line comments appear in the middle
-of a statement, or they may be aligned with the source line on the previous
+of a statement), or they may be aligned with the source line on the previous
 non-blank line.
 @end table
 

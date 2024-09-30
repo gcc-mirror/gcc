@@ -178,7 +178,7 @@ public:
 
     pretty_printer pp;
     pp_format_decoder (&pp) = default_tree_printer;
-    pp_show_color (&pp) = pp_show_color (global_dc->printer);
+    pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
     bool first = true;
     for (auto iter : escaped_decls)
       {

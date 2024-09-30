@@ -29,9 +29,16 @@
 #ifndef _GLIBCXX_CLIMITS
 #define _GLIBCXX_CLIMITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 
 #include <bits/c++config.h>
 #include_next <limits.h>
+
+#pragma GCC diagnostic pop
 
 #endif

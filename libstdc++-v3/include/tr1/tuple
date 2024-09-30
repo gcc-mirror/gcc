@@ -32,7 +32,12 @@
 #ifndef _GLIBCXX_TR1_TUPLE
 #define _GLIBCXX_TR1_TUPLE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 #include <bits/requires_hosted.h> // TR1
 
@@ -419,10 +424,11 @@ namespace tr1
   namespace
   {
     _Swallow_assign ignore;
-  }; // anonymous namespace
+  } // anonymous namespace
 }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_TR1_TUPLE

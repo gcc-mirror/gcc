@@ -1,6 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 -mno-vsx" } */
 
 /* target/60137, compiler got a 'could not split insn error'.  */

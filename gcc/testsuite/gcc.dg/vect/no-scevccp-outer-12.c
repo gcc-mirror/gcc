@@ -46,5 +46,4 @@ int main (void)
   return 0;
 }
 
-/* Until we support multiple types in the inner loop  */
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" { xfail { ! { aarch64*-*-* riscv*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED." 1 "vect" } } */

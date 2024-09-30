@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-finline-stringops=memcpy -save-temps -g0 -fno-lto" } */
 /* { dg-additional-options "-DRUN_FRACTION=11" { target simulator } } */
+/* { dg-require-effective-target ptr32plus } */
 /* { dg-timeout-factor 2 } */
 
 #include "../memcmp-1.c"

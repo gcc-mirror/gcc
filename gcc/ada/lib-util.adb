@@ -271,8 +271,7 @@ package body Lib.Util is
 
    procedure Write_Info_Str (Val : String) is
    begin
-      Info_Buffer (Info_Buffer_Len + 1 .. Info_Buffer_Len + Val'Length)
-                                                                  := Val;
+      Info_Buffer (Info_Buffer_Len + 1 .. Info_Buffer_Len + Val'Length) := Val;
       Info_Buffer_Len := Info_Buffer_Len + Val'Length;
       Info_Buffer_Col := Info_Buffer_Col + Val'Length;
    end Write_Info_Str;

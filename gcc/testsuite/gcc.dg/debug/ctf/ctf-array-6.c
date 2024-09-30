@@ -1,6 +1,6 @@
 /* CTF generation for multidimensional array.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]+0x2\[\t \]+\[^\n\]*cta_nelems" 1 } } */

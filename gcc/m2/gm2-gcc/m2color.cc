@@ -27,9 +27,11 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 
 char *
-m2color_colorize_start (bool show_color, char *name, unsigned int _name_high)
+m2color_colorize_start (bool show_color, void *name, unsigned int _name_high)
 {
-  return const_cast<char*> (colorize_start (show_color, name, _name_high));
+  return const_cast<char*> (colorize_start (show_color,
+					    reinterpret_cast <char *> (name),
+					    _name_high));
 }
 
 

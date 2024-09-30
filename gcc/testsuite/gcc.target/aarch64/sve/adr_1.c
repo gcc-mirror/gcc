@@ -29,12 +29,10 @@
 
 TEST_ALL (LOOP)
 
-/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b,} 2 } } */
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.b,} 2 } } */
+/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.b,} 4 } } */
 /* { dg-final { scan-assembler-not {\tadr\tz[0-9]+\.b,} } } */
 
-/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.h,} 2 } } */
-/* { dg-final { scan-assembler-times {\tlsl\tz[0-9]+\.h,} 2 } } */
+/* { dg-final { scan-assembler-times {\tadd\tz[0-9]+\.h,} 4 } } */
 /* { dg-final { scan-assembler-not {\tadr\tz[0-9]+\.h,} } } */
 
 /* { dg-final { scan-assembler-not {\tadd\tz[0-9]+\.s,} } } */

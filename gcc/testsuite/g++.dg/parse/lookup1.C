@@ -1,3 +1,4 @@
+// { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } }
 #include <list>
 
 using namespace std;

@@ -36,13 +36,15 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
+#ifndef _GLIBCXX_CSIGNAL
+#define _GLIBCXX_CSIGNAL 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <signal.h>
-
-#ifndef _GLIBCXX_CSIGNAL
-#define _GLIBCXX_CSIGNAL 1
 
 // Get rid of those macros defined in <signal.h> in lieu of real functions.
 #undef raise

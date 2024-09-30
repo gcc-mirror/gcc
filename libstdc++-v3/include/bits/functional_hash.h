@@ -30,7 +30,9 @@
 #ifndef _FUNCTIONAL_HASH_H
 #define _FUNCTIONAL_HASH_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <type_traits>
 #include <bits/hash_bytes.h>

@@ -36,13 +36,15 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
+#ifndef _GLIBCXX_CFLOAT
+#define _GLIBCXX_CFLOAT 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <float.h>
-
-#ifndef _GLIBCXX_CFLOAT
-#define _GLIBCXX_CFLOAT 1
 
 #if __cplusplus >= 201103L
 #  ifndef DECIMAL_DIG

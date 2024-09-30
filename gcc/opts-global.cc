@@ -257,7 +257,7 @@ init_options_once (void)
   initial_lang_mask = lang_hooks.option_lang_mask ();
 
   const bool show_highlight_colors
-    = pp_show_highlight_colors (global_dc->printer);
+    = pp_show_highlight_colors (global_dc->m_printer);
 
   lang_hooks.initialize_diagnostics (global_dc);
   /* ??? Ideally, we should do this earlier and the FEs will override

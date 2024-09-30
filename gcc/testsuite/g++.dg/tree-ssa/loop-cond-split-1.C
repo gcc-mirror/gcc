@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-lsplit-details" } */
+/* { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } } */
 
 #include <string>
 #include <map>

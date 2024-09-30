@@ -7146,7 +7146,6 @@ fi
 # * 'long long'
 # * variadic macros
 # * overlong strings
-# * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
 # In stage 1, disable -Wformat warnings from old GCCs about new % codes
@@ -7170,7 +7169,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 loose_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
+for real_option in -W -Wall -Wno-error=narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -21406,7 +21405,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21409 "configure"
+#line 21408 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21512,7 +21511,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21515 "configure"
+#line 21514 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -30884,22 +30883,22 @@ $as_echo "#define HAVE_AS_MARCH_ZAAMO_ZALRSC 1" >>confdefs.h
 
 fi
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -march=rv32i_zabha support" >&5
-$as_echo_n "checking assembler for -march=rv32i_zabha support... " >&6; }
-if ${gcc_cv_as_riscv_march_zabha+:} false; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -march=rv32i_b support" >&5
+$as_echo_n "checking assembler for -march=rv32i_b support... " >&6; }
+if ${gcc_cv_as_riscv_march_b+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  gcc_cv_as_riscv_march_zabha=no
+  gcc_cv_as_riscv_march_b=no
   if test x$gcc_cv_as != x; then
     $as_echo '' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_zabha -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_b -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
     then
-	gcc_cv_as_riscv_march_zabha=yes
+	gcc_cv_as_riscv_march_b=yes
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -30907,11 +30906,11 @@ else
     rm -f conftest.o conftest.s
   fi
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_riscv_march_zabha" >&5
-$as_echo "$gcc_cv_as_riscv_march_zabha" >&6; }
-if test $gcc_cv_as_riscv_march_zabha = yes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_riscv_march_b" >&5
+$as_echo "$gcc_cv_as_riscv_march_b" >&6; }
+if test $gcc_cv_as_riscv_march_b = yes; then
 
-$as_echo "#define HAVE_AS_MARCH_ZABHA 1" >>confdefs.h
+$as_echo "#define HAVE_AS_MARCH_B 1" >>confdefs.h
 
 fi
 
@@ -31398,7 +31397,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
   | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
-  | visium | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa | ft32)
     insn="nop"
     ;;
   ia64 | s390)

@@ -189,6 +189,7 @@ protected:
   void visit (HIR::ImplBlock &impl) override { rust_unreachable (); }
   void visit (HIR::ExternalStaticItem &item) override { rust_unreachable (); }
   void visit (HIR::ExternalFunctionItem &item) override { rust_unreachable (); }
+  void visit (HIR::ExternalTypeItem &item) override { rust_unreachable (); }
   void visit (HIR::ExternBlock &block) override { rust_unreachable (); }
   void visit (HIR::LiteralPattern &pattern) override { rust_unreachable (); }
   void visit (HIR::IdentifierPattern &pattern) override { rust_unreachable (); }

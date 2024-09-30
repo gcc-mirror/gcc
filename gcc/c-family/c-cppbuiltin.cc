@@ -1034,7 +1034,11 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_fold_expressions=201603L");
 	  if (cxx_dialect <= cxx17)
 	    cpp_define (pfile, "__cpp_nontype_template_args=201411L");
-	  cpp_define (pfile, "__cpp_range_based_for=201603L");
+	  if (!flag_range_for_ext_temps)
+	    cpp_define (pfile, "__cpp_range_based_for=201603L");
+          else
+	    /* This is the C++23 or -std=c++17 -frange-for-ext-temps value.  */
+	    cpp_define (pfile, "__cpp_range_based_for=202211L");
 	  if (cxx_dialect <= cxx17)
 	    cpp_define (pfile, "__cpp_constexpr=201603L");
 	  cpp_define (pfile, "__cpp_if_constexpr=201606L");
@@ -1091,7 +1095,7 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect > cxx23)
 	{
 	  /* Set feature test macros for C++26.  */
-	  cpp_define (pfile, "__cpp_constexpr=202306L");
+	  cpp_define (pfile, "__cpp_constexpr=202406L");
 	  cpp_define (pfile, "__cpp_static_assert=202306L");
 	  cpp_define (pfile, "__cpp_placeholder_variables=202306L");
 	  cpp_define (pfile, "__cpp_structured_bindings=202403L");

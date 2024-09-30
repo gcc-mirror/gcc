@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include "../coro.h"
 #include "../coro1-ret-int-yield-int.h"

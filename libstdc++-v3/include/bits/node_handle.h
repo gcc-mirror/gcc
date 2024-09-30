@@ -31,7 +31,9 @@
 #ifndef _NODE_HANDLE
 #define _NODE_HANDLE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/version.h>
 

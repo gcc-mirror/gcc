@@ -2,6 +2,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_int_mult } */
 /* { dg-additional-options "-std=c++11 -O3 -fopt-info-vec-optimized -fdump-tree-original -fdump-tree-gimple" } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 
 /* PR other/33426 */
 /* Testing whether #pragma ivdep is working.  */

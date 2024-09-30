@@ -5,8 +5,14 @@ template <typename a> a b(a &&);
 template <typename c> struct d { c e; };
 template <typename f, typename> struct coroutine_traits : f {};
 template <typename = void> struct coroutine_handle;
-template <> struct coroutine_handle<> {};
-template <typename> struct coroutine_handle : coroutine_handle<> {};
+template <> struct coroutine_handle<> {
+  static coroutine_handle from_address(void*);
+  void* address();
+};
+template <typename> struct coroutine_handle : coroutine_handle<> {
+  static coroutine_handle from_address(void*);
+  void* address();
+};
 struct g {};
 } // namespace std
 
@@ -33,9 +39,10 @@ public:
   std::g initial_suspend();
   l final_suspend() noexcept;
 };
+class n;
 class m : public j {
 public:
-  void get_return_object();
+  n get_return_object();
   void unhandled_exception();
 };
 class n {

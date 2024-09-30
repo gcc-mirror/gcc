@@ -30,11 +30,16 @@
 #ifndef _OSTREAM_INSERT_H
 #define _OSTREAM_INSERT_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <iosfwd>
 #include <bits/cxxabi_forced.h>
 #include <bits/exception_defines.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -131,4 +136,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#pragma GCC diagnostic pop
 #endif /* _OSTREAM_INSERT_H */

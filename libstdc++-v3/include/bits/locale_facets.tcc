@@ -30,7 +30,11 @@
 #ifndef _LOCALE_FACETS_TCC
 #define _LOCALE_FACETS_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -758,9 +762,12 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       const fmtflags __fmt = __io.flags();
       __io.flags((__fmt & ~ios_base::basefield) | ios_base::hex);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       typedef __gnu_cxx::__conditional_type<(sizeof(void*)
 					     <= sizeof(unsigned long)),
 	unsigned long, unsigned long long>::__type _UIntPtrType;       
+#pragma GCC diagnostic pop
 
       _UIntPtrType __ul;
       __beg = _M_extract_int(__beg, __end, __io, __err, __ul);
@@ -1202,9 +1209,12 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 					 | ios_base::uppercase);
       __io.flags((__flags & __fmt) | (ios_base::hex | ios_base::showbase));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       typedef __gnu_cxx::__conditional_type<(sizeof(const void*)
 					     <= sizeof(unsigned long)),
 	unsigned long, unsigned long long>::__type _UIntPtrType;       
+#pragma GCC diagnostic pop
 
       __s = _M_insert_int(__s, __io, __fill,
 			  reinterpret_cast<_UIntPtrType>(__v));
@@ -1433,4 +1443,5 @@ _GLIBCXX_END_NAMESPACE_LDBL
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
+#pragma GCC diagnostic pop
 #endif

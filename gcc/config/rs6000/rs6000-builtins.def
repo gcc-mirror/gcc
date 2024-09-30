@@ -963,6 +963,9 @@
   const vss __builtin_altivec_vsldoi_8hi (vss, vss, const int<4>);
     VSLDOI_8HI altivec_vsldoi_v8hi {}
 
+  const vsq __builtin_altivec_vsldoi_v1ti (vsq, vsq, const int<4>);
+    VSLDOI_1TI altivec_vsldoi_v1ti {}
+
   const vss __builtin_altivec_vslh (vss, vus);
     VSLH vashlv8hi3 {}
 
@@ -1799,6 +1802,9 @@
   const vsll __builtin_vsx_xxsldwi_2di (vsll, vsll, const int<2>);
     XXSLDWI_2DI vsx_xxsldwi_v2di {}
 
+  const vsq __builtin_vsx_xxsldwi_v1ti (vsq, vsq, const int<2>);
+    XXSLDWI_1TI vsx_xxsldwi_v1ti {}
+
   const vf __builtin_vsx_xxsldwi_4sf (vf, vf, const int<2>);
     XXSLDWI_4SF vsx_xxsldwi_v4sf {}
 
@@ -2345,13 +2351,13 @@
     VFIRSTMISMATCHOREOSINDEX_V4SI first_mismatch_or_eos_index_v4si {}
 
   const vsc __builtin_altivec_vadub (vsc, vsc);
-    VADUB vaduv16qi3 {}
+    VADUB uabdv16qi3 {}
 
   const vss __builtin_altivec_vaduh (vss, vss);
-    VADUH vaduv8hi3 {}
+    VADUH uabdv8hi3 {}
 
   const vsi __builtin_altivec_vaduw (vsi, vsi);
-    VADUW vaduv4si3 {}
+    VADUW uabdv4si3 {}
 
   const vsll __builtin_altivec_vbpermd (vsll, vsc);
     VBPERMD altivec_vbpermd {}
@@ -2548,11 +2554,11 @@
 
   const signed int \
       __builtin_vsx_scalar_test_data_class_dp (double, const int<7>);
-    VSTDCDP xststdcdp {}
+    VSTDCDP xststdc_df {}
 
   const signed int \
       __builtin_vsx_scalar_test_data_class_sp (float, const int<7>);
-    VSTDCSP xststdcsp {}
+    VSTDCSP xststdc_sf {}
 
   const signed int __builtin_vsx_scalar_test_neg_dp (double);
     VSTDCNDP xststdcnegdp {}
@@ -2721,7 +2727,7 @@
 
   const signed int __builtin_vsx_scalar_test_data_class_qp (_Float128, \
                                                             const int<7>);
-    VSTDCQP xststdcqp_kf {}
+    VSTDCQP xststdc_kf {}
 
   const signed int __builtin_vsx_scalar_test_neg_qp (_Float128);
     VSTDCNQP xststdcnegqp_kf {}
@@ -3267,6 +3273,9 @@
   const vss __builtin_altivec_vsldb_v8hi (vss, vss, const int<3>);
     VSLDB_V8HI vsldb_v8hi {}
 
+  const vsq __builtin_altivec_vsldb_v1ti (vsq, vsq, const int<3>);
+    VSLDB_V1TI vsldb_v1ti {}
+
   const vsq __builtin_altivec_vslq (vsq, vuq);
     VSLQ vashlv1ti3 {}
 
@@ -3284,6 +3293,9 @@
 
   const vss __builtin_altivec_vsrdb_v8hi (vss, vss, const int<3>);
     VSRDB_V8HI vsrdb_v8hi {}
+
+  const vsq __builtin_altivec_vsrdb_v1ti (vsq, vsq, const int<3>);
+    VSRDB_V1TI vsrdb_v1ti {}
 
   const vsq __builtin_altivec_vsrq (vsq, vuq);
     VSRQ vlshrv1ti3 {}

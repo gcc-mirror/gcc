@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // Bug: g++ doesn't find the conversion from ostream_withassign to ostream.
 
 #include <iostream>

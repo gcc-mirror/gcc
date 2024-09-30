@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 // Test that we copy simple parms correctly by value, reference or
 // rvalue reference.

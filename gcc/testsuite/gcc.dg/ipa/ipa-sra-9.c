@@ -7,6 +7,8 @@ typedef struct S {
   unsigned a, b, c;
 } SS;
 
+typedef SS __attribute__((aligned(1))) SSS;
+
 typedef struct U {
   SS s[2];
 } UU;
@@ -14,7 +16,7 @@ typedef struct U {
 typedef UU __attribute__((aligned(1))) UUU;
 
 static unsigned int __attribute__ ((noinline))
-get_a (SS s)
+get_a (SSS s)
 {
   return s.a;
 };

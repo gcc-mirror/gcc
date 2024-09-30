@@ -585,7 +585,6 @@ AC_SUBST(aliasing_flags)
 # * 'long long'
 # * variadic macros
 # * overlong strings
-# * C++11 narrowing conversions in { }
 # So, we only use -pedantic if we can disable those warnings.
 
 # In stage 1, disable -Wformat warnings from old GCCs about new % codes
@@ -595,7 +594,7 @@ AC_ARG_ENABLE(build-format-warnings,
 AS_IF([test $enable_build_format_warnings = no],
       [wf_opt=-Wno-format],[wf_opt=])
 ACX_PROG_CXX_WARNING_OPTS(
-	m4_quote(m4_do([-W -Wall -Wno-narrowing -Wwrite-strings ],
+	m4_quote(m4_do([-W -Wall -Wno-error=narrowing -Wwrite-strings ],
 		       [-Wcast-qual $wf_opt])),
 		       [loose_warn])
 ACX_PROG_CC_WARNING_OPTS(
@@ -5461,11 +5460,11 @@ configured with --enable-newlib-nano-formatted-io.])
       [-march=rv32i_zaamo_zalrsc],,,
       [AC_DEFINE(HAVE_AS_MARCH_ZAAMO_ZALRSC, 1,
 		 [Define if the assembler understands -march=rv*_zaamo_zalrsc.])])
-    gcc_GAS_CHECK_FEATURE([-march=rv32i_zabha support],
-      gcc_cv_as_riscv_march_zabha,
-      [-march=rv32i_zabha],,,
-      [AC_DEFINE(HAVE_AS_MARCH_ZABHA, 1,
-		 [Define if the assembler understands -march=rv*_zabha.])])
+    gcc_GAS_CHECK_FEATURE([-march=rv32i_b support],
+      gcc_cv_as_riscv_march_b,
+      [-march=rv32i_b],,,
+      [AC_DEFINE(HAVE_AS_MARCH_B, 1,
+		 [Define if the assembler understands -march=rv*_b.])])
     ;;
     loongarch*-*-*)
     gcc_GAS_CHECK_FEATURE([.dtprelword support],
@@ -5610,7 +5609,7 @@ esac
 case "$cpu_type" in
   aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
   | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
-  | visium | xstormy16 | xtensa)
+  | visium | xstormy16 | xtensa | ft32)
     insn="nop"
     ;;
   ia64 | s390)

@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic.h"
 #include "diagnostic-metadata.h"
 #include "diagnostic-path.h"
+#include "diagnostic-format.h"
 #include "json.h"
 #include "selftest.h"
 #include "logical-location.h"
@@ -47,14 +48,13 @@ public:
     m_cur_children_array = nullptr;
   }
   void
-  on_begin_diagnostic (const diagnostic_info &) final override
+  on_report_diagnostic (const diagnostic_info &diagnostic,
+			diagnostic_t orig_diag_kind) final override;
+  void on_diagram (const diagnostic_diagram &) final override
   {
     /* No-op.  */
   }
-  void
-  on_end_diagnostic (const diagnostic_info &diagnostic,
-		     diagnostic_t orig_diag_kind) final override;
-  void on_diagram (const diagnostic_diagram &) final override
+  void after_diagnostic (const diagnostic_info &) final override
   {
     /* No-op.  */
   }
@@ -225,14 +225,17 @@ make_json_for_path (diagnostic_context &context,
 }
 
 
-/* Implementation of "on_end_diagnostic" vfunc for JSON output.
+/* Implementation of "on_report_diagnostic" vfunc for JSON output.
    Generate a JSON object for DIAGNOSTIC, and store for output
    within current diagnostic group.  */
 
 void
-json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
-				       diagnostic_t orig_diag_kind)
+json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
+					  diagnostic_t orig_diag_kind)
 {
+  pretty_printer *const pp = get_printer ();
+  pp_output_formatted_text (pp, m_context.get_urlifier ());
+
   json::object *diag_obj = new json::object ();
 
   /* Get "kind" of diagnostic.  */
@@ -250,10 +253,10 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
   }
 
   // FIXME: encoding of the message (json::string requires UTF-8)
-  diag_obj->set_string ("message", pp_formatted_text (m_context.printer));
-  pp_clear_output_area (m_context.printer);
+  diag_obj->set_string ("message", pp_formatted_text (pp));
+  pp_clear_output_area (pp);
 
-  if (char *option_text = m_context.make_option_name (diagnostic.option_index,
+  if (char *option_text = m_context.make_option_name (diagnostic.option_id,
 						      orig_diag_kind,
 						      diagnostic.kind))
     {
@@ -261,7 +264,7 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
       free (option_text);
     }
 
-  if (char *option_url = m_context.make_option_url (diagnostic.option_index))
+  if (char *option_url = m_context.make_option_url (diagnostic.option_id))
     {
       diag_obj->set_string ("option_url", option_url);
       free (option_url);
@@ -395,15 +398,8 @@ diagnostic_output_format_init_json (diagnostic_context &context)
   /* Suppress normal textual path output.  */
   context.set_path_format (DPF_NONE);
 
-  /* The metadata is handled in JSON format, rather than as text.  */
-  context.set_show_cwe (false);
-  context.set_show_rules (false);
-
-  /* The option is handled in JSON format, rather than as text.  */
-  context.set_show_option_requested (false);
-
   /* Don't colorize the text.  */
-  pp_show_color (context.printer) = false;
+  pp_show_color (context.m_printer) = false;
   context.set_show_highlight_colors (false);
 }
 

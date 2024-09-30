@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -162,7 +163,10 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info, tree scalar_type)
       if (gimple_assign_cast_p (assign)
 	  || gimple_assign_rhs_code (assign) == DOT_PROD_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_SUM_EXPR
+	  || gimple_assign_rhs_code (assign) == SAD_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_PLUS_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_MINUS_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_LSHIFT_EXPR
 	  || gimple_assign_rhs_code (assign) == FLOAT_EXPR)
 	{

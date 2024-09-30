@@ -1,4 +1,5 @@
 //  { dg-do run }
+//  { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 #include "../coro.h"
 
 #include <stdexcept>

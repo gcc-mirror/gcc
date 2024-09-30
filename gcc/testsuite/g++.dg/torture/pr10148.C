@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 #include <assert.h>

@@ -6,7 +6,10 @@
 #  undef __STDC_CONSTANT_MACROS
 #  define __STDC_CONSTANT_MACROS
 # endif
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 # include_next <stdint.h>
+#pragma GCC diagnostic pop
 #else
 # include "stdint-gcc.h"
 #endif

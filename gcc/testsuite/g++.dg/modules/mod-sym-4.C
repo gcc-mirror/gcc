@@ -12,9 +12,9 @@ static void addone () {}
 static int x = 5;
 
 namespace {
-// { dg-final { scan-assembler {_ZN12_GLOBAL__N_14frobEv:} } }
+// { dg-final { scan-assembler {_ZN12_GLOBAL__N_1L4frobEv:} } }
 void frob () {}
-// { dg-final { scan-assembler {_ZN12_GLOBAL__N_11yE:} } }
+// { dg-final { scan-assembler {_ZN12_GLOBAL__N_1L1yE:} } }
 int y = 2;
 struct Bill
 {

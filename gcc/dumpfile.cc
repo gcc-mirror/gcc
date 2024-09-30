@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo-emit-json.h"
 #include "stringpool.h" /* for get_identifier.  */
 #include "spellcheck.h"
+#include "make-unique.h"
+#include "pretty-print-format-impl.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -628,7 +630,7 @@ dump_context::dump_loc_immediate (dump_flags_t dump_kind,
 
 /* Make an item for the given dump call, equivalent to print_gimple_stmt.  */
 
-static optinfo_item *
+static std::unique_ptr<optinfo_item>
 make_item_for_dump_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
 {
   pretty_printer pp;
@@ -636,9 +638,10 @@ make_item_for_dump_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
   pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
   pp_newline (&pp);
 
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_GIMPLE, gimple_location (stmt),
-			xstrdup (pp_formatted_text (&pp)));
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
+				 gimple_location (stmt),
+				 xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -650,17 +653,15 @@ dump_context::dump_gimple_stmt (const dump_metadata_t &metadata,
 				dump_flags_t extra_dump_flags,
 				gimple *gs, int spc)
 {
-  optinfo_item *item
+  auto item
     = make_item_for_dump_gimple_stmt (gs, spc, dump_flags | extra_dump_flags);
-  emit_item (item, metadata.get_dump_flags ());
+  emit_item (*item.get (), metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      info.add_item (item);
+      info.add_item (std::move (item));
     }
-  else
-    delete item;
 }
 
 /* Similar to dump_gimple_stmt, except additionally print source location.  */
@@ -677,7 +678,7 @@ dump_context::dump_gimple_stmt_loc (const dump_metadata_t &metadata,
 
 /* Make an item for the given dump call, equivalent to print_gimple_expr.  */
 
-static optinfo_item *
+static std::unique_ptr<optinfo_item>
 make_item_for_dump_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
 {
   dump_flags |= TDF_RHS_ONLY;
@@ -685,9 +686,10 @@ make_item_for_dump_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
   pp_needs_newline (&pp) = true;
   pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
 
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_GIMPLE, gimple_location (stmt),
-			xstrdup (pp_formatted_text (&pp)));
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
+				 gimple_location (stmt),
+				 xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -700,17 +702,15 @@ dump_context::dump_gimple_expr (const dump_metadata_t &metadata,
 				dump_flags_t extra_dump_flags,
 				gimple *gs, int spc)
 {
-  optinfo_item *item
+  std::unique_ptr<optinfo_item> item
     = make_item_for_dump_gimple_expr (gs, spc, dump_flags | extra_dump_flags);
-  emit_item (item, metadata.get_dump_flags ());
+  emit_item (*item.get (), metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      info.add_item (item);
+      info.add_item (std::move (item));
     }
-  else
-    delete item;
 }
 
 /* Similar to dump_gimple_expr, except additionally print source location.  */
@@ -728,7 +728,7 @@ dump_context::dump_gimple_expr_loc (const dump_metadata_t &metadata,
 
 /* Make an item for the given dump call, equivalent to print_generic_expr.  */
 
-static optinfo_item *
+static std::unique_ptr<optinfo_item>
 make_item_for_dump_generic_expr (tree node, dump_flags_t dump_flags)
 {
   pretty_printer pp;
@@ -740,9 +740,9 @@ make_item_for_dump_generic_expr (tree node, dump_flags_t dump_flags)
   if (EXPR_HAS_LOCATION (node))
     loc = EXPR_LOCATION (node);
 
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TREE, loc,
-			xstrdup (pp_formatted_text (&pp)));
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TREE, loc,
+				 xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -754,17 +754,15 @@ dump_context::dump_generic_expr (const dump_metadata_t &metadata,
 				 dump_flags_t extra_dump_flags,
 				 tree t)
 {
-  optinfo_item *item
+  std::unique_ptr<optinfo_item> item
     = make_item_for_dump_generic_expr (t, dump_flags | extra_dump_flags);
-  emit_item (item, metadata.get_dump_flags ());
+  emit_item (*item.get (), metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      info.add_item (item);
+      info.add_item (std::move (item));
     }
-  else
-    delete item;
 }
 
 
@@ -783,123 +781,75 @@ dump_context::dump_generic_expr_loc (const dump_metadata_t &metadata,
 
 /* Make an item for the given dump call.  */
 
-static optinfo_item *
+static std::unique_ptr<optinfo_item>
 make_item_for_dump_symtab_node (symtab_node *node)
 {
   location_t loc = DECL_SOURCE_LOCATION (node->decl);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
-			xstrdup (node->dump_name ()));
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
+				 xstrdup (node->dump_name ()));
   return item;
 }
+
+struct wrapped_optinfo_item : public pp_token_custom_data::value
+{
+  wrapped_optinfo_item (std::unique_ptr<optinfo_item> item)
+  : m_optinfo_item (std::move (item))
+  {
+    gcc_assert (m_optinfo_item.get ());
+  }
+
+  void dump (FILE *out) const final override
+  {
+    fprintf (out, "OPTINFO(\"%s\")", m_optinfo_item->get_text ());
+  }
+
+  bool as_standard_tokens (pp_token_list &) final override
+  {
+    /* Keep as a custom token.  */
+    return false;
+  }
+
+  std::unique_ptr<optinfo_item> m_optinfo_item;
+};
 
 /* dump_pretty_printer's ctor.  */
 
 dump_pretty_printer::dump_pretty_printer (dump_context *context,
 					  dump_flags_t dump_kind)
-: pretty_printer (), m_context (context), m_dump_kind (dump_kind),
-  m_stashed_items ()
+: pretty_printer (),
+  m_context (context),
+  m_dump_kind (dump_kind),
+  m_token_printer (*this)
 {
   pp_format_decoder (this) = format_decoder_cb;
-}
-
-/* Phase 3 of formatting; compare with pp_output_formatted_text.
-
-   Emit optinfo_item instances for the various formatted chunks from phases
-   1 and 2 (i.e. pp_format).
-
-   Some chunks may already have had their items built (during decode_format).
-   These chunks have been stashed into m_stashed_items; we emit them here.
-
-   For all other purely textual chunks, they are printed into
-   buffer->formatted_obstack, and then emitted as a textual optinfo_item.
-   This consolidates multiple adjacent text chunks into a single text
-   optinfo_item.  */
-
-void
-dump_pretty_printer::emit_items (optinfo *dest)
-{
-  output_buffer *buffer = pp_buffer (this);
-  chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char * const *args = chunk_array->get_args ();
-
-  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
-  gcc_assert (buffer->line_length == 0);
-
-  unsigned stashed_item_idx = 0;
-  for (unsigned chunk = 0; args[chunk]; chunk++)
-    {
-      if (stashed_item_idx < m_stashed_items.length ()
-	  && args[chunk] == *m_stashed_items[stashed_item_idx].buffer_ptr)
-	{
-	  emit_any_pending_textual_chunks (dest);
-	  /* This chunk has a stashed item: use it.  */
-	  emit_item (m_stashed_items[stashed_item_idx++].item, dest);
-	}
-      else
-	/* This chunk is purely textual.  Print it (to
-	   buffer->formatted_obstack), so that we can consolidate adjacent
-	   chunks into one textual optinfo_item.  */
-	pp_string (this, args[chunk]);
-    }
-
-  emit_any_pending_textual_chunks (dest);
-
-  /* Ensure that we consumed all of stashed_items.  */
-  gcc_assert (stashed_item_idx == m_stashed_items.length ());
-
-  chunk_array->pop_from_output_buffer (*buffer);
-}
-
-/* Subroutine of dump_pretty_printer::emit_items
-   for consolidating multiple adjacent pure-text chunks into single
-   optinfo_items (in phase 3).  */
-
-void
-dump_pretty_printer::emit_any_pending_textual_chunks (optinfo *dest)
-{
-  output_buffer *const buffer = pp_buffer (this);
-  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
-
-  /* Don't emit an item if the pending text is empty.  */
-  if (output_buffer_last_position_in_text (buffer) == NULL)
-    return;
-
-  char *formatted_text = xstrdup (pp_formatted_text (this));
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-			formatted_text);
-  emit_item (item, dest);
-
-  /* Clear the pending text by unwinding formatted_text back to the start
-     of the buffer (without deallocating).  */
-  obstack_free (&buffer->formatted_obstack,
-		buffer->formatted_obstack.object_base);
+  set_token_printer (&m_token_printer);
 }
 
 /* Emit ITEM and take ownership of it.  If DEST is non-NULL, add ITEM
    to DEST; otherwise delete ITEM.  */
 
 void
-dump_pretty_printer::emit_item (optinfo_item *item, optinfo *dest)
+dump_pretty_printer::emit_item (std::unique_ptr<optinfo_item> item,
+				optinfo *dest)
 {
-  m_context->emit_item (item, m_dump_kind);
+  m_context->emit_item (*item.get (), m_dump_kind);
   if (dest)
-    dest->add_item (item);
-  else
-    delete item;
+    dest->add_item (std::move (item));
 }
 
-/* Record that ITEM (generated in phase 2 of formatting) is to be used for
-   the chunk at BUFFER_PTR in phase 3 (by emit_items).  */
+/* Append a custom pp_token for ITEM (generated in phase 2 of formatting)
+   into FORMATTTED_TOK_LIST, so that it can be emitted in phase 2.  */
 
 void
-dump_pretty_printer::stash_item (const char **buffer_ptr, optinfo_item *item)
+dump_pretty_printer::stash_item (pp_token_list &formatted_tok_list,
+				 std::unique_ptr<optinfo_item> item)
 {
-  gcc_assert (buffer_ptr);
-  gcc_assert (item);
+  gcc_assert (item.get ());
 
-  m_stashed_items.safe_push (stashed_item (buffer_ptr, item));
+  auto custom_data
+    = ::make_unique<wrapped_optinfo_item> (std::move (item));
+  formatted_tok_list.push_back<pp_token_custom_data> (std::move (custom_data));
 }
 
 /* pp_format_decoder callback for dump_pretty_printer, and thus for
@@ -912,10 +862,10 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
 					const char *spec, int /*precision*/,
 					bool /*wide*/, bool /*set_locus*/,
 					bool /*verbose*/, bool */*quoted*/,
-					const char **buffer_ptr)
+					pp_token_list &formatted_tok_list)
 {
   dump_pretty_printer *opp = static_cast <dump_pretty_printer *> (pp);
-  return opp->decode_format (text, spec, buffer_ptr);
+  return opp->decode_format (text, spec, formatted_tok_list);
 }
 
 /* Format decoder for dump_pretty_printer, and thus for dump_printf and
@@ -942,7 +892,7 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
 
 bool
 dump_pretty_printer::decode_format (text_info *text, const char *spec,
-				       const char **buffer_ptr)
+				    pp_token_list &formatted_tok_list)
 {
   /* Various format codes that imply making an optinfo_item and stashed it
      for later use (to capture metadata, rather than plain text).  */
@@ -953,8 +903,8 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 	cgraph_node *node = va_arg (*text->m_args_ptr, cgraph_node *);
 
 	/* Make an item for the node, and stash it.  */
-	optinfo_item *item = make_item_for_dump_symtab_node (node);
-	stash_item (buffer_ptr, item);
+	auto item = make_item_for_dump_symtab_node (node);
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -963,8 +913,8 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 	gimple *stmt = va_arg (*text->m_args_ptr, gimple *);
 
 	/* Make an item for the stmt, and stash it.  */
-	optinfo_item *item = make_item_for_dump_gimple_expr (stmt, 0, TDF_SLIM);
-	stash_item (buffer_ptr, item);
+	auto item = make_item_for_dump_gimple_expr (stmt, 0, TDF_SLIM);
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -973,8 +923,8 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 	gimple *stmt = va_arg (*text->m_args_ptr, gimple *);
 
 	/* Make an item for the stmt, and stash it.  */
-	optinfo_item *item = make_item_for_dump_gimple_stmt (stmt, 0, TDF_SLIM);
-	stash_item (buffer_ptr, item);
+	auto item = make_item_for_dump_gimple_stmt (stmt, 0, TDF_SLIM);
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -983,8 +933,8 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
 	tree t = va_arg (*text->m_args_ptr, tree);
 
 	/* Make an item for the tree, and stash it.  */
-	optinfo_item *item = make_item_for_dump_generic_expr (t, TDF_SLIM);
-	stash_item (buffer_ptr, item);
+	auto item = make_item_for_dump_generic_expr (t, TDF_SLIM);
+	stash_item (formatted_tok_list, std::move (item));
 	return true;
       }
 
@@ -993,10 +943,92 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
     }
 }
 
+void
+dump_pretty_printer::custom_token_printer::
+print_tokens (pretty_printer *pp,
+	      const pp_token_list &tokens)
+{
+  /* Accumulate text whilst emitting items.  */
+  for (auto iter = tokens.m_first; iter; iter = iter->m_next)
+    switch (iter->m_kind)
+      {
+      default:
+	gcc_unreachable ();
+
+      case pp_token::kind::text:
+	{
+	  pp_token_text *sub = as_a <pp_token_text *> (iter);
+	  gcc_assert (sub->m_value.get ());
+	  pp_string (pp, sub->m_value.get ());
+	}
+	break;
+
+      case pp_token::kind::begin_color:
+      case pp_token::kind::end_color:
+	/* No-op for dumpfiles.  */
+	break;
+
+      case pp_token::kind::begin_quote:
+	pp_begin_quote (pp, pp_show_color (pp));
+	break;
+      case pp_token::kind::end_quote:
+	pp_end_quote (pp, pp_show_color (pp));
+	break;
+
+      case pp_token::kind::begin_url:
+      case pp_token::kind::end_url:
+	/* No-op for dumpfiles.  */
+	break;
+
+      case pp_token::kind::custom_data:
+	{
+	  emit_any_pending_textual_chunks ();
+	  pp_token_custom_data *sub = as_a <pp_token_custom_data *> (iter);
+	  gcc_assert (sub->m_value.get ());
+	  wrapped_optinfo_item *custom_data
+	    = static_cast<wrapped_optinfo_item *> (sub->m_value.get ());
+	  m_dump_pp.emit_item (std::move (custom_data->m_optinfo_item),
+			       m_optinfo);
+	}
+	break;
+      }
+
+  emit_any_pending_textual_chunks ();
+}
+
+/* Subroutine of dump_pretty_printer::custom_token_printer::print_tokens
+   for consolidating multiple adjacent pure-text chunks into single
+   optinfo_items (in phase 3).  */
+
+void
+dump_pretty_printer::custom_token_printer::
+emit_any_pending_textual_chunks ()
+{
+  dump_pretty_printer *pp = &m_dump_pp;
+  output_buffer *const buffer = pp_buffer (pp);
+  gcc_assert (buffer->m_obstack == &buffer->m_formatted_obstack);
+
+  /* Don't emit an item if the pending text is empty.  */
+  if (output_buffer_last_position_in_text (buffer) == nullptr)
+    return;
+
+  char *formatted_text = xstrdup (pp_formatted_text (pp));
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				 formatted_text);
+  pp->emit_item (std::move (item), m_optinfo);
+
+  /* Clear the pending text by unwinding formatted_text back to the start
+     of the buffer (without deallocating).  */
+  obstack_free (&buffer->m_formatted_obstack,
+		buffer->m_formatted_obstack.object_base);
+}
+
 /* Output a formatted message using FORMAT on appropriate dump streams.  */
 
 void
-dump_context::dump_printf_va (const dump_metadata_t &metadata, const char *format,
+dump_context::dump_printf_va (const dump_metadata_t &metadata,
+			      const char *format,
 			      va_list *ap)
 {
   dump_pretty_printer pp (this, metadata.get_dump_flags ());
@@ -1006,14 +1038,16 @@ dump_context::dump_printf_va (const dump_metadata_t &metadata, const char *forma
   /* Phases 1 and 2, using pp_format.  */
   pp_format (&pp, &text);
 
-  /* Phase 3.  */
+  /* Phase 3: update the custom token_printer with any active optinfo.  */
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      pp.emit_items (&info);
+      pp.set_optinfo (&info);
     }
   else
-    pp.emit_items (NULL);
+    pp.set_optinfo (nullptr);
+
+  pp_output_formatted_text (&pp, nullptr);
 }
 
 /* Similar to dump_printf, except source location is also printed, and
@@ -1031,7 +1065,7 @@ dump_context::dump_printf_loc_va (const dump_metadata_t &metadata,
 /* Make an item for the given dump call, equivalent to print_dec.  */
 
 template<unsigned int N, typename C>
-static optinfo_item *
+static std::unique_ptr<optinfo_item>
 make_item_for_dump_dec (const poly_int<N, C> &value)
 {
   STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
@@ -1051,9 +1085,9 @@ make_item_for_dump_dec (const poly_int<N, C> &value)
 	}
     }
 
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-			xstrdup (pp_formatted_text (&pp)));
+  auto item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				 xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -1061,35 +1095,33 @@ make_item_for_dump_dec (const poly_int<N, C> &value)
 
 template<unsigned int N, typename C>
 void
-dump_context::dump_dec (const dump_metadata_t &metadata, const poly_int<N, C> &value)
+dump_context::dump_dec (const dump_metadata_t &metadata,
+			const poly_int<N, C> &value)
 {
-  optinfo_item *item = make_item_for_dump_dec (value);
-  emit_item (item, metadata.get_dump_flags ());
+  auto item = make_item_for_dump_dec (value);
+  emit_item (*item.get (), metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      info.add_item (item);
+      info.add_item (std::move (item));
     }
-  else
-    delete item;
 }
 
 /* Output the name of NODE on appropriate dump streams.  */
 
 void
-dump_context::dump_symtab_node (const dump_metadata_t &metadata, symtab_node *node)
+dump_context::dump_symtab_node (const dump_metadata_t &metadata,
+				symtab_node *node)
 {
-  optinfo_item *item = make_item_for_dump_symtab_node (node);
-  emit_item (item, metadata.get_dump_flags ());
+  auto item = make_item_for_dump_symtab_node (node);
+  emit_item (*item.get (), metadata.get_dump_flags ());
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo (metadata);
-      info.add_item (item);
+      info.add_item (std::move (item));
     }
-  else
-    delete item;
 }
 
 /* Get the current dump scope-nesting depth.
@@ -1132,10 +1164,10 @@ dump_context::begin_scope (const char *name,
   pretty_printer pp;
   pp_printf (&pp, "%s %s %s", "===", name, "===");
   pp_newline (&pp);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-			xstrdup (pp_formatted_text (&pp)));
-  emit_item (item, MSG_NOTE);
+  std::unique_ptr<optinfo_item> item
+    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				 xstrdup (pp_formatted_text (&pp)));
+  emit_item (*item.get (), MSG_NOTE);
 
   if (optinfo_enabled_p ())
     {
@@ -1143,11 +1175,9 @@ dump_context::begin_scope (const char *name,
 	= begin_next_optinfo (dump_metadata_t (MSG_NOTE, impl_location),
 			      user_location);
       info.m_kind = OPTINFO_KIND_SCOPE;
-      info.add_item (item);
+      info.add_item (std::move (item));
       end_any_optinfo ();
     }
-  else
-    delete item;
 }
 
 /* Pop a nested dump scope.  */
@@ -1226,17 +1256,17 @@ dump_context::emit_optinfo (const optinfo *info)
    consolidation into optinfo instances).  */
 
 void
-dump_context::emit_item (optinfo_item *item, dump_flags_t dump_kind)
+dump_context::emit_item (const optinfo_item &item, dump_flags_t dump_kind)
 {
   if (dump_file && apply_dump_filter_p (dump_kind, pflags))
-    fprintf (dump_file, "%s", item->get_text ());
+    fprintf (dump_file, "%s", item.get_text ());
 
   if (alt_dump_file && apply_dump_filter_p (dump_kind, alt_flags))
-    fprintf (alt_dump_file, "%s", item->get_text ());
+    fprintf (alt_dump_file, "%s", item.get_text ());
 
   /* Support for temp_dump_context in selftests.  */
   if (m_test_pp && apply_dump_filter_p (dump_kind, m_test_pp_flags))
-    pp_string (m_test_pp, item->get_text ());
+    pp_string (m_test_pp, item.get_text ());
 }
 
 /* The current singleton dump_context, and its default.  */

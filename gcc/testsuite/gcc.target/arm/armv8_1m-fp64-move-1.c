@@ -2,7 +2,7 @@
 /* { dg-options "-O" } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
-/* { dg-additional-options "-mfloat-abi=hard" } *
+/* { dg-additional-options "-mfloat-abi=hard" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*
@@ -33,13 +33,7 @@ w_r ()
 
 /*
 ** w_w:
-** (
-**	vmov.f32	s2, s0
-**	vmov.f32	s3, s1
-** |
-**	vmov.f32	s3, s1
-**	vmov.f32	s2, s0
-** )
+**	vmov.f64	d1, d0
 **	bx	lr
 */
 void

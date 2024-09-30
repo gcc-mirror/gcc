@@ -794,7 +794,7 @@
 })
 
 ;; -------------------------------------------------------------------------
-;; Truncation to a mode whose inner mode size is an eigth of mode's.
+;; Truncation to a mode whose inner mode size is an eighth of mode's.
 ;; We emulate this with three consecutive vncvts.
 ;; -------------------------------------------------------------------------
 (define_expand "trunc<mode><v_oct_trunc>2"
@@ -1073,29 +1073,19 @@
 [(set_attr "type" "vialu")])
 
 ;; -------------------------------------------------------------------------------
-;; - [INT] ABS expansion to vmslt and vneg.
+;; - [INT] ABS expansion to vneg and vmax.
 ;; -------------------------------------------------------------------------------
 
-(define_insn_and_split "abs<mode>2"
+(define_expand "abs<mode>2"
   [(set (match_operand:V_VLSI 0 "register_operand")
-     (abs:V_VLSI
-       (match_operand:V_VLSI 1 "register_operand")))]
-  "TARGET_VECTOR && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
+    (smax:V_VLSI
+     (match_dup 0)
+     (neg:V_VLSI
+       (match_operand:V_VLSI 1 "register_operand"))))]
+  "TARGET_VECTOR"
 {
-  rtx zero = gen_const_vec_duplicate (<MODE>mode, GEN_INT (0));
-  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode);
-  rtx mask = gen_reg_rtx (mask_mode);
-  riscv_vector::expand_vec_cmp (mask, LT, operands[1], zero);
-
-  rtx ops[] = {operands[0], mask, operands[1], operands[1]};
-  riscv_vector::emit_vlmax_insn (code_for_pred (NEG, <MODE>mode),
-                                  riscv_vector::UNARY_OP_TAMU, ops);
   DONE;
-}
-[(set_attr "type" "vector")])
+})
 
 ;; -------------------------------------------------------------------------------
 ;; ---- [FP] Unary operations
@@ -1460,6 +1450,69 @@
   "TARGET_VECTOR"
 {
   emit_insn (gen_vec_extract<mode>qi (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Extract a vector from a vector.
+;; -------------------------------------------------------------------------
+;; TODO: This can be extended to allow basically any extract mode.
+;; For now this helps optimize VLS subregs like (subreg:V2DI (reg:V4DI) 16)
+;; that would otherwise need to go via memory.
+
+(define_expand "vec_extract<mode><vls_half>"
+  [(set (match_operand:<VLS_HALF>	 0 "nonimmediate_operand")
+     (vec_select:<VLS_HALF>
+       (match_operand:VLS_HAS_HALF	 1 "register_operand")
+       (parallel
+	 [(match_operand		 2 "immediate_operand")])))]
+  "TARGET_VECTOR"
+{
+  int sz = GET_MODE_NUNITS (<VLS_HALF>mode).to_constant ();
+  int part = INTVAL (operands[2]);
+
+  rtx start = GEN_INT (part * sz);
+  rtx tmp = operands[1];
+
+  if (part != 0)
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+
+      rtx ops[] = {tmp, operands[1], start};
+      riscv_vector::emit_vlmax_insn
+	(code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode),
+	 riscv_vector::BINARY_OP, ops);
+    }
+
+  emit_move_insn (operands[0], gen_lowpart (<VLS_HALF>mode, tmp));
+  DONE;
+})
+
+(define_expand "vec_extract<mode><vls_quarter>"
+  [(set (match_operand:<VLS_QUARTER>	 0 "nonimmediate_operand")
+     (vec_select:<VLS_QUARTER>
+       (match_operand:VLS_HAS_QUARTER	 1 "register_operand")
+       (parallel
+	 [(match_operand		 2 "immediate_operand")])))]
+  "TARGET_VECTOR"
+{
+  int sz = GET_MODE_NUNITS (<VLS_QUARTER>mode).to_constant ();
+  int part = INTVAL (operands[2]);
+
+  rtx start = GEN_INT (part * sz);
+  rtx tmp = operands[1];
+
+  if (part != 0)
+    {
+      tmp = gen_reg_rtx (<MODE>mode);
+
+      rtx ops[] = {tmp, operands[1], start};
+      riscv_vector::emit_vlmax_insn
+	(code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode),
+	 riscv_vector::BINARY_OP, ops);
+    }
+
+  emit_move_insn (operands[0], gen_lowpart (<VLS_QUARTER>mode, tmp));
   DONE;
 })
 
@@ -2659,6 +2712,17 @@
   }
 )
 
+(define_expand "ssadd<mode>3"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")
+   (match_operand:V_VLSI 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_ssadd (operands[0], operands[1], operands[2], <MODE>mode);
+    DONE;
+  }
+)
+
 (define_expand "ussub<mode>3"
   [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:V_VLSI 1 "register_operand")
@@ -2762,5 +2826,21 @@
 		     riscv_vector::CPOP_OP, cpop_ops);
     operands[1] = reg;
     operands[2] = const0_rtx;
+  }
+)
+
+;; -------------------------------------------------------------------------
+;; - vrol.vv vror.vv
+;; -------------------------------------------------------------------------
+(define_expand "v<bitmanip_optab><mode>3"
+  [(set (match_operand:VI 0 "register_operand")
+	(bitmanip_rotate:VI
+	  (match_operand:VI 1 "register_operand")
+	  (match_operand:VI 2 "register_operand")))]
+  "TARGET_ZVBB || TARGET_ZVKB"
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_v (<CODE>, <MODE>mode),
+				   riscv_vector::BINARY_OP, operands);
+    DONE;
   }
 )

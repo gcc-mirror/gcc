@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 -- { dg-options "-g" }
 
 with Debug4_Pkg;

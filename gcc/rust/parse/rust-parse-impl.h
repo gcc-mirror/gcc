@@ -1382,10 +1382,10 @@ Parser<ManagedTokenSource>::parse_vis_item (AST::AttrVec outer_attrs)
 	case IDENTIFIER:
 	case UNDERSCORE:
 	  return parse_const_item (std::move (vis), std::move (outer_attrs));
-	case UNSAFE:
-	case EXTERN_KW:
 	case ASYNC:
 	  return parse_async_item (std::move (vis), std::move (outer_attrs));
+	case UNSAFE:
+	case EXTERN_KW:
 	case FN_KW:
 	  return parse_function (std::move (vis), std::move (outer_attrs));
 	default:
@@ -2908,7 +2908,8 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::Function>
 Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
-					    AST::AttrVec outer_attrs)
+					    AST::AttrVec outer_attrs,
+					    bool is_external)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
   // Get qualifiers for function if they exist
@@ -2992,7 +2993,7 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
 		       std::move (generic_params), std::move (function_params),
 		       std::move (return_type), std::move (where_clause),
 		       std::move (body), std::move (vis),
-		       std::move (outer_attrs), locus));
+		       std::move (outer_attrs), locus, false, is_external));
 }
 
 // Parses function or method qualifiers (i.e. const, unsafe, and extern).
@@ -6033,68 +6034,6 @@ Parser<ManagedTokenSource>::parse_named_function_params (
   return params;
 }
 
-template <typename ManagedTokenSource>
-std::unique_ptr<AST::ExternalFunctionItem>
-Parser<ManagedTokenSource>::parse_external_function_item (
-  AST::Visibility vis, AST::AttrVec outer_attrs)
-{
-  location_t locus = lexer.peek_token ()->get_locus ();
-
-  // parse extern function declaration item
-  // skip function token
-  lexer.skip_token ();
-
-  // parse identifier
-  const_TokenPtr ident_tok = expect_token (IDENTIFIER);
-  if (ident_tok == nullptr)
-    {
-      skip_after_semicolon ();
-      return nullptr;
-    }
-  Identifier ident{ident_tok};
-
-  // parse (optional) generic params
-  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
-    = parse_generic_params_in_angles ();
-
-  if (!skip_token (LEFT_PAREN))
-    {
-      skip_after_semicolon ();
-      return nullptr;
-    }
-
-  // parse parameters
-  std::vector<AST::NamedFunctionParam> function_params
-    = parse_named_function_params (
-      [] (TokenId id) { return id == RIGHT_PAREN; });
-
-  if (!skip_token (RIGHT_PAREN))
-    {
-      skip_after_semicolon ();
-      return nullptr;
-    }
-
-  // parse (optional) return type
-  std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
-
-  // parse (optional) where clause
-  AST::WhereClause where_clause = parse_where_clause ();
-
-  if (!skip_token (SEMICOLON))
-    {
-      // skip somewhere?
-      return nullptr;
-    }
-
-  function_params.shrink_to_fit ();
-
-  return std::unique_ptr<AST::ExternalFunctionItem> (
-    new AST::ExternalFunctionItem (
-      std::move (ident), std::move (generic_params), std::move (return_type),
-      std::move (where_clause), std::move (function_params), std::move (vis),
-      std::move (outer_attrs), locus));
-}
-
 // Parses a single extern block item (static or function declaration).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ExternalItem>
@@ -6164,8 +6103,8 @@ Parser<ManagedTokenSource>::parse_external_item ()
 				       std::move (outer_attrs), locus));
       }
     case FN_KW:
-      return parse_external_function_item (std::move (vis),
-					   std::move (outer_attrs));
+      return parse_function (std::move (vis), std::move (outer_attrs), true);
+
     case TYPE:
       return parse_external_type_item (std::move (vis),
 				       std::move (outer_attrs));
@@ -10475,6 +10414,7 @@ Parser<ManagedTokenSource>::parse_pattern ()
       lexer.skip_token ();
       alts.push_back (parse_pattern_no_alt ());
     }
+
   while (lexer.peek_token ()->get_id () == PIPE);
 
   /* alternates */
@@ -10630,14 +10570,6 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 	    case LEFT_PAREN: {
 	      // tuple struct
 	      lexer.skip_token ();
-
-	      // check if empty tuple
-	      if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-		{
-		  lexer.skip_token ();
-		  return std::unique_ptr<AST::TupleStructPattern> (
-		    new AST::TupleStructPattern (std::move (path), nullptr));
-		}
 
 	      // parse items
 	      std::unique_ptr<AST::TupleStructItems> items
@@ -11093,14 +11025,6 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 
 	// DEBUG
 	rust_debug ("parsing tuple struct pattern");
-
-	// check if empty tuple
-	if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
-	  {
-	    lexer.skip_token ();
-	    return std::unique_ptr<AST::TupleStructPattern> (
-	      new AST::TupleStructPattern (std::move (path), nullptr));
-	  }
 
 	// parse items
 	std::unique_ptr<AST::TupleStructItems> items

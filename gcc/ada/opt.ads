@@ -261,7 +261,9 @@ package Opt is
    --  (switch -B)
 
    CCG_Mode : Boolean := False;
-   --  Set to True when running as CCG (either via -gnatceg or via -emit-c)
+   --  GNAT, GNATBIND
+   --  Set to True when running as CCG (implicitly, via -emit-c, or -G for the
+   --  binder)
 
    Check_Aliasing_Of_Parameters : Boolean := False;
    --  GNAT
@@ -699,10 +701,10 @@ package Opt is
    --  GNAT
    --  True if generating assembly instead of an object file, via the -S switch
 
-   Generate_C_Code : Boolean := False;
-   --  GNAT, GNATBIND
+   Generate_C_Header : Boolean := False;
+   --  GNAT
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
+   --  Set True by use of -gnateg for GNAT.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
@@ -1054,19 +1056,6 @@ package Opt is
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
 
-   Minimize_Expression_With_Actions : Boolean := False;
-   --  GNAT
-   --  If True, minimize the use of N_Expression_With_Actions node.
-   --  This can be used in particular on some back-ends where this node is
-   --  difficult to support.
-
-   Modify_Tree_For_C : Boolean := False;
-   --  GNAT
-   --  If this switch is set True (currently it is set only by -gnatd.V), then
-   --  certain meaning-preserving transformations are applied to the tree to
-   --  make it easier to interface with back ends that implement C semantics.
-   --  There is a section in Sinfo which describes the transformations made.
-
    Multiple_Unit_Index : Nat := 0;
    --  GNAT
    --  This is set non-zero if the current unit is being compiled in multiple
@@ -1351,6 +1340,19 @@ package Opt is
    --  GNATMAKE, GNATLINK
    --  Set to False when no run_path_option should be issued to the linker
 
+   SARIF_File : Boolean := False;
+   --  GNAT
+   --  Output error and warning messages in SARIF format. Set to true when the
+   --  backend option "-fdiagnostics-format=sarif-file" is found on the
+   --  command line. The SARIF file is written to the file named:
+   --  <source_file>.gnat.sarif
+
+   SARIF_Output : Boolean := False;
+   --  GNAT
+   --  Output error and warning messages in SARIF format. Set to true when the
+   --  backend option "-fdiagnostics-format=sarif-stderr" is found on the
+   --  command line.
+
    Search_Directory_Present : Boolean := False;
    --  GNAT
    --  Set to True when argument is -I. Reset to False when next argument, a
@@ -1537,12 +1539,6 @@ package Opt is
    --  GNATBIND
    --  Tolerate time stamp and other consistency errors. If this flag is set to
    --  True (-t), then inconsistencies result in warnings rather than errors.
-
-   Transform_Function_Array : Boolean := False;
-   --  GNAT
-   --  If this switch is set True, then functions returning constrained arrays
-   --  are transformed into a procedure with an out parameter, and all calls
-   --  are updated accordingly.
 
    Treat_Categorization_Errors_As_Warnings : Boolean := False;
    --  Normally categorization errors are true illegalities. If this switch

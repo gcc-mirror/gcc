@@ -49,7 +49,6 @@ public:
   void visit (AST::Trait &);
   void visit (AST::InherentImpl &);
   void visit (AST::TraitImpl &);
-  void visit (AST::ExternBlock &);
 
   // type dec nodes, which visit their fields or variants by default
   void visit (AST::StructStruct &);
@@ -67,7 +66,6 @@ public:
   void visit (AST::RangeFromToInclExpr &);
   void visit (AST::RangeToInclExpr &);
   void visit (AST::ReturnExpr &);
-  void visit (AST::UnsafeBlockExpr &);
   void visit (AST::LoopExpr &);
   void visit (AST::WhileLoopExpr &);
   void visit (AST::WhileLetLoopExpr &);
@@ -118,7 +116,6 @@ public:
   void visit (AST::TraitItemType &);
   void visit (AST::ExternalTypeItem &);
   void visit (AST::ExternalStaticItem &);
-  void visit (AST::ExternalFunctionItem &);
   void visit (AST::MacroMatchRepetition &);
   void visit (AST::MacroMatcher &);
   void visit (AST::MacroRulesDefinition &);
@@ -152,7 +149,6 @@ public:
   void visit (AST::ImplTraitTypeOneBound &);
   void visit (AST::TraitObjectTypeOneBound &);
   void visit (AST::TupleType &);
-  void visit (AST::RawPointerType &);
   void visit (AST::ReferenceType &);
   void visit (AST::ArrayType &);
   void visit (AST::SliceType &);

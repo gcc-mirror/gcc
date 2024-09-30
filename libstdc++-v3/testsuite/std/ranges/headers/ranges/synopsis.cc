@@ -22,7 +22,11 @@
 
 #ifndef __cpp_lib_ranges
 # error "Feature test macro for ranges is missing in <ranges>"
-#elif __cpp_lib_ranges < 201911L
+#elif __cplusplus > 202302L && __cpp_lib_ranges != 202406L
+# error "Feature test macro for ranges has wrong value in <ranges>"
+#elif __cplusplus == 202302L && __cpp_lib_ranges != 202302L
+# error "Feature test macro for ranges has wrong value in <ranges>"
+#elif __cplusplus == 202002L && __cpp_lib_ranges != 202110L
 # error "Feature test macro for ranges has wrong value in <ranges>"
 #endif
 

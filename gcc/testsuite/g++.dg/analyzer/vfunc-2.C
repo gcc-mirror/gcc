@@ -1,3 +1,4 @@
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 #include <cstdio>
 #include <cstdlib>
 

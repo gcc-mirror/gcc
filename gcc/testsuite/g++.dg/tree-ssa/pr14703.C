@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized -fno-ipa-reference" } */
+/* { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } } */
 #include <iostream>
 
 namespace {

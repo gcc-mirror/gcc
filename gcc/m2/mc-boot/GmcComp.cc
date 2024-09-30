@@ -12,9 +12,9 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along
-with gm2; see the file COPYING.  If not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
@@ -593,9 +593,9 @@ static void doPass (bool parseDefs, bool parseMain, unsigned int no, symbolKey_p
       if (parseDefs && (decl_isImp (decl_getMainModule ())))
         {
           /* we need to parse the definition module of a corresponding implementation module.  */
-          (*p.proc) (reinterpret_cast<void *> (decl_lookupDef (decl_getSymName (decl_getMainModule ()))));
+          (*p.proc) (reinterpret_cast <void *> (decl_lookupDef (decl_getSymName (decl_getMainModule ()))));
         }
-      (*p.proc) (reinterpret_cast<void *> (decl_getMainModule ()));
+      (*p.proc) (reinterpret_cast <void *> (decl_getMainModule ()));
     }
   if (parseDefs)
     {

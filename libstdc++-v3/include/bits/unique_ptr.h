@@ -379,8 +379,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
       /// Converting constructor from @c auto_ptr
-      template<typename _Up, typename = _Require<
-	       is_convertible<_Up*, _Tp*>, is_same<_Dp, default_delete<_Tp>>>>
+      template<typename _Up,
+	       typename = _Require<is_convertible<_Up*, pointer>,
+				   is_same<_Dp, default_delete<_Tp>>>>
 	unique_ptr(auto_ptr<_Up>&& __u) noexcept;
 #pragma GCC diagnostic pop
 #endif
@@ -1156,9 +1157,9 @@ namespace __detail
 
 #if __cpp_variable_templates
   template<typename _Tp>
-    static constexpr bool __is_unique_ptr = false;
+    constexpr bool __is_unique_ptr = false;
   template<typename _Tp, typename _Del>
-    static constexpr bool __is_unique_ptr<unique_ptr<_Tp, _Del>> = true;
+    constexpr bool __is_unique_ptr<unique_ptr<_Tp, _Del>> = true;
 #endif
 
   /// @} group pointer_abstractions

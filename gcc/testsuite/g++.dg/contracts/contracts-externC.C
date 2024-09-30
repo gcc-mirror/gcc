@@ -2,6 +2,7 @@
 // when wrapping functions in pre- and postconditions.
 // { dg-do link }
 // { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 volatile int x = 10;
 

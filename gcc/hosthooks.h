@@ -47,4 +47,4 @@ struct host_hooks
 /* Each host provides its own.  */
 extern const struct host_hooks host_hooks;
 
-#endif /* GCC_LANG_HOOKS_H */
+#endif /* GCC_HOST_HOOKS_H */

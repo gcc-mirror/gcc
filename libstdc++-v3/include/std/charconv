@@ -29,7 +29,12 @@
 #ifndef _GLIBCXX_CHARCONV
 #define _GLIBCXX_CHARCONV 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
 
 #include <bits/requires_hosted.h> // for error codes
 
@@ -932,4 +937,5 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++14
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_CHARCONV

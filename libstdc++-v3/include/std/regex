@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_REGEX
 #define _GLIBCXX_REGEX 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // string and container heavy
 

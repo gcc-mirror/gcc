@@ -29,6 +29,7 @@ with Atree;            use Atree;
 with Checks;           use Checks;
 with Contracts;        use Contracts;
 with Debug;            use Debug;
+with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;            use Einfo;
 with Einfo.Entities;   use Einfo.Entities;
 with Einfo.Utils;      use Einfo.Utils;
@@ -159,6 +160,14 @@ package body Sem_Ch13 is
    procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
    --  Performs the processing of an aspect at the freeze point. ASN is the
    --  N_Aspect_Specification node for the aspect.
+
+   procedure Check_Aspect_Too_Late (N : Node_Id);
+   --  This procedure is similar to Rep_Item_Too_Late for representation
+   --  aspects that apply to type and that do not have a corresponding pragma.
+   --
+   --  Used to check in particular that the expression associated with aspect
+   --  node N for the given type (entity) of the aspect does not appear too
+   --  late according to the rules in RM 13.1(9) and 13.1(10).
 
    procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
    --  Called if both Storage_Pool and Storage_Size attribute definition
@@ -967,14 +976,6 @@ package body Sem_Ch13 is
       --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
       --  the aspect specification node ASN.
 
-      procedure Check_Aspect_Too_Late (N : Node_Id);
-      --  This procedure is similar to Rep_Item_Too_Late for representation
-      --  aspects that apply to type and that do not have a corresponding
-      --  pragma.
-      --  Used to check in particular that the expression associated with
-      --  aspect node N for the given type (entity) of the aspect does not
-      --  appear too late according to the rules in RM 13.1(9) and 13.1(10).
-
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
       --  optional Boolean, this routines creates the corresponding pragma
@@ -999,106 +1000,6 @@ package body Sem_Ch13 is
 
          Check_Aspect_Too_Late (ASN);
       end Analyze_Aspect_Default_Value;
-
-      ---------------------------
-      -- Check_Aspect_Too_Late --
-      ---------------------------
-
-      procedure Check_Aspect_Too_Late (N : Node_Id) is
-         Typ  : constant Entity_Id := Entity (N);
-         Expr : constant Node_Id   := Expression (N);
-
-         function Find_Type_Reference
-           (Typ : Entity_Id; Expr : Node_Id) return Boolean;
-         --  Return True if a reference to type Typ is found in the expression
-         --  Expr.
-
-         -------------------------
-         -- Find_Type_Reference --
-         -------------------------
-
-         function Find_Type_Reference
-           (Typ : Entity_Id; Expr : Node_Id) return Boolean
-         is
-            function Find_Type (N : Node_Id) return Traverse_Result;
-            --  Set Found to True if N refers to Typ
-
-            ---------------
-            -- Find_Type --
-            ---------------
-
-            function Find_Type (N : Node_Id) return Traverse_Result is
-            begin
-               if N = Typ
-                 or else (Nkind (N) in N_Identifier | N_Expanded_Name
-                           and then Present (Entity (N))
-                           and then Entity (N) = Typ)
-               then
-                  return Abandon;
-               else
-                  return OK;
-               end if;
-            end Find_Type;
-
-            function Search_Type_Reference is new Traverse_Func (Find_Type);
-
-         begin
-            return Search_Type_Reference (Expr) = Abandon;
-         end Find_Type_Reference;
-
-         Parent_Type : Entity_Id;
-
-         Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
-
-      begin
-         --  Ensure Expr is analyzed so that e.g. all types are properly
-         --  resolved for Find_Type_Reference. We preanalyze this expression
-         --  as a spec expression (to avoid recursive freezing), while skipping
-         --  resolution (to not fold type self-references, e.g. T'Last).
-
-         In_Spec_Expression := True;
-
-         Preanalyze (Expr);
-
-         In_Spec_Expression := Save_In_Spec_Expression;
-
-         --  A self-referential aspect is illegal if it forces freezing the
-         --  entity before the corresponding aspect has been analyzed.
-
-         if Find_Type_Reference (Typ, Expr) then
-            Error_Msg_NE
-              ("aspect specification causes premature freezing of&", N, Typ);
-         end if;
-
-         --  For representation aspects, check for case of untagged derived
-         --  type whose parent either has primitive operations (pre Ada 2022),
-         --  or is a by-reference type (RM 13.1(10)).
-         --  Strictly speaking the check also applies to Ada 2012 but it is
-         --  really too constraining for existing code already, so relax it.
-         --  ??? Confirming aspects should be allowed here.
-
-         if Is_Representation_Aspect (Get_Aspect_Id (N))
-           and then Is_Derived_Type (Typ)
-           and then not Is_Tagged_Type (Typ)
-         then
-            Parent_Type := Etype (Base_Type (Typ));
-
-            if Ada_Version <= Ada_2012
-              and then Has_Primitive_Operations (Parent_Type)
-            then
-               Error_Msg_N
-                 ("|representation aspect not permitted before Ada 2022: " &
-                  "use -gnat2022!", N);
-               Error_Msg_NE
-                 ("\parent type & has primitive operations!", N, Parent_Type);
-
-            elsif Is_By_Reference_Type (Parent_Type) then
-               No_Type_Rep_Item (N);
-               Error_Msg_NE
-                 ("\parent type & is a by-reference type!", N, Parent_Type);
-            end if;
-         end if;
-      end Check_Aspect_Too_Late;
 
       -------------------------------------
       -- Make_Pragma_From_Boolean_Aspect --
@@ -1347,7 +1248,7 @@ package body Sem_Ch13 is
 
                      if Etype (Expression (ASN)) = Any_Type then
                         Error_Msg_NE
-                          ("\aspect must be fully defined before & is frozen",
+                          ("aspect must be fully defined before & is frozen",
                            ASN, E);
                      end if;
 
@@ -2081,6 +1982,11 @@ package body Sem_Ch13 is
                if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
                     ("aspect must apply to a type with discriminants", Expr);
+
+               elsif not Is_First_Subtype (E) then
+                  Error_Msg_N
+                    ("aspect not specifiable in a subtype declaration",
+                     Aspect);
 
                elsif not Is_Entity_Name (Expr) then
                   Error_Msg_N
@@ -4612,6 +4518,63 @@ package body Sem_Ch13 is
                            Pragma_Name                  => Nam);
                      end if;
 
+                     --  Minimum check of First_Controlling_Parameter aspect;
+                     --  the checks shared by the aspect and its corresponding
+                     --  pragma are performed when the pragma is analyzed.
+
+                     if A_Id = Aspect_First_Controlling_Parameter then
+                        if Present (Expr) then
+                           Analyze (Expr);
+                        end if;
+
+                        if (No (Expr) or else Entity (Expr) = Standard_True)
+                          and then not Core_Extensions_Allowed
+                        then
+                           Error_Msg_GNAT_Extension
+                             ("'First_'Controlling_'Parameter", Sloc (Aspect),
+                              Is_Core_Extension => True);
+                           goto Continue;
+                        end if;
+
+                        if not (Is_Type (E)
+                                  and then
+                                    (Is_Tagged_Type (E)
+                                       or else Is_Concurrent_Type (E)))
+                        then
+                           Error_Msg_N
+                             ("aspect 'First_'Controlling_'Parameter can only "
+                              & "apply to tagged type or concurrent type",
+                              Aspect);
+                           goto Continue;
+                        end if;
+
+                        if Present (Expr)
+                          and then Entity (Expr) = Standard_False
+                        then
+                           --  If the aspect is specified for a derived type,
+                           --  the specified value shall be confirming.
+
+                           if Is_Derived_Type (E)
+                             and then Has_First_Controlling_Parameter_Aspect
+                                        (Etype (E))
+                           then
+                              Error_Msg_Name_1 := Nam;
+                              Error_Msg_N
+                                ("specification of inherited True value for "
+                                   & "aspect% can only confirm parent value",
+                                 Id);
+                           end if;
+
+                           goto Continue;
+                        end if;
+
+                        --  Given that the aspect has been explicitly given,
+                        --  we take note to avoid checking for its implicit
+                        --  inheritance (see Analyze_Full_Type_Declaration).
+
+                        Set_Has_First_Controlling_Parameter_Aspect (E);
+                     end if;
+
                   --  In general cases, the corresponding pragma/attribute
                   --  definition clause will be inserted later at the freezing
                   --  point, and we do not need to build it now.
@@ -5803,13 +5766,18 @@ package body Sem_Ch13 is
 
             if not Check_Primitive_Function (Subp) then
                if Present (Ref_Node) then
-                  Error_Msg_N ("improper function for default iterator!",
-                     Ref_Node);
-                  Error_Msg_Sloc := Sloc (Subp);
-                  Error_Msg_NE
-                     ("\\default iterator defined # "
-                     & "must be a primitive function",
-                     Ref_Node, Subp);
+                  if Debug_Flag_Underscore_DD then
+                     Record_Default_Iterator_Not_Primitive_Error
+                       (Ref_Node, Subp);
+                  else
+                     Error_Msg_N ("improper function for default iterator!",
+                        Ref_Node);
+                     Error_Msg_Sloc := Sloc (Subp);
+                     Error_Msg_NE
+                        ("\\default iterator defined # "
+                        & "must be a primitive function",
+                        Ref_Node, Subp);
+                  end if;
                end if;
 
                return False;
@@ -6077,24 +6045,6 @@ package body Sem_Ch13 is
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.
          Check_Restriction_No_Specification_Of_Aspect (N);
-      end if;
-
-      --  Ignore some selected attributes in CodePeer mode since they are not
-      --  relevant in this context.
-
-      if CodePeer_Mode then
-         case Id is
-
-            --  Ignore Component_Size in CodePeer mode, to avoid changing the
-            --  internal representation of types by implicitly packing them.
-
-            when Attribute_Component_Size =>
-               Rewrite (N, Make_Null_Statement (Sloc (N)));
-               return;
-
-            when others =>
-               null;
-         end case;
       end if;
 
       --  Process Ignore_Rep_Clauses option
@@ -10336,12 +10286,12 @@ package body Sem_Ch13 is
 
             if Is_Ignored_Ghost_Pragma (Prag) then
                Add_Condition (New_Occurrence_Of (Standard_True, Sloc (Prag)));
-               return;
+
+            else
+               --  Mark corresponding SCO as enabled
+
+               Set_SCO_Pragma_Enabled (Sloc (Prag));
             end if;
-
-            --  Mark corresponding SCO as enabled
-
-            Set_SCO_Pragma_Enabled (Sloc (Prag));
 
             --  Extract the arguments of the pragma
 
@@ -10375,7 +10325,9 @@ package body Sem_Ch13 is
 
                   --  "and"-in the Arg2 condition to evolving expression
 
-                  Add_Condition (Arg2_Copy);
+                  if not Is_Ignored_Ghost_Pragma (Prag) then
+                     Add_Condition (Arg2_Copy);
+                  end if;
                end;
             end if;
          end Add_Predicate;
@@ -11650,6 +11602,110 @@ package body Sem_Ch13 is
          Preanalyze_Spec_Expression (Expression (ASN), T);
       end if;
    end Check_Aspect_At_Freeze_Point;
+
+   ---------------------------
+   -- Check_Aspect_Too_Late --
+   ---------------------------
+
+   procedure Check_Aspect_Too_Late (N : Node_Id) is
+      Typ  : constant Entity_Id := Entity (N);
+      Expr : constant Node_Id   := Expression (N);
+
+      function Find_Type_Reference
+        (Typ : Entity_Id; Expr : Node_Id) return Boolean;
+      --  Return True if a reference to type Typ is found in the expression
+      --  Expr.
+
+      -------------------------
+      -- Find_Type_Reference --
+      -------------------------
+
+      function Find_Type_Reference
+        (Typ : Entity_Id; Expr : Node_Id) return Boolean
+      is
+         function Find_Type (N : Node_Id) return Traverse_Result;
+         --  Set Found to True if N refers to Typ
+
+         ---------------
+         -- Find_Type --
+         ---------------
+
+         function Find_Type (N : Node_Id) return Traverse_Result is
+         begin
+            if N = Typ
+              or else (Nkind (N) in N_Identifier | N_Expanded_Name
+                        and then Present (Entity (N))
+                        and then Entity (N) = Typ)
+            then
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Find_Type;
+
+         function Search_Type_Reference is new Traverse_Func (Find_Type);
+
+      begin
+         return Search_Type_Reference (Expr) = Abandon;
+      end Find_Type_Reference;
+
+      Parent_Type : Entity_Id;
+
+      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+      Save_Must_Not_Freeze    : constant Boolean := Must_Not_Freeze (Expr);
+
+   begin
+      --  Ensure Expr is analyzed so that e.g. all types are properly
+      --  resolved for Find_Type_Reference. We preanalyze this expression
+      --  (to avoid expansion), handle it as a spec expression (like default
+      --  expression), disable freezing and skip resolution (to not fold
+      --  type self-references, e.g. T'Last).
+
+      In_Spec_Expression := True;
+      Set_Must_Not_Freeze (Expr);
+
+      Preanalyze (Expr);
+
+      Set_Must_Not_Freeze (Expr, Save_Must_Not_Freeze);
+      In_Spec_Expression := Save_In_Spec_Expression;
+
+      --  A self-referential aspect is illegal if it forces freezing the
+      --  entity before the corresponding aspect has been analyzed.
+
+      if Find_Type_Reference (Typ, Expr) then
+         Error_Msg_NE
+           ("aspect specification causes premature freezing of&", N, Typ);
+      end if;
+
+      --  For representation aspects, check for case of untagged derived
+      --  type whose parent either has primitive operations (pre Ada 2022),
+      --  or is a by-reference type (RM 13.1(10)).
+      --  Strictly speaking the check also applies to Ada 2012 but it is
+      --  really too constraining for existing code already, so relax it.
+      --  ??? Confirming aspects should be allowed here.
+
+      if Is_Representation_Aspect (Get_Aspect_Id (N))
+        and then Is_Derived_Type (Typ)
+        and then not Is_Tagged_Type (Typ)
+      then
+         Parent_Type := Etype (Base_Type (Typ));
+
+         if Ada_Version <= Ada_2012
+           and then Has_Primitive_Operations (Parent_Type)
+         then
+            Error_Msg_N
+              ("|representation aspect not permitted before Ada 2022: " &
+               "use -gnat2022!", N);
+            Error_Msg_NE
+              ("\parent type & has primitive operations!", N, Parent_Type);
+
+         elsif Is_By_Reference_Type (Parent_Type) then
+            No_Type_Rep_Item (N);
+            Error_Msg_NE
+              ("\parent type & is a by-reference type!", N, Parent_Type);
+         end if;
+      end if;
+   end Check_Aspect_Too_Late;
 
    -----------------------------------
    -- Check_Constant_Address_Clause --
@@ -13943,8 +13999,8 @@ package body Sem_Ch13 is
         (E   : Entity_Id;
          Nam : Name_Id) return Node_Id
       is
-         Rep : constant Node_Id
-                 := Get_Rep_Item (E, Nam, Check_Parents => True);
+         Rep : constant Node_Id :=
+           Get_Rep_Item (E, Nam, Check_Parents => True);
       begin
          if Present (Rep)
            and then not Has_Rep_Item (E, Nam, Check_Parents => False)
@@ -13960,8 +14016,8 @@ package body Sem_Ch13 is
          Nam1 : Name_Id;
          Nam2 : Name_Id) return Node_Id
       is
-         Rep : constant Node_Id
-                 := Get_Rep_Item (E, Nam1, Nam2, Check_Parents => True);
+         Rep : constant Node_Id :=
+           Get_Rep_Item (E, Nam1, Nam2, Check_Parents => True);
       begin
          if Present (Rep)
            and then not Has_Rep_Item (E, Nam1, Nam2, Check_Parents => False)
@@ -15477,20 +15533,41 @@ package body Sem_Ch13 is
       --------------
 
       procedure Too_Late is
+         S : Entity_Id;
       begin
          --  Other compilers seem more relaxed about rep items appearing too
          --  late. Since analysis tools typically don't care about rep items
          --  anyway, no reason to be too strict about this.
 
          if not Relaxed_RM_Semantics then
-            Error_Msg_N ("|representation item appears too late!", N);
+            if Debug_Flag_Underscore_DD then
+
+               S := First_Subtype (T);
+               if Present (Freeze_Node (S)) then
+                  Record_Representation_Too_Late_Error
+                    (Rep    => N,
+                     Freeze => Freeze_Node (S),
+                     Def    => S);
+               else
+                  Error_Msg_N ("|representation item appears too late!", N);
+               end if;
+
+            else
+               Error_Msg_N ("|representation item appears too late!", N);
+
+               S := First_Subtype (T);
+               if Present (Freeze_Node (S)) then
+                  Error_Msg_NE
+                    ("??no more representation items for }",
+                     Freeze_Node (S), S);
+               end if;
+            end if;
          end if;
       end Too_Late;
 
       --  Local variables
 
       Parent_Type : Entity_Id;
-      S           : Entity_Id;
 
    --  Start of processing for Rep_Item_Too_Late
 
@@ -15524,14 +15601,6 @@ package body Sem_Ch13 is
          end if;
 
          Too_Late;
-         S := First_Subtype (T);
-
-         if Present (Freeze_Node (S)) then
-            if not Relaxed_RM_Semantics then
-               Error_Msg_NE
-                 ("??no more representation items for }", Freeze_Node (S), S);
-            end if;
-         end if;
 
          return True;
 
@@ -16078,8 +16147,12 @@ package body Sem_Ch13 is
                   --  before the actual freeze point.
 
                   when Aspect_Default_Value =>
-                     Set_Must_Not_Freeze (Expr);
+                     Check_Aspect_Too_Late (ASN);
                      Preanalyze_Spec_Expression (Expr, E);
+
+                  when Aspect_Default_Component_Value =>
+                     Check_Aspect_Too_Late (ASN);
+                     Preanalyze_Spec_Expression (Expr, Component_Type (E));
 
                   when Aspect_CPU
                      | Aspect_Interrupt_Priority
@@ -16094,7 +16167,6 @@ package body Sem_Ch13 is
                   --  relevant to the misuse of deferred constants.
 
                   when Aspect_Storage_Size =>
-                     Set_Must_Not_Freeze (Expr);
                      Preanalyze_Spec_Expression (Expr, Any_Integer);
 
                   when others =>
@@ -16373,8 +16445,8 @@ package body Sem_Ch13 is
       end if;
 
       declare
-         Set : constant Local_Restriction_Set
-           := Parse_Aspect_Local_Restrictions (Parent (N));
+         Set : constant Local_Restriction_Set :=
+           Parse_Aspect_Local_Restrictions (Parent (N));
          pragma Unreferenced (Set);
       begin
          null;
@@ -17912,6 +17984,37 @@ package body Sem_Ch13 is
 
          Next (Assoc);
       end loop;
+
+      --  If Relaxed_Finalization is set, the Finalize and Adjust procedures
+      --  are considered as having the No_Raise aspect specified.
+
+      if Serious_Errors_Detected > 0 then
+         null;
+
+      elsif Has_Relaxed_Finalization (Typ) then
+         Assoc := First (Component_Associations (Aggr));
+         while Present (Assoc) loop
+            Nam := First (Choices (Assoc));
+            Exp := Expression (Assoc);
+
+            if Chars (Nam) in Name_Adjust | Name_Finalize then
+               pragma Assert (Is_Entity_Name (Exp));
+               Set_No_Raise (Entity (Exp));
+            end if;
+
+            Next (Assoc);
+         end loop;
+
+      --  If Relaxed_Finalization is not set, then check that the support for
+      --  strict finalization is available in the runtime library.
+
+      elsif not In_Predefined_Unit (Cunit (Get_Source_Unit (Typ)))
+        and then not RTE_Available (RE_Finalization_Master)
+      then
+         Error_Msg_N
+           ("only Relaxed Finalization is supported in this configuration",
+            ASN);
+      end if;
    end Validate_Finalizable_Aspect;
 
    ------------------------------

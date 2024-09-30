@@ -1,8 +1,8 @@
 /* PR middle-end/25521 - place `const volatile' objects in read-only
    sections.
 
-   { dg-require-effective-target elf }
    { dg-do compile }
+   { dg-require-effective-target elf }
    { dg-skip-if "" { ! const_volatile_readonly_section } } */
 
 const volatile int foo = 30;

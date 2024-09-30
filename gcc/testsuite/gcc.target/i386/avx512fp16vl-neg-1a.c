@@ -1,4 +1,4 @@
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mavx512fp16 -mavx512vl" } */
 
 /* { dg-final { scan-assembler-times "vxorps\[ \\t\]+\[^\n\r\]*%xmm0" 1 } } */

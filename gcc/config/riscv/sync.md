@@ -199,7 +199,7 @@
 	   "bnez\t%4, 1b";
   }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 20))])
+   (set (attr "length") (const_int 16))])
 
 (define_insn "subword_atomic_fetch_strong_<atomic_optab>"
   [(set (match_operand:SI 0 "register_operand" "=&r")		   ;; old value at mem
@@ -416,7 +416,7 @@
 	   "mv\t%0, %4";
   }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 20))])
+   (set (attr "length") (const_int 16))])
 
 (define_expand "atomic_exchange<mode>"
   [(match_operand:SHORT 0 "register_operand") ;; old value at mem
@@ -503,7 +503,7 @@
 
 ; Atomic CAS ops
 
-(define_insn "atomic_cas_value_strong<mode>"
+(define_insn "zalrsc_atomic_cas_value_strong<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(match_operand:GPR 1 "memory_operand" "+A"))
    (set (match_dup 1)
@@ -530,16 +530,49 @@
   [(set_attr "type" "multi")
    (set (attr "length") (const_int 16))])
 
+;; Implement compare_exchange with a conservative leading fence when
+;; model_failure is seq_cst.
+;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7
+;; (A6C and A7).
+;; More details: https://github.com/riscv-non-isa/riscv-elf-psabi-doc/issues/444
+(define_insn "zacas_atomic_cas_value_strong<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")			    ;; val output
+	(match_operand:GPR 1 "memory_operand" "+A"))			    ;; memory
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "0")  ;; expected val
+			      (match_operand:GPR 3 "reg_or_0_operand" "rJ") ;; desired val
+			      (match_operand:SI 4 "const_int_operand")	    ;; mod_s
+			      (match_operand:SI 5 "const_int_operand")]	    ;; mod_f
+	 UNSPEC_COMPARE_AND_SWAP))]
+  "TARGET_ZACAS"
+  {
+    enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+    enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+    /* Find the union of the two memory models so we can satisfy both success
+       and failure memory models.  */
+    operands[4] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+
+    if (model_failure == MEMMODEL_SEQ_CST)
+      return "fence\trw,rw\;"
+	     "amocas.<amo>%A4\t%0,%z3,%1";
+    else
+      return "amocas.<amo>%A4\t%0,%z3,%1";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length")
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[5]))) ? 8
+		      : 4)"))])
+
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
    (match_operand:GPR 1 "register_operand" "")  ;; val output
    (match_operand:GPR 2 "memory_operand" "")    ;; memory
-   (match_operand:GPR 3 "reg_or_0_operand" "")  ;; expected value
+   (match_operand:GPR 3 "register_operand" "")  ;; expected value
    (match_operand:GPR 4 "reg_or_0_operand" "")  ;; desired value
    (match_operand:SI 5 "const_int_operand" "")  ;; is_weak
    (match_operand:SI 6 "const_int_operand" "")  ;; mod_s
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
-  "TARGET_ZALRSC"
+  "TARGET_ZALRSC || TARGET_ZACAS"
 {
   if (word_mode != <MODE>mode && operands[3] != const0_rtx)
     {
@@ -550,9 +583,20 @@
       operands[3] = simplify_gen_subreg (<MODE>mode, tmp0, word_mode, 0);
     }
 
-  emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
-						operands[3], operands[4],
-						operands[6], operands[7]));
+  if (TARGET_ZACAS)
+    emit_insn (gen_zacas_atomic_cas_value_strong<mode> (operands[1],
+							operands[2],
+							operands[3],
+							operands[4],
+							operands[6],
+							operands[7]));
+  else
+    emit_insn (gen_zalrsc_atomic_cas_value_strong<mode> (operands[1],
+							 operands[2],
+							 operands[3],
+							 operands[4],
+							 operands[6],
+							 operands[7]));
 
   rtx compare = operands[1];
   if (operands[3] != const0_rtx)
@@ -573,20 +617,65 @@
   DONE;
 })
 
+;; Implement compare_exchange with a conservative leading fence when
+;; model_failure is seq_cst.
+;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7
+;; (A6C and A7).
+;; More details: https://github.com/riscv-non-isa/riscv-elf-psabi-doc/issues/444
+(define_insn "zacas_atomic_cas_value_strong<mode>"
+  [(set (match_operand:SHORT 0 "register_operand" "=&r")			;; val output
+	(match_operand:SHORT 1 "memory_operand" "+A"))				;; memory
+   (set (match_dup 1)
+	(unspec_volatile:SHORT [(match_operand:SHORT 2 "register_operand" "0")  ;; expected_val
+				(match_operand:SHORT 3 "register_operand" "rJ") ;; desired_val
+				(match_operand:SI 4 "const_int_operand")	;; mod_s
+				(match_operand:SI 5 "const_int_operand")]	;; mod_f
+	 UNSPEC_COMPARE_AND_SWAP))]
+  "TARGET_ZACAS && TARGET_ZABHA"
+  {
+    enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+    enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+    /* Find the union of the two memory models so we can satisfy both success
+       and failure memory models.  */
+    operands[4] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+
+    if (model_failure == MEMMODEL_SEQ_CST)
+      return "fence\trw,rw\;"
+	     "amocas.<amobh>%A4\t%0,%z3,%1";
+    else
+      return "amocas.<amobh>%A4\t%0,%z3,%1";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length")
+	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[5]))) ? 8
+		      : 4)"))])
+
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand")    ;; bool output
    (match_operand:SHORT 1 "register_operand") ;; val output
    (match_operand:SHORT 2 "memory_operand")   ;; memory
-   (match_operand:SHORT 3 "reg_or_0_operand") ;; expected value
+   (match_operand:SHORT 3 "register_operand") ;; expected value
    (match_operand:SHORT 4 "reg_or_0_operand") ;; desired value
    (match_operand:SI 5 "const_int_operand")   ;; is_weak
    (match_operand:SI 6 "const_int_operand")   ;; mod_s
    (match_operand:SI 7 "const_int_operand")]  ;; mod_f
-  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "(TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC) || (TARGET_ZACAS && TARGET_ZABHA)"
 {
-  emit_insn (gen_atomic_cas_value_strong<mode> (operands[1], operands[2],
-						operands[3], operands[4],
-						operands[6], operands[7]));
+
+  if (TARGET_ZACAS && TARGET_ZABHA)
+    emit_insn (gen_zacas_atomic_cas_value_strong<mode> (operands[1],
+							operands[2],
+							operands[3],
+							operands[4],
+							operands[6],
+							operands[7]));
+  else
+    emit_insn (gen_zalrsc_atomic_cas_value_strong<mode> (operands[1],
+							 operands[2],
+							 operands[3],
+							 operands[4],
+							 operands[6],
+							 operands[7]));
 
   rtx val = gen_reg_rtx (SImode);
   if (operands[1] != const0_rtx)
@@ -619,7 +708,7 @@
   DONE;
 })
 
-(define_expand "atomic_cas_value_strong<mode>"
+(define_expand "zalrsc_atomic_cas_value_strong<mode>"
   [(match_operand:SHORT 0 "register_operand") ;; val output
    (match_operand:SHORT 1 "memory_operand")   ;; memory
    (match_operand:SHORT 2 "reg_or_0_operand") ;; expected value

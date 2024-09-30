@@ -1329,7 +1329,9 @@ convenient for use with realtime applications.
 .. index:: Random number generation
 
 Provides random number capabilities which extend those available in the
-standard Ada library and are more convenient to use.
+standard Ada library and are more convenient to use. This package is
+however NOT suitable for situations requiring cryptographically secure
+randomness.
 
 .. _`GNAT.Regexp_(g-regexp.ads)`:
 

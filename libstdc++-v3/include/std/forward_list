@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_FORWARD_LIST
 #define _GLIBCXX_FORWARD_LIST 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // containers
 
@@ -45,6 +47,8 @@
 # include <debug/forward_list>
 #endif
 
+#define __glibcxx_want_algorithm_default_value_type
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_incomplete_container_elements
 #define __glibcxx_want_list_remove_return_type
@@ -74,7 +78,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase_if(forward_list<_Tp, _Alloc>& __cont, _Predicate __pred)
     { return __cont.remove_if(__pred); }
 
-  template<typename _Tp, typename _Alloc, typename _Up>
+  template<typename _Tp, typename _Alloc,
+	   typename _Up _GLIBCXX26_DEF_VAL_T(_Tp)>
     inline typename forward_list<_Tp, _Alloc>::size_type
     erase(forward_list<_Tp, _Alloc>& __cont, const _Up& __value)
     {

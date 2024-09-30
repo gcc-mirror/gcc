@@ -29,15 +29,22 @@
 #ifndef _GLIBCXX_CWCHAR
 #define _GLIBCXX_CWCHAR 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <cstddef>
 #include <ctime>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
+
 #if _GLIBCXX_HAVE_WCHAR_H
 #include_next <wchar.h>
 #endif
+
+#pragma GCC diagnostic pop
 
 // Need to do a bit of trickery here with mbstate_t as char_traits
 // assumes it is in wchar.h, regardless of wchar_t specializations.

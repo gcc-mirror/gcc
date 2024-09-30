@@ -2890,7 +2890,7 @@ __pattern_includes(__parallel_tag<_IsVector> __tag, _ExecutionPolicy&& __exec, _
         });
 }
 
-constexpr auto __set_algo_cut_off = 1000;
+inline constexpr auto __set_algo_cut_off = 1000;
 
 template <class _IsVector, class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2,
           class _OutputIterator, class _Compare, class _SizeFunction, class _SetOP>

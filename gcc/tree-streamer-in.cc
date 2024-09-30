@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "opts.h"
+#include "stor-layout.h"
 
 
 /* Read a STRING_CST from the string table in DATA_IN using input
@@ -395,6 +396,17 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 #ifdef ACCEL_COMPILER
   if (TYPE_ALIGN (expr) > targetm.absolute_biggest_alignment)
     SET_TYPE_ALIGN (expr, targetm.absolute_biggest_alignment);
+
+  /* Host streams out VOIDmode for aggregate type. */
+  if (AGGREGATE_TYPE_P (expr) && TYPE_MODE (expr) == VOIDmode)
+    {
+      if (TREE_CODE (expr) == ARRAY_TYPE)
+	compute_array_mode (expr);
+      else if (RECORD_OR_UNION_TYPE_P (expr))
+	compute_record_mode (expr);
+      else
+	gcc_unreachable ();
+    }
 #endif
 }
 
@@ -671,8 +683,37 @@ static void
 lto_input_ts_poly_tree_pointers (class lto_input_block *ib,
 				 class data_in *data_in, tree expr)
 {
-  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
-    POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
+#ifdef ACCEL_COMPILER
+  /* Ensure that we have streamed-in host_num_poly_int_coeffs.  */
+  const unsigned num_poly_int_coeffs = host_num_poly_int_coeffs;
+  gcc_assert (num_poly_int_coeffs > 0);
+#else
+  const unsigned num_poly_int_coeffs = NUM_POLY_INT_COEFFS;
+#endif
+
+  unsigned i;
+  if (num_poly_int_coeffs <= NUM_POLY_INT_COEFFS)
+    {
+      for (i = 0; i < num_poly_int_coeffs; i++)
+	POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
+
+      tree coeff_type = TREE_TYPE (POLY_INT_CST_COEFF (expr, 0));
+      for (; i < NUM_POLY_INT_COEFFS; i++)
+	POLY_INT_CST_COEFF (expr, i) = build_zero_cst (coeff_type);
+    }
+  else
+    {
+      for (i = 0; i < NUM_POLY_INT_COEFFS; i++)
+	POLY_INT_CST_COEFF (expr, i) = stream_read_tree_ref (ib, data_in);
+      for (; i < num_poly_int_coeffs; i++)
+	{
+	  tree val = stream_read_tree_ref (ib, data_in);
+	  if (!integer_zerop (val))
+	    fatal_error (input_location,
+			 "degree of %<poly_int%> exceeds "
+			 "%<NUM_POLY_INT_COEFFS%>");
+	}
+    }
 }
 
 

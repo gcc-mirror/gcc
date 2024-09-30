@@ -24,7 +24,9 @@
 #ifndef _GLIBCXX_STACKTRACE
 #define _GLIBCXX_STACKTRACE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // std::string bound
 
@@ -80,7 +82,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr native_handle_type
     native_handle() const noexcept { return _M_pc; }
 
-    constexpr explicit operator bool() const noexcept { return _M_pc != -1; }
+    constexpr explicit operator bool() const noexcept
+    { return _M_pc != (native_handle_type)-1; }
 
     // [stacktrace.entry.query], query
     [[nodiscard]]
@@ -178,13 +181,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using _AllocTraits = allocator_traits<_Allocator>;
       using uintptr_t = __UINTPTR_TYPE__;
+      struct _Impl;
 
     public:
       using value_type = stacktrace_entry;
       using const_reference = const value_type&;
       using reference = value_type&;
       using const_iterator
-	= __gnu_cxx::__normal_iterator<value_type*, basic_stacktrace>;
+	= __gnu_cxx::__normal_iterator<typename _AllocTraits::const_pointer,
+				       _Impl>;
       using iterator = const_iterator;
       using reverse_iterator = std::reverse_iterator<iterator>;
       using const_reverse_iterator = std::reverse_iterator<const_iterator>;
@@ -555,7 +560,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
 		{
 		  // For std::allocator we use nothrow-new directly so we
-		  // don't need to handle bad_alloc exceptions.
+		  // don't need to handle exceptions from __alloc.allocate(n).
 		  auto __p = __detail::__get_temporary_buffer<value_type>(__n);
 		  if (__p == nullptr) [[unlikely]]
 		    return nullptr;
@@ -567,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    {
 		      _M_frames = __alloc.allocate(__n);
 		    }
-		  __catch (const std::bad_alloc&)
+		  __catch (...)
 		    {
 		      return nullptr;
 		    }

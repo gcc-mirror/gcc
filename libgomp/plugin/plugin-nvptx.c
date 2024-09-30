@@ -1242,6 +1242,43 @@ GOMP_OFFLOAD_get_name (void)
   return "nvptx";
 }
 
+/* Return the UID; if not available return NULL.
+   Returns freshly allocated memoy.  */
+
+const char *
+GOMP_OFFLOAD_get_uid (int ord)
+{
+  CUresult r;
+  CUuuid s;
+  struct ptx_device *dev = ptx_devices[ord];
+
+  if (CUDA_CALL_EXISTS (cuDeviceGetUuid_v2))
+    r = CUDA_CALL_NOCHECK (cuDeviceGetUuid_v2, &s, dev->dev);
+  else if (CUDA_CALL_EXISTS (cuDeviceGetUuid))
+    r = CUDA_CALL_NOCHECK (cuDeviceGetUuid, &s, dev->dev);
+  else
+    return NULL;
+  if (r != CUDA_SUCCESS)
+    NULL;
+
+  size_t len = strlen ("GPU-12345678-9abc-defg-hijk-lmniopqrstuv");
+  char *str = (char *) GOMP_PLUGIN_malloc (len + 1);
+  sprintf (str,
+	   "GPU-%02x" "%02x" "%02x" "%02x"
+	   "-%02x" "%02x"
+	   "-%02x" "%02x"
+	   "-%02x" "%02x" "%02x" "%02x" "%02x" "%02x" "%02x" "%02x",
+	   (unsigned char) s.bytes[0], (unsigned char) s.bytes[1],
+	   (unsigned char) s.bytes[2], (unsigned char) s.bytes[3],
+	   (unsigned char) s.bytes[4], (unsigned char) s.bytes[5],
+	   (unsigned char) s.bytes[6], (unsigned char) s.bytes[7],
+	   (unsigned char) s.bytes[8], (unsigned char) s.bytes[9],
+	   (unsigned char) s.bytes[10], (unsigned char) s.bytes[11],
+	   (unsigned char) s.bytes[12], (unsigned char) s.bytes[13],
+	   (unsigned char) s.bytes[14], (unsigned char) s.bytes[15]);
+  return str;
+}
+
 unsigned int
 GOMP_OFFLOAD_get_caps (void)
 {
@@ -1264,6 +1301,7 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (num_devices > 0
       && ((omp_requires_mask
 	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_SELF_MAPS
 	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
 	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
@@ -1271,7 +1309,8 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
      if so, enable USM.  Currently, capabilities is per device type, hence,
      check all devices.  */
   if (num_devices > 0
-      && (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+      && (omp_requires_mask
+	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
     for (int dev = 0; dev < num_devices; dev++)
       {
 	int pi;

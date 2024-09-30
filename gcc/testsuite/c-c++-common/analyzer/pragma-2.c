@@ -1,6 +1,7 @@
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* Verify that we can disable -Wanalyzer-too-complex via pragmas.  */
 /* { dg-additional-options "-Wanalyzer-too-complex -Werror=analyzer-too-complex -fno-analyzer-state-merge -g" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 

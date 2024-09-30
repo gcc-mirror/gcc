@@ -18,7 +18,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.1 - Template class basic_filebuf 
+// 27.8.1.1 - Template class basic_ostringstream
 
 #include <ostream>
 #include <sstream>

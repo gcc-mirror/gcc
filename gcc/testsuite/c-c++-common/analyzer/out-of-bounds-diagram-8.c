@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fdiagnostics-text-art-charset=unicode" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } } */
 
 #include <stdlib.h>
 #include <stdint.h>

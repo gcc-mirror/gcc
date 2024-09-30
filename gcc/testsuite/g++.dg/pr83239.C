@@ -2,6 +2,7 @@
 // on simple std::vector code
 // { dg-do compile }
 // { dg-options "-O3 -finline-limit=500 -Wall -fdump-tree-optimized"  }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

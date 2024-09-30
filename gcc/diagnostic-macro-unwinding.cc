@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic.h"
 #include "diagnostic-macro-unwinding.h"
+#include "diagnostic-format-text.h"
 #include "intl.h"
 
 /* This is a pair made of a location and the line map it originated
@@ -72,7 +73,7 @@ struct loc_map_pair
    function.  */
 
 void
-maybe_unwind_expanded_macro_loc (diagnostic_context *context,
+maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
                                  location_t where)
 {
   const struct line_map *map;
@@ -177,9 +178,9 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
 	const int resolved_def_loc_line = SOURCE_LINE (m, l0);
         if (ix == 0 && saved_location_line != resolved_def_loc_line)
           {
-            diagnostic_append_note (context, resolved_def_loc, 
-                                    "in definition of macro %qs",
-                                    linemap_map_get_macro_name (iter->map));
+	    text_output.append_note (resolved_def_loc,
+				     "in definition of macro %qs",
+				     linemap_map_get_macro_name (iter->map));
             /* At this step, as we've printed the context of the macro
                definition, we don't want to print the context of its
                expansion, otherwise, it'd be redundant.  */
@@ -194,9 +195,9 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
                                     iter->map->get_expansion_point_location (),
                                     LRK_MACRO_DEFINITION_LOCATION, NULL);
 
-        diagnostic_append_note (context, resolved_exp_loc, 
-                                "in expansion of macro %qs",
-                                linemap_map_get_macro_name (iter->map));
+	text_output.append_note (resolved_exp_loc,
+				 "in expansion of macro %qs",
+				 linemap_map_get_macro_name (iter->map));
       }
 }
 
@@ -214,8 +215,8 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
     that is similar to what is done for function call stacks, or
     template instantiation contexts.  */
 void
-virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
+virt_loc_aware_diagnostic_finalizer (diagnostic_text_output_format &text_output,
 				     const diagnostic_info *diagnostic)
 {
-  maybe_unwind_expanded_macro_loc (context, diagnostic_location (diagnostic));
+  maybe_unwind_expanded_macro_loc (text_output, diagnostic_location (diagnostic));
 }

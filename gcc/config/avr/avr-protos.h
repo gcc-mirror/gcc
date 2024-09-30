@@ -1,5 +1,4 @@
-/* Prototypes for exported functions defined in avr.cc
-   
+/* Prototypes for tm_p.h for AVR 8-bit microcontrollers.
    Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
@@ -21,7 +20,7 @@
 
 
 extern int avr_function_arg_regno_p (int r);
-extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
+extern void avr_cpu_cpp_builtins (cpp_reader * pfile);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_adjust_reg_alloc_order (void);
@@ -35,6 +34,7 @@ extern void avr_init_expanders (void);
 #ifdef TREE_CODE
 extern void avr_asm_output_aligned_decl_common (FILE*, tree, const char*, unsigned HOST_WIDE_INT, unsigned int, bool);
 extern void avr_asm_asm_output_aligned_bss (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int, void (*) (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int));
+extern void avr_declare_function_name (FILE *, const char *, tree);
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
 extern bool avr_addr_space_supported_p (addr_space_t, location_t loc = UNKNOWN_LOCATION);
@@ -54,7 +54,7 @@ extern const char *avr_out_tsthi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_tstpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_compare (rtx_insn *, rtx*, int*);
 extern const char *avr_out_compare64 (rtx_insn *, rtx*, int*);
-extern const char *ret_cond_branch (rtx x, int len, int reverse);
+extern const char *avr_cond_branch (rtx_insn *, rtx *);
 extern const char *avr_out_movpsi (rtx_insn *, rtx*, int*);
 extern const char *avr_out_sign_extend (rtx_insn *, rtx*, int*);
 extern const char *avr_out_insert_notbit (rtx_insn *, rtx*, int*);
@@ -62,7 +62,11 @@ extern const char *avr_out_insv (rtx_insn *, rtx*, int*);
 extern const char *avr_out_extr (rtx_insn *, rtx*, int*);
 extern const char *avr_out_extr_not (rtx_insn *, rtx*, int*);
 extern const char *avr_out_plus_set_ZN (rtx*, int*);
-extern const char *avr_out_cmp_ext (rtx*, enum rtx_code, int*);
+extern const char *avr_out_plus_set_N (rtx*, int*);
+extern const char *avr_out_op8_set_ZN (rtx_code, rtx*, int*);
+extern int avr_len_op8_set_ZN (rtx_code, rtx*);
+extern bool avr_op8_ZN_operator (rtx);
+extern const char *avr_out_cmp_ext (rtx*, rtx_code, int*);
 
 extern const char *ashlqi3_out (rtx_insn *insn, rtx operands[], int *len);
 extern const char *ashlhi3_out (rtx_insn *insn, rtx operands[], int *len);
@@ -90,7 +94,6 @@ extern void avr_expand_epilogue (bool);
 extern bool avr_emit_cpymemhi (rtx*);
 extern void avr_emit_xior_with_shift (rtx_insn*, rtx*, int);
 extern int avr_epilogue_uses (int regno);
-extern bool avr_split_tiny_move (rtx_insn *insn, rtx *operands);
 
 extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
@@ -112,19 +115,20 @@ extern const char* output_reload_inhi (rtx*, rtx, int*);
 extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
 extern const char* avr_out_lpm (rtx_insn *, rtx*, int*);
-extern void avr_notice_update_cc (rtx body, rtx_insn *insn);
+extern const char* avr_out_cmp_lsr (rtx_insn *, rtx*, int*);
+extern void avr_maybe_cmp_lsr (rtx *);
 extern int reg_unused_after (rtx_insn *insn, rtx reg);
-extern int avr_jump_mode (rtx x, rtx_insn *insn);
+extern int avr_jump_mode (rtx x, rtx_insn *insn, int = 0);
 extern int test_hard_reg_class (enum reg_class rclass, rtx x);
 extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
-extern RTX_CODE avr_normalize_condition (RTX_CODE condition);
+extern rtx_code avr_normalize_condition (rtx_code condition);
 extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
 				rtx operands[], int *len, int t_len);
-extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
-extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, RTX_CODE, RTX_CODE);
+extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, rtx_code, rtx_code);
+extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, rtx_code, rtx_code);
 extern rtx avr_incoming_return_addr_rtx (void);
 extern rtx avr_legitimize_reload_address (rtx*, machine_mode, int, int, int, int, rtx (*)(rtx,int));
 extern bool avr_adiw_reg_p (rtx);
@@ -133,9 +137,8 @@ extern bool avr_mem_memx_p (rtx);
 extern bool avr_load_libgcc_p (rtx);
 extern bool avr_xload_libgcc_p (machine_mode);
 extern rtx avr_eval_addr_attrib (rtx x);
-extern bool avr_casei_sequence_check_operands (rtx *xop);
 
-extern bool avr_float_lib_compare_returns_bool (machine_mode, enum rtx_code);
+extern bool avr_float_lib_compare_returns_bool (machine_mode, rtx_code);
 
 static inline unsigned
 regmask (machine_mode mode, unsigned regno)
@@ -153,6 +156,8 @@ extern rtx zero_reg_rtx;
 extern rtx all_regs_rtx[32];
 extern rtx rampz_rtx;
 extern rtx cc_reg_rtx;
+extern rtx ccn_reg_rtx;
+extern rtx cczn_reg_rtx;
 
 #endif /* RTX_CODE */
 
@@ -162,6 +167,8 @@ extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 
 extern bool avr_have_dimode;
 
+/* From avr-passes.cc */
+
 namespace gcc { class context; }
 class rtl_opt_pass;
 
@@ -170,6 +177,10 @@ extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_ifelse (gcc::context *);
+#ifdef RTX_CODE
+extern bool avr_casei_sequence_check_operands (rtx *xop);
+extern bool avr_split_fake_addressing_move (rtx_insn *insn, rtx *operands);
+#endif /* RTX_CODE */
 
 /* From avr-log.cc */
 

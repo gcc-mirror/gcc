@@ -39,6 +39,11 @@ package Exp_Intr is
    --  documentation of these intrinsics. Loc is passed to provide location
    --  information where it is needed.
 
+   procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id);
+   --  Rewrite the node as the appropriate string literal or positive constant.
+   --  Nam is the name of one of the intrinsics declared in GNAT.Source_Info;
+   --  see g-souinf.ads for documentation of these intrinsics.
+
    procedure Expand_Intrinsic_Call (N : Node_Id; E : Entity_Id);
    --  N is either a function call node, a procedure call statement node, or
    --  an operator where the corresponding subprogram is intrinsic (i.e. was

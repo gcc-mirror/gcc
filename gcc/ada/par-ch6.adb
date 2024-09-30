@@ -1911,7 +1911,6 @@ package body Ch6 is
          Is_Extended : Boolean := False;
 
       begin
-
          if Token = Tok_Identifier then
             Save_Scan_State (Scan_State); -- at identifier
             Scan; -- past identifier

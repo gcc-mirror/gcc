@@ -1,4 +1,6 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for stdlib qsort" { ! hostedlib } }
+
 #include <stdlib.h>
 #include <string.h>
 

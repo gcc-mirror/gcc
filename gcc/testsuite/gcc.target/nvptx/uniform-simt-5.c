@@ -22,7 +22,7 @@ main()
 
 /* Per 'omp_simt_exit':
      - 'nvptx_warpsync'
-       { dg-final { scan-assembler-times {bar\.warp\.sync\t0xffffffff;} 1 { target default_ptx_isa_version_at_least_6_0 } } }
+       { dg-final { scan-assembler-times {bar\.warp\.sync\t0xffffffff;} 1 { target nvptx_default_ptx_isa_version_at_least_6_0 } } }
      - 'nvptx_uniform_warp_check'
-       { dg-final { scan-assembler-times {vote\.all\.pred\t%r_sync, 1;} 1 { target { ! default_ptx_isa_version_at_least_6_0 } } } }
+       { dg-final { scan-assembler-times {vote\.all\.pred\t%r_sync, 1;} 1 { target { ! nvptx_default_ptx_isa_version_at_least_6_0 } } } }
 */

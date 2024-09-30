@@ -1,4 +1,5 @@
-/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
+/* Extra machine modes for AVR 8-bit microcontrollers.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -17,6 +18,12 @@
    <http://www.gnu.org/licenses/>.  */
 
 FRACTIONAL_INT_MODE (PSI, 24, 3);
+
+/* Used when the N (and Z) flag(s) of SREG are set.
+   The N flag indicates  whether the value is negative.
+   The Z flag indicates  whether the value is zero.  */
+CC_MODE (CCN);
+CC_MODE (CCZN);
 
 /* Make TA and UTA 64 bits wide.
    128 bit wide modes would be insane on a 8-bit machine.

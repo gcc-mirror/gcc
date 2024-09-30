@@ -20,7 +20,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 Enum
-Name(ptx_isa) Type(int)
+Name(ptx_isa) Type(enum ptx_isa)
 Known PTX ISA target architectures (for use with the -misa= option):
 
 EnumValue

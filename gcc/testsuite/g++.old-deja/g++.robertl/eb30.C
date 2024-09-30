@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for fstream" { ! hostedlib } }
 #include <fstream>
 
 class bifstream : public std::ifstream {

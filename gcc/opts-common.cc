@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "diagnostic.h"
+#include "opts-diagnostic.h"
 #include "spellcheck.h"
 #include "opts-jobserver.h"
 
@@ -1867,6 +1868,13 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 	break;
       }
   return -1;
+}
+
+int
+compiler_diagnostic_option_manager::
+option_enabled_p (diagnostic_option_id opt_id) const
+{
+  return option_enabled (opt_id.m_idx, m_lang_mask, m_opts);
 }
 
 /* Fill STATE with the current state of option OPTION in OPTS.  Return

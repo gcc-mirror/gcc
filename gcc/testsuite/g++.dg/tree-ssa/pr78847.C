@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target c++14 } */
 /* { dg-options "-O3 -fdump-tree-ldist-optimized" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } } */
 
 #include <stddef.h>
 #include <cstring>

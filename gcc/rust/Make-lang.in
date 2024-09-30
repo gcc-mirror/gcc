@@ -100,6 +100,16 @@ GRS_OBJS = \
     rust/rust-proc-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
+    rust/rust-macro-builtins-helpers.o \
+    rust/rust-macro-builtins-asm.o \
+    rust/rust-macro-builtins-trait.o \
+    rust/rust-macro-builtins-utility.o \
+    rust/rust-macro-builtins-log-debug.o \
+    rust/rust-macro-builtins-test-bench.o \
+    rust/rust-macro-builtins-format-args.o \
+    rust/rust-macro-builtins-location.o \
+    rust/rust-macro-builtins-include.o \
+	rust/rust-fmt.o \
     rust/rust-hir.o \
     rust/rust-hir-map.o \
     rust/rust-attributes.o \
@@ -115,12 +125,14 @@ GRS_OBJS = \
     rust/rust-ast-lower-expr.o \
     rust/rust-ast-lower-type.o \
     rust/rust-ast-lower-stmt.o \
+    rust/rust-ast-lower-format-args.o \
     rust/rust-rib.o \
     rust/rust-name-resolution-context.o \
     rust/rust-default-resolver.o \
     rust/rust-toplevel-name-resolver-2.0.o \
     rust/rust-early-name-resolver-2.0.o \
     rust/rust-late-name-resolver-2.0.o \
+	rust/rust-immutable-name-resolution-context.o \
     rust/rust-early-name-resolver.o \
     rust/rust-name-resolver.o \
     rust/rust-ast-resolve.o \
@@ -143,6 +155,7 @@ GRS_OBJS = \
     rust/rust-tyty-util.o \
     rust/rust-tyty-call.o \
     rust/rust-tyty-subst.o \
+    rust/rust-tyty-variance-analysis.o \
     rust/rust-typecheck-context.o \
     rust/rust-tyty-bounds.o \
     rust/rust-hir-trait-resolve.o \
@@ -200,6 +213,8 @@ GRS_OBJS = \
     rust/rust-dir-owner.o \
     rust/rust-unicode.o \
     rust/rust-punycode.o \
+	rust/rust-lang-item.o \
+	rust/rust-expand-format-args.o \
     $(END)
 # removed object files from here
 
@@ -209,15 +224,13 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
 LIBPROC_MACRO_INTERNAL = ../libgrust/libproc_macro_internal/libproc_macro_internal.a
-
-
-RUST_LIBDEPS = $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL)
+LIBFORMAT_PARSER = ../libgrust/libformat_parser/debug/liblibformat_parser.a
 
 # The compiler itself is called crab1
-crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(RUST_LIBDEPS) $(rust.prev)
+crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(LIBPROC_MACRO_INTERNAL) $(BACKENDLIBS)
+	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(CRAB1_LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
 # Build hooks.

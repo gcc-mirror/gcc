@@ -95,6 +95,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
    }},
 
   {"zabha", "zaamo"},
+  {"zacas", "zaamo"},
+
+  {"zcmop", "zca"},
 
   {"b", "zba"},
   {"b", "zbb"},
@@ -283,6 +286,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zaamo", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zalrsc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zabha", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zacas", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
@@ -316,6 +320,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"ziccif",   ISA_SPEC_CLASS_NONE, 1, 0},
   {"zicclsm",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"ziccrse",  ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zimop", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zcmop", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
   {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
@@ -855,8 +862,8 @@ riscv_subset_list::to_string (bool version_p) const
 
   bool skip_zifencei = false;
   bool skip_zaamo_zalrsc = false;
-  bool skip_zabha = false;
   bool skip_zicsr = false;
+  bool skip_b = false;
   bool i2p0 = false;
 
   /* For RISC-V ISA version 2.2 or earlier version, zicsr and zifencei is
@@ -884,12 +891,14 @@ riscv_subset_list::to_string (bool version_p) const
   skip_zifencei = true;
 #endif
 #ifndef HAVE_AS_MARCH_ZAAMO_ZALRSC
-  /* Skip since binutils 2.42 and earlier don't recognize zaamo/zalrsc.  */
+  /* Skip since binutils 2.42 and earlier don't recognize zaamo/zalrsc.
+     Expanding 'a' to zaamo/zalrsc would otherwise break compilations
+     for users with an older version of binutils.  */
   skip_zaamo_zalrsc = true;
 #endif
-#ifndef HAVE_AS_MARCH_ZABHA
-  /* Skip since binutils 2.42 and earlier don't recognize zabha.  */
-  skip_zabha = true;
+#ifndef HAVE_AS_MARCH_B
+  /* Skip since binutils 2.42 and earlier don't recognize b.  */
+  skip_b = true;
 #endif
 
   for (subset = m_head; subset != NULL; subset = subset->next)
@@ -908,7 +917,7 @@ riscv_subset_list::to_string (bool version_p) const
       if (skip_zaamo_zalrsc && subset->name == "zalrsc")
 	continue;
 
-      if (skip_zabha && subset->name == "zabha")
+      if (skip_b && subset->name == "b")
 	continue;
 
       /* For !version_p, we only separate extension with underline for
@@ -1590,6 +1599,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zaamo",   &gcc_options::x_riscv_za_subext, MASK_ZAAMO},
   {"zalrsc",  &gcc_options::x_riscv_za_subext, MASK_ZALRSC},
   {"zabha",   &gcc_options::x_riscv_za_subext, MASK_ZABHA},
+  {"zacas",   &gcc_options::x_riscv_za_subext, MASK_ZACAS},
 
   {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
@@ -1623,6 +1633,9 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
   {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
   {"zic64b", &gcc_options::x_riscv_zicmo_subext, MASK_ZIC64B},
+
+  {"zimop",    &gcc_options::x_riscv_mop_subext, MASK_ZIMOP},
+  {"zcmop",    &gcc_options::x_riscv_mop_subext, MASK_ZCMOP},
 
   {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
   {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},
@@ -2066,7 +2079,7 @@ riscv_select_multilib_by_abi (
   const std::string &riscv_current_abi_str,
   const std::vector<riscv_multi_lib_info_t> &multilib_infos)
 {
-  for (size_t i = 0; i < multilib_infos.size (); ++i)
+  for (ssize_t i = multilib_infos.size () - 1; i >= 0; --i)
     if (riscv_current_abi_str == multilib_infos[i].abi_str)
       return xstrdup (multilib_infos[i].path.c_str ());
 

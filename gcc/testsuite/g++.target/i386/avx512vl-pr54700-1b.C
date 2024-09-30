@@ -5,5 +5,6 @@
 /* { dg-final { scan-assembler-times "pblendvb" 2 } } */
 /* { dg-final { scan-assembler-times "blendvps" 4 } } */
 /* { dg-final { scan-assembler-times "blendvpd" 4 } } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include "sse4_1-pr54700-1.C"

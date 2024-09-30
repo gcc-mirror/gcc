@@ -1,3 +1,159 @@
+2024-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116847
+	* c-pch.cc: Include diagnostic.h.
+	(c_common_write_pch): Call global_dc->pch_save.
+	(c_common_read_pch): Call global_dc->pch_restore.
+
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* c.opt.urls: Regenerate.
+
+2024-09-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-pretty-print.cc (c_pretty_printer::primary_expression): Use
+	TARGET_EXPR accessors.
+	(c_pretty_printer::expression): Likewise.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* c.opt (frange-for-ext-temps): New option.
+	* c-opts.cc (c_common_post_options): Set flag_range_for_ext_temps
+	for C++23 or later or for C++11 or later in !flag_iso mode if
+	the option wasn't set by user.
+	* c-cppbuiltin.cc (c_cpp_builtins): Change __cpp_range_based_for
+	value for flag_range_for_ext_temps from 201603L to 202212L in C++17
+	or later.
+	* c-omp.cc (c_find_nested_loop_xform_r): Handle CLEANUP_POINT_EXPR
+	like TRY_FINALLY_EXPR.
+
+2024-09-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-opts.cc: Include "diagnostic-format-text.h".
+	(c_diagnostic_finalizer): Rename to...
+	(c_diagnostic_text_finalizer): ...this.  Convert first param
+	from diagnostic_context * to diagnostic_text_output_format & and
+	update accordingly.
+	(c_common_diagnostics_set_defaults): Update for renamings.
+
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116162
+	* c.opt (Wdefaulted-function-deleted): New.
+
+2024-09-12  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add CppReason for Wc++{14,17,20,23}-extensions.
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Don't check
+	OPT_Wc__23_extensions.
+
+2024-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/105863
+	* c.opt (-embed-dir=): New option.
+	(-embed-directory): New alias.
+	(-embed-directory=): New alias.
+	* c-opts.cc (c_common_handle_option): Handle OPT__embed_dir_.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.cc (c_option_controlling_cpp_diagnostic): Return
+	diagnostic_option_id rather than int.
+	(c_cpp_diagnostic): Update for renaming of
+	diagnostic_override_option_index to diagnostic_set_option_id.
+
+2024-09-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-format.cc (selftest::test_type_mismatch_range_labels): Rename
+	diagnostic_context's "printer" field to "m_printer".
+	(selftest::test_type_mismatch_range_labels): Likewise.
+	* c-opts.cc (c_diagnostic_finalizer): Likewise.
+
+2024-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46457
+	PR c++/81665
+	* c-attribs.cc (handle_flag_enum_attribute): New.
+	(c_common_gnu_attributes): Add it.
+	(c_common_clang_attributes, c_common_clang_attribute_table): New.
+	* c-common.h: Declare c_common_clang_attribute_table.
+	* c-warn.cc (c_do_switch_warnings): Handle flag_enum.
+
+2024-09-03  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_counted_by_attribute): Is ignored and issues
+	warning with -Wattributes in C++ for now.
+
+2024-09-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-ada-spec.cc (dump_ada_node): Prefix all output_buffer fields
+	with "m_".
+	* c-pretty-print.cc (pp_c_integer_constant): Likewise.
+	(pp_c_integer_constant): Likewise.
+	(pp_c_floating_constant): Likewise.
+	(pp_c_fixed_constant): Likewise.
+
+2024-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116130
+	* c-attribs.cc (c_common_gnu_attributes): Add entries for
+	"unsequenced", "reproducible", "unsequenced noptr" and
+	"reproducible noptr" attributes.
+	(handle_unsequenced_attribute): New function.
+	(handle_reproducible_attribute): Likewise.
+	* c-common.h (handle_unsequenced_attribute): Declare.
+	(handle_reproducible_attribute): Likewise.
+	* c-lex.cc (c_common_has_attribute): Return 202311 for standard
+	unsequenced and reproducible attributes.
+
+2024-08-28  Jason Merrill  <jason@redhat.com>
+
+	* c-pragma.cc (handle_pragma_diagnostic_impl): Also handle
+	-Wc++23-extensions early.
+	* c-lex.cc (interpret_float): Use -Wc++23-extensions for extended
+	floating point literal pedwarn.
+
+2024-08-09  Patrick Palka  <ppalka@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.cc (c_pp_lookup_pragma): Use ARRAY_SIZE in
+	n_omp_pragmas_simd initializer.
+	(init_pragmas): Likewise.
+
+2024-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115744
+	* c-cppbuiltin.cc (c_cpp_builtins): Change __cpp_constexpr
+	from 202306L to 202406L for C++26.
+
+2024-08-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116064
+	* c.opt (Wtemplate-body): New warning.
+
+2024-08-02  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wdangling-reference): Move from -Wall to -Wextra.
+
+2024-07-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-format.cc (gcc_gfc_char_table): Add formats for tree objects.
+
 2024-07-23  Andi Kleen  <ak@linux.intel.com>
 
 	* c-attribs.cc (set_musttail_on_return): New function.

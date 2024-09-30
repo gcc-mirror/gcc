@@ -3760,7 +3760,22 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location,
 	{
 	  tree init = TARGET_EXPR_INITIAL (*arg_p);
 	  if (init
-	      && !VOID_TYPE_P (TREE_TYPE (init)))
+	      && !VOID_TYPE_P (TREE_TYPE (init))
+	      /* Currently, due to c++/116015, it is not desirable to
+		 strip a TARGET_EXPR whose initializer is a {}.  The
+		 problem is that if we do elide it, we also have to
+		 replace all the occurrences of the slot temporary in the
+		 initializer with the temporary created for the argument.
+		 But we do not have that temporary yet so the replacement
+		 would be quite awkward and it might be needed to resort
+		 back to a PLACEHOLDER_EXPR.  Note that stripping the
+		 TARGET_EXPR wouldn't help anyway, as gimplify_expr would
+		 just allocate a temporary to store the CONSTRUCTOR into.
+		 (FIXME PR116375.)
+
+		 See convert_for_arg_passing for the C++ code that marks
+		 the TARGET_EXPR as eliding or not.  */
+	      && TREE_CODE (init) != CONSTRUCTOR)
 	    *arg_p = init;
 	}
     }
@@ -5549,7 +5564,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	struct gimplify_init_ctor_preeval_data preeval_data;
 	HOST_WIDE_INT num_ctor_elements, num_nonzero_elements;
 	HOST_WIDE_INT num_unique_nonzero_elements;
-	bool complete_p, valid_const_initializer;
+	int complete_p;
+	bool valid_const_initializer;
 
 	/* Aggregate types must lower constructors to initialization of
 	   individual elements.  The exception is that a CONSTRUCTOR node
@@ -5599,7 +5615,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	    DECL_INITIAL (object) = ctor;
 	    TREE_STATIC (object) = 1;
-	    if (!DECL_NAME (object))
+	    if (!DECL_NAME (object) || DECL_NAMELESS (object))
 	      DECL_NAME (object) = create_tmp_var_name ("C");
 	    walk_tree (&DECL_INITIAL (object), force_labels_r, NULL, NULL);
 
@@ -5652,6 +5668,17 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	else if (ensure_single_access && num_nonzero_elements == 0)
 	  /* If a single access to the target must be ensured and all elements
 	     are zero, then it's optimal to clear whatever their number.  */
+	  cleared = true;
+	/* If the object is small enough to go in registers, and it's
+	   not required to be constructed in memory, clear it first.
+	   That will avoid wasting cycles preserving any padding bits
+	   that might be there, and if there aren't any, the compiler
+	   is smart enough to optimize the clearing out.  */
+	else if (complete_p <= 0
+		 && !TREE_ADDRESSABLE (ctor)
+		 && !TREE_THIS_VOLATILE (object)
+		 && (TYPE_MODE (type) != BLKmode || TYPE_NO_FORCE_BLK (type))
+		 && optimize)
 	  cleared = true;
 	else
 	  cleared = false;
@@ -6980,7 +7007,8 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	*expr_p = build_fold_addr_expr (op0);
 
       /* Make sure TREE_CONSTANT and TREE_SIDE_EFFECTS are set properly.  */
-      recompute_tree_invariant_for_addr_expr (*expr_p);
+      if (TREE_CODE (*expr_p) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*expr_p);
 
       /* If we re-built the ADDR_EXPR add a conversion to the original type
          if required.  */
@@ -7324,7 +7352,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			       ASM_VOLATILE_P (expr)
 			       || noutputs == 0
 			       || labels);
-      gimple_asm_set_input (stmt, ASM_INPUT_P (expr));
+      gimple_asm_set_basic (stmt, ASM_BASIC_P (expr));
       gimple_asm_set_inline (stmt, ASM_INLINE_P (expr));
 
       gimplify_seq_add_stmt (pre_p, stmt);
@@ -7771,7 +7799,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
   /* When adding a variable-sized variable, we have to handle all sorts
      of additional bits of data: the pointer replacement variable, and
      the parameters of the type.  */
-  if (DECL_SIZE (decl) && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+  if (DECL_SIZE (decl) && !poly_int_tree_p (DECL_SIZE (decl)))
     {
       /* Add the pointer replacement variable as PRIVATE if the variable
 	 replacement is private, else FIRSTPRIVATE since we'll need the
@@ -14385,7 +14413,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		}
 	    }
 	  else if (DECL_SIZE (decl)
-		   && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
+		   && !poly_int_tree_p (DECL_SIZE (decl))
 		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_POINTER
 		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
 		   && (OMP_CLAUSE_MAP_KIND (c)
@@ -19422,7 +19450,7 @@ gimplify_body (tree fndecl, bool do_parms)
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
 
   /* If we had callee-copies statements, insert them at the beginning
-     of the function and clear DECL_VALUE_EXPR_P on the parameters.  */
+     of the function and clear DECL_HAS_VALUE_EXPR_P on the parameters.  */
   if (!gimple_seq_empty_p (parm_stmts))
     {
       tree parm;

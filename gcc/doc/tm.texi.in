@@ -3108,7 +3108,6 @@ used in .eh_frame or .debug_frame is different from that used in other
 debug info sections.  Given a GCC hard register number, this macro
 should return the .eh_frame register number.  The default is
 @code{DEBUGGER_REGNO (@var{regno})}.
-
 @end defmac
 
 @defmac DWARF2_FRAME_REG_OUT (@var{regno}, @var{for_eh})
@@ -3177,6 +3176,14 @@ In this case, you might specify:
 
 Note that the elimination of the argument pointer with the stack pointer is
 specified first since that is the preferred elimination.
+@end defmac
+
+@defmac RELOAD_ELIMINABLE_REGS
+Like @code{ELIMINABLE_REGS}, but only used in the old reload framework where
+it takes precedence over @code{ELIMINABLE_REGS}.  This macro can be useful
+during the transition to LRA because there are cases where reload and LRA
+disagree on how eliminable registers should be represented. For an example,
+see @file{avr.h}.
 @end defmac
 
 @hook TARGET_CAN_ELIMINATE
@@ -3454,6 +3461,8 @@ stack.
 @hook TARGET_VALID_POINTER_MODE
 
 @hook TARGET_REF_MAY_ALIAS_ERRNO
+
+@hook TARGET_MODE_CAN_TRANSFER_BITS
 
 @hook TARGET_TRANSLATE_MODE_ATTRIBUTE
 
@@ -6611,6 +6620,10 @@ the target supports DWARF 2 frame unwind information.
 @hook TARGET_DWARF_REGISTER_SPAN
 
 @hook TARGET_DWARF_FRAME_REG_MODE
+
+@hook TARGET_OUTPUT_CFI_DIRECTIVE
+
+@hook TARGET_DW_CFI_OPRND1_DESC
 
 @hook TARGET_INIT_DWARF_REG_SIZES_EXTRA
 

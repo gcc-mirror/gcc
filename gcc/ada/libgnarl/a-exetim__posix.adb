@@ -113,14 +113,14 @@ package body Ada.Execution_Time is
       function clock_gettime
         (clock_id : Interfaces.C.int;
          tp       : access timespec)
-         return int;
+         return Interfaces.C.int;
       pragma Import (C, clock_gettime, "clock_gettime");
       --  Function from the POSIX.1b Realtime Extensions library
 
       function pthread_getcpuclockid
         (tid       : Thread_Id;
          clock_id  : access Interfaces.C.int)
-         return int;
+         return Interfaces.C.int;
       pragma Import (C, pthread_getcpuclockid, "pthread_getcpuclockid");
       --  Function from the Thread CPU-Time Clocks option
 

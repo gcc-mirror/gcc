@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 /*
   Test that members of temporary awaitables in co_await statements do not get
   'promoted'. This would lead to the members destructor getting called more

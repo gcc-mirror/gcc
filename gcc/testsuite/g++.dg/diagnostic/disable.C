@@ -1,5 +1,7 @@
 // { dg-options "-Wtemplates -Wmultiple-inheritance -Wvirtual-inheritance -Wnamespaces" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
+#define _GLIBCXX_SYSHDR
 #include <iostream>
 #include <algorithm>
 

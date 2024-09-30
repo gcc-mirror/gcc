@@ -115,8 +115,8 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 enum required_ext
 {
   VECTOR_EXT,		/* Vector extension */
-  ZVBB_EXT,		/* Cryto vector Zvbb sub-ext */
-  ZVBB_OR_ZVKB_EXT,	/* Cryto vector Zvbb or zvkb sub-ext */
+  ZVBB_EXT,		/* Crypto vector Zvbb sub-ext */
+  ZVBB_OR_ZVKB_EXT,	/* Crypto vector Zvbb or zvkb sub-ext */
   ZVBC_EXT,		/* Crypto vector Zvbc sub-ext */
   ZVKG_EXT,		/* Crypto vector Zvkg sub-ext */
   ZVKNED_EXT,		/* Crypto vector Zvkned sub-ext */
@@ -125,12 +125,12 @@ enum required_ext
   ZVKSED_EXT,		/* Crypto vector Zvksed sub-ext */
   ZVKSH_EXT,		/* Crypto vector Zvksh sub-ext */
   XTHEADVECTOR_EXT,	/* XTheadVector extension */
-  ZVFBFMIN_EXT,		/* Zvfbfmin externsion */
+  ZVFBFMIN_EXT,		/* Zvfbfmin extension */
   ZVFBFWMA_EXT,		/* Zvfbfwma extension */
   /* Please update below to isa_name func when add or remove enum type(s).  */
 };
 
-static inline const char * reqired_ext_to_isa_name (enum required_ext required)
+static inline const char * required_ext_to_isa_name (enum required_ext required)
 {
   switch (required)
   {
@@ -155,7 +155,7 @@ static inline const char * reqired_ext_to_isa_name (enum required_ext required)
     case ZVKSH_EXT:
       return "zvksh";
     case XTHEADVECTOR_EXT:
-      return "xthreadvector";
+      return "xtheadvector";
     case ZVFBFMIN_EXT:
       return "zvfbfmin";
     case ZVFBFWMA_EXT:

@@ -30,14 +30,18 @@
 #ifndef _GLIBCXX_CHRONO_H
 #define _GLIBCXX_CHRONO_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201103L
 
 #include <ratio>
 #include <type_traits>
 #include <limits>
-#include <ctime>
+#if _GLIBCXX_HOSTED
+# include <ctime>
+#endif
 #include <bits/parse_numbers.h> // for literals support.
 #if __cplusplus >= 202002L
 # include <concepts>
@@ -50,7 +54,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && _GLIBCXX_HOSTED
   namespace filesystem { struct __file_clock; };
 #endif
 
@@ -372,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
 #endif // C++20
 
-#ifdef __glibcxx_chrono // C++ >= 17 && HOSTED
+#if __cplusplus >= 201703L // C++ >= 17
     /** Convert a `duration` to type `ToDur` and round down.
      *
      * If the duration cannot be represented exactly in the result type,
@@ -1196,6 +1200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// @}
     /// @} group chrono
 
+#if _GLIBCXX_HOSTED
     // Clocks.
 
     // Why nanosecond resolution as the default?
@@ -1310,9 +1315,18 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     template<> inline constexpr bool is_clock_v<file_clock> = true;
     /// @}
 #endif // C++20
+#elif __cplusplus >= 202002L
+    // Define a fake clock like chrono::local_t so that sys_time etc.
+    // can be used for freestanding.
+    struct __sys_t;
+    template<typename _Duration>
+      using sys_time = time_point<__sys_t, _Duration>;
+    using sys_seconds = sys_time<seconds>;
+    using sys_days = sys_time<days>;
+#endif // _GLIBCXX_HOSTED
   } // namespace chrono
 
-#ifdef __glibcxx_chrono_udls // C++ >= 14 && HOSTED
+#ifdef __glibcxx_chrono_udls // C++ >= 14
   inline namespace literals
   {
   /** ISO C++ 2014  namespace for suffixes for duration literals.
@@ -1435,7 +1449,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   } // namespace chrono
 #endif // __glibcxx_chrono_udls
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L && _GLIBCXX_HOSTED
   namespace filesystem
   {
     struct __file_clock
@@ -1497,7 +1511,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	}
     };
   } // namespace filesystem
-#endif // C++17
+#endif // C++17 && HOSTED
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

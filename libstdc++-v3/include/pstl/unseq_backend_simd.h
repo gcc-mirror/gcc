@@ -22,7 +22,7 @@ namespace __unseq_backend
 {
 
 // Expect vector width up to 64 (or 512 bit)
-const std::size_t __lane_size = 64;
+inline const std::size_t __lane_size = 64;
 
 template <class _Iterator, class _DifferenceType, class _Function>
 _Iterator

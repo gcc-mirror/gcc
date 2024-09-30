@@ -821,6 +821,7 @@ extern struct visibility_flags visibility_options;
 
 /* Attribute table common to the C front ends.  */
 extern const struct scoped_attribute_specs c_common_gnu_attribute_table;
+extern const struct scoped_attribute_specs c_common_clang_attribute_table;
 extern const struct scoped_attribute_specs c_common_format_attribute_table;
 
 /* Pointer to function to lazily generate the VAR_DECL for __FUNCTION__ etc.
@@ -864,6 +865,8 @@ extern void check_function_format (const_tree, tree, int, tree *,
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
+extern tree handle_unsequenced_attribute (tree *, tree, tree, int, bool *);
+extern tree handle_reproducible_attribute (tree *, tree, tree, int, bool *);
 extern bool c_common_handle_option (size_t, const char *, HOST_WIDE_INT, int,
 				    location_t,
 				    const struct cl_option_handlers *);

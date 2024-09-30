@@ -309,6 +309,16 @@ GNAT_ADA_OBJS =	\
  ada/cstand.o	\
  ada/debug.o	\
  ada/debug_a.o	\
+ ada/diagnostics-brief_emitter.o      \
+ ada/diagnostics-constructors.o      \
+ ada/diagnostics-converter.o      \
+ ada/diagnostics-json_utils.o      \
+ ada/diagnostics-pretty_emitter.o      \
+ ada/diagnostics-repository.o      \
+ ada/diagnostics-sarif_emitter.o      \
+ ada/diagnostics-switch_repository.o      \
+ ada/diagnostics-utils.o      \
+ ada/diagnostics.o      \
  ada/einfo-entities.o \
  ada/einfo-utils.o \
  ada/einfo.o	\
@@ -594,6 +604,16 @@ GNATBIND_OBJS = \
  ada/casing.o     \
  ada/csets.o      \
  ada/debug.o      \
+ ada/diagnostics-brief_emitter.o      \
+ ada/diagnostics-constructors.o      \
+ ada/diagnostics-converter.o      \
+ ada/diagnostics-json_utils.o      \
+ ada/diagnostics-pretty_emitter.o      \
+ ada/diagnostics-repository.o      \
+ ada/diagnostics-sarif_emitter.o      \
+ ada/diagnostics-switch_repository.o      \
+ ada/diagnostics-utils.o      \
+ ada/diagnostics.o      \
  ada/einfo-entities.o \
  ada/einfo-utils.o \
  ada/einfo.o      \

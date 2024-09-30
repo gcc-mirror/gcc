@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Search;
 with Ada.Unchecked_Deallocation;
 
 package body Ada.Strings.Unbounded is
@@ -58,7 +57,7 @@ package body Ada.Strings.Unbounded is
    --  Calculation takes into account alignment of the allocated memory
    --  segments to use memory effectively by Append/Insert/etc operations.
 
-   function Sum (Left : Natural; Right : Integer) return Natural with Inline;
+   function Sum (Left, Right : Natural) return Natural with Inline;
    --  Returns summary of Left and Right, raise Constraint_Error on overflow
 
    function Mul (Left, Right : Natural) return Natural with Inline;
@@ -165,7 +164,11 @@ package body Ada.Strings.Unbounded is
       else
          DR := Allocate (DL);
          DR.Data (1 .. Left'Length) := Left;
-         DR.Data (Left'Length + 1 .. DL) := RR.Data (1 .. RR.Last);
+
+         if Left'Length < Natural'Last then
+            DR.Data (Left'Length + 1 .. DL) := RR.Data (1 .. RR.Last);
+         end if;
+
          DR.Last := DL;
       end if;
 
@@ -243,7 +246,7 @@ package body Ada.Strings.Unbounded is
    is
       DL : constant Natural := Mul (Left, Right'Length);
       DR : Shared_String_Access;
-      K  : Positive;
+      K  : Natural;
 
    begin
       --  Result is an empty string, reuse shared empty string
@@ -255,10 +258,10 @@ package body Ada.Strings.Unbounded is
 
       else
          DR := Allocate (DL);
-         K := 1;
+         K := 0;
 
          for J in 1 .. Left loop
-            DR.Data (K .. K + Right'Length - 1) := Right;
+            DR.Data (K + 1 .. K + Right'Length) := Right;
             K := K + Right'Length;
          end loop;
 
@@ -275,7 +278,7 @@ package body Ada.Strings.Unbounded is
       RR : constant Shared_String_Access := Right.Reference;
       DL : constant Natural := Mul (Left, RR.Last);
       DR : Shared_String_Access;
-      K  : Positive;
+      K  : Natural;
 
    begin
       --  Result is an empty string, reuse shared empty string
@@ -293,10 +296,10 @@ package body Ada.Strings.Unbounded is
 
       else
          DR := Allocate (DL);
-         K := 1;
+         K := 0;
 
          for J in 1 .. Left loop
-            DR.Data (K .. K + RR.Last - 1) := RR.Data (1 .. RR.Last);
+            DR.Data (K + 1 .. K + RR.Last) := RR.Data (1 .. RR.Last);
             K := K + RR.Last;
          end loop;
 
@@ -703,15 +706,15 @@ package body Ada.Strings.Unbounded is
          Reference (SR);
          DR := SR;
 
-      --  Index is out of range
+      --  From is too large
 
-      elsif Through > SR.Last then
+      elsif From - 1 > SR.Last then
          raise Index_Error;
 
       --  Compute size of the result
 
       else
-         DL := SR.Last - (Through - From + 1);
+         DL := SR.Last - (Natural'Min (SR.Last, Through) - From + 1);
 
          --  Result is an empty string, reuse shared empty string
 
@@ -723,7 +726,11 @@ package body Ada.Strings.Unbounded is
          else
             DR := Allocate (DL);
             DR.Data (1 .. From - 1) := SR.Data (1 .. From - 1);
-            DR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
+
+            if Through < Natural'Last then
+               DR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
+            end if;
+
             DR.Last := DL;
          end if;
       end if;
@@ -746,13 +753,13 @@ package body Ada.Strings.Unbounded is
       if From > Through then
          null;
 
-      --  Through is outside of the range
+      --  From is too large
 
-      elsif Through > SR.Last then
+      elsif From - 1 > SR.Last then
          raise Index_Error;
 
       else
-         DL := SR.Last - (Through - From + 1);
+         DL := SR.Last - (Natural'Min (SR.Last, Through) - From + 1);
 
          --  Result is empty, reuse shared empty string
 
@@ -763,7 +770,10 @@ package body Ada.Strings.Unbounded is
          --  Try to reuse existing shared string
 
          elsif Can_Be_Reused (SR, DL) then
-            SR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
+            if Through < Natural'Last then
+               SR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
+            end if;
+
             SR.Last := DL;
 
          --  Otherwise, allocate new shared string
@@ -771,7 +781,11 @@ package body Ada.Strings.Unbounded is
          else
             DR := Allocate (DL);
             DR.Data (1 .. From - 1) := SR.Data (1 .. From - 1);
-            DR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
+
+            if Through < Natural'Last then
+               DR.Data (From .. DL) := SR.Data (Through + 1 .. SR.Last);
+            end if;
+
             DR.Last := DL;
             Source.Reference := DR;
             Unreference (SR);
@@ -1093,7 +1107,7 @@ package body Ada.Strings.Unbounded is
    begin
       --  Check index first
 
-      if Before > SR.Last + 1 then
+      if Before - 1 > SR.Last then
          raise Index_Error;
       end if;
 
@@ -1113,9 +1127,13 @@ package body Ada.Strings.Unbounded is
       else
          DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. Before - 1) := SR.Data (1 .. Before - 1);
-         DR.Data (Before .. Before + New_Item'Length - 1) := New_Item;
-         DR.Data (Before + New_Item'Length .. DL) :=
-           SR.Data (Before .. SR.Last);
+         DR.Data (Before .. Before - 1 + New_Item'Length) := New_Item;
+
+         if Before <= SR.Last then
+            DR.Data (Before + New_Item'Length .. DL) :=
+              SR.Data (Before .. SR.Last);
+         end if;
+
          DR.Last := DL;
       end if;
 
@@ -1134,7 +1152,7 @@ package body Ada.Strings.Unbounded is
    begin
       --  Check bounds
 
-      if Before > SR.Last + 1 then
+      if Before - 1 > SR.Last then
          raise Index_Error;
       end if;
 
@@ -1152,9 +1170,12 @@ package body Ada.Strings.Unbounded is
       --  Try to reuse existing shared string first
 
       elsif Can_Be_Reused (SR, DL) then
-         SR.Data (Before + New_Item'Length .. DL) :=
-           SR.Data (Before .. SR.Last);
-         SR.Data (Before .. Before + New_Item'Length - 1) := New_Item;
+         if Before <= SR.Last then
+            SR.Data (Before + New_Item'Length .. DL) :=
+              SR.Data (Before .. SR.Last);
+         end if;
+
+         SR.Data (Before .. Before - 1 + New_Item'Length) := New_Item;
          SR.Last := DL;
 
       --  Otherwise, allocate new shared string and fill it
@@ -1162,9 +1183,13 @@ package body Ada.Strings.Unbounded is
       else
          DR := Allocate (DL, DL / Growth_Factor);
          DR.Data (1 .. Before - 1) := SR.Data (1 .. Before - 1);
-         DR.Data (Before .. Before + New_Item'Length - 1) := New_Item;
-         DR.Data (Before + New_Item'Length .. DL) :=
-           SR.Data (Before .. SR.Last);
+         DR.Data (Before .. Before - 1 + New_Item'Length) := New_Item;
+
+         if Before <= SR.Last then
+            DR.Data (Before + New_Item'Length .. DL) :=
+              SR.Data (Before .. SR.Last);
+         end if;
+
          DR.Last := DL;
          Source.Reference := DR;
          Unreference (SR);
@@ -1206,7 +1231,7 @@ package body Ada.Strings.Unbounded is
    begin
       --  Check bounds
 
-      if Position > SR.Last + 1 then
+      if Position - 1 > SR.Last then
          raise Index_Error;
       end if;
 
@@ -1228,9 +1253,13 @@ package body Ada.Strings.Unbounded is
       else
          DR := Allocate (DL);
          DR.Data (1 .. Position - 1) := SR.Data (1 .. Position - 1);
-         DR.Data (Position .. Position + New_Item'Length - 1) := New_Item;
-         DR.Data (Position + New_Item'Length .. DL) :=
-           SR.Data (Position + New_Item'Length .. SR.Last);
+         DR.Data (Position .. Position - 1 + New_Item'Length) := New_Item;
+
+         if Position <= SR.Last - New_Item'Length then
+            DR.Data (Position + New_Item'Length .. DL) :=
+              SR.Data (Position + New_Item'Length .. SR.Last);
+         end if;
+
          DR.Last := DL;
       end if;
 
@@ -1249,11 +1278,11 @@ package body Ada.Strings.Unbounded is
    begin
       --  Bounds check
 
-      if Position > SR.Last + 1 then
+      if Position - 1 > SR.Last then
          raise Index_Error;
       end if;
 
-      DL := Integer'Max (SR.Last, Position + New_Item'Length - 1);
+      DL := Integer'Max (SR.Last, Sum (Position - 1, New_Item'Length));
 
       --  Result is empty string, reuse empty shared string
 
@@ -1269,7 +1298,7 @@ package body Ada.Strings.Unbounded is
       --  Try to reuse existing shared string
 
       elsif Can_Be_Reused (SR, DL) then
-         SR.Data (Position .. Position + New_Item'Length - 1) := New_Item;
+         SR.Data (Position .. Position - 1 + New_Item'Length) := New_Item;
          SR.Last := DL;
 
       --  Otherwise allocate new shared string and fill it
@@ -1277,9 +1306,13 @@ package body Ada.Strings.Unbounded is
       else
          DR := Allocate (DL);
          DR.Data (1 .. Position - 1) := SR.Data (1 .. Position - 1);
-         DR.Data (Position .. Position + New_Item'Length - 1) := New_Item;
-         DR.Data (Position + New_Item'Length .. DL) :=
-           SR.Data (Position + New_Item'Length .. SR.Last);
+         DR.Data (Position .. Position - 1 + New_Item'Length) := New_Item;
+
+         if Position <= SR.Last - New_Item'Length then
+            DR.Data (Position + New_Item'Length .. DL) :=
+              SR.Data (Position + New_Item'Length .. SR.Last);
+         end if;
+
          DR.Last := DL;
          Source.Reference := DR;
          Unreference (SR);
@@ -1365,15 +1398,14 @@ package body Ada.Strings.Unbounded is
    begin
       --  Check bounds
 
-      if Low > SR.Last + 1 then
+      if Low - 1 > SR.Last then
          raise Index_Error;
       end if;
 
       --  Do replace operation when removed slice is not empty
 
       if High >= Low then
-         DL := Sum (SR.Last,
-                    By'Length + Low - Integer'Min (High, SR.Last) - 1);
+         DL := Sum (Low - 1 + Integer'Max (SR.Last - High, 0), By'Length);
          --  This is the number of characters remaining in the string after
          --  replacing the slice.
 
@@ -1387,8 +1419,13 @@ package body Ada.Strings.Unbounded is
          else
             DR := Allocate (DL);
             DR.Data (1 .. Low - 1) := SR.Data (1 .. Low - 1);
-            DR.Data (Low .. Low + By'Length - 1) := By;
-            DR.Data (Low + By'Length .. DL) := SR.Data (High + 1 .. SR.Last);
+            DR.Data (Low .. Low - 1 + By'Length) := By;
+
+            if High < SR.Last then
+               DR.Data (Low + By'Length .. DL) :=
+                 SR.Data (High + 1 .. SR.Last);
+            end if;
+
             DR.Last := DL;
          end if;
 
@@ -1414,14 +1451,14 @@ package body Ada.Strings.Unbounded is
    begin
       --  Bounds check
 
-      if Low > SR.Last + 1 then
+      if Low - 1 > SR.Last then
          raise Index_Error;
       end if;
 
       --  Do replace operation only when replaced slice is not empty
 
       if High >= Low then
-         DL := By'Length + SR.Last + Low - Integer'Min (High, SR.Last) - 1;
+         DL := Sum (Low - 1 + Integer'Max (SR.Last - High, 0), By'Length);
          --  This is the number of characters remaining in the string after
          --  replacing the slice.
 
@@ -1434,8 +1471,12 @@ package body Ada.Strings.Unbounded is
          --  Try to reuse existing shared string
 
          elsif Can_Be_Reused (SR, DL) then
-            SR.Data (Low + By'Length .. DL) := SR.Data (High + 1 .. SR.Last);
-            SR.Data (Low .. Low + By'Length - 1) := By;
+            if High < SR.Last then
+               SR.Data (Low + By'Length .. DL) :=
+                 SR.Data (High + 1 .. SR.Last);
+            end if;
+
+            SR.Data (Low .. Low - 1 + By'Length) := By;
             SR.Last := DL;
 
          --  Otherwise allocate new shared string and fill it
@@ -1443,8 +1484,13 @@ package body Ada.Strings.Unbounded is
          else
             DR := Allocate (DL);
             DR.Data (1 .. Low - 1) := SR.Data (1 .. Low - 1);
-            DR.Data (Low .. Low + By'Length - 1) := By;
-            DR.Data (Low + By'Length .. DL) := SR.Data (High + 1 .. SR.Last);
+            DR.Data (Low .. Low - 1 + By'Length) := By;
+
+            if High < SR.Last then
+               DR.Data (Low + By'Length .. DL) :=
+                 SR.Data (High + 1 .. SR.Last);
+            end if;
+
             DR.Last := DL;
             Source.Reference := DR;
             Unreference (SR);
@@ -1509,7 +1555,7 @@ package body Ada.Strings.Unbounded is
    begin
       --  Note: test of High > Length is in accordance with AI95-00128
 
-      if Low > SR.Last + 1 or else High > SR.Last then
+      if Low - 1 > SR.Last or else High > SR.Last then
          raise Index_Error;
 
       else
@@ -1521,7 +1567,7 @@ package body Ada.Strings.Unbounded is
    -- Sum --
    ---------
 
-   function Sum (Left : Natural; Right : Integer) return Natural is
+   function Sum (Left, Right : Natural) return Natural is
       pragma Unsuppress (Overflow_Check);
    begin
       return Left + Right;

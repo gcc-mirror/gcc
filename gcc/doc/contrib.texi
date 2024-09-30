@@ -64,6 +64,10 @@ improved alias analysis, plus migrating GCC to Bugzilla.
 Geoff Berry for his Java object serialization work and various patches.
 
 @item
+Richard Biener for his ongoing middle-end contributions and bug fixes
+and for release management.
+
+@item
 David Binderman for testing GCC trunk against Fedora Rawhide
 and csmith.
 
@@ -365,10 +369,6 @@ Stu Grossman for gdb hacking, allowing GCJ developers to debug Java code.
 Michael K. Gschwind contributed the port to the PDP-11.
 
 @item
-Richard Biener for his ongoing middle-end contributions and bug fixes
-and for release management.
-
-@item
 Ron Guilmette implemented the @command{protoize} and @command{unprotoize}
 tools, the support for DWARF 1 symbolic debugging information, and much of
 the support for System V Release 4.  He has also worked heavily on the
@@ -644,6 +644,9 @@ John Marino for contributing the DragonFly BSD port.
 @item
 Philip Martin for lots of libstdc++ string and vector iterator fixes and
 improvements, and string clean up and testsuites.
+
+@item
+Dhruv Matani for work on libstdc++ allocators.
 
 @item
 Michael Matz for his work on dominance tree discovery, the x86-64 port,

@@ -22,8 +22,7 @@
 #include "rust-hir-item.h"
 #include "rust-hir-visitor.h"
 #include "rust-hir.h"
-
-#include <vector>
+#include "rust-system.h"
 
 namespace Rust {
 
@@ -51,9 +50,7 @@ protected:
   template <typename T> void visit_all (std::vector<std::unique_ptr<T>> &items)
   {
     for (std::unique_ptr<T> &item : items)
-      {
-	item->accept_vis (*this);
-      }
+      item->accept_vis (*this);
   }
 
   void visit (HIR::Function &function) override
@@ -155,6 +152,7 @@ public:
   void visit (HIR::ImplBlock &impl) override {}
   void visit (HIR::ExternalStaticItem &item) override {}
   void visit (HIR::ExternalFunctionItem &item) override {}
+  void visit (HIR::ExternalTypeItem &item) override {}
   void visit (HIR::ExternBlock &block) override {}
   void visit (HIR::LiteralPattern &pattern) override {}
   void visit (HIR::IdentifierPattern &pattern) override {}

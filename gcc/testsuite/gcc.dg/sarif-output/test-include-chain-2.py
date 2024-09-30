@@ -26,10 +26,21 @@ def sarif():
 
 def test_basics(sarif):
     schema = sarif['$schema']
-    assert schema == "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+    assert schema == "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json"
 
     version = sarif['version']
     assert version == "2.1.0"
+
+def test_execution_successful(sarif):
+    runs = sarif['runs']
+    run = runs[0]
+
+    invocations = run['invocations']
+    assert len(invocations) == 1
+    invocation = invocations[0]
+
+    # We expect a mere 'warning' to allow executionSuccessful be true
+    assert invocation['executionSuccessful'] == True
 
 def test_result(sarif):
     runs = sarif['runs']
@@ -85,9 +96,11 @@ def test_location_relationships(sarif):
         == "  __builtin_free (ptr); // 1st\n"
     assert threadFlow['locations'][0]['kinds'] == ['release', 'memory']
     assert threadFlow['locations'][0]['executionOrder'] == 1
-    
+
+    # We should have an embedded link in this event's message to the
+    # other event's location within the SARIF file:
     assert threadFlow['locations'][1]['location']['message']['text'] \
-        == "second 'free' here; first 'free' was at (1)"
+        == "second 'free' here; first 'free' was at [(1)](sarif:/runs/0/results/0/codeFlows/0/threadFlows/0/locations/0)"
     assert threadFlow['locations'][1]['location']['physicalLocation']['contextRegion']['snippet']['text'] \
         == "  __builtin_free (ptr); // 2nd\n"
     assert threadFlow['locations'][1]['kinds'] == ['danger']

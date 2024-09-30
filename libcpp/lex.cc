@@ -225,10 +225,7 @@ acc_char_index (word_type cmp ATTRIBUTE_UNUSED,
    and branches without increasing the number of arithmetic operations.
    It's almost certainly going to be a win with 64-bit word size.  */
 
-static const uchar * search_line_acc_char (const uchar *, const uchar *)
-  ATTRIBUTE_UNUSED;
-
-static const uchar *
+static inline const uchar *
 search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
   const word_type repl_nl = acc_char_replicate ('\n');
@@ -290,75 +287,10 @@ static const char repl_chars[4][16] __attribute__((aligned(16))) = {
     '?', '?', '?', '?', '?', '?', '?', '?' },
 };
 
-/* A version of the fast scanner using MMX vectorized byte compare insns.
-
-   This uses the PMOVMSKB instruction which was introduced with "MMX2",
-   which was packaged into SSE1; it is also present in the AMD MMX
-   extension.  Mark the function as using "sse" so that we emit a real
-   "emms" instruction, rather than the 3dNOW "femms" instruction.  */
-
-static const uchar *
-#ifndef __SSE__
-__attribute__((__target__("sse")))
-#endif
-search_line_mmx (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
-{
-  typedef char v8qi __attribute__ ((__vector_size__ (8)));
-  typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
-
-  const v8qi repl_nl = *(const v8qi *)repl_chars[0];
-  const v8qi repl_cr = *(const v8qi *)repl_chars[1];
-  const v8qi repl_bs = *(const v8qi *)repl_chars[2];
-  const v8qi repl_qm = *(const v8qi *)repl_chars[3];
-
-  unsigned int misalign, found, mask;
-  const v8qi *p;
-  v8qi data, t, c;
-
-  /* Align the source pointer.  While MMX doesn't generate unaligned data
-     faults, this allows us to safely scan to the end of the buffer without
-     reading beyond the end of the last page.  */
-  misalign = (uintptr_t)s & 7;
-  p = (const v8qi *)((uintptr_t)s & -8);
-  data = *p;
-
-  /* Create a mask for the bytes that are valid within the first
-     16-byte block.  The Idea here is that the AND with the mask
-     within the loop is "free", since we need some AND or TEST
-     insn in order to set the flags for the branch anyway.  */
-  mask = -1u << misalign;
-
-  /* Main loop processing 8 bytes at a time.  */
-  goto start;
-  do
-    {
-      data = *++p;
-      mask = -1;
-
-    start:
-      t = __builtin_ia32_pcmpeqb(data, repl_nl);
-      c = __builtin_ia32_pcmpeqb(data, repl_cr);
-      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
-      c = __builtin_ia32_pcmpeqb(data, repl_bs);
-      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
-      c = __builtin_ia32_pcmpeqb(data, repl_qm);
-      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
-      found = __builtin_ia32_pmovmskb (t);
-      found &= mask;
-    }
-  while (!found);
-
-  __builtin_ia32_emms ();
-
-  /* FOUND contains 1 in bits for which we matched a relevant
-     character.  Conversion to the byte index is trivial.  */
-  found = __builtin_ctz(found);
-  return (const uchar *)p + found;
-}
 
 /* A version of the fast scanner using SSE2 vectorized byte compare insns.  */
 
-static const uchar *
+static inline const uchar *
 #ifndef __SSE2__
 __attribute__((__target__("sse2")))
 #endif
@@ -409,130 +341,84 @@ search_line_sse2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   return (const uchar *)p + found;
 }
 
-#ifdef HAVE_SSE4
-/* A version of the fast scanner using SSE 4.2 vectorized string insns.  */
+#ifdef HAVE_SSSE3
+/* A version of the fast scanner using SSSE3 shuffle (PSHUFB) insns.  */
 
-static const uchar *
-#ifndef __SSE4_2__
-__attribute__((__target__("sse4.2")))
+static inline const uchar *
+#ifndef __SSSE3__
+__attribute__((__target__("ssse3")))
 #endif
-search_line_sse42 (const uchar *s, const uchar *end)
+search_line_ssse3 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
   typedef char v16qi __attribute__ ((__vector_size__ (16)));
-  static const v16qi search = { '\n', '\r', '?', '\\' };
+  typedef v16qi v16qi_u __attribute__ ((__aligned__ (1)));
+  /* Helper vector for pshufb-based matching:
+     each character C we're searching for is at position (C % 16).  */
+  v16qi lut = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n', 0, '\\', '\r', 0, '?' };
+  static_assert('\n' == 10 && '\r' == 13 && '\\' == 92 && '?' == 63,
+                "host character encoding is ASCII");
 
-  uintptr_t si = (uintptr_t)s;
-  uintptr_t index;
-
-  /* Check for unaligned input.  */
-  if (si & 15)
+  v16qi d1, d2, t1, t2;
+  /* Unaligned loads, potentially using padding after the final newline.  */
+  static_assert (CPP_BUFFER_PADDING >= 64, "");
+  d1 = *(const v16qi_u *)s;
+  d2 = *(const v16qi_u *)(s + 16);
+  unsigned m1, m2, found;
+  /* Process two 16-byte chunks per iteration.  */
+  do
     {
-      v16qi sv;
-
-      if (__builtin_expect (end - s < 16, 0)
-	  && __builtin_expect ((si & 0xfff) > 0xff0, 0))
-	{
-	  /* There are less than 16 bytes left in the buffer, and less
-	     than 16 bytes left on the page.  Reading 16 bytes at this
-	     point might generate a spurious page fault.  Defer to the
-	     SSE2 implementation, which already handles alignment.  */
-	  return search_line_sse2 (s, end);
-	}
-
-      /* ??? The builtin doesn't understand that the PCMPESTRI read from
-	 memory need not be aligned.  */
-      sv = __builtin_ia32_loaddqu ((const char *) s);
-      index = __builtin_ia32_pcmpestri128 (search, 4, sv, 16, 0);
-
-      if (__builtin_expect (index < 16, 0))
-	goto found;
-
-      /* Advance the pointer to an aligned address.  We will re-scan a
-	 few bytes, but we no longer need care for reading past the
-	 end of a page, since we're guaranteed a match.  */
-      s = (const uchar *)((si + 15) & -16);
+      t1 = __builtin_ia32_pshufb128 (lut, d1);
+      t2 = __builtin_ia32_pshufb128 (lut, d2);
+      m1 = __builtin_ia32_pmovmskb128 (t1 == d1);
+      m2 = __builtin_ia32_pmovmskb128 (t2 == d2);
+      s += 32;
+      d1 = *(const v16qi_u *)s;
+      d2 = *(const v16qi_u *)(s + 16);
+      found = m1 + (m2 << 16);
     }
-
-  /* Main loop, processing 16 bytes at a time.  */
-#ifdef __GCC_ASM_FLAG_OUTPUTS__
-  while (1)
-    {
-      char f;
-
-      /* By using inline assembly instead of the builtin,
-	 we can use the result, as well as the flags set.  */
-      __asm ("%vpcmpestri\t$0, %2, %3"
-	     : "=c"(index), "=@ccc"(f)
-	     : "m"(*s), "x"(search), "a"(4), "d"(16));
-      if (f)
-	break;
-      
-      s += 16;
-    }
-#else
-  s -= 16;
-  /* By doing the whole loop in inline assembly,
-     we can make proper use of the flags set.  */
-  __asm (      ".balign 16\n"
-	"0:	add $16, %1\n"
-	"	%vpcmpestri\t$0, (%1), %2\n"
-	"	jnc 0b"
-	: "=&c"(index), "+r"(s)
-	: "x"(search), "a"(4), "d"(16));
-#endif
-
- found:
-  return s + index;
+  while (!found);
+  /* Prefer to compute 's - 32' here, not spend an extra instruction
+     to make a copy of the previous value of 's' in the loop.  */
+  __asm__ ("" : "+r"(s));
+  return s - 32 + __builtin_ctz (found);
 }
 
 #else
-/* Work around out-dated assemblers without sse4 support.  */
-#define search_line_sse42 search_line_sse2
+/* Work around out-dated assemblers without SSSE3 support.  */
+#define search_line_ssse3 search_line_sse2
 #endif
 
+#ifdef __SSSE3__
+/* No need for CPU probing, just use the best available variant.  */
+#define search_line_fast search_line_ssse3
+#else
 /* Check the CPU capabilities.  */
 
 #include "../gcc/config/i386/cpuid.h"
 
 typedef const uchar * (*search_line_fast_type) (const uchar *, const uchar *);
-static search_line_fast_type search_line_fast;
+static search_line_fast_type search_line_fast
+#if defined(__SSE2__)
+ = search_line_sse2;
+#else
+ = search_line_acc_char;
+#endif
 
 #define HAVE_init_vectorized_lexer 1
 static inline void
 init_vectorized_lexer (void)
 {
-  unsigned dummy, ecx = 0, edx = 0;
-  search_line_fast_type impl = search_line_acc_char;
-  int minimum = 0;
+  unsigned ax, bx, cx, dx;
 
-#if defined(__SSE4_2__)
-  minimum = 3;
-#elif defined(__SSE2__)
-  minimum = 2;
-#elif defined(__SSE__)
-  minimum = 1;
-#endif
+  if (!__get_cpuid (1, &ax, &bx, &cx, &dx))
+    return;
 
-  if (minimum == 3)
-    impl = search_line_sse42;
-  else if (__get_cpuid (1, &dummy, &dummy, &ecx, &edx) || minimum == 2)
-    {
-      if (minimum == 3 || (ecx & bit_SSE4_2))
-        impl = search_line_sse42;
-      else if (minimum == 2 || (edx & bit_SSE2))
-	impl = search_line_sse2;
-      else if (minimum == 1 || (edx & bit_SSE))
-	impl = search_line_mmx;
-    }
-  else if (__get_cpuid (0x80000001, &dummy, &dummy, &dummy, &edx))
-    {
-      if (minimum == 1
-	  || (edx & (bit_MMXEXT | bit_CMOV)) == (bit_MMXEXT | bit_CMOV))
-	impl = search_line_mmx;
-    }
-
-  search_line_fast = impl;
+  if (cx & bit_SSSE3)
+    search_line_fast = search_line_ssse3;
+  else if (dx & bit_SSE2)
+    search_line_fast = search_line_sse2;
 }
+#endif
 
 #elif (GCC_VERSION >= 4005) && defined(_ARCH_PWR8) && defined(__ALTIVEC__)
 
@@ -1970,11 +1856,12 @@ skip_whitespace (cpp_reader *pfile, cppchar_t c)
       /* Just \f \v or \0 left.  */
       else if (c == '\0')
 	saw_NUL = true;
-      else if (pfile->state.in_directive && CPP_PEDANTIC (pfile))
-	cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line,
-			     CPP_BUF_COL (buffer),
-			     "%s in preprocessing directive",
-			     c == '\f' ? "form feed" : "vertical tab");
+      else if (pfile->state.in_directive)
+	cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+				  pfile->line_table->highest_line,
+				  CPP_BUF_COL (buffer),
+				  "%s in preprocessing directive",
+				  c == '\f' ? "form feed" : "vertical tab");
 
       c = *buffer->cur++;
     }
@@ -2140,11 +2027,11 @@ maybe_va_opt_error (cpp_reader *pfile)
       if (!_cpp_in_system_header (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_OPT__ is not available until C++20");
+	    cpp_pedwarning (pfile, CPP_W_CXX20_EXTENSIONS,
+			    "__VA_OPT__ is not available until C++20");
 	  else
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "__VA_OPT__ is not available until C23");
+	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			    "__VA_OPT__ is not available until C23");
 	}
     }
   else if (!pfile->state.va_args_ok)
@@ -4017,8 +3904,9 @@ _cpp_lex_direct (cpp_reader *pfile)
 		   && CPP_PEDANTIC (pfile)
 		   && ! buffer->warned_cplusplus_comments)
 	    {
-	      if (cpp_error (pfile, CPP_DL_PEDWARN,
-			     "C++ style comments are not allowed in ISO C90"))
+	      if (cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				  "C++ style comments are not allowed "
+				  "in ISO C90"))
 		cpp_error (pfile, CPP_DL_NOTE,
 			   "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
@@ -5334,7 +5222,20 @@ cpp_directive_only_process (cpp_reader *pfile,
 		     error messages. */
 		  buffer->line_base -= pos - line_start;
 
-		  _cpp_handle_directive (pfile, line_start + 1 != pos);
+		  if (_cpp_handle_directive (pfile, line_start + 1 != pos) == 2)
+		    {
+		      if (pfile->directive_result.type != CPP_PADDING)
+			cb (pfile, CPP_DO_token, data,
+			    &pfile->directive_result, pfile->directive_result.src_loc);
+		      if (pfile->context->prev)
+			{
+			  gcc_assert (pfile->context->tokens_kind == TOKENS_KIND_DIRECT);
+			  for (const cpp_token *tok = FIRST (pfile->context).token;
+			       tok != LAST (pfile->context).token; ++tok)
+			    cb (pfile, CPP_DO_token, data, tok, tok->src_loc);
+			  _cpp_pop_context (pfile);
+			}
+		    }
 
 		  /* Sanitize the line settings.  Duplicate #include's can
 		     mess things up. */

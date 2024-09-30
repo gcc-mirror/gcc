@@ -736,6 +736,7 @@ build_throw (location_t loc, tree exp, tsubst_flags_t complain)
 	    exp = moved;
 
 	  /* Call the copy constructor.  */
+	  auto_diagnostic_group d;
 	  releasing_vec exp_vec (make_tree_vector_single (exp));
 	  exp = build_special_member_call (object, complete_ctor_identifier,
 					   &exp_vec, TREE_TYPE (object), flags,
@@ -1074,8 +1075,6 @@ check_noexcept_r (tree *tp, int *walk_subtrees, void *)
 
          We could use TREE_NOTHROW (t) for !TREE_PUBLIC fns, though... */
       tree fn = cp_get_callee (t);
-      if (concept_check_p (fn))
-	return NULL_TREE;
       tree type = TREE_TYPE (fn);
       gcc_assert (INDIRECT_TYPE_P (type));
       type = TREE_TYPE (type);

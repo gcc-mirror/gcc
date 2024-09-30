@@ -228,7 +228,10 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
       for (const insn_change *change : changes)
 	if (!change->is_deletion ())
 	  {
-	    fprintf (dump_file, " %c %d", sep, change->new_cost);
+	    if (INSN_CODE (change->rtl ()) == NOOP_MOVE_INSN_CODE)
+	      fprintf (dump_file, " %c nop", sep);
+	    else
+	      fprintf (dump_file, " %c %d", sep, change->new_cost);
 	    sep = '+';
 	  }
       if (weighted_new_cost != 0)

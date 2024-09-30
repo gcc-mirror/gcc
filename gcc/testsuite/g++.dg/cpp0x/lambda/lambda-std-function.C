@@ -1,5 +1,6 @@
 // Test using std::function wrapper.
 // { dg-do run { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for functional function" { ! hostedlib } }
 
 #include <functional>
 

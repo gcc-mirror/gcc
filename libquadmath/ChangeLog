@@ -1,3 +1,15 @@
+2024-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libquadmath.texi (M_LOG2Eq, M_LOG10Eq, M_1_PIq,
+	M_2_PIq, M_2_SQRTPIq, M_SQRT1_2q): Adjust descriptioni
+	of these constants.
+
+2024-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116007
+	* math/sqrtq.c (TFtype): For PowerPC without __LONG_DOUBLE_IEEE128__
+	define to __float128 before including soft-fp.h and quad.h.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am [LIBQUAD_USE_SYMVER_SUN] (quadmath.map-sun): Pass

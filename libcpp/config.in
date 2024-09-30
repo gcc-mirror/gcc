@@ -210,8 +210,8 @@
 /* Define to 1 if you have the `putc_unlocked' function. */
 #undef HAVE_PUTC_UNLOCKED
 
-/* Define to 1 if you can assemble SSE4 insns. */
-#undef HAVE_SSE4
+/* Define to 1 if you can assemble SSSE3 insns. */
+#undef HAVE_SSSE3
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H

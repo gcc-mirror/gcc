@@ -198,7 +198,7 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
       diagnostic_set_info_translated (&diagnostic, xformat, &argp,
 				      &rich_loc, kind);
       if (opt != 0)
-	diagnostic.option_index = opt;
+	diagnostic.option_id = opt;
 
       diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
@@ -207,8 +207,9 @@ d_diagnostic_report_diagnostic (const Loc &loc, int opt, const char *format,
       /* Write verbatim messages with no location direct to stream.  */
       text_info text (expand_d_format (format), &argp, errno, nullptr);
 
-      pp_format_verbatim (global_dc->printer, &text);
-      pp_newline_and_flush (global_dc->printer);
+      pretty_printer *const pp = global_dc->m_printer;
+      pp_format_verbatim (pp, &text);
+      pp_newline_and_flush (pp);
     }
 
   va_end (argp);

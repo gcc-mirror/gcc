@@ -29,8 +29,15 @@
 #ifndef _GLIBCXX_CSTRING
 #define _GLIBCXX_CSTRING 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 
 #include_next <string.h>
+
+#pragma GCC diagnostic pop
 
 #endif

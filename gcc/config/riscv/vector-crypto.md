@@ -168,9 +168,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_vandn<mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
         (riscv_vector::avl_type) INTVAL (operands[8])))
@@ -409,9 +409,9 @@
 	/* vl */operands[5],
 	<MODE>mode,
 	false,
-	[] (rtx *operands, rtx boardcast_scalar) {
+	[] (rtx *operands, rtx broadcast_scalar) {
 	  emit_insn (gen_pred_vclmul<h><mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], operands[3], broadcast_scalar, operands[5],
 	       operands[6], operands[7], operands[8]));
         },
         (riscv_vector::avl_type) INTVAL (operands[8])))

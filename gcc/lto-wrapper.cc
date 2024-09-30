@@ -484,6 +484,7 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
  
 
 	case OPT_foffload_abi_:
+	case OPT_foffload_abi_host_opts_:
 	  if (existing_opt == -1)
 	    decoded_options.safe_push (*foption);
 	  else if (foption->value != decoded_options[existing_opt].value)
@@ -745,6 +746,7 @@ append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
 	case OPT_foffload_abi_:
+	case OPT_foffload_abi_host_opts_:
 	case OPT_fcf_protection_:
 	case OPT_fasynchronous_unwind_tables:
 	case OPT_funwind_tables:
@@ -1364,7 +1366,7 @@ init_num_threads (void)
 void
 print_lto_docs_link ()
 {
-  bool print_url = global_dc->printer->supports_urls_p ();
+  bool print_url = global_dc->m_printer->supports_urls_p ();
   const char *url = global_dc->make_option_url (OPT_flto);
 
   pretty_printer pp;
@@ -1994,7 +1996,10 @@ cont:
 
       if (parallel)
 	{
-	  makefile = make_temp_file (".mk");
+	  if (save_temps)
+	    makefile = concat (dumppfx, "ltrans.mk", NULL);
+	  else
+	    makefile = make_temp_file (".mk");
 	  mstream = fopen (makefile, "w");
 	  qsort (ltrans_priorities, nr, sizeof (int) * 2, cmp_priority);
 	}
@@ -2136,6 +2141,26 @@ cont:
   obstack_free (&argv_obstack, NULL);
 }
 
+/* Concrete implementation of diagnostic_option_manager for LTO.  */
+
+class lto_diagnostic_option_manager : public gcc_diagnostic_option_manager
+{
+public:
+  lto_diagnostic_option_manager ()
+  : gcc_diagnostic_option_manager (0 /* lang_mask */)
+  {
+  }
+  int option_enabled_p (diagnostic_option_id) const final override
+  {
+    return true;
+  }
+  char *make_option_name (diagnostic_option_id,
+			  diagnostic_t,
+			  diagnostic_t) const final override
+  {
+    return nullptr;
+  }
+};
 
 /* Entry point.  */
 
@@ -2158,11 +2183,7 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
-  global_dc->set_option_hooks (nullptr,
-			       nullptr,
-			       nullptr,
-			       get_option_url,
-			       0);
+  global_dc->set_option_manager (new lto_diagnostic_option_manager (), 0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

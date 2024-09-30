@@ -190,13 +190,19 @@ package body Aspects is
       --  Note that not all aspects are added to the chain of representation
       --  items. In such cases, search the list of aspect specifications. First
       --  find the declaration node where the aspects reside. This is usually
-      --  the parent or the parent of the parent.
+      --  the parent or the parent of the parent, after getting through the
+      --  additional indirection of the N_Defining_Program_Unit_Name if needed.
 
       if No (Parent (Owner)) then
          return Empty;
       end if;
 
       Decl := Parent (Owner);
+
+      if Nkind (Decl) = N_Defining_Program_Unit_Name then
+         Decl := Parent (Decl);
+      end if;
+
       if not Permits_Aspect_Specifications (Decl) then
          Decl := Parent (Decl);
 

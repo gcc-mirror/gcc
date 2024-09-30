@@ -715,6 +715,10 @@ ConstChecker::visit (ExternalFunctionItem &)
 {}
 
 void
+ConstChecker::visit (ExternalTypeItem &)
+{}
+
+void
 ConstChecker::visit (ExternBlock &block)
 {
   // FIXME: Do we need to do this?

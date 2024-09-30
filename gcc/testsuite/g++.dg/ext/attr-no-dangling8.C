@@ -8,6 +8,7 @@ template<class T> constexpr bool is_reference_v<T&&> = true;
 
 template <typename T>
 struct [[gnu::no_dangling(is_reference_v<T>)]] S {
+  int i;
   int &foo (const int &);
 };
 
@@ -15,6 +16,7 @@ template <typename T1, typename T2>
 struct X {
   template <typename U1 = T1, typename U2 = T2>
   struct [[gnu::no_dangling(is_reference_v<U1> && is_reference_v<U2>)]] Y {
+    int i;
     int &foo (const int &);
   };
 };

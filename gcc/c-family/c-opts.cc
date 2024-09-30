@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "file-prefix-map.h"    /* add_*_prefix_map()  */
 #include "context.h"
+#include "diagnostic-format-text.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -168,26 +169,28 @@ c_common_option_lang_mask (void)
 
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
-c_diagnostic_finalizer (diagnostic_context *context,
-			const diagnostic_info *diagnostic,
-			diagnostic_t)
+c_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
+			     const diagnostic_info *diagnostic,
+			     diagnostic_t)
 {
-  char *saved_prefix = pp_take_prefix (context->printer);
-  pp_set_prefix (context->printer, NULL);
-  pp_newline (context->printer);
-  diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
+  pretty_printer *const pp = text_output.get_printer ();
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, NULL);
+  pp_newline (pp);
+  diagnostic_show_locus (&text_output.get_context (),
+			 diagnostic->richloc, diagnostic->kind, pp);
   /* By default print macro expansion contexts in the diagnostic
      finalizer -- for tokens resulting from macro expansion.  */
-  virt_loc_aware_diagnostic_finalizer (context, diagnostic);
-  pp_set_prefix (context->printer, saved_prefix);
-  pp_flush (context->printer);
+  virt_loc_aware_diagnostic_finalizer (text_output, diagnostic);
+  pp_set_prefix (pp, saved_prefix);
+  pp_flush (pp);
 }
 
 /* Common default settings for diagnostics.  */
 void
 c_common_diagnostics_set_defaults (diagnostic_context *context)
 {
-  diagnostic_finalizer (context) = c_diagnostic_finalizer;
+  diagnostic_text_finalizer (context) = c_diagnostic_text_finalizer;
   context->m_opt_permissive = OPT_fpermissive;
 }
 
@@ -621,6 +624,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_iwithprefixbefore:
       add_prefixed_path (arg, INC_BRACKET);
+      break;
+
+    case OPT__embed_dir_:
+      add_path (xstrdup (arg), INC_EMBED, 0, true);
       break;
 
     case OPT_lang_asm:
@@ -1152,6 +1159,21 @@ c_common_post_options (const char **pfilename)
      to know when concepts are enabled.  */
   if (cxx_dialect >= cxx20)
     flag_concepts = 1;
+
+  /* Enable lifetime extension of range based for temporaries for C++23.
+     Diagnose -std=c++23 -fno-range-for-ext-temps.  */
+  if (cxx_dialect >= cxx23)
+    {
+      if (OPTION_SET_P (flag_range_for_ext_temps)
+	  && !flag_range_for_ext_temps)
+	error ("%<-fno-range-for-ext-temps%> is incompatible with C++23");
+      flag_range_for_ext_temps = 1;
+    }
+  /* Otherwise default to enabled in GNU modes but allow user to override.  */
+  else if (cxx_dialect >= cxx11
+	   && !flag_iso
+	   && !OPTION_SET_P (flag_range_for_ext_temps))
+    flag_range_for_ext_temps = 1;
 
   /* -fimmediate-escalation has no effect when immediate functions are not
      supported.  */

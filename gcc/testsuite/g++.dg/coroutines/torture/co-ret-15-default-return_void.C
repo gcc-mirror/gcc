@@ -1,4 +1,5 @@
 // { dg-do run { target c++17 } }
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
 //
 // Check if default return_void is insert at correct position.
 #include <cassert>

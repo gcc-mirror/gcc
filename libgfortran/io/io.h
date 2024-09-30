@@ -861,8 +861,14 @@ internal_proto (transfer_array_inner);
 extern void set_integer (void *, GFC_INTEGER_LARGEST, int);
 internal_proto(set_integer);
 
+extern void set_unsigned (void *, GFC_UINTEGER_LARGEST, int);
+internal_proto(set_unsigned);
+
 extern GFC_UINTEGER_LARGEST si_max (int);
 internal_proto(si_max);
+
+extern GFC_UINTEGER_LARGEST us_max (int);
+internal_proto(us_max);
 
 extern int convert_real (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_real);
@@ -890,6 +896,10 @@ internal_proto(read_radix);
 
 extern void read_decimal (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_decimal);
+
+extern void read_decimal_unsigned (st_parameter_dt *, const fnode *, char *,
+				   int);
+internal_proto(read_decimal_unsigned);
 
 extern void read_user_defined (st_parameter_dt *, void *);
 internal_proto(read_user_defined);
@@ -940,6 +950,9 @@ internal_proto(write_f);
 
 extern void write_i (st_parameter_dt *, const fnode *, const char *, int);
 internal_proto(write_i);
+
+extern void write_iu (st_parameter_dt *, const fnode *, const char *, int);
+internal_proto(write_iu);
 
 extern void write_l (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(write_l);

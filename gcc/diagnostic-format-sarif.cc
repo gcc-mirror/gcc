@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-metadata.h"
 #include "diagnostic-path.h"
+#include "diagnostic-format.h"
 #include "json.h"
 #include "cpplib.h"
 #include "logical-location.h"
@@ -44,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic-show-locus.h"
 #include "selftest-json.h"
 #include "text-range-label.h"
+#include "pretty-print-format-impl.h"
+#include "pretty-print-urlifier.h"
 
 /* Forward decls.  */
 class sarif_builder;
@@ -163,10 +166,9 @@ public:
   sarif_invocation (sarif_builder &builder,
 		    const char * const *original_argv);
 
-  void add_notification_for_ice (diagnostic_context &context,
-				 const diagnostic_info &diagnostic,
+  void add_notification_for_ice (const diagnostic_info &diagnostic,
 				 sarif_builder &builder);
-  void prepare_to_flush (diagnostic_context &context);
+  void prepare_to_flush (sarif_builder &builder);
 
 private:
   std::unique_ptr<json::array> m_notifications_arr;
@@ -290,17 +292,17 @@ private:
    . |  have 'char'"|                    | | with type 'int'")                |
    . | in include-chain-1-2.h            | | in include-chain-1-1.h           |
    . +-----------------------------------+ +----------------------------------+
-   .                   |                                      |
-   .                   | included-by                          | included-by
-   .                   V                                      V
+   .            ^         |                            ^         |
+   .   includes |         | included-by       includes |         | included-by
+   .            |         V                            |         V
    .  +--------------------------------+    +--------------------------------+
    .  |"id": 1                         |    |"id": 3                         |
    .  | #include "include-chain-1-2.h" |    | #include "include-chain-1-1.h" |
    .  | in include-chain-1.h           |    | in include-chain-1.h           |
    .  +--------------------------------+    +--------------------------------+
-   .                         |                      |
-   .                         | included-by          | included-by
-   .                         V                      V
+   .                   ^     |                       ^    |
+   .          includes |     | included-by  includes |    | included-by
+   .                   |     V                       |    V
    .                  +------------------------------------+
    .                  |"id": 4                             |
    .                  | The  #include "include-chain-1.h"  |
@@ -323,7 +325,11 @@ public:
     {
      /* Process a #include relationship where m_location_obj
 	was #included-d at m_where.  */
-     included_from
+     included_from,
+
+     /* Process a location_t that was added as a secondary location
+	to a rich_location without a label.  */
+     unlabelled_secondary_location
     };
 
     worklist_item (sarif_location &location_obj,
@@ -369,6 +375,7 @@ private:
 
   std::list<worklist_item> m_worklist;
   std::map<location_t, sarif_location *> m_included_from_locations;
+  std::map<location_t, sarif_location *> m_unlabelled_secondary_locations;
 };
 
 /* Subclass of sarif_object for SARIF "result" objects
@@ -379,15 +386,18 @@ private:
 class sarif_result : public sarif_location_manager
 {
 public:
-  sarif_result () : m_related_locations_arr (nullptr) {}
+  sarif_result (unsigned idx_within_parent)
+    : m_related_locations_arr (nullptr),
+      m_idx_within_parent (idx_within_parent)
+  {}
+
+  unsigned get_index_within_parent () const { return m_idx_within_parent; }
 
   void
-  on_nested_diagnostic (diagnostic_context &context,
-			const diagnostic_info &diagnostic,
+  on_nested_diagnostic (const diagnostic_info &diagnostic,
 			diagnostic_t orig_diag_kind,
 			sarif_builder &builder);
-  void on_diagram (diagnostic_context &context,
-		   const diagnostic_diagram &diagram,
+  void on_diagram (const diagnostic_diagram &diagram,
 		   sarif_builder &builder);
 
   void
@@ -396,6 +406,7 @@ public:
 
 private:
   json::array *m_related_locations_arr; // borrowed
+  const unsigned m_idx_within_parent;
 };
 
 /* Subclass of sarif_object for SARIF "location" objects
@@ -454,7 +465,39 @@ private:
 /* Subclass of sarif_object for SARIF "codeFlow" objects
    (SARIF v2.1.0 section 3.36).  */
 
-class sarif_code_flow : public sarif_object {};
+class sarif_code_flow : public sarif_object
+{
+public:
+  sarif_code_flow (sarif_result &parent,
+		   unsigned idx_within_parent);
+
+  sarif_result &get_parent () const { return m_parent; }
+  unsigned get_index_within_parent () const { return m_idx_within_parent; }
+
+  sarif_thread_flow &
+  get_or_append_thread_flow (const diagnostic_thread &thread,
+			     diagnostic_thread_id_t thread_id);
+
+  sarif_thread_flow &
+  get_thread_flow (diagnostic_thread_id_t thread_id);
+
+  void add_location (sarif_thread_flow_location &);
+
+  sarif_thread_flow_location &
+  get_thread_flow_loc_obj (diagnostic_event_id_t event_id) const;
+
+private:
+  sarif_result &m_parent;
+  const unsigned m_idx_within_parent;
+
+  hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
+	   sarif_thread_flow *> m_thread_id_map; // borrowed ptr
+  json::array *m_thread_flows_arr; // borrowed
+
+  /* Vec of borrowed ptr, allowing for going easily from
+     an event_id to the corresponding threadFlowLocation object.  */
+  std::vector<sarif_thread_flow_location *> m_all_tfl_objs;
+};
 
 /* Subclass of sarif_object for SARIF "threadFlow" objects
    (SARIF v2.1.0 section 3.37).  */
@@ -462,20 +505,41 @@ class sarif_code_flow : public sarif_object {};
 class sarif_thread_flow : public sarif_object
 {
 public:
-  sarif_thread_flow (const diagnostic_thread &thread);
+  sarif_thread_flow (sarif_code_flow &parent,
+		     const diagnostic_thread &thread,
+		     unsigned idx_within_parent);
 
-  void
-  add_location
-    (std::unique_ptr<sarif_thread_flow_location> thread_flow_loc_obj);
+  sarif_code_flow &get_parent () const { return m_parent; }
+  unsigned get_index_within_parent () const { return m_idx_within_parent; }
+
+  sarif_thread_flow_location &add_location ();
 
 private:
+  sarif_code_flow &m_parent;
   json::array *m_locations_arr; // borrowed
+  const unsigned m_idx_within_parent;
 };
 
 /* Subclass of sarif_object for SARIF "threadFlowLocation" objects
    (SARIF v2.1.0 section 3.38).  */
 
-class sarif_thread_flow_location : public sarif_object {};
+class sarif_thread_flow_location : public sarif_object
+{
+public:
+  sarif_thread_flow_location (sarif_thread_flow &parent,
+			      unsigned idx_within_parent)
+  : m_parent (parent),
+    m_idx_within_parent (idx_within_parent)
+  {
+  }
+
+  sarif_thread_flow &get_parent () const { return m_parent; }
+  unsigned get_index_within_parent () const { return m_idx_within_parent; }
+
+private:
+  sarif_thread_flow &m_parent;
+  const unsigned m_idx_within_parent;
+};
 
 /* Subclass of sarif_object for SARIF "reportingDescriptor" objects
    (SARIF v2.1.0 section 3.49).  */
@@ -516,8 +580,7 @@ class sarif_replacement : public sarif_object {};
 class sarif_ice_notification : public sarif_location_manager
 {
 public:
-  sarif_ice_notification (diagnostic_context &context,
-			  const diagnostic_info &diagnostic,
+  sarif_ice_notification (const diagnostic_info &diagnostic,
 			  sarif_builder &builder);
 
   void
@@ -559,6 +622,7 @@ public:
    - diagnostic groups (see limitations below)
    - logical locations (e.g. cfun)
    - labelled ranges (as annotations)
+   - secondary ranges without labels (as related locations)
 
    Known limitations:
    - GCC supports one-deep nesting of diagnostics (via auto_diagnostic_group),
@@ -566,9 +630,6 @@ public:
      diagnostics (e.g. we ignore fix-it hints on them)
    - although we capture command-line arguments (section 3.20.2), we don't
      yet capture response files.
-   - doesn't capture secondary locations within a rich_location
-     (perhaps we should use the "relatedLocations" property: SARIF v2.1.0
-     section 3.27.22)
    - doesn't capture "artifact.encoding" property
      (SARIF v2.1.0 section 3.24.9).
    - doesn't capture hashes of the source files
@@ -577,7 +638,9 @@ public:
      (SARIF v2.1.0 section 3.27.13).
    - doesn't capture -Werror cleanly
    - doesn't capture inlining information (can SARIF handle this?)
-   - doesn't capture macro expansion information (can SARIF handle this?).  */
+   - doesn't capture macro expansion information (can SARIF handle this?).
+   - doesn't capture any diagnostic_metadata::rules associated with
+     a diagnostic.  */
 
 class sarif_builder
 {
@@ -587,11 +650,9 @@ public:
 		 const char *main_input_filename_,
 		 bool formatted);
 
-  void end_diagnostic (diagnostic_context &context,
-		       const diagnostic_info &diagnostic,
-		       diagnostic_t orig_diag_kind);
-  void emit_diagram (diagnostic_context &context,
-		     const diagnostic_diagram &diagram);
+  void on_report_diagnostic (const diagnostic_info &diagnostic,
+			     diagnostic_t orig_diag_kind);
+  void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
   std::unique_ptr<sarif_result> take_current_result ()
@@ -618,19 +679,41 @@ public:
   std::unique_ptr<sarif_message>
   make_message_object (const char *msg) const;
   std::unique_ptr<sarif_message>
-  make_message_object_for_diagram (diagnostic_context &context,
-				   const diagnostic_diagram &diagram);
+  make_message_object_for_diagram (const diagnostic_diagram &diagram);
   std::unique_ptr<sarif_artifact_content>
   maybe_make_artifact_content_object (const char *filename) const;
 
   std::unique_ptr<sarif_artifact_location>
   make_artifact_location_object (const char *filename);
 
+  const sarif_code_flow *
+  get_code_flow_for_event_ids () const
+  {
+    return m_current_code_flow;
+  }
+
+  diagnostic_context &get_context () const { return m_context; }
+  pretty_printer *get_printer () const { return m_printer; }
+  token_printer &get_token_printer () { return m_token_printer; }
+
 private:
+  class sarif_token_printer : public token_printer
+  {
+  public:
+    sarif_token_printer (sarif_builder &builder)
+      : m_builder (builder)
+    {
+    }
+    void print_tokens (pretty_printer *pp,
+		       const pp_token_list &tokens) final override;
+  private:
+    sarif_builder &m_builder;
+  };
+
   std::unique_ptr<sarif_result>
-  make_result_object (diagnostic_context &context,
-		      const diagnostic_info &diagnostic,
-		      diagnostic_t orig_diag_kind);
+  make_result_object (const diagnostic_info &diagnostic,
+		      diagnostic_t orig_diag_kind,
+		      unsigned idx_within_parent);
   void
   add_any_include_chain (sarif_location_manager &loc_mgr,
 			 sarif_location &location_obj,
@@ -644,11 +727,13 @@ private:
 			enum diagnostic_artifact_role role);
   std::unique_ptr<sarif_code_flow>
   make_code_flow_object (sarif_result &result,
+			 unsigned idx_within_parent,
 			 const diagnostic_path &path);
-  std::unique_ptr<sarif_thread_flow_location>
-  make_thread_flow_location_object (sarif_result &result,
-				    const diagnostic_event &event,
-				    int path_event_idx);
+  void
+  populate_thread_flow_location_object (sarif_result &result,
+					sarif_thread_flow_location &thread_flow_loc_obj,
+					const diagnostic_event &event,
+					int event_execution_idx);
   std::unique_ptr<json::array>
   maybe_make_kinds_array (diagnostic_event::meaning m) const;
   std::unique_ptr<sarif_physical_location>
@@ -686,8 +771,7 @@ private:
   std::unique_ptr<sarif_tool_component_reference>
   make_tool_component_reference_object_for_cwe () const;
   std::unique_ptr<sarif_reporting_descriptor>
-  make_reporting_descriptor_object_for_warning (diagnostic_context &context,
-						const diagnostic_info &diagnostic,
+  make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
 						diagnostic_t orig_diag_kind,
 						const char *option_text);
   std::unique_ptr<sarif_reporting_descriptor>
@@ -718,7 +802,9 @@ private:
   int get_sarif_column (expanded_location exploc) const;
 
   diagnostic_context &m_context;
+  pretty_printer *m_printer;
   const line_maps *m_line_maps;
+  sarif_token_printer m_token_printer;
 
   /* The JSON object for the invocation object.  */
   std::unique_ptr<sarif_invocation> m_invocation_obj;
@@ -745,6 +831,9 @@ private:
   int m_tabstop;
 
   bool m_formatted;
+
+  unsigned m_next_result_idx;
+  sarif_code_flow *m_current_code_flow;
 };
 
 /* class sarif_object : public json::object.  */
@@ -790,24 +879,27 @@ sarif_invocation::sarif_invocation (sarif_builder &builder,
 		     make_date_time_string_for_current_time ());
 }
 
-/* Handle an internal compiler error DIAGNOSTIC occurring on CONTEXT.
+/* Handle an internal compiler error DIAGNOSTIC.
    Add an object representing the ICE to the notifications array.  */
 
 void
-sarif_invocation::add_notification_for_ice (diagnostic_context &context,
-					    const diagnostic_info &diagnostic,
+sarif_invocation::add_notification_for_ice (const diagnostic_info &diagnostic,
 					    sarif_builder &builder)
 {
   m_success = false;
 
   m_notifications_arr->append<sarif_ice_notification>
-    (::make_unique<sarif_ice_notification> (context, diagnostic, builder));
+    (::make_unique<sarif_ice_notification> (diagnostic, builder));
 }
 
 void
-sarif_invocation::prepare_to_flush (diagnostic_context &context)
+sarif_invocation::prepare_to_flush (sarif_builder &builder)
 {
+  const diagnostic_context &context = builder.get_context ();
+
   /* "executionSuccessful" property (SARIF v2.1.0 section 3.20.14).  */
+  if (context.execution_failed_p ())
+    m_success = false;
   set_bool ("executionSuccessful", m_success);
 
   /* "toolExecutionNotifications" property (SARIF v2.1.0 section 3.20.21).  */
@@ -987,6 +1079,34 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
 	   *this);
       }
       break;
+    case worklist_item::kind::unlabelled_secondary_location:
+      {
+	sarif_location &primary_loc_obj = item.m_location_obj;
+	sarif_location *secondary_loc_obj = nullptr;
+	auto iter = m_unlabelled_secondary_locations.find (item.m_where);
+	if (iter != m_unlabelled_secondary_locations.end ())
+	  secondary_loc_obj = iter->second;
+	else
+	  {
+	    std::unique_ptr<sarif_location> new_loc_obj
+	      = builder.make_location_object
+		  (*this,
+		   item.m_where,
+		   diagnostic_artifact_role::scanned_file);
+	    secondary_loc_obj = new_loc_obj.get ();
+	    add_related_location (std::move (new_loc_obj));
+	    auto kv
+	      = std::pair<location_t, sarif_location *> (item.m_where,
+							 secondary_loc_obj);
+	    m_unlabelled_secondary_locations.insert (kv);
+	  }
+	gcc_assert (secondary_loc_obj);
+	primary_loc_obj.lazily_add_relationship
+	  (*secondary_loc_obj,
+	   location_relationship_kind::relevant,
+	   *this);
+      }
+      break;
     }
 }
 
@@ -999,8 +1119,7 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
    secondary diagnostics occur (such as notes to a warning).  */
 
 void
-sarif_result::on_nested_diagnostic (diagnostic_context &context,
-				    const diagnostic_info &diagnostic,
+sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
 				    diagnostic_t /*orig_diag_kind*/,
 				    sarif_builder &builder)
 {
@@ -1011,8 +1130,8 @@ sarif_result::on_nested_diagnostic (diagnostic_context &context,
     = builder.make_location_object (*this, *diagnostic.richloc, nullptr,
 				    diagnostic_artifact_role::result_file);
   auto message_obj
-    = builder.make_message_object (pp_formatted_text (context.printer));
-  pp_clear_output_area (context.printer);
+    = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
+  pp_clear_output_area (builder.get_printer ());
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
   add_related_location (std::move (location_obj));
@@ -1025,13 +1144,11 @@ sarif_result::on_nested_diagnostic (diagnostic_context &context,
    (SARIF v2.1.0 section 3.28.5).  */
 
 void
-sarif_result::on_diagram (diagnostic_context &context,
-			  const diagnostic_diagram &diagram,
+sarif_result::on_diagram (const diagnostic_diagram &diagram,
 			  sarif_builder &builder)
 {
   auto location_obj = ::make_unique<sarif_location> ();
-  auto message_obj
-    = builder.make_message_object_for_diagram (context, diagram);
+  auto message_obj = builder.make_message_object_for_diagram (diagram);
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
   add_related_location (std::move (location_obj));
@@ -1183,8 +1300,7 @@ sarif_location::lazily_add_relationships_array ()
    DIAGNOSTIC is an internal compiler error.  */
 
 sarif_ice_notification::
-sarif_ice_notification (diagnostic_context &context,
-			const diagnostic_info &diagnostic,
+sarif_ice_notification (const diagnostic_info &diagnostic,
 			sarif_builder &builder)
 {
   /* "locations" property (SARIF v2.1.0 section 3.58.4).  */
@@ -1196,8 +1312,8 @@ sarif_ice_notification (diagnostic_context &context,
 
   /* "message" property (SARIF v2.1.0 section 3.85.5).  */
   auto message_obj
-    = builder.make_message_object (pp_formatted_text (context.printer));
-  pp_clear_output_area (context.printer);
+    = builder.make_message_object (pp_formatted_text (builder.get_printer ()));
+  pp_clear_output_area (builder.get_printer ());
   set<sarif_message> ("message", std::move (message_obj));
 
   /* "level" property (SARIF v2.1.0 section 3.58.6).  */
@@ -1258,9 +1374,67 @@ lazily_add_kind (enum location_relationship_kind kind)
   kinds_arr->append_string (kind_str);
 }
 
+/* class sarif_code_flow : public sarif_object.  */
+
+sarif_code_flow::sarif_code_flow (sarif_result &parent,
+				  unsigned idx_within_parent)
+: m_parent (parent),
+  m_idx_within_parent (idx_within_parent)
+{
+  /* "threadFlows" property (SARIF v2.1.0 section 3.36.3).  */
+  auto thread_flows_arr = ::make_unique<json::array> ();
+  m_thread_flows_arr = thread_flows_arr.get (); // borrowed
+  set<json::array> ("threadFlows", std::move (thread_flows_arr));
+}
+
+sarif_thread_flow &
+sarif_code_flow::get_or_append_thread_flow (const diagnostic_thread &thread,
+					    diagnostic_thread_id_t thread_id)
+{
+  sarif_thread_flow **slot = m_thread_id_map.get (thread_id);
+  if (slot)
+    return **slot;
+
+  unsigned next_thread_flow_idx = m_thread_flows_arr->size ();
+  auto thread_flow_obj
+    = ::make_unique<sarif_thread_flow> (*this, thread, next_thread_flow_idx);
+  m_thread_id_map.put (thread_id, thread_flow_obj.get ()); // borrowed
+  sarif_thread_flow *result = thread_flow_obj.get ();
+  m_thread_flows_arr->append<sarif_thread_flow> (std::move (thread_flow_obj));
+  return *result;
+}
+
+sarif_thread_flow &
+sarif_code_flow::get_thread_flow (diagnostic_thread_id_t thread_id)
+{
+  sarif_thread_flow **slot = m_thread_id_map.get (thread_id);
+  gcc_assert (slot); // it must already have one
+  return **slot;
+}
+
+void
+sarif_code_flow::add_location (sarif_thread_flow_location &tfl_obj)
+{
+  m_all_tfl_objs.push_back (&tfl_obj);
+}
+
+sarif_thread_flow_location &
+sarif_code_flow::get_thread_flow_loc_obj (diagnostic_event_id_t event_id) const
+{
+  gcc_assert (event_id.known_p ());
+  gcc_assert ((size_t)event_id.zero_based () < m_all_tfl_objs.size ());
+  sarif_thread_flow_location *tfl_obj = m_all_tfl_objs[event_id.zero_based ()];
+  gcc_assert (tfl_obj);
+  return *tfl_obj;
+}
+
 /* class sarif_thread_flow : public sarif_object.  */
 
-sarif_thread_flow::sarif_thread_flow (const diagnostic_thread &thread)
+sarif_thread_flow::sarif_thread_flow (sarif_code_flow &parent,
+				      const diagnostic_thread &thread,
+				      unsigned idx_within_parent)
+: m_parent (parent),
+  m_idx_within_parent (idx_within_parent)
 {
   /* "id" property (SARIF v2.1.0 section 3.37.2).  */
   label_text name (thread.get_name (false));
@@ -1274,11 +1448,18 @@ sarif_thread_flow::sarif_thread_flow (const diagnostic_thread &thread)
   set ("locations", m_locations_arr);
 }
 
-void
-sarif_thread_flow::
-add_location (std::unique_ptr<sarif_thread_flow_location> thread_flow_loc_obj)
+/* Add a sarif_thread_flow_location to this threadFlow object, but
+   don't populate it yet.  */
+
+sarif_thread_flow_location &
+sarif_thread_flow::add_location ()
 {
-  m_locations_arr->append (std::move (thread_flow_loc_obj));
+  const unsigned thread_flow_location_idx = m_locations_arr->size ();
+  sarif_thread_flow_location *thread_flow_loc_obj
+    = new sarif_thread_flow_location (*this, thread_flow_location_idx);
+  m_locations_arr->append (thread_flow_loc_obj);
+  m_parent.add_location (*thread_flow_loc_obj);
+  return *thread_flow_loc_obj;
 }
 
 /* class sarif_builder.  */
@@ -1290,7 +1471,9 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			      const char *main_input_filename_,
 			      bool formatted)
 : m_context (context),
+  m_printer (context.m_printer),
   m_line_maps (line_maps),
+  m_token_printer (*this),
   m_invocation_obj
     (::make_unique<sarif_invocation> (*this,
 				      context.get_original_argv ())),
@@ -1300,8 +1483,12 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_rule_id_set (),
   m_rules_arr (new json::array ()),
   m_tabstop (context.m_tabstop),
-  m_formatted (formatted)
+  m_formatted (formatted),
+  m_next_result_idx (0),
+  m_current_code_flow (nullptr)
 {
+  gcc_assert (m_line_maps);
+
   /* Mark MAIN_INPUT_FILENAME_ as the artifact that the tool was
      instructed to scan.
      Only quote the contents if it gets referenced by physical locations,
@@ -1313,30 +1500,30 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			  false);
 }
 
-/* Implementation of "end_diagnostic" for SARIF output.  */
+/* Implementation of "on_report_diagnostic" for SARIF output.  */
 
 void
-sarif_builder::end_diagnostic (diagnostic_context &context,
-			       const diagnostic_info &diagnostic,
-			       diagnostic_t orig_diag_kind)
+sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
+				     diagnostic_t orig_diag_kind)
 {
+  pp_output_formatted_text (m_printer, m_context.get_urlifier ());
+
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
-      m_invocation_obj->add_notification_for_ice (context, diagnostic, *this);
+      m_invocation_obj->add_notification_for_ice (diagnostic, *this);
       return;
     }
 
   if (m_cur_group_result)
     /* Nested diagnostic.  */
-    m_cur_group_result->on_nested_diagnostic (context,
-					      diagnostic,
+    m_cur_group_result->on_nested_diagnostic (diagnostic,
 					      orig_diag_kind,
 					      *this);
   else
     {
       /* Top-level diagnostic.  */
-      m_cur_group_result
-	= make_result_object (context, diagnostic, orig_diag_kind);
+      m_cur_group_result = make_result_object (diagnostic, orig_diag_kind,
+					       m_next_result_idx++);
     }
 }
 
@@ -1344,12 +1531,11 @@ sarif_builder::end_diagnostic (diagnostic_context &context,
    for SARIF output.  */
 
 void
-sarif_builder::emit_diagram (diagnostic_context &context,
-			     const diagnostic_diagram &diagram)
+sarif_builder::emit_diagram (const diagnostic_diagram &diagram)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_group_result);
-  m_cur_group_result->on_diagram (context, diagram, *this);
+  m_cur_group_result->on_diagram (diagram, *this);
 }
 
 /* Implementation of "end_group_cb" for SARIF output.  */
@@ -1371,7 +1557,7 @@ sarif_builder::end_group ()
 std::unique_ptr<sarif_log>
 sarif_builder::flush_to_object ()
 {
-  m_invocation_obj->prepare_to_flush (m_context);
+  m_invocation_obj->prepare_to_flush (*this);
   std::unique_ptr<sarif_log> top
     = make_top_level_object (std::move (m_invocation_obj),
 			     std::move (m_results_array));
@@ -1434,17 +1620,17 @@ make_rule_id_for_diagnostic_kind (diagnostic_t diag_kind)
 /* Make a "result" object (SARIF v2.1.0 section 3.27) for DIAGNOSTIC.  */
 
 std::unique_ptr<sarif_result>
-sarif_builder::make_result_object (diagnostic_context &context,
-				   const diagnostic_info &diagnostic,
-				   diagnostic_t orig_diag_kind)
+sarif_builder::make_result_object (const diagnostic_info &diagnostic,
+				   diagnostic_t orig_diag_kind,
+				   unsigned idx_within_parent)
 {
-  auto result_obj = ::make_unique<sarif_result> ();
+  auto result_obj = ::make_unique<sarif_result> (idx_within_parent);
 
   /* "ruleId" property (SARIF v2.1.0 section 3.27.5).  */
   /* Ideally we'd have an option_name for these.  */
   if (char *option_text
-	= context.make_option_name (diagnostic.option_index,
-				    orig_diag_kind, diagnostic.kind))
+	= m_context.make_option_name (diagnostic.option_id,
+				      orig_diag_kind, diagnostic.kind))
     {
       /* Lazily create reportingDescriptor objects for and add to m_rules_arr.
 	 Set ruleId referencing them.  */
@@ -1458,8 +1644,7 @@ sarif_builder::make_result_object (diagnostic_context &context,
 	  m_rule_id_set.add (option_text);
 
 	  m_rules_arr->append<sarif_reporting_descriptor>
-	    (make_reporting_descriptor_object_for_warning (context,
-							   diagnostic,
+	    (make_reporting_descriptor_object_for_warning (diagnostic,
 							   orig_diag_kind,
 							   option_text));
 	}
@@ -1487,6 +1672,8 @@ sarif_builder::make_result_object (diagnostic_context &context,
 	}
 
       diagnostic.metadata->maybe_add_sarif_properties (*result_obj);
+
+      /* We don't yet support diagnostic_metadata::rule.  */
     }
 
   /* "level" property (SARIF v2.1.0 section 3.27.10).  */
@@ -1495,8 +1682,8 @@ sarif_builder::make_result_object (diagnostic_context &context,
 
   /* "message" property (SARIF v2.1.0 section 3.27.11).  */
   auto message_obj
-    = make_message_object (pp_formatted_text (context.printer));
-  pp_clear_output_area (context.printer);
+    = make_message_object (pp_formatted_text (m_printer));
+  pp_clear_output_area (m_printer);
   result_obj->set<sarif_message> ("message", std::move (message_obj));
 
   /* "locations" property (SARIF v2.1.0 section 3.27.12).  */
@@ -1510,8 +1697,10 @@ sarif_builder::make_result_object (diagnostic_context &context,
   if (const diagnostic_path *path = diagnostic.richloc->get_path ())
     {
       auto code_flows_arr = ::make_unique<json::array> ();
+      const unsigned code_flow_index = 0;
       code_flows_arr->append<sarif_code_flow>
 	(make_code_flow_object (*result_obj.get (),
+				code_flow_index,
 				*path));
       result_obj->set<json::array> ("codeFlows", std::move (code_flows_arr));
     }
@@ -1537,8 +1726,7 @@ sarif_builder::make_result_object (diagnostic_context &context,
 
 std::unique_ptr<sarif_reporting_descriptor>
 sarif_builder::
-make_reporting_descriptor_object_for_warning (diagnostic_context &context,
-					      const diagnostic_info &diagnostic,
+make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
 					      diagnostic_t /*orig_diag_kind*/,
 					      const char *option_text)
 {
@@ -1551,7 +1739,7 @@ make_reporting_descriptor_object_for_warning (diagnostic_context &context,
      it seems redundant compared to "id".  */
 
   /* "helpUri" property (SARIF v2.1.0 section 3.49.12).  */
-  if (char *option_url = context.make_option_url (diagnostic.option_index))
+  if (char *option_url = m_context.make_option_url (diagnostic.option_id))
     {
       reporting_desc->set_string ("helpUri", option_url);
       free (option_url);
@@ -1707,7 +1895,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 
       std::unique_ptr<sarif_multiformat_message_string> result
 	= builder.make_multiformat_message_string
-	    (pp_formatted_text (dc.printer));
+	    (pp_formatted_text (dc.m_printer));
 
       diagnostic_finish (&dc);
 
@@ -1737,18 +1925,19 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
   set_any_logical_locs_arr (*location_obj, logical_loc);
 
-  /* "annotations" property (SARIF v2.1.0 section 3.28.6).  */
+  /* Handle labelled ranges and/or secondary locations.  */
   {
-    /* Create annotations for any labelled ranges.  */
     std::unique_ptr<json::array> annotations_arr = nullptr;
     for (unsigned int i = 0; i < rich_loc.get_num_locations (); i++)
       {
 	const location_range *range = rich_loc.get_range (i);
+	bool handled = false;
 	if (const range_label *label = range->m_label)
 	  {
 	    label_text text = label->get_text (i);
 	    if (text.get ())
 	      {
+		/* Create annotations for any labelled ranges.  */
 		location_t range_loc = rich_loc.get_loc (i);
 		auto region
 		  = maybe_make_region_object (range_loc,
@@ -1760,11 +1949,21 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 		    region->set<sarif_message>
 		      ("message", make_message_object (text.get ()));
 		    annotations_arr->append<sarif_region> (std::move (region));
+		    handled = true;
 		  }
 	      }
 	  }
+
+	/* Add related locations for any secondary locations in RICH_LOC
+	   that don't have labels (and thus aren't added to "annotations"). */
+	if (i > 0 && !handled)
+	  loc_mgr.add_relationship_to_worklist
+	    (*location_obj.get (),
+	     sarif_location_manager::worklist_item::kind::unlabelled_secondary_location,
+	     range->m_loc);
       }
     if (annotations_arr)
+      /* "annotations" property (SARIF v2.1.0 section 3.28.6).  */
       location_obj->set<json::array> ("annotations",
 				      std::move (annotations_arr));
   }
@@ -2007,7 +2206,10 @@ sarif_builder::get_sarif_column (expanded_location exploc) const
    or return nullptr.
 
    If COLUMN_OVERRIDE is non-zero, then use it as the column number
-   if LOC has no column information.  */
+   if LOC has no column information.
+
+   We only support text properties of regions ("text regions"),
+   not binary properties ("binary regions"); see 3.30.1.  */
 
 std::unique_ptr<sarif_region>
 sarif_builder::maybe_make_region_object (location_t loc,
@@ -2030,11 +2232,16 @@ sarif_builder::maybe_make_region_object (location_t loc,
   if (exploc_finish.file !=exploc_caret.file)
     return nullptr;
 
+  /* We can have line == 0 in the presence of "#" lines.
+     SARIF requires lines > 0, so if we hit this case we don't have a
+     way of validly representing the region as SARIF; bail out.  */
+  if (exploc_start.line <= 0)
+    return nullptr;
+
   auto region_obj = ::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
-  if (exploc_start.line > 0)
-    region_obj->set_integer ("startLine", exploc_start.line);
+  region_obj->set_integer ("startLine", exploc_start.line);
 
   /* "startColumn" property (SARIF v2.1.0 section 3.30.6).
 
@@ -2102,11 +2309,16 @@ maybe_make_region_object_for_context (location_t loc,
   if (exploc_finish.file !=exploc_caret.file)
     return nullptr;
 
+  /* We can have line == 0 in the presence of "#" lines.
+     SARIF requires lines > 0, so if we hit this case we don't have a
+     way of validly representing the region as SARIF; bail out.  */
+  if (exploc_start.line <= 0)
+    return nullptr;
+
   auto region_obj = ::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
-  if (exploc_start.line > 0)
-    region_obj->set_integer ("startLine", exploc_start.line);
+  region_obj->set_integer ("startLine", exploc_start.line);
 
   /* "endLine" property (SARIF v2.1.0 section 3.30.7) */
   if (exploc_finish.line != exploc_start.line
@@ -2219,83 +2431,115 @@ make_sarif_logical_location_object (const logical_location &logical_loc)
   return logical_loc_obj;
 }
 
+label_text
+make_sarif_url_for_event (const sarif_code_flow *code_flow,
+			  diagnostic_event_id_t event_id)
+{
+  gcc_assert (event_id.known_p ());
+
+  if (!code_flow)
+    return label_text ();
+
+  const sarif_thread_flow_location &tfl_obj
+    = code_flow->get_thread_flow_loc_obj (event_id);
+  const int location_idx = tfl_obj.get_index_within_parent ();
+
+  const sarif_thread_flow &thread_flow_obj = tfl_obj.get_parent ();
+  const int thread_flow_idx = thread_flow_obj.get_index_within_parent ();
+
+  const sarif_code_flow &code_flow_obj = thread_flow_obj.get_parent ();
+  const int code_flow_idx = code_flow_obj.get_index_within_parent ();
+
+  const sarif_result &result_obj = code_flow_obj.get_parent ();
+  const int result_idx = result_obj.get_index_within_parent ();
+
+  /* We only support a single run object in the log.  */
+  const int run_idx = 0;
+
+  char *buf = xasprintf
+    ("sarif:/runs/%i/results/%i/codeFlows/%i/threadFlows/%i/locations/%i",
+     run_idx, result_idx, code_flow_idx, thread_flow_idx, location_idx);
+  return label_text::take (buf);
+}
+
 /* Make a "codeFlow" object (SARIF v2.1.0 section 3.36) for PATH.  */
 
 std::unique_ptr<sarif_code_flow>
 sarif_builder::make_code_flow_object (sarif_result &result,
+				      unsigned idx_within_parent,
 				      const diagnostic_path &path)
 {
-  auto code_flow_obj = ::make_unique <sarif_code_flow> ();
+  auto code_flow_obj
+    = ::make_unique <sarif_code_flow> (result, idx_within_parent);
 
-  /* "threadFlows" property (SARIF v2.1.0 section 3.36.3).  */
-  auto thread_flows_arr = ::make_unique<json::array> ();
-
-  /* Walk the events, consolidating into per-thread threadFlow objects,
-     using the index with PATH as the overall executionOrder.  */
-  hash_map<int_hash<diagnostic_thread_id_t, -1, -2>,
-	   sarif_thread_flow *> thread_id_map; // borrowed
+  /* First pass:
+     Create threadFlows and threadFlowLocation objects within them,
+     effectively recording a mapping from event_id to threadFlowLocation
+     so that we can later go from an event_id to a URI within the
+     SARIF file.  */
   for (unsigned i = 0; i < path.num_events (); i++)
     {
       const diagnostic_event &event = path.get_event (i);
       const diagnostic_thread_id_t thread_id = event.get_thread_id ();
-      sarif_thread_flow *thread_flow_obj;
 
-      if (sarif_thread_flow **slot = thread_id_map.get (thread_id))
-	thread_flow_obj = *slot;
-      else
-	{
-	  const diagnostic_thread &thread = path.get_thread (thread_id);
-	  thread_flow_obj = new sarif_thread_flow (thread);
-	  thread_id_map.put (thread_id, thread_flow_obj); // borrowed
-	  thread_flows_arr->append (thread_flow_obj);
-	}
-
-      /* Add event to thread's threadFlow object.  */
-      std::unique_ptr<sarif_thread_flow_location> thread_flow_loc_obj
-	= make_thread_flow_location_object (result, event, i);
-      thread_flow_obj->add_location (std::move (thread_flow_loc_obj));
+      sarif_thread_flow &thread_flow_obj
+	= code_flow_obj->get_or_append_thread_flow (path.get_thread (thread_id),
+						    thread_id);
+      thread_flow_obj.add_location ();
     }
-  code_flow_obj->set<json::array> ("threadFlows", std::move (thread_flows_arr));
+
+  /* Second pass: walk the events, populating the tfl objs.  */
+  m_current_code_flow = code_flow_obj.get ();
+  for (unsigned i = 0; i < path.num_events (); i++)
+    {
+      const diagnostic_event &event = path.get_event (i);
+      sarif_thread_flow_location &thread_flow_loc_obj
+	= code_flow_obj->get_thread_flow_loc_obj (i);
+      populate_thread_flow_location_object (result,
+					    thread_flow_loc_obj,
+					    event,
+					    i);
+    }
+  m_current_code_flow = nullptr;
 
   return code_flow_obj;
 }
 
-/* Make a "threadFlowLocation" object (SARIF v2.1.0 section 3.38) for EVENT.  */
+/* Populate TFL_OBJ, a "threadFlowLocation" object (SARIF v2.1.0 section 3.38)
+   based on EVENT.  */
 
-std::unique_ptr<sarif_thread_flow_location>
-sarif_builder::make_thread_flow_location_object (sarif_result &result,
-						 const diagnostic_event &ev,
-						 int path_event_idx)
+void
+sarif_builder::
+populate_thread_flow_location_object (sarif_result &result,
+				      sarif_thread_flow_location &tfl_obj,
+				      const diagnostic_event &ev,
+				      int event_execution_idx)
 {
-  auto thread_flow_loc_obj = ::make_unique<sarif_thread_flow_location> ();
-
   /* Give diagnostic_event subclasses a chance to add custom properties
      via a property bag.  */
-  ev.maybe_add_sarif_properties (*thread_flow_loc_obj);
+  ev.maybe_add_sarif_properties (tfl_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
-  thread_flow_loc_obj->set<sarif_location>
+  tfl_obj.set<sarif_location>
     ("location",
      make_location_object (result, ev, diagnostic_artifact_role::traced_file));
 
   /* "kinds" property (SARIF v2.1.0 section 3.38.8).  */
   diagnostic_event::meaning m = ev.get_meaning ();
   if (auto kinds_arr = maybe_make_kinds_array (m))
-    thread_flow_loc_obj->set<json::array> ("kinds", std::move (kinds_arr));
+    tfl_obj.set<json::array> ("kinds", std::move (kinds_arr));
 
   /* "nestingLevel" property (SARIF v2.1.0 section 3.38.10).  */
-  thread_flow_loc_obj->set_integer ("nestingLevel", ev.get_stack_depth ());
+  tfl_obj.set_integer ("nestingLevel", ev.get_stack_depth ());
 
   /* "executionOrder" property (SARIF v2.1.0 3.38.11).
      Offset by 1 to match the human-readable values emitted by %@.  */
-  thread_flow_loc_obj->set_integer ("executionOrder", path_event_idx + 1);
+  tfl_obj.set_integer ("executionOrder", event_execution_idx + 1);
 
   /* It might be nice to eventually implement the following for -fanalyzer:
      - the "stack" property (SARIF v2.1.0 section 3.38.5)
      - the "state" property (SARIF v2.1.0 section 3.38.9)
      - the "importance" property (SARIF v2.1.0 section 3.38.13).  */
-
-  return thread_flow_loc_obj;
 }
 
 /* If M has any known meaning, make a json array suitable for the "kinds"
@@ -2342,27 +2586,27 @@ sarif_builder::make_message_object (const char *msg) const
    of the message.  */
 
 std::unique_ptr<sarif_message>
-sarif_builder::make_message_object_for_diagram (diagnostic_context &context,
-						const diagnostic_diagram &diagram)
+sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagram)
 {
   auto message_obj = ::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   message_obj->set_string ("text", diagram.get_alt_text ());
 
-  char *saved_prefix = pp_take_prefix (context.printer);
-  pp_set_prefix (context.printer, nullptr);
+  pretty_printer *const pp = m_printer;
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, nullptr);
 
   /* "To produce a code block in Markdown, simply indent every line of
      the block by at least 4 spaces or 1 tab."
      Here we use 4 spaces.  */
-  diagram.get_canvas ().print_to_pp (context.printer, "    ");
-  pp_set_prefix (context.printer, saved_prefix);
+  diagram.get_canvas ().print_to_pp (pp, "    ");
+  pp_set_prefix (pp, saved_prefix);
 
   /* "markdown" property (SARIF v2.1.0 section 3.11.9).  */
-  message_obj->set_string ("markdown", pp_formatted_text (context.printer));
+  message_obj->set_string ("markdown", pp_formatted_text (pp));
 
-  pp_clear_output_area (context.printer);
+  pp_clear_output_area (pp);
 
   return message_obj;
 }
@@ -2381,7 +2625,7 @@ sarif_builder::make_multiformat_message_string (const char *msg) const
   return message_obj;
 }
 
-#define SARIF_SCHEMA "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+#define SARIF_SCHEMA "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json"
 #define SARIF_VERSION "2.1.0"
 
 /* Make a top-level "sarifLog" object (SARIF v2.1.0 section 3.13).  */
@@ -2870,20 +3114,21 @@ public:
     m_builder.end_group ();
   }
   void
-  on_begin_diagnostic (const diagnostic_info &) final override
+  on_report_diagnostic (const diagnostic_info &diagnostic,
+			diagnostic_t orig_diag_kind) final override
   {
-    /* No-op,  */
-  }
-  void
-  on_end_diagnostic (const diagnostic_info &diagnostic,
-		     diagnostic_t orig_diag_kind) final override
-  {
-    m_builder.end_diagnostic (m_context, diagnostic, orig_diag_kind);
+    m_builder.on_report_diagnostic (diagnostic, orig_diag_kind);
   }
   void on_diagram (const diagnostic_diagram &diagram) final override
   {
-    m_builder.emit_diagram (m_context, diagram);
+    m_builder.emit_diagram (diagram);
   }
+  void after_diagnostic (const diagnostic_info &) final override
+  {
+    /* No-op.  */
+  }
+
+  sarif_builder &get_builder () { return m_builder; }
 
 protected:
   sarif_output_format (diagnostic_context &context,
@@ -2960,11 +3205,128 @@ private:
   char *m_base_file_name;
 };
 
+/* Print the start of an embedded link to PP, as per 3.11.6.  */
+
+static void
+sarif_begin_embedded_link (pretty_printer *pp)
+{
+  pp_character (pp, '[');
+}
+
+/* Print the end of an embedded link to PP, as per 3.11.6.  */
+
+static void
+sarif_end_embedded_link (pretty_printer *pp,
+			 const char *url)
+{
+  pp_string (pp, "](");
+  /* TODO: does the URI need escaping?
+     See https://github.com/oasis-tcs/sarif-spec/issues/657 */
+  pp_string (pp, url);
+  pp_character (pp, ')');
+}
+
+/* class sarif_token_printer : public token_printer.  */
+
+/* Implementation of pretty_printer::token_printer for SARIF output.
+   Emit URLs as per 3.11.6 ("Messages with embedded links").  */
+
+void
+sarif_builder::sarif_token_printer::print_tokens (pretty_printer *pp,
+						  const pp_token_list &tokens)
+{
+  /* Convert to text, possibly with colorization, URLs, etc.  */
+  label_text current_url;
+  for (auto iter = tokens.m_first; iter; iter = iter->m_next)
+    switch (iter->m_kind)
+      {
+      default:
+	gcc_unreachable ();
+
+      case pp_token::kind::text:
+	{
+	  const pp_token_text *sub = as_a <const pp_token_text *> (iter);
+	  const char * const str = sub->m_value.get ();
+	  if (current_url.get ())
+	    {
+	      /* Write iter->m_value, but escaping any
+		 escaped link characters as per 3.11.6.  */
+	      for (const char *ptr = str; *ptr; ptr++)
+		{
+		  const char ch = *ptr;
+		  switch (ch)
+		    {
+		    default:
+		      pp_character (pp, ch);
+		      break;
+		    case '\\':
+		    case '[':
+		    case ']':
+		      pp_character (pp, '\\');
+		      pp_character (pp, ch);
+		      break;
+		    }
+		}
+	    }
+	  else
+	    /* TODO: is other escaping needed? (e.g. of '[')
+	       See https://github.com/oasis-tcs/sarif-spec/issues/658 */
+	    pp_string (pp, str);
+	}
+	break;
+
+      case pp_token::kind::begin_color:
+      case pp_token::kind::end_color:
+	/* These are no-ops.  */
+	break;
+
+      case pp_token::kind::begin_quote:
+	pp_begin_quote (pp, pp_show_color (pp));
+	break;
+      case pp_token::kind::end_quote:
+	pp_end_quote (pp, pp_show_color (pp));
+	break;
+
+      /* Emit URLs as per 3.11.6 ("Messages with embedded links").  */
+      case pp_token::kind::begin_url:
+	{
+	  pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
+	  sarif_begin_embedded_link (pp);
+	  current_url = std::move (sub->m_value);
+	}
+	break;
+      case pp_token::kind::end_url:
+	gcc_assert (current_url.get ());
+	sarif_end_embedded_link (pp, current_url.get ());
+	current_url = label_text::borrow (nullptr);
+	break;
+
+      case pp_token::kind::event_id:
+	{
+	  pp_token_event_id *sub = as_a <pp_token_event_id *> (iter);
+	  gcc_assert (sub->m_event_id.known_p ());
+	  const sarif_code_flow *code_flow
+	    = m_builder.get_code_flow_for_event_ids ();
+	  label_text url = make_sarif_url_for_event (code_flow,
+						     sub->m_event_id);
+	  if (url.get ())
+	    sarif_begin_embedded_link (pp);
+	  pp_character (pp, '(');
+	  pp_decimal_int (pp, sub->m_event_id.one_based ());
+	  pp_character (pp, ')');
+	  if (url.get ())
+	    sarif_end_embedded_link (pp, url.get ());
+	}
+	break;
+      }
+}
+
 /* Populate CONTEXT in preparation for SARIF output (either to stderr, or
    to a file).  */
 
 static void
-diagnostic_output_format_init_sarif (diagnostic_context &context)
+diagnostic_output_format_init_sarif (diagnostic_context &context,
+				     std::unique_ptr<sarif_output_format> fmt)
 {
   /* Suppress normal textual path output.  */
   context.set_path_format (DPF_NONE);
@@ -2972,32 +3334,31 @@ diagnostic_output_format_init_sarif (diagnostic_context &context)
   /* Override callbacks.  */
   context.set_ice_handler_callback (sarif_ice_handler);
 
-  /* The metadata is handled in SARIF format, rather than as text.  */
-  context.set_show_cwe (false);
-  context.set_show_rules (false);
-
-  /* The option is handled in SARIF format, rather than as text.  */
-  context.set_show_option_requested (false);
-
   /* Don't colorize the text.  */
-  pp_show_color (context.printer) = false;
+  pp_show_color (context.m_printer) = false;
   context.set_show_highlight_colors (false);
+
+  context.m_printer->set_token_printer
+    (&fmt->get_builder ().get_token_printer ());
+  context.set_output_format (fmt.release ());
 }
 
 /* Populate CONTEXT in preparation for SARIF output to stderr.  */
 
 void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
+					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted)
 {
-  diagnostic_output_format_init_sarif (context);
-  context.set_output_format
-    (new sarif_stream_output_format (context,
-				     line_table,
-				     main_input_filename_,
-				     formatted,
-				     stderr));
+  gcc_assert (line_maps);
+  diagnostic_output_format_init_sarif
+    (context,
+     ::make_unique<sarif_stream_output_format> (context,
+						line_maps,
+						main_input_filename_,
+						formatted,
+						stderr));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to a file named
@@ -3005,34 +3366,38 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 
 void
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
+					  const line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
 					  const char *base_file_name)
 {
-  diagnostic_output_format_init_sarif (context);
-  context.set_output_format
-    (new sarif_file_output_format (context,
-				   line_table,
-				   main_input_filename_,
-				   formatted,
-				   base_file_name));
+  gcc_assert (line_maps);
+  diagnostic_output_format_init_sarif
+    (context,
+     ::make_unique<sarif_file_output_format> (context,
+					      line_maps,
+					      main_input_filename_,
+					      formatted,
+					      base_file_name));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to STREAM.  */
 
 void
 diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
+					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted,
 					    FILE *stream)
 {
-  diagnostic_output_format_init_sarif (context);
-  context.set_output_format
-    (new sarif_stream_output_format (context,
-				     line_table,
-				     main_input_filename_,
-				     formatted,
-				     stream));
+  gcc_assert (line_maps);
+  diagnostic_output_format_init_sarif
+    (context,
+     ::make_unique<sarif_stream_output_format> (context,
+						line_maps,
+						main_input_filename_,
+						formatted,
+						stream));
 }
 
 #if CHECKING_P
@@ -3048,13 +3413,12 @@ class test_sarif_diagnostic_context : public test_diagnostic_context
 public:
   test_sarif_diagnostic_context (const char *main_input_filename)
   {
-    diagnostic_output_format_init_sarif (*this);
-
-    m_format = new buffered_output_format (*this,
-					   line_table,
-					   main_input_filename,
-					   true);
-    set_output_format (m_format); // give ownership;
+    auto format = ::make_unique<buffered_output_format> (*this,
+							 line_table,
+							 main_input_filename,
+							 true);
+    m_format = format.get (); // borrowed
+    diagnostic_output_format_init_sarif (*this, std::move (format));
   }
 
   std::unique_ptr<sarif_log> flush_to_object ()
@@ -3128,7 +3492,7 @@ test_make_location_object (const line_table_case &case_)
   richloc.add_range (field, SHOW_RANGE_WITHOUT_CARET, &label2);
   richloc.set_escape_on_output (true);
 
-  sarif_result result;
+  sarif_result result (0);
 
   std::unique_ptr<sarif_location> location_obj
     = builder.make_location_object
@@ -3424,6 +3788,119 @@ test_simple_log_2 (const line_table_case &case_)
   }
 }
 
+/* Assuming that a single diagnostic has been emitted within
+   LOG, get a json::object for the result object.  */
+
+static const json::object *
+get_result_from_log (const sarif_log *log)
+{
+  auto runs = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (log, "runs"); // 3.13.4
+  ASSERT_EQ (runs->size (), 1);
+
+  // 3.14 "run" object:
+  auto run = (*runs)[0];
+
+  // 3.14.23:
+  auto results = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (run, "results");
+  ASSERT_EQ (results->size (), 1);
+
+  // 3.27 "result" object:
+  auto result = (*results)[0];
+  return expect_json_object (SELFTEST_LOCATION, result);
+}
+
+/* Assuming that a single diagnostic has been emitted to
+   DC, get a json::object for the messsage object within
+   the result.  */
+
+static const json::object *
+get_message_from_log (const sarif_log *log)
+{
+  auto result_obj = get_result_from_log (log);
+
+  // 3.27.11:
+  auto message_obj
+    = EXPECT_JSON_OBJECT_WITH_OBJECT_PROPERTY (result_obj, "message");
+  return message_obj;
+}
+
+/* Tests of messages with embedded links; see SARIF v2.1.0 3.11.6.  */
+
+static void
+test_message_with_embedded_link ()
+{
+  auto_fix_quotes fix_quotes;
+  {
+    test_sarif_diagnostic_context dc ("test.c");
+    rich_location richloc (line_table, UNKNOWN_LOCATION);
+    dc.report (DK_ERROR, richloc, nullptr, 0,
+	       "before %{text%} after",
+	       "http://example.com");
+    std::unique_ptr<sarif_log> log = dc.flush_to_object ();
+
+    auto message_obj = get_message_from_log (log.get ());
+    ASSERT_JSON_STRING_PROPERTY_EQ
+      (message_obj, "text",
+       "before [text](http://example.com) after");
+  }
+
+  /* Escaping in message text.
+     This is "EXAMPLE 1" from 3.11.6.  */
+  {
+    test_sarif_diagnostic_context dc ("test.c");
+    rich_location richloc (line_table, UNKNOWN_LOCATION);
+
+    /* Disable "unquoted sequence of 2 consecutive punctuation
+       characters `]\' in format" warning.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+    dc.report (DK_ERROR, richloc, nullptr, 0,
+	       "Prohibited term used in %{para[0]\\spans[2]%}.",
+	       "1");
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
+
+    std::unique_ptr<sarif_log> log = dc.flush_to_object ();
+
+    auto message_obj = get_message_from_log (log.get ());
+    ASSERT_JSON_STRING_PROPERTY_EQ
+      (message_obj, "text",
+       "Prohibited term used in [para\\[0\\]\\\\spans\\[2\\]](1).");
+    /* This isn't exactly what EXAMPLE 1 of the spec has; reported as
+       https://github.com/oasis-tcs/sarif-spec/issues/656  */
+  }
+
+  /* Urlifier.  */
+  {
+    class test_urlifier : public urlifier
+    {
+    public:
+      char *
+      get_url_for_quoted_text (const char *p, size_t sz) const final override
+      {
+	if (!strncmp (p, "-foption", sz))
+	  return xstrdup ("http://example.com");
+	return nullptr;
+      }
+    };
+
+    test_sarif_diagnostic_context dc ("test.c");
+    dc.set_urlifier (new test_urlifier ());
+    rich_location richloc (line_table, UNKNOWN_LOCATION);
+    dc.report (DK_ERROR, richloc, nullptr, 0,
+	       "foo %<-foption%> %<unrecognized%> bar");
+    std::unique_ptr<sarif_log> log = dc.flush_to_object ();
+
+    auto message_obj = get_message_from_log (log.get ());
+    ASSERT_JSON_STRING_PROPERTY_EQ
+      (message_obj, "text",
+       "foo `[-foption](http://example.com)' `unrecognized' bar");
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -3432,6 +3909,7 @@ diagnostic_format_sarif_cc_tests ()
   for_each_line_table_case (test_make_location_object);
   test_simple_log ();
   for_each_line_table_case (test_simple_log_2);
+  test_message_with_embedded_link ();
 }
 
 } // namespace selftest

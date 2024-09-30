@@ -131,7 +131,7 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::NEVER:
     case TyTy::PLACEHOLDER:
     case TyTy::PROJECTION:
-      assemble_builtin_candidate (Analysis::RustLangItem::SIZED);
+      assemble_builtin_candidate (LangItem::Kind::SIZED);
       break;
 
       // FIXME str and slice need to be moved and test cases updated
@@ -140,7 +140,7 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::ADT:
     case TyTy::TUPLE:
       // FIXME add extra checks
-      assemble_builtin_candidate (Analysis::RustLangItem::SIZED);
+      assemble_builtin_candidate (LangItem::Kind::SIZED);
       break;
 
     case TyTy::DYNAMIC:
@@ -150,8 +150,7 @@ TypeBoundsProbe::assemble_sized_builtin ()
 }
 
 void
-TypeBoundsProbe::assemble_builtin_candidate (
-  Analysis::RustLangItem::ItemType lang_item)
+TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
 {
   DefId id;
   bool found_lang_item = mappings->lookup_lang_item (lang_item, &id);
@@ -171,7 +170,7 @@ TypeBoundsProbe::assemble_builtin_candidate (
   trait_references.push_back ({trait_ref, mappings->lookup_builtin_marker ()});
 
   rust_debug ("Added builtin lang_item: %s for %s",
-	      Analysis::RustLangItem::ToString (lang_item).c_str (),
+	      LangItem::ToString (lang_item).c_str (),
 	      raw->get_name ().c_str ());
 }
 
@@ -246,8 +245,7 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 	TypeCheckType::Resolve (fn.get_return_type ().get ());
 
 	HIR::TraitItem *trait_item = mappings->lookup_trait_item_lang_item (
-	  Analysis::RustLangItem::ItemType::FN_ONCE_OUTPUT,
-	  final_seg->get_locus ());
+	  LangItem::Kind::FN_ONCE_OUTPUT, final_seg->get_locus ());
 
 	std::vector<HIR::GenericArgsBinding> bindings;
 	location_t output_locus = fn.get_return_type ()->get_locus ();

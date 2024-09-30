@@ -40,16 +40,16 @@ void test01()
 
   std::discrete_distribution<> dd1({ });
   auto bdd1 = std::bind(dd1, eng);
-  testDiscreteDist(bdd1, [](int n) { return discrete_pdf(n, { }); } );
+  testDiscreteDist<ARGS>(bdd1, [](int n) { return discrete_pdf(n, { }); } );
 
   std::discrete_distribution<> dd2({ 1.0, 3.0, 2.0});
   auto bdd2 = std::bind(dd2, eng);
-  testDiscreteDist(bdd2, [](int n)
+  testDiscreteDist<ARGS>(bdd2, [](int n)
 		   { return discrete_pdf(n, { 1.0, 3.0, 2.0}); } );
 
   std::discrete_distribution<> dd3({ 2.0, 2.0, 1.0, 0.0, 4.0});
   auto bdd3 = std::bind(dd3, eng);
-  testDiscreteDist(bdd3, [](int n)
+  testDiscreteDist<ARGS>(bdd3, [](int n)
 		   { return discrete_pdf(n, { 2.0, 2.0, 1.0, 0.0, 4.0}); } );
 }
 

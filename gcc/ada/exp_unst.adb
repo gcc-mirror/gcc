@@ -29,7 +29,6 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
-with Exp_Util;       use Exp_Util;
 with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -282,13 +281,6 @@ package body Exp_Unst is
          if E = Sub and then Present (Protected_Body_Subprogram (E)) then
             E := Protected_Body_Subprogram (E);
          end if;
-
-         if Ekind (E) = E_Function
-           and then Rewritten_For_C (E)
-           and then Present (Corresponding_Procedure (E))
-         then
-            E := Corresponding_Procedure (E);
-         end if;
       end if;
 
       pragma Assert (Subps_Index (E) /= Uint_0);
@@ -515,78 +507,90 @@ package body Exp_Unst is
             is
                T : constant Entity_Id := Get_Fullest_View (In_T);
 
-               procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
+               procedure Note_Uplevel_Bound (N : Node_Id);
                --  N is the bound of a dynamic type. This procedure notes that
                --  this bound is uplevel referenced, it can handle references
                --  to entities (typically _FIRST and _LAST entities), and also
                --  attribute references of the form T'name (name is typically
                --  FIRST or LAST) where T is the uplevel referenced bound.
-               --  Ref, if Present, is the location of the reference to
-               --  replace.
 
                ------------------------
                -- Note_Uplevel_Bound --
                ------------------------
 
-               procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id) is
-               begin
-                  --  Entity name case. Make sure that the entity is declared
-                  --  in a subprogram. This may not be the case for a type in a
-                  --  loop appearing in a precondition.
-                  --  Exclude explicitly discriminants (that can appear
-                  --  in bounds of discriminated components) and enumeration
-                  --  literals.
+               procedure Note_Uplevel_Bound (N : Node_Id) is
 
-                  if Is_Entity_Name (N) then
-                     if Present (Entity (N))
-                       and then not Is_Type (Entity (N))
-                       and then Present (Enclosing_Subprogram (Entity (N)))
-                       and then
-                         Ekind (Entity (N))
-                           not in E_Discriminant | E_Enumeration_Literal
-                     then
-                        Note_Uplevel_Ref
-                          (E      => Entity (N),
-                           N      => Empty,
-                           Caller => Current_Subprogram,
-                           Callee => Enclosing_Subprogram (Entity (N)));
+                  function Note_Uplevel_Bound_Trav
+                    (N : Node_Id) return Traverse_Result;
+                  --  Tree visitor that marks entities that are uplevel
+                  --  referenced.
+
+                  procedure Do_Note_Uplevel_Bound
+                    is new Traverse_Proc (Note_Uplevel_Bound_Trav);
+                  --  Subtree visitor instantiation
+
+                  -----------------------------
+                  -- Note_Uplevel_Bound_Trav --
+                  -----------------------------
+
+                  function Note_Uplevel_Bound_Trav
+                    (N : Node_Id) return Traverse_Result
+                  is
+                  begin
+                     --  Entity name case. Make sure that the entity is
+                     --  declared in a subprogram. This may not be the case for
+                     --  a type in a loop appearing in a precondition. Exclude
+                     --  explicitly discriminants (that can appear in bounds of
+                     --  discriminated components), enumeration literals and
+                     --  block.
+
+                     if Is_Entity_Name (N) then
+                        if Present (Entity (N))
+                          and then not Is_Type (Entity (N))
+                          and then Present
+                            (Enclosing_Subprogram (Entity (N)))
+                          and then
+                            Ekind (Entity (N))
+                              not in E_Discriminant | E_Enumeration_Literal
+                                | E_Block
+                        then
+                           Note_Uplevel_Ref
+                             (E      => Entity (N),
+                              N      => Empty,
+                              Caller => Current_Subprogram,
+                              Callee => Enclosing_Subprogram (Entity (N)));
+                        end if;
                      end if;
 
-                  --  Attribute or indexed component case
+                     --  N_Function_Call are handled later, don't touch them
+                     --  yet.
+                     if Nkind (N) in N_Function_Call
+                     then
+                        return Skip;
 
-                  elsif Nkind (N) in
-                          N_Attribute_Reference | N_Indexed_Component
-                  then
-                     Note_Uplevel_Bound (Prefix (N), Ref);
+                     --  In N_Selected_Component and N_Expanded_Name, only the
+                     --  prefix may be referencing a uplevel entity.
 
-                     --  The indices of the indexed components, or the
-                     --  associated expressions of an attribute reference,
-                     --  may also involve uplevel references.
-
-                     declare
-                        Expr : Node_Id;
-
-                     begin
-                        Expr := First (Expressions (N));
-                        while Present (Expr) loop
-                           Note_Uplevel_Bound (Expr, Ref);
-                           Next (Expr);
-                        end loop;
-                     end;
+                     elsif Nkind (N) in N_Selected_Component
+                         | N_Expanded_Name
+                     then
+                        Do_Note_Uplevel_Bound (Prefix (N));
+                        return Skip;
 
                      --  The type of the prefix may be have an uplevel
                      --  reference if this needs bounds.
 
-                     if Nkind (N) = N_Attribute_Reference then
+                     elsif Nkind (N) = N_Attribute_Reference then
                         declare
                            Attr : constant Attribute_Id :=
                                     Get_Attribute_Id (Attribute_Name (N));
                            DT   : Boolean := False;
 
                         begin
-                           if (Attr = Attribute_First
-                                 or else Attr = Attribute_Last
-                                 or else Attr = Attribute_Length)
+                           if Attr in
+                                Attribute_First
+                                | Attribute_Last
+                                | Attribute_Length
                              and then Is_Constrained (Etype (Prefix (N)))
                            then
                               Check_Static_Type
@@ -595,59 +599,10 @@ package body Exp_Unst is
                         end;
                      end if;
 
-                  --  Binary operator cases. These can apply to arrays for
-                  --  which we may need bounds.
-
-                  elsif Nkind (N) in N_Binary_Op then
-                     Note_Uplevel_Bound (Left_Opnd (N),  Ref);
-                     Note_Uplevel_Bound (Right_Opnd (N), Ref);
-
-                  --  Unary operator case
-
-                  elsif Nkind (N) in N_Unary_Op then
-                     Note_Uplevel_Bound (Right_Opnd (N), Ref);
-
-                  --  Explicit dereference and selected component case
-
-                  elsif Nkind (N) in
-                          N_Explicit_Dereference | N_Selected_Component
-                  then
-                     Note_Uplevel_Bound (Prefix (N), Ref);
-
-                  --  Conditional expressions
-
-                  elsif Nkind (N) = N_If_Expression then
-                     declare
-                        Expr : Node_Id;
-
-                     begin
-                        Expr := First (Expressions (N));
-                        while Present (Expr) loop
-                           Note_Uplevel_Bound (Expr, Ref);
-                           Next (Expr);
-                        end loop;
-                     end;
-
-                  elsif Nkind (N) = N_Case_Expression then
-                     declare
-                        Alternative : Node_Id;
-
-                     begin
-                        Note_Uplevel_Bound (Expression (N), Ref);
-
-                        Alternative := First (Alternatives (N));
-                        while Present (Alternative) loop
-                           Note_Uplevel_Bound (Expression (Alternative), Ref);
-                        end loop;
-                     end;
-
-                  --  Conversion case
-
-                  elsif Nkind (N) in
-                          N_Type_Conversion | N_Unchecked_Type_Conversion
-                  then
-                     Note_Uplevel_Bound (Expression (N), Ref);
-                  end if;
+                     return OK;
+                  end Note_Uplevel_Bound_Trav;
+               begin
+                  Do_Note_Uplevel_Bound (N);
                end Note_Uplevel_Bound;
 
             --  Start of processing for Check_Static_Type
@@ -681,12 +636,12 @@ package body Exp_Unst is
 
                   begin
                      if not Is_Static_Expression (LB) then
-                        Note_Uplevel_Bound (LB, N);
+                        Note_Uplevel_Bound (LB);
                         DT := True;
                      end if;
 
                      if not Is_Static_Expression (UB) then
-                        Note_Uplevel_Bound (UB, N);
+                        Note_Uplevel_Bound (UB);
                         DT := True;
                      end if;
                   end;
@@ -712,7 +667,7 @@ package body Exp_Unst is
                         D := First_Elmt (Discriminant_Constraint (T));
                         while Present (D) loop
                            if not Is_Static_Expression (Node (D)) then
-                              Note_Uplevel_Bound (Node (D), N);
+                              Note_Uplevel_Bound (Node (D));
                               DT := True;
                            end if;
 
@@ -784,16 +739,6 @@ package body Exp_Unst is
                --  Nothing to do if Caller and Callee are the same
 
                if Caller = Callee then
-                  return;
-
-               --  Callee may be a function that returns an array, and that has
-               --  been rewritten as a procedure. If caller is that procedure,
-               --  nothing to do either.
-
-               elsif Ekind (Callee) = E_Function
-                 and then Rewritten_For_C (Callee)
-                 and then Corresponding_Procedure (Callee) = Caller
-               then
                   return;
 
                elsif Ekind (Callee) in E_Entry | E_Entry_Family then
@@ -2208,206 +2153,10 @@ package body Exp_Unst is
          end loop;
       end Subp_Loop;
 
-      --  Next step, process uplevel references. This has to be done in a
-      --  separate pass, after completing the processing in Sub_Loop because we
-      --  need all the AREC declarations generated, inserted, and analyzed so
-      --  that the uplevel references can be successfully analyzed.
-
-      Uplev_Refs : for J in Urefs.First .. Urefs.Last loop
-         declare
-            UPJ : Uref_Entry renames Urefs.Table (J);
-
-         begin
-            --  Ignore type references, these are implicit references that do
-            --  not need rewriting (e.g. the appearance in a conversion).
-            --  Also ignore if no reference was specified or if the rewriting
-            --  has already been done (this can happen if the N_Identifier
-            --  occurs more than one time in the tree). Also ignore references
-            --  when not generating C code (in particular for the case of LLVM,
-            --  since GNAT-LLVM will handle the processing for up-level refs).
-
-            if No (UPJ.Ref)
-              or else not Is_Entity_Name (UPJ.Ref)
-              or else No (Entity (UPJ.Ref))
-              or else not Opt.Generate_C_Code
-            then
-               goto Continue;
-            end if;
-
-            --  Rewrite one reference
-
-            Rewrite_One_Ref : declare
-               Loc : constant Source_Ptr := Sloc (UPJ.Ref);
-               --  Source location for the reference
-
-               Typ : constant Entity_Id := Etype (UPJ.Ent);
-               --  The type of the referenced entity
-
-               Atyp : Entity_Id;
-               --  The actual subtype of the reference
-
-               RS_Caller : constant SI_Type := Subp_Index (UPJ.Caller);
-               --  Subp_Index for caller containing reference
-
-               STJR : Subp_Entry renames Subps.Table (RS_Caller);
-               --  Subp_Entry for subprogram containing reference
-
-               RS_Callee : constant SI_Type := Subp_Index (UPJ.Callee);
-               --  Subp_Index for subprogram containing referenced entity
-
-               STJE : Subp_Entry renames Subps.Table (RS_Callee);
-               --  Subp_Entry for subprogram containing referenced entity
-
-               Pfx  : Node_Id;
-               Comp : Entity_Id;
-               SI   : SI_Type;
-
-            begin
-               Atyp := Etype (UPJ.Ref);
-
-               if Ekind (Atyp) /= E_Record_Subtype then
-                  Atyp := Get_Actual_Subtype (UPJ.Ref);
-               end if;
-
-               --  Ignore if no ARECnF entity for enclosing subprogram which
-               --  probably happens as a result of not properly treating
-               --  instance bodies. To be examined ???
-
-               --  If this test is omitted, then the compilation of freeze.adb
-               --  and inline.adb fail in unnesting mode.
-
-               if No (STJR.ARECnF) then
-                  goto Continue;
-               end if;
-
-               --  If this is a reference to a global constant, use its value
-               --  rather than create a reference. It is more efficient and
-               --  furthermore indispensable if the context requires a
-               --  constant, such as a branch of a case statement.
-
-               if Ekind (UPJ.Ent) = E_Constant
-                 and then Is_True_Constant (UPJ.Ent)
-                 and then Present (Constant_Value (UPJ.Ent))
-                 and then Is_Static_Expression (Constant_Value (UPJ.Ent))
-               then
-                  Rewrite (UPJ.Ref, New_Copy_Tree (Constant_Value (UPJ.Ent)));
-                  goto Continue;
-               end if;
-
-               --  Push the current scope, so that the pointer type Tnn, and
-               --  any subsidiary entities resulting from the analysis of the
-               --  rewritten reference, go in the right entity chain.
-
-               Push_Scope (STJR.Ent);
-
-               --  Now we need to rewrite the reference. We have a reference
-               --  from level STJR.Lev to level STJE.Lev. The general form of
-               --  the rewritten reference for entity X is:
-
-               --    Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECmU.X)
-
-               --  where a,b,c,d .. m =
-               --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev
-
-               pragma Assert (STJR.Lev > STJE.Lev);
-
-               --  Compute the prefix of X. Here are examples to make things
-               --  clear (with parens to show groupings, the prefix is
-               --  everything except the .X at the end).
-
-               --   level 2 to level 1
-
-               --     AREC1F.X
-
-               --   level 3 to level 1
-
-               --     (AREC2F.AREC1U).X
-
-               --   level 4 to level 1
-
-               --     ((AREC3F.AREC2U).AREC1U).X
-
-               --   level 6 to level 2
-
-               --     (((AREC5F.AREC4U).AREC3U).AREC2U).X
-
-               --  In the above, ARECnF and ARECnU are pointers, so there are
-               --  explicit dereferences required for these occurrences.
-
-               Pfx :=
-                 Make_Explicit_Dereference (Loc,
-                   Prefix => New_Occurrence_Of (STJR.ARECnF, Loc));
-               SI := RS_Caller;
-               for L in STJE.Lev .. STJR.Lev - 2 loop
-                  SI := Enclosing_Subp (SI);
-                  Pfx :=
-                    Make_Explicit_Dereference (Loc,
-                      Prefix =>
-                        Make_Selected_Component (Loc,
-                          Prefix        => Pfx,
-                          Selector_Name =>
-                            New_Occurrence_Of (Subps.Table (SI).ARECnU, Loc)));
-               end loop;
-
-               --  Get activation record component (must exist)
-
-               Comp := Activation_Record_Component (UPJ.Ent);
-               pragma Assert (Present (Comp));
-
-               --  Do the replacement. If the component type is an access type,
-               --  this is an uplevel reference for an entity that requires a
-               --  fat pointer, so dereference the component.
-
-               if Is_Access_Type (Etype (Comp)) then
-                  Rewrite (UPJ.Ref,
-                    Make_Explicit_Dereference (Loc,
-                      Prefix =>
-                        Make_Selected_Component (Loc,
-                          Prefix        => Pfx,
-                          Selector_Name =>
-                            New_Occurrence_Of (Comp, Loc))));
-
-               else
-                  Rewrite (UPJ.Ref,
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (Atyp, Loc),
-                      Attribute_Name => Name_Deref,
-                      Expressions    => New_List (
-                        Make_Selected_Component (Loc,
-                          Prefix        => Pfx,
-                          Selector_Name =>
-                            New_Occurrence_Of (Comp, Loc)))));
-               end if;
-
-               --  Analyze and resolve the new expression. We do not need to
-               --  establish the relevant scope stack entries here, because we
-               --  have already set all the correct entity references, so no
-               --  name resolution is needed. We have already set the current
-               --  scope, so that any new entities created will be in the right
-               --  scope.
-
-               --  We analyze with all checks suppressed (since we do not
-               --  expect any exceptions)
-
-               Analyze_And_Resolve (UPJ.Ref, Typ, Suppress => All_Checks);
-
-               --  Generate an extra temporary to facilitate the C backend
-               --  processing this dereference
-
-               if Opt.Modify_Tree_For_C
-                 and then Nkind (Parent (UPJ.Ref)) in
-                            N_Type_Conversion | N_Unchecked_Type_Conversion
-               then
-                  Force_Evaluation (UPJ.Ref, Mode => Strict);
-               end if;
-
-               Pop_Scope;
-            end Rewrite_One_Ref;
-         end;
-
-      <<Continue>>
-         null;
-      end loop Uplev_Refs;
+      --  Note: we used to process uplevel references, in particular for the
+      --  old CCG (cprint.adb). With GNAT LLVM, processing of uplevel
+      --  references needs to be done directly there which is more reliable, so
+      --  we no longer need to do it here.
 
       --  Finally, loop through all calls adding extra actual for the
       --  activation record where it is required.

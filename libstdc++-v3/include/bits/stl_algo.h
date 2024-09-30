@@ -72,6 +72,9 @@
 # endif
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // inline namespace
+
 // See concept_check.h for the __glibcxx_*_requires macros.
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -4521,15 +4524,39 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first != __last)
-	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	  {
-	    // XXX rand() % N is not uniformly distributed
-	    _RandomAccessIterator __j = __first
-					+ std::rand() % ((__i - __first) + 1);
-	    if (__i != __j)
-	      std::iter_swap(__i, __j);
-	  }
+      if (__first == __last)
+	return;
+
+#if RAND_MAX < __INT_MAX__
+      if (__builtin_expect((__last - __first) >= RAND_MAX / 4, 0))
+	{
+	  // Use a xorshift implementation seeded by two calls to rand()
+	  // instead of using rand() for all the random numbers needed.
+	  unsigned __xss
+	    = (unsigned)std::rand() ^ ((unsigned)std::rand() << 15);
+	  for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	    {
+	      __xss += !__xss;
+	      __xss ^= __xss << 13;
+	      __xss ^= __xss >> 17;
+	      __xss ^= __xss << 5;
+	      _RandomAccessIterator __j = __first
+					    + (__xss % ((__i - __first) + 1));
+	      if (__i != __j)
+		std::iter_swap(__i, __j);
+	    }
+	  return;
+	}
+#endif
+
+      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	{
+	  // XXX rand() % N is not uniformly distributed
+	  _RandomAccessIterator __j = __first
+					+ (std::rand() % ((__i - __first) + 1));
+	  if (__i != __j)
+	    std::iter_swap(__i, __j);
+	}
     }
 
   /**
@@ -5876,5 +5903,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 _GLIBCXX_END_NAMESPACE_ALGO
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #endif /* _STL_ALGO_H */

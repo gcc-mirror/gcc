@@ -4192,7 +4192,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
       else
 	{
 	  m_data_cnt = data_cnt;
-	  if (TYPE_UNSIGNED (type0))
+	  if (TYPE_UNSIGNED (type0) || prec0 >= 0)
 	    rhs1 = build_zero_cst (m_limb_type);
 	  else
 	    {
@@ -4210,7 +4210,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  rhs1 = add_cast (m_limb_type, gimple_assign_lhs (g));
 		}
 	    }
-	  if (TYPE_UNSIGNED (type1))
+	  if (TYPE_UNSIGNED (type1) || prec1 >= 0)
 	    rhs2 = build_zero_cst (m_limb_type);
 	  else
 	    {

@@ -540,6 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __result = __mid; // Everything up to __mid is now guarded.
       __result = std::__uninitialized_copy_a(__first2, __last2, __mid, __alloc);
       __guard.release();
+      return __result;
     }
 
   // __uninitialized_fill_move

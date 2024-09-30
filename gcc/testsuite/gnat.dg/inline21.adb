@@ -1,4 +1,4 @@
---  { dg-compile }
+--  { dg-do compile }
 --  { dg-options "-O -gnatn" }
 
 with Inline21_Q;

@@ -4702,6 +4702,39 @@ handle_std_noreturn_attribute (tree *node, tree name, tree args,
     }
 }
 
+/* Handle the standard [[unsequenced]] attribute.  */
+
+static tree
+handle_std_unsequenced_attribute (tree *node, tree name, tree args,
+				  int flags, bool *no_add_attrs)
+{
+  /* Unlike GNU __attribute__ ((unsequenced)), the standard [[unsequenced]]
+     should be only applied to function declarators or type specifiers which
+     have function type.  */
+  if (node[2])
+    {
+      auto_diagnostic_group d;
+      if (pedwarn (input_location, OPT_Wattributes,
+		   "standard %qE attribute can only be applied to function "
+		   "declarators or type specifiers with function type", name))
+	inform (input_location, "did you mean to specify it after %<)%> "
+				"following function parameters?");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  return handle_unsequenced_attribute (node, name, args, flags, no_add_attrs);
+}
+
+/* Handle the standard [[reproducible]] attribute.  */
+
+static tree
+handle_std_reproducible_attribute (tree *node, tree name, tree args,
+				   int flags, bool *no_add_attrs)
+{
+  return handle_std_unsequenced_attribute (node, name, args, flags,
+					   no_add_attrs);
+}
+
 /* Table of supported standard (C23) attributes.  */
 static const attribute_spec std_attributes[] =
 {
@@ -4718,7 +4751,11 @@ static const attribute_spec std_attributes[] =
   { "nodiscard", 0, 1, false, false, false, false,
     handle_nodiscard_attribute, NULL },
   { "noreturn", 0, 0, false, false, false, false,
-    handle_std_noreturn_attribute, NULL }
+    handle_std_noreturn_attribute, NULL },
+  { "reproducible", 0, 0, false, true, true, false,
+    handle_std_reproducible_attribute, NULL },
+  { "unsequenced", 0, 0, false, true, true, false,
+    handle_std_unsequenced_attribute, NULL }
 };
 
 const scoped_attribute_specs std_attribute_table =
@@ -4911,12 +4948,24 @@ c_warn_unused_attributes (tree attrs)
    list of attributes with them removed.  */
 
 tree
-c_warn_type_attributes (tree attrs)
+c_warn_type_attributes (tree type, tree attrs)
 {
   tree *attr_ptr = &attrs;
   while (*attr_ptr)
     if (get_attribute_namespace (*attr_ptr) == NULL_TREE)
       {
+	if (TREE_CODE (type) == FUNCTION_TYPE)
+	  {
+	    tree name = get_attribute_name (*attr_ptr);
+	    /* [[unsequenced]] and [[reproducible]] is fine on function
+	       types that aren't being defined.  */
+	    if (is_attribute_p ("unsequenced", name)
+		|| is_attribute_p ("reproducible", name))
+	      {
+		attr_ptr = &TREE_CHAIN (*attr_ptr);
+		continue;
+	      }
+	  }
 	pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
 		 get_attribute_name (*attr_ptr));
 	*attr_ptr = TREE_CHAIN (*attr_ptr);
@@ -5386,7 +5435,7 @@ groktypename (struct c_type_name *type_name, tree *expr,
 			 DEPRECATED_NORMAL);
 
   /* Apply attributes.  */
-  attrs = c_warn_type_attributes (attrs);
+  attrs = c_warn_type_attributes (type, attrs);
   decl_attributes (&type, attrs, 0);
 
   return type;
@@ -7196,7 +7245,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		else if (inner_decl->kind == cdk_array)
 		  attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
 	      }
-	    attrs = c_warn_type_attributes (attrs);
+	    attrs = c_warn_type_attributes (type, attrs);
 	    returned_attrs = decl_attributes (&type,
 					      chainon (returned_attrs, attrs),
 					      attr_flags);
@@ -7502,12 +7551,18 @@ grokdeclarator (const struct c_declarator *declarator,
 	       modify the shared type, so we gcc_assert (itype)
 	       below.  */
 	      {
+		/* Identify typeless storage as introduced in C2Y
+		   and supported also in earlier language modes.  */
+		bool typeless = (char_type_p (type)
+				 && !(type_quals & TYPE_QUAL_ATOMIC))
+				|| (AGGREGATE_TYPE_P (type)
+				    && TYPE_TYPELESS_STORAGE (type));
+
 		addr_space_t as = DECODE_QUAL_ADDR_SPACE (type_quals);
 		if (!ADDR_SPACE_GENERIC_P (as) && as != TYPE_ADDR_SPACE (type))
 		  type = build_qualified_type (type,
 					       ENCODE_QUAL_ADDR_SPACE (as));
-
-		type = build_array_type (type, itype);
+		type = build_array_type (type, itype, typeless);
 	      }
 
 	    if (type != error_mark_node)
@@ -9659,6 +9714,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       if (DECL_NAME (x)
 	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	saw_named_field = true;
+
+      if (AGGREGATE_TYPE_P (TREE_TYPE (x))
+	  && TYPE_TYPELESS_STORAGE (TREE_TYPE (x)))
+	TYPE_TYPELESS_STORAGE (t) = true;
     }
 
   detect_field_duplicates (fieldlist);
@@ -9859,6 +9918,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
       TYPE_LANG_SPECIFIC (x) = TYPE_LANG_SPECIFIC (t);
       TYPE_TRANSPARENT_AGGR (x) = TYPE_TRANSPARENT_AGGR (t);
+      TYPE_TYPELESS_STORAGE (x) = TYPE_TYPELESS_STORAGE (t);
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
       C_TYPE_FIELDS_NON_CONSTEXPR (x) = C_TYPE_FIELDS_NON_CONSTEXPR (t);
@@ -13433,7 +13493,8 @@ finish_declspecs (struct c_declspecs *specs)
  handle_postfix_attrs:
   if (specs->type != NULL)
     {
-      specs->postfix_attrs = c_warn_type_attributes (specs->postfix_attrs);
+      specs->postfix_attrs
+	= c_warn_type_attributes (specs->type, specs->postfix_attrs);
       decl_attributes (&specs->type, specs->postfix_attrs, 0);
       specs->postfix_attrs = NULL_TREE;
     }

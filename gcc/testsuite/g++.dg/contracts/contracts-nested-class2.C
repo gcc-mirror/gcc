@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 void gfn3(int n) [[ pre: n > 0 ]];
 

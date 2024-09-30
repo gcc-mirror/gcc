@@ -1,5 +1,6 @@
 // PR c++/61038
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <cstring>
 #include <cstdlib>

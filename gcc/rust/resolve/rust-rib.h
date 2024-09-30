@@ -103,6 +103,39 @@ struct DuplicateNameError
 class Rib
 {
 public:
+  // TODO: Rename the class? to what? Binding? Declaration?
+  // This is useful for items which are in namespaces where shadowing is not
+  // allowed, but which are still shadowable! for example, when you do a glob
+  // import, if a later import has the same name as an item imported in the glob
+  // import, that glob imported item will need to get shadowed
+  class Definition
+  {
+  public:
+    static Definition NonShadowable (NodeId id);
+    static Definition Shadowable (NodeId id);
+
+    std::vector<NodeId> ids;
+    bool shadowable;
+
+    Definition () = default;
+
+    Definition &operator= (const Definition &) = default;
+    Definition (Definition const &) = default;
+
+    bool is_ambiguous () const;
+
+    NodeId get_node_id ()
+    {
+      rust_assert (!is_ambiguous ());
+      return ids[0];
+    }
+
+    std::string to_string () const;
+
+  private:
+    Definition (NodeId id, bool shadowable);
+  };
+
   enum class Kind
   {
     Normal,
@@ -131,28 +164,28 @@ public:
    * Insert a new node in the rib
    *
    * @param name The name associated with the AST node
-   * @param id Its NodeId
-   * @param can_shadow If the newly inserted value can shadow an existing one
+   * @param def The `Definition` to insert
    *
    * @return `DuplicateNameError` if the node is already present in the rib. The
    *         `DuplicateNameError` class contains the NodeId of the existing
    * node. Returns the new NodeId on success.
    */
-  tl::expected<NodeId, DuplicateNameError> insert (std::string name, NodeId id,
-						   bool can_shadow = false);
+  tl::expected<NodeId, DuplicateNameError> insert (std::string name,
+						   Definition def);
 
   /**
    * Access an inserted NodeId.
    *
    * @return tl::nullopt if the key does not exist, the NodeId otherwise
    */
-  tl::optional<NodeId> get (const std::string &name);
+  tl::optional<Rib::Definition> get (const std::string &name);
 
   /* View all the values stored in the rib */
-  const std::unordered_map<std::string, NodeId> &get_values () const;
+  const std::unordered_map<std::string, Definition> &get_values () const;
 
 private:
-  std::unordered_map<std::string, NodeId> values;
+  // TODO: Switch this to (NodeId, shadowable = false);
+  std::unordered_map<std::string, Definition> values;
 };
 
 } // namespace Resolver2_0

@@ -26,7 +26,8 @@
 ;; Vector int modes
 (define_mode_iterator VEC_I [V16QI V8HI V4SI V2DI])
 
-;; Vector int modes for comparison, shift and rotation
+;; Vector int modes for comparison, shift and rotation.  ISA 3.1 adds the V1TI mode
+;; for the vector int128 type.
 (define_mode_iterator VEC_IC [V16QI V8HI V4SI V2DI (V1TI "TARGET_POWER10")])
 
 ;; 128-bit int modes

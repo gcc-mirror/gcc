@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_FUTURE
 #define _GLIBCXX_FUTURE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // concurrency
 
@@ -1526,7 +1528,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Signature, typename _Fn,
 	   typename _Alloc = std::allocator<int>>
-    static shared_ptr<__future_base::_Task_state_base<_Signature>>
+    shared_ptr<__future_base::_Task_state_base<_Signature>>
     __create_task_state(_Fn&& __fn, const _Alloc& __a = _Alloc())
     {
       typedef typename decay<_Fn>::type _Fn2;

@@ -1932,6 +1932,7 @@ gfc_match_associate (void)
 	  gfc_matching_procptr_assignment = 1;
 	  if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
 	    {
+	      gfc_matching_procptr_assignment = 0;
 	      gfc_error ("Invalid association target at %C");
 	      goto assocListError;
 	    }
@@ -2127,6 +2128,13 @@ gfc_match_type_spec (gfc_typespec *ts)
   if (gfc_match ("integer") == MATCH_YES)
     {
       ts->type = BT_INTEGER;
+      ts->kind = gfc_default_integer_kind;
+      goto kind_selector;
+    }
+
+  if (flag_unsigned && gfc_match ("unsigned") == MATCH_YES)
+    {
+      ts->type = BT_UNSIGNED;
       ts->kind = gfc_default_integer_kind;
       goto kind_selector;
     }
@@ -5539,10 +5547,11 @@ gfc_free_namelist (gfc_namelist *name)
 void
 gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 		       bool free_align_allocator,
-		       bool free_mem_traits_space)
+		       bool free_mem_traits_space, bool free_init)
 {
   gfc_omp_namelist *n;
   gfc_expr *last_allocator = NULL;
+  char *last_init_attr = NULL;
 
   for (; name; name = n)
     {
@@ -5551,6 +5560,7 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 	gfc_free_expr (name->u.align);
       else if (free_mem_traits_space)
 	{ }  /* name->u.memspace_sym: shall not call gfc_free_symbol here. */
+
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
       else if (free_align_allocator)
@@ -5563,6 +5573,15 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns,
 	}
       else if (free_mem_traits_space)
 	{ }  /* name->u2.traits_sym: shall not call gfc_free_symbol here. */
+      else if (free_init)
+	{
+	  if (name->u.init.attr != last_init_attr)
+	    {
+	      last_init_attr = name->u.init.attr;
+	      free (name->u.init.attr);
+	      free (name->u2.init_interop_fr);
+	    }
+	}
       else if (name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)
@@ -5602,9 +5621,11 @@ gfc_match_namelist (void)
 	  return MATCH_ERROR;
 	}
 
+      /* A use associated name shall not be used as a namelist group name
+	 (e.g. F2003:C581).  It is only supported as a legacy extension.  */
       if (group_name->attr.flavor == FL_NAMELIST
 	  && group_name->attr.use_assoc
-	  && !gfc_notify_std (GFC_STD_GNU, "Namelist group name %qs "
+	  && !gfc_notify_std (GFC_STD_LEGACY, "Namelist group name %qs "
 			      "at %C already is USE associated and can"
 			      "not be respecified.", group_name->name))
 	return MATCH_ERROR;
@@ -6193,7 +6214,9 @@ match_case_selector (gfc_case **cp)
 	goto cleanup;
 
       if (c->high->ts.type != BT_LOGICAL && c->high->ts.type != BT_INTEGER
-	  && c->high->ts.type != BT_CHARACTER)
+	  && c->high->ts.type != BT_CHARACTER
+	  && (!flag_unsigned
+	      || (flag_unsigned && c->high->ts.type != BT_UNSIGNED)))
 	{
 	  gfc_error ("Expression in CASE selector at %L cannot be %s",
 		     &c->high->where, gfc_typename (&c->high->ts));
@@ -6209,7 +6232,9 @@ match_case_selector (gfc_case **cp)
 	goto need_expr;
 
       if (c->low->ts.type != BT_LOGICAL && c->low->ts.type != BT_INTEGER
-	  && c->low->ts.type != BT_CHARACTER)
+	  && c->low->ts.type != BT_CHARACTER
+	  && (!flag_unsigned
+	      || (flag_unsigned && c->low->ts.type != BT_UNSIGNED)))
 	{
 	  gfc_error ("Expression in CASE selector at %L cannot be %s",
 		     &c->low->where, gfc_typename (&c->low->ts));
@@ -6228,7 +6253,9 @@ match_case_selector (gfc_case **cp)
 	  if (m == MATCH_YES
 	      && c->high->ts.type != BT_LOGICAL
 	      && c->high->ts.type != BT_INTEGER
-	      && c->high->ts.type != BT_CHARACTER)
+	      && c->high->ts.type != BT_CHARACTER
+	      && (!flag_unsigned
+		  || (flag_unsigned && c->high->ts.type != BT_UNSIGNED)))
 	    {
 	      gfc_error ("Expression in CASE selector at %L cannot be %s",
 			 &c->high->where, gfc_typename (c->high));
@@ -6327,7 +6354,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
 {
   gfc_ref *ref;
   gfc_symbol *assoc_sym;
-  int rank = 0;
+  int rank = 0, corank = 0;
 
   assoc_sym = associate->symtree->n.sym;
 
@@ -6345,6 +6372,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
     {
       assoc_sym->attr.dimension = 1;
       assoc_sym->as = gfc_copy_array_spec (CLASS_DATA (selector)->as);
+      corank = assoc_sym->as->corank;
       goto build_class_sym;
     }
   else if (selector->ts.type == BT_CLASS
@@ -6371,13 +6399,20 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
 	}
 
       if (!ref || ref->u.ar.type == AR_FULL)
-	selector->rank = CLASS_DATA (selector)->as->rank;
+	{
+	  selector->rank = CLASS_DATA (selector)->as->rank;
+	  selector->corank = CLASS_DATA (selector)->as->corank;
+	}
       else if (ref->u.ar.type == AR_SECTION)
-	selector->rank = ref->u.ar.dimen;
+	{
+	  selector->rank = ref->u.ar.dimen;
+	  selector->corank = ref->u.ar.codimen;
+	}
       else
 	selector->rank = 0;
 
       rank = selector->rank;
+      corank = selector->corank;
     }
 
   if (rank)
@@ -6399,12 +6434,20 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector,
 	  assoc_sym->as->rank = rank;
 	  assoc_sym->as->type = AS_DEFERRED;
 	}
-      else
-	assoc_sym->as = NULL;
     }
-  else
-    assoc_sym->as = NULL;
 
+  if (corank != 0 && rank == 0)
+    {
+      if (!assoc_sym->as)
+	assoc_sym->as = gfc_get_array_spec ();
+      assoc_sym->as->corank = corank;
+      assoc_sym->attr.codimension = 1;
+    }
+  else if (corank == 0 && rank == 0 && assoc_sym->as)
+    {
+      free (assoc_sym->as);
+      assoc_sym->as = NULL;
+    }
 build_class_sym:
   /* Deal with the very specific case of a SELECT_TYPE selector being an
      associate_name whose type has been identified by component references.

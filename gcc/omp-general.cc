@@ -972,6 +972,7 @@ find_combined_omp_for (tree *tp, int *walk_subtrees, void *data)
       *walk_subtrees = 1;
       break;
     case TRY_FINALLY_EXPR:
+    case CLEANUP_POINT_EXPR:
       pdata[0] = tp;
       *walk_subtrees = 1;
       break;
@@ -1207,6 +1208,11 @@ struct omp_ts_info omp_ts_map[] =
      OMP_TRAIT_PROPERTY_NONE, true,
      NULL
    },
+   { "self_maps",
+     (1 << OMP_TRAIT_SET_IMPLEMENTATION),
+     OMP_TRAIT_PROPERTY_NONE, true,
+     NULL
+   },
    { "dynamic_allocators",
      (1 << OMP_TRAIT_SET_IMPLEMENTATION),
      OMP_TRAIT_PROPERTY_NONE, true,
@@ -1288,6 +1294,8 @@ omp_check_context_selector (location_t loc, tree ctx)
   for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
     {
       enum omp_tss_code tss_code = OMP_TSS_CODE (tss);
+      bool saw_any_prop = false;
+      bool saw_other_prop = false;
 
       /* We can parse this, but not handle it yet.  */
       if (tss_code == OMP_TRAIT_SET_TARGET_DEVICE)
@@ -1324,9 +1332,61 @@ omp_check_context_selector (location_t loc, tree ctx)
 	  else
 	    ts_seen[ts_code] = true;
 
+	  /* If trait-property "any" is specified in the "kind"
+	     trait-selector of the "device" selector set or the
+	     "target_device" selector sets, no other trait-property
+	     may be specified in the same selector set.  */
+	  if (ts_code == OMP_TRAIT_DEVICE_KIND)
+	    for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+	      {
+		const char *prop = omp_context_name_list_prop (p);
+		if (!prop)
+		  continue;
+		else if (strcmp (prop, "any") == 0)
+		  saw_any_prop = true;
+		else
+		  saw_other_prop = true;
+	      }
+	  /* It seems slightly suspicious that the spec's language covers
+	     the device_num selector too, but
+	       target_device={device_num(whatever),kind(any)}
+	     is probably not terribly useful anyway.  */
+	  else if (ts_code == OMP_TRAIT_DEVICE_ARCH
+		   || ts_code == OMP_TRAIT_DEVICE_ISA
+		   || ts_code == OMP_TRAIT_DEVICE_NUM)
+	    saw_other_prop = true;
+
+	  /* Each trait-property can only be specified once in a trait-selector
+	     other than the construct selector set.  FIXME: only handles
+	     name-list properties, not clause-list properties, since the
+	     "requires" selector is not implemented yet (PR 113067).  */
+	  if (tss_code != OMP_TRAIT_SET_CONSTRUCT)
+	    for (tree p1 = OMP_TS_PROPERTIES (ts); p1; p1 = TREE_CHAIN (p1))
+	      {
+		if (OMP_TP_NAME (p1) != OMP_TP_NAMELIST_NODE)
+		  break;
+		const char *n1 = omp_context_name_list_prop (p1);
+		if (!n1)
+		  continue;
+		for (tree p2 = TREE_CHAIN (p1); p2; p2 = TREE_CHAIN (p2))
+		  {
+		    const char *n2 = omp_context_name_list_prop (p2);
+		    if (!n2)
+		      continue;
+		    if (!strcmp (n1, n2))
+		      {
+			error_at (loc,
+				  "trait-property %qs specified more "
+				  "than once in %qs selector",
+				  n1, OMP_TS_NAME (ts));
+			return error_mark_node;
+		      }
+		  }
+	      }
+
+	  /* Check for unknown properties.  */
 	  if (omp_ts_map[ts_code].valid_properties == NULL)
 	    continue;
-
 	  for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 	    for (unsigned j = 0; ; j++)
 	      {
@@ -1375,6 +1435,14 @@ omp_check_context_selector (location_t loc, tree ctx)
 		  /* Identifier traits.  */
 		  break;
 	      }
+	}
+
+      if (saw_any_prop && saw_other_prop)
+	{
+	  error_at (loc,
+		    "no other trait-property may be specified "
+		    "in the same selector set with %<kind(\"any\")%>");
+	  return error_mark_node;
 	}
     }
   return ctx;
@@ -1646,6 +1714,22 @@ omp_context_selector_matches (tree ctx)
 
 		  if ((omp_requires_mask
 		       & OMP_REQUIRES_UNIFIED_SHARED_MEMORY) == 0)
+		    {
+		      if (symtab->state == PARSING)
+			ret = -1;
+		      else
+			return 0;
+		    }
+		}
+	      break;
+	    case OMP_TRAIT_IMPLEMENTATION_SELF_MAPS:
+	      if (set == OMP_TRAIT_SET_IMPLEMENTATION)
+		{
+		  if (cfun && (cfun->curr_properties & PROP_gimple_any) != 0)
+		    break;
+
+		  if ((omp_requires_mask
+		       & OMP_REQUIRES_SELF_MAPS) == 0)
 		    {
 		      if (symtab->state == PARSING)
 			ret = -1;
@@ -3260,7 +3344,10 @@ omp_runtime_api_procname (const char *name)
       "alloc",
       "calloc",
       "free",
+      "get_interop_int",
+      "get_interop_ptr",
       "get_mapped_ptr",
+      "get_num_interop_properties",
       "realloc",
       "target_alloc",
       "target_associate_ptr",
@@ -3286,9 +3373,14 @@ omp_runtime_api_procname (const char *name)
       "get_cancellation",
       "get_default_allocator",
       "get_default_device",
+      "get_device_from_uid",
       "get_device_num",
       "get_dynamic",
       "get_initial_device",
+      "get_interop_name",
+      "get_interop_rc_desc",
+      "get_interop_str",
+      "get_interop_type_desc",
       "get_level",
       "get_max_active_levels",
       "get_max_task_priority",
@@ -3331,12 +3423,13 @@ omp_runtime_api_procname (const char *name)
 	 as DECL_NAME only omp_* and omp_*_8 appear.  */
       "display_env",
       "get_ancestor_thread_num",
-      "init_allocator",
+      "get_uid_from_device",
       "get_partition_place_nums",
       "get_place_num_procs",
       "get_place_proc_ids",
       "get_schedule",
       "get_team_size",
+      "init_allocator",
       "set_default_device",
       "set_dynamic",
       "set_max_active_levels",
@@ -3376,6 +3469,35 @@ omp_runtime_api_call (const_tree fndecl)
       || !TREE_PUBLIC (fndecl))
     return false;
   return omp_runtime_api_procname (IDENTIFIER_POINTER (declname));
+}
+
+/* See "Additional Definitions for the OpenMP API Specification" document;
+   associated IDs are 1, 2, ...  */
+static const char* omp_interop_fr_str[] = {"cuda", "cuda_driver", "opencl",
+					   "sycl", "hip", "level_zero", "hsa"};
+
+/* Returns the foreign-runtime ID if found or 0 otherwise.  */
+
+int
+omp_get_fr_id_from_name (const char *str)
+{
+  static_assert (GOMP_INTEROP_IFR_LAST == ARRAY_SIZE (omp_interop_fr_str), "");
+
+  for (unsigned i = 0; i < ARRAY_SIZE (omp_interop_fr_str); ++i)
+    if (!strcmp (str, omp_interop_fr_str[i]))
+      return i + 1;
+  return 0;
+}
+
+/* Returns the string value to a foreign-runtime integer value or NULL if value
+   is not known.  */
+
+const char *
+omp_get_name_from_fr_id (int fr_id)
+{
+  if (fr_id < 1 || fr_id > (int) ARRAY_SIZE (omp_interop_fr_str))
+    return NULL;
+  return omp_interop_fr_str[fr_id-1];
 }
 
 namespace omp_addr_tokenizer {
@@ -4105,6 +4227,7 @@ find_nested_loop_xform (tree *tp, int *walk_subtrees, void *data)
       *walk_subtrees = 1;
       break;
     case TRY_FINALLY_EXPR:
+    case CLEANUP_POINT_EXPR:
       pdata[0] = tp;
       *walk_subtrees = 1;
       break;

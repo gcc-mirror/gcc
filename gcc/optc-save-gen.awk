@@ -1307,6 +1307,11 @@ for (i = 0; i < n_opts; i++) {
 			var_opt_optimize_init[n_opt_val] = init;
 		}
 
+		# Mark options that are annotated with both Optimization and
+		# Target so we can avoid streaming out target-specific opts when
+		# offloading is enabled.
+		if (flag_set_p("Target", flags[i]))
+			var_target_opt[n_opt_val] = 1;
 		n_opt_val++;
 	}
 }
@@ -1384,6 +1389,10 @@ for (i = 0; i < n_opt_val; i++) {
 		} else {
 			sgn = "int";
 		}
+		# Do not stream out target-specific opts if offloading is
+		# enabled.
+		if (var_target_opt[i])
+			print "  if (!lto_stream_offload_p)"
 		# If applicable, encode the streamed value.
 		if (var_opt_optimize_init[i]) {
 			print "  if (" var_opt_optimize_init[i] " > (" var_opt_val_type[i] ") 10)";
@@ -1408,6 +1417,11 @@ print "                           struct cl_optimization *ptr ATTRIBUTE_UNUSED)"
 print "{";
 for (i = 0; i < n_opt_val; i++) {
 	name = var_opt_val[i]
+        if (var_target_opt[i]) {
+		print "#ifdef ACCEL_COMPILER"
+		print "#error accel compiler cannot define Optimization attribute for target-specific option " name;
+		print "#else"
+	}
 	otype = var_opt_val_type[i];
 	if (otype ~ "^const char \\**$") {
 		print "  ptr->" name" = bp_unpack_string (data_in, bp);";
@@ -1427,6 +1441,8 @@ for (i = 0; i < n_opt_val; i++) {
 			print "    ptr->" name" ^= " var_opt_optimize_init[i] ";";
 		}
 	}
+	if (var_target_opt[i])
+		print "#endif"
 }
 print "  for (size_t i = 0; i < ARRAY_SIZE (ptr->explicit_mask); i++)";
 print "    ptr->explicit_mask[i] = bp_unpack_value (bp, 64);";

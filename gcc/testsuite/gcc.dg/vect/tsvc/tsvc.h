@@ -1,7 +1,10 @@
 /*  This file is distributed under the University of Illinois Open Source
     License. See license.txt for details.  */
 
-#define iterations 10000
+#ifndef iterations
+#define iterations 10
+/* Was: #define iterations 10000 */
+#endif
 #define LEN_1D 32000
 #define LEN_2D 256
 #define ARRAY_ALIGNMENT 64
@@ -1093,7 +1096,11 @@ real_t calc_checksum(const char * name)
 
 real_t get_expected_result(const char * name) 
 {
-    if (!strcmp(name, "s000")) {
+    if (!name) {
+        fprintf(stderr, "NULL name passed to expected_result.\n");
+        exit(1);
+#if iterations == 10000
+    } else if (!strcmp(name, "s000")) {
 	return 512075584.f;
     } else if (!strcmp(name, "s111")) {
 	return 32000.410156f;
@@ -1395,6 +1402,334 @@ real_t get_expected_result(const char * name)
 	return 1.644824f;
     } else if (!strcmp(name, "vbor")) {
 	return 31924.046875f;
+#elif iterations == 10
+    } else if (!strcmp (name, "s000")) {
+	return 512066944.000000f;
+    } else if (!strcmp (name, "s1111")) {
+	return 13.352139f;
+    } else if (!strcmp (name, "s1112")) {
+	return 32008.869141f;
+    } else if (!strcmp (name, "s1113")) {
+	return 51.947979f;
+    } else if (!strcmp (name, "s1115")) {
+	return 1567.842896f;
+    } else if (!strcmp (name, "s1119")) {
+	return 1567.842896f;
+    } else if (!strcmp (name, "s111")) {
+	return 32000.410156f;
+    } else if (!strcmp (name, "s112")) {
+	return 32049.320312f;
+    } else if (!strcmp (name, "s113")) {
+	return 32000.640625f;
+    } else if (!strcmp (name, "s114")) {
+	return 1567.842896f;
+    } else if (!strcmp (name, "s115")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s1161")) {
+	return 23.546333f;
+    } else if (!strcmp (name, "s116")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s118")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s119")) {
+	return 65536.000000f;
+    } else if (!strcmp (name, "s1213")) {
+	return 14.449853f;
+    } else if (!strcmp (name, "s121")) {
+	return 32004.953125f;
+    } else if (!strcmp (name, "s1221")) {
+	return 79623.273438f;
+    } else if (!strcmp (name, "s122")) {
+	return 32016.369141f;
+    } else if (!strcmp (name, "s1232")) {
+	return 1567.842896f;
+    } else if (!strcmp (name, "s123")) {
+	return 32003.283203f;
+    } else if (!strcmp (name, "s1244")) {
+	return 36.141911f;
+    } else if (!strcmp (name, "s124")) {
+	return 32001.640625f;
+    } else if (!strcmp (name, "s1251")) {
+	return 42.998329f;
+    } else if (!strcmp (name, "s125")) {
+	return 0.000000f;
+    } else if (!strcmp (name, "s126")) {
+	return 65536.000000f;
+    } else if (!strcmp (name, "s1279")) {
+	return 32.852161f;
+    } else if (!strcmp (name, "s127")) {
+	return 32003.283203f;
+    } else if (!strcmp (name, "s1281")) {
+	return 3298534883328.000000f;
+    } else if (!strcmp (name, "s128")) {
+	return 80000.000000f;
+    } else if (!strcmp (name, "s13110")) {
+	return 2.000000f;
+    } else if (!strcmp (name, "s131")) {
+	return 32005.441406f;
+    } else if (!strcmp (name, "s132")) {
+	return 65538.562500f;
+    } else if (!strcmp (name, "s1351")) {
+	return 21.901442f;
+    } else if (!strcmp (name, "s141")) {
+	return 65536.000000f;
+    } else if (!strcmp (name, "s1421")) {
+	return 16000.000000f;
+    } else if (!strcmp (name, "s151")) {
+	return 32005.441406f;
+    } else if (!strcmp (name, "s152")) {
+	return 32012.019531f;
+    } else if (!strcmp (name, "s161")) {
+	return 64002.054688f;
+    } else if (!strcmp (name, "s162")) {
+	return 32003.865234f;
+    } else if (!strcmp (name, "s171")) {
+	return 32016.433594f;
+    } else if (!strcmp (name, "s172")) {
+	return 32016.433594f;
+    } else if (!strcmp (name, "s173")) {
+	return 32001.626953f;
+    } else if (!strcmp (name, "s174")) {
+	return 32001.626953f;
+    } else if (!strcmp (name, "s175")) {
+	return 32003.865234f;
+    } else if (!strcmp (name, "s176")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s2101")) {
+	return 65700.101562f;
+    } else if (!strcmp (name, "s2102")) {
+	return 0.000000f;
+    } else if (!strcmp (name, "s2111")) {
+	return 0.065485f;
+    } else if (!strcmp (name, "s211")) {
+	return 63994.015625f;
+    } else if (!strcmp (name, "s212")) {
+	return 32020.935547f;
+    } else if (!strcmp (name, "s221")) {
+	return 512409472.000000f;
+    } else if (!strcmp (name, "s222")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s2233")) {
+	return 3135.685791f;
+    } else if (!strcmp (name, "s2244")) {
+	return 32.852161f;
+    } else if (!strcmp (name, "s2251")) {
+	return 2.635389f;
+    } else if (!strcmp (name, "s2275")) {
+	return 1567.842896f;
+    } else if (!strcmp (name, "s231")) {
+	return 65536.000000f;
+    } else if (!strcmp (name, "s232")) {
+	return 65536.000000f;
+    } else if (!strcmp (name, "s233")) {
+	return 3135.685791f;
+    } else if (!strcmp (name, "s235")) {
+	return 32010.951172f;
+    } else if (!strcmp (name, "s241")) {
+	return 64000.000000f;
+    } else if (!strcmp (name, "s242")) {
+	return 1535966208.000000f;
+    } else if (!strcmp (name, "s243")) {
+	return 64082.726562f;
+    } else if (!strcmp (name, "s244")) {
+	return 64000.007812f;
+    } else if (!strcmp (name, "s251")) {
+	return 32004.367188f;
+    } else if (!strcmp (name, "s252")) {
+	return 63999.000000f;
+    } else if (!strcmp (name, "s253")) {
+	return 384000.000000f;
+    } else if (!strcmp (name, "s254")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s255")) {
+	return 31953.501953f;
+    } else if (!strcmp (name, "s256")) {
+	return 163072.000000f;
+    } else if (!strcmp (name, "s257")) {
+	return 163072.000000f;
+    } else if (!strcmp (name, "s258")) {
+	return 14.652780f;
+    } else if (!strcmp (name, "s261")) {
+	return 32024.523438f;
+    } else if (!strcmp (name, "s2710")) {
+	return 96003.281250f;
+    } else if (!strcmp (name, "s2711")) {
+	return 32065.755859f;
+    } else if (!strcmp (name, "s2712")) {
+	return 32065.755859f;
+    } else if (!strcmp (name, "s271")) {
+	return 32065.755859f;
+    } else if (!strcmp (name, "s272")) {
+	return 64000.000000f;
+    } else if (!strcmp (name, "s273")) {
+	return 96000.000000f;
+    } else if (!strcmp (name, "s274")) {
+	return 384018.062500f;
+    } else if (!strcmp (name, "s275")) {
+	return 65536.000000f;
+    } else if (!strcmp (name, "s276")) {
+	return 32065.755859f;
+    } else if (!strcmp (name, "s277")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s278")) {
+	return 64012.589844f;
+    } else if (!strcmp (name, "s279")) {
+	return 63988.562500f;
+    } else if (!strcmp (name, "s281")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s291")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s292")) {
+	return 31953.501953f;
+    } else if (!strcmp (name, "s293")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s3110")) {
+	return 2.000000f;
+    } else if (!strcmp (name, "s31111")) {
+	return 10.950721f;
+    } else if (!strcmp (name, "s3112")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "s3113")) {
+	return 2.000000f;
+    } else if (!strcmp (name, "s311")) {
+	return 10.950721f;
+    } else if (!strcmp (name, "s312")) {
+	return 1.030518f;
+    } else if (!strcmp (name, "s313")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "s314")) {
+	return 1.000000f;
+    } else if (!strcmp (name, "s315")) {
+	return 54857.000000f;
+    } else if (!strcmp (name, "s316")) {
+	return 0.000031f;
+    } else if (!strcmp (name, "s317")) {
+	return 0.000000f;
+    } else if (!strcmp (name, "s318")) {
+	return 32002.000000f;
+    } else if (!strcmp (name, "s319")) {
+	return 43.803417f;
+    } else if (!strcmp (name, "s321")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s322")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s323")) {
+	return 146472.437500f;
+    } else if (!strcmp (name, "s3251")) {
+	return 13.595582f;
+    } else if (!strcmp (name, "s331")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s332")) {
+	return -1.000000f;
+    } else if (!strcmp (name, "s341")) {
+	return 10.950721f;
+    } else if (!strcmp (name, "s342")) {
+	return 10.950721f;
+    } else if (!strcmp (name, "s343")) {
+	return 0.000000f;
+    } else if (!strcmp (name, "s351")) {
+	return 2592000.000000f;
+    } else if (!strcmp (name, "s352")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "s353")) {
+	return 352000.000000f;
+    } else if (!strcmp (name, "s4112")) {
+	return 32103.878906f;
+    } else if (!strcmp (name, "s4113")) {
+	return 32001.640625f;
+    } else if (!strcmp (name, "s4114")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "s4115")) {
+	return 1.038636f;
+    } else if (!strcmp (name, "s4116")) {
+	return 0.753265f;
+    } else if (!strcmp (name, "s4117")) {
+	return 32002.205078f;
+    } else if (!strcmp (name, "s4121")) {
+	return 32016.433594f;
+    } else if (!strcmp (name, "s421")) {
+	return 32005.230469f;
+    } else if (!strcmp (name, "s422")) {
+	return 31678.765625f;
+    } else if (!strcmp (name, "s423")) {
+	return 34521.710938f;
+    } else if (!strcmp (name, "s424")) {
+	return 822.364014f;
+    } else if (!strcmp (name, "s431")) {
+	return 32164.423828f;
+    } else if (!strcmp (name, "s441")) {
+	return 32016.433594f;
+    } else if (!strcmp (name, "s442")) {
+	return 32008.214844f;
+    } else if (!strcmp (name, "s443")) {
+	return 32032.878906f;
+    } else if (!strcmp (name, "s451")) {
+	return 32007.896484f;
+    } else if (!strcmp (name, "s452")) {
+	return 32511.939453f;
+    } else if (!strcmp (name, "s453")) {
+	return 21.901442f;
+    } else if (!strcmp (name, "s471")) {
+	return 64004.925781f;
+    } else if (!strcmp (name, "s481")) {
+	return 32016.433594f;
+    } else if (!strcmp (name, "s482")) {
+	return 32016.433594f;
+    } else if (!strcmp (name, "s491")) {
+	return 32001.640625f;
+    } else if (!strcmp (name, "vag")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "vas")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "va")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "vbor")) {
+	return 31924.044922f;
+    } else if (!strcmp (name, "vdotr")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "vif")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "vpvpv")) {
+	return 1.644725f;
+    } else if (!strcmp (name, "vpvts")) {
+	return 17521528832.000000f;
+    } else if (!strcmp (name, "vpvtv")) {
+	return 32065.755859f;
+    } else if (!strcmp (name, "vpv")) {
+	return 164.469772f;
+    } else if (!strcmp (name, "vsumr")) {
+	return 10.950721f;
+    } else if (!strcmp (name, "vtvtv")) {
+	return 32000.000000f;
+    } else if (!strcmp (name, "vtv")) {
+	return 32000.000000f;
+#elif iterations == 256
+    } else if (!strcmp (name, "s1119")) {
+        return 201466.390625f;
+    } else if (!strcmp (name, "s115")) {
+        return 31968.617188f;
+    } else if (!strcmp (name, "s119")) {
+        return 86343.289062f;
+    } else if (!strcmp (name, "s125")) {
+        return 131072.000000f;
+    } else if (!strcmp (name, "s2102")) {
+        return 256.000000f;
+    } else if (!strcmp (name, "s2233")) {
+        return 337652.718750f;
+    } else if (!strcmp (name, "s2275")) {
+        return 43579.421875f;
+    } else if (!strcmp (name, "s231")) {
+        return 119107.445312f;
+    } else if (!strcmp (name, "s235")) {
+        return 32339.158203f;
+#elif iterations == 3200
+    } else if (!strcmp (name, "s176")) {
+#ifndef TRUNCATE_TEST
+        return 32021.121094f;
+#else /* TRUNCATE_TEST */
+        return 32023.751953f;
+#endif /* TRUNCATE_TEST */
+#endif /* iterations */
     } else {
         fprintf(stderr, "Unknown function name passed to expected_result: %s\n", name);
         exit(1);
@@ -1420,6 +1755,7 @@ void run(test_function_t vector_func, const char *fname, void * arg_info)
     struct args_t func_args = {.arg_info=arg_info};
 
     double result = vector_func(&func_args);
+#if iterations == 10000 || iterations == 10 || iterations == 256 || iterations == 3200
     double expected_result = get_expected_result(fname);
 
     if (!is_checksum_same(expected_result, result))
@@ -1427,6 +1763,18 @@ void run(test_function_t vector_func, const char *fname, void * arg_info)
 	fprintf (stderr, "value: %f, expected: %f\n", result, expected_result);
 	__builtin_abort();
       }
+#else
+    /* To generate values for a new iteration count, run
+       check-gcc 'RUNTESTFLAGS=vect.exp'
+       on a host you consider having a sound gcc port.
+       The output can be collated by something like:
+     grep '#### iterations == [0-9]*' ./gcc/testsuite/gcc/gcc.log|sort -n|uniq|sed 'sX.*iterations == [0-9]*XX'
+     */
+    fprintf (stderr,
+      "\n%5s X0#### iterations == %d    } else if (!strcmp (name, \"%s\")) {"
+      "\n%5s X1#### iterations == %d\treturn %ff;\n",
+      fname, iterations, fname, fname, iterations, result);
+#endif
 }
 
 int

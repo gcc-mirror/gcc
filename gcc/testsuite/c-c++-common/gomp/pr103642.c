@@ -1,5 +1,6 @@
 /* PR middle-end/103642 */
 /* { dg-do compile } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 

@@ -2,7 +2,7 @@
 /* { dg-options "-O -mfp16-format=ieee" } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
-/* { dg-additional-options "-mfloat-abi=hard" } *
+/* { dg-additional-options "-mfloat-abi=hard" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*

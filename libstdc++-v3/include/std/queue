@@ -55,7 +55,9 @@
 #ifndef _GLIBCXX_QUEUE
 #define _GLIBCXX_QUEUE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // containers
 

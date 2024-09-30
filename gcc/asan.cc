@@ -4276,6 +4276,7 @@ asan_instrument (void)
 {
   if (hwasan_sanitize_p ())
     {
+      initialize_sanitizer_builtins ();
       transform_statements ();
       return 0;
     }
@@ -4693,6 +4694,8 @@ hwasan_finish_file (void)
      (the kernel has its own initialization already).  */
   if (flag_sanitize & SANITIZE_KERNEL_HWADDRESS)
     return;
+
+  initialize_sanitizer_builtins ();
 
   /* Avoid instrumenting code in the hwasan constructors/destructors.  */
   flag_sanitize &= ~SANITIZE_HWADDRESS;

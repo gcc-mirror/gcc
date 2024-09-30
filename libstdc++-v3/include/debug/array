@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_DEBUG_ARRAY
 #define _GLIBCXX_DEBUG_ARRAY 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <array>
 

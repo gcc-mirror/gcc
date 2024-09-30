@@ -1,3 +1,73 @@
+2024-09-27  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* MAINTAINERS: Add myself as MVE Reviewer for the AArch32 (arm)
+	port.
+
+2024-09-25  Sam James  <sam@gentoo.org>
+
+	* ltmain.sh (func_mode_link): Allow various flags through filter.
+
+2024-09-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* MAINTAINERS: Move my entry in DCO list into alphabetical order.
+
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* MAINTAINERS: Fix sort order and add username.
+
+2024-09-23  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2024-09-23  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* MAINTAINERS: Update email and add myself to DCO.
+
+2024-09-18  Andrew Kreimer  <algonell@gmail.com>
+
+	* configure.ac: Fix typos.
+	* configure: Rebuilt.
+
+2024-09-12  YunQiang Su  <syq@gcc.gnu.org>
+
+	* .gitignore: Add .vscode.
+
+2024-09-04  Marc Poulhiès  <dkm@kataplop.net>
+
+	* configure: Regenerate.
+	* configure.ac: Save LIBS around calls to AC_SEARCH_LIBS.
+
+2024-09-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* MAINTAINERS: Update my email address and add myself to DCO.
+
+2024-08-22  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Fix whitespace.
+
+2024-08-22  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (STAGE1_CONFIGURE_FLAGS): Remove --disable-intermodule.
+
+2024-08-07  navidr  <navidr@gcc.gnu.org>
+
+	* MAINTAINERS: Changing my email to gnu email.
+
+2024-08-05  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* MAINTAINERS: Add myself.
+
+2024-07-31  Arsen Arsenović  <arsen@aarsen.me>
+
+	* .dir-locals.el: Change c-mode to a list of C, C++ and ObjC
+	modes that Emacs currently provides.
+
+2024-07-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* .b4-config: New file.
+
 2024-07-26  Sam James  <sam@gentoo.org>
 
 	* MAINTAINERS: Add myself.

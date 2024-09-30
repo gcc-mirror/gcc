@@ -7799,7 +7799,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
     {
       /* Be careful not to go beyond the extracted object and maintain the
 	 natural alignment of the memory.  */
-      wanted_inner_mode = smallest_int_mode_for_size (len);
+      wanted_inner_mode = smallest_int_mode_for_size (len).require ();
       while (pos % GET_MODE_BITSIZE (wanted_inner_mode) + len
 	     > GET_MODE_BITSIZE (wanted_inner_mode))
 	wanted_inner_mode = GET_MODE_WIDER_MODE (wanted_inner_mode).require ();
@@ -15102,6 +15102,12 @@ make_more_copies (void)
 	    continue;
 
 	  rtx new_reg = gen_reg_rtx (GET_MODE (dest));
+
+	  /* The "original" pseudo copies have important attributes
+	     attached, like pointerness.  We want that for these copies
+	     too, for use by insn recognition and later passes.  */
+	  set_reg_attrs_from_value (new_reg, dest);
+
 	  rtx_insn *new_insn = gen_move_insn (new_reg, src);
 	  SET_SRC (set) = new_reg;
 	  emit_insn_before (new_insn, insn);

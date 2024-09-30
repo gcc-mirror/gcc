@@ -119,7 +119,7 @@ DEF_RVV_TYPE (vbool2_t, 13, __rvv_bool2_t, boolean, RVVMF2BI, _b2, , )
 DEF_RVV_TYPE (vbool1_t, 13, __rvv_bool1_t, boolean, RVVM1BI, _b1, , )
 
 /* LMUL = 1/8:
-   Only enble when TARGET_MIN_VLEN > 32.
+   Only enable when TARGET_MIN_VLEN > 32.
    Machine mode = RVVMF8QImode.  */
 DEF_RVV_TYPE (vint8mf8_t, 15, __rvv_int8mf8_t, int8, RVVMF8QI, _i8mf8, _i8,
 	      _e8mf8)
@@ -229,7 +229,7 @@ DEF_RVV_TYPE (vuint8m8_t, 15, __rvv_uint8m8_t, uint8, RVVM8QI, _u8m8, _u8,
 	      _e8m8)
 
 /* LMUL = 1/4:
-   Only enble when TARGET_MIN_VLEN > 32.
+   Only enable when TARGET_MIN_VLEN > 32.
    Machine mode = RVVMF4HImode.  */
 DEF_RVV_TYPE (vint16mf4_t, 16, __rvv_int16mf4_t, int16, RVVMF4HI, _i16mf4, _i16,
 	      _e16mf4)
@@ -322,7 +322,7 @@ DEF_RVV_TYPE (vuint16m8_t, 16, __rvv_uint16m8_t, uint16, RVVM8HI, _u16m8, _u16,
 	      _e16m8)
 
 /* LMUL = 1/2:
-   Only enble when TARGET_MIN_VLEN > 32.
+   Only enable when TARGET_MIN_VLEN > 32.
    Machine mode = RVVMF2SImode.  */
 DEF_RVV_TYPE (vint32mf2_t, 16, __rvv_int32mf2_t, int32, RVVMF2SI, _i32mf2, _i32,
 	      _e32mf2)
@@ -539,7 +539,7 @@ DEF_RVV_TYPE (vfloat16m8_t, 17, __rvv_float16m8_t, float16, RVVM8HF, _f16m8,
 
 /* Disable all when !TARGET_VECTOR_ELEN_FP_32.  */
 /* LMUL = 1/2:
-   Only enble when TARGET_MIN_VLEN > 32.
+   Only enable when TARGET_MIN_VLEN > 32.
    Machine mode = RVVMF2SFmode.  */
 DEF_RVV_TYPE (vfloat32mf2_t, 18, __rvv_float32mf2_t, float, RVVMF2SF, _f32mf2,
 	      _f32, _e32mf2)
@@ -655,7 +655,7 @@ DEF_RVV_BASE_TYPE (unsigned_vector, get_vector_type (type_idx))
 /* According to riscv-vector-builtins-types.def, the unsigned
    type is always the signed type + 1 (They have same SEW and LMUL).
    For example 'vuint8mf8_t' enum = 'vint8mf8_t' enum + 1.
-   Note: We dont't allow type_idx to be unsigned type.  */
+   Note: We don't allow type_idx to be unsigned type.  */
 DEF_RVV_BASE_TYPE (unsigned_scalar, builtin_types[type_idx + 1].scalar)
 DEF_RVV_BASE_TYPE (vector_ptr, builtin_types[type_idx].vector_ptr)
 /* According to the latest rvv-intrinsic-doc, it defines vsm.v intrinsic:

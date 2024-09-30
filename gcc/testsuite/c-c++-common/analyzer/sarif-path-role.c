@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options " -fno-diagnostics-json-formatting -fdiagnostics-format=sarif-file" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 

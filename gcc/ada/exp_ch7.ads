@@ -129,7 +129,6 @@ package Exp_Ch7 is
      (N           : Node_Id;
       Clean_Stmts : List_Id;
       Mark_Id     : Entity_Id;
-      Top_Decls   : List_Id;
       Defer_Abort : Boolean;
       Fin_Id      : out Entity_Id);
    --  N may denote an accept statement, block, entry body, package body,
@@ -142,11 +141,9 @@ package Exp_Ch7 is
    --  Clean_Stmts may contain additional context-dependent code used to abort
    --  asynchronous calls or complete tasks (see Build_Cleanup_Statements).
    --  Mark_Id is the secondary stack used in the current context or Empty if
-   --  missing. Top_Decls is the list on which the declaration of the finalizer
-   --  is attached in the non-package case. Defer_Abort indicates that the
-   --  statements passed in perform actions that require abort to be deferred,
-   --  such as for task termination. Fin_Id is the finalizer declaration
-   --  entity.
+   --  missing. Defer_Abort indicates that the statements passed in perform
+   --  actions that require abort to be deferred, such as for task termination.
+   --  Fin_Id is the finalizer declaration entity.
 
    procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id);
    --  Build one controlling procedure when a late body overrides one of the
@@ -224,6 +221,11 @@ package Exp_Ch7 is
    --  does not have a TSS entry for Finalize_Address. The procedure converts
    --  an address into a pointer and subsequently calls Deep_Finalize on the
    --  dereference.
+
+   function Make_Finalize_Call_For_Node
+     (Loc  : Source_Ptr;
+      Node : Entity_Id) return Node_Id;
+   --  Create a call to finalize the object attached to the given Master_Node
 
    function Make_Init_Call
      (Obj_Ref : Node_Id;

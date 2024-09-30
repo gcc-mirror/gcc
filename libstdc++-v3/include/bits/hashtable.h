@@ -30,7 +30,9 @@
 #ifndef _HASHTABLE_H
 #define _HASHTABLE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/hashtable_policy.h>
 #include <bits/enable_special_members.h>
@@ -39,6 +41,9 @@
 #if __cplusplus > 201402L
 # include <bits/node_handle.h>
 #endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -2757,5 +2762,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 /// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 #endif // _HASHTABLE_H

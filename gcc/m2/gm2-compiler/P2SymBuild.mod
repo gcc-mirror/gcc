@@ -37,7 +37,7 @@ FROM M2Options IMPORT PedanticParamNames, ExtendedOpaque ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM M2Base IMPORT ZType ;
 FROM Storage IMPORT ALLOCATE ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t ;
 FROM M2LexBuf IMPORT TokenToLocation ;
 
 FROM M2Reserved IMPORT ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,

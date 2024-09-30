@@ -1,4 +1,5 @@
 // { dg-do compile }
+/* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 
 #include <stdlib.h>
 

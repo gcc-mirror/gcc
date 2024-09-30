@@ -161,10 +161,10 @@ namespace std {
 
 #if __cplusplus > 201703L
   template<class M, class N>
-    constexpr common_type_t<M,N> gcd(M m, N n);
+    constexpr common_type_t<M,N> gcd(M m, N n) noexcept;
 
   template<class M, class N>
-    constexpr common_type_t<M,N> lcm(M m, N n);
+    constexpr common_type_t<M,N> lcm(M m, N n) noexcept;
 
   template<class T>
     constexpr T midpoint(T a, T b) noexcept;

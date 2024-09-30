@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CSTDDEF
 #define _GLIBCXX_CSTDDEF 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #undef __need_wchar_t
 #undef __need_ptrdiff_t
@@ -51,6 +53,9 @@
 
 #define __glibcxx_want_byte
 #include <bits/version.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
 
 extern "C++"
 {
@@ -188,5 +193,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_byte
 } // extern "C++"
+
+#pragma GCC diagnostic pop
 
 #endif // _GLIBCXX_CSTDDEF

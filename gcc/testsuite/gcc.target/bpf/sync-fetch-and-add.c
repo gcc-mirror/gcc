@@ -11,5 +11,5 @@ foo ()
   __sync_fetch_and_add((int *)val, (int)delta);
 }
 
-/* { dg-final { scan-assembler "xadddw\t.*" } } */
-/* { dg-final { scan-assembler "xaddw\t.*" } } */
+/* { dg-final { scan-assembler "afadd\t.*" } } */
+/* { dg-final { scan-assembler "afadd32\t.*" } } */

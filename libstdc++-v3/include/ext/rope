@@ -43,7 +43,9 @@
 #ifndef _ROPE
 #define _ROPE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
@@ -65,6 +67,10 @@
 # endif
 
 #include <ext/memory> // For uninitialized_copy_n
+
+// Ignore warnings about default member initializers.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -3008,6 +3014,8 @@ namespace tr1
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
+#pragma GCC diagnostic pop
 
 # include <ext/ropeimpl.h>
 

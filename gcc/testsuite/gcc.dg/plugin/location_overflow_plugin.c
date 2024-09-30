@@ -7,6 +7,7 @@
 #include "coretypes.h"
 #include "spellcheck.h"
 #include "diagnostic.h"
+#include "diagnostic-format-text.h"
 
 int plugin_is_GPL_compatible;
 
@@ -36,12 +37,12 @@ on_pragma_registration (void */*gcc_data*/, void */*user_data*/)
 }
 
 /* We add some extra testing during diagnostics by chaining up
-   to the finalizer.  */
+   to the text finalizer.  */
 
-static diagnostic_finalizer_fn original_finalizer = NULL;
+static diagnostic_text_finalizer_fn original_text_finalizer = NULL;
 
 static void
-verify_unpacked_ranges  (diagnostic_context *context,
+verify_unpacked_ranges  (diagnostic_text_output_format &text_output,
 			 const diagnostic_info *diagnostic,
 			 diagnostic_t orig_diag_kind)
 {
@@ -49,13 +50,13 @@ verify_unpacked_ranges  (diagnostic_context *context,
   location_t loc = diagnostic_location (diagnostic);
   gcc_assert (IS_ADHOC_LOC (loc));
 
-  /* We're done testing; chain up to original finalizer.  */
-  gcc_assert (original_finalizer);
-  original_finalizer (context, diagnostic, orig_diag_kind);
+  /* We're done testing; chain up to original text finalizer.  */
+  gcc_assert (original_text_finalizer);
+  original_text_finalizer (text_output, diagnostic, orig_diag_kind);
 }
 
 static void
-verify_no_columns  (diagnostic_context *context,
+verify_no_columns  (diagnostic_text_output_format &text_output,
 		    const diagnostic_info *diagnostic,
 		    diagnostic_t orig_diag_kind)
 {
@@ -63,9 +64,9 @@ verify_no_columns  (diagnostic_context *context,
   location_t loc = diagnostic_location (diagnostic);
   gcc_assert (LOCATION_COLUMN (loc) == 0);
 
-  /* We're done testing; chain up to original finalizer.  */
-  gcc_assert (original_finalizer);
-  original_finalizer (context, diagnostic, orig_diag_kind);
+  /* We're done testing; chain up to original text finalizer.  */
+  gcc_assert (original_text_finalizer);
+  original_text_finalizer (text_output, diagnostic, orig_diag_kind);
 }
 
 int
@@ -89,15 +90,15 @@ plugin_init (struct plugin_name_args *plugin_info,
 		     NULL); /* void *user_data */
 
   /* Hack in additional testing, based on the exact value supplied.  */
-  original_finalizer = diagnostic_finalizer (global_dc);
+  original_text_finalizer = diagnostic_text_finalizer (global_dc);
   switch (base_location)
     {
     case LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 1:
-      diagnostic_finalizer (global_dc) = verify_unpacked_ranges;
+      diagnostic_text_finalizer (global_dc) = verify_unpacked_ranges;
       break;
 
     case LINE_MAP_MAX_LOCATION_WITH_COLS + 1:
-      diagnostic_finalizer (global_dc) = verify_no_columns;
+      diagnostic_text_finalizer (global_dc) = verify_no_columns;
       break;
 
     default:

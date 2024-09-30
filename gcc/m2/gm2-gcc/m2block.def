@@ -21,10 +21,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2block ;
 
-
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
-FROM SYSTEM IMPORT ADDRESS ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM CDataTypes IMPORT CharStar ;
 
 
 (*
@@ -46,7 +44,7 @@ PROCEDURE toplevel () : BOOLEAN ;
                       in the global binding level.
 *)
 
-PROCEDURE global_constant (t: Tree) : Tree ;
+PROCEDURE global_constant (t: tree) : tree ;
 
 
 (*
@@ -56,7 +54,7 @@ PROCEDURE global_constant (t: Tree) : Tree ;
                                  inside the current_binding_level I suspect.
 *)
 
-PROCEDURE RememberInitModuleFunction (t: Tree) : Tree ;
+PROCEDURE RememberInitModuleFunction (t: tree) : tree ;
 
 
 (*
@@ -64,7 +62,7 @@ PROCEDURE RememberInitModuleFunction (t: Tree) : Tree ;
                           poisoned.
 *)
 
-PROCEDURE DumpGlobalConstants () : Tree ;
+PROCEDURE DumpGlobalConstants () : tree ;
 
 
 (*
@@ -74,21 +72,21 @@ PROCEDURE DumpGlobalConstants () : Tree ;
                        can be used by many different functions if necessary.
 *)
 
-PROCEDURE RememberConstant (t: Tree) : Tree ;
+PROCEDURE RememberConstant (t: tree) : tree ;
 
 
 (*
     RememberType - remember the type, t, in the ggc marked list.
 *)
 
-PROCEDURE RememberType (t: Tree) : Tree ;
+PROCEDURE RememberType (t: tree) : tree ;
 
 
 (*
     pushDecl - pushes a declaration onto the current binding level.
 *)
 
-PROCEDURE pushDecl (decl: Tree) : Tree ;
+PROCEDURE pushDecl (decl: tree) : tree ;
 
 
 (*
@@ -113,14 +111,14 @@ PROCEDURE pushGlobalScope ;
                        binding level.
 *)
 
-PROCEDURE popFunctionScope () : Tree ;
+PROCEDURE popFunctionScope () : tree ;
 
 
 (*
     pushFunctionScope - push a binding level.
 *)
 
-PROCEDURE pushFunctionScope (fndecl: Tree) ;
+PROCEDURE pushFunctionScope (fndecl: tree) ;
 
 
 (*
@@ -129,7 +127,7 @@ PROCEDURE pushFunctionScope (fndecl: Tree) ;
                         The cur_stmt_list is appended to the STATEMENT_LIST.
 *)
 
-PROCEDURE finishFunctionCode (fndecl: Tree) ;
+PROCEDURE finishFunctionCode (fndecl: tree) ;
 
 
 (*
@@ -142,7 +140,7 @@ PROCEDURE finishFunctionCode (fndecl: Tree) ;
                         containing the DECL_EXPR is also created.
 *)
 
-PROCEDURE finishFunctionDecl (location: location_t; fndecl: Tree) ;
+PROCEDURE finishFunctionDecl (location: location_t; fndecl: tree) ;
 
 
 (*
@@ -150,14 +148,14 @@ PROCEDURE finishFunctionDecl (location: location_t; fndecl: Tree) ;
                in the current scope.
 *)
 
-PROCEDURE getLabel (location: location_t; name: ADDRESS) : Tree ;
+PROCEDURE getLabel (location: location_t; name: CharStar) : tree ;
 
 
 (*
    GetErrorNode - returns the gcc error_mark_node.
 *)
 
-PROCEDURE GetErrorNode () : Tree ;
+PROCEDURE GetErrorNode () : tree ;
 
 
 (*
@@ -165,21 +163,21 @@ PROCEDURE GetErrorNode () : Tree ;
                  it is not already present.
 *)
 
-PROCEDURE includeDecl (decl: Tree) ;
+PROCEDURE includeDecl (decl: tree) ;
 
 
 (*
    GetGlobals - returns a list of global variables, functions, constants.
 *)
 
-PROCEDURE GetGlobals () : Tree ;
+PROCEDURE GetGlobals () : tree ;
 
 
 (*
    GetGlobalContext - returns the global context tree.
 *)
 
-PROCEDURE GetGlobalContext () : Tree ;
+PROCEDURE GetGlobalContext () : tree ;
 
 
 (*
@@ -187,7 +185,7 @@ PROCEDURE GetGlobalContext () : Tree ;
                           statement list and returns the list node.
 *)
 
-PROCEDURE begin_statement_list () : Tree ;
+PROCEDURE begin_statement_list () : tree ;
 
 
 (*
@@ -195,7 +193,7 @@ PROCEDURE begin_statement_list () : Tree ;
                          current binding level.
 *)
 
-PROCEDURE push_statement_list (t: Tree) : Tree ;
+PROCEDURE push_statement_list (t: tree) : tree ;
 
 
 (*
@@ -203,7 +201,7 @@ PROCEDURE push_statement_list (t: Tree) : Tree ;
                         current binding level.
 *)
 
-PROCEDURE pop_statement_list () : Tree ;
+PROCEDURE pop_statement_list () : tree ;
 
 
 (*

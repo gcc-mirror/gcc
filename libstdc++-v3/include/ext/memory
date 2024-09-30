@@ -56,7 +56,9 @@
 #ifndef _EXT_MEMORY
 #define _EXT_MEMORY 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

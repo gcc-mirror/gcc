@@ -2,6 +2,7 @@
 
 // { dg-do run }
 // { dg-options "-std=c++20 -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 
 void foo (const int b)
@@ -13,4 +14,4 @@ int main()
    foo(3);
 }
 
-// { dg-output "contract violation in function foo at .*.C:8: b == 9.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function foo at .*.C:9: b == 9.*(\n|\r\n|\r)" }

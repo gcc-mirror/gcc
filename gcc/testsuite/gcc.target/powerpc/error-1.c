@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-options "-O -mvsx -mno-altivec" } */
 
 /* { dg-error "'-mvsx' and '-mno-altivec' are incompatible" "" { target *-*-* } 0 } */

@@ -949,7 +949,134 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   return;
 }
 
+/* Same as above, but somewhat simpler because we only treat unsigned
+   numbers.  */
 
+static void
+write_decimal_unsigned (st_parameter_dt *dtp, const fnode *f,
+			const char *source, int len)
+{
+  GFC_UINTEGER_LARGEST n = 0;
+  int w, m, digits, nsign, nzero, nblank;
+  char *p;
+  const char *q;
+  sign_t sign;
+  char itoa_buf[GFC_BTOA_BUF_SIZE];
+
+  w = f->u.integer.w;
+  m = f->format == FMT_G ? -1 : f->u.integer.m;
+
+  n = extract_uint (source, len);
+
+  /* Special case:  */
+  if (m == 0 && n == 0)
+    {
+      if (w == 0)
+	w = 1;
+
+      p = write_block (dtp, w);
+      if (p == NULL)
+	return;
+
+      if (unlikely (is_char4_unit (dtp)))
+	{
+	  gfc_char4_t *p4 = (gfc_char4_t *) p;
+	  memset4 (p4, ' ', w);
+	}
+      else
+	memset (p, ' ', w);
+      goto done;
+    }
+
+  /* Just in case somebody wants a + sign.  */
+  sign = calculate_sign (dtp, false);
+  nsign = sign == S_NONE ? 0 : 1;
+
+  q = gfc_itoa (n, itoa_buf, sizeof (itoa_buf));
+  digits = strlen (q);
+
+  /* Select a width if none was specified.  The idea here is to always
+     print something.  */
+  if (w == DEFAULT_WIDTH)
+    w = default_width_for_integer (len);
+
+  if (w == 0)
+    w = ((digits < m) ? m : digits) + nsign;
+
+  p = write_block (dtp, w);
+  if (p == NULL)
+    return;
+
+  nzero = 0;
+  if (digits < m)
+    nzero = m - digits;
+
+  /* See if things will work.  */
+
+  nblank = w - (nsign + nzero + digits);
+
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      gfc_char4_t *p4 = (gfc_char4_t *)p;
+      if (nblank < 0)
+	{
+	  memset4 (p4, '*', w);
+	  goto done;
+	}
+
+      if (!dtp->u.p.namelist_mode)
+	{
+	  memset4 (p4, ' ', nblank);
+	  p4 += nblank;
+	}
+
+      if (sign == S_PLUS)
+	*p4++ = '+';
+
+      memset4 (p4, '0', nzero);
+      p4 += nzero;
+
+      memcpy4 (p4, q, digits);
+
+      if (dtp->u.p.namelist_mode)
+	{
+	  p4 += digits;
+	  memset4 (p4, ' ', nblank);
+	}
+
+      return;
+    }
+
+  if (nblank < 0)
+    {
+      star_fill (p, w);
+      goto done;
+    }
+
+  if (!dtp->u.p.namelist_mode)
+    {
+      memset (p, ' ', nblank);
+      p += nblank;
+    }
+
+  if (sign == S_PLUS)
+    *p++ = '+';
+
+  memset (p, '0', nzero);
+  p += nzero;
+
+  memcpy (p, q, digits);
+
+  if (dtp->u.p.namelist_mode)
+    {
+      p += digits;
+      memset (p, ' ', nblank);
+    }
+
+ done:
+  return;
+
+}
 /* Convert hexadecimal to ASCII.  */
 
 static const char *
@@ -1240,6 +1367,11 @@ write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
   write_decimal (dtp, f, p, len);
 }
 
+void
+write_iu (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
+{
+  write_decimal_unsigned (dtp, f, p, len);
+}
 
 void
 write_b (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
@@ -1402,6 +1534,47 @@ write_integer (st_parameter_dt *dtp, const char *source, int kind)
   f.u.integer.m = -1;
   f.format = FMT_NONE;
   write_decimal (dtp, &f, source, kind);
+}
+
+/* Write a list-directed unsigned value.  We use the same formatting
+   as for integer.  */
+
+static void
+write_unsigned (st_parameter_dt *dtp, const char *source, int kind)
+{
+  int width;
+  fnode f;
+
+  switch (kind)
+    {
+    case 1:
+      width = 4;
+      break;
+
+    case 2:
+      width = 6;
+      break;
+
+    case 4:
+      width = 11;
+      break;
+
+    case 8:
+      width = 20;
+      break;
+
+    case 16:
+      width = 40;
+      break;
+
+    default:
+      width = 0;
+      break;
+    }
+  f.u.integer.w = width;
+  f.u.integer.m = -1;
+  f.format = FMT_NONE;
+  write_decimal_unsigned (dtp, &f, source, kind);
 }
 
 
@@ -1941,6 +2114,9 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
     {
     case BT_INTEGER:
       write_integer (dtp, p, kind);
+      break;
+    case BT_UNSIGNED:
+      write_unsigned (dtp, p, kind);
       break;
     case BT_LOGICAL:
       write_logical (dtp, p, kind);

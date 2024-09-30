@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_DEBUG_BITSET
 #define _GLIBCXX_DEBUG_BITSET
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bitset>
 #include <debug/safe_sequence.h>

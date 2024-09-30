@@ -304,6 +304,7 @@ int main(int, char**)
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }
 // { dg-output {contract violation in function body<int> at .*:9: a > 0(\n|\r\n|\r)} }
 // { dg-output {\[continue:on\](\n|\r\n|\r)} }
 // { dg-output {-2(\n|\r\n|\r)} }

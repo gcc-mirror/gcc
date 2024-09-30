@@ -1232,16 +1232,16 @@ function_info::add_use (use_info *use)
   need_use_splay_tree (def);
   int comparison = lookup_use (def->m_use_tree, insn);
   gcc_checking_assert (comparison != 0);
-  splay_tree_node<use_info *> *neighbor = def->m_use_tree.root ();
+  use_info *neighbor = def->m_use_tree.root ()->value ();
 
   // If USE comes before NEIGHBOR, insert USE to NEIGHBOR's left,
   // otherwise insert USE to NEIGHBOR's right.
   auto *use_node = allocate<splay_tree_node<use_info *>> (use);
-  def->m_use_tree.insert_child (neighbor, comparison > 0, use_node);
+  def->m_use_tree.insert_relative (comparison, use_node);
   if (comparison > 0)
-    insert_use_after (use, neighbor->value ());
+    insert_use_after (use, neighbor);
   else
-    insert_use_before (use, neighbor->value ());
+    insert_use_before (use, neighbor);
 }
 
 void

@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR1_COMPLEX
 #define _GLIBCXX_TR1_COMPLEX 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // TR1
 

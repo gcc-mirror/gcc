@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>'
 
 include(iparm.m4)dnl
+ifelse(index(rtype_name,`GFC_INTEGER'),`0',dnl
+define(`rtype_name',patsubst(rtype_name,`GFC_INTEGER',`GFC_UINTEGER'))dnl
+define(`rtype',patsubst(rtype,`gfc_array_i',`gfc_array_m')))dnl
 
 `#if defined (HAVE_'rtype_name`)
 
@@ -36,10 +39,10 @@ include(iparm.m4)dnl
    matrices.  */
 
 typedef void (*blas_call)(const char *, const char *, const int *, const int *,
-                          const int *, const 'rtype_name` *, const 'rtype_name` *,
-                          const int *, const 'rtype_name` *, const int *,
-                          const 'rtype_name` *, 'rtype_name` *, const int *,
-                          int, int);
+			  const int *, const 'rtype_name` *, const 'rtype_name` *,
+			  const int *, const 'rtype_name` *, const int *,
+			  const 'rtype_name` *, 'rtype_name` *, const int *,
+			  int, int);
 
 /* The order of loops is different in the case of plain matrix
    multiplication C=MATMUL(A,B), and in the frequent special case where
@@ -70,7 +73,7 @@ typedef void (*blas_call)(const char *, const char *, const int *, const int *,
    see if there is a way to perform the matrix multiplication by a call
    to the BLAS gemm function.  */
 
-extern void matmul_'rtype_code` ('rtype` * const restrict retarray, 
+extern void matmul_'rtype_code` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 export_proto(matmul_'rtype_code`);
@@ -82,7 +85,7 @@ export_proto(matmul_'rtype_code`);
 #ifdef HAVE_AVX
 'define(`matmul_name',`matmul_'rtype_code`_avx')dnl
 `static void
-'matmul_name` ('rtype` * const restrict retarray, 
+'matmul_name` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx")));
 static' include(matmul_internal.m4)dnl
@@ -91,7 +94,7 @@ static' include(matmul_internal.m4)dnl
 #ifdef HAVE_AVX2
 'define(`matmul_name',`matmul_'rtype_code`_avx2')dnl
 `static void
-'matmul_name` ('rtype` * const restrict retarray, 
+'matmul_name` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx2,fma")));
 static' include(matmul_internal.m4)dnl
@@ -100,7 +103,7 @@ static' include(matmul_internal.m4)dnl
 #ifdef HAVE_AVX512F
 'define(`matmul_name',`matmul_'rtype_code`_avx512f')dnl
 `static void
-'matmul_name` ('rtype` * const restrict retarray, 
+'matmul_name` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx512f")));
 static' include(matmul_internal.m4)dnl
@@ -111,7 +114,7 @@ static' include(matmul_internal.m4)dnl
 #if defined(HAVE_AVX) && defined(HAVE_FMA3) && defined(HAVE_AVX128)
 'define(`matmul_name',`matmul_'rtype_code`_avx128_fma3')dnl
 `void
-'matmul_name` ('rtype` * const restrict retarray, 
+'matmul_name` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma")));
 internal_proto('matmul_name`);
@@ -120,7 +123,7 @@ internal_proto('matmul_name`);
 #if defined(HAVE_AVX) && defined(HAVE_FMA4) && defined(HAVE_AVX128)
 'define(`matmul_name',`matmul_'rtype_code`_avx128_fma4')dnl
 `void
-'matmul_name` ('rtype` * const restrict retarray, 
+'matmul_name` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma4")));
 internal_proto('matmul_name`);
@@ -134,15 +137,15 @@ internal_proto('matmul_name`);
 
 /* Currently, this is i386 only.  Adjust for other architectures.  */
 
-void matmul_'rtype_code` ('rtype` * const restrict retarray, 
+void matmul_'rtype_code` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  static void (*matmul_p) ('rtype` * const restrict retarray, 
+  static void (*matmul_p) ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 
-  void (*matmul_fn) ('rtype` * const restrict retarray, 
+  void (*matmul_fn) ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 

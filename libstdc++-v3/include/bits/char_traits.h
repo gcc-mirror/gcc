@@ -34,7 +34,9 @@
 #ifndef _CHAR_TRAITS_H
 #define _CHAR_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 
@@ -651,10 +653,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (std::__is_constant_evaluated())
 	  return __gnu_cxx::char_traits<char_type>::length(__s);
 #endif
-	size_t __i = 0;
-	while (!eq(__s[__i], char_type()))
-	  ++__i;
-	return __i;
+	return __builtin_strlen((const char*)__s);
       }
 
       static _GLIBCXX17_CONSTEXPR const char_type*

@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O2 -march=haswell -mtune-ctrl=avx256_move_by_pieces" }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <cstring>
 

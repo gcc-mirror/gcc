@@ -22,6 +22,7 @@
 #define IN_TARGET_CODE 1
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -3431,10 +3432,6 @@ rs6000_override_options_after_change (void)
   else if (!OPTION_SET_P (flag_cunroll_grow_size))
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
 
-  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
-  if (rs6000_rop_protect)
-    flag_shrink_wrap = 0;
-
   /* One of the late-combine passes runs after register allocation
      and can match define_insn_and_splits that were previously used
      only before register allocation.  Some of those define_insn_and_splits
@@ -6265,7 +6262,7 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
           | (small_val & mask)))
 	return false;
       splat_val = small_val;
-      inner = smallest_int_mode_for_size (bitsize);
+      inner = smallest_int_mode_for_size (bitsize).require ();
     }
 
   /* Check if SPLAT_VAL can really be the operand of a vspltis[bhw].  */
@@ -17333,9 +17330,9 @@ static char *
 rs6000_offload_options (void)
 {
   if (TARGET_64BIT)
-    return xstrdup ("-foffload-abi=lp64");
+    return xstrdup ("-foffload-abi=lp64 -foffload-abi-host-opts=-m64");
   else
-    return xstrdup ("-foffload-abi=ilp32");
+    return xstrdup ("-foffload-abi=ilp32 -foffload-abi-host-opts=-m32");
 }
 
 

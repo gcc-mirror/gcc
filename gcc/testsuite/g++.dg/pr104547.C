@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O3 -fdump-tree-vrp2"  }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 

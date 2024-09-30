@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_IOSFWD
 #define _GLIBCXX_IOSFWD 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // iostreams
 

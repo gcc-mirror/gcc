@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-cddce2 -ffinite-loops -Wno-unused-result" } */
+/* { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } } */
 
 #include <string>
 #include <vector>

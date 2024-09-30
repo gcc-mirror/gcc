@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 // Check that we correctly handle params with non-trivial DTORs and
 // use the correct copy/move CTORs.

@@ -1633,9 +1633,11 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	      else if ((!identifier_pos || strict)
 		       && !CPP_OPTION (pfile, delimited_escape_seqs)
 		       && CPP_OPTION (pfile, cpp_pedantic))
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "named universal character escapes are only valid "
-			   "in C++23");
+		cpp_pedwarning (pfile,
+				CPP_OPTION (pfile, cplusplus)
+				? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC,
+				"named universal character escapes are only "
+				"valid in C++23");
 	      if (name == str)
 		result = 0x40;
 	      else
@@ -1757,8 +1759,9 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		   "empty delimited escape sequence");
       else if (!CPP_OPTION (pfile, delimited_escape_seqs)
 	       && CPP_OPTION (pfile, cpp_pedantic))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "delimited escape sequences are only valid in C++23");
+	cpp_pedwarning (pfile, (CPP_OPTION (pfile, cplusplus)
+				? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC),
+			"delimited escape sequences are only valid in C++23");
       str++;
       length = 0;
       delimited = false;
@@ -2129,10 +2132,11 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
 		     "empty delimited escape sequence");
 	  return from;
 	}
-     else if (!CPP_OPTION (pfile, delimited_escape_seqs)
-	      && CPP_OPTION (pfile, cpp_pedantic))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "delimited escape sequences are only valid in C++23");
+      else if (!CPP_OPTION (pfile, delimited_escape_seqs)
+	       && CPP_OPTION (pfile, cpp_pedantic))
+	cpp_pedwarning (pfile, (CPP_OPTION (pfile, cplusplus)
+				? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC),
+			"delimited escape sequences are only valid in C++23");
       delimited = false;
       extend_char_range (&char_range, loc_reader);
     }
@@ -2234,8 +2238,10 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	    }
 	  else if (!CPP_OPTION (pfile, delimited_escape_seqs)
 		   && CPP_OPTION (pfile, cpp_pedantic))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "delimited escape sequences are only valid in C++23");
+	    cpp_pedwarning (pfile, (CPP_OPTION (pfile, cplusplus)
+				    ? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC),
+			    "delimited escape sequences are only valid "
+			    "in C++23");
 	  extend_char_range (&char_range, loc_reader);
 	}
       else
@@ -2300,20 +2306,20 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 			  char_range, loc_reader, ranges);
 
     case 'x':
-      if (uneval && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "numeric escape sequence in unevaluated string: "
-		   "'\\%c'", (int) c);
+      if (uneval)
+	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			"numeric escape sequence in unevaluated string: "
+			"'\\%c'", (int) c);
       return convert_hex (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':
     case 'o':
-      if (uneval && CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "numeric escape sequence in unevaluated string: "
-		   "'\\%c'", (int) c);
+      if (uneval)
+	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+			"numeric escape sequence in unevaluated string: "
+			"'\\%c'", (int) c);
       return convert_oct (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
@@ -2345,9 +2351,8 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
       break;
 
     case 'e': case 'E':
-      if (CPP_PEDANTIC (pfile))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "non-ISO-standard escape sequence, '\\%c'", (int) c);
+      cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+		      "non-ISO-standard escape sequence, '\\%c'", (int) c);
       c = charconsts[2];
       break;
 
@@ -2757,7 +2762,7 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
 
   if (type == CPP_UTF8CHAR)
     max_chars = 1;
-  else if (i > 1 && CPP_OPTION (pfile, cplusplus) && CPP_PEDANTIC (pfile))
+  else if (i > 1 && CPP_OPTION (pfile, cplusplus))
     {
       /* C++ as a DR since
 	 P1854R4 - Making non-encodable string literals ill-formed
@@ -2773,15 +2778,15 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
 	    {
 	      if (src_chars <= 2)
 		diagnosed
-		  = cpp_error (pfile, CPP_DL_PEDWARN,
-			       "character not encodable in a single execution "
-			       "character code unit");
+		  = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				    "character not encodable in a single "
+				    "execution character code unit");
 	      else
 		diagnosed
-		  = cpp_error (pfile, CPP_DL_PEDWARN,
-			       "at least one character in a multi-character "
-			       "literal not encodable in a single execution "
-			       "character code unit");
+		  = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				    "at least one character in a multi-"
+				    "character literal not encodable in a "
+				    "single execution character code unit");
 	      if (diagnosed && i > max_chars)
 		i = max_chars;
 	    }
@@ -3093,6 +3098,7 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
   struct cset_converter input_cset;
   struct _cpp_strbuf to;
   unsigned char *buffer;
+  size_t pad = CPP_BUFFER_PADDING;
 
   input_cset = init_iconv_desc (pfile, SOURCE_CHARSET, input_charset);
   if (input_cset.func == convert_no_conversion)
@@ -3130,15 +3136,12 @@ _cpp_convert_input (cpp_reader *pfile, const char *input_charset,
     }
 
   /* Resize buffer if we allocated substantially too much, or if we
-     haven't enough space for the \n-terminator or following
-     15 bytes of padding (used to quiet warnings from valgrind or
-     Address Sanitizer, when the optimized lexer accesses aligned
-     16-byte memory chunks, including the bytes after the malloced,
-     area, and stops lexing on '\n').  */
-  if (to.len + 4096 < to.asize || to.len + 16 > to.asize)
-    to.text = XRESIZEVEC (uchar, to.text, to.len + 16);
+     don't have enough space for the following padding, which allows
+     search_line_fast to use (possibly misaligned) vector loads.  */
+  if (to.len + 4096 < to.asize || to.len + pad > to.asize)
+    to.text = XRESIZEVEC (uchar, to.text, to.len + pad);
 
-  memset (to.text + to.len, '\0', 16);
+  memset (to.text + to.len, '\0', pad);
 
   /* If the file is using old-school Mac line endings (\r only),
      terminate with another \r, not an \n, so that we do not mistake

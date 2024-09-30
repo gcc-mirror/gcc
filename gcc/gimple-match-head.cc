@@ -145,6 +145,16 @@ optimize_vectors_before_lowering_p ()
   return !cfun || (cfun->curr_properties & PROP_gimple_lvec) == 0;
 }
 
+/* Returns true if the expression T has no side effects
+   including not trapping. */
+static inline bool
+expr_no_side_effects_p (tree t)
+{
+  /* For gimple, there should only be gimple val's here. */
+  gcc_assert (is_gimple_val (t));
+  return true;
+}
+
 /* Return true if pow(cst, x) should be optimized into exp(log(cst) * x).
    As a workaround for SPEC CPU2017 628.pop2_s, don't do it if arg0
    is an exact integer, arg1 = phi_res +/- cst1 and phi_res = PHI <cst2, ...>
@@ -374,4 +384,124 @@ gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp, tree (*va
   if (invert_tree_comparison (ac1, HONOR_NANS (op10)) == ac2)
     return true;
   return false;
+}
+
+/*
+ * Return the relevant gcond * of the given phi, as well as the true
+ * and false TREE args of the phi.  Or return nullptr.
+ *
+ * If matched the gcond *, the output argument TREE true_arg and false_arg
+ * will be updated to the relevant args of phi.
+ *
+ * If failed to match, nullptr gcond * will be returned, as well as the output
+ * arguments will be set to NULL_TREE.
+ */
+
+static inline gcond *
+match_cond_with_binary_phi (gphi *phi, tree *true_arg, tree *false_arg)
+{
+  *true_arg = *false_arg = NULL_TREE;
+
+  if (gimple_phi_num_args (phi) != 2)
+    return nullptr;
+
+  basic_block pred_b0 = EDGE_PRED (gimple_bb (phi), 0)->src;
+  basic_block pred_b1 = EDGE_PRED (gimple_bb (phi), 1)->src;
+  edge edge_for_pred_0 = nullptr;
+
+  if (EDGE_COUNT (pred_b0->succs) == 2
+      && EDGE_COUNT (pred_b1->succs) == 1
+      && EDGE_COUNT (pred_b1->preds) == 1
+      && pred_b0 == EDGE_PRED (pred_b1, 0)->src)
+    /*
+     * +------+
+     * | b0:  |
+     * | def  |       +-----+
+     * | ...  |       | b1: |
+     * | cond |------>| def |
+     * +------+       | ... |
+     *    |           +-----+
+     *    #              |
+     *    |              |
+     *    v              |
+     * +-----+           |
+     * | b2: |           |
+     * | def |<----------+
+     * +-----+
+     * #: edge_for_pred_0.
+     */
+    edge_for_pred_0 = EDGE_PRED (gimple_bb (phi), 0);
+  else if (EDGE_COUNT (pred_b1->succs) == 2
+	   && EDGE_COUNT (pred_b0->succs) == 1
+	   && EDGE_COUNT (pred_b0->preds) == 1
+	   && pred_b1 == EDGE_PRED (pred_b0, 0)->src)
+    /*
+     *                +------+
+     *                | b1:  |
+     * +-----+        | def  |
+     * | b0: |        | ...  |
+     * | def |<---#---| cond |
+     * | ... |        +------+
+     * +-----+           |
+     *    |              |
+     *    |              |
+     *    |              |
+     *    v              |
+     * +-----+           |
+     * | b2: |           |
+     * | def |<----------+
+     * +-----+
+     * #: edge_for_pred_0.
+     */
+    edge_for_pred_0 = EDGE_PRED (pred_b0, 0);
+  else if (EDGE_COUNT (pred_b0->succs) == 1
+	   && EDGE_COUNT (pred_b1->succs) == 1
+	   && EDGE_COUNT (pred_b0->preds) == 1
+	   && EDGE_COUNT (pred_b1->preds) == 1
+	   && EDGE_COUNT (EDGE_PRED (pred_b0, 0)->src->succs) == 2
+	   && EDGE_PRED (pred_b0, 0)->src == EDGE_PRED (pred_b1, 0)->src)
+    /* +------+
+     * | b0:  |
+     * | ...  |       +-----+
+     * | cond |------>| b2: |
+     * +------+       | ... |
+     *    |           +-----+
+     *    #              |
+     *    |              |
+     *    v              |
+     * +-----+           |
+     * | b1: |           |
+     * | ... |           |
+     * +-----+           |
+     *    |              |
+     *    |              |
+     *    v              |
+     * +-----+           |
+     * | b3: |<----------+
+     * | ... |
+     * +-----+
+     * #: edge_for_pred_0.
+     */
+    edge_for_pred_0 = EDGE_PRED (pred_b0, 0);
+
+  if (!edge_for_pred_0)
+    return nullptr;
+
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (edge_for_pred_0->src));
+
+  if (!cond)
+    return nullptr;
+
+  if (edge_for_pred_0->flags & EDGE_TRUE_VALUE)
+    {
+      *true_arg = gimple_phi_arg_def (phi, 0);
+      *false_arg = gimple_phi_arg_def (phi, 1);
+    }
+  else /* Aka edge_for_pred_0->flags & EDGE_FALSE_VALUE  */
+    {
+      *false_arg = gimple_phi_arg_def (phi, 0);
+      *true_arg = gimple_phi_arg_def (phi, 1);
+    }
+
+  return cond;
 }

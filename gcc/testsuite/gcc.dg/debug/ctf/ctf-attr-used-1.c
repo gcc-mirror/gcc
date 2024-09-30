@@ -3,7 +3,7 @@
    This attribute, attached to a function, means that code must be emitted for
    the function even if it appears that the function is not referenced.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O2 -gctf -dA" } */
 
 /* These should be true for higher optimization levels.  */

@@ -332,7 +332,7 @@ package body GNAT.Lists is
 
          --  The list has at least one outstanding iterator
 
-         if L.Iterators > 0 then
+         if Check_Tampering and then L.Iterators > 0 then
             raise Iterated;
          end if;
       end Ensure_Unlocked;

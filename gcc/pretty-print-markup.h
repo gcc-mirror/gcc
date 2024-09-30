@@ -22,21 +22,20 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostic-color.h"
 
+class pp_token_list;
+
 namespace pp_markup {
 
 class context
 {
 public:
   context (pretty_printer &pp,
-	   output_buffer &buf,
-	   unsigned chunk_idx,
 	   bool &quoted,
-	   const urlifier *urlifier)
+	   pp_token_list *formatted_token_list)
   : m_pp (pp),
-    m_buf (buf),
-    m_chunk_idx (chunk_idx),
+    m_buf (*pp_buffer (&pp)),
     m_quoted (quoted),
-    m_urlifier (urlifier)
+    m_formatted_token_list (formatted_token_list)
   {
   }
 
@@ -46,11 +45,12 @@ public:
   void begin_highlight_color (const char *color_name);
   void end_highlight_color ();
 
+  void push_back_any_text ();
+
   pretty_printer &m_pp;
   output_buffer &m_buf;
-  unsigned m_chunk_idx;
   bool &m_quoted;
-  const urlifier *m_urlifier;
+  pp_token_list *m_formatted_token_list;
 };
 
 /* Abstract base class for use in pp_format for handling "%e".

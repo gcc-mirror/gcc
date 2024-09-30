@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O3 -fdump-tree-optimized -std=c++14" }
+// { dg-skip-if "requires hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <array>
 #include <utility>

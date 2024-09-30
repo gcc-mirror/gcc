@@ -3363,6 +3363,19 @@ a pointer to int.",
  bool, (ao_ref *ref),
  default_ref_may_alias_errno)
 
+DEFHOOK
+(mode_can_transfer_bits,
+ "Define this to return false if the mode @var{mode} cannot be used\n\
+for memory copying of @code{GET_MODE_SIZE (mode)} units.  This might be\n\
+because a register class allowed for @var{mode} has registers that do\n\
+not transparently transfer every bit pattern or because the load or\n\
+store patterns available for @var{mode} have this issue.\n\
+\n\
+The default is to assume modes with the same precision as size are fine\n\
+to be used.",
+ bool, (machine_mode mode),
+ NULL)
+
 /* Support for named address spaces.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_ADDR_SPACE_"
@@ -4113,6 +4126,26 @@ used to return a smaller mode than the raw mode to prevent call\n\
 clobbered parts of a register altering the frame register size",
  machine_mode, (int regno),
  default_dwarf_frame_reg_mode)
+
+/* Print out architecture-specific CFI directives to the assembly file.  */
+DEFHOOK
+(output_cfi_directive,
+ "This hook handles architecture-specific CFI directives and prints\n\
+them out to the assembly file @var{f}.\n\
+Return true if a architecture-specific directive was found, false\n\
+otherwise.",
+ bool, (FILE * f, dw_cfi_ref cfi),
+ hook_bool_FILEptr_dwcfiptr_false)
+
+DEFHOOK
+(dw_cfi_oprnd1_desc,
+ "This hook informs the caller what the architecture-specific directives\n\
+takes as a first operand.\n\
+Return true if a architecture-specific directive was found and\n\
+@var{oprnd_type} is set, false otherwise and @var{oprnd_type} is not\n\
+modified.",
+ bool, (dwarf_call_frame_info cfi_opc, dw_cfi_oprnd_type & oprnd_type),
+ hook_bool_dwcfi_dwcfioprndtyperef_false)
 
 /* If expand_builtin_init_dwarf_reg_sizes needs to fill in table
    entries not corresponding directly to registers below

@@ -4023,6 +4023,9 @@ extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_trunc (tree, tree*, tree (*)(tree));
 
+extern bool gimple_signed_integer_sat_add (tree, tree*, tree (*)(tree));
+extern bool gimple_signed_integer_sat_sub (tree, tree*, tree (*)(tree));
+
 static void
 build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, internal_fn fn,
 				    tree lhs, tree op_0, tree op_1)
@@ -4040,7 +4043,7 @@ build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, gphi *phi,
 				    internal_fn fn, tree lhs, tree op_0,
 				    tree op_1)
 {
-  if (direct_internal_fn_supported_p (fn, TREE_TYPE (lhs), OPTIMIZE_FOR_BOTH))
+  if (direct_internal_fn_supported_p (fn, TREE_TYPE (op_0), OPTIMIZE_FOR_BOTH))
     {
       gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
       gimple_call_set_lhs (call, lhs);
@@ -4072,7 +4075,8 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
 }
 
 /*
- * Try to match saturation unsigned add with PHI.
+ * Try to match saturation add with PHI.
+ * For unsigned integer:
  *   <bb 2> :
  *   _1 = x_3(D) + y_4(D);
  *   if (_1 >= x_3(D))
@@ -4086,10 +4090,31 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
  *   # _2 = PHI <255(2), _1(3)>
  *   =>
  *   <bb 4> [local count: 1073741824]:
- *   _2 = .SAT_ADD (x_4(D), y_5(D));  */
+ *   _2 = .SAT_ADD (x_4(D), y_5(D));
+ *
+ * For signed integer:
+ *   x.0_1 = (long unsigned int) x_7(D);
+ *   y.1_2 = (long unsigned int) y_8(D);
+ *   _3 = x.0_1 + y.1_2;
+ *   sum_9 = (int64_t) _3;
+ *   _4 = x_7(D) ^ y_8(D);
+ *   _5 = x_7(D) ^ sum_9;
+ *   _15 = ~_4;
+ *   _16 = _5 & _15;
+ *   if (_16 < 0)
+ *     goto <bb 3>; [41.00%]
+ *   else
+ *     goto <bb 4>; [59.00%]
+ *   _11 = x_7(D) < 0;
+ *   _12 = (long int) _11;
+ *   _13 = -_12;
+ *   _14 = _13 ^ 9223372036854775807;
+ *   # _6 = PHI <_14(3), sum_9(2)>
+ *   =>
+ *   _6 = .SAT_ADD (x_5(D), y_6(D)); [tail call]  */
 
 static void
-match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
+match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
 {
   if (gimple_phi_num_args (phi) != 2)
     return;
@@ -4097,7 +4122,8 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
   tree ops[2];
   tree phi_result = gimple_phi_result (phi);
 
-  if (gimple_unsigned_integer_sat_add (phi_result, ops, NULL))
+  if (gimple_unsigned_integer_sat_add (phi_result, ops, NULL)
+      || gimple_signed_integer_sat_add (phi_result, ops, NULL))
     build_saturation_binary_arith_call (gsi, phi, IFN_SAT_ADD, phi_result,
 					ops[0], ops[1]);
 }
@@ -4137,7 +4163,7 @@ match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
  *  <bb 4> [local count: 1073741824]:
  *  _1 = .SAT_SUB (x_2(D), y_3(D));  */
 static void
-match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gphi *phi)
+match_saturation_sub (gimple_stmt_iterator *gsi, gphi *phi)
 {
   if (gimple_phi_num_args (phi) != 2)
     return;
@@ -4145,7 +4171,8 @@ match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gphi *phi)
   tree ops[2];
   tree phi_result = gimple_phi_result (phi);
 
-  if (gimple_unsigned_integer_sat_sub (phi_result, ops, NULL))
+  if (gimple_unsigned_integer_sat_sub (phi_result, ops, NULL)
+      || gimple_signed_integer_sat_sub (phi_result, ops, NULL))
     build_saturation_binary_arith_call (gsi, phi, IFN_SAT_SUB, phi_result,
 					ops[0], ops[1]);
 }
@@ -5408,13 +5435,15 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 
 /* Replace .POPCOUNT (x) == 1 or .POPCOUNT (x) != 1 with
    (x & (x - 1)) > x - 1 or (x & (x - 1)) <= x - 1 if .POPCOUNT
-   isn't a direct optab.  */
+   isn't a direct optab.  Also handle `<=`/`>` to be
+   `x & (x - 1) !=/== x`. */
 
 static void
 match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
 {
   tree clhs, crhs;
   enum tree_code code;
+  bool was_le = false;
   if (gimple_code (stmt) == GIMPLE_COND)
     {
       clhs = gimple_cond_lhs (stmt);
@@ -5427,8 +5456,11 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
       crhs = gimple_assign_rhs2 (stmt);
       code = gimple_assign_rhs_code (stmt);
     }
-  if (code != EQ_EXPR && code != NE_EXPR)
+  if (code != LE_EXPR && code != GT_EXPR
+      && code != EQ_EXPR && code != NE_EXPR)
     return;
+  if (code == LE_EXPR || code == GT_EXPR)
+    was_le = true;
   if (TREE_CODE (clhs) != SSA_NAME || !integer_onep (crhs))
     return;
   gimple *call = SSA_NAME_DEF_STMT (clhs);
@@ -5452,8 +5484,9 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
       /* Tell expand_POPCOUNT the popcount result is only used in equality
 	 comparison with one, so that it can decide based on rtx costs.  */
       gimple *g = gimple_build_call_internal (IFN_POPCOUNT, 2, arg,
-					      nonzero_arg ? integer_zero_node
-					      : integer_one_node);
+					      was_le ? integer_minus_one_node
+					      : (nonzero_arg ? integer_zero_node
+						 : integer_one_node));
       gimple_call_set_lhs (g, gimple_call_lhs (call));
       gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
       gsi_replace (&gsi2, g, true);
@@ -5464,11 +5497,16 @@ match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
 				   build_int_cst (type, -1));
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   g = gimple_build_assign (make_ssa_name (type),
-			   nonzero_arg ? BIT_AND_EXPR : BIT_XOR_EXPR,
+			   (nonzero_arg || was_le) ? BIT_AND_EXPR : BIT_XOR_EXPR,
 			   arg, argm1);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   tree_code cmpcode;
-  if (nonzero_arg)
+  if (was_le)
+    {
+      argm1 = build_zero_cst (type);
+      cmpcode = code == LE_EXPR ? EQ_EXPR : NE_EXPR;
+    }
+  else if (nonzero_arg)
     {
       argm1 = build_zero_cst (type);
       cmpcode = code;
@@ -6093,12 +6131,17 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
   fma_deferring_state fma_state (param_avoid_fma_max_bits > 0);
 
-  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
-    gsi_next (&psi))
+  for (gphi_iterator psi_next, psi = gsi_start_phis (bb); !gsi_end_p (psi);
+       psi = psi_next)
     {
+      psi_next = psi;
+      gsi_next (&psi_next);
+
       gimple_stmt_iterator gsi = gsi_after_labels (bb);
-      match_unsigned_saturation_add (&gsi, psi.phi ());
-      match_unsigned_saturation_sub (&gsi, psi.phi ());
+
+      /* The match_* may remove phi node.  */
+      match_saturation_add (&gsi, psi.phi ());
+      match_saturation_sub (&gsi, psi.phi ());
     }
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
@@ -6129,6 +6172,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case PLUS_EXPR:
 	      match_unsigned_saturation_add (&gsi, as_a<gassign *> (stmt));
+	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
 	      /* fall-through  */
 	    case MINUS_EXPR:
 	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
@@ -6162,6 +6206,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case EQ_EXPR:
 	    case NE_EXPR:
+	    case LE_EXPR:
+	    case GT_EXPR:
 	      match_single_bit_test (&gsi, stmt);
 	      break;
 

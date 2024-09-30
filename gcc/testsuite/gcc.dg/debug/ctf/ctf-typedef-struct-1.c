@@ -1,4 +1,4 @@
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 typedef struct my_int

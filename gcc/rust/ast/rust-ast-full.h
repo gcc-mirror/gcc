@@ -28,5 +28,6 @@
 #include "rust-stmt.h"
 #include "rust-type.h"
 #include "rust-macro.h"
+#include "rust-builtin-ast-nodes.h"
 
 #endif

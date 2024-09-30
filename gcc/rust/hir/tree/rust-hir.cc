@@ -3257,6 +3257,19 @@ ExternalFunctionItem::as_string () const
 }
 
 std::string
+ExternalTypeItem::as_string () const
+{
+  std::string str = ExternalItem::as_string ();
+
+  str += "type ";
+
+  // add name
+  str += get_item_name ().as_string ();
+
+  return str;
+}
+
+std::string
 NamedFunctionParam::as_string () const
 {
   std::string str = name.as_string ();
@@ -4273,6 +4286,12 @@ ExternalFunctionItem::accept_vis (HIRFullVisitor &vis)
 }
 
 void
+ExternalTypeItem::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
 ExternBlock::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4538,6 +4557,12 @@ TraitItemFunc::accept_vis (HIRTraitItemVisitor &vis)
 
 void
 ExternalFunctionItem::accept_vis (HIRExternalItemVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ExternalTypeItem::accept_vis (HIRExternalItemVisitor &vis)
 {
   vis.visit (*this);
 }

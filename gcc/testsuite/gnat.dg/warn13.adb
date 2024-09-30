@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 
 procedure Warn13 is
 

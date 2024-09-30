@@ -264,6 +264,8 @@ Mask(ZALRSC) Var(riscv_za_subext)
 
 Mask(ZABHA) Var(riscv_za_subext)
 
+Mask(ZACAS) Var(riscv_za_subext)
+
 Mask(ZA64RS)  Var(riscv_za_subext)
 
 Mask(ZA128RS) Var(riscv_za_subext)
@@ -403,6 +405,13 @@ Mask(ZICBOM) Var(riscv_zicmo_subext)
 Mask(ZICBOP) Var(riscv_zicmo_subext)
 
 Mask(ZIC64B) Var(riscv_zicmo_subext)
+
+TargetVariable
+int riscv_mop_subext
+
+Mask(ZIMOP) Var(riscv_mop_subext)
+
+Mask(ZCMOP) Var(riscv_mop_subext)
 
 TargetVariable
 int riscv_zf_subext

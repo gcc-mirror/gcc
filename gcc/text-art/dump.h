@@ -59,15 +59,9 @@ void dump_to_pp (const T &obj, text_art::theme *theme, pretty_printer *pp)
 template <typename T>
 void dump_to_file (const T &obj, FILE *outf)
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  if (outf == stderr)
-    pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (outf);
-
+  tree_dump_pretty_printer pp (outf);
   text_art::theme *theme = global_dc->get_diagram_theme ();
   dump_to_pp (obj, theme, &pp);
-  pp_flush (&pp);
 }
 
 /* Dump OBJ to stderr, using OBJ's make_dump_widget member function.  */

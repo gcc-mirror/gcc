@@ -95,8 +95,8 @@ class PatternDeclaration : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, Rib::ItemType type);
-  static void go (AST::Pattern *pattern, Rib::ItemType type,
+  static void go (AST::Pattern &pattern, Rib::ItemType type);
+  static void go (AST::Pattern &pattern, Rib::ItemType type,
 		  std::vector<PatternBinding> &bindings);
 
   void visit (AST::IdentifierPattern &pattern) override;

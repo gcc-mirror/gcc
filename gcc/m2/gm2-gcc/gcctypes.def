@@ -1,0 +1,36 @@
+(* gcctypes provides a placeholder module for gcc declared data types.
+
+Copyright (C) 2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE gcctypes ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+EXPORT UNQUALIFIED location_t, tree ;
+
+
+TYPE
+   (* Not declared here by the bootstrap tool mc when
+      --gcc-config-system is used.  *)
+   location_t = CARDINAL ;
+   tree = ADDRESS ;
+
+
+END gcctypes.

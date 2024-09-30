@@ -32,3 +32,13 @@ v4si f4_(v4si a, v4si b, v4si c, v4si d, v4si e, v4si f) {
 
 /* For each testcase, should produce only one VEC_COND_EXPR for X^Y. */
 /* { dg-final { scan-tree-dump-times " VEC_COND_EXPR " 4 "forwprop1" } } */
+/* 2 IOR, one each for f1 and f2.
+   2 AND, one each for f3 and f4. */
+/* { dg-final { scan-tree-dump-times " & " 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times " \\| " 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times " \\^ " 4 "forwprop1" } } */
+/* 8 eq comparisons from each of `a == b`/`c == d`.
+   2 more to check that `e == f`
+   2 ne comparisons to check that `e != f`.   */
+/* { dg-final { scan-tree-dump-times " == " 10 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times " != " 2 "forwprop1" } } */

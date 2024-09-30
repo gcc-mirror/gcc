@@ -1,3 +1,4 @@
+// { dg-skip-if "requires hosted libstdc++ for string" { ! hostedlib } }
 #include <coroutine>
 #include <string>
 

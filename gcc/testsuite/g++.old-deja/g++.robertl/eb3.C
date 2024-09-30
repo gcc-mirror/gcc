@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 #include <complex>
 template<class T>
 class Vec {

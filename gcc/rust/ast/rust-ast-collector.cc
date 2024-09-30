@@ -16,6 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 #include "rust-ast-collector.h"
+#include "rust-ast.h"
+#include "rust-diagnostics.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
 
@@ -2083,31 +2085,6 @@ TokenCollector::visit (ExternalStaticItem &item)
 }
 
 void
-TokenCollector::visit (ExternalFunctionItem &function)
-{
-  visit_items_as_lines (function.get_outer_attrs ());
-  visit (function.get_visibility ());
-
-  auto id = function.get_identifier ().as_string ();
-
-  push (Rust::Token::make (FN_KW, function.get_locus ()));
-  push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
-  if (function.has_generics ())
-    visit (function.get_generic_params ());
-  push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
-
-  visit_items_joined_by_separator (function.get_function_params ());
-
-  push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
-  if (function.has_return_type ())
-    {
-      push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
-      visit (function.get_return_type ());
-    }
-  push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
-}
-
-void
 TokenCollector::visit (ExternBlock &block)
 {
   visit_items_as_lines (block.get_outer_attrs ());
@@ -2501,8 +2478,7 @@ TokenCollector::visit (TupleStructPattern &pattern)
 {
   visit (pattern.get_path ());
   push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
-  if (pattern.has_items ())
-    visit (pattern.get_items ());
+  visit (pattern.get_items ());
   push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
 }
 
@@ -2570,8 +2546,7 @@ TokenCollector::visit (LetStmt &stmt)
 {
   push (Rust::Token::make (LET, stmt.get_locus ()));
   auto &pattern = stmt.get_pattern ();
-  if (pattern)
-    visit (pattern);
+  visit (pattern);
 
   if (stmt.has_type ())
     {
@@ -2803,6 +2778,13 @@ TokenCollector::visit (BareFunctionType &type)
       push (Rust::Token::make (RETURN_TYPE, UNDEF_LOCATION));
       visit (type.get_return_type ());
     }
+}
+
+void
+TokenCollector::visit (AST::FormatArgs &fmt)
+{
+  rust_sorry_at (fmt.get_locus (), "%s:%u: unimplemented FormatArgs visitor",
+		 __FILE__, __LINE__);
 }
 
 } // namespace AST

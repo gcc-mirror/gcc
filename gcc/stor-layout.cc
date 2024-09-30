@@ -339,9 +339,9 @@ mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
 }
 
 /* Return the narrowest mode of class MCLASS that contains at least
-   SIZE bits.  Abort if no such mode exists.  */
+   SIZE bits, if such a mode exists.  */
 
-machine_mode
+opt_machine_mode
 smallest_mode_for_size (poly_uint64 size, enum mode_class mclass)
 {
   machine_mode mode = VOIDmode;
@@ -353,7 +353,8 @@ smallest_mode_for_size (poly_uint64 size, enum mode_class mclass)
     if (known_ge (GET_MODE_PRECISION (mode), size))
       break;
 
-  gcc_assert (mode != VOIDmode);
+  if (mode == VOIDmode)
+    return opt_machine_mode ();
 
   if (mclass == MODE_INT || mclass == MODE_PARTIAL_INT)
     for (i = 0; i < NUM_INT_N_ENTS; i ++)
@@ -2396,6 +2397,32 @@ finish_builtin_struct (tree type, const char *name, tree fields,
   layout_decl (TYPE_NAME (type), 0);
 }
 
+/* Compute TYPE_MODE for TYPE (which is ARRAY_TYPE).  */
+
+void compute_array_mode (tree type)
+{
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+  SET_TYPE_MODE (type, BLKmode);
+  if (TYPE_SIZE (type) != 0
+      && ! targetm.member_type_forces_blk (type, VOIDmode)
+      /* BLKmode elements force BLKmode aggregate;
+	 else extract/store fields may lose.  */
+      && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
+	  || TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
+    {
+      SET_TYPE_MODE (type, mode_for_array (TREE_TYPE (type),
+					   TYPE_SIZE (type)));
+      if (TYPE_MODE (type) != BLKmode
+	  && STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
+	  && TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+	{
+	  TYPE_NO_FORCE_BLK (type) = 1;
+	  SET_TYPE_MODE (type, BLKmode);
+	}
+    }
+}
+
 /* Calculate the mode, size, and alignment for TYPE.
    For an array type, calculate the element separation as well.
    Record TYPE on the chain of permanent or temporary types
@@ -2434,7 +2461,7 @@ layout_type (tree type)
     case ENUMERAL_TYPE:
       {
 	scalar_int_mode mode
-	  = smallest_int_mode_for_size (TYPE_PRECISION (type));
+	  = smallest_int_mode_for_size (TYPE_PRECISION (type)).require ();
 	SET_TYPE_MODE (type, mode);
 	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
 	/* Don't set TYPE_PRECISION here, as it may be set by a bitfield.  */
@@ -2709,24 +2736,7 @@ layout_type (tree type)
 	align = MAX (align, BITS_PER_UNIT);
 #endif
 	SET_TYPE_ALIGN (type, align);
-	SET_TYPE_MODE (type, BLKmode);
-	if (TYPE_SIZE (type) != 0
-	    && ! targetm.member_type_forces_blk (type, VOIDmode)
-	    /* BLKmode elements force BLKmode aggregate;
-	       else extract/store fields may lose.  */
-	    && (TYPE_MODE (TREE_TYPE (type)) != BLKmode
-		|| TYPE_NO_FORCE_BLK (TREE_TYPE (type))))
-	  {
-	    SET_TYPE_MODE (type, mode_for_array (TREE_TYPE (type),
-						 TYPE_SIZE (type)));
-	    if (TYPE_MODE (type) != BLKmode
-		&& STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
-		&& TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
-	      {
-		TYPE_NO_FORCE_BLK (type) = 1;
-		SET_TYPE_MODE (type, BLKmode);
-	      }
-	  }
+	compute_array_mode (type);
 	if (AGGREGATE_TYPE_P (element))
 	  TYPE_TYPELESS_STORAGE (type) = TYPE_TYPELESS_STORAGE (element);
 	/* When the element size is constant, check that it is at least as
@@ -2927,7 +2937,8 @@ initialize_sizetypes (void)
 
   bprecision
     = MIN (precision + LOG2_BITS_PER_UNIT + 1, MAX_FIXED_MODE_SIZE);
-  bprecision = GET_MODE_PRECISION (smallest_int_mode_for_size (bprecision));
+  bprecision
+    = GET_MODE_PRECISION (smallest_int_mode_for_size (bprecision).require ());
   if (bprecision > HOST_BITS_PER_DOUBLE_INT)
     bprecision = HOST_BITS_PER_DOUBLE_INT;
 
@@ -2942,14 +2953,14 @@ initialize_sizetypes (void)
   TYPE_UNSIGNED (bitsizetype) = 1;
 
   /* Now layout both types manually.  */
-  scalar_int_mode mode = smallest_int_mode_for_size (precision);
+  scalar_int_mode mode = smallest_int_mode_for_size (precision).require ();
   SET_TYPE_MODE (sizetype, mode);
   SET_TYPE_ALIGN (sizetype, GET_MODE_ALIGNMENT (TYPE_MODE (sizetype)));
   TYPE_SIZE (sizetype) = bitsize_int (precision);
   TYPE_SIZE_UNIT (sizetype) = size_int (GET_MODE_SIZE (mode));
   set_min_and_max_values_for_integral_type (sizetype, precision, UNSIGNED);
 
-  mode = smallest_int_mode_for_size (bprecision);
+  mode = smallest_int_mode_for_size (bprecision).require ();
   SET_TYPE_MODE (bitsizetype, mode);
   SET_TYPE_ALIGN (bitsizetype, GET_MODE_ALIGNMENT (TYPE_MODE (bitsizetype)));
   TYPE_SIZE (bitsizetype) = bitsize_int (bprecision);

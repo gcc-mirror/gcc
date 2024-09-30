@@ -12,5 +12,5 @@ void test_f(unsigned x, unsigned y) {
 }
 
 /* { dg-final { scan-tree-dump-not "Duplicating join block" "split-paths" } } */
-/* { dg-final { scan-tree-dump-times "Block . is a join that does not expose" 1 "split-paths" } } */
+/* { dg-final { scan-tree-dump-times "appears to be a join point for if-convertable bbs." 1 "split-paths" } } */
 

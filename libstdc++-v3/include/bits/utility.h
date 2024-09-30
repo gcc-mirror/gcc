@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_UTILITY_H
 #define _GLIBCXX_UTILITY_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201103L
 
@@ -219,9 +221,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline constexpr bool __is_in_place_type_v<in_place_type_t<_Tp>> = true;
-
-  template<typename _Tp>
-    using __is_in_place_type = bool_constant<__is_in_place_type_v<_Tp>>;
 
   template<typename>
     inline constexpr bool __is_in_place_index_v = false;

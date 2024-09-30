@@ -352,6 +352,7 @@ extern void mips_expand_atomic_qihi (union mips_gen_fn_ptrs,
 extern void mips_expand_vector_init (rtx, rtx);
 extern void mips_expand_vec_unpack (rtx op[2], bool, bool);
 extern void mips_expand_vec_reduc (rtx, rtx, rtx (*)(rtx, rtx, rtx));
+extern void mips_expand_msa_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 extern void mips_expand_vec_minmax (rtx, rtx, rtx,
 				    rtx (*) (rtx, rtx, rtx), bool);
 

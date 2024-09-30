@@ -21,10 +21,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE FOR "C" m2statement ;
 
-
-FROM SYSTEM IMPORT ADDRESS ;
-FROM m2tree IMPORT Tree ;
-FROM m2linemap IMPORT location_t ;
+FROM gcctypes IMPORT location_t, tree ;
+FROM CDataTypes IMPORT CharStar ;
 FROM m2expr IMPORT BuildUnarySetFunction ;
 
 
@@ -33,28 +31,28 @@ FROM m2expr IMPORT BuildUnarySetFunction ;
             result of the expression is TRUE or FALSE.
 *)
 
-PROCEDURE DoJump (location: location_t; exp: Tree; falselabel: ADDRESS; truelabel: ADDRESS) ;
+PROCEDURE DoJump (location: location_t; exp: tree; falselabel, truelabel: CharStar) ;
 
 
 (*
    BuildStartFunctionCode - generate function entry code.
 *)
 
-PROCEDURE BuildStartFunctionCode (location: location_t; fndecl: Tree; isexported: BOOLEAN; isinline: BOOLEAN) ;
+PROCEDURE BuildStartFunctionCode (location: location_t; fndecl: tree; isexported: BOOLEAN; isinline: BOOLEAN) ;
 
 
 (*
    BuildEndFunctionCode - generates the function epilogue.
 *)
 
-PROCEDURE BuildEndFunctionCode (location: location_t; fndecl: Tree; nested: BOOLEAN) ;
+PROCEDURE BuildEndFunctionCode (location: location_t; fndecl: tree; nested: BOOLEAN) ;
 
 
 (*
    BuildReturnValueCode - generates the code associated with: RETURN( value )
 *)
 
-PROCEDURE BuildReturnValueCode (location: location_t; fndecl: Tree; value: Tree) ;
+PROCEDURE BuildReturnValueCode (location: location_t; fndecl: tree; value: tree) ;
 
 
 (*
@@ -78,28 +76,28 @@ PROCEDURE BuildPopFunctionContext ;
                          It returns, des.
 *)
 
-PROCEDURE BuildAssignmentTree (location: location_t; des, expr: Tree) : Tree ;
+PROCEDURE BuildAssignmentTree (location: location_t; des, expr: tree) : tree ;
 
 
 (*
    BuildAssignmentStatement builds the assignment of, des, and, expr.
 *)
 
-PROCEDURE BuildAssignmentStatement (location: location_t; des, expr: Tree) ;
+PROCEDURE BuildAssignmentStatement (location: location_t; des, expr: tree) ;
 
 
 (*
    BuildGoto - builds a goto operation.
 *)
 
-PROCEDURE BuildGoto (location: location_t; name: ADDRESS) ;
+PROCEDURE BuildGoto (location: location_t; name: CharStar) ;
 
 
 (*
    DeclareLabel - create a label, name.
 *)
 
-PROCEDURE DeclareLabel (location: location_t; name: ADDRESS) ;
+PROCEDURE DeclareLabel (location: location_t; name: CharStar) ;
 
 
 (*
@@ -107,7 +105,7 @@ PROCEDURE DeclareLabel (location: location_t; name: ADDRESS) ;
                       statement, s, if, condition, is true.
 *)
 
-PROCEDURE BuildIfThenDoEnd (condition: Tree; then_block: Tree) : Tree ;
+PROCEDURE BuildIfThenDoEnd (condition: tree; then_block: tree) : tree ;
 
 
 (*
@@ -116,14 +114,14 @@ PROCEDURE BuildIfThenDoEnd (condition: Tree; then_block: Tree) : Tree ;
                         condition.
 *)
 
-PROCEDURE BuildIfThenElseEnd (condition: Tree; then_block: Tree; else_block: Tree) : Tree ;
+PROCEDURE BuildIfThenElseEnd (condition: tree; then_block: tree; else_block: tree) : tree ;
 
 
 (*
    BuildParam - build a list of parameters, ready for a subsequent procedure call.
 *)
 
-PROCEDURE BuildParam (location: location_t; param: Tree) ;
+PROCEDURE BuildParam (location: location_t; param: tree) ;
 
 
 (*
@@ -136,7 +134,7 @@ PROCEDURE BuildParam (location: location_t; param: Tree) ;
                            a call to BuildFunctionCallTree.
 *)
 
-PROCEDURE BuildFunctionCallTree (location: location_t; procedure: Tree; rettype: Tree) ;
+PROCEDURE BuildFunctionCallTree (location: location_t; procedure: tree; rettype: tree) ;
 
 
 (*
@@ -144,7 +142,7 @@ PROCEDURE BuildFunctionCallTree (location: location_t; procedure: Tree; rettype:
                             parameter list and the return type, rettype.
 *)
 
-PROCEDURE BuildProcedureCallTree (location: location_t; procedure: Tree; rettype: Tree) : Tree ;
+PROCEDURE BuildProcedureCallTree (location: location_t; procedure: tree; rettype: tree) : tree ;
 
 
 (*
@@ -152,14 +150,14 @@ PROCEDURE BuildProcedureCallTree (location: location_t; procedure: Tree; rettype
                                     parameter list and the return type, rettype.
 *)
 
-PROCEDURE BuildIndirectProcedureCallTree (location: location_t; procedure: Tree; rettype: Tree) : Tree ;
+PROCEDURE BuildIndirectProcedureCallTree (location: location_t; procedure: tree; rettype: tree) : tree ;
 
 
 (*
    BuildFunctValue - generates code for value := last_function(foobar);
 *)
 
-PROCEDURE BuildFunctValue (location: location_t; value: Tree) : Tree ;
+PROCEDURE BuildFunctValue (location: location_t; value: tree) : tree ;
 
 
 (*
@@ -167,7 +165,7 @@ PROCEDURE BuildFunctValue (location: location_t; value: Tree) : Tree ;
 *)
 
 PROCEDURE BuildCall2 (location: location_t;
-                      function, rettype, arg1, arg2: Tree) : Tree ;
+                      function, rettype, arg1, arg2: tree) : tree ;
 
 
 (*
@@ -175,28 +173,28 @@ PROCEDURE BuildCall2 (location: location_t;
 *)
 
 PROCEDURE BuildCall3 (location: location_t;
-                      function, rettype, arg1, arg2, arg3: Tree) : Tree ;
+                      function, rettype, arg1, arg2, arg3: tree) : tree ;
 
 
 (*
    SetLastFunction - set the last_function to, t.
 *)
 
-PROCEDURE SetLastFunction (t: Tree) ;
+PROCEDURE SetLastFunction (t: tree) ;
 
 
 (*
    GetLastFunction - returns, last_function.
 *)
 
-PROCEDURE GetLastFunction () : Tree ;
+PROCEDURE GetLastFunction () : tree ;
 
 
 (*
    GetParamTree - return parameter, i.
 *)
 
-PROCEDURE GetParamTree (call: Tree; i: CARDINAL) : Tree ;
+PROCEDURE GetParamTree (call: tree; i: CARDINAL) : tree ;
 
 
 (*
@@ -204,23 +202,23 @@ PROCEDURE GetParamTree (call: Tree; i: CARDINAL) : Tree ;
                      attached.
 *)
 
-PROCEDURE BuildTryFinally (location: location_t; call: Tree; cleanups: Tree) : Tree ;
+PROCEDURE BuildTryFinally (location: location_t; call: tree; cleanups: tree) : tree ;
 
 
 (*
    BuildCleanUp - return a CLEANUP_POINT_EXPR which will clobber, param.
 *)
 
-PROCEDURE BuildCleanUp (param: Tree) : Tree ;
+PROCEDURE BuildCleanUp (param: tree) : tree ;
 
 
 (*
     BuildAsm - generates an inline assembler instruction.
 *)
 
-PROCEDURE BuildAsm (location: location_t; instr: Tree;
+PROCEDURE BuildAsm (location: location_t; instr: tree;
                     isVolatile: BOOLEAN; isSimple: BOOLEAN;
-                    inputs: Tree; outputs: Tree; trash: Tree; labels: Tree) ;
+                    inputs: tree; outputs: tree; trash: tree; labels: tree) ;
 
 
 (*
@@ -231,7 +229,7 @@ PROCEDURE BuildAsm (location: location_t; instr: Tree;
                               of the large set invoking the unop.
 *)
 
-PROCEDURE BuildUnaryForeachWordDo (location: location_t; type: Tree; op1: Tree; op2: Tree;
+PROCEDURE BuildUnaryForeachWordDo (location: location_t; type: tree; op1: tree; op2: tree;
                                    unop: BuildUnarySetFunction;
                                    is_op1lvalue, is_op2lvalue, is_op1const, is_op2const: BOOLEAN) ;
 
@@ -242,7 +240,7 @@ PROCEDURE BuildUnaryForeachWordDo (location: location_t; type: Tree; op1: Tree; 
                            op2 is a constant.
 *)
 
-PROCEDURE BuildExcludeVarConst (location: location_t; type: Tree; op1: Tree; op2: Tree; is_lvalue: BOOLEAN; fieldno: INTEGER) ;
+PROCEDURE BuildExcludeVarConst (location: location_t; type: tree; op1: tree; op2: tree; is_lvalue: BOOLEAN; fieldno: INTEGER) ;
 
 
 (*
@@ -250,7 +248,7 @@ PROCEDURE BuildExcludeVarConst (location: location_t; type: Tree; op1: Tree; op2
                          varel is a variable.
 *)
 
-PROCEDURE BuildExcludeVarVar (location: location_t; type: Tree; varset: Tree; varel: Tree; is_lvalue: BOOLEAN; low: Tree) ;
+PROCEDURE BuildExcludeVarVar (location: location_t; type: tree; varset: tree; varel: tree; is_lvalue: BOOLEAN; low: tree) ;
 
 
 (*
@@ -259,7 +257,7 @@ PROCEDURE BuildExcludeVarVar (location: location_t; type: Tree; varset: Tree; va
                            op2 is a constant.
 *)
 
-PROCEDURE BuildIncludeVarConst (location: location_t; type: Tree; op1: Tree; op2: Tree; is_lvalue: BOOLEAN; fieldno: INTEGER) ;
+PROCEDURE BuildIncludeVarConst (location: location_t; type: tree; op1: tree; op2: tree; is_lvalue: BOOLEAN; fieldno: INTEGER) ;
 
 
 (*
@@ -267,7 +265,7 @@ PROCEDURE BuildIncludeVarConst (location: location_t; type: Tree; op1: Tree; op2
                          op2 is a variable.
 *)
 
-PROCEDURE BuildIncludeVarVar (location: location_t; type: Tree; varset: Tree; varel: Tree; is_lvalue: BOOLEAN; low: Tree) ;
+PROCEDURE BuildIncludeVarVar (location: location_t; type: tree; varset: tree; varel: tree; is_lvalue: BOOLEAN; low: tree) ;
 
 
 (*
@@ -278,21 +276,21 @@ PROCEDURE BuildIncludeVarVar (location: location_t; type: Tree; varset: Tree; va
                  sequence for all modules.
 *)
 
-PROCEDURE BuildStart (location: location_t; name: ADDRESS; inner_module: BOOLEAN) : Tree ;
+PROCEDURE BuildStart (location: location_t; name: CharStar; inner_module: BOOLEAN) : tree ;
 
 
 (*
     BuildEnd - complete the initialisation function for this module.
 *)
 
-PROCEDURE BuildEnd (location: location_t; fndecl: Tree; nested: BOOLEAN) ;
+PROCEDURE BuildEnd (location: location_t; fndecl: tree; nested: BOOLEAN) ;
 
 
 (*
     BuildCallInner - call the inner module function.  It has no parameters and no return value.
 *)
 
-PROCEDURE BuildCallInner (location: location_t; fndecl: Tree) ;
+PROCEDURE BuildCallInner (location: location_t; fndecl: tree) ;
 
 
 (*
@@ -313,7 +311,7 @@ PROCEDURE SetEndLocation (location: location_t) ;
    BuildBuiltinCallTree - calls the builtin procedure.
 *)
 
-PROCEDURE BuildBuiltinCallTree (location: location_t; func: Tree) : Tree ;
+PROCEDURE BuildBuiltinCallTree (func: tree) : tree ;
 
 
 END m2statement.

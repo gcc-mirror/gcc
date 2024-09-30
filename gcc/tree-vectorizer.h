@@ -222,6 +222,9 @@ struct _slp_tree {
   unsigned int lanes;
   /* The operation of this node.  */
   enum tree_code code;
+  /* Whether uses of this load or feeders of this store are suitable
+     for load/store-lanes.  */
+  bool ldst_lanes;
 
   int vertex;
 
@@ -508,6 +511,12 @@ public:
 
   /* The count of the basic blocks in the vectorization region.  */
   unsigned int nbbs;
+
+  /* Used to keep a sequence of def stmts of a pattern stmt that are loop
+    invariant if they exists.
+    The sequence is emitted in the loop preheader should the loop be vectorized
+    and are reset when undoing patterns.  */
+  gimple_seq inv_pattern_def_seq;
 
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
@@ -1039,6 +1048,7 @@ public:
 #define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
 #define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
+#define LOOP_VINFO_INV_PATTERN_DEF_SEQ(L)  (L)->inv_pattern_def_seq
 
 #define LOOP_VINFO_FULLY_MASKED_P(L)		\
   (LOOP_VINFO_USING_PARTIAL_VECTORS_P (L)	\
@@ -2313,6 +2323,7 @@ extern bool supportable_indirect_convert_operation (code_helper,
 						    tree, tree,
 						    vec<std::pair<tree, tree_code> > *,
 						    tree = NULL_TREE);
+extern int compare_step_with_zero (vec_info *, stmt_vec_info);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
@@ -2534,7 +2545,7 @@ extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> 
 					  unsigned * = nullptr, bool = false);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &);
-extern opt_result vect_analyze_slp (vec_info *, unsigned);
+extern opt_result vect_analyze_slp (vec_info *, unsigned, bool);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);

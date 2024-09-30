@@ -1,4 +1,5 @@
-/* Copyright (C) 1998-2024 Free Software Foundation, Inc.
+/* Build device-specs for AVR 8-bit microcontrollers.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Joern Rennecke
 
    This file is part of GCC.

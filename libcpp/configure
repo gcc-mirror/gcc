@@ -9140,14 +9140,14 @@ case $target in
 int
 main ()
 {
-asm ("pcmpestri %0, %%xmm0, %%xmm1" : : "i"(0))
+asm ("pshufb %xmm0, %xmm1")
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-$as_echo "#define HAVE_SSE4 1" >>confdefs.h
+$as_echo "#define HAVE_SSSE3 1" >>confdefs.h
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext

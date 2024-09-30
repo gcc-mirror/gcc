@@ -1352,12 +1352,14 @@
 )
 
 (define_insn "aarch64_simd_imm_shl<mode><vczle><vczbe>"
- [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-       (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		   (match_operand:VDQ_I  2 "aarch64_simd_lshift_imm" "Dl")))]
+ [(set (match_operand:VDQ_I 0 "register_operand")
+       (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand")
+		   (match_operand:VDQ_I  2 "aarch64_simd_lshift_imm")))]
  "TARGET_SIMD"
-  "shl\t%0.<Vtype>, %1.<Vtype>, %2"
-  [(set_attr "type" "neon_shift_imm<q>")]
+  {@ [ cons: =0, 1,  2   ; attrs: type       ]
+     [ w       , w,  vs1 ; neon_add<q>       ] add\t%0.<Vtype>, %1.<Vtype>, %1.<Vtype>
+     [ w       , w,  Dl  ; neon_shift_imm<q> ] shl\t%0.<Vtype>, %1.<Vtype>, %2
+  }
 )
 
 (define_insn "aarch64_simd_reg_sshl<mode><vczle><vczbe>"
@@ -2629,6 +2631,15 @@
   [(set_attr "type" "neon_fp_neg_<stype><q>")]
 )
 
+(define_insn "aarch64_fnegv2di2<vczle><vczbe>"
+ [(set (match_operand:V2DI 0 "register_operand" "=w")
+       (unspec:V2DI [(match_operand:V2DI 1 "register_operand" "w")]
+		      UNSPEC_FNEG))]
+ "TARGET_SIMD"
+ "fneg\\t%0.2d, %1.2d"
+  [(set_attr "type" "neon_fp_neg_d")]
+)
+
 (define_insn "abs<mode>2<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (abs:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
@@ -3508,6 +3519,15 @@
 	(popcount:VDQHSD (match_operand:VDQHSD 1 "register_operand")))]
   "TARGET_SIMD"
   {
+    if (TARGET_SVE)
+      {
+	rtx p = aarch64_ptrue_reg (<VPRED>mode);
+	emit_insn (gen_aarch64_pred_popcount<mode> (operands[0],
+						    p,
+						    operands[1]));
+	DONE;
+      }
+
     /* Generate a byte popcount.  */
     machine_mode mode = <bitsize> == 64 ? V8QImode : V16QImode;
     rtx tmp = gen_reg_rtx (mode);
@@ -7789,7 +7809,16 @@
 	(match_operand:VSTRUCT_QD 1 "general_operand"))]
   "TARGET_FLOAT"
 {
-  if (can_create_pseudo_p ())
+  if (known_eq (GET_MODE_SIZE (<MODE>mode), 16)
+      && operands[1] == CONST0_RTX (<MODE>mode)
+      && MEM_P (operands[0])
+      && (can_create_pseudo_p ()
+	  || memory_address_p (TImode, XEXP (operands[0], 0))))
+    {
+      operands[0] = adjust_address (operands[0], TImode, 0);
+      operands[1] = CONST0_RTX (TImode);
+    }
+  else if (can_create_pseudo_p ())
     {
       if (GET_CODE (operands[0]) != REG)
 	operands[1] = force_reg (<MODE>mode, operands[1]);
@@ -9880,4 +9909,23 @@
   "TARGET_BF16_FP"
   "shl\\t%d0, %d1, #16"
   [(set_attr "type" "neon_shift_imm")]
+)
+
+;; faminmax
+(define_insn "@aarch64_<faminmax_uns_op><mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
+		       (match_operand:VHSDF 2 "register_operand" "w")]
+		      FAMINMAX_UNS))]
+  "TARGET_FAMINMAX"
+  "<faminmax_uns_op>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+)
+
+(define_insn "*aarch64_faminmax_fused"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(FMAXMIN:VHSDF
+	  (abs:VHSDF (match_operand:VHSDF 1 "register_operand" "w"))
+	  (abs:VHSDF (match_operand:VHSDF 2 "register_operand" "w"))))]
+  "TARGET_FAMINMAX"
+  "<faminmax_op>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
 )

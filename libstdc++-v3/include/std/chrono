@@ -30,9 +30,13 @@
 #ifndef _GLIBCXX_CHRONO
 #define _GLIBCXX_CHRONO 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
-#include <bits/requires_hosted.h> // for <ctime> and clocks
+#ifdef _GLIBCXX_NO_FREESTANDING_CHRONO
+# include <bits/requires_hosted.h> // for <ctime> and clocks
+#endif
 
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
@@ -41,7 +45,9 @@
 #include <bits/chrono.h>
 
 #if __cplusplus >= 202002L
-# include <bit>
+# include <bit> // __countr_zero
+#endif
+#if __cplusplus >= 202002L && _GLIBCXX_HOSTED
 # include <sstream>
 # include <string>
 # include <vector>
@@ -82,6 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using local_seconds = local_time<seconds>;
     using local_days = local_time<days>;
 
+#if _GLIBCXX_HOSTED
     class utc_clock;
     class tai_clock;
     class gps_clock;
@@ -234,7 +241,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return gps_time<_CDur>{__t.time_since_epoch()} - 315964809s;
 	}
     };
-
+#endif // _GLIBCXX_HOSTED
 
     template<typename _DestClock, typename _SourceClock>
       struct clock_time_conversion
@@ -251,6 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { return __t; }
       };
 
+#if _GLIBCXX_HOSTED
     template<>
       struct clock_time_conversion<system_clock, system_clock>
       {
@@ -355,6 +363,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _DestClock::from_utc(__t);
 	  }
       };
+#endif // _GLIBCXX_HOSTED
 
     /// @cond undocumented
     namespace __detail
@@ -365,6 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    clock_time_conversion<_DestClock, _SourceClock>{}(__t);
 	  };
 
+#if _GLIBCXX_HOSTED
       template<typename _DestClock, typename _SourceClock, typename _Duration>
        concept __clock_convs_sys
 	  = requires (const time_point<_SourceClock, _Duration>& __t) {
@@ -394,7 +404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      clock_time_conversion<system_clock, utc_clock>{}(
 		clock_time_conversion<utc_clock, _SourceClock>{}(__t)));
 	  };
-
+#endif // _GLIBCXX_HOSTED
     } // namespace __detail
     /// @endcond
 
@@ -404,10 +414,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline auto
       clock_cast(const time_point<_SourceClock, _Duration>& __t)
       requires __detail::__clock_convs<_DestClock, _SourceClock, _Duration>
+#if _GLIBCXX_HOSTED
 	|| __detail::__clock_convs_sys<_DestClock, _SourceClock, _Duration>
 	|| __detail::__clock_convs_utc<_DestClock, _SourceClock, _Duration>
 	|| __detail::__clock_convs_sys_utc<_DestClock, _SourceClock, _Duration>
 	|| __detail::__clock_convs_utc_sys<_DestClock, _SourceClock, _Duration>
+#endif // _GLIBCXX_HOSTED
       {
        constexpr bool __direct
 	 = __detail::__clock_convs<_DestClock, _SourceClock, _Duration>;
@@ -415,6 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 {
 	   return clock_time_conversion<_DestClock, _SourceClock>{}(__t);
 	 }
+#if _GLIBCXX_HOSTED
        else
 	 {
 	   constexpr bool __convert_via_sys_clock
@@ -465,6 +478,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 }
 	     }
 	 }
+#endif // _GLIBCXX_HOSTED
       }
 
     // CALENDRICAL TYPES
@@ -2530,6 +2544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+#if _GLIBCXX_HOSTED
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
     // C++20 [time.zones] Time zones
 
@@ -3324,6 +3339,7 @@ namespace __detail
 	const auto __li = __detail::__get_leap_second_info(__s, false);
 	return utc_time<_CDur>{__t.time_since_epoch()} + __li.elapsed;
       }
+#endif // _GLIBCXX_HOSTED
 
     /// @} group chrono
 #endif // C++20
@@ -3358,7 +3374,7 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#if __cplusplus >= 202002L
+#if __cplusplus >= 202002L && _GLIBCXX_HOSTED
 # include <bits/chrono_io.h>
 #endif
 

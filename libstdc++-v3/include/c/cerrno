@@ -38,10 +38,17 @@
 #ifndef _GLIBCXX_CERRNO
 #define _GLIBCXX_CERRNO 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 
 #include <bits/c++config.h>
 #include_next <errno.h>
+
+#pragma GCC diagnostic pop
 
 // Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
 #ifndef errno

@@ -8,7 +8,7 @@ namespace N2
 {
   namespace N { class C2; }
   namespace A2 = N;
-  class A2::C2 {}; // { dg_bogus "does not enclose" }
+  class A2::C2 {}; // { dg-bogus "does not enclose" }
 }
 
 namespace N3 { namespace N { class C3; } }

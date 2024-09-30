@@ -35,4 +35,4 @@ int main()
 }
 
 // { dg-error "required from" "" { target *-*-* } 28 }
-// { dg-error "no type" "" { target *-*-* } 114 }
+// { dg-error "no type" "" { target *-*-* } 119 }

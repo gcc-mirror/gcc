@@ -8908,9 +8908,11 @@ get_file_function_name (const char *type)
      will be local to this file and the name is only necessary for
      debugging purposes. 
      We also assign sub_I and sub_D sufixes to constructors called from
-     the global static constructors.  These are always local.  */
+     the global static constructors.  These are always local.
+     OpenMP "declare target" offloaded constructors/destructors use "off_I" and
+     "off_D" for the same purpose.  */
   else if (((type[0] == 'I' || type[0] == 'D') && targetm.have_ctors_dtors)
-	   || (startswith (type, "sub_")
+	   || ((startswith (type, "sub_") || startswith (type, "off_"))
 	       && (type[4] == 'I' || type[4] == 'D')))
     {
       const char *file = main_input_filename;
@@ -9565,7 +9567,6 @@ build_common_tree_nodes (bool signed_char)
   /* Define these next since types below may used them.  */
   integer_zero_node = build_int_cst (integer_type_node, 0);
   integer_one_node = build_int_cst (integer_type_node, 1);
-  integer_three_node = build_int_cst (integer_type_node, 3);
   integer_minus_one_node = build_int_cst (integer_type_node, -1);
 
   size_zero_node = size_int (0);
@@ -12403,7 +12404,7 @@ escaped_string::escape (const char *unescaped)
 	  continue;
 	}
 
-      if (c != '\n' || !pp_is_wrapping_line (global_dc->printer))
+      if (c != '\n' || !pp_is_wrapping_line (global_dc->m_printer))
 	{
 	  if (escaped == NULL)
 	    {
@@ -15831,8 +15832,9 @@ test_escaped_strings (void)
   ASSERT_STREQ ("foobar", (const char *) msg);
 
   /* Ensure that we have -fmessage-length set to 0.  */
-  saved_cutoff = pp_line_cutoff (global_dc->printer);
-  pp_line_cutoff (global_dc->printer) = 0;
+  pretty_printer *pp = global_dc->m_printer;
+  saved_cutoff = pp_line_cutoff (pp);
+  pp_line_cutoff (pp) = 0;
 
   msg.escape ("foo\nbar");
   ASSERT_STREQ ("foo\\nbar", (const char *) msg);
@@ -15841,7 +15843,7 @@ test_escaped_strings (void)
   ASSERT_STREQ ("\\a\\b\\f\\n\\r\\t\\v", (const char *) msg);
 
   /* Now repeat the tests with -fmessage-length set to 5.  */
-  pp_line_cutoff (global_dc->printer) = 5;
+  pp_line_cutoff (pp) = 5;
 
   /* Note that the newline is not translated into an escape.  */
   msg.escape ("foo\nbar");
@@ -15851,7 +15853,7 @@ test_escaped_strings (void)
   ASSERT_STREQ ("\\a\\b\\f\n\\r\\t\\v", (const char *) msg);
 
   /* Restore the original message length setting.  */
-  pp_line_cutoff (global_dc->printer) = saved_cutoff;
+  pp_line_cutoff (pp) = saved_cutoff;
 }
 
 /* Run all of the selftests within this file.  */

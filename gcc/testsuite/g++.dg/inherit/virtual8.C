@@ -1,5 +1,6 @@
 // PR c++/48035
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <new>
 #include <cstring>

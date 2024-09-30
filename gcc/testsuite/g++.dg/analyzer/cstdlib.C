@@ -1,3 +1,5 @@
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib free" { ! hostedlib } } */
+
 #include <cstdlib>
 
 void test_1 (void *ptr)

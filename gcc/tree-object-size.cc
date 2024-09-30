@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimplify-me.h"
 #include "gimplify.h"
+#include "tree-ssa-dce.h"
 
 struct object_size_info
 {
@@ -2187,6 +2188,7 @@ static unsigned int
 object_sizes_execute (function *fun, bool early)
 {
   todo = 0;
+  auto_bitmap sdce_worklist;
 
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
@@ -2277,13 +2279,18 @@ object_sizes_execute (function *fun, bool early)
 
 	  /* Propagate into all uses and fold those stmts.  */
 	  if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-	    replace_uses_by (lhs, result);
+	    {
+	      replace_uses_by (lhs, result);
+	      /* Mark lhs as being possiblely DCEd. */
+	      bitmap_set_bit (sdce_worklist, SSA_NAME_VERSION (lhs));
+	    }
 	  else
 	    replace_call_with_value (&i, result);
 	}
     }
 
   fini_object_sizes ();
+  simple_dce_from_worklist (sdce_worklist);
   return todo;
 }
 

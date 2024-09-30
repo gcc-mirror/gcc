@@ -12077,6 +12077,11 @@ while the unsigned version uses @code{umax} and @code{umin}.  There
 are no versions that pair @code{smax} with @code{umin} or @code{umax}
 with @code{smin}.
 
+It is also possible to use other types of attributes as codes,
+in a similar way.  For example, an int iterator could be used to
+iterate over @code{unspec} numbers, with an int attribute specifying
+an associated rtx code.  @xref{Int Iterators}.
+
 Here's an example of code iterators in action, taken from the MIPS port:
 
 @smallexample

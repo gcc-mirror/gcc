@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for fstream" { ! hostedlib } }
 // GROUPS passed error-messages
 #include <fstream>
 #include <iomanip>

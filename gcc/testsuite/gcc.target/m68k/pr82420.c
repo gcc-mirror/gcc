@@ -1,4 +1,4 @@
-/* { do-do compile } */
+/* { dg-do compile } */
 /* { dg-options "-march=68000 -malign-int" } */
 
 int a;

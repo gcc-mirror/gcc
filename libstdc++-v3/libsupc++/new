@@ -35,7 +35,9 @@
 #ifndef _NEW
 #define _NEW
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/exception.h>
@@ -43,7 +45,11 @@
 #define __glibcxx_want_launder
 #define __glibcxx_want_hardware_interference_size
 #define __glibcxx_want_destroying_delete
+#define __glibcxx_want_constexpr_new
 #include <bits/version.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // scoped enum
 
 #pragma GCC visibility push(default)
 
@@ -128,66 +134,95 @@ namespace std
  *  Placement new and delete signatures (take a memory address argument,
  *  does nothing) may not be replaced by a user's program.
 */
-_GLIBCXX_NODISCARD void* operator new(std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+_GLIBCXX_NODISCARD void* operator new(std::size_t)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_THROW (std::bad_alloc)
   __attribute__((__externally_visible__));
-_GLIBCXX_NODISCARD void* operator new[](std::size_t) _GLIBCXX_THROW (std::bad_alloc)
+_GLIBCXX_NODISCARD void* operator new[](std::size_t)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_THROW (std::bad_alloc)
   __attribute__((__externally_visible__));
-void operator delete(void*) _GLIBCXX_USE_NOEXCEPT
+void operator delete(void*) _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
-void operator delete[](void*) _GLIBCXX_USE_NOEXCEPT
+void operator delete[](void*) _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #if __cpp_sized_deallocation
-void operator delete(void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
+void operator delete(void*, std::size_t)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
-void operator delete[](void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
+void operator delete[](void*, std::size_t)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #endif
-_GLIBCXX_NODISCARD void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD void* operator new(std::size_t, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
-_GLIBCXX_NODISCARD void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD void* operator new[](std::size_t, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
-void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+void operator delete(void*, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
-void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
+void operator delete[](void*, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #if __cpp_aligned_new
 _GLIBCXX_NODISCARD void* operator new(std::size_t, std::align_val_t)
+  _GLIBCXX_TXN_SAFE
   __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 _GLIBCXX_NODISCARD void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
+   _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
-void operator delete(void*, std::align_val_t)
+void operator delete(void*, std::align_val_t) _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete(void*, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 _GLIBCXX_NODISCARD void* operator new[](std::size_t, std::align_val_t)
+  _GLIBCXX_TXN_SAFE
   __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
 _GLIBCXX_NODISCARD void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __alloc_size__ (1), __malloc__));
-void operator delete[](void*, std::align_val_t)
+void operator delete[](void*, std::align_val_t) _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&)
+  _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 #if __cpp_sized_deallocation
-void operator delete(void*, std::size_t, std::align_val_t)
+void operator delete(void*, std::size_t, std::align_val_t) _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
-void operator delete[](void*, std::size_t, std::align_val_t)
+void operator delete[](void*, std::size_t, std::align_val_t) _GLIBCXX_TXN_SAFE
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 #endif // __cpp_sized_deallocation
 #endif // __cpp_aligned_new
 
+#if __cpp_lib_constexpr_new >= 202406L
+# define _GLIBCXX_PLACEMENT_CONSTEXPR constexpr
+#else
+# define _GLIBCXX_PLACEMENT_CONSTEXPR inline
+#endif
+
 // Default placement versions of operator new.
-_GLIBCXX_NODISCARD inline void* operator new(std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD _GLIBCXX_PLACEMENT_CONSTEXPR
+void* operator new(std::size_t, void* __p)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
 { return __p; }
-_GLIBCXX_NODISCARD inline void* operator new[](std::size_t, void* __p) _GLIBCXX_USE_NOEXCEPT
+_GLIBCXX_NODISCARD _GLIBCXX_PLACEMENT_CONSTEXPR
+void* operator new[](std::size_t, void* __p)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
 { return __p; }
 
+#undef _GLIBCXX_PLACEMENT_CONSTEXPR
+
 // Default placement versions of operator delete.
-inline void operator delete  (void*, void*) _GLIBCXX_USE_NOEXCEPT { }
-inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
+inline void operator delete  (void*, void*)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
+{ }
+inline void operator delete[](void*, void*)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
+{ }
 //@}
 } // extern "C++"
 
-#if __cplusplus >= 201703L
 namespace std
 {
 #ifdef __cpp_lib_launder // C++ >= 17 && HAVE_BUILTIN_LAUNDER
@@ -195,33 +230,28 @@ namespace std
   template<typename _Tp>
     [[nodiscard]] constexpr _Tp*
     launder(_Tp* __p) noexcept
-    { return __builtin_launder(__p); }
-
-  // The program is ill-formed if T is a function type or
-  // (possibly cv-qualified) void.
-
-  template<typename _Ret, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
-    void launder(_Ret (*)(_Args...) _GLIBCXX_NOEXCEPT_QUAL) = delete;
-  template<typename _Ret, typename... _Args _GLIBCXX_NOEXCEPT_PARM>
-    void launder(_Ret (*)(_Args......) _GLIBCXX_NOEXCEPT_QUAL) = delete;
-
-  void launder(void*) = delete;
-  void launder(const void*) = delete;
-  void launder(volatile void*) = delete;
-  void launder(const volatile void*) = delete;
+    {
+      if constexpr (__is_same(const volatile _Tp, const volatile void))
+	static_assert(!__is_same(const volatile _Tp, const volatile void),
+		      "std::launder argument must not be a void pointer");
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_function)
+      else if constexpr (__is_function(_Tp))
+	static_assert(!__is_function(_Tp),
+		      "std::launder argument must not be a function pointer");
+#endif
+      else
+	return __builtin_launder(__p);
+      return nullptr;
+    }
 #endif // __cpp_lib_launder
 
 #ifdef __cpp_lib_hardware_interference_size // C++ >= 17 && defined(gcc_dest_sz)
   inline constexpr size_t hardware_destructive_interference_size = __GCC_DESTRUCTIVE_SIZE;
   inline constexpr size_t hardware_constructive_interference_size = __GCC_CONSTRUCTIVE_SIZE;
 #endif // __cpp_lib_hardware_interference_size
-}
-#endif // C++17
 
 // Emitted despite the FTM potentially being undefined.
-#if __cplusplus > 201703L
-namespace std
-{
+#if __cplusplus >= 202002L
   /// Tag type used to declare a class-specific operator delete that can
   /// invoke the destructor before deallocating the memory.
   struct destroying_delete_t
@@ -230,9 +260,10 @@ namespace std
   };
   /// Tag variable of type destroying_delete_t.
   inline constexpr destroying_delete_t destroying_delete{};
-}
 #endif // C++20
+}
 
 #pragma GCC visibility pop
+#pragma GCC diagnostic pop
 
 #endif

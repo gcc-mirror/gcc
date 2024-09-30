@@ -1,6 +1,8 @@
 // { dg-do link { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } }
 // { dg-require-effective-target static }
 // { dg-options "-static" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
+
 // Bug: g++ fails to instantiate operator<<.
 
 // libc-5.4.xx has __IO_putc in its static C library, which can conflict

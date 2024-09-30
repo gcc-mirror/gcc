@@ -70,6 +70,9 @@
 ;; 8-byte and 4-byte HImode vector modes
 (define_mode_iterator VI2_32_64 [(V4HI "TARGET_MMX_WITH_SSE") V2HI])
 
+;; 8-byte, 4-byte and 2-byte QImode vector modes
+(define_mode_iterator VI1_16_32_64 [(V8QI "TARGET_MMX_WITH_SSE") V4QI V2QI])
+
 ;; 4-byte and 2-byte integer vector modes
 (define_mode_iterator VI_16_32 [V4QI V2QI V2HI])
 
@@ -121,7 +124,7 @@
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr mmxintvecmode
   [(V2SF "V2SI") (V2SI "V2SI") (V4HI "V4HI") (V8QI "V8QI")
-   (V4HF "V4HI") (V2HF "V2HI")])
+   (V4HF "V4HI") (V2HF "V2HI") (V4BF "V4HI") (V2BF "V2HI")])
 
 (define_mode_attr mmxintvecmodelower
   [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")
@@ -169,7 +172,7 @@
 
 (define_expand "mov<mode>"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand")
-	(match_operand:MMXMODE 1 "nonimmediate_operand"))]
+	(match_operand:MMXMODE 1 "nonimm_or_0_operand"))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -1958,6 +1961,8 @@
 
 (define_mode_iterator VHF_32_64 [V2HF (V4HF "TARGET_MMX_WITH_SSE")])
 
+(define_mode_iterator VBF_32_64 [V2BF (V4BF "TARGET_MMX_WITH_SSE")])
+
 (define_expand "divv4hf3"
   [(set (match_operand:V4HF 0 "register_operand")
 	(div:V4HF
@@ -2036,6 +2041,26 @@
   DONE;
 })
 
+;; VDIVNEPBF16 does not generate floating point exceptions.
+(define_expand "<insn><mode>3"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+    (plusminusmultdiv:VBF_32_64
+      (match_operand:VBF_32_64 1 "nonimmediate_operand")
+      (match_operand:VBF_32_64 2 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[2]), <MODE>mode);
+
+  emit_insn (gen_<insn>v8bf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
 (define_expand "divv2hf3"
   [(set (match_operand:V2HF 0 "register_operand")
 	(div:V2HF
@@ -2076,6 +2101,25 @@
   DONE;
 })
 
+(define_expand "<code><mode>3"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+    (smaxmin:VBF_32_64
+      (match_operand:VBF_32_64 1 "nonimmediate_operand")
+      (match_operand:VBF_32_64 2 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[2]), <MODE>mode);
+
+  emit_insn (gen_<code>v8bf3 (op0, op1, op2));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
 (define_expand "sqrt<mode>2"
   [(set (match_operand:VHF_32_64 0 "register_operand")
 	(sqrt:VHF_32_64
@@ -2091,18 +2135,37 @@
   DONE;
 })
 
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(sqrt:VBF_32_64 (match_operand:VBF_32_64 1 "vector_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode,
+			    force_reg (<MODE>mode, operands[1]), <MODE>mode);
+
+  emit_insn (gen_sqrtv8bf2 (op0, op1));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_mode_iterator VHBF_32_64
+ [V2BF (V4BF "TARGET_MMX_WITH_SSE")
+  V2HF (V4HF "TARGET_MMX_WITH_SSE")]) 
+
 (define_expand "<code><mode>2"
-  [(set (match_operand:VHF_32_64 0 "register_operand")
-	(absneg:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand")))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand")
+	(absneg:VHBF_32_64
+	  (match_operand:VHBF_32_64 1 "register_operand")))]
   "TARGET_SSE"
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
 (define_insn_and_split "*mmx_<code><mode>"
-  [(set (match_operand:VHF_32_64 0 "register_operand" "=x,x,x")
-	(absneg:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand" "0,x,x")))
-   (use (match_operand:VHF_32_64 2 "register_operand" "x,0,x"))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand" "=x,x,x")
+	(absneg:VHBF_32_64
+	  (match_operand:VHBF_32_64 1 "register_operand" "0,x,x")))
+   (use (match_operand:VHBF_32_64 2 "register_operand" "x,0,x"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
@@ -2115,11 +2178,11 @@
   [(set_attr "isa" "noavx,noavx,avx")])
 
 (define_insn_and_split "*mmx_nabs<mode>2"
-  [(set (match_operand:VHF_32_64 0 "register_operand" "=x,x,x")
-	(neg:VHF_32_64
-	  (abs:VHF_32_64
-	    (match_operand:VHF_32_64 1 "register_operand" "0,x,x"))))
-   (use (match_operand:VHF_32_64 2 "register_operand" "x,0,x"))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand" "=x,x,x")
+	(neg:VHBF_32_64
+	  (abs:VHBF_32_64
+	    (match_operand:VHBF_32_64 1 "register_operand" "0,x,x"))))
+   (use (match_operand:VHBF_32_64 2 "register_operand" "x,0,x"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
@@ -2227,6 +2290,23 @@
 						 operands[2], operands[3]));
   emit_move_insn (operands[0],
 		  lowpart_subreg (<MODE>mode, op0, <mmxxmmmode>mode));
+  DONE;
+})
+
+;;This instruction does not generate floating point exceptions
+(define_expand "vec_cmp<mode>qi"
+  [(set (match_operand:QI 0 "register_operand")
+	(match_operator:QI 1 ""
+	  [(match_operand:VBF_32_64 2 "register_operand")
+	   (match_operand:VBF_32_64 3 "nonimmediate_operand")]))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op2 = lowpart_subreg (V8BFmode,
+			     force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode,
+			     force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_vec_cmpv8bfqi (operands[0], operands[1], op2, op3));
   DONE;
 })
 
@@ -2410,11 +2490,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "*mmx_andnot<mode>3"
-  [(set (match_operand:VHF_32_64 0 "register_operand"    "=x,x")
-	(and:VHF_32_64
-	  (not:VHF_32_64
-	    (match_operand:VHF_32_64 1 "register_operand" "0,x"))
-	  (match_operand:VHF_32_64 2 "register_operand"   "x,x")))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand"    "=x,x")
+	(and:VHBF_32_64
+	  (not:VHBF_32_64
+	    (match_operand:VHBF_32_64 1 "register_operand" "0,x"))
+	  (match_operand:VHBF_32_64 2 "register_operand"   "x,x")))]
   "TARGET_SSE"
   "@
    andnps\t{%2, %0|%0, %2}
@@ -2425,10 +2505,10 @@
    (set_attr "mode" "V4SF")])
 
 (define_insn "<code><mode>3"
-  [(set (match_operand:VHF_32_64 0 "register_operand"   "=x,x")
-	(any_logic:VHF_32_64
-	  (match_operand:VHF_32_64 1 "register_operand" "%0,x")
-	  (match_operand:VHF_32_64 2 "register_operand" " x,x")))]
+  [(set (match_operand:VHBF_32_64 0 "register_operand"   "=x,x")
+	(any_logic:VHBF_32_64
+	  (match_operand:VHBF_32_64 1 "register_operand" "%0,x")
+	  (match_operand:VHBF_32_64 2 "register_operand" " x,x")))]
   "TARGET_SSE"
   "@
    <logic>ps\t{%2, %0|%0, %2}
@@ -2440,14 +2520,14 @@
 
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
-	(and:VHF_32_64
-	  (not:VHF_32_64 (match_dup 3))
-	  (match_operand:VHF_32_64 1 "register_operand")))
+	(and:VHBF_32_64
+	  (not:VHBF_32_64 (match_dup 3))
+	  (match_operand:VHBF_32_64 1 "register_operand")))
    (set (match_dup 5)
-	(and:VHF_32_64 (match_dup 3)
-		  (match_operand:VHF_32_64 2 "register_operand")))
-   (set (match_operand:VHF_32_64 0 "register_operand")
-	(ior:VHF_32_64 (match_dup 4) (match_dup 5)))]
+	(and:VHBF_32_64 (match_dup 3)
+		  (match_operand:VHBF_32_64 2 "register_operand")))
+   (set (match_operand:VHBF_32_64 0 "register_operand")
+	(ior:VHBF_32_64 (match_dup 4) (match_dup 5)))]
   "TARGET_SSE"
 {
   operands[3] = ix86_build_signbit_mask (<MODE>mode, true, false);
@@ -2458,11 +2538,11 @@
 
 (define_expand "xorsign<mode>3"
   [(set (match_dup 4)
-	(and:VHF_32_64 (match_dup 3)
-		  (match_operand:VHF_32_64 2 "register_operand")))
-   (set (match_operand:VHF_32_64 0 "register_operand")
-	(xor:VHF_32_64 (match_dup 4)
-		  (match_operand:VHF_32_64 1 "register_operand")))]
+	(and:VHBF_32_64 (match_dup 3)
+		  (match_operand:VHBF_32_64 2 "register_operand")))
+   (set (match_operand:VHBF_32_64 0 "register_operand")
+	(xor:VHBF_32_64 (match_dup 4)
+		  (match_operand:VHBF_32_64 1 "register_operand")))]
   "TARGET_SSE"
 {
   operands[3] = ix86_build_signbit_mask (<MODE>mode, true, false);
@@ -2474,7 +2554,7 @@
   [(set (match_operand:<mmxintvecmode> 0 "register_operand")
 	(lshiftrt:<mmxintvecmode>
 	  (subreg:<mmxintvecmode>
-	    (match_operand:VHF_32_64 1 "register_operand") 0)
+	    (match_operand:VHBF_32_64 1 "register_operand") 0)
 	  (match_dup 2)))]
   "TARGET_SSE2"
 {
@@ -2629,6 +2709,86 @@
   emit_insn (gen_vec_fmsubaddv8hf4 (op0, op1, op2, op3));
 
   emit_move_insn (operands[0], lowpart_subreg (V4HFmode, op0, V8HFmode));
+  DONE;
+})
+
+(define_expand "fma<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (match_operand:VBF_32_64 1 "nonimmediate_operand")
+	  (match_operand:VBF_32_64 2 "nonimmediate_operand")
+	  (match_operand:VBF_32_64 3 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fmav8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_expand "fms<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (match_operand:VBF_32_64   1 "nonimmediate_operand")
+	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 3 "nonimmediate_operand"))))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fmsv8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_expand "fnma<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 1 "nonimmediate_operand"))
+	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
+	  (match_operand:VBF_32_64   3 "nonimmediate_operand")))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fnmav8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
+  DONE;
+})
+
+(define_expand "fnms<mode>4"
+  [(set (match_operand:VBF_32_64 0 "register_operand")
+	(fma:VBF_32_64
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 1 "nonimmediate_operand"))
+	  (match_operand:VBF_32_64   2 "nonimmediate_operand")
+	  (neg:VBF_32_64
+	    (match_operand:VBF_32_64 3 "nonimmediate_operand"))))]
+  "TARGET_AVX10_2_256"
+{
+  rtx op0 = gen_reg_rtx (V8BFmode);
+  rtx op1 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[1]), <MODE>mode);
+  rtx op2 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[2]), <MODE>mode);
+  rtx op3 = lowpart_subreg (V8BFmode, force_reg (<MODE>mode, operands[3]), <MODE>mode);
+
+  emit_insn (gen_fnmsv8bf4 (op0, op1, op2, op3));
+
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0, V8BFmode));
   DONE;
 })
 
@@ -3061,7 +3221,7 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_insn "*<insn><mode>3"
+(define_insn "<insn><mode>3"
   [(set (match_operand:VI_16_32 0 "register_operand" "=x,Yw")
         (sat_plusminus:VI_16_32
 	  (match_operand:VI_16_32 1 "register_operand" "<comm>0,Yw")
@@ -6646,3 +6806,24 @@
   [(set_attr "type" "mmx")
    (set_attr "modrm" "0")
    (set_attr "memory" "none")])
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:VI1_16_32_64 0 "register_operand" "=v")
+	(popcount:VI1_16_32_64
+	  (match_operand:VI1_16_32_64 1 "register_operand" "v")))]
+  "TARGET_AVX512VL && TARGET_AVX512BITALG"
+  "vpopcntb\t{%1, %0|%0, %1}")
+
+(define_insn "popcount<mode>2"
+  [(set (match_operand:VI2_32_64 0 "register_operand" "=v")
+	(popcount:VI2_32_64
+	  (match_operand:VI2_32_64 1 "register_operand" "v")))]
+  "TARGET_AVX512VL && TARGET_AVX512BITALG"
+  "vpopcntw\t{%1, %0|%0, %1}")
+
+(define_insn "popcountv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=v")
+	(popcount:V2SI
+	  (match_operand:V2SI 1 "register_operand" "v")))]
+  "TARGET_AVX512VPOPCNTDQ && TARGET_AVX512VL && TARGET_MMX_WITH_SSE"
+  "vpopcntd\t{%1, %0|%0, %1}")

@@ -29,9 +29,16 @@
 #ifndef _GLIBCXX_CSTDARG
 #define _GLIBCXX_CSTDARG 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 
 #undef __need___va_list
 #include_next <stdarg.h>
+
+#pragma GCC diagnostic pop
 
 #endif

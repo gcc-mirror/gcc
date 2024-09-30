@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mamx-int8" } */
 /* { dg-final { scan-assembler "tdpbssd\[ \\t]+\[^\n\]*%tmm3+\[^\n\]*%tmm2+\[^\n\]*%tmm1"  } } */
-/* { dg-final { scan-assembler "tdpbsud\[ \\t]+\[^\n\]*%tmm3+\[^\n\]*%tmm2+\[^\n\]*%tmm1"  } } *
+/* { dg-final { scan-assembler "tdpbsud\[ \\t]+\[^\n\]*%tmm3+\[^\n\]*%tmm2+\[^\n\]*%tmm1"  } } */
 /* { dg-final { scan-assembler "tdpbusd\[ \\t]+\[^\n\]*%tmm3+\[^\n\]*%tmm2+\[^\n\]*%tmm1"  } } */
 /* { dg-final { scan-assembler "tdpbuud\[ \\t]+\[^\n\]*%tmm3+\[^\n\]*%tmm2+\[^\n\]*%tmm1"  } } */
 #include <immintrin.h>

@@ -1,5 +1,6 @@
 // Testcase from TM TS
 // { dg-options "-std=c++14 -fgnu-tm" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 
 #include <iostream>
 

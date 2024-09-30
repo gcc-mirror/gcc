@@ -36,13 +36,15 @@
 // ISO C++ 14882: 27.8.2  C Library files
 //
 
+#ifndef _GLIBCXX_CSTDIO
+#define _GLIBCXX_CSTDIO 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <stdio.h>
-
-#ifndef _GLIBCXX_CSTDIO
-#define _GLIBCXX_CSTDIO 1
 
 #if __cplusplus <= 201103L && !defined(_GLIBCXX_HAVE_GETS)
 extern "C" char* gets (char* __s) __attribute__((__deprecated__));

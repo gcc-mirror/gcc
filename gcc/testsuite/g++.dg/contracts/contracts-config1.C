@@ -24,6 +24,7 @@ int main(int, char **)
   return 0;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for stdc++exp" { ! hostedlib } }
 // { dg-output {contract violation in function main at .*:14: false(\n|\r\n|\r)} }
 // { dg-output {\[continue:on\](\n|\r\n|\r)} }
 // { dg-output {contract violation in function main at .*:15: false(\n|\r\n|\r)} }

@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_ATOMIC_LOCK_FREE_H
 #define _GLIBCXX_ATOMIC_LOCK_FREE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 /**
  * @addtogroup atomics

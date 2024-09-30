@@ -36,7 +36,12 @@
 #ifndef _GLIBCXX_COMPLEX
 #define _GLIBCXX_COMPLEX 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
@@ -2650,4 +2655,5 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #pragma clang diagnostic pop
 #endif
 
+#pragma GCC diagnostic pop
 #endif  /* _GLIBCXX_COMPLEX */

@@ -1,6 +1,7 @@
 // { dg-do assemble }
 // { dg-xfail-if "" { xstormy16-*-* } }
 // { dg-require-effective-target size20plus }
+// { dg-skip-if "requires hosted libstdc++ for stdlib qsort" { ! hostedlib } }
 
 #include <stdio.h>
 #include <stdlib.h>

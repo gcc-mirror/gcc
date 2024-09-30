@@ -29,7 +29,12 @@
 #ifndef _GLIBCXX_TR1_TYPE_TRAITS
 #define _GLIBCXX_TR1_TYPE_TRAITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 #include <bits/requires_hosted.h> // TR1
 
@@ -118,8 +123,11 @@ namespace tr1
   _DEFINE_SPEC(0, __is_integral_helper, unsigned int, true)
   _DEFINE_SPEC(0, __is_integral_helper, long, true)
   _DEFINE_SPEC(0, __is_integral_helper, unsigned long, true)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   _DEFINE_SPEC(0, __is_integral_helper, long long, true)
   _DEFINE_SPEC(0, __is_integral_helper, unsigned long long, true)
+#pragma GCC diagnostic pop
 
   /// is_integral
   template<typename _Tp>
@@ -539,6 +547,8 @@ namespace tr1
     : public integral_constant<bool, is_pod<_Tp>::value>
     { };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   template<typename>
     struct __is_signed_helper
     : public false_type { };
@@ -562,6 +572,7 @@ namespace tr1
   _DEFINE_SPEC(0, __is_unsigned_helper, unsigned int, true)
   _DEFINE_SPEC(0, __is_unsigned_helper, unsigned long, true)
   _DEFINE_SPEC(0, __is_unsigned_helper, unsigned long long, true)
+#pragma GCC diagnostic pop
 
   template<typename _Tp>
     struct is_unsigned
@@ -684,4 +695,5 @@ namespace tr1
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_TR1_TYPE_TRAITS

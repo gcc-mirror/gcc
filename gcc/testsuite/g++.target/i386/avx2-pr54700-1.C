@@ -5,6 +5,7 @@
 /* { dg-final { scan-assembler-times "vpblendvb" 2 } } */
 /* { dg-final { scan-assembler-times "vblendvps" 4 } } */
 /* { dg-final { scan-assembler-times "vblendvpd" 4 } } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } } */
 
 #include <x86intrin.h>
 

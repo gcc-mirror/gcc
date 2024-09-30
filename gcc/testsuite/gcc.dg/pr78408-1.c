@@ -1,7 +1,8 @@
 /* PR c/78408 */
 /* { dg-do compile { target size32plus } } */
-/* { dg-options "-O2 -fdump-tree-fab1-details" } */
-/* { dg-final { scan-tree-dump-times "after previous" 17 "fab1" } } */
+/* { dg-options "-O2 -fdump-tree-ccp-details -fdump-tree-forwprop-details" } */
+/* { dg-final { scan-tree-dump-times "after previous" 1 "ccp1" } } */
+/* { dg-final { scan-tree-dump-times "after previous" 16 "forwprop1" } } */
 
 struct S { char a[33]; };
 struct T { char a[65536]; };

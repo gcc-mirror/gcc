@@ -1,5 +1,6 @@
 /* { dg-do run { target { powerpc64le-*-* } } } */
 /* { dg-options "-Os -fno-forward-propagate -fschedule-insns -fno-tree-ter -Wno-psabi" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 /* { dg-require-effective-target p8vector_hw } */
 
 typedef unsigned char __attribute__ ((__vector_size__ (64))) v512u8;

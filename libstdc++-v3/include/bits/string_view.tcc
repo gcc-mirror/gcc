@@ -34,7 +34,9 @@
 #ifndef _GLIBCXX_STRING_VIEW_TCC
 #define _GLIBCXX_STRING_VIEW_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201703L
 

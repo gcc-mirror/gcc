@@ -321,6 +321,7 @@ equiv_oracle::equiv_oracle ()
   m_equiv.create (0);
   m_equiv.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   m_equiv_set = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_tree_view (m_equiv_set);
   obstack_init (&m_chain_obstack);
   m_self_equiv.create (0);
   m_self_equiv.safe_grow_cleared (num_ssa_names + 1);
@@ -1092,7 +1093,9 @@ dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
       bool check = bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op1))
 		   || bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op2));
       relation_chain *ptr = set_one_relation (bb, k, op1, op2);
-      if (ptr && check)
+      if (ptr && check
+	  && (m_relations[bb->index].m_num_relations
+	      < param_relation_block_limit))
 	register_transitives (bb, *ptr);
     }
 }
@@ -1203,7 +1206,13 @@ dom_oracle::register_transitives (basic_block root_bb,
   const_bitmap equiv1 = equiv_set (relation.op1 (), root_bb);
   const_bitmap equiv2 = equiv_set (relation.op2 (), root_bb);
 
-  for (bb = root_bb; bb; bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+  const unsigned work_budget = param_transitive_relations_work_bound;
+  unsigned avail_budget = work_budget;
+  for (bb = root_bb; bb;
+       /* Advancing to the next immediate dominator eats from the budget,
+	  if none is left after that there's no point to continue.  */
+       bb = (--avail_budget > 0
+	     ? get_immediate_dominator (CDI_DOMINATORS, bb) : nullptr))
     {
       int bbi = bb->index;
       if (bbi >= (int)m_relations.length())
@@ -1246,27 +1255,38 @@ dom_oracle::register_transitives (basic_block root_bb,
 
 	  // Ignore if both NULL (not relevant relation) or the same,
 	  if (r1 == r2)
-	    continue;
+	    ;
 
-	  // Any operand not an equivalence, just take the real operand.
-	  if (!r1)
-	    r1 = relation.op1 ();
-	  if (!r2)
-	    r2 = relation.op2 ();
-
-	  value_relation nr (relation.kind (), r1, r2);
-	  if (nr.apply_transitive (*ptr))
+	  else
 	    {
-	      if (!set_one_relation (root_bb, nr.kind (), nr.op1 (), nr.op2 ()))
-		return;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
+	      // Any operand not an equivalence, just take the real operand.
+	      if (!r1)
+		r1 = relation.op1 ();
+	      if (!r2)
+		r2 = relation.op2 ();
+
+	      value_relation nr (relation.kind (), r1, r2);
+	      if (nr.apply_transitive (*ptr))
 		{
-		  fprintf (dump_file, "   Registering transitive relation ");
-		  nr.dump (dump_file);
-		  fputc ('\n', dump_file);
+		  // If the new relation is already present we know any
+		  // further processing is already reflected above it.
+		  // When we ran into the limit of relations on root_bb
+		  // we can give up as well.
+		  if (!set_one_relation (root_bb, nr.kind (),
+					 nr.op1 (), nr.op2 ()))
+		    return;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file,
+			       "   Registering transitive relation ");
+		      nr.dump (dump_file);
+		      fputc ('\n', dump_file);
+		    }
 		}
 	    }
-
+	  /* Processed one relation, abort if we've eaten up our budget.  */
+	  if (--avail_budget == 0)
+	    return;
 	}
     }
 }

@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "-Wno-deprecated -Wno-return-type" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 /* bug.cc */
 /* simple program to demonstrate the bug with named return values in gcc
 */

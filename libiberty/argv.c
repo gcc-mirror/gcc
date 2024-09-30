@@ -124,15 +124,6 @@ consume_whitespace (const char **input)
     }
 }
 
-static int
-only_whitespace (const char* input)
-{
-  while (*input != EOS && ISSPACE (*input))
-    input++;
-
-  return (*input == EOS);
-}
-
 /*
 
 @deftypefn Extension char** buildargv (char *@var{sp})

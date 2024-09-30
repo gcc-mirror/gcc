@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O3 -march=z13 -mzarch" } */
 
 typedef long long __attribute__((vector_size(16))) v2di;

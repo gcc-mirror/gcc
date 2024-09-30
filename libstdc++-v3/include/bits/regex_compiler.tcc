@@ -55,6 +55,9 @@
 // All dummy nodes will be eliminated at the end of compilation.
 */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++20-extensions" // variadic macro with 0 args
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -621,4 +624,6 @@ namespace __detail
 } // namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
+
+#pragma GCC diagnostic pop

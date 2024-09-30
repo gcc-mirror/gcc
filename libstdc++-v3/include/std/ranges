@@ -32,7 +32,9 @@
 
 #if __cplusplus > 201703L
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <concepts>
 
@@ -51,6 +53,7 @@
 #include <bits/ranges_util.h>
 #include <bits/refwrap.h>
 
+#define __glibcxx_want_algorithm_default_value_type
 #define __glibcxx_want_ranges
 #define __glibcxx_want_ranges_as_const
 #define __glibcxx_want_ranges_as_rvalue
@@ -9327,7 +9330,6 @@ namespace __detail
 			 std::forward<_Args>(__args)...);
 	  else
 	    {
-	      using _RefT = range_reference_t<_Rg>;
 	      static_assert(constructible_from<_Cont, _Args...>);
 	      _Cont __c(std::forward<_Args>(__args)...);
 	      if constexpr (sized_range<_Rg>

@@ -516,12 +516,11 @@ switch_to_frame_table_section (int for_eh, bool back)
 /* Describe for the GTY machinery what parts of dw_cfi_oprnd1 are used.  */
 
 enum dw_cfi_oprnd_type
-dw_cfi_oprnd1_desc (enum dwarf_call_frame_info cfi)
+dw_cfi_oprnd1_desc (dwarf_call_frame_info cfi)
 {
   switch (cfi)
     {
     case DW_CFA_nop:
-    case DW_CFA_GNU_window_save:
     case DW_CFA_remember_state:
     case DW_CFA_restore_state:
       return dw_cfi_oprnd_unused;
@@ -557,14 +556,20 @@ dw_cfi_oprnd1_desc (enum dwarf_call_frame_info cfi)
       return dw_cfi_oprnd_loc;
 
     default:
-      gcc_unreachable ();
+      {
+	dw_cfi_oprnd_type oprnd_type;
+	if (targetm.dw_cfi_oprnd1_desc (cfi, oprnd_type))
+	  return oprnd_type;
+	else
+	  gcc_unreachable ();
+      }
     }
 }
 
 /* Describe for the GTY machinery what parts of dw_cfi_oprnd2 are used.  */
 
 enum dw_cfi_oprnd_type
-dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
+dw_cfi_oprnd2_desc (dwarf_call_frame_info cfi)
 {
   switch (cfi)
     {
@@ -1361,43 +1366,6 @@ struct GTY((for_user)) addr_table_entry {
     }
   GTY ((desc ("%1.kind"))) addr;
 };
-
-typedef unsigned int var_loc_view;
-
-/* Location lists are ranges + location descriptions for that range,
-   so you can track variables that are in different places over
-   their entire life.  */
-typedef struct GTY(()) dw_loc_list_struct {
-  dw_loc_list_ref dw_loc_next;
-  const char *begin; /* Label and addr_entry for start of range */
-  addr_table_entry *begin_entry;
-  const char *end;  /* Label for end of range */
-  addr_table_entry *end_entry;
-  char *ll_symbol; /* Label for beginning of location list.
-		      Only on head of list.  */
-  char *vl_symbol; /* Label for beginning of view list.  Ditto.  */
-  const char *section; /* Section this loclist is relative to */
-  dw_loc_descr_ref expr;
-  var_loc_view vbegin, vend;
-  hashval_t hash;
-  /* True if all addresses in this and subsequent lists are known to be
-     resolved.  */
-  bool resolved_addr;
-  /* True if this list has been replaced by dw_loc_next.  */
-  bool replaced;
-  /* True if it has been emitted into .debug_loc* / .debug_loclists*
-     section.  */
-  unsigned char emitted : 1;
-  /* True if hash field is index rather than hash value.  */
-  unsigned char num_assigned : 1;
-  /* True if .debug_loclists.dwo offset has been emitted for it already.  */
-  unsigned char offset_emitted : 1;
-  /* True if note_variable_value_in_expr has been called on it.  */
-  unsigned char noted_variable_value : 1;
-  /* True if the range should be emitted even if begin and end
-     are the same.  */
-  bool force;
-} dw_loc_list_node;
 
 static dw_loc_descr_ref int_loc_descriptor (poly_int64);
 static dw_loc_descr_ref uint_loc_descriptor (unsigned HOST_WIDE_INT);
@@ -5487,8 +5455,8 @@ get_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
 
 /* Returns the parent of the declaration of DIE.  */
 
-static dw_die_ref
-get_die_parent (dw_die_ref die)
+dw_die_ref
+dw_get_die_parent (dw_die_ref die)
 {
   dw_die_ref t;
 
@@ -7820,7 +7788,7 @@ generate_type_signature (dw_die_ref die, comdat_type_node *type_node)
 
   name = get_AT_string (die, DW_AT_name);
   decl = get_AT_ref (die, DW_AT_specification);
-  parent = get_die_parent (die);
+  parent = dw_get_die_parent (die);
 
   /* First, compute a signature for just the type name (and its surrounding
      context, if any.  This is stored in the type unit DIE for link-time
@@ -10396,8 +10364,10 @@ dwarf2out_maybe_output_loclist_view_pair (dw_loc_list_ref curr)
     }
   else
     {
-      dw2_asm_output_data_uleb128 (curr->vbegin, "Location view begin");
-      dw2_asm_output_data_uleb128 (curr->vend, "Location view end");
+      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vbegin)
+				   ? 0 : curr->vbegin, "Location view begin");
+      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vend)
+				   ? 0 : curr->vend, "Location view end");
     }
 #endif /* DW_LLE_view_pair */
 
@@ -10460,10 +10430,12 @@ output_loc_list (dw_loc_list_ref list_head)
 	    }
 	  else
 	    {
-	      dw2_asm_output_data_uleb128 (curr->vbegin,
+	      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vbegin)
+					   ? 0 : curr->vbegin,
 					   "View list begin (%s)",
 					   list_head->vl_symbol);
-	      dw2_asm_output_data_uleb128 (curr->vend,
+	      dw2_asm_output_data_uleb128 (ZERO_VIEW_P (curr->vend)
+					   ? 0 : curr->vend,
 					   "View list end (%s)",
 					   list_head->vl_symbol);
 	    }
@@ -14052,6 +14024,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	       || (cv_quals == TYPE_UNQUALIFIED)))
 	  || (TREE_CODE (name) == TYPE_DECL
 	      && DECL_NAME (name)
+	      && !DECL_NAMELESS (name)
 	      && (TREE_TYPE (name) == qualified_type
 		  || (lang_hooks.types.get_debug_type
 		      && (lang_hooks.types.get_debug_type (TREE_TYPE (name))
@@ -21183,6 +21156,29 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
   list = NULL;
 
   memset (&next_cfa, 0, sizeof (next_cfa));
+
+#ifdef CODEVIEW_DEBUGGING_INFO
+  /* We can write simplified frame base information for CodeView, as we're
+     not using it for rewinding.  */
+  if (codeview_debuginfo_p ())
+    {
+      int dwreg = DEBUGGER_REGNO (cfun->machine->fs.cfa_reg->u.reg.regno);
+
+      next_cfa.reg.set_by_dwreg (dwreg);
+      next_cfa.offset = cfun->machine->fs.fp_valid
+	? cfun->machine->fs.fp_offset : cfun->machine->fs.sp_offset;
+
+      *list_tail = new_loc_list (build_cfa_loc (&next_cfa, offset),
+				 fde->dw_fde_begin, 0,
+				 fde->dw_fde_second_begin
+				 ? fde->dw_fde_second_end : fde->dw_fde_end, 0,
+				 section);
+      maybe_gen_llsym (list);
+
+      return list;
+    }
+#endif
+
   next_cfa.reg.set_by_dwreg (INVALID_REGNUM);
   remember = next_cfa;
 
@@ -25171,17 +25167,26 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
      Do that by doing the recursion to subblocks on the single subblock
      of STMT.  */
   bool unwrap_one = false;
-  if (BLOCK_SUBBLOCKS (stmt) && !BLOCK_CHAIN (BLOCK_SUBBLOCKS (stmt)))
+  tree sub = BLOCK_SUBBLOCKS (stmt);
+  if (sub)
     {
-      tree origin = block_ultimate_origin (BLOCK_SUBBLOCKS (stmt));
+      tree origin = block_ultimate_origin (sub);
       if (origin
 	  && TREE_CODE (origin) == BLOCK
 	  && BLOCK_SUPERCONTEXT (origin) == decl)
 	unwrap_one = true;
+      for (tree next = BLOCK_CHAIN (sub); unwrap_one && next;
+	   next = BLOCK_CHAIN (next))
+	if (BLOCK_FRAGMENT_ORIGIN (next) != sub)
+	  unwrap_one = false;
     }
   decls_for_scope (stmt, subr_die, !unwrap_one);
   if (unwrap_one)
-    decls_for_scope (BLOCK_SUBBLOCKS (stmt), subr_die);
+    {
+      decls_for_scope (sub, subr_die);
+      for (sub = BLOCK_CHAIN (sub); sub; sub = BLOCK_CHAIN (sub))
+	gen_block_die (sub, subr_die);
+    }
 }
 
 /* Generate a DIE for a field in a record, or structure.  CTX is required: see
@@ -28940,7 +28945,7 @@ dwarf2out_set_ignored_loc (unsigned int line, unsigned int column,
   dw_fde_ref fde = cfun->fde;
 
   fde->ignored_debug = false;
-  set_cur_line_info_table (function_section (fde->decl));
+  set_cur_line_info_table (current_function_section ());
 
   dwarf2out_source_line (line, column, filename, 0, true);
 }

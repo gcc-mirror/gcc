@@ -1,6 +1,7 @@
 // PR c++/91859
 // { dg-do run { target c++20 } }
 // { dg-additional-options -O2 }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib malloc" { ! hostedlib } }
 
 #include <cstdlib>
 #include <new>

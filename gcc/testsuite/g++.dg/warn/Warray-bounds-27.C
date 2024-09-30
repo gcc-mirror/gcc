@@ -2,6 +2,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++11 }
 // { dg-options "-O2 -Warray-bounds" }
+// { dg-skip-if "requires hosted libstdc++ for cstring" { ! hostedlib } }
 
 #include <array>
 #include <cstring>

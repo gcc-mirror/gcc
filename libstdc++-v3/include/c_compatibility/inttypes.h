@@ -29,7 +29,12 @@
 #ifndef _GLIBCXX_INTTYPES_H
 #define _GLIBCXX_INTTYPES_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // include_next
 
 #include <bits/c++config.h>
 
@@ -87,5 +92,7 @@ namespace std
 # endif
 
 #endif // C++11
+
+#pragma GCC diagnostic pop
 
 #endif // _GLIBCXX_INTTYPES_H

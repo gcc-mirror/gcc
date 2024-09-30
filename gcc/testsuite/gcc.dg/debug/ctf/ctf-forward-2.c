@@ -4,7 +4,7 @@
    For forward types, the compiler encodes the CTF kind in the ctt_type field.
    CTF_K_FORWARD is used as the CTF type as usual in the ctt_info.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x26000000\[\t \]+\[^\n\]*ctt_info" 1 } } */

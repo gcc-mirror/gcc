@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_ALGORITHM
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2717,7 +2718,7 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
 static opt_result
 vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
 		     unsigned *suggested_unroll_factor,
-		     bool& slp_done_for_suggested_uf)
+		     unsigned& slp_done_for_suggested_uf)
 {
   opt_result ok = opt_result::success ();
   int res;
@@ -2786,11 +2787,11 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
   /* If the slp decision is false when suggested unroll factor is worked
      out, and we are applying suggested unroll factor, we can simply skip
      all slp related analyses this time.  */
-  bool slp = !applying_suggested_uf || slp_done_for_suggested_uf;
+  unsigned slp = !applying_suggested_uf ? 2 : slp_done_for_suggested_uf;
 
   /* Classify all cross-iteration scalar data-flow cycles.
      Cross-iteration cycles caused by virtual phis are analyzed separately.  */
-  vect_analyze_scalar_cycles (loop_vinfo, slp);
+  vect_analyze_scalar_cycles (loop_vinfo, slp == 2);
 
   vect_pattern_recog (loop_vinfo);
 
@@ -2853,18 +2854,23 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
   vect_compute_single_scalar_iteration_cost (loop_vinfo);
 
   poly_uint64 saved_vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  bool saved_can_use_partial_vectors_p
+    = LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo);
+
+  /* This is the point where we can re-start analysis with SLP forced off.  */
+start_over:
 
   if (slp)
     {
       /* Check the SLP opportunities in the loop, analyze and build
 	 SLP trees.  */
-      ok = vect_analyze_slp (loop_vinfo, LOOP_VINFO_N_STMTS (loop_vinfo));
+      ok = vect_analyze_slp (loop_vinfo, LOOP_VINFO_N_STMTS (loop_vinfo),
+			     slp == 1);
       if (!ok)
 	return ok;
 
       /* If there are any SLP instances mark them as pure_slp.  */
-      slp = vect_make_slp_decision (loop_vinfo);
-      if (slp)
+      if (vect_make_slp_decision (loop_vinfo))
 	{
 	  /* Find stmts that need to be both vectorized and SLPed.  */
 	  vect_detect_hybrid_slp (loop_vinfo);
@@ -2880,15 +2886,15 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
 	}
     }
 
-  bool saved_can_use_partial_vectors_p
-    = LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo);
-
   /* We don't expect to have to roll back to anything other than an empty
      set of rgroups.  */
   gcc_assert (LOOP_VINFO_MASKS (loop_vinfo).is_empty ());
 
-  /* This is the point where we can re-start analysis with SLP forced off.  */
-start_over:
+  /* When we arrive here with SLP disabled and we are supposed
+     to use SLP for everything fail vectorization.  */
+  if (!slp && param_vect_force_slp)
+    return opt_result::failure_at (vect_location,
+				   "may need non-SLP handling\n");
 
   /* Apply the suggested unrolling factor, this was determined by the backend
      during finish_cost the first time we ran the analyzis for this
@@ -2946,91 +2952,13 @@ start_over:
 
   if (slp)
     {
-      /* Analyze operations in the SLP instances.  Note this may
-	 remove unsupported SLP instances which makes the above
-	 SLP kind detection invalid.  */
-      unsigned old_size = LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length ();
-      vect_slp_analyze_operations (loop_vinfo);
-      if (LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length () != old_size)
+      /* Analyze operations in the SLP instances.  We can't simply
+	 remove unsupported SLP instances as this makes the above
+	 SLP kind detection invalid and might also affect the VF.  */
+      if (! vect_slp_analyze_operations (loop_vinfo))
 	{
 	  ok = opt_result::failure_at (vect_location,
 				       "unsupported SLP instances\n");
-	  goto again;
-	}
-
-      /* Check whether any load in ALL SLP instances is possibly permuted.  */
-      slp_tree load_node, slp_root;
-      unsigned i, x;
-      slp_instance instance;
-      bool can_use_lanes = true;
-      FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), x, instance)
-	{
-	  slp_root = SLP_INSTANCE_TREE (instance);
-	  int group_size = SLP_TREE_LANES (slp_root);
-	  tree vectype = SLP_TREE_VECTYPE (slp_root);
-	  bool loads_permuted = false;
-	  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
-	    {
-	      if (!SLP_TREE_LOAD_PERMUTATION (load_node).exists ())
-		continue;
-	      unsigned j;
-	      stmt_vec_info load_info;
-	      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (load_node), j, load_info)
-		if (SLP_TREE_LOAD_PERMUTATION (load_node)[j] != j)
-		  {
-		    loads_permuted = true;
-		    break;
-		  }
-	    }
-
-	  /* If the loads and stores can be handled with load/store-lane
-	     instructions record it and move on to the next instance.  */
-	  if (loads_permuted
-	      && SLP_INSTANCE_KIND (instance) == slp_inst_kind_store
-	      && vect_store_lanes_supported (vectype, group_size, false)
-		   != IFN_LAST)
-	    {
-	      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load_node)
-		if (STMT_VINFO_GROUPED_ACCESS
-		      (SLP_TREE_REPRESENTATIVE (load_node)))
-		  {
-		    stmt_vec_info stmt_vinfo = DR_GROUP_FIRST_ELEMENT
-			(SLP_TREE_REPRESENTATIVE (load_node));
-		    /* Use SLP for strided accesses (or if we can't
-		       load-lanes).  */
-		    if (STMT_VINFO_STRIDED_P (stmt_vinfo)
-			|| vect_load_lanes_supported
-			     (STMT_VINFO_VECTYPE (stmt_vinfo),
-			      DR_GROUP_SIZE (stmt_vinfo), false) == IFN_LAST)
-		      break;
-		  }
-
-	      can_use_lanes
-		= can_use_lanes && i == SLP_INSTANCE_LOADS (instance).length ();
-
-	      if (can_use_lanes && dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "SLP instance %p can use load/store-lanes\n",
-				 (void *) instance);
-	    }
-	  else
-	    {
-	      can_use_lanes = false;
-	      break;
-	    }
-	}
-
-      /* If all SLP instances can use load/store-lanes abort SLP and try again
-	 with SLP disabled.  */
-      if (can_use_lanes)
-	{
-	  ok = opt_result::failure_at (vect_location,
-				       "Built SLP cancelled: can use "
-				       "load/store-lanes\n");
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "Built SLP cancelled: all SLP instances support "
-			     "load/store-lanes\n");
 	  goto again;
 	}
     }
@@ -3155,10 +3083,23 @@ start_over:
       if (direct_internal_fn_supported_p (IFN_SELECT_VL, iv_type,
 					  OPTIMIZE_FOR_SPEED)
 	  && LOOP_VINFO_LENS (loop_vinfo).length () == 1
-	  && LOOP_VINFO_LENS (loop_vinfo)[0].factor == 1 && !slp
+	  && LOOP_VINFO_LENS (loop_vinfo)[0].factor == 1
 	  && (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 	      || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()))
 	LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = true;
+
+      /* If any of the SLP instances cover more than a single lane
+	 we cannot use .SELECT_VL at the moment, even if the number
+	 of lanes is uniform throughout the SLP graph.  */
+      if (LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
+	for (slp_instance inst : LOOP_VINFO_SLP_INSTANCES (loop_vinfo))
+	  if (SLP_TREE_LANES (SLP_INSTANCE_TREE (inst)) != 1
+	      && !(SLP_INSTANCE_KIND (inst) == slp_inst_kind_store
+		   && SLP_INSTANCE_TREE (inst)->ldst_lanes))
+	    {
+	      LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = false;
+	      break;
+	    }
     }
 
   /* Decide whether this loop_vinfo should use partial vectors or peeling,
@@ -3276,15 +3217,14 @@ again:
   /* Ensure that "ok" is false (with an opt_problem if dumping is enabled).  */
   gcc_assert (!ok);
 
-  /* Try again with SLP forced off but if we didn't do any SLP there is
+  /* Try again with SLP degraded but if we didn't do any SLP there is
      no point in re-trying.  */
   if (!slp)
     return ok;
 
-  /* If the slp decision is true when suggested unroll factor is worked
-     out, and we are applying suggested unroll factor, we don't need to
-     re-try any more.  */
-  if (applying_suggested_uf && slp_done_for_suggested_uf)
+  /* If we are applying suggested unroll factor, we don't need to
+     re-try any more as we want to keep the SLP mode fixed.  */
+  if (applying_suggested_uf)
     return ok;
 
   /* If there are reduction chains re-trying will fail anyway.  */
@@ -3329,11 +3269,18 @@ again:
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "re-trying with SLP disabled\n");
+    {
+      if (slp)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "re-trying with single-lane SLP\n");
+      else
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "re-trying with SLP disabled\n");
+    }
 
-  /* Roll back state appropriately.  No SLP this time.  */
-  slp = false;
+  /* Roll back state appropriately.  Degrade SLP this time.  From multi-
+     to single-lane to disabled.  */
+  --slp;
   /* Restore vectorization factor as it were without SLP.  */
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = saved_vectorization_factor;
   /* Free the SLP instances.  */
@@ -3478,7 +3425,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
   machine_mode vector_mode = vector_modes[mode_i];
   loop_vinfo->vector_mode = vector_mode;
   unsigned int suggested_unroll_factor = 1;
-  bool slp_done_for_suggested_uf = false;
+  unsigned slp_done_for_suggested_uf = 0;
 
   /* Run the main analysis.  */
   opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal,
@@ -4400,7 +4347,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  && is_a <gphi *> (phi_use_stmt)
 	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt))
 	  && (op1 == PHI_ARG_DEF_FROM_EDGE (phi_use_stmt,
-					    loop_latch_edge (loop->inner))))
+					    loop_latch_edge (loop->inner)))
+	  && lcphis.length () == 1)
         {
           if (dump_enabled_p ())
             report_vect_op (MSG_NOTE, def_stmt,
@@ -6075,6 +6023,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  while (cond_node != slp_node_instance->reduc_phis)
 	    {
 	      stmt_vec_info cond_info = SLP_TREE_REPRESENTATIVE (cond_node);
+	      int slp_reduc_idx;
 	      if (gimple_assign_rhs_code (cond_info->stmt) == COND_EXPR)
 		{
 		  gimple *vec_stmt
@@ -6083,13 +6032,15 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 		  ccompares.safe_push
 		    (std::make_pair (gimple_assign_rhs1 (vec_stmt),
 				     STMT_VINFO_REDUC_IDX (cond_info) == 2));
-		}
-	      /* ???  We probably want to have REDUC_IDX on the SLP node?
-		 We have both three and four children COND_EXPR nodes
-		 dependent on whether the comparison is still embedded
-		 as GENERIC.  So work backwards.  */
-	      int slp_reduc_idx = (SLP_TREE_CHILDREN (cond_node).length () - 3
+		  /* ???  We probably want to have REDUC_IDX on the SLP node?
+		     We have both three and four children COND_EXPR nodes
+		     dependent on whether the comparison is still embedded
+		     as GENERIC.  So work backwards.  */
+		  slp_reduc_idx = (SLP_TREE_CHILDREN (cond_node).length () - 3
 				   + STMT_VINFO_REDUC_IDX (cond_info));
+		}
+	      else
+		slp_reduc_idx = STMT_VINFO_REDUC_IDX (cond_info);
 	      cond_node = SLP_TREE_CHILDREN (cond_node)[slp_reduc_idx];
 	    }
 	}
@@ -10615,7 +10566,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  vec_steps.safe_push (vec_step);
 	  tree step_mul = gimple_build_vector (&init_stmts, &mul_elts);
 	  if (peel_mul)
-	    step_mul = gimple_build (&init_stmts, PLUS_EXPR, step_vectype,
+	    step_mul = gimple_build (&init_stmts, MINUS_EXPR, step_vectype,
 				     step_mul, peel_mul);
 	  if (!init_node)
 	    vec_init = gimple_build_vector (&init_stmts, &init_elts);
@@ -11033,7 +10984,8 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 
 	 where VEC_LHS is the vectorized live-out result and MASK is
 	 the loop mask for the final iteration.  */
-      gcc_assert (ncopies == 1 && !slp_node);
+      gcc_assert (ncopies == 1
+		  && (!slp_node || SLP_TREE_LANES (slp_node) == 1));
       gimple_seq tem = NULL;
       gimple_stmt_iterator gsi = gsi_last (tem);
       tree len = vect_get_loop_len (loop_vinfo, &gsi,
@@ -11067,7 +11019,7 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo,
 
 	 where VEC_LHS is the vectorized live-out result and MASK is
 	 the loop mask for the final iteration.  */
-      gcc_assert (!slp_node);
+      gcc_assert (!slp_node || SLP_TREE_LANES (slp_node) == 1);
       tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
       gimple_seq tem = NULL;
       gimple_stmt_iterator gsi = gsi_last (tem);
@@ -11219,7 +11171,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
       /* No transformation required.  */
       if (loop_vinfo && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	{
-	  if (slp_node)
+	  if (slp_node && SLP_TREE_LANES (slp_node) != 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -11228,7 +11180,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 				 "the loop.\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
-	  else if (ncopies > 1)
+	  else if (ncopies > 1
+		   || (slp_node && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -11238,7 +11191,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	    }
 	  else
 	    {
-	      gcc_assert (ncopies == 1 && !slp_node);
+	      gcc_assert (ncopies == 1
+			  && (!slp_node || SLP_TREE_LANES (slp_node) == 1));
 	      if (direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
 						  OPTIMIZE_FOR_SPEED))
 		vect_record_loop_mask (loop_vinfo,
@@ -11285,8 +11239,9 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
   if (slp_node)
     {
       gcc_assert (!loop_vinfo
-		  || (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
-		      && !LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)));
+		  || ((!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+		       && !LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+		      || SLP_TREE_LANES (slp_node) == 1));
 
       /* Get the correct slp vectorized stmt.  */
       vec_lhs = SLP_TREE_VEC_DEFS (slp_node)[vec_entry];
@@ -12401,6 +12356,18 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
       vect_schedule_slp (loop_vinfo, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
     }
 
+  /* Generate the loop invariant statements.  */
+  if (!gimple_seq_empty_p (LOOP_VINFO_INV_PATTERN_DEF_SEQ (loop_vinfo)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>generating loop invariant statements\n");
+      gimple_stmt_iterator gsi;
+      gsi = gsi_after_labels (loop_preheader_edge (loop)->src);
+      gsi_insert_seq_before (&gsi, LOOP_VINFO_INV_PATTERN_DEF_SEQ (loop_vinfo),
+			     GSI_CONTINUE_LINKING);
+    }
+
   /* FORNOW: the vectorizer supports only loops which body consist
      of one basic block (header + empty latch). When the vectorizer will
      support more involved loop forms, the order by which the BBs are
@@ -12872,6 +12839,7 @@ optimize_mask_stores (class loop *loop)
 		  if (has_zero_uses (lhs))
 		    {
 		      gsi_remove (&gsi_from, true);
+		      release_defs (stmt1);
 		      continue;
 		    }
 		}

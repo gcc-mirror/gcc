@@ -146,12 +146,8 @@ call_summary::dump (const extrinsic_state &ext_state,
 		    FILE *fp,
 		    bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (ext_state, &pp, simple);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this object to stderr.  */
@@ -724,8 +720,6 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
       break;
     case RK_CAST:
       {
-	const cast_region *summary_cast_reg
-	  = as_a <const cast_region *> (summary_reg);
 	const region *summary_parent_reg = summary_reg->get_parent_region ();
 	const region *caller_parent_reg
 	  = convert_region_from_summary (summary_parent_reg);
@@ -887,12 +881,8 @@ call_summary_replay::dump_to_pp (pretty_printer *pp, bool simple) const
 void
 call_summary_replay::dump (FILE *fp, bool simple) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.set_output_stream (fp);
+  tree_dump_pretty_printer pp (fp);
   dump_to_pp (&pp, simple);
-  pp_flush (&pp);
 }
 
 /* Dump a multiline representation of this object to stderr.  */

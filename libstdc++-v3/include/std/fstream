@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_FSTREAM
 #define _GLIBCXX_FSTREAM 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // iostreams
 
@@ -271,6 +273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Returns true if the external file is open.
        */
+      _GLIBCXX_NODISCARD
       bool
       is_open() const throw()
       { return _M_file.is_open(); }
@@ -668,6 +671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This hides both signatures of std::basic_ios::rdbuf().
        */
+      _GLIBCXX_NODISCARD
       __filebuf_type*
       rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
@@ -676,12 +680,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Wrapper to test for an open file.
        *  @return  @c rdbuf()->is_open()
        */
+      _GLIBCXX_NODISCARD
       bool
       is_open()
       { return _M_filebuf.is_open(); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 365. Lack of const-qualification in clause 27
+      _GLIBCXX_NODISCARD
       bool
       is_open() const
       { return _M_filebuf.is_open(); }
@@ -940,6 +946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This hides both signatures of std::basic_ios::rdbuf().
        */
+      _GLIBCXX_NODISCARD
       __filebuf_type*
       rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
@@ -948,12 +955,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Wrapper to test for an open file.
        *  @return  @c rdbuf()->is_open()
        */
+      _GLIBCXX_NODISCARD
       bool
       is_open()
       { return _M_filebuf.is_open(); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 365. Lack of const-qualification in clause 27
+      _GLIBCXX_NODISCARD
       bool
       is_open() const
       { return _M_filebuf.is_open(); }
@@ -1205,6 +1214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        *  This hides both signatures of std::basic_ios::rdbuf().
        */
+      _GLIBCXX_NODISCARD
       __filebuf_type*
       rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
@@ -1213,12 +1223,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @brief  Wrapper to test for an open file.
        *  @return  @c rdbuf()->is_open()
        */
+      _GLIBCXX_NODISCARD
       bool
       is_open()
       { return _M_filebuf.is_open(); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 365. Lack of const-qualification in clause 27
+      _GLIBCXX_NODISCARD
       bool
       is_open() const
       { return _M_filebuf.is_open(); }

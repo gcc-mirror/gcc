@@ -35,6 +35,8 @@
 
 --  Note: the implementation used in this package is a version of the
 --  Mersenne Twister. See s-rannum.adb for details and references.
+--  It is suitable for simulations, but should not be used as a cryptographic
+--  pseudo-random source.
 
 with System.Random_Numbers;
 

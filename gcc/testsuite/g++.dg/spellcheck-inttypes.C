@@ -1,4 +1,5 @@
 /* { dg-options "-std=c++11" } */
+/* { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } } */
 #ifdef _AIX
 #define _STD_TYPES_T
 #endif

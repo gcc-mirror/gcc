@@ -173,6 +173,9 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 
   gcc_assert (nelts == NULL_TREE || TREE_CODE (nelts) == INTEGER_CST);
 
+  /* An initializer is unqualified.  */
+  type = cv_unqualified (type);
+
   if (type == error_mark_node)
     ;
   else if (static_storage_p && zero_init_p (type))
@@ -659,6 +662,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("default member initializer for %qD required before the end "
 		 "of its enclosing class", member);
 	  inform (location_of (init), "defined here");
@@ -2733,6 +2737,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 	  ++ error_count;
 	  if (complain)
 	    {
+	      auto_diagnostic_group d;
 	      if (DECL_CONTEXT (field) == origin)
 		{
 		  if (using_new)
@@ -2761,6 +2766,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
 	  ++ error_count;
 	  if (complain)
 	    {
+	      auto_diagnostic_group d;
 	      if (DECL_CONTEXT (field) == origin)
 		{
 		  if (using_new)
@@ -2887,6 +2893,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
   bool warned = false;
   if (nelts)
     nelts = fold_for_warn (nelts);
+
+  auto_diagnostic_group d;
   if (nelts)
     if (CONSTANT_CLASS_P (nelts))
       warned = warning_at (loc, OPT_Wplacement_new_,
@@ -3405,6 +3413,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      error ("request for member %qD is ambiguous", fnname);
 	      print_candidates (fns);
 	    }
@@ -4122,6 +4131,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      int saved_errorcount = errorcount;
 	      if (permerror_opt (loc, OPT_Wdelete_incomplete,
 				 "operator %<delete []%> used on "
@@ -4724,7 +4734,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 		    && TREE_CONSTANT (maxindex)
 		    && (init ? TREE_CODE (init) == CONSTRUCTOR
 			: (type_has_constexpr_default_constructor
-			   (inner_elt_type)))
+			   (inner_elt_type)
+			   /* Value-initialization of scalars is constexpr.  */
+			   || (explicit_value_init_p
+			       && SCALAR_TYPE_P (inner_elt_type))))
 		    && (literal_type_p (inner_elt_type)
 			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
   vec<constructor_elt, va_gc> *const_vec = NULL;
@@ -4945,7 +4958,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      if (xvalue)
 		from = move (from);
 	      if (direct_init)
-		from = build_tree_list (NULL_TREE, from);
+		{
+		  /* Wrap the initializer in a CONSTRUCTOR so that
+		     build_vec_init recognizes it as direct-initialization.  */
+		  from = build_constructor_single (init_list_type_node,
+						   NULL_TREE, from);
+		  CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+		}
 	    }
 	  else
 	    from = NULL_TREE;
@@ -5203,6 +5222,7 @@ build_delete (location_t loc, tree otype, tree addr,
 		{
 		  if (complain & tf_error)
 		    {
+		      auto_diagnostic_group d;
 		      int saved_errorcount = errorcount;
 		      if (permerror_opt (loc, OPT_Wdelete_incomplete,
 					 "operator %<delete%> used on "

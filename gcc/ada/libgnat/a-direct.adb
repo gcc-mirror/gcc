@@ -1292,7 +1292,7 @@ package body Ada.Directories is
       Dir_Pointer      : Dir_Type_Value;
       File_Name_Addr   : Address;
       File_Name_Len    : aliased Integer;
-      Pattern_Regex    : Regexp;
+      Pattern_Regex    : System.Regexp.Regexp;
 
       Call_Result      : Integer;
       pragma Warnings (Off, Call_Result);
@@ -1377,7 +1377,7 @@ package body Ada.Directories is
                              Compose (Directory, File_Name) & ASCII.NUL;
                   Path   : String renames
                              Path_C (Path_C'First .. Path_C'Last - 1);
-                  Attr   : aliased File_Attributes;
+                  Attr   : aliased System.File_Attributes.File_Attributes;
                   Exists : Integer;
                   Error  : Integer;
 

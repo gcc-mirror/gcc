@@ -36,7 +36,12 @@
 // ISO C++ 14882: <cwctype>
 //
 
+#ifndef _GLIBCXX_CWCTYPE
+#define _GLIBCXX_CWCTYPE 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 
@@ -49,9 +54,6 @@
 
 #include <wctype.h>
 #endif // _GLIBCXX_HAVE_WCTYPE_H
-
-#ifndef _GLIBCXX_CWCTYPE
-#define _GLIBCXX_CWCTYPE 1
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum

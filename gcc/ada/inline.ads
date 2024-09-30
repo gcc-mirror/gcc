@@ -165,7 +165,10 @@ package Inline is
       N             : Node_Id;
       Subp          : Entity_Id;
       Is_Serious    : Boolean := False;
-      Suppress_Info : Boolean := False);
+      Suppress_Info : Boolean := False)
+     with
+       Pre => Msg'First <= Msg'Last
+       and then Msg (Msg'Last) = '?';
    --  This procedure is called if the node N, an instance of a call to
    --  subprogram Subp, cannot be inlined. Msg is the message to be issued,
    --  which ends with ? (it does not end with ?p?, this routine takes care of

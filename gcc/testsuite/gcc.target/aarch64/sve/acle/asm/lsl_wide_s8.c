@@ -276,7 +276,7 @@ TEST_UNIFORM_ZX (lsl_wide_x0_s8_x_untied, svint8_t, uint64_t,
 
 /*
 ** lsl_wide_1_s8_x_tied1:
-**	lsl	z0\.b, z0\.b, #1
+**	add	z0\.b, z0\.b, z0\.b
 **	ret
 */
 TEST_UNIFORM_Z (lsl_wide_1_s8_x_tied1, svint8_t,
@@ -285,7 +285,7 @@ TEST_UNIFORM_Z (lsl_wide_1_s8_x_tied1, svint8_t,
 
 /*
 ** lsl_wide_1_s8_x_untied:
-**	lsl	z0\.b, z1\.b, #1
+**	add	z0\.b, z1\.b, z1\.b
 **	ret
 */
 TEST_UNIFORM_Z (lsl_wide_1_s8_x_untied, svint8_t,

@@ -29,6 +29,8 @@ DEFINITION MODULE FOR "C" libc ;
 FROM SYSTEM IMPORT ADDRESS, CSIZE_T, CSSIZE_T ;
 
 EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
+                   atof, atoi, atol, atoll,
+                   strtod, strtof, strtold, strtol, strtoll, strtoul, strtoull,
                    write, read,
                    system, abort,
                    malloc, free,
@@ -73,6 +75,88 @@ TYPE
            END ;
 
    exitP = PROCEDURE () : INTEGER ;
+
+
+(*
+     double atof(const char *nptr)
+*)
+
+PROCEDURE atof (nptr: ADDRESS) : REAL ;
+
+
+(*
+     int atoi(const char *nptr)
+*)
+
+PROCEDURE atoi (nptr: ADDRESS) : INTEGER ;
+
+
+(*
+     long atol(const char *nptr);
+*)
+
+PROCEDURE atol (nptr: ADDRESS) : CSSIZE_T ;
+
+
+(*
+     long long atoll(const char *nptr);
+*)
+
+PROCEDURE atoll (nptr: ADDRESS) : LONGINT ;
+
+
+(*
+     double strtod(const char *restrict nptr, char **_Nullable restrict endptr)
+*)
+
+PROCEDURE strtod (nptr, endptr: ADDRESS) : REAL ;
+
+
+(*
+     float strtof(const char *restrict nptr, char **_Nullable restrict endptr)
+*)
+
+PROCEDURE strtof (nptr, endptr: ADDRESS) : SHORTREAL ;
+
+
+(*
+     long double strtold(const char *restrict nptr,
+                         char **_Nullable restrict endptr)
+*)
+
+PROCEDURE strtold (nptr, endptr: ADDRESS) : LONGREAL ;
+
+
+(*
+     long strtol(const char *restrict nptr, char **_Nullable restrict endptr,
+                 int base)
+*)
+
+PROCEDURE strtol (nptr, endptr: ADDRESS; base: INTEGER) : CSSIZE_T ;
+
+
+(*
+     long long strtoll(const char *restrict nptr,
+                       char **_Nullable restrict endptr, int base)
+*)
+
+PROCEDURE strtoll (nptr, endptr: ADDRESS; base: INTEGER) : LONGINT ;
+
+
+(*
+     unsigned long strtoul(const char *restrict nptr,
+                           char **_Nullable restrict endptr, int base)
+*)
+
+PROCEDURE strtoul (nptr, endptr: ADDRESS; base: INTEGER) : CSIZE_T ;
+
+
+(*
+     unsigned long long strtoull(const char *restrict nptr,
+                                 char **_Nullable restrict endptr, int base)
+*)
+
+PROCEDURE strtoull (nptr, endptr: ADDRESS; base: INTEGER) : LONGCARD ;
 
 
 (*
@@ -211,7 +295,7 @@ PROCEDURE close (d: INTEGER) : [ INTEGER ] ;
    open - open the file, filename with flag and mode.
 *)
 
-PROCEDURE open (filename: ADDRESS; oflag: INTEGER; ...) : INTEGER ;
+PROCEDURE open (filename: ADDRESS; oflag: INTEGER; mode: INTEGER) : INTEGER ;
 
 
 (*

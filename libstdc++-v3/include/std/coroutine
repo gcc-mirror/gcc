@@ -29,7 +29,12 @@
 #ifndef _GLIBCXX_COROUTINE
 #define _GLIBCXX_COROUTINE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
 
 #define __glibcxx_want_coroutine
 #include <bits/version.h>
@@ -99,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // [coroutine.handle.con], construct/reset
-      constexpr coroutine_handle() noexcept : _M_fr_ptr(0) {}
+      constexpr coroutine_handle() noexcept : _M_fr_ptr(nullptr) {}
 
       constexpr coroutine_handle(std::nullptr_t __h) noexcept
 	: _M_fr_ptr(__h)
@@ -358,4 +363,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // __cpp_lib_coroutine
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_COROUTINE

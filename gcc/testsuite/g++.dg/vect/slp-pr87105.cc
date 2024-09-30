@@ -3,6 +3,7 @@
 // { dg-require-effective-target vect_double }
 // For MIN/MAX recognition
 // { dg-additional-options "-ffast-math" }
+// { dg-skip-if "requires hosted libstdc++ for cmath" { ! hostedlib } }
 
 #include <algorithm>
 #include <cmath>

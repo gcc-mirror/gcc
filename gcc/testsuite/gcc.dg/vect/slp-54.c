@@ -15,4 +15,4 @@ void foo (int * __restrict x, int *y)
     }
 }
 
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { vect_int && vect_int_mult } xfail riscv*-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target { vect_int && vect_int_mult } } } } */

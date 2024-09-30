@@ -22,38 +22,48 @@
 #include "rust-bir-place.h"
 #include "rust-bir-visitor.h"
 
+#include "polonius/rust-polonius-ffi.h"
+#include "rust-tyty-variance-analysis.h"
+
 namespace Rust {
 
 namespace BIR {
 
 struct BasicBlock;
-class Node;
+class Statement;
 class AbstractExpr;
+
+using LoanId = uint32_t;
 
 /**
  * Top-level entity of the Borrow-checker IR (BIR).
- * It represents a single function (method, closure, etc.), which is also the
- * basic unit of Polonius borrow-checking.
+ * It represents a single function (method, closure, etc.), which is the
+ * basic unit of borrow-checking.
  */
 struct Function
 {
   PlaceDB place_db;
-  std::vector<PlaceId> arguments; // Only used for dump.
+  std::vector<PlaceId> arguments;
   std::vector<BasicBlock> basic_blocks;
+  FreeRegions universal_regions;
+  std::vector<std::pair<FreeRegion, FreeRegion>> universal_region_bounds;
+  location_t location;
 };
 
-/** Single "instruction" of BIR. */
-class Node
+/** Single statement of BIR. */
+class Statement
 {
 public:
   enum class Kind
   {
-    ASSIGNMENT,	  // <place> = <expr>
-    SWITCH,	  // switch <place>
-    RETURN,	  // return
-    GOTO,	  // goto
-    STORAGE_DEAD, // StorageDead(<place>)
-    STORAGE_LIVE, // StorageLive(<place>)
+    ASSIGNMENT,		  // <place> = <expr>
+    SWITCH,		  // switch <place>
+    RETURN,		  // return
+    GOTO,		  // goto
+    STORAGE_DEAD,	  // StorageDead(<place>)
+    STORAGE_LIVE,	  // StorageLive(<place>)
+    USER_TYPE_ASCRIPTION, // UserTypeAscription(<place>, <tyty>)
+    FAKE_READ,
   };
 
 private:
@@ -66,21 +76,27 @@ private:
   // ASSIGNMENT: rhs
   // otherwise: <unused>
   std::unique_ptr<AbstractExpr> expr;
+  TyTy::BaseType *type;
 
 public:
-  Node (PlaceId lhs, AbstractExpr *rhs)
+  Statement (PlaceId lhs, AbstractExpr *rhs)
     : kind (Kind::ASSIGNMENT), place (lhs), expr (rhs)
   {}
 
-  explicit Node (Kind kind, PlaceId place = INVALID_PLACE,
-		 AbstractExpr *expr = nullptr)
+  explicit Statement (Kind kind, PlaceId place = INVALID_PLACE,
+		      AbstractExpr *expr = nullptr)
     : kind (kind), place (place), expr (expr)
+  {}
+
+  explicit Statement (Kind kind, PlaceId place, TyTy::BaseType *type)
+    : kind (kind), place (place), type (type)
   {}
 
 public:
   WARN_UNUSED_RESULT Kind get_kind () const { return kind; }
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
   WARN_UNUSED_RESULT AbstractExpr &get_expr () const { return *expr; }
+  WARN_UNUSED_RESULT TyTy::BaseType *get_type () const { return type; }
 };
 
 /** Unique identifier for a basic block in the BIR. */
@@ -92,36 +108,39 @@ static constexpr BasicBlockId INVALID_BB
 struct BasicBlock
 {
   // BIR "instructions".
-  std::vector<Node> statements;
+  std::vector<Statement> statements;
   // A basic block can end with: goto, return or switch
   std::vector<BasicBlockId> successors;
 
 public:
-  WARN_UNUSED_RESULT bool is_terminated () const
-  {
-    if (statements.empty ())
-      return false;
-    switch (statements.back ().get_kind ())
-      {
-      case Node::Kind::GOTO:
-      case Node::Kind::RETURN:
-      case Node::Kind::SWITCH:
-	return true;
-      default:
-	return false;
-      }
-  }
+  WARN_UNUSED_RESULT bool is_terminated () const;
 
   WARN_UNUSED_RESULT bool is_goto_terminated () const
   {
     return is_terminated ()
-	   && statements.back ().get_kind () == Node::Kind::GOTO;
+	   && statements.back ().get_kind () == Statement::Kind::GOTO;
   }
 };
 
-// Rhs expression of BIR assignment node (abstract).
+enum class ExprKind
+{
+  INITIALIZER,
+  OPERATOR,
+  BORROW,
+  ASSIGNMENT,
+  CALL,
+};
+
+// Rhs expression of BIR assignment statements (abstract).
 class AbstractExpr : public Visitable
 {
+  ExprKind kind;
+
+public:
+  explicit AbstractExpr (ExprKind kind) : kind (kind) {}
+  WARN_UNUSED_RESULT ExprKind get_kind () const { return kind; }
+
+  virtual ~AbstractExpr () {}
 };
 
 class InitializerExpr : public VisitableImpl<AbstractExpr, InitializerExpr>
@@ -129,10 +148,17 @@ class InitializerExpr : public VisitableImpl<AbstractExpr, InitializerExpr>
   std::vector<PlaceId> values;
 
 public:
-  explicit InitializerExpr (std::vector<PlaceId> &&values) : values (values) {}
+  explicit InitializerExpr (std::vector<PlaceId> &&values)
+    : VisitableImpl<AbstractExpr, InitializerExpr> (ExprKind::INITIALIZER),
+      values (values)
+  {}
 
 public:
   std::vector<PlaceId> &get_values () { return values; }
+  WARN_UNUSED_RESULT const std::vector<PlaceId> &get_values () const
+  {
+    return values;
+  }
 };
 
 template <unsigned ARITY>
@@ -142,7 +168,8 @@ class Operator : public VisitableImpl<AbstractExpr, Operator<ARITY>>
 
 public:
   explicit Operator (std::array<PlaceId, ARITY> &&operands)
-    : operands (operands)
+    : VisitableImpl<AbstractExpr, Operator<ARITY>> (ExprKind::OPERATOR),
+      operands (operands)
   {}
 
 public:
@@ -156,15 +183,22 @@ public:
 class BorrowExpr : public VisitableImpl<AbstractExpr, BorrowExpr>
 {
   PlaceId place;
+  LoanId loan;
+  Polonius::Origin origin;
 
 public:
-  explicit BorrowExpr (PlaceId place) : place (place) {}
+  explicit BorrowExpr (PlaceId place, LoanId loan_id, Polonius::Origin lifetime)
+    : VisitableImpl<AbstractExpr, BorrowExpr> (ExprKind::BORROW), place (place),
+      loan (loan_id), origin (lifetime)
+  {}
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
+  WARN_UNUSED_RESULT LoanId get_loan () const { return loan; }
+  WARN_UNUSED_RESULT Polonius::Origin get_origin () const { return origin; }
 };
 
 /**
- * This expression is only to be used inside the assignment node and acts as
- * identity wrapper for a place value. It is separated from `Operator<1>` to
+ * This expression is only to be used inside the assignment statement and acts
+ * as identity wrapper for a place value. It is separated from `Operator<1>` to
  * render it more explicitly in the dump.
  */
 class Assignment : public VisitableImpl<AbstractExpr, Assignment>
@@ -172,26 +206,49 @@ class Assignment : public VisitableImpl<AbstractExpr, Assignment>
   PlaceId rhs;
 
 public:
-  explicit Assignment (PlaceId rhs) : rhs (rhs) {}
+  explicit Assignment (PlaceId rhs)
+    : VisitableImpl<AbstractExpr, Assignment> (ExprKind::ASSIGNMENT), rhs (rhs)
+  {}
 
 public:
   WARN_UNUSED_RESULT PlaceId get_rhs () const { return rhs; }
 };
 
-class CallExpr : public VisitableImpl<AbstractExpr, CallExpr>
+class CallExpr final : public VisitableImpl<AbstractExpr, CallExpr>
 {
   std::vector<PlaceId> arguments;
   PlaceId callable;
 
 public:
   explicit CallExpr (PlaceId callable, std::vector<PlaceId> &&arguments)
-    : arguments (arguments), callable (callable)
+    : VisitableImpl (ExprKind::CALL), arguments (arguments), callable (callable)
   {}
 
 public:
-  const std::vector<PlaceId> &get_arguments () { return arguments; }
+  WARN_UNUSED_RESULT const std::vector<PlaceId> &get_arguments () const
+  {
+    return arguments;
+  }
   WARN_UNUSED_RESULT PlaceId get_callable () const { return callable; }
 };
+
+inline bool
+BasicBlock::is_terminated () const
+{
+  if (statements.empty ())
+    return false;
+  switch (statements.back ().get_kind ())
+    {
+    case Statement::Kind::GOTO:
+    case Statement::Kind::RETURN:
+    case Statement::Kind::SWITCH:
+      return true;
+    case Statement::Kind::ASSIGNMENT:
+      return statements.back ().get_expr ().get_kind () == ExprKind::CALL;
+    default:
+      return false;
+    }
+}
 
 } // namespace BIR
 

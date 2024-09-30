@@ -19,7 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // 27.7.1 - Template class basic_stringbuf
-// NB: This file is for testing basic_filebuf with NO OTHER INCLUDES.
+// NB: This file is for testing basic_stringbuf with NO OTHER INCLUDES.
 
 #include <sstream>
 #include <testsuite_hooks.h>

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { tail_call && { c || c++11 } } } } */
+/* { dg-do compile { target { struct_musttail && { c || c++11 } } } } */
 
 extern int foo2 (int x, ...);
 

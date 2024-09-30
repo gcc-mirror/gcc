@@ -22,6 +22,7 @@
 #include "rust-ast.h"
 #include "rust-path.h"
 #include "rust-expr.h"
+#include <memory>
 
 namespace Rust {
 namespace AST {
@@ -155,19 +156,31 @@ public:
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_init_expr ()
+  Expr &get_init_expr ()
+  {
+    rust_assert (has_init_expr ());
+    return *init_expr;
+  }
+
+  std::unique_ptr<Expr> &get_init_expr_ptr ()
   {
     rust_assert (has_init_expr ());
     return init_expr;
   }
 
-  std::unique_ptr<Pattern> &get_pattern ()
+  Pattern &get_pattern ()
   {
     rust_assert (variables_pattern != nullptr);
-    return variables_pattern;
+    return *variables_pattern;
   }
 
-  std::unique_ptr<Type> &get_type ()
+  Type &get_type ()
+  {
+    rust_assert (has_type ());
+    return *type;
+  }
+
+  std::unique_ptr<Type> &get_type_ptr ()
   {
     rust_assert (has_type ());
     return type;
@@ -249,10 +262,22 @@ public:
   bool is_marked_for_strip () const override { return expr == nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Expr> &get_expr ()
+  Expr &get_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return *expr;
+  }
+
+  std::unique_ptr<Expr> &get_expr_ptr ()
   {
     rust_assert (expr != nullptr);
     return expr;
+  }
+
+  std::unique_ptr<Expr> take_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return std::move (expr);
   }
 
   bool is_semicolon_followed () const { return semicolon_followed; }

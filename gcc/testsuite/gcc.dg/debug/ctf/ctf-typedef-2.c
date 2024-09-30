@@ -2,7 +2,7 @@
 
    In this testcase, typedef of type void should be generated.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "0x2a000000\[\t \]+\[^\n\]*ctt_info" 1 } } */

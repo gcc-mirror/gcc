@@ -11,20 +11,20 @@ void consumer (void *);
   {									\
     if (which)								\
       {									\
-	for (int i = 0; i < 7; ++i)					\
+	for (int i = 0; i < 70; ++i)					\
 	  x1[i] += VAL;							\
 	consumer (x1);							\
-	for (int i = 0; i < 7; ++i)					\
+	for (int i = 0; i < 70; ++i)					\
 	  x2[i] -= VAL;							\
 	consumer (x2);							\
       }									\
     else								\
       {									\
-	for (int i = 0; i < 7; ++i)					\
+	for (int i = 0; i < 70; ++i)					\
 	  x3[i] &= VAL;							\
 	consumer (x3);							\
       }									\
-    for (int i = 0; i < 7; ++i)						\
+    for (int i = 0; i < 70; ++i)					\
       x4[i] |= VAL;							\
     consumer (x4);							\
   }

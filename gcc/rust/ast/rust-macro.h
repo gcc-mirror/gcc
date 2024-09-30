@@ -610,6 +610,11 @@ public:
 
   std::string as_string () const override;
 
+  Pattern::Kind get_pattern_kind () override
+  {
+    return Pattern::Kind::MacroInvocation;
+  }
+
   /**
    * The default constructor you should use. Whenever we parse a macro call, we
    * cannot possibly know whether or not this call refers to a builtin macro or
@@ -722,10 +727,11 @@ private:
   {}
 
   MacroInvocation (const MacroInvocation &other)
-    : TraitItem (other.locus), outer_attrs (other.outer_attrs),
-      locus (other.locus), node_id (other.node_id),
-      invoc_data (other.invoc_data), is_semi_coloned (other.is_semi_coloned),
-      kind (other.kind), builtin_kind (other.builtin_kind)
+    : TraitItem (other.locus), ExternalItem (other.node_id),
+      outer_attrs (other.outer_attrs), locus (other.locus),
+      node_id (other.node_id), invoc_data (other.invoc_data),
+      is_semi_coloned (other.is_semi_coloned), kind (other.kind),
+      builtin_kind (other.builtin_kind)
   {
     if (other.kind == InvocKind::Builtin)
       for (auto &pending : other.pending_eager_invocs)

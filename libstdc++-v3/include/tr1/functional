@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR1_FUNCTIONAL
 #define _GLIBCXX_TR1_FUNCTIONAL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // TR1
 
@@ -43,6 +45,10 @@
 #include <tr1/functional_hash.h>
 #include <ext/type_traits.h>
 #include <bits/move.h> // for std::__addressof
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvolatile" // volatile parm/return
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -2282,4 +2288,5 @@ namespace tr1
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_TR1_FUNCTIONAL

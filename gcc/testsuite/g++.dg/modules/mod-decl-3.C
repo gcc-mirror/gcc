@@ -22,5 +22,3 @@ namespace Bink
   import  // { dg-error "does not name" }
   ben;
 }
-
-// { dg-prune-output "not writing module" }

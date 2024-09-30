@@ -2401,7 +2401,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	    }
 	  unsigned int len;
 	  print_hex_buf_size (val, &len);
-	  if (UNLIKELY (len > sizeof (pp_buffer (pp)->digit_buffer)))
+	  if (UNLIKELY (len > sizeof (pp_buffer (pp)->m_digit_buffer)))
 	    {
 	      char *buf = XALLOCAVEC (char, len);
 	      print_hex (val, buf);
@@ -2409,8 +2409,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	    }
 	  else
 	    {
-	      print_hex (val, pp_buffer (pp)->digit_buffer);
-	      pp_string (pp, pp_buffer (pp)->digit_buffer);
+	      print_hex (val, pp_buffer (pp)->m_digit_buffer);
+	      pp_string (pp, pp_buffer (pp)->m_digit_buffer);
 	    }
 	}
       if ((flags & TDF_GIMPLE)
@@ -4898,10 +4898,10 @@ pp_double_int (pretty_printer *pp, double_int d, bool uns)
 	}
       /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
 	 systems?  */
-      sprintf (pp_buffer (pp)->digit_buffer,
+      sprintf (pp_buffer (pp)->m_digit_buffer,
 	       HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 	       (unsigned HOST_WIDE_INT) high, low);
-      pp_string (pp, pp_buffer (pp)->digit_buffer);
+      pp_string (pp, pp_buffer (pp)->m_digit_buffer);
     }
 }
 

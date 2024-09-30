@@ -727,46 +727,6 @@ package Sinfo is
    --    refers to a node or is posted on its source location, and has the
    --    effect of inhibiting further messages involving this same node.
 
-   -----------------------
-   -- Modify_Tree_For_C --
-   -----------------------
-
-   --  If the flag Opt.Modify_Tree_For_C is set True, then the tree is modified
-   --  in ways that help match the semantics better with C, easing the task of
-   --  interfacing to C code generators (other than GCC, where the work is done
-   --  in gigi, and there is no point in changing that), and also making life
-   --  easier for Cprint in generating C source code.
-
-   --  The current modifications implemented are as follows:
-
-   --    N_Op_Rotate_Left, N_Op_Rotate_Right, N_Shift_Right_Arithmetic nodes
-   --    are eliminated from the tree (since these operations do not exist in
-   --    C), and the operations are rewritten in terms of logical shifts and
-   --    other logical operations that do exist in C. See Exp_Ch4 expansion
-   --    routines for these operators for details of the transformations made.
-
-   --    The right operand of N_Op_Shift_Right and N_Op_Shift_Left is always
-   --    less than the word size (since other values are not well-defined in
-   --    C). This is done using an explicit test if necessary.
-
-   --    Min and Max attributes are expanded into equivalent if expressions,
-   --    dealing properly with side effect issues.
-
-   --    Mod for signed integer types is expanded into equivalent expressions
-   --    using Rem (which is % in C) and other C-available operators.
-
-   --    Functions returning bounded arrays are transformed into procedures
-   --    with an extra out parameter, and the calls updated accordingly.
-
-   --    Aggregates are only kept unexpanded for object declarations, otherwise
-   --    they are systematically expanded into loops (for arrays) and
-   --    individual assignments (for records).
-
-   --    Unconstrained array types are handled by means of fat pointers.
-
-   --    Postconditions are inlined by the frontend since their body may have
-   --    references to itypes defined in the enclosing subprogram.
-
    ------------------------------------
    -- Description of Semantic Fields --
    ------------------------------------
@@ -1789,6 +1749,11 @@ package Sinfo is
    --    flag aids the ABE Processing phase to suppress the diagnostics of
    --    finalization actions in initialization contexts.
 
+   --  Is_Interpolated_String_Literal
+   --    Defined in string literals. Used to differentiate string literals
+   --    composed of interpolated string elements from string literals found
+   --    in interpolated expressions.
+
    --  Is_Known_Guaranteed_ABE
    --    NOTE: this flag is shared between the legacy ABE mechanism and the
    --    default ABE mechanism.
@@ -2650,6 +2615,7 @@ package Sinfo is
       --  Has_Wide_Character
       --  Has_Wide_Wide_Character
       --  Is_Folded_In_Parser
+      --  Is_Interpolated_String_Literal
       --  plus fields for expression
 
       ---------------------------------------
@@ -2657,8 +2623,7 @@ package Sinfo is
       ---------------------------------------
 
       --  INTERPOLATED_STRING_LITERAL ::=
-      --    '{' "{INTERPOLATED_STRING_ELEMENT}" {
-      --        "{INTERPOLATED_STRING_ELEMENT}" } '}'
+      --    'f' "{INTERPOLATED_STRING_ELEMENT}"
 
       --  INTERPOLATED_STRING_ELEMENT ::=
       --      ESCAPED_CHARACTER | INTERPOLATED_EXPRESSION
@@ -4020,9 +3985,6 @@ package Sinfo is
       --  Must_Be_Byte_Aligned
       --  plus fields for expression
 
-      --  Note: in Modify_Tree_For_C mode, Max and Min attributes are expanded
-      --  into equivalent if expressions, properly taking care of side effects.
-
       ---------------------------------
       -- 4.1.4  Attribute Designator --
       ---------------------------------
@@ -4241,6 +4203,11 @@ package Sinfo is
 
       --  At most one of (Defining_Identifier, Iterator_Specification)
       --  is present at a time, in which case the other one is empty.
+      --  The Reverse_Present flag is present for cases where semantic analysis
+      --  later changes the association to have an N_Iterator_Specification
+      --  rather than a Defining_Identifier (due to the "discrete choice"
+      --  being resolved as an iterator name), and needs to set that flag on
+      --  the N_Iterator_Specification node.
 
       --  N_Iterated_Component_Association
       --  Sloc points to FOR
@@ -4248,6 +4215,7 @@ package Sinfo is
       --  Iterator_Specification
       --  Expression
       --  Discrete_Choices
+      --  Reverse_Present
       --  Loop_Actions
       --  Box_Present
 
@@ -4629,11 +4597,6 @@ package Sinfo is
       --  the case where the computed range exceeds that of Long_Long_Integer,
       --  and we are running in ELIMINATED mode, the operator node will be
       --  changed to be a call to the appropriate routine in System.Bignums.
-
-      --  Note: In Modify_Tree_For_C mode, we do not generate an N_Op_Mod node
-      --  for signed integer types (since there is no equivalent operator in
-      --  C). Instead we rewrite such an operation in terms of REM (which is
-      --  % in C) and other C-available operators.
 
       ------------------------------------
       -- 4.5.7  Conditional Expressions --
@@ -5222,14 +5185,14 @@ package Sinfo is
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
       --  Cleanup_Actions
-      --  Has_Created_Identifier
-      --  Is_Asynchronous_Call_Block
-      --  Is_Task_Allocation_Block
-      --  Exception_Junk
-      --  Is_Abort_Block
-      --  Is_Initialization_Block
-      --  Is_Task_Master
       --  At_End_Proc (set to Empty if no clean up procedure)
+      --  Exception_Junk
+      --  Has_Created_Identifier
+      --  Is_Abort_Block
+      --  Is_Asynchronous_Call_Block
+      --  Is_Initialization_Block
+      --  Is_Task_Allocation_Block
+      --  Is_Task_Master
 
       -------------------------
       -- 5.7  Exit Statement --
@@ -5504,6 +5467,7 @@ package Sinfo is
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
       --  Corresponding_Spec
+      --  At_End_Proc (set to Empty if no clean up procedure)
       --  Acts_As_Spec
       --  Bad_Is_Detected used only by parser
       --  Do_Storage_Check
@@ -5741,8 +5705,8 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence (set to Empty if no HSS present)
       --  Corresponding_Spec
-      --  Was_Originally_Stub
       --  At_End_Proc (set to Empty if no clean up procedure)
+      --  Was_Originally_Stub
 
       --  Note: if a source level package does not contain a handled sequence
       --  of statements, then the parser supplies a dummy one with a null
@@ -6774,7 +6738,6 @@ package Sinfo is
       --  Corresponding_Spec_Of_Stub
       --  Library_Unit points to the subunit
       --  Corresponding_Body
-      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -------------------------------
       -- 10.1.3  Package Body Stub --
@@ -7798,12 +7761,6 @@ package Sinfo is
       --  plus fields for expression
       --  Shift_Count_OK
 
-      --  Note: N_Op_Rotate_Left, N_Op_Rotate_Right, N_Shift_Right_Arithmetic
-      --  never appear in the expanded tree if Modify_Tree_For_C mode is set.
-
-      --  Note: For N_Op_Shift_Left and N_Op_Shift_Right, the right operand is
-      --  always less than the word size if Modify_Tree_For_C mode is set.
-
    --------------------------
    -- Obsolescent Features --
    --------------------------
@@ -8112,9 +8069,6 @@ package Sinfo is
       --  actions are inserted. The expander removes such empty cases after
       --  the expression of the node is fully analyzed and expanded, at which
       --  point it is safe to remove it, since no more actions can be inserted.
-
-      --  Note: In Modify_Tree_For_C, we never generate any declarations in
-      --  the action list, which can contain only non-declarative statements.
 
       --------------------
       -- Free Statement --

@@ -32,7 +32,9 @@
 #ifndef _VALARRAY_BEFORE_H
 #define _VALARRAY_BEFORE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/slice_array.h>
 

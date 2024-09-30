@@ -1,3 +1,5 @@
+// { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
+
 #include <cassert>
 
 typedef int intarr100[100];

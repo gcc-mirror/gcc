@@ -1,5 +1,6 @@
 /* { dg-require-effective-target alloca } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 #include "../../gcc.dg/analyzer/analyzer-decls.h"

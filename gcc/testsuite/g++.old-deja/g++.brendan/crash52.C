@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "-Wreturn-type" }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed old-abort
 #include <iostream>
 

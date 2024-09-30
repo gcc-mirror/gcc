@@ -109,7 +109,7 @@ private
 
    type Holder_Access is access all Holder;
 
-   type Shared_Holder is record
+   type Shared_Holder is limited record
       Counter : System.Atomic_Counters.Atomic_Counter;
       Element : Element_Access;
    end record;

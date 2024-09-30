@@ -57,7 +57,7 @@ typedef enum {ldtoa_maxsignificant, ldtoa_decimaldigits} ldtoa_Mode;
              error to TRUE if the number is too large or badly formed.
 */
 
-EXTERN long double ldtoa_strtold (void * s, bool *error);
+EXTERN long double ldtoa_strtold (void *s, bool *error);
 
 /*
    ldtoa - converts a LONGREAL, d, into a string.  The address of the

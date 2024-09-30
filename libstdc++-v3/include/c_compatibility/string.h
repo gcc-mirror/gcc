@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cstring>
-
 #ifndef _GLIBCXX_STRING_H
 #define _GLIBCXX_STRING_H 1
+
+#include <cstring>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 using std::memcpy;

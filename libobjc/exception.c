@@ -42,7 +42,7 @@ is_kind_of_exception_matcher (Class catch_class, id exception)
     return 1;
 
   /* If exception is nil (eg, @throw nil;), then it can only be
-     catched by a catch-all (eg, @catch (id object)).  */
+     caught by a catch-all (eg, @catch (id object)).  */
   if (exception != nil)
     {
       Class c;
@@ -384,7 +384,7 @@ PERSONALITY_FUNCTION (int version,
 #endif /* __USING_SJLJ_EXCEPTIONS__  */
 
   /* If ip is not present in the table, C++ would call terminate.  */
-  /* ??? As with Java, it's perhaps better to tweek the LSDA to that
+  /* ??? As with Java, it's perhaps better to tweak the LSDA to that
      no-action is mapped to no-entry.  */
   CONTINUE_UNWINDING;
 

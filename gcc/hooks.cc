@@ -62,6 +62,20 @@ hook_bool_bool_gcc_optionsp_false (bool, struct gcc_options *)
   return false;
 }
 
+/* Generic hook that takes (dwarf_call_frame_info, dw_cfi_oprnd_type &) and
+   return false.  */
+bool hook_bool_dwcfi_dwcfioprndtyperef_false (dwarf_call_frame_info,
+					      dw_cfi_oprnd_type &)
+{
+  return false;
+}
+
+/* Generic hook that takes (FILE *, dw_cfi_ref) and return false.  */
+bool hook_bool_FILEptr_dwcfiptr_false (FILE *, dw_cfi_ref)
+{
+  return false;
+}
+
 /* Generic hook that takes const int, const int) and returns true.  */
 bool hook_bool_const_int_const_int_true (const int, const int)
 {

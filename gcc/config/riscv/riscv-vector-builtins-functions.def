@@ -653,7 +653,7 @@ DEF_RVV_FUNCTION (vsoxseg, seg_indexed_loadstore, none_m_preds, tuple_v_scalar_p
 DEF_RVV_FUNCTION (vlsegff, seg_fault_load, full_preds, tuple_v_scalar_const_ptr_size_ptr_ops)
 #undef REQUIRED_EXTENSIONS
 
-/* Definiation of crypto vector intrinsic functions */
+/* Definition of crypto vector intrinsic functions */
 // ZVBB and ZVKB
 #define REQUIRED_EXTENSIONS ZVBB_EXT
 DEF_RVV_FUNCTION (vbrev,  alu, full_preds, u_vv_ops)

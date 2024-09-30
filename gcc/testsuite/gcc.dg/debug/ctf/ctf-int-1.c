@@ -1,7 +1,7 @@
 /* Tests for CTF integer base types.
    - Verify that there is a single record for the base types.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 /* { dg-final { scan-assembler-times "ascii \"int.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"short int.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

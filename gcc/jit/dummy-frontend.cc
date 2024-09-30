@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "cgraph.h"
 #include "target.h"
+#include "diagnostic-format-text.h"
 
 #include <mpfr.h>
 
@@ -984,7 +985,7 @@ struct ggc_root_tab jit_root_tab[] =
 /* Implementation of "begin_diagnostic".  */
 
 static void
-jit_begin_diagnostic (diagnostic_context */*context*/,
+jit_begin_diagnostic (diagnostic_text_output_format &,
 		      const diagnostic_info */*diagnostic*/)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
@@ -997,7 +998,7 @@ jit_begin_diagnostic (diagnostic_context */*context*/,
 /* Implementation of "end_diagnostic".  */
 
 static void
-jit_end_diagnostic (diagnostic_context *context,
+jit_end_diagnostic (diagnostic_text_output_format &text_output,
 		    const diagnostic_info *diagnostic,
 		    diagnostic_t)
 {
@@ -1007,7 +1008,7 @@ jit_end_diagnostic (diagnostic_context *context,
   /* Delegate to the playback context (and thence to the
      recording context).  */
   gcc_assert (diagnostic);
-  gcc::jit::active_playback_ctxt->add_diagnostic (context, *diagnostic);
+  gcc::jit::active_playback_ctxt->add_diagnostic (&text_output.get_context (), *diagnostic); // FIXME
 }
 
 /* Language hooks.  */
@@ -1026,8 +1027,8 @@ jit_langhook_init (void)
     }
 
   gcc_assert (global_dc);
-  diagnostic_starter (global_dc) = jit_begin_diagnostic;
-  diagnostic_finalizer (global_dc) = jit_end_diagnostic;
+  diagnostic_text_starter (global_dc) = jit_begin_diagnostic;
+  diagnostic_text_finalizer (global_dc) = jit_end_diagnostic;
 
   build_common_tree_nodes (false);
 

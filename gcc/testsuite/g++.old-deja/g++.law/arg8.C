@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // GROUPS passed arg-matching
 // arg-matching file
 // Message-Id: <9307081747.AA14030@tnt>

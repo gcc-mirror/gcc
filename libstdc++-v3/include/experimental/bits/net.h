@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_EXPERIMENTAL_NET_H
 #define _GLIBCXX_EXPERIMENTAL_NET_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201402L
 

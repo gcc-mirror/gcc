@@ -91,5 +91,4 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump "vect_recog_dot_prod_pattern: detected" "vect" } } */
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorizing statement: \\S+ = DOT_PROD_EXPR" 16 "vect" } } */
+/* { dg-final { scan-tree-dump "vectorizing SLP node starting from: \\S+ = DOT_PROD_EXPR" "vect" { target vect_sdot_qi } } } */

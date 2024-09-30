@@ -46,8 +46,13 @@ void* operator new[](std::size_t size, const std::nothrow_t&) throw();
 void  operator delete[](void* ptr) throw();
 void  operator delete[](void* ptr, const std::nothrow_t&) throw();
 
-void* operator new  (std::size_t size, void* ptr) throw();
-void* operator new[](std::size_t size, void* ptr) throw();
+#if __cplusplus > 202302L
+# define CXX26_CONSTEXPR constexpr
+#else
+# define CXX26_CONSTEXPR
+#endif
+CXX26_CONSTEXPR void* operator new  (std::size_t size, void* ptr) throw();
+CXX26_CONSTEXPR void* operator new[](std::size_t size, void* ptr) throw();
 void  operator delete  (void* ptr, void*) throw();
 void  operator delete[](void* ptr, void*) throw();
 

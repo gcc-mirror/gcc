@@ -1,5 +1,4 @@
-;;   This file contains instructions that support fixed-point operations
-;;   for Atmel AVR micro controllers.
+;;   Support fixed-point operations for AVR 8-bit microcontrollers.
 ;;   Copyright (C) 2012-2024 Free Software Foundation, Inc.
 ;;
 ;;   Contributed by Sean D'Epagnier  (sean@depagnier.com)

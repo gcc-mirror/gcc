@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 #define INC_FUNCTIONAL  1
 #define USE_STATIC_CAST 1
 

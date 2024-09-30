@@ -34,7 +34,9 @@
 #ifndef _GLIBCXX_SPAN
 #define _GLIBCXX_SPAN 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_span
 #include <bits/version.h>
@@ -123,6 +125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __is_compatible_ref
 	  = __is_array_convertible<_Type, remove_reference_t<_Ref>>;
 
+      // Nested type so that _Type is not an associated class of iterator.
+      struct __iter_tag;
+
     public:
       // member types
       using element_type           = _Type;
@@ -133,7 +138,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using const_pointer          = const _Type*;
       using reference              = element_type&;
       using const_reference        = const element_type&;
-      using iterator = __gnu_cxx::__normal_iterator<pointer, span>;
+      using iterator = __gnu_cxx::__normal_iterator<pointer, __iter_tag>;
       using reverse_iterator       = std::reverse_iterator<iterator>;
 #if __cplusplus > 202002L
       using const_iterator         = std::const_iterator<iterator>;

@@ -361,7 +361,8 @@ extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
 
 extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
 				      HOST_WIDE_INT *, HOST_WIDE_INT *,
-				      bool *);
+				      int *);
+extern bool type_has_padding_at_level_p (tree);
 extern bool immediate_const_ctor_p (const_tree, unsigned int words = 1);
 extern void store_constructor (tree, rtx, int, poly_int64, bool);
 extern HOST_WIDE_INT int_expr_size (const_tree exp);

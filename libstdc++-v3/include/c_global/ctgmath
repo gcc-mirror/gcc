@@ -26,7 +26,9 @@
  *  This is a Standard C++ Library header.
  */
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #ifndef _GLIBCXX_CTGMATH
 #define _GLIBCXX_CTGMATH 1
@@ -40,5 +42,4 @@ extern "C++" {
 }
 #endif
 
-#endif 
-
+#endif

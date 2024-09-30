@@ -29,7 +29,9 @@
 #ifndef _SCOPED_ALLOCATOR
 #define _SCOPED_ALLOCATOR 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
@@ -42,6 +44,9 @@
 #if __cplusplus > 201703L
 # include <bits/uses_allocator_args.h>
 #endif
+
+#define __glibcxx_want_allocator_traits_is_always_equal
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

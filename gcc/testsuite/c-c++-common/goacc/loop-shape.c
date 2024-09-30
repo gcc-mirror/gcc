@@ -1,7 +1,7 @@
 /* Exercise *_parser_oacc_shape_clause by checking various combinations
    of gang, worker and vector clause arguments.  */
 
-/* { dg-compile } */
+/* { dg-do compile } */
 
 int main ()
 {

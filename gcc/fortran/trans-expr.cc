@@ -147,7 +147,9 @@ tree
 gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
 {
   gfc_symbol *sym = expr->symtree->n.sym;
-  bool is_coarray = sym->attr.codimension;
+  bool is_coarray = sym->ts.type == BT_CLASS
+		      ? CLASS_DATA (sym)->attr.codimension
+		      : sym->attr.codimension;
   gfc_expr *caf_expr = gfc_copy_expr (expr);
   gfc_ref *ref = caf_expr->ref, *last_caf_ref = NULL;
 
@@ -173,6 +175,9 @@ gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
   gfc_free_ref_list (last_caf_ref->next);
   last_caf_ref->next = NULL;
   caf_expr->rank = comp_ref ? 0 : last_caf_ref->u.c.component->as->rank;
+  caf_expr->corank = last_caf_ref->u.c.component->as
+		       ? last_caf_ref->u.c.component->as->corank
+		       : expr->corank;
   se.want_pointer = comp_ref;
   gfc_conv_expr (&se, caf_expr);
   gfc_add_block_to_block (&outerse->pre, &se.pre);
@@ -2039,7 +2044,6 @@ void
 gfc_advance_se_ss_chain (gfc_se * se)
 {
   gfc_se *p;
-  gfc_ss *ss;
 
   gcc_assert (se != NULL && se->ss != NULL && se->ss != gfc_ss_terminator);
 
@@ -2051,15 +2055,7 @@ gfc_advance_se_ss_chain (gfc_se * se)
       gcc_assert (p->parent == NULL || p->parent->ss == p->ss
 		  || p->parent->ss->nested_ss == p->ss);
 
-      /* If we were in a nested loop, the next scalarized expression can be
-	 on the parent ss' next pointer.  Thus we should not take the next
-	 pointer blindly, but rather go up one nest level as long as next
-	 is the end of chain.  */
-      ss = p->ss;
-      while (ss->next == gfc_ss_terminator && ss->parent != NULL)
-	ss = ss->parent;
-
-      p->ss = ss->next;
+      p->ss = p->ss->next;
 
       p = p->parent;
     }
@@ -2417,7 +2413,8 @@ gfc_get_caf_token_offset (gfc_se *se, tree *token, tree *offset, tree caf_decl,
     {
       gcc_assert (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (caf_decl))
 		    == GFC_ARRAY_ALLOCATABLE
-		  || expr->symtree->n.sym->attr.select_type_temporary);
+		  || expr->symtree->n.sym->attr.select_type_temporary
+		  || expr->symtree->n.sym->assoc);
       *token = gfc_conv_descriptor_token (caf_decl);
     }
   else if (DECL_LANG_SPECIFIC (caf_decl)
@@ -3236,6 +3233,13 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       else
         se->string_length = sym->ts.u.cl->backend_decl;
       gcc_assert (se->string_length);
+
+      /* For coarray strings return the pointer to the data and not the
+	 descriptor.  */
+      if (sym->attr.codimension && sym->attr.associate_var
+	  && !se->descriptor_only
+	  && TREE_CODE (TREE_TYPE (se->expr)) != ARRAY_TYPE)
+	se->expr = gfc_conv_descriptor_data_get (se->expr);
     }
 
   /* Some expressions leak through that haven't been fixed up.  */
@@ -3969,9 +3973,9 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
     case INTRINSIC_DIVIDE:
       /* If expr is a real or complex expr, use an RDIV_EXPR. If op1 is
-         an integer, we must round towards zero, so we use a
+	 an integer or unsigned, we must round towards zero, so we use a
          TRUNC_DIV_EXPR.  */
-      if (expr->ts.type == BT_INTEGER)
+      if (expr->ts.type == BT_INTEGER || expr->ts.type == BT_UNSIGNED)
 	code = TRUNC_DIV_EXPR;
       else
 	code = RDIV_EXPR;
@@ -5822,6 +5826,10 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	    }
 	  else
 	    gcc_unreachable ();
+
+	case BT_UNSIGNED:
+	  gfc_internal_error ("Unsigned not yet implemented");
+
 	case BT_PROCEDURE:
 	case BT_HOLLERITH:
 	case BT_UNION:
@@ -6430,11 +6438,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     {
       bool finalized = false;
       tree derived_array = NULL_TREE;
+      symbol_attribute *attr;
 
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
 
+      attr = fsym ? &(fsym->ts.type == BT_CLASS ? CLASS_DATA (fsym)->attr
+						: fsym->attr)
+		  : nullptr;
       /* If the procedure requires an explicit interface, the actual
 	 argument is passed according to the corresponding formal
 	 argument.  If the corresponding formal argument is a POINTER,
@@ -6450,7 +6462,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (comp)
 	nodesc_arg = nodesc_arg || !comp->attr.always_explicit;
       else
-	nodesc_arg = nodesc_arg || !sym->attr.always_explicit;
+	nodesc_arg
+	  = nodesc_arg
+	    || !(sym->attr.always_explicit || (attr && attr->codimension));
 
       /* Class array expressions are sometimes coming completely unadorned
 	 with either arrayspec or _data component.  Correct that here.
@@ -9637,7 +9651,7 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 
       /* Register the component with the caf-lib before it is initialized.
 	 Register only allocatable components, that are not coarray'ed
-	 components (%comp[*]).  Only register when the constructor is not the
+	 components (%comp[*]).  Only register when the constructor is the
 	 null-expression.  */
       if (coarray && !cm->attr.codimension
 	  && (cm->attr.allocatable || cm->attr.pointer)
@@ -10351,7 +10365,13 @@ trans_caf_token_assign (gfc_se *lse, gfc_se *rse, gfc_expr *expr1,
   else if (lhs_attr.codimension)
     {
       lhs_tok = gfc_get_ultimate_alloc_ptr_comps_caf_token (lse, expr1);
-      lhs_tok = build_fold_indirect_ref (lhs_tok);
+      if (!lhs_tok)
+	{
+	  lhs_tok = gfc_get_tree_for_caf_expr (expr1);
+	  lhs_tok = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (lhs_tok));
+	}
+      else
+	lhs_tok = build_fold_indirect_ref (lhs_tok);
       tmp = build2_loc (input_location, MODIFY_EXPR, void_type_node,
 			lhs_tok, null_pointer_node);
       gfc_prepend_expr_to_block (&lse->post, tmp);
@@ -10501,10 +10521,25 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       gfc_add_modify (&block, lse.expr,
 		      fold_convert (TREE_TYPE (lse.expr), rse.expr));
 
-      /* Also set the tokens for pointer components in derived typed
-	 coarrays.  */
       if (flag_coarray == GFC_FCOARRAY_LIB)
-	trans_caf_token_assign (&lse, &rse, expr1, expr2);
+	{
+	  if (expr1->ref)
+	    /* Also set the tokens for pointer components in derived typed
+	       coarrays.  */
+	    trans_caf_token_assign (&lse, &rse, expr1, expr2);
+	  else if (gfc_caf_attr (expr1).codimension)
+	    {
+	      tree lhs_caf_decl, rhs_caf_decl, lhs_tok, rhs_tok;
+
+	      lhs_caf_decl = gfc_get_tree_for_caf_expr (expr1);
+	      rhs_caf_decl = gfc_get_tree_for_caf_expr (expr2);
+	      gfc_get_caf_token_offset (&lse, &lhs_tok, nullptr, lhs_caf_decl,
+					NULL_TREE, expr1);
+	      gfc_get_caf_token_offset (&rse, &rhs_tok, nullptr, rhs_caf_decl,
+					NULL_TREE, expr2);
+	      gfc_add_modify (&block, lhs_tok, rhs_tok);
+	    }
+	}
 
       gfc_add_block_to_block (&block, &rse.post);
       gfc_add_block_to_block (&block, &lse.post);
@@ -10946,8 +10981,9 @@ gfc_conv_string_parameter (gfc_se * se)
       the assignment from the temporary to the lhs.  */
 
 tree
-gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
-			 bool deep_copy, bool dealloc, bool in_coarray)
+gfc_trans_scalar_assign (gfc_se *lse, gfc_se *rse, gfc_typespec ts,
+			 bool deep_copy, bool dealloc, bool in_coarray,
+			 bool assoc_assign)
 {
   stmtblock_t block;
   tree tmp;
@@ -11068,6 +11104,21 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
 
+      if (in_coarray)
+	{
+	  if (flag_coarray == GFC_FCOARRAY_LIB && assoc_assign)
+	    {
+	      gfc_add_modify (&block, gfc_conv_descriptor_token (lse->expr),
+			      TYPE_LANG_SPECIFIC (
+				TREE_TYPE (TREE_TYPE (rse->expr)))
+				->caf_token);
+	    }
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (lse->expr)))
+	    lse->expr = gfc_conv_array_data (lse->expr);
+	  if (flag_coarray == GFC_FCOARRAY_SINGLE && assoc_assign
+	      && !POINTER_TYPE_P (TREE_TYPE (rse->expr)))
+	    rse->expr = gfc_build_addr_expr (NULL_TREE, rse->expr);
+	}
       gfc_add_modify (&block, lse->expr,
 		      fold_convert (TREE_TYPE (lse->expr), rse->expr));
     }
@@ -12240,6 +12291,15 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
     }
 }
 
+bool
+is_assoc_assign (gfc_expr *lhs, gfc_expr *rhs)
+{
+  if (lhs->expr_type != EXPR_VARIABLE || rhs->expr_type != EXPR_VARIABLE)
+    return false;
+
+  return lhs->symtree->n.sym->assoc
+	 && lhs->symtree->n.sym->assoc->target == rhs;
+}
 
 /* Subroutine of gfc_trans_assignment that actually scalarizes the
    assignment.  EXPR1 is the destination/LHS and EXPR2 is the source/RHS.
@@ -12273,6 +12333,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   symbol_attribute lhs_caf_attr, rhs_caf_attr, lhs_attr;
   bool is_poly_assign;
   bool realloc_flag;
+  bool assoc_assign = false;
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -12327,6 +12388,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		       || gfc_is_class_array_ref (expr2, NULL)
 		       || gfc_is_class_scalar_expr (expr2))
 		   && lhs_attr.flavor != FL_PROCEDURE;
+
+  assoc_assign = is_assoc_assign (expr1, expr2);
 
   realloc_flag = flag_realloc_lhs
 		 && gfc_is_reallocatable_lhs (expr1)
@@ -12421,11 +12484,13 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   l_is_temp = (lss != gfc_ss_terminator && loop.temp_ss != NULL);
 
   /* Translate the expression.  */
-  rse.want_coarray = flag_coarray == GFC_FCOARRAY_LIB && init_flag
-      && lhs_caf_attr.codimension;
+  rse.want_coarray = flag_coarray == GFC_FCOARRAY_LIB
+		     && (init_flag || assoc_assign) && lhs_caf_attr.codimension;
+  rse.want_pointer = rse.want_coarray && !init_flag && !lhs_caf_attr.dimension;
   gfc_conv_expr (&rse, expr2);
 
-  /* Deal with the case of a scalar class function assigned to a derived type.  */
+  /* Deal with the case of a scalar class function assigned to a derived type.
+   */
   if (gfc_is_alloc_class_scalar_function (expr2)
       && expr1->ts.type == BT_DERIVED)
     {
@@ -12598,29 +12663,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
       expr1->must_finalize = 0;
     }
-  else if (flag_coarray == GFC_FCOARRAY_LIB
-	   && lhs_caf_attr.codimension && rhs_caf_attr.codimension
-	   && ((lhs_caf_attr.allocatable && lhs_refs_comp)
-	       || (rhs_caf_attr.allocatable && rhs_refs_comp)))
-    {
-      /* Only detour to caf_send[get][_by_ref] () when the lhs or rhs is an
-	 allocatable component, because those need to be accessed via the
-	 caf-runtime.  No need to check for coindexes here, because resolve
-	 has rewritten those already.  */
-      gfc_code code;
-      gfc_actual_arglist a1, a2;
-      /* Clear the structures to prevent accessing garbage.  */
-      memset (&code, '\0', sizeof (gfc_code));
-      memset (&a1, '\0', sizeof (gfc_actual_arglist));
-      memset (&a2, '\0', sizeof (gfc_actual_arglist));
-      a1.expr = expr1;
-      a1.next = &a2;
-      a2.expr = expr2;
-      a2.next = NULL;
-      code.ext.actual = &a1;
-      code.resolved_isym = gfc_intrinsic_subroutine_by_id (GFC_ISYM_CAF_SEND);
-      tmp = gfc_conv_intrinsic_subroutine (&code);
-    }
   else if (!is_poly_assign && expr2->must_finalize
 	   && expr1->ts.type == BT_CLASS
 	   && expr2->ts.type == BT_CLASS)
@@ -12663,15 +12705,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   else
     gfc_add_block_to_block (&body, &rse.pre);
 
+  if (flag_coarray != GFC_FCOARRAY_NONE && expr1->ts.type == BT_CHARACTER
+      && assoc_assign)
+    tmp = gfc_trans_pointer_assignment (expr1, expr2);
+
   /* If nothing else works, do it the old fashioned way!  */
   if (tmp == NULL_TREE)
-    tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				   gfc_expr_is_variable (expr2)
-				   || scalar_to_array
+    tmp
+      = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				 gfc_expr_is_variable (expr2) || scalar_to_array
 				   || expr2->expr_type == EXPR_ARRAY,
-				   !(l_is_temp || init_flag) && dealloc,
-				   expr1->symtree->n.sym->attr.codimension);
-
+				 !(l_is_temp || init_flag) && dealloc,
+				 expr1->symtree->n.sym->attr.codimension,
+				 assoc_assign);
 
   /* Add the lse pre block to the body  */
   gfc_add_block_to_block (&body, &lse.pre);

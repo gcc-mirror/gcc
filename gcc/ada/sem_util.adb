@@ -1784,7 +1784,6 @@ package body Sem_Util is
 
    function Build_Default_Subtype_OK (T : Entity_Id) return Boolean is
    begin
-
       if Is_Constrained (T) then
 
          --  We won't build a new subtype if T is constrained
@@ -5939,7 +5938,7 @@ package body Sem_Util is
                         else
                            Error_Msg
                              ("\Constraint_Error will be raised"
-                              & " for objects of this type??", Eloc, N);
+                              & " for objects of this type", Eloc, N);
                         end if;
                      end if;
                   end;
@@ -9806,8 +9805,8 @@ package body Sem_Util is
                      end if;
                   end;
                else
-                  UI_Discrim_Value
-                    := Expr_Value (Type_Low_Bound (Discrim_Value_Subtype));
+                  UI_Discrim_Value :=
+                    Expr_Value (Type_Low_Bound (Discrim_Value_Subtype));
                end if;
          end case;
 
@@ -9861,14 +9860,14 @@ package body Sem_Util is
       if Present (Variant) then
          if Discrim_Value_Status = Static_Subtype then
             declare
-               Discrim_Value_Subtype_Intervals
-                 : constant Interval_Lists.Discrete_Interval_List
-                 := Interval_Lists.Type_Intervals (Discrim_Value_Subtype);
+               Discrim_Value_Subtype_Intervals :
+                 constant Interval_Lists.Discrete_Interval_List :=
+                 Interval_Lists.Type_Intervals (Discrim_Value_Subtype);
 
-               Variant_Intervals
-                 : constant Interval_Lists.Discrete_Interval_List
-                 := Interval_Lists.Choice_List_Intervals
-                     (Discrete_Choices => Discrete_Choices (Variant));
+               Variant_Intervals :
+                 constant Interval_Lists.Discrete_Interval_List :=
+                 Interval_Lists.Choice_List_Intervals
+                   (Discrete_Choices => Discrete_Choices (Variant));
             begin
                if not Interval_Lists.Is_Subset
                         (Subset => Discrim_Value_Subtype_Intervals,
@@ -11617,8 +11616,8 @@ package body Sem_Util is
             declare
                Constit_Elmt : Elmt_Id;
                Constit_Id   : Entity_Id;
-               Constits     : constant Elist_Id
-                 := Part_Of_Constituents (Item_Id);
+               Constits     : constant Elist_Id :=
+                 Part_Of_Constituents (Item_Id);
             begin
                if Present (Constits) then
                   Constit_Elmt := First_Elmt (Constits);
@@ -13249,6 +13248,20 @@ package body Sem_Util is
 
       return All_Static;
    end Has_Static_Array_Bounds;
+
+   -----------------------------------
+   -- Has_Static_Empty_Array_Bounds --
+   -----------------------------------
+
+   function Has_Static_Empty_Array_Bounds (Typ : Node_Id) return Boolean is
+      All_Static : Boolean;
+      Has_Empty  : Boolean;
+
+   begin
+      Examine_Array_Bounds (Typ, All_Static, Has_Empty);
+
+      return Has_Empty;
+   end Has_Static_Empty_Array_Bounds;
 
    ---------------------------------------
    -- Has_Static_Non_Empty_Array_Bounds --
@@ -15210,6 +15223,10 @@ package body Sem_Util is
       then
          return Is_Aliased_View (Expression (Obj));
 
+      elsif Is_Expanded_Class_Wide_Interface_Object_Decl (Parent (Obj)) then
+         return Is_Aliased
+                  (Defining_Identifier (Original_Node (Parent (Obj))));
+
       --  The dereference of an access-to-object value denotes an aliased view,
       --  but this routine uses the rules of the language so we need to exclude
       --  rewritten constructs that introduce artificial dereferences.
@@ -15901,10 +15918,8 @@ package body Sem_Util is
                elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then
                   return False;
 
-               elsif Nkind (Parent (Par)) in
-                       N_Function_Call            |
-                       N_Procedure_Call_Statement |
-                       N_Entry_Call_Statement
+               elsif Nkind (Parent (Par)) in N_Entry_Call_Statement
+                                           | N_Subprogram_Call
                then
                   --  Check that the element is not part of an actual for an
                   --  in-out parameter.
@@ -15915,14 +15930,14 @@ package body Sem_Util is
 
                   begin
                      F := First_Formal (Entity (Name (Parent (Par))));
-                     A := First (Parameter_Associations (Parent (Par)));
+                     A := First_Actual (Parent (Par));
                      while Present (F) loop
                         if A = Par and then Ekind (F) /= E_In_Parameter then
                            return False;
                         end if;
 
                         Next_Formal (F);
-                        Next (A);
+                        Next_Actual (A);
                      end loop;
                   end;
 
@@ -16067,6 +16082,29 @@ package body Sem_Util is
       P   : Node_Id;
 
    begin
+      --  Since Ada 2005, the "current instance" rule does not apply
+      --  to a type_mark in an access_definition (RM 8.6),
+      --  although it does apply in an access_to_object definition.
+      --  So the rule does not apply in the definition of an anonymous
+      --  access type, but it does apply in the definition of a named
+      --  access-to-object type.
+      --  The rule also does not apply in a designated subprogram profile.
+
+      if Ada_Version >= Ada_2005 then
+         case Nkind (Parent (N)) is
+            when N_Access_Definition | N_Access_Function_Definition =>
+               return False;
+            when N_Parameter_Specification =>
+               if Nkind (Parent (Parent (N))) in
+                 N_Access_To_Subprogram_Definition
+               then
+                  return False;
+               end if;
+            when others =>
+               null;
+         end case;
+      end if;
+
       --  Simplest case: entity is a concurrent type and we are currently
       --  inside the body. This will eventually be expanded into a call to
       --  Self (for tasks) or _object (for protected objects).
@@ -16116,6 +16154,12 @@ package body Sem_Util is
             elsif Nkind (P) = N_Pragma
               and then Get_Pragma_Id (P) in Pragma_Predicate
                                           | Pragma_Predicate_Failure
+
+              --  For "pragma Predicate (T, Is_OK (T))", return False for the
+              --  first use of T and True for the second.
+
+              and then
+                N /= Expression (First (Pragma_Argument_Associations (P)))
             then
                declare
                   Arg : constant Entity_Id :=
@@ -16131,7 +16175,7 @@ package body Sem_Util is
          end loop;
       end if;
 
-      --  In any other context this is not a current occurrence
+      --  In any other context this is not a current instance reference.
 
       return False;
    end Is_Current_Instance;
@@ -18576,8 +18620,8 @@ package body Sem_Util is
    function Is_Null_Extension_Of
      (Descendant, Ancestor : Entity_Id) return Boolean
    is
-      Ancestor_Type : constant Entity_Id
-        := Underlying_Type (Base_Type (Ancestor));
+      Ancestor_Type : constant Entity_Id :=
+        Underlying_Type (Base_Type (Ancestor));
       Descendant_Type : Entity_Id := Underlying_Type (Base_Type (Descendant));
    begin
       pragma Assert (not Is_Class_Wide_Type (Descendant));
@@ -21010,6 +21054,16 @@ package body Sem_Util is
       if Nkind (N) in N_Subexpr and then Assignment_OK (N) then
          return True;
 
+      --  It is possible that N is a selected component of a view conversion,
+      --  and in that case get the expression of the conversion and test
+      --  whether it is indeed a variable.
+
+      elsif Nkind (N) = N_Selected_Component
+        and then Is_View_Conversion (Ultimate_Prefix (N))
+        and then Is_Variable (Expression (Ultimate_Prefix (N)))
+      then
+         return True;
+
       --  Normally we go to the original node, but there is one exception where
       --  we use the rewritten node, namely when it is an explicit dereference.
       --  The generated code may rewrite a prefix which is an access type with
@@ -21163,7 +21217,9 @@ package body Sem_Util is
         and then Nkind (Unqual_Conv (N)) in N_Has_Etype
       then
          if Is_Tagged_Type (Etype (N))
-           and then Is_Tagged_Type (Etype (Unqual_Conv (N)))
+           and then (Is_Tagged_Type (Etype (Unqual_Conv (N)))
+                      or else Is_Class_Wide_Equivalent_Type
+                                (Etype (Unqual_Conv (N))))
          then
             return True;
 
@@ -27745,9 +27801,10 @@ package body Sem_Util is
       Pref : Node_Id;
 
    begin
-      --  Deal with indexed or selected component where prefix is modified
+      --  Deal with indexed components, selected components, or slices where
+      --  the prefix is modified.
 
-      if Nkind (N) in N_Indexed_Component | N_Selected_Component then
+      if Nkind (N) in N_Indexed_Component | N_Selected_Component | N_Slice then
 
          --  Grab the original node to avoid looking at internally generated
          --  objects.
@@ -29842,8 +29899,8 @@ package body Sem_Util is
          Comp := First (Component_Associations (N));
          while Present (Comp) loop
             declare
-               Choice_Intervals : constant Discrete_Interval_List
-                 := Choice_List_Intervals (Choices (Comp));
+               Choice_Intervals : constant Discrete_Interval_List :=
+                 Choice_List_Intervals (Choices (Comp));
             begin
                for J in Choice_Intervals'Range loop
                   Num_I := Num_I + 1;
@@ -29857,8 +29914,8 @@ package body Sem_Util is
          --  Normalize the lists sorting and merging the intervals
 
          declare
-            Aggr_Intervals : Discrete_Interval_List (1 .. Num_I)
-                               := Intervals (1 .. Num_I);
+            Aggr_Intervals : Discrete_Interval_List (1 .. Num_I) :=
+              Intervals (1 .. Num_I);
          begin
             Normalize_Interval_List (Aggr_Intervals, Num_I);
             Check_Consistency (Aggr_Intervals (1 .. Num_I));
@@ -29936,8 +29993,8 @@ package body Sem_Util is
          while Present (Choice) loop
             if Nkind (Choice) = N_Others_Choice then
                declare
-                  Others_Choice : Node_Id
-                    := First (Others_Discrete_Choices (Choice));
+                  Others_Choice : Node_Id :=
+                    First (Others_Discrete_Choices (Choice));
                begin
                   while Present (Others_Choice) loop
                      Count := Count + 1;
@@ -29972,8 +30029,8 @@ package body Sem_Util is
 
             when N_Subtype_Indication =>
                declare
-                  Range_Exp : constant Node_Id
-                    := Range_Expression (Constraint (Choice));
+                  Range_Exp : constant Node_Id :=
+                    Range_Expression (Constraint (Choice));
                begin
                   return (Low  => Expr_Value (Low_Bound (Range_Exp)),
                           High => Expr_Value (High_Bound (Range_Exp)));
@@ -30120,8 +30177,8 @@ package body Sem_Util is
             Not_Null : Pos range List'Range;
             --  Index of the most recently examined non-null interval
 
-            Null_Interval : constant Discrete_Interval
-              := (Low => Uint_1, High => Uint_0); -- any null range ok here
+            Null_Interval : constant Discrete_Interval :=
+              (Low => Uint_1, High => Uint_0); -- any null range ok here
          begin
             if List'Length = 0 or else Is_Null (List'First) then
                Null_Interval_Count := List'Length;
@@ -30915,9 +30972,9 @@ package body Sem_Util is
             -------------------------------------------
 
             procedure Declare_Indirect_Temp_Via_Allocation is
-               Access_Type_Id : constant Entity_Id
-                 := Make_Temporary
-                      (Loc, Indirect_Temp_Access_Type_Char, Attr_Prefix);
+               Access_Type_Id : constant Entity_Id :=
+                 Make_Temporary
+                   (Loc, Indirect_Temp_Access_Type_Char, Attr_Prefix);
 
                Temp_Decl : constant Node_Id :=
                  Make_Object_Declaration (Loc,
@@ -30963,14 +31020,14 @@ package body Sem_Util is
                   return New_Occurrence_Of (Typ, Loc);
                end Designated_Subtype_Mark;
 
-               Access_Type_Def : constant Node_Id
-                 := Make_Access_To_Object_Definition
-                      (Loc, Subtype_Indication => Designated_Subtype_Mark);
+               Access_Type_Def : constant Node_Id :=
+                 Make_Access_To_Object_Definition
+                   (Loc, Subtype_Indication => Designated_Subtype_Mark);
 
-               Access_Type_Decl : constant Node_Id
-                 := Make_Full_Type_Declaration
-                      (Loc, Access_Type_Id,
-                       Type_Definition => Access_Type_Def);
+               Access_Type_Decl : constant Node_Id :=
+                 Make_Full_Type_Declaration
+                   (Loc, Access_Type_Id,
+                    Type_Definition => Access_Type_Def);
             begin
                Mutate_Ekind (Temp_Id, E_Variable);
                Set_Etype (Temp_Id, Access_Type_Id);

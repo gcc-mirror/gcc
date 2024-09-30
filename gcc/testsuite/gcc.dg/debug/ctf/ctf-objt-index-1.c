@@ -6,7 +6,7 @@
 
    In this testcase, 4 records in the object index section are expected.  */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "objtinfo_name" 4 } } */

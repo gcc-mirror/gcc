@@ -1,5 +1,5 @@
 /* { dg-do run { target sse2_runtime } } */
-/* { dg-options "-O2 -msse2 -mfpmath=sse -ftree-vectorize -fdump-tree-vect-details -save-temps" } */
+/* { dg-options "-O2 -msse2 -mfpmath=sse -ftree-vectorize -fdump-tree-vect-details -save-temps -mno-sse4" } */
 
 extern void abort ();
 

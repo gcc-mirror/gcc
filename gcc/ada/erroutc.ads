@@ -519,6 +519,10 @@ package Erroutc is
    --  splits the line generating multiple lines of output, and in this case
    --  the last line has no terminating end of line character.
 
+   procedure Output_Text_Within (Txt : String_Ptr; Line_Length : Nat);
+   --  Output the text in Txt, splitting it into lines of at most the size of
+   --  Line_Length.
+
    procedure Prescan_Message (Msg : String);
    --  Scans message text and sets the following variables:
    --
@@ -551,8 +555,7 @@ package Erroutc is
    --  test these values before doing the full error scan.
    --
    --  Note that the call has no effect for continuation messages (those whose
-   --  first character is '\'), and all variables are left unchanged, unless
-   --  -gnatdF is set.
+   --  first character is '\') except for the Has_Insertion_Line setting.
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
    --  All error messages whose location is in the range From .. To (not

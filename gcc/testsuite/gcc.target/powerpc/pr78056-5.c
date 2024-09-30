@@ -1,6 +1,4 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* powerpc_vsx_ok represents power7 */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-options "-mdejagnu-cpu=power5" } */
 

@@ -34,7 +34,12 @@
 #ifndef _FSTREAM_TCC
 #define _FSTREAM_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
 
 #include <bits/cxxabi_forced.h>
 #include <bits/move.h>   // for swap
@@ -1094,4 +1099,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
+#pragma GCC diagnostic pop
 #endif

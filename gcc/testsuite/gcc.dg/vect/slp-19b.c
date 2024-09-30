@@ -54,5 +54,5 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_strided4 } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! vect_strided4 } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_strided4 } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target vect_strided4 } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { ! vect_strided4 } } } } */

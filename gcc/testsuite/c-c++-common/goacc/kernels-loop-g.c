@@ -5,6 +5,7 @@
 /*TODO PR100400 { dg-additional-options -fcompare-debug } */
 /* { dg-additional-options "-fdump-tree-parloops1-all" } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include "kernels-loop.c"
 

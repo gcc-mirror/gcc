@@ -7,8 +7,8 @@ typedef concept int CINT; // { dg-error "'concept' cannot appear in a typedef de
 void f(concept int); // { dg-error "a parameter cannot be declared 'concept'" }
 
 template<typename T>
-concept int f2() { return 0; } // { dg-error "return type" }
-concept bool f3(); // { dg-error "14:concept .f3. has no definition" }
+concept int f2() { return 0; } // { dg-error "function concepts are no longer supported" }
+concept bool f3(); // { dg-error "14:function concepts are no longer supported" }
 		   // { dg-error "keyword is not allowed" "" { target *-*-* } .-1 }
 
 struct X
@@ -26,11 +26,11 @@ struct X
   concept X(); // { dg-error "a constructor cannot be 'concept'" }
 };
 
-concept bool X2; // { dg-error "non-template variable" }
+concept bool X2; // { dg-error "variable" }
 	         // { dg-error "keyword is not allowed" "" { target *-*-* } .-1 }
 
 template<typename T>
-  concept bool X3; // { dg-error "has no initializer" }
+  concept bool X3; // { dg-error "variable concepts" }
 		   // { dg-error "keyword is not allowed" "" { target *-*-* } .-1 }
 
 struct S {

@@ -27,11 +27,6 @@ PATH/include-chain-2.h:6:3: warning: double-'free' of 'ptr' [CWE-415] [-Wanalyze
 
 #include "include-chain-2.h"
 
-/* We expect a failing compile due to the errors, but the use of 
-   -fdiagnostics-format=sarif-file means there should be no output to stderr.
-   DejaGnu injects this message; ignore it:
-   { dg-prune-output "exit status is 1" } */
-
 /* Verify that some JSON was written to a file with the expected name:
    { dg-final { verify-sarif-file } } */
 

@@ -1,5 +1,6 @@
 // PR c++/67348
 // { dg-do compile { target c++20 } }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <type_traits>
 #include <vector>

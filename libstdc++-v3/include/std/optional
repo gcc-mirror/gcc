@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_OPTIONAL
 #define _GLIBCXX_OPTIONAL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_freestanding_optional
 #define __glibcxx_want_optional
@@ -742,9 +744,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_concepts
 
   template<typename _Tp>
-  class optional;
-
-  template<typename _Tp>
     inline constexpr bool __is_optional_v = false;
   template<typename _Tp>
     inline constexpr bool __is_optional_v<optional<_Tp>> = true;
@@ -853,8 +852,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using __not_self = __not_<is_same<optional, __remove_cvref_t<_Up>>>;
       template<typename _Up>
 	using __not_tag = __not_<is_same<in_place_t, __remove_cvref_t<_Up>>>;
-      template<typename _Up>
-	using __is_bool = is_same<remove_cv_t<_Up>, bool>;
       template<typename... _Cond>
 	using _Requires = enable_if_t<__and_v<_Cond...>, bool>;
 #endif
@@ -868,7 +865,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Converting constructors for engaged optionals.
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
 	  && (!is_same_v<in_place_t, remove_cvref_t<_Up>>)
 	  && is_constructible_v<_Tp, _Up>
@@ -919,7 +916,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Base(std::in_place, __il, std::forward<_Args>(__args)...)
 	{ }
 #else
-      template<typename _Up = _Tp,
+      template<typename _Up = remove_cv_t<_Tp>,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
 			 is_convertible<_Up, _Tp>,
@@ -929,7 +926,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	: _Base(std::in_place, std::forward<_Up>(__t)) { }
 
-      template<typename _Up = _Tp,
+      template<typename _Up = remove_cv_t<_Tp>,
 	       _Requires<__not_self<_Up>, __not_tag<_Up>,
 			 is_constructible<_Tp, _Up>,
 			 __not_<is_convertible<_Up, _Tp>>,
@@ -1017,7 +1014,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      template<typename _Up = _Tp>
+      template<typename _Up = remove_cv_t<_Tp>>
 #ifdef _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL
 	requires (!is_same_v<optional, remove_cvref_t<_Up>>)
 	  && (!(is_scalar_v<_Tp> && is_same_v<_Tp, decay_t<_Up>>))
@@ -1242,7 +1239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_bad_optional_access();
       }
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __u) const&
 	{
@@ -1255,7 +1252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return static_cast<_Tp>(std::forward<_Up>(__u));
 	}
 
-      template<typename _Up>
+      template<typename _Up = remove_cv_t<_Tp>>
 	constexpr _Tp
 	value_or(_Up&& __u) &&
 	{
@@ -1584,9 +1581,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__rhs; }
 #endif // three-way-comparison
 
+#if __cpp_lib_concepts
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 4072. std::optional comparisons: constrain harder
-#if __cpp_lib_concepts
 # define _REQUIRES_NOT_OPTIONAL(T) requires (!__is_optional_v<T>)
 #else
 # define _REQUIRES_NOT_OPTIONAL(T)
@@ -1678,8 +1675,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__rhs || __lhs >= *__rhs; }
 
 #ifdef __cpp_lib_three_way_comparison
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3746. optional's spaceship with U with a type derived from optional
+  // causes infinite constraint meta-recursion
+  template<typename _Tp>
+    concept __is_derived_from_optional = requires (const _Tp& __t) {
+      []<typename _Up>(const optional<_Up>&){ }(__t);
+    };
+
   template<typename _Tp, typename _Up>
-    requires (!__is_optional_v<_Up>)
+    requires (!__is_derived_from_optional<_Up>)
       && three_way_comparable_with<_Up, _Tp>
     constexpr compare_three_way_result_t<_Tp, _Up>
     operator<=> [[nodiscard]] (const optional<_Tp>& __x, const _Up& __v)

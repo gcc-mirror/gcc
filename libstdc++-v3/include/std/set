@@ -55,7 +55,9 @@
 #ifndef _GLIBCXX_SET
 #define _GLIBCXX_SET 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // containers
 
@@ -69,6 +71,7 @@
 # include <debug/set>
 #endif
 
+#define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_generic_associative_lookup
 #define __glibcxx_want_node_extract

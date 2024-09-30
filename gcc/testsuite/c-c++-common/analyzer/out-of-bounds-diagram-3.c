@@ -2,6 +2,7 @@
    { dg-require-effective-target lp64 } */
 
 /* { dg-additional-options "-fdiagnostics-text-art-charset=unicode" } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 
 #include <stdlib.h>
 #include <string.h>

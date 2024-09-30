@@ -26,9 +26,9 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cerrno>
-
 #ifndef _GLIBCXX_ERRNO_H
 #define _GLIBCXX_ERRNO_H 1
+
+#include <cerrno>
 
 #endif

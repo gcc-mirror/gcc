@@ -150,7 +150,7 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   if (is_op_overload)
     {
       auto lang_item_type
-	= Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
+	= LangItem::OperatorToLangItem (expr.get_expr_type ());
       translated = resolve_operator_overload (lang_item_type, expr, lhs, rhs,
 					      expr.get_lhs ().get (),
 					      expr.get_rhs ().get ());
@@ -193,9 +193,8 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
     expr.get_mappings ().get_hirid (), &fntype);
   if (is_op_overload)
     {
-      auto lang_item_type
-	= Analysis::RustLangItem::CompoundAssignmentOperatorToLangItem (
-	  expr.get_expr_type ());
+      auto lang_item_type = LangItem::CompoundAssignmentOperatorToLangItem (
+	expr.get_expr_type ());
       auto compound_assignment
 	= resolve_operator_overload (lang_item_type, expr, lhs, rhs,
 				     expr.get_lhs ().get (),
@@ -244,8 +243,7 @@ CompileExpr::visit (HIR::NegationExpr &expr)
     expr.get_mappings ().get_hirid (), &fntype);
   if (is_op_overload)
     {
-      auto lang_item_type
-	= Analysis::RustLangItem::NegationOperatorToLangItem (op);
+      auto lang_item_type = LangItem::NegationOperatorToLangItem (op);
       translated
 	= resolve_operator_overload (lang_item_type, expr, negated_expr,
 				     nullptr, expr.get_expr ().get (), nullptr);
@@ -836,7 +834,7 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
     expr.get_mappings ().get_hirid (), &fntype);
   if (is_op_overload)
     {
-      auto lang_item_type = Analysis::RustLangItem::ItemType::DEREF;
+      auto lang_item_type = LangItem::Kind::DEREF;
       tree operator_overload_call
 	= resolve_operator_overload (lang_item_type, expr, main_expr, nullptr,
 				     expr.get_expr ().get (), nullptr);
@@ -1423,9 +1421,10 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 }
 
 tree
-CompileExpr::resolve_operator_overload (
-  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExprMeta expr,
-  tree lhs, tree rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
+CompileExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
+					HIR::OperatorExprMeta expr, tree lhs,
+					tree rhs, HIR::Expr *lhs_expr,
+					HIR::Expr *rhs_expr)
 {
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
@@ -1446,8 +1445,7 @@ CompileExpr::resolve_operator_overload (
     }
 
   // lookup compiled functions since it may have already been compiled
-  HIR::PathIdentSegment segment_name (
-    Analysis::RustLangItem::ToString (lang_item_type));
+  HIR::PathIdentSegment segment_name (LangItem::ToString (lang_item_type));
   tree fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
 
   // lookup the autoderef mappings
@@ -2120,7 +2118,7 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
     expr.get_mappings ().get_hirid (), &fntype);
   if (is_op_overload)
     {
-      auto lang_item_type = Analysis::RustLangItem::ItemType::INDEX;
+      auto lang_item_type = LangItem::Kind::INDEX;
       tree operator_overload_call
 	= resolve_operator_overload (lang_item_type, expr, array_reference,
 				     index, expr.get_array_expr ().get (),
@@ -2313,11 +2311,23 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   if (is_block_expr)
     {
       auto body_mappings = function_body->get_mappings ();
-      Resolver::Rib *rib = nullptr;
-      bool ok
-	= ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
-					       &rib);
-      rust_assert (ok);
+      if (flag_name_resolution_2_0)
+	{
+	  auto nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+	  auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
+
+	  rust_assert (candidate.has_value ());
+	}
+      else
+	{
+	  Resolver::Rib *rib = nullptr;
+	  bool ok
+	    = ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
+						   &rib);
+	  rust_assert (ok);
+	}
     }
 
   tree enclosing_scope = NULL_TREE;

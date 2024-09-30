@@ -1271,10 +1271,13 @@ gfc_init_builtin_functions (void)
 			  attr);
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(code, name, type, attr) /* ignore */
+#undef DEF_GOMP_BUILTIN_COMPILER
+#define DEF_GOMP_BUILTIN_COMPILER(code, name, type, attr) /* ignore */
 #include "../omp-builtins.def"
 #undef DEF_GOACC_BUILTIN
 #undef DEF_GOACC_BUILTIN_COMPILER
 #undef DEF_GOMP_BUILTIN
+#undef DEF_GOMP_BUILTIN_COMPILER
     }
 
   if (flag_openmp || flag_openmp_simd || flag_tree_parallelize_loops)
@@ -1287,10 +1290,16 @@ gfc_init_builtin_functions (void)
 #define DEF_GOMP_BUILTIN(code, name, type, attr) \
       gfc_define_builtin ("__builtin_" name, builtin_types[type], \
 			  code, name, attr);
+#undef DEF_GOMP_BUILTIN_COMPILER
+#define DEF_GOMP_BUILTIN_COMPILER(code, name, type, attr) \
+      if (flag_openmp) \
+	gfc_define_builtin ("__builtin_" name, builtin_types[type], \
+			      code, name, attr);
 #include "../omp-builtins.def"
 #undef DEF_GOACC_BUILTIN
 #undef DEF_GOACC_BUILTIN_COMPILER
 #undef DEF_GOMP_BUILTIN
+#undef DEF_GOMP_BUILTIN_COMPILER
       tree gomp_alloc = builtin_decl_explicit (BUILT_IN_GOMP_ALLOC);
       tree two = build_int_cst (integer_type_node, 2);
       DECL_ATTRIBUTES (gomp_alloc)

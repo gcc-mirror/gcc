@@ -32,7 +32,9 @@
 #ifndef _GLIBCXX_CISO646
 #define _GLIBCXX_CISO646
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #endif

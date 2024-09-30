@@ -20,6 +20,7 @@
 #define RUST_AST_LOWER_EXPR
 
 #include "rust-ast-lower-base.h"
+#include "rust-ast.h"
 
 namespace Rust {
 namespace HIR {
@@ -29,10 +30,10 @@ class ASTLowerPathInExpression : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::PathInExpression *translate (AST::PathInExpression *expr)
+  static HIR::PathInExpression *translate (AST::PathInExpression &expr)
   {
     ASTLowerPathInExpression compiler;
-    expr->accept_vis (compiler);
+    expr.accept_vis (compiler);
     rust_assert (compiler.translated);
     return compiler.translated;
   }
@@ -51,10 +52,10 @@ class ASTLowerQualPathInExpression : public ASTLoweringBase
 
 public:
   static HIR::QualifiedPathInExpression *
-  translate (AST::QualifiedPathInExpression *expr)
+  translate (AST::QualifiedPathInExpression &expr)
   {
     ASTLowerQualPathInExpression compiler;
-    expr->accept_vis (compiler);
+    expr.accept_vis (compiler);
     rust_assert (compiler.translated);
     return compiler.translated;
   }
@@ -72,7 +73,7 @@ class ASTLoweringExpr : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Expr *translate (AST::Expr *expr, bool *terminated = nullptr);
+  static HIR::Expr *translate (AST::Expr &expr, bool *terminated = nullptr);
 
   void visit (AST::TupleIndexExpr &expr) override;
   void visit (AST::TupleExpr &expr) override;
@@ -120,6 +121,9 @@ public:
   void visit (AST::RangeFromToInclExpr &expr) override;
   void visit (AST::ClosureExprInner &expr) override;
   void visit (AST::ClosureExprInnerTyped &expr) override;
+
+  // Extra visitor for FormatArgs nodes
+  void visit (AST::FormatArgs &fmt) override;
 
 private:
   ASTLoweringExpr ();

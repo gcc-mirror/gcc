@@ -33,3 +33,4 @@ int fn3(int x)
   return x;
 }
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }

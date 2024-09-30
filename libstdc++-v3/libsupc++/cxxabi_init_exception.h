@@ -31,7 +31,9 @@
 #ifndef _CXXABI_INIT_EXCEPTION_H
 #define _CXXABI_INIT_EXCEPTION_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC visibility push(default)
 

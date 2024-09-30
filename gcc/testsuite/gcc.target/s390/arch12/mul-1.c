@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 
 int
 msrkc (int unused, int a, int b)

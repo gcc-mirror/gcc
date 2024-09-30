@@ -214,7 +214,7 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new
--fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
+-fconcepts  -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
 -fno-elide-constructors
 -fno-enforce-eh-specs
@@ -233,7 +233,7 @@ in the following sections.
 -fnew-ttp-matching
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names
 -fno-optional-diags
--fno-pretty-templates
+-fno-pretty-templates  -frange-for-ext-temps
 -fno-rtti  -fsized-deallocation
 -ftemplate-backtrace-limit=@var{n}
 -ftemplate-depth=@var{n}
@@ -251,6 +251,7 @@ in the following sections.
 -Wcomma-subscript  -Wconditionally-supported
 -Wno-conversion-null  -Wctad-maybe-unsupported
 -Wctor-dtor-privacy  -Wdangling-reference
+-Wno-defaulted-function-deleted
 -Wno-delete-incomplete
 -Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare
 -Wdeprecated-copy -Wdeprecated-copy-dtor
@@ -270,7 +271,8 @@ in the following sections.
 -Wno-non-template-friend  -Wold-style-cast
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
--Wsuggest-final-types  -Wsuggest-override  -Wno-template-id-cdtor
+-Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
+-Wno-template-id-cdtor
 -Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
@@ -721,6 +723,7 @@ Objective-C and Objective-C++ Dialects}.
 -iplugindir=@var{dir}  -iprefix @var{file}
 -iquote @var{dir}  -isysroot @var{dir}  -isystem @var{dir}
 -iwithprefix @var{dir}  -iwithprefixbefore @var{dir}
+--embed-dir=@var{dir}
 -L@var{dir}  -no-canonical-prefixes  --no-sysroot-suffix
 -nostdinc  -nostdinc++  --sysroot=@var{dir}}
 
@@ -1479,7 +1482,8 @@ See RS/6000 and PowerPC Options.
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512 -mevex512
+-musermsr -mavx10.1 -mavx10.1-256 -mavx10.1-512 -mevex512 -mavx10.2 -mavx10.2-256
+-mavx10.2-512
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -3610,6 +3614,15 @@ the default template arguments for that template.  If either of these
 behaviors make it harder to understand the error message rather than
 easier, you can use @option{-fno-pretty-templates} to disable them.
 
+@opindex frange-for-ext-temps
+@item -frange-for-ext-temps
+Enable lifetime extension of C++ range based for temporaries.
+With @option{-std=c++23} and above this is part of the language standard,
+so lifetime of the temporaries is extended until the end of the loop
+regardless of this option.  This option allows enabling that behavior also
+in earlier versions of the standard and is enabled by default in the
+GNU dialects, from @option{-std=gnu++11} until @option{-std=gnu++20}.
+
 @opindex fno-rtti
 @opindex frtti
 @item -fno-rtti
@@ -3962,7 +3975,7 @@ that has a pointer data member and a trivial destructor.
 The warning can be disabled by using the @code{gnu::no_dangling} attribute
 (@pxref{C++ Attributes}).
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by @option{-Wextra}.
 
 @opindex Wdelete-non-virtual-dtor
 @opindex Wno-delete-non-virtual-dtor
@@ -4634,6 +4647,14 @@ namespaces, and this may be used to enforce that rule.  The warning is
 inactive inside a system header file, such as the STL, so one can still
 use the STL.  One may also use using directives and qualified names.
 
+@opindex Wtemplate-body
+@opindex Wno-template-body
+@item -Wno-template-body @r{(C++ and Objective-C++ only)}
+Disable diagnosing errors when parsing a template, and instead issue an
+error only upon instantiation of the template.  This flag can also be
+used to downgrade such errors into warnings with @option{Wno-error=} or
+@option{-fpermissive}.
+
 @opindex Wtemplate-id-cdtor
 @opindex Wno-template-id-cdtor
 @item -Wno-template-id-cdtor @r{(C++ and Objective-C++ only)}
@@ -4786,6 +4807,14 @@ not caught by reference. @option{-Wcatch-value} is enabled by @option{-Wall}.
 @opindex Wno-conditionally-supported
 @item -Wconditionally-supported @r{(C++ and Objective-C++ only)}
 Warn for conditionally-supported (C++11 [intro.defs]) constructs.
+
+@opindex Wdefaulted-function-deleted
+@opindex Wno-defaulted-function-deleted
+@item -Wno-defaulted-function-deleted @r{(C++ and Objective-C++ only)}
+Warn when an explicitly defaulted function is deleted by the compiler.
+That can occur when the function's declared type does not match the type
+of the function that would have been implicitly declared.  This warning
+is enabled by default.
 
 @opindex Wdelete-incomplete
 @opindex Wno-delete-incomplete
@@ -5865,8 +5894,9 @@ named @file{@var{source}.sarif}, respectively.
 
 The @samp{json} format is a synonym for @samp{json-stderr}.
 The @samp{json-stderr} and @samp{json-file} formats are identical, apart from
-where the JSON is emitted to - with the former, the JSON is emitted to stderr,
-whereas with @samp{json-file} it is written to @file{@var{source}.gcc.json}.
+where the JSON is emitted to.  With @samp{json-stderr}, the JSON is emitted
+to stderr, whereas with @samp{json-file} it is written to
+@file{@var{source}.gcc.json}.
 
 The emitted JSON consists of a top-level JSON array containing JSON objects
 representing the diagnostics.
@@ -6360,6 +6390,7 @@ that have their own flag:
 -Wint-conversion @r{(C and Objective-C only)}
 -Wnarrowing @r{(C++ and Objective-C++ only)}
 -Wreturn-mismatch @r{(C and Objective-C only)}
+-Wtemplate-body @r{(C++ and Objective-C++ only)}
 }
 
 The @option{-fpermissive} option is the default for historic C language
@@ -6480,6 +6511,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wcalloc-transposed-args
 -Wcast-function-type
 -Wclobbered
+-Wdangling-reference @r{(C++ only)}
 -Wdeprecated-copy @r{(C++ and Objective-C++ only)}
 -Wempty-body
 -Wenum-conversion @r{(only for C/ObjC)}
@@ -7659,9 +7691,9 @@ unless C++14 mode (or newer) is active.
 Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  (The presence of a @code{default} label prevents this
-warning.)  @code{case} labels outside the enumeration range also
-provoke warnings when this option is used (even if there is a
-@code{default} label).
+warning.)  @code{case} labels that do not correspond to enumerators also
+provoke warnings when this option is used, unless the enumeration is marked
+with the @code{flag_enum} attribute.
 This warning is enabled by @option{-Wall}.
 
 @opindex Wswitch-default
@@ -7675,8 +7707,9 @@ case.
 @item -Wswitch-enum
 Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
-enumeration.  @code{case} labels outside the enumeration range also
-provoke warnings when this option is used.  The only difference
+enumeration.  @code{case} labels that do not correspond to enumerators also
+provoke warnings when this option is used, unless the enumeration is marked
+with the @code{flag_enum} attribute.  The only difference
 between @option{-Wswitch} and this option is that this option gives a
 warning about an omitted enumeration code even if there is a
 @code{default} label.
@@ -16940,6 +16973,9 @@ this parameter.  The default value of this parameter is 50.
 @item vect-induction-float
 Enable loop vectorization of floating point inductions.
 
+@item vect-force-slp
+Force the use of SLP when vectorizing, fail if not possible.
+
 @item vrp-block-limit
 Maximum number of basic blocks before VRP switches to a lower memory algorithm.
 
@@ -17108,6 +17144,9 @@ in the outgoing range calculator.
 @item relation-block-limit
 Maximum number of relations the oracle will register in a basic block.
 
+@item transitive-relations-work-bound
+Work bound when discovering transitive relations from existing relations.
+
 @item min-pagesize
 Minimum page size for warning purposes.
 
@@ -17162,22 +17201,20 @@ The precision of division is propotional to this param when division
 approximation is enabled.  The default value is 2.
 
 @item aarch64-autovec-preference
-Force an ISA selection strategy for auto-vectorization.  Accepts values from
-0 to 4, inclusive.
+Force an ISA selection strategy for auto-vectorization.
 @table @samp
-@item 0
+@item default
 Use the default heuristics.
-@item 1
+@item asimd-only
 Use only Advanced SIMD for auto-vectorization.
-@item 2
+@item sve-only
 Use only SVE for auto-vectorization.
-@item 3
+@item prefer-asimd
 Use both Advanced SIMD and SVE.  Prefer Advanced SIMD when the costs are
 deemed equal.
-@item 4
+@item prefer-sve
 Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
 @end table
-The default value is 0.
 
 @item aarch64-ldp-policy
 Fine-grained policy for load pairs.
@@ -21532,6 +21569,8 @@ performance of the code.  Permissible values for this option are:
 @samp{oryon-1},
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
 @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{grace},
+@samp{neoverse-v3}, @samp{neoverse-v3ae}, @samp{neoverse-n3},
+@samp{cortex-a725}, @samp{cortex-x925},
 @samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
@@ -21834,7 +21873,7 @@ Enable the Scalable Matrix Extension.
 Enable the FEAT_SME_I16I64 extension to SME.
 @item sme-f64f64
 Enable the FEAT_SME_F64F64 extension to SME.
-+@item sme2
+@item sme2
 Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
 @item lse128
 Enable the LSE128 128-bit atomic instructions extension.  This also
@@ -21848,6 +21887,10 @@ Enable support for Armv9.4-a Guarded Control Stack extension.
 Enable support for Armv8.9-a/9.4-a translation hardening extension.
 @item rcpc3
 Enable the RCpc3 (Release Consistency) extension.
+@item fp8
+Enable the fp8 (8-bit floating point) extension.
+@item faminmax
+Enable the Floating Point Absolute Maximum/Minimum extension.
 
 @end table
 
@@ -22034,11 +22077,6 @@ Set architecture type or tuning for @var{gpu}. Supported values for @var{gpu}
 are
 
 @table @samp
-@item fiji
-Compile for GCN3 Fiji devices (gfx803).  Support deprecated; availablility
-depends on how GCC has been configured, see @option{--with-arch} and
-@option{--with-multilib-list}.
-
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
 
@@ -22692,9 +22730,7 @@ the case.
 
 @opindex mlra
 @item -mlra
-Enable Local Register Allocation.  This is still experimental for ARC,
-so by default the compiler uses standard reload
-(i.e.@: @option{-mno-lra}).
+Does nothing.  Preserved for backward compatibility.
 
 @opindex mlra-priority-none
 @item -mlra-priority-none
@@ -23015,7 +23051,6 @@ Permissible names are:
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
 @samp{armv8.1-m.main},
-@samp{armv9-a},
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
@@ -23481,6 +23516,12 @@ of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect
 is unsuccessful the option has no effect.
 
+@option{-march=unset} causes the compiler to ignore any
+@option{-march=@dots{}} options that appear earlier on the command line
+and behave as if the option was never passed.  This is useful to avoid
+warnings about conflicting CPU and architecture options when the two
+produce different architecture specifications.
+
 @opindex mtune
 @item -mtune=@var{name}
 This option specifies the name of the target ARM processor for
@@ -23642,6 +23683,12 @@ See @option{-mtune} for more information.
 of the build computer.  At present, this feature is only supported on
 GNU/Linux, and not all architectures are recognized.  If the auto-detect
 is unsuccessful the option has no effect.
+
+@option{-mcpu=unset} causes the compiler to ignore any
+@option{-mcpu=@dots{}} options that appear earlier on the command line
+and behave as if the option was never passed.  This is useful to avoid
+warnings about conflicting CPU and architecture options when the two
+produce different architecture specifications.
 
 @opindex mfpu
 @item -mfpu=@var{name}
@@ -24030,7 +24077,7 @@ a device library @code{lib@var{mcu}.a} and a
 @uref{https://gcc.gnu.org/wiki/avr-gcc#spec-files,device-specs} file
 @code{specs-@var{mcu}}. Only the latter is provided by the compiler
 according the supported @code{@var{mcu}}s below.  The rest is supported
-by @w{@uref{https://www.nongnu.org/avr-libc/,AVR-LibC}}, or by means of
+by @w{@uref{https://github.com/avrdudes/avr-libc/,AVR-LibC}}, or by means of
 @uref{https://gcc.gnu.org/wiki/avr-gcc#atpack,@code{atpack}} files
 from the hardware manufacturer.
 
@@ -24266,7 +24313,7 @@ points to.
 The startup code from libgcc never sets @code{EIND}.
 Notice that startup code is a blend of code from libgcc and AVR-LibC.
 For the impact of AVR-LibC on @code{EIND}, see the
-@w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC user manual}}.
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/,AVR-LibC user manual}}.
 
 @item
 It is legitimate for user-specific startup code to set up @code{EIND}
@@ -24568,6 +24615,13 @@ and defined to@tie{}0, otherwise.
 @item __WITH_AVRLIBC__
 The compiler is configured to be used together with AVR-Libc.
 See the @option{--with-avrlibc} configure option.
+
+@item __HAVE_SIGNAL_N__
+The compiler supports the @code{signal(@var{num})} and
+@code{interrupt(@var{num})}
+@ref{AVR Function Attributes,,function attributes}
+with an argument @var{num} that specifies the number of the
+interrupt service routine.
 
 @item __HAVE_DOUBLE_MULTILIB__
 Defined if @option{-mdouble=} acts as a multilib option.
@@ -34568,6 +34622,7 @@ Intel Core 2 CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3, CX16,
 SAHF and FXSR instruction set support.
 
 @item nehalem
+@itemx corei7
 Intel Nehalem CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF and FXSR instruction set support.
 
@@ -34576,16 +34631,19 @@ Intel Westmere CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR and PCLMUL instruction set support.
 
 @item sandybridge
+@itemx corei7-avx
 Intel Sandy Bridge CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE and PCLMUL instruction set
 support.
 
 @item ivybridge
+@itemx core-avx-i
 Intel Ivy Bridge CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND
 and F16C instruction set support.
 
 @item haswell
+@itemx core-avx2
 Intel Haswell CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE and HLE instruction set support.
@@ -34602,11 +34660,149 @@ SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES and SGX instruction set support.
 
+@item skylake-avx512
+Intel Skylake Server CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
+RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW,
+AVX512DQ and AVX512CD instruction set support.
+
+@item cascadelake
+Intel Cascade Lake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
+F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
+CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD and AVX512VNNI instruction set support.
+
+@item cannonlake
+Intel Cannon Lake Server CPU with 64-bit extensions, MMX, SSE, SSE2,
+SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL,
+FSGSBASE, RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX,
+PREFETCHW, AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW,
+AVX512DQ, AVX512CD, PKU, AVX512VBMI, AVX512IFMA and SHA instruction set
+support.
+
+@item cooperlake
+Intel Cooper Lake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
+F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
+CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, AVX512VNNI and AVX512BF16 instruction set support.
+
+@item icelake-client
+Intel Ice Lake Client CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
+RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
+, VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
+
+@item icelake-server
+Intel Ice Lake Server CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
+RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
+, VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD and CLWB
+instruction set support.
+
+@item tigerlake
+Intel Tiger Lake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
+F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
+CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
+PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
+VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, MOVDIRI, MOVDIR64B, CLWB,
+AVX512VP2INTERSECT and KEYLOCKER instruction set support.
+
+@item rocketlake
+Intel Rocket Lake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
+F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
+CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
+PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
+VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
+
+@item alderlake
+@itemx raptorlake
+@itemx meteorlake
+@itemx gracemont
+Intel Alder Lake/Raptor Lake/Meteor Lake/Gracemont CPU with 64-bit extensions,
+MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW,
+PCLMUL, RDRND, XSAVE, XSAVEC, XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX,
+GFNI-SSE, CLWB, MOVDIRI, MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI,
+BMI2, F16C, FMA, LZCNT, PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL,
+WIDEKL and AVX-VNNI instruction set support.
+
+@item arrowlake
+Intel Arrow Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT and CMPCCXADD instruction set
+support.
+
+@item arrowlake-s
+@itemx lunarlake
+Intel Arrow Lake S/Lunar Lake CPU with 64-bit extensions, MOVBE, MMX, SSE,
+SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND,
+XSAVE, XSAVEC, XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB,
+MOVDIRI, MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA,
+LZCNT, PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512,
+SM3 and SM4 instruction set support.
+
+@item pantherlake
+Intel Panther Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
+XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
+MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
+PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
+UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512,
+SM3, SM4 and PREFETCHI instruction set support.
+
+@item sapphirerapids
+@itemx emeraldrapids
+Intel Sapphire Rapids/Emerald Rapids CPU with 64-bit extensions, MMX, SSE,
+SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL,
+FSGSBASE, RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX,
+PREFETCHW, AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW,
+AVX512DQ, AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES,
+AVX512VBMI2, VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG,
+WBNOINVD, CLWB, MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG,
+SERIALIZE, TSXLDTRK, UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16
+and AVX512BF16 instruction set support.
+
+@item graniterapids
+Intel Granite Rapids CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
+RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
+VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
+MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
+UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16, AVX512BF16, AMX-FP16
+and PREFETCHI instruction set support.
+
+@item graniterapids-d
+Intel Granite Rapids D CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
+RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
+AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
+AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
+VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
+MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
+UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16, AVX512BF16, AMX-FP16,
+PREFETCHI and AMX-COMPLEX instruction set support.
+
 @item bonnell
+@itemx atom
 Intel Bonnell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
 
 @item silvermont
+@itemx slm
 Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, PCLMUL, PREFETCHW and RDRND
 instruction set support.
@@ -34656,137 +34852,6 @@ MOVDIRI, MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA,
 LZCNT, PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
 ENQCMD, UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16,
 SHA512, SM3, SM4, USER_MSR and PREFETCHI instruction set support.
-
-@item skylake-avx512
-Intel Skylake Server CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
-RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW,
-AVX512DQ and AVX512CD instruction set support.
-
-@item cannonlake
-Intel Cannonlake Server CPU with 64-bit extensions, MMX, SSE, SSE2,
-SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL,
-FSGSBASE, RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX,
-PREFETCHW, AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW,
-AVX512DQ, AVX512CD, PKU, AVX512VBMI, AVX512IFMA and SHA instruction set
-support.
-
-@item icelake-client
-Intel Icelake Client CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
-RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
-, VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
-
-@item icelake-server
-Intel Icelake Server CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
-RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
-, VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD and CLWB
-instruction set support.
-
-@item cascadelake
-Intel Cascadelake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
-F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
-CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD and AVX512VNNI instruction set support.
-
-@item cooperlake
-Intel cooperlake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
-F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
-CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, AVX512VNNI and AVX512BF16 instruction set support.
-
-@item tigerlake
-Intel Tigerlake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
-F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
-CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
-PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
-VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, MOVDIRI, MOVDIR64B, CLWB,
-AVX512VP2INTERSECT and KEYLOCKER instruction set support.
-
-@item sapphirerapids
-Intel sapphirerapids CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
-RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
-VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
-MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
-UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16 and AVX512BF16
-instruction set support.
-
-@item alderlake
-Intel Alderlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
-SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC, XSAVES,
-XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI, MOVDIR64B,
-CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT, PCONFIG, PKU,
-VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL and AVX-VNNI instruction set
-support.
-
-@item rocketlake
-Intel Rocketlake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3
-, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
-F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
-CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
-PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
-VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
-
-@item graniterapids
-Intel graniterapids CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
-RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
-VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
-MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
-UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16, AVX512BF16, AMX-FP16
-and PREFETCHI instruction set support.
-
-@item graniterapids-d
-Intel graniterapids D CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
-RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
-AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
-AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
-VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, PCONFIG, WBNOINVD, CLWB,
-MOVDIRI, MOVDIR64B, ENQCMD, CLDEMOTE, PTWRITE, WAITPKG, SERIALIZE, TSXLDTRK,
-UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512FP16, AVX512BF16, AMX-FP16,
-PREFETCHI and AMX-COMPLEX instruction set support.
-
-@item arrowlake
-Intel Arrow Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
-XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
-MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
-PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT and CMPCCXADD instruction set
-support.
-
-@item arrowlake-s
-Intel Arrow Lake S CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
-XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
-MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
-PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512,
-SM3 and SM4 instruction set support.
-
-@item pantherlake
-Intel Panther Lake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
-SSSE3, SSE4.1, SSE4.2, POPCNT, AES, PREFETCHW, PCLMUL, RDRND, XSAVE, XSAVEC,
-XSAVES, XSAVEOPT, FSGSBASE, PTWRITE, RDPID, SGX, GFNI-SSE, CLWB, MOVDIRI,
-MOVDIR64B, CLDEMOTE, WAITPKG, ADCX, AVX, AVX2, BMI, BMI2, F16C, FMA, LZCNT,
-PCONFIG, PKU, VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL, AVX-VNNI,
-UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16, SHA512,
-SM3, SM4 and PREFETCHI instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -35681,6 +35746,15 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @need 200
 @opindex mavx10.1-512
 @itemx -mavx10.1-512
+@need 200
+@opindex mavx10.2
+@itemx -mavx10.2
+@need 200
+@opindex mavx10.2-256
+@itemx -mavx10.2-256
+@need 200
+@opindex mavx10.2-512
+@itemx -mavx10.2-512
 These switches enable the use of instructions in the MMX, SSE,
 AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA, AES,
 PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
@@ -35691,8 +35765,9 @@ WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16, ENQCMD,
 AVX512VPOPCNTDQ, AVX512VNNI, SERIALIZE, UINTR, HRESET, AMXTILE, AMXINT8,
 AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16, AVXIFMA, AVXVNNIINT8, AVXNECONVERT,
 CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT, AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512,
-SM4, APX_F, USER_MSR, AVX10.1 or CLDEMOTE extended instruction sets.  Each has
-a corresponding @option{-mno-} option to disable use of these instructions.
+SM4, APX_F, USER_MSR, AVX10.1, AVX10.2 or CLDEMOTE extended instruction sets.
+Each has a corresponding @option{-mno-} option to disable use of these
+instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and

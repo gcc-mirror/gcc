@@ -34,7 +34,9 @@
 #ifndef _LOCALE_FACETS_NONIO_H
 #define _LOCALE_FACETS_NONIO_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <ctime>	// For struct tm
 

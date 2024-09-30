@@ -1,4 +1,4 @@
-/* { dg-do compile { target { tail_call } } } */
+/* { dg-do compile { target { musttail } } } */
 /* { dg-options "-std=gnu++11" } */
 /* { dg-additional-options "-fdelayed-branch" { target sparc*-*-* } } */
 

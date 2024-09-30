@@ -42,7 +42,9 @@
 #ifndef _GLIBCXX_BITSET
 #define _GLIBCXX_BITSET 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
@@ -205,10 +207,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX14_CONSTEXPR bool
       _M_is_equal(const _Base_bitset<_Nw>& __x) const _GLIBCXX_NOEXCEPT
       {
-	for (size_t __i = 0; __i < _Nw; ++__i)
-	  if (_M_w[__i] != __x._M_w[__i])
-	    return false;
-	return true;
+#if __cplusplus >= 201402L
+	if (__builtin_is_constant_evaluated())
+	  {
+	    for (size_t __i = 0; __i < _Nw; ++__i)
+	      if (_M_w[__i] != __x._M_w[__i])
+		return false;
+	    return true;
+	  }
+#endif
+	return !__builtin_memcmp(_M_w, __x._M_w, _Nw * sizeof(_WordT));
       }
 
       template<size_t _Nb>
@@ -864,10 +872,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_WordT*	_M_wp;
 	size_t 	_M_bpos;
 
-	// left undefined
-	reference();
-
-      public:
 	_GLIBCXX23_CONSTEXPR
 	reference(bitset& __b, size_t __pos) _GLIBCXX_NOEXCEPT
 	{
@@ -875,6 +879,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _M_bpos = _Base::_S_whichbit(__pos);
 	}
 
+      public:
 #if __cplusplus >= 201103L
 	reference(const reference&) = default;
 #endif

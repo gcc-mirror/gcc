@@ -157,9 +157,9 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_icf);
   NEXT_PASS (pass_ipa_devirt);
+  NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_sra);
-  NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
@@ -509,6 +509,9 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_early_remat);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);
+      /* In the following, some passes are tied to 'pass_postreload' and others
+	 to 'pass_late_compilation'.  The difference is that the latter also
+	 run for 'targetm.no_register_allocation' targets.  */
       NEXT_PASS (pass_postreload);
       PUSH_INSERT_PASSES_WITHIN (pass_postreload)
 	  NEXT_PASS (pass_postreload_cse);

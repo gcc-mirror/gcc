@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pragma.h"
 #include "langhooks.h"
 #include "hosthooks.h"
+#include "diagnostic.h"
 
 /* This is a list of flag variables that must match exactly, and their
    names for the error message.  The possible values for *flag_var must
@@ -178,7 +179,8 @@ c_common_write_pch (void)
   cpp_write_pch_state (parse_in, pch_outfile);
   timevar_pop (TV_PCH_CPP_SAVE);
 
-  if (fseek (pch_outfile, 0, SEEK_SET) != 0
+  if (global_dc->pch_save (pch_outfile) < 0
+      || fseek (pch_outfile, 0, SEEK_SET) != 0
       || fwrite (get_ident (), IDENT_LENGTH, 1, pch_outfile) != 1)
     fatal_error (input_location, "cannot write %s: %m", pch_file);
 
@@ -359,6 +361,10 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
   linemap_line_start (line_table, saved_loc.line, 0);
 
   timevar_pop (TV_PCH_CPP_RESTORE);
+
+  if (global_dc->pch_restore (f) < 0)
+    fatal_error (input_location, "cannot read %s: %m", name);
+
   fclose (f);
 
   if (cpp_result != 0)

@@ -3430,6 +3430,23 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   This switch suppresses listing of inherited aspects.
 
 
+.. index:: -gnatw_l  (gcc)
+
+:switch:`-gnatw_l`
+  *Activate warnings on implicitly limited types.*
+
+  This switch causes the compiler trigger warnings on record types that do not
+  have a limited keyword but contain a component that is a limited type.
+
+
+.. index:: -gnatw_L  (gcc)
+
+:switch:`-gnatw_L`
+  *Suppress warnings on implicitly limited types.*
+
+  This switch suppresses warnings on implicitly limited types.
+
+
 .. index:: -gnatwm  (gcc)
 
 :switch:`-gnatwm`
@@ -4766,7 +4783,7 @@ checks to be performed. The following checks are defined:
   then proper indentation is checked, with the digit indicating the
   indentation level required. A value of zero turns off this style check.
   The rule checks that the following constructs start on a column that is
-  a multiple of the alignment level:
+  one plus a multiple of the alignment level:
 
   * beginnings of declarations (except record component declarations)
     and statements;
@@ -4777,10 +4794,10 @@ checks to be performed. The following checks are defined:
     or body or that completes a compound statement.
 
   Full line comments must be
-  aligned with the ``--`` starting on a column that is a multiple of
+  aligned with the ``--`` starting on a column that is one plus a multiple of
   the alignment level, or they may be aligned the same way as the following
   non-blank line (this is useful when full line comments appear in the middle
-  of a statement, or they may be aligned with the source line on the previous
+  of a statement), or they may be aligned with the source line on the previous
   non-blank line.
 
 .. index:: -gnatya   (gcc)

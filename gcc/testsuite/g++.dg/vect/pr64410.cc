@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target vect_double }
 // { dg-additional-options "-fexcess-precision=fast" }
+// { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 #include <complex>

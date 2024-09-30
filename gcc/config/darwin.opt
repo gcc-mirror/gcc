@@ -381,6 +381,10 @@ unexported_symbols_list
 Driver RejectNegative Separate
 -unexported_symbols_list <filename>	Do not export the global symbols listed in <filename>.
 
+weak_framework
+Driver RejectNegative Separate
+-weak_framework <framework>	Make a weak link to the specified framework.
+
 weak_reference_mismatches
 Driver RejectNegative Separate
 -weak_reference_mismatches <treatment>	Specifies what to do if a symbol import conflicts between file (weak in one and not in another) the default is to treat the symbol as non-weak.

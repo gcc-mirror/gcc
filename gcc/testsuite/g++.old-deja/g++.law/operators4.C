@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 // GROUPS passed operators
 // opr-del file
 // From: rollins@bart.ee.queensu.ca (Mark Rollins)

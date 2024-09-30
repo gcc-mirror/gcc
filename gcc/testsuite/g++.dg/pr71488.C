@@ -3,6 +3,7 @@
 // { dg-options "-O3 -std=c++11" }
 // { dg-additional-options "-msse4" { target sse4_runtime } }
 // { dg-require-effective-target c++11 }
+// { dg-skip-if "requires hosted libstdc++ for valarray" { ! hostedlib } }
 
 #include <valarray>
 

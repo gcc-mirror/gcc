@@ -1997,8 +1997,10 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 CNS(CLOCK_RT_Ada, "")
 #endif
 
-#if defined (__APPLE__) || defined (__linux__) || defined (__ANDROID__) \
-  || defined (__QNX__) || defined (__rtems__) || defined (DUMMY)
+#if defined (__APPLE__) || defined (__ANDROID__) || defined (DUMMY) \
+  || defined (__FreeBSD__) || defined (__linux__) \
+  || defined (__QNX__) || defined (__rtems__)
+
 /*
 
    --  Sizes of pthread data types
@@ -2041,7 +2043,8 @@ CND(PTHREAD_RWLOCKATTR_SIZE, "pthread_rwlockattr_t")
 CND(PTHREAD_RWLOCK_SIZE,     "pthread_rwlock_t")
 CND(PTHREAD_ONCE_SIZE,       "pthread_once_t")
 
-#endif /* __APPLE__ || __linux__ || __ANDROID__ || __rtems__ */
+#endif /* __APPLE__ || __ANDROID__ || __FreeBSD ||__linux__
+          || __QNX__|| __rtems__ */
 
 /*
 

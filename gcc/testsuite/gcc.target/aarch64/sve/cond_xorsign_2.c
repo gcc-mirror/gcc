@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msve-vector-bits=128 --param aarch64-autovec-preference=2" } */
+/* { dg-options "-O2 -msve-vector-bits=128 --param aarch64-autovec-preference=sve-only" } */
 
 #include "cond_xorsign_1.c"
 

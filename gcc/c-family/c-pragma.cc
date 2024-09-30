@@ -1565,8 +1565,7 @@ c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
 {
   const int n_oacc_pragmas = ARRAY_SIZE (oacc_pragmas);
   const int n_omp_pragmas = ARRAY_SIZE (omp_pragmas);
-  const int n_omp_pragmas_simd = sizeof (omp_pragmas_simd)
-				 / sizeof (*omp_pragmas);
+  const int n_omp_pragmas_simd = ARRAY_SIZE (omp_pragmas_simd);
   int i;
 
   for (i = 0; i < n_oacc_pragmas; ++i)
@@ -1807,8 +1806,7 @@ init_pragma (void)
 	}
       if (flag_openmp || flag_openmp_simd)
 	{
-	  const int n_omp_pragmas_simd
-	    = sizeof (omp_pragmas_simd) / sizeof (*omp_pragmas);
+	  const int n_omp_pragmas_simd = ARRAY_SIZE (omp_pragmas_simd);
 	  int i;
 
 	  for (i = 0; i < n_omp_pragmas_simd; ++i)

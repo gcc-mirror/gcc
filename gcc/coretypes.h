@@ -141,6 +141,12 @@ struct gomp_single;
 struct gomp_target;
 struct gomp_teams;
 
+/* Forward declaration of CFI's and DWARF's types.  */
+struct dw_cfi_node;
+using dw_cfi_ref = struct dw_cfi_node *;
+enum dw_cfi_oprnd_type: int;
+enum dwarf_call_frame_info: int;
+
 /* Subclasses of symtab_node, using indentation to show the class
    hierarchy.  */
 
@@ -159,6 +165,7 @@ struct cl_decoded_option;
 struct cl_option_handlers;
 class rich_location;
 class diagnostic_context;
+class diagnostic_text_output_format;
 class pretty_printer;
 class diagnostic_event_id_t;
 typedef const char * (*diagnostic_input_charset_callback)(const char *);

@@ -64,13 +64,19 @@ test_format()
 		 " | 25.708 | 17:26:25.708 | 1 | 51 | 51 | 1 | 51 | 12/19/22"
 		 " | 17:26:25 | 22 | 2022 | +0000 | UTC" );
 
+  auto st = std::chrono::time_point_cast<std::chrono::seconds>(t);
   auto loc = std::locale::classic();
   auto smod = std::format(loc, "{:%Ec %EC %Od %Oe %OH %OI %Om %OM %OS %Ou %OU"
 			       " %Ow %OW %Ex %EX %Oy %Ey %EY %Ez %Oz}", t);
   s = std::format("{:%c %C %d %e %H %I %m %M %S %u %U"
 		  " %w %W %x %X %y %y %Y +00:00 +00:00}",
-		  std::chrono::time_point_cast<std::chrono::seconds>(t));
+		  st);
   VERIFY( smod == s );
+
+  s = std::format("{}", t);
+  VERIFY( s == "2022-12-19 17:26:25.708" );
+  s = std::format("{0:} {0:=<21}", st);
+  VERIFY( s == "2022-12-19 17:26:25 2022-12-19 17:26:25==" );
 }
 
 void

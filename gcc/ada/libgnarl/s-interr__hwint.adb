@@ -482,9 +482,10 @@ package body System.Interrupts is
       Handler   : System.OS_Interface.Interrupt_Handler)
    is
       Vec : constant Interrupt_Vector :=
-              Interrupt_Number_To_Vector (int (Interrupt));
+              Interrupt_Number_To_Vector
+                (Interfaces.C.int (Interrupt));
 
-      Status : int;
+      Status : Interfaces.C.int;
 
    begin
       --  Only install umbrella handler when no Ada handler has already been
@@ -613,7 +614,7 @@ package body System.Interrupts is
    procedure Notify_Interrupt (Param : System.Address) is
       Interrupt : constant Interrupt_ID := Interrupt_ID (Param);
       Id        : constant Binary_Semaphore_Id := Semaphore_ID_Map (Interrupt);
-      Status    : int;
+      Status    : Interfaces.C.int;
    begin
       if Id /= 0 then
          Status := Binary_Semaphore_Release (Id);
@@ -744,7 +745,7 @@ package body System.Interrupts is
       --------------------
 
       procedure Unbind_Handler (Interrupt : Interrupt_ID) is
-         Status : int;
+         Status : Interfaces.C.int;
 
       begin
          --  Flush server task off semaphore, allowing it to terminate
@@ -1024,7 +1025,7 @@ package body System.Interrupts is
       Tmp_Handler     : Parameterless_Handler;
       Tmp_ID          : Task_Id;
       Tmp_Entry_Index : Task_Entry_Index;
-      Status          : int;
+      Status          : Interfaces.C.int;
 
    begin
       Semaphore_ID_Map (Interrupt) := Int_Sema;

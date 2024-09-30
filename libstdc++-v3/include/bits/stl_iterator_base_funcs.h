@@ -59,7 +59,9 @@
 #ifndef _STL_ITERATOR_BASE_FUNCS_H
 #define _STL_ITERATOR_BASE_FUNCS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/concept_check.h>
 #include <debug/assertions.h>

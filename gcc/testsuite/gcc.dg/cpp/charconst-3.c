@@ -20,7 +20,7 @@ int main ()
   if ('ab' != (int) ((unsigned char) 'a' * scale + (unsigned char) 'b'))
     abort ();
 
-  if ('\234b' != (int) ((unsigned char) '\234' * scale + (unsigned char) 'b'))
+  if ('\234b' != (int) ((unsigned char) '\234' * (unsigned int) scale + (unsigned char) 'b'))
     abort ();
 
   if ('b\234' != (int) ((unsigned char) 'b' * scale + (unsigned char) '\234'))

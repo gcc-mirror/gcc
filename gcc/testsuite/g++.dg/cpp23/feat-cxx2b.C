@@ -1,4 +1,5 @@
 // { dg-options "-std=c++2b -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
+// { dg-skip-if "requires hosted libstdc++ for complex" { ! hostedlib } }
 
 //  C++98 features:
 
@@ -42,8 +43,8 @@
 
 #ifndef __cpp_range_based_for
 #  error "__cpp_range_based_for"
-#elif __cpp_range_based_for != 201603
-#  error "__cpp_range_based_for != 201603"
+#elif __cpp_range_based_for != 202211
+#  error "__cpp_range_based_for != 202211"
 #endif
 
 #ifndef __cpp_decltype

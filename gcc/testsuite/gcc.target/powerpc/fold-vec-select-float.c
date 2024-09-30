@@ -1,9 +1,9 @@
-/* Verify that overloaded built-ins for vec_sel with float 
-   inputs for VSX produce the right code.  */
+/* Verify that overloaded built-ins for vec_sel with float
+   inputs produce the right code.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-maltivec -O2" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

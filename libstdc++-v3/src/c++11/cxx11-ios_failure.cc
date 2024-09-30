@@ -94,6 +94,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     ~__iosfail_type_info();
 
+    using __si_class_type_info::__do_upcast;
+
     bool
     __do_upcast (const __class_type_info *dst_type,
 		 void **obj_ptr) const override;

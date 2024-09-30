@@ -1,5 +1,6 @@
 // Testcase for value-initialization in new-expressions.
 // { dg-do run }
+// { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } }
 
 #include <stdlib.h>
 #include <string.h>

@@ -31,7 +31,9 @@
 #ifndef _GLIBCXX_TR1_RANDOM_H
 #define _GLIBCXX_TR1_RANDOM_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

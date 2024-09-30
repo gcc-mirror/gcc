@@ -29,13 +29,18 @@
 #ifndef _CONCURRENCE_H
 #define _CONCURRENCE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <exception>
 #include <bits/gthr.h> 
 #include <bits/functexcept.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -311,5 +316,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+
+#pragma GCC diagnostic pop
 
 #endif

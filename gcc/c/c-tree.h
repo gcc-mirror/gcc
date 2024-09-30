@@ -680,7 +680,7 @@ extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
 extern tree c_simulate_builtin_function_decl (tree);
 extern void c_warn_unused_attributes (tree);
-extern tree c_warn_type_attributes (tree);
+extern tree c_warn_type_attributes (tree, tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
 extern tree start_enum (location_t, struct c_enum_contents *, tree, tree,
@@ -899,13 +899,13 @@ extern void c_bind (location_t, tree, bool);
 extern bool tag_exists_p (enum tree_code, tree);
 
 /* In c-errors.cc */
-extern bool pedwarn_c90 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c90 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c99 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c11 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c11 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
-extern bool pedwarn_c23 (location_t, int opt, const char *, ...)
+extern bool pedwarn_c23 (location_t, diagnostic_option_id, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 
 extern void

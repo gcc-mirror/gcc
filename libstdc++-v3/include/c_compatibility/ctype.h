@@ -26,10 +26,10 @@
  *  This is a Standard C++ Library header.
  */
 
-#include <cctype>
-
 #ifndef _GLIBCXX_CTYPE_H
 #define _GLIBCXX_CTYPE_H 1
+
+#include <cctype>
 
 #ifdef _GLIBCXX_NAMESPACE_C
 using std::isalnum;

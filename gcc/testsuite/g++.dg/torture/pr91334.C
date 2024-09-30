@@ -1,5 +1,6 @@
 /* PR c++/91334.  */
 /* { dg-do compile } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib size_t" { ! hostedlib } } */
 
 #include <new>
 #include <stdlib.h>

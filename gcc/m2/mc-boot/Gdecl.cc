@@ -635,6 +635,7 @@ struct decl_moduleT_r {
 struct decl_defT_r {
                      nameKey_Name name;
                      nameKey_Name source;
+                     bool unqualified;
                      bool hasHidden;
                      bool forC;
                      Indexing_Index exported;
@@ -727,6 +728,8 @@ static decl_group freeGroup;
 static decl_group globalGroup;
 static FIO_File outputFile;
 static decl_language lang;
+static decl_node__opaque charStarN;
+static decl_node__opaque constCharStarN;
 static decl_node__opaque bitsperunitN;
 static decl_node__opaque bitsperwordN;
 static decl_node__opaque bitspercharN;
@@ -933,6 +936,18 @@ extern "C" decl_node decl_lookupModule (nameKey_Name n);
 */
 
 extern "C" void decl_putDefForC (decl_node n);
+
+/*
+   putDefUnqualified - the definition module uses unqualified.
+*/
+
+extern "C" void decl_putDefUnqualified (decl_node n);
+
+/*
+   isDefUnqualified - returns TRUE if the definition module uses unqualified.
+*/
+
+extern "C" bool decl_isDefUnqualified (decl_node n);
 
 /*
    lookupInScope - looks up a symbol named, n, from, scope.
@@ -2087,6 +2102,20 @@ static bool isLocal (decl_node__opaque n);
 */
 
 static void importEnumFields (decl_node__opaque m, decl_node__opaque n);
+
+/*
+   checkGccType - check to see if node n is gcc tree or location_t
+                  and record its use in keyc.
+*/
+
+static void checkGccType (decl_node__opaque n);
+
+/*
+   checkCDataTypes - check to see if node n is CharStar or ConstCharStar
+                  and if necessary assign n to the global variable.
+*/
+
+static void checkCDataTypes (decl_node__opaque n);
 
 /*
    isComplex - returns TRUE if, n, is the complex type.
@@ -3307,6 +3336,58 @@ static bool isDeclInImp (decl_node__opaque type);
 static void doTypeNameModifier (mcPretty_pretty p, decl_node__opaque n);
 
 /*
+   isGccType - return TRUE if n is tree or location_t.
+*/
+
+static bool isGccType (decl_node__opaque n);
+
+/*
+   doGccType - record whether we are going to declare tree or location_t
+               so that the appropriate gcc header can be included instead.
+*/
+
+static void doGccType (mcPretty_pretty p, decl_node__opaque n);
+
+/*
+   isCDataType - return true if n is charStar or constCharStar.
+*/
+
+static bool isCDataType (decl_node__opaque n);
+
+/*
+   isCDataTypes - return TRUE if n is CharStar or ConstCharStar.
+*/
+
+static bool isCDataTypes (decl_node__opaque n);
+
+/*
+   doCDataTypes - if we are going to declare CharStar or ConstCharStar
+               then generate a comment instead.
+*/
+
+static void doCDataTypes (mcPretty_pretty p, decl_node__opaque n);
+
+/*
+   doCDataTypesC - generate the C representation of the CDataTypes data types.
+*/
+
+static void doCDataTypesC (mcPretty_pretty p, decl_node__opaque n);
+
+/*
+   doTypeOrPointer - only declare type or pointer n providing that
+                     the name is not location_t or tree and
+                     the --gccConfigSystem option is enabled.
+*/
+
+static void doTypeOrPointer (mcPretty_pretty p, decl_node__opaque n);
+
+/*
+   doTypedef - generate a typedef for n provuiding it is not
+*/
+
+static void doTypedef (mcPretty_pretty p, decl_node__opaque n);
+
+/*
    doTypesC -
 */
 
@@ -3982,6 +4063,25 @@ static bool typePair (decl_node__opaque a, decl_node__opaque b, decl_node__opaqu
 */
 
 static bool needsCast (decl_node__opaque at, decl_node__opaque ft);
+
+/*
+   castDestType - emit the destination type ft
+*/
+
+static void castDestType (mcPretty_pretty p, decl_node__opaque formal, decl_node__opaque ft);
+
+/*
+   identifyPointer -
+*/
+
+static decl_node__opaque identifyPointer (decl_node__opaque type);
+
+/*
+   castPointer - provides a six way cast between ADDRESS (ie void * ),
+                 char * and const char *.
+*/
+
+static unsigned int castPointer (mcPretty_pretty p, decl_node__opaque actual, decl_node__opaque formal, decl_node__opaque at, decl_node__opaque ft);
 
 /*
    checkSystemCast - checks to see if we are passing to/from
@@ -5539,6 +5639,12 @@ static void makeBaseSymbols (void);
 static void makeBuiltins (void);
 
 /*
+   makeCDataTypes - assign the charStarN and constCharStarN to NIL.
+*/
+
+static void makeCDataTypes (void);
+
+/*
    init -
 */
 
@@ -5556,7 +5662,7 @@ static decl_node__opaque newNode (decl_nodeT k)
   Storage_ALLOCATE ((void **) &d, sizeof (decl_nodeRec));
   if (enableMemsetOnAllocation)
     {
-      d = static_cast<decl_node__opaque> (libc_memset (reinterpret_cast<void *> (d), 0, static_cast<size_t> (sizeof ((*d)))));
+      d = static_cast<decl_node__opaque> (libc_memset (reinterpret_cast <void *> (d), 0, static_cast<size_t> (sizeof ((*d)))));
     }
   if (d == NULL)
     {
@@ -5725,6 +5831,52 @@ static void importEnumFields (decl_node__opaque m, decl_node__opaque n)
 
 
 /*
+   checkGccType - check to see if node n is gcc tree or location_t
+                  and record its use in keyc.
+*/
+
+static void checkGccType (decl_node__opaque n)
+{
+  if (((mcOptions_getGccConfigSystem ()) && ((decl_getScope (static_cast<decl_node> (n))) != NULL)) && ((decl_getSymName (decl_getScope (static_cast<decl_node> (n)))) == (nameKey_makeKey ((const char *) "gcctypes", 8))))
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "location_t", 10)))
+        {
+          keyc_useGccLocation ();
+        }
+      else if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "tree", 4)))
+        {
+          /* avoid dangling else.  */
+          keyc_useGccTree ();
+        }
+    }
+}
+
+
+/*
+   checkCDataTypes - check to see if node n is CharStar or ConstCharStar
+                  and if necessary assign n to the global variable.
+*/
+
+static void checkCDataTypes (decl_node__opaque n)
+{
+  if (((decl_getScope (static_cast<decl_node> (n))) != NULL) && ((decl_getSymName (decl_getScope (static_cast<decl_node> (n)))) == (nameKey_makeKey ((const char *) "CDataTypes", 10))))
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "CharStar", 8)))
+        {
+          charStarN = n;
+        }
+      else if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "ConstCharStar", 13)))
+        {
+          /* avoid dangling else.  */
+          constCharStarN = n;
+        }
+    }
+}
+
+
+/*
    isComplex - returns TRUE if, n, is the complex type.
 */
 
@@ -5802,6 +5954,7 @@ static decl_node__opaque makeDef (nameKey_Name n)
   d->defF.source = nameKey_NulName;
   d->defF.hasHidden = false;
   d->defF.forC = false;
+  d->defF.unqualified = false;
   d->defF.exported = Indexing_InitIndex (1);
   d->defF.importedModules = Indexing_InitIndex (1);
   d->defF.constFixup = initFixupInfo ();
@@ -5913,7 +6066,7 @@ static decl_node__opaque addTo (decl_scopeT *decls, decl_node__opaque d)
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if ((symbolKey_getSymKey ((*decls).symbols, n)) == NULL)
         {
-          symbolKey_putSymKey ((*decls).symbols, n, reinterpret_cast<void *> (d));
+          symbolKey_putSymKey ((*decls).symbols, n, reinterpret_cast <void *> (d));
         }
       else
         {
@@ -5923,22 +6076,22 @@ static decl_node__opaque addTo (decl_scopeT *decls, decl_node__opaque d)
     }
   if (decl_isConst (static_cast<decl_node> (d)))
     {
-      Indexing_IncludeIndiceIntoIndex ((*decls).constants, reinterpret_cast<void *> (d));
+      Indexing_IncludeIndiceIntoIndex ((*decls).constants, reinterpret_cast <void *> (d));
     }
   else if (decl_isVar (static_cast<decl_node> (d)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex ((*decls).variables, reinterpret_cast<void *> (d));
+      Indexing_IncludeIndiceIntoIndex ((*decls).variables, reinterpret_cast <void *> (d));
     }
   else if (decl_isType (static_cast<decl_node> (d)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex ((*decls).types, reinterpret_cast<void *> (d));
+      Indexing_IncludeIndiceIntoIndex ((*decls).types, reinterpret_cast <void *> (d));
     }
   else if (decl_isProcedure (static_cast<decl_node> (d)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex ((*decls).procedures, reinterpret_cast<void *> (d));
+      Indexing_IncludeIndiceIntoIndex ((*decls).procedures, reinterpret_cast <void *> (d));
       if (debugDecl)
         {
           libc_printf ((const char *) "%d procedures on the dynamic array\\n", 36, Indexing_HighIndice ((*decls).procedures));
@@ -5957,7 +6110,7 @@ static decl_node__opaque addTo (decl_scopeT *decls, decl_node__opaque d)
 static void export_ (decl_node__opaque d, decl_node__opaque n)
 {
   mcDebug_assert (decl_isDef (static_cast<decl_node> (d)));
-  Indexing_IncludeIndiceIntoIndex (d->defF.exported, reinterpret_cast<void *> (n));
+  Indexing_IncludeIndiceIntoIndex (d->defF.exported, reinterpret_cast <void *> (n));
 }
 
 
@@ -6207,7 +6360,7 @@ static decl_node__opaque addProcedureToScope (decl_node__opaque d, nameKey_Name 
   if (((decl_isDef (static_cast<decl_node> (m))) && ((decl_getSymName (static_cast<decl_node> (m))) == (nameKey_makeKey ((const char *) "M2RTS", 5)))) && ((decl_getSymName (static_cast<decl_node> (d))) == (nameKey_makeKey ((const char *) "HALT", 4))))
     {
       haltN = d;
-      symbolKey_putSymKey (baseSymbols, n, reinterpret_cast<void *> (haltN));
+      symbolKey_putSymKey (baseSymbols, n, reinterpret_cast <void *> (haltN));
     }
   return addToScope (d);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -6375,7 +6528,7 @@ static void putFieldVarient (decl_node__opaque f, decl_node__opaque v)
   switch (v->kind)
     {
       case decl_varient:
-        Indexing_IncludeIndiceIntoIndex (v->varientF.listOfSons, reinterpret_cast<void *> (f));
+        Indexing_IncludeIndiceIntoIndex (v->varientF.listOfSons, reinterpret_cast <void *> (f));
         break;
 
 
@@ -6413,14 +6566,14 @@ static decl_node__opaque putFieldRecord (decl_node__opaque r, nameKey_Name tag, 
   switch (r->kind)
     {
       case decl_record:
-        Indexing_IncludeIndiceIntoIndex (r->recordF.listOfSons, reinterpret_cast<void *> (n));
+        Indexing_IncludeIndiceIntoIndex (r->recordF.listOfSons, reinterpret_cast <void *> (n));
         /* ensure that field, n, is in the parents Local Symbols.  */
         if (tag != nameKey_NulName)
           {
             /* avoid gcc warning by using compound statement even if not strictly necessary.  */
             if ((symbolKey_getSymKey (r->recordF.localSymbols, tag)) == symbolKey_NulKey)
               {
-                symbolKey_putSymKey (r->recordF.localSymbols, tag, reinterpret_cast<void *> (n));
+                symbolKey_putSymKey (r->recordF.localSymbols, tag, reinterpret_cast <void *> (n));
               }
             else
               {
@@ -6431,12 +6584,12 @@ static decl_node__opaque putFieldRecord (decl_node__opaque r, nameKey_Name tag, 
         break;
 
       case decl_varientfield:
-        Indexing_IncludeIndiceIntoIndex (r->varientfieldF.listOfSons, reinterpret_cast<void *> (n));
+        Indexing_IncludeIndiceIntoIndex (r->varientfieldF.listOfSons, reinterpret_cast <void *> (n));
         p = getParent (r);
         mcDebug_assert (p->kind == decl_record);
         if (tag != nameKey_NulName)
           {
-            symbolKey_putSymKey (p->recordF.localSymbols, tag, reinterpret_cast<void *> (n));
+            symbolKey_putSymKey (p->recordF.localSymbols, tag, reinterpret_cast <void *> (n));
           }
         break;
 
@@ -6453,7 +6606,7 @@ static decl_node__opaque putFieldRecord (decl_node__opaque r, nameKey_Name tag, 
   n->recordfieldF.tag = false;
   n->recordfieldF.scope = static_cast<decl_node__opaque> (NULL);
   initCname (&n->recordfieldF.cname);
-  /* 
+  /*
    IF r^.kind=record
    THEN
       doRecordM2 (doP, r)
@@ -6472,14 +6625,14 @@ static decl_node__opaque putFieldRecord (decl_node__opaque r, nameKey_Name tag, 
 
 static void ensureOrder (Indexing_Index i, decl_node__opaque a, decl_node__opaque b)
 {
-  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast<void *> (a)));
-  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast<void *> (b)));
-  Indexing_RemoveIndiceFromIndex (i, reinterpret_cast<void *> (a));
-  Indexing_RemoveIndiceFromIndex (i, reinterpret_cast<void *> (b));
-  Indexing_IncludeIndiceIntoIndex (i, reinterpret_cast<void *> (a));
-  Indexing_IncludeIndiceIntoIndex (i, reinterpret_cast<void *> (b));
-  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast<void *> (a)));
-  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast<void *> (b)));
+  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast <void *> (a)));
+  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast <void *> (b)));
+  Indexing_RemoveIndiceFromIndex (i, reinterpret_cast <void *> (a));
+  Indexing_RemoveIndiceFromIndex (i, reinterpret_cast <void *> (b));
+  Indexing_IncludeIndiceIntoIndex (i, reinterpret_cast <void *> (a));
+  Indexing_IncludeIndiceIntoIndex (i, reinterpret_cast <void *> (b));
+  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast <void *> (a)));
+  mcDebug_assert (Indexing_IsIndiceInIndex (i, reinterpret_cast <void *> (b)));
 }
 
 
@@ -6584,17 +6737,17 @@ static void addEnumToModule (decl_node__opaque m, decl_node__opaque e)
   mcDebug_assert (((decl_isModule (static_cast<decl_node> (m))) || (decl_isDef (static_cast<decl_node> (m)))) || (decl_isImp (static_cast<decl_node> (m))));
   if (decl_isModule (static_cast<decl_node> (m)))
     {
-      Indexing_IncludeIndiceIntoIndex (m->moduleF.enumFixup.info, reinterpret_cast<void *> (e));
+      Indexing_IncludeIndiceIntoIndex (m->moduleF.enumFixup.info, reinterpret_cast <void *> (e));
     }
   else if (decl_isDef (static_cast<decl_node> (m)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex (m->defF.enumFixup.info, reinterpret_cast<void *> (e));
+      Indexing_IncludeIndiceIntoIndex (m->defF.enumFixup.info, reinterpret_cast <void *> (e));
     }
   else if (decl_isImp (static_cast<decl_node> (m)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex (m->impF.enumFixup.info, reinterpret_cast<void *> (e));
+      Indexing_IncludeIndiceIntoIndex (m->impF.enumFixup.info, reinterpret_cast <void *> (e));
     }
 }
 
@@ -6648,8 +6801,8 @@ static decl_node__opaque doMakeEnumField (decl_node__opaque e, nameKey_Name n)
   if (f == NULL)
     {
       f = newNode (decl_enumerationfield);
-      symbolKey_putSymKey (e->enumerationF.localSymbols, n, reinterpret_cast<void *> (f));
-      Indexing_IncludeIndiceIntoIndex (e->enumerationF.listOfSons, reinterpret_cast<void *> (f));
+      symbolKey_putSymKey (e->enumerationF.localSymbols, n, reinterpret_cast <void *> (f));
+      Indexing_IncludeIndiceIntoIndex (e->enumerationF.listOfSons, reinterpret_cast <void *> (f));
       f->enumerationfieldF.name = n;
       f->enumerationfieldF.type = e;
       f->enumerationfieldF.scope = static_cast<decl_node__opaque> (decl_getDeclScope ());
@@ -6750,17 +6903,17 @@ static void addConstToModule (decl_node__opaque m, decl_node__opaque e)
   mcDebug_assert (((decl_isModule (static_cast<decl_node> (m))) || (decl_isDef (static_cast<decl_node> (m)))) || (decl_isImp (static_cast<decl_node> (m))));
   if (decl_isModule (static_cast<decl_node> (m)))
     {
-      Indexing_IncludeIndiceIntoIndex (m->moduleF.constFixup.info, reinterpret_cast<void *> (e));
+      Indexing_IncludeIndiceIntoIndex (m->moduleF.constFixup.info, reinterpret_cast <void *> (e));
     }
   else if (decl_isDef (static_cast<decl_node> (m)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex (m->defF.constFixup.info, reinterpret_cast<void *> (e));
+      Indexing_IncludeIndiceIntoIndex (m->defF.constFixup.info, reinterpret_cast <void *> (e));
     }
   else if (decl_isImp (static_cast<decl_node> (m)))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex (m->impF.constFixup.info, reinterpret_cast<void *> (e));
+      Indexing_IncludeIndiceIntoIndex (m->impF.constFixup.info, reinterpret_cast <void *> (e));
     }
 }
 
@@ -6866,7 +7019,7 @@ static decl_node__opaque makeIntrinsicProc (decl_nodeT k, unsigned int noArgs, d
 {
   decl_node__opaque f;
 
-  /* 
+  /*
    makeIntrisicProc - create an intrinsic node.
   */
   f = newNode (k);
@@ -8378,7 +8531,7 @@ static DynamicStrings_String getFQstring (decl_node__opaque n)
   DynamicStrings_String i;
   DynamicStrings_String s;
 
-  if ((decl_getScope (static_cast<decl_node> (n))) == NULL)
+  if (((decl_getScope (static_cast<decl_node> (n))) == NULL) || (decl_isDefUnqualified (decl_getScope (static_cast<decl_node> (n)))))
     {
       return DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (static_cast<decl_node> (n))));
     }
@@ -8389,7 +8542,7 @@ static DynamicStrings_String getFQstring (decl_node__opaque n)
       s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (decl_getScope (static_cast<decl_node> (n)))));
       return FormatStrings_Sprintf2 (DynamicStrings_InitString ((const char *) "%s_%s", 5), (const unsigned char *) &s, (sizeof (s)-1), (const unsigned char *) &i, (sizeof (i)-1));
     }
-  else if ((! (decl_isExported (static_cast<decl_node> (n)))) || (mcOptions_getIgnoreFQ ()))
+  else if (((! (decl_isExported (static_cast<decl_node> (n)))) || (mcOptions_getIgnoreFQ ())) || (decl_isDefUnqualified (decl_getScope (static_cast<decl_node> (n)))))
     {
       /* avoid dangling else.  */
       return DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (static_cast<decl_node> (n))));
@@ -8415,7 +8568,7 @@ static DynamicStrings_String getFQDstring (decl_node__opaque n, bool scopes)
   DynamicStrings_String i;
   DynamicStrings_String s;
 
-  if ((decl_getScope (static_cast<decl_node> (n))) == NULL)
+  if (((decl_getScope (static_cast<decl_node> (n))) == NULL) || (decl_isDefUnqualified (decl_getScope (static_cast<decl_node> (n)))))
     {
       return DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (getDName (n, scopes)));
     }
@@ -8427,7 +8580,7 @@ static DynamicStrings_String getFQDstring (decl_node__opaque n, bool scopes)
       s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (decl_getScope (static_cast<decl_node> (n)))));
       return FormatStrings_Sprintf2 (DynamicStrings_InitString ((const char *) "%s_%s", 5), (const unsigned char *) &s, (sizeof (s)-1), (const unsigned char *) &i, (sizeof (i)-1));
     }
-  else if ((! (decl_isExported (static_cast<decl_node> (n)))) || (mcOptions_getIgnoreFQ ()))
+  else if (((! (decl_isExported (static_cast<decl_node> (n)))) || (mcOptions_getIgnoreFQ ())) || (decl_isDefUnqualified (decl_getScope (static_cast<decl_node> (n)))))
     {
       /* avoid dangling else.  */
       return DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (getDName (n, scopes)));
@@ -8490,14 +8643,14 @@ static void doNothing (decl_node__opaque n)
 
 static void doConstC (decl_node__opaque n)
 {
-  if (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n))))
+  if (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (n))))
     {
       mcPretty_print (doP, (const char *) "#   define ", 11);
       doFQNameC (doP, n);
       mcPretty_setNeedSpace (doP);
       doExprC (doP, n->constF.value);
       mcPretty_print (doP, (const char *) "\\n", 2);
-      alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast <void *> (n));
     }
 }
 
@@ -10084,7 +10237,7 @@ static void doString (mcPretty_pretty p, decl_node__opaque n)
   s = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (decl_getSymName (static_cast<decl_node> (n))));
   outTextS (p, s);
   s = DynamicStrings_KillString (s);
-  /* 
+  /*
    IF DynamicStrings.Index (s, '"', 0)=-1
    THEN
       outText (p, '"') ;
@@ -10244,7 +10397,7 @@ static void doStringC (mcPretty_pretty p, decl_node__opaque n)
   DynamicStrings_String s;
 
   mcDebug_assert (isString (n));
-  /* 
+  /*
    s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
    IF DynamicStrings.Length (s)>3
    THEN
@@ -10792,7 +10945,7 @@ static void doParamTypeEmit (mcPretty_pretty p, decl_node__opaque paramnode, dec
       doTypeNameC (p, paramtype);
       doOpaqueModifier (p, paramnode);
     }
-  /* 
+  /*
       IF nodeUsesOpaque (paramnode) AND (NOT getNodeOpaqueVoidStar (paramnode))
       THEN
          outText (p, '__opaque')
@@ -11979,6 +12132,195 @@ static void doTypeNameModifier (mcPretty_pretty p, decl_node__opaque n)
 
 
 /*
+   isGccType - return TRUE if n is tree or location_t.
+*/
+
+static bool isGccType (decl_node__opaque n)
+{
+  return (mcOptions_getGccConfigSystem ()) && (((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "location_t", 10))) || ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "tree", 4))));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   doGccType - record whether we are going to declare tree or location_t
+               so that the appropriate gcc header can be included instead.
+*/
+
+static void doGccType (mcPretty_pretty p, decl_node__opaque n)
+{
+  if (mcOptions_getGccConfigSystem ())
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "location_t", 10)))
+        {
+          outText (p, (const char *) "/* Not going to declare ", 24);
+          doTypeNameC (p, n);
+          outText (p, (const char *) " as it is declared in the gcc header input.h.  */\\n\\n", 53);
+          keyc_useGccLocation ();
+        }
+      else if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "tree", 4)))
+        {
+          /* avoid dangling else.  */
+          outText (p, (const char *) "/* Not going to declare ", 24);
+          doTypeNameC (p, n);
+          outText (p, (const char *) " as it is declared in the gcc header tree.h.  */\\n\\n", 52);
+          keyc_useGccTree ();
+        }
+    }
+}
+
+
+/*
+   isCDataType - return true if n is charStar or constCharStar.
+*/
+
+static bool isCDataType (decl_node__opaque n)
+{
+  return (n != NULL) && ((n == charStarN) || (n == constCharStarN));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   isCDataTypes - return TRUE if n is CharStar or ConstCharStar.
+*/
+
+static bool isCDataTypes (decl_node__opaque n)
+{
+  decl_node__opaque scope;
+
+  scope = static_cast<decl_node__opaque> (decl_getScope (static_cast<decl_node> (n)));
+  return ((scope != NULL) && ((decl_getSymName (static_cast<decl_node> (scope))) == (nameKey_makeKey ((const char *) "CDataTypes", 10)))) && (((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "CharStar", 8))) || ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "ConstCharStar", 13))));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   doCDataTypes - if we are going to declare CharStar or ConstCharStar
+               then generate a comment instead.
+*/
+
+static void doCDataTypes (mcPretty_pretty p, decl_node__opaque n)
+{
+  if (isCDataTypes (n))
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "CharStar", 8)))
+        {
+          outText (p, (const char *) "/* Not going to declare ", 24);
+          doTypeNameC (p, n);
+          outText (p, (const char *) " as it is a C type.  */\\n\\n", 27);
+          charStarN = n;
+        }
+      else if ((decl_getSymName (static_cast<decl_node> (n))) == (nameKey_makeKey ((const char *) "ConstCharStar", 13)))
+        {
+          /* avoid dangling else.  */
+          outText (p, (const char *) "/* Not going to declare ", 24);
+          doTypeNameC (p, n);
+          outText (p, (const char *) " as it is a C type.  */\\n\\n", 27);
+          constCharStarN = n;
+        }
+    }
+}
+
+
+/*
+   doCDataTypesC - generate the C representation of the CDataTypes data types.
+*/
+
+static void doCDataTypesC (mcPretty_pretty p, decl_node__opaque n)
+{
+  if (n == charStarN)
+    {
+      outText (p, (const char *) "char *", 6);
+      mcPretty_setNeedSpace (p);
+    }
+  else if (n == constCharStarN)
+    {
+      /* avoid dangling else.  */
+      outText (p, (const char *) "const char *", 12);
+      mcPretty_setNeedSpace (p);
+    }
+}
+
+
+/*
+   doTypeOrPointer - only declare type or pointer n providing that
+                     the name is not location_t or tree and
+                     the --gccConfigSystem option is enabled.
+*/
+
+static void doTypeOrPointer (mcPretty_pretty p, decl_node__opaque n)
+{
+  decl_node__opaque m;
+
+  if (isGccType (n))
+    {
+      doGccType (p, n);
+    }
+  else if (isCDataTypes (n))
+    {
+      /* avoid dangling else.  */
+      doCDataTypes (p, n);
+    }
+  else
+    {
+      /* avoid dangling else.  */
+      m = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
+      outText (p, (const char *) "typedef", 7);
+      mcPretty_setNeedSpace (p);
+      doTypeC (p, m, &m);
+      if (decl_isType (static_cast<decl_node> (m)))
+        {
+          mcPretty_setNeedSpace (p);
+        }
+      doTypeNameC (p, n);
+      doTypeNameModifier (p, n);
+      outText (p, (const char *) ";\\n\\n", 5);
+    }
+}
+
+
+/*
+   doTypedef - generate a typedef for n provuiding it is not
+*/
+
+static void doTypedef (mcPretty_pretty p, decl_node__opaque n)
+{
+  decl_node__opaque m;
+
+  if (isGccType (n))
+    {
+      doGccType (p, n);
+    }
+  else if (isCDataTypes (n))
+    {
+      /* avoid dangling else.  */
+      doCDataTypes (p, n);
+    }
+  else
+    {
+      /* avoid dangling else.  */
+      m = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
+      outText (p, (const char *) "typedef", 7);
+      mcPretty_setNeedSpace (p);
+      doTypeC (p, m, &m);
+      if (decl_isType (static_cast<decl_node> (m)))
+        {
+          mcPretty_setNeedSpace (p);
+        }
+      doTypeNameC (p, n);
+      doTypeNameModifier (p, n);
+      outText (p, (const char *) ";\\n\\n", 5);
+    }
+}
+
+
+/*
    doTypesC -
 */
 
@@ -11996,16 +12338,7 @@ static void doTypesC (decl_node__opaque n)
       else if ((decl_isType (static_cast<decl_node> (m))) || (decl_isPointer (static_cast<decl_node> (m))))
         {
           /* avoid dangling else.  */
-          outText (doP, (const char *) "typedef", 7);
-          mcPretty_setNeedSpace (doP);
-          doTypeC (doP, m, &m);
-          if (decl_isType (static_cast<decl_node> (m)))
-            {
-              mcPretty_setNeedSpace (doP);
-            }
-          doTypeNameC (doP, n);
-          doTypeNameModifier (doP, n);
-          outText (doP, (const char *) ";\\n\\n", 5);
+          doTypeOrPointer (doP, n);
         }
       else if (decl_isEnumeration (static_cast<decl_node> (m)))
         {
@@ -12023,16 +12356,7 @@ static void doTypesC (decl_node__opaque n)
       else
         {
           /* avoid dangling else.  */
-          outText (doP, (const char *) "typedef", 7);
-          mcPretty_setNeedSpace (doP);
-          doTypeC (doP, m, &m);
-          if (decl_isType (static_cast<decl_node> (m)))
-            {
-              mcPretty_setNeedSpace (doP);
-            }
-          doTypeNameC (doP, n);
-          doTypeNameModifier (doP, n);
-          outText (doP, (const char *) ";\\n\\n", 5);
+          doTypedef (doP, n);
         }
     }
 }
@@ -13045,6 +13369,11 @@ static void doTypeC (mcPretty_pretty p, decl_node__opaque n, decl_node__opaque *
     {
       outText (p, (const char *) "void", 4);
     }
+  else if (isCDataTypes (n))
+    {
+      /* avoid dangling else.  */
+      doCDataTypesC (p, n);
+    }
   else if (isBase (n))
     {
       /* avoid dangling else.  */
@@ -13095,15 +13424,17 @@ static void doTypeC (mcPretty_pretty p, decl_node__opaque n, decl_node__opaque *
       /* avoid dangling else.  */
       doSetC (p, n);
     }
+  else if (isCDataTypes (n))
+    {
+      /* avoid dangling else.  */
+      doCDataTypesC (p, n);
+    }
   else
     {
       /* avoid dangling else.  */
-      /* --fixme--  */
-      mcPretty_print (p, (const char *) "to do ...  typedef etc etc ", 27);
-      doFQNameC (p, n);
-      mcPretty_print (p, (const char *) ";\\n", 3);
-      M2RTS_HALT (-1);
-      __builtin_unreachable ();
+      mcMetaError_metaError1 ((const char *) "expecting a type symbol rather than a {%1DMd} {%1DMa}", 53, (const unsigned char *) &n, (sizeof (n)-1));
+      mcError_flushErrors ();
+      mcError_errorAbort0 ((const char *) "terminating compilation", 23);
     }
 }
 
@@ -13158,6 +13489,18 @@ static void doTypeNameC (mcPretty_pretty p, decl_node__opaque n)
   if (n == NULL)
     {
       outText (p, (const char *) "void", 4);
+      mcPretty_setNeedSpace (p);
+    }
+  else if (n == charStarN)
+    {
+      /* avoid dangling else.  */
+      outText (p, (const char *) "char *", 6);
+      mcPretty_setNeedSpace (p);
+    }
+  else if (n == constCharStarN)
+    {
+      /* avoid dangling else.  */
+      outText (p, (const char *) "const char *", 12);
       mcPretty_setNeedSpace (p);
     }
   else if (isBase (n))
@@ -13326,7 +13669,7 @@ static void doExternCP (mcPretty_pretty p)
 
 static void doProcedureCommentText (mcPretty_pretty p, DynamicStrings_String s)
 {
-  /* remove 
+  /* remove
    from the start of the comment.  */
   while (((DynamicStrings_Length (s)) > 0) && ((DynamicStrings_char (s, 0)) == ASCII_lf))
     {
@@ -13392,7 +13735,7 @@ static void doProcedureHeadingC (decl_node__opaque n, bool prototype)
     }
   q = static_cast<decl_node__opaque> (NULL);
   doTypeC (doP, n->procedureF.returnType, &q);
-  /* 
+  /*
    IF NOT isExported (n)
    THEN
       doTypeNameModifier (doP, n^.procedureF.returnType)
@@ -13582,12 +13925,12 @@ static void doPrototypeC (decl_node__opaque n)
 
 static void addTodo (decl_node__opaque n)
 {
-  if (((n != NULL) && (! (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (n))))) && (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n)))))
+  if (((n != NULL) && (! (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (n))))) && (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (n)))))
     {
       mcDebug_assert (! (decl_isVarient (static_cast<decl_node> (n))));
       mcDebug_assert (! (decl_isVarientField (static_cast<decl_node> (n))));
       mcDebug_assert (! (decl_isDef (static_cast<decl_node> (n))));
-      alists_includeItemIntoList (globalGroup->todoQ, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (globalGroup->todoQ, reinterpret_cast <void *> (n));
     }
 }
 
@@ -13841,9 +14184,9 @@ static void doSimplifyNode (alists_alist l, decl_node__opaque n)
 
 static void simplifyNode (alists_alist l, decl_node__opaque n)
 {
-  if (! (alists_isItemInList (l, reinterpret_cast<void *> (n))))
+  if (! (alists_isItemInList (l, reinterpret_cast <void *> (n))))
     {
-      alists_includeItemIntoList (l, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (l, reinterpret_cast <void *> (n));
       doSimplifyNode (l, n);
     }
 }
@@ -14063,7 +14406,7 @@ static void includeDefVarProcedure (decl_node__opaque n)
       defModule = static_cast<decl_node__opaque> (decl_lookupDef (decl_getSymName (static_cast<decl_node> (n))));
       if (defModule != NULL)
         {
-          /* 
+          /*
          includeVar (defModule^.defF.decls) ;
          simplifyTypes (defModule^.defF.decls) ;
   */
@@ -15236,6 +15579,155 @@ static bool needsCast (decl_node__opaque at, decl_node__opaque ft)
 
 
 /*
+   castDestType - emit the destination type ft
+*/
+
+static void castDestType (mcPretty_pretty p, decl_node__opaque formal, decl_node__opaque ft)
+{
+  doTypeNameC (p, ft);
+  if (decl_isVarParam (static_cast<decl_node> (formal)))
+    {
+      outText (p, (const char *) "*", 1);
+    }
+}
+
+
+/*
+   identifyPointer -
+*/
+
+static decl_node__opaque identifyPointer (decl_node__opaque type)
+{
+  if (decl_isPointer (static_cast<decl_node> (type)))
+    {
+      /* avoid gcc warning by using compound statement even if not strictly necessary.  */
+      if ((decl_skipType (decl_getType (static_cast<decl_node> (type)))) == charN)
+        {
+          return charStarN;
+        }
+      else if (((decl_skipType (decl_getType (static_cast<decl_node> (type)))) == byteN) || ((decl_skipType (decl_getType (static_cast<decl_node> (type)))) == locN))
+        {
+          /* avoid dangling else.  */
+          return addressN;
+        }
+    }
+  return type;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   castPointer - provides a six way cast between ADDRESS (ie void * ),
+                 char * and const char *.
+*/
+
+static unsigned int castPointer (mcPretty_pretty p, decl_node__opaque actual, decl_node__opaque formal, decl_node__opaque at, decl_node__opaque ft)
+{
+  decl_node__opaque sat;
+  decl_node__opaque sft;
+  unsigned int parenth;
+
+  parenth = 0;
+  if (at != ft)
+    {
+      sat = identifyPointer (static_cast<decl_node__opaque> (decl_skipType (static_cast<decl_node> (at))));
+      sft = identifyPointer (static_cast<decl_node__opaque> (decl_skipType (static_cast<decl_node> (ft))));
+      if (sat == addressN)
+        {
+          if (sft == charStarN)
+            {
+              outText (p, (const char *) "reinterpret_cast <", 18);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+          else if (sft == constCharStarN)
+            {
+              /* avoid dangling else.  */
+              outText (p, (const char *) "const_cast <", 12);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) "> (static_cast <", 16);
+              doTypeNameC (p, charStarN);
+              outText (p, (const char *) ">", 1);
+              parenth += 1;
+            }
+          else
+            {
+              /* avoid dangling else.  */
+              outText (p, (const char *) "reinterpret_cast <", 18);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+        }
+      else if (sat == charStarN)
+        {
+          /* avoid dangling else.  */
+          if (sft == addressN)
+            {
+              outText (p, (const char *) "reinterpret_cast <", 18);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+          else if (sft == constCharStarN)
+            {
+              /* avoid dangling else.  */
+              outText (p, (const char *) "const_cast <", 12);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+          else
+            {
+              /* avoid dangling else.  */
+              outText (p, (const char *) "reinterpret_cast <", 18);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+        }
+      else if (sat == constCharStarN)
+        {
+          /* avoid dangling else.  */
+          if (sft == addressN)
+            {
+              outText (p, (const char *) "static_cast <", 13);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) "> (const_cast <", 15);
+              doTypeNameC (p, charStarN);
+              outText (p, (const char *) ">", 1);
+              parenth += 1;
+            }
+          else if (sft == charStarN)
+            {
+              /* avoid dangling else.  */
+              outText (p, (const char *) "const_cast <", 12);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+          else
+            {
+              /* avoid dangling else.  */
+              outText (p, (const char *) "reinterpret_cast <", 18);
+              castDestType (p, formal, ft);
+              outText (p, (const char *) ">", 1);
+            }
+        }
+      else
+        {
+          /* avoid dangling else.  */
+          outText (p, (const char *) "reinterpret_cast <", 18);
+          castDestType (p, formal, ft);
+          outText (p, (const char *) ">", 1);
+        }
+      mcPretty_setNeedSpace (p);
+      outText (p, (const char *) "(", 1);
+      parenth += 1;
+    }
+  return parenth;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    checkSystemCast - checks to see if we are passing to/from
                      a system generic type (WORD, BYTE, ADDRESS)
                      and if so emit a cast.  It returns the number of
@@ -15254,12 +15746,18 @@ static unsigned int checkSystemCast (mcPretty_pretty p, decl_node__opaque actual
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (lang == decl_ansiCP)
         {
-          if ((isString (actual)) && ((decl_skipType (static_cast<decl_node> (ft))) == addressN))
+          if ((isString (actual)) && (isCDataType (static_cast<decl_node__opaque> (decl_skipType (static_cast<decl_node> (ft))))))
             {
+              /* Nothing to do.  */
+              return 0;
+            }
+          else if ((isString (actual)) && ((decl_skipType (static_cast<decl_node> (ft))) == addressN))
+            {
+              /* avoid dangling else.  */
               outText (p, (const char *) "const_cast<void*> (static_cast<const void*> (", 45);
               return 2;
             }
-          else if ((decl_isPointer (decl_skipType (static_cast<decl_node> (ft)))) || ((decl_skipType (static_cast<decl_node> (ft))) == addressN))
+          else if (((decl_isPointer (decl_skipType (static_cast<decl_node> (ft)))) || ((decl_skipType (static_cast<decl_node> (ft))) == addressN)) || (isCDataType (static_cast<decl_node__opaque> (decl_skipType (static_cast<decl_node> (ft))))))
             {
               /* avoid dangling else.  */
               if (actual == nilN)
@@ -15273,14 +15771,7 @@ static unsigned int checkSystemCast (mcPretty_pretty p, decl_node__opaque actual
                 }
               else
                 {
-                  outText (p, (const char *) "reinterpret_cast<", 17);
-                  doTypeNameC (p, ft);
-                  if (decl_isVarParam (static_cast<decl_node> (formal)))
-                    {
-                      outText (p, (const char *) "*", 1);
-                    }
-                  mcPretty_noSpace (p);
-                  outText (p, (const char *) "> (", 3);
+                  return castPointer (p, actual, formal, at, ft);
                 }
             }
           else
@@ -17529,11 +18020,11 @@ static decl_dependentState allDependants (decl_node__opaque n)
 
 static decl_dependentState walkDependants (alists_alist l, decl_node__opaque n)
 {
-  if ((n == NULL) || (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n))))
+  if ((n == NULL) || (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (n))))
     {
       return decl_completed;
     }
-  else if (alists_isItemInList (l, reinterpret_cast<void *> (n)))
+  else if (alists_isItemInList (l, reinterpret_cast <void *> (n)))
     {
       /* avoid dangling else.  */
       return decl_recursive;
@@ -17541,7 +18032,7 @@ static decl_dependentState walkDependants (alists_alist l, decl_node__opaque n)
   else
     {
       /* avoid dangling else.  */
-      alists_includeItemIntoList (l, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (l, reinterpret_cast <void *> (n));
       return doDependants (l, n);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -17558,11 +18049,11 @@ static decl_dependentState walkType (alists_alist l, decl_node__opaque n)
   decl_node__opaque t;
 
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (t)))
     {
       return decl_completed;
     }
-  else if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
+  else if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t)))
     {
       /* avoid dangling else.  */
       return decl_blocked;
@@ -17667,18 +18158,18 @@ static void dbq (decl_node__opaque n)
   if (mcOptions_getDebugTopological ())
     {
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
-      if (alists_isItemInList (globalGroup->todoQ, reinterpret_cast<void *> (n)))
+      if (alists_isItemInList (globalGroup->todoQ, reinterpret_cast <void *> (n)))
         {
           db ((const char *) "{T", 2, n);
           outText (doP, (const char *) "}", 1);
         }
-      else if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (n)))
+      else if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (n)))
         {
           /* avoid dangling else.  */
           db ((const char *) "{P", 2, n);
           outText (doP, (const char *) "}", 1);
         }
-      else if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n)))
+      else if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (n)))
         {
           /* avoid dangling else.  */
           db ((const char *) "{D", 2, n);
@@ -17786,7 +18277,7 @@ static decl_dependentState walkVarient (alists_alist l, decl_node__opaque n)
 
 static void queueBlocked (decl_node__opaque n)
 {
-  if (! ((alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n))) || (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (n)))))
+  if (! ((alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (n))) || (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (n)))))
     {
       addTodo (n);
     }
@@ -17802,7 +18293,7 @@ static decl_dependentState walkVar (alists_alist l, decl_node__opaque n)
   decl_node__opaque t;
 
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (t)))
     {
       return decl_completed;
     }
@@ -17909,7 +18400,7 @@ static decl_dependentState walkPointer (alists_alist l, decl_node__opaque n)
 
   /* if the type of, n, is done or partial then we can output pointer.  */
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if ((alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t))) || (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t))))
+  if ((alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t))) || (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (t))))
     {
       /* pointer to partial can always generate a complete type.  */
       return decl_completed;
@@ -17929,7 +18420,7 @@ static decl_dependentState walkArray (alists_alist l, decl_node__opaque n)
   decl_dependentState s;
 
   /* an array can only be declared if its data type has already been emitted.  */
-  if (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n->arrayF.type))))
+  if (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (n->arrayF.type))))
     {
       s = walkDependants (l, n->arrayF.type);
       queueBlocked (n->arrayF.type);
@@ -17982,7 +18473,7 @@ static decl_dependentState walkVarParam (alists_alist l, decl_node__opaque n)
   decl_node__opaque t;
 
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t)))
     {
       /* parameter can be issued from a partial.  */
       return decl_completed;
@@ -18002,7 +18493,7 @@ static decl_dependentState walkParam (alists_alist l, decl_node__opaque n)
   decl_node__opaque t;
 
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t)))
     {
       /* parameter can be issued from a partial.  */
       return decl_completed;
@@ -18022,7 +18513,7 @@ static decl_dependentState walkOptarg (alists_alist l, decl_node__opaque n)
   decl_node__opaque t;
 
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t)))
     {
       /* parameter can be issued from a partial.  */
       return decl_completed;
@@ -18044,12 +18535,12 @@ static decl_dependentState walkRecordField (alists_alist l, decl_node__opaque n)
 
   mcDebug_assert (decl_isRecordField (static_cast<decl_node> (n)));
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t)))
     {
       dbs (decl_partial, n);
       return decl_partial;
     }
-  else if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t)))
+  else if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast <void *> (t)))
     {
       /* avoid dangling else.  */
       dbs (decl_completed, n);
@@ -18137,7 +18628,7 @@ static decl_dependentState walkProcType (alists_alist l, decl_node__opaque n)
   decl_node__opaque t;
 
   t = static_cast<decl_node__opaque> (decl_getType (static_cast<decl_node> (n)));
-  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast <void *> (t)))
     {}  /* empty.  */
   else
     {
@@ -19298,7 +19789,7 @@ static void visitIntrinsic (alists_alist v, decl_node__opaque n, decl_nodeProced
 static void visitDependants (alists_alist v, decl_node__opaque n, decl_nodeProcedure p)
 {
   mcDebug_assert (n != NULL);
-  mcDebug_assert (alists_isItemInList (v, reinterpret_cast<void *> (n)));
+  mcDebug_assert (alists_isItemInList (v, reinterpret_cast <void *> (n)));
   switch (n->kind)
     {
       case decl_explist:
@@ -19651,9 +20142,9 @@ static void visitDependants (alists_alist v, decl_node__opaque n, decl_nodeProce
 
 static void visitNode (alists_alist v, decl_node__opaque n, decl_nodeProcedure p)
 {
-  if ((n != NULL) && (! (alists_isItemInList (v, reinterpret_cast<void *> (n)))))
+  if ((n != NULL) && (! (alists_isItemInList (v, reinterpret_cast <void *> (n)))))
     {
-      alists_includeItemIntoList (v, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (v, reinterpret_cast <void *> (n));
       (*p.proc) (n);
       visitDependants (v, n, p);
     }
@@ -20222,15 +20713,15 @@ static void tryOutputTodo (decl_nodeProcedure c, decl_nodeProcedure t, decl_node
       d = static_cast<decl_node__opaque> (alists_getItemFromList (globalGroup->todoQ, i));
       if (tryComplete (d, c, t, v))
         {
-          alists_removeItemFromList (globalGroup->todoQ, reinterpret_cast<void *> (d));
+          alists_removeItemFromList (globalGroup->todoQ, reinterpret_cast <void *> (d));
           addDone (d);
           i = 1;
         }
       else if (tryPartial (d, pt))
         {
           /* avoid dangling else.  */
-          alists_removeItemFromList (globalGroup->todoQ, reinterpret_cast<void *> (d));
-          alists_includeItemIntoList (globalGroup->partialQ, reinterpret_cast<void *> (d));
+          alists_removeItemFromList (globalGroup->todoQ, reinterpret_cast <void *> (d));
+          alists_includeItemIntoList (globalGroup->partialQ, reinterpret_cast <void *> (d));
           i = 1;
         }
       else
@@ -20260,7 +20751,7 @@ static void tryOutputPartial (decl_nodeProcedure t)
       d = static_cast<decl_node__opaque> (alists_getItemFromList (globalGroup->partialQ, i));
       if (tryCompleteFromPartial (d, t))
         {
-          alists_removeItemFromList (globalGroup->partialQ, reinterpret_cast<void *> (d));
+          alists_removeItemFromList (globalGroup->partialQ, reinterpret_cast <void *> (d));
           addDone (d);
           i = 1;
           n -= 1;
@@ -21624,7 +22115,7 @@ static void addDone (decl_node__opaque n)
 {
   DynamicStrings_String s;
 
-  alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast<void *> (n));
+  alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast <void *> (n));
   if ((decl_isVar (static_cast<decl_node> (n))) || (decl_isParameter (static_cast<decl_node> (n))))
     {
       initNodeOpaqueState (n);
@@ -21674,7 +22165,7 @@ static decl_node__opaque dbgAdd (alists_alist l, decl_node__opaque n)
 {
   if (n != NULL)
     {
-      alists_includeItemIntoList (l, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (l, reinterpret_cast <void *> (n));
     }
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -21963,7 +22454,7 @@ static void dbg (const char *listName_, unsigned int _listName_high, const char 
   outputFile = FIO_StdOut;
   doP = mcPretty_initPretty ((mcPretty_writeProc) {(mcPretty_writeProc_t) write_}, (mcPretty_writeLnProc) {(mcPretty_writeLnProc_t) writeln});
   l = alists_initList ();
-  alists_includeItemIntoList (l, reinterpret_cast<void *> (n));
+  alists_includeItemIntoList (l, reinterpret_cast <void *> (n));
   i = 1;
   do {
     n = static_cast<decl_node__opaque> (alists_getItemFromList (l, i));
@@ -22558,46 +23049,46 @@ static void makeBaseSymbols (void)
   imN = makeBase (decl_im);
   reN = makeBase (decl_re);
   cmplxN = makeBase (decl_cmplx);
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "BOOLEAN", 7), reinterpret_cast<void *> (booleanN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "PROC", 4), reinterpret_cast<void *> (procN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CHAR", 4), reinterpret_cast<void *> (charN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CARDINAL", 8), reinterpret_cast<void *> (cardinalN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTCARD", 9), reinterpret_cast<void *> (shortcardN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGCARD", 8), reinterpret_cast<void *> (longcardN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "INTEGER", 7), reinterpret_cast<void *> (integerN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGINT", 7), reinterpret_cast<void *> (longintN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTINT", 8), reinterpret_cast<void *> (shortintN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "BITSET", 6), reinterpret_cast<void *> (bitsetN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "REAL", 4), reinterpret_cast<void *> (realN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTREAL", 9), reinterpret_cast<void *> (shortrealN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGREAL", 8), reinterpret_cast<void *> (longrealN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "COMPLEX", 7), reinterpret_cast<void *> (complexN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGCOMPLEX", 11), reinterpret_cast<void *> (longcomplexN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTCOMPLEX", 12), reinterpret_cast<void *> (shortcomplexN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "NIL", 3), reinterpret_cast<void *> (nilN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "TRUE", 4), reinterpret_cast<void *> (trueN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "FALSE", 5), reinterpret_cast<void *> (falseN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SIZE", 4), reinterpret_cast<void *> (sizeN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "MIN", 3), reinterpret_cast<void *> (minN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "MAX", 3), reinterpret_cast<void *> (maxN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "FLOAT", 5), reinterpret_cast<void *> (floatN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "TRUNC", 5), reinterpret_cast<void *> (truncN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "ORD", 3), reinterpret_cast<void *> (ordN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "VAL", 3), reinterpret_cast<void *> (valN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CHR", 3), reinterpret_cast<void *> (chrN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CAP", 3), reinterpret_cast<void *> (capN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "ABS", 3), reinterpret_cast<void *> (absN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "NEW", 3), reinterpret_cast<void *> (newN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "DISPOSE", 7), reinterpret_cast<void *> (disposeN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LENGTH", 6), reinterpret_cast<void *> (lengthN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "INC", 3), reinterpret_cast<void *> (incN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "DEC", 3), reinterpret_cast<void *> (decN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "INCL", 4), reinterpret_cast<void *> (inclN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "EXCL", 4), reinterpret_cast<void *> (exclN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "HIGH", 4), reinterpret_cast<void *> (highN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CMPLX", 5), reinterpret_cast<void *> (cmplxN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "RE", 2), reinterpret_cast<void *> (reN));
-  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "IM", 2), reinterpret_cast<void *> (imN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "BOOLEAN", 7), reinterpret_cast <void *> (booleanN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "PROC", 4), reinterpret_cast <void *> (procN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CHAR", 4), reinterpret_cast <void *> (charN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CARDINAL", 8), reinterpret_cast <void *> (cardinalN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTCARD", 9), reinterpret_cast <void *> (shortcardN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGCARD", 8), reinterpret_cast <void *> (longcardN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "INTEGER", 7), reinterpret_cast <void *> (integerN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGINT", 7), reinterpret_cast <void *> (longintN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTINT", 8), reinterpret_cast <void *> (shortintN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "BITSET", 6), reinterpret_cast <void *> (bitsetN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "REAL", 4), reinterpret_cast <void *> (realN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTREAL", 9), reinterpret_cast <void *> (shortrealN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGREAL", 8), reinterpret_cast <void *> (longrealN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "COMPLEX", 7), reinterpret_cast <void *> (complexN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LONGCOMPLEX", 11), reinterpret_cast <void *> (longcomplexN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SHORTCOMPLEX", 12), reinterpret_cast <void *> (shortcomplexN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "NIL", 3), reinterpret_cast <void *> (nilN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "TRUE", 4), reinterpret_cast <void *> (trueN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "FALSE", 5), reinterpret_cast <void *> (falseN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "SIZE", 4), reinterpret_cast <void *> (sizeN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "MIN", 3), reinterpret_cast <void *> (minN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "MAX", 3), reinterpret_cast <void *> (maxN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "FLOAT", 5), reinterpret_cast <void *> (floatN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "TRUNC", 5), reinterpret_cast <void *> (truncN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "ORD", 3), reinterpret_cast <void *> (ordN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "VAL", 3), reinterpret_cast <void *> (valN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CHR", 3), reinterpret_cast <void *> (chrN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CAP", 3), reinterpret_cast <void *> (capN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "ABS", 3), reinterpret_cast <void *> (absN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "NEW", 3), reinterpret_cast <void *> (newN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "DISPOSE", 7), reinterpret_cast <void *> (disposeN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "LENGTH", 6), reinterpret_cast <void *> (lengthN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "INC", 3), reinterpret_cast <void *> (incN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "DEC", 3), reinterpret_cast <void *> (decN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "INCL", 4), reinterpret_cast <void *> (inclN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "EXCL", 4), reinterpret_cast <void *> (exclN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "HIGH", 4), reinterpret_cast <void *> (highN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "CMPLX", 5), reinterpret_cast <void *> (cmplxN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "RE", 2), reinterpret_cast <void *> (reN));
+  symbolKey_putSymKey (baseSymbols, nameKey_makeKey ((const char *) "IM", 2), reinterpret_cast <void *> (imN));
   addDone (booleanN);
   addDone (charN);
   addDone (cardinalN);
@@ -22641,6 +23132,22 @@ static void makeBuiltins (void)
 
 
 /*
+   makeCDataTypes - assign the charStarN and constCharStarN to NIL.
+*/
+
+static void makeCDataTypes (void)
+{
+  decl_node__opaque CdatatypesN;
+
+  CdatatypesN = static_cast<decl_node__opaque> (decl_lookupDef (nameKey_makeKey ((const char *) "CDataTypes", 10)));
+  decl_enterScope (static_cast<decl_node> (CdatatypesN));
+  charStarN = static_cast<decl_node__opaque> (decl_makePointer (static_cast<decl_node> (charN)));
+  constCharStarN = static_cast<decl_node__opaque> (decl_makePointer (static_cast<decl_node> (charN)));
+  decl_leaveScope ();
+}
+
+
+/*
    init -
 */
 
@@ -22663,6 +23170,7 @@ static void init (void)
   outputState = decl_punct;
   tempCount = 0;
   mustVisitScope = false;
+  makeCDataTypes ();
 }
 
 
@@ -23006,8 +23514,8 @@ extern "C" decl_node decl_lookupDef (nameKey_Name n)
   if (d == NULL)
     {
       d = makeDef (n);
-      symbolKey_putSymKey (defUniverse, n, reinterpret_cast<void *> (d));
-      Indexing_IncludeIndiceIntoIndex (defUniverseI, reinterpret_cast<void *> (d));
+      symbolKey_putSymKey (defUniverse, n, reinterpret_cast <void *> (d));
+      Indexing_IncludeIndiceIntoIndex (defUniverseI, reinterpret_cast <void *> (d));
     }
   return static_cast<decl_node> (d);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -23027,8 +23535,8 @@ extern "C" decl_node decl_lookupImp (nameKey_Name n)
   if (m == NULL)
     {
       m = makeImp (n);
-      symbolKey_putSymKey (modUniverse, n, reinterpret_cast<void *> (m));
-      Indexing_IncludeIndiceIntoIndex (modUniverseI, reinterpret_cast<void *> (m));
+      symbolKey_putSymKey (modUniverse, n, reinterpret_cast <void *> (m));
+      Indexing_IncludeIndiceIntoIndex (modUniverseI, reinterpret_cast <void *> (m));
     }
   mcDebug_assert (! (decl_isModule (static_cast<decl_node> (m))));
   return static_cast<decl_node> (m);
@@ -23049,8 +23557,8 @@ extern "C" decl_node decl_lookupModule (nameKey_Name n)
   if (m == NULL)
     {
       m = makeModule (n);
-      symbolKey_putSymKey (modUniverse, n, reinterpret_cast<void *> (m));
-      Indexing_IncludeIndiceIntoIndex (modUniverseI, reinterpret_cast<void *> (m));
+      symbolKey_putSymKey (modUniverse, n, reinterpret_cast <void *> (m));
+      Indexing_IncludeIndiceIntoIndex (modUniverseI, reinterpret_cast <void *> (m));
     }
   mcDebug_assert (! (decl_isImp (static_cast<decl_node> (m))));
   return static_cast<decl_node> (m);
@@ -23067,6 +23575,35 @@ extern "C" void decl_putDefForC (decl_node n)
 {
   mcDebug_assert (decl_isDef (n));
   static_cast<decl_node__opaque> (n)->defF.forC = true;
+}
+
+
+/*
+   putDefUnqualified - the definition module uses unqualified.
+*/
+
+extern "C" void decl_putDefUnqualified (decl_node n)
+{
+  mcDebug_assert (decl_isDef (n));
+  /* Currently (and this is a temporary development restriction to
+      reduce any search space for bugs) the only module which can be
+      export unqualified is gcctypes.  */
+  if (static_cast<decl_node__opaque> (n)->defF.name == (nameKey_makeKey ((const char *) "gcctypes", 8)))
+    {
+      static_cast<decl_node__opaque> (n)->defF.unqualified = true;
+    }
+}
+
+
+/*
+   isDefUnqualified - returns TRUE if the definition module uses unqualified.
+*/
+
+extern "C" bool decl_isDefUnqualified (decl_node n)
+{
+  return (decl_isDef (n)) && static_cast<decl_node__opaque> (n)->defF.unqualified;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
 }
 
 
@@ -23491,7 +24028,7 @@ extern "C" decl_node decl_getType (decl_node n)
 
 extern "C" decl_node decl_skipType (decl_node n)
 {
-  while ((n != NULL) && (decl_isType (n)))
+  while (((n != NULL) && (decl_isType (n))) && (! (isCDataType (static_cast<decl_node__opaque> (n)))))
     {
       if ((decl_getType (n)) == NULL)
         {
@@ -23620,7 +24157,7 @@ extern "C" bool decl_isExported (decl_node n)
       switch (s->kind)
         {
           case decl_def:
-            return Indexing_IsIndiceInIndex (s->defF.exported, reinterpret_cast<void *> (n));
+            return Indexing_IsIndiceInIndex (s->defF.exported, reinterpret_cast <void *> (n));
             break;
 
 
@@ -24552,11 +25089,11 @@ extern "C" decl_node decl_makeVarient (decl_node r)
     {
       case decl_record:
         /* now add, n, to the record/varient, r, field list  */
-        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (r)->recordF.listOfSons, reinterpret_cast<void *> (n));
+        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (r)->recordF.listOfSons, reinterpret_cast <void *> (n));
         break;
 
       case decl_varientfield:
-        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (r)->varientfieldF.listOfSons, reinterpret_cast<void *> (n));
+        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (r)->varientfieldF.listOfSons, reinterpret_cast <void *> (n));
         break;
 
 
@@ -25051,21 +25588,23 @@ extern "C" decl_node decl_import (decl_node m, decl_node n)
 
   mcDebug_assert (((decl_isDef (m)) || (decl_isModule (m))) || (decl_isImp (m)));
   name = decl_getSymName (n);
+  checkGccType (static_cast<decl_node__opaque> (n));
+  checkCDataTypes (static_cast<decl_node__opaque> (n));
   r = static_cast<decl_node__opaque> (decl_lookupInScope (m, name));
   if (r == NULL)
     {
       switch (static_cast<decl_node__opaque> (m)->kind)
         {
           case decl_def:
-            symbolKey_putSymKey (static_cast<decl_node__opaque> (m)->defF.decls.symbols, name, reinterpret_cast<void *> (n));
+            symbolKey_putSymKey (static_cast<decl_node__opaque> (m)->defF.decls.symbols, name, reinterpret_cast <void *> (n));
             break;
 
           case decl_imp:
-            symbolKey_putSymKey (static_cast<decl_node__opaque> (m)->impF.decls.symbols, name, reinterpret_cast<void *> (n));
+            symbolKey_putSymKey (static_cast<decl_node__opaque> (m)->impF.decls.symbols, name, reinterpret_cast <void *> (n));
             break;
 
           case decl_module:
-            symbolKey_putSymKey (static_cast<decl_node__opaque> (m)->moduleF.decls.symbols, name, reinterpret_cast<void *> (n));
+            symbolKey_putSymKey (static_cast<decl_node__opaque> (m)->moduleF.decls.symbols, name, reinterpret_cast <void *> (n));
             break;
 
 
@@ -25152,17 +25691,17 @@ extern "C" void decl_addImportedModule (decl_node m, decl_node i, bool scoped)
   mcDebug_assert ((decl_isDef (i)) || (decl_isModule (i)));
   if (decl_isDef (m))
     {
-      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (m)->defF.importedModules, reinterpret_cast<void *> (i));
+      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (m)->defF.importedModules, reinterpret_cast <void *> (i));
     }
   else if (decl_isImp (m))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (m)->impF.importedModules, reinterpret_cast<void *> (i));
+      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (m)->impF.importedModules, reinterpret_cast <void *> (i));
     }
   else if (decl_isModule (m))
     {
       /* avoid dangling else.  */
-      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (m)->moduleF.importedModules, reinterpret_cast<void *> (i));
+      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (m)->moduleF.importedModules, reinterpret_cast <void *> (i));
     }
   else
     {
@@ -25287,14 +25826,14 @@ extern "C" void decl_foreachModModuleDo (symbolKey_performOperation p)
 
 extern "C" void decl_enterScope (decl_node n)
 {
-  if (Indexing_IsIndiceInIndex (scopeStack, reinterpret_cast<void *> (n)))
+  if (Indexing_IsIndiceInIndex (scopeStack, reinterpret_cast <void *> (n)))
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
   else
     {
-      Indexing_IncludeIndiceIntoIndex (scopeStack, reinterpret_cast<void *> (n));
+      Indexing_IncludeIndiceIntoIndex (scopeStack, reinterpret_cast <void *> (n));
     }
   if (debugScopes)
     {
@@ -25315,7 +25854,7 @@ extern "C" void decl_leaveScope (void)
 
   i = Indexing_HighIndice (scopeStack);
   n = static_cast<decl_node__opaque> (Indexing_GetIndice (scopeStack, i));
-  Indexing_RemoveIndiceFromIndex (scopeStack, reinterpret_cast<void *> (n));
+  Indexing_RemoveIndiceFromIndex (scopeStack, reinterpret_cast <void *> (n));
   if (debugScopes)
     {
       libc_printf ((const char *) "leave scope\\n", 13);
@@ -25582,7 +26121,7 @@ extern "C" void decl_addVarParameters (decl_node n, decl_node i, decl_node type,
   else
     {
       p = static_cast<decl_node__opaque> (decl_makeVarParameter (i, type, n, isused));
-      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->procedureF.parameters, reinterpret_cast<void *> (p));
+      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->procedureF.parameters, reinterpret_cast <void *> (p));
     }
 }
 
@@ -25606,7 +26145,7 @@ extern "C" void decl_addNonVarParameters (decl_node n, decl_node i, decl_node ty
   else
     {
       p = static_cast<decl_node__opaque> (decl_makeNonVarParameter (i, type, n, isused));
-      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->procedureF.parameters, reinterpret_cast<void *> (p));
+      Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->procedureF.parameters, reinterpret_cast <void *> (p));
     }
 }
 
@@ -25649,7 +26188,7 @@ extern "C" void decl_addParameter (decl_node proc, decl_node param)
   switch (static_cast<decl_node__opaque> (proc)->kind)
     {
       case decl_procedure:
-        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (proc)->procedureF.parameters, reinterpret_cast<void *> (param));
+        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (proc)->procedureF.parameters, reinterpret_cast <void *> (param));
         if (decl_isVarargs (param))
           {
             static_cast<decl_node__opaque> (proc)->procedureF.vararg = true;
@@ -25661,7 +26200,7 @@ extern "C" void decl_addParameter (decl_node proc, decl_node param)
         break;
 
       case decl_proctype:
-        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (proc)->proctypeF.parameters, reinterpret_cast<void *> (param));
+        Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (proc)->proctypeF.parameters, reinterpret_cast <void *> (param));
         if (decl_isVarargs (param))
           {
             static_cast<decl_node__opaque> (proc)->proctypeF.vararg = true;
@@ -25814,7 +26353,7 @@ extern "C" decl_node decl_makeComponentRef (decl_node rec, decl_node field)
   decl_node__opaque n;
   decl_node__opaque a;
 
-  /* 
+  /*
    n := getLastOp (rec) ;
    IF (n#NIL) AND (isDeref (n) OR isPointerRef (n)) AND
       (skipType (getType (rec)) = skipType (getType (n)))
@@ -26086,7 +26625,7 @@ extern "C" decl_node decl_putSetValue (decl_node n, decl_node t)
 extern "C" decl_node decl_includeSetValue (decl_node n, decl_node l, decl_node h)
 {
   mcDebug_assert (decl_isSetValue (n));
-  Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->setvalueF.values, reinterpret_cast<void *> (l));
+  Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->setvalueF.values, reinterpret_cast <void *> (l));
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -26165,7 +26704,7 @@ extern "C" void decl_putExpList (decl_node n, decl_node e)
 {
   mcDebug_assert (n != NULL);
   mcDebug_assert (decl_isExpList (n));
-  Indexing_PutIndice (static_cast<decl_node__opaque> (n)->explistF.exp, (Indexing_HighIndice (static_cast<decl_node__opaque> (n)->explistF.exp))+1, reinterpret_cast<void *> (e));
+  Indexing_PutIndice (static_cast<decl_node__opaque> (n)->explistF.exp, (Indexing_HighIndice (static_cast<decl_node__opaque> (n)->explistF.exp))+1, reinterpret_cast <void *> (e));
 }
 
 
@@ -26194,8 +26733,6 @@ extern "C" decl_node decl_makeConstExp (void)
 
 extern "C" decl_node decl_getNextConstExp (void)
 {
-  decl_node__opaque n;
-
   mcDebug_assert (((decl_isDef (static_cast<decl_node> (currentModule))) || (decl_isImp (static_cast<decl_node> (currentModule)))) || (decl_isModule (static_cast<decl_node> (currentModule))));
   if (decl_isDef (static_cast<decl_node> (currentModule)))
     {
@@ -26206,12 +26743,12 @@ extern "C" decl_node decl_getNextConstExp (void)
       /* avoid dangling else.  */
       return static_cast<decl_node> (getNextFixup (&currentModule->impF.constFixup));
     }
-  else if (decl_isModule (static_cast<decl_node> (currentModule)))
+  else
     {
       /* avoid dangling else.  */
+      mcDebug_assert (decl_isModule (static_cast<decl_node> (currentModule)));
       return static_cast<decl_node> (getNextFixup (&currentModule->moduleF.constFixup));
     }
-  return static_cast<decl_node> (n);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -26351,7 +26888,7 @@ extern "C" void decl_addStatement (decl_node s, decl_node n)
   if (n != NULL)
     {
       mcDebug_assert (decl_isStatementSequence (s));
-      Indexing_PutIndice (static_cast<decl_node__opaque> (s)->stmtF.statements, (Indexing_HighIndice (static_cast<decl_node__opaque> (s)->stmtF.statements))+1, reinterpret_cast<void *> (n));
+      Indexing_PutIndice (static_cast<decl_node__opaque> (s)->stmtF.statements, (Indexing_HighIndice (static_cast<decl_node__opaque> (s)->stmtF.statements))+1, reinterpret_cast <void *> (n));
       if ((isIntrinsic (static_cast<decl_node__opaque> (n))) && static_cast<decl_node__opaque> (n)->intrinsicF.postUnreachable)
         {
           static_cast<decl_node__opaque> (n)->intrinsicF.postUnreachable = false;
@@ -27052,7 +27589,7 @@ extern "C" decl_node decl_putCaseStatement (decl_node n, decl_node l, decl_node 
 {
   mcDebug_assert (decl_isCase (n));
   mcDebug_assert (decl_isCaseList (l));
-  Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->caseF.caseLabelList, reinterpret_cast<void *> (decl_makeCaseLabelList (l, s)));
+  Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->caseF.caseLabelList, reinterpret_cast <void *> (decl_makeCaseLabelList (l, s)));
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -27125,7 +27662,7 @@ extern "C" bool decl_isCaseList (decl_node n)
 extern "C" decl_node decl_putCaseRange (decl_node n, decl_node lo, decl_node hi)
 {
   mcDebug_assert (decl_isCaseList (n));
-  Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->caselistF.rangePairs, reinterpret_cast<void *> (decl_makeRange (lo, hi)));
+  Indexing_IncludeIndiceIntoIndex (static_cast<decl_node__opaque> (n)->caselistF.rangePairs, reinterpret_cast <void *> (decl_makeRange (lo, hi)));
   return n;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

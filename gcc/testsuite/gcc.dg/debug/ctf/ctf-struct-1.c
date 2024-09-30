@@ -5,7 +5,7 @@
    struct b : ctt_into = 0x1a000002 (2 field members)
 */
 
-/* { dg-do compile )  */
+/* { dg-do compile } */
 /* { dg-options "-O0 -gctf -dA" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0x1a000004\[\t \]+\[^\n\]*ctt_info" 1 } } */

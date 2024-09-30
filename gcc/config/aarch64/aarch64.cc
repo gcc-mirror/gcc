@@ -22,6 +22,7 @@
 
 #define INCLUDE_STRING
 #define INCLUDE_ALGORITHM
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
@@ -59,6 +60,7 @@
 #include "opts.h"
 #include "gimplify.h"
 #include "dwarf2.h"
+#include "dwarf2out.h"
 #include "gimple-iterator.h"
 #include "tree-vectorizer.h"
 #include "aarch64-cost-tables.h"
@@ -392,6 +394,7 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 #include "tuning_models/cortexa57.h"
 #include "tuning_models/cortexa72.h"
 #include "tuning_models/cortexa73.h"
+#include "tuning_models/cortexx925.h"
 #include "tuning_models/exynosm1.h"
 #include "tuning_models/thunderxt88.h"
 #include "tuning_models/thunderx.h"
@@ -409,7 +412,10 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 #include "tuning_models/neoversev1.h"
 #include "tuning_models/neoverse512tvb.h"
 #include "tuning_models/neoversen2.h"
+#include "tuning_models/neoversen3.h"
 #include "tuning_models/neoversev2.h"
+#include "tuning_models/neoversev3.h"
+#include "tuning_models/neoversev3ae.h"
 #include "tuning_models/a64fx.h"
 
 /* Support for fine-grained override of the tuning structures.  */
@@ -589,14 +595,10 @@ aarch64_lookup_shared_state_flags (tree attrs, const char *state_name)
 {
   for (tree attr = attrs; attr; attr = TREE_CHAIN (attr))
     {
-      if (!cxx11_attribute_p (attr))
+      if (!is_attribute_namespace_p ("arm", attr))
 	continue;
 
-      auto ns = IDENTIFIER_POINTER (TREE_PURPOSE (TREE_PURPOSE (attr)));
-      if (strcmp (ns, "arm") != 0)
-	continue;
-
-      auto attr_name = IDENTIFIER_POINTER (TREE_VALUE (TREE_PURPOSE (attr)));
+      auto attr_name = IDENTIFIER_POINTER (get_attribute_name (attr));
       auto flags = aarch64_attribute_shared_state_flags (attr_name);
       if (!flags)
 	continue;
@@ -1449,6 +1451,32 @@ aarch64_dwarf_frame_reg_mode (int regno)
   return default_dwarf_frame_reg_mode (regno);
 }
 
+/* Implement TARGET_OUTPUT_CFI_DIRECTIVE.  */
+static bool
+aarch64_output_cfi_directive (FILE *f, dw_cfi_ref cfi)
+{
+  bool found = false;
+  if (cfi->dw_cfi_opc == DW_CFA_AARCH64_negate_ra_state)
+    {
+      fprintf (f, "\t.cfi_negate_ra_state\n");
+      found = true;
+    }
+  return found;
+}
+
+/* Implement TARGET_DW_CFI_OPRND1_DESC.  */
+static bool
+aarch64_dw_cfi_oprnd1_desc (dwarf_call_frame_info cfi_opc,
+			    dw_cfi_oprnd_type &oprnd_type)
+{
+  if (cfi_opc == DW_CFA_AARCH64_negate_ra_state)
+    {
+      oprnd_type = dw_cfi_oprnd_unused;
+      return true;
+    }
+  return false;
+}
+
 /* If X is a CONST_DOUBLE, return its bit representation as a constant
    integer, otherwise return X unmodified.  */
 static rtx
@@ -2018,6 +2046,7 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case PR_HI_REGS:
       return mode == VNx32BImode ? 2 : 1;
 
+    case MOVEABLE_SYSREGS:
     case FFR_REGS:
     case PR_AND_FFR_REGS:
     case FAKE_REGS:
@@ -2044,6 +2073,9 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   if (regno == VG_REGNUM)
     /* This must have the same size as _Unwind_Word.  */
     return mode == DImode;
+
+  if (regno == FPM_REGNUM)
+    return mode == QImode || mode == HImode || mode == SImode || mode == DImode;
 
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   if (vec_flags == VEC_SVE_PRED)
@@ -2513,10 +2545,11 @@ aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned,
      unnecessarily significant.  */
   if (PR_REGNUM_P (regno))
     return mode;
-  if (known_ge (GET_MODE_SIZE (mode), 4))
-    return mode;
-  else
+  if (known_lt (GET_MODE_SIZE (mode), 4)
+      && REG_CAN_CHANGE_MODE_P (regno, mode, SImode)
+      && REG_CAN_CHANGE_MODE_P (regno, SImode, mode))
     return SImode;
+  return mode;
 }
 
 /* Return true if I's bits are consecutive ones from the MSB.  */
@@ -9606,7 +9639,7 @@ aarch64_expand_prologue (void)
 	  default:
 	    gcc_unreachable ();
 	}
-      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      add_reg_note (insn, REG_CFA_NEGATE_RA_STATE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -10027,7 +10060,7 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
 	  default:
 	    gcc_unreachable ();
 	}
-      add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
+      add_reg_note (insn, REG_CFA_NEGATE_RA_STATE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -11800,8 +11833,8 @@ aarch64_maybe_generate_simd_constant (rtx target, rtx val, machine_mode mode)
       /* Use the same base type as aarch64_gen_shareable_zero.  */
       rtx zero = CONST0_RTX (V4SImode);
       emit_move_insn (lowpart_subreg (V4SImode, target, mode), zero);
-      rtx neg = lowpart_subreg (V2DFmode, target, mode);
-      emit_insn (gen_negv2df2 (neg, copy_rtx (neg)));
+      rtx neg = lowpart_subreg (V2DImode, target, mode);
+      emit_insn (gen_aarch64_fnegv2di2 (neg, copy_rtx (neg)));
       return true;
     }
 
@@ -12680,6 +12713,9 @@ aarch64_regno_regclass (unsigned regno)
   if (PR_REGNUM_P (regno))
     return PR_LO_REGNUM_P (regno) ? PR_LO_REGS : PR_HI_REGS;
 
+  if (regno == FPM_REGNUM)
+    return MOVEABLE_SYSREGS;
+
   if (regno == FFR_REGNUM || regno == FFRT_REGNUM)
     return FFR_REGS;
 
@@ -13068,6 +13104,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case PR_HI_REGS:
       return mode == VNx32BImode ? 2 : 1;
 
+    case MOVEABLE_SYSREGS:
     case STACK_REG:
     case FFR_REGS:
     case PR_AND_FFR_REGS:
@@ -16219,6 +16256,10 @@ private:
      supported by Advanced SIMD and SVE2.  */
   bool m_has_avg = false;
 
+  /* Additional initialization costs for using gather or scatter operation in
+     the current loop.  */
+  unsigned int m_sve_gather_scatter_init_cost = 0;
+
   /* True if the vector body contains a store to a decl and if the
      function is known to have a vld1 from the same decl.
 
@@ -16388,7 +16429,7 @@ record_potential_advsimd_unrolling (loop_vec_info loop_vinfo)
 
   /* Check whether it is possible in principle to use Advanced SIMD
      instead.  */
-  if (aarch64_autovec_preference == 2)
+  if (aarch64_autovec_preference == AARCH64_AUTOVEC_SVE_ONLY)
     return;
 
   /* We don't want to apply the heuristic to outer loops, since it's
@@ -16802,7 +16843,8 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
       && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
     {
       unsigned int nunits = vect_nunits_for_cost (vectype);
-      if (GET_MODE_UNIT_BITSIZE (TYPE_MODE (vectype)) == 64)
+      /* Test for VNx2 modes, which have 64-bit containers.  */
+      if (known_eq (GET_MODE_NUNITS (TYPE_MODE (vectype)), aarch64_sve_vg))
 	return { sve_costs->gather_load_x64_cost, nunits };
       return { sve_costs->gather_load_x32_cost, nunits };
     }
@@ -17283,6 +17325,25 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	stmt_cost = aarch64_detect_vector_stmt_subtype (m_vinfo, kind,
 							stmt_info, vectype,
 							where, stmt_cost);
+
+      /* Check if we've seen an SVE gather/scatter operation and which size.  */
+      if (kind == scalar_load
+	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
+	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+	{
+	  const sve_vec_cost *sve_costs = aarch64_tune_params.vec_costs->sve;
+	  if (sve_costs)
+	    {
+	      /* Test for VNx2 modes, which have 64-bit containers.  */
+	      if (known_eq (GET_MODE_NUNITS (TYPE_MODE (vectype)),
+			    aarch64_sve_vg))
+		m_sve_gather_scatter_init_cost
+		  += sve_costs->gather_load_x64_init_cost;
+	      else
+		m_sve_gather_scatter_init_cost
+		  += sve_costs->gather_load_x32_init_cost;
+	    }
+	}
     }
 
   /* Do any SVE-specific adjustments to the cost.  */
@@ -17531,6 +17592,19 @@ adjust_body_cost (loop_vec_info loop_vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Original vector body cost = %d\n", body_cost);
 
+  /* If we know we have a single partial vector iteration, cap the VF
+     to the number of scalar iterations for costing purposes.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      auto niters = LOOP_VINFO_INT_NITERS (loop_vinfo);
+      if (niters < estimated_vf && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Scalar loop iterates at most %wd times.  Capping VF "
+			 " from %d to %wd\n", niters, estimated_vf, niters);
+
+      estimated_vf = MIN (estimated_vf, niters);
+    }
+
   fractional_cost scalar_cycles_per_iter
     = scalar_ops.min_cycles_per_iter () * estimated_vf;
 
@@ -17668,6 +17742,11 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
       m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
 					     m_costs[vect_body]);
       m_suggested_unroll_factor = determine_suggested_unroll_factor ();
+
+      /* For gather and scatters there's an additional overhead for the first
+	 iteration.  For low count loops they're not beneficial so model the
+	 overhead as loop prologue costs.  */
+      m_costs[vect_prologue] += m_sve_gather_scatter_init_cost;
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
@@ -18961,9 +19040,9 @@ static char *
 aarch64_offload_options (void)
 {
   if (TARGET_ILP32)
-    return xstrdup ("-foffload-abi=ilp32");
+    return xstrdup ("-foffload-abi=ilp32 -foffload-abi-host-opts=-mabi=ilp32");
   else
-    return xstrdup ("-foffload-abi=lp64");
+    return xstrdup ("-foffload-abi=lp64 -foffload-abi-host-opts=-mabi=lp64");
 }
 
 static struct machine_function *
@@ -22272,8 +22351,8 @@ static bool
 aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
 {
   /* Take into account the aarch64-autovec-preference param if non-zero.  */
-  bool only_asimd_p = aarch64_autovec_preference == 1;
-  bool only_sve_p = aarch64_autovec_preference == 2;
+  bool only_asimd_p = aarch64_autovec_preference == AARCH64_AUTOVEC_ASIMD_ONLY;
+  bool only_sve_p = aarch64_autovec_preference == AARCH64_AUTOVEC_SVE_ONLY;
 
   if (only_asimd_p)
     return false;
@@ -22281,8 +22360,8 @@ aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
     return true;
 
   /* The preference in case of a tie in costs.  */
-  bool prefer_asimd = aarch64_autovec_preference == 3;
-  bool prefer_sve = aarch64_autovec_preference == 4;
+  bool prefer_asimd = aarch64_autovec_preference == AARCH64_AUTOVEC_PREFER_ASIMD;
+  bool prefer_sve = aarch64_autovec_preference == AARCH64_AUTOVEC_PREFER_SVE;
 
   poly_int64 nunits_sve = GET_MODE_NUNITS (sve_m);
   poly_int64 nunits_asimd = GET_MODE_NUNITS (asimd_m);
@@ -22383,8 +22462,8 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
        than an SVE main loop with N bytes then by default we'll try to
        use the SVE loop to vectorize the epilogue instead.  */
 
-  bool only_asimd_p = aarch64_autovec_preference == 1;
-  bool only_sve_p = aarch64_autovec_preference == 2;
+  bool only_asimd_p = aarch64_autovec_preference == AARCH64_AUTOVEC_ASIMD_ONLY;
+  bool only_sve_p = aarch64_autovec_preference == AARCH64_AUTOVEC_SVE_ONLY;
 
   unsigned int sve_i = (TARGET_SVE && !only_asimd_p) ? 0 : ARRAY_SIZE (sve_modes);
   unsigned int advsimd_i = 0;
@@ -22948,7 +23027,8 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
   if (CONST_VECTOR_P (op)
       && CONST_VECTOR_DUPLICATE_P (op))
     n_elts = CONST_VECTOR_NPATTERNS (op);
-  else if ((vec_flags & VEC_SVE_DATA)
+  else if (which == AARCH64_CHECK_MOV
+	   && TARGET_SVE
 	   && const_vec_series_p (op, &base, &step))
     {
       gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
@@ -25206,6 +25286,16 @@ aarch64_output_simd_mov_immediate (rtx const_vector, unsigned width,
 
   if (which == AARCH64_CHECK_MOV)
     {
+      if (info.insn == simd_immediate_info::INDEX)
+	{
+	  gcc_assert (TARGET_SVE);
+	  snprintf (templ, sizeof (templ), "index\t%%Z0.%c, #"
+		    HOST_WIDE_INT_PRINT_DEC ", #" HOST_WIDE_INT_PRINT_DEC,
+		    element_char, INTVAL (info.u.index.base),
+		    INTVAL (info.u.index.step));
+	  return templ;
+	}
+
       mnemonic = info.insn == simd_immediate_info::MVN ? "mvni" : "movi";
       shift_op = (info.u.mov.modifier == simd_immediate_info::MSL
 		  ? "msl" : "lsl");
@@ -26721,7 +26811,8 @@ aarch64_expand_cpymem (rtx *operands, bool is_memmove)
 	 (when !STRICT_ALIGNMENT) - this is smaller and faster.  */
       if (size > 0 && size < 16 && !STRICT_ALIGNMENT)
 	{
-	  next_mode = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  next_mode = smallest_mode_for_size
+	    (size * BITS_PER_UNIT, MODE_INT).require ();
 	  int n_bytes = GET_MODE_SIZE (next_mode).to_constant ();
 	  gcc_assert (n_bytes <= mode_bytes);
 	  offset -= n_bytes - size;
@@ -26832,7 +26923,8 @@ aarch64_expand_setmem (rtx *operands)
 	 (when !STRICT_ALIGNMENT) - this is smaller and faster.  */
       if (len > 0 && len < 16 && !STRICT_ALIGNMENT)
 	{
-	  next_mode = smallest_mode_for_size (len * BITS_PER_UNIT, MODE_INT);
+	  next_mode = smallest_mode_for_size
+	    (len * BITS_PER_UNIT, MODE_INT).require ();
 	  int n_bytes = GET_MODE_SIZE (next_mode).to_constant ();
 	  gcc_assert (n_bytes <= mode_bytes);
 	  offset -= n_bytes - len;
@@ -27344,6 +27436,26 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
       && SCALAR_INT_MODE_P (GET_MODE (XEXP (SET_SRC (prev_set), 0)))
       && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
     return true;
+
+  /* Fuse CMP and CSEL/CSET.  */
+  if (prev_set && curr_set
+      && GET_CODE (SET_SRC (prev_set)) == COMPARE
+      && SCALAR_INT_MODE_P (GET_MODE (XEXP (SET_SRC (prev_set), 0)))
+      && reg_referenced_p (SET_DEST (prev_set), PATTERN (curr)))
+    {
+      enum attr_type prev_type = get_attr_type (prev);
+      if ((prev_type == TYPE_ALUS_SREG || prev_type == TYPE_ALUS_IMM)
+	  && ((aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_CSEL)
+	       && GET_CODE (SET_SRC (curr_set)) == IF_THEN_ELSE
+	       && aarch64_reg_or_zero (XEXP (SET_SRC (curr_set), 1), VOIDmode)
+	       && aarch64_reg_or_zero (XEXP (SET_SRC (curr_set), 2), VOIDmode)
+	       && SCALAR_INT_MODE_P (GET_MODE (XEXP (SET_SRC (curr_set), 1))))
+	      || (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_CSET)
+		  && GET_RTX_CLASS (GET_CODE (SET_SRC (curr_set)))
+		     == RTX_COMPARE
+		  && REG_P (SET_DEST (curr_set)))))
+	return true;
+    }
 
   /* Fuse flag-setting ALU instructions and conditional branch.  */
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_ALU_BRANCH)
@@ -30749,6 +30861,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_DWARF_FRAME_REG_MODE
 #define TARGET_DWARF_FRAME_REG_MODE aarch64_dwarf_frame_reg_mode
+
+#undef TARGET_OUTPUT_CFI_DIRECTIVE
+#define TARGET_OUTPUT_CFI_DIRECTIVE aarch64_output_cfi_directive
+
+#undef TARGET_DW_CFI_OPRND1_DESC
+#define TARGET_DW_CFI_OPRND1_DESC aarch64_dw_cfi_oprnd1_desc
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE aarch64_promoted_type

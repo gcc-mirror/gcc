@@ -748,17 +748,6 @@ package Einfo is
 --       other function entities, only in implicit inequality routines,
 --       where Comes_From_Source is always False.
 
---    Corresponding_Function
---       Defined on procedures internally built with an extra out parameter
---       to return a constrained array type, when Modify_Tree_For_C is set.
---       Denotes the function that returns the constrained array type for
---       which this procedure was built.
-
---    Corresponding_Procedure
---       Defined on functions that return a constrained array type, when
---       Modify_Tree_For_C is set. Denotes the internally built procedure
---       with an extra out parameter created for it.
-
 --    Corresponding_Record_Component
 --       Defined in components of a derived untagged record type, including
 --       discriminants. For a regular component or a stored discriminant,
@@ -1662,6 +1651,11 @@ package Einfo is
 --       that this does not imply a representation with holes, since the rep
 --       clause may merely confirm the default 0..N representation.
 
+--    Has_First_Controlling_Parameter_Aspect
+--       Defined in tagged types, concurrent types and concurrent record types.
+--       Set to indicate that the type has a First_Controlling_Parameter of
+--       True (whether by an aspect_specification, a pragma, or inheritance).
+
 --    Has_Exit
 --       Defined in loop entities. Set if the loop contains an exit statement.
 
@@ -2037,8 +2031,22 @@ package Einfo is
 --       checks for infinite recursion.
 
 --    Has_Relaxed_Finalization [base type only]
---       Defined in all type entities. Indicates that the type is subject to
---       relaxed semantics for the finalization operations.
+--       Defined in all type entities. Set only for controlled types and types
+--       with controlled components. Indicates that the type is subject to the
+--       relaxed semantics for the finalization operations. These semantics are
+--       made up of two independent parts:
+--
+--       1. The compiler is permitted to perform no automatic finalization of
+--          heap-allocated objects: Finalize is only called when the object is
+--          explicitly deallocated, or when the object is assigned a new value.
+--          As a consequence, no finalization collection is created for access
+--          types designating the type, and no header is allocated in front of
+--          heap-allocated objects of the type.
+--
+--       2. If an exception is raised out of the Adjust or Finalize procedures,
+--          the compiler is permitted to enforce none of the guarantees given
+--          by the RM 7.6.1(14/1) and following subclauses, and to instead just
+--          let the exception be propagated upward.
 
 --    Has_Shift_Operator [base type only]
 --       Defined in integer types. Set in the base type of an integer type for
@@ -2644,7 +2652,7 @@ package Einfo is
 --       the transient finalization mechanisms. The flag prevents the double
 --       finalization of the object.
 
---    Is_Finalizer (synthesized)
+--    Is_Finalizer
 --       Applies to all entities, true for procedures containing finalization
 --       code to process local or library level objects.
 
@@ -3791,13 +3799,17 @@ package Einfo is
 --       in the spec of a generic package, in constructs that forbid discrete
 --       types with predicates.
 
+--    No_Raise
+--       Defined in subprograms and generic subprograms. Set if a valid aspect
+--       or pragma No_Raise applies.
+
 --    No_Reordering [implementation base type only]
 --       Defined in record types. Set only for a base type to which a valid
 --       pragma No_Component_Reordering applies.
 
 --    No_Return
---       Defined in all entities. Set for subprograms and generic subprograms
---       to which a valid aspect or pragma No_Return applies.
+--       Defined in subprograms and generic subprograms. Set if a valid aspect
+--       or pragma No_Return applies.
 
 --    No_Strict_Aliasing [base type only]
 --       Defined in access types. Set to direct the backend to avoid any
@@ -4284,12 +4296,6 @@ package Einfo is
 --       from the default value. When this flag is set for a record type,
 --       the Bit_Order aspect must be set to the same value (either explicitly
 --       or as the target default value).
-
---    Rewritten_For_C
---       Defined on functions that return a constrained array type, when
---       Modify_Tree_For_C is set. Indicates that a procedure with an extra
---       out parameter has been created for it, and calls must be rewritten as
---       calls to the new procedure.
 
 --    RM_Size
 --       Defined in all type and subtype entities. Contains the value of
@@ -4972,7 +4978,6 @@ package Einfo is
    --    Materialize_Entity
    --    Needs_Debug_Info
    --    Never_Set_In_Source
-   --    No_Return
    --    Overlays_Constant
    --    Referenced
    --    Referenced_As_LHS
@@ -5522,7 +5527,6 @@ package Einfo is
    --    Anonymous_Collections                (non-generic case only)
    --    Corresponding_Equality               (implicit /= only)
    --    Thunk_Entity                         (thunk case only)
-   --    Corresponding_Procedure              (generate C code only)
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma                        (non-generic case only)
@@ -5583,10 +5587,11 @@ package Einfo is
    --    Is_Visible_Lib_Unit
    --    Is_Wrapper
    --    Needs_No_Actuals
+   --    No_Raise
+   --    No_Return
    --    Requires_Overriding                  (non-generic case only)
    --    Return_Present
    --    Returns_By_Ref
-   --    Rewritten_For_C                      (generate C code only)
    --    Sec_Stack_Needed_For_Return
    --    SPARK_Pragma_Inherited
    --    Uses_Sec_Stack
@@ -5883,7 +5888,6 @@ package Einfo is
    --    Anonymous_Collections                (non-generic case only)
    --    Static_Initialization                (init_proc only)
    --    Thunk_Entity                         (thunk case only)
-   --    Corresponding_Function               (generate C code only)
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma                        (non-generic case only)
@@ -5945,6 +5949,7 @@ package Einfo is
    --    Is_Valued_Procedure
    --    Is_Visible_Lib_Unit
    --    Needs_No_Actuals
+   --    No_Raise
    --    No_Return
    --    Requires_Overriding                  (non-generic case only)
    --    Sec_Stack_Needed_For_Return
@@ -5973,6 +5978,7 @@ package Einfo is
    --    First_Entity
    --    Corresponding_Record_Type
    --    Entry_Bodies_Array
+   --    Has_First_Controlling_Parameter_Aspect
    --    Last_Entity
    --    Discriminant_Constraint
    --    Scope_Depth_Value
@@ -6014,6 +6020,7 @@ package Einfo is
    --    Component_Alignment                  (special)  (base type only)
    --    C_Pass_By_Copy                       (base type only)
    --    Has_Dispatch_Table                   (base tagged type only)
+   --    Has_First_Controlling_Parameter_Aspect
    --    Has_Pragma_Pack                      (impl base type only)
    --    Has_Private_Ancestor
    --    Has_Private_Extension
@@ -6049,6 +6056,7 @@ package Einfo is
    --    Underlying_Record_View $$$           (base type only)
    --    Predicated_Parent                    (subtype only)
    --    Has_Completion
+   --    Has_First_Controlling_Parameter_Aspect
    --    Has_Private_Ancestor
    --    Has_Private_Extension
    --    Has_Record_Rep_Clause                (base type only)
@@ -6144,6 +6152,7 @@ package Einfo is
    --    Corresponding_Record_Type
    --    Last_Entity
    --    Discriminant_Constraint
+   --    Has_First_Controlling_Parameter_Aspect
    --    Scope_Depth_Value
    --    Stored_Constraint
    --    Task_Body_Procedure

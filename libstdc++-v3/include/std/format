@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_FORMAT
 #define _GLIBCXX_FORMAT 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // for std::string
 
@@ -62,6 +64,10 @@
 #if !__has_builtin(__builtin_toupper)
 # include <cctype>
 #endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // __int128
+#pragma GCC diagnostic ignored "-Wc++23-extensions" // bf16
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -155,7 +161,7 @@ namespace __format
       = basic_format_string<wchar_t, type_identity_t<_Args>...>;
 #endif
 
-#if __cplusplus > 202302L
+#if __cpp_lib_format >= 202311L // >= C++26
   [[__gnu__::__always_inline__]]
   inline __format::_Runtime_format_string<char>
   runtime_format(string_view __fmt) noexcept
@@ -222,6 +228,9 @@ namespace __format
   inline void
   __failed_to_parse_format_spec()
   { __throw_format_error("format error: failed to parse format-spec"); }
+
+  template<typename _CharT> class _Scanner;
+
 } // namespace __format
   /// @endcond
 
@@ -241,9 +250,8 @@ namespace __format
       using iterator = const_iterator;
 
       constexpr explicit
-      basic_format_parse_context(basic_string_view<_CharT> __fmt,
-				 size_t __num_args = 0) noexcept
-      : _M_begin(__fmt.begin()), _M_end(__fmt.end()), _M_num_args(__num_args)
+      basic_format_parse_context(basic_string_view<_CharT> __fmt) noexcept
+      : _M_begin(__fmt.begin()), _M_end(__fmt.end())
       { }
 
       basic_format_parse_context(const basic_format_parse_context&) = delete;
@@ -283,21 +291,85 @@ namespace __format
 	    __format::__invalid_arg_id_in_format_string();
       }
 
+#if __cpp_lib_format >= 202305L
+      template<typename... _Ts>
+	constexpr void
+	check_dynamic_spec(size_t __id) noexcept;
+
+      constexpr void
+      check_dynamic_spec_integral(size_t __id) noexcept
+      {
+	check_dynamic_spec<int, unsigned, long long, unsigned long long>(__id);
+      }
+
+      constexpr void
+      check_dynamic_spec_string(size_t __id) noexcept
+      {
+	check_dynamic_spec<const char_type*, basic_string_view<_CharT>>(__id);
+      }
+
+    private:
+      // Check the Mandates: condition for check_dynamic_spec<Ts...>(n)
+      template<typename... _Ts>
+	static consteval bool
+	__check_dynamic_spec_types()
+	{
+	  if constexpr (sizeof...(_Ts))
+	    {
+	      int __counts[] = {
+		(is_same_v<bool, _Ts> + ...),
+		(is_same_v<_CharT, _Ts> + ...),
+		(is_same_v<int, _Ts> + ...),
+		(is_same_v<unsigned, _Ts> + ...),
+		(is_same_v<long long, _Ts> + ...),
+		(is_same_v<unsigned long long, _Ts> + ...),
+		(is_same_v<float, _Ts> + ...),
+		(is_same_v<double, _Ts> + ...),
+		(is_same_v<long double, _Ts> + ...),
+		(is_same_v<const _CharT*, _Ts> + ...),
+		(is_same_v<basic_string_view<_CharT>, _Ts> + ...),
+		(is_same_v<const void*, _Ts> + ...)
+	      };
+	      int __sum = 0;
+	      for (int __c : __counts)
+		{
+		  __sum += __c;
+		  if (__c > 1)
+		    __invalid_dynamic_spec("non-unique template argument type");
+		}
+	      if (__sum != sizeof...(_Ts))
+		__invalid_dynamic_spec("disallowed template argument type");
+	    }
+	  return true;
+	}
+
+      // This must not be constexpr.
+      static void __invalid_dynamic_spec(const char*);
+
+      friend __format::_Scanner<_CharT>;
+#endif
+
+      // This constructor should only be used by the implementation.
+      constexpr explicit
+      basic_format_parse_context(basic_string_view<_CharT> __fmt,
+				 size_t __num_args) noexcept
+      : _M_begin(__fmt.begin()), _M_end(__fmt.end()), _M_num_args(__num_args)
+      { }
+
     private:
       iterator _M_begin;
       iterator _M_end;
       enum _Indexing { _Unknown, _Manual, _Auto };
       _Indexing _M_indexing = _Unknown;
       size_t _M_next_arg_id = 0;
-      size_t _M_num_args;
+      size_t _M_num_args = 0;
     };
 
 /// @cond undocumented
   template<typename _Tp, template<typename...> class _Class>
-    static constexpr bool __is_specialization_of = false;
+    constexpr bool __is_specialization_of = false;
   template<template<typename...> class _Class, typename... _Args>
-    static constexpr bool __is_specialization_of<_Class<_Args...>, _Class>
-      = true;
+    constexpr bool __is_specialization_of<_Class<_Args...>, _Class> = true;
 
 namespace __format
 {
@@ -549,6 +621,9 @@ namespace __format
 		__pc.check_arg_id(__v);
 		__val = __v;
 	      }
+#if __cpp_lib_format >= 202305L
+	    __pc.check_dynamic_spec_integral(__val);
+#endif
 	    ++__first; // past the '}'
 	  }
 	return __first;
@@ -1394,8 +1469,9 @@ namespace __format
 
   // We can format a floating-point type iff it is usable with to_chars.
   template<typename _Tp>
-    concept __formattable_float = requires (_Tp __t, char* __p)
-    { __format::to_chars(__p, __p, __t, chars_format::scientific, 6); };
+    concept __formattable_float
+      = is_same_v<remove_cv_t<_Tp>, _Tp> && requires (_Tp __t, char* __p)
+      { __format::to_chars(__p, __p, __t, chars_format::scientific, 6); };
 
   template<__char _CharT>
     struct __formatter_fp
@@ -1604,6 +1680,10 @@ namespace __format
 
 	      do
 		{
+		  // Mangling of this lambda, and thus resize_and_overwrite
+		  // instantiated with it, was fixed in ABI 18 (G++ 13).  Since
+		  // <format> was new in G++ 13, and is experimental, that
+		  // isn't a problem.
 		  auto __overwrite = [&__to_chars, &__res] (char* __p, size_t __n)
 		  {
 		    __res = __to_chars(__p + 1, __p + __n - 1);
@@ -1816,25 +1896,28 @@ namespace __format
 	if (__grp.empty() && __point == __dot)
 	  return __lstr; // Locale uses '.' and no grouping.
 
-	size_t __d = __str.find(__dot);
-	size_t __e = min(__d, __str.find(__exp));
+	size_t __d = __str.find(__dot); // Index of radix character (if any).
+	size_t __e = min(__d, __str.find(__exp)); // First of radix or exponent
 	if (__e == __str.npos)
 	  __e = __str.size();
-	const size_t __r = __str.size() - __e;
+	const size_t __r = __str.size() - __e; // Length of remainder.
 	auto __overwrite = [&](_CharT* __p, size_t) {
+	  // Apply grouping to the digits before the radix or exponent.
 	  auto __end = std::__add_grouping(__p, __np.thousands_sep(),
 					   __grp.data(), __grp.size(),
 					   __str.data(), __str.data() + __e);
-	  if (__r)
+	  if (__r) // If there's a fractional part or exponent
 	    {
 	      if (__d != __str.npos)
 		{
-		  *__end = __point;
+		  *__end = __point; // Add the locale's radix character.
 		  ++__end;
 		  ++__e;
 		}
-	      if (__r > 1)
-		__end += __str.copy(__end, __str.npos, __e);
+	      const size_t __rlen = __str.size() - __e;
+	      // Append fractional digits and/or exponent:
+	      char_traits<_CharT>::copy(__end, __str.data() + __e, __rlen);
+	      __end += __rlen;
 	    }
 	  return (__end - __p);
 	};
@@ -2103,52 +2186,52 @@ namespace __format
 #endif // USE_WCHAR_T
   /// @}
 
-  /// Format an integer.
-  template<integral _Tp, __format::__char _CharT>
-    requires (!__is_one_of<_Tp, char, wchar_t, char16_t, char32_t>::value)
-    struct formatter<_Tp, _CharT>
-    {
-      formatter() = default;
+/// @cond undocumented
+namespace __format
+{
+  // each cv-unqualified arithmetic type ArithmeticT other than
+  // char, wchar_t, char8_t, char16_t, or char32_t
+  template<typename _Tp>
+    constexpr bool __is_formattable_integer = __is_integer<_Tp>::__value;
 
-      [[__gnu__::__always_inline__]]
-      constexpr typename basic_format_parse_context<_CharT>::iterator
-      parse(basic_format_parse_context<_CharT>& __pc)
-      {
-	return _M_f.template _M_parse<_Tp>(__pc);
-      }
-
-      template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	format(_Tp __u, basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f.format(__u, __fc); }
-
-    private:
-      __format::__formatter_int<_CharT> _M_f;
-    };
-
-#if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
-  template<typename _Tp, __format::__char _CharT>
-    requires (__is_one_of<_Tp, __int128, unsigned __int128>::value)
-    struct formatter<_Tp, _CharT>
-    {
-      formatter() = default;
-
-      [[__gnu__::__always_inline__]]
-      constexpr typename basic_format_parse_context<_CharT>::iterator
-      parse(basic_format_parse_context<_CharT>& __pc)
-      {
-	return _M_f.template _M_parse<_Tp>(__pc);
-      }
-
-      template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	format(_Tp __u, basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f.format(__u, __fc); }
-
-    private:
-      __format::__formatter_int<_CharT> _M_f;
-    };
+#if defined __SIZEOF_INT128__
+  template<> inline constexpr bool __is_formattable_integer<__int128>  = true;
+  template<> inline constexpr bool __is_formattable_integer<unsigned __int128>
+      = true;
 #endif
+
+  template<> inline constexpr bool __is_formattable_integer<char> = false;
+  template<> inline constexpr bool __is_formattable_integer<wchar_t> = false;
+#ifdef _GLIBCXX_USE_CHAR8_T
+  template<> inline constexpr bool __is_formattable_integer<char8_t> = false;
+#endif
+  template<> inline constexpr bool __is_formattable_integer<char16_t> = false;
+  template<> inline constexpr bool __is_formattable_integer<char32_t> = false;
+}
+/// ~endcond
+
+  /// Format an integer.
+  template<typename _Tp, __format::__char _CharT>
+    requires __format::__is_formattable_integer<_Tp>
+    struct formatter<_Tp, _CharT>
+    {
+      formatter() = default;
+
+      [[__gnu__::__always_inline__]]
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      {
+	return _M_f.template _M_parse<_Tp>(__pc);
+      }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(_Tp __u, basic_format_context<_Out, _CharT>& __fc) const
+	{ return _M_f.format(__u, __fc); }
+
+    private:
+      __format::__formatter_int<_CharT> _M_f;
+    };
 
 #if defined __glibcxx_to_chars
   /// Format a floating-point value.
@@ -2342,13 +2425,7 @@ namespace __format
 
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // P2510R3 Formatting pointers
-#if __cplusplus > 202302L || ! defined __STRICT_ANSI__
-#define _GLIBCXX_P2518R3 1
-#else
-#define _GLIBCXX_P2518R3 0
-#endif
-
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	__first = __spec._M_parse_zero_fill(__first, __last);
 	if (__finished())
 	  return __first;
@@ -2360,11 +2437,9 @@ namespace __format
 	  {
 	    if (*__first == 'p')
 	      ++__first;
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	    else if (*__first == 'P')
 	    {
-	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // P2510R3 Formatting pointers
 	      __spec._M_type = __format::_Pres_P;
 	      ++__first;
 	    }
@@ -2388,7 +2463,7 @@ namespace __format
 	  int __n = __ptr - __buf;
 	  __buf[0] = '0';
 	  __buf[1] = 'x';
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	  if (_M_spec._M_type == __format::_Pres_P)
 	    {
 	      __buf[1] = 'X';
@@ -2413,7 +2488,7 @@ namespace __format
 	    }
 #endif
 
-#if _GLIBCXX_P2518R3
+#if __glibcxx_format >= 202304L
 	  if (_M_spec._M_zero_fill)
 	    {
 	      size_t __width = _M_spec._M_get_width(__fc);
@@ -2541,6 +2616,8 @@ namespace __format
 } // namespace __format
 /// @endcond
 
+// Concept std::formattable was introduced by P2286R8 "Formatting Ranges",
+// but we can't guard it with __cpp_lib_format_ranges until we define that!
 #if __cplusplus > 202002L
   // [format.formattable], concept formattable
   template<typename _Tp, typename _CharT>
@@ -3213,6 +3290,10 @@ namespace __format
   template<typename _Context, typename... _Args>
     class _Arg_store;
 
+  template<typename _Ch, typename _Tp>
+    consteval _Arg_t
+    __to_arg_t_enum() noexcept;
+
 } // namespace __format
 /// @endcond
 
@@ -3279,6 +3360,18 @@ namespace __format
       [[nodiscard,__gnu__::__always_inline__]]
       explicit operator bool() const noexcept
       { return _M_type != __format::_Arg_none; }
+
+#if __cpp_lib_format >= 202306L // >= C++26
+      template<typename _Visitor>
+	decltype(auto)
+	visit(this basic_format_arg __arg, _Visitor&& __vis)
+	{ return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type); }
+
+      template<typename _Res, typename _Visitor>
+	_Res
+	visit(this basic_format_arg __arg, _Visitor&& __vis)
+	{ return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type); }
+#endif
 
     private:
       template<typename _Ctx>
@@ -3494,6 +3587,10 @@ namespace __format
 	friend decltype(auto)
 	visit_format_arg(_Visitor&& __vis, basic_format_arg<_Ctx>);
 
+      template<typename _Ch, typename _Tp>
+	friend consteval __format::_Arg_t
+	__format::__to_arg_t_enum() noexcept;
+
       template<typename _Visitor>
 	decltype(auto)
 	_M_visit(_Visitor&& __vis, __format::_Arg_t __type)
@@ -3561,6 +3658,7 @@ namespace __format
     };
 
   template<typename _Visitor, typename _Context>
+    _GLIBCXX26_DEPRECATED_SUGGEST("std::basic_format_arg::visit")
     inline decltype(auto)
     visit_format_arg(_Visitor&& __vis, basic_format_arg<_Context> __arg)
     {
@@ -3596,6 +3694,8 @@ namespace __format
       }
   };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename _Context>
     inline size_t
     __int_from_arg(const basic_format_arg<_Context>& __arg)
@@ -3819,6 +3919,9 @@ namespace __format
     __do_vformat_to(_Out, basic_string_view<_CharT>,
 		    const basic_format_args<_Context>&,
 		    const locale* = nullptr);
+
+  template<typename _CharT> struct __formatter_chrono;
+
 } // namespace __format
 /// @endcond
 
@@ -3829,6 +3932,11 @@ namespace __format
    * this class template explicitly. For typical uses of `std::format` the
    * library will use the specializations `std::format_context` (for `char`)
    * and `std::wformat_context` (for `wchar_t`).
+   *
+   * You are not allowed to define partial or explicit specializations of
+   * this class template.
+   *
+   * @since C++20
    */
   template<typename _Out, typename _CharT>
     class basic_format_context
@@ -3860,6 +3968,8 @@ namespace __format
 	__format::__do_vformat_to(_Out2, basic_string_view<_CharT2>,
 				  const basic_format_args<_Context2>&,
 				  const locale*);
+
+      friend __format::__formatter_chrono<_CharT>;
 
     public:
       ~basic_format_context() = default;
@@ -3897,7 +4007,11 @@ namespace __format
     {
       using iterator = typename basic_format_parse_context<_CharT>::iterator;
 
-      basic_format_parse_context<_CharT> _M_pc;
+      struct _Parse_context : basic_format_parse_context<_CharT>
+      {
+	using basic_format_parse_context<_CharT>::basic_format_parse_context;
+	const _Arg_t* _M_types = nullptr;
+      } _M_pc;
 
       constexpr explicit
       _Scanner(basic_string_view<_CharT> __str, size_t __nargs = -1)
@@ -4057,6 +4171,16 @@ namespace __format
       }
     };
 
+  template<typename _CharT, typename _Tp>
+    consteval _Arg_t
+    __to_arg_t_enum() noexcept
+    {
+      using _Context = __format::__format_context<_CharT>;
+      using _Fmt_arg = basic_format_arg<_Context>;
+      using _NormalizedTp = typename _Fmt_arg::template _Normalize<_Tp>;
+      return _Fmt_arg::template _S_to_enum<_NormalizedTp>();
+    }
+
   // Validate a format string for Args.
   template<typename _CharT, typename... _Args>
     class _Checking_scanner : public _Scanner<_CharT>
@@ -4066,10 +4190,14 @@ namespace __format
 	"std::formatter must be specialized for each type being formatted");
 
     public:
-      constexpr
+      consteval
       _Checking_scanner(basic_string_view<_CharT> __str)
       : _Scanner<_CharT>(__str, sizeof...(_Args))
-      { }
+      {
+#if __cpp_lib_format >= 202305L
+	this->_M_pc._M_types = _M_types.data();
+#endif
+      }
 
     private:
       constexpr void
@@ -4100,6 +4228,11 @@ namespace __format
 	  else
 	    __builtin_unreachable();
 	}
+
+#if __cpp_lib_format >= 202305L
+      array<_Arg_t, sizeof...(_Args)>
+	_M_types{ { __format::__to_arg_t_enum<_CharT, _Args>()... } };
+#endif
     };
 
   template<typename _Out, typename _CharT, typename _Context>
@@ -4194,9 +4327,42 @@ namespace __format
       else
 	return std::move(__sink)._M_finish().out;
     }
+#pragma GCC diagnostic pop
 
 } // namespace __format
 /// @endcond
+
+#if __cpp_lib_format >= 202305L
+  template<typename _CharT>
+  template<typename... _Ts>
+    constexpr void
+    basic_format_parse_context<_CharT>::check_dynamic_spec(size_t __id) noexcept
+    {
+      // This call enforces the Mandates: condition that _Ts contains valid
+      // types and each type appears at most once. It could be a static_assert
+      // but this way failures give better diagnostics, due to calling the
+      // non-constexpr __invalid_dynamic_spec function.
+      [[maybe_unused]]
+      constexpr bool __ok = __check_dynamic_spec_types<_Ts...>();
+
+      if consteval {
+	if (__id >= _M_num_args)
+	  __format::__invalid_arg_id_in_format_string();
+	if constexpr (sizeof...(_Ts) != 0)
+	  {
+	    using _Parse_context = __format::_Scanner<_CharT>::_Parse_context;
+	    auto __arg = static_cast<_Parse_context*>(this)->_M_types[__id];
+	    __format::_Arg_t __types[] = {
+	      __format::__to_arg_t_enum<_CharT, _Ts>()...
+	    };
+	    for (auto __t : __types)
+	      if (__arg == __t)
+		return;
+	  }
+	__invalid_dynamic_spec("arg(id) type does not match");
+      }
+    }
+#endif
 
   template<typename _CharT, typename... _Args>
     template<typename _Tp>
@@ -4583,4 +4749,5 @@ namespace __format
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_format
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_FORMAT

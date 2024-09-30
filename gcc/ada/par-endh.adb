@@ -28,6 +28,7 @@ with Stringt;  use Stringt;
 with Uintp;    use Uintp;
 
 with GNAT.Spelling_Checker; use GNAT.Spelling_Checker;
+with Diagnostics.Constructors; use Diagnostics.Constructors;
 
 separate (Par)
 package body Endh is
@@ -896,6 +897,8 @@ package body Endh is
    procedure Output_End_Expected (Ins : Boolean) is
       End_Type : SS_End_Type;
 
+      Wrong_End_Start : Source_Ptr;
+      Wrong_End_Finish : Source_Ptr;
    begin
       --  Suppress message if this was a potentially junk entry (e.g. a record
       --  entry where no record keyword was present).
@@ -932,8 +935,32 @@ package body Endh is
 
       elsif End_Type = E_Loop then
          if Error_Msg_Node_1 = Empty then
-            Error_Msg_SC -- CODEFIX
-              ("`END LOOP;` expected@ for LOOP#!");
+
+            if Debug_Flag_Underscore_DD then
+
+               --  TODO: This is a quick hack to get the location of the
+               --  END LOOP for the demonstration.
+
+               Wrong_End_Start := Token_Ptr;
+
+               while Token /= Tok_Semicolon loop
+                  Scan; -- past semicolon
+               end loop;
+
+               Wrong_End_Finish := Token_Ptr;
+
+               Restore_Scan_State (Scan_State);
+
+               Record_End_Loop_Expected_Error
+                 (End_Loc   => To_Span (First => Wrong_End_Start,
+                                        Ptr   => Wrong_End_Start,
+                                        Last  => Wrong_End_Finish),
+                  Start_Loc => Error_Msg_Sloc);
+
+            else
+               Error_Msg_SC -- CODEFIX
+                 ("`END LOOP;` expected@ for LOOP#!");
+            end if;
          else
             Error_Msg_SC -- CODEFIX
               ("`END LOOP &;` expected@!");

@@ -338,7 +338,7 @@ insn_combination::substitute_note (insn_info *use_insn, rtx note,
       || REG_NOTE_KIND (note) == REG_EQUIV)
     {
       insn_propagation prop (use_insn->rtl (), m_dest, m_src);
-      return (prop.apply_to_rvalue (&XEXP (note, 0))
+      return (prop.apply_to_note (&XEXP (note, 0))
 	      && (can_propagate || prop.num_replacements == 0));
     }
   return true;

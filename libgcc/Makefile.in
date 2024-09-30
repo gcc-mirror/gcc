@@ -47,6 +47,7 @@ with_aix_soname = @with_aix_soname@
 solaris_ld_v2_maps = @solaris_ld_v2_maps@
 enable_execute_stack = @enable_execute_stack@
 unwind_header = @unwind_header@
+md_unwind_def_header = @md_unwind_def_header@
 md_unwind_header = @md_unwind_header@
 sfp_machine_header = @sfp_machine_header@
 thread_header = @thread_header@
@@ -358,12 +359,15 @@ SHLIBUNWIND_INSTALL =
 
 
 # Create links to files specified in config.host.
-LIBGCC_LINKS = enable-execute-stack.c unwind.h md-unwind-support.h \
+LIBGCC_LINKS = enable-execute-stack.c \
+               unwind.h md-unwind-def.h md-unwind-support.h \
                sfp-machine.h gthr-default.h
 
 enable-execute-stack.c: $(srcdir)/$(enable_execute_stack)
 	-$(LN_S) $< $@
 unwind.h: $(srcdir)/$(unwind_header)
+	-$(LN_S) $< $@
+md-unwind-def.h: $(srcdir)/config/$(md_unwind_def_header)
 	-$(LN_S) $< $@
 md-unwind-support.h: $(srcdir)/config/$(md_unwind_header)
 	-$(LN_S) $< $@

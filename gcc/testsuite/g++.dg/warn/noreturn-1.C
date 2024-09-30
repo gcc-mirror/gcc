@@ -2,6 +2,7 @@
 // Origin: Kaveh Ghazi <ghazi@caip.rutgers.edu> 2002-06-18.
 // { dg-do compile }
 // { dg-options "-Wall -O2" }
+// { dg-skip-if "requires hosted libstdc++ for cstdlib abort" { ! hostedlib } }
 
 #include <cstdlib>
 

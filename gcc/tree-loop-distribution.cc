@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 	data reuse.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -980,6 +981,9 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
 	  if (TREE_CODE (USE_FROM_PTR (use_p)) == SSA_NAME)
 	    {
 	      tree new_def = get_current_def (USE_FROM_PTR (use_p));
+	      if (!new_def)
+		/* Something defined outside of the loop.  */
+		continue;
 	      SET_USE (use_p, new_def);
 	    }
 	}

@@ -36,13 +36,15 @@
 // ISO C++ 14882: <ccytpe>
 //
 
+#ifndef _GLIBCXX_CCTYPE
+#define _GLIBCXX_CCTYPE 1
+
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <ctype.h>
-
-#ifndef _GLIBCXX_CCTYPE
-#define _GLIBCXX_CCTYPE 1
 
 // Get rid of those macros defined in <ctype.h> in lieu of real functions.
 #undef isalnum

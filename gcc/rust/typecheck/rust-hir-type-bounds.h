@@ -38,7 +38,7 @@ public:
 private:
   void scan ();
   void assemble_sized_builtin ();
-  void assemble_builtin_candidate (Analysis::RustLangItem::ItemType item);
+  void assemble_builtin_candidate (LangItem::Kind item);
 
 private:
   TypeBoundsProbe (const TyTy::BaseType *receiver);

@@ -47,3 +47,4 @@ export int pre_print2(int n);
 export int fn3(int n)
   [[ pre: pre_print2(n) > 0 ]];
 
+// { dg-skip-if "requires hosted libstdc++ for cstdio" { ! hostedlib } }

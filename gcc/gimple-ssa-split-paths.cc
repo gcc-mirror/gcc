@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "fold-const.h"
+#include "cfghooks.h"
 
 /* Given LATCH, the latch block in a loop, see if the shape of the
    path reaching LATCH is suitable for being split by duplication.
@@ -141,6 +142,40 @@ poor_ifcvt_candidate_code (enum tree_code code)
 	  || code == CALL_EXPR);
 }
 
+/* Return TRUE if PRED of BB is an poor ifcvt candidate. */
+static bool
+poor_ifcvt_pred (basic_block pred, basic_block bb)
+{
+  /* If the edge count of the pred is not 1, then
+     this is the predecessor from the if rather
+     than middle one. */
+  if (EDGE_COUNT (pred->succs) != 1)
+    return false;
+
+  /* Empty middle bb are never a poor ifcvt candidate. */
+  if (empty_block_p (pred))
+    return false;
+  /* If BB's predecessors are single statement blocks where
+     the output of that statement feed the same PHI in BB,
+     it an ifcvt candidate. */
+  gimple *stmt = last_and_only_stmt (pred);
+  if (!stmt || gimple_code (stmt) != GIMPLE_ASSIGN)
+    return true;
+  tree_code code = gimple_assign_rhs_code (stmt);
+  if (poor_ifcvt_candidate_code (code))
+    return true;
+  tree lhs = gimple_assign_lhs (stmt);
+  gimple_stmt_iterator gsi;
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *phi = gsi_stmt (gsi);
+      if (gimple_phi_arg_def (phi, 0) == lhs
+	  || gimple_phi_arg_def (phi, 1) == lhs)
+	return false;
+    }
+  return true;
+}
+
 /* Return TRUE if BB is a reasonable block to duplicate by examining
    its size, false otherwise.  BB will always be a loop latch block.
 
@@ -167,128 +202,44 @@ is_feasible_trace (basic_block bb)
   int num_stmts_in_pred2
     = EDGE_COUNT (pred2->succs) == 1 ? count_stmts_in_block (pred2) : 0;
 
+  /* Upper Hard limit on the number statements to copy.  */
+  if (num_stmts_in_join
+      >= param_max_jump_thread_duplication_stmts)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Duplicating block %d would duplicate "
+		 "too many statments: %d >= %d\n",
+		 bb->index, num_stmts_in_join,
+		 param_max_jump_thread_duplication_stmts);
+      return false;
+    }
+
   /* This is meant to catch cases that are likely opportunities for
-     if-conversion.  Essentially we look for the case where
-     BB's predecessors are both single statement blocks where
-     the output of that statement feed the same PHI in BB.  */
-  if (num_stmts_in_pred1 == 1 && num_stmts_in_pred2 == 1)
+     if-conversion.  */
+  if (num_stmts_in_pred1 <= 1 && num_stmts_in_pred2 <= 1)
     {
-      gimple *stmt1 = last_and_only_stmt (pred1);
-      gimple *stmt2 = last_and_only_stmt (pred2);
-
-      if (stmt1 && stmt2
-	  && gimple_code (stmt1) == GIMPLE_ASSIGN
-	  && gimple_code (stmt2) == GIMPLE_ASSIGN)
+      int num_phis = 0;
+      /* The max number of PHIs that should be considered for an ifcvt
+	 candidate.  */
+      const int max_num_phis = 3;
+      for (gphi_iterator si = gsi_start_phis (bb); ! gsi_end_p (si);
+	  gsi_next (&si))
 	{
-	  enum tree_code code1 = gimple_assign_rhs_code (stmt1);
-	  enum tree_code code2 = gimple_assign_rhs_code (stmt2);
-
-	  if (!poor_ifcvt_candidate_code (code1)
-	      && !poor_ifcvt_candidate_code (code2))
-	    {
-	      tree lhs1 = gimple_assign_lhs (stmt1);
-	      tree lhs2 = gimple_assign_lhs (stmt2);
-	      gimple_stmt_iterator gsi;
-	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		{
-		  gimple *phi = gsi_stmt (gsi);
-		  if ((gimple_phi_arg_def (phi, 0) == lhs1
-		       && gimple_phi_arg_def (phi, 1) == lhs2)
-		      || (gimple_phi_arg_def (phi, 1) == lhs1
-			  && gimple_phi_arg_def (phi, 0) == lhs2))
-		    {
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file,
-				 "Block %d appears to be a join point for "
-				 "if-convertable diamond.\n",
-				 bb->index);
-		      return false;
-		    }
-		}
-	    }
+	  num_phis++;
+	  if (num_phis > max_num_phis)
+	    break;
 	}
-    }
-
-  /* Canonicalize the form.  */
-  if (num_stmts_in_pred1 == 0 && num_stmts_in_pred2 == 1)
-    {
-      std::swap (pred1, pred2);
-      std::swap (num_stmts_in_pred1, num_stmts_in_pred2);
-    }
-
-  /* Another variant.  This one is half-diamond.  */
-  if (num_stmts_in_pred1 == 1 && num_stmts_in_pred2 == 0
-      && dominated_by_p (CDI_DOMINATORS, pred1, pred2))
-    {
-      gimple *stmt1 = last_and_only_stmt (pred1);
-
-      /* The only statement in PRED1 must be an assignment that is
-	 not a good candidate for if-conversion.   This may need some
-	 generalization.  */
-      if (stmt1 && gimple_code (stmt1) == GIMPLE_ASSIGN)
+      if (num_phis <= max_num_phis
+	  && !poor_ifcvt_pred (pred1, bb)
+	  && !poor_ifcvt_pred (pred2, bb))
 	{
-	  enum tree_code code1 = gimple_assign_rhs_code (stmt1);
-
-	  if (!poor_ifcvt_candidate_code (code1))
-	    {
-	      tree lhs1 = gimple_assign_lhs (stmt1);
-	      tree rhs1 = gimple_assign_rhs1 (stmt1);
-
-	      gimple_stmt_iterator gsi;
-	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		{
-		  gimple *phi = gsi_stmt (gsi);
-		  if ((gimple_phi_arg_def (phi, 0) == lhs1
-		       && gimple_phi_arg_def (phi, 1) == rhs1)
-		      || (gimple_phi_arg_def (phi, 1) == lhs1
-			  && gimple_phi_arg_def (phi, 0) == rhs1))
-		    {
-		      if (dump_file && (dump_flags & TDF_DETAILS))
-			fprintf (dump_file,
-				 "Block %d appears to be a join point for "
-				 "if-convertable half-diamond.\n",
-				 bb->index);
-		      return false;
-		    }
-		}
-	    }
-	}
-    }
-
-  /* Canonicalize the form.  */
-  if (single_pred_p (pred1) && single_pred (pred1) == pred2
-      && num_stmts_in_pred1 == 0)
-    std::swap (pred1, pred2);
-
-  /* This is meant to catch another kind of cases that are likely opportunities
-     for if-conversion.  After canonicalizing, PRED2 must be an empty block and
-     PRED1 must be the only predecessor of PRED2.  Moreover, PRED1 is supposed
-     to end with a cond_stmt which has the same args with the PHI in BB.  */
-  if (single_pred_p (pred2) && single_pred (pred2) == pred1
-      && num_stmts_in_pred2 == 0)
-    {
-      if (gcond *cond_stmt = dyn_cast <gcond *> (*gsi_last_bb (pred1)))
-	{
-	  tree lhs = gimple_cond_lhs (cond_stmt);
-	  tree rhs = gimple_cond_rhs (cond_stmt);
-
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      gimple *phi = gsi_stmt (gsi);
-	      if ((operand_equal_p (gimple_phi_arg_def (phi, 0), lhs)
-		   && operand_equal_p (gimple_phi_arg_def (phi, 1), rhs))
-		  || (operand_equal_p (gimple_phi_arg_def (phi, 0), rhs)
-		      && (operand_equal_p (gimple_phi_arg_def (phi, 1), lhs))))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file,
-			     "Block %d appears to be optimized to a join "
-			     "point for if-convertable half-diamond.\n",
-			     bb->index);
-		  return false;
-		}
-	    }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Block %d appears to be a join point for "
+		     "if-convertable bbs.\n",
+		     bb->index);
+	  return false;
 	}
     }
 
@@ -406,12 +357,6 @@ is_feasible_trace (basic_block bb)
   /* We may want something here which looks at dataflow and tries
      to guess if duplication of BB is likely to result in simplification
      of instructions in BB in either the original or the duplicate.  */
-
-  /* Upper Hard limit on the number statements to copy.  */
-  if (num_stmts_in_join
-      >= param_max_jump_thread_duplication_stmts)
-    return false;
-
   return true;
 }
 

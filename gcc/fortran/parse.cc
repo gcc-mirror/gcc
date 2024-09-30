@@ -1165,6 +1165,9 @@ decode_omp_directive (void)
     case 'f':
       matcho ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
       break;
+    case 'i':
+      matcho ("interop", gfc_match_omp_interop, ST_OMP_INTEROP);
+      break;
     case 'm':
       matcho ("masked taskloop simd", gfc_match_omp_masked_taskloop_simd,
 	      ST_OMP_MASKED_TASKLOOP_SIMD);
@@ -1342,8 +1345,12 @@ decode_omp_directive (void)
 
   switch (ret)
     {
-    /* Set omp_target_seen; exclude ST_OMP_DECLARE_TARGET.
-       FIXME: Get clarification, cf. OpenMP Spec Issue #3240.  */
+    /* For the constraints on clauses with the global requirement property,
+       we set omp_target_seen. This included all clauses that take the
+       DEVICE clause, (BEGIN) DECLARE_TARGET and procedures run the device
+       (which effectively is implied by the former).  */
+    case ST_OMP_DECLARE_TARGET:
+    case ST_OMP_INTEROP:
     case ST_OMP_TARGET:
     case ST_OMP_TARGET_DATA:
     case ST_OMP_TARGET_ENTER_DATA:
@@ -1881,6 +1888,7 @@ next_statement (void)
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: case ST_OMP_DEPOBJ: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: case ST_OMP_ERROR: \
+  case ST_OMP_INTEROP: \
   case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
   case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
@@ -2809,6 +2817,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_FLUSH:
       p = "!$OMP FLUSH";
+      break;
+    case ST_OMP_INTEROP:
+      p = "!$OMP INTEROP";
       break;
     case ST_OMP_LOOP:
       p = "!$OMP LOOP";
@@ -5164,7 +5175,7 @@ parse_associate (void)
     {
       gfc_symbol *sym, *tsym;
       gfc_expr *target;
-      int rank;
+      int rank, corank;
 
       if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
 	gcc_unreachable ();
@@ -5225,11 +5236,17 @@ parse_associate (void)
 	  if (sym->ts.type == BT_CLASS)
 	    {
 	      if (CLASS_DATA (sym)->as)
-		target->rank = CLASS_DATA (sym)->as->rank;
+		{
+		  target->rank = CLASS_DATA (sym)->as->rank;
+		  target->corank = CLASS_DATA (sym)->as->corank;
+		}
 	      sym->attr.class_ok = 1;
 	    }
 	  else
-	    target->rank = tsym->result->as ? tsym->result->as->rank : 0;
+	    {
+	      target->rank = tsym->result->as ? tsym->result->as->rank : 0;
+	      target->corank = tsym->result->as ? tsym->result->as->corank : 0;
+	    }
 	}
 
       /* Check if the target expression is array valued. This cannot be done
@@ -5261,18 +5278,19 @@ parse_associate (void)
 	}
 
       rank = target->rank;
+      corank = target->corank;
       /* Fixup cases where the ranks are mismatched.  */
       if (sym->ts.type == BT_CLASS && CLASS_DATA (sym))
 	{
-	  if ((!CLASS_DATA (sym)->as && rank != 0)
-	       || (CLASS_DATA (sym)->as
-		   && CLASS_DATA (sym)->as->rank != rank))
+	  if ((!CLASS_DATA (sym)->as && (rank != 0 || corank != 0))
+	      || (CLASS_DATA (sym)->as
+		  && (CLASS_DATA (sym)->as->rank != rank
+		      || CLASS_DATA (sym)->as->corank != corank)))
 	    {
 	      /* Don't just (re-)set the attr and as in the sym.ts,
 	      because this modifies the target's attr and as.  Copy the
 	      data and do a build_class_symbol.  */
 	      symbol_attribute attr = CLASS_DATA (target)->attr;
-	      int corank = gfc_get_corank (target);
 	      gfc_typespec type;
 
 	      if (rank || corank)
@@ -5290,6 +5308,7 @@ parse_associate (void)
 		  attr.dimension = attr.codimension = 0;
 		}
 	      attr.class_ok = 0;
+	      attr.associate_var = 1;
 	      type = CLASS_DATA (sym)->ts;
 	      if (!gfc_build_class_symbol (&type, &attr, &as))
 		gcc_unreachable ();
@@ -5300,17 +5319,22 @@ parse_associate (void)
 	  else
 	    sym->attr.class_ok = 1;
 	}
-      else if ((!sym->as && rank != 0)
-	       || (sym->as && sym->as->rank != rank))
+      else if ((!sym->as && (rank != 0 || corank != 0))
+	       || (sym->as
+		   && (sym->as->rank != rank || sym->as->corank != corank)))
 	{
 	  as = gfc_get_array_spec ();
 	  as->type = AS_DEFERRED;
 	  as->rank = rank;
-	  as->corank = gfc_get_corank (target);
+	  as->corank = corank;
 	  sym->as = as;
-	  sym->attr.dimension = 1;
-	  if (as->corank)
-	    sym->attr.codimension = 1;
+	  if (rank)
+	    sym->attr.dimension = 1;
+	  if (corank)
+	    {
+	      as->cotype = AS_ASSUMED_SHAPE;
+	      sym->attr.codimension = 1;
+	    }
 	}
     }
 
@@ -7395,6 +7419,9 @@ done:
     omp_requires_mask
 	  = (enum omp_requires) (omp_requires_mask
 				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+  if (omp_requires & OMP_REQ_SELF_MAPS)
+    omp_requires_mask
+	  = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_SELF_MAPS);
   if (omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
     omp_requires_mask = (enum omp_requires) (omp_requires_mask
 					     | OMP_REQUIRES_DYNAMIC_ALLOCATORS);
