@@ -790,6 +790,21 @@ output_buffer::pop_formatted_chunks ()
   obstack_free (&m_chunk_obstack, old_top);
 }
 
+/* Dump state of this output_buffer to OUT, for debugging.  */
+
+void
+output_buffer::dump (FILE *out) const
+{
+  int depth = 0;
+  for (pp_formatted_chunks *iter = m_cur_formatted_chunks;
+       iter;
+       iter = iter->m_prev, depth++)
+    {
+      fprintf (out, "pp_formatted_chunks: depth %i\n", depth);
+      iter->dump (out);
+    }
+}
+
 #ifndef PTRDIFF_MAX
 #define PTRDIFF_MAX INTTYPE_MAXIMUM (ptrdiff_t)
 #endif
@@ -3011,6 +3026,14 @@ pretty_printer::end_url ()
     }
   if (m_url_format != URL_FORMAT_NONE)
     pp_string (this, get_end_url_string (this));
+}
+
+/* Dump state of this pretty_printer to OUT, for debugging.  */
+
+void
+pretty_printer::dump (FILE *out) const
+{
+  m_buffer->dump (out);
 }
 
 /* class pp_markup::context.  */
