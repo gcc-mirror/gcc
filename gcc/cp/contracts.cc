@@ -2437,8 +2437,6 @@ copy_and_remap_contracts (tree dest, tree source, bool remap_post = true)
       CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
 	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
 
-
-
       chainon (last, c);
       last = c;
       if (!contract_attrs)
