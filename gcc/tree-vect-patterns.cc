@@ -6062,12 +6062,15 @@ vect_recog_bool_pattern (vec_info *vinfo,
       if (get_vectype_for_scalar_type (vinfo, type) == NULL_TREE)
 	return NULL;
 
+      enum vect_def_type dt;
       if (check_bool_pattern (var, vinfo, bool_stmts))
 	var = adjust_bool_stmts (vinfo, bool_stmts, type, stmt_vinfo);
       else if (integer_type_for_mask (var, vinfo))
 	return NULL;
       else if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
-	       && !vect_get_internal_def (vinfo, var))
+	       && vect_is_simple_use (var, vinfo, &dt)
+	       && (dt == vect_external_def
+		   || dt == vect_constant_def))
 	{
 	  /* If the condition is already a boolean then manually convert it to a
 	     mask of the given integer type but don't set a vectype.  */
