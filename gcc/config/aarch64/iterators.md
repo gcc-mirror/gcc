@@ -3142,6 +3142,9 @@
 					 UNSPEC_COND_SMAX
 					 UNSPEC_COND_SMIN])
 
+(define_int_iterator SVE_COND_SMAXMIN [UNSPEC_COND_SMAX
+				       UNSPEC_COND_SMIN])
+
 (define_int_iterator SVE_COND_FP_TERNARY [UNSPEC_COND_FMLA
 					  UNSPEC_COND_FMLS
 					  UNSPEC_COND_FNMLA
@@ -4501,6 +4504,9 @@
 ;; Iterators and attributes for faminmax
 
 (define_int_iterator FAMINMAX_UNS [UNSPEC_FAMAX UNSPEC_FAMIN])
+
+(define_int_attr faminmax_cond_uns_op
+  [(UNSPEC_COND_SMAX "famax") (UNSPEC_COND_SMIN "famin")])
 
 (define_int_attr faminmax_uns_op
   [(UNSPEC_FAMAX "famax") (UNSPEC_FAMIN "famin")])

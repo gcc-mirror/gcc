@@ -2467,6 +2467,43 @@
   [(set_attr "movprfx" "yes")]
 )
 
+;; -------------------------------------------------------------------------
+;; -- [FP] Absolute maximum and minimum
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FAMAX
+;; - FAMIN
+;; -------------------------------------------------------------------------
+;; Predicated floating-point absolute maximum and minimum.
+(define_insn_and_rewrite "*aarch64_pred_faminmax_fused"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	   (unspec:SVE_FULL_F
+	     [(match_operand 5)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	     UNSPEC_COND_FABS)
+	   (unspec:SVE_FULL_F
+	     [(match_operand 6)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 3 "register_operand")]
+	     UNSPEC_COND_FABS)]
+	  SVE_COND_SMAXMIN))]
+  "TARGET_SVE_FAMINMAX"
+  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
+     [ w        , Upl , %0 , w ; *              ] <faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+     [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  }
+  "&& (!rtx_equal_p (operands[1], operands[5])
+       || !rtx_equal_p (operands[1], operands[6]))"
+  {
+    operands[5] = copy_rtx (operands[1]);
+    operands[6] = copy_rtx (operands[1]);
+  }
+)
+
 ;; =========================================================================
 ;; == Complex arithmetic
 ;; =========================================================================
