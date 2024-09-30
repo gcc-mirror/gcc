@@ -278,11 +278,6 @@ enum contract_matching_context
 #define DECL_IS_POST_FN_P(NODE) \
   (DECL_ABSTRACT_ORIGIN (NODE) && DECL_POST_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
 
-/* True iff the FUNCTION_DECL is the caller contract wrapper function
-  for a guarded function.  */
-#define DECL_IS_WRAPPER_FN_P(NODE) \
-  (DECL_ABSTRACT_ORIGIN (NODE) && DECL_WRAPPER_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
-
 
 extern void remove_contract_attributes		(tree);
 extern void copy_contract_attributes		(tree, tree);
