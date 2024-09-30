@@ -345,9 +345,17 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 	      if (gassign *assign = dyn_cast <gassign *> (stmt))
 		{
 		  tree lhs = gimple_assign_lhs (assign);
+		  tree lhst = TREE_TYPE (lhs);
 		  enum tree_code ass_code
 		    = gimple_assign_rhs_code (assign);
-		  if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
+		  if (ass_code != MAX_EXPR && ass_code != MIN_EXPR
+		      /* Conversions from boolean like types is ok
+			 as `a?1:b` and `a?0:b` will always simplify
+			 to `a & b` or `a | b`.
+			 See PR 116890.  */
+		      && !(INTEGRAL_TYPE_P (lhst)
+			   && TYPE_UNSIGNED (lhst)
+			   && TYPE_PRECISION (lhst) == 1))
 		    return NULL;
 		  if (lhs != gimple_assign_rhs1 (arg0_def_stmt))
 		    return NULL;

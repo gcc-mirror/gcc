@@ -15,8 +15,8 @@ int f(int t, int c)
   return g(d,e);
 }
 
-/* There should be one ifs as one of them should be changed into
-   a conditional and the other should be there still.  */
-/* { dg-final { scan-tree-dump-times "if" 1 "optimized" }  }*/
+/* There should be no ifs as this is converted into `(t != 0) & (c != 0)`.
+/* { dg-final { scan-tree-dump-not "if" "optimized" }  }*/
 /* { dg-final { scan-tree-dump-times "\[^\r\n\]*_\[0-9\]* = c_\[0-9\]*.D. != 0" 1 "optimized"  } } */
+/* { dg-final { scan-tree-dump-times "\[^\r\n\]*_\[0-9\]* = t_\[0-9\]*.D. != 0" 1 "optimized"  } } */
 
