@@ -1,3 +1,32 @@
+2024-09-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_arith_data.h: Add test data for SAT_SUB.
+	* gcc.target/riscv/sat_s_sub-1-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-1-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-1-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-1-i8.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-1-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-1-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-1-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-1-i8.c: New test.
+
+2024-09-29  Sam James  <sam@gentoo.org>
+
+	PR fortran/116858
+	* gfortran.dg/initialization_25.f90: Fix dg-error arguments.
+
+2024-09-29  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR testsuite/116806
+	* gcc.dg/cpp/charconst-3.c: Perform arithmetic in unsigned
+	type to avoid integer overflow.
+
+2024-09-29  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	PR target/108038
+	* gcc.target/riscv/slt-1.c: New test.
+
 2024-09-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/unsigned_33.f90: New test.

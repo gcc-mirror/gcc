@@ -1,3 +1,33 @@
+2024-09-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_sssub): Add new func
+	decl for expanding signed SAT_SUB.
+	* config/riscv/riscv.cc (riscv_expand_sssub): Add new func impl
+	for expanding signed SAT_SUB.
+	* config/riscv/riscv.md (sssub<mode>3): Add new pattern sssub
+	for scalar signed integer.
+
+2024-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116627
+	* cselib.cc (remove_useless_values): Discard useless locs
+	even from preserved cselib_vals in cselib_preserved_hash_table
+	hash table.
+
+2024-09-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* doc/extend.texi (SH Operand Modifiers): New.
+
+2024-09-29  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	PR target/108038
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): New
+	simplification.
+
+2024-09-29  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/sourcebuild.texi: Document struct-layout-1.exp.
+
 2024-09-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR target/69374
