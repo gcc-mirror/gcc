@@ -304,6 +304,7 @@ sem_function::get_hash (void)
 	   (TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))));
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
       hstate.add_flag (DECL_CXX_DESTRUCTOR_P (decl));
+      hstate.add_flag (DECL_STATIC_CHAIN (decl));
 
       set_hash (hstate.end ());
     }
@@ -655,7 +656,10 @@ sem_function::equals_wpa (sem_item *item,
     }
 
   if (list1 || list2)
-    return return_false_with_msg ("Mismatched number of parameters");
+    return return_false_with_msg ("mismatched number of parameters");
+
+  if (DECL_STATIC_CHAIN (decl) != DECL_STATIC_CHAIN (item->decl))
+    return return_false_with_msg ("static chain mismatch");
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
@@ -876,7 +880,10 @@ sem_function::equals_private (sem_item *item)
         return return_false ();
     }
   if (arg1 || arg2)
-    return return_false_with_msg ("Mismatched number of arguments");
+    return return_false_with_msg ("mismatched number of arguments");
+
+ if (DECL_STATIC_CHAIN (decl) != DECL_STATIC_CHAIN (m_compared_func->decl))
+    return return_false_with_msg ("static chain mismatch");
 
   if (!dyn_cast <cgraph_node *> (node)->has_gimple_body_p ())
     return true;
