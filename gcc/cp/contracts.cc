@@ -1564,8 +1564,7 @@ handle_contracts_p (tree decl1)
 {
   return (flag_contracts
 	  && !processing_template_decl
-	  && (DECL_ABSTRACT_ORIGIN (decl1) == NULL_TREE
-	      || DECL_IS_WRAPPER_FN_P(decl1))
+	  && (DECL_ABSTRACT_ORIGIN (decl1) == NULL_TREE)
 	  && contract_any_active_p (DECL_CONTRACTS (decl1)));
 }
 
@@ -2252,7 +2251,7 @@ finish_function_contracts (tree fndecl)
   if (pre == error_mark_node || post == error_mark_node)
     return;
 
-  if (pre)
+  if (pre && DECL_INITIAL (pre) == error_mark_node)
     {
       DECL_PENDING_INLINE_P (pre) = false;
       start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
@@ -2262,7 +2261,7 @@ finish_function_contracts (tree fndecl)
       expand_or_defer_fn (finished_pre);
     }
 
-  if (post)
+  if (post && DECL_INITIAL (post) == error_mark_node)
     {
       DECL_PENDING_INLINE_P (post) = false;
       start_preparsed_function (post,
@@ -2279,7 +2278,7 @@ finish_function_contracts (tree fndecl)
   /* Check if we need to update wrapper function contracts. */
   tree wrapdecl = get_contract_wrapper_function (fndecl);
   if (wrapdecl){
-      copy_and_remap_contracts (wrapdecl, fndecl);
+      copy_and_remap_contracts (wrapdecl, fndecl, true);
   }
 }
 
@@ -2405,28 +2404,40 @@ duplicate_contracts (tree newdecl, tree olddecl)
     }
 }
 
-/* Replace the any contract attributes on OVERRIDER with a copy where any
-   references to BASEFN's PARM_DECLs have been rewritten to the corresponding
-   PARM_DECL in OVERRIDER.  */
+/* Replace the any contract attributes on SOURCE with a copy where any
+   references to SOURCE's PARM_DECLs have been rewritten to the corresponding
+   PARM_DECL in DEST.  If remap_post is true, result identifier is
+   also re-mapped. C++20 version used this function to remap contracts on
+   virtual functions from base class to derived class. In such a case
+   postcondition identified wasn't remapped. Caller side wrapper functions
+   need to remap the result idnetifier. */
 
 void
-copy_and_remap_contracts (tree overrider, tree basefn)
+copy_and_remap_contracts (tree dest, tree source, bool remap_post = true)
 {
   tree last = NULL_TREE, contract_attrs = NULL_TREE;
-  for (tree a = DECL_CONTRACTS (basefn);
+  for (tree a = DECL_CONTRACTS (source);
       a != NULL_TREE;
       a = CONTRACT_CHAIN (a))
     {
       tree c = copy_node (a);
+      tree contract = CONTRACT_STATEMENT (c);
       TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
 					copy_node (CONTRACT_STATEMENT (c)));
 
-      tree src = basefn;
-      tree dst = overrider;
-      remap_contract (src, dst, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
+      remap_contract (source, dest, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
+
+      if ( remap_post && (TREE_CODE (CONTRACT_STATEMENT (c)) == POSTCONDITION_STMT))
+	{
+	  tree oldvar = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (c));
+	  if (oldvar)
+	      DECL_CONTEXT (oldvar) = dest;
+	}
 
       CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
 	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
+
+
 
       chainon (last, c);
       last = c;
@@ -2434,7 +2445,7 @@ copy_and_remap_contracts (tree overrider, tree basefn)
 	contract_attrs = c;
     }
 
-  set_decl_contracts (overrider, contract_attrs);
+  set_decl_contracts (dest, contract_attrs);
 }
 
 /* Build a declaration for the contract wrapper of a caller FNDECL.  */
@@ -2447,7 +2458,7 @@ build_contract_wrapper_function (tree fndecl)
 
   /* Use mangled name so we can differentiate between different virtual
     functions of the same name. */
-  const char *name = IDENTIFIER_POINTER ((DECL_ASSEMBLER_NAME (fndecl)));
+  const char *name = IDENTIFIER_POINTER ((mangle_decl_string (fndecl)));
   name = ACONCAT ((name, ".contract_wrapper", NULL));
 
   location_t loc = DECL_SOURCE_LOCATION (fndecl);
@@ -2508,8 +2519,6 @@ build_contract_wrapper_function (tree fndecl)
    TODO : we can probably skip this step if function needs
    instantiating as it will be done as a part of instantiation. */
   copy_and_remap_contracts (wrapdecl, fndecl);
-
-  DECL_ABSTRACT_ORIGIN (wrapdecl) = fndecl;
 
   /* Make this function internal  */
   TREE_PUBLIC (wrapdecl) = false;
