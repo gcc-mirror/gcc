@@ -751,7 +751,7 @@ diagnostic_output_format_init_xhtml_file (diagnostic_context &context,
 namespace selftest {
 
 /* A subclass of xhtml_output_format for writing selftests.
-   The JSON output is cached internally, rather than written
+   The XML output is cached internally, rather than written
    out to a file.  */
 
 class test_xhtml_diagnostic_context : public test_diagnostic_context
