@@ -236,7 +236,6 @@ static int discriminator_for_string_literal (tree, tree);
 static void write_discriminator (const int);
 static void write_local_name (tree, const tree, const tree);
 static void dump_substitution_candidates (void);
-static tree mangle_decl_string (const tree);
 static void maybe_check_abi_tags (tree, tree = NULL_TREE, int = 10);
 
 /* Control functions.  */
@@ -4448,7 +4447,7 @@ mangle_module_global_init (int module)
 
 /* Generate the mangled name of DECL.  */
 
-static tree
+tree
 mangle_decl_string (const tree decl)
 {
   tree result;
