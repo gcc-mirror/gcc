@@ -1848,10 +1848,17 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 				   " too many incoming edges.\n");
 
   /* We assume that the latch is empty.  */
-  if (!empty_block_p (loop->latch)
-      || !gimple_seq_empty_p (phi_nodes (loop->latch)))
-    return opt_result::failure_at (vect_location,
-				   "not vectorized: latch block not empty.\n");
+  basic_block latch = loop->latch;
+  do
+    {
+      if (!empty_block_p (latch)
+	  || !gimple_seq_empty_p (phi_nodes (latch)))
+	return opt_result::failure_at (vect_location,
+				       "not vectorized: latch block not "
+				       "empty.\n");
+      latch = single_pred (latch);
+    }
+  while (single_succ_p (latch));
 
   /* Make sure there is no abnormal exit.  */
   auto_vec<edge> exits = get_loop_exit_edges (loop);
