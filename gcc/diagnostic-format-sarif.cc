@@ -649,6 +649,7 @@ public:
 		 const line_maps *line_maps,
 		 const char *main_input_filename_,
 		 bool formatted);
+  ~sarif_builder ();
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
 			     diagnostic_t orig_diag_kind);
@@ -1498,6 +1499,18 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   get_or_create_artifact (main_input_filename_,
 			  diagnostic_artifact_role::analysis_target,
 			  false);
+}
+
+sarif_builder::~sarif_builder ()
+{
+  /* Normally m_filename_to_artifact_map will have been emptied as part
+     of make_run_object, but this isn't run by all the selftests.
+     Ensure the artifact objects are cleaned up for such cases.  */
+  for (auto iter : m_filename_to_artifact_map)
+    {
+      sarif_artifact *artifact_obj = iter.second;
+      delete artifact_obj;
+    }
 }
 
 /* Implementation of "on_report_diagnostic" for SARIF output.  */
@@ -2697,6 +2710,7 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
       artifacts_arr->append (artifact_obj);
     }
   run_obj->set<json::array> ("artifacts", std::move (artifacts_arr));
+  m_filename_to_artifact_map.empty ();
 
   /* "results" property (SARIF v2.1.0 section 3.14.23).  */
   run_obj->set<json::array> ("results", std::move (results));

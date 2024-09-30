@@ -112,6 +112,8 @@ public:
 
   size_t elements () const { return m_map.elements (); }
 
+  void empty () { m_map.empty(); }
+
   class iterator
   {
   public:
