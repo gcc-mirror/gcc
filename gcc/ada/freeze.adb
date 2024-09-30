@@ -6938,6 +6938,21 @@ package body Freeze is
             end if;
          end;
 
+         --  If the entity is a declaration of an access-to-subprogram type
+         --  with pre/postcondition contracts, build the wrapper (if it hasn't
+         --  already been done during aspect processing), and propagate the
+         --  pre/postcondition pragmas to the wrapper.
+
+         if Ada_Version >= Ada_2022
+           and then Expander_Active
+           and then Ekind (E) = E_Access_Subprogram_Type
+           and then Nkind (Parent (E)) = N_Full_Type_Declaration
+           and then Present (Contract (Designated_Type (E)))
+           and then not Is_Derived_Type (E)
+         then
+            Build_Access_Subprogram_Wrapper (Parent (E));
+         end if;
+
          --  Deal with special cases of freezing for subtype
 
          if E /= Base_Type (E) then

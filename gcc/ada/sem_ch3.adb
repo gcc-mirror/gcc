@@ -105,11 +105,6 @@ package body Sem_Ch3 is
    --  abstract interface types implemented by a record type or a derived
    --  record type.
 
-   procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id);
-   --  When an access-to-subprogram type has pre/postconditions, we build a
-   --  subprogram that includes these contracts and is invoked by an indirect
-   --  call through the corresponding access type.
-
    procedure Build_Derived_Type
      (N             : Node_Id;
       Parent_Type   : Entity_Id;
@@ -6997,19 +6992,78 @@ package body Sem_Ch3 is
    -------------------------------------
 
    procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (Decl);
       Id       : constant Entity_Id  := Defining_Identifier (Decl);
+      Loc      : constant Source_Ptr := Sloc (Decl);
+      Subp     : constant Entity_Id  := Make_Temporary (Loc, 'A');
       Type_Def : constant Node_Id    := Type_Definition (Decl);
-      Specs   :  constant List_Id    :=
-                              Parameter_Specifications (Type_Def);
-      Profile : constant List_Id     := New_List;
-      Subp    : constant Entity_Id   := Make_Temporary (Loc, 'A');
+      Specs    : constant List_Id    := Parameter_Specifications (Type_Def);
 
-      Contracts : constant List_Id := New_List;
-      Form_P    : Node_Id;
-      New_P     : Node_Id;
-      New_Decl  : Node_Id;
-      Spec      : Node_Id;
+      function Build_Access_Subprogram_Wrapper_Declaration return Node_Id;
+      --  Build the declaration and the specification of the wrapper
+
+      -------------------------------------------------
+      -- Build_Access_Subprogram_Wrapper_Declaration --
+      -------------------------------------------------
+
+      function Build_Access_Subprogram_Wrapper_Declaration return Node_Id is
+         Form_P   : Node_Id;
+         New_Decl : Node_Id;
+         New_P    : Node_Id;
+         Profile  : constant List_Id := New_List;
+         Spec     : Node_Id;
+
+      begin
+         Form_P := First (Specs);
+
+         while Present (Form_P) loop
+            New_P := New_Copy_Tree (Form_P);
+            Set_Defining_Identifier (New_P,
+              Make_Defining_Identifier
+               (Loc, Chars (Defining_Identifier (Form_P))));
+            Append (New_P, Profile);
+            Next (Form_P);
+         end loop;
+
+         --  Add to parameter specifications the access parameter that is
+         --  passed in from an indirect call.
+
+         Append (
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier => Make_Temporary (Loc, 'P'),
+              Parameter_Type      => New_Occurrence_Of (Id, Loc)),
+            Profile);
+
+         if Nkind (Type_Def) = N_Access_Procedure_Definition then
+            Spec :=
+              Make_Procedure_Specification (Loc,
+                Defining_Unit_Name       => Subp,
+                Parameter_Specifications => Profile);
+            Mutate_Ekind (Subp, E_Procedure);
+         else
+            Spec :=
+              Make_Function_Specification (Loc,
+                Defining_Unit_Name       => Subp,
+                Parameter_Specifications => Profile,
+                Result_Definition        =>
+                  New_Copy_Tree (Result_Definition (Type_Def)));
+            Mutate_Ekind (Subp, E_Function);
+         end if;
+
+         New_Decl :=
+           Make_Subprogram_Declaration (Loc, Specification => Spec);
+
+         Set_Is_Wrapper (Subp);
+
+         --  The wrapper is declared in the freezing actions to facilitate its
+         --  identification and thus avoid handling it as a primitive operation
+         --  of a tagged type (see Is_Access_To_Subprogram_Wrapper); otherwise
+         --  it may be handled as a dispatching operation and erroneously
+         --  registered in a dispatch table.
+
+         Append_Freeze_Action (Id, New_Decl);
+
+         return New_Decl;
+      end Build_Access_Subprogram_Wrapper_Declaration;
 
       procedure Replace_Type_Name (Expr : Node_Id);
       --  In the expressions for contract aspects, replace occurrences of the
@@ -7041,6 +7095,17 @@ package body Sem_Ch3 is
          Traverse (Expr);
       end Replace_Type_Name;
 
+      --  Local variables
+
+      Has_Wrapper  : constant Boolean :=
+                       Present
+                         (Access_Subprogram_Wrapper (Designated_Type (Id)));
+      Contracts    : List_Id := No_List;
+      Wrapper_Decl : Node_Id;
+      Pragmas      : List_Id := No_List;
+
+   --  Start of processing for Build_Access_Subprogram_Wrapper
+
    begin
       if Ekind (Id) in E_Access_Subprogram_Type
                      | E_Access_Protected_Subprogram_Type
@@ -7055,80 +7120,111 @@ package body Sem_Ch3 is
          return;
       end if;
 
-      declare
-         Asp  : Node_Id;
-         A_Id : Aspect_Id;
+      --  Current state: We are processing the full-type declaration of
+      --  this access-to-subprogram type. Collect its pre/postconditions
+      --  and replace occurrences of the access type with the name of the
+      --  subprogram entity.
 
-      begin
-         Asp := First (Aspect_Specifications (Decl));
-         while Present (Asp) loop
-            A_Id := Get_Aspect_Id (Chars (Identifier (Asp)));
-            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
-               Append (New_Copy_Tree (Asp), Contracts);
-               Replace_Type_Name (Expression (Last (Contracts)));
-            end if;
-            Next (Asp);
-         end loop;
-      end;
+      if not Is_Frozen (Id) then
+         if Present (Aspect_Specifications (Decl)) then
+            declare
+               Asp          : Node_Id;
+               A_Id         : Aspect_Id;
+               New_Contract : Node_Id;
 
-      --  If there are no contract aspects, no need for a wrapper.
+            begin
+               Asp := First (Aspect_Specifications (Decl));
+               while Present (Asp) loop
+                  A_Id := Get_Aspect_Id (Chars (Identifier (Asp)));
 
-      if Is_Empty_List (Contracts) then
-         return;
-      end if;
+                  if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+                     New_Contract := New_Copy_Tree (Asp);
+                     Append_New (New_Contract, Contracts);
+                     Replace_Type_Name (Expression (New_Contract));
+                  end if;
 
-      Form_P := First (Specs);
+                  Next (Asp);
+               end loop;
+            end;
+         end if;
 
-      while Present (Form_P) loop
-         New_P := New_Copy_Tree (Form_P);
-         Set_Defining_Identifier (New_P,
-           Make_Defining_Identifier
-            (Loc, Chars (Defining_Identifier (Form_P))));
-         Append (New_P, Profile);
-         Next (Form_P);
-      end loop;
+         --  No wrapper is needed if there are no contract aspects
 
-      --  Add to parameter specifications the access parameter that is passed
-      --  in from an indirect call.
+         if Is_Empty_List (Contracts) then
+            return;
+         end if;
 
-      Append (
-         Make_Parameter_Specification (Loc,
-           Defining_Identifier => Make_Temporary (Loc, 'P'),
-           Parameter_Type      => New_Occurrence_Of (Id, Loc)),
-         Profile);
+         --  Build the wrapper declaration, propagate the aspects, and link
+         --  the wrapper with its access-type declaration.
 
-      if Nkind (Type_Def) = N_Access_Procedure_Definition then
-         Spec :=
-           Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       => Subp,
-             Parameter_Specifications => Profile);
-         Mutate_Ekind (Subp, E_Procedure);
+         Wrapper_Decl := Build_Access_Subprogram_Wrapper_Declaration;
+         Set_Aspect_Specifications (Wrapper_Decl, Contracts);
+         Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+
+         --  Build the body of this wrapper
+
+         Build_Access_Subprogram_Wrapper_Body (Decl, Wrapper_Decl);
+
+      --  Current status: We are freezing the access-to-subprogram type entity.
+      --  Collect its pragmas pre/postconditions that come from the sources,
+      --  and replace occurrences of the access type with the name of the
+      --  subprogram entity.
+
       else
-         Spec :=
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name       => Subp,
-             Parameter_Specifications => Profile,
-             Result_Definition        =>
-               New_Copy_Tree
-                 (Result_Definition (Type_Definition (Decl))));
-         Mutate_Ekind (Subp, E_Function);
+         if Present (Contract (Designated_Type (Id))) then
+            declare
+               Prag       : Node_Id;
+               New_Pragma : Node_Id;
+
+            begin
+               Prag := Pre_Post_Conditions (Contract (Designated_Type (Id)));
+
+               while Present (Prag) loop
+                  if Comes_From_Source (Prag) then
+                     New_Pragma := New_Copy_Tree (Prag);
+                     Append_New (New_Pragma, Pragmas);
+                     Replace_Type_Name
+                       (First (Pragma_Argument_Associations (New_Pragma)));
+
+                     --  Force reanalyzing the copy since it will be applied to
+                     --  the wrapper.
+
+                     Set_Analyzed (New_Pragma, False);
+                  end if;
+
+                  Prag := Next_Pragma (Prag);
+               end loop;
+            end;
+
+            --  No wrapper is needed if there are no pre/postcondition pragmas
+
+            if Is_Empty_List (Pragmas) then
+               return;
+            end if;
+
+            --  Build the wrapper, if not previously done, and propagate the
+            --  pragmas to the wrapper spec. The access-to-subprogram type
+            --  declaration might have a precondition aspect and a
+            --  postcondition pragma, or vice versa. In such cases,
+            --  Build_Access_Subprogram_Wrapper is called twice: (1) when
+            --  processing the full-type declaration (building the wrapper
+            --  with the aspect), and (2) when freezing the type (adding the
+            --  pragmas after the spec of the wrapper).
+
+            if not Has_Wrapper then
+               Wrapper_Decl := Build_Access_Subprogram_Wrapper_Declaration;
+               Insert_List_After (Wrapper_Decl, Pragmas);
+
+               Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+               Build_Access_Subprogram_Wrapper_Body (Decl, Wrapper_Decl);
+            else
+               Wrapper_Decl :=
+                 Parent
+                   (Parent (Access_Subprogram_Wrapper (Designated_Type (Id))));
+               Insert_List_After (Wrapper_Decl, Pragmas);
+            end if;
+         end if;
       end if;
-
-      New_Decl :=
-        Make_Subprogram_Declaration (Loc, Specification => Spec);
-      Set_Aspect_Specifications (New_Decl, Contracts);
-      Set_Is_Wrapper (Subp);
-
-      --  The wrapper is declared in the freezing actions to facilitate its
-      --  identification and thus avoid handling it as a primitive operation
-      --  of a tagged type (see Is_Access_To_Subprogram_Wrapper); otherwise it
-      --  may be handled as a dispatching operation and erroneously registered
-      --  in a dispatch table.
-
-      Append_Freeze_Action (Id, New_Decl);
-
-      Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
-      Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
    end Build_Access_Subprogram_Wrapper;
 
    -------------------------------
