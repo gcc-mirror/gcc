@@ -4194,7 +4194,6 @@ handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
     {
       make_transitive_closure_constraints (tem);
       callarg_transitive = true;
-      gcc_checking_assert (!(flags & EAF_NO_DIRECT_READ));
     }
 
   /* If necessary, produce varinfo for indirect accesses to ARG.  */
