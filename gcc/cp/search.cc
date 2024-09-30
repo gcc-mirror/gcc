@@ -2193,7 +2193,7 @@ check_final_overrider (tree overrider, tree basefn)
       {
 	/* We're inheriting basefn's contracts; create a copy of them but
 	   replace references to their parms to our parms.  */
-	copy_and_remap_contracts (overrider, basefn);
+	copy_and_remap_contracts (overrider, basefn, false);
       }
     else if (DECL_HAS_CONTRACTS_P (basefn) && DECL_HAS_CONTRACTS_P (overrider))
       {
