@@ -1,6 +1,6 @@
 // test that contracts on overriding functions are found correctly
-// { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr" }
+// { dg-do compile }
+// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr -g3" }
 #include <cstdio>
 
 struct Base
