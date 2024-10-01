@@ -663,8 +663,14 @@ remove_unused_var (tree var)
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  gsi_remove (&gsi, true);
-  release_defs (stmt);
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    remove_phi_node (&gsi, true);
+  else
+    {
+      unlink_stmt_vdef (stmt);
+      gsi_remove (&gsi, true);
+      release_defs (stmt);
+    }
 }
 
 /* Note that we're replacing OLD_RHS with NEW_RHS in STMT.  */
