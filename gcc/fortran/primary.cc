@@ -2192,7 +2192,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   bool intrinsic;
   bool inferred_type;
   locus old_loc;
-  char sep;
+  char peeked_char;
 
   tail = NULL;
 
@@ -2282,9 +2282,10 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	sym->ts.u.derived = tgt_expr->ts.u.derived;
     }
 
-  if ((inferred_type && !sym->as && gfc_peek_ascii_char () == '(')
-      || (equiv_flag && gfc_peek_ascii_char () == '(')
-      || gfc_peek_ascii_char () == '[' || sym->attr.codimension
+  peeked_char = gfc_peek_ascii_char ();
+  if ((inferred_type && !sym->as && peeked_char == '(')
+      || (equiv_flag && peeked_char == '(') || peeked_char == '['
+      || sym->attr.codimension
       || (sym->attr.dimension && sym->ts.type != BT_CLASS
 	  && !sym->attr.proc_pointer && !gfc_is_proc_ptr_comp (primary)
 	  && !(gfc_matching_procptr_assignment
@@ -2295,6 +2296,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	      || CLASS_DATA (sym)->attr.codimension)))
     {
       gfc_array_spec *as;
+      bool coarray_only = sym->attr.codimension && !sym->attr.dimension
+			  && sym->ts.type == BT_CHARACTER;
 
       tail = extend_ref (primary, tail);
       tail->type = REF_ARRAY;
@@ -2310,12 +2313,18 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       else
 	as = sym->as;
 
-      m = gfc_match_array_ref (&tail->u.ar, as, equiv_flag,
-			       as ? as->corank : 0);
+      m = gfc_match_array_ref (&tail->u.ar, as, equiv_flag, as ? as->corank : 0,
+			       coarray_only);
       if (m != MATCH_YES)
 	return m;
 
       gfc_gobble_whitespace ();
+      if (coarray_only)
+	{
+	  primary->ts = sym->ts;
+	  goto check_substring;
+	}
+
       if (equiv_flag && gfc_peek_ascii_char () == '(')
 	{
 	  tail = extend_ref (primary, tail);
@@ -2333,14 +2342,13 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     return MATCH_YES;
 
   /* With DEC extensions, member separator may be '.' or '%'.  */
-  sep = gfc_peek_ascii_char ();
+  peeked_char = gfc_peek_ascii_char ();
   m = gfc_match_member_sep (sym);
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
   inquiry = false;
-  if (m == MATCH_YES && sep == '%'
-      && primary->ts.type != BT_CLASS
+  if (m == MATCH_YES && peeked_char == '%' && primary->ts.type != BT_CLASS
       && (primary->ts.type != BT_DERIVED || inferred_type))
     {
       match mm;
@@ -2453,7 +2461,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
            && m == MATCH_YES && !inquiry)
     {
       gfc_error ("Unexpected %<%c%> for nonderived-type variable %qs at %C",
-		 sep, sym->name);
+		 peeked_char, sym->name);
       return MATCH_ERROR;
     }
 
@@ -2484,7 +2492,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  if (inquiry)
 	    sym = NULL;
 
-	  if (sep == '%')
+	  if (peeked_char == '%')
 	    {
 	      if (tmp)
 		{
@@ -2815,6 +2823,11 @@ check_substring:
 	  if (substring)
 	    primary->ts.u.cl = NULL;
 
+	  if (gfc_peek_ascii_char () == '(')
+	    {
+	      gfc_error_now ("Unexpected array/substring ref at %C");
+	      return MATCH_ERROR;
+	    }
 	  break;
 
 	case MATCH_NO:

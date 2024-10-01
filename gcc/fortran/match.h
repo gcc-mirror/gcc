@@ -317,7 +317,8 @@ match gfc_match_init_expr (gfc_expr **);
 
 /* array.cc.  */
 match gfc_match_array_spec (gfc_array_spec **, bool, bool);
-match gfc_match_array_ref (gfc_array_ref *, gfc_array_spec *, int, int);
+match gfc_match_array_ref (gfc_array_ref *, gfc_array_spec *, int, int,
+			   bool = false);
 match gfc_match_array_constructor (gfc_expr **);
 
 /* interface.cc.  */

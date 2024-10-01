@@ -179,7 +179,7 @@ matched:
 
 match
 gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
-		     int corank)
+		     int corank, bool coarray_only)
 {
   match m;
   bool matched_bracket = false;
@@ -198,6 +198,8 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
        matched_bracket = true;
        goto coarray;
     }
+  else if (coarray_only && corank != 0)
+    goto coarray;
 
   if (gfc_match_char ('(') != MATCH_YES)
     {
@@ -243,11 +245,12 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
 coarray:
   if (!matched_bracket && gfc_match_char ('[') != MATCH_YES)
     {
-      if (ar->dimen > 0)
+      int dim = coarray_only ? 0 : ar->dimen;
+      if (dim > 0 || coarray_only)
 	{
 	  if (corank != 0)
 	    {
-	      for (int i = ar->dimen; i < GFC_MAX_DIMENSIONS; ++i)
+	      for (int i = dim; i < GFC_MAX_DIMENSIONS; ++i)
 		ar->dimen_type[i] = DIMEN_THIS_IMAGE;
 	      ar->codimen = corank;
 	    }
