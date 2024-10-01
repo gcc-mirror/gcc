@@ -2346,18 +2346,20 @@ void update_stmt_eh_region (gimple *stmt) {
     while (region) {
         switch (region->type) {
             case ERT_CLEANUP:
-                if(gimple_code (stmt) == GIMPLE_RESX){
-                  gimple_resx_set_region(stmt, region->index);
+                if (gimple_code (stmt) == GIMPLE_RESX){
+                  gresx *resx_stmt = as_a <gresx *> (stmt);
+                  gimple_resx_set_region (resx_stmt, region->index);
                 }
-                *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
+                else *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
                 return;
 
             case ERT_TRY:
                 if (match_lp (lp, &exception_types)) {
-                  if(gimple_code (stmt) == GIMPLE_RESX){
-                    gimple_resx_set_region(stmt, region->index);
+                  if (gimple_code (stmt) == GIMPLE_RESX){
+                    gresx *resx_stmt = as_a <gresx *> (stmt);
+                    gimple_resx_set_region (resx_stmt, region->index);
                   }
-                  *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
+                  else *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
                   return;
                 }
                 break;
@@ -2378,8 +2380,9 @@ void update_stmt_eh_region (gimple *stmt) {
         region = region->outer;
     }
 
-    if(gimple_code (stmt) == GIMPLE_RESX){
-      gimple_resx_set_region(stmt, -1);
+    if (gimple_code (stmt) == GIMPLE_RESX){
+      gresx *resx_stmt = as_a <gresx *> (stmt);
+      gimple_resx_set_region (resx_stmt, 0);
     }
     else remove_stmt_from_eh_lp_fn (cfun, stmt);
 }
@@ -3075,7 +3078,7 @@ void extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector) {
   basic_block bb = gimple_bb (resx_stmt);
 	
   // Iterate over edges to walk up the basic blocks
-  FOR_EACH_EDGE (e, ei, bb->pred)
+  FOR_EACH_EDGE (e, ei, bb->preds)
   {
   	// Get the last stmt of the basic block as it is an EH stmt
   	bb = e->src;
@@ -3115,7 +3118,7 @@ void extract_fun_resx_types (function *fun, vec<tree> *ret_vector) {
 		gimple *stmt = gsi_stmt (gsi);
 		vec<tree> *ret_vector;
 
-		if (stmt_can_throw_external (stmt)){
+		if (stmt_can_throw_external (fun, stmt)){
 			if (gimple_code (stmt) == GIMPLE_RESX){
 				extract_types_for_resx (stmt, ret_vector);
 			}
