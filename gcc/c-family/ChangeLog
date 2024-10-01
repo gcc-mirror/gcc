@@ -1,3 +1,9 @@
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-format.cc (selftest::test_type_mismatch_range_labels):
+	Explicitly pass in dc.m_printer to diagnostic_show_locus.
+
 2024-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/116847

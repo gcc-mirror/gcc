@@ -1,3 +1,9 @@
+2024-10-01  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++/116895
+	* config/os/newlib/ctype_base.h: Avoid signed-overflow warnings by
+	explicitly casting initializer expressions to mask.
+
 2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/istream.tcc: Add diagnostic pragmas around uses

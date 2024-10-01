@@ -1,3 +1,18 @@
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* program-point.cc (function_point::print_source_line): Replace
+	call to diagnostic_show_locus with a call to
+	diagnostic_source_print_policy::print.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* kf-analyzer.cc: Include "pretty-print-markup.h".
+	(kf_analyzer_dump_escaped::impl_call_pre): Defer colorization
+	choices by eliminating the construction of a intermediate string,
+	replacing it with a new pp_element subclass via "%e".
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

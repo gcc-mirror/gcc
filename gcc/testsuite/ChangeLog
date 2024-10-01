@@ -1,3 +1,104 @@
+2024-09-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/tree-ssa/absfloat16.c: Fix testcase.
+
+2024-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109859
+	* g++.dg/cpp2a/concepts-defarg3.C: New test.
+	* g++.dg/cpp2a/lambda-targ8.C: New test.
+
+2024-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto27.adb: New test.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/expensive_selftests_plugin.c (test_richloc):
+	Explicitly pass in dc.m_printer to diagnostic_show_locus.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/diagnostic_group_plugin.c
+	(test_diagnostic_start_span_fn): Update for change to callback
+	type.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/diagnostic_group_plugin.c
+	(test_output_format::on_begin_group): Use get_printer () rather
+	than accessing m_context.m_printer.
+	(test_output_format::on_end_group): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c
+	(xhtml_builder::m_printer): New field.
+	(xhtml_builder::xhtml_builder): Add "pp" param and use it to
+	initialize m_printer.
+	(xhtml_builder::on_report_diagnostic): Drop "context" param.
+	(xhtml_builder::make_element_for_diagnostic): Likewise.  Use
+	this->m_printer rather than the context's m_printer.  Pass
+	m_printer to call to diagnostic_show_locus.
+	(xhtml_builder::emit_diagram): Drop "context" param.
+	(xhtml_output_format::on_report_diagnostic): Drop context param
+	from call to m_builder.
+	(xhtml_output_format::on_diagram): Likewise.
+	(xhtml_output_format::xhtml_output_format): Pass result of
+	get_printer as printer for builder.
+	(diagnostic_output_format_init_xhtml): Use the fmt's printer
+	rather than the context's.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-c++-common/analyzer/escaping-1.c: Update expected results to
+	remove type information from C++ results.  Previously we were
+	using %qD with default_tree_printer, which used
+	lang_hooks.decl_printable_name, whereas now we're using %qD with
+	a clone of the cxx_pretty_printer.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: Fix stray
+	reference to JSON.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_dotprod_hisi):
+	New.
+	* gcc.dg/vect/vect-dotprod-conv-optab.c: Likewise.
+	* gcc.target/aarch64/vect-dotprod-twoway-hisi.c: Likewise.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/sme/vect-dotprod-twoway.c (udot2): New.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116879
+	* gcc.dg/pr116879.c: New testcase.
+
+2024-09-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116817
+	* g++.dg/vect/pr116817.cc: New test.
+
+2024-09-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/pr81265.f90: New test.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116842
+	* g++.dg/torture/pr116842.C: New testcase.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116850
+	* gcc.dg/pr116850.c: New testcase.
+
 2024-09-29  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/sat_arith.h: Add test helper macros.

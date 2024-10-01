@@ -1,3 +1,20 @@
+2024-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109859
+	* parser.cc (cp_parser_lambda_declarator_opt): Temporarily clear
+	local_variables_forbidden_p.
+	(cp_parser_placeholder_type_specifier): Turn an assert into an
+	error.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* pt.cc: Include "pretty-print-markup.h".
+	(warn_spec_missing_attributes): Defer colorization choices by
+	replacing printing to a pretty_printer * param with appending
+	to a vec of strings.  Replace pretty_printer with usage of
+	pp_markup::comma_separated_quoted_strings and "%e".
+
 2024-09-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/116160

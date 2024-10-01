@@ -1,3 +1,19 @@
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* error.cc (gfc_diagnostic_build_locus_prefix): Convert first
+	param from diagnostic_context * to
+	const diagnostic_location_print_policy &.  Add colorize param.
+	Likewise for the "two expanded_locations" overload.
+	(gfc_diagnostic_text_starter): Update for above changes.
+	(gfc_diagnostic_start_span): Update for change to callback type.
+
+2024-09-30  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/81265
+	* trans-expr.cc (gfc_conv_procedure_call): Ensure coarrays use a
+	descriptor when passed.
+
 2024-09-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* check.cc (intrinsic_type_check): Handle unsigned.

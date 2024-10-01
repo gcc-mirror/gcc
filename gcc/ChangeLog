@@ -1,3 +1,568 @@
+2024-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ipa/113996
+	* ipa-icf.cc (sem_function::get_hash): Hash DECL_STATIC_CHAIN.
+	(sem_function::equals_wpa): Compare it.
+	(sem_function::equals_private): Likewise.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-show-locus.cc
+	(selftest::test_diagnostic_show_locus_unknown_location): Move call
+	to dc.test_show_locus into ASSERT_STREQ, and compare against its
+	result, rather than explicitly using dc.m_printer.
+	(selftest::test_one_liner_simple_caret): Likewise.
+	(selftest::test_one_liner_no_column): Likewise.
+	(selftest::test_one_liner_caret_and_range): Likewise.
+	(selftest::test_one_liner_multiple_carets_and_ranges): Likewise.
+	(selftest::test_one_liner_fixit_insert_before): Likewise.
+	(selftest::test_one_liner_fixit_insert_after): Likewise.
+	(selftest::test_one_liner_fixit_remove): Likewise.
+	(selftest::test_one_liner_fixit_replace): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range):
+	Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range):
+	Likewise.
+	(selftest::test_one_liner_fixit_validation_adhoc_locations):
+	Likewise.
+	(selftest::test_one_liner_many_fixits_1): Likewise.
+	(selftest::test_one_liner_many_fixits_2): Likewise.
+	(selftest::test_one_liner_labels): Likewise.
+	(selftest::test_one_liner_simple_caret_utf8): Likewise.
+	(selftest::test_one_liner_multiple_carets_and_ranges_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_insert_before_utf8): Likewise.
+	(selftest::test_one_liner_fixit_insert_after_utf8): Likewise.
+	(selftest::test_one_liner_fixit_remove_utf8): Likewise.
+	(selftest::test_one_liner_fixit_replace_utf8): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_validation_adhoc_locations_utf8):
+	Likewise.
+	(selftest::test_one_liner_many_fixits_1_utf8): Likewise.
+	(selftest::test_one_liner_many_fixits_2_utf8): Likewise.
+	(selftest::test_one_liner_labels_utf8): Likewise.
+	(selftest::test_one_liner_colorized_utf8): Likewise.
+	(selftest::test_add_location_if_nearby): Likewise.
+	(selftest::test_diagnostic_show_locus_fixit_lines): Likewise.
+	(selftest::test_overlapped_fixit_printing): Likewise.
+	(selftest::test_overlapped_fixit_printing_utf8): Likewise.
+	(selftest::test_overlapped_fixit_printing_utf8): Likewise.
+	(selftest::test_overlapped_fixit_printing_2): Likewise.
+	(selftest::test_fixit_insert_containing_newline): Likewise.
+	(selftest::test_fixit_insert_containing_newline_2): Likewise.
+	(selftest::test_fixit_replace_containing_newline): Likewise.
+	(selftest::test_fixit_deletion_affecting_newline): Likewise.
+	(selftest::test_tab_expansion): Likewise.
+	(selftest::test_escaping_bytes_1): Likewise.
+	(selftest::test_escaping_bytes_2): Likewise.
+	(selftest::test_line_numbers_multiline_range): Likewise.
+	* selftest-diagnostic.cc
+	(selftest::test_diagnostic_context::test_show_locus): Return the
+	formatted text of m_printer.
+	* selftest-diagnostic.h
+	(selftest::test_diagnostic_context::test_show_locus): Convert
+	return type from void to const char *.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-show-locus.cc (diagnostic_context::maybe_show_locus):
+	Convert param "pp" from * to &.  Drop logic for using the
+	context's m_printer when the param is null.
+	* diagnostic.h (diagnostic_context::maybe_show_locus): Convert
+	param "pp" from * to &.
+	(diagnostic_show_locus): Drop default "nullptr" value for pp
+	param.  Assert that it and context are nonnull.  Pass pp by
+	reference to maybe_show_locus.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-format-json.cc (json_from_expanded_location): Replace
+	call to diagnostic_context::converted_column with call to
+	diagnostic_column_policy::converted_column.
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Replace call to
+	diagnostic_show_locus with call to
+	diagnostic_source_print_policy::print.
+	* diagnostic-format-text.cc (get_location_text): Replace call to
+	diagnostic_context::get_location_text with call to
+	diagnostic_column_policy::get_location_text.
+	(diagnostic_text_output_format::report_current_module): Replace call
+	to diagnostic_context::converted_column with call to
+	diagnostic_column_policy::converted_column.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::diagnostic_output_format):
+	Initialize m_column_policy.
+	(diagnostic_text_output_format::get_column_policy): New.
+	(diagnostic_text_output_format::m_column_policy): New.
+	* diagnostic-path.cc (class path_print_policy): New.
+	(event_range::maybe_add_event): Replace diagnostic_context param
+	with path_print_policy.
+	(event_range::print): Convert "pp" from * to &.  Convert first
+	param of start_span callback from diagnostic_context to
+	diagnostic_location_print_policy.
+	(path_summary::path_summary): Convert first param from
+	diagnostic_text_output_format to path_print_policy.  Add
+	colorize param.  Update for changes to
+	event_range::maybe_add_event.
+	(thread_event_printer::print_swimlane_for_event_range): Assert
+	that pp is non-null.  Update for change to event_range::print.
+	(diagnostic_text_output_format::print_path): Pass
+	path_print_policy to path_summary's ctor.
+	(selftest::test_empty_path): Likewise.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	* diagnostic-show-locus.cc (colorizer::set_range): Update for
+	change to m_pp.
+	(colorizer::m_pp): Convert from * to &.
+	(class layout): Add friend class layout_printer and move various
+	decls to it.
+	(layout::m_pp): Drop field.
+	(layout::m_policy): Rename to...
+	(layout::m_char_policy): ...this.
+	(layout::m_colorizer): Move field to class layout_printer.
+	(layout::m_diagnostic_path_p): Drop field.
+	(class layout_printer): New class, by refactoring class layout.
+	(colorizer::colorizer): Convert "pp" param from * to &.
+	(colorizer::set_named_color): Update for above change.
+	(colorizer::begin_state): Likewise.
+	(colorizer::finish_state): Likewise.
+	(make_policy): Rename to...
+	(make_char_policy): ...this, and update param from
+	diagnostic_context to diagnostic_source_print_policy.
+	(layout::layout): Update param from diagnostic_context to
+	diagnostic_source_print_policy.  Drop params "diagnostic_kind" and
+	"pp", moving these and other material to class layout_printer.
+	(layout::maybe_add_location_range): Update for renamed field.
+	(layout::print_gap_in_line_numbering): Convert to...
+	(layout_printer::print_gap_in_line_numbering): ...this.
+	(layout::calculate_x_offset_display): Update for renamed field.
+	(layout::print_source_line): Convert to...
+	(layout_printer::print_source_line): ...this.
+	(layout::print_leftmost_column): Convert to...
+	(layout_printer::print_leftmost_column): ...this.
+	(layout::start_annotation_line): Convert to...
+	(layout_printer::start_annotation_line): ...this.
+	(layout::print_annotation_line): Convert to...
+	(layout_printer::print_annotation_line): ...this.
+	(layout::print_any_labels): Convert to...
+	(layout_printer::print_any_labels): ...this.
+	(layout::print_leading_fixits): Convert to...
+	(layout_printer::print_leading_fixits): ...this.
+	(layout::print_trailing_fixits): Convert to...
+	(layout_printer::print_trailing_fixits): ...this.
+	(layout::print_newline): Convert to...
+	(layout_printer::print_newline): ...this.
+	(layout::get_state_at_point): Make const.
+	(layout::get_x_bound_for_row): Make const.
+	(layout::move_to_column): Convert to...
+	(layout_printer::move_to_column): ...this.
+	(layout::show_ruler): Convert to...
+	(layout_printer::show_ruler): ...this.
+	(layout::print_line): Convert to...
+	(layout_printer::print_line): ...this.
+	(layout::print_any_right_to_left_edge_lines): Convert to...
+	(layout_printer::print_any_right_to_left_edge_lines): ...this.
+	(layout::print_any_right_to_left_edge_lines): Likewise.
+	(layout_printer::layout_printer): New.
+	(layout::update_any_effects): Delete, moving logic to
+	layout_printer::print.
+	(gcc_rich_location::add_location_if_nearby): Update param from
+	diagnostic_context to diagnostic_source_print_policy.  Add
+	overload taking a diagnostic_context.
+	(diagnostic_context::maybe_show_locus): Move handling of null
+	pretty_printer here, from layout ctor.  Convert call to
+	diagnostic_context::show_locus to
+	diagnostic_source_print_policy::print.
+	(diagnostic_source_print_policy::diagnostic_source_print_policy):
+	New.
+	(diagnostic_context::show_locus): Convert to...
+	(diagnostic_source_print_policy::print): ...this.  Convert pp
+	from * to &.
+	(layout_printer::print): New, based on material in
+	diagnostic_context::show_locus.
+	(selftest::make_char_policy): New.
+	(selftest::test_display_widths): Update for above changes.
+	(selftest::test_offset_impl): Likewise.
+	(selftest::test_layout_x_offset_display_utf8): Likewise.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_diagnostic_show_locus_unknown_location): Use
+	test_diagnostic_context::test_show_locus rather than
+	diagnostic_show_locus.
+	(selftest::test_one_liner_no_column): Likewise.
+	(selftest::test_one_liner_caret_and_range): Likewise.
+	(selftest::test_one_liner_multiple_carets_and_ranges): Likewise.
+	(selftest::test_one_liner_fixit_insert_before): Likewise.
+	(selftest::test_one_liner_fixit_insert_after): Likewise.
+	(selftest::test_one_liner_fixit_remove): Likewise.
+	(selftest::test_one_liner_fixit_replace): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range):
+	Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range):
+	Likewise.
+	(selftest::test_one_liner_fixit_validation_adhoc_locations):
+	Likewise.
+	(selftest::test_one_liner_many_fixits_1): Likewise.
+	(selftest::test_one_liner_many_fixits_2): Likewise.
+	(selftest::test_one_liner_labels): Likewise.
+	(selftest::test_one_liner_simple_caret_utf8): Likewise.
+	(selftest::test_one_liner_caret_and_range_utf8): Likewise.
+	(selftest::test_one_liner_multiple_carets_and_ranges_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_insert_before_utf8): Likewise.
+	(selftest::test_one_liner_fixit_insert_after_utf8): Likewise.
+	(selftest::test_one_liner_fixit_remove_utf8): Likewise.
+	(selftest::test_one_liner_fixit_replace_utf8): Likewise.
+	(selftest::test_one_liner_fixit_replace_non_equal_range_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_replace_equal_secondary_range_utf8):
+	Likewise.
+	(selftest::test_one_liner_fixit_validation_adhoc_locations_utf8):
+	Likewise.
+	(selftest::test_one_liner_many_fixits_1_utf8): Likewise.
+	(selftest::test_one_liner_many_fixits_2_utf8): Likewise.
+	(selftest::test_one_liner_labels_utf8): Likewise.
+	(selftest::test_one_liner_colorized_utf8): Likewise.
+	(selftest::test_add_location_if_nearby): Likewise.
+	(selftest::test_diagnostic_show_locus_fixit_lines): Likewise.
+	(selftest::test_overlapped_fixit_printing): Likewise.
+	(selftest::test_overlapped_fixit_printing_utf8): Likewise.
+	(selftest::test_overlapped_fixit_printing_2): Likewise.
+	(selftest::test_fixit_insert_containing_newline): Likewise.
+	(selftest::test_fixit_insert_containing_newline_2): Likewise.
+	(selftest::test_fixit_replace_containing_newline): Likewise.
+	(selftest::test_fixit_deletion_affecting_newline): Likewise.
+	(selftest::test_tab_expansion): Likewise.
+	(selftest::test_escaping_bytes_1): Likewise.
+	(selftest::test_escaping_bytes_2): Likewise.
+	(selftest::test_line_numbers_multiline_range): Likewise.
+	* diagnostic.cc
+	(diagnostic_column_policy::diagnostic_column_policy): New.
+	(diagnostic_context::converted_column): Convert to...
+	(diagnostic_column_policy::converted_column): ...this.
+	(diagnostic_context::get_location_text): Convert to...
+	(diagnostic_column_policy::get_location_text): ...this, adding
+	"show_column" param.
+	(diagnostic_location_print_policy::diagnostic_location_print_policy):
+	New ctors.
+	(default_diagnostic_start_span_fn): Convert param from
+	diagnostic_context * to const diagnostic_location_print_policy &.
+	Add "pp" param.
+	(selftest::assert_location_text): Update for above changes.
+	(selftest::test_diagnostic_get_location_text): Rename to...
+	(selftest::test_get_location_text): ...this.
+	(selftest::c_diagnostic_cc_tests): Update for renaming.
+	* diagnostic.h (class diagnostic_location_print_policy): New
+	forward decl.
+	(class diagnostic_source_print_policy): New forward decl.
+	(diagnostic_start_span_fn): Convert first param from
+	diagnostic_context * to const diagnostic_location_print_policy &
+	and add pretty_printer * param.
+	(class diagnostic_column_policy): New.
+	(class diagnostic_location_print_policy): New.
+	(class diagnostic_source_print_policy): New.
+	(class diagnostic_context): Add friend class
+	diagnostic_source_print_policy.
+	(diagnostic_context::converted_column): Drop decl in favor of
+	diagnostic_column_policy::converted_column.
+	(diagnostic_context::get_location_text): Drop decl in favor of
+	diagnostic_column_policy::get_location_text.
+	(diagnostic_context::show_locus): Drop decl in favor of
+	diagnostic_source_print_policy::print.
+	(default_diagnostic_start_span_fn): Update for change to
+	diagnostic_start_span_fn.
+	* gcc-rich-location.h (class diagnostic_source_print_policy): New
+	forward decl.
+	(gcc_rich_location::add_location_if_nearby): Convert first param
+	from diagnostic_context to diagnostic_source_print_policy.  Add
+	overload taking diagnostic_context.
+	* selftest-diagnostic.cc
+	(selftest::test_diagnostic_context::test_diagnostic_context): Turn
+	off colorization.
+	(selftest::test_diagnostic_context::start_span_cb): Update for
+	change to callback type.
+	(test_diagnostic_context::test_show_locus): New.
+	* selftest-diagnostic.h
+	(selftest::test_diagnostic_context::start_span_cb): Update for
+	change to callback type.
+	(test_diagnostic_context::test_show_locus): New decl.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-format-json.cc (diagnostic_output_format_init_json):
+	Pass in the format.  Use the format's printer when disabling
+	colorization.  Move the call to set_output_format into here.
+	(diagnostic_output_format_init_json_stderr): Update for above
+	change.
+	(diagnostic_output_format_init_json_file): Likewise.
+	* diagnostic-format-sarif.cc
+	(diagnostic_output_format_init_sarif): Use the format's printer
+	when disabling colorization.
+	* diagnostic-path.cc (selftest::test_empty_path): Use the
+	text_output's printer.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* attribs.cc: Include "pretty-print-markup.h".
+	(decls_mismatched_attributes): Defer colorization choices by
+	replacing printing to a pretty_printer * param with appending
+	to a vec of strings.
+	(maybe_diag_alias_attributes): As above, replacing pretty_printer
+	with usage of pp_markup::comma_separated_quoted_strings and "%e"
+	in two places.
+	* attribs.h (decls_mismatched_attributes): Update decl.
+	* gimple-ssa-warn-access.cc: Include "pretty-print-markup.h".
+	(pass_waccess::maybe_warn_memmodel): Defer colorization choices by
+	replacing printing to a pretty_printer * param with use of
+	pp_markup::comma_separated_quoted_strings and "%e".
+	(pass_waccess::maybe_warn_memmodel): Likewise, replacing printing
+	to a temporary buffer.
+	* pretty-print-markup.h
+	(class pp_markup::comma_separated_quoted_strings): New.
+	* pretty-print.cc
+	(pp_markup::comma_separated_quoted_strings::add_to_phase_2): New.
+	(selftest::test_pp_printf_within_pp_element): New.
+	(selftest::test_comma_separated_quoted_strings): New.
+	(selftest::pretty_print_cc_tests): Call the new tests.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.cc (output_buffer::dump): New.
+	(pretty_printer::dump): New.
+	* pretty-print.h (output_buffer::dump): New decls.
+	(pretty_printer::dump): New decls.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_builder::~sarif_builder): New,
+	deleting any remaining artifact objects.
+	(sarif_builder::make_run_object): Empty the artifact map.
+	* ordered-hash-map.h (ordered_hash_map::empty): New.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/c6x/c6x.md (sdot_prodv2hi): Renamed to...
+	(sdot_prodsiv2hi): ...this.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/rs6000/altivec.md (udot_prod<mode>): Renamed to...
+	(udot_prodv4si<mode>): ...this.
+	(sdot_prodv8hi): Renamed to...
+	(sdot_prodv4siv8hi): ...this.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/mips/loongson-mmi.md (sdot_prodv4hi): Renamed to...
+	(sdot_prodv2siv4hi): ...this.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/arc/simdext.md (sdot_prodv2hi): Renamed to...
+	(sdot_prodsiv2hi): ...this.
+	(udot_prodv2hi): Renamed to...
+	(udot_prodsiv2hi): ...this.
+	(sdot_prodv4hi): Renamed to...
+	(sdot_prodv2siv4hi): ...this.
+	(udot_prodv4hi): Renamed to...
+	(udot_prodv2siv4hi): ...this.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/i386/mmx.md (usdot_prodv8qi): Renamed to...
+	(usdot_prodv2siv8qi): ...this.
+	(sdot_prodv8qi): Renamed to...
+	(sdot_prodv2siv8qi): ...this.
+	(udot_prodv8qi): Renamed to...
+	(udot_prodv2siv8qi): ...this.
+	(usdot_prodv4hi): Renamed to...
+	(usdot_prodv2siv4hi): ...this.
+	(udot_prodv4hi): Renamed to...
+	(udot_prodv2siv4hi): ...this.
+	(sdot_prodv4hi): Renamed to...
+	(sdot_prodv2siv4hi): ...this.
+	* config/i386/sse.md (sdot_prod<mode>): Renamed to...
+	(sdot_prod<sseunpackmodelower><mode>): ...this.
+	(sdot_prodv4si): Renamed to...
+	(sdot_prodv2div4si): ...this.
+	(usdot_prod<mode>): Renamed to...
+	(usdot_prod<ssedvecmodelower><mode>): ...this.
+	(sdot_prod<mode>): Renamed to...
+	(sdot_prod<ssedvecmodelower><mode>): ...this.
+	(sdot_prodv64qi): Renamed to...
+	(sdot_prodv16siv64qi): ...this.
+	(udot_prod<mode>): Renamed to...
+	(udot_prod<ssedvecmodelower><mode>): ...this.
+	(udot_prodv64qi): Renamed to...
+	(udot_prodv16qiv64qi): ...this.
+	(usdot_prod<mode>): Renamed to...
+	(usdot_prod<sseunpackmodelower><mode>): ...this.
+	(udot_prod<mode>): Renamed to...
+	(udot_prod<sseunpackmodelower><mode>): ...this.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/arm/neon.md (<sup>dot_prod<vsi2qi>): Renamed to...
+	(<sup>dot_prod<mode><vsi2qi>): ...this.
+	(neon_<sup>dot<vsi2qi>): Renamed to...
+	(neon_<sup>dot<mode><vsi2qi>): ...this.
+	(neon_usdot<vsi2qi>): Renamed to...
+	(neon_usdot<mode><vsi2qi>): ...this.
+	(usdot_prod<vsi2qi>): Renamed to...
+	(usdot_prod<mode><vsi2qi>): ...this.
+	* config/arm/arm-builtins.cc
+	(CODE_FOR_neon_sdotv8qi): Definie as alias to
+	new CODE_FOR_neon_sdotv2siv8qi.
+	(CODE_FOR_neon_udotv8qi): Definie as alias to
+	new CODE_FOR_neon_udotv2siv8qi.
+	(CODE_FOR_neon_usdotv8qi): Definie as alias to
+	new CODE_FOR_neon_usdotv2siv8qi.
+	(CODE_FOR_neon_sdotv16qi): Definie as alias to
+	new CODE_FOR_neon_sdotv4siv16qi.
+	(CODE_FOR_neon_udotv16qi): Definie as alias to
+	new CODE_FOR_neon_udotv4siv16qi.
+	(CODE_FOR_neon_usdotv16qi): Definie as alias to
+	new CODE_FOR_neon_usdotv4siv16qi.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(<sur>dot_prod<vsi2qi><vczle><vczbe>): Renamed to...
+	(<sur>dot_prod<mode><vsi2qi><vczle><vczbe>): ...this.
+	(usdot_prod<vsi2qi><vczle><vczbe>): Renamed to...
+	(usdot_prod<mode><vsi2qi><vczle><vczbe>): ...this.
+	(<su>sadv16qi): Adjust call to gen_udot_prod take second mode.
+	(popcount<mode2>): fix use of `udot_prod_optab'.
+	* config/aarch64/aarch64-sve.md
+	(<sur>dot_prod<vsi2qi>): Renamed to...
+	(<sur>dot_prod<mode><vsi2qi>): ...this.
+	(@<sur>dot_prod<vsi2qi>): Renamed to...
+	(@<sur>dot_prod<mode><vsi2qi>): ...this.
+	(<su>sad<vsi2qi>): Adjust call to gen_udot_prod take second mode.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_<sur>dotvnx4sivnx8hi): Renamed to...
+	(<sur>dot_prodvnx4sivnx8hi): ...this.
+	* config/aarch64/aarch64-simd-builtins.def: Modify macro
+	expansion-based initialization and expansion
+	of (u|s|us)dot_prod builtins.
+	* config/aarch64/aarch64-builtins.cc
+	(CODE_FOR_aarch64_sdot_prodv8qi): Define as alias to
+	new CODE_FOR_sdot_prodv2siv8qi.
+	(CODE_FOR_aarch64_udot_prodv8qi): Define as alias to
+	new CODE_FOR_udot_prodv2siv8qi.
+	(CODE_FOR_aarch64_usdot_prodv8qi): Define as alias to
+	new CODE_FOR_usdot_prodv2siv8qi.
+	(CODE_FOR_aarch64_sdot_prodv16qi): Define as alias to
+	new CODE_FOR_sdot_prodv4siv16qi.
+	(CODE_FOR_aarch64_udot_prodv16qi): Define as alias to
+	new CODE_FOR_udot_prodv4siv16qi.
+	(CODE_FOR_aarch64_usdot_prodv16qi): Define as alias to
+	new CODE_FOR_usdot_prodv4siv16qi.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdot_impl::expand): s/direct/convert/ in
+	`convert_optab_handler_for_sign' function call.
+	(svusdot_impl::expand): add second mode argument in call to
+	`code_for_dot_prod'.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::convert_optab_handler_for_sign): New class
+	method.
+	* config/aarch64/aarch64-sve-builtins.h
+	(class function_expander): Add prototype for new
+	`convert_optab_handler_for_sign' method.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gimple-match-exports.cc (directly_supported_p): Add overload
+	for conversion-type optabs.
+	* gimple-match.h (directly_supported_p): Add new function
+	prototype.
+	* optabs.cc (expand_widen_pattern_expr): Make the
+	DOT_PROD_EXPR tree code use `find_widening_optab_handler' to
+	retrieve icode.
+	* tree-vect-loop.cc (vect_is_emulated_mixed_dot_prod): make it
+	call conversion-type overloaded `directly_supported_p'.
+	* tree-vect-patterns.cc (vect_supportable_conv_optab_p): New.
+	(vect_recog_dot_prod_pattern): s/direct/conv/ in call to
+	`vect_supportable_direct_optab_p'.
+
+2024-09-30  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* optabs.def (sdot_prod_optab): Convert from OPTAB_D to
+	OPTAB_CD.
+	(udot_prod_optab): Likewise.
+	(usdot_prod_optab): Likewise.
+	* doc/md.texi (Standard Names): update entries for u,s and us
+	dot_prod names.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116879
+	* tree-vect-loop.cc (vect_analyze_loop_form): Scan all
+	blocks that form the latch.
+
+2024-09-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116817
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Check for const or
+	externals.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116842
+	* tree-vect-stmts.cc (hoist_defs_of_uses): Sort stmts to hoist
+	after UID to avoid breaking vect_stmt_dominates_stmt_p.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116785
+	* tree-ssa-structalias.cc (get_constraint_for_1): Only
+	volatile qualified reads produce ANYTHING.
+
+2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116850
+	* gimple-ssa-isolate-paths.cc (bb_split_points): New global.
+	(insert_trap): Delay BB splitting if post-doms are computed.
+	(find_explicit_erroneous_behavior): Process delayed BB
+	splitting after releasing post dominators.
+	(gimple_ssa_isolate_erroneous_paths): Do not free post-dom
+	info here.
+
+2024-09-30  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 1 matching pattern for signed SAT_SUB.
+	* tree-ssa-math-opts.cc (gimple_signed_integer_sat_sub): Add new
+	decl for generated SAT_SUB matching func.
+	(match_unsigned_saturation_sub): Rename from...
+	(match_saturation_sub): ...Rename to and add signed SAT_SUB matching.
+	(math_opts_dom_walker::after_dom_children): Leverage the named
+	match func for both the unsigned and signed SAT_SUB.
+
 2024-09-29  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-protos.h (riscv_expand_sssub): Add new func
