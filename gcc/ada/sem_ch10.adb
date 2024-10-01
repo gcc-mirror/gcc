@@ -3039,7 +3039,8 @@ package body Sem_Ch10 is
 
          --  Self-referential withs are always useless, so warn
 
-         if Warn_On_Redundant_Constructs then
+         if Warn_On_Redundant_Constructs and then False then -- ???
+            --  Disable for now, because it breaks SPARK builds
             Error_Msg_N ("unnecessary with of self?r?", N);
          end if;
 
