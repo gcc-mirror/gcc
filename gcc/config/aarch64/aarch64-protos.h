@@ -1236,4 +1236,7 @@ void aarch64_expand_reversed_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 
 extern bool aarch64_gcs_enabled ();
 
+extern unsigned aarch64_data_alignment (const_tree exp, unsigned align);
+extern unsigned aarch64_stack_alignment (const_tree exp, unsigned align);
+
 #endif /* GCC_AARCH64_PROTOS_H */

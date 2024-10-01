@@ -2678,6 +2678,60 @@ aarch64_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   return align;
 }
 
+/* Align definitions of arrays, unions and structures so that
+   initializations and copies can be made more efficient.  This is not
+   ABI-changing, so it only affects places where we can see the
+   definition.  Increasing the alignment tends to introduce padding,
+   so don't do this when optimizing for size/conserving stack space.  */
+
+unsigned
+aarch64_data_alignment (const_tree type, unsigned align)
+{
+  if (optimize_size)
+    return align;
+
+  if (AGGREGATE_TYPE_P (type))
+    {
+      unsigned HOST_WIDE_INT size = 0;
+
+      if (TYPE_SIZE (type) && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && tree_fits_uhwi_p (TYPE_SIZE (type)))
+	size = tree_to_uhwi (TYPE_SIZE (type));
+
+      /* Align small structs/arrays to 32 bits, or 64 bits if larger.  */
+      if (align < 32 && size <= 32)
+	align = 32;
+      else if (align < 64)
+	align = 64;
+    }
+
+  return align;
+}
+
+unsigned
+aarch64_stack_alignment (const_tree type, unsigned align)
+{
+  if (flag_conserve_stack)
+    return align;
+
+  if (AGGREGATE_TYPE_P (type))
+    {
+      unsigned HOST_WIDE_INT size = 0;
+
+      if (TYPE_SIZE (type) && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && tree_fits_uhwi_p (TYPE_SIZE (type)))
+	size = tree_to_uhwi (TYPE_SIZE (type));
+
+      /* Align small structs/arrays to 32 bits, or 64 bits if larger.  */
+      if (align < 32 && size <= 32)
+	align = 32;
+      else if (align < 64)
+	align = 64;
+    }
+
+  return align;
+}
+
 /* Return true if calls to DECL should be treated as
    long-calls (ie called via a register).  */
 static bool
