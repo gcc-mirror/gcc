@@ -8341,10 +8341,9 @@ package body Freeze is
 
       function In_Expanded_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node, determines whether it
-      --  is the statement sequence of an expander-generated subprogram: body
-      --  created for an expression function, for a predicate function, an init
-      --  proc, a stream subprogram, or a renaming as body. If so, this is not
-      --  a freezing context and the entity will be frozen at a later point.
+      --  is the statement sequence of an expander-generated subprogram body or
+      --  of a renaming_as_body. If so, this is not a freezing context and the
+      --  entity will be frozen at a later point.
 
       function Has_Decl_In_List
         (E : Entity_Id;
@@ -8464,8 +8463,8 @@ package body Freeze is
          else
             Id := Defining_Unit_Name (Specification (P));
 
-            --  The following are expander-created bodies, or bodies that
-            --  are not freeze points.
+            --  This is the body of a Type-Specific Support routine or the one
+            --  generated for a renaming_as_body.
 
             if Nkind (Id) = N_Defining_Identifier
               and then (Is_Init_Proc (Id)
