@@ -1219,12 +1219,12 @@ odr_equivalent_or_derived_p (tree t1, tree t2)
   if (in_lto_p)
     {
       if (odr_types_equivalent_p (t1, t2))
-       return true;
+	return true;
     }
   else
     {
       if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-       return true;
+	return true;
     }
   if (!TYPE_BINFO (t2))
     return false;

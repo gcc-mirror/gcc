@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef struct eh_region_d *eh_region;
 typedef struct eh_landing_pad_d *eh_landing_pad;
+typedef struct eh_landing_pad_d *eh_landing_pad;
 
 extern void using_eh_for_cleanups (void);
 extern void add_stmt_to_eh_lp (gimple *, int);
@@ -31,6 +32,8 @@ extern bool remove_stmt_from_eh_lp (gimple *);
 extern int lookup_stmt_eh_lp_fn (struct function *, const gimple *);
 extern int lookup_stmt_eh_lp (const gimple *);
 extern bool make_eh_dispatch_edges (geh_dispatch *);
+extern bool match_lp (eh_landing_pad, vec<tree> *);
+extern void update_stmt_eh_region(gimple *);
 extern bool match_lp (eh_landing_pad, vec<tree> *);
 extern void update_stmt_eh_region(gimple *);
 extern edge make_eh_edge (gimple *);
