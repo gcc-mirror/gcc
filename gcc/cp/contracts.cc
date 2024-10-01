@@ -2421,7 +2421,6 @@ copy_and_remap_contracts (tree dest, tree source, bool remap_post = true)
       a = CONTRACT_CHAIN (a))
     {
       tree c = copy_node (a);
-      tree contract = CONTRACT_STATEMENT (c);
       TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
 					copy_node (CONTRACT_STATEMENT (c)));
 
