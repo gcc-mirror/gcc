@@ -1239,13 +1239,16 @@ ranger_cache::block_range (vrange &r, basic_block bb, tree name, bool calc)
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
       basic_block def_bb = NULL;
       if (def_stmt)
-	def_bb = gimple_bb (def_stmt);;
+	def_bb = gimple_bb (def_stmt);
       if (!def_bb)
 	{
 	  // If we get to the entry block, this better be a default def
 	  // or range_on_entry was called for a block not dominated by
-	  // the def.  
-	  gcc_checking_assert (SSA_NAME_IS_DEFAULT_DEF (name));
+	  // the def.  But it could be also SSA_NAME defined by a statement
+	  // not yet in the IL (such as queued edge insertion), in that case
+	  // just punt.
+	  if (!SSA_NAME_IS_DEFAULT_DEF (name))
+	    return false;
 	  def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 	}
 
