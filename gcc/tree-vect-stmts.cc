@@ -9788,20 +9788,6 @@ permute_vec_elements (vec_info *vinfo,
   return data_ref;
 }
 
-/* Comparator for qsort, sorting after GIMPLE UID.  */
-
-static int
-sort_after_uid (const void *a_, const void *b_)
-{
-  const gimple *a = *(const gimple * const *)a_;
-  const gimple *b = *(const gimple * const *)b_;
-  if (gimple_uid (a) < gimple_uid (b))
-    return -1;
-  else if (gimple_uid (a) > gimple_uid (b))
-    return 1;
-  return 0;
-}
-
 /* Hoist the definitions of all SSA uses on STMT_INFO out of the loop LOOP,
    inserting them on the loops preheader edge.  Returns true if we
    were successful in doing so (and thus STMT_INFO can be moved then),
@@ -9809,15 +9795,15 @@ sort_after_uid (const void *a_, const void *b_)
    definitions of all SSA uses, it would be false when we are costing.  */
 
 static bool
-hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
+hoist_defs_of_uses (gimple *stmt, class loop *loop, bool hoist_p)
 {
   ssa_op_iter i;
-  tree op;
-  auto_vec<gimple *, 8> to_hoist;
+  use_operand_p use_p;
+  auto_vec<use_operand_p, 8> to_hoist;
 
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt_info->stmt, i, SSA_OP_USE)
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_USE)
     {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (op);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (USE_FROM_PTR (use_p));
       if (!gimple_nop_p (def_stmt)
 	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
 	{
@@ -9827,7 +9813,9 @@ hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
 	     dependencies within them.  */
 	  tree op2;
 	  ssa_op_iter i2;
-	  if (gimple_code (def_stmt) == GIMPLE_PHI)
+	  if (gimple_code (def_stmt) == GIMPLE_PHI
+	      || (single_ssa_def_operand (def_stmt, SSA_OP_DEF)
+		  == NULL_DEF_OPERAND_P))
 	    return false;
 	  FOR_EACH_SSA_TREE_OPERAND (op2, def_stmt, i2, SSA_OP_USE)
 	    {
@@ -9836,7 +9824,7 @@ hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
 		  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt2)))
 		return false;
 	    }
-	  to_hoist.safe_push (def_stmt);
+	  to_hoist.safe_push (use_p);
 	}
     }
 
@@ -9846,14 +9834,21 @@ hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop, bool hoist_p)
   if (!hoist_p)
     return true;
 
-  /* Preserve UID order, otherwise we break dominance checks.  */
-  to_hoist.qsort (sort_after_uid);
-
-  for (gimple *def_stmt : to_hoist)
+  /* Instead of moving defs we copy them so we can zero their UID to not
+     confuse dominance queries in the preheader.  */
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  for (use_operand_p use_p : to_hoist)
     {
-      gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
-      gsi_remove (&gsi, false);
-      gsi_insert_on_edge_immediate (loop_preheader_edge (loop), def_stmt);
+      gimple *def_stmt = SSA_NAME_DEF_STMT (USE_FROM_PTR (use_p));
+      gimple *copy = gimple_copy (def_stmt);
+      gimple_set_uid (copy, 0);
+      def_operand_p def_p = single_ssa_def_operand (def_stmt, SSA_OP_DEF);
+      tree new_def = duplicate_ssa_name (DEF_FROM_PTR (def_p), copy);
+      update_stmt (copy);
+      def_p = single_ssa_def_operand (copy, SSA_OP_DEF);
+      SET_DEF (def_p, new_def);
+      SET_USE (use_p, new_def);
+      gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
     }
 
   return true;
@@ -10227,7 +10222,7 @@ vectorizable_load (vec_info *vinfo,
 	 transform time.  */
       bool hoist_p = (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
 		      && !nested_in_vect_loop
-		      && hoist_defs_of_uses (stmt_info, loop, !costing_p));
+		      && hoist_defs_of_uses (stmt_info->stmt, loop, false));
       if (costing_p)
 	{
 	  enum vect_cost_model_location cost_loc
@@ -10264,6 +10259,7 @@ vectorizable_load (vec_info *vinfo,
 	  gimple *new_stmt = gimple_build_assign (scalar_dest, rhs);
 	  gimple_set_vuse (new_stmt, vuse);
 	  gsi_insert_on_edge_immediate (pe, new_stmt);
+	  hoist_defs_of_uses (new_stmt, loop, true);
 	}
       /* These copies are all equivalent.  */
       if (hoist_p)
