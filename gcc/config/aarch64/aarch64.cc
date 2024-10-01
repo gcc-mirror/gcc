@@ -22507,6 +22507,10 @@ aarch64_mangle_type (const_tree type)
 	return "Dh";
     }
 
+  /* Modal 8 bit floating point types.  */
+  if (TYPE_MAIN_VARIANT (type) == aarch64_mfp8_type_node)
+    return "u6__mfp8";
+
   /* Mangle AArch64-specific internal types.  TYPE_NAME is non-NULL_TREE for
      builtin types.  */
   if (TYPE_NAME (type) != NULL)
@@ -22518,6 +22522,29 @@ aarch64_mangle_type (const_tree type)
     }
 
   /* Use the default mangling.  */
+  return NULL;
+}
+
+/* Implement TARGET_INVALID_CONVERSION.  */
+
+static const char *
+aarch64_invalid_conversion (const_tree fromtype, const_tree totype)
+{
+  /* Do not allow conversions to/from FP8. But do allow conversions between
+     volatile and const variants of __mfp8. */
+  bool fromtype_is_fp8
+      = (TYPE_MAIN_VARIANT (fromtype) == aarch64_mfp8_type_node);
+  bool totype_is_fp8 = (TYPE_MAIN_VARIANT (totype) == aarch64_mfp8_type_node);
+
+  if (fromtype_is_fp8 && totype_is_fp8)
+    return NULL;
+
+  if (fromtype_is_fp8)
+    return N_ ("invalid conversion from type %<mfloat8_t%>");
+  if (totype_is_fp8)
+    return N_ ("invalid conversion to type %<mfloat8_t%>");
+
+  /* Conversion allowed.  */
   return NULL;
 }
 
@@ -29071,8 +29098,20 @@ aarch64_stack_protect_guard (void)
   return NULL_TREE;
 }
 
-/* Return the diagnostic message string if the binary operation OP is
-   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+/* Implement TARGET_INVALID_UNARY_OP.  */
+
+static const char *
+aarch64_invalid_unary_op (int op, const_tree type)
+{
+  /* Reject all single-operand operations on __mfp8 except for &.  */
+  if (TYPE_MAIN_VARIANT (type) == aarch64_mfp8_type_node && op != ADDR_EXPR)
+    return N_ ("operation not permitted on type %<mfloat8_t%>");
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
+/* Implement TARGET_INVALID_BINARY_OP.  */
 
 static const char *
 aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
@@ -29085,6 +29124,11 @@ aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
       && (aarch64_sve::builtin_type_p (type1)
 	  != aarch64_sve::builtin_type_p (type2)))
     return N_("cannot combine GNU and SVE vectors in a binary operation");
+
+  /* Reject all 2-operand operations on __mfp8.  */
+  if (TYPE_MAIN_VARIANT (type1) == aarch64_mfp8_type_node
+      || TYPE_MAIN_VARIANT (type2) == aarch64_mfp8_type_node)
+    return N_ ("operation not permitted on type %<mfloat8_t%>");
 
   /* Operation allowed.  */
   return NULL;
@@ -30802,6 +30846,12 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION aarch64_invalid_conversion
+
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP aarch64_invalid_unary_op
 
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP aarch64_invalid_binary_op

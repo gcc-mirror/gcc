@@ -40,6 +40,8 @@ extern "C"
 {
 #endif
 
+  typedef __mfp8 mfloat8_t;
+
   typedef uint64_t fpm_t;
 
   enum __ARM_FPM_FORMAT

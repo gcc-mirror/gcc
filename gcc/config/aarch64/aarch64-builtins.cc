@@ -991,6 +991,11 @@ static GTY(()) tree aarch64_simd_intOI_type_node = NULL_TREE;
 static GTY(()) tree aarch64_simd_intCI_type_node = NULL_TREE;
 static GTY(()) tree aarch64_simd_intXI_type_node = NULL_TREE;
 
+/* The user-visible __mfp8 type, and a pointer to that type.  Used
+   across the back-end.  */
+tree aarch64_mfp8_type_node = NULL_TREE;
+tree aarch64_mfp8_ptr_type_node = NULL_TREE;
+
 /* The user-visible __fp16 type, and a pointer to that type.  Used
    across the back-end.  */
 tree aarch64_fp16_type_node = NULL_TREE;
@@ -1824,6 +1829,19 @@ aarch64_init_builtin_rsqrt (void)
   }
 }
 
+/* Initialize the backend type that supports the user-visible __mfp8
+   type and its relative pointer type.  */
+
+static void
+aarch64_init_fp8_types (void)
+{
+  aarch64_mfp8_type_node = make_unsigned_type (8);
+  SET_TYPE_MODE (aarch64_mfp8_type_node, QImode);
+
+  lang_hooks.types.register_builtin_type (aarch64_mfp8_type_node, "__mfp8");
+  aarch64_mfp8_ptr_type_node = build_pointer_type (aarch64_mfp8_type_node);
+}
+
 /* Initialize the backend types that support the user-visible __fp16
    type, also initialize a pointer to that type, to be used when
    forming HFAs.  */
@@ -2227,6 +2245,8 @@ void
 aarch64_general_init_builtins (void)
 {
   aarch64_init_fpsr_fpcr_builtins ();
+
+  aarch64_init_fp8_types ();
 
   aarch64_init_fp16_types ();
 
