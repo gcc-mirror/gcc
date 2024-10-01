@@ -34,6 +34,8 @@ extern int lookup_stmt_eh_lp (const gimple *);
 extern bool make_eh_dispatch_edges (geh_dispatch *);
 extern bool same_or_derived_type (tree, tree);
 extern bool match_lp (eh_landing_pad, vec<tree> *);
+extern void unlink_eh_region(eh_region , eh_region);
+extern void reinsert_eh_region(eh_region , eh_landing_pad);
 extern void update_stmt_eh_region(gimple *);
 extern edge make_eh_edge (gimple *);
 extern edge redirect_eh_edge (edge, basic_block);
