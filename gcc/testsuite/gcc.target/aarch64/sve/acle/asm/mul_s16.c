@@ -183,8 +183,7 @@ TEST_UNIFORM_Z (mul_3_s16_m_untied, svint16_t,
 
 /*
 ** mul_m1_s16_m:
-**	mov	(z[0-9]+)\.b, #-1
-**	mul	z0\.h, p0/m, z0\.h, \1\.h
+**	neg	z0\.h, p0/m, z0\.h
 **	ret
 */
 TEST_UNIFORM_Z (mul_m1_s16_m, svint16_t,
@@ -597,7 +596,7 @@ TEST_UNIFORM_Z (mul_255_s16_x, svint16_t,
 
 /*
 ** mul_m1_s16_x:
-**	mul	z0\.h, z0\.h, #-1
+**	neg	z0\.h, p0/m, z0\.h
 **	ret
 */
 TEST_UNIFORM_Z (mul_m1_s16_x, svint16_t,

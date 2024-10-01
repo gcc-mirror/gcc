@@ -768,6 +768,27 @@ public:
     if (integer_zerop (op1) || integer_zerop (op2))
       return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
 
+    /* If the divisor is all integer -1, fold to svneg.  */
+    tree pg = gimple_call_arg (f.call, 0);
+    if (!f.type_suffix (0).unsigned_p && integer_minus_onep (op2))
+      {
+	function_instance instance ("svneg", functions::svneg,
+				    shapes::unary, MODE_none,
+				    f.type_suffix_ids, GROUP_none, f.pred);
+	gcall *call = f.redirect_call (instance);
+	unsigned offset_index = 0;
+	if (f.pred == PRED_m)
+	  {
+	    offset_index = 1;
+	    gimple_call_set_arg (call, 0, op1);
+	  }
+	else
+	  gimple_set_num_ops (call, 5);
+	gimple_call_set_arg (call, offset_index, pg);
+	gimple_call_set_arg (call, offset_index + 1, op1);
+	return call;
+      }
+
     /* If the divisor is a uniform power of 2, fold to a shift
        instruction.  */
     tree op2_cst = uniform_integer_cst_p (op2);
@@ -2047,12 +2068,37 @@ public:
     if (integer_zerop (op1) || integer_zerop (op2))
       return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
 
+    /* If one of the operands is all integer -1, fold to svneg.  */
+    tree pg = gimple_call_arg (f.call, 0);
+    tree negated_op = NULL;
+    if (integer_minus_onep (op2))
+      negated_op = op1;
+    else if (integer_minus_onep (op1))
+      negated_op = op2;
+    if (!f.type_suffix (0).unsigned_p && negated_op)
+      {
+	function_instance instance ("svneg", functions::svneg,
+				    shapes::unary, MODE_none,
+				    f.type_suffix_ids, GROUP_none, f.pred);
+	gcall *call = f.redirect_call (instance);
+	unsigned offset_index = 0;
+	if (f.pred == PRED_m)
+	  {
+	    offset_index = 1;
+	    gimple_call_set_arg (call, 0, op1);
+	  }
+	else
+	  gimple_set_num_ops (call, 5);
+	gimple_call_set_arg (call, offset_index, pg);
+	gimple_call_set_arg (call, offset_index + 1, negated_op);
+	return call;
+      }
+
     /* If one of the operands is a uniform power of 2, fold to a left shift
        by immediate.  */
-    tree pg = gimple_call_arg (f.call, 0);
     tree op1_cst = uniform_integer_cst_p (op1);
     tree op2_cst = uniform_integer_cst_p (op2);
-    tree shift_op1, shift_op2;
+    tree shift_op1, shift_op2 = NULL;
     if (op1_cst && integer_pow2p (op1_cst)
 	&& (f.pred != PRED_m
 	    || is_ptrue (pg, f.type_suffix (0).element_bytes)))
@@ -2068,15 +2114,20 @@ public:
     else
       return NULL;
 
-    shift_op2 = wide_int_to_tree (unsigned_type_for (TREE_TYPE (shift_op2)),
-				  tree_log2 (shift_op2));
-    function_instance instance ("svlsl", functions::svlsl,
-				shapes::binary_uint_opt_n, MODE_n,
-				f.type_suffix_ids, GROUP_none, f.pred);
-    gcall *call = f.redirect_call (instance);
-    gimple_call_set_arg (call, 1, shift_op1);
-    gimple_call_set_arg (call, 2, shift_op2);
-    return call;
+    if (shift_op2)
+      {
+	shift_op2 = wide_int_to_tree (unsigned_type_for (TREE_TYPE (shift_op2)),
+				      tree_log2 (shift_op2));
+	function_instance instance ("svlsl", functions::svlsl,
+				    shapes::binary_uint_opt_n, MODE_n,
+				    f.type_suffix_ids, GROUP_none, f.pred);
+	gcall *call = f.redirect_call (instance);
+	gimple_call_set_arg (call, 1, shift_op1);
+	gimple_call_set_arg (call, 2, shift_op2);
+	return call;
+      }
+
+    return NULL;
   }
 };
 
