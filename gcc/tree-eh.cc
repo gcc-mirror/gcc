@@ -49,6 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "print-tree.h"
 #include "ipa-utils.h"
+#include "print-tree.h"
+#include "ipa-utils.h"
 #include "hash-set.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,
@@ -2281,6 +2283,106 @@ same_or_derived_type (tree t1, tree t2)
   if (t1 == t2)
     return true;
   while ((TREE_CODE (t1) == POINTER_TYPE || TREE_CODE (t1) == REFERENCE_TYPE)
+	 && TREE_CODE (t1) == TREE_CODE (t2))
+  {
+    t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
+    t2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
+  }
+  if (t1 == t2)
+    return true;
+  if (!AGGREGATE_TYPE_P (t1) || !AGGREGATE_TYPE_P (t2))
+    return false;
+  return odr_equivalent_or_derived_p (t1, t2);
+}
+
+// Check if a landing pad can handle any of the given exception types
+bool match_lp(eh_landing_pad lp, vec<tree> *exception_types) {
+    eh_region region = lp->region;
+
+    // Ensure the region is of type ERT_TRY
+    if (region && region->type == ERT_TRY) {
+        eh_catch_d *catch_handler = region->u.eh_try.first_catch;
+
+        while (catch_handler) {
+            tree type_list = catch_handler->type_list;
+
+	    if (!type_list)
+	      return true;
+
+            for (tree t = type_list; t; t = TREE_CHAIN(t)) {
+                tree type = TREE_VALUE(t);
+                for (unsigned i = 0; i < exception_types->length(); ++i) {
+                  // match found or a catch-all handler (NULL)
+                    if (!type || same_or_derived_type ((*exception_types)[i], type)) {
+                        return true;
+                    }
+                }
+            }
+            catch_handler = catch_handler->next_catch;
+        }
+    }
+    return false;
+}
+
+// Function to update landing pad in throw_stmt_table for a given statement
+void update_stmt_eh_region(gimple *stmt) {
+  auto_vec<tree> exception_types;
+  if (!stmt_throw_types (cfun, stmt, &exception_types)) {
+        return;
+    }
+    
+    int lp_nr = lookup_stmt_eh_lp_fn(cfun, stmt);
+    if (lp_nr <= 0) {
+        return;
+    }
+
+    eh_landing_pad lp = get_eh_landing_pad_from_number(lp_nr);
+    if (!lp) {
+        return;
+    }
+
+    eh_region region = lp->region;
+
+    // Walk up the region tree
+    while (region) {
+        switch (region->type) {
+            case ERT_CLEANUP:
+                *cfun->eh->throw_stmt_table->get(const_cast<gimple *>(stmt)) = lp->index;
+                return;
+
+            case ERT_TRY:
+                if (match_lp(lp, &exception_types)) {
+                    *cfun->eh->throw_stmt_table->get(const_cast<gimple *>(stmt)) = lp->index;
+                    return;
+                }
+                break;
+
+            case ERT_MUST_NOT_THROW:
+                // Undefined behavior, leave edge unchanged
+                return;
+
+            case ERT_ALLOWED_EXCEPTIONS:
+                if (!match_lp(lp, &exception_types)) {
+                    return;
+                }
+                break;
+
+            default:
+                break;
+        }
+        region = region->outer;
+    }
+
+    remove_stmt_from_eh_lp_fn(cfun, stmt);
+}
+bool
+same_or_derived_type (tree t1, tree t2)
+{
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+  if (t1 == t2)
+    return true;
+  while ((TREE_CODE (t1) == POINTER_TYPE || TREE_CODE (t1) == REFERENCE_TYPE)
         && TREE_CODE (t1) == TREE_CODE (t2))
   {
     t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
@@ -3029,6 +3131,42 @@ stmt_could_throw_1_p (gassign *stmt)
   return false;
 }
 
+void extract_exception_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
+    tree callee = gimple_call_fndecl (call_stmt);
+    if (callee == NULL_TREE) {
+        return;
+      }
+      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (callee)), "__cxa_throw") == 0) {
+          // Extracting exception type
+          tree exception_type_info = gimple_call_arg (call_stmt, 1); 
+          if (exception_type_info && TREE_CODE (exception_type_info) == ADDR_EXPR) {
+              exception_type_info = TREE_OPERAND (exception_type_info, 0);
+          }
+          if (exception_type_info && TREE_CODE (exception_type_info) == VAR_DECL) {
+              // Converting the typeinfo to a compile-time type
+              tree exception_type = TREE_TYPE (exception_type_info);
+              if (exception_type) {
+                  ret_vector->safe_push (exception_type);
+              }
+          }
+      }
+}
+
+// Determine which types can be thrown by a GIMPLE statement and convert them to compile-time types
+bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
+    if (!flag_exceptions) {
+        return false;
+    }
+
+    switch (gimple_code (stmt)) {
+        case GIMPLE_CALL:
+            extract_exception_types_for_call (as_a<gcall*> (stmt), ret_vector);
+            return !ret_vector->is_empty ();
+
+        default:
+            return false;
+    }
+}
 void extract_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
     tree callee = gimple_call_fndecl (call_stmt);
     if (callee == NULL_TREE) {
