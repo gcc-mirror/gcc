@@ -3131,42 +3131,6 @@ stmt_could_throw_1_p (gassign *stmt)
   return false;
 }
 
-void extract_exception_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
-    tree callee = gimple_call_fndecl (call_stmt);
-    if (callee == NULL_TREE) {
-        return;
-      }
-      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (callee)), "__cxa_throw") == 0) {
-          // Extracting exception type
-          tree exception_type_info = gimple_call_arg (call_stmt, 1); 
-          if (exception_type_info && TREE_CODE (exception_type_info) == ADDR_EXPR) {
-              exception_type_info = TREE_OPERAND (exception_type_info, 0);
-          }
-          if (exception_type_info && TREE_CODE (exception_type_info) == VAR_DECL) {
-              // Converting the typeinfo to a compile-time type
-              tree exception_type = TREE_TYPE (exception_type_info);
-              if (exception_type) {
-                  ret_vector->safe_push (exception_type);
-              }
-          }
-      }
-}
-
-// Determine which types can be thrown by a GIMPLE statement and convert them to compile-time types
-bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
-    if (!flag_exceptions) {
-        return false;
-    }
-
-    switch (gimple_code (stmt)) {
-        case GIMPLE_CALL:
-            extract_exception_types_for_call (as_a<gcall*> (stmt), ret_vector);
-            return !ret_vector->is_empty ();
-
-        default:
-            return false;
-    }
-}
 void extract_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
     tree callee = gimple_call_fndecl (call_stmt);
     if (callee == NULL_TREE) {
