@@ -692,7 +692,7 @@ package body Lib.Load is
          --  of being loaded. We do *not* care about a circular chain that
          --  leads back to a body, because this kind of circular dependence
          --  legitimately occurs (e.g. two package bodies that contain
-         --  inlined subprogram referenced by the other).
+         --  inlined subprograms referenced by each other).
 
          --  Ada 2005 (AI-50217): We also ignore limited_with clauses, because
          --  their purpose is precisely to create legal circular structures.

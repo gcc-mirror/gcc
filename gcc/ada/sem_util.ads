@@ -1780,7 +1780,7 @@ package Sem_Util is
    function Is_Ancestor_Package
      (E1 : Entity_Id;
       E2 : Entity_Id) return Boolean;
-   --  Determine whether package E1 is an ancestor of E2
+   --  True if package E1 is an ancestor of E2 other than E2 itself
 
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an atomic

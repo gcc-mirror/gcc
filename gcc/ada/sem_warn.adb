@@ -2484,7 +2484,7 @@ package body Sem_Warn is
          Item := First (Context_Items (Cnode));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
-              and then not Implicit_With (Item)
+              and then not Is_Implicit_With (Item)
               and then In_Extended_Main_Source_Unit (Item)
 
               --  Guard for no entity present. Not clear under what conditions

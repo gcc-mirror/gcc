@@ -1678,7 +1678,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Elaborate_All_Present, Flag),
         Sm (Elaborate_Desirable, Flag),
         Sm (Elaborate_Present, Flag),
-        Sm (Implicit_With, Flag),
+        Sm (Is_Implicit_With, Flag),
         Sm (Library_Unit, Node_Id),
         Sm (Limited_View_Installed, Flag),
         Sm (Next_Implicit_With, Node_Id),

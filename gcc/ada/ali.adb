@@ -2942,24 +2942,22 @@ package body ALI is
                Checkc (' ');
                Skip_Space;
                Withs.Increment_Last;
-               Withs.Table (Withs.Last).Uname              := Get_Unit_Name;
-               Withs.Table (Withs.Last).Elaborate          := False;
-               Withs.Table (Withs.Last).Elaborate_All      := False;
-               Withs.Table (Withs.Last).Elab_Desirable     := False;
-               Withs.Table (Withs.Last).Elab_All_Desirable := False;
-               Withs.Table (Withs.Last).SAL_Interface      := False;
-               Withs.Table (Withs.Last).Limited_With       := (C = 'Y');
-               Withs.Table (Withs.Last).Implicit_With      := (C = 'Z');
+               Withs.Table (Withs.Last) :=
+                 (Uname              => Get_Unit_Name,
+                  Sfile              => No_File,
+                  Afile              => No_File,
+                  Elaborate          => False,
+                  Elaborate_All      => False,
+                  Elab_Desirable     => False,
+                  Elab_All_Desirable => False,
+                  SAL_Interface      => False,
+                  Limited_With       => (C = 'Y'),
+                  Implicit_With      => (C = 'Z'));
 
-               --  Generic case with no object file available
+               --  If At_Eol, then no object file is available; leave Sfile and
+               --  Afile as above (No_File).
 
-               if At_Eol then
-                  Withs.Table (Withs.Last).Sfile := No_File;
-                  Withs.Table (Withs.Last).Afile := No_File;
-
-               --  Normal case
-
-               else
+               if not At_Eol then
                   Withs.Table (Withs.Last).Sfile := Get_File_Name
                                                       (Lower => True);
                   Withs.Table (Withs.Last).Afile := Get_File_Name

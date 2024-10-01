@@ -10671,7 +10671,7 @@ package body Sem_Ch12 is
 
                   if OK then
                      New_I := New_Copy (Item);
-                     Set_Implicit_With (New_I);
+                     Set_Is_Implicit_With (New_I);
 
                      Append (New_I, Current_Context);
                   end if;

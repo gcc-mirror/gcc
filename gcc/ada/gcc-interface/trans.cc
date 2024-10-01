@@ -8204,7 +8204,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_With_Clause:
       if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
-	  || Implicit_With (gnat_node)
+	  || Is_Implicit_With (gnat_node)
 	  || Limited_Present (gnat_node))
 	gnu_result = alloc_stmt_list ();
       else
@@ -9541,7 +9541,7 @@ elaborate_all_entities (Node_Id gnat_node)
   if (!present_gnu_tree (gnat_node))
      save_gnu_tree (gnat_node, integer_zero_node, true);
 
-  /* Save entities in all context units.  A body may have an implicit_with
+  /* Save entities in all context units.  A body may have an implicit with
      on its own spec, if the context includes a child unit, so don't save
      the spec twice.  */
   for (gnat_with_clause = First (Context_Items (gnat_node));

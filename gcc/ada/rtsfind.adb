@@ -1310,11 +1310,11 @@ package body Rtsfind is
                  (U, Defining_Unit_Name (Specification (LibUnit))));
          Ghost_Mode := Saved_GM;
 
-         Set_Corresponding_Spec  (Withn, U.Entity);
-         Set_First_Name          (Withn);
-         Set_Implicit_With       (Withn);
-         Set_Library_Unit        (Withn, Cunit (U.Unum));
-         Set_Next_Implicit_With  (Withn, U.First_Implicit_With);
+         Set_Corresponding_Spec (Withn, U.Entity);
+         Set_First_Name         (Withn);
+         Set_Is_Implicit_With   (Withn);
+         Set_Library_Unit       (Withn, Cunit (U.Unum));
+         Set_Next_Implicit_With (Withn, U.First_Implicit_With);
 
          U.First_Implicit_With := Withn;
 

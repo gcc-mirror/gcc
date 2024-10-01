@@ -16549,15 +16549,15 @@ package body Sem_Prag is
 
             --  In Ada 83 mode, there can be no items following it in the
             --  context list except other pragmas and implicit with clauses
-            --  (e.g. those added by use of Rtsfind). In Ada 95 mode, this
-            --  placement rule does not apply.
+            --  (e.g. those added by Rtsfind). In Ada 95 mode, this placement
+            --  rule does not apply.
 
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Citem := Next (N);
                while Present (Citem) loop
                   if Nkind (Citem) = N_Pragma
                     or else (Nkind (Citem) = N_With_Clause
-                              and then Implicit_With (Citem))
+                              and then Is_Implicit_With (Citem))
                   then
                      null;
                   else

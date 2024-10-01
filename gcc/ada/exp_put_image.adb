@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Csets;          use Csets;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -37,6 +38,7 @@ with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
+with Output;         use Output;
 with Rtsfind;        use Rtsfind;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Util;       use Sem_Util;
@@ -1375,8 +1377,19 @@ package body Exp_Put_Image is
    -- Preload_Root_Buffer_Type --
    ------------------------------
 
+   Preload_Root_Buffer_Type_Done : Boolean := False;
+   --  True if Preload_Root_Buffer_Type has already done its work;
+   --  no need to do it again in that case.
+
+   Debug_Unit_Walk : Boolean renames Debug_Flag_Dot_WW;
+
    procedure Preload_Root_Buffer_Type (Compilation_Unit : Node_Id) is
+      Ignore : Entity_Id;
    begin
+      if Preload_Root_Buffer_Type_Done then
+         return;
+      end if;
+
       --  We can't call RTE (RE_Root_Buffer_Type) for at least some
       --  predefined units, because it would introduce cyclic dependences.
       --  The package where Root_Buffer_Type is declared, for example, and
@@ -1393,19 +1406,26 @@ package body Exp_Put_Image is
       --  RTE (RE_Root_Buffer_Type) when compiling the compiler itself.
       --  Packages Ada.Strings.Buffer_Types and friends are not included
       --  in the compiler.
-      --
-      --  Don't do it if type Root_Buffer_Type is unavailable in the runtime.
 
       if not In_Predefined_Unit (Compilation_Unit)
         and then Tagged_Seen
         and then not No_Run_Time_Mode
-        and then RTE_Available (RE_Root_Buffer_Type)
       then
-         declare
-            Ignore : constant Entity_Id := RTE (RE_Root_Buffer_Type);
-         begin
-            null;
-         end;
+         Preload_Root_Buffer_Type_Done := True;
+
+         --  Don't do it if type Root_Buffer_Type is unavailable in the
+         --  runtime.
+
+         if RTE_Available (RE_Root_Buffer_Type) then
+            if Debug_Unit_Walk then
+               Write_Line ("Preload_Root_Buffer_Type: ");
+               Write_Unit_Info
+                 (Get_Cunit_Unit_Number (Compilation_Unit),
+                  Unit (Compilation_Unit));
+            end if;
+
+            Ignore := RTE (RE_Root_Buffer_Type);
+         end if;
       end if;
    end Preload_Root_Buffer_Type;
 

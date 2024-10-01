@@ -15254,10 +15254,8 @@ package body Sem_Util is
      (E1 : Entity_Id;
       E2 : Entity_Id) return Boolean
    is
-      Par : Entity_Id;
-
+      Par : Entity_Id := E2;
    begin
-      Par := E2;
       while Present (Par) and then Par /= Standard_Standard loop
          if Par = E1 then
             return True;

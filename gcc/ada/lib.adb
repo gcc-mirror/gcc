@@ -1335,7 +1335,7 @@ package body Lib is
                     (Unit_Name
                        (Get_Cunit_Unit_Number (Library_Unit (Context_Item))));
 
-                  if Implicit_With (Context_Item) then
+                  if Is_Implicit_With (Context_Item) then
                      Write_Str (" -- implicit");
                   end if;
 

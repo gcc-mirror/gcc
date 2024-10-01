@@ -316,7 +316,7 @@ package body Lib.Writ is
                return False;
 
             else
-               return Implicit_With (Clause);
+               return Is_Implicit_With (Clause);
             end if;
          end Is_Implicit_With_Clause;
 

@@ -10054,7 +10054,7 @@ package body Sem_Ch8 is
 
             Set_Corresponding_Spec (Withn, System_Aux_Id);
             Set_First_Name         (Withn);
-            Set_Implicit_With      (Withn);
+            Set_Is_Implicit_With   (Withn);
             Set_Library_Unit       (Withn, Cunit (Unum));
 
             Insert_After (With_Sys, Withn);

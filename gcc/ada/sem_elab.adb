@@ -8482,8 +8482,8 @@ package body Sem_Elab is
               Make_With_Clause (Loc,
                 Name => New_Occurrence_Of (Unit_Id, Loc));
 
-            Set_Implicit_With (Clause);
-            Set_Library_Unit  (Clause, Unit_Cunit);
+            Set_Is_Implicit_With (Clause);
+            Set_Library_Unit (Clause, Unit_Cunit);
 
             Append_To (Items, Clause);
          end if;
@@ -16393,8 +16393,8 @@ package body Sem_Elab is
                   Name => Name (Itm));
 
       begin
-         Set_Library_Unit  (CW, Library_Unit (Itm));
-         Set_Implicit_With (CW);
+         Set_Is_Implicit_With (CW);
+         Set_Library_Unit (CW, Library_Unit (Itm));
 
          --  Set elaborate all desirable on copy and then append the copy to
          --  the list of body with's and we are done.
