@@ -418,6 +418,8 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
      __builtin_offsetof ( type-id, offsetof-expression )
      __builtin_addressof ( expression )
 
+     __builtin_is_virtual_base_of ( type-id , type-id )
+
      __has_nothrow_assign ( type-id )   
      __has_nothrow_constructor ( type-id )
      __has_nothrow_copy ( type-id )

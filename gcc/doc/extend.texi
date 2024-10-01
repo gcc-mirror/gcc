@@ -29984,9 +29984,24 @@ If @var{base_type} is a base class of @var{derived_type}
 Top-level cv-qualifications of @var{base_type} and
 @var{derived_type} are ignored.  For the purposes of this trait, a
 class type is considered is own base.
+The trait is @code{true} even if @var{base_type} is an ambiguous or
+inaccessible base class of @var{derived_type}.
 Requires: if @code{__is_class (base_type)} and @code{__is_class (derived_type)}
 are @code{true} and @var{base_type} and @var{derived_type} are not the same
 type (disregarding cv-qualifiers), @var{derived_type} shall be a complete
+type.  A diagnostic is produced if this requirement is not met.
+@enddefbuiltin
+
+@defbuiltin{bool __builtin_is_virtual_base_of (@var{base_type}, @var{derived_type})}
+If @var{base_type} is a virtual base class of @var{derived_type}
+([class.derived], [class.mi]) then the trait is @code{true},
+otherwise it is @code{false}.
+Top-level cv-qualifications of @var{base_type} and
+@var{derived_type} are ignored.
+The trait is @code{true} even if @var{base_type} is an ambiguous or
+inaccessible virtual base class of @var{derived_type}.
+Requires: if @code{__is_class (base_type)} and @code{__is_class (derived_type)}
+are @code{true}, @var{derived_type} shall be a complete
 type.  A diagnostic is produced if this requirement is not met.
 @enddefbuiltin
 

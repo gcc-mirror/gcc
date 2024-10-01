@@ -65,6 +65,7 @@ struct lookup_base_data_s
   bool repeated_base;	/* Whether there are repeated bases in the
 			    hierarchy.  */
   bool want_any;	/* Whether we want any matching binfo.  */
+  bool require_virtual;	/* Whether we require a virtual path.  */
 };
 
 /* Worker function for lookup_base.  See if we've found the desired
@@ -93,11 +94,18 @@ dfs_lookup_base (tree binfo, void *data_)
 
   if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->base))
     {
+      const bool via_virtual
+	= binfo_via_virtual (binfo, data->t) != NULL_TREE;
+
+      if (data->require_virtual && !via_virtual)
+	/* Skip this result if we require virtual inheritance
+	   and this is not a virtual base.  */
+	return dfs_skip_bases;
+
       if (!data->binfo)
 	{
 	  data->binfo = binfo;
-	  data->via_virtual
-	    = binfo_via_virtual (data->binfo, data->t) != NULL_TREE;
+	  data->via_virtual = via_virtual;
 
 	  if (!data->repeated_base)
 	    /* If there are no repeated bases, we can stop now.  */
@@ -124,7 +132,7 @@ dfs_lookup_base (tree binfo, void *data_)
 	    }
 
 	  /* Prefer one via a non-virtual path.  */
-	  if (!binfo_via_virtual (binfo, data->t))
+	  if (!via_virtual)
 	    {
 	      data->binfo = binfo;
 	      data->via_virtual = false;
@@ -271,6 +279,7 @@ lookup_base (tree t, tree base, base_access access,
       data.repeated_base = (offset == -1) && CLASSTYPE_REPEATED_BASE_P (t);
       data.want_any = access == ba_any;
       data.offset = offset;
+      data.require_virtual = (access & ba_require_virtual);
 
       dfs_walk_once (t_binfo, dfs_lookup_base, NULL, &data);
       binfo = data.binfo;
