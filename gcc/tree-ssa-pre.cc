@@ -2008,10 +2008,11 @@ clean (bitmap_set_t set1, bitmap_set_t set2 = NULL)
 }
 
 /* Clean the set of expressions that are no longer valid in SET because
-   they are clobbered in BLOCK or because they trap and may not be executed.  */
+   they are clobbered in BLOCK or because they trap and may not be executed.
+   When CLEAN_TRAPS is true remove all possibly trapping expressions.  */
 
 static void
-prune_clobbered_mems (bitmap_set_t set, basic_block block)
+prune_clobbered_mems (bitmap_set_t set, basic_block block, bool clean_traps)
 {
   bitmap_iterator bi;
   unsigned i;
@@ -2049,7 +2050,7 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 	     a possible exit point.
 	     ???  This is overly conservative if we translate AVAIL_OUT
 	     as the available expression might be after the exit point.  */
-	  if (BB_MAY_NOTRETURN (block)
+	  if ((BB_MAY_NOTRETURN (block) || clean_traps)
 	      && vn_reference_may_trap (ref))
 	    to_remove = i;
 	}
@@ -2060,7 +2061,7 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block)
 	     a possible exit point.
 	     ???  This is overly conservative if we translate AVAIL_OUT
 	     as the available expression might be after the exit point.  */
-	  if (BB_MAY_NOTRETURN (block)
+	  if ((BB_MAY_NOTRETURN (block) || clean_traps)
 	      && vn_nary_may_trap (nary))
 	    to_remove = i;
 	}
@@ -2114,6 +2115,8 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
   bool was_visited = BB_VISITED (block);
   bool changed = ! BB_VISITED (block);
+  bool any_max_on_edge = false;
+
   BB_VISITED (block) = 1;
   old = ANTIC_OUT = S = NULL;
 
@@ -2158,6 +2161,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 		 maximal set to arrive at a maximum ANTIC_IN solution.
 		 We can ignore them in the intersection operation and thus
 		 need not explicitely represent that maximum solution.  */
+	      any_max_on_edge = true;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "ANTIC_IN is MAX on %d->%d\n",
 			 e->src->index, e->dest->index);
@@ -2223,7 +2227,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 
   /* Prune expressions that are clobbered in block and thus become
      invalid if translated from ANTIC_OUT to ANTIC_IN.  */
-  prune_clobbered_mems (ANTIC_OUT, block);
+  prune_clobbered_mems (ANTIC_OUT, block, any_max_on_edge);
 
   /* Generate ANTIC_OUT - TMP_GEN.  */
   S = bitmap_set_subtract_expressions (ANTIC_OUT, TMP_GEN (block));
@@ -2396,7 +2400,7 @@ compute_partial_antic_aux (basic_block block,
 
   /* Prune expressions that are clobbered in block and thus become
      invalid if translated from PA_OUT to PA_IN.  */
-  prune_clobbered_mems (PA_OUT, block);
+  prune_clobbered_mems (PA_OUT, block, false);
 
   /* PA_IN starts with PA_OUT - TMP_GEN.
      Then we subtract things from ANTIC_IN.  */
