@@ -6142,7 +6142,6 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
       && REGNO (xreg) >= REG_22
       && (xval == const0_rtx
 	  || (IN_RANGE (avr_int16 (xval, 2), 0, 63)
-	      && eqne_p
 	      && reg_unused_after (insn, xreg))))
     {
       xop[2] = avr_word (xval, 2);
