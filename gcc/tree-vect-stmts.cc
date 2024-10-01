@@ -14803,8 +14803,10 @@ supportable_indirect_convert_operation (code_helper code,
 		 In the future, if it is supported, changes may need to be made
 		 to this part, such as checking the RANGE of each element
 		 in the vector.  */
-	      if ((TREE_CODE (op0) == SSA_NAME && !SSA_NAME_RANGE_INFO (op0))
-		  || !vect_get_range_info (op0, &op_min_value, &op_max_value))
+	      if (TREE_CODE (op0) != SSA_NAME
+		  || !SSA_NAME_RANGE_INFO (op0)
+		  || !vect_get_range_info (op0, &op_min_value,
+					   &op_max_value))
 		break;
 
 	      if (cvt_type == NULL_TREE
