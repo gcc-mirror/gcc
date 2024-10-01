@@ -421,8 +421,9 @@ FUNC_BEGIN (__riscv_save_0)
   addi sp, sp, -16
   .cfi_def_cfa_offset 16
   sw s2, 0(sp)
+  .cfi_offset 18, -16
   sw s1, 4(sp)
-  .cfi_offset 9, -16
+  .cfi_offset 9, -12
   sw s0, 8(sp)
   .cfi_offset 8, -8
   sw ra, 12(sp)
