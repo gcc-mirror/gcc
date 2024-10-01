@@ -5130,9 +5130,23 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
       if (DECL_P (modify_dest))
 	suppress_warning (modify_dest, OPT_Wuninitialized);
 
+      /* If we have a return slot, we can assign it the result directly,
+	 except in the case where it is a global variable that is only
+	 written to because, the callee being permitted to read or take
+	 the address of its DECL_RESULT, this could invalidate the flag
+	 on the global variable; instead we preventively remove the store,
+	 which would have happened later if the call was not inlined.  */
       if (gimple_call_return_slot_opt_p (call_stmt))
 	{
-	  return_slot = modify_dest;
+	  tree base = get_base_address (modify_dest);
+
+	  if (VAR_P (base)
+	      && (TREE_STATIC (base) || DECL_EXTERNAL (base))
+	      && varpool_node::get (base)->writeonly)
+	    return_slot = NULL;
+	  else
+	    return_slot = modify_dest;
+
 	  modify_dest = NULL;
 	}
     }
