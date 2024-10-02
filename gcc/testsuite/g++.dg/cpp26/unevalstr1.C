@@ -83,21 +83,21 @@ extern "\o{0103}" { int f14 (); }	// { dg-error "numeric escape sequence in unev
 [[nodiscard ("\x{20}")]] int h19 ();	// { dg-error "numeric escape sequence in unevaluated string" }
 [[nodiscard ("\h")]] int h20 ();	// { dg-error "unknown escape sequence" }
 
-float operator "" _my0 (const char *);
-float operator "" "" _my1 (const char *);
-float operator L"" _my2 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator u"" _my3 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator U"" _my4 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator u8"" _my5 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator L"" "" _my6 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator u"" "" _my7 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator U"" "" _my8 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator u8"" "" _my9 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator "" L"" _my10 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator "" u"" _my11 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator "" U"" _my12 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator "" u8"" _my13 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator "\0" _my14 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
-float operator "\x00" _my15 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
-float operator "\h" _my16 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
+float operator ""_my0 (const char *);
+float operator "" ""_my1 (const char *);
+float operator L""_my2 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator u""_my3 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator U""_my4 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator u8""_my5 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator L"" ""_my6 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator u"" ""_my7 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator U"" ""_my8 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator u8"" ""_my9 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" L""_my10 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" u""_my11 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" U""_my12 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" u8""_my13 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "\0"_my14 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
+float operator "\x00"_my15 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
+float operator "\h"_my16 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
 						// { dg-error "unknown escape sequence" "" { target *-*-* } .-1 }

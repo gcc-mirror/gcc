@@ -3,7 +3,7 @@
 
 #include <string>
 
-std::string operator"" _i18n(const char*, std::size_t);
+std::string operator ""_i18n(const char*, std::size_t);
 
 std::string vogon_poem = R"V0G0N(
                 O freddled gruntbuggly thy micturations are to me

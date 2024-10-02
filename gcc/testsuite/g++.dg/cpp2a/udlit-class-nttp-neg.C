@@ -9,4 +9,4 @@ struct literal_class {
 };
 
 template <literal_class...>
-int operator"" _udl();      // { dg-error "5:literal operator template .int operator\"\"_udl\\(\\). has invalid parameter list" }
+int operator ""_udl();      // { dg-error "5:literal operator template .int operator\"\"_udl\\(\\). has invalid parameter list" }

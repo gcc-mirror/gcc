@@ -6,11 +6,11 @@
 #include <cstdlib>
 
 void
-operator "" _s(const char *, size_t)
+operator ""_s(const char *, size_t)
 { }
 
 void
-operator "" _t(const char)
+operator ""_t(const char)
 { }
 
 #define QUOTE(s) #s

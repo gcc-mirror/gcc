@@ -4,19 +4,19 @@
 #include <cstdint>
 #include <cassert>
 
-int operator"" _foo(const char*)                  { return 0; }
-int operator"" _foo(unsigned long long int)       { return 1; }
-int operator"" _foo(long double)                  { return 2; }
-int operator"" _foo(char)                         { return 3; }
-int operator"" _foo(wchar_t)                      { return 4; }
-int operator"" _foo(char16_t)                     { return 5; }
-int operator"" _foo(char32_t)                     { return 6; }
-int operator"" _foo(const char*, std::size_t)     { return 7; }
-int operator"" _foo(const wchar_t*, std::size_t)  { return 8; }
-int operator"" _foo(const char16_t*, std::size_t) { return 9; }
-int operator"" _foo(const char32_t*, std::size_t) { return 10; }
-template<char...> int operator"" _foo2()          { return 20; }
-int operator"" _foo2(unsigned long long int)      { return 21; }
+int operator ""_foo(const char*)                  { return 0; }
+int operator ""_foo(unsigned long long int)       { return 1; }
+int operator ""_foo(long double)                  { return 2; }
+int operator ""_foo(char)                         { return 3; }
+int operator ""_foo(wchar_t)                      { return 4; }
+int operator ""_foo(char16_t)                     { return 5; }
+int operator ""_foo(char32_t)                     { return 6; }
+int operator ""_foo(const char*, std::size_t)     { return 7; }
+int operator ""_foo(const wchar_t*, std::size_t)  { return 8; }
+int operator ""_foo(const char16_t*, std::size_t) { return 9; }
+int operator ""_foo(const char32_t*, std::size_t) { return 10; }
+template<char...> int operator ""_foo2()          { return 20; }
+int operator ""_foo2(unsigned long long int)      { return 21; }
 
 int
 main()

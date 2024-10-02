@@ -6,10 +6,10 @@
 #include <cstdint>
 #include <cassert>
 
-int operator"" _embedchar(char)
+int operator ""_embedchar(char)
 { return 41; }
 
-int operator"" _embedstr(const char*, std::size_t len)
+int operator ""_embedstr(const char*, std::size_t len)
 { return 42 + len; }
 
 void

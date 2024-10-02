@@ -16,7 +16,7 @@ cstrlen(const char* s)
 }
 
 constexpr size_type
-operator "" _lenraw(const char* digits)
+operator ""_lenraw(const char* digits)
 {
   return cstrlen(digits);
 }

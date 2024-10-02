@@ -11,7 +11,7 @@ constexpr unsigned long long mymax(A && a,const B& b){
 }
 
 template<char... List>
-constexpr long long operator"" _y() noexcept
+constexpr long long operator ""_y() noexcept
 {
   return AA<1, mymax(1,2)>::val; // <-- crashes gcc
   // return mymax(1,2);   // <-- compiles

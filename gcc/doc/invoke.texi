@@ -4032,6 +4032,18 @@ bool b = e <= 3.7;
 @option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
 by @option{-Wenum-conversion}.
 
+@opindex Wdeprecated-literal-operator
+@opindex Wno-deprecated-literal-operator
+@item -Wdeprecated-literal-operator @r{(C++ and Objective-C++ only)}
+Warn that the declaration of a user-defined literal operator with a
+space before the suffix is deprecated.  This warning is enabled by
+default in C++23.
+
+@smallexample
+string operator "" _i18n(const char*, std::size_t); // deprecated
+string operator ""_i18n(const char*, std::size_t); // preferred
+@end smallexample
+
 @opindex Welaborated-enum-base
 @opindex Wno-elaborated-enum-base
 @item -Wno-elaborated-enum-base

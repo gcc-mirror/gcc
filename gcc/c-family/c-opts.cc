@@ -1016,6 +1016,11 @@ c_common_post_options (const char **pfilename)
 		       warn_deprecated_enum_float_conv,
 		       cxx_dialect >= cxx20 && warn_deprecated);
 
+  /* -Wdeprecated-literal-operator is enabled by default in C++23.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_deprecated_literal_operator,
+		       cxx_dialect >= cxx23 && warn_deprecated);
+
   /* -Wtemplate-id-cdtor is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_template_id_cdtor,
