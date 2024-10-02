@@ -453,6 +453,15 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
 {
   auto binder_pin = context->push_clean_lifetime_resolver (true);
 
+  TraitReference *trait_reference = &TraitReference::error_node ();
+  if (impl_block.has_trait_ref ())
+    {
+      std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
+      trait_reference = TraitResolver::Resolve (*ref);
+      if (trait_reference->is_error ())
+	return;
+    }
+
   bool failed_flag = false;
   auto result = resolve_impl_block_substitutions (impl_block, failed_flag);
   if (failed_flag)
@@ -474,7 +483,7 @@ TypeCheckItem::visit (HIR::ImplBlock &impl_block)
     }
 
   // validate the impl items
-  validate_trait_impl_block (impl_block, self, substitutions);
+  validate_trait_impl_block (trait_reference, impl_block, self, substitutions);
 }
 
 TyTy::BaseType *
@@ -698,16 +707,16 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 
 void
 TypeCheckItem::validate_trait_impl_block (
-  HIR::ImplBlock &impl_block, TyTy::BaseType *self,
+  TraitReference *trait_reference, HIR::ImplBlock &impl_block,
+  TyTy::BaseType *self,
   std::vector<TyTy::SubstitutionParamMapping> &substitutions)
 {
   auto specified_bound = TyTy::TypeBoundPredicate::error ();
-  TraitReference *trait_reference = &TraitReference::error_node ();
   if (impl_block.has_trait_ref ())
     {
       std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
-      trait_reference = TraitResolver::Resolve (*ref);
-      rust_assert (!trait_reference->is_error ());
+      if (trait_reference->is_error ())
+	return;
 
       // we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
       // for example

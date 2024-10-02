@@ -117,19 +117,26 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
       return false;
     }
 
-  if (auto hid = mappings.lookup_node_to_hir (ref))
+  auto hid = mappings.lookup_node_to_hir (ref);
+  if (!hid)
     {
-      tl::optional<HIR::Item *> resolved_item
-	= mappings.lookup_hir_item (hid.value ());
-      rust_assert (resolved_item.has_value ());
-      rust_assert (resolved_item.value ()->get_item_kind ()
-		   == HIR::Item::ItemKind::Trait);
-      *resolved = static_cast<HIR::Trait *> (*resolved_item);
-
-      return true;
+      rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
+      return false;
     }
-  rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
-  return false;
+
+  auto resolved_item = mappings.lookup_hir_item (hid.value ());
+  rust_assert (resolved_item.has_value ());
+  if (resolved_item.value ()->get_item_kind () != HIR::Item::ItemKind::Trait)
+    {
+      rich_location r (line_table, path.get_locus ());
+      r.add_fixit_replace ("not a trait");
+      rust_error_at (r, ErrorCode::E0404, "Expected a trait found %qs",
+		     path.as_simple_path ().as_string ().c_str ());
+      return false;
+    }
+
+  *resolved = static_cast<HIR::Trait *> (*resolved_item);
+  return true;
 }
 
 TraitReference *

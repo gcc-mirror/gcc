@@ -63,7 +63,8 @@ protected:
 				    bool &failure_flag);
 
   void validate_trait_impl_block (
-    HIR::ImplBlock &impl_block, TyTy::BaseType *self,
+    TraitReference *trait_reference, HIR::ImplBlock &impl_block,
+    TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 
   TyTy::BaseType *resolve_impl_item (HIR::ImplBlock &impl_block,
