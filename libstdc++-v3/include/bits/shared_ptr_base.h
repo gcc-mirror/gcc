@@ -2012,6 +2012,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, _Lock_policy _Lp>
     class __weak_ptr
     {
+    public:
+      using element_type = typename remove_extent<_Tp>::type;
+
+    private:
       template<typename _Yp, typename _Res = void>
 	using _Compatible = typename
 	  enable_if<__sp_compatible_with<_Yp*, _Tp*>::value, _Res>::type;
@@ -2020,9 +2024,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp>
 	using _Assignable = _Compatible<_Yp, __weak_ptr&>;
 
-    public:
-      using element_type = typename remove_extent<_Tp>::type;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      // Helper for construction/assignment:
+      template<typename _Yp>
+	static element_type*
+	_S_safe_upcast(const __weak_ptr<_Yp, _Lp>& __r)
+	{
+	  // We know that _Yp and _Tp are compatible, that is, either
+	  // _Yp* is convertible to _Tp* or _Yp is U[N] and _Tp is U cv [].
 
+	  // If _Yp is the same as _Tp after removing extents and cv
+	  // qualifications, there's no pointer adjustments to do. This
+	  // also allows us to support incomplete types.
+	  using _At = typename remove_cv<typename remove_extent<_Tp>::type>::type;
+	  using _Bt = typename remove_cv<typename remove_extent<_Yp>::type>::type;
+	  if constexpr (is_same<_At, _Bt>::value)
+	    return __r._M_ptr;
+	  // If they're not the same type, but they're both scalars,
+	  // we again don't need any adjustment. This allows us to support e.g.
+	  // pointers to a differently cv qualified type X.
+	  else if constexpr (__and_<is_scalar<_At>, is_scalar<_Bt>>::value)
+	    return __r._M_ptr;
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_is_virtual_base_of)
+	  // If _Tp is not a virtual base class of _Yp, the pointer
+	  // conversion does not require dereferencing __r._M_ptr; just
+	  // rely on the implicit conversion.
+	  else if constexpr (!__builtin_is_virtual_base_of(_Tp, _Yp))
+	    return __r._M_ptr;
+#endif
+	  // Expensive path; must lock() and do the pointer conversion while
+	  // a shared_ptr keeps the pointee alive (because we may need
+	  // to dereference).
+	  else
+	    return __r.lock().get();
+	}
+#pragma GCC diagnostic pop
+
+    public:
       constexpr __weak_ptr() noexcept
       : _M_ptr(nullptr), _M_refcount()
       { }
@@ -2047,8 +2086,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // in multithreaded programs __r._M_ptr may be invalidated at any point.
       template<typename _Yp, typename = _Compatible<_Yp>>
 	__weak_ptr(const __weak_ptr<_Yp, _Lp>& __r) noexcept
-	: _M_refcount(__r._M_refcount)
-        { _M_ptr = __r.lock().get(); }
+	: _M_ptr(_S_safe_upcast(__r)), _M_refcount(__r._M_refcount)
+        { }
 
       template<typename _Yp, typename = _Compatible<_Yp>>
 	__weak_ptr(const __shared_ptr<_Yp, _Lp>& __r) noexcept
@@ -2061,7 +2100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Yp, typename = _Compatible<_Yp>>
 	__weak_ptr(__weak_ptr<_Yp, _Lp>&& __r) noexcept
-	: _M_ptr(__r.lock().get()), _M_refcount(std::move(__r._M_refcount))
+	: _M_ptr(_S_safe_upcast(__r)), _M_refcount(std::move(__r._M_refcount))
         { __r._M_ptr = nullptr; }
 
       __weak_ptr&
@@ -2071,7 +2110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Assignable<_Yp>
 	operator=(const __weak_ptr<_Yp, _Lp>& __r) noexcept
 	{
-	  _M_ptr = __r.lock().get();
+	  _M_ptr = _S_safe_upcast(__r);
 	  _M_refcount = __r._M_refcount;
 	  return *this;
 	}
@@ -2096,7 +2135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Assignable<_Yp>
 	operator=(__weak_ptr<_Yp, _Lp>&& __r) noexcept
 	{
-	  _M_ptr = __r.lock().get();
+	  _M_ptr = _S_safe_upcast(__r);
 	  _M_refcount = std::move(__r._M_refcount);
 	  __r._M_ptr = nullptr;
 	  return *this;
