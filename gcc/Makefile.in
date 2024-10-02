@@ -3640,12 +3640,12 @@ $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	$(SHELL) $(srcdir)/doc/install.texi2html
 
 # Regenerate the .opt.urls files from the generated html, and from the .opt
-# files.  Doing so requires all languages that have their own HTML manuals
-# to be enabled.
+# files.
 .PHONY: regenerate-opt-urls
 OPT_URLS_HTML_DEPS = $(build_htmldir)/gcc/Option-Index.html \
 	$(build_htmldir)/gdc/Option-Index.html \
 	$(build_htmldir)/gfortran/Option-Index.html
+$(OPT_URLS_HTML_DEPS): %/Option-Index.html: %/index.html
 
 regenerate-opt-urls: $(srcdir)/regenerate-opt-urls.py $(OPT_URLS_HTML_DEPS)
 	$(srcdir)/regenerate-opt-urls.py $(build_htmldir) $(shell dirname $(srcdir))
