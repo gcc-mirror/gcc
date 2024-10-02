@@ -133,75 +133,33 @@ gen_log2 (tree op, location_t loc, tree *result, tree type)
   return stmts;
 }
 
-/* Is it possible to efficiently check that a value of TYPE is a power of 2?
-
-   If yes, returns TYPE.  If no, returns NULL_TREE.  May also return another
-   type.  This indicates that logarithm of the variable can be computed but
-   only after it is converted to this type.
-
-   Also see gen_pow2p.  */
-
-static tree
-can_pow2p (tree type)
-{
-  /* __builtin_popcount supports the unsigned type or its long and long long
-     variants.  Choose the smallest out of those that can still fit TYPE.  */
-  int prec = TYPE_PRECISION (type);
-  int i_prec = TYPE_PRECISION (unsigned_type_node);
-  int li_prec = TYPE_PRECISION (long_unsigned_type_node);
-  int lli_prec = TYPE_PRECISION (long_long_unsigned_type_node);
-
-  if (prec <= i_prec)
-    return unsigned_type_node;
-  else if (prec <= li_prec)
-    return long_unsigned_type_node;
-  else if (prec <= lli_prec)
-    return long_long_unsigned_type_node;
-  else
-    return NULL_TREE;
-}
-
-/* Build a sequence of gimple statements checking that OP is a power of 2.  Use
-   special optabs if target supports them.  Return the result as a
-   boolean_type_node ssa name through RESULT.  Assumes that OP's value will
-   be non-negative.  The generated check may give arbitrary answer for negative
-   values.
-
-   Before computing the check, OP may have to be converted to another type.
-   This should be specified in TYPE.  Use can_pow2p to decide what this type
-   should be.
-
-   Should only be used if can_pow2p returns true for type of OP.  */
+/* Build a sequence of gimple statements checking that OP is a power of 2.
+   Return the result as a boolean_type_node ssa name through RESULT.  Assumes
+   that OP's value will be non-negative.  The generated check may give
+   arbitrary answer for negative values.  */
 
 static gimple_seq
-gen_pow2p (tree op, location_t loc, tree *result, tree type)
+gen_pow2p (tree op, location_t loc, tree *result)
 {
   gimple_seq stmts = NULL;
   gimple_stmt_iterator gsi = gsi_last (stmts);
 
-  built_in_function fn;
-  if (type == unsigned_type_node)
-    fn = BUILT_IN_POPCOUNT;
-  else if (type == long_unsigned_type_node)
-    fn = BUILT_IN_POPCOUNTL;
-  else
-    {
-      fn = BUILT_IN_POPCOUNTLL;
-      gcc_checking_assert (type == long_long_unsigned_type_node);
-    }
+  tree type = TREE_TYPE (op);
+  tree utype = unsigned_type_for (type);
 
-  tree orig_type = TREE_TYPE (op);
+  /* Build (op ^ (op - 1)) > (op - 1).  */
   tree tmp1;
-  if (type != orig_type)
-    tmp1 = gimple_convert (&gsi, false, GSI_NEW_STMT, loc, type, op);
-  else
+  if (types_compatible_p (type, utype))
     tmp1 = op;
-  /* Build __builtin_popcount{l,ll} (op) == 1.  */
-  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc,
-			    as_combined_fn (fn), integer_type_node, tmp1);
-  *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, EQ_EXPR,
-			  boolean_type_node, tmp2,
-			  build_one_cst (integer_type_node));
+  else
+    tmp1 = gimple_convert (&gsi, false, GSI_NEW_STMT, loc, utype, op);
+  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, MINUS_EXPR, utype,
+			    tmp1, build_one_cst (utype));
+  tree tmp3 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, BIT_XOR_EXPR,
+			    utype, tmp1, tmp2);
+  *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, GT_EXPR,
+			  boolean_type_node, tmp3, tmp2);
+
   return stmts;
 }
 
@@ -371,9 +329,6 @@ switch_conversion::is_exp_index_transform_viable (gswitch *swtch)
   m_exp_index_transform_log2_type = can_log2 (index_type, opt_type);
   if (!m_exp_index_transform_log2_type)
     return false;
-  m_exp_index_transform_pow2p_type = can_pow2p (index_type);
-  if (!m_exp_index_transform_pow2p_type)
-    return false;
 
   /* Check that each case label corresponds only to one value
      (no case 1..3).  */
@@ -467,8 +422,7 @@ switch_conversion::exp_index_transform (gswitch *swtch)
   new_edge2->probability = profile_probability::even ();
 
   tree tmp;
-  gimple_seq stmts = gen_pow2p (index, UNKNOWN_LOCATION, &tmp,
-				m_exp_index_transform_pow2p_type);
+  gimple_seq stmts = gen_pow2p (index, UNKNOWN_LOCATION, &tmp);
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_seq_after (&gsi, stmts, GSI_LAST_NEW_STMT);
   gcond *stmt_cond = gimple_build_cond (NE_EXPR, tmp, boolean_false_node,
