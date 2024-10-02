@@ -435,6 +435,10 @@ struct cpp_options
   /* Different -Wimplicit-fallthrough= levels.  */
   unsigned char cpp_warn_implicit_fallthrough;
 
+  /* Nonzero means warn about a define of a different macro right after
+     #ifndef/#if !defined header guard directive.  */
+  unsigned char warn_header_guard;
+
   /* Nonzero means we should look for header.gcc files that remap file
      names.  */
   unsigned char remap;
@@ -709,7 +713,8 @@ enum cpp_warning_reason {
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL,
   CPP_W_INVALID_UTF8,
-  CPP_W_UNICODE
+  CPP_W_UNICODE,
+  CPP_W_HEADER_GUARD
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

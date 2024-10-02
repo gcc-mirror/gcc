@@ -415,6 +415,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wframe-address)
 Wglobal-module
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wglobal-module)
 
+Wheader-guard
+UrlSuffix(gcc/Warning-Options.html#index-Wheader-guard)
+
 Wif-not-aligned
 UrlSuffix(gcc/Warning-Options.html#index-Wif-not-aligned)
 

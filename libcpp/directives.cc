@@ -31,7 +31,11 @@ struct if_stack
 {
   struct if_stack *next;
   location_t line;		/* Line where condition started.  */
-  const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
+  location_t def_loc;		/* Locus of the following #define if any.  */
+  const cpp_hashnode *mi_cmacro;/* Macro name for #ifndef around entire
+				   file.  */
+  const cpp_hashnode *mi_def_cmacro;  /* Macro name in the following
+					 #define.  */
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
   int type;			/* Most recent conditional for diagnostics.  */
@@ -144,7 +148,7 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
    where the extension appears to have come from.  */
 
 #define DIRECTIVE_TABLE							\
-  D(define,	T_DEFINE = 0,	KANDR,     IN_I)			\
+  D(define,	T_DEFINE = 0,	KANDR,     IN_I | IF_COND)		\
   D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)		\
   D(endif,	T_ENDIF,	KANDR,     COND)			\
   D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND)		\
@@ -680,8 +684,8 @@ do_define (cpp_reader *pfile)
 
       /* If we have been requested to expand comments into macros,
 	 then re-enable saving of comments.  */
-      pfile->state.save_comments =
-	! CPP_OPTION (pfile, discard_comments_in_macro_exp);
+      pfile->state.save_comments
+	= ! CPP_OPTION (pfile, discard_comments_in_macro_exp);
 
       if (pfile->cb.before_define)
 	pfile->cb.before_define (pfile);
@@ -691,7 +695,28 @@ do_define (cpp_reader *pfile)
 	  pfile->cb.define (pfile, pfile->directive_line, node);
 
       node->flags &= ~NODE_USED;
+
+      if (pfile->mi_valid
+	  && !pfile->mi_cmacro
+	  && CPP_OPTION (pfile, warn_header_guard)
+	  && node->type == NT_USER_MACRO
+	  && node->value.macro
+	  && node->value.macro->count == 0
+	  && !node->value.macro->fun_like)
+	{
+	  cpp_buffer *buffer = pfile->buffer;
+	  struct if_stack *ifs = buffer->if_stack;
+	  if (ifs
+	      && !ifs->next
+	      && ifs->mi_cmacro
+	      && node != ifs->mi_cmacro)
+	    {
+	      ifs->mi_def_cmacro = node;
+	      ifs->def_loc = pfile->directive_line;
+	    }
+	}
     }
+  pfile->mi_valid = false;
 }
 
 /* Handle #undef.  Mark the identifier NT_VOID in the hash table.  */
@@ -2711,6 +2736,13 @@ do_endif (cpp_reader *pfile)
 	{
 	  pfile->mi_valid = true;
 	  pfile->mi_cmacro = ifs->mi_cmacro;
+	  pfile->mi_loc = ifs->line;
+	  pfile->mi_def_cmacro = nullptr;
+	  if (ifs->mi_def_cmacro && !_cpp_defined_macro_p (pfile->mi_cmacro))
+	    {
+	      pfile->mi_def_cmacro = ifs->mi_def_cmacro;
+	      pfile->mi_def_loc = ifs->def_loc;
+	    }
 	}
 
       buffer->if_stack = ifs->next;
@@ -2732,6 +2764,7 @@ push_conditional (cpp_reader *pfile, int skip, int type,
 
   ifs = XOBNEW (&pfile->buffer_ob, struct if_stack);
   ifs->line = pfile->directive_line;
+  ifs->def_loc = 0;
   ifs->next = buffer->if_stack;
   ifs->skip_elses = pfile->state.skipping || !skip;
   ifs->was_skipping = pfile->state.skipping;
@@ -2741,6 +2774,7 @@ push_conditional (cpp_reader *pfile, int skip, int type,
     ifs->mi_cmacro = cmacro;
   else
     ifs->mi_cmacro = 0;
+  ifs->mi_def_cmacro = nullptr;
 
   pfile->state.skipping = skip;
   buffer->if_stack = ifs;

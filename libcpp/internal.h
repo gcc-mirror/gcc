@@ -495,9 +495,11 @@ struct cpp_reader
      been used.  */
   bool seen_once_only;
 
-  /* Multiple include optimization.  */
+  /* Multiple include optimization and -Wheader-guard warning.  */
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
+  const cpp_hashnode *mi_def_cmacro;
+  location_t mi_loc, mi_def_loc;
   bool mi_valid;
 
   /* Lexing.  */
@@ -696,7 +698,8 @@ _cpp_in_main_source_file (cpp_reader *pfile)
 }
 
 /* True if NODE is a macro for the purposes of ifdef, defined etc.  */
-inline bool _cpp_defined_macro_p (cpp_hashnode *node)
+inline bool
+_cpp_defined_macro_p (const cpp_hashnode *node)
 {
   /* Do not treat conditional macros as being defined.  This is due to
      the powerpc port using conditional macros for 'vector', 'bool',

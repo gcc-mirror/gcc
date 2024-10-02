@@ -372,7 +372,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n}
 -Wformat-y2k  -Wframe-address
 -Wframe-larger-than=@var{byte-size}  -Wno-free-nonheap-object
--Wno-if-not-aligned  -Wno-ignored-attributes
+-Wheader-guard  -Wno-if-not-aligned  -Wno-ignored-attributes
 -Wignored-qualifiers  -Wno-incompatible-pointer-types  -Whardened
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n}
 -Wno-implicit-function-declaration  -Wno-implicit-int
@@ -10114,6 +10114,19 @@ void f (void *d)
 Do not warn if certain built-in macros are redefined.  This suppresses
 warnings for redefinition of @code{__TIMESTAMP__}, @code{__TIME__},
 @code{__DATE__}, @code{__FILE__}, and @code{__BASE_FILE__}.
+
+@opindex Wheader-guard
+@item -Wheader-guard
+Warn if a valid preprocessor header multiple inclusion guard has
+a @code{#define} directive right after @code{#ifndef} or @code{#if !defined}
+directive for the multiple inclusion guard, which defines a different macro
+from the guard macro with a similar name, the actual multiple inclusion guard
+macro isn't defined at the corresponding @code{#ifndef} directive at the end
+of the header, and the @code{#define} directive defines an object-like macro
+with empty definition.  In such case, it often is just a misspelled guard
+name, either in the @code{#ifndef} or @code{#if !defined} directive or in the
+subsequent @code{#define} directive.  This warning is enabled
+by @option{-Wall}.
 
 @opindex Wstrict-prototypes
 @opindex Wno-strict-prototypes

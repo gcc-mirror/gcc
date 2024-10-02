@@ -2253,7 +2253,26 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file,
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
   if (pfile->mi_valid && file->cmacro == NULL)
-    file->cmacro = pfile->mi_cmacro;
+    {
+      file->cmacro = pfile->mi_cmacro;
+      if (pfile->mi_cmacro
+	  && pfile->mi_def_cmacro
+	  && pfile->cb.get_suggestion)
+	{
+	  auto mi_cmacro = (const char *) NODE_NAME (pfile->mi_cmacro);
+	  auto mi_def_cmacro = (const char *) NODE_NAME (pfile->mi_def_cmacro);
+	  const char *names[] = { mi_def_cmacro, NULL };
+	  if (pfile->cb.get_suggestion (pfile, mi_cmacro, names)
+	      && cpp_warning_with_line (pfile, CPP_W_HEADER_GUARD,
+					pfile->mi_loc, 0,
+					"header guard \"%s\" followed by "
+					"\"#define\" of a different macro",
+					mi_cmacro))
+	    cpp_error_at (pfile, CPP_DL_NOTE, pfile->mi_def_loc,
+			  "\"%s\" is defined here; did you mean \"%s\"?",
+			  mi_def_cmacro, mi_cmacro);
+	}
+    }
 
   /* Invalidate control macros in the #including file.  */
   pfile->mi_valid = false;

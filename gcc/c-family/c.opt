@@ -828,6 +828,10 @@ Wglobal-module
 C++ ObjC++ Var(warn_global_module) Warning Init(1)
 Warn about the global module fragment not containing only preprocessing directives.
 
+Wheader-guard
+C ObjC C++ ObjC++ CPP(warn_header_guard) CppReason(CPP_W_HEADER_GUARD) Var(cpp_warn_header_guard) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when #ifndef of a header guard is followed by #define of a different macro with the header guard macro not defined at the end of header.
+
 Wif-not-aligned
 C ObjC C++ ObjC++ Var(warn_if_not_aligned) Init(1) Warning
 Warn when the field in a struct is not aligned.
