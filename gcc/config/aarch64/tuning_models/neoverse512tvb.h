@@ -143,7 +143,7 @@ static const struct tune_params neoverse512tvb_tunings =
     1 /* store_pred.  */
   }, /* memmov_cost.  */
   3, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  AARCH64_FUSE_BASE, /* fusible_ops  */
   "32:16",	/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */

@@ -150,7 +150,7 @@ static const struct tune_params a64fx_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   7, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  AARCH64_FUSE_BASE, /* fusible_ops  */
   "32",	/* function_align.  */
   "16",	/* jump_align.  */
   "32",	/* loop_align.  */

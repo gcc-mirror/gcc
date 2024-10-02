@@ -168,7 +168,7 @@ static const struct tune_params generic_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   2, /* issue_rate  */
-  (AARCH64_FUSE_AES_AESMC | AARCH64_FUSE_CMP_BRANCH), /* fusible_ops  */
+  AARCH64_FUSE_BASE, /* fusible_ops  */
   "16:12",	/* function_align.  */
   "4",	/* jump_align.  */
   "8",	/* loop_align.  */

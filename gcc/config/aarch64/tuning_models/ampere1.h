@@ -88,11 +88,8 @@ static const struct tune_params ampere1_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   4, /* issue_rate  */
-  (AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_AES_AESMC |
-   AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_MOVK_MOVK |
-   AARCH64_FUSE_ALU_BRANCH /* adds, ands, bics, ccmp, ccmn */ |
-   AARCH64_FUSE_CMP_BRANCH),
-  /* fusible_ops  */
+  (AARCH64_FUSE_BASE | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK
+   | AARCH64_FUSE_ALU_BRANCH), /* fusible_ops  */
   "32",		/* function_align.  */
   "4",		/* jump_align.  */
   "32:16",	/* loop_align.  */

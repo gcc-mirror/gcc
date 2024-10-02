@@ -41,8 +41,7 @@ static const struct tune_params saphira_tunings =
     4 /* store_pred.  */
   }, /* memmov_cost.  */
   4, /* issue_rate  */
-  (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
-   | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
+  (AARCH64_FUSE_MOVK | AARCH64_FUSE_ADRP_ADD), /* fuseable_ops  */
   "16",	/* function_align.  */
   "8",	/* jump_align.  */
   "16",	/* loop_align.  */
