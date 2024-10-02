@@ -3864,8 +3864,10 @@ for code that is not valid in C++23 but used to be valid but deprecated
 in C++20 with a pedantic warning that can be disabled with
 @option{-Wno-comma-subscript}.
 
-Enabled by default with @option{-std=c++20} unless @option{-Wno-deprecated},
-and with @option{-std=c++23} regardless of @option{-Wno-deprecated}.
+Enabled by default with @option{-std=c++20} unless
+@option{-Wno-deprecated}, and after @option{-std=c++23} regardless of
+@option{-Wno-deprecated}.  Before @option{-std=c++20}, enabled with
+explicit @option{-Wdeprecated}.
 
 This warning is upgraded to an error by @option{-pedantic-errors} in
 C++23 mode or later.
@@ -4012,7 +4014,7 @@ int k = f - e;
 
 @option{-Wdeprecated-enum-enum-conversion} is enabled by default with
 @option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
-by @option{-Wenum-conversion}.
+by @option{-Wenum-conversion} or @option{-Wdeprecated}.
 
 @opindex Wdeprecated-enum-float-conversion
 @opindex Wno-deprecated-enum-float-conversion
@@ -4030,14 +4032,14 @@ bool b = e <= 3.7;
 
 @option{-Wdeprecated-enum-float-conversion} is enabled by default with
 @option{-std=c++20}.  In pre-C++20 dialects, this warning can be enabled
-by @option{-Wenum-conversion}.
+by @option{-Wenum-conversion} or @option{-Wdeprecated}.
 
 @opindex Wdeprecated-literal-operator
 @opindex Wno-deprecated-literal-operator
 @item -Wdeprecated-literal-operator @r{(C++ and Objective-C++ only)}
 Warn that the declaration of a user-defined literal operator with a
 space before the suffix is deprecated.  This warning is enabled by
-default in C++23.
+default in C++23, or with explicit @option{-Wdeprecated}.
 
 @smallexample
 string operator "" _i18n(const char*, std::size_t); // deprecated
@@ -4740,7 +4742,8 @@ non-class type, @code{volatile}-qualified function return type,
 @code{volatile}-qualified parameter type, and structured bindings of a
 @code{volatile}-qualified type.  This usage was deprecated in C++20.
 
-Enabled by default with @option{-std=c++20}.
+Enabled by default with @option{-std=c++20}.  Before
+@option{-std=c++20}, enabled with explicit @option{-Wdeprecated}.
 
 @opindex Wzero-as-null-pointer-constant
 @opindex Wno-zero-as-null-pointer-constant
@@ -10388,6 +10391,13 @@ disable the error when compiled with @option{-Werror} flag.
 @opindex Wdeprecated
 @item -Wno-deprecated
 Do not warn about usage of deprecated features.  @xref{Deprecated Features}.
+
+In C++, explicitly specifying @option{-Wdeprecated} also enables
+warnings about some features that are deprecated in later language
+standards, specifically @option{-Wcomma-subscript},
+@option{-Wvolatile}, @option{-Wdeprecated-enum-float-conversion},
+@option{-Wdeprecated-enum-enum-conversion}, and
+@option{-Wdeprecated-literal-operator}.
 
 @opindex Wno-deprecated-declarations
 @opindex Wdeprecated-declarations

@@ -996,30 +996,37 @@ c_common_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_register,
 		       cxx_dialect >= cxx17);
 
+  /* Explicit -Wdeprecated turns on warnings from later standards.  */
+  auto deprecated_in = [&](enum cxx_dialect d)
+  {
+    if (OPTION_SET_P (warn_deprecated)) return !!warn_deprecated;
+    return (warn_deprecated && cxx_dialect >= d);
+  };
+
   /* -Wcomma-subscript is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_comma_subscript,
 		       cxx_dialect >= cxx23
-		       || (cxx_dialect == cxx20 && warn_deprecated));
+		       || deprecated_in (cxx20));
 
   /* -Wvolatile is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,
-		       cxx_dialect >= cxx20 && warn_deprecated);
+		       deprecated_in (cxx20));
 
   /* -Wdeprecated-enum-enum-conversion is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_deprecated_enum_enum_conv,
-		       cxx_dialect >= cxx20 && warn_deprecated);
+		       deprecated_in (cxx20));
 
   /* -Wdeprecated-enum-float-conversion is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_deprecated_enum_float_conv,
-		       cxx_dialect >= cxx20 && warn_deprecated);
+		       deprecated_in (cxx20));
 
   /* -Wdeprecated-literal-operator is enabled by default in C++23.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_deprecated_literal_operator,
-		       cxx_dialect >= cxx23 && warn_deprecated);
+		       deprecated_in (cxx23));
 
   /* -Wtemplate-id-cdtor is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
