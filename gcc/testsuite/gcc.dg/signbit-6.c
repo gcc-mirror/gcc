@@ -38,8 +38,10 @@ int main ()
   TYPE a[N];
   TYPE b[N];
 
-  a[0] = INT_MIN;
-  b[0] = INT_MIN;
+  /* This will invoke UB due to -INT32_MIN.  The test is supposed to pass
+     because GCC is supposed to handle this UB case in a predictable way.  */
+  a[0] = INT32_MIN;
+  b[0] = INT32_MIN;
 
   for (int i = 1; i < N; ++i)
     {
