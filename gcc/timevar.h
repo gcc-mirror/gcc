@@ -24,9 +24,7 @@
 namespace json { class value; }
 
 /* Timing variables are used to measure elapsed time in various
-   portions of the compiler.  Each measures elapsed user, system, and
-   wall-clock time, as appropriate to and supported by the host
-   system.
+   portions of the compiler.  Each measures wall time.
 
    Timing variables are defined using the DEFTIMEVAR macro in
    timevar.def.  Each has an enumeral identifier, used when referring
@@ -53,12 +51,6 @@ namespace json { class value; }
 
 struct timevar_time_def
 {
-  /* User time in this process.  */
-  uint64_t user;
-
-  /* System time (if applicable for this host platform) in this process.  */
-  uint64_t sys;
-
   /* Wall clock time.  */
   uint64_t wall;
 
