@@ -16,9 +16,17 @@ foo (int n)
   bar (p, n);
 }
 
+#if defined __AVR__
+/* For AVR devices, AVRtest assigns 8 KiB of stack, which is not quite
+   enough for this test case.  Thus request less memory on AVR.  */
+#define ALLOC 6000
+#else
+#define ALLOC 8192
+#endif
+
 int
 main ()
 {
-  for (int i = 2; i < 8192; ++i)
+  for (int i = 2; i < ALLOC; ++i)
     foo (i);
 }
