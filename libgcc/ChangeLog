@@ -1,3 +1,8 @@
+2024-10-01  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* config/riscv/save-restore.S: Fix .cfi_offset for
+	__riscv_save_[0-3] on RV32.
+
 2024-09-27  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* config/aarch64/aarch64-unwind.h: Fix header path.

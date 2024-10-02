@@ -1,3 +1,19 @@
+2024-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/Indexing.def (FindIndice): New procedure
+	function.
+	* gm2-libs/Indexing.mod (FindIndice): Implement new
+	procedure function.
+
+2024-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116918
+	* gm2-compiler/M2Swig.mod (AnnotateProcedure): Capitalize
+	the generated comment, split comment into multiple lines and
+	terminate the comment with ".  */".
+	(DoCheckUnbounded): Escape the % character with %%.
+	(DoWriteFile): Ditto.
+
 2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/116801

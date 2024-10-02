@@ -1,3 +1,8 @@
+2024-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Don't define __cpp_concepts
+	before C++17.
+
 2024-09-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

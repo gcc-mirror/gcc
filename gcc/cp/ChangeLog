@@ -1,3 +1,20 @@
+2024-10-01  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* constraint.cc (diagnose_trait_expr): New diagnostic.
+	* cp-trait.def (IS_VIRTUAL_BASE_OF): New builtin.
+	* cp-tree.h (enum base_access_flags): Add a new flag to be
+	able to request a search for a virtual base class.
+	* cxx-pretty-print.cc (pp_cxx_userdef_literal): Update the
+	list of GNU extensions to the grammar.
+	* search.cc (struct lookup_base_data_s): Add a field to
+	request searching for a virtual base class.
+	(dfs_lookup_base): Add the ability to look for a virtual
+	base class.
+	(lookup_base): Forward the flag to dfs_lookup_base.
+	* semantics.cc (trait_expr_value): Implement the builtin
+	by calling lookup_base with the new flag.
+	(finish_trait_expr): Handle the new builtin.
+
 2024-09-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109859

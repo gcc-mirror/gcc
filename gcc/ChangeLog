@@ -1,3 +1,102 @@
+2024-10-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_compare): Drop superfluous sub-condition.
+
+2024-10-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-passes.cc (avr_split_fake_addressing_move): Fix
+	a build warning.
+
+2024-10-01  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-sve.md
+	(<fmaxmin><mode>3): Remove this instruction pattern.
+	(cond_<fmaxmin><mode>): Remove this instruction pattern.
+	* config/aarch64/iterators.md: New unspecs and changes to
+	iterators and attrs to use the new unspecs
+
+2024-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.cc (expand_call_inline): Remove the store to the
+	return slot if it is a global variable that is only written to.
+
+2024-10-01  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* doc/extend.texi: Document the new
+	__builtin_is_virtual_base_of builtin; amend the docs for
+	__is_base_of.
+
+2024-10-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116890
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Conversions
+	from bool is also should be considered as wanting to happen.
+
+2024-10-01  Claudio Bantaloukas  <Claudio.Bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_mfp8_type_node): Add node
+	for __mfp8 type.
+	(aarch64_mfp8_ptr_type_node): Add node for __mfp8 pointer type.
+	(aarch64_init_fp8_types): New function to initialise fp8 types and
+	register with language backends.
+	* config/aarch64/aarch64.cc (aarch64_mangle_type): Add ABI mangling for
+	new type.
+	(aarch64_invalid_conversion): Add function implementing
+	TARGET_INVALID_CONVERSION hook that blocks conversion to and from the
+	__mfp8 type.
+	(aarch64_invalid_unary_op): Add function implementing TARGET_UNARY_OP
+	hook that blocks operations on __mfp8 other than &.
+	(aarch64_invalid_binary_op): Extend TARGET_BINARY_OP hook to disallow
+	operations on __mfp8 type.
+	(TARGET_INVALID_CONVERSION): Add define.
+	(TARGET_INVALID_UNARY_OP): Likewise.
+	* config/aarch64/aarch64.h (aarch64_mfp8_type_node): Add node for __mfp8
+	type.
+	(aarch64_mfp8_ptr_type_node): Add node for __mfp8 pointer type.
+	* config/aarch64/arm_private_fp8.h (mfloat8_t): Add typedef.
+
+2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116902
+	PR tree-optimization/116842
+	* tree-vect-stmts.cc (sort_after_uid): Remove again.
+	(hoist_defs_of_uses): Copy defs instead of hoisting them so
+	we can zero their UID.
+	(vectorizable_load): Separate analysis and transform call,
+	do transform on the stmt copy.
+
+2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116905
+	* tree-vect-stmts.cc (supportable_indirect_convert_operation):
+	Fix guard for vect_get_range_info.
+
+2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116906
+	* tree-ssa-pre.cc (prune_clobbered_mems): Add clean_traps
+	argument.
+	(compute_antic_aux): Direct prune_clobbered_mems to prune
+	all traps when any MAX solution was involved in the ANTIC
+	computation.
+	(compute_partial_antic_aux): Adjust.
+
+2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116899
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Set m_workback
+	to vNULL instead of creating it, growing and then truncating.
+	(ranger_cache::fill_block_cache): Use safe_push rather than quick_push
+	on m_workback.
+	(ranger_cache::range_from_dom): Likewise.
+
+2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116898
+	* gimple-range-cache.cc (ranger_cache::block_range): If a SSA_NAME
+	with NULL def_bb isn't SSA_NAME_IS_DEFAULT_DEF, return false instead
+	of failing assertion.  Formatting fix.
+
 2024-09-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ipa/113996

@@ -1,3 +1,61 @@
+2024-10-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_34.f90: New test.
+
+2024-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto28.adb: New test.
+	* gnat.dg/lto28_pkg1.ads: New helper.
+	* gnat.dg/lto28_pkg2.ads: Likewise.
+	* gnat.dg/lto28_pkg2.adb: Likewise.
+	* gnat.dg/lto28_pkg3.ads: Likewise.
+
+2024-10-01  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* g++.dg/ext/is_virtual_base_of.C: New test.
+	* g++.dg/ext/is_virtual_base_of_diagnostic.C: New test.
+
+2024-10-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116890
+	* gcc.dg/tree-ssa/phi-opt-7.c: Update testcase for no ifs left.
+	* gcc.dg/tree-ssa/phi-opt-42.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-43.c: New test.
+
+2024-10-01  Claudio Bantaloukas  <Claudio.Bantaloukas@arm.com>
+
+	* g++.target/aarch64/fp8_mangling.C: New tests exercising mangling.
+	* g++.target/aarch64/fp8_scalar_typecheck_2.C: New tests in C++.
+	* gcc.target/aarch64/fp8_scalar_1.c: New tests in C.
+	* gcc.target/aarch64/fp8_scalar_typecheck_1.c: Likewise.
+
+2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116902
+	PR tree-optimization/116842
+	* g++.dg/torture/pr116902.C: New testcase.
+
+2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116905
+	* gcc.dg/pr116905.c: New testcase.
+
+2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116906
+	* gcc.dg/pr116906-1.c: New testcase.
+	* gcc.dg/pr116906-2.c: Likewise.
+
+2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116899
+	* gcc.dg/bitint-111.c: New test.
+
+2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116898
+	* gcc.dg/bitint-110.c: New test.
+
 2024-09-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* gcc.dg/tree-ssa/absfloat16.c: Fix testcase.
