@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target float16 } */
 /* { dg-options "-frounding-math" } */
+/* { dg-add-options float16 } */
 /* { dg-additional-options "-mavx" { target avx } } */
 
 typedef __attribute__((__vector_size__(16))) _Float16 F;
