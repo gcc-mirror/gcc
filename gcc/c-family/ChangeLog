@@ -1,3 +1,8 @@
+2024-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Don't define __cpp_concepts
+	before C++17.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

@@ -1,3 +1,22 @@
+2024-10-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115361
+	* g++.dg/ext/attr-no-dangling6.C
+	* g++.dg/ext/attr-no-dangling7.C
+	* g++.dg/ext/attr-no-dangling8.C
+	* g++.dg/ext/attr-no-dangling9.C
+	* g++.dg/warn/Wdangling-reference1.C
+	* g++.dg/warn/Wdangling-reference2.C
+	* g++.dg/warn/Wdangling-reference3.C: Make classes non-empty.
+	* g++.dg/warn/Wdangling-reference23.C: New test.
+
+2024-10-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115987
+	* g++.dg/ext/attr-no-dangling6.C: Adjust.
+	* g++.dg/ext/attr-no-dangling7.C: Likewise.
+	* g++.dg/warn/Wdangling-reference22.C: New test.
+
 2024-09-28  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,14 @@
+2024-10-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115361
+	* call.cc (do_warn_dangling_reference): Check is_empty_class.
+
+2024-10-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115987
+	* call.cc (do_warn_dangling_reference): Don't consider a
+	temporary with a scalar type that cannot bind to the return type.
+
 2024-09-20  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
