@@ -117,5 +117,5 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect"  {target { vect_strided8 && vect_int_mult } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" {target { vect_strided8 && vect_int_mult } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 6 "vect" {target { vect_strided8 && vect_int_mult } } } } */
   
