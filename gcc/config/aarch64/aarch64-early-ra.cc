@@ -3389,6 +3389,12 @@ early_ra::is_dead_insn (rtx_insn *insn)
   if (side_effects_p (set))
     return false;
 
+  /* If we can't delete dead exceptions and the insn throws,
+     then the instruction is not dead.  */
+  if (!cfun->can_delete_dead_exceptions
+      && !insn_nothrow_p (insn))
+    return false;
+
   return true;
 }
 
