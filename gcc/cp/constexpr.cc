@@ -1867,6 +1867,12 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
      with virtual bases.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (fun) || DECL_HAS_VTT_PARM_P (fun))
     {
+      if (!ctx->quiet)
+	{
+	  error_at (cp_expr_loc_or_input_loc (t),
+		    "call to non-%<constexpr%> function %qD", fun);
+	  explain_invalid_constexpr_fn (fun);
+	}
       *non_constant_p = true;
       return binds;
     }
