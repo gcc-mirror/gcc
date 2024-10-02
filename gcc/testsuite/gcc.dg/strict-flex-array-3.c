@@ -17,6 +17,21 @@
 	} \
 } while (0);
 
+#ifdef __AVR__
+/* AVR-Libc doesn't support %zd, thus use %d for size_t.  */
+#undef  expect
+#define expect(p, _v) do {						\
+    size_t v = _v;							\
+    if (p == v)								\
+      __builtin_printf ("ok:  %s == %d\n", #p, p);			\
+    else								\
+      {									\
+	__builtin_printf ("WAT: %s == %d (expected %d)\n", #p, p, v);	\
+	FAIL ();							\
+      }									\
+} while (0);
+#endif /* AVR */
+
 struct trailing_array_1 {
     int a;
     int b;
@@ -46,8 +61,8 @@ void __attribute__((__noinline__)) stuff(
     struct trailing_array_3 *trailing_0,
     struct trailing_array_4 *trailing_flex)
 {
-    expect(__builtin_object_size(normal->c, 1), 16);
-    expect(__builtin_object_size(trailing_1->c, 1), 4);
+    expect(__builtin_object_size(normal->c, 1), 4 * __SIZEOF_INT__);
+    expect(__builtin_object_size(trailing_1->c, 1), __SIZEOF_INT__);
     expect(__builtin_object_size(trailing_0->c, 1), 0);
     expect(__builtin_object_size(trailing_flex->c, 1), -1);
 }
