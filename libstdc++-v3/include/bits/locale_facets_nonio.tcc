@@ -637,6 +637,8 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
       && defined __LONG_DOUBLE_IEEE128__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat" // '%Lf' expects 'long double'
 extern "C"
 __typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
 
@@ -671,6 +673,7 @@ __typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
       return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits);
     }
+#pragma GCC diagnostic pop
 #endif
 
 _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11

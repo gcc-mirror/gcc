@@ -423,7 +423,7 @@ namespace tr1
   // TODO: Put this in some kind of shared file.
   namespace
   {
-    _Swallow_assign ignore;
+    _Swallow_assign ignore  __attribute__((__unused__));
   } // anonymous namespace
 }
 
