@@ -150,6 +150,9 @@ namespace __gnu_parallel
     max(const _Tp& __a, const _Tp& __b)
     { return (__a > __b) ? __a : __b; }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // *nary_function
+
   /** @brief Constructs predicate for equality from strict weak
    *  ordering predicate
    */
@@ -165,9 +168,6 @@ namespace __gnu_parallel
       bool operator()(const _T1& __a, const _T2& __b)
       { return !_M_comp(__a, __b) && !_M_comp(__b, __a); }
     };
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // *nary_function
 
   /** @brief Similar to std::unary_negate,
    *  but giving the argument types explicitly. */
