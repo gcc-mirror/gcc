@@ -1,7 +1,7 @@
 /* PR tree-optimization/108540 */
 
 __attribute__((noipa)) void
-bar (const char *cp, unsigned long size, char sign, int dsgn)
+bar (const char *cp, __SIZE_TYPE__ size, char sign, int dsgn)
 {
   if (__builtin_strcmp (cp, "ZERO") != 0 || size != 4 || sign != '-' || dsgn != 1)
     __builtin_abort ();
@@ -11,7 +11,7 @@ __attribute__((noipa)) void
 foo (int x, int ch, double d)
 {
   const char *cp = "";
-  unsigned long size = 0;
+  __SIZE_TYPE__ size = 0;
   char sign = '\0';
   switch (x)
     {
@@ -41,7 +41,7 @@ foo (int x, int ch, double d)
 	sign = '\0';
       if (ch == 'a' || ch == 'A')
 	{
-	  union U { long long l; double d; } u;
+	  union U { __INT64_TYPE__ l; double d; } u;
 	  int dsgn;
 	  u.d = d;
 	  if (u.l < 0)
