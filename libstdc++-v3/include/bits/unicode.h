@@ -625,7 +625,7 @@ inline namespace __v15_1_0
   {
     const auto __end = std::end(__incb_linkers);
     // Array is small enough that linear search is faster than binary search.
-    return std::find(__incb_linkers, __end, __c) != __end;
+    return _GLIBCXX_STD_A::find(__incb_linkers, __end, __c) != __end;
   }
 
   // @pre c <= 0x10FFFF
