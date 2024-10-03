@@ -5415,8 +5415,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* x / y * y == x -> x % y == 0.  */
 (simplify
   (eq:c (mult:c (trunc_div:s @0 @1) @1) @0)
-  (if (TREE_CODE (TREE_TYPE (@0)) != COMPLEX_TYPE)
-    (eq (trunc_mod @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
+  (if (TREE_CODE (TREE_TYPE (@0)) != COMPLEX_TYPE
+       && (!VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (@0)))
+	   || !target_supports_op_p (TREE_TYPE (@0), TRUNC_DIV_EXPR,
+				     optab_vector)
+	   || target_supports_op_p (TREE_TYPE (@0), TRUNC_MOD_EXPR,
+				    optab_vector)))
+   (eq (trunc_mod @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
 
 /* ((X /[ex] A) +- B) * A  -->  X +- A * B.  */
 (for op (plus minus)
