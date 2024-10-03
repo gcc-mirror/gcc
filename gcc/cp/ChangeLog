@@ -1,3 +1,20 @@
+2024-10-02  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116722
+	* constexpr.cc (cxx_bind_parameters_in_call): When !ctx->quiet,
+	emit error before bailing out due to a call to {con,de}structor
+	for a class with virtual bases.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	* pt.cc (iterative_hash_template_arg): Use iterative_hash_hashval_t
+	to hash TYPE_HASH.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	* pt.cc (iterative_hash_template_arg): Avoid using
+	iterative_hash_object.
+
 2024-10-01  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	* constraint.cc (diagnose_trait_expr): New diagnostic.

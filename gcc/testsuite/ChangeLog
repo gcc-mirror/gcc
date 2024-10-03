@@ -1,3 +1,134 @@
+2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116098
+	* c-c++-common/torture/pr116098-2.c: New test.
+	* g++.dg/torture/pr116098-1.C: New test.
+
+2024-10-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/strict-flex-array-3.c (expect) [AVR]: Use custom
+	version due to AVR-LibC limitations.
+	(stuff): Use __SIZEOF_INT__ instead of hard-coded values.
+
+2024-10-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr113596.c: Require less memory so it works on AVR.
+
+2024-10-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/pr93820-2.c: Add dg-require-effective-target int32.
+
+2024-10-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/signbit-6.c (main): Initialize a[0] and b[0]
+	with INT32_MIN (instead of with INT_MIN).
+
+2024-10-02  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-fncall-mask.c: New.
+
+2024-10-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/dlstp-loop-form.c: New test.
+
+2024-10-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/116616
+	* gcc.target/i386/switch-exp-transform-1.c: Don't test for
+	presence of the POPCOUNT internal fn call.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-12a.c: Adjust.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-19c.c: Adjust expectation.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-double-reduc-5.c: Un-XFAIL everywhere.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116596
+	* gcc.dg/vect/slp-11a.c: Fix.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113197
+	* gcc.dg/lto/pr113197_0.c: New testcase.
+	* gcc.dg/lto/pr113197_1.c: Likewise.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116660
+	* gcc.dg/vect/no-scevccp-outer-12.c: Add vect_pack_trunc.
+	* gcc.dg/vect/vect-multitypes-6.c: Add vect_char_add, remove
+	explicit 32bit sparc XFAIL.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116566
+	* gcc.dg/tree-ssa/reassoc-46.c: When using partial vectors
+	the dump-scan doesn't look for the required .COND_ADD so
+	skip for partial vectors.
+
+2024-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96842
+	* c-c++-common/cpp/Wheader-guard-1.c: New test.
+	* c-c++-common/cpp/Wheader-guard-1-1.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-2.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-3.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-4.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-5.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-6.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-7.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-8.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-9.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-10.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-11.h: New test.
+	* c-c++-common/cpp/Wheader-guard-1-12.h: New test.
+	* c-c++-common/cpp/Wheader-guard-2.c: New test.
+	* c-c++-common/cpp/Wheader-guard-2.h: New test.
+	* c-c++-common/cpp/Wheader-guard-3.c: New test.
+	* c-c++-common/cpp/Wheader-guard-3.h: New test.
+
+2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116922
+	* gcc.dg/torture/pr116922.c: New test.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/pr116905.c: Add float16 options.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116654
+	* gcc.target/powerpc/p9-vec-length-full-8.c: Adjust.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116654
+	* gcc.dg/vect/costmodel/ppc/costmodel-slp-12.c: Adjust.
+
+2024-10-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_sub-2-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-2-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-2-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-2-i8.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-2-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-2-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-2-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-2-i8.c: New test.
+
 2024-10-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/unsigned_34.f90: New test.

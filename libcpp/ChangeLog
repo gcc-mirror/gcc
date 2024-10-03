@@ -1,3 +1,26 @@
+2024-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96842
+	* include/cpplib.h (struct cpp_options): Add warn_header_guard member.
+	(enum cpp_warning_reason): Add CPP_W_HEADER_GUARD enumerator.
+	* internal.h (struct cpp_reader): Add mi_def_cmacro, mi_loc and
+	mi_def_loc members.
+	(_cpp_defined_macro_p): Constify type pointed by argument type.
+	Formatting fix.
+	* init.cc (cpp_create_reader): Clear
+	CPP_OPTION (pfile, warn_header_guard).
+	* directives.cc (struct if_stack): Add def_loc and mi_def_cmacro
+	members.
+	(DIRECTIVE_TABLE): Add IF_COND flag to define.
+	(do_define): Set ifs->mi_def_cmacro on a define immediately following
+	#ifndef directive for the guard.  Clear pfile->mi_valid.  Formatting
+	fix.
+	(do_endif): Copy over pfile->mi_def_cmacro and pfile->mi_def_loc
+	if ifs->mi_def_cmacro is set and pfile->mi_cmacro isn't a defined
+	macro.
+	(push_conditional): Clear mi_def_cmacro and mi_def_loc members.
+	* files.cc (_cpp_pop_file_buffer): Emit -Wheader-guard diagnostics.
+
 2024-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* files.cc (finish_embed): Initialize toks to tok rather

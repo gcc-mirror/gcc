@@ -1,3 +1,29 @@
+2024-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/dragonfly/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunc)
+	(__timepunct<wchar_t>::_M_initialize_timepunc): Set
+	_M_date_time_format for C locale. Set %Ex formats to the same
+	values as the %x formats.
+	* config/locale/generic/time_members.cc: Likewise.
+	* config/locale/gnu/time_members.cc: Likewise.
+	* testsuite/22_locale/time_get/get/char/5.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/5.cc: New test.
+
+2024-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__detail::__use_floor): New
+	function.
+	(__detail::__round): New function.
+	(from_stream): Use __detail::__round.
+	* testsuite/std/time/clock/file/io.cc: Check for expected
+	rounding in parse.
+	* testsuite/std/time/clock/gps/io.cc: Likewise.
+
+2024-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/postypes.h: Fix -Wlong-long warning.
+
 2024-10-01  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++/116895

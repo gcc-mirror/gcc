@@ -1,3 +1,91 @@
+2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116098
+	* tree-ssa-phiopt.cc (move_stmt): Rewrite VCEs from integer to integer
+	types to case.
+
+2024-10-02  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* tree-if-conv.cc (predicate_statements): Fix handling of
+	predicated function calls.
+
+2024-10-02  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.cc (check_dec_insn): New helper function containing
+	code hoisted from...
+	(arm_mve_dlstp_check_dec_counter): ... here. Use check_dec_insn to
+	check the validity of the candidate dec_insn.
+
+2024-10-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/116616
+	* tree-switch-conversion.cc (can_pow2p): Remove this function.
+	(gen_pow2p): Generate bitmagic instead of a builtin.  Remove the
+	TYPE parameter.
+	(switch_conversion::is_exp_index_transform_viable): Don't call
+	can_pow2p.
+	(switch_conversion::exp_index_transform): Call gen_pow2p without
+	the TYPE parameter.
+	* tree-switch-conversion.h: Remove
+	m_exp_index_transform_pow2p_type.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113197
+	* tree-ssa-structalias.cc (handle_call_arg): Remove bougs
+	assert.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114855
+	* predict.cc (ssa_expected_value): New global.
+	(expr_expected_value): Do not take bitmap.
+	(expr_expected_value_1): Likewise.  Use ssa_expected_value
+	to cache results for a SSA def.
+	(tree_predict_by_opcode): Adjust.
+	(tree_estimate_probability): Manage ssa_expected_value.
+	(tree_guess_outgoing_edge_probabilities): Likewise.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116566
+	* tree-vect-loop.cc (vectorizable_induction): Handle single-lane
+	SLP for VLA vectors.
+
+2024-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <h8300-hms>: Drop obsolete
+	reference to binaries download docs.
+
+2024-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96842
+	* doc/invoke.texi (Wheader-guard): Document.
+
+2024-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in ($(OPT_URLS_HTML_DEPS)): Add dependencies of the
+	Option-Index.html files on the corresponding index.html files.
+	Don't mention the requirement that all languages that have their own
+	HTML manuals to be enabled.
+
+2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116922
+	* gimple-ssa-backprop.cc (remove_unused_var): Handle phi
+	nodes correctly.
+
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116654
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment):
+	Treat non-grouped accesses like non-SLP.
+
+2024-10-02  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 2 matching pattern for signed SAT_SUB.
+
 2024-10-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_out_compare): Drop superfluous sub-condition.
