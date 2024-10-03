@@ -5,7 +5,12 @@
 
 #include <stdarg.h>
 
+#ifdef __AVR__
+/* AVR doesn't have that much stack... */
+struct S { int a[500]; };
+#else
 struct S { int a[1024]; };
+#endif
 
 int
 f1 (...)
