@@ -12987,7 +12987,7 @@ proc check_effective_target_frame_pointer_for_non_leaf { } {
 # most trivial type.
 proc check_effective_target_tail_call { } {
     return [check_no_messages_and_pattern tail_call ",SIBCALL" rtl-expand {
-	__attribute__((__noipa__)) void foo (void) { }
+	__attribute__((__noipa__)) void foo (void);
 	__attribute__((__noipa__)) void bar (void) { foo(); }
     } {-O2 -fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
@@ -12997,7 +12997,7 @@ proc check_effective_target_tail_call { } {
 # is supported at -O0.
 proc check_effective_target_musttail { } {
     return [check_no_messages_and_pattern musttail ",SIBCALL" rtl-expand {
-	__attribute__((__noipa__)) void foo (void) { }
+	__attribute__((__noipa__)) void foo (void);
 	__attribute__((__noipa__)) void bar (void) { [[gnu::musttail]] return foo(); }
     } {-fdump-rtl-expand-all}] ;# The "SIBCALL" note requires a detailed dump.
 }
