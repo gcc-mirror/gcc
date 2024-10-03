@@ -96,6 +96,8 @@
 
 #define LONG_LONG_TYPE_SIZE	64
 
+#define WIDEST_HARDWARE_FP_SIZE	64
+
 /* This value is the amount of bytes a caller is allowed to drop the stack
    before probing has to be done for stack clash protection.  */
 #define STACK_CLASH_CALLER_GUARD 1024
