@@ -379,11 +379,25 @@ sat_s_sub_##T##_fmt_2 (T x, T y)             \
 #define DEF_SAT_S_SUB_FMT_2_WRAP(T, UT, MIN, MAX) \
   DEF_SAT_S_SUB_FMT_2(T, UT, MIN, MAX)
 
+#define DEF_SAT_S_SUB_FMT_3(T, UT, MIN, MAX)             \
+T __attribute__((noinline))                              \
+sat_s_sub_##T##_fmt_3 (T x, T y)                         \
+{                                                        \
+  T minus;                                               \
+  bool overflow = __builtin_sub_overflow (x, y, &minus); \
+  return overflow ? x < 0 ? MIN : MAX : minus;           \
+}
+#define DEF_SAT_S_SUB_FMT_3_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_3(T, UT, MIN, MAX)
+
 #define RUN_SAT_S_SUB_FMT_1(T, x, y) sat_s_sub_##T##_fmt_1(x, y)
 #define RUN_SAT_S_SUB_FMT_1_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_1(T, x, y)
 
 #define RUN_SAT_S_SUB_FMT_2(T, x, y) sat_s_sub_##T##_fmt_2(x, y)
 #define RUN_SAT_S_SUB_FMT_2_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_2(T, x, y)
+
+#define RUN_SAT_S_SUB_FMT_3(T, x, y) sat_s_sub_##T##_fmt_3(x, y)
+#define RUN_SAT_S_SUB_FMT_3_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_3(T, x, y)
 
 /******************************************************************************/
 /* Saturation Truncate (unsigned and signed)                                  */
