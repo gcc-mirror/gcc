@@ -9079,30 +9079,6 @@ pack_expansion_args_count (tree args)
   return count;
 }
 
-/* Used for a variable of pointer type T (typically 'tree') that starts out
-   pointing to exposed data, but might get changed to point to internal data
-   that can be safely discarded at scope exit.  Use .release when exposing the
-   internal data to prevent ggc_free.  */
-
-template <class T>
-struct free_if_changed_proxy
-{
-  T val;
-  T orig;
-
-  free_if_changed_proxy (T t): val(t), orig(t) { }
-  ~free_if_changed_proxy ()
-  {
-    if (val != orig)
-      ggc_free (val);
-  }
-
-  T release () { return orig = val; }
-
-  operator T () { return val; }
-  free_if_changed_proxy& operator= (const T& t) { val = t; return *this; }
-};
-
 /* Convert all template arguments to their appropriate types, and
    return a vector containing the innermost resulting template
    arguments.  If any error occurs, return error_mark_node. Error and
@@ -9129,6 +9105,8 @@ coerce_template_parms (tree parms,
 		       bool require_all_args /* = true */)
 {
   int nparms, nargs, parm_idx, arg_idx, lost = 0;
+  tree orig_inner_args;
+  tree inner_args;
 
   /* When used as a boolean value, indicates whether this is a
      variadic template parameter list. Since it's an int, we can also
@@ -9174,6 +9152,7 @@ coerce_template_parms (tree parms,
 	++default_p;
     }
 
+  inner_args = orig_inner_args = INNERMOST_TEMPLATE_ARGS (args);
   /* If there are no parameters that follow a parameter pack, we need to
      expand any argument packs so that we can deduce a parameter pack from
      some non-packed args followed by an argument pack, as in variadic85.C.
@@ -9182,7 +9161,6 @@ coerce_template_parms (tree parms,
      with a nested class inside a partial specialization of a class
      template, as in variadic92.C, or when deducing a template parameter pack
      from a sub-declarator, as in variadic114.C.  */
-  free_if_changed_proxy<tree> inner_args = INNERMOST_TEMPLATE_ARGS (args);
   if (!post_variadic_parms)
     inner_args = expand_template_argument_pack (inner_args);
 
@@ -9297,8 +9275,7 @@ coerce_template_parms (tree parms,
 	    {
 	      /* We don't know how many args we have yet, just use the
 		 unconverted (and still packed) ones for now.  */
-	      ggc_free (new_inner_args);
-	      new_inner_args = inner_args.orig;
+	      new_inner_args = orig_inner_args;
 	      arg_idx = nargs;
 	      break;
 	    }
@@ -9352,9 +9329,8 @@ coerce_template_parms (tree parms,
 		  = make_pack_expansion (conv, complain);
 
               /* We don't know how many args we have yet, just
-		 use the unconverted (but unpacked) ones for now.  */
-	      ggc_free (new_inner_args);
-	      new_inner_args = inner_args.release ();
+                 use the unconverted ones for now.  */
+              new_inner_args = inner_args;
 	      arg_idx = nargs;
               break;
             }
