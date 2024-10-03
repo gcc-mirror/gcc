@@ -2019,7 +2019,7 @@ gimple_add_init_for_auto_var (tree decl,
   gimplify_assign (decl, call, seq_p);
 }
 
-/* Generate padding initialization for automatic vairable DECL.
+/* Generate padding initialization for automatic variable DECL.
    C guarantees that brace-init with fewer initializers than members
    aggregate will initialize the rest of the aggregate as-if it were
    static initialization.  In turn static initialization guarantees
