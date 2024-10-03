@@ -1,3 +1,11 @@
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116585
+	* gcc.dg/torture/pr116585.c: New testcase.
+
 2024-10-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/115361

@@ -1,3 +1,13 @@
+2024-10-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116585
+	* tree-data-ref.cc (split_constant_offset_1): When either
+	operand is subject to abnormal coalescing do no further
+	processing.
+
 2024-09-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
