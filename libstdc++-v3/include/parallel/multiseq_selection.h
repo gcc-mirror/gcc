@@ -189,9 +189,12 @@ namespace __gnu_parallel
 
       __r = __rd_log2(__nmax) + 1;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long" // LL literal
       // Pad all lists to this length, at least as long as any ns[__i],
       // equality iff __nmax = 2^__k - 1.
       __l = (1ULL << __r) - 1;
+#pragma GCC diagnostic pop
 
       for (_SeqNumber __i = 0; __i < __m; __i++)
         {

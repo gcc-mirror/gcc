@@ -353,6 +353,7 @@ namespace __parallel
            __gnu_parallel::sequential_tag);
 
   template<typename _FIter1, typename _FIter2, typename _BiPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     search(_FIter1, _FIter1, _FIter2, _FIter2, _BiPredicate);
 

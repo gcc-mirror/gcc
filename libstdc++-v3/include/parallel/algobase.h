@@ -515,11 +515,17 @@ namespace __parallel
   // Public interface
   template<typename _FIterator1, typename _FIterator2,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline _FIterator1
     search(_FIterator1 __begin1, _FIterator1 __end1,
 	   _FIterator2 __begin2, _FIterator2 __end2,
 	   _BinaryPredicate  __pred)
     {
+#if __cplusplus > 201703L
+      if (std::is_constant_evaluated())
+	return _GLIBCXX_STD_A::search(__begin1, __end1, __begin2, __end2,
+				      std::move(__pred));
+#endif
       return __search_switch(__begin1, __end1, __begin2, __end2, __pred,
 			     std::__iterator_category(__begin1),
 			     std::__iterator_category(__begin2));

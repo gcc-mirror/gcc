@@ -191,8 +191,8 @@ namespace __gnu_parallel
 	    // Cannot use volatile variable directly.
 	    _DifferenceType __my_first = __my_job._M_first;
 	    __result = __f(__op, __begin + __my_first);
-	    ++__my_job._M_first;
-	    --__my_job._M_load;
+	    __my_job._M_first += 1;
+	    __my_job._M_load -= 1;
 	  }
 
 	_RAIter __current;

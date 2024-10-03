@@ -84,6 +84,9 @@
 
 #include <parallel/types.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long" // LL literal
+
 /** 
   * @brief Determine at compile(?)-time if the parallel variant of an
   * algorithm should be called.
@@ -338,5 +341,7 @@ namespace __gnu_parallel
     { }
   };
 }
+
+#pragma GCC diagnostic pop
 
 #endif /* _GLIBCXX_PARALLEL_SETTINGS_H */

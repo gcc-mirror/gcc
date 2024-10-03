@@ -84,15 +84,17 @@
 #define n (
 #endif
 #define o (
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || defined(_GLIBCXX_PARALLEL)
 // <random> defines member functions called p()
+// (and <tr1/random> defines them too, which is included by Parallel Mode).
 #else
 #define p (
 #endif
 #define q (
 #define r (
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L || defined(_GLIBCXX_PARALLEL)
 // <random> defines member functions called s() and t()
+// (and <tr1/random> defines them too, which is included by Parallel Mode).
 // <chrono> and <string> define operator ""s in C++14
 #else
 #define s (

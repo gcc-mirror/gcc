@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-Wno-unused-variable" }
 // { dg-additional-options "-D_GLIBCXX_DEBUG" { target c++17_down } }
-
+// { dg-skip-if "cannot mix with DEBUG" { *-*-* } { "-D_GLIBCXX_PARALLEL" } }
 #include <tuple>
 #include <utility>
 

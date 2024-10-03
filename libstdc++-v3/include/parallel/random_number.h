@@ -38,6 +38,9 @@
 
 namespace __gnu_parallel
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long" // LL literal
+
   /** @brief Random number generator, based on the Mersenne twister. */
   class _RandomNumber
   {
@@ -119,6 +122,8 @@ namespace __gnu_parallel
       return __res;
     }
 };
+
+#pragma GCC diagnostic pop
 
 } // namespace __gnu_parallel
 
