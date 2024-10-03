@@ -639,8 +639,9 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
 	  unsigned *v;
-	  /* Nested function lowering might introduce LHSs
-	     that are COMPONENT_REFs.  */
+	  /* Handle only plain var clobbers.
+	     Nested functions lowering and C++ front-end inserts clobbers
+	     which are not just plain variables.  */
 	  if (!VAR_P (lhs))
 	    continue;
 	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
