@@ -347,7 +347,8 @@ public:
   };
 
   sarif_location_manager ()
-  : m_next_location_id (0)
+  : m_related_locations_arr (nullptr),
+    m_next_location_id (0)
   {
   }
 
@@ -357,7 +358,8 @@ public:
   }
 
   virtual void
-  add_related_location (std::unique_ptr<sarif_location> location_obj) = 0;
+  add_related_location (std::unique_ptr<sarif_location> location_obj,
+			sarif_builder &builder);
 
   void
   add_relationship_to_worklist (sarif_location &location_obj,
@@ -371,6 +373,7 @@ public:
   process_worklist_item (sarif_builder &builder,
 			 const worklist_item &item);
 private:
+  json::array *m_related_locations_arr; // borrowed
   unsigned m_next_location_id;
 
   std::list<worklist_item> m_worklist;
@@ -387,8 +390,7 @@ class sarif_result : public sarif_location_manager
 {
 public:
   sarif_result (unsigned idx_within_parent)
-    : m_related_locations_arr (nullptr),
-      m_idx_within_parent (idx_within_parent)
+  : m_idx_within_parent (idx_within_parent)
   {}
 
   unsigned get_index_within_parent () const { return m_idx_within_parent; }
@@ -400,12 +402,7 @@ public:
   void on_diagram (const diagnostic_diagram &diagram,
 		   sarif_builder &builder);
 
-  void
-  add_related_location (std::unique_ptr<sarif_location> location_obj)
-    final override;
-
 private:
-  json::array *m_related_locations_arr; // borrowed
   const unsigned m_idx_within_parent;
 };
 
@@ -584,8 +581,8 @@ public:
 			  sarif_builder &builder);
 
   void
-  add_related_location (std::unique_ptr<sarif_location> location_obj)
-    final override;
+  add_related_location (std::unique_ptr<sarif_location> location_obj,
+			sarif_builder &builder) final override;
 };
 
 /* Abstract base class for use when making an  "artifactContent"
@@ -648,7 +645,8 @@ public:
   sarif_builder (diagnostic_context &context,
 		 const line_maps *line_maps,
 		 const char *main_input_filename_,
-		 bool formatted);
+		 bool formatted,
+		 enum sarif_version version);
   ~sarif_builder ();
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
@@ -696,6 +694,7 @@ public:
   diagnostic_context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer; }
   token_printer &get_token_printer () { return m_token_printer; }
+  enum sarif_version get_version () const { return m_version; }
 
 private:
   class sarif_token_printer : public token_printer
@@ -806,6 +805,7 @@ private:
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   sarif_token_printer m_token_printer;
+  enum sarif_version m_version;
 
   /* The JSON object for the invocation object.  */
   std::unique_ptr<sarif_invocation> m_invocation_obj;
@@ -889,8 +889,16 @@ sarif_invocation::add_notification_for_ice (const diagnostic_info &diagnostic,
 {
   m_success = false;
 
+  auto notification
+    = ::make_unique<sarif_ice_notification> (diagnostic, builder);
+
+  /* Support for related locations within a notification was added
+     in SARIF 2.2; see https://github.com/oasis-tcs/sarif-spec/issues/540  */
+  if (builder.get_version () >= sarif_version::v2_2_prerelease_2024_08_08)
+    notification->process_worklist (builder);
+
   m_notifications_arr->append<sarif_ice_notification>
-    (::make_unique<sarif_ice_notification> (diagnostic, builder));
+    (std::move (notification));
 }
 
 void
@@ -1009,6 +1017,26 @@ sarif_artifact::populate_roles ()
 
 /* class sarif_location_manager : public sarif_object.  */
 
+/* Base implementation of sarif_location_manager::add_related_location vfunc.
+
+   Add LOCATION_OBJ to this object's "relatedLocations" array,
+   creating it if it doesn't yet exist.  */
+
+void
+sarif_location_manager::
+add_related_location (std::unique_ptr<sarif_location> location_obj,
+		      sarif_builder &)
+{
+  if (!m_related_locations_arr)
+    {
+      m_related_locations_arr = new json::array ();
+      /* Give ownership of m_related_locations_arr to json::object;
+	 keep a borrowed ptr.  */
+      set ("relatedLocations", m_related_locations_arr);
+    }
+  m_related_locations_arr->append (std::move (location_obj));
+}
+
 void
 sarif_location_manager::
 add_relationship_to_worklist (sarif_location &location_obj,
@@ -1063,7 +1091,7 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
 		   item.m_where,
 		   diagnostic_artifact_role::scanned_file);
 	    includer_loc_obj = new_loc_obj.get ();
-	    add_related_location (std::move (new_loc_obj));
+	    add_related_location (std::move (new_loc_obj), builder);
 	    auto kv
 	      = std::pair<location_t, sarif_location *> (item.m_where,
 							 includer_loc_obj);
@@ -1095,7 +1123,7 @@ sarif_location_manager::process_worklist_item (sarif_builder &builder,
 		   item.m_where,
 		   diagnostic_artifact_role::scanned_file);
 	    secondary_loc_obj = new_loc_obj.get ();
-	    add_related_location (std::move (new_loc_obj));
+	    add_related_location (std::move (new_loc_obj), builder);
 	    auto kv
 	      = std::pair<location_t, sarif_location *> (item.m_where,
 							 secondary_loc_obj);
@@ -1135,7 +1163,7 @@ sarif_result::on_nested_diagnostic (const diagnostic_info &diagnostic,
   pp_clear_output_area (builder.get_printer ());
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
-  add_related_location (std::move (location_obj));
+  add_related_location (std::move (location_obj), builder);
 }
 
 /* Handle diagrams that occur within a diagnostic group.
@@ -1152,27 +1180,7 @@ sarif_result::on_diagram (const diagnostic_diagram &diagram,
   auto message_obj = builder.make_message_object_for_diagram (diagram);
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
-  add_related_location (std::move (location_obj));
-}
-
-/* Implementation of sarif_location_manager::add_related_location vfunc
-   for result objects.
-
-   Add LOCATION_OBJ to this result's "relatedLocations" array,
-   creating it if it doesn't yet exist.  */
-
-void
-sarif_result::
-add_related_location (std::unique_ptr<sarif_location> location_obj)
-{
-  if (!m_related_locations_arr)
-    {
-      m_related_locations_arr = new json::array ();
-      /* Give ownership of m_related_locations_arr to json::object;
-	 keep a borrowed ptr.  */
-      set ("relatedLocations", m_related_locations_arr);
-    }
-  m_related_locations_arr->append (std::move (location_obj));
+  add_related_location (std::move (location_obj), builder);
 }
 
 /* class sarif_location : public sarif_object.  */
@@ -1326,11 +1334,15 @@ sarif_ice_notification (const diagnostic_info &diagnostic,
 
 void
 sarif_ice_notification::
-add_related_location (std::unique_ptr<sarif_location> location_obj)
+add_related_location (std::unique_ptr<sarif_location> location_obj,
+		      sarif_builder &builder)
 {
-  /* TODO(SARIF 2.2): see https://github.com/oasis-tcs/sarif-spec/issues/540
-     For now, discard all related locations within a notification.  */
-  location_obj = nullptr;
+  /* Support for related locations within a notification was added
+     in SARIF 2.2; see https://github.com/oasis-tcs/sarif-spec/issues/540  */
+  if (builder.get_version () >= sarif_version::v2_2_prerelease_2024_08_08)
+    sarif_location_manager::add_related_location (std::move (location_obj),
+						  builder);
+  /* Otherwise implicitly discard LOCATION_OBJ.  */
 }
 
 /* class sarif_location_relationship : public sarif_object.  */
@@ -1470,11 +1482,13 @@ sarif_thread_flow::add_location ()
 sarif_builder::sarif_builder (diagnostic_context &context,
 			      const line_maps *line_maps,
 			      const char *main_input_filename_,
-			      bool formatted)
+			      bool formatted,
+			      enum sarif_version version)
 : m_context (context),
   m_printer (context.m_printer),
   m_line_maps (line_maps),
   m_token_printer (*this),
+  m_version (version),
   m_invocation_obj
     (::make_unique<sarif_invocation> (*this,
 				      context.get_original_argv ())),
@@ -2639,8 +2653,41 @@ sarif_builder::make_multiformat_message_string (const char *msg) const
   return message_obj;
 }
 
-#define SARIF_SCHEMA "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json"
-#define SARIF_VERSION "2.1.0"
+/* Convert VERSION to a value for the "$schema" property
+   of a "sarifLog" object (SARIF v2.1.0 section 3.13.3).  */
+
+static const char *
+sarif_version_to_url (enum sarif_version version)
+{
+  switch (version)
+    {
+    default:
+      gcc_unreachable ();
+    case sarif_version::v2_1_0:
+      return "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
+    case sarif_version::v2_2_prerelease_2024_08_08:
+      return "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/refs/tags/2.2-prerelease-2024-08-08/sarif-2.2/schema/sarif-2-2.schema.json";
+    }
+}
+
+/* Convert VERSION to a value for the "version" property
+   of a "sarifLog" object (SARIF v2.1.0 section 3.13.2).  */
+
+static const char *
+sarif_version_to_property (enum sarif_version version)
+{
+  switch (version)
+    {
+    default:
+      gcc_unreachable ();
+    case sarif_version::v2_1_0:
+      return "2.1.0";
+    case sarif_version::v2_2_prerelease_2024_08_08:
+      /* I would have used "2.2-prerelease-2024-08-08",
+	 but the schema only accepts "2.2".  */
+      return "2.2";
+    }
+}
 
 /* Make a top-level "sarifLog" object (SARIF v2.1.0 section 3.13).  */
 
@@ -2652,10 +2699,10 @@ make_top_level_object (std::unique_ptr<sarif_invocation> invocation_obj,
   auto log_obj = ::make_unique<sarif_log> ();
 
   /* "$schema" property (SARIF v2.1.0 section 3.13.3) .  */
-  log_obj->set_string ("$schema", SARIF_SCHEMA);
+  log_obj->set_string ("$schema", sarif_version_to_url (m_version));
 
   /* "version" property (SARIF v2.1.0 section 3.13.2).  */
-  log_obj->set_string ("version", SARIF_VERSION);
+  log_obj->set_string ("version", sarif_version_to_property (m_version));
 
   /* "runs" property (SARIF v2.1.0 section 3.13.4).  */
   auto run_arr = ::make_unique<json::array> ();
@@ -3149,9 +3196,10 @@ protected:
   sarif_output_format (diagnostic_context &context,
 		       const line_maps *line_maps,
 		       const char *main_input_filename_,
-		       bool formatted)
+		       bool formatted,
+		       enum sarif_version version)
   : diagnostic_output_format (context),
-    m_builder (context, line_maps, main_input_filename_, formatted)
+    m_builder (context, line_maps, main_input_filename_, formatted, version)
   {}
 
   sarif_builder m_builder;
@@ -3164,8 +3212,10 @@ public:
 			      const line_maps *line_maps,
 			      const char *main_input_filename_,
 			      bool formatted,
+			      enum sarif_version version,
 			      FILE *stream)
-  : sarif_output_format (context, line_maps, main_input_filename_, formatted),
+  : sarif_output_format (context, line_maps, main_input_filename_,
+			 formatted, version),
     m_stream (stream)
   {
   }
@@ -3188,8 +3238,10 @@ public:
 			    const line_maps *line_maps,
 			    const char *main_input_filename_,
 			    bool formatted,
+			    enum sarif_version version,
 			    const char *base_file_name)
-  : sarif_output_format (context, line_maps, main_input_filename_, formatted),
+  : sarif_output_format (context, line_maps, main_input_filename_,
+			 formatted, version),
     m_base_file_name (xstrdup (base_file_name))
   {
   }
@@ -3364,7 +3416,8 @@ void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 					    const line_maps *line_maps,
 					    const char *main_input_filename_,
-					    bool formatted)
+					    bool formatted,
+					    enum sarif_version version)
 {
   gcc_assert (line_maps);
   diagnostic_output_format_init_sarif
@@ -3373,6 +3426,7 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 						line_maps,
 						main_input_filename_,
 						formatted,
+						version,
 						stderr));
 }
 
@@ -3384,6 +3438,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					  const line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
+					  enum sarif_version version,
 					  const char *base_file_name)
 {
   gcc_assert (line_maps);
@@ -3393,6 +3448,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					      line_maps,
 					      main_input_filename_,
 					      formatted,
+					      version,
 					      base_file_name));
 }
 
@@ -3403,6 +3459,7 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted,
+					    enum sarif_version version,
 					    FILE *stream)
 {
   gcc_assert (line_maps);
@@ -3412,6 +3469,7 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 						line_maps,
 						main_input_filename_,
 						formatted,
+						version,
 						stream));
 }
 
@@ -3426,12 +3484,14 @@ namespace selftest {
 class test_sarif_diagnostic_context : public test_diagnostic_context
 {
 public:
-  test_sarif_diagnostic_context (const char *main_input_filename)
+  test_sarif_diagnostic_context (const char *main_input_filename,
+				 enum sarif_version version)
   {
     auto format = ::make_unique<buffered_output_format> (*this,
 							 line_table,
 							 main_input_filename,
-							 true);
+							 true,
+							 version);
     m_format = format.get (); // borrowed
     diagnostic_output_format_init_sarif (*this, std::move (format));
   }
@@ -3448,8 +3508,10 @@ private:
     buffered_output_format (diagnostic_context &context,
 			    const line_maps *line_maps,
 			    const char *main_input_filename_,
-			    bool formatted)
-    : sarif_output_format (context, line_maps, main_input_filename_, formatted)
+			    bool formatted,
+			    enum sarif_version version)
+    : sarif_output_format (context, line_maps, main_input_filename_,
+			   formatted, version)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -3469,7 +3531,8 @@ private:
    with labels and escape-on-output.  */
 
 static void
-test_make_location_object (const line_table_case &case_)
+test_make_location_object (const line_table_case &case_,
+			   enum sarif_version version)
 {
   diagnostic_show_locus_fixture_one_liner_utf8 f (case_);
   location_t line_end = linemap_position_for_column (line_table, 31);
@@ -3480,7 +3543,7 @@ test_make_location_object (const line_table_case &case_)
 
   test_diagnostic_context dc;
 
-  sarif_builder builder (dc, line_table, "MAIN_INPUT_FILENAME", true);
+  sarif_builder builder (dc, line_table, "MAIN_INPUT_FILENAME", true, version);
 
   /* These "columns" are byte offsets, whereas later on the columns
      in the generated SARIF use sarif_builder::get_sarif_column and
@@ -3591,9 +3654,9 @@ test_make_location_object (const line_table_case &case_)
    Verify various basic properties. */
 
 static void
-test_simple_log ()
+test_simple_log (enum sarif_version version)
 {
-  test_sarif_diagnostic_context dc ("MAIN_INPUT_FILENAME");
+  test_sarif_diagnostic_context dc ("MAIN_INPUT_FILENAME", version);
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
@@ -3602,8 +3665,10 @@ test_simple_log ()
 
   // 3.13 sarifLog:
   auto log = log_ptr.get ();
-  ASSERT_JSON_STRING_PROPERTY_EQ (log, "$schema", SARIF_SCHEMA); // 3.13.3
-  ASSERT_JSON_STRING_PROPERTY_EQ (log, "version", SARIF_VERSION); // 3.13.2
+  ASSERT_JSON_STRING_PROPERTY_EQ (log, "$schema",
+				  sarif_version_to_url (version));
+  ASSERT_JSON_STRING_PROPERTY_EQ (log, "version",
+				  sarif_version_to_property (version));
 
   auto runs = EXPECT_JSON_OBJECT_WITH_ARRAY_PROPERTY (log, "runs"); // 3.13.4
   ASSERT_EQ (runs->size (), 1);
@@ -3706,7 +3771,8 @@ test_simple_log ()
 /* As above, but with a "real" location_t.  */
 
 static void
-test_simple_log_2 (const line_table_case &case_)
+test_simple_log_2 (const line_table_case &case_,
+		   enum sarif_version version)
 {
   auto_fix_quotes fix_quotes;
 
@@ -3721,7 +3787,7 @@ test_simple_log_2 (const line_table_case &case_)
   if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  test_sarif_diagnostic_context dc (f.get_filename ());
+  test_sarif_diagnostic_context dc (f.get_filename (), version);
 
   const location_t typo_loc
     = make_location (linemap_position_for_column (line_table, 1),
@@ -3842,11 +3908,11 @@ get_message_from_log (const sarif_log *log)
 /* Tests of messages with embedded links; see SARIF v2.1.0 3.11.6.  */
 
 static void
-test_message_with_embedded_link ()
+test_message_with_embedded_link (enum sarif_version version)
 {
   auto_fix_quotes fix_quotes;
   {
-    test_sarif_diagnostic_context dc ("test.c");
+    test_sarif_diagnostic_context dc ("test.c", version);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
 	       "before %{text%} after",
@@ -3862,7 +3928,7 @@ test_message_with_embedded_link ()
   /* Escaping in message text.
      This is "EXAMPLE 1" from 3.11.6.  */
   {
-    test_sarif_diagnostic_context dc ("test.c");
+    test_sarif_diagnostic_context dc ("test.c", version);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
 
     /* Disable "unquoted sequence of 2 consecutive punctuation
@@ -3902,7 +3968,7 @@ test_message_with_embedded_link ()
       }
     };
 
-    test_sarif_diagnostic_context dc ("test.c");
+    test_sarif_diagnostic_context dc ("test.c", version);
     dc.set_urlifier (new test_urlifier ());
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
@@ -3916,15 +3982,39 @@ test_message_with_embedded_link ()
   }
 }
 
+static void
+run_tests_per_version (const line_table_case &case_)
+{
+  for (int version_idx = 0;
+       version_idx < (int)sarif_version::num_versions;
+       ++version_idx)
+    {
+      enum sarif_version version
+	= static_cast<enum sarif_version> (version_idx);
+
+      test_make_location_object (case_, version);
+      test_simple_log_2 (case_, version);
+    }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 diagnostic_format_sarif_cc_tests ()
 {
-  for_each_line_table_case (test_make_location_object);
-  test_simple_log ();
-  for_each_line_table_case (test_simple_log_2);
-  test_message_with_embedded_link ();
+  for (int version_idx = 0;
+       version_idx < (int)sarif_version::num_versions;
+       ++version_idx)
+    {
+      enum sarif_version version
+	= static_cast<enum sarif_version> (version_idx);
+
+      test_simple_log (version);
+      test_message_with_embedded_link (version);
+    }
+
+  /* Run tests per (line-table-case, SARIF version) pair.  */
+  for_each_line_table_case (run_tests_per_version);
 }
 
 } // namespace selftest

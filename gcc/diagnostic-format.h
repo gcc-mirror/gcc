@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_FORMAT_H
 #define GCC_DIAGNOSTIC_FORMAT_H
 
+#include "diagnostic.h"
+
 /* Abstract base class for a particular output format for diagnostics;
    each value of -fdiagnostics-output-format= will have its own
    implementation.  */
@@ -71,22 +73,5 @@ extern void
 diagnostic_output_format_init_json_file (diagnostic_context &context,
 					 bool formatted,
 					 const char *base_file_name);
-extern void
-diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
-					    const line_maps *line_maps,
-					    const char *main_input_filename_,
-					    bool formatted);
-extern void
-diagnostic_output_format_init_sarif_file (diagnostic_context &context,
-					  const line_maps *line_maps,
-					  const char *main_input_filename_,
-					  bool formatted,
-					  const char *base_file_name);
-extern void
-diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
-					    const line_maps *line_maps,
-					    const char *main_input_filename_,
-					    bool formatted,
-					    FILE *stream);
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_H */

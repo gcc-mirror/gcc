@@ -59,6 +59,10 @@ proc scan-sarif-file-not { args } {
 #
 # Assuming "check-jsonschema" is available, use it to verify that the .sarif
 # file complies with the SARIF schema.
+#
+# The first argument is the version of the SARIF schema to validate against
+# If present can be "2.1" or "2.2"
+# If absent, validate against 2.1
 
 proc verify-sarif-file { args } {
     global srcdir subdir
@@ -66,6 +70,9 @@ proc verify-sarif-file { args } {
     set testcase [testname-for-summary]
     set filename [lindex $testcase 0]
     set output_file "[file tail $filename].sarif"
+
+    set version [lindex $args 0]
+    verbose "sarif version: $version" 2
 
     if { ![check_effective_target_recent_python3] } {
 	unsupported "$testcase verify-sarif-file: python3 is missing"
@@ -91,10 +98,22 @@ proc verify-sarif-file { args } {
 	return	
     }
 
-    set schema_file $srcdir/lib/sarif-schema-2.1.0.json
+    # Handle different versions of SARIF
+    if { $version == "" } {
+	set version "2.1"
+    }
+    
+    if { $version == "2.1" } {
+	set schema_file $srcdir/lib/sarif-schema-2.1.0.json
+    } elseif { $version == "2.2" } {
+	set schema_file $srcdir/lib/sarif-schema-2.2-prerelease-2024-08-08.json
+    } else {
+	fail "unrecognized sarif version: $version"
+	return
+    }
     verbose "schema_file: $schema_file" 2
 
-    set what "$testcase (test .sarif output against SARIF schema)"
+    set what "$testcase (test .sarif output against SARIF $version schema)"
     if [catch {exec check-jsonschema --schemafile $schema_file $output_file} res ] {
 	verbose "verify-sarif-file: res: $res" 2
 	fail "$what"

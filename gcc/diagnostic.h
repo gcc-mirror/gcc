@@ -76,7 +76,11 @@ enum diagnostics_output_format
   DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR,
 
   /* SARIF-based output, to a file.  */
-  DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE
+  DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE,
+
+  /* Undocumented, for use by test suite.
+     SARIF-based output, to a file, using a prerelease of the 2.2 schema.  */
+  DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE
 };
 
 /* An enum for controlling how diagnostic_paths should be printed.  */

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    message module.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -38,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
 #include "diagnostic-format.h"
+#include "diagnostic-format-sarif.h"
 #include "diagnostic-format-text.h"
 #include "edit-context.h"
 #include "selftest.h"
@@ -1625,7 +1627,8 @@ diagnostic_output_format_init (diagnostic_context &context,
       diagnostic_output_format_init_sarif_stderr (context,
 						  line_table,
 						  main_input_filename_,
-						  json_formatting);
+						  json_formatting,
+						  sarif_version::v2_1_0);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
@@ -1633,7 +1636,17 @@ diagnostic_output_format_init (diagnostic_context &context,
 						line_table,
 						main_input_filename_,
 						json_formatting,
+						sarif_version::v2_1_0,
 						base_file_name);
+      break;
+    case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE:
+      diagnostic_output_format_init_sarif_file
+	(context,
+	 line_table,
+	 main_input_filename_,
+	 json_formatting,
+	 sarif_version::v2_2_prerelease_2024_08_08,
+	 base_file_name);
       break;
     }
 }

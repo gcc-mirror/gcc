@@ -1487,6 +1487,10 @@ Enum(diagnostics_output_format) String(sarif-stderr) Value(DIAGNOSTICS_OUTPUT_FO
 EnumValue
 Enum(diagnostics_output_format) String(sarif-file) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE)
 
+EnumValue
+Enum(diagnostics_output_format) String(sarif-file-2.2-prerelease) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE)
+; undocumented
+
 fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
 Print fix-it hints in machine-readable form.
