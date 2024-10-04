@@ -332,10 +332,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       unique_lock<mutex> __lk(_M_mut);
       // Wait until we can set the write-entered flag.
-      _M_gate1.wait(__lk, [=]{ return !_M_write_entered(); });
+      _M_gate1.wait(__lk, [this]{ return !_M_write_entered(); });
       _M_state |= _S_write_entered;
       // Then wait until there are no more readers.
-      _M_gate2.wait(__lk, [=]{ return _M_readers() == 0; });
+      _M_gate2.wait(__lk, [this]{ return _M_readers() == 0; });
     }
 
     bool
@@ -367,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lock_shared()
     {
       unique_lock<mutex> __lk(_M_mut);
-      _M_gate1.wait(__lk, [=]{ return _M_state < _S_max_readers; });
+      _M_gate1.wait(__lk, [this]{ return _M_state < _S_max_readers; });
       ++_M_state;
     }
 
@@ -690,13 +690,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	unique_lock<mutex> __lk(_M_mut);
 	if (!_M_gate1.wait_until(__lk, __abs_time,
-				 [=]{ return !_M_write_entered(); }))
+				 [this]{ return !_M_write_entered(); }))
 	  {
 	    return false;
 	  }
 	_M_state |= _S_write_entered;
 	if (!_M_gate2.wait_until(__lk, __abs_time,
-				 [=]{ return _M_readers() == 0; }))
+				 [this]{ return _M_readers() == 0; }))
 	  {
 	    _M_state ^= _S_write_entered;
 	    // Wake all threads blocked while the write-entered flag was set.
@@ -716,7 +716,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	unique_lock<mutex> __lk(_M_mut);
 	if (!_M_gate1.wait_until(__lk, __abs_time,
-				 [=]{ return _M_state < _S_max_readers; }))
+				 [this]{ return _M_state < _S_max_readers; }))
 	  {
 	    return false;
 	  }
