@@ -3269,7 +3269,7 @@
      u = UNSPEC_IEEE_MAX;
 
    if (MEM_P (operands[2]))
-     force_reg (<MODE>mode, operands[2]);
+     operands[2] = force_reg (<MODE>mode, operands[2]);
    rtvec v = gen_rtvec (2, operands[2], operands[1]);
    rtx tmp = gen_rtx_UNSPEC (<MODE>mode, v, u);
    emit_move_insn (operands[0], tmp);
