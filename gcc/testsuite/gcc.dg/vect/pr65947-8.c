@@ -43,4 +43,4 @@ main (void)
 
 /* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! { vect_fold_extract_last } } } } } */
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_fold_extract_last } } } } */
-/* { dg-final { scan-tree-dump "multiple types in double reduction or condition reduction" "vect" { target { ! { vect_fold_extract_last } } } } } */
+/* { dg-final { scan-tree-dump "multiple types in\[^\\n\\r\]* condition reduction" "vect" { target { ! { vect_fold_extract_last } } } } } */
