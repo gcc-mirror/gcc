@@ -1210,6 +1210,47 @@ diagnostic_context::warning_enabled_at (location_t loc,
   return diagnostic_enabled (&diagnostic);
 }
 
+/* Emit a diagnostic within a diagnostic group on this context.  */
+
+bool
+diagnostic_context::emit_diagnostic (diagnostic_t kind,
+				     rich_location &richloc,
+				     const diagnostic_metadata *metadata,
+				     diagnostic_option_id option_id,
+				     const char *gmsgid, ...)
+{
+  begin_group ();
+
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool ret = emit_diagnostic_va (kind, richloc, metadata, option_id,
+				 gmsgid, &ap);
+  va_end (ap);
+
+  end_group ();
+
+  return ret;
+}
+
+/* As above, but taking a va_list *.  */
+
+bool
+diagnostic_context::emit_diagnostic_va (diagnostic_t kind,
+					rich_location &richloc,
+					const diagnostic_metadata *metadata,
+					diagnostic_option_id option_id,
+					const char *gmsgid, va_list *ap)
+{
+  begin_group ();
+
+  bool ret = diagnostic_impl (&richloc, metadata, option_id,
+			      gmsgid, ap, kind);
+
+  end_group ();
+
+  return ret;
+}
+
 /* Report a diagnostic message (an error or a warning) as specified by
    this diagnostic_context.
    front-end independent format specifiers are exactly those described

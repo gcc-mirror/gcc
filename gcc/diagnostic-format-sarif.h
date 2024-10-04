@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "json.h"
 #include "diagnostic-format.h"
+#include "diagnostic-output-file.h"
 
 class logical_location;
 
@@ -42,7 +43,7 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 					    enum sarif_version version);
 extern void
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
-					  const line_maps *line_maps,
+					  line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
 					  enum sarif_version version,

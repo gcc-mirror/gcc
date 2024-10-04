@@ -1510,9 +1510,10 @@ sarif_builder::sarif_builder (diagnostic_context &context,
      since otherwise the "no diagnostics" case would quote the main input
      file, and doing so noticeably bloated the output seen in analyzer
      integration testing (build directory went from 20G -> 21G).  */
-  get_or_create_artifact (main_input_filename_,
-			  diagnostic_artifact_role::analysis_target,
-			  false);
+  if (main_input_filename_)
+    get_or_create_artifact (main_input_filename_,
+			    diagnostic_artifact_role::analysis_target,
+			    false);
 }
 
 sarif_builder::~sarif_builder ()
@@ -3239,29 +3240,17 @@ public:
 			    const char *main_input_filename_,
 			    bool formatted,
 			    enum sarif_version version,
-			    const char *base_file_name)
+			    diagnostic_output_file output_file)
   : sarif_output_format (context, line_maps, main_input_filename_,
 			 formatted, version),
-    m_base_file_name (xstrdup (base_file_name))
+    m_output_file (std::move (output_file))
   {
+    gcc_assert (m_output_file.get_open_file ());
+    gcc_assert (m_output_file.get_filename ());
   }
   ~sarif_file_output_format ()
   {
-    char *filename = concat (m_base_file_name, ".sarif", nullptr);
-    free (m_base_file_name);
-    m_base_file_name = nullptr;
-    FILE *outf = fopen (filename, "w");
-    if (!outf)
-      {
-	const char *errstr = xstrerror (errno);
-	fnotice (stderr, "error: unable to open '%s' for writing: %s\n",
-		 filename, errstr);
-	free (filename);
-	return;
-      }
-    m_builder.flush_to_file (outf);
-    fclose (outf);
-    free (filename);
+    m_builder.flush_to_file (m_output_file.get_open_file ());
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -3269,7 +3258,7 @@ public:
   }
 
 private:
-  char *m_base_file_name;
+  diagnostic_output_file m_output_file;
 };
 
 /* Print the start of an embedded link to PP, as per 3.11.6.  */
@@ -3435,13 +3424,35 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 
 void
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
-					  const line_maps *line_maps,
+					  line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
 					  enum sarif_version version,
 					  const char *base_file_name)
 {
   gcc_assert (line_maps);
+
+  if (!base_file_name)
+    {
+      rich_location richloc (line_maps, UNKNOWN_LOCATION);
+      context.emit_diagnostic (DK_ERROR, richloc, nullptr, 0,
+			       "unable to determine filename for SARIF output");
+      return;
+    }
+
+  label_text filename = label_text::take (concat (base_file_name,
+						  ".sarif",
+						  nullptr));
+  FILE *outf = fopen (filename.get (), "w");
+  if (!outf)
+    {
+      rich_location richloc (line_maps, UNKNOWN_LOCATION);
+      context.emit_diagnostic (DK_ERROR, richloc, nullptr, 0,
+			       "unable to open %qs for SARIF output: %m",
+			       filename.get ());
+      return;
+    }
+  diagnostic_output_file output_file (outf, true, std::move (filename));
   diagnostic_output_format_init_sarif
     (context,
      ::make_unique<sarif_file_output_format> (context,
@@ -3449,7 +3460,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					      main_input_filename_,
 					      formatted,
 					      version,
-					      base_file_name));
+					      std::move (output_file)));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to STREAM.  */
