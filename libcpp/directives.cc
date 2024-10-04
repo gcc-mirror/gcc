@@ -1492,7 +1492,12 @@ do_line (cpp_reader *pfile)
 		       &new_lineno, &wrapped))
     {
       if (token->type == CPP_EOF)
-	cpp_error (pfile, CPP_DL_ERROR, "unexpected end of file after #line");
+        {
+          if (pfile->buffer->next_line < pfile->buffer->rlimit)
+            cpp_error (pfile, CPP_DL_ERROR, "missing #line directive arguments");
+          else
+            cpp_error (pfile, CPP_DL_ERROR, "unexpected end of file after #line");
+        }
       else
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "\"%s\" after #line is not a positive integer",
