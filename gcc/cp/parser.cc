@@ -19864,9 +19864,11 @@ cp_parser_template_argument (cp_parser* parser)
 
      -- the name of a non-type template-parameter; or
 
-     -- the name of an object or function with external linkage...
+     -- the name of an object or function with external (or internal,
+	since C++11) linkage...
 
-     -- the address of an object or function with external linkage...
+     -- the address of an object or function with external (or internal,
+	since C++11) linkage...
 
      -- a pointer to member...  */
   /* Look for a non-type template parameter.  */
@@ -19929,11 +19931,16 @@ cp_parser_template_argument (cp_parser* parser)
 	    probe = TREE_OPERAND (probe, 1);
 	  if (VAR_P (probe))
 	    {
-	      /* A variable without external linkage might still be a
+	      /* A variable without valid linkage might still be a
 		 valid constant-expression, so no error is issued here
 		 if the external-linkage check fails.  */
-	      if (!address_p && !DECL_EXTERNAL_LINKAGE_P (probe))
-		cp_parser_simulate_error (parser);
+	      if (!address_p)
+		{
+		  linkage_kind linkage = decl_linkage (probe);
+		  if (linkage != lk_external
+		      && (cxx_dialect < cxx11 || linkage != lk_internal))
+		    cp_parser_simulate_error (parser);
+		}
 	    }
 	  else if (is_overloaded_fn (argument))
 	    /* All overloaded functions are allowed; if the external
