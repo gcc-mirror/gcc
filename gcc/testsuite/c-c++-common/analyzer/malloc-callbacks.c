@@ -64,7 +64,7 @@ void test_5 (void)
 {
   allocator_t alloc_fn = get_alloca ();
   deallocator_t dealloc_fn = get_free ();
-  int *ptr = (int *) alloc_fn (sizeof (int)); /* dg-message "region created on stack here" } */
+  int *ptr = (int *) alloc_fn (sizeof (int)); /* { dg-message "region created on stack here" } */
   dealloc_fn (ptr); /* { dg-warning "'free' of 'ptr' which points to memory on the stack" } */
 }
 
