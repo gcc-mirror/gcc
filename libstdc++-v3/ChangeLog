@@ -1,3 +1,125 @@
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/116369
+	* include/debug/safe_base.h (_Safe_sequence_base::_M_iterators):
+	Add mutable specifier.
+	(_Safe_sequence_base::_M_const_iterators): Likewise.
+
+2024-10-03  Kim Gräsman  <kim.grasman@gmail.com>
+
+	Backported from master:
+	2024-08-28  Kim Gräsman  <kim.grasman@gmail.com>
+
+	* include/bits/cpp_type_traits.h: Improve doxygen file docs.
+
+2024-10-03  Kim Gräsman  <kim.grasman@gmail.com>
+
+	Backported from master:
+	2024-08-28  Kim Gräsman  <kim.grasman@gmail.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h: Improve doxygen file
+	docs.
+	* config/cpu/i486/opt/ext/opt_random.h: Likewise.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix check for O_NONBLOCK.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116857
+	* libsupc++/guard.cc (__cxa_guard_acquire): Remove
+	_GLIBCXX_NOTHROW to match declaration in <cxxabi.h>.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/37475
+	* config/locale/gnu/codecvt_members.cc (Guard): New RAII type.
+	(do_out, do_in): Return partial if the destination is empty but
+	the source is not. Use Guard to restore locale on scope exit.
+	Return immediately on any conversion error.
+	(do_encoding, do_max_length, do_length): Use Guard.
+	* testsuite/22_locale/codecvt/in/char/37475.cc: New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/37475.cc: New test.
+	* testsuite/22_locale/codecvt/out/char/37475.cc: New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/37475.cc: New test.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/dragonfly/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunc)
+	(__timepunct<wchar_t>::_M_initialize_timepunc): Set
+	_M_date_time_format for C locale. Set %Ex formats to the same
+	values as the %x formats.
+	* config/locale/generic/time_members.cc: Likewise.
+	* config/locale/gnu/time_members.cc: Likewise.
+	* testsuite/22_locale/time_get/get/char/5.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/5.cc: New test.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (__resize_for_overwrite): Add
+	inline keyword to function with always_inline attribute.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90276
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc
+	[_GLIBCXX_DEBUG]: Add xfail-run-if for debug mode.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc
+	[_GLIBCXX_DEBUG]: Reduce size of test data.
+	* testsuite/25_algorithms/pstl/alg_sorting/includes.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_util.h:
+	Likewise.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::__is_formattable_integer): New
+	variable template and specializations.
+	(template<integral, __char> struct formatter): Replace
+	constraints on first arg with __is_formattable_integer.
+	* testsuite/std/format/formatter/requirements.cc: Check that
+	std::formatter specializations for char8_t and const int are
+	disabled.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116755
+	* include/bits/chrono_io.h (formatter<duration<R,P>>::format):
+	Cast negative integral durations to unsigned rep.
+	* testsuite/20_util/duration/io.cc: Test the most negative
+	integer durations.
+
 2024-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
