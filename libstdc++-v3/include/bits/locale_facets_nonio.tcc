@@ -637,10 +637,14 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
       && defined __LONG_DOUBLE_IEEE128__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat" // '%Lf' expects 'long double'
-extern "C"
-__typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
+// The snprintf symbol in glibc that works with __ibm128 format is not visible
+// when compiling with -mabi=ieeelongdouble so we use this name for it instead.
+// N.B. we don't use __typeof__(__builtin_snprintf) for the type because that
+// would inherit __attribute__((format(printf, 3, 4))) and give a warning for
+// passing __ibm128 to %Lf instead of long double. The warning would be wrong
+// because long double in this TU is __ieee128 and snprintf expects __ibm128.
+extern "C" int
+__glibcxx_snprintfibm128(char*, size_t, const char*, ...) __asm__("snprintf");
 
   template<typename _CharT, typename _OutIter>
     _OutIter
@@ -673,7 +677,6 @@ __typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
       return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits);
     }
-#pragma GCC diagnostic pop
 #endif
 
 _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
