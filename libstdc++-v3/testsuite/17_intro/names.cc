@@ -383,4 +383,11 @@
 #undef y
 #endif
 
+#if defined __GLIBC_PREREQ && defined _FORTIFY_SOURCE
+# if ! __GLIBC_PREREQ(2,41)
+// https://sourceware.org/bugzilla/show_bug.cgi?id=32052
+#  undef sz
+# endif
+#endif
+
 #include <bits/stdc++.h>
