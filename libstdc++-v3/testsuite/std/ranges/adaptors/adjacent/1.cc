@@ -47,6 +47,9 @@ test01()
       VERIFY( &std::get<2>(v3[i]) == &y[i] + 2 );
     }
 
+  // LWG 3848 - adjacent_view etc missing base accessor
+  v3.base();
+
   const auto v5 = y | views::adjacent<5>;
   VERIFY( ranges::equal(v5, views::single(std::make_tuple(1, 2, 3, 4, 5))) );
 

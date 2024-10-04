@@ -8,6 +8,7 @@
 #endif
 
 #include <algorithm>
+#include <sstream>
 #include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -76,10 +77,24 @@ test02()
     VERIFY( ranges::equal(wrapper(x) | views::chunk(i) | views::join, x) );
 }
 
+void
+test03()
+{
+  // LWG 3851 - chunk_view::inner-iterator missing custom iter_move and iter_swap
+  auto ints = std::istringstream{"0 1 2 3 4"};
+  std::vector<std::string> vs{"the", "quick", "brown", "fox"};
+  auto r = views::zip(vs, views::istream<int>(ints)) | views::chunk(2) | views::join;
+  std::vector<std::tuple<std::string, int>> res;
+  ranges::copy(std::move_iterator(r.begin()), std::move_sentinel(r.end()),
+	       std::back_inserter(res));
+  VERIFY( vs.front().empty() );
+}
+
 int
 main()
 {
   static_assert(test01());
   test02<__gnu_test::test_input_range<int>>();
   test02<__gnu_test::test_forward_range<int>>();
+  test03();
 }
