@@ -3275,6 +3275,9 @@ again:
 	}
     }
 
+  /* Roll back state appropriately.  Degrade SLP this time.  From multi-
+     to single-lane to disabled.  */
+  --slp;
   if (dump_enabled_p ())
     {
       if (slp)
@@ -3285,9 +3288,6 @@ again:
 			 "re-trying with SLP disabled\n");
     }
 
-  /* Roll back state appropriately.  Degrade SLP this time.  From multi-
-     to single-lane to disabled.  */
-  --slp;
   /* Restore vectorization factor as it were without SLP.  */
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = saved_vectorization_factor;
   /* Free the SLP instances.  */
