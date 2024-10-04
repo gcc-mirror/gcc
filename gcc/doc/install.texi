@@ -4118,11 +4118,6 @@ This configuration is intended for embedded systems.
 @heading h8300-hms
 Renesas H8/300 series of processors.
 
-The calling convention and structure layout has changed in release 2.6.
-All code must be recompiled.  The calling convention now passes the
-first three arguments in function calls in registers.  Structures are no
-longer a multiple of 2 bytes.
-
 @html
 <hr />
 @end html
