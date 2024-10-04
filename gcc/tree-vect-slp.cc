@@ -4426,25 +4426,28 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	  /* Now build an even or odd extraction from the unpermuted load.  */
 	  lane_permutation_t perm;
 	  perm.create ((group_lanes + 1) / 2);
-	  unsigned level;
-	  if (even
-	      && ((level = 1 << ctz_hwi (even)), true)
-	      && group_lanes % (2 * level) == 0)
+	  unsigned even_level = even ? 1 << ctz_hwi (even) : 0;
+	  unsigned odd_level = odd ? 1 << ctz_hwi (odd) : 0;
+	  if (even_level
+	      && group_lanes % (2 * even_level) == 0
+	      /* ???  When code generating permutes we do not try to pun
+		 to larger component modes so level != 1 isn't a natural
+		 even/odd extract.  Prefer one if possible.  */
+	      && (even_level == 1 || !odd_level || odd_level != 1))
 	    {
 	      /* { 0, 1, ... 4, 5 ..., } */
-	      unsigned level = 1 << ctz_hwi (even);
-	      for (unsigned i = 0; i < group_lanes / 2 / level; ++i)
-		for (unsigned j = 0; j < level; ++j)
-		  perm.quick_push (std::make_pair (0, 2 * i * level + j));
+	      for (unsigned i = 0; i < group_lanes / 2 / even_level; ++i)
+		for (unsigned j = 0; j < even_level; ++j)
+		  perm.quick_push (std::make_pair (0, 2 * i * even_level + j));
 	    }
-	  else if (odd)
+	  else if (odd_level)
 	    {
 	      /* { ..., 2, 3, ... 6, 7 } */
-	      unsigned level = 1 << ctz_hwi (odd);
-	      gcc_assert (group_lanes % (2 * level) == 0);
-	      for (unsigned i = 0; i < group_lanes / 2 / level; ++i)
-		for (unsigned j = 0; j < level; ++j)
-		  perm.quick_push (std::make_pair (0, (2 * i + 1) * level + j));
+	      gcc_assert (group_lanes % (2 * odd_level) == 0);
+	      for (unsigned i = 0; i < group_lanes / 2 / odd_level; ++i)
+		for (unsigned j = 0; j < odd_level; ++j)
+		  perm.quick_push
+		    (std::make_pair (0, (2 * i + 1) * odd_level + j));
 	    }
 	  else
 	    {
