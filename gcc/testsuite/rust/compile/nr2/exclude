@@ -34,7 +34,6 @@ derive_macro6.rs
 expected_type_args2.rs
 expected_type_args3.rs
 feature_rust_attri0.rs
-feature_rust_attri1.rs
 for_lifetimes.rs
 format_args_basic_expansion.rs
 generic-default1.rs
@@ -54,13 +53,11 @@ infer-crate-name.rs
 issue-1019.rs
 issue-1031.rs
 issue-1034.rs
-issue-1128.rs
 issue-1129-2.rs
 issue-1130.rs
 issue-1165.rs
 issue-1173.rs
 issue-1235.rs
-issue-1237.rs
 issue-1272.rs
 issue-1289.rs
 issue-1447.rs
@@ -167,7 +164,6 @@ redef_error2.rs
 redef_error4.rs
 redef_error5.rs
 redef_error6.rs
-rustc_attr1.rs
 self-path1.rs
 self-path2.rs
 sizeof-stray-infer-var-bug.rs
