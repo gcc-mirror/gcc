@@ -15473,6 +15473,24 @@ avr_c_mode_for_floating_type (tree_index ti)
 }
 
 
+/* Implement `TARGET_FLOATN_MODE'.  */
+
+static opt_scalar_float_mode
+avr_floatn_mode (int n, bool /*extended*/)
+{
+  if (n == 32)
+    return SFmode;
+
+  // Notice that -m[long-]double= just tells which library (AVR-LibC
+  // or libgcc/libf7) is providing symbols like sin.  DFmode support
+  // is provided by libf7 no matter what.
+  if (n == 64)
+    return DFmode;
+
+  return opt_scalar_float_mode ();
+}
+
+
 /* Worker function for `FLOAT_LIB_COMPARE_RETURNS_BOOL'.  */
 
 bool
@@ -15704,6 +15722,9 @@ avr_use_lra_p ()
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE avr_c_mode_for_floating_type
+
+#undef  TARGET_FLOATN_MODE
+#define TARGET_FLOATN_MODE avr_floatn_mode
 
 gcc_target targetm = TARGET_INITIALIZER;
 
