@@ -309,7 +309,7 @@ FUNC_BEGIN(__riscv_save_0)
   sw s0, 4(sp)
   .cfi_offset 8, -8
   sw ra, 8(sp)
-  .cfi_offset 1, 0
+  .cfi_offset 1, -4
   jr t0
   .cfi_endproc
 FUNC_END(__riscv_save_2)
