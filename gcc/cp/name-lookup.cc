@@ -3101,7 +3101,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	{
 	  if (same_type_p (TREE_TYPE (old), TREE_TYPE (decl)))
 	    /* Two type decls to the same type.  Do nothing.  */
-	    return old_bval;
+	    return old;
 	  else
 	    goto conflict;
 	}
@@ -3114,7 +3114,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 
 	  /* The new one must be an alias at this point.  */
 	  gcc_assert (DECL_NAMESPACE_ALIAS (decl));
-	  return old_bval;
+	  return old;
 	}
       else if (TREE_CODE (old) == VAR_DECL)
 	{
