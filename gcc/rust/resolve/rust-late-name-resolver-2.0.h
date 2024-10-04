@@ -41,6 +41,7 @@ public:
   // TODO: Do we need this?
   // void visit (AST::Method &) override;
   void visit (AST::IdentifierPattern &) override;
+  void visit (AST::SelfParam &) override;
 
   // resolutions
   void visit (AST::IdentifierExpr &) override;
