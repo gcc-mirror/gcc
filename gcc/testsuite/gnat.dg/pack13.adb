@@ -1,4 +1,4 @@
--- [ dg-do compile }
+-- { dg-do compile }
 
 package body Pack13 is
 
