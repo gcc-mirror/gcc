@@ -175,6 +175,9 @@ public:
   tl::expected<NodeId, DuplicateNameError>
   insert_shadowable (Identifier name, NodeId id, Namespace ns);
 
+  tl::expected<NodeId, DuplicateNameError>
+  insert_globbed (Identifier name, NodeId id, Namespace ns);
+
   /**
    * Run a lambda in a "scoped" context, meaning that a new `Rib` will be pushed
    * before executing the lambda and then popped. This is useful for all kinds

@@ -194,7 +194,6 @@ redef_error6.rs
 rustc_attr1.rs
 self-path1.rs
 self-path2.rs
-shadow1.rs
 sizeof-stray-infer-var-bug.rs
 specify-crate-name.rs
 stmt_with_block_dot.rs

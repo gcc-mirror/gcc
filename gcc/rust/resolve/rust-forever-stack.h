@@ -453,6 +453,22 @@ public:
 							      NodeId id);
 
   /**
+   * Insert a new glob-originated definition in the innermost `Rib` in this
+   * stack
+   *
+   * @param name The name of the definition
+   * @param id Its NodeId
+   *
+   * @return `DuplicateNameError` if that node was already present in the Rib,
+   * the node's `NodeId` otherwise.
+   *
+   * @aborts if there are no `Rib`s inserted in the current map, this function
+   *         aborts the program.
+   */
+  tl::expected<NodeId, DuplicateNameError> insert_globbed (Identifier name,
+							   NodeId id);
+
+  /**
    * Insert a new definition at the root of this stack
    *
    * @param name The name of the definition

@@ -64,6 +64,24 @@ NameResolutionContext::insert_shadowable (Identifier name, NodeId id,
     }
 }
 
+tl::expected<NodeId, DuplicateNameError>
+NameResolutionContext::insert_globbed (Identifier name, NodeId id, Namespace ns)
+{
+  switch (ns)
+    {
+    case Namespace::Values:
+      return values.insert_globbed (name, id);
+    case Namespace::Types:
+      return types.insert_globbed (name, id);
+    case Namespace::Macros:
+      return macros.insert_globbed (name, id);
+    case Namespace::Labels:
+    default:
+      // return labels.insert (name, id);
+      rust_unreachable ();
+    }
+}
+
 void
 NameResolutionContext::map_usage (Usage usage, Definition definition)
 {

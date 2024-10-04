@@ -154,8 +154,8 @@ Late::visit (AST::IdentifierPattern &identifier)
   // do we insert functions in labels as well?
 
   // We do want to ignore duplicated data because some situations rely on it.
-  std::ignore
-    = ctx.values.insert (identifier.get_ident (), identifier.get_node_id ());
+  std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
+					      identifier.get_node_id ());
 }
 
 void
