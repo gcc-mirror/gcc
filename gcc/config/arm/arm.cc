@@ -815,6 +815,9 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P arm_modes_tieable_p
 
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P arm_noce_conversion_profitable_p
+
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS arm_can_change_mode_class
 
@@ -36087,6 +36090,90 @@ arm_get_mask_mode (machine_mode mode)
     return arm_mode_to_pred_mode (mode);
 
   return default_get_mask_mode (mode);
+}
+
+/* Helper function to determine whether SEQ represents a sequence of
+   instructions representing the Armv8.1-M Mainline conditional arithmetic
+   instructions: csinc, csneg and csinv. The cinc instruction is generated
+   using a different mechanism.  */
+
+static bool
+arm_is_v81m_cond_insn (rtx_insn *seq)
+{
+  rtx_insn *curr_insn = seq;
+  rtx set;
+  /* The pattern may start with a simple set with register operands.  Skip
+     through any of those.  */
+  while (curr_insn)
+    {
+      set = single_set (curr_insn);
+      if (!set
+	  || !REG_P (SET_DEST (set)))
+	return false;
+
+      if (!REG_P (SET_SRC (set)))
+	break;
+      curr_insn = NEXT_INSN (curr_insn);
+    }
+
+  if (!set)
+    return false;
+
+  /* The next instruction should be one of:
+     NEG: for csneg,
+     PLUS: for csinc,
+     NOT: for csinv.  */
+  if (GET_CODE (SET_SRC (set)) != NEG
+      && GET_CODE (SET_SRC (set)) != PLUS
+      && GET_CODE (SET_SRC (set)) != NOT)
+    return false;
+
+  curr_insn = NEXT_INSN (curr_insn);
+  if (!curr_insn)
+    return false;
+
+  /* The next instruction should be a COMPARE.  */
+  set = single_set (curr_insn);
+  if (!set
+      || !REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != COMPARE)
+    return false;
+
+  curr_insn = NEXT_INSN (curr_insn);
+  if (!curr_insn)
+    return false;
+
+  /* And the last instruction should be an IF_THEN_ELSE.  */
+  set = single_set (curr_insn);
+  if (!set
+      || !REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+    return false;
+
+  return !NEXT_INSN (curr_insn);
+}
+
+/* For Armv8.1-M Mainline we have both conditional execution through IT blocks,
+   as well as conditional arithmetic instructions controlled by
+   TARGET_COND_ARITH.  To generate the latter we rely on a special part of the
+   "ce" pass that generates code for targets that don't support conditional
+   execution of general instructions known as "noce".  These transformations
+   happen before 'reload_completed'.  However, "noce" also triggers for some
+   unwanted patterns [PR 116444] that prevent "ce" optimisations after reload.
+   To make sure we can get both we use the TARGET_NOCE_CONVERSION_PROFITABLE_P
+   hook to only allow "noce" to generate the patterns that are profitable.  */
+
+bool
+arm_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
+{
+  if (!TARGET_COND_ARITH
+      || reload_completed)
+    return true;
+
+  if (arm_is_v81m_cond_insn (seq))
+    return true;
+
+  return false;
 }
 
 /* Output assembly to read the thread pointer from the appropriate TPIDR

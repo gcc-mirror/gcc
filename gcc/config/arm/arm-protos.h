@@ -210,6 +210,7 @@ extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
 extern opt_machine_mode arm_get_mask_mode (machine_mode mode);
+extern bool arm_noce_conversion_profitable_p (rtx_insn *,struct noce_if_info *);
 
 #endif /* RTX_CODE */
 
