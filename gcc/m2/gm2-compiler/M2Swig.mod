@@ -887,7 +887,7 @@ BEGIN
          fprintf0(f, ') };\n') ;
          IF typeUnique
          THEN
-            fprintf0(f, '%array_functions(') ;
+            fprintf0(f, '%%array_functions(') ;
             DoType(type) ;
             fprintf0(f, ', ') ;
             DoType(type) ;
