@@ -92,9 +92,9 @@ extern "\o{0103}" { int f14 (); }	// { dg-warning "delimited escape sequences ar
 
 float operator "" _my0 (const char *);
 float operator "" "" _my1 (const char *);
-float operator L"" _my2 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator u"" _my3 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
-float operator U"" _my4 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator L"" _my2 (const char *);		// { dg-error "invalid encoding prefix in literal operator" }
+float operator u"" _my3 (const char *);		// { dg-error "invalid encoding prefix in literal operator" }
+float operator U"" _my4 (const char *);		// { dg-error "invalid encoding prefix in literal operator" }
 float operator u8"" _my5 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
 float operator L"" "" _my6 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
 float operator u"" "" _my7 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
@@ -107,4 +107,40 @@ float operator "" u8"" _my13 (const char *);	// { dg-error "invalid encoding pre
 float operator "\0" _my14 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
 float operator "\x00" _my15 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
 float operator "\h" _my16 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
+						// { dg-warning "unknown escape sequence" "" { target *-*-* } .-1 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+// { dg-warning "space between quotes and suffix is deprecated" "" { target c++23 } .-18 }
+
+float operator ""_my20 (const char *);
+float operator "" ""_my21 (const char *);
+float operator L""_my22 (const char *);		// { dg-error "invalid encoding prefix in literal operator" }
+float operator u""_my23 (const char *);		// { dg-error "invalid encoding prefix in literal operator" }
+float operator U""_my24 (const char *);		// { dg-error "invalid encoding prefix in literal operator" }
+float operator u8""_my25 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator L"" ""_my26 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator u"" ""_my27 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator U"" ""_my28 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator u8"" ""_my29 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" L""_my30 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" u""_my31 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" U""_my32 (const char *);	// { dg-error "invalid encoding prefix in literal operator" }
+float operator "" u8""_my33 (const char *);	// { dg-error "invalid encoding prefix in literal operator" "" { target c++20 } }
+float operator "\0"_my34 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
+float operator "\x00"_my35 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
+float operator "\h"_my36 (const char *);	// { dg-error "expected empty string after 'operator' keyword" }
 						// { dg-warning "unknown escape sequence" "" { target *-*-* } .-1 }
