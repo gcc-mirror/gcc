@@ -167,11 +167,13 @@ diagnostic_option_classifier::pch_save (FILE *f)
   unsigned int lengths[2] = { m_classification_history.length (),
 			      m_push_list.length () };
   if (fwrite (lengths, sizeof (lengths), 1, f) != 1
-      || fwrite (m_classification_history.address (),
-		 sizeof (diagnostic_classification_change_t),
-		 lengths[0], f) != lengths[0]
-      || fwrite (m_push_list.address (), sizeof (int),
-		 lengths[1], f) != lengths[1])
+      || (lengths[0]
+	  && fwrite (m_classification_history.address (),
+		     sizeof (diagnostic_classification_change_t),
+		     lengths[0], f) != lengths[0])
+      || (lengths[1]
+	  && fwrite (m_push_list.address (), sizeof (int),
+		     lengths[1], f) != lengths[1]))
     return -1;
   return 0;
 }
@@ -189,11 +191,13 @@ diagnostic_option_classifier::pch_restore (FILE *f)
   gcc_checking_assert (m_push_list.is_empty ());
   m_classification_history.safe_grow (lengths[0]);
   m_push_list.safe_grow (lengths[1]);
-  if (fread (m_classification_history.address (),
-	     sizeof (diagnostic_classification_change_t),
-	     lengths[0], f) != lengths[0]
-      || fread (m_push_list.address (), sizeof (int),
-		lengths[1], f) != lengths[1])
+  if ((lengths[0]
+       && fread (m_classification_history.address (),
+		 sizeof (diagnostic_classification_change_t),
+		 lengths[0], f) != lengths[0])
+      || (lengths[1]
+	  && fread (m_push_list.address (), sizeof (int),
+		    lengths[1], f) != lengths[1]))
     return -1;
   return 0;
 }
