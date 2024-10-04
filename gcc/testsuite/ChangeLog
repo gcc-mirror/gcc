@@ -1,3 +1,110 @@
+2024-10-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/size_clause6.ads: New test.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/udlit-string-literal.h
+	* g++.dg/cpp0x/Wliteral-suffix2.C
+	* g++.dg/cpp0x/constexpr-55708.C
+	* g++.dg/cpp0x/gnu_fext-numeric-literals.C
+	* g++.dg/cpp0x/gnu_fno-ext-numeric-literals.C
+	* g++.dg/cpp0x/pr51420.C
+	* g++.dg/cpp0x/pr60209-neg.C
+	* g++.dg/cpp0x/pr60209.C
+	* g++.dg/cpp0x/pr61038.C
+	* g++.dg/cpp0x/std_fext-numeric-literals.C
+	* g++.dg/cpp0x/std_fno-ext-numeric-literals.C
+	* g++.dg/cpp0x/udlit-addr.C
+	* g++.dg/cpp0x/udlit-args-neg.C
+	* g++.dg/cpp0x/udlit-args.C
+	* g++.dg/cpp0x/udlit-args2.C
+	* g++.dg/cpp0x/udlit-clink-neg.C
+	* g++.dg/cpp0x/udlit-concat-neg.C
+	* g++.dg/cpp0x/udlit-concat.C
+	* g++.dg/cpp0x/udlit-constexpr.C
+	* g++.dg/cpp0x/udlit-cpp98-neg.C
+	* g++.dg/cpp0x/udlit-declare-neg.C
+	* g++.dg/cpp0x/udlit-embed-quote.C
+	* g++.dg/cpp0x/udlit-extended-id-1.C
+	* g++.dg/cpp0x/udlit-extended-id-3.C
+	* g++.dg/cpp0x/udlit-extern-c.C
+	* g++.dg/cpp0x/udlit-friend.C
+	* g++.dg/cpp0x/udlit-general.C
+	* g++.dg/cpp0x/udlit-implicit-conv-neg-char8_t.C
+	* g++.dg/cpp0x/udlit-implicit-conv-neg.C
+	* g++.dg/cpp0x/udlit-inline.C
+	* g++.dg/cpp0x/udlit-mangle.C
+	* g++.dg/cpp0x/udlit-member-neg.C
+	* g++.dg/cpp0x/udlit-namespace.C
+	* g++.dg/cpp0x/udlit-nofunc-neg.C
+	* g++.dg/cpp0x/udlit-nonempty-str-neg.C
+	* g++.dg/cpp0x/udlit-nosuffix-neg.C
+	* g++.dg/cpp0x/udlit-nounder-neg.C
+	* g++.dg/cpp0x/udlit-operator-neg.C
+	* g++.dg/cpp0x/udlit-overflow-neg.C
+	* g++.dg/cpp0x/udlit-overflow.C
+	* g++.dg/cpp0x/udlit-preproc-neg.C
+	* g++.dg/cpp0x/udlit-raw-length.C
+	* g++.dg/cpp0x/udlit-raw-op-string-neg.C
+	* g++.dg/cpp0x/udlit-raw-op.C
+	* g++.dg/cpp0x/udlit-raw-str.C
+	* g++.dg/cpp0x/udlit-resolve-char8_t.C
+	* g++.dg/cpp0x/udlit-resolve.C
+	* g++.dg/cpp0x/udlit-shadow-neg.C
+	* g++.dg/cpp0x/udlit-string-length.C
+	* g++.dg/cpp0x/udlit-suffix-neg.C
+	* g++.dg/cpp0x/udlit-template.C
+	* g++.dg/cpp0x/udlit-tmpl-arg-neg.C
+	* g++.dg/cpp0x/udlit-tmpl-arg-neg2.C
+	* g++.dg/cpp0x/udlit-tmpl-arg.C
+	* g++.dg/cpp0x/udlit-tmpl-parms-neg.C
+	* g++.dg/cpp0x/udlit-tmpl-parms.C
+	* g++.dg/cpp1y/pr57640.C
+	* g++.dg/cpp1y/pr88872.C
+	* g++.dg/cpp26/unevalstr1.C
+	* g++.dg/cpp2a/concepts-pr60391.C
+	* g++.dg/cpp2a/consteval-prop21.C
+	* g++.dg/cpp2a/nontype-class6.C
+	* g++.dg/cpp2a/udlit-class-nttp-ctad-neg.C
+	* g++.dg/cpp2a/udlit-class-nttp-ctad-neg2.C
+	* g++.dg/cpp2a/udlit-class-nttp-ctad.C
+	* g++.dg/cpp2a/udlit-class-nttp-neg.C
+	* g++.dg/cpp2a/udlit-class-nttp-neg2.C
+	* g++.dg/cpp2a/udlit-class-nttp.C
+	* g++.dg/ext/is_convertible2.C
+	* g++.dg/lookup/pr87269.C
+	* g++.dg/cpp0x/udlit_system_header: Adjust for C++23 deprecated
+	operator "" _suffix.
+	* g++.dg/DRs/dr2521.C: New test.
+
+2024-10-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/c23-stdarg-9.c (struct S) [AVR]: Only use int a[500].
+
+2024-10-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116927
+	* g++.dg/torture/pr116927-1.C: New test.
+
+2024-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116301
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2.1.c: New test.
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2.2.c: New test.
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2_1.py: Support
+	script for new test.
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2_2.py: Likewise.
+	* gcc.dg/plugin/crash-test-ice-in-header.h: New header.
+	* gcc.dg/plugin/plugin.exp: Add the new tests.
+	* lib/sarif-schema-2.2-prerelease-2024-08-08.json: New schema
+	file.
+	* lib/scansarif.exp (verify-sarif-file): Add optional argument for
+	specifying which version of the schema to validate against,
+	supporting "2.1" and "2.2", defaulting to the former.
+	Update the test name to capture the version of the schema tested
+	against.
+
 2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/116098

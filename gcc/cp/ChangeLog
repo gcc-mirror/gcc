@@ -1,3 +1,28 @@
+2024-10-03  Jason Merrill  <jason@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* pt.cc (coerce_template_parms): Free garbage vecs.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2024-10-03  Jason Merrill  <jason@redhat.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	* pt.cc (struct free_if_changed_proxy): New.
+	(coerce_template_parms): Use it.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* parser.cc (location_between): New.
+	(cp_parser_operator): Handle -Wdeprecated-literal-operator.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	* pt.cc (struct free_if_changed_proxy): New.
+	(coerce_template_parms): Use it.
+
 2024-10-02  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/116722

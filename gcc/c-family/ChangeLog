@@ -1,3 +1,14 @@
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Explicit -Wdeprecated enables
+	deprecations from later standards.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wdeprecated-literal-operator.
+	* c-opts.cc (c_common_post_options): Default on in C++23.
+	* c.opt.urls: Regenerate.
+
 2024-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/96842

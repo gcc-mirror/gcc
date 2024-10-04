@@ -1,3 +1,95 @@
+2024-10-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/aarch64/aarch64.h (WIDEST_HARDWARE_FP_SIZE): Define to 64.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Explicit -Wdeprecated enables more warnings.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Document -Wdeprecated-literal-operator.
+
+2024-10-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_induction): Initialize
+	vec_init.
+
+2024-10-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116927
+	* config/aarch64/aarch64-early-ra.cc (early_ra::is_dead_insn): Insns
+	that throw are not dead with -fno-delete-dead-exceptions.
+
+2024-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116301
+	* common.opt (sarif-file-2.2-prerelease): New value for
+	-fdiagnostics-format=.
+	* diagnostic-format-sarif.cc
+	(sarif_location_manager::sarif_location_manager): Move
+	initialization of m_related_locations_arr here from sarif_result's
+	ctor.
+	(sarif_location_manager::add_related_location): Implement for
+	base class, taking sarif_result's implementation.  Add "builder"
+	param.
+	(sarif_location_manager::m_related_locations_arr): Move here from
+	class sarif_result.
+	(class sarif_result): Move m_related_locations_arr field and
+	add_related_location vfunc to class sarif_location_manager.
+	(sarif_builder::get_version): New accessor.
+	(sarif_builder::m_version): New field.
+	(sarif_invocation::add_notification_for_ice): Call
+	process_worklist on the notification for SARIF 2.2 and later.
+	(sarif_location_manager::process_worklist_item): Pass builder to
+	calls to add_related_location.
+	(sarif_result::on_nested_diagnostic): Likewise.
+	(sarif_result::on_diagram): Likewise.
+	(sarif_ice_notification::add_related_location): Add builder param.
+	For SARIF 2.2 and later chain up to base class impl so that
+	notifications get related locations.
+	(sarif_builder::sarif_builder): Add "version" param.
+	(SARIF_SCHEMA): Delete in favor of...
+	(sarif_version_to_url): New function.
+	(SARIF_VERSION): Delete in favor of...
+	(sarif_version_to_property): New function.
+	(make_top_level_object): Update to use m_version for "$schema" and
+	"version".
+	(sarif_output_format::sarif_output_format): Add "version" param.
+	(sarif_stream_output_format::sarif_stream_output_format):
+	Likewise.
+	(sarif_file_output_format::sarif_file_output_format): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Likewise.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(selftest::test_sarif_diagnostic_context): Likewise.
+	(selftest::test_make_location_object): Likewise.
+	(selftest::test_simple_log): Likewise.  Update schema and version
+	tests accordingly.
+	(selftest::test_simple_log_2): Add "version" param.
+	(selftest::test_message_with_embedded_link): Likewise.
+	(selftest::run_tests_per_version): New, based on the
+	for_each_line_table_case calls in...
+	(selftest::diagnostic_format_sarif_cc_tests): Add loop over sarif
+	versions.  Replace for_each_line_table_case calls with one
+	call to run_tests_per_version.
+	* diagnostic-format-sarif.h: Include "diagnostic-format.h".
+	(enum class sarif_version): New.
+	(diagnostic_output_format_init_sarif_stderr): Move to here from
+	diagnostic-format.h.  Add "version" param.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* diagnostic-format.h: Include "diagnostic.h".
+	(diagnostic_output_format_init_sarif_stderr): Move from here to
+	diagnostic-format-sarif.h.
+	* diagnostic.cc: Define INCLUDE_MEMORY.
+	Include "diagnostic-format-sarif.h".
+	(diagnostic_output_format_init): Pass sarif_version::v2_1_0 to
+	existing SARIF options.
+	Add case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE.
+	* diagnostic.h (enum diagnostics_output_format): Add
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE.
+
 2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/116098

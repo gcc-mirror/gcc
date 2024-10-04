@@ -1,3 +1,32 @@
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (__unicode::__is_incb_linker): Use
+	_GLIBCXX_STD_A namespace for std::find.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116944
+	* include/parallel/base.h: Move diagnostic pragmas earlier.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets_nonio.tcc (money_put::__do_get):
+	Ignore -Wformat warning for __ibm128 arguments.
+	* include/tr1/tuple (ignore): Ignore -Wunused warning.
+
+2024-10-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_NodeBuilder<>::_S_build): Remove
+	const qualification on _NodeGenerator instance.
+	(_ReuseOrAllocNode<>::operator()(_Args&&...)): Remove const qualification.
+	(_ReuseOrAllocNode<>::_M_nodes): Remove mutable.
+	(_Insert_base<>::_M_insert_range): Remove _NodeGetter const qualification.
+	(_Hash_code_base<>::_M_bucket_index(const _Hash_node_value<>&, size_t)):
+	Simplify noexcept declaration, we already static_assert that _RangeHash functor
+	is noexcept.
+	* include/bits/hashtable.h: Rework comments. Remove const qualifier on
+	_NodeGenerator& arguments.
+
 2024-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/locale/dragonfly/time_members.cc
