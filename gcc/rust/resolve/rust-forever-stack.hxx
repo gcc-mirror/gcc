@@ -133,6 +133,16 @@ ForeverStack<N>::insert_shadowable (Identifier name, NodeId node)
 
 template <Namespace N>
 tl::expected<NodeId, DuplicateNameError>
+ForeverStack<N>::insert_globbed (Identifier name, NodeId node)
+{
+  auto &innermost_rib = peek ();
+
+  return insert_inner (innermost_rib, name.as_string (),
+		       Rib::Definition::Globbed (node));
+}
+
+template <Namespace N>
+tl::expected<NodeId, DuplicateNameError>
 ForeverStack<N>::insert_at_root (Identifier name, NodeId node)
 {
   auto &root_rib = root.rib;
@@ -474,9 +484,17 @@ ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
   auto values = starting_point.rib.get_values ();
 
   for (auto &kv : values)
-    for (auto id : kv.second.ids)
-      if (id == to_find)
-	return {{starting_point, kv.first}};
+    {
+      for (auto id : kv.second.ids_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_non_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_globbed)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+    }
 
   for (auto &child : starting_point.children)
     {

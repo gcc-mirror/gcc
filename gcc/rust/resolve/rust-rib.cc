@@ -22,26 +22,51 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-Rib::Definition::Definition (NodeId id, bool shadowable)
-  : ids ({id}), shadowable (shadowable)
-{}
+Rib::Definition::Definition (NodeId id, Mode mode)
+{
+  switch (mode)
+    {
+    case Mode::SHADOWABLE:
+      ids_shadowable.push_back (id);
+      return;
+    case Mode::NON_SHADOWABLE:
+      ids_non_shadowable.push_back (id);
+      return;
+    case Mode::GLOBBED:
+      ids_globbed.push_back (id);
+      return;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 bool
 Rib::Definition::is_ambiguous () const
 {
-  return shadowable && ids.size () > 1;
+  if (!ids_shadowable.empty ())
+    return false;
+  else if (!ids_non_shadowable.empty ())
+    return ids_non_shadowable.size () > 1;
+  else
+    return ids_globbed.size () > 1;
 }
 
 std::string
 Rib::Definition::to_string () const
 {
   std::stringstream out;
-  out << (shadowable ? "(S)" : "(NS)") << "[";
-  std::string sep;
-  for (auto id : ids)
+  const char *headers[3] = {"(S)[", "] (NS)[", "] (G)["};
+  const std::vector<NodeId> *id_lists[3]
+    = {&ids_shadowable, &ids_non_shadowable, &ids_globbed};
+  for (int i = 0; i < 3; i++)
     {
-      out << sep << id;
-      sep = ",";
+      out << headers[i];
+      std::string sep;
+      for (auto id : *id_lists[i])
+	{
+	  out << sep << id;
+	  sep = ",";
+	}
     }
   out << "]";
   return out.str ();
@@ -50,13 +75,19 @@ Rib::Definition::to_string () const
 Rib::Definition
 Rib::Definition::Shadowable (NodeId id)
 {
-  return Definition (id, true);
+  return Definition (id, Mode::SHADOWABLE);
 }
 
 Rib::Definition
 Rib::Definition::NonShadowable (NodeId id)
 {
-  return Definition (id, false);
+  return Definition (id, Mode::NON_SHADOWABLE);
+}
+
+Rib::Definition
+Rib::Definition::Globbed (NodeId id)
+{
+  return Definition (id, Mode::GLOBBED);
 }
 
 DuplicateNameError::DuplicateNameError (std::string name, NodeId existing)
@@ -85,29 +116,53 @@ Rib::insert (std::string name, Definition def)
       /* No old value */
       values[name] = def;
     }
-  else if (it->second.shadowable && def.shadowable)
-    { /* Both shadowable */
+  else if (it->second.ids_non_shadowable.empty ()
+	   || def.ids_non_shadowable.empty ())
+    { /* No non-shadowable conflict */
       auto &current = values[name];
-      for (auto id : def.ids)
+      for (auto id : def.ids_non_shadowable)
 	{
-	  if (std::find (current.ids.cbegin (), current.ids.cend (), id)
-	      == current.ids.cend ())
-	    current.ids.push_back (id);
+	  if (std::find (current.ids_non_shadowable.cbegin (),
+			 current.ids_non_shadowable.cend (), id)
+	      == current.ids_non_shadowable.cend ())
+	    current.ids_non_shadowable.push_back (id);
 	  else
+	    // TODO: should this produce an error?
+	    return tl::make_unexpected (DuplicateNameError (name, id));
+	}
+      for (auto id : def.ids_shadowable)
+	{
+	  if (std::find (current.ids_shadowable.cbegin (),
+			 current.ids_shadowable.cend (), id)
+	      == current.ids_shadowable.cend ())
+	    current.ids_shadowable.push_back (id);
+	  else
+	    // TODO: should this produce an error?
+	    return tl::make_unexpected (DuplicateNameError (name, id));
+	}
+      for (auto id : def.ids_globbed)
+	{
+	  if (std::find (current.ids_globbed.cbegin (),
+			 current.ids_globbed.cend (), id)
+	      == current.ids_globbed.cend ())
+	    current.ids_globbed.push_back (id);
+	  else
+	    // TODO: should this produce an error?
 	    return tl::make_unexpected (DuplicateNameError (name, id));
 	}
     }
-  else if (it->second.shadowable)
-    { /* Only old shadowable : replace value */
-      values[name] = def;
-    }
-  else /* Neither are shadowable */
+  else /* Multiple non-shadowable */
     {
       return tl::make_unexpected (
-	DuplicateNameError (name, it->second.ids.back ()));
+	DuplicateNameError (name, it->second.ids_non_shadowable.back ()));
     }
 
-  return def.ids.back ();
+  if (!def.ids_shadowable.empty ())
+    return def.ids_shadowable.back ();
+  else if (!def.ids_non_shadowable.empty ())
+    return def.ids_non_shadowable.back ();
+  rust_assert (!def.ids_globbed.empty ());
+  return def.ids_globbed.back ();
 }
 
 tl::optional<Rib::Definition>
