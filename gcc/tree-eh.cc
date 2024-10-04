@@ -2326,18 +2326,32 @@ bool match_lp (eh_landing_pad lp, vec<tree> *exception_types) {
     return false;
 }
 
-void unlink_eh_region (eh_region region, eh_region prev_region) {
-    if (region->outer && region->outer->inner == region) {
-        region->outer->inner = region->next_peer;
+void unlink_eh_region(eh_region region) {
+    gcc_assert(!region->inner);
+    eh_region *link;
+
+    // Check if region is root
+    if (!region->outer) {
+        gcc_unreachable();
+        return;
     }
-    if (prev_region && prev_region->next_peer == region) {
-        prev_region->next_peer = region->next_peer;
+
+    link = &region->outer->inner;
+
+    while (*link && *link != region) {
+        link = &(*link)->next_peer;
     }
-    region->next_peer = NULL;
+
+    // Ensure the region is in the peer chain
+    gcc_assert(*link == region);
+
+    *link = region->next_peer;
+
     region->outer = NULL;
+    region->next_peer = NULL;
 }
 
-void reinsert_eh_region(eh_region region, eh_landing_pad lp) {
+void reinsert_eh_region (eh_region region, eh_landing_pad lp) {
     eh_region new_outer = lp->region;
     region->outer = new_outer;
     
@@ -2351,8 +2365,8 @@ void reinsert_eh_region(eh_region region, eh_landing_pad lp) {
     }
 
     // Set the region index in the region array
-    region->index = vec_safe_length(cfun->eh->region_array);
-    vec_safe_push(cfun->eh->region_array, region);
+    region->index = vec_safe_length (cfun->eh->region_array);
+    vec_safe_push (cfun->eh->region_array, region);
 }
 
 // Function to update landing pad and region in throw_stmt_table for a given statement
@@ -2385,7 +2399,7 @@ void update_stmt_eh_region (gimple *stmt) {
                 }
                 else *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
 
-                unlink_eh_region (region, prev_region);
+                unlink_eh_region (region);
                 reinsert_eh_region (region, lp);
                 return;
 
@@ -2397,7 +2411,7 @@ void update_stmt_eh_region (gimple *stmt) {
                   }
                   else *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
 
-                  unlink_eh_region (region, prev_region);
+                  unlink_eh_region (region);
                   reinsert_eh_region (region, lp);
                   return;
                 }
@@ -2422,7 +2436,7 @@ void update_stmt_eh_region (gimple *stmt) {
 
     if (gimple_code (stmt) == GIMPLE_RESX){
       gresx *resx_stmt = as_a <gresx *> (stmt);
-      gimple_resx_set_region (resx_stmt, region->index);
+      gimple_resx_set_region (resx_stmt, 0);
     }
     else remove_stmt_from_eh_lp_fn (cfun, stmt);
 }
@@ -3089,7 +3103,8 @@ bool extract_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
             }
         }
         return true;
-      }
+    }
+    return true;
 }
 
 // Determine which types can be thrown by a GIMPLE statement and convert them to compile-time types
@@ -3097,14 +3112,14 @@ bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
     if (!flag_exceptions) {
         return false;
     }
+    bool type_exists = true;
 
     switch (gimple_code (stmt)) {
-        case GIMPLE_RESX:
-            extract_fun_resx_types (fun, ret_vector);
-            return !ret_vector->is_empty ();
+        // case GIMPLE_RESX:
+        //     extract_fun_resx_types (fun, ret_vector);
+        //     return !ret_vector->is_empty ();
 
         case GIMPLE_CALL:
-            bool type_exists = false;
             type_exists =  extract_types_for_call (as_a<gcall*> (stmt), ret_vector);
             return type_exists && !ret_vector->is_empty ();
           
@@ -3131,7 +3146,7 @@ void extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector) {
 	  if (bb->aux)continue;
 	  bb->aux = (void*)1;
 	
-	  if (e->flags & EDGE_EH && last_stmt!= NULL){
+	  if (!last_stmt && (e->flags & EDGE_EH)){
       if (gimple_code (last_stmt) == GIMPLE_CALL) {
         // check if its a throw
         extract_types_for_call (as_a<gcall*> (last_stmt), ret_vector);
@@ -3154,6 +3169,8 @@ void extract_fun_resx_types (function *fun, vec<tree> *ret_vector) {
 	gimple_stmt_iterator gsi;
   hash_set<tree> types;
 
+  clear_aux_for_blocks ();
+
 	FOR_EACH_BB_FN (bb, fun)
 	{
 		bb->aux = (void*)1;
@@ -3161,7 +3178,7 @@ void extract_fun_resx_types (function *fun, vec<tree> *ret_vector) {
 		gimple *stmt = gsi_stmt (gsi);
 		auto_vec<tree> resx_types;
 
-		if (stmt_can_throw_external (fun, stmt) && !stmt){
+		if (!stmt && stmt_can_throw_external (fun, stmt)){
 			if (gimple_code (stmt) == GIMPLE_RESX){
 				extract_types_for_resx (stmt, &resx_types);
 			}
