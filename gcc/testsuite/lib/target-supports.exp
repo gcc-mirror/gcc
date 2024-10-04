@@ -3965,6 +3965,17 @@ proc check_effective_target_floatn_nx_runtime {} {
     return 1
 }
 
+# Return 1 when double is at least as good as _Float32x, i.e. double can
+# be used to emulate _Float32x.
+
+proc check_effective_target_double_float32xplus {} {
+    return [check_no_compiler_messages_nocache double_float32xplus object {
+	_Float32x x;
+	int dummy1[__DBL_MANT_DIG__ >= __FLT32X_MANT_DIG__ ? 1 : -1];
+	int dummy2[__DBL_MAX_EXP__ >= __FLT32X_MAX_EXP__ ? 1 : -1];
+    } [add_options_for_float32x ""]]
+}
+
 # Add options needed to use the _FloatN / _FloatNx type indicated in
 # the function name.
 
