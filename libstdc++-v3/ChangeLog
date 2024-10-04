@@ -1,3 +1,23 @@
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116857
+	* libsupc++/guard.cc (__cxa_guard_acquire): Remove
+	_GLIBCXX_NOTHROW to match declaration in <cxxabi.h>.
+
+2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116755
+	* include/bits/chrono_io.h (formatter<duration<R,P>>::format):
+	Cast negative integral durations to unsigned rep.
+	* testsuite/20_util/duration/io.cc: Test the most negative
+	integer durations.
+
 2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
