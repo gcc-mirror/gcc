@@ -63,9 +63,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     count_down(ptrdiff_t __update = 1)
     {
+      __glibcxx_assert(__update >= 0);
       auto const __old = __atomic_impl::fetch_sub(&_M_a,
 				    __update, memory_order::release);
-      if (__old == __update)
+      __glibcxx_assert(__update >= 0);
+      if (__old == static_cast<__detail::__platform_wait_t>(__update))
 	__atomic_impl::notify_all(&_M_a);
     }
 
@@ -88,6 +90,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
+    // This alignas is not redundant, it increases the alignment for
+    // long long on x86.
     alignas(__alignof__(__detail::__platform_wait_t)) __detail::__platform_wait_t _M_a;
   };
 _GLIBCXX_END_NAMESPACE_VERSION
