@@ -3063,6 +3063,8 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))) == 16)
     {
       tmp = SUBREG_REG (op0);
+      if (GET_MODE (tmp) == V8HFmode || GET_MODE (tmp) == V8BFmode)
+	tmp = gen_lowpart (V8HImode, tmp);
       tmp = gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, tmp, tmp), UNSPEC_PTEST);
     }
   else
