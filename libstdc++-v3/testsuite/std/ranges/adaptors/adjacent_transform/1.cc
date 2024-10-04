@@ -39,6 +39,9 @@ test01()
   VERIFY( ranges::size(v3) == 4 );
   VERIFY( ranges::equal(v3, (int[]){3, 4, 5, 6}) );
 
+  // LWG 3848 - adjacent_transform_view etc missing base accessor
+  v3.base();
+
   const auto v6 = y | views::adjacent_transform<6>([](auto...) { return 0; });
   VERIFY( ranges::equal(v6, (int[]){0}) );
 
