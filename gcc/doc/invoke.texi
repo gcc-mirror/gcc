@@ -38206,13 +38206,12 @@ Whether a particular directive is translated is controlled by the
 module mapper.  Header unit names are canonicalized during
 preprocessing.
 
-Dependency information can be emitted for macro import, extending the
-functionality of @option{-MD} and @option{-MMD} options.  Detection of
-import declarations also requires phase 4 preprocessing, and thus
-requires full preprocessing (or compilation).
-
-The @option{-M}, @option{-MM} and @option{-E -fdirectives-only} options halt
-preprocessing before phase 4.
+Dependency information can be emitted for module import, extending the
+functionality of the various @option{-M} options.  Detection of import
+declarations requires phase 4 handling of preprocessor directives, but
+does not require macro expansion, so it is not necessary to use
+@option{-MD}.  See also @option{-fdeps-*} for an alternate format for
+module dependency information.
 
 The @option{-save-temps} option uses @option{-fdirectives-only} for
 preprocessing, and preserve the macro definitions in the preprocessed

@@ -92,10 +92,16 @@ preprocess_file (cpp_reader *pfile)
      cpp_scan_nooutput or cpp_get_token next.  */
   if (flag_no_output && pfile->buffer)
     {
-      /* Scan -included buffers, then the main file.  */
-      while (pfile->buffer->prev)
-	cpp_scan_nooutput (pfile);
-      cpp_scan_nooutput (pfile);
+      if (flag_modules)
+	/* For macros from imported headers we need directives_only_cb.  */
+	scan_translation_unit_directives_only (pfile);
+      else
+	{
+	  /* Scan -included buffers, then the main file.  */
+	  while (pfile->buffer->prev)
+	    cpp_scan_nooutput (pfile);
+	  cpp_scan_nooutput (pfile);
+	}
     }
   else if (cpp_get_options (pfile)->traditional)
     scan_translation_unit_trad (pfile);
@@ -389,28 +395,31 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
       gcc_unreachable ();
 
     case CPP_DO_print:
-      {
-	print.src_line += va_arg (args, unsigned);
+      if (!flag_no_output)
+	{
+	  print.src_line += va_arg (args, unsigned);
 
-	const void *buf = va_arg (args, const void *);
-	size_t size = va_arg (args, size_t);
-	fwrite (buf, 1, size, print.outf);
-      }
+	  const void *buf = va_arg (args, const void *);
+	  size_t size = va_arg (args, size_t);
+	  fwrite (buf, 1, size, print.outf);
+	}
       break;
 
     case CPP_DO_location:
-      maybe_print_line (va_arg (args, location_t));
+      if (!flag_no_output)
+	maybe_print_line (va_arg (args, location_t));
       break;
 
     case CPP_DO_token:
       {
 	const cpp_token *token = va_arg (args, const cpp_token *);
-	location_t spelling_loc = va_arg (args, location_t);
-	streamer->stream (pfile, token, spelling_loc);
+	unsigned flags = 0;
 	if (streamer->filter)
+	  flags = lang_hooks.preprocess_token (pfile, token, streamer->filter);
+	if (!flag_no_output)
 	  {
-	    unsigned flags = lang_hooks.preprocess_token
-	      (pfile, token, streamer->filter);
+	    location_t spelling_loc = va_arg (args, location_t);
+	    streamer->stream (pfile, token, spelling_loc);
 	    if (flags & lang_hooks::PT_begin_pragma)
 	      streamer->begin_pragma ();
 	  }
