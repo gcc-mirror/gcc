@@ -7426,7 +7426,7 @@
 })
 
 (define_insn "indirect_goto"
-  [(unspec [(match_operand 0 "register_operand" "=r")] UNSPEC_GOTO)]
+  [(unspec [(match_operand 0 "register_operand" "r")] UNSPEC_GOTO)]
   "GET_MODE (operands[0]) == word_mode"
   "bv%* %%r0(%0)"
   [(set_attr "type" "branch")
