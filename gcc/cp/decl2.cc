@@ -6124,19 +6124,13 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
      might need special handling for.  */
   if (!VAR_OR_FUNCTION_DECL_P (decl)
-      || DECL_LANG_SPECIFIC (decl) == NULL
       || DECL_THUNK_P (decl))
-    {
-      if (!decl_dependent_p (decl)
-	  && !require_deduced_type (decl, complain))
-	return false;
-      return true;
-    }
+    return true;
 
   /* We only want to do this processing once.  We don't need to keep trying
      to instantiate inline templates, because unit-at-a-time will make sure
      we get them compiled before functions that want to inline them.  */
-  if (DECL_ODR_USED (decl))
+  if (DECL_LANG_SPECIFIC (decl) && DECL_ODR_USED (decl))
     return true;
 
   if (flag_concepts && TREE_CODE (decl) == FUNCTION_DECL
@@ -6163,6 +6157,13 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
       || (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
     maybe_instantiate_decl (decl);
+
+  if (!decl_dependent_p (decl)
+      && !require_deduced_type (decl, complain))
+    return false;
+
+  if (DECL_LANG_SPECIFIC (decl) == NULL)
+    return true;
 
   if (processing_template_decl || in_template_context)
     return true;
