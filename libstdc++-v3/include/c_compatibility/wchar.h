@@ -41,7 +41,6 @@ using std::btowc;
 using std::wctob;
 using std::fgetwc;
 using std::fgetws;
-using std::fgetws;
 using std::fputwc;
 using std::fputws;
 using std::fwide;
