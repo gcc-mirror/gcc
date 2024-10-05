@@ -5637,6 +5637,21 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 				  arrayexpr->ts.kind);
       break;
 
+    case BT_UNSIGNED:
+      /* For MAXVAL, the minimum is zero, for MINVAL it is HUGE().  */
+      if (op == GT_EXPR)
+	{
+	  tmp = gfc_get_unsigned_type (arrayexpr->ts.kind);
+	  tmp = build_int_cst (tmp, 0);
+	}
+      else
+	{
+	  n = gfc_validate_kind (arrayexpr->ts.type, arrayexpr->ts.kind, false);
+	  tmp = gfc_conv_mpz_unsigned_to_tree (gfc_unsigned_kinds[n].huge,
+					       expr->ts.kind);
+	}
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -5644,8 +5659,9 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   /* We start with the most negative possible value for MAXLOC, and the most
      positive possible value for MINLOC. The most negative possible value is
      -HUGE for BT_REAL and (-HUGE - 1) for BT_INTEGER; the most positive
-     possible value is HUGE in both cases.  */
-  if (op == GT_EXPR)
+     possible value is HUGE in both cases.  BT_UNSIGNED has already been dealt
+     with above.  */
+  if (op == GT_EXPR && expr->ts.type != BT_UNSIGNED)
     tmp = fold_build1_loc (input_location, NEGATE_EXPR, TREE_TYPE (tmp), tmp);
   if (op == GT_EXPR && arrayexpr->ts.type == BT_INTEGER)
     tmp = fold_build2_loc (input_location, MINUS_EXPR, TREE_TYPE (tmp), tmp,

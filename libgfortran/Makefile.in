@@ -245,29 +245,42 @@ am__objects_7 = generated/maxloc0_4_i1.lo generated/maxloc0_8_i1.lo \
 	generated/maxloc0_16_i4.lo generated/maxloc0_4_i8.lo \
 	generated/maxloc0_8_i8.lo generated/maxloc0_16_i8.lo \
 	generated/maxloc0_4_i16.lo generated/maxloc0_8_i16.lo \
-	generated/maxloc0_16_i16.lo generated/maxloc0_4_r4.lo \
-	generated/maxloc0_8_r4.lo generated/maxloc0_16_r4.lo \
-	generated/maxloc0_4_r8.lo generated/maxloc0_8_r8.lo \
-	generated/maxloc0_16_r8.lo generated/maxloc0_4_r10.lo \
-	generated/maxloc0_8_r10.lo generated/maxloc0_16_r10.lo \
-	generated/maxloc0_4_r16.lo generated/maxloc0_8_r16.lo \
-	generated/maxloc0_16_r16.lo generated/maxloc0_4_r17.lo \
-	generated/maxloc0_8_r17.lo generated/maxloc0_16_r17.lo
+	generated/maxloc0_16_i16.lo generated/maxloc0_4_m1.lo \
+	generated/maxloc0_8_m1.lo generated/maxloc0_16_m1.lo \
+	generated/maxloc0_4_m2.lo generated/maxloc0_8_m2.lo \
+	generated/maxloc0_16_m2.lo generated/maxloc0_4_m4.lo \
+	generated/maxloc0_8_m4.lo generated/maxloc0_16_m4.lo \
+	generated/maxloc0_4_m8.lo generated/maxloc0_8_m8.lo \
+	generated/maxloc0_16_m8.lo generated/maxloc0_4_m16.lo \
+	generated/maxloc0_8_m16.lo generated/maxloc0_16_m16.lo \
+	generated/maxloc0_4_r4.lo generated/maxloc0_8_r4.lo \
+	generated/maxloc0_16_r4.lo generated/maxloc0_4_r8.lo \
+	generated/maxloc0_8_r8.lo generated/maxloc0_16_r8.lo \
+	generated/maxloc0_4_r10.lo generated/maxloc0_8_r10.lo \
+	generated/maxloc0_16_r10.lo generated/maxloc0_4_r16.lo \
+	generated/maxloc0_8_r16.lo generated/maxloc0_16_r16.lo \
+	generated/maxloc0_4_r17.lo generated/maxloc0_8_r17.lo \
+	generated/maxloc0_16_r17.lo
 am__objects_8 = generated/maxloc1_4_i1.lo generated/maxloc1_8_i1.lo \
 	generated/maxloc1_16_i1.lo generated/maxloc1_4_i2.lo \
 	generated/maxloc1_8_i2.lo generated/maxloc1_16_i2.lo \
 	generated/maxloc1_4_i4.lo generated/maxloc1_8_i4.lo \
-	generated/maxloc1_16_i4.lo generated/maxloc1_4_i8.lo \
-	generated/maxloc1_8_i8.lo generated/maxloc1_16_i8.lo \
-	generated/maxloc1_4_i16.lo generated/maxloc1_8_i16.lo \
-	generated/maxloc1_16_i16.lo generated/maxloc1_4_r4.lo \
-	generated/maxloc1_8_r4.lo generated/maxloc1_16_r4.lo \
-	generated/maxloc1_4_r8.lo generated/maxloc1_8_r8.lo \
-	generated/maxloc1_16_r8.lo generated/maxloc1_4_r10.lo \
-	generated/maxloc1_8_r10.lo generated/maxloc1_16_r10.lo \
-	generated/maxloc1_4_r16.lo generated/maxloc1_8_r16.lo \
-	generated/maxloc1_16_r16.lo generated/maxloc1_4_r17.lo \
-	generated/maxloc1_8_r17.lo generated/maxloc1_16_r17.lo
+	generated/maxloc1_16_i4.lo generated/maxloc1_4_m1.lo \
+	generated/maxloc1_8_m1.lo generated/maxloc1_16_m1.lo \
+	generated/maxloc1_4_m2.lo generated/maxloc1_8_m2.lo \
+	generated/maxloc1_16_m2.lo generated/maxloc1_4_m4.lo \
+	generated/maxloc1_8_m4.lo generated/maxloc1_16_m4.lo \
+	generated/maxloc1_4_m8.lo generated/maxloc1_8_m8.lo \
+	generated/maxloc1_16_m8.lo generated/maxloc1_4_m16.lo \
+	generated/maxloc1_8_m16.lo generated/maxloc1_16_i16.lo \
+	generated/maxloc1_4_r4.lo generated/maxloc1_8_r4.lo \
+	generated/maxloc1_16_r4.lo generated/maxloc1_4_r8.lo \
+	generated/maxloc1_8_r8.lo generated/maxloc1_16_r8.lo \
+	generated/maxloc1_4_r10.lo generated/maxloc1_8_r10.lo \
+	generated/maxloc1_16_r10.lo generated/maxloc1_4_r16.lo \
+	generated/maxloc1_8_r16.lo generated/maxloc1_16_r16.lo \
+	generated/maxloc1_4_r17.lo generated/maxloc1_8_r17.lo \
+	generated/maxloc1_16_r17.lo
 am__objects_9 = generated/maxval_i1.lo generated/maxval_i2.lo \
 	generated/maxval_i4.lo generated/maxval_i8.lo \
 	generated/maxval_i16.lo generated/maxval_m1.lo \
@@ -283,14 +296,22 @@ am__objects_10 = generated/minloc0_4_i1.lo generated/minloc0_8_i1.lo \
 	generated/minloc0_16_i4.lo generated/minloc0_4_i8.lo \
 	generated/minloc0_8_i8.lo generated/minloc0_16_i8.lo \
 	generated/minloc0_4_i16.lo generated/minloc0_8_i16.lo \
-	generated/minloc0_16_i16.lo generated/minloc0_4_r4.lo \
-	generated/minloc0_8_r4.lo generated/minloc0_16_r4.lo \
-	generated/minloc0_4_r8.lo generated/minloc0_8_r8.lo \
-	generated/minloc0_16_r8.lo generated/minloc0_4_r10.lo \
-	generated/minloc0_8_r10.lo generated/minloc0_16_r10.lo \
-	generated/minloc0_4_r16.lo generated/minloc0_8_r16.lo \
-	generated/minloc0_16_r16.lo generated/minloc0_4_r17.lo \
-	generated/minloc0_8_r17.lo generated/minloc0_16_r17.lo
+	generated/minloc0_16_i16.lo generated/minloc0_4_m1.lo \
+	generated/minloc0_8_m1.lo generated/minloc0_16_m1.lo \
+	generated/minloc0_4_m2.lo generated/minloc0_8_m2.lo \
+	generated/minloc0_16_m2.lo generated/minloc0_4_m4.lo \
+	generated/minloc0_8_m4.lo generated/minloc0_16_m4.lo \
+	generated/minloc0_4_m8.lo generated/minloc0_8_m8.lo \
+	generated/minloc0_16_m8.lo generated/minloc0_4_m16.lo \
+	generated/minloc0_8_m16.lo generated/minloc0_16_m16.lo \
+	generated/minloc0_4_r4.lo generated/minloc0_8_r4.lo \
+	generated/minloc0_16_r4.lo generated/minloc0_4_r8.lo \
+	generated/minloc0_8_r8.lo generated/minloc0_16_r8.lo \
+	generated/minloc0_4_r10.lo generated/minloc0_8_r10.lo \
+	generated/minloc0_16_r10.lo generated/minloc0_4_r16.lo \
+	generated/minloc0_8_r16.lo generated/minloc0_16_r16.lo \
+	generated/minloc0_4_r17.lo generated/minloc0_8_r17.lo \
+	generated/minloc0_16_r17.lo
 am__objects_11 = generated/minloc1_4_i1.lo generated/minloc1_8_i1.lo \
 	generated/minloc1_16_i1.lo generated/minloc1_4_i2.lo \
 	generated/minloc1_8_i2.lo generated/minloc1_16_i2.lo \
@@ -298,14 +319,22 @@ am__objects_11 = generated/minloc1_4_i1.lo generated/minloc1_8_i1.lo \
 	generated/minloc1_16_i4.lo generated/minloc1_4_i8.lo \
 	generated/minloc1_8_i8.lo generated/minloc1_16_i8.lo \
 	generated/minloc1_4_i16.lo generated/minloc1_8_i16.lo \
-	generated/minloc1_16_i16.lo generated/minloc1_4_r4.lo \
-	generated/minloc1_8_r4.lo generated/minloc1_16_r4.lo \
-	generated/minloc1_4_r8.lo generated/minloc1_8_r8.lo \
-	generated/minloc1_16_r8.lo generated/minloc1_4_r10.lo \
-	generated/minloc1_8_r10.lo generated/minloc1_16_r10.lo \
-	generated/minloc1_4_r16.lo generated/minloc1_8_r16.lo \
-	generated/minloc1_16_r16.lo generated/minloc1_4_r17.lo \
-	generated/minloc1_8_r17.lo generated/minloc1_16_r17.lo
+	generated/minloc1_16_i16.lo generated/minloc1_4_m1.lo \
+	generated/minloc1_8_m1.lo generated/minloc1_16_m1.lo \
+	generated/minloc1_4_m2.lo generated/minloc1_8_m2.lo \
+	generated/minloc1_16_m2.lo generated/minloc1_4_m4.lo \
+	generated/minloc1_8_m4.lo generated/minloc1_16_m4.lo \
+	generated/minloc1_4_m8.lo generated/minloc1_8_m8.lo \
+	generated/minloc1_16_m8.lo generated/minloc1_4_m16.lo \
+	generated/minloc1_8_m16.lo generated/minloc1_16_m16.lo \
+	generated/minloc1_4_r4.lo generated/minloc1_8_r4.lo \
+	generated/minloc1_16_r4.lo generated/minloc1_4_r8.lo \
+	generated/minloc1_8_r8.lo generated/minloc1_16_r8.lo \
+	generated/minloc1_4_r10.lo generated/minloc1_8_r10.lo \
+	generated/minloc1_16_r10.lo generated/minloc1_4_r16.lo \
+	generated/minloc1_8_r16.lo generated/minloc1_16_r16.lo \
+	generated/minloc1_4_r17.lo generated/minloc1_8_r17.lo \
+	generated/minloc1_16_r17.lo
 am__objects_12 = generated/minval_i1.lo generated/minval_i2.lo \
 	generated/minval_i4.lo generated/minval_i8.lo \
 	generated/minval_i16.lo generated/minval_m1.lo \
@@ -1114,6 +1143,21 @@ generated/maxloc0_16_i8.c \
 generated/maxloc0_4_i16.c \
 generated/maxloc0_8_i16.c \
 generated/maxloc0_16_i16.c \
+generated/maxloc0_4_m1.c \
+generated/maxloc0_8_m1.c \
+generated/maxloc0_16_m1.c \
+generated/maxloc0_4_m2.c \
+generated/maxloc0_8_m2.c \
+generated/maxloc0_16_m2.c \
+generated/maxloc0_4_m4.c \
+generated/maxloc0_8_m4.c \
+generated/maxloc0_16_m4.c \
+generated/maxloc0_4_m8.c \
+generated/maxloc0_8_m8.c \
+generated/maxloc0_16_m8.c \
+generated/maxloc0_4_m16.c \
+generated/maxloc0_8_m16.c \
+generated/maxloc0_16_m16.c \
 generated/maxloc0_4_r4.c \
 generated/maxloc0_8_r4.c \
 generated/maxloc0_16_r4.c \
@@ -1148,11 +1192,20 @@ generated/maxloc1_16_i2.c \
 generated/maxloc1_4_i4.c \
 generated/maxloc1_8_i4.c \
 generated/maxloc1_16_i4.c \
-generated/maxloc1_4_i8.c \
-generated/maxloc1_8_i8.c \
-generated/maxloc1_16_i8.c \
-generated/maxloc1_4_i16.c \
-generated/maxloc1_8_i16.c \
+generated/maxloc1_4_m1.c \
+generated/maxloc1_8_m1.c \
+generated/maxloc1_16_m1.c \
+generated/maxloc1_4_m2.c \
+generated/maxloc1_8_m2.c \
+generated/maxloc1_16_m2.c \
+generated/maxloc1_4_m4.c \
+generated/maxloc1_8_m4.c \
+generated/maxloc1_16_m4.c \
+generated/maxloc1_4_m8.c \
+generated/maxloc1_8_m8.c \
+generated/maxloc1_16_m8.c \
+generated/maxloc1_4_m16.c \
+generated/maxloc1_8_m16.c \
 generated/maxloc1_16_i16.c \
 generated/maxloc1_4_r4.c \
 generated/maxloc1_8_r4.c \
@@ -1227,6 +1280,21 @@ generated/minloc0_16_i8.c \
 generated/minloc0_4_i16.c \
 generated/minloc0_8_i16.c \
 generated/minloc0_16_i16.c \
+generated/minloc0_4_m1.c \
+generated/minloc0_8_m1.c \
+generated/minloc0_16_m1.c \
+generated/minloc0_4_m2.c \
+generated/minloc0_8_m2.c \
+generated/minloc0_16_m2.c \
+generated/minloc0_4_m4.c \
+generated/minloc0_8_m4.c \
+generated/minloc0_16_m4.c \
+generated/minloc0_4_m8.c \
+generated/minloc0_8_m8.c \
+generated/minloc0_16_m8.c \
+generated/minloc0_4_m16.c \
+generated/minloc0_8_m16.c \
+generated/minloc0_16_m16.c \
 generated/minloc0_4_r4.c \
 generated/minloc0_8_r4.c \
 generated/minloc0_16_r4.c \
@@ -1267,6 +1335,21 @@ generated/minloc1_16_i8.c \
 generated/minloc1_4_i16.c \
 generated/minloc1_8_i16.c \
 generated/minloc1_16_i16.c \
+generated/minloc1_4_m1.c \
+generated/minloc1_8_m1.c \
+generated/minloc1_16_m1.c \
+generated/minloc1_4_m2.c \
+generated/minloc1_8_m2.c \
+generated/minloc1_16_m2.c \
+generated/minloc1_4_m4.c \
+generated/minloc1_8_m4.c \
+generated/minloc1_16_m4.c \
+generated/minloc1_4_m8.c \
+generated/minloc1_8_m8.c \
+generated/minloc1_16_m8.c \
+generated/minloc1_4_m16.c \
+generated/minloc1_8_m16.c \
+generated/minloc1_16_m16.c \
 generated/minloc1_4_r4.c \
 generated/minloc1_8_r4.c \
 generated/minloc1_16_r4.c \
@@ -2110,6 +2193,36 @@ generated/maxloc0_8_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc0_16_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_4_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_8_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_16_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_4_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_8_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_16_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_4_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_8_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_16_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_4_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_8_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_16_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_4_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_8_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc0_16_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc0_4_r4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc0_8_r4.lo: generated/$(am__dirstamp) \
@@ -2158,15 +2271,33 @@ generated/maxloc1_8_i4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_16_i4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
-generated/maxloc1_4_i8.lo: generated/$(am__dirstamp) \
+generated/maxloc1_4_m1.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
-generated/maxloc1_8_i8.lo: generated/$(am__dirstamp) \
+generated/maxloc1_8_m1.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
-generated/maxloc1_16_i8.lo: generated/$(am__dirstamp) \
+generated/maxloc1_16_m1.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
-generated/maxloc1_4_i16.lo: generated/$(am__dirstamp) \
+generated/maxloc1_4_m2.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
-generated/maxloc1_8_i16.lo: generated/$(am__dirstamp) \
+generated/maxloc1_8_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_16_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_4_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_8_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_16_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_4_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_8_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_16_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_4_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/maxloc1_8_m16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/maxloc1_16_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
@@ -2260,6 +2391,36 @@ generated/minloc0_8_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minloc0_16_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_4_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_8_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_16_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_4_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_8_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_16_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_4_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_8_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_16_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_4_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_8_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_16_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_4_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_8_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc0_16_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minloc0_4_r4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minloc0_8_r4.lo: generated/$(am__dirstamp) \
@@ -2319,6 +2480,36 @@ generated/minloc1_4_i16.lo: generated/$(am__dirstamp) \
 generated/minloc1_8_i16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minloc1_16_i16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_4_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_8_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_16_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_4_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_8_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_16_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_4_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_8_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_16_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_4_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_8_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_16_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_4_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_8_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/minloc1_16_m16.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 generated/minloc1_4_r4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
@@ -3864,6 +4055,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_16_r17.Plo@am__quote@
@@ -3876,6 +4072,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_4_r17.Plo@am__quote@
@@ -3888,6 +4089,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc0_8_r17.Plo@am__quote@
@@ -3899,7 +4105,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i4.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_r17.Plo@am__quote@
@@ -3908,10 +4117,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_s1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_16_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i1.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i4.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_r17.Plo@am__quote@
@@ -3920,10 +4132,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_s1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_4_s4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i1.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i4.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/maxloc1_8_r17.Plo@am__quote@
@@ -3961,6 +4176,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_16_r17.Plo@am__quote@
@@ -3973,6 +4193,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_4_r17.Plo@am__quote@
@@ -3985,6 +4210,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc0_8_r17.Plo@am__quote@
@@ -3997,6 +4227,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_16_r17.Plo@am__quote@
@@ -4009,6 +4244,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_4_r17.Plo@am__quote@
@@ -4021,6 +4261,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/minloc1_8_r17.Plo@am__quote@

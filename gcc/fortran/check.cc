@@ -4219,7 +4219,17 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
   gfc_expr *a, *m, *d, *k, *b;
 
   a = ap->expr;
-  if (!int_or_real_or_char_check_f2003 (a, 0) || !array_check (a, 0))
+
+  if (flag_unsigned)
+    {
+      if (!int_or_real_or_char_or_unsigned_check_f2003 (a, 0))
+	return false;
+    }
+  else
+    if (!int_or_real_or_char_check_f2003 (a, 0))
+      return false;
+
+  if (!array_check (a, 0))
     return false;
 
   d = ap->next->expr;

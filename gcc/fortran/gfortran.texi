@@ -2793,7 +2793,8 @@ As of now, the following intrinsics take unsigned arguments:
 @item @code{RANDOM_NUMBER}
 @item @code{CSHIFT} and @code{EOSHIFT}
 @item @code{FINDLOC}
-@item @code{MAXVAL} and @code{MINVAL}.
+@item @code{MAXVAL} and @code{MINVAL}
+@item @code{MAXLOC} and @code{MINLOC}.
 @end itemize
 This list will grow in the near future.
 @c ---------------------------------------------------------------------
