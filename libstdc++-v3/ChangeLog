@@ -1,3 +1,56 @@
+2024-10-04  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (single_view::empty): Define as per LWG 4035.
+	(iota_view::empty): Define as per LWG 4001.
+	(lazy_split_view::_OuterIter::value_type): Remove default
+	constructor and make other constructor private as per LWG 4013.
+	(common_view::begin): Disable non-const overload for simple
+	views as per LWG 4012.
+	(common_view::end): Likewise.
+	(adjacent_view::base): Define as per LWG 3848.
+	(adjacent_transform_view::base): Likewise.
+	(chunk_view::_InnerIter::iter_move): Define as per LWG 3851.
+	(chunk_view::_InnerIter::itep_swap): Likewise.
+	(slide_view::base): Define as per LWG 3848.
+	(repeat_view): Adjust deduction guide as per LWG 4053.
+	(_Repeat::operator()): Adjust single-parameter overload as per
+	LWG 4054.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc: Verify existence
+	of base member function.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc: Likewise.
+	* testsuite/std/ranges/adaptors/chunk/1.cc: Test LWG 3851 example.
+	* testsuite/std/ranges/adaptors/slide/1.cc: Verify existence of
+	base member function.
+	* testsuite/std/ranges/iota/iota_view.cc: Test LWG 4001 example.
+	* testsuite/std/ranges/repeat/1.cc: Test LWG 4053/4054 examples.
+
+2024-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/algobase.h (search): Use sequential algorithm
+	for constant evaluation.
+	* include/parallel/algorithmfwd.h (search): Add
+	_GLIBCXX20_CONSTEXPR.
+	* include/parallel/multiway_merge.h: Remove stray semi-colon.
+	* include/parallel/multiseq_selection.h: Add diagnostic pragmas
+	for -Wlong-long warning.
+	* include/parallel/quicksort.h: Likewise.
+	* include/parallel/random_number.h: Likewise.
+	* include/parallel/settings.h: Likewise.
+	* include/parallel/workstealing.h: Replace ++ and -- on volatile
+	variables.
+	* testsuite/17_intro/names.cc: Skip names defined by
+	<tr1/random>.
+	* testsuite/20_util/pair/dangling_ref.cc: Skip test if Parallel
+	Mode is enabled.
+	* testsuite/20_util/tuple/dangling_ref.cc: Likewise.
+
+2024-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116964
+	* include/std/shared_mutex (__shared_mutex_cv): Use [this] for
+	lambda captures.
+	(shared_timed_mutex) [!_GLIBCXX_USE_PTHREAD_RWLOCK_T]: Likewise.
+
 2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unicode.h (__unicode::__is_incb_linker): Use

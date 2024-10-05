@@ -1,3 +1,117 @@
+2024-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116978
+	* diagnostic-format-sarif.cc (sarif_builder::sarif_builder):
+	Gracefully handle "main_input_filename_" being NULL.
+	(sarif_output_format::sarif_output_format): Replace param
+	"base_file_name" with "output_file" and assert that the file
+	was opened successfully and has a non-NULL filename.
+	(sarif_output_format::~sarif_file_output_format): Move
+	responsibility for building the filename and opening the file from
+	here to the creator of the instance.
+	(sarif_output_format::m_base_file_name): Replace with...
+	(sarif_output_format::m_output_file): ...this.
+	(diagnostic_output_format_init_sarif_file): Make "line_maps" param
+	non-const.  Gracefully handle "base_file_name" being NULL.
+	Construct the filename and open the file here, rather than in
+	~sarif_file_output_format, and handle failures immediately here,
+	rather than at the end of the compile.
+	* diagnostic-format-sarif.h: Include "diagnostic-output-file.h".
+	(diagnostic_output_format_init_sarif_file): Make "line_maps" param
+	non-const.
+	* diagnostic-output-file.h: New file.
+	* diagnostic.cc (diagnostic_context::emit_diagnostic): New.
+	(diagnostic_context::emit_diagnostic_va): New.
+	* diagnostic.h (diagnostic_context::emit_diagnostic): New decl.
+	(diagnostic_context::emit_diagnostic_va): New decl.
+
+2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116962
+	* config/i386/i386.cc (ix86_stack_protect_runtime_enabled_p): New
+	function.
+	(TARGET_STACK_PROTECT_RUNTIME_ENABLED_P): New.
+
+2024-10-04  Saurabh Jha  <saurabh.jha@arm.com>
+
+	PR target/116934
+	* config/aarch64/iterators.md: Move UNSPEC_COND_SMAX and
+	UNSPEC_COND_SMIN to correct iterators.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116953
+	* config/avr/avr.cc (avr_out_sbxx_branch): Work on a copy of
+	the operands rather than on operands itself, which is just
+	recog_data.operand and may be clobbered by jump_over_one_insn_p.
+
+2024-10-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* cfgexpand.cc (add_scope_conflicts_1): Expand comment
+	on when non-var clobbers show up.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_floatn_mode): Remove.
+	(TARGET_FLOATN_MODE): Remove.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_floatn_mode): New static function.
+	(TARGET_FLOATN_MODE): New define.
+
+2024-10-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/tuning_models/generic_armv9_a.h
+	(generic_armv9a_prefetch_tune): Define.
+	(generic_armv9_a_tunings): Use the above.
+
+2024-10-04  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/116444
+	* config/arm/arm-protos.h (arm_noce_conversion_profitable_p): New
+	declaration.
+	* config/arm/arm.cc (arm_is_v81m_cond_insn): New helper function used
+	in ...
+	(arm_noce_conversion_profitable_p): ... here. New function to implement
+	...
+	(TARGET_NOCE_PROFITABLE_P): ... this target hook.  New define.
+
+2024-10-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Derement 'slp'
+	before dumping which stage we're starting.
+
+2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/116936
+	* diagnostic.cc (diagnostic_option_classifier::pch_save): Only call
+	fwrite if corresponding length is non-zero.
+	(diagnostic_option_classifier::pch_restore): Only call fread if
+	corresponding length is non-zero.
+
+2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116921
+	* config/i386/i386-expand.cc (ix86_expand_int_compare): Add a SUBREG
+	to V8HImode from V8HFmode or V8BFmode before generating a ptest.
+
+2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116925
+	* config/i386/sse.md (*minmax<mode>3_2): Assign force_reg result
+	back to operands[2] instead of throwing it away.
+
+2024-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <h8300-hms>: Drop GCC 2.6
+	ABI change note.
+
+2024-10-04  Sam James  <sam@gentoo.org>
+
+	* gimplify.cc (gimple_add_init_for_auto_var): Fix 'variable' typo.
+
 2024-10-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/aarch64/aarch64.h (WIDEST_HARDWARE_FP_SIZE): Define to 64.

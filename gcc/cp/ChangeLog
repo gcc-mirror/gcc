@@ -1,3 +1,30 @@
+2024-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113266
+	PR c++/116911
+	* parser.cc (cp_parser_template_argument): Allow
+	internal-linkage variables since C++11.
+
+2024-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116913
+	* name-lookup.cc (update_binding): Return the strip_using'd old
+	decl rather than the binding.
+
+2024-10-04  Jason Merrill  <jason@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (spec_entry::hash): New member.
+	* pt.cc (spec_hasher::hash): Set it and return it.
+	(maybe_process_partial_specialization): Clear it when
+	changing tmpl/args.
+	(lookup_template_class): Likewise, don't pass hash to find.
+	(retrieve_specialization): Set it, don't pass hash to find.
+	(register_specialization): Don't pass hash to find.
+	(reregister_specialization): Likewise.
+	(match_mergeable_specialization): Likewise.
+	(add_mergeable_specialization): Likewise.
+
 2024-10-03  Jason Merrill  <jason@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 

@@ -1,3 +1,7 @@
+2024-10-04  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* MAINTAINERS: Add myself to write after approval.
+
 2024-09-27  Christophe Lyon  <christophe.lyon@arm.com>
 
 	* MAINTAINERS: Add myself as MVE Reviewer for the AArch32 (arm)

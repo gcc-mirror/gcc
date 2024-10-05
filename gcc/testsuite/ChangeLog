@@ -1,3 +1,100 @@
+2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116962
+	* gcc.target/i386/pr116962.c: New file.
+
+2024-10-04  Saurabh Jha  <saurabh.jha@arm.com>
+
+	PR target/116934
+	* gcc.target/aarch64/sve2/pr116934.c: New test.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116953
+	* gcc.target/avr/torture/pr116953.c: New test.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* lib/target-supports.exp (check_effective_target_double_float32xplus):
+	New proc.
+	* gcc.dg/torture/float32x-builtin.c: Add
+	dg-require-effective-target double_float32xplus.
+	* gcc.dg/torture/float32x-tg-2.c: Same.
+	* gcc.dg/torture/float32x-tg.c: Same.
+	* gcc.dg/torture/float64-builtin.c: Add
+	dg-require-effective-target double64plus.
+	* gcc.dg/torture/float64-tg-2.c: Same.
+	* gcc.dg/torture/float64-tg.c: Same.
+
+2024-10-04  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	* gcc.target/arm/pr59858.c: Add -fpermissive.
+	* gcc.target/arm/pr65647.c: Likewise.
+	* gcc.target/arm/pr65710.c: Likewise.
+	* gcc.target/arm/pr97969.c: Likewise.
+
+2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/unevalstr1.C: Revert the 2024-10-03 changes, instead
+	expect extra warnings.  Add another set of tests without space
+	between " and _.
+	* g++.dg/cpp26/unevalstr2.C: Expect extra warnings for C++23.  Add
+	another set of tests without space between " and _.
+
+2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116921
+	* gcc.target/i386/pr116921.c: New test.
+
+2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116925
+	* g++.target/i386/avx-pr116925.C: New test.
+
+2024-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113266
+	PR c++/116911
+	* g++.dg/cpp0x/nontype6.C: New test.
+
+2024-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116913
+	* g++.dg/lookup/using70.C: New test.
+
+2024-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65947-8.c: Adjust.
+
+2024-10-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99856
+	* gcc.dg/vect/pr99856.c: Fix copy&paste errors.
+
+2024-10-04  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/Wstringop-overflow-79.c: Fix index for notes.
+	* gcc.dg/Wstringop-overflow-80.c: Ditto.
+
+2024-10-04  Sam James  <sam@gentoo.org>
+
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Add missing brace.
+	* c-c++-common/analyzer/malloc-callbacks.c: Ditto.
+	* gcc.dg/Wstringop-overflow-79.c: Ditto.
+	* gcc.dg/Wstringop-overflow-80.c: Ditto.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.c-torture/execute/ieee/pr108540-1.c: Un-preprocess
+	__SIZE_TYPE__ and __INT64_TYPE__.
+	* gcc.c-torture/execute/ieee/pr108540-1.x: New file, requires double64.
+
+2024-10-04  Sam James  <sam@gentoo.org>
+
+	* gnat.dg/pack13.adb: Fix 'dg-...' directive syntax.
+	* gnat.dg/size_attribute.adb: Ditto.
+	* gnat.dg/subp_elim_errors.adb: Ditto.
+
 2024-10-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/size_clause6.ads: New test.

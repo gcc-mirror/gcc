@@ -1,3 +1,9 @@
+2024-10-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/116918
+	* gm2-compiler/M2Swig.mod (DoCheckUnbounded): Escape
+	the % character used in array_functions with %%.
+
 2024-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs/Indexing.def (FindIndice): New procedure
