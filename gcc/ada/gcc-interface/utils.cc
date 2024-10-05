@@ -107,6 +107,7 @@ static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
+static tree handle_uninitialized_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
 static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
 static tree handle_simd_attribute (tree *, tree, tree, int, bool *);
@@ -214,6 +215,8 @@ static const attribute_spec gnat_internal_attributes[] =
     handle_flatten_attribute, NULL },
   { "used",         0, 0,  true,  false, false, false,
     handle_used_attribute, NULL },
+  { "uninitialized",0, 0,  true,  false, false, false,
+    handle_uninitialized_attribute, NULL },
   { "cold",         0, 0,  true,  false, false, false,
     handle_cold_attribute, attr_cold_hot_exclusions },
   { "hot",          0, 0,  true,  false, false, false,
@@ -7165,6 +7168,30 @@ handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle an "uninitialized" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_uninitialized_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+				int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree decl = *node;
+  if (!VAR_P (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a variable", name, decl);
+      *no_add_attrs = true;
+    }
+  else if (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a local variable", name, decl);
       *no_add_attrs = true;
     }
 

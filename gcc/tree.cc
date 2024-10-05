@@ -9848,7 +9848,6 @@ build_common_builtin_nodes (void)
       ftype = build_function_type_list (void_type_node,
 					ptr_type_node,
 					ptr_type_node,
-					integer_type_node,
 					NULL_TREE);
       local_define_builtin ("__builtin_clear_padding", ftype,
 			    BUILT_IN_CLEAR_PADDING,

@@ -1993,17 +1993,14 @@ gimple_add_init_for_auto_var (tree decl,
 {
   gcc_assert (auto_var_p (decl));
   gcc_assert (init_type > AUTO_INIT_UNINITIALIZED);
-  location_t loc = EXPR_LOCATION (decl);
+
+  const location_t loc = DECL_SOURCE_LOCATION (decl);
   tree decl_size = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+  tree init_type_node = build_int_cst (integer_type_node, (int) init_type);
+  tree decl_name;
 
-  tree init_type_node
-    = build_int_cst (integer_type_node, (int) init_type);
-
-  tree decl_name = NULL_TREE;
   if (DECL_NAME (decl))
-
     decl_name = build_string_literal (DECL_NAME (decl));
-
   else
     {
       char decl_name_anonymous[3 + (HOST_BITS_PER_INT + 2) / 3];
