@@ -2530,7 +2530,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
       /* Propagate purviewness and importingness as with
 	 set_instantiating_module.  */
-      if (modules_p ())
+      if (modules_p () && DECL_LANG_SPECIFIC (new_result))
 	{
 	  if (DECL_MODULE_PURVIEW_P (new_result))
 	    DECL_MODULE_PURVIEW_P (old_result) = true;
