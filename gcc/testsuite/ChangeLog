@@ -1,3 +1,11 @@
+2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116962
+	* gcc.target/i386/pr116962.c: New file.
+
 2024-10-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
