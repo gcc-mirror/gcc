@@ -7411,7 +7411,6 @@
   /* Ensure the frame pointer move is not optimized.  */
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
-  emit_clobber (frame_pointer_rtx);
   emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);
@@ -9202,7 +9201,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   /* Ensure the frame pointer move is not optimized.  */
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
-  emit_clobber (frame_pointer_rtx);
   emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);
