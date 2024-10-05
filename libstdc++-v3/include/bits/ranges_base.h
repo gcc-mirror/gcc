@@ -947,7 +947,9 @@ namespace ranges
 
   struct __distance_fn final
   {
-    template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3664. LWG 3392 broke std::ranges::distance(a, a+3)
+    template<typename _It, sentinel_for<_It> _Sent>
       requires (!sized_sentinel_for<_Sent, _It>)
       constexpr iter_difference_t<_It>
       operator()[[nodiscard]](_It __first, _Sent __last) const
@@ -961,13 +963,11 @@ namespace ranges
 	return __n;
       }
 
-    template<input_or_output_iterator _It, sized_sentinel_for<_It> _Sent>
+    template<typename _It, sized_sentinel_for<decay_t<_It>> _Sent>
       [[nodiscard]]
-      constexpr iter_difference_t<_It>
-      operator()(const _It& __first, const _Sent& __last) const
-      {
-	return __last - __first;
-      }
+      constexpr iter_difference_t<decay_t<_It>>
+      operator()(_It&& __first, _Sent __last) const
+      { return __last - static_cast<const decay_t<_It>&>(__first); }
 
     template<range _Range>
       [[nodiscard]]
