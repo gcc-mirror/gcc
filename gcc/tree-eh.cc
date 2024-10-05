@@ -2327,7 +2327,6 @@ bool match_lp (eh_landing_pad lp, vec<tree> *exception_types) {
 }
 
 void unlink_eh_region(eh_region region) {
-    gcc_assert(!region->inner);
     eh_region *link;
 
     // Check if region is root
@@ -2389,14 +2388,22 @@ void update_stmt_eh_region (gimple *stmt) {
     eh_region region = lp->region;
     eh_region prev_region = NULL;
 
+    bool update = false;
+    if (gimple_code (stmt) == GIMPLE_RESX)
+    region = region->outer;
+
     // Walk up the region tree
     while (region) {
         switch (region->type) {
             case ERT_CLEANUP:
+                if (!update)
+      		      return;
+
                 if (gimple_code (stmt) == GIMPLE_RESX){
                   gresx *resx_stmt = as_a <gresx *> (stmt);
                   gimple_resx_set_region (resx_stmt, region->index);
                 }
+
                 else *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
 
                 unlink_eh_region (region);
@@ -2404,11 +2411,15 @@ void update_stmt_eh_region (gimple *stmt) {
                 return;
 
             case ERT_TRY:
+                if (update)
+                return;
+
                 if (match_lp (lp, &exception_types)) {
                   if (gimple_code (stmt) == GIMPLE_RESX){
                     gresx *resx_stmt = as_a <gresx *> (stmt);
                     gimple_resx_set_region (resx_stmt, region->index);
                   }
+
                   else *cfun->eh->throw_stmt_table->get (const_cast<gimple *> (stmt)) = lp->index;
 
                   unlink_eh_region (region);
@@ -2432,7 +2443,11 @@ void update_stmt_eh_region (gimple *stmt) {
         }
         prev_region = region;
         region = region->outer;
+        update = true;
     }
+
+    if (!update)
+    return;
 
     if (gimple_code (stmt) == GIMPLE_RESX){
       gresx *resx_stmt = as_a <gresx *> (stmt);
@@ -3115,9 +3130,9 @@ bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
     bool type_exists = true;
 
     switch (gimple_code (stmt)) {
-        // case GIMPLE_RESX:
-        //     extract_fun_resx_types (fun, ret_vector);
-        //     return !ret_vector->is_empty ();
+        case GIMPLE_RESX:
+            extract_fun_resx_types (fun, ret_vector);
+            return !ret_vector->is_empty ();
 
         case GIMPLE_CALL:
             type_exists =  extract_types_for_call (as_a<gcall*> (stmt), ret_vector);
