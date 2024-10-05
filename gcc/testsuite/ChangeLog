@@ -1,3 +1,19 @@
+2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116962
+	* gcc.target/i386/pr116962.c: New file.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116953
+	* gcc.target/avr/torture/pr116953.c: New test.
+
 2024-10-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

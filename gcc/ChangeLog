@@ -1,3 +1,23 @@
+2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116962
+	* config/i386/i386.cc (ix86_stack_protect_runtime_enabled_p): New
+	function.
+	(TARGET_STACK_PROTECT_RUNTIME_ENABLED_P): New.
+
+2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116953
+	* config/avr/avr.cc (avr_out_sbxx_branch): Work on a copy of
+	the operands rather than on operands itself, which is just
+	recog_data.operand and may be clobbered by jump_over_one_insn_p.
+
 2024-10-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

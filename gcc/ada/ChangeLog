@@ -1,3 +1,9 @@
+2024-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116430
+	* exp_ch7.adb (Build_Finalizer.Create_Finalizer): For the insertion
+	point of the finalizer, deal with package bodies that are subunits.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.
