@@ -1,3 +1,12 @@
+2024-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/116933
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Out_Parameter>: Add
+	the "uninitialized" attribute on Out parameters.
+	* gcc-interface/utils.cc (gnat_internal_attributes): Add entry for
+	the "uninitialized" attribute.
+	(handle_uninitialized_attribute): New function.
+
 2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR other/116801

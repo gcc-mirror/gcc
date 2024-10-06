@@ -1,3 +1,19 @@
+2024-10-05  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/version.def: Added the feature-testing macro.
+	* include/bits/version.h: Regenerated.
+	* include/std/type_traits: Add support for
+	std::is_virtual_base_of and std::is_virtual_base_of_v,
+	implemented in terms of the compiler builtin.
+	* testsuite/20_util/is_virtual_base_of/value.cc: New test.
+
+2024-10-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__distance_fn::operator()):
+	Adjust iterator/sentinel overloads as per LWG 3664.
+	* testsuite/24_iterators/range_operations/distance.cc:
+	Test LWG 3664 example.
+
 2024-10-04  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (single_view::empty): Define as per LWG 4035.

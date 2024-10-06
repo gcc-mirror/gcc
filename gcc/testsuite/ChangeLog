@@ -1,3 +1,7 @@
+2024-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/auto_var_init.adb: New test.
+
 2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/116962

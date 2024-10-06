@@ -1,3 +1,26 @@
+2024-10-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (nonlocal_goto): Don't clobber
+	frame_pointer_rtx.
+	(builtin_longjmp): Likewise.
+
+2024-10-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Fix indirect_got constraint.
+
+2024-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/116933
+	* gimplify.cc (gimple_add_init_for_auto_var): Use the correct macro
+	to fetch the source location of the variable.
+	* tree.cc (common_builtin_nodes): Remove the 3rd parameter in the
+	type of BUILT_IN_CLEAR_PADDING.
+
+2024-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_lower_load_permutations): Prefer
+	level 1 even/odd extracts.
+
 2024-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116978
