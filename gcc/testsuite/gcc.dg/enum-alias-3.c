@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target lto } */
 /* { dg-options "-O2 -flto" } */
 
 typedef int *A;
