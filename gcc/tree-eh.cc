@@ -2283,14 +2283,14 @@ same_or_derived_type (tree t1, tree t2)
   t2 = TYPE_MAIN_VARIANT (t2);
   if (t1 == t2)
     return true;
-  while ( (TREE_CODE (t1) == POINTER_TYPE || TREE_CODE (t1) == REFERENCE_TYPE)
-        && TREE_CODE (t1) == TREE_CODE (t2))
-  {
-    t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
-    t2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
-    if (TREE_CODE (t1) == VOID_TYPE)
-      return true;
-  }
+  while ((TREE_CODE (t1) == POINTER_TYPE || TREE_CODE (t1) == REFERENCE_TYPE)
+         && TREE_CODE (t1) == TREE_CODE (t2))
+    {
+      t1 = TYPE_MAIN_VARIANT (TREE_TYPE (t1));
+      t2 = TYPE_MAIN_VARIANT (TREE_TYPE (t2));
+      if (TREE_CODE (t1) == VOID_TYPE)
+        return true;
+    }
   if (t1 == t2)
     return true;
   if (TREE_CODE (t2) == NULLPTR_TYPE && TREE_CODE (t1) == POINTER_TYPE)
@@ -2300,153 +2300,186 @@ same_or_derived_type (tree t1, tree t2)
   return odr_equivalent_or_derived_p (t1, t2);
 }
 
-// Check if a landing pad can handle any of the given exception types
-static bool match_lp (eh_region region, vec<tree> *exception_types){
-    // Ensure the region is of type ERT_TRY
-    if (region && region->type == ERT_TRY) {
-        eh_catch_d *catch_handler = region->u.eh_try.first_catch;
+// Check if a region can handle any of the given exception types
+static bool
+match_lp (eh_region region, vec<tree> *exception_types)
+{
+  // Ensure the region is of type ERT_TRY
+  if (region && region->type == ERT_TRY)
+    {
+      eh_catch_d *catch_handler = region->u.eh_try.first_catch;
 
-        while (catch_handler) {
-            tree type_list = catch_handler->type_list;
+      while (catch_handler)
+        {
+          tree type_list = catch_handler->type_list;
 
-            if (type_list == NULL) {
-                return true;
+          if (type_list == NULL)
+            {
+              return true;
             }
 
-            for (tree t = type_list; t; t = TREE_CHAIN (t)) {
-                tree type = TREE_VALUE (t);
-                for (unsigned i = 0; i < exception_types->length (); ++i) {
+          for (tree t = type_list; t; t = TREE_CHAIN (t))
+            {
+              tree type = TREE_VALUE (t);
+              for (unsigned i = 0; i < exception_types->length (); ++i)
+                {
                   // match found or a catch-all handler (NULL)
-                    if (!type || same_or_derived_type (type, (*exception_types)[i])) {
-                        return true;
+                  if (!type
+                      || same_or_derived_type (type, (*exception_types)[i]))
+                    {
+                      return true;
                     }
                 }
             }
-            catch_handler = catch_handler->next_catch;
+          catch_handler = catch_handler->next_catch;
         }
     }
-    return false;
+  return false;
 }
 
-static void unlink_eh_region(eh_region region) {
-    eh_region *link;
+static void
+unlink_eh_region (eh_region region)
+{
+  eh_region *link;
 
-    // Check if region is root
-    if (!region->outer) {
-        gcc_unreachable();
-        return;
-    }
-
-    link = &region->outer->inner;
-
-    while (*link && *link != region) {
-        link = &(*link)->next_peer;
-    }
-
-    // Ensure the region is in the peer chain
-    gcc_assert(*link == region);
-
-    *link = region->next_peer;
-
-    region->outer = NULL;
-    region->next_peer = NULL;
-}
-
-static void reinsert_eh_region (eh_region region, eh_region new_outer) {
-    region->outer = new_outer;
-    
-    // Insert region as the inner of new_outer, or at the top of the tree
-    if (new_outer) {
-        region->next_peer = new_outer->inner;
-        new_outer->inner = region;
-    } else {
-        region->next_peer = cfun->eh->region_tree;
-        cfun->eh->region_tree = region;
-    }
-
-}
-
-// Function to update landing pad and region in throw_stmt_table for a given statement
-void update_stmt_eh_region (gimple *stmt) {
-  auto_vec<tree> exception_types;
-  if (!stmt_throw_types (cfun, stmt, &exception_types)) {
-        return;
-    }
-    
-    int lp_nr = lookup_stmt_eh_lp_fn (cfun, stmt);
-    if (lp_nr <= 0) {
+  // Check if region is root
+  if (!region->outer)
+    {
+      gcc_unreachable ();
       return;
     }
 
-    eh_landing_pad lp = get_eh_landing_pad_from_number (lp_nr);
-    if (!lp) {
-        return;
+  link = &region->outer->inner;
+
+  while (*link && *link != region)
+    {
+      link = &(*link)->next_peer;
     }
 
-    eh_region region = lp->region;
-    eh_region resx_region = NULL;
+  // Ensure the region is in the peer chain
+  gcc_assert (*link == region);
 
-    bool update = false;
-    if (gimple_code (stmt) == GIMPLE_RESX)
-    resx_region = get_eh_region_from_number (gimple_resx_region (as_a <gresx *>  (stmt)));
+  *link = region->next_peer;
 
-    // Walk up the region tree
-    while (region) {
-        switch (region->type) {
-            case ERT_CLEANUP:
-                if (!update)
-      		      return;
+  region->outer = NULL;
+  region->next_peer = NULL;
+}
 
-                if (gimple_code (stmt) == GIMPLE_RESX){
+static void
+reinsert_eh_region (eh_region region, eh_region new_outer)
+{
+  region->outer = new_outer;
+
+  // Insert region as the inner of new_outer, or at the top of the tree
+  if (new_outer)
+    {
+      region->next_peer = new_outer->inner;
+      new_outer->inner = region;
+    }
+  else
+    {
+      region->next_peer = cfun->eh->region_tree;
+      cfun->eh->region_tree = region;
+    }
+}
+
+/* Function to update landing pad and region in throw_stmt_table for a given
+statement */
+void
+update_stmt_eh_region (gimple *stmt)
+{
+  auto_vec<tree> exception_types;
+  if (!stmt_throw_types (cfun, stmt, &exception_types))
+    {
+      return;
+    }
+
+  eh_region region;
+
+  int lp_nr = lookup_stmt_eh_lp_fn (cfun, stmt);
+  if (lp_nr <= 0)
+    {
+      return;
+    }
+
+  eh_landing_pad lp = get_eh_landing_pad_from_number (lp_nr);
+  if (!lp)
+    {
+      return;
+    }
+
+  region = lp->region;
+  eh_region resx_region = NULL;
+
+  bool update = false;
+  if (gimple_code (stmt) == GIMPLE_RESX)
+    resx_region = get_eh_region_from_number (
+        gimple_resx_region (as_a<gresx *> (stmt)));
+
+  // Walk up the region tree
+  while (region)
+    {
+      switch (region->type)
+        {
+        case ERT_CLEANUP:
+          if (!update)
+            return;
+
+          if (gimple_code (stmt) == GIMPLE_RESX)
+            {
+              unlink_eh_region (resx_region);
+              reinsert_eh_region (resx_region, region);
+            }
+
+          remove_stmt_from_eh_lp_fn (cfun, stmt);
+          record_stmt_eh_region (region, stmt);
+          return;
+
+        case ERT_TRY:
+          if (match_lp (region, &exception_types))
+            {
+              if (!update)
+                return;
+              if (gimple_code (stmt) == GIMPLE_RESX)
+                {
                   unlink_eh_region (resx_region);
                   reinsert_eh_region (resx_region, region);
                 }
 
-                remove_stmt_from_eh_lp_fn (cfun, stmt);
-                record_stmt_eh_region (region, stmt);
-                return;
+              remove_stmt_from_eh_lp_fn (cfun, stmt);
+              record_stmt_eh_region (region, stmt);
+              return;
+            }
+          break;
 
-            case ERT_TRY:
-                if (match_lp (region, &exception_types)) {
-                  if (!update)
-                  return;
-                  if (gimple_code (stmt) == GIMPLE_RESX){
-                    unlink_eh_region (resx_region);
-                    reinsert_eh_region (resx_region, region);
-                  }
+        case ERT_MUST_NOT_THROW:
+          // Undefined behavior, leave edge unchanged
+          return;
 
-                  remove_stmt_from_eh_lp_fn (cfun, stmt);
-                  record_stmt_eh_region (region, stmt);
-                  return;
-                }
-                break;
+        case ERT_ALLOWED_EXCEPTIONS:
+          /* FIXME: match_lp will always return false.  */
+          if (!match_lp (region, &exception_types))
+            {
+              return;
+            }
+          break;
 
-            case ERT_MUST_NOT_THROW:
-                // Undefined behavior, leave edge unchanged
-                return;
-
-            case ERT_ALLOWED_EXCEPTIONS:
-            /* FIXME: match_lp will always return false.  */
-                if (!match_lp (region, &exception_types)) {
-                    return;
-                }
-                break;
-
-            default:
-                break;
+        default:
+          break;
         }
-        region = region->outer;
-        update = true;
+      region = region->outer;
+      update = true;
     }
 
-    if (!update)
+  if (!update)
     return;
 
-    if (gimple_code (stmt) == GIMPLE_RESX){
+  if (gimple_code (stmt) == GIMPLE_RESX)
+    {
       unlink_eh_region (resx_region);
       reinsert_eh_region (resx_region, NULL);
     }
-    remove_stmt_from_eh_lp_fn (cfun, stmt);
+  remove_stmt_from_eh_lp_fn (cfun, stmt);
 }
 
 /* Create the single EH edge from STMT to its nearest landing pad,
@@ -3091,91 +3124,114 @@ stmt_could_throw_1_p (gassign *stmt)
   return false;
 }
 
-bool extract_types_for_call (gcall *call_stmt, vec<tree> *ret_vector) {
-    tree callee = gimple_call_fndecl (call_stmt);
-    if (callee == NULL_TREE) {
-        return false;
+bool
+extract_types_for_call (gcall *call_stmt, vec<tree> *ret_vector)
+{
+  tree callee = gimple_call_fndecl (call_stmt);
+  if (callee == NULL_TREE)
+    {
+      return false;
     }
 
-    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (callee)), "__cxa_throw") == 0) {
-        // Extracting exception type
-        tree exception_type_info = gimple_call_arg (call_stmt, 1); 
-        if (exception_type_info && TREE_CODE (exception_type_info) == ADDR_EXPR) {
-            exception_type_info = TREE_OPERAND (exception_type_info, 0);
+  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (callee)), "__cxa_throw") == 0)
+    {
+      // Extracting exception type
+      tree exception_type_info = gimple_call_arg (call_stmt, 1);
+      if (exception_type_info && TREE_CODE (exception_type_info) == ADDR_EXPR)
+        {
+          exception_type_info = TREE_OPERAND (exception_type_info, 0);
         }
-        if (exception_type_info && TREE_CODE (exception_type_info) == VAR_DECL) {
-            // Converting the typeinfo to a compile-time type
-            tree exception_type = TREE_TYPE (decl_assembler_name (exception_type_info));
-            if (exception_type) {
-               ret_vector->safe_push (exception_type);
+      if (exception_type_info && TREE_CODE (exception_type_info) == VAR_DECL)
+        {
+          // Converting the typeinfo to a compile-time type
+          tree exception_type
+              = TREE_TYPE (decl_assembler_name (exception_type_info));
+          if (exception_type)
+            {
+              ret_vector->safe_push (exception_type);
             }
         }
-        return true;
+      return true;
     }
-    return false;
+  return false;
 }
 
-// Determine which types can be thrown by a GIMPLE statement and convert them to compile-time types
-bool stmt_throw_types (function *fun, gimple *stmt, vec<tree> *ret_vector) {
-    if (!flag_exceptions) {
-        return false;
+/* Determine which types can be thrown by a GIMPLE statement and convert them
+ * to compile-time types */
+bool
+stmt_throw_types (function *, gimple *stmt, vec<tree> *ret_vector)
+{
+  if (!flag_exceptions)
+    {
+      return false;
     }
-    bool type_exists = true;
+  bool type_exists = true;
 
-    switch (gimple_code (stmt)) {
-        case GIMPLE_RESX:
-            type_exists = extract_types_for_resx (as_a<gresx*> (stmt), ret_vector);
-            return type_exists;
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_RESX:
+      type_exists = extract_types_for_resx (as_a<gresx *> (stmt), ret_vector);
+      return type_exists;
 
-        case GIMPLE_CALL:
-            type_exists = extract_types_for_call (as_a<gcall*> (stmt), ret_vector);
-            /* FIXME: if type exists we should have always vector nonempty.  */
-            return type_exists && !ret_vector->is_empty ();
-          
-        default:
-            return false;
+    case GIMPLE_CALL:
+      type_exists = extract_types_for_call (as_a<gcall *> (stmt), ret_vector);
+      /* FIXME: if type exists we should have always vector nonempty.  */
+      return type_exists && !ret_vector->is_empty ();
+
+    default:
+      return false;
     }
 }
 
 // To get the all exception types from a resx stmt
-static bool extract_types_for_resx (basic_block bb, vec<tree> *ret_vector) {
-	edge e;
-	edge_iterator ei;
-	
+static bool
+extract_types_for_resx (basic_block bb, vec<tree> *ret_vector)
+{
+  edge e;
+  edge_iterator ei;
+
   // Iterate over edges to walk up the basic blocks
   FOR_EACH_EDGE (e, ei, bb->preds)
   {
-  	// Get the last stmt of the basic block as it is an EH stmt
-  	bb = e->src;
-  	gimple_stmt_iterator gsi = gsi_last_bb (bb);
-	  gimple *last_stmt = gsi_stmt (gsi);
-	
-	  if (bb->aux)continue;
-	  bb->aux = (void*)1;
-	
-	  if (last_stmt && (e->flags & EDGE_EH)){
-      if (gimple_code (last_stmt) == GIMPLE_CALL) {
-        // check if its a throw
-        if (!extract_types_for_call (as_a<gcall*> (last_stmt), ret_vector))
-          return false;
-        continue;
+    // Get the last stmt of the basic block as it is an EH stmt
+    bb = e->src;
+    gimple_stmt_iterator gsi = gsi_last_bb (bb);
+    gimple *last_stmt = gsi_stmt (gsi);
+
+    if (bb->aux)
+      continue;
+    bb->aux = (void *)1;
+
+    if (last_stmt && (e->flags & EDGE_EH))
+      {
+        if (gimple_code (last_stmt) == GIMPLE_CALL)
+          {
+            // check if its a throw
+            if (!extract_types_for_call (as_a<gcall *> (last_stmt),
+                                         ret_vector))
+              return false;
+            continue;
+          }
+        else if (gimple_code (last_stmt) == GIMPLE_RESX)
+          {
+            // Recursively processing resx
+            // FIXME: to get this linear, we should cache results.
+            if (!extract_types_for_resx (last_stmt, ret_vector))
+              return false;
+            continue;
+          }
       }
-      else if (gimple_code (last_stmt) == GIMPLE_RESX){
-        // Recursively processing resx
-        extract_types_for_resx (last_stmt, ret_vector);
-        continue;
-      }
-	
-    }
     /* FIXME: remove recursion here, so we do not run out of stack.  */
-  	else if (!extract_types_for_resx (last_stmt, ret_vector))
+    else if (!extract_types_for_resx (e->src, ret_vector))
       return false;
   }
   return true;
 }
 
-// To get the all exception types from a resx stmt  
-bool extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector) {
+// To get the all exception types from a resx stmt
+bool
+extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector)
+{
   basic_block bb = gimple_bb (resx_stmt);
   bool ret = extract_types_for_resx (bb, ret_vector);
   /* FIXME: this is non-linear.  */
@@ -3184,40 +3240,48 @@ bool extract_types_for_resx (gimple *resx_stmt, vec<tree> *ret_vector) {
 }
 
 // To get the types being thrown outside of a function
-bool extract_fun_resx_types (function *fun, vec<tree> *ret_vector) {
-	basic_block bb;
-	gimple_stmt_iterator gsi;
+bool
+extract_fun_resx_types (function *fun, vec<tree> *ret_vector)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
   hash_set<tree> types;
 
-	FOR_EACH_BB_FN (bb, fun)
-	{
-		bb->aux = (void*)1;
-		gsi = gsi_last_bb (bb);
-		gimple *stmt = gsi_stmt (gsi);
-		auto_vec<tree> resx_types;
+  FOR_EACH_BB_FN (bb, fun)
+  {
+    bb->aux = (void *)1;
+    gsi = gsi_last_bb (bb);
+    gimple *stmt = gsi_stmt (gsi);
+    auto_vec<tree> resx_types;
 
     if (!stmt || !stmt_can_throw_external (fun, stmt))
-    continue;
-		
-		if (gimple_code (stmt) == GIMPLE_RESX){
-			if (!extract_types_for_resx (stmt, &resx_types))
-        return false;
-		}
-			
-		else if (gimple_code (stmt) == GIMPLE_CALL){
-			if (!extract_types_for_call (as_a<gcall*> (stmt), &resx_types))
-      return false;
-		}
+      continue;
 
-		for (unsigned i = 0;i<resx_types.length ();++i){
-			tree type = resx_types[i];
-		  types.add (type);
-		}
-	}
+    if (gimple_code (stmt) == GIMPLE_RESX)
+      {
+        if (!extract_types_for_resx (stmt, &resx_types))
+          return false;
+      }
 
-  for (auto it = types.begin (); it != types.end (); ++it) {
-        ret_vector->safe_push (*it);
+    else if (gimple_code (stmt) == GIMPLE_CALL)
+      {
+        if (!extract_types_for_call (as_a<gcall *> (stmt), &resx_types))
+          return false;
+      }
+
+    for (unsigned i = 0; i < resx_types.length (); ++i)
+      {
+        tree type = resx_types[i];
+        types.add (type);
+      }
   }
+
+  for (auto it = types.begin (); it != types.end (); ++it)
+    {
+      ret_vector->safe_push (*it);
+    }
+
+  return true;
 }
 
 /* Return true if statement STMT within FUN could throw an exception.  */
