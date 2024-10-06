@@ -91,9 +91,9 @@ along with GCC; see the file COPYING3.  If not see
    the RTL to avoid scheduling related problems.  For example, the
    store and load could be separated by a call to a pure or const
    function which has no frame and this function might also use SP-16.
-   We have 14-bit immediates on the 64-bit port, so we use secondary
-   memory for the copies.  */
-#define PA_SECONDARY_MEMORY_NEEDED(MODE, CLASS1, CLASS2) \
-  (MAYBE_FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)		\
-   || MAYBE_FP_REG_CLASS_P (CLASS2) != FP_REG_CLASS_P (CLASS1))
-
+   
+   On the 64-bit port, I couldn't get SECONDARY_MEMORY_NEEDED to work
+   with LRA, so I modified the move patterns to use SP-40.  The HP
+   compiler also uses this slot in the frame marker for moving data
+   between the general and floating-point registers.  */
+#define PA_SECONDARY_MEMORY_NEEDED(MODE, CLASS1, CLASS2) false
