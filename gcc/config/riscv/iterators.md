@@ -233,6 +233,8 @@
 (define_code_iterator any_ge [ge geu])
 (define_code_iterator any_lt [lt ltu])
 (define_code_iterator any_le [le leu])
+;; Iterators for conditions we can emit a sCC against 0 or a reg directly
+(define_code_iterator scc_0  [eq ne gt gtu])
 
 ; atomics code iterator
 (define_code_iterator any_atomic [plus ior xor and])
