@@ -13239,6 +13239,16 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 		      cp_lexer_consume_token (parser->lexer);
 		    }
 		}
+	      bool const_p = false;
+	      if (flag_contracts_nonattr_const_keyword)
+		{
+		  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+		  if (tok && tok->keyword == RID_CONST)
+		    {
+		      const_p = true;
+		      cp_lexer_consume_token (parser->lexer);
+		    }
+		}
 	      
 	      parens.require_open (parser);
 	      /* Enable location wrappers when parsing contracts.  */
@@ -13247,6 +13257,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
 	      if (mutable_p)
+		flag_contracts_nonattr_noconst = 1;
+	      if (flag_contracts_nonattr_const_keyword && !const_p)
 		flag_contracts_nonattr_noconst = 1;
 
 	      /* if we have a current class object, constify it before processing
@@ -13271,7 +13283,10 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
 					NULL_TREE /*result*/, condition, loc);
 	      if (contract != error_mark_node)
-		set_contract_mutable(contract, mutable_p);
+		{
+		  set_contract_mutable(contract, mutable_p);
+		  set_contract_const(contract, const_p);
+		}
 
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
 
@@ -31503,6 +31518,7 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
   matching_parens parens;
 
   bool mutable_p = false;
+  bool const_p = false;
 
   /* Parse the optional mode.  */
   tree mode = NULL_TREE;
@@ -31527,6 +31543,15 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	  if (tok && tok->keyword == RID_MUTABLE)
 	    {
 	      mutable_p = true;
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	}
+      if (flag_contracts_nonattr_const_keyword)
+	{
+	  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+	  if (tok && tok->keyword == RID_CONST)
+	    {
+	      const_p = true;
 	      cp_lexer_consume_token (parser->lexer);
 	    }
 	}
@@ -31578,7 +31603,10 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* And its corresponding contract.  */
       contract = grok_contract (attribute, mode, identifier, condition, loc);
       if (contract != error_mark_node)
-	set_contract_mutable(contract, mutable_p);
+	{
+	  set_contract_mutable(contract, mutable_p);
+	  set_contract_mutable(contract, const_p);
+	}
     }
   else
     {
@@ -31602,6 +31630,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	++processing_contract_postcondition;
       if (mutable_p)
 	flag_contracts_nonattr_noconst = 1;
+      if (flag_contracts_nonattr_const_keyword && !const_p)
+	flag_contracts_nonattr_noconst = 1;
       cp_expr condition = cp_parser_conditional_expression (parser);
       if (postcondition_p)
 	--processing_contract_postcondition;
@@ -31621,8 +31651,10 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* Build the contract.  */
       contract = grok_contract (attribute, mode, result, condition, loc);
       if (contract != error_mark_node)
-	set_contract_mutable(contract, mutable_p);
-
+	{
+	  set_contract_mutable(contract, mutable_p);
+	  set_contract_const(contract, const_p);
+	}
       /* Leave our temporary scope for the postcondition result.  */
       if (result)
 	{
@@ -31677,9 +31709,13 @@ void cp_parser_late_contract_condition (cp_parser *parser,
     }
 
   bool mutable_p = get_contract_mutable (contract);
+  bool const_p = get_contract_const (contract);
   bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
   if (flag_contracts_nonattr && flag_contracts_nonattr_mutable_keyword &&
       mutable_p)
+    flag_contracts_nonattr_noconst = 1;
+  if (flag_contracts_nonattr && flag_contracts_nonattr_const_keyword &&
+      !const_p)
     flag_contracts_nonattr_noconst = 1;
   /* 'this' is not allowed in preconditions of constructors or in postconditions
      of destructors.  Note that the previous value of this variable is
