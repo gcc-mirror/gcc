@@ -3304,7 +3304,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
   vec_info_shared shared;
   vect_loop_form_info info;
-  if (!vect_analyze_loop_form (loop, &info))
+  if (!vect_analyze_loop_form (loop, NULL, &info))
     goto gather_done;
 
   simple_loop_info = vect_create_loop_vinfo (loop, &shared, &info);
@@ -3346,7 +3346,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
     {
       vec_info_shared shared;
       vect_loop_form_info info;
-      if (vect_analyze_loop_form (loop->inner, &info))
+      if (vect_analyze_loop_form (loop->inner, NULL, &info))
 	{
 	  simple_loop_info
 	    = vect_create_loop_vinfo (loop->inner, &shared, &info);
