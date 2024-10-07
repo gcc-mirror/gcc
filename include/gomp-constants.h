@@ -382,6 +382,14 @@ enum gomp_map_kind
 #define GOMP_DEPEND_MUTEXINOUTSET	4
 #define GOMP_DEPEND_INOUTSET		5
 
+/* Predefined allocator value ranges.  */
+#define GOMP_OMP_PREDEF_ALLOC_MAX	8
+#define GOMP_OMPX_PREDEF_ALLOC_MIN	200
+#define GOMP_OMPX_PREDEF_ALLOC_MAX	200
+
+/* Predefined allocator with access == thread.  */
+#define GOMP_OMP_PREDEF_ALLOC_THREADS	8
+
 /* Flag values for OpenMP 'requires' directive features.  */
 // compiler use only: OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER  0xf
 #define GOMP_REQUIRES_UNIFIED_ADDRESS       0x10

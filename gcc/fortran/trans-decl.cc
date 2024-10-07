@@ -821,6 +821,23 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     set_decl_tls_model (decl, decl_default_tls_model (decl));
 
+  if (sym->attr.omp_allocate && TREE_STATIC (decl))
+    {
+      struct gfc_omp_namelist *n;
+      for (n = sym->ns->omp_allocate; n; n = n->next)
+	if (n->sym == sym)
+	  break;
+      tree alloc = gfc_conv_constant_to_tree (n->u2.allocator);
+      tree align = (n->u.align ? gfc_conv_constant_to_tree (n->u.align)
+			       : NULL_TREE);
+      if (align != NULL_TREE)
+	SET_DECL_ALIGN (decl, MAX (tree_to_uhwi (align),
+			DECL_ALIGN_UNIT (decl)) * BITS_PER_UNIT);
+      DECL_ATTRIBUTES (decl)
+	= tree_cons (get_identifier ("omp allocate"),
+		     build_tree_list (alloc, align), DECL_ATTRIBUTES (decl));
+    }
+
   /* Mark weak variables.  */
   if (sym->attr.ext_attr & (1 << EXT_ATTR_WEAK))
     declare_weak (decl);
@@ -5251,71 +5268,55 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   se.expr = NULL_TREE;
   for (struct gfc_omp_namelist *n = omp_ns ? omp_ns->omp_allocate : NULL;
        n; n = n->next)
-    if (!TREE_STATIC (n->sym->backend_decl))
-      {
-	tree align = (n->u.align ? gfc_conv_constant_to_tree (n->u.align)
-				 : NULL_TREE);
-	if (last_allocator != n->u2.allocator)
-	  {
-	    location_t loc = input_location;
-	    gfc_init_se (&se, NULL);
-	    if (n->u2.allocator)
-	      {
-		input_location = gfc_get_location (&n->u2.allocator->where);
-		gfc_conv_expr (&se, n->u2.allocator);
-	      }
-	    /* We need to evalulate non-constants - also to find the location
-	       after which the GOMP_alloc has to be added to - also as BLOCK
-	       does not yield a new BIND_EXPR_BODY.  */
-	    if (n->u2.allocator
-		&& (!(CONSTANT_CLASS_P (se.expr) && DECL_P (se.expr))
-		    || se.pre.head || se.post.head))
-	      {
-		stmtblock_t tmpblock;
-		gfc_init_block (&tmpblock);
-		se.expr = gfc_evaluate_now (se.expr, &tmpblock);
-		/* First post then pre because the new code is inserted
-		   at the top. */
-		gfc_add_init_cleanup (block, gfc_finish_block (&se.post), NULL);
-		gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
-				      NULL);
-		gfc_add_init_cleanup (block, gfc_finish_block (&se.pre), NULL);
-	      }
-	    last_allocator = n->u2.allocator;
-	    input_location = loc;
-	  }
-
-	/* 'omp allocate( {purpose: allocator, value: align},
-			  {purpose: init-stmtlist, value: cleanup-stmtlist},
-			  {purpose: size-var, value: last-size-expr}}
-	    where init-stmt/cleanup-stmt is the STATEMENT list to find the
-	    try-final block; last-size-expr is to find the location after
-	    which to add the code and 'size-var' is for the proper size, cf.
-	    gfc_trans_auto_array_allocation - either or both of the latter
-	    can be NULL.  */
-	tree tmp = lookup_attribute ("omp allocate",
-				     DECL_ATTRIBUTES (n->sym->backend_decl));
-	tmp = TREE_VALUE (tmp);
-	TREE_PURPOSE (tmp) = se.expr;
-	TREE_VALUE (tmp) = align;
-	TREE_PURPOSE (TREE_CHAIN (tmp)) = init_stmtlist;
-	TREE_VALUE (TREE_CHAIN (tmp)) = cleanup_stmtlist;
-      }
-    else if (n->sym->attr.in_common)
-      {
-	gfc_error ("Sorry, !$OMP allocate for COMMON block variable %qs at %L "
-		   "not supported", n->sym->common_block->name,
-		   &n->sym->common_block->where);
-	break;
-      }
-    else
-      {
-	gfc_error ("Sorry, !$OMP allocate for variable %qs at %L with SAVE "
-		   "attribute not yet implemented", n->sym->name,
-		   &n->sym->declared_at);
-	/* FIXME: Remember to handle last_allocator.  */
-	break;
-      }
+    {
+      tree align = (n->u.align ? gfc_conv_constant_to_tree (n->u.align) : NULL_TREE);
+      if (last_allocator != n->u2.allocator)
+	{
+	  location_t loc = input_location;
+	  gfc_init_se (&se, NULL);
+	  if (n->u2.allocator)
+	    {
+	      input_location = gfc_get_location (&n->u2.allocator->where);
+	      gfc_conv_expr (&se, n->u2.allocator);
+	    }
+	  /* We need to evalulate non-constants - also to find the location
+	     after which the GOMP_alloc has to be added to - also as BLOCK
+	     does not yield a new BIND_EXPR_BODY.  */
+	  if (n->u2.allocator
+	      && (!(CONSTANT_CLASS_P (se.expr) && DECL_P (se.expr))
+		  || se.pre.head || se.post.head))
+	    {
+	      stmtblock_t tmpblock;
+	      gfc_init_block (&tmpblock);
+	      se.expr = gfc_evaluate_now (se.expr, &tmpblock);
+	      /* First post then pre because the new code is inserted
+		 at the top. */
+	      gfc_add_init_cleanup (block, gfc_finish_block (&se.post), NULL);
+	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
+				    NULL);
+	      gfc_add_init_cleanup (block, gfc_finish_block (&se.pre), NULL);
+	    }
+	  last_allocator = n->u2.allocator;
+	  input_location = loc;
+	}
+      if (TREE_STATIC (n->sym->backend_decl))
+	continue;
+      /* 'omp allocate( {purpose: allocator, value: align},
+			{purpose: init-stmtlist, value: cleanup-stmtlist},
+			{purpose: size-var, value: last-size-expr}}
+	  where init-stmt/cleanup-stmt is the STATEMENT list to find the
+	  try-final block; last-size-expr is to find the location after
+	  which to add the code and 'size-var' is for the proper size, cf.
+	  gfc_trans_auto_array_allocation - either or both of the latter
+	  can be NULL.  */
+      tree tmp = lookup_attribute ("omp allocate",
+				   DECL_ATTRIBUTES (n->sym->backend_decl));
+      tmp = TREE_VALUE (tmp);
+      TREE_PURPOSE (tmp) = se.expr;
+      TREE_VALUE (tmp) = align;
+      TREE_PURPOSE (TREE_CHAIN (tmp)) = init_stmtlist;
+      TREE_VALUE (TREE_CHAIN (tmp)) = cleanup_stmtlist;
+    }
 
   gfc_init_block (&tmpblock);
 

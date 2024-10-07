@@ -11,6 +11,6 @@ subroutine f ()
   use m
   implicit none
   ! The "Sorry" is here temporarily only to avoid excess error failures.
-  integer, save :: i ! { dg-error "Sorry, !.OMP allocate for variable 'i' at .1. with SAVE attribute not yet implemented" }
+  integer, save :: i
   !$omp allocate(i) allocator(ompx_gnu_pinned_mem_alloc)
 end

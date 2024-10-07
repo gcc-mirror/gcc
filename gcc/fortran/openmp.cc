@@ -7857,9 +7857,12 @@ is_predefined_allocator (gfc_expr *expr)
 	  && expr->ts.kind == gfc_c_intptr_kind
 	  && expr->expr_type == EXPR_CONSTANT
 	  && ((mpz_sgn (expr->value.integer) > 0
-	       && mpz_cmp_si (expr->value.integer, 8) <= 0)
-	      || (mpz_cmp_si (expr->value.integer, 200) >= 0
-		  && mpz_cmp_si (expr->value.integer, 200) <= 0)));
+	       && mpz_cmp_si (expr->value.integer,
+			      GOMP_OMP_PREDEF_ALLOC_MAX) <= 0)
+	      || (mpz_cmp_si (expr->value.integer,
+			      GOMP_OMPX_PREDEF_ALLOC_MIN) >= 0
+		  && mpz_cmp_si (expr->value.integer,
+				 GOMP_OMPX_PREDEF_ALLOC_MAX) <= 0)));
 }
 
 /* Resolve declarative ALLOCATE statement. Note: Common block vars only appear

@@ -20967,20 +20967,22 @@ c_parser_omp_allocate (c_parser *parser)
       if (TREE_STATIC (var))
 	{
 	  if (allocator == NULL_TREE && allocator_loc == UNKNOWN_LOCATION)
-	    error_at (loc, "%<allocator%> clause required for "
-			   "static variable %qD", var);
+	    {
+	      error_at (loc,
+			"%<allocator%> clause required for "
+			"static variable %qD", var);
+	      continue;
+	    }
 	  else if (allocator
 		   && (wi::to_widest (allocator) < 1
-		       || wi::to_widest (allocator) > 8))
-	    /* 8 = largest predefined memory allocator. */
-	    error_at (allocator_loc,
-		      "%<allocator%> clause requires a predefined allocator as "
-		      "%qD is static", var);
-	  else
-	    sorry_at (OMP_CLAUSE_LOCATION (nl),
-		      "%<#pragma omp allocate%> for static variables like "
-		      "%qD not yet supported", var);
-	  continue;
+		       || wi::to_widest (allocator) > GOMP_OMP_PREDEF_ALLOC_MAX)
+		   && (wi::to_widest (allocator) < GOMP_OMPX_PREDEF_ALLOC_MIN
+		       || wi::to_widest (allocator) > GOMP_OMPX_PREDEF_ALLOC_MAX))
+	    {
+	      error_at (allocator_loc,
+			"%<allocator%> clause requires a predefined allocator as "
+			"%qD is static", var);
+	    }
 	}
       if (allocator)
 	{
@@ -20988,6 +20990,9 @@ c_parser_omp_allocate (c_parser *parser)
 	    = {EXPR_LOC_OR_LOC (allocator, OMP_CLAUSE_LOCATION (nl)), var};
 	  walk_tree (&allocator, c_check_omp_allocate_allocator_r, &data, NULL);
 	}
+      if (alignment)
+	SET_DECL_ALIGN (var, BITS_PER_UNIT * MAX (tree_to_uhwi (alignment),
+						  DECL_ALIGN_UNIT (var)));
       DECL_ATTRIBUTES (var) = tree_cons (get_identifier ("omp allocate"),
 					 build_tree_list (allocator, alignment),
 					 DECL_ATTRIBUTES (var));
