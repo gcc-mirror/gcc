@@ -10333,10 +10333,22 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	 instead of relying on the pattern described above.  */
       if (!nunits.is_constant (&npatterns)
 	  || !TYPE_VECTOR_SUBPARTS (op_vectype).is_constant ())
-	return -1;
+	{
+	  if (dump_p)
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported permutation %p on variable-length"
+			     " vectors\n", (void *) node);
+	  return -1;
+	}
       nelts_per_pattern = ncopies = 1;
       if (linfo && !LOOP_VINFO_VECT_FACTOR (linfo).is_constant (&ncopies))
-	return -1;
+	{
+	  if (dump_p)
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported permutation %p for variable VF\n",
+			     (void *) node);
+	  return -1;
+	}
       pack_p = false;
       unpack_factor = 1;
     }
