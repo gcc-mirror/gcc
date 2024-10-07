@@ -13230,26 +13230,35 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      matching_parens parens;
 
 	      bool mutable_p = false;
-	      if (flag_contracts_nonattr_mutable_keyword)
-		{
-		  cp_token *tok = cp_lexer_peek_token (parser->lexer);
-		  if (tok && tok->keyword == RID_MUTABLE)
-		    {
-		      mutable_p = true;
-		      cp_lexer_consume_token (parser->lexer);
-		    }
-		}
 	      bool const_p = false;
-	      if (flag_contracts_nonattr_const_keyword)
+	      
+	      for (cp_token *tok = cp_lexer_peek_token (parser->lexer);
+		   tok && tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST;
+		   tok = cp_lexer_peek_token (parser->lexer))
 		{
-		  cp_token *tok = cp_lexer_peek_token (parser->lexer);
-		  if (tok && tok->keyword == RID_CONST)
+		  if (!flag_contracts_nonattr_mutable_keyword &&
+		      !flag_contracts_nonattr_const_keyword)
+		    break;
+		  if (flag_contracts_nonattr_mutable_keyword)
 		    {
-		      const_p = true;
-		      cp_lexer_consume_token (parser->lexer);
+		      if (tok && tok->keyword == RID_MUTABLE)
+			{
+			  mutable_p = true;
+			  cp_lexer_consume_token (parser->lexer);
+			  continue;
+			}
+		    }
+		  if (flag_contracts_nonattr_const_keyword)
+		    {
+		      if (tok && tok->keyword == RID_CONST)
+			{
+			  const_p = true;
+			  cp_lexer_consume_token (parser->lexer);
+			}
 		    }
 		}
-	      
+	      if (mutable_p && const_p)
+		error_at (loc, "contracts cannot be both mutable and const");
 	      parens.require_open (parser);
 	      /* Enable location wrappers when parsing contracts.  */
 	      auto suppression = make_temp_override (suppress_location_wrappers,
@@ -31527,24 +31536,33 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
     }
   else
     {
-      if (flag_contracts_nonattr_mutable_keyword)
+      for (cp_token *tok = cp_lexer_peek_token (parser->lexer);
+	   tok && tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST;
+	   tok = cp_lexer_peek_token (parser->lexer))
 	{
-	  cp_token *tok = cp_lexer_peek_token (parser->lexer);
-	  if (tok && tok->keyword == RID_MUTABLE)
+	  if (!flag_contracts_nonattr_mutable_keyword &&
+	      !flag_contracts_nonattr_const_keyword)
+	    break;
+	  if (flag_contracts_nonattr_mutable_keyword)
 	    {
-	      mutable_p = true;
-	      cp_lexer_consume_token (parser->lexer);
+	      if (tok && tok->keyword == RID_MUTABLE)
+		{
+		  mutable_p = true;
+		  cp_lexer_consume_token (parser->lexer);
+		  continue;
+		}
+	    }
+	  if (flag_contracts_nonattr_const_keyword)
+	    {
+	      if (tok && tok->keyword == RID_CONST)
+		{
+		  const_p = true;
+		  cp_lexer_consume_token (parser->lexer);
+		}
 	    }
 	}
-      if (flag_contracts_nonattr_const_keyword)
-	{
-	  cp_token *tok = cp_lexer_peek_token (parser->lexer);
-	  if (tok && tok->keyword == RID_CONST)
-	    {
-	      const_p = true;
-	      cp_lexer_consume_token (parser->lexer);
-	    }
-	}
+      if (mutable_p && const_p)
+	error_at (loc, "contracts cannot be both mutable and const");
       parens.require_open (parser);
       if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
 	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
@@ -31700,6 +31718,8 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   bool mutable_p = get_contract_mutable (contract);
   bool const_p = get_contract_const (contract);
+  if (mutable_p && const_p)
+    error_at (DECL_SOURCE_LOCATION (attribute), "contracts cannot be both mutable and const");
   bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
   if (flag_contracts_nonattr && flag_contracts_nonattr_mutable_keyword &&
       mutable_p)
