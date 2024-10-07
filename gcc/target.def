@@ -2496,8 +2496,11 @@ declaration of the built-in function.  @var{arglist} is the list of\n\
 arguments passed to the built-in function.  The result is a\n\
 complete expression that implements the operation, usually\n\
 another @code{CALL_EXPR}.\n\
-@var{arglist} really has type @samp{VEC(tree,gc)*}",
- tree, (location_t loc, tree fndecl, void *arglist), NULL)
+@var{arglist} really has type @samp{VEC(tree,gc)*}\n\
+@var{complain} is a boolean indicating whether invalid operations\n\
+should emit errors.  This is set to @code{false} when the C++ templating\n\
+context expects that errors should not be emitted (i.e. SFINAE).",
+ tree, (location_t loc, tree fndecl, void *arglist, bool complain), NULL)
 
 DEFHOOK
 (check_builtin_call,
@@ -2512,9 +2515,11 @@ but after the optional @code{TARGET_RESOLVE_OVERLOADED_BUILTIN}\n\
 step is now to built-in function @var{fndecl}.  @var{loc} is the\n\
 location of the call and @var{args} is an array of function arguments,\n\
 of which there are @var{nargs}.  @var{arg_loc} specifies the location\n\
-of each argument.",
+of each argument.  @var{complain} is a boolean indicating whether invalid\n\
+arguments should emitm errors.  This is set to @code{false} when the C++\n\
+templating context expects that errors should not be emitted (i.e. SFINAE).",
  bool, (location_t loc, vec<location_t> arg_loc, tree fndecl,
-	tree orig_fndecl, unsigned int nargs, tree *args),
+	tree orig_fndecl, unsigned int nargs, tree *args, bool complain),
  NULL)
 
 /* Fold a target-specific builtin to a tree valid for both GIMPLE

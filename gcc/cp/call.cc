@@ -11192,7 +11192,8 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
 	argarray[i] = maybe_constant_value (argarray[i]);
 
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
-					     orig_fndecl, nargs, argarray))
+					     orig_fndecl, nargs, argarray,
+					     complain & tf_error))
 	return error_mark_node;
       else if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING))
 	{

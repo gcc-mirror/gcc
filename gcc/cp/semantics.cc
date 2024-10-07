@@ -3287,7 +3287,8 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       if (TREE_CODE (fn) == FUNCTION_DECL
 	  && (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
 	      || DECL_BUILT_IN_CLASS (fn) == BUILT_IN_MD))
-	result = resolve_overloaded_builtin (input_location, fn, *args);
+	result = resolve_overloaded_builtin (input_location, fn, *args,
+					     complain & tf_error);
 
       if (!result)
 	{

@@ -1680,7 +1680,7 @@ find_instance (bool *unsupported_builtin, int *instance,
 
 tree
 altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
-				    void *passed_arglist)
+				    void *passed_arglist, bool)
 {
   rs6000_gen_builtins fcode
     = (rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);

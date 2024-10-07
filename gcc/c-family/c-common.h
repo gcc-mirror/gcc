@@ -859,8 +859,8 @@ extern void check_function_arguments_recurse (void (*)
 					      void *, tree,
 					      unsigned HOST_WIDE_INT,
 					      opt_code);
-extern bool check_builtin_function_arguments (location_t, vec<location_t>,
-					      tree, tree, int, tree *);
+extern bool check_builtin_function_arguments (location_t, vec<location_t>, tree,
+					      tree, int, tree *, bool = true);
 extern void check_function_format (const_tree, tree, int, tree *,
 				   vec<location_t> *,
 				   bool (*comp_types) (tree, tree));
@@ -1105,7 +1105,8 @@ extern tree build_function_call_vec (location_t, vec<location_t>, tree,
 				     vec<tree, va_gc> *, vec<tree, va_gc> *,
 				     tree = NULL_TREE);
 
-extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *);
+extern tree resolve_overloaded_builtin (location_t, tree, vec<tree, va_gc> *,
+					bool = true);
 
 extern tree finish_label_address_expr (tree, location_t);
 

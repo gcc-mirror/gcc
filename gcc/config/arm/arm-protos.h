@@ -31,8 +31,8 @@ extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);
 extern enum reg_class arm_regno_class (int);
-extern bool arm_check_builtin_call (location_t , vec<location_t> , tree,
-				    tree, unsigned int, tree *);
+extern bool arm_check_builtin_call (location_t, vec<location_t>, tree, tree,
+				    unsigned int, tree *, bool);
 extern void arm_load_pic_register (unsigned long, rtx);
 extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
