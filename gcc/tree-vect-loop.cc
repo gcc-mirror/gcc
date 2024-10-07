@@ -1767,9 +1767,8 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 		       exit_e->src->index, exit_e->dest->index, exit_e->aux);
 
   /* Check if we have any control flow that doesn't leave the loop.  */
-  class loop *v_loop = loop->inner ? loop->inner : loop;
-  basic_block *bbs = get_loop_body (v_loop);
-  for (unsigned i = 0; i < v_loop->num_nodes; i++)
+  basic_block *bbs = get_loop_body (loop);
+  for (unsigned i = 0; i < loop->num_nodes; i++)
     if (EDGE_COUNT (bbs[i]->succs) != 1
 	&& (EDGE_COUNT (bbs[i]->succs) != 2
 	    || !loop_exits_from_bb_p (bbs[i]->loop_father, bbs[i])))
