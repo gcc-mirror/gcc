@@ -10208,6 +10208,13 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   unsigned i;
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   bool repeating_p = multiple_p (nunits, SLP_TREE_LANES (node));
+  /* True if we're permuting a single input of 2N vectors down
+     to N vectors.  This case doesn't generalize beyond 2 since
+     VEC_PERM_EXPR only takes 2 inputs.  */
+  bool pack_p = false;
+  /* If we're permuting inputs of N vectors each into X*N outputs,
+     this is the value of X, otherwise it is 1.  */
+  unsigned int unpack_factor = 1;
   tree op_vectype = NULL_TREE;
   FOR_EACH_VEC_ELT (children, i, child)
     if (SLP_TREE_VECTYPE (child))
@@ -10229,7 +10236,20 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 			     "Unsupported vector types in lane permutation\n");
 	  return -1;
 	}
-      if (SLP_TREE_LANES (child) != SLP_TREE_LANES (node))
+      auto op_nunits = TYPE_VECTOR_SUBPARTS (op_vectype);
+      unsigned int this_unpack_factor;
+      /* Check whether the input has twice as many lanes per vector.  */
+      if (children.length () == 1
+	  && known_eq (SLP_TREE_LANES (child) * nunits,
+		       SLP_TREE_LANES (node) * op_nunits * 2))
+	pack_p = true;
+      /* Check whether the output has N times as many lanes per vector.  */
+      else if (constant_multiple_p (SLP_TREE_LANES (node) * op_nunits,
+				    SLP_TREE_LANES (child) * nunits,
+				    &this_unpack_factor)
+	       && (i == 0 || unpack_factor == this_unpack_factor))
+	unpack_factor = this_unpack_factor;
+      else
 	repeating_p = false;
     }
 
@@ -10257,14 +10277,25 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       return 1;
     }
 
-  /* Set REPEATING_P to true if every output uses the same permute vector
+  /* Set REPEATING_P to true if the permutations are cylical wrt UNPACK_FACTOR
      and if we can generate the vectors in a vector-length agnostic way.
+     This requires UNPACK_STEP == NUNITS / UNPACK_FACTOR to be known at
+     compile time.
+
+     The significance of UNPACK_STEP is that, when PACK_P is false,
+     output vector I operates on a window of UNPACK_STEP elements from each
+     input, starting at lane UNPACK_STEP * (I % UNPACK_FACTOR).  For example,
+     when UNPACK_FACTOR is 2, the first output vector operates on lanes
+     [0, NUNITS / 2 - 1] of each input vector and the second output vector
+     operates on lanes [NUNITS / 2, NUNITS - 1] of each input vector.
 
      When REPEATING_P is true, NOUTPUTS holds the total number of outputs
      that we actually need to generate.  */
   uint64_t noutputs = 0;
+  poly_uint64 unpack_step = 0;
   loop_vec_info linfo = dyn_cast <loop_vec_info> (vinfo);
   if (!linfo
+      || !multiple_p (nunits, unpack_factor, &unpack_step)
       || !constant_multiple_p (LOOP_VINFO_VECT_FACTOR (linfo)
 			       * SLP_TREE_LANES (node), nunits, &noutputs))
     repeating_p = false;
@@ -10286,7 +10317,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   uint64_t ncopies;
   if (repeating_p)
     {
-      /* We need a single permute mask vector that has the form:
+      /* We need permute mask vectors that have the form:
 
 	   { X1, ..., Xn, X1 + n, ..., Xn + n, X1 + 2n, ..., Xn + 2n, ... }
 
@@ -10306,8 +10337,10 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       nelts_per_pattern = ncopies = 1;
       if (linfo && !LOOP_VINFO_VECT_FACTOR (linfo).is_constant (&ncopies))
 	return -1;
+      pack_p = false;
+      unpack_factor = 1;
     }
-  unsigned olanes = ncopies * SLP_TREE_LANES (node);
+  unsigned olanes = unpack_factor * ncopies * SLP_TREE_LANES (node);
   gcc_assert (repeating_p || multiple_p (olanes, nunits));
 
   /* Compute the { { SLP operand, vector index}, lane } permutation sequence
@@ -10318,27 +10351,34 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   auto_vec<poly_uint64> active_lane;
   vperm.create (olanes);
   active_lane.safe_grow_cleared (children.length (), true);
-  for (unsigned i = 0; i < ncopies; ++i)
+  for (unsigned int ui = 0; ui < unpack_factor; ++ui)
     {
-      for (unsigned pi = 0; pi < perm.length (); ++pi)
-	{
-	  std::pair<unsigned, unsigned> p = perm[pi];
-	  tree vtype = SLP_TREE_VECTYPE (children[p.first]);
-	  if (repeating_p)
-	    vperm.quick_push ({{p.first, 0}, p.second + active_lane[p.first]});
-	  else
-	    {
-	      /* We checked above that the vectors are constant-length.  */
-	      unsigned vnunits = TYPE_VECTOR_SUBPARTS (vtype).to_constant ();
-	      unsigned lane = active_lane[p.first].to_constant ();
-	      unsigned vi = (lane + p.second) / vnunits;
-	      unsigned vl = (lane + p.second) % vnunits;
-	      vperm.quick_push ({{p.first, vi}, vl});
-	    }
-	}
-      /* Advance to the next group.  */
       for (unsigned j = 0; j < children.length (); ++j)
-	active_lane[j] += SLP_TREE_LANES (children[j]);
+	active_lane[j] = ui * unpack_step;
+      for (unsigned i = 0; i < ncopies; ++i)
+	{
+	  for (unsigned pi = 0; pi < perm.length (); ++pi)
+	    {
+	      std::pair<unsigned, unsigned> p = perm[pi];
+	      tree vtype = SLP_TREE_VECTYPE (children[p.first]);
+	      if (repeating_p)
+		vperm.quick_push ({{p.first, 0},
+				   p.second + active_lane[p.first]});
+	      else
+		{
+		  /* We checked above that the vectors are constant-length.  */
+		  unsigned vnunits = TYPE_VECTOR_SUBPARTS (vtype)
+		    .to_constant ();
+		  unsigned lane = active_lane[p.first].to_constant ();
+		  unsigned vi = (lane + p.second) / vnunits;
+		  unsigned vl = (lane + p.second) % vnunits;
+		  vperm.quick_push ({{p.first, vi}, vl});
+		}
+	    }
+	  /* Advance to the next group.  */
+	  for (unsigned j = 0; j < children.length (); ++j)
+	    active_lane[j] += SLP_TREE_LANES (children[j]);
+	}
     }
 
   if (dump_p)
@@ -10382,19 +10422,32 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   mask.quick_grow (count);
   vec_perm_indices indices;
   unsigned nperms = 0;
-  /* When REPEATING_P is true, we only have one unique permute vector
-     to check during analysis, but we need to generate NOUTPUTS vectors
-     during transformation.  */
+  /* When REPEATING_P is true, we only have UNPACK_FACTOR unique permute
+     vectors to check during analysis, but we need to generate NOUTPUTS
+     vectors during transformation.  */
   unsigned total_nelts = olanes;
   if (repeating_p && gsi)
-    total_nelts *= noutputs;
+    total_nelts = (total_nelts / unpack_factor) * noutputs;
   for (unsigned i = 0; i < total_nelts; ++i)
     {
-      unsigned vi = i / olanes;
+      /* VI is the input vector index when generating code for REPEATING_P.  */
+      unsigned vi = i / olanes * (pack_p ? 2 : 1);
       unsigned ei = i % olanes;
       mask_element = vperm[ei].second;
-      if (first_vec.first == -1U
-	  || first_vec == vperm[ei].first)
+      if (pack_p)
+	{
+	  /* In this case, we have N outputs and the single child provides 2N
+	     inputs.  Output X permutes inputs 2X and 2X+1.
+
+	     The mask indices are taken directly from the SLP permutation node.
+	     Index X selects from the first vector if (X / NUNITS) % 2 == 0;
+	     X selects from the second vector otherwise.  These conditions
+	     are only known at compile time for constant-length vectors.  */
+	  first_vec = std::make_pair (0, 0);
+	  second_vec = std::make_pair (0, 1);
+	}
+      else if (first_vec.first == -1U
+	       || first_vec == vperm[ei].first)
 	first_vec = vperm[ei].first;
       else if (second_vec.first == -1U
 	       || second_vec == vperm[ei].first)
