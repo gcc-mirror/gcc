@@ -1933,6 +1933,46 @@ aarch64_sve_int_mode (machine_mode mode)
   return aarch64_sve_data_mode (int_mode, GET_MODE_NUNITS (mode)).require ();
 }
 
+/* Look for a vector mode with the same classification as VEC_MODE,
+   but with each group of FACTOR elements coalesced into a single element.
+   In other words, look for a mode in which the elements are FACTOR times
+   larger and in which the number of elements is FACTOR times smaller.
+
+   Return the mode found, if one exists.  */
+
+static opt_machine_mode
+aarch64_coalesce_units (machine_mode vec_mode, unsigned int factor)
+{
+  auto elt_bits = vector_element_size (GET_MODE_BITSIZE (vec_mode),
+				       GET_MODE_NUNITS (vec_mode));
+  auto vec_flags = aarch64_classify_vector_mode (vec_mode);
+  if (vec_flags & VEC_SVE_PRED)
+    {
+      if (known_eq (GET_MODE_SIZE (vec_mode), BYTES_PER_SVE_PRED))
+	return aarch64_sve_pred_mode (elt_bits * factor);
+      return {};
+    }
+
+  scalar_mode new_elt_mode;
+  if (!int_mode_for_size (elt_bits * factor, false).exists (&new_elt_mode))
+    return {};
+
+  if (vec_flags == VEC_ADVSIMD)
+    {
+      auto mode = aarch64_simd_container_mode (new_elt_mode,
+					       GET_MODE_BITSIZE (vec_mode));
+      if (mode != word_mode)
+	return mode;
+    }
+  else if (vec_flags & VEC_SVE_DATA)
+    {
+      poly_uint64 new_nunits;
+      if (multiple_p (GET_MODE_NUNITS (vec_mode), factor, &new_nunits))
+	return aarch64_sve_data_mode (new_elt_mode, new_nunits);
+    }
+  return {};
+}
+
 /* Implement TARGET_VECTORIZE_RELATED_MODE.  */
 
 static opt_machine_mode
@@ -25731,26 +25771,23 @@ aarch64_evpc_reencode (struct expand_vec_perm_d *d)
 {
   expand_vec_perm_d newd;
 
-  if (d->vec_flags != VEC_ADVSIMD)
+  /* The subregs that we'd create are not supported for big-endian SVE;
+     see aarch64_modes_compatible_p for details.  */
+  if (BYTES_BIG_ENDIAN && (d->vec_flags & VEC_ANY_SVE))
     return false;
 
   /* Get the new mode.  Always twice the size of the inner
      and half the elements.  */
-  poly_uint64 vec_bits = GET_MODE_BITSIZE (d->vmode);
-  unsigned int new_elt_bits = GET_MODE_UNIT_BITSIZE (d->vmode) * 2;
-  auto new_elt_mode = int_mode_for_size (new_elt_bits, false).require ();
-  machine_mode new_mode = aarch64_simd_container_mode (new_elt_mode, vec_bits);
-
-  if (new_mode == word_mode)
+  machine_mode new_mode;
+  if (!aarch64_coalesce_units (d->vmode, 2).exists (&new_mode))
     return false;
 
   vec_perm_indices newpermindices;
-
   if (!newpermindices.new_shrunk_vector (d->perm, 2))
     return false;
 
   newd.vmode = new_mode;
-  newd.vec_flags = VEC_ADVSIMD;
+  newd.vec_flags = d->vec_flags;
   newd.op_mode = newd.vmode;
   newd.op_vec_flags = newd.vec_flags;
   newd.target = d->target ? gen_lowpart (new_mode, d->target) : NULL;
