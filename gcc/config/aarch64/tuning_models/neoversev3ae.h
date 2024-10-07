@@ -22,24 +22,6 @@
 
 #include "generic.h"
 
-static const struct cpu_addrcost_table neoversev3ae_addrcost_table =
-{
-    {
-      1, /* hi  */
-      0, /* si  */
-      0, /* di  */
-      1, /* ti  */
-    },
-  0, /* pre_modify  */
-  0, /* post_modify  */
-  2, /* post_modify_ld3_st3  */
-  2, /* post_modify_ld4_st4  */
-  0, /* register_offset  */
-  0, /* register_sextend  */
-  0, /* register_zextend  */
-  0 /* imm_offset  */
-};
-
 static const struct cpu_regmove_cost neoversev3ae_regmove_cost =
 {
   3, /* GP2GP  */
@@ -209,7 +191,7 @@ static const struct cpu_vector_cost neoversev3ae_vector_cost =
 static const struct tune_params neoversev3ae_tunings =
 {
   &cortexa76_extra_costs,
-  &neoversev3ae_addrcost_table,
+  &generic_armv9_a_addrcost_table,
   &neoversev3ae_regmove_cost,
   &neoversev3ae_vector_cost,
   &generic_branch_cost,

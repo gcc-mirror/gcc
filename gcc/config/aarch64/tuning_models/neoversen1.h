@@ -25,7 +25,7 @@
 static const struct tune_params neoversen1_tunings =
 {
   &cortexa76_extra_costs,
-  &generic_addrcost_table,
+  &generic_armv8_a_addrcost_table,
   &generic_regmove_cost,
   &cortexa57_vector_cost,
   &generic_branch_cost,
