@@ -1,3 +1,9 @@
+2024-12-06  Andrew Stubbs  <ams@baylibre.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_from_to): Move an "else" clause to
+	a higher nesting level.
+
 2024-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.cc (finish_omp_clauses): Diagnose grainsize

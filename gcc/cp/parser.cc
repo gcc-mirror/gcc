@@ -42058,16 +42058,16 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
 	      mapper_modifier = true;
 	      pos += 3;
 	    }
-	  else
-	    {
-	      cp_parser_error (parser, "%<to%> or %<from%> clause with "
-			       "modifier other than %<present%> or %<mapper%>");
-	      cp_parser_skip_to_closing_parenthesis (parser,
-						     /*recovering=*/true,
-						     /*or_comma=*/false,
-						     /*consume_paren=*/true);
-	      return list;
-	    }
+	}
+      else
+	{
+	  cp_parser_error (parser, "%<to%> or %<from%> clause with "
+			   "modifier other than %<present%> or %<mapper%>");
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
 	}
     }
 
