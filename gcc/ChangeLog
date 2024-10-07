@@ -1,3 +1,25 @@
+2024-10-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-64.h (PA_SECONDARY_MEMORY_NEEDED): Define
+	to false.  Update comment.
+	* config/pa/pa.md: Modify 64-bit move patterns to support
+	copying between integer and floating-point registers using
+	stack slot SP-40.
+
+2024-10-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (no_arg_map): New.
+	(vect_get_operand_map): Handle IFN_GOMP_SIMD_LANE.
+	(vect_build_slp_tree_1): Likewise.
+	* tree-vect-stmts.cc (vectorizable_call): Handle single-lane SLP
+	for .GOMP_SIMD_LANE calls.
+
+2024-10-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <*-*-freebsd*>: Focus on DWARF
+	only.
+
 2024-10-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (nonlocal_goto): Don't clobber

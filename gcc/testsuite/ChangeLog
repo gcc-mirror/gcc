@@ -1,3 +1,9 @@
+2024-10-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/cpp0x/noexcept87.C: Require lto.
+	* g++.dg/ext/pragma-unroll-lambda-lto.C: Likewise.
+	* gcc.dg/enum-alias-3.c: Likewise.
+
 2024-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/auto_var_init.adb: New test.
