@@ -10257,26 +10257,33 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       return 1;
     }
 
-  /* REPEATING_P is true if every output vector is guaranteed to use the
-     same permute vector.  We can handle that case for both variable-length
-     and constant-length vectors, but we only handle other cases for
-     constant-length vectors.
+  /* Set REPEATING_P to true if every output uses the same permute vector
+     and if we can generate the vectors in a vector-length agnostic way.
+
+     When REPEATING_P is true, NOUTPUTS holds the total number of outputs
+     that we actually need to generate.  */
+  uint64_t noutputs = 0;
+  loop_vec_info linfo = dyn_cast <loop_vec_info> (vinfo);
+  if (!linfo
+      || !constant_multiple_p (LOOP_VINFO_VECT_FACTOR (linfo)
+			       * SLP_TREE_LANES (node), nunits, &noutputs))
+    repeating_p = false;
+
+  /* We can handle the conditions described for REPEATING_P above for
+     both variable- and constant-length vectors.  The fallback requires
+     us to generate every element of every permute vector explicitly,
+     which is only possible for constant-length permute vectors.
 
      Set:
 
      - NPATTERNS and NELTS_PER_PATTERN to the encoding of the permute
-       mask vector that we want to build.
+       mask vectors that we want to build.
 
      - NCOPIES to the number of copies of PERM that we need in order
-       to build the necessary permute mask vectors.
-
-     - NOUTPUTS_PER_MASK to the number of output vectors we want to create
-       for each permute mask vector.  This is only relevant when GSI is
-       nonnull.  */
+       to build the necessary permute mask vectors.  */
   uint64_t npatterns;
   unsigned nelts_per_pattern;
   uint64_t ncopies;
-  unsigned noutputs_per_mask;
   if (repeating_p)
     {
       /* We need a single permute mask vector that has the form:
@@ -10288,7 +10295,6 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	 that we use for permutes requires 3n elements.  */
       npatterns = SLP_TREE_LANES (node);
       nelts_per_pattern = ncopies = 3;
-      noutputs_per_mask = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
     }
   else
     {
@@ -10298,10 +10304,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  || !TYPE_VECTOR_SUBPARTS (op_vectype).is_constant ())
 	return -1;
       nelts_per_pattern = ncopies = 1;
-      if (loop_vec_info linfo = dyn_cast <loop_vec_info> (vinfo))
-	if (!LOOP_VINFO_VECT_FACTOR (linfo).is_constant (&ncopies))
-	  return -1;
-      noutputs_per_mask = 1;
+      if (linfo && !LOOP_VINFO_VECT_FACTOR (linfo).is_constant (&ncopies))
+	return -1;
     }
   unsigned olanes = ncopies * SLP_TREE_LANES (node);
   gcc_assert (repeating_p || multiple_p (olanes, nunits));
@@ -10378,16 +10382,24 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   mask.quick_grow (count);
   vec_perm_indices indices;
   unsigned nperms = 0;
-  for (unsigned i = 0; i < vperm.length (); ++i)
+  /* When REPEATING_P is true, we only have one unique permute vector
+     to check during analysis, but we need to generate NOUTPUTS vectors
+     during transformation.  */
+  unsigned total_nelts = olanes;
+  if (repeating_p && gsi)
+    total_nelts *= noutputs;
+  for (unsigned i = 0; i < total_nelts; ++i)
     {
-      mask_element = vperm[i].second;
+      unsigned vi = i / olanes;
+      unsigned ei = i % olanes;
+      mask_element = vperm[ei].second;
       if (first_vec.first == -1U
-	  || first_vec == vperm[i].first)
-	first_vec = vperm[i].first;
+	  || first_vec == vperm[ei].first)
+	first_vec = vperm[ei].first;
       else if (second_vec.first == -1U
-	       || second_vec == vperm[i].first)
+	       || second_vec == vperm[ei].first)
 	{
-	  second_vec = vperm[i].first;
+	  second_vec = vperm[ei].first;
 	  mask_element += nunits;
 	}
       else
@@ -10451,17 +10463,12 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	      if (!identity_p)
 		mask_vec = vect_gen_perm_mask_checked (vectype, indices);
 
-	      for (unsigned int vi = 0; vi < noutputs_per_mask; ++vi)
-		{
-		  tree first_def
-		    = vect_get_slp_vect_def (first_node,
-					     first_vec.second + vi);
-		  tree second_def
-		    = vect_get_slp_vect_def (second_node,
-					     second_vec.second + vi);
-		  vect_add_slp_permutation (vinfo, gsi, node, first_def,
-					    second_def, mask_vec, mask[0]);
-		}
+	      tree first_def
+		= vect_get_slp_vect_def (first_node, first_vec.second + vi);
+	      tree second_def
+		= vect_get_slp_vect_def (second_node, second_vec.second + vi);
+	      vect_add_slp_permutation (vinfo, gsi, node, first_def,
+					second_def, mask_vec, mask[0]);
 	    }
 
 	  index = 0;
