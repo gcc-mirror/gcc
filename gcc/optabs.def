@@ -308,7 +308,7 @@ OPTAB_D (negv3_optab, "negv$I$a3")
 OPTAB_D (uaddc5_optab, "uaddc$I$a5")
 OPTAB_D (usubc5_optab, "usubc$I$a5")
 OPTAB_D (addptr3_optab, "addptr$a3")
-OPTAB_D (spaceship_optab, "spaceship$a3")
+OPTAB_D (spaceship_optab, "spaceship$a4")
 
 OPTAB_D (smul_highpart_optab, "smul$a3_highpart")
 OPTAB_D (umul_highpart_optab, "umul$a3_highpart")

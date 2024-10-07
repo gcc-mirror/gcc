@@ -8568,11 +8568,15 @@ inclusive and operand 1 exclusive.
 If this pattern is not defined, a call to the library function
 @code{__clear_cache} is used.
 
-@cindex @code{spaceship@var{m}3} instruction pattern
-@item @samp{spaceship@var{m}3}
+@cindex @code{spaceship@var{m}4} instruction pattern
+@item @samp{spaceship@var{m}4}
 Initialize output operand 0 with mode of integer type to -1, 0, 1 or 2
 if operand 1 with mode @var{m} compares less than operand 2, equal to
 operand 2, greater than operand 2 or is unordered with operand 2.
+Operand 3 should be @code{const0_rtx} if the result is used in comparisons,
+@code{const1_rtx} if the result is used as integer value and the comparison
+is signed, @code{const2_rtx} if the result is used as integer value and
+the comparison is unsigned.
 @var{m} should be a scalar floating point mode.
 
 This pattern is not allowed to @code{FAIL}.

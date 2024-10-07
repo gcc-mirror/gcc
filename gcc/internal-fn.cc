@@ -5107,6 +5107,7 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   tree lhs = gimple_call_lhs (stmt);
   tree rhs1 = gimple_call_arg (stmt, 0);
   tree rhs2 = gimple_call_arg (stmt, 1);
+  tree rhs3 = gimple_call_arg (stmt, 2);
   tree type = TREE_TYPE (rhs1);
 
   do_pending_stack_adjust ();
@@ -5114,13 +5115,15 @@ expand_SPACESHIP (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx op1 = expand_normal (rhs1);
   rtx op2 = expand_normal (rhs2);
+  rtx op3 = expand_normal (rhs3);
 
-  class expand_operand ops[3];
+  class expand_operand ops[4];
   create_call_lhs_operand (&ops[0], target, TYPE_MODE (TREE_TYPE (lhs)));
   create_input_operand (&ops[1], op1, TYPE_MODE (type));
   create_input_operand (&ops[2], op2, TYPE_MODE (type));
+  create_input_operand (&ops[3], op3, TYPE_MODE (TREE_TYPE (rhs3)));
   insn_code icode = optab_handler (spaceship_optab, TYPE_MODE (type));
-  expand_insn (icode, 3, ops);
+  expand_insn (icode, 4, ops);
   assign_call_lhs (lhs, target, &ops[0]);
 }
 

@@ -117,6 +117,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-ssa-math-opts.h"
 #include "dbgcnt.h"
+#include "cfghooks.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -5869,7 +5870,7 @@ convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
    <bb 6> [local count: 1073741824]:
    and turn it into:
    <bb 2> [local count: 1073741824]:
-   _1 = .SPACESHIP (a_2(D), b_3(D));
+   _1 = .SPACESHIP (a_2(D), b_3(D), 0);
    if (_1 == 0)
      goto <bb 6>; [34.00%]
    else
@@ -5891,7 +5892,13 @@ convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
 
    <bb 6> [local count: 1073741824]:
    so that the backend can emit optimal comparison and
-   conditional jump sequence.  */
+   conditional jump sequence.  If the
+   <bb 6> [local count: 1073741824]:
+   above has a single PHI like:
+   # _27 = PHI<0(2), -1(3), 2(4), 1(5)>
+   then replace it with effectively
+   _1 = .SPACESHIP (a_2(D), b_3(D), 1);
+   _27 = _1;  */
 
 static void
 optimize_spaceship (gcond *stmt)
@@ -5901,7 +5908,8 @@ optimize_spaceship (gcond *stmt)
     return;
   tree arg1 = gimple_cond_lhs (stmt);
   tree arg2 = gimple_cond_rhs (stmt);
-  if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1))
+  if ((!SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1))
+       && !INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
       || optab_handler (spaceship_optab,
 			TYPE_MODE (TREE_TYPE (arg1))) == CODE_FOR_nothing
       || operand_equal_p (arg1, arg2, 0))
@@ -6013,11 +6021,104 @@ optimize_spaceship (gcond *stmt)
 	}
     }
 
-  gcall *gc = gimple_build_call_internal (IFN_SPACESHIP, 2, arg1, arg2);
+  /* Check if there is a single bb into which all failed conditions
+     jump to (perhaps through an empty block) and if it results in
+     a single integral PHI which just sets it to -1, 0, 1, 2
+     (or -1, 0, 1 when NaNs can't happen).  In that case use 1 rather
+     than 0 as last .SPACESHIP argument to tell backends it might
+     consider different code generation and just cast the result
+     of .SPACESHIP to the PHI result.  */
+  tree arg3 = integer_zero_node;
+  edge e = EDGE_SUCC (bb0, 0);
+  if (e->dest == bb1)
+    e = EDGE_SUCC (bb0, 1);
+  basic_block bbp = e->dest;
+  gphi *phi = NULL;
+  for (gphi_iterator psi = gsi_start_phis (bbp);
+       !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gphi *gp = psi.phi ();
+      tree res = gimple_phi_result (gp);
+
+      if (phi != NULL
+	  || virtual_operand_p (res)
+	  || !INTEGRAL_TYPE_P (TREE_TYPE (res))
+	  || TYPE_PRECISION (TREE_TYPE (res)) < 2)
+	{
+	  phi = NULL;
+	  break;
+	}
+      phi = gp;
+    }
+  if (phi
+      && integer_zerop (gimple_phi_arg_def_from_edge (phi, e))
+      && EDGE_COUNT (bbp->preds) == (HONOR_NANS (TREE_TYPE (arg1)) ? 4 : 3))
+    {
+      for (unsigned i = 0; phi && i < EDGE_COUNT (bbp->preds) - 1; ++i)
+	{
+	  edge e3 = i == 0 ? e1 : i == 1 ? em1 : e2;
+	  if (e3->dest != bbp)
+	    {
+	      if (!empty_block_p (e3->dest)
+		  || !single_succ_p (e3->dest)
+		  || single_succ (e3->dest) != bbp)
+		{
+		  phi = NULL;
+		  break;
+		}
+	      e3 = single_succ_edge (e3->dest);
+	    }
+	  tree a = gimple_phi_arg_def_from_edge (phi, e3);
+	  if (TREE_CODE (a) != INTEGER_CST
+	      || (i == 0 && !integer_onep (a))
+	      || (i == 1 && !integer_all_onesp (a))
+	      || (i == 2 && wi::to_widest (a) != 2))
+	    {
+	      phi = NULL;
+	      break;
+	    }
+	}
+      if (phi)
+	arg3 = build_int_cst (integer_type_node,
+			      TYPE_UNSIGNED (TREE_TYPE (arg1)) ? 2 : 1);
+    }
+
+  /* For integral <=> comparisons only use .SPACESHIP if it is turned
+     into an integer (-1, 0, 1).  */
+  if (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1)) && arg3 == integer_zero_node)
+    return;
+
+  gcall *gc = gimple_build_call_internal (IFN_SPACESHIP, 3, arg1, arg2, arg3);
   tree lhs = make_ssa_name (integer_type_node);
   gimple_call_set_lhs (gc, lhs);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   gsi_insert_before (&gsi, gc, GSI_SAME_STMT);
+
+  wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
+  wide_int w2 = (HONOR_NANS (TREE_TYPE (arg1))
+		 ? wi::two (TYPE_PRECISION (integer_type_node))
+		 : wi::one (TYPE_PRECISION (integer_type_node)));
+  int_range<1> vr (TREE_TYPE (lhs), wm1, w2);
+  set_range_info (lhs, vr);
+
+  if (arg3 != integer_zero_node)
+    {
+      tree type = TREE_TYPE (gimple_phi_result (phi));
+      if (!useless_type_conversion_p (type, integer_type_node))
+	{
+	  tree tem = make_ssa_name (type);
+	  gimple *gcv = gimple_build_assign (tem, NOP_EXPR, lhs);
+	  gsi_insert_before (&gsi, gcv, GSI_SAME_STMT);
+	  lhs = tem;
+	}
+      SET_PHI_ARG_DEF_ON_EDGE (phi, e, lhs);
+      gimple_cond_set_lhs (stmt, boolean_false_node);
+      gimple_cond_set_rhs (stmt, boolean_false_node);
+      gimple_cond_set_code (stmt, (e->flags & EDGE_TRUE_VALUE)
+				  ? EQ_EXPR : NE_EXPR);
+      update_stmt (stmt);
+      return;
+    }
 
   gimple_cond_set_lhs (stmt, lhs);
   gimple_cond_set_rhs (stmt, integer_zero_node);
@@ -6055,11 +6156,6 @@ optimize_spaceship (gcond *stmt)
 			    (e2->flags & EDGE_TRUE_VALUE) ? NE_EXPR : EQ_EXPR);
       update_stmt (cond);
     }
-
-  wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
-  wide_int w2 = wi::two (TYPE_PRECISION (integer_type_node));
-  int_range<1> vr (TREE_TYPE (lhs), wm1, w2);
-  set_range_info (lhs, vr);
 }
 
 
