@@ -25,6 +25,8 @@ void f3(int *i) pre const(i++); // { dg-error "increment of read-only location" 
 void f4(int *i) pre const((*i)++); // ok, not deep const
 void f5(int *i) pre const(gi++); //  ok, non automatic storage
 void f6(int *i) pre const mutable(gi++); // { dg-error "cannot be both mutable and const" }
+void f7(int *i) pre const((*i)++) pre mutable((*i)++); // ok, not deep const
+void f8(int *i) pre const(gi++) pre mutable(gi++); //  ok, non automatic storage
 
 // todo structured binding test
 // lambda tests
