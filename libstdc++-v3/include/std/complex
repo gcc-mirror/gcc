@@ -2040,7 +2040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __complex_acos(const std::complex<_Tp>& __z)
     {
       const std::complex<_Tp> __t = std::asin(__z);
-      const _Tp __pi_2 = 1.5707963267948966192313216916397514L;
+      const _Tp __pi_2 = (_Tp) 1.5707963267948966192313216916397514L;
       return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
     }
 
