@@ -13229,10 +13229,25 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      location_t loc = token->location;
 	      matching_parens parens;
 
+	      bool mutable_p = false;
+	      if (flag_contracts_nonattr_mutable_keyword)
+		{
+		  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+		  if (tok && tok->keyword == RID_MUTABLE)
+		    {
+		      mutable_p = true;
+		      cp_lexer_consume_token (parser->lexer);
+		    }
+		}
+	      
 	      parens.require_open (parser);
 	      /* Enable location wrappers when parsing contracts.  */
 	      auto suppression = make_temp_override (suppress_location_wrappers,
 						     0);
+
+	      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
+	      if (mutable_p)
+		flag_contracts_nonattr_noconst = 1;
 
 	      /* if we have a current class object, constify it before processing
 	       *  the contract condition */
@@ -13249,10 +13264,14 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      /* revert (any) constification of the current class object */
 	      current_class_ref = current_class_ref_copy;
 
+	      flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
+
 	      parens.require_close (parser);
 	      /* Build the contract.  */
 	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
 					NULL_TREE /*result*/, condition, loc);
+	      if (contract != error_mark_node)
+		set_contract_mutable(contract, mutable_p);
 
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
 
@@ -31483,6 +31502,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
   matching_parens parens;
 
+  bool mutable_p = false;
+
   /* Parse the optional mode.  */
   tree mode = NULL_TREE;
   if (attr_mode)
@@ -31500,6 +31521,15 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
     }
   else
     {
+      if (flag_contracts_nonattr_mutable_keyword)
+	{
+	  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+	  if (tok && tok->keyword == RID_MUTABLE)
+	    {
+	      mutable_p = true;
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	}
       parens.require_open (parser);
       if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
 	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
@@ -31547,6 +31577,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* And its corresponding contract.  */
       contract = grok_contract (attribute, mode, identifier, condition, loc);
+      if (contract != error_mark_node)
+	set_contract_mutable(contract, mutable_p);
     }
   else
     {
@@ -31564,12 +31596,16 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
+      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
       ++processing_contract_condition;
       if (postcondition_p)
 	++processing_contract_postcondition;
+      if (mutable_p)
+	flag_contracts_nonattr_noconst = 1;
       cp_expr condition = cp_parser_conditional_expression (parser);
       if (postcondition_p)
 	--processing_contract_postcondition;
+      flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
       --processing_contract_condition;
 
 	/* For natural syntax, we eat the parens here. For the attribute
@@ -31584,6 +31620,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* Build the contract.  */
       contract = grok_contract (attribute, mode, result, condition, loc);
+      if (contract != error_mark_node)
+	set_contract_mutable(contract, mutable_p);
 
       /* Leave our temporary scope for the postcondition result.  */
       if (result)
@@ -31638,6 +31676,11 @@ void cp_parser_late_contract_condition (cp_parser *parser,
       ++processing_template_decl;
     }
 
+  bool mutable_p = get_contract_mutable (contract);
+  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
+  if (flag_contracts_nonattr && flag_contracts_nonattr_mutable_keyword &&
+      mutable_p)
+    flag_contracts_nonattr_noconst = 1;
   /* 'this' is not allowed in preconditions of constructors or in postconditions
      of destructors.  Note that the previous value of this variable is
      established by the calling function, so we need to save it here.  */
@@ -31686,6 +31729,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   /* Commit to changes.  */
   update_late_contract (contract, result, condition);
+  flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
 
   /* Leave our temporary scope for the postcondition result.  */
   if (result)
