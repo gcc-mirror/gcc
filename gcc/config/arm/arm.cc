@@ -36101,7 +36101,7 @@ static bool
 arm_is_v81m_cond_insn (rtx_insn *seq)
 {
   rtx_insn *curr_insn = seq;
-  rtx set;
+  rtx set = NULL_RTX;
   /* The pattern may start with a simple set with register operands.  Skip
      through any of those.  */
   while (curr_insn)
@@ -36164,7 +36164,7 @@ arm_is_v81m_cond_insn (rtx_insn *seq)
    hook to only allow "noce" to generate the patterns that are profitable.  */
 
 bool
-arm_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
+arm_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *)
 {
   if (!TARGET_COND_ARITH
       || reload_completed)
