@@ -668,6 +668,12 @@ struct cpp_embed_params
    compiler that supports C99.  */
 #if HAVE_DESIGNATED_INITIALIZERS
 extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
+#elif __cpp_constexpr >= 201304L
+extern const struct _cpp_trigraph_map_s {
+  unsigned char map[UCHAR_MAX + 1];
+  constexpr _cpp_trigraph_map_s ();
+} _cpp_trigraph_map_d;
+#define _cpp_trigraph_map _cpp_trigraph_map_d.map
 #else
 extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif

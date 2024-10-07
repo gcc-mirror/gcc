@@ -41,8 +41,8 @@ static void read_original_directory (cpp_reader *);
 static void post_options (cpp_reader *);
 
 /* If we have designated initializers (GCC >2.7) these tables can be
-   initialized, constant data.  Otherwise, they have to be filled in at
-   runtime.  */
+   initialized, constant data.  Similarly for C++14 and later.
+   Otherwise, they have to be filled in at runtime.  */
 #if HAVE_DESIGNATED_INITIALIZERS
 
 #define init_trigraph_map()  /* Nothing.  */
@@ -51,6 +51,15 @@ __extension__ const uchar _cpp_trigraph_map[UCHAR_MAX + 1] = {
 
 #define END };
 #define s(p, v) [p] = v,
+
+#elif __cpp_constexpr >= 201304L
+
+#define init_trigraph_map()  /* Nothing.  */
+#define TRIGRAPH_MAP \
+constexpr _cpp_trigraph_map_s::_cpp_trigraph_map_s () : map {} {
+#define END } \
+constexpr _cpp_trigraph_map_s _cpp_trigraph_map_d;
+#define s(p, v) map[p] = v;
 
 #else
 
