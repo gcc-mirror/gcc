@@ -1067,7 +1067,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		 LOCATION_LINE (vect_location.get_location_t ()));
 
   /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
-  opt_loop_vec_info loop_vinfo = vect_analyze_loop (loop, &shared);
+  opt_loop_vec_info loop_vinfo = vect_analyze_loop (loop, loop_vectorized_call,
+						    &shared);
   loop->aux = loop_vinfo;
 
   if (!loop_vinfo)

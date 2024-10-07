@@ -2460,7 +2460,8 @@ extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 extern bool needs_fold_left_reduction_p (tree, code_helper);
 /* Drive for loop analysis stage.  */
-extern opt_loop_vec_info vect_analyze_loop (class loop *, vec_info_shared *);
+extern opt_loop_vec_info vect_analyze_loop (class loop *, gimple *,
+					    vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
@@ -2495,7 +2496,8 @@ struct vect_loop_form_info
   gcond *inner_loop_cond;
   edge loop_exit;
 };
-extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
+extern opt_result vect_analyze_loop_form (class loop *, gimple *,
+					  vect_loop_form_info *);
 extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
 					     const vect_loop_form_info *,
 					     loop_vec_info = nullptr);
