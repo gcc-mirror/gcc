@@ -12122,6 +12122,12 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
 
   /* Instantiate the condition.  If the return type is undeduced, process
      the expression as if inside a template to avoid spurious type errors.  */
+  bool mutable_p = get_contract_mutable (t);
+  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
+  if (flag_contracts_nonattr && flag_contracts_nonattr_mutable_keyword &&
+      mutable_p)
+    flag_contracts_nonattr_noconst = 1;
+
   if (auto_p)
     ++processing_template_decl;
   ++processing_contract_condition;
@@ -12139,6 +12145,7 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
   /* And the comment.  */
   CONTRACT_COMMENT (r)
       = tsubst_expr (CONTRACT_COMMENT (r), args, complain, in_decl);
+  flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
 
   return r;
 }
