@@ -10310,8 +10310,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
      from the { SLP operand, scalar lane } permutation as recorded in the
      SLP node as intermediate step.  This part should already work
      with SLP children with arbitrary number of lanes.  */
-  auto_vec<std::pair<std::pair<unsigned, unsigned>, unsigned> > vperm;
-  auto_vec<unsigned> active_lane;
+  auto_vec<std::pair<std::pair<unsigned, unsigned>, poly_uint64>> vperm;
+  auto_vec<poly_uint64> active_lane;
   vperm.create (olanes);
   active_lane.safe_grow_cleared (children.length (), true);
   for (unsigned i = 0; i < ncopies; ++i)
@@ -10326,8 +10326,9 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	    {
 	      /* We checked above that the vectors are constant-length.  */
 	      unsigned vnunits = TYPE_VECTOR_SUBPARTS (vtype).to_constant ();
-	      unsigned vi = (active_lane[p.first] + p.second) / vnunits;
-	      unsigned vl = (active_lane[p.first] + p.second) % vnunits;
+	      unsigned lane = active_lane[p.first].to_constant ();
+	      unsigned vi = (lane + p.second) / vnunits;
+	      unsigned vl = (lane + p.second) % vnunits;
 	      vperm.quick_push ({{p.first, vi}, vl});
 	    }
 	}
@@ -10353,9 +10354,10 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 		  ? multiple_p (i, npatterns)
 		  : multiple_p (i, TYPE_VECTOR_SUBPARTS (vectype))))
 	    dump_printf (MSG_NOTE, ",");
-	  dump_printf (MSG_NOTE, " vops%u[%u][%u]",
-		       vperm[i].first.first, vperm[i].first.second,
-		       vperm[i].second);
+	  dump_printf (MSG_NOTE, " vops%u[%u][",
+		       vperm[i].first.first, vperm[i].first.second);
+	  dump_dec (MSG_NOTE, vperm[i].second);
+	  dump_printf (MSG_NOTE, "]");
 	}
       dump_printf (MSG_NOTE, "\n");
     }
