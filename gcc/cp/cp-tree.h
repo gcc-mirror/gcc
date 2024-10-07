@@ -512,6 +512,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
       FNDECL_MANIFESTLY_CONST_EVALUATED (in FUNCTION_DECL)
+      contract_mutable (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -8927,6 +8928,22 @@ set_contract_semantic (tree t, contract_semantic semantic)
   TREE_LANG_FLAG_3 (CONTRACT_CHECK (t)) = semantic & 0x01;
   TREE_LANG_FLAG_2 (t) = (semantic & 0x02) >> 1;
   TREE_LANG_FLAG_0 (t) = (semantic & 0x04) >> 2;
+}
+
+/* Returns the mutable flag of the node.  */
+
+inline int
+get_contract_mutable (const_tree t)
+{
+  return TREE_LANG_FLAG_4 (CONTRACT_CHECK (t));
+}
+
+/* Sets the mutable flag of the node.  */
+
+inline void
+set_contract_mutable (tree t, int mut)
+{
+  TREE_LANG_FLAG_4 (CONTRACT_CHECK (t)) = mut;
 }
 
 /* Inline bodies.  */
