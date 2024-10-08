@@ -69,7 +69,7 @@ struct entry { const char *name; unsigned long codepoint; };
 static struct entry *entries;
 static unsigned long num_allocated, num_entries;
 
-/* Unicode 15.1 Table 4-8.  */
+/* Unicode 16.0 Table 4-8.  */
 struct generated {
   const char *prefix;
   /* max_high is a workaround for UnicodeData.txt inconsistencies
@@ -90,13 +90,14 @@ static struct generated generated_ranges[] =
   { "CJK UNIFIED IDEOGRAPH-", 0x2ebf0, 0x2ee5d, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x30000, 0x3134a, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x31350, 0x323af, 0, 1, 0 },
-  { "TANGUT IDEOGRAPH-", 0x17000, 0x187f7, 0, 2, 0 },
-  { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d08, 0, 2, 0 },
-  { "KHITAN SMALL SCRIPT CHARACTER-", 0x18b00, 0x18cd5, 0, 3, 0 },
-  { "NUSHU CHARACTER-", 0x1b170, 0x1b2fb, 0, 4, 0 },
-  { "CJK COMPATIBILITY IDEOGRAPH-", 0xf900, 0xfa6d, 0, 5, 0 },
-  { "CJK COMPATIBILITY IDEOGRAPH-", 0xfa70, 0xfad9, 0, 5, 0 },
-  { "CJK COMPATIBILITY IDEOGRAPH-", 0x2f800, 0x2fa1d, 0, 5, 0 }
+  { "EGYPTIAN HIEROGLYPH-", 0x13460, 0x143fa, 0, 2, 0 },
+  { "TANGUT IDEOGRAPH-", 0x17000, 0x187f7, 0, 3, 0 },
+  { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d08, 0, 3, 0 },
+  { "KHITAN SMALL SCRIPT CHARACTER-", 0x18b00, 0x18cd5, 0, 4, 0 },
+  { "NUSHU CHARACTER-", 0x1b170, 0x1b2fb, 0, 5, 0 },
+  { "CJK COMPATIBILITY IDEOGRAPH-", 0xf900, 0xfa6d, 0, 6, 0 },
+  { "CJK COMPATIBILITY IDEOGRAPH-", 0xfa70, 0xfad9, 0, 6, 0 },
+  { "CJK COMPATIBILITY IDEOGRAPH-", 0x2f800, 0x2fa1d, 0, 6, 0 }
 };
 
 struct node {
@@ -670,7 +671,7 @@ write_copyright (void)
    <http://www.gnu.org/licenses/>.\n\
 \n\
 \n\
-   Copyright (C) 1991-2023 Unicode, Inc.  All rights reserved.\n\
+   Copyright (C) 1991-2024 Unicode, Inc.  All rights reserved.\n\
    Distributed under the Terms of Use in\n\
    http://www.unicode.org/copyright.html.\n\
 \n\

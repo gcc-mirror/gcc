@@ -67,7 +67,7 @@ static_assert( uc::__grapheme_cluster_break_property(riZ + 1) == _Gcb_Other );
 static_assert( uc::__grapheme_cluster_break_property(U'\uD788') == _Gcb_LV );
 static_assert( uc::__grapheme_cluster_break_property(U'\uD7A3') == _Gcb_LVT );
 static_assert( uc::__grapheme_cluster_break_property(U'\u200D') == _Gcb_ZWJ );
-static_assert( uc::__grapheme_cluster_break_property(U'\U0001D16D')
+static_assert( uc::__grapheme_cluster_break_property(U'\U00011F03')
     == _Gcb_SpacingMark );
 static_assert( uc::__grapheme_cluster_break_property(U'\U0001D16E')
     == _Gcb_Extend );

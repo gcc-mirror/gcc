@@ -590,9 +590,9 @@ namespace __unicode
   template<typename _View>
     using _Utf32_view = _Utf_view<char32_t, _View>;
 
-inline namespace __v15_1_0
+inline namespace __v16_0_0
 {
-#define _GLIBCXX_GET_UNICODE_DATA 150100
+#define _GLIBCXX_GET_UNICODE_DATA 160000
 #include "unicode-data.h"
 #ifdef _GLIBCXX_GET_UNICODE_DATA
 # error "Invalid unicode data"
@@ -943,7 +943,7 @@ inline namespace __v15_1_0
       _Iterator _M_begin;
     };
 
-} // namespace __v15_1_0
+} // namespace __v16_0_0
 
   // Return the field width of a string.
   template<typename _CharT>

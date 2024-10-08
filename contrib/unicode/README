@@ -35,7 +35,7 @@ localedata/unicode-gen/unicode_utils.py
 localedata/unicode-gen/utf8_gen.py
 
 And the most recent versions added to GCC are from glibc git commit:
-71de3aead9fffe89556e80ebc94aa918d8ee7bca
+064c708c78cc2a6b5802dce73108fc0c1c6bfc80
 
 The script gen_wcwidth.py found here contains the GCC-specific code to
 map glibc's output to the lookup tables we require.  This script should not need
@@ -52,7 +52,7 @@ The procedure to update GCC's Unicode support is the following:
 
 3.  Run ./gen_wcwidth.py X.Y > ../../libcpp/generated_cpp_wcwidth.h
     (where X.Y is the version of the Unicode standard corresponding to the
-    Unicode data files being used, most recently, 15.1.0).
+    Unicode data files being used, most recently, 16.0.0).
 
 4.  Update Unicode Copyright years in libcpp/makeucnid.cc and in
     libcpp/makeuname2c.cc up to the year in which the Unicode
@@ -67,7 +67,7 @@ The procedure to update GCC's Unicode support is the following:
 	> ../../libcpp/ucnid.h
 
 7.  Read the corresponding Unicode's standard and update correspondingly
-    generated_ranges table in libcpp/makeuname2c.cc (in Unicode 15 all
+    generated_ranges table in libcpp/makeuname2c.cc (in Unicode 16 all
     the needed information was in Table 4-8).
 
 8.  Compile makeuname2c, e.g. with:
