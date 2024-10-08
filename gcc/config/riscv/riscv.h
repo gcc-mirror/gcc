@@ -939,8 +939,6 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 #define TARGET_VECTOR_MISALIGN_SUPPORTED \
    riscv_vector_unaligned_access_p
 
-#define LOGICAL_OP_NON_SHORT_CIRCUIT 0
-
 /* Control the assembler format that we output.  */
 
 /* Output to assembler file text saying following lines
