@@ -75,6 +75,8 @@ struct riscv_implied_info_t
 /* Implied ISA info, must end with NULL sentinel.  */
 static const riscv_implied_info_t riscv_implied_info[] =
 {
+  {"m", "zmmul"},
+
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
