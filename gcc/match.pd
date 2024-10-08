@@ -9059,6 +9059,32 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	}
 	(cmp @0 { res; })))))))))
 
+/* Invert sign of X in comparisons of the form C1 - X CMP C2.  */
+
+(for cmp (lt le gt ge eq ne)
+     rcmp (gt ge lt le eq ne)
+  (simplify
+   (cmp (minus INTEGER_CST@0 @1) INTEGER_CST@2)
+/* For UB-on-overflow types, simply switch sides for X and C2
+   to arrive at X RCMP C1 - C2, handling the case when the latter
+   expression overflows.  */
+   (if (!TREE_OVERFLOW (@0) && !TREE_OVERFLOW (@2)
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@1)))
+     (with { tree res = int_const_binop (MINUS_EXPR, @0, @2); }
+      (if (TREE_OVERFLOW (res))
+	(switch
+	 (if (cmp == NE_EXPR)
+	  { constant_boolean_node (true, type); })
+	 (if (cmp == EQ_EXPR)
+	  { constant_boolean_node (false, type); })
+	 {
+	   bool less = cmp == LE_EXPR || cmp == LT_EXPR;
+	   bool ovf_high = wi::lt_p (wi::to_wide (@0), 0,
+				     TYPE_SIGN (TREE_TYPE (@0)));
+	   constant_boolean_node (less == ovf_high, type);
+	 })
+      (rcmp @1 { res; }))))))
+
 /* Canonicalizations of BIT_FIELD_REFs.  */
 
 (simplify
