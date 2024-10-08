@@ -7654,6 +7654,69 @@ riscv_compute_frame_info (void)
   /* Next points the incoming stack pointer and any incoming arguments. */
 }
 
+/* Implement TARGET_CAN_INLINE_P.  Determine whether inlining the function
+   CALLER into the function CALLEE is safe.  Inlining should be rejected if
+   there is no always_inline attribute and the target options differ except
+   for differences in ISA extensions or performance tuning options like the
+   code model, TLS dialect, and stack protector, etc.  Inlining is
+   permissible when the non-ISA extension options are identical and the ISA
+   extensions of CALLEE are a subset of those of CALLER, thereby improving
+   the performance of Function Multi-Versioning.  */
+
+static bool
+riscv_can_inline_p (tree caller, tree callee)
+{
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+
+  /* It's safe to inline if callee has no opts.  */
+  if (! callee_tree)
+    return true;
+
+  if (! caller_tree)
+    caller_tree = target_option_default_node;
+
+  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+  struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+
+  int isa_flag_mask = riscv_x_target_flags_isa_mask ();
+
+  /* Callee and caller should have the same target options except for ISA.  */
+  int callee_target_flags = callee_opts->x_target_flags & ~isa_flag_mask;
+  int caller_target_flags = caller_opts->x_target_flags & ~isa_flag_mask;
+
+  if (callee_target_flags != caller_target_flags)
+    return false;
+
+  /* Callee's ISA should be a subset of the caller's ISA.  */
+  if (! riscv_ext_is_subset (caller_opts, callee_opts))
+    return false;
+
+  /* If the callee has always_inline set, we can ignore the rest attributes.  */
+  if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee)))
+    return true;
+
+  if (caller_opts->x_riscv_cmodel != callee_opts->x_riscv_cmodel)
+    return false;
+
+  if (caller_opts->x_riscv_tls_dialect != callee_opts->x_riscv_tls_dialect)
+    return false;
+
+  if (caller_opts->x_riscv_stack_protector_guard_reg
+      != callee_opts->x_riscv_stack_protector_guard_reg)
+    return false;
+
+  if (caller_opts->x_riscv_stack_protector_guard_offset
+      != callee_opts->x_riscv_stack_protector_guard_offset)
+    return false;
+
+  if (caller_opts->x_rvv_vector_strict_align
+      != callee_opts->x_rvv_vector_strict_align)
+    return false;
+
+  return true;
+}
+
 /* Make sure that we're not trying to eliminate to the wrong hard frame
    pointer.  */
 
@@ -12667,6 +12730,9 @@ riscv_stack_clash_protection_alloca_probe_range (void)
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	riscv_legitimate_address_p
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P riscv_can_inline_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE riscv_can_eliminate
