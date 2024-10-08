@@ -2576,9 +2576,12 @@ package Einfo is
 --       entity is associated with a dispatch table.
 
 --    Is_Dispatch_Table_Wrapper
---       Applies to all entities. Set on wrappers built when the subprogram has
---       class-wide preconditions or class-wide postconditions affected by
---       overriding (AI12-0195).
+--       Applies to all entities. Set on wrappers built when a subprogram has
+--       class-wide preconditions or postconditions affected by overriding
+--       (AI12-0195). Also set on wrappers built when an inherited subprogram
+--       implements an interface primitive that has class-wide preconditions
+--       or postconditions. In the former case, the entity also has its
+--       LSP_Subprogram attribute set.
 
 --    Is_Dispatching_Operation
 --       Defined in all entities. Set for procedures, functions, generic

@@ -1458,7 +1458,14 @@ package body Sem_Disp is
             pragma Assert
               ((Ekind (Subp) = E_Function
                  and then Is_Dispatching_Operation (Old_Subp)
+                 and then not Is_Class_Wide_Type (Etype (Subp))
                  and then Is_Null_Extension (Base_Type (Etype (Subp))))
+
+              or else
+               (Ekind (Subp) = E_Function
+                 and then Is_Dispatching_Operation (Old_Subp)
+                 and then Is_Class_Wide_Type (Etype (Subp))
+                 and then Is_Null_Extension (Root_Type (Etype (Subp))))
 
               or else
                (Ekind (Subp) = E_Procedure
