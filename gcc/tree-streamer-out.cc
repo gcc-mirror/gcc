@@ -194,7 +194,8 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       && (VAR_P (expr)
 	  || TREE_CODE (expr) == PARM_DECL
 	  || TREE_CODE (expr) == FIELD_DECL)
-      && AGGREGATE_TYPE_P (TREE_TYPE (expr)))
+      && (AGGREGATE_TYPE_P (TREE_TYPE (expr))
+	  || VECTOR_TYPE_P (TREE_TYPE (expr))))
     bp_pack_machine_mode (bp, VOIDmode);
   else
     bp_pack_machine_mode (bp, DECL_MODE (expr));
@@ -332,7 +333,8 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
      whose size is 256-bits, which is not representable on accelerator.
      Instead stream out VOIDmode, and while streaming-in, recompute
      appropriate TYPE_MODE for accelerator.  */
-  if (lto_stream_offload_p && AGGREGATE_TYPE_P (expr))
+  if (lto_stream_offload_p
+      && (AGGREGATE_TYPE_P (expr) || VECTOR_TYPE_P (expr)))
     bp_pack_machine_mode (bp, VOIDmode);
   /* for VECTOR_TYPE, TYPE_MODE reevaluates the mode using target_flags
      not necessary valid in a global context.

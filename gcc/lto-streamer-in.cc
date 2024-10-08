@@ -1753,16 +1753,30 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
 	 with -g1, see for example PR113488.  */
       else if (DECL_P (expr) && DECL_ABSTRACT_ORIGIN (expr) == expr)
 	DECL_ABSTRACT_ORIGIN (expr) = NULL_TREE;
+    }
 
 #ifdef ACCEL_COMPILER
-      if ((VAR_P (expr)
-	   || TREE_CODE (expr) == PARM_DECL
-	   || TREE_CODE (expr) == FIELD_DECL)
-	  && AGGREGATE_TYPE_P (TREE_TYPE (expr))
-	  && DECL_MODE (expr) == VOIDmode)
-	SET_DECL_MODE (expr, TYPE_MODE (TREE_TYPE (expr)));
-#endif
+  if ((VAR_P (expr)
+       || TREE_CODE (expr) == PARM_DECL
+       || TREE_CODE (expr) == FIELD_DECL)
+      && DECL_MODE (expr) == VOIDmode)
+    {
+      tree type = TREE_TYPE (expr);
+      if (AGGREGATE_TYPE_P (type))
+	SET_DECL_MODE (expr, TYPE_MODE (type));
+      else if (VECTOR_TYPE_P (type))
+	SET_DECL_MODE (expr, TYPE_MODE_RAW (type));
     }
+
+  if (VECTOR_TYPE_P (expr) && TYPE_MODE (expr) == VOIDmode)
+    {
+      poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (expr);
+      tree innertype = TREE_TYPE (expr);
+      machine_mode vmode
+	= mode_for_vector (SCALAR_TYPE_MODE (innertype), nunits).else_blk ();
+      SET_TYPE_MODE (expr, vmode);
+    }
+#endif
 }
 
 /* Read the physical representation of a tree node with tag TAG from
@@ -2106,13 +2120,9 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	    case MODE_VECTOR_UFRACT:
 	    case MODE_VECTOR_ACCUM:
 	    case MODE_VECTOR_UACCUM:
-	      /* For unsupported vector modes just use BLKmode,
-		 if the scalar mode is supported.  */
-	      if (table[(int) inner] != VOIDmode)
-		{
-		  table[m] = BLKmode;
-		  break;
-		}
+	      /* Vector modes are recomputed on accel side and shouldn't have
+		 been streamed-out from host.  */
+	      gcc_unreachable ();
 	      /* FALLTHRU */
 	    default:
 	      /* This is only used for offloading-target compilations and
