@@ -7024,7 +7024,7 @@ vect_cse_slp_nodes (scalar_stmts_to_slp_tree_map_t *bst_map, slp_tree& node)
 
   /* Now record the node for CSE in other siblings.  */
   if (put_p)
-    bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
+    *bst_map->get (SLP_TREE_SCALAR_STMTS (node)) = node;
 }
 
 /* Optimize the SLP graph of VINFO.  */
