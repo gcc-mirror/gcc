@@ -1,3 +1,155 @@
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/allocate-static.f90: Move to libgomp/testsuite/.
+
+2024-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_35.f90: New test.
+
+2024-10-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/cset-sext-sfb.c: Turn off ssa-phiopt.
+	* gcc.target/riscv/cset-sext-thead.c: Do not check CE output anymore.
+	* gcc.target/riscv/cset-sext-ventana.c: Similarly.  Adjust branch cost.
+	* gcc.target/riscv/cset-sext-zicond.c: Similarly.
+	* gcc.target/riscv/cset-sext.c: Similarly.  No longer allow
+	"neg" in asm output.
+
+2024-10-07  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/116735
+	* gcc.dg/flex-array-counted-by-9.c: New test.
+
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto43.C: Adjust diagnostic.
+	* g++.dg/cpp2a/lambda-generic7.C: Likewise.
+
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/macro-8_a.H: New test.
+	* g++.dg/modules/macro-8_b.C: New test.
+	* g++.dg/modules/macro-8_c.C: New test.
+	* g++.dg/modules/macro-8_d.C: New test.
+
+2024-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/aarch64/uxtl-combine-1.c: Remove executable permissions.
+	* gcc.target/aarch64/uxtl-combine-2.c: Likewise.
+	* gcc.target/aarch64/uxtl-combine-3.c: Likewise.
+	* gcc.target/aarch64/uxtl-combine-4.c: Likewise.
+	* gcc.target/aarch64/uxtl-combine-5.c: Likewise.
+	* gcc.target/aarch64/uxtl-combine-6.c: Likewise.
+	* gcc.target/gcn/complex.c: Likewise.
+	* gcc.target/i386/avx2-bf16-vec-absneg.c: Likewise.
+	* gcc.target/i386/avx512f-bf16-vec-absneg.c: Likewise.
+	* gcc.target/i386/pr104371-2.c: Likewise.
+	* gcc.target/i386/pr115146.c: Likewise.
+	* gcc.target/i386/vpermt2-special-bf16-shufflue.c: Likewise.
+	* g++.target/i386/pr107563-a.C: Likewise.
+	* g++.target/i386/pr107563-b.C: Likewise.
+
+2024-10-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-fncall-mask-math.c: New.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116583
+	* gcc.dg/vect/slp-13.c: Remove xfail for vect_variable_length.
+	* gcc.dg/vect/slp-13-big-array.c: Likewise.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/permute_5.c: New test.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116583
+	* gcc.target/aarch64/sve/permute_1.c: New test.
+	* gcc.target/aarch64/sve/permute_2.c: Likewise.
+	* gcc.target/aarch64/sve/permute_3.c: Likewise.
+	* gcc.target/aarch64/sve/permute_4.c: Likewise.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/gcc-dg.exp (gcc-dg-runtest): Unset torture_current_flags
+	after each test.
+
+2024-10-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR testsuite/116683
+	* g++.dg/ext/pragma-unroll-lambda-lto.C (main): Add #pragma to
+	prevent unrolling of the setup loop.
+
+2024-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116896
+	* g++.target/i386/pr116896-1.C: New test.
+	* g++.target/i386/pr116896-2.C: New test.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/allocate-9.c: Update for removed sorry.
+	* gfortran.dg/gomp/allocate-15.f90: Likewise.
+	* gfortran.dg/gomp/allocate-pinned-1.f90: Likewise.
+	* gfortran.dg/gomp/allocate-4.f90: Likewise; add dg-error for
+	previously missing diagnostic.
+	* c-c++-common/gomp/allocate-18.c: New test.
+	* c-c++-common/gomp/allocate-19.c: New test.
+	* gfortran.dg/gomp/allocate-clause.f90: New test.
+	* gfortran.dg/gomp/allocate-static-2.f90: New test.
+	* gfortran.dg/gomp/allocate-static.f90: New test.
+
+2024-10-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/vect/slp-26.c: Adjust GCN.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.misc-tests/options.exp: Re-enable for nvptx.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/torture/complex-sign-mixed-add.c: Re-enable all
+	variants for nvptx.
+	* c-c++-common/torture/complex-sign-mixed-sub.c: Likewise.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/special/weak-2.c: Re-enable for nvptx.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.c-torture/execute/20020529-1.c: Re-enable all variants for
+	nvptx.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.c-torture/execute/printf-1.c: XFAIL for nvptx.
+	* gcc.c-torture/execute/printf-chk-1.c: Likewise.
+	* gcc.c-torture/execute/vprintf-1.c: Likewise.
+	* gcc.c-torture/execute/vprintf-chk-1.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_freestanding):
+	Disable for nvptx.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.c-torture/compile/920501-4.c: Re-enable nvptx
+	"ptxas times out" variants.
+	* gcc.c-torture/compile/921011-1.c: Likewise.
+	* gcc.c-torture/compile/pr34334.c: Likewise.
+	* gcc.c-torture/compile/pr37056.c: Likewise.
+	* gcc.c-torture/compile/pr39423-1.c: Likewise.
+	* gcc.c-torture/compile/pr49049.c: Likewise.
+	* gcc.c-torture/compile/pr59417.c: Likewise.
+	* gcc.c-torture/compile/limits-fndefn.c: Likewise.
+	Specify '-Wa,--no-verify' for nvptx '-O0'.
+
+2024-10-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.c-torture/compile/20080721-1.c: Re-enable for nvptx.
+
 2024-10-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* g++.dg/cpp0x/noexcept87.C: Require lto.

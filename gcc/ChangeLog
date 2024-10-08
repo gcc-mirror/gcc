@@ -1,3 +1,132 @@
+2024-10-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/iterators.md (scc_0): New code iterator.
+	* config/riscv/zicond.md: New splitters to improve code generated for
+	cases like (and (scc) (scc)) for zicond, xventanacondops, xtheadcondmov.
+
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Module Preprocessing): Allow -M,
+	refer to -fdeps.
+
+2024-10-07  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.cc (arm_noce_oncersion_profitable_p): Remove unused
+	argument name.
+	(arm_is_v81m_cond_insn): Initialize variable.
+
+2024-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/riscv/vector-crypto.md: Remove executable permissions.
+
+2024-10-07  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* tree-if-conv.cc (if_convertible_stmt_p): Check for explicit
+	function declaration before IFN fallback.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116583
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Add more
+	dump messages.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116583
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Handle
+	variable-length pack and unpack permutations.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116583
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Remove
+	the noutputs_per_mask inner loop and instead generate a
+	separate permute vector for each output.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116583
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Using
+	poly_uint64 for scalar lane indices.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (SVE_I): Move further up file.
+	(SVE_F): New mode iterator.
+	(SVE_ALL): Redefine in terms of SVE_I and SVE_F.
+	* config/aarch64/aarch64-sve.md (*<LOGICALF:optab><mode>3): Extend
+	to all SVE_F.
+
+2024-10-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116583
+	* config/aarch64/aarch64.cc (aarch64_coalesce_units): New function,
+	extending the Advanced SIMD handling from...
+	(aarch64_evpc_reencode): ...here to SVE data and predicate modes.
+
+2024-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116990
+	* tree-vect-loop.cc (vect_analyze_loop_form): Check the current
+	loop body for control flow.
+
+2024-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116982
+	* tree-vectorizer.h (vect_analyze_loop): Pass in .LOOP_VECTORIZED
+	call.
+	(vect_analyze_loop_form): Likewise.
+	* tree-vect-loop.cc (vect_analyze_loop_form): Reject loops where we
+	cannot determine a IV exit for the scalar loop.
+	(vect_analyze_loop): Adjust.
+	* tree-vectorizer.cc (try_vectorize_loop_1): Likewise.
+	* tree-parloops.cc (gather_scalar_reductions): Likewise.
+
+2024-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116896
+	* optabs.def (spaceship_optab): Use spaceship$a4 rather than
+	spaceship$a3.
+	* internal-fn.cc (expand_SPACESHIP): Expect 3 call arguments
+	rather than 2, expand the last one, expect 4 operands of
+	spaceship_optab.
+	* tree-ssa-math-opts.cc: Include cfghooks.h.
+	(optimize_spaceship): Check if a single PHI is initialized to
+	-1, 0, 1, 2 or -1, 0, 1 values, in that case pass 1 as last (new)
+	argument to .SPACESHIP and optimize away the comparisons,
+	otherwise pass 0.  Also check for integer comparisons rather than
+	floating point, in that case do it only if there is a single PHI
+	with -1, 0, 1 values and pass 1 to last argument of .SPACESHIP
+	if the <=> is signed, 2 if unsigned.
+	* config/i386/i386-protos.h (ix86_expand_fp_spaceship): Add
+	another rtx argument.
+	(ix86_expand_int_spaceship): Declare.
+	* config/i386/i386-expand.cc (ix86_expand_fp_spaceship): Add
+	arg3 argument, if it is const0_rtx, expand like before, otherwise
+	emit optimized sequence for setting the result into a GPR.
+	(ix86_expand_int_spaceship): New function.
+	* config/i386/i386.md (UNSPEC_SETCC_SI_SLP): New UNSPEC code.
+	(setcc_si_slp): New define_expand.
+	(*setcc_si_slp): New define_insn_and_split.
+	(setcc + setcc + movzbl): New define_peephole2.
+	(spaceship<mode>3): Renamed to ...
+	(spaceship<mode>4): ... this.  Add an extra operand, pass it
+	to ix86_expand_fp_spaceship.
+	(spaceshipxf3): Renamed to ...
+	(spaceshipxf4): ... this.  Add an extra operand, pass it
+	to ix86_expand_fp_spaceship.
+	(spaceship<mode>4): New define_expand for SWI modes.
+	* doc/md.texi (spaceship@var{m}3): Renamed to ...
+	(spaceship@var{m}4): ... this.  Document the meaning of last
+	operand.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_bind_expr): Fix corner case for OpenMP
+	allocate directive.
+	(gimplify_scan_omp_clauses): Warn if omp_thread_mem_alloc is used
+	as allocator with the target/task/taskloop directive.
+
 2024-10-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-64.h (PA_SECONDARY_MEMORY_NEEDED): Define

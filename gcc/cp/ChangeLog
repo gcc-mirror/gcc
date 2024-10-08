@@ -1,3 +1,16 @@
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (duplicate_decls): Only check PURVIEW_P if
+	DECL_LANG_SPECIFIC.
+
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* decl2.cc (mark_used): Always check require_deduced_type.
+
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (init_modules): Don't warn about -M.
+
 2024-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/113266

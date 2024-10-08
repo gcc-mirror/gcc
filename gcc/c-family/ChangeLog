@@ -1,3 +1,9 @@
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* c-ppoutput.cc (preprocess_file): For modules,
+	use directives-only scan even with flag_no_output.
+	(directives_only_cb): Respect flag_no_output.
+
 2024-10-03  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Explicit -Wdeprecated enables

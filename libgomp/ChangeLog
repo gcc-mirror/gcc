@@ -1,3 +1,22 @@
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/allocate-static.f90: Moved from
+	gcc/testsuite/ as it is a dg-do run test; use real omp_lib_kinds
+	instead of local definition
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Wording cleanup;
+	sort as in Appendix B; add missing items; remove duplicates.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* allocator.c: Add static asserts for news
+	GOMP_OMP{,X}_PREDEF_ALLOC_{MIN,MAX} range values.
+	* libgomp.texi (OpenMP Impl. Status): Allocate directive for
+	static vars is now supported. Refer to PR for allocate clause.
+	(Memory allocation): Update for static vars; minor word tweaking.
+
 2024-09-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (TR13 status): Update semi-duplicated, semi-obsoleted

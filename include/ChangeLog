@@ -1,3 +1,9 @@
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (GOMP_OMP_PREDEF_ALLOC_MAX,
+	GOMP_OMPX_PREDEF_ALLOC_MIN, GOMP_OMPX_PREDEF_ALLOC_MAX,
+	GOMP_OMP_PREDEF_ALLOC_THREADS): New defines.
+
 2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gomp-constants.h (GOMP_REQUIRES_SELF_MAPS): #define.

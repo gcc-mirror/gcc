@@ -1,3 +1,14 @@
+2024-10-07  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/116735
+	* c-decl.cc (verify_counted_by_attribute): Remove the attribute
+	when error.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Set alignment for alignof;
+	accept static variables and fix predef allocator check.
+
 2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_declare_target): Set target-used bit

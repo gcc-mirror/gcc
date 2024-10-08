@@ -1,3 +1,68 @@
+2024-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Add files for unsigned MINLOC and MAXLOC.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add files for unsigned MINLOC and MAXLOC.
+	* generated/maxloc0_16_m1.c: New file.
+	* generated/maxloc0_16_m16.c: New file.
+	* generated/maxloc0_16_m2.c: New file.
+	* generated/maxloc0_16_m4.c: New file.
+	* generated/maxloc0_16_m8.c: New file.
+	* generated/maxloc0_4_m1.c: New file.
+	* generated/maxloc0_4_m16.c: New file.
+	* generated/maxloc0_4_m2.c: New file.
+	* generated/maxloc0_4_m4.c: New file.
+	* generated/maxloc0_4_m8.c: New file.
+	* generated/maxloc0_8_m1.c: New file.
+	* generated/maxloc0_8_m16.c: New file.
+	* generated/maxloc0_8_m2.c: New file.
+	* generated/maxloc0_8_m4.c: New file.
+	* generated/maxloc0_8_m8.c: New file.
+	* generated/maxloc1_16_m1.c: New file.
+	* generated/maxloc1_16_m2.c: New file.
+	* generated/maxloc1_16_m4.c: New file.
+	* generated/maxloc1_16_m8.c: New file.
+	* generated/maxloc1_4_m1.c: New file.
+	* generated/maxloc1_4_m16.c: New file.
+	* generated/maxloc1_4_m2.c: New file.
+	* generated/maxloc1_4_m4.c: New file.
+	* generated/maxloc1_4_m8.c: New file.
+	* generated/maxloc1_8_m1.c: New file.
+	* generated/maxloc1_8_m16.c: New file.
+	* generated/maxloc1_8_m2.c: New file.
+	* generated/maxloc1_8_m4.c: New file.
+	* generated/maxloc1_8_m8.c: New file.
+	* generated/minloc0_16_m1.c: New file.
+	* generated/minloc0_16_m16.c: New file.
+	* generated/minloc0_16_m2.c: New file.
+	* generated/minloc0_16_m4.c: New file.
+	* generated/minloc0_16_m8.c: New file.
+	* generated/minloc0_4_m1.c: New file.
+	* generated/minloc0_4_m16.c: New file.
+	* generated/minloc0_4_m2.c: New file.
+	* generated/minloc0_4_m4.c: New file.
+	* generated/minloc0_4_m8.c: New file.
+	* generated/minloc0_8_m1.c: New file.
+	* generated/minloc0_8_m16.c: New file.
+	* generated/minloc0_8_m2.c: New file.
+	* generated/minloc0_8_m4.c: New file.
+	* generated/minloc0_8_m8.c: New file.
+	* generated/minloc1_16_m1.c: New file.
+	* generated/minloc1_16_m16.c: New file.
+	* generated/minloc1_16_m2.c: New file.
+	* generated/minloc1_16_m4.c: New file.
+	* generated/minloc1_16_m8.c: New file.
+	* generated/minloc1_4_m1.c: New file.
+	* generated/minloc1_4_m16.c: New file.
+	* generated/minloc1_4_m2.c: New file.
+	* generated/minloc1_4_m4.c: New file.
+	* generated/minloc1_4_m8.c: New file.
+	* generated/minloc1_8_m1.c: New file.
+	* generated/minloc1_8_m16.c: New file.
+	* generated/minloc1_8_m2.c: New file.
+	* generated/minloc1_8_m4.c: New file.
+	* generated/minloc1_8_m8.c: New file.
+
 2024-10-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* Makefile.am: Add minval and maxval files.

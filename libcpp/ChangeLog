@@ -1,3 +1,12 @@
+2024-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal.h (_cpp_trigraph_map_s): New type for C++14 or later.
+	(_cpp_trigraph_map_d): New variable for C++14 or later.
+	(_cpp_trigraph_map): Define to _cpp_trigraph_map_d.map for C++14 or
+	later.
+	* init.cc (init_trigraph_map): Define to nothing for C++14 or later.
+	(TRIGRAPH_MAP, END, s): Define differently for C++14 or later.
+
 2024-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/96842
