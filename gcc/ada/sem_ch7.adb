@@ -3375,6 +3375,9 @@ package body Sem_Ch7 is
                end loop;
             end;
 
+            Set_Is_Hidden (Id);
+            Set_Is_Potentially_Use_Visible (Id, False);
+
          --  For subtypes of private types the frontend generates two entities:
          --  one associated with the partial view and the other associated with
          --  the full view. When the subtype declaration is public the frontend
