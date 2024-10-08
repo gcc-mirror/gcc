@@ -867,6 +867,17 @@ namespace __gnu_test
       typename Iter<T>::ContainerType bounds;
     };
 
+  // A move-only type meeting the minimum std::range requirements
+  template<typename T, template<typename> class Iter>
+    struct test_range_nocopy : test_range<T, Iter>
+    {
+      test_range_nocopy(T* first, T* last) : test_range<T, Iter>(first, last)
+      {}
+
+      test_range_nocopy(test_range_nocopy&&) = default;
+      test_range_nocopy& operator=(test_range_nocopy&&) = default;
+    };
+
   template<typename T>
     using test_contiguous_range
       = test_range<T, contiguous_iterator_wrapper>;
