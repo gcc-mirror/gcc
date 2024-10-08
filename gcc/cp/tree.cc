@@ -5935,14 +5935,16 @@ decl_linkage (tree decl)
      linkage first, and then transform that into a concrete
      implementation.  */
 
-  /* An explicit type alias has no linkage.  */
+  /* An explicit type alias has no linkage.  Nor do the built-in declarations
+     of 'int' and such.  */
   if (TREE_CODE (decl) == TYPE_DECL
-      && !DECL_IMPLICIT_TYPEDEF_P (decl)
-      && !DECL_SELF_REFERENCE_P (decl))
+      && !DECL_IMPLICIT_TYPEDEF_P (decl))
     {
       /* But this could be a typedef name for linkage purposes, in which
 	 case we're interested in the linkage of the main decl.  */
-      if (decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
+      if (decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)))
+	  /* Likewise for the injected-class-name.  */
+	  || DECL_SELF_REFERENCE_P (decl))
 	decl = TYPE_MAIN_DECL (TREE_TYPE (decl));
       else
 	return lk_none;

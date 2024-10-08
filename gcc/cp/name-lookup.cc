@@ -6620,7 +6620,7 @@ do_namespace_alias (tree alias, tree name_space)
   DECL_NAMESPACE_ALIAS (alias) = name_space;
   DECL_EXTERNAL (alias) = 1;
   DECL_CONTEXT (alias) = FROB_CONTEXT (current_scope ());
-  TREE_PUBLIC (alias) = TREE_PUBLIC (DECL_CONTEXT (alias));
+  TREE_PUBLIC (alias) = TREE_PUBLIC (CP_DECL_CONTEXT (alias));
 
   alias = pushdecl (alias);
 

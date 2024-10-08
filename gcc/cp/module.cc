@@ -2352,10 +2352,8 @@ private:
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
     DB_IS_PENDING_BIT,		/* Is a maybe-pending entity.  */
-    DB_IS_INTERNAL_BIT,		/* It is an (erroneous)
-				   internal-linkage entity.  */
-    DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
-				   entity. */
+    DB_TU_LOCAL_BIT,		/* It is a TU-local entity.  */
+    DB_EXPOSURE_BIT,		/* Exposes a TU-local entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_MAYBE_RECURSIVE_BIT,	/* An entity maybe in a recursive cluster.  */
@@ -2441,13 +2439,13 @@ public:
 		&& get_flag_bit<DB_IS_PENDING_BIT> ()));
   }
 public:
-  bool is_internal () const
+  bool is_tu_local () const
   {
-    return get_flag_bit<DB_IS_INTERNAL_BIT> ();
+    return get_flag_bit<DB_TU_LOCAL_BIT> ();
   }
-  bool refs_internal () const
+  bool is_exposure () const
   {
-    return get_flag_bit<DB_REFS_INTERNAL_BIT> ();
+    return get_flag_bit<DB_EXPOSURE_BIT> ();
   }
   bool is_import () const
   {
@@ -2615,6 +2613,11 @@ public:
     void add_mergeable (depset *);
     depset *add_dependency (tree decl, entity_kind);
     void add_namespace_context (depset *, tree ns);
+
+  private:
+    bool has_tu_local_tmpl_arg (tree decl, tree args, bool explain);
+    bool is_tu_local_entity (tree decl, bool explain = false);
+    bool is_tu_local_value (tree decl, tree expr, bool explain = false);
 
   private:
     static bool add_binding_entity (tree, WMB_Flags, void *);
@@ -13041,6 +13044,248 @@ depset::hash::find_binding (tree ctx, tree name)
   return slot ? *slot : NULL;
 }
 
+/* Returns true if DECL is a TU-local entity, as defined by [basic.link].
+   If EXPLAIN is true, emit an informative note about why DECL is TU-local.  */
+
+bool
+depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
+{
+  gcc_checking_assert (DECL_P (decl));
+
+  /* An explicit type alias is not an entity, and so is never TU-local.
+     Neither are the built-in declarations of 'int' and such.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && !DECL_SELF_REFERENCE_P (decl)
+      && !DECL_IMPLICIT_TYPEDEF_P (decl))
+    return false;
+
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  tree type = TREE_TYPE (decl);
+
+  /* Check specializations first for slightly better explanations.  */
+  int use_tpl = -1;
+  tree ti = node_template_info (decl, use_tpl);
+  if (use_tpl > 0 && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL)
+    {
+      /* A specialization of a TU-local template.  */
+      tree tmpl = TI_TEMPLATE (ti);
+      if (is_tu_local_entity (tmpl))
+	{
+	  if (explain)
+	    {
+	      inform (loc, "%qD is a specialization of TU-local template %qD",
+		      decl, tmpl);
+	      is_tu_local_entity (tmpl, /*explain=*/true);
+	    }
+	  return true;
+	}
+
+      /* A specialization of a template with any TU-local template argument.  */
+      if (has_tu_local_tmpl_arg (decl, TI_ARGS (ti), explain))
+	return true;
+
+      /* FIXME A specialization of a template whose (possibly instantiated)
+	 declaration is an exposure.  This should always be covered by the
+	 above cases??  */
+    }
+
+  /* A type, function, variable, or template with internal linkage.  */
+  linkage_kind kind = decl_linkage (decl);
+  if (kind == lk_internal
+      /* But although weakrefs are marked static, don't consider them
+	 to be TU-local.  */
+      && !lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+    {
+      if (explain)
+	inform (loc, "%qD declared with internal linkage", decl);
+      return true;
+    }
+
+  /* Does not have a name with linkage and is declared, or introduced by a
+     lambda-expression, within the definition of a TU-local entity.  */
+  if (kind == lk_none)
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      if (LAMBDA_TYPE_P (type))
+	if (tree extra = LAMBDA_TYPE_EXTRA_SCOPE (type))
+	  ctx = extra;
+
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	  if (!TREE_PUBLIC (ctx))
+	    {
+	      if (explain)
+		inform (loc, "%qD has no linkage and is declared in an "
+			"anonymous namespace", decl);
+	      return true;
+	    }
+	}
+      else if (TYPE_P (ctx))
+	{
+	  tree ctx_decl = TYPE_MAIN_DECL (ctx);
+	  if (is_tu_local_entity (ctx_decl))
+	    {
+	      if (explain)
+		{
+		  inform (loc, "%qD has no linkage and is declared within "
+			  "TU-local entity %qT", decl, ctx);
+		  is_tu_local_entity (ctx_decl, /*explain=*/true);
+		}
+	      return true;
+	    }
+	}
+      else if (is_tu_local_entity (ctx))
+	{
+	  if (explain)
+	    {
+	      inform (loc, "%qD has no linkage and is declared within "
+		      "TU-local entity %qD", decl, ctx);
+	      is_tu_local_entity (ctx, /*explain=*/true);
+	    }
+	  return true;
+	}
+    }
+
+  /* A type with no name that is defined outside a class-specifier, function
+     body, or initializer; or is introduced by a defining-type-specifier that
+     is used to declare only TU-local entities.
+
+     We consider types with names for linkage purposes as having names, since
+     these aren't really TU-local.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && TYPE_ANON_P (type)
+      && !DECL_SELF_REFERENCE_P (decl)
+      /* An enum with an enumerator name for linkage.  */
+      && !(UNSCOPED_ENUM_P (type) && TYPE_VALUES (type)))
+    {
+      tree main_decl = TYPE_MAIN_DECL (type);
+      if (!DECL_CLASS_SCOPE_P (main_decl)
+	  && !decl_function_context (main_decl)
+	  /* FIXME: Lambdas defined outside initializers.  We'll need to more
+	     thoroughly set LAMBDA_TYPE_EXTRA_SCOPE to check this.  */
+	  && !LAMBDA_TYPE_P (type))
+	{
+	  if (explain)
+	    inform (loc, "%qT has no name and is not defined within a class, "
+		    "function, or initializer", type);
+	  return true;
+	}
+
+      // FIXME introduced by a defining-type-specifier only declaring TU-local
+      // entities; does this refer to e.g. 'static struct {} a;"?  I can't
+      // think of any cases where this isn't covered by earlier cases.  */
+    }
+
+  return false;
+}
+
+/* Helper for is_tu_local_entity.  Returns true if one of the ARGS of
+   DECL is TU-local.  Emits an explanation if EXPLAIN is true.  */
+
+bool
+depset::hash::has_tu_local_tmpl_arg (tree decl, tree args, bool explain)
+{
+  if (!args || TREE_CODE (args) != TREE_VEC)
+    return false;
+
+  for (tree a : tree_vec_range (args))
+    {
+      if (TREE_CODE (a) == TREE_VEC)
+	{
+	  if (has_tu_local_tmpl_arg (decl, a, explain))
+	    return true;
+	}
+      else if (!WILDCARD_TYPE_P (a))
+	{
+	  if (DECL_P (a) && is_tu_local_entity (a))
+	    {
+	      if (explain)
+		{
+		  inform (DECL_SOURCE_LOCATION (decl),
+			  "%qD has TU-local template argument %qD",
+			  decl, a);
+		  is_tu_local_entity (a, /*explain=*/true);
+		}
+	      return true;
+	    }
+
+	  if (TYPE_P (a) && TYPE_NAME (a) && is_tu_local_entity (TYPE_NAME (a)))
+	    {
+	      if (explain)
+		{
+		  inform (DECL_SOURCE_LOCATION (decl),
+			  "%qD has TU-local template argument %qT",
+			  decl, a);
+		  is_tu_local_entity (TYPE_NAME (a), /*explain=*/true);
+		}
+	      return true;
+	    }
+
+	  if (EXPR_P (a) && is_tu_local_value (decl, a, explain))
+	    return true;
+	}
+    }
+
+  return false;
+}
+
+/* Returns true if EXPR (part of the initializer for DECL) is a TU-local value
+   or object.  Emits an explanation if EXPLAIN is true.  */
+
+bool
+depset::hash::is_tu_local_value (tree decl, tree expr, bool explain)
+{
+  if (!expr)
+    return false;
+
+  tree e = expr;
+  STRIP_ANY_LOCATION_WRAPPER (e);
+  STRIP_NOPS (e);
+  if (TREE_CODE (e) == TARGET_EXPR)
+    e = TARGET_EXPR_INITIAL (e);
+  if (!e)
+    return false;
+
+  /* It is, or is a pointer to, a TU-local function or the object associated
+     with a TU-local variable.  */
+  tree object = NULL_TREE;
+  if (TREE_CODE (e) == ADDR_EXPR)
+    object = TREE_OPERAND (e, 0);
+  else if (TREE_CODE (e) == PTRMEM_CST)
+    object = PTRMEM_CST_MEMBER (e);
+  else if (VAR_OR_FUNCTION_DECL_P (e))
+    object = e;
+
+  if (object
+      && VAR_OR_FUNCTION_DECL_P (object)
+      && is_tu_local_entity (object))
+    {
+      if (explain)
+	{
+	  /* We've lost a lot of location information by the time we get here,
+	     so let's just do our best effort.  */
+	  auto loc = cp_expr_loc_or_loc (expr, DECL_SOURCE_LOCATION (decl));
+	  if (VAR_P (object))
+	    inform (loc, "%qD refers to TU-local object %qD", decl, object);
+	  else
+	    inform (loc, "%qD refers to TU-local function %qD", decl, object);
+	  is_tu_local_entity (object, true);
+	}
+      return true;
+    }
+
+  /* It is an object of class or array type and any of its subobjects or
+     any of the objects or functions to which its non-static data members
+     of reference type refer is TU-local and is usable in constant
+     expressions.  */
+  if (TREE_CODE (e) == CONSTRUCTOR && AGGREGATE_TYPE_P (TREE_TYPE (e)))
+    for (auto &f : CONSTRUCTOR_ELTS (e))
+      if (is_tu_local_value (decl, f.value, explain))
+	return true;
+
+  return false;
+}
+
 /* DECL is a newly discovered dependency.  Create the depset, if it
    doesn't already exist.  Add it to the worklist if so.
 
@@ -13147,6 +13392,7 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       if (ek != EK_USING)
 	{
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
+	  bool imported_from_module_p = false;
 
 	  if (DECL_LANG_SPECIFIC (not_tmpl)
 	      && DECL_MODULE_IMPORT_P (not_tmpl))
@@ -13162,28 +13408,36 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 		  dep->cluster = index - from->entity_lwm;
 		  dep->section = from->remap;
 		  dep->set_flag_bit<DB_IMPORTED_BIT> ();
+
+		  if (!from->is_header ())
+		    imported_from_module_p = true;
 		}
 	    }
 
-	  if (ek == EK_DECL
-	      && !dep->is_import ()
-	      && TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
-	      && !(TREE_CODE (decl) == TEMPLATE_DECL
-		   && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl)))
+	  /* Check for TU-local entities.  This is unnecessary in header
+	     units because we can export internal-linkage decls, and
+	     no declarations are exposures.  Similarly, if the decl was
+	     imported from a non-header module we know it cannot have
+	     been TU-local.  */
+	  if (!header_module_p () && !imported_from_module_p)
 	    {
-	      tree ctx = CP_DECL_CONTEXT (decl);
+	      if (is_tu_local_entity (decl))
+		dep->set_flag_bit<DB_TU_LOCAL_BIT> ();
 
-	      if (!TREE_PUBLIC (ctx))
-		/* Member of internal namespace.  */
-		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-	      else if (VAR_OR_FUNCTION_DECL_P (not_tmpl)
-		       && DECL_THIS_STATIC (not_tmpl))
+	      if (VAR_P (decl)
+		  && decl_maybe_constant_var_p (decl)
+		  && is_tu_local_value (decl, DECL_INITIAL (decl)))
 		{
-		  /* An internal decl.  This is ok in a GM entity.  */
-		  if (!(header_module_p ()
-			|| !DECL_LANG_SPECIFIC (not_tmpl)
-			|| !DECL_MODULE_PURVIEW_P (not_tmpl)))
-		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+		  /* A potentially-constant variable initialized to a TU-local
+		     value is not usable in constant expressions within other
+		     translation units.  We can achieve this by simply not
+		     streaming the definition in such cases.  */
+		  dep->clear_flag_bit<DB_DEFN_BIT> ();
+
+		  if (DECL_DECLARED_CONSTEXPR_P (decl))
+		    /* Also, a constexpr variable initialized to a TU-local
+		       value is an exposure.  */
+		    dep->set_flag_bit<DB_EXPOSURE_BIT> ();
 		}
 	    }
 
@@ -13222,8 +13476,8 @@ depset::hash::add_dependency (depset *dep)
   gcc_checking_assert (current && !is_key_order ());
   current->deps.safe_push (dep);
 
-  if (dep->is_internal () && !current->is_internal ())
-    current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
+  if (dep->is_tu_local ())
+    current->set_flag_bit<DB_EXPOSURE_BIT> ();
 
   if (current->get_entity_kind () == EK_USING
       && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
@@ -13342,13 +13596,9 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	/* Ignore entities not within the module purview.  */
 	return false;
 
-      if (VAR_OR_FUNCTION_DECL_P (inner)
-	  && DECL_THIS_STATIC (inner))
-	{
-	  if (!header_module_p ())
-	    /* Ignore internal-linkage entitites.  */
-	    return false;
-	}
+      if (!header_module_p () && data->hash->is_tu_local_entity (decl))
+	/* Ignore TU-local entitites.  */
+	return false;
 
       if ((TREE_CODE (decl) == VAR_DECL
 	   || TREE_CODE (decl) == TYPE_DECL)
@@ -14044,10 +14294,8 @@ bool
 depset::hash::finalize_dependencies ()
 {
   bool ok = true;
-  depset::hash::iterator end (this->end ());
-  for (depset::hash::iterator iter (begin ()); iter != end; ++iter)
+  for (depset *dep : *this)
     {
-      depset *dep = *iter;
       if (dep->is_binding ())
 	{
 	  /* Keep the containing namespace dep first.  */
@@ -14060,23 +14308,41 @@ depset::hash::finalize_dependencies ()
 	    gcc_qsort (&dep->deps[1], dep->deps.length () - 1,
 		       sizeof (dep->deps[1]), binding_cmp);
 	}
-      else if (dep->refs_internal ())
+      else if (dep->is_exposure () && !dep->is_tu_local ())
 	{
-	  for (unsigned ix = dep->deps.length (); ix--;)
-	    {
-	      depset *rdep = dep->deps[ix];
-	      if (rdep->is_internal ())
-		{
-		  // FIXME:QOI Better location information?  We're
-		  // losing, so it doesn't matter about efficiency
-		  tree decl = dep->get_entity ();
-		  error_at (DECL_SOURCE_LOCATION (decl),
-			    "%q#D references internal linkage entity %q#D",
-			    decl, rdep->get_entity ());
-		  break;
-		}
-	    }
 	  ok = false;
+	  bool explained = false;
+	  tree decl = dep->get_entity ();
+
+	  for (depset *rdep : dep->deps)
+	    if (!rdep->is_binding () && rdep->is_tu_local ())
+	      {
+		// FIXME:QOI Better location information?  We're
+		// losing, so it doesn't matter about efficiency
+		tree exposed = rdep->get_entity ();
+		auto_diagnostic_group d;
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "%qD exposes TU-local entity %qD", decl, exposed);
+		bool informed = is_tu_local_entity (exposed, /*explain=*/true);
+		gcc_checking_assert (informed);
+		explained = true;
+		break;
+	      }
+
+	  if (!explained && VAR_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
+	    {
+	      auto_diagnostic_group d;
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"%qD is declared %<constexpr%> and is initialized to "
+			"a TU-local value", decl);
+	      bool informed = is_tu_local_value (decl, DECL_INITIAL (decl),
+						 /*explain=*/true);
+	      gcc_checking_assert (informed);
+	      explained = true;
+	    }
+
+	  /* We should have emitted an error above.  */
+	  gcc_checking_assert (explained);
 	}
     }
 
@@ -14100,7 +14366,9 @@ void
 depset::tarjan::connect (depset *v)
 {
   gcc_checking_assert (v->is_binding ()
-		       || !(v->is_unreached () || v->is_import ()));
+		       || !(v->is_tu_local ()
+			    || v->is_unreached ()
+			    || v->is_import ()));
 
   v->cluster = v->section = ++index;
   stack.safe_push (v);
@@ -14110,7 +14378,8 @@ depset::tarjan::connect (depset *v)
     {
       depset *dep = v->deps[ix];
 
-      if (dep->is_binding () || !dep->is_import ())
+      if (dep->is_binding ()
+	  || !(dep->is_import () || dep->is_tu_local ()))
 	{
 	  unsigned lwm = dep->cluster;
 
@@ -14326,14 +14595,12 @@ depset::hash::connect ()
   tarjan connector (size ());
   vec<depset *> deps;
   deps.create (size ());
-  iterator end (this->end ());
-  for (iterator iter (begin ()); iter != end; ++iter)
+  for (depset *item : *this)
     {
-      depset *item = *iter;
-
       entity_kind kind = item->get_entity_kind ();
       if (kind == EK_BINDING
 	  || !(kind == EK_REDIRECT
+	       || item->is_tu_local ()
 	       || item->is_unreached ()
 	       || item->is_import ()))
 	deps.quick_push (item);
@@ -18612,7 +18879,8 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
   note_defs = note_defs_table_t::create_ggc (1000);
 #endif
 
-  /* Determine Strongy Connected Components.  */
+  /* Determine Strongly Connected Components.  This will also strip any
+     unnecessary dependencies on imported or TU-local entities.  */
   vec<depset *> sccs = table.connect ();
 
   vec_alloc (ool, modules->length ());
