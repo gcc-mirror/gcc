@@ -974,6 +974,129 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+  template<typename _Tp, typename _Alloc>
+    template<__detail::__container_compatible_range<_Tp> _Rg>
+      constexpr auto
+      vector<_Tp, _Alloc>::
+      insert_range(const_iterator __pos, _Rg&& __rg)
+      -> iterator
+      {
+	if (__pos == cend())
+	  {
+	    append_range(std::forward<_Rg>(__rg));
+	    return end();
+	  }
+
+	if constexpr (ranges::forward_range<_Rg>)
+	  {
+	    // Start of existing elements:
+	    pointer __old_start = this->_M_impl._M_start;
+	    // End of existing elements:
+	    pointer __old_finish = this->_M_impl._M_finish;
+	    // Insertion point:
+	    const auto __ins_idx = __pos - cbegin();
+	    pointer __ins = __old_start + __ins_idx;
+	    // Number of new elements to insert:
+	    const auto __n = size_type(ranges::distance(__rg));
+	    // Number of elements that can fit in unused capacity:
+	    const auto __cap = this->_M_impl._M_end_of_storage - __old_finish;
+	    if (__cap >= __n)
+	      {
+		// Number of existing elements after insertion point:
+		const size_type __elems_after = cend() - __pos;
+		if (__elems_after > __n)
+		  {
+		    _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
+		    std::__uninitialized_move_a(__old_finish - __n,
+						__old_finish,
+						__old_finish,
+						_M_get_Tp_allocator());
+		    this->_M_impl._M_finish += __n;
+		    _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
+		    std::move_backward(__ins, __old_finish - __n, __old_finish);
+		    ranges::copy(__rg, __ins);
+		  }
+		else
+		  {
+		    auto __first = ranges::begin(__rg);
+		    const auto __last = ranges::end(__rg);
+		    auto __mid = ranges::next(__first, __elems_after);
+		    _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
+		    _Base::_M_append_range(ranges::subrange(__mid, __last));
+		    _GLIBCXX_ASAN_ANNOTATE_GREW(__n - __elems_after);
+		    std::__uninitialized_move_a(__ins, __old_finish,
+						this->_M_impl._M_finish,
+						_M_get_Tp_allocator());
+		    this->_M_impl._M_finish += __elems_after;
+		    _GLIBCXX_ASAN_ANNOTATE_GREW(__elems_after);
+		    ranges::copy(__first, __mid, __ins);
+		  }
+	      }
+	    else // Reallocate
+	      {
+		const size_type __len
+		  = _M_check_len(__n, "vector::insert_range");
+
+		struct _Guard : _Guard_alloc
+		{
+		  // End of elements to destroy:
+		  pointer _M_finish = _Guard_alloc::_M_storage;
+
+		  using _Guard_alloc::_Guard_alloc;
+
+		  constexpr
+		  ~_Guard()
+		  {
+		    std::_Destroy(this->_M_storage, _M_finish,
+				  this->_M_vect._M_get_Tp_allocator());
+		  }
+		};
+
+		// Allocate new storage:
+		pointer __new_start(this->_M_allocate(__len));
+		_Guard __guard(__new_start, __len, *this);
+
+		auto& __alloc = _M_get_Tp_allocator();
+
+		// Populate the new storage in three steps. After each step,
+		// __guard owns the new storage and any elements that have
+		// been constructed there.
+
+		// Move elements from before insertion point to new storage:
+		__guard._M_finish
+		  = std::__uninitialized_move_if_noexcept_a(
+		      __old_start, __ins, __new_start, __alloc);
+
+		// Append new elements to new storage:
+		_Base::_M_append_range_to(__rg, __guard._M_finish);
+
+		// Move elements from after insertion point to new storage:
+		__guard._M_finish
+		    = std::__uninitialized_move_if_noexcept_a(
+			__ins, __old_finish, __guard._M_finish, __alloc);
+
+		_GLIBCXX_ASAN_ANNOTATE_REINIT; // Creates _Asan::_Reinit.
+
+		// All elements are in the new storage, exchange ownership
+		// with __guard so that it cleans up the old storage:
+		this->_M_impl._M_start = __guard._M_storage;
+		this->_M_impl._M_finish = __guard._M_finish;
+		this->_M_impl._M_end_of_storage = __new_start + __len;
+		__guard._M_storage = __old_start;
+		__guard._M_finish = __old_finish;
+		__guard._M_len = (__old_finish - __old_start) + __cap;
+		// _Asan::_Reinit destructor marks unused capacity.
+		// _Guard destructor destroys [old_start,old_finish).
+		// _Guard_alloc destructor frees [old_start,old_start+len).
+	      }
+	    return begin() + __ins_idx;
+	  }
+	else
+	  return insert_range(__pos, vector(from_range, std::move(__rg),
+					    _M_get_Tp_allocator()));
+      }
+#endif // ranges_to_container
 
   // vector<bool>
   template<typename _Alloc>

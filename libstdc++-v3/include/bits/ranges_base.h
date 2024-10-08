@@ -1079,6 +1079,16 @@ namespace ranges
 #if __glibcxx_ranges_to_container // C++ >= 23
   struct from_range_t { explicit from_range_t() = default; };
   inline constexpr from_range_t from_range{};
+
+/// @cond undocumented
+namespace __detail
+{
+  template<typename _Rg, typename _Tp>
+    concept __container_compatible_range
+      = ranges::input_range<_Rg>
+	  && convertible_to<ranges::range_reference_t<_Rg>, _Tp>;
+}
+/// @endcond
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

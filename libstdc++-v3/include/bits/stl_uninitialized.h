@@ -132,10 +132,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // This is the default implementation of std::uninitialized_copy.
-  template<typename _InputIterator, typename _ForwardIterator>
+  // This can be used with C++20 iterators and non-common ranges.
+  template<typename _InputIterator, typename _Sentinel,
+	   typename _ForwardIterator>
     _GLIBCXX20_CONSTEXPR
     _ForwardIterator
-    __do_uninit_copy(_InputIterator __first, _InputIterator __last,
+    __do_uninit_copy(_InputIterator __first, _Sentinel __last,
 		     _ForwardIterator __result)
     {
       _UninitDestroyGuard<_ForwardIterator> __guard(__result);
@@ -568,11 +570,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //  default allocator.  For nondefault allocators we do not use
   //  any of the POD optimizations.
 
-  template<typename _InputIterator, typename _ForwardIterator,
-	   typename _Allocator>
+  template<typename _InputIterator, typename _Sentinel,
+	   typename _ForwardIterator, typename _Allocator>
     _GLIBCXX20_CONSTEXPR
     _ForwardIterator
-    __uninitialized_copy_a(_InputIterator __first, _InputIterator __last,
+    __uninitialized_copy_a(_InputIterator __first, _Sentinel __last,
 			   _ForwardIterator __result, _Allocator& __alloc)
     {
       _UninitDestroyGuard<_ForwardIterator, _Allocator>
@@ -586,17 +588,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if _GLIBCXX_HOSTED
-  template<typename _InputIterator, typename _ForwardIterator, typename _Tp>
+  template<typename _InputIterator, typename _Sentinel,
+	   typename _ForwardIterator, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
-    __uninitialized_copy_a(_InputIterator __first, _InputIterator __last,
+    __uninitialized_copy_a(_InputIterator __first, _Sentinel __last,
 			   _ForwardIterator __result, allocator<_Tp>&)
     {
 #ifdef __cpp_lib_is_constant_evaluated
       if (std::is_constant_evaluated())
-	return std::__do_uninit_copy(__first, __last, __result);
+	return std::__do_uninit_copy(std::move(__first), __last, __result);
 #endif
+
+#ifdef __glibcxx_ranges
+      if constexpr (!is_same_v<_InputIterator, _Sentinel>)
+	{
+	  // Convert to a common range if possible, to benefit from memcpy
+	  // optimizations that std::uninitialized_copy might use.
+	  if constexpr (sized_sentinel_for<_Sentinel, _InputIterator>
+			  && random_access_iterator<_InputIterator>)
+	    return std::uninitialized_copy(__first,
+					   __first + (__last - __first),
+					   __result);
+	  else // Just use default implementation.
+	    return std::__do_uninit_copy(std::move(__first), __last, __result);
+	}
+      else
+	return std::uninitialized_copy(std::move(__first), __last, __result);
+#else
       return std::uninitialized_copy(__first, __last, __result);
+#endif
     }
 #endif
 
