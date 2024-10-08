@@ -1,0 +1,297 @@
+# Copyright (C) 2024 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an SH target.
+if ![istarget sh*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib g++-dg.exp
+
+# Return 1 if target is SH2A
+proc check_effective_target_sh2a { } {
+    return [check_no_compiler_messages sh2a object {
+	     #ifndef __SH2A__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target is SH1
+proc check_effective_target_sh1 { } {
+    return [check_no_compiler_messages sh1 object {
+	     #ifndef __SH1__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target is SH4A
+proc check_effective_target_sh4a { } {
+    return [check_no_compiler_messages sh4a object {
+	     #ifndef __SH4A__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target is big endian
+proc check_effective_target_big_endian { } {
+    return [check_no_compiler_messages big_endian object {
+	     #if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target is little endian
+proc check_effective_target_little_endian { } {
+    return [check_no_compiler_messages little_endian object {
+	     #if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target has any FPU (single or double precision)
+proc check_effective_target_any_fpu { } {
+    return [check_no_compiler_messages any_fpu object {
+	     #ifndef __SH_FPU_ANY__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target has a double precision FPU which is allowed to be
+# used by the compiler as such.
+proc check_effective_target_double_fpu { } {
+    return [check_no_compiler_messages double_fpu object {
+	     #ifndef __SH_FPU_DOUBLE__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target has a double precision FPU but it is only being used
+# in single precision mode by the compiler
+proc check_effective_target_use_single_only_fpu { } {
+    return [check_no_compiler_messages use_single_only_fpu object {
+	     #if !(defined (__SH2A_SINGLE_ONLY__) \
+		   || defined (__SH4_SINGLE_ONLY__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target has an FPU and the default mode is single
+proc check_effective_target_default_single_fpu { } {
+    return [check_no_compiler_messages default_single_fpu object {
+	     #if !(defined (__SH2E__) || defined (__SH3E__) \
+		   || defined (__SH2A_SINGLE__) \
+		   || defined (__SH2A_SINGLE_ONLY__) \
+		   || defined (__SH4_SINGLE__) \
+		   || defined (__SH4_SINGLE_ONLY__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target has no FPU
+proc check_effective_target_no_fpu { } {
+    return [check_no_compiler_messages no_fpu object {
+	     #ifdef __SH_FPU_ANY__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+
+# Return 1 if the target has XF regs
+proc check_effective_target_has_xf_regs { } {
+    return [check_no_compiler_messages has_xf_regs object {
+	     #if !(defined (__SH_FPU_ANY__) \
+		   && (defined (__SH4__) \
+		       || defined (__SH4_SINGLE__) \
+		       || defined (__SH4_SINGLE_ONLY__) \
+		       || defined (__SH4A__)))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+
+# Return 1 if the target can do the fsca insn
+proc check_effective_target_has_fsca { } {
+    return [check_no_compiler_messages has_fsca object {
+	     #if !(defined (__SH_FPU_ANY__) \
+		   && (defined (__SH4__) \
+		       || defined (__SH4_SINGLE__) \
+		       || defined (__SH4_SINGLE_ONLY__) \
+		       || defined (__SH4A__)))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target can do the fsrra insn
+proc check_effective_target_has_fsrra { } {
+    return [check_no_compiler_messages has_fsrra object {
+	     #if !(defined (__SH_FPU_ANY__) \
+		   && (defined (__SH4__) \
+		       || defined (__SH4_SINGLE__) \
+		       || defined (__SH4_SINGLE_ONLY__) \
+		       || defined (__SH4A__)))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target can do the fpchg insn
+proc check_effective_target_has_fpchg { } {
+    return [check_no_compiler_messages has_fpchg object {
+	     #if !(defined (__SH4A__) && defined (__SH_FPU_ANY__) \
+		   && !defined (__SH4_SINGLE_ONLY__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target can do dynamic shifts
+proc check_effective_target_has_dyn_shift { } {
+    return [check_no_compiler_messages has_dyn_shift object {
+	     #if !(defined (__SH3__) \
+		   || defined (__SH3E__) \
+		   || defined (__SH2A__) \
+		   || defined (__SH4__) \
+		   || defined (__SH4_NOFPU__) \
+		   || defined (__SH4_SINGLE__) \
+		   || defined (__SH4_SINGLE_ONLY__) \
+		   || defined (__SH4A__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the mfmovd option is enabled
+proc check_effective_target_fmovd_enabled { } {
+    return [check_no_compiler_messages fmovd_enabled object {
+	     #ifndef __FMOVD_ENABLED__
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target supports privileged mode
+proc check_effective_target_has_privileged { } {
+    return [check_no_compiler_messages has_privileged object {
+	     #if !(defined (__SH3__) \
+		   || defined (__SH3E__) \
+		   || defined (__SH4__) \
+		   || defined (__SH4_NOFPU__) \
+		   || defined (__SH4_SINGLE__) \
+		   || defined (__SH4_SINGLE_ONLY__) \
+		   || defined (__SH4A__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if the target supports the prefetch insn
+proc check_effective_target_has_pref { } {
+    return [check_no_compiler_messages has_pref object {
+	     #if !(defined (__SH3__) \
+		   || defined (__SH3E__) \
+		   || defined (__SH4__) \
+		   || defined (__SH4_NOFPU__) \
+		   || defined (__SH4_SINGLE__) \
+		   || defined (__SH4_SINGLE_ONLY__) \
+		   || defined (__SH4A__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target does banked r0..r7 regs type of ISRs
+proc check_effective_target_banked_r0r7_isr { } {
+    return [check_no_compiler_messages banked_r0r7_isr object {
+	     #if !(defined (__SH3__) || defined (__SH3E__) \
+		   || defined (__SH4__) \
+		   || defined (__SH4_SINGLE__) \
+		   || defined (__SH4_SINGLE_ONLY__) \
+		   || defined (__SH4_NOFPU__) \
+		   || defined (__SH4A__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target does stack only type of ISRs
+proc check_effective_target_stack_save_isr { } {
+    return [check_no_compiler_messages stack_save_isr object {
+	     #if !(defined (__SH1__) \
+		   || defined (__SH2__) \
+		   || defined (__SH2E__) \
+		   || defined (__SH2A__))
+	     #error ""
+	     #endif
+    } ""]
+}
+
+# Return 1 if target supports atomic-model=soft-gusa
+proc check_effective_target_atomic_model_soft_gusa_available { } {
+    return [check_no_compiler_messages atomic_model_soft_gusa_available object {
+	     int x = 0;
+    } "-matomic-model=soft-gusa"]
+}
+
+# Return 1 if target supports atomic-model=soft-tcb
+proc check_effective_target_atomic_model_soft_tcb_available { } {
+    return [check_no_compiler_messages atomic_model_soft_tcb_available object {
+	     int x = 0;
+    } "-matomic-model=soft-tcb,gbr-offset=0"]
+}
+
+# Return 1 if target supports atomic-model=soft-imask
+proc check_effective_target_atomic_model_soft_imask_available { } {
+    return [check_no_compiler_messages atomic_model_soft_imask_available object {
+	     int x = 0;
+    } "-matomic-model=soft-imask -mno-usermode"]
+}
+
+# Return 1 if target supports atomic-model=hard-llcs
+proc check_effective_target_atomic_model_hard_llcs_available { } {
+    return [check_no_compiler_messages atomic_model_hard_llcs_available object {
+	     int x = 0;
+    } "-matomic-model=hard-llcs"]
+}
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" $DEFAULT_CXXFLAGS
+
+# All done.
+dg-finish
