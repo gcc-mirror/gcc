@@ -3088,6 +3088,23 @@
 ;; - NOT
 ;; -------------------------------------------------------------------------
 
+(define_expand "ctz<mode>2"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_dup 2)
+	   (ctz:SVE_I
+	     (match_operand:SVE_I 1 "register_operand"))]
+	  UNSPEC_PRED_X))]
+  "TARGET_SVE"
+  {
+     rtx pred = aarch64_ptrue_reg (<VPRED>mode);
+     rtx temp = gen_reg_rtx (<MODE>mode);
+     emit_insn (gen_aarch64_pred_rbit<mode> (temp, pred, operands[1]));
+     emit_insn (gen_aarch64_pred_clz<mode> (operands[0], pred, temp));
+     DONE;
+  }
+)
+
 ;; Unpredicated integer unary arithmetic.
 (define_expand "<optab><mode>2"
   [(set (match_operand:SVE_I 0 "register_operand")
