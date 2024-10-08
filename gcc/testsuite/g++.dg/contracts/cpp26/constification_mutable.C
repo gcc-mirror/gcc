@@ -129,6 +129,7 @@ int main()
   contract_assert((*pi)++); // ok, not deep const
 
   contract_assert(i == 4 ? i : i ); // ok, no name clash
+  contract_assert const(i == 4 ? i : i ); // { dg-error "expected.* before .const." }
 
 
   return 0;
