@@ -9083,7 +9083,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				     TYPE_SIGN (TREE_TYPE (@0)));
 	   constant_boolean_node (less == ovf_high, type);
 	 })
-      (rcmp @1 { res; }))))))
+      (rcmp @1 { res; })))
+/* For unsigned types, transform like so (using < as example):
+	 C1 - X < C2
+      ==>  C1 - X = { 0, 1, ..., C2 - 1 }
+      ==>  X = { C1 - (C2 - 1), ..., C1 + 1, C1 }
+      ==>  X - (C1 - (C2 - 1)) = { 0, 1, ..., C1 - (C1 - (C2 - 1)) }
+      ==>  X - (C1 - C2 + 1) = { 0, 1, ..., C2 - 1 }
+      ==>  X - (C1 - C2 + 1) < C2.
+
+      Similarly,
+	 C1 - X <= C2 ==> X - (C1 - C2) <= C2;
+	 C1 - X >= C2 ==> X - (C1 - C2 + 1) >= C2;
+	 C1 - X > C2 ==> X - (C1 - C2) > C2.  */
+   (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
+     (switch
+       (if (cmp == EQ_EXPR || cmp == NE_EXPR)
+	 (cmp @1 (minus @0 @2)))
+       (if (cmp == LE_EXPR || cmp == GT_EXPR)
+	 (cmp (plus @1 (minus @2 @0)) @2))
+       (if (cmp == LT_EXPR || cmp == GE_EXPR)
+	 (cmp (plus @1 (minus @2
+		   (plus @0 { build_one_cst (TREE_TYPE (@1)); }))) @2)))))))
 
 /* Canonicalizations of BIT_FIELD_REFs.  */
 
