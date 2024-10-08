@@ -123,7 +123,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_ATOMIC)
     builtin_define ("__riscv_atomic");
 
-  if (TARGET_MUL)
+  if (TARGET_ZMMUL)
     builtin_define ("__riscv_mul");
   if (TARGET_DIV)
     builtin_define ("__riscv_div");
