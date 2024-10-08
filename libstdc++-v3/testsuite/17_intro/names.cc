@@ -282,6 +282,12 @@
 #undef y
 #endif
 
+#if defined (__linux__) && defined (__ia64__)
+// <bits/sigcontext.h> defines __ia64_fpreg::u
+// <sys/ucontext.h> defines __ia64_fpreg_mcontext::u
+#undef u
+#endif
+
 #if defined (__linux__) || defined (__gnu_hurd__)
 #if __has_include(<features.h>)
 #include <features.h>
