@@ -665,16 +665,6 @@ enum aarch64_extra_tuning_flags
   AARCH64_EXTRA_TUNE_ALL = (1u << AARCH64_EXTRA_TUNE_index_END) - 1
 };
 
-/* Enum to distinguish which type of check is to be done in
-   aarch64_simd_valid_immediate.  This is used as a bitmask where
-   AARCH64_CHECK_MOV has both bits set.  Thus AARCH64_CHECK_MOV will
-   perform all checks.  Adding new types would require changes accordingly.  */
-enum simd_immediate_check {
-  AARCH64_CHECK_ORR  = 1 << 0,
-  AARCH64_CHECK_BIC  = 1 << 1,
-  AARCH64_CHECK_MOV  = AARCH64_CHECK_ORR | AARCH64_CHECK_BIC
-};
-
 extern struct tune_params aarch64_tune_params;
 
 /* The available SVE predicate patterns, known in the ACLE as "svpattern".  */
@@ -834,8 +824,10 @@ char *aarch64_output_sve_rdvl (rtx);
 char *aarch64_output_sve_addvl_addpl (rtx);
 char *aarch64_output_sve_vector_inc_dec (const char *, rtx);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, scalar_int_mode);
-char *aarch64_output_simd_mov_immediate (rtx, unsigned,
-			enum simd_immediate_check w = AARCH64_CHECK_MOV);
+char *aarch64_output_simd_mov_imm (rtx, unsigned);
+char *aarch64_output_simd_orr_imm (rtx, unsigned);
+char *aarch64_output_simd_and_imm (rtx, unsigned);
+
 char *aarch64_output_sve_mov_immediate (rtx);
 char *aarch64_output_sve_ptrues (rtx);
 bool aarch64_pad_reg_upward (machine_mode, const_tree, bool);
@@ -849,8 +841,9 @@ bool aarch64_pars_overlap_p (rtx, rtx);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, scalar_int_mode);
 bool aarch64_simd_shift_imm_p (rtx, machine_mode, bool);
 bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
-bool aarch64_simd_valid_immediate (rtx, struct simd_immediate_info *,
-			enum simd_immediate_check w = AARCH64_CHECK_MOV);
+bool aarch64_simd_valid_and_imm (rtx);
+bool aarch64_simd_valid_mov_imm (rtx);
+bool aarch64_simd_valid_orr_imm (rtx);
 bool aarch64_valid_sysreg_name_p (const char *);
 const char *aarch64_retrieve_sysreg (const char *, bool, bool);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);

@@ -464,21 +464,19 @@
   "@internal
    A constraint that matches vector of immediates for orr."
  (and (match_code "const_vector")
-      (match_test "aarch64_simd_valid_immediate (op, NULL,
-						 AARCH64_CHECK_ORR)")))
+      (match_test "aarch64_simd_valid_orr_imm (op)")))
 
 (define_constraint "Db"
   "@internal
-   A constraint that matches vector of immediates for bic."
+   A constraint that matches vector of immediates for and/bic."
  (and (match_code "const_vector")
-      (match_test "aarch64_simd_valid_immediate (op, NULL,
-						 AARCH64_CHECK_BIC)")))
+      (match_test "aarch64_simd_valid_and_imm (op)")))
 
 (define_constraint "Dn"
   "@internal
  A constraint that matches vector of immediates."
  (and (match_code "const,const_vector")
-      (match_test "aarch64_simd_valid_immediate (op, NULL)")))
+      (match_test "aarch64_simd_valid_mov_imm (op)")))
 
 (define_constraint "Dh"
   "@internal

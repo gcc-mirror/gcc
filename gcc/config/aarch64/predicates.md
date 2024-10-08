@@ -118,14 +118,12 @@
 (define_predicate "aarch64_reg_or_orr_imm"
    (ior (match_operand 0 "register_operand")
 	(and (match_code "const_vector")
-	     (match_test "aarch64_simd_valid_immediate (op, NULL,
-							AARCH64_CHECK_ORR)"))))
+	     (match_test "aarch64_simd_valid_orr_imm (op)"))))
 
-(define_predicate "aarch64_reg_or_bic_imm"
+(define_predicate "aarch64_reg_or_and_imm"
    (ior (match_operand 0 "register_operand")
 	(and (match_code "const_vector")
-	     (match_test "aarch64_simd_valid_immediate (op, NULL,
-							AARCH64_CHECK_BIC)"))))
+	     (match_test "aarch64_simd_valid_and_imm (op)"))))
 
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")
