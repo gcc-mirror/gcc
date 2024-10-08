@@ -13082,6 +13082,12 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 		  if (!flag_contracts_nonattr_mutable_keyword &&
 		      !flag_contracts_nonattr_const_keyword)
 		    break;
+		  if (tok->keyword == RID_CONST &&
+		      !flag_contracts_nonattr_const_keyword)
+		    break;
+		  if (tok->keyword == RID_MUTABLE &&
+		      !flag_contracts_nonattr_mutable_keyword)
+		    break;
 		  if (flag_contracts_nonattr_mutable_keyword)
 		    {
 		      if (tok && tok->keyword == RID_MUTABLE)
@@ -31302,6 +31308,12 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	{
 	  if (!flag_contracts_nonattr_mutable_keyword &&
 	      !flag_contracts_nonattr_const_keyword)
+	    break;
+	  if (tok->keyword == RID_CONST &&
+	      !flag_contracts_nonattr_const_keyword)
+	    break;
+	  if (tok->keyword == RID_MUTABLE &&
+	      !flag_contracts_nonattr_mutable_keyword)
 	    break;
 	  if (flag_contracts_nonattr_mutable_keyword)
 	    {
