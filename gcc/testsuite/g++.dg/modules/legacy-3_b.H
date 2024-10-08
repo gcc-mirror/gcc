@@ -12,5 +12,5 @@ int move (int X = __LINE__); // Capture __LINE__ in a non-definition
 // this should not be diverted
 #include "legacy-3.h"
 
-// { dg-final { scan-file legacy-3_b.i {\n# 9 "[^\n]*legacy-3_b.H"\nimport  "[^\n]*legacy-3_a.H" \[\[__translated\]\];\nint move \(int X = 10\);\n} } }
+// { dg-final { scan-file legacy-3_b.i {\n# 9 "[^\n]*legacy-3_b.H"\nimport "[^\n]*legacy-3_a.H" \[\[__translated\]\];\nint move \(int X = 10\);\n} } }
 

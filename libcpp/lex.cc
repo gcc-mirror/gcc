@@ -4411,14 +4411,17 @@ cpp_output_token (const cpp_token *token, FILE *fp)
       {
 	size_t i;
 	const unsigned char * name = NODE_NAME (token->val.node.node);
-	
-	for (i = 0; i < NODE_LEN (token->val.node.node); i++)
+	unsigned len = NODE_LEN (token->val.node.node);
+
+	for (i = 0; i < len; i++)
 	  if (name[i] & ~0x7F)
 	    {
 	      unsigned char buffer[10];
 	      i += utf8_to_ucn (buffer, name + i) - 1;
 	      fwrite (buffer, 1, 10, fp);
 	    }
+	  else if (name[i] == ' ' && i == len - 1)
+	    /* Omit terminal space in "export ".  */;
 	  else
 	    fputc (NODE_NAME (token->val.node.node)[i], fp);
       }

@@ -9,4 +9,4 @@ module m:part;
 // { dg-final { scan-file dep-2.d {\ngcm.cache/m:part\.gcm:| dep-2\.o} } }
 // { dg-final { scan-file dep-2.d {\n\.PHONY: m:part\.c\+\+-module} } }
 
-// { dg-final { scan-file dep-2.i {\nmodule  m:part;\n} } }
+// { dg-final { scan-file dep-2.i {\nmodule m:part;\n} } }

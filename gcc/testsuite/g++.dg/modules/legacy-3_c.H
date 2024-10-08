@@ -17,7 +17,7 @@ MARK3 __LINE__
 // this should not be translated
 #include "legacy-3.h"
 
-// { dg-final { scan-file legacy-3_c.i {MARK1 8\nimport  "[^\n]*legacy-3_a.H" \[\[__translated\]\];\nMARK2 10\n} } }
+// { dg-final { scan-file legacy-3_c.i {MARK1 8\nimport "[^\n]*legacy-3_a.H" \[\[__translated\]\];\nMARK2 10\n} } }
 // We should have stopped.
 // { dg-final { scan-file legacy-3_c.i {move} } }
 // { dg-final { scan-file legacy-3_c.i {MARK2 13\n\nMARK3 15\n} } }
