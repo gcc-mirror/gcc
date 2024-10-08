@@ -140,7 +140,7 @@ enum simd_immediate_check {
 /* Information about a legitimate vector immediate operand.  */
 struct simd_immediate_info
 {
-  enum insn_type { MOV, MVN, INDEX, PTRUE };
+  enum insn_type { MOV, MVN, INDEX, PTRUE, SVE_MOV };
   enum modifier_type { LSL, MSL };
 
   simd_immediate_info () {}
@@ -22982,14 +22982,16 @@ aarch64_sve_valid_immediate (unsigned HOST_WIDE_INT ival, scalar_int_mode mode,
 	{
 	  /* DUP with no shift.  */
 	  if (info)
-	    *info = simd_immediate_info (mode, val);
+	    *info = simd_immediate_info (mode, val,
+					 simd_immediate_info::SVE_MOV);
 	  return true;
 	}
       if ((val & 0xff) == 0 && IN_RANGE (val, -0x8000, 0x7f00))
 	{
 	  /* DUP with LSL #8.  */
 	  if (info)
-	    *info = simd_immediate_info (mode, val);
+	    *info = simd_immediate_info (mode, val,
+					 simd_immediate_info::SVE_MOV);
 	  return true;
 	}
     }
@@ -22997,7 +22999,7 @@ aarch64_sve_valid_immediate (unsigned HOST_WIDE_INT ival, scalar_int_mode mode,
     {
       /* DUPM.  */
       if (info)
-	*info = simd_immediate_info (mode, val);
+	*info = simd_immediate_info (mode, val, simd_immediate_info::SVE_MOV);
       return true;
     }
   return false;
@@ -23322,8 +23324,13 @@ aarch64_simd_valid_imm (rtx op, simd_immediate_info *info,
 
   if (vec_flags & VEC_SVE_DATA)
     return aarch64_sve_valid_immediate (ival, imode, info, which);
-  else
-    return aarch64_advsimd_valid_immediate (val64, imode, info, which);
+
+  if (aarch64_advsimd_valid_immediate (val64, imode, info, which))
+    return true;
+
+  if (TARGET_SVE)
+    return aarch64_sve_valid_immediate (ival, imode, info, which);
+  return false;
 }
 
 /* Return true if OP is a valid SIMD move immediate for SVE or AdvSIMD.  */
@@ -25427,6 +25434,14 @@ aarch64_output_simd_imm (rtx const_vector, unsigned width,
 	  return templ;
 	}
 
+      if (info.insn == simd_immediate_info::SVE_MOV)
+	{
+	  gcc_assert (TARGET_SVE);
+	  snprintf (templ, sizeof (templ), "mov\t%%Z0.%c, #" HOST_WIDE_INT_PRINT_DEC,
+		    element_char, INTVAL (info.u.mov.value));
+	  return templ;
+	}
+
       mnemonic = info.insn == simd_immediate_info::MVN ? "mvni" : "movi";
       shift_op = (info.u.mov.modifier == simd_immediate_info::MSL
 		  ? "msl" : "lsl");
@@ -25446,8 +25461,18 @@ aarch64_output_simd_imm (rtx const_vector, unsigned width,
   else
     {
       /* AARCH64_CHECK_ORR or AARCH64_CHECK_AND.  */
-      mnemonic = info.insn == simd_immediate_info::MVN ? "bic" : "orr";
-      if (info.u.mov.shift)
+      mnemonic = "orr";
+      if (which == AARCH64_CHECK_AND)
+	mnemonic = info.insn == simd_immediate_info::MVN ? "bic" : "and";
+
+      if (info.insn == simd_immediate_info::SVE_MOV)
+	{
+	  gcc_assert (TARGET_SVE);
+	  snprintf (templ, sizeof (templ), "%s\t%%Z0.%c, %%Z0.%c, "
+		    HOST_WIDE_INT_PRINT_DEC, mnemonic, element_char,
+		    element_char, INTVAL (info.u.mov.value));
+	}
+      else if (info.u.mov.shift)
 	snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, #"
 		  HOST_WIDE_INT_PRINT_DEC ", %s #%d", mnemonic, lane_count,
 		  element_char, UINTVAL (info.u.mov.value), "lsl",

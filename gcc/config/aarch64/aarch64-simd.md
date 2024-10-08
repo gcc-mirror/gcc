@@ -1135,13 +1135,11 @@
 (define_insn "ior<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand")
 	(ior:VDQ_I (match_operand:VDQ_I 1 "register_operand")
-		   (match_operand:VDQ_I 2 "aarch64_orr_imm_sve_advsimd")))]
+		   (match_operand:VDQ_I 2 "aarch64_reg_or_orr_imm")))]
   "TARGET_SIMD"
-  {@ [ cons: =0 , 1 , 2; attrs: arch ]
-     [ w        , w , w  ; simd      ] orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
-     [ w        , 0 , vsl; sve       ] orr\t%Z0.<Vetype>, %Z0.<Vetype>, #%2
-     [ w        , 0 , Do ; simd      ] \
-       << aarch64_output_simd_orr_imm (operands[2], <bitsize>);
+  {@ [ cons: =0 , 1 , 2  ]
+     [ w        , w , w  ] orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+     [ w        , 0 , Do ] << aarch64_output_simd_orr_imm (operands[2], <bitsize>);
   }
   [(set_attr "type" "neon_logic<q>")]
 )
