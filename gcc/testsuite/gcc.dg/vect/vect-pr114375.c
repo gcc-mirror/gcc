@@ -30,6 +30,7 @@ int main()
 {
   check_vect ();
 
+#pragma GCC novector
   for (int i = 0; i < 512; ++i)
     a[i] = (i >> 1) & 1;
 
@@ -42,3 +43,4 @@ int main()
   return 0;
 }
 
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target avx2 } } } */

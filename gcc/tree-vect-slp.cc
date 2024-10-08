@@ -2029,16 +2029,66 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			  || gimple_call_internal_p (stmt, IFN_MASK_GATHER_LOAD)
 			  || gimple_call_internal_p (stmt,
 						     IFN_MASK_LEN_GATHER_LOAD));
-	      load_permutation.release ();
-	      /* We cannot handle permuted masked loads, see PR114375.  */
-	      if (any_permute
-		  || (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-		      && DR_GROUP_SIZE (first_stmt_info) != group_size)
+	      bool has_gaps = false;
+	      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		for (stmt_vec_info si = DR_GROUP_NEXT_ELEMENT (first_stmt_info);
+		     si; si = DR_GROUP_NEXT_ELEMENT (si))
+		  if (DR_GROUP_GAP (si) != 1)
+		    has_gaps = true;
+	      /* We cannot handle permuted masked loads directly, see
+		 PR114375.  We cannot handle strided masked loads or masked
+		 loads with gaps.  */
+	      if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		   && (DR_GROUP_GAP (first_stmt_info) != 0 || has_gaps))
 		  || STMT_VINFO_STRIDED_P (stmt_info))
 		{
+		  load_permutation.release ();
 		  matches[0] = false;
 		  return NULL;
 		}
+
+	      /* For permuted masked loads do an unpermuted masked load of
+		 the whole group followed by a SLP permute node.  */
+	      if (any_permute
+		  || (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		      && DR_GROUP_SIZE (first_stmt_info) != group_size))
+		{
+		  /* Discover the whole unpermuted load.  */
+		  vec<stmt_vec_info> stmts2;
+		  stmts2.create (DR_GROUP_SIZE (first_stmt_info));
+		  stmts2.quick_grow_cleared (DR_GROUP_SIZE (first_stmt_info));
+		  unsigned i = 0;
+		  for (stmt_vec_info si = first_stmt_info;
+		       si; si = DR_GROUP_NEXT_ELEMENT (si))
+		    stmts2[i++] = si;
+		  bool *matches2
+		    = XALLOCAVEC (bool, DR_GROUP_SIZE (first_stmt_info));
+		  slp_tree unperm_load
+		    = vect_build_slp_tree (vinfo, stmts2,
+					   DR_GROUP_SIZE (first_stmt_info),
+					   &this_max_nunits, matches2, limit,
+					   &this_tree_size, bst_map);
+		  /* When we are able to do the full masked load emit that
+		     followed by 'node' being the desired final permutation.  */
+		  if (unperm_load)
+		    {
+		      lane_permutation_t lperm;
+		      lperm.create (group_size);
+		      for (unsigned j = 0; j < load_permutation.length (); ++j)
+			lperm.quick_push
+			  (std::make_pair (0, load_permutation[j]));
+		      SLP_TREE_CODE (node) = VEC_PERM_EXPR;
+		      SLP_TREE_CHILDREN (node).safe_push (unperm_load);
+		      SLP_TREE_LANE_PERMUTATION (node) = lperm;
+		      load_permutation.release ();
+		      return node;
+		    }
+		  stmts2.release ();
+		  load_permutation.release ();
+		  matches[0] = false;
+		  return NULL;
+		}
+	      load_permutation.release ();
 	    }
 	  else
 	    {
