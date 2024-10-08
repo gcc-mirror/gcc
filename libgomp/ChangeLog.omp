@@ -1,6 +1,14 @@
 2025-03-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
+	2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/96835
+	* testsuite/libgomp.c++/pr96835-1.C: New.
+	* testsuite/libgomp.c++/pr96835-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr96835-1.C: Likewise.
+
+	Backported from trunk:
 	2025-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/101544
