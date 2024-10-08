@@ -267,6 +267,13 @@ namespace __debug
 		__gnu_debug::__base(__last), __al)
 	{ }
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	forward_list(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
+	: _Base(std::from_range, std::forward<_Rg>(__rg), __a)
+	{ }
+#endif
+
       forward_list(const forward_list&) = default;
 
       forward_list(forward_list&&) = default;
@@ -310,6 +317,39 @@ namespace __debug
 
 	  this->_M_invalidate_all();
 	}
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	assign_range(_Rg&& __rg)
+	{
+	  // Have to reimplement this function, so that we use the debug
+	  // version of erase_after, which invalidates the correct iterators.
+
+	  static_assert(assignable_from<_Tp&, ranges::range_reference_t<_Rg>>);
+
+	  auto __first = ranges::begin(__rg);
+	  const auto __last = ranges::end(__rg);
+	  auto __prev = _Base::before_begin();
+	  auto __curr = _Base::begin();
+	  const auto __end = _Base::end();
+
+	  while (__curr != __end && __first != __last)
+	    {
+	      *__curr = *__first;
+	      __prev = __curr;
+	      ++__first;
+	      ++__curr;
+	    }
+
+	  if (__curr != __end)
+	    erase_after(const_iterator(__prev, this), end());
+	  else
+	    _Base::insert_range_after(__prev,
+				      ranges::subrange(std::move(__first),
+						       __last));
+	}
+#endif
 
       void
       assign(size_type __n, const _Tp& __val)
@@ -400,6 +440,10 @@ namespace __debug
       using _Base::emplace_front;
       using _Base::push_front;
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      using _Base::prepend_range;
+#endif
+
       void
       pop_front()
       {
@@ -467,6 +511,18 @@ namespace __debug
 	__glibcxx_check_insert_after(__pos);
 	return { _Base::insert_after(__pos.base(), __il), this };
       }
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	iterator
+	insert_range_after(const_iterator __position, _Rg&& __rg)
+	{
+	  auto __ret
+	    = _Base::insert_range_after(__position.base(),
+					std::forward<_Rg>(__rg));
+	  return { __ret, this };
+	}
+#endif
 
       iterator
       erase_after(const_iterator __pos)
@@ -860,6 +916,13 @@ namespace __debug
 	   typename = _RequireAllocator<_Allocator>>
     forward_list(size_t, _Tp, _Allocator = _Allocator())
       -> forward_list<_Tp, _Allocator>;
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
+    forward_list(from_range_t, _Rg&&, _Allocator = _Allocator())
+      -> forward_list<ranges::range_value_t<_Rg>, _Allocator>;
+#endif
 #endif
 
   template<typename _Tp, typename _Alloc>

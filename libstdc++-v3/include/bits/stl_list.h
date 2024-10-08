@@ -64,6 +64,10 @@
 #include <bits/allocated_ptr.h>
 #include <ext/aligned_buffer.h>
 #endif
+#if __glibcxx_ranges_to_container // C++ >= 23
+# include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
+# include <bits/ranges_util.h> // ranges::subrange
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -892,6 +896,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Construct a list from a range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	list(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
+	: _Base(_Node_alloc_type(__a))
+	{
+	  auto __first = ranges::begin(__rg);
+	  const auto __last = ranges::end(__rg);
+	  for (; __first != __last; ++__first)
+	    emplace_back(*__first);
+	}
+#endif
+
 #if __cplusplus >= 201103L
       /**
        *  No explicit dtor needed as the _Base dtor takes care of
@@ -949,6 +969,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	this->assign(__l.begin(), __l.end());
 	return *this;
       }
+#endif
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Assign a range to a list.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	assign_range(_Rg&& __rg)
+	{
+	  static_assert(assignable_from<_Tp&, ranges::range_reference_t<_Rg>>);
+
+	  iterator __first1 = begin();
+	  const iterator __last1 = end();
+	  auto __first2 = ranges::begin(__rg);
+	  const auto __last2 = ranges::end(__rg);
+	  for (; __first1 != __last1 && __first2 != __last2;
+	       ++__first1, (void)++__first2)
+	    *__first1 = *__first2;
+	  if (__first2 == __last2)
+	    erase(__first1, __last1);
+	  else
+	    insert_range(__last1,
+			 ranges::subrange(std::move(__first2), __last2));
+	}
 #endif
 
       /**
@@ -1275,6 +1321,50 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Insert a range at the beginning of a list.
+       * @param  __rg An input range of elements that can be converted to
+       *              the list's value type.
+       *
+       * Inserts the elements of `__rg` at the beginning of the list.
+       * No iterators to existing elements are invalidated by this function.
+       * If the insertion fails due to an exception, no elements will be added
+       * and so the list will be unchanged.
+       *
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	prepend_range(_Rg&& __rg)
+	{
+	  list __tmp(from_range, std::forward<_Rg>(__rg), get_allocator());
+	  if (!__tmp.empty())
+	    splice(begin(), __tmp);
+	}
+
+      /**
+       * @brief Insert a range at the end of a list.
+       * @param  __rg An input range of elements that can be converted to
+       *              the list's value type.
+       *
+       * Inserts the elements of `__rg` at the end of the list.
+       * No iterators to existing elements are invalidated by this function.
+       * If the insertion fails due to an exception, no elements will be added
+       * and so the list will be unchanged.
+       *
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	append_range(_Rg&& __rg)
+	{
+	  list __tmp(from_range, std::forward<_Rg>(__rg), get_allocator());
+	  if (!__tmp.empty())
+	    splice(end(), __tmp);
+	}
+#endif
+
       /**
        *  @brief  Removes first element.
        *
@@ -1502,6 +1592,37 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{
 	  list __tmp(__first, __last, get_allocator());
 	  splice(__position, __tmp);
+	}
+#endif
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Insert a range into a list.
+       * @param  __position An iterator.
+       * @param  __rg An input range of elements that can be converted to
+       *              the list's value type.
+       * @return An iterator pointing to the first element inserted,
+       *         or `__position` if the range is empty.
+       *
+       * Inserts the elements of `__rg` before `__position`.
+       * No iterators to existing elements are invalidated by this function.
+       * If the insertion fails due to an exception, no elements will be added
+       * and so the list will be unchanged.
+       *
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	iterator
+	insert_range(const_iterator __position, _Rg&& __rg)
+	{
+	  list __tmp(from_range, std::forward<_Rg>(__rg), get_allocator());
+	  if (!__tmp.empty())
+	    {
+	      auto __it = __tmp.begin();
+	      splice(__position, __tmp);
+	      return __it;
+	    }
+	  return __position._M_const_cast();
 	}
 #endif
 
@@ -2102,6 +2223,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	   typename = _RequireAllocator<_Allocator>>
     list(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> list<_ValT, _Allocator>;
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
+    list(from_range_t, _Rg&&, _Allocator = _Allocator())
+      -> list<ranges::range_value_t<_Rg>, _Allocator>;
+#endif
 #endif
 
 _GLIBCXX_END_NAMESPACE_CXX11

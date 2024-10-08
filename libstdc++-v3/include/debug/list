@@ -160,6 +160,13 @@ namespace __debug
 		__gnu_debug::__base(__last), __a)
 	{ }
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	list(from_range_t, _Rg&& __rg, const _Allocator& __a = _Allocator())
+	: _Base(std::from_range, std::forward<_Rg>(__rg), __a)
+	{ }
+#endif
+
       list(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
@@ -206,6 +213,32 @@ namespace __debug
 
 	  this->_M_invalidate_all();
 	}
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	assign_range(_Rg&& __rg)
+	{
+	  // Have to reimplement this function, so that we use the debug
+	  // version of erase, which invalidates the correct iterators.
+
+	  static_assert(assignable_from<_Tp&, ranges::range_reference_t<_Rg>>);
+
+	  auto __first1 = _Base::begin();
+	  const auto __last1 = _Base::end();
+	  auto __first2 = ranges::begin(__rg);
+	  const auto __last2 = ranges::end(__rg);
+	  for (; __first1 != __last1 && __first2 != __last2;
+	       ++__first1, (void)++__first2)
+	    *__first1 = *__first2;
+	  if (__first2 == __last2)
+	    erase(const_iterator(__first1, this),
+		  const_iterator(__last1, this));
+	  else
+	    _Base::insert_range(__last1,
+				ranges::subrange(std::move(__first2), __last2));
+	}
+#endif
 
       void
       assign(size_type __n, const _Tp& __t)
@@ -401,6 +434,11 @@ namespace __debug
       using _Base::emplace_front;
 #endif
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      using _Base::prepend_range;
+      using _Base::append_range;
+#endif
+
       void
       pop_front() _GLIBCXX_NOEXCEPT
       {
@@ -508,6 +546,17 @@ namespace __debug
 					     __gnu_debug::__unsafe(__last));
 	  else
 	    _Base::insert(__position.base(), __first, __last);
+	}
+#endif
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	iterator
+	insert_range(const_iterator __position, _Rg&& __rg)
+	{
+	  auto __ret = _Base::insert_range(__position.base(),
+					   std::forward<_Rg>(__rg));
+	  return { __ret, this };
 	}
 #endif
 
@@ -920,6 +969,13 @@ namespace __debug
 	   typename = _RequireAllocator<_Allocator>>
     list(size_t, _Tp, _Allocator = _Allocator())
       -> list<_Tp, _Allocator>;
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
+    list(from_range_t, _Rg&&, _Allocator = _Allocator())
+      -> list<ranges::range_value_t<_Rg>, _Allocator>;
+#endif
 #endif
 
   template<typename _Tp, typename _Alloc>

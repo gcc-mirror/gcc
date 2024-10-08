@@ -42,6 +42,10 @@
 #include <bits/allocator.h>
 #include <ext/alloc_traits.h>
 #include <ext/aligned_buffer.h>
+#if __glibcxx_ranges_to_container // C++ >= 23
+# include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
+# include <bits/ranges_util.h> // ranges::subrange
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -564,6 +568,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _Base(_Node_alloc_type(__al))
 	{ _M_range_initialize(__first, __last); }
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Construct a forward_list from a range.
+       * @param __rg An input range with elements that are convertible to
+       *             the forward_list's value_type.
+       * @param __a An allocator.
+       *
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	forward_list(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
+	: _Base(_Node_alloc_type(__a))
+	{
+	  _Node_base* __to = &this->_M_impl._M_head;
+	  auto __first = ranges::begin(__rg);
+	  const auto __last = ranges::end(__rg);
+	  for (; __first != __last; ++__first)
+	    {
+	      __to->_M_next = this->_M_create_node(*__first);
+	      __to = __to->_M_next;
+	    }
+	}
+#endif // ranges_to_container
+
       /**
        *  @brief  The %forward_list copy constructor.
        *  @param  __list  A %forward_list of identical element and allocator
@@ -674,6 +702,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  typedef is_assignable<_Tp, decltype(*__first)> __assignable;
 	  _M_assign(__first, __last, __assignable());
 	}
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Assign a range to a forward_list.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	assign_range(_Rg&& __rg)
+	{
+	  static_assert(assignable_from<_Tp&, ranges::range_reference_t<_Rg>>);
+
+	  auto __first = ranges::begin(__rg);
+	  const auto __last = ranges::end(__rg);
+	  iterator __prev = before_begin();
+	  iterator __curr = begin();
+	  const iterator __end = end();
+
+	  while (__curr != __end && __first != __last)
+	    {
+	      *__curr = *__first;
+	      __prev = __curr;
+	      ++__first;
+	      ++__curr;
+	    }
+
+	  if (__curr != __end)
+	    erase_after(__prev, __end);
+	  else
+	    insert_range_after(__prev,
+			       ranges::subrange(std::move(__first), __last));
+	}
+#endif // ranges_to_container
 
       /**
        *  @brief  Assigns a given value to a %forward_list.
@@ -888,6 +949,33 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       push_front(_Tp&& __val)
       { this->_M_insert_after(cbefore_begin(), std::move(__val)); }
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Insert a range at the beginning of a forward_list.
+       * @param __rg An input range with elements that are convertible to
+       *             the forward_list's value_type.
+       *
+       * The inserted elements will be in the same order as in the range,
+       * so they are not reversed as would happen with a simple loop calling
+       * emplace_front for each element of the range.
+       *
+       * No iterators to existing elements are invalidated by this function.
+       * If the insertion fails due to an exception, no elements will be added
+       * and so the list will be unchanged.
+       *
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	void
+	prepend_range(_Rg&& __rg)
+	{
+	  forward_list __tmp(from_range, std::forward<_Rg>(__rg),
+			     get_allocator());
+	  if (!__tmp.empty())
+	    splice_after(before_begin(), __tmp);
+	}
+#endif // ranges_to_container
+
       /**
        *  @brief  Removes first element.
        *
@@ -1003,6 +1091,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
       { return insert_after(__pos, __il.begin(), __il.end()); }
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Insert a rangeinto a forward_list.
+       * @param  __position An iterator.
+       * @param  __rg An input range of elements that can be converted to
+       *              the forward_list's value type.
+       * @return An iterator pointing to the last element inserted,
+       *         or `__position` if the range is empty.
+       *
+       * Inserts the elements of `__rg` after `__position`.
+       * No iterators to existing elements are invalidated by this function.
+       * If the insertion fails due to an exception, no elements will be added
+       * and so the list will be unchanged.
+       *
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<_Tp> _Rg>
+	iterator
+	insert_range_after(const_iterator __position, _Rg&& __rg)
+	{
+	  forward_list __tmp(from_range, std::forward<_Rg>(__rg),
+			     get_allocator());
+	  return _M_splice_after(__position, __tmp.before_begin(), __tmp.end());
+	}
+#endif // ranges_to_container
 
       /**
        *  @brief  Removes the element pointed to by the iterator following
@@ -1438,6 +1552,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	   typename = _RequireAllocator<_Allocator>>
     forward_list(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> forward_list<_ValT, _Allocator>;
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+  template<ranges::input_range _Rg,
+	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
+    forward_list(from_range_t, _Rg&&, _Allocator = _Allocator())
+      -> forward_list<ranges::range_value_t<_Rg>, _Allocator>;
+#endif
 #endif
 
   /**
