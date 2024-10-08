@@ -12438,6 +12438,67 @@ riscv_expand_ustrunc (rtx dest, rtx src)
   emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
 }
 
+/* Implement the signed saturation truncation for int mode.
+
+   b = SAT_TRUNC (a);
+   =>
+   1.  lt = a < max
+   2.  gt = min < a
+   3.  mask = lt & gt
+   4.  trunc_mask = -mask
+   5.  sat_mask = mask - 1
+   6.  lt = a < 0
+   7.  neg = -lt
+   8.  sat = neg ^ max
+   9.  trunc = src & trunc_mask
+   10. sat = sat & sat_mask
+   11. dest = trunc | sat  */
+
+void
+riscv_expand_sstrunc (rtx dest, rtx src)
+{
+  machine_mode mode = GET_MODE (dest);
+  unsigned narrow_prec = GET_MODE_PRECISION (mode).to_constant ();
+  HOST_WIDE_INT narrow_max = ((int64_t)1 << (narrow_prec - 1)) - 1; // 127
+  HOST_WIDE_INT narrow_min = -narrow_max - 1; // -128
+
+  rtx xmode_narrow_max = gen_reg_rtx (Xmode);
+  rtx xmode_narrow_min = gen_reg_rtx (Xmode);
+  rtx xmode_lt = gen_reg_rtx (Xmode);
+  rtx xmode_gt = gen_reg_rtx (Xmode);
+  rtx xmode_src = gen_lowpart (Xmode, src);
+  rtx xmode_dest = gen_reg_rtx (Xmode);
+  rtx xmode_mask = gen_reg_rtx (Xmode);
+  rtx xmode_sat = gen_reg_rtx (Xmode);
+  rtx xmode_trunc = gen_reg_rtx (Xmode);
+  rtx xmode_sat_mask = gen_reg_rtx (Xmode);
+  rtx xmode_trunc_mask = gen_reg_rtx (Xmode);
+
+  /* Step-1: lt = src < max, gt = min < src, mask = lt & gt  */
+  emit_move_insn (xmode_narrow_min, gen_int_mode (narrow_min, Xmode));
+  emit_move_insn (xmode_narrow_max, gen_int_mode (narrow_max, Xmode));
+  riscv_emit_binary (LT, xmode_lt, xmode_src, xmode_narrow_max);
+  riscv_emit_binary (LT, xmode_gt, xmode_narrow_min, xmode_src);
+  riscv_emit_binary (AND, xmode_mask, xmode_lt, xmode_gt);
+
+  /* Step-2: sat_mask = mask - 1, trunc_mask = ~mask  */
+  riscv_emit_binary (PLUS, xmode_sat_mask, xmode_mask, CONSTM1_RTX (Xmode));
+  riscv_emit_unary (NEG, xmode_trunc_mask, xmode_mask);
+
+  /* Step-3: lt = src < 0, lt = -lt, sat = lt ^ narrow_max  */
+  riscv_emit_binary (LT, xmode_lt, xmode_src, CONST0_RTX (Xmode));
+  riscv_emit_unary (NEG, xmode_lt, xmode_lt);
+  riscv_emit_binary (XOR, xmode_sat, xmode_lt, xmode_narrow_max);
+
+  /* Step-4: xmode_dest = (src & trunc_mask) | (sat & sat_mask)  */
+  riscv_emit_binary (AND, xmode_trunc, xmode_src, xmode_trunc_mask);
+  riscv_emit_binary (AND, xmode_sat, xmode_sat, xmode_sat_mask);
+  riscv_emit_binary (IOR, xmode_dest, xmode_trunc, xmode_sat);
+
+  /* Step-5: dest = xmode_dest  */
+  emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
+}
+
 /* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode for
    TI_LONG_DOUBLE_TYPE which is for long double type, go with the
    default one for the others.  */

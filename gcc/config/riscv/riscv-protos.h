@@ -138,6 +138,7 @@ extern void riscv_expand_ssadd (rtx, rtx, rtx);
 extern void riscv_expand_ussub (rtx, rtx, rtx);
 extern void riscv_expand_sssub (rtx, rtx, rtx);
 extern void riscv_expand_ustrunc (rtx, rtx);
+extern void riscv_expand_sstrunc (rtx, rtx);
 
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx, bool *invert_ptr = 0);

@@ -4413,6 +4413,16 @@
   }
 )
 
+(define_expand "sstrunc<mode><anyi_double_truncated>2"
+  [(match_operand:<ANYI_DOUBLE_TRUNCATED> 0 "register_operand")
+   (match_operand:ANYI_DOUBLE_TRUNC       1 "register_operand")]
+  ""
+  {
+    riscv_expand_sstrunc (operands[0], operands[1]);
+    DONE;
+  }
+)
+
 (define_expand "ustrunc<mode><anyi_quad_truncated>2"
   [(match_operand:<ANYI_QUAD_TRUNCATED> 0 "register_operand")
    (match_operand:ANYI_QUAD_TRUNC       1 "register_operand")]
@@ -4423,12 +4433,32 @@
   }
 )
 
+(define_expand "sstrunc<mode><anyi_quad_truncated>2"
+  [(match_operand:<ANYI_QUAD_TRUNCATED> 0 "register_operand")
+   (match_operand:ANYI_QUAD_TRUNC       1 "register_operand")]
+  ""
+  {
+    riscv_expand_sstrunc (operands[0], operands[1]);
+    DONE;
+  }
+)
+
 (define_expand "ustrunc<mode><anyi_oct_truncated>2"
   [(match_operand:<ANYI_OCT_TRUNCATED> 0 "register_operand")
    (match_operand:ANYI_OCT_TRUNC       1 "register_operand")]
   ""
   {
     riscv_expand_ustrunc (operands[0], operands[1]);
+    DONE;
+  }
+)
+
+(define_expand "sstrunc<mode><anyi_oct_truncated>2"
+  [(match_operand:<ANYI_OCT_TRUNCATED> 0 "register_operand")
+   (match_operand:ANYI_OCT_TRUNC       1 "register_operand")]
+  ""
+  {
+    riscv_expand_sstrunc (operands[0], operands[1]);
     DONE;
   }
 )
