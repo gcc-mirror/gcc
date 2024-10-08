@@ -10474,6 +10474,15 @@ and,
   (simplify (reduc (op @0 VECTOR_CST@1))
     (op (reduc:type @0) (reduc:type @1))))
 
+/* Simplify .REDUC_IOR (@0) ==/!= 0 to @0 ==/!= 0.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (IFN_REDUC_IOR @0) integer_zerop)
+  (if (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (@0)))
+       && can_compare_p (cmp == EQ_EXPR ? EQ : NE, TYPE_MODE (TREE_TYPE (@0)),
+			 ccp_jump))
+   (cmp @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
 /* Simplify vector floating point operations of alternating sub/add pairs
    into using an fneg of a wider element type followed by a normal add.
    under IEEE 754 the fneg of the wider type will negate every even entry

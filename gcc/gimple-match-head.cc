@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
 #include "gimplify.h"
+#include "memmodel.h"
+#include "optabs.h"
 #include "optabs-tree.h"
 #include "tree-eh.h"
 #include "dbgcnt.h"
