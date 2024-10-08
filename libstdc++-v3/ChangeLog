@@ -1,3 +1,89 @@
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view::copy) Use explicit
+	template argument for call to std::min<size_t>.
+	(basic_string_view::substr): Likewise.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (tracker_allocator):
+	Initialize base class in copy constructor.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (remove_all) [__FreeBSD__ || __DragonFly__]:
+	Check for EMLINK as well as ELOOP.
+	[__NetBSD__]: Check for EFTYPE as well as ELOOP.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115399
+	* include/tr2/dynamic_bitset (operator>>=): Remove redundant
+	call to _M_do_sanitize.
+	* include/tr2/dynamic_bitset.tcc (_M_do_left_shift): Zero out
+	low bits in words that should no longer be populated.
+	(_M_do_right_shift): Likewise for high bits.
+	* testsuite/tr2/dynamic_bitset/pr115399.cc: New test.
+
+2024-10-07  Kim Gräsman  <kim.grasman@gmail.com>
+
+	Backported from master:
+	2024-08-28  Kim Gräsman  <kim.grasman@gmail.com>
+
+	* include/bits/cpp_type_traits.h: Improve doxygen file docs.
+
+2024-10-07  Kim Gräsman  <kim.grasman@gmail.com>
+
+	Backported from master:
+	2024-08-28  Kim Gräsman  <kim.grasman@gmail.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h: Improve doxygen file
+	docs.
+	* config/cpu/i486/opt/ext/opt_random.h: Likewise.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Variant_storage::_M_reset): Use
+	__unlikely__ form of attribute instead of unlikely.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.ac: Fix check for O_NONBLOCK.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116641
+	* include/bits/basic_string.h (operator=(basic_string&&)): Call
+	_M_assign instead of assign.
+	* testsuite/21_strings/basic_string/allocator/116641.cc: New
+	test.
+
+2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115585
+	* src/c++11/assert_fail.cc (__glibcxx_assert_fail): Add
+	definition for non-verbose builds.
+
 2024-07-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
