@@ -8575,8 +8575,11 @@ if operand 1 with mode @var{m} compares less than operand 2, equal to
 operand 2, greater than operand 2 or is unordered with operand 2.
 Operand 3 should be @code{const0_rtx} if the result is used in comparisons,
 @code{const1_rtx} if the result is used as integer value and the comparison
-is signed, @code{const2_rtx} if the result is used as integer value and
-the comparison is unsigned.
+is integral unsigned, @code{constm1_rtx} if the result is used as integer
+value and the comparison is integral signed and some other @code{CONST_INT}
+if the result is used as integer value and the comparison is floating point.
+In the last case, instead of setting output operand 0 to 2 for unordered,
+set it to operand 3.
 @var{m} should be a scalar floating point mode.
 
 This pattern is not allowed to @code{FAIL}.

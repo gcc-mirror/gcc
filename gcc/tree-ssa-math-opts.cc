@@ -6023,11 +6023,12 @@ optimize_spaceship (gcond *stmt)
 
   /* Check if there is a single bb into which all failed conditions
      jump to (perhaps through an empty block) and if it results in
-     a single integral PHI which just sets it to -1, 0, 1, 2
+     a single integral PHI which just sets it to -1, 0, 1, X
      (or -1, 0, 1 when NaNs can't happen).  In that case use 1 rather
      than 0 as last .SPACESHIP argument to tell backends it might
      consider different code generation and just cast the result
-     of .SPACESHIP to the PHI result.  */
+     of .SPACESHIP to the PHI result.  X above is some value
+     other than -1, 0, 1, for libstdc++ 2, for libc++ -127.  */
   tree arg3 = integer_zero_node;
   edge e = EDGE_SUCC (bb0, 0);
   if (e->dest == bb1)
@@ -6054,6 +6055,7 @@ optimize_spaceship (gcond *stmt)
       && integer_zerop (gimple_phi_arg_def_from_edge (phi, e))
       && EDGE_COUNT (bbp->preds) == (HONOR_NANS (TREE_TYPE (arg1)) ? 4 : 3))
     {
+      HOST_WIDE_INT argval = SCALAR_FLOAT_TYPE_P (TREE_TYPE (arg1)) ? 2 : -1;
       for (unsigned i = 0; phi && i < EDGE_COUNT (bbp->preds) - 1; ++i)
 	{
 	  edge e3 = i == 0 ? e1 : i == 1 ? em1 : e2;
@@ -6071,16 +6073,29 @@ optimize_spaceship (gcond *stmt)
 	  tree a = gimple_phi_arg_def_from_edge (phi, e3);
 	  if (TREE_CODE (a) != INTEGER_CST
 	      || (i == 0 && !integer_onep (a))
-	      || (i == 1 && !integer_all_onesp (a))
-	      || (i == 2 && wi::to_widest (a) != 2))
+	      || (i == 1 && !integer_all_onesp (a)))
 	    {
 	      phi = NULL;
 	      break;
 	    }
+	  if (i == 2)
+	    {
+	      tree minv = TYPE_MIN_VALUE (signed_char_type_node);
+	      tree maxv = TYPE_MAX_VALUE (signed_char_type_node);
+	      widest_int w = widest_int::from (wi::to_wide (a), SIGNED);
+	      if ((w >= -1 && w <= 1)
+		  || w < wi::to_widest (minv)
+		  || w > wi::to_widest (maxv))
+		{
+		  phi = NULL;
+		  break;
+		}
+	      argval = w.to_shwi ();
+	    }
 	}
       if (phi)
 	arg3 = build_int_cst (integer_type_node,
-			      TYPE_UNSIGNED (TREE_TYPE (arg1)) ? 2 : 1);
+			      TYPE_UNSIGNED (TREE_TYPE (arg1)) ? 1 : argval);
     }
 
   /* For integral <=> comparisons only use .SPACESHIP if it is turned
@@ -6094,11 +6109,18 @@ optimize_spaceship (gcond *stmt)
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   gsi_insert_before (&gsi, gc, GSI_SAME_STMT);
 
-  wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
-  wide_int w2 = (HONOR_NANS (TREE_TYPE (arg1))
-		 ? wi::two (TYPE_PRECISION (integer_type_node))
-		 : wi::one (TYPE_PRECISION (integer_type_node)));
-  int_range<1> vr (TREE_TYPE (lhs), wm1, w2);
+  wide_int wmin = wi::minus_one (TYPE_PRECISION (integer_type_node));
+  wide_int wmax = wi::one (TYPE_PRECISION (integer_type_node));
+  if (HONOR_NANS (TREE_TYPE (arg1)))
+    {
+      if (arg3 == integer_zero_node)
+	wmax = wi::two (TYPE_PRECISION (integer_type_node));
+      else if (tree_int_cst_sgn (arg3) < 0)
+	wmin = wi::to_wide (arg3);
+      else
+	wmax = wi::to_wide (arg3);
+    }
+  int_range<1> vr (TREE_TYPE (lhs), wmin, wmax);
   set_range_info (lhs, vr);
 
   if (arg3 != integer_zero_node)

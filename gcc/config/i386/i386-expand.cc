@@ -3234,7 +3234,7 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
   if (l2)
     {
       emit_label (l2);
-      emit_move_insn (dest, const2_rtx);
+      emit_move_insn (dest, op2 == const0_rtx ? const2_rtx : op2);
     }
   emit_label (lend);
 }
@@ -3250,11 +3250,11 @@ ix86_expand_int_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
      operands nor optimize CC mode - we need a mode usable for both
      LT and GT resp. LTU and GTU comparisons with the same unswapped
      operands.  */
-  rtx flags = gen_rtx_REG (INTVAL (op2) == 1 ? CCGCmode : CCmode, FLAGS_REG);
+  rtx flags = gen_rtx_REG (INTVAL (op2) != 1 ? CCGCmode : CCmode, FLAGS_REG);
   rtx tmp = gen_rtx_COMPARE (GET_MODE (flags), op0, op1);
   emit_insn (gen_rtx_SET (flags, tmp));
   rtx lt_tmp = gen_reg_rtx (QImode);
-  ix86_expand_setcc (lt_tmp, INTVAL (op2) == 1 ? LT : LTU, flags,
+  ix86_expand_setcc (lt_tmp, INTVAL (op2) != 1 ? LT : LTU, flags,
 		     const0_rtx);
   if (GET_MODE (dest) != QImode)
     {
@@ -3264,7 +3264,7 @@ ix86_expand_int_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
       lt_tmp = tmp;
     }
   rtx gt_tmp = gen_reg_rtx (QImode);
-  ix86_expand_setcc (gt_tmp, INTVAL (op2) == 1 ? GT : GTU, flags,
+  ix86_expand_setcc (gt_tmp, INTVAL (op2) != 1 ? GT : GTU, flags,
 		     const0_rtx);
   if (GET_MODE (dest) != QImode)
     {
