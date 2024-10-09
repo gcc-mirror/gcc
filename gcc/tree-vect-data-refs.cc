@@ -3206,6 +3206,7 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
   if (loop_vinfo && integer_zerop (step))
     {
       DR_GROUP_FIRST_ELEMENT (stmt_info) = NULL;
+      DR_GROUP_NEXT_ELEMENT (stmt_info) = NULL;
       if (!nested_in_vect_loop_p (loop, stmt_info))
 	return DR_IS_READ (dr);
       /* Allow references with zero step for outer loops marked
@@ -3225,6 +3226,7 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
       /* Interleaved accesses are not yet supported within outer-loop
         vectorization for references in the inner-loop.  */
       DR_GROUP_FIRST_ELEMENT (stmt_info) = NULL;
+      DR_GROUP_NEXT_ELEMENT (stmt_info) = NULL;
 
       /* For the rest of the analysis we use the outer-loop step.  */
       step = STMT_VINFO_DR_STEP (stmt_info);
@@ -3247,6 +3249,7 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
 	{
 	  /* Mark that it is not interleaving.  */
 	  DR_GROUP_FIRST_ELEMENT (stmt_info) = NULL;
+	  DR_GROUP_NEXT_ELEMENT (stmt_info) = NULL;
 	  return true;
 	}
     }
