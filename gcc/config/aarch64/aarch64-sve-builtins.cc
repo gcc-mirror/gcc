@@ -1283,7 +1283,7 @@ function_builder::function_builder (handle_pragma_index pragma_index,
 				    bool function_nulls)
 {
   m_overload_type = build_function_type (void_type_node, void_list_node);
-  m_direct_overloads = lang_GNU_CXX ();
+  m_direct_overloads = lang_GNU_CXX () || in_lto_p;
 
   if (initial_indexes[pragma_index] == 0)
     {
