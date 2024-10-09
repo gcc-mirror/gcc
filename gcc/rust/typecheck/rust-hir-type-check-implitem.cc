@@ -24,6 +24,10 @@
 #include "rust-hir-type-check-pattern.h"
 #include "rust-type-util.h"
 #include "rust-tyty.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 namespace Rust {
 namespace Resolver {
@@ -461,8 +465,23 @@ TypeCheckImplItem::visit (HIR::Function &function)
       TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
     }
 
-  auto canonical_path
-    = mappings.lookup_canonical_path (function.get_mappings ().get_nodeid ());
+  tl::optional<CanonicalPath> canonical_path;
+
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path = nr_ctx.values.to_canonical_path (
+	function.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path = mappings.lookup_canonical_path (
+	function.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path.has_value ());
 
   RustIdent ident{*canonical_path, function.get_locus ()};
   auto fnType = new TyTy::FnType (
