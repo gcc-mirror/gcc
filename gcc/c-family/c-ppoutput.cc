@@ -93,8 +93,11 @@ preprocess_file (cpp_reader *pfile)
   if (flag_no_output && pfile->buffer)
     {
       if (flag_modules)
-	/* For macros from imported headers we need directives_only_cb.  */
-	scan_translation_unit_directives_only (pfile);
+	{
+	  /* For macros from imported headers we need directives_only_cb.  */
+	  cpp_get_options (pfile)->directives_only = true;
+	  scan_translation_unit_directives_only (pfile);
+	}
       else
 	{
 	  /* Scan -included buffers, then the main file.  */
