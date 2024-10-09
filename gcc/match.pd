@@ -9104,7 +9104,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 (cmp (plus @1 (minus @2 @0)) @2))
        (if (cmp == LT_EXPR || cmp == GE_EXPR)
 	 (cmp (plus @1 (minus @2
-		   (plus @0 { build_one_cst (TREE_TYPE (@1)); }))) @2)))))))
+		   (plus @0 { build_one_cst (TREE_TYPE (@1)); }))) @2)))
+/* For wrapping signed types (-fwrapv), transform like so (using < as example):
+	 C1 - X < C2
+      ==>  C1 - X = { -INF, -INF + 1, ..., C2 - 1 }
+      ==>  X = { C1 - (-INF), C1 - (-INF + 1), ..., C1 - C2 + 1 }
+      ==>  X - (C1 + 1) = { - (-INF) - 1, - (-INF) - 2, ..., -C2 }
+      ==>  X - (C1 + 1) = { +INF, +INF - 1, ..., -C2 }
+      ==>  X - (C1 + 1) > -C2 - 1
+      ==>  X - (C1 + 1) > bit_not (C2)
+
+      Similarly,
+	 C1 - X <= C2 ==> X - (C1 + 1) >= bit_not (C2);
+	 C1 - X >= C2 ==> X - (C1 + 1) <= bit_not (C2);
+	 C1 - X > C2 ==> X - (C1 + 1) < bit_not (C2).  */
+   (if (!TYPE_UNSIGNED (TREE_TYPE (@1))
+	&& TYPE_OVERFLOW_WRAPS (TREE_TYPE (@1)))
+     (if (cmp == EQ_EXPR || cmp == NE_EXPR)
+	(cmp @1 (minus @0 @2))
+     (rcmp (minus @1 (plus @0 { build_one_cst (TREE_TYPE (@1)); }))
+	     (bit_not @2))))))))
 
 /* Canonicalizations of BIT_FIELD_REFs.  */
 
