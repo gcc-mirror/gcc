@@ -33,7 +33,6 @@ const_generics_3.rs
 const_generics_4.rs
 const_generics_5.rs
 const_generics_7.rs
-const_generics_8.rs
 derive_empty.rs
 derive_macro1.rs
 derive_macro3.rs
@@ -61,8 +60,6 @@ generics8.rs
 generics9.rs
 if_let_expr.rs
 infer-crate-name.rs
-issue-1005.rs
-issue-1006.rs
 issue-1019.rs
 issue-1031.rs
 issue-1034.rs
@@ -92,7 +89,6 @@ issue-2019-2.rs
 issue-2019-3.rs
 issue-2036.rs
 issue-2037.rs
-issue-2039.rs
 issue-2043.rs
 issue-2070.rs
 issue-2105.rs
@@ -141,7 +137,6 @@ macros/mbe/macro43.rs
 macros/mbe/macro44.rs
 macros/mbe/macro50.rs
 macros/mbe/macro54.rs
-macros/mbe/macro55.rs
 macros/mbe/macro6.rs
 macros/mbe/macro_rules_macro_rules.rs
 macros/mbe/macro_use1.rs
@@ -154,7 +149,6 @@ match4.rs
 match5.rs
 match8.rs
 match9.rs
-method1.rs
 method2.rs
 missing_constructor_fields.rs
 multi_reference_type.rs
@@ -222,8 +216,6 @@ unsafe2.rs
 unsafe3.rs
 unsafe6.rs
 unsafe7.rs
-unsafe8.rs
-unsafe9.rs
 use_1.rs
 use_2.rs
 v0-mangle1.rs

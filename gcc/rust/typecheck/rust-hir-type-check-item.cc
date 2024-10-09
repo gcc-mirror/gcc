@@ -32,6 +32,9 @@
 #include "rust-type-util.h"
 #include "rust-tyty-variance-analysis.h"
 
+// for flag_name_resolution_2_0
+#include "options.h"
+
 namespace Rust {
 namespace Resolver {
 
@@ -343,8 +346,24 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
     }
 
   // get the path
-  auto canonical_path
-    = mappings.lookup_canonical_path (enum_decl.get_mappings ().get_nodeid ());
+  tl::optional<CanonicalPath> canonical_path;
+
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path = nr_ctx.types.to_canonical_path (
+	enum_decl.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path = mappings.lookup_canonical_path (
+	enum_decl.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path.has_value ());
+
   RustIdent ident{*canonical_path, enum_decl.get_locus ()};
 
   // multi variant ADT
@@ -390,8 +409,24 @@ TypeCheckItem::visit (HIR::Union &union_decl)
     }
 
   // get the path
-  auto canonical_path
-    = mappings.lookup_canonical_path (union_decl.get_mappings ().get_nodeid ());
+  tl::optional<CanonicalPath> canonical_path;
+
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path = nr_ctx.types.to_canonical_path (
+	union_decl.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path = mappings.lookup_canonical_path (
+	union_decl.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path.has_value ());
+
   RustIdent ident{*canonical_path, union_decl.get_locus ()};
 
   // there is only a single variant
