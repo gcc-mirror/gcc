@@ -3477,12 +3477,16 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	}
 
       if (GET_CODE (opleft) == ASHIFT && GET_CODE (opright) == LSHIFTRT
-          && rtx_equal_p (XEXP (opleft, 0), XEXP (opright, 0))
-          && CONST_INT_P (XEXP (opleft, 1))
-          && CONST_INT_P (XEXP (opright, 1))
-          && (INTVAL (XEXP (opleft, 1)) + INTVAL (XEXP (opright, 1))
-	      == GET_MODE_UNIT_PRECISION (mode)))
-        return gen_rtx_ROTATE (mode, XEXP (opright, 0), XEXP (opleft, 1));
+	  && rtx_equal_p (XEXP (opleft, 0), XEXP (opright, 0)))
+	{
+	  rtx leftcst = unwrap_const_vec_duplicate (XEXP (opleft, 1));
+	  rtx rightcst = unwrap_const_vec_duplicate (XEXP (opright, 1));
+
+	  if (CONST_INT_P (leftcst) && CONST_INT_P (rightcst)
+	      && (INTVAL (leftcst) + INTVAL (rightcst)
+		  == GET_MODE_UNIT_PRECISION (mode)))
+	    return gen_rtx_ROTATE (mode, XEXP (opright, 0), XEXP (opleft, 1));
+	}
 
       /* Same, but for ashift that has been "simplified" to a wider mode
         by simplify_shift_const.  */
