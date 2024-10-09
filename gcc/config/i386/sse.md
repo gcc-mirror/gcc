@@ -10995,7 +10995,7 @@
    vmovlps\t{%H2, %1, %0|%0, %1, %H2}
    %vmovhps\t{%2, %0|%q0, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx,*")
-   (set_attr "type" "ssemov")
+   (set_attr "type" "ssemov2")
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex,maybe_vex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF,V2SF")])
 
@@ -11557,7 +11557,7 @@
    vmovlhps\t{%2, %1, %0|%0, %1, %2}
    %vmovlps\t{%2, %H0|%H0, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx,*")
-   (set_attr "type" "ssemov")
+   (set_attr "type" "ssemov2")
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex,maybe_vex")
    (set_attr "mode" "V2SF,V2SF,V4SF,V4SF,V2SF")])
 
@@ -11610,7 +11610,7 @@
    vmovlps\t{%2, %1, %0|%0, %1, %q2}
    %vmovlps\t{%2, %0|%q0, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx,*")
-   (set_attr "type" "sseshuf,sseshuf,ssemov,ssemov,ssemov")
+   (set_attr "type" "sseshuf,sseshuf,ssemov2,ssemov2,ssemov")
    (set (attr "length_immediate")
      (if_then_else (eq_attr "alternative" "0,1")
 		   (const_string "1")
@@ -11766,7 +11766,7 @@
    movhps\t{%2, %0|%0, %q2}
    vmovhps\t{%2, %1, %0|%0, %1, %q2}"
   [(set_attr "isa" "noavx,avx,noavx,avx")
-   (set_attr "type" "ssemov")
+   (set_attr "type" "ssemov2")
    (set_attr "prefix" "orig,maybe_evex,orig,maybe_evex")
    (set_attr "mode" "V4SF,V4SF,V2SF,V2SF")])
 
@@ -12214,7 +12214,7 @@
    movlpd\t{%2, %0|%0, %2}
    vmovlpd\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx,noavx,avx")
-   (set_attr "type" "ssemov")
+   (set_attr "type" "ssemov2")
    (set_attr "mode" "DF")])
 
 (define_expand "vec_set<mode>"
@@ -14665,7 +14665,7 @@
    #
    #"
   [(set_attr "isa" "noavx,avx,noavx,avx,*,*,*")
-   (set_attr "type" "ssemov,ssemov,sselog,sselog,ssemov,fmov,imov")
+   (set_attr "type" "ssemov2,ssemov2,sselog,sselog,ssemov,fmov,imov")
    (set (attr "prefix_data16")
      (if_then_else (eq_attr "alternative" "0")
 		   (const_string "1")
@@ -14735,6 +14735,8 @@
 	      (const_string "fmov")
 	    (eq_attr "alternative" "10")
 	      (const_string "imov")
+	    (eq_attr "alternative" "0,1,2")
+	      (const_string "ssemov2")
 	   ]
 	   (const_string "ssemov")))
    (set (attr "prefix_data16")
@@ -14787,7 +14789,7 @@
      (if_then_else
        (eq_attr "alternative" "5")
        (const_string "sselog")
-       (const_string "ssemov")))
+       (const_string "ssemov2")))
    (set (attr "prefix_data16")
      (if_then_else
        (and (eq_attr "alternative" "2,4")
@@ -14859,7 +14861,7 @@
      (if_then_else
        (eq_attr "alternative" "0,1,2")
        (const_string "sselog")
-       (const_string "ssemov")))
+       (const_string "ssemov2")))
    (set (attr "prefix_data16")
 	(if_then_else (eq_attr "alternative" "3")
 		      (const_string "1")
@@ -21545,7 +21547,7 @@
    movhps\t{%2, %0|%0, %q2}
    vmovhps\t{%2, %1, %0|%0, %1, %q2}"
   [(set_attr "isa" "sse2_noavx,avx,noavx,noavx,avx")
-   (set_attr "type" "sselog,sselog,ssemov,ssemov,ssemov")
+   (set_attr "type" "sselog,sselog,ssemov,ssemov2,ssemov2")
    (set_attr "prefix" "orig,maybe_evex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
@@ -21653,7 +21655,7 @@
      (if_then_else
        (eq_attr "alternative" "0,1,2,3,4,5")
        (const_string "sselog")
-       (const_string "ssemov")))
+       (const_string "ssemov2")))
    (set (attr "addr")
      (if_then_else (eq_attr "alternative" "0,1")
 		   (const_string "gpr16")
