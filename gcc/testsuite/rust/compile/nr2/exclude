@@ -191,12 +191,6 @@ traits9.rs
 type-bindings1.rs
 unconstrained_type_param.rs
 undeclared_label.rs
-unsafe1.rs
-unsafe11.rs
-unsafe2.rs
-unsafe3.rs
-unsafe6.rs
-unsafe7.rs
 use_1.rs
 use_2.rs
 v0-mangle1.rs
