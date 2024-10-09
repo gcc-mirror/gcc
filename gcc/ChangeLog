@@ -1,3 +1,9 @@
+2024-10-08  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vaesdec_<mode>, vaesdeclast_<mode>,
+	vaesenc_<mode>, vaesenclast_<mode>): Replace which_alternative
+	check by TARGET_AES one.
+
 2024-10-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Fix indirect_got constraint.

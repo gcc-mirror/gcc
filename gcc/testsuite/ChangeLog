@@ -1,3 +1,18 @@
+2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116190
+	* gnat.dg/aggr31.adb: New test.
+
+2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115535
+	* gnat.dg/put_image1.adb: New test
+
+2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114636
+	* gnat.dg/specs/generic_inst1.ads: New test.
+
 2024-10-04  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
