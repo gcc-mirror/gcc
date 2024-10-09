@@ -3039,10 +3039,31 @@ package body Sem_Ch10 is
 
          --  Self-referential withs are always useless, so warn
 
-         if Warn_On_Redundant_Constructs and then False then -- ???
-            --  Disable for now, because it breaks SPARK builds
+         if Warn_On_Redundant_Constructs then
             Error_Msg_N ("unnecessary with of self?r?", N);
          end if;
+
+         declare
+            This : Node_Id := Next (N);
+         begin
+            --  Remove subsequent use clauses for the same package
+
+            while Present (This) loop
+               declare
+                  Nxt : constant Node_Id := Next (This);
+               begin
+                  if Nkind (This) = N_Use_Package_Clause
+                    and then Same_Name (Name (N), Name (This))
+                  then
+                     if not More_Ids (This) and not Prev_Ids (This) then
+                        Remove (This);
+                     end if;
+                  end if;
+
+                  This := Nxt;
+               end;
+            end loop;
+         end;
 
       --  Normal (non-self-referential) case
 
