@@ -15153,11 +15153,12 @@ evaluate code depending on the value of a constant expression.  This
 built-in function returns @var{exp1} if @var{const_exp}, which is an
 integer constant expression, is nonzero.  Otherwise it returns @var{exp2}.
 
-This built-in function is analogous to the @samp{? :} operator in C,
-except that the expression returned has its type unaltered by promotion
-rules.  Also, the built-in function does not evaluate the expression
-that is not chosen.  For example, if @var{const_exp} evaluates to @code{true},
-@var{exp2} is not evaluated even if it has side effects.
+Like the @samp{? :} operator, this built-in function does not evaluate the
+expression that is not chosen.  For example, if @var{const_exp} evaluates to
+@code{true}, @var{exp2} is not evaluated even if it has side effects.  On the
+other hand, @code{__builtin_choose_expr} differs from @samp{? :} in that the
+first operand must be a compile-time constant, and the other operands are not
+subject to the @samp{? :} type constraints and promotions.
 
 This built-in function can return an lvalue if the chosen argument is an
 lvalue.
