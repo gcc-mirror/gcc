@@ -905,7 +905,8 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	    }
 
 	  if (is_a <bb_vec_info> (vinfo)
-	      && !oprnd_info->any_pattern)
+	      && !oprnd_info->any_pattern
+	      && number_of_oprnds > 1)
 	    {
 	      /* Now for commutative ops we should see whether we can
 		 make the other operand matching.  */
@@ -1305,10 +1306,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      /* Mismatch.  */
 	      continue;
 	    }
-	  if (first_stmt_code != rhs_code
+	  if (!ldst_p
+	      && first_stmt_code != rhs_code
 	      && alt_stmt_code == ERROR_MARK)
 	    alt_stmt_code = rhs_code;
-	  if ((first_stmt_code != rhs_code
+	  if ((!ldst_p
+	       && first_stmt_code != rhs_code
 	       && (first_stmt_code != IMAGPART_EXPR
 		   || rhs_code != REALPART_EXPR)
 	       && (first_stmt_code != REALPART_EXPR
@@ -1325,20 +1328,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		    && (TREE_CODE_CLASS (tree_code (first_stmt_code))
 			== tcc_comparison)
 		    && (swap_tree_comparison (tree_code (first_stmt_code))
-			== tree_code (rhs_code)))
-	       && !(STMT_VINFO_GROUPED_ACCESS (stmt_info)
-		    && (first_stmt_code == ARRAY_REF
-			|| first_stmt_code == BIT_FIELD_REF
-			|| first_stmt_code == COMPONENT_REF
-			|| first_stmt_code == REALPART_EXPR
-			|| first_stmt_code == IMAGPART_EXPR
-			|| first_stmt_code == MEM_REF)
-		    && (rhs_code == ARRAY_REF
-			|| rhs_code == BIT_FIELD_REF
-			|| rhs_code == COMPONENT_REF
-			|| rhs_code == REALPART_EXPR
-			|| rhs_code == IMAGPART_EXPR
-			|| rhs_code == MEM_REF)))
+			== tree_code (rhs_code))))
 	      || (ldst_p
 		  && (STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		      != STMT_VINFO_GROUPED_ACCESS (first_stmt_info)))
