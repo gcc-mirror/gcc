@@ -9046,16 +9046,41 @@
   [(set_attr "type" "crypto_sha3")]
 )
 
-(define_insn "aarch64_xarqv2di"
+(define_insn "*aarch64_xarqv2di_insn"
   [(set (match_operand:V2DI 0 "register_operand" "=w")
-	(rotatert:V2DI
+	(rotate:V2DI
 	 (xor:V2DI
 	  (match_operand:V2DI 1 "register_operand" "%w")
 	  (match_operand:V2DI 2 "register_operand" "w"))
-	 (match_operand:SI 3 "aarch64_simd_shift_imm_di" "Usd")))]
+	 (match_operand:V2DI 3 "aarch64_simd_lshift_imm" "Dl")))]
   "TARGET_SHA3"
-  "xar\\t%0.2d, %1.2d, %2.2d, %3"
+  {
+    operands[3]
+      = GEN_INT (64 - INTVAL (unwrap_const_vec_duplicate (operands[3])));
+    return "xar\\t%0.2d, %1.2d, %2.2d, %3";
+  }
   [(set_attr "type" "crypto_sha3")]
+)
+
+;; The semantics of the vxarq_u64 intrinsics treat the immediate argument as a
+;; right-rotate amount but the recommended representation of rotates by a
+;; constant in RTL is with the left ROTATE code.  Translate between the
+;; intrinsic-provided amount and the RTL operands in the expander here.
+;; The define_insn for XAR will translate back to instruction semantics in its
+;; output logic.
+(define_expand "aarch64_xarqv2di"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(rotate:V2DI
+	 (xor:V2DI
+	  (match_operand:V2DI 1 "register_operand")
+	  (match_operand:V2DI 2 "register_operand"))
+	 (match_operand:SI 3 "aarch64_simd_shift_imm_di")))]
+  "TARGET_SHA3"
+  {
+    operands[3]
+      = aarch64_simd_gen_const_vector_dup (V2DImode,
+					   64 - INTVAL (operands[3]));
+  }
 )
 
 (define_insn "bcaxq<mode>4"
