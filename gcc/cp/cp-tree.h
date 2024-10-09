@@ -451,6 +451,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       ATOMIC_CONSTR_MAP_INSTANTIATED_P (in ATOMIC_CONSTR)
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
       RETURN_EXPR_LOCAL_ADDR_P (in RETURN_EXPR)
+      PACK_INDEX_PARENTHESIZED_P (in PACK_INDEX_*)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2258,7 +2259,8 @@ enum languages { lang_c, lang_cplusplus };
    || TREE_CODE (T) == BOUND_TEMPLATE_TEMPLATE_PARM	\
    || TREE_CODE (T) == DECLTYPE_TYPE			\
    || TREE_CODE (T) == TRAIT_TYPE			\
-   || TREE_CODE (T) == DEPENDENT_OPERATOR_TYPE)
+   || TREE_CODE (T) == DEPENDENT_OPERATOR_TYPE		\
+   || TREE_CODE (T) == PACK_INDEX_TYPE)
 
 /* Nonzero if T is a class (or struct or union) type.  Also nonzero
    for template type parameters, typename types, and instantiated
@@ -4001,6 +4003,9 @@ struct GTY(()) lang_decl {
 #define PACK_EXPANSION_CHECK(NODE) \
   TREE_CHECK2 (NODE, TYPE_PACK_EXPANSION, EXPR_PACK_EXPANSION)
 
+#define PACK_INDEX_CHECK(NODE) \
+  TREE_CHECK2 (NODE, PACK_INDEX_TYPE, PACK_INDEX_EXPR)
+
 /* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define PACK_EXPANSION_PATTERN(NODE)                            \
@@ -4025,6 +4030,22 @@ struct GTY(()) lang_decl {
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
     : &TREE_OPERAND ((NODE), 2))
 
+/* True if NODE is a pack index.  */
+#define PACK_INDEX_P(NODE)                 \
+  (TREE_CODE (NODE) == PACK_INDEX_TYPE     \
+   || TREE_CODE (NODE) == PACK_INDEX_EXPR)
+
+/* For a pack index T...[N], the pack expansion 'T...'.  */
+#define PACK_INDEX_PACK(NODE) \
+  (TREE_CODE (PACK_INDEX_CHECK (NODE)) == PACK_INDEX_TYPE \
+   ? TREE_TYPE (NODE) : TREE_OPERAND (NODE, 0))
+
+/* For a pack index T...[N], the index N.  */
+#define PACK_INDEX_INDEX(NODE) \
+  *(TREE_CODE (PACK_INDEX_CHECK (NODE)) == PACK_INDEX_TYPE \
+    ? &TYPE_MAX_VALUE_RAW (NODE)			\
+    : &TREE_OPERAND ((NODE), 1))
+
 /* True iff this pack expansion is within a function context.  */
 #define PACK_EXPANSION_LOCAL_P(NODE) \
   TREE_LANG_FLAG_0 (PACK_EXPANSION_CHECK (NODE))
@@ -4041,6 +4062,11 @@ struct GTY(()) lang_decl {
    instantiation of this pack expansion.  */
 #define PACK_EXPANSION_FORCE_EXTRA_ARGS_P(NODE) \
   TREE_LANG_FLAG_3 (PACK_EXPANSION_CHECK (NODE))
+
+/* Indicates whether a pack expansion has been parenthesized.  Used for
+   a pack expansion in a decltype.  */
+#define PACK_INDEX_PARENTHESIZED_P(NODE) \
+  TREE_LANG_FLAG_1 (TREE_CHECK (NODE, PACK_INDEX_EXPR))
 
 /* True iff the wildcard can match a template parameter pack.  */
 #define WILDCARD_PACK_P(NODE) TREE_LANG_FLAG_0 (NODE)
@@ -7582,6 +7608,7 @@ extern bool template_parameter_pack_p           (const_tree);
 extern bool function_parameter_pack_p		(const_tree);
 extern bool function_parameter_expanded_from_pack_p (tree, tree);
 extern tree make_pack_expansion                 (tree, tsubst_flags_t = tf_warning_or_error);
+extern tree make_pack_index			(tree, tree);
 extern bool check_for_bare_parameter_packs      (tree, location_t = UNKNOWN_LOCATION);
 extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
@@ -7907,6 +7934,8 @@ extern tree finish_underlying_type	        (tree);
 extern tree calculate_bases                     (tree, tsubst_flags_t);
 extern tree finish_bases                        (tree, bool);
 extern tree calculate_direct_bases              (tree, tsubst_flags_t);
+extern tree pack_index_element			(tree, tree, bool,
+						 tsubst_flags_t);
 extern tree finish_offsetof			(tree, tree, location_t);
 extern void finish_decl_cleanup			(tree, tree);
 extern void finish_eh_cleanup			(tree);

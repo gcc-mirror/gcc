@@ -1622,6 +1622,12 @@ structural_comptypes (tree t1, tree t2, int strict)
 	      && comp_template_args (PACK_EXPANSION_EXTRA_ARGS (t1),
 				     PACK_EXPANSION_EXTRA_ARGS (t2)));
 
+    case PACK_INDEX_TYPE:
+      return (cp_tree_equal (PACK_INDEX_PACK (t1),
+			     PACK_INDEX_PACK (t2))
+	      && cp_tree_equal (PACK_INDEX_INDEX (t1),
+				PACK_INDEX_INDEX (t2)));
+
     case DECLTYPE_TYPE:
       if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t1)
           != DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (t2))

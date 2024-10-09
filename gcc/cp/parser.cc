@@ -5740,6 +5740,62 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   return finish_binary_fold_expr (loc, expr1, expr2, op);
 }
 
+/* Return true iff the next tokens (following a typedef-name or id-expression)
+   start a pack index.  */
+
+static bool
+cp_parser_next_tokens_are_pack_index_p (cp_parser *parser)
+{
+  return (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_SQUARE));
+}
+
+/* Parse a pack-index-specifier:
+
+    pack-index-specifier:
+      typedef-name ... [ constant-expression ]
+
+   or a pack-index-expression:
+
+    pack-index-expression:
+      id-expression ... [ constant-expression ]
+
+   PACK is the parsed typedef-name or the id-expression.  Returns either
+   a PACK_INDEX_TYPE or PACK_INDEX_EXPR.  */
+
+static tree
+cp_parser_pack_index (cp_parser *parser, tree pack)
+{
+  if (cxx_dialect < cxx26)
+    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+	     OPT_Wc__26_extensions, "pack indexing only available with "
+	     "%<-std=c++2c%> or %<-std=gnu++2c%>");
+  /* Consume the '...' token.  */
+  cp_lexer_consume_token (parser->lexer);
+  /* Consume the '['.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
+    {
+      error_at (cp_lexer_peek_token (parser->lexer)->location,
+		"pack index missing");
+      cp_lexer_consume_token (parser->lexer);
+      return error_mark_node;
+    }
+
+  tree index = cp_parser_constant_expression (parser,
+					      /*allow_non_constant_p=*/false,
+					      /*non_constant_p=*/nullptr,
+					      /*strict_p=*/true);
+  /* Consume the ']'.  */
+  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
+
+  if (TREE_CODE (pack) == TYPE_DECL)
+    pack = TREE_TYPE (pack);
+  pack = make_pack_expansion (pack);
+  return make_pack_index (pack, index);
+}
+
 /* Parse a primary-expression.
 
    primary-expression:
@@ -6369,6 +6425,11 @@ cp_parser_primary_expression (cp_parser *parser,
 	  = make_location (caret_loc, start_loc, finish_loc);
 
 	decl.set_location (combined_loc);
+
+	/* "T...[constant-expression]" is a C++26 pack-index-expression.  */
+	if (cp_parser_next_tokens_are_pack_index_p (parser))
+	  decl = cp_parser_pack_index (parser, decl);
+
 	return decl;
       }
 
@@ -6412,6 +6473,7 @@ missing_template_diag (location_t loc, diagnostic_t diag_kind = DK_WARNING)
    id-expression:
      unqualified-id
      qualified-id
+     pack-index-expression
 
    qualified-id:
      :: [opt] nested-name-specifier template [opt] unqualified-id
@@ -6594,7 +6656,9 @@ cp_parser_id_expression (cp_parser *parser,
      identifier
      operator-function-id
      conversion-function-id
-     ~ class-name
+     literal-operator-id
+     ~ type-name
+     ~ computed-type-specifier
      template-id
 
    If TEMPLATE_KEYWORD_P is TRUE, we have just seen the `template'
@@ -6901,6 +6965,13 @@ cp_parser_unqualified_id (cp_parser* parser,
 		    "typedef-name %qD used as destructor declarator",
 		    type_decl);
 
+	/* "~T...[N]" is a C++26 pack-index-specifier.  */
+	if (cp_parser_next_tokens_are_pack_index_p (parser))
+	  {
+	    type_decl = cp_parser_pack_index (parser, type_decl);
+	    return build_min_nt_loc (loc, BIT_NOT_EXPR, type_decl);
+	  }
+
 	return build_min_nt_loc (loc, BIT_NOT_EXPR, TREE_TYPE (type_decl));
       }
 
@@ -6971,9 +7042,10 @@ check_template_keyword_in_nested_name_spec (tree name)
      class-or-namespace-name :: nested-name-specifier [opt]
      class-or-namespace-name :: template nested-name-specifier [opt]
 
-   nested-name-specifier: [C++0x]
+   nested-name-specifier: [C++11]
      type-name ::
      namespace-name ::
+     computed-type-specifier ::
      nested-name-specifier identifier ::
      nested-name-specifier template [opt] simple-template-id ::
 
@@ -7062,8 +7134,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	  if (token->type != CPP_NAME)
 	    break;
 	  /* If the following token is neither a `<' (to begin a
-	     template-id), nor a `::', then we are not looking at a
-	     nested-name-specifier.  */
+	     template-id), a `...[' (to begin a pack-index-specifier),
+	     nor a `::', then we are not looking at a nested-name-specifier.  */
 	  token = cp_lexer_peek_nth_token (parser->lexer, 2);
 
 	  if (token->type == CPP_COLON
@@ -7081,6 +7153,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	    }
 
 	  if (token->type != CPP_SCOPE
+	      /* See if a pack-index-specifier follows.  */
+	      && !(token->type == CPP_ELLIPSIS
+		   && cp_lexer_peek_nth_token (parser->lexer, 3)->type
+		      == CPP_OPEN_SQUARE)
 	      && !cp_parser_nth_token_starts_template_argument_list_p
 		  (parser, 2))
 	    break;
@@ -7445,6 +7521,12 @@ cp_parser_qualifying_entity (cp_parser *parser,
 				is_declaration,
 				/*enum_ok=*/cxx_dialect > cxx98);
   successful_parse_p = only_class_p || cp_parser_parse_definitely (parser);
+
+  /* "T...[constant-expression]" is a C++26 pack-index-specifier.  */
+  if (successful_parse_p
+      && cp_parser_next_tokens_are_pack_index_p (parser))
+    scope = cp_parser_pack_index (parser, scope);
+
   /* If that didn't work, try for a namespace-name.  */
   if (!only_class_p && !successful_parse_p)
     {
@@ -17368,6 +17450,10 @@ cp_parser_decltype_expr (cp_parser *parser,
       tree id_expression = expr;
       cp_id_kind idk;
       const char *error_msg;
+      const bool pack_index_p = cp_parser_next_tokens_are_pack_index_p (parser);
+      const bool have_id_expr_p
+	= (pack_index_p
+	   || cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN);
 
       if (identifier_p (expr))
 	/* Lookup the name we got back from the id-expression.  */
@@ -17379,7 +17465,7 @@ cp_parser_decltype_expr (cp_parser *parser,
           && TREE_CODE (expr) != TYPE_DECL
 	  && (TREE_CODE (expr) != BIT_NOT_EXPR
 	      || !TYPE_P (TREE_OPERAND (expr, 0)))
-          && cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
+	  && have_id_expr_p)
         {
           /* Complete lookup of the id-expression.  */
           expr = (finish_id_expression
@@ -17407,11 +17493,13 @@ cp_parser_decltype_expr (cp_parser *parser,
 	    }
         }
 
-      if (expr
-          && expr != error_mark_node
-          && cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
-        /* We have an id-expression.  */
-        id_expression_or_member_access_p = true;
+      if (expr && expr != error_mark_node && have_id_expr_p)
+	{
+	  /* We have an id-expression.  */
+	  id_expression_or_member_access_p = true;
+	  if (pack_index_p)
+	    expr = cp_parser_pack_index (parser, expr);
+	}
     }
 
   if (!id_expression_or_member_access_p)
@@ -17974,13 +18062,17 @@ cp_parser_mem_initializer (cp_parser* parser)
 /* Parse a mem-initializer-id.
 
    mem-initializer-id:
-     :: [opt] nested-name-specifier [opt] class-name
-     decltype-specifier (C++11)
+     class-or-decltype
      identifier
 
+  class-or-decltype:
+    nested-name-specifier [opt] type-name
+    nested-name-specifier template simple-template-id
+    computed-type-specifier
+
    Returns a TYPE indicating the class to be initialized for the first
-   production (and the second in C++11).  Returns an IDENTIFIER_NODE
-   indicating the data member to be initialized for the last production.  */
+   production.  Returns an IDENTIFIER_NODE indicating the data member to
+   be initialized for the second production.  */
 
 static tree
 cp_parser_mem_initializer_id (cp_parser* parser)
@@ -18051,10 +18143,15 @@ cp_parser_mem_initializer_id (cp_parser* parser)
 			       /*class_head_p=*/false,
 			       /*is_declaration=*/true);
   /* If we found one, we're done.  */
-  if (cp_parser_parse_definitely (parser))
-    return id;
-  /* Otherwise, look for an ordinary identifier.  */
-  return cp_parser_identifier (parser);
+  if (!cp_parser_parse_definitely (parser))
+    /* Otherwise, look for an ordinary identifier.  */
+    id = cp_parser_identifier (parser);
+
+  /* ": T...[N]" is a C++26 pack-index-specifier.  */
+  if (cp_parser_next_tokens_are_pack_index_p (parser))
+    id = cp_parser_pack_index (parser, id);
+
+  return id;
 }
 
 /* Overloading [gram.over] */
@@ -20472,11 +20569,11 @@ cp_parser_type_specifier (cp_parser* parser,
    C++11 Extension:
 
    simple-type-specifier:
-     auto
-     decltype ( expression )
      char16_t
      char32_t
      __underlying_type ( type-id )
+     computed-type-specifier
+     placeholder-type-specifier
 
    C++17 extension:
 
@@ -20857,6 +20954,12 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	      && !cp_parser_parse_definitely (parser))
 	    type = NULL_TREE;
 	}
+
+      /* "T...[constant-expression]" is a C++26 pack-index-specifier.  */
+      if (type
+	  && type != error_mark_node
+	  && cp_parser_next_tokens_are_pack_index_p (parser))
+	type = cp_parser_pack_index (parser, type);
 
       if (!type && flag_concepts && decl_specs)
 	{
@@ -29139,12 +29242,21 @@ cp_parser_base_clause (cp_parser* parser)
 /* Parse a base-specifier.
 
    base-specifier:
-     attribute-specifier-seq [opt] :: [opt] nested-name-specifier [opt]
-       class-name
-     attribute-specifier-seq [opt] virtual access-specifier [opt] :: [opt]
-       nested-name-specifier [opt] class-name
-     attribute-specifier-seq [opt] access-specifier virtual [opt] :: [opt]
-       nested-name-specifier [opt] class-name
+     attribute-specifier-seq [opt] class-or-decltype
+     attribute-specifier-seq [opt] virtual access-specifier [opt]
+       class-or-decltype
+     attribute-specifier-seq [opt] access-specifier virtual [opt]
+       class-or-decltype
+
+   class-or-decltype:
+     nested-name-specifier [opt] type-name
+     nested-name-specifier template simple-template-id
+     computed-type-specifier
+
+   access-specifier:
+     private
+     protected
+     public
 
    Returns a TREE_LIST.  The TREE_PURPOSE will be one of
    ACCESS_{DEFAULT,PUBLIC,PROTECTED,PRIVATE}_[VIRTUAL]_NODE to
@@ -29273,6 +29385,9 @@ cp_parser_base_specifier (cp_parser* parser)
 				   /*class_head_p=*/false,
 				   /*is_declaration=*/true);
       type = TREE_TYPE (type);
+      /* ": T...[constant-expression]" is a C++26 pack-index-specifier.  */
+      if (cp_parser_next_tokens_are_pack_index_p (parser))
+	type = cp_parser_pack_index (parser, type);
     }
 
   if (type == error_mark_node)

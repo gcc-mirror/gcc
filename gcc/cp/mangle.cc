@@ -2668,6 +2668,12 @@ write_type (tree type)
 		     "use library traits instead", type);
 	      break;
 
+	    case PACK_INDEX_TYPE:
+	      /* TODO Mangle pack indexing
+		 <https://github.com/itanium-cxx-abi/cxx-abi/issues/175>.  */
+	      sorry ("mangling type pack index");
+	      break;
+
 	    case LANG_TYPE:
 	      /* fall through.  */
 

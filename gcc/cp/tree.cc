@@ -4277,6 +4277,15 @@ cp_tree_equal (tree t1, tree t2)
 	return false;
       return true;
 
+    case PACK_INDEX_EXPR:
+      if (!cp_tree_equal (PACK_INDEX_PACK (t1),
+			  PACK_INDEX_PACK (t2)))
+	return false;
+      if (!cp_tree_equal (PACK_INDEX_INDEX (t1),
+			  PACK_INDEX_INDEX (t2)))
+	return false;
+      return true;
+
     case COMPONENT_REF:
       /* If we're comparing contract conditions of overrides, member references
 	 compare equal if they designate the same member.  */
@@ -5614,6 +5623,13 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case EXPR_PACK_EXPANSION:
       WALK_SUBTREE (TREE_OPERAND (t, 0));
       WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (t));
+      *walk_subtrees_p = 0;
+      break;
+
+    case PACK_INDEX_TYPE:
+    case PACK_INDEX_EXPR:
+      WALK_SUBTREE (PACK_INDEX_PACK (t));
+      WALK_SUBTREE (PACK_INDEX_INDEX (t));
       *walk_subtrees_p = 0;
       break;
 

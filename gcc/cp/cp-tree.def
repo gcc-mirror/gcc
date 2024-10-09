@@ -397,6 +397,14 @@ DEFTREECODE (TYPE_PACK_EXPANSION, "type_pack_expansion", tcc_type, 0)
    but will be used for expressions.  */
 DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 3)
 
+/* Represents a pack index Ts...[I], yielding a type.  PACK_INDEX_PACK is
+   the pack expansion Ts, PACK_INDEX_INDEX the index I.  */
+DEFTREECODE (PACK_INDEX_TYPE, "pack_index_type", tcc_type, 0)
+
+/* Represents a pack index Ts...[I], yielding an expression.  PACK_INDEX_PACK
+   is the pack expansion Ts, PACK_INDEX_INDEX the index I.  */
+DEFTREECODE (PACK_INDEX_EXPR, "pack_index_expr", tcc_expression, 2)
+
 /* Selects the Ith parameter out of an argument pack. This node will
    be used when instantiating pack expansions; see
    tsubst_pack_expansion.

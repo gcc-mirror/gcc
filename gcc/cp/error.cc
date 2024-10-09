@@ -813,6 +813,13 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       pp_cxx_ws_string (pp, "...");
       break;
 
+    case PACK_INDEX_TYPE:
+      dump_type (pp, PACK_INDEX_PACK (t), flags);
+      pp_cxx_left_bracket (pp);
+      dump_expr (pp, PACK_INDEX_INDEX (t), flags & ~TFF_EXPR_IN_PARENS);
+      pp_cxx_right_bracket (pp);
+      break;
+
     case TYPE_ARGUMENT_PACK:
       dump_template_argument (pp, t, flags);
       break;
@@ -1087,6 +1094,7 @@ dump_type_prefix (cxx_pretty_printer *pp, tree t, int flags)
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
+    case PACK_INDEX_TYPE:
       dump_type (pp, t, flags);
       pp->set_padding (pp_before);
       break;
@@ -1219,6 +1227,7 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
     case TYPE_PACK_EXPANSION:
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
+    case PACK_INDEX_TYPE:
       break;
 
     default:
@@ -3100,6 +3109,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
       pp->expression (t);
+      break;
+
+    case PACK_INDEX_EXPR:
+      pp->expression (PACK_INDEX_PACK (t));
+      pp_cxx_left_bracket (pp);
+      pp->expression (PACK_INDEX_INDEX (t));
+      pp_cxx_right_bracket (pp);
       break;
 
     case TRUTH_AND_EXPR:

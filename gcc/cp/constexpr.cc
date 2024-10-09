@@ -9943,6 +9943,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case EXPR_PACK_EXPANSION:
       return RECUR (PACK_EXPANSION_PATTERN (t), want_rval);
 
+    case PACK_INDEX_EXPR:
+      return true;
+
     case INDIRECT_REF:
       {
         tree x = TREE_OPERAND (t, 0);

@@ -9273,6 +9273,11 @@ trees_out::type_node (tree type)
       tree_node (PACK_EXPANSION_EXTRA_ARGS (type));
       break;
 
+    case PACK_INDEX_TYPE:
+      tree_node (PACK_INDEX_PACK (type));
+      tree_node (PACK_INDEX_INDEX (type));
+      break;
+
     case TYPENAME_TYPE:
       {
 	tree_node (TYPE_CONTEXT (type));
@@ -9837,6 +9842,15 @@ trees_in::tree_node (bool is_use)
 		  PACK_EXPANSION_LOCAL_P (expn) = local;
 		  res = expn;
 		}
+	    }
+	    break;
+
+	  case PACK_INDEX_TYPE:
+	    {
+	      tree pack = tree_node ();
+	      tree index = tree_node ();
+	      if (!get_overrun ())
+		res = make_pack_index (pack, index);
 	    }
 	    break;
 

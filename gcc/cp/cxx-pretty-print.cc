@@ -1219,6 +1219,13 @@ cxx_pretty_printer::expression (tree t)
       pp_cxx_ws_string (this, "...");
       break;
 
+    case PACK_INDEX_EXPR:
+      expression (PACK_INDEX_PACK (t));
+      pp_cxx_left_bracket (this);
+      expression (PACK_INDEX_INDEX (t));
+      pp_cxx_right_bracket (this);
+      break;
+
     case UNARY_LEFT_FOLD_EXPR:
       pp_cxx_unary_left_fold_expression (this, t);
       break;
@@ -1917,6 +1924,13 @@ cxx_pretty_printer::type_id (tree t)
     case TYPE_PACK_EXPANSION:
       type_id (PACK_EXPANSION_PATTERN (t));
       pp_cxx_ws_string (this, "...");
+      break;
+
+    case PACK_INDEX_TYPE:
+      type_id (PACK_INDEX_PACK (t));
+      pp_cxx_left_bracket (this);
+      expression (PACK_INDEX_INDEX (t));
+      pp_cxx_right_bracket (this);
       break;
 
     case TYPE_ARGUMENT_PACK:

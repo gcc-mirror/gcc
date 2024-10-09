@@ -2452,6 +2452,8 @@ finish_parenthesized_expr (cp_expr expr)
   tree stripped_expr = tree_strip_any_location_wrapper (expr);
   if (TREE_CODE (stripped_expr) == STRING_CST)
     PAREN_STRING_LITERAL_P (stripped_expr) = 1;
+  else if (TREE_CODE (stripped_expr) == PACK_INDEX_EXPR)
+    PACK_INDEX_PARENTHESIZED_P (stripped_expr) = true;
 
   expr = cp_expr (force_paren_expr (expr), expr.get_location ());
 
@@ -4848,22 +4850,36 @@ finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
   if (TREE_CODE (idx) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (idx)))
     {
       if (complain & tf_error)
-	error ("%<__type_pack_element%> index is not an integral constant");
+	error ("pack index is not an integral constant");
       return error_mark_node;
     }
   if (tree_int_cst_sgn (idx) < 0)
     {
       if (complain & tf_error)
-	error ("%<__type_pack_element%> index is negative");
+	error ("pack index is negative");
       return error_mark_node;
     }
   if (wi::to_widest (idx) >= TREE_VEC_LENGTH (types))
     {
       if (complain & tf_error)
-	error ("%<__type_pack_element%> index is out of range");
+	error ("pack index is out of range");
       return error_mark_node;
     }
   return TREE_VEC_ELT (types, tree_to_shwi (idx));
+}
+
+/* In a pack-index T...[N], return the element at index IDX within TYPES.
+   PARENTHESIZED_P is true iff the pack index was wrapped in ().  */
+
+tree
+pack_index_element (tree idx, tree types, bool parenthesized_p,
+		    tsubst_flags_t complain)
+{
+  tree r = finish_type_pack_element (idx, types, complain);
+  if (parenthesized_p)
+    /* For the benefit of decltype(auto).  */
+    r = force_paren_expr (r);
+  return r;
 }
 
 /* Implement the __direct_bases keyword: Return the direct base classes
