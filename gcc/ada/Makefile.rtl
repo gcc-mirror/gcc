@@ -1972,32 +1972,6 @@ ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
 endif
 endif
 
-# HP/PA HP-UX 10
-ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
-ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(target_os))),)
-
-  SELECTED_PAIRS=hppa-hpux10
-
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__hpux.ads \
-  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
-  s-interr.adb<libgnarl/s-interr__sigaction.adb \
-  s-intman.adb<libgnarl/s-intman__posix.adb \
-  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
-  s-osinte.adb<libgnarl/s-osinte__hpux-dce.adb \
-  s-osinte.ads<libgnarl/s-osinte__hpux-dce.ads \
-  s-parame.ads<libgnat/s-parame__hpux.ads \
-  s-oslock.ads<libgnat/s-oslock__posix.ads \
-  s-osprim.adb<libgnat/s-osprim__posix.adb \
-  s-taprop.adb<libgnarl/s-taprop__hpux-dce.adb \
-  s-taspri.ads<libgnarl/s-taspri__hpux-dce.ads \
-  s-tpopsp.adb<libgnarl/s-tpopsp__posix.adb \
-  system.ads<libgnat/system-hpux.ads
-
-  EH_MECHANISM=-gcc
-endif
-endif
-
 # HP/PA HP-UX 11
 ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(target_os))),)
