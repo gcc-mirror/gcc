@@ -3478,6 +3478,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    wide_int limit_0 = wi::mask (otype_prec, false, itype_prec); // Aka 255
    wide_int limit_1 = wi::uhwi ((HOST_WIDE_INT_1U << otype_prec) - 3,
 				itype_prec); // Aka 253
+   wide_int limit_2 = wi::uhwi ((HOST_WIDE_INT_1U << otype_prec) - 2,
+				itype_prec); // Aka 254
    wide_int otype_max = wi::mask (otype_prec - 1, false, otype_prec);
    wide_int itype_max = wi::mask (otype_prec - 1, false, itype_prec);
    wide_int int_cst_1 = wi::to_wide (@1);
@@ -3485,6 +3487,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    wide_int int_cst_3 = wi::to_wide (@3);
   }
   (if (((wi::eq_p (int_cst_1, offset) && wi::eq_p (int_cst_2, limit_0))
+	 || (wi::eq_p (int_cst_1, itype_max) && wi::eq_p (int_cst_2, limit_2))
 	 || (wi::eq_p (int_cst_1, itype_max) && wi::eq_p (int_cst_2, limit_1)))
        && wi::eq_p (int_cst_3, otype_max))))))
 
