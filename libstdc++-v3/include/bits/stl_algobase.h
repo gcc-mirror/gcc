@@ -308,51 +308,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __a;
     }
 
-  // Fallback implementation of the function in bits/stl_iterator.h used to
-  // remove the __normal_iterator wrapper. See copy, fill, ...
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    inline _Iterator
-    __niter_base(_Iterator __it)
-    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
-    { return __it; }
-
-#if __cplusplus < 201103L
-  template<typename _Ite, typename _Seq>
-    _Ite
-    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
-		 std::random_access_iterator_tag>&);
-
- template<typename _Ite, typename _Cont, typename _Seq>
-    _Ite
-    __niter_base(const ::__gnu_debug::_Safe_iterator<
-		 ::__gnu_cxx::__normal_iterator<_Ite, _Cont>, _Seq,
-		 std::random_access_iterator_tag>&);
-#else
-  template<typename _Ite, typename _Seq>
-    _GLIBCXX20_CONSTEXPR
-    decltype(std::__niter_base(std::declval<_Ite>()))
-    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
-		 std::random_access_iterator_tag>&)
-    noexcept(std::is_nothrow_copy_constructible<_Ite>::value);
-#endif
-
-  // Reverse the __niter_base transformation to get a
-  // __normal_iterator back again (this assumes that __normal_iterator
-  // is only used to wrap random access iterators, like pointers).
-  template<typename _From, typename _To>
-    _GLIBCXX20_CONSTEXPR
-    inline _From
-    __niter_wrap(_From __from, _To __res)
-    { return __from + (std::__niter_base(__res) - std::__niter_base(__from)); }
-
-  // No need to wrap, iterator already has the right type.
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    inline _Iterator
-    __niter_wrap(const _Iterator&, _Iterator __res)
-    { return __res; }
-
   // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)

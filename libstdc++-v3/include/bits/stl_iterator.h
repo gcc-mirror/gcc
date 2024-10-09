@@ -655,23 +655,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # endif // __glibcxx_make_reverse_iterator
 
   template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    auto
-    __niter_base(reverse_iterator<_Iterator> __it)
-    -> decltype(__make_reverse_iterator(__niter_base(__it.base())))
-    { return __make_reverse_iterator(__niter_base(__it.base())); }
-
-  template<typename _Iterator>
     struct __is_move_iterator<reverse_iterator<_Iterator> >
       : __is_move_iterator<_Iterator>
     { };
-
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    auto
-    __miter_base(reverse_iterator<_Iterator> __it)
-    -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
-    { return __make_reverse_iterator(__miter_base(__it.base())); }
 #endif // C++11
 
   // 24.4.2.2.1 back_insert_iterator
@@ -1336,18 +1322,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __normal_iterator<_Iterator, _Container>(__i.base() + __n); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace __gnu_cxx
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Iterator, typename _Container>
-    _GLIBCXX20_CONSTEXPR
-    _Iterator
-    __niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
-    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
-    { return __it.base(); }
 
 #if __cplusplus >= 201103L && __cplusplus <= 201703L
   // Need to overload __to_address because the pointer_traits primary template
@@ -1821,25 +1800,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _ReturnType(__i); }
 
   template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    auto
-    __niter_base(move_iterator<_Iterator> __it)
-    -> decltype(make_move_iterator(__niter_base(__it.base())))
-    { return make_move_iterator(__niter_base(__it.base())); }
-
-  template<typename _Iterator>
     struct __is_move_iterator<move_iterator<_Iterator> >
     {
       enum { __value = 1 };
       typedef __true_type __type;
     };
 
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    auto
-    __miter_base(move_iterator<_Iterator> __it)
-    -> decltype(__miter_base(__it.base()))
-    { return __miter_base(__it.base()); }
 
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
@@ -2984,6 +2950,108 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
 
   /// @} group iterators
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+namespace __gnu_debug
+{
+  template<typename _Iterator, typename _Sequence, typename _Category>
+    class _Safe_iterator;
+}
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  /// @cond undocumented
+
+  // Unwrap a __normal_iterator to get the underlying iterator
+  // (usually a pointer). See uses in std::copy, std::fill, etc.
+  template<typename _Iterator, typename _Container>
+    _GLIBCXX20_CONSTEXPR
+    _Iterator
+    __niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
+    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
+    { return __it.base(); }
+
+  // Fallback implementation used for iterators that can't be unwrapped.
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    inline _Iterator
+    __niter_base(_Iterator __it)
+    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
+    { return __it; }
+
+  // Overload for _Safe_iterator needs to be declared before uses of
+  // std::__niter_base because we call it qualified so isn't found by ADL.
+#if __cplusplus < 201103L
+  template<typename _Ite, typename _Seq>
+    _Ite
+    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
+		 std::random_access_iterator_tag>&);
+
+ template<typename _Ite, typename _Cont, typename _Seq>
+    _Ite
+    __niter_base(const ::__gnu_debug::_Safe_iterator<
+		 ::__gnu_cxx::__normal_iterator<_Ite, _Cont>, _Seq,
+		 std::random_access_iterator_tag>&);
+#else
+  template<typename _Ite, typename _Seq>
+    _GLIBCXX20_CONSTEXPR
+    decltype(std::__niter_base(std::declval<_Ite>()))
+    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
+		 std::random_access_iterator_tag>&)
+    noexcept(std::is_nothrow_copy_constructible<_Ite>::value);
+#endif
+
+#if __cplusplus >= 201103L
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    auto
+    __niter_base(reverse_iterator<_Iterator> __it)
+    -> decltype(__make_reverse_iterator(__niter_base(__it.base())))
+    { return __make_reverse_iterator(__niter_base(__it.base())); }
+
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    auto
+    __niter_base(move_iterator<_Iterator> __it)
+    -> decltype(make_move_iterator(__niter_base(__it.base())))
+    { return make_move_iterator(__niter_base(__it.base())); }
+
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    auto
+    __miter_base(reverse_iterator<_Iterator> __it)
+    -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
+    { return __make_reverse_iterator(__miter_base(__it.base())); }
+
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    auto
+    __miter_base(move_iterator<_Iterator> __it)
+    -> decltype(__miter_base(__it.base()))
+    { return __miter_base(__it.base()); }
+#endif
+
+  // Reverse the __niter_base transformation to get a __normal_iterator
+  // back again (this assumes that __normal_iterator is only used to wrap
+  // random access iterators, like pointers).
+  // All overloads of std::__niter_base must be declared before this.
+  template<typename _From, typename _To>
+    _GLIBCXX20_CONSTEXPR
+    inline _From
+    __niter_wrap(_From __from, _To __res)
+    { return __from + (std::__niter_base(__res) - std::__niter_base(__from)); }
+
+  // No need to wrap, iterator already has the right type.
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    inline _Iterator
+    __niter_wrap(const _Iterator&, _Iterator __res)
+    { return __res; }
+
+  /// @endcond
 
 #if __cpp_deduction_guides >= 201606
   // These helper traits are used for deduction guides
