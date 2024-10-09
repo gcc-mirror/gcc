@@ -2905,7 +2905,7 @@ _cpp_pop_context (cpp_reader *pfile)
     }
 
   pfile->context = context->prev;
-  /* decrease peak memory consumption by feeing the context.  */
+  /* Decrease peak memory consumption by freeing the context.  */
   pfile->context->next = NULL;
   free (context);
 }
