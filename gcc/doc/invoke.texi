@@ -1068,7 +1068,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division
 -mcond-move-int  -mno-cond-move-int
 -mcond-move-float  -mno-cond-move-float
--memcpy  -mno-memcpy -mstrict-align -mno-strict-align
+-memcpy  -mno-memcpy -mstrict-align -mno-strict-align -G @var{num}
 -mmax-inline-memcpy-size=@var{n}
 -mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
 -mdirect-extern-access -mno-direct-extern-access
@@ -27282,10 +27282,10 @@ Avoid or allow generating memory accesses that may not be aligned on a natural
 object boundary as described in the architecture specification. The default is
 @option{-mno-strict-align}.
 
-@opindex msmall-data-limit
-@item -msmall-data-limit=@var{number}
-Put global and static data smaller than @var{number} bytes into a special
-section (on some targets).  The default value is 0.
+@opindex G
+@item -G @var{num}
+Put global and static data smaller than @var{num} bytes into a small data
+section.  The default value is 0.
 
 @opindex mmax-inline-memcpy-size
 @item -mmax-inline-memcpy-size=@var{n}
