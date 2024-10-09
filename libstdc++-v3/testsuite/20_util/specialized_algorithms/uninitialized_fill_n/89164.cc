@@ -32,4 +32,5 @@ void test01()
 
   std::uninitialized_fill_n(p, 1, x); // { dg-error "here" }
 }
-// { dg-error "must be constructible" "" { target *-*-* } 0 }
+// { dg-error "no matching function" "construct_at" { target c++20 } 0 }
+// { dg-error "use of deleted function" "X(const X&)" { target *-*-* } 0 }

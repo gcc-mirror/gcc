@@ -54,8 +54,10 @@ test01()
 
   std::uninitialized_copy(a, a+10, b);
 
-  VERIFY(constructed == 0);
-  VERIFY(assigned == 10);
+  // In GCC 14 and older std::uninitialized_copy was optimized to std::copy
+  // and so used assignments not construction, but that was non-conforming.
+  VERIFY(constructed == 10);
+  VERIFY(assigned == 0);
 }
 
 int
