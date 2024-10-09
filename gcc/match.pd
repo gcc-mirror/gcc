@@ -3461,7 +3461,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   }
   (if (wi::eq_p (trunc_max, int_cst_1) && wi::eq_p (max, int_cst_2))))))
 
-/* Signed saturation truncate, case 1, sizeof (WT) > sizeof (NT).
+/* Signed saturation truncate, case 1 and case 2, sizeof (WT) > sizeof (NT).
    SAT_S_TRUNC(X) = (unsigned)X + NT_MAX + 1  > Unsigned_MAX ? (NT)X.  */
 (match (signed_integer_sat_trunc @0)
  (cond^ (gt (plus:c (convert@4 @0) INTEGER_CST@1) INTEGER_CST@2)
@@ -3471,17 +3471,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && !TYPE_UNSIGNED (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@4)))
  (with
   {
-   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
-   unsigned otype_precision = TYPE_PRECISION (type);
-   wide_int offset = wi::uhwi (HOST_WIDE_INT_1U << (otype_precision - 1), itype_precision);
-   wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
-   wide_int max = wi::mask (otype_precision - 1, false, otype_precision);
+   unsigned itype_prec = TYPE_PRECISION (TREE_TYPE (@0));
+   unsigned otype_prec = TYPE_PRECISION (type);
+   wide_int offset = wi::uhwi (HOST_WIDE_INT_1U << (otype_prec - 1),
+			       itype_prec); // Aka 128 for int8_t
+   wide_int limit_0 = wi::mask (otype_prec, false, itype_prec); // Aka 255
+   wide_int limit_1 = wi::uhwi ((HOST_WIDE_INT_1U << otype_prec) - 3,
+				itype_prec); // Aka 253
+   wide_int otype_max = wi::mask (otype_prec - 1, false, otype_prec);
+   wide_int itype_max = wi::mask (otype_prec - 1, false, itype_prec);
    wide_int int_cst_1 = wi::to_wide (@1);
    wide_int int_cst_2 = wi::to_wide (@2);
    wide_int int_cst_3 = wi::to_wide (@3);
   }
-  (if (wi::eq_p (int_cst_1, offset) && wi::eq_p (int_cst_2, trunc_max)
-       && wi::eq_p (int_cst_3, max))))))
+  (if (((wi::eq_p (int_cst_1, offset) && wi::eq_p (int_cst_2, limit_0))
+	 || (wi::eq_p (int_cst_1, itype_max) && wi::eq_p (int_cst_2, limit_1)))
+       && wi::eq_p (int_cst_3, otype_max))))))
 
 /* x >  y  &&  x != XXX_MIN  -->  x > y
    x >  y  &&  x == XXX_MIN  -->  false . */
