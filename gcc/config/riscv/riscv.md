@@ -3129,6 +3129,38 @@
 }
 [(set_attr "type" "branch")])
 
+(define_insn_and_split "*branch<ANYI:mode>_shiftedarith_<optab>_shifted"
+  [(set (pc)
+	(if_then_else (any_eq
+		    (and:ANYI (match_operand:ANYI 1 "register_operand" "r")
+			  (match_operand 2 "shifted_const_arith_operand" "i"))
+		    (match_operand 3 "shifted_const_arith_operand" "i"))
+	 (label_ref (match_operand 0 "" ""))
+	 (pc)))
+   (clobber (match_scratch:X 4 "=&r"))
+   (clobber (match_scratch:X 5 "=&r"))]
+  "!SMALL_OPERAND (INTVAL (operands[2]))
+    && !SMALL_OPERAND (INTVAL (operands[3]))
+    && SMALL_AFTER_COMMON_TRAILING_SHIFT (INTVAL (operands[2]),
+					     INTVAL (operands[3]))"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4) (lshiftrt:X (match_dup 1) (match_dup 7)))
+   (set (match_dup 4) (and:X (match_dup 4) (match_dup 8)))
+   (set (match_dup 5) (match_dup 9))
+   (set (pc) (if_then_else (any_eq (match_dup 4) (match_dup 5))
+			   (label_ref (match_dup 0)) (pc)))]
+{
+  HOST_WIDE_INT mask1 = INTVAL (operands[2]);
+  HOST_WIDE_INT mask2 = INTVAL (operands[3]);
+  int trailing_shift = COMMON_TRAILING_ZEROS (mask1, mask2);
+
+  operands[7] = GEN_INT (trailing_shift);
+  operands[8] = GEN_INT (mask1 >> trailing_shift);
+  operands[9] = GEN_INT (mask2 >> trailing_shift);
+}
+[(set_attr "type" "branch")])
+
 (define_insn_and_split "*branch<ANYI:mode>_shiftedmask_equals_zero"
   [(set (pc)
 	(if_then_else (match_operator 1 "equality_operator"

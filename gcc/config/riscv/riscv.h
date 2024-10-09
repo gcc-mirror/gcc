@@ -667,6 +667,18 @@ enum reg_class
 /* True if bit BIT is set in VALUE.  */
 #define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
 
+/* Returns the smaller (common) number of trailing zeros for VAL1 and VAL2.  */
+#define COMMON_TRAILING_ZEROS(VAL1, VAL2)				\
+  (ctz_hwi (VAL1) < ctz_hwi (VAL2)					\
+   ? ctz_hwi (VAL1)							\
+   : ctz_hwi (VAL2))
+
+/* Returns true if both VAL1 and VAL2 are SMALL_OPERANDs after shifting by
+   the common number of trailing zeros.  */
+#define SMALL_AFTER_COMMON_TRAILING_SHIFT(VAL1, VAL2)			\
+  (SMALL_OPERAND ((VAL1) >> COMMON_TRAILING_ZEROS (VAL1, VAL2))		\
+   && SMALL_OPERAND ((VAL2) >> COMMON_TRAILING_ZEROS (VAL1, VAL2)))
+
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1
