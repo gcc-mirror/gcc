@@ -1158,9 +1158,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define SSE_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
 
-#define SSE_FLOAT_MODE_SSEMATH_OR_HF_P(MODE)				\
-  ((SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH)				\
-   || (TARGET_AVX512FP16 && (MODE) == HFmode))
+#define SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P(MODE)                          \
+  ((SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH)                         \
+   || (TARGET_AVX512FP16 && (MODE) == HFmode)                           \
+   || (TARGET_AVX10_2_256 && (MODE) == BFmode))
 
 #define FMA4_VEC_FLOAT_MODE_P(MODE) \
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \

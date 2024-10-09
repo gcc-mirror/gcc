@@ -21324,7 +21324,7 @@ ix86_multiplication_cost (const struct processor_costs *cost,
   if (VECTOR_MODE_P (mode))
     inner_mode = GET_MODE_INNER (mode);
 
-  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+  if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
     return inner_mode == DFmode ? cost->mulsd : cost->mulss;
   else if (X87_FLOAT_MODE_P (mode))
     return cost->fmul;
@@ -21449,7 +21449,7 @@ ix86_division_cost (const struct processor_costs *cost,
   if (VECTOR_MODE_P (mode))
     inner_mode = GET_MODE_INNER (mode);
 
-  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+  if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
     return inner_mode == DFmode ? cost->divsd : cost->divss;
   else if (X87_FLOAT_MODE_P (mode))
     return cost->fdiv;
@@ -21991,7 +21991,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	  return true;
 	}
 
-      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = cost->addss;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fadd;
@@ -22198,7 +22198,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case NEG:
-      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = cost->sse_op;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fchs;
@@ -22306,14 +22306,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case FLOAT_EXTEND:
-      if (!SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+      if (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = 0;
       else
         *total = ix86_vec_cost (mode, cost->addss);
       return false;
 
     case FLOAT_TRUNCATE:
-      if (!SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+      if (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = cost->fadd;
       else
         *total = ix86_vec_cost (mode, cost->addss);
@@ -22323,7 +22323,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       /* SSE requires memory load for the constant operand. It may make
 	 sense to account for this.  Of course the constant operand may or
 	 may not be reused. */
-      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = cost->sse_op;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fabs;
@@ -22334,7 +22334,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case SQRT:
-      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+      if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = mode == SFmode ? cost->sqrtss : cost->sqrtsd;
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fsqrt;
@@ -25083,7 +25083,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	case MINUS_EXPR:
 	  if (kind == scalar_stmt)
 	    {
-	      if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+	      if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 		stmt_cost = ix86_cost->addss;
 	      else if (X87_FLOAT_MODE_P (mode))
 		stmt_cost = ix86_cost->fadd;
@@ -25109,7 +25109,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  break;
 
 	case NEGATE_EXPR:
-	  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+	  if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	    stmt_cost = ix86_cost->sse_op;
 	  else if (X87_FLOAT_MODE_P (mode))
 	    stmt_cost = ix86_cost->fchs;
@@ -25165,7 +25165,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	case BIT_XOR_EXPR:
 	case BIT_AND_EXPR:
 	case BIT_NOT_EXPR:
-	  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+	  if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	    stmt_cost = ix86_cost->sse_op;
 	  else if (VECTOR_MODE_P (mode))
 	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
