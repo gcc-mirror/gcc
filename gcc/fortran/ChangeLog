@@ -1,3 +1,13 @@
+2024-10-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/51815
+	* array.cc (gfc_match_array_ref): Only parse coarray part of
+	ref.
+	* match.h (gfc_match_array_ref): Add flag.
+	* primary.cc (gfc_match_varspec): Request only coarray ref
+	parsing when no regular array is present.  Report error on
+	unexpected additional ref.
+
 2024-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* check.cc (gfc_check_minloc_maxloc): Handle BT_UNSIGNED.

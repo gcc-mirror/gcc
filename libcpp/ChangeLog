@@ -1,3 +1,14 @@
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update Unicode Copyright years.
+	* makeuname2c.cc (generated_ranges): Adjust Unicode version from 15.1
+	to 16.0.  Add EGYPTIAN HIEROGLYPH- generated range, adjust indexes in
+	following entries.
+	(write_copyright): Update Unicode Copyright years.
+	* generated_cpp_wcwidth.h: Regenerated.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+
 2024-10-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* internal.h (_cpp_trigraph_map_s): New type for C++14 or later.

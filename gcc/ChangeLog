@@ -1,3 +1,157 @@
+2024-10-09  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	PR tree-optimization/116024
+	* match.pd: New transformation around integer comparison.
+
+2024-10-09  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	PR tree-optimization/116024
+	* match.pd: New transformation around integer comparison.
+
+2024-10-08  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	PR tree-optimization/116024
+	* match.pd: New transformation around integer comparison.
+
+2024-10-08  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	PR tree-optimization/116024
+	* match.pd: New transformation around integer comparison.
+
+2024-10-08  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* config/riscv/riscv-c.cc: (riscv_cpu_cpp_builtins):
+	Enable builtin __riscv_mul with Zmmul extension.
+
+2024-10-08  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* common/config/riscv/riscv-common.cc: M implies Zmmul.
+
+2024-10-08  Yangyu Chen  <chenyangyu@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (cl_opt_var_ref_t): Add
+	cl_opt_var_ref_t pointer to member of cl_target_option.
+	(struct riscv_ext_flag_table_t): Add new cl_opt_var_ref_t field.
+	(RISCV_EXT_FLAG_ENTRY): New macro to simplify the definition of
+	riscv_ext_flag_table.
+	(riscv_ext_is_subset): New function to check if the callee's ISA
+	is a subset of the caller's.
+	(riscv_x_target_flags_isa_mask): New function to get the mask of
+	ISA extension in x_target_flags of gcc_options.
+	* config/riscv/riscv-subset.h (riscv_ext_is_subset): Declare
+	riscv_ext_is_subset function.
+	(riscv_x_target_flags_isa_mask): Declare
+	riscv_x_target_flags_isa_mask function.
+	* config/riscv/riscv.cc (riscv_can_inline_p): New function.
+	(TARGET_CAN_INLINE_P): Implement TARGET_CAN_INLINE_P.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_sstrunc): Add new
+	func decl to expand SAT_TRUNC.
+	* config/riscv/riscv.cc (riscv_expand_sstrunc): Add new func
+	impl to expand SAT_TRUNC.
+	* config/riscv/riscv.md (sstrunc<mode><anyi_double_truncated>2):
+	Add new pattern for double truncation.
+	(sstrunc<mode><anyi_quad_truncated>2): Ditto but for quad.
+	(sstrunc<mode><anyi_oct_truncated>2): Ditto but for oct.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* tree-ssa-math-opts.cc (build_saturation_binary_arith_call): Rename
+	to...
+	(build_saturation_binary_arith_call_and_replace): ...this.
+	(build_saturation_binary_arith_call_and_insert): ...this.
+	(match_unsigned_saturation_add): Leverage renamed func.
+	(match_unsigned_saturation_sub): Ditto.
+	(match_saturation_add): Return bool on matched and leverage
+	renamed func.
+	(match_saturation_sub): Ditto.
+	(match_saturation_trunc): Ditto.
+	(math_opts_dom_walker::after_dom_children): Ensure at most one
+	pattern will be matched for each phi node.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 1 matching pattern for signed SAT_TRUNC.
+	* tree-ssa-math-opts.cc (gimple_signed_integer_sat_trunc): Add
+	new decl for signed SAT_TRUNC.
+	(match_saturation_trunc): Add new func impl to try SAT_TRUNC
+	pattern on phi node.
+	(math_opts_dom_walker::after_dom_children): Add
+	match_saturation_trunc for phi node iteration.
+
+2024-10-08  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vaesdec_<mode>, vaesdeclast_<mode>,
+	vaesenc_<mode>, vaesenclast_<mode>): Replace which_alternative
+	check by TARGET_AES one.
+
+2024-10-08  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/109498
+	* config/aarch64/aarch64-sve.md (ctz<mode>2): Added pattern to expand
+	CTZ to RBIT + CLZ for SVE.
+
+2024-10-08  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	PR target/116615
+	* config/riscv/riscv.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Remove.
+
+2024-10-08  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 3 matching pattern for signed SAT_SUB.
+
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116896
+	* tree-ssa-math-opts.cc (optimize_spaceship): Handle unordered values
+	other than 2, but they still need to be signed char range possibly
+	converted to the PHI result and can't be in [-1, 1] range.  Use
+	last .SPACESHIP argument of 1 for unsigned int comparisons, -1 for
+	signed int, 0 for floating point branches and any other for floating
+	point with that value as unordered.
+	* config/i386/i386-expand.cc (ix86_expand_fp_spaceship): Use op2 rather
+	const2_rtx if op2 is not const0_rtx for unordered result.
+	(ix86_expand_int_spaceship): Change INTVAL (op2) == 1 tests to
+	INTVAL (op2) != -1.
+	* doc/md.texi (spaceship@var{m}4): Document the above changes.
+
+2024-10-08  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	PR ipa/96265
+	* lto-streamer-in.cc (lto_read_tree_1): Set TYPE_MODE and DECL_MODE
+	for vector_type if offloading is enabled.
+	(lto_input_mode_table): Remove handling of vector modes.
+	* tree-streamer-out.cc (pack_ts_decl_common_value_fields): Stream out
+	VOIDmode for vector_type if offloading is enabled.
+	(pack_ts_decl_common_value_fields): Likewise.
+
+2024-10-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* diagnostic-color.cc: Conditionally enable terminal processing
+	based on define availability.
+	* pretty-print.cc: Likewise.
+
+2024-10-08  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/loongarch.opt.in
+	(mannotate-tablejump): New option.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.md (tablejump<mode>): Emit
+	additional correlation info between the jump instruction and the
+	jump table, if -mannotate-tablejump.
+	* doc/invoke.texi: Document -mannotate-tablejump.
+
+2024-10-08  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc: zawrs -> zalrsc.
+
 2024-10-07  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/iterators.md (scc_0): New code iterator.

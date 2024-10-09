@@ -1,3 +1,14 @@
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/unicode.h (std::__unicode::__v15_1_0): Rename inline
+	namespace to ...
+	(std::__unicode::__v16_0_0): ... this.
+	(_GLIBCXX_GET_UNICODE_DATA): Change from 150100 to 160000.
+	* include/bits/unicode-data.h: Regenerated.
+	* testsuite/ext/unicode/properties.cc: Check for _Gcb_SpacingMark
+	on U+11F03 rather than U+1D16D as the latter lost SpacingMark property
+	in Unicode 16.0.
+
 2024-10-05  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	* include/bits/version.def: Added the feature-testing macro.

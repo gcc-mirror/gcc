@@ -1,3 +1,116 @@
+2024-10-09  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* gcc.dg/tree-ssa/pr116024-2.c: New test.
+	* gcc.dg/tree-ssa/pr116024-2-fwrapv.c: Ditto.
+	* gcc.target/aarch64/gtu_to_ltu_cmp_1.c: Adjust.
+
+2024-10-09  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* gcc.dg/tree-ssa/pr116024-1-fwrapv.c: New test.
+
+2024-10-08  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* gcc.dg/tree-ssa/pr116024-1.c: New test.
+
+2024-10-08  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* gcc.dg/tree-ssa/pr116024.c: New test.
+	* gcc.dg/pr67089-6.c: Adjust.
+
+2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116190
+	* gnat.dg/aggr31.adb: New test.
+
+2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115535
+	* gnat.dg/put_image1.adb: New test
+
+2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114636
+	* gnat.dg/specs/generic_inst1.ads: New test.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_arith_data.h: Add test data for SAT_TRUNC.
+	* gcc.target/riscv/sat_s_trunc-1-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-1-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-1-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-1-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-1-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-1-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-1-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-1-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-1-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-1-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-1-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-1-i64-to-i8.c: New test.
+
+2024-10-08  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/109498
+	* gcc.target/aarch64/sve/ctz.c: New test.
+
+2024-10-08  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116615
+	* gcc.target/riscv/cset-sext-sfb.c: Skip for -Os.
+
+2024-10-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/pr102532.f90: Fix dg-errors: Add new error.
+	* gfortran.dg/coarray/substring_1.f90: New test.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_sub-4-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-4-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-4-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-4-i8.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-4-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-4-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-4-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-4-i8.c: New test.
+
+2024-10-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_sub-3-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-3-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-3-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-3-i8.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-3-i16.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-3-i32.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-3-i64.c: New test.
+	* gcc.target/riscv/sat_s_sub-run-3-i8.c: New test.
+
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116896
+	* gcc.target/i386/pr116896.c: New test.
+
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/named-universal-char-escape-1.c: Add tests
+	for some Unicode 16.0 characters, both normal and generated.
+
+2024-10-08  Andreas Schwab  <schwab@suse.de>
+
+	* gfortran.dg/pr95690.f90: Allow matching error message anywhere.
+
+2024-10-08  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/jump-table-annotate.c: New test.
+
+2024-10-08  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/predef-38.c: New test.
+	* gcc.target/riscv/predef-39.c: New test.
+
 2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.dg/gomp/allocate-static.f90: Move to libgomp/testsuite/.

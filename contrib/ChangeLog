@@ -1,3 +1,20 @@
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Update glibc git commit hash, replace
+	Unicode 15 or 15.1 versions with 16.
+	* unicode/gen_libstdcxx_unicode_data.py: Use 160000 instead of
+	150100 in _GLIBCXX_GET_UNICODE_DATA test.
+	* unicode/from_glibc/utf8_gen.py: Updated from glibc
+	064c708c78cc2a6b5802dce73108fc0c1c6bfc80 commit.
+	* unicode/DerivedCoreProperties.txt: Updated from Unicode 16.0.
+	* unicode/emoji-data.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+	* unicode/GraphemeBreakProperty.txt: Likewise.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/NameAliases.txt: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+	* unicode/EastAsianWidth.txt: Likewise.
+
 2024-09-18  Filip Kastl  <fkastl@suse.cz>
 
 	* check-params-in-docs.py: Skip tables of values of a param.
