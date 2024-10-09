@@ -489,10 +489,25 @@ sat_s_trunc_##WT##_to_##NT##_fmt_2 (WT x)             \
 #define DEF_SAT_S_TRUNC_FMT_2_WRAP(NT, WT, NT_MIN, NT_MAX) \
   DEF_SAT_S_TRUNC_FMT_2(NT, WT, NT_MIN, NT_MAX)
 
+#define DEF_SAT_S_TRUNC_FMT_3(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_3 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN < x && x <= (WT)NT_MAX            \
+    ? trunc                                           \
+    : x < 0 ? NT_MIN : NT_MAX;                        \
+}
+#define DEF_SAT_S_TRUNC_FMT_3_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_3(NT, WT, NT_MIN, NT_MAX)
+
 #define RUN_SAT_S_TRUNC_FMT_1(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_1 (x)
 #define RUN_SAT_S_TRUNC_FMT_1_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_1(NT, WT, x)
 
 #define RUN_SAT_S_TRUNC_FMT_2(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_2 (x)
 #define RUN_SAT_S_TRUNC_FMT_2_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_2(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_3(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_3 (x)
+#define RUN_SAT_S_TRUNC_FMT_3_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_3(NT, WT, x)
 
 #endif
