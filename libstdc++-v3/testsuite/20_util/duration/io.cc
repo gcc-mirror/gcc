@@ -5,6 +5,10 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
+#ifndef __cpp_lib_char8_t
+using char8_t = unsigned char; // Prevent errors if -fno-char8_t is used.
+#endif
+
 void
 test01()
 {
@@ -173,12 +177,14 @@ test_format()
 
 #if __cplusplus > 202002L
   static_assert( ! std::formattable<std::chrono::duration<wchar_t>, char> );
-  static_assert( ! std::formattable<std::chrono::duration<char8_t>, char> );
   static_assert( ! std::formattable<std::chrono::duration<char16_t>, char> );
   static_assert( ! std::formattable<std::chrono::duration<char32_t>, char> );
-  static_assert( ! std::formattable<std::chrono::duration<char8_t>, wchar_t> );
   static_assert( ! std::formattable<std::chrono::duration<char16_t>, wchar_t> );
   static_assert( ! std::formattable<std::chrono::duration<char32_t>, wchar_t> );
+#ifdef __cpp_lib_char8_t
+  static_assert( ! std::formattable<std::chrono::duration<char8_t>, char> );
+  static_assert( ! std::formattable<std::chrono::duration<char8_t>, wchar_t> );
+#endif
 #endif
 }
 
