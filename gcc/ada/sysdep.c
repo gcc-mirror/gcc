@@ -177,8 +177,8 @@ __gnat_set_text_mode (int handle)
 void
 __gnat_set_mode (int handle, int mode)
 {
-  /*  the values here must be synchronized with
-      System.File_Control_Block.Content_Encodding:
+  /*  The values here must be synchronized with
+      Interfaces.C_Streams.Content_Encoding:
 
       None         = 0
       Default_Text = 1
@@ -200,8 +200,8 @@ __gnat_set_mode (int handle, int mode)
 void
 __gnat_set_mode (int handle, int mode)
 {
-  /*  the values here must be synchronized with
-      System.File_Control_Block.Content_Encodding:
+  /*  The values here must be synchronized with
+      Interfaces.C_Streams.Content_Encoding:
 
       None         = 0
       Default_Text = 1
