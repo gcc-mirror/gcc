@@ -10,4 +10,4 @@ f1 (int x, int t)
   return t;
 }
 
-/* { dg-final { scan-assembler-times "cmn\\tw\[0-9\]+, #2" 1 } } */
+/* { dg-final { scan-assembler-times "cmn\\tw\[0-9\]+, #3" 1 } } */

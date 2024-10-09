@@ -9030,6 +9030,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (cmp @0 { TREE_OVERFLOW (res)
 		 ? drop_tree_overflow (res) : res; }))))))))
 (for cmp (lt le gt ge)
+     rcmp (gt ge lt le)
  (for op (plus minus)
       rop (minus plus)
   (simplify
@@ -9057,7 +9058,47 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				  "X cmp C2 -+ C1"),
 				 WARN_STRICT_OVERFLOW_COMPARISON);
 	}
-	(cmp @0 { res; })))))))))
+	(cmp @0 { res; })))))
+/* For wrapping types, simplify the following cases of X +- C1 CMP C2:
+
+   (a) If CMP is <= and C2 -+ C1 == +INF (1), simplify to X >= -INF -+ C1
+       by observing the following:
+
+	X +- C1 <= C2
+  ==>  -INF <= X +- C1 <= C2 (add left hand side which holds for any X, C1)
+  ==>  -INF -+ C1 <= X <= C2 -+ C1 (add -+C1 to all 3 expressions)
+  ==>  -INF -+ C1 <= X <= +INF (due to (1))
+  ==>  -INF -+ C1 <= X (eliminate the right hand side since it holds for any X)
+
+    (b) Similarly, if CMP is >= and C2 -+ C1 == -INF (1):
+
+	X +- C1 >= C2
+  ==>  +INF >= X +- C1 >= C2 (add left hand side which holds for any X, C1)
+  ==>  +INF -+ C1 >= X >= C2 -+ C1 (add -+C1 to all 3 expressions)
+  ==>  +INF -+ C1 >= X >= -INF (due to (1))
+  ==>  +INF -+ C1 >= X (eliminate the right hand side since it holds for any X)
+
+    (c) The > and < cases are negations of (a) and (b), respectively.  */
+   (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+     (with
+       {
+	wide_int max = wi::max_value (TREE_TYPE (@0));
+	wide_int min = wi::min_value (TREE_TYPE (@0));
+
+	wide_int c2 = rop == PLUS_EXPR
+			      ? wi::add (wi::to_wide (@2), wi::to_wide (@1))
+			      : wi::sub (wi::to_wide (@2), wi::to_wide (@1));
+	}
+	(if (((cmp == LE_EXPR || cmp == GT_EXPR) && wi::eq_p (c2, max))
+	    || ((cmp == LT_EXPR || cmp == GE_EXPR) && wi::eq_p (c2, min)))
+	  (with
+	   {
+	     wide_int c1 = rop == PLUS_EXPR
+			   ? wi::add (wi::bit_not (c2), wi::to_wide (@1))
+			   : wi::sub (wi::bit_not (c2), wi::to_wide (@1));
+	     tree c1_cst = wide_int_to_tree (TREE_TYPE (@0), c1);
+	   }
+	   (rcmp @0 { c1_cst; })))))))))
 
 /* Invert sign of X in comparisons of the form C1 - X CMP C2.  */
 
