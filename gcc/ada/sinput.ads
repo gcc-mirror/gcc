@@ -56,7 +56,6 @@
 
 with Alloc;
 with Casing; use Casing;
-with Interfaces.C;
 with Namet;  use Namet;
 with System;
 with Table;
@@ -708,12 +707,13 @@ package Sinput is
    --  to avoid memory leaks.
 
    type C_Array is record
-      Pointer : access constant Character;
-      Length  : Interfaces.C.int range 0 .. Interfaces.C.int'Last;
-   end record with Convention => C_Pass_By_Copy;
+      Pointer : aliased access constant Character;
+      Length  : aliased Integer;
+   end record;
+   --  WARNING: There is a matching C declaration of this type in fe.h
 
-   function C_Source_Buffer (S : SFI) return C_Array with
-     Export, Convention => C, External_Name => "sinput__c_source_buffer";
+   function C_Source_Buffer (S : SFI) return C_Array;
+   --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
 private
    pragma Inline (File_Name);

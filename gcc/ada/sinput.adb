@@ -281,10 +281,8 @@ package body Sinput is
    ---------------------
 
    function C_Source_Buffer (S : SFI) return C_Array is
-      use type Interfaces.C.int;
-
-      Length : constant Interfaces.C.int :=
-        Interfaces.C.int (Source_Last (S) - Source_First (S));
+      Length : constant Integer :=
+        Integer (Source_Last (S) - Source_First (S));
 
       Text : constant Source_Buffer_Ptr := Source_Text (S);
 
