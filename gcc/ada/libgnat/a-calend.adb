@@ -897,6 +897,15 @@ is
       -----------------
 
       function To_Ada_Time (Unix_Time : Long_Integer) return Time is
+      begin
+         return To_Ada_Time_64 (Long_Long_Integer (Unix_Time));
+      end To_Ada_Time;
+
+      --------------------
+      -- To_Ada_Time_64 --
+      --------------------
+
+      function To_Ada_Time_64 (Unix_Time : Long_Long_Integer) return Time is
          pragma Unsuppress (Overflow_Check);
          Ada_Rep : Time_Rep := Time_Rep (Unix_Time * Nano) - Epoch_Offset;
 
@@ -928,7 +937,7 @@ is
       exception
          when Constraint_Error =>
             raise Time_Error;
-      end To_Ada_Time;
+      end To_Ada_Time_64;
 
       -----------------
       -- To_Ada_Time --
@@ -1019,10 +1028,22 @@ is
         (tv_sec  : Long_Integer;
          tv_nsec : Long_Integer) return Duration
       is
+      begin
+         return To_Duration_64 (Long_Long_Integer (tv_sec), tv_nsec);
+      end To_Duration;
+
+      --------------------
+      -- To_Duration_64 --
+      --------------------
+
+      function To_Duration_64
+        (tv_sec  : Long_Long_Integer;
+         tv_nsec : Long_Integer) return Duration
+      is
          pragma Unsuppress (Overflow_Check);
       begin
          return Duration (tv_sec) + Duration (tv_nsec) / Nano_F;
-      end To_Duration;
+      end To_Duration_64;
 
       ------------------------
       -- To_Struct_Timespec --
@@ -1033,6 +1054,19 @@ is
          tv_sec  : out Long_Integer;
          tv_nsec : out Long_Integer)
       is
+      begin
+         To_Struct_Timespec_64 (D, Long_Long_Integer (tv_sec), tv_nsec);
+      end To_Struct_Timespec;
+
+      ---------------------------
+      -- To_Struct_Timespec_64 --
+      ---------------------------
+
+      procedure To_Struct_Timespec_64
+        (D       : Duration;
+         tv_sec  : out Long_Long_Integer;
+         tv_nsec : out Long_Integer)
+      is
          pragma Unsuppress (Overflow_Check);
          Secs      : Duration;
          Nano_Secs : Duration;
@@ -1041,13 +1075,13 @@ is
          --  Seconds extraction, avoid potential rounding errors
 
          Secs   := D - 0.5;
-         tv_sec := Long_Integer (Secs);
+         tv_sec := Long_Long_Integer (Secs);
 
          --  Nanoseconds extraction
 
          Nano_Secs := D - Duration (tv_sec);
          tv_nsec := Long_Integer (Nano_Secs * Nano);
-      end To_Struct_Timespec;
+      end To_Struct_Timespec_64;
 
       ------------------
       -- To_Struct_Tm --
@@ -1103,15 +1137,24 @@ is
       ------------------
 
       function To_Unix_Time (Ada_Time : Time) return Long_Integer is
+      begin
+         return Long_Integer (To_Unix_Time_64 (Ada_Time));
+      end To_Unix_Time;
+
+      ---------------------
+      -- To_Unix_Time_64 --
+      ---------------------
+
+      function To_Unix_Time_64 (Ada_Time : Time) return Long_Long_Integer is
          pragma Unsuppress (Overflow_Check);
          Ada_Rep : constant Time_Rep := Time_Rep (Ada_Time);
       begin
-         return Long_Integer ((Ada_Rep + Epoch_Offset) / Nano) -
-            Long_Integer (Elapsed_Leaps (Start_Of_Time, Ada_Rep));
+         return Long_Long_Integer ((Ada_Rep + Epoch_Offset) / Nano) -
+            Long_Long_Integer (Elapsed_Leaps (Start_Of_Time, Ada_Rep));
       exception
          when Constraint_Error =>
             raise Time_Error;
-      end To_Unix_Time;
+      end To_Unix_Time_64;
    end Conversion_Operations;
 
    ----------------------

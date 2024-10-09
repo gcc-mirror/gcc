@@ -37,6 +37,10 @@ with Interfaces.C;
 package Ada.Calendar.Conversions is
 
    function To_Ada_Time (Unix_Time : Interfaces.C.long) return Time;
+   pragma Obsolescent (To_Ada_Time, "Retires in v26");
+   --  Old version which will overflow at the 2038 Epochalypse
+
+   function To_Ada_Time_64 (Unix_Time : Interfaces.C.long_long) return Time;
    --  Convert a time value represented as number of seconds since the
    --  Unix Epoch to a time value relative to an Ada implementation-defined
    --  Epoch. The units of the result are nanoseconds on all targets. Raises
@@ -70,6 +74,12 @@ package Ada.Calendar.Conversions is
    function To_Duration
      (tv_sec  : Interfaces.C.long;
       tv_nsec : Interfaces.C.long) return Duration;
+   pragma Obsolescent (To_Duration, "Retires in v26");
+   --  Old version which will overflow at the 2038 Epochalypse
+
+   function To_Duration_64
+     (tv_sec  : Interfaces.C.long_long;
+      tv_nsec : Interfaces.C.long) return Duration;
    --  Convert an elapsed time value expressed in Unix-like fields of struct
    --  timespec into a Duration value. The expected ranges are:
 
@@ -79,6 +89,13 @@ package Ada.Calendar.Conversions is
    procedure To_Struct_Timespec
      (D       : Duration;
       tv_sec  : out Interfaces.C.long;
+      tv_nsec : out Interfaces.C.long);
+   pragma Obsolescent (To_Struct_Timespec, "Retires in v26");
+   --  Old version which will overflow at the 2038 Epochalypse
+
+   procedure To_Struct_Timespec_64
+     (D       : Duration;
+      tv_sec  : out Interfaces.C.long_long;
       tv_nsec : out Interfaces.C.long);
    --  Convert a Duration value into the constituents of struct timespec.
    --  Formal tv_sec denotes seconds and tv_nsecs denotes nanoseconds.
@@ -105,6 +122,10 @@ package Ada.Calendar.Conversions is
    --  The input date is considered to be in UTC
 
    function To_Unix_Time (Ada_Time : Time) return Interfaces.C.long;
+   pragma Obsolescent (To_Unix_Time, "Retires in v26");
+   --  Old version which will overflow at the 2038 Epochalypse
+
+   function To_Unix_Time_64 (Ada_Time : Time) return Interfaces.C.long_long;
    --  Convert a time value represented as number of time units since the Ada
    --  implementation-defined Epoch to a value relative to the Unix Epoch. The
    --  units of the result are seconds. Raises Time_Error if the result cannot

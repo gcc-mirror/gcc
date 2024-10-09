@@ -43,6 +43,16 @@ package body Ada.Calendar.Conversions is
       return Conversion_Operations.To_Ada_Time (Val);
    end To_Ada_Time;
 
+   --------------------
+   -- To_Ada_Time_64 --
+   --------------------
+
+   function To_Ada_Time_64 (Unix_Time : long_long) return Time is
+      Val : constant Long_Long_Integer := Long_Long_Integer (Unix_Time);
+   begin
+      return Conversion_Operations.To_Ada_Time_64 (Val);
+   end To_Ada_Time_64;
+
    -----------------
    -- To_Ada_Time --
    -----------------
@@ -83,6 +93,20 @@ package body Ada.Calendar.Conversions is
       return Conversion_Operations.To_Duration (Secs, Nano_Secs);
    end To_Duration;
 
+   --------------------
+   -- To_Duration_64 --
+   --------------------
+
+   function To_Duration_64
+     (tv_sec  : long_long;
+      tv_nsec : long) return Duration
+   is
+      Secs      : constant Long_Long_Integer := Long_Long_Integer (tv_sec);
+      Nano_Secs : constant Long_Integer := Long_Integer (tv_nsec);
+   begin
+      return Conversion_Operations.To_Duration_64 (Secs, Nano_Secs);
+   end To_Duration_64;
+
    ------------------------
    -- To_Struct_Timespec --
    ------------------------
@@ -101,6 +125,25 @@ package body Ada.Calendar.Conversions is
       tv_sec  := long (Secs);
       tv_nsec := long (Nano_Secs);
    end To_Struct_Timespec;
+
+   ---------------------------
+   -- To_Struct_Timespec_64 --
+   ---------------------------
+
+   procedure To_Struct_Timespec_64
+     (D       : Duration;
+      tv_sec  : out long_long;
+      tv_nsec : out long)
+   is
+      Secs      : Long_Long_Integer;
+      Nano_Secs : Long_Integer;
+
+   begin
+      Conversion_Operations.To_Struct_Timespec_64 (D, Secs, Nano_Secs);
+
+      tv_sec  := long_long (Secs);
+      tv_nsec := long (Nano_Secs);
+   end To_Struct_Timespec_64;
 
    ------------------
    -- To_Struct_Tm --
@@ -144,6 +187,17 @@ package body Ada.Calendar.Conversions is
    begin
       return long (Val);
    end To_Unix_Time;
+
+   ---------------------
+   -- To_Unix_Time_64 --
+   ---------------------
+
+   function To_Unix_Time_64 (Ada_Time : Time) return long_long is
+      Val : constant Long_Long_Integer :=
+              Conversion_Operations.To_Unix_Time_64 (Ada_Time);
+   begin
+      return long_long (Val);
+   end To_Unix_Time_64;
 
    -----------------------
    -- To_Unix_Nano_Time --

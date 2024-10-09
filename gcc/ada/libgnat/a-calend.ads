@@ -291,6 +291,10 @@ private
    package Conversion_Operations is
 
       function To_Ada_Time (Unix_Time : Long_Integer) return Time;
+      pragma Obsolescent (To_Ada_Time, "Retires in v26");
+      --  Old Unix to Ada Epoch conversion
+
+      function To_Ada_Time_64 (Unix_Time : Long_Long_Integer) return Time;
       --  Unix to Ada Epoch conversion
 
       function To_Ada_Time
@@ -306,11 +310,24 @@ private
       function To_Duration
         (tv_sec  : Long_Integer;
          tv_nsec : Long_Integer) return Duration;
+      pragma Obsolescent (To_Duration, "Retires in v26");
+      --  Old Struct timespec to Duration conversion
+
+      function To_Duration_64
+        (tv_sec  : Long_Long_Integer;
+         tv_nsec : Long_Integer) return Duration;
       --  Struct timespec to Duration conversion
 
       procedure To_Struct_Timespec
         (D       : Duration;
          tv_sec  : out Long_Integer;
+         tv_nsec : out Long_Integer);
+      pragma Obsolescent (To_Struct_Timespec, "Retires in v26");
+      --  Old Duration to struct timespec conversion
+
+      procedure To_Struct_Timespec_64
+        (D       : Duration;
+         tv_sec  : out Long_Long_Integer;
          tv_nsec : out Long_Integer);
       --  Duration to struct timespec conversion
 
@@ -325,6 +342,10 @@ private
       --  Time to struct tm conversion
 
       function To_Unix_Time (Ada_Time : Time) return Long_Integer;
+      pragma Obsolescent (To_Unix_Time, "Retires in v26");
+      --  Old Ada to Unix Epoch conversion
+
+      function To_Unix_Time_64 (Ada_Time : Time) return Long_Long_Integer;
       --  Ada to Unix Epoch conversion
 
    end Conversion_Operations;
