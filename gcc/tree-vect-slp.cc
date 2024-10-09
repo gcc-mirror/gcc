@@ -3557,13 +3557,15 @@ vect_analyze_slp_instance (vec_info *vinfo,
 
 static slp_tree
 vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
-				   vec<stmt_vec_info> &scalar_stmts)
+				   vec<stmt_vec_info> &scalar_stmts,
+				   poly_uint64 max_nunits)
 {
   unsigned int group_size = scalar_stmts.length ();
   slp_tree node = vect_create_new_slp_node (scalar_stmts,
 					    SLP_TREE_CHILDREN
 					      (rhs_nodes[0]).length ());
   SLP_TREE_VECTYPE (node) = SLP_TREE_VECTYPE (rhs_nodes[0]);
+  node->max_nunits = max_nunits;
   for (unsigned l = 0;
        l < SLP_TREE_CHILDREN (rhs_nodes[0]).length (); ++l)
     {
@@ -3573,6 +3575,7 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
       SLP_TREE_CHILDREN (node).quick_push (perm);
       SLP_TREE_LANE_PERMUTATION (perm).create (group_size);
       SLP_TREE_VECTYPE (perm) = SLP_TREE_VECTYPE (node);
+      perm->max_nunits = max_nunits;
       SLP_TREE_LANES (perm) = group_size;
       /* ???  We should set this NULL but that's not expected.  */
       SLP_TREE_REPRESENTATIVE (perm)
@@ -3628,6 +3631,7 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
 	      SLP_TREE_LANES (permab) = n;
 	      SLP_TREE_LANE_PERMUTATION (permab).create (n);
 	      SLP_TREE_VECTYPE (permab) = SLP_TREE_VECTYPE (perm);
+	      permab->max_nunits = max_nunits;
 	      /* ???  Should be NULL but that's not expected.  */
 	      SLP_TREE_REPRESENTATIVE (permab) = SLP_TREE_REPRESENTATIVE (perm);
 	      SLP_TREE_CHILDREN (permab).quick_push (a);
@@ -3698,6 +3702,7 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
 	  SLP_TREE_LANES (permab) = n;
 	  SLP_TREE_LANE_PERMUTATION (permab).create (n);
 	  SLP_TREE_VECTYPE (permab) = SLP_TREE_VECTYPE (perm);
+	  permab->max_nunits = max_nunits;
 	  /* ???  Should be NULL but that's not expected.  */
 	  SLP_TREE_REPRESENTATIVE (permab) = SLP_TREE_REPRESENTATIVE (perm);
 	  SLP_TREE_CHILDREN (permab).quick_push (a);
@@ -3828,7 +3833,6 @@ vect_build_slp_instance (vec_info *vinfo,
 	  /* Create a new SLP instance.  */
 	  slp_instance new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
-	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
 	  SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
@@ -4027,9 +4031,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	  /* Analyze the stored values and pinch them together with
 	     a permute node so we can preserve the whole store group.  */
 	  auto_vec<slp_tree> rhs_nodes;
-
-	  /* Calculate the unrolling factor based on the smallest type.  */
-	  poly_uint64 unrolling_factor = 1;
+	  poly_uint64 max_nunits = 1;
 
 	  unsigned int rhs_common_nlanes = 0;
 	  unsigned int start = 0, end = i;
@@ -4046,13 +4048,8 @@ vect_build_slp_instance (vec_info *vinfo,
 					  matches, limit, &tree_size, bst_map);
 	      if (node)
 		{
-		  /* ???  Possibly not safe, but not sure how to check
-		     and fail SLP build?  */
-		  unrolling_factor
-		    = force_common_multiple (unrolling_factor,
-					     calculate_unrolling_factor
-					       (max_nunits, end - start));
 		  rhs_nodes.safe_push (node);
+		  vect_update_max_nunits (&max_nunits, node->max_nunits);
 		  if (start == 0)
 		    rhs_common_nlanes = SLP_TREE_LANES (node);
 		  else if (rhs_common_nlanes != SLP_TREE_LANES (node))
@@ -4116,6 +4113,7 @@ vect_build_slp_instance (vec_info *vinfo,
 					       SLP_TREE_CHILDREN
 						 (rhs_nodes[0]).length ());
 	      SLP_TREE_VECTYPE (node) = SLP_TREE_VECTYPE (rhs_nodes[0]);
+	      node->max_nunits = max_nunits;
 	      node->ldst_lanes = true;
 	      SLP_TREE_CHILDREN (node)
 		.reserve_exact (SLP_TREE_CHILDREN (rhs_nodes[0]).length ()
@@ -4132,7 +4130,8 @@ vect_build_slp_instance (vec_info *vinfo,
 		child->refcnt++;
 	    }
 	  else
-	    node = vect_build_slp_store_interleaving (rhs_nodes, scalar_stmts);
+	    node = vect_build_slp_store_interleaving (rhs_nodes, scalar_stmts,
+						      max_nunits);
 
 	  while (!rhs_nodes.is_empty ())
 	    vect_free_slp_tree (rhs_nodes.pop ());
@@ -4140,7 +4139,6 @@ vect_build_slp_instance (vec_info *vinfo,
 	  /* Create a new SLP instance.  */
 	  slp_instance new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
-	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
 	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
 	  SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
@@ -4881,7 +4879,6 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	      slp_tree invnode = vect_create_new_slp_node (ops);
 	      SLP_TREE_DEF_TYPE (invnode) = vect_external_def;
 	      SLP_INSTANCE_TREE (new_instance) = invnode;
-	      SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = 1;
 	      SLP_INSTANCE_LOADS (new_instance) = vNULL;
 	      SLP_INSTANCE_ROOT_STMTS (new_instance) = roots;
 	      SLP_INSTANCE_REMAIN_DEFS (new_instance) = vNULL;
@@ -7198,6 +7195,47 @@ vect_gather_slp_loads (vec_info *vinfo)
     }
 }
 
+/* For NODE update VF based on the number of lanes and the vector types
+   used.  */
+
+static void
+vect_update_slp_vf_for_node (slp_tree node, poly_uint64 &vf,
+			     hash_set<slp_tree> &visited)
+{
+  if (!node || SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+    return;
+  if (visited.add (node))
+    return;
+
+  for (slp_tree child : SLP_TREE_CHILDREN (node))
+    vect_update_slp_vf_for_node (child, vf, visited);
+
+  /* We do not visit SLP nodes for constants or externals - those neither
+     have a vector type set yet (vectorizable_* does this) nor do they
+     have max_nunits set.  Instead we rely on internal nodes max_nunit
+     to cover constant/external operands.
+     Note that when we stop using fixed size vectors externs and constants
+     shouldn't influence the (minimum) vectorization factor, instead
+     vectorizable_* should honor the vectorization factor when trying to
+     assign vector types to constants and externals and cause iteration
+     to a higher vectorization factor when required.  */
+  poly_uint64 node_vf
+    = calculate_unrolling_factor (node->max_nunits, SLP_TREE_LANES (node));
+  vf = force_common_multiple (vf, node_vf);
+
+  /* For permute nodes that are fed from externs or constants we have to
+     consider their number of lanes as well.  Likewise for store-lanes.  */
+  if (SLP_TREE_CODE (node) == VEC_PERM_EXPR
+      || node->ldst_lanes)
+    for (slp_tree child : SLP_TREE_CHILDREN (node))
+      if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
+	{
+	  poly_uint64 child_vf
+	    = calculate_unrolling_factor (node->max_nunits,
+					  SLP_TREE_LANES (child));
+	  vf = force_common_multiple (vf, child_vf);
+	}
+}
 
 /* For each possible SLP instance decide whether to SLP it and calculate overall
    unrolling factor needed to SLP the loop.  Return TRUE if decided to SLP at
@@ -7215,6 +7253,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 
   DUMP_VECT_SCOPE ("vect_make_slp_decision");
 
+  hash_set<slp_tree> visited;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* FORNOW: SLP if you can.  */
@@ -7223,9 +7262,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 	   GET_MODE_SIZE (vinfo->vector_mode) * X
 
 	 for some rational X, so they must have a common multiple.  */
-      unrolling_factor
-	= force_common_multiple (unrolling_factor,
-				 SLP_INSTANCE_UNROLLING_FACTOR (instance));
+      vect_update_slp_vf_for_node (SLP_INSTANCE_TREE (instance),
+				   unrolling_factor, visited);
 
       /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts.  Later we
 	 call vect_detect_hybrid_slp () to find stmts that need hybrid SLP and

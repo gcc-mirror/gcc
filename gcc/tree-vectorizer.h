@@ -315,9 +315,6 @@ public:
      otherwise.  */
   vec<tree> remain_defs;
 
-  /* The unrolling factor required to vectorized this SLP instance.  */
-  poly_uint64 unrolling_factor;
-
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
 
@@ -340,7 +337,6 @@ public:
 
 /* Access Functions.  */
 #define SLP_INSTANCE_TREE(S)                     (S)->root
-#define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMTS(S)               (S)->root_stmts
 #define SLP_INSTANCE_REMAIN_DEFS(S)              (S)->remain_defs
