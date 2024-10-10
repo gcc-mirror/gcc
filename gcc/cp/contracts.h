@@ -43,6 +43,7 @@ enum contract_semantic
   CCS_MAYBE
 };
 
+
 /* True if the contract is unchecked.  */
 
 inline bool
@@ -74,6 +75,27 @@ struct contract_role
   contract_semantic audit_semantic;
   contract_semantic axiom_semantic;
 };
+
+/* P2900 contract clasification */
+
+enum constract_assertion_kind {
+  CAK_INVALID = 0 ,
+  CAK_PRE = 1 ,
+  CAK_POST = 2 ,
+  CAK_ASSERT = 3
+};
+
+enum constract_evaluation_semantic {
+  CES_INVALID = 0,
+  CES_ENFORCE = 1 ,
+  CES_OBSERVE = 2
+};
+
+enum constract_detection_mode {
+  CDM_PREDICATE_FALSE = 1 ,
+  CDM_EVAL_EXCEPTION = 2
+};
+
 
 /* Information for configured contract semantics.  */
 
