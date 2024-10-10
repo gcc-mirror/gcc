@@ -10,7 +10,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-continuation-mode=on" }
 #include <iostream>
-#include <experimental/contract>
+#include "../../../../../libstdc++-v3/include/std/contracts"
 
 #define VERIFY_ASSERT(statement, asserts)  \
 	{ \
@@ -27,12 +27,12 @@ static_assert (__cpp_contracts >= 201906);
 static_assert (__cpp_contracts_literal_semantics >= 201906);
 static_assert (__cpp_contracts_roles >= 201906);
 
-void handle_contract_violation(const std::experimental::contract_violation &violation) {
+void handle_contract_violation(const std::contracts::contract_violation &violation) {
   std::cerr << "custom std::handle_contract_violation called:"
-    << " " << violation.line_number()
-    << " " << violation.file_name()
+    << " " << violation.location().line()
+    << " " << violation.location().file_name()
     << std::endl;
-  throw -(int)violation.line_number();
+  throw -(int)violation.location().line();
 }
 
 void foo(int x) pre (x>10){};
