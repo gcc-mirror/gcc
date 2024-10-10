@@ -1349,9 +1349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
     { return __it.base(); }
 
-#if __cplusplus >= 201103L
-
-#if __cplusplus <= 201703L
+#if __cplusplus >= 201103L && __cplusplus <= 201703L
   // Need to overload __to_address because the pointer_traits primary template
   // will deduce element_type of __normal_iterator<T*, C> as T* rather than T.
   template<typename _Iterator, typename _Container>
@@ -1362,6 +1360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::__to_address(__it.base()); }
 #endif
 
+#if __cplusplus >= 201103L
   /**
    * @addtogroup iterators
    * @{
@@ -1820,6 +1819,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR _ReturnType
     __make_move_if_noexcept_iterator(_Tp* __i)
     { return _ReturnType(__i); }
+
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    auto
+    __niter_base(move_iterator<_Iterator> __it)
+    -> decltype(make_move_iterator(__niter_base(__it.base())))
+    { return make_move_iterator(__niter_base(__it.base())); }
+
+  template<typename _Iterator>
+    struct __is_move_iterator<move_iterator<_Iterator> >
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+
+  template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
+    auto
+    __miter_base(move_iterator<_Iterator> __it)
+    -> decltype(__miter_base(__it.base()))
+    { return __miter_base(__it.base()); }
+
+#define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
+#define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
+  std::__make_move_if_noexcept_iterator(_Iter)
+#else
+#define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) (_Iter)
+#define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
+#endif // C++11
 
 #if __cplusplus > 201703L && __glibcxx_concepts
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -2956,35 +2984,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
 
   /// @} group iterators
-
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    auto
-    __niter_base(move_iterator<_Iterator> __it)
-    -> decltype(make_move_iterator(__niter_base(__it.base())))
-    { return make_move_iterator(__niter_base(__it.base())); }
-
-  template<typename _Iterator>
-    struct __is_move_iterator<move_iterator<_Iterator> >
-    {
-      enum { __value = 1 };
-      typedef __true_type __type;
-    };
-
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    auto
-    __miter_base(move_iterator<_Iterator> __it)
-    -> decltype(__miter_base(__it.base()))
-    { return __miter_base(__it.base()); }
-
-#define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
-#define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
-  std::__make_move_if_noexcept_iterator(_Iter)
-#else
-#define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) (_Iter)
-#define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
-#endif // C++11
 
 #if __cpp_deduction_guides >= 201606
   // These helper traits are used for deduction guides
