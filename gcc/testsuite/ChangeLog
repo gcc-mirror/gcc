@@ -1,3 +1,11 @@
+2024-10-09  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-09-20  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116726
+	* gcc.dg/pr116726.c: New test.
+
 2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/116190
