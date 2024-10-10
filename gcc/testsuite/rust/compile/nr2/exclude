@@ -233,7 +233,6 @@ issue-3045-1.rs
 issue-3045-2.rs
 issue-3046.rs
 unknown-associated-item.rs
-inline_asm_parse_output_operand.rs
 issue-3030.rs
 issue-3035.rs
 issue-3082.rs
