@@ -4322,7 +4322,6 @@ pass_phiopt::execute (function *)
 	}
 
       gimple_stmt_iterator gsi;
-      bool candorest = true;
 
       /* Check that we're looking for nested phis.  */
       basic_block merge = diamond_p ? EDGE_SUCC (bb2, 0)->dest : bb2;
@@ -4338,14 +4337,10 @@ pass_phiopt::execute (function *)
 	    tree arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
 	    if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1) == 2)
 	      {
-		candorest = false;
 		cfgchanged = true;
-		break;
+		return;
 	      }
 	  }
-
-      if (!candorest)
-	return;
 
       gphi *phi = single_non_singleton_phi_for_edges (phis, e1, e2);
       if (!phi)
