@@ -3504,17 +3504,22 @@ vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
 }
 
 /* STMT_INFO is a store group of size GROUP_SIZE that we are considering
-   splitting into two, with the first split group having size NEW_GROUP_SIZE.
+   vectorizing with VECTYPE that might be NULL.  MASKED_P indicates whether
+   the stores are masked.
    Return true if we could use IFN_STORE_LANES instead and if that appears
    to be the better approach.  */
 
 static bool
 vect_slp_prefer_store_lanes_p (vec_info *vinfo, stmt_vec_info stmt_info,
+			       tree vectype, bool masked_p,
 			       unsigned int group_size,
 			       unsigned int new_group_size)
 {
-  tree scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
-  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+  if (!vectype)
+    {
+      tree scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
+      vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+    }
   if (!vectype)
     return false;
   /* Allow the split if one of the two new groups would operate on full
@@ -3528,7 +3533,7 @@ vect_slp_prefer_store_lanes_p (vec_info *vinfo, stmt_vec_info stmt_info,
   if (multiple_p (group_size - new_group_size, TYPE_VECTOR_SUBPARTS (vectype))
       || multiple_p (new_group_size, TYPE_VECTOR_SUBPARTS (vectype)))
     return false;
-  return vect_store_lanes_supported (vectype, group_size, false) != IFN_LAST;
+  return vect_store_lanes_supported (vectype, group_size, masked_p) != IFN_LAST;
 }
 
 /* Analyze an SLP instance starting from a group of grouped stores.  Call
@@ -3973,6 +3978,10 @@ vect_build_slp_instance (vec_info *vinfo,
       else if (is_a <loop_vec_info> (vinfo)
 	       && (group_size != 1 && i < group_size))
 	{
+	  gcall *call = dyn_cast <gcall *> (stmt_info->stmt);
+	  bool masked_p = call
+	      && gimple_call_internal_p (call)
+	      && internal_fn_mask_index (gimple_call_internal_fn (call)) != -1;
 	  /* There are targets that cannot do even/odd interleaving schemes
 	     so they absolutely need to use load/store-lanes.  For now
 	     force single-lane SLP for them - they would be happy with
@@ -3987,9 +3996,10 @@ vect_build_slp_instance (vec_info *vinfo,
 	  bool want_store_lanes
 	    = (! STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 	       && ! STMT_VINFO_STRIDED_P (stmt_info)
+	       && ! STMT_VINFO_SLP_VECT_ONLY (stmt_info)
 	       && compare_step_with_zero (vinfo, stmt_info) > 0
-	       && vect_slp_prefer_store_lanes_p (vinfo, stmt_info,
-						 group_size, 1));
+	       && vect_slp_prefer_store_lanes_p (vinfo, stmt_info, NULL_TREE,
+						 masked_p, group_size, 1));
 	  if (want_store_lanes || force_single_lane)
 	    i = 1;
 
@@ -4074,14 +4084,14 @@ vect_build_slp_instance (vec_info *vinfo,
 
 	  /* Now re-assess whether we want store lanes in case the
 	     discovery ended up producing all single-lane RHSs.  */
-	  if (rhs_common_nlanes == 1
+	  if (! want_store_lanes
+	      && rhs_common_nlanes == 1
 	      && ! STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 	      && ! STMT_VINFO_STRIDED_P (stmt_info)
+	      && ! STMT_VINFO_SLP_VECT_ONLY (stmt_info)
 	      && compare_step_with_zero (vinfo, stmt_info) > 0
 	      && (vect_store_lanes_supported (SLP_TREE_VECTYPE (rhs_nodes[0]),
-					      group_size,
-					      SLP_TREE_CHILDREN
-						(rhs_nodes[0]).length () != 1)
+					      group_size, masked_p)
 		  != IFN_LAST))
 	    want_store_lanes = true;
 
