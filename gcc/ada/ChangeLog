@@ -1,3 +1,8 @@
+2024-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115535
+	* exp_put_image.adb: Remove clauses for Sem_Aux.
+
 2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.ads (Is_Two_Pass_Aggregate): New function declaration.
