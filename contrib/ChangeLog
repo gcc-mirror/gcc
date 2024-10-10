@@ -1,3 +1,7 @@
+2024-10-09  René Rebe  <rene@exactcode.de>
+
+	* config-list.mk (LIST): no --enable-obsolete for ia64-linux.
+
 2024-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* unicode/README: Update glibc git commit hash, replace

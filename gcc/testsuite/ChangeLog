@@ -1,3 +1,102 @@
+2024-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/fstack-protector-strong.c: Adjust
+	scan-assembler-times.
+	* gcc.dg/graphite/scop-6.c: Refine the testcase to avoid array
+	out of bounds.
+	* gcc.dg/graphite/scop-9.c: Ditto.
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Add -fno-tree-vectorize.
+	* gcc.dg/tree-ssa/ivopts-lt.c: Ditto.
+	* gcc.dg/tree-ssa/loop-16.c: Ditto.
+	* gcc.dg/tree-ssa/loop-28.c: Ditto.
+	* gcc.dg/tree-ssa/loop-bound-2.c: Ditto.
+	* gcc.dg/tree-ssa/loop-bound-4.c: Ditto.
+	* gcc.dg/tree-ssa/loop-bound-6.c: Ditto.
+	* gcc.dg/tree-ssa/predcom-4.c: Ditto.
+	* gcc.dg/tree-ssa/predcom-5.c: Ditto.
+	* gcc.dg/tree-ssa/scev-11.c: Ditto.
+	* gcc.dg/tree-ssa/scev-9.c: Ditto.
+	* gcc.dg/tree-ssa/split-path-11.c: Ditto.
+	* gcc.dg/unroll-8.c: Ditto.
+	* gcc.dg/var-expand1.c: Ditto.
+	* gcc.dg/vect/vect-cost-model-6.c: Removed.
+	* gcc.target/i386/pr86270.c: Ditto.
+	* gcc.target/i386/pr86722.c: Ditto.
+	* gcc.target/x86_64/abi/callabi/leaf-2.c: Ditto.
+
+2024-10-09  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	PR target/115921
+	* gcc.target/riscv/branch-1.c: Additional tests.
+
+2024-10-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/mod_2.c: Corrected effective-target to
+	arm_cpu_cortex_a57_ok.
+	* gcc.target/arm/mod_256.c: Likewise.
+
+2024-10-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116629
+	* gcc.target/aarch64/sve/acle/general/pr106326_2.c: New test.
+
+2024-10-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (check-function-bodies): Look in ltrans0.ltrans.s
+	if the test appears to be using LTO.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/initlist-opt1.C: Adjust for different diagnostics
+	from std::construct_at by adding -fconcepts-diagnostics-depth=2.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117041
+	* gcc.dg/torture/pr117041.c: New testcase.
+
+2024-10-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr65647.c: Use effective-target arm_arch_v6m.
+	Removed unneeded dg-skip-if.
+	* gcc.target/arm/mod_2.c: Use effective-target arm_cpu_cortex_a57.
+	* gcc.target/arm/mod_256.c: Likewise.
+	* gcc.target/arm/vseleqdf.c: Likewise.
+	* gcc.target/arm/vseleqsf.c: Likewise.
+	* gcc.target/arm/vselgedf.c: Likewise.
+	* gcc.target/arm/vselgesf.c: Likewise.
+	* gcc.target/arm/vselgtdf.c: Likewise.
+	* gcc.target/arm/vselgtsf.c: Likewise.
+	* gcc.target/arm/vselledf.c: Likewise.
+	* gcc.target/arm/vsellesf.c: Likewise.
+	* gcc.target/arm/vselltdf.c: Likewise.
+	* gcc.target/arm/vselltsf.c: Likewise.
+	* gcc.target/arm/vselnedf.c: Likewise.
+	* gcc.target/arm/vselnesf.c: Likewise.
+	* gcc.target/arm/vselvcdf.c: Likewise.
+	* gcc.target/arm/vselvcsf.c: Likewise.
+	* gcc.target/arm/vselvsdf.c: Likewise.
+	* gcc.target/arm/vselvssf.c: Likewise.
+	* lib/target-supports.exp: Define effective-target arm_cpu_cortex_a57.
+	Update effective-target arm_v8_1_lob_ok to use -mcpu=unset.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116575
+	PR tree-optimization/114375
+	* gcc.dg/vect/vect-pr114375.c: Expect vectorization now with avx2.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117000
+	* gcc.target/i386/pr117000.c: New testcase.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR preprocessor/89808
+	* g++.dg/warn/Wno-pragma-once-outside-header.C: New test.
+	* g++.dg/warn/Wpragma-once-outside-header.C: New test.
+
 2024-10-09  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
 
 	* gcc.dg/tree-ssa/pr116024-2.c: New test.

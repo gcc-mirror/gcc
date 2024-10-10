@@ -1,3 +1,20 @@
+2024-10-09  Jason Merrill  <jason@redhat.com>
+
+	* macro.cc (_cpp_pop_context): Fix typo.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR bootstrap/117039
+	* directives.cc (do_pragma_once): Use ' instead of %< and %>.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR preprocessor/89808
+	* include/cpplib.h (cpp_warning_reason): Define
+	CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER.
+	* directives.cc (do_pragma_once): Use
+	CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER.
+
 2024-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* makeucnid.cc (write_copyright): Update Unicode Copyright years.

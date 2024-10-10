@@ -1,3 +1,101 @@
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116210
+	* testsuite/17_intro/names.cc (sz): Undef for versions of Glibc
+	that use it in the fortify wrappers.
+	* testsuite/17_intro/names_fortify.cc: New test.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116969
+	* include/bits/locale_facets_nonio.tcc (money_put::__do_put):
+	Remove diagnostic pragmas.
+	(__glibcxx_snprintfibm128): Declare type manually, instead of
+	using __typeof__(__builtin_snprintf).
+
+2024-10-09  Frank Scheiner  <frank.scheiner@web.de>
+
+	* testsuite/17_intro/names.cc [__linux__ && __ia64__]: Undefine
+	'u' as used in glibc headers.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116992
+	* include/bits/semaphore_base.h (_GLIBCXX_USE_POSIX_SEMAPHORE):
+	Undefine and issue a warning if POSIX sem_t is not supported.
+	* testsuite/30_threads/semaphore/platform_try_acquire_for.cc:
+	Prune new warning.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116991
+	* include/std/complex (__complex_acos): Cast literal to
+	destination type.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/latch (latch::count_down): Add assertions for
+	preconditions. Cast parameter to avoid -Wsign-compare on some
+	targets.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112808
+	* doc/xml/manual/using.xml (_GLIBCXX_ASSERTIONS): Document
+	implicit definition for -O0 compilation.
+	(_GLIBCXX_NO_ASSERTIONS): Document.
+	* doc/html/manual/using_macros.html: Regenerate.
+	* include/bits/c++config [!__OPTIMIZE__] (_GLIBCXX_ASSERTIONS):
+	Define for unoptimized builds.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/61458
+	* doc/doxygen/user.cfg.in (GENERATE_BUGLIST): Set to NO.
+	* include/std/type_traits (__aligned_storage_msa): Remove.
+	(__aligned_storage_max_align_t): New struct.
+	(__aligned_storage_default_alignment): New function.
+	(aligned_storage): Use __aligned_storage_default_alignment for
+	default alignment. Replace union with a struct containing an
+	aligned buffer. Improve Doxygen comment.
+	(aligned_storage_t): Use __aligned_storage_default_alignment for
+	default alignment.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h: Remove cv-qualifiers from
+	type managed by _Sp_counted_ptr_inplace, as per LWG 3210.
+	* include/bits/stl_construct.h: Do not cast away cv-qualifiers
+	when passing pointer to placement new.
+	* include/std/expected: Use remove_cv_t for union member, as per
+	LWG 3891.
+	* testsuite/20_util/allocator/void.cc: Do not test construction
+	via const pointer.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (construct_at): Support array
+	types (LWG 3436).
+	* testsuite/20_util/specialized_algorithms/construct_at/array.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/construct_at/array_neg.cc:
+	New test.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Add
+	[[unlikely]] attribute to condition for missing %c format in
+	locale. Use %T instead of %H:%M:%S in fallback.
+
+2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116755
+	* include/bits/chrono_io.h (operator<<): Use +d.count() for
+	duration inserter.
+	(__formatter_chrono::_M_format): Likewise for %Q format.
+	* testsuite/20_util/duration/io.cc: Test durations with
+	character types as reps.
+
 2024-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/unicode.h (std::__unicode::__v15_1_0): Rename inline

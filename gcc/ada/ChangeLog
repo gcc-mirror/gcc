@@ -1,3 +1,25 @@
+2024-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117038
+	* fe.h (struct c_array): Add 'const' to declaration of pointer.
+	(C_Source_Buffer): Use consistent formatting.
+	* par-ch3.adb (P_Component_Items): Properly set Aliased_Present on
+	access definition.
+	* sinput.ads: Remove clause for Interfaces.C.
+	(C_Array): Change type of Length to Integer and make both components
+	aliased.  Remove Convention aspect.
+	(C_Source_Buffer): Remove all aspects.
+	* sinput.adb (C_Source_Buffer): Adjust to above change.
+
+2024-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl: Remove HP-UX 10 section.
+	* libgnarl/s-osinte__hpux-dce.ads: Delete.
+	* libgnarl/s-osinte__hpux-dce.adb: Likewise.
+	* libgnarl/s-taprop__hpux-dce.adb: Likewise.
+	* libgnarl/s-taspri__hpux-dce.ads: Likewise.
+	* libgnat/s-oslock__hpux-dce.ads: Likewise.
+
 2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/116498

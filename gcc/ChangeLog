@@ -1,3 +1,104 @@
+2024-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* tree-vect-loop.cc (vect_analyze_loop_costing): Enable
+	vectorization for LOOP_VINFO_PEELING_FOR_NITER in very cheap
+	cost model.
+	(vect_analyze_loop): Disable epilogue vectorization in very
+	cheap cost model.
+	* doc/invoke.texi: Adjust documents for very-cheap cost model.
+
+2024-10-09  Jovan Vukic  <Jovan.Vukic@rt-rk.com>
+
+	PR target/115921
+	* config/riscv/iterators.md (any_eq): New code iterator.
+	* config/riscv/riscv.h (COMMON_TRAILING_ZEROS): New macro.
+	(SMALL_AFTER_COMMON_TRAILING_SHIFT): Ditto.
+	* config/riscv/riscv.md (*branch<ANYI:mode>_shiftedarith_<optab>_shifted):
+	New pattern.
+
+2024-10-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-08  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* common/config/riscv/riscv-common.cc: M implies Zmmul.
+
+2024-10-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-08  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* config/riscv/riscv-c.cc: (riscv_cpu_cpp_builtins):
+	Enable builtin __riscv_mul with Zmmul extension.
+
+2024-10-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116629
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_builder::function_builder): Use direct overloads for LTO.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_access): When
+	cancelling a DR group also clear DR_GROUP_NEXT_ELEMENT.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117041
+	* tree-vect-stmts.cc (get_group_load_store_type): Only
+	check DR_GROUP_NEXT_ELEMENT for STMT_VINFO_GROUPED_ACCESS.
+
+2024-10-09  René Rebe  <rene@exactcode.de>
+
+	* config/ia64/ia64.cc: Enable LRA for ia64.
+	* config/ia64/ia64.md: Likewise.
+	* config/ia64/predicates.md: Likewise.
+
+2024-10-09  René Rebe  <rene@exactcode.de>
+
+	* config.gcc: Only list ia64*-*-(hpux|vms|elf) in the list of
+	obsoleted targets.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116974
+	* tree-vect-stmts.cc (check_scan_store): Pass in the SLP node
+	instead of just a flag.  Allow single-lane scan stores.
+	(vectorizable_store): Adjust.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Empty scan_map
+	before re-trying.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116575
+	PR tree-optimization/114375
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Do not reject
+	permuted mask loads without gaps but instead discover a
+	node for the full unpermuted load and permute that with
+	a VEC_PERM node.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117000
+	* match.pd (.REDUC_IOR !=/== 0): New pattern.
+	* gimple-match-head.cc: Include memmodel.h and optabs.h.
+	* generic-match-head.cc: Likewise.
+
+2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_cse_slp_nodes): Fix memory leak.
+
+2024-10-09  Jan Beulich  <jbeulich@suse.com>
+
+	* doc/extend.texi: Clarify __builtin_choose_expr()
+	(dis)similarity to the ?: operator.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR preprocessor/89808
+	* doc/invoke.texi (Warning Options): Document
+	-Wno-pragma-once-outside-header.
+
 2024-10-09  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
 
 	PR tree-optimization/116024

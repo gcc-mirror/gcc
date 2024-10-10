@@ -1,3 +1,13 @@
+2024-10-09  Jason Merrill  <jason@redhat.com>
+
+	* c-ppoutput.cc (preprocess_file): Set directives_only flag.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR preprocessor/89808
+	* c.opt (Wpragma_once_outside_header): Define new option.
+	* c.opt.urls: Regenerate.
+
 2024-10-07  Jason Merrill  <jason@redhat.com>
 
 	* c-ppoutput.cc (preprocess_file): For modules,
