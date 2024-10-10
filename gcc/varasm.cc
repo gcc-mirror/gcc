@@ -6884,6 +6884,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
+  else if (strcmp (name, ".data.rel.ro") == 0
+	   || strcmp (name, ".data.rel.ro.local") == 0)
+    flags = SECTION_WRITE | SECTION_RELRO;
   else if (decl)
     {
       enum section_category category
@@ -6897,12 +6900,7 @@ default_section_type_flags (tree decl, const char *name, int reloc)
 	flags = SECTION_WRITE;
     }
   else
-    {
-      flags = SECTION_WRITE;
-      if (strcmp (name, ".data.rel.ro") == 0
-	  || strcmp (name, ".data.rel.ro.local") == 0)
-	flags |= SECTION_RELRO;
-    }
+    flags = SECTION_WRITE;
 
   if (decl && DECL_P (decl) && DECL_COMDAT_GROUP (decl))
     flags |= SECTION_LINKONCE;
