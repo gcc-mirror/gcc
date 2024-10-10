@@ -29,5 +29,5 @@ foo (void)
   d += 0.;
   U u0 = u + u + u1 + (U) d;
   V v0 = ((X)u0)[0] + v + v;
-  t = (T) (long) (__int128) v0 + t + t + t1;
+  t = (T) (long long) (__int128) v0 + t + t + t1;
 }
