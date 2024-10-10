@@ -1367,8 +1367,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      && first_stmt_code != CFN_MASK_LOAD
 	      && first_stmt_code != CFN_MASK_STORE)
 	    {
-	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
-				       call_stmt))
+	      if (!is_a <gcall *> (stmts[0]->stmt)
+		  || !compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
+					  call_stmt))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
