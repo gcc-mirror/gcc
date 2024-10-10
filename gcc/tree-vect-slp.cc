@@ -1991,7 +1991,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  stmt_vec_info load_info;
 	  load_permutation.create (group_size);
 	  stmt_vec_info first_stmt_info
-	    = DR_GROUP_FIRST_ELEMENT (SLP_TREE_SCALAR_STMTS (node)[0]);
+	    = STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	      ? DR_GROUP_FIRST_ELEMENT (stmt_info) : stmt_info;
 	  bool any_permute = false;
 	  bool any_null = false;
 	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
@@ -2035,8 +2036,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		 loads with gaps.  */
 	      if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		   && (DR_GROUP_GAP (first_stmt_info) != 0 || has_gaps))
-		  || STMT_VINFO_STRIDED_P (stmt_info)
-		  || (!STMT_VINFO_GROUPED_ACCESS (stmt_info) && any_permute))
+		  || STMT_VINFO_STRIDED_P (stmt_info))
 		{
 		  load_permutation.release ();
 		  matches[0] = false;
@@ -2051,17 +2051,17 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		{
 		  /* Discover the whole unpermuted load.  */
 		  vec<stmt_vec_info> stmts2;
-		  stmts2.create (DR_GROUP_SIZE (first_stmt_info));
-		  stmts2.quick_grow_cleared (DR_GROUP_SIZE (first_stmt_info));
+		  unsigned dr_group_size = STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		      ? DR_GROUP_SIZE (first_stmt_info) : 1;
+		  stmts2.create (dr_group_size);
+		  stmts2.quick_grow_cleared (dr_group_size);
 		  unsigned i = 0;
 		  for (stmt_vec_info si = first_stmt_info;
 		       si; si = DR_GROUP_NEXT_ELEMENT (si))
 		    stmts2[i++] = si;
-		  bool *matches2
-		    = XALLOCAVEC (bool, DR_GROUP_SIZE (first_stmt_info));
+		  bool *matches2 = XALLOCAVEC (bool, dr_group_size);
 		  slp_tree unperm_load
-		    = vect_build_slp_tree (vinfo, stmts2,
-					   DR_GROUP_SIZE (first_stmt_info),
+		    = vect_build_slp_tree (vinfo, stmts2, dr_group_size,
 					   &this_max_nunits, matches2, limit,
 					   &this_tree_size, bst_map);
 		  /* When we are able to do the full masked load emit that
