@@ -580,6 +580,7 @@ public:
 				       enum mode_suffix_index) const = 0;
   virtual bool skip_overload_p (enum predication_index,
 				enum mode_suffix_index) const = 0;
+  virtual bool mode_after_pred () const = 0;
 
   /* Define all functions associated with the given group.  */
   virtual void build (function_builder &,

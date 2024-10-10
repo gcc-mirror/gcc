@@ -886,11 +886,18 @@ function_builder::get_name (const function_instance &instance,
   if (preserve_user_namespace)
     append_name ("__arm_");
   append_name (instance.base_name);
-  append_name (pred_suffixes[instance.pred]);
+
+  if (instance.shape->mode_after_pred ())
+    append_name (pred_suffixes[instance.pred]);
+
   if (!overloaded_p
       || instance.shape->explicit_mode_suffix_p (instance.pred,
 						 instance.mode_suffix_id))
     append_name (instance.mode_suffix ().string);
+
+  if (!instance.shape->mode_after_pred ())
+    append_name (pred_suffixes[instance.pred]);
+
   for (unsigned int i = 0; i < 2; ++i)
     if (!overloaded_p
 	|| instance.shape->explicit_type_suffix_p (i, instance.pred,

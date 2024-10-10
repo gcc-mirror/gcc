@@ -387,6 +387,12 @@ struct nonoverloaded_base : public function_shape
     return false;
   }
 
+  bool
+  mode_after_pred () const override
+  {
+    return true;
+  }
+
   tree
   resolve (function_resolver &) const override
   {
@@ -416,6 +422,12 @@ struct overloaded_base : public function_shape
   skip_overload_p (enum predication_index, enum mode_suffix_index) const override
   {
     return false;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return true;
   }
 };
 
