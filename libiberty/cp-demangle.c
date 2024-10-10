@@ -655,9 +655,9 @@ d_dump (struct demangle_component *dc, int indent)
       return;
     case DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE:
       {
-	char suffix[2] = { dc->u.s_extended_builtin.type->suffix, 0 };
+	char suffix[2] = { dc->u.s_extended_builtin.suffix, 0 };
 	printf ("builtin type %s%d%s\n", dc->u.s_extended_builtin.type->name,
-		dc->u.s_extended_builtin.type->arg, suffix);
+		dc->u.s_extended_builtin.arg, suffix);
       }
       return;
     case DEMANGLE_COMPONENT_OPERATOR:
