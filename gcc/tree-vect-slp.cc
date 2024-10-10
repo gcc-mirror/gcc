@@ -10279,10 +10279,19 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	}
       auto op_nunits = TYPE_VECTOR_SUBPARTS (op_vectype);
       unsigned int this_unpack_factor;
+      /* Detect permutations of external, pre-existing vectors.  The external
+	 node's SLP_TREE_LANES stores the total number of units in the vector,
+	 or zero if the vector has variable length.
+
+	 We are expected to keep the original VEC_PERM_EXPR for such cases.
+	 There is no repetition to model.  */
+      if (SLP_TREE_DEF_TYPE (child) == vect_external_def
+	  && SLP_TREE_SCALAR_OPS (child).is_empty ())
+	repeating_p = false;
       /* Check whether the input has twice as many lanes per vector.  */
-      if (children.length () == 1
-	  && known_eq (SLP_TREE_LANES (child) * nunits,
-		       SLP_TREE_LANES (node) * op_nunits * 2))
+      else if (children.length () == 1
+	       && known_eq (SLP_TREE_LANES (child) * nunits,
+			    SLP_TREE_LANES (node) * op_nunits * 2))
 	pack_p = true;
       /* Check whether the output has N times as many lanes per vector.  */
       else if (constant_multiple_p (SLP_TREE_LANES (node) * op_nunits,
