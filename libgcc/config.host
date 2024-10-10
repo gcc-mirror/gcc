@@ -1414,7 +1414,7 @@ s390x-ibm-tpf*)
 	md_unwind_header=s390/tpf-unwind.h
 	;;
 sh-*-elf* | sh[12346l]*-*-elf*)
-	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-fdpbit"
+	tmake_file="$tmake_file sh/t-sh t-crtstuff-pic t-softfp-sfdf t-softfp"
 	extra_parts="$extra_parts crt1.o crti.o crtn.o crtbeginS.o crtendS.o \
 		libic_invalidate_array_4-100.a \
 		libic_invalidate_array_4-200.a \
