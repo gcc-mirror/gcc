@@ -25,6 +25,40 @@ include $(top_srcdir)/fragment.am
 # Convenience library for C++23 runtime.
 noinst_LTLIBRARIES = libc++23convenience.la
 
+# Module std support.  Not compiled for now, only installed.
+# Let's install the interface units in the bits subdirectory.
+toolexeclib_DATA = libstdc++.modules.json
+includebitsdir = $(gxx_include_dir)/bits
+includebits_DATA = std.cc std.compat.cc
+
+# The manifest to be installed uses the relative path between install dirs.
+libstdc++.modules.json: libstdc++.modules.json.in
+	relpath=$$($(toplevel_srcdir)/contrib/relpath.sh \
+		   $(abspath $(toolexeclibdir)) \
+		   $(abspath $(includebitsdir))) && \
+	sed "s,@MODPATH@,$$relpath," $< > $@
+
+# The uninstalled manifest uses the relative path to builddir.
+stamp-module-manifest: libstdc++.modules.json.in
+	@-mkdir -p ../.libs
+	sed "s,@MODPATH@,../c++23," $< \
+	  > ../.libs/libstdc++.modules.json
+	@$(STAMP) $@
+
+# Add the C library exports to both modules.
+std.cc: std.cc.in std-clib.cc.in
+	cat $^ > $@
+std.compat.cc: std.compat.cc.in std-clib.cc.in
+	cat $^ > $@
+
+# Also put the interface units in the build-includes bits directory.
+stamp-modules-bits: $(includebits_DATA)
+	@-mkdir -p $(top_builddir)/include/bits
+	-cd $(top_builddir)/include/bits && $(LN_S) $(abspath $?) . 2>/dev/null
+	@$(STAMP) $@
+
+all-local: stamp-module-manifest stamp-modules-bits
+
 headers =
 
 if ENABLE_EXTERN_TEMPLATE

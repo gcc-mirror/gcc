@@ -2075,4 +2075,14 @@
 #endif /* !defined(__cpp_lib_to_string) && defined(__glibcxx_want_to_string) */
 #undef __glibcxx_want_to_string
 
+#if !defined(__cpp_lib_modules)
+# if (__cplusplus >= 202002L) && (__cpp_modules)
+#  define __glibcxx_modules 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_modules)
+#   define __cpp_lib_modules 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_modules) && defined(__glibcxx_want_modules) */
+#undef __glibcxx_want_modules
+
 #undef __glibcxx_want_all

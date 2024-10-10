@@ -1,0 +1,676 @@
+// C standard library exports for -*- C++ -*- std and std.compat modules
+// This file is appended to std.cc.in or std-compat.cc.in.
+
+#ifdef STD_COMPAT
+#define C_LIB_NAMESPACE
+#else
+#define C_LIB_NAMESPACE namespace std
+#endif
+
+// C standard library headers [tab:headers.cpp.c]
+
+// 19.3 <cassert>
+// No exports
+
+// 23.5.1 <cctype>
+export C_LIB_NAMESPACE
+{
+  using std::isalnum;
+  using std::isalpha;
+  using std::isblank;
+  using std::iscntrl;
+  using std::isdigit;
+  using std::isgraph;
+  using std::islower;
+  using std::isprint;
+  using std::ispunct;
+  using std::isspace;
+  using std::isupper;
+  using std::isxdigit;
+  using std::tolower;
+  using std::toupper;
+}
+
+// 19.4 <cerrno>
+// No exports
+
+// 28.3 <cfenv>
+export C_LIB_NAMESPACE
+{
+  using std::feclearexcept;
+  using std::fegetenv;
+  using std::fegetexceptflag;
+  using std::fegetround;
+  using std::feholdexcept;
+  using std::fenv_t;
+  using std::feraiseexcept;
+  using std::fesetenv;
+  using std::fesetexceptflag;
+  using std::fesetround;
+  using std::fetestexcept;
+  using std::feupdateenv;
+  using std::fexcept_t;
+}
+
+// 17.3.7 <cfloat> [cfloat.syn]
+// No exports, only provides macros
+
+// 31.13.2 <cinttypes>
+export C_LIB_NAMESPACE
+{
+  using std::imaxabs;
+  using std::imaxdiv;
+  using std::imaxdiv_t;
+  using std::strtoimax;
+  using std::strtoumax;
+  using std::wcstoimax;
+  using std::wcstoumax;
+}
+
+// 17.3.6 <climits> [climits.syn]
+// No exports, only provides macros
+
+// 30.5 <clocale>
+export C_LIB_NAMESPACE
+{
+  using std::lconv;
+  using std::localeconv;
+  using std::setlocale;
+  // LC_* macros not exported
+}
+
+// 28.7.1 <cmath>
+export C_LIB_NAMESPACE
+{
+  using std::abs;
+  using std::acos;
+  using std::acosf;
+  using std::acosh;
+  using std::acoshf;
+  using std::acoshl;
+  using std::acosl;
+  using std::asin;
+  using std::asinf;
+  using std::asinh;
+  using std::asinhf;
+  using std::asinhl;
+  using std::asinl;
+  using std::atan;
+  using std::atan2;
+  using std::atan2f;
+  using std::atan2l;
+  using std::atanf;
+  using std::atanh;
+  using std::atanhf;
+  using std::atanhl;
+  using std::atanl;
+  using std::cbrt;
+  using std::cbrtf;
+  using std::cbrtl;
+  using std::ceil;
+  using std::ceilf;
+  using std::ceill;
+  using std::copysign;
+  using std::copysignf;
+  using std::copysignl;
+  using std::cos;
+  using std::cosf;
+  using std::cosh;
+  using std::coshf;
+  using std::coshl;
+  using std::cosl;
+  using std::double_t;
+  using std::erf;
+  using std::erfc;
+  using std::erfcf;
+  using std::erfcl;
+  using std::erff;
+  using std::erfl;
+  using std::exp;
+  using std::exp2;
+  using std::exp2f;
+  using std::exp2l;
+  using std::expf;
+  using std::expl;
+  using std::expm1;
+  using std::expm1f;
+  using std::expm1l;
+  using std::fabs;
+  using std::fabsf;
+  using std::fabsl;
+  using std::fdim;
+  using std::fdimf;
+  using std::fdiml;
+  using std::float_t;
+  using std::floor;
+  using std::floorf;
+  using std::floorl;
+  using std::fma;
+  using std::fmaf;
+  using std::fmal;
+  using std::fmax;
+  using std::fmaxf;
+  using std::fmaxl;
+  using std::fmin;
+  using std::fminf;
+  using std::fminl;
+  using std::fmod;
+  using std::fmodf;
+  using std::fmodl;
+  using std::fpclassify;
+  using std::frexp;
+  using std::frexpf;
+  using std::frexpl;
+  using std::hypot;
+  using std::hypotf;
+  using std::hypotl;
+  using std::ilogb;
+  using std::ilogbf;
+  using std::ilogbl;
+  using std::isfinite;
+  using std::isgreater;
+  using std::isgreaterequal;
+  using std::isinf;
+  using std::isless;
+  using std::islessequal;
+  using std::islessgreater;
+  using std::isnan;
+  using std::isnormal;
+  using std::isunordered;
+  using std::ldexp;
+  using std::ldexpf;
+  using std::ldexpl;
+#ifndef STD_COMPAT
+  using std::lerp;
+#endif
+  using std::lgamma;
+  using std::lgammaf;
+  using std::lgammal;
+  using std::llrint;
+  using std::llrintf;
+  using std::llrintl;
+  using std::llround;
+  using std::llroundf;
+  using std::llroundl;
+  using std::log;
+  using std::log10;
+  using std::log10f;
+  using std::log10l;
+  using std::log1p;
+  using std::log1pf;
+  using std::log1pl;
+  using std::log2;
+  using std::log2f;
+  using std::log2l;
+  using std::logb;
+  using std::logbf;
+  using std::logbl;
+  using std::logf;
+  using std::logl;
+  using std::lrint;
+  using std::lrintf;
+  using std::lrintl;
+  using std::lround;
+  using std::lroundf;
+  using std::lroundl;
+  using std::modf;
+  using std::modff;
+  using std::modfl;
+  using std::nan;
+  using std::nanf;
+  using std::nanl;
+  using std::nearbyint;
+  using std::nearbyintf;
+  using std::nearbyintl;
+  using std::nextafter;
+  using std::nextafterf;
+  using std::nextafterl;
+  using std::nexttoward;
+  using std::nexttowardf;
+  using std::nexttowardl;
+  using std::pow;
+  using std::powf;
+  using std::powl;
+  using std::remainder;
+  using std::remainderf;
+  using std::remainderl;
+  using std::remquo;
+  using std::remquof;
+  using std::remquol;
+  using std::rint;
+  using std::rintf;
+  using std::rintl;
+  using std::round;
+  using std::roundf;
+  using std::roundl;
+  using std::scalbln;
+  using std::scalblnf;
+  using std::scalblnl;
+  using std::scalbn;
+  using std::scalbnf;
+  using std::scalbnl;
+  using std::signbit;
+  using std::sin;
+  using std::sinf;
+  using std::sinh;
+  using std::sinhf;
+  using std::sinhl;
+  using std::sinl;
+  using std::sqrt;
+  using std::sqrtf;
+  using std::sqrtl;
+  using std::tan;
+  using std::tanf;
+  using std::tanh;
+  using std::tanhf;
+  using std::tanhl;
+  using std::tanl;
+  using std::tgamma;
+  using std::tgammaf;
+  using std::tgammal;
+  using std::trunc;
+  using std::truncf;
+  using std::truncl;
+
+#if __cpp_lib_math_special_functions && !defined(STD_COMPAT)
+  using std::assoc_laguerre;
+  using std::assoc_laguerref;
+  using std::assoc_laguerrel;
+  using std::assoc_legendre;
+  using std::assoc_legendref;
+  using std::assoc_legendrel;
+  using std::beta;
+  using std::betaf;
+  using std::betal;
+  using std::comp_ellint_1;
+  using std::comp_ellint_1f;
+  using std::comp_ellint_1l;
+  using std::comp_ellint_2;
+  using std::comp_ellint_2f;
+  using std::comp_ellint_2l;
+  using std::comp_ellint_3;
+  using std::comp_ellint_3f;
+  using std::comp_ellint_3l;
+  using std::cyl_bessel_i;
+  using std::cyl_bessel_if;
+  using std::cyl_bessel_il;
+  using std::cyl_bessel_j;
+  using std::cyl_bessel_jf;
+  using std::cyl_bessel_jl;
+  using std::cyl_bessel_k;
+  using std::cyl_bessel_kf;
+  using std::cyl_bessel_kl;
+  using std::cyl_neumann;
+  using std::cyl_neumannf;
+  using std::cyl_neumannl;
+  using std::ellint_1;
+  using std::ellint_1f;
+  using std::ellint_1l;
+  using std::ellint_2;
+  using std::ellint_2f;
+  using std::ellint_2l;
+  using std::ellint_3;
+  using std::ellint_3f;
+  using std::ellint_3l;
+  using std::expint;
+  using std::expintf;
+  using std::expintl;
+  using std::hermite;
+  using std::hermitef;
+  using std::hermitel;
+  using std::legendre;
+  using std::legendref;
+  using std::legendrel;
+  using std::laguerre;
+  using std::laguerref;
+  using std::laguerrel;
+  using std::riemann_zeta;
+  using std::riemann_zetaf;
+  using std::riemann_zetal;
+  using std::sph_bessel;
+  using std::sph_besself;
+  using std::sph_bessell;
+  using std::sph_legendre;
+  using std::sph_legendref;
+  using std::sph_legendrel;
+  using std::sph_neumann;
+  using std::sph_neumannf;
+  using std::sph_neumannl;
+#endif
+}
+
+// 17.13.3 <csetjmp>
+export C_LIB_NAMESPACE
+{
+  using std::jmp_buf;
+  using std::longjmp;
+  // setjmp macro not exported
+}
+
+// 17.13.4 <csignal>
+export C_LIB_NAMESPACE
+{
+  using std::raise;
+  using std::sig_atomic_t;
+  using std::signal;
+  // SIG_* macros not exported
+}
+
+// 17.13.2 <cstdarg>
+export C_LIB_NAMESPACE
+{
+  using std::va_list;
+  // va_arg and friend macros not exported
+}
+
+// 17.2.1 <cstddef> [cstddef.syn]
+export C_LIB_NAMESPACE
+{
+  using std::max_align_t;
+  using std::nullptr_t;
+  using std::ptrdiff_t;
+  using std::size_t;
+#ifndef STD_COMPAT
+  using std::byte;
+  using std::operator<<=;
+  using std::operator<<;
+  using std::operator>>=;
+  using std::operator>>;
+  using std::operator|=;
+  using std::operator|;
+  using std::operator&=;
+  using std::operator&;
+  using std::operator^=;
+  using std::operator^;
+  using std::operator~;
+  using std::to_integer;
+#endif
+  // NULL and offsetof macros not exported
+}
+
+// 17.4 <cstdint>
+export C_LIB_NAMESPACE
+{
+  using std::int8_t;
+  using std::int16_t;
+  using std::int32_t;
+  using std::int64_t;
+  using std::int_fast16_t;
+  using std::int_fast32_t;
+  using std::int_fast64_t;
+  using std::int_fast8_t;
+  using std::int_least16_t;
+  using std::int_least32_t;
+  using std::int_least64_t;
+  using std::int_least8_t;
+  using std::intmax_t;
+  using std::intptr_t;
+  using std::uint8_t;
+  using std::uint16_t;
+  using std::uint32_t;
+  using std::uint64_t;
+  using std::uint_fast16_t;
+  using std::uint_fast32_t;
+  using std::uint_fast64_t;
+  using std::uint_fast8_t;
+  using std::uint_least16_t;
+  using std::uint_least32_t;
+  using std::uint_least64_t;
+  using std::uint_least8_t;
+  using std::uintmax_t;
+  using std::uintptr_t;
+}
+
+// 31.13.1 <cstdio>
+export C_LIB_NAMESPACE
+{
+  using std::clearerr;
+  using std::fclose;
+  using std::feof;
+  using std::ferror;
+  using std::fflush;
+  using std::fgetc;
+  using std::fgetpos;
+  using std::fgets;
+  using std::FILE;
+  using std::fopen;
+  using std::fpos_t;
+  using std::fprintf;
+  using std::fputc;
+  using std::fputs;
+  using std::fread;
+  using std::freopen;
+  using std::fscanf;
+  using std::fseek;
+  using std::fsetpos;
+  using std::ftell;
+  using std::fwrite;
+  using std::getc;
+  using std::getchar;
+  using std::perror;
+  using std::printf;
+  using std::putc;
+  using std::putchar;
+  using std::puts;
+  using std::remove;
+  using std::rename;
+  using std::rewind;
+  using std::scanf;
+  using std::setbuf;
+  using std::setvbuf;
+  using std::size_t;
+  using std::snprintf;
+  using std::sprintf;
+  using std::sscanf;
+  using std::tmpfile;
+  using std::tmpnam;
+  using std::ungetc;
+  using std::vfprintf;
+  using std::vfscanf;
+  using std::vprintf;
+  using std::vscanf;
+  using std::vsnprintf;
+  using std::vsprintf;
+  using std::vsscanf;
+}
+
+// 17.2.2 <cstdlib> [cstdlib.syn]
+export C_LIB_NAMESPACE
+{
+  using std::_Exit;
+  using std::abort;
+  using std::abs;
+  using std::aligned_alloc;
+  using std::at_quick_exit;
+  using std::atexit;
+  using std::atof;
+  using std::atoi;
+  using std::atol;
+  using std::atoll;
+  using std::bsearch;
+  using std::calloc;
+  using std::div;
+  using std::div_t;
+  using std::exit;
+  using std::free;
+  using std::getenv;
+  using std::labs;
+  using std::ldiv;
+  using std::ldiv_t;
+  using std::llabs;
+  using std::lldiv;
+  using std::lldiv_t;
+  using std::malloc;
+  using std::mblen;
+  using std::mbstowcs;
+  using std::mbtowc;
+  using std::qsort;
+  using std::quick_exit;
+  using std::rand;
+  using std::realloc;
+  using std::size_t;
+  using std::srand;
+  using std::strtod;
+  using std::strtof;
+  using std::strtol;
+  using std::strtold;
+  using std::strtoll;
+  using std::strtoul;
+  using std::strtoull;
+  using std::system;
+  using std::wcstombs;
+  using std::wctomb;
+}
+
+// 23.5.3 <cstring>
+export C_LIB_NAMESPACE
+{
+  using std::memchr;
+  using std::memcmp;
+  using std::memcpy;
+  using std::memmove;
+  using std::memset;
+  using std::size_t;
+  using std::strcat;
+  using std::strchr;
+  using std::strcmp;
+  using std::strcoll;
+  using std::strcpy;
+  using std::strcspn;
+  using std::strerror;
+  using std::strlen;
+  using std::strncat;
+  using std::strncmp;
+  using std::strncpy;
+  using std::strpbrk;
+  using std::strrchr;
+  using std::strspn;
+  using std::strstr;
+  using std::strtok;
+  using std::strxfrm;
+}
+
+// 29.15 <ctime>
+export C_LIB_NAMESPACE
+{
+  using std::asctime;
+  using std::clock;
+  using std::clock_t;
+  using std::ctime;
+  using std::difftime;
+  using std::gmtime;
+  using std::localtime;
+  using std::mktime;
+  using std::size_t;
+  using std::strftime;
+  using std::time;
+  using std::time_t;
+  using std::timespec;
+  using std::tm;
+  using std::timespec_get;
+}
+
+// 23.5.5 <cuchar>
+export C_LIB_NAMESPACE
+{
+  using std::mbrtoc8;
+  using std::c8rtomb;
+  using std::mbrtoc16;
+  using std::c16rtomb;
+  using std::mbrtoc32;
+  using std::c32rtomb;
+}
+
+// 23.5.4 <cwchar>
+export C_LIB_NAMESPACE
+{
+  using std::btowc;
+  using std::fgetwc;
+  using std::fgetws;
+  using std::fputwc;
+  using std::fputws;
+  using std::fwide;
+  using std::fwprintf;
+  using std::fwscanf;
+  using std::getwc;
+  using std::getwchar;
+  using std::mbrlen;
+  using std::mbrtowc;
+  using std::mbsinit;
+  using std::mbsrtowcs;
+  using std::mbstate_t;
+  using std::putwc;
+  using std::putwchar;
+  using std::size_t;
+  using std::swprintf;
+  using std::swscanf;
+  using std::tm;
+  using std::ungetwc;
+  using std::vfwprintf;
+  using std::vfwscanf;
+  using std::vswprintf;
+  using std::vswscanf;
+  using std::vwprintf;
+  using std::vwscanf;
+  using std::wcrtomb;
+  using std::wcscat;
+  using std::wcschr;
+  using std::wcscmp;
+  using std::wcscoll;
+  using std::wcscpy;
+  using std::wcscspn;
+  using std::wcsftime;
+  using std::wcslen;
+  using std::wcsncat;
+  using std::wcsncmp;
+  using std::wcsncpy;
+  using std::wcspbrk;
+  using std::wcsrchr;
+  using std::wcsrtombs;
+  using std::wcsspn;
+  using std::wcsstr;
+  using std::wcstod;
+  using std::wcstof;
+  using std::wcstok;
+  using std::wcstol;
+  using std::wcstold;
+  using std::wcstoll;
+  using std::wcstoul;
+  using std::wcstoull;
+  using std::wcsxfrm;
+  using std::wctob;
+  using std::wint_t;
+  using std::wmemchr;
+  using std::wmemcmp;
+  using std::wmemcpy;
+  using std::wmemmove;
+  using std::wmemset;
+  using std::wprintf;
+  using std::wscanf;
+}
+
+// 23.5.2 <cwctype>
+export C_LIB_NAMESPACE
+{
+  using std::iswalnum;
+  using std::iswalpha;
+  using std::iswblank;
+  using std::iswcntrl;
+  using std::iswctype;
+  using std::iswdigit;
+  using std::iswgraph;
+  using std::iswlower;
+  using std::iswprint;
+  using std::iswpunct;
+  using std::iswspace;
+  using std::iswupper;
+  using std::iswxdigit;
+  using std::towctrans;
+  using std::towlower;
+  using std::towupper;
+  using std::wctrans;
+  using std::wctrans_t;
+  using std::wctype;
+  using std::wctype_t;
+  using std::wint_t;
+}

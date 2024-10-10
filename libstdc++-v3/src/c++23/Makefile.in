@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -162,6 +163,36 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+am__installdirs = "$(DESTDIR)$(includebitsdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
+DATA = $(includebits_DATA) $(toolexeclib_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -424,6 +455,12 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 
 # Convenience library for C++23 runtime.
 noinst_LTLIBRARIES = libc++23convenience.la
+
+# Module std support.  Not compiled for now, only installed.
+# Let's install the interface units in the bits subdirectory.
+toolexeclib_DATA = libstdc++.modules.json
+includebitsdir = $(gxx_include_dir)/bits
+includebits_DATA = std.cc std.compat.cc
 headers = 
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
@@ -566,6 +603,48 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-includebitsDATA: $(includebits_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(includebits_DATA)'; test -n "$(includebitsdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(includebitsdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(includebitsdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(includebitsdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(includebitsdir)" || exit $$?; \
+	done
+
+uninstall-includebitsDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(includebits_DATA)'; test -n "$(includebitsdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(includebitsdir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibDATA: $(toolexeclib_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -620,8 +699,11 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(DATA) all-local
 installdirs:
+	for dir in "$(DESTDIR)$(includebitsdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
+	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -674,13 +756,13 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-includebitsDATA
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-toolexeclibDATA
 
 install-html: install-html-am
 
@@ -719,26 +801,56 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-includebitsDATA uninstall-toolexeclibDATA
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags dvi dvi-am html html-am info \
-	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
+.PHONY: CTAGS GTAGS TAGS all all-am all-local check check-am clean \
+	clean-generic clean-libtool clean-noinstLTLIBRARIES \
+	cscopelist-am ctags ctags-am distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
+	html html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am \
+	install-includebitsDATA install-info install-info-am \
 	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am
+	install-ps-am install-strip install-toolexeclibDATA \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-includebitsDATA \
+	uninstall-toolexeclibDATA
 
 .PRECIOUS: Makefile
 
+
+# The manifest to be installed uses the relative path between install dirs.
+libstdc++.modules.json: libstdc++.modules.json.in
+	relpath=$$($(toplevel_srcdir)/contrib/relpath.sh \
+		   $(abspath $(toolexeclibdir)) \
+		   $(abspath $(includebitsdir))) && \
+	sed "s,@MODPATH@,$$relpath," $< > $@
+
+# The uninstalled manifest uses the relative path to builddir.
+stamp-module-manifest: libstdc++.modules.json.in
+	@-mkdir -p ../.libs
+	sed "s,@MODPATH@,../c++23," $< \
+	  > ../.libs/libstdc++.modules.json
+	@$(STAMP) $@
+
+# Add the C library exports to both modules.
+std.cc: std.cc.in std-clib.cc.in
+	cat $^ > $@
+std.compat.cc: std.compat.cc.in std-clib.cc.in
+	cat $^ > $@
+
+# Also put the interface units in the build-includes bits directory.
+stamp-modules-bits: $(includebits_DATA)
+	@-mkdir -p $(top_builddir)/include/bits
+	-cd $(top_builddir)/include/bits && $(LN_S) $(abspath $?) . 2>/dev/null
+	@$(STAMP) $@
+
+all-local: stamp-module-manifest stamp-modules-bits
 
 vpath % $(top_srcdir)/src/c++23
 
