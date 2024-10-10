@@ -1366,19 +1366,10 @@ init_num_threads (void)
 void
 print_lto_docs_link ()
 {
-  bool print_url = global_dc->m_printer->supports_urls_p ();
-  const char *url = global_dc->make_option_url (OPT_flto);
-
-  pretty_printer pp;
-  pp.set_url_format (URL_FORMAT_DEFAULT);
-  pp_string (&pp, "see the ");
-  if (print_url)
-    pp_begin_url (&pp, url);
-  pp_string (&pp, "%<-flto%> option documentation");
-  if (print_url)
-    pp_end_url (&pp);
-  pp_string (&pp, " for more information");
-  inform (UNKNOWN_LOCATION, pp_formatted_text (&pp));
+  label_text url = label_text::take (global_dc->make_option_url (OPT_flto));
+  inform (UNKNOWN_LOCATION,
+	  "see the %{%<-flto%> option documentation%} for more information",
+	  url.get ());
 }
 
 /* Test that a make command is present and working, return true if so.  */
