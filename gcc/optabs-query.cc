@@ -485,6 +485,12 @@ find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
       if (GET_MODE_CLASS (limit_mode) == MODE_PARTIAL_INT)
 	limit_mode = GET_MODE_WIDER_MODE (limit_mode).require ();
     }
+  else if (is_a <scalar_int_mode> (to_mode))
+    {
+      gcc_checking_assert (VECTOR_MODE_P (from_mode)
+			   && GET_MODE_INNER (from_mode) < to_mode);
+      limit_mode = from_mode;
+    }
   else
     gcc_checking_assert (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode)
 			 && from_mode < to_mode);
