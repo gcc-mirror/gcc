@@ -1613,6 +1613,70 @@ struct store_def : public overloaded_base<0>
 };
 SHAPE (store)
 
+/* Base class for store_scatter_offset and store_scatter_shifted_offset, which
+   differ only in the units of the displacement.  Also used by
+   store_scatter_base.  */
+struct store_scatter : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return false;
+  }
+};
+
+/* void vfoo[_t0](<X>_t *, <Y>_t, <T0>_t)
+
+   where <X> might be tied to <t0> (for non-truncating stores) or might
+   depend on the function base name (for truncating stores),
+   <Y> has the same width as <T0> but is of unsigned type.
+
+   Example: vstrbq_scatter_offset
+   void [__arm_]vstrbq_scatter_offset[_s16](int8_t *base, uint16x8_t offset, int16x8_t value)
+   void [__arm_]vstrbq_scatter_offset_p[_s16](int8_t *base, uint16x8_t offset, int16x8_t value, mve_pred16_t p)  */
+struct store_scatter_offset_def : public store_scatter
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_offset, preserve_user_namespace);
+    build_all (b, "_,as,vu0,v0", group, MODE_offset, preserve_user_namespace);
+  }
+
+  /* Resolve a scatter store that takes a scalar pointer base and a vector
+     displacement.
+
+     The stored data is the final argument, and it determines the
+     type suffix.  */
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| !r.require_pointer_type (0)
+	|| (type = r.infer_vector_type (2)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* Offset (arg 1) should be a vector of unsigned with same width as value
+       (arg 2).  */
+    type_suffix_index offset_type
+      = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
+    if (!r.require_matching_vector_type (1, offset_type))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (store_scatter_offset)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, <T0>_t)
 
    i.e. the standard shape for ternary operations that operate on
