@@ -324,9 +324,26 @@ static bool
 check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 		 class du_head *this_head, HARD_REG_SET this_unavailable)
 {
-  int nregs = this_head->nregs;
+  int nregs = 1;
   int i;
   struct du_chain *tmp;
+
+  /* See whether new_reg accepts all modes that occur in
+     definition and uses and record the number of regs it would take.  */
+  for (tmp = this_head->first; tmp; tmp = tmp->next_use)
+    {
+      int n;
+      /* Completely ignore DEBUG_INSNs, otherwise we can get
+	 -fcompare-debug failures.  */
+      if (DEBUG_INSN_P (tmp->insn))
+	continue;
+
+      if (!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc)))
+	return false;
+      n = hard_regno_nregs (new_reg, GET_MODE (*tmp->loc));
+      if (n > nregs)
+	nregs = n;
+    }
 
   for (i = nregs - 1; i >= 0; --i)
     if (TEST_HARD_REG_BIT (this_unavailable, new_reg + i)
@@ -348,14 +365,10 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
      definition and uses.  */
   for (tmp = this_head->first; tmp; tmp = tmp->next_use)
     {
-      /* Completely ignore DEBUG_INSNs, otherwise we can get
-	 -fcompare-debug failures.  */
       if (DEBUG_INSN_P (tmp->insn))
 	continue;
 
-      if (!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
-	  || call_clobbered_in_chain_p (this_head, GET_MODE (*tmp->loc),
-					new_reg))
+      if (call_clobbered_in_chain_p (this_head, GET_MODE (*tmp->loc), new_reg))
 	return false;
     }
 
