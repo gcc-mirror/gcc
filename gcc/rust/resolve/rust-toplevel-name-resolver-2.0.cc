@@ -348,6 +348,15 @@ TopLevel::visit (AST::ConstantItem &const_item)
   DefaultResolver::visit (const_item);
 }
 
+void
+TopLevel::visit (AST::TypeAlias &type_item)
+{
+  insert_or_error_out (type_item.get_new_type_name (), type_item,
+		       Namespace::Types);
+
+  DefaultResolver::visit (type_item);
+}
+
 static void
 flatten_rebind (
   const AST::UseTreeRebind &glob,

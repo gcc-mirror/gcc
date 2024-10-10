@@ -206,7 +206,6 @@ traits7.rs
 traits8.rs
 traits9.rs
 tuple_struct1.rs
-type-alias1.rs
 type-bindings1.rs
 unconstrained_type_param.rs
 undeclared_label.rs

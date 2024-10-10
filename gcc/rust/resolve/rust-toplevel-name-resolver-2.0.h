@@ -161,6 +161,7 @@ private:
   void visit (AST::Enum &enum_item) override;
   void visit (AST::Union &union_item) override;
   void visit (AST::ConstantItem &const_item) override;
+  void visit (AST::TypeAlias &type_item) override;
   void visit (AST::ExternCrate &crate) override;
   void visit (AST::TypeParam &type_param) override;
 
