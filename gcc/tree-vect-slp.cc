@@ -2031,7 +2031,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		 loads with gaps.  */
 	      if ((STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		   && (DR_GROUP_GAP (first_stmt_info) != 0 || has_gaps))
-		  || STMT_VINFO_STRIDED_P (stmt_info))
+		  || STMT_VINFO_STRIDED_P (stmt_info)
+		  || (!STMT_VINFO_GROUPED_ACCESS (stmt_info) && any_permute))
 		{
 		  load_permutation.release ();
 		  matches[0] = false;
