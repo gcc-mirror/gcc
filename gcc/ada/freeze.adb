@@ -8022,9 +8022,11 @@ package body Freeze is
          --  generation, and so the size and alignment values for such types
          --  are irrelevant. Ditto for types declared within a generic unit,
          --  which may have components that depend on generic parameters, and
-         --  that will be recreated in an instance.
+         --  that will be recreated in an instance, except for static subtypes
+         --  because they may be referenced in the static expressions of the
+         --  generic unit, which need to be evaluated during its processing.
 
-         if Inside_A_Generic then
+         if Inside_A_Generic and then not Is_Static_Subtype (E) then
             null;
 
          --  Otherwise we call the layout procedure
