@@ -117,7 +117,77 @@ void
 diagnostic_text_output_format::
 after_diagnostic (const diagnostic_info &diagnostic)
 {
-  show_any_path (diagnostic);
+  if (const diagnostic_path *path = diagnostic.richloc->get_path ())
+    print_path (*path);
+}
+
+/* Return a malloc'd string describing a location and the severity of the
+   diagnostic, e.g. "foo.c:42:10: error: ".  The caller is responsible for
+   freeing the memory.  */
+char *
+diagnostic_text_output_format::
+build_prefix (const diagnostic_info &diagnostic) const
+{
+  gcc_assert (diagnostic.kind < DK_LAST_DIAGNOSTIC_KIND);
+
+  const char *text = _(get_diagnostic_kind_text (diagnostic.kind));
+  const char *text_cs = "", *text_ce = "";
+  pretty_printer *pp = get_printer ();
+
+  if (const char *color_name = diagnostic_get_color_for_kind (diagnostic.kind))
+    {
+      text_cs = colorize_start (pp_show_color (pp), color_name);
+      text_ce = colorize_stop (pp_show_color (pp));
+    }
+
+  const expanded_location s = diagnostic_expand_location (&diagnostic);
+  label_text location_text = get_location_text (s);
+
+  char *result = build_message_string ("%s %s%s%s", location_text.get (),
+				       text_cs, text, text_ce);
+  return result;
+}
+
+/* Same as build_prefix, but only the source FILE is given.  */
+char *
+diagnostic_text_output_format::file_name_as_prefix (const char *f) const
+{
+  pretty_printer *const pp = get_printer ();
+  const char *locus_cs
+    = colorize_start (pp_show_color (pp), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (pp));
+  return build_message_string ("%s%s:%s ", locus_cs, f, locus_ce);
+}
+
+/* Add a purely textual note with text GMSGID and with LOCATION.  */
+
+void
+diagnostic_text_output_format::append_note (location_t location,
+					    const char * gmsgid, ...)
+{
+  diagnostic_context *context = &get_context ();
+
+  diagnostic_info diagnostic;
+  va_list ap;
+  rich_location richloc (line_table, location);
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
+  if (context->m_inhibit_notes_p)
+    {
+      va_end (ap);
+      return;
+    }
+  pretty_printer *pp = get_printer ();
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, build_prefix (diagnostic));
+  pp_format (pp, &diagnostic.message);
+  pp_output_formatted_text (pp);
+  pp_destroy_prefix (pp);
+  pp_set_prefix (pp, saved_prefix);
+  pp_newline (pp);
+  diagnostic_show_locus (context, &richloc, DK_NOTE, pp);
+  va_end (ap);
 }
 
 /* If DIAGNOSTIC has a CWE identifier, print it.

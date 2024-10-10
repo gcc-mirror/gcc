@@ -78,8 +78,6 @@ private:
   label_text get_location_text (const expanded_location &s) const;
   bool includes_seen_p (const line_map_ordinary *map);
 
-  void show_any_path (const diagnostic_info &diagnostic);
-
   diagnostic_column_policy m_column_policy;
 
   /* Used to detect when the input file stack has changed since last
