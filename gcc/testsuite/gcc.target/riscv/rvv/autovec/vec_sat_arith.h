@@ -446,6 +446,26 @@ vec_sat_u_sub_##T1##_##T2##_fmt_zip (T1 *x, T2 b, unsigned limit) \
 }
 #define DEF_VEC_SAT_U_SUB_ZIP_WRAP(T1, T2) DEF_VEC_SAT_U_SUB_ZIP(T1, T2)
 
+#define DEF_VEC_SAT_S_SUB_FMT_1(T, UT, MIN, MAX)                     \
+void __attribute__((noinline))                                       \
+vec_sat_s_sub_##T##_fmt_1 (T *out, T *op_1, T *op_2, unsigned limit) \
+{                                                                    \
+  unsigned i;                                                        \
+  for (i = 0; i < limit; i++)                                        \
+    {                                                                \
+      T x = op_1[i];                                                 \
+      T y = op_2[i];                                                 \
+      T minus = (UT)x - (UT)y;                                       \
+      out[i] = (x ^ y) >= 0                                          \
+        ? minus                                                      \
+        : (minus ^ x) >= 0                                           \
+          ? minus                                                    \
+          : x < 0 ? MIN : MAX;                                       \
+    }                                                                \
+}
+#define DEF_VEC_SAT_S_SUB_FMT_1_WRAP(T, UT, MIN, MAX) \
+  DEF_VEC_SAT_S_SUB_FMT_1(T, UT, MIN, MAX)
+
 #define RUN_VEC_SAT_U_SUB_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_sub_##T##_fmt_1(out, op_1, op_2, N)
 
@@ -480,6 +500,11 @@ vec_sat_u_sub_##T1##_##T2##_fmt_zip (T1 *x, T2 b, unsigned limit) \
   vec_sat_u_sub_##T1##_##T2##_fmt_zip(x, b, N)
 #define RUN_VEC_SAT_U_SUB_FMT_ZIP_WRAP(T1, T2, x, b, N) \
   RUN_VEC_SAT_U_SUB_FMT_ZIP(T1, T2, x, b, N) \
+
+#define RUN_VEC_SAT_S_SUB_FMT_1(T, out, op_1, op_2, N) \
+  vec_sat_s_sub_##T##_fmt_1(out, op_1, op_2, N)
+#define RUN_VEC_SAT_S_SUB_FMT_1_WRAP(T, out, op_1, op_2, N) \
+  RUN_VEC_SAT_S_SUB_FMT_1(T, out, op_1, op_2, N)
 
 /******************************************************************************/
 /* Saturation Sub Truncated (Unsigned and Signed)                             */
