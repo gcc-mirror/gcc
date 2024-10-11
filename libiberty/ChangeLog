@@ -1,3 +1,8 @@
+2024-10-10  Simon Martin  <simon@nasilyan.com>
+
+	* cp-demangle.c (d_dump): Fix compilation when CP_DEMANGLE_DEBUG
+	is defined.
+
 2024-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/116614

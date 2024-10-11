@@ -1,3 +1,104 @@
+2024-10-10  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/116650
+	* regrename.cc (check_new_reg_p): Calculate nregs in terms of
+	the new candidate register.
+
+2024-10-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (pass_phiopt::execute): Remove candorest
+	and return instead of setting candorest.
+
+2024-10-10  Li Xu  <xuli1@eswincomputing.com>
+
+	PR target/116883
+	* config/riscv/riscv-c.cc (riscv_pragma_intrinsic_flags_pollute): Choose zvl4096b
+	to initialize null type.
+
+2024-10-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Set repeating_p
+	to false if we have an external node for a pre-existing vector.
+
+2024-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117060
+	* tree-vect-slp.cc (vect_build_slp_tree_1): When comparing
+	calls also fail if the first isn't a call.
+
+2024-10-10  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/116831
+	* match.pd: Guard simplification to trunc_mod with check for
+	mod optab support.
+
+2024-10-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Do not compare
+	RHS codes for loads or stores.
+	(vect_get_and_check_slp_defs): Only demote operand to external
+	in case there is more than one operand.
+
+2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::ix86_vector_costs):
+	Add new member m_num_avx256_vec_perm.
+	(ix86_vector_costs::add_stmt_cost): Record 256-bit vec_perm.
+	(ix86_vector_costs::finish_cost): Prevent vectorization for
+	TAREGT_AVX256_AVOID_VEC_PERM when there's 256-bit vec_perm
+	instruction.
+	* config/i386/i386.h (TARGET_AVX256_AVOID_VEC_PERM): New
+	Macro.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_SPLIT_REGS): Add
+	m_CORE_ATOM.
+	(X86_TUNE_AVX256_AVOID_VEC_PERM): New tune.
+
+2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse_movcc): Guard
+	instruction blendv generation under new tune.
+	* config/i386/i386.h (TARGET_SSE_MOVCC_USE_BLENDV): New Macro.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_MOVCC_USE_BLENDV):
+	New tune.
+
+2024-10-10  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386.md: Rewrite insn truncsfbf2.
+
+2024-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-text.cc
+	(diagnostic_text_output_format::after_diagnostic): Replace call to
+	show_any_path with body, taken from diagnostic.cc.
+	(diagnostic_text_output_format::build_prefix): Move here from
+	diagnostic.cc, updating to use get_diagnostic_kind_text and
+	diagnostic_get_color_for_kind.
+	(diagnostic_text_output_format::file_name_as_prefix): Move here
+	from diagnostic.cc
+	(diagnostic_text_output_format::append_note): Likewise.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::show_any_path): Drop decl.
+	* diagnostic.cc
+	(diagnostic_text_output_format::file_name_as_prefix): Move to
+	diagnostic-format-text.cc.
+	(diagnostic_text_output_format::build_prefix): Likewise.
+	(diagnostic_text_output_format::show_any_path): Move to body of
+	diagnostic_text_output_format::after_diagnostic.
+	(diagnostic_text_output_format::append_note): Move to
+	diagnostic-format-text.cc.
+
+2024-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (fdiagnostics-format): Describe "json" et al as
+	deprecated, and remove the long description of the output format.
+
+2024-10-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* lto-wrapper.cc (print_lto_docs_link): Use a format string rather
+	than building the string manually.  Fix memory leak of "url" by
+	using label_text.
+
 2024-10-09  liuhongt  <hongtao.liu@intel.com>
 
 	* tree-vect-loop.cc (vect_analyze_loop_costing): Enable

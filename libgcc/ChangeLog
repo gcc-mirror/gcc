@@ -1,3 +1,9 @@
+2024-10-10  Sébastien Michelland  <sebastien.michelland@lcis.grenoble-inp.fr>
+
+	PR target/29845
+	* config.host (sh-*-elf*): Replace fdpbit with softfp.
+	* config/sh/sfp-machine.h: New file.
+
 2024-10-04  Tsung Chun Lin  <tclin914@gmail.com>
 
 	* config/riscv/save-restore.S: Fix .cfi_offset for saving ra in

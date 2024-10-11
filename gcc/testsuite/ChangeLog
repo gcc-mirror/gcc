@@ -1,3 +1,43 @@
+2024-10-10  Richard Ball  <richard.ball@arm.com>
+
+	PR tree-optimization/116258
+	* gcc.target/aarch64/pr116258.c:
+	Alter test to add big-endian support.
+
+2024-10-10  Li Xu  <xuli1@eswincomputing.com>
+
+	PR target/116883
+	* g++.target/riscv/rvv/base/pr116883.C: New test.
+
+2024-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117060
+	* gfortran.dg/pr117060.f90: New testcase.
+
+2024-10-10  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/116831
+	* gcc.dg/torture/pr116831.c: New test.
+
+2024-10-10  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-57.c: New testcase.
+	* gcc.dg/Wstringop-overflow-47.c: Adjust.
+	* gcc.dg/strlenopt-32.c: XFAIL parts.
+
+2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx256_avoid_vec_perm.c: New test.
+
+2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse_movcc_use_blendv.c: New file.
+
+2024-10-10  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/truncsfbf-1.c: New test.
+	* gcc.target/i386/truncsfbf-2.c: New test.
+
 2024-10-09  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.dg/fstack-protector-strong.c: Adjust
