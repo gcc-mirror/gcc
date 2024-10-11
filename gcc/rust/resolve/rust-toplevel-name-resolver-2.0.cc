@@ -248,6 +248,9 @@ TopLevel::visit (AST::StaticItem &static_item)
     = [this, &static_item] () { static_item.get_expr ().accept_vis (*this); };
 
   ctx.scoped (Rib::Kind::Item, static_item.get_node_id (), sub_vis);
+
+  insert_or_error_out (static_item.get_identifier ().as_string (), static_item,
+		       Namespace::Values);
 }
 
 void
