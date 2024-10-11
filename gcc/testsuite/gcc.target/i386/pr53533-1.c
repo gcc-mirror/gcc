@@ -1,7 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O1" } */
 /* { dg-final { scan-assembler-times "imull\[ \t\]" "1" } } */
-/* { dg-final { scan-assembler-times "(?:addl|subl)\[ \t\]" "1" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "subl\[ \t\]" "1" } } */
+/* { dg-final { scan-assembler-times "add(?:l|q)\[ \t\]" "1" } } */
+/* { dg-final { scan-assembler-not "leal" } } */
 
 void
 __attribute__((noipa))
