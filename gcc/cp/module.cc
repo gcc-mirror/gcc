@@ -2353,6 +2353,8 @@ private:
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
     DB_IS_PENDING_BIT,		/* Is a maybe-pending entity.  */
     DB_TU_LOCAL_BIT,		/* It is a TU-local entity.  */
+    DB_REFS_TU_LOCAL_BIT,	/* Refers to a TU-local entity (but is not
+				   necessarily an exposure.)  */
     DB_EXPOSURE_BIT,		/* Exposes a TU-local entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
@@ -2425,7 +2427,9 @@ public:
 public:
   bool has_defn () const
   {
-    return get_flag_bit<DB_DEFN_BIT> ();
+    /* Never consider TU-local entities as having definitions, since
+       we will never be accessing them from importers anyway.  */
+    return get_flag_bit<DB_DEFN_BIT> () && !is_tu_local ();
   }
 
 public:
@@ -2442,6 +2446,10 @@ public:
   bool is_tu_local () const
   {
     return get_flag_bit<DB_TU_LOCAL_BIT> ();
+  }
+  bool refs_tu_local () const
+  {
+    return get_flag_bit<DB_REFS_TU_LOCAL_BIT> ();
   }
   bool is_exposure () const
   {
@@ -2579,11 +2587,14 @@ public:
     unsigned section;	     /* When writing out, the section.  */
     bool reached_unreached;  /* We reached an unreached entity.  */
     bool writing_merge_key;  /* We're writing merge key information.  */
+    bool ignore_tu_local;    /* In a context where referencing a TU-local
+				entity is not an exposure.  */
 
   public:
     hash (size_t size, hash *c = NULL)
       : parent (size), chain (c), current (NULL), section (0),
-	reached_unreached (false), writing_merge_key (false)
+	reached_unreached (false), writing_merge_key (false),
+	ignore_tu_local (false)
     {
       worklist.create (size);
     }
@@ -2784,6 +2795,7 @@ static GTY((cache)) decl_tree_cache_map *imported_temploid_friends;
 /* Tree tags.  */
 enum tree_tag {
   tt_null,		/* NULL_TREE.  */
+  tt_tu_local,		/* A TU-local entity.  */
   tt_fixed,		/* Fixed vector index.  */
 
   tt_node,		/* By-value node.  */
@@ -3068,6 +3080,8 @@ private:
   depset::hash *dep_hash;    	/* Dependency table.  */
   int ref_num;			/* Back reference number.  */
   unsigned section;
+  bool writing_local_entities;	/* Whether we might walk into a TU-local
+				   entity we need to emit placeholders for.  */
 #if CHECKING_P
   int importedness;		/* Checker that imports not occurring
 				   inappropriately.  +ve imports ok,
@@ -3097,6 +3111,18 @@ public:
   };
 
 public:
+  /* The walk is used for three similar purposes:
+
+      1. The initial scan for dependencies.
+      2. Once dependencies have been found, ordering them.
+      3. Writing dependencies to file (streaming_p).
+
+     For cases where it matters, these accessers can be used to determine
+     which state we're in.  */
+  bool is_initial_scan () const
+  {
+    return !streaming_p () && !is_key_order ();
+  }
   bool is_key_order () const
   {
     return dep_hash->is_key_order ();
@@ -3137,6 +3163,10 @@ private:
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
   void tree_list (tree, bool has_purpose);
 
+private:
+  bool has_tu_local_dep (tree) const;
+  tree find_tu_local_decl (tree);
+
 public:
   /* Mark a node for by-value walking.  */
   void mark_by_value (tree);
@@ -3174,7 +3204,7 @@ public:
 
 public:
   /* Serialize various definitions. */
-  void write_definition (tree decl);
+  void write_definition (tree decl, bool refs_tu_local = false);
   void mark_declaration (tree decl, bool do_defn);
 
 private:
@@ -3202,6 +3232,7 @@ private:
   static unsigned tree_val_count;
   static unsigned decl_val_count;
   static unsigned back_ref_count;
+  static unsigned tu_local_count;
   static unsigned null_count;
 };
 } // anon namespace
@@ -3210,12 +3241,14 @@ private:
 unsigned trees_out::tree_val_count;
 unsigned trees_out::decl_val_count;
 unsigned trees_out::back_ref_count;
+unsigned trees_out::tu_local_count;
 unsigned trees_out::null_count;
 
 trees_out::trees_out (allocator *mem, module_state *state, depset::hash &deps,
 		      unsigned section)
   :parent (mem), state (state), tree_map (500),
-   dep_hash (&deps), ref_num (0), section (section)
+   dep_hash (&deps), ref_num (0), section (section),
+   writing_local_entities (false)
 {
 #if CHECKING_P
   importedness = 0;
@@ -4355,6 +4388,9 @@ dumper::impl::nested_name (tree t)
   int origin = -1;
   tree name = NULL_TREE;
 
+  if (t && TREE_CODE (t) == TU_LOCAL_ENTITY)
+    t = TU_LOCAL_ENTITY_NAME (t);
+
   if (t && TREE_CODE (t) == TREE_BINFO)
     t = BINFO_TYPE (t);
 
@@ -4915,6 +4951,7 @@ trees_out::instrument ()
       dump ("  %u decl trees", decl_val_count);
       dump ("  %u other trees", tree_val_count);
       dump ("  %u back references", back_ref_count);
+      dump ("  %u TU-local entities", tu_local_count);
       dump ("  %u null trees", null_count);
     }
 }
@@ -7873,6 +7910,17 @@ trees_out::decl_value (tree decl, depset *dep)
 		       || DECL_ORIGINAL_TYPE (decl)
 		       || !TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)));
 
+  /* There's no need to walk any of the contents of a known TU-local entity,
+     since importers should never see any of it regardless.  But make sure we
+     at least note its location so importers can use it for diagnostics.  */
+  if (dep && dep->is_tu_local ())
+    {
+      gcc_checking_assert (is_initial_scan ());
+      insert (decl, WK_value);
+      state->note_location (DECL_SOURCE_LOCATION (decl));
+      return;
+    }
+
   merge_kind mk = get_merge_kind (decl, dep);
   bool is_imported_temploid_friend = imported_temploid_friends->get (decl);
 
@@ -8457,14 +8505,17 @@ trees_in::decl_value ()
 	  /* Frob it to be ready for cloning.  */
 	  TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
 	  DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
-	  set_underlying_type (inner);
-	  if (tdef_flags & 2)
+	  if (TREE_CODE (TREE_TYPE (inner)) != TU_LOCAL_ENTITY)
 	    {
-	      /* Match instantiate_alias_template's handling.  */
-	      tree type = TREE_TYPE (inner);
-	      TYPE_DEPENDENT_P (type) = true;
-	      TYPE_DEPENDENT_P_VALID (type) = true;
-	      SET_TYPE_STRUCTURAL_EQUALITY (type);
+	      set_underlying_type (inner);
+	      if (tdef_flags & 2)
+		{
+		  /* Match instantiate_alias_template's handling.  */
+		  tree type = TREE_TYPE (inner);
+		  TYPE_DEPENDENT_P (type) = true;
+		  TYPE_DEPENDENT_P_VALID (type) = true;
+		  SET_TYPE_STRUCTURAL_EQUALITY (type);
+		}
 	    }
 	}
 
@@ -8969,10 +9020,14 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	}
       tree_node (tpl);
 
-      /* Streaming TPL caused us to visit DECL and maybe its type.  */
-      gcc_checking_assert (TREE_VISITED (decl));
-      if (DECL_IMPLICIT_TYPEDEF_P (decl))
-	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
+      /* Streaming TPL caused us to visit DECL and maybe its type,
+	 if it wasn't TU-local.  */
+      if (CHECKING_P && !has_tu_local_dep (tpl))
+	{
+	  gcc_checking_assert (TREE_VISITED (decl));
+	  if (DECL_IMPLICIT_TYPEDEF_P (decl))
+	    gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
+	}
       return false;
     }
 
@@ -8992,10 +9047,10 @@ trees_out::decl_node (tree decl, walk_kind ref)
       dep = dep_hash->add_dependency (decl, kind);
     }
 
-  if (!dep)
+  if (!dep || dep->is_tu_local ())
     {
       /* Some internal entity of context.  Do by value.  */
-      decl_value (decl, NULL);
+      decl_value (decl, dep);
       return false;
     }
 
@@ -9151,7 +9206,10 @@ trees_out::type_node (tree type)
 	if (streaming_p ())
 	  dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
 				       TREE_CODE (name), name, name);
-	gcc_checking_assert (TREE_VISITED (type));
+
+	/* We'll have either visited this type or have newly discovered
+	   that it's TU-local; either way we won't need to visit it again.  */
+	gcc_checking_assert (TREE_VISITED (type) || has_tu_local_dep (name));
 	return;
       }
 
@@ -9435,6 +9493,64 @@ trees_in::tree_value ()
   return existing;
 }
 
+/* Whether DECL has a TU-local dependency in the hash.  */
+
+bool
+trees_out::has_tu_local_dep (tree decl) const
+{
+  /* Only the contexts of fields or enums remember that they're
+     TU-local.  */
+  if (DECL_CONTEXT (decl)
+      && (TREE_CODE (decl) == FIELD_DECL
+	  || TREE_CODE (decl) == CONST_DECL))
+    decl = TYPE_NAME (DECL_CONTEXT (decl));
+
+  depset *dep = dep_hash->find_dependency (decl);
+  return dep && dep->is_tu_local ();
+}
+
+/* If T depends on a TU-local entity, return that decl.  */
+
+tree
+trees_out::find_tu_local_decl (tree t)
+{
+  /* We need to have walked all deps first before we can check.  */
+  gcc_checking_assert (!is_initial_scan ());
+
+  auto walker = [](tree *tp, int *walk_subtrees, void *data) -> tree
+    {
+      auto self = (trees_out *)data;
+
+      tree decl = NULL_TREE;
+      if (TYPE_P (*tp))
+	{
+	  /* A PMF type is a record type, which we otherwise wouldn't walk;
+	     return whether the function type is TU-local.  */
+	  if (TYPE_PTRMEMFUNC_P (*tp))
+	    {
+	      *walk_subtrees = 0;
+	      return self->find_tu_local_decl (TYPE_PTRMEMFUNC_FN_TYPE (*tp));
+	    }
+	  else
+	    decl = TYPE_MAIN_DECL (*tp);
+	}
+      else if (DECL_P (*tp))
+	decl = *tp;
+
+      if (decl)
+	{
+	  /* We found a DECL, this will tell us whether we're TU-local.  */
+	  *walk_subtrees = 0;
+	  return self->has_tu_local_dep (decl) ? decl : NULL_TREE;
+	}
+      return NULL_TREE;
+    };
+
+  /* We need to walk without duplicates so that we step into the pointed-to
+     types of array types.  */
+  return cp_walk_tree_without_duplicates (&t, walker, this);
+}
+
 /* Stream out tree node T.  We automatically create local back
    references, which is essentially a single pass lisp
    self-referential structure pretty-printer.  */
@@ -9446,6 +9562,46 @@ trees_out::tree_node (tree t)
   walk_kind ref = ref_node (t);
   if (ref == WK_none)
     goto done;
+
+  /* Find TU-local entities and intercept streaming to instead write a
+     placeholder value; this way we don't need to emit such decls.
+     We only need to do this when writing a definition of an entity
+     that we know names a TU-local entity.  */
+  if (!is_initial_scan () && writing_local_entities)
+    {
+      tree local_decl = NULL_TREE;
+      if (DECL_P (t) && has_tu_local_dep (t))
+	local_decl = t;
+      /* Consider a type to be TU-local if it refers to any TU-local decl,
+	 no matter how deep.
+
+	 This worsens diagnostics slightly, as we often no longer point
+	 directly to the at-fault entity when instantiating.  However, this
+	 reduces the module size slightly and means that much less of pt.cc
+	 needs to know about us.  */
+      else if (TYPE_P (t))
+	local_decl = find_tu_local_decl (t);
+      else if (EXPR_P (t))
+	local_decl = find_tu_local_decl (TREE_TYPE (t));
+
+      if (local_decl)
+	{
+	  int tag = insert (t, WK_value);
+	  if (streaming_p ())
+	    {
+	      tu_local_count++;
+	      i (tt_tu_local);
+	      dump (dumper::TREE)
+		&& dump ("Writing TU-local entity:%d %C:%N",
+			 tag, TREE_CODE (t), t);
+	    }
+	  /* TODO: Get a more descriptive name?  */
+	  tree_node (DECL_NAME (local_decl));
+	  if (state)
+	    state->write_location (*this, DECL_SOURCE_LOCATION (local_decl));
+	  goto done;
+	}
+    }
 
   if (ref != WK_normal)
     goto skip_normal;
@@ -9601,6 +9757,18 @@ trees_in::tree_node (bool is_use)
 
     case tt_null:
       /* NULL_TREE.  */
+      break;
+
+    case tt_tu_local:
+      {
+	/* A translation-unit-local entity.  */
+	res = make_node (TU_LOCAL_ENTITY);
+	int tag = insert (res);
+
+	TU_LOCAL_ENTITY_NAME (res) = tree_node ();
+	TU_LOCAL_ENTITY_LOCATION (res) = state->read_location (*this);
+	dump (dumper::TREE) && dump ("Read TU-local entity:%d %N", tag, res);
+      }
       break;
 
     case tt_fixed:
@@ -10228,7 +10396,8 @@ trees_in::tree_node (bool is_use)
       /* A template.  */
       if (tree tpl = tree_node ())
 	{
-	  res = DECL_TEMPLATE_RESULT (tpl);
+	  res = (TREE_CODE (tpl) == TU_LOCAL_ENTITY ?
+		 tpl : DECL_TEMPLATE_RESULT (tpl));
 	  dump (dumper::TREE)
 	    && dump ("Read template %C:%N", TREE_CODE (res), res);
 	}
@@ -12054,8 +12223,18 @@ void
 trees_out::write_function_def (tree decl)
 {
   tree_node (DECL_RESULT (decl));
-  tree_node (DECL_INITIAL (decl));
-  tree_node (DECL_SAVED_TREE (decl));
+
+  {
+    /* The function body for a non-inline function or function template
+       is ignored for determining exposures.  This should only matter
+       for templates (we don't emit the bodies of non-inline functions
+       to begin with).  */
+    auto ovr = make_temp_override (dep_hash->ignore_tu_local,
+				   !DECL_DECLARED_INLINE_P (decl));
+    tree_node (DECL_INITIAL (decl));
+    tree_node (DECL_SAVED_TREE (decl));
+  }
+
   tree_node (DECL_FRIEND_CONTEXT (decl));
 
   constexpr_fundef *cexpr = retrieve_constexpr_fundef (decl);
@@ -12157,6 +12336,10 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 void
 trees_out::write_var_def (tree decl)
 {
+  /* The initializer of a variable or variable template is ignored for
+     determining exposures.  */
+  auto ovr = make_temp_override (dep_hash->ignore_tu_local, VAR_P (decl));
+
   tree init = DECL_INITIAL (decl);
   tree_node (init);
   if (!init)
@@ -12344,21 +12527,28 @@ trees_out::write_class_def (tree defn)
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	write_definition (vtables);
 
-      /* Write the friend classes.  */
-      tree_list (CLASSTYPE_FRIEND_CLASSES (type), false);
+      {
+	/* Friend declarations in class definitions are ignored when
+	   determining exposures.  */
+	auto ovr = make_temp_override (dep_hash->ignore_tu_local, true);
 
-      /* Write the friend functions.  */
-      for (tree friends = DECL_FRIENDLIST (defn);
-	   friends; friends = TREE_CHAIN (friends))
-	{
-	  /* Name of these friends.  */
-	  tree_node (TREE_PURPOSE (friends));
-	  tree_list (TREE_VALUE (friends), false);
-	}
-      /* End of friend fns.  */
-      tree_node (NULL_TREE);
+	/* Write the friend classes.  */
+	tree_list (CLASSTYPE_FRIEND_CLASSES (type), false);
 
-      /* Write the decl list.  */
+	/* Write the friend functions.  */
+	for (tree friends = DECL_FRIENDLIST (defn);
+	     friends; friends = TREE_CHAIN (friends))
+	  {
+	    tree_node (FRIEND_NAME (friends));
+	    tree_list (FRIEND_DECLS (friends), false);
+	  }
+	/* End of friend fns.  */
+	tree_node (NULL_TREE);
+      }
+
+      /* Write the decl list.  We don't need to ignore exposures of friend
+	 decls here as any such decls should already have been added and
+	 ignored above.  */
       tree_list (CLASSTYPE_DECL_LIST (type), true);
 
       if (TYPE_CONTAINS_VPTR_P (type))
@@ -12729,6 +12919,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 		 friend_decls; friend_decls = TREE_CHAIN (friend_decls))
 	      {
 		tree f = TREE_VALUE (friend_decls);
+		if (TREE_CODE (f) == TU_LOCAL_ENTITY)
+		  continue;
 
 		DECL_BEFRIENDING_CLASSES (f)
 		  = tree_cons (NULL_TREE, type, DECL_BEFRIENDING_CLASSES (f));
@@ -12877,8 +13069,11 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 /* Write out the body of DECL.  See above circularity note.  */
 
 void
-trees_out::write_definition (tree decl)
+trees_out::write_definition (tree decl, bool refs_tu_local)
 {
+  auto ovr = make_temp_override (writing_local_entities,
+				 writing_local_entities || refs_tu_local);
+
   if (streaming_p ())
     {
       assert_definition (decl);
@@ -13477,7 +13672,11 @@ depset::hash::add_dependency (depset *dep)
   current->deps.safe_push (dep);
 
   if (dep->is_tu_local ())
-    current->set_flag_bit<DB_EXPOSURE_BIT> ();
+    {
+      current->set_flag_bit<DB_REFS_TU_LOCAL_BIT> ();
+      if (!ignore_tu_local)
+	current->set_flag_bit<DB_EXPOSURE_BIT> ();
+    }
 
   if (current->get_entity_kind () == EK_USING
       && DECL_IMPLICIT_TYPEDEF_P (dep->get_entity ())
@@ -14138,7 +14337,7 @@ depset::hash::find_dependencies (module_state *module)
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
 
-		  if (!walker.is_key_order ()
+		  if (!is_key_order ()
 		      && item->is_pending_entity ())
 		    {
 		      tree ns = find_pending_key (decl, nullptr);
@@ -14147,15 +14346,15 @@ depset::hash::find_dependencies (module_state *module)
 
 		  walker.decl_value (decl, current);
 		  if (current->has_defn ())
-		    walker.write_definition (decl);
+		    walker.write_definition (decl, current->refs_tu_local ());
 		}
 	      walker.end ();
 
-	      if (!walker.is_key_order ()
+	      if (!is_key_order ()
 		  && DECL_CLASS_TEMPLATE_P (decl))
 		add_deduction_guides (decl);
 
-	      if (!walker.is_key_order ()
+	      if (!is_key_order ()
 		  && TREE_CODE (decl) == TEMPLATE_DECL
 		  && !DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 		{
@@ -14288,6 +14487,24 @@ binding_cmp (const void *a_, const void *b_)
   return DECL_UID (a_ent) < DECL_UID (b_ent) ? -1 : +1;
 }
 
+/* True iff TMPL has an explicit instantiation definition.
+
+   This is local to module.cc because register_specialization skips adding most
+   instantiations unless module_maybe_has_cmi_p.  */
+
+static bool
+template_has_explicit_inst (tree tmpl)
+{
+  for (tree t = DECL_TEMPLATE_INSTANTIATIONS (tmpl); t; t = TREE_CHAIN (t))
+    {
+      tree spec = TREE_VALUE (t);
+      if (DECL_EXPLICIT_INSTANTIATION (spec)
+	  && !DECL_REALLY_EXTERN (spec))
+	return true;
+    }
+  return false;
+}
+
 /* Sort the bindings, issue errors about bad internal refs.  */
 
 bool
@@ -14343,6 +14560,39 @@ depset::hash::finalize_dependencies ()
 
 	  /* We should have emitted an error above.  */
 	  gcc_checking_assert (explained);
+	}
+      else if (warn_template_names_tu_local
+	       && dep->refs_tu_local () && !dep->is_tu_local ())
+	{
+	  tree decl = dep->get_entity ();
+
+	  /* Friend decls in a class body are ignored, but this is harmless:
+	     it should not impact any consumers.  */
+	  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+	    continue;
+
+	  /* We should now only be warning about templates.  */
+	  gcc_checking_assert
+	    (TREE_CODE (decl) == TEMPLATE_DECL
+	     && VAR_OR_FUNCTION_DECL_P (DECL_TEMPLATE_RESULT (decl)));
+
+	  /* Don't warn if we've seen any explicit instantiation definitions,
+	     the intent might be for importers to only use those.  */
+	  if (template_has_explicit_inst (decl))
+	    continue;
+
+	  for (depset *rdep : dep->deps)
+	    if (!rdep->is_binding () && rdep->is_tu_local ())
+	      {
+		tree ref = rdep->get_entity ();
+		auto_diagnostic_group d;
+		if (warning_at (DECL_SOURCE_LOCATION (decl),
+				OPT_Wtemplate_names_tu_local,
+				"%qD refers to TU-local entity %qD and cannot "
+				"be instantiated in other TUs", decl, ref))
+		  is_tu_local_entity (ref, /*explain=*/true);
+		break;
+	      }
 	}
     }
 
@@ -15513,8 +15763,9 @@ enum ct_bind_flags
 void
 module_state::intercluster_seed (trees_out &sec, unsigned index_hwm, depset *dep)
 {
-  if (dep->is_import ()
-      || dep->cluster < index_hwm)
+  if (dep->is_tu_local ())
+    /* We only stream placeholders for TU-local entities anyway.  */;
+  else if (dep->is_import () || dep->cluster < index_hwm)
     {
       tree ent = dep->get_entity ();
       if (!TREE_VISITED (ent))
@@ -15735,7 +15986,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	      sec.u (ct_defn);
 	      sec.tree_node (decl);
 	      dump () && dump ("Writing definition %N", decl);
-	      sec.write_definition (decl);
+	      sec.write_definition (decl, b->refs_tu_local ());
 
 	      if (!namer->has_defn ())
 		namer = b;

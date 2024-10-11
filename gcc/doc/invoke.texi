@@ -272,7 +272,7 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
--Wno-template-id-cdtor
+-Wno-template-id-cdtor  -Wtemplate-names-tu-local
 -Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
 
@@ -4624,6 +4624,24 @@ template<typename T> struct S @{
 
 @option{-Wtemplate-id-cdtor} is enabled by default with
 @option{-std=c++20}; it is also enabled by @option{-Wc++20-compat}.
+
+@opindex Wtemplate-names-tu-local
+@opindex Wno-template-names-tu-local
+@item -Wtemplate-names-tu-local
+Warn when a template body hides an exposure of a translation-unit-local
+entity.  In most cases, referring to a translation-unit-local entity
+(such as an internal linkage declaration) within an entity that is
+emitted into a module's CMI is an error.  However, within the
+initializer of a variable, or in the body of a non-inline function,
+this is not an exposure and no error is emitted.
+
+This can cause variable or function templates to accidentally become
+unusable if they reference such an entity, because other translation
+units that import the template will never be able to instantiate it.
+This warning attempts to detect cases where this might occur.
+The presence of an explicit instantiation silences the warning.
+
+This flag is enabled by @option{-Wextra}.
 
 @opindex Wterminate
 @opindex Wno-terminate

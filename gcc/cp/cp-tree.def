@@ -575,6 +575,12 @@ DEFTREECODE (ASSERTION_STMT, "assertion_stmt", tcc_statement, 3)
 DEFTREECODE (PRECONDITION_STMT, "precondition_stmt", tcc_statement, 3)
 DEFTREECODE (POSTCONDITION_STMT, "postcondition_stmt", tcc_statement, 4)
 
+/* A reference to a translation-unit local entity.
+
+   This is emitted by modules streaming when writing a TU-local entity that
+   wasn't an exposure (e.g. in a non-inline function template).  */
+DEFTREECODE (TU_LOCAL_ENTITY, "tu_local_entity", tcc_exceptional, 0)
+
 /*
 Local variables:
 mode:c

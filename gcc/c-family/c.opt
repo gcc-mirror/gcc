@@ -1485,6 +1485,10 @@ Wtemplate-id-cdtor
 C++ ObjC++ Var(warn_template_id_cdtor) Warning
 Warn about simple-template-id in a constructor or destructor.
 
+Wtemplate-names-tu-local
+C++ ObjC++ Var(warn_template_names_tu_local) Warning EnabledBy(Wextra)
+Warn about templates naming TU-local entities in a module.
+
 Wterminate
 C++ ObjC++ Warning Var(warn_terminate) Init(1)
 Warn if a throw expression will always result in a call to terminate().
