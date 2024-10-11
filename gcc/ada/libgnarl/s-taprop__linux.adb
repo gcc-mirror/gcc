@@ -259,6 +259,11 @@ package body System.Task_Primitives.Operations is
    --  Initialize the lock L. If Ceiling_Support is True, then set the ceiling
    --  to Prio. Returns 0 for success, or ENOMEM for out-of-memory.
 
+   function Requires_Affinity_Change
+     (Domain : Dispatching_Domain_Access) return Boolean;
+   --  Returns whether a call to pthread_setaffinity_np is required to assign a
+   --  task to Domain.
+
    -------------------
    -- Abort_Handler --
    -------------------
@@ -520,6 +525,20 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result in 0 | EINVAL);
       Ceiling_Violation := Result = EINVAL;
    end Read_Lock;
+
+   ------------------------------
+   -- Requires_Affinity_Change --
+   ------------------------------
+
+   function Requires_Affinity_Change
+     (Domain : Dispatching_Domain_Access) return Boolean is
+   begin
+      return
+        Domain /= System_Domain
+        or else Domain.all
+                /= [Multiprocessors.CPU'First
+                    .. Multiprocessors.Number_Of_CPUs => True];
+   end Requires_Affinity_Change;
 
    ------------
    -- Unlock --
@@ -941,7 +960,9 @@ package body System.Task_Primitives.Operations is
 
       --  Support is available
 
-      elsif T.Common.Base_CPU /= Multiprocessors.Not_A_Specific_CPU then
+      elsif T.Common.CPU_Is_Explicit
+        and then T.Common.Base_CPU /= Multiprocessors.Not_A_Specific_CPU
+      then
          declare
             CPUs    : constant size_t :=
                         C.size_t (Multiprocessors.Number_Of_CPUs);
@@ -971,7 +992,7 @@ package body System.Task_Primitives.Operations is
 
       --  Handle dispatching domains
 
-      else
+      elsif Requires_Affinity_Change (T.Common.Domain) then
          declare
             CPUs    : constant size_t :=
                         C.size_t (Multiprocessors.Number_Of_CPUs);
@@ -1464,6 +1485,8 @@ package body System.Task_Primitives.Operations is
 
       if pthread_setaffinity_np'Address /= Null_Address
         and then T.Common.LL.Thread /= Null_Thread_Id
+        and then (T.Common.CPU_Is_Explicit
+                  or else Requires_Affinity_Change (T.Common.Domain))
       then
          declare
             CPUs         : constant size_t :=

@@ -518,6 +518,17 @@ package System.Tasking is
       --
       --  Protection: Only written by Self, accessed by anyone
 
+      CPU_Is_Explicit : Boolean;
+      --  True if the task is either assigned to a CPU or explicitly not
+      --  assigned to a CPU through Not_A_Specific_CPU being used with the CPU
+      --  Aspect a subprogram in System.Multiprocessors.Dispatching_Domains.
+      --  False otherwise.
+      --  We keep track of this information to make it possible to accomodate
+      --  native affinity inheritance on some platforms when no RM D.16
+      --  features are used. An example of such a platform is Linux, where we
+      --  strive to make the taskset command line tool have the expected effect
+      --  when the program does not use RM D.16 features.
+
       Base_CPU : System.Multiprocessors.CPU_Range;
       --  Base CPU, only changed via dispatching domains package.
       --
@@ -1184,18 +1195,19 @@ package System.Tasking is
    --  System.Tasking.Initialization being present, as was done before.
 
    procedure Initialize_ATCB
-     (Self_ID              : Task_Id;
-      Task_Entry_Point     : Task_Procedure_Access;
-      Task_Arg             : System.Address;
-      Parent               : Task_Id;
-      Elaborated           : Access_Boolean;
-      Base_Priority        : System.Any_Priority;
-      Base_CPU             : System.Multiprocessors.CPU_Range;
-      Domain               : Dispatching_Domain_Access;
-      Task_Info            : System.Task_Info.Task_Info_Type;
-      Stack_Size           : System.Parameters.Size_Type;
-      T                    : Task_Id;
-      Success              : out Boolean);
+     (Self_ID          : Task_Id;
+      Task_Entry_Point : Task_Procedure_Access;
+      Task_Arg         : System.Address;
+      Parent           : Task_Id;
+      Elaborated       : Access_Boolean;
+      Base_Priority    : System.Any_Priority;
+      Base_CPU         : System.Multiprocessors.CPU_Range;
+      CPU_Is_Explicit  : Boolean;
+      Domain           : Dispatching_Domain_Access;
+      Task_Info        : System.Task_Info.Task_Info_Type;
+      Stack_Size       : System.Parameters.Size_Type;
+      T                : Task_Id;
+      Success          : out Boolean);
    --  Initialize fields of the TCB for task T, and link into global TCB
    --  structures. Call this only with abort deferred and holding RTS_Lock.
    --  Self_ID is the calling task (normally the activator of T). Success is

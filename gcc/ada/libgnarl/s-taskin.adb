@@ -89,12 +89,12 @@ package body System.Tasking is
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
+      CPU_Is_Explicit  : Boolean;
       Domain           : Dispatching_Domain_Access;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
-      Success          : out Boolean)
-   is
+      Success          : out Boolean) is
    begin
       T.Common.State := Unactivated;
 
@@ -110,9 +110,10 @@ package body System.Tasking is
       --  would be illegal, because Common_ATCB is limited because
       --  Task_Primitives.Private_Data is limited.
 
-      T.Common.Parent                   := Parent;
-      T.Common.Base_Priority            := Base_Priority;
-      T.Common.Base_CPU                 := Base_CPU;
+      T.Common.Parent := Parent;
+      T.Common.Base_Priority := Base_Priority;
+      T.Common.CPU_Is_Explicit := CPU_Is_Explicit;
+      T.Common.Base_CPU := Base_CPU;
 
       --  The Domain defaults to that of the activator. But that can be null in
       --  the case of foreign threads (see Register_Foreign_Thread), in which
@@ -235,6 +236,7 @@ package body System.Tasking is
          Elaborated       => null,
          Base_Priority    => Base_Priority,
          Base_CPU         => Base_CPU,
+         CPU_Is_Explicit  => Main_CPU /= Unspecified_CPU,
          Domain           => System_Domain,
          Task_Info        => Task_Info.Unspecified_Task_Info,
          Stack_Size       => 0,
