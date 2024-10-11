@@ -2352,7 +2352,8 @@ m68k_legitimate_mem_p (rtx x, struct m68k_address *address)
 {
   return (MEM_P (x)
 	  && m68k_decompose_address (GET_MODE (x), XEXP (x, 0),
-				     reload_in_progress || reload_completed,
+				     (reload_in_progress || lra_in_progress
+				      || reload_completed),
 				     address));
 }
 
@@ -3899,11 +3900,13 @@ emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
   rtx tem;
 
   if (scratch_reg
-      && reload_in_progress && GET_CODE (operand0) == REG
+      && (reload_in_progress || lra_in_progress)
+      && GET_CODE (operand0) == REG
       && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
     operand0 = reg_equiv_mem (REGNO (operand0));
   else if (scratch_reg
-	   && reload_in_progress && GET_CODE (operand0) == SUBREG
+	   && (reload_in_progress || lra_in_progress)
+	   && GET_CODE (operand0) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand0)) == REG
 	   && REGNO (SUBREG_REG (operand0)) >= FIRST_PSEUDO_REGISTER)
     {
@@ -3916,11 +3919,13 @@ emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
     }
 
   if (scratch_reg
-      && reload_in_progress && GET_CODE (operand1) == REG
+      && (reload_in_progress || lra_in_progress)
+      && GET_CODE (operand1) == REG
       && REGNO (operand1) >= FIRST_PSEUDO_REGISTER)
     operand1 = reg_equiv_mem (REGNO (operand1));
   else if (scratch_reg
-	   && reload_in_progress && GET_CODE (operand1) == SUBREG
+	   && (reload_in_progress || lra_in_progress)
+	   && GET_CODE (operand1) == SUBREG
 	   && GET_CODE (SUBREG_REG (operand1)) == REG
 	   && REGNO (SUBREG_REG (operand1)) >= FIRST_PSEUDO_REGISTER)
     {
@@ -3932,11 +3937,13 @@ emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
       operand1 = alter_subreg (&temp, true);
     }
 
-  if (scratch_reg && reload_in_progress && GET_CODE (operand0) == MEM
+  if (scratch_reg && (reload_in_progress || lra_in_progress)
+      && GET_CODE (operand0) == MEM
       && ((tem = find_replacement (&XEXP (operand0, 0)))
 	  != XEXP (operand0, 0)))
     operand0 = gen_rtx_MEM (GET_MODE (operand0), tem);
-  if (scratch_reg && reload_in_progress && GET_CODE (operand1) == MEM
+  if (scratch_reg && (reload_in_progress || lra_in_progress)
+      && GET_CODE (operand1) == MEM
       && ((tem = find_replacement (&XEXP (operand1, 0)))
 	  != XEXP (operand1, 0)))
     operand1 = gen_rtx_MEM (GET_MODE (operand1), tem);
