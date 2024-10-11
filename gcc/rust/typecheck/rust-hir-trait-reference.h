@@ -246,6 +246,8 @@ public:
 
   HIR::ImplBlock *get_impl_block ();
 
+  location_t get_locus () const;
+
   TyTy::BaseType *get_self ();
   const TyTy::BaseType *get_self () const;
 

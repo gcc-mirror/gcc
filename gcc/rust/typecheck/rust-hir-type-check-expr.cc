@@ -1822,10 +1822,20 @@ TypeCheckExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
       HIR::ImplBlock *parent = impl_item.first;
       HIR::Function *fn = impl_item.second;
 
-      if (parent->has_trait_ref ()
-	  && fn->get_function_name ().as_string ().compare (
-	       associated_item_name)
-	       == 0)
+      bool is_deref = lang_item_type == LangItem::Kind::DEREF
+		      || lang_item_type == LangItem::Kind::DEREF_MUT;
+      bool is_deref_match = fn->get_function_name ().as_string ().compare (
+			      LangItem::ToString (LangItem::Kind::DEREF))
+			      == 0
+			    || fn->get_function_name ().as_string ().compare (
+				 LangItem::ToString (LangItem::Kind::DEREF_MUT))
+				 == 0;
+
+      bool is_recursive_op
+	= fn->get_function_name ().as_string ().compare (associated_item_name)
+	    == 0
+	  || (is_deref && is_deref_match);
+      if (parent->has_trait_ref () && is_recursive_op)
 	{
 	  TraitReference *trait_reference
 	    = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
@@ -1842,7 +1852,8 @@ TypeCheckExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
 
 	      bool is_lang_item_impl
 		= trait_reference->get_mappings ().get_defid ()
-		  == respective_lang_item_id;
+		    == respective_lang_item_id
+		  || (is_deref && is_deref_match);
 	      bool self_is_lang_item_self
 		= fntype->get_self_type ()->is_equal (*adjusted_self);
 	      bool recursive_operator_overload
