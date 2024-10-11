@@ -498,12 +498,14 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __copy_move_a1(_II, _II, _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>);
 
   template<bool _IsMove, typename _II, typename _OI>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_a1(_II __first, _II __last, _OI __result)
     { return std::__copy_move_a2<_IsMove>(__first, __last, __result); }
 
   template<bool _IsMove, typename _II, typename _OI>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_a(_II __first, _II __last, _OI __result)
@@ -755,6 +757,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #undef _GLIBCXX_ADVANCE
 
   template<bool _IsMove, typename _BI1, typename _BI2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     __copy_move_backward_a1(_BI1 __first, _BI1 __last, _BI2 __result)
@@ -783,6 +786,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 			    _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>);
 
   template<bool _IsMove, typename _II, typename _OI>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_backward_a(_II __first, _II __last, _OI __result)
@@ -838,6 +842,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
@@ -873,6 +878,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     move_backward(_BI1 __first, _BI1 __last, _BI2 __result)
@@ -956,6 +962,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _Ite, typename _Cont, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline void
     __fill_a1(::__gnu_cxx::__normal_iterator<_Ite, _Cont> __first,
@@ -975,6 +982,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	    const bool&);
 
   template<typename _FIte, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline void
     __fill_a(_FIte __first, _FIte __last, const _Tp& __value)
@@ -1000,6 +1008,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  to @c memset or @c wmemset.
   */
   template<typename _ForwardIterator, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline void
     fill(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
@@ -1106,6 +1115,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	       std::input_iterator_tag);
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
@@ -1118,6 +1128,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
@@ -1130,6 +1141,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
@@ -1165,6 +1177,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   // DR 865. More algorithms that throw away information
   // DR 426. search_n(), fill_n(), and generate_n() with negative n
   template<typename _OI, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     fill_n(_OI __first, _Size __n, const _Tp& __value)
@@ -1244,6 +1257,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _II1, typename _II2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline bool
     __equal_aux(_II1 __first1, _II1 __last1, _II2 __first2)
