@@ -1,3 +1,12 @@
+2024-10-10  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-10-10  Richard Ball  <richard.ball@arm.com>
+
+	PR tree-optimization/116258
+	* gcc.target/aarch64/pr116258.c:
+	Alter test to add big-endian support.
+
 2024-10-09  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:
