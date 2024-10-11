@@ -414,7 +414,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_byte // C++ >= 17
   enum class byte : unsigned char;
 
   template<>
