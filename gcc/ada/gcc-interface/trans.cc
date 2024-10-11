@@ -9765,9 +9765,7 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 	  {
 	    /* For package specs, we recurse inside the declarations,
 	       thus taking the two pass approach inside the boundary.  */
-	    if (Nkind (gnat_decl) == N_Package_Declaration
-		&& (Nkind (Specification (gnat_decl)
-			   == N_Package_Specification)))
+	    if (Nkind (gnat_decl) == N_Package_Declaration)
 	      process_decls (Visible_Declarations (Specification (gnat_decl)),
 			     Private_Declarations (Specification (gnat_decl)),
 			     true, false);
@@ -9853,9 +9851,7 @@ process_decls (List_Id gnat_decls, List_Id gnat_decls2,
 		|| Nkind (gnat_decl) == N_Protected_Body_Stub)
 	      add_stmt (gnat_to_gnu (gnat_decl));
 
-	    else if (Nkind (gnat_decl) == N_Package_Declaration
-		     && (Nkind (Specification (gnat_decl)
-				== N_Package_Specification)))
+	    else if (Nkind (gnat_decl) == N_Package_Declaration)
 	      process_decls (Visible_Declarations (Specification (gnat_decl)),
 			     Private_Declarations (Specification (gnat_decl)),
 			     false, true);
