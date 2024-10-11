@@ -42,8 +42,23 @@ CompileItem::visit (HIR::StaticItem &var)
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
 
-  auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
-    var.get_mappings ().get_nodeid ());
+  tl::optional<Resolver::CanonicalPath> canonical_path;
+
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path
+	= nr_ctx.values.to_canonical_path (var.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path = ctx->get_mappings ().lookup_canonical_path (
+	var.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path.has_value ());
 
   HIR::Expr *const_value_expr = var.get_expr ().get ();
   ctx->push_const_context ();
