@@ -3150,7 +3150,9 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
 {
   gcc_checking_assert (ix86_fp_comparison_strategy (GT) != IX86_FPCMP_ARITH);
   rtx zero = NULL_RTX;
-  if (op2 != const0_rtx && TARGET_IEEE_FP && GET_MODE (dest) == SImode)
+  if (op2 != const0_rtx
+      && (TARGET_IEEE_FP || TARGET_ZERO_EXTEND_WITH_AND)
+      && GET_MODE (dest) == SImode)
     zero = force_reg (SImode, const0_rtx);
   rtx gt = ix86_expand_fp_compare (GT, op0, op1);
   rtx l0 = op2 == const0_rtx ? gen_label_rtx () : NULL_RTX;
@@ -3190,15 +3192,20 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
     }
   else
     {
-      rtx lt_tmp = gen_reg_rtx (QImode);
-      ix86_expand_setcc (lt_tmp, UNLT, gen_rtx_REG (CCFPmode, FLAGS_REG),
-			 const0_rtx);
-      if (GET_MODE (dest) != QImode)
+      rtx lt_tmp = NULL_RTX;
+      if (GET_MODE (dest) != SImode || !TARGET_ZERO_EXTEND_WITH_AND)
 	{
-	  tmp = gen_reg_rtx (GET_MODE (dest));
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
-							    lt_tmp)));
-	  lt_tmp = tmp;
+	  lt_tmp = gen_reg_rtx (QImode);
+	  ix86_expand_setcc (lt_tmp, UNLT, gen_rtx_REG (CCFPmode, FLAGS_REG),
+			     const0_rtx);
+	  if (GET_MODE (dest) != QImode)
+	    {
+	      tmp = gen_reg_rtx (GET_MODE (dest));
+	      emit_insn (gen_rtx_SET (tmp,
+				      gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							   lt_tmp)));
+	      lt_tmp = tmp;
+	    }
 	}
       rtx gt_tmp;
       if (zero)
@@ -3206,7 +3213,9 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
 	  /* If TARGET_IEEE_FP and dest has SImode, emit SImode clear
 	     before the floating point comparison and use setcc_si_slp
 	     pattern to hide it from the combiner, so that it doesn't
-	     undo it.  */
+	     undo it.  Similarly for TARGET_ZERO_EXTEND_WITH_AND, where
+	     the ZERO_EXTEND normally emitted would need to be AND
+	     with flags clobber.  */
 	  tmp = ix86_expand_compare (GT, XEXP (gt, 0), const0_rtx);
 	  PUT_MODE (tmp, QImode);
 	  emit_insn (gen_setcc_si_slp (zero, tmp, zero));
@@ -3225,10 +3234,23 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
 	      gt_tmp = tmp;
 	    }
 	}
-      tmp = expand_simple_binop (GET_MODE (dest), MINUS, gt_tmp, lt_tmp, dest,
-				 0, OPTAB_DIRECT);
-      if (!rtx_equal_p (tmp, dest))
-	emit_move_insn (dest, tmp);
+      if (lt_tmp)
+	{
+	  tmp = expand_simple_binop (GET_MODE (dest), MINUS, gt_tmp, lt_tmp,
+				     dest, 0, OPTAB_DIRECT);
+	  if (!rtx_equal_p (tmp, dest))
+	    emit_move_insn (dest, tmp);
+	}
+      else
+	{
+	  /* For TARGET_ZERO_EXTEND_WITH_AND emit sbb directly, as we can't
+	     do ZERO_EXTEND without clobbering flags.  */
+	  tmp = ix86_expand_compare (UNLT, XEXP (gt, 0), const0_rtx);
+	  PUT_MODE (tmp, SImode);
+	  emit_insn (gen_subsi3_carry (dest, gt_tmp,
+				       force_reg (GET_MODE (dest), const0_rtx),
+				       XEXP (gt, 0), tmp));
+	}
     }
   emit_jump (lend);
   if (l2)
@@ -3246,6 +3268,14 @@ void
 ix86_expand_int_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
 {
   gcc_assert (INTVAL (op2));
+  rtx zero1 = NULL_RTX, zero2 = NULL_RTX;
+  if (TARGET_ZERO_EXTEND_WITH_AND && GET_MODE (dest) == SImode)
+    {
+      zero1 = force_reg (SImode, const0_rtx);
+      if (INTVAL (op2) != 1)
+	zero2 = force_reg (SImode, const0_rtx);
+    }
+
   /* Not using ix86_expand_int_compare here, so that it doesn't swap
      operands nor optimize CC mode - we need a mode usable for both
      LT and GT resp. LTU and GTU comparisons with the same unswapped
@@ -3253,30 +3283,70 @@ ix86_expand_int_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
   rtx flags = gen_rtx_REG (INTVAL (op2) != 1 ? CCGCmode : CCmode, FLAGS_REG);
   rtx tmp = gen_rtx_COMPARE (GET_MODE (flags), op0, op1);
   emit_insn (gen_rtx_SET (flags, tmp));
-  rtx lt_tmp = gen_reg_rtx (QImode);
-  ix86_expand_setcc (lt_tmp, INTVAL (op2) != 1 ? LT : LTU, flags,
-		     const0_rtx);
-  if (GET_MODE (dest) != QImode)
+  rtx lt_tmp = NULL_RTX;
+  if (zero2)
     {
-      tmp = gen_reg_rtx (GET_MODE (dest));
-      emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
-							lt_tmp)));
-      lt_tmp = tmp;
+      /* For TARGET_ZERO_EXTEND_WITH_AND, emit setcc_si_slp to avoid
+	 ZERO_EXTEND.  */
+      tmp = ix86_expand_compare (LT, flags, const0_rtx);
+      PUT_MODE (tmp, QImode);
+      emit_insn (gen_setcc_si_slp (zero2, tmp, zero2));
+      lt_tmp = zero2;
     }
-  rtx gt_tmp = gen_reg_rtx (QImode);
-  ix86_expand_setcc (gt_tmp, INTVAL (op2) != 1 ? GT : GTU, flags,
-		     const0_rtx);
-  if (GET_MODE (dest) != QImode)
+  else if (!zero1)
     {
-      tmp = gen_reg_rtx (GET_MODE (dest));
-      emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
-							gt_tmp)));
-      gt_tmp = tmp;
+      lt_tmp = gen_reg_rtx (QImode);
+      ix86_expand_setcc (lt_tmp, INTVAL (op2) != 1 ? LT : LTU, flags,
+			 const0_rtx);
+      if (GET_MODE (dest) != QImode)
+	{
+	  tmp = gen_reg_rtx (GET_MODE (dest));
+	  emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							    lt_tmp)));
+	  lt_tmp = tmp;
+	}
     }
-  tmp = expand_simple_binop (GET_MODE (dest), MINUS, gt_tmp, lt_tmp, dest,
-			     0, OPTAB_DIRECT);
-  if (!rtx_equal_p (tmp, dest))
-    emit_move_insn (dest, tmp);
+  rtx gt_tmp;
+  if (zero1)
+    {
+      /* For TARGET_ZERO_EXTEND_WITH_AND, emit setcc_si_slp to avoid
+	 ZERO_EXTEND.  */
+      tmp = ix86_expand_compare (INTVAL (op2) != 1 ? GT : GTU, flags,
+				 const0_rtx);
+      PUT_MODE (tmp, QImode);
+      emit_insn (gen_setcc_si_slp (zero1, tmp, zero1));
+      gt_tmp = zero1;
+    }
+  else
+    {
+      gt_tmp = gen_reg_rtx (QImode);
+      ix86_expand_setcc (gt_tmp, INTVAL (op2) != 1 ? GT : GTU, flags,
+			 const0_rtx);
+      if (GET_MODE (dest) != QImode)
+	{
+	  tmp = gen_reg_rtx (GET_MODE (dest));
+	  emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							    gt_tmp)));
+	  gt_tmp = tmp;
+	}
+    }
+  if (lt_tmp)
+    {
+      tmp = expand_simple_binop (GET_MODE (dest), MINUS, gt_tmp, lt_tmp, dest,
+				 0, OPTAB_DIRECT);
+      if (!rtx_equal_p (tmp, dest))
+	emit_move_insn (dest, tmp);
+    }
+  else
+    {
+      /* For TARGET_ZERO_EXTEND_WITH_AND emit sbb directly, as we can't
+	 do ZERO_EXTEND without clobbering flags.  */
+      tmp = ix86_expand_compare (LTU, flags, const0_rtx);
+      PUT_MODE (tmp, SImode);
+      emit_insn (gen_subsi3_carry (dest, gt_tmp,
+				   force_reg (GET_MODE (dest), const0_rtx),
+				   flags, tmp));
+    }
 }
 
 /* Expand comparison setting or clearing carry flag.  Return true when
