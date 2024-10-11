@@ -4902,6 +4902,15 @@ expand_vec_ussub (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
   emit_vec_binary_alu (op_0, op_1, op_2, US_MINUS, vec_mode);
 }
 
+/* Expand the standard name ssadd<mode>3 for vector mode,  we can leverage
+   the vector fixed point vector single-width saturating add directly.  */
+
+void
+expand_vec_sssub (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
+{
+  emit_vec_binary_alu (op_0, op_1, op_2, SS_MINUS, vec_mode);
+}
+
 /* Expand the standard name ustrunc<m><n>2 for double vector mode,  like
    DI => SI.  we can leverage the vector fixed point vector narrowing
    fixed-point clip directly.  */
