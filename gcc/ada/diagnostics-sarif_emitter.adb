@@ -31,6 +31,14 @@ with Sinput;                 use Sinput;
 
 package body Diagnostics.SARIF_Emitter is
 
+   --  We are currently using SARIF 2.1.0
+
+   SARIF_Version : constant String := "2.1.0";
+   pragma Style_Checks ("M100");
+   SARIF_Schema  : constant String :=
+     "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
+   pragma Style_Checks ("M79");
+
    type Artifact_Change is record
       File  : String_Ptr;
       --  Name of the file
@@ -1074,7 +1082,11 @@ package body Diagnostics.SARIF_Emitter is
       Begin_Block;
       NL_And_Indent;
 
-      Write_String_Attribute ("version", "2.1.0");
+      Write_String_Attribute ("$schema", SARIF_Schema);
+      Write_Char (',');
+      NL_And_Indent;
+
+      Write_String_Attribute ("version", SARIF_Version);
       Write_Char (',');
       NL_And_Indent;
 
