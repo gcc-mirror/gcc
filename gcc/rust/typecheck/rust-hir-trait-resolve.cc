@@ -669,6 +669,12 @@ AssociatedImplTrait::reset_associated_types ()
   trait->clear_associated_types ();
 }
 
+location_t
+AssociatedImplTrait::get_locus () const
+{
+  return impl->get_locus ();
+}
+
 Analysis::NodeMapping
 TraitItemReference::get_parent_trait_mappings () const
 {
