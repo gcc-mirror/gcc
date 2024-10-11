@@ -17906,7 +17906,7 @@ package body Sem_Prag is
                   Error_Msg_N
                     ("?_j?'First_'Controlling_'Parameter has no effect", N);
                   Error_Msg_NE
-                    ("?_j?because & does not implement interface types",
+                    ("\?_j?because & does not implement interface types",
                      N, E);
                end if;
 
