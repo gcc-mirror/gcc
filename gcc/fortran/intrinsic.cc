@@ -2264,7 +2264,7 @@ add_functions (void)
   make_generic ("long", GFC_ISYM_LONG, GFC_STD_GNU);
 
   add_sym_2 ("uint", GFC_ISYM_UINT, CLASS_ELEMENTAL, ACTUAL_NO, BT_UNSIGNED,
-	     di, GFC_STD_GNU, gfc_check_uint, gfc_simplify_uint,
+	     di, GFC_STD_UNSIGNED, gfc_check_uint, gfc_simplify_uint,
 	     gfc_resolve_uint, a, BT_REAL, dr, REQUIRED, kind, BT_INTEGER, di,
 	     OPTIONAL);
 
@@ -2966,17 +2966,13 @@ add_functions (void)
 
   make_generic ("selected_int_kind", GFC_ISYM_SI_KIND, GFC_STD_F95);
 
-  if (flag_unsigned)
-    {
-
-      add_sym_1 ("selected_unsigned_kind", GFC_ISYM_SU_KIND,
-		 CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
-		 GFC_STD_GNU, gfc_check_selected_int_kind,
-		 gfc_simplify_selected_unsigned_kind, NULL, r, BT_INTEGER, di,
-		 REQUIRED);
+  add_sym_1 ("selected_unsigned_kind", GFC_ISYM_SU_KIND,
+	     CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_UNSIGNED, gfc_check_selected_int_kind,
+	     gfc_simplify_selected_unsigned_kind, NULL, r, BT_INTEGER, di,
+	     REQUIRED);
 
       make_generic ("selected_unsigned_kind", GFC_ISYM_SU_KIND, GFC_STD_GNU);
-    }
 
   add_sym_1 ("selected_logical_kind", GFC_ISYM_SL_KIND, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di,
 	     GFC_STD_F2023, /* it has the same requirements */ gfc_check_selected_int_kind,
@@ -4943,6 +4939,10 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
 
     case GFC_STD_LEGACY:
       symstd_msg = _("for backward compatibility");
+      break;
+
+    case GFC_STD_UNSIGNED:
+      symstd_msg = _("unsigned");
       break;
 
     default:

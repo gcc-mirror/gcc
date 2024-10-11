@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
    Nevertheless, some features available in F2018 are prohibited in F2023.
    Please remember to keep those definitions in sync with
    gfortran.texi.  */
+#define GFC_STD_UNSIGNED	(1<<14) /* Not really a standard, but
+					   better for error handling.  */
 #define GFC_STD_F2023_DEL	(1<<13)	/* Prohibited in F2023.  */
 #define GFC_STD_F2023		(1<<12)	/* New in F2023.  */
 #define GFC_STD_F2018_DEL	(1<<11)	/* Deleted in F2018.  */

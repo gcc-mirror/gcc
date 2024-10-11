@@ -539,6 +539,10 @@ gfc_post_options (const char **pfilename)
   else if (gfc_option.allow_std & GFC_STD_F2003)
     lang_hooks.name = "GNU Fortran2003";
 
+  /* Set the unsigned "standard".  */
+  if (flag_unsigned)
+    gfc_option.allow_std |= GFC_STD_UNSIGNED;
+
   return gfc_cpp_preprocess_only ();
 }
 
