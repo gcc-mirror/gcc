@@ -8896,11 +8896,18 @@ resolve_address_of_overloaded_function (tree target_type,
 	  tree match = most_specialized_instantiation (matches);
 
 	  if (match != error_mark_node)
-	    matches = tree_cons (TREE_PURPOSE (match),
-				 NULL_TREE,
-				 NULL_TREE);
+	    {
+	      matches = match;
+	      TREE_CHAIN (match) = NULL_TREE;
+	    }
 	}
     }
+  else if (flag_concepts && TREE_CHAIN (matches))
+    if (tree match = most_constrained_function (matches))
+      {
+	matches = match;
+	TREE_CHAIN (match) = NULL_TREE;
+      }
 
   /* Now we should have exactly one function in MATCHES.  */
   if (matches == NULL_TREE)

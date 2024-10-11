@@ -2071,6 +2071,10 @@ get_template_for_ordering (tree list)
 {
   gcc_assert (TREE_CODE (list) == TREE_LIST);
   tree f = TREE_VALUE (list);
+  if (f == NULL_TREE)
+    /* Also handle a list from resolve_address_of_overloaded_function with the
+       function in TREE_PURPOSE.  */
+    f = TREE_PURPOSE (list);
   if (tree ti = DECL_TEMPLATE_INFO (f))
     return TI_TEMPLATE (ti);
   return f;
@@ -2084,7 +2088,7 @@ get_template_for_ordering (tree list)
 
    Note that we don't compare constraints on the functions
    themselves, but rather those of their templates. */
-static tree
+tree
 most_constrained_function (tree candidates)
 {
   // Try to find the best candidate in a first pass.
@@ -23865,11 +23869,14 @@ resolve_overloaded_unification (tree tparms,
 	tree fn = *iter;
 	if (flag_noexcept_type)
 	  maybe_instantiate_noexcept (fn, tf_none);
-	if (try_one_overload (tparms, targs, tempargs, parm, TREE_TYPE (fn),
+	if (TREE_CODE (fn) == FUNCTION_DECL && !constraints_satisfied_p (fn))
+	  continue;
+	tree elem = TREE_TYPE (fn);
+	if (try_one_overload (tparms, targs, tempargs, parm, elem,
 			      strict, sub_strict, addr_p, explain_p)
-	    && (!goodfn || !decls_match (goodfn, fn)))
+	    && (!goodfn || !same_type_p (goodfn, elem)))
 	  {
-	    goodfn = fn;
+	    goodfn = elem;
 	    ++good;
 	  }
       }
@@ -23878,6 +23885,9 @@ resolve_overloaded_unification (tree tparms,
      to function or pointer to member function argument if the set of
      overloaded functions does not contain function templates and at most
      one of a set of overloaded functions provides a unique match.
+
+     CWG2918 allows multiple functions to match if they all have the same type,
+     so that we can choose the most constrained later.
 
      So if we found multiple possibilities, we return success but don't
      deduce anything.  */
