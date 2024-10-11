@@ -9604,7 +9604,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   /* If this is an access type or a fat pointer, the minimum size is that given
      by the default pointer mode.  */
   if (TREE_CODE (gnu_type) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (gnu_type))
-    old_size = bitsize_int (ptr_mode);
+    old_size = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
 
   /* Issue an error either if the default size of the object isn't a constant
      or if the new size is smaller than it.  */
