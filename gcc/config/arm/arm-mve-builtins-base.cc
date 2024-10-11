@@ -245,6 +245,16 @@ class vstrq_scatter_impl : public store_truncating
 public:
   using store_truncating::store_truncating;
 
+  CONSTEXPR vstrq_scatter_impl (bool shifted,
+				scalar_mode to_int_mode,
+				opt_scalar_mode to_float_mode)
+    : store_truncating (to_int_mode, to_float_mode),
+      m_shifted (shifted)
+  {}
+
+  /* Shifted offset (true) or plain offset (false).  */
+  bool m_shifted;
+
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
@@ -255,15 +265,23 @@ public:
       case PRED_none:
 	icode = (e.vector_mode (0) == memory_mode
 		 /* Non-truncating store case.  */
-		 ? code_for_mve_vstrq_scatter_offset (memory_mode)
+		 ? (m_shifted
+		    ? code_for_mve_vstrq_scatter_shifted_offset (memory_mode)
+		    : code_for_mve_vstrq_scatter_offset (memory_mode))
 		 /* Truncating store case.  */
-		 : code_for_mve_vstrq_truncate_scatter_offset (memory_mode));
+		 : (m_shifted
+		    ? CODE_FOR_mve_vstrq_truncate_scatter_shifted_offset_v4si
+		    : code_for_mve_vstrq_truncate_scatter_offset (memory_mode)));
 	break;
 
       case PRED_p:
 	icode = (e.vector_mode (0) == memory_mode
-		 ? code_for_mve_vstrq_scatter_offset_p (memory_mode)
-		 : code_for_mve_vstrq_truncate_scatter_offset_p (memory_mode));
+		 ? (m_shifted
+		    ? code_for_mve_vstrq_scatter_shifted_offset_p (memory_mode)
+		    : code_for_mve_vstrq_scatter_offset_p (memory_mode))
+		 : (m_shifted
+		    ? CODE_FOR_mve_vstrq_truncate_scatter_shifted_offset_p_v4si
+		    : code_for_mve_vstrq_truncate_scatter_offset_p (memory_mode)));
 	break;
 
       default:
@@ -1241,12 +1259,15 @@ FUNCTION_ONLY_N_NO_F (vsliq, VSLIQ)
 FUNCTION_ONLY_N_NO_F (vsriq, VSRIQ)
 FUNCTION (vst1q, vst1_impl,)
 FUNCTION (vstrbq, vstrq_impl, (QImode, opt_scalar_mode ()))
-FUNCTION (vstrbq_scatter, vstrq_scatter_impl, (QImode, opt_scalar_mode ()))
-FUNCTION (vstrdq_scatter, vstrq_scatter_impl, (DImode, opt_scalar_mode ()))
+FUNCTION (vstrbq_scatter, vstrq_scatter_impl, (false, QImode, opt_scalar_mode ()))
+FUNCTION (vstrdq_scatter, vstrq_scatter_impl, (false, DImode, opt_scalar_mode ()))
+FUNCTION (vstrdq_scatter_shifted, vstrq_scatter_impl, (true, DImode, opt_scalar_mode ()))
 FUNCTION (vstrhq, vstrq_impl, (HImode, HFmode))
-FUNCTION (vstrhq_scatter, vstrq_scatter_impl, (HImode, HFmode))
+FUNCTION (vstrhq_scatter, vstrq_scatter_impl, (false, HImode, HFmode))
+FUNCTION (vstrhq_scatter_shifted, vstrq_scatter_impl, (true, HImode, HFmode))
 FUNCTION (vstrwq, vstrq_impl, (SImode, SFmode))
-FUNCTION (vstrwq_scatter, vstrq_scatter_impl, (SImode, SFmode))
+FUNCTION (vstrwq_scatter, vstrq_scatter_impl, (false, SImode, SFmode))
+FUNCTION (vstrwq_scatter_shifted, vstrq_scatter_impl, (true, SImode, SFmode))
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 

@@ -4072,68 +4072,80 @@
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_shifted_offset_<supf>v4si"))
   (set_attr "length" "8")])
 
-;;
-;; [vstrhq_scatter_shifted_offset_p_s vstrhq_scatter_shifted_offset_p_u]
-;;
-(define_expand "mve_vstrhq_scatter_shifted_offset_p_<supf><mode>"
-  [(match_operand:<MVE_H_ELEM> 0 "mve_scatter_memory")
-   (match_operand:MVE_5 1 "s_register_operand")
-   (match_operand:MVE_5 2 "s_register_operand")
-   (match_operand:<MVE_VPRED> 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRHSSOQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrhq_scatter_shifted_offset_p_<supf><mode>_insn (ind, operands[1],
-							       operands[2],
-							       operands[3]));
-  DONE;
-})
-
-(define_insn "mve_vstrhq_scatter_shifted_offset_p_<supf><mode>_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:MVE_5 1 "s_register_operand" "w")
-	   (match_operand:MVE_5 2 "s_register_operand" "w")
-	   (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	  VSTRHSSOQ))]
-  "TARGET_HAVE_MVE"
-  "vpst\;vstrht.<V_sz_elem>\t%q2, [%0, %q1, uxtw #1]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn"))
-  (set_attr "length" "8")])
-
+;; Vector scatter stores with shifted offset
 ;;
 ;; [vstrhq_scatter_shifted_offset_s vstrhq_scatter_shifted_offset_u]
-;;
-(define_expand "mve_vstrhq_scatter_shifted_offset_<supf><mode>"
-  [(match_operand:<MVE_H_ELEM> 0 "mve_scatter_memory")
-   (match_operand:MVE_5 1 "s_register_operand")
-   (match_operand:MVE_5 2 "s_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRHSSOQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn (ind, operands[1],
-							     operands[2]));
-  DONE;
-})
-
-(define_insn "mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn"
+;; [vstrhq_scatter_shifted_offset_f]
+;; [vstrwq_scatter_shifted_offset_s vstrwq_scatter_shifted_offset_u]
+;; [vstrwq_scatter_shifted_offset_f]
+;; [vstrdq_scatter_shifted_offset_s vstrdq_scatter_shifted_offset_u]
+(define_insn "@mve_vstrq_scatter_shifted_offset_<mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:MVE_5 1 "s_register_operand" "w")
-	   (match_operand:MVE_5 2 "s_register_operand" "w")]
-	  VSTRHSSOQ))]
-  "TARGET_HAVE_MVE"
-  "vstrh.<V_sz_elem>\t%q2, [%0, %q1, uxtw #1]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_scatter_shifted_offset_<supf><mode>_insn"))
+	   (match_operand:<MVE_scatter_offset> 1 "s_register_operand" "w")
+	   (match_operand:MVE_VLD_ST_scatter_shifted 2 "s_register_operand" "w")]
+	  VSTRSSOQ))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vstr<MVE_elem_ch>.<V_sz_elem>\t%q2, [%0, %q1, uxtw #<MVE_scatter_shift>]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_scatter_shifted_offset_<mode>"))
   (set_attr "length" "4")])
+
+;; Truncating vector scatter stores with shifted offset
+;;
+;; [vstrhq_scatter_shifted_offset_s32 vstrhq_scatter_shifted_offset_u32]
+(define_insn "mve_vstrq_truncate_scatter_shifted_offset_v4si"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_operand:SI 0 "register_operand" "r")
+	   (match_operand:V4SI 1 "s_register_operand" "w")
+	   (truncate:V4HI
+	     (match_operand:V4SI 2 "s_register_operand" "w"))]
+	  VSTRSSOQ_TRUNC))]
+  "TARGET_HAVE_MVE"
+  "vstrh.32\t%q2, [%0, %q1, uxtw #1]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_truncate_scatter_shifted_offset_v4si"))
+  (set_attr "length" "4")])
+
+;; Predicated vector scatter stores with shifted offset
+;;
+;; [vstrhq_scatter_shifted_offset_p_s vstrhq_scatter_shifted_offset_p_u]
+;; [vstrhq_scatter_shifted_offset_p_f]
+;; [vstrwq_scatter_shifted_offset_p_s vstrwq_scatter_shifted_offset_p_u]
+;; [vstrwq_scatter_shifted_offset_p_f]
+;; [vstrdq_scatter_shifted_offset_p_s vstrdq_scatter_shifted_offset_p_u]
+;;
+(define_insn "@mve_vstrq_scatter_shifted_offset_p_<mode>"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_operand:SI 0 "register_operand" "r")
+	   (match_operand:<MVE_scatter_offset> 1 "s_register_operand" "w")
+	   (match_operand:MVE_VLD_ST_scatter_shifted 2 "s_register_operand" "w")
+	   (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
+	  VSTRSSOQ_P))]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vpst\;vstr<MVE_elem_ch>t.<V_sz_elem>\t%q2, [%0, %q1, uxtw #<MVE_scatter_shift>]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_scatter_shifted_offset_<mode>"))
+  (set_attr "length" "8")])
+
+;; Predicated truncating vector scatter stores with shifted offset
+;;
+;; [vstrhq_scatter_shifted_offset_p_s32 vstrhq_scatter_shifted_offset_p_u32]
+(define_insn "mve_vstrq_truncate_scatter_shifted_offset_p_v4si"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_operand:SI 0 "register_operand" "r")
+	   (match_operand:V4SI 1 "s_register_operand" "w")
+	   (truncate:V4HI
+	     (match_operand:V4SI 2 "s_register_operand" "w"))
+	   (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
+	  VSTRSSOQ_TRUNC_P))]
+  "TARGET_HAVE_MVE"
+  "vpst\;vstrht.32\t%q2, [%0, %q1, uxtw #1]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_truncate_scatter_shifted_offset_v4si"))
+  (set_attr "length" "8")])
 
 ;;
 ;; [vstrdq_scatter_base_p_s vstrdq_scatter_base_p_u]
@@ -4183,131 +4195,6 @@
   (set_attr "length" "4")])
 
 ;;
-;; [vstrdq_scatter_shifted_offset_p_s vstrdq_scatter_shifted_offset_p_u]
-;;
-(define_expand "mve_vstrdq_scatter_shifted_offset_p_<supf>v2di"
-  [(match_operand:V2DI 0 "mve_scatter_memory")
-   (match_operand:V2DI 1 "s_register_operand")
-   (match_operand:V2DI 2 "s_register_operand")
-   (match_operand:V2QI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRDSSOQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn (ind, operands[1],
-							     operands[2],
-							     operands[3]));
-  DONE;
-})
-
-(define_insn "mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V2DI 1 "s_register_operand" "w")
-	   (match_operand:V2DI 2 "s_register_operand" "w")
-	   (match_operand:V2QI 3 "vpr_register_operand" "Up")]
-	  VSTRDSSOQ))]
-  "TARGET_HAVE_MVE"
-  "vpst\;vstrdt.64\t%q2, [%0, %q1, uxtw #3]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrdq_scatter_shifted_offset_s vstrdq_scatter_shifted_offset_u]
-;;
-(define_expand "mve_vstrdq_scatter_shifted_offset_<supf>v2di"
-  [(match_operand:V2DI 0 "mve_scatter_memory")
-   (match_operand:V2DI 1 "s_register_operand")
-   (match_operand:V2DI 2 "s_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRDSSOQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn (ind, operands[1],
-							   operands[2]));
-  DONE;
-})
-
-(define_insn "mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V2DI 1 "s_register_operand" "w")
-	   (match_operand:V2DI 2 "s_register_operand" "w")]
-	  VSTRDSSOQ))]
-  "TARGET_HAVE_MVE"
-  "vstrd.64\t%q2, [%0, %q1, uxtw #3]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrhq_scatter_shifted_offset_f]
-;;
-(define_expand "mve_vstrhq_scatter_shifted_offset_fv8hf"
-  [(match_operand:V8HI 0 "memory_operand" "=Us")
-   (match_operand:V8HI 1 "s_register_operand" "w")
-   (match_operand:V8HF 2 "s_register_operand" "w")
-   (unspec:V4SI [(const_int 0)] VSTRHQSSO_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (gen_mve_vstrhq_scatter_shifted_offset_fv8hf_insn (ind, operands[1],
-							       operands[2]));
-  DONE;
-})
-
-(define_insn "mve_vstrhq_scatter_shifted_offset_fv8hf_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V8HI 1 "s_register_operand" "w")
-	   (match_operand:V8HF 2 "s_register_operand" "w")]
-	  VSTRHQSSO_F))]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vstrh.16\t%q2, [%0, %q1, uxtw #1]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_scatter_shifted_offset_fv8hf_insn"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrhq_scatter_shifted_offset_p_f]
-;;
-(define_expand "mve_vstrhq_scatter_shifted_offset_p_fv8hf"
-  [(match_operand:V8HI 0 "memory_operand" "=Us")
-   (match_operand:V8HI 1 "s_register_operand" "w")
-   (match_operand:V8HF 2 "s_register_operand" "w")
-   (match_operand:V8BI 3 "vpr_register_operand" "Up")
-   (unspec:V4SI [(const_int 0)] VSTRHQSSO_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrhq_scatter_shifted_offset_p_fv8hf_insn (ind, operands[1],
-							operands[2],
-							operands[3]));
-  DONE;
-})
-
-(define_insn "mve_vstrhq_scatter_shifted_offset_p_fv8hf_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V8HI 1 "s_register_operand" "w")
-	   (match_operand:V8HF 2 "s_register_operand" "w")
-	   (match_operand:V8BI 3 "vpr_register_operand" "Up")]
-	  VSTRHQSSO_F))]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vstrht.16\t%q2, [%0, %q1, uxtw #1]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrhq_scatter_shifted_offset_fv8hf_insn"))
-  (set_attr "length" "8")])
-
-;;
 ;; [vstrwq_scatter_base_f]
 ;;
 (define_insn "mve_vstrwq_scatter_base_fv4sf"
@@ -4353,131 +4240,6 @@
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_base_fv4sf"))
   (set_attr "length" "8")])
-
-;;
-;; [vstrwq_scatter_shifted_offset_f]
-;;
-(define_expand "mve_vstrwq_scatter_shifted_offset_fv4sf"
-  [(match_operand:V4SI 0 "mve_scatter_memory")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:V4SF 2 "s_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWQSSO_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (gen_mve_vstrwq_scatter_shifted_offset_fv4sf_insn (ind, operands[1],
-							       operands[2]));
-  DONE;
-})
-
-(define_insn "mve_vstrwq_scatter_shifted_offset_fv4sf_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V4SI 1 "s_register_operand" "w")
-	   (match_operand:V4SF 2 "s_register_operand" "w")]
-	 VSTRWQSSO_F))]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vstrw.32\t%q2, [%0, %q1, uxtw #2]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_shifted_offset_fv4sf_insn"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrwq_scatter_shifted_offset_p_f]
-;;
-(define_expand "mve_vstrwq_scatter_shifted_offset_p_fv4sf"
-  [(match_operand:V4SI 0 "mve_scatter_memory")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:V4SF 2 "s_register_operand")
-   (match_operand:V4BI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWQSSO_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrwq_scatter_shifted_offset_p_fv4sf_insn (ind, operands[1],
-							operands[2],
-							operands[3]));
-  DONE;
-})
-
-(define_insn "mve_vstrwq_scatter_shifted_offset_p_fv4sf_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V4SI 1 "s_register_operand" "w")
-	   (match_operand:V4SF 2 "s_register_operand" "w")
-	   (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	  VSTRWQSSO_F))]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vstrwt.32\t%q2, [%0, %q1, uxtw #2]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_shifted_offset_fv4sf_insn"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrwq_scatter_shifted_offset_p_s vstrwq_scatter_shifted_offset_p_u]
-;;
-(define_expand "mve_vstrwq_scatter_shifted_offset_p_<supf>v4si"
-  [(match_operand:V4SI 0 "mve_scatter_memory")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:V4SI 2 "s_register_operand")
-   (match_operand:V4BI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWSSOQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrwq_scatter_shifted_offset_p_<supf>v4si_insn (ind, operands[1],
-							     operands[2],
-							     operands[3]));
-  DONE;
-})
-
-(define_insn "mve_vstrwq_scatter_shifted_offset_p_<supf>v4si_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V4SI 1 "s_register_operand" "w")
-	   (match_operand:V4SI 2 "s_register_operand" "w")
-	   (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	  VSTRWSSOQ))]
-  "TARGET_HAVE_MVE"
-  "vpst\;vstrwt.32\t%q2, [%0, %q1, uxtw #2]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrwq_scatter_shifted_offset_s vstrwq_scatter_shifted_offset_u]
-;;
-(define_expand "mve_vstrwq_scatter_shifted_offset_<supf>v4si"
-  [(match_operand:V4SI 0 "mve_scatter_memory")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:V4SI 2 "s_register_operand")
-   (unspec:V4SI [(const_int 0)] VSTRWSSOQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ind = XEXP (operands[0], 0);
-  gcc_assert (REG_P (ind));
-  emit_insn (
-    gen_mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn (ind, operands[1],
-							   operands[2]));
-  DONE;
-})
-
-(define_insn "mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:SI 0 "register_operand" "r")
-	   (match_operand:V4SI 1 "s_register_operand" "w")
-	   (match_operand:V4SI 2 "s_register_operand" "w")]
-	  VSTRWSSOQ))]
-  "TARGET_HAVE_MVE"
-  "vstrw.32\t%q2, [%0, %q1, uxtw #2]"
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_shifted_offset_<supf>v4si_insn"))
-  (set_attr "length" "4")])
 
 ;;
 ;;

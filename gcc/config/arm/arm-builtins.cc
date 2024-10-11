@@ -611,18 +611,6 @@ arm_quadop_unone_unone_unone_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_quadop_unone_unone_unone_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_strss_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_none};
-#define STRSS_QUALIFIERS (arm_strss_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned};
-#define STRSU_QUALIFIERS (arm_strsu_qualifiers)
-
-static enum arm_type_qualifiers
 arm_strsbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_unsigned, qualifier_immediate, qualifier_none};
 #define STRSBS_QUALIFIERS (arm_strsbs_qualifiers)
@@ -632,18 +620,6 @@ arm_strsbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_unsigned, qualifier_immediate,
       qualifier_unsigned};
 #define STRSBU_QUALIFIERS (arm_strsbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_unsigned, qualifier_predicate};
-#define STRSU_P_QUALIFIERS (arm_strsu_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strss_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer, qualifier_unsigned,
-      qualifier_none, qualifier_predicate};
-#define STRSS_P_QUALIFIERS (arm_strss_p_qualifiers)
 
 static enum arm_type_qualifiers
 arm_strsbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
