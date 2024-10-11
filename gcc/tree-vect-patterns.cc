@@ -4538,6 +4538,7 @@ extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_trunc (tree, tree*, tree (*)(tree));
 
 extern bool gimple_signed_integer_sat_add (tree, tree*, tree (*)(tree));
+extern bool gimple_signed_integer_sat_sub (tree, tree*, tree (*)(tree));
 
 static gimple *
 vect_recog_build_binary_gimple_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
@@ -4684,6 +4685,7 @@ vect_recog_sat_sub_pattern_transform (vec_info *vinfo,
 
 /*
  * Try to detect saturation sub pattern (SAT_ADD), aka below gimple:
+ * Unsigned:
  *   _7 = _1 >= _2;
  *   _8 = _1 - _2;
  *   _10 = (long unsigned int) _7;
@@ -4691,6 +4693,27 @@ vect_recog_sat_sub_pattern_transform (vec_info *vinfo,
  *
  * And then simplied to
  *   _9 = .SAT_SUB (_1, _2);
+ *
+ * Signed:
+ *   x.0_4 = (unsigned char) x_16;
+ *   y.1_5 = (unsigned char) y_18;
+ *   _6 = x.0_4 - y.1_5;
+ *   minus_19 = (int8_t) _6;
+ *   _7 = x_16 ^ y_18;
+ *   _8 = x_16 ^ minus_19;
+ *   _44 = _7 < 0;
+ *   _23 = x_16 < 0;
+ *   _24 = (signed char) _23;
+ *   _58 = (unsigned char) _24;
+ *   _59 = -_58;
+ *   _25 = (signed char) _59;
+ *   _26 = _25 ^ 127;
+ *   _42 = _8 < 0;
+ *   _41 = _42 & _44;
+ *   iftmp.2_11 = _41 ? _26 : minus_19;
+ *
+ * And then simplied to
+ *   iftmp.2_11 = .SAT_SUB (x_16, y_18);
  */
 
 static gimple *
@@ -4705,7 +4728,8 @@ vect_recog_sat_sub_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   tree ops[2];
   tree lhs = gimple_assign_lhs (last_stmt);
 
-  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
+  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL)
+      || gimple_signed_integer_sat_sub (lhs, ops, NULL))
     {
       vect_recog_sat_sub_pattern_transform (vinfo, stmt_vinfo, lhs, ops);
       gimple *stmt = vect_recog_build_binary_gimple_stmt (vinfo, stmt_vinfo,
