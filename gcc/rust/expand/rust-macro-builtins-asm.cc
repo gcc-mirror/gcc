@@ -341,6 +341,7 @@ tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
+  location_t locus = parser.peek_current_token ()->get_locus ();
   if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "out"))
     {
       auto reg = parse_reg (inline_asm_ctx);
@@ -355,7 +356,7 @@ parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
       // instead of nullptr
       struct AST::InlineAsmOperand::Out out (reg, false, std::move (expr));
 
-      inline_asm_ctx.inline_asm.operands.push_back (out);
+      inline_asm_ctx.inline_asm.operands.emplace_back (out, locus);
 
       return inline_asm_ctx;
     }

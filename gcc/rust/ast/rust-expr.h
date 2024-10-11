@@ -4771,7 +4771,7 @@ struct InlineAsmRegOrRegClass
 class InlineAsmOperand
 {
 public:
-  enum RegisterType
+  enum class RegisterType
   {
     In,
     Out,
@@ -4782,8 +4782,24 @@ public:
     Label,
   };
 
-  struct In
+  class Register
   {
+  public:
+    Register () {}
+    virtual ~Register () = default;
+
+    std::unique_ptr<Register> clone () const
+    {
+      return std::unique_ptr<Register> (clone_impl ());
+    }
+
+  protected:
+    virtual Register *clone_impl () const = 0;
+  };
+
+  class In : public Register
+  {
+  public:
     tl::optional<InlineAsmRegOrRegClass> reg;
     std::unique_ptr<Expr> expr;
 
@@ -4808,10 +4824,14 @@ public:
 
       return *this;
     }
+
+  private:
+    In *clone_impl () const { return new In (*this); }
   };
 
-  struct Out
+  class Out : public Register
   {
+  public:
     tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> expr; // can be null
@@ -4837,10 +4857,14 @@ public:
       expr = other.expr->clone_expr ();
       return *this;
     }
+
+  private:
+    Out *clone_impl () const { return new Out (*this); }
   };
 
-  struct InOut
+  class InOut : public Register
   {
+  public:
     tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> expr; // this can't be null
@@ -4867,10 +4891,14 @@ public:
 
       return *this;
     }
+
+  private:
+    InOut *clone_impl () const { return new InOut (*this); }
   };
 
-  struct SplitInOut
+  class SplitInOut : public Register
   {
+  public:
     tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> in_expr;
@@ -4902,15 +4930,23 @@ public:
 
       return *this;
     }
+
+  private:
+    SplitInOut *clone_impl () const { return new SplitInOut (*this); }
   };
 
-  struct Const
+  class Const : public Register
   {
+  public:
     AnonConst anon_const;
+
+  private:
+    Const *clone_impl () const { return new Const (*this); }
   };
 
-  struct Sym
+  class Sym : public Register
   {
+  public:
     std::unique_ptr<Expr> expr;
 
     Sym (std::unique_ptr<Expr> expr) : expr (std::move (expr))
@@ -4927,10 +4963,14 @@ public:
       expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;
     }
+
+  private:
+    Sym *clone_impl () const { return new Sym (*this); }
   };
 
-  struct Label
+  class Label : public Register
   {
+  public:
     std::string label_name;
     std::unique_ptr<Expr> expr;
 
@@ -4951,27 +4991,37 @@ public:
       expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;
     }
+
+  private:
+    Label *clone_impl () const { return new Label (*this); }
   };
 
   InlineAsmOperand (const InlineAsmOperand &other)
-    : register_type (other.register_type), in (other.in), out (other.out),
-      in_out (other.in_out), split_in_out (other.split_in_out),
-      cnst (other.cnst), sym (other.sym)
+    : register_type (other.register_type), locus (other.locus),
+      reg (other.reg->clone ())
   {}
 
-  InlineAsmOperand (const struct In &reg) : register_type (In), in (reg) {}
-  InlineAsmOperand (const struct Out &reg) : register_type (Out), out (reg) {}
-  InlineAsmOperand (const struct InOut &reg)
-    : register_type (InOut), in_out (reg)
+  InlineAsmOperand (const In &reg, location_t locus)
+    : register_type (RegisterType::In), locus (locus), reg (new In (reg))
   {}
-  InlineAsmOperand (const struct SplitInOut &reg)
-    : register_type (SplitInOut), split_in_out (reg)
+  InlineAsmOperand (const Out &reg, location_t locus)
+    : register_type (RegisterType::Out), locus (locus), reg (new Out (reg))
   {}
-  InlineAsmOperand (const struct Const &reg) : register_type (Const), cnst (reg)
+  InlineAsmOperand (const InOut &reg, location_t locus)
+    : register_type (RegisterType::InOut), locus (locus), reg (new InOut (reg))
   {}
-  InlineAsmOperand (const struct Sym &reg) : register_type (Sym), sym (reg) {}
-  InlineAsmOperand (const struct Label &reg)
-    : register_type (Label), label (reg)
+  InlineAsmOperand (const SplitInOut &reg, location_t locus)
+    : register_type (RegisterType::SplitInOut), locus (locus),
+      reg (new SplitInOut (reg))
+  {}
+  InlineAsmOperand (const Const &reg, location_t locus)
+    : register_type (RegisterType::Const), locus (locus), reg (new Const (reg))
+  {}
+  InlineAsmOperand (const Sym &reg, location_t locus)
+    : register_type (RegisterType::Sym), locus (locus), reg (new Sym (reg))
+  {}
+  InlineAsmOperand (const Label &reg, location_t locus)
+    : register_type (RegisterType::Label), locus (locus), reg (new Label (reg))
   {}
 
   location_t get_locus () const { return locus; }
@@ -4980,25 +5030,88 @@ public:
   // Potentially fail immediately if you don't use get_register_type() to
   // inspect the RegisterType first before calling the following functions Check
   // first
-  struct In get_in () const { return in.value (); }
-  struct Out get_out () const { return out.value (); }
-  struct InOut get_in_out () const { return in_out.value (); }
-  struct SplitInOut get_split_in_out () const { return split_in_out.value (); }
-  struct Const get_const () const { return cnst.value (); }
-  struct Sym get_sym () const { return sym.value (); }
-  struct Label get_label () const { return label.value (); }
+  In &get_in ()
+  {
+    rust_assert (register_type == RegisterType::In);
+    return static_cast<In &> (*reg);
+  }
+  const In &get_in () const
+  {
+    rust_assert (register_type == RegisterType::In);
+    return static_cast<const In &> (*reg);
+  }
+
+  Out &get_out ()
+  {
+    rust_assert (register_type == RegisterType::Out);
+    return static_cast<Out &> (*reg);
+  }
+  const Out &get_out () const
+  {
+    rust_assert (register_type == RegisterType::Out);
+    return static_cast<const Out &> (*reg);
+  }
+
+  InOut &get_in_out ()
+  {
+    rust_assert (register_type == RegisterType::InOut);
+    return static_cast<InOut &> (*reg);
+  }
+  const InOut &get_in_out () const
+  {
+    rust_assert (register_type == RegisterType::InOut);
+    return static_cast<const InOut &> (*reg);
+  }
+
+  SplitInOut &get_split_in_out ()
+  {
+    rust_assert (register_type == RegisterType::SplitInOut);
+    return static_cast<SplitInOut &> (*reg);
+  }
+  const SplitInOut &get_split_in_out () const
+  {
+    rust_assert (register_type == RegisterType::SplitInOut);
+    return static_cast<const SplitInOut &> (*reg);
+  }
+
+  Const &get_const ()
+  {
+    rust_assert (register_type == RegisterType::Const);
+    return static_cast<Const &> (*reg);
+  }
+  const Const &get_const () const
+  {
+    rust_assert (register_type == RegisterType::Const);
+    return static_cast<Const &> (*reg);
+  }
+
+  Sym &get_sym ()
+  {
+    rust_assert (register_type == RegisterType::Sym);
+    return static_cast<Sym &> (*reg);
+  }
+  const Sym &get_sym () const
+  {
+    rust_assert (register_type == RegisterType::Sym);
+    return static_cast<const Sym &> (*reg);
+  }
+
+  Label &get_label ()
+  {
+    rust_assert (register_type == RegisterType::Label);
+    return static_cast<Label &> (*reg);
+  }
+  const Label &get_label () const
+  {
+    rust_assert (register_type == RegisterType::Label);
+    return static_cast<const Label &> (*reg);
+  }
 
 private:
   RegisterType register_type;
 
   location_t locus;
-  tl::optional<struct In> in;
-  tl::optional<struct Out> out;
-  tl::optional<struct InOut> in_out;
-  tl::optional<struct SplitInOut> split_in_out;
-  tl::optional<struct Const> cnst;
-  tl::optional<struct Sym> sym;
-  tl::optional<struct Label> label;
+  std::unique_ptr<Register> reg;
 };
 
 struct InlineAsmPlaceHolder
