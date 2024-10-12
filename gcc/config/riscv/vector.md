@@ -2095,6 +2095,16 @@
       emit_move_insn (tmp, gen_int_mode (value, Pmode));
       operands[3] = gen_rtx_SIGN_EXTEND (<VEL>mode, tmp);
     }
+  /* Never load (const_int 0) into a register, that's silly.  */
+  else if (operands[3] == CONST0_RTX (<VEL>mode))
+    ;
+  /* If we're broadcasting [-16..15] across more than just
+     element 0, then we can use vmv.v.i directly, thus avoiding
+     the load of the constant into a GPR.  */
+  else if (CONST_INT_P (operands[3])
+	   && IN_RANGE (INTVAL (operands[3]), -16, 15)
+	   && !satisfies_constraint_Wb1 (operands[1]))
+    ;
   else
     operands[3] = force_reg (<VEL>mode, operands[3]);
 })
@@ -2111,18 +2121,18 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (vec_duplicate:V_VLSI
-	    (match_operand:<VEL> 3 "direct_broadcast_operand"       " r,  r,Wdm,Wdm,Wdm,Wdm,  r,  r"))
-	  (match_operand:V_VLSI 2 "vector_merge_operand"            "vu,  0, vu,  0, vu,  0, vu,  0")))]
+	    (match_operand:<VEL> 3 "direct_broadcast_operand"       "rP,rP,Wdm,Wdm,Wdm,Wdm, rJ, rJ"))
+	  (match_operand:V_VLSI 2 "vector_merge_operand"            "vu, 0, vu,  0, vu,  0, vu,  0")))]
   "TARGET_VECTOR"
   "@
-   vmv.v.x\t%0,%3
-   vmv.v.x\t%0,%3
+   vmv.v.%o3\t%0,%3
+   vmv.v.%o3\t%0,%3
    vlse<sew>.v\t%0,%3,zero,%1.t
    vlse<sew>.v\t%0,%3,zero,%1.t
    vlse<sew>.v\t%0,%3,zero
    vlse<sew>.v\t%0,%3,zero
-   vmv.s.x\t%0,%3
-   vmv.s.x\t%0,%3"
+   vmv.s.x\t%0,%z3
+   vmv.s.x\t%0,%z3"
   "(register_operand (operands[3], <VEL>mode)
   || CONST_POLY_INT_P (operands[3]))
   && GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode)"
