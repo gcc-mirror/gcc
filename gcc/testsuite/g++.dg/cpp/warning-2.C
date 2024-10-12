@@ -3,4 +3,4 @@
 // { dg-options "-pedantic" }
 
 #warning example text /* { dg-warning "example text" } */
-// { dg-warning "#warning before C\\\+\\\+23 is a GCC extension" "pedantic" { target c++20_down } .-1 }
+// { dg-warning "'#warning' before C\\\+\\\+23 is a GCC extension" "pedantic" { target c++20_down } .-1 }

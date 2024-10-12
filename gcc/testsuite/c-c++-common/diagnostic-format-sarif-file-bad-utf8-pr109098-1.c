@@ -16,8 +16,8 @@
        { dg-final { scan-sarif-file "\"level\": \"warning\"" } }
        { dg-final { scan-sarif-file "\"ruleId\": \"-Winvalid-utf8\"" } }
        { dg-final { scan-sarif-file "\"message\": " } }
-         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character <80>"} } }
-         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character <98>"} } }
-         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character <80>"} } }
-         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character <99>"} } }
+         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character '<80>'"} } }
+         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character '<98>'"} } }
+         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character '<80>'"} } }
+         { dg-final { scan-sarif-file {"text": "invalid UTF-8 character '<99>'"} } }
 */

@@ -663,7 +663,7 @@ static void sanity_checks (cpp_reader *pfile)
      type precisions made by cpplib.  */
   test--;
   if (test < 1)
-    cpp_error (pfile, CPP_DL_ICE, "cppchar_t must be an unsigned type");
+    cpp_error (pfile, CPP_DL_ICE, "%<cppchar_t%> must be an unsigned type");
 
   if (CPP_OPTION (pfile, precision) > max_precision)
     cpp_error (pfile, CPP_DL_ICE,
@@ -674,18 +674,19 @@ static void sanity_checks (cpp_reader *pfile)
 
   if (CPP_OPTION (pfile, precision) < CPP_OPTION (pfile, int_precision))
     cpp_error (pfile, CPP_DL_ICE,
-	       "CPP arithmetic must be at least as precise as a target int");
+	       "CPP arithmetic must be at least as precise as a target "
+	       "%<int%>");
 
   if (CPP_OPTION (pfile, char_precision) < 8)
-    cpp_error (pfile, CPP_DL_ICE, "target char is less than 8 bits wide");
+    cpp_error (pfile, CPP_DL_ICE, "target %<char%> is less than 8 bits wide");
 
   if (CPP_OPTION (pfile, wchar_precision) < CPP_OPTION (pfile, char_precision))
     cpp_error (pfile, CPP_DL_ICE,
-	       "target wchar_t is narrower than target char");
+	       "target %<wchar_t%> is narrower than target %<char%>");
 
   if (CPP_OPTION (pfile, int_precision) < CPP_OPTION (pfile, char_precision))
     cpp_error (pfile, CPP_DL_ICE,
-	       "target int is narrower than target char");
+	       "target %<int%> is narrower than target %<char%>");
 
   /* This is assumed in eval_token() and could be fixed if necessary.  */
   if (sizeof (cppchar_t) > sizeof (cpp_num_part))

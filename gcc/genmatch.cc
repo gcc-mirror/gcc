@@ -31,18 +31,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "is-a.h"
 #include "ordered-hash-map.h"
+#include "pretty-print.h"
+#include "input.h"
 
-
-/* Stubs for GGC referenced through instantiations triggered by hash-map.  */
-void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
-				  size_t, size_t MEM_STAT_DECL)
+void
+fatal (const char *format, ...)
 {
-  return NULL;
-}
-void ggc_free (void *)
-{
-}
+  va_list ap;
 
+  va_start (ap, format);
+  fprintf (stderr, "%s: ", progname);
+  vfprintf (stderr, format, ap);
+  va_end (ap);
+  fputc ('\n', stderr);
+  exit (FATAL_EXIT_CODE);
+}
 
 /* Global state.  */
 
@@ -52,29 +55,9 @@ unsigned verbose;
 
 /* libccp helpers.  */
 
-static class line_maps *line_table;
-
-/* The rich_location class within libcpp requires a way to expand
-   location_t instances, and relies on the client code
-   providing a symbol named
-     linemap_client_expand_location_to_spelling_point
-   to do this.
-
-   This is the implementation for genmatch.  */
-
-expanded_location
-linemap_client_expand_location_to_spelling_point (const line_maps *set,
-						  location_t loc,
-						  enum location_aspect)
-{
-  const struct line_map_ordinary *map;
-  loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
-  return linemap_expand_location (set, map, loc);
-}
-
 static bool
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 5, 0)))
+__attribute__((format (gcc_diag, 5, 0)))
 #endif
 diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level errtype,
 	       enum cpp_warning_reason, rich_location *richloc,
@@ -86,7 +69,11 @@ diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level errtype,
   expanded_location loc = linemap_expand_location (line_table, map, location);
   fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
 	   (errtype == CPP_DL_WARNING) ? "warning" : "error");
-  vfprintf (stderr, msg, *ap);
+  pretty_printer pp;
+  pp.set_output_stream (stderr);
+  text_info text (msg, ap, errno);
+  pp_format_verbatim (&pp, &text);
+  pp_flush (&pp);
   fprintf (stderr, "\n");
   FILE *f = fopen (loc.file, "r");
   if (f)
@@ -119,7 +106,7 @@ notfound:
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 fatal_at (const cpp_token *tk, const char *msg, ...)
 {
@@ -132,7 +119,7 @@ fatal_at (const cpp_token *tk, const char *msg, ...)
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 fatal_at (location_t loc, const char *msg, ...)
 {
@@ -145,7 +132,7 @@ fatal_at (location_t loc, const char *msg, ...)
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 warning_at (const cpp_token *tk, const char *msg, ...)
 {
@@ -158,7 +145,7 @@ warning_at (const cpp_token *tk, const char *msg, ...)
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 warning_at (location_t loc, const char *msg, ...)
 {
@@ -267,8 +254,8 @@ output_line_directive (FILE *f, location_t location,
 		      bool dumpfile = false, bool fnargs = false,
 		      bool indirect_line_numbers = false)
 {
-  typedef pair_hash<nofree_string_hash, int_hash<int, -1>> location_hash;
-  static hash_map<location_hash, int> loc_id_map;
+  typedef pair_hash<nofree_string_hash, int_hash<int, -1>> loc_hash;
+  static hash_map<loc_hash, int> loc_id_map;
   const line_map_ordinary *map;
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
@@ -4520,7 +4507,7 @@ parser::eat_ident (const char *s)
   const cpp_token *token = peek ();
   const char *t = get_ident ();
   if (strcmp (s, t) != 0)
-    fatal_at (token, "expected '%s' got '%s'\n", s, t);
+    fatal_at (token, "expected %qs got %qs", s, t);
   return token;
 }
 
@@ -4588,7 +4575,7 @@ parser::parse_operation (unsigned char &opt_grp)
 	  alt_id = xstrdup (id);
 	  alt_id[strlen (id) - 1] = '\0';
 	  if (opt_grp == 1)
-	    fatal_at (id_tok, "use '%s?' here", alt_id);
+	    fatal_at (id_tok, "use %<%s?%> here", alt_id);
 	}
       else
 	opt_grp = 1;
@@ -4673,10 +4660,10 @@ parser::parse_expr ()
   if (token->type == CPP_XOR && !(token->flags & PREV_WHITE))
     {
       if (!parsing_match_operand)
-	fatal_at (token, "modifier '^' is only valid in a match expression");
+	fatal_at (token, "modifier %<^%> is only valid in a match expression");
 
       if (!(*e->operation == COND_EXPR))
-	fatal_at (token, "modifier '^' can only act on operation COND_EXPR");
+	fatal_at (token, "modifier %<^%> can only act on operation %<COND_EXPR%>");
 
       eat_token (CPP_XOR);
       e->match_phi = true;
@@ -5391,7 +5378,7 @@ parser::parse_pattern ()
     {
       if (active_ifs.length () > 0
 	  || active_fors.length () > 0)
-	fatal_at (token, "define_predicates inside if or for is not supported");
+	fatal_at (token, "%<define_predicates%> inside if or for is not supported");
       parse_predicates (token->src_loc);
     }
   else if (strcmp (id, "define_operator_list") == 0)
@@ -5401,10 +5388,11 @@ parser::parse_pattern ()
 	fatal_at (token, "operator-list inside if or for is not supported");
       parse_operator_list (token->src_loc);
     }
+  else if (active_ifs.length () == 0 && active_fors.length () == 0)
+    fatal_at (token, "expected %<define_predicates%>, %<simplify%>, "
+		     "%<match%>, %<for%> or %<if%>");
   else
-    fatal_at (token, "expected %s'simplify', 'match', 'for' or 'if'",
-	      active_ifs.length () == 0 && active_fors.length () == 0
-	      ? "'define_predicates', " : "");
+    fatal_at (token, "expected %<simplify%>, %<match%>, %<for%> or %<if%>");
 
   eat_token (CPP_CLOSE_PAREN);
 }
@@ -5446,12 +5434,13 @@ parser::finish_match_operand (operand *op)
 	  if (cpts[i][j]->value_match)
 	    {
 	      if (value_match)
-		fatal_at (cpts[i][j]->location, "duplicate @@");
+		fatal_at (cpts[i][j]->location, "duplicate %s", "@@");
 	      value_match = cpts[i][j];
 	    }
 	}
       if (cpts[i].length () == 1 && value_match)
-	fatal_at (value_match->location, "@@ without a matching capture");
+	fatal_at (value_match->location,
+		  "%s without a matching capture", "@@");
       if (value_match)
 	{
 	  /* Duplicate prevailing capture with the existing ID, create

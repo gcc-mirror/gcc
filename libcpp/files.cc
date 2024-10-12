@@ -530,7 +530,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
   /* Ensure we get no confusion between cached files and directories.  */
   if (start_dir == NULL)
-    cpp_error_at (pfile, CPP_DL_ICE, loc, "NULL directory in find_file");
+    cpp_error_at (pfile, CPP_DL_ICE, loc, "NULL directory in %<find_file%>");
 
   void **hash_slot
     = htab_find_slot_with_hash (pfile->file_hash, fname,
@@ -607,7 +607,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 			   " but they were invalid");
 		if (!cpp_get_options (pfile)->warn_invalid_pch)
 		  cpp_error (pfile, CPP_DL_NOTE,
-			     "use -Winvalid-pch for more information");
+			     "use %<-Winvalid-pch%> for more information");
 	      }
 
 	    if (kind == _cpp_FFK_PRE_INCLUDE)
@@ -1415,7 +1415,8 @@ finish_base64_embed (cpp_reader *pfile, const char *fname, bool angle,
     {
       if (!params->has_embed)
 	cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
-		      "'gnu::base64' parameter can be only used with \".\"");
+		      "%<gnu::base64%> parameter can be only used with "
+		      "%<\".\"%>");
       return 0;
     }
   tokenrun *cur_run = &params->base64.base_run;
@@ -1431,7 +1432,7 @@ finish_base64_embed (cpp_reader *pfile, const char *fname, bool angle,
 	    {
 	    fail:
 	      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
-			    "'gnu::base64' argument not valid base64 "
+			    "%<gnu::base64%> argument not valid base64 "
 			    "encoded string");
 	      free (buf);
 	      return 0;
@@ -2265,11 +2266,11 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file,
 	  if (pfile->cb.get_suggestion (pfile, mi_cmacro, names)
 	      && cpp_warning_with_line (pfile, CPP_W_HEADER_GUARD,
 					pfile->mi_loc, 0,
-					"header guard \"%s\" followed by "
-					"\"#define\" of a different macro",
+					"header guard %qs followed by "
+					"%<#define%> of a different macro",
 					mi_cmacro))
 	    cpp_error_at (pfile, CPP_DL_NOTE, pfile->mi_def_loc,
-			  "\"%s\" is defined here; did you mean \"%s\"?",
+			  "%qs is defined here; did you mean %qs?",
 			  mi_def_cmacro, mi_cmacro);
 	}
     }

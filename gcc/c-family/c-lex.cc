@@ -342,7 +342,7 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
   if (token->type != CPP_OPEN_PAREN)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "missing '(' after \"__has_attribute\"");
+		 "missing %<(%> after %<__has_attribute%>");
       return 0;
     }
   token = get_token_no_padding (pfile);
@@ -464,13 +464,13 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
   else
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "macro \"__has_attribute\" requires an identifier");
+		 "macro %<__has_attribute%> requires an identifier");
       return 0;
     }
 
   if (get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
-	       "missing ')' after \"__has_attribute\"");
+	       "missing %<)%> after %<__has_attribute%>");
 
   return result;
 }
@@ -484,7 +484,7 @@ c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
   if (token->type != CPP_OPEN_PAREN)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "missing '(' after \"__has_%s\"", builtin);
+		 "missing %<(%> after %<__has_%s%>", builtin);
       return 0;
     }
 
@@ -497,14 +497,14 @@ c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
       if (token->type != CPP_CLOSE_PAREN)
 	{
 	  cpp_error (pfile, CPP_DL_ERROR,
-		     "expected ')' after \"%s\"", name);
+		     "expected %<)%> after %<%s%>", name);
 	  name = "";
 	}
     }
   else
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "macro \"__has_%s\" requires an identifier", builtin);
+		 "macro %<__has_%s%> requires an identifier", builtin);
       if (token->type == CPP_CLOSE_PAREN)
 	return 0;
     }

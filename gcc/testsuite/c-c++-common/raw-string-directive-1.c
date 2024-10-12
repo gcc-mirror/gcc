@@ -32,19 +32,19 @@ line12
 )"
 
 #if R"(line 13 /* { dg-error "line13" } */
-file:35:1: error: line14)" /* { dg-error "line14\\)\"\" is not valid" } */
-#endif R"(line 15 /* { dg-warning "extra tokens at end of #endif" } */
+file:35:1: error: line14)"
+#endif R"(line 15 /* { dg-warning "extra tokens at end of '#endif'" } */
 \
 line16)" ""
 
-#ifdef XYZ R"(line17 /* { dg-warning "extra tokens at end of #ifdef" } */
+#ifdef XYZ R"(line17 /* { dg-warning "extra tokens at end of '#ifdef'" } */
 \
 \
 line18)"
 #endif
 
 #if 1
-#else R"(line23 /* { dg-warning "extra tokens at end of #else" } */
+#else R"(line23 /* { dg-warning "extra tokens at end of '#else'" } */
 \
 
 line24)"
@@ -52,7 +52,7 @@ line24)"
 
 #if 0
 #elif R"(line 25 /* { dg-error "line25" } */
-file:55:1: error: line26)" /* { dg-error "line26\\)\"\" is not valid" } */
+file:55:1: error: line26)"
 #endif
 
 #line 60 R"(file:60:1: warning: this file has a space
@@ -61,13 +61,13 @@ in it!)"
 /* { dg-warning "this file has a space" "#line check" { target *-*-* } 60 } */
 #line 63 "file"
 
-#undef X1 R"(line28 /* { dg-warning "extra tokens at end of #undef" } */
+#undef X1 R"(line28 /* { dg-warning "extra tokens at end of '#undef'" } */
 line29
 \
 )"
 
 #ident R"(line30
-line31)" R"(line 32 /* { dg-warning "extra tokens at end of #ident" } */
+line31)" R"(line 32 /* { dg-warning "extra tokens at end of '#ident'" } */
 line 33)"
 
 #pragma GCC diagnostic ignored R"(-Woption /* { dg-warning "-Wpragmas" } */

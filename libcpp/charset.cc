@@ -867,8 +867,8 @@ cpp_host_to_exec_charset (cpp_reader *pfile, cppchar_t c)
   if (c > LAST_POSSIBLY_BASIC_SOURCE_CHAR)
     {
       cpp_error (pfile, CPP_DL_ICE,
-		 "character 0x%lx is not in the basic source character set\n",
-		 (unsigned long)c);
+		 "character 0x%lx is not in the basic source character set",
+		 (unsigned long) c);
       return 0;
     }
 
@@ -1550,10 +1550,10 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
   else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
 	   && !CPP_OPTION (pfile, cplusplus))
     cpp_error (pfile, CPP_DL_WARNING,
-	       "C99's universal character names are incompatible with C90");
+	       "C99%'s universal character names are incompatible with C90");
   else if (CPP_WTRADITIONAL (pfile) && identifier_pos == 0)
     cpp_warning (pfile, CPP_W_TRADITIONAL,
-	         "the meaning of '\\%c' is different in traditional C",
+	         "the meaning of %<\\%c%> is different in traditional C",
 	         (int) str[-1]);
 
   result = 0;
@@ -1592,7 +1592,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	      *cp = 0;
 	      return false;
 	    }
-	  cpp_error (pfile, CPP_DL_ERROR, "'\\N' not followed by '{'");
+	  cpp_error (pfile, CPP_DL_ERROR, "%<\\N%> not followed by %<{%>");
 	}
       else
 	{
@@ -1656,13 +1656,13 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 			  && (!CPP_OPTION (pfile, delimited_escape_seqs)
 			      || !strict))
 			ret = cpp_warning (pfile, CPP_W_UNICODE,
-					   "\\N{%.*s} is not a valid "
+					   "%<\\N{%.*s}%> is not a valid "
 					   "universal character; treating it "
 					   "as separate tokens",
 					   (int) (str - name), name);
 		      else
 			cpp_error (pfile, CPP_DL_ERROR,
-				   "\\N{%.*s} is not a valid universal "
+				   "%<\\N{%.*s}%> is not a valid universal "
 				   "character", (int) (str - name), name);
 
 		      /* Try to do a loose name lookup according to
@@ -1672,7 +1672,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 						       str - name, canon_name);
 		      if (result != (cppchar_t) -1 && ret)
 			cpp_error (pfile, CPP_DL_NOTE,
-				   "did you mean \\N{%s}?", canon_name);
+				   "did you mean %<\\N{%s}%>?", canon_name);
 		      else
 			result = 0xC0;
 		      if (identifier_pos
@@ -1690,7 +1690,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	  else if (identifier_pos)
 	    {
 	      cpp_warning (pfile, CPP_W_UNICODE,
-			   "'\\N{' not terminated with '}' after %.*s; "
+			   "%<\\N{%> not terminated with %<}%> after %.*s; "
 			   "treating it as separate tokens",
 			   (int) (str - base), base);
 	      *cp = 0;
@@ -1699,7 +1699,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	  else
 	    {
 	      cpp_error (pfile, CPP_DL_ERROR,
-			 "'\\N{' not terminated with '}' after %.*s",
+			 "%<\\N{%> not terminated with %<}%> after %.*s",
 			 (int) (str - base), base);
 	      result = 1;
 	    }
@@ -1707,7 +1707,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
     }
   else
     {
-      cpp_error (pfile, CPP_DL_ICE, "In _cpp_valid_ucn but not a UCN");
+      cpp_error (pfile, CPP_DL_ICE, "in %<_cpp_valid_ucn%> but not a UCN");
       length = 4;
     }
 
@@ -1775,7 +1775,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
     {
       if (delimited)
 	cpp_warning (pfile, CPP_W_UNICODE,
-		     "'\\u{' not terminated with '}' after %.*s; "
+		     "%<\\u{%> not terminated with %<}%> after %.*s; "
 		     "treating it as separate tokens",
 		     (int) (str - base), base);
       *cp = 0;
@@ -1791,7 +1791,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		   (int) (str - base), base);
       else
 	cpp_error (pfile, CPP_DL_ERROR,
-		   "'\\u{' not terminated with '}' after %.*s",
+		   "%<\\u{%> not terminated with %<}%> after %.*s",
 		   (int) (str - base), base);
       result = 1;
     }
@@ -1821,7 +1821,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
       if (CPP_OPTION (pfile, warn_dollars) && !pfile->state.skipping)
 	{
 	  CPP_OPTION (pfile, warn_dollars) = 0;
-	  cpp_error (pfile, CPP_DL_PEDWARN, "'$' in identifier or number");
+	  cpp_error (pfile, CPP_DL_PEDWARN, "%<$%> in identifier or number");
 	}
       NORMALIZE_STATE_UPDATE_IDNUM (nst, result);
     }
@@ -2096,7 +2096,7 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
 
   if (CPP_WTRADITIONAL (pfile))
     cpp_warning (pfile, CPP_W_TRADITIONAL,
-	         "the meaning of '\\x' is different in traditional C");
+	         "the meaning of %<\\x%> is different in traditional C");
 
   /* Skip 'x'.  */
   from++;
@@ -2144,13 +2144,13 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
   if (!digits_found)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "\\x used with no following hex digits");
+		 "%<\\x%> used with no following hex digits");
       return from;
     }
   else if (delimited)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "'\\x{' not terminated with '}' after %.*s",
+		 "%<\\x{%> not terminated with %<}%> after %.*s",
 		 (int) (from - base), base);
       return from;
     }
@@ -2201,7 +2201,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       from++;
       extend_char_range (&char_range, loc_reader);
       if (from == limit || *from != '{')
-	cpp_error (pfile, CPP_DL_ERROR, "'\\o' not followed by '{'");
+	cpp_error (pfile, CPP_DL_ERROR, "%<\\o%> not followed by %<}%>");
       else
 	{
 	  from++;
@@ -2247,7 +2247,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       else
 	{
 	  cpp_error (pfile, CPP_DL_ERROR,
-		     "'\\o{' not terminated with '}' after %.*s",
+		     "%<\\o{%> not terminated with %<}%> after %.*s",
 		     (int) (from - base), base);
 	  return from;
 	}
@@ -2309,7 +2309,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
       if (uneval)
 	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
 			"numeric escape sequence in unevaluated string: "
-			"'\\%c'", (int) c);
+			"%<\\%c%>", (int) c);
       return convert_hex (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
@@ -2319,7 +2319,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
       if (uneval)
 	cpp_pedwarning (pfile, CPP_W_PEDANTIC,
 			"numeric escape sequence in unevaluated string: "
-			"'\\%c'", (int) c);
+			"%<\\%c%>", (int) c);
       return convert_oct (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
 
@@ -2346,13 +2346,13 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     case 'a':
       if (CPP_WTRADITIONAL (pfile))
 	cpp_warning (pfile, CPP_W_TRADITIONAL,
-		     "the meaning of '\\a' is different in traditional C");
+		     "the meaning of %<\\a%> is different in traditional C");
       c = charconsts[0];
       break;
 
     case 'e': case 'E':
       cpp_pedwarning (pfile, CPP_W_PEDANTIC,
-		      "non-ISO-standard escape sequence, '\\%c'", (int) c);
+		      "non-ISO-standard escape sequence, %<\\%c%>", (int) c);
       c = charconsts[2];
       break;
 
@@ -2360,7 +2360,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     unknown:
       if (ISGRAPH (c))
 	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "unknown escape sequence: '\\%c'", (int) c);
+		   "unknown escape sequence: %<\\%c%>", (int) c);
       else
 	{
 	  encoding_rich_location rich_loc (pfile);
@@ -2370,7 +2370,7 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	  char buf[32];
 	  sprintf(buf, "%03o", (int) c);
 	  cpp_error_at (pfile, CPP_DL_PEDWARN, &rich_loc,
-			"unknown escape sequence: '\\%s'", buf);
+			"unknown escape sequence: %<\\%s%>", buf);
 	}
     }
 
@@ -2655,7 +2655,7 @@ cpp_interpret_string_ranges (cpp_reader *pfile, const cpp_string *from,
   bool (*saved_diagnostic_handler) (cpp_reader *, enum cpp_diagnostic_level,
 				    enum cpp_warning_reason, rich_location *,
 				    const char *, va_list *)
-    ATTRIBUTE_FPTR_PRINTF(5,0);
+    ATTRIBUTE_CPP_PPDIAG (5, 0);
 
   saved_diagnostic_handler = pfile->cb.diagnostic;
   pfile->cb.diagnostic = noop_diagnostic_cb;
@@ -2704,7 +2704,7 @@ count_source_chars (cpp_reader *pfile, cpp_string str, cpp_ttype type)
   bool (*saved_diagnostic_handler) (cpp_reader *, enum cpp_diagnostic_level,
 				    enum cpp_warning_reason, rich_location *,
 				    const char *, va_list *)
-    ATTRIBUTE_FPTR_PRINTF(5,0);
+    ATTRIBUTE_CPP_PPDIAG (5, 0);
   saved_diagnostic_handler = pfile->cb.diagnostic;
   pfile->cb.diagnostic = noop_diagnostic_cb;
   convert_f save_func = pfile->narrow_cset_desc.func;
@@ -2803,7 +2803,7 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
       if (type != CPP_UTF8CHAR)
 	cpp_error (pfile, CPP_DL_WARNING,
 		   "multi-character literal with %ld characters exceeds "
-		   "'int' size of %ld bytes", (long) i, (long) max_chars);
+		   "%<int%> size of %ld bytes", (long) i, (long) max_chars);
       else if (src_chars > 2)
 	cpp_error (pfile, CPP_DL_ERROR,
 		   "multi-character literal cannot have an encoding prefix");

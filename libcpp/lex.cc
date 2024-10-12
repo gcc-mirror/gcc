@@ -1036,7 +1036,7 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 	      if (CPP_OPTION (pfile, trigraphs))
 		cpp_warning_with_line (pfile, CPP_W_TRIGRAPHS,
                                        pfile->line_table->highest_line, col,
-				       "trigraph ??%c converted to %c",
+				       "trigraph %<??%c%> converted to %<%c%>",
 				       note->type,
 				       (int) _cpp_trigraph_map[note->type]);
 	      else
@@ -1044,7 +1044,7 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 		  cpp_warning_with_line 
 		    (pfile, CPP_W_TRIGRAPHS,
                      pfile->line_table->highest_line, col,
-		     "trigraph ??%c ignored, use -trigraphs to enable",
+		     "trigraph %<??%c%> ignored, use %<-trigraphs%> to enable",
 		     note->type);
 		}
 	    }
@@ -1577,7 +1577,7 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
 	      rich_loc.add_range (bidi::current_ctx_loc ());
 	      cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
 			      "UTF-8 vs UCN mismatch when closing "
-			      "a context by \"%s\"", bidi::to_str (kind));
+			      "a context by %qs", bidi::to_str (kind));
 	    }
 	}
       else if (warn_bidi & bidirectional_any
@@ -1585,11 +1585,11 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
 	{
 	  if (kind == bidi::kind::PDF || kind == bidi::kind::PDI)
 	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
-			    "\"%s\" is closing an unopened context",
+			    "%qs is closing an unopened context",
 			    bidi::to_str (kind));
 	  else
 	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
-			    "found problematic Unicode character \"%s\"",
+			    "found problematic Unicode character %qs",
 			    bidi::to_str (kind));
 	}
     }
@@ -1619,13 +1619,13 @@ _cpp_warn_invalid_utf8 (cpp_reader *pfile)
 	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
 			     pfile->line_table->highest_line,
 			     CPP_BUF_COL (buffer),
-			     "invalid UTF-8 character <%x>",
+			     "invalid UTF-8 character %<<%x>%>",
 			     cur[0]);
       else
 	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
 			       pfile->line_table->highest_line,
 			       CPP_BUF_COL (buffer),
-			       "invalid UTF-8 character <%x>",
+			       "invalid UTF-8 character %<<%x>%>",
 			       cur[0]);
       return cur + 1;
     }
@@ -1635,13 +1635,13 @@ _cpp_warn_invalid_utf8 (cpp_reader *pfile)
 	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
 			     pfile->line_table->highest_line,
 			     CPP_BUF_COL (buffer),
-			     "invalid UTF-8 character <%x><%x>",
+			     "invalid UTF-8 character %<<%x><%x>%>",
 			     cur[0], cur[1]);
       else
 	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
 			       pfile->line_table->highest_line,
 			       CPP_BUF_COL (buffer),
-			       "invalid UTF-8 character <%x><%x>",
+			       "invalid UTF-8 character %<<%x><%x>%>",
 			       cur[0], cur[1]);
       return cur + 2;
     }
@@ -1651,13 +1651,13 @@ _cpp_warn_invalid_utf8 (cpp_reader *pfile)
 	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
 			     pfile->line_table->highest_line,
 			     CPP_BUF_COL (buffer),
-			     "invalid UTF-8 character <%x><%x><%x>",
+			     "invalid UTF-8 character %<<%x><%x><%x>%>",
 			     cur[0], cur[1], cur[2]);
       else
 	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
 			       pfile->line_table->highest_line,
 			       CPP_BUF_COL (buffer),
-			       "invalid UTF-8 character <%x><%x><%x>",
+			       "invalid UTF-8 character %<<%x><%x><%x>%>",
 			       cur[0], cur[1], cur[2]);
       return cur + 3;
     }
@@ -1667,13 +1667,13 @@ _cpp_warn_invalid_utf8 (cpp_reader *pfile)
 	cpp_error_with_line (pfile, CPP_DL_PEDWARN,
 			     pfile->line_table->highest_line,
 			     CPP_BUF_COL (buffer),
-			     "invalid UTF-8 character <%x><%x><%x><%x>",
+			     "invalid UTF-8 character %<<%x><%x><%x><%x>%>",
 			     cur[0], cur[1], cur[2], cur[3]);
       else
 	cpp_warning_with_line (pfile, CPP_W_INVALID_UTF8,
 			       pfile->line_table->highest_line,
 			       CPP_BUF_COL (buffer),
-			       "invalid UTF-8 character <%x><%x><%x><%x>",
+			       "invalid UTF-8 character %<<%x><%x><%x><%x>%>",
 			       cur[0], cur[1], cur[2], cur[3]);
       return cur + 4;
     }
@@ -1755,7 +1755,7 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	      cpp_warning_with_line (pfile, CPP_W_COMMENTS,
 				     pfile->line_table->highest_line,
 				     CPP_BUF_COL (buffer),
-				     "\"/*\" within comment");
+				     "%</*%> within comment");
 	    }
 	}
       else if (c == '\n')
@@ -1933,13 +1933,13 @@ warn_about_normalization (cpp_reader *pfile,
       sz = cpp_spell_token (pfile, token, buf, false) - buf;
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
 	cpp_warning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
-			"`%.*s' is not in NFKC", (int) sz, buf);
+			"%<%.*s%> is not in NFKC", (int) sz, buf);
       else if (identifier && CPP_OPTION (pfile, xid_identifiers))
 	cpp_pedwarning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
-				  "`%.*s' is not in NFC", (int) sz, buf);
+				  "%<%.*s%> is not in NFC", (int) sz, buf);
       else
 	cpp_warning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
-			"`%.*s' is not in NFC", (int) sz, buf);
+			"%<%.*s%> is not in NFC", (int) sz, buf);
       free (buf);
     }
 }
@@ -1966,7 +1966,7 @@ forms_identifier_p (cpp_reader *pfile, int first,
       if (CPP_OPTION (pfile, warn_dollars) && !pfile->state.skipping)
 	{
 	  CPP_OPTION (pfile, warn_dollars) = 0;
-	  cpp_error (pfile, CPP_DL_PEDWARN, "'$' in identifier or number");
+	  cpp_error (pfile, CPP_DL_PEDWARN, "%<$%> in identifier or number");
 	}
 
       return true;
@@ -2028,10 +2028,10 @@ maybe_va_opt_error (cpp_reader *pfile)
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
 	    cpp_pedwarning (pfile, CPP_W_CXX20_EXTENSIONS,
-			    "__VA_OPT__ is not available until C++20");
+			    "%<__VA_OPT__%> is not available until C++20");
 	  else
 	    cpp_pedwarning (pfile, CPP_W_PEDANTIC,
-			    "__VA_OPT__ is not available until C23");
+			    "%<__VA_OPT__%> is not available until C23");
 	}
     }
   else if (!pfile->state.va_args_ok)
@@ -2039,7 +2039,7 @@ maybe_va_opt_error (cpp_reader *pfile)
       /* __VA_OPT__ should only appear in the replacement list of a
 	 variadic macro.  */
       cpp_error (pfile, CPP_DL_PEDWARN,
-		 "__VA_OPT__ can only appear in the expansion"
+		 "%<__VA_OPT__%> can only appear in the expansion"
 		 " of a C++20 variadic macro");
     }
 }
@@ -2056,7 +2056,7 @@ identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
   /* It is allowed to poison the same identifier twice.  */
   if ((node->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
     {
-      cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned \"%s\"",
+      cpp_error (pfile, CPP_DL_ERROR, "attempt to use poisoned %qs",
 		 NODE_NAME (node));
       const auto data = (cpp_hashnode_extra *)
 	ht_lookup (pfile->extra_hash_table, node->ident, HT_NO_INSERT);
@@ -2071,11 +2071,11 @@ identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
     {
       if (CPP_OPTION (pfile, cplusplus))
 	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "__VA_ARGS__ can only appear in the expansion"
+		   "%<__VA_ARGS__%> can only appear in the expansion"
 		   " of a C++11 variadic macro");
       else
 	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "__VA_ARGS__ can only appear in the expansion"
+		   "%<__VA_ARGS__%> can only appear in the expansion"
 		   " of a C99 variadic macro");
     }
 
@@ -2087,7 +2087,7 @@ identifier_diagnostics_on_lex (cpp_reader *pfile, cpp_hashnode *node)
   /* For -Wc++-compat, warn about use of C++ named operators.  */
   if (node->flags & NODE_WARN_OPERATOR)
     cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
-		 "identifier \"%s\" is a special operator name in C++",
+		 "identifier %qs is a special operator name in C++",
 		 NODE_NAME (node));
 }
 
@@ -3485,7 +3485,7 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
 	      && _cpp_maybe_notify_macro_use (pfile, node, tok->src_loc)
 	      && !cpp_fun_like_macro_p (node))
 	    cpp_error_with_line (pfile, CPP_DL_ERROR, tok->src_loc, 0, 
-				 "module control-line \"%s\" cannot be"
+				 "module control-line %qs cannot be"
 				 " an object-like macro",
 				 NODE_NAME (node));
 	}

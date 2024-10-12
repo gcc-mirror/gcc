@@ -6,13 +6,13 @@
 // { dg-bogus "__TIME__ builtin is not defined" "no-time" { target *-*-* } .-1 }
 #endif
 
-#define __TIME__ "X"  // { dg-error "\"__TIME__\" redefined .-Werror=builtin-macro-redefined." }
+#define __TIME__ "X"  // { dg-error "'__TIME__' redefined .-Werror=builtin-macro-redefined." }
 
 #define __TIME__ "Y"  // { dg-bogus "-Wbuiltin-macro-redefined" }
-                      // { dg-warning "\"__TIME__\" redefined" "not-builtin-1" { target *-*-* } .-1 }
+                      // { dg-warning "'__TIME__' redefined" "not-builtin-1" { target *-*-* } .-1 }
                       // { dg-message "previous definition" "previous-1" { target *-*-* } 9 }
 
 #define X "X"
 #define X "Y"         // { dg-bogus "-Wbuiltin-macro-redefined" }
-                      // { dg-warning "\"X\" redefined" "not-builtin-2" { target *-*-* } .-1 }
+                      // { dg-warning "'X' redefined" "not-builtin-2" { target *-*-* } .-1 }
                       // { dg-message "previous definition" "previous-2" { target *-*-* } 15 }

@@ -1,18 +1,18 @@
 // { dg-do compile }
 // { dg-options "-std=gnu99 -fdiagnostics-show-option -Wtraditional -Wno-deprecated -Wno-long-long" }
 
-#assert x(x)         // { dg-warning "suggest hiding #assert from traditional C with an indented # .-Wtraditional." }
+#assert x(x)         // { dg-warning "suggest hiding '#assert' from traditional C with an indented '#' .-Wtraditional." }
 
- #define X X         // { dg-warning "traditional C ignores #define with the # indented .-Wtraditional." }
+ #define X X         // { dg-warning "traditional C ignores '#define' with the '#' indented .-Wtraditional." }
 
 #if 0
-#elif 1              // { dg-warning "suggest not using #elif in traditional C .-Wtraditional." }
+#elif 1              // { dg-warning "suggest not using '#elif' in traditional C .-Wtraditional." }
 #endif
 
 #define f(X) X
-int f;               // { dg-warning "function-like macro \"f\" must be used with arguments in traditional C .-Wtraditional." }
+int f;               // { dg-warning "function-like macro 'f' must be used with arguments in traditional C .-Wtraditional." }
 
-#if 0U               // { dg-warning "traditional C rejects the \"U\" suffix .-Wtraditional." }
+#if 0U               // { dg-warning "traditional C rejects the 'U' suffix .-Wtraditional." }
 #endif
 
 #if +1               // { dg-warning " traditional C rejects the unary plus operator .-Wtraditional." }

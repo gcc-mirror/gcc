@@ -6,7 +6,7 @@
 #undef B
 
 #if 0
-#elifdef A	// { dg-warning "#elifdef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifdef A	// { dg-warning "'#elifdef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #define M1 1
 #endif
 
@@ -25,7 +25,7 @@
 #endif
 
 #if 0
-#elifndef B	// { dg-warning "#elifndef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifndef B	// { dg-warning "'#elifndef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #define M2 2
 #endif
 
@@ -34,32 +34,32 @@
 #endif
 
 #if 0
-#elifdef A	// { dg-warning "#elifdef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifdef A	// { dg-warning "'#elifdef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #else
 #error "#elifdef A did not apply"
 #endif
 
 #if 0
-#elifndef B	// { dg-warning "#elifndef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifndef B	// { dg-warning "'#elifndef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #else
 #error "#elifndef B did not apply"
 #endif
 
 #if 1
-#elifdef A	// { dg-warning "#elifdef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifdef A	// { dg-warning "'#elifdef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #endif
 
 #if 1
-#elifndef B	// { dg-warning "#elifndef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifndef B	// { dg-warning "'#elifndef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #endif
 
 // As with #elif, the syntax of the new directives is relaxed after a
    non-skipped group. 
 
 #if 1
-#elifdef x * y	// { dg-warning "#elifdef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifdef x * y	// { dg-warning "'#elifdef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #endif
 
 #if 1
-#elifndef !	// { dg-warning "#elifndef before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
+#elifndef !	// { dg-warning "'#elifndef' before C\\\+\\\+23 is a GCC extension" "" { target c++20_down } }
 #endif

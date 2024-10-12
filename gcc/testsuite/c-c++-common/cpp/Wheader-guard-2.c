@@ -6,5 +6,5 @@
 
 int i;
 
-/* { dg-warning "header guard \"WHEADER_GUARD_2\" followed by \"#define\" of a different macro" "" { target *-*-* } 0 } */
-/* { dg-message "\"WHEADERGUARD2\" is defined here; did you mean \"WHEADER_GUARD_2\"\\\?" "" { target *-*-* } 0 } */
+/* { dg-warning "header guard 'WHEADER_GUARD_2' followed by '#define' of a different macro" "" { target *-*-* } 0 } */
+/* { dg-message "'WHEADERGUARD2' is defined here; did you mean 'WHEADER_GUARD_2'\\\?" "" { target *-*-* } 0 } */

@@ -3,7 +3,7 @@
 
 void operator""_x(const char *, decltype(sizeof(0)));
 
-#include ""_x		  // { dg-error "include expects" }
+#include ""_x		  // { dg-error "'#include' expects" }
 #line ""_x		  // { dg-error "not a positive integer" }
 #if __has_include(""_x)	  // { dg-error "requires a header-name" }
 #endif
