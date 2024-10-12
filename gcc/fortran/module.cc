@@ -1353,7 +1353,7 @@ parse_integer (int c)
       atom_int = 10 * atom_int + c - '0';
     }
 
-  atom_int *= sign; 
+  atom_int *= sign;
 }
 
 
@@ -6346,7 +6346,7 @@ write_module (void)
 
   /* Initialize the column counter. */
   module_column = 1;
-  
+
   /* Write the operator interfaces.  */
   mio_lparen ();
 
@@ -6780,7 +6780,12 @@ import_iso_c_binding_module (void)
 		  not_in_std = (gfc_option.allow_std & d) == 0; \
 		  name = b; \
 		  break;
-#define NAMED_REALCST(a,b,c,d) \
+#define NAMED_UINTCST(a,b,c,d) \
+		case a: \
+		  not_in_std = (gfc_option.allow_std & d) == 0; \
+		  name = b; \
+		  break;
+#define NAMED_REALCST(a,b,c,d)			\
 	        case a: \
 		  not_in_std = (gfc_option.allow_std & d) == 0; \
 		  name = b; \
@@ -6867,7 +6872,12 @@ import_iso_c_binding_module (void)
 		if ((gfc_option.allow_std & d) == 0) \
 		  continue; \
 		break;
-#define NAMED_REALCST(a,b,c,d) \
+#define NAMED_UINTCST(a,b,c,d) \
+	      case a: \
+		if ((gfc_option.allow_std & d) == 0) \
+		  continue; \
+		break;
+#define NAMED_REALCST(a,b,c,d)			\
 	      case a: \
 		if ((gfc_option.allow_std & d) == 0) \
 		  continue; \
@@ -7101,6 +7111,7 @@ use_iso_fortran_env_module (void)
 
   intmod_sym symbol[] = {
 #define NAMED_INTCST(a,b,c,d) { a, b, 0, d },
+#define NAMED_UINTCST(a,b,c,d) { a, b, 0, d },
 #define NAMED_KINDARRAY(a,b,c,d) { a, b, 0, d },
 #define NAMED_DERIVED_TYPE(a,b,c,d) { a, b, 0, d },
 #define NAMED_FUNCTION(a,b,c,d) { a, b, c, d },
@@ -7110,6 +7121,9 @@ use_iso_fortran_env_module (void)
 
   i = 0;
 #define NAMED_INTCST(a,b,c,d) symbol[i++].value = c;
+#include "iso-fortran-env.def"
+
+#define NAMED_UINTCST(a,b,c,d) symbol[i++].value = c;
 #include "iso-fortran-env.def"
 
   /* Generate the symbol for the module itself.  */
@@ -7159,6 +7173,15 @@ use_iso_fortran_env_module (void)
 	      switch (symbol[i].id)
 		{
 #define NAMED_INTCST(a,b,c,d) \
+		case a:
+#include "iso-fortran-env.def"
+		  create_int_parameter (u->local_name[0] ? u->local_name
+							 : u->use_name,
+					symbol[i].value, mod,
+					INTMOD_ISO_FORTRAN_ENV, symbol[i].id);
+		  break;
+
+#define NAMED_UINTCST(a,b,c,d) \
 		case a:
 #include "iso-fortran-env.def"
 		  create_int_parameter (u->local_name[0] ? u->local_name
@@ -7226,6 +7249,13 @@ use_iso_fortran_env_module (void)
 	  switch (symbol[i].id)
 	    {
 #define NAMED_INTCST(a,b,c,d) \
+	    case a:
+#include "iso-fortran-env.def"
+	      create_int_parameter (symbol[i].name, symbol[i].value, mod,
+				    INTMOD_ISO_FORTRAN_ENV, symbol[i].id);
+	      break;
+
+#define NAMED_UINTCST(a,b,c,d)			\
 	    case a:
 #include "iso-fortran-env.def"
 	      create_int_parameter (symbol[i].name, symbol[i].value, mod,

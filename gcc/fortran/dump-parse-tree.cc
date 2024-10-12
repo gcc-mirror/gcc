@@ -3867,7 +3867,8 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
   *asterisk = false;
   *post = "";
   *type_name = "<error>";
-  if (ts->type == BT_REAL || ts->type == BT_INTEGER || ts->type == BT_COMPLEX)
+  if (ts->type == BT_REAL || ts->type == BT_INTEGER || ts->type == BT_COMPLEX
+      || ts->type == BT_UNSIGNED)
     {
       if (ts->is_c_interop && ts->interop_kind)
 	ret = T_OK;
@@ -3895,7 +3896,16 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 		*type_name = "__GFORTRAN_DOUBLE_COMPLEX";
 	      else if (strcmp (*type_name, "long_double_complex") == 0)
 		*type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
-
+	      else if (strcmp (*type_name, "unsigned") == 0)
+		*type_name = "unsigned int";
+	      else if (strcmp (*type_name, "unsigned_char") == 0)
+		*type_name = "unsigned char";
+	      else if (strcmp (*type_name, "unsigned_short") == 0)
+		*type_name = "unsigned short int";
+	      else if (strcmp (*type_name, "unsigned_long") == 0)
+		*type_name = "unsigned long int";
+	      else if (strcmp (*type_name, "unsigned_long long") == 0)
+		*type_name = "unsigned long long int";
 	      break;
 	    }
 	}

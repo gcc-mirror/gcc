@@ -754,6 +754,7 @@ enum gfc_param_spec_type
 #define BBT_HEADER(self) int priority; struct self *left, *right
 
 #define NAMED_INTCST(a,b,c,d) a,
+#define NAMED_UINTCST(a,b,c,d) a,
 #define NAMED_KINDARRAY(a,b,c,d) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
 #define NAMED_SUBROUTINE(a,b,c,d) a,
@@ -765,6 +766,7 @@ enum iso_fortran_env_symbol
   ISOFORTRANENV_LAST, ISOFORTRANENV_NUMBER = ISOFORTRANENV_LAST
 };
 #undef NAMED_INTCST
+#undef NANED_UINTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
 #undef NAMED_SUBROUTINE
@@ -779,6 +781,7 @@ enum iso_fortran_env_symbol
 #define DERIVED_TYPE(a,b,c) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
 #define NAMED_SUBROUTINE(a,b,c,d) a,
+#define NAMED_UINTCST(a,b,c,d) a,
 enum iso_c_binding_symbol
 {
   ISOCBINDING_INVALID = -1,
@@ -795,6 +798,7 @@ enum iso_c_binding_symbol
 #undef DERIVED_TYPE
 #undef NAMED_FUNCTION
 #undef NAMED_SUBROUTINE
+#undef NAMED_UINTCST
 
 enum intmod_id
 {
@@ -3503,6 +3507,7 @@ extern bool gfc_seen_div0;
 /* trans-types.cc */
 int gfc_validate_kind (bt, int, bool);
 int gfc_get_int_kind_from_width_isofortranenv (int size);
+int gfc_get_uint_kind_from_width_isofortranenv (int size);
 int gfc_get_real_kind_from_width_isofortranenv (int size);
 tree gfc_get_union_type (gfc_symbol *);
 tree gfc_get_derived_type (gfc_symbol * derived, int codimen = 0);
@@ -3516,6 +3521,7 @@ extern int gfc_default_character_kind;
 extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
 extern int gfc_c_int_kind;
+extern int gfc_c_uint_kind;
 extern int gfc_c_intptr_kind;
 extern int gfc_atomic_int_kind;
 extern int gfc_atomic_logical_kind;

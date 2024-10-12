@@ -23,6 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 # define NAMED_INTCST(a,b,c,d)
 #endif
 
+#ifndef NAMED_UINTCST
+# define NAMED_UINTCST(a,b,c,d)
+#endif
+
 #ifndef NAMED_KINDARRAY
 # define NAMED_KINDARRAY(a,b,c,d)
 #endif
@@ -99,7 +103,14 @@ NAMED_INTCST (ISOFORTRANENV_FILE_STAT_FAILED_IMAGE, "stat_failed_image", \
               GFC_STAT_FAILED_IMAGE, GFC_STD_F2018)
 NAMED_INTCST (ISOFORTRANENV_FILE_STAT_UNLOCKED, "stat_unlocked", \
               GFC_STAT_UNLOCKED, GFC_STD_F2008)
-
+NAMED_UINTCST (ISOFORTRANENV_UINT8, "uint8", \
+	       gfc_get_uint_kind_from_width_isofortranenv (8), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOFORTRANENV_UINT16, "uint16", \
+	       gfc_get_uint_kind_from_width_isofortranenv (16), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOFORTRANENV_UINT32, "uint32", \
+	       gfc_get_uint_kind_from_width_isofortranenv (32), GFC_STD_UNSIGNED)
+NAMED_UINTCST (ISOFORTRANENV_UINT64, "uint64", \
+	       gfc_get_uint_kind_from_width_isofortranenv (64), GFC_STD_UNSIGNED)
 
 /* The arguments to NAMED_KINDARRAY are:
      -- an internal name
@@ -144,6 +155,7 @@ NAMED_DERIVED_TYPE (ISOFORTRAN_TEAM_TYPE, "team_type", \
 		    : gfc_default_integer_kind, GFC_STD_F2018)
 
 #undef NAMED_INTCST
+#undef NAMED_UINTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
 #undef NAMED_SUBROUTINE

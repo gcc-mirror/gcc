@@ -4925,6 +4925,12 @@ std_for_isocbinding_symbol (int id)
 #include "iso-c-binding.def"
 #undef NAMED_INTCST
 
+#define NAMED_UINTCST(a,b,c,d) \
+      case a:\
+	return d;
+#include "iso-c-binding.def"
+#undef NAMED_UINTCST
+
 #define NAMED_FUNCTION(a,b,c,d) \
       case a:\
         return d;
@@ -5032,6 +5038,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
     {
 
 #define NAMED_INTCST(a,b,c,d) case a :
+#define NAMED_UINTCST(a,b,c,d) case a :
 #define NAMED_REALCST(a,b,c,d) case a :
 #define NAMED_CMPXCST(a,b,c,d) case a :
 #define NAMED_LOGCST(a,b,c) case a :

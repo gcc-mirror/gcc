@@ -2796,7 +2796,21 @@ As of now, the following intrinsics take unsigned arguments:
 @item @code{MAXVAL} and @code{MINVAL}
 @item @code{MAXLOC} and @code{MINLOC}.
 @end itemize
-This list will grow in the near future.
+The following constants have been added to the intrinsic
+@code{ISO_C_BINDING} module: @code{c_unsigned},
+@code{c_unsigned_short}, @code{c_unsigned_char},
+@code{c_unsigned_long}, @code{c_unsigned_long_long},
+@code{c_uintmax_t}, @code{c_uint8_t}, @code{c_uint16_t},
+@code{c_uint32_t}, @code{c_uint64_t}, @code{c_uint128_t},
+@code{c_uint_fast8_t}, @code{c_uint_fast16_t}, @code{c_uint_fast32_t},
+@code{c_uint_fast64_t}, @code{c_uint_fast128_t},
+@code{c_uint_least8_t}, @code{c_uint_least16_t}, @code{c_uint_least32_t},
+@code{c_uint_least64_t} and @code{c_uint_least128_t}.
+
+The following constants have been added to the intrinsic
+@code{ISO_FORTRAN_ENV} module: @code{uint8}, @code{uint16},
+@code{uint32} and @code{uint64}.
+
 @c ---------------------------------------------------------------------
 @c ---------------------------------------------------------------------
 @c Mixed-Language Programming
