@@ -1,3 +1,20 @@
+2024-10-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.cc (add_functions): Convert uint and
+	selected_unsigned_kind to GFC_STD_UNSIGNED.
+	(gfc_check_intrinsic_standard): Handle GFC_STD_UNSIGNED.
+	* libgfortran.h (GFC_STD_UNSIGNED): Add.
+	* options.cc (gfc_post_options): Set GFC_STD_UNSIGNED
+	if -funsigned is set.
+
+2024-10-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* error.cc (error_char, error_string, error_uinteger, error_integer,
+	error_hwuint, error_hwint, gfc_widechar_display_length,
+	gfc_wide_display_length, error_printf, show_locus, show_loci):
+	Remove unused static functions.
+	(IBUF_LEN, MAX_ARGS): Remove now unused #define.
+
 2024-10-08  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/51815

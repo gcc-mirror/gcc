@@ -1,3 +1,9 @@
+2024-10-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116498
+	PR ada/117087
+	* gcc-interface/decl.cc (validate_size): Fix thinko.
+
 2024-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/117038

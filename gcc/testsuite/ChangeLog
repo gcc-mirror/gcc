@@ -1,3 +1,171 @@
+2024-10-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/bmi2-pr112526.c: Replace long with long long.
+	* gcc.target/i386/pr105854.c: Likewise.
+	* gcc.target/i386/pr112943.c: Likewise.
+	* gcc.target/i386/pr67325.c: Likewise.
+	* gcc.target/i386/pr97971.c: Likewise.
+
+2024-10-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	* g++.target/i386/pr105953.C: Skip for x32.
+
+2024-10-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr115407.c: Only run for lp64.
+
+2024-10-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* g++.target/aarch64/pr117048.C: New test.
+
+2024-10-11  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/116826
+	PR tree-optimization/86710
+	* gcc.dg/tree-ssa/log_ident.c: New test.
+
+2024-10-11  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/sve/faminmax_1.c: New test.
+	* gcc.target/aarch64/sve/faminmax_2.c: New test.
+
+2024-10-11  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/sve2/acle/asm/amax_f16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/amax_f32.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/amax_f64.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/amin_f16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/amin_f32.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/amin_f64.c: New test.
+
+2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117086
+	* gcc.dg/torture/pr117086.c: New testcase.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-8-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-8-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-8-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-8-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-8-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-8-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-8-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-8-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-8-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-8-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-8-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-8-i64-to-i8.c: New test.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-7-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-7-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-7-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-7-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-7-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-7-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-7-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-7-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-7-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-7-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-7-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-7-i64-to-i8.c: New test.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-6-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-6-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-6-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-6-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-6-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-6-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-6-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-6-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-6-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-6-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-6-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-6-i64-to-i8.c: New test.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-5-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-5-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-5-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-5-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-5-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-5-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-5-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-5-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-5-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-5-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-5-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-5-i64-to-i8.c: New test.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-4-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-4-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-4-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-4-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-4-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-4-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-4-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-4-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-4-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-4-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-4-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-4-i64-to-i8.c: New test.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-3-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-3-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-3-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-3-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-3-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-3-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-3-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-3-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-3-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-3-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-3-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-3-i64-to-i8.c: New test.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat_s_trunc-2-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-2-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-2-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-2-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-2-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-2-i64-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-2-i16-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-2-i32-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-2-i32-to-i8.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-2-i64-to-i16.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-2-i64-to-i32.c: New test.
+	* gcc.target/riscv/sat_s_trunc-run-2-i64-to-i8.c: New test.
+
+2024-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117053
+	* g++.target/i386/pr116896-3.C: New test.
+
+2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117050
+	* gcc.dg/vect/pr117050.c: New testcase.
+
 2024-10-10  Richard Ball  <richard.ball@arm.com>
 
 	PR tree-optimization/116258

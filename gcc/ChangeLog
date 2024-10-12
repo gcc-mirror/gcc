@@ -1,3 +1,122 @@
+2024-10-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* config/aarch64/aarch64-simd.md (aarch64_xarqv2di): Redefine into a
+	define_expand.
+	(*aarch64_xarqv2di_insn): Define.
+
+2024-10-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Handle vector constants in (x << C1) | (x >> C2) -> ROTATE
+	simplification.
+
+2024-10-11  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/116826
+	PR tree-optimization/86710
+	* match.pd: Fold logN(1.0/a) -> -logN(a),
+	logN(C/a) -> logN(C) - logN(a),	logN(a) + logN(b) -> logN(a*b),
+	and logN(a) - logN(b) -> logN(a/b).
+
+2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117080
+	* tree-vectorizer.h (_slp_tree::memory_access_type): Add.
+	(SLP_TREE_MEMORY_ACCESS_TYPE): New.
+	(record_stmt_cost): Add another overload.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize
+	memory_access_type.
+	* tree-vect-stmts.cc (vectorizable_store): Set
+	SLP_TREE_MEMORY_ACCESS_TYPE.
+	(vectorizable_load): Likewise.  Also record the SLP node
+	when costing emulated gather offset decompose and vector
+	composition.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Also
+	recognize SLP emulated gather/scatter.
+
+2024-10-11  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-sve2.md
+	(*aarch64_pred_faminmax_fused): Instruction pattern for faminmax
+	codegen.
+	* config/aarch64/iterators.md: Iterator and attribute for
+	faminmax codegen.
+
+2024-10-11  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svamax): Absolute maximum declaration.
+	(svamin): Absolute minimum declaration.
+	* config/aarch64/aarch64-sve-builtins-base.def
+	(REQUIRED_EXTENSIONS): Add faminmax intrinsics behind a flag.
+	(svamax): Absolute maximum declaration.
+	(svamin): Absolute minimum declaration.
+	* config/aarch64/aarch64-sve-builtins-base.h: Declaring function
+	bases for the new intrinsics.
+	* config/aarch64/aarch64.h
+	(TARGET_SVE_FAMINMAX): New flag for SVE2 faminmax.
+	* config/aarch64/iterators.md: New unspecs, iterators, and attrs
+	for the new intrinsics.
+
+2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117086
+	* match.pd ((op (vec_cond ...) ..) -> (vec_cond ...)): Add
+	missing checks for VECTOR_TYPE_P (type).
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 4 matching pattern for signed SAT_TRUNC.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 3 matching pattern for signed SAT_TRUNC.
+
+2024-10-11  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 2 matching pattern for signed SAT_TRUNC.
+
+2024-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117053
+	* config/i386/i386-expand.cc (ix86_expand_fp_spaceship): Handle
+	TARGET_ZERO_EXTEND_WITH_AND differently.
+	(ix86_expand_int_spaceship): Likewise.
+
+2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117050
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Do not support
+	permutes of non-grouped .MASK_LOAD.
+
+2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_prefer_store_lanes_p): Allow
+	passing in of vectype, pass in whether the stores are masked
+	and query the correct optab.
+	(vect_build_slp_instance): Guard store-lanes query with
+	! STMT_VINFO_SLP_VECT_ONLY, guaranteeing an uniform mask.
+
+2024-10-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md
+	(sse_movhlps): Change type attr from ssemov to ssemov2.
+	(sse_loadhps): Ditto.
+	(*vec_concat<mode>): Ditto.
+	(vec_setv2df_0): Ditto.
+	(sse_loadlps): Change attr from ssemov to ssemov2 except for 2, 3.
+	(sse2_loadhps): Change attr from ssemov to ssemov2 except for 0, 1.
+	(sse2_loadlpd): Change attr from ssemov to ssemov2 except for 0, 1,
+	2.
+	(sse2_movsd_<mode>): Change attr from ssemov to ssemov2 except for 5.
+	(vec_concatv2df): Change attr from ssemov to ssemov2 except for 0, 1,
+	2.
+	(*vec_concat<mode>): Change attr from ssemov to ssemov2 for 3, 4.
+	(vec_concatv2di): Change attr from ssemov to ssemov2 except for 0, 1,
+	2, 3, 4, 5.
+
 2024-10-10  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/116650

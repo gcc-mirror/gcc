@@ -1,3 +1,38 @@
+2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__niter_base(move_iterator<I>))
+	(__is_move_iterator, __miter_base, _GLIBCXX_MAKE_MOVE_ITERATOR)
+	(_GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR): Move earlier in the
+	file.
+
+2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__is_byte<byte>): Guard with
+	__glibcxx_byte macro instead of checking __cplusplus.
+
+2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117085
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Add L
+	option to format string.
+	* testsuite/std/time/format.cc: Move to...
+	* testsuite/std/time/format/format.cc: ...here.
+	* testsuite/std/time/format_localized.cc: Move to...
+	* testsuite/std/time/format/localized.cc: ...here.
+	* testsuite/std/time/format/pr117085.cc: New test.
+
+2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/time_get/get/char/5.cc: Fix dg-do
+	directive.
+	* testsuite/22_locale/time_get/get/wchar_t/5.cc: Likewise.
+
+2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/io.cc [!__cpp_lib_char8_t]: Define
+	char8_t as a typedef for unsigned char.
+	* testsuite/std/format/parse_ctx_neg.cc: Skip for -fno-char8_t.
+
 2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/116210
