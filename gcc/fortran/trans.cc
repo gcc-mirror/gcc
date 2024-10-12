@@ -47,18 +47,6 @@ static gfc_file *gfc_current_backend_file;
 const char gfc_msg_fault[] = N_("Array reference out of bounds");
 
 
-/* Return a location_t suitable for 'tree' for a gfortran locus.  The way the
-   parser works in gfortran, loc->lb->location contains only the line number
-   and LOCATION_COLUMN is 0; hence, the column has to be added when generating
-   locations for 'tree'.  Cf. error.cc's gfc_format_decoder.  */
-
-location_t
-gfc_get_location (locus *loc)
-{
-  return linemap_position_for_loc_and_offset (line_table, loc->lb->location,
-					      loc->nextc - loc->lb->line);
-}
-
 /* Advance along TREE_CHAIN n times.  */
 
 tree

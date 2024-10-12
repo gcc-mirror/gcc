@@ -3434,6 +3434,13 @@ const char * gfc_get_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 bool gfc_find_sym_in_expr (gfc_symbol *, gfc_expr *);
 
 /* error.cc */
+location_t gfc_get_location_with_offset (locus *, unsigned);
+inline location_t
+gfc_get_location (locus *loc)
+{
+  return gfc_get_location_with_offset (loc, 0);
+}
+
 void gfc_error_init_1 (void);
 void gfc_diagnostics_init (void);
 void gfc_diagnostics_finish (void);

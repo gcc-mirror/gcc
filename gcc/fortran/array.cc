@@ -1390,7 +1390,7 @@ done:
     expr = gfc_get_array_expr (BT_UNKNOWN, 0, &where);
 
   expr->value.constructor = head;
-  if (expr->ts.u.cl)
+  if (expr->ts.type == BT_CHARACTER && expr->ts.u.cl)
     expr->ts.u.cl->length_from_typespec = seen_ts;
 
   *result = expr;
