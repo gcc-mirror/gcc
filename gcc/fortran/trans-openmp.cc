@@ -1553,6 +1553,11 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       return;
     }
 
+  if (!openacc && GFC_CLASS_TYPE_P (TREE_TYPE (decl)))
+    warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
+		"Implicit mapping of polymorphic variable %qD is "
+		"unspecified behavior", decl);
+
   tree c2 = NULL_TREE, c3 = NULL_TREE, c4 = NULL_TREE;
   tree present = gfc_omp_check_optional_argument (decl, true);
   if (POINTER_TYPE_P (TREE_TYPE (decl)))

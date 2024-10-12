@@ -9087,10 +9087,30 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  gfc_error ("List item %qs with allocatable components is not "
 			     "permitted in map clause at %L", n->sym->name,
 			     &n->where);
+		if (!openacc
+		    && (list == OMP_LIST_MAP
+			|| list == OMP_LIST_FROM
+			|| list == OMP_LIST_TO)
+		    && ((n->expr && n->expr->ts.type == BT_CLASS)
+			|| (!n->expr && n->sym->ts.type == BT_CLASS)))
+		  gfc_warning (OPT_Wopenmp,
+			       "Mapping polymorphic list item at %L is "
+			       "unspecified behavior", &n->where);
 		if (list == OMP_LIST_MAP && !openacc)
 		  switch (code->op)
 		    {
 		    case EXEC_OMP_TARGET:
+		    case EXEC_OMP_TARGET_PARALLEL:
+		    case EXEC_OMP_TARGET_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+		    case EXEC_OMP_TARGET_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_LOOP:
 		    case EXEC_OMP_TARGET_DATA:
 		      switch (n->u.map.op)
 			{
@@ -9113,8 +9133,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			  gfc_error ("TARGET%s with map-type other than TO, "
 				     "FROM, TOFROM, or ALLOC on MAP clause "
 				     "at %L",
-				     code->op == EXEC_OMP_TARGET
-				     ? "" : " DATA", &n->where);
+				     code->op == EXEC_OMP_TARGET_DATA
+				     ? " DATA" : "", &n->where);
 			  break;
 			}
 		      break;
@@ -9381,6 +9401,33 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    && n->sym == omp_clauses->detach->symtree->n.sym)
 		  gfc_error ("DETACH event handle %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
+
+		if (!openacc
+		    && list == OMP_LIST_FIRSTPRIVATE
+		    && ((n->expr && n->expr->ts.type == BT_CLASS)
+			|| (!n->expr && n->sym->ts.type == BT_CLASS)))
+		  switch (code->op)
+		    {
+		    case EXEC_OMP_TARGET:
+		    case EXEC_OMP_TARGET_PARALLEL:
+		    case EXEC_OMP_TARGET_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+		    case EXEC_OMP_TARGET_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_LOOP:
+		      gfc_warning (OPT_Wopenmp,
+				   "FIRSTPRIVATE with polymorphic list item at "
+				   "%L is unspecified behavior", &n->where);
+		      break;
+		    default:
+		      break;
+		    }
+
 		switch (list)
 		  {
 		  case OMP_LIST_REDUCTION_TASK:
