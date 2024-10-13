@@ -333,10 +333,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename incrementable_traits<_Iter>::difference_type>;
 	};
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3798. Rvalue reference and iterator_category
     template<typename _Iter>
       concept __cpp17_fwd_iterator = __cpp17_input_iterator<_Iter>
 	&& constructible_from<_Iter>
-	&& is_lvalue_reference_v<iter_reference_t<_Iter>>
+	&& is_reference_v<iter_reference_t<_Iter>>
 	&& same_as<remove_cvref_t<iter_reference_t<_Iter>>,
 		   typename indirectly_readable_traits<_Iter>::value_type>
 	&& requires(_Iter __it)
