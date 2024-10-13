@@ -6114,7 +6114,7 @@ proc check_effective_target_arm_pacbti_hw {} {
 	  asm ("autg r12, lr, sp");
 	  asm ("bx lr");
 	}
-    } "-march=armv8.1-m.main+pacbti+fp -mbranch-protection=standard -mthumb -mfloat-abi=hard"]
+    } "-mcpu=unset -march=armv8.1-m.main+pacbti+fp -mbranch-protection=standard -mthumb -mfloat-abi=hard"]
 }
 
 # Return 1 if this compilation turns on string_ops_prefer_neon on.

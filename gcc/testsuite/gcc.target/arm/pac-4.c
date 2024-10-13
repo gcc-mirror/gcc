@@ -1,7 +1,9 @@
 /* Testing return address signing.  */
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_pacbti_ok } */
 /* { dg-require-effective-target mbranch_protection_ok } */
-/* { dg-options "-march=armv8.1-m.main+pacbti+fp -mthumb -mfloat-abi=hard --save-temps -O2" } */
+/* { dg-options "-mfloat-abi=hard --save-temps -O2" } */
+/* { dg-add-options arm_arch_v8_1m_main_pacbti } */
 
 #include "pac.h"
 
