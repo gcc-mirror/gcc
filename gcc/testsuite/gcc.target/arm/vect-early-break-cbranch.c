@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_early_break } */
-/* { dg-require-effective-target arm_neon_ok } */
-/* { dg-require-effective-target arm32 } */
-/* { dg-options "-O3 -march=armv8-a+simd -mfpu=auto -mfloat-abi=hard  -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2" } */
+/* { dg-require-effective-target arm_arch_v8a_hard_ok } */
+/* { dg-options "-O3 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2" } */
+/* { dg-add-options arm_arch_v8a_hard } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #define N 640
