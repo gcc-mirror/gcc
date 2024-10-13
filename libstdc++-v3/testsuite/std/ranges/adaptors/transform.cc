@@ -214,6 +214,21 @@ test10()
   static_assert(std::same_as<cat, std::random_access_iterator_tag>);
 }
 
+void
+test11()
+{
+  struct MoveIt {
+    int&& operator()(int& i) const { return std::move(i); }
+  };
+
+  int x[] {2, 4};
+  auto xform = x | views::transform(MoveIt{});
+  using iterator = decltype(xform.begin());
+  // LWG 3798. Rvalue reference and iterator_category
+  using cat = std::iterator_traits<iterator>::iterator_category;
+  static_assert(std::same_as<cat, std::random_access_iterator_tag>);
+}
+
 int
 main()
 {
@@ -227,4 +242,5 @@ main()
   test08();
   test09();
   test10();
+  test11();
 }
