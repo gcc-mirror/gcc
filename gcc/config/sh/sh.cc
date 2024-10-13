@@ -3231,7 +3231,7 @@ multcosts (rtx x ATTRIBUTE_UNUSED)
 static bool
 sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	      int opno ATTRIBUTE_UNUSED,
-	      int *total, bool speed ATTRIBUTE_UNUSED)
+	      int *total, bool speed)
 {
   int code = GET_CODE (x);
 
@@ -3264,10 +3264,12 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
         }
       return false;
 
-    /* The cost of a mem access is mainly the cost of the address mode.  */
+    /* The cost of a mem access is mainly the cost of the address mode on top
+       of the cost of the load/store insn itself.  */
     case MEM:
       *total = sh_address_cost (XEXP (x, 0), GET_MODE (x), MEM_ADDR_SPACE (x),
-				true);
+				speed)
+	       + COSTS_N_INSNS (1);
       return true;
 
     case IF_THEN_ELSE:
@@ -3317,7 +3319,8 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	{
 	  *total = sh_address_cost (XEXP (XEXP (x, 0), 0),
 				    GET_MODE (XEXP (x, 0)),
-				    MEM_ADDR_SPACE (XEXP (x, 0)), true);
+				    MEM_ADDR_SPACE (XEXP (x, 0)), speed)
+		   + COSTS_N_INSNS (1);
 	  return true;
 	}
       return false;
@@ -3335,7 +3338,8 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	  /* Handle SH2A's movu.b and movu.w insn.  */
 	  *total = sh_address_cost (XEXP (XEXP (x, 0), 0), 
 				    GET_MODE (XEXP (x, 0)), 
-				    MEM_ADDR_SPACE (XEXP (x, 0)), true);
+				    MEM_ADDR_SPACE (XEXP (x, 0)), speed)
+		   + COSTS_N_INSNS (1);
 	  return true;
 	}
       return false;
@@ -3350,14 +3354,16 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	    {
 	      *total = sh_address_cost (XEXP (XEXP (xx, 0), 0), 
 					GET_MODE (XEXP (xx, 0)),
-					MEM_ADDR_SPACE (XEXP (xx, 0)), true);
+					MEM_ADDR_SPACE (XEXP (xx, 0)), speed);
+		       + COSTS_N_INSNS (1);
 	      return true;
 	    }
 	  if (GET_CODE (xx) == SET && MEM_P (XEXP (xx, 1)))
 	    {
 	      *total = sh_address_cost (XEXP (XEXP (xx, 1), 0),
 					GET_MODE (XEXP (xx, 1)),
-					MEM_ADDR_SPACE (XEXP (xx, 1)), true);
+					MEM_ADDR_SPACE (XEXP (xx, 1)), speed);
+		       + COSTS_N_INSNS (1);
 	      return true;
 	    }
 	}
