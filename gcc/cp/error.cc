@@ -3397,8 +3397,7 @@ location_of (tree t)
 	return input_location;
     }
   else if (TREE_CODE (t) == OVERLOAD)
-    t = OVL_FIRST (t) != conv_op_marker ? OVL_FIRST (t)
-      : OVL_FIRST (OVL_CHAIN (t));
+    t = OVL_FIRST (t);
 
   if (DECL_P (t))
     return DECL_SOURCE_LOCATION (t);
