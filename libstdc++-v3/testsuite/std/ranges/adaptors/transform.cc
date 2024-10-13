@@ -175,6 +175,24 @@ test08()
   static_assert(!requires { views::all | transform; });
 }
 
+void
+test10()
+{
+  struct F {
+    short operator()(int) { return 0; }
+    const int& operator()(const int& i) const { return i; }
+  };
+
+  int x[] {2, 4};
+  const auto xform = x | views::transform(F{});
+  using const_iterator = decltype(xform.begin());
+  // LWG 3564. transform_view::iterator<true>::value_type and iterator_category
+  // should use const F&
+  static_assert(std::same_as<std::iter_value_t<const_iterator>, int>);
+  using cat = std::iterator_traits<const_iterator>::iterator_category;
+  static_assert(std::same_as<cat, std::random_access_iterator_tag>);
+}
+
 int
 main()
 {
@@ -186,4 +204,5 @@ main()
   test06();
   test07();
   test08();
+  test10();
 }
