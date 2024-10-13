@@ -1,3 +1,71 @@
+2024-10-12  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/116985
+	* tree-vect-loop.cc (vect_transform_reduction): Compute loop mask
+	index based on effective vector copies for reduction op.
+
+2024-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117104
+	* match.pd ((cmp:c (minmax:c @0 @1) @0) -> (out @0 @1)): Properly
+	guard the vector case.
+
+2024-10-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/constraints.md (P): New constraint.
+	* config/riscv/vector.md (pred_broadcast<mode> expander): Do
+	not force small integers into GPRs so aggressively.
+	(pred_broadcast<mode> insn & splitter): Allow splatting small
+	constants across the vector register directly.  Allow splatting
+	(const_int 0) into element 0 directly.
+
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (LINKER_FOR_BUILD): Append -no-pie if it is in
+	$(LD_PICFLAG) when building build/genmatch.
+
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (generated_files): Remove {gimple,generic}-match*.
+	(generated_match_files): New variable.  Add a dependency of
+	$(filter-out $(OBJS-libcommon),$(ALL_HOST_OBJS)) files on those.
+	(build/genmatch$(build_exeext)): Depend on and link against
+	libcommon.a and $(LIBBACKTRACE).
+	* genmatch.cc: Include pretty-print.h and input.h.
+	(ggc_internal_cleared_alloc, ggc_free): Remove.
+	(fatal): New function.
+	(line_table): Remove.
+	(linemap_client_expand_location_to_spelling_point): Remove.
+	(diagnostic_cb): Use gcc_diag rather than printf format.  Use
+	pp_format_verbatim on a temporary pretty_printer instead of
+	vfprintf.
+	(fatal_at, warning_at): Use gcc_diag rather than printf format.
+	(output_line_directive): Rename location_hash to loc_hash.
+	(parser::eat_ident, parser::parse_operation, parser::parse_expr,
+	parser::parse_pattern, parser::finish_match_operand): Fix up
+	-Wformat-diag warnings.
+
+2024-10-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (sssub<mode>3): Add new pattern for
+	signed SAT_SUB.
+	* config/riscv/riscv-protos.h (expand_vec_sssub): Add new func
+	decl to expand sssub to vssub.
+	* config/riscv/riscv-v.cc (expand_vec_sssub): Add new func
+	impl to expand sssub to vssub.
+
+2024-10-12  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-patterns.cc (gimple_signed_integer_sat_sub): Add new
+	func decl for signed SAT_SUB.
+	(vect_recog_sat_sub_pattern_transform): Update comments.
+	(vect_recog_sat_sub_pattern): Try the vector signed SAT_SUB
+	pattern.
+
+2024-10-12  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add case 1 matching pattern for vector signed SAT_SUB.
+
 2024-10-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	PR target/117048

@@ -1,3 +1,178 @@
+2024-10-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_36.f90: New test.
+
+2024-10-12  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/116985
+	* gcc.dg/vect/pr116985.c: New testcase.
+
+2024-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117104
+	* gcc.dg/pr117104.c: New testcase.
+
+2024-10-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/polymorphic-mapping.f90: New test.
+	* gfortran.dg/gomp/polymorphic-mapping-2.f90: New test.
+
+2024-10-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr55583.c: Use long long for 64-bit integer.
+
+2024-10-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr115749.c (uword): New.
+	(func): Replace unsigned long with uword.
+
+2024-10-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/invariant-ternlog-1.c: Also scan (%edx).
+
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/counter-2.c: Adjust expected diagnostics for
+	libcpp diagnostic formatting changes.
+	* c-c++-common/cpp/embed-3.c: Likewise.
+	* c-c++-common/cpp/embed-4.c: Likewise.
+	* c-c++-common/cpp/embed-16.c: Likewise.
+	* c-c++-common/cpp/embed-18.c: Likewise.
+	* c-c++-common/cpp/eof-2.c: Likewise.
+	* c-c++-common/cpp/eof-3.c: Likewise.
+	* c-c++-common/cpp/fmax-include-depth.c: Likewise.
+	* c-c++-common/cpp/has-builtin.c: Likewise.
+	* c-c++-common/cpp/line-2.c: Likewise.
+	* c-c++-common/cpp/line-3.c: Likewise.
+	* c-c++-common/cpp/macro-arg-count-1.c: Likewise.
+	* c-c++-common/cpp/macro-arg-count-2.c: Likewise.
+	* c-c++-common/cpp/macro-ranges.c: Likewise.
+	* c-c++-common/cpp/named-universal-char-escape-4.c: Likewise.
+	* c-c++-common/cpp/named-universal-char-escape-5.c: Likewise.
+	* c-c++-common/cpp/pr88974.c: Likewise.
+	* c-c++-common/cpp/va-opt-error.c: Likewise.
+	* c-c++-common/cpp/va-opt-pedantic.c: Likewise.
+	* c-c++-common/cpp/Wheader-guard-2.c: Likewise.
+	* c-c++-common/cpp/Wheader-guard-3.c: Likewise.
+	* c-c++-common/cpp/Winvalid-utf8-1.c: Likewise.
+	* c-c++-common/cpp/Winvalid-utf8-2.c: Likewise.
+	* c-c++-common/cpp/Winvalid-utf8-3.c: Likewise.
+	* c-c++-common/diagnostic-format-sarif-file-bad-utf8-pr109098-1.c:
+	Likewise.
+	* c-c++-common/diagnostic-format-sarif-file-bad-utf8-pr109098-3.c:
+	Likewise.
+	* c-c++-common/pr68833-3.c: Likewise.
+	* c-c++-common/raw-string-directive-1.c: Likewise.
+	* gcc.dg/analyzer/named-constants-Wunused-macros.c: Likewise.
+	* gcc.dg/binary-constants-4.c: Likewise.
+	* gcc.dg/builtin-redefine.c: Likewise.
+	* gcc.dg/cpp/19951025-1.c: Likewise.
+	* gcc.dg/cpp/c11-warning-1.c: Likewise.
+	* gcc.dg/cpp/c11-warning-2.c: Likewise.
+	* gcc.dg/cpp/c11-warning-3.c: Likewise.
+	* gcc.dg/cpp/c23-elifdef-2.c: Likewise.
+	* gcc.dg/cpp/c23-warning-2.c: Likewise.
+	* gcc.dg/cpp/embed-2.c: Likewise.
+	* gcc.dg/cpp/embed-3.c: Likewise.
+	* gcc.dg/cpp/embed-4.c: Likewise.
+	* gcc.dg/cpp/expr.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-3.c: Likewise.
+	* gcc.dg/cpp/gnu11-elifdef-4.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-1.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-2.c: Likewise.
+	* gcc.dg/cpp/gnu11-warning-3.c: Likewise.
+	* gcc.dg/cpp/gnu23-warning-2.c: Likewise.
+	* gcc.dg/cpp/include6.c: Likewise.
+	* gcc.dg/cpp/pr35322.c: Likewise.
+	* gcc.dg/cpp/tr-warn6.c: Likewise.
+	* gcc.dg/cpp/undef2.c: Likewise.
+	* gcc.dg/cpp/warn-comments.c: Likewise.
+	* gcc.dg/cpp/warn-comments-2.c: Likewise.
+	* gcc.dg/cpp/warn-comments-3.c: Likewise.
+	* gcc.dg/cpp/warn-cxx-compat.c: Likewise.
+	* gcc.dg/cpp/warn-cxx-compat-2.c: Likewise.
+	* gcc.dg/cpp/warn-deprecated.c: Likewise.
+	* gcc.dg/cpp/warn-deprecated-2.c: Likewise.
+	* gcc.dg/cpp/warn-long-long.c: Likewise.
+	* gcc.dg/cpp/warn-long-long-2.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-1.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-2.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-3.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-4-bytes.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-4-unicode.c: Likewise.
+	* gcc.dg/cpp/warn-redefined.c: Likewise.
+	* gcc.dg/cpp/warn-redefined-2.c: Likewise.
+	* gcc.dg/cpp/warn-traditional.c: Likewise.
+	* gcc.dg/cpp/warn-traditional-2.c: Likewise.
+	* gcc.dg/cpp/warn-trigraphs-1.c: Likewise.
+	* gcc.dg/cpp/warn-trigraphs-2.c: Likewise.
+	* gcc.dg/cpp/warn-trigraphs-3.c: Likewise.
+	* gcc.dg/cpp/warn-trigraphs-4.c: Likewise.
+	* gcc.dg/cpp/warn-undef.c: Likewise.
+	* gcc.dg/cpp/warn-undef-2.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros.c: Likewise.
+	* gcc.dg/cpp/warn-unused-macros-2.c: Likewise.
+	* gcc.dg/pch/counter-2.c: Likewise.
+	* g++.dg/cpp0x/udlit-error1.C: Likewise.
+	* g++.dg/cpp23/named-universal-char-escape1.C: Likewise.
+	* g++.dg/cpp23/named-universal-char-escape2.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-1.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-2.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-3.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-4.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-5.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-6.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-7.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-8.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-9.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-10.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-11.C: Likewise.
+	* g++.dg/cpp23/Winvalid-utf8-12.C: Likewise.
+	* g++.dg/cpp/elifdef-3.C: Likewise.
+	* g++.dg/cpp/elifdef-5.C: Likewise.
+	* g++.dg/cpp/elifdef-6.C: Likewise.
+	* g++.dg/cpp/elifdef-7.C: Likewise.
+	* g++.dg/cpp/embed-1.C: Likewise.
+	* g++.dg/cpp/embed-2.C: Likewise.
+	* g++.dg/cpp/pedantic-errors.C: Likewise.
+	* g++.dg/cpp/warning-1.C: Likewise.
+	* g++.dg/cpp/warning-2.C: Likewise.
+	* g++.dg/ext/bitint1.C: Likewise.
+	* g++.dg/ext/bitint2.C: Likewise.
+
+2024-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/112600
+	* gcc.target/i386/pr112600-4a.c: New test.
+	* gcc.target/i386/pr112600-4b.c: New test.
+
+2024-10-12  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109918
+	* g++.dg/warn/Woverloaded-virt1.C: Check that no warning is
+	emitted for non virtual base methods.
+	* g++.dg/warn/Woverloaded-virt5.C: New test.
+	* g++.dg/warn/Woverloaded-virt6.C: New test.
+	* g++.dg/warn/Woverloaded-virt7.C: New test.
+	* g++.dg/warn/Woverloaded-virt8.C: New test.
+	* g++.dg/warn/Woverloaded-virt9.C: New test.
+
+2024-10-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-1-i8.c: New test.
+
 2024-10-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc.target/i386/bmi2-pr112526.c: Replace long with long long.

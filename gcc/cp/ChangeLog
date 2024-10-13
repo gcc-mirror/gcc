@@ -1,3 +1,11 @@
+2024-10-12  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109918
+	* class.cc (warn_hidden): Keep track of overloaded and of hidden
+	base methods. Mention the actual hiding function in the warning,
+	not the first overload.
+	* error.cc (location_of): Skip over conv_op_marker.
+
 2024-10-07  Jason Merrill  <jason@redhat.com>
 
 	* decl.cc (duplicate_decls): Only check PURVIEW_P if

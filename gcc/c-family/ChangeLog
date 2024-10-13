@@ -1,3 +1,8 @@
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (c_common_has_attribute,
+	c_common_lex_availability_macro): Fix up -Wformat-diag warnings.
+
 2024-10-09  Jason Merrill  <jason@redhat.com>
 
 	* c-ppoutput.cc (preprocess_file): Set directives_only flag.

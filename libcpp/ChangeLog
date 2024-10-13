@@ -1,3 +1,54 @@
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (ATTRIBUTE_CPP_PPDIAG): Define.
+	(struct cpp_callbacks): Use ATTRIBUTE_CPP_PPDIAG instead of
+	ATTRIBUTE_FPTR_PRINTF on diagnostic callback.
+	(cpp_error, cpp_warning, cpp_pedwarning, cpp_warning_syshdr): Use
+	ATTRIBUTE_CPP_PPDIAG (3, 4) instead of ATTRIBUTE_PRINTF_3.
+	(cpp_warning_at, cpp_pedwarning_at): Use ATTRIBUTE_CPP_PPDIAG (4, 5)
+	instead of ATTRIBUTE_PRINTF_4.
+	(cpp_error_with_line, cpp_warning_with_line, cpp_pedwarning_with_line,
+	cpp_warning_with_line_syshdr): Use ATTRIBUTE_CPP_PPDIAG (5, 6)
+	instead of ATTRIBUTE_PRINTF_5.
+	(cpp_error_at): Use ATTRIBUTE_CPP_PPDIAG (4, 5) instead of
+	ATTRIBUTE_PRINTF_4.
+	* Makefile.in (po/$(PACKAGE).pot): Use --language=GCC-source rather
+	than --language=c.
+	* errors.cc (cpp_diagnostic_at, cpp_diagnostic,
+	cpp_diagnostic_with_line): Use ATTRIBUTE_CPP_PPDIAG instead of
+	-ATTRIBUTE_FPTR_PRINTF.
+	* charset.cc (cpp_host_to_exec_charset, _cpp_valid_ucn, convert_hex,
+	convert_oct, convert_escape): Fix up -Wformat-diag warnings.
+	(cpp_interpret_string_ranges, count_source_chars): Use
+	ATTRIBUTE_CPP_PPDIAG instead of ATTRIBUTE_FPTR_PRINTF.
+	(narrow_str_to_charconst): Fix up -Wformat-diag warnings.
+	* directives.cc (check_eol_1, directive_diagnostics, lex_macro_node,
+	do_undef, glue_header_name, parse_include, do_include_common,
+	do_include_next, _cpp_parse_embed_params, do_embed, read_flag,
+	do_line, do_linemarker, register_pragma_1, do_pragma_once,
+	do_pragma_push_macro, do_pragma_pop_macro, do_pragma_poison,
+	do_pragma_system_header, do_pragma_warning_or_error, _cpp_do__Pragma,
+	do_else, do_elif, do_endif, parse_answer, do_assert,
+	cpp_define_unused): Likewise.
+	* expr.cc (cpp_classify_number, parse_defined, eval_token,
+	_cpp_parse_expr, reduce, check_promotion): Likewise.
+	* files.cc (_cpp_find_file, finish_base64_embed,
+	_cpp_pop_file_buffer): Likewise.
+	* init.cc (sanity_checks): Likewise.
+	* lex.cc (_cpp_process_line_notes, maybe_warn_bidi_on_char,
+	_cpp_warn_invalid_utf8, _cpp_skip_block_comment,
+	warn_about_normalization, forms_identifier_p, maybe_va_opt_error,
+	identifier_diagnostics_on_lex, cpp_maybe_module_directive): Likewise.
+	* macro.cc (class vaopt_state, builtin_has_include_1,
+	builtin_has_include, builtin_has_embed, _cpp_warn_if_unused_macro,
+	_cpp_builtin_macro_text, builtin_macro, stringify_arg,
+	_cpp_arguments_ok, collect_args, enter_macro_context,
+	_cpp_save_parameter, parse_params, create_iso_definition,
+	_cpp_create_definition, check_trad_stringification): Likewise.
+	* pch.cc (cpp_valid_state): Likewise.
+	* traditional.cc (_cpp_scan_out_logical_line, recursive_macro):
+	Likewise.
+
 2024-10-09  Jason Merrill  <jason@redhat.com>
 
 	* macro.cc (_cpp_pop_context): Fix typo.
