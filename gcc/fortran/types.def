@@ -45,8 +45,7 @@ along with GCC; see the file COPYING3.  If not see
     the type pointed to.  */
 
 DEF_PRIMITIVE_TYPE (BT_VOID, void_type_node)
-DEF_PRIMITIVE_TYPE (BT_BOOL,
-		    (*lang_hooks.types.type_for_size) (BOOL_TYPE_SIZE, 1))
+DEF_PRIMITIVE_TYPE (BT_BOOL, boolean_type_node)
 DEF_PRIMITIVE_TYPE (BT_INT, integer_type_node)
 DEF_PRIMITIVE_TYPE (BT_UINT, unsigned_type_node)
 DEF_PRIMITIVE_TYPE (BT_LONG, long_integer_type_node)

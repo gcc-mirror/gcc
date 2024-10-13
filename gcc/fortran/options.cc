@@ -868,11 +868,14 @@ gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fbuiltin_:
-      /* We only handle -fno-builtin-omp_is_initial_device.  */
+      /* We only handle -fno-builtin-omp_is_initial_device
+	 and -fno-builtin-acc_on_device.  */
       if (value)
 	return false;  /* Not supported. */
       if (!strcmp ("omp_is_initial_device", arg))
 	gfc_option.disable_omp_is_initial_device = true;
+      else if (!strcmp ("acc_on_device", arg))
+	gfc_option.disable_acc_on_device = true;
       else
 	warning (0, "command-line option %<-fno-builtin-%s%> is not valid for "
 		 "Fortran", arg);

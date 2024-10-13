@@ -4381,13 +4381,51 @@ conv_base_obj_fcn_val (gfc_se * se, tree base_object, gfc_expr * expr)
   se->expr = build_fold_addr_expr_loc (input_location, se->expr);
 }
 
+static tree
+get_builtin_fn (gfc_symbol * sym)
+{
+  if (!gfc_option.disable_omp_is_initial_device
+      && flag_openmp && sym->attr.function && sym->ts.type == BT_LOGICAL
+      && !strcmp (sym->name, "omp_is_initial_device"))
+    return builtin_decl_explicit (BUILT_IN_OMP_IS_INITIAL_DEVICE);
+
+  if (!gfc_option.disable_acc_on_device
+      && flag_openacc && sym->attr.function && sym->ts.type == BT_LOGICAL
+      && !strcmp (sym->name, "acc_on_device_h"))
+    return builtin_decl_explicit (BUILT_IN_ACC_ON_DEVICE);
+
+  return NULL_TREE;
+}
+
+static tree
+update_builtin_function (tree fn_call, gfc_symbol *sym)
+{
+  tree fn = TREE_OPERAND (CALL_EXPR_FN (fn_call), 0);
+
+  if (DECL_FUNCTION_CODE (fn) == BUILT_IN_OMP_IS_INITIAL_DEVICE)
+     /* In Fortran omp_is_initial_device returns logical(4)
+	but the builtin uses 'int'.  */
+    return fold_convert (TREE_TYPE (TREE_TYPE (sym->backend_decl)), fn_call);
+
+  else if (DECL_FUNCTION_CODE (fn) == BUILT_IN_ACC_ON_DEVICE)
+    {
+      /* Likewise for the return type; additionally, the argument it a
+	 call-by-value int, Fortran has a by-reference 'integer(4)'.  */
+      tree arg = build_fold_indirect_ref_loc (input_location,
+					      CALL_EXPR_ARG (fn_call, 0));
+      CALL_EXPR_ARG (fn_call, 0) = fold_convert (integer_type_node, arg);
+      return fold_convert (TREE_TYPE (TREE_TYPE (sym->backend_decl)), fn_call);
+    }
+  return fn_call;
+}
 
 static void
-conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr,
-		   gfc_actual_arglist *actual_args)
+conv_function_val (gfc_se * se, bool *is_builtin, gfc_symbol * sym,
+		   gfc_expr * expr, gfc_actual_arglist *actual_args)
 {
   tree tmp;
 
+  *is_builtin = false;
   if (gfc_is_proc_ptr_comp (expr))
     tmp = get_proc_ptr_comp (expr);
   else if (sym->attr.dummy)
@@ -4404,9 +4442,13 @@ conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr,
       if (!sym->backend_decl)
 	sym->backend_decl = gfc_get_extern_function_decl (sym, actual_args);
 
-      TREE_USED (sym->backend_decl) = 1;
-
-      tmp = sym->backend_decl;
+      if ((tmp = get_builtin_fn (sym)) != NULL_TREE)
+	*is_builtin = true;
+      else
+	{
+	  TREE_USED (sym->backend_decl) = 1;
+	  tmp = sym->backend_decl;
+	}
 
       if (sym->attr.cray_pointee)
 	{
@@ -6324,6 +6366,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_actual_arglist *arg;
   int has_alternate_specifier = 0;
   bool need_interface_mapping;
+  bool is_builtin;
   bool callee_alloc;
   bool ulim_copy;
   gfc_typespec ts;
@@ -8164,7 +8207,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   /* Generate the actual call.  */
   if (base_object == NULL_TREE)
-    conv_function_val (se, sym, expr, args);
+    conv_function_val (se, &is_builtin, sym, expr, args);
   else
     conv_base_obj_fcn_val (se, base_object, expr);
 
@@ -8188,6 +8231,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   fntype = TREE_TYPE (TREE_TYPE (se->expr));
   se->expr = build_call_vec (TREE_TYPE (fntype), se->expr, arglist);
+
+  if (is_builtin)
+    se->expr = update_builtin_function (se->expr, sym);
 
   /* Allocatable scalar function results must be freed and nullified
      after use. This necessitates the creation of a temporary to

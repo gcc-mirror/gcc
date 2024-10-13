@@ -2231,15 +2231,6 @@ gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
      to know that.  */
   gcc_assert (!(sym->attr.entry || sym->attr.entry_master));
 
-  if (!gfc_option.disable_omp_is_initial_device
-      && flag_openmp && sym->attr.function && sym->ts.type == BT_LOGICAL
-      && !strcmp (sym->name, "omp_is_initial_device"))
-    {
-      sym->backend_decl
-	= builtin_decl_explicit (BUILT_IN_OMP_IS_INITIAL_DEVICE);
-      return sym->backend_decl;
-    }
-
   if (sym->attr.proc_pointer)
     return get_proc_pointer_decl (sym);
 

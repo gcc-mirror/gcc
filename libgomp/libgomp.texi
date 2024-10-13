@@ -547,7 +547,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item @code{no_openmp_constructs} assumptions clause @tab N @tab
 @item Restriction for @code{ordered} regarding loop-transforming directives
       @tab N @tab
-@item @code{apply} code to loop-transforming constructs @tab N @tab
+@item @code{apply} clause to loop-transforming constructs @tab N @tab
 @item Non-constant values in the @code{sizes} clause @tab N @tab
 @item @code{fuse} loop-transformation construct @tab N @tab
 @item @code{interchange} loop-transformation construct @tab N @tab
@@ -573,7 +573,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item New @code{priority} clause to @code{target}, @code{target_enter_data},
       @code{target_data}, @code{target_exit_data} and @code{target_update}
       @tab N @tab
-@item New @code{device_type} clause to the @code{target} directive.
+@item New @code{device_type} clause to the @code{target} directive
       @tab N @tab
 @item @code{target_data} as composite construct @tab N @tab
 @item @code{nowait} clause with reverse-offload @code{target} directives
@@ -584,7 +584,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item @code{memscope} clause to @code{atomic} and @code{flush} @tab N @tab
 @item New @code{transparent} clause for multi-generational task-dependence graphs
       @tab N @tab
-@item The @code{cancel} construct new completes tasks with unfulfilled events
+@item The @code{cancel} construct now completes tasks with unfulfilled events
       @tab N @tab
 @item @code{omp_fulfill_event} routine was restricted regarding fulfillment of
       event variables @tab N @tab
@@ -622,7 +622,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item @code{ompt_get_buffer_limits} OMPT routine @tab N @tab
 @end multitable
 
-@unnumberedsubsec Deprecated features, unless listed above.
+@unnumberedsubsec Deprecated features, unless listed above
 @multitable @columnfractions .60 .10 .25
 @item Deprecation of omitting the optional white space to separate adjacent
       keywords in the directive-name in Fortran (fixed and free source form)
@@ -1915,9 +1915,9 @@ This function returns @code{true} if currently running on the host device,
 @code{false} otherwise.  Here, @code{true} and @code{false} represent
 their language-specific counterparts.
 
-Note that in GCC this value is already folded to a constant in the compiler;
-compile with @option{-fno-builtin-omp_is_initial_device} if a run-time function
-is desired.
+Note that in GCC this function call is already folded to a constant in the
+compiler; compile with @option{-fno-builtin-omp_is_initial_device} if a
+run-time function is desired.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -4885,6 +4885,10 @@ returned to indicate the device is executing on the specified device type.
 In Fortran, @code{true} is returned. If the program is not executing
 on the specified device type C/C++ returns zero, while Fortran
 returns @code{false}.
+
+Note that in GCC, depending on @var{devicetype}, the function call might
+be folded to a constant in the compiler; compile with
+@option{-fno-builtin-acc_on_device} if a run-time function is desired.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
