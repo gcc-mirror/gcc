@@ -195,6 +195,7 @@ function replace_pass(line, fnname,			num, i)
 }
 
 END {
+  max_number_args = 2;
   for (i = 1; i < lineno; i++)
     {
       ret = parse_line(lines[i], "NEXT_PASS");
@@ -202,7 +203,9 @@ END {
 	{
 	  # Set pass_name argument, an optional with_arg argument
 	  pass_name = args[1];
-	  with_arg = args[2];
+	  num_args = 0;
+	  while (args[num_args + 2])
+	    num_args++;
 
 	  # Set pass_final_counts
 	  if (pass_name in pass_final_counts)
@@ -214,13 +217,22 @@ END {
 
 	  # Print call expression with extra pass_num argument
 	  printf "%s", prefix;
-	  if (with_arg)
-	    printf "NEXT_PASS_WITH_ARG";
+	  if (num_args > 0)
+	    {
+	      printf "NEXT_PASS_WITH_ARG";
+	      if (num_args > max_number_args)
+		{
+		  print "ERROR: Only supports up to " max_number_args " args to NEXT_PASS";
+		  exit 1;
+		}
+	      if (num_args != 1)
+	        printf num_args;
+	    }
 	  else
 	    printf "NEXT_PASS";
 	  printf " (%s, %s", pass_name, pass_num;
-	  if (with_arg)
-	    printf ",%s", with_arg;
+	  for (j = 0; j < num_args; j++)
+	    printf ",%s", args[j+2];
 	  printf ")%s\n", postfix;
 
 	  continue;
@@ -254,6 +266,8 @@ END {
   print "#undef POP_INSERT_PASSES"
   print "#undef NEXT_PASS"
   print "#undef NEXT_PASS_WITH_ARG"
+  for (i = 2; i <= max_number_args; i++)
+    print "#undef NEXT_PASS_WITH_ARG" i
   print "#undef TERMINATE_PASS_LIST"
 }
 
