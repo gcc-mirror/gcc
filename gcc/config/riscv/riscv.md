@@ -1813,7 +1813,15 @@
 (define_expand "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))]
-  "TARGET_64BIT")
+  "TARGET_64BIT"
+{
+  if (SUBREG_P (operands[1]) && SUBREG_PROMOTED_VAR_P (operands[1])
+      && SUBREG_PROMOTED_UNSIGNED_P (operands[1]))
+    {
+      emit_insn (gen_movdi (operands[0], SUBREG_REG (operands[1])));
+      DONE;
+    }
+})
 
 (define_insn_and_split "*zero_extendsidi2_internal"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
@@ -1894,7 +1902,15 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(sign_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT")
+  "TARGET_64BIT"
+{
+  if (SUBREG_P (operands[1]) && SUBREG_PROMOTED_VAR_P (operands[1])
+      && SUBREG_PROMOTED_SIGNED_P (operands[1]))
+    {
+      emit_insn (gen_movdi (operands[0], SUBREG_REG (operands[1])));
+      DONE;
+    }
+})
 
 (define_insn "*extendsidi2_internal"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
