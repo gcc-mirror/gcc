@@ -92,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
-	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */);
+	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */, true /* remove_unused_locals */);
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_if_to_switch);
@@ -225,10 +225,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_vrp, false /* final_p*/);
       NEXT_PASS (pass_array_bounds);
       NEXT_PASS (pass_dse);
-      NEXT_PASS (pass_dce);
-      /* pass_stdarg is always run and at this point we execute
-         TODO_remove_unused_locals to prune CLOBBERs of dead
-	 variables which are otherwise a churn on alias walkings.  */
+      NEXT_PASS (pass_dce, false /* update_address_taken_p */, true /* remove_unused_locals */);
       NEXT_PASS (pass_stdarg);
       NEXT_PASS (pass_call_cdce);
       NEXT_PASS (pass_cselim);
@@ -273,7 +270,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
       NEXT_PASS (pass_dse, true /* use DR analysis */);
-      NEXT_PASS (pass_dce);
+      NEXT_PASS (pass_dce, false /* update_address_taken_p */, false /* remove_unused_locals */);
       /* Pass group that runs when 1) enabled, 2) there are loops
 	 in the function.  Make sure to run pass_fix_loops before
 	 to discover/remove loops before running the gate function
@@ -355,7 +352,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_dse);
-      NEXT_PASS (pass_dce, true /* update_address_taken_p */);
+      NEXT_PASS (pass_dce, true /* update_address_taken_p */, true /* remove_unused_locals */);
       /* After late DCE we rewrite no longer addressed locals into SSA
 	 form if possible.  */
       NEXT_PASS (pass_forwprop);

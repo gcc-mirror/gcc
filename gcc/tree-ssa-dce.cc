@@ -2096,18 +2096,23 @@ public:
   opt_pass * clone () final override { return new pass_dce (m_ctxt); }
   void set_pass_param (unsigned n, bool param) final override
     {
-      gcc_assert (n == 0);
-      update_address_taken_p = param;
+      gcc_assert (n == 0 || n == 1);
+      if (n == 0)
+	update_address_taken_p = param;
+      else if (n == 1)
+	remove_unused_locals_p = param;
     }
   bool gate (function *) final override { return flag_tree_dce != 0; }
   unsigned int execute (function *) final override
     {
       return (tree_ssa_dce ()
+	      | (remove_unused_locals_p ? TODO_remove_unused_locals : 0)
 	      | (update_address_taken_p ? TODO_update_address_taken : 0));
     }
 
 private:
   bool update_address_taken_p;
+  bool remove_unused_locals_p = false;
 }; // class pass_dce
 
 } // anon namespace
@@ -2144,18 +2149,23 @@ public:
   opt_pass * clone () final override { return new pass_cd_dce (m_ctxt); }
   void set_pass_param (unsigned n, bool param) final override
     {
-      gcc_assert (n == 0);
-      update_address_taken_p = param;
+      gcc_assert (n == 0 || n == 1);
+      if (n == 0)
+	update_address_taken_p = param;
+      else if (n == 1)
+	remove_unused_locals_p = param;
     }
   bool gate (function *) final override { return flag_tree_dce != 0; }
   unsigned int execute (function *) final override
     {
       return (tree_ssa_cd_dce ()
+	      | (remove_unused_locals_p ? TODO_remove_unused_locals : 0)
 	      | (update_address_taken_p ? TODO_update_address_taken : 0));
     }
 
 private:
   bool update_address_taken_p;
+  bool remove_unused_locals_p = false;
 }; // class pass_cd_dce
 
 } // anon namespace
