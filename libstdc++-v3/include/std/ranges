@@ -1886,8 +1886,12 @@ namespace views::__adaptor
 	  static auto
 	  _S_iter_cat()
 	  {
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 3564. transform_view::iterator<true>::value_type and
+	    // iterator_category should use const F&
 	    using _Base = transform_view::_Base<_Const>;
-	    using _Res = invoke_result_t<_Fp&, range_reference_t<_Base>>;
+	    using _Res = invoke_result_t<__maybe_const_t<_Const, _Fp>&,
+					 range_reference_t<_Base>>;
 	    if constexpr (is_lvalue_reference_v<_Res>)
 	      {
 		using _Cat
@@ -1936,7 +1940,8 @@ namespace views::__adaptor
 	  using iterator_concept = decltype(_S_iter_concept());
 	  // iterator_category defined in __transform_view_iter_cat
 	  using value_type
-	    = remove_cvref_t<invoke_result_t<_Fp&, range_reference_t<_Base>>>;
+	    = remove_cvref_t<invoke_result_t<__maybe_const_t<_Const, _Fp>&,
+					     range_reference_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
 
 	  _Iterator() requires default_initializable<_Base_iter> = default;
