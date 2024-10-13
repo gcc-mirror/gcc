@@ -130,7 +130,7 @@ private:
 #define POP_INSERT_PASSES()
 #define NEXT_PASS(PASS, NUM) opt_pass *PASS ## _ ## NUM
 #define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
-#define NEXT_PASS_WITH_ARG2(PASS, NUM, ARG0, ARG1) NEXT_PASS (PASS, NUM)
+#define NEXT_PASS_WITH_ARGS(PASS, NUM, ...) NEXT_PASS (PASS, NUM)
 #define TERMINATE_PASS_LIST(PASS)
 
 #include "pass-instances.def"

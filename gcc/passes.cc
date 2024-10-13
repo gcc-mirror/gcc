@@ -1589,7 +1589,7 @@ pass_manager::pass_manager (context *ctxt)
 #define POP_INSERT_PASSES()
 #define NEXT_PASS(PASS, NUM) PASS ## _ ## NUM = NULL
 #define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
-#define NEXT_PASS_WITH_ARG2(PASS, NUM, ARG0, ARG1) NEXT_PASS (PASS, NUM)
+#define NEXT_PASS_WITH_ARGS(PASS, NUM, ...) NEXT_PASS (PASS, NUM)
 #define TERMINATE_PASS_LIST(PASS)
 #include "pass-instances.def"
 
@@ -1636,11 +1636,16 @@ pass_manager::pass_manager (context *ctxt)
       PASS ## _ ## NUM->set_pass_param (0, ARG);	\
     } while (0)
 
-#define NEXT_PASS_WITH_ARG2(PASS, NUM, ARG0, ARG1)	\
+#define NEXT_PASS_WITH_ARGS(PASS, NUM, ...)		\
     do {						\
       NEXT_PASS (PASS, NUM);				\
-      PASS ## _ ## NUM->set_pass_param (0, ARG0);	\
-      PASS ## _ ## NUM->set_pass_param (1, ARG1);	\
+      static constexpr bool values[] = { __VA_ARGS__ };	\
+      unsigned i = 0;					\
+      for (bool value : values)				\
+	{						\
+	  PASS ## _ ## NUM->set_pass_param (i, value);	\
+	  i++;						\
+	}						\
     } while (0)
 
 #include "pass-instances.def"
