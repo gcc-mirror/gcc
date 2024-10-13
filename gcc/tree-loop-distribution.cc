@@ -3552,7 +3552,7 @@ determine_reduction_stmt_1 (const loop_p loop, const basic_block *bbs)
       basic_block bb = bbs[i];
 
       for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
-	   gsi_next_nondebug (&bsi))
+	   gsi_next (&bsi))
 	{
 	  gphi *phi = bsi.phi ();
 	  if (virtual_operand_p (gimple_phi_result (phi)))
@@ -3565,8 +3565,8 @@ determine_reduction_stmt_1 (const loop_p loop, const basic_block *bbs)
 	    }
 	}
 
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next_nondebug (&bsi), ++ninsns)
+      for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb);
+	   !gsi_end_p (bsi); gsi_next_nondebug (&bsi), ++ninsns)
 	{
 	  /* Bail out early for loops which are unlikely to match.  */
 	  if (ninsns > 16)
