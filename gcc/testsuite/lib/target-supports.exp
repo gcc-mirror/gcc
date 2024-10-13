@@ -5781,6 +5781,7 @@ foreach { armfunc armflag armdefs } {
 	v7r "-march=armv7-r+fp" __ARM_ARCH_7R__
 	v7m "-march=armv7-m -mthumb -mfloat-abi=soft" __ARM_ARCH_7M__
 	v7em "-march=armv7e-m+fp -mthumb" __ARM_ARCH_7EM__
+	v7em_hard "-march=armv7e-m+fp -mfpu=auto -mfloat-abi=hard -mthumb" __ARM_ARCH_7EM__
 	v7ve "-march=armv7ve+fp -marm"
 		"__ARM_ARCH_7A__ && __ARM_FEATURE_IDIV"
 	v7ve_neon "-march=armv7ve+simd -mfpu=auto -mfloat-abi=softfp"
@@ -5849,6 +5850,8 @@ foreach { armfunc armflag armdefs } {
 foreach { armfunc armflag armdefs } {
 	    xscale_arm "-mcpu=xscale -mfloat-abi=soft -marm" "__XSCALE__ && !__thumb__"
 	    cortex_a57 "-mcpu=cortex-a57" __ARM_ARCH_8A__
+	    cortex_m0 "-mcpu=cortex-m0 -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
+	    cortex_m23 "-mcpu=cortex-m23 -mfloat-abi=soft -mthumb" "__ARM_ARCH_8M_BASE__  && __thumb__"
 	} {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_cpu_FUNC_ok { } {
