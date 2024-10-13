@@ -1591,12 +1591,6 @@ pass_manager::pass_manager (context *ctxt)
 #define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
 #define TERMINATE_PASS_LIST(PASS)
 #include "pass-instances.def"
-#undef INSERT_PASSES_AFTER
-#undef PUSH_INSERT_PASSES_WITHIN
-#undef POP_INSERT_PASSES
-#undef NEXT_PASS
-#undef NEXT_PASS_WITH_ARG
-#undef TERMINATE_PASS_LIST
 
   /* Initialize the pass_lists array.  */
 #define DEF_PASS_LIST(LIST) pass_lists[PASS_LIST_NO_##LIST] = &LIST;
@@ -1642,13 +1636,6 @@ pass_manager::pass_manager (context *ctxt)
     } while (0)
 
 #include "pass-instances.def"
-
-#undef INSERT_PASSES_AFTER
-#undef PUSH_INSERT_PASSES_WITHIN
-#undef POP_INSERT_PASSES
-#undef NEXT_PASS
-#undef NEXT_PASS_WITH_ARG
-#undef TERMINATE_PASS_LIST
 
   /* Register the passes with the tree dump code.  */
   register_dump_files (all_lowering_passes);

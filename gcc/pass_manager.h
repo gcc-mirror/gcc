@@ -134,13 +134,6 @@ private:
 
 #include "pass-instances.def"
 
-#undef INSERT_PASSES_AFTER
-#undef PUSH_INSERT_PASSES_WITHIN
-#undef POP_INSERT_PASSES
-#undef NEXT_PASS
-#undef NEXT_PASS_WITH_ARG
-#undef TERMINATE_PASS_LIST
-
 }; // class pass_manager
 
 } // namespace gcc

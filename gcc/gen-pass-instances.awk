@@ -248,6 +248,13 @@ END {
 
       print lines[i];
     }
+  # print out the #undefs
+  print "#undef INSERT_PASSES_AFTER"
+  print "#undef PUSH_INSERT_PASSES_WITHIN"
+  print "#undef POP_INSERT_PASSES"
+  print "#undef NEXT_PASS"
+  print "#undef NEXT_PASS_WITH_ARG"
+  print "#undef TERMINATE_PASS_LIST"
 }
 
 # Local Variables:
