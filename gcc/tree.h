@@ -5053,6 +5053,17 @@ strip_array_types (tree type)
   return type;
 }
 
+/* Recursively traverse down pointer type layers to pointee type.  */
+
+inline const_tree
+strip_pointer_types (const_tree type)
+{
+  while (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  return type;
+}
+
 /* Desription of the reason why the argument of valid_constant_size_p
    is not a valid size.  */
 enum cst_size_error {
