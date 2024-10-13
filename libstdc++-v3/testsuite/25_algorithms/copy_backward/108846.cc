@@ -25,10 +25,15 @@ test_pr108846()
     B *src = &dsrc;
     // If this is optimized to memmove it will overwrite tail padding.
     std::copy_backward(src, src+1, dst+1);
+    // Check tail padding is unchanged:
     VERIFY(ddst.x == 3);
+    // Check B subobject was copied:
+    VERIFY(ddst.i == 4 && ddst.j == 5);
 #if __cpp_lib_ranges >= 201911L
+    ddst.i = ddst.j = 99;
     std::ranges::copy_backward(src, src+1, dst+1);
     VERIFY(ddst.x == 3);
+    VERIFY(ddst.i == 4 && ddst.j == 5);
 #endif
 }
 
@@ -52,10 +57,15 @@ test_non_const_copy_assign()
     B2 *src = &dsrc;
     // Ensure the not-taken trivial copy path works for this type.
     std::copy_backward(src, src+1, dst+1);
+    // Check tail padding is unchanged:
     VERIFY(ddst.x == 3);
+    // Check B subobject was copied:
+    VERIFY(ddst.i == 4 && ddst.j == 5);
 #if __cpp_lib_ranges >= 201911L
+    ddst.i = ddst.j = 99;
     std::ranges::copy_backward(src, src+1, dst+1);
     VERIFY(ddst.x == 3);
+    VERIFY(ddst.i == 4 && ddst.j == 5);
 #endif
 }
 
@@ -81,10 +91,15 @@ test_non_const_copy_assign_trivial()
     B3 *src = &dsrc;
     // If this is optimized to memmove it will overwrite tail padding.
     std::copy_backward(src, src+1, dst+1);
+    // Check tail padding is unchanged:
     VERIFY(ddst.x == 3);
+    // Check B subobject was copied:
+    VERIFY(ddst.i == 4 && ddst.j == 5);
 #if __cpp_lib_ranges >= 201911L
+    ddst.i = ddst.j = 99;
     std::ranges::copy_backward(src, src+1, dst+1);
     VERIFY(ddst.x == 3);
+    VERIFY(ddst.i == 4 && ddst.j == 5);
 #endif
 }
 
