@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_thumb2_ok } */
-/* { dg-options "-mthumb -mcpu=cortex-m3 -O2" } */
+/* { dg-require-effective-target arm_cpu_cortex_m3_ok } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_cpu_cortex_m3 } */
 
 struct tmp {
  unsigned int dummy;

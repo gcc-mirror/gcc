@@ -1,7 +1,8 @@
 /* PR target/53859 */
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_thumb2_ok } */
-/* { dg-options "-mcpu=cortex-m4 -mthumb -O2" } */
+/* { dg-require-effective-target arm_cpu_cortex_m4_ok } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_cpu_cortex_m4 } */
 
 void bar (int,int,char* ,int);
 
