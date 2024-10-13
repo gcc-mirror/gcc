@@ -2,8 +2,8 @@
    break CRC intrinsics.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_hard_vfp_ok }  */
-/* { dg-additional-options "-mfloat-abi=hard -march=armv8-a+simd+crc" } */
+/* { dg-require-effective-target arm_arch_v8a_crc_hard_ok }  */
+/* { dg-add-options arm_arch_v8a_crc_hard }*/
 
 #include <arm_acle.h>
 
