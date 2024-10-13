@@ -592,7 +592,7 @@ namespace ranges
 	if constexpr (sized_sentinel_for<_Sent, _Out>)
 	  {
 	    const auto __len = __last - __first;
-	    return ranges::fill_n(__first, __len, __value);
+	    return ranges::fill_n(std::move(__first), __len, __value);
 	  }
 	else if constexpr (is_scalar_v<_Tp>)
 	  {
