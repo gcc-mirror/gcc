@@ -291,6 +291,42 @@ public:
   }
 };
 
+  /* Builds the vstrq_scatter_base intrinsics.  */
+class vstrq_scatter_base_impl : public function_base
+{
+public:
+  CONSTEXPR vstrq_scatter_base_impl (scalar_mode to_int_mode)
+    : m_to_int_mode (to_int_mode)
+  {}
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code icode;
+    switch (e.pred)
+      {
+      case PRED_none:
+	icode = code_for_mve_vstrq_scatter_base (e.vector_mode (0));
+	break;
+
+      case PRED_p:
+	icode = code_for_mve_vstrq_scatter_base_p (e.vector_mode (0));
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+    return e.use_exact_insn (icode);
+  }
+
+  /* The mode of a single memory element.  */
+  scalar_mode m_to_int_mode;
+};
+
 /* Builds the vldrq* intrinsics.  */
 class vldrq_impl : public load_extending
 {
@@ -1261,12 +1297,14 @@ FUNCTION (vst1q, vst1_impl,)
 FUNCTION (vstrbq, vstrq_impl, (QImode, opt_scalar_mode ()))
 FUNCTION (vstrbq_scatter, vstrq_scatter_impl, (false, QImode, opt_scalar_mode ()))
 FUNCTION (vstrdq_scatter, vstrq_scatter_impl, (false, DImode, opt_scalar_mode ()))
+FUNCTION (vstrdq_scatter_base, vstrq_scatter_base_impl, (DImode))
 FUNCTION (vstrdq_scatter_shifted, vstrq_scatter_impl, (true, DImode, opt_scalar_mode ()))
 FUNCTION (vstrhq, vstrq_impl, (HImode, HFmode))
 FUNCTION (vstrhq_scatter, vstrq_scatter_impl, (false, HImode, HFmode))
 FUNCTION (vstrhq_scatter_shifted, vstrq_scatter_impl, (true, HImode, HFmode))
 FUNCTION (vstrwq, vstrq_impl, (SImode, SFmode))
 FUNCTION (vstrwq_scatter, vstrq_scatter_impl, (false, SImode, SFmode))
+FUNCTION (vstrwq_scatter_base, vstrq_scatter_base_impl, (SImode))
 FUNCTION (vstrwq_scatter_shifted, vstrq_scatter_impl, (true, SImode, SFmode))
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)

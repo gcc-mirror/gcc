@@ -3396,28 +3396,24 @@
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_truncate_scatter_offset_<mode>"))
   (set_attr "length" "8")])
 
-;
-;
-;; [vstrwq_scatter_base_s vstrwq_scatter_base_u]
+;; Vector scatter stores with base
 ;;
-(define_insn "mve_vstrwq_scatter_base_<supf>v4si"
+;; [vstrdq_scatter_base_s vstrdq_scatter_base_u]
+;; [vstrwq_scatter_base_s vstrwq_scatter_base_u]
+;; [vstrwq_scatter_base_f]
+;;
+(define_insn "@mve_vstrq_scatter_base_<mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
-		[(match_operand:V4SI 0 "s_register_operand" "w")
+		[(match_operand:<MVE_scatter_offset> 0 "s_register_operand" "w")
 		 (match_operand:SI 1 "immediate_operand" "i")
-		 (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VSTRWSBQ))
+		 (match_operand:MVE_4 2 "s_register_operand" "w")]
+	 VSTRSBQ))
   ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn("vstrw.u32\t%q2, [%q0, %1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_base_<supf>v4si"))
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vstr<MVE_elem_ch>.u<V_sz_elem>\t%q2, [%q0, %1]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_scatter_base_<mode>"))
   (set_attr "length" "4")])
 
 ;;
@@ -3464,28 +3460,26 @@
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_<supf>v4si"))
   (set_attr "length" "4")])
+
+;; Predicated vector scatter stores with base
 ;;
+;; [vstrdq_scatter_base_p_s vstrdq_scatter_base_p_u]
 ;; [vstrwq_scatter_base_p_s vstrwq_scatter_base_p_u]
+;; [vstrwq_scatter_base_p_f]
 ;;
-(define_insn "mve_vstrwq_scatter_base_p_<supf>v4si"
+(define_insn "@mve_vstrq_scatter_base_p_<mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
-		[(match_operand:V4SI 0 "s_register_operand" "w")
+		[(match_operand:<MVE_scatter_offset> 0 "s_register_operand" "w")
 		 (match_operand:SI 1 "immediate_operand" "i")
-		 (match_operand:V4SI 2 "s_register_operand" "w")
-		 (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	 VSTRWSBQ))
+		 (match_operand:MVE_4 2 "s_register_operand" "w")
+		 (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
+	 VSTRSBQ_P))
   ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vpst\n\tvstrwt.u32\t%q2, [%q0, %1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_base_<supf>v4si"))
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vpst\n\tvstr<MVE_elem_ch>t.u<V_sz_elem>\t%q2, [%q0, %1]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_scatter_base_<mode>"))
   (set_attr "length" "8")])
 
 ;;
@@ -4145,100 +4139,6 @@
   "TARGET_HAVE_MVE"
   "vpst\;vstrht.32\t%q2, [%0, %q1, uxtw #1]"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_truncate_scatter_shifted_offset_v4si"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrdq_scatter_base_p_s vstrdq_scatter_base_p_u]
-;;
-(define_insn "mve_vstrdq_scatter_base_p_<supf>v2di"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-		[(match_operand:V2DI 0 "s_register_operand" "w")
-		 (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-		 (match_operand:V2DI 2 "s_register_operand" "w")
-		 (match_operand:V2QI 3 "vpr_register_operand" "Up")]
-	 VSTRDSBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vpst\;\tvstrdt.u64\t%q2, [%q0, %1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrdq_scatter_base_<supf>v2di"))
-  (set_attr "length" "8")])
-
-;;
-;; [vstrdq_scatter_base_s vstrdq_scatter_base_u]
-;;
-(define_insn "mve_vstrdq_scatter_base_<supf>v2di"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-		[(match_operand:V2DI 0 "s_register_operand" "=w")
-		 (match_operand:SI 1 "mve_vldrd_immediate" "Ri")
-		 (match_operand:V2DI 2 "s_register_operand" "w")]
-	 VSTRDSBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vstrd.u64\t%q2, [%q0, %1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrdq_scatter_base_<supf>v2di"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrwq_scatter_base_f]
-;;
-(define_insn "mve_vstrwq_scatter_base_fv4sf"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-		[(match_operand:V4SI 0 "s_register_operand" "w")
-		 (match_operand:SI 1 "immediate_operand" "i")
-		 (match_operand:V4SF 2 "s_register_operand" "w")]
-	 VSTRWQSB_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vstrw.u32\t%q2, [%q0, %1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_base_fv4sf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vstrwq_scatter_base_p_f]
-;;
-(define_insn "mve_vstrwq_scatter_base_p_fv4sf"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-		[(match_operand:V4SI 0 "s_register_operand" "w")
-		 (match_operand:SI 1 "immediate_operand" "i")
-		 (match_operand:V4SF 2 "s_register_operand" "w")
-		 (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	 VSTRWQSB_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vpst\n\tvstrwt.u32\t%q2, [%q0, %1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrwq_scatter_base_fv4sf"))
   (set_attr "length" "8")])
 
 ;;
