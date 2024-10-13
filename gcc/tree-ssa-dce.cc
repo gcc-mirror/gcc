@@ -2057,19 +2057,6 @@ perform_tree_ssa_dce (bool aggressive)
   return todo;
 }
 
-/* Pass entry points.  */
-static unsigned int
-tree_ssa_dce (void)
-{
-  return perform_tree_ssa_dce (/*aggressive=*/false);
-}
-
-static unsigned int
-tree_ssa_cd_dce (void)
-{
-  return perform_tree_ssa_dce (/*aggressive=*/optimize >= 2);
-}
-
 namespace {
 
 const pass_data pass_data_dce =
@@ -2085,15 +2072,11 @@ const pass_data pass_data_dce =
   0, /* todo_flags_finish */
 };
 
-class pass_dce : public gimple_opt_pass
+class pass_dce_base : public gimple_opt_pass
 {
 public:
-  pass_dce (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_dce, ctxt), update_address_taken_p (false)
-  {}
-
   /* opt_pass methods: */
-  opt_pass * clone () final override { return new pass_dce (m_ctxt); }
+  bool gate (function *) final override { return flag_tree_dce != 0; }
   void set_pass_param (unsigned n, bool param) final override
     {
       gcc_assert (n == 0 || n == 1);
@@ -2102,17 +2085,38 @@ public:
       else if (n == 1)
 	remove_unused_locals_p = param;
     }
-  bool gate (function *) final override { return flag_tree_dce != 0; }
-  unsigned int execute (function *) final override
+
+protected:
+  pass_dce_base (const pass_data &data, gcc::context *ctxt)
+    : gimple_opt_pass (data, ctxt)
+  {}
+  unsigned int execute_dce (function *, bool aggressive)
     {
-      return (tree_ssa_dce ()
+      return (perform_tree_ssa_dce (aggressive)
 	      | (remove_unused_locals_p ? TODO_remove_unused_locals : 0)
 	      | (update_address_taken_p ? TODO_update_address_taken : 0));
     }
 
 private:
-  bool update_address_taken_p;
+  bool update_address_taken_p = false;
   bool remove_unused_locals_p = false;
+}; // class pass_dce_base
+
+
+class pass_dce : public pass_dce_base
+{
+public:
+  pass_dce (gcc::context *ctxt)
+    : pass_dce_base (pass_data_dce, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () final override { return new pass_dce (m_ctxt); }
+  unsigned int execute (function *func) final override
+    {
+      return execute_dce (func, /*aggressive=*/false);
+    }
+
 }; // class pass_dce
 
 } // anon namespace
@@ -2138,34 +2142,20 @@ const pass_data pass_data_cd_dce =
   0, /* todo_flags_finish */
 };
 
-class pass_cd_dce : public gimple_opt_pass
+class pass_cd_dce : public pass_dce_base
 {
 public:
   pass_cd_dce (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_cd_dce, ctxt), update_address_taken_p (false)
+    : pass_dce_base (pass_data_cd_dce, ctxt)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () final override { return new pass_cd_dce (m_ctxt); }
-  void set_pass_param (unsigned n, bool param) final override
+  unsigned int execute (function *func) final override
     {
-      gcc_assert (n == 0 || n == 1);
-      if (n == 0)
-	update_address_taken_p = param;
-      else if (n == 1)
-	remove_unused_locals_p = param;
-    }
-  bool gate (function *) final override { return flag_tree_dce != 0; }
-  unsigned int execute (function *) final override
-    {
-      return (tree_ssa_cd_dce ()
-	      | (remove_unused_locals_p ? TODO_remove_unused_locals : 0)
-	      | (update_address_taken_p ? TODO_update_address_taken : 0));
+      return execute_dce (func, /*aggressive=*/optimize >= 2);
     }
 
-private:
-  bool update_address_taken_p;
-  bool remove_unused_locals_p = false;
 }; // class pass_cd_dce
 
 } // anon namespace
