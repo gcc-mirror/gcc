@@ -1677,6 +1677,55 @@ struct store_scatter_offset_def : public store_scatter
 };
 SHAPE (store_scatter_offset)
 
+/* void vfoo[_t0](<Y>_t, const int, <T0>_t)
+
+   where <X> is tied to <t0>.
+   <Y> has the same width as <T0> but is of unsigned type.
+
+   Example: vstrbq_scatter_base
+   void [__arm_]vstrwq_scatter_base[_s32](uint32x4_t addr, const int offset, int32x4_t value)
+   void [__arm_]vstrwq_scatter_base_p[_s32](uint32x4_t addr, const int offset, int32x4_t value, mve_pred16_t p)  */
+struct store_scatter_base_def : public store_scatter
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "_,vu0,ss64,v0", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| !r.require_integer_immediate (1)
+	|| (type = r.infer_vector_type (2)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index base_type
+      = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
+
+    /* Base (arg 0) should be a vector of unsigned with same width as value
+       (arg 2).  */
+    if (!r.require_matching_vector_type (0, base_type))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    int multiple = c.type_suffix (0).element_bits / 8;
+    int bound = 127 * multiple;
+    return c.require_immediate_range_multiple (1, -bound, bound, multiple);
+  }
+};
+SHAPE (store_scatter_base)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, <T0>_t)
 
    i.e. the standard shape for ternary operations that operate on
