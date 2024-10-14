@@ -235,7 +235,7 @@ DEF_SVE_FUNCTION (svsm4ekey, binary, s_unsigned, none)
 			     | AARCH64_FL_SME \
 			     | AARCH64_FL_SM_ON)
 DEF_SVE_FUNCTION (svclamp, clamp, all_integer, none)
-DEF_SVE_FUNCTION (svpsel, select_pred, all_pred_count, none)
+DEF_SVE_FUNCTION (svpsel_lane, select_pred, all_pred_count, none)
 DEF_SVE_FUNCTION (svrevd, unary, all_data, mxz)
 #undef REQUIRED_EXTENSIONS
 
