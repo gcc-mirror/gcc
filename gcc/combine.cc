@@ -5656,6 +5656,31 @@ maybe_swap_commutative_operands (rtx x)
       SUBST (XEXP (x, 1), temp);
     }
 
+  /* Canonicalize (vec_merge (fma op2 op1 op3) op1 mask) to
+     (vec_merge (fma op1 op2 op3) op1 mask).  */
+  if (GET_CODE (x) == VEC_MERGE
+      && GET_CODE (XEXP (x, 0)) == FMA)
+    {
+      rtx fma_op1 = XEXP (XEXP (x, 0), 0);
+      rtx fma_op2 = XEXP (XEXP (x, 0), 1);
+      rtx masked_op = XEXP (x, 1);
+      if (rtx_equal_p (masked_op, fma_op2))
+	{
+	  if (GET_CODE (fma_op1) == NEG)
+	    {
+	      /* Keep the negate canonicalized to the first operand.  */
+	      fma_op1 = XEXP (fma_op1, 0);
+	      SUBST (XEXP (XEXP (XEXP (x, 0), 0), 0), fma_op2);
+	      SUBST (XEXP (XEXP (x, 0), 1), fma_op1);
+	    }
+	  else
+	    {
+	      SUBST (XEXP (XEXP (x, 0), 0), fma_op2);
+	      SUBST (XEXP (XEXP (x, 0), 1), fma_op1);
+	    }
+	}
+    }
+
   unsigned n_elts = 0;
   if (GET_CODE (x) == VEC_MERGE
       && CONST_INT_P (XEXP (x, 2))
