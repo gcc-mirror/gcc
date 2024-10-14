@@ -697,7 +697,6 @@ static const char *sparc_mangle_type (const_tree);
 static void sparc_trampoline_init (rtx, tree, rtx);
 static machine_mode sparc_preferred_simd_mode (scalar_mode);
 static reg_class_t sparc_preferred_reload_class (rtx x, reg_class_t rclass);
-static bool sparc_lra_p (void);
 static bool sparc_print_operand_punct_valid_p (unsigned char);
 static void sparc_print_operand (FILE *, rtx, int);
 static void sparc_print_operand_address (FILE *, machine_mode, rtx);
@@ -920,9 +919,6 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE sparc_mangle_type
 #endif
-
-#undef TARGET_LRA_P
-#define TARGET_LRA_P sparc_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P sparc_legitimate_address_p
@@ -1956,10 +1952,6 @@ sparc_option_override (void)
   /* Don't use stack biasing in 32-bit mode.  */
   if (TARGET_ARCH32)
     target_flags &= ~MASK_STACK_BIAS;
-
-  /* Use LRA instead of reload, unless otherwise instructed.  */
-  if (!(target_flags_explicit & MASK_LRA))
-    target_flags |= MASK_LRA;
 
   /* Enable applicable errata workarounds for LEON3FT.  */
   if (sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc)
@@ -13284,14 +13276,6 @@ sparc_preferred_reload_class (rtx x, reg_class_t rclass)
     }
 
   return rclass;
-}
-
-/* Return true if we use LRA instead of reload pass.  */
-
-static bool
-sparc_lra_p (void)
-{
-  return TARGET_LRA;
 }
 
 /* Output a wide multiply instruction in V8+ mode.  INSN is the instruction,

@@ -1414,8 +1414,7 @@ See RS/6000 and PowerPC Options.
 -mvis4  -mno-vis4  -mvis4b  -mno-vis4b
 -mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  -mfsmuld  -mno-fsmuld
 -mpopc  -mno-popc  -msubxc  -mno-subxc
--mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc
--mlra  -mno-lra}
+-mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc}
 
 @emph{System V Options}
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
@@ -33563,13 +33562,6 @@ between the two sides of function calls, as per the 32-bit ABI@.
 
 The default is @option{-mno-std-struct-return}.  This option has no effect
 in 64-bit mode.
-
-@opindex mlra
-@opindex mno-lra
-@item -mlra
-@itemx -mno-lra
-Enable Local Register Allocation.  This is the default for SPARC since GCC 7
-so @option{-mno-lra} needs to be passed to get old Reload.
 
 @opindex mcpu
 @item -mcpu=@var{cpu_type}

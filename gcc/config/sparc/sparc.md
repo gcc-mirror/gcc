@@ -265,12 +265,8 @@
 (define_attr "cpu_feature" "none,fpu,fpunotv9,v9,vis,vis3,vis4,vis4b"
   (const_string "none"))
 
-(define_attr "lra" "disabled,enabled"
-  (const_string "enabled"))
-
 (define_attr "enabled" ""
-  (cond [(eq_attr "cpu_feature" "none")
-           (cond [(eq_attr "lra" "disabled") (symbol_ref "!TARGET_LRA")] (const_int 1))
+  (cond [(eq_attr "cpu_feature" "none") (const_int 1)
          (eq_attr "cpu_feature" "fpu") (symbol_ref "TARGET_FPU")
          (eq_attr "cpu_feature" "fpunotv9") (symbol_ref "TARGET_FPU && !TARGET_V9")
          (eq_attr "cpu_feature" "v9") (symbol_ref "TARGET_V9")
@@ -1867,8 +1863,7 @@ visl")
    (set_attr "subtype" "*,*,regular,*,regular,*,*,*,*,*,*,*,*,*,*,*,*,*,double,double")
    (set_attr "length" "*,2,*,*,*,*,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
    (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
-   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")
-   (set_attr "lra" "*,*,disabled,disabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+   (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")])
 
 (define_insn "*movdi_insn_sp64"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,  m,b,b")
@@ -2496,8 +2491,7 @@ visl")
    (set_attr "subtype" "*,*,double,double,*,*,*,*,*,*,regular,*,*,*,*,regular,*")
    (set_attr "length" "*,2,*,*,*,2,2,2,*,*,*,*,2,2,2,*,*")
    (set_attr "fptype" "*,*,double,double,double,*,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "cpu_feature" "v9,*,vis,vis,v9,fpunotv9,vis3,vis3,fpu,fpu,*,*,fpu,fpu,*,*,*")
-   (set_attr "lra" "*,*,*,*,*,*,*,*,*,*,disabled,disabled,*,*,*,*,*")])
+   (set_attr "cpu_feature" "v9,*,vis,vis,v9,fpunotv9,vis3,vis3,fpu,fpu,*,*,fpu,fpu,*,*,*")])
 
 (define_insn "*movdf_insn_sp64"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,m, *r,*r,  m,*r")
@@ -8526,8 +8520,7 @@ visl")
   [(set_attr "type" "store,*,visl,visl,vismv,*,*,fpload,fpstore,load,store,*,*,*,load,store")
    (set_attr "subtype" "*,*,double,double,double,*,*,*,*,regular,*,*,*,*,regular,*")
    (set_attr "length" "*,2,*,*,*,2,2,*,*,*,*,2,2,2,*,*")
-   (set_attr "cpu_feature" "*,*,vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*,*,*")
-   (set_attr "lra" "*,*,*,*,*,*,*,*,*,disabled,disabled,*,*,*,*,*")])
+   (set_attr "cpu_feature" "*,*,vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*,*,*")])
 
 (define_split
   [(set (match_operand:VM64 0 "register_operand" "")
