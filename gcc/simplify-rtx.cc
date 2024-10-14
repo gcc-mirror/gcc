@@ -4088,10 +4088,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
       if (VECTOR_MODE_P (mode) && GET_CODE (op0) == ASHIFTRT
 	  && (CONST_INT_P (XEXP (op0, 1))
 	      || (GET_CODE (XEXP (op0, 1)) == CONST_VECTOR
-		  && CONST_VECTOR_DUPLICATE_P (XEXP (op0, 1))
+		  && const_vec_duplicate_p (XEXP (op0, 1))
 		  && CONST_INT_P (XVECEXP (XEXP (op0, 1), 0, 0))))
 	  && GET_CODE (op1) == CONST_VECTOR
-	  && CONST_VECTOR_DUPLICATE_P (op1)
+	  && const_vec_duplicate_p (op1)
 	  && CONST_INT_P (XVECEXP (op1, 0, 0)))
 	{
 	  unsigned HOST_WIDE_INT shift_count
