@@ -120,6 +120,7 @@ rs6000 vector extns     Aldy Hernandez          <aldy@quesejoda.com>
 rx port                 Nick Clifton            <nickc@redhat.com>
 s390 port               Ulrich Weigand          <uweigand@de.ibm.com>
 s390 port               Andreas Krebbel         <krebbel@linux.ibm.com>
+s390 port               Stefan Schulze Frielinghaus <stefansf@linux.ibm.com>
 sh port                 Alexandre Oliva         <aoliva@gcc.gnu.org>
 sh port                 Oleg Endo               <olegendo@gcc.gnu.org>
 sparc port              David S. Miller         <davem@redhat.com>
