@@ -2779,6 +2779,40 @@
   }
 )
 
+(define_expand "sstrunc<mode><v_double_trunc>2"
+  [(match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
+   (match_operand:VWEXTI           1 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_double_sstrunc (operands[0], operands[1],
+					  <MODE>mode);
+    DONE;
+  }
+)
+
+(define_expand "sstrunc<mode><v_quad_trunc>2"
+  [(match_operand:<V_QUAD_TRUNC> 0 "register_operand")
+   (match_operand:VQEXTI         1 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_quad_sstrunc (operands[0], operands[1], <MODE>mode,
+					   <V_DOUBLE_TRUNC>mode);
+    DONE;
+  }
+)
+
+(define_expand "sstrunc<mode><v_oct_trunc>2"
+  [(match_operand:<V_OCT_TRUNC> 0 "register_operand")
+   (match_operand:VOEXTI        1 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_oct_sstrunc (operands[0], operands[1], <MODE>mode,
+					  <V_DOUBLE_TRUNC>mode,
+					  <V_QUAD_TRUNC>mode);
+    DONE;
+  }
+)
+
 ;; =========================================================================
 ;; == Early break auto-vectorization patterns
 ;; =========================================================================

@@ -652,8 +652,12 @@ void expand_vec_ssadd (rtx, rtx, rtx, machine_mode);
 void expand_vec_ussub (rtx, rtx, rtx, machine_mode);
 void expand_vec_sssub (rtx, rtx, rtx, machine_mode);
 void expand_vec_double_ustrunc (rtx, rtx, machine_mode);
+void expand_vec_double_sstrunc (rtx, rtx, machine_mode);
 void expand_vec_quad_ustrunc (rtx, rtx, machine_mode, machine_mode);
+void expand_vec_quad_sstrunc (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_oct_ustrunc (rtx, rtx, machine_mode, machine_mode,
+			     machine_mode);
+void expand_vec_oct_sstrunc (rtx, rtx, machine_mode, machine_mode,
 			     machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
