@@ -3435,8 +3435,9 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
   if (!base_file_name)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
-      context.emit_diagnostic (DK_ERROR, richloc, nullptr, 0,
-			       "unable to determine filename for SARIF output");
+      context.emit_diagnostic_with_group
+	(DK_ERROR, richloc, nullptr, 0,
+	 "unable to determine filename for SARIF output");
       return;
     }
 
@@ -3447,9 +3448,10 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
   if (!outf)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
-      context.emit_diagnostic (DK_ERROR, richloc, nullptr, 0,
-			       "unable to open %qs for SARIF output: %m",
-			       filename.get ());
+      context.emit_diagnostic_with_group
+	(DK_ERROR, richloc, nullptr, 0,
+	 "unable to open %qs for SARIF output: %m",
+	 filename.get ());
       return;
     }
   diagnostic_output_file output_file (outf, true, std::move (filename));

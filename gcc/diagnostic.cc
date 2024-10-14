@@ -1160,18 +1160,19 @@ diagnostic_context::warning_enabled_at (location_t loc,
 /* Emit a diagnostic within a diagnostic group on this context.  */
 
 bool
-diagnostic_context::emit_diagnostic (diagnostic_t kind,
-				     rich_location &richloc,
-				     const diagnostic_metadata *metadata,
-				     diagnostic_option_id option_id,
-				     const char *gmsgid, ...)
+diagnostic_context::
+emit_diagnostic_with_group (diagnostic_t kind,
+			    rich_location &richloc,
+			    const diagnostic_metadata *metadata,
+			    diagnostic_option_id option_id,
+			    const char *gmsgid, ...)
 {
   begin_group ();
 
   va_list ap;
   va_start (ap, gmsgid);
-  bool ret = emit_diagnostic_va (kind, richloc, metadata, option_id,
-				 gmsgid, &ap);
+  bool ret = emit_diagnostic_with_group_va (kind, richloc, metadata, option_id,
+					    gmsgid, &ap);
   va_end (ap);
 
   end_group ();
@@ -1182,11 +1183,12 @@ diagnostic_context::emit_diagnostic (diagnostic_t kind,
 /* As above, but taking a va_list *.  */
 
 bool
-diagnostic_context::emit_diagnostic_va (diagnostic_t kind,
-					rich_location &richloc,
-					const diagnostic_metadata *metadata,
-					diagnostic_option_id option_id,
-					const char *gmsgid, va_list *ap)
+diagnostic_context::
+emit_diagnostic_with_group_va (diagnostic_t kind,
+			       rich_location &richloc,
+			       const diagnostic_metadata *metadata,
+			       diagnostic_option_id option_id,
+			       const char *gmsgid, va_list *ap)
 {
   begin_group ();
 

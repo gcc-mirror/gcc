@@ -505,17 +505,17 @@ public:
     return m_option_classifier.option_unspecified_p (option_id);
   }
 
-  bool emit_diagnostic (diagnostic_t kind,
-			rich_location &richloc,
-			const diagnostic_metadata *metadata,
-			diagnostic_option_id option_id,
-			const char *gmsgid, ...)
+  bool emit_diagnostic_with_group (diagnostic_t kind,
+				   rich_location &richloc,
+				   const diagnostic_metadata *metadata,
+				   diagnostic_option_id option_id,
+				   const char *gmsgid, ...)
     ATTRIBUTE_GCC_DIAG(6,7);
-  bool emit_diagnostic_va (diagnostic_t kind,
-			   rich_location &richloc,
-			   const diagnostic_metadata *metadata,
-			   diagnostic_option_id option_id,
-			   const char *gmsgid, va_list *ap)
+  bool emit_diagnostic_with_group_va (diagnostic_t kind,
+				      rich_location &richloc,
+				      const diagnostic_metadata *metadata,
+				      diagnostic_option_id option_id,
+				      const char *gmsgid, va_list *ap)
     ATTRIBUTE_GCC_DIAG(6,0);
 
   bool report_diagnostic (diagnostic_info *);
