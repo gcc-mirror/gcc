@@ -3,7 +3,7 @@
 ! Check whether 'acc_on_device()' is properly compile-time optimized. */
 
 ! { dg-additional-options "-fdump-tree-gimple -fdump-tree-optimized" }
-! { dg-additional-options -foffload-options=-fdump-tree-optimized { target { offload_device_nvptx || offload_target_amdgcn } } }
+! { dg-additional-options -foffload-options=-fdump-tree-optimized { target { offload_target_nvptx || offload_target_amdgcn } } }
 
 ! { dg-final { scan-tree-dump-times "acc_on_device" 1 "gimple" } }
 
