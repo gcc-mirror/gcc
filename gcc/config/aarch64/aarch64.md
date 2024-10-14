@@ -5345,6 +5345,15 @@
 	(popcount:ALLI (match_operand:ALLI 1 "register_operand")))]
   "TARGET_CSSC ? GET_MODE_BITSIZE (<MODE>mode) >= 32 : TARGET_SIMD"
 {
+  if (!TARGET_CSSC && TARGET_SVE && <MODE>mode != QImode)
+    {
+      rtx tmp = gen_reg_rtx (<VEC_POP_MODE>mode);
+      rtx op1 = gen_lowpart (<VEC_POP_MODE>mode, operands[1]);
+      emit_insn (gen_popcount<vec_pop_mode>2 (tmp, op1));
+      emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
+      DONE;
+    }
+
   if (!TARGET_CSSC)
     {
       rtx v = gen_reg_rtx (V8QImode);

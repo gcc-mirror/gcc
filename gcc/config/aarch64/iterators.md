@@ -290,6 +290,8 @@
 ;; Advanced SIMD modes for H, S and D types.
 (define_mode_iterator VDQHSD [V4HI V8HI V2SI V4SI V2DI])
 
+(define_mode_iterator VDQHSD_V1DI [VDQHSD V1DI])
+
 ;; Advanced SIMD and scalar integer modes for H and S.
 (define_mode_iterator VSDQ_HSI [V4HI V8HI V2SI V4SI HI SI])
 
@@ -559,7 +561,7 @@
 (define_mode_iterator SVE_I_SIMD_DI [SVE_I V2DI])
 
 ;; All SVE and Advanced SIMD integer vector modes.
-(define_mode_iterator SVE_VDQ_I [SVE_I VDQ_I])
+(define_mode_iterator SVE_VDQ_I [SVE_I VDQ_I V1DI])
 
 ;; SVE integer vector modes whose elements are 16 bits or wider.
 (define_mode_iterator SVE_HSDI [VNx8HI VNx4HI VNx2HI
@@ -1235,7 +1237,7 @@
 (define_mode_attr bitsize [(V8QI "64") (V16QI "128")
 			   (V4HI "64") (V8HI "128")
 			   (V2SI "64") (V4SI "128")
-				       (V2DI "128")])
+			   (V1DI "64") (V2DI "128")])
 
 ;; Map a floating point or integer mode to the appropriate register name prefix
 (define_mode_attr s [(HF "h") (SF "s") (DF "d") (SI "s") (DI "d")])
@@ -2297,7 +2299,7 @@
 			 (VNx8DI "VNx2BI") (VNx8DF "VNx2BI")
 			 (V8QI "VNx8BI") (V16QI "VNx16BI")
 			 (V4HI "VNx4BI") (V8HI "VNx8BI") (V2SI "VNx2BI")
-			 (V4SI "VNx4BI") (V2DI "VNx2BI")])
+			 (V4SI "VNx4BI") (V2DI "VNx2BI") (V1DI "VNx2BI")])
 
 ;; ...and again in lower case.
 (define_mode_attr vpred [(VNx16QI "vnx16bi") (VNx8QI "vnx8bi")
@@ -2330,6 +2332,14 @@
 			   (VNx8BF "VNx16BF")
 			   (VNx4SI "VNx8SI") (VNx4SF "VNx8SF")
 			   (VNx2DI "VNx4DI") (VNx2DF "VNx4DF")])
+
+;; The Advanced SIMD modes of popcount corresponding to scalar modes.
+(define_mode_attr VEC_POP_MODE [(QI "V8QI") (HI "V4HI")
+				(SI "V2SI") (DI "V1DI")])
+
+;; ...and again in lower case.
+(define_mode_attr vec_pop_mode [(QI "v8qi") (HI "v4hi")
+				(SI "v2si") (DI "v1di")])
 
 ;; On AArch64 the By element instruction doesn't have a 2S variant.
 ;; However because the instruction always selects a pair of values

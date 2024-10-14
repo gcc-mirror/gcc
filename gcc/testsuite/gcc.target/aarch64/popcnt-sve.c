@@ -4,7 +4,7 @@
 
 /*
 ** f_v4hi:
-**	ptrue	(p[0-7]).b, all
+**	ptrue	(p[0-7]).b, vl8
 **	ldr	d([0-9]+), \[x0\]
 **	cnt	z\2.h, \1/m, z\2.h
 **	str	d\2, \[x1\]
@@ -21,7 +21,7 @@ f_v4hi (unsigned short *__restrict b, unsigned short *__restrict d)
 
 /*
 ** f_v8hi:
-**	ptrue	(p[0-7]).b, all
+**	ptrue	(p[0-7]).b, vl16
 **	ldr	q([0-9]+), \[x0\]
 **	cnt	z\2.h, \1/m, z\2.h
 **	str	q\2, \[x1\]
@@ -42,7 +42,7 @@ f_v8hi (unsigned short *__restrict b, unsigned short *__restrict d)
 
 /*
 ** f_v2si:
-**	ptrue	(p[0-7]).b, all
+**	ptrue	(p[0-7]).b, vl8
 **	ldr	d([0-9]+), \[x0\]
 **	cnt	z\2.s, \1/m, z\2.s
 **	str	d\2, \[x1\]
@@ -57,7 +57,7 @@ f_v2si (unsigned int *__restrict b, unsigned int *__restrict d)
 
 /*
 ** f_v4si:
-**	ptrue	(p[0-7]).b, all
+**	ptrue	(p[0-7]).b, vl16
 **	ldr	q([0-9]+), \[x0\]
 **	cnt	z\2.s, \1/m, z\2.s
 **	str	q\2, \[x1\]
@@ -74,7 +74,7 @@ f_v4si (unsigned int *__restrict b, unsigned int *__restrict d)
 
 /*
 ** f_v2di:
-**	ptrue	(p[0-7]).b, all
+**	ptrue	(p[0-7]).b, vl16
 **	ldr	q([0-9]+), \[x0\]
 **	cnt	z\2.d, \1/m, z\2.d
 **	str	q\2, \[x1\]

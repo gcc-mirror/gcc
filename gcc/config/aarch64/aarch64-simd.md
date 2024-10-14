@@ -3516,16 +3516,25 @@
 )
 
 (define_expand "popcount<mode>2"
-  [(set (match_operand:VDQHSD 0 "register_operand")
-	(popcount:VDQHSD (match_operand:VDQHSD 1 "register_operand")))]
+  [(set (match_operand:VDQHSD_V1DI 0 "register_operand")
+	(popcount:VDQHSD_V1DI
+	  (match_operand:VDQHSD_V1DI 1 "register_operand")))]
   "TARGET_SIMD"
   {
     if (TARGET_SVE)
       {
-	rtx p = aarch64_ptrue_reg (<VPRED>mode);
+	rtx p = aarch64_ptrue_reg (<VPRED>mode, <bitsize> == 64 ? 8 : 16);
 	emit_insn (gen_aarch64_pred_popcount<mode> (operands[0],
 						    p,
 						    operands[1]));
+	DONE;
+      }
+
+    if (<MODE>mode == V1DImode)
+      {
+	rtx out = gen_reg_rtx (DImode);
+	emit_insn (gen_popcountdi2 (out, gen_lowpart (DImode, operands[1])));
+	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, out));
 	DONE;
       }
 

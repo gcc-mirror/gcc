@@ -917,6 +917,7 @@ rtx aarch64_expand_sve_dupq (rtx, machine_mode, rtx);
 void aarch64_expand_mov_immediate (rtx, rtx);
 rtx aarch64_stack_protect_canary_mem (machine_mode, rtx, aarch64_salt_type);
 rtx aarch64_ptrue_reg (machine_mode);
+rtx aarch64_ptrue_reg (machine_mode, unsigned int);
 rtx aarch64_pfalse_reg (machine_mode);
 bool aarch64_sve_same_pred_for_ptest_p (rtx *, rtx *);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);

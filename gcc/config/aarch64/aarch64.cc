@@ -3630,6 +3630,27 @@ aarch64_ptrue_reg (machine_mode mode)
   return gen_lowpart (mode, reg);
 }
 
+/* Return an all-true (restricted to the leading VL bits) predicate register of
+   mode MODE.  */
+
+rtx
+aarch64_ptrue_reg (machine_mode mode, unsigned int vl)
+{
+  gcc_assert (aarch64_sve_pred_mode_p (mode));
+
+  rtx_vector_builder builder (VNx16BImode, vl, 2);
+
+  for (int i = 0; i < vl; i++)
+    builder.quick_push (CONST1_RTX (BImode));
+
+  for (int i = 0; i < vl; i++)
+    builder.quick_push (CONST0_RTX (BImode));
+
+  rtx const_vec = builder.build ();
+  rtx reg = force_reg (VNx16BImode, const_vec);
+  return gen_lowpart (mode, reg);
+}
+
 /* Return an all-false predicate register of mode MODE.  */
 
 rtx
