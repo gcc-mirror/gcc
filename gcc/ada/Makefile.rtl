@@ -1805,7 +1805,8 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   ifneq (,$(findstring morello,$(target_alias)))
     LIBGNAT_TARGET_PAIRS += \
     s-intman.adb<libgnarl/s-intman__cheribsd.adb \
-    s-osinte.ads<libgnarl/s-osinte__cheribsd.ads
+    s-osinte.ads<libgnarl/s-osinte__cheribsd.ads \
+    s-secsta.adb<libgnat/s-secsta__cheri.adb
 
     EXTRA_GNATRTL_NONTASKING_OBJS += i-cheri.o i-cheri-exceptions.o
   else
