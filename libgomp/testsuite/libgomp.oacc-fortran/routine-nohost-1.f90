@@ -7,6 +7,8 @@
 
 ! { dg-additional-options "-fdump-tree-oaccloops" }
 
+! { dg-additional-options "-fno-inline" } for stable results regarding OpenACC 'routine'.
+
 program main
   use openacc
   implicit none
