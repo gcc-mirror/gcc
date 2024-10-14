@@ -2619,7 +2619,6 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 
 
   vec<tree, va_gc> * args = build_arg_list (wrapdecl);
-  tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
   tree *class_ptr = args->begin();
   tree fn;
   gcc_assert (class_ptr);
@@ -2643,10 +2642,7 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 			    args->length (),
 			    args->address ());
 
-  if (!VOID_TYPE_P (return_type))
-    finish_return_stmt (call);
-  else
-    finish_return_stmt (NULL_TREE);
+  finish_return_stmt (call);
 
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
