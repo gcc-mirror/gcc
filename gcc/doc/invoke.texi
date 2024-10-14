@@ -223,7 +223,7 @@ in the following sections.
 -fno-implicit-templates
 -fno-implicit-inline-templates
 -fno-implement-inlines
--fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules-ts
+-fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules
 -fmodule-implicit-inline
 -fno-module-lazy
 -fmodule-mapper=@var{specification}
@@ -3504,12 +3504,12 @@ To save space, do not emit out-of-line copies of inline functions
 controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
-@opindex fmodules-ts
-@opindex fno-modules-ts
-@item -fmodules-ts
-@itemx -fno-modules-ts
+@opindex fmodules
+@opindex fno-modules
+@item -fmodules
+@itemx -fno-modules
 Enable support for C++20 modules (@pxref{C++ Modules}).  The
-@option{-fno-modules-ts} is usually not needed, as that is the
+@option{-fno-modules} is usually not needed, as that is the
 default.  Even though this is a C++20 feature, it is not currently
 implicitly enabled by selecting that standard version.
 
@@ -37926,7 +37926,7 @@ Acyclic Graph (DAG).  You must build imports before the importer.
 Header files may themselves be compiled to header units, which are a
 transitional ability aiming at faster compilation.  The
 @option{-fmodule-header} option is used to enable this, and implies
-the @option{-fmodules-ts} option.  These CMIs are named by the fully
+the @option{-fmodules} option.  These CMIs are named by the fully
 resolved underlying header file, and thus may be a complete pathname
 containing subdirectories.  If the header file is found at an absolute
 pathname, the CMI location is still relative to a CMI root directory.
@@ -37935,7 +37935,7 @@ As header files often have no suffix, you commonly have to specify a
 @option{-x} option to tell the compiler the source is a header file.
 You may use @option{-x c++-header}, @option{-x c++-user-header} or
 @option{-x c++-system-header}.  When used in conjunction with
-@option{-fmodules-ts}, these all imply an appropriate
+@option{-fmodules}, these all imply an appropriate
 @option{-fmodule-header} option.  The latter two variants use the
 user or system include path to search for the file specified.  This
 allows you to, for instance, compile standard library header files as
@@ -37953,8 +37953,8 @@ the bits/stdc++.h header used for libstdc++ precompiled headers you
 can
 
 @smallexample
-g++ -fmodules-ts -x c++-system-header -c bits/stdc++.h
-g++ -fmodules-ts -include bits/stdc++.h mycode.C
+g++ -fmodules -x c++-system-header -c bits/stdc++.h
+g++ -fmodules -include bits/stdc++.h mycode.C
 @end smallexample
 
 and any standard library #includes in mycode.C will be skipped,
@@ -38138,8 +38138,8 @@ output.  Usually you also want to use this option when explicitly
 preprocessing a header-unit, or consuming such preprocessed output:
 
 @smallexample
-g++ -fmodules-ts -E -fdirectives-only my-header.hh -o my-header.ii
-g++ -x c++-header -fmodules-ts -fpreprocessed -fdirectives-only my-header.ii
+g++ -fmodules -E -fdirectives-only my-header.hh -o my-header.ii
+g++ -x c++-header -fmodules -fpreprocessed -fdirectives-only my-header.ii
 @end smallexample
 
 @node C++ Compiled Module Interface

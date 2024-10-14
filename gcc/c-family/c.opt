@@ -2033,12 +2033,12 @@ flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
-fmodules-ts
-C++ ObjC++ Var(flag_modules) Integer Init(0)
-Enable C++ modules-ts (experimental).
+fmodules
+C++ ObjC++ Var(flag_modules) Integer
+Enable C++20 Modules (experimental).
 
-fno-modules
-C++ ObjC++ Undocumented RejectNegative Var(flag_modules,0) Integer
+fmodules-ts
+C++ ObjC++ Alias(fmodules) Undocumented
 ;; undocumented
 
 fmodule-header
