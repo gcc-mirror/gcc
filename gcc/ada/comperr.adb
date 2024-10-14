@@ -409,7 +409,8 @@ package body Comperr is
                Generate_Minimal_Reproducer;
             end if;
          exception
-            when others => null;
+            when others =>
+               Write_Str ("failed to generate reproducer");
          end;
 
          Write_Eol;
