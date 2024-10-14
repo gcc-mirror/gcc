@@ -3,6 +3,7 @@ LIB2ADD += $(srcdir)/config/riscv/save-restore.S \
 	   $(srcdir)/config/riscv/multi3.c \
 	   $(srcdir)/config/riscv/div.S \
 	   $(srcdir)/config/riscv/atomic.c \
+	   $(srcdir)/config/riscv/feature_bits.c \
 
 # Avoid the full unwinder being pulled along with the division libcalls.
 LIB2_DIVMOD_EXCEPTION_FLAGS := -fasynchronous-unwind-tables
