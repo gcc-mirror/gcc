@@ -3395,7 +3395,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    The T and UT are type pair like T=int8_t, UT=uint8_t.  */
 (match (signed_integer_sat_sub @0 @1)
  (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
-	(bit_xor:c (negate (convert (lt @0 integer_zerop)))
+	(bit_xor:c (nop_convert?
+		    (negate (nop_convert? (convert (lt @0 integer_zerop)))))
 		   max_value)
 	(realpart @2))
  (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
@@ -3416,18 +3417,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   max_value)
 	@2)
  (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))))
-
-/* Signed saturation sub, case 5:
-   Z = .SUB_OVERFLOW (X, Y)
-   SAT_S_SUB = IMAGPART_EXPR (Z) != 0 ? (-(T)(X < 0) ^ MAX) : minus;  */
-(match (signed_integer_sat_sub @0 @1)
- (cond^ (ne (imagpart (IFN_SUB_OVERFLOW:c@2 @0 @1)) integer_zerop)
-	(bit_xor:c (nop_convert?
-		    (negate (nop_convert? (convert (lt @0 integer_zerop)))))
-		   max_value)
-	(realpart @2))
- (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
 
 /* Unsigned saturation truncate, case 1, sizeof (WT) > sizeof (NT).
    SAT_U_TRUNC = (NT)x | (NT)(-(X > (WT)(NT)(-1))).  */
