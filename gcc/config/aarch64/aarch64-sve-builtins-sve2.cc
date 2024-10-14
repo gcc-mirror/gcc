@@ -234,7 +234,7 @@ public:
   }
 };
 
-class svpsel_impl : public function_base
+class svpsel_lane_impl : public function_base
 {
 public:
   rtx
@@ -625,7 +625,7 @@ FUNCTION (svpmullb, unspec_based_function, (-1, UNSPEC_PMULLB, -1))
 FUNCTION (svpmullb_pair, unspec_based_function, (-1, UNSPEC_PMULLB_PAIR, -1))
 FUNCTION (svpmullt, unspec_based_function, (-1, UNSPEC_PMULLT, -1))
 FUNCTION (svpmullt_pair, unspec_based_function, (-1, UNSPEC_PMULLT_PAIR, -1))
-FUNCTION (svpsel, svpsel_impl,)
+FUNCTION (svpsel_lane, svpsel_lane_impl,)
 FUNCTION (svqabs, rtx_code_function, (SS_ABS, UNKNOWN, UNKNOWN))
 FUNCTION (svqcadd, svqcadd_impl,)
 FUNCTION (svqcvt, integer_conversion, (UNSPEC_SQCVT, UNSPEC_SQCVTU,
