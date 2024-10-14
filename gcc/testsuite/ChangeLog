@@ -1,3 +1,93 @@
+2024-10-13  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2024-07-29  Sam James  <sam@gentoo.org>
+
+	PR ipa/111613
+	* gcc.c-torture/pr111613.c: Rename to..
+	* gcc.c-torture/execute/pr111613.c: ...this.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117041
+	* gcc.dg/torture/pr117041.c: New testcase.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117086
+	* gcc.dg/torture/pr117086.c: New testcase.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116879
+	* gcc.dg/pr116879.c: New testcase.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116850
+	* gcc.dg/pr116850.c: New testcase.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116768
+	* gcc.dg/torture/pr116768.c: New testcase.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116921
+	* gcc.target/i386/pr116921.c: New test.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116899
+	* gcc.dg/bitint-111.c: New test.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116898
+	* gcc.dg/bitint-110.c: New test.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-20  Uros Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* gcc.target/i386/sse-pr116738.c: New test.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116678
+	* g++.dg/warn/deprecated-20.C: New test.
+
 2024-10-10  Richard Ball  <richard.ball@arm.com>
 
 	Backported from master:

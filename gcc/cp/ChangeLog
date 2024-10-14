@@ -1,3 +1,13 @@
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116678
+	* optimize.cc: Include decl.h.
+	(maybe_thunk_body): Temporarily change deprecated_state to
+	UNAVAILABLE_DEPRECATED_SUPPRESS.
+
 2024-10-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/115361

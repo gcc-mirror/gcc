@@ -1,3 +1,138 @@
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117041
+	* tree-vect-stmts.cc (get_group_load_store_type): Only
+	check DR_GROUP_NEXT_ELEMENT for STMT_VINFO_GROUPED_ACCESS.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117086
+	* match.pd ((op (vec_cond ...) ..) -> (vec_cond ...)): Add
+	missing checks for VECTOR_TYPE_P (type).
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116990
+	* tree-vect-loop.cc (vect_analyze_loop_form): Check the current
+	loop body for control flow.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116879
+	* tree-vect-loop.cc (vect_analyze_loop_form): Scan all
+	blocks that form the latch.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116850
+	* gimple-ssa-isolate-paths.cc (bb_split_points): New global.
+	(insert_trap): Delay BB splitting if post-doms are computed.
+	(find_explicit_erroneous_behavior): Process delayed BB
+	splitting after releasing post dominators.
+	(gimple_ssa_isolate_erroneous_paths): Do not free post-dom
+	info here.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116768
+	* tree-data-ref.cc (build_classic_dist_vector_1): Revert
+	PR101009 change.
+	* tree-chrec.cc (eq_evolutions_p): Make sure (sizetype)1
+	and (int)1 compare equal.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116166
+	* tree-ssa-threadedge.h (jump_threader::thread_around_empty_blocks):
+	Add limit parameter.
+	(jump_threader::thread_through_normal_block): Likewise.
+	* tree-ssa-threadedge.cc (jump_threader::thread_around_empty_blocks):
+	Honor and decrement limit parameter.
+	(jump_threader::thread_through_normal_block): Likewise.
+	(jump_threader::thread_across_edge): Initialize limit from
+	param_max_jump_thread_paths and pass it down to workers.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116921
+	* config/i386/i386-expand.cc (ix86_expand_int_compare): Add a SUBREG
+	to V8HImode from V8HFmode or V8BFmode before generating a ptest.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116899
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Set m_workback
+	to vNULL instead of creating it, growing and then truncating.
+	(ranger_cache::fill_block_cache): Use safe_push rather than quick_push
+	on m_workback.
+	(ranger_cache::range_from_dom): Likewise.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116898
+	* gimple-range-cache.cc (ranger_cache::block_range): If a SSA_NAME
+	with NULL def_bb isn't SSA_NAME_IS_DEFAULT_DEF, return false instead
+	of failing assertion.  Formatting fix.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116627
+	* cselib.cc (remove_useless_values): Discard useless locs
+	even from preserved cselib_vals in cselib_preserved_hash_table
+	hash table.
+
+2024-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-20  Uros Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* config/i386/subst.md (mask_scalar_operand_arg34,
+	mask_scalar_expand_op3, round_saeonly_scalar_mask_arg3): New
+	subst attributes.
+	* config/i386/sse.md
+	(<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	Change from define_insn to define_expand, rename the old define_insn
+	to ...
+	(*<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	... this.
+	(<sse>_ieee_vm<ieee_maxmin><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	New define_insn.
+
 2024-10-08  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (vaesdec_<mode>, vaesdeclast_<mode>,
