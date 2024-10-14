@@ -3256,6 +3256,9 @@ again:
   unsigned i, j;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), i, instance)
     {
+      if (SLP_TREE_DEF_TYPE (SLP_INSTANCE_TREE (instance)) != vect_internal_def)
+	continue;
+
       stmt_vec_info vinfo;
       vinfo = SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance))[0];
       if (! STMT_VINFO_GROUPED_ACCESS (vinfo))

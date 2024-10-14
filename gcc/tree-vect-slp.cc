@@ -3756,6 +3756,13 @@ vect_build_slp_instance (vec_info *vinfo,
 			 "Analyzing vectorizable constructor: %G\n",
 			 root_stmt_infos[0]->stmt);
     }
+  else if (kind == slp_inst_kind_gcond)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Analyzing vectorizable control flow: %G",
+			 root_stmt_infos[0]->stmt);
+    }
 
   if (dump_enabled_p ())
     {
@@ -4826,6 +4833,80 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 					 max_tree_size, &limit,
 					 bst_map, NULL, force_single_lane);
 	      }
+	  }
+
+      /* Find SLP sequences starting from gconds.  */
+      for (auto cond : LOOP_VINFO_LOOP_CONDS (loop_vinfo))
+	{
+	  auto cond_info = loop_vinfo->lookup_stmt (cond);
+
+	  cond_info = vect_stmt_to_vectorize (cond_info);
+	  vec<stmt_vec_info> roots = vNULL;
+	  roots.safe_push (cond_info);
+	  gimple *stmt = STMT_VINFO_STMT (cond_info);
+	  tree args0 = gimple_cond_lhs (stmt);
+	  tree args1 = gimple_cond_rhs (stmt);
+
+	  /* These should be enforced by cond lowering.  */
+	  gcc_assert (gimple_cond_code (stmt) == NE_EXPR);
+	  gcc_assert (zerop (args1));
+
+	  /* An argument without a loop def will be codegened from vectorizing the
+	     root gcond itself.  As such we don't need to try to build an SLP tree
+	     from them.  It's highly likely that the resulting SLP tree here if both
+	     arguments have a def will be incompatible, but we rely on it being split
+	     later on.  */
+	  if (auto varg = loop_vinfo->lookup_def (args0))
+	    {
+	      vec<stmt_vec_info> stmts;
+	      vec<tree> remain = vNULL;
+	      stmts.create (1);
+	      stmts.quick_push (vect_stmt_to_vectorize (varg));
+
+	      vect_build_slp_instance (vinfo, slp_inst_kind_gcond,
+				       stmts, roots, remain,
+				       max_tree_size, &limit,
+				       bst_map, NULL, force_single_lane);
+	    }
+	  else
+	    {
+	      /* Create a new SLP instance.  */
+	      slp_instance new_instance = XNEW (class _slp_instance);
+	      vec<tree> ops;
+	      ops.create (1);
+	      ops.quick_push (args0);
+	      slp_tree invnode = vect_create_new_slp_node (ops);
+	      SLP_TREE_DEF_TYPE (invnode) = vect_external_def;
+	      SLP_INSTANCE_TREE (new_instance) = invnode;
+	      SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = 1;
+	      SLP_INSTANCE_LOADS (new_instance) = vNULL;
+	      SLP_INSTANCE_ROOT_STMTS (new_instance) = roots;
+	      SLP_INSTANCE_REMAIN_DEFS (new_instance) = vNULL;
+	      SLP_INSTANCE_KIND (new_instance) = slp_inst_kind_gcond;
+	      new_instance->reduc_phis = NULL;
+	      new_instance->cost_vec = vNULL;
+	      new_instance->subgraph_entries = vNULL;
+	      vinfo->slp_instances.safe_push (new_instance);
+	    }
+	}
+
+	/* Find and create slp instances for inductions that have been forced
+	   live due to early break.  */
+	edge latch_e = loop_latch_edge (LOOP_VINFO_LOOP (loop_vinfo));
+	for (auto stmt_info : LOOP_VINFO_EARLY_BREAKS_LIVE_IVS (loop_vinfo))
+	  {
+	    vec<stmt_vec_info> stmts;
+	    vec<stmt_vec_info> roots = vNULL;
+	    vec<tree> remain = vNULL;
+	    gphi *lc_phi = as_a<gphi *> (STMT_VINFO_STMT (stmt_info));
+	    tree def = gimple_phi_arg_def_from_edge (lc_phi, latch_e);
+	    stmt_vec_info lc_info = loop_vinfo->lookup_def (def);
+	    stmts.create (1);
+	    stmts.quick_push (vect_stmt_to_vectorize (lc_info));
+	    vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
+				     stmts, roots, remain,
+				     max_tree_size, &limit,
+				     bst_map, NULL, force_single_lane);
 	  }
     }
 
@@ -7242,8 +7323,9 @@ maybe_push_to_hybrid_worklist (vec_info *vinfo,
 	    }
 	}
     }
-  /* No def means this is a loo_vect sink.  */
-  if (!any_def)
+  /* No def means this is a loop_vect sink.  Gimple conditionals also don't have a
+     def but shouldn't be considered sinks.  */
+  if (!any_def && STMT_VINFO_DEF_TYPE (stmt_info) != vect_condition_def)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -8067,7 +8149,14 @@ vect_slp_analyze_operations (vec_info *vinfo)
 					    (SLP_INSTANCE_TREE (instance))))))
 	  /* Check we can vectorize the reduction.  */
 	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_bb_reduc
-	      && !vectorizable_bb_reduc_epilogue (instance, &cost_vec)))
+	      && !vectorizable_bb_reduc_epilogue (instance, &cost_vec))
+	  /* Check we can vectorize the gcond.  */
+	  || (SLP_INSTANCE_KIND (instance) == slp_inst_kind_gcond
+	      && !vectorizable_early_exit (vinfo,
+					   SLP_INSTANCE_ROOT_STMTS (instance)[0],
+					   NULL, NULL,
+					   SLP_INSTANCE_TREE (instance),
+					   &cost_vec)))
         {
 	  cost_vec.release ();
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
@@ -8697,6 +8786,8 @@ vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 	 !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gassign *assign = dyn_cast<gassign *> (gsi_stmt (gsi));
+      /* This can be used to start SLP discovery for early breaks for BB early breaks
+	 when we get that far.  */
       if (!assign)
 	continue;
 
@@ -10924,7 +11015,7 @@ vect_remove_slp_scalar_calls (vec_info *vinfo, slp_tree node)
 /* Vectorize the instance root.  */
 
 void
-vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
+vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance instance)
 {
   gassign *rstmt = NULL;
 
@@ -11026,6 +11117,21 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
       gsi_insert_seq_before (&rgsi, epilogue, GSI_SAME_STMT);
       gimple_assign_set_rhs_from_tree (&rgsi, scalar_def);
       update_stmt (gsi_stmt (rgsi));
+      return;
+    }
+  else if (instance->kind == slp_inst_kind_gcond)
+    {
+      /* Only support a single root for now as we can't codegen CFG yet and so we
+	 can't support lane > 1 at this time.  */
+      gcc_assert (instance->root_stmts.length () == 1);
+      auto root_stmt_info = instance->root_stmts[0];
+      auto last_stmt = STMT_VINFO_STMT (root_stmt_info);
+      gimple_stmt_iterator rgsi = gsi_for_stmt (last_stmt);
+      gimple *vec_stmt = NULL;
+      gcc_assert (!SLP_TREE_VEC_DEFS (node).is_empty ());
+      bool res = vectorizable_early_exit (vinfo, root_stmt_info, &rgsi,
+					  &vec_stmt, node, NULL);
+      gcc_assert (res);
       return;
     }
   else
@@ -11246,7 +11352,7 @@ vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances)
 	vect_schedule_scc (vinfo, node, instance, scc_info, maxdfs, stack);
 
       if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
-	vectorize_slp_instance_root_stmt (node, instance);
+	vectorize_slp_instance_root_stmt (vinfo, node, instance);
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
