@@ -2945,7 +2945,9 @@ public:
     : while_comparison (unspec_for_sint, unspec_for_uint), m_eq_p (eq_p)
   {}
 
-  /* Try to fold a call by treating its arguments as constants of type T.  */
+  /* Try to fold a call by treating its arguments as constants of type T.
+     We have already filtered out the degenerate cases of X .LT. MIN
+     and X .LE. MAX.  */
   template<typename T>
   gimple *
   fold_type (gimple_folder &f) const
@@ -3000,6 +3002,13 @@ public:
   {
     if (f.vectors_per_tuple () > 1)
       return nullptr;
+
+    /* Filter out cases where the condition is always true or always false.  */
+    tree arg1 = gimple_call_arg (f.call, 1);
+    if (!m_eq_p && operand_equal_p (arg1, TYPE_MIN_VALUE (TREE_TYPE (arg1))))
+      return f.fold_to_pfalse ();
+    if (m_eq_p && operand_equal_p (arg1, TYPE_MAX_VALUE (TREE_TYPE (arg1))))
+      return f.fold_to_ptrue ();
 
     if (f.type_suffix (1).unsigned_p)
       return fold_type<poly_uint64> (f);
