@@ -9494,7 +9494,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FMA @0 @1 @2))
  (simplify
   (negate (IFN_FNMS@3 @0 @1 @2))
-  (if (single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
    (IFN_FMA @0 @1 @2))))
 
 /* CLZ simplifications.  */
