@@ -4231,7 +4231,7 @@ static bool
 gimple_fold_builtin_acc_on_device (gimple_stmt_iterator *gsi, tree arg0)
 {
   /* Defer folding until we know which compiler we're in.  */
-  if (ENABLE_OFFLOADING && symtab->state != EXPANSION)
+  if (symtab->state != EXPANSION)
     return false;
 
   unsigned val_host = GOMP_DEVICE_HOST;
