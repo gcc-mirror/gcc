@@ -1,5 +1,8 @@
 ! { dg-do run }
-! { dg-additional-options "-cpp -fno-builtin-acc_on_device" }
+! { dg-additional-options "-cpp" }
+
+! Disable the acc_on_device builtin; we want to test the libgomp library function.
+! { dg-additional-options -fno-builtin-acc_on_device }
 
 ! { dg-additional-options "-fopt-info-all-omp" }
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
