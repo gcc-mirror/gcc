@@ -290,9 +290,12 @@ static void __init_riscv_features_bits_linux ()
     }
 
   const struct riscv_hwprobe hwprobe_ima_ext = hwprobes[4];
-
   /* Every time we add new extensions, we should check if previous extensions
-     imply the new extension and set the corresponding bit.  */
+     imply the new extension and set the corresponding bit.
+     We don't need to handle cases where:
+     1.  The new extension implies a previous extension (e.g., Zve32f -> F).
+     2.  The extensions imply some other extensions appear in the same release
+	 version of Linux Kernel (e.g., Zbc - > Zbkc).  */
 
   if (hwprobe_ima_ext.value & RISCV_HWPROBE_IMA_FD)
     {
@@ -397,7 +400,7 @@ __init_riscv_feature_bits ()
 #ifdef __linux
   __init_riscv_features_bits_linux ();
 #else
-  /* Unsupported, just initlizaed that into all zeros.  */
+  /* Unsupported, just initialize that into all zeros.  */
   __riscv_feature_bits.length = 0;
   __riscv_vendor_feature_bits.length = 0;
   __riscv_cpu_model.mvendorid = 0;
