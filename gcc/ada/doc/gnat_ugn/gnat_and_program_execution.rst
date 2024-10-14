@@ -636,7 +636,7 @@ using GNAT and your familiarity with compiler internals.
   would on a C program (but :ref:`The_GNAT_Debugger_GDB` for caveats). The
   ``where`` command is the first line of attack; the variable
   ``lineno`` (seen by ``print lineno``), used by the second phase of
-  ``gnat1`` and by the ``gcc`` backend, indicates the source line at
+  ``gnat1`` and by the ``gcc`` back end, indicates the source line at
   which the execution stopped, and ``input_file name`` indicates the name of
   the source file.
 
@@ -666,7 +666,7 @@ brief description of its organization may be helpful:
 * All files prefixed with :file:`exp` perform normalization and
   expansion of the intermediate representation (abstract syntax tree, or AST).
   The expansion has the effect of lowering the semantic level of the AST to
-  a level closer to what the backend can handle. For example, it converts
+  a level closer to what the back end can handle. For example, it converts
   tasking operations into calls to the appropriate runtime routines.
   These files use the same numbering scheme as the parser and semantics files.
   For example, the construction of record initialization procedures is done in
@@ -1368,7 +1368,7 @@ The following are the most relevant of those switches:
 
 :switch:`--demangle[={style}]`, :switch:`--no-demangle`
   These switches control whether symbol names should be demangled when
-  printing output.  The default is to demangle C++ symbols.  You can use 
+  printing output.  The default is to demangle C++ symbols.  You can use
   :switch:`--no-demangle` to turn off demangling. Different
   compilers have different mangling styles.  The optional demangling style
   argument can be used to choose an appropriate demangling style for your
@@ -1773,7 +1773,7 @@ following conditions are met:
 * The optimization level is at least :switch:`-O1`.
 
 * The called subprogram is suitable for inlining: it must be small enough
-  and not contain something that the backend cannot support in inlined
+  and not contain something that the back end cannot support in inlined
   subprograms.
 
   .. index:: pragma Inline
@@ -1792,7 +1792,7 @@ in the body of the subprogram), the following conditions must all be true:
 * The optimization level is at least :switch:`-O1`.
 
 * The called subprogram is suitable for inlining: It must be small enough
-  and not contain something that the backend cannot support in inlined
+  and not contain something that the back end cannot support in inlined
   subprograms.
 
 * There is a ``pragma Inline`` for the subprogram.
@@ -1836,33 +1836,34 @@ is compiled, the call will be inlined if the body of ``Q`` is small
 enough, but now ``Main`` depends on the body of ``R`` in
 :file:`r.adb` as well as on the spec. This means that if this body is edited,
 the main program must be recompiled. Note that this extra dependency
-occurs whether or not the call is in fact inlined by the backend.
+occurs whether or not the call is in fact inlined by the back end.
 
 The use of front end inlining with :switch:`-gnatN` generates similar
 additional dependencies.
 
 .. index:: -fno-inline (gcc)
 
-Note: The :switch:`-fno-inline` switch overrides all other conditions and ensures that
-no inlining occurs, unless requested with pragma Inline_Always for most
-back-ends. The extra dependences resulting from :switch:`-gnatn` will still be active,
-even if this switch is used to suppress the resulting inlining actions.
+Note: The :switch:`-fno-inline` switch overrides all other conditions
+and ensures that no inlining occurs, unless requested with pragma
+Inline_Always for most back ends. The extra dependences resulting from
+:switch:`-gnatn` will still be active, even if this switch is used to
+suppress the resulting inlining actions.
 
 .. index:: -fno-inline-functions (gcc)
 
-For the GCC backend, you can use the
+For the GCC back end, you can use the
 :switch:`-fno-inline-functions` switch to prevent automatic inlining
 of subprograms if you use :switch:`-O3`.
 
 .. index:: -fno-inline-small-functions (gcc)
 
-For the GCC backend, you can use the
+For the GCC back end, you can use the
 :switch:`-fno-inline-small-functions` switch to prevent automatic
 inlining of small subprograms if you use :switch:`-O2`.
 
 .. index:: -fno-inline-functions-called-once (gcc)
 
-For the GC backend, you can use the
+For the GC back end, you can use the
 :switch:`-fno-inline-functions-called-once` switch to prevent inlining
 of subprograms local to the unit and called once from within it if you
 use :switch:`-O1`.
@@ -1941,10 +1942,10 @@ Vectorization of loops
 
 .. index:: Optimization Switches
 
-The GCC and LLVM backends have an auto-vectorizer that's enabled by
-default at some optimization levels.  For the GCC backend, it's
+The GCC and LLVM back ends have an auto-vectorizer that's enabled by
+default at some optimization levels.  For the GCC back end, it's
 enabled by default at :switch:`-O3` and you can request it at other
-levels with :switch:`-ftree-vectorize`. For the LLVM backend, it's
+levels with :switch:`-ftree-vectorize`. For the LLVM back end, it's
 enabled by default at lower levels, but you can explicitly enable or
 disable it with the :switch:`-fno-vectorize`, :switch:`-fvectorize`,
 :switch:`-fno-slp-vectorize`, and :switch:`-fslp-vectorize` switches.
@@ -2034,7 +2035,7 @@ preferably to other optimizations by means of pragma ``Loop_Optimize``:
 
 placed immediately within the loop will convey the appropriate hint to the
 compiler for this loop. This is currently only supported for the GCC
-backend.
+back end.
 
 You can also help the compiler generate better vectorized code
 for a given loop by asserting that there are no loop-carried dependencies
@@ -2065,7 +2066,7 @@ be overcome by another hint:
 
 placed immediately within the loop will tell the compiler that it can safely
 omit the non-vectorized version of the loop as well as the run-time test.
-This is also currently only supported by the GCC backend.
+This is also currently only supported by the GCC back end.
 
 
 .. _Other_Optimization_Switches:
@@ -2076,9 +2077,9 @@ Other Optimization Switches
 .. index:: Optimization Switches
 
 You can also use any specialized optimization switches supported by
-the backend being used.  These switches have not been extensively
+the back end being used.  These switches have not been extensively
 tested with GNAT but can generally be expected to work. Examples of
-switches in this category for the GCC backend are
+switches in this category for the GCC back end are
 :switch:`-funroll-loops` and the various target-specific :switch:`-m`
 options (in particular, it has been observed that :switch:`-march=xxx`
 can significantly improve performance on appropriate machines). For
@@ -2131,14 +2132,15 @@ instead of in every iteration (this is called load hoisting).
 
 This kind of optimizations, based on strict type-based aliasing, is
 triggered by specifying an optimization level of :switch:`-O2` or
-higher (or :switch:`-Os`) for the GCC backend and :switch:`-O1` or higher for the
-LLVM backend and allows the compiler to generate more
+higher (or :switch:`-Os`) for the GCC back end and :switch:`-O1` or
+higher for the LLVM back end and allows the compiler to generate more
 efficient code.
 
-However, although this optimization is always correct in terms of
-the formal semantics of the Ada Reference Manual, you can run into difficulties 
-arise if you use features like ``Unchecked_Conversion``  to break
-the typing system. Consider the following complete program example:
+However, although this optimization is always correct in terms of the
+formal semantics of the Ada Reference Manual, you can run into
+difficulties arise if you use features like ``Unchecked_Conversion``
+to break the typing system. Consider the following complete program
+example:
 
   .. code-block:: ada
 
@@ -2341,7 +2343,7 @@ the compiler can have significant benefits. We've seen cases of large
 scale application code where the execution time is increased by up to
 5% when these optimizations are turned off. However, if you have code
 that make significant use of unchecked conversion, you might want to
-just stick with :switch:`-O1` (with the GCC backend) and avoid the
+just stick with :switch:`-O1` (with the GCC back end) and avoid the
 entire issue. If you get adequate performance at this level of
 optimization, that's probably the safest approach. If tests show that
 you really need higher levels of optimization, then you can experiment
@@ -2592,7 +2594,7 @@ is directly performed by the linker.
 .. index:: -fdata-sections (gcc)
 
 In order to do this, it has to work with objects compiled with the
-following switches passed to the GCC backend:
+following switches passed to the GCC back end:
 :switch:`-ffunction-sections` :switch:`-fdata-sections`.
 
 These options are usable with C and Ada files.
@@ -2966,7 +2968,7 @@ or ``Unsuppress`` in the usual manner.
 .. index:: -gnato?? (gcc)
 
 Additionally, you can use the compiler switch :switch:`-gnato?` or
-:switch:`-gnato??` to control the checking mode default (which you can 
+:switch:`-gnato??` to control the checking mode default (which you can
 subsequently override using the above pragmas).
 
 Here ``?`` is one of the digits ``1`` through ``3``:
@@ -3376,8 +3378,8 @@ the subtypes because both the parameter and return are of the same type.
 An example instantiation
 
   .. code-block:: ada
-  
-        package Mks_Numerics is new 
+
+        package Mks_Numerics is new
            Ada.Numerics.Generic_Elementary_Functions (System.Dim.Mks.Mks_Type);
 
 .. _Stack_Related_Facilities:
@@ -3431,7 +3433,7 @@ For the environment task, the stack size is determined by the operating system.
 Consequently, to modify the size of the environment task please refer to your
 operating system documentation.
 
-When using the LLVM backend, this switch doesn't perform full stack overflow
+When using the LLVM back end, this switch doesn't perform full stack overflow
 checking, but just checks for very large local dynamic allocations.
 
 .. _Static_Stack_Usage_Analysis:
@@ -3475,7 +3477,7 @@ issue a warning for each subprogram whose stack usage might be larger
 than the specified amount of bytes.  The wording of that warning is
 consistent with that in the file documented above.
 
-This is not supported by the LLVM backend.
+This is not supported by the LLVM back end.
 
 
 .. _Dynamic_Stack_Usage_Analysis:
@@ -3496,7 +3498,7 @@ Note that this switch is not compatible with tools like
 Valgrind and DrMemory; they will report errors.
 
 It is not always convenient to output the stack usage when the program
-is still running. Hence, you can delay this output until the 
+is still running. Hence, you can delay this output until the
 termination of the number of tasks specified as the argument of the
 :switch:`-u` switch. For example:
 
@@ -3538,7 +3540,7 @@ given in kilobytes. For example:
 would specify to the analyzer that the environment task stack has a limit
 of 1.6 megabytes. Any stack usage beyond this will be ignored by the analysis.
 
-This is not suppored by the LLVM backend.
+This is not suppored by the LLVM back end.
 
 The package ``GNAT.Task_Stack_Usage`` provides facilities to get
 stack-usage reports at run time. See its body for the details.

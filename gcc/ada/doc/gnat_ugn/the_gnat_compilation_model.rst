@@ -1494,7 +1494,7 @@ Restrictions that require partition-wide consistency (like
 recognized wherever they appear
 and can be freely inherited, e.g. from a |withed| unit to the |withing|
 unit. This makes sense since the binder will always insist on seeing
-consistent us, so any unit not conforming to any restrictions 
+consistent us, so any unit not conforming to any restrictions
 anywhere in the partition will be rejected and it's better for you to find
 that out at compile time rather than bind time.
 
@@ -3713,9 +3713,9 @@ Convention identifiers are recognized by GNAT:
 
   * General subprogram entities. This is used  to bind an Ada subprogram
     declaration to
-    a compiler builtin by name with back-ends where such interfaces are
+    a compiler builtin by name with back ends where such interfaces are
     available. A typical example is the set of ``__builtin`` functions
-    exposed by the ``gcc`` back-end, as in the following example:
+    exposed by the ``gcc`` back end, as in the following example:
 
 
     .. code-block:: ada
