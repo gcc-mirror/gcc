@@ -1,3 +1,15 @@
+2024-10-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (gfc_option_t): Add disable_acc_on_device.
+	* options.cc (gfc_handle_option): Handle -fno-builtin-acc_on_device.
+	* trans-decl.cc (gfc_get_extern_function_decl): Move
+	__builtin_omp_is_initial_device handling to ...
+	* trans-expr.cc (get_builtin_fn): ... this new function.
+	(conv_function_val): Call it.
+	(update_builtin_function): New.
+	(gfc_conv_procedure_call): Call it.
+	* types.def (BT_BOOL): Fix type by using bool_type_node.
+
 2024-10-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.cc (get_c_type_name): Also handle BT_UNSIGNED.

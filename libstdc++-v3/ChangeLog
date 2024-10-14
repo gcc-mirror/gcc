@@ -1,3 +1,17 @@
+2024-10-13  Sam James  <sam@gentoo.org>
+
+	* testsuite/17_intro/names_fortify.cc: Undefine _FORTIFY_SOURCE.
+
+2024-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117121
+	* include/bits/ranges_algobase.h (copy_backward): Decrement
+	output iterator before assigning one element through it.
+	* testsuite/25_algorithms/copy/108846.cc: Ensure the algorithm's
+	effects are correct for a single memcpyable element.
+	* testsuite/25_algorithms/copy_backward/108846.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/108846.cc: Likewise.
+
 2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (__niter_base(move_iterator<I>))

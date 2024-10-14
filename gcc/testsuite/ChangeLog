@@ -1,3 +1,22 @@
+2024-10-13  Simon Martin  <simon@nasilyan.com>
+
+	Revert:
+	2024-10-13  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109918
+	* g++.dg/warn/Woverloaded-virt1.C: Check that no warning is
+	emitted for non virtual base methods.
+	* g++.dg/warn/Woverloaded-virt5.C: New test.
+	* g++.dg/warn/Woverloaded-virt6.C: New test.
+	* g++.dg/warn/Woverloaded-virt7.C: New test.
+	* g++.dg/warn/Woverloaded-virt8.C: New test.
+	* g++.dg/warn/Woverloaded-virt9.C: New test.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116481
+	* gcc.dg/pr116481.c: New testcase.
+
 2024-10-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/unsigned_36.f90: New test.

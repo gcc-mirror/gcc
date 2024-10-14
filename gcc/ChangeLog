@@ -1,3 +1,29 @@
+2024-10-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md ("movsi", "movxf"): Replace
+	reload_in_progress by reload_in_progress || lra_in_progress.
+	* config/m68k/m68k.cc (m68k_legitimate_mem_p)
+	(emit_move_sequence): Likewise.
+	* config/m68k/predicates.md ("fp_src_operand"): Likewise.
+
+2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116481
+	* pointer-query.cc (build_printable_array_type):
+	Build an array types with function or method element type
+	manually to avoid bogus diagnostic.
+
+2024-10-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimple-fold.cc (gimple_fold_builtin_acc_on_device): Also fold
+	when offloading is not configured.
+
+2024-10-13  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/riscv.md (zero_extendsidi2): If RHS is already
+	zero extended, then this is just a copy.
+	(extendsidi2): Similarly, but for sign extension.
+
 2024-10-12  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/116985

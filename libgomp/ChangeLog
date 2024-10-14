@@ -1,3 +1,17 @@
+2024-10-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (TR13): Fix minor typos.
+	(omp_is_initial_device): Improve wording.
+	(acc_on_device): Note how to disable the builtin.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Remove TODO.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Likewise.
+	Add -fno-builtin-acc_on_device.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c: Update
+	dg- as !offloading_enabled now compile-time expands acc_on_device.
+	* testsuite/libgomp.fortran/target-is-initial-device-3.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-2.f90: New test.
+
 2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.fortran/allocate-static.f90: Moved from
