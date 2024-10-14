@@ -732,6 +732,23 @@ vec_sat_s_trunc_##NT##_##WT##_fmt_5 (NT *out, WT *in, unsigned limit) \
 #define DEF_VEC_SAT_S_TRUNC_FMT_5_WRAP(NT, WT, NT_MIN, NT_MAX) \
   DEF_VEC_SAT_S_TRUNC_FMT_5(NT, WT, NT_MIN, NT_MAX)
 
+#define DEF_VEC_SAT_S_TRUNC_FMT_6(NT, WT, NT_MIN, NT_MAX)             \
+void __attribute__((noinline))                                        \
+vec_sat_s_trunc_##NT##_##WT##_fmt_6 (NT *out, WT *in, unsigned limit) \
+{                                                                     \
+  unsigned i;                                                         \
+  for (i = 0; i < limit; i++)                                         \
+    {                                                                 \
+      WT x = in[i];                                                   \
+      NT trunc = (NT)x;                                               \
+      out[i] = (WT)NT_MIN >= x || x > (WT)NT_MAX                      \
+	? x < 0 ? NT_MIN : NT_MAX                                     \
+	: trunc;                                                      \
+    }                                                                 \
+}
+#define DEF_VEC_SAT_S_TRUNC_FMT_6_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_VEC_SAT_S_TRUNC_FMT_6(NT, WT, NT_MIN, NT_MAX)
+
 #define RUN_VEC_SAT_U_TRUNC_FMT_1(NT, WT, out, in, N) \
   vec_sat_u_trunc_##NT##_##WT##_fmt_1 (out, in, N)
 #define RUN_VEC_SAT_U_TRUNC_FMT_1_WRAP(NT, WT, out, in, N) \
@@ -776,5 +793,10 @@ vec_sat_s_trunc_##NT##_##WT##_fmt_5 (NT *out, WT *in, unsigned limit) \
   vec_sat_s_trunc_##NT##_##WT##_fmt_5 (out, in, N)
 #define RUN_VEC_SAT_S_TRUNC_FMT_5_WRAP(NT, WT, out, in, N) \
   RUN_VEC_SAT_S_TRUNC_FMT_5(NT, WT, out, in, N)
+
+#define RUN_VEC_SAT_S_TRUNC_FMT_6(NT, WT, out, in, N) \
+  vec_sat_s_trunc_##NT##_##WT##_fmt_6 (out, in, N)
+#define RUN_VEC_SAT_S_TRUNC_FMT_6_WRAP(NT, WT, out, in, N) \
+  RUN_VEC_SAT_S_TRUNC_FMT_6(NT, WT, out, in, N)
 
 #endif
