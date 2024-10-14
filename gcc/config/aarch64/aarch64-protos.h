@@ -827,6 +827,7 @@ char *aarch64_output_scalar_simd_mov_immediate (rtx, scalar_int_mode);
 char *aarch64_output_simd_mov_imm (rtx, unsigned);
 char *aarch64_output_simd_orr_imm (rtx, unsigned);
 char *aarch64_output_simd_and_imm (rtx, unsigned);
+char *aarch64_output_simd_xor_imm (rtx, unsigned);
 
 char *aarch64_output_sve_mov_immediate (rtx);
 char *aarch64_output_sve_ptrues (rtx);
@@ -844,6 +845,7 @@ bool aarch64_sve_ptrue_svpattern_p (rtx, struct simd_immediate_info *);
 bool aarch64_simd_valid_and_imm (rtx);
 bool aarch64_simd_valid_mov_imm (rtx);
 bool aarch64_simd_valid_orr_imm (rtx);
+bool aarch64_simd_valid_xor_imm (rtx);
 bool aarch64_valid_sysreg_name_p (const char *);
 const char *aarch64_retrieve_sysreg (const char *, bool, bool);
 rtx aarch64_check_zero_based_sve_index_immediate (rtx);

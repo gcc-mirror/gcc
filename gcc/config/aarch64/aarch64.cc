@@ -134,7 +134,8 @@ constexpr auto AARCH64_STATE_OUT = 1U << 2;
 enum simd_immediate_check {
   AARCH64_CHECK_MOV,
   AARCH64_CHECK_ORR,
-  AARCH64_CHECK_AND
+  AARCH64_CHECK_AND,
+  AARCH64_CHECK_XOR
 };
 
 /* Information about a legitimate vector immediate operand.  */
@@ -23354,6 +23355,13 @@ aarch64_simd_valid_and_imm (rtx op)
   return aarch64_simd_valid_imm (op, NULL, AARCH64_CHECK_AND);
 }
 
+/* Return true if OP is a valid SIMD xor immediate for SVE.  */
+bool
+aarch64_simd_valid_xor_imm (rtx op)
+{
+  return aarch64_simd_valid_imm (op, NULL, AARCH64_CHECK_XOR);
+}
+
 /* Check whether X is a VEC_SERIES-like constant that starts at 0 and
    has a step in the range of INDEX.  Return the index expression if so,
    otherwise return null.  */
@@ -25460,10 +25468,12 @@ aarch64_output_simd_imm (rtx const_vector, unsigned width,
     }
   else
     {
-      /* AARCH64_CHECK_ORR or AARCH64_CHECK_AND.  */
+      /* AARCH64_CHECK_ORR, AARCH64_CHECK_AND or AARCH64_CHECK_XOR.  */
       mnemonic = "orr";
       if (which == AARCH64_CHECK_AND)
 	mnemonic = info.insn == simd_immediate_info::MVN ? "bic" : "and";
+      else if (which == AARCH64_CHECK_XOR)
+	mnemonic = "eor";
 
       if (info.insn == simd_immediate_info::SVE_MOV)
 	{
@@ -25499,6 +25509,14 @@ char*
 aarch64_output_simd_and_imm (rtx const_vector, unsigned width)
 {
   return aarch64_output_simd_imm (const_vector, width, AARCH64_CHECK_AND);
+}
+
+/* Returns the string with the EOR instruction for the SIMD immediate
+   CONST_VECTOR of WIDTH bits.  */
+char*
+aarch64_output_simd_xor_imm (rtx const_vector, unsigned width)
+{
+  return aarch64_output_simd_imm (const_vector, width, AARCH64_CHECK_XOR);
 }
 
 /* Returns the string with the MOV instruction for the SIMD immediate

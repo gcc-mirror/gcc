@@ -1144,12 +1144,16 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
+;; For EOR (vector, register) and SVE EOR (vector, immediate)
 (define_insn "xor<mode>3<vczle><vczbe>"
-  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-        (xor:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		 (match_operand:VDQ_I 2 "register_operand" "w")))]
+  [(set (match_operand:VDQ_I 0 "register_operand")
+        (xor:VDQ_I (match_operand:VDQ_I 1 "register_operand")
+                   (match_operand:VDQ_I 2 "aarch64_reg_or_xor_imm")))]
   "TARGET_SIMD"
-  "eor\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
+  {@ [ cons: =0 , 1 , 2  ]
+     [ w        , w , w  ] eor\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+     [ w        , 0 , Do ] << aarch64_output_simd_xor_imm (operands[2], <bitsize>);
+  }
   [(set_attr "type" "neon_logic<q>")]
 )
 

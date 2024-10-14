@@ -125,6 +125,11 @@
 	(and (match_code "const_vector")
 	     (match_test "aarch64_simd_valid_and_imm (op)"))))
 
+(define_predicate "aarch64_reg_or_xor_imm"
+   (ior (match_operand 0 "register_operand")
+        (and (match_code "const_vector")
+             (match_test "aarch64_simd_valid_xor_imm (op)"))))
+
 (define_predicate "aarch64_fp_compare_operand"
   (ior (match_operand 0 "register_operand")
        (and (match_code "const_double")
