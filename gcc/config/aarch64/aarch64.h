@@ -1652,6 +1652,10 @@ enum class aarch64_tristate_mode : int { NO, YES, MAYBE };
   { int (aarch64_tristate_mode::MAYBE), \
     int (aarch64_local_sme_state::ANY) }
 
+/* Zero terminated list of regnos for which hardreg PRE should be
+   applied.  */
+#define HARDREG_PRE_REGNOS { FPM_REGNUM, 0 }
+
 #endif
 
 #endif /* GCC_AARCH64_H */
