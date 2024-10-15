@@ -1171,7 +1171,7 @@ Dump::visit (StructExprStructFields &e)
   if (!e.has_struct_base ())
     put_field ("struct_base", "none");
   else
-    put_field ("struct_base", e.get_struct_base ()->as_string ());
+    put_field ("struct_base", e.get_struct_base ().as_string ());
 
   end ("StructExprStructFields");
 }
@@ -1182,7 +1182,7 @@ Dump::visit (StructExprStructBase &e)
   begin ("StructExprStructBase");
   do_structexprstruct (e);
 
-  put_field ("struct_base", e.get_struct_base ()->as_string ());
+  put_field ("struct_base", e.get_struct_base ().as_string ());
 
   end ("StructExprStructBase");
 }

@@ -70,6 +70,33 @@ get_string_in_delims (std::string str_input, AST::DelimType delim_type)
   rust_unreachable ();
 }
 
+Crate::Crate (std::vector<std::unique_ptr<Item>> items,
+	      AST::AttrVec inner_attrs, Analysis::NodeMapping mappings)
+  : WithInnerAttrs (std::move (inner_attrs)), items (std::move (items)),
+    mappings (mappings)
+{}
+
+Crate::Crate (Crate const &other)
+  : WithInnerAttrs (other.inner_attrs), mappings (other.mappings)
+{
+  items.reserve (other.items.size ());
+  for (const auto &e : other.items)
+    items.push_back (e->clone_item ());
+}
+
+Crate &
+Crate::operator= (Crate const &other)
+{
+  inner_attrs = other.inner_attrs;
+  mappings = other.mappings;
+
+  items.reserve (other.items.size ());
+  for (const auto &e : other.items)
+    items.push_back (e->clone_item ());
+
+  return *this;
+}
+
 std::string
 Crate::as_string () const
 {
@@ -2677,14 +2704,14 @@ Expr::as_string () const
 }
 
 // hopefully definition here will prevent circular dependency issue
-TraitBound *
+std::unique_ptr<TraitBound>
 TypePath::to_trait_bound (bool in_parens) const
 {
   // create clone FIXME is this required? or is copy constructor automatically
   // called?
   TypePath copy (*this);
-  return new TraitBound (mappings, std::move (copy), copy.get_locus (),
-			 in_parens);
+  return Rust::make_unique<TraitBound> (mappings, std::move (copy),
+					copy.get_locus (), in_parens);
 }
 
 std::string
@@ -3012,7 +3039,7 @@ StructExprStructFields::as_string () const
     }
   else
     {
-      str += struct_base->as_string ();
+      str += (*struct_base)->as_string ();
     }
 
   return str;
@@ -3990,6 +4017,12 @@ StructExprStructFields::accept_vis (HIRFullVisitor &vis)
 
 void
 StructExprStructBase::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+StructExprStructBase::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -5151,21 +5184,6 @@ StaticItem::accept_vis (HIRVisItemVisitor &vis)
 {
   vis.visit (*this);
 }
-
-std::string
-ConstGenericParam::as_string () const
-{
-  auto result = "ConstGenericParam: " + name + " : " + type->as_string ();
-
-  if (default_expression)
-    result += " = " + default_expression->as_string ();
-
-  return result;
-}
-
-void
-ConstGenericParam::accept_vis (HIRFullVisitor &)
-{}
 
 } // namespace HIR
 } // namespace Rust

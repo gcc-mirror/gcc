@@ -19,7 +19,6 @@
 #ifndef RUST_HIR_VISITOR_H
 #define RUST_HIR_VISITOR_H
 
-#include "rust-hir-expr.h"
 #include "rust-hir-full-decls.h"
 
 namespace Rust {

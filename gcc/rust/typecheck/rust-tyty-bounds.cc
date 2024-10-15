@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-hir-full-decls.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-substitution-mapper.h"
@@ -203,21 +204,21 @@ TypeCheckBase::get_predicate_from_bound (
     = HIR::GenericArgs::create_empty (type_path.get_locus ());
 
   auto &final_seg = type_path.get_final_segment ();
-  switch (final_seg->get_type ())
+  switch (final_seg.get_type ())
     {
       case HIR::TypePathSegment::SegmentType::GENERIC: {
-	auto final_generic_seg
-	  = static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
-	if (final_generic_seg->has_generic_args ())
+	auto &final_generic_seg
+	  = static_cast<HIR::TypePathSegmentGeneric &> (final_seg);
+	if (final_generic_seg.has_generic_args ())
 	  {
-	    args = final_generic_seg->get_generic_args ();
+	    args = final_generic_seg.get_generic_args ();
 	  }
       }
       break;
 
       case HIR::TypePathSegment::SegmentType::FUNCTION: {
 	auto &final_function_seg
-	  = static_cast<HIR::TypePathSegmentFunction &> (*final_seg);
+	  = static_cast<HIR::TypePathSegmentFunction &> (final_seg);
 	auto &fn = final_function_seg.get_function_path ();
 
 	// we need to make implicit generic args which must be an implicit
@@ -225,7 +226,7 @@ TypeCheckBase::get_predicate_from_bound (
 	auto crate_num = mappings.get_current_crate ();
 	HirId implicit_args_id = mappings.get_next_hir_id ();
 	Analysis::NodeMapping mapping (crate_num,
-				       final_seg->get_mappings ().get_nodeid (),
+				       final_seg.get_mappings ().get_nodeid (),
 				       implicit_args_id, UNKNOWN_LOCAL_DEFID);
 
 	std::vector<std::unique_ptr<HIR::Type>> params_copy;
@@ -234,12 +235,10 @@ TypeCheckBase::get_predicate_from_bound (
 	    params_copy.push_back (p->clone_type ());
 	  }
 
-	HIR::TupleType *implicit_tuple
-	  = new HIR::TupleType (mapping, std::move (params_copy),
-				final_seg->get_locus ());
-
 	std::vector<std::unique_ptr<HIR::Type>> inputs;
-	inputs.push_back (std::unique_ptr<HIR::Type> (implicit_tuple));
+	inputs.push_back (
+	  Rust::make_unique<HIR::TupleType> (mapping, std::move (params_copy),
+					     final_seg.get_locus ()));
 
 	// resolve the fn_once_output type which assumes there must be an output
 	// set
@@ -249,7 +248,7 @@ TypeCheckBase::get_predicate_from_bound (
 	HIR::TraitItem *trait_item
 	  = mappings
 	      .lookup_trait_item_lang_item (LangItem::Kind::FN_ONCE_OUTPUT,
-					    final_seg->get_locus ())
+					    final_seg.get_locus ())
 	      .value ();
 
 	std::vector<HIR::GenericArgsBinding> bindings;
@@ -263,7 +262,7 @@ TypeCheckBase::get_predicate_from_bound (
 	args = HIR::GenericArgs ({} /* lifetimes */,
 				 std::move (inputs) /* type_args*/,
 				 std::move (bindings) /* binding_args*/,
-				 {} /* const_args */, final_seg->get_locus ());
+				 {} /* const_args */, final_seg.get_locus ());
       }
       break;
 

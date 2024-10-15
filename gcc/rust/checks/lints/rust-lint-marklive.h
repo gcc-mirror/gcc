@@ -247,7 +247,7 @@ public:
     stct.get_struct_name ().accept_vis (*this);
     if (stct.has_struct_base ())
       {
-	stct.struct_base->base_struct->accept_vis (*this);
+	stct.get_struct_base ().get_base ().accept_vis (*this);
       }
   }
 
@@ -258,7 +258,7 @@ public:
 
   void visit (HIR::StructExprStructBase &stct) override
   {
-    stct.get_struct_base ()->base_struct->accept_vis (*this);
+    stct.get_struct_base ().get_base ().accept_vis (*this);
   }
 
   void visit (HIR::Module &module) override
