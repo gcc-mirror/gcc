@@ -27,8 +27,6 @@ closure_no_type_anno.rs
 complex-path1.rs
 complex_qualified_path_in_expr.rs
 const-issue1440.rs
-const1.rs
-const3.rs
 const_generics_3.rs
 const_generics_4.rs
 const_generics_5.rs
@@ -38,7 +36,6 @@ derive_macro1.rs
 derive_macro3.rs
 derive_macro4.rs
 derive_macro6.rs
-diagnostic_underline.rs
 expected_type_args2.rs
 expected_type_args3.rs
 feature_rust_attri0.rs
