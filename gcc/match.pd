@@ -9441,7 +9441,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (IFN_FNMS @0 @1 @2))
   (simplify
    (negate (fmas@3 @0 @1 @2))
-   (if (single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
     (IFN_FNMS @0 @1 @2))))
 
  (simplify
@@ -9455,7 +9455,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FNMA @0 @1 @2))
  (simplify
   (negate (IFN_FMS@3 @0 @1 @2))
-   (if (single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
     (IFN_FNMA @0 @1 @2)))
 
  (simplify
@@ -9469,7 +9469,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FMS @0 @1 @2))
  (simplify
   (negate (IFN_FNMA@3 @0 @1 @2))
-  (if (single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
    (IFN_FMS @0 @1 @2)))
 
  (simplify
