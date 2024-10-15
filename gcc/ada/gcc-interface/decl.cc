@@ -4457,12 +4457,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       process_attributes (&gnu_type, &attr_list, false, gnat_entity);
 
       /* See if a size was specified, by means of either an Object_Size or
-         a regular Size clause, and validate it if so.
-
-	 ??? Don't set the size for a String_Literal since it is either
-	 confirming or we don't handle it properly (if the low bound is
-	 non-constant).  */
-      if (!gnu_size && kind != E_String_Literal_Subtype)
+         a regular Size clause, and validate it if so.  */
+      if (!gnu_size)
 	{
 	  const char *size_s = "size for %s too small{, minimum allowed is ^}";
 	  const char *type_s = is_by_ref ? "by-reference type &" : "&";
