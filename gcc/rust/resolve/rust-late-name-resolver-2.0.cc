@@ -164,16 +164,14 @@ Late::visit (AST::IdentifierExpr &expr)
   // TODO: same thing as visit(PathInExpression) here?
 
   tl::optional<Rib::Definition> resolved = tl::nullopt;
-  auto label = ctx.labels.get (expr.get_ident ());
-  auto value = ctx.values.get (expr.get_ident ());
 
-  if (label)
-    {
-      resolved = label;
-    }
-  else if (value)
+  if (auto value = ctx.values.get (expr.get_ident ()))
     {
       resolved = value;
+    }
+  else if (auto type = ctx.types.get (expr.get_ident ()))
+    {
+      resolved = type;
     }
   else
     {
@@ -202,18 +200,33 @@ Late::visit (AST::PathInExpression &expr)
   // do we emit it in `get<Namespace::Labels>`?
 
   rust_debug ("[ARTHUR]: %s", expr.as_simple_path ().as_string ().c_str ());
-  auto value = ctx.values.resolve_path (expr.get_segments ());
-  if (!value.has_value ())
-    rust_unreachable (); // Should have been resolved earlier
 
-  if (value->is_ambiguous ())
+  tl::optional<Rib::Definition> resolved = tl::nullopt;
+
+  if (auto value = ctx.values.resolve_path (expr.get_segments ()))
+    {
+      resolved = value;
+    }
+  else if (auto type = ctx.types.resolve_path (expr.get_segments ()))
+    {
+      resolved = type;
+    }
+  else
+    {
+      rust_error_at (expr.get_locus (),
+		     "could not resolve path expression: %qs",
+		     expr.as_simple_path ().as_string ().c_str ());
+      return;
+    }
+
+  if (resolved->is_ambiguous ())
     {
       rust_error_at (expr.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
 		     expr.as_string ().c_str ());
       return;
     }
   ctx.map_usage (Usage (expr.get_node_id ()),
-		 Definition (value->get_node_id ()));
+		 Definition (resolved->get_node_id ()));
 }
 
 void
