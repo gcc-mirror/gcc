@@ -18263,6 +18263,8 @@ quarter:
   else if (use_vec_merge)
     {
 do_vec_merge:
+      if (!nonimmediate_operand (val, inner_mode))
+	val = force_reg (inner_mode, val);
       tmp = gen_rtx_VEC_DUPLICATE (mode, val);
       tmp = gen_rtx_VEC_MERGE (mode, tmp, target,
 			       GEN_INT (HOST_WIDE_INT_1U << elt));
