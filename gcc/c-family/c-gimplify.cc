@@ -133,6 +133,10 @@ enum bc_t { bc_break = 0, bc_continue = 1 };
    linked through TREE_CHAIN.  */
 static tree bc_label[2];
 
+/* Hash map from loop/switch names (identified by LABEL_DECL) to
+   corresponding break and (if any) continue labels.  */
+static bc_hash_map_t *bc_hash_map;
+
 /* Begin a scope which can be exited by a break or continue statement.  BC
    indicates which.
 
@@ -172,6 +176,26 @@ finish_bc_block (tree *block, enum bc_t bc, tree label)
   DECL_CHAIN (label) = NULL_TREE;
 }
 
+/* For named loop or switch with NAME, remember corresponding break
+   label BLAB and continue label CLAB.  */
+
+static void
+note_named_bc (tree name, tree blab, tree clab)
+{
+  if (bc_hash_map == NULL)
+    bc_hash_map = new bc_hash_map_t (32);
+  bc_hash_map->put (name, std::make_pair (blab, clab));
+}
+
+/* Remove NAME from the map after processing body of the loop or
+   switch.  */
+
+static void
+release_named_bc (tree name)
+{
+  bc_hash_map->remove (name);
+}
+
 /* Allow saving and restoring break/continue state.  */
 
 void
@@ -179,8 +203,10 @@ save_bc_state (bc_state_t *state)
 {
   state->bc_label[bc_break] = bc_label[bc_break];
   state->bc_label[bc_continue] = bc_label[bc_continue];
+  state->bc_hash_map = bc_hash_map;
   bc_label[bc_break] = NULL_TREE;
   bc_label[bc_continue] = NULL_TREE;
+  bc_hash_map = NULL;
 }
 
 void
@@ -188,8 +214,10 @@ restore_bc_state (bc_state_t *state)
 {
   gcc_assert (bc_label[bc_break] == NULL);
   gcc_assert (bc_label[bc_continue] == NULL);
+  gcc_assert (bc_hash_map == NULL);
   bc_label[bc_break] = state->bc_label[bc_break];
   bc_label[bc_continue] = state->bc_label[bc_continue];
+  bc_hash_map = state->bc_hash_map;
 }
 
 /* Get the LABEL_EXPR to represent a break or continue statement
@@ -229,8 +257,9 @@ expr_loc_or_loc (const_tree expr, location_t or_loc)
 
 static void
 genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
-		   tree incr, bool cond_is_first, int *walk_subtrees,
-		   void *data, walk_tree_fn func, walk_tree_lh lh)
+		   tree incr, tree name, bool cond_is_first,
+		   int *walk_subtrees, void *data, walk_tree_fn func,
+		   walk_tree_lh lh)
 {
   tree blab, clab;
   tree entry = NULL, exit = NULL, t;
@@ -245,9 +274,14 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 
   blab = begin_bc_block (bc_break, start_locus);
   clab = begin_bc_block (bc_continue, start_locus);
+  if (name)
+    note_named_bc (name, blab, clab);
 
   walk_tree_1 (&body, func, data, NULL, lh);
   *walk_subtrees = 0;
+
+  if (name)
+    release_named_bc (name);
 
   /* If condition is zero don't generate a loop construct.  */
   if (cond && integer_zerop (cond))
@@ -373,8 +407,8 @@ genericize_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
     }
 
   genericize_c_loop (&loop, EXPR_LOCATION (stmt), FOR_COND (stmt),
-		     FOR_BODY (stmt), FOR_EXPR (stmt), 1, walk_subtrees,
-		     data, func, lh);
+		     FOR_BODY (stmt), FOR_EXPR (stmt), FOR_NAME (stmt), 1,
+		     walk_subtrees, data, func, lh);
   append_to_statement_list (loop, &expr);
   if (expr == NULL_TREE)
     expr = loop;
@@ -389,8 +423,8 @@ genericize_while_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 {
   tree stmt = *stmt_p;
   genericize_c_loop (stmt_p, EXPR_LOCATION (stmt), WHILE_COND (stmt),
-		     WHILE_BODY (stmt), NULL_TREE, 1, walk_subtrees,
-		     data, func, lh);
+		     WHILE_BODY (stmt), NULL_TREE, WHILE_NAME (stmt), 1,
+		     walk_subtrees, data, func, lh);
 }
 
 /* Genericize a DO_STMT node *STMT_P.  */
@@ -401,8 +435,8 @@ genericize_do_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 {
   tree stmt = *stmt_p;
   genericize_c_loop (stmt_p, EXPR_LOCATION (stmt), DO_COND (stmt),
-		     DO_BODY (stmt), NULL_TREE, 0, walk_subtrees,
-		     data, func, lh);
+		     DO_BODY (stmt), NULL_TREE, DO_NAME (stmt), 0,
+		     walk_subtrees, data, func, lh);
 }
 
 /* Genericize a SWITCH_STMT node *STMT_P by turning it into a SWITCH_EXPR.  */
@@ -412,7 +446,7 @@ genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 			walk_tree_fn func, walk_tree_lh lh)
 {
   tree stmt = *stmt_p;
-  tree break_block, body, cond, type;
+  tree blab, body, cond, type;
   location_t stmt_locus = EXPR_LOCATION (stmt);
 
   body = SWITCH_STMT_BODY (stmt);
@@ -423,19 +457,25 @@ genericize_switch_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 
   walk_tree_1 (&cond, func, data, NULL, lh);
 
-  break_block = begin_bc_block (bc_break, stmt_locus);
+  blab = begin_bc_block (bc_break, stmt_locus);
+  if (SWITCH_STMT_NAME (stmt))
+    note_named_bc (SWITCH_STMT_NAME (stmt), blab, NULL_TREE);
 
   walk_tree_1 (&body, func, data, NULL, lh);
+
+  if (SWITCH_STMT_NAME (stmt))
+    release_named_bc (SWITCH_STMT_NAME (stmt));
+
   walk_tree_1 (&type, func, data, NULL, lh);
   *walk_subtrees = 0;
 
-  if (TREE_USED (break_block))
-    SWITCH_BREAK_LABEL_P (break_block) = 1;
-  finish_bc_block (&body, bc_break, break_block);
+  if (TREE_USED (blab))
+    SWITCH_BREAK_LABEL_P (blab) = 1;
+  finish_bc_block (&body, bc_break, blab);
   *stmt_p = build2_loc (stmt_locus, SWITCH_EXPR, type, cond, body);
   SWITCH_ALL_CASES_P (*stmt_p) = SWITCH_STMT_ALL_CASES_P (stmt);
   gcc_checking_assert (!SWITCH_STMT_NO_BREAK_P (stmt)
-		       || !TREE_USED (break_block));
+		       || !TREE_USED (blab));
 }
 
 /* Genericize a CONTINUE_STMT node *STMT_P.  */
@@ -445,7 +485,16 @@ genericize_continue_stmt (tree *stmt_p)
 {
   tree stmt_list = NULL;
   tree pred = build_predict_expr (PRED_CONTINUE, NOT_TAKEN);
-  tree label = get_bc_label (bc_continue);
+  tree label;
+  if (CONTINUE_NAME (*stmt_p))
+    {
+      tree_pair *slot = bc_hash_map->get (CONTINUE_NAME (*stmt_p));
+      gcc_checking_assert (slot);
+      label = slot->second;
+      TREE_USED (label) = 1;
+    }
+  else
+    label = get_bc_label (bc_continue);
   location_t location = EXPR_LOCATION (*stmt_p);
   tree jump = build1_loc (location, GOTO_EXPR, void_type_node, label);
   append_to_statement_list_force (pred, &stmt_list);
@@ -458,7 +507,16 @@ genericize_continue_stmt (tree *stmt_p)
 static void
 genericize_break_stmt (tree *stmt_p)
 {
-  tree label = get_bc_label (bc_break);
+  tree label;
+  if (BREAK_NAME (*stmt_p))
+    {
+      tree_pair *slot = bc_hash_map->get (BREAK_NAME (*stmt_p));
+      gcc_checking_assert (slot);
+      label = slot->first;
+      TREE_USED (label) = 1;
+    }
+  else
+    label = get_bc_label (bc_break);
   location_t location = EXPR_LOCATION (*stmt_p);
   *stmt_p = build1_loc (location, GOTO_EXPR, void_type_node, label);
 }
@@ -615,6 +673,8 @@ c_genericize (tree fndecl)
       hash_set<tree> pset;
       walk_tree (&DECL_SAVED_TREE (fndecl), c_genericize_control_r, &pset,
 		 &pset);
+      delete bc_hash_map;
+      bc_hash_map = NULL;
       restore_bc_state (&save_state);
       pop_cfun ();
     }

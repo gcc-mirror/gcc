@@ -1216,9 +1216,13 @@ extern const char *c_get_substring_location (const substring_loc &substr_loc,
 					     location_t *out_loc);
 
 /* In c-gimplify.cc.  */
+typedef hash_map<tree, tree_pair,
+		 simple_hashmap_traits<tree_decl_hash,
+				       tree_pair>> bc_hash_map_t;
 typedef struct bc_state
 {
   tree bc_label[2];
+  bc_hash_map_t *bc_hash_map;
 } bc_state_t;
 extern void save_bc_state (bc_state_t *);
 extern void restore_bc_state (bc_state_t *);
@@ -1501,29 +1505,39 @@ extern tree build_userdef_literal (tree suffix_id, tree value,
 				   tree num_string);
 
 
-/* WHILE_STMT accessors. These give access to the condition of the
-   while statement and the body of the while statement, respectively.  */
+/* WHILE_STMT accessors.  These give access to the condition of the
+   while statement, the body and name of the while statement, respectively.  */
 #define WHILE_COND(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
 #define WHILE_BODY(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
+#define WHILE_NAME(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 2)
 
-/* DO_STMT accessors. These give access to the condition of the do
-   statement and the body of the do statement, respectively.  */
+/* DO_STMT accessors.  These give access to the condition of the do
+   statement, the body and name of the do statement, respectively.  */
 #define DO_COND(NODE)		TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
 #define DO_BODY(NODE)		TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
+#define DO_NAME(NODE)		TREE_OPERAND (DO_STMT_CHECK (NODE), 2)
 
-/* FOR_STMT accessors. These give access to the init statement,
-   condition, update expression, and body of the for statement,
+/* FOR_STMT accessors.  These give access to the init statement,
+   condition, update expression, body and name of the for statement,
    respectively.  */
 #define FOR_INIT_STMT(NODE)	TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
 #define FOR_COND(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
 #define FOR_EXPR(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 #define FOR_SCOPE(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 4)
+#define FOR_NAME(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 5)
+
+/* BREAK_STMT accessors.  */
+#define BREAK_NAME(NODE)	TREE_OPERAND (BREAK_STMT_CHECK (NODE), 0)
+
+/* CONTINUE_STMT accessors.  */
+#define CONTINUE_NAME(NODE)	TREE_OPERAND (CONTINUE_STMT_CHECK (NODE), 0)
 
 #define SWITCH_STMT_COND(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_STMT_BODY(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 #define SWITCH_STMT_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 #define SWITCH_STMT_SCOPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 3)
+#define SWITCH_STMT_NAME(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 4)
 /* True if there are case labels for all possible values of switch cond, either
    because there is a default: case label or because the case label ranges cover
    all values.  */

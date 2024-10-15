@@ -162,6 +162,14 @@ vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
    #pragma omp begin assumes ... #pragma omp end assumes regions
    we are in.  */
 vec<c_omp_begin_assumes_data, va_gc> *current_omp_begin_assumes;
+
+/* Vector of loop names with C_DECL_LOOP_NAME or C_DECL_SWITCH_NAME marked
+   LABEL_DECL as the last and canonical for each loop or switch.  */
+static vec<tree> loop_names;
+
+/* Hash table mapping LABEL_DECLs to the canonical LABEL_DECLs if LOOP_NAMES
+   vector becomes too long.  */
+static decl_tree_map *loop_names_hash;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are
@@ -694,13 +702,14 @@ add_stmt (tree t)
 	SET_EXPR_LOCATION (t, input_location);
     }
 
-  if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
-    STATEMENT_LIST_HAS_LABEL (cur_stmt_list) = 1;
-
   /* Add T to the statement-tree.  Non-side-effect statements need to be
      recorded during statement expressions.  */
   if (!building_stmt_list_p ())
     push_stmt_list ();
+
+  if (code == LABEL_EXPR || code == CASE_LABEL_EXPR)
+    STATEMENT_LIST_HAS_LABEL (cur_stmt_list) = 1;
+
   append_to_statement_list_force (t, &cur_stmt_list);
 
   return t;
@@ -11683,6 +11692,10 @@ c_push_function_context (void)
   c_stmt_tree.x_cur_stmt_list = vec_safe_copy (c_stmt_tree.x_cur_stmt_list);
   p->x_in_statement = in_statement;
   p->x_switch_stack = c_switch_stack;
+  p->loop_names = loop_names;
+  loop_names = vNULL;
+  p->loop_names_hash = loop_names_hash;
+  loop_names_hash = NULL;
   p->arg_info = current_function_arg_info;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
@@ -11722,6 +11735,12 @@ c_pop_function_context (void)
   p->base.x_stmt_tree.x_cur_stmt_list = NULL;
   in_statement = p->x_in_statement;
   c_switch_stack = p->x_switch_stack;
+  loop_names.release ();
+  loop_names = p->loop_names;
+  p->loop_names = vNULL;
+  delete loop_names_hash;
+  loop_names_hash = p->loop_names_hash;
+  p->loop_names_hash = NULL;
   current_function_arg_info = p->arg_info;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
@@ -13802,6 +13821,214 @@ c_check_in_current_scope (tree decl)
 {
   struct c_binding *b = I_SYMBOL_BINDING (DECL_NAME (decl));
   return b != NULL && B_IN_CURRENT_SCOPE (b);
+}
+
+/* Search for loop or switch names.  BEFORE_LABELS is last statement before
+   possible labels and SWITCH_P true for a switch, false for loops.
+   Searches through last statements in cur_stmt_list, stops when seeing
+   BEFORE_LABELs, or statement other than LABEL_EXPR or CASE_LABEL_EXPR.
+   Returns number of loop/switch names found and if any are found, sets
+   *LAST_P to the canonical loop/switch name LABEL_DECL.  */
+
+int
+c_get_loop_names (tree before_labels, bool switch_p, tree *last_p)
+{
+  *last_p = NULL_TREE;
+  if (!building_stmt_list_p ()
+      || !STATEMENT_LIST_HAS_LABEL (cur_stmt_list)
+      || before_labels == void_list_node)
+    return 0;
+
+  int ret = 0;
+  tree last = NULL_TREE;
+  for (tree_stmt_iterator tsi = tsi_last (cur_stmt_list);
+       !tsi_end_p (tsi); tsi_prev (&tsi))
+    {
+      tree stmt = tsi_stmt (tsi);
+      if (stmt == before_labels)
+	break;
+      else if (TREE_CODE (stmt) == LABEL_EXPR)
+	{
+	  if (last == NULL_TREE)
+	    last = LABEL_EXPR_LABEL (stmt);
+	  else
+	    {
+	      loop_names.safe_push (LABEL_EXPR_LABEL (stmt));
+	      ++ret;
+	    }
+	}
+      else if (TREE_CODE (stmt) != CASE_LABEL_EXPR)
+	break;
+    }
+  if (last)
+    {
+      if (switch_p)
+	C_DECL_SWITCH_NAME (last) = 1;
+      else
+	C_DECL_LOOP_NAME (last) = 1;
+      loop_names.safe_push (last);
+      ++ret;
+      if (loop_names.length () > 16)
+	{
+	  unsigned int first = 0, i;
+	  tree l, c = NULL_TREE;
+	  if (loop_names_hash == NULL)
+	    loop_names_hash = new decl_tree_map (ret);
+	  else
+	    first = loop_names.length () - ret;
+	  FOR_EACH_VEC_ELT_REVERSE (loop_names, i, l)
+	    {
+	      if (C_DECL_LOOP_NAME (l) || C_DECL_SWITCH_NAME (l))
+		c = l;
+	      loop_names_hash->put (l, c);
+	      if (i == first)
+		break;
+	    }
+	}
+      *last_p = last;
+    }
+  return ret;
+}
+
+/* Undoes what get_loop_names did when it returned NUM_NAMES.  */
+
+void
+c_release_loop_names (int num_names)
+{
+  unsigned len = loop_names.length () - num_names;
+  if (loop_names_hash)
+    {
+      if (len <= 16)
+	{
+	  delete loop_names_hash;
+	  loop_names_hash = NULL;
+	}
+      else
+	{
+	  unsigned int i;
+	  tree l;
+	  FOR_EACH_VEC_ELT_REVERSE (loop_names, i, l)
+	    {
+	      loop_names_hash->remove (l);
+	      if (i == len)
+		break;
+	    }
+	}
+    }
+  loop_names.truncate (len);
+}
+
+/* Finish processing of break or continue identifier operand.
+   NAME is the identifier operand of break or continue and
+   IS_BREAK is true iff it is break stmt.  Returns the operand
+   to use for BREAK_STMT or CONTINUE_STMT, either NULL_TREE or
+   canonical loop/switch name LABEL_DECL.  */
+
+tree
+c_finish_bc_name (location_t loc, tree name, bool is_break)
+{
+  tree label = NULL_TREE, lab;
+  pedwarn_c23 (loc, OPT_Wpedantic,
+	       "ISO C does not support %qs statement with an identifier "
+	       "operand before C2Y", is_break ? "break" : "continue");
+
+  /* If I_LABEL_DECL is NULL or not from current function, don't waste time
+     trying to find it among loop_names, it can't be there.  */
+  if (!loop_names.is_empty ()
+      && current_function_scope
+      && (lab = I_LABEL_DECL (name))
+      && DECL_CONTEXT (lab) == current_function_decl)
+    {
+      unsigned int i;
+      tree l, c = NULL_TREE;
+      if (loop_names_hash)
+	{
+	  if (tree *val = loop_names_hash->get (lab))
+	    label = *val;
+	}
+      else
+	FOR_EACH_VEC_ELT_REVERSE (loop_names, i, l)
+	  {
+	    if (C_DECL_LOOP_NAME (l) || C_DECL_SWITCH_NAME (l))
+	      c = l;
+	    if (l == lab)
+	      {
+		label = c;
+		break;
+	      }
+	  }
+      if (label)
+	TREE_USED (lab) = 1;
+    }
+  if (label == NULL_TREE)
+    {
+      auto_vec<const char *> candidates;
+      unsigned int i;
+      tree l, c = NULL_TREE;
+      FOR_EACH_VEC_ELT_REVERSE (loop_names, i, l)
+	{
+	  if (C_DECL_LOOP_NAME (l) || C_DECL_SWITCH_NAME (l))
+	    c = l;
+	  if (is_break || C_DECL_LOOP_NAME (c))
+	    candidates.safe_push (IDENTIFIER_POINTER (DECL_NAME (l)));
+	}
+      const char *hint = find_closest_string (IDENTIFIER_POINTER (name),
+					      &candidates);
+      if (hint)
+	{
+	  gcc_rich_location richloc (loc);
+	  richloc.add_fixit_replace (hint);
+	  if (is_break)
+	    error_at (&richloc, "%<break%> statement operand %qE does not "
+				"refer to a named loop or %<switch%>; "
+				"did you mean %qs?", name, hint);
+	  else
+	    error_at (&richloc, "%<continue%> statement operand %qE does not "
+				"refer to a named loop; did you mean %qs?",
+		      name, hint);
+	}
+      else if (is_break)
+	error_at (loc, "%<break%> statement operand %qE does not refer to a "
+		       "named loop or %<switch%>", name);
+      else
+	error_at (loc, "%<continue%> statement operand %qE does not refer to "
+		       "a named loop", name);
+    }
+  else if (!C_DECL_LOOP_NAME (label) && !is_break)
+    {
+      auto_diagnostic_group d;
+      error_at (loc, "%<continue%> statement operand %qE refers to a named "
+		     "%<switch%>", name);
+      inform (DECL_SOURCE_LOCATION (label), "%<switch%> name defined here");
+      label = NULL_TREE;
+    }
+  else if (!C_DECL_LOOP_SWITCH_NAME_VALID (label))
+    {
+      auto_diagnostic_group d;
+      if (C_DECL_LOOP_NAME (label))
+	{
+	  error_at (loc, "%qs statement operand %qE refers to a loop outside "
+			 "of its body", is_break ? "break" : "continue", name);
+	  inform (DECL_SOURCE_LOCATION (label), "loop name defined here");
+	}
+      else
+	{
+	  error_at (loc, "%<break%> statement operand %qE refers to a "
+			 "%<switch%> outside of its body", name);
+	  inform (DECL_SOURCE_LOCATION (label),
+		  "%<switch%> name defined here");
+	}
+      label = NULL_TREE;
+    }
+  else if (label == loop_names.last () && (in_statement & IN_NAMED_STMT) != 0)
+    /* If it is just a fancy reference to the innermost construct, handle it
+       just like break; or continue; though tracking cheaply what is the
+       innermost loop for continue when nested in switches would require
+       another global variable and updating it.  */
+    label = NULL_TREE;
+  else
+    C_DECL_LOOP_SWITCH_NAME_USED (label) = 1;
+  return label;
 }
 
 #include "gt-c-c-decl.h"

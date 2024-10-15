@@ -11943,7 +11943,7 @@ struct c_switch *c_switch_stack;
 tree
 c_start_switch (location_t switch_loc,
 		location_t switch_cond_loc,
-		tree exp, bool explicit_cast_p)
+		tree exp, bool explicit_cast_p, tree switch_name)
 {
   tree orig_type = error_mark_node;
   bool bool_cond_p = false;
@@ -11996,7 +11996,7 @@ c_start_switch (location_t switch_loc,
   /* Add this new SWITCH_STMT to the stack.  */
   cs = XNEW (struct c_switch);
   cs->switch_stmt = build_stmt (switch_loc, SWITCH_STMT, exp,
-				NULL_TREE, orig_type, NULL_TREE);
+				NULL_TREE, orig_type, NULL_TREE, switch_name);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
   cs->bindings = c_get_switch_bindings ();
@@ -12097,7 +12097,7 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 }
 
 tree
-c_finish_bc_stmt (location_t loc, tree label, bool is_break)
+c_finish_bc_stmt (location_t loc, tree label, bool is_break, tree name)
 {
   /* In switch statements break is sometimes stylistically used after
      a return statement.  This can lead to spurious warnings about
@@ -12109,7 +12109,7 @@ c_finish_bc_stmt (location_t loc, tree label, bool is_break)
   bool skip = !block_may_fallthru (cur_stmt_list);
 
   if (is_break)
-    switch (in_statement)
+    switch (in_statement & ~IN_NAMED_STMT)
       {
       case 0:
 	error_at (loc, "break statement not within loop or switch");
@@ -12129,7 +12129,7 @@ c_finish_bc_stmt (location_t loc, tree label, bool is_break)
 	break;
       }
   else
-    switch (in_statement & ~IN_SWITCH_STMT)
+    switch (in_statement & ~(IN_SWITCH_STMT | IN_NAMED_STMT))
       {
       case 0:
 	error_at (loc, "continue statement not within a loop");
@@ -12148,14 +12148,24 @@ c_finish_bc_stmt (location_t loc, tree label, bool is_break)
   if (skip)
     return NULL_TREE;
   else if ((in_statement & IN_OBJC_FOREACH)
-	   && !(is_break && (in_statement & IN_SWITCH_STMT)))
+	   && !(is_break && (in_statement & IN_SWITCH_STMT))
+	   && name == NULL_TREE)
     {
       /* The foreach expander produces low-level code using gotos instead
 	 of a structured loop construct.  */
       gcc_assert (label);
       return add_stmt (build_stmt (loc, GOTO_EXPR, label));
     }
-  return add_stmt (build_stmt (loc, (is_break ? BREAK_STMT : CONTINUE_STMT)));
+  else if (name && C_DECL_LOOP_NAME (name) && C_DECL_SWITCH_NAME (name))
+    {
+      label = DECL_CHAIN (name);
+      if (!is_break)
+	label = DECL_CHAIN (label);
+      /* Foreach expander from some outer level.  */
+      return add_stmt (build_stmt (loc, GOTO_EXPR, label));
+    }
+  return add_stmt (build_stmt (loc, is_break ? BREAK_STMT : CONTINUE_STMT,
+			       name));
 }
 
 /* A helper routine for c_process_expr_stmt and c_finish_stmt_expr.  */

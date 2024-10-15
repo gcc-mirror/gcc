@@ -2943,8 +2943,23 @@ c_pretty_printer::statement (tree t)
 	    continue ;
 	    return expression(opt) ;  */
     case BREAK_STMT:
+      pp_string (this, "break");
+      if (BREAK_NAME (t))
+	{
+	  pp_space (this);
+	  pp_c_tree_decl_identifier (this, BREAK_NAME (t));
+	}
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
     case CONTINUE_STMT:
-      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_string (this, "continue");
+      if (CONTINUE_NAME (t))
+	{
+	  pp_space (this);
+	  pp_c_tree_decl_identifier (this, CONTINUE_NAME (t));
+	}
       pp_c_semicolon (this);
       pp_needs_newline (this) = true;
       break;

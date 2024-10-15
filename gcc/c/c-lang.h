@@ -54,6 +54,8 @@ struct GTY(()) language_function {
   unsigned char x_in_statement;
   struct c_switch * GTY((skip)) x_switch_stack;
   struct c_arg_info * GTY((skip)) arg_info;
+  vec<tree> GTY((skip)) loop_names;
+  decl_tree_map * GTY((skip)) loop_names_hash;
   int returns_value;
   int returns_null;
   int returns_abnormally;
