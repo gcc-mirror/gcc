@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-lower-expr.h"
+#include "optional.h"
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-block.h"
 #include "rust-ast-lower-struct-field-expr.h"
@@ -77,7 +78,7 @@ ASTLoweringExpr::visit (AST::TupleIndexExpr &expr)
 void
 ASTLoweringExpr::visit (AST::TupleExpr &expr)
 {
-  std::vector<std::unique_ptr<HIR::Expr> > tuple_elements;
+  std::vector<std::unique_ptr<HIR::Expr>> tuple_elements;
   for (auto &e : expr.get_tuple_elems ())
     {
       HIR::Expr *t = ASTLoweringExpr::translate (*e);
@@ -174,7 +175,7 @@ ASTLoweringExpr::visit (AST::CallExpr &expr)
   HIR::Expr *func = ASTLoweringExpr::translate (expr.get_function_expr ());
 
   auto const &in_params = expr.get_params ();
-  std::vector<std::unique_ptr<HIR::Expr> > params;
+  std::vector<std::unique_ptr<HIR::Expr>> params;
   for (auto &param : in_params)
     {
       auto trans = ASTLoweringExpr::translate (*param);
@@ -200,7 +201,7 @@ ASTLoweringExpr::visit (AST::MethodCallExpr &expr)
   HIR::Expr *receiver = ASTLoweringExpr::translate (expr.get_receiver_expr ());
 
   auto const &in_params = expr.get_params ();
-  std::vector<std::unique_ptr<HIR::Expr> > params;
+  std::vector<std::unique_ptr<HIR::Expr>> params;
   for (auto &param : in_params)
     {
       auto trans = ASTLoweringExpr::translate (*param);
@@ -290,7 +291,7 @@ ASTLoweringExpr::visit (AST::ArrayIndexExpr &expr)
 void
 ASTLoweringExpr::visit (AST::ArrayElemsValues &elems)
 {
-  std::vector<std::unique_ptr<HIR::Expr> > elements;
+  std::vector<std::unique_ptr<HIR::Expr>> elements;
   for (auto &elem : elems.get_values ())
     {
       HIR::Expr *translated_elem = ASTLoweringExpr::translate (*elem);
@@ -511,16 +512,17 @@ ASTLoweringExpr::visit (AST::StructExprStructFields &struct_expr)
   HIR::PathInExpression copied_path (*path);
   delete path;
 
-  HIR::StructBase *base = nullptr;
+  tl::optional<std::unique_ptr<HIR::StructBase>> base = tl::nullopt;
   if (struct_expr.has_struct_base ())
     {
       HIR::Expr *translated_base = ASTLoweringExpr::translate (
 	struct_expr.get_struct_base ().get_base_struct ());
-      base = new HIR::StructBase (std::unique_ptr<HIR::Expr> (translated_base));
+      base = tl::optional (Rust::make_unique<StructBase> (
+	std::unique_ptr<HIR::Expr> (translated_base)));
     }
 
   auto const &in_fields = struct_expr.get_fields ();
-  std::vector<std::unique_ptr<HIR::StructExprField> > fields;
+  std::vector<std::unique_ptr<HIR::StructExprField>> fields;
   for (auto &field : in_fields)
     {
       HIR::StructExprField *translated
@@ -535,7 +537,8 @@ ASTLoweringExpr::visit (AST::StructExprStructFields &struct_expr)
 
   translated
     = new HIR::StructExprStructFields (mapping, copied_path, std::move (fields),
-				       struct_expr.get_locus (), base,
+				       struct_expr.get_locus (),
+				       std::move (base),
 				       struct_expr.get_inner_attrs (),
 				       struct_expr.get_outer_attrs ());
 }

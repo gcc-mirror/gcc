@@ -19,7 +19,10 @@
 #ifndef RUST_HIR_PATH_H
 #define RUST_HIR_PATH_H
 
-#include "rust-hir.h"
+#include "rust-hir-simple-path.h"
+#include "rust-hir-type-no-bounds.h"
+#include "rust-hir-pattern-abstract.h"
+#include "rust-hir-expr-abstract.h"
 
 namespace Rust {
 namespace HIR {
@@ -76,27 +79,16 @@ public:
 
   // Pointer type for type in constructor to enable polymorphism
   GenericArgsBinding (Identifier ident, std::unique_ptr<Type> type_ptr,
-		      location_t locus = UNDEF_LOCATION)
-    : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
-  {}
+		      location_t locus = UNDEF_LOCATION);
 
   // Copy constructor has to deep copy the type as it is a unique pointer
-  GenericArgsBinding (GenericArgsBinding const &other)
-    : identifier (other.identifier), type (other.type->clone_type ()),
-      locus (other.locus)
-  {}
+  GenericArgsBinding (GenericArgsBinding const &other);
 
   // default destructor
   ~GenericArgsBinding () = default;
 
   // Overload assignment operator to deep copy the pointed-to type
-  GenericArgsBinding &operator= (GenericArgsBinding const &other)
-  {
-    identifier = other.identifier;
-    type = other.type->clone_type ();
-    locus = other.locus;
-    return *this;
-  }
+  GenericArgsBinding &operator= (GenericArgsBinding const &other);
 
   // move constructors
   GenericArgsBinding (GenericArgsBinding &&other) = default;
@@ -119,22 +111,11 @@ class ConstGenericArg
   // at name-resolution, hence no need for ambiguities here
 
 public:
-  ConstGenericArg (std::unique_ptr<Expr> expression, location_t locus)
-    : expression (std::move (expression)), locus (locus)
-  {}
+  ConstGenericArg (std::unique_ptr<Expr> expression, location_t locus);
 
-  ConstGenericArg (const ConstGenericArg &other) : locus (other.locus)
-  {
-    expression = other.expression->clone_expr ();
-  }
+  ConstGenericArg (const ConstGenericArg &other);
 
-  ConstGenericArg operator= (const ConstGenericArg &other)
-  {
-    expression = other.expression->clone_expr ();
-    locus = other.locus;
-
-    return *this;
-  }
+  ConstGenericArg operator= (const ConstGenericArg &other);
 
   std::unique_ptr<Expr> &get_expression () { return expression; }
 
@@ -162,42 +143,15 @@ public:
   GenericArgs (std::vector<Lifetime> lifetime_args,
 	       std::vector<std::unique_ptr<Type> > type_args,
 	       std::vector<GenericArgsBinding> binding_args,
-	       std::vector<ConstGenericArg> const_args, location_t locus)
-    : lifetime_args (std::move (lifetime_args)),
-      type_args (std::move (type_args)),
-      binding_args (std::move (binding_args)),
-      const_args (std::move (const_args)), locus (locus)
-  {}
+	       std::vector<ConstGenericArg> const_args, location_t locus);
 
   // copy constructor with vector clone
-  GenericArgs (GenericArgs const &other)
-    : lifetime_args (other.lifetime_args), binding_args (other.binding_args),
-      const_args (other.const_args), locus (other.locus)
-  {
-    type_args.clear ();
-    type_args.reserve (other.type_args.size ());
-
-    for (const auto &e : other.type_args)
-      type_args.push_back (e->clone_type ());
-  }
+  GenericArgs (GenericArgs const &other);
 
   ~GenericArgs () = default;
 
   // overloaded assignment operator to vector clone
-  GenericArgs &operator= (GenericArgs const &other)
-  {
-    lifetime_args = other.lifetime_args;
-    binding_args = other.binding_args;
-    const_args = other.const_args;
-    locus = other.locus;
-
-    type_args.clear ();
-    type_args.reserve (other.type_args.size ());
-    for (const auto &e : other.type_args)
-      type_args.push_back (e->clone_type ());
-
-    return *this;
-  }
+  GenericArgs &operator= (GenericArgs const &other);
 
   // move constructors
   GenericArgs (GenericArgs &&other) = default;
@@ -209,11 +163,7 @@ public:
     return GenericArgs ({}, {}, {}, {}, locus);
   }
 
-  bool is_empty () const
-  {
-    return lifetime_args.size () == 0 && type_args.size () == 0
-	   && binding_args.size () == 0;
-  }
+  bool is_empty () const;
 
   std::string as_string () const;
 
@@ -245,25 +195,11 @@ private:
 public:
   PathExprSegment (Analysis::NodeMapping mappings,
 		   PathIdentSegment segment_name, location_t locus,
-		   GenericArgs generic_args)
-    : mappings (std::move (mappings)), segment_name (std::move (segment_name)),
-      generic_args (std::move (generic_args)), locus (locus)
-  {}
+		   GenericArgs generic_args);
 
-  PathExprSegment (PathExprSegment const &other)
-    : mappings (other.mappings), segment_name (other.segment_name),
-      generic_args (other.generic_args), locus (other.locus)
-  {}
+  PathExprSegment (PathExprSegment const &other);
 
-  PathExprSegment &operator= (PathExprSegment const &other)
-  {
-    mappings = other.mappings;
-    segment_name = other.segment_name;
-    generic_args = other.generic_args;
-    locus = other.locus;
-
-    return *this;
-  }
+  PathExprSegment &operator= (PathExprSegment const &other);
 
   // move constructors
   PathExprSegment (PathExprSegment &&other) = default;
@@ -308,14 +244,7 @@ public:
 
   std::string as_string () const override;
 
-  void iterate_path_segments (std::function<bool (PathExprSegment &)> cb)
-  {
-    for (auto it = segments.begin (); it != segments.end (); it++)
-      {
-	if (!cb (*it))
-	  return;
-      }
-  }
+  void iterate_path_segments (std::function<bool (PathExprSegment &)> cb);
 
   size_t get_num_segments () const { return segments.size (); }
 
@@ -349,11 +278,7 @@ public:
 		    location_t locus = UNDEF_LOCATION,
 		    bool has_opening_scope_resolution = false,
 		    std::vector<AST::Attribute> outer_attrs
-		    = std::vector<AST::Attribute> ())
-    : PathPattern (std::move (path_segments)),
-      PathExpr (std::move (mappings), std::move (outer_attrs)),
-      has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
-  {}
+		    = std::vector<AST::Attribute> ());
 
   // Creates an error state path in expression.
   static PathInExpression create_error ()
@@ -385,14 +310,7 @@ public:
 
   bool opening_scope_resolution () { return has_opening_scope_resolution; }
 
-  bool is_self () const
-  {
-    if (!is_single_segment ())
-      return false;
-
-    return get_final_segment ().get_segment ().as_string ().compare ("self")
-	   == 0;
-  }
+  bool is_self () const;
 
   const Analysis::NodeMapping &get_mappings () const override final
   {
@@ -456,21 +374,10 @@ public:
 
   TypePathSegment (Analysis::NodeMapping mappings,
 		   PathIdentSegment ident_segment,
-		   bool has_separating_scope_resolution, location_t locus)
-    : mappings (std::move (mappings)),
-      ident_segment (std::move (ident_segment)), locus (locus),
-      has_separating_scope_resolution (has_separating_scope_resolution),
-      type (SegmentType::REG)
-  {}
+		   bool has_separating_scope_resolution, location_t locus);
 
   TypePathSegment (Analysis::NodeMapping mappings, std::string segment_name,
-		   bool has_separating_scope_resolution, location_t locus)
-    : mappings (std::move (mappings)),
-      ident_segment (PathIdentSegment (std::move (segment_name))),
-      locus (locus),
-      has_separating_scope_resolution (has_separating_scope_resolution),
-      type (SegmentType::REG)
-  {}
+		   bool has_separating_scope_resolution, location_t locus);
 
   virtual std::string as_string () const { return ident_segment.as_string (); }
 
@@ -511,11 +418,7 @@ public:
   TypePathSegmentGeneric (Analysis::NodeMapping mappings,
 			  PathIdentSegment ident_segment,
 			  bool has_separating_scope_resolution,
-			  GenericArgs generic_args, location_t locus)
-    : TypePathSegment (std::move (mappings), std::move (ident_segment),
-		       has_separating_scope_resolution, locus),
-      generic_args (std::move (generic_args))
-  {}
+			  GenericArgs generic_args, location_t locus);
 
   // Constructor from segment name and all args
   TypePathSegmentGeneric (Analysis::NodeMapping mappings,
@@ -525,13 +428,7 @@ public:
 			  std::vector<std::unique_ptr<Type> > type_args,
 			  std::vector<GenericArgsBinding> binding_args,
 			  std::vector<ConstGenericArg> const_args,
-			  location_t locus)
-    : TypePathSegment (std::move (mappings), std::move (segment_name),
-		       has_separating_scope_resolution, locus),
-      generic_args (
-	GenericArgs (std::move (lifetime_args), std::move (type_args),
-		     std::move (binding_args), std::move (const_args), locus))
-  {}
+			  location_t locus);
 
   std::string as_string () const override;
 
@@ -566,37 +463,15 @@ public:
 
   // Constructor
   TypePathFunction (std::vector<std::unique_ptr<Type> > inputs,
-		    std::unique_ptr<Type> type)
-    : inputs (std::move (inputs)), return_type (std::move (type))
-  {}
+		    std::unique_ptr<Type> type);
 
   // Copy constructor with clone
-  TypePathFunction (TypePathFunction const &other)
-  {
-    return_type = other.has_return_type ()
-		    ? other.get_return_type ().clone_type ()
-		    : nullptr;
-
-    inputs.reserve (other.inputs.size ());
-    for (const auto &e : other.inputs)
-      inputs.push_back (e->clone_type ());
-  }
+  TypePathFunction (TypePathFunction const &other);
 
   ~TypePathFunction () = default;
 
   // Overloaded assignment operator to clone type
-  TypePathFunction &operator= (TypePathFunction const &other)
-  {
-    return_type = other.has_return_type ()
-		    ? other.get_return_type ().clone_type ()
-		    : nullptr;
-
-    inputs.reserve (other.inputs.size ());
-    for (const auto &e : other.inputs)
-      inputs.push_back (e->clone_type ());
-
-    return *this;
-  }
+  TypePathFunction &operator= (TypePathFunction const &other);
 
   // move constructors
   TypePathFunction (TypePathFunction &&other) = default;
@@ -624,21 +499,13 @@ public:
   TypePathSegmentFunction (Analysis::NodeMapping mappings,
 			   PathIdentSegment ident_segment,
 			   bool has_separating_scope_resolution,
-			   TypePathFunction function_path, location_t locus)
-    : TypePathSegment (std::move (mappings), std::move (ident_segment),
-		       has_separating_scope_resolution, locus),
-      function_path (std::move (function_path))
-  {}
+			   TypePathFunction function_path, location_t locus);
 
   // Constructor with segment name and TypePathFn
   TypePathSegmentFunction (Analysis::NodeMapping mappings,
 			   std::string segment_name,
 			   bool has_separating_scope_resolution,
-			   TypePathFunction function_path, location_t locus)
-    : TypePathSegment (std::move (mappings), std::move (segment_name),
-		       has_separating_scope_resolution, locus),
-      function_path (std::move (function_path))
-  {}
+			   TypePathFunction function_path, location_t locus);
 
   std::string as_string () const override;
 
@@ -698,35 +565,13 @@ public:
   // Constructor
   TypePath (Analysis::NodeMapping mappings,
 	    std::vector<std::unique_ptr<TypePathSegment> > segments,
-	    location_t locus, bool has_opening_scope_resolution = false)
-    : TypeNoBounds (mappings, locus),
-      has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments))
-  {}
+	    location_t locus, bool has_opening_scope_resolution = false);
 
   // Copy constructor with vector clone
-  TypePath (TypePath const &other)
-    : TypeNoBounds (other.mappings, other.locus),
-      has_opening_scope_resolution (other.has_opening_scope_resolution)
-  {
-    segments.reserve (other.segments.size ());
-    for (const auto &e : other.segments)
-      segments.push_back (e->clone_type_path_segment ());
-  }
+  TypePath (TypePath const &other);
 
   // Overloaded assignment operator with clone
-  TypePath &operator= (TypePath const &other)
-  {
-    has_opening_scope_resolution = other.has_opening_scope_resolution;
-    locus = other.locus;
-    mappings = other.mappings;
-
-    segments.reserve (other.segments.size ());
-    for (const auto &e : other.segments)
-      segments.push_back (e->clone_type_path_segment ());
-
-    return *this;
-  }
+  TypePath &operator= (TypePath const &other);
 
   // move constructors
   TypePath (TypePath &&other) = default;
@@ -739,7 +584,7 @@ public:
   AST::SimplePath as_simple_path () const;
 
   // Creates a trait bound with a clone of this type path as its only element.
-  TraitBound *to_trait_bound (bool in_parens) const override;
+  std::unique_ptr<TraitBound> to_trait_bound (bool in_parens) const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -751,10 +596,7 @@ public:
     return segments;
   }
 
-  std::unique_ptr<TypePathSegment> &get_final_segment ()
-  {
-    return segments.back ();
-  }
+  TypePathSegment &get_final_segment () { return *segments.back (); }
 };
 
 class QualifiedPathType
@@ -767,36 +609,16 @@ class QualifiedPathType
 public:
   // Constructor
   QualifiedPathType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-		     std::unique_ptr<TypePath> trait, location_t locus)
-    : type (std::move (type)), trait (std::move (trait)), locus (locus),
-      mappings (mappings)
-  {}
+		     std::unique_ptr<TypePath> trait, location_t locus);
 
   // Copy constructor uses custom deep copy for Type to preserve polymorphism
-  QualifiedPathType (QualifiedPathType const &other)
-    : type (other.type->clone_type ()),
-      trait (other.has_as_clause () ? std::unique_ptr<HIR::TypePath> (
-	       new HIR::TypePath (*other.trait))
-				    : nullptr),
-      locus (other.locus), mappings (other.mappings)
-  {}
+  QualifiedPathType (QualifiedPathType const &other);
 
   // default destructor
   ~QualifiedPathType () = default;
 
   // overload assignment operator to use custom clone method
-  QualifiedPathType &operator= (QualifiedPathType const &other)
-  {
-    type = other.type->clone_type ();
-    locus = other.locus;
-    mappings = other.mappings;
-    trait
-      = other.has_as_clause ()
-	  ? std::unique_ptr<HIR::TypePath> (new HIR::TypePath (*other.trait))
-	  : nullptr;
-
-    return *this;
-  }
+  QualifiedPathType &operator= (QualifiedPathType const &other);
 
   // move constructor
   QualifiedPathType (QualifiedPathType &&other) = default;
@@ -815,26 +637,9 @@ public:
 
   TypePath &get_trait () { return *trait; }
 
-  bool trait_has_generic_args () const
-  {
-    rust_assert (has_as_clause ());
-    bool is_generic_seg = trait->get_final_segment ()->get_type ()
-			  == TypePathSegment::SegmentType::GENERIC;
-    if (!is_generic_seg)
-      return false;
+  bool trait_has_generic_args () const;
 
-    TypePathSegmentGeneric *seg = static_cast<TypePathSegmentGeneric *> (
-      trait->get_final_segment ().get ());
-    return seg->has_generic_args ();
-  }
-
-  GenericArgs &get_trait_generic_args ()
-  {
-    rust_assert (trait_has_generic_args ());
-    TypePathSegmentGeneric *seg = static_cast<TypePathSegmentGeneric *> (
-      trait->get_final_segment ().get ());
-    return seg->get_generic_args ();
-  }
+  GenericArgs &get_trait_generic_args ();
 };
 
 /* HIR node representing a qualified path-in-expression pattern (path that
@@ -852,11 +657,7 @@ public:
 			     std::vector<PathExprSegment> path_segments,
 			     location_t locus = UNDEF_LOCATION,
 			     std::vector<AST::Attribute> outer_attrs
-			     = std::vector<AST::Attribute> ())
-    : PathPattern (std::move (path_segments)),
-      PathExpr (std::move (mappings), std::move (outer_attrs)),
-      path_type (std::move (qual_path_type)), locus (locus)
-  {}
+			     = std::vector<AST::Attribute> ());
 
   location_t get_locus () const override final { return locus; }
 
@@ -917,40 +718,13 @@ public:
     Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
     std::unique_ptr<TypePathSegment> associated_segment,
     std::vector<std::unique_ptr<TypePathSegment> > path_segments,
-    location_t locus = UNDEF_LOCATION)
-    : TypeNoBounds (mappings, locus), path_type (std::move (qual_path_type)),
-      associated_segment (std::move (associated_segment)),
-      segments (std::move (path_segments))
-  {}
+    location_t locus = UNDEF_LOCATION);
 
   // Copy constructor with vector clone
-  QualifiedPathInType (QualifiedPathInType const &other)
-    : TypeNoBounds (other.mappings, other.locus), path_type (other.path_type)
-  {
-    auto seg = other.associated_segment->clone_type_path_segment_impl ();
-    associated_segment = std::unique_ptr<TypePathSegment> (seg);
-
-    segments.reserve (other.segments.size ());
-    for (const auto &e : other.segments)
-      segments.push_back (e->clone_type_path_segment ());
-  }
+  QualifiedPathInType (QualifiedPathInType const &other);
 
   // Overloaded assignment operator with vector clone
-  QualifiedPathInType &operator= (QualifiedPathInType const &other)
-  {
-    auto seg = other.associated_segment->clone_type_path_segment_impl ();
-    associated_segment = std::unique_ptr<TypePathSegment> (seg);
-
-    path_type = other.path_type;
-    locus = other.locus;
-    mappings = other.mappings;
-
-    segments.reserve (other.segments.size ());
-    for (const auto &e : other.segments)
-      segments.push_back (e->clone_type_path_segment ());
-
-    return *this;
-  }
+  QualifiedPathInType &operator= (QualifiedPathInType const &other);
 
   // move constructors
   QualifiedPathInType (QualifiedPathInType &&other) = default;
@@ -969,40 +743,6 @@ public:
   {
     return segments;
   }
-};
-
-class SimplePathSegment
-{
-  Analysis::NodeMapping mappings;
-
-public:
-  SimplePathSegment (Analysis::NodeMapping mappings) : mappings (mappings) {}
-
-  const Analysis::NodeMapping &get_mappings () const { return mappings; }
-};
-
-class SimplePath
-{
-  std::vector<SimplePathSegment> segments;
-  Analysis::NodeMapping mappings;
-  location_t locus;
-
-public:
-  SimplePath (std::vector<SimplePathSegment> segments,
-	      Analysis::NodeMapping mappings, location_t locus)
-    : segments (std::move (segments)), mappings (mappings), locus (locus)
-  {}
-
-  static HIR::SimplePath create_empty ()
-  {
-    return HIR::SimplePath ({}, Analysis::NodeMapping::get_error (),
-			    UNDEF_LOCATION);
-  }
-
-  bool is_error () const { return segments.empty (); }
-
-  const Analysis::NodeMapping &get_mappings () const { return mappings; }
-  location_t get_locus () const { return locus; }
 };
 
 } // namespace HIR

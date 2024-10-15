@@ -20,17 +20,74 @@
 #define RUST_HIR_ITEM_H
 
 #include "rust-abi.h"
-#include "rust-ast-full-decls.h"
+#include "rust-hir-stmt.h"
 #include "rust-common.h"
-#include "rust-hir-expr.h"
-#include "rust-hir.h"
-#include "rust-hir-path.h"
+#include "rust-hir-visibility.h"
+#include "rust-hir-generic-param.h"
 
 namespace Rust {
 namespace HIR {
-// forward decls
-class BlockExpr;
-class TypePath;
+
+// Rust "item" HIR node (declaration of top-level/module-level allowed stuff)
+class Item : public Stmt, public WithOuterAttrs
+{
+  // TODO: should outer attrs be defined here or in each derived class?
+public:
+  enum class ItemKind
+  {
+    Static,
+    Constant,
+    TypeAlias,
+    Function,
+    UseDeclaration,
+    ExternBlock,
+    ExternCrate,
+    Struct,
+    Union,
+    Enum,
+    EnumItem, // FIXME: ARTHUR: Do we need that?
+    Trait,
+    Impl,
+    Module,
+  };
+
+  static std::string item_kind_string (ItemKind kind);
+
+  virtual ItemKind get_item_kind () const = 0;
+
+  // Unique pointer custom clone function
+  std::unique_ptr<Item> clone_item () const
+  {
+    return std::unique_ptr<Item> (clone_item_impl ());
+  }
+
+  BaseKind get_hir_kind () override { return Node::BaseKind::ITEM; }
+
+  std::string as_string () const override;
+
+  /* Adds crate names to the vector passed by reference, if it can
+   * (polymorphism). */
+  virtual void
+  add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
+  {}
+
+  bool is_item () const override final { return true; }
+
+protected:
+  // Constructor
+  Item (Analysis::NodeMapping mappings,
+	AST::AttrVec outer_attribs = AST::AttrVec ())
+    : Stmt (std::move (mappings)), WithOuterAttrs (std::move (outer_attribs))
+  {}
+
+  // Clone function implementation as pure virtual method
+  virtual Item *clone_item_impl () const = 0;
+
+  /* Save having to specify two clone methods in derived classes by making
+   * statement clone return item clone. Hopefully won't affect performance too
+   * much. */
+  Item *clone_stmt_impl () const override { return clone_item_impl (); }
+};
 
 // A type generic parameter (as opposed to a lifetime generic parameter)
 class TypeParam : public GenericParam
@@ -65,47 +122,13 @@ public:
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
-	     AST::AttrVec outer_attrs = std::vector<AST::Attribute> ())
-    : GenericParam (mappings), outer_attrs (std::move (outer_attrs)),
-      type_representation (std::move (type_representation)),
-      type_param_bounds (std::move (type_param_bounds)),
-      type (std::move (type)), locus (locus)
-  {}
+	     AST::AttrVec outer_attrs = std::vector<AST::Attribute> ());
 
   // Copy constructor uses clone
-  TypeParam (TypeParam const &other)
-    : GenericParam (other.mappings), outer_attrs (other.outer_attrs),
-      type_representation (other.type_representation), locus (other.locus)
-  {
-    // guard to prevent null pointer dereference
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
-
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-  }
+  TypeParam (TypeParam const &other);
 
   // Overloaded assignment operator to clone
-  TypeParam &operator= (TypeParam const &other)
-  {
-    type_representation = other.type_representation;
-    outer_attrs = other.outer_attrs;
-    locus = other.locus;
-    mappings = other.mappings;
-
-    // guard to prevent null pointer dereference
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
-    else
-      type = nullptr;
-
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-
-    return *this;
-  }
+  TypeParam &operator= (TypeParam const &other);
   // move constructors
   TypeParam (TypeParam &&other) = default;
   TypeParam &operator= (TypeParam &&other) = default;
@@ -120,16 +143,9 @@ public:
 
   Type &get_type () { return *type; }
 
-  Analysis::NodeMapping get_type_mappings () const
-  {
-    rust_assert (type != nullptr);
-    return type->get_mappings ();
-  }
+  Analysis::NodeMapping get_type_mappings () const;
 
-  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
-  {
-    return type_param_bounds;
-  }
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ();
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -234,35 +250,13 @@ public:
     Analysis::NodeMapping mappings, std::vector<LifetimeParam> for_lifetimes,
     std::unique_ptr<Type> bound_type,
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-    location_t locus)
-    : for_lifetimes (std::move (for_lifetimes)),
-      bound_type (std::move (bound_type)),
-      type_param_bounds (std::move (type_param_bounds)),
-      mappings (std::move (mappings)), locus (locus)
-  {}
+    location_t locus);
 
   // Copy constructor requires clone
-  TypeBoundWhereClauseItem (TypeBoundWhereClauseItem const &other)
-    : for_lifetimes (other.for_lifetimes),
-      bound_type (other.bound_type->clone_type ()), mappings (other.mappings)
-  {
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-  }
+  TypeBoundWhereClauseItem (TypeBoundWhereClauseItem const &other);
 
   // Overload assignment operator to clone
-  TypeBoundWhereClauseItem &operator= (TypeBoundWhereClauseItem const &other)
-  {
-    mappings = other.mappings;
-    for_lifetimes = other.for_lifetimes;
-    bound_type = other.bound_type->clone_type ();
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-
-    return *this;
-  }
+  TypeBoundWhereClauseItem &operator= (TypeBoundWhereClauseItem const &other);
 
   // move constructors
   TypeBoundWhereClauseItem (TypeBoundWhereClauseItem &&other) = default;
@@ -279,10 +273,7 @@ public:
 
   Type &get_bound_type () { return *bound_type; }
 
-  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
-  {
-    return type_param_bounds;
-  }
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ();
 
   Analysis::NodeMapping get_mappings () const override final
   {
@@ -379,51 +370,22 @@ private:
   Analysis::NodeMapping mappings;
 
   SelfParam (Analysis::NodeMapping mappings, ImplicitSelfKind self_kind,
-	     Lifetime lifetime, Type *type)
-    : self_kind (self_kind), lifetime (std::move (lifetime)), type (type),
-      mappings (mappings)
-  {}
+	     Lifetime lifetime, Type *type);
 
 public:
   // Type-based self parameter (not ref, no lifetime)
   SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-	     bool is_mut, location_t locus)
-    : self_kind (is_mut ? ImplicitSelfKind::MUT : ImplicitSelfKind::IMM),
-      lifetime (
-	Lifetime (mappings, AST::Lifetime::LifetimeType::NAMED, "", locus)),
-      type (std::move (type)), locus (locus), mappings (mappings)
-  {}
+	     bool is_mut, location_t locus);
 
   // Lifetime-based self parameter (is ref, no type)
   SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime, bool is_mut,
-	     location_t locus)
-    : self_kind (is_mut ? ImplicitSelfKind::MUT_REF
-			: ImplicitSelfKind::IMM_REF),
-      lifetime (std::move (lifetime)), locus (locus), mappings (mappings)
-  {}
+	     location_t locus);
 
   // Copy constructor requires clone
-  SelfParam (SelfParam const &other)
-    : self_kind (other.self_kind), lifetime (other.lifetime),
-      locus (other.locus), mappings (other.mappings)
-  {
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
-  }
+  SelfParam (SelfParam const &other);
 
   // Overload assignment operator to use clone
-  SelfParam &operator= (SelfParam const &other)
-  {
-    if (other.type != nullptr)
-      type = other.type->clone_type ();
-
-    self_kind = other.self_kind;
-    lifetime = other.lifetime;
-    locus = other.locus;
-    mappings = other.mappings;
-
-    return *this;
-  }
+  SelfParam &operator= (SelfParam const &other);
 
   // move constructors
   SelfParam (SelfParam &&other) = default;
@@ -456,25 +418,11 @@ public:
 
   Analysis::NodeMapping get_mappings () { return mappings; }
 
-  Mutability get_mut () const
-  {
-    return (self_kind == ImplicitSelfKind::MUT
-	    || self_kind == ImplicitSelfKind::MUT_REF)
-	     ? Mutability::Mut
-	     : Mutability::Imm;
-  }
+  Mutability get_mut () const;
 
-  bool is_mut () const
-  {
-    return self_kind == ImplicitSelfKind::MUT
-	   || self_kind == ImplicitSelfKind::MUT_REF;
-  }
+  bool is_mut () const;
 
-  bool is_ref () const
-  {
-    return self_kind == ImplicitSelfKind::IMM_REF
-	   || self_kind == ImplicitSelfKind::MUT_REF;
-  }
+  bool is_ref () const;
 };
 
 // Qualifiers for function, i.e. const, unsafe, extern etc.
@@ -516,28 +464,13 @@ struct FunctionParam
 public:
   FunctionParam (Analysis::NodeMapping mappings,
 		 std::unique_ptr<Pattern> param_name,
-		 std::unique_ptr<Type> param_type, location_t locus)
-    : param_name (std::move (param_name)), type (std::move (param_type)),
-      locus (locus), mappings (mappings)
-  {}
+		 std::unique_ptr<Type> param_type, location_t locus);
 
   // Copy constructor uses clone
-  FunctionParam (FunctionParam const &other)
-    : param_name (other.param_name->clone_pattern ()),
-      type (other.type->clone_type ()), locus (other.locus),
-      mappings (other.mappings)
-  {}
+  FunctionParam (FunctionParam const &other);
 
   // Overload assignment operator to use clone
-  FunctionParam &operator= (FunctionParam const &other)
-  {
-    param_name = other.param_name->clone_pattern ();
-    type = other.type->clone_type ();
-    locus = other.locus;
-    mappings = other.mappings;
-
-    return *this;
-  }
+  FunctionParam &operator= (FunctionParam const &other);
 
   // move constructors
   FunctionParam (FunctionParam &&other) = default;
@@ -554,58 +487,6 @@ public:
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
-// Visibility of an item
-struct Visibility
-{
-public:
-  enum VisType
-  {
-    PRIVATE,
-    PUBLIC,
-    RESTRICTED,
-    ERROR,
-  };
-
-private:
-  VisType vis_type;
-  HIR::SimplePath path;
-  location_t locus;
-
-  // should this store location info?
-
-public:
-  Visibility (VisType vis_type,
-	      HIR::SimplePath path = HIR::SimplePath::create_empty (),
-	      location_t locus = UNDEF_LOCATION)
-    : vis_type (vis_type), path (std::move (path)), locus (locus)
-  {}
-
-  // Returns whether visibility is in an error state.
-  bool is_error () const { return vis_type == ERROR; }
-
-  // Does the current visibility refer to a simple `pub <item>` entirely public
-  bool is_public () const { return vis_type == PUBLIC; }
-
-  // Is the current visibility public restricted to a certain path
-  bool is_restricted () const { return vis_type == RESTRICTED; }
-
-  // Creates an error visibility.
-  static Visibility create_error ()
-  {
-    return Visibility (ERROR, HIR::SimplePath::create_empty ());
-  }
-
-  VisType get_vis_type () const { return vis_type; }
-
-  const HIR::SimplePath &get_path () const
-  {
-    rust_assert (!is_error ());
-    return path;
-  }
-
-  std::string as_string () const;
-};
-
 // Item that supports visibility - abstract base class
 class VisItem : public Item
 {
@@ -620,18 +501,10 @@ protected:
   {}
 
   // Visibility copy constructor
-  VisItem (VisItem const &other) : Item (other), visibility (other.visibility)
-  {}
+  VisItem (VisItem const &other);
 
   // Overload assignment operator to clone
-  VisItem &operator= (VisItem const &other)
-  {
-    Item::operator= (other);
-    visibility = other.visibility;
-    // outer_attrs = other.outer_attrs;
-
-    return *this;
-  }
+  VisItem &operator= (VisItem const &other);
 
   // move constructors
   VisItem (VisItem &&other) = default;
@@ -673,34 +546,13 @@ public:
 	  location_t locus, std::vector<std::unique_ptr<Item>> items,
 	  Visibility visibility = Visibility::create_error (),
 	  AST::AttrVec inner_attrs = AST::AttrVec (),
-	  AST::AttrVec outer_attrs = AST::AttrVec ())
-    : VisItem (std::move (mappings), std::move (visibility),
-	       std::move (outer_attrs)),
-      WithInnerAttrs (std::move (inner_attrs)), module_name (module_name),
-      locus (locus), items (std::move (items))
-  {}
+	  AST::AttrVec outer_attrs = AST::AttrVec ());
 
   // Copy constructor with vector clone
-  Module (Module const &other)
-    : VisItem (other), WithInnerAttrs (other.inner_attrs), module_name ("")
-  {
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_item ());
-  }
+  Module (Module const &other);
 
   // Overloaded assignment operator with vector clone
-  Module &operator= (Module const &other)
-  {
-    VisItem::operator= (other);
-    inner_attrs = other.inner_attrs;
-
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_item ());
-
-    return *this;
-  }
+  Module &operator= (Module const &other);
 
   // move constructors
   Module (Module &&other) = default;
@@ -1120,63 +972,13 @@ public:
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    AST::AttrVec outer_attrs, SelfParam self, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      qualifiers (std::move (qualifiers)),
-      function_name (std::move (function_name)),
-      generic_params (std::move (generic_params)),
-      function_params (std::move (function_params)),
-      return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)),
-      function_body (std::move (function_body)), self (std::move (self)),
-      locus (locus)
-  {}
+	    AST::AttrVec outer_attrs, SelfParam self, location_t locus);
 
   // Copy constructor with clone
-  Function (Function const &other)
-    : VisItem (other), qualifiers (other.qualifiers),
-      function_name (other.function_name),
-      function_params (other.function_params),
-      where_clause (other.where_clause),
-      function_body (other.function_body->clone_block_expr ()),
-      self (other.self), locus (other.locus)
-  {
-    // guard to prevent null dereference (always required)
-    if (other.return_type != nullptr)
-      return_type = other.return_type->clone_type ();
-    else
-      return_type = nullptr;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
+  Function (Function const &other);
 
   // Overloaded assignment operator to clone
-  Function &operator= (Function const &other)
-  {
-    VisItem::operator= (other);
-    function_name = other.function_name;
-    qualifiers = other.qualifiers;
-    function_params = other.function_params;
-
-    // guard to prevent null dereference (always required)
-    if (other.return_type != nullptr)
-      return_type = other.return_type->clone_type ();
-    else
-      return_type = nullptr;
-
-    where_clause = other.where_clause;
-    function_body = other.function_body->clone_block_expr ();
-    locus = other.locus;
-    self = other.self;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
+  Function &operator= (Function const &other);
 
   // move constructors
   Function (Function &&other) = default;
@@ -1280,40 +1082,13 @@ public:
   TypeAlias (Analysis::NodeMapping mappings, Identifier new_type_name,
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     WhereClause where_clause, std::unique_ptr<Type> existing_type,
-	     Visibility vis, AST::AttrVec outer_attrs, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      new_type_name (std::move (new_type_name)),
-      generic_params (std::move (generic_params)),
-      where_clause (std::move (where_clause)),
-      existing_type (std::move (existing_type)), locus (locus)
-  {}
+	     Visibility vis, AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor
-  TypeAlias (TypeAlias const &other)
-    : VisItem (other), new_type_name (other.new_type_name),
-      where_clause (other.where_clause),
-      existing_type (other.existing_type->clone_type ()), locus (other.locus)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
+  TypeAlias (TypeAlias const &other);
 
   // Overloaded assignment operator to clone
-  TypeAlias &operator= (TypeAlias const &other)
-  {
-    VisItem::operator= (other);
-    new_type_name = other.new_type_name;
-    where_clause = other.where_clause;
-    existing_type = other.existing_type->clone_type ();
-    locus = other.locus;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
+  TypeAlias &operator= (TypeAlias const &other);
 
   // move constructors
   TypeAlias (TypeAlias &&other) = default;
@@ -1468,32 +1243,15 @@ public:
 
   StructField (Analysis::NodeMapping mappings, Identifier field_name,
 	       std::unique_ptr<Type> field_type, Visibility vis,
-	       location_t locus, AST::AttrVec outer_attrs = AST::AttrVec ())
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      field_name (std::move (field_name)), field_type (std::move (field_type)),
-      mappings (mappings), locus (locus)
-  {}
+	       location_t locus, AST::AttrVec outer_attrs = AST::AttrVec ());
 
   // Copy constructor
-  StructField (StructField const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_name (other.field_name),
-      field_type (other.field_type->clone_type ()), mappings (other.mappings)
-  {}
+  StructField (StructField const &other);
 
   ~StructField () = default;
 
   // Overloaded assignment operator to clone
-  StructField &operator= (StructField const &other)
-  {
-    field_name = other.field_name;
-    field_type = other.field_type->clone_type ();
-    visibility = other.visibility;
-    outer_attrs = other.outer_attrs;
-    mappings = other.mappings;
-
-    return *this;
-  }
+  StructField &operator= (StructField const &other);
 
   // move constructors
   StructField (StructField &&other) = default;
@@ -1598,31 +1356,15 @@ public:
   // Complete constructor
   TupleField (Analysis::NodeMapping mapping, std::unique_ptr<Type> field_type,
 	      Visibility vis, location_t locus,
-	      AST::AttrVec outer_attrs = AST::AttrVec ())
-    : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
-      field_type (std::move (field_type)), locus (locus), mappings (mapping)
-  {}
+	      AST::AttrVec outer_attrs = AST::AttrVec ());
 
   // Copy constructor with clone
-  TupleField (TupleField const &other)
-    : outer_attrs (other.outer_attrs), visibility (other.visibility),
-      field_type (other.field_type->clone_type ()), locus (other.locus),
-      mappings (other.mappings)
-  {}
+  TupleField (TupleField const &other);
 
   ~TupleField () = default;
 
   // Overloaded assignment operator to clone
-  TupleField &operator= (TupleField const &other)
-  {
-    field_type = other.field_type->clone_type ();
-    visibility = other.visibility;
-    outer_attrs = other.outer_attrs;
-    locus = other.locus;
-    mappings = other.mappings;
-
-    return *this;
-  }
+  TupleField &operator= (TupleField const &other);
 
   // move constructors
   TupleField (TupleField &&other) = default;
@@ -1656,12 +1398,7 @@ public:
 	       Identifier struct_name,
 	       std::vector<std::unique_ptr<GenericParam>> generic_params,
 	       WhereClause where_clause, Visibility vis,
-	       AST::AttrVec outer_attrs, location_t locus)
-    : Struct (std::move (mappings), std::move (struct_name),
-	      std::move (generic_params), std::move (where_clause),
-	      std::move (vis), locus, std::move (outer_attrs)),
-      fields (std::move (fields))
-  {}
+	       AST::AttrVec outer_attrs, location_t locus);
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1706,10 +1443,7 @@ public:
   };
 
   EnumItem (Analysis::NodeMapping mappings, Identifier variant_name,
-	    AST::AttrVec outer_attrs, location_t locus)
-    : Item (std::move (mappings), std::move (outer_attrs)),
-      variant_name (std::move (variant_name)), locus (locus)
-  {}
+	    AST::AttrVec outer_attrs, location_t locus);
 
   // Unique pointer custom clone function
   std::unique_ptr<EnumItem> clone_enum_item () const
@@ -1752,11 +1486,7 @@ public:
 
   EnumItemTuple (Analysis::NodeMapping mappings, Identifier variant_name,
 		 std::vector<TupleField> tuple_fields, AST::AttrVec outer_attrs,
-		 location_t locus)
-    : EnumItem (std::move (mappings), std::move (variant_name),
-		std::move (outer_attrs), locus),
-      tuple_fields (std::move (tuple_fields))
-  {}
+		 location_t locus);
 
   std::string as_string () const override;
 
@@ -1790,11 +1520,7 @@ public:
 
   EnumItemStruct (Analysis::NodeMapping mappings, Identifier variant_name,
 		  std::vector<StructField> struct_fields,
-		  AST::AttrVec outer_attrs, location_t locus)
-    : EnumItem (std::move (mappings), std::move (variant_name),
-		std::move (outer_attrs), locus),
-      struct_fields (std::move (struct_fields))
-  {}
+		  AST::AttrVec outer_attrs, location_t locus);
 
   std::string as_string () const override;
 
@@ -1819,27 +1545,13 @@ class EnumItemDiscriminant : public EnumItem
 public:
   EnumItemDiscriminant (Analysis::NodeMapping mappings, Identifier variant_name,
 			std::unique_ptr<Expr> expr, AST::AttrVec outer_attrs,
-			location_t locus)
-    : EnumItem (std::move (mappings), std::move (variant_name),
-		std::move (outer_attrs), locus),
-      expression (std::move (expr))
-  {}
+			location_t locus);
 
   // Copy constructor with clone
-  EnumItemDiscriminant (EnumItemDiscriminant const &other)
-    : EnumItem (other), expression (other.expression->clone_expr ())
-  {}
+  EnumItemDiscriminant (EnumItemDiscriminant const &other);
 
   // Overloaded assignment operator to clone
-  EnumItemDiscriminant &operator= (EnumItemDiscriminant const &other)
-  {
-    EnumItem::operator= (other);
-    expression = other.expression->clone_expr ();
-    // variant_name = other.variant_name;
-    // outer_attrs = other.outer_attrs;
-
-    return *this;
-  }
+  EnumItemDiscriminant &operator= (EnumItemDiscriminant const &other);
 
   // move constructors
   EnumItemDiscriminant (EnumItemDiscriminant &&other) = default;
@@ -1903,48 +1615,15 @@ public:
   Enum (Analysis::NodeMapping mappings, Identifier enum_name, Visibility vis,
 	std::vector<std::unique_ptr<GenericParam>> generic_params,
 	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem>> items,
-	AST::AttrVec outer_attrs, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      enum_name (std::move (enum_name)),
-      generic_params (std::move (generic_params)),
-      where_clause (std::move (where_clause)), items (std::move (items)),
-      locus (locus)
-  {}
+	AST::AttrVec outer_attrs, location_t locus);
 
   // TODO: constructor with less arguments
 
   // Copy constructor with vector clone
-  Enum (Enum const &other)
-    : VisItem (other), enum_name (other.enum_name),
-      where_clause (other.where_clause), locus (other.locus)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_enum_item ());
-  }
+  Enum (Enum const &other);
 
   // Overloaded assignment operator with vector clone
-  Enum &operator= (Enum const &other)
-  {
-    VisItem::operator= (other);
-    enum_name = other.enum_name;
-    where_clause = other.where_clause;
-    locus = other.locus;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    items.reserve (other.items.size ());
-    for (const auto &e : other.items)
-      items.push_back (e->clone_enum_item ());
-
-    return *this;
-  }
+  Enum &operator= (Enum const &other);
 
   // Move constructors
   Enum (Enum &&other) = default;
@@ -2012,40 +1691,13 @@ public:
   Union (Analysis::NodeMapping mappings, Identifier union_name, Visibility vis,
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 WhereClause where_clause, std::vector<StructField> variants,
-	 AST::AttrVec outer_attrs, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      union_name (std::move (union_name)),
-      generic_params (std::move (generic_params)),
-      where_clause (std::move (where_clause)), variants (std::move (variants)),
-      locus (locus)
-  {}
+	 AST::AttrVec outer_attrs, location_t locus);
 
   // copy constructor with vector clone
-  Union (Union const &other)
-    : VisItem (other), union_name (other.union_name),
-      where_clause (other.where_clause), variants (other.variants),
-      locus (other.locus)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
+  Union (Union const &other);
 
   // overloaded assignment operator with vector clone
-  Union &operator= (Union const &other)
-  {
-    VisItem::operator= (other);
-    union_name = other.union_name;
-    where_clause = other.where_clause;
-    variants = other.variants;
-    locus = other.locus;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
+  Union &operator= (Union const &other);
 
   // move constructors
   Union (Union &&other) = default;
@@ -2089,29 +1741,12 @@ public:
   ConstantItem (Analysis::NodeMapping mappings, Identifier ident,
 		Visibility vis, std::unique_ptr<Type> type,
 		std::unique_ptr<Expr> const_expr, AST::AttrVec outer_attrs,
-		location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      identifier (std::move (ident)), type (std::move (type)),
-      const_expr (std::move (const_expr)), locus (locus)
-  {}
+		location_t locus);
 
-  ConstantItem (ConstantItem const &other)
-    : VisItem (other), identifier (other.identifier),
-      type (other.type->clone_type ()),
-      const_expr (other.const_expr->clone_expr ()), locus (other.locus)
-  {}
+  ConstantItem (ConstantItem const &other);
 
   // Overload assignment operator to clone
-  ConstantItem &operator= (ConstantItem const &other)
-  {
-    VisItem::operator= (other);
-    identifier = other.identifier;
-    type = other.type->clone_type ();
-    const_expr = other.const_expr->clone_expr ();
-    locus = other.locus;
-
-    return *this;
-  }
+  ConstantItem &operator= (ConstantItem const &other);
 
   // move constructors
   ConstantItem (ConstantItem &&other) = default;
@@ -2185,31 +1820,13 @@ public:
 
   StaticItem (Analysis::NodeMapping mappings, Identifier name, Mutability mut,
 	      std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
-	      Visibility vis, AST::AttrVec outer_attrs, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      mut (mut), name (std::move (name)), type (std::move (type)),
-      expr (std::move (expr)), locus (locus)
-  {}
+	      Visibility vis, AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with clone
-  StaticItem (StaticItem const &other)
-    : VisItem (other), mut (other.mut), name (other.name),
-      type (other.type->clone_type ()), expr (other.expr->clone_expr ()),
-      locus (other.locus)
-  {}
+  StaticItem (StaticItem const &other);
 
   // Overloaded assignment operator to clone
-  StaticItem &operator= (StaticItem const &other)
-  {
-    VisItem::operator= (other);
-    name = other.name;
-    mut = other.mut;
-    type = other.type->clone_type ();
-    expr = other.expr->clone_expr ();
-    locus = other.locus;
-
-    return *this;
-  }
+  StaticItem &operator= (StaticItem const &other);
 
   // move constructors
   StaticItem (StaticItem &&other) = default;
@@ -2258,45 +1875,15 @@ public:
 		     std::vector<std::unique_ptr<GenericParam>> generic_params,
 		     SelfParam self, std::vector<FunctionParam> function_params,
 		     std::unique_ptr<Type> return_type,
-		     WhereClause where_clause)
-    : qualifiers (std::move (qualifiers)),
-      function_name (std::move (function_name)),
-      generic_params (std::move (generic_params)),
-      function_params (std::move (function_params)),
-      return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)), self (std::move (self))
-  {}
+		     WhereClause where_clause);
 
   // Copy constructor with clone
-  TraitFunctionDecl (TraitFunctionDecl const &other)
-    : qualifiers (other.qualifiers), function_name (other.function_name),
-      function_params (other.function_params),
-      return_type (other.return_type->clone_type ()),
-      where_clause (other.where_clause), self (other.self)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
+  TraitFunctionDecl (TraitFunctionDecl const &other);
 
   ~TraitFunctionDecl () = default;
 
   // Overloaded assignment operator with clone
-  TraitFunctionDecl &operator= (TraitFunctionDecl const &other)
-  {
-    function_name = other.function_name;
-    qualifiers = other.qualifiers;
-    function_params = other.function_params;
-    return_type = other.return_type->clone_type ();
-    where_clause = other.where_clause;
-    self = other.self;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
+  TraitFunctionDecl &operator= (TraitFunctionDecl const &other);
 
   // move constructors
   TraitFunctionDecl (TraitFunctionDecl &&other) = default;
@@ -2350,34 +1937,13 @@ public:
 
   TraitItemFunc (Analysis::NodeMapping mappings, TraitFunctionDecl decl,
 		 std::unique_ptr<BlockExpr> block_expr,
-		 AST::AttrVec outer_attrs, location_t locus)
-    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
-      decl (std::move (decl)), block_expr (std::move (block_expr)),
-      locus (locus)
-  {}
+		 AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with clone
-  TraitItemFunc (TraitItemFunc const &other)
-    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
-      decl (other.decl), locus (other.locus)
-  {
-    if (other.block_expr != nullptr)
-      block_expr = other.block_expr->clone_block_expr ();
-  }
+  TraitItemFunc (TraitItemFunc const &other);
 
   // Overloaded assignment operator to clone
-  TraitItemFunc &operator= (TraitItemFunc const &other)
-  {
-    TraitItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    decl = other.decl;
-    locus = other.locus;
-    mappings = other.mappings;
-    if (other.block_expr != nullptr)
-      block_expr = other.block_expr->clone_block_expr ();
-
-    return *this;
-  }
+  TraitItemFunc &operator= (TraitItemFunc const &other);
 
   // move constructors
   TraitItemFunc (TraitItemFunc &&other) = default;
@@ -2439,32 +2005,13 @@ public:
 
   TraitItemConst (Analysis::NodeMapping mappings, Identifier name,
 		  std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
-		  AST::AttrVec outer_attrs, location_t locus)
-    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
-      name (std::move (name)), type (std::move (type)), expr (std::move (expr)),
-      locus (locus)
-  {}
+		  AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with clones
-  TraitItemConst (TraitItemConst const &other)
-    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
-      name (other.name), type (other.type->clone_type ()),
-      expr (other.expr->clone_expr ()), locus (other.locus)
-  {}
+  TraitItemConst (TraitItemConst const &other);
 
   // Overloaded assignment operator to clone
-  TraitItemConst &operator= (TraitItemConst const &other)
-  {
-    TraitItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    name = other.name;
-    type = other.type->clone_type ();
-    expr = other.expr->clone_expr ();
-    locus = other.locus;
-    mappings = other.mappings;
-
-    return *this;
-  }
+  TraitItemConst &operator= (TraitItemConst const &other);
 
   // move constructors
   TraitItemConst (TraitItemConst &&other) = default;
@@ -2527,37 +2074,13 @@ public:
 
   TraitItemType (Analysis::NodeMapping mappings, Identifier name,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-		 AST::AttrVec outer_attrs, location_t locus)
-    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
-      name (std::move (name)),
-      type_param_bounds (std::move (type_param_bounds)), locus (locus)
-  {}
+		 AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with vector clone
-  TraitItemType (TraitItemType const &other)
-    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
-      name (other.name), locus (other.locus)
-  {
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-  }
+  TraitItemType (TraitItemType const &other);
 
   // Overloaded assignment operator with vector clone
-  TraitItemType &operator= (TraitItemType const &other)
-  {
-    TraitItem::operator= (other);
-    outer_attrs = other.outer_attrs;
-    name = other.name;
-    locus = other.locus;
-    mappings = other.mappings;
-
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-
-    return *this;
-  }
+  TraitItemType &operator= (TraitItemType const &other);
 
   // default move constructors
   TraitItemType (TraitItemType &&other) = default;
@@ -2645,56 +2168,13 @@ public:
 	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
 	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
-	 AST::AttrVec outer_attrs, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      unsafety (unsafety), name (std::move (name)),
-      generic_params (std::move (generic_params)),
-      type_param_bounds (std::move (type_param_bounds)),
-      where_clause (std::move (where_clause)),
-      trait_items (std::move (trait_items)), locus (locus)
-  {}
+	 AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with vector clone
-  Trait (Trait const &other)
-    : VisItem (other), unsafety (other.unsafety), name (other.name),
-      where_clause (other.where_clause), locus (other.locus)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-
-    trait_items.reserve (other.trait_items.size ());
-    for (const auto &e : other.trait_items)
-      trait_items.push_back (e->clone_trait_item ());
-  }
+  Trait (Trait const &other);
 
   // Overloaded assignment operator with vector clone
-  Trait &operator= (Trait const &other)
-  {
-    VisItem::operator= (other);
-    name = other.name;
-    unsafety = other.unsafety;
-    where_clause = other.where_clause;
-    locus = other.locus;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    type_param_bounds.reserve (other.type_param_bounds.size ());
-    for (const auto &e : other.type_param_bounds)
-      type_param_bounds.push_back (e->clone_type_param_bound ());
-
-    trait_items.reserve (other.trait_items.size ());
-    for (const auto &e : other.trait_items)
-      trait_items.push_back (e->clone_trait_item ());
-
-    return *this;
-  }
+  Trait &operator= (Trait const &other);
 
   // default move constructors
   Trait (Trait &&other) = default;
@@ -2753,50 +2233,11 @@ public:
 	     std::unique_ptr<Type> impl_type,
 	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
 	     BoundPolarity polarity, Visibility vis, AST::AttrVec inner_attrs,
-	     AST::AttrVec outer_attrs, location_t locus, bool unsafe = false)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      WithInnerAttrs (std::move (inner_attrs)),
-      generic_params (std::move (generic_params)),
-      impl_type (std::move (impl_type)), trait_ref (std::move (trait_ref)),
-      where_clause (std::move (where_clause)), polarity (polarity),
-      locus (locus), impl_items (std::move (impl_items)), unsafe (unsafe)
-  {}
+	     AST::AttrVec outer_attrs, location_t locus, bool unsafe = false);
 
-  ImplBlock (ImplBlock const &other)
-    : VisItem (other), WithInnerAttrs (other.inner_attrs),
-      impl_type (other.impl_type->clone_type ()),
-      where_clause (other.where_clause), polarity (other.polarity),
-      locus (other.locus), unsafe (other.unsafe)
-  {
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
+  ImplBlock (ImplBlock const &other);
 
-    impl_items.reserve (other.impl_items.size ());
-    for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_inherent_impl_item ());
-  }
-
-  ImplBlock &operator= (ImplBlock const &other)
-  {
-    VisItem::operator= (other);
-    impl_type = other.impl_type->clone_type ();
-    where_clause = other.where_clause;
-    polarity = other.polarity;
-    inner_attrs = other.inner_attrs;
-    locus = other.locus;
-    unsafe = other.unsafe;
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    impl_items.reserve (other.impl_items.size ());
-    for (const auto &e : other.impl_items)
-      impl_items.push_back (e->clone_inherent_impl_item ());
-
-    return *this;
-  }
+  ImplBlock &operator= (ImplBlock const &other);
 
   ImplBlock (ImplBlock &&other) = default;
   ImplBlock &operator= (ImplBlock &&other) = default;
@@ -2905,30 +2346,13 @@ public:
 
 protected:
   ExternalItem (Analysis::NodeMapping mappings, Identifier item_name,
-		Visibility vis, AST::AttrVec outer_attrs, location_t locus)
-    : mappings (mappings), outer_attrs (std::move (outer_attrs)),
-      visibility (std::move (vis)), item_name (std::move (item_name)),
-      locus (locus)
-  {}
+		Visibility vis, AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor
-  ExternalItem (ExternalItem const &other)
-    : mappings (other.mappings), outer_attrs (other.outer_attrs),
-      visibility (other.visibility), item_name (other.item_name),
-      locus (other.locus)
-  {}
+  ExternalItem (ExternalItem const &other);
 
   // Overloaded assignment operator to clone
-  ExternalItem &operator= (ExternalItem const &other)
-  {
-    mappings = other.mappings;
-    item_name = other.item_name;
-    visibility = other.visibility;
-    outer_attrs = other.outer_attrs;
-    locus = other.locus;
-
-    return *this;
-  }
+  ExternalItem &operator= (ExternalItem const &other);
 
   // move constructors
   ExternalItem (ExternalItem &&other) = default;
@@ -2948,27 +2372,13 @@ public:
   ExternalStaticItem (Analysis::NodeMapping mappings, Identifier item_name,
 		      std::unique_ptr<Type> item_type, Mutability mut,
 		      Visibility vis, AST::AttrVec outer_attrs,
-		      location_t locus)
-    : ExternalItem (std::move (mappings), std::move (item_name),
-		    std::move (vis), std::move (outer_attrs), locus),
-      mut (mut), item_type (std::move (item_type))
-  {}
+		      location_t locus);
 
   // Copy constructor
-  ExternalStaticItem (ExternalStaticItem const &other)
-    : ExternalItem (other), mut (other.mut),
-      item_type (other.item_type->clone_type ())
-  {}
+  ExternalStaticItem (ExternalStaticItem const &other);
 
   // Overloaded assignment operator to clone
-  ExternalStaticItem &operator= (ExternalStaticItem const &other)
-  {
-    ExternalItem::operator= (other);
-    item_type = other.item_type->clone_type ();
-    mut = other.mut;
-
-    return *this;
-  }
+  ExternalStaticItem &operator= (ExternalStaticItem const &other);
 
   // move constructors
   ExternalStaticItem (ExternalStaticItem &&other) = default;
@@ -3008,29 +2418,15 @@ public:
   bool has_name () const { return name.as_string () != "_"; }
 
   NamedFunctionParam (Analysis::NodeMapping mappings, Identifier name,
-		      std::unique_ptr<Type> param_type)
-    : name (std::move (name)), param_type (std::move (param_type)),
-      mappings (std::move (mappings))
-  {}
+		      std::unique_ptr<Type> param_type);
 
   // Copy constructor
-  NamedFunctionParam (NamedFunctionParam const &other)
-    : name (other.name), param_type (other.param_type->clone_type ()),
-      mappings (other.mappings)
-  {}
+  NamedFunctionParam (NamedFunctionParam const &other);
 
   ~NamedFunctionParam () = default;
 
   // Overloaded assignment operator to clone
-  NamedFunctionParam &operator= (NamedFunctionParam const &other)
-  {
-    mappings = other.mappings;
-    name = other.name;
-    param_type = other.param_type->clone_type ();
-    // has_name = other.has_name;
-
-    return *this;
-  }
+  NamedFunctionParam &operator= (NamedFunctionParam const &other);
 
   // move constructors
   NamedFunctionParam (NamedFunctionParam &&other) = default;
@@ -3082,48 +2478,13 @@ public:
     std::vector<std::unique_ptr<GenericParam>> generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
-    Visibility vis, AST::AttrVec outer_attrs, location_t locus)
-    : ExternalItem (std::move (mappings), std::move (item_name),
-		    std::move (vis), std::move (outer_attrs), locus),
-      generic_params (std::move (generic_params)),
-      return_type (std::move (return_type)),
-      where_clause (std::move (where_clause)),
-      function_params (std::move (function_params)),
-      has_variadics (has_variadics)
-  {}
+    Visibility vis, AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with clone
-  ExternalFunctionItem (ExternalFunctionItem const &other)
-    : ExternalItem (other), where_clause (other.where_clause),
-      function_params (other.function_params),
-      has_variadics (other.has_variadics)
-  {
-    if (other.return_type)
-      return_type = other.return_type->clone_type ();
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-  }
+  ExternalFunctionItem (ExternalFunctionItem const &other);
 
   // Overloaded assignment operator with clone
-  ExternalFunctionItem &operator= (ExternalFunctionItem const &other)
-  {
-    ExternalItem::operator= (other);
-
-    where_clause = other.where_clause;
-    function_params = other.function_params;
-    has_variadics = other.has_variadics;
-
-    if (other.return_type)
-      return_type = other.return_type->clone_type ();
-
-    generic_params.reserve (other.generic_params.size ());
-    for (const auto &e : other.generic_params)
-      generic_params.push_back (e->clone_generic_param ());
-
-    return *this;
-  }
+  ExternalFunctionItem &operator= (ExternalFunctionItem const &other);
 
   // move constructors
   ExternalFunctionItem (ExternalFunctionItem &&other) = default;
@@ -3163,14 +2524,9 @@ class ExternalTypeItem : public ExternalItem
 {
 public:
   ExternalTypeItem (Analysis::NodeMapping mappings, Identifier item_name,
-		    Visibility vis, location_t locus)
-    : ExternalItem (std::move (mappings), std::move (item_name),
-		    Visibility (std::move (vis)),
-		    /* FIXME: Is that correct? */
-		    {}, locus)
-  {}
+		    Visibility vis, location_t locus);
 
-  ExternalTypeItem (ExternalTypeItem const &other) : ExternalItem (other) {}
+  ExternalTypeItem (ExternalTypeItem const &other);
 
   ExternalTypeItem (ExternalTypeItem &&other) = default;
   ExternalTypeItem &operator= (ExternalTypeItem &&other) = default;
@@ -3210,36 +2566,13 @@ public:
   ExternBlock (Analysis::NodeMapping mappings, ABI abi,
 	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
 	       Visibility vis, AST::AttrVec inner_attrs,
-	       AST::AttrVec outer_attrs, location_t locus)
-    : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      WithInnerAttrs (std::move (inner_attrs)), abi (abi),
-      extern_items (std::move (extern_items)), locus (locus)
-  {}
+	       AST::AttrVec outer_attrs, location_t locus);
 
   // Copy constructor with vector clone
-  ExternBlock (ExternBlock const &other)
-    : VisItem (other), WithInnerAttrs (other.inner_attrs), abi (other.abi),
-      locus (other.locus)
-  {
-    extern_items.reserve (other.extern_items.size ());
-    for (const auto &e : other.extern_items)
-      extern_items.push_back (e->clone_external_item ());
-  }
+  ExternBlock (ExternBlock const &other);
 
   // Overloaded assignment operator with vector clone
-  ExternBlock &operator= (ExternBlock const &other)
-  {
-    VisItem::operator= (other);
-    abi = other.abi;
-    inner_attrs = other.inner_attrs;
-    locus = other.locus;
-
-    extern_items.reserve (other.extern_items.size ());
-    for (const auto &e : other.extern_items)
-      extern_items.push_back (e->clone_external_item ());
-
-    return *this;
-  }
+  ExternBlock &operator= (ExternBlock const &other);
 
   // move constructors
   ExternBlock (ExternBlock &&other) = default;

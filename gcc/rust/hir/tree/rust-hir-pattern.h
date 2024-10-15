@@ -19,12 +19,13 @@
 #ifndef RUST_HIR_PATTERN_H
 #define RUST_HIR_PATTERN_H
 
+#include "rust-hir-pattern-abstract.h"
 #include "rust-common.h"
-#include "rust-hir.h"
+#include "rust-hir-literal.h"
+#include "rust-hir-path.h"
 
 namespace Rust {
 namespace HIR {
-
 // Literal pattern HIR node (comparing to a literal)
 class LiteralPattern : public Pattern
 {
