@@ -9524,7 +9524,8 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
 		   EXPAND_NORMAL);
 
   if (TREE_CODE (treeop0) == SSA_NAME
-      && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison)))
+      && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison))
+      && !VECTOR_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (srcstmt))))
     {
       type = TREE_TYPE (gimple_assign_rhs1 (srcstmt));
       enum tree_code cmpcode = gimple_assign_rhs_code (srcstmt);
@@ -9534,7 +9535,8 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
       unsignedp = TYPE_UNSIGNED (type);
       comparison_code = convert_tree_comp_to_rtx (cmpcode, unsignedp);
     }
-  else if (COMPARISON_CLASS_P (treeop0))
+  else if (COMPARISON_CLASS_P (treeop0)
+	   && !VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (treeop0, 0))))
     {
       type = TREE_TYPE (TREE_OPERAND (treeop0, 0));
       enum tree_code cmpcode = TREE_CODE (treeop0);
