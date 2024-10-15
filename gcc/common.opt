@@ -2189,11 +2189,11 @@ Common Var(flag_ivopts) Init(1) Optimization
 Optimize induction variables on trees.
 
 fjump-tables
-Common Var(flag_jump_tables) Init(1) Optimization
+Common Var(flag_jump_tables) Init(0) Optimization
 Use jump tables for sufficiently large switch statements.
 
 fbit-tests
-Common Var(flag_bit_tests) Init(1) Optimization
+Common Var(flag_bit_tests) Init(0) Optimization
 Use bit tests for sufficiently large switch statements.
 
 fkeep-inline-functions
