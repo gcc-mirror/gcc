@@ -51,7 +51,9 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Snames;         use Snames;
 with Stand;
+with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
+with Uintp;           use Uintp;
 
 package body Exp_Ch2 is
 
@@ -721,6 +723,12 @@ package body Exp_Ch2 is
 
    procedure Expand_N_Interpolated_String_Literal (N : Node_Id) is
 
+      procedure Apply_Static_Length_Check (Typ : Entity_Id);
+      --  Tries to determine statically whether the length of the interpolated
+      --  string N exceeds the length of the target subtype Typ. If it can be
+      --  determined at compile time then an N_Raise_Constraint_Error node
+      --  replaces the interpolated string N, and a warning message is issued.
+
       function Build_Interpolated_String_Image (N : Node_Id) return Node_Id;
       --  Build the following Expression_With_Actions node:
       --     do
@@ -732,6 +740,47 @@ package body Exp_Ch2 is
       --        Result : constant String := Get (Sink);
       --        Destroy (Sink);
       --     in Result end
+
+      -------------------------------
+      -- Apply_Static_Length_Check --
+      -------------------------------
+
+      procedure Apply_Static_Length_Check (Typ : Entity_Id) is
+         HB         : constant Node_Id := High_Bound (First_Index (Typ));
+         LB         : constant Node_Id := Low_Bound (First_Index (Typ));
+         Str_Elem   : Node_Id;
+         Str_Length : Nat;
+         Typ_Length : Nat;
+
+      begin
+         if Compile_Time_Known_Value (LB)
+           and then Compile_Time_Known_Value (HB)
+         then
+            Typ_Length := UI_To_Int (Expr_Value (HB) - Expr_Value (LB) + 1);
+
+            --  Compute the minimum length of the interpolated string: the
+            --  length of the concatenation of the string literals composing
+            --  the interpolated string.
+
+            Str_Length := 0;
+            Str_Elem   := First (Expressions (N));
+            while Present (Str_Elem) loop
+               if Nkind (Str_Elem) = N_String_Literal then
+                  Str_Length := Str_Length + String_Length (Strval (Str_Elem));
+               end if;
+
+               Next (Str_Elem);
+            end loop;
+
+            if Str_Length > Typ_Length then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "wrong length for interpolated string of}??",
+                  CE_Length_Check_Failed,
+                  Ent => Typ,
+                  Typ => Typ);
+            end if;
+         end if;
+      end Apply_Static_Length_Check;
 
       -------------------------------------
       -- Build_Interpolated_String_Image --
@@ -747,10 +796,11 @@ package body Exp_Ch2 is
                              Object_Definition =>
                                New_Occurrence_Of (RTE (RE_Buffer_Type), Loc));
 
+         B_Type        : constant Entity_Id := Base_Type (Etype (N));
          Get_Id        : constant RE_Id :=
-                           (if Etype (N) = Stand.Standard_String then
+                           (if B_Type = Stand.Standard_String then
                                RE_Get
-                            elsif Etype (N) = Stand.Standard_Wide_String then
+                            elsif B_Type = Stand.Standard_Wide_String then
                                RE_Wide_Get
                             else
                                RE_Wide_Wide_Get);
@@ -760,7 +810,7 @@ package body Exp_Ch2 is
                            Make_Object_Declaration (Loc,
                              Defining_Identifier => Result_Entity,
                              Object_Definition =>
-                               New_Occurrence_Of (Etype (N), Loc),
+                               New_Occurrence_Of (B_Type, Loc),
                              Expression =>
                                Make_Function_Call (Loc,
                                  Name => New_Occurrence_Of (RTE (Get_Id), Loc),
@@ -838,8 +888,24 @@ package body Exp_Ch2 is
    --  Start of processing for Expand_N_Interpolated_String_Literal
 
    begin
+      --  If the type imposed by the context is constrained then check that
+      --  the statically known length of the interpolated string does not
+      --  exceed the length of its type.
+
+      if Is_Constrained (Typ) then
+         Apply_Static_Length_Check (Typ);
+
+         if Nkind (N) = N_Raise_Constraint_Error then
+            return;
+         end if;
+      end if;
+
       Rewrite (N, Build_Interpolated_String_Image (N));
       Analyze_And_Resolve (N, Typ);
+
+      if Is_Constrained (Typ) then
+         Apply_Length_Check (Expression (N), Typ);
+      end if;
    end Expand_N_Interpolated_String_Literal;
 
 end Exp_Ch2;
