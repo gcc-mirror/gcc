@@ -1072,14 +1072,13 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   stmt_vec_info first_stmt_info = stmts[0];
   code_helper first_stmt_code = ERROR_MARK;
   code_helper alt_stmt_code = ERROR_MARK;
-  code_helper rhs_code = ERROR_MARK;
   code_helper first_cond_code = ERROR_MARK;
   tree lhs;
   bool need_same_oprnds = false;
-  tree vectype = NULL_TREE, first_op1 = NULL_TREE;
+  tree first_op1 = NULL_TREE;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
-  bool first_stmt_ldst_p = false, ldst_p = false;
-  bool first_stmt_phi_p = false, phi_p = false;
+  bool first_stmt_ldst_p = false;
+  bool first_stmt_phi_p = false;
   int first_reduc_idx = -1;
   bool maybe_soft_fail = false;
   tree soft_fail_nunits_vectype = NULL_TREE;
@@ -1088,6 +1087,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   stmt_vec_info stmt_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
+      bool ldst_p = false;
+      bool phi_p = false;
+      code_helper rhs_code = ERROR_MARK;
+
       swap[i] = 0;
       matches[i] = false;
       if (!stmt_info)
@@ -1139,7 +1142,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  return false;
 	}
 
-      tree nunits_vectype;
+      tree vectype, nunits_vectype;
       if (!vect_get_vector_types_for_stmt (vinfo, stmt_info, &vectype,
 					   &nunits_vectype, group_size))
 	{
