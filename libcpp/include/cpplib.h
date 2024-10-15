@@ -598,6 +598,9 @@ struct cpp_options
   /* True if -finput-charset= option has been used explicitly.  */
   bool cpp_input_charset_explicit;
 
+  /* -Wtrailing-whitespace= value.  */
+  unsigned char cpp_warn_trailing_whitespace;
+
   /* Dependency generation.  */
   struct
   {
@@ -722,7 +725,8 @@ enum cpp_warning_reason {
   CPP_W_INVALID_UTF8,
   CPP_W_UNICODE,
   CPP_W_HEADER_GUARD,
-  CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER
+  CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER,
+  CPP_W_TRAILING_WHITESPACE
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

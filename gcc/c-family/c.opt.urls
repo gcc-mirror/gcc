@@ -864,6 +864,12 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-traditional)
 Wtraditional-conversion
 UrlSuffix(gcc/Warning-Options.html#index-Wno-traditional-conversion)
 
+Wtrailing-whitespace=
+UrlSuffix(gcc/Warning-Options.html#index-Wno-trailing-whitespace)
+
+Wtrailing-whitespace
+UrlSuffix(gcc/Warning-Options.html#index-Wno-trailing-whitespace)
+
 Wtrigraphs
 UrlSuffix(gcc/Warning-Options.html#index-Wtrigraphs)
 

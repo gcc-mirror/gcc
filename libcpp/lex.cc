@@ -928,7 +928,7 @@ _cpp_clean_line (cpp_reader *pfile)
 	      if (p == buffer->next_line || p[-1] != '\\')
 		break;
 
-	      add_line_note (buffer, p - 1, p != d ? ' ': '\\');
+	      add_line_note (buffer, p - 1, p != d ? ' ' : '\\');
 	      d = p - 2;
 	      buffer->next_line = p - 1;
 	    }
@@ -943,6 +943,20 @@ _cpp_clean_line (cpp_reader *pfile)
 		}
 	    }
 	}
+     done:
+      if (d > buffer->next_line
+	  && CPP_OPTION (pfile, cpp_warn_trailing_whitespace))
+	switch (CPP_OPTION (pfile, cpp_warn_trailing_whitespace))
+	  {
+	  case 1:
+	    if (ISBLANK (d[-1]))
+	      add_line_note (buffer, d - 1, 'W');
+	    break;
+	  case 2:
+	    if (IS_NVSPACE (d[-1]) && d[-1])
+	      add_line_note (buffer, d - 1, 'W');
+	    break;
+	  }
     }
   else
     {
@@ -955,7 +969,6 @@ _cpp_clean_line (cpp_reader *pfile)
 	s++;
     }
 
- done:
   *d = '\n';
   /* A sentinel note that should never be processed.  */
   add_line_note (buffer, d + 1, '\n');
@@ -1013,13 +1026,23 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 
       if (note->type == '\\' || note->type == ' ')
 	{
-	  if (note->type == ' ' && !in_comment)
-	    cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
-				 "backslash and newline separated by space");
+	  if (note->type == ' ')
+	    {
+	      if (!in_comment)
+		cpp_error_with_line (pfile, CPP_DL_WARNING,
+				     pfile->line_table->highest_line, col,
+				     "backslash and newline separated by "
+				     "space");
+	      else if (CPP_OPTION (pfile, cpp_warn_trailing_whitespace))
+		cpp_warning_with_line (pfile, CPP_W_TRAILING_WHITESPACE,
+				       pfile->line_table->highest_line, col,
+				       "trailing whitespace");
+	    }
 
 	  if (buffer->next_line > buffer->rlimit)
 	    {
-	      cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->line_table->highest_line, col,
+	      cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+				   pfile->line_table->highest_line, col,
 				   "backslash-newline at end of file");
 	      /* Prevent "no newline at end of file" warning.  */
 	      buffer->next_line = buffer->rlimit;
@@ -1040,15 +1063,16 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 				       note->type,
 				       (int) _cpp_trigraph_map[note->type]);
 	      else
-		{
-		  cpp_warning_with_line 
-		    (pfile, CPP_W_TRIGRAPHS,
-                     pfile->line_table->highest_line, col,
-		     "trigraph %<??%c%> ignored, use %<-trigraphs%> to enable",
-		     note->type);
-		}
+		cpp_warning_with_line (pfile, CPP_W_TRIGRAPHS,
+				       pfile->line_table->highest_line, col,
+				       "trigraph %<??%c%> ignored, use "
+				       "%<-trigraphs%> to enable", note->type);
 	    }
 	}
+      else if (note->type == 'W')
+	cpp_warning_with_line (pfile, CPP_W_TRAILING_WHITESPACE,
+			       pfile->line_table->highest_line, col,
+			       "trailing whitespace");
       else if (note->type == 0)
 	/* Already processed in lex_raw_string.  */;
       else
@@ -2503,6 +2527,12 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	    /* This can happen for ??/<NEWLINE> when trigraphs are not
 	       being interpretted.  */
 	    gcc_checking_assert (!CPP_OPTION (pfile, trigraphs));
+	    note->type = 0;
+	    note++;
+	    break;
+
+	  case 'W':
+	    /* Don't warn about trailing whitespace in raw string literals.  */
 	    note->type = 0;
 	    note++;
 	    break;

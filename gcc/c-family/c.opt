@@ -1466,6 +1466,26 @@ Wtraditional-conversion
 C ObjC Var(warn_traditional_conversion) Warning
 Warn of prototypes causing type conversions different from what would happen in the absence of prototype.
 
+Enum
+Name(warn_trailing_whitespace_kind) Type(int) UnknownError(argument %qs to %<-Wtrailing-whitespace=%> not recognized)
+
+EnumValue
+Enum(warn_trailing_whitespace_kind) String(none) Value(0)
+
+EnumValue
+Enum(warn_trailing_whitespace_kind) String(blank) Value(1)
+
+EnumValue
+Enum(warn_trailing_whitespace_kind) String(space) Value(2)
+
+Wtrailing-whitespace=
+C ObjC C++ ObjC++ CPP(cpp_warn_trailing_whitespace) CppReason(CPP_W_TRAILING_WHITESPACE) Enum(warn_trailing_whitespace_kind) Joined RejectNegative Var(warn_trailing_whitespace) Init(0) Warning
+Warn about trailing whitespace on lines except when in raw string literals.
+
+Wtrailing-whitespace
+C ObjC C++ ObjC++ Alias(Wtrailing-whitespace=,blank,none) Warning
+Warn about trailing whitespace on lines except when in raw string literals.   Equivalent to Wtrailing-whitespace=blank when enabled or Wtrailing-whitespace=none when disabled.
+
 Wtrigraphs
 C ObjC C++ ObjC++ CPP(warn_trigraphs) CppReason(CPP_W_TRIGRAPHS) Var(cpp_warn_trigraphs) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn if trigraphs are encountered that might affect the meaning of the program.
