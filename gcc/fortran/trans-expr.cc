@@ -4437,7 +4437,6 @@ conv_function_val (gfc_se * se, bool *is_builtin, gfc_symbol * sym,
 {
   tree tmp;
 
-  *is_builtin = false;
   if (gfc_is_proc_ptr_comp (expr))
     tmp = get_proc_ptr_comp (expr);
   else if (sym->attr.dummy)
@@ -8218,6 +8217,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   arglist = retargs;
 
   /* Generate the actual call.  */
+  is_builtin = false;
   if (base_object == NULL_TREE)
     conv_function_val (se, &is_builtin, sym, expr, args);
   else
