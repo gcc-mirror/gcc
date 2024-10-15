@@ -2114,8 +2114,9 @@ package body Sem_Aggr is
         (N         : Node_Id;
          Index_Typ : Entity_Id)
       is
-         Loc : constant Source_Ptr := Sloc (N);
-         Id  : constant Entity_Id  := Defining_Identifier (N);
+         Loc  : constant Source_Ptr := Sloc (N);
+         Id   : constant Entity_Id  := Defining_Identifier (N);
+         Expr : constant Node_Id    := Expression (N);
 
          -----------------------
          -- Remove_References --
@@ -2145,7 +2146,6 @@ package body Sem_Aggr is
          Choice         : Node_Id;
          Resolution_OK  : Boolean;
          Scop           : Entity_Id;
-         Expr           : constant Node_Id := Expression (N);
 
       --  Start of processing for Resolve_Iterated_Component_Association
 
@@ -2232,16 +2232,6 @@ package body Sem_Aggr is
                   Next (Loop_Action);
                end loop;
             end;
-         end if;
-
-         --  An iterated_component_association may appear in a nested
-         --  aggregate for a multidimensional structure: preserve the bounds
-         --  computed for the expression, as well as the anonymous array
-         --  type generated for it; both are needed during array expansion.
-
-         if Nkind (Expr) = N_Aggregate then
-            Set_Aggregate_Bounds (Expression (N), Aggregate_Bounds (Expr));
-            Set_Etype (Expression (N), Etype (Expr));
          end if;
 
          End_Scope;
