@@ -92,7 +92,7 @@ NameResolutionContext::map_usage (Usage usage, Definition definition)
 }
 
 tl::optional<NodeId>
-NameResolutionContext::lookup (NodeId usage)
+NameResolutionContext::lookup (NodeId usage) const
 {
   auto it = resolved_nodes.find (Usage (usage));
 

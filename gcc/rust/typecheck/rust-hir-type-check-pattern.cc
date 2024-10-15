@@ -20,6 +20,10 @@
 #include "rust-hir-pattern.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-type-util.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 namespace Rust {
 namespace Resolver {
@@ -49,12 +53,26 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 
   NodeId ref_node_id = UNKNOWN_NODEID;
   bool maybe_item = false;
-  maybe_item
-    |= resolver->lookup_resolved_name (pattern.get_mappings ().get_nodeid (),
-				       &ref_node_id);
-  maybe_item
-    |= resolver->lookup_resolved_type (pattern.get_mappings ().get_nodeid (),
-				       &ref_node_id);
+
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (pattern.get_mappings ().get_nodeid ()))
+	{
+	  ref_node_id = *id;
+	  maybe_item = true;
+	}
+    }
+  else
+    {
+      maybe_item |= resolver->lookup_resolved_name (
+	pattern.get_mappings ().get_nodeid (), &ref_node_id);
+      maybe_item |= resolver->lookup_resolved_type (
+	pattern.get_mappings ().get_nodeid (), &ref_node_id);
+    }
+
   bool path_is_const_item = false;
 
   if (maybe_item)

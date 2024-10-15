@@ -213,7 +213,7 @@ public:
   // TODO: Use newtype pattern for Usage and Definition
   void map_usage (Usage usage, Definition definition);
 
-  tl::optional<NodeId> lookup (NodeId usage);
+  tl::optional<NodeId> lookup (NodeId usage) const;
 
 private:
   /* Map of "usage" nodes which have been resolved to a "definition" node */
