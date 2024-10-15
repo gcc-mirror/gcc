@@ -6448,6 +6448,8 @@ union U @{
 
 @end itemize
 
+@opindex Wchanges-meaning
+@opindex Wno-changes-meaning
 @item -Wno-changes-meaning @r{(C++ and Objective-C++ only)}
 C++ requires that unqualified uses of a name within a class have the
 same meaning in the complete scope of the class, so declaring the name
