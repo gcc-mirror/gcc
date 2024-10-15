@@ -443,10 +443,12 @@ begin
    Write_Switch_Char ("Vxx");
    Write_Line
      ("Enable selected validity checking mode, xx = list of parameters:");
-   Write_Line ("        a    turn on all validity checking options");
+   Write_Line ("        a    turn on all of the following validity checking"
+                & " options");
    Write_Line ("        c    turn on checking for copies");
    Write_Line ("        C    turn off checking for copies");
-   Write_Line ("        d    turn on default (RM) checking");
+   Write_Line ("        d    turn on default (RM) checking"
+                & " (enabled by default)");
    Write_Line ("        D    turn off default (RM) checking");
    Write_Line ("        e    turn on checking for elementary components");
    Write_Line ("        E    turn off checking for elementary components");
