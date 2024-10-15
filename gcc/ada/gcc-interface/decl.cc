@@ -3110,14 +3110,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	tree gnu_string_index_type
 	  = get_base_type (TREE_TYPE (TYPE_INDEX_TYPE
 				      (TYPE_DOMAIN (gnu_string_array_type))));
+
+        /* For a null string literal we set the bounds to 1 .. 0, to
+           avoid a possible overflow when calculating the upper bound
+           as LOWER_BOUND + LENGTH - 1.  */
+        const bool is_null_string
+          = String_Literal_Length (gnat_entity) == Uint_0;
 	tree gnu_lower_bound
-	  = convert (gnu_string_index_type,
+	  = is_null_string ?
+	    build_int_cst (gnu_string_index_type, 1) :
+	    convert (gnu_string_index_type,
 		     gnat_to_gnu (String_Literal_Low_Bound (gnat_entity)));
 	tree gnu_length
 	  = UI_To_gnu (String_Literal_Length (gnat_entity),
 		       gnu_string_index_type);
 	tree gnu_upper_bound
-	  = build_binary_op (PLUS_EXPR, gnu_string_index_type,
+	  = is_null_string ?
+	    build_int_cst (gnu_string_index_type, 0) :
+	    build_binary_op (PLUS_EXPR, gnu_string_index_type,
 			     gnu_lower_bound,
 			     int_const_binop (MINUS_EXPR, gnu_length,
 					      convert (gnu_string_index_type,
