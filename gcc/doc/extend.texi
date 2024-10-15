@@ -15317,6 +15317,61 @@ initializers of variables usable in constant expressions.   For more details
 refer to the latest revision of the C++ standard.
 @enddefbuiltin
 
+@defbuiltin{@var{type} __builtin_counted_by_ref (@var{ptr})}
+The built-in function @code{__builtin_counted_by_ref} checks whether the array
+object pointed by the pointer @var{ptr} has another object associated with it
+that represents the number of elements in the array object through the
+@code{counted_by} attribute (i.e. the counted-by object). If so, returns a
+pointer to the corresponding counted-by object.
+If such counted-by object does not exist, returns a null pointer.
+
+This built-in function is only available in C for now.
+
+The argument @var{ptr} must be a pointer to an array.
+The @var{type} of the returned value is a pointer type pointing to the
+corresponding type of the counted-by object or a void pointer type in case
+of a null pointer being returned.
+
+For example:
+
+@smallexample
+struct foo1 @{
+  int counter;
+  struct bar1 array[] __attribute__((counted_by (counter)));
+@} *p;
+
+struct foo2 @{
+  int other;
+  struct bar2 array[];
+@} *q;
+@end smallexample
+
+@noindent
+the following call to the built-in
+
+@smallexample
+__builtin_counted_by_ref (p->array)
+@end smallexample
+
+@noindent
+returns:
+
+@smallexample
+&p->counter with type @code{int *}.
+@end smallexample
+
+@noindent
+However, the following call to the built-in
+
+@smallexample
+__builtin_counted_by_ref (q->array)
+@end smallexample
+
+@noindent
+returns a null pointer to @code{void}.
+
+@enddefbuiltin
+
 @defbuiltin{void __builtin_clear_padding (@var{ptr})}
 The built-in function @code{__builtin_clear_padding} function clears
 padding bits inside of the object representation of object pointed by

@@ -2766,6 +2766,27 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
   return call;
 }
 
+/* For the COMPONENT_REF ref, check whether it has a counted_by attribute,
+   if so, wrap this COMPONENT_REF with the corresponding CALL to the
+   function .ACCESS_WITH_SIZE.
+   Otherwise, return the ref itself.  */
+
+tree
+handle_counted_by_for_component_ref (location_t loc, tree ref)
+{
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+  tree datum = TREE_OPERAND (ref, 0);
+  tree subdatum = TREE_OPERAND (ref, 1);
+  tree counted_by_type = NULL_TREE;
+  tree counted_by_ref = build_counted_by_ref (datum, subdatum,
+					      &counted_by_type);
+  if (counted_by_ref)
+    ref = build_access_with_size_for_counted_by (loc, ref,
+						 counted_by_ref,
+						 counted_by_type);
+  return ref;
+}
+
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
    location of the COMPONENT_REF.  COMPONENT_LOC is the location
@@ -2849,13 +2870,9 @@ build_component_ref (location_t loc, tree datum, tree component,
 	  int quals;
 	  tree subtype;
 	  bool use_datum_quals;
-	  tree counted_by_type = NULL_TREE;
 	  /* Do not handle counted_by when in typeof and alignof operator.  */
 	  handle_counted_by = handle_counted_by && !in_typeof && !in_alignof;
-	  tree counted_by_ref = handle_counted_by
-				? build_counted_by_ref (datum, subdatum,
-							&counted_by_type)
-				: NULL_TREE;
+
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
 
@@ -2875,10 +2892,8 @@ build_component_ref (location_t loc, tree datum, tree component,
 			NULL_TREE);
 	  SET_EXPR_LOCATION (ref, loc);
 
-	  if (counted_by_ref)
-	    ref = build_access_with_size_for_counted_by (loc, ref,
-							 counted_by_ref,
-							 counted_by_type);
+	  if (handle_counted_by)
+	    ref = handle_counted_by_for_component_ref (loc, ref);
 
 	  if (TREE_READONLY (subdatum)
 	      || (use_datum_quals && TREE_READONLY (datum)))

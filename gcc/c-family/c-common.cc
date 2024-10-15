@@ -430,6 +430,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
   { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
+  { "__builtin_counted_by_ref", RID_BUILTIN_COUNTED_BY_REF, D_CONLY },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
