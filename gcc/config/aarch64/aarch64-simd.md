@@ -1294,6 +1294,35 @@
   [(set_attr "type" "neon_shift_acc<q>")]
 )
 
+;; After all the combinations and propagations of ROTATE have been
+;; attempted split any remaining vector rotates into SHL + USRA sequences.
+(define_insn_and_split "*aarch64_simd_rotate_imm<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand" "=&w")
+	(rotate:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
+		      (match_operand:VDQ_I 2 "aarch64_simd_lshift_imm")))]
+  "TARGET_SIMD"
+  "#"
+  "&& 1"
+  [(set (match_dup 3)
+	(ashift:VDQ_I (match_dup 1)
+		      (match_dup 2)))
+   (set (match_dup 0)
+	(plus:VDQ_I
+	  (lshiftrt:VDQ_I
+	    (match_dup 1)
+	    (match_dup 4))
+	  (match_dup 3)))]
+  {
+    operands[3] = reload_completed ? operands[0] : gen_reg_rtx (<MODE>mode);
+    rtx shft_amnt = unwrap_const_vec_duplicate (operands[2]);
+    int bitwidth = GET_MODE_UNIT_SIZE (<MODE>mode) * BITS_PER_UNIT;
+    operands[4]
+      = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+					   bitwidth - INTVAL (shft_amnt));
+  }
+  [(set_attr "length" "8")]
+)
+
 (define_insn "aarch64_<sra_op>rsra_n<mode>_insn"
  [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
 	(plus:VSDQ_I_DI
