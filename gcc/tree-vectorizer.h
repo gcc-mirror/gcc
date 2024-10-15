@@ -2730,6 +2730,18 @@ vect_is_reduction (stmt_vec_info stmt_info)
   return STMT_VINFO_REDUC_IDX (stmt_info) >= 0;
 }
 
+/* Returns the memory acccess type being used to vectorize the statement.  If
+   SLP this is read from NODE, otherwise it's read from the STMT_VINFO.  */
+
+inline vect_memory_access_type
+vect_mem_access_type (stmt_vec_info stmt_info, slp_tree node)
+{
+  if (node)
+    return SLP_TREE_MEMORY_ACCESS_TYPE (node);
+  else
+    return STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info);
+}
+
 /* If STMT_INFO describes a reduction, return the vect_reduction_type
    of the reduction it describes, otherwise return -1.  */
 inline int

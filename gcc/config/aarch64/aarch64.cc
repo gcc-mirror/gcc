@@ -16278,7 +16278,7 @@ public:
 private:
   void record_potential_advsimd_unrolling (loop_vec_info);
   void analyze_loop_vinfo (loop_vec_info);
-  void count_ops (unsigned int, vect_cost_for_stmt, stmt_vec_info,
+  void count_ops (unsigned int, vect_cost_for_stmt, stmt_vec_info, slp_tree,
 		  aarch64_vec_op_count *);
   fractional_cost adjust_body_cost_sve (const aarch64_vec_op_count *,
 					fractional_cost, unsigned int,
@@ -16595,11 +16595,13 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
-/* Return true if an access of kind KIND for STMT_INFO represents one
-   vector of an LD[234] or ST[234] operation.  Return the total number of
-   vectors (2, 3 or 4) if so, otherwise return a value outside that range.  */
+/* Return true if an access of kind KIND for STMT_INFO (or NODE if SLP)
+   represents one vector of an LD[234] or ST[234] operation.  Return the total
+   number of vectors (2, 3 or 4) if so, otherwise return a value outside that
+   range.  */
 static int
-aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info)
+aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+			     slp_tree node)
 {
   if ((kind == vector_load
        || kind == unaligned_load
@@ -16609,7 +16611,7 @@ aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info)
     {
       stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
       if (stmt_info
-	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_LOAD_STORE_LANES)
+	  && vect_mem_access_type (stmt_info, node) == VMAT_LOAD_STORE_LANES)
 	return DR_GROUP_SIZE (stmt_info);
     }
   return 0;
@@ -16847,14 +16849,15 @@ aarch64_detect_scalar_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
 }
 
 /* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
-   for the vectorized form of STMT_INFO, which has cost kind KIND and which
-   when vectorized would operate on vector type VECTYPE.  Try to subdivide
-   the target-independent categorization provided by KIND to get a more
-   accurate cost.  WHERE specifies where the cost associated with KIND
-   occurs.  */
+   for the vectorized form of STMT_INFO possibly using SLP node NODE, which has
+   cost kind KIND and which when vectorized would operate on vector type
+   VECTYPE.  Try to subdivide the target-independent categorization provided by
+   KIND to get a more accurate cost.  WHERE specifies where the cost associated
+   with KIND occurs.  */
 static fractional_cost
 aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
-				    stmt_vec_info stmt_info, tree vectype,
+				    stmt_vec_info stmt_info, slp_tree node,
+				    tree vectype,
 				    enum vect_cost_model_location where,
 				    fractional_cost stmt_cost)
 {
@@ -16880,7 +16883,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
      cost by the number of elements in the vector.  */
   if (kind == scalar_load
       && sve_costs
-      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
     {
       unsigned int nunits = vect_nunits_for_cost (vectype);
       /* Test for VNx2 modes, which have 64-bit containers.  */
@@ -16893,7 +16896,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
      in a scatter operation.  */
   if (kind == scalar_store
       && sve_costs
-      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
     return sve_costs->scatter_store_elt_cost;
 
   /* Detect cases in which vec_to_scalar represents an in-loop reduction.  */
@@ -17017,7 +17020,7 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
    cost of any embedded operations.  */
 static fractional_cost
 aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
-			  stmt_vec_info stmt_info, tree vectype,
+			  stmt_vec_info stmt_info, slp_tree node, tree vectype,
 			  unsigned vec_flags, fractional_cost stmt_cost)
 {
   if (vectype)
@@ -17026,7 +17029,7 @@ aarch64_adjust_stmt_cost (vec_info *vinfo, vect_cost_for_stmt kind,
 
       /* Detect cases in which a vector load or store represents an
 	 LD[234] or ST[234] instruction.  */
-      switch (aarch64_ld234_st234_vectors (kind, stmt_info))
+      switch (aarch64_ld234_st234_vectors (kind, stmt_info, node))
 	{
 	case 2:
 	  stmt_cost += simd_costs->ld2_st2_permute_cost;
@@ -17098,7 +17101,7 @@ aarch64_force_single_cycle (vec_info *vinfo, stmt_vec_info stmt_info)
    information relating to the vector operation in OPS.  */
 void
 aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info,
+				 stmt_vec_info stmt_info, slp_tree node,
 				 aarch64_vec_op_count *ops)
 {
   const aarch64_base_vec_issue_info *base_issue = ops->base_issue_info ();
@@ -17196,7 +17199,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 
   /* Add any extra overhead associated with LD[234] and ST[234] operations.  */
   if (simd_issue)
-    switch (aarch64_ld234_st234_vectors (kind, stmt_info))
+    switch (aarch64_ld234_st234_vectors (kind, stmt_info, node))
       {
       case 2:
 	ops->general_ops += simd_issue->ld2_st2_general_ops * count;
@@ -17214,7 +17217,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
   /* Add any overhead associated with gather loads and scatter stores.  */
   if (sve_issue
       && (kind == scalar_load || kind == scalar_store)
-      && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+      && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
     {
       unsigned int pairs = CEIL (count, 2);
       ops->pred_ops += sve_issue->gather_scatter_pair_pred_ops * pairs;
@@ -17319,7 +17322,7 @@ aarch64_stp_sequence_cost (unsigned int count, vect_cost_for_stmt kind,
 
 unsigned
 aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-				     stmt_vec_info stmt_info, slp_tree,
+				     stmt_vec_info stmt_info, slp_tree node,
 				     tree vectype, int misalign,
 				     vect_cost_model_location where)
 {
@@ -17363,13 +17366,14 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
       if (vectype && m_vec_flags)
 	stmt_cost = aarch64_detect_vector_stmt_subtype (m_vinfo, kind,
-							stmt_info, vectype,
-							where, stmt_cost);
+							stmt_info, node,
+							vectype, where,
+							stmt_cost);
 
       /* Check if we've seen an SVE gather/scatter operation and which size.  */
       if (kind == scalar_load
 	  && aarch64_sve_mode_p (TYPE_MODE (vectype))
-	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
+	  && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
 	{
 	  const sve_vec_cost *sve_costs = aarch64_tune_params.vec_costs->sve;
 	  if (sve_costs)
@@ -17418,7 +17422,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     {
       /* Account for any extra "embedded" costs that apply additively
 	 to the base cost calculated above.  */
-      stmt_cost = aarch64_adjust_stmt_cost (m_vinfo, kind, stmt_info,
+      stmt_cost = aarch64_adjust_stmt_cost (m_vinfo, kind, stmt_info, node,
 					    vectype, m_vec_flags, stmt_cost);
 
       /* If we're recording a nonzero vector loop body cost for the
@@ -17429,7 +17433,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
 	  && stmt_cost != 0)
 	for (auto &ops : m_ops)
-	  count_ops (count, kind, stmt_info, &ops);
+	  count_ops (count, kind, stmt_info, node, &ops);
 
       /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
 	 estimate the number of statements in the unrolled Advanced SIMD
