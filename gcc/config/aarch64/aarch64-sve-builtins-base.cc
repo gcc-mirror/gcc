@@ -1302,6 +1302,20 @@ public:
 class svindex_impl : public function_base
 {
 public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    /* Apply constant folding if base and step are integer constants.  */
+    tree vec_type = TREE_TYPE (f.lhs);
+    tree base = gimple_call_arg (f.call, 0);
+    tree step = gimple_call_arg (f.call, 1);
+    if (TREE_CODE (base) != INTEGER_CST || TREE_CODE (step) != INTEGER_CST)
+      return NULL;
+    return gimple_build_assign (f.lhs,
+				build_vec_series (vec_type, base, step));
+  }
+
+public:
   rtx
   expand (function_expander &e) const override
   {
