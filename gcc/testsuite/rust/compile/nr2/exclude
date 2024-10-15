@@ -45,7 +45,6 @@ feature_rust_attri0.rs
 feature_rust_attri1.rs
 for_lifetimes.rs
 format_args_basic_expansion.rs
-found_struct.rs
 generic-default1.rs
 generics1.rs
 generics10.rs
@@ -145,10 +144,8 @@ match2.rs
 match3.rs
 match4.rs
 match5.rs
-match8.rs
 match9.rs
 method2.rs
-missing_constructor_fields.rs
 multi_reference_type.rs
 multiple_bindings1.rs
 multiple_bindings2.rs
@@ -203,7 +200,6 @@ traits6.rs
 traits7.rs
 traits8.rs
 traits9.rs
-tuple_struct1.rs
 type-bindings1.rs
 unconstrained_type_param.rs
 undeclared_label.rs
