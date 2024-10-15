@@ -1477,10 +1477,12 @@ predicate_bbs (loop_p loop)
 		{
 		  tree low = build2_loc (loc, GE_EXPR,
 					 boolean_type_node,
-					 index, CASE_LOW (label));
+					 index, fold_convert_loc (loc, TREE_TYPE (index),
+						 CASE_LOW (label)));
 		  tree high = build2_loc (loc, LE_EXPR,
 					  boolean_type_node,
-					  index, CASE_HIGH (label));
+					  index, fold_convert_loc (loc, TREE_TYPE (index),
+						  CASE_HIGH (label)));
 		  case_cond = build2_loc (loc, TRUTH_AND_EXPR,
 					  boolean_type_node,
 					  low, high);
@@ -1489,7 +1491,8 @@ predicate_bbs (loop_p loop)
 		case_cond = build2_loc (loc, EQ_EXPR,
 					boolean_type_node,
 					index,
-					CASE_LOW (gimple_switch_label (sw, i)));
+					fold_convert_loc (loc, TREE_TYPE (index),
+							  CASE_LOW (label)));
 	      if (i > 1)
 		switch_cond = build2_loc (loc, TRUTH_OR_EXPR,
 					  boolean_type_node,
