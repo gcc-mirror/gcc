@@ -25161,7 +25161,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       }
 
     case REFERENCE_TYPE:
-      if (!TYPE_REF_P (arg))
+      if (!TYPE_REF_P (arg)
+	  || TYPE_REF_IS_RVALUE (parm) != TYPE_REF_IS_RVALUE (arg))
 	return unify_type_mismatch (explain_p, parm, arg);
       return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
 		    strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
