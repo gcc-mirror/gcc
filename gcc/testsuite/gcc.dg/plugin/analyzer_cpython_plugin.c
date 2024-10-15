@@ -963,17 +963,10 @@ public:
 void
 kf_PyList_New::impl_call_post (const call_details &cd) const
 {
-  class success : public call_info
+  class success : public success_call_info
   {
   public:
-    success (const call_details &cd) : call_info (cd) {}
-
-    label_text
-    get_desc (bool can_colorize) const final override
-    {
-      return make_label_text (can_colorize, "when %qE succeeds",
-                              get_fndecl ());
-    }
+    success (const call_details &cd) : success_call_info (cd) {}
 
     bool
     update_model (region_model *model, const exploded_edge *,
@@ -1104,17 +1097,10 @@ public:
 void
 kf_PyLong_FromLong::impl_call_post (const call_details &cd) const
 {
-  class success : public call_info
+  class success : public success_call_info
   {
   public:
-    success (const call_details &cd) : call_info (cd) {}
-
-    label_text
-    get_desc (bool can_colorize) const final override
-    {
-      return make_label_text (can_colorize, "when %qE succeeds",
-                              get_fndecl ());
-    }
+    success (const call_details &cd) : success_call_info (cd) {}
 
     bool
     update_model (region_model *model, const exploded_edge *,
