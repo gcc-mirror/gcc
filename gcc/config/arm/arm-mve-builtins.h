@@ -398,6 +398,7 @@ public:
 				    unsigned int = SAME_SIZE);
   bool require_scalar_type (unsigned int, const char *);
   bool require_pointer_type (unsigned int);
+  bool require_pointer_to_type (unsigned int, tree);
   bool require_integer_immediate (unsigned int);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);

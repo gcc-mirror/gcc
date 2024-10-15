@@ -688,28 +688,6 @@ arm_ldrgbwbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define LDRGBWBU_Z_QUALIFIERS (arm_ldrgbwbu_z_qualifiers)
 
 static enum arm_type_qualifiers
-arm_strsbwbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const, qualifier_none};
-#define STRSBWBS_QUALIFIERS (arm_strsbwbs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const, qualifier_unsigned};
-#define STRSBWBU_QUALIFIERS (arm_strsbwbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbs_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
-      qualifier_none, qualifier_predicate};
-#define STRSBWBS_P_QUALIFIERS (arm_strsbwbs_p_qualifiers)
-
-static enum arm_type_qualifiers
-arm_strsbwbu_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_const,
-      qualifier_unsigned, qualifier_predicate};
-#define STRSBWBU_P_QUALIFIERS (arm_strsbwbu_p_qualifiers)
-
-static enum arm_type_qualifiers
 arm_lsll_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none};
 #define LSLL_QUALIFIERS (arm_lsll_qualifiers)

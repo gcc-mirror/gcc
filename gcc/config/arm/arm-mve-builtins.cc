@@ -1661,6 +1661,31 @@ function_resolver::require_pointer_type (unsigned int argno)
   return true;
 }
 
+/* Require argument ARGNO to be a pointer to EXPECTED type.  Return true on
+   success, otherwise report an error and return false.  */
+bool
+function_resolver::require_pointer_to_type (unsigned int argno, tree expected)
+{
+  tree actual = get_argument_type (argno);
+  if (TREE_CODE (actual) != POINTER_TYPE)
+    {
+      error_at (location, "passing %qT to argument %d of %qE, which"
+		" expects a pointer type", actual, argno + 1, fndecl);
+      return false;
+    }
+
+  tree target = TREE_TYPE (actual);
+  if (target != expected)
+    {
+      error_at (location, "passing %qT to argument %d of %qE, which"
+		" expects a pointer to %qT", actual, argno + 1, fndecl,
+		expected);
+      return false;
+    }
+
+  return true;
+}
+
 /* Require the function to have exactly EXPECTED arguments.  Return true
    if it does, otherwise report an appropriate error.  */
 bool

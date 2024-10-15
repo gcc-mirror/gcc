@@ -304,23 +304,59 @@ public:
     return CP_WRITE_MEMORY;
   }
 
+  machine_mode memory_vector_mode (const function_instance &fi) const override
+  {
+    poly_uint64 nunits = GET_MODE_NUNITS (fi.vector_mode (0));
+    return arm_mve_data_mode (m_to_int_mode, nunits).require ();
+  }
+
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
+    rtx insns, base_ptr, new_base;
+    machine_mode base_mode;
+
+    if ((e.mode_suffix_id != MODE_none)
+	&& (e.mode_suffix_id != MODE_wb))
+      gcc_unreachable ();
+
+    /* In _wb mode, the start offset is passed via a pointer,
+       dereference it.  */
+    if (e.mode_suffix_id == MODE_wb)
+      {
+	base_mode = e.memory_vector_mode ();
+	rtx base = gen_reg_rtx (base_mode);
+	base_ptr = e.args[0];
+	emit_insn (gen_rtx_SET (base, gen_rtx_MEM (base_mode, base_ptr)));
+	e.args[0] = base;
+	new_base = gen_reg_rtx (base_mode);
+	e.args.quick_insert (0, new_base);
+      }
+
     switch (e.pred)
       {
       case PRED_none:
-	icode = code_for_mve_vstrq_scatter_base (e.vector_mode (0));
+	icode = (e.mode_suffix_id == MODE_none)
+	  ? code_for_mve_vstrq_scatter_base (e.vector_mode (0))
+	  : code_for_mve_vstrq_scatter_base_wb (e.vector_mode (0));
 	break;
 
       case PRED_p:
-	icode = code_for_mve_vstrq_scatter_base_p (e.vector_mode (0));
+	icode = (e.mode_suffix_id == MODE_none)
+	  ? code_for_mve_vstrq_scatter_base_p (e.vector_mode (0))
+	  : code_for_mve_vstrq_scatter_base_wb_p (e.vector_mode (0));
 	break;
 
       default:
 	gcc_unreachable ();
       }
-    return e.use_exact_insn (icode);
+    insns = e.use_exact_insn (icode);
+
+    /* Update offset as appropriate.  */
+    if (e.mode_suffix_id == MODE_wb)
+      emit_insn (gen_rtx_SET (gen_rtx_MEM (base_mode, base_ptr), new_base));
+
+    return insns;
   }
 
   /* The mode of a single memory element.  */

@@ -150,6 +150,7 @@ parse_element_type (const function_instance &instance, const char *&format)
    _       - void
    al      - array pointer for loads
    as      - array pointer for stores
+   b       - pointer to vector of unsigned, width given by the first type suffix
    p       - predicates with type mve_pred16_t
    s<elt>  - a scalar type with the given element suffix
    t<elt>  - a vector or tuple type with given element suffix [*1]
@@ -179,6 +180,15 @@ parse_type (const function_instance &instance, const char *&format)
 	return build_pointer_type (instance.memory_scalar_type ());
       }
       gcc_unreachable ();
+    }
+
+  if (ch == 'b')
+    {
+      type_class_index tclass = TYPE_unsigned;
+      unsigned int bits = instance.type_suffix (0).element_bits;
+      type_suffix_index suffix = find_type_suffix (tclass, bits);
+      tree acle_type = acle_vector_types[0][type_suffixes[suffix].vector_type];
+      return build_pointer_type (acle_type);
     }
 
   if (ch == 'p')
@@ -1684,7 +1694,8 @@ SHAPE (store_scatter_offset)
 
    Example: vstrbq_scatter_base
    void [__arm_]vstrwq_scatter_base[_s32](uint32x4_t addr, const int offset, int32x4_t value)
-   void [__arm_]vstrwq_scatter_base_p[_s32](uint32x4_t addr, const int offset, int32x4_t value, mve_pred16_t p)  */
+   void [__arm_]vstrwq_scatter_base_p[_s32](uint32x4_t addr, const int offset, int32x4_t value, mve_pred16_t p)
+   void [__arm_]vstrdq_scatter_base_wb[_s64](uint64x2_t *addr, const int offset, int64x2_t value)  */
 struct store_scatter_base_def : public store_scatter
 {
   void
@@ -1692,12 +1703,17 @@ struct store_scatter_base_def : public store_scatter
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_wb, preserve_user_namespace);
     build_all (b, "_,vu0,ss64,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "_,b,ss64,v0", group, MODE_wb, preserve_user_namespace);
   }
 
   tree
   resolve (function_resolver &r) const override
   {
+    gcc_assert ((r.mode_suffix_id == MODE_none)
+		|| (r.mode_suffix_id == MODE_wb));
+
     unsigned int i, nargs;
     type_suffix_index type;
     if (!r.check_gp_argument (3, i, nargs)
@@ -1708,10 +1724,20 @@ struct store_scatter_base_def : public store_scatter
     type_suffix_index base_type
       = find_type_suffix (TYPE_unsigned, type_suffixes[type].element_bits);
 
-    /* Base (arg 0) should be a vector of unsigned with same width as value
-       (arg 2).  */
-    if (!r.require_matching_vector_type (0, base_type))
-      return error_mark_node;
+    if (r.mode_suffix_id == MODE_none)
+      {
+	/* Base (arg 0) should be a vector of unsigned with same width as value
+	   (arg 2).  */
+	if (!r.require_matching_vector_type (0, base_type))
+	  return error_mark_node;
+      }
+    else
+      {
+	/* Base (arg 0) should be a pointer to a vector of unsigned with the
+	   same width as value (arg 2).  */
+	if (!r.require_pointer_to_type (0, r.get_vector_type (base_type)))
+	  return error_mark_node;
+      }
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
