@@ -1965,13 +1965,7 @@ make_forwarders_with_degenerate_phis (function *fn)
    In conservative mode, we ignore control dependence and simply declare
    all but the most trivially dead branches necessary.  This mode is fast.
    In aggressive mode, control dependences are taken into account, which
-   results in more dead code elimination, but at the cost of some time.
-
-   FIXME: Aggressive mode before PRE doesn't work currently because
-	  the dominance info is not invalidated after DCE1.  This is
-	  not an issue right now because we only run aggressive DCE
-	  as the last tree SSA pass, but keep this in mind when you
-	  start experimenting with pass ordering.  */
+   results in more dead code elimination, but at the cost of some time.  */
 
 static unsigned int
 perform_tree_ssa_dce (bool aggressive)
