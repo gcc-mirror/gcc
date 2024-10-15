@@ -31,21 +31,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "is-a.h"
 #include "ordered-hash-map.h"
-#include "pretty-print.h"
-#include "input.h"
 
-void
-fatal (const char *format, ...)
+
+/* Stubs for GGC referenced through instantiations triggered by hash-map.  */
+void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
+				  size_t, size_t MEM_STAT_DECL)
 {
-  va_list ap;
-
-  va_start (ap, format);
-  fprintf (stderr, "%s: ", progname);
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fputc ('\n', stderr);
-  exit (FATAL_EXIT_CODE);
+  return NULL;
 }
+void ggc_free (void *)
+{
+}
+
 
 /* Global state.  */
 
@@ -54,6 +51,538 @@ unsigned verbose;
 
 
 /* libccp helpers.  */
+
+static class line_maps *line_table;
+
+/* The rich_location class within libcpp requires a way to expand
+   location_t instances, and relies on the client code
+   providing a symbol named
+     linemap_client_expand_location_to_spelling_point
+   to do this.
+
+   This is the implementation for genmatch.  */
+
+expanded_location
+linemap_client_expand_location_to_spelling_point (const line_maps *set,
+						  location_t loc,
+						  enum location_aspect)
+{
+  const struct line_map_ordinary *map;
+  loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
+  return linemap_expand_location (set, map, loc);
+}
+
+#define DIAG_ARGMAX 30
+
+#define diag_integer_with_precision(FS, ARG, PREC, T, F) \
+  do								\
+    switch (PREC)						\
+      {								\
+      case 0:							\
+	fprintf (FS, "%" F, ARG.m_##T);				\
+	break;							\
+								\
+      case 1:							\
+	fprintf (FS, "%l" F, ARG.m_long_##T);			\
+	break;							\
+								\
+      case 2:							\
+	fprintf (FS, "%" HOST_LONG_LONG_FORMAT F,		\
+		 ARG.m_long_long_##T);				\
+	break;							\
+								\
+      case 3:							\
+	if (T (-1) < T (0))					\
+	  fprintf (FS, "%" GCC_PRISZ F,				\
+		   (fmt_size_t) ARG.m_ssize_t);			\
+	else							\
+	  fprintf (FS, "%" GCC_PRISZ F,				\
+		   (fmt_size_t) ARG.m_size_t);			\
+	break;							\
+								\
+      case 4:							\
+	if (T (-1) >= T (0))					\
+	  {							\
+	    unsigned long long a = ARG.m_ptrdiff_t;		\
+	    unsigned long long m = PTRDIFF_MAX;			\
+	    m = 2 * m + 1;					\
+	    fprintf (FS, "%" HOST_LONG_LONG_FORMAT F,		\
+		     a & m);					\
+	  }							\
+	else if (sizeof (ptrdiff_t) <= sizeof (int))		\
+	  fprintf (FS, "%" F, (int) ARG.m_ptrdiff_t);		\
+	else if (sizeof (ptrdiff_t) <= sizeof (long))		\
+	  fprintf (FS, "%l" F, (long) ARG.m_ptrdiff_t);		\
+	else							\
+	  fprintf (FS, "%" HOST_LONG_LONG_FORMAT F,		\
+		   (long long int) ARG.m_ptrdiff_t);		\
+	break;							\
+								\
+      default:							\
+	break;							\
+      }								\
+  while (0)
+
+/* This is a simplified version of pretty-print.cc (pp_format)
+   which emits the diagnostics to F stream directly.
+   It needs to support everything that libcpp needs in its diagnostics,
+   but doesn't have to bother with colors, UTF-8 quoting, URL pretty
+   printing, etc.  */
+#if GCC_VERSION >= 4001
+__attribute__((format (gcc_diag, 3, 0)))
+#endif
+static void
+diag_vfprintf (FILE *f, int err_no, const char *msg, va_list *ap)
+{
+  unsigned int curarg = 0;
+  bool any_numbered = false;
+  bool any_unnumbered = false;
+  enum arg_kind {
+    arg_kind_none,
+    arg_kind_int,
+    arg_kind_long_int,
+    arg_kind_long_long_int,
+    arg_kind_unsigned,
+    arg_kind_long_unsigned,
+    arg_kind_long_long_unsigned,
+    arg_kind_hwi,
+    arg_kind_uhwi,
+    arg_kind_size_t,
+    arg_kind_ssize_t,
+    arg_kind_ptrdiff_t,
+    arg_kind_cst_pchar,
+    arg_kind_pvoid,
+    arg_kind_double,
+    arg_kind_Z
+  };
+  union {
+    enum arg_kind m_kind;
+    int m_int;
+    long m_long_int;
+    long long m_long_long_int;
+    unsigned m_unsigned;
+    unsigned long m_long_unsigned;
+    unsigned long long m_long_long_unsigned;
+    HOST_WIDE_INT m_hwi;
+    unsigned HOST_WIDE_INT m_uhwi;
+    size_t m_size_t;
+    ssize_t m_ssize_t;
+    ptrdiff_t m_ptrdiff_t;
+    const char *m_cst_pchar;
+    void *m_pvoid;
+    double m_double;
+    struct { int *p; unsigned len; } m_Z;
+  } args[DIAG_ARGMAX];
+  memset (args, 0, sizeof (args));
+  for (const char *p = strchr (msg, '%'); p; p = strchr (p, '%'))
+    {
+      ++p;
+      switch (*p)
+	{
+	case '\0':
+	  gcc_unreachable ();
+	case '%':
+	case '<':
+	case '>':
+	case '\'':
+	case '}':
+	case 'R':
+	case 'm':
+	  /* These don't need any arguments.  */
+	  ++p;
+	  continue;
+	default:
+	  break;
+	}
+      unsigned argno;
+      if (ISDIGIT (*p))
+	{
+	  char *end;
+	  argno = strtoul (p, &end, 10) - 1;
+	  p = end;
+	  gcc_assert (*p == '$');
+	  p++;
+
+	  any_numbered = true;
+	  gcc_assert (!any_unnumbered);
+	}
+      else
+	{
+	  argno = curarg++;
+	  any_unnumbered = true;
+	  gcc_assert (!any_numbered);
+	}
+      gcc_assert (argno < DIAG_ARGMAX);
+      gcc_assert (args[argno].m_kind == arg_kind_none);
+      int precision = 0;
+      bool wide = false;
+      for (; *p; ++p)
+	{
+	  switch (*p)
+	    {
+	    case 'q':
+	    case '+':
+	    case '#':
+	      continue;
+	    case 'w':
+	      gcc_assert (!wide);
+	      wide = true;
+	      continue;
+	    case 'z':
+	      gcc_assert (!precision);
+	      precision = 3;
+	      continue;
+	    case 't':
+	      gcc_assert (!precision);
+	      precision = 4;
+	      continue;
+	    case 'l':
+	      gcc_assert (precision < 2);
+	      ++precision;
+	      continue;
+	    default:
+	      break;
+	    }
+	  break;
+	}
+      if (*p == '.')
+	{
+	  /* We handle '%.Ns' and '%.*s' or '%M$.*N$s'
+	     (where M == N + 1).  */
+	  ++p;
+	  if (ISDIGIT (*p))
+	    {
+	      while (ISDIGIT (*p))
+		++p;
+	      gcc_assert (*p == 's');
+	    }
+	  else
+	    {
+	      gcc_assert (*p == '*');
+	      ++p;
+	      if (ISDIGIT (*p))
+		{
+		  char *end;
+		  unsigned int argno2 = strtoul (p, &end, 10) - 1;
+		  p = end;
+		  gcc_assert (argno2 == argno - 1);
+		  gcc_assert (!any_unnumbered);
+		  gcc_assert (*p == '$');
+		  ++p;
+		  args[argno2].m_kind = arg_kind_int;
+		}
+	      else
+		{
+		  gcc_assert (!any_numbered);
+		  args[argno].m_kind = arg_kind_int;
+		  ++argno;
+		  ++curarg;
+		}
+	    }
+	  gcc_assert (*p == 's');
+	}
+      enum arg_kind kind = arg_kind_none;
+      switch (*p)
+	{
+	case 'r':
+	  kind = arg_kind_cst_pchar;
+	  break;
+	case 'c':
+	  kind = arg_kind_int;
+	  break;
+	case 'd':
+	case 'i':
+	  if (wide)
+	    kind = arg_kind_hwi;
+	  else
+	    switch (precision)
+	      {
+	      case 0:
+		kind = arg_kind_int;
+		break;
+	      case 1:
+		kind = arg_kind_long_int;
+		break;
+	      case 2:
+		kind = arg_kind_long_long_int;
+		break;
+	      case 3:
+		kind = arg_kind_ssize_t;
+		break;
+	      case 4:
+		kind = arg_kind_ptrdiff_t;
+		break;
+	      }
+	  break;
+	case 'o':
+	case 'u':
+	case 'x':
+	  if (wide)
+	    kind = arg_kind_uhwi;
+	  else
+	    switch (precision)
+	      {
+	      case 0:
+		kind = arg_kind_unsigned;
+		break;
+	      case 1:
+		kind = arg_kind_long_unsigned;
+		break;
+	      case 2:
+		kind = arg_kind_long_long_unsigned;
+		break;
+	      case 3:
+		kind = arg_kind_size_t;
+		break;
+	      case 4:
+		kind = arg_kind_ptrdiff_t;
+		break;
+	      }
+	  break;
+	case 's':
+	case '{':
+	  kind = arg_kind_cst_pchar;
+	  break;
+	case 'p':
+	  kind = arg_kind_pvoid;
+	  break;
+	case 'f':
+	  kind = arg_kind_double;
+	  break;
+	case 'Z':
+	  kind = arg_kind_Z;
+	  break;
+	case '@':
+	case 'e':
+	  /* These two are unhandled, hopefully libcpp doesn't use them.  */
+	default:
+	  gcc_unreachable ();
+	}
+      gcc_assert (kind != arg_kind_none);
+      args[argno].m_kind = kind;
+    }
+  for (int i = 0; i < DIAG_ARGMAX; ++i)
+    switch (args[i].m_kind)
+      {
+      case arg_kind_none:
+	for (++i; i < DIAG_ARGMAX; ++i)
+	  gcc_assert (args[i].m_kind == arg_kind_none);
+	break;
+      case arg_kind_int:
+	args[i].m_int = va_arg (*ap, int);
+	break;
+      case arg_kind_long_int:
+	args[i].m_long_int = va_arg (*ap, long);
+	break;
+      case arg_kind_long_long_int:
+	args[i].m_long_long_int = va_arg (*ap, long long);
+	break;
+      case arg_kind_unsigned:
+	args[i].m_unsigned = va_arg (*ap, unsigned);
+	break;
+      case arg_kind_long_unsigned:
+	args[i].m_long_unsigned = va_arg (*ap, unsigned long);
+	break;
+      case arg_kind_long_long_unsigned:
+	args[i].m_long_long_unsigned = va_arg (*ap, unsigned long long);
+	break;
+      case arg_kind_hwi:
+	args[i].m_hwi = va_arg (*ap, HOST_WIDE_INT);
+	break;
+      case arg_kind_uhwi:
+	args[i].m_uhwi = va_arg (*ap, unsigned HOST_WIDE_INT);
+	break;
+      case arg_kind_size_t:
+	args[i].m_size_t = va_arg (*ap, size_t);
+	break;
+      case arg_kind_ssize_t:
+	args[i].m_ssize_t = va_arg (*ap, ssize_t);
+	break;
+      case arg_kind_ptrdiff_t:
+	args[i].m_ptrdiff_t = va_arg (*ap, ptrdiff_t);
+	break;
+      case arg_kind_cst_pchar:
+	args[i].m_cst_pchar = va_arg (*ap, const char *);
+	break;
+      case arg_kind_pvoid:
+	args[i].m_pvoid = va_arg (*ap, void *);
+	break;
+      case arg_kind_double:
+	args[i].m_double = va_arg (*ap, double);
+	break;
+      case arg_kind_Z:
+	args[i].m_Z.p = va_arg (*ap, int *);
+	args[i].m_Z.len = va_arg (*ap, unsigned);
+	break;
+      default:
+	gcc_unreachable ();
+      }
+  curarg = 0;
+  const char *q = msg;
+  for (const char *p = strchr (msg, '%'); p; p = strchr (p, '%'))
+    {
+      if (q != p)
+	fprintf (f, "%.*s", (int) (p - q), q);
+      ++p;
+      q = p + 1;
+      switch (*p)
+	{
+	case '%':
+	  fputc ('%', f);
+	  ++p;
+	  continue;
+	case '<':
+	case '>':
+	case '\'':
+	  fputc ('\'', f);
+	  ++p;
+	  continue;
+	case '}':
+	case 'R':
+	  ++p;
+	  continue;
+	case 'm':
+	  fprintf (f, "%s", xstrerror (err_no));
+	  ++p;
+	  continue;
+	default:
+	  break;
+	}
+      unsigned argno;
+      if (ISDIGIT (*p))
+	{
+	  char *end;
+	  argno = strtoul (p, &end, 10) - 1;
+	  p = end;
+	  p++;
+	}
+      else
+	argno = curarg++;
+      int precision = 0;
+      bool quote = false;
+      bool wide = false;
+      for (; *p; ++p)
+	{
+	  switch (*p)
+	    {
+	    case 'q':
+	      gcc_assert (!quote);
+	      quote = true;
+	      fputc ('\'', f);
+	      continue;
+	    case '+':
+	    case '#':
+	      continue;
+	    case 'w':
+	      wide = true;
+	      continue;
+	    case 'z':
+	      precision = 3;
+	      continue;
+	    case 't':
+	      precision = 4;
+	      continue;
+	    case 'l':
+	      ++precision;
+	      continue;
+	    default:
+	      break;
+	    }
+	  break;
+	}
+      q = p + 1;
+      switch (*p)
+	{
+	case 'r':
+	  break;
+	case 'c':
+	  fputc (args[argno].m_int, f);
+	  break;
+	case 'd':
+	case 'i':
+	  if (wide)
+	    fprintf (f, HOST_WIDE_INT_PRINT_DEC, args[argno].m_hwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 int, "d");
+	  break;
+	case 'o':
+	  if (wide)
+	    fprintf (f, "%" HOST_WIDE_INT_PRINT "o", args[argno].m_uhwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 unsigned, "o");
+	  break;
+	case 'u':
+	  if (wide)
+	    fprintf (f, HOST_WIDE_INT_PRINT_UNSIGNED, args[argno].m_uhwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 unsigned, "u");
+	  break;
+	case 'x':
+	  if (wide)
+	    fprintf (f, HOST_WIDE_INT_PRINT_HEX, args[argno].m_uhwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 unsigned, "x");
+	  break;
+	case 's':
+	  fprintf (f, "%s", args[argno].m_cst_pchar);
+	  break;
+	case '.':
+	  {
+	    int n;
+	    const char *s;
+	    ++p;
+	    if (ISDIGIT (*p))
+	      {
+		char *end;
+		n = strtoul (p, &end, 10);
+		p = end;
+	      }
+	    else
+	      {
+		p = strchr (p, 's');
+		if (any_unnumbered)
+		  {
+		    n = args[argno].m_int;
+		    ++argno;
+		    ++curarg;
+		  }
+		else
+		  n = args[argno - 1].m_int;
+	      }
+	    q = p + 1;
+	    s = args[argno].m_cst_pchar;
+	    size_t len = n < 0 ? strlen (s) : strnlen (s, n);
+	    fprintf (f, "%.*s", (int) len, s);
+	    break;
+	  }
+	case '{':
+	  break;
+	case 'p':
+	  fprintf (f, "%p", args[argno].m_pvoid);
+	  break;
+	case 'f':
+	  fprintf (f, "%f", args[argno].m_double);
+	  break;
+	case 'Z':
+	  for (unsigned i = 0; i < args[argno].m_Z.len; ++i)
+	    {
+	      fprintf (f, "%i", args[argno].m_Z.p[i]);
+		if (i < args[argno].m_Z.len - 1)
+		  fprintf (f, ", ");
+	      }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      if (quote)
+	fputc ('\'', f);
+    }
+  fprintf (f, "%s", q);
+}
 
 static bool
 #if GCC_VERSION >= 4001
@@ -64,16 +593,13 @@ diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level errtype,
 	       const char *msg, va_list *ap)
 {
   const line_map_ordinary *map;
+  int err_no = errno;
   location_t location = richloc->get_loc ();
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
   fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
 	   (errtype == CPP_DL_WARNING) ? "warning" : "error");
-  pretty_printer pp;
-  pp.set_output_stream (stderr);
-  text_info text (msg, ap, errno);
-  pp_format_verbatim (&pp, &text);
-  pp_flush (&pp);
+  diag_vfprintf (stderr, err_no, msg, ap);
   fprintf (stderr, "\n");
   FILE *f = fopen (loc.file, "r");
   if (f)
@@ -254,8 +780,8 @@ output_line_directive (FILE *f, location_t location,
 		      bool dumpfile = false, bool fnargs = false,
 		      bool indirect_line_numbers = false)
 {
-  typedef pair_hash<nofree_string_hash, int_hash<int, -1>> loc_hash;
-  static hash_map<loc_hash, int> loc_id_map;
+  typedef pair_hash<nofree_string_hash, int_hash<int, -1>> location_hash;
+  static hash_map<location_hash, int> loc_id_map;
   const line_map_ordinary *map;
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);

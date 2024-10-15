@@ -2957,12 +2957,12 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.cc gtype-desc.h version.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
+       $(GIMPLE_MATCH_PD_SEQ_SRC) $(GENERIC_MATCH_PD_SEQ_SRC) \
+       gimple-match-auto.h generic-match-auto.h \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
        $(TM_RUST_H) rust/rust-target-hooks-def.h \
        case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
-generated_match_files = gimple-match-auto.h generic-match-auto.h \
-	$(GIMPLE_MATCH_PD_SEQ_SRC) $(GENERIC_MATCH_PD_SEQ_SRC)
 
 #
 # How to compile object files to run on the build machine.
@@ -3145,14 +3145,8 @@ build/genmatch$(build_exeext): BUILD_LIBDEPS += $(LIBINTL_DEP) $(LIBICONV_DEP)
 build/genmatch$(build_exeext): BUILD_LIBS += $(LIBINTL) $(LIBICONV)
 endif
 
-# genmatch links in libcommon.a, which could have been compiled with
-# $(PICFLAG) set to -fno-PIE.  Make sure to link genmatch with -no-pie
-# in that case.
-build/genmatch$(build_exeext): LINKER_FOR_BUILD += $(findstring -no-pie,$(LD_PICFLAG))
-
 build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
-  build/vec.o build/hash-table.o build/sort.o libcommon.a \
-  $(LIBBACKTRACE)
+  $(BUILD_ERRORS) build/vec.o build/hash-table.o build/sort.o
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
@@ -4581,8 +4575,6 @@ po/gcc.pot: force
 # objects from $(OBJS) as early as possible, build all their
 # prerequisites strictly before all objects.
 $(ALL_HOST_OBJS) : | $(generated_files)
-# build/genmatch depends on libcommon.a, so avoid circular dependencies.
-$(filter-out $(OBJS-libcommon),$(ALL_HOST_OBJS)) : | $(generated_match_files)
 
 # Include the auto-generated dependencies for all host objects.
 DEPFILES = \
