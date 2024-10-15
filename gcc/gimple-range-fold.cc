@@ -1139,7 +1139,8 @@ fold_using_range::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
       || TREE_CODE_CLASS (gimple_assign_rhs_code (cond_def)) != tcc_comparison)
     return false;
   tree type = TREE_TYPE (gimple_assign_rhs1 (cond_def));
-  if (!range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
+  if (!value_range::supports_type_p (type)
+      || !range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
     return false;
   range_op_handler hand (gimple_assign_rhs_code (cond_def));
   if (!hand)
