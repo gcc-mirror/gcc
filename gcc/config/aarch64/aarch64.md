@@ -7218,13 +7218,12 @@
 }
 )
 
-;; For copysign (x, y), we want to generate:
+;; For copysignf (x, y), we want to generate:
 ;;
-;;   LDR d2, #(1 << 63)
-;;   BSL v2.8b, [y], [x]
+;;	movi    v31.4s, 0x80, lsl 24
+;;	bit     v0.16b, v1.16b, v31.16b
 ;;
-;; or another, equivalent, sequence using one of BSL/BIT/BIF.  Because
-;; we expect these operations to nearly always operate on
+;; Because we expect these operations to nearly always operate on
 ;; floating-point values, we do not want the operation to be
 ;; simplified into a bit-field insert operation that operates on the
 ;; integer side, since typically that would involve three inter-bank
@@ -7239,32 +7238,25 @@
    (match_operand:GPF 2 "nonmemory_operand")]
   "TARGET_SIMD"
 {
-  rtx signbit_const = GEN_INT (HOST_WIDE_INT_M1U
-			       << (GET_MODE_BITSIZE (<MODE>mode) - 1));
-  /* copysign (x, -1) should instead be expanded as orr with the sign
-     bit.  */
+  rtx sign = GEN_INT (HOST_WIDE_INT_M1U << (GET_MODE_BITSIZE (<MODE>mode) - 1));
+  rtx v_bitmask = gen_const_vec_duplicate (<VQ_INT_EQUIV>mode, sign);
+  v_bitmask = force_reg (<VQ_INT_EQUIV>mode, v_bitmask);
+
+  /* copysign (x, -1) should instead be expanded as orr with the signbit.  */
   rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
+
   if (GET_CODE (op2_elt) == CONST_DOUBLE
       && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
     {
-      rtx v_bitmask
-	= force_reg (V2<V_INT_EQUIV>mode,
-		     gen_const_vec_duplicate (V2<V_INT_EQUIV>mode,
-					      signbit_const));
-
-      emit_insn (gen_iorv2<v_int_equiv>3 (
-	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[0], <MODE>mode),
-	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[1], <MODE>mode),
+      emit_insn (gen_ior<vq_int_equiv>3 (
+	lowpart_subreg (<VQ_INT_EQUIV>mode, operands[0], <MODE>mode),
+	lowpart_subreg (<VQ_INT_EQUIV>mode, operands[1], <MODE>mode),
 	v_bitmask));
       DONE;
     }
-
-  machine_mode int_mode = <V_INT_EQUIV>mode;
-  rtx bitmask = gen_reg_rtx (int_mode);
-  emit_move_insn (bitmask, signbit_const);
   operands[2] = force_reg (<MODE>mode, operands[2]);
   emit_insn (gen_copysign<mode>3_insn (operands[0], operands[1], operands[2],
-				       bitmask));
+				       v_bitmask));
   DONE;
 }
 )
@@ -7273,23 +7265,21 @@
   [(set (match_operand:GPF 0 "register_operand")
 	(unspec:GPF [(match_operand:GPF 1 "register_operand")
 		     (match_operand:GPF 2 "register_operand")
-		     (match_operand:<V_INT_EQUIV> 3 "register_operand")]
+		     (match_operand:<VQ_INT_EQUIV> 3 "register_operand")]
 	 UNSPEC_COPYSIGN))]
   "TARGET_SIMD"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: type  ]
      [ w        , w , w , 0 ; neon_bsl<q>  ] bsl\t%0.<Vbtype>, %2.<Vbtype>, %1.<Vbtype>
      [ w        , 0 , w , w ; neon_bsl<q>  ] bit\t%0.<Vbtype>, %2.<Vbtype>, %3.<Vbtype>
      [ w        , w , 0 , w ; neon_bsl<q>  ] bif\t%0.<Vbtype>, %1.<Vbtype>, %3.<Vbtype>
-     [ r        , r , 0 , X ; bfm          ] bfxil\t%<w1>0, %<w1>1, #0, <sizem1>
   }
 )
 
-
-;; For xorsign (x, y), we want to generate:
+;; For xorsignf (x, y), we want to generate:
 ;;
-;; LDR   d2, #1<<63
-;; AND   v3.8B, v1.8B, v2.8B
-;; EOR   v0.8B, v0.8B, v3.8B
+;;	movi    v31.4s, 0x80, lsl 24
+;;	and     v31.16b, v31.16b, v1.16b
+;;	eor     v0.16b, v31.16b, v0.16b
 ;;
 
 (define_expand "@xorsign<mode>3"

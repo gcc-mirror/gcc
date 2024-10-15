@@ -1891,6 +1891,14 @@
 			       (VNx8SF  "vnx8si") (VNx16SF "vnx16si")
 ])
 
+;; Mode with floating-point values replaced by 128-bit vector integers.
+(define_mode_attr VQ_INT_EQUIV [(DF   "V2DI")   (SF   "V4SI")
+])
+
+;; Lower case mode with floating-point values replaced by 128-bit vector integers.
+(define_mode_attr vq_int_equiv [(DF   "v2di")   (SF   "v4si")
+])
+
 ;; Floating-point equivalent of selected modes.
 (define_mode_attr V_FP_EQUIV [(VNx8HI "VNx8HF") (VNx8HF "VNx8HF")
 			      (VNx8BF "VNx8HF")

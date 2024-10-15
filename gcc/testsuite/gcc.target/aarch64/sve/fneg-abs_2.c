@@ -7,7 +7,7 @@
 
 /*
 ** f1:
-**	orr	v0.2s, #?128, lsl #?24
+**	orr	v0.4s, #?128, lsl #?24
 **	ret
 */
 float32_t f1 (float32_t a)
