@@ -3494,6 +3494,84 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize interleaving patterns like [0 4 1 5].  */
+
+static bool
+shuffle_interleave_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  machine_mode sel_mode = related_int_vector_mode (vmode).require ();
+  poly_int64 vec_len = d->perm.length ();
+  int n_patterns = d->perm.encoding ().npatterns ();
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  if (n_patterns != 2)
+    return false;
+
+  unsigned vlen = vec_len.to_constant ();
+
+  if (vlen < 4 || vlen > 64)
+    return false;
+
+  if (d->one_vector_p)
+    return false;
+
+  bool low = true;
+  if (d->perm.series_p (0, 2, 0, 1)
+      && d->perm.series_p (1, 2, vlen, 1))
+    low = true;
+  else if (d->perm.series_p (0, 2, vlen / 2, 1)
+	   && d->perm.series_p (1, 2, vlen + vlen / 2, 1))
+    low = false;
+  else
+    return false;
+
+  vec_perm_builder sel (vlen, 2, 1);
+  sel.safe_grow (vlen);
+  int cnt = 0;
+  for (unsigned i = 0; i < vlen; i += 2)
+    {
+      sel[i] = cnt;
+      sel[i + 1] = cnt + vlen / 2;
+      cnt++;
+    }
+
+  vec_perm_indices indices (sel, 2, vlen);
+
+  if (vlen != indices.length ().to_constant ())
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  int slide_cnt = vlen / 2;
+  rtx tmp = gen_reg_rtx (vmode);
+
+  if (low)
+    {
+      /* No need for a vector length because we slide up until the
+	 end of OP1 anyway.  */
+      rtx ops[] = {tmp, d->op0, d->op1, gen_int_mode (slide_cnt, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+      emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+    }
+  else
+    {
+      rtx ops[] = {tmp, d->op1, d->op0, gen_int_mode (slide_cnt, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, vmode);
+      emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops,
+			  gen_int_mode (slide_cnt, Pmode));
+    }
+
+  rtx sel_rtx = vec_perm_indices_to_rtx (sel_mode, indices);
+  emit_vlmax_gather_insn (gen_lowpart (vmode, d->target), tmp, sel_rtx);
+
+  return true;
+}
+
 /* Recognize decompress patterns:
 
    1. VEC_PERM_EXPR op0 and op1
@@ -3809,6 +3887,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_consecutive_patterns (d))
 	    return true;
 	  if (shuffle_slide_patterns (d))
+	    return true;
+	  if (shuffle_interleave_patterns (d))
 	    return true;
 	  if (shuffle_compress_patterns (d))
 	    return true;
