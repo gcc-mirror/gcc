@@ -194,6 +194,16 @@ def strip_versioned_namespace(typename):
     return typename.replace(_versioned_namespace, '')
 
 
+def strip_fundts_namespace(typ):
+    """Remove "fundamentals_vN" inline namespace from qualified type name."""
+    pattern = r'^std::experimental::fundamentals_v\d::'
+    repl = 'std::experimental::'
+    if sys.version_info[0] == 2:
+        return re.sub(pattern, repl, typ, 1)
+    else: # Technically this needs Python 3.1 but nobody should be using 3.0
+        return re.sub(pattern, repl, typ, count=1)
+
+
 def strip_inline_namespaces(type_str):
     """Remove known inline namespaces from the canonical name of a type."""
     type_str = strip_versioned_namespace(type_str)
@@ -1267,8 +1277,7 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
 
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
-        self.typename = re.sub(r'^std::experimental::fundamentals_v\d::',
-                               'std::experimental::', self.typename, 1)
+        self.typename = strip_fundts_namespace(self.typename)
         self.val = val
         self.contained_type = None
         contained_value = None
@@ -1363,9 +1372,8 @@ class StdExpOptionalPrinter(SingleObjContainerPrinter):
     def __init__(self, typename, val):
         valtype = self._recognize(val.type.template_argument(0))
         typename = strip_versioned_namespace(typename)
-        self.typename = re.sub(
-            r'^std::(experimental::|)(fundamentals_v\d::|)(.*)',
-            r'std::\1\3<%s>' % valtype, typename, 1)
+        typename = strip_fundts_namespace(typename)
+        self.typename = '%s<%s>' % (typename, valtype)
         payload = val['_M_payload']
         if self.typename.startswith('std::experimental'):
             engaged = val['_M_engaged']
