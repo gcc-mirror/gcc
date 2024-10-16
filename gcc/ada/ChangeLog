@@ -1,3 +1,9 @@
+2024-10-14  Steve Baird  <baird@adacore.com>
+
+	PR ada/114593
+	* sem_res.adb (Valid_Conversion): Test In_Instance instead of
+	In_Instance_Body.
+
 2024-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/115535

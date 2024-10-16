@@ -1,3 +1,62 @@
+2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-fncall-mask.c: New.
+
+2024-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	Backported from master:
+	2023-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109934
+	* gcc.dg/tree-ssa/pr109934.c: New test.
+
+2024-10-14  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-05-16  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/pr113787.c: New test.
+
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115033
+	* gcc.c-torture/execute/pr115033.c: New test.
+
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114207
+	* gcc.c-torture/execute/pr114207.c: New test.
+
+2024-10-14  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2024-07-29  Sam James  <sam@gentoo.org>
+
+	PR ipa/111613
+	* gcc.c-torture/pr111613.c: Rename to..
+	* gcc.c-torture/execute/pr111613.c: ...this.
+
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/111613
+	* gcc.c-torture/pr111613.c: New test.
+
+2024-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114593
+	* gnat.dg/specs/generic_inst2-child2.ads: New test.
+	* gnat.dg/specs/generic_inst2.ads: New helper.
+	* gnat.dg/specs/generic_inst2-child1.ads: Likewise.
+
 2024-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/116190
