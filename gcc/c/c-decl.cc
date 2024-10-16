@@ -13881,6 +13881,7 @@ c_get_loop_names (tree before_labels, bool switch_p, tree *last_p)
 	    {
 	      if (C_DECL_LOOP_NAME (l) || C_DECL_SWITCH_NAME (l))
 		c = l;
+	      gcc_checking_assert (c);
 	      loop_names_hash->put (l, c);
 	      if (i == first)
 		break;
@@ -13952,6 +13953,7 @@ c_finish_bc_name (location_t loc, tree name, bool is_break)
 	  {
 	    if (C_DECL_LOOP_NAME (l) || C_DECL_SWITCH_NAME (l))
 	      c = l;
+	    gcc_checking_assert (c);
 	    if (l == lab)
 	      {
 		label = c;
@@ -13970,6 +13972,7 @@ c_finish_bc_name (location_t loc, tree name, bool is_break)
 	{
 	  if (C_DECL_LOOP_NAME (l) || C_DECL_SWITCH_NAME (l))
 	    c = l;
+	  gcc_checking_assert (c);
 	  if (is_break || C_DECL_LOOP_NAME (c))
 	    candidates.safe_push (IDENTIFIER_POINTER (DECL_NAME (l)));
 	}
