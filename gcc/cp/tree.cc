@@ -3077,19 +3077,6 @@ cxx_print_statistics (void)
 }
 
 /* Return, as an INTEGER_CST node, the number of elements for TYPE
-   (which is an ARRAY_TYPE).  This counts only elements of the top
-   array.  */
-
-tree
-array_type_nelts_top (tree type)
-{
-  return fold_build2_loc (input_location,
-		      PLUS_EXPR, sizetype,
-		      array_type_nelts_minus_one (type),
-		      size_one_node);
-}
-
-/* Return, as an INTEGER_CST node, the number of elements for TYPE
    (which is an ARRAY_TYPE).  This one is a recursive count of all
    ARRAY_TYPEs that are clumped together.  */
 

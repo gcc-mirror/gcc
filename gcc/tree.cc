@@ -3732,6 +3732,19 @@ array_type_nelts_minus_one (const_tree type)
 	  ? max
 	  : fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, min));
 }
+
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This counts only elements of the top
+   array.  */
+
+tree
+array_type_nelts_top (tree type)
+{
+  return fold_build2_loc (input_location,
+		      PLUS_EXPR, sizetype,
+		      array_type_nelts_minus_one (type),
+		      size_one_node);
+}
 
 /* If arg is static -- a reference to an object in static storage -- then
    return the object.  This is not the same as the C meaning of `static'.
