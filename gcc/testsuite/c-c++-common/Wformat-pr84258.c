@@ -1,4 +1,5 @@
 /* { dg-options "-Wformat" } */
+/* { dg-additional-options "-std=gnu17" { target c } } */
 
 int main (int argc, char **argv)
 {

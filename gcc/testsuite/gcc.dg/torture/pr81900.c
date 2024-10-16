@@ -1,7 +1,7 @@
 /* PR/81900 */
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
-/* { dg-options "-fdump-tree-optimized" } */
+/* { dg-options "-std=gnu17 -fdump-tree-optimized" } */
 
 void Perl_croak() __attribute__((noreturn));
 char *Perl_sv_gets();

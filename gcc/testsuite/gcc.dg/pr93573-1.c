@@ -1,6 +1,6 @@
 /* PR c/93573 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 void bar ();
 

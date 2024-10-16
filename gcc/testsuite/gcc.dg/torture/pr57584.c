@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target label_values } */
 /* { dg-require-effective-target indirect_jumps } */

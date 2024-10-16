@@ -1,6 +1,6 @@
 /* PR middle-end/63762 */
 /* { dg-do assemble } */
-/* { dg-options "-O2" } */
+/* { dg-options "-std=gnu17 -O2" } */
 
 #include <stdlib.h>
 

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 char *e ();
 
 #define SET \

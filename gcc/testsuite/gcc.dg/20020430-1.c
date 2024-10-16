@@ -5,7 +5,7 @@
    which left a reference to the deleted ADDR_VEC.  */
 
 /* { dg-do compile { target fpic } } */
-/* { dg-options "-O2 -frename-registers -fpic" } */
+/* { dg-options "-std=gnu17 -O2 -frename-registers -fpic" } */
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
 
 typedef unsigned long XID;

@@ -2,7 +2,7 @@
    net/ethtool/ioctl.c  */
 
 /* { dg-do compile } */
-/* { dg-options "-fanalyzer" } */
+/* { dg-options "-std=gnu17 -fanalyzer" } */
 /* { dg-require-effective-target analyzer } */
 
 typedef signed char __s8;

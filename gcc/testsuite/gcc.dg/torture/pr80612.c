@@ -1,5 +1,6 @@
 /* PR tree-optimization/80612 */
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 
 struct obstack *a;
 struct obstack {

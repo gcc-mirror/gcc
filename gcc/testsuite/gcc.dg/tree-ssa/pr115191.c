@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O1 -w" }
+// { dg-options "-std=gnu17 -O1 -w" }
 
 typedef void *SCM;
 void set_socket_io_ports();

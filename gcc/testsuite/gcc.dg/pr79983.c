@@ -1,6 +1,6 @@
 /* PR c/79983 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 struct S;
 struct S { int i; }; /* { dg-message "originally defined here" } */

@@ -1,6 +1,6 @@
 /* PR tree-optimization/111407*/
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-std=gnu17 -O2" } */
 enum { SEND_TOFILE } __sigsetjmp();
 void fclose();
 void foldergets();

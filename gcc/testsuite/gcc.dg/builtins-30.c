@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wshadow -fshow-column" } */
+/* { dg-options "-std=gnu17 -Wall -Wshadow -fshow-column" } */
 
 extern double strtod (const char *, char **);
 #define UNUSED __attribute__ ((unused))

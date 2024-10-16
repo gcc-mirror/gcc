@@ -1,6 +1,6 @@
 /* Test -mrecord-mcount */
 /* { dg-do compile { target { *-*-linux* && nonpic } } } */
-/* { dg-options "-pg -mrecord-mcount" } */
+/* { dg-options "-Wno-old-style-definition -pg -mrecord-mcount" } */
 /* { dg-final { scan-assembler "mcount_loc" } } */
 /* Origin: Andi Kleen */
 extern void foobar(char *);

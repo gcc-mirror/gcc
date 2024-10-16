@@ -1,6 +1,7 @@
 /* PR c++/106937 */
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-fpermissive -fcf-protection" } */
+/* { dg-additional-options "-std=gnu17" { target c } } */
 /* { dg-additional-options "-std=c++11" { target c++ } } */
 /* Test printing a pointer to function with attribute.  */
 

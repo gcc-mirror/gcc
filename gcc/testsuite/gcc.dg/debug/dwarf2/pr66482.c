@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -gdwarf" } */
+/* { dg-options "-std=gnu17 -O3 -gdwarf" } */
 
 void f(int p) {}
 int g() {

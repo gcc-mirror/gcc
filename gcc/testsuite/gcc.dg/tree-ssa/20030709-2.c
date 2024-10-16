@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-dce3" } */
+/* { dg-options "-Wno-old-style-definition -O -fdump-tree-dce3" } */
   
 struct rtx_def;
 typedef struct rtx_def *rtx;

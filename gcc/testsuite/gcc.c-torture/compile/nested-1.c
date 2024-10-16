@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target trampolines } */
 
 typedef __SIZE_TYPE__ size_t;

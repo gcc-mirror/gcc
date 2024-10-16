@@ -1,3 +1,4 @@
+/* { dg-options "-std=gnu17" } */
 #include "20091015-1_a.h"
 #include "20091015-1_b.h"
 void foo ();

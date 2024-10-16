@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-dom2 -fdump-tree-optimized" } */
+/* { dg-options "-Wno-old-style-definition -O1 -fdump-tree-dom2 -fdump-tree-optimized" } */
     
 extern void abort (void);
 union tree_node;

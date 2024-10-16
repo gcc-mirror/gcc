@@ -1,6 +1,6 @@
 /* PR sanitizer/81223 */
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=undefined" } */
+/* { dg-options "-std=gnu17 -fsanitize=undefined" } */
 
 void bar ();
 

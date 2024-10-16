@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive" } */
+/* { dg-options "-std=gnu17 -fpermissive" } */
 
 static inline int __attribute__((__always_inline__))
 foo ()

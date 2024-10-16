@@ -1,7 +1,7 @@
 /* PR c/102759 - ICE calling a function taking an argument redeclared
    without a prototype.
    { dg-do compile }
-   { dg-options "-Wall" } */
+   { dg-options "-std=gnu17 -Wall" } */
 
 void f (void)
 {

@@ -1,6 +1,6 @@
 /* { dg-require-effective-target untyped_assembly } */
 /* { dg-require-effective-target indirect_calls } */
-/* { dg-additional-options "-fpermissive" } */
+/* { dg-additional-options "-std=gnu17 -fpermissive" } */
 
 void
 foo (x, fn)

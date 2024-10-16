@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -Os -w -Wno-psabi" } */
+/* { dg-options "-std=gnu17 -fpermissive -Os -w -Wno-psabi" } */
 /* { dg-skip-if "PR105147" { powerpc*-*-* s390*-*-* } } */
 
 typedef char __attribute__((__vector_size__ (16 * sizeof (char)))) U;

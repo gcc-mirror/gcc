@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fstrict-overflow -O2 -Wstrict-overflow" } */
+/* { dg-options "-std=gnu17 -fstrict-overflow -O2 -Wstrict-overflow" } */
 
 /* Don't warn about an overflow in a copied loop header.  We used to
    get a warning in value numbering.  This is PR 33565.  */

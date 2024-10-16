@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 
 struct singlecomplex { float real, imag ; } ;
 struct doublecomplex { double real, imag ; } ;

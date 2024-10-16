@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-std=gnu17 -pedantic-errors" } */
 
 void f (int, ...);
 

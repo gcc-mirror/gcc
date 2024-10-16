@@ -3,7 +3,7 @@
 /* { dg-require-effective-target fpic } */
 /* { dg-require-effective-target shared } */
 /* { dg-extra-ld-options { -shared } } */
-/* { dg-lto-options { { -flto -flto-partition=1to1 -O2 -Wno-incompatible-pointer-types -Wno-discarded-qualifiers -fPIC } } } */
+/* { dg-lto-options { { -std=gnu17 -flto -flto-partition=1to1 -O2 -Wno-incompatible-pointer-types -Wno-discarded-qualifiers -fPIC } } } */
 
 struct { struct A *a; } *b;
 struct B { int *b; };

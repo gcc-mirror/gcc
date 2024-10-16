@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 extern int foobar1 ();
 
 typedef struct

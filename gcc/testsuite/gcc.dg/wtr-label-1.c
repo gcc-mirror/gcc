@@ -2,7 +2,7 @@
    Note, gcc should omit these warnings in system header files.
    Origin: Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 8/24/2000.  */
 /* { dg-do compile } */
-/* { dg-options "-Wtraditional" } */
+/* { dg-options "-Wno-old-style-definition -Wtraditional" } */
 
 enum foo1 { a };
 struct foo2 { int i; };

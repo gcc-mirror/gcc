@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 #include <stdio.h>
 #include <stdint.h>
 

@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-profiling "-fprofile-generate" } */
-/* { dg-options "-O2 -fprofile-generate" } */
+/* { dg-options "-std=gnu17 -O2 -fprofile-generate" } */
 
 void lookup ();
 int hash ();

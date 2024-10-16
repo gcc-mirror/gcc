@@ -2,7 +2,7 @@
    traversal of the loops after versioning.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fmodulo-sched -fdump-rtl-sms" } */
+/* { dg-options "-Wno-old-style-definition -O2 -fmodulo-sched -fdump-rtl-sms" } */
 
 int th, h, em, nlwm, nlwS, nlw, sy;
 void

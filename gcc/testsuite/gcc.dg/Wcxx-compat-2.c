@@ -1,4 +1,4 @@
-/* { dg-options "-Wc++-compat" } */
+/* { dg-options "-std=gnu17 -Wc++-compat" } */
 
 _Bool foo;			/* This is okay.  */
 int bool;			/* { dg-warning "5:keyword" } */

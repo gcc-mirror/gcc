@@ -1,3 +1,4 @@
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target vect_int } */
 /* PR tree-optimization/67682.  */
 

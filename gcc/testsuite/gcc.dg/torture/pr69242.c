@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-w" } */
+/* { dg-additional-options "-std=gnu17 -w" } */
 
 int a[1];
 void *memcpy();

@@ -5,7 +5,7 @@
    16666.  Test with -pedantic, where the problem should still be
    diagnosed.  */
 /* { dg-do compile } */
-/* { dg-options "-pedantic" } */
+/* { dg-options "-std=gnu17 -pedantic" } */
 
 float dremf (float, float); /* { dg-warning "prototype declaration" } */
 

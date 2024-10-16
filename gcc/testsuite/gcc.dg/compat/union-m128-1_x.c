@@ -1,4 +1,4 @@
-/* { dg-options "-O -msse2" } */
+/* { dg-options "-std=gnu17 -O -msse2" } */
 
 #include "union-m128-1.h"
 

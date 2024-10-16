@@ -5,7 +5,7 @@
  * user error, not internal compiler error. */
 
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 int main()
 {

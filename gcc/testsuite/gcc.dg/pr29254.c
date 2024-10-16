@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -Werror" } */
+/* { dg-options "-std=gnu17 -O3 -Werror" } */
 
 int value_compare ();
 

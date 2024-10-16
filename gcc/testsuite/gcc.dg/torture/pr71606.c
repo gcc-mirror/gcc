@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 _Complex a;
 void fn1 ();
 

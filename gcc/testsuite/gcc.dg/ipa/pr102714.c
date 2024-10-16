@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-strict-aliasing -fdump-ipa-sra-details -fdump-tree-optimized" } */
+/* { dg-options "-std=gnu17 -O2 -fno-strict-aliasing -fdump-ipa-sra-details -fdump-tree-optimized" } */
 
 typedef _Bool bool;
 

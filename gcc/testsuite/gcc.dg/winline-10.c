@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Winline -fopt-info-optimized-inline=stderr" } */
+/* { dg-options "-Wno-old-style-definition -O2 -Winline -fopt-info-optimized-inline=stderr" } */
 
 struct s { int a; };
 

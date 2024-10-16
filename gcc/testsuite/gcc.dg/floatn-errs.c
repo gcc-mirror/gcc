@@ -1,6 +1,6 @@
 /* Tests for _FloatN / _FloatNx types: test erroneous code.  */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 /* { dg-add-options float32 } */
 /* { dg-add-options float64 } */
 /* { dg-add-options float32x } */

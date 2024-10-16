@@ -1,4 +1,5 @@
 /* { dg-do assemble } */
+/* { dg-additional-options "-Wno-old-style-definition" } */
 
 void (*foo[6][6]) (int);
 void bar (hdR)

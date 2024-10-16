@@ -1,5 +1,6 @@
 /* Test parsing of #pragma omp declare simd */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-old-style-definition" } */
 
 #ifdef __aarch64__
 #pragma omp declare simd uniform (a) aligned (b : 2 * sizeof (int)) \

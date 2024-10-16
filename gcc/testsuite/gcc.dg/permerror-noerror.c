@@ -1,4 +1,4 @@
-/* { dg-options "-Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=return-mismatch -Wno-error=declaration-missing-parameter-type" } */
+/* { dg-options "-std=gnu17 -Wno-error=implicit-function-declaration -Wno-error=implicit-int -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=return-mismatch -Wno-error=declaration-missing-parameter-type" } */
 
 /* This test should emulate the effect of -fpermissive by adding all the
    -Wno-error= options that are implied by -fpermissive.  It needs to be

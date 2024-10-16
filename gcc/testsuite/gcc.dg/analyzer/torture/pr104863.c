@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fanalyzer-transitivity" } */
+/* { dg-additional-options "-std=gnu17 -fanalyzer-transitivity" } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 
 extern void g();

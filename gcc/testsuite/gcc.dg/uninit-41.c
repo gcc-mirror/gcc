@@ -1,7 +1,7 @@
 /* Verify that calls to non-modifying built-ins aren't considered
    potentially modifying.
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
+   { dg-options "-std=gnu17 -O2 -Wall" }
    { dg-require-effective-target alloca } */
 
 typedef __SIZE_TYPE__ size_t;

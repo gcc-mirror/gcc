@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-std=gnu17 -O2 -ftree-vectorize" } */
 
 static const unsigned char _c30[] =
   "statistic of allocated integer registers:";

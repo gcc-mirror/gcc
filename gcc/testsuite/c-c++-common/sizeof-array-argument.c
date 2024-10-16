@@ -1,5 +1,6 @@
 /* PR c/6940 */
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-old-style-definition" { target c } } */
 
 /* Test -Wsizeof-array-argument warning.  */
 

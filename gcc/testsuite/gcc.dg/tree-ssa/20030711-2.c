@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2" } */
+/* { dg-options "-Wno-old-style-definition -O2 -fdump-tree-dom2" } */
   
 
 struct rtx_def;

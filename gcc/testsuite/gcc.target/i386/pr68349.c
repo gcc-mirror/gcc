@@ -1,6 +1,6 @@
 /* PR target/68483 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-std=gnu17 -O2" } */
 
 int a, b;
 unsigned long my_strlen();

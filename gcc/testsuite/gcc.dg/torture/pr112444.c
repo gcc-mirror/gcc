@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-additional-options "-std=gnu17 -ftrivial-auto-var-init=zero" } */
 
 int qmi_message_pbm_get_all_capabilities_output_capability_basic_information_get_printable_message_offset,
     qmi_message_pbm_get_all_capabilities_output_capability_basic_information_get_printable_message_init_offset,

@@ -4,7 +4,7 @@
    without a prototype.  If it's decided that it shouldn't be the tests
    here will need to be adjusted.
    { dg-do compile }
-   { dg-options "-Wall" } */
+   { dg-options "-std=gnu17 -Wall" } */
 
 #define FMT(n1, n2) __attribute__((__format__(__printf__, n1, n2)))
 

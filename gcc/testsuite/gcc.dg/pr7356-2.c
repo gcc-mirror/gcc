@@ -1,4 +1,4 @@
-/* { dg-options "-fdiagnostics-show-caret" } */
+/* { dg-options "-Wno-old-style-definition -fdiagnostics-show-caret" } */
 
 int i /* { dg-error "6: expected ';' before 'int'" } */
 int j;

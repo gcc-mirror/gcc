@@ -1,6 +1,6 @@
 /* PR c/97882 - Segmentation Fault on improper redeclaration of function
    { dg-do compile }
-   { dg-options "" } */
+   { dg-options "-std=gnu17" } */
 
 // Check pointer declaration incompatibiliies.
 

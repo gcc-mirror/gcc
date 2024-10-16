@@ -1,6 +1,6 @@
 /*
 { dg-do compile }
-{ dg-options "-W -Wall" }
+{ dg-options "-Wno-old-style-definition -W -Wall" }
 */
 
 

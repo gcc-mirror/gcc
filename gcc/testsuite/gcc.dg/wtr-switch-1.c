@@ -2,7 +2,7 @@
    Note, gcc should omit these warnings in system header files.
    By Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 8/22/2000.  */
 /* { dg-do compile } */
-/* { dg-options "-Wtraditional" } */
+/* { dg-options "-Wno-old-style-definition -Wtraditional" } */
 
 void
 testfunc (l)

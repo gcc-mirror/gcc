@@ -1,6 +1,6 @@
 /* PR101838 */
 /* { dg-do run } */
-/* { dg-options "-Wpedantic -O0" } */
+/* { dg-options "-std=gnu17 -Wpedantic -O0" } */
 /* { dg-require-effective-target alloca } */
 
 

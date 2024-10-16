@@ -4,7 +4,7 @@
    functions declared with no prototype are checked for overlap, and that
    invalid calls are ignored.
   { dg-do compile }
-  { dg-options "-O2 -fpermissive -Wrestrict" }  */
+  { dg-options "-std=gnu17 -O2 -fpermissive -Wrestrict" }  */
 
 void* memcpy ();
 char* strncpy ();

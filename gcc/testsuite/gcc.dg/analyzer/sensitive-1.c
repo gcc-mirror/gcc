@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 #include <stdio.h>
 
 /* Solaris needs this for <unistd.h> to declare getpass.  */

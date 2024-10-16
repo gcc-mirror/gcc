@@ -5,7 +5,7 @@
    floating-point registers on SPARC64.  */
 
 /* { dg-do assemble } */
-/* { dg-options "-O2" } */
+/* { dg-options "-std=gnu17 -O2" } */
 
 extern int foo1();
 extern int foo2();

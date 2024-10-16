@@ -1,6 +1,6 @@
 /* { dg-require-effective-target freorder } */
 /* { dg-require-effective-target label_values } */
-/* { dg-options "-O2 -freorder-blocks-and-partition" } */
+/* { dg-options "-std=gnu17 -O2 -freorder-blocks-and-partition" } */
 /* { dg-require-stack-size "4000" } */
 
 #include <stdlib.h>

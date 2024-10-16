@@ -1,7 +1,7 @@
 /* Excess precision tests.  Test excess precision is removed when
    necessary.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -mfpmath=387 -fexcess-precision=standard" } */
+/* { dg-options "-Wno-old-style-definition -O2 -mfpmath=387 -fexcess-precision=standard" } */
 
 #include <float.h>
 #include <stdarg.h>

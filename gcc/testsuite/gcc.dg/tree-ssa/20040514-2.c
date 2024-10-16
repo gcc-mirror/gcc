@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-phiopt1" } */
+/* { dg-options "-Wno-old-style-definition -O2 -fdump-tree-phiopt1" } */
 int
 foo2 (distance, i, j)
      int distance;

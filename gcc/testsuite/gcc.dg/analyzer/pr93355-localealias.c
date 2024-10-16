@@ -3,7 +3,7 @@
    Adapted from intl/localealias.c, with all #includes removed.  */
 
 /* { dg-do "compile" } */
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-Wno-old-style-definition -Wno-analyzer-too-complex" } */
 /* TODO: remove the need for this option.  */
 /* { dg-require-effective-target alloca } */
 

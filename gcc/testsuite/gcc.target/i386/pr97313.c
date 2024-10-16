@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fPIE" } */
+/* { dg-options "-std=gnu17 -O2 -fPIE" } */
 /* { dg-require-effective-target pie } */
 
 typedef struct {

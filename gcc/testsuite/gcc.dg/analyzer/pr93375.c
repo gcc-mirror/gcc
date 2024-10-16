@@ -1,4 +1,4 @@
-/* { dg-additional-options "-Wno-implicit-int" } */
+/* { dg-additional-options "-std=gnu17 -Wno-implicit-int" } */
 
 extern void foo (void *) __attribute__((nonnull));
 

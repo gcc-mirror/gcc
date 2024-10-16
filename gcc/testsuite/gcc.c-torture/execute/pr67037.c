@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 long (*extfunc)();
 
 static inline void lstrcpynW( short *d, const short *s, int n )

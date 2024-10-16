@@ -1,6 +1,6 @@
 /* PR c/89521 */
 /* { dg-do compile } */
-/* { dg-options "-Ofast -w" } */
+/* { dg-options "-std=gnu17 -Ofast -w" } */
 
 #define A(name) __typeof (__builtin_##name (0)) name (); long name##1 () { return name (1); }
 #define B(name) A(name) A(name##f) A(name##l)

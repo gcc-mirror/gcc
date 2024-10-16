@@ -1,7 +1,7 @@
 /* PR bootstrap/41241 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fcompare-debug -g" } */
-/* { dg-options "-O2 -fcompare-debug -g -march=i586 -mtune=i586 -fomit-frame-pointer" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-options "-std=gnu17 -O2 -fcompare-debug -g" } */
+/* { dg-options "-std=gnu17 -O2 -fcompare-debug -g -march=i586 -mtune=i586 -fomit-frame-pointer" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 typedef struct { int t1; int t2; int t3; } *T;
 typedef struct { int s; } S;

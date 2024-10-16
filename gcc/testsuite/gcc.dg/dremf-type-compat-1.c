@@ -4,7 +4,7 @@
    so it should be permitted when the function is built in.  Bug
    16666.  */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 float dremf (float, float);
 

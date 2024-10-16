@@ -1,4 +1,4 @@
-/* { dg-options "-Wall -Wextra -O2 -fno-toplevel-reorder -fno-tree-ch -fno-tree-dce -fno-tree-dominator-opts -fno-tree-dse -fno-tree-loop-ivcanon -fpredictive-commoning -fdump-tree-pcom-details-blocks -fdump-tree-lim-details-blocks" } */
+/* { dg-options "-std=gnu17 -Wall -Wextra -O2 -fno-toplevel-reorder -fno-tree-ch -fno-tree-dce -fno-tree-dominator-opts -fno-tree-dse -fno-tree-loop-ivcanon -fpredictive-commoning -fdump-tree-pcom-details-blocks -fdump-tree-lim-details-blocks" } */
 
 short a, b;
 int c[9];

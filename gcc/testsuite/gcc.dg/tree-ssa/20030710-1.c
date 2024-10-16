@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-copyprop2" } */
+/* { dg-options "-Wno-old-style-definition -O1 -fdump-tree-copyprop2" } */
 
 extern void abort (void);
 extern void blah (void);

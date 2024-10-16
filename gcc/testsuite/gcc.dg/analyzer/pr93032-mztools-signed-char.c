@@ -4,7 +4,7 @@
    removed.  */
 
 /* { dg-do "compile" } */
-/* { dg-additional-options "-fsigned-char" } */
+/* { dg-additional-options "-Wno-old-style-definition -fsigned-char" } */
 /* { dg-require-effective-target int32plus } */
 
 /* TODO (PR analyzer/112528): remove need for this.  */

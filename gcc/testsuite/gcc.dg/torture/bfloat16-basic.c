@@ -1,6 +1,6 @@
 /* Test __bf16.  */
 /* { dg-do run } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-old-style-definition" } */
 /* { dg-add-options bfloat16 } */
 /* { dg-require-effective-target bfloat16_runtime } */
 

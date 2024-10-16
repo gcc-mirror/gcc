@@ -1,6 +1,6 @@
 /* PR tree-optimization/69156 */
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -O1 -fno-tree-ccp" } */
+/* { dg-options "-std=gnu17 -fpermissive -O1 -fno-tree-ccp" } */
 
 _Bool
 foo ()

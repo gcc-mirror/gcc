@@ -1,6 +1,6 @@
 /* PR debug/94167 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fcompare-debug" } */
+/* { dg-options "-std=gnu17 -O2 -fcompare-debug" } */
 
 struct S { int g, h; signed char i; int j; signed char k; int l[4]; } a, c;
 struct T { signed char g; } e;

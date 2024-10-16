@@ -33,6 +33,7 @@ test_fn (int n, ...)
   struct small_tag s2;
   struct large_tag l;
 
+  (void) n;
   va_start (ap, n);
   s1 = va_arg (ap, struct small_tag);
   l = va_arg (ap, struct large_tag);
