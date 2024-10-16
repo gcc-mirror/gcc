@@ -13299,6 +13299,7 @@ c_parser_expression (c_parser *parser)
 	  next.value = build_int_cst (TREE_TYPE (val),
 				      ((const unsigned char *)
 				       RAW_DATA_POINTER (val))[last]);
+	  next.original_type = integer_type_node;
 	  c_parser_consume_token (parser);
 	}
       else
