@@ -2583,13 +2583,16 @@ package body Sem_Warn is
 
                         if No (Ent) then
 
+                           --  Check entities in the extended system if
+                           --  specified.
+
+                           if Check_System_Aux (Lunit) then
+                              null;
+
                            --  If in spec, just set the flag
 
-                           if Unit = Spec_Unit then
+                           elsif Unit = Spec_Unit then
                               Set_No_Entities_Ref_In_Spec (Item);
-
-                           elsif Check_System_Aux (Lunit) then
-                              null;
 
                            --  Else the warning may be needed
 
