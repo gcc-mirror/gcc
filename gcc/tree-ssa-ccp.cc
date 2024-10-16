@@ -1848,7 +1848,7 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	/* Do a cross comparison of the max/min pairs.  */
 	maxmin = wi::cmp (max1, min2, r1type_sgn);
 	minmax = wi::cmp (min1, max2, r1type_sgn);
-	if (maxmin < (code == LE_EXPR ? 1: 0))  /* o1 < or <= o2.  */
+	if (maxmin < (code == LE_EXPR ? 1 : 0))  /* o1 < or <= o2.  */
 	  {
 	    *mask = 0;
 	    *val = 1;

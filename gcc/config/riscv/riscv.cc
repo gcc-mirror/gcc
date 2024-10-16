@@ -6622,8 +6622,8 @@ riscv_union_memmodels (enum memmodel model1, enum memmodel model2)
   model1 = memmodel_base (model1);
   model2 = memmodel_base (model2);
 
-  enum memmodel weaker = model1 <= model2 ? model1: model2;
-  enum memmodel stronger = model1 > model2 ? model1: model2;
+  enum memmodel weaker = model1 <= model2 ? model1 : model2;
+  enum memmodel stronger = model1 > model2 ? model1 : model2;
 
   switch (stronger)
     {

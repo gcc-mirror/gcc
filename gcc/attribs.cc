@@ -381,7 +381,7 @@ lookup_scoped_attribute_spec (const_tree ns, const_tree name)
   struct substring attr;
   scoped_attributes *attrs;
 
-  const char *ns_str = (ns != NULL_TREE) ? IDENTIFIER_POINTER (ns): NULL;
+  const char *ns_str = (ns != NULL_TREE) ? IDENTIFIER_POINTER (ns) : NULL;
 
   attrs = find_attribute_namespace (ns_str);
 

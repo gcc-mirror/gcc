@@ -6115,8 +6115,8 @@ main (int argc, char **argv)
 
   if (!cpp_read_main_file (r, input))
     return 1;
-  cpp_define (r, gimple ? "GIMPLE=1": "GENERIC=1");
-  cpp_define (r, gimple ? "GENERIC=0": "GIMPLE=0");
+  cpp_define (r, gimple ? "GIMPLE=1" : "GENERIC=1");
+  cpp_define (r, gimple ? "GENERIC=0" : "GIMPLE=0");
 
   null_id = new id_base (id_base::NULL_ID, "null");
 

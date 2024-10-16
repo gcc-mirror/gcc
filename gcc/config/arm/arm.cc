@@ -24730,11 +24730,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
 	    inc_val = GET_MODE_SIZE (GET_MODE (x));
 	    if (code == POST_INC || code == POST_DEC)
-	      asm_fprintf (stream, "], #%s%d",(code == POST_INC)
-					      ? "": "-", inc_val);
+	      asm_fprintf (stream, "], #%s%d", (code == POST_INC)
+					       ? "" : "-", inc_val);
 	    else
-	      asm_fprintf (stream, ", #%s%d]!",(code == PRE_INC)
-					       ? "": "-", inc_val);
+	      asm_fprintf (stream, ", #%s%d]!", (code == PRE_INC)
+						? "" : "-", inc_val);
 	  }
 	else if (code == POST_MODIFY || code == PRE_MODIFY)
 	  {
@@ -24743,9 +24743,9 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	    if (postinc_reg && CONST_INT_P (postinc_reg))
 	      {
 		if (code == POST_MODIFY)
-		  asm_fprintf (stream, "], #%wd",INTVAL (postinc_reg));
+		  asm_fprintf (stream, "], #%wd", INTVAL (postinc_reg));
 		else
-		  asm_fprintf (stream, ", #%wd]!",INTVAL (postinc_reg));
+		  asm_fprintf (stream, ", #%wd]!", INTVAL (postinc_reg));
 	      }
 	  }
 	else if (code == PLUS)

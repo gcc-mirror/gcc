@@ -32,7 +32,7 @@
   General-purpose AR registers for indirect sibling calls, @code{a2}-
   @code{a8}.")
 
-(define_register_constraint "d" "TARGET_DENSITY ? AR_REGS: NO_REGS"
+(define_register_constraint "d" "TARGET_DENSITY ? AR_REGS : NO_REGS"
  "@internal
   All AR registers, including sp, but only if the Xtensa Code Density
   Option is configured.")
@@ -53,7 +53,7 @@
   General-purpose AR registers, but only if the Xtensa Sign Extend
   Option is configured.")
 
-(define_register_constraint "C" "TARGET_MUL16 ? GR_REGS: NO_REGS"
+(define_register_constraint "C" "TARGET_MUL16 ? GR_REGS : NO_REGS"
  "@internal
   General-purpose AR registers, but only if the Xtensa 16-Bit Integer
   Multiply Option is configured.")
@@ -63,7 +63,7 @@
   General-purpose AR registers, but only if the Xtensa Code Density
   Option is configured.")
 
-(define_register_constraint "W" "TARGET_CONST16 ? GR_REGS: NO_REGS"
+(define_register_constraint "W" "TARGET_CONST16 ? GR_REGS : NO_REGS"
  "@internal
   General-purpose AR registers, but only if the Xtensa Const16
   Option is configured.")

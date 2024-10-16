@@ -1989,7 +1989,7 @@ predict_loops (void)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Predicting loop %i%s with %i exits.\n",
-		 loop->num, recursion ? " (with recursion)":"", n_exits);
+		 loop->num, recursion ? " (with recursion)" : "", n_exits);
       if (dump_file && (dump_flags & TDF_DETAILS)
 	  && max_loop_iterations_int (loop) >= 0)
 	{

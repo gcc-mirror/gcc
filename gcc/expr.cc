@@ -9670,7 +9670,7 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf(dump_file, "positive division:%s unsigned cost: %u; "
-		  "signed cost: %u\n", was_tie ? "(needed tie breaker)":"",
+		  "signed cost: %u\n", was_tie ? "(needed tie breaker)" : "",
 		  uns_cost, sgn_cost);
 
       if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))

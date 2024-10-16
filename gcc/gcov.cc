@@ -2733,7 +2733,7 @@ format_gcov (gcov_type top, gcov_type bottom, int decimal_places)
 
   if (decimal_places >= 0)
     {
-      float ratio = bottom ? 100.0f * top / bottom: 0;
+      float ratio = bottom ? 100.0f * top / bottom : 0;
 
       /* Round up to 1% if there's a small non-zero value.  */
       if (ratio > 0.0f && ratio < 0.5f && decimal_places == 0)

@@ -224,7 +224,7 @@ enum cfg_bb_flags
 /* For iterating over insns in basic block when we might remove the
    current insn.  */
 #define FOR_BB_INSNS_SAFE(BB, INSN, CURR)			\
-  for ((INSN) = BB_HEAD (BB), (CURR) = (INSN) ? NEXT_INSN ((INSN)): NULL;	\
+  for ((INSN) = BB_HEAD (BB), (CURR) = (INSN) ? NEXT_INSN ((INSN)) : NULL;	\
        (INSN) && (INSN) != NEXT_INSN (BB_END (BB));	\
        (INSN) = (CURR), (CURR) = (INSN) ? NEXT_INSN ((INSN)) : NULL)
 

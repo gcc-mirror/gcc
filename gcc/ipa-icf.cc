@@ -3410,7 +3410,7 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count,
       unsigned total = equal_items + non_singular_classes_count;
       fprintf (dump_file, "Totally needed symbols: %u"
 	       ", fraction of loaded symbols: %.2f%%\n\n", total,
-	       loaded_symbols ? 100.0f * total / loaded_symbols: 0.0f);
+	       loaded_symbols ? 100.0f * total / loaded_symbols : 0.0f);
     }
 
   unsigned int l;

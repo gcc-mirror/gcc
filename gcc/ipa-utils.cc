@@ -1012,11 +1012,16 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 	  cstate->low = MIN (cstate->low, (*cstate2)->low);
 	  cstate->high = MAX (cstate->high, (*cstate2)->high);
 	}
-      if (dump_file && (dump_flags & TDF_DETAILS) && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
-	fprintf (dump_file, "BB %i %s preorder %i posorder %i low %i high %i\n",
-		 bb->index, terminating_bbs_set.contains (bb) ? "(terminating)": "",
-		 cstate->dfs_preorder, cstate->dfs_postorder, cstate->low, cstate->high);
-      if (cstate->low == cstate->dfs_preorder && cstate->high == cstate->dfs_postorder
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+	fprintf (dump_file,
+		 "BB %i %s preorder %i posorder %i low %i high %i\n",
+		 bb->index,
+		 terminating_bbs_set.contains (bb) ? "(terminating)" : "",
+		 cstate->dfs_preorder, cstate->dfs_postorder, cstate->low,
+		 cstate->high);
+      if (cstate->low == cstate->dfs_preorder
+	  && cstate->high == cstate->dfs_postorder
 	  && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
 	bitmap_set_bit (ret, bb->index);
       if (terminating_bbs_set.contains (bb))
@@ -1035,7 +1040,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
   if (dump_file)
     {
       fprintf (dump_file, "Always executed bbbs %s: ",
-	       assume_return_or_eh ? "(assuming return or EH)": "");
+	       assume_return_or_eh ? "(assuming return or EH)" : "");
       bitmap_print (dump_file, ret, "", "\n");
     }
 

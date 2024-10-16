@@ -608,8 +608,8 @@ extern enum reg_class arc_regno_reg_class[];
    needed to represent mode MODE in a register of class CLASS.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
-(( GET_MODE_SIZE (MODE) == 16 && CLASS == SIMD_VR_REGS) ? 1: \
-((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+((GET_MODE_SIZE (MODE) == 16 && CLASS == SIMD_VR_REGS) ? 1 \
+ : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 #define SMALL_INT(X) ((unsigned) ((X) + 0x100) < 0x200)
 #define SMALL_INT_RANGE(X, OFFSET, SHIFT)	\
@@ -868,9 +868,9 @@ extern int arc_initial_elimination_offset(int from, int to);
 
 /* Recognize any constant value that is a valid address.  */
 #define CONSTANT_ADDRESS_P(X)					\
-  (flag_pic ? (arc_legitimate_pic_addr_p (X) || LABEL_P (X)):	\
-   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
-    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
+  (flag_pic ? (arc_legitimate_pic_addr_p (X) || LABEL_P (X))	\
+   : (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
+      || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
 
 /* Is the argument a const_int rtx, containing an exact power of 2 */
 #define  IS_POWEROF2_P(X) (! ( (X) & ((X) - 1)) && (X))

@@ -2447,7 +2447,8 @@ inline_small_functions (void)
 			   s->time.to_double (),
 			   ipa_size_summaries->get (edge->caller)->size,
 			   buf_net_change,
-			   cross_module_call_p (edge) ? " (cross module)":"");
+			   cross_module_call_p (edge)
+			   ? " (cross module)" : "");
 	}
       if (min_size > overall_size)
 	{
@@ -2463,7 +2464,7 @@ inline_small_functions (void)
     dump_printf (MSG_NOTE,
 		 "Unit growth for small function inlining: %i->%i (%i%%)\n",
 		 initial_size, overall_size,
-		 initial_size ? overall_size * 100 / (initial_size) - 100: 0);
+		 initial_size ? overall_size * 100 / (initial_size) - 100 : 0);
   symtab->remove_edge_removal_hook (edge_removal_hook_holder);
 }
 

@@ -1256,7 +1256,7 @@ create_parameter_descriptors (cgraph_node *node,
 	    fprintf (dump_file, " is a scalar with only %i call uses%s\n",
 		     desc->call_uses,
 		     desc->remove_only_when_retval_removed
-		     ? " and return uses": "");
+		     ? " and return uses" : "");
 	}
 
       if (POINTER_TYPE_P (type))

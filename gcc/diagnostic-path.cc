@@ -795,7 +795,7 @@ path_summary::path_summary (const path_print_policy &policy,
 	  continue;
 
       auto theme = policy.get_diagram_theme ();
-      const bool allow_emojis = theme ? theme->emojis_p (): false;
+      const bool allow_emojis = theme ? theme->emojis_p () : false;
       cur_event_range = new event_range (path, idx, event, pts,
 					 show_event_links,
 					 colorize,

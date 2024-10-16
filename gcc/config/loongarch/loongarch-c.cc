@@ -116,7 +116,7 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
 
 	max_v_major = major > max_v_major ? major : max_v_major;
 	max_v_minor = major == max_v_major
-	  ? (minor > max_v_minor ? minor : max_v_minor): max_v_minor;
+	  ? (minor > max_v_minor ? minor : max_v_minor) : max_v_minor;
       }
 
   /* Find the minimum ISA version required to run the target program.  */

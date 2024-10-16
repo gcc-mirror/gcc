@@ -6580,8 +6580,8 @@ gen_push2 (rtx mem, rtx reg1, rtx reg2, bool ppx_p = false)
   if (REG_P (reg2) && GET_MODE (reg2) != word_mode)
     reg2 = gen_rtx_REG (word_mode, REGNO (reg2));
 
-  return ppx_p ? gen_push2p_di (mem, reg1, reg2):
-		 gen_push2_di (mem, reg1, reg2);
+  return ppx_p ? gen_push2p_di (mem, reg1, reg2)
+	       : gen_push2_di (mem, reg1, reg2);
 }
 
 /* Return >= 0 if there is an unused call-clobbered register available

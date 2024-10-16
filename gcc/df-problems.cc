@@ -3532,7 +3532,7 @@ df_create_unused_note (rtx_insn *insn, df_ref def,
 	|| df_ignore_stack_reg (dregno)))
     {
       rtx reg = (DF_REF_LOC (def))
-                ? *DF_REF_REAL_LOC (def): DF_REF_REG (def);
+		? *DF_REF_REAL_LOC (def) : DF_REF_REG (def);
       df_set_note (REG_UNUSED, insn, reg);
       dead_debug_insert_temp (debug, dregno, insn, DEBUG_TEMP_AFTER_WITH_REG);
       if (REG_DEAD_DEBUGGING)

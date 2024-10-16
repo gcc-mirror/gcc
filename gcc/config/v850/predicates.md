@@ -182,7 +182,7 @@
 
      */
 
-  for (i = 2; i < count - (TARGET_LONG_CALLS ? 2: 1); i++)
+  for (i = 2; i < count - (TARGET_LONG_CALLS ? 2 : 1); i++)
     {
       rtx dest;
       rtx src;

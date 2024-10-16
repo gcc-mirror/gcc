@@ -1290,7 +1290,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       && !dguide_name_p (name))
     rval = build_baselink (rval_binfo, basetype_path, rval,
 			   (IDENTIFIER_CONV_OP_P (name)
-			   ? TREE_TYPE (name): NULL_TREE));
+			    ? TREE_TYPE (name) : NULL_TREE));
   return rval;
 }
 

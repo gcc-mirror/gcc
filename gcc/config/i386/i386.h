@@ -238,7 +238,7 @@ extern const struct processor_costs *ix86_cost;
 extern const struct processor_costs ix86_size_cost;
 
 #define ix86_cur_cost() \
-  (optimize_insn_for_size_p () ? &ix86_size_cost: ix86_cost)
+  (optimize_insn_for_size_p () ? &ix86_size_cost : ix86_cost)
 
 /* Macros used in the machine description to test the flags.  */
 

@@ -2309,7 +2309,7 @@ cgraph_node::dump (FILE *f)
 	  if (edge->indirect_info->agg_contents)
 	   fprintf (f, "loaded from %s %s at offset %i ",
 		    edge->indirect_info->member_ptr ? "member ptr" : "aggregate",
-		    edge->indirect_info->by_ref ? "passed by reference":"",
+		    edge->indirect_info->by_ref ? "passed by reference" : "",
 		    (int)edge->indirect_info->offset);
 	  if (edge->indirect_info->vptr_changed)
 	    fprintf (f, "(vptr maybe changed) ");

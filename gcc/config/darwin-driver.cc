@@ -370,7 +370,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
     {
       if (seenX86_64 || seenM64)
 	{
-	  const char *op = (seenX86_64? "-arch x86_64": "-m64");
+	  const char *op = (seenX86_64 ? "-arch x86_64" : "-m64");
 	  warning (0, "%qs conflicts with %<-arch i386%> (%qs ignored)",
 		   op, op);
 	}
@@ -393,7 +393,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
     {
       if (seenPPC64 || seenM64)
 	{
-	  const char *op = (seenPPC64? "-arch ppc64": "-m64");
+	  const char *op = (seenPPC64 ? "-arch ppc64" : "-m64");
 	  warning (0, "%qs conflicts with %<-arch ppc%> (%qs ignored)",
 		   op, op);
 	}

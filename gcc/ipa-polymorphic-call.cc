@@ -624,7 +624,7 @@ ipa_polymorphic_call_context::dump (FILE *f, bool newline) const
 	fprintf (f, "nothing known");
       if (outer_type || offset)
 	{
-	  fprintf (f, "Outer type%s:", dynamic ? " (dynamic)":"");
+	  fprintf (f, "Outer type%s:", dynamic ? " (dynamic)" : "");
 	  print_generic_expr (f, outer_type, TDF_SLIM);
 	  if (maybe_derived_type)
 	    fprintf (f, " (or a derived type)");

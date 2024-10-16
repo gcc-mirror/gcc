@@ -9829,7 +9829,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	}
 
       from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
-		   ? 1 + (modifycode != INIT_EXPR): 0;
+		   ? 1 + (modifycode != INIT_EXPR) : 0;
       result = build_vec_init (lhs, NULL_TREE, newrhs,
 			       /*explicit_value_init_p=*/false,
 			       from_array, complain);

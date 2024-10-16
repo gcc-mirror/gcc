@@ -2187,14 +2187,14 @@
   if (epiphany_uninterruptible_p (current_function_decl)
       != target_uninterruptible)
     {
-      emit_insn (target_uninterruptible ? gen_gid (): gen_gie ());
+      emit_insn (target_uninterruptible ? gen_gid () : gen_gie ());
       emit_call_insn
 	(gen_rtx_PARALLEL
 	  (VOIDmode,
 	   gen_rtvec (2, gen_rtx_CALL (VOIDmode, operands[0], operands[1]),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_REG (SImode, GPR_LR)))));
-      emit_insn (target_uninterruptible ? gen_gie (): gen_gid ());
+      emit_insn (target_uninterruptible ? gen_gie () : gen_gid ());
       DONE;
     }
 })
@@ -2225,13 +2225,13 @@
   if (epiphany_uninterruptible_p (current_function_decl)
       != target_uninterruptible)
     {
-      emit_insn (target_uninterruptible ? gen_gid (): gen_gie ());
+      emit_insn (target_uninterruptible ? gen_gid () : gen_gie ());
       emit_call_insn
 	(gen_rtx_PARALLEL
 	  (VOIDmode,
 	   gen_rtvec (2, gen_rtx_CALL (VOIDmode, operands[0], operands[1]),
 			 ret_rtx)));
-      emit_insn (target_uninterruptible ? gen_gie (): gen_gid ());
+      emit_insn (target_uninterruptible ? gen_gie () : gen_gid ());
       DONE;
     }
 })
@@ -2264,7 +2264,7 @@
   if (epiphany_uninterruptible_p (current_function_decl)
       != target_uninterruptible)
     {
-      emit_insn (target_uninterruptible ? gen_gid (): gen_gie ());
+      emit_insn (target_uninterruptible ? gen_gid () : gen_gie ());
       emit_call_insn
 	(gen_rtx_PARALLEL
 	  (VOIDmode,
@@ -2273,7 +2273,7 @@
 			    gen_rtx_CALL (VOIDmode, operands[1], operands[2])),
 			 gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_REG (SImode, GPR_LR)))));
-      emit_insn (target_uninterruptible ? gen_gie (): gen_gid ());
+      emit_insn (target_uninterruptible ? gen_gie () : gen_gid ());
       DONE;
     }
 })
@@ -2307,7 +2307,7 @@
   if (epiphany_uninterruptible_p (current_function_decl)
       != target_uninterruptible)
     {
-      emit_insn (target_uninterruptible ? gen_gid (): gen_gie ());
+      emit_insn (target_uninterruptible ? gen_gid () : gen_gie ());
       emit_call_insn
 	(gen_rtx_PARALLEL
 	  (VOIDmode,
@@ -2315,7 +2315,7 @@
 			   (operands[0],
 			    gen_rtx_CALL (VOIDmode, operands[1], operands[2])),
 			 ret_rtx)));
-      emit_insn (target_uninterruptible ? gen_gie (): gen_gid ());
+      emit_insn (target_uninterruptible ? gen_gie () : gen_gid ());
       DONE;
     }
 })

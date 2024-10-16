@@ -2146,8 +2146,8 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
   unsigned int i;
   fprintf (f, "%*s type %i: ", indent * 2, "", t->id);
   print_generic_expr (f, t->type, TDF_SLIM);
-  fprintf (f, "%s", t->anonymous_namespace ? " (anonymous namespace)":"");
-  fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)":"");
+  fprintf (f, "%s", t->anonymous_namespace ? " (anonymous namespace)" : "");
+  fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)" : "");
   if (TYPE_NAME (t->type))
     {
       if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t->type)))

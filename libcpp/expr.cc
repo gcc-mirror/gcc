@@ -141,9 +141,9 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
       bool uppercase = (*s == 'D');
       switch (s[1])
       {
-      case 'f': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_SMALL): 0); break;
+      case 'f': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_SMALL) : 0); break;
       case 'F': return (uppercase ? (CPP_N_DFLOAT | CPP_N_SMALL) : 0); break;
-      case 'd': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_MEDIUM): 0); break;
+      case 'd': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_MEDIUM) : 0); break;
       case 'D': return (uppercase ? (CPP_N_DFLOAT | CPP_N_MEDIUM) : 0); break;
       case 'l': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_LARGE) : 0); break;
       case 'L': return (uppercase ? (CPP_N_DFLOAT | CPP_N_LARGE) : 0); break;

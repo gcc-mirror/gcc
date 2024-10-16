@@ -118,7 +118,7 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
   /* One minus to account for the leading empty space.  */
   value = value ? value - 1 
     : (isatty (fileno (pp_buffer (context->m_printer)->m_stream))
-       ? get_terminal_width () - 1: INT_MAX);
+       ? get_terminal_width () - 1 : INT_MAX);
   
   if (value <= 0) 
     value = INT_MAX;

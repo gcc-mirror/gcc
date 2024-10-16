@@ -299,8 +299,8 @@ dump_gcov_file (const char *filename)
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
 	{
-	  printf (error < 0 ? "%s:counter overflow at %lu\n" :
-		  "%s:read error at %lu\n", filename,
+	  printf (error < 0 ? "%s:counter overflow at %lu\n"
+		  : "%s:read error at %lu\n", filename,
 		  (long unsigned) gcov_position ());
 	  break;
 	}

@@ -9674,7 +9674,7 @@ arc_delegitimize_address (rtx orig_x)
 rtx
 gen_acc1 (void)
 {
-  return gen_rtx_REG (SImode, TARGET_BIG_ENDIAN ? 56: 57);
+  return gen_rtx_REG (SImode, TARGET_BIG_ENDIAN ? 56 : 57);
 }
 
 /* Return a REG rtx for acc2.  N.B. the gcc-internal representation may
@@ -9684,7 +9684,7 @@ gen_acc1 (void)
 rtx
 gen_acc2 (void)
 {
-  return gen_rtx_REG (SImode, TARGET_BIG_ENDIAN ? 57: 56);
+  return gen_rtx_REG (SImode, TARGET_BIG_ENDIAN ? 57 : 56);
 }
 
 /* When estimating sizes during arc_reorg, when optimizing for speed, there

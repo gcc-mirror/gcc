@@ -242,7 +242,7 @@ c_common_init_options (unsigned int decoded_options_count,
   g_string_concat_db
     = new (ggc_alloc <string_concat_db> ()) string_concat_db ();
 
-  parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
+  parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX : CLK_GNUC89,
 				ident_hash, line_table, ident_hash_extra);
   cb = cpp_get_callbacks (parse_in);
   cb->diagnostic = c_cpp_diagnostic;
@@ -358,13 +358,13 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	 preprocessed output, but still do -dM etc. as software
 	 depends on this.  Preprocessed output does occur if -MD, -MMD
 	 or environment var dependency generation is used.  */
-      cpp_opts->deps.style = (code == OPT_M ? DEPS_SYSTEM: DEPS_USER);
+      cpp_opts->deps.style = (code == OPT_M ? DEPS_SYSTEM : DEPS_USER);
       flag_no_output = 1;
       break;
 
     case OPT_MD:
     case OPT_MMD:
-      cpp_opts->deps.style = (code == OPT_MD ? DEPS_SYSTEM: DEPS_USER);
+      cpp_opts->deps.style = (code == OPT_MD ? DEPS_SYSTEM : DEPS_USER);
       cpp_opts->deps.need_preprocessor_output = true;
       deps_file = arg;
       break;
@@ -1389,7 +1389,7 @@ c_common_finish (void)
 	deps_stream = stdout;
       else
 	{
-	  deps_stream = fopen (deps_file, deps_append ? "a": "w");
+	  deps_stream = fopen (deps_file, deps_append ? "a" : "w");
 	  if (!deps_stream)
 	    fatal_error (input_location, "opening dependency file %s: %m",
 			 deps_file);
@@ -1811,7 +1811,7 @@ cb_dir_change (cpp_reader * ARG_UNUSED (pfile), const char *dir)
 static void
 set_std_c89 (int c94, int iso)
 {
-  cpp_set_lang (parse_in, c94 ? CLK_STDC94: iso ? CLK_STDC89: CLK_GNUC89);
+  cpp_set_lang (parse_in, c94 ? CLK_STDC94 : iso ? CLK_STDC89 : CLK_GNUC89);
   flag_iso = iso;
   flag_no_asm = iso;
   flag_no_gnu_keywords = iso;
@@ -1828,7 +1828,7 @@ set_std_c89 (int c94, int iso)
 static void
 set_std_c99 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_STDC99: CLK_GNUC99);
+  cpp_set_lang (parse_in, iso ? CLK_STDC99 : CLK_GNUC99);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1844,7 +1844,7 @@ set_std_c99 (int iso)
 static void
 set_std_c11 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_STDC11: CLK_GNUC11);
+  cpp_set_lang (parse_in, iso ? CLK_STDC11 : CLK_GNUC11);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1860,7 +1860,7 @@ set_std_c11 (int iso)
 static void
 set_std_c17 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_STDC17: CLK_GNUC17);
+  cpp_set_lang (parse_in, iso ? CLK_STDC17 : CLK_GNUC17);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1876,7 +1876,7 @@ set_std_c17 (int iso)
 static void
 set_std_c23 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_STDC23: CLK_GNUC23);
+  cpp_set_lang (parse_in, iso ? CLK_STDC23 : CLK_GNUC23);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1909,7 +1909,7 @@ set_std_c2y (int iso)
 static void
 set_std_cxx98 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX98: CLK_GNUCXX);
+  cpp_set_lang (parse_in, iso ? CLK_CXX98 : CLK_GNUCXX);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1923,7 +1923,7 @@ set_std_cxx98 (int iso)
 static void
 set_std_cxx11 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX11: CLK_GNUCXX11);
+  cpp_set_lang (parse_in, iso ? CLK_CXX11 : CLK_GNUCXX11);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1938,7 +1938,7 @@ set_std_cxx11 (int iso)
 static void
 set_std_cxx14 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX14: CLK_GNUCXX14);
+  cpp_set_lang (parse_in, iso ? CLK_CXX14 : CLK_GNUCXX14);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1953,7 +1953,7 @@ set_std_cxx14 (int iso)
 static void
 set_std_cxx17 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX17: CLK_GNUCXX17);
+  cpp_set_lang (parse_in, iso ? CLK_CXX17 : CLK_GNUCXX17);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1969,7 +1969,7 @@ set_std_cxx17 (int iso)
 static void
 set_std_cxx20 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX20: CLK_GNUCXX20);
+  cpp_set_lang (parse_in, iso ? CLK_CXX20 : CLK_GNUCXX20);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -1987,7 +1987,7 @@ set_std_cxx20 (int iso)
 static void
 set_std_cxx23 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX23: CLK_GNUCXX23);
+  cpp_set_lang (parse_in, iso ? CLK_CXX23 : CLK_GNUCXX23);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
@@ -2005,7 +2005,7 @@ set_std_cxx23 (int iso)
 static void
 set_std_cxx26 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX26: CLK_GNUCXX26);
+  cpp_set_lang (parse_in, iso ? CLK_CXX26 : CLK_GNUCXX26);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;

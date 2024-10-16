@@ -658,7 +658,7 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   int end_line
     = endloc.file == startloc.file ? endloc.line : startloc.line;
   int end_column
-    = endloc.file == startloc.file ? endloc.column: startloc.column;
+    = endloc.file == startloc.file ? endloc.column : startloc.column;
 
   if (startloc.line > end_line)
     {
@@ -1089,8 +1089,8 @@ build_init_ctor (tree gcov_info_type)
   append_to_statement_list (stmt, &ctor);
 
   /* Generate a constructor to run it.  */
-  int priority = SUPPORTS_INIT_PRIORITY
-    ? MAX_RESERVED_INIT_PRIORITY: DEFAULT_INIT_PRIORITY;
+  int priority = (SUPPORTS_INIT_PRIORITY
+		  ? MAX_RESERVED_INIT_PRIORITY : DEFAULT_INIT_PRIORITY);
   cgraph_build_static_cdtor ('I', ctor, priority);
 }
 
@@ -1112,8 +1112,8 @@ build_gcov_exit_decl (void)
   append_to_statement_list (stmt, &dtor);
 
   /* Generate a destructor to run it.  */
-  int priority = SUPPORTS_INIT_PRIORITY
-    ? MAX_RESERVED_INIT_PRIORITY: DEFAULT_INIT_PRIORITY;
+  int priority = (SUPPORTS_INIT_PRIORITY
+		  ? MAX_RESERVED_INIT_PRIORITY : DEFAULT_INIT_PRIORITY);
 
   cgraph_build_static_cdtor ('D', dtor, priority);
 }

@@ -442,7 +442,8 @@ dequeue_and_dump (dump_info_p di)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       dump_int (di, "prec", TYPE_PRECISION (t));
-      dump_string_field (di, "sign", TYPE_UNSIGNED (t) ? "unsigned": "signed");
+      dump_string_field (di, "sign",
+			 TYPE_UNSIGNED (t) ? "unsigned" : "signed");
       dump_child ("min", TYPE_MIN_VALUE (t));
       dump_child ("max", TYPE_MAX_VALUE (t));
 
@@ -456,9 +457,11 @@ dequeue_and_dump (dump_info_p di)
 
     case FIXED_POINT_TYPE:
       dump_int (di, "prec", TYPE_PRECISION (t));
-      dump_string_field (di, "sign", TYPE_UNSIGNED (t) ? "unsigned": "signed");
+      dump_string_field (di, "sign",
+			 TYPE_UNSIGNED (t) ? "unsigned" : "signed");
       dump_string_field (di, "saturating",
-			 TYPE_SATURATING (t) ? "saturating": "non-saturating");
+			 TYPE_SATURATING (t)
+			 ? "saturating" : "non-saturating");
       break;
 
     case POINTER_TYPE:
