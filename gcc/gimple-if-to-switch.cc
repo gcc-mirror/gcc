@@ -255,7 +255,7 @@ if_chain::is_beneficial ()
   else
     output.release ();
 
-  output = bit_test_cluster::find_bit_tests (filtered_clusters);
+  output = bit_test_cluster::find_bit_tests (filtered_clusters, 2);
   r = output.length () < filtered_clusters.length ();
   if (r)
     dump_clusters (&output, "BT can be built");

@@ -1773,12 +1773,13 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 }
 
 /* Find bit tests of given CLUSTERS, where all members of the vector
-   are of type simple_cluster.  New clusters are returned.  */
+   are of type simple_cluster.   MAX_C is the approx max number of cases per
+   label.  New clusters are returned.  */
 
 vec<cluster *>
-bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
+bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
 {
-  if (!is_enabled ())
+  if (!is_enabled () || max_c == 1)
     return clusters.copy ();
 
   unsigned l = clusters.length ();
@@ -2207,18 +2208,26 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 }
 
 /* Compute the number of case labels that correspond to each outgoing edge of
-   switch statement.  Record this information in the aux field of the edge.  */
+   switch statement.  Record this information in the aux field of the edge.
+   Return the approx max number of cases per edge.  */
 
-void
+int
 switch_decision_tree::compute_cases_per_edge ()
 {
+  int max_c = 0;
   reset_out_edges_aux (m_switch);
   int ncases = gimple_switch_num_labels (m_switch);
   for (int i = ncases - 1; i >= 1; --i)
     {
       edge case_edge = gimple_switch_edge (cfun, m_switch, i);
       case_edge->aux = (void *) ((intptr_t) (case_edge->aux) + 1);
+      /* For a range case add one extra. That's enough for the bit
+	 cluster heuristic.  */
+      if ((intptr_t)case_edge->aux > max_c)
+	max_c = (intptr_t)case_edge->aux +
+		!!CASE_HIGH (gimple_switch_label (m_switch, i));
     }
+  return max_c;
 }
 
 /* Analyze switch statement and return true when the statement is expanded
@@ -2236,7 +2245,7 @@ switch_decision_tree::analyze_switch_statement ()
   m_case_bbs.reserve (l);
   m_case_bbs.quick_push (default_bb);
 
-  compute_cases_per_edge ();
+  int max_c = compute_cases_per_edge ();
 
   for (unsigned i = 1; i < l; i++)
     {
@@ -2257,7 +2266,7 @@ switch_decision_tree::analyze_switch_statement ()
   reset_out_edges_aux (m_switch);
 
   /* Find bit-test clusters.  */
-  vec<cluster *> output = bit_test_cluster::find_bit_tests (clusters);
+  vec<cluster *> output = bit_test_cluster::find_bit_tests (clusters, max_c);
 
   /* Find jump table clusters.  */
   vec<cluster *> output2;
