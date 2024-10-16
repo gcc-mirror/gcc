@@ -1,3 +1,13 @@
+2024-10-14  Yangyu Chen  <chenyangyu@isrc.iscas.ac.cn>
+
+	* config/riscv/feature_bits.c (__init_riscv_features_bits_linux):
+	Add detailed comments on processing implied extensions.
+
+2024-10-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/feature_bits.c: New.
+	* config/riscv/t-elf (LIB2ADD): Add feature_bits.c.
+
 2024-10-10  Sébastien Michelland  <sebastien.michelland@lcis.grenoble-inp.fr>
 
 	PR target/29845

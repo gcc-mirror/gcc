@@ -1,3 +1,312 @@
+2024-10-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr65518.c: Adjust.
+
+2024-10-16  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-version-1.c, gcc.dg/c23-version-2.c,
+	gcc.dg/gnu23-version-1.c: New tests.
+
+2024-10-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr116655.c: New test.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/init-1.c: New test.
+	* c-c++-common/init-2.c: New test.
+	* c-c++-common/init-3.c: New test.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-24.c: New test.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/embed-20.c: New test.
+	* c-c++-common/cpp/embed-21.c: New test.
+	* c-c++-common/cpp/embed-28.c: New test.
+	* gcc.dg/cpp/embed-8.c: New test.
+	* gcc.dg/cpp/embed-9.c: New test.
+	* gcc.dg/cpp/embed-10.c: New test.
+	* gcc.dg/cpp/embed-11.c: New test.
+	* gcc.dg/cpp/embed-12.c: New test.
+	* gcc.dg/cpp/embed-13.c: New test.
+	* gcc.dg/cpp/embed-14.c: New test.
+	* gcc.dg/cpp/embed-15.c: New test.
+	* gcc.dg/cpp/embed-16.c: New test.
+	* gcc.dg/pch/embed-1.c: New test.
+	* gcc.dg/pch/embed-1.hs: New test.
+	* gcc.dg/lto/embed-1_0.c: New test.
+	* gcc.dg/lto/embed-1_1.c: New test.
+
+2024-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR testsuite/115365
+	* gcc.dg/pr100927.c: Adjust testcase to avoid scan FIX in REG_EQUIV.
+
+2024-10-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/116016
+	* gcc.dg/builtin-counted-by-ref-1.c: New test.
+	* gcc.dg/builtin-counted-by-ref.c: New test.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117022
+	* gcc.dg/c23-named-loops-1.c: New test.
+	* gcc.dg/c23-named-loops-5.c: New test.
+	* gcc.dg/c2y-named-loops-1.c: New test.
+	* gcc.dg/c2y-named-loops-2.c: New test.
+	* gcc.dg/c2y-named-loops-4.c: New test.
+	* gcc.dg/c2y-named-loops-5.c: New test.
+	* gcc.dg/c2y-named-loops-6.c: New test.
+	* gcc.dg/c2y-named-loops-7.c: New test.
+	* gcc.dg/gnu99-named-loops-1.c: New test.
+	* gcc.dg/gnu99-named-loops-2.c: New test.
+	* gcc.dg/gnu99-named-loops-3.c: New test.
+	* gcc.dg/gnu99-named-loops-4.c: New test.
+	* gcc.dg/gnu2y-named-loops-3.c: New test.
+	* gcc.dg/gomp/named-loops-1.c: New test.
+	* gcc.dg/gomp/named-loops-2.c: New test.
+	* objc.dg/named-loops-1.m: New test.
+
+2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/80637
+	* g++.dg/cpp2a/concepts-fn9.C: New test.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116891
+	* gcc.dg/pr116891.c: New test.
+	* gcc.target/i386/fma-pr116891.c: New test.
+
+2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116710
+	* g++.dg/template/unify12.C: New test.
+
+2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117054
+	* g++.dg/cpp2a/lambda-targ9.C: New test.
+
+2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr107432-9.c: Require AVX2 effective target.
+	Include avx2-check.h instead of avx-check.h.  Define TEST to avx2_test.
+
+2024-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Use success_call_info
+	in a couple of places to avoid reimplementing get_desc.
+
+2024-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-pr63969-missing-driver.c (create_code): When
+	breaking PATH, use setenv with a bogus value, rather than
+	unsetenv, in case the system uses a default path that contains
+	the driver binary.
+
+2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117116
+	* gcc.target/i386/pr117116.c: New test.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117147
+	* gcc.dg/vect/pr117147.c: New testcase.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117138
+	* gcc.dg/torture/pr117138.c: New testcase.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117137
+	* gcc.dg/torture/pr117137.c: New testcase.
+
+2024-10-15  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/acle/asm/mul_s8.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mul_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u64.c: Likewise.
+	* gcc.target/aarch64/sve/mul_const_run.c: Likewise.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/Wtrailing-whitespace-1.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-2.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-3.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-4.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-5.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-6.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-7.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-8.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-9.c: New test.
+	* c-c++-common/cpp/Wtrailing-whitespace-10.c: New test.
+
+2024-10-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-13.c: Add
+	compile option for expanding check.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-22.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-29.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-15.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add_imm-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vec_sat_u_trunc-12.c: Ditto.
+
+2024-10-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/cpp-2_c.C: Expect only one space after import.
+	* g++.dg/modules/cpp-5_c.C
+	* g++.dg/modules/dep-2.C
+	* g++.dg/modules/dir-only-2_b.C
+	* g++.dg/modules/pr99050_b.C
+	* g++.dg/modules/inc-xlate-1_b.H
+	* g++.dg/modules/legacy-3_b.H
+	* g++.dg/modules/legacy-3_c.H: Likewise.
+
+2024-10-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/DRs/dr2918.C: New test.
+
+2024-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/vect/pr116997.c: New test.
+
+2024-10-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/114436
+	* c-c++-common/cpp/pragma-system-header-1.h: New test.
+	* c-c++-common/cpp/pragma-system-header-2.h: New test.
+	* c-c++-common/cpp/pragma-system-header.c: New test.
+
+2024-10-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/109704
+	* c-c++-common/cpp/pragma-push-pop-utf8.c: New test.
+	* g++.dg/pch/pushpop-2.C: New test.
+	* g++.dg/pch/pushpop-2.Hs: New test.
+	* gcc.dg/pch/pushpop-2.c: New test.
+	* gcc.dg/pch/pushpop-2.hs: New test.
+
+2024-10-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/dummy_3.f90: New test.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116956
+	* gfortran.dg/vect/pr116956.f90: New test.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/117012
+	* gcc.target/aarch64/pr117012.c: New test.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116371
+	* gcc.target/aarch64/sme2/acle-asm/psel_b16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_b32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_b64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_b8.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c8.c: Renamed to....
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_b32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_b64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_b8.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c8.c: ... These.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-early-break_126.c: New test.
+	* gcc.dg/vect/vect-early-break_127.c: New test.
+	* gcc.dg/vect/vect-early-break_128.c: New test.
+
+2024-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114593
+	* gnat.dg/specs/generic_inst2-child2.ads: New test.
+	* gnat.dg/specs/generic_inst2.ads: New helper.
+	* gnat.dg/specs/generic_inst2-child1.ads: Likewise.
+
+2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116999
+	PR target/117045
+	* gcc.target/aarch64/sve/acle/general/whilele_5.c: Fix bogus
+	expected result.
+	* gcc.target/aarch64/sve/acle/general/whilele_11.c: New test.
+	* gcc.target/aarch64/sve/acle/general/whilele_12.c: Likewise.
+
+2024-10-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-4-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-4-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-4-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-4-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-4-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-4-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-4-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-4-i8.c: New test.
+
+2024-10-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-3-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-3-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-3-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-3-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-3-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-3-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-3-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-3-i8.c: New test.
+
+2024-10-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-2-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-2-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-2-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-2-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-2-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-2-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-2-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_sub-run-2-i8.c: New test.
+
+2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116290
+	* gcc.dg/pr116290.c: New testcase.
+
+2024-10-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/pr53512-1.c: Add -fno-math-errno option.
+	* gcc.target/sh/pr53512-2.c: Likewise.
+	* gcc.target/sh/pr53512-3.c: Likewise.
+	* gcc.target/sh/pr53512-4.c: Likewise.
+	* gcc.target/sh/pr54680.c: Likewise.
+
 2024-10-13  Simon Martin  <simon@nasilyan.com>
 
 	Revert:

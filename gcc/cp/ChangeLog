@@ -1,3 +1,31 @@
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117022
+	* semantics.cc (begin_while_stmt, begin_do_stmt, begin_for_stmt,
+	finish_break_stmt, finish_continue_stmt, begin_switch_stmt): Pass
+	another NULL_TREE to build_stmt calls.
+
+2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116710
+	* pt.cc (unify) <case REFERENCE_TYPE>: Compare rvalueness.
+
+2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117054
+	* pt.cc (extract_locals_r): Disable tree_extra_args assert
+	for LAMBDA_EXPR.
+
+2024-10-14  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (most_constrained_function): Declare..
+	* class.cc (resolve_address_of_overloaded_function): Call it.
+	* pt.cc (get_template_for_ordering): Handle list from
+	resolve_address_of_overloaded_function.
+	(most_constrained_function): No longer static.
+	(resolve_overloaded_unification): Always compare type rather
+	than decl.
+
 2024-10-13  Simon Martin  <simon@nasilyan.com>
 
 	Revert:

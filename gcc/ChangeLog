@@ -1,3 +1,343 @@
+2024-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Move
+	VMAT_ELEMENTWISE fallback for single-element interleaving
+	of too large groups before overrun checking.
+
+2024-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117050
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Properly handle
+	non-grouped masked loads when handling permutations.
+
+2024-10-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (SLP_INSTANCE_UNROLLING_FACTOR): Remove.
+	(slp_instance::unrolling_factor): Likewise.
+	* tree-vect-slp.cc (vect_build_slp_instance): Do not set
+	SLP_INSTANCE_UNROLLING_FACTOR.  Remove then dead code.
+	Compute and set max_nunits from the RHS nodes merged.
+	(vect_update_slp_vf_for_node): New function.
+	(vect_make_slp_decision): Use vect_update_slp_vf_for_node
+	to compute VF recursively.
+	(vect_build_slp_store_interleaving): Get max_nunits and
+	properly set that on the permute nodes built.
+	(vect_analyze_slp): Do not set SLP_INSTANCE_UNROLLING_FACTOR.
+
+2024-10-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/116655
+	* config/riscv/riscv-vector-costs.cc (max_number_of_live_regs):
+	Use biggest mode instead of constant's saved mode.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (gimplify_init_ctor_eval): For larger RAW_DATA_CST,
+	just gimplify cref as lvalue and add gimple assignment of rctor
+	to cref instead of going through gimplification of INIT_EXPR, as
+	the latter can suffer from infinite recursion.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* treestruct.def (TS_RAW_DATA_CST): New.
+	* tree.def (RAW_DATA_CST): New tree code.
+	* tree-core.h (struct tree_raw_data): New type.
+	(union tree_node): Add raw_data_cst member.
+	* tree.h (RAW_DATA_LENGTH, RAW_DATA_POINTER, RAW_DATA_OWNER): Define.
+	(gt_ggc_mx, gt_pch_nx): Declare overloads for tree_raw_data *.
+	* tree.cc (tree_node_structure_for_code): Handle RAW_DATA_CST.
+	(initialize_tree_contains_struct): Handle TS_RAW_DATA_CST.
+	(tree_code_size): Handle RAW_DATA_CST.
+	(initializer_zerop): Likewise.
+	(gt_ggc_mx, gt_pch_nx): Define overloads for tree_raw_data *.
+	* gimplify.cc (gimplify_init_ctor_eval): Handle RAW_DATA_CST.
+	* fold-const.cc (operand_compare::operand_equal_p): Handle
+	RAW_DATA_CST.  Formatting fix.
+	(operand_compare::hash_operand): Handle RAW_DATA_CST.
+	(native_encode_initializer): Likewise.
+	(get_array_ctor_element_at_index): Likewise.
+	(fold): Likewise.
+	* gimple-fold.cc (fold_array_ctor_reference): Likewise.  Formatting
+	fix.
+	* varasm.cc (const_hash_1): Handle RAW_DATA_CST.
+	(initializer_constant_valid_p_1): Likewise.
+	(array_size_for_constructor): Likewise.
+	(output_constructor_regular_field): Likewise.
+	* expr.cc (categorize_ctor_elements_1): Likewise.
+	(expand_expr_real_1) <case ARRAY_REF>: Punt for RAW_DATA_CST.
+	* tree-streamer.cc (streamer_check_handled_ts_structures): Mark
+	TS_RAW_DATA_CST as handled.
+	* tree-streamer-in.cc (streamer_alloc_tree): Handle RAW_DATA_CST.
+	(lto_input_ts_raw_data_cst_tree_pointers): New function.
+	(streamer_read_tree_body): Call it for RAW_DATA_CST.
+	* tree-streamer-out.cc (write_ts_raw_data_cst_tree_pointers): New
+	function.
+	(streamer_write_tree_body): Call it for RAW_DATA_CST.
+	(streamer_write_tree_header): Handle RAW_DATA_CST.
+	* lto-streamer-out.cc (DFS::DFS_write_tree_body): Handle RAW_DATA_CST.
+	* tree-pretty-print.cc (dump_generic_node): Likewise.
+
+2024-10-16  Sam James  <sam@gentoo.org>
+
+	* config/vax/vax.opt.urls: Adjust index for -mlra.
+
+2024-10-16  Sam James  <sam@gentoo.org>
+
+	PR target/113952
+	* config/sparc/sparc.cc (sparc_lra_p): Delete.
+	(TARGET_LRA_P): Ditto.
+	(sparc_option_override): Don't use MASK_LRA.
+	* config/sparc/sparc.md (disabled,enabled): Drop lra attribute.
+	* config/sparc/sparc.opt: Delete -mlra.
+	* config/sparc/sparc.opt.urls: Ditto.
+	* doc/invoke.texi (SPARC options): Drop -mlra and -mno-lra.
+
+2024-10-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/116016
+	* doc/extend.texi: Add documentation for __builtin_counted_by_ref.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116891
+	* match.pd ((negate (fmas@3 @0 @1 @2)) -> (IFN_FNMS @0 @1 @2)):
+	Only enable for !HONOR_SIGN_DEPENDENT_ROUNDING.
+	((negate (IFN_FMS@3 @0 @1 @2)) -> (IFN_FNMA @0 @1 @2)): Likewise.
+	((negate (IFN_FNMA@3 @0 @1 @2)) -> (IFN_FMS @0 @1 @2)): Likewise.
+
+2024-10-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/117157
+	* doc/invoke.texi (Wno-changes-meaning): Add opindex.
+
+2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117116
+	* config/i386/i386-expand.cc (expand_vector_set): Force "val"
+	into a register before VEC_MERGE/VEC_DUPLICATE RTX is generated
+	if it doesn't satisfy nonimmediate_operand predicate.
+
+2024-10-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-dce.cc (perform_tree_ssa_dce): Remove FIXME note.
+
+2024-10-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gen-pass-instances.awk: Remove the limit of the params.
+	* pass_manager.h (NEXT_PASS_WITH_ARG2): Rename to ...
+	(NEXT_PASS_WITH_ARGS): This.
+	* passes.cc (NEXT_PASS_WITH_ARG2): Rename to ...
+	(NEXT_PASS_WITH_ARGS): This and support more than 2 params by using
+	a constexpr array.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116907
+	* tree-ssa-live.cc (clear_unused_block_pointer_in_block): New
+	helper.
+	(clear_unused_block_pointer): Call it.
+
+2024-10-15  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/117141
+	* match.pd: Remove the dup pattern for signed SAT_SUB.
+
+2024-10-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vectorizer.h (vect_mem_access_type): New.
+	* config/aarch64/aarch64.cc (aarch64_ld234_st234_vectors): Use it.
+	(aarch64_detect_vector_stmt_subtype): Likewise.
+	(aarch64_adjust_stmt_cost): Likewise.
+	(aarch64_vector_costs::count_ops): Likewise.
+	(aarch64_vector_costs::add_stmt_cost): Make SLP node named.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117138
+	* gimple-range-fold.cc (fold_using_range::condexpr_adjust):
+	Check if the comparison operand type is supported.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117137
+	* expr.cc (expand_cond_expr_using_cmove): Make sure to
+	expand vector comparisons separately.
+
+2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117147
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Put vars and
+	initialization of per-lane data into the per-lane processing
+	loop to avoid re-using previous lane state.
+
+2024-10-15  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svmul_impl::fold):
+	Implement fold to svlsl for power-of-2 operands.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Wtrailing-whitespace): Document.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/117110
+	* Makefile.in (generated_files, generated_match_files,
+	build/genmatch$(build_exeext), LINKER_FOR_BUILD): Revert
+	2024-10-12 changes.
+	* genmatch.cc: Don't include pretty-print.h and input.h.
+	(fatal, ggc_internal_cleared_alloc, ggc_free, line_table,
+	linemap_client_expand_location_to_spelling_point): Revert
+	2024-10-12 changes.
+	(DIAG_ARGMAX): Define.
+	(diag_integer_with_precision): Define.
+	(diag_vfprintf): New function.
+	(diagnostic_cb): Use diag_vfprintf instead of pp_format_verbatim.
+	(output_line_directive): Revert 2024-10-12 changes.
+
+2024-10-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117109
+	* diagnostic-format-sarif.cc
+	(diagnostic_output_format_init_sarif_file): Rename
+	diagnostic_context::emit_diagnostic to
+	diagnostic_context::emit_diagnostic_with_group.
+	* diagnostic.cc (diagnostic_context::emit_diagnostic): Rename
+	to...
+	(diagnostic_context::emit_diagnostic_with_group): ...this.
+	(diagnostic_context::emit_diagnostic_va): Rename to...
+	(diagnostic_context::emit_diagnostic_with_group_va): ...this.
+	* diagnostic.h (diagnostic_context::emit_diagnostic): Rename to...
+	(diagnostic_context::emit_diagnostic_with_group): ...this.
+	(diagnostic_context::emit_diagnostic_va): Rename to...
+	(diagnostic_context::emit_diagnostic_with_group_va): ...this.
+
+2024-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116997
+	* fold-const.cc (fold_ternary_loc): Fix BIT_INSERT_EXPR constant folding
+	for BYTES_BIG_ENDIAN targets.
+
+2024-10-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-dce.cc (tree_ssa_dce): Remove.
+	(tree_ssa_cd_dce): Remove.
+	(class pass_dce_base): New class.
+	(class pass_dce): Use pass_dce_base as the base class.
+	(class pass_cd_dce): Likewise.
+
+2024-10-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117096
+	* passes.def: Update some of the dce/cd-cde passes setting
+	the 2nd arg to true.
+	Also remove comment about stdarg since dce does it.
+	* tree-ssa-dce.cc (pass_dce): Add remove_unused_locals_p field.
+	Update set_pass_param to allow for 2nd param.
+	Use remove_unused_locals_p in execute to return TODO_remove_unused_locals.
+	(pass_cd_dce): Likewise.
+	* tree-stdarg.cc (pass_data_stdarg): Remove TODO_remove_unused_locals.
+
+2024-10-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gen-pass-instances.awk (END): Handle processing
+	of multiple arguments to NEXT_PASS. Also error out
+	if using more than max_number_args (2).
+	* pass_manager.h (NEXT_PASS_WITH_ARG2): New define.
+	* passes.cc (NEXT_PASS_WITH_ARG2): New define.
+
+2024-10-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gen-pass-instances.awk: Print out the #undefs.
+	* pass_manager.h: Don't #undef INSERT_PASSES_AFTER,
+	PUSH_INSERT_PASSES_WITHIN, POP_INSERT_PASSES, NEXT_PASS,
+	NEXT_PASS_WITH_ARG, and TERMINATE_PASS_LIST.
+	* passes.cc: Likewise.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/116956
+	* tree-vectorizer.cc (vec_info::move_dr): Copy STMT_VINFO_STRIDED_P.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/117012
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): Use
+	const_vec_duplicate_p instead of CONST_VECTOR_DUPLICATE_P.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116371
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (class svpsel_impl):
+	Renamed to ...
+	(class svpsel_lane_impl): ... This and adjust initialization.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svpsel): Renamed to ...
+	(svpsel_lane): ... This.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svpsel): Renamed to
+	svpsel_lane.
+
+2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Handle SLP trees with no
+	children.
+	* tree-vectorizer.h (enum slp_instance_kind): Add slp_inst_kind_gcond.
+	(LOOP_VINFO_EARLY_BREAKS_LIVE_IVS): New.
+	(vectorizable_early_exit): Expose.
+	(class _loop_vec_info): Add early_break_live_stmts.
+	* tree-vect-slp.cc (vect_build_slp_instance, vect_analyze_slp_instance):
+	Support gcond instances.
+	(vect_analyze_slp): Analyze gcond roots and early break live statements.
+	(maybe_push_to_hybrid_worklist): Don't sink gconds.
+	(vect_slp_analyze_operations): Support gconds.
+	(vect_slp_check_for_roots): Update comments.
+	(vectorize_slp_instance_root_stmt): Support gconds.
+	(vect_schedule_slp): Pass vinfo to vectorize_slp_instance_root_stmt.
+	* tree-vect-stmts.cc (vect_stmt_relevant_p): Record early break live
+	statements.
+	(vectorizable_early_exit): Support SLP.
+
+2024-10-14  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR middle-end/116926
+	* optabs-query.cc (find_widening_optab_handler_and_mode): Add
+	handling of vector -> scalar optab handling.
+
+2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116999
+	PR target/117045
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svwhilelx_impl::fold): Check for WHILELTs of the minimum value
+	and WHILELEs of the maximum value.  Fold them to all-false and
+	all-true respectively.
+
+2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/116891
+	* match.pd ((negate (IFN_FNMS@3 @0 @1 @2)) -> (IFN_FMA @0 @1 @2)):
+	Only enable for !HONOR_SIGN_DEPENDENT_ROUNDING.
+
+2024-10-14  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add matching pattern for vector signed SAT_SUB form 3.
+
+2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116290
+	* tree-loop-distribution.cc (determine_reduction_stmt_1): PHIs
+	have no debug variants.  Start with first non-debug real stmt.
+	* tree-ssa-loop-ivopts.cc (find_givs_in_bb): Do not analyze
+	debug stmts.
+
+2024-10-14  Oleg Endo  <olegendo@gcc.gnu.org>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/113533
+	* config/sh/sh.cc (sh_rtx_costs): Adjust cost estimation of MEM rtx
+	to be always at least COST_N_INSNS (1).  Forward speed argument to
+	sh_address_cost.
+
 2024-10-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md ("movsi", "movxf"): Replace

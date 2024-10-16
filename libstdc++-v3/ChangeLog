@@ -1,3 +1,77 @@
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (strip_fundts_namespace): New.
+	(StdExpAnyPrinter, StdExpOptionalPrinter): Use it.
+
+2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106676
+	* include/bits/iterator_concepts.h (__cpp17_fwd_iterator): Use
+	is_reference instead of is_value_reference.
+	rvalue references.
+	* include/std/ranges (transform_view:__iter_cat::_S_iter_cat):
+	Likewise.
+	(zip_transform_view::__iter_cat::_S_iter_cat): Likewise.
+	(adjacent_transform_view::__iter_cat::_S_iter_cat): Likewise.
+	(join_with_view::__iter_cat::_S_iter_cat): Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Check
+	iterator_category when the transformation function returns an
+	rvalue reference type.
+
+2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (transform_view:_Iterator): Use const F&
+	to determine value_type and iterator_category of
+	_Iterator<true>, as per LWG 3564.
+	* testsuite/std/ranges/adaptors/transform.cc: Check value_type
+	and iterator_category.
+
+2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117135
+	* config/locale/generic/time_members.cc
+	(__timepunct<wchar_t>::_M_initialize_timepunc): Set
+	_M_date_time_format for C locale. Set %Ex formats to the same
+	values as the %x formats.
+
+2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (constrained_equality): Bump value.
+	* include/bits/version.h: Regenerate.
+	* include/std/expected (operator==): Add constraints and
+	noexcept specifiers.
+	* testsuite/20_util/optional/relops/constrained.cc: Adjust
+	check for feature test macro.
+	* testsuite/20_util/pair/comparison_operators/constrained.cc:
+	Likewise.
+	* testsuite/20_util/tuple/comparison_operators/constrained.cc:
+	Likewise.
+	* testsuite/20_util/variant/relops/constrained.cc: Likewise.
+	* testsuite/20_util/expected/equality_constrained.cc: New test.
+
+2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117094
+	* include/bits/ranges_algobase.h (__fill_fn): Use std::move for
+	iterator that might not be copyable.
+	* testsuite/25_algorithms/fill/constrained.cc: Check
+	non-copyable iterator with sized sentinel.
+
+2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93059
+	* include/bits/stl_algobase.h (__fill_a1(T*, T*, const T&)):
+	Change template parameters and enable_if condition to allow the
+	fill value to be an integer.
+
+2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93059
+	* include/bits/cpp_type_traits.h (__memcpyable): Add partial
+	specialization for pointers to distinct types.
+	(__memcpyable_integer): New trait to control which types can use
+	cross-type memcpy optimizations.
+
 2024-10-13  Sam James  <sam@gentoo.org>
 
 	* testsuite/17_intro/names_fortify.cc: Undefine _FORTIFY_SOURCE.

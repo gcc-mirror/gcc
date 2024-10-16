@@ -1,3 +1,25 @@
+2024-10-15  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82250
+	PR fortran/82251
+	PR fortran/117136
+	* trans-expr.cc (gfc_conv_procedure_call): Initialize
+	'is_builtin'.
+	(conv_function_val): Clean up.
+
+2024-10-14  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77871
+	* trans-expr.cc (gfc_conv_derived_to_class): Assign token when
+	converting a coarray to class.
+	(gfc_get_tree_for_caf_expr): For classes get the caf decl from
+	the saved descriptor.
+	(gfc_get_caf_token_offset):Assert that coarray=lib is set and
+	cover more cases where the tree having the coarray token can be.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_caf_get): Use unified
+	test for pointers.
+
 2024-10-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.h (gfc_option_t): Add disable_acc_on_device.

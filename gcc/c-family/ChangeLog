@@ -1,3 +1,57 @@
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ppoutput.cc (token_streamer::stream): Add special code to spell
+	CPP_EMBED token.
+	* c-lex.cc (c_lex_with_flags): Handle CPP_EMBED.  Formatting fix.
+	* c-common.cc (c_parse_error): Handle CPP_EMBED.
+	(braced_list_to_string): Optimize RAW_DATA_CST surrounded by
+	INTEGER_CSTs which match some bytes before or after RAW_DATA_CST in
+	its owner.
+
+2024-10-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/116016
+	* c-common.cc: Add new __builtin_counted_by_ref.
+	* c-common.h (enum rid): Add RID_BUILTIN_COUNTED_BY_REF.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117022
+	* c-common.def (FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
+	CONTINUE_STMT, SWITCH_STMT): Add an extra operand, *_NAME
+	and document it.
+	* c-common.h (bc_hash_map_t): New typedef.
+	(struct bc_state): Add bc_hash_map member.
+	(WHILE_NAME, DO_NAME, FOR_NAME, BREAK_NAME, CONTINUE_NAME,
+	SWITCH_STMT_NAME): Define.
+	* c-pretty-print.cc (c_pretty_printer::statement): Print
+	BREAK_STMT or CONTINUE_STMT operand if any.
+	* c-gimplify.cc (bc_hash_map): New static variable.
+	(note_named_bc, release_named_bc): New functions.
+	(save_bc_state): Save and clear bc_hash_map.
+	(restore_bc_state): Assert NULL and restore bc_hash_map.
+	(genericize_c_loop): Add NAME argument, call note_named_bc
+	and release_named_bc if non-NULL around the body walk.
+	(genericize_for_stmt, genericize_while_stmt, genericize_do_stmt):
+	Adjust callers of it.
+	(genericize_switch_stmt): Rename break_block variable to blab.
+	Call note_named_bc and release_named_bc if SWITCH_STMT_NAME is
+	non-NULL around the body walk.
+	(genericize_continue_stmt): Handle non-NULL CONTINUE_NAME.
+	(genericize_break_stmt): Handle non-NULL BREAK_NAME.
+	(c_genericize): Delete and clear bc_hash_map.
+
+2024-10-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/117157
+	* c.opt.urls: Regenerate.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wtrailing-whitespace=): New option.
+	(Wtrailing-whitespace): New alias.
+	* c.opt.urls: Regenerate.
+
 2024-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lex.cc (c_common_has_attribute,

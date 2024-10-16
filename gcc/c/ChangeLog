@@ -1,3 +1,100 @@
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-tree.h (c_maybe_optimize_large_byte_initializer): Declare.
+	* c-parser.cc (c_parser_initval): Attempt to optimize large char array
+	initializers into RAW_DATA_CST.
+	* c-typeck.cc (c_maybe_optimize_large_byte_initializer): New function.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_braced_init): Handle CPP_EMBED.
+	(c_parser_get_builtin_args): Likewise.
+	(c_parser_expression): Likewise.
+	(c_parser_expr_list): Likewise.
+	* c-typeck.cc (digest_init): Handle RAW_DATA_CST.  Formatting fix.
+	(init_node_successor): New function.
+	(add_pending_init): Handle RAW_DATA_CST.
+	(set_nonincremental_init): Formatting fix.
+	(output_init_element): Handle RAW_DATA_CST.  Formatting fixes.
+	(maybe_split_raw_data): New function.
+	(process_init_element): Use maybe_split_raw_data.  Handle
+	RAW_DATA_CST.
+
+2024-10-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/116016
+	* c-decl.cc (names_builtin_p): Add RID_BUILTIN_COUNTED_BY_REF.
+	* c-parser.cc (has_counted_by_object): New routine.
+	(get_counted_by_ref): New routine.
+	(c_parser_postfix_expression): Handle New RID_BUILTIN_COUNTED_BY_REF.
+	* c-tree.h: New routine handle_counted_by_for_component_ref.
+	* c-typeck.cc (handle_counted_by_for_component_ref): New routine.
+	(build_component_ref): Call the new routine.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117022
+	* c-tree.h: Implement C2Y N3355 - Named loops.
+	(C_DECL_LOOP_NAME, C_DECL_SWITCH_NAME, C_DECL_LOOP_SWITCH_NAME_VALID,
+	C_DECL_LOOP_SWITCH_NAME_USED, IN_NAMED_STMT): Define.
+	(c_get_loop_names, c_release_loop_names, c_finish_bc_name): Declare.
+	(c_start_switch): Add NAME argument.
+	(c_finish_bc_stmt): Likewise.
+	* c-lang.h (struct language_function): Add loop_names and
+	loop_names_hash members.
+	* c-parser.cc (c_parser_external_declaration,
+	c_parser_declaration_or_fndef, c_parser_struct_or_union_specifier,
+	c_parser_parameter_declaration): Adjust c_parser_pragma caller.
+	(get_before_labels): New function.
+	(c_parser_compound_statement_nostart): Call get_before_labels when
+	needed, adjust c_parser_pragma and c_parser_statement_after_labels
+	callers.
+	(c_parser_statement): Call get_before_labels first and pass it to
+	c_parser_statement_after_labels.
+	(c_parser_bc_name): New function.
+	(c_parser_statement_after_labels): Add BEFORE_LABELS argument.  Pass
+	it down to c_parser_switch_statement, c_parser_while_statement,
+	c_parser_do_statement, c_parser_for_statement and c_parser_pragma.
+	Call c_parser_bc_name for RID_BREAK and RID_CONTINUE and pass it as
+	another argument to c_finish_bc_stmt.
+	(c_parser_if_body, c_parser_else_body): Call get_before_labels
+	early and pass it to c_parser_statement_after_labels.
+	(c_parser_switch_statement): Add BEFORE_LABELS argument.  Call
+	c_get_loop_names, if named, pass switch_name to c_start_switch,
+	mark it valid and set IN_NAMED_STMT bit in in_statement before
+	parsing body, otherwise clear IN_NAMED_STMT bit before that parsing.
+	Run c_release_loop_names at the end.
+	(c_parser_while_statement, c_parser_do_statement,
+	c_parser_for_statement): Add BEFORE_LABELS argument.  Call
+	c_get_loop_names, if named, mark it valid and set IN_NAMED_STMT bit
+	in in_statement before parsing body, otherwise clear IN_NAMED_STMT
+	before that parsing, arrange for the loop name if used to be
+	another *_STMT argument.
+	(c_parser_objc_class_instance_variables,
+	c_parser_objc_methodprotolist): Adjust c_parser_pragma callers.
+	(c_parser_pragma): Add BEFORE_LABELS argument.  Pass it down to
+	c_parser_for_statement, c_parser_while_statement or
+	c_parser_do_statement.
+	(c_parser_omp_loop_nest, c_maybe_parse_omp_decl): Adjust
+	c_parser_pragma callers.
+	* c-decl.cc (loop_names, loop_names_hash): New static variables.
+	(add_stmt): Set STATEMENT_LIST_HAS_LABEL after push_stmt_list rather
+	than before it.
+	(c_push_function_context): Save and clear loop_names and
+	loop_names_hash.
+	(c_pop_function_context): Release or delete, restore and clear
+	loop_names and loop_names_hash.
+	(c_get_loop_names, c_release_loop_names, c_finish_bc_name): New
+	functions.
+	* c-typeck.cc (c_start_switch): Add SWITCH_NAME argument, pass it down
+	to build_stmt.
+	(c_finish_bc_stmt): Add NAME argument.  Mark of IN_NAMED_STMT bit
+	of in_statement in swtiches.  Use label for IN_OBJC_FOREACH only if
+	name is NULL.  If name is non-NULL and C_DECL_LOOP_NAME and
+	C_DECL_SWITCH_NAME are both set, assume outer ObjC foreach and
+	dig labels from DECL_CHAIN of name.  Pass NAME to build_stmt
+	otherwise.
+
 2024-10-07  qing zhao  <qing.zhao@oracle.com>
 
 	PR c/116735

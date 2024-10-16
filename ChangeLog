@@ -1,3 +1,11 @@
+2024-10-16  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Fix Write After Approval name order.
+
+2024-10-14  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* MAINTAINERS (s390 port): Add myself.
+
 2024-10-13  Josef Melcr  <melcrjos@fit.cvut.cz>
 
 	* MAINTAINERS: Add myself to write after approval

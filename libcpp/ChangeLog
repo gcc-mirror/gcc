@@ -1,3 +1,59 @@
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (TTYPE_TABLE): Add CPP_EMBED token type.
+	* files.cc (finish_embed): For limit >= 64 and C preprocessing
+	instead of emitting CPP_NUMBER CPP_COMMA separated sequence for the
+	whole embed emit it just for the first and last byte and in between
+	emit a CPP_EMBED token or tokens if too large.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_trailing_whitespace member.
+	(enum cpp_warning_reason): Add CPP_W_TRAILING_WHITESPACE.
+	* internal.h (struct _cpp_line_note): Document 'W' line note.
+	* lex.cc (_cpp_clean_line): Add 'W' line note for trailing whitespace
+	except for trailing whitespace after backslash.  Formatting fix.
+	(_cpp_process_line_notes): Emit -Wtrailing-whitespace diagnostics.
+	Formatting fixes.
+	(lex_raw_string): Clear type on 'W' notes.
+
+2024-10-14  Jason Merrill  <jason@redhat.com>
+
+	* lex.cc (cpp_output_token): Omit terminal space from name.
+
+2024-10-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/114436
+	* directives.cc (destringize_and_run): If the _Pragma changed the
+	buffer system header state (e.g. because it was "GCC
+	system_header"), propagate that change back to the actual buffer
+	too.
+
+2024-10-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/109704
+	* include/cpplib.h (class cpp_auto_suppress_diagnostics): New class.
+	* errors.cc
+	(cpp_auto_suppress_diagnostics::cpp_auto_suppress_diagnostics): New
+	function.
+	(cpp_auto_suppress_diagnostics::~cpp_auto_suppress_diagnostics): New
+	function.
+	* charset.cc (noop_diagnostic_cb): Remove.
+	(cpp_interpret_string_ranges): Refactor diagnostic suppression logic
+	into new class cpp_auto_suppress_diagnostics.
+	(count_source_chars): Likewise.
+	* directives.cc (cpp_pop_definition): Add cpp_hashnode argument.
+	(lex_identifier_from_string): New static helper function.
+	(push_pop_macro_common): Refactor common logic from
+	do_pragma_push_macro and do_pragma_pop_macro; use
+	lex_identifier_from_string instead of _cpp_lex_identifier.
+	(do_pragma_push_macro): Reimplement using push_pop_macro_common.
+	(do_pragma_pop_macro): Likewise.
+	* internal.h (_cpp_lex_identifier): Remove.
+	* lex.cc (lex_identifier_intern): Remove.
+	(_cpp_lex_identifier): Remove.
+
 2024-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (ATTRIBUTE_CPP_PPDIAG): Define.
