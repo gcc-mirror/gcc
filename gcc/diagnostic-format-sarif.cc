@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-range-label.h"
 #include "pretty-print-format-impl.h"
 #include "pretty-print-urlifier.h"
+#include "demangle.h"
+#include "backtrace.h"
 
 /* Forward decls.  */
 class sarif_builder;
@@ -167,7 +169,8 @@ public:
 		    const char * const *original_argv);
 
   void add_notification_for_ice (const diagnostic_info &diagnostic,
-				 sarif_builder &builder);
+				 sarif_builder &builder,
+				 std::unique_ptr<json::object> backtrace);
   void prepare_to_flush (sarif_builder &builder);
 
 private:
@@ -578,7 +581,8 @@ class sarif_ice_notification : public sarif_location_manager
 {
 public:
   sarif_ice_notification (const diagnostic_info &diagnostic,
-			  sarif_builder &builder);
+			  sarif_builder &builder,
+			  std::unique_ptr<json::object> backtrace);
 
   void
   add_related_location (std::unique_ptr<sarif_location> location_obj,
@@ -801,6 +805,9 @@ private:
   make_artifact_content_object (const char *text) const;
   int get_sarif_column (expanded_location exploc) const;
 
+  std::unique_ptr<json::object>
+  make_stack_from_backtrace ();
+
   diagnostic_context &m_context;
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
@@ -885,12 +892,15 @@ sarif_invocation::sarif_invocation (sarif_builder &builder,
 
 void
 sarif_invocation::add_notification_for_ice (const diagnostic_info &diagnostic,
-					    sarif_builder &builder)
+					    sarif_builder &builder,
+					    std::unique_ptr<json::object> backtrace)
 {
   m_success = false;
 
   auto notification
-    = ::make_unique<sarif_ice_notification> (diagnostic, builder);
+    = ::make_unique<sarif_ice_notification> (diagnostic,
+					     builder,
+					     std::move (backtrace));
 
   /* Support for related locations within a notification was added
      in SARIF 2.2; see https://github.com/oasis-tcs/sarif-spec/issues/540  */
@@ -1310,7 +1320,8 @@ sarif_location::lazily_add_relationships_array ()
 
 sarif_ice_notification::
 sarif_ice_notification (const diagnostic_info &diagnostic,
-			sarif_builder &builder)
+			sarif_builder &builder,
+			std::unique_ptr<json::object> backtrace)
 {
   /* "locations" property (SARIF v2.1.0 section 3.58.4).  */
   auto locations_arr
@@ -1327,6 +1338,13 @@ sarif_ice_notification (const diagnostic_info &diagnostic,
 
   /* "level" property (SARIF v2.1.0 section 3.58.6).  */
   set_string ("level", "error");
+
+  /* If we have backtrace information, add it as part of a property bag.  */
+  if (backtrace)
+    {
+      sarif_property_bag &bag = get_or_create_properties ();
+      bag.set ("gcc/backtrace", std::move (backtrace));
+    }
 }
 
 /* Implementation of sarif_location_manager::add_related_location vfunc
@@ -1528,6 +1546,129 @@ sarif_builder::~sarif_builder ()
     }
 }
 
+/* Functions at which to stop the backtrace print.  It's not
+   particularly helpful to print the callers of these functions.  */
+
+static const char * const bt_stop[] =
+{
+  "main",
+  "toplev::main",
+  "execute_one_pass",
+  "compile_file",
+};
+
+struct bt_closure
+{
+  bt_closure (sarif_builder &builder,
+	      json::array *frames_arr)
+  : m_builder (builder),
+    m_frames_arr (frames_arr)
+  {
+  }
+
+  sarif_builder &m_builder;
+  json::array *m_frames_arr;
+};
+
+/* A callback function passed to the backtrace_full function.  */
+
+static int
+bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
+	     const char *function)
+{
+  bt_closure *closure = (bt_closure *)data;
+
+  /* If we don't have any useful information, don't print
+     anything.  */
+  if (filename == NULL && function == NULL)
+    return 0;
+
+  /* Skip functions in diagnostic.cc or diagnostic-global-context.cc.  */
+  if (closure->m_frames_arr->size () == 0
+      && filename != NULL
+      && (strcmp (lbasename (filename), "diagnostic.cc") == 0
+	  || strcmp (lbasename (filename),
+		     "diagnostic-global-context.cc") == 0))
+    return 0;
+
+  /* Print up to 20 functions.  We could make this a --param, but
+     since this is only for debugging just use a constant for now.  */
+  if (closure->m_frames_arr->size () >= 20)
+    {
+      /* Returning a non-zero value stops the backtrace.  */
+      return 1;
+    }
+
+  char *alc = NULL;
+  if (function != NULL)
+    {
+      char *str = cplus_demangle_v3 (function,
+				     (DMGL_VERBOSE | DMGL_ANSI
+				      | DMGL_GNU_V3 | DMGL_PARAMS));
+      if (str != NULL)
+	{
+	  alc = str;
+	  function = str;
+	}
+
+      for (size_t i = 0; i < ARRAY_SIZE (bt_stop); ++i)
+	{
+	  size_t len = strlen (bt_stop[i]);
+	  if (strncmp (function, bt_stop[i], len) == 0
+	      && (function[len] == '\0' || function[len] == '('))
+	    {
+	      if (alc != NULL)
+		free (alc);
+	      /* Returning a non-zero value stops the backtrace.  */
+	      return 1;
+	    }
+	}
+    }
+
+  auto frame_obj = ::make_unique<json::object> ();
+
+  /* I tried using sarifStack and sarifStackFrame for this
+     but it's not a good fit e.g. PC information.  */
+  char buf[128];
+  snprintf (buf, sizeof (buf) - 1, "0x%lx", (unsigned long)pc);
+  frame_obj->set_string ("pc", buf);
+  if (function)
+    frame_obj->set_string ("function", function);
+  if (filename)
+    frame_obj->set_string ("filename", filename);
+  frame_obj->set_integer ("lineno", lineno);
+  closure->m_frames_arr->append (std::move (frame_obj));
+
+  if (alc != NULL)
+    free (alc);
+
+  return 0;
+}
+
+/* Attempt to generate a JSON object representing a backtrace,
+   for adding to ICE notifications.  */
+
+std::unique_ptr<json::object>
+sarif_builder::make_stack_from_backtrace ()
+{
+  auto frames_arr = ::make_unique<json::array> ();
+
+  backtrace_state *state = nullptr;
+  state = backtrace_create_state (nullptr, 0, nullptr, nullptr);
+  bt_closure closure (*this, frames_arr.get ());
+  const int frames_to_skip = 5;
+  if (state != nullptr)
+    backtrace_full (state, frames_to_skip, bt_callback, nullptr,
+		    (void *) &closure);
+
+  if (frames_arr->size () == 0)
+    return nullptr;
+
+  auto stack = ::make_unique<json::object> ();
+  stack->set ("frames", std::move (frames_arr));
+  return stack;
+}
+
 /* Implementation of "on_report_diagnostic" for SARIF output.  */
 
 void
@@ -1538,7 +1679,9 @@ sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
-      m_invocation_obj->add_notification_for_ice (diagnostic, *this);
+      std::unique_ptr<json::object> stack = make_stack_from_backtrace ();
+      m_invocation_obj->add_notification_for_ice (diagnostic, *this,
+						  std::move (stack));
 
       /* Print a header for the remaining output to stderr, and
 	 return, attempting to print the usual ICE messages to

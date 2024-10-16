@@ -55,6 +55,13 @@ def test_notification(sarif):
     assert get_location_artifact_uri(loc0).endswith('crash-test-ice-in-header.h')
     assert 'inject_ice ();' in get_location_snippet_text(loc0)
 
+    # We may have backtrace information
+    if 'properties' in notification:
+        backtrace = notification['properties']['gcc/backtrace']
+        assert 'frames' in backtrace
+        # Ideally we should have a frame for pass_crash_test::execute(function*)
+        # but we can't rely on this.
+
     # In SARIF 2.1 and earlier we aren't able to capture the include path
     # as a related location within the notification
     assert 'relationships' not in loc0
