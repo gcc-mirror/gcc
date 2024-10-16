@@ -1239,15 +1239,19 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
   if (params->limit < limit)
     limit = params->limit;
 
-  /* For sizes larger than say 64 bytes, this is just a temporary
-     solution, we should emit a single new token which the FEs will
-     handle as an optimization.  */
+  size_t embed_tokens = 0;
+  if (!CPP_OPTION (pfile, cplusplus)
+      && CPP_OPTION (pfile, lang) != CLK_ASM
+      && limit >= 64)
+    embed_tokens = ((limit - 2) / INT_MAX) + (((limit - 2) % INT_MAX) != 0);
+
   size_t max = INTTYPE_MAXIMUM (size_t) / sizeof (cpp_token);
-  if (limit > max / 2
+  if ((embed_tokens ? (embed_tokens > (max - 3) / 2) : (limit > max / 2))
       || (limit
 	  ? (params->prefix.count > max
 	     || params->suffix.count > max
-	     || (limit * 2 - 1 + params->prefix.count
+	     || ((embed_tokens ? embed_tokens * 2 + 3 : limit * 2 - 1)
+		 + params->prefix.count
 		 + params->suffix.count > max))
 	  : params->if_empty.count > max))
     {
@@ -1281,13 +1285,16 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
 			"%s is too large", file->path);
 	  return 0;
 	}
+      if (embed_tokens && i == 0)
+	i = limit - 2;
     }
   uchar *s = len ? _cpp_unaligned_alloc (pfile, len) : NULL;
   _cpp_buff *tok_buff = NULL;
   cpp_token *tok = &pfile->directive_result, *toks = tok;
   size_t count = 0;
   if (limit)
-    count = (params->prefix.count + limit * 2 - 1
+    count = (params->prefix.count
+	     + (embed_tokens ? embed_tokens * 2 + 3 : limit * 2 - 1)
 	     + params->suffix.count) - 1;
   else if (params->if_empty.count)
     count = params->if_empty.count - 1;
@@ -1338,6 +1345,34 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
 	  tok->type = CPP_COMMA;
 	  tok->flags = NO_EXPAND;
 	  tok++;
+	}
+      if (i == 0 && embed_tokens)
+	{
+	  ++i;
+	  for (size_t j = 0; j < embed_tokens; ++j)
+	    {
+	      tok->src_loc = params->loc;
+	      tok->type = CPP_EMBED;
+	      tok->flags = NO_EXPAND;
+	      tok->val.str.text = &buffer[i];
+	      tok->val.str.len
+		= limit - 1 - i > INT_MAX ? INT_MAX : limit - 1 - i;
+	      i += tok->val.str.len;
+	      if (tok->val.str.len < 32 && j)
+		{
+		  /* Avoid CPP_EMBED with a fewer than 32 bytes, shrink the
+		     previous CPP_EMBED by 64 and grow this one by 64.  */
+		  tok[-2].val.str.len -= 64;
+		  tok->val.str.text -= 64;
+		  tok->val.str.len += 64;
+		}
+	      tok++;
+	      tok->src_loc = params->loc;
+	      tok->type = CPP_COMMA;
+	      tok->flags = NO_EXPAND;
+	      tok++;
+	    }
+	  --i;
 	}
     }
   if (limit && params->suffix.count)

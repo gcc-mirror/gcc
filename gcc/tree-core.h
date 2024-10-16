@@ -1515,6 +1515,13 @@ struct GTY(()) tree_string {
   char str[1];
 };
 
+struct GTY((user)) tree_raw_data {
+  struct tree_typed typed;
+  tree owner;
+  const char *str;
+  int length;
+};
+
 struct GTY(()) tree_complex {
   struct tree_typed typed;
   tree real;
@@ -2105,6 +2112,7 @@ union GTY ((ptr_alias (union lang_tree_node),
   struct tree_fixed_cst GTY ((tag ("TS_FIXED_CST"))) fixed_cst;
   struct tree_vector GTY ((tag ("TS_VECTOR"))) vector;
   struct tree_string GTY ((tag ("TS_STRING"))) string;
+  struct tree_raw_data GTY ((tag ("TS_RAW_DATA_CST"))) raw_data_cst;
   struct tree_complex GTY ((tag ("TS_COMPLEX"))) complex;
   struct tree_identifier GTY ((tag ("TS_IDENTIFIER"))) identifier;
   struct tree_decl_minimal GTY((tag ("TS_DECL_MINIMAL"))) decl_minimal;

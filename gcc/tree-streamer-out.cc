@@ -880,6 +880,19 @@ write_ts_constructor_tree_pointers (struct output_block *ob, tree expr)
 }
 
 
+/* Write all pointer fields in the RAW_DATA_CST/TS_RAW_DATA_CST structure of
+   EXPR to output block OB.  */
+
+static void
+write_ts_raw_data_cst_tree_pointers (struct output_block *ob, tree expr)
+{
+  /* Only write this for non-NULL RAW_DATA_OWNER.  RAW_DATA_CST with
+     NULL RAW_DATA_OWNER is streamed to be read back as STRING_CST.  */
+  if (RAW_DATA_OWNER (expr) != NULL_TREE)
+    stream_write_tree_ref (ob, RAW_DATA_OWNER (expr));
+}
+
+
 /* Write all pointer fields in the TS_OMP_CLAUSE structure of EXPR
    to output block OB.  If REF_P is true, write a reference to EXPR's
    pointer fields.  */
@@ -973,6 +986,9 @@ streamer_write_tree_body (struct output_block *ob, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     write_ts_constructor_tree_pointers (ob, expr);
 
+  if (code == RAW_DATA_CST)
+    write_ts_raw_data_cst_tree_pointers (ob, expr);
+
   if (code == OMP_CLAUSE)
     write_ts_omp_clause_tree_pointers (ob, expr);
 }
@@ -1028,6 +1044,35 @@ streamer_write_tree_header (struct output_block *ob, tree expr)
     streamer_write_uhwi (ob, call_expr_nargs (expr));
   else if (TREE_CODE (expr) == OMP_CLAUSE)
     streamer_write_uhwi (ob, OMP_CLAUSE_CODE (expr));
+  else if (TREE_CODE (expr) == RAW_DATA_CST)
+    {
+      if (RAW_DATA_OWNER (expr) == NULL_TREE)
+	{
+	  /* RAW_DATA_CST with NULL RAW_DATA_OWNER is an owner of other
+	     RAW_DATA_CST's data.  This should be streamed out so that
+	     it can be streamed back in as a STRING_CST instead, but without
+	     the need to duplicate the possibly large data.  */
+	  streamer_write_uhwi (ob, 0);
+	  streamer_write_string_with_length (ob, ob->main_stream,
+					     RAW_DATA_POINTER (expr),
+					     RAW_DATA_LENGTH (expr), true);
+	}
+      else
+	{
+	  streamer_write_uhwi (ob, RAW_DATA_LENGTH (expr));
+	  tree owner = RAW_DATA_OWNER (expr);
+	  unsigned HOST_WIDE_INT off;
+	  if (TREE_CODE (owner) == STRING_CST)
+	    off = RAW_DATA_POINTER (expr) - TREE_STRING_POINTER (owner);
+	  else
+	    {
+	      gcc_checking_assert (TREE_CODE (owner) == RAW_DATA_CST
+				   && RAW_DATA_OWNER (owner) == NULL_TREE);
+	      off = RAW_DATA_POINTER (expr) - RAW_DATA_POINTER (owner);
+	    }
+	  streamer_write_uhwi (ob, off);
+	}
+    }
   else if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
       gcc_checking_assert (TREE_INT_CST_NUNITS (expr));

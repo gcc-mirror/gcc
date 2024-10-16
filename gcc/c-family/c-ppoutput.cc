@@ -309,6 +309,60 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
 	maybe_print_line (UNKNOWN_LOCATION);
       in_pragma = false;
     }
+  else if (token->type == CPP_EMBED)
+    {
+      char buf[76 + 6];
+      maybe_print_line (token->src_loc);
+      gcc_checking_assert (token->val.str.len != 0);
+      fputs ("#embed \".\" __gnu__::__base64__(", print.outf);
+      if (token->val.str.len > 30)
+	{
+	  fputs (" \\\n", print.outf);
+	  print.src_line++;
+	}
+      buf[0] = '"';
+      memcpy (buf + 1 + 76, "\" \\\n", 5);
+      unsigned int j = 1;
+      static const char base64_enc[] =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+      for (unsigned i = 0; ; i += 3)
+	{
+	  unsigned char a = token->val.str.text[i];
+	  unsigned char b = 0, c = 0;
+	  unsigned int n = token->val.str.len - i;
+	  if (n > 1)
+	    b = token->val.str.text[i + 1];
+	  if (n > 2)
+	    c = token->val.str.text[i + 2];
+	  unsigned long v = ((((unsigned long) a) << 16)
+			     | (((unsigned long) b) << 8)
+			     | c);
+	  buf[j++] = base64_enc[(v >> 18) & 63];
+	  buf[j++] = base64_enc[(v >> 12) & 63];
+	  buf[j++] = base64_enc[(v >> 6) & 63];
+	  buf[j++] = base64_enc[v & 63];
+	  if (j == 76 + 1 || n <= 3)
+	    {
+	      if (n < 3)
+		{
+		  buf[j - 1] = '=';
+		  if (n == 1)
+		    buf[j - 2] = '=';
+		}
+	      if (n <= 3)
+		memcpy (buf + j, "\")", 3);
+	      else
+		print.src_line++;
+	      fputs (buf, print.outf);
+	      j = 1;
+	      if (n <= 3)
+		break;
+	    }
+	}
+      print.printed = true;
+      maybe_print_line (token->src_loc);
+      return;
+    }
   else
     {
       if (cpp_get_options (parse_in)->debug)

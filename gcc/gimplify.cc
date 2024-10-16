@@ -5381,6 +5381,49 @@ gimplify_init_ctor_eval (tree object, vec<constructor_elt, va_gc> *elts,
 	  && TREE_CODE (TREE_TYPE (value)) != VECTOR_TYPE)
 	gimplify_init_ctor_eval (cref, CONSTRUCTOR_ELTS (value),
 				 pre_p, cleared);
+      else if (TREE_CODE (value) == RAW_DATA_CST)
+	{
+	  if (RAW_DATA_LENGTH (value) <= 32)
+	    {
+	      for (unsigned int i = 0; i < (unsigned) RAW_DATA_LENGTH (value);
+		   ++i)
+		if (!cleared || RAW_DATA_POINTER (value)[i])
+		  {
+		    if (i)
+		      {
+			tree p
+			  = fold_build2 (PLUS_EXPR, TREE_TYPE (purpose),
+					 purpose,
+					 build_int_cst (TREE_TYPE (purpose),
+							i));
+			cref = build4 (ARRAY_REF, array_elt_type,
+				       unshare_expr (object), p, NULL_TREE,
+				       NULL_TREE);
+		      }
+		    tree init
+		      = build2 (INIT_EXPR, TREE_TYPE (cref), cref,
+				build_int_cst (TREE_TYPE (value),
+					       ((const unsigned char *)
+						RAW_DATA_POINTER (value))[i]));
+		    gimplify_and_add (init, pre_p);
+		    ggc_free (init);
+		  }
+	    }
+	  else
+	    {
+	      tree rtype = build_array_type_nelts (TREE_TYPE (value),
+						   RAW_DATA_LENGTH (value));
+	      tree rctor = build_constructor_single (rtype, bitsize_zero_node,
+						     value);
+	      tree addr = build_fold_addr_expr (cref);
+	      cref = build2 (MEM_REF, rtype, addr,
+			     build_int_cst (ptr_type_node, 0));
+	      rctor = tree_output_constant_def (rctor);
+	      tree init = build2 (INIT_EXPR, rtype, cref, rctor);
+	      gimplify_and_add (init, pre_p);
+	      ggc_free (init);
+	    }
+	}
       else
 	{
 	  tree init = build2 (INIT_EXPR, TREE_TYPE (cref), cref, value);

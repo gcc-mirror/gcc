@@ -513,6 +513,7 @@ tree_node_structure_for_code (enum tree_code code)
     case STRING_CST:		return TS_STRING;
     case VECTOR_CST:		return TS_VECTOR;
     case VOID_CST:		return TS_TYPED;
+    case RAW_DATA_CST:		return TS_RAW_DATA_CST;
 
       /* tcc_exceptional cases.  */
     case BLOCK:			return TS_BLOCK;
@@ -571,6 +572,7 @@ initialize_tree_contains_struct (void)
 	case TS_FIXED_CST:
 	case TS_VECTOR:
 	case TS_STRING:
+	case TS_RAW_DATA_CST:
 	case TS_COMPLEX:
 	case TS_SSA_NAME:
 	case TS_CONSTRUCTOR:
@@ -1026,6 +1028,7 @@ tree_code_size (enum tree_code code)
 	case REAL_CST:		return sizeof (tree_real_cst);
 	case FIXED_CST:		return sizeof (tree_fixed_cst);
 	case COMPLEX_CST:	return sizeof (tree_complex);
+	case RAW_DATA_CST:	return sizeof (tree_raw_data);
 	case VECTOR_CST:	gcc_unreachable ();
 	case STRING_CST:	gcc_unreachable ();
 	default:
@@ -10458,6 +10461,15 @@ initializer_zerop (const_tree init, bool *nonzero /* = NULL */)
       *nonzero = true;
       return false;
 
+    case RAW_DATA_CST:
+      for (unsigned int i = 0; i < (unsigned int) RAW_DATA_LENGTH (init); ++i)
+	if (RAW_DATA_POINTER (init)[i])
+	  {
+	    *nonzero = true;
+	    return false;
+	  }
+      return true;
+
     case CONSTRUCTOR:
       {
 	if (TREE_CLOBBER_P (init))
@@ -15217,6 +15229,50 @@ tree_cc_finalize (void)
 {
   clear_nonstandard_integer_type_cache ();
   vec_free (bitint_type_cache);
+}
+
+void
+gt_ggc_mx (tree_raw_data *x)
+{
+  gt_ggc_m_9tree_node (x->typed.type);
+  gt_ggc_m_9tree_node (x->owner);
+}
+
+void
+gt_pch_nx (tree_raw_data *x)
+{
+  gt_pch_n_9tree_node (x->typed.type);
+  gt_pch_n_9tree_node (x->owner);
+}
+
+/* For PCH we guarantee that RAW_DATA_CST's RAW_DATA_OWNER is a STRING_CST and
+   RAW_DATA_POINTER points into it.  We don't want to save/restore
+   RAW_DATA_POINTER on its own but want to restore it pointing at the same
+   offset of the STRING_CST as before.  */
+
+void
+gt_pch_nx (tree_raw_data *x, gt_pointer_operator op, void *cookie)
+{
+  op (&x->typed.type, NULL, cookie);
+  gcc_checking_assert (x->owner
+		       && TREE_CODE (x->owner) == STRING_CST
+		       && x->str >= TREE_STRING_POINTER (x->owner)
+		       && (x->str + x->length
+			   <= (TREE_STRING_POINTER (x->owner)
+			       + TREE_STRING_LENGTH (x->owner))));
+  ptrdiff_t off = x->str - (const char *) (x->owner);
+  tree owner = x->owner;
+  op (&x->owner, NULL, cookie);
+  x->owner = owner;
+  /* The above op call relocates x->owner and remembers the address
+     for relocation e.g. if the compiler is position independent.
+     We then restore x->owner back to its previous value and call
+     op again, for x->owner itself this just repeats (uselessly) what
+     the first call did, but as the second argument is now non-NULL
+     and different, it also arranges for &x->str to be noted for the
+     PIE relocation.  */
+  op (&x->owner, &x->str, cookie);
+  x->str = (const char *) (x->owner) + off;
 }
 
 #if CHECKING_P

@@ -3194,6 +3194,11 @@ const_hash_1 (const tree exp)
 	return hi;
       }
 
+    case RAW_DATA_CST:
+      p = RAW_DATA_POINTER (exp);
+      len = RAW_DATA_LENGTH (exp);
+      break;
+
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT idx;
@@ -4887,6 +4892,7 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
     case FIXED_CST:
     case STRING_CST:
     case COMPLEX_CST:
+    case RAW_DATA_CST:
       return null_pointer_node;
 
     case ADDR_EXPR:
@@ -5480,6 +5486,9 @@ array_size_for_constructor (tree val)
     {
       if (TREE_CODE (index) == RANGE_EXPR)
 	index = TREE_OPERAND (index, 1);
+      if (value && TREE_CODE (value) == RAW_DATA_CST)
+	index = size_binop (PLUS_EXPR, index,
+			    size_int (RAW_DATA_LENGTH (value) - 1));
       if (max_index == NULL_TREE || tree_int_cst_lt (max_index, index))
 	max_index = index;
     }
@@ -5671,6 +5680,12 @@ output_constructor_regular_field (oc_local_state *local)
   /* Output the element's initial value.  */
   if (local->val == NULL_TREE)
     assemble_zeros (fieldsize);
+  else if (local->val && TREE_CODE (local->val) == RAW_DATA_CST)
+    {
+      fieldsize *= RAW_DATA_LENGTH (local->val);
+      assemble_string (RAW_DATA_POINTER (local->val),
+		       RAW_DATA_LENGTH (local->val));
+    }
   else
     fieldsize = output_constant (local->val, fieldsize, align2,
 				 local->reverse, false);

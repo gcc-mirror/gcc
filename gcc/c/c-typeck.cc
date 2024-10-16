@@ -8797,12 +8797,13 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
   if (!maybe_const)
     arith_const_expr = false;
   else if (!INTEGRAL_TYPE_P (TREE_TYPE (inside_init))
-      && TREE_CODE (TREE_TYPE (inside_init)) != REAL_TYPE
-      && TREE_CODE (TREE_TYPE (inside_init)) != COMPLEX_TYPE)
+	   && TREE_CODE (TREE_TYPE (inside_init)) != REAL_TYPE
+	   && TREE_CODE (TREE_TYPE (inside_init)) != COMPLEX_TYPE)
     arith_const_expr = false;
   else if (TREE_CODE (inside_init) != INTEGER_CST
-      && TREE_CODE (inside_init) != REAL_CST
-      && TREE_CODE (inside_init) != COMPLEX_CST)
+	   && TREE_CODE (inside_init) != REAL_CST
+	   && TREE_CODE (inside_init) != COMPLEX_CST
+	   && TREE_CODE (inside_init) != RAW_DATA_CST)
     arith_const_expr = false;
   else if (TREE_OVERFLOW (inside_init))
     arith_const_expr = false;
@@ -9063,6 +9064,22 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 					       ? ic_init_const
 					       : ic_init), null_pointer_constant,
 					      NULL_TREE, NULL_TREE, 0);
+      if (TREE_CODE (inside_init) == RAW_DATA_CST
+	  && c_inhibit_evaluation_warnings == 0
+	  && warn_conversion
+	  && !TYPE_UNSIGNED (type)
+	  && TYPE_PRECISION (type) == CHAR_BIT)
+	for (unsigned int i = 0;
+	     i < (unsigned) RAW_DATA_LENGTH (inside_init); ++i)
+	  if (((const signed char *) RAW_DATA_POINTER (inside_init))[i] < 0)
+	    warning_at (init_loc, OPT_Wconversion,
+			"conversion from %qT to %qT changes value from "
+			"%qd to %qd",
+			integer_type_node, type,
+			((const unsigned char *)
+			 RAW_DATA_POINTER (inside_init))[i],
+			((const signed char *)
+			 RAW_DATA_POINTER (inside_init))[i]);
       return inside_init;
     }
 
@@ -10174,6 +10191,28 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
     while (field != NULL_TREE);
 }
 
+/* Helper function for add_pending_init.  Find inorder successor of P
+   in AVL tree.  */
+static struct init_node *
+init_node_successor (struct init_node *p)
+{
+  struct init_node *r;
+  if (p->right)
+    {
+      r = p->right;
+      while (r->left)
+	r = r->left;
+      return r;
+    }
+  r = p->parent;
+  while (r && p == r->right)
+    {
+      p = r;
+      r = r->parent;
+    }
+  return r;
+}
+
 /* Add a new initializer to the tree of pending initializers.  PURPOSE
    identifies the initializer, either array index or field in a structure.
    VALUE is the value of that index or field.  If ORIGTYPE is not
@@ -10201,9 +10240,179 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 	  if (tree_int_cst_lt (purpose, p->purpose))
 	    q = &p->left;
 	  else if (tree_int_cst_lt (p->purpose, purpose))
-	    q = &p->right;
+	    {
+	      if (TREE_CODE (p->value) != RAW_DATA_CST
+		  || (p->right
+		      && tree_int_cst_le (p->right->purpose, purpose)))
+		q = &p->right;
+	      else
+		{
+		  widest_int pp = wi::to_widest (p->purpose);
+		  widest_int pw = wi::to_widest (purpose);
+		  if (pp + RAW_DATA_LENGTH (p->value) <= pw)
+		    q = &p->right;
+		  else
+		    {
+		      /* Override which should split the old RAW_DATA_CST
+			 into 2 or 3 pieces.  */
+		      if (!implicit && warn_override_init)
+			warning_init (loc, OPT_Woverride_init,
+				      "initialized field overwritten");
+		      unsigned HOST_WIDE_INT start = (pw - pp).to_uhwi ();
+		      unsigned HOST_WIDE_INT len = 1;
+		      if (TREE_CODE (value) == RAW_DATA_CST)
+			len = RAW_DATA_LENGTH (value);
+		      unsigned HOST_WIDE_INT end = 0;
+		      unsigned plen = RAW_DATA_LENGTH (p->value);
+		      gcc_checking_assert (start < plen && start);
+		      if (plen - start > len)
+			end = plen - start - len;
+		      tree v = p->value;
+		      tree origtype = p->origtype;
+		      if (start == 1)
+			p->value = build_int_cst (TREE_TYPE (v),
+						  *(const unsigned char *)
+						  RAW_DATA_POINTER (v));
+		      else
+			{
+			  p->value = v;
+			  if (end > 1)
+			    v = copy_node (v);
+			  RAW_DATA_LENGTH (p->value) = start;
+			}
+		      if (end)
+			{
+			  tree epurpose
+			    = size_binop (PLUS_EXPR, purpose,
+					  bitsize_int (len));
+			  if (end > 1)
+			    {
+			      RAW_DATA_LENGTH (v) -= plen - end;
+			      RAW_DATA_POINTER (v) += plen - end;
+			    }
+			  else
+			    v = build_int_cst (TREE_TYPE (v),
+					       ((const unsigned char *)
+						RAW_DATA_POINTER (v))[plen
+								      - end]);
+			  add_pending_init (loc, epurpose, v, origtype,
+					    implicit, braced_init_obstack);
+			}
+		      q = &constructor_pending_elts;
+		      continue;
+		    }
+		}
+	    }
 	  else
 	    {
+	      if (TREE_CODE (p->value) == RAW_DATA_CST
+		  && (RAW_DATA_LENGTH (p->value)
+		      > (TREE_CODE (value) == RAW_DATA_CST
+			 ? RAW_DATA_LENGTH (value) : 1)))
+		{
+		  /* Override which should split the old RAW_DATA_CST
+		     into 2 pieces.  */
+		  if (!implicit && warn_override_init)
+		    warning_init (loc, OPT_Woverride_init,
+				  "initialized field overwritten");
+		  unsigned HOST_WIDE_INT len = 1;
+		  if (TREE_CODE (value) == RAW_DATA_CST)
+		    len = RAW_DATA_LENGTH (value);
+		  if ((unsigned) RAW_DATA_LENGTH (p->value) > len + 1)
+		    {
+		      RAW_DATA_LENGTH (p->value) -= len;
+		      RAW_DATA_POINTER (p->value) += len;
+		    }
+		  else
+		    {
+		      unsigned int l = RAW_DATA_LENGTH (p->value) - 1;
+		      p->value
+			= build_int_cst (TREE_TYPE (p->value),
+					 ((const unsigned char *)
+					  RAW_DATA_POINTER (p->value))[l]);
+		    }
+		  p->purpose = size_binop (PLUS_EXPR, p->purpose,
+					   bitsize_int (len));
+		  continue;
+		}
+	      if (TREE_CODE (value) == RAW_DATA_CST)
+		{
+		handle_raw_data:
+		  /* RAW_DATA_CST value might overlap various further
+		     prior initval entries.  Find out how many.  */
+		  unsigned cnt = 0;
+		  widest_int w
+		    = wi::to_widest (purpose) + RAW_DATA_LENGTH (value);
+		  struct init_node *r = p, *last = NULL;
+		  bool override_init = warn_override_init;
+		  while ((r = init_node_successor (r))
+			 && wi::to_widest (r->purpose) < w)
+		    {
+		      ++cnt;
+		      if (TREE_SIDE_EFFECTS (r->value))
+			warning_init (loc, OPT_Woverride_init_side_effects,
+				      "initialized field with side-effects "
+				      "overwritten");
+		      else if (override_init)
+			{
+			  warning_init (loc, OPT_Woverride_init,
+					"initialized field overwritten");
+			  override_init = false;
+			}
+		      last = r;
+		    }
+		  if (cnt)
+		    {
+		      if (TREE_CODE (last->value) == RAW_DATA_CST
+			  && (wi::to_widest (last->purpose)
+			      + RAW_DATA_LENGTH (last->value) > w))
+			{
+			  /* The last overlapping prior initval overlaps
+			     only partially.  Shrink it and decrease cnt.  */
+			  unsigned int l = (wi::to_widest (last->purpose)
+					    + RAW_DATA_LENGTH (last->value)
+					    - w).to_uhwi ();
+			  --cnt;
+			  RAW_DATA_LENGTH (last->value) -= l;
+			  RAW_DATA_POINTER (last->value) += l;
+			  if (RAW_DATA_LENGTH (last->value) == 1)
+			    {
+			      const unsigned char *s
+				= ((const unsigned char *)
+				   RAW_DATA_POINTER (last->value));
+			      last->value
+				= build_int_cst (TREE_TYPE (last->value), *s);
+			    }
+			  last->purpose
+			    = size_binop (PLUS_EXPR, last->purpose,
+					  bitsize_int (l));
+			}
+		      /* Instead of deleting cnt nodes from the AVL tree
+			 and rebalancing, peel of last cnt bytes from the
+			 RAW_DATA_CST.  Overriding thousands of previously
+			 initialized array elements with #embed needs to work,
+			 but doesn't need to be super efficient.  */
+		      gcc_checking_assert ((unsigned) RAW_DATA_LENGTH (value)
+					   > cnt);
+		      RAW_DATA_LENGTH (value) -= cnt;
+		      const unsigned char *s
+			= ((const unsigned char *) RAW_DATA_POINTER (value)
+			   + RAW_DATA_LENGTH (value));
+		      unsigned int o = RAW_DATA_LENGTH (value);
+		      for (r = p; cnt--; ++o, ++s)
+			{
+			  r = init_node_successor (r);
+			  r->purpose = size_binop (PLUS_EXPR, purpose,
+						   bitsize_int (o));
+			  r->value = build_int_cst (TREE_TYPE (value), *s);
+			  r->origtype = origtype;
+			}
+		      if (RAW_DATA_LENGTH (value) == 1)
+			value = build_int_cst (TREE_TYPE (value),
+					       *((const unsigned char *)
+						 RAW_DATA_POINTER (value)));
+		    }
+		}
 	      if (!implicit)
 		{
 		  if (TREE_SIDE_EFFECTS (p->value))
@@ -10217,6 +10426,23 @@ add_pending_init (location_t loc, tree purpose, tree value, tree origtype,
 	      p->value = value;
 	      p->origtype = origtype;
 	      return;
+	    }
+	}
+      if (TREE_CODE (value) == RAW_DATA_CST && p)
+	{
+	  struct init_node *r;
+	  if (q == &p->left)
+	    r = p;
+	  else
+	    r = init_node_successor (p);
+	  if (r && wi::to_widest (r->purpose) < (wi::to_widest (purpose)
+						 + RAW_DATA_LENGTH (value)))
+	    {
+	      /* Overlap with at least one prior initval in the range but
+		 not at the start.  */
+	      p = r;
+	      p->purpose = purpose;
+	      goto handle_raw_data;
 	    }
 	}
     }
@@ -10447,8 +10673,8 @@ set_nonincremental_init (struct obstack * braced_init_obstack)
     {
       if (TYPE_DOMAIN (constructor_type))
 	constructor_unfilled_index
-	    = convert (bitsizetype,
-		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
+	  = convert (bitsizetype,
+		     TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
       else
 	constructor_unfilled_index = bitsize_zero_node;
     }
@@ -10662,12 +10888,13 @@ output_init_element (location_t loc, tree value, tree origtype,
   if (!maybe_const)
     arith_const_expr = false;
   else if (!INTEGRAL_TYPE_P (TREE_TYPE (value))
-      && TREE_CODE (TREE_TYPE (value)) != REAL_TYPE
-      && TREE_CODE (TREE_TYPE (value)) != COMPLEX_TYPE)
+	   && TREE_CODE (TREE_TYPE (value)) != REAL_TYPE
+	   && TREE_CODE (TREE_TYPE (value)) != COMPLEX_TYPE)
     arith_const_expr = false;
   else if (TREE_CODE (value) != INTEGER_CST
-      && TREE_CODE (value) != REAL_CST
-      && TREE_CODE (value) != COMPLEX_CST)
+	   && TREE_CODE (value) != REAL_CST
+	   && TREE_CODE (value) != COMPLEX_CST
+	   && TREE_CODE (value) != RAW_DATA_CST)
     arith_const_expr = false;
   else if (TREE_OVERFLOW (value))
     arith_const_expr = false;
@@ -10772,10 +10999,16 @@ output_init_element (location_t loc, tree value, tree origtype,
      put it on constructor_pending_elts.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE
       && (!constructor_incremental
-	  || !tree_int_cst_equal (field, constructor_unfilled_index)))
+	  || !tree_int_cst_equal (field, constructor_unfilled_index)
+	  || (TREE_CODE (value) == RAW_DATA_CST
+	      && constructor_pending_elts
+	      && pending)))
     {
       if (constructor_incremental
-	  && tree_int_cst_lt (field, constructor_unfilled_index))
+	  && (tree_int_cst_lt (field, constructor_unfilled_index)
+	      || (TREE_CODE (value) == RAW_DATA_CST
+		  && constructor_pending_elts
+		  && pending)))
 	set_nonincremental_init (braced_init_obstack);
 
       add_pending_init (loc, field, value, origtype, implicit,
@@ -10834,9 +11067,14 @@ output_init_element (location_t loc, tree value, tree origtype,
 
   /* Advance the variable that indicates sequential elements output.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE)
-    constructor_unfilled_index
-      = size_binop_loc (input_location, PLUS_EXPR, constructor_unfilled_index,
-			bitsize_one_node);
+    {
+      tree inc = bitsize_one_node;
+      if (value && TREE_CODE (value) == RAW_DATA_CST)
+	inc = bitsize_int (RAW_DATA_LENGTH (value));
+      constructor_unfilled_index
+	= size_binop_loc (input_location, PLUS_EXPR,
+			  constructor_unfilled_index, inc);
+    }
   else if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
       constructor_unfilled_fields
@@ -10845,8 +11083,8 @@ output_init_element (location_t loc, tree value, tree origtype,
       /* Skip any nameless bit fields.  */
       while (constructor_unfilled_fields != NULL_TREE
 	     && DECL_UNNAMED_BIT_FIELD (constructor_unfilled_fields))
-	constructor_unfilled_fields =
-	  DECL_CHAIN (constructor_unfilled_fields);
+	constructor_unfilled_fields
+	  = DECL_CHAIN (constructor_unfilled_fields);
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE)
     constructor_unfilled_fields = NULL_TREE;
@@ -11092,6 +11330,23 @@ initialize_elementwise_p (tree type, tree value)
   return false;
 }
 
+/* Helper function for process_init_element.  Split first element of
+   RAW_DATA_CST and save the rest to *RAW_DATA.  */
+
+static inline tree
+maybe_split_raw_data (tree value, tree *raw_data)
+{
+  if (value == NULL_TREE || TREE_CODE (value) != RAW_DATA_CST)
+    return value;
+  *raw_data = value;
+  value = build_int_cst (integer_type_node,
+			 *(const unsigned char *)
+			 RAW_DATA_POINTER (*raw_data));
+  ++RAW_DATA_POINTER (*raw_data);
+  --RAW_DATA_LENGTH (*raw_data);
+  return value;
+}
+
 /* Add one non-braced element to the current constructor level.
    This adjusts the current position within the constructor's type.
    This may also start or terminate implicit levels
@@ -11114,7 +11369,9 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     = (orig_value != NULL_TREE && TREE_CODE (orig_value) == STRING_CST);
   bool strict_string = value.original_code == STRING_CST;
   bool was_designated = designator_depth != 0;
+  tree raw_data = NULL_TREE;
 
+retry:
   designator_depth = 0;
   designator_erroneous = 0;
 
@@ -11282,6 +11539,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      continue;
 	    }
 
+	  value.value = maybe_split_raw_data (value.value, &raw_data);
 	  if (value.value)
 	    {
 	      push_member_name (constructor_fields);
@@ -11370,6 +11628,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      continue;
 	    }
 
+	  value.value = maybe_split_raw_data (value.value, &raw_data);
 	  if (value.value)
 	    {
 	      push_member_name (constructor_fields);
@@ -11418,26 +11677,66 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      break;
 	    }
 
-	  /* Now output the actual element.  */
-	  if (value.value)
+	  if (value.value
+	      && TREE_CODE (value.value) == RAW_DATA_CST
+	      && RAW_DATA_LENGTH (value.value) > 1
+	      && (TREE_CODE (elttype) == INTEGER_TYPE
+		  || TREE_CODE (elttype) == BITINT_TYPE)
+	      && TYPE_PRECISION (elttype) == CHAR_BIT
+	      && (constructor_max_index == NULL_TREE
+		  || tree_int_cst_lt (constructor_index,
+				      constructor_max_index)))
 	    {
+	      unsigned int len = RAW_DATA_LENGTH (value.value);
+	      if (constructor_max_index)
+		{
+		  widest_int w = wi::to_widest (constructor_max_index);
+		  w -= wi::to_widest (constructor_index);
+		  w += 1;
+		  if (w < len)
+		    len = w.to_uhwi ();
+		}
+	      if (len < (unsigned) RAW_DATA_LENGTH (value.value))
+		{
+		  raw_data = copy_node (value.value);
+		  RAW_DATA_LENGTH (raw_data) -= len;
+		  RAW_DATA_POINTER (raw_data) += len;
+		  RAW_DATA_LENGTH (value.value) = len;
+		}
+	      TREE_TYPE (value.value) = elttype;
 	      push_array_bounds (tree_to_uhwi (constructor_index));
 	      output_init_element (loc, value.value, value.original_type,
-				   strict_string, elttype,
-				   constructor_index, true, implicit,
-				   braced_init_obstack);
+				   false, elttype, constructor_index, true,
+				   implicit, braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
+	      constructor_index
+		= size_binop_loc (input_location, PLUS_EXPR,
+				  constructor_index, bitsize_int (len));
 	    }
+	  else
+	    {
+	      value.value = maybe_split_raw_data (value.value, &raw_data);
+	      /* Now output the actual element.  */
+	      if (value.value)
+		{
+		  push_array_bounds (tree_to_uhwi (constructor_index));
+		  output_init_element (loc, value.value, value.original_type,
+				       strict_string, elttype,
+				       constructor_index, true, implicit,
+				       braced_init_obstack);
+		  RESTORE_SPELLING_DEPTH (constructor_depth);
+		}
 
-	  constructor_index
-	    = size_binop_loc (input_location, PLUS_EXPR,
-			      constructor_index, bitsize_one_node);
+	      constructor_index
+		= size_binop_loc (input_location, PLUS_EXPR,
+				  constructor_index, bitsize_one_node);
 
-	  if (!value.value)
-	    /* If we are doing the bookkeeping for an element that was
-	       directly output as a constructor, we must update
-	       constructor_unfilled_index.  */
-	    constructor_unfilled_index = constructor_index;
+	      if (!value.value)
+		/* If we are doing the bookkeeping for an element that was
+		   directly output as a constructor, we must update
+		   constructor_unfilled_index.  */
+		constructor_unfilled_index = constructor_index;
+	    }
 	}
       else if (gnu_vector_type_p (constructor_type))
 	{
@@ -11452,6 +11751,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      break;
 	    }
 
+	  value.value = maybe_split_raw_data (value.value, &raw_data);
 	  /* Now output the actual element.  */
 	  if (value.value)
 	    {
@@ -11485,6 +11785,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	}
       else
 	{
+	  value.value = maybe_split_raw_data (value.value, &raw_data);
 	  if (value.value)
 	    output_init_element (loc, value.value, value.original_type,
 				 strict_string, constructor_type,
@@ -11556,6 +11857,14 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
     }
 
   constructor_range_stack = 0;
+
+  if (raw_data && RAW_DATA_LENGTH (raw_data))
+    {
+      gcc_assert (!string_flag && !was_designated);
+      value.value = raw_data;
+      raw_data = NULL_TREE;
+      goto retry;
+    }
 }
 
 /* Build a complete asm-statement, whose components are a CV_QUALIFIER

@@ -7165,6 +7165,13 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  init_elts += mult * TREE_STRING_LENGTH (value);
 	  break;
 
+	case RAW_DATA_CST:
+	  nz_elts += mult * RAW_DATA_LENGTH (value);
+	  unique_nz_elts += RAW_DATA_LENGTH (value);
+	  init_elts += mult * RAW_DATA_LENGTH (value);
+	  num_fields += mult * (RAW_DATA_LENGTH (value) - 1);
+	  break;
+
 	case COMPLEX_CST:
 	  if (!initializer_zerop (TREE_REALPART (value)))
 	    {
@@ -11825,7 +11832,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				      field, value)
 	      if (tree_int_cst_equal (field, index))
 		{
-		  if (!TREE_SIDE_EFFECTS (value))
+		  if (!TREE_SIDE_EFFECTS (value)
+		      && TREE_CODE (value) != RAW_DATA_CST)
 		    return expand_expr (fold (value), target, tmode, modifier);
 		  break;
 		}
@@ -11867,7 +11875,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					  field, value)
 		  if (tree_int_cst_equal (field, index))
 		    {
-		      if (TREE_SIDE_EFFECTS (value))
+		      if (TREE_SIDE_EFFECTS (value)
+			  || TREE_CODE (value) == RAW_DATA_CST)
 			break;
 
 		      if (TREE_CODE (value) == CONSTRUCTOR)
@@ -11884,8 +11893,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 			    break;
 			}
 
-		      return
-		        expand_expr (fold (value), target, tmode, modifier);
+		      return expand_expr (fold (value), target, tmode,
+					  modifier);
 		    }
 	      }
 	    else if (TREE_CODE (init) == STRING_CST)

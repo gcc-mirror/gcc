@@ -6767,6 +6767,8 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
     message = catenate_messages (gmsgid, " before end of line");
   else if (token_type == CPP_DECLTYPE)
     message = catenate_messages (gmsgid, " before %<decltype%>");
+  else if (token_type == CPP_EMBED)
+    message = catenate_messages (gmsgid, " before %<#embed%>");
   else if (token_type < N_TTYPES)
     {
       message = catenate_messages (gmsgid, " before %qs token");
@@ -9775,7 +9777,9 @@ maybe_add_include_fixit (rich_location *richloc, const char *header,
 
 /* Attempt to convert a braced array initializer list CTOR for array
    TYPE into a STRING_CST for convenience and efficiency.  Return
-   the converted string on success or the original ctor on failure.  */
+   the converted string on success or the original ctor on failure.
+   Also, for non-convertable CTORs which contain RAW_DATA_CST values
+   among the elts try to extend the range of RAW_DATA_CSTs.  */
 
 static tree
 braced_list_to_string (tree type, tree ctor, bool member)
@@ -9819,26 +9823,155 @@ braced_list_to_string (tree type, tree ctor, bool member)
   auto_vec<char> str;
   str.reserve (nelts + 1);
 
-  unsigned HOST_WIDE_INT i;
+  unsigned HOST_WIDE_INT i, j = HOST_WIDE_INT_M1U;
   tree index, value;
+  bool check_raw_data = false;
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, index, value)
     {
+      if (check_raw_data)
+	{
+	  /* The preprocessor always surrounds CPP_EMBED tokens in between
+	     CPP_NUMBER and CPP_COMMA tokens.  Try to undo that here now that
+	     the whole initializer is parsed.  E.g. if we have
+	     [0] = 'T', [1] = "his is a #embed tex", [20] = 't'
+	     where the middle value is RAW_DATA_CST and in its owner this is
+	     surrounded by 'T' and 't' characters, we can create from it just
+	     [0] = "This is a #embed text"
+	     Similarly if a RAW_DATA_CST needs to be split into two parts
+	     because of designated init store but the stored value is actually
+	     the same as in the RAW_DATA_OWNER's memory we can merge multiple
+	     RAW_DATA_CSTs.  */
+	  if (TREE_CODE (value) == RAW_DATA_CST
+	      && index
+	      && tree_fits_uhwi_p (index))
+	    {
+	      tree owner = RAW_DATA_OWNER (value);
+	      unsigned int start, end, k;
+	      if (TREE_CODE (owner) == STRING_CST)
+		{
+		  start
+		    = RAW_DATA_POINTER (value) - TREE_STRING_POINTER (owner);
+		  end = TREE_STRING_LENGTH (owner) - RAW_DATA_LENGTH (value);
+		}
+	      else
+		{
+		  gcc_checking_assert (TREE_CODE (owner) == RAW_DATA_CST);
+		  start
+		    = RAW_DATA_POINTER (value) - RAW_DATA_POINTER (owner);
+		  end = RAW_DATA_LENGTH (owner) - RAW_DATA_LENGTH (value);
+		}
+	      end -= start;
+	      unsigned HOST_WIDE_INT l = j == HOST_WIDE_INT_M1U ? i : j;
+	      for (k = 0; k < start && k < l; ++k)
+		{
+		  constructor_elt *elt = CONSTRUCTOR_ELT (ctor, l - k - 1);
+		  if (elt->index == NULL_TREE
+		      || !tree_fits_uhwi_p (elt->index)
+		      || !tree_fits_shwi_p (elt->value)
+		      || wi::to_widest (index) != (wi::to_widest (elt->index)
+						   + (k + 1)))
+		    break;
+		  if (TYPE_UNSIGNED (TREE_TYPE (value)))
+		    {
+		      if (tree_to_shwi (elt->value)
+			  != *((const unsigned char *)
+			       RAW_DATA_POINTER (value) - k - 1))
+			break;
+		    }
+		  else if (tree_to_shwi (elt->value)
+			   != *((const signed char *)
+				RAW_DATA_POINTER (value) - k - 1))
+		    break;
+		}
+	      start = k;
+	      l = 0;
+	      for (k = 0; k < end && k + 1 < CONSTRUCTOR_NELTS (ctor) - i; ++k)
+		{
+		  constructor_elt *elt = CONSTRUCTOR_ELT (ctor, i + k + 1);
+		  if (elt->index == NULL_TREE
+		      || !tree_fits_uhwi_p (elt->index)
+		      || (wi::to_widest (elt->index)
+			  != (wi::to_widest (index)
+			      + (RAW_DATA_LENGTH (value) + l))))
+		    break;
+		  if (TREE_CODE (elt->value) == RAW_DATA_CST
+		      && RAW_DATA_OWNER (elt->value) == RAW_DATA_OWNER (value)
+		      && (RAW_DATA_POINTER (elt->value)
+			  == RAW_DATA_POINTER (value) + l))
+		    {
+		      l += RAW_DATA_LENGTH (elt->value);
+		      end -= RAW_DATA_LENGTH (elt->value) - 1;
+		      continue;
+		    }
+		  if (!tree_fits_shwi_p (elt->value))
+		    break;
+		  if (TYPE_UNSIGNED (TREE_TYPE (value)))
+		    {
+		      if (tree_to_shwi (elt->value)
+			  != *((const unsigned char *)
+			       RAW_DATA_POINTER (value)
+			       + RAW_DATA_LENGTH (value) + k))
+			break;
+		    }
+		  else if (tree_to_shwi (elt->value)
+			   != *((const signed char *)
+				RAW_DATA_POINTER (value)
+				+ RAW_DATA_LENGTH (value) + k))
+		    break;
+		  ++l;
+		}
+	      end = k;
+	      if (start != 0 || end != 0)
+		{
+		  if (j == HOST_WIDE_INT_M1U)
+		    j = i - start;
+		  else
+		    j -= start;
+		  RAW_DATA_POINTER (value) -= start;
+		  RAW_DATA_LENGTH (value) += start + end;
+		  i += end;
+		  if (start == 0)
+		    CONSTRUCTOR_ELT (ctor, j)->index = index;
+		  CONSTRUCTOR_ELT (ctor, j)->value = value;
+		  ++j;
+		  continue;
+		}
+	    }
+	  if (j != HOST_WIDE_INT_M1U)
+	    {
+	      CONSTRUCTOR_ELT (ctor, j)->index = index;
+	      CONSTRUCTOR_ELT (ctor, j)->value = value;
+	      ++j;
+	    }
+	  continue;
+	}
+
       unsigned HOST_WIDE_INT idx = i;
       if (index)
 	{
 	  if (!tree_fits_uhwi_p (index))
-	    return ctor;
+	    {
+	      check_raw_data = true;
+	      continue;
+	    }
 	  idx = tree_to_uhwi (index);
 	}
 
       /* auto_vec is limited to UINT_MAX elements.  */
       if (idx > UINT_MAX)
-	return ctor;
+	{
+	  check_raw_data = true;
+	  continue;
+	}
 
-     /* Avoid non-constant initializers.  */
-     if (!tree_fits_shwi_p (value))
-	return ctor;
+      /* Avoid non-constant initializers.  */
+      if (!tree_fits_shwi_p (value))
+	{
+	  check_raw_data = true;
+	  --i;
+	  continue;
+	}
 
       /* Skip over embedded nuls except the last one (initializer
 	 elements are in ascending order of indices).  */
@@ -9846,14 +9979,20 @@ braced_list_to_string (tree type, tree ctor, bool member)
       if (!val && i + 1 < nelts)
 	continue;
 
-      if (idx < str.length())
-	return ctor;
+      if (idx < str.length ())
+	{
+	  check_raw_data = true;
+	  continue;
+	}
 
       /* Bail if the CTOR has a block of more than 256 embedded nuls
 	 due to implicitly initialized elements.  */
       unsigned nchars = (idx - str.length ()) + 1;
       if (nchars > 256)
-	return ctor;
+	{
+	  check_raw_data = true;
+	  continue;
+	}
 
       if (nchars > 1)
 	{
@@ -9862,9 +10001,19 @@ braced_list_to_string (tree type, tree ctor, bool member)
 	}
 
       if (idx >= maxelts)
-	return ctor;
+	{
+	  check_raw_data = true;
+	  continue;
+	}
 
       str.safe_insert (idx, val);
+    }
+
+  if (check_raw_data)
+    {
+      if (j != HOST_WIDE_INT_M1U)
+	CONSTRUCTOR_ELTS (ctor)->truncate (j);
+      return ctor;
     }
 
   /* Append a nul string termination.  */

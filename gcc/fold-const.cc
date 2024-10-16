@@ -3360,8 +3360,14 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
       case STRING_CST:
 	return (TREE_STRING_LENGTH (arg0) == TREE_STRING_LENGTH (arg1)
 		&& ! memcmp (TREE_STRING_POINTER (arg0),
-			      TREE_STRING_POINTER (arg1),
-			      TREE_STRING_LENGTH (arg0)));
+			     TREE_STRING_POINTER (arg1),
+			     TREE_STRING_LENGTH (arg0)));
+
+      case RAW_DATA_CST:
+	return (RAW_DATA_LENGTH (arg0) == RAW_DATA_LENGTH (arg1)
+		&& ! memcmp (RAW_DATA_POINTER (arg0),
+			     RAW_DATA_POINTER (arg1),
+			     RAW_DATA_LENGTH (arg0)));
 
       case ADDR_EXPR:
 	gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
@@ -3959,6 +3965,10 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
     case STRING_CST:
       hstate.add ((const void *) TREE_STRING_POINTER (t),
 		  TREE_STRING_LENGTH (t));
+      return;
+    case RAW_DATA_CST:
+      hstate.add ((const void *) RAW_DATA_POINTER (t),
+		  RAW_DATA_LENGTH (t));
       return;
     case COMPLEX_CST:
       hash_operand (TREE_REALPART (t), hstate, flags);
@@ -8463,6 +8473,48 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		}
 
 	      curpos = pos;
+	      if (val && TREE_CODE (val) == RAW_DATA_CST)
+		{
+		  if (count)
+		    return 0;
+		  if (off == -1
+		      || (curpos >= off
+			  && (curpos + RAW_DATA_LENGTH (val)
+			      <= (HOST_WIDE_INT) off + len)))
+		    {
+		      if (ptr)
+			memcpy (ptr + (curpos - o), RAW_DATA_POINTER (val),
+				RAW_DATA_LENGTH (val));
+		      if (mask)
+			memset (mask + curpos, 0, RAW_DATA_LENGTH (val));
+		    }
+		  else if (curpos + RAW_DATA_LENGTH (val) > off
+			   && curpos < (HOST_WIDE_INT) off + len)
+		    {
+		      /* Partial overlap.  */
+		      unsigned char *p = NULL;
+		      int no = 0;
+		      int l;
+		      gcc_assert (mask == NULL);
+		      if (curpos >= off)
+			{
+			  if (ptr)
+			    p = ptr + curpos - off;
+			  l = MIN ((HOST_WIDE_INT) off + len - curpos,
+				   RAW_DATA_LENGTH (val));
+			}
+		      else
+			{
+			  p = ptr;
+			  no = off - curpos;
+			  l = len;
+			}
+		      if (p)
+			memcpy (p, RAW_DATA_POINTER (val) + no, l);
+		    }
+		  curpos += RAW_DATA_LENGTH (val);
+		  val = NULL_TREE;
+		}
 	      if (val)
 		do
 		  {
@@ -13840,6 +13892,9 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index,
       else
 	first_p = false;
 
+      if (TREE_CODE (cval) == RAW_DATA_CST)
+	max_index += RAW_DATA_LENGTH (cval) - 1;
+
       /* Do we have match?  */
       if (wi::cmp (access_index, index, index_sgn) >= 0)
 	{
@@ -13939,10 +13994,26 @@ fold (tree expr)
 	    && TREE_CODE (op0) == CONSTRUCTOR
 	    && ! type_contains_placeholder_p (TREE_TYPE (op0)))
 	  {
-	    tree val = get_array_ctor_element_at_index (op0,
-							wi::to_offset (op1));
+	    unsigned int idx;
+	    tree val
+	      = get_array_ctor_element_at_index (op0, wi::to_offset (op1),
+						 &idx);
 	    if (val)
-	      return val;
+	      {
+		if (TREE_CODE (val) != RAW_DATA_CST)
+		  return val;
+		if (CONSTRUCTOR_ELT (op0, idx)->index == NULL_TREE
+		    || (TREE_CODE (CONSTRUCTOR_ELT (op0, idx)->index)
+			!= INTEGER_CST))
+		  return t;
+		offset_int o
+		  = (wi::to_offset (op1)
+		     - wi::to_offset (CONSTRUCTOR_ELT (op0, idx)->index));
+		gcc_checking_assert (o < RAW_DATA_LENGTH (val));
+		return build_int_cst (TREE_TYPE (val),
+				      ((const unsigned char *)
+				       RAW_DATA_POINTER (val))[o.to_uhwi ()]);
+	      }
 	  }
 
 	return t;

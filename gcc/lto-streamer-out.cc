@@ -1159,6 +1159,9 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	}
     }
 
+  if (code == RAW_DATA_CST)
+    DFS_follow_tree_edge (RAW_DATA_OWNER (expr));
+
   if (code == OMP_CLAUSE)
     {
       int i;

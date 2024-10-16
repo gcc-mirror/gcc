@@ -2519,6 +2519,28 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       }
       break;
 
+    case RAW_DATA_CST:
+      for (unsigned i = 0; i < (unsigned) RAW_DATA_LENGTH (node); ++i)
+	{
+	  if (TYPE_UNSIGNED (TREE_TYPE (node))
+	      || TYPE_PRECISION (TREE_TYPE (node)) > CHAR_BIT)
+	    pp_decimal_int (pp, ((const unsigned char *)
+				 RAW_DATA_POINTER (node))[i]);
+	  else
+	    pp_decimal_int (pp, ((const signed char *)
+				 RAW_DATA_POINTER (node))[i]);
+	  if (i == RAW_DATA_LENGTH (node) - 1U)
+	    break;
+	  else if (i == 9 && RAW_DATA_LENGTH (node) > 20)
+	    {
+	      pp_string (pp, ", ..., ");
+	      i = RAW_DATA_LENGTH (node) - 11;
+	    }
+	  else
+	    pp_string (pp, ", ");
+	}
+      break;
+
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);

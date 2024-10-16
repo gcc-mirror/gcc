@@ -144,6 +144,8 @@ class rich_location;
   TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++11 */		\
   TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++11 */	\
 									\
+  TK(EMBED,		LITERAL) /* #embed - C23 */			\
+									\
   TK(COMMENT,		LITERAL) /* Only if output comments.  */	\
 				 /* SPELL_LITERAL happens to DTRT.  */	\
   TK(MACRO_ARG,		NONE)	 /* Macro argument.  */			\

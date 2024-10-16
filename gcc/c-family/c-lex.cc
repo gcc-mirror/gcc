@@ -783,6 +783,48 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       *value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
       break;
 
+    case CPP_EMBED:
+      *value = make_node (RAW_DATA_CST);
+      TREE_TYPE (*value) = integer_type_node;
+      RAW_DATA_LENGTH (*value) = tok->val.str.len;
+      if (pch_file)
+	{
+	  /* When writing PCH headers, copy the data over, such that
+	     the owner is a STRING_CST.  */
+	  int off = 0;
+	  if (tok->val.str.len <= INT_MAX - 2)
+	    /* See below.  */
+	    off = 1;
+	  tree owner = build_string (tok->val.str.len + 2 * off,
+				     (const char *) tok->val.str.text - off);
+	  TREE_TYPE (owner) = build_array_type_nelts (unsigned_char_type_node,
+						      tok->val.str.len);
+	  RAW_DATA_OWNER (*value) = owner;
+	  RAW_DATA_POINTER (*value) = TREE_STRING_POINTER (owner) + off;
+	}
+      else
+	{
+	  /* Otherwise add another dummy RAW_DATA_CST as owner which
+	     indicates the data is owned by libcpp.  */
+	  RAW_DATA_POINTER (*value) = (const char *) tok->val.str.text;
+	  tree owner = make_node (RAW_DATA_CST);
+	  TREE_TYPE (owner) = integer_type_node;
+	  RAW_DATA_LENGTH (owner) = tok->val.str.len;
+	  RAW_DATA_POINTER (owner) = (const char *) tok->val.str.text;
+	  if (tok->val.str.len <= INT_MAX - 2)
+	    {
+	      /* The preprocessor surrounds at least smaller CPP_EMBEDs
+		 in between CPP_NUMBER CPP_COMMA before and
+		 CPP_COMMA CPP_NUMBER after, so the actual libcpp buffer
+		 holds those 2 extra bytes around it.  Don't do that if
+		 CPP_EMBED is at the maximum ~ 2GB size.  */
+	      RAW_DATA_LENGTH (owner) += 2;
+	      RAW_DATA_POINTER (owner)--;
+	    }
+	  RAW_DATA_OWNER (*value) = owner;
+	}
+      break;
+
       /* This token should not be visible outside cpplib.  */
     case CPP_MACRO_ARG:
       gcc_unreachable ();
@@ -802,7 +844,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	  add_flags |= PREV_FALLTHROUGH;
 	  goto retry_after_at;
 	}
-       goto retry;
+      goto retry;
 
     default:
       *value = NULL_TREE;
