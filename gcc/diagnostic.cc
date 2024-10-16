@@ -284,7 +284,6 @@ diagnostic_context::initialize (int n_opts)
   m_diagnostic_groups.m_emission_count = 0;
   m_output_format = new diagnostic_text_output_format (*this);
   m_set_locations_cb = nullptr;
-  m_ice_handler_cb = nullptr;
   m_client_data_hooks = nullptr;
   m_diagrams.m_theme = nullptr;
   m_original_argv = nullptr;
@@ -782,16 +781,15 @@ diagnostic_context::action_after_output (diagnostic_t diag_kind)
     case DK_ICE:
     case DK_ICE_NOBT:
       {
-	/* Optional callback for attempting to handle ICEs gracefully.  */
-	if (void (*ice_handler_cb) (diagnostic_context *) = m_ice_handler_cb)
+	/* Attempt to ensure that any outputs are flushed e.g. that .sarif
+	   files are written out.
+	   Only do it once.  */
+	static bool finishing_due_to_ice = false;
+	if (!finishing_due_to_ice)
 	  {
-	    /* Clear the callback, to avoid potentially re-entering
-	       the routine if there's a crash within the handler.  */
-	    m_ice_handler_cb = NULL;
-	    ice_handler_cb (this);
+	    finishing_due_to_ice = true;
+	    finish ();
 	  }
-	/* The context might have had diagnostic_finish called on
-	   it at this point.  */
 
 	struct backtrace_state *state = NULL;
 	if (diag_kind == DK_ICE)

@@ -468,7 +468,6 @@ public:
   friend class diagnostic_source_print_policy;
   friend class diagnostic_text_output_format;
 
-  typedef void (*ice_handler_callback_t) (diagnostic_context *);
   typedef void (*set_locations_callback_t) (diagnostic_context *,
 					    diagnostic_info *);
 
@@ -586,10 +585,6 @@ public:
   void set_escape_format (enum diagnostics_escape_format val)
   {
     m_escape_format = val;
-  }
-  void set_ice_handler_callback (ice_handler_callback_t cb)
-  {
-    m_ice_handler_cb = cb;
   }
 
   /* Various accessors.  */
@@ -858,9 +853,6 @@ private:
      the BLOCK_SUPERCONTEXT() chain hanging off the LOCATION_BLOCK()
      of a diagnostic's location.  */
   set_locations_callback_t m_set_locations_cb;
-
-  /* Optional callback for attempting to handle ICEs gracefully.  */
-  ice_handler_callback_t m_ice_handler_cb;
 
   /* A bundle of hooks for providing data to the context about its client
      e.g. version information, plugins, etc.

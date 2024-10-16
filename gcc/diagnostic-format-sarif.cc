@@ -1539,6 +1539,14 @@ sarif_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
       m_invocation_obj->add_notification_for_ice (diagnostic, *this);
+
+      /* Print a header for the remaining output to stderr, and
+	 return, attempting to print the usual ICE messages to
+	 stderr.  Hopefully this will be helpful to the user in
+	 indicating what's gone wrong (also for DejaGnu, for pruning
+	 those messages).   */
+      fnotice (stderr, "Internal compiler error:\n");
+
       return;
     }
 
@@ -3138,23 +3146,6 @@ sarif_builder::make_artifact_content_object (const char *text) const
   return content_obj;
 }
 
-/* Callback for diagnostic_context::ice_handler_cb for when an ICE
-   occurs.  */
-
-static void
-sarif_ice_handler (diagnostic_context *context)
-{
-  /* Attempt to ensure that a .sarif file is written out.  */
-  diagnostic_finish (context);
-
-  /* Print a header for the remaining output to stderr, and
-     return, attempting to print the usual ICE messages to
-     stderr.  Hopefully this will be helpful to the user in
-     indicating what's gone wrong (also for DejaGnu, for pruning
-     those messages).   */
-  fnotice (stderr, "Internal compiler error:\n");
-}
-
 class sarif_output_format : public diagnostic_output_format
 {
 public:
@@ -3386,9 +3377,6 @@ diagnostic_output_format_init_sarif (diagnostic_context &context,
 {
   /* Suppress normal textual path output.  */
   context.set_path_format (DPF_NONE);
-
-  /* Override callbacks.  */
-  context.set_ice_handler_callback (sarif_ice_handler);
 
   /* Don't colorize the text.  */
   pp_show_color (fmt->get_printer ()) = false;

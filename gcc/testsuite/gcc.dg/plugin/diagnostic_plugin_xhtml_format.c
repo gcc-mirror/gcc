@@ -362,7 +362,15 @@ void
 xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 				     diagnostic_t orig_diag_kind)
 {
-  // TODO: handle (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
+  if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
+    {
+      /* Print a header for the remaining output to stderr, and
+	 return, attempting to print the usual ICE messages to
+	 stderr.  Hopefully this will be helpful to the user in
+	 indicating what's gone wrong (also for DejaGnu, for pruning
+	 those messages).   */
+      fnotice (stderr, "Internal compiler error:\n");
+    }
 
   auto diag_element
     = make_element_for_diagnostic (diagnostic, orig_diag_kind);
@@ -573,23 +581,6 @@ xhtml_builder::flush_to_file (FILE *outf)
   fprintf (outf, "\n");
 }
 
-/* Callback for diagnostic_context::ice_handler_cb for when an ICE
-   occurs.  */
-
-static void
-xhtml_ice_handler (diagnostic_context *context)
-{
-  /* Attempt to ensure that a .xhtml file is written out.  */
-  diagnostic_finish (context);
-
-  /* Print a header for the remaining output to stderr, and
-     return, attempting to print the usual ICE messages to
-     stderr.  Hopefully this will be helpful to the user in
-     indicating what's gone wrong (also for DejaGnu, for pruning
-     those messages).   */
-  fnotice (stderr, "Internal compiler error:\n");
-}
-
 class xhtml_output_format : public diagnostic_output_format
 {
 public:
@@ -707,9 +698,6 @@ static void
 diagnostic_output_format_init_xhtml (diagnostic_context &context,
 				     std::unique_ptr<xhtml_output_format> fmt)
 {
-  /* Override callbacks.  */
-  context.set_ice_handler_callback (xhtml_ice_handler);
-
   /* Don't colorize the text.  */
   pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
