@@ -287,6 +287,14 @@ TopLevel::visit (AST::TypeParam &type_param)
 }
 
 void
+TopLevel::visit (AST::ConstGenericParam &const_param)
+{
+  insert_or_error_out (const_param.get_name (), const_param, Namespace::Values);
+
+  DefaultResolver::visit (const_param);
+}
+
+void
 TopLevel::visit (AST::TupleStruct &tuple_struct)
 {
   insert_or_error_out (tuple_struct.get_struct_name (), tuple_struct,
