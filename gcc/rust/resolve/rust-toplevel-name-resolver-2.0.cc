@@ -265,6 +265,13 @@ TopLevel::visit (AST::StaticItem &static_item)
 }
 
 void
+TopLevel::visit (AST::ExternalStaticItem &static_item)
+{
+  insert_or_error_out (static_item.get_identifier ().as_string (), static_item,
+		       Namespace::Values);
+}
+
+void
 TopLevel::visit (AST::StructStruct &struct_item)
 {
   auto generic_vis = [this, &struct_item] () {
