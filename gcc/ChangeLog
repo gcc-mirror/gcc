@@ -1,3 +1,59 @@
+2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* tree-if-conv.cc (predicate_statements): Fix handling of
+	predicated function calls.
+
+2024-10-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/109985
+	* ipa-modref.cc (modref_summary::useful_p): Fix handling of ECF_NOVOPS.
+	(modref_access_analysis::process_fnspec): Likevise.
+	(modref_access_analysis::analyze_call): Likevise.
+	(propagate_unknown_call): Likevise.
+	(modref_propagate_in_scc): Likevise.
+	(modref_propagate_flags_in_scc): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+
+2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116238
+	* config/aarch64/aarch64.cc (aarch64_hard_regno_caller_save_mode):
+	Only return SImode if we can convert to and from it.
+
+2024-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::ix86_vector_costs):
+	Add new member m_num_avx256_vec_perm.
+	(ix86_vector_costs::add_stmt_cost): Record 256-bit vec_perm.
+	(ix86_vector_costs::finish_cost): Prevent vectorization for
+	TAREGT_AVX256_AVOID_VEC_PERM when there's 256-bit vec_perm
+	instruction.
+	* config/i386/i386.h (TARGET_AVX256_AVOID_VEC_PERM): New
+	Macro.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_SPLIT_REGS): Add
+	m_CORE_ATOM.
+	(X86_TUNE_AVX256_AVOID_VEC_PERM): New tune.
+
+2024-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse_movcc): Guard
+	instruction blendv generation under new tune.
+	* config/i386/i386.h (TARGET_SSE_MOVCC_USE_BLENDV): New Macro.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_MOVCC_USE_BLENDV):
+	New tune.
+
 2024-10-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,84 @@
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (strip_fundts_namespace): New.
+	(StdExpAnyPrinter, StdExpOptionalPrinter): Use it.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90276
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc:
+	Increase timeout for debug mode.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/transform_binary.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/mismatch.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/minmax_element.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/set_symmetric_difference.cc:
+	Likewise.
+
+2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (transform_view:_Iterator): Use const F&
+	to determine value_type and iterator_category of
+	_Iterator<true>, as per LWG 3564.
+	* testsuite/std/ranges/adaptors/transform.cc: Check value_type
+	and iterator_category.
+
+2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117085
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Add L
+	option to format string.
+	* testsuite/std/time/format.cc: Move to...
+	* testsuite/std/time/format/format.cc: ...here.
+	* testsuite/std/time/format/pr117085.cc: New test.
+
+2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Add
+	[[unlikely]] attribute to condition for missing %c format in
+	locale. Use %T instead of %H:%M:%S in fallback.
+
+2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117135
+	* config/locale/generic/time_members.cc
+	(__timepunct<wchar_t>::_M_initialize_timepunc): Set
+	_M_date_time_format for C locale. Set %Ex formats to the same
+	values as the %x formats.
+
+2024-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117094
+	* include/bits/ranges_algobase.h (__fill_fn): Use std::move for
+	iterator that might not be copyable.
+	* testsuite/25_algorithms/fill/constrained.cc: Check
+	non-copyable iterator with sized sentinel.
+
 2024-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

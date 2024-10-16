@@ -1,3 +1,36 @@
+2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-fncall-mask.c: New.
+
+2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116238
+	* gcc.target/aarch64/sve/pr116238.c: New test.
+
+2024-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114593
+	* gnat.dg/specs/generic_inst2-child2.ads: New test.
+	* gnat.dg/specs/generic_inst2.ads: New helper.
+	* gnat.dg/specs/generic_inst2-child1.ads: Likewise.
+
+2024-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx256_avoid_vec_perm.c: New test.
+
+2024-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse_movcc_use_blendv.c: New file.
+
 2024-10-13  Sam James  <sam@gentoo.org>
 
 	Backported from master:
