@@ -275,5 +275,37 @@ Late::visit (AST::StructExprStructFields &s)
   DefaultResolver::visit (s);
 }
 
+// needed because Late::visit (AST::GenericArg &) is non-virtual
+void
+Late::visit (AST::GenericArgs &args)
+{
+  for (auto &lifetime : args.get_lifetime_args ())
+    visit (lifetime);
+
+  for (auto &generic : args.get_generic_args ())
+    visit (generic);
+
+  for (auto &binding : args.get_binding_args ())
+    visit (binding);
+}
+
+void
+Late::visit (AST::GenericArg &arg)
+{
+  if (arg.get_kind () == AST::GenericArg::Kind::Either)
+    {
+      // prefer type parameter to const parameter on ambiguity
+      auto type = ctx.types.get (arg.get_path ());
+      auto value = ctx.values.get (arg.get_path ());
+
+      if (!type.has_value () && value.has_value ())
+	arg = arg.disambiguate_to_const ();
+      else
+	arg = arg.disambiguate_to_type ();
+    }
+
+  DefaultResolver::visit (arg);
+}
+
 } // namespace Resolver2_0
 } // namespace Rust
