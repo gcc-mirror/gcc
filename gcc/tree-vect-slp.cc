@@ -4427,6 +4427,7 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	  && contiguous
 	  && (SLP_TREE_LANES (load) > 1 || loads.size () == 1)
 	  && pow2p_hwi (SLP_TREE_LANES (load))
+	  && pow2p_hwi (group_lanes)
 	  && SLP_TREE_LOAD_PERMUTATION (load)[0] % SLP_TREE_LANES (load) == 0
 	  && group_lanes % SLP_TREE_LANES (load) == 0)
 	{
