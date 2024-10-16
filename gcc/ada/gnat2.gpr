@@ -1,0 +1,54 @@
+--  The "2" in Gnat2 is arbitrary and is there because "gnat.gpr" already
+--  exists in the repository.
+project Gnat2 is
+
+   --  We need C++ as a language to force the use of g++ for linking. That
+   --  causes GPRbuild to emit a warning because we don't have C++ source
+   --  files, but it should be fine.
+   for Languages use ("Ada", "C++");
+
+   for Main use ("gnat1drv.adb",
+                 "gnatbind.adb",
+                 "gnatmake.adb",
+                 "gnatlink.adb",
+                 "gnatcmd.adb",
+                 "gnatchop.adb",
+                 "gnatkr.adb",
+                 "gnatls.adb",
+                 "gnatprep.adb",
+                 "gnatname.adb",
+                 "gnatclean.adb");
+
+   Build_Dir := external ("Build_Dir");
+
+   Generated_Dir := Build_Dir & "/generated";
+
+   for Source_Dirs use (".", Build_Dir, Generated_Dir);
+
+   for Excluded_Source_Files use
+     ("indepsw-aix.adb",
+      "indepsw-darwin.adb",
+      "ada_get_targ.adb",
+      "indepsw-gnu.adb",
+      "seinfo_tables.ads",
+      "seinfo_tables.adb");
+
+   for Object_Dir use Build_Dir;
+
+   for Exec_Dir use Build_dir & "/..";
+
+   package Builder is
+      for Executable ("gnat1drv.adb") use "gnat1";
+
+      for Executable ("gnatcmd.adb") use "gnat";
+
+   end Builder;
+
+   package Coverage is
+      --  To make building from the oldest supported compiler work, we copy a handful
+      --  of fresh source files from the run-time library. We need gnatcov to not instrument
+      --  those files, so we add the clause below. It's unknown why only putting "GNAT" is sufficient???
+      --  We also pull in GNAT.Lists for example, but specifying it here triggers a warning.
+      for Excluded_Units use ("Gnat");
+   end Coverage;
+end Gnat2;
