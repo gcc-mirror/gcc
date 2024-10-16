@@ -11347,6 +11347,42 @@ maybe_split_raw_data (tree value, tree *raw_data)
   return value;
 }
 
+/* Return non-zero if c_parser_initval should attempt to optimize
+   large initializers into RAW_DATA_CST.  In that case return how
+   many elements to optimize at most.  */
+
+unsigned
+c_maybe_optimize_large_byte_initializer (void)
+{
+  if (!constructor_type
+      || TREE_CODE (constructor_type) != ARRAY_TYPE
+      || constructor_stack->implicit)
+    return 0;
+  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
+  if (TREE_CODE (elttype) != INTEGER_TYPE
+      && TREE_CODE (elttype) != BITINT_TYPE)
+    return 0;
+  if (TYPE_PRECISION (elttype) != CHAR_BIT
+      || constructor_stack->replacement_value.value
+      || (COMPLETE_TYPE_P (constructor_type)
+	  && !poly_int_tree_p (TYPE_SIZE (constructor_type)))
+      || constructor_range_stack)
+    return 0;
+  if (constructor_max_index == NULL_TREE)
+    return INT_MAX;
+  if (tree_int_cst_le (constructor_max_index, constructor_index)
+      || integer_all_onesp (constructor_max_index))
+    return 0;
+  widest_int w = wi::to_widest (constructor_max_index);
+  w -= wi::to_widest (constructor_index);
+  w += 1;
+  if (w < 64)
+    return 0;
+  if (w > INT_MAX)
+    return INT_MAX;
+  return w.to_uhwi ();
+}
+
 /* Add one non-braced element to the current constructor level.
    This adjusts the current position within the constructor's type.
    This may also start or terminate implicit levels
