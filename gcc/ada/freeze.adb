@@ -8684,8 +8684,9 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            Freeze_Nodes : List_Id := No_List;
-            Pos          : Int     := Scope_Stack.Last;
+            Freeze_Nodes : List_Id   := No_List;
+            Pos          : Int       := Scope_Stack.Last;
+            Scop         : Entity_Id := Current_Scope;
 
          begin
             if Present (Desig_Typ) then
@@ -8712,12 +8713,18 @@ package body Freeze is
             --  If the expression is within a top-level pragma, as for a pre-
             --  condition on a library-level subprogram, nothing to do.
 
-            if not Is_Compilation_Unit (Current_Scope)
-              and then (Is_Record_Type (Scope (Current_Scope))
-                         or else (Ekind (Current_Scope) in E_Block | E_Loop
-                                   and then Is_Internal (Current_Scope)))
-            then
-               Pos := Pos - 1;
+            if not Is_Compilation_Unit (Scop) then
+               if Is_Record_Type (Scope (Scop)) then
+                  Pos := Pos - 1;
+
+               else
+                  while Ekind (Scop) in E_Block | E_Loop
+                    and then Is_Internal (Scop)
+                  loop
+                     Pos  := Pos - 1;
+                     Scop := Scope (Scop);
+                  end loop;
+               end if;
             end if;
 
             if Is_Non_Empty_List (Freeze_Nodes) then
