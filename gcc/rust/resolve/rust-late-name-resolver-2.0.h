@@ -49,6 +49,8 @@ public:
   void visit (AST::StructExprStructBase &) override;
   void visit (AST::StructExprStructFields &) override;
   void visit (AST::StructStruct &) override;
+  void visit (AST::GenericArgs &) override;
+  void visit (AST::GenericArg &);
 
 private:
   /* Setup Rust's builtin types (u8, i32, !...) in the resolver */
