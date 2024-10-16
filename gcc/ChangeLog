@@ -1,3 +1,60 @@
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/111613
+	* ipa-modref.cc (analyze_parms): Do not preserve EAF_NO_DIRECT_READ and
+	EAF_NO_INDIRECT_READ from past flags.
+
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/109985
+	* ipa-modref.cc (modref_summary::useful_p): Fix handling of ECF_NOVOPS.
+	(modref_access_analysis::process_fnspec): Likevise.
+	(modref_access_analysis::analyze_call): Likevise.
+	(propagate_unknown_call): Likevise.
+	(modref_propagate_in_scc): Likevise.
+	(modref_propagate_flags_in_scc): Likewise.
+	(ipa_merge_modref_summary_after_inlining): Likewise.
+
+2024-10-14  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2024-05-16  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/113787
+	* ipa-fnsummary.cc (points_to_local_or_readonly_memory_p): Do not
+	look into TARGET_MEM_REFS with constant opreand 0.
+
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/115033
+	* ipa-modref.cc (modref_eaf_analysis::analyze_ssa_name): Fix checking of
+	EAF flags when analysing values dereferenced as function parameters.
+
+2024-10-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	Backported from master:
+	2024-07-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/114207
+	* ipa-prop.cc (unadjusted_ptr_and_unit_offset): Fix accounting of offsets in ADDR_EXPR.
+
+2024-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	Backported from master:
+	2023-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109934
+	* value-range.cc (irange::invert): Remove buggy special case.
+
 2024-10-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Fix indirect_got constraint.
