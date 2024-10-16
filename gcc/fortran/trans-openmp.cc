@@ -582,7 +582,7 @@ gfc_walk_alloc_comps (tree decl, tree dest, tree var,
 	      tem = size_binop (MINUS_EXPR, tem, size_one_node);
 	    }
 	  else
-	    tem = array_type_nelts (type);
+	    tem = array_type_nelts_minus_one (type);
 	  tem = fold_convert (gfc_array_index_type, tem);
 	}
 
@@ -1309,7 +1309,7 @@ gfc_omp_clause_linear_ctor (tree clause, tree dest, tree src, tree add)
 	  nelems = size_binop (MINUS_EXPR, nelems, size_one_node);
 	}
       else
-	nelems = array_type_nelts (type);
+	nelems = array_type_nelts_minus_one (type);
       nelems = fold_convert (gfc_array_index_type, nelems);
 
       gfc_omp_linear_clause_add_loop (&block, dest, src, add, nelems);

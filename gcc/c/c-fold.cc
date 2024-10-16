@@ -73,11 +73,12 @@ c_fold_array_ref (tree type, tree ary, tree index)
   unsigned elem_nchars = (TYPE_PRECISION (elem_type)
 			  / TYPE_PRECISION (char_type_node));
   unsigned len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
-  tree nelts = array_type_nelts (TREE_TYPE (ary));
+  tree nelts_minus_one = array_type_nelts_minus_one (TREE_TYPE (ary));
   bool dummy1 = true, dummy2 = true;
-  nelts = c_fully_fold_internal (nelts, true, &dummy1, &dummy2, false, false);
+  nelts_minus_one = c_fully_fold_internal (nelts_minus_one, true, &dummy1,
+					   &dummy2, false, false);
   unsigned HOST_WIDE_INT i = tree_to_uhwi (index);
-  if (!tree_int_cst_le (index, nelts)
+  if (!tree_int_cst_le (index, nelts_minus_one)
       || i >= len
       || i + elem_nchars > len)
     return NULL_TREE;

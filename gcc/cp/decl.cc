@@ -6956,7 +6956,7 @@ reshape_init_array (tree type, reshape_iter *d, tree first_initializer_p,
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
 
   if (TYPE_DOMAIN (type))
-    max_index = array_type_nelts (type);
+    max_index = array_type_nelts_minus_one (type);
 
   return reshape_init_array_1 (TREE_TYPE (type), max_index, d,
 			       first_initializer_p, complain);

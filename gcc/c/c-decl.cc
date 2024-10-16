@@ -5367,7 +5367,7 @@ one_element_array_type_p (const_tree type)
 {
   if (TREE_CODE (type) != ARRAY_TYPE)
     return false;
-  return integer_zerop (array_type_nelts (type));
+  return integer_zerop (array_type_nelts_minus_one (type));
 }
 
 /* Determine whether TYPE is a zero-length array type "[0]".  */
@@ -6315,15 +6315,15 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  for (tree type = parm->specs->type; TREE_CODE (type) == ARRAY_TYPE;
 	       type = TREE_TYPE (type))
 	    {
-	      tree nelts = array_type_nelts (type);
-	      if (error_operand_p (nelts))
+	      tree nelts_minus_one = array_type_nelts_minus_one (type);
+	      if (error_operand_p (nelts_minus_one))
 		return attrs;
-	      if (TREE_CODE (nelts) != INTEGER_CST)
+	      if (TREE_CODE (nelts_minus_one) != INTEGER_CST)
 		{
 		  /* Each variable VLA bound is represented by the dollar
 		     sign.  */
 		  spec += "$";
-		  tpbnds = tree_cons (NULL_TREE, nelts, tpbnds);
+		  tpbnds = tree_cons (NULL_TREE, nelts_minus_one, tpbnds);
 		}
 	    }
 	  tpbnds = nreverse (tpbnds);

@@ -263,7 +263,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
       else if (TYPE_DOMAIN (type) == NULL_TREE)
 	return NULL_TREE;
       else
-	max_index = array_type_nelts (type);
+	max_index = array_type_nelts_minus_one (type);
 
       /* If we have an error_mark here, we should just return error mark
 	 as we don't know the size of the array yet.  */
@@ -474,7 +474,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
       vec<constructor_elt, va_gc> *v = NULL;
 
       /* Iterate over the array elements, building initializations.  */
-      tree max_index = array_type_nelts (type);
+      tree max_index = array_type_nelts_minus_one (type);
 
       /* If we have an error_mark here, we should just return error mark
 	 as we don't know the size of the array yet.  */
@@ -4526,7 +4526,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 		    : location_of (base));
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
-    maxindex = array_type_nelts (atype);
+    maxindex = array_type_nelts_minus_one (atype);
 
   if (maxindex == NULL_TREE || maxindex == error_mark_node)
     return error_mark_node;
@@ -5191,7 +5191,7 @@ build_delete (location_t loc, tree otype, tree addr,
 	    error_at (loc, "unknown array size in delete");
 	  return error_mark_node;
 	}
-      return build_vec_delete (loc, addr, array_type_nelts (type),
+      return build_vec_delete (loc, addr, array_type_nelts_minus_one (type),
 			       auto_delete, use_global_delete, complain);
     }
 

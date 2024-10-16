@@ -24629,7 +24629,7 @@ ix86_canonical_va_list_type (tree type)
 	return ms_va_list_type_node;
 
       if ((TREE_CODE (type) == ARRAY_TYPE
-	   && integer_zerop (array_type_nelts (type)))
+	   && integer_zerop (array_type_nelts_minus_one (type)))
 	  || POINTER_TYPE_P (type))
 	{
 	  tree elem_type = TREE_TYPE (type);

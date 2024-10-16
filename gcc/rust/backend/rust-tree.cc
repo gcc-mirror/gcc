@@ -869,7 +869,7 @@ tree
 array_type_nelts_top (tree type)
 {
   return fold_build2_loc (input_location, PLUS_EXPR, sizetype,
-			  array_type_nelts (type), size_one_node);
+			  array_type_nelts_minus_one (type), size_one_node);
 }
 
 // forked from gcc/cp/tree.cc builtin_valid_in_constant_expr_p

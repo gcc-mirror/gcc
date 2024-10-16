@@ -3085,7 +3085,7 @@ array_type_nelts_top (tree type)
 {
   return fold_build2_loc (input_location,
 		      PLUS_EXPR, sizetype,
-		      array_type_nelts (type),
+		      array_type_nelts_minus_one (type),
 		      size_one_node);
 }
 

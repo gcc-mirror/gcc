@@ -556,7 +556,8 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 				     integer_zero_node, tf_warning_or_error);
       initializer = build_constructor_va (init_list_type_node, 2,
 					  NULL_TREE, build_address (elt),
-					  NULL_TREE, array_type_nelts (type));
+					  NULL_TREE,
+					  array_type_nelts_minus_one (type));
       type = vla_capture_type (type);
     }
   else if (!dependent_type_p (type)

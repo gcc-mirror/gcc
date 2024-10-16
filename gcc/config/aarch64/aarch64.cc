@@ -1081,7 +1081,7 @@ pure_scalable_type_info::analyze_array (const_tree type)
 
   /* An array of unknown, flexible or variable length will be passed and
      returned by reference whatever we do.  */
-  tree nelts_minus_one = array_type_nelts (type);
+  tree nelts_minus_one = array_type_nelts_minus_one (type);
   if (!tree_fits_uhwi_p (nelts_minus_one))
     return DOESNT_MATTER;
 

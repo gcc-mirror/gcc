@@ -6991,14 +6991,14 @@ count_type_elements (const_tree type, bool for_ctor_p)
     {
     case ARRAY_TYPE:
       {
-	tree nelts;
+	tree nelts_minus_one;
 
-	nelts = array_type_nelts (type);
-	if (nelts && tree_fits_uhwi_p (nelts))
+	nelts_minus_one = array_type_nelts_minus_one (type);
+	if (nelts_minus_one && tree_fits_uhwi_p (nelts_minus_one))
 	  {
 	    unsigned HOST_WIDE_INT n;
 
-	    n = tree_to_uhwi (nelts) + 1;
+	    n = tree_to_uhwi (nelts_minus_one) + 1;
 	    if (n == 0 || for_ctor_p)
 	      return n;
 	    else

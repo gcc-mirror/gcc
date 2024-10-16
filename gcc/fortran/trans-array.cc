@@ -9695,7 +9695,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
       else
 	{
 	  /*  Otherwise use the TYPE_DOMAIN information.  */
-	  tmp = array_type_nelts (decl_type);
+	  tmp = array_type_nelts_minus_one (decl_type);
 	  tmp = fold_convert (gfc_array_index_type, tmp);
 	}
 
