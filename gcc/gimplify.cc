@@ -5419,9 +5419,10 @@ gimplify_init_ctor_eval (tree object, vec<constructor_elt, va_gc> *elts,
 	      cref = build2 (MEM_REF, rtype, addr,
 			     build_int_cst (ptr_type_node, 0));
 	      rctor = tree_output_constant_def (rctor);
-	      tree init = build2 (INIT_EXPR, rtype, cref, rctor);
-	      gimplify_and_add (init, pre_p);
-	      ggc_free (init);
+	      if (gimplify_expr (&cref, pre_p, NULL, is_gimple_lvalue,
+				 fb_lvalue) != GS_ERROR)
+		gimplify_seq_add_stmt (pre_p,
+				       gimple_build_assign (cref, rctor));
 	    }
 	}
       else
