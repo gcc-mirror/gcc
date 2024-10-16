@@ -2081,6 +2081,35 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	  else
 	    *memory_access_type = VMAT_CONTIGUOUS;
 
+	  /* If this is single-element interleaving with an element
+	     distance that leaves unused vector loads around punt - we
+	     at least create very sub-optimal code in that case (and
+	     blow up memory, see PR65518).  */
+	  if (loop_vinfo
+	      && *memory_access_type == VMAT_CONTIGUOUS
+	      && single_element_p
+	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
+	    {
+	      if (SLP_TREE_LANES (slp_node) == 1)
+		{
+		  *memory_access_type = VMAT_ELEMENTWISE;
+		  overrun_p = false;
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "single-element interleaving not supported "
+				     "for not adjacent vector loads, using "
+				     "elementwise access\n");
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "single-element interleaving not supported "
+				     "for not adjacent vector loads\n");
+		  return false;
+		}
+	    }
+
 	  overrun_p = loop_vinfo && gap != 0;
 	  if (overrun_p && vls_type != VLS_LOAD)
 	    {
@@ -2149,6 +2178,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 				 "Peeling for outer loop is not supported\n");
 	      return false;
 	    }
+
 	  /* Peeling for gaps assumes that a single scalar iteration
 	     is enough to make sure the last vector iteration doesn't
 	     access excess elements.  */
@@ -2176,34 +2206,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "peeling for gaps insufficient for "
 				     "access\n");
-		  return false;
-		}
-	    }
-
-	  /* If this is single-element interleaving with an element
-	     distance that leaves unused vector loads around punt - we
-	     at least create very sub-optimal code in that case (and
-	     blow up memory, see PR65518).  */
-	  if (loop_vinfo
-	      && *memory_access_type == VMAT_CONTIGUOUS
-	      && single_element_p
-	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
-	    {
-	      if (SLP_TREE_LANES (slp_node) == 1)
-		{
-		  *memory_access_type = VMAT_ELEMENTWISE;
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "single-element interleaving not supported "
-				     "for not adjacent vector loads, using "
-				     "elementwise access\n");
-		}
-	      else
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "single-element interleaving not supported "
-				     "for not adjacent vector loads\n");
 		  return false;
 		}
 	    }
