@@ -7355,6 +7355,14 @@ the @code{POLY_VALUE_MIN}, @code{POLY_VALUE_MAX} and
 implementation returns the lowest possible value of @var{val}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_AVOID_STORE_FORWARDING_P (vec<store_fwd_info>, @var{rtx}, @var{int}, @var{bool})
+Given a list of stores and a load instruction that reads from the location
+of the stores, this hook decides if it's profitable to emit additional code
+to avoid a potential store forwarding stall.  The additional instructions
+needed, the sequence cost and additional relevant information is given in
+the arguments so that the target can make an informed decision.
+@end deftypefn
+
 @node Scheduling
 @section Adjusting the Instruction Scheduler
 

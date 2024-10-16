@@ -1759,6 +1759,10 @@ fgcse-sm
 Common Var(flag_gcse_sm) Init(0) Optimization
 Perform store motion after global common subexpression elimination.
 
+favoid-store-forwarding
+Common Var(flag_avoid_store_forwarding) Init(0) Optimization
+Try to avoid store forwarding.
+
 fgcse-las
 Common Var(flag_gcse_las) Init(0) Optimization
 Perform redundant load after store elimination in global common subexpression

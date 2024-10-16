@@ -4752,6 +4752,8 @@ Define this macro if a non-short-circuit operation produced by
 
 @hook TARGET_ESTIMATED_POLY_VALUE
 
+@hook TARGET_AVOID_STORE_FORWARDING_P
+
 @node Scheduling
 @section Adjusting the Instruction Scheduler
 

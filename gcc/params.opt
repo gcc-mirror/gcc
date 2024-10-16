@@ -1040,6 +1040,10 @@ Allow the store merging pass to introduce unaligned stores if it is legal to do 
 Common Joined UInteger Var(param_store_merging_max_size) Init(65536) IntegerRange(1, 65536) Param Optimization
 Maximum size of a single store merging region in bytes.
 
+-param=store-forwarding-max-distance=
+Common Joined UInteger Var(param_store_forwarding_max_distance) Init(10) IntegerRange(0, 1000) Param Optimization
+Maximum number of instruction distance that a small store forwarded to a larger load may stall. Value '0' disables the cost checks for the avoid-store-forwarding pass.
+
 -param=switch-conversion-max-branch-ratio=
 Common Joined UInteger Var(param_switch_conversion_branch_ratio) Init(8) IntegerRange(1, 65536) Param Optimization
 The maximum ratio between array size and switch branches for a switch conversion to take place.

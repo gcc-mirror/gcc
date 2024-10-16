@@ -925,6 +925,14 @@ and addressing mode selection.  The pass is run twice, with values
 being propagated into loops only on the second run.  The code is
 located in @file{fwprop.cc}.
 
+@item Store forwarding avoidance
+
+This pass attempts to reduce the overhead of store to load forwarding.
+It detects when a load reads from one or more previous smaller stores and
+then rearranges them so that the stores are done after the load.  The loaded
+value is adjusted with a series of bit insert instructions so that it stays
+the same.  The code is located in @file{avoid-store-forwarding.cc}.
+
 @item Common subexpression elimination
 
 This pass removes redundant computation within basic blocks, and

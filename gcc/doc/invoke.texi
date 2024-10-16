@@ -12806,6 +12806,15 @@ loop unrolling.
 This option is enabled by default at optimization levels @option{-O1},
 @option{-O2}, @option{-O3}, @option{-Os}.
 
+@opindex favoid-store-forwarding
+@item -favoid-store-forwarding
+@itemx -fno-avoid-store-forwarding
+Many CPUs will stall for many cycles when a load partially depends on previous
+smaller stores.  This pass tries to detect such cases and avoid the penalty by
+changing the order of the load and store and then fixing up the loaded value.
+
+Disabled by default.
+
 @opindex ffp-contract
 @item -ffp-contract=@var{style}
 @option{-ffp-contract=off} disables floating-point expression contraction.

@@ -503,6 +503,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sms);
       NEXT_PASS (pass_live_range_shrinkage);
       NEXT_PASS (pass_sched);
+      NEXT_PASS (pass_rtl_avoid_store_forwarding);
       NEXT_PASS (pass_early_remat);
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);

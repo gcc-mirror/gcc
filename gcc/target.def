@@ -6979,6 +6979,16 @@ HOOK_VECTOR_END (shrink_wrap)
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
 
+DEFHOOK
+(avoid_store_forwarding_p,
+ "Given a list of stores and a load instruction that reads from the location\n\
+of the stores, this hook decides if it's profitable to emit additional code\n\
+to avoid a potential store forwarding stall.  The additional instructions\n\
+needed, the sequence cost and additional relevant information is given in\n\
+the arguments so that the target can make an informed decision.",
+ bool, (vec<store_fwd_info>, rtx, int, bool),
+ default_avoid_store_forwarding_p)
+
 /* Determine the type of unwind info to emit for debugging.  */
 DEFHOOK
 (debug_unwind_info,

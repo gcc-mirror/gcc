@@ -706,6 +706,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fgcse-lm)
 fgcse-sm
 UrlSuffix(gcc/Optimize-Options.html#index-fgcse-sm)
 
+favoid-store-forwarding
+UrlSuffix(gcc/Optimize-Options.html#index-favoid-store-forwarding)
+
 fgcse-las
 UrlSuffix(gcc/Optimize-Options.html#index-fgcse-las)
 

@@ -572,6 +572,7 @@ extern rtl_opt_pass *make_pass_rtl_dse3 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_cprop (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_pre (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_hoist (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_rtl_avoid_store_forwarding (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_store_motion (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_cse_after_global_opts (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_ifcvt (gcc::context *ctxt);

@@ -254,6 +254,9 @@ extern reg_class_t default_preferred_rename_class (reg_class_t rclass);
 extern bool default_class_likely_spilled_p (reg_class_t);
 extern unsigned char default_class_max_nregs (reg_class_t, machine_mode);
 
+extern bool default_avoid_store_forwarding_p (vec<store_fwd_info>, rtx, int,
+					      bool);
+
 extern enum unwind_info_type default_debug_unwind_info (void);
 
 extern void default_canonicalize_comparison (int *, rtx *, rtx *, bool);
