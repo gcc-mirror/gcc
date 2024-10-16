@@ -164,6 +164,7 @@ private:
   void visit (AST::TypeAlias &type_item) override;
   void visit (AST::ExternCrate &crate) override;
   void visit (AST::TypeParam &type_param) override;
+  void visit (AST::ConstGenericParam &const_param) override;
 
   void visit (AST::UseDeclaration &use) override;
 };
