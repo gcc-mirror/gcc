@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx10.2" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
 /* { dg-final { scan-assembler-times "vmovw\t4\\(%esp\\), %xmm0" 3 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "vmovw\t8\\(%ebp\\), %xmm0" 1 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "vmovw\t%xmm0, %xmm0" 4 { target ia32 } } } */

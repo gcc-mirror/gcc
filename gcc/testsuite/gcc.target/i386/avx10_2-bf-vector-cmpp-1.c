@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx10.2 -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2 -O2" } */
 /* { dg-final { scan-assembler-times "vcmppbf16" 10 } } */
 
 typedef __bf16 v16bf __attribute__ ((__vector_size__ (32)));

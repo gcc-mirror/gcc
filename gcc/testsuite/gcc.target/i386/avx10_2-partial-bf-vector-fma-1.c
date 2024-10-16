@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx10.2 -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2 -O2" } */
 /* { dg-final { scan-assembler-times "vfmadd132nepbf16\[^\n\r\]*xmm\[0-9\]" 3 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "vfmsub132nepbf16\[^\n\r\]*xmm\[0-9\]" 3 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "vfnmadd132nepbf16\[^\n\r\]*xmm\[0-9\]" 3 { target ia32 } } } */

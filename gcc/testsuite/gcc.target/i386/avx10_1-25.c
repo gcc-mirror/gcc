@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx" } */
+/* { dg-options "-O2 -march=x86-64-v2 -mavx" } */
 /* { dg-require-ifunc "" } */
 
 #include <immintrin.h>

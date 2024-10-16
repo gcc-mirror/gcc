@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx10.2 -mfpmath=sse" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2 -mfpmath=sse" } */
 /* { dg-final { scan-assembler-times "comi" 6 } } */
 /* { dg-final { scan-assembler-times "comx" 12 } } */
 
