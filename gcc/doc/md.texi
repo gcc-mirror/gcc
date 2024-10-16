@@ -3910,9 +3910,6 @@ instruction sequence
 @item T
 Memory address aligned to an 8-byte boundary
 
-@item U
-Even register
-
 @item W
 Memory address for @samp{e} constraint registers
 
