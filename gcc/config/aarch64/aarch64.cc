@@ -16018,6 +16018,22 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
   return true;
 }
 
+/* Emit an optimized sequence to perform a vector rotate
+   of REG by the vector constant amount AMNT and place the result
+   in DST.  Return true iff successful.  */
+
+bool
+aarch64_emit_opt_vec_rotate (rtx dst, rtx reg, rtx amnt)
+{
+  machine_mode mode = GET_MODE (reg);
+  /* Attempt to expand the rotate as a vector permute.
+     For some rotate amounts they can be single instructions and
+     even the general single-vector TBL permute has good throughput.  */
+  if (expand_rotate_as_vec_perm (mode, dst, reg, amnt))
+    return true;
+  return false;
+}
+
 /* Return the number of instructions that can be issued per cycle.  */
 static int
 aarch64_sched_issue_rate (void)
