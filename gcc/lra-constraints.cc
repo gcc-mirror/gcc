@@ -680,7 +680,8 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 	 used by reload instructions.  */
       if (REG_P (original)
 	  && (int) REGNO (original) >= new_regno_start
-	  && INSN_UID (curr_insn) >= new_insn_uid_start
+	  && (INSN_UID (curr_insn) >= new_insn_uid_start
+	      || ira_former_scratch_p (REGNO (original)))
 	  && in_class_p (original, rclass, &new_class, true))
 	{
 	  unsigned int regno = REGNO (original);
