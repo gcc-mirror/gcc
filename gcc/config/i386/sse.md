@@ -32366,8 +32366,12 @@
 (define_insn "avx10_2_comsbf16_v8bf"
   [(set (reg:CCFP FLAGS_REG)
 	(unspec:CCFP
-	  [(match_operand:V8BF 0 "register_operand" "v")
-	   (match_operand:V8BF 1 "nonimmediate_operand" "vm")]
+	  [(vec_select:BF
+	     (match_operand:V8BF 0 "register_operand" "v")
+	     (parallel [(const_int 0)]))
+	   (vec_select:BF
+	     (match_operand:V8BF 1 "nonimmediate_operand" "vm")
+	     (parallel [(const_int 0)]))]
 	 UNSPEC_VCOMSBF16))]
   "TARGET_AVX10_2_256"
   "vcomsbf16\t{%1, %0|%0, %1}"
