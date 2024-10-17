@@ -208,7 +208,6 @@
     else
       {
 	if (FP_REGNUM_P (REGNO (operands[0]))
-	    && <MODE>mode == V2DImode
 	    && aarch64_maybe_generate_simd_constant (operands[0], operands[1],
 						     <MODE>mode))
 	  ;
