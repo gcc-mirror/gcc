@@ -8285,6 +8285,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (rdiv @0 (exps:s @1))
     (mult @0 (exps (negate @1)))))
 
+ (for pow (POW_ALL)
+  (if (! HONOR_INFINITIES (type)
+       && ! flag_trapping_math
+       && ! flag_errno_math)
+   /* Simplify pow(1.0/x, y) into pow(x, -y).  */
+   (simplify
+    (pow (rdiv:s real_onep@0 @1) @2)
+     (pow @1 (negate @2)))
+
+   /* Simplify pow(0.0, x) into 0.0.  */
+   (if (! HONOR_NANS (type) && ! HONOR_SIGNED_ZEROS (type))
+    (simplify
+     (pow real_zerop@0 @1)
+      @0))))
+
  (if (! HONOR_SIGN_DEPENDENT_ROUNDING (type)
       && ! HONOR_NANS (type) && ! HONOR_INFINITIES (type)
       && ! flag_trapping_math
@@ -8642,6 +8657,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (mult (POW:s @0 @1) (POW:s @2 @1))
    (POW (mult @0 @2) @1))
+
+ (if (! HONOR_INFINITIES (type) && ! flag_trapping_math)
+  /* Simplify powi(1.0/x, y) into powi(x, -y).  */
+  (simplify
+   (POWI (rdiv@3 real_onep@0 @1) @2)
+   (if (single_use (@3))
+    (POWI @1 (negate @2))))
+
+  /* Simplify powi(0.0, x) into 0.0.  */
+  (if (! HONOR_NANS (type) && ! HONOR_SIGNED_ZEROS (type))
+   (simplify
+    (POWI real_zerop@0 @1)
+     @0)))
 
  /* Simplify powi(x,y) * powi(z,y) -> powi(x*z,y). */
  (simplify
