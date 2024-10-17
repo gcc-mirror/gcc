@@ -150,7 +150,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @ENABLE_FILESYSTEM_TS_TRUE@am__DEPENDENCIES_1 = $(top_builddir)/src/filesystem/libstdc++fsconvenience.la
 @ENABLE_BACKTRACE_TRUE@am__DEPENDENCIES_2 = $(top_builddir)/src/libbacktrace/libstdc++_libbacktrace.la
-am__objects_1 = contract.lo
+am__objects_1 = contract.lo contract26.lo
 am_libstdc__exp_la_OBJECTS = $(am__objects_1)
 libstdc__exp_la_OBJECTS = $(am_libstdc__exp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -455,7 +455,8 @@ toolexeclib_LTLIBRARIES = libstdc++exp.la
 @ENABLE_BACKTRACE_TRUE@backtrace_lib = $(top_builddir)/src/libbacktrace/libstdc++_libbacktrace.la
 headers = 
 sources = \
-	contract.cc
+	contract.cc \
+	contract26.cc
 
 
 # vpath % $(top_srcdir)/src/experimental
