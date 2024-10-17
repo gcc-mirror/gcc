@@ -1926,6 +1926,19 @@ public:
   }
 };
 
+class svlsl_impl : public rtx_code_function
+{
+public:
+  CONSTEXPR svlsl_impl ()
+    : rtx_code_function (ASHIFT, ASHIFT) {}
+
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    return f.fold_const_binary (LSHIFT_EXPR);
+  }
+};
+
 class svmad_impl : public function_base
 {
 public:
@@ -3304,7 +3317,7 @@ FUNCTION (svldnf1uh, svldxf1_extend_impl, (TYPE_SUFFIX_u16, UNSPEC_LDNF1))
 FUNCTION (svldnf1uw, svldxf1_extend_impl, (TYPE_SUFFIX_u32, UNSPEC_LDNF1))
 FUNCTION (svldnt1, svldnt1_impl,)
 FUNCTION (svlen, svlen_impl,)
-FUNCTION (svlsl, rtx_code_function, (ASHIFT, ASHIFT))
+FUNCTION (svlsl, svlsl_impl,)
 FUNCTION (svlsl_wide, shift_wide, (ASHIFT, UNSPEC_ASHIFT_WIDE))
 FUNCTION (svlsr, rtx_code_function, (LSHIFTRT, LSHIFTRT))
 FUNCTION (svlsr_wide, shift_wide, (LSHIFTRT, UNSPEC_LSHIFTRT_WIDE))

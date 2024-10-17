@@ -1147,7 +1147,10 @@ aarch64_const_binop (enum tree_code code, tree arg1, tree arg2)
       /* Return 0 for division by 0, like SDIV and UDIV do.  */
       if (code == TRUNC_DIV_EXPR && integer_zerop (arg2))
 	return arg2;
-
+      /* Return 0 if shift amount is out of range. */
+      if (code == LSHIFT_EXPR
+	  && wi::geu_p (wi::to_wide (arg2), TYPE_PRECISION (type)))
+	return build_int_cst (type, 0);
       if (!poly_int_binop (poly_res, code, arg1, arg2, sign, &overflow))
 	return NULL_TREE;
       return force_fit_type (type, poly_res, false,
