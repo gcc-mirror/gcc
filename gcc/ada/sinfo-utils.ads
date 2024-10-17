@@ -27,6 +27,65 @@ with Sinfo.Nodes; use Sinfo.Nodes;
 
 package Sinfo.Utils is
 
+   --  We would like to get rid of the Library_Unit field, and replace it with
+   --  Other_Comp_Unit (on N_Compilation_Unit), Withed_Lib_Unit (on
+   --  N_With_Clause), and Subunit (on N_Body_Stub). Or we could split
+   --  Other_Comp_Unit into Spec_Lib_Unit, Body_Lib_Unit, Subunit_Parent.
+   --  However, gnat-llvm, codepeer, and spark are still using Library_Unit.
+   --  Therefore, we use the wrappers below.
+   --
+   --  The call site should always know whether it has an N_Compilation_Unit,
+   --  N_Body_Stub, or N_With_Clause. In the N_Compilation_Unit case, it should
+   --  also know whether it's looking for the spec of a body, the body of a
+   --  spec, or the parent of a subunit. Spec_Or_Body_Lib_Unit and
+   --  Other_Comp_Unit should be avoided when possible; these are for the
+   --  N_Compilation_Unit cases where the call site does NOT know what it's
+   --  looking for.
+
+   function Spec_Lib_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id;
+   procedure Set_Spec_Lib_Unit (N, Val : N_Compilation_Unit_Id);
+   --  The spec compilation unit of a body compilation unit.
+   --  It can be an acts-as-spec subprogram body; in that case
+   --  Spec_Lib_Unit points to itself.
+
+   function Body_Lib_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id;
+   procedure Set_Body_Lib_Unit (N, Val : N_Compilation_Unit_Id);
+   --  The body compilation unit of a spec compilation unit.
+   --  Empty if not present.
+
+   function Spec_Or_Body_Lib_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id;
+   --  Same as Spec_Lib_Unit or Body_Lib_Unit, depending on whether
+   --  N is a body or spec. Used when we know N is a library unit
+   --  (not a subunit), but we don't know whether it's the spec
+   --  or the body.
+
+   function Subunit_Parent
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id;
+   procedure Set_Subunit_Parent (N, Val : N_Compilation_Unit_Id);
+   --  The parent body of a subunit
+
+   function Other_Comp_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id;
+   --  Same as Spec_Lib_Unit, Body_Lib_Unit, or Subunit_Parent,
+   --  as appropriate. Used when we don't know whether N is a
+   --  a library unit spec, library unit body, or subunit.
+
+   function Stub_Subunit (N : N_Body_Stub_Id) return Opt_N_Compilation_Unit_Id;
+   procedure Set_Stub_Subunit
+     (N : N_Body_Stub_Id; Val : N_Compilation_Unit_Id);
+   --  Subunit corresponding to a stub
+
+   function Withed_Lib_Unit
+     (N : N_With_Clause_Id) return Opt_N_Compilation_Unit_Id;
+   procedure Set_Withed_Lib_Unit
+     (N : N_With_Clause_Id; Val : N_Compilation_Unit_Id);
+   --  The compilation unit that a with clause refers to.
+   --  Note that the Sem_Elab creates with clauses that point to bodies
+   --  (including non-Acts_As_Spec bodies).
+
    -------------------------------
    -- Parent-related operations --
    -------------------------------
@@ -54,9 +113,9 @@ package Sinfo.Utils is
    -- Miscellaneous Tree Access Subprograms --
    -------------------------------------------
 
-   function First_Real_Statement -- ????
+   function First_Real_Statement -- ???
      (Ignored : N_Handled_Sequence_Of_Statements_Id) return Node_Id is (Empty);
-   --  The First_Real_Statement field is going away, but it is referenced in
+   --  The First_Real_Statement field has been removed, but it is referenced in
    --  codepeer and gnat-llvm. This is a temporary version, always returning
    --  Empty, to ease the transition.
 

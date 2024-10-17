@@ -337,10 +337,20 @@ extern Entity_Id Storage_Model_Copy_To 		(Entity_Id);
 
 /* sinfo: */
 
+#define Spec_Lib_Unit                   sinfo__utils__spec_lib_unit
+#define Body_Lib_Unit                   sinfo__utils__body_lib_unit
+#define Subunit_Parent                  sinfo__utils__subunit_parent
+#define Stub_Subunit                    sinfo__utils__stub_subunit
+#define Withed_Lib_Unit                 sinfo__utils__withed_lib_unit
 #define End_Location			sinfo__utils__end_location
 #define Set_Has_No_Elaboration_Code	sinfo__nodes__set_has_no_elaboration_code
 #define Set_Present_Expr		sinfo__nodes__set_present_expr
 
+extern Node_Id Spec_Lib_Unit            (Node_Id);
+extern Node_Id Body_Lib_Unit            (Node_Id);
+extern Node_Id Subunit_Parent           (Node_Id);
+extern Node_Id Stub_Subunit             (Node_Id);
+extern Node_Id Withed_Lib_Unit          (Node_Id);
 extern Source_Ptr End_Location 		(Node_Id);
 extern void Set_Has_No_Elaboration_Code	(Node_Id, Boolean);
 extern void Set_Present_Expr		(Node_Id, Uint);

@@ -5006,7 +5006,7 @@ package body Exp_Util is
       --  declarations of the package spec.
 
       if Nkind (U) = N_Package_Body then
-         U := Unit (Library_Unit (Cunit (Current_Sem_Unit)));
+         U := Unit (Spec_Lib_Unit (Cunit (Current_Sem_Unit)));
       end if;
 
       if Nkind (U) = N_Package_Declaration then

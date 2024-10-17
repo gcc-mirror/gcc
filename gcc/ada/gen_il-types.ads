@@ -124,7 +124,9 @@ package Gen_IL.Types is
       N_Subexpr,
       N_Subprogram_Specification,
       N_Unary_Op,
-      N_Unit_Body,
+      N_Lib_Unit_Declaration,
+      N_Lib_Unit_Renaming_Declaration,
+      N_Lib_Unit_Body,
 
       --  End of abstract node types.
 

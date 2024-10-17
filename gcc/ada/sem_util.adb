@@ -7506,7 +7506,7 @@ package body Sem_Util is
       while Present (Encl_Unit)
         and then Nkind (Unit (Encl_Unit)) = N_Subunit
       loop
-         Encl_Unit := Library_Unit (Encl_Unit);
+         Encl_Unit := Subunit_Parent (Encl_Unit);
       end loop;
 
       pragma Assert (Nkind (Encl_Unit) = N_Compilation_Unit);
@@ -10059,7 +10059,7 @@ package body Sem_Util is
 
    function Get_Body_From_Stub (N : Node_Id) return Node_Id is
    begin
-      return Proper_Body (Unit (Library_Unit (N)));
+      return Proper_Body (Unit (Stub_Subunit (N)));
    end Get_Body_From_Stub;
 
    ---------------------
@@ -20170,7 +20170,7 @@ package body Sem_Util is
       return Is_RCI_Pkg_Decl_Cunit (Cunit)
         or else
          (Nkind (Unit (Cunit)) = N_Package_Body
-           and then Is_RCI_Pkg_Decl_Cunit (Library_Unit (Cunit)));
+           and then Is_RCI_Pkg_Decl_Cunit (Spec_Lib_Unit (Cunit)));
    end Is_RCI_Pkg_Spec_Or_Body;
 
    -----------------------------------------
@@ -27020,13 +27020,13 @@ package body Sem_Util is
       K2 : constant Node_Kind := Nkind (N2);
 
    begin
-      if (K1 = N_Identifier or else K1 = N_Defining_Identifier)
-        and then (K2 = N_Identifier or else K2 = N_Defining_Identifier)
+      if K1 in N_Identifier | N_Defining_Identifier
+        and then K2 in N_Identifier | N_Defining_Identifier
       then
          return Chars (N1) = Chars (N2);
 
-      elsif (K1 = N_Selected_Component or else K1 = N_Expanded_Name)
-        and then (K2 = N_Selected_Component or else K2 = N_Expanded_Name)
+      elsif K1 in N_Selected_Component | N_Expanded_Name
+        and then K2 in N_Selected_Component | N_Expanded_Name
       then
          return Same_Name (Selector_Name (N1), Selector_Name (N2))
            and then Same_Name (Prefix (N1), Prefix (N2));
@@ -29046,7 +29046,7 @@ package body Sem_Util is
          Clause := First (Context_Items (Comp_Unit));
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause then
-               if Library_Unit (Clause) = U then
+               if Withed_Lib_Unit (Clause) = U then
                   return True;
 
                --  The with_clause may denote a renaming of the unit we are
@@ -29084,7 +29084,7 @@ package body Sem_Util is
           (Nkind (Unit (Curr)) = N_Subprogram_Body
             and then not Acts_As_Spec (Unit (Curr)))
       then
-         if Unit_In_Context (Library_Unit (Curr)) then
+         if Unit_In_Context (Spec_Lib_Unit (Curr)) then
             return True;
          end if;
       end if;
@@ -29092,10 +29092,10 @@ package body Sem_Util is
       --  If the spec is a child unit, examine the parents
 
       if Is_Child_Unit (Curr_Entity) then
-         if Nkind (Unit (Curr)) in N_Unit_Body then
+         if Nkind (Unit (Curr)) in N_Lib_Unit_Body then
             return
               Unit_In_Parent_Context
-                (Parent_Spec (Unit (Library_Unit (Curr))));
+                (Parent_Spec (Unit (Spec_Lib_Unit (Curr))));
          else
             return Unit_In_Parent_Context (Parent_Spec (Unit (Curr)));
          end if;

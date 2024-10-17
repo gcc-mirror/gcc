@@ -3552,7 +3552,8 @@ package body Errout is
          --  Deal with matching entry in List_Pragmas table
 
          if Full_List
-           and then List_Pragmas_Index <= List_Pragmas.Last
+           and then List_Pragmas_Index in
+                    List_Pragmas.First .. List_Pragmas.Last
            and then S = List_Pragmas.Table (List_Pragmas_Index).Ploc
          then
             case List_Pragmas.Table (List_Pragmas_Index).Ptyp is

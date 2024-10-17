@@ -31,6 +31,145 @@ with Sinput; use Sinput;
 
 package body Sinfo.Utils is
 
+   function Spec_Lib_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id
+   is
+      pragma Assert (Unit (N) in N_Lib_Unit_Body_Id);
+   begin
+      return Val : constant Opt_N_Compilation_Unit_Id :=
+        Spec_Or_Body_Lib_Unit (N)
+      do
+         pragma Assert
+           (if Present (Val) then
+             Unit (Val) in N_Lib_Unit_Declaration_Id
+              | N_Lib_Unit_Renaming_Declaration_Id -- only in case of error
+             or else (N = Val
+                      and then Unit (N) in N_Subprogram_Body_Id
+                      and then Acts_As_Spec (N)));
+      end return;
+   end Spec_Lib_Unit;
+
+   procedure Set_Spec_Lib_Unit (N, Val : N_Compilation_Unit_Id) is
+      pragma Assert (Unit (N) in N_Lib_Unit_Body_Id);
+      pragma Assert
+        (Unit (Val) in N_Lib_Unit_Declaration_Id
+          | N_Lib_Unit_Renaming_Declaration_Id -- only in case of error
+         or else (N = Val
+                  and then Unit (N) in N_Subprogram_Body_Id
+                  and then Acts_As_Spec (N)));
+   begin
+      Set_Library_Unit (N, Val);
+   end Set_Spec_Lib_Unit;
+
+   function Body_Lib_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id
+   is
+      pragma Assert
+        (Unit (N) in N_Lib_Unit_Declaration_Id
+          | N_Lib_Unit_Renaming_Declaration_Id); -- only in case of error
+   begin
+      return Val : constant Opt_N_Compilation_Unit_Id :=
+        Spec_Or_Body_Lib_Unit (N)
+      do
+         pragma Assert
+           (if Present (Val) then Unit (Val) in N_Lib_Unit_Body_Id);
+      end return;
+   end Body_Lib_Unit;
+
+   procedure Set_Body_Lib_Unit (N, Val : N_Compilation_Unit_Id) is
+      pragma Assert
+        (Unit (N) in N_Lib_Unit_Declaration_Id
+          | N_Lib_Unit_Renaming_Declaration_Id); -- only in case of error
+      pragma Assert (Unit (Val) in N_Lib_Unit_Body_Id);
+   begin
+      Set_Library_Unit (N, Val);
+   end Set_Body_Lib_Unit;
+
+   function Spec_Or_Body_Lib_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id
+   is
+      pragma Assert
+        (Unit (N) in
+          N_Lib_Unit_Declaration_Id | N_Lib_Unit_Body_Id
+          | N_Lib_Unit_Renaming_Declaration_Id);
+   begin
+      return Other_Comp_Unit (N);
+   end Spec_Or_Body_Lib_Unit;
+
+   function Subunit_Parent
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id
+   is
+      pragma Assert (Unit (N) in N_Subunit_Id);
+   begin
+      return Val : constant Opt_N_Compilation_Unit_Id := Other_Comp_Unit (N) do
+         pragma Assert
+           (if Present (Val) then
+             Unit (Val) in N_Lib_Unit_Body_Id | N_Subunit_Id);
+      end return;
+   end Subunit_Parent;
+
+   procedure Set_Subunit_Parent (N, Val : N_Compilation_Unit_Id) is
+      pragma Assert (Unit (N) in N_Subunit_Id);
+      pragma Assert (Unit (Val) in N_Lib_Unit_Body_Id | N_Subunit_Id);
+   begin
+      Set_Library_Unit (N, Val);
+   end Set_Subunit_Parent;
+
+   function Other_Comp_Unit
+     (N : N_Compilation_Unit_Id) return Opt_N_Compilation_Unit_Id
+   is
+      pragma Assert (N in N_Compilation_Unit_Id);
+      Val : constant Opt_N_Compilation_Unit_Id := Library_Unit (N);
+   begin
+      if Unit (N) in N_Subunit_Id then
+         pragma Assert
+           (if Present (Val) then
+             Unit (Val) in N_Lib_Unit_Body_Id | N_Subunit_Id);
+      end if;
+
+      return Library_Unit (N);
+   end Other_Comp_Unit;
+
+   function Stub_Subunit
+     (N : N_Body_Stub_Id) return Opt_N_Compilation_Unit_Id is
+   begin
+      return Val : constant Opt_N_Compilation_Unit_Id := Library_Unit (N) do
+         pragma Assert (if Present (Val) then Unit (Val) in N_Subunit_Id);
+      end return;
+   end Stub_Subunit;
+
+   procedure Set_Stub_Subunit
+     (N : N_Body_Stub_Id; Val : N_Compilation_Unit_Id)
+   is
+      pragma Assert (Unit (Val) in N_Subunit_Id);
+   begin
+      Set_Library_Unit (N, Val);
+   end Set_Stub_Subunit;
+
+   function Withed_Lib_Unit
+     (N : N_With_Clause_Id) return Opt_N_Compilation_Unit_Id is
+   begin
+      return Val : constant Opt_N_Compilation_Unit_Id := Library_Unit (N) do
+         pragma Assert
+           (if Present (Val) then
+             Unit (Val) in N_Lib_Unit_Declaration_Id
+             | N_Lib_Unit_Renaming_Declaration_Id
+             | N_Package_Body_Id | N_Subprogram_Body_Id
+             | N_Null_Statement_Id); -- for ignored ghost code
+      end return;
+   end Withed_Lib_Unit;
+
+   procedure Set_Withed_Lib_Unit
+     (N : N_With_Clause_Id; Val : N_Compilation_Unit_Id)
+   is
+      pragma Assert
+        (Unit (Val) in N_Lib_Unit_Declaration_Id
+         | N_Lib_Unit_Renaming_Declaration_Id
+         | N_Package_Body_Id | N_Subprogram_Body_Id);
+   begin
+      Set_Library_Unit (N, Val);
+   end Set_Withed_Lib_Unit;
+
    ---------------
    -- Debugging --
    ---------------

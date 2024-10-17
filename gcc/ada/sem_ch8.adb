@@ -9998,7 +9998,8 @@ package body Sem_Ch8 is
                or else (Nkind (The_Unit) = N_Subprogram_Body
                          and then not Acts_As_Spec (Cunit (Current_Sem_Unit))))
          then
-            With_Sys := Find_System (Library_Unit (Cunit (Current_Sem_Unit)));
+            With_Sys :=
+              Find_System (Spec_Or_Body_Lib_Unit (Cunit (Current_Sem_Unit)));
          end if;
 
          if No (With_Sys) and then Present (N) then
@@ -10055,7 +10056,7 @@ package body Sem_Ch8 is
             Set_Corresponding_Spec (Withn, System_Aux_Id);
             Set_First_Name         (Withn);
             Set_Is_Implicit_With   (Withn);
-            Set_Library_Unit       (Withn, Cunit (Unum));
+            Set_Withed_Lib_Unit    (Withn, Cunit (Unum));
 
             Insert_After (With_Sys, Withn);
             Mark_Rewrite_Insertion (Withn);

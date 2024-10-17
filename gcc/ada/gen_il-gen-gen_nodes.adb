@@ -835,16 +835,16 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sm (Corresponding_Spec, Node_Id),
         Sm (Was_Originally_Stub, Flag)));
 
-   Ab (N_Unit_Body, N_Proper_Body);
+   Ab (N_Lib_Unit_Body, N_Proper_Body);
 
-   Cc (N_Package_Body, N_Unit_Body,
+   Cc (N_Package_Body, N_Lib_Unit_Body,
        (Sy (Defining_Unit_Name, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
         Sy (At_End_Proc, Node_Id, Default_Empty),
         Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
-   Cc (N_Subprogram_Body, N_Unit_Body,
+   Cc (N_Subprogram_Body, N_Lib_Unit_Body,
        (Sy (Specification, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
@@ -1791,5 +1791,21 @@ begin -- Gen_IL.Gen.Gen_Nodes
             (N_Case_Statement_Alternative,
              N_Variant));
    --  Nodes that can be alternatives in case contructs
+
+   Union (N_Lib_Unit_Declaration,
+          Children =>
+            (N_Package_Declaration,
+             N_Subprogram_Declaration,
+             N_Generic_Declaration,
+             N_Generic_Instantiation));
+   --  Nodes corresponding to the library_unit_declaration syntactic category
+
+   Union (N_Lib_Unit_Renaming_Declaration,
+          Children =>
+            (N_Package_Renaming_Declaration,
+             N_Subprogram_Renaming_Declaration,
+             N_Generic_Renaming_Declaration));
+   --  Nodes corresponding to the library_unit_renaming_declaration syntactic
+   --  category.
 
 end Gen_IL.Gen.Gen_Nodes;

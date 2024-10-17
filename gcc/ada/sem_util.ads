@@ -3065,8 +3065,8 @@ package Sem_Util is
    --  capture actual value information, but we can capture conditional tests.
 
    function Same_Name (N1, N2 : Node_Id) return Boolean;
-   --  Determine if two (possibly expanded) names are the same name. This is
-   --  a purely syntactic test, and N1 and N2 need not be analyzed.
+   --  True if two identifiers or expanded names are the same name. This
+   --  is a purely syntactic test, and N1 and N2 need not be analyzed.
 
    function Same_Object (Node1, Node2 : Node_Id) return Boolean;
    --  Determine if Node1 and Node2 are known to designate the same object.

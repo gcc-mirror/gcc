@@ -734,6 +734,15 @@ package body Gen_IL.Gen is
                      Type_Table (T).First := Type_Table (Children (1)).First;
                      Type_Table (T).Last  :=
                        Type_Table (Children (Last_Index (Children))).Last;
+
+                     --  We know that each abstract type has at least two
+                     --  children. The concrete types must be ordered so
+                     --  that each abstract type is a contiguous subrange.
+
+                     if Type_Table (T).First >= Type_Table (T).Last then
+                        raise Illegal with
+                          Image (T) & " children out of order";
+                     end if;
                   end;
 
                when Between_Abstract_Entity_And_Concrete_Node_Types =>

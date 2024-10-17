@@ -948,7 +948,7 @@ package body Lib.Load is
    --------------------------
 
    procedure Make_Child_Decl_Unit (N : Node_Id) is
-      Unit_Decl : constant Node_Id          := Library_Unit (N);
+      Unit_Decl : constant Node_Id          := Spec_Lib_Unit (N);
       Unit_Num  : constant Unit_Number_Type := Get_Cunit_Unit_Number (N);
 
    begin
@@ -988,14 +988,14 @@ package body Lib.Load is
 
       if In_Main then
          Units.Table (Units.Last)        := Units.Table (Main_Unit);
-         Units.Table (Units.Last).Cunit  := Library_Unit (N);
+         Units.Table (Units.Last).Cunit  := Spec_Lib_Unit (N);
          Init_Unit_Name (Units.Last, Unit_Name (Main_Unit));
 
          Units.Table (Main_Unit).Cunit   := N;
          Units.Table (Main_Unit).Version := Source_Checksum (Sind);
          Init_Unit_Name (Main_Unit,
            Get_Body_Name
-             (Unit_Name (Get_Cunit_Unit_Number (Library_Unit (N)))));
+             (Unit_Name (Get_Cunit_Unit_Number (Spec_Lib_Unit (N)))));
 
       else
          --  Duplicate information from instance unit, for the body. The unit
@@ -1003,7 +1003,7 @@ package body Lib.Load is
          --  units table when first loaded as a declaration.
 
          Units.Table (Units.Last) := Units.Table (Get_Cunit_Unit_Number (N));
-         Units.Table (Units.Last).Cunit := Library_Unit (N);
+         Units.Table (Units.Last).Cunit := Spec_Lib_Unit (N);
       end if;
    end Make_Instance_Unit;
 

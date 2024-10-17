@@ -1530,7 +1530,7 @@ package body Sem is
          Curunit = Main_Unit
            or else
              (Nkind (Unit (Cunit (Main_Unit))) = N_Package_Body
-               and then Library_Unit (Cunit (Main_Unit)) = Cunit (Curunit));
+               and then Spec_Lib_Unit (Cunit (Main_Unit)) = Cunit (Curunit));
       --  Configuration flags have special settings when compiling a predefined
       --  file as a main unit. This applies to its spec as well.
 
@@ -1841,8 +1841,8 @@ package body Sem is
 
          while Present (CL) loop
             if Nkind (CL) = N_With_Clause
-              and then Library_Unit (CL) = Main_CU
-              and then not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
+              and then Withed_Lib_Unit (CL) = Main_CU
+              and then not Done (Get_Cunit_Unit_Number (Withed_Lib_Unit (CL)))
             then
                return True;
             end if;
@@ -2025,9 +2025,9 @@ package body Sem is
 
          if Nkind (Unit (Withed_Unit)) = N_Package_Body
            and then Is_Generic_Instance
-                      (Defining_Entity (Unit (Library_Unit (Withed_Unit))))
+                      (Defining_Entity (Unit (Spec_Lib_Unit (Withed_Unit))))
          then
-            Do_Withed_Unit (Library_Unit (Withed_Unit));
+            Do_Withed_Unit (Spec_Lib_Unit (Withed_Unit));
          end if;
       end Do_Withed_Unit;
 
@@ -2062,7 +2062,7 @@ package body Sem is
                else
                   Seen (Unit_Num) := True;
 
-                  if CU = Library_Unit (Main_CU) then
+                  if CU = Spec_Or_Body_Lib_Unit (Main_CU) then
                      Process_Bodies_In_Context (CU);
 
                      --  If main is a child unit, examine parent unit contexts
@@ -2122,8 +2122,8 @@ package body Sem is
          Clause := First (Context_Items (Comp));
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause then
-               Spec := Library_Unit (Clause);
-               Body_CU := Library_Unit (Spec);
+               Spec := Withed_Lib_Unit (Clause);
+               Body_CU := Body_Lib_Unit (Spec);
 
                --  If we are processing the spec of the main unit, load bodies
                --  only if the with_clause indicates that it forced the loading
@@ -2183,7 +2183,7 @@ package body Sem is
               and then Is_Generic_Instance (Defining_Entity (N))
             then
                Append_List
-                 (Context_Items (CU), Context_Items (Library_Unit (CU)));
+                 (Context_Items (CU), Context_Items (Spec_Lib_Unit (CU)));
             end if;
 
             Next_Elmt (Cur);
@@ -2233,11 +2233,11 @@ package body Sem is
                   if CU = Main_CU
                     and then Nkind (Original_Node (Unit (Main_CU))) in
                                                   N_Generic_Instantiation
-                    and then Present (Library_Unit (Main_CU))
+                    and then Present (Spec_Lib_Unit (Main_CU))
                   then
                      Do_Unit_And_Dependents
-                       (Library_Unit (Main_CU),
-                        Unit (Library_Unit (Main_CU)));
+                       (Spec_Lib_Unit (Main_CU),
+                        Unit (Spec_Lib_Unit (Main_CU)));
                   end if;
 
                --  It is a spec, process it, and the units it depends on,
@@ -2257,7 +2257,7 @@ package body Sem is
                   --  after all other specs.
 
                   if Nkind (Unit (CU)) = N_Package_Declaration
-                    and then Library_Unit (CU) = Main_CU
+                    and then Body_Lib_Unit (CU) = Main_CU
                     and then CU /= Main_CU
                   then
                      Spec_CU := CU;
@@ -2316,7 +2316,7 @@ package body Sem is
 
             begin
                if Present (U) and then Nkind (Unit (U)) = N_Subunit then
-                  Lib := Library_Unit (U);
+                  Lib := Subunit_Parent (U);
                   return Lib = Main_CU or else Is_Subunit_Of_Main (Lib);
                else
                   return False;
@@ -2346,7 +2346,7 @@ package body Sem is
                while Is_Child_Unit (Child) loop
                   Parent_CU :=
                     Cunit (Get_Cunit_Entity_Unit_Number (Scope (Child)));
-                  Body_CU := Library_Unit (Parent_CU);
+                  Body_CU := Body_Lib_Unit (Parent_CU);
 
                   if Present (Body_CU)
                     and then not Seen (Get_Cunit_Unit_Number (Body_CU))
@@ -2418,7 +2418,7 @@ package body Sem is
       --  and which have context clauses of their own, since these with'ed
       --  units are part of its own dependencies.
 
-      if Nkind (Unit (CU)) in N_Unit_Body then
+      if Nkind (Unit (CU)) in N_Lib_Unit_Body then
          for S in Main_Unit .. Last_Unit loop
 
             --  We are only interested in subunits. For preproc. data and def.
@@ -2431,7 +2431,7 @@ package body Sem is
                   Pnode : Node_Id;
 
                begin
-                  Pnode := Library_Unit (Cunit (S));
+                  Pnode := Subunit_Parent (Cunit (S));
 
                   --  In -gnatc mode, the errors in the subunits will not have
                   --  been recorded, but the analysis of the subunit may have
@@ -2444,7 +2444,7 @@ package body Sem is
                   --  Find ultimate parent of the subunit
 
                   while Nkind (Unit (Pnode)) = N_Subunit loop
-                     Pnode := Library_Unit (Pnode);
+                     Pnode := Subunit_Parent (Pnode);
                   end loop;
 
                   --  See if it belongs to current unit, and if so, include its
@@ -2476,7 +2476,7 @@ package body Sem is
            and then (Include_Limited
                      or else not Limited_Present (Context_Item))
          then
-            Lib_Unit := Library_Unit (Context_Item);
+            Lib_Unit := Withed_Lib_Unit (Context_Item);
             Action (Lib_Unit);
          end if;
 

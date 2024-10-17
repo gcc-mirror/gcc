@@ -5786,7 +5786,7 @@ package body Sem_Ch12 is
                end if;
 
                if Ekind (Curr_Unit) = E_Package_Body then
-                  Remove_Context (Library_Unit (Curr_Comp));
+                  Remove_Context (Spec_Lib_Unit (Curr_Comp));
                end if;
             end if;
 
@@ -6992,10 +6992,10 @@ package body Sem_Ch12 is
 
       Body_Cunit := Parent (N);
 
-      --  The two compilation unit nodes are linked by the Library_Unit field
+      --  Set spec/body links for the two compilation units
 
-      Set_Library_Unit (Decl_Cunit, Body_Cunit);
-      Set_Library_Unit (Body_Cunit, Decl_Cunit);
+      Set_Body_Lib_Unit (Decl_Cunit, Body_Cunit);
+      Set_Spec_Lib_Unit (Body_Cunit, Decl_Cunit);
 
       --  Preserve the private nature of the package if needed
 
@@ -9175,11 +9175,11 @@ package body Sem_Ch12 is
                --  stub in the original generic unit with the subunit, in order
                --  to preserve non-local references within.
 
-               --  Only the proper body needs to be copied. Library_Unit and
-               --  context clause are simply inherited by the generic copy.
-               --  Note that the copy (which may be recursive if there are
-               --  nested subunits) must be done first, before attaching it to
-               --  the enclosing generic.
+               --  Only the proper body needs to be copied. The context clause
+               --  and Spec_Or_Body_Lib_Unit are simply inherited by the
+               --  generic copy. Note that the copy (which may be recursive
+               --  if there are nested subunits) must be done first, before
+               --  attaching it to the enclosing generic.
 
                New_Body :=
                  Copy_Generic_Node
@@ -9198,7 +9198,7 @@ package body Sem_Ch12 is
                --  copy, which does not have stubs any longer.
 
                Set_Proper_Body (Unit (Subunit), New_Body);
-               Set_Library_Unit (New_N, Subunit);
+               Set_Stub_Subunit (New_N, Subunit);
                Inherit_Context (Unit (Subunit), N);
             end;
 
@@ -9213,17 +9213,17 @@ package body Sem_Ch12 is
 
          <<Subunit_Not_Found>> null;
 
-      --  If the node is a compilation unit, it is the subunit of a stub, which
-      --  has been loaded already (see code below). In this case, the library
-      --  unit field of N points to the parent unit (which is a compilation
-      --  unit) and need not (and cannot) be copied.
+      --  If the node is a compilation unit, it is the subunit of a stub that
+      --  has already been loaded. The parent unit is a compilation unit and
+      --  need not (and cannot) be copied.
 
-      --  When the proper body of the stub is analyzed, the library_unit link
-      --  is used to establish the proper context (see sem_ch10).
+      --  When the proper body of the stub is analyzed, the Subunit_Parent
+      --  field is used to establish the proper context (see Sem_Ch10).
 
       --  The other fields of a compilation unit are copied as usual
 
       elsif Nkind (N) = N_Compilation_Unit then
+         pragma Assert (Unit (N) in N_Subunit_Id);
 
          --  This code can only be executed when not instantiating, because in
          --  the copy made for an instantiation, the compilation unit node has
@@ -10155,7 +10155,7 @@ package body Sem_Ch12 is
          if Nkind (B) = N_Package_Body then
             Id := Corresponding_Spec (B);
          else pragma Assert (Nkind (B) = N_Package_Body_Stub);
-            Id := Corresponding_Spec (Proper_Body (Unit (Library_Unit (B))));
+            Id := Corresponding_Spec (Proper_Body (Unit (Stub_Subunit (B))));
          end if;
 
          Ensure_Freeze_Node (Id);
@@ -10265,7 +10265,7 @@ package body Sem_Ch12 is
 
          begin
             if Nkind (Enc_N) = N_Package_Body_Stub then
-               Enclosing_Body := Proper_Body (Unit (Library_Unit (Enc_N)));
+               Enclosing_Body := Proper_Body (Unit (Stub_Subunit (Enc_N)));
             else
                Enclosing_Body := Enc_N;
             end if;
@@ -10648,7 +10648,7 @@ package body Sem_Ch12 is
          Item := First (Context_Items (Parent (Gen_Decl)));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause then
-               Lib_Unit := Library_Unit (Item);
+               Lib_Unit := Withed_Lib_Unit (Item);
 
                --  Take care to prevent direct cyclic with's
 
@@ -10660,7 +10660,7 @@ package body Sem_Ch12 is
                   OK := True;
                   while Present (Clause) loop
                      if Nkind (Clause) = N_With_Clause
-                       and then Library_Unit (Clause) = Lib_Unit
+                       and then Withed_Lib_Unit (Clause) = Lib_Unit
                      then
                         OK := False;
                         exit;
@@ -10892,7 +10892,7 @@ package body Sem_Ch12 is
                 not In_Same_Source_Unit (Generic_Parent (Par_Inst), Inst)
             then
                while Present (Decl) loop
-                  if ((Nkind (Decl) in N_Unit_Body
+                  if ((Nkind (Decl) in N_Lib_Unit_Body
                         or else
                        Nkind (Decl) in N_Body_Stub)
                       and then Comes_From_Source (Decl))
@@ -15360,10 +15360,10 @@ package body Sem_Ch12 is
 
       return
         Current_Unit = Cunit (Main_Unit)
-          or else Current_Unit = Library_Unit (Cunit (Main_Unit))
+          or else Current_Unit = Other_Comp_Unit (Cunit (Main_Unit))
           or else (Present (Current_Unit)
-                    and then Present (Library_Unit (Current_Unit))
-                    and then Is_In_Main_Unit (Library_Unit (Current_Unit)));
+                    and then Present (Other_Comp_Unit (Current_Unit))
+                    and then Is_In_Main_Unit (Other_Comp_Unit (Current_Unit)));
    end Is_In_Main_Unit;
 
    ----------------------------

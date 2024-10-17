@@ -339,7 +339,7 @@ package body Lib.Writ is
             --  the unit anywhere else.
 
             if Nkind (Item) = N_With_Clause then
-               Unum := Get_Cunit_Unit_Number (Library_Unit (Item));
+               Unum := Get_Cunit_Unit_Number (Withed_Lib_Unit (Item));
                With_Flags (Unum) := True;
 
                if not Limited_Present (Item) then
@@ -594,9 +594,10 @@ package body Lib.Writ is
 
          if Ukind in N_Generic_Declaration
            or else
-             (Present (Library_Unit (Unode))
-                and then
-                  Nkind (Unit (Library_Unit (Unode))) in N_Generic_Declaration)
+             (Ukind in N_Lib_Unit_Body
+                and then Present (Spec_Lib_Unit (Unode))
+                and then Nkind (Unit (Spec_Lib_Unit (Unode)))
+                  in N_Generic_Declaration)
          then
             Write_Info_Str (" GE");
          end if;
@@ -638,7 +639,7 @@ package body Lib.Writ is
          --  it and which have context clauses of their own, since these
          --  with'ed units are part of its own elaboration dependencies.
 
-         if Nkind (Unit (Unode)) in N_Unit_Body then
+         if Nkind (Unit (Unode)) in N_Lib_Unit_Body then
             for S in Units.First .. Last_Unit loop
 
                --  We are only interested in subunits. For preproc. data and
@@ -647,7 +648,7 @@ package body Lib.Writ is
                if Cunit (S) /= Empty
                  and then Nkind (Unit (Cunit (S))) = N_Subunit
                then
-                  Pnode := Library_Unit (Cunit (S));
+                  Pnode := Subunit_Parent (Cunit (S));
 
                   --  In gnatc mode, the errors in the subunits will not have
                   --  been recorded, but the analysis of the subunit may have
@@ -661,7 +662,7 @@ package body Lib.Writ is
                   --  Find ultimate parent of the subunit
 
                   while Nkind (Unit (Pnode)) = N_Subunit loop
-                     Pnode := Library_Unit (Pnode);
+                     Pnode := Subunit_Parent (Pnode);
                   end loop;
 
                   --  See if it belongs to current unit, and if so, include
@@ -1169,7 +1170,7 @@ package body Lib.Writ is
             if Nkind (U) = N_Package_Body then
                U := Parent (Parent (
                    Alias (Related_Instance (Defining_Unit_Name
-                     (Specification (Unit (Library_Unit (Parent (U)))))))));
+                     (Specification (Unit (Spec_Lib_Unit (Parent (U)))))))));
             end if;
 
             S := Specification (U);

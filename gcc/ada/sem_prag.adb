@@ -5651,8 +5651,7 @@ package body Sem_Prag is
                   then
                      Set_Has_Pragma_Unreferenced
                        (Cunit_Entity
-                         (Get_Source_Unit
-                           (Library_Unit (Citem))));
+                         (Get_Source_Unit (Withed_Lib_Unit (Citem))));
                      Set_Elab_Unit_Name (Arg_Expr, Name (Citem));
                      exit;
                   end if;
@@ -8308,21 +8307,21 @@ package body Sem_Prag is
             Decl : Node_Id;
             Err  : Boolean;
 
-            function Same_Convention (Decl : Node_Id) return Boolean;
+            function Matching_Convention (Decl : Node_Id) return Boolean;
             --  Decl is a pragma node. This function returns True if this
             --  pragma has a first argument that is an identifier with a
             --  Chars field corresponding to the Convention_Id C.
 
-            function Same_Name (Decl : Node_Id) return Boolean;
+            function Matching_Name (Decl : Node_Id) return Boolean;
             --  Decl is a pragma node. This function returns True if this
             --  pragma has a second argument that is an identifier with a
             --  Chars field that matches the Chars of the current subprogram.
 
-            ---------------------
-            -- Same_Convention --
-            ---------------------
+            -------------------------
+            -- Matching_Convention --
+            -------------------------
 
-            function Same_Convention (Decl : Node_Id) return Boolean is
+            function Matching_Convention (Decl : Node_Id) return Boolean is
                Arg1 : constant Node_Id :=
                         First (Pragma_Argument_Associations (Decl));
 
@@ -8341,13 +8340,13 @@ package body Sem_Prag is
                end if;
 
                return False;
-            end Same_Convention;
+            end Matching_Convention;
 
-            ---------------
-            -- Same_Name --
-            ---------------
+            -------------------
+            -- Matching_Name --
+            -------------------
 
-            function Same_Name (Decl : Node_Id) return Boolean is
+            function Matching_Name (Decl : Node_Id) return Boolean is
                Arg1 : constant Node_Id :=
                         First (Pragma_Argument_Associations (Decl));
                Arg2 : Node_Id;
@@ -8374,7 +8373,7 @@ package body Sem_Prag is
                end;
 
                return False;
-            end Same_Name;
+            end Matching_Name;
 
          --  Start of processing for Diagnose_Multiple_Pragmas
 
@@ -8400,7 +8399,7 @@ package body Sem_Prag is
                   --  Look for pragma with same name as us
 
                   if Nkind (Decl) = N_Pragma
-                    and then Same_Name (Decl)
+                    and then Matching_Name (Decl)
                   then
                      --  Give error if same as our pragma or Export/Convention
 
@@ -8421,7 +8420,7 @@ package body Sem_Prag is
                         --  they specify the same convention. If so, all OK,
                         --  and set special flags to stop other messages
 
-                        if Same_Convention (Decl) then
+                        if Matching_Convention (Decl) then
                            Set_Import_Interface_Present (N);
                            Set_Import_Interface_Present (Decl);
                            Err := False;

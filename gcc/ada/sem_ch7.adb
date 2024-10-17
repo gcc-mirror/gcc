@@ -1406,7 +1406,7 @@ package body Sem_Ch7 is
 
       begin
          if Id = Cunit_Entity (Main_Unit)
-           or else Parent (Decl) = Library_Unit (Cunit (Main_Unit))
+           or else Parent (Decl) = Other_Comp_Unit (Cunit (Main_Unit))
          then
             Generate_Reference (Id, Scope (Id), 'k', False);
 
@@ -1422,7 +1422,7 @@ package body Sem_Ch7 is
 
             begin
                if Nkind (Main_Spec) = N_Package_Body then
-                  Main_Spec := Unit (Library_Unit (Cunit (Main_Unit)));
+                  Main_Spec := Unit (Other_Comp_Unit (Cunit (Main_Unit)));
                end if;
 
                U := Parent_Spec (Main_Spec);
