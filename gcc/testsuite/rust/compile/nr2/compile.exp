@@ -44,23 +44,23 @@ namespace eval rust-nr2-ns {
     # Run tests in directories
     # Manually specifying these, in case some other test file
     # does something weird
-    set test_dirs {. compile macros/builtin macros/mbe macros/proc}
+    set test_dirs {{} {macros builtin} {macros mbe} {macros proc}}
 
     set tests_expect_ok ""
     set tests_expect_err ""
 
     foreach test_dir $test_dirs {
-        foreach test [lsort [glob -nocomplain -tails -directory $srcdir/$subdir/../$test_dir *.rs]] {
-	    if {$test_dir == "."} {
-		set test_lbl $test
-	    } else {
-		set test_lbl "$test_dir/$test"
-            }
+        set directory [list {*}[file split $srcdir] {*}[file split $subdir]]
+	set directory [lreplace $directory end end]
+	set directory [list {*}$directory {*}$test_dir]
+        foreach test [lsort [glob -nocomplain -tails -directory [file join {*}$directory] *.rs]] {
+	    # use '/' as the path seperator for entries in the exclude file
+	    set test_lbl [join [list {*}$test_dir $test] "/"]
 	    set idx [lsearch -exact -sorted $exclude $test_lbl]
 	    if {$idx == -1} {
-		lappend tests_expect_ok $srcdir/$subdir/../$test_dir/$test
+		lappend tests_expect_ok [file join {*}$directory $test]
 	    } else {
-		lappend tests_expect_err $srcdir/$subdir/../$test_dir/$test
+		lappend tests_expect_err [file join {*}$directory $test]
 		set exclude [lreplace $exclude $idx $idx]
 	    }
 	}
