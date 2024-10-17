@@ -23,7 +23,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include "../../include/std/contracts"
+#include <contracts>
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 # include <iostream>
 #endif
