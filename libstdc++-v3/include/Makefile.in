@@ -424,6 +424,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/codecvt \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/complex \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/condition_variable \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/contracts \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/deque \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/execution \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/filesystem \
