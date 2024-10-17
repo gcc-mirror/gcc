@@ -1046,24 +1046,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using iterator_concept = std::__detail::__iter_concept<_Iterator>;
 #endif
 
-      _GLIBCXX_CONSTEXPR __normal_iterator() _GLIBCXX_NOEXCEPT
-      : _M_current(_Iterator()) { }
+      __attribute__((__always_inline__))
+      _GLIBCXX_CONSTEXPR
+      __normal_iterator() _GLIBCXX_NOEXCEPT
+      : _M_current() { }
 
-      explicit _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__))
+      explicit _GLIBCXX_CONSTEXPR
       __normal_iterator(const _Iterator& __i) _GLIBCXX_NOEXCEPT
       : _M_current(__i) { }
 
       // Allow iterator to const_iterator conversion
 #if __cplusplus >= 201103L
       template<typename _Iter, typename = __convertible_from<_Iter>>
-	_GLIBCXX20_CONSTEXPR
+	[[__gnu__::__always_inline__]]
+	constexpr
 	__normal_iterator(const __normal_iterator<_Iter, _Container>& __i)
 	noexcept
 #else
       // N.B. _Container::pointer is not actually in container requirements,
       // but is present in std::vector and std::basic_string.
       template<typename _Iter>
-        __normal_iterator(const __normal_iterator<_Iter,
+	__attribute__((__always_inline__))
+	__normal_iterator(const __normal_iterator<_Iter,
 			  typename __enable_if<
 	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
 		      _Container>::__type>& __i)
@@ -1071,17 +1076,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         : _M_current(__i.base()) { }
 
       // Forward iterator requirements
-      _GLIBCXX20_CONSTEXPR
+
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_CONSTEXPR
       reference
       operator*() const _GLIBCXX_NOEXCEPT
       { return *_M_current; }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_CONSTEXPR
       pointer
       operator->() const _GLIBCXX_NOEXCEPT
       { return _M_current; }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
       __normal_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
@@ -1089,13 +1098,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
       __normal_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       { return __normal_iterator(_M_current++); }
 
       // Bidirectional iterator requirements
-      _GLIBCXX20_CONSTEXPR
+
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
       __normal_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
@@ -1103,38 +1115,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
       __normal_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       { return __normal_iterator(_M_current--); }
 
       // Random access iterator requirements
-      _GLIBCXX20_CONSTEXPR
+
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_CONSTEXPR
       reference
       operator[](difference_type __n) const _GLIBCXX_NOEXCEPT
       { return _M_current[__n]; }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
       __normal_iterator&
       operator+=(difference_type __n) _GLIBCXX_NOEXCEPT
       { _M_current += __n; return *this; }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_CONSTEXPR
       __normal_iterator
       operator+(difference_type __n) const _GLIBCXX_NOEXCEPT
       { return __normal_iterator(_M_current + __n); }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
       __normal_iterator&
       operator-=(difference_type __n) _GLIBCXX_NOEXCEPT
       { _M_current -= __n; return *this; }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_CONSTEXPR
       __normal_iterator
       operator-(difference_type __n) const _GLIBCXX_NOEXCEPT
       { return __normal_iterator(_M_current - __n); }
 
-      _GLIBCXX20_CONSTEXPR
+      __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
+      _GLIBCXX_CONSTEXPR
       const _Iterator&
       base() const _GLIBCXX_NOEXCEPT
       { return _M_current; }
@@ -1150,7 +1170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_lib_three_way_comparison
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr bool
     operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1161,7 +1181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr std::__detail::__synth3way_t<_IteratorR, _IteratorL>
     operator<=>(const __normal_iterator<_IteratorL, _Container>& __lhs,
 		const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1169,7 +1189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
 
   template<typename _Iterator, typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr bool
     operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1180,7 +1200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    [[nodiscard]]
+    [[nodiscard, __gnu__::__always_inline__]]
     constexpr std::__detail::__synth3way_t<_Iterator>
     operator<=>(const __normal_iterator<_Iterator, _Container>& __lhs,
 		const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1189,7 +1209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
    // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1197,7 +1217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1205,7 +1225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() == __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1213,7 +1233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() != __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator!=(const __normal_iterator<_Iterator, _Container>& __lhs,
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1222,7 +1242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Random access iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX_NODISCARD
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1230,7 +1250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() < __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     operator<(const __normal_iterator<_Iterator, _Container>& __lhs,
 	      const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1238,7 +1258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() < __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX_NODISCARD
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1246,7 +1266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() > __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator>(const __normal_iterator<_Iterator, _Container>& __lhs,
 	      const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1254,7 +1274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() > __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX_NODISCARD
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1262,7 +1282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() <= __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator<=(const __normal_iterator<_Iterator, _Container>& __lhs,
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1270,7 +1290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() <= __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-    _GLIBCXX_NODISCARD
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -1278,7 +1298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() >= __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline bool
     operator>=(const __normal_iterator<_Iterator, _Container>& __lhs,
 	       const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1293,8 +1313,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _IteratorL, typename _IteratorR, typename _Container>
 #if __cplusplus >= 201103L
     // DR 685.
-    [[__nodiscard__]] _GLIBCXX20_CONSTEXPR
-    inline auto
+    [[__nodiscard__, __gnu__::__always_inline__]]
+    constexpr auto
     operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs) noexcept
     -> decltype(__lhs.base() - __rhs.base())
@@ -1306,7 +1326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline typename __normal_iterator<_Iterator, _Container>::difference_type
     operator-(const __normal_iterator<_Iterator, _Container>& __lhs,
 	      const __normal_iterator<_Iterator, _Container>& __rhs)
@@ -1314,7 +1334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
     inline __normal_iterator<_Iterator, _Container>
     operator+(typename __normal_iterator<_Iterator, _Container>::difference_type
 	      __n, const __normal_iterator<_Iterator, _Container>& __i)
@@ -1332,6 +1352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Need to overload __to_address because the pointer_traits primary template
   // will deduce element_type of __normal_iterator<T*, C> as T* rather than T.
   template<typename _Iterator, typename _Container>
+    [[__gnu__::__always_inline__]] _GLIBCXX_NODISCARD
     constexpr auto
     __to_address(const __gnu_cxx::__normal_iterator<_Iterator,
 						    _Container>& __it) noexcept
@@ -1786,7 +1807,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     = __conditional_t<__move_if_noexcept_cond
       <typename iterator_traits<_Iterator>::value_type>::value,
 		_Iterator, move_iterator<_Iterator>>>
-    inline _GLIBCXX17_CONSTEXPR _ReturnType
+    [[__nodiscard__]]
+    constexpr _ReturnType
     __make_move_if_noexcept_iterator(_Iterator __i)
     { return _ReturnType(__i); }
 
@@ -1795,7 +1817,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _ReturnType
     = __conditional_t<__move_if_noexcept_cond<_Tp>::value,
 		      const _Tp*, move_iterator<_Tp*>>>
-    inline _GLIBCXX17_CONSTEXPR _ReturnType
+    [[__nodiscard__]]
+    constexpr _ReturnType
     __make_move_if_noexcept_iterator(_Tp* __i)
     { return _ReturnType(__i); }
 
@@ -1805,7 +1828,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       enum { __value = 1 };
       typedef __true_type __type;
     };
-
 
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
@@ -2968,14 +2990,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Unwrap a __normal_iterator to get the underlying iterator
   // (usually a pointer). See uses in std::copy, std::fill, etc.
   template<typename _Iterator, typename _Container>
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
     _GLIBCXX20_CONSTEXPR
-    _Iterator
+    inline _Iterator
     __niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
     _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
     { return __it.base(); }
 
   // Fallback implementation used for iterators that can't be unwrapped.
   template<typename _Iterator>
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
     _GLIBCXX20_CONSTEXPR
     inline _Iterator
     __niter_base(_Iterator __it)
@@ -3007,28 +3031,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
-    auto
+    inline auto
     __niter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__niter_base(__it.base())))
     { return __make_reverse_iterator(__niter_base(__it.base())); }
 
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
-    auto
+    inline auto
     __niter_base(move_iterator<_Iterator> __it)
     -> decltype(make_move_iterator(__niter_base(__it.base())))
     { return make_move_iterator(__niter_base(__it.base())); }
 
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
-    auto
+    inline auto
     __miter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
     { return __make_reverse_iterator(__miter_base(__it.base())); }
 
   template<typename _Iterator>
     _GLIBCXX20_CONSTEXPR
-    auto
+    inline auto
     __miter_base(move_iterator<_Iterator> __it)
     -> decltype(__miter_base(__it.base()))
     { return __miter_base(__it.base()); }
@@ -3039,6 +3063,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // random access iterators, like pointers).
   // All overloads of std::__niter_base must be declared before this.
   template<typename _From, typename _To>
+    _GLIBCXX_NODISCARD
     _GLIBCXX20_CONSTEXPR
     inline _From
     __niter_wrap(_From __from, _To __res)
@@ -3046,6 +3071,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // No need to wrap, iterator already has the right type.
   template<typename _Iterator>
+    __attribute__((__always_inline__)) _GLIBCXX_NODISCARD
     _GLIBCXX20_CONSTEXPR
     inline _Iterator
     __niter_wrap(const _Iterator&, _Iterator __res)
