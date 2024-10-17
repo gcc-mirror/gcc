@@ -101,6 +101,12 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
 	[glob -nocomplain $srcdir/$subdir/slp-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
     et-dg-runtest dg-runtest [lsort \
+	[glob -nocomplain $srcdir/$subdir/no-fast-math-*.\[cS\]]] \
+	$flags $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest [lsort \
+	[glob -nocomplain $srcdir/$subdir/no-math-errno-*.\[cS\]]] \
+	$flags $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/bb-slp*.\[cS\]]] \
 	$flags $VECT_SLP_CFLAGS
 }
@@ -130,20 +136,6 @@ lappend VECT_SLP_CFLAGS "-ffast-math"
 et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/fast-math-bb-slp-*.\[cS\]]] \
 	"" $VECT_SLP_CFLAGS
-
-# -fno-fast-math tests
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-fno-fast-math"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/no-fast-math-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
-
-# -fno-math-errno tests
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-fno-math-errno"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/no-math-errno-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
 
 # -fwrapv tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
