@@ -941,6 +941,10 @@ interpret_integer (const cpp_token *token, unsigned int flags,
 	{
 	  max_bits_per_digit = 3;
 	  prefix_len = 1;
+	  if (token->val.str.len > 2
+	      && (token->val.str.text[1] == 'o'
+		  || token->val.str.text[1] == 'O'))
+	    prefix_len = 2;
 	}
       else if ((flags & CPP_N_RADIX) == CPP_N_HEX)
 	{

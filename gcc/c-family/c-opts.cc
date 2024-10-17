@@ -1892,7 +1892,7 @@ set_std_c23 (int iso)
 static void
 set_std_c2y (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_STDC23: CLK_GNUC23);
+  cpp_set_lang (parse_in, iso ? CLK_STDC2Y : CLK_GNUC2Y);
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;

@@ -556,6 +556,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   enum {NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON} float_flag;
   bool seen_digit;
   bool seen_digit_sep;
+  bool zero_o_prefix;
 
   if (ud_suffix)
     *ud_suffix = NULL;
@@ -571,6 +572,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   radix = 10;
   seen_digit = false;
   seen_digit_sep = false;
+  zero_o_prefix = false;
 
   /* First, interpret the radix.  */
   if (*str == '0')
@@ -595,6 +597,17 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	  if (str[1] == '0' || str[1] == '1')
 	    {
 	      radix = 2;
+	      str++;
+	    }
+	  else if (DIGIT_SEP (str[1]))
+	    SYNTAX_ERROR_AT (virtual_location,
+			     "digit separator after base indicator");
+	}
+      else if ((*str == 'o' || *str == 'O') && !CPP_OPTION (pfile, cplusplus))
+	{
+	  if (ISDIGIT (str[1]))
+	    {
+	      zero_o_prefix = true;
 	      str++;
 	    }
 	  else if (DIGIT_SEP (str[1]))
@@ -692,6 +705,12 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	{
 	  cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
 			       "invalid prefix %<0b%> for floating constant");
+	  return CPP_N_INVALID;
+	}
+      if (zero_o_prefix)
+	{
+	  cpp_error_with_line (pfile, CPP_DL_ERROR, virtual_location, 0,
+			       "invalid prefix %<0o%> for floating constant");
 	  return CPP_N_INVALID;
 	}
 
@@ -897,8 +916,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
   if (radix == 2)
     {
       bool warned = false;
-      if (!CPP_OPTION (pfile, binary_constants)
-	  && CPP_PEDANTIC (pfile))
+      if (!CPP_OPTION (pfile, binary_constants) && CPP_PEDANTIC (pfile))
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
 	    warned
@@ -915,6 +933,19 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	cpp_warning_with_line (pfile, CPP_W_C11_C23_COMPAT,
 			       virtual_location, 0,
 			       "binary constants are a C23 feature");
+    }
+  if (zero_o_prefix)
+    {
+      bool warned = false;
+      if (!CPP_OPTION (pfile, octal_constants) && CPP_PEDANTIC (pfile))
+	warned
+	  = cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location,
+				      0, "%<0o%> prefixed constants are a C2Y "
+					 "feature or GCC extension");
+      if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
+	cpp_warning_with_line (pfile, CPP_W_C23_C2Y_COMPAT,
+			       virtual_location, 0,
+			       "%<0o%> prefixed constants are a C2Y feature");
     }
 
   if (radix == 10)
@@ -967,6 +998,8 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 	{
 	  base = 8;
 	  p++;
+	  if (*p == 'o' || *p == 'O')
+	    p++;
 	}
       else if ((type & CPP_N_RADIX) == CPP_N_HEX)
 	{

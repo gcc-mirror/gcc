@@ -1579,7 +1579,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
     {
       length = 4;
       if (identifier_pos
-	  && !CPP_OPTION (pfile, delimited_escape_seqs)
+	  && !CPP_OPTION (pfile, named_uc_escape_seqs)
 	  && CPP_OPTION (pfile, std))
 	{
 	  *cp = 0;
@@ -1631,7 +1631,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		cpp_error (pfile, CPP_DL_ERROR,
 			   "empty named universal character escape sequence");
 	      else if ((!identifier_pos || strict)
-		       && !CPP_OPTION (pfile, delimited_escape_seqs)
+		       && !CPP_OPTION (pfile, named_uc_escape_seqs)
 		       && CPP_OPTION (pfile, cpp_pedantic))
 		cpp_pedwarning (pfile,
 				CPP_OPTION (pfile, cplusplus)
@@ -1653,7 +1653,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		    {
 		      bool ret = true;
 		      if (identifier_pos
-			  && (!CPP_OPTION (pfile, delimited_escape_seqs)
+			  && (!CPP_OPTION (pfile, named_uc_escape_seqs)
 			      || !strict))
 			ret = cpp_warning (pfile, CPP_W_UNICODE,
 					   "%<\\N{%.*s}%> is not a valid "
@@ -1676,7 +1676,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 		      else
 			result = 0xC0;
 		      if (identifier_pos
-			  && (!CPP_OPTION (pfile, delimited_escape_seqs)
+			  && (!CPP_OPTION (pfile, named_uc_escape_seqs)
 			      || !strict))
 			{
 			  *cp = 0;
@@ -1746,6 +1746,7 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 
   if (delimited && str < limit && *str == '}')
     {
+      bool warned = false;
       if (length == 32 && identifier_pos)
 	{
 	  cpp_warning (pfile, CPP_W_UNICODE,
@@ -1755,13 +1756,28 @@ _cpp_valid_ucn (cpp_reader *pfile, const uchar **pstr,
 	  return false;
 	}
       else if (length == 32)
-	cpp_error (pfile, CPP_DL_ERROR,
-		   "empty delimited escape sequence");
+	{
+	  cpp_error (pfile, CPP_DL_ERROR, "empty delimited escape sequence");
+	  warned = true;
+	}
       else if (!CPP_OPTION (pfile, delimited_escape_seqs)
 	       && CPP_OPTION (pfile, cpp_pedantic))
-	cpp_pedwarning (pfile, (CPP_OPTION (pfile, cplusplus)
-				? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC),
-			"delimited escape sequences are only valid in C++23");
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    warned
+	      = cpp_pedwarning (pfile, CPP_W_CXX23_EXTENSIONS,
+				"delimited escape sequences are only valid "
+				"in C++23");
+	  else
+	    warned
+	      = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				"delimited escape sequences are only valid "
+				"in C2Y");
+	}
+      if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
+	cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+		     "delimited escape sequences are only valid in C2Y");
+
       str++;
       length = 0;
       delimited = false;
@@ -2125,6 +2141,7 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
 
   if (delimited && from < limit && *from == '}')
     {
+      bool warned = false;
       from++;
       if (!digits_found)
 	{
@@ -2134,9 +2151,21 @@ convert_hex (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	}
       else if (!CPP_OPTION (pfile, delimited_escape_seqs)
 	       && CPP_OPTION (pfile, cpp_pedantic))
-	cpp_pedwarning (pfile, (CPP_OPTION (pfile, cplusplus)
-				? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC),
-			"delimited escape sequences are only valid in C++23");
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    warned
+	      = cpp_pedwarning (pfile, CPP_W_CXX23_EXTENSIONS,
+				"delimited escape sequences are only valid "
+				"in C++23");
+	  else
+	    warned
+	      = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				"delimited escape sequences are only valid "
+				"in C2Y");
+	}
+      if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
+	cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+		     "delimited escape sequences are only valid in C2Y");
       delimited = false;
       extend_char_range (&char_range, loc_reader);
     }
@@ -2229,6 +2258,7 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
     {
       if (from < limit && *from == '}')
 	{
+	  bool warned = false;
 	  from++;
 	  if (count == 1)
 	    {
@@ -2238,10 +2268,21 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
 	    }
 	  else if (!CPP_OPTION (pfile, delimited_escape_seqs)
 		   && CPP_OPTION (pfile, cpp_pedantic))
-	    cpp_pedwarning (pfile, (CPP_OPTION (pfile, cplusplus)
-				    ? CPP_W_CXX23_EXTENSIONS : CPP_W_PEDANTIC),
-			    "delimited escape sequences are only valid "
-			    "in C++23");
+	    {
+	      if (CPP_OPTION (pfile, cplusplus))
+		warned
+		  = cpp_pedwarning (pfile, CPP_W_CXX23_EXTENSIONS,
+				    "delimited escape sequences are only "
+				    "valid in C++23");
+	      else
+		warned
+		  = cpp_pedwarning (pfile, CPP_W_PEDANTIC,
+				    "delimited escape sequences are only "
+				    "valid in C2Y");
+	    }
+	  if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
+	    cpp_warning (pfile, CPP_W_C11_C23_COMPAT,
+			 "delimited escape sequences are only valid in C2Y");
 	  extend_char_range (&char_range, loc_reader);
 	}
       else

@@ -452,7 +452,7 @@ C ObjC Alias(Wc11-c23-compat)
 Deprecated in favor of -Wc11-c23-compat.
 
 Wc23-c2y-compat
-C ObjC Var(warn_c23_c2y_compat) Init(-1) Warning
+C ObjC CPP(cpp_warn_c23_c2y_compat) CppReason(CPP_W_C23_C2Y_COMPAT) Var(warn_c23_c2y_compat) Init(-1) Warning
 Warn about features not present in ISO C23, but present in ISO C2Y.
 
 Wc90-c99-compat
