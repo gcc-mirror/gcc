@@ -14290,9 +14290,12 @@ vect_maybe_update_slp_op_vectype (slp_tree op, tree vectype)
   if (SLP_TREE_VECTYPE (op))
     return types_compatible_p (SLP_TREE_VECTYPE (op), vectype);
   /* For external defs refuse to produce VECTOR_BOOLEAN_TYPE_P, those
-     should be handled by patters.  Allow vect_constant_def for now.  */
+     should be handled by patters.  Allow vect_constant_def for now
+     as well as the trivial single-lane uniform vect_external_def case
+     both of which we code-generate reasonably.  */
   if (VECTOR_BOOLEAN_TYPE_P (vectype)
-      && SLP_TREE_DEF_TYPE (op) == vect_external_def)
+      && SLP_TREE_DEF_TYPE (op) == vect_external_def
+      && SLP_TREE_LANES (op) > 1)
     return false;
   SLP_TREE_VECTYPE (op) = vectype;
   return true;
