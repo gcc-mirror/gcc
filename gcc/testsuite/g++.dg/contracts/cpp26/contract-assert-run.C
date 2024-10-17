@@ -10,7 +10,7 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-continuation-mode=on" }
 #include <iostream>
-#include "../../../../../libstdc++-v3/include/std/contracts"
+#include <contracts>
 
 #define VERIFY_ASSERT(statement, asserts)  \
 	{ \
