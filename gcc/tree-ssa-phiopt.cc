@@ -838,33 +838,13 @@ move_stmt (gimple *stmt, gimple_stmt_iterator *gsi, auto_bitmap &inserted_exprs)
   // Mark the name to be renamed if there is one.
   bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
   gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt);
-  gsi_move_before (&gsi1, gsi);
+  gsi_move_before (&gsi1, gsi, GSI_NEW_STMT);
   reset_flow_sensitive_info (name);
 
   /* Rewrite some code which might be undefined when
      unconditionalized. */
-  if (gimple_assign_single_p (stmt))
-    {
-      tree rhs = gimple_assign_rhs1 (stmt);
-      /* VCE from integral types to another integral types but with
-	 different precisions need to be changed into casts
-	 to be well defined when unconditional. */
-      if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
-	  && INTEGRAL_TYPE_P (TREE_TYPE (name))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (rhs, 0))))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "rewriting stmt with maybe undefined VCE ");
-	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-	    }
-	  tree new_rhs = TREE_OPERAND (rhs, 0);
-	  gcc_assert (is_gimple_val (new_rhs));
-	  gimple_assign_set_rhs_code (stmt, NOP_EXPR);
-	  gimple_assign_set_rhs1 (stmt, new_rhs);
-	  update_stmt (stmt);
-	}
-    }
+  if (gimple_needing_rewrite_undefined (stmt))
+    rewrite_to_defined_unconditional (gsi);
 }
 
 /* RAII style class to temporarily remove flow sensitive
