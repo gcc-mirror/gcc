@@ -29268,7 +29268,6 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
 * Function Multiversioning::   Declaring multiple function versions.
 * Type Traits::         Compiler support for type traits.
-* C++ Concepts::        Improved support for generic programming.
 * Deprecated Features:: Things will disappear from G++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
@@ -30144,49 +30143,6 @@ definition, expands to a template argument pack containing integers
 from @code{0} to @code{@var{length}-1}.  This is provided for
 efficient implementation of @code{std::make_integer_sequence}.
 @enddefbuiltin
-
-
-@node C++ Concepts
-@section C++ Concepts
-
-C++ concepts provide much-improved support for generic programming. In
-particular, they allow the specification of constraints on template arguments.
-The constraints are used to extend the usual overloading and partial
-specialization capabilities of the language, allowing generic data structures
-and algorithms to be ``refined'' based on their properties rather than their
-type names.
-
-The following keywords are reserved for concepts.
-
-@table @code
-@kindex assumes
-@item assumes
-States an expression as an assumption, and if possible, verifies that the
-assumption is valid. For example, @code{assume(n > 0)}.
-
-@kindex axiom
-@item axiom
-Introduces an axiom definition. Axioms introduce requirements on values.
-
-@kindex forall
-@item forall
-Introduces a universally quantified object in an axiom. For example,
-@code{forall (int n) n + 0 == n}.
-
-@kindex concept
-@item concept
-Introduces a concept definition. Concepts are sets of syntactic and semantic
-requirements on types and their values.
-
-@kindex requires
-@item requires
-Introduces constraints on template arguments or requirements for a member
-function of a class template.
-@end table
-
-The front end also exposes a number of internal mechanism that can be used
-to simplify the writing of type traits. Note that some of these traits are
-likely to be removed in the future.
 
 @defbuiltin{bool __is_same (@var{type1}, @var{type2})}
 A binary type trait: @code{true} whenever the @var{type1} and
