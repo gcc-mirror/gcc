@@ -1419,11 +1419,11 @@ move_computations_worker (basic_block bb)
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
 	 unsigned arithmetic.  */
-      if (gimple_with_undefined_signed_overflow (stmt)
+      if (gimple_needing_rewrite_undefined (stmt)
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	gsi_insert_seq_on_edge (e, rewrite_to_defined_overflow (stmt));
+	gsi_insert_seq_on_edge (e, rewrite_to_defined_unconditional (stmt));
       else
 	gsi_insert_on_edge (e, stmt);
     }

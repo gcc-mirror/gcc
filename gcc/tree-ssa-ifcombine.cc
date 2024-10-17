@@ -514,9 +514,9 @@ ifcombine_mark_ssa_name_walk (tree *t, int *, void *data_)
 static inline void
 ifcombine_rewrite_to_defined_overflow (gimple_stmt_iterator gsi)
 {
-  if (!gimple_with_undefined_signed_overflow (gsi_stmt (gsi)))
+  if (!gimple_needing_rewrite_undefined (gsi_stmt (gsi)))
     return;
-  rewrite_to_defined_overflow (&gsi);
+  rewrite_to_defined_unconditional (&gsi);
 }
 
 

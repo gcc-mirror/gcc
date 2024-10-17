@@ -10592,10 +10592,12 @@ arith_code_with_undefined_signed_overflow (tree_code code)
 
 /* Return true if STMT has an operation that operates on a signed
    integer types involves undefined behavior on overflow and the
-   operation can be expressed with unsigned arithmetic.  */
+   operation can be expressed with unsigned arithmetic.
+   Also returns true if STMT is a VCE that needs to be rewritten
+   if moved to be executed unconditionally.   */
 
 bool
-gimple_with_undefined_signed_overflow (gimple *stmt)
+gimple_needing_rewrite_undefined (gimple *stmt)
 {
   if (!is_gimple_assign (stmt))
     return false;
@@ -10606,6 +10608,16 @@ gimple_with_undefined_signed_overflow (gimple *stmt)
   if (!INTEGRAL_TYPE_P (lhs_type)
       && !POINTER_TYPE_P (lhs_type))
     return false;
+  tree rhs = gimple_assign_rhs1 (stmt);
+  /* VCE from integral types to a integral types but with
+     a smaller precision need to be changed into casts
+     to be well defined. */
+  if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (rhs, 0)))
+      && is_gimple_val (TREE_OPERAND (rhs, 0))
+      && TYPE_PRECISION (lhs_type)
+	  < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (rhs, 0))))
+    return true;
   if (!TYPE_OVERFLOW_UNDEFINED (lhs_type))
     return false;
   if (!arith_code_with_undefined_signed_overflow
@@ -10625,19 +10637,39 @@ gimple_with_undefined_signed_overflow (gimple *stmt)
    contain a modified form of STMT itself.  */
 
 static gimple_seq
-rewrite_to_defined_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
-			     bool in_place)
+rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
+				  bool in_place)
 {
+  gcc_assert (gimple_needing_rewrite_undefined (stmt));
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "rewriting stmt with undefined signed "
-	       "overflow ");
+      fprintf (dump_file, "rewriting stmt for being uncondtional defined");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
-
+  gimple_seq stmts = NULL;
+  /* VCE from integral types to another integral types but with
+     smaller precisions need to be changed into casts
+     to be well defined. */
+  if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+      tree new_rhs = TREE_OPERAND (rhs, 0);
+      gcc_assert (TYPE_PRECISION (TREE_TYPE (rhs))
+		  < TYPE_PRECISION (TREE_TYPE (new_rhs)));
+      gcc_assert (is_gimple_val (new_rhs));
+      gimple_assign_set_rhs_code (stmt, NOP_EXPR);
+      gimple_assign_set_rhs1 (stmt, new_rhs);
+      if (in_place)
+	  update_stmt (stmt);
+      else
+	{
+	  gimple_set_modified (stmt, true);
+	  gimple_seq_add_stmt (&stmts, stmt);
+	}
+      return stmts;
+    }
   tree lhs = gimple_assign_lhs (stmt);
   tree type = unsigned_type_for (TREE_TYPE (lhs));
-  gimple_seq stmts = NULL;
   if (gimple_assign_rhs_code (stmt) == ABS_EXPR)
     gimple_assign_set_rhs_code (stmt, ABSU_EXPR);
   else
@@ -10672,15 +10704,15 @@ rewrite_to_defined_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 }
 
 void
-rewrite_to_defined_overflow (gimple_stmt_iterator *gsi)
+rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi)
 {
-  rewrite_to_defined_overflow (gsi, gsi_stmt (*gsi), true);
+  rewrite_to_defined_unconditional (gsi, gsi_stmt (*gsi), true);
 }
 
 gimple_seq
-rewrite_to_defined_overflow (gimple *stmt)
+rewrite_to_defined_unconditional (gimple *stmt)
 {
-  return rewrite_to_defined_overflow (nullptr, stmt, false);
+  return rewrite_to_defined_unconditional (nullptr, stmt, false);
 }
 
 /* The valueization hook we use for the gimple_build API simplification.

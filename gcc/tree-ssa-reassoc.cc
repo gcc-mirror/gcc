@@ -2925,13 +2925,13 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
-	if (gimple_with_undefined_signed_overflow (stmt))
+	if (gimple_needing_rewrite_undefined (stmt))
 	  {
 	    gimple_stmt_iterator gsip = gsi;
 	    gimple_stmt_iterator gsin = gsi;
 	    gsi_prev (&gsip);
 	    gsi_next (&gsin);
-	    rewrite_to_defined_overflow (&gsi);
+	    rewrite_to_defined_unconditional (&gsi);
 	    unsigned uid = gimple_uid (stmt);
 	    if (gsi_end_p (gsip))
 	      gsip = gsi_after_labels (bb);

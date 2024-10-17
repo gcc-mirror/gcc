@@ -3932,8 +3932,8 @@ final_value_replacement_loop (class loop *loop)
 	  gsi2 = gsi_start (stmts);
 	  while (!gsi_end_p (gsi2))
 	    {
-	      if (gimple_with_undefined_signed_overflow (gsi_stmt (gsi2)))
-		rewrite_to_defined_overflow (&gsi2);
+	      if (gimple_needing_rewrite_undefined (gsi_stmt (gsi2)))
+		rewrite_to_defined_unconditional (&gsi2);
 	      gsi_next (&gsi2);
 	    }
 	}

@@ -59,9 +59,9 @@ extern tree gimple_get_virt_method_for_vtable (HOST_WIDE_INT, tree,
 extern tree gimple_fold_indirect_ref (tree);
 extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
 extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
-extern bool gimple_with_undefined_signed_overflow (gimple *);
-extern void rewrite_to_defined_overflow (gimple_stmt_iterator *);
-extern gimple_seq rewrite_to_defined_overflow (gimple *);
+extern bool gimple_needing_rewrite_undefined (gimple *);
+extern void rewrite_to_defined_unconditional (gimple_stmt_iterator *);
+extern gimple_seq rewrite_to_defined_unconditional (gimple *);
 extern void replace_call_with_value (gimple_stmt_iterator *, tree);
 extern tree tree_vec_extract (gimple_stmt_iterator *, tree, tree, tree, tree);
 extern void gsi_replace_with_seq_vops (gimple_stmt_iterator *, gimple_seq);

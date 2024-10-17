@@ -1066,7 +1066,7 @@ if_convertible_gimple_assign_stmt_p (gimple *stmt,
 	fprintf (dump_file, "tree could trap...\n");
       return false;
     }
-  else if (gimple_with_undefined_signed_overflow (stmt))
+  else if (gimple_needing_rewrite_undefined (stmt))
     /* We have to rewrite stmts with undefined overflow.  */
     need_to_rewrite_undefined = true;
 
@@ -2881,8 +2881,8 @@ predicate_statements (loop_p loop)
 
 	      gsi_replace (&gsi, new_stmt, true);
 	    }
-	  else if (gimple_with_undefined_signed_overflow (stmt))
-	    rewrite_to_defined_overflow (&gsi);
+	  else if (gimple_needing_rewrite_undefined (stmt))
+	    rewrite_to_defined_unconditional (&gsi);
 	  else if (gimple_vdef (stmt))
 	    {
 	      tree lhs = gimple_assign_lhs (stmt);
