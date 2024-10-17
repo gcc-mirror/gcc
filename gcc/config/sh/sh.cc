@@ -3354,7 +3354,7 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	    {
 	      *total = sh_address_cost (XEXP (XEXP (xx, 0), 0), 
 					GET_MODE (XEXP (xx, 0)),
-					MEM_ADDR_SPACE (XEXP (xx, 0)), speed);
+					MEM_ADDR_SPACE (XEXP (xx, 0)), speed)
 		       + COSTS_N_INSNS (1);
 	      return true;
 	    }
@@ -3362,7 +3362,7 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	    {
 	      *total = sh_address_cost (XEXP (XEXP (xx, 1), 0),
 					GET_MODE (XEXP (xx, 1)),
-					MEM_ADDR_SPACE (XEXP (xx, 1)), speed);
+					MEM_ADDR_SPACE (XEXP (xx, 1)), speed)
 		       + COSTS_N_INSNS (1);
 	      return true;
 	    }
