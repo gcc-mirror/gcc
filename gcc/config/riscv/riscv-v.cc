@@ -3947,11 +3947,22 @@ shuffle_generic_patterns (struct expand_vec_perm_d *d)
   if (!get_gather_index_mode (d).exists (&sel_mode))
     return false;
 
+  rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
+  poly_uint64 nunits = GET_MODE_NUNITS (sel_mode);
+  rtx elt;
+
+  bool is_simple = d->one_vector_p
+    || const_vec_duplicate_p (sel, &elt)
+    || (nunits.is_constant ()
+	&& const_vec_all_in_range_p (sel, 0, nunits - 1));
+
+  if (!is_simple && !riscv_two_source_permutes)
+    return false;
+
   /* Success! */
   if (d->testing_p)
     return true;
 
-  rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
   /* Some FIXED-VLMAX/VLS vector permutation situations call targethook
      instead of expand vec_perm<mode>, we handle it directly.  */
   expand_vec_perm (d->target, d->op0, d->op1, sel);
