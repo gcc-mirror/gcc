@@ -91,3 +91,12 @@ TEST_UNIFORM_Z (sra_32_u32_tied2, svuint32_t,
 TEST_UNIFORM_Z (sra_32_u32_untied, svuint32_t,
 		z0 = svsra_n_u32 (z1, z2, 32),
 		z0 = svsra (z1, z2, 32))
+
+/*
+** sra_2_u32_zeroop1:
+**	lsr	z0\.s, z1\.s, #2
+**	ret
+*/
+TEST_UNIFORM_Z (sra_2_u32_zeroop1, svuint32_t,
+		z0 = svsra_n_u32 (svdup_u32 (0), z1, 2),
+		z0 = svsra (svdup_u32 (0), z1, 2))

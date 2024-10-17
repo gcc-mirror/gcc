@@ -91,3 +91,12 @@ TEST_UNIFORM_Z (sra_64_s64_tied2, svint64_t,
 TEST_UNIFORM_Z (sra_64_s64_untied, svint64_t,
 		z0 = svsra_n_s64 (z1, z2, 64),
 		z0 = svsra (z1, z2, 64))
+
+/*
+** sra_2_s64_zeroop1:
+**	asr	z0\.d, z1\.d, #2
+**	ret
+*/
+TEST_UNIFORM_Z (sra_2_s64_zeroop1, svint64_t,
+		z0 = svsra_n_s64 (svdup_s64 (0), z1, 2),
+		z0 = svsra (svdup_s64 (0), z1, 2))
