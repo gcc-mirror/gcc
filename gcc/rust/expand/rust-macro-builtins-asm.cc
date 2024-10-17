@@ -314,6 +314,7 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
   // For the keyword IN, currently we count it as a seperate keyword called
   // Rust::IN search for #define RS_TOKEN_LIST in code base.
   auto &parser = inline_asm_ctx.parser;
+  location_t locus = parser.peek_current_token ()->get_locus ();
   if (!inline_asm_ctx.is_global_asm () && parser.skip_token (IN))
     {
       auto reg = parse_reg (inline_asm_ctx);
@@ -331,7 +332,7 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
       struct AST::InlineAsmOperand::In in (reg, std::move (expr));
-      inline_asm_ctx.inline_asm.operands.push_back (in);
+      inline_asm_ctx.inline_asm.operands.emplace_back (in, locus);
       return inline_asm_ctx;
     }
   return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
