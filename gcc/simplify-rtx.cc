@@ -4328,6 +4328,14 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 				      mode, op0, new_amount_rtx);
 	}
 #endif
+      /* ROTATE/ROTATERT:HI (X:HI, 8) is BSWAP:HI (X).  Other combinations
+	 such as SImode with a count of 16 do not correspond to RTL BSWAP
+	 semantics.  */
+      tem = unwrap_const_vec_duplicate (trueop1);
+      if (GET_MODE_UNIT_BITSIZE (mode) == (2 * BITS_PER_UNIT)
+	  && CONST_INT_P (tem) && INTVAL (tem) == BITS_PER_UNIT)
+	return simplify_gen_unary (BSWAP, mode, op0, mode);
+
       /* FALLTHRU */
     case ASHIFTRT:
       if (trueop1 == CONST0_RTX (mode))
