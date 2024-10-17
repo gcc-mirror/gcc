@@ -6529,6 +6529,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 	unsigned int i;
 	gcc_checking_assert (len >= 64);
 	location_t last_loc = UNKNOWN_LOCATION;
+	location_t prev_loc = UNKNOWN_LOCATION;
 	for (i = 0; i < 64; ++i)
 	  {
 	    c_token *tok = c_parser_peek_nth_token_raw (parser, 1 + 2 * i);
@@ -6544,6 +6545,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 	    buf1[i] = (char) tree_to_uhwi (tok->value);
 	    if (i == 0)
 	      loc = tok->location;
+	    prev_loc = last_loc;
 	    last_loc = tok->location;
 	  }
 	if (i < 64)
@@ -6567,6 +6569,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 	unsigned int max_len = 131072 - offsetof (struct tree_string, str) - 1;
 	unsigned int orig_len = len;
 	unsigned int off = 0, last = 0;
+	unsigned char lastc = 0;
 	if (!wi::neg_p (wi::to_wide (val)) && wi::to_widest (val) <= UCHAR_MAX)
 	  off = 1;
 	len = MIN (len, max_len - off);
@@ -6596,19 +6599,24 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 	    if (tok2->type != CPP_COMMA && tok2->type != CPP_CLOSE_BRACE)
 	      break;
 	    buf2[i + off] = (char) tree_to_uhwi (tok->value);
-	    /* If orig_len is INT_MAX, this can be flexible array member and
-	       in that case we need to ensure another element which
-	       for CPP_EMBED is normally guaranteed after it.  Include
-	       that byte in the RAW_DATA_OWNER though, so it can be optimized
-	       later.  */
-	    if (tok2->type == CPP_CLOSE_BRACE && orig_len == INT_MAX)
-	      {
-		last = 1;
-		break;
-	      }
+	    prev_loc = last_loc;
 	    last_loc = tok->location;
 	    c_parser_consume_token (parser);
 	    c_parser_consume_token (parser);
+	  }
+	/* If orig_len is INT_MAX, this can be flexible array member and
+	   in that case we need to ensure another element which
+	   for CPP_EMBED is normally guaranteed after it.  Include
+	   that byte in the RAW_DATA_OWNER though, so it can be optimized
+	   later.  */
+	if (orig_len == INT_MAX
+	    && (!c_parser_next_token_is (parser, CPP_COMMA)
+		|| c_parser_peek_2nd_token (parser)->type != CPP_NUMBER))
+	  {
+	    --i;
+	    last = 1;
+	    std::swap (prev_loc, last_loc);
+	    lastc = (unsigned char) buf2[i + off];
 	  }
 	val = make_node (RAW_DATA_CST);
 	TREE_TYPE (val) = integer_type_node;
@@ -6625,6 +6633,13 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 	init.original_type = integer_type_node;
 	init.m_decimal = 0;
 	process_init_element (loc, init, false, braced_init_obstack);
+	if (last)
+	  {
+	    init.value = build_int_cst (integer_type_node, lastc);
+	    init.original_code = INTEGER_CST;
+	    set_c_expr_source_range (&init, prev_loc, prev_loc);
+	    process_init_element (prev_loc, init, false, braced_init_obstack);
+	  }
       }
 }
 
