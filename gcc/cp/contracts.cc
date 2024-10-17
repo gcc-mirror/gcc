@@ -1313,8 +1313,8 @@ static GTY(()) hash_map<tree, tree> *decl_pre_fn;
 static GTY(()) hash_map<tree, tree> *decl_post_fn;
 
 /* tree that holds the pseude source location type */
-static GTY(()) tree pseudo_source_location_impl_type;
-static GTY(()) tree pseudo_source_location_type;
+static GTY(()) tree contracts_source_location_impl_type;
+static GTY(()) tree contracts_source_location_type;
 
 
 /* Returns the precondition funtion for D, or null if not set.  */
@@ -1626,108 +1626,113 @@ build_contract_function_decls (tree d)
 }
 
 /* Build a layout-compatible internal version of source location __impl type.  */
+
 static tree
-get_pseudo_source_location_impl_type ()
+get_contracts_source_location_impl_type ()
 {
-  if (!pseudo_source_location_impl_type)
-    {
-      // first build the __impl layout equivalent type
-      tree fields = NULL_TREE;
-      /* Must match <source_location>:
-	 struct __impl
-	  {
-	      const char* _M_file_name;
-	      const char* _M_function_name;
-	      unsigned _M_line;
-	      unsigned _M_column;
-	  }; */
-      const tree types[] = { const_string_type_node,
-			    const_string_type_node,
-			    uint_least32_type_node,
-			    uint_least32_type_node };
+  if (contracts_source_location_impl_type)
+     return contracts_source_location_impl_type;
 
-      for (tree type : types)
+  // first build the __impl layout equivalent type
+  tree fields = NULL_TREE;
+  /* Must match <source_location>:
+     struct __impl
       {
-	/* finish_builtin_struct wants fieldss chained in reverse.  */
-	tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
-				NULL_TREE, type);
-	DECL_CHAIN (next) = fields;
-	fields = next;
-      }
+	  const char* _M_file_name;
+	  const char* _M_function_name;
+	  unsigned _M_line;
+	  unsigned _M_column;
+      }; */
+  const tree types[] = { const_string_type_node,
+			const_string_type_node,
+			uint_least32_type_node,
+			uint_least32_type_node };
 
-      iloc_sentinel ils (input_location);
-      input_location = BUILTINS_LOCATION;
-      pseudo_source_location_impl_type = make_class_type (RECORD_TYPE);
-      finish_builtin_struct (pseudo_source_location_impl_type,
-			     "__pseudo_source_location_impl_type",
-			     fields, NULL_TREE);
-      CLASSTYPE_AS_BASE (pseudo_source_location_impl_type)
-	= pseudo_source_location_impl_type;
-      DECL_CONTEXT (TYPE_NAME (pseudo_source_location_impl_type))
-	= FROB_CONTEXT (global_namespace);
-      TREE_PUBLIC (TYPE_NAME (pseudo_source_location_impl_type)) = true;
-      CLASSTYPE_LITERAL_P (pseudo_source_location_impl_type) = true;
-      CLASSTYPE_LAZY_COPY_CTOR (pseudo_source_location_impl_type) = true;
-      CLASSTYPE_LAZY_COPY_ASSIGN (pseudo_source_location_impl_type) = true;
-      CLASSTYPE_LAZY_DESTRUCTOR (pseudo_source_location_impl_type) = true;
-      xref_basetypes (pseudo_source_location_impl_type, /*bases=*/NULL_TREE);
-      pseudo_source_location_impl_type
-	= cp_build_qualified_type (pseudo_source_location_impl_type,
-				   TYPE_QUAL_CONST);
-    }
+  for (tree type : types)
+  {
+    /* finish_builtin_struct wants fieldss chained in reverse.  */
+    tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+			    NULL_TREE, type);
+    DECL_CHAIN (next) = fields;
+    fields = next;
+  }
 
-  return pseudo_source_location_impl_type;
+  iloc_sentinel ils (input_location);
+  input_location = BUILTINS_LOCATION;
+  contracts_source_location_impl_type = make_class_type (RECORD_TYPE);
+  finish_builtin_struct (contracts_source_location_impl_type,
+			 "__contracts_source_location_impl_type",
+			 fields, NULL_TREE);
+  CLASSTYPE_AS_BASE (contracts_source_location_impl_type)
+    = contracts_source_location_impl_type;
+  DECL_CONTEXT (TYPE_NAME (contracts_source_location_impl_type))
+    = FROB_CONTEXT (global_namespace);
+  TREE_PUBLIC (TYPE_NAME (contracts_source_location_impl_type)) = false;
+  CLASSTYPE_LITERAL_P (contracts_source_location_impl_type) = true;
+  CLASSTYPE_LAZY_COPY_CTOR (contracts_source_location_impl_type) = true;
+  CLASSTYPE_LAZY_COPY_ASSIGN (contracts_source_location_impl_type) = true;
+  CLASSTYPE_LAZY_DESTRUCTOR (contracts_source_location_impl_type) = true;
+  xref_basetypes (contracts_source_location_impl_type, /*bases=*/NULL_TREE);
+  contracts_source_location_impl_type
+    = cp_build_qualified_type (contracts_source_location_impl_type,
+			       TYPE_QUAL_CONST);
+
+  return contracts_source_location_impl_type;
 }
 /* Build a layout-compatible internal version of source location type.  */
+
 static tree
-get_pseudo_source_location_type ()
+get_contracts_source_location_type ()
 {
   // build a source_location layout compatible type
-  if (!pseudo_source_location_type)
+  if (contracts_source_location_type)
+    return contracts_source_location_type;
+
+  tree fields = NULL_TREE;
+  /* Must match <source_location>:
+   struct source_location
     {
-      tree fields = NULL_TREE;
-      /* Must match <source_location>:
-       struct source_location
-	{
-	private:
-	    const __impl* _M_impl = nullptr;
-	};  */
-      const tree type = build_pointer_type (pseudo_source_location_impl_type);
+    private:
+	const __impl* _M_impl = nullptr;
+    };  */
+  const tree type = build_pointer_type (contracts_source_location_impl_type);
 
-      tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
-			      NULL_TREE, type);
-      DECL_CHAIN (next) = fields;
-      fields = next;
+  tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+			  NULL_TREE, type);
+  DECL_CHAIN (next) = fields;
+  fields = next;
 
-      iloc_sentinel ils (input_location);
-      input_location = BUILTINS_LOCATION;
-      pseudo_source_location_type = make_class_type (RECORD_TYPE);
-      finish_builtin_struct (pseudo_source_location_type,
-			   "__pseudo_source_location_type",
-			   fields, NULL_TREE);
-      CLASSTYPE_AS_BASE (pseudo_source_location_type)
-      = pseudo_source_location_type;
-      DECL_CONTEXT (TYPE_NAME (pseudo_source_location_type))
-      = FROB_CONTEXT (global_namespace);
-      TREE_PUBLIC (TYPE_NAME (pseudo_source_location_type)) = true;
-      CLASSTYPE_LITERAL_P (pseudo_source_location_type) = true;
-      CLASSTYPE_LAZY_COPY_CTOR (pseudo_source_location_type) = true;
-      CLASSTYPE_LAZY_COPY_ASSIGN (pseudo_source_location_type) = true;
-      CLASSTYPE_LAZY_DESTRUCTOR (pseudo_source_location_type) = true;
-      xref_basetypes (pseudo_source_location_type, /*bases=*/NULL_TREE);
-      pseudo_source_location_type
-      = cp_build_qualified_type (pseudo_source_location_type,
-				 TYPE_QUAL_CONST);
-    }
-  return pseudo_source_location_type;
+  iloc_sentinel ils (input_location);
+  input_location = BUILTINS_LOCATION;
+  contracts_source_location_type = make_class_type (RECORD_TYPE);
+  finish_builtin_struct (contracts_source_location_type,
+		       "__contracts_source_location_type",
+		       fields, NULL_TREE);
+  CLASSTYPE_AS_BASE (contracts_source_location_type)
+  = contracts_source_location_type;
+  DECL_CONTEXT (TYPE_NAME (contracts_source_location_type))
+  = FROB_CONTEXT (global_namespace);
+  TREE_PUBLIC (TYPE_NAME (contracts_source_location_type)) = false;
+  CLASSTYPE_LITERAL_P (contracts_source_location_type) = true;
+  CLASSTYPE_LAZY_COPY_CTOR (contracts_source_location_type) = true;
+  CLASSTYPE_LAZY_COPY_ASSIGN (contracts_source_location_type) = true;
+  CLASSTYPE_LAZY_DESTRUCTOR (contracts_source_location_type) = true;
+  xref_basetypes (contracts_source_location_type, /*bases=*/NULL_TREE);
+  contracts_source_location_type
+  = cp_build_qualified_type (contracts_source_location_type,
+			     TYPE_QUAL_CONST);
+
+  return contracts_source_location_type;
 }
 
 /* Build a layout-compatible internal version of source location __impl type.  */
+
 static tree
-build_pseudo_source_location_impl (tree contract)
+build_contracts_source_location_impl (tree contract)
 {
 
   expanded_location loc = expand_location (EXPR_LOCATION (contract));
+  /* For now, this will give the invented name in case of a wrapper function. */
   const char *function = fndecl_name (DECL_ORIGIN (current_function_decl));
 
   /* Must match the type layout in source_location::__impl type.  */
@@ -1738,22 +1743,24 @@ build_pseudo_source_location_impl (tree contract)
      NULL_TREE, build_int_cst (uint_least32_type_node, loc.line),
      NULL_TREE, build_int_cst (uint_least32_type_node, loc.column));
 
-  ctor = finish_compound_literal (get_pseudo_source_location_impl_type(),
+  ctor = finish_compound_literal (get_contracts_source_location_impl_type(),
 				  ctor, tf_none);
   protected_set_expr_location (ctor, EXPR_LOCATION (contract));
 
   return build_address(ctor);
 }
+
 /* Build a layout-compatible internal version of source location type.  */
+
 static tree
-build_pseudo_source_location (tree contract)
+build_contracts_source_location (tree contract)
 {
   /* Must match the type layout in source_location::__impl type.  */
   tree ctor = build_constructor_va
     (init_list_type_node,1,
-     NULL_TREE, build_pseudo_source_location_impl(contract));
+     NULL_TREE, build_contracts_source_location_impl(contract));
 
-  ctor = finish_compound_literal (get_pseudo_source_location_type (),
+  ctor = finish_compound_literal (get_contracts_source_location_type (),
 				  ctor, tf_none);
   protected_set_expr_location (ctor, EXPR_LOCATION (contract));
 
@@ -1761,6 +1768,7 @@ build_pseudo_source_location (tree contract)
 }
 
 /* Build a layout-compatible internal version of contract_violation type.  */
+
 static tree
 get_pseudo_contract_violation_type ()
 {
@@ -1786,7 +1794,7 @@ get_pseudo_contract_violation_type ()
 			      const_string_type_node,
 			      integer_type_node,
 			      integer_type_node,
-			      get_pseudo_source_location_type(),
+			      get_contracts_source_location_type(),
 			      integer_type_node };
 
 	  for (tree type : types)
@@ -1849,7 +1857,8 @@ get_pseudo_contract_violation_type ()
   return pseudo_contract_violation_type;
 }
 
-/* Return a VAR_DECL to pass to handle_contract_violation.  */
+/* Get name of contract_level of the specified contract. Used when building
+ C++20 contract_violation object. */
 
 static const char *
 get_contract_level_name (tree contract)
@@ -1862,6 +1871,9 @@ get_contract_level_name (tree contract)
   return "default";
 }
 
+/* Get name of contract_role of the specified contract. Used when building
+ C++20 contract_violation object. */
+
 static const char *
 get_contract_role_name (tree contract)
 {
@@ -1872,6 +1884,8 @@ get_contract_role_name (tree contract)
       return IDENTIFIER_POINTER (role);
   return "default";
 }
+
+/* Build C++20 contract_violation layout compatible object. */
 
 static tree
 build_contract_violation_cpp20 (tree contract, contract_continuation cmode)
@@ -1898,6 +1912,9 @@ build_contract_violation_cpp20 (tree contract, contract_continuation cmode)
   return ctor;
 }
 
+/* Get constract_assertion_kind of the specified contract. Used when building
+ P2900R7 contract_violation object. */
+
 static int
 get_contract_assertion_kind(tree contract)
 {
@@ -1907,42 +1924,44 @@ get_contract_assertion_kind(tree contract)
     case PRECONDITION_STMT:	return CAK_PRE;
     case POSTCONDITION_STMT:	return CAK_POST;
     default:
-      error ("Invalid contract kind");
+       break;
   }
 
-  return CAK_INVALID;
+  gcc_unreachable ();
 }
 
+/* Get constract_evaluation_semantic of the specified contract. Used when building
+ P2900R7 contract_violation object. */
 static int
-get_evaluation_semantic(tree contract, contract_continuation cmode)
+get_evaluation_semantic(tree contract)
 {
   contract_semantic semantic = get_contract_semantic (contract);
 
-  if (checked_contract_p(semantic))
-    {
-	  return CES_ENFORCE;
-    }
+  if (checked_contract_p (semantic))
+    return CES_ENFORCE;
+
   return CES_OBSERVE;
 }
 
+/* Build P2900R7 contract_violation layout compatible object. */
 static tree
-build_contract_violation_P2900 (tree contract, contract_continuation cmode)
+build_contract_violation_P2900 (tree contract)
 {
   int assertion_kind = get_contract_assertion_kind (contract);
-  int evaluation_semantic = get_evaluation_semantic (contract, cmode);
+  int evaluation_semantic = get_evaluation_semantic (contract);
   /* we hardcode CDM_PREDICATE_FALSE because that's all we support for now */
   int detection_mode = CDM_PREDICATE_FALSE;
 
   /* Must match the type layout in get_pseudo_contract_violation_type.  */
   tree ctor = build_constructor_va
     (init_list_type_node, 7,
-     NULL_TREE, build_int_cst (NULL_TREE, 0), 		// version
+     NULL_TREE, build_int_cst (integer_type_node, 0), 		// version
      NULL_TREE, build_int_cst (nullptr_type_node, 0),   // __vendor_ext
      NULL_TREE, CONTRACT_COMMENT (contract),
-     NULL_TREE, build_int_cst (NULL_TREE, detection_mode),
-     NULL_TREE, build_int_cst (NULL_TREE, assertion_kind),
-     NULL_TREE, build_pseudo_source_location(contract),
-     NULL_TREE, build_int_cst (NULL_TREE, evaluation_semantic));
+     NULL_TREE, build_int_cst (integer_type_node, detection_mode),
+     NULL_TREE, build_int_cst (integer_type_node, assertion_kind),
+     NULL_TREE, build_contracts_source_location (contract),
+     NULL_TREE, build_int_cst (integer_type_node, evaluation_semantic));
 
   ctor = finish_compound_literal (get_pseudo_contract_violation_type (),
 				  ctor, tf_none);
@@ -1950,13 +1969,13 @@ build_contract_violation_P2900 (tree contract, contract_continuation cmode)
   return ctor;
 }
 
+/* Return a VAR_DECL to pass to handle_contract_violation.  */
+
 static tree
 build_contract_violation (tree contract, contract_continuation cmode)
 {
   if (flag_contracts_nonattr)
-    {
-      return build_contract_violation_P2900(contract, cmode);
-    }
+    return build_contract_violation_P2900(contract);
 
   return build_contract_violation_cpp20(contract, cmode);
 }
@@ -1985,13 +2004,10 @@ declare_handle_contract_violation ()
   tree id_exp = NULL_TREE;
 
   if (flag_contracts_nonattr)
-    {
       id_exp = get_identifier ("contracts");
-    }
   else
-    {
       id_exp = get_identifier ("experimental");
-    }
+
   tree ns_exp = lookup_qualified_name (std_node, id_exp);
 
   tree violation = error_mark_node;
@@ -2244,6 +2260,7 @@ constify_contract_access(tree decl)
 }
 
 /* do not allow non-const by-value params being used in postconditions */
+
 bool
 maybe_reject_param_in_postcondition(tree decl)
 {
