@@ -56,16 +56,16 @@ TEST (void)
   CALC(res_ref, src.a);
 
   res1.x = INTRINSIC (_cvtneph_phf8) (src.x);
-  if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res, res_ref))
+  if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res1, res_ref))
     abort ();
 
   res2.x = INTRINSIC (_mask_cvtneph_phf8) (res2.x, mask, src.x);
-  MASK_MERGE (h) (res_ref, mask, SIZE);
-  if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res, res_ref))
+  MASK_MERGE (i_b) (res_ref, mask, SIZE);
+  if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res2, res_ref))
     abort ();
 
   res3.x = INTRINSIC (_maskz_cvtneph_phf8) (mask, src.x);
-  MASK_ZERO (h) (res_ref, mask, SIZE);
-  if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res, res_ref))
+  MASK_ZERO (i_b) (res_ref, mask, SIZE);
+  if (UNION_CHECK (AVX512F_LEN_HALF, i_b) (res3, res_ref))
     abort ();
 }
