@@ -18438,6 +18438,13 @@
 	  (match_operand:VI_AVX2 2 "vector_operand")))]
   "TARGET_SSE2")
 
+(define_expand "andn<mode>3"
+  [(set (match_operand:VI 0 "register_operand")
+	(and:VI
+	  (not:VI (match_operand:VI 2 "register_operand"))
+	  (match_operand:VI 1 "register_operand")))]
+  "TARGET_SSE2")
+
 (define_expand "<sse2_avx2>_andnot<mode>3_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand")
 	(vec_merge:VI48_AVX512VL

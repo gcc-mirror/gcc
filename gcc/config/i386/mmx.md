@@ -4467,6 +4467,13 @@
   operands[0] = lowpart_subreg (V16QImode, operands[0], <MODE>mode);
 })
 
+(define_expand "andn<mode>3"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+        (and:MMXMODEI
+          (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand"))
+          (match_operand:MMXMODEI 2 "register_operand")))]
+  "TARGET_SSE2")
+
 (define_insn "mmx_andnot<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x,v")
 	(and:MMXMODEI
