@@ -3572,6 +3572,70 @@ shuffle_interleave_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+
+/* Recognize even/odd patterns like [0 2 4 6].  We use two compress
+   and one slideup.  */
+
+static bool
+shuffle_even_odd_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+  int n_patterns = d->perm.encoding ().npatterns ();
+
+  if (n_patterns != 1)
+    return false;
+
+  if (!vec_len.is_constant ())
+    return false;
+
+  int vlen = vec_len.to_constant ();
+  if (vlen < 4 || vlen > 64)
+    return false;
+
+  if (d->one_vector_p)
+    return false;
+
+  bool even = true;
+  if (!d->perm.series_p (0, 1, 0, 2))
+    {
+      even = false;
+      if (!d->perm.series_p (0, 1, 1, 2))
+	return false;
+    }
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  machine_mode mask_mode = get_mask_mode (vmode);
+  rvv_builder builder (mask_mode, vlen, 1);
+  int bit = even ? 0 : 1;
+  for (int i = 0; i < vlen; i++)
+    {
+      bit ^= 1;
+      if (bit)
+	builder.quick_push (CONST1_RTX (BImode));
+      else
+	builder.quick_push (CONST0_RTX (BImode));
+    }
+  rtx mask = force_reg (mask_mode, builder.build ());
+
+  insn_code icode = code_for_pred_compress (vmode);
+  rtx ops1[] = {d->target, d->op0, mask};
+  emit_vlmax_insn (icode, COMPRESS_OP, ops1);
+
+  rtx tmp2 = gen_reg_rtx (vmode);
+  rtx ops2[] = {tmp2, d->op1, mask};
+  emit_vlmax_insn (icode, COMPRESS_OP, ops2);
+
+  rtx ops[] = {d->target, d->target, tmp2, gen_int_mode (vlen / 2, Pmode)};
+  icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+  emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+
+  return true;
+}
+
 /* Recognize decompress patterns:
 
    1. VEC_PERM_EXPR op0 and op1
@@ -3889,6 +3953,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_slide_patterns (d))
 	    return true;
 	  if (shuffle_interleave_patterns (d))
+	    return true;
+	  if (shuffle_even_odd_patterns (d))
 	    return true;
 	  if (shuffle_compress_patterns (d))
 	    return true;
