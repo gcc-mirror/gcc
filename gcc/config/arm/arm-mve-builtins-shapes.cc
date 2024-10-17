@@ -1535,6 +1535,64 @@ struct load_ext_def : public nonoverloaded_base
 };
 SHAPE (load_ext)
 
+/* Base class for load_ext_gather_offset and load_ext_gather_shifted_offset,
+   which differ only in the units of the displacement.  */
+struct load_ext_gather : public overloaded_base<0>
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return false;
+  }
+};
+
+/* <T0>_t vfoo[_t0](<X>_t const *, <Y>_t)
+
+   where <X> might be tied to <t0> (for non-extending loads) or might
+   depend on the function base name (for extending loads),
+   <Y> has the same width as <T0> but is of unsigned type.
+
+   Example: vldrhq_gather_offset
+   int16x8_t [__arm_]vldrhq_gather_offset[_s16](int16_t const *base, uint16x8_t offset)
+   int32x4_t [__arm_]vldrhq_gather_offset_z[_s32](int16_t const *base, uint32x4_t offset, mve_pred16_t p)  */
+struct load_ext_gather_offset_def : public load_ext_gather
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_offset, preserve_user_namespace);
+    build_all (b, "v0,al,vu0", group, MODE_offset, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    mode_suffix_index mode = MODE_offset;
+    type_suffix_index ptr_type;
+    type_suffix_index offset_type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (ptr_type = r.infer_pointer_type (0)) == NUM_TYPE_SUFFIXES
+	|| (offset_type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* tclass comes from base argument, element bits come from the offset
+       argument.  */
+    type_suffix_index type = find_type_suffix (type_suffixes[ptr_type].tclass,
+			       type_suffixes[offset_type].element_bits);
+
+    return r.resolve_to (mode, type);
+  }
+};
+SHAPE (load_ext_gather_offset)
+
 /* <T0>_t vfoo[_t0](<T0>_t)
    <T0>_t vfoo_n_t0(<sT0>_t)
 
