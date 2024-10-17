@@ -39,7 +39,8 @@ endif
 headers =
 
 sources = \
-	contract.cc
+	contract.cc \
+	contract26.cc
 
 # vpath % $(top_srcdir)/src/experimental
 

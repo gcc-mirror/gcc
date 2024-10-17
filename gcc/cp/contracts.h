@@ -77,6 +77,7 @@ struct contract_role
 };
 
 /* P2900 contract clasification */
+/* Must match relevant enums in <contracts> header  */
 
 enum constract_assertion_kind {
   CAK_INVALID = 0 ,
