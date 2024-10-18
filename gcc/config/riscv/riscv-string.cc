@@ -1078,7 +1078,6 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
   bool need_loop = true;
   bool size_p = optimize_function_for_size_p (cfun);
   rtx src, dst;
-  rtx end = gen_reg_rtx (Pmode);
   rtx vec;
   rtx length_rtx = length_in;
 
@@ -1245,7 +1244,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
       emit_insn (gen_rtx_SET (length_rtx, gen_rtx_MINUS (Pmode, length_rtx, cnt)));
 
       /* Emit the loop condition.  */
-      rtx test = gen_rtx_NE (VOIDmode, end, const0_rtx);
+      rtx test = gen_rtx_NE (VOIDmode, length_rtx, const0_rtx);
       emit_jump_insn (gen_cbranch4 (Pmode, test, length_rtx, const0_rtx, label));
       emit_insn (gen_nop ());
     }
