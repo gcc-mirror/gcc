@@ -5899,6 +5899,8 @@ foreach { armfunc armflag armdefs } {
 	v8a_crc_hard "-march=armv8-a+crc+simd -mfpu=auto -mfloat-abi=hard" "__ARM_ARCH_8A__ && __ARM_FEATURE_CRC32"
 	v8_1a "-march=armv8.1-a+simd" __ARM_ARCH_8A__
 	v8_2a "-march=armv8.2-a+simd" __ARM_ARCH_8A__
+	v8_2a_bf16 "-march=armv8.2-a+bf16 -mfpu=auto -mfloat-abi=softfp" __ARM_ARCH_8A__
+	v8_2a_bf16_hard "-march=armv8.2-a+bf16 -mfpu=auto -mfloat-abi=hard" __ARM_ARCH_8A__
 	v8r "-march=armv8-r+fp.sp" __ARM_ARCH_8R__
 	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
 		__ARM_ARCH_8M_BASE__
