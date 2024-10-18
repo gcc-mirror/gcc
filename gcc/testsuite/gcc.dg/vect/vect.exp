@@ -115,6 +115,9 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
     et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/wrapv-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest [lsort \
+	[glob -nocomplain $srcdir/$subdir/trapv-*.\[cS\]]] \
+	$flags $DEFAULT_VECTCFLAGS
 
     et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/fast-math-bb-slp-*.\[cS\]]] \
@@ -128,13 +131,6 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
 global SAVED_DEFAULT_VECTCFLAGS
 set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
 set SAVED_VECT_SLP_CFLAGS $VECT_SLP_CFLAGS
-
-# -ftrapv tests
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-ftrapv"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/trapv-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
 
 # -fno-tree-dce tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
