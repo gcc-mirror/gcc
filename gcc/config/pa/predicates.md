@@ -300,7 +300,7 @@
 (define_predicate "integer_store_memory_operand"
   (match_code "reg,mem")
 {
-  if (reload_in_progress
+  if ((lra_in_progress || reload_in_progress)
       && REG_P (op)
       && REGNO (op) >= FIRST_PSEUDO_REGISTER
       && reg_renumber [REGNO (op)] < 0)
@@ -312,7 +312,7 @@
 	 REG+D instructions in pa_emit_move_sequence.  Further, the Q
 	 constraint is used in more than simple move instructions.  So,
 	 we must return true and let reload handle the reload.  */
-      if (reload_in_progress)
+      if (lra_in_progress || reload_in_progress)
 	return true;
 
       /* Extract CONST_INT operand.  */
@@ -326,7 +326,8 @@
   if (!MEM_P (op))
     return false;
 
-  return ((reload_in_progress || memory_address_p (mode, XEXP (op, 0)))
+  return ((lra_in_progress || reload_in_progress
+	   || memory_address_p (mode, XEXP (op, 0)))
 	  && !IS_LO_SUM_DLT_ADDR_P (XEXP (op, 0))
 	  && !IS_INDEX_ADDR_P (XEXP (op, 0)));
 })
@@ -346,7 +347,7 @@
 (define_predicate "floating_point_store_memory_operand"
   (match_code "reg,mem")
 {
-  if (reload_in_progress
+  if ((lra_in_progress || reload_in_progress)
       && REG_P (op)
       && REGNO (op) >= FIRST_PSEUDO_REGISTER
       && reg_renumber [REGNO (op)] < 0)
@@ -366,7 +367,8 @@
   if (!MEM_P (op))
     return false;
 
-  return ((reload_in_progress || memory_address_p (mode, XEXP (op, 0)))
+  return ((lra_in_progress || reload_in_progress
+	   || memory_address_p (mode, XEXP (op, 0)))
 	  && (INT14_OK_STRICT || !symbolic_memory_operand (op, VOIDmode))
 	  && !IS_LO_SUM_DLT_ADDR_P (XEXP (op, 0))
 	  && !IS_INDEX_ADDR_P (XEXP (op, 0)));
@@ -555,7 +557,7 @@
   if (register_operand (op, mode))
     return true;
 
-  if (!reload_in_progress && !reload_completed)
+  if (!lra_in_progress && !reload_in_progress && !reload_completed)
     return false;
 
   if (! MEM_P (op))

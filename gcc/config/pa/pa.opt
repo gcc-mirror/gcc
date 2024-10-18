@@ -86,6 +86,10 @@ mlong-calls
 Target Mask(LONG_CALLS)
 Always generate long calls.
 
+mlra
+Target Var(pa_lra_p) Init(0)
+Use LRA instead of reload (transitional).
+
 mlong-load-store
 Target Mask(LONG_LOAD_STORE)
 Emit long load/store sequences.
