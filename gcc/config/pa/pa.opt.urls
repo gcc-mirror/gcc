@@ -36,6 +36,8 @@ UrlSuffix(gcc/HPPA-Options.html#index-mlinker-opt)
 mlong-calls
 UrlSuffix(gcc/HPPA-Options.html#index-mlong-calls-5)
 
+; skipping UrlSuffix for 'mlra' due to finding no URLs
+
 mlong-load-store
 UrlSuffix(gcc/HPPA-Options.html#index-mlong-load-store)
 
