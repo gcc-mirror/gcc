@@ -125,15 +125,15 @@ is
         or else (X < Big (Int64'(0))) = (Y < Big (Int64'(0))))
    with Ghost;
 
-   function Round_Quotient (X, Y, Q, R : Big_Integer) return Big_Integer is
-     (if abs R > (abs Y - Big (Int64'(1))) / Big (Int64'(2)) then
-       (if Same_Sign (X, Y) then Q + Big (Int64'(1))
-        else Q - Big (Int64'(1)))
-      else
-        Q)
-   with
+   function Round_Quotient (X, Y, Q, R : Big_Integer) return Big_Integer with
      Ghost,
-     Pre => Y /= 0 and then Q = X / Y and then R = X rem Y;
+     Pre  => Y /= 0 and then Q = X / Y and then R = X rem Y,
+     Post => Round_Quotient'Result =
+       (if abs R > (abs Y - Big (Int64'(1))) / Big (Int64'(2)) then
+         (if Same_Sign (X, Y) then Q + Big (Int64'(1))
+          else Q - Big (Int64'(1)))
+        else
+          Q);
 
    procedure Scaled_Divide64
      (X, Y, Z : Int64;

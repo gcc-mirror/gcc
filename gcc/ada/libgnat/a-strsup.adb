@@ -1627,6 +1627,8 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                        Result.Data (K) =
                          Item (Item'Last - (Max_Length - K) mod Ilen));
                end loop;
+               pragma Assert
+                 (Result.Data (1 .. Max_Length)'Initialized);
 
             when Strings.Error =>
                raise Ada.Strings.Length_Error;

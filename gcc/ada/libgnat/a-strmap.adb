@@ -148,7 +148,7 @@ is
 
          pragma Loop_Invariant (if Map = Identity then J = 0);
          pragma Loop_Invariant (J <= Character'Pos (C) + 1);
-         pragma Loop_Invariant (Result (1 .. J)'Initialized);
+         pragma Loop_Invariant (for all K in 1 .. J => Result (K)'Initialized);
          pragma Loop_Invariant (for all K in 1 .. J => Result (K) <= C);
          pragma Loop_Invariant
            (SPARK_Proof_Sorted_Character_Sequence (Result (1 .. J)));
@@ -404,6 +404,7 @@ is
          pragma Loop_Invariant
            (for all K in 1 .. J => Result (K) = Map (Domain (K)));
       end loop;
+      pragma Assert (Is_Domain (Map, Domain (1 .. J)));
 
       --  Show the equality of Domain and To_Domain(Map)
 

@@ -54,6 +54,7 @@ is
 
    procedure Bad_Value (S : String)
    with
+     Always_Terminates,
      Depends => (null => S),
      Exceptional_Cases => (others => Standard.False);
    pragma No_Return (Bad_Value);

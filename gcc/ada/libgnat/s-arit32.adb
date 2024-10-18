@@ -119,7 +119,9 @@ is
    --  0 .. 2**31 - 1, then the corresponding nonnegative signed integer is
    --  returned, otherwise constraint error is raised.
 
-   procedure Raise_Error;
+   procedure Raise_Error with
+     Always_Terminates,
+     Exceptional_Cases => (Constraint_Error => True);
    pragma No_Return (Raise_Error);
    --  Raise constraint error with appropriate message
 
