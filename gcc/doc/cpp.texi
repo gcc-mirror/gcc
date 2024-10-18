@@ -3204,7 +3204,8 @@ directive}: @samp{#if}, @samp{#ifdef} or @samp{#ifndef}.
 * @code{__has_builtin}::
 * @code{__has_feature}::
 * @code{__has_extension}::
-* @code{__has_include}::
+* @code{__has_include}::        @code{__has_include} and
+                                 @code{__has_include_next}
 * @code{__has_embed}::
 @end menu
 
@@ -3607,22 +3608,27 @@ details of which identifiers are accepted by these function-like macros, see
 the Clang documentation}}.
 
 @node @code{__has_include}
-@subsection @code{__has_include}
+@subsection @code{__has_include}, @code{__has_include_next}
 @cindex @code{__has_include}
+@cindex @code{__has_include_next}
 
-The special operator @code{__has_include (@var{operand})} may be used in
-@samp{#if} and @samp{#elif} expressions to test whether the header referenced
-by its @var{operand} can be included using the @samp{#include} directive.  Using
-the operator in other contexts is not valid.  The @var{operand} takes
-the same form as the file in the @samp{#include} directive (@pxref{Include
-Syntax}) and evaluates to a nonzero value if the header can be included and
-to zero otherwise.  Note that that the ability to include a header doesn't
-imply that the header doesn't contain invalid constructs or @samp{#error}
-directives that would cause the preprocessor to fail.
+The special operators @code{__has_include (@var{operand})} and
+@code{__has_include_next (@var{operand})} may be used in @samp{#if} and
+@samp{#elif} expressions to test whether the header referenced by their
+@var{operand} can be included using the @samp{#include} and
+@samp{#include_next} directive, respectively.  Using the operators in
+other contexts is not valid.  The @var{operand} takes the same form as
+the file in the @samp{#include} and @samp{#include_next} directives
+respectively (@pxref{Include Syntax}) and the operators evaluate to a
+nonzero value if the header can be included and to zero otherwise.  Note
+that that the ability to include a header doesn't imply that the header
+doesn't contain invalid constructs or @samp{#error} directives that
+would cause the preprocessor to fail.
 
-The @code{__has_include} operator by itself, without any @var{operand} or
-parentheses, acts as a predefined macro so that support for it can be tested
-in portable code.  Thus, the recommended use of the operator is as follows:
+The @code{__has_include} and @code{__has_include_next} operators by
+themselves, without any @var{operand} or parentheses, act as
+predefined macros so that support for them can be tested in portable
+code.  Thus, the recommended use of the operators is as follows:
 
 @smallexample
 #if defined __has_include
@@ -3644,6 +3650,8 @@ but not with others that don't.
 @dots{}
 #endif
 @end smallexample
+
+The same holds for @code{__has_include_next}.
 
 @node @code{__has_embed}
 @subsection @code{__has_embed}
