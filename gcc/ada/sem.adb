@@ -2123,27 +2123,32 @@ package body Sem is
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause then
                Spec := Withed_Lib_Unit (Clause);
-               Body_CU := Body_Lib_Unit (Spec);
-
-               --  If we are processing the spec of the main unit, load bodies
-               --  only if the with_clause indicates that it forced the loading
-               --  of the body for a generic instantiation. Note that bodies of
-               --  parents that are instances have been loaded already.
-
-               if Present (Body_CU)
-                 and then Body_CU /= Main_CU
-                 and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
-                 and then Nkind (Unit (Comp)) /= N_Package_Declaration
+               if Unit (Spec) in N_Lib_Unit_Declaration_Id
+                               | N_Lib_Unit_Renaming_Declaration_Id
                then
-                  Body_U := Get_Cunit_Unit_Number (Body_CU);
+                  Body_CU := Body_Lib_Unit (Spec);
 
-                  if not Seen (Body_U)
-                    and then not Depends_On_Main (Body_CU)
+                  --  If we are processing the spec of the main unit, load
+                  --  bodies only if the with_clause indicates that it forced
+                  --  the loading of the body for a generic instantiation.
+                  --  Note that bodies of parents that are instances have been
+                  --  loaded already.
+
+                  if Present (Body_CU)
+                    and then Body_CU /= Main_CU
+                    and then Nkind (Unit (Body_CU)) /= N_Subprogram_Body
+                    and then Nkind (Unit (Comp)) /= N_Package_Declaration
                   then
-                     Seen (Body_U) := True;
-                     Do_Withed_Units (Body_CU, Include_Limited => False);
-                     Do_Action (Body_CU, Unit (Body_CU));
-                     Done (Body_U) := True;
+                     Body_U := Get_Cunit_Unit_Number (Body_CU);
+
+                     if not Seen (Body_U)
+                       and then not Depends_On_Main (Body_CU)
+                     then
+                        Seen (Body_U) := True;
+                        Do_Withed_Units (Body_CU, Include_Limited => False);
+                        Do_Action (Body_CU, Unit (Body_CU));
+                        Done (Body_U) := True;
+                     end if;
                   end if;
                end if;
             end if;
