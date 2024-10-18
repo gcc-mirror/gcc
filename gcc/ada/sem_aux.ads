@@ -261,10 +261,6 @@ package Sem_Aux is
    --  irregularity compared to other representation aspects, and the cost of
    --  looking up the aspect when needed is small.
 
-   function Has_Unconstrained_Elements (T : Entity_Id) return Boolean;
-   --  True if T has discriminants and is unconstrained, or is an array type
-   --  whose element type Has_Unconstrained_Elements.
-
    function Has_Variant_Part (Typ : Entity_Id) return Boolean;
    --  Return True if the first subtype of Typ is a discriminated record type
    --  which has a variant part. False otherwise.

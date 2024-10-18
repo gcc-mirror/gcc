@@ -5213,18 +5213,6 @@ package body Sem_Ch3 is
          Rewrite (Object_Definition (N), New_Occurrence_Of (Act_T, Loc));
          Freeze_Before (N, Act_T);
 
-      elsif Nkind (E) = N_Function_Call
-        and then Constant_Present (N)
-        and then Has_Unconstrained_Elements (Etype (E))
-      then
-         --  The back-end has problems with constants of a discriminated type
-         --  with defaults, if the initial value is a function call. We
-         --  generate an intermediate temporary that will receive a reference
-         --  to the result of the call. The initialization expression then
-         --  becomes a dereference of that temporary.
-
-         Remove_Side_Effects (E);
-
       --  If this is a constant declaration of an unconstrained type and
       --  the initialization is an aggregate, we can use the subtype of the
       --  aggregate for the declared entity because it is immutable.
