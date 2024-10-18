@@ -1500,6 +1500,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   tree mask = gimple_assign_rhs3 (stmt);
   tree vec0 = gimple_assign_rhs1 (stmt);
   tree vec1 = gimple_assign_rhs2 (stmt);
+  tree res_vect_type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree vect_type = TREE_TYPE (vec0);
   tree mask_type = TREE_TYPE (mask);
   tree vect_elt_type = TREE_TYPE (vect_type);
@@ -1512,7 +1513,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
 
-  if (!TYPE_VECTOR_SUBPARTS (vect_type).is_constant (&elements))
+  if (!TYPE_VECTOR_SUBPARTS (res_vect_type).is_constant (&elements))
     return;
 
   if (TREE_CODE (mask) == SSA_NAME)
@@ -1672,9 +1673,9 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
     }
 
   if (constant_p)
-    constr = build_vector_from_ctor (vect_type, v);
+    constr = build_vector_from_ctor (res_vect_type, v);
   else
-    constr = build_constructor (vect_type, v);
+    constr = build_constructor (res_vect_type, v);
   gimple_assign_set_rhs_from_tree (gsi, constr);
   update_stmt (gsi_stmt (*gsi));
 }
