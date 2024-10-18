@@ -107,6 +107,9 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
 	[glob -nocomplain $srcdir/$subdir/no-math-errno-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
     et-dg-runtest dg-runtest [lsort \
+	[glob -nocomplain $srcdir/$subdir/no-vfa-*.\[cS\]]] \
+	$flags $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/bb-slp*.\[cS\]]] \
 	$flags $VECT_SLP_CFLAGS
 }
@@ -115,13 +118,6 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
 global SAVED_DEFAULT_VECTCFLAGS
 set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
 set SAVED_VECT_SLP_CFLAGS $VECT_SLP_CFLAGS
-
-# --param vect-max-version-for-alias-checks=0 tests
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "--param" "vect-max-version-for-alias-checks=0"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/no-vfa-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
 
 # -ffast-math tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
