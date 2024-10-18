@@ -25516,8 +25516,11 @@ aarch64_output_sve_mov_immediate (rtx const_vector)
 	}
     }
 
-  snprintf (templ, sizeof (templ), "mov\t%%0.%c, #" HOST_WIDE_INT_PRINT_DEC,
-	    element_char, INTVAL (info.u.mov.value));
+  if (info.u.mov.value == const0_rtx && TARGET_NON_STREAMING)
+    snprintf (templ, sizeof (templ), "movi\t%%d0, #0");
+  else
+    snprintf (templ, sizeof (templ), "mov\t%%0.%c, #" HOST_WIDE_INT_PRINT_DEC,
+	      element_char, INTVAL (info.u.mov.value));
   return templ;
 }
 
