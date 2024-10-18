@@ -657,6 +657,7 @@ package body Exp_Ch4 is
 
       Adj_Call          : Node_Id;
       Aggr_In_Place     : Boolean;
+      Container_Aggr    : Boolean;
       Delayed_Cond_Expr : Boolean;
       Node              : Node_Id;
       Temp              : Entity_Id;
@@ -667,6 +668,8 @@ package body Exp_Ch4 is
 
       TagR : Node_Id := Empty;
       --  Target reference for tag assignment
+
+   --  Start of processing for Expand_Allocator_Expression
 
    begin
       --  Handle call to C++ constructor
@@ -689,14 +692,19 @@ package body Exp_Ch4 is
 
       Aggr_In_Place     := Is_Delayed_Aggregate (Exp);
       Delayed_Cond_Expr := Is_Delayed_Conditional_Expression (Exp);
+      Container_Aggr    := Nkind (Exp) = N_Aggregate
+                             and then Has_Aspect (T, Aspect_Aggregate);
 
       --  If the expression is an aggregate to be built in place, then we need
       --  to delay applying predicate checks, because this would result in the
       --  creation of a temporary, which is illegal for limited types and just
       --  inefficient in the other cases. Likewise for a conditional expression
-      --  whose expansion has been delayed.
+      --  whose expansion has been delayed and for container aggregates.
 
-      if not Aggr_In_Place and then not Delayed_Cond_Expr then
+      if not Aggr_In_Place
+        and then not Delayed_Cond_Expr
+        and then not Container_Aggr
+      then
          Apply_Predicate_Check (Exp, T);
       end if;
 
@@ -759,9 +767,26 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  An allocator with a container aggregate as qualified expression must
+      --  be rewritten into the form expected by Expand_Container_Aggregate.
+
+      if Container_Aggr then
+         Temp := Make_Temporary (Loc, 'P', N);
+         Temp_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Temp,
+             Object_Definition   => New_Occurrence_Of (PtrT, Loc),
+             Expression          => Relocate_Node (N));
+
+         Set_Analyzed (Exp, False);
+         Insert_Action (N, Temp_Decl);
+         Rewrite (N, New_Occurrence_Of (Temp, Loc));
+         Analyze_And_Resolve (N, PtrT);
+         Apply_Predicate_Check (N, T, Deref => True);
+
       --  Case of tagged type or type requiring finalization
 
-      if Is_Tagged_Type (T) or else Needs_Finalization (T) then
+      elsif Is_Tagged_Type (T) or else Needs_Finalization (T) then
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
@@ -1072,7 +1097,6 @@ package body Exp_Ch4 is
          Build_Allocate_Deallocate_Proc (Declaration_Node (Temp), Mark => N);
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
-
          Apply_Predicate_Check (N, T, Deref => True);
 
       elsif Is_Access_Type (T) and then Can_Never_Be_Null (T) then

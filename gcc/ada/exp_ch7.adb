@@ -2781,17 +2781,17 @@ package body Exp_Ch7 is
 
          if Ekind (Obj_Id) in E_Constant | E_Variable then
 
-            --  The object is initialized by a build-in-place function call.
-            --  The Master_Node insertion point is after the function call.
-
-            if Present (BIP_Initialization_Call (Obj_Id)) then
-               Master_Node_Ins := BIP_Initialization_Call (Obj_Id);
-
             --  The object is initialized by an aggregate. The Master_Node
             --  insertion point is after the last aggregate assignment.
 
-            elsif Present (Last_Aggregate_Assignment (Obj_Id)) then
+            if Present (Last_Aggregate_Assignment (Obj_Id)) then
                Master_Node_Ins := Last_Aggregate_Assignment (Obj_Id);
+
+            --  The object is initialized by a build-in-place function call.
+            --  The Master_Node insertion point is after the function call.
+
+            elsif Present (BIP_Initialization_Call (Obj_Id)) then
+               Master_Node_Ins := BIP_Initialization_Call (Obj_Id);
 
             --  In other cases the Master_Node is inserted after the last call
             --  to either [Deep_]Initialize or the type-specific init proc.
