@@ -11167,7 +11167,7 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 	 can't support lane > 1 at this time.  */
       gcc_assert (instance->root_stmts.length () == 1);
       auto root_stmt_info = instance->root_stmts[0];
-      auto last_stmt = STMT_VINFO_STMT (root_stmt_info);
+      auto last_stmt = STMT_VINFO_STMT (vect_orig_stmt (root_stmt_info));
       gimple_stmt_iterator rgsi = gsi_for_stmt (last_stmt);
       gimple *vec_stmt = NULL;
       gcc_assert (!SLP_TREE_VEC_DEFS (node).is_empty ());
