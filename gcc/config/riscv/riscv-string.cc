@@ -1153,15 +1153,17 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 		 Still, by choosing a lower LMUL factor that still allows
 		 an entire transfer, we can reduce register pressure.  */
 	      for (unsigned lmul = 1; lmul <= 4; lmul <<= 1)
-		if (TARGET_MIN_VLEN * lmul <= nunits * BITS_PER_UNIT
-		    /* Avoid loosing the option of using vsetivli .  */
-		    && (nunits <= 31 * lmul || nunits > 31 * 8)
+		if (length * BITS_PER_UNIT <= TARGET_MIN_VLEN * lmul
 		    && multiple_p (BYTES_PER_RISCV_VECTOR * lmul, potential_ew)
 		    && (riscv_vector::get_vector_mode
 			 (elem_mode, exact_div (BYTES_PER_RISCV_VECTOR * lmul,
 				     potential_ew)).exists (&vmode)))
 		  break;
 	    }
+
+	  /* Stop searching if a suitable vmode has been found.  */
+	  if (vmode != VOIDmode)
+	    break;
 
 	  /* The RVVM8?I modes are notionally 8 * BYTES_PER_RISCV_VECTOR bytes
 	     wide.  BYTES_PER_RISCV_VECTOR can't be evenly divided by
