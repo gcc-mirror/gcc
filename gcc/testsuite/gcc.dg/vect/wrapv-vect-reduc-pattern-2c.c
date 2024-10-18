@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fwrapv" } */
 /* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
