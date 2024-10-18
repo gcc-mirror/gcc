@@ -13,7 +13,7 @@ TEST_UNIFORM_Z (dup_1_f64, svfloat64_t,
 
 /*
 ** dup_0_f64:
-**	mov	z0\.d, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f64, svfloat64_t,
@@ -118,7 +118,7 @@ TEST_UNIFORM_Z (dup_1_f64_z, svfloat64_t,
 
 /*
 ** dup_0_f64_z:
-**	mov	z0\.[bhsd], #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f64_z, svfloat64_t,
@@ -166,7 +166,7 @@ TEST_UNIFORM_Z (dup_1_f64_x, svfloat64_t,
 
 /*
 ** dup_0_f64_x:
-**	mov	z0\.d, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f64_x, svfloat64_t,

@@ -250,7 +250,7 @@ TEST_UNIFORM_Z (bic_128_s8_x, svint8_t,
 
 /*
 ** bic_255_s8_x:
-**	mov	z0\.b, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (bic_255_s8_x, svint8_t,

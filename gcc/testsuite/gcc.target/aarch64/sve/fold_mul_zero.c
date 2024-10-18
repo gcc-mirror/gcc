@@ -5,7 +5,7 @@
 
 /*
 ** s64_x_pg_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_pg_op1 (svbool_t pg, svint64_t op2)
@@ -15,7 +15,7 @@ svint64_t s64_x_pg_op1 (svbool_t pg, svint64_t op2)
 
 /*
 ** s64_z_pg_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_pg_op1 (svbool_t pg, svint64_t op2)
@@ -25,7 +25,7 @@ svint64_t s64_z_pg_op1 (svbool_t pg, svint64_t op2)
 
 /*
 ** s64_m_pg_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_m_pg_op1 (svbool_t pg, svint64_t op2)
@@ -35,7 +35,7 @@ svint64_t s64_m_pg_op1 (svbool_t pg, svint64_t op2)
 
 /*
 ** s64_x_ptrue_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_ptrue_op1 (svint64_t op2)
@@ -45,7 +45,7 @@ svint64_t s64_x_ptrue_op1 (svint64_t op2)
 
 /*
 ** s64_z_ptrue_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_ptrue_op1 (svint64_t op2)
@@ -55,7 +55,7 @@ svint64_t s64_z_ptrue_op1 (svint64_t op2)
 
 /*
 ** s64_m_ptrue_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_m_ptrue_op1 (svint64_t op2)
@@ -65,7 +65,7 @@ svint64_t s64_m_ptrue_op1 (svint64_t op2)
 
 /*
 ** s64_x_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_pg_op2 (svbool_t pg, svint64_t op1)
@@ -75,7 +75,7 @@ svint64_t s64_x_pg_op2 (svbool_t pg, svint64_t op1)
 
 /*
 ** s64_z_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_pg_op2 (svbool_t pg, svint64_t op1)
@@ -95,7 +95,7 @@ svint64_t s64_m_pg_op2 (svbool_t pg, svint64_t op1)
 
 /*
 ** s64_x_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_ptrue_op2 (svint64_t op1)
@@ -105,7 +105,7 @@ svint64_t s64_x_ptrue_op2 (svint64_t op1)
 
 /*
 ** s64_z_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_ptrue_op2 (svint64_t op1)
@@ -115,7 +115,7 @@ svint64_t s64_z_ptrue_op2 (svint64_t op1)
 
 /*
 ** s64_m_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_m_ptrue_op2 (svint64_t op1)
@@ -125,7 +125,7 @@ svint64_t s64_m_ptrue_op2 (svint64_t op1)
 
 /*
 ** s64_n_x_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_n_x_pg_op2 (svbool_t pg, svint64_t op1)
@@ -135,7 +135,7 @@ svint64_t s64_n_x_pg_op2 (svbool_t pg, svint64_t op1)
 
 /*
 ** s64_n_z_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_n_z_pg_op2 (svbool_t pg, svint64_t op1)
@@ -155,7 +155,7 @@ svint64_t s64_n_m_pg_op2 (svbool_t pg, svint64_t op1)
 
 /*
 ** s64_n_x_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_n_x_ptrue_op2 (svint64_t op1)
@@ -165,7 +165,7 @@ svint64_t s64_n_x_ptrue_op2 (svint64_t op1)
 
 /*
 ** s64_n_z_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_n_z_ptrue_op2 (svint64_t op1)
@@ -175,7 +175,7 @@ svint64_t s64_n_z_ptrue_op2 (svint64_t op1)
 
 /*
 ** s64_n_m_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_n_m_ptrue_op2 (svint64_t op1)
@@ -185,7 +185,7 @@ svint64_t s64_n_m_ptrue_op2 (svint64_t op1)
 
 /*
 ** u64_x_pg_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_x_pg_op1 (svbool_t pg, svuint64_t op2)
@@ -195,7 +195,7 @@ svuint64_t u64_x_pg_op1 (svbool_t pg, svuint64_t op2)
 
 /*
 ** u64_z_pg_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_z_pg_op1 (svbool_t pg, svuint64_t op2)
@@ -205,7 +205,7 @@ svuint64_t u64_z_pg_op1 (svbool_t pg, svuint64_t op2)
 
 /*
 ** u64_m_pg_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_m_pg_op1 (svbool_t pg, svuint64_t op2)
@@ -215,7 +215,7 @@ svuint64_t u64_m_pg_op1 (svbool_t pg, svuint64_t op2)
 
 /*
 ** u64_x_ptrue_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_x_ptrue_op1 (svuint64_t op2)
@@ -225,7 +225,7 @@ svuint64_t u64_x_ptrue_op1 (svuint64_t op2)
 
 /*
 ** u64_z_ptrue_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_z_ptrue_op1 (svuint64_t op2)
@@ -235,7 +235,7 @@ svuint64_t u64_z_ptrue_op1 (svuint64_t op2)
 
 /*
 ** u64_m_ptrue_op1:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_m_ptrue_op1 (svuint64_t op2)
@@ -245,7 +245,7 @@ svuint64_t u64_m_ptrue_op1 (svuint64_t op2)
 
 /*
 ** u64_x_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_x_pg_op2 (svbool_t pg, svuint64_t op1)
@@ -255,7 +255,7 @@ svuint64_t u64_x_pg_op2 (svbool_t pg, svuint64_t op1)
 
 /*
 ** u64_z_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_z_pg_op2 (svbool_t pg, svuint64_t op1)
@@ -275,7 +275,7 @@ svuint64_t u64_m_pg_op2 (svbool_t pg, svuint64_t op1)
 
 /*
 ** u64_x_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_x_ptrue_op2 (svuint64_t op1)
@@ -285,7 +285,7 @@ svuint64_t u64_x_ptrue_op2 (svuint64_t op1)
 
 /*
 ** u64_z_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_z_ptrue_op2 (svuint64_t op1)
@@ -295,7 +295,7 @@ svuint64_t u64_z_ptrue_op2 (svuint64_t op1)
 
 /*
 ** u64_m_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_m_ptrue_op2 (svuint64_t op1)
@@ -305,7 +305,7 @@ svuint64_t u64_m_ptrue_op2 (svuint64_t op1)
 
 /*
 ** u64_n_x_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_n_x_pg_op2 (svbool_t pg, svuint64_t op1)
@@ -315,7 +315,7 @@ svuint64_t u64_n_x_pg_op2 (svbool_t pg, svuint64_t op1)
 
 /*
 ** u64_n_z_pg_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_n_z_pg_op2 (svbool_t pg, svuint64_t op1)
@@ -335,7 +335,7 @@ svuint64_t u64_n_m_pg_op2 (svbool_t pg, svuint64_t op1)
 
 /*
 ** u64_n_x_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_n_x_ptrue_op2 (svuint64_t op1)
@@ -345,7 +345,7 @@ svuint64_t u64_n_x_ptrue_op2 (svuint64_t op1)
 
 /*
 ** u64_n_z_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_n_z_ptrue_op2 (svuint64_t op1)
@@ -355,7 +355,7 @@ svuint64_t u64_n_z_ptrue_op2 (svuint64_t op1)
 
 /*
 ** u64_n_m_ptrue_op2:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svuint64_t u64_n_m_ptrue_op2 (svuint64_t op1)

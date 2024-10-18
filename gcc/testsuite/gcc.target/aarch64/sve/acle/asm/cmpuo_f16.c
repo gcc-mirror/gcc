@@ -32,8 +32,8 @@ TEST_COMPARE_ZD (cmpuo_h4_f16, svfloat16_t, float16_t,
 
 /*
 ** cmpuo_0_f16:
-**	mov	(z[0-9]+\.h), #0
-**	fcmuo	p0\.h, p1/z, (z0\.h, \1|\1, z0\.h)
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
+**	fcmuo	p0\.h, p1/z, (z0\.h, z\1\.h|z\1\.h, z0\.h)
 **	ret
 */
 TEST_COMPARE_Z (cmpuo_0_f16, svfloat16_t,

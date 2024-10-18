@@ -13,7 +13,7 @@ TEST_UNIFORM_Z (dup_1_f32, svfloat32_t,
 
 /*
 ** dup_0_f32:
-**	mov	z0\.s, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f32, svfloat32_t,
@@ -118,7 +118,7 @@ TEST_UNIFORM_Z (dup_1_f32_z, svfloat32_t,
 
 /*
 ** dup_0_f32_z:
-**	mov	z0\.[bhsd], #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f32_z, svfloat32_t,
@@ -166,7 +166,7 @@ TEST_UNIFORM_Z (dup_1_f32_x, svfloat32_t,
 
 /*
 ** dup_0_f32_x:
-**	mov	z0\.s, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f32_x, svfloat32_t,

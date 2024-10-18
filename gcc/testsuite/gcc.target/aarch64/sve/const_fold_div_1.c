@@ -15,7 +15,7 @@ svint64_t s64_x_pg (svbool_t pg)
 
 /*
 ** s64_x_pg_0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_pg_0 (svbool_t pg)
@@ -25,7 +25,7 @@ svint64_t s64_x_pg_0 (svbool_t pg)
 
 /*
 ** s64_x_pg_by0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_pg_by0 (svbool_t pg)
@@ -45,7 +45,7 @@ svint64_t s64_z_pg (svbool_t pg)
 
 /*
 ** s64_z_pg_0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_pg_0 (svbool_t pg)
@@ -55,7 +55,7 @@ svint64_t s64_z_pg_0 (svbool_t pg)
 
 /*
 ** s64_z_pg_by0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_pg_by0 (svbool_t pg)
@@ -117,7 +117,7 @@ svint64_t s64_x_pg_n (svbool_t pg)
 
 /*
 ** s64_x_pg_n_s64_0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_pg_n_s64_0 (svbool_t pg)
@@ -127,7 +127,7 @@ svint64_t s64_x_pg_n_s64_0 (svbool_t pg)
 
 /*
 ** s64_x_pg_n_s64_by0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_x_pg_n_s64_by0 (svbool_t pg)
@@ -147,7 +147,7 @@ svint64_t s64_z_pg_n (svbool_t pg)
 
 /*
 ** s64_z_pg_n_s64_0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_pg_n_s64_0 (svbool_t pg)
@@ -157,7 +157,7 @@ svint64_t s64_z_pg_n_s64_0 (svbool_t pg)
 
 /*
 ** s64_z_pg_n_s64_by0:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint64_t s64_z_pg_n_s64_by0 (svbool_t pg)
@@ -209,7 +209,7 @@ svint64_t s64_m_ptrue_n ()
 
 /*
 ** s32_m_ptrue_dupq:
-**	mov	z[0-9]+\.b, #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 svint32_t s32_m_ptrue_dupq ()

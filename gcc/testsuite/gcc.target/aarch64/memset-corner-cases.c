@@ -29,7 +29,7 @@ set0byte (int64_t *src)
 
 /* 35bytes would become 4 scalar instructions.  So favour NEON.
 **set0neon:
-**	movi	v([0-9]+).4s, 0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 **	stp	q\1, q\1, \[x0\]
 **	str	wzr, \[x0, 31\]
 **	ret

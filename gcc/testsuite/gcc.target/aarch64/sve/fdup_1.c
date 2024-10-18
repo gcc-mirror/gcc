@@ -47,8 +47,6 @@ DEF_SET_IMM_FP (0x1.1fp-4, imm1fpm4)
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.s, #3.1e\+1\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.s, #2.421875e-1\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.s, #0\n} 1 } } */
-
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.d,} 7 } } */
 
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.d, #1.0e\+0\n} 1 } } */
@@ -59,4 +57,4 @@ DEF_SET_IMM_FP (0x1.1fp-4, imm1fpm4)
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.d, #3.1e\+1\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfmov\tz[0-9]+\.d, #2.421875e-1\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #0\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmov(?:i\td|\tz)([0-9]+)(?:\.[bhsd])?, #0\n} 2 } } */

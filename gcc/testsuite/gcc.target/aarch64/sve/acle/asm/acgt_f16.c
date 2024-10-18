@@ -44,9 +44,9 @@ TEST_COMPARE_ZD (acgt_h4_f16, svfloat16_t, float16_t,
 
 /*
 ** acgt_0_f16:
-**	mov	(z[0-9]+\.h), #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 ** (
-**	facgt	p0\.h, p1/z, z0\.h, \1
+**	facgt	p0\.h, p1/z, z0\.h, z\1\.h
 ** |
 **	faclt	p0\.h, p1/z, \1, z0\.h
 ** )

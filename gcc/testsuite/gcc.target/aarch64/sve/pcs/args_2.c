@@ -55,7 +55,7 @@ caller_int (int8_t *x0, int16_t *x1, int32_t *x2, int64_t *x3)
 	      svptrue_pat_b32 (SV_VL3));
 }
 
-/* { dg-final { scan-assembler {\tmov\tz0\.b, #0\n} } } */
+/* { dg-final { scan-assembler {\tmov(\tz0\.b|i\td0), #0\n} } } */
 /* { dg-final { scan-assembler {\tmov\tz1\.h, #1\n} } } */
 /* { dg-final { scan-assembler {\tmov\tz2\.s, #2\n} } } */
 /* { dg-final { scan-assembler {\tmov\tz3\.d, #3\n} } } */
