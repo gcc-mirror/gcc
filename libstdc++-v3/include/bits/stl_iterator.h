@@ -1348,18 +1348,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 201103L && __cplusplus <= 201703L
-  // Need to overload __to_address because the pointer_traits primary template
-  // will deduce element_type of __normal_iterator<T*, C> as T* rather than T.
-  template<typename _Iterator, typename _Container>
-    [[__gnu__::__always_inline__]] _GLIBCXX_NODISCARD
-    constexpr auto
-    __to_address(const __gnu_cxx::__normal_iterator<_Iterator,
-						    _Container>& __it) noexcept
-    -> decltype(std::__to_address(__it.base()))
-    { return std::__to_address(__it.base()); }
-#endif
-
 #if __cplusplus >= 201103L
   /**
    * @addtogroup iterators

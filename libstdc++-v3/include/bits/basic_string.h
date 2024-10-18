@@ -1732,18 +1732,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	basic_string&
 	assign(_InputIterator __first, _InputIterator __last)
 	{
+	  using _IterTraits = iterator_traits<_InputIterator>;
+	  if constexpr (is_pointer<decltype(std::__niter_base(__first))>::value
+			  && is_same<typename _IterTraits::value_type,
+				     _CharT>::value)
+	    {
+	      __glibcxx_requires_valid_range(__first, __last);
+	      return _M_replace(size_type(0), size(),
+				std::__niter_base(__first), __last - __first);
+	    }
 #if __cplusplus >= 202002L
-	  if constexpr (contiguous_iterator<_InputIterator>
-			  && is_same_v<iter_value_t<_InputIterator>, _CharT>)
-#else
-	  if constexpr (__is_one_of<_InputIterator, const_iterator, iterator,
-				    const _CharT*, _CharT*>::value)
-#endif
+	  else if constexpr (contiguous_iterator<_InputIterator>
+			       && is_same_v<iter_value_t<_InputIterator>,
+					    _CharT>)
 	    {
 	      __glibcxx_requires_valid_range(__first, __last);
 	      return _M_replace(size_type(0), size(),
 				std::__to_address(__first), __last - __first);
 	    }
+#endif
 	  else
 	    return *this = basic_string(__first, __last, get_allocator());
 	}

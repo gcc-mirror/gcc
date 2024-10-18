@@ -3935,7 +3935,7 @@ namespace views::__adaptor
       operator() [[nodiscard]] (_Iter __i, iter_difference_t<_Iter> __n) const
       {
 	if constexpr (contiguous_iterator<_Iter>)
-	  return span(std::__to_address(__i), __n);
+	  return span(std::to_address(__i), __n);
 	else if constexpr (random_access_iterator<_Iter>)
 	  return subrange(__i, __i + __n);
 	else
