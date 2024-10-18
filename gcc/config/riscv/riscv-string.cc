@@ -1086,22 +1086,22 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
     {
       HOST_WIDE_INT length = INTVAL (length_in);
 
-    /* By using LMUL=8, we can copy as many bytes in one go as there
-       are bits in a vector register.  If the entire block thus fits,
-       we don't need a loop.  */
-    if (length <= TARGET_MIN_VLEN)
-      {
-	need_loop = false;
+      /* By using LMUL=8, we can copy as many bytes in one go as there
+	 are bits in a vector register.  If the entire block thus fits,
+	 we don't need a loop.  */
+      if (length <= TARGET_MIN_VLEN)
+	{
+	  need_loop = false;
 
-	/* If a single scalar load / store pair can do the job, leave it
-	   to the scalar code to do that.  */
-	/* ??? If fast unaligned access is supported, the scalar code could
-	   use suitably sized scalars irrespective of alignment.  If that
-	   gets fixed, we have to adjust the test here.  */
+	  /* If a single scalar load / store pair can do the job, leave it
+	     to the scalar code to do that.  */
+	  /* ??? If fast unaligned access is supported, the scalar code could
+	     use suitably sized scalars irrespective of alignment.  If that
+	     gets fixed, we have to adjust the test here.  */
 
-	if (pow2p_hwi (length) && length <= potential_ew)
-	  return false;
-      }
+	  if (pow2p_hwi (length) && length <= potential_ew)
+	    return false;
+	}
 
       /* Find the vector mode to use.  Using the largest possible element
 	 size is likely to give smaller constants, and thus potentially
