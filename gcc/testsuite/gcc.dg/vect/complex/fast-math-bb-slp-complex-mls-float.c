@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_complex_add_float } */
-/* { dg-additional-options "-fdump-tree-vect-details" } */
+/* { dg-additional-options "-ffast-math -fdump-tree-vect-details" } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
 
 #define TYPE float

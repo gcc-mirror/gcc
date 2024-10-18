@@ -1,5 +1,6 @@
 /* PR 47892 */
 /* { dg-do compile } */
+/* { dg-additional-options "-ffast-math" } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_condition } */
 

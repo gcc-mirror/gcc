@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_double } */
+/* { dg-additional-options "-ffast-math" } */
 /* { dg-additional-options "--param vect-epilogues-nomask=0" } */
 
 #include "tree-vect.h"

@@ -1,3 +1,4 @@
+/* { dg-additional-options "-ffast-math" } */
 /* { dg-require-effective-target vect_double } */
 
 /* need -funsafe-math-optimizations to vectorize the summation.

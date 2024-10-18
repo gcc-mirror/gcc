@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
-/* { dg-additional-options "-fno-tree-loop-vectorize" } */
+/* { dg-additional-options "-ffast-math -fno-tree-loop-vectorize" } */
 
 #define UNROLL
 

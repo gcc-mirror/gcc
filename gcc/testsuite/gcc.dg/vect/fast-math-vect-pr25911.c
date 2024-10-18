@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-ffast-math" } */
 
 float bessel_Kn_scaled_small_x(int n)
 {

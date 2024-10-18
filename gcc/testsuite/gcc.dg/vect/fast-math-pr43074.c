@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-ffast-math" } */
 
 float
 pvslockprocess(float *fout, float *fin, int framesize)

@@ -1,5 +1,6 @@
 /* PR tree-optimization/55281 */
 /* { dg-do compile } */
+/* { dg-additional-options "-ffast-math" } */
 
 static inline float
 bar (float k, float j)
