@@ -340,7 +340,7 @@ package body Exp_Ch5 is
       Lhs : constant Node_Id := Name (N);
 
       Act_Lhs : constant Node_Id := Get_Referenced_Object (Lhs);
-      Act_Rhs : Node_Id          := Get_Referenced_Object (Rhs);
+      Act_Rhs : constant Node_Id := Get_Referenced_Object (Rhs);
 
       L_Type : constant Entity_Id :=
                  Underlying_Type (Get_Actual_Subtype (Act_Lhs));
@@ -515,14 +515,9 @@ package body Exp_Ch5 is
          Set_Backwards_OK (N, False);
       end if;
 
-      --  We certainly must use a loop for change of representation and also
-      --  we use the operand of the conversion on the right-hand side as the
-      --  effective right-hand side (the component types must match in this
-      --  situation).
+      --  We certainly must use a loop for change of representation
 
       if Crep then
-         Act_Rhs := Get_Referenced_Object (Rhs);
-         R_Type  := Get_Actual_Subtype (Act_Rhs);
          Loop_Required := True;
 
       --  We require a loop if either side is possibly bit aligned
@@ -3283,6 +3278,10 @@ package body Exp_Ch5 is
       --  Array types
 
       elsif Is_Array_Type (Typ) then
+         --  We use the operand of a conversion on the right-hand side as the
+         --  effective right-hand side (the component types must match in this
+         --  situation).
+
          declare
             Actual_Rhs : Node_Id := Rhs;
 
