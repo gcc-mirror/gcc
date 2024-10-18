@@ -362,6 +362,8 @@ notify_std_msg(int std)
     return _("Obsolescent feature:");
   else if (std & GFC_STD_F95_DEL)
     return _("Deleted feature:");
+  else if (std & GFC_STD_UNSIGNED)
+    return _("Unsigned:");
   else
     gcc_unreachable ();
 }
