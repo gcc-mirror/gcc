@@ -32,6 +32,7 @@ std_freestanding = \
 	${std_srcdir}/bit \
 	${std_srcdir}/bitset \
 	${std_srcdir}/concepts \
+	${std_srcdir}/contracts \
 	${std_srcdir}/coroutine \
 	${std_srcdir}/expected \
 	${std_srcdir}/functional \
@@ -68,7 +69,6 @@ std_headers = \
 	${std_srcdir}/codecvt \
 	${std_srcdir}/complex \
 	${std_srcdir}/condition_variable \
-	${std_srcdir}/contracts \
 	${std_srcdir}/deque \
 	${std_srcdir}/execution \
 	${std_srcdir}/filesystem \
