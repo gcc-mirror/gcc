@@ -2020,11 +2020,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 
 	  if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
 	    {
-	      gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD)
-			  || gimple_call_internal_p (stmt, IFN_GATHER_LOAD)
-			  || gimple_call_internal_p (stmt, IFN_MASK_GATHER_LOAD)
-			  || gimple_call_internal_p (stmt,
-						     IFN_MASK_LEN_GATHER_LOAD));
+	      gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD));
 	      bool has_gaps = false;
 	      if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 		for (stmt_vec_info si = DR_GROUP_NEXT_ELEMENT (first_stmt_info);
