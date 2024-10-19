@@ -1051,35 +1051,31 @@ riscv_expand_block_clear (rtx dest, rtx length)
 
 namespace riscv_vector {
 
-/* Used by cpymemsi in riscv.md .  */
+struct stringop_info {
+  rtx avl;
+  bool need_loop;
+  machine_mode vmode;
+};
 
-bool
-expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
+/* If a vectorized stringop should be used populate INFO and return TRUE.
+   Otherwise return false and leave INFO unchanged.
+
+   MAX_EW is the maximum element width that the caller wants to use and
+   LENGTH_IN is the length of the stringop in bytes.
+*/
+
+static bool
+use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
+		       rtx length_in)
 {
-  /*
-    memcpy:
-	mv a3, a0                       # Copy destination
-    loop:
-	vsetvli t0, a2, e8, m8, ta, ma  # Vectors of 8b
-	vle8.v v0, (a1)                 # Load bytes
-	add a1, a1, t0                  # Bump pointer
-	sub a2, a2, t0                  # Decrement count
-	vse8.v v0, (a3)                 # Store bytes
-	add a3, a3, t0                  # Bump pointer
-	bnez a2, loop                   # Any more?
-	ret                             # Return
-  */
-  gcc_assert (TARGET_VECTOR);
-
-  HOST_WIDE_INT potential_ew
-    = (MIN (MIN (MEM_ALIGN (src_in), MEM_ALIGN (dst_in)), BITS_PER_WORD)
-       / BITS_PER_UNIT);
-  machine_mode vmode = VOIDmode;
   bool need_loop = true;
-  bool size_p = optimize_function_for_size_p (cfun);
-  rtx src, dst;
-  rtx vec;
-  rtx length_rtx = length_in;
+  machine_mode vmode = VOIDmode;
+  /* The number of elements in the stringop.  */
+  rtx avl = length_in;
+  HOST_WIDE_INT potential_ew = max_ew;
+
+  if (!TARGET_VECTOR || !(stringop_strategy & STRATEGY_VECTOR))
+    return false;
 
   if (CONST_INT_P (length_in))
     {
@@ -1113,17 +1109,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
 	 for small element widths, we might allow larger element widths for
 	 loops too.  */
       if (need_loop)
-	{
-	  if (movmem_p)
-	    /* Inlining general memmove is a pessimisation: we can't avoid
-	       having to decide which direction to go at runtime, which is
-	       costly in instruction count however for situations where the
-	       entire move fits in one vector operation we can do all reads
-	       before doing any writes so we don't have to worry so generate
-	       the inline vector code in such situations.  */
-	    return false;
-	  potential_ew = 1;
-	}
+	potential_ew = 1;
       for (; potential_ew; potential_ew >>= 1)
 	{
 	  scalar_int_mode elem_mode;
@@ -1193,7 +1179,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
 	  gcc_assert (potential_ew > 1);
 	}
       if (potential_ew > 1)
-	length_rtx = GEN_INT (length / potential_ew);
+	avl = GEN_INT (length / potential_ew);
     }
   else
     {
@@ -1203,35 +1189,80 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
   /* A memcpy libcall in the worst case takes 3 instructions to prepare the
      arguments + 1 for the call.  When RVV should take 7 instructions and
      we're optimizing for size a libcall may be preferable.  */
-  if (size_p && need_loop)
+  if (optimize_function_for_size_p (cfun) && need_loop)
     return false;
 
-  /* length_rtx holds the (remaining) length of the required copy.
+  info.need_loop = need_loop;
+  info.vmode = vmode;
+  info.avl = avl;
+  return true;
+}
+
+/* Used by cpymemsi in riscv.md .  */
+
+bool
+expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
+{
+  /*
+    memcpy:
+	mv a3, a0                       # Copy destination
+    loop:
+	vsetvli t0, a2, e8, m8, ta, ma  # Vectors of 8b
+	vle8.v v0, (a1)                 # Load bytes
+	add a1, a1, t0                  # Bump pointer
+	sub a2, a2, t0                  # Decrement count
+	vse8.v v0, (a3)                 # Store bytes
+	add a3, a3, t0                  # Bump pointer
+	bnez a2, loop                   # Any more?
+	ret                             # Return
+  */
+  struct stringop_info info;
+
+  HOST_WIDE_INT potential_ew
+    = (MIN (MIN (MEM_ALIGN (src_in), MEM_ALIGN (dst_in)), BITS_PER_WORD)
+       / BITS_PER_UNIT);
+
+  if (!use_vector_stringop_p (info, potential_ew, length_in))
+    return false;
+
+  /* Inlining general memmove is a pessimisation: we can't avoid having to
+     decide which direction to go at runtime, which is costly in instruction
+     count however for situations where the entire move fits in one vector
+     operation we can do all reads before doing any writes so we don't have to
+     worry so generate the inline vector code in such situations.  */
+  if (info.need_loop && movmem_p)
+    return false;
+
+  rtx src, dst;
+  rtx vec;
+
+  /* avl holds the (remaining) length of the required copy.
      cnt holds the length we copy with the current load/store pair.  */
-  rtx cnt = length_rtx;
+  rtx cnt = info.avl;
   rtx label = NULL_RTX;
   rtx dst_addr = copy_addr_to_reg (XEXP (dst_in, 0));
   rtx src_addr = copy_addr_to_reg (XEXP (src_in, 0));
 
-  if (need_loop)
+  if (info.need_loop)
     {
-      length_rtx = copy_to_mode_reg (Pmode, length_rtx);
+      info.avl = copy_to_mode_reg (Pmode, info.avl);
       cnt = gen_reg_rtx (Pmode);
       label = gen_label_rtx ();
 
       emit_label (label);
-      emit_insn (riscv_vector::gen_no_side_effects_vsetvl_rtx (vmode, cnt,
-							       length_rtx));
+      emit_insn (riscv_vector::gen_no_side_effects_vsetvl_rtx (info.vmode, cnt,
+							       info.avl));
     }
 
-  vec = gen_reg_rtx (vmode);
-  src = change_address (src_in, vmode, src_addr);
-  dst = change_address (dst_in, vmode, dst_addr);
+  vec = gen_reg_rtx (info.vmode);
+  src = change_address (src_in, info.vmode, src_addr);
+  dst = change_address (dst_in, info.vmode, dst_addr);
 
   /* If we don't need a loop and have a suitable mode to describe the size,
      just do a load / store pair and leave it up to the later lazy code
      motion pass to insert the appropriate vsetvli.  */
-  if (!need_loop && known_eq (GET_MODE_SIZE (vmode), INTVAL (length_in)))
+  if (!info.need_loop
+      && known_eq (GET_MODE_SIZE (info.vmode), INTVAL (length_in)))
     {
       emit_move_insn (vec, src);
       emit_move_insn (dst, vec);
@@ -1239,26 +1270,26 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
   else
     {
       machine_mode mask_mode = riscv_vector::get_vector_mode
-	(BImode, GET_MODE_NUNITS (vmode)).require ();
+	(BImode, GET_MODE_NUNITS (info.vmode)).require ();
       rtx mask =  CONSTM1_RTX (mask_mode);
       if (!satisfies_constraint_K (cnt))
 	cnt= force_reg (Pmode, cnt);
       rtx m_ops[] = {vec, mask, src};
-      emit_nonvlmax_insn (code_for_pred_mov (vmode),
+      emit_nonvlmax_insn (code_for_pred_mov (info.vmode),
 			  riscv_vector::UNARY_OP_TAMA, m_ops, cnt);
-      emit_insn (gen_pred_store (vmode, dst, mask, vec, cnt,
+      emit_insn (gen_pred_store (info.vmode, dst, mask, vec, cnt,
 				 get_avl_type_rtx (riscv_vector::NONVLMAX)));
     }
 
-  if (need_loop)
+  if (info.need_loop)
     {
       emit_insn (gen_rtx_SET (src_addr, gen_rtx_PLUS (Pmode, src_addr, cnt)));
       emit_insn (gen_rtx_SET (dst_addr, gen_rtx_PLUS (Pmode, dst_addr, cnt)));
-      emit_insn (gen_rtx_SET (length_rtx, gen_rtx_MINUS (Pmode, length_rtx, cnt)));
+      emit_insn (gen_rtx_SET (info.avl, gen_rtx_MINUS (Pmode, info.avl, cnt)));
 
       /* Emit the loop condition.  */
-      rtx test = gen_rtx_NE (VOIDmode, length_rtx, const0_rtx);
-      emit_jump_insn (gen_cbranch4 (Pmode, test, length_rtx, const0_rtx, label));
+      rtx test = gen_rtx_NE (VOIDmode, info.avl, const0_rtx);
+      emit_jump_insn (gen_cbranch4 (Pmode, test, info.avl, const0_rtx, label));
       emit_insn (gen_nop ());
     }
 
