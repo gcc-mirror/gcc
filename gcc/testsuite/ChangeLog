@@ -1,3 +1,59 @@
+2024-10-18  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/115815
+	* gcc.dg/lto/pr115815_0.c: New test.
+
+2024-10-18  Li Xu  <xuli1@eswincomputing.com>
+
+	Backported from master:
+	2024-10-10  Li Xu  <xuli1@eswincomputing.com>
+
+	PR target/116883
+	* g++.target/riscv/rvv/base/pr116883.C: New test.
+
+2024-10-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117054
+	* g++.dg/cpp2a/lambda-targ9.C: New test.
+
+2024-10-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116534
+	* g++.dg/warn/Wtautological-compare4.C: New test.
+
+2024-10-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116476
+	* g++.dg/cpp0x/initlist-opt2.C: New test.
+
+2024-10-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116424
+	* g++.dg/cpp2a/paren-init38.C: New test.
+
+2024-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117116
+	* gcc.target/i386/pr117116.c: New test.
+
 2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* gcc.dg/vect/vect-fncall-mask.c: New.

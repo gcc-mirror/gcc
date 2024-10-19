@@ -1,3 +1,30 @@
+2024-10-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-10-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117054
+	* pt.cc (extract_locals_r): Disable tree_extra_args assert
+	for LAMBDA_EXPR.
+
+2024-10-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116476
+	* call.cc (maybe_init_list_as_array): Try convert_like and see if it
+	worked.
+
+2024-10-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116424
+	* typeck2.cc (process_init_constructor_record): Move the clearing of
+	TARGET_EXPR_ELIDING_P down.
+
 2024-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

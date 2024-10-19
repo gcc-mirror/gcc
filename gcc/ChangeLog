@@ -1,3 +1,42 @@
+2024-10-18  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/115815
+	* cgraph.cc (cgraph_node_cannot_be_local_p_1): Also check
+	DECL_STATIC_CONSTRUCTOR and DECL_STATIC_DESTRUCTOR.
+	* ipa-visibility.cc (non_local_p): Likewise.
+	(cgraph_node::local_p): Delete extraneous line of tabs.
+
+2024-10-18  Li Xu  <xuli1@eswincomputing.com>
+
+	Backported from master:
+	2024-10-10  Li Xu  <xuli1@eswincomputing.com>
+
+	PR target/116883
+	* config/riscv/riscv-c.cc (riscv_pragma_intrinsic_flags_pollute): Choose zvl4096b
+	to initialize null type.
+
+2024-10-17  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116534
+	* fold-const.cc (operand_compare::operand_equal_p): If either
+	field's DECL_FIELD_OFFSET is null, compare the fields with ==.
+
+2024-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117116
+	* config/i386/i386-expand.cc (expand_vector_set): Force "val"
+	into a register before VEC_MERGE/VEC_DUPLICATE RTX is generated
+	if it doesn't satisfy nonimmediate_operand predicate.
+
 2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* tree-if-conv.cc (predicate_statements): Fix handling of
