@@ -1,9 +1,9 @@
 /* Test the ACLE data intrinsics get expanded to the correct instructions on a specific architecture  */
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_softfp_ok } */
-/* { dg-require-effective-target arm_arch_v6_ok } */
+/* { dg-require-effective-target arm_arch_v6_arm_ok } */
 /* { dg-additional-options "--save-temps -O1" } */
-/* { dg-add-options arm_arch_v6 } */
+/* { dg-add-options arm_arch_v6_arm } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include "arm_acle.h"
