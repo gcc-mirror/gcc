@@ -38,6 +38,12 @@ along with GCC; see the file COPYING3.  If not see
 class json_output_format : public diagnostic_output_format
 {
 public:
+  void dump (FILE *out, int indent) const override
+  {
+    fprintf (out, "%*sjson_output_format\n", indent, "");
+    diagnostic_output_format::dump (out, indent);
+  }
+
   void on_begin_group () final override
   {
     /* No-op.  */

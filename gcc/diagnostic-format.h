@@ -32,6 +32,8 @@ class diagnostic_output_format
 public:
   virtual ~diagnostic_output_format () {}
 
+  virtual void dump (FILE *out, int indent) const;
+
   virtual void on_begin_group () = 0;
   virtual void on_end_group () = 0;
 
@@ -51,6 +53,8 @@ public:
   {
     return m_context.get_diagram_theme ();
   }
+
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
 protected:
   diagnostic_output_format (diagnostic_context &context)

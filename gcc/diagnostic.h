@@ -477,6 +477,9 @@ public:
 
   void finish ();
 
+  void dump (FILE *out) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr); }
+
   bool execution_failed_p () const;
 
   void set_original_argv (unique_argv original_argv);

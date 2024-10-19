@@ -418,6 +418,24 @@ diagnostic_context::finish ()
   m_original_argv = nullptr;
 }
 
+/* Dump state of this diagnostic_context to OUT, for debugging.  */
+
+void
+diagnostic_context::dump (FILE *out) const
+{
+  fprintf (out, "diagnostic_context:\n");
+  fprintf (out, "  counts:\n");
+  for (int i = 0; i < DK_LAST_DIAGNOSTIC_KIND; i++)
+    if (m_diagnostic_count[i] > 0)
+      fprintf (out, "    %s%i\n",
+	       get_diagnostic_kind_text (static_cast<diagnostic_t> (i)),
+	       m_diagnostic_count[i]);
+  fprintf (out, "  output format:\n");
+  m_output_format->dump (out, 4);
+  fprintf (out, "  printer:\n");
+  m_printer->dump (out, 4);
+}
+
 /* Return true if sufficiently severe diagnostics have been seen that
    we ought to exit with a non-zero exit code.  */
 
@@ -1553,6 +1571,12 @@ diagnostic_context::end_group ()
 	m_output_format->on_end_group ();
       m_diagnostic_groups.m_emission_count = 0;
     }
+}
+
+void
+diagnostic_output_format::dump (FILE *, int) const
+{
+  /* No-op for now.  */
 }
 
 /* Set the output format for CONTEXT to FORMAT, using BASE_FILE_NAME for

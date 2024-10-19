@@ -3302,6 +3302,12 @@ public:
     gcc_assert (!pending_result);
   }
 
+  void dump (FILE *out, int indent) const override
+  {
+    fprintf (out, "%*ssarif_output_format\n", indent, "");
+    diagnostic_output_format::dump (out, indent);
+  }
+
   void on_begin_group () final override
   {
     /* No-op,  */
@@ -3385,6 +3391,13 @@ public:
   ~sarif_file_output_format ()
   {
     m_builder.flush_to_file (m_output_file.get_open_file ());
+  }
+  void dump (FILE *out, int indent) const override
+  {
+    fprintf (out, "%*ssarif_file_output_format: %s\n",
+	     indent, "",
+	     m_output_file.get_filename ());
+    diagnostic_output_format::dump (out, indent);
   }
   bool machine_readable_stderr_p () const final override
   {

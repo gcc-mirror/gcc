@@ -39,6 +39,9 @@ public:
     m_includes_seen (nullptr)
   {}
   ~diagnostic_text_output_format ();
+
+  void dump (FILE *out, int indent) const override;
+
   void on_begin_group () override {}
   void on_end_group () override {}
   void on_report_diagnostic (const diagnostic_info &,

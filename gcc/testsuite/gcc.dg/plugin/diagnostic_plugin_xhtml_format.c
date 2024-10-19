@@ -594,6 +594,12 @@ public:
     gcc_assert (!pending_diag);
   }
 
+  void dump (FILE *out, int indent) const override
+  {
+    fprintf (out, "%*xhtml_output_format\n", indent, "");
+    diagnostic_output_format::dump (out, indent);
+  }
+
   void on_begin_group () final override
   {
     /* No-op,  */

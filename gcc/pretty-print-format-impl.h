@@ -373,8 +373,8 @@ public:
 
   void append_formatted_chunk (obstack &s, const char *content);
 
-  void dump (FILE *out) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr); }
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
   // For use in selftests
   pp_formatted_chunks *get_prev () const { return m_prev; }

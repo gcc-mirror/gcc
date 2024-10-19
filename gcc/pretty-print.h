@@ -93,8 +93,8 @@ public:
   pp_formatted_chunks *push_formatted_chunks ();
   void pop_formatted_chunks ();
 
-  void dump (FILE *out) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr); }
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
   /* Obstack where the text is built up.  */
   struct obstack m_formatted_obstack;
@@ -316,8 +316,8 @@ public:
   void set_real_maximum_length ();
   int remaining_character_count_for_line ();
 
-  void dump (FILE *out) const;
-  void DEBUG_FUNCTION dump () const { dump (stderr); }
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
 
 private:
   /* Where we print external representation of ENTITY.  */

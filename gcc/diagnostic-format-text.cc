@@ -69,6 +69,13 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
     }
 }
 
+void
+diagnostic_text_output_format::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sdiagnostic_text_output_format\n", indent, "");
+  diagnostic_output_format::dump (out, indent);
+}
+
 /* Implementation of diagnostic_output_format::on_report_diagnostic vfunc
    for GCC's standard textual output.  */
 
