@@ -220,7 +220,6 @@ public:
 };
 
 class edit_context;
-namespace json { class value; }
 class diagnostic_client_data_hooks;
 class logical_location;
 class diagnostic_diagram;
