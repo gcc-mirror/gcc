@@ -611,9 +611,9 @@ PROCEDURE DeclareArgEnvParams (tokno: CARDINAL; proc: CARDINAL) ;
 BEGIN
    Assert (IsProcedure (proc)) ;
    StartScope (proc) ;
-   Assert (PutParam (tokno, proc, 1, MakeKey ("argc"), Integer, FALSE)) ;
-   Assert (PutParam (tokno, proc, 2, MakeKey ("argv"), Address, FALSE)) ;
-   Assert (PutParam (tokno, proc, 3, MakeKey ("envp"), Address, FALSE)) ;
+   Assert (PutParam (tokno, proc, 1, MakeKey ("argc"), Integer, FALSE, tokno)) ;
+   Assert (PutParam (tokno, proc, 2, MakeKey ("argv"), Address, FALSE, tokno)) ;
+   Assert (PutParam (tokno, proc, 3, MakeKey ("envp"), Address, FALSE, tokno)) ;
    EndScope
 END DeclareArgEnvParams ;
 

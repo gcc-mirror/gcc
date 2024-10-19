@@ -69,11 +69,23 @@ EXPORT QUALIFIED MetaError0, MetaError1, MetaError2, MetaError3, MetaError4,
     {%1D}     sets the error message to where symbol 1 was declared.
               The declaration will choose the definition module, then
               implementation (or program) module.
+    {%1G}     sets the error message to where symbol 1 was declared.
+              The declaration will choose in order the forward declaration,
+              implementation module, program module or definition module.
     {%1M}     sets the error message to where symbol 1 was declared.
               The declaration will choose the implementation or program
               module and if these do not exist then it falls back to
               the definition module.
     {%1U}     sets the error message to where symbol 1 was first used.
+    {%1V}     set the error message location to the name of the symbol declared.
+              For example foo: bar
+                          ^^^  some error message.
+    {%1H}     set the error message location to the whole declaration of the symbol.
+              For example foo: bar
+                          ^^^^^^^^ some error message.
+    {%1B}     set the error message location to the type declaration of the symbol.
+              For example foo: bar
+                               ^^^ some error message.
     {%A}      abort, issue non recoverable error message (this should
               not used for internal errors).
     {%E}      error (default recoverable error).

@@ -57,7 +57,7 @@ FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 
 FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     PushTtok, PushTFtok, PopTtok, PopTFtok, OperandTok,
-                    PushTFntok, Top,
+                    PushTFntok, Top, DupFrame,
                     StartBuildDefFile, StartBuildModFile,
                     BuildModuleStart,
                     EndBuildFile,
@@ -422,6 +422,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -1087,14 +1088,23 @@ WithStatement := "WITH"
                  "END"
                =:
 
-ProcedureDeclaration := ProcedureHeading ";" ( ProcedureBlock              % PushAutoOn %
-                        Ident )                                            % EndBuildProcedure %
+ProcedureDeclaration :=                                                    % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                        ProcedureHeading ";" PostProcedureHeading          % BlockAssert (top = Top ()) %
+                                                                  =:
+
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                            % DupFrame %
+                                                                           % EndBuildProcedure %
+                    =:
+ProperProcedure := ProcedureBlock                                          % PushAutoOn %
+                                  Ident                                    % EndBuildProcedure %
                                                                            % PopAuto %
-                      =:
+                                         =:
 
 DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" |
-                            "__INLINE__" ]
-                       =:
+                            "__INLINE__" ] =:
 
 ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
                      DefineBuiltinProcedure                                % PushAutoOn %

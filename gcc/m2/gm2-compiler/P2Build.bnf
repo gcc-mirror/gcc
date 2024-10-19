@@ -97,6 +97,9 @@ FROM P2SymBuild IMPORT P2StartBuildProgramModule,
                        EndBuildProcedure,
                        BuildFunction, BuildOptFunction,
                        BuildNoReturnAttribute,
+                       BuildProcedureDefinedByForward,
+                       BuildProcedureDefinedByProper,
+                       EndBuildForward,
 
                        BuildPointerType,
                        BuildRecord, BuildFieldRecord,
@@ -115,7 +118,8 @@ FROM P2SymBuild IMPORT P2StartBuildProgramModule,
                        DetermineType, PushType, PopType,
                        SeenUnknown, SeenSet, SeenString, SeenArray, SeenConstructor,
                        SeenCast,
-                       PushRememberConstant, PopRememberConstant ;
+                       PushRememberConstant, PopRememberConstant,
+                       CheckProcedure ;
 
 FROM M2Reserved IMPORT ArrayTok, VarTok ;
 
@@ -499,6 +503,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -884,7 +889,9 @@ FormalTypeList := "(" ( ")" FormalReturn |
                         ProcedureParameters
                   ")" FormalReturn ) =:
 
-FormalReturn := [ ":" OptReturnType ] =:
+FormalReturn := ( ":" OptReturnType |                                      % CheckProcedure %
+                )
+              =:
 
 OptReturnType := "[" Qualident                                             % BuildOptFunction %
                                "]" | Qualident                             % BuildFunction %
@@ -1008,13 +1015,22 @@ LoopStatement := "LOOP" StatementSequence "END" =:
 
 WithStatement := "WITH" Designator "DO" StatementSequence "END" =:
 
-ProcedureDeclaration := ProcedureHeading                                   % Assert(IsProcedure(OperandT(1))) %
-                                         ";" ( ProcedureBlock
-                                                                           % Assert(IsProcedure(OperandT(1))) %
-                        Ident )
-                                                                           % EndBuildProcedure %
+ProcedureDeclaration :=                                                    % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                        ProcedureHeading                                   % Assert(IsProcedure(OperandT(1))) %
+                                         ";" PostProcedureHeading          % Assert (top = Top ()) %
+                                                                  =:
 
-                      =:
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                            % Assert (IsProcedure (OperandT (1))) %
+                                                                           % BuildProcedureDefinedByForward (OperandT (1)) %
+                                                                           % EndBuildForward %
+                    =:
+
+ProperProcedure := ProcedureBlock                                          % Assert(IsProcedure(OperandT(1))) %
+                                  Ident                                    % EndBuildProcedure %
+                                        =:
 
 DefineBuiltinProcedure :=  [ "__ATTRIBUTE__" "__BUILTIN__"
                               "(" "("                                      % PushAutoOff %
@@ -1064,6 +1080,7 @@ AttributeUnused := [ "<*"                                                  % Pus
 -- error messages
 
 ProcedureBlock :=                                                          % Assert(IsProcedure(OperandT(1))) %
+                                                                           % BuildProcedureDefinedByProper (OperandT (1)) %
                   {                                                        % Assert(IsProcedure(OperandT(1))) %
                     Declaration                                            % Assert(IsProcedure(OperandT(1))) %
                                 } [ "BEGIN" ProcedureBlockBody ] "END"     % Assert(IsProcedure(OperandT(1))) %
@@ -1161,7 +1178,7 @@ NonVarFPSection :=                                                         % VAR
                                                                            % BuildFPSection %
                 =:
 
-FormalType := "ARRAY" "OF"                                                 % VAR n: CARDINAL ; %
+FormalType := "ARRAY" "OF"                                                 % VAR n, tok: CARDINAL ; %
                                                                            % PushTF(ArrayTok, 1) %
                            { "ARRAY" "OF"                                  % PopTF(ArrayTok, n) %
                                                                            % INC(n) %
@@ -1169,9 +1186,9 @@ FormalType := "ARRAY" "OF"                                                 % VAR
                                           } Qualident
                                                       |                    % VAR Sym, Type: CARDINAL ; %
                                                         Qualident
-                                                                           % PopTF(Sym, Type) ;
+                                                                           % PopTFtok (Sym, Type, tok) ;
                                                                              PushT(NulTok) ;
-                                                                             PushTF(Sym, Type) %
+                                                                             PushTFtok (Sym, Type, tok) %
             =:
 
 ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %

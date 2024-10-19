@@ -65,6 +65,7 @@ FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, Opera
                     PushTFA,
                     PushTFn, PopTFn, PushTFtok, PopTtok, PopTFtok, PushTtok, PushTFntok,
                     PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
+                    DupFrame,
                     BuildTypeForConstructor, BuildConstructor, BuildConstructorEnd,
                     PopConstructor,
                     NextConstructorField, SilentBuildConstructor,
@@ -87,6 +88,7 @@ FROM PCSymBuild IMPORT PCStartBuildProgModule,
                        PCStartBuildProcedure,
                        PCBuildProcedureHeading,
                        PCEndBuildProcedure,
+                       PCEndBuildForward,
                        PCBuildImportOuterModule,
                        PCBuildImportInnerModule,
                        StartDesConst,
@@ -466,6 +468,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -1117,11 +1120,20 @@ WithStatement := "WITH" Designator "DO"
                  "END"
                =:
 
-ProcedureDeclaration := ProcedureHeading ";"                               % PushAutoOff %
-                                             ProcedureBlock                % PopAuto ; PushAutoOn %
-                        Ident                                              % PCEndBuildProcedure ;
-                                                                             PopAuto %
-                      =:
+ProcedureDeclaration :=                                                    % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                        ProcedureHeading ";" PostProcedureHeading          % Assert (top = Top ()) %
+                                                                  =:
+
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                            % PCEndBuildForward %
+                    =:
+
+ProperProcedure := ProcedureBlock                                          % PushAutoOn %
+                                  Ident                                    % PCEndBuildProcedure %
+                                                                           % PopAuto %
+                                         =:
 
 DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__"
                             "(" "("                                        % PushAutoOff %
@@ -1133,11 +1145,11 @@ ProcedureHeading := "PROCEDURE"                                            % M2E
                                                                            % PushAutoOn %
                      DefineBuiltinProcedure
                      ( Ident
-                                                                           % PCStartBuildProcedure ;
-                                                                             PushAutoOff %
+                                                                           % PCStartBuildProcedure %
+                                                                           % PushAutoOff %
                        [ FormalParameters ] AttributeNoReturn
-                                                                           % PCBuildProcedureHeading ;
-                                                                             PopAuto %
+                                                                           % PCBuildProcedureHeading %
+                                                                           % PopAuto %
                      )                                                     % PopAuto %
                      =:
 
@@ -1147,11 +1159,11 @@ DefProcedureHeading := "PROCEDURE"                                         % M2E
                                                                            % PushAutoOn %
                         Builtin
                         ( Ident
-                                                                           % PCStartBuildProcedure ;
-                                                                             PushAutoOff %
+                                                                           % PCStartBuildProcedure %
+                                                                           % PushAutoOff %
                           [ DefFormalParameters ] AttributeNoReturn
-                                                                           % PCBuildProcedureHeading ;
-                                                                             PopAuto %
+                                                                           % PCBuildProcedureHeading %
+                                                                           % PopAuto %
                         )                                                  % PopAuto %
                                                                            % M2Error.LeaveErrorScope %
                      =:

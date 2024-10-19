@@ -1,0 +1,5 @@
+DEFINITION MODULE badparam ;
+
+PROCEDURE foo (c: CHAR) ;
+
+END badparam.

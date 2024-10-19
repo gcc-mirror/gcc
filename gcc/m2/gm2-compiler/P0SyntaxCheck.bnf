@@ -47,9 +47,14 @@ IMPLEMENTATION MODULE P0SyntaxCheck ;
 FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
                      InsertTokenAndRewind, GetTokenNo, DisplayToken, DumpTokens ;
 
+FROM M2Quads IMPORT PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn,
+                    PopAuto, DisplayStack, PushTFtok, PushTtok, DupFrame,
+                    Top ;
+
+FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok,
+                       QualifiedTok, UnQualifiedTok, BuiltinTok, InlineTok ;
+
 FROM M2MetaError IMPORT MetaErrorStringT0 ;
-FROM M2Quads IMPORT PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack, PushTFtok, PushTtok ;
-FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok, BuiltinTok, InlineTok ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 FROM NameKey IMPORT Name, NulName, makekey ;
 FROM StrLib IMPORT StrCopy, StrConCat, StrEqual ;
@@ -64,7 +69,7 @@ FROM P0SymBuild IMPORT RegisterImports, RegisterInnerImports,
                        RegisterProgramModule,
                        RegisterImplementationModule, RegisterDefinitionModule,
                        RegisterInnerModule, EndModule,
-                       RegisterProcedure, EndProcedure ;
+                       RegisterProcedure, EndProcedure, EndForward ;
 
 FROM SymbolTable IMPORT NulSym, PutModuleContainsBuiltin, PutHiddenTypeDeclared ;
 
@@ -86,6 +91,16 @@ VAR
    seenError        : BOOLEAN ;
    LastIdent        : Name ;
    InsertCount      : CARDINAL ;
+
+
+(*
+   BlockAssert - wrap an Assert specifically for blocks.
+*)
+
+PROCEDURE BlockAssert (value: BOOLEAN) ;
+BEGIN
+   Assert (value) ;
+END BlockAssert ;
 
 
 PROCEDURE ErrorString (s: String) ;
@@ -487,6 +502,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -805,11 +821,20 @@ LoopStatement := "LOOP" StatementSequence "END" =:
 
 WithStatement := "WITH" Designator "DO" StatementSequence "END" =:
 
-ProcedureDeclaration :=
-                        ProcedureHeading ";" ( ProcedureBlock             % PushAutoOn %
-                                                              Ident       % EndProcedure %
+ProcedureDeclaration :=                                                   % VAR top: CARDINAL ; %
+                                                                          % top := Top () %
+                        ProcedureHeading ";" PostProcedureHeading         % BlockAssert (top = Top ()) %
+                                                                  =:
+
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                           % EndForward %
+                    =:
+
+ProperProcedure := ProcedureBlock                                         % PushAutoOn %
+                                  Ident                                   % EndProcedure %
                                                                           % PopAuto %
-                                                                    ) =:
+                                         =:
 
 DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" |
                             "__INLINE__" ] =:

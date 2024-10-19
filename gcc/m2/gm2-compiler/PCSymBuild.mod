@@ -677,6 +677,28 @@ END PCEndBuildProcedure ;
 
 
 (*
+   EndBuildForward - Ends building a forward declaration.
+
+                     The Stack:
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | ProcSym    |
+                     |------------|
+                     | NameStart  |
+                     |------------|
+                                           Empty
+*)
+
+PROCEDURE PCEndBuildForward ;
+BEGIN
+   PopN (2)
+END PCEndBuildForward ;
+
+
+(*
    BuildProcedureHeading - Builds a procedure heading for the definition
                            module procedures.
 

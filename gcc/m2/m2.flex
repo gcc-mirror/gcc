@@ -264,6 +264,7 @@ EXIT                       { updatepos(); M2LexBuf_AddTok(M2Reserved_exittok); r
 EXPORT                     { updatepos(); M2LexBuf_AddTok(M2Reserved_exporttok); return; }
 FINALLY                    { updatepos(); M2LexBuf_AddTok(M2Reserved_finallytok); return; }
 FOR                        { updatepos(); M2LexBuf_AddTok(M2Reserved_fortok); return; }
+FORWARD                    { updatepos(); M2LexBuf_AddTok(M2Reserved_forwardtok); return; }
 FROM                       { updatepos(); M2LexBuf_AddTok(M2Reserved_fromtok); return; }
 IF                         { updatepos(); M2LexBuf_AddTok(M2Reserved_iftok); return; }
 IMPLEMENTATION             { updatepos(); M2LexBuf_AddTok(M2Reserved_implementationtok); return; }

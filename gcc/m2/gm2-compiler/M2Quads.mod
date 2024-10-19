@@ -15619,6 +15619,22 @@ END PopTF ;
 
 
 (*
+   DupFrame - duplicate the top of stack and push the new frame.
+*)
+
+PROCEDURE DupFrame ;
+VAR
+   f, newf: BoolFrame ;
+BEGIN
+   f := PopAddress (BoolStack) ;
+   PushAddress (BoolStack, f) ;
+   newf := newBoolFrame () ;
+   newf^ := f^ ;
+   PushAddress (BoolStack, newf)
+END DupFrame ;
+
+
+(*
    newBoolFrame - creates a new BoolFrame with all fields initialised to their defaults.
 *)
 

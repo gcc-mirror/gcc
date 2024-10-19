@@ -46,7 +46,7 @@ TYPE
                      name           : Name ;
                      kind           : Kind ;
                      sym            : CARDINAL ;
-                     level          : CARDINAL ;
+                     level          : INTEGER ;
                      token          : CARDINAL ;      (* where the block starts.  *)
                      LocalModules   : List ;          (* locally declared modules at the current level  *)
                      ImportedModules: Index ;         (* current list of imports for the scanned module *)
@@ -65,7 +65,7 @@ TYPE
 VAR
    headBP,
    curBP : BlockInfoPtr ;
-   Level : CARDINAL ;
+   Level : INTEGER ;
 
 
 (*
@@ -534,6 +534,18 @@ BEGIN
    EndBlock ;
    M2Error.LeaveErrorScope
 END EndProcedure ;
+
+
+(*
+   EndForward - ends building a forward procedure.
+*)
+
+PROCEDURE EndForward ;
+BEGIN
+   PopN (1) ;
+   EndBlock ;
+   M2Error.LeaveErrorScope
+END EndForward ;
 
 
 (*
