@@ -1,3 +1,30 @@
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117028
+	* include/cpplib.h (struct cpp_options): Add named_uc_escape_seqs,
+	octal_constants and cpp_warn_c23_c2y_compat members.
+	(enum cpp_warning_reason): Add CPP_W_C23_C2Y_COMPAT enumerator.
+	* init.cc (struct lang_flags): Add named_uc_escape_seqs and
+	octal_constants bit-fields.
+	(lang_defaults): Add initializers for them into the table.
+	(cpp_set_lang): Initialize named_uc_escape_seqs and octal_constants.
+	(cpp_create_reader): Initialize cpp_warn_c23_c2y_compat to -1.
+	* charset.cc (_cpp_valid_ucn): Test
+	CPP_OPTION (pfile, named_uc_escape_seqs) rather than
+	CPP_OPTION (pfile, delimited_escape_seqs) in \N{} related tests.
+	Change wording of C cpp_pedwarning for \u{} and emit
+	-Wc23-c2y-compat warning for it too if needed.  Formatting fixes.
+	(convert_hex): Change wording of C cpp_pedwarning for \u{} and emit
+	-Wc23-c2y-compat warning for it too if needed.
+	(convert_oct): Likewise.
+	* expr.cc (cpp_classify_number): Handle C2Y 0o or 0O prefixed
+	octal constants.
+	(cpp_interpret_integer): Likewise.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (interpret_float_suffix): ?: operator formatting fixes.
+
 2024-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (TTYPE_TABLE): Add CPP_EMBED token type.

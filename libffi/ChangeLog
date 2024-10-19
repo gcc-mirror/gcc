@@ -1,3 +1,9 @@
+2024-10-16  Joseph Myers  <josmyers@redhat.com>
+
+	* testsuite/libffi.call/va_struct2.c (test_fn): Cast n to void.
+	* testsuite/libffi.call/va_struct3.c (test_fn): Likewise.
+	Backported from <https://github.com/libffi/libffi/pull/861>.
+
 2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* include/ffi_cfi.h (cfi_negate_ra_state): Declare AArch64 cfi

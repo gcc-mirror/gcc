@@ -1,3 +1,26 @@
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* cp-tree.h (array_type_nelts_top)
+	* tree.cc (array_type_nelts_top):
+	Remove function (move to gcc/).
+
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* decl.cc (reshape_init_array)
+	* init.cc
+	(build_zero_init_1)
+	(build_value_init_noctor)
+	(build_vec_init)
+	(build_delete)
+	* lambda.cc (add_capture)
+	* tree.cc (array_type_nelts_top):
+	Rename array_type_nelts => array_type_nelts_minus_one
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* search.cc (lookup_member): ?: operator formatting fixes.
+	* typeck.cc (cp_build_modify_expr): Likewise.
+
 2024-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117022

@@ -1,3 +1,18 @@
+2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/t-aarch64: Always use -Werror
+	-Wno-prio-ctor-dtor.
+
+2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/cpuinfo.c (__init_cpu_features_resolver): Add
+	prototype.
+	(__init_cpu_features): Likewise.
+
+2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/lse.S: Undefine L() macro.
+
 2024-10-14  Yangyu Chen  <chenyangyu@isrc.iscas.ac.cn>
 
 	* config/riscv/feature_bits.c (__init_riscv_features_bits_linux):

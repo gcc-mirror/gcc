@@ -1,3 +1,104 @@
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (ranges::__assign_one): Remove.
+	(__copy_or_move, __copy_or_move_backward): Use std::__assign_one
+	instead of ranges::__assign_one.
+
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__copy_move_a1, __copy_move_a)
+	(__copy_move_backward_a1, __copy_move_backward_a, move_backward)
+	(__fill_a1, __fill_a, fill, __fill_n_a, fill_n, __equal_aux):
+	Add always_inline attribute to one-line forwarding functions.
+
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (find): Add nodiscard.
+
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115444
+	PR libstdc++/114817
+	* include/bits/stl_algo.h (__copy_n): Remove generic overload
+	and overload for random access iterators.
+	(copy_n): Inline generic version of __copy_n here. Do not defer
+	to std::copy for random access iterators.
+	* include/bits/stl_algobase.h (__copy_move): Remove.
+	(__nothrow_contiguous_iterator, __memcpyable_iterators): New
+	concepts.
+	(__assign_one, _GLIBCXX_TO_ADDR, _GLIBCXX_ADVANCE): New helpers.
+	(__copy_move_a2): Inline __copy_move logic and conditional
+	memmove optimization into the most generic overload.
+	(__copy_n_a): Likewise.
+	(__copy_move_backward): Remove.
+	(__copy_move_backward_a2): Inline __copy_move_backward logic and
+	memmove optimization into the most generic overload.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/114817.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/114817.cc:
+	New test.
+	* testsuite/25_algorithms/copy/114817.cc: New test.
+	* testsuite/25_algorithms/copy/115444.cc: New test.
+	* testsuite/25_algorithms/copy_n/114817.cc: New test.
+
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__normal_iterator): Make all
+	members and overloaded operators constexpr before C++20, and add
+	always_inline attribute
+	(__to_address): Add nodiscard and always_inline attributes.
+	(__make_move_if_noexcept_iterator): Add nodiscard
+	and make unconditionally constexpr.
+	(__niter_base(__normal_iterator), __niter_base(Iter)):
+	Add nodiscard and always_inline attributes.
+	(__niter_base(reverse_iterator), __niter_base(move_iterator))
+	(__miter_base): Add inline.
+	(__niter_wrap(From, To)): Add nodiscard attribute.
+	(__niter_wrap(const Iter&, Iter)): Add nodiscard and
+	always_inline attributes.
+
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/68350
+	PR libstdc++/93059
+	* include/bits/stl_uninitialized.h (__check_constructible)
+	(_GLIBCXX_USE_ASSIGN_FOR_INIT): Remove.
+	[C++98] (__unwrappable_niter): New trait.
+	(__uninitialized_copy<true>): Replace use of std::copy.
+	(uninitialized_copy): Fix Doxygen comments. Open-code memcpy
+	optimization for C++11 and later.
+	(__uninitialized_fill<true>): Replace use of std::fill.
+	(uninitialized_fill): Fix Doxygen comments. Open-code memset
+	optimization for C++11 and later.
+	(__uninitialized_fill_n<true>): Replace use of std::fill_n.
+	(uninitialized_fill_n): Fix Doxygen comments. Open-code memset
+	optimization for C++11 and later.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/64476.cc:
+	Adjust expected behaviour to match what the standard specifies.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/sizes.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/1.cc:
+	Adjust dg-error directives.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/89164.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy_n/89164.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/89164.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill_n/89164.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/89164.cc: Likewise.
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: Likewise.
+
+2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__niter_base, __niter_wrap): Move
+	to ...
+	* include/bits/stl_iterator.h: ... here.
+	(__niter_base, __miter_base): Move all overloads to the end of
+	the header.
+	* testsuite/24_iterators/normal_iterator/wrapping.cc: New test.
+
 2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (strip_fundts_namespace): New.

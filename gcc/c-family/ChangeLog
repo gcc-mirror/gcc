@@ -1,3 +1,20 @@
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117028
+	* c.opt (Wc23-c2y-compat): Add CPP and CppReason parameters.
+	* c-opts.cc (set_std_c2y): Use CLK_STDC2Y or CLK_GNUC2Y rather
+	than CLK_STDC23 and CLK_GNUC23.  Formatting fix.
+	* c-lex.cc (interpret_integer): Handle C2Y 0o or 0O prefixed
+	and wb/WB/uwb/UWB suffixed octal constants.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-opts.cc (c_common_init_options, c_common_handle_option,
+	c_common_finish, set_std_c89, set_std_c99, set_std_c11,
+	set_std_c17, set_std_c23, set_std_cxx98, set_std_cxx11,
+	set_std_cxx14, set_std_cxx17, set_std_cxx20, set_std_cxx23,
+	set_std_cxx26): ?: operator formatting fixes.
+
 2024-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ppoutput.cc (token_streamer::stream): Add special code to spell

@@ -1,3 +1,14 @@
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* backend/rust-tree.h (array_type_nelts_top)
+	* backend/rust-tree.cc (array_type_nelts_top):
+	Remove function.
+
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* backend/rust-tree.cc (array_type_nelts_top):
+	Rename array_type_nelts => array_type_nelts_minus_one
+
 2024-09-26  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* checks/errors/borrowck/rust-bir.h

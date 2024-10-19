@@ -1,3 +1,9 @@
+2024-10-18  Alex Coplan  <alex.coplan@arm.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as aarch64 ldp/stp
+	maintainer.
+	(Various Maintainers): Add myself as pair fusion maintainer.
+
 2024-10-16  Filip Kastl  <fkastl@suse.cz>
 
 	* MAINTAINERS: Fix Write After Approval name order.

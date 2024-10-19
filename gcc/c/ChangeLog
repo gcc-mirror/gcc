@@ -1,3 +1,29 @@
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* c-decl.cc (one_element_array_type_p, get_parm_array_spec)
+	* c-fold.cc (c_fold_array_ref):
+	Rename array_type_nelts => array_type_nelts_minus_one
+
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117177
+	* c-parser.cc (c_parser_initval): Instead of doing
+	orig_len == INT_MAX checks before consuming tokens to set
+	last = 1, check it after consuming it and if not followed
+	by CPP_COMMA CPP_NUMBER, call process_init_element once
+	more with the last CPP_NUMBER.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (c_get_loop_names): Add checking assert that
+	c is non-NULL in the loop.
+	(c_finish_bc_name): Likewise.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_expression): Initialize next.original_type
+	to integer_type_node for the CPP_EMBED case.
+
 2024-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-tree.h (c_maybe_optimize_large_byte_initializer): Declare.

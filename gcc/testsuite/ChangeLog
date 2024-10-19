@@ -1,3 +1,938 @@
+2024-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_37.f90: New test.
+
+2024-10-18  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/vsetvl/pr112929-1.c: Expect smaller lmul.
+	* gcc.target/riscv/rvv/vsetvl/pr112988-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/cpymem-3.c: New test.
+
+2024-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117192
+	* gcc.target/i386/pr117192.c: New test.
+
+2024-10-18  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/acle/asm/div_s32.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/acle/asm/div_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_u64.c: Likewise.
+	* gcc.target/aarch64/sve/fold_div_zero.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s16.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mul_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u8.c: Likewise.
+	* gcc.target/aarch64/sve/mul_const_run.c: Likewise.
+
+2024-10-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Remove special-casing of tests
+	named trapv-*
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Add dg-additional-options -ftrapv.
+
+2024-10-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Remove special-casing of tests
+	named wrapv-*
+	* gcc.dg/vect/wrapv-vect-7.c: Add dg-additional-options -fwrapv.
+	* gcc.dg/vect/wrapv-vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-2short.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-pattern-2c.c: Likewise.
+
+2024-10-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Remove special-casing of tests
+	named fast-math-*
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Add dg-additional-options
+	-ffast-math.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Likewise.
+	* gcc.dg/vect/fast-math-bb-slp-call-3.c: Likewise.
+	* gcc.dg/vect/fast-math-ifcvt-1.c: Likewise.
+	* gcc.dg/vect/fast-math-pr35982.c: Likewise.
+	* gcc.dg/vect/fast-math-pr43074.c: Likewise.
+	* gcc.dg/vect/fast-math-pr44152.c: Likewise.
+	* gcc.dg/vect/fast-math-pr55281.c: Likewise.
+	* gcc.dg/vect/fast-math-slp-27.c: Likewise.
+	* gcc.dg/vect/fast-math-slp-38.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-call-1.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-call-2.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-complex-3.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-outer-7.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-pow-1.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-pow-2.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-pr25911.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-pr29925.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-reduc-5.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-reduc-7.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-reduc-8.c: Likewise.
+	* gcc.dg/vect/fast-math-vect-reduc-9.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: Likewise.
+
+2024-10-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Remove special-casing of tests
+	named no-vfa-*
+	* gcc.dg/vect/no-vfa-pr29145.c: Add dg-additional-options
+	--param vect-max-version-for-alias-checks=0.
+	* gcc.dg/vect/no-vfa-vect-101.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102a.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-37.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-43.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-45.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-49.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-51.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-53.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-57.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-61.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-79.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-1.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-dv-2.c: Likewise.
+
+2024-10-18  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/lto/pr115815_0.c: Add dejagu directives.
+
+2024-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/117140
+	* gcc.dg/vect/vect-early-break_129-pr117140.c: New test.
+
+2024-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vec-perm-lower.c: New test.
+
+2024-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/const_create_using_fmov.c: New test.
+
+2024-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_18.c: Update zero regexpr.
+	* gcc.target/aarch64/memset-corner-cases.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_bf16.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_f16.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_f32.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_f64.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_s16.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_s32.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_s64.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_s8.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_u16.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_u32.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_u64.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/revd_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acge_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acge_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acge_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acgt_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acgt_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acgt_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acle_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acle_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/acle_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/aclt_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/aclt_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/aclt_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cmpuo_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cmpuo_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/cmpuo_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u8.c: Likewise.
+	* gcc.target/aarch64/sve/const_fold_div_1.c: Likewise.
+	* gcc.target/aarch64/sve/const_fold_mul_1.c: Likewise.
+	* gcc.target/aarch64/sve/dup_imm_1.c: Likewise.
+	* gcc.target/aarch64/sve/fdup_1.c: Likewise.
+	* gcc.target/aarch64/sve/fold_div_zero.c: Likewise.
+	* gcc.target/aarch64/sve/fold_mul_zero.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_4.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+
+2024-10-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_wb_u16.c: Use pointer
+	parameter in foo2.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_m_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_x_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_x_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdwdupq_x_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_m_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_wb_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_x_wb_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_x_wb_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/viwdupq_x_wb_u8.c: Likewise.
+
+2024-10-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vddupq_m_wb_u16.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_wb_u32.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_m_wb_u8.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_wb_u16.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_wb_u32.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_wb_u8.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_x_wb_u16.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_x_wb_u32.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vddupq_x_wb_u8.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_wb_u16.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_wb_u32.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_m_wb_u8.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_wb_u16.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_wb_u32.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_wb_u8.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_x_wb_u16.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_x_wb_u32.c: Remove foo2.
+	* gcc.target/arm/mve/intrinsics/vidupq_x_wb_u8.c: Remove foo2.
+
+2024-10-18  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/acle/cde-mve-error-1.c: Corrected quotation in
+	expected error message.
+
+2024-10-18  Victor Rodriguez  <victor.rodriguez.bahena@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8-2.c: Fix typo.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8s-2.c: Ditto.
+
+2024-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/105361
+	* gfortran.dg/pr105361.f90: In the comparisons of
+	real values after a read, use a tolerance so that
+	subtle differences in results between different
+	architectures do not fail.
+
+2024-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/117191
+	* gcc.target/avr/torture/pr117189.c: Rename to...
+	* gcc.target/avr/torture/pr117191.c: ...this.
+
+2024-10-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/builtin-object-size-1.c (test12): New test.
+	(main): Call it.
+
+2024-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/lra-pr116550-2.c: Rename to...
+	* gcc.target/avr/torture/pr117189.c: ...this.
+
+2024-10-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/116550
+	* gcc.target/avr/torture/lra-pr116550-1.c: New file.
+	* gcc.target/avr/torture/lra-pr116550-2.c: New file.
+
+2024-10-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect.exp: Process no-fast-math-* and
+	no-math-errno-* in the main set.
+	* gcc.dg/vect/no-fast-math-vect16.c: Add -fno-fast-math.
+	* gcc.dg/vect/no-math-errno-slp-32.c: Add -fno-math-errno.
+	* gcc.dg/vect/no-math-errno-vect-pow-1.c: Likewise.
+
+2024-10-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-25.c: Add -march=x86-64-v3.
+	* gcc.target/i386/avx10_1-26.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf-vector-cmpp-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-media-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-minmax-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vaddnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcmppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdivnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfpclasspbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetexppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetmantpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmaxpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmulnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrcppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vreducenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrndscalenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrsqrtpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vscalefpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsqrtnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsubnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-bf-vector-cmpp-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-2.c: Ditto.
+	* gcc.target/i386/avx10_2-compare-1.c: Ditto.
+	* gcc.target/i386/avx10_2-compare-1b.c: Ditto.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-media-1.c: Ditto.
+	* gcc.target/i386/avx10_2-minmax-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf-vector-fast-math-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vaddnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcmppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomsbf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomsbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtne2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtneph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttnebf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttnebf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdivnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmaddXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmsubXXXnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfpclasspbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetexppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetmantpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmaxpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsh-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxss-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovd-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmulnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrcppbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vreducenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrndscalenepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrsqrtpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vscalefpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsqrtnepbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsubnepbf16-2.c: Ditto.
+
+2024-10-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/add_sources/submodule_1_sub.f90: New test.
+	* gfortran.dg/coarray/submodule_1.f90: New test.
+
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117028
+	* gcc.dg/bitint-112.c: New test.
+	* gcc.dg/c23-digit-separators-1.c: Add _Static_assert for
+	valid binary constant with digit separator.
+	* gcc.dg/c23-octal-constants-1.c: New test.
+	* gcc.dg/c23-octal-constants-2.c: New test.
+	* gcc.dg/c2y-digit-separators-1.c: New test.
+	* gcc.dg/c2y-digit-separators-2.c: New test.
+	* gcc.dg/c2y-octal-constants-1.c: New test.
+	* gcc.dg/c2y-octal-constants-2.c: New test.
+	* gcc.dg/c2y-octal-constants-3.c: New test.
+	* gcc.dg/cpp/c23-delimited-escape-seq-1.c: New test.
+	* gcc.dg/cpp/c23-delimited-escape-seq-2.c: New test.
+	* gcc.dg/cpp/c2y-delimited-escape-seq-1.c: New test.
+	* gcc.dg/cpp/c2y-delimited-escape-seq-2.c: New test.
+	* gcc.dg/cpp/c2y-delimited-escape-seq-3.c: New test.
+	* gcc.dg/cpp/c2y-delimited-escape-seq-4.c: New test.
+	* gcc.dg/octal-constants-1.c: New test.
+	* gcc.dg/octal-constants-2.c: New test.
+	* gcc.dg/octal-constants-3.c: New test.
+	* gcc.dg/octal-constants-4.c: New test.
+	* gcc.dg/system-octal-constants-1.c: New test.
+	* gcc.dg/system-octal-constants-1.h: New file.
+
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117177
+	* c-c++-common/init-4.c: New test.
+
+2024-10-17  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr116940.c: New test.
+
+2024-10-17  Cui, Lili  <lili.cui@intel.com>
+
+	* g++.target/i386/vect-cmp.C: New test.
+
+2024-10-16  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/builtin-object-size-3.c (test9): Adjust test.
+	* gcc.dg/builtin-object-size-4.c (test8): Likewise.
+
+2024-10-16  Jolen Li  <jolen.li@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vdupq_n_u8.c (foo1): Update
+	expected code.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_u16.c (foo1): Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_u32.c (foo1): Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_s8.c: Add test with
+	immediate argument.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f16.c (foo1): Update
+	expected code.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f32.c (foo1): Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_m_n_s16.c: Add test with
+	immediate argument.
+	* gcc.target/arm/mve/intrinsics/vdupq_m_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_m_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_x_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_x_n_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_x_n_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f32-2.c: New test.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_s16-2.c: New test.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_s32-2.c: New test.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_u16-2.c: New test.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_u32-2.c: New test.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f16.c: Remove xfail.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32.c: Likewise.
+
+2024-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116602
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2_1.py: Add check
+	for backtrace.
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2_2.py: Likewise.
+
+2024-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: Update for
+	removal of ICE callback.
+
+2024-10-16  Joseph Myers  <josmyers@redhat.com>
+
+	* c-c++-common/Wcast-function-type.c: Add -std=gnu17 for C.
+	* c-c++-common/Wformat-pr84258.c: Add -std=gnu17 for C.
+	* c-c++-common/Wvarargs.c: Add -std=gnu17 for C.
+	* c-c++-common/analyzer/data-model-12.c: Add -std=gnu17 for C.
+	* c-c++-common/builtins.c: Add -std=gnu17 for C.
+	* c-c++-common/pointer-to-fn1.c: Add -std=gnu17 for C.
+	* c-c++-common/pragma-diag-17.c: Add -std=gnu17 for C.
+	* c-c++-common/sizeof-array-argument.c: Add
+	-Wno-old-style-definition for C.
+	* g++.dg/lto/pr54625-1_0.c: Add -std=gnu17.
+	* g++.dg/lto/pr54625-2_0.c: Add -std=gnu17.
+	* gcc.c-torture/compile/20040214-2.c: Add -std=gnu17.
+	* gcc.c-torture/compile/921011-2.c: Add -std=gnu17.
+	* gcc.c-torture/compile/931102-1.c: Add -std=gnu17.
+	* gcc.c-torture/compile/990801-1.c: Add -std=gnu17.
+	* gcc.c-torture/compile/nested-1.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr100241-1.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr106101.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr113616.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr47967.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr51694.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr71109.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr83051-2.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr89663-1.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr94238.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr96796.c: Add -std=gnu17.
+	* gcc.c-torture/compile/pr97576.c: Add -std=gnu17.
+	* gcc.c-torture/compile/udivmod4.c: Add -std=gnu17.
+	* gcc.c-torture/execute/20010605-2.c: Add -std=gnu17.
+	* gcc.c-torture/execute/20020404-1.c: Add -std=gnu17.
+	* gcc.c-torture/execute/20030714-1.c: Add -std=gnu17.
+	* gcc.c-torture/execute/20051012-1.c: Add -std=gnu17.
+	* gcc.c-torture/execute/20190820-1.c: Add -std=gnu17.
+	* gcc.c-torture/execute/920612-1.c: Add -Wno-old-style-definition.
+	* gcc.c-torture/execute/930608-1.c: Add -std=gnu17.
+	* gcc.c-torture/execute/comp-goto-1.c: Add -std=gnu17.
+	* gcc.c-torture/execute/ieee/fp-cmp-1.x: Add -std=gnu17.
+	* gcc.c-torture/execute/ieee/fp-cmp-2.x: Add -std=gnu17.
+	* gcc.c-torture/execute/ieee/fp-cmp-3.x: Add -std=gnu17.
+	* gcc.c-torture/execute/ieee/fp-cmp-4.x: New file.
+	* gcc.c-torture/execute/ieee/fp-cmp-4f.x: New file.
+	* gcc.c-torture/execute/ieee/fp-cmp-4l.x: New file.
+	* gcc.c-torture/execute/loop-9.c: Add -std=gnu17.
+	* gcc.c-torture/execute/pr103209.c: Add -std=gnu17.
+	* gcc.c-torture/execute/pr28289.c: Add -std=gnu17.
+	* gcc.c-torture/execute/pr34982.c: Add -std=gnu17.
+	* gcc.c-torture/execute/pr67037.c: Add -std=gnu17.
+	* gcc.c-torture/execute/va-arg-2.c: Add -std=gnu17.
+	* gcc.dg/20010202-1.c: Add -std=gnu17.
+	* gcc.dg/20020430-1.c: Add -std=gnu17.
+	* gcc.dg/20031218-3.c: Add -std=gnu17.
+	* gcc.dg/20040127-1.c: Add -std=gnu17.
+	* gcc.dg/20041014-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/20041122-1.c: Add -std=gnu17.
+	* gcc.dg/20050309-1.c: Add -std=gnu17.
+	* gcc.dg/20061026.c: Add -std=gnu17.
+	* gcc.dg/20101010-1.c: Add -std=gnu17.
+	* gcc.dg/Warray-parameter-10.c: Add -std=gnu17.
+	* gcc.dg/Wbuiltin-declaration-mismatch-2.c: Add -std=gnu17.
+	* gcc.dg/Wbuiltin-declaration-mismatch-3.c: Add -std=gnu17.
+	* gcc.dg/Wbuiltin-declaration-mismatch-4.c: Add -std=gnu17.
+	* gcc.dg/Wbuiltin-declaration-mismatch-5.c: Add -std=gnu17.
+	* gcc.dg/Wbuiltin-declaration-mismatch.c: Add -std=gnu17.
+	* gcc.dg/Wcxx-compat-2.c: Add -std=gnu17.
+	* gcc.dg/Wdouble-promotion.c: Add -std=gnu17.
+	* gcc.dg/Wfree-nonheap-object-7.c: Add -std=gnu17.
+	* gcc.dg/Wimplicit-int-1.c: Add -std=gnu17.
+	* gcc.dg/Wimplicit-int-1a.c: Add -std=gnu17.
+	* gcc.dg/Wimplicit-int-2.c: Add -std=gnu17.
+	* gcc.dg/Wimplicit-int-3.c: Add -std=gnu17.
+	* gcc.dg/Wimplicit-int-4.c: Add -std=gnu17.
+	* gcc.dg/Wimplicit-int-4a.c: Add -std=gnu17.
+	* gcc.dg/Wincompatible-pointer-types-1.c: Add -std=gnu17.
+	* gcc.dg/Wrestrict-19.c: Add -std=gnu17.
+	* gcc.dg/Wrestrict-4.c: Add -std=gnu17.
+	* gcc.dg/Wrestrict-5.c: Add -std=gnu17.
+	* gcc.dg/Wstrict-overflow-20.c: Add -std=gnu17.
+	* gcc.dg/Wstringop-overflow-13.c: Add -std=gnu17.
+	* gcc.dg/analyzer/doom-d_main-IdentifyVersion.c: Add -std=gnu17.
+	* gcc.dg/analyzer/doom-s_sound-pr108867.c: Add -std=gnu17.
+	* gcc.dg/analyzer/pr93032-mztools-signed-char.c: Add
+	-Wno-old-style-definition.
+	* gcc.dg/analyzer/pr93032-mztools-unsigned-char.c: Add
+	-Wno-old-style-definition.
+	* gcc.dg/analyzer/pr93355-localealias.c: Add
+	-Wno-old-style-definition.
+	* gcc.dg/analyzer/pr93375.c: Add -std=gnu17.
+	* gcc.dg/analyzer/pr94688.c: Add -std=gnu17.
+	* gcc.dg/analyzer/sensitive-1.c: Add -std=gnu17.
+	* gcc.dg/analyzer/torture/asm-x86-linux-wfx_get_ps_timeout-full.c:
+	Add -std=gnu17.
+	* gcc.dg/analyzer/torture/pr104863.c: Add -std=gnu17.
+	* gcc.dg/analyzer/torture/pr93379.c: Add -std=gnu17.
+	* gcc.dg/array-quals-2.c: Add -std=gnu17.
+	* gcc.dg/attr-invalid.c: Add -Wno-old-style-definition.
+	* gcc.dg/auto-init-uninit-A.c: Add -Wno-old-style-definition.
+	* gcc.dg/builtin-choose-expr.c: Declare exit with (int) prototype.
+	* gcc.dg/builtin-tgmath-err-1.c: Add -std=gnu17.
+	* gcc.dg/builtins-30.c: Add -std=gnu17.
+	* gcc.dg/cast-function-1.c: Add -std=gnu17.
+	* gcc.dg/cleanup-1.c: Add -std=gnu17.
+	* gcc.dg/compat/struct-complex-1_x.c: Add -std=gnu17.
+	* gcc.dg/compat/struct-complex-2_x.c: Add -std=gnu17.
+	* gcc.dg/compat/union-m128-1_x.c: Add -std=gnu17.
+	* gcc.dg/debug/dwarf2/pr66482.c: Add -std=gnu17.
+	* gcc.dg/dfp/composite-type-2.c: Add -std=gnu17.
+	* gcc.dg/dfp/composite-type.c: Add -std=gnu17.
+	* gcc.dg/dfp/keywords-pedantic.c: Add -std=gnu17.
+	* gcc.dg/dremf-type-compat-1.c: Add -std=gnu17.
+	* gcc.dg/dremf-type-compat-2.c: Add -std=gnu17.
+	* gcc.dg/dremf-type-compat-3.c: Add -std=gnu17.
+	* gcc.dg/dremf-type-compat-4.c: Add -std=gnu17.
+	* gcc.dg/enum-compat-1.c: Add -std=gnu17.
+	* gcc.dg/enum-compat-2.c: Add -std=gnu17.
+	* gcc.dg/floatn-errs.c: Add -std=gnu17.
+	* gcc.dg/fltconst-pedantic-dfp.c: Add -std=gnu17.
+	* gcc.dg/format/proto.c: Add -std=gnu17.
+	* gcc.dg/format/sentinel-1.c: Add -std=gnu17.
+	* gcc.dg/gomp/declare-simd-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/ifelse-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/inline-33.c: Add -std=gnu17.
+	* gcc.dg/ipa/inline-5.c: Add -std=gnu17.
+	* gcc.dg/ipa/ipa-sra-21.c: Add -std=gnu17.
+	* gcc.dg/ipa/pr102714.c: Add -std=gnu17.
+	* gcc.dg/ipa/pr104813.c: Add -std=gnu17.
+	* gcc.dg/ipa/pr108679.c: Add -std=gnu17.
+	* gcc.dg/ipa/pr42706.c: Add -std=gnu17.
+	* gcc.dg/ipa/pr88214.c: Add -Wno-old-style-definition.
+	* gcc.dg/ipa/pr91853.c: Add -Wno-old-style-definition.
+	* gcc.dg/ipa/pr93763.c: Add -std=gnu17.
+	* gcc.dg/ipa/pr96482-2.c: Add -std=gnu17.
+	* gcc.dg/lto/20091013-1_2.c: Add -std=gnu17.
+	* gcc.dg/lto/20091015-1_2.c: Add -std=gnu17.
+	* gcc.dg/lto/pr113197_1.c: Add -std=gnu17.
+	* gcc.dg/lto/pr54702_1.c: Add -std=gnu17.
+	* gcc.dg/lto/pr99849_0.c: Add -std=gnu17.
+	* gcc.dg/noncompile/920923-1.c: Add -std=gnu17.
+	* gcc.dg/noncompile/old-style-parm-1.c: Add
+	-Wno-old-style-definition.
+	* gcc.dg/noncompile/old-style-parm-3.c: Add
+	-Wno-old-style-definition.
+	* gcc.dg/noncompile/pr30552-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/noncompile/pr30552-3.c: Add -std=gnu17.
+	* gcc.dg/noncompile/pr71265.c: Add -Wno-old-style-definition.
+	* gcc.dg/noncompile/pr79758-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/noncompile/pr79758.c: Add -Wno-old-style-definition.
+	* gcc.dg/noncompile/va-arg-1.c: Add -std=gnu17.
+	* gcc.dg/old-style-prom-1.c: Add -std=gnu17.
+	* gcc.dg/old-style-prom-2.c: Add -std=gnu17.
+	* gcc.dg/old-style-prom-3.c: Add -std=gnu17.
+	* gcc.dg/old-style-then-proto-1.c: Add -std=gnu17.
+	* gcc.dg/parm-incomplete-1.c: Add -std=gnu17.
+	* gcc.dg/parm-mismatch-1.c: Add -std=gnu17.
+	* gcc.dg/permerror-default.c: Add -std=gnu17.
+	* gcc.dg/permerror-fpermissive-nowarning.c: Add -std=gnu17.
+	* gcc.dg/permerror-fpermissive.c: Add -std=gnu17.
+	* gcc.dg/permerror-noerror.c: Add -std=gnu17.
+	* gcc.dg/permerror-nowarning.c: Add -std=gnu17.
+	* gcc.dg/permerror-pedantic.c: Add -std=gnu17.
+	* gcc.dg/plugin/infoleak-net-ethtool-ioctl.c: Add -std=gnu17.
+	* gcc.dg/pointer-array-quals-1.c: Add -std=gnu17.
+	* gcc.dg/pointer-array-quals-2.c: Add -std=gnu17.
+	* gcc.dg/pr100791.c: Add -std=gnu17.
+	* gcc.dg/pr100843.c: Add -std=gnu17.
+	* gcc.dg/pr102273.c: Add -std=gnu17.
+	* gcc.dg/pr102385.c: Add -std=gnu17.
+	* gcc.dg/pr103222.c: Add -std=gnu17.
+	* gcc.dg/pr105140.c: Add -std=gnu17.
+	* gcc.dg/pr105150.c: Add -std=gnu17.
+	* gcc.dg/pr105250.c: Add -std=gnu17.
+	* gcc.dg/pr105972.c: Add -Wno-old-style-definition.
+	* gcc.dg/pr111039.c: Add -std=gnu17.
+	* gcc.dg/pr111407.c: Add -std=gnu17.
+	* gcc.dg/pr111922.c: Add -Wno-old-style-definition.
+	* gcc.dg/pr15236.c: Add -std=gnu17.
+	* gcc.dg/pr17188-1.c: Add -std=gnu17.
+	* gcc.dg/pr20368-1.c: Add -std=gnu17.
+	* gcc.dg/pr20368-2.c: Add -std=gnu17.
+	* gcc.dg/pr20368-3.c: Add -std=gnu17.
+	* gcc.dg/pr27331.c: Add -Wno-old-style-definition.
+	* gcc.dg/pr27861-1.c: Add -std=gnu17.
+	* gcc.dg/pr28121.c: Add -std=gnu17.
+	* gcc.dg/pr28243.c: Add -std=gnu17.
+	* gcc.dg/pr28888.c: Add -std=gnu17.
+	* gcc.dg/pr29254.c: Add -std=gnu17.
+	* gcc.dg/pr34457-1.c: Add -std=gnu17.
+	* gcc.dg/pr36015.c: Add -std=gnu17.
+	* gcc.dg/pr38245-3.c: Add -std=gnu17.
+	* gcc.dg/pr38245-4.c: Add -std=gnu17.
+	* gcc.dg/pr41241.c: Add -std=gnu17.
+	* gcc.dg/pr43058.c: Add -std=gnu17.
+	* gcc.dg/pr44539.c: Add -std=gnu17.
+	* gcc.dg/pr45055.c: Add -std=gnu17.
+	* gcc.dg/pr50908.c: Add -Wno-old-style-definition.
+	* gcc.dg/pr60647-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/pr63762.c: Add -std=gnu17.
+	* gcc.dg/pr63804.c: Add -std=gnu17.
+	* gcc.dg/pr68306-3.c: Add -std=gnu17.
+	* gcc.dg/pr68533.c: Add -std=gnu17.
+	* gcc.dg/pr69156.c: Add -std=gnu17.
+	* gcc.dg/pr7356-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/pr79983.c: Add -std=gnu17.
+	* gcc.dg/pr83463.c: Add -std=gnu17.
+	* gcc.dg/pr87347.c: Add -std=gnu17.
+	* gcc.dg/pr89521-1.c: Add -std=gnu17.
+	* gcc.dg/pr89521-2.c: Add -std=gnu17.
+	* gcc.dg/pr90648.c: Add -std=gnu17.
+	* gcc.dg/pr93573-1.c: Add -std=gnu17.
+	* gcc.dg/pr94167.c: Add -std=gnu17.
+	* gcc.dg/pr94705.c: Add -std=gnu17.
+	* gcc.dg/pr95118.c: Add -std=gnu17.
+	* gcc.dg/pr96335.c: Add -std=gnu17.
+	* gcc.dg/pr97830.c: Add -std=gnu17.
+	* gcc.dg/pr97882.c: Add -std=gnu17.
+	* gcc.dg/pr99122-2.c: Add -std=gnu17.
+	* gcc.dg/pr99122-3.c: Add -std=gnu17.
+	* gcc.dg/qual-component-1.c: Add -std=gnu17.
+	* gcc.dg/sibcall-6.c: Add -Wno-old-style-definition.
+	* gcc.dg/sms-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/tm/20091221.c: Add -std=gnu17.
+	* gcc.dg/torture/bfloat16-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float128-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float128x-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float16-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float32-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float32x-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float64-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/float64x-basic.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/pr102762.c: Add -std=gnu17.
+	* gcc.dg/torture/pr103987.c: Add -std=gnu17.
+	* gcc.dg/torture/pr104825.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/pr105166.c: Add -std=gnu17.
+	* gcc.dg/torture/pr105185.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/pr109652.c: Add -std=gnu17.
+	* gcc.dg/torture/pr112444.c: Add -std=gnu17.
+	* gcc.dg/torture/pr113895-3.c: Add -std=gnu17.
+	* gcc.dg/torture/pr24626-2.c: Add -std=gnu17.
+	* gcc.dg/torture/pr25183.c: Add -std=gnu17.
+	* gcc.dg/torture/pr38948.c: Add -std=gnu17.
+	* gcc.dg/torture/pr44807.c: Add -std=gnu17.
+	* gcc.dg/torture/pr47281.c: Add -std=gnu17.
+	* gcc.dg/torture/pr47958-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/pr48063.c: Add -std=gnu17.
+	* gcc.dg/torture/pr57036-1.c: Add -std=gnu17.
+	* gcc.dg/torture/pr57330.c: Add -std=gnu17.
+	* gcc.dg/torture/pr57584.c: Add -std=gnu17.
+	* gcc.dg/torture/pr67741.c: Add -std=gnu17.
+	* gcc.dg/torture/pr68104.c: Add -std=gnu17.
+	* gcc.dg/torture/pr69242.c: Add -std=gnu17.
+	* gcc.dg/torture/pr70457.c: Add -std=gnu17.
+	* gcc.dg/torture/pr70985.c: Add -std=gnu17.
+	* gcc.dg/torture/pr71606.c: Add -std=gnu17.
+	* gcc.dg/torture/pr71816.c: Add -std=gnu17.
+	* gcc.dg/torture/pr77286.c: Add -std=gnu17.
+	* gcc.dg/torture/pr77646.c: Add -std=gnu17.
+	* gcc.dg/torture/pr77677-2.c: Add -std=gnu17.
+	* gcc.dg/torture/pr78365.c: Add -Wno-old-style-definition.
+	* gcc.dg/torture/pr79732.c: Add -std=gnu17.
+	* gcc.dg/torture/pr80612.c: Add -std=gnu17.
+	* gcc.dg/torture/pr80764.c: Add -std=gnu17.
+	* gcc.dg/torture/pr80842.c: Add -std=gnu17.
+	* gcc.dg/torture/pr81900.c: Add -std=gnu17.
+	* gcc.dg/torture/pr82276.c: Add -std=gnu17.
+	* gcc.dg/torture/pr84803.c: Add -std=gnu17.
+	* gcc.dg/torture/pr93124.c: Add -std=gnu17.
+	* gcc.dg/torture/pr97330-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-prof/comp-goto-1.c: Add -std=gnu17.
+	* gcc.dg/tree-ssa/20030703-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030708-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030709-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030709-3.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030710-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030711-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030711-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030711-3.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030714-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030714-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030728-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030807-10.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030807-11.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030807-3.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030807-6.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030807-7.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030814-4.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030814-5.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030814-6.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20030918-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/20040514-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/loadpre7.c: Add -Wno-old-style-definition.
+	* gcc.dg/tree-ssa/pr111003.c: Add -std=gnu17.
+	* gcc.dg/tree-ssa/pr115128.c: Add -std=gnu17.
+	* gcc.dg/tree-ssa/pr115191.c: Add -std=gnu17.
+	* gcc.dg/tree-ssa/pr24840.c: Add -std=gnu17.
+	* gcc.dg/tree-ssa/pr69666.c: Add -std=gnu17.
+	* gcc.dg/tree-ssa/pr70232.c: Add -std=gnu17.
+	* gcc.dg/ubsan/pr79757-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/ubsan/pr79757-2.c: Add -Wno-old-style-definition.
+	* gcc.dg/ubsan/pr79757-3.c: Add -Wno-old-style-definition.
+	* gcc.dg/ubsan/pr81223.c: Add -std=gnu17.
+	* gcc.dg/uninit-10-O0.c: Add -Wno-old-style-definition.
+	* gcc.dg/uninit-10.c: Add -Wno-old-style-definition.
+	* gcc.dg/uninit-32.c: Add -std=gnu17.
+	* gcc.dg/uninit-41.c: Add -std=gnu17.
+	* gcc.dg/uninit-A-O0.c: Add -Wno-old-style-definition.
+	* gcc.dg/uninit-A.c: Add -Wno-old-style-definition.
+	* gcc.dg/unused-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/vect/bb-slp-pr114249.c: Add -std=gnu17.
+	* gcc.dg/vect/bb-slp-pr97486.c: Add -std=gnu17.
+	* gcc.dg/vect/bb-slp-subgroups-1.c: Add -std=gnu17.
+	* gcc.dg/vect/bb-slp-subgroups-2.c: Add -std=gnu17.
+	* gcc.dg/vect/bb-slp-subgroups-3.c: Add -std=gnu17.
+	* gcc.dg/vect/vect-early-break_111-pr113731.c: Add -std=gnu17.
+	* gcc.dg/vect/vect-early-break_122-pr114239.c: Add -std=gnu17.
+	* gcc.dg/vect/vect-multi-peel-gaps.c: Add -std=gnu17.
+	* gcc.dg/vla-stexp-2.c: Add -std=gnu17.
+	* gcc.dg/warn-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/winline-10.c: Add -Wno-old-style-definition.
+	* gcc.dg/wtr-label-1.c: Add -Wno-old-style-definition.
+	* gcc.dg/wtr-switch-1.c: Add -Wno-old-style-definition.
+	* gcc.target/i386/excess-precision-3.c: Add
+	-Wno-old-style-definition.
+	* gcc.target/i386/fma4-256-nmsubXX.c: Add -std=gnu17.
+	* gcc.target/i386/fma4-nmsubXX.c: Add -std=gnu17.
+	* gcc.target/i386/nop-mcount.c: Add -Wno-old-style-definition.
+	* gcc.target/i386/pr102627.c: Add -std=gnu17.
+	* gcc.target/i386/pr106994.c: Add -std=gnu17.
+	* gcc.target/i386/pr68349.c: Add -std=gnu17.
+	* gcc.target/i386/pr97313.c: Add -std=gnu17.
+	* gcc.target/i386/pr99454.c: Add -std=gnu17.
+	* gcc.target/i386/record-mcount.c: Add -Wno-old-style-definition.
+
+2024-10-16  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gcc.dg/vect/vect-switch-ifcvt-3.c: New test.
+
 2024-10-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/pr65518.c: Adjust.

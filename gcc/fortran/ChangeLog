@@ -1,3 +1,21 @@
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* trans-array.cc (structure_alloc_comps)
+	* trans-openmp.cc
+	(gfc_walk_alloc_comps)
+	(gfc_omp_clause_linear_ctor):
+	Rename array_type_nelts => array_type_nelts_minus_one
+
+2024-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* error.cc (notify_std_msg): Handle GFC_STD_UNSIGNED.
+
+2024-10-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/80235
+	* trans-decl.cc (gfc_build_qualified_array): Make sure the array
+	is associated to the correct module and being marked as extern.
+
 2024-10-15  Thomas Schwinge  <tschwinge@baylibre.com>
 	    Harald Anlauf  <anlauf@gmx.de>
 

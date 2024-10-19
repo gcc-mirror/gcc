@@ -1,3 +1,9 @@
+2024-10-18  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (resolve_unit_addrs_overlap_walk): New static function.
+	(resolve_unit_addrs_overlap): New static function.
+	(build_dwarf_data): Call resolve_unit_addrs_overlap.
+
 2024-08-05  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac (ACX_PROG_CC_WARNING_OPTS): Add -Wpointer-arith.
