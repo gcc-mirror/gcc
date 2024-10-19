@@ -1799,7 +1799,7 @@ blank_line:
   if (digit_flag)
     gfc_error_now ("Statement label without statement at %L", &label_locus);
 
-  gfc_current_locus.lb->truncated = 0;
+  gfc_current_locus.u.lb->truncated = 0;
   gfc_advance_line ();
   return ST_NONE;
 }

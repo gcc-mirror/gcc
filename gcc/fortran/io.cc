@@ -3761,11 +3761,11 @@ static bool
 check_io_constraints (io_kind k, gfc_dt *dt, gfc_code *io_code,
 		      locus *spec_end)
 {
-#define io_constraint(condition, msg, arg)\
+#define io_constraint(condition, msg, where)\
 if (condition) \
   {\
-    if ((arg)->lb != NULL)\
-      gfc_error ((msg), (arg));\
+    if (GFC_LOCUS_IS_SET (*where))\
+      gfc_error ((msg), (where));\
     else\
       gfc_error ((msg), spec_end);\
     return false;\

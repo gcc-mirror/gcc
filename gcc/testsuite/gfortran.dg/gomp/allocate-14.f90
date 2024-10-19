@@ -32,10 +32,10 @@ subroutine coarrays(x)
 
   !$omp allocate(x)  ! { dg-error "Unexpected dummy argument 'x' as argument at .1. to declarative !.OMP ALLOCATE" }
 
-  !$omp allocators allocate(y) ! { dg-error "28:Unexpected coarray 'y' in 'allocate' at .1." }
+  !$omp allocators allocate(y) ! { dg-error "29:Unexpected coarray 'y' in 'allocate' at .1." }
     allocate(y[*])
 
-  !$omp allocate(z) ! { dg-error "17:Unexpected coarray 'z' in 'allocate' at .1." }
+  !$omp allocate(z) ! { dg-error "18:Unexpected coarray 'z' in 'allocate' at .1." }
     allocate(z(5)[*])
   x = 5
 end 

@@ -3912,7 +3912,8 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
       if (lvalue->ts.type == BT_LOGICAL && rvalue->ts.type == BT_LOGICAL)
 	return true;
 
-      where = lvalue->where.lb ? &lvalue->where : &rvalue->where;
+      where = (GFC_LOCUS_IS_SET (lvalue->where)
+	       ? &lvalue->where : &rvalue->where);
       gfc_error ("Incompatible types in DATA statement at %L; attempted "
 		 "conversion of %s to %s", where,
 		 gfc_typename (rvalue), gfc_typename (lvalue));

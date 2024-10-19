@@ -2736,10 +2736,10 @@ gfc_get_union_type (gfc_symbol *un)
         /* The map field's declaration. */
         map_field = gfc_add_field_to_struct(typenode, get_identifier(map->name),
                                             map_type, &chain);
-        if (map->loc.lb)
-          gfc_set_decl_location (map_field, &map->loc);
-        else if (un->declared_at.lb)
-          gfc_set_decl_location (map_field, &un->declared_at);
+	if (GFC_LOCUS_IS_SET (map->loc))
+	  gfc_set_decl_location (map_field, &map->loc);
+	else if (GFC_LOCUS_IS_SET (un->declared_at))
+	  gfc_set_decl_location (map_field, &un->declared_at);
 
         DECL_PACKED (map_field) |= TYPE_PACKED (typenode);
         DECL_NAMELESS(map_field) = true;
@@ -3115,9 +3115,9 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       field = gfc_add_field_to_struct (typenode,
 				       get_identifier (c->name),
 				       field_type, &chain);
-      if (c->loc.lb)
+      if (GFC_LOCUS_IS_SET (c->loc))
 	gfc_set_decl_location (field, &c->loc);
-      else if (derived->declared_at.lb)
+      else if (GFC_LOCUS_IS_SET (derived->declared_at))
 	gfc_set_decl_location (field, &derived->declared_at);
 
       gfc_finish_decl_attrs (field, &c->attr);

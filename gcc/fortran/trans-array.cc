@@ -2349,10 +2349,12 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
     {
       symbol_attribute attr;
       gfc_se fse;
-      gfc_warning (0, "The structure constructor at %C has been"
+      locus loc;
+      gfc_locus_from_location (&loc, input_location);
+      gfc_warning (0, "The structure constructor at %L has been"
 			 " finalized. This feature was removed by f08/0011."
 			 " Use -std=f2018 or -std=gnu to eliminate the"
-			 " finalization.");
+			 " finalization.", &loc);
       attr.pointer = attr.allocatable = 0;
       gfc_init_se (&fse, NULL);
       fse.expr = desc;
@@ -7099,14 +7101,13 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
 {
   tree parm;
   tree type;
-  locus loc;
   tree offset;
   tree tmp;
   tree stmt;
   stmtblock_t init;
 
-  gfc_save_backend_locus (&loc);
-  gfc_set_backend_locus (&sym->declared_at);
+  location_t loc = input_location;
+  input_location = gfc_get_location (&sym->declared_at);
 
   /* Descriptor type.  */
   parm = sym->backend_decl;
@@ -7141,7 +7142,7 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
     }
   stmt = gfc_finish_block (&init);
 
-  gfc_restore_backend_locus (&loc);
+  input_location = loc;
 
   /* Add the initialization code to the start of the function.  */
 
@@ -7181,7 +7182,6 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   tree size;
   tree type;
   tree offset;
-  locus loc;
   stmtblock_t init;
   tree stmtInit, stmtCleanup;
   tree lbound;
@@ -7217,13 +7217,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       return;
     }
 
-  loc.nextc = NULL;
-  gfc_save_backend_locus (&loc);
-  /* loc.nextc is not set by save_backend_locus but the location routines
-     depend on it.  */
-  if (loc.nextc == NULL)
-    loc.nextc = loc.lb->line;
-  gfc_set_backend_locus (&sym->declared_at);
+  location_t loc = input_location;
+  input_location = gfc_get_location (&sym->declared_at);
 
   /* Descriptor type.  */
   type = TREE_TYPE (tmpdesc);
@@ -7293,8 +7288,12 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       stride = gfc_index_one_node;
 
       if (warn_array_temporaries)
-	gfc_warning (OPT_Warray_temporaries,
-		     "Creating array temporary at %L", &loc);
+	{
+	  locus where;
+	  gfc_locus_from_location (&where, loc);
+	  gfc_warning (OPT_Warray_temporaries,
+		     "Creating array temporary at %L", &where);
+	}
     }
 
   /* This is for the case where the array data is used directly without
@@ -7363,7 +7362,9 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 	      /* Check (ubound(a) - lbound(a) == ubound(b) - lbound(b)).  */
 	      char * msg;
 	      tree temp;
+	      locus where;
 
+	      gfc_locus_from_location (&where, loc);
 	      temp = fold_build2_loc (input_location, MINUS_EXPR,
 				      gfc_array_index_type, ubound, lbound);
 	      temp = fold_build2_loc (input_location, PLUS_EXPR,
@@ -7380,7 +7381,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
 	      msg = xasprintf ("Dimension %d of array '%s' has extent "
 			       "%%ld instead of %%ld", n+1, sym->name);
 
-	      gfc_trans_runtime_check (true, false, tmp, &init, &loc, msg,
+	      gfc_trans_runtime_check (true, false, tmp, &init, &where, msg,
 			fold_convert (long_integer_type_node, temp),
 			fold_convert (long_integer_type_node, stride2));
 
@@ -7532,7 +7533,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
      be freed at the end of the function by pop_context.  */
   gfc_add_init_cleanup (block, stmtInit, stmtCleanup);
 
-  gfc_restore_backend_locus (&loc);
+  input_location = loc;
 }
 
 
@@ -11839,7 +11840,6 @@ gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)
   tree tmp;
   tree descriptor;
   stmtblock_t init;
-  locus loc;
   int rank;
 
   /* Make sure the frontend gets these right.  */
@@ -11859,8 +11859,8 @@ gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (type == NULL || !GFC_DESCRIPTOR_TYPE_P (type))
     return;
 
-  gfc_save_backend_locus (&loc);
-  gfc_set_backend_locus (&sym->declared_at);
+  location_t loc = input_location;
+  input_location = gfc_get_location (&sym->declared_at);
   gfc_init_block (&init);
 
   rank = CLASS_DATA (sym)->as ? (CLASS_DATA (sym)->as->rank) : (0);
@@ -11872,7 +11872,7 @@ gfc_trans_class_array (gfc_symbol * sym, gfc_wrapped_block * block)
   gfc_add_expr_to_block (&init, tmp);
 
   gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
-  gfc_restore_backend_locus (&loc);
+  input_location = loc;
 }
 
 
@@ -11889,7 +11889,6 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   tree descriptor;
   stmtblock_t init;
   stmtblock_t cleanup;
-  locus loc;
   int rank;
   bool sym_has_alloc_comp, has_finalizer;
 
@@ -11903,8 +11902,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 	      || has_finalizer
 	      || (sym->as->type == AS_ASSUMED_RANK && sym->attr.dummy));
 
-  gfc_save_backend_locus (&loc);
-  gfc_set_backend_locus (&sym->declared_at);
+  location_t loc = input_location;
+  input_location = gfc_get_location (&sym->declared_at);
   gfc_init_block (&init);
 
   gcc_assert (VAR_P (sym->backend_decl)
@@ -11933,7 +11932,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (sym->attr.dummy || sym->attr.use_assoc || sym->attr.result)
     {
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
-      gfc_restore_backend_locus (&loc);
+      input_location = loc;
       return;
     }
 
@@ -11948,7 +11947,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       gfc_trans_static_array_pointer (sym);
 
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
-      gfc_restore_backend_locus (&loc);
+      input_location = loc;
       return;
     }
 
@@ -12013,7 +12012,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   			     gfc_get_dtype_rank_type (sym->as->rank, etype));
       gfc_add_expr_to_block (&init, tmp);
     }
-  gfc_restore_backend_locus (&loc);
+  input_location = loc;
   gfc_init_block (&cleanup);
 
   /* Allocatable arrays need to be freed when they go out of scope.

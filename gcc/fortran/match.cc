@@ -675,16 +675,21 @@ gfc_match_sym_tree (gfc_symtree **matched_symbol, int host_assoc)
 {
   char buffer[GFC_MAX_SYMBOL_LEN + 1];
   match m;
+  int ret;
 
+  locus loc = gfc_current_locus;
   m = gfc_match_name (buffer);
   if (m != MATCH_YES)
     return m;
-
+  loc = gfc_get_location_range (NULL, 0, &loc, 1, &gfc_current_locus);
   if (host_assoc)
-    return (gfc_get_ha_sym_tree (buffer, matched_symbol))
-	    ? MATCH_ERROR : MATCH_YES;
+    {
+      ret = gfc_get_ha_sym_tree (buffer, matched_symbol, &loc);
+      return ret ? MATCH_ERROR : MATCH_YES;
+    }
 
-  if (gfc_get_sym_tree (buffer, NULL, matched_symbol, false))
+  ret = gfc_get_sym_tree (buffer, NULL, matched_symbol, false, &loc);
+  if (ret)
     return MATCH_ERROR;
 
   return MATCH_YES;

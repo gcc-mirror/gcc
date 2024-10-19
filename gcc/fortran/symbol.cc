@@ -3254,7 +3254,7 @@ gfc_release_symbol (gfc_symbol *&sym)
 /* Allocate and initialize a new symbol node.  */
 
 gfc_symbol *
-gfc_new_symbol (const char *name, gfc_namespace *ns)
+gfc_new_symbol (const char *name, gfc_namespace *ns, locus *where)
 {
   gfc_symbol *p;
 
@@ -3263,7 +3263,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   gfc_clear_ts (&p->ts);
   gfc_clear_attr (&p->attr);
   p->ns = ns;
-  p->declared_at = gfc_current_locus;
+  p->declared_at = where ? *where : gfc_current_locus;
   p->name = gfc_get_string ("%s", name);
 
   return p;
@@ -3477,7 +3477,7 @@ gfc_save_symbol_data (gfc_symbol *sym)
 
 int
 gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result,
-		  bool allow_subroutine)
+		  bool allow_subroutine, locus *where)
 {
   gfc_symtree *st;
   gfc_symbol *p;
@@ -3498,7 +3498,7 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result,
   if (st == NULL)
     {
       /* If not there, create a new symbol.  */
-      p = gfc_new_symbol (name, ns);
+      p = gfc_new_symbol (name, ns, where);
 
       /* Add to the list of tentative symbols.  */
       p->old_symbol = NULL;
@@ -3546,12 +3546,13 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result,
 
 
 int
-gfc_get_symbol (const char *name, gfc_namespace *ns, gfc_symbol **result)
+gfc_get_symbol (const char *name, gfc_namespace *ns, gfc_symbol **result,
+		locus *where)
 {
   gfc_symtree *st;
   int i;
 
-  i = gfc_get_sym_tree (name, ns, &st, false);
+  i = gfc_get_sym_tree (name, ns, &st, false, where);
   if (i != 0)
     return i;
 
@@ -3567,7 +3568,7 @@ gfc_get_symbol (const char *name, gfc_namespace *ns, gfc_symbol **result)
    exist, but tries to host-associate the symbol if possible.  */
 
 int
-gfc_get_ha_sym_tree (const char *name, gfc_symtree **result)
+gfc_get_ha_sym_tree (const char *name, gfc_symtree **result, locus *where)
 {
   gfc_symtree *st;
   int i;
@@ -3591,17 +3592,17 @@ gfc_get_ha_sym_tree (const char *name, gfc_symtree **result)
       return 0;
     }
 
-  return gfc_get_sym_tree (name, gfc_current_ns, result, false);
+  return gfc_get_sym_tree (name, gfc_current_ns, result, false, where);
 }
 
 
 int
-gfc_get_ha_symbol (const char *name, gfc_symbol **result)
+gfc_get_ha_symbol (const char *name, gfc_symbol **result, locus *where)
 {
   int i;
   gfc_symtree *st = NULL;
 
-  i = gfc_get_ha_sym_tree (name, &st);
+  i = gfc_get_ha_sym_tree (name, &st, where);
 
   if (st)
     *result = st->n.sym;

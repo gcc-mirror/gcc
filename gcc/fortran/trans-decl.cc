@@ -2278,15 +2278,13 @@ gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 	{
 	  /* By construction, the external function cannot be
 	     a contained procedure.  */
-	  locus old_loc;
-
-	  gfc_save_backend_locus (&old_loc);
+	  location_t old_loc = input_location;
 	  push_cfun (NULL);
 
 	  gfc_create_function_decl (gsym->ns, true);
 
 	  pop_cfun ();
-	  gfc_restore_backend_locus (&old_loc);
+	  input_location = old_loc;
 	}
 
       /* If the namespace has entries, the proc_name is the
@@ -2491,7 +2489,7 @@ build_function_decl (gfc_symbol * sym, bool global)
 
   /* Set the line and filename.  sym->declared_at seems to point to the
      last statement for subroutines, but it'll do for now.  */
-  gfc_set_backend_locus (&sym->declared_at);
+  input_location = gfc_get_location (&sym->declared_at);
 
   /* Allow only one nesting level.  Allow public declarations.  */
   gcc_assert (current_function_decl == NULL_TREE
@@ -3049,12 +3047,12 @@ build_entry_thunks (gfc_namespace * ns, bool global)
   stmtblock_t body;
   tree thunk_fndecl;
   tree tmp;
-  locus old_loc;
+  location_t old_loc;
 
   /* This should always be a toplevel function.  */
   gcc_assert (current_function_decl == NULL_TREE);
 
-  gfc_save_backend_locus (&old_loc);
+  old_loc = input_location;
   for (el = ns->entries; el; el = el->next)
     {
       vec<tree, va_gc> *args = NULL;
@@ -3221,7 +3219,7 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 	}
     }
 
-  gfc_restore_backend_locus (&old_loc);
+  input_location = old_loc;
 }
 
 
@@ -4559,7 +4557,7 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 static tree
 gfc_null_and_pass_deferred_len (gfc_symbol *sym, stmtblock_t *init,
-			        locus *loc)
+				location_t loc)
 {
   tree tmp;
 
@@ -4589,7 +4587,7 @@ gfc_null_and_pass_deferred_len (gfc_symbol *sym, stmtblock_t *init,
       gfc_add_expr_to_block (init, tmp2);
     }
 
-  gfc_restore_backend_locus (loc);
+  input_location = loc;
 
   /* Pass the final character length back.  */
   if (sym->attr.intent != INTENT_IN)
@@ -4641,7 +4639,7 @@ get_proc_result (gfc_symbol* sym)
 void
 gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 {
-  locus loc;
+  location_t loc;
   gfc_symbol *sym;
   gfc_formal_arglist *f;
   stmtblock_t tmpblock;
@@ -4674,8 +4672,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       else if (proc_sym->as)
 	{
 	  tree result = TREE_VALUE (current_fake_result_decl);
-	  gfc_save_backend_locus (&loc);
-	  gfc_set_backend_locus (&proc_sym->declared_at);
+	  loc = input_location;
+	  input_location = gfc_get_location (&proc_sym->declared_at);
 	  gfc_trans_dummy_array_bias (proc_sym, result, block);
 
 	  /* An automatic character length, pointer array result.  */
@@ -4686,7 +4684,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      if (proc_sym->ts.deferred)
 		{
 		  gfc_start_block (&init);
-		  tmp = gfc_null_and_pass_deferred_len (proc_sym, &init, &loc);
+		  tmp = gfc_null_and_pass_deferred_len (proc_sym, &init, loc);
 		  gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 		}
 	      else
@@ -4698,8 +4696,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  if (proc_sym->ts.deferred)
 	    {
 	      tmp = NULL;
-	      gfc_save_backend_locus (&loc);
-	      gfc_set_backend_locus (&proc_sym->declared_at);
+	      loc = input_location;
+	      input_location = gfc_get_location (&proc_sym->declared_at);
 	      gfc_start_block (&init);
 	      /* Zero the string length on entry.  */
 	      gfc_add_modify (&init, proc_sym->ts.u.cl->backend_decl,
@@ -4714,7 +4712,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_add_modify (&init, tmp,
 			      fold_convert (TREE_TYPE (se.expr),
 					    null_pointer_node));
-	      gfc_restore_backend_locus (&loc);
+	      input_location = loc;
 
 	      /* Pass back the string length on exit.  */
 	      tmp = proc_sym->ts.u.cl->backend_decl;
@@ -4759,10 +4757,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   /* Initialize the INTENT(OUT) derived type dummy arguments.  This
      should be done here so that the offsets and lbounds of arrays
      are available.  */
-  gfc_save_backend_locus (&loc);
-  gfc_set_backend_locus (&proc_sym->declared_at);
+  loc = input_location;
+  input_location = gfc_get_location (&proc_sym->declared_at);
   init_intent_out_dt (proc_sym, block);
-  gfc_restore_backend_locus (&loc);
+  input_location = loc;
 
   /* For some reasons, internal procedures point to the parent's
      namespace.  Top-level procedure and variables inside BLOCK are fine.  */
@@ -4967,10 +4965,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		{
 		  if (TREE_STATIC (sym->backend_decl))
 		    {
-		      gfc_save_backend_locus (&loc);
-		      gfc_set_backend_locus (&sym->declared_at);
+		      loc = input_location;
+		      input_location = gfc_get_location (&sym->declared_at);
 		      gfc_trans_static_array_pointer (sym);
-		      gfc_restore_backend_locus (&loc);
+		      input_location = loc;
 		    }
 		  else
 		    {
@@ -4990,8 +4988,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 	      else
 		{
-		  gfc_save_backend_locus (&loc);
-		  gfc_set_backend_locus (&sym->declared_at);
+		  loc = input_location;
+		  input_location = gfc_get_location (&sym->declared_at);
 
 		  if (alloc_comp_or_fini)
 		    {
@@ -5012,7 +5010,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 		  gfc_trans_auto_array_allocation (sym->backend_decl,
 						   sym, block);
-		  gfc_restore_backend_locus (&loc);
+		  input_location = loc;
 		}
 	      break;
 
@@ -5040,9 +5038,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  && sym->attr.result)
 		{
 		  gfc_start_block (&init);
-		  gfc_save_backend_locus (&loc);
-		  gfc_set_backend_locus (&sym->declared_at);
-		  tmp = gfc_null_and_pass_deferred_len (sym, &init, &loc);
+		  loc = input_location;
+		  input_location = gfc_get_location (&sym->declared_at);
+		  tmp = gfc_null_and_pass_deferred_len (sym, &init, loc);
 		  gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 		}
 	      break;
@@ -5067,8 +5065,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    {
 	      tree descriptor = NULL_TREE;
 
-	      gfc_save_backend_locus (&loc);
-	      gfc_set_backend_locus (&sym->declared_at);
+	      loc = input_location;
+	      input_location = gfc_get_location (&sym->declared_at);
 	      gfc_start_block (&init);
 
 	      if (sym->ts.type == BT_CHARACTER
@@ -5133,10 +5131,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    && sym->ts.type == BT_CHARACTER
 		    && sym->ts.deferred
 		    && sym->ts.u.cl->passed_length)
-		tmp = gfc_null_and_pass_deferred_len (sym, &init, &loc);
+		tmp = gfc_null_and_pass_deferred_len (sym, &init, loc);
 	      else
 		{
-		  gfc_restore_backend_locus (&loc);
+		  input_location = loc;
 		  tmp = NULL_TREE;
 		}
 
@@ -5170,12 +5168,13 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      if (sym->ts.type == BT_CLASS)
 		{
 		  /* Initialize _vptr to declared type.  */
-		  gfc_save_backend_locus (&loc);
-		  gfc_set_backend_locus (&sym->declared_at);
+		  loc = input_location;
+		  input_location = gfc_get_location (&sym->declared_at);
+
 		  e = gfc_lval_expr_from_sym (sym);
 		  gfc_reset_vptr (&init, e);
 		  gfc_free_expr (e);
-		  gfc_restore_backend_locus (&loc);
+		  input_location = loc;
 		}
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
@@ -5192,9 +5191,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  if (sym->attr.dummy)
 	    {
 	      gfc_start_block (&init);
-	      gfc_save_backend_locus (&loc);
-	      gfc_set_backend_locus (&sym->declared_at);
-	      tmp = gfc_null_and_pass_deferred_len (sym, &init, &loc);
+	      loc = input_location;
+	      input_location = gfc_get_location (&sym->declared_at);
+	      tmp = gfc_null_and_pass_deferred_len (sym, &init, loc);
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 	    }
 	}
@@ -5204,20 +5203,20 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	gfc_trans_deferred_array (sym, block);
       else if (sym->ts.type == BT_CHARACTER)
 	{
-	  gfc_save_backend_locus (&loc);
-	  gfc_set_backend_locus (&sym->declared_at);
+	  loc = input_location;
+	  input_location = gfc_get_location (&sym->declared_at);
 	  if (sym->attr.dummy || sym->attr.result)
 	    gfc_trans_dummy_character (sym, sym->ts.u.cl, block);
 	  else
 	    gfc_trans_auto_character_variable (sym, block);
-	  gfc_restore_backend_locus (&loc);
+	  input_location = loc;
 	}
       else if (sym->attr.assign)
 	{
-	  gfc_save_backend_locus (&loc);
-	  gfc_set_backend_locus (&sym->declared_at);
+	  loc = input_location;
+	  input_location = gfc_get_location (&sym->declared_at);
 	  gfc_trans_assign_aux_var (sym, block);
-	  gfc_restore_backend_locus (&loc);
+	  input_location = loc;
 	}
       else if (sym->ts.type == BT_DERIVED
 		 && sym->value
@@ -5582,7 +5581,7 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 			  void_type_node);
 	  DECL_EXTERNAL (entry->namespace_decl) = 1;
 	}
-      gfc_set_backend_locus (&use_stmt->where);
+      input_location = gfc_get_location (&use_stmt->where);
       if (!use_stmt->only_flag)
 	(*debug_hooks->imported_module_or_decl) (entry->namespace_decl,
 						 NULL_TREE,
@@ -5665,7 +5664,7 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	    local_name = get_identifier (rent->local_name);
 	  else
 	    local_name = NULL_TREE;
-	  gfc_set_backend_locus (&rent->where);
+	  input_location = gfc_get_location (&rent->where);
 	  (*debug_hooks->imported_module_or_decl) (decl, local_name,
 						   ns->proc_name->backend_decl,
 						   !use_stmt->only_flag,
@@ -6870,11 +6869,12 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
 {
   gfc_code *code;
   gfc_oacc_declare *oc;
-  locus where = gfc_current_locus;
+  locus where;
   gfc_omp_clauses *omp_clauses = NULL;
   gfc_omp_namelist *n, *p;
-
   module_oacc_clauses = NULL;
+
+  gfc_locus_from_location (&where, input_location);
   gfc_traverse_ns (ns, find_module_oacc_declare_clauses);
 
   if (module_oacc_clauses && sym->attr.flavor == FL_PROGRAM)
@@ -8209,9 +8209,9 @@ gfc_generate_block_data (gfc_namespace * ns)
 
   /* Tell the backend the source location of the block data.  */
   if (ns->proc_name)
-    gfc_set_backend_locus (&ns->proc_name->declared_at);
+    input_location = gfc_get_location (&ns->proc_name->declared_at);
   else
-    gfc_set_backend_locus (&gfc_current_locus);
+    input_location = gfc_get_location (&gfc_current_locus);
 
   /* Process the DATA statements.  */
   gfc_trans_common (ns);

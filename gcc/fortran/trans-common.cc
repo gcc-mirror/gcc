@@ -382,7 +382,7 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved, bool is_auto)
 
   /* The source location has been lost, and doesn't really matter.
      We need to set it to something though.  */
-  gfc_set_decl_location (decl, &gfc_current_locus);
+  DECL_SOURCE_LOCATION (decl) = input_location;
 
   gfc_add_decl_to_function (decl);
 
@@ -611,8 +611,7 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
   tmp = build_range_type (gfc_array_index_type,
 			  gfc_index_zero_node, tmp);
   tmp = build_array_type (type, tmp);
-  field = build_decl (gfc_get_location (&gfc_current_locus),
-		      FIELD_DECL, NULL_TREE, tmp);
+  field = build_decl (input_location, FIELD_DECL, NULL_TREE, tmp);
 
   known_align = BIGGEST_ALIGNMENT;
 

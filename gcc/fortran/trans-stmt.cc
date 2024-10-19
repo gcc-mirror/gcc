@@ -1464,8 +1464,7 @@ gfc_trans_if_1 (gfc_code * code)
 {
   gfc_se if_se;
   tree stmt, elsestmt;
-  locus saved_loc;
-  location_t loc;
+  location_t loc, saved_loc = UNKNOWN_LOCATION;
 
   /* Check for an unconditional ELSE clause.  */
   if (!code->expr1)
@@ -1476,16 +1475,16 @@ gfc_trans_if_1 (gfc_code * code)
   gfc_start_block (&if_se.pre);
 
   /* Calculate the IF condition expression.  */
-  if (code->expr1->where.lb)
+  if (GFC_LOCUS_IS_SET (code->expr1->where))
     {
-      gfc_save_backend_locus (&saved_loc);
-      gfc_set_backend_locus (&code->expr1->where);
+      saved_loc = input_location;
+      input_location = gfc_get_location (&code->expr1->where);
     }
 
   gfc_conv_expr_val (&if_se, code->expr1);
 
-  if (code->expr1->where.lb)
-    gfc_restore_backend_locus (&saved_loc);
+  if (saved_loc != UNKNOWN_LOCATION)
+    input_location = saved_loc;
 
   /* Translate the THEN clause.  */
   stmt = gfc_trans_code (code->next);
@@ -1497,8 +1496,8 @@ gfc_trans_if_1 (gfc_code * code)
     elsestmt = build_empty_stmt (input_location);
 
   /* Build the condition expression and add it to the condition block.  */
-  loc = code->expr1->where.lb ? gfc_get_location (&code->expr1->where)
-			      : input_location;
+  loc = (GFC_LOCUS_IS_SET (code->expr1->where)
+	 ? gfc_get_location (&code->expr1->where) : input_location);
   stmt = fold_build3_loc (loc, COND_EXPR, void_type_node, if_se.expr, stmt,
 			  elsestmt);
 

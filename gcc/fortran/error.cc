@@ -52,17 +52,43 @@ static int warningcount_buffered, werrorcount_buffered;
 
 
 /* Return a location_t suitable for 'tree' for a gfortran locus.  During
-   parsing in gfortran, loc->lb->location contains only the line number
+   parsing in gfortran, loc->u.lb->location contains only the line number
    and LOCATION_COLUMN is 0; hence, the column has to be added when generating
-   locations for 'tree'.  */
+   locations for 'tree'.  If available, return location_t directly, which
+   might be a range. */
 
 location_t
 gfc_get_location_with_offset (locus *loc, unsigned offset)
 {
-  gcc_checking_assert (loc->nextc >= loc->lb->line);
-  return linemap_position_for_loc_and_offset (line_table, loc->lb->location,
-					      loc->nextc - loc->lb->line
+  if (loc->nextc == (gfc_char_t *) -1)
+    {
+      gcc_checking_assert (offset == 0);
+      return loc->u.location;
+    }
+  gcc_checking_assert (loc->nextc >= loc->u.lb->line);
+  return linemap_position_for_loc_and_offset (line_table, loc->u.lb->location,
+					      loc->nextc - loc->u.lb->line
 					      + offset);
+}
+
+/* Convert a locus to a range. */
+
+locus
+gfc_get_location_range (locus *caret_loc, unsigned caret_offset,
+			locus *start_loc, unsigned start_offset,
+			locus *end_loc)
+{
+  location_t caret;
+  location_t start = gfc_get_location_with_offset (start_loc, start_offset);
+  location_t end = gfc_get_location_with_offset (end_loc, 0);
+
+  if (caret_loc)
+    caret = gfc_get_location_with_offset (caret_loc, caret_offset);
+
+  locus range;
+  range.nextc = (gfc_char_t *) -1;
+  range.u.location = make_location (caret_loc ? caret : start, start, end);
+  return range;
 }
 
 /* Return buffered_p.  */

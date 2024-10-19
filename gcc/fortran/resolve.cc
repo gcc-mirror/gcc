@@ -5196,7 +5196,8 @@ find_array_spec (gfc_expr *e)
       case REF_ARRAY:
 	if (as == NULL)
 	  {
-	    locus loc = ref->u.ar.where.lb ? ref->u.ar.where : e->where;
+	    locus loc = (GFC_LOCUS_IS_SET (ref->u.ar.where)
+			 ? ref->u.ar.where : e->where);
 	    gfc_error ("Invalid array reference of a non-array entity at %L",
 		       &loc);
 	    return false;

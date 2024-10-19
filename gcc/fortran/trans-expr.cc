@@ -1641,8 +1641,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 	      cond = fold_build2_loc (input_location, NE_EXPR,
 				      logical_type_node, from_len, to_len);
 	      gfc_trans_runtime_check (true, false, cond, &body,
-				       &gfc_current_locus, msg,
-				       to_len, from_len);
+				       NULL, msg, to_len, from_len);
 	      free (msg);
 	    }
 	}
@@ -10023,10 +10022,12 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
 	  && expr->must_finalize
 	  && gfc_may_be_finalized (expr->ts))
 	{
-	  gfc_warning (0, "The structure constructor at %C has been"
+	  locus loc;
+	  gfc_locus_from_location (&loc, input_location);
+	  gfc_warning (0, "The structure constructor at %L has been"
 			 " finalized. This feature was removed by f08/0011."
 			 " Use -std=f2018 or -std=gnu to eliminate the"
-			 " finalization.");
+			 " finalization.", &loc);
 	  symbol_attribute attr;
 	  attr.allocatable = attr.pointer = 0;
 	  gfc_finalize_tree_expr (se, expr->ts.u.derived, attr, 0);
