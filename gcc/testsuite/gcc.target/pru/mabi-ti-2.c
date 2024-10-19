@@ -8,8 +8,8 @@ struct big {
 	char c[9];
 };
 
-struct big test(void)
-{ /* { dg-error "large return values not supported with '-mabi=ti' option" } */
+struct big test(void) /* { dg-error "large return values not supported with '-mabi=ti' option" } */
+{
   static struct big b;
   return b;
 }

@@ -4,9 +4,9 @@
 /* { dg-options "-O1 -mabi=ti" } */
 
 
-extern void (*extfuncp)(int);
+extern void (*extfuncp)(int); /* { dg-error "function pointers not supported with '-mabi=ti' option" } */
 
 void test(void)
 {
-  extfuncp(1); /* { dg-error "function pointers not supported with '-mabi=ti' option" } */
+  extfuncp(1);
 }

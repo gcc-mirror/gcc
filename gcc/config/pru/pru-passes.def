@@ -21,7 +21,7 @@
    that the compiled code by GCC conforms to the TI ABI specification.
    If GCC cannot output a conforming code, then an error is raised.  */
 
-INSERT_PASS_AFTER (pass_warn_unused_result, 1, pru_tiabi_check);
+INSERT_PASS_AFTER (pass_ipa_auto_profile_offline, 1, pru_tiabi_check);
 
 /* If -minrt option is used, then this pass would validate
    that the compiled code by GCC is compatible with the minimal
