@@ -966,7 +966,7 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
 
 /* This function delegates block-move expansion to either the vector
    implementation or the scalar one.  Return TRUE if successful or FALSE
-   otherwise.  */
+   otherwise.  Assume that the memory regions do not overlap.  */
 
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
@@ -974,7 +974,7 @@ riscv_expand_block_move (rtx dest, rtx src, rtx length)
   if ((TARGET_VECTOR && !TARGET_XTHEADVECTOR)
       && stringop_strategy & STRATEGY_VECTOR)
     {
-      bool ok = riscv_vector::expand_block_move (dest, src, length);
+      bool ok = riscv_vector::expand_block_move (dest, src, length, false);
       if (ok)
 	return true;
     }
@@ -1054,7 +1054,7 @@ namespace riscv_vector {
 /* Used by cpymemsi in riscv.md .  */
 
 bool
-expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
+expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
 {
   /*
     memcpy:
@@ -1085,10 +1085,9 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
     {
       HOST_WIDE_INT length = INTVAL (length_in);
 
-      /* By using LMUL=8, we can copy as many bytes in one go as there
-	 are bits in a vector register.  If the entire block thus fits,
-	 we don't need a loop.  */
-      if (length <= TARGET_MIN_VLEN)
+      /* If the VLEN and preferred LMUL allow the entire block to be copied in
+	 one go then no loop is needed.  */
+      if (known_le (length, BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL))
 	{
 	  need_loop = false;
 
@@ -1114,19 +1113,32 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	 for small element widths, we might allow larger element widths for
 	 loops too.  */
       if (need_loop)
-	potential_ew = 1;
+	{
+	  if (movmem_p)
+	    /* Inlining general memmove is a pessimisation: we can't avoid
+	       having to decide which direction to go at runtime, which is
+	       costly in instruction count however for situations where the
+	       entire move fits in one vector operation we can do all reads
+	       before doing any writes so we don't have to worry so generate
+	       the inline vector code in such situations.  */
+	    return false;
+	  potential_ew = 1;
+	}
       for (; potential_ew; potential_ew >>= 1)
 	{
 	  scalar_int_mode elem_mode;
 	  unsigned HOST_WIDE_INT bits = potential_ew * BITS_PER_UNIT;
-	  unsigned HOST_WIDE_INT per_iter;
-	  HOST_WIDE_INT nunits;
+	  poly_uint64 per_iter;
+	  poly_int64 nunits;
 
 	  if (need_loop)
-	    per_iter = TARGET_MIN_VLEN;
+	    per_iter = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;
 	  else
 	    per_iter = length;
-	  nunits = per_iter / potential_ew;
+	  /* BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL may not be divisible by
+	     this potential_ew.  */
+	  if (!multiple_p (per_iter, potential_ew, &nunits))
+	    continue;
 
 	  /* Unless we get an implementation that's slow for small element
 	     size / non-word-aligned accesses, we assume that the hardware
@@ -1137,6 +1149,8 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	  if (length % potential_ew != 0
 	      || !int_mode_for_size (bits, 0).exists (&elem_mode))
 	    continue;
+
+	  poly_uint64 mode_units;
 	  /* Find the mode to use for the copy inside the loop - or the
 	     sole copy, if there is no loop.  */
 	  if (!need_loop)
@@ -1152,12 +1166,12 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 		 pointless.
 		 Still, by choosing a lower LMUL factor that still allows
 		 an entire transfer, we can reduce register pressure.  */
-	      for (unsigned lmul = 1; lmul <= 4; lmul <<= 1)
-		if (length * BITS_PER_UNIT <= TARGET_MIN_VLEN * lmul
-		    && multiple_p (BYTES_PER_RISCV_VECTOR * lmul, potential_ew)
+	      for (unsigned lmul = 1; lmul < TARGET_MAX_LMUL; lmul <<= 1)
+		if (known_le (length * BITS_PER_UNIT, TARGET_MIN_VLEN * lmul)
+		    && multiple_p (BYTES_PER_RISCV_VECTOR * lmul, potential_ew,
+				   &mode_units)
 		    && (riscv_vector::get_vector_mode
-			 (elem_mode, exact_div (BYTES_PER_RISCV_VECTOR * lmul,
-				     potential_ew)).exists (&vmode)))
+			 (elem_mode, mode_units).exists (&vmode)))
 		  break;
 	    }
 
@@ -1165,15 +1179,12 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
 	  if (vmode != VOIDmode)
 	    break;
 
-	  /* The RVVM8?I modes are notionally 8 * BYTES_PER_RISCV_VECTOR bytes
-	     wide.  BYTES_PER_RISCV_VECTOR can't be evenly divided by
-	     the sizes of larger element types; the LMUL factor of 8 can at
-	     the moment be divided by the SEW, with SEW of up to 8 bytes,
-	     but there are reserved encodings so there might be larger
-	     SEW in the future.  */
-	  if (riscv_vector::get_vector_mode
-	      (elem_mode, exact_div (BYTES_PER_RISCV_VECTOR * 8,
-				     potential_ew)).exists (&vmode))
+	  /* BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL will at least be divisible
+	     by potential_ew 1, so this should succeed eventually.  */
+	  if (multiple_p (BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL,
+			  potential_ew, &mode_units)
+	      && riscv_vector::get_vector_mode (elem_mode,
+						mode_units).exists (&vmode))
 	    break;
 
 	  /* We may get here if we tried an element size that's larger than
@@ -1186,7 +1197,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
     }
   else
     {
-      vmode = E_RVVM8QImode;
+      gcc_assert (get_lmul_mode (QImode, TARGET_MAX_LMUL).exists (&vmode));
     }
 
   /* A memcpy libcall in the worst case takes 3 instructions to prepare the

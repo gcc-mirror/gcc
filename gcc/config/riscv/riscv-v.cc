@@ -1890,6 +1890,18 @@ get_mask_mode (machine_mode mode)
   return get_vector_mode (BImode, nunits).require ();
 }
 
+/* Return the appropriate LMUL mode for MODE.  */
+
+opt_machine_mode
+get_lmul_mode (scalar_mode mode, int lmul)
+{
+  poly_uint64 lmul_nunits;
+  unsigned int bytes = GET_MODE_SIZE (mode);
+  if (multiple_p (BYTES_PER_RISCV_VECTOR * lmul, bytes, &lmul_nunits))
+    return get_vector_mode (mode, lmul_nunits);
+  return E_VOIDmode;
+}
+
 /* Return the appropriate M1 mode for MODE.  */
 
 static opt_machine_mode

@@ -12,7 +12,7 @@ extern void *memcpy(void *__restrict dest, const void *__restrict src, __SIZE_TY
 /* memcpy should be implemented using the cpymem pattern.
 ** f1:
 XX	\.L\d+: # local label is ignored
-**	vsetvli\s+[ta][0-7],a2,e8,m8,ta,ma
+**	vsetvli\s+[ta][0-7],a2,e8,m1,ta,ma
 **	vle8\.v\s+v\d+,0\(a1\)
 **	vse8\.v\s+v\d+,0\(a0\)
 **	add\s+a1,a1,[ta][0-7]
@@ -31,7 +31,7 @@ void f1 (void *a, void *b, __SIZE_TYPE__ l)
    overflow is undefined.
 ** f2:
 XX	\.L\d+: # local label is ignored
-**	vsetvli\s+[ta][0-7],a2,e8,m8,ta,ma
+**	vsetvli\s+[ta][0-7],a2,e8,m1,ta,ma
 **	vle8\.v\s+v\d+,0\(a1\)
 **	vse8\.v\s+v\d+,0\(a0\)
 **	add\s+a1,a1,[ta][0-7]

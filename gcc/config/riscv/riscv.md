@@ -2761,12 +2761,6 @@
     FAIL;
 })
 
-;; Inlining general memmove is a pessimisation: we can't avoid having to decide
-;; which direction to go at runtime, which is costly in instruction count
-;; however for situations where the entire move fits in one vector operation
-;; we can do all reads before doing any writes so we don't have to worry
-;; so generate the inline vector code in such situations
-;; nb. prefer scalar path for tiny memmoves.
 (define_expand "movmem<mode>"
   [(parallel [(set (match_operand:BLK 0 "general_operand")
    (match_operand:BLK 1 "general_operand"))
@@ -2774,10 +2768,8 @@
     (use (match_operand:SI 3 "const_int_operand"))])]
   "TARGET_VECTOR"
 {
-  if ((INTVAL (operands[2]) >= TARGET_MIN_VLEN / 8)
-	&& (INTVAL (operands[2]) <= TARGET_MIN_VLEN)
-	&& riscv_vector::expand_block_move (operands[0], operands[1],
-	     operands[2]))
+  if (riscv_vector::expand_block_move (operands[0], operands[1], operands[2],
+				       true))
     DONE;
   else
     FAIL;

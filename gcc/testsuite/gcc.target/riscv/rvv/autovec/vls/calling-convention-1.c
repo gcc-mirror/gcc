@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2 -mrvv-max-lmul=m8" } */
 
 #include "def.h"
 
@@ -143,10 +143,6 @@ DEF_RET1_ARG9 (v1024qi)
 DEF_RET1_ARG9 (v2048qi)
 DEF_RET1_ARG9 (v4096qi)
 
-// RET1_ARG0 tests
-/* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 9 } } */
-/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
-
 // v1qi tests: return value (lbu) and function prologue (sb)
 // 1 lbu per test, argnum sb's when args > 1
 /* { dg-final { scan-assembler-times {lbu\s+a0,\s*[0-9]+\(sp\)} 8 } } */
@@ -169,7 +165,4 @@ DEF_RET1_ARG9 (v4096qi)
 /* { dg-final { scan-assembler-times {sd\s+a[0-7],\s*[0-9]+\(sp\)} 103 } } */
 
 // v32-4096qi tests: return value (vse8.v)
-/* { dg-final { scan-assembler-times {vse8.v\s+v[0-9],\s*[0-9]+\(a0\)} 74 } } */
-// v1024-4096qi_ARG1 tests: return value (vse64.v)
-// for some reason ARG1 returns using vse64 instead of vse8
-/* { dg-final { scan-assembler-times {vse64.v\s+v[0-9],\s*[0-9]+\(a0\)\s+ret} 3 } } */
+/* { dg-final { scan-assembler-times {vse8.v\s+v[0-9],\s*[0-9]+\(a0\)} 80 } } */

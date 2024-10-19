@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -frename-registers" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -frename-registers -mrvv-max-lmul=m8" } */
 
 signed char e;
 short f = 8;
