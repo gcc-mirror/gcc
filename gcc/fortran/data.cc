@@ -272,8 +272,6 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   gfc_symbol *symbol;
   gfc_typespec *last_ts;
   mpz_t offset;
-  const char *msg = "F18(R841): data-implied-do object at %L is neither an "
-		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
@@ -523,7 +521,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	     violates F18(R841). If the error is removed, the expected result
 	     is obtained. Leaving the code in place ensures a clean error
 	     recovery.  */
-	  gfc_error (msg, &lvalue->where);
+	  gfc_error ("data-implied-do object at %L is neither an array-element "
+		     "nor a scalar-structure-component (F2018: R841)",
+		     &lvalue->where);
 
 	  /* This breaks with the other reference types in that the output
 	     constructor has to be of type COMPLEX, whereas the lvalue is

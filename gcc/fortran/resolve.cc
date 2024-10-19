@@ -13984,8 +13984,8 @@ deferred_requirements (gfc_symbol *sym)
 static bool
 resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 {
-  const char *auto_save_msg = "Automatic object %qs at %L cannot have the "
-			      "SAVE attribute";
+  const char *auto_save_msg = G_("Automatic object %qs at %L cannot have the "
+				 "SAVE attribute");
 
   if (!resolve_fl_var_and_proc (sym, mp_flag))
     return false;
@@ -18246,8 +18246,8 @@ resolve_equivalence (gfc_equiv *eq)
       /* Since the pair of objects is not of the same type, mixed or
 	 non-default sequences can be rejected.  */
 
-      msg = "Sequence %s with mixed components in EQUIVALENCE "
-	    "statement at %L with different type objects";
+      msg = G_("Sequence %s with mixed components in EQUIVALENCE "
+	       "statement at %L with different type objects");
       if ((object ==2
 	   && last_eq_type == SEQ_MIXED
 	   && last_where
@@ -18256,8 +18256,8 @@ resolve_equivalence (gfc_equiv *eq)
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
 	continue;
 
-      msg = "Non-default type object or sequence %s in EQUIVALENCE "
-	    "statement at %L with objects of different type";
+      msg = G_("Non-default type object or sequence %s in EQUIVALENCE "
+	       "statement at %L with objects of different type");
       if ((object ==2
 	   && last_eq_type == SEQ_NONDEFAULT
 	   && last_where
@@ -18266,15 +18266,15 @@ resolve_equivalence (gfc_equiv *eq)
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
 	continue;
 
-      msg ="Non-CHARACTER object %qs in default CHARACTER "
-	   "EQUIVALENCE statement at %L";
+      msg = G_("Non-CHARACTER object %qs in default CHARACTER "
+	       "EQUIVALENCE statement at %L");
       if (last_eq_type == SEQ_CHARACTER
 	  && eq_type != SEQ_CHARACTER
 	  && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where))
 		continue;
 
-      msg ="Non-NUMERIC object %qs in default NUMERIC "
-	   "EQUIVALENCE statement at %L";
+      msg = G_("Non-NUMERIC object %qs in default NUMERIC "
+	       "EQUIVALENCE statement at %L");
       if (last_eq_type == SEQ_NUMERIC
 	  && eq_type != SEQ_NUMERIC
 	  && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where))

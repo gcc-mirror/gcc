@@ -7216,7 +7216,7 @@ gfc_split_omp_clauses (gfc_code *code,
 		 }
 	     }
 	   if (!found)
-	     gfc_error ("%qs specified in 'allocate' clause at %L but not "
+	     gfc_error ("%qs specified in %<allocate%> clause at %L but not "
 			"in an explicit privatization clause",
 			alloc_nl->sym->name, &alloc_nl->where);
 	 }
@@ -8424,7 +8424,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	{
 	  if (!search_ns->proc_name->attr.function
 	      && !search_ns->proc_name->attr.subroutine)
-	    gfc_error ("The base name for 'declare variant' must be "
+	    gfc_error ("The base name for %<declare variant%> must be "
 		       "specified at %L ", &odv->where);
 	  else
 	    error_found = false;

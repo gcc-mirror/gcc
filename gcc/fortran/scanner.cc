@@ -1008,7 +1008,7 @@ skip_fixed_omp_sentinel (locus *start)
     }
   else if (UNLIKELY (c == 'x' || c == 'X'))
     gfc_warning_now (OPT_Wsurprising,
-		     "Ignoring '!$omx' vendor-extension sentinel at %C");
+		     "Ignoring %<!$omx%> vendor-extension sentinel at %C");
   return false;
 }
 
