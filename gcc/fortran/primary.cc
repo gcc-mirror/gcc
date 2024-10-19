@@ -1471,6 +1471,9 @@ match_sym_complex_part (gfc_expr **result)
 	goto error;
       break;
 
+    case BT_UNSIGNED:
+      goto error;
+
     default:
       gfc_internal_error ("gfc_match_sym_complex_part(): Bad type");
     }
