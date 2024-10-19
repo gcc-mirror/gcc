@@ -8519,7 +8519,10 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 	  && !arg_types
 	  && !arg_info->parms
 	  && !arg_info->no_named_args_stdarg_p)
-	arg_types = arg_info->types = void_list_node;
+	{
+	  arg_types = arg_info->types = void_list_node;
+	  arg_info->c23_empty_parens = 1;
+	}
 
       /* If there is a parameter of incomplete type in a definition,
 	 this is an error.  In a declaration this is valid, and a
@@ -8589,6 +8592,7 @@ build_arg_info (void)
   ret->pending_sizes = NULL;
   ret->had_vla_unspec = 0;
   ret->no_named_args_stdarg_p = 0;
+  ret->c23_empty_parens = 0;
   return ret;
 }
 
@@ -10923,7 +10927,8 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
      its parameter list).  */
   else if (!in_system_header_at (input_location)
 	   && !current_function_scope
-	   && arg_info->types != error_mark_node)
+	   && arg_info->types != error_mark_node
+	   && !arg_info->c23_empty_parens)
     warning_at (DECL_SOURCE_LOCATION (fndecl), OPT_Wtraditional,
 		"traditional C rejects ISO C style function definitions");
 

@@ -525,6 +525,10 @@ struct c_arg_info {
   BOOL_BITFIELD had_vla_unspec : 1;
   /* True when the arguments are a (...) prototype.  */
   BOOL_BITFIELD no_named_args_stdarg_p : 1;
+  /* True when empty parentheses have been interpreted as (void) in C23 or
+     later.  This is only for use by -Wtraditional and is no longer needed if
+     -Wtraditional is removed.  */
+  BOOL_BITFIELD c23_empty_parens : 1;
 };
 
 /* A declarator.  */
