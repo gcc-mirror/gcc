@@ -658,3 +658,7 @@ Specify TLS dialect.
 mfence-tso
 Target Var(TARGET_FENCE_TSO) Init(1)
 Specifies whether the fence.tso instruction should be used.
+
+mautovec-segment
+Target Integer Var(riscv_mautovec_segment) Init(1)
+Enable (default) or disable generation of vector segment load/store instructions.

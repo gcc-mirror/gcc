@@ -282,7 +282,7 @@
    (match_operand:<VM> 2 "vector_mask_operand")
    (match_operand 3 "autovec_length_operand")
    (match_operand 4 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR_AUTOVEC_SEGMENT"
   {
     riscv_vector::expand_lanes_load_store (operands, true);
     DONE;
@@ -295,7 +295,7 @@
    (match_operand:<VM> 2 "vector_mask_operand")
    (match_operand 3 "autovec_length_operand")
    (match_operand 4 "const_0_operand")]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR_AUTOVEC_SEGMENT"
   {
     riscv_vector::expand_lanes_load_store (operands, false);
     DONE;
