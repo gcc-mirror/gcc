@@ -77,7 +77,10 @@ package body MDLL is
       Bas_Opt  : aliased String := "-Wl,--base-file," & Bas_File;
       Lib_Opt  : aliased String := "-mdll";
       Out_Opt  : aliased String := "-o";
-      Adr_Opt  : aliased String := "-Wl,--image-base=" & Lib_Address;
+      Adr_Opt  : aliased String :=
+                   (if Relocatable
+                    then ""
+                    else "-Wl,--image-base=" & Lib_Address);
       Map_Opt  : aliased String := "-Wl,-Map," & Lib_Filename & ".map";
 
       L_Afiles : Argument_List := Afiles;
@@ -86,25 +89,19 @@ package body MDLL is
 
       All_Options : constant Argument_List := Options & Largs_Options;
 
-      procedure Build_Reloc_DLL;
+      procedure Build_DLL;
       --  Build a relocatable DLL with only objects file specified. This uses
       --  the well known five step build (see GNAT User's Guide).
 
-      procedure Ada_Build_Reloc_DLL;
+      procedure Ada_Build_DLL;
       --  Build a relocatable DLL with Ada code. This uses the well known five
       --  step build (see GNAT User's Guide).
 
-      procedure Build_Non_Reloc_DLL;
-      --  Build a non relocatable DLL containing no Ada code
+      ---------------
+      -- Build_DLL --
+      ---------------
 
-      procedure Ada_Build_Non_Reloc_DLL;
-      --  Build a non relocatable DLL with Ada code
-
-      ---------------------
-      -- Build_Reloc_DLL --
-      ---------------------
-
-      procedure Build_Reloc_DLL is
+      procedure Build_DLL is
 
          Objects_Exp_File : constant OS_Lib.Argument_List :=
                               Exp_File'Unchecked_Access & Ofiles;
@@ -185,13 +182,13 @@ package body MDLL is
             OS_Lib.Delete_File (Bas_File, Success);
             OS_Lib.Delete_File (Jnk_File, Success);
             raise;
-      end Build_Reloc_DLL;
+      end Build_DLL;
 
-      -------------------------
-      -- Ada_Build_Reloc_DLL --
-      -------------------------
+      -------------------
+      -- Ada_Build_DLL --
+      -------------------
 
-      procedure Ada_Build_Reloc_DLL is
+      procedure Ada_Build_DLL is
          Success : Boolean;
          pragma Warnings (Off, Success);
 
@@ -290,125 +287,7 @@ package body MDLL is
             OS_Lib.Delete_File (Bas_File, Success);
             OS_Lib.Delete_File (Jnk_File, Success);
             raise;
-      end Ada_Build_Reloc_DLL;
-
-      -------------------------
-      -- Build_Non_Reloc_DLL --
-      -------------------------
-
-      procedure Build_Non_Reloc_DLL is
-         Success : Boolean;
-         pragma Warnings (Off, Success);
-
-      begin
-         if not Quiet then
-            Text_IO.Put_Line ("building non relocatable DLL...");
-            Text_IO.Put ("make " & Dll_File &
-                         " using address " & Lib_Address);
-
-            if Build_Import then
-               Text_IO.Put_Line (" and " & Lib_File);
-            else
-               Text_IO.New_Line;
-            end if;
-         end if;
-
-         --  Build exp table and the lib .a file
-
-         Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Exp_Table    => Exp_File,
-                      Build_Import => Build_Import);
-
-         --  Build the DLL
-
-         declare
-            Params      : constant OS_Lib.Argument_List :=
-                            Map_Opt'Unchecked_Access &
-                            Adr_Opt'Unchecked_Access & All_Options;
-            First_Param : Positive := Params'First + 1;
-
-         begin
-            if Map_File then
-               First_Param := Params'First;
-            end if;
-
-            Utl.Gcc
-              (Output_File => Dll_File,
-               Files       => Exp_File'Unchecked_Access & Ofiles,
-               Options     => Params (First_Param .. Params'Last),
-               Build_Lib   => True);
-         end;
-
-         OS_Lib.Delete_File (Exp_File, Success);
-
-      exception
-         when others =>
-            OS_Lib.Delete_File (Exp_File, Success);
-            raise;
-      end Build_Non_Reloc_DLL;
-
-      -----------------------------
-      -- Ada_Build_Non_Reloc_DLL --
-      -----------------------------
-
-      --  Build a non relocatable DLL with Ada code
-
-      procedure Ada_Build_Non_Reloc_DLL is
-         Success : Boolean;
-         pragma Warnings (Off, Success);
-
-      begin
-         if not Quiet then
-            Text_IO.Put_Line ("building non relocatable DLL...");
-            Text_IO.Put ("make " & Dll_File &
-                         " using address " & Lib_Address);
-
-            if Build_Import then
-               Text_IO.Put_Line (" and " & Lib_File);
-            else
-               Text_IO.New_Line;
-            end if;
-         end if;
-
-         --  Build exp table and the lib .a file
-
-         Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Exp_Table    => Exp_File,
-                      Build_Import => Build_Import);
-
-         --  Build the DLL
-
-         Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
-
-         declare
-            Params      : constant OS_Lib.Argument_List :=
-                            Map_Opt'Unchecked_Access &
-                            Out_Opt'Unchecked_Access &
-                            Dll_File'Unchecked_Access &
-                            Lib_Opt'Unchecked_Access &
-                            Exp_File'Unchecked_Access &
-                            Adr_Opt'Unchecked_Access &
-                            Ofiles &
-                            All_Options;
-            First_Param : Positive := Params'First + 1;
-
-         begin
-            if Map_File then
-               First_Param := Params'First;
-            end if;
-
-            Utl.Gnatlink
-              (L_Afiles (L_Afiles'Last).all,
-               Params (First_Param .. Params'Last));
-         end;
-
-         OS_Lib.Delete_File (Exp_File, Success);
-
-      exception
-         when others =>
-            OS_Lib.Delete_File (Exp_File, Success);
-            raise;
-      end Ada_Build_Non_Reloc_DLL;
+      end Ada_Build_DLL;
 
    --  Start of processing for Build_Dynamic_Library
 
@@ -432,21 +311,11 @@ package body MDLL is
          end;
       end if;
 
-      case Relocatable is
-         when True =>
-            if L_Afiles'Length = 0 then
-               Build_Reloc_DLL;
-            else
-               Ada_Build_Reloc_DLL;
-            end if;
-
-         when False =>
-            if L_Afiles'Length = 0 then
-               Build_Non_Reloc_DLL;
-            else
-               Ada_Build_Non_Reloc_DLL;
-            end if;
-      end case;
+      if L_Afiles'Length = 0 then
+          Build_DLL;
+      else
+         Ada_Build_DLL;
+      end if;
    end Build_Dynamic_Library;
 
    --------------------------
