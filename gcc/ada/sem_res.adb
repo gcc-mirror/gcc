@@ -4942,7 +4942,7 @@ package body Sem_Res is
                        A, Nam);
                   end if;
 
-                  if Debug_Flag_Underscore_PP
+                  if not Debug_Flag_Underscore_PP
                     and then
                       (Is_Controlling_Formal (F)
                          or else Is_Class_Wide_Type (Designated_Type (F_Typ)))
