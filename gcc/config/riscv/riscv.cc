@@ -12583,22 +12583,6 @@ riscv_stack_clash_protection_alloca_probe_range (void)
   return STACK_CLASH_CALLER_GUARD;
 }
 
-static bool
-riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
-				      unsigned alignment,
-				      enum by_pieces_operation op, bool speed_p)
-{
-  /* For set/clear with size > UNITS_PER_WORD, by pieces uses vector broadcasts
-     with UNITS_PER_WORD size pieces.  Use setmem<mode> instead which can use
-     bigger chunks.  */
-  if (TARGET_VECTOR && stringop_strategy & STRATEGY_VECTOR
-      && (op == CLEAR_BY_PIECES || op == SET_BY_PIECES)
-      && speed_p && size > UNITS_PER_WORD)
-    return false;
-
-  return default_use_by_pieces_infrastructure_p (size, alignment, op, speed_p);
-}
-
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -12963,9 +12947,6 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE riscv_c_mode_for_floating_type
-
-#undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
-#define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P riscv_use_by_pieces_infrastructure_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
