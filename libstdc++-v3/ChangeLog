@@ -1,3 +1,198 @@
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117135
+	* config/locale/generic/time_members.cc
+	(__timepunct<wchar_t>::_M_initialize_timepunc): Set
+	_M_date_time_format for C locale. Set %Ex formats to the same
+	values as the %x formats.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/dragonfly/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunc)
+	(__timepunct<wchar_t>::_M_initialize_timepunc): Set
+	_M_date_time_format for C locale. Set %Ex formats to the same
+	values as the %x formats.
+	* config/locale/generic/time_members.cc: Likewise.
+	* config/locale/gnu/time_members.cc: Likewise.
+	* testsuite/22_locale/time_get/get/char/5.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/5.cc: New test.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116777
+	* doc/xml/manual/using.xml: Document features that are not
+	supported for the gcc4-compatible ABI.
+	* doc/html/manual/using_dual_abi.html: Regenerate.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (auto_win_file_handle): Add error_code&
+	member and set it if CreateFileW or GetFileInformationByHandle
+	fails.
+	(fs::equiv_files) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Simplify
+	control flow.
+	(fs::hard_link_count) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Clear ec
+	on success.
+	* testsuite/27_io/filesystem/operations/hard_link_count.cc:
+	Check error handling.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (auto_win_file_handle): Change constructor
+	parameter from const path& to const wchar_t*.
+	(fs::equiv_files): New function.
+	(fs::equivalent): Use equiv_files.
+	* src/filesystem/ops-common.h (fs::equiv_files): Declare.
+	(do_copy_file): Use equiv_files.
+	* src/filesystem/ops.cc (fs::equiv_files): Define.
+	(fs::copy, fs::equivalent): Use equiv_files.
+	* testsuite/27_io/filesystem/operations/copy.cc: Test
+	overwriting directory contents recursively.
+	* testsuite/27_io/filesystem/operations/copy_file.cc: Test
+	overwriting existing files.
+
+2024-10-16  Lennox Shou Hao Ho  <lennoxhoe@gmail.com>
+
+	Backported from master:
+	2024-07-30  Lennox Shou Hao Ho  <lennoxhoe@gmail.com>
+
+	PR libstdc++/113663
+	* src/c++17/fs_ops.cc (fs::equivalent): Moved helper class
+	auto_handle to anonymous namespace as auto_win_file_handle.
+	(fs::hard_link_count): Changed Windows implementation to use
+	information provided by GetFileInformationByHandle which is more
+	reliable.
+	* testsuite/27_io/filesystem/operations/hard_link_count.cc: New
+	test.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_args): Remove default
+	constructor, as per LWG 4106.
+	* testsuite/std/format/arguments/args.cc: Check it isn't default
+	constructible.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114387
+	* include/std/format (basic_format_context): Define copy
+	operations as deleted, as per LWG 4061.
+	* testsuite/std/format/context.cc: New test.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-07-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115854
+	* include/bits/stl_bvector.h (_Bvector_base): Convert allocator
+	to rebound type explicitly.
+	* testsuite/23_containers/vector/allocator/115854.cc: New test.
+	* testsuite/23_containers/vector/bool/allocator/115854.cc: New test.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116549
+	* include/bits/stl_iterator.h (disable_sized_sentinel_for):
+	Define specialization for two move_iterator types, as per LWG
+	3736.
+	* testsuite/24_iterators/move_iterator/lwg3736.cc: New test.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (strip_fundts_namespace): New.
+	(StdExpAnyPrinter, StdExpOptionalPrinter): Use it.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/116369
+	* include/debug/safe_base.h (_Safe_sequence_base::_M_iterators):
+	Add mutable specifier.
+	(_Safe_sequence_base::_M_const_iterators): Likewise.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (transform_view:_Iterator): Use const F&
+	to determine value_type and iterator_category of
+	_Iterator<true>, as per LWG 3564.
+	* testsuite/std/ranges/adaptors/transform.cc: Check value_type
+	and iterator_category.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117094
+	* include/bits/ranges_algobase.h (__fill_fn): Use std::move for
+	iterator that might not be copyable.
+	* testsuite/25_algorithms/fill/constrained.cc: Check
+	non-copyable iterator with sized sentinel.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116754
+	* include/bits/ranges_algobase.h (__copy_or_move): Fix order of
+	arguments to __memcpyable.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117085
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Add L
+	option to format string.
+	* testsuite/std/time/format.cc: Move to...
+	* testsuite/std/time/format/format.cc: ...here.
+	* testsuite/std/time/format/pr117085.cc: New test.
+
+2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Add
+	[[unlikely]] attribute to condition for missing %c format in
+	locale. Use %T instead of %H:%M:%S in fallback.
+
 2024-10-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

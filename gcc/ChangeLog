@@ -1,3 +1,41 @@
+2024-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117116
+	* config/i386/i386-expand.cc (expand_vector_set): Force "val"
+	into a register before VEC_MERGE/VEC_DUPLICATE RTX is generated
+	if it doesn't satisfy nonimmediate_operand predicate.
+
+2024-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::ix86_vector_costs):
+	Add new member m_num_avx256_vec_perm.
+	(ix86_vector_costs::add_stmt_cost): Record 256-bit vec_perm.
+	(ix86_vector_costs::finish_cost): Prevent vectorization for
+	TAREGT_AVX256_AVOID_VEC_PERM when there's 256-bit vec_perm
+	instruction.
+	* config/i386/i386.h (TARGET_AVX256_AVOID_VEC_PERM): New
+	Macro.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_SPLIT_REGS): Add
+	m_CORE_ATOM.
+	(X86_TUNE_AVX256_AVOID_VEC_PERM): New tune.
+
+2024-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse_movcc): Guard
+	instruction blendv generation under new tune.
+	* config/i386/i386.h (TARGET_SSE_MOVCC_USE_BLENDV): New Macro.
+	* config/i386/x86-tune.def (X86_TUNE_SSE_MOVCC_USE_BLENDV):
+	New tune.
+
 2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* tree-if-conv.cc (predicate_statements): Fix handling of

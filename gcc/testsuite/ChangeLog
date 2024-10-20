@@ -1,3 +1,25 @@
+2024-10-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117116
+	* gcc.target/i386/pr117116.c: New test.
+
+2024-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx256_avoid_vec_perm.c: New test.
+
+2024-10-16  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse_movcc_use_blendv.c: New file.
+
 2024-10-15  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* gcc.dg/vect/vect-fncall-mask.c: New.
