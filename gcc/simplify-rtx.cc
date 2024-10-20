@@ -6909,6 +6909,28 @@ simplify_context::simplify_ternary_operation (rtx_code code, machine_mode mode,
 		  && rtx_equal_p (XEXP (op0, 1), op1))))
 	return op2;
 
+      /* Convert a != 0 ? -a : 0 into "-a".  */
+      if (GET_CODE (op0) == NE
+	  && ! side_effects_p (op0)
+	  && ! HONOR_NANS (mode)
+	  && ! HONOR_SIGNED_ZEROS (mode)
+	  && XEXP (op0, 1) == CONST0_RTX (mode)
+	  && op2 == CONST0_RTX (mode)
+	  && GET_CODE (op1) == NEG
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0)))
+	return op1;
+
+      /* Convert a == 0 ? 0 : -a into "-a".  */
+      if (GET_CODE (op0) == EQ
+	  && ! side_effects_p (op0)
+	  && ! HONOR_NANS (mode)
+	  && ! HONOR_SIGNED_ZEROS (mode)
+	  && op1 == CONST0_RTX (mode)
+	  && XEXP (op0, 1) == CONST0_RTX (mode)
+	  && GET_CODE (op2) == NEG
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op2, 0)))
+	return op2;
+
       /* Convert (!c) != {0,...,0} ? a : b into
          c != {0,...,0} ? b : a for vector modes.  */
       if (VECTOR_MODE_P (GET_MODE (op1))
