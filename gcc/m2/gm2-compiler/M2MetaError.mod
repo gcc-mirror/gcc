@@ -1684,7 +1684,7 @@ END copySym ;
 
 
 (*
-   op := {'!'|'a'|'c'|'d'|'k'|'q'|'t'|'p'|'n'|'s'|'u'|
+   op := {'!'|'a'|'c'|'d'|'k'|'n'|'p'|'q'|'s'|'t'|'u'|
           'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'K'|'M'|'N'|
           'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'} then =:
 *)
@@ -1707,11 +1707,11 @@ BEGIN
       'd':  doDesc (eb, sym, bol) |
       'k':  unquotedKeyword (eb) ;
             DEC (eb.ini) |
-      'q':  doQualified (eb, sym, bol) |
-      't':  doType (eb, sym, bol) |
-      'p':  popColor (eb) |
       'n':  doNumber (eb, sym, bol) |
+      'p':  popColor (eb) |
+      'q':  doQualified (eb, sym, bol) |
       's':  doSkipType (eb, sym, bol) |
+      't':  doType (eb, sym, bol) |
       'u':  eb.quotes := FALSE |
       'A':  eb.type := aborta ;
             seenAbort := TRUE |

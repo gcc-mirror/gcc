@@ -2055,7 +2055,7 @@ PROCEDURE GetComparison (left, right: CARDINAL) : String ;
 BEGIN
    IF left < right
    THEN
-      RETURN InitString ('less')
+      RETURN InitString ('fewer')
    ELSIF left > right
    THEN
       RETURN InitString ('more')
