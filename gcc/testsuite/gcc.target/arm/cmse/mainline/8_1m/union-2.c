@@ -13,8 +13,8 @@
 /* { dg-final { scan-assembler "movt\tip, 31" } } */
 /* { dg-final { scan-assembler "and\tr2, r2, ip" } } */
 /* Shift on the same register as blxns.  */
-/* { dg-final { scan-assembler "lsrs\t(r\[3-9\]|r10|fp|ip), \\1, #1.*blxns\t\\1" } } */
-/* { dg-final { scan-assembler "lsls\t(r\[3-9\]|r10|fp|ip), \\1, #1.*blxns\t\\1" } } */
+/* { dg-final { scan-assembler "lsrs?\t(r\[3-9\]|r10|fp|ip), \\1, #1.*blxns\t\\1" } } */
+/* { dg-final { scan-assembler "lsls?\t(r\[3-9\]|r10|fp|ip), \\1, #1.*blxns\t\\1" } } */
 /* { dg-final { scan-assembler "push\t\{r4, r5, r6, r7, r8, r9, r10, fp\}" } } */
 /* Check the right registers are cleared and none appears twice.  */
 /* { dg-final { scan-assembler "clrm\t\{(r3, )?(r4, )?(r5, )?(r6, )?(r7, )?(r8, )?(r9, )?(r10, )?(fp, )?(ip, )?APSR\}" } } */
