@@ -1,3 +1,79 @@
+2024-10-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112418
+	* tree-ssa-phiopt.cc (is_factor_profitable): New function.
+	(factor_out_conditional_operation): Add merge argument. Remove
+	arg0/arg1 arguments. Return bool instead of the new phi.
+	Early return for virtual ops. Call is_factor_profitable to
+	check if the factoring would be profitable.
+	(pass_phiopt::execute): Call factor_out_conditional_operation
+	on all phis instead of just singleton phi.
+	* doc/invoke.texi (--param phiopt-factor-max-stmts-live=): Document.
+	* params.opt (--param=phiopt-factor-max-stmts-live=): New opt.
+
+2024-10-19  Greg McGary  <gkm@rivosinc.com>
+
+	* config/riscv/autovec.md (vec_mask_len_load_lanes, vec_mask_len_store_lanes):
+	Predicate with TARGET_VECTOR_AUTOVEC_SEGMENT
+	* config/riscv/riscv-opts.h (TARGET_VECTOR_AUTOVEC_SEGMENT): New macro.
+	* config/riscv/riscv.opt (-m(no-)autovec-segment): New option.
+
+2024-10-19  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_use_by_pieces_infrastructure_p):
+	New function.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Define.
+
+2024-10-19  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv-string.cc (struct stringop_info): New.
+	(expand_block_move): Move decision making code to...
+	(use_vector_stringop_p): ...here.
+
+2024-10-19  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv-protos.h (get_lmul_mode): New prototype.
+	(expand_block_move): Add bool parameter for movmem_p.
+	* config/riscv/riscv-string.cc (riscv_expand_block_move_scalar):
+	Pass movmem_p as false to riscv_vector::expand_block_move.
+	(expand_block_move): Add movmem_p parameter.  Return false if
+	loop needed and movmem_p is true.  Respect TARGET_MAX_LMUL.
+	* config/riscv/riscv-v.cc (get_lmul_mode): New function.
+	* config/riscv/riscv.md (movmem<mode>): Move checking for
+	whether to generate inline vector code to
+	riscv_vector::expand_block_move by passing movmem_p as true.
+
+2024-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (json::value): Remove forward decl.
+
+2024-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (json_output_format::dump): New.
+	* diagnostic-format-sarif.cc (sarif_output_format::dump): New.
+	(sarif_file_output_format::dump): New.
+	* diagnostic-format-text.cc (diagnostic_text_output_format::dump):
+	New.
+	* diagnostic-format-text.h (diagnostic_text_output_format::dump):
+	New decl.
+	* diagnostic-format.h (diagnostic_output_format::dump): New decls.
+	* diagnostic.cc (diagnostic_context::dump): New.
+	(diagnostic_output_format::dump): New.
+	* diagnostic.h (diagnostic_context::dump): New decls.
+	* pretty-print-format-impl.h (pp_formatted_chunks::dump): Add
+	"indent" param.
+	* pretty-print.cc (bytes_per_hexdump_line): New constant.
+	(print_hexdump_line): New.
+	(print_hexdump): New.
+	(output_buffer::dump): Add "indent" param and use it.  Add
+	hexdump of current object in m_formatted_obstack and
+	m_chunk_obstack.
+	(pp_formatted_chunks::dump): Add "indent" param and use it.
+	(pretty_printer::dump): Likewise.  Add dumping of m_show_color
+	and m_url_format.
+	* pretty-print.h (output_buffer::dump): Add "indent" param.
+	(pretty_printer::dump): Likewise.
+
 2024-10-18  Alejandro Colomar  <alx@kernel.org>
 
 	* tree.h (array_type_nelts_top)

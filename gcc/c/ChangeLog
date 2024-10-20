@@ -1,3 +1,11 @@
+2024-10-19  Joseph Myers  <josmyers@redhat.com>
+
+	* c-tree.h (c_arg_info): Add c23_empty_parens.
+	* c-decl.cc (grokparms): Set c23_empty_parens.
+	(build_arg_info): Clear c23_empty_parens.
+	(store_parm_decls_newstyle): Do not give -Wtraditional warning for
+	ISO C function definition if c23_empty_parens.
+
 2024-10-18  Alejandro Colomar  <alx@kernel.org>
 
 	* c-decl.cc (one_element_array_type_p, get_parm_array_spec)

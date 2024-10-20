@@ -1,3 +1,149 @@
+2024-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2MetaError.mod (op): Alphabetically order
+	each case label and comment.
+
+2024-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2-compiler/M2MetaError.def: Extend comment documentating
+	new format specifiers.
+	* gm2-compiler/M2MetaError.mod (GetTokProcedure): New declaration.
+	(doErrorScopeModule): New procedure.
+	(doErrorScopeForward): Ditto.
+	(doErrorScopeMod): Reimplement.
+	(doErrorScopeFor): New procedure.
+	(declarationMod): Ditto.
+	(doErrorScopeDefinition): Ditto.
+	(doErrorScopeDef): Reimplement.
+	(declaredDef): New procedure.
+	(declaredFor): Ditto.
+	(doErrorScopeProc): Ditto.
+	(declaredVar): Ditto.
+	(declaredType): Ditto.
+	(declaredFull): Ditto.
+	* gm2-compiler/M2Options.mod (SetAutoInit): Add missing
+	return type.
+	(GetDumpGimple): Remove duplicate implementation.
+	* gm2-compiler/M2Quads.def (DupFrame): New procedure.
+	* gm2-compiler/M2Quads.mod (DupFrame): New procedure.
+	* gm2-compiler/M2Reserved.def (ForwardTok): New variable.
+	* gm2-compiler/M2Reserved.mod (ForwardTok): Initialize variable.
+	* gm2-compiler/M2Scaffold.mod (DeclareArgEnvParams): Add
+	tokno parameter for call to PutParam.
+	* gm2-compiler/P0SymBuild.def (EndForward): New procedure.
+	* gm2-compiler/P0SymBuild.mod (EndForward): New procedure.
+	* gm2-compiler/P0SyntaxCheck.bnf (BlockAssert): New procedure.
+	(ProcedureDeclaration): Reimplement rule.
+	(PostProcedureHeading): New rule.
+	(ForwardDeclaration): Ditto.
+	(ProperProcedure): Ditto.
+	* gm2-compiler/P1Build.bnf (ProcedureDeclaration): Reimplement rule.
+	(PostProcedureHeading): New rule.
+	(ForwardDeclaration): Ditto.
+	(ProperProcedure): Ditto.
+	* gm2-compiler/P1SymBuild.def (Export): Removed unnecessary
+	export.
+	(EndBuildForward): New procedure.
+	* gm2-compiler/P1SymBuild.mod (StartBuildProcedure): Reimplement.
+	(EndBuildProcedure): Ditto.
+	(EndBuildForward): Ditto.
+	* gm2-compiler/P2Build.bnf (ProcedureDeclaration): Reimplement rule.
+	(PostProcedureHeading): New rule.
+	(ForwardDeclaration): Ditto.
+	(ProperProcedure): Ditto.
+	* gm2-compiler/P2SymBuild.def (BuildProcedureDefinedByForward):
+	New procedure.
+	(BuildProcedureDefinedByProper): Ditto.
+	(CheckProcedure): Ditto.
+	(EndBuildForward): Ditto.
+	* gm2-compiler/P2SymBuild.mod (EndBuildProcedure): Reimplement.
+	(EndBuildForward): New procedure.
+	(BuildFPSection): Reimplement to allow forward declaration or
+	checking of parameters.
+	(BuildProcedureDefinedByProper): New procedure.
+	(BuildProcedureDefinedByForward): Ditto
+	(FailParameter): Remove.
+	(ParameterError): New procedure.
+	(ParameterMismatch): Ditto.
+	(EndBuildFormalParameters): Add parameter number check.
+	(GetComparison): New procedure function.
+	(GetSourceDesc): Ditto.
+	(GetCurSrcDesc): Ditto.
+	(GetDeclared): New procedure.
+	(ReturnTypeMismatch): Ditto.
+	(BuildFunction): Reimplement.
+	(CheckProcedure): New procedure.
+	(CheckFormalParameterSection): Reimplement using ParameterError.
+	* gm2-compiler/P3Build.bnf (ProcedureDeclaration): Reimplement rule.
+	(PostProcedureHeading): New rule.
+	(ForwardDeclaration): Ditto.
+	(ProperProcedure): Ditto.
+	* gm2-compiler/P3SymBuild.def (Export): Remove unnecessary export.
+	(EndBuildForward): New procedure.
+	* gm2-compiler/P3SymBuild.mod (EndBuildForward): New procedure.
+	* gm2-compiler/PCBuild.bnf (ProcedureDeclaration): Reimplement rule.
+	(PostProcedureHeading): New rule.
+	(ForwardDeclaration): Ditto.
+	(ProperProcedure): Ditto.
+	* gm2-compiler/PCSymBuild.def (EndBuildForward): New procedure.
+	* gm2-compiler/PCSymBuild.mod (EndBuildForward): Ditto.
+	* gm2-compiler/PHBuild.bnf (ProcedureDeclaration): Reimplement rule.
+	(PostProcedureHeading): New rule.
+	(ForwardDeclaration): Ditto.
+	(ProperProcedure): Ditto.
+	* gm2-compiler/SymbolTable.def (PutVarTok): New procedure.
+	(PutParam): Add typetok parameter.
+	(PutVarParam): Ditto.
+	(PutParamName): Ditto.
+	(GetDeclaredFor): New procedure function.
+	(AreParametersDefinedInDefinition): Ditto.
+	(PutParametersDefinedByForward): New procedure.
+	(GetParametersDefinedByForward): New procedure function.
+	(PutParametersDefinedByProper): New procedure.
+	(GetParametersDefinedByProper): New procedure function.
+	(GetProcedureDeclaredForward): Ditto.
+	(PutProcedureDeclaredForward): New procedure.
+	(GetProcedureDeclaredProper): New procedure function.
+	(PutProcedureDeclaredProper): New procedure.
+	(GetProcedureDeclaredDefinition): New procedure function.
+	(PutProcedureDeclaredDefinition): New procedure.
+	(GetVarDeclTypeTok): Ditto.
+	(PutVarDeclTypeTok): New procedure.
+	(GetVarDeclTok): Ditto.
+	(PutVarDeclTok): New procedure.
+	(GetVarDeclFullTok): Ditto.
+	* gm2-compiler/SymbolTable.mod (ProcedureDecl): New record type.
+	(VarDecl): Ditto.
+	(SymProcedure): Add new field Declared.
+	(SymVar): Add new field Declared.
+	(PutVarTok): New procedure.
+	(PutParam): Add typetok parameter.
+	(PutVarParam): Ditto.
+	(PutParamName): Ditto.
+	(GetDeclaredFor): New procedure function.
+	(AreParametersDefinedInDefinition): Ditto.
+	(PutParametersDefinedByForward): New procedure.
+	(GetParametersDefinedByForward): New procedure function.
+	(PutParametersDefinedByProper): New procedure.
+	(GetParametersDefinedByProper): New procedure function.
+	(GetProcedureDeclaredForward): Ditto.
+	(PutProcedureDeclaredForward): New procedure.
+	(GetProcedureDeclaredProper): New procedure function.
+	(PutProcedureDeclaredProper): New procedure.
+	(GetProcedureDeclaredDefinition): New procedure function.
+	(PutProcedureDeclaredDefinition): New procedure.
+	(GetVarDeclTypeTok): Ditto.
+	(PutVarDeclTypeTok): New procedure.
+	(GetVarDeclTok): Ditto.
+	(PutVarDeclTok): New procedure.
+	(GetVarDeclFullTok): Ditto.
+	(MakeProcedure): Initialize Declared field.
+	(MakeVar): Initialize Declared field.
+	* gm2-libs-log/FileSystem.def (FileNameChar): Add
+	missing return type.
+	* m2.flex: Add FORWARD keyword.
+
 2024-10-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/116918

@@ -1,3 +1,212 @@
+2024-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/114423
+	* c-c++-common/cpp/pragma-diagnostic-loc.c: New test.
+	* c-c++-common/cpp/diagnostic-pragma-1.c: Adjust expected output.
+	* g++.dg/pch/operator-1.C: Likewise.
+
+2024-10-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112418
+	* gcc.dg/tree-ssa/factor_op_phi-1.c: New test.
+	* gcc.dg/tree-ssa/factor_op_phi-2.c: New test.
+	* gcc.dg/tree-ssa/factor_op_phi-3.c: New test.
+	* gcc.dg/tree-ssa/factor_op_phi-4.c: New test.
+
+2024-10-19  Greg McGary  <gkm@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_load_noseg_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-1.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-2.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-3.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-4.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-5.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-6.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/struct/mask_struct_store_noseg_run-7.c:
+	New test.
+	* gcc.target/riscv/rvv/autovec/no-segment.c: New test.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-1.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-10.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-11.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-12.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-13.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-14.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-15.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-16.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-17.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-18.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-2.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-3.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-4.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-5.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-6.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-7.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-8.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg-9.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-1.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-10.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-11.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-12.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-13.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-14.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-15.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-16.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-17.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-18.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-2.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-3.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-4.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-5.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-6.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-7.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-8.c: New file.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect_noseg_run-9.c: New file.
+
+2024-10-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/117225
+	* gfortran.dg/unsigned_38.f90: Add missing dg-error directive.
+
+2024-10-19  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113469.c: Expect mf2 setmem.
+	* gcc.target/riscv/rvv/base/setmem-2.c: Update f1 to expect
+	straight-line vector memset.
+	* gcc.target/riscv/rvv/base/setmem-3.c: Likewise.
+
+2024-10-19  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113206-1.c: Add
+	-mrvv-max-lmul=m8.
+	* gcc.target/riscv/rvv/autovec/pr113206-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-1.c: Add
+	-mrvv-max-lmul=m8 and adjust assembly scans.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-2.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-3.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-4.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-5.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-6.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/calling-convention-7.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls/spill-4.c: Add
+	-mrvv-max-lmul=m8.
+	* gcc.target/riscv/rvv/autovec/vls/spill-7.c: Likewise.
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Expect m1 in f1 and f2.
+	* gcc.target/riscv/rvv/base/cpymem-2.c: Add -mrvv-max-lmul=m8.
+	* gcc.target/riscv/rvv/base/movmem-1.c: Adjust f1 to a length
+	that will not get vectorized.
+	* gcc.target/riscv/rvv/base/pr111720-0.c: Add -mrvv-max-lmul=m8.
+	* gcc.target/riscv/rvv/base/pr111720-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-4.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-5.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-6.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-7.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-8.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr111720-9.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/pr112929-1.c: Expect memcpy m1
+	loops.
+	* gcc.target/riscv/rvv/vsetvl/pr112988-1.c: Likewise.
+
+2024-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115328
+	* gm2/iso/fail/badparam.def: New test.
+	* gm2/iso/fail/badparam.mod: New test.
+	* gm2/iso/fail/badparam2.def: New test.
+	* gm2/iso/fail/badparam2.mod: New test.
+	* gm2/iso/fail/badparam3.def: New test.
+	* gm2/iso/fail/badparam3.mod: New test.
+	* gm2/iso/fail/badparamarray.def: New test.
+	* gm2/iso/fail/badparamarray.mod: New test.
+	* gm2/iso/fail/simpledef1.def: New test.
+	* gm2/iso/fail/simpledef1.mod: New test.
+	* gm2/iso/fail/simpleforward.mod: New test.
+	* gm2/iso/fail/simpleforward2.mod: New test.
+	* gm2/iso/fail/simpleforward3.mod: New test.
+	* gm2/iso/fail/simpleforward4.mod: New test.
+	* gm2/iso/fail/simpleforward5.mod: New test.
+	* gm2/iso/fail/simpleforward7.mod: New test.
+	* gm2/iso/pass/simpleforward.mod: New test.
+	* gm2/iso/pass/simpleforward6.mod: New test.
+
+2024-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/bounds_check_25.f90: Update expected column
+	in the diagnostic.
+	* gfortran.dg/goacc/pr92793-1.f90: Likewise.
+	* gfortran.dg/gomp/allocate-14.f90: Likewise.
+	* gfortran.dg/gomp/polymorphic-mapping.f90: Likewise.
+	* gfortran.dg/gomp/reduction5.f90: Likewise.
+	* gfortran.dg/gomp/reduction6.f90: Likewise.
+
+2024-10-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/117225
+	* gfortran.dg/unsigned_38.f90: New test.
+
+2024-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c
+	(xhtml_output_format::dump): New.
+
+2024-10-19  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/wtr-gnu17-1.c, gcc.dg/wtr-gnu23-1.c: New tests.
+
 2024-10-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/unsigned_37.f90: New test.

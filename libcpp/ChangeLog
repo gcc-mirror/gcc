@@ -1,3 +1,14 @@
+2024-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/114423
+	* internal.h (struct cpp_reader): Add DIAGNOSTIC_OVERRIDE_LOC
+	field.
+	* directives.cc (destringize_and_run): Set the new field to the
+	location of the _Pragma operator.
+	* errors.cc (cpp_diagnostic_at): Support DIAGNOSTIC_OVERRIDE_LOC to
+	temporarily issue diagnostics at a different location.
+	(cpp_diagnostic_with_line): Likewise.
+
 2024-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117028

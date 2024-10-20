@@ -1,3 +1,81 @@
+2024-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* check.cc (is_c_interoperable): Use _(...) around to mark strings
+	as translatable.
+	* data.cc (gfc_assign_data_value): Move string literal to gfc_error
+	to make it translatable.
+	* resolve.cc (resolve_fl_variable, resolve_equivalence): Use G_(...)
+	around string literals.
+	* scanner.cc (skip_fixed_omp_sentinel): Replace '...' by %<...%>.
+	* trans-openmp.cc (gfc_split_omp_clauses,
+	gfc_trans_omp_declare_variant): Likewise.
+
+2024-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* data.cc (gfc_assign_data_value): Use linemap_location_before_p
+	and GFC_LOCUS_IS_SET.
+	* decl.cc (gfc_verify_c_interop_param): Make better translatable.
+	(build_sym, variable_decl, gfc_match_formal_arglist,
+	gfc_match_subroutine): Add range-based locations, use it in
+	diagnostic and gobble whitespace for better locations.
+	* error.cc (gfc_get_location_with_offset): Handle new format.
+	(gfc_get_location_range): New.
+	* expr.cc (gfc_check_assign): Use GFC_LOCUS_IS_SET.
+	* frontend-passes.cc (check_locus_code, check_locus_expr):
+	Likewise.
+	(runtime_error_ne): Use GFC_LOCUS_IS_SET.
+	* gfortran.h (locus): Change lb to union with lb and location.
+	(GFC_LOCUS_IS_SET): Define.
+	(gfc_get_location_range): New prototype.
+	(gfc_new_symbol, gfc_get_symbol, gfc_get_sym_tree,
+	gfc_get_ha_symbol, gfc_get_ha_sym_tree): Take optional locus
+	argument.
+	* io.cc (io_constraint): Use GFC_LOCUS_IS_SET.
+	* match.cc (gfc_match_sym_tree): Use range locus.
+	* openmp.cc (gfc_match_omp_variable_list,
+	gfc_match_omp_doacross_sink): Likewise.
+	* parse.cc (next_free): Update for locus struct change.
+	* primary.cc (gfc_match_varspec): Likewise.
+	(match_variable): Use range locus.
+	* resolve.cc (find_array_spec): Use GFC_LOCUS_IS_SET.
+	* scanner.cc (gfc_at_eof, gfc_at_bol, gfc_start_source_files,
+	gfc_advance_line, gfc_define_undef_line, skip_fixed_comments,
+	gfc_gobble_whitespace, include_stmt, gfc_new_file): Update
+	for locus struct change.
+	* symbol.cc (gfc_new_symbol, gfc_get_sym_tree, gfc_get_symbol,
+	gfc_get_ha_sym_tree, gfc_get_ha_symbol): Take optional locus.
+	* trans-array.cc (gfc_trans_array_constructor_value): Use %L not %C.
+	(gfc_trans_g77_array, gfc_trans_dummy_array_bias,
+	gfc_trans_class_array, gfc_trans_deferred_array): Replace
+	gfc_{save,set,restore}_backend_locus by directly using
+	input_location.
+	* trans-common.cc (build_equiv_decl, get_init_field): Likewise.
+	* trans-decl.cc (gfc_get_extern_function_decl, build_function_decl,
+	build_entry_thunks, gfc_null_and_pass_deferred_len,
+	gfc_trans_deferred_vars, gfc_trans_use_stmts, finish_oacc_declare,
+	gfc_generate_block_data): Likewise.
+	* trans-expr.cc (gfc_copy_class_to_class, gfc_conv_expr): Changes
+	to avoid gfc_current_locus.
+	* trans-io.cc (set_error_locus): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_workshare): Use input_locus directly.
+	* trans-stmt.cc (gfc_trans_if_1): Likewise and use GFC_LOCUS_IS_SET.
+	* trans-types.cc (gfc_get_union_type, gfc_get_derived_type): Likewise.
+	* trans.cc (gfc_locus_from_location): New.
+	(trans_runtime_error_vararg, gfc_trans_runtime_check): Use location_t
+	for file + line data.
+	(gfc_current_backend_file, gfc_save_backend_locus,
+	gfc_set_backend_locus, gfc_restore_backend_locus): Remove.
+	(trans_code): Use input_location directly, don't set gfc_current_locus.
+	* trans.h (gfc_save_backend_locus, gfc_set_backend_locus,
+	gfc_restore_backend_locus): Remove prototypes.
+	(gfc_locus_from_location): Add prototype.
+
+2024-10-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/117225
+	* primary.cc (match_sym_complex_part): An UNSIGNED in
+	a complex part is an error.
+
 2024-10-18  Alejandro Colomar  <alx@kernel.org>
 
 	* trans-array.cc (structure_alloc_comps)
