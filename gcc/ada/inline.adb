@@ -498,7 +498,7 @@ package body Inline is
          --  package of the subprogram to find more calls to be inlined.
 
          if Comp = Cunit (Main_Unit)
-           or else Comp = Spec_Or_Body_Lib_Unit (Cunit (Main_Unit))
+           or else Comp = Other_Comp_Unit (Cunit (Main_Unit))
          then
             Add_Call (E);
             return Inline_Package;
@@ -4716,7 +4716,7 @@ package body Inline is
       end loop;
 
       return Comp = Cunit (Main_Unit)
-        or else Comp = Spec_Or_Body_Lib_Unit (Cunit (Main_Unit));
+        or else Comp = Other_Comp_Unit (Cunit (Main_Unit));
    end In_Main_Unit_Or_Subunit;
 
    ----------------
