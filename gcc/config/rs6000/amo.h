@@ -46,7 +46,7 @@ enum _AMO_LD {
   _AMO_LD_CS_NE		= 0x10,		/* Compare and Swap Not Equal.  */
   _AMO_LD_INC_BOUNDED	= 0x18,		/* Fetch and Increment Bounded.  */
   _AMO_LD_INC_EQUAL	= 0x19,		/* Fetch and Increment Equal.  */
-  _AMO_LD_DEC_BOUNDED	= 0x1A		/* Fetch and Decrement Bounded.  */
+  _AMO_LD_DEC_BOUNDED	= 0x1C		/* Fetch and Decrement Bounded.  */
 };
 
 /* Implementation of the simple LWAT/LDAT operations that take one register and
