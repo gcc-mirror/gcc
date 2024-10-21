@@ -83,7 +83,7 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path
@@ -127,7 +127,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path
@@ -189,7 +189,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path
@@ -249,7 +249,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path

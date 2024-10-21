@@ -287,7 +287,7 @@ MarkLive::find_ref_node_id (NodeId ast_node_id, NodeId &ref_node_id)
 {
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       nr_ctx.lookup (ast_node_id).map ([&ref_node_id] (NodeId resolved) {

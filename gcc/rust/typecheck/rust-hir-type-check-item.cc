@@ -200,7 +200,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   // FIXME: HACK: ARTHUR: Disgusting
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       path = nr_ctx.values
@@ -280,7 +280,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   // FIXME: HACK: ARTHUR: Disgusting
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
       auto canonical_path = nr_ctx.types.to_canonical_path (
 	struct_decl.get_mappings ().get_nodeid ());
@@ -353,7 +353,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path = nr_ctx.types.to_canonical_path (
@@ -416,7 +416,7 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path = nr_ctx.types.to_canonical_path (
@@ -591,7 +591,7 @@ TypeCheckItem::visit (HIR::Function &function)
   // FIXME: HACK: ARTHUR: Disgusting
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
       auto canonical_path = nr_ctx.values.to_canonical_path (
 	function.get_mappings ().get_nodeid ());
