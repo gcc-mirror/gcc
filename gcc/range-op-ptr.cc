@@ -379,29 +379,6 @@ pointer_plus_operator::op2_range (irange &r, tree type,
   return true;
 }
 
-class pointer_and_operator : public range_operator
-{
-public:
-  virtual void wi_fold (irange &r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_pointer_and;
-
-void
-pointer_and_operator::wi_fold (irange &r, tree type,
-			       const wide_int &lh_lb,
-			       const wide_int &lh_ub,
-			       const wide_int &rh_lb ATTRIBUTE_UNUSED,
-			       const wide_int &rh_ub ATTRIBUTE_UNUSED) const
-{
-  // For pointer types, we are really only interested in asserting
-  // whether the expression evaluates to non-NULL.
-  if (wi_zero_p (type, lh_lb, lh_ub) || wi_zero_p (type, lh_lb, lh_ub))
-    r.set_zero (type);
-  else
-    r.set_varying (type);
-}
-
 
 class pointer_or_operator : public range_operator
 {
