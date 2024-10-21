@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" "-mfloat-abi=*" } } */
-/* { dg-options "-march=armv8.1-m.main+fp+pacbti" } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_pacbti_ok } */
+/* { dg-add-options arm_arch_v8_1m_main_pacbti } */
 
 #if (__ARM_FEATURE_BTI != 1)
 #error "Feature test macro __ARM_FEATURE_BTI_DEFAULT should be defined to 1."
