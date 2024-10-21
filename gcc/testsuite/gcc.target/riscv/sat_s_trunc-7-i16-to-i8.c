@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if  "" { *-*-* } { "-flto" } } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -O3 -fdump-rtl-expand-details -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
