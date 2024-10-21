@@ -567,24 +567,37 @@ pointer_or_operator::wi_fold (irange &r, tree type,
 
 class operator_pointer_diff : public range_operator
 {
+  using range_operator::fold_range;
   using range_operator::update_bitmask;
   using range_operator::op1_op2_relation_effect;
-  virtual bool op1_op2_relation_effect (irange &lhs_range,
-					tree type,
-					const irange &op1_range,
-					const irange &op2_range,
-					relation_kind rel) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const prange &op1,
+			   const prange &op2,
+			   relation_trio trio) const final override;
   virtual bool op1_op2_relation_effect (irange &lhs_range,
 					tree type,
 					const prange &op1_range,
 					const prange &op2_range,
 					relation_kind rel) const final override;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
   void update_bitmask (irange &r,
 		       const prange &lh, const prange &rh) const final override
   { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
 } op_pointer_diff;
+
+bool
+operator_pointer_diff::fold_range (irange &r, tree type,
+				   const prange &op1,
+				   const prange &op2,
+				   relation_trio trio) const
+{
+  gcc_checking_assert (r.supports_type_p (type));
+
+  r.set_varying (type);
+  relation_kind rel = trio.op1_op2 ();
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  update_bitmask (r, op1, op2);
+  return true;
+}
 
 bool
 operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
@@ -600,16 +613,6 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
     return false;
 
   return minus_op1_op2_relation_effect (lhs_range, type, op1, op2, rel);
-}
-
-bool
-operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
-						const irange &op1_range,
-						const irange &op2_range,
-						relation_kind rel) const
-{
-  return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
-					rel);
 }
 
 bool
