@@ -3360,6 +3360,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   }
   (if (wi::eq_p (c2, max) && wi::eq_p (c0_add_1, max))))))
 
+/* The boundary condition for case 9: IMM = 1  (branch with le):
+   SAT_U_SUB = IMM >= Y ? (IMM - Y) : 0.  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (cond^ (le @1 integer_onep@0) (bit_xor @1 integer_onep@0) integer_zerop)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+     && types_match (type, @1))))
+
 /* Unsigned saturation sub with op_1 imm, case 10:
    SAT_U_SUB = X > IMM  ? (X - IMM) : 0.
              = X >= IMM ? (X - IMM) : 0.  */
