@@ -379,34 +379,6 @@ pointer_plus_operator::op2_range (irange &r, tree type,
   return true;
 }
 
-class pointer_min_max_operator : public range_operator
-{
-public:
-  virtual void wi_fold (irange & r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_ptr_min_max;
-
-void
-pointer_min_max_operator::wi_fold (irange &r, tree type,
-				   const wide_int &lh_lb,
-				   const wide_int &lh_ub,
-				   const wide_int &rh_lb,
-				   const wide_int &rh_ub) const
-{
-  // For MIN/MAX expressions with pointers, we only care about
-  // nullness.  If both are non null, then the result is nonnull.
-  // If both are null, then the result is null.  Otherwise they
-  // are varying.
-  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
-      && !wi_includes_zero_p (type, rh_lb, rh_ub))
-    r.set_nonzero (type);
-  else if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
-    r.set_zero (type);
-  else
-    r.set_varying (type);
-}
-
 class pointer_and_operator : public range_operator
 {
 public:
