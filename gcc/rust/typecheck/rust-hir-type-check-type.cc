@@ -399,8 +399,8 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  // FIXME: HACK: ARTHUR: Remove this
 	  if (flag_name_resolution_2_0)
 	    {
-	      auto nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
-			      .resolver ();
+	      auto &nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
+			       .resolver ();
 
 	      // assign the ref_node_id if we've found something
 	      nr_ctx.lookup (path.get_mappings ().get_nodeid ())

@@ -470,7 +470,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 
   if (flag_name_resolution_2_0)
     {
-      auto nr_ctx
+      auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path = nr_ctx.values.to_canonical_path (

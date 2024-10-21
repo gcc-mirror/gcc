@@ -2453,7 +2453,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
       auto body_mappings = function_body.get_mappings ();
       if (flag_name_resolution_2_0)
 	{
-	  auto nr_ctx
+	  auto &nr_ctx
 	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
 	  auto candidate = nr_ctx.values.to_rib (body_mappings.get_nodeid ());
