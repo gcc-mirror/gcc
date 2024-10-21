@@ -1,3 +1,12 @@
+2024-10-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-19  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_use_by_pieces_infrastructure_p):
+	New function.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Define.
+
 2024-10-19  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/112418

@@ -1,3 +1,10 @@
+2024-10-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2MetaError.mod (op): Corrected ordering.
+	* gm2-compiler/P2SymBuild.def: Remove comment.
+	* gm2-compiler/P2SymBuild.mod (GetComparison): Replace
+	the word less with fewer.
+
 2024-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2MetaError.mod (op): Alphabetically order

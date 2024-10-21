@@ -1,3 +1,13 @@
+2024-10-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-20  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113469.c: Expect mf2 setmem.
+	* gcc.target/riscv/rvv/base/setmem-2.c: Update f1 to expect
+	straight-line vector memset.
+	* gcc.target/riscv/rvv/base/setmem-3.c: Likewise.
+
 2024-10-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/114423
