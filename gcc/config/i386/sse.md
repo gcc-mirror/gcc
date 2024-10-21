@@ -2423,6 +2423,91 @@
   DONE;
 })
 
+;; Optimize cmp + movcc with mask register by kortest + movcc.
+(define_insn_and_split "*kortest_cmp<SWI1248_AVX512BWDQ_64:mode>_movqicc"
+   [(set (match_operand:QI 0 "register_operand" "=r,r,r,r,r,r")
+      (if_then_else:QI
+	(match_operator 1 "bt_comparison_operator"
+	  [(match_operand:SWI1248_AVX512BWDQ_64 4 "register_operand"
+	  "?k,<SWI1248_AVX512BWDQ_64:r>,?k, <SWI1248_AVX512BWDQ_64:r>,?k,r")
+	   (const_int -1)])
+	(match_operand:QI 2 "register_operand"	"r,r,0,0,r,r")
+	(match_operand:QI 3 "register_operand" " 0,0,r,r,r,r")))
+    (clobber (reg:CC FLAGS_REG))]
+  "TARGET_AVX512BW && TARGET_CMOVE && !TARGET_PARTIAL_REG_STALL"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(if_then_else:SI
+	  (match_dup 5)
+	  (match_dup 2)
+	  (match_dup 3)))]
+{
+  rtx flag_reg;
+  if (MASK_REGNO_P (REGNO (operands[4])))
+    {
+      emit_insn (gen_kortest<SWI1248_AVX512BWDQ_64:mode>_ccc (operands[4], operands[4]));
+      flag_reg = gen_rtx_REG (CCCmode, FLAGS_REG);
+    }
+  else
+    {
+      flag_reg = gen_rtx_REG (CCZmode, FLAGS_REG);
+      emit_insn (gen_rtx_SET (flag_reg,
+			      gen_rtx_COMPARE (CCZmode,
+					       operands[4],
+					       constm1_rtx)));
+    }
+  operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
+				flag_reg,const0_rtx);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[2] = gen_lowpart (SImode, operands[2]);
+  operands[3] = gen_lowpart (SImode, operands[3]);
+}
+  [(set_attr "isa" "*,*,*,*,apx_ndd,apx_ndd")
+   (set_attr "type" "icmov")
+   (set_attr "mode" "QI")])
+
+(define_insn_and_split "*kortest_cmp<SWI1248_AVX512BWDQ_64:mode>_mov<SWI248:mode>cc"
+   [(set (match_operand:SWI248 0 "register_operand" "=r,r,r,r,r,r,r,r")
+      (if_then_else:SWI248
+	(match_operator 1 "bt_comparison_operator"
+	  [(match_operand:SWI1248_AVX512BWDQ_64 4 "register_operand"
+	  "?k,<SWI1248_AVX512BWDQ_64:r>,?k, <SWI1248_AVX512BWDQ_64:r>,?k,r,?k, r")
+	   (const_int -1)])
+	(match_operand:SWI248 2 "nonimmediate_operand" "rm,rm, 0, 0,rm,rm, r, r")
+	(match_operand:SWI248 3 "nonimmediate_operand" " 0, 0,rm,rm, r, r,rm,rm")))
+    (clobber (reg:CC FLAGS_REG))]
+  "TARGET_AVX512BW && TARGET_CMOVE
+   && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(if_then_else:SWI248
+	  (match_dup 5)
+	  (match_dup 2)
+	  (match_dup 3)))]
+{
+  rtx flag_reg;
+  if (MASK_REGNO_P (REGNO (operands[4])))
+    {
+      emit_insn (gen_kortest<SWI1248_AVX512BWDQ_64:mode>_ccc (operands[4], operands[4]));
+      flag_reg = gen_rtx_REG (CCCmode, FLAGS_REG);
+    }
+  else
+    {
+      flag_reg = gen_rtx_REG (CCZmode, FLAGS_REG);
+      emit_insn (gen_rtx_SET (flag_reg,
+			      gen_rtx_COMPARE (CCZmode,
+					       operands[4],
+					       constm1_rtx)));
+    }
+  operands[5] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
+				flag_reg,const0_rtx);
+}
+  [(set_attr "isa" "*,*,*,*,apx_ndd,apx_ndd,apx_ndd,apx_ndd")
+   (set_attr "type" "icmov")
+   (set_attr "mode" "<SWI248:MODE>")])
+
 (define_insn "kunpckhi"
   [(set (match_operand:HI 0 "register_operand" "=k")
 	(ior:HI
