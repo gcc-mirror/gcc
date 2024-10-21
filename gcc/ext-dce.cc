@@ -478,7 +478,12 @@ binop_implies_op2_fully_live (rtx_code code)
    holds true, and bits set in MASK are live in the result.  Compute a
    mask of (potentially) live bits in the non-constant inputs.  In case of
    binop_implies_op2_fully_live (e.g. shifts), the computed mask may
-   exclusively pertain to the first operand.  */
+   exclusively pertain to the first operand.
+
+   This looks wrong as we may have some important operations embedded as
+   operands of another operation.  For example, we might have an extension
+   wrapping a shift.  It really feels like this needs to be recursing down
+   into operands much more often.  */
 
 unsigned HOST_WIDE_INT
 carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
@@ -557,9 +562,26 @@ carry_backpropagate (unsigned HOST_WIDE_INT mask, enum rtx_code code, rtx x)
       return mmask;
 
     case SIGN_EXTEND:
-      if (mask & ~GET_MODE_MASK (GET_MODE_INNER (GET_MODE (XEXP (x, 0)))))
+      if (!GET_MODE_BITSIZE (GET_MODE (x)).is_constant ()
+	  || !GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))).is_constant ())
+	return -1;
+
+      /* We want the mode of the inner object.  We need to ensure its
+	 sign bit is on in MASK.  */
+      mode = GET_MODE (XEXP (x, 0));
+      if (mask & ~GET_MODE_MASK (GET_MODE_INNER (mode)))
 	mask |= 1ULL << (GET_MODE_BITSIZE (mode).to_constant () - 1);
-      return mask;
+
+      /* Recurse into the operand.  */
+      return carry_backpropagate (mask, GET_CODE (XEXP (x, 0)), XEXP (x, 0));
+
+    case ZERO_EXTEND:
+      if (!GET_MODE_BITSIZE (GET_MODE (x)).is_constant ()
+	  || !GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))).is_constant ())
+	return -1;
+
+      /* Recurse into the operand.  */
+      return carry_backpropagate (mask, GET_CODE (XEXP (x, 0)), XEXP (x, 0));
 
     /* We propagate for the shifted operand, but not the shift
        count.  The count is handled specially.  */
@@ -670,6 +692,8 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	      if (skipped_dest)
 		dst_mask = -1;
 
+	      dst_mask = carry_backpropagate (dst_mask, code, src);
+
 	      /* ??? Could also handle ZERO_EXTRACT / SIGN_EXTRACT
 		 of the source specially to improve optimization.  */
 	      if (code == SIGN_EXTEND || code == ZERO_EXTEND)
@@ -696,9 +720,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 
 	      /* Optimization is done at this point.  We just want to make
 		 sure everything that should get marked as live is marked
-		 from here onward.  Shouldn't the backpropagate step happen
-		 before optimization?  */
-	      dst_mask = carry_backpropagate (dst_mask, code, src);
+		 from here onward.  */
 
 	      /* We will handle the other operand of a binary operator
 		 at the bottom of the loop by resetting Y.  */
