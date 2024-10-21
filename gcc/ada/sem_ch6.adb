@@ -35,6 +35,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
+with Exp_Aggr;       use Exp_Aggr;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch9;        use Exp_Ch9;
@@ -989,13 +990,17 @@ package body Sem_Ch6 is
          --  The return value is converted to the return type of the function,
          --  which implies a predicate check if the return type is predicated.
          --  We do not apply the check for an extended return statement because
-         --  Analyze_Object_Declaration has already done it on Obj_Decl above.
-         --  We do not apply the check to a case expression because it will
-         --  be expanded into a series of return statements, each of which
+         --  Analyze_Object_Declaration has already done it on Obj_Decl above,
+         --  or to a delayed aggregate because the return will be turned into
+         --  an extended return by Expand_Simple_Function_Return in this case.
+         --  We do not apply the check to a conditional expression because it
+         --  will be expanded into a series of return statements, each of which
          --  will receive a predicate check.
 
          if Nkind (N) /= N_Extended_Return_Statement
+           and then not Is_Delayed_Aggregate (Expr)
            and then Nkind (Expr) /= N_Case_Expression
+           and then Nkind (Expr) /= N_If_Expression
          then
             Apply_Predicate_Check (Expr, R_Type);
          end if;

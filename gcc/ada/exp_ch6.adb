@@ -6621,11 +6621,16 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  For the case of a simple return that does not come from an
-      --  extended return, in the case of build-in-place, we rewrite
-      --  "return <expression>;" to be:
-
-      --    return _anon_ : <return_subtype> := <expression>
+      --  For the case of a simple return that does not come from an extended
+      --  return, and if the function returns in place or the expression is an
+      --  aggregate whose expansion has been delayed to be returned in place
+      --  (see Is_Build_In_Place_Aggregate_Return), we rewrite:
+      --
+      --    return <expression>;
+      --
+      --  into
+      --
+      --    return _anonymous_ : <return_subtype> := <expression>
 
       --  The expansion produced by Expand_N_Extended_Return_Statement will
       --  contain simple return statements (for example, a block containing
@@ -6644,7 +6649,8 @@ package body Exp_Ch6 is
           or else Has_BIP_Formals (Scope_Id));
 
       if not Comes_From_Extended_Return_Statement (N)
-        and then Is_Build_In_Place_Function (Scope_Id)
+        and then (Is_Build_In_Place_Function (Scope_Id)
+                   or else Is_Delayed_Aggregate (Exp))
 
          --  The functionality of interface thunks is simple and it is always
          --  handled by means of simple return statements. This leaves their
@@ -6653,23 +6659,20 @@ package body Exp_Ch6 is
         and then not Is_Thunk (Scope_Id)
       then
          declare
-            Return_Object_Entity : constant Entity_Id :=
-                                     Make_Temporary (Loc, 'R', Exp);
-
             Obj_Decl : constant Node_Id :=
                          Make_Object_Declaration (Loc,
-                           Defining_Identifier => Return_Object_Entity,
+                           Defining_Identifier => Make_Temporary (Loc, 'R'),
                            Object_Definition   => Subtype_Ind,
-                           Expression          => Exp);
+                           Expression          => Relocate_Node (Exp));
 
-            Ext : constant Node_Id :=
-                    Make_Extended_Return_Statement (Loc,
-                      Return_Object_Declarations => New_List (Obj_Decl));
+            Stmt : constant Node_Id :=
+                     Make_Extended_Return_Statement (Loc,
+                       Return_Object_Declarations => New_List (Obj_Decl));
             --  Do not perform this high-level optimization if the result type
             --  is an interface because the "this" pointer must be displaced.
 
          begin
-            Rewrite (N, Ext);
+            Rewrite (N, Stmt);
             Analyze (N);
             return;
          end;

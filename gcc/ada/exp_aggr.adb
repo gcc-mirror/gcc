@@ -167,8 +167,8 @@ package body Exp_Aggr is
 
    function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean;
    --  True if N is an aggregate (possibly qualified or a dependent expression
-   --  of a conditional expression, and possibly recursively so) that is being
-   --  returned from a build-in-place function. Such qualified and conditional
+   --  of a conditional expression, and possibly recursively so) that needs to
+   --  be built-in-place in the return object. Such qualified and conditional
    --  expressions are transparent for this purpose because an enclosing return
    --  is propagated resp. distributed into these expressions by the expander.
 
@@ -6190,6 +6190,7 @@ package body Exp_Aggr is
                                        (Defining_Identifier (Parent_Node))))
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)
+        or else Is_Build_In_Place_Aggregate_Return (N)
       then
          Set_Expansion_Delayed (N, not Static_Array_Aggregate (N));
          return;
@@ -6293,15 +6294,6 @@ package body Exp_Aggr is
          end if;
 
       elsif Maybe_In_Place_OK and then Parent_Kind = N_Allocator then
-         Set_Expansion_Delayed (N);
-         return;
-
-      --  Limited arrays in return statements are expanded when
-      --  enclosing construct is expanded.
-
-      elsif Maybe_In_Place_OK
-        and then Parent_Kind = N_Simple_Return_Statement
-      then
          Set_Expansion_Delayed (N);
          return;
 
@@ -8896,9 +8888,11 @@ package body Exp_Aggr is
    ----------------------------------------
 
    function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean is
-      P : Node_Id := Parent (N);
+      F : Entity_Id;
+      P : Node_Id;
 
    begin
+      P := Parent (N);
       while Nkind (P) in N_Case_Expression
                        | N_Case_Expression_Alternative
                        | N_If_Expression
@@ -8917,9 +8911,17 @@ package body Exp_Aggr is
          return False;
       end if;
 
-      return
-        Is_Build_In_Place_Function
-          (Return_Applies_To (Return_Statement_Entity (P)));
+      F := Return_Applies_To (Return_Statement_Entity (P));
+
+      --  For a build-in-place function, all the returns are done in place
+      --  by definition. We also return aggregates in place in other cases
+      --  as an optimization, and they correspond to the cases where the
+      --  return object is built in place (see Is_Special_Return_Object).
+
+      return Is_Build_In_Place_Function (F)
+        or else Needs_Secondary_Stack (Etype (F))
+        or else (Back_End_Return_Slot
+                  and then Is_By_Reference_Type (Etype (F)));
    end Is_Build_In_Place_Aggregate_Return;
 
    --------------------------
