@@ -5948,8 +5948,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   tree sameval_base = NULL_TREE;
   poly_int64 soff, doff;
   unsigned n_executable = 0;
-  edge_iterator ei;
-  edge e, sameval_e = NULL;
+  edge sameval_e = NULL;
 
   /* TODO: We could check for this in initialization, and replace this
      with a gcc_assert.  */
@@ -5962,10 +5961,32 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   if (!inserted)
     gimple_set_plf (phi, GF_PLF_1, false);
 
+  basic_block bb = gimple_bb (phi);
+
+  /* For the equivalence handling below make sure to first process an
+     edge with a non-constant.  */
+  auto_vec<edge, 2> preds;
+  preds.reserve_exact (EDGE_COUNT (bb->preds));
+  bool seen_nonconstant = false;
+  for (unsigned i = 0; i < EDGE_COUNT (bb->preds); ++i)
+    {
+      edge e = EDGE_PRED (bb, i);
+      preds.quick_push (e);
+      if (!seen_nonconstant)
+	{
+	  tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	  if (TREE_CODE (def) == SSA_NAME)
+	    {
+	      seen_nonconstant = true;
+	      if (i != 0)
+		std::swap (preds[0], preds[i]);
+	    }
+	}
+    }
+
   /* See if all non-TOP arguments have the same value.  TOP is
      equivalent to everything, so we can ignore it.  */
-  basic_block bb = gimple_bb (phi);
-  FOR_EACH_EDGE (e, ei, bb->preds)
+  for (edge e : preds)
     if (e->flags & EDGE_EXECUTABLE)
       {
 	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -6063,27 +6084,6 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 			    fprintf (dump_file, " are equal on edge %d -> %d\n",
 				     e->src->index, e->dest->index);
 			  }
-			continue;
-		      }
-		    /* If on all previous edges the value was equal to def
-		       we can change sameval to def.  */
-		    if (EDGE_COUNT (bb->preds) == 2
-			&& (val = vn_nary_op_get_predicated_value
-				    (vnresult, EDGE_PRED (bb, 0)))
-			&& integer_truep (val)
-			&& !(e->flags & EDGE_DFS_BACK))
-		      {
-			if (dump_file && (dump_flags & TDF_DETAILS))
-			  {
-			    fprintf (dump_file, "Predication says ");
-			    print_generic_expr (dump_file, def, TDF_NONE);
-			    fprintf (dump_file, " and ");
-			    print_generic_expr (dump_file, sameval, TDF_NONE);
-			    fprintf (dump_file, " are equal on edge %d -> %d\n",
-				     EDGE_PRED (bb, 0)->src->index,
-				     EDGE_PRED (bb, 0)->dest->index);
-			  }
-			sameval = def;
 			continue;
 		      }
 		  }
