@@ -1220,6 +1220,10 @@ aarch64_init_simd_builtin_types (void)
   aarch64_simd_types[Bfloat16x4_t].eltype = bfloat16_type_node;
   aarch64_simd_types[Bfloat16x8_t].eltype = bfloat16_type_node;
 
+  /* Init FP8 element types.  */
+  aarch64_simd_types[Mfloat8x8_t].eltype = aarch64_mfp8_type_node;
+  aarch64_simd_types[Mfloat8x16_t].eltype = aarch64_mfp8_type_node;
+
   for (i = 0; i < nelts; i++)
     {
       tree eltype = aarch64_simd_types[i].eltype;

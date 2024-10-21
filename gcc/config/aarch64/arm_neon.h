@@ -72,6 +72,9 @@ typedef __Poly16_t poly16_t;
 typedef __Poly64_t poly64_t;
 typedef __Poly128_t poly128_t;
 
+typedef __Mfloat8x8_t mfloat8x8_t;
+typedef __Mfloat8x16_t mfloat8x16_t;
+
 typedef __fp16 float16_t;
 typedef float float32_t;
 typedef double float64_t;

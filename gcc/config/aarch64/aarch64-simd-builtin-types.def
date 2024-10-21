@@ -52,3 +52,5 @@
   ENTRY (Float64x2_t, V2DF, none, 13)
   ENTRY (Bfloat16x4_t, V4BF, none, 14)
   ENTRY (Bfloat16x8_t, V8BF, none, 14)
+  ENTRY (Mfloat8x8_t, V8QI, modal_float, 13)
+  ENTRY (Mfloat8x16_t, V16QI, modal_float, 14)

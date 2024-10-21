@@ -17,6 +17,7 @@ TEST_GENERAL (__Bfloat16x8_t)
 TEST_GENERAL (__Float16x8_t)
 TEST_GENERAL (__Float32x4_t)
 TEST_GENERAL (__Float64x2_t)
+TEST_GENERAL (__Mfloat8x16_t)
 
 __Int8x16_t const_s8x8 () { return (__Int8x16_t) { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }; }
 __Int16x8_t const_s16x4 () { return (__Int16x8_t) { 1, 0, 1, 0, 1, 0, 1, 0 }; }

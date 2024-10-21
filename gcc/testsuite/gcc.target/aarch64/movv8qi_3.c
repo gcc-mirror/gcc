@@ -22,6 +22,7 @@ TEST_VECTOR (__Bfloat16x4_t)
 TEST_VECTOR (__Float16x4_t)
 TEST_VECTOR (__Float32x2_t)
 TEST_VECTOR (__Float64x1_t)
+TEST_VECTOR (__Mfloat8x8_t)
 
 /*
 ** test___Int8x8_t:

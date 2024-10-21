@@ -19,6 +19,7 @@ TEST_VECTOR (float16x8x2_t)
 TEST_VECTOR (bfloat16x8x2_t)
 TEST_VECTOR (float32x4x2_t)
 TEST_VECTOR (float64x2x2_t)
+TEST_VECTOR (mfloat8x16x2_t)
 
 /*
 ** mov_int8x16x2_t:
