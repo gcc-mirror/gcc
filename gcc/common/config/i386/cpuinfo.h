@@ -343,301 +343,298 @@ get_intel_cpu (struct __processor_model *cpu_model,
 {
   const char *cpu = NULL;
 
-  /* Parse family and model only for model 6. */
-  if (cpu_model2->__cpu_family != 0x6)
-    return cpu;
-
-  switch (cpu_model2->__cpu_model)
-    {
-    case 0x1c:
-    case 0x26:
-      /* Bonnell.  */
-      cpu = "bonnell";
-      CHECK___builtin_cpu_is ("atom");
-      cpu_model->__cpu_type = INTEL_BONNELL;
-      break;
-    case 0x37:
-    case 0x4a:
-    case 0x4d:
-    case 0x5d:
-      /* Silvermont.  */
-    case 0x4c:
-    case 0x5a:
-    case 0x75:
-      /* Airmont.  */
-      cpu = "silvermont";
-      CHECK___builtin_cpu_is ("silvermont");
-      cpu_model->__cpu_type = INTEL_SILVERMONT;
-      break;
-    case 0x5c:
-    case 0x5f:
-      /* Goldmont.  */
-      cpu = "goldmont";
-      CHECK___builtin_cpu_is ("goldmont");
-      cpu_model->__cpu_type = INTEL_GOLDMONT;
-      break;
-    case 0x7a:
-      /* Goldmont Plus.  */
-      cpu = "goldmont-plus";
-      CHECK___builtin_cpu_is ("goldmont-plus");
-      cpu_model->__cpu_type = INTEL_GOLDMONT_PLUS;
-      break;
-    case 0x86:
-    case 0x96:
-    case 0x9c:
-      /* Tremont.  */
-      cpu = "tremont";
-      CHECK___builtin_cpu_is ("tremont");
-      cpu_model->__cpu_type = INTEL_TREMONT;
-      break;
-    case 0x1a:
-    case 0x1e:
-    case 0x1f:
-    case 0x2e:
-      /* Nehalem.  */
-      cpu = "nehalem";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("nehalem");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_NEHALEM;
-      break;
-    case 0x25:
-    case 0x2c:
-    case 0x2f:
-      /* Westmere.  */
-      cpu = "westmere";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("westmere");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_WESTMERE;
-      break;
-    case 0x2a:
-    case 0x2d:
-      /* Sandy Bridge.  */
-      cpu = "sandybridge";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("sandybridge");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_SANDYBRIDGE;
-      break;
-    case 0x3a:
-    case 0x3e:
-      /* Ivy Bridge.  */
-      cpu = "ivybridge";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("ivybridge");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_IVYBRIDGE;
-      break;
-    case 0x3c:
-    case 0x3f:
-    case 0x45:
-    case 0x46:
-      /* Haswell.  */
-      cpu = "haswell";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("haswell");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_HASWELL;
-      break;
-    case 0x3d:
-    case 0x47:
-    case 0x4f:
-    case 0x56:
-      /* Broadwell.  */
-      cpu = "broadwell";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("broadwell");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_BROADWELL;
-      break;
-    case 0x4e:
-    case 0x5e:
-      /* Skylake.  */
-    case 0x8e:
-    case 0x9e:
-      /* Kaby Lake.  */
-    case 0xa5:
-    case 0xa6:
-      /* Comet Lake.  */
-      cpu = "skylake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("skylake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_SKYLAKE;
-      break;
-    case 0xa7:
-      /* Rocket Lake.  */
-      cpu = "rocketlake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("rocketlake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_ROCKETLAKE;
-      break;
-    case 0x55:
-      CHECK___builtin_cpu_is ("corei7");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      if (has_cpu_feature (cpu_model, cpu_features2,
-			   FEATURE_AVX512BF16))
-	{
-	  /* Cooper Lake.  */
-	  cpu = "cooperlake";
-	  CHECK___builtin_cpu_is ("cooperlake");
-	  cpu_model->__cpu_subtype = INTEL_COREI7_COOPERLAKE;
-	}
-      else if (has_cpu_feature (cpu_model, cpu_features2,
-				FEATURE_AVX512VNNI))
-	{
-	  /* Cascade Lake.  */
-	  cpu = "cascadelake";
-	  CHECK___builtin_cpu_is ("cascadelake");
-	  cpu_model->__cpu_subtype = INTEL_COREI7_CASCADELAKE;
-	}
-      else
-	{
-	  /* Skylake with AVX-512 support.  */
-	  cpu = "skylake-avx512";
-	  CHECK___builtin_cpu_is ("skylake-avx512");
-	  cpu_model->__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
-	}
-      break;
-    case 0x66:
-      /* Cannon Lake.  */
-      cpu = "cannonlake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("cannonlake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_CANNONLAKE;
-      break;
-    case 0x6a:
-    case 0x6c:
-      /* Ice Lake server.  */
-      cpu = "icelake-server";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("icelake-server");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_ICELAKE_SERVER;
-      break;
-    case 0x7e:
-    case 0x7d:
-    case 0x9d:
-       /* Ice Lake client.  */
-      cpu = "icelake-client";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("icelake-client");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_ICELAKE_CLIENT;
-      break;
-    case 0x8c:
-    case 0x8d:
-      /* Tiger Lake.  */
-      cpu = "tigerlake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("tigerlake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
-      break;
-
-    case 0xbe:
-      /* Alder Lake N, E-core only.  */
-    case 0x97:
-    case 0x9a:
-      /* Alder Lake.  */
-    case 0xb7:
-    case 0xba:
-    case 0xbf:
-      /* Raptor Lake.  */
-    case 0xaa:
-    case 0xac:
-      /* Meteor Lake.  */
-      cpu = "alderlake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("alderlake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_ALDERLAKE;
-      break;
-    case 0x8f:
-      /* Sapphire Rapids.  */
-    case 0xcf:
-      /* Emerald Rapids.  */
-      cpu = "sapphirerapids";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("sapphirerapids");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_SAPPHIRERAPIDS;
-      break;
-    case 0xaf:
-      /* Sierra Forest.  */
-      cpu = "sierraforest";
-      CHECK___builtin_cpu_is ("sierraforest");
-      cpu_model->__cpu_type = INTEL_SIERRAFOREST;
-      break;
-    case 0xad:
-      /* Granite Rapids.  */
-      cpu = "graniterapids";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("graniterapids");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS;
-      break;
-    case 0xae:
-      /* Granite Rapids D.  */
-      cpu = "graniterapids-d";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("graniterapids-d");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS_D;
-      break;
-    case 0xb6:
-      /* Grand Ridge.  */
-      cpu = "grandridge";
-      CHECK___builtin_cpu_is ("grandridge");
-      cpu_model->__cpu_type = INTEL_GRANDRIDGE;
-      break;
-    case 0xc5:
-      /* Arrow Lake.  */
-      cpu = "arrowlake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("arrowlake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE;
-      break;
-    case 0xc6:
-      /* Arrow Lake S.  */
-    case 0xbd:
-      /* Lunar Lake.  */
-      cpu = "arrowlake-s";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("arrowlake-s");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE_S;
-      break;
-    case 0xdd:
-      /* Clearwater Forest.  */
-      cpu = "clearwaterforest";
-      CHECK___builtin_cpu_is ("clearwaterforest");
-      cpu_model->__cpu_type = INTEL_CLEARWATERFOREST;
-      break;
-    case 0xcc:
-      /* Panther Lake.  */
-      cpu = "pantherlake";
-      CHECK___builtin_cpu_is ("corei7");
-      CHECK___builtin_cpu_is ("pantherlake");
-      cpu_model->__cpu_type = INTEL_COREI7;
-      cpu_model->__cpu_subtype = INTEL_COREI7_PANTHERLAKE;
-      break;
-    case 0x17:
-    case 0x1d:
-      /* Penryn.  */
-    case 0x0f:
-      /* Merom.  */
-      cpu = "core2";
-      CHECK___builtin_cpu_is ("core2");
-      cpu_model->__cpu_type = INTEL_CORE2;
-      break;
-    default:
-      break;
-    }
+  /* Parse family and model for family 0x6.  */
+  if (cpu_model2->__cpu_family == 0x6)
+    switch (cpu_model2->__cpu_model)
+      {
+      case 0x1c:
+      case 0x26:
+	/* Bonnell.  */
+	cpu = "bonnell";
+	CHECK___builtin_cpu_is ("atom");
+	cpu_model->__cpu_type = INTEL_BONNELL;
+	break;
+      case 0x37:
+      case 0x4a:
+      case 0x4d:
+      case 0x5d:
+	/* Silvermont.  */
+      case 0x4c:
+      case 0x5a:
+      case 0x75:
+	/* Airmont.  */
+	cpu = "silvermont";
+	CHECK___builtin_cpu_is ("silvermont");
+	cpu_model->__cpu_type = INTEL_SILVERMONT;
+	break;
+      case 0x5c:
+      case 0x5f:
+	/* Goldmont.  */
+	cpu = "goldmont";
+	CHECK___builtin_cpu_is ("goldmont");
+	cpu_model->__cpu_type = INTEL_GOLDMONT;
+	break;
+      case 0x7a:
+	/* Goldmont Plus.  */
+	cpu = "goldmont-plus";
+	CHECK___builtin_cpu_is ("goldmont-plus");
+	cpu_model->__cpu_type = INTEL_GOLDMONT_PLUS;
+	break;
+      case 0x86:
+      case 0x96:
+      case 0x9c:
+	/* Tremont.  */
+	cpu = "tremont";
+	CHECK___builtin_cpu_is ("tremont");
+	cpu_model->__cpu_type = INTEL_TREMONT;
+	break;
+      case 0x17:
+      case 0x1d:
+	/* Penryn.  */
+      case 0x0f:
+	/* Merom.  */
+	cpu = "core2";
+	CHECK___builtin_cpu_is ("core2");
+	cpu_model->__cpu_type = INTEL_CORE2;
+	break;
+      case 0x1a:
+      case 0x1e:
+      case 0x1f:
+      case 0x2e:
+	/* Nehalem.  */
+	cpu = "nehalem";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("nehalem");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_NEHALEM;
+	break;
+      case 0x25:
+      case 0x2c:
+      case 0x2f:
+	/* Westmere.  */
+	cpu = "westmere";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("westmere");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_WESTMERE;
+	break;
+      case 0x2a:
+      case 0x2d:
+	/* Sandy Bridge.  */
+	cpu = "sandybridge";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("sandybridge");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_SANDYBRIDGE;
+	break;
+      case 0x3a:
+      case 0x3e:
+	/* Ivy Bridge.  */
+	cpu = "ivybridge";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("ivybridge");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_IVYBRIDGE;
+	break;
+      case 0x3c:
+      case 0x3f:
+      case 0x45:
+      case 0x46:
+	/* Haswell.  */
+	cpu = "haswell";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("haswell");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_HASWELL;
+	break;
+      case 0x3d:
+      case 0x47:
+      case 0x4f:
+      case 0x56:
+	/* Broadwell.  */
+	cpu = "broadwell";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("broadwell");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_BROADWELL;
+	break;
+      case 0x4e:
+      case 0x5e:
+	/* Skylake.  */
+      case 0x8e:
+      case 0x9e:
+	/* Kaby Lake.  */
+      case 0xa5:
+      case 0xa6:
+	/* Comet Lake.  */
+	cpu = "skylake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("skylake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_SKYLAKE;
+	break;
+      case 0x55:
+	CHECK___builtin_cpu_is ("corei7");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	if (has_cpu_feature (cpu_model, cpu_features2,
+			    FEATURE_AVX512BF16))
+	  {
+	    /* Cooper Lake.  */
+	    cpu = "cooperlake";
+	    CHECK___builtin_cpu_is ("cooperlake");
+	    cpu_model->__cpu_subtype = INTEL_COREI7_COOPERLAKE;
+	  }
+	else if (has_cpu_feature (cpu_model, cpu_features2,
+				  FEATURE_AVX512VNNI))
+	  {
+	    /* Cascade Lake.  */
+	    cpu = "cascadelake";
+	    CHECK___builtin_cpu_is ("cascadelake");
+	    cpu_model->__cpu_subtype = INTEL_COREI7_CASCADELAKE;
+	  }
+	else
+	  {
+	    /* Skylake with AVX-512 support.  */
+	    cpu = "skylake-avx512";
+	    CHECK___builtin_cpu_is ("skylake-avx512");
+	    cpu_model->__cpu_subtype = INTEL_COREI7_SKYLAKE_AVX512;
+	  }
+	break;
+      case 0x66:
+	/* Cannon Lake.  */
+	cpu = "cannonlake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("cannonlake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_CANNONLAKE;
+	break;
+      case 0x7e:
+      case 0x7d:
+      case 0x9d:
+	/* Ice Lake client.  */
+	cpu = "icelake-client";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("icelake-client");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_ICELAKE_CLIENT;
+	break;
+      case 0x6a:
+      case 0x6c:
+	/* Ice Lake server.  */
+	cpu = "icelake-server";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("icelake-server");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_ICELAKE_SERVER;
+	break;
+      case 0xa7:
+	/* Rocket Lake.  */
+	cpu = "rocketlake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("rocketlake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_ROCKETLAKE;
+	break;
+      case 0x8c:
+      case 0x8d:
+	/* Tiger Lake.  */
+	cpu = "tigerlake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("tigerlake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
+	break;
+      case 0xbe:
+	/* Alder Lake N, E-core only.  */
+      case 0x97:
+      case 0x9a:
+	/* Alder Lake.  */
+      case 0xb7:
+      case 0xba:
+      case 0xbf:
+	/* Raptor Lake.  */
+      case 0xaa:
+      case 0xac:
+	/* Meteor Lake.  */
+	cpu = "alderlake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("alderlake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_ALDERLAKE;
+	break;
+      case 0x8f:
+	/* Sapphire Rapids.  */
+      case 0xcf:
+	/* Emerald Rapids.  */
+	cpu = "sapphirerapids";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("sapphirerapids");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_SAPPHIRERAPIDS;
+	break;
+      case 0xaf:
+	/* Sierra Forest.  */
+	cpu = "sierraforest";
+	CHECK___builtin_cpu_is ("sierraforest");
+	cpu_model->__cpu_type = INTEL_SIERRAFOREST;
+	break;
+      case 0xad:
+	/* Granite Rapids.  */
+	cpu = "graniterapids";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("graniterapids");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS;
+	break;
+      case 0xae:
+	/* Granite Rapids D.  */
+	cpu = "graniterapids-d";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("graniterapids-d");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_GRANITERAPIDS_D;
+	break;
+      case 0xb6:
+	/* Grand Ridge.  */
+	cpu = "grandridge";
+	CHECK___builtin_cpu_is ("grandridge");
+	cpu_model->__cpu_type = INTEL_GRANDRIDGE;
+	break;
+      case 0xc5:
+	/* Arrow Lake.  */
+	cpu = "arrowlake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("arrowlake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE;
+	break;
+      case 0xc6:
+	/* Arrow Lake S.  */
+      case 0xbd:
+	/* Lunar Lake.  */
+	cpu = "arrowlake-s";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("arrowlake-s");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE_S;
+	break;
+      case 0xdd:
+	/* Clearwater Forest.  */
+	cpu = "clearwaterforest";
+	CHECK___builtin_cpu_is ("clearwaterforest");
+	cpu_model->__cpu_type = INTEL_CLEARWATERFOREST;
+	break;
+      case 0xcc:
+	/* Panther Lake.  */
+	cpu = "pantherlake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("pantherlake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_PANTHERLAKE;
+	break;
+      default:
+	break;
+      }
 
   return cpu;
 }
