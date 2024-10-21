@@ -554,7 +554,7 @@ loop_versioning::loop_versioning (function *fn)
      handled efficiently by scalar code.  omp_max_vf calculates the
      maximum number of bytes in a vector, when such a value is relevant
      to loop optimization.  */
-  m_maximum_scale = estimated_poly_value (omp_max_vf ());
+  m_maximum_scale = estimated_poly_value (omp_max_vf (false));
   m_maximum_scale = MAX (m_maximum_scale, MAX_FIXED_MODE_SIZE);
 }
 

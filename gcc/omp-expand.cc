@@ -212,7 +212,7 @@ omp_adjust_chunk_size (tree chunk_size, bool simd_schedule)
   if (!simd_schedule || integer_zerop (chunk_size))
     return chunk_size;
 
-  poly_uint64 vf = omp_max_vf ();
+  poly_uint64 vf = omp_max_vf (false);
   if (known_eq (vf, 1U))
     return chunk_size;
 

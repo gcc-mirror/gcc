@@ -987,10 +987,11 @@ find_combined_omp_for (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
-/* Return maximum possible vectorization factor for the target.  */
+/* Return maximum possible vectorization factor for the target, or for
+   the OpenMP offload target if one exists.  */
 
 poly_uint64
-omp_max_vf (void)
+omp_max_vf (bool offload)
 {
   if (!optimize
       || optimize_debug
@@ -998,6 +999,18 @@ omp_max_vf (void)
       || (!flag_tree_loop_vectorize
 	  && OPTION_SET_P (flag_tree_loop_vectorize)))
     return 1;
+
+  if (ENABLE_OFFLOADING && offload)
+    {
+      for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
+	{
+	  if (startswith (c, "amdgcn"))
+	    return ordered_max (64, omp_max_vf (false));
+	  else if ((c = strchr (c, ':')))
+	    c++;
+	}
+      /* Otherwise, fall through to host VF.  */
+    }
 
   auto_vector_modes modes;
   targetm.vectorize.autovectorize_vector_modes (&modes, true);

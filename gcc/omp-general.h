@@ -162,7 +162,7 @@ extern void omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 				  struct omp_for_data_loop *loops);
 extern gimple *omp_build_barrier (tree lhs);
 extern tree find_combined_omp_for (tree *, int *, void *);
-extern poly_uint64 omp_max_vf (void);
+extern poly_uint64 omp_max_vf (bool);
 extern int omp_max_simt_vf (void);
 extern const char *omp_context_name_list_prop (tree);
 extern void omp_construct_traits_to_codes (tree, int, enum tree_code *);

@@ -4589,7 +4589,8 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 {
   if (known_eq (sctx->max_vf, 0U))
     {
-      sctx->max_vf = sctx->is_simt ? omp_max_simt_vf () : omp_max_vf ();
+      sctx->max_vf = (sctx->is_simt ? omp_max_simt_vf ()
+		      : omp_max_vf (omp_maybe_offloaded_ctx (ctx)));
       if (maybe_gt (sctx->max_vf, 1U))
 	{
 	  tree c = omp_find_clause (gimple_omp_for_clauses (ctx->stmt),
