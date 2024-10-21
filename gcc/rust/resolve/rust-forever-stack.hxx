@@ -194,8 +194,36 @@ ForeverStack<N>::reverse_iter (std::function<KeepGoing (Node &)> lambda)
 
 template <Namespace N>
 void
+ForeverStack<N>::reverse_iter (
+  std::function<KeepGoing (const Node &)> lambda) const
+{
+  return reverse_iter (cursor (), lambda);
+}
+
+template <Namespace N>
+void
 ForeverStack<N>::reverse_iter (Node &start,
 			       std::function<KeepGoing (Node &)> lambda)
+{
+  auto *tmp = &start;
+
+  while (true)
+    {
+      auto keep_going = lambda (*tmp);
+      if (keep_going == KeepGoing::No)
+	return;
+
+      if (tmp->is_root ())
+	return;
+
+      tmp = &tmp->parent.value ();
+    }
+}
+
+template <Namespace N>
+void
+ForeverStack<N>::reverse_iter (
+  const Node &start, std::function<KeepGoing (const Node &)> lambda) const
 {
   auto *tmp = &start;
 
@@ -508,21 +536,52 @@ ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
 }
 
 template <Namespace N>
+tl::optional<typename ForeverStack<N>::ConstDfsResult>
+ForeverStack<N>::dfs (const ForeverStack<N>::Node &starting_point,
+		      NodeId to_find) const
+{
+  auto values = starting_point.rib.get_values ();
+
+  for (auto &kv : values)
+    {
+      for (auto id : kv.second.ids_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_non_shadowable)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+      for (auto id : kv.second.ids_globbed)
+	if (id == to_find)
+	  return {{starting_point, kv.first}};
+    }
+
+  for (auto &child : starting_point.children)
+    {
+      auto candidate = dfs (child.second, to_find);
+
+      if (candidate.has_value ())
+	return candidate;
+    }
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
 tl::optional<Resolver::CanonicalPath>
-ForeverStack<N>::to_canonical_path (NodeId id)
+ForeverStack<N>::to_canonical_path (NodeId id) const
 {
   // find the id in the current forever stack, starting from the root,
   // performing either a BFS or DFS once the Node containing the ID is found, go
   // back up to the root (parent().parent().parent()...) accumulate link
   // segments reverse them that's your canonical path
 
-  return dfs (root, id).map ([this, id] (DfsResult tuple) {
+  return dfs (root, id).map ([this, id] (ConstDfsResult tuple) {
     auto containing_node = tuple.first;
     auto name = tuple.second;
 
     auto segments = std::vector<Resolver::CanonicalPath> ();
 
-    reverse_iter (containing_node, [&segments] (Node &current) {
+    reverse_iter (containing_node, [&segments] (const Node &current) {
       if (current.is_root ())
 	return KeepGoing::No;
 
@@ -582,8 +641,34 @@ ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
 }
 
 template <Namespace N>
+tl::optional<const Rib &>
+ForeverStack<N>::dfs_rib (const ForeverStack<N>::Node &starting_point,
+			  NodeId to_find) const
+{
+  if (starting_point.id == to_find)
+    return starting_point.rib;
+
+  for (auto &child : starting_point.children)
+    {
+      auto candidate = dfs_rib (child.second, to_find);
+
+      if (candidate.has_value ())
+	return candidate;
+    }
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
 tl::optional<Rib &>
 ForeverStack<N>::to_rib (NodeId rib_id)
+{
+  return dfs_rib (root, rib_id);
+}
+
+template <Namespace N>
+tl::optional<const Rib &>
+ForeverStack<N>::to_rib (NodeId rib_id) const
 {
   return dfs_rib (root, rib_id);
 }

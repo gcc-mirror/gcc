@@ -513,10 +513,11 @@ public:
   tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments);
 
   // FIXME: Documentation
-  tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id);
+  tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id) const;
 
   // FIXME: Documentation
   tl::optional<Rib &> to_rib (NodeId rib_id);
+  tl::optional<const Rib &> to_rib (NodeId rib_id) const;
 
   std::string as_debug_string ();
 
@@ -579,9 +580,12 @@ private:
 
   /* Reverse iterate on `Node`s from the cursor, in an outwards fashion */
   void reverse_iter (std::function<KeepGoing (Node &)> lambda);
+  void reverse_iter (std::function<KeepGoing (const Node &)> lambda) const;
 
   /* Reverse iterate on `Node`s from a specified one, in an outwards fashion */
   void reverse_iter (Node &start, std::function<KeepGoing (Node &)> lambda);
+  void reverse_iter (const Node &start,
+		     std::function<KeepGoing (const Node &)> lambda) const;
 
   Node &cursor ();
   const Node &cursor () const;
@@ -617,11 +621,20 @@ private:
     Node &first;
     std::string second;
   };
+  struct ConstDfsResult
+  {
+    const Node &first;
+    std::string second;
+  };
 
   // FIXME: Documentation
   tl::optional<DfsResult> dfs (Node &starting_point, NodeId to_find);
+  tl::optional<ConstDfsResult> dfs (const Node &starting_point,
+				    NodeId to_find) const;
   // FIXME: Documentation
   tl::optional<Rib &> dfs_rib (Node &starting_point, NodeId to_find);
+  tl::optional<const Rib &> dfs_rib (const Node &starting_point,
+				     NodeId to_find) const;
 };
 
 } // namespace Resolver2_0
