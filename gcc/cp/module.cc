@@ -2329,7 +2329,7 @@ private:
     DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
-    DB_IS_MEMBER_BIT,		/* Is an out-of-class member.  */
+    DB_IS_PENDING_BIT,		/* Is a maybe-pending entity.  */
     DB_IS_INTERNAL_BIT,		/* It is an (erroneous)
 				   internal-linkage entity.  */
     DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
@@ -2407,11 +2407,14 @@ public:
   }
 
 public:
-  /* This class-member is defined here, but the class was imported.  */
-  bool is_member () const
+  /* This entity might be found other than by namespace-scope lookup;
+     see module_state::write_pendings for more details.  */
+  bool is_pending_entity () const
   {
-    gcc_checking_assert (get_entity_kind () == EK_DECL);
-    return get_flag_bit<DB_IS_MEMBER_BIT> ();
+    return (get_entity_kind () == EK_SPECIALIZATION
+	    || get_entity_kind () == EK_PARTIAL
+	    || (get_entity_kind () == EK_DECL
+		&& get_flag_bit<DB_IS_PENDING_BIT> ()));
   }
 public:
   bool is_internal () const
@@ -13031,6 +13034,18 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 		}
 	    }
+
+	  /* A namespace-scope type may be declared in one module unit
+	     and defined in another; make sure that we're found when
+	     completing the class.  */
+	  if (ek == EK_DECL
+	      && !dep->is_import ()
+	      && dep->has_defn ()
+	      && DECL_NAMESPACE_SCOPE_P (not_tmpl)
+	      && DECL_IMPLICIT_TYPEDEF_P (not_tmpl)
+	      /* Anonymous types can't be forward-declared.  */
+	      && !IDENTIFIER_ANON_P (DECL_NAME (not_tmpl)))
+	    dep->set_flag_bit<DB_IS_PENDING_BIT> ();
 	}
 
       if (!dep->is_import ())
@@ -13383,9 +13398,9 @@ depset::hash::add_class_entities (vec<tree, va_gc> *class_members)
       if (dep->get_entity_kind () == EK_REDIRECT)
 	dep = dep->deps[0];
 
-      /* Only non-instantiations need marking as members.  */
+      /* Only non-instantiations need marking as pendings.  */
       if (dep->get_entity_kind () == EK_DECL)
-	dep->set_flag_bit <DB_IS_MEMBER_BIT> ();
+	dep->set_flag_bit <DB_IS_PENDING_BIT> ();
     }
 }
 
@@ -13711,10 +13726,7 @@ depset::hash::find_dependencies (module_state *module)
 		  walker.mark_declaration (decl, current->has_defn ());
 
 		  if (!walker.is_key_order ()
-		      && (item->get_entity_kind () == EK_SPECIALIZATION
-			  || item->get_entity_kind () == EK_PARTIAL
-			  || (item->get_entity_kind () == EK_DECL
-			      && item->is_member ())))
+		      && item->is_pending_entity ())
 		    {
 		      tree ns = find_pending_key (decl, nullptr);
 		      add_namespace_context (item, ns);
@@ -15939,15 +15951,13 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
    'instantiated' in one module, and it'd be nice to not have to
    reinstantiate it in another.
 
-   (c) A member classes completed elsewhere.  A member class could be
-   declared in one header and defined in another.  We need to know to
-   load the class definition before looking in it.  This turns out to
-   be a specific case of #b, so we can treat these the same.  But it
-   does highlight an issue -- there could be an intermediate import
-   between the outermost containing namespace-scope class and the
-   innermost being-defined member class.  This is actually possible
-   with all of these cases, so be aware -- we're not just talking of
-   one level of import to get to the innermost namespace.
+   (c) Classes completed elsewhere.  A class could be declared in one
+   header and defined in another.  We need to know to load the class
+   definition before looking in it.  It does highlight an issue --
+   there could be an intermediate import between the outermost containing
+   namespace-scope class and the innermost being-defined class.  This is
+   actually possible with all of these cases, so be aware -- we're not
+   just talking of one level of import to get to the innermost namespace.
 
    This gets complicated fast, it took me multiple attempts to even
    get something remotely working.  Partially because I focussed on
@@ -16067,9 +16077,7 @@ module_state::write_pendings (elf_out *to, vec<depset *> depsets,
       if (d->is_import ())
 	continue;
 
-      if (!(d->get_entity_kind () == depset::EK_SPECIALIZATION
-	    || d->get_entity_kind () == depset::EK_PARTIAL
-	    || (d->get_entity_kind () == depset::EK_DECL && d->is_member ())))
+      if (!d->is_pending_entity ())
 	continue;
 
       tree key_decl = nullptr;
