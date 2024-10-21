@@ -133,6 +133,7 @@
 #define MODE_d_f16 E_V4HFmode
 #define MODE_d_f32 E_V2SFmode
 #define MODE_d_f64 E_V1DFmode
+#define MODE_d_mf8 E_V8QImode
 #define MODE_d_s8 E_V8QImode
 #define MODE_d_s16 E_V4HImode
 #define MODE_d_s32 E_V2SImode
@@ -148,6 +149,7 @@
 #define MODE_q_f16 E_V8HFmode
 #define MODE_q_f32 E_V4SFmode
 #define MODE_q_f64 E_V2DFmode
+#define MODE_q_mf8 E_V16QImode
 #define MODE_q_s8 E_V16QImode
 #define MODE_q_s16 E_V8HImode
 #define MODE_q_s32 E_V4SImode
@@ -177,6 +179,7 @@
 #define QUAL_p16 qualifier_poly
 #define QUAL_p64 qualifier_poly
 #define QUAL_p128 qualifier_poly
+#define QUAL_mf8 qualifier_modal_float
 
 #define LENGTH_d ""
 #define LENGTH_q "q"
@@ -598,6 +601,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 /* vreinterpret intrinsics are defined for any pair of element types.
    {     _bf16           }   {     _bf16           }
    {      _f16 _f32 _f64 }   {      _f16 _f32 _f64 }
+   { _mf8                }   { _mf8                }
    { _s8  _s16 _s32 _s64 } x { _s8  _s16 _s32 _s64 }
    { _u8  _u16 _u32 _u64 }   { _u8  _u16 _u32 _u64 }
    { _p8  _p16      _p64 }   { _p8  _p16      _p64 }.  */
@@ -609,6 +613,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VREINTERPRET_BUILTIN2 (A, f16) \
   VREINTERPRET_BUILTIN2 (A, f32) \
   VREINTERPRET_BUILTIN2 (A, f64) \
+  VREINTERPRET_BUILTIN2 (A, mf8) \
   VREINTERPRET_BUILTIN2 (A, s8) \
   VREINTERPRET_BUILTIN2 (A, s16) \
   VREINTERPRET_BUILTIN2 (A, s32) \
@@ -626,6 +631,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VREINTERPRET_BUILTINS1 (f16) \
   VREINTERPRET_BUILTINS1 (f32) \
   VREINTERPRET_BUILTINS1 (f64) \
+  VREINTERPRET_BUILTINS1 (mf8) \
   VREINTERPRET_BUILTINS1 (s8) \
   VREINTERPRET_BUILTINS1 (s16) \
   VREINTERPRET_BUILTINS1 (s32) \
@@ -641,6 +647,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 /* vreinterpretq intrinsics are additionally defined for p128.
    {     _bf16                 }   {     _bf16                 }
    {      _f16 _f32 _f64       }   {      _f16 _f32 _f64       }
+   { _mf8                      }   { _mf8                      }
    { _s8  _s16 _s32 _s64       } x { _s8  _s16 _s32 _s64       }
    { _u8  _u16 _u32 _u64       }   { _u8  _u16 _u32 _u64       }
    { _p8  _p16      _p64 _p128 }   { _p8  _p16      _p64 _p128 }.  */
@@ -652,6 +659,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VREINTERPRETQ_BUILTIN2 (A, f16) \
   VREINTERPRETQ_BUILTIN2 (A, f32) \
   VREINTERPRETQ_BUILTIN2 (A, f64) \
+  VREINTERPRETQ_BUILTIN2 (A, mf8) \
   VREINTERPRETQ_BUILTIN2 (A, s8) \
   VREINTERPRETQ_BUILTIN2 (A, s16) \
   VREINTERPRETQ_BUILTIN2 (A, s32) \
@@ -670,6 +678,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VREINTERPRETQ_BUILTINS1 (f16) \
   VREINTERPRETQ_BUILTINS1 (f32) \
   VREINTERPRETQ_BUILTINS1 (f64) \
+  VREINTERPRETQ_BUILTINS1 (mf8) \
   VREINTERPRETQ_BUILTINS1 (s8) \
   VREINTERPRETQ_BUILTINS1 (s16) \
   VREINTERPRETQ_BUILTINS1 (s32) \
@@ -1117,7 +1126,8 @@ aarch64_lookup_simd_type_in_table (machine_mode mode,
 {
   int i;
   int nelts = ARRAY_SIZE (aarch64_simd_types);
-  int q = qualifiers & (qualifier_poly | qualifier_unsigned);
+  int q = qualifiers
+    & (qualifier_poly | qualifier_unsigned | qualifier_modal_float);
 
   for (i = 0; i < nelts; i++)
     {
