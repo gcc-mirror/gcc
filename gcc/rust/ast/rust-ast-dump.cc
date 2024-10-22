@@ -18,11 +18,21 @@
 
 #include "rust-ast-dump.h"
 #include "rust-expr.h"
+#include <vector>
 
 namespace Rust {
 namespace AST {
 
-Dump::Dump (std::ostream &stream) : stream (stream), indentation (Indent ()) {}
+Dump::Dump (std::ostream &stream)
+  : stream (stream), indentation (Indent ()), print_internal (false)
+{}
+
+Dump::Dump (std::ostream &stream, bool print_internal,
+	    std::vector<std::string> blacklist)
+  : stream (stream), indentation (Indent ()), print_internal (print_internal)
+{
+  internal_blacklist = blacklist;
+}
 
 bool
 Dump::require_spacing (TokenPtr previous, TokenPtr current)

@@ -223,9 +223,14 @@ struct CompileOptions
     HIR_DUMP,
     HIR_DUMP_PRETTY,
     BIR_DUMP,
+    INTERNAL_DUMP,
   };
 
   std::set<DumpOption> dump_options;
+
+  /* List of node that is not print during the dump of the ast with internal
+   * comment */
+  std::vector<std::string> internal_blacklist;
 
   /* configuration options - actually useful for conditional compilation and
    * whatever data related to target arch, features, os, family, env, endian,
@@ -290,6 +295,18 @@ struct CompileOptions
     enable_dump_option (DumpOption::HIR_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP_PRETTY);
     enable_dump_option (DumpOption::BIR_DUMP);
+    enable_dump_option (DumpOption::INTERNAL_DUMP);
+  }
+
+  void add_blacklist (std::string node)
+  {
+    rust_assert (!node.empty ());
+    internal_blacklist.push_back (node);
+  }
+
+  const std::vector<std::string> get_blacklist () const
+  {
+    return internal_blacklist;
   }
 
   void set_crate_name (std::string name)
@@ -410,9 +427,12 @@ private:
 
   void dump_lex (Parser<Lexer> &parser) const;
   void dump_ast_pretty (AST::Crate &crate, bool expanded = false) const;
+  void dump_ast_pretty_internal (AST::Crate &crate) const;
   void dump_name_resolution (Resolver2_0::NameResolutionContext &ctx) const;
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
+
+  void handle_internal_blacklist (std::string arg);
 
   // pipeline stages - TODO maybe move?
   /* Register plugins pipeline stage. TODO maybe move to another object?

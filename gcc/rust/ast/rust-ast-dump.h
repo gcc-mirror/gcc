@@ -32,6 +32,8 @@ class Dump
 {
 public:
   Dump (std::ostream &stream);
+  Dump (std::ostream &stream, bool print_internal,
+	std::vector<std::string> blacklist);
 
   /**
    * Run the visitor on an entire crate and its items
@@ -71,6 +73,23 @@ public:
 	    stream << "\n";
 	    previous = nullptr;
 	    break;
+	  case AST::CollectItem::Kind::InternalComment:
+	    if (print_internal)
+	      {
+		bool is_blacklisted = false;
+		std::string comment = item.get_internal_comment ();
+		for (auto &node : internal_blacklist)
+		  {
+		    if (comment.find (node) != std::string::npos)
+		      {
+			is_blacklisted = true;
+			break;
+		      }
+		  }
+		if (!is_blacklisted)
+		  stream << " /* " << comment << " */ ";
+	      }
+	    break;
 	  default:
 	    rust_unreachable ();
 	  }
@@ -83,6 +102,8 @@ public:
 private:
   std::ostream &stream;
   Indent indentation;
+  bool print_internal;
+  std::vector<std::string> internal_blacklist;
 
   static bool require_spacing (TokenPtr previous, TokenPtr current);
 };
