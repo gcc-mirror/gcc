@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math" } */
+/* { dg-options "-O2 -ffast-math -fdump-tree-optimized" } */
 /* { dg-require-effective-target c99_runtime } */
 
 extern void link_error(void);
@@ -54,3 +54,5 @@ extern void link_error(void);
 TEST_LOGS (double, , )
 TEST_LOGS (float, f, f)
 TEST_LOGS (long double, L, l)
+
+/* { dg-final { scan-tree-dump-not "link_error" "optimized" } } */
