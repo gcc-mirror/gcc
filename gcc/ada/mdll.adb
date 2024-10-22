@@ -312,7 +312,7 @@ package body MDLL is
       end if;
 
       if L_Afiles'Length = 0 then
-          Build_DLL;
+         Build_DLL;
       else
          Ada_Build_DLL;
       end if;
