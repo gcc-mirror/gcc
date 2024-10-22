@@ -108,6 +108,22 @@ public:
   }
 };
 
+class svxar_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    /* aarch64_sve2_xar represents this operation with a left-rotate RTX.
+       Convert the right-rotate amount from the intrinsic to fit this.  */
+    machine_mode mode = e.vector_mode (0);
+    HOST_WIDE_INT rot = GET_MODE_UNIT_BITSIZE (mode)
+			- INTVAL (e.args[2]);
+    e.args[2] = aarch64_simd_gen_const_vector_dup (mode, rot);
+    return e.use_exact_insn (code_for_aarch64_sve2_xar (mode));
+  }
+};
+
 class svcdot_impl : public function_base
 {
 public:
@@ -795,6 +811,6 @@ FUNCTION (svwhilege, while_comparison, (UNSPEC_WHILEGE, UNSPEC_WHILEHS))
 FUNCTION (svwhilegt, while_comparison, (UNSPEC_WHILEGT, UNSPEC_WHILEHI))
 FUNCTION (svwhilerw, svwhilerw_svwhilewr_impl, (UNSPEC_WHILERW))
 FUNCTION (svwhilewr, svwhilerw_svwhilewr_impl, (UNSPEC_WHILEWR))
-FUNCTION (svxar, CODE_FOR_MODE0 (aarch64_sve2_xar),)
+FUNCTION (svxar, svxar_impl,)
 
 } /* end namespace aarch64_sve */

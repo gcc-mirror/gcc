@@ -1266,18 +1266,28 @@
 ;; - XAR
 ;; -------------------------------------------------------------------------
 
+;; Also allow the Advanced SIMD modes as the the SVE2 XAR instruction
+;; can handle more element sizes than the TARGET_SHA3 one from Advanced SIMD.
+;; Don't allow the V2DImode use here unless !TARGET_SHA3 as the Advanced SIMD
+;; version should be preferred when available as it is non-destructive on its
+;; input.
 (define_insn "@aarch64_sve2_xar<mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand")
-	(rotatert:SVE_FULL_I
-	  (xor:SVE_FULL_I
-	    (match_operand:SVE_FULL_I 1 "register_operand")
-	    (match_operand:SVE_FULL_I 2 "register_operand"))
-	  (match_operand:SVE_FULL_I 3 "aarch64_simd_rshift_imm")))]
-  "TARGET_SVE2"
-  {@ [ cons: =0 , 1  , 2 ; attrs: movprfx ]
-     [ w        , %0 , w ; *              ] xar\t%0.<Vetype>, %0.<Vetype>, %2.<Vetype>, #%3
-     [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;xar\t%0.<Vetype>, %0.<Vetype>, %2.<Vetype>, #%3
+  [(set (match_operand:SVE_ASIMD_FULL_I 0 "register_operand" "=w,?&w")
+	(rotate:SVE_ASIMD_FULL_I
+	  (xor:SVE_ASIMD_FULL_I
+	    (match_operand:SVE_ASIMD_FULL_I 1 "register_operand" "%0,w")
+	    (match_operand:SVE_ASIMD_FULL_I 2 "register_operand" "w,w"))
+	  (match_operand:SVE_ASIMD_FULL_I 3 "aarch64_simd_lshift_imm")))]
+  "TARGET_SVE2 && !(<MODE>mode == V2DImode && TARGET_SHA3)"
+  {
+    operands[3]
+      = GEN_INT (GET_MODE_UNIT_BITSIZE (<MODE>mode)
+		 - INTVAL (unwrap_const_vec_duplicate (operands[3])));
+    if (which_alternative == 0)
+      return "xar\t%Z0.<Vetype>, %Z0.<Vetype>, %Z2.<Vetype>, #%3";
+    return "movprfx\t%Z0, %Z1\;xar\t%Z0.<Vetype>, %Z0.<Vetype>, %Z2.<Vetype>, #%3";
   }
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------

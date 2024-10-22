@@ -70,7 +70,11 @@ TEST_UNIFORM_Z (xar_2_u16_untied, svuint16_t,
 
 /*
 ** xar_16_u16_tied1:
-**	xar	z0\.h, z0\.h, z1\.h, #16
+** (
+**	eor	z0\.d, z1\.d, z0\.d
+** |
+**	eor	z0\.d, z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (xar_16_u16_tied1, svuint16_t,
@@ -79,7 +83,11 @@ TEST_UNIFORM_Z (xar_16_u16_tied1, svuint16_t,
 
 /*
 ** xar_16_u16_tied2:
-**	xar	z0\.h, z0\.h, z1\.h, #16
+** (
+**	eor	z0\.d, z1\.d, z0\.d
+** |
+**	eor	z0\.d, z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (xar_16_u16_tied2, svuint16_t,
@@ -89,11 +97,9 @@ TEST_UNIFORM_Z (xar_16_u16_tied2, svuint16_t,
 /*
 ** xar_16_u16_untied:
 ** (
-**	movprfx	z0, z1
-**	xar	z0\.h, z0\.h, z2\.h, #16
+**	eor	z0\.d, z1\.d, z2\.d
 ** |
-**	movprfx	z0, z2
-**	xar	z0\.h, z0\.h, z1\.h, #16
+**	eor	z0\.d, z2\.d, z1\.d
 ** )
 **	ret
 */

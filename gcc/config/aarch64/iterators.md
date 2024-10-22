@@ -446,6 +446,9 @@
 ;; All fully-packed SVE integer vector modes.
 (define_mode_iterator SVE_FULL_I [VNx16QI VNx8HI VNx4SI VNx2DI])
 
+;; All fully-packed SVE integer and Advanced SIMD integer modes.
+(define_mode_iterator SVE_ASIMD_FULL_I [SVE_FULL_I VDQ_I])
+
 ;; All fully-packed SVE floating-point vector modes.
 (define_mode_iterator SVE_FULL_F [VNx8HF VNx4SF VNx2DF])
 

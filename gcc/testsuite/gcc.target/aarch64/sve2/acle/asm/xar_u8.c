@@ -70,7 +70,11 @@ TEST_UNIFORM_Z (xar_2_u8_untied, svuint8_t,
 
 /*
 ** xar_8_u8_tied1:
-**	xar	z0\.b, z0\.b, z1\.b, #8
+** (
+**	eor	z0\.d, z1\.d, z0\.d
+** |
+**	eor	z0\.d, z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (xar_8_u8_tied1, svuint8_t,
@@ -79,7 +83,11 @@ TEST_UNIFORM_Z (xar_8_u8_tied1, svuint8_t,
 
 /*
 ** xar_8_u8_tied2:
-**	xar	z0\.b, z0\.b, z1\.b, #8
+** (
+**	eor	z0\.d, z1\.d, z0\.d
+** |
+**	eor	z0\.d, z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (xar_8_u8_tied2, svuint8_t,
@@ -89,11 +97,9 @@ TEST_UNIFORM_Z (xar_8_u8_tied2, svuint8_t,
 /*
 ** xar_8_u8_untied:
 ** (
-**	movprfx	z0, z1
-**	xar	z0\.b, z0\.b, z2\.b, #8
+**	eor	z0\.d, z1\.d, z2\.d
 ** |
-**	movprfx	z0, z2
-**	xar	z0\.b, z0\.b, z1\.b, #8
+**	eor	z0\.d, z2\.d, z1\.d
 ** )
 **	ret
 */
