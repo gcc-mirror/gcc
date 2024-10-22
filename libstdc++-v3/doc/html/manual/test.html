@@ -352,12 +352,13 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
       Since GCC 14, the libstdc++ testsuite has built-in support for running
       tests with more than one <code class="option">-std</code>, similar to the G++ tests.
       Adding <code class="code">set v3_std_list { 11 17 23 }</code> to
-      <code class="filename">~/.dejagnurc</code> or a file named by the
+      <code class="filename">~/.dejagnurc</code> or to a file named by the
       <code class="envar">DEJAGNU</code> environment variable will cause every test to
       be run three times, using a different <code class="option">-std</code> each time.
       Alternatively, a list of standard versions to test with can be specified
       as a comma-separated list in the <code class="envar">GLIBCXX_TESTSUITE_STDS</code>
-      environment variable.
+      environment variable, e.g. <code class="envar">GLIBCXX_TESTSUITE_STDS=11,17,23</code>
+      is equivalent to the <code class="code">v3_std_list</code> value above.
     </p><p>
       To run the libstdc++ test suite under the
       <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>, use
