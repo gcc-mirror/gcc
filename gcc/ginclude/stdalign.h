@@ -26,12 +26,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef _STDALIGN_H
 #define _STDALIGN_H
 
-#if (!defined __cplusplus						\
-     && !(defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L))
+#if !(defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L)
 
+#ifndef __cplusplus
 #define alignas _Alignas
 #define alignof _Alignof
+#endif
 
+/* These are defined for C++, but deprecated in C++23.  */
 #define __alignas_is_defined 1
 #define __alignof_is_defined 1
 
