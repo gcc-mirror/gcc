@@ -15,6 +15,6 @@ auto x64 = 3.14f64;
 #ifdef __STDCPP_FLOAT128_T__
 auto x128 = 3.14f128;
 #endif
-#ifdef __STDCPP_FLOAT16_T__
+#ifdef __STDCPP_BFLOAT16_T__
 auto xbf = 1.2bf16;
 #endif
