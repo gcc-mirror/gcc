@@ -1402,6 +1402,8 @@ namespace __detail::__variant
 		   && (is_swappable_v<_Types> && ...))>
     swap(variant<_Types...>&, variant<_Types...>&) = delete;
 
+  [[noreturn]] void __throw_bad_variant_access(unsigned);
+
   class bad_variant_access : public exception
   {
   public:
@@ -1411,27 +1413,23 @@ namespace __detail::__variant
     { return _M_reason; }
 
   private:
+    // Must only be called with a string literal
     bad_variant_access(const char* __reason) noexcept : _M_reason(__reason) { }
 
     // Must point to a string with static storage duration:
     const char* _M_reason = "bad variant access";
 
-    friend void __throw_bad_variant_access(const char* __what);
+    friend void __throw_bad_variant_access([[maybe_unused]] unsigned __n)
+    {
+      [[maybe_unused]] static constexpr const char* __reasons[] = {
+	"std::get: wrong index for variant",
+	"std::get: variant is valueless",
+	"std::visit: variant is valueless",
+	"std::visit<R>: variant is valueless",
+      };
+      _GLIBCXX_THROW_OR_ABORT(bad_variant_access(__reasons[__n % 4u]));
+    }
   };
-
-  // Must only be called with a string literal
-  inline void
-  __throw_bad_variant_access(const char* __what)
-  { _GLIBCXX_THROW_OR_ABORT(bad_variant_access(__what)); }
-
-  inline void
-  __throw_bad_variant_access(bool __valueless)
-  {
-    if (__valueless) [[__unlikely__]]
-      __throw_bad_variant_access("std::get: variant is valueless");
-    else
-      __throw_bad_variant_access("std::get: wrong index for variant");
-  }
 
   template<typename... _Types>
     class variant
@@ -1941,7 +1939,7 @@ namespace __detail::__variant
       namespace __variant = std::__detail::__variant;
 
       if ((__variant::__as(__variants).valueless_by_exception() || ...))
-	__throw_bad_variant_access("std::visit: variant is valueless");
+	__throw_bad_variant_access(2);
 
       using _Result_type
 	= __detail::__variant::__visit_result_t<_Visitor, _Variants...>;
@@ -1981,7 +1979,7 @@ namespace __detail::__variant
       namespace __variant = std::__detail::__variant;
 
       if ((__variant::__as(__variants).valueless_by_exception() || ...))
-	__throw_bad_variant_access("std::visit<R>: variant is valueless");
+	__throw_bad_variant_access(3);
 
       return std::__do_visit<_Res>(std::forward<_Visitor>(__visitor),
 	  __variant::__as(std::forward<_Variants>(__variants))...);
