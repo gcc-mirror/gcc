@@ -75,19 +75,12 @@ extern unsigned int gcn_local_sym_hash (const char *name);
    supported for gcn.  */
 #define GOMP_SELF_SPECS ""
 
-/* Explicitly set the ABI version; in principle, we could use just the
-   default; however, when debugging symbols are turned on, mkoffload.cc
-   writes a new AMD GPU object file and the ABI version needs to be the
-   same. - LLVM <= 17 defaults to 4 while LLVM >= 18 defaults to 5.
-   GCC supports LLVM >= 13.0.1 and only LLVM >= 14 supports version 5.  */
-#define ABI_VERSION_SPEC "--amdhsa-code-object-version=4"
-
 #include "gcn-device-macros.h"
 
 /* Use LLVM assembler and linker options.  */
 #define ASM_SPEC  "-triple=amdgcn--amdhsa "  \
 		  "%{march=*:-mcpu=%*} " \
-		  ABI_VERSION_SPEC " " \
+		  ABI_VERSION_OPT \
 		  XNACKOPT \
 		  SRAMOPT \
 		  WAVE64OPT \

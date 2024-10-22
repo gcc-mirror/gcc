@@ -28,13 +28,16 @@ extern const struct gcn_device_def {
   enum hsaco_attr_type wave64_default;
   enum hsaco_attr_type cumode_default;
   int max_isa_vgprs;
+  unsigned generic_version;
+  const char *arch_family;
 } gcn_devices[];
 
 #define TARGET_CPU_CPP_BUILTINS()                                              \
   do                                                                           \
     {                                                                          \
+      builtin_define ("__AMDGPU__");                                           \
       builtin_define ("__AMDGCN__");                                           \
-      if (TARGET_GCN5)                                                    \
+      if (TARGET_GCN5)                                                         \
 	builtin_define ("__GCN5__");                                           \
       else if (TARGET_CDNA1)                                                   \
 	builtin_define ("__CDNA1__");                                          \
@@ -46,8 +49,26 @@ extern const struct gcn_device_def {
 	builtin_define ("__RDNA3__");                                          \
       else                                                                     \
 	gcc_unreachable ();                                                    \
-      char *name = (char *)xmalloc (sizeof (gcn_devices[gcn_arch].name) + 5);  \
+      char *name = (char *)xmalloc (strlen (gcn_devices[gcn_arch].name) + 5);  \
       sprintf (name, "__%s__", gcn_devices[gcn_arch].name);                    \
+      char *p;                                                                 \
+      if (gcn_devices[gcn_arch].generic_version)                               \
+	while ((p = strchr(name, '-')))                                        \
+	  *p = '_';                                                            \
+      builtin_define (name);                                                   \
+      name = (char *)xmalloc (strlen (gcn_devices[gcn_arch].arch_family) + 5); \
+      sprintf (name, "__%s__", gcn_devices[gcn_arch].arch_family);             \
+      builtin_define (name);                                                   \
+      name = (char *)xmalloc (strlen ("__amdgcn_target_id__") +                \
+			      strlen (gcn_devices[gcn_arch].name) + 4);        \
+      sprintf (name, "__amdgcn_target_id__=\"%s\"", gcn_devices[gcn_arch].name); \
+      builtin_define (name);                                                   \
+      name = (char *)xmalloc (strlen ("__amdgcn_processor__") +                \
+			      strlen (gcn_devices[gcn_arch].name) + 4);        \
+      sprintf (name, "__amdgcn_processor__=\"%s\"", gcn_devices[gcn_arch].name); \
+      if (gcn_devices[gcn_arch].generic_version)                               \
+	while ((p = strchr(name, '-')))                                        \
+	  *p = '_';                                                            \
       builtin_define (name);                                                   \
   } while (0)
 

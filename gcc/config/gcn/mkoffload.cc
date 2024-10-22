@@ -48,6 +48,8 @@
 #define ELFABIVERSION_AMDGPU_HSA_V3 1
 #undef  ELFABIVERSION_AMDGPU_HSA_V4
 #define ELFABIVERSION_AMDGPU_HSA_V4 2
+#undef  ELFABIVERSION_AMDGPU_HSA_V6
+#define ELFABIVERSION_AMDGPU_HSA_V6 4
 
 /* Extract the EF_AMDGPU_MACH_AMDGCN_GFXnnn from the def file.  */
 enum elf_arch_code {
@@ -68,6 +70,9 @@ enum elf_arch_code {
 #define EF_AMDGPU_FEATURE_SRAMECC_ANY_V4	0x400
 #define EF_AMDGPU_FEATURE_SRAMECC_OFF_V4	0x800
 #define EF_AMDGPU_FEATURE_SRAMECC_ON_V4		0xc00
+
+#define EF_AMDGPU_GENERIC_VERSION_V		0xff000000  /* Mask.  */
+#define EF_AMDGPU_GENERIC_VERSION_OFFSET	24
 
 #define SET_XNACK_ON(VAR) VAR = ((VAR & ~EF_AMDGPU_FEATURE_XNACK_V4) \
 				 | EF_AMDGPU_FEATURE_XNACK_ON_V4)
@@ -99,6 +104,12 @@ enum elf_arch_code {
 #define TEST_SRAM_ECC_ON(VAR) ((VAR & EF_AMDGPU_FEATURE_SRAMECC_V4) \
 			       == EF_AMDGPU_FEATURE_SRAMECC_ON_V4)
 #define TEST_SRAM_ECC_UNSET(VAR) ((VAR & EF_AMDGPU_FEATURE_SRAMECC_V4) == 0)
+
+#define GET_GENERIC_VERSION(VAR) ((VAR & EF_AMDGPU_GENERIC_VERSION_V) \
+				  >> EF_AMDGPU_GENERIC_VERSION_OFFSET)
+#define SET_GENERIC_VERSION(VAR,GEN_VER) \
+  VAR = ((VAR & ~EF_AMDGPU_GENERIC_VERSION_V) \
+	 | (GEN_VER << EF_AMDGPU_GENERIC_VERSION_OFFSET))
 
 #ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
@@ -305,7 +316,9 @@ copy_early_debug_info (const char *infile, const char *outfile)
 
   /* Patch the correct elf architecture flag into the file.  */
   ehdr.e_ident[7] = ELFOSABI_AMDGPU_HSA;
-  ehdr.e_ident[8] = ELFABIVERSION_AMDGPU_HSA_V4;
+  ehdr.e_ident[8] = (GET_GENERIC_VERSION (elf_flags)
+		     ? ELFABIVERSION_AMDGPU_HSA_V6
+		     : ELFABIVERSION_AMDGPU_HSA_V4);
   ehdr.e_type = ET_REL;
   ehdr.e_machine = EM_AMDGPU;
   ehdr.e_flags = elf_arch | elf_flags;
@@ -1034,6 +1047,15 @@ main (int argc, char **argv)
 #undef HSACO_ATTR_ANY
     default:
       fatal_error (input_location, "unhandled architecture");
+    }
+
+  /* Set the generic version.  */
+  switch (elf_arch)
+    {
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS, GEN_VER, ...) \
+    case ELF: if (GEN_VER) SET_GENERIC_VERSION (elf_flags, GEN_VER); break;
+#include "gcn-devices.def"
+#undef GCN_DEVICE
     }
 
   /* Build arguments for compiler pass.  */

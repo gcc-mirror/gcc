@@ -25,28 +25,30 @@ BEGIN {
   print "   Do not edit.  */"
 
   list=""
+  generic_list=""
 }
 
 /^GCN_DEVICE\(/ {
   gfx=$2
-  list=(list " OPT_" gfx)
+  NAME=$3
+  list=(list " OPT_" NAME)
 
   print ""
   next
 }
 
 /XNACK default.*HSACO_ATTR_UNSUPPORTED/ {
-  printf "\n#define XNACK_%s \"march=%s:;\"", gfx, gfx
+  printf "\n#define XNACK_%s \"march=%s:;\"", NAME, gfx
   next
 }
 
 /XNACK default.*HSACO_ATTR_OFF/ {
-  printf "\n#define XNACK_%s \"march=%s:%{!mxnack*|mxnack=default|mxnack=off:-mattr=-xnack;mxnack=on:-mattr=+xnack};\"", gfx, gfx
+  printf "\n#define XNACK_%s \"march=%s:%{!mxnack*|mxnack=default|mxnack=off:-mattr=-xnack;mxnack=on:-mattr=+xnack};\"", NAME, gfx
   next
 }
 
 /XNACK default.*HSACO_ATTR_ANY/ {
-  printf "\n#define XNACK_%s \"march=%s:%{mxnack=off:-mattr=-xnack;mxnack=on:-mattr=+xnack};\"", gfx, gfx
+  printf "\n#define XNACK_%s \"march=%s:%{mxnack=off:-mattr=-xnack;mxnack=on:-mattr=+xnack};\"", NAME, gfx
   next
 }
 
@@ -56,12 +58,12 @@ BEGIN {
 }
 
 /SRAM_ECC default.*HSACO_ATTR_UNSUPPORTED/ {
-  printf "\n#define SRAM_%s \"march=%s:;\"", gfx, gfx
+  printf "\n#define SRAM_%s \"march=%s:;\"", NAME, gfx
   next
 }
 
 /SRAM_ECC default.*HSACO_ATTR_ANY/ {
-  printf "\n#define SRAM_%s \"march=%s:%{msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc};\"", gfx, gfx
+  printf "\n#define SRAM_%s \"march=%s:%{msram-ecc=on:-mattr=+sramecc;msram-ecc=off:-mattr=-sramecc};\"", NAME, gfx
   next
 }
 
@@ -71,12 +73,12 @@ BEGIN {
 }
 
 /WAVE64 mode.*HSACO_ATTR_UNSUPPORTED/ {
-  printf "\n#define WAVE64_%s \"march=%s:;\"", gfx, gfx
+  printf "\n#define WAVE64_%s \"march=%s:;\"", NAME, gfx
   next
 }
 
 /WAVE64 mode.*HSACO_ATTR_ON/ {
-  printf "\n#define WAVE64_%s \"march=%s:-mattr=+wavefrontsize64;\"", gfx, gfx
+  printf "\n#define WAVE64_%s \"march=%s:-mattr=+wavefrontsize64;\"", NAME, gfx
   next
 }
 
@@ -86,12 +88,12 @@ BEGIN {
 }
 
 /CU mode.*HSACO_ATTR_UNSUPPORTED/ {
-  printf "\n#define CU_%s \"march=%s:;\"", gfx, gfx
+  printf "\n#define CU_%s \"march=%s:;\"", NAME, gfx
   next
 }
 
 /CU mode.*HSACO_ATTR_ON/ {
-  printf "\n#define CU_%s \"march=%s:-mattr=+cumode;\"", gfx, gfx
+  printf "\n#define CU_%s \"march=%s:-mattr=+cumode;\"", NAME, gfx
   next
 }
 
@@ -100,9 +102,26 @@ BEGIN {
   exit 1
 }
 
+/Generic code obj version/ {
+  match($0,/Generic code obj version[^\/]*\/[\t ]*([0-9]+)/,m)
+  if (m[1] > 0) {
+     printf "\n#define GENERIC_%s \"march=%s:--amdhsa-code-object-version=6;\"", NAME, gfx
+     generic_list=(generic_list " GENERIC_" NAME)
+  }
+  next
+}
+
+# ABI Version: In principle, the LLVM default would work. However,
+# however, when debugging symbols are turned on, mkoffload.cc
+# writes a new AMD GPU object file and the ABI version needs to be the
+# same. - LLVM <= 17 defaults to 4 while LLVM >= 18 defaults to 5.
+# GCC supports LLVM >= 13.0.1 and only LLVM >= 14 supports version 5.
+# Code object V6 is supported since LLVM 19.
+
 END {
   print ""
   print ""
+  printf "#define ABI_VERSION_OPT \"%%{\"%s \"!march=*|march=*:--amdhsa-code-object-version=4} \"\n", generic_list
   printf "#define XNACKOPT \"%%{\"%s \":%%eexpected march\\n} \"\n", gensub (/OPT/, "XNACK", "g", list)
   printf "#define SRAMOPT \"%%{\"%s \":%%eexpected march\\n} \"\n", gensub (/OPT/, "SRAM", "g", list)
   printf "#define WAVE64OPT \"%%{\"%s \":%%eexpected march\\n} \"\n", gensub (/OPT/, "WAVE64", "g", list)
