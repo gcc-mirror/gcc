@@ -28,34 +28,33 @@
 #include <testsuite_hooks.h>
 #include <replacement_memory_operators.h>
 
-static constexpr std::initializer_list<std::pair<const char*, int>> lst = {
-    {"long_str_for_dynamic_allocating", 1}
-};
+static constexpr std::initializer_list<std::pair<const char*, const char*>> lst =
+  { { "long_str_for_dynamic_allocation", "long_str_for_dynamic_allocation" } };
 
 void
 test01()
 {
   __gnu_test::counter::reset();
-  std::unordered_multimap<std::string, int,
+  std::unordered_multimap<std::string, std::string,
 			  std::hash<std::string_view>,
 			  std::equal_to<std::string_view>> foo;
   foo.insert(lst.begin(), lst.end());
   VERIFY( foo.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 }
 
 void
 test02()
 {
   __gnu_test::counter::reset();
-  std::unordered_multimap<std::string, int> foo;
+  std::unordered_multimap<std::string, std::string> foo;
   foo.insert(lst.begin(), lst.end());
   VERIFY( foo.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 }
 
 int

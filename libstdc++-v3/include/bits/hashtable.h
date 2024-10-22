@@ -930,10 +930,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert_unique(_Kt&&, _Arg&&, _NodeGenerator&);
 
       template<typename _Kt>
-	static __conditional_t<
-	  __and_<__is_nothrow_invocable<_Hash&, const key_type&>,
-		 __not_<__is_nothrow_invocable<_Hash&, _Kt>>>::value,
-	  key_type, _Kt&&>
+	key_type
 	_S_forward_key(_Kt&& __k)
 	{ return std::forward<_Kt>(__k); }
 
