@@ -522,6 +522,11 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	{
 	  /* Generate the given function if we can.  */
 	  internal_fn ifn = as_internal_fn (fn);
+
+	  /* We can't and should not emit calls to non-const functions.  */
+	  if (!(internal_fn_flags (ifn) & ECF_CONST))
+	    return NULL_TREE;
+
 	  new_stmt = build_call_internal (ifn, res_op);
 	  if (!new_stmt)
 	    return NULL_TREE;
