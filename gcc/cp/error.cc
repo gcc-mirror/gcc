@@ -84,7 +84,6 @@ static void dump_type_prefix (cxx_pretty_printer *, tree, int);
 static void dump_type_suffix (cxx_pretty_printer *, tree, int);
 static void dump_function_name (cxx_pretty_printer *, tree, int);
 static void dump_call_expr_args (cxx_pretty_printer *, tree, int, bool);
-static void dump_aggr_init_expr_args (cxx_pretty_printer *, tree, int, bool);
 static void dump_expr_list (cxx_pretty_printer *, tree, int);
 static void dump_global_iord (cxx_pretty_printer *, tree);
 static void dump_parameters (cxx_pretty_printer *, tree, int);
@@ -2253,46 +2252,15 @@ dump_template_parms (cxx_pretty_printer *pp, tree info,
 static void
 dump_call_expr_args (cxx_pretty_printer *pp, tree t, int flags, bool skipfirst)
 {
-  tree arg;
-  call_expr_arg_iterator iter;
+  const int len = call_expr_nargs (t);
 
   pp_cxx_left_paren (pp);
-  FOR_EACH_CALL_EXPR_ARG (arg, iter, t)
+  for (int i = skipfirst; i < len; ++i)
     {
-      if (skipfirst)
-	skipfirst = false;
-      else
-	{
-	  dump_expr (pp, arg, flags | TFF_EXPR_IN_PARENS);
-	  if (more_call_expr_args_p (&iter))
-	    pp_separate_with_comma (pp);
-	}
-    }
-  pp_cxx_right_paren (pp);
-}
-
-/* Print out the arguments of AGGR_INIT_EXPR T as a parenthesized list
-   using flags FLAGS.  Skip over the first argument if SKIPFIRST is
-   true.  */
-
-static void
-dump_aggr_init_expr_args (cxx_pretty_printer *pp, tree t, int flags,
-                          bool skipfirst)
-{
-  tree arg;
-  aggr_init_expr_arg_iterator iter;
-
-  pp_cxx_left_paren (pp);
-  FOR_EACH_AGGR_INIT_EXPR_ARG (arg, iter, t)
-    {
-      if (skipfirst)
-	skipfirst = false;
-      else
-	{
-	  dump_expr (pp, arg, flags | TFF_EXPR_IN_PARENS);
-	  if (more_aggr_init_expr_args_p (&iter))
-	    pp_separate_with_comma (pp);
-	}
+      tree arg = get_nth_callarg (t, i);
+      dump_expr (pp, arg, flags | TFF_EXPR_IN_PARENS);
+      if (i + 1 < len)
+	pp_separate_with_comma (pp);
     }
   pp_cxx_right_paren (pp);
 }
@@ -2451,28 +2419,9 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case AGGR_INIT_EXPR:
-      {
-	tree fn = NULL_TREE;
-
-	if (TREE_CODE (AGGR_INIT_EXPR_FN (t)) == ADDR_EXPR)
-	  fn = TREE_OPERAND (AGGR_INIT_EXPR_FN (t), 0);
-
-	if (fn && TREE_CODE (fn) == FUNCTION_DECL)
-	  {
-	    if (DECL_CONSTRUCTOR_P (fn))
-	      dump_type (pp, DECL_CONTEXT (fn), flags);
-	    else
-	      dump_decl (pp, fn, 0);
-	  }
-	else
-	  dump_expr (pp, AGGR_INIT_EXPR_FN (t), 0);
-      }
-      dump_aggr_init_expr_args (pp, t, flags, true);
-      break;
-
     case CALL_EXPR:
       {
-	tree fn = CALL_EXPR_FN (t);
+	tree fn = cp_get_callee (t);
 	bool skipfirst = false;
 
 	/* Deal with internal functions.  */
@@ -2494,8 +2443,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    && NEXT_CODE (fn) == METHOD_TYPE
 	    && call_expr_nargs (t))
 	  {
-	    tree ob = CALL_EXPR_ARG (t, 0);
-	    if (TREE_CODE (ob) == ADDR_EXPR)
+	    tree ob = get_nth_callarg (t, 0);
+	    if (is_dummy_object (ob))
+	      /* Don't print dummy object.  */;
+	    else if (TREE_CODE (ob) == ADDR_EXPR)
 	      {
 		dump_expr (pp, TREE_OPERAND (ob, 0),
                            flags | TFF_EXPR_IN_PARENS);
@@ -2514,7 +2465,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    pp_string (cxx_pp, M_("<ubsan routine call>"));
 	    break;
 	  }
-	dump_expr (pp, fn, flags | TFF_EXPR_IN_PARENS);
+
+	if (TREE_CODE (fn) == FUNCTION_DECL
+	    && DECL_CONSTRUCTOR_P (fn)
+	    && is_dummy_object (get_nth_callarg (t, 0)))
+	  dump_type (pp, DECL_CONTEXT (fn), flags);
+	else
+	  dump_expr (pp, fn, flags | TFF_EXPR_IN_PARENS);
 	dump_call_expr_args (pp, t, flags, skipfirst);
       }
       break;
