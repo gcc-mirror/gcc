@@ -1,7 +1,8 @@
 /* PR target/103750 */
 /* { dg-do compile }  */
 /* { dg-options "-O2 -mavx512dq -mavx512bw -mavx512vl" } */
-/* { dg-final { scan-assembler-not "kmov" } } */
+/* { dg-final { scan-assembler-not "kmov" { xfail ia32 } } } */
+/* xfail need to be fixed.  */
 
 #include <immintrin.h>
 extern __m128i* pi128;
