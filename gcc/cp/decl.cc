@@ -9446,8 +9446,9 @@ static GTY((cache)) decl_tree_cache_map *decomp_type_table;
 tree
 lookup_decomp_type (tree v)
 {
-  if (tree *slot = decomp_type_table->get (v))
-    return *slot;
+  if (decomp_type_table)
+    if (tree *slot = decomp_type_table->get (v))
+      return *slot;
   return NULL_TREE;
 }
 
