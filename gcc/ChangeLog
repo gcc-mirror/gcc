@@ -1,3 +1,100 @@
+2024-10-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116488
+	PR rtl-optimization/116579
+	PR rtl-optimization/116915
+	PR rtl-optimization/117226
+	* ext-dce.cc (carry_backpropagate): Properly handle SIGN_EXTEND, add
+	ZERO_EXTEND handling as well.
+	(ext_dce_process_uses): Call carry_backpropagate before the optimization
+	step.
+
+2024-10-21  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (sstrunc<mode><v_double_trunc>2): Add
+	new pattern sstrunc for double trunc.
+	(sstrunc<mode><v_quad_trunc>2): Ditto but for quad trunc.
+	(sstrunc<mode><v_oct_trunc>2): Ditto but for oct trunc.
+	* config/riscv/riscv-protos.h (expand_vec_double_sstrunc): Add
+	new func decl to expand double trunc.
+	(expand_vec_quad_sstrunc): Ditto but for quad trunc.
+	(expand_vec_oct_sstrunc): Ditto but for oct trunc.
+	* config/riscv/riscv-v.cc (expand_vec_double_sstrunc): Add new
+	func to expand double trunc.
+	(expand_vec_quad_sstrunc): Ditto but for quad trunc.
+	(expand_vec_oct_sstrunc): Ditto but for oct trunc.
+
+2024-10-21  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-patterns.cc (gimple_signed_integer_sat_trunc): Add
+	new func decl for signed SAT_TRUNC.
+	(vect_recog_sat_trunc_pattern): Try signed match pattern for
+	the SAT_TRUNC.
+
+2024-10-21  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refine matching for vector signed SAT_TRUNC form 1.
+
+2024-10-21  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_register_move_cost):
+	Increase costs involving MOVEABLE_SYSREGS.
+
+2024-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.h (SGPR_REGNO_P): Silence warning.
+
+2024-10-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116783
+	* pair-fusion.cc (def_walker::cand_addr_uses): New.
+	(def_walker::def_walker): Add parameter for candidate address
+	uses.
+	(def_walker::alias_conflict_p): Declare.
+	(def_walker::addr_reg_conflict_p): New.
+	(def_walker::conflict_p): New.
+	(store_walker::store_walker): Add parameter for candidate
+	address uses and pass to base ctor.
+	(store_walker::conflict_p): Rename to ...
+	(store_walker::alias_conflict_p): ... this.
+	(load_walker::load_walker): Add parameter for candidate
+	address uses and pass to base ctor.
+	(load_walker::conflict_p): Rename to ...
+	(load_walker::alias_conflict_p): ... this.
+	(pair_fusion_bb_info::try_fuse_pair): Collect address register
+	uses for candidate insns and pass down to alias walkers.
+
+2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	* config/rs6000/amo.h (enum _AMO_LD): Correct the function code for
+	_AMO_LD_DEC_BOUNDED.
+
+2024-10-21  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Refactor the
+	function for future expansion on different family.
+
+2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117159
+	* config/i386/sse.md
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Change from define_insn_and_split to define_insn.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Split to the zero_extend pattern.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+
 2024-10-20  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

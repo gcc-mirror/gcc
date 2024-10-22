@@ -1,3 +1,21 @@
+2024-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc:
+	Move to ...
+	* testsuite/26_numerics/headers/cmath/specfun_c++17.cc: here and
+	adjust test to be valid for all -std dialects.
+
+2024-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector::_M_data_ptr): Remove
+	non-const overloads. Always return non-const pointer.
+
+2024-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117220
+	* include/bits/stl_iterator.h: Move _GLIBCXX_NODISCARD
+	annotations after __attribute__((__always_inline__)).
+
 2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_algobase.h (ranges::__assign_one): Remove.
