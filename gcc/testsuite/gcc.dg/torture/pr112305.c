@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int32plus } */
+/* { dg-skip-if "long-running loop" { simulator } { "-O0" "-O1" } } */
 
 int a;
 void b()
