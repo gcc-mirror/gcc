@@ -1,3 +1,12 @@
+2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117159.c: New test.
+	* gcc.target/i386/avx512bw-pr103750-1.c: Remove xfail.
+	* gcc.target/i386/avx512bw-pr103750-2.c: Remove xfail.
+
 2024-10-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

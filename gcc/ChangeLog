@@ -1,3 +1,35 @@
+2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	* config/rs6000/amo.h (enum _AMO_LD): Correct the function code for
+	_AMO_LD_DEC_BOUNDED.
+
+2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117159
+	* config/i386/sse.md
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Change from define_insn_and_split to define_insn.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Split to the zero_extend pattern.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+
 2024-10-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
