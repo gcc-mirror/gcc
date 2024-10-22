@@ -1546,9 +1546,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
   elt.tmpl = tmpl;
   elt.args = args;
   elt.spec = spec;
-
-  if (hash == 0)
-    hash = spec_hasher::hash (&elt);
+  elt.hash = hash;
 
   spec_entry **slot = decl_specializations->find_slot (&elt, INSERT);
   if (*slot)
