@@ -2579,10 +2579,8 @@ tokens_buff_new (cpp_reader *pfile, size_t len,
 		 location_t **virt_locs)
 {
   size_t tokens_size = len * sizeof (cpp_token *);
-  size_t locs_size = len * sizeof (location_t);
-
   if (virt_locs != NULL)
-    *virt_locs = XNEWVEC (location_t, locs_size);
+    *virt_locs = XNEWVEC (location_t, len);
   return _cpp_get_buff (pfile, tokens_size);
 }
 
