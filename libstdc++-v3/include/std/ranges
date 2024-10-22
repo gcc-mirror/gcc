@@ -9687,7 +9687,7 @@ namespace ranges
     { }
 
     constexpr iterator<false>
-    begin() requires(!(__detail::__simple_view<_Vs> && ...))
+    begin() requires (!(__detail::__simple_view<_Vs> && ...))
     {
       iterator<false> __it(this, in_place_index<0>, ranges::begin(std::get<0>(_M_views)));
       __it.template _M_satisfy<0>();
@@ -9703,9 +9703,10 @@ namespace ranges
     }
 
     constexpr auto
-    end() requires(!(__detail::__simple_view<_Vs> && ...))
+    end() requires (!(__detail::__simple_view<_Vs> && ...))
     {
-      if constexpr (__detail::__last_is_common<_Vs...>::value)
+      if constexpr ((semiregular<iterator_t<_Vs>> && ...)
+		    && __detail::__last_is_common<_Vs...>::value)
 	{
 	  constexpr auto __n = sizeof...(_Vs);
 	  return iterator<false>(this, in_place_index<__n - 1>,
@@ -9718,7 +9719,8 @@ namespace ranges
     constexpr auto
     end() const requires (range<const _Vs> && ...) && __detail::__concatable<const _Vs...>
     {
-      if constexpr (__detail::__last_is_common<const _Vs...>::value)
+      if constexpr ((semiregular<iterator_t<const _Vs>> && ...)
+		    && __detail::__last_is_common<const _Vs...>::value)
 	{
 	  constexpr auto __n = sizeof...(_Vs);
 	  return iterator<true>(this, in_place_index<__n - 1>,

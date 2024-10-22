@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include <array>
+#include <sstream>
 #include <utility>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -66,9 +67,28 @@ test02()
   VERIFY( ranges::equal(v | views::drop(1), x) );
 }
 
+void
+test03()
+{
+  // LWG 4166 - concat_view::end() should be more constrained in order to
+  // support noncopyable iterators
+  auto range_copyable_it = std::vector<int>{1, 2, 3};
+
+  std::stringstream ss{"4 5 6"};
+  auto range_noncopyable_it = views::istream<int>(ss);
+  ranges::range auto view1 = views::concat(range_copyable_it, range_noncopyable_it);
+  VERIFY( ranges::equal(view1, std::vector{1, 2, 3, 4, 5, 6}) );
+
+  ss = std::stringstream{"4 5 6"};
+  range_noncopyable_it = views::istream<int>(ss);
+  ranges::range auto view2 = views::concat(range_noncopyable_it, range_copyable_it);
+  VERIFY( ranges::equal(view2, std::vector{4, 5, 6, 1, 2, 3}) );
+}
+
 int
 main()
 {
   static_assert(test01());
   test02();
+  test03();
 }
