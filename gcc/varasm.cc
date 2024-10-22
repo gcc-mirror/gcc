@@ -5488,7 +5488,7 @@ array_size_for_constructor (tree val)
 	index = TREE_OPERAND (index, 1);
       if (value && TREE_CODE (value) == RAW_DATA_CST)
 	index = size_binop (PLUS_EXPR, index,
-			    size_int (RAW_DATA_LENGTH (value) - 1));
+			    bitsize_int (RAW_DATA_LENGTH (value) - 1));
       if (max_index == NULL_TREE || tree_int_cst_lt (max_index, index))
 	max_index = index;
     }
