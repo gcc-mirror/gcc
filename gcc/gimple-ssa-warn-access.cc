@@ -607,7 +607,8 @@ maybe_warn_nonstring_arg (tree fndecl, GimpleOrTree exp)
 	{
 	  if (tree arrbnd = TYPE_DOMAIN (type))
 	    {
-	      if ((arrbnd = TYPE_MAX_VALUE (arrbnd)))
+	      if ((arrbnd = TYPE_MAX_VALUE (arrbnd))
+		  && TREE_CODE (arrbnd) == INTEGER_CST)
 		{
 		  asize = wi::to_offset (arrbnd) + 1;
 		  known_size = true;
