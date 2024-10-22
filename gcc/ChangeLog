@@ -1,3 +1,98 @@
+2024-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117104
+	* match.pd ((cmp:c (minmax:c @0 @1) @0) -> (out @0 @1)): Properly
+	guard the vector case.
+
+2024-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116982
+	* tree-vectorizer.h (vect_analyze_loop): Pass in .LOOP_VECTORIZED
+	call.
+	(vect_analyze_loop_form): Likewise.
+	* tree-vect-loop.cc (vect_analyze_loop_form): Reject loops where we
+	cannot determine a IV exit for the scalar loop.
+	(vect_analyze_loop): Adjust.
+	* tree-vectorizer.cc (try_vectorize_loop_1): Likewise.
+	* tree-parloops.cc (gather_scalar_reductions): Likewise.
+
+2024-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116907
+	* tree-ssa-live.cc (clear_unused_block_pointer_in_block): New
+	helper.
+	(clear_unused_block_pointer): Call it.
+
+2024-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116481
+	* pointer-query.cc (build_printable_array_type):
+	Build an array types with function or method element type
+	manually to avoid bogus diagnostic.
+
+2024-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116290
+	* tree-loop-distribution.cc (determine_reduction_stmt_1): PHIs
+	have no debug variants.  Start with first non-debug real stmt.
+	* tree-ssa-loop-ivopts.cc (find_givs_in_bb): Do not analyze
+	debug stmts.
+
+2024-10-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115110
+	* tree-ssa-alias.cc (view_converted_memref_p): Fix.
+
+2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
+
+	* config/rs6000/amo.h (enum _AMO_LD): Correct the function code for
+	_AMO_LD_DEC_BOUNDED.
+
+2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117159
+	* config/i386/sse.md
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Change from define_insn_and_split to define_insn.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Split to the zero_extend pattern.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+
 2024-10-18  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
