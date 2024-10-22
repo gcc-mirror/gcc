@@ -690,7 +690,11 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 			maxval = TREE_OPERAND (maxval, 0);
 		    }
 
-		  expression (maxval);
+		  /* This covers unspecified bounds.  */
+		  if (TREE_CODE (maxval) == COMPOUND_EXPR)
+		    pp_string (this, "*");
+		  else
+		    expression (maxval);
 		}
 	    }
 	  else if (TYPE_SIZE (t))

@@ -357,6 +357,191 @@ qualify_type (tree type, tree like)
 				 | ENCODE_QUAL_ADDR_SPACE (as_common));
 }
 
+
+/* Check consistency of type TYP.E  For derived types, we test that
+   C_TYPE_VARIABLE_SIZE and C_TYPE_VARIABLY_MODIFIED are consistent with
+   the requirements of the base type.  We also check that arrays with a
+   non-constant length are marked with C_TYPE_VARIABLE_SIZE. If any
+   inconsistency is detected false is returned and true otherwise.  */
+
+static bool
+c_verify_type (tree type)
+{
+  switch (TREE_CODE (type))
+    {
+    case POINTER_TYPE:
+    case FUNCTION_TYPE:
+      /* Pointer and funcions can not have variable size.  */
+      if (C_TYPE_VARIABLE_SIZE (type))
+	return false;
+      /* Pointer and funcions are variably modified if and only if the
+	 return / target type is variably modified.  */
+      if (C_TYPE_VARIABLY_MODIFIED (type)
+	  != C_TYPE_VARIABLY_MODIFIED (TREE_TYPE (type)))
+	return false;
+      break;
+    case ARRAY_TYPE:
+      /* An array has variable size if and only if it has a non-constant
+	 dimensions or its element type has variable size.  */
+      if ((C_TYPE_VARIABLE_SIZE (TREE_TYPE (type))
+	   || (TYPE_DOMAIN (type) && TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+	       && TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+		  != INTEGER_CST))
+	  != C_TYPE_VARIABLE_SIZE (type))
+	return false;
+      /* If the element type or the array has variable size, then the
+	 array has variable size and is variably modified.  */
+      if (C_TYPE_VARIABLE_SIZE (TREE_TYPE (type))
+	  || C_TYPE_VARIABLE_SIZE (type))
+	{
+	  if (!C_TYPE_VARIABLE_SIZE (type))
+	    return false;
+	  if (!C_TYPE_VARIABLY_MODIFIED (type))
+	    return false;
+	}
+      /* If the element type is variably modified, then also the array.  */
+      if (C_TYPE_VARIABLY_MODIFIED (TREE_TYPE (type))
+	  && !C_TYPE_VARIABLY_MODIFIED (type))
+	return false;
+      break;
+    default:
+      break;
+    }
+  return true;
+}
+
+/* Propagate C_TYPE_VARIABLY_MODIFIED and C_TYPE_VARIABLE_SIZE
+   from a base type to a newly built derived or qualified type.  */
+
+static tree
+c_set_type_bits (tree new_type, tree old_type)
+{
+  gcc_checking_assert (c_verify_type (old_type));
+
+  if (C_TYPE_VARIABLY_MODIFIED (old_type))
+    C_TYPE_VARIABLY_MODIFIED (new_type) = true;
+
+  if (TREE_CODE (new_type) == ARRAY_TYPE && C_TYPE_VARIABLE_SIZE (old_type))
+    {
+      C_TYPE_VARIABLY_MODIFIED (new_type) = true;
+      C_TYPE_VARIABLE_SIZE (new_type) = true;
+    }
+  return new_type;
+}
+
+/* Build a pointer type using the default pointer mode.  */
+
+tree
+c_build_pointer_type (tree to_type)
+{
+  addr_space_t as = to_type == error_mark_node ? ADDR_SPACE_GENERIC
+					       : TYPE_ADDR_SPACE (to_type);
+  machine_mode pointer_mode;
+
+  if (as != ADDR_SPACE_GENERIC || c_default_pointer_mode == VOIDmode)
+    pointer_mode = targetm.addr_space.pointer_mode (as);
+  else
+    pointer_mode = c_default_pointer_mode;
+
+  return c_build_pointer_type_for_mode (to_type, pointer_mode, false);
+}
+
+/* Build a pointer type using the given mode.  */
+
+tree
+c_build_pointer_type_for_mode (tree type, machine_mode mode, bool m)
+{
+  tree ret = build_pointer_type_for_mode (type, mode, m);
+  return c_set_type_bits (ret, type);
+}
+
+/* Build a function type.  */
+
+tree
+c_build_function_type (tree type, tree args, bool no)
+{
+  tree ret = build_function_type (type, args, no);
+  return c_set_type_bits (ret, type);
+}
+
+/* Build an array type.  This sets typeless storage as required
+   by C2Y and C_TYPE_VARIABLY_MODIFIED and C_TYPE_VARIABLE_SIZE
+   based on the element type and domain.  */
+
+tree
+c_build_array_type (tree type, tree domain)
+{
+  int type_quals = TYPE_QUALS (type);
+
+  /* Identify typeless storage as introduced in C2Y
+     and supported also in earlier language modes.  */
+  bool typeless = (char_type_p (type) && !(type_quals & TYPE_QUAL_ATOMIC))
+		  || (AGGREGATE_TYPE_P (type) && TYPE_TYPELESS_STORAGE (type));
+
+  tree ret = build_array_type (type, domain, typeless);
+
+  if (domain && TYPE_MAX_VALUE (domain)
+      && TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST)
+    {
+      C_TYPE_VARIABLE_SIZE (ret) = 1;
+      C_TYPE_VARIABLY_MODIFIED (ret) = 1;
+    }
+
+  return c_set_type_bits (ret, type);
+}
+
+tree
+c_build_type_attribute_qual_variant (tree type, tree attrs, int quals)
+{
+  tree ret = build_type_attribute_qual_variant (type, attrs, quals);
+  return c_set_type_bits (ret, type);
+}
+
+tree
+c_build_type_attribute_variant (tree type, tree attrs)
+{
+  return c_build_type_attribute_qual_variant (type, attrs, TYPE_QUALS (type));
+}
+
+/* Reconstruct a complex derived type.  This is used to re-construct types
+   with the vector attribute.  It is called via a langhook.  */
+
+tree
+c_reconstruct_complex_type (tree type, tree bottom)
+{
+  tree inner, outer;
+
+  if (TREE_CODE (type) == POINTER_TYPE)
+    {
+      inner = c_reconstruct_complex_type (TREE_TYPE (type), bottom);
+      outer = c_build_pointer_type_for_mode (inner, TYPE_MODE (type),
+					     TYPE_REF_CAN_ALIAS_ALL (type));
+    }
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      inner = c_reconstruct_complex_type (TREE_TYPE (type), bottom);
+      outer = c_build_array_type (inner, TYPE_DOMAIN (type));
+
+      gcc_checking_assert (C_TYPE_VARIABLE_SIZE (type)
+			   == C_TYPE_VARIABLE_SIZE (outer));
+      gcc_checking_assert (C_TYPE_VARIABLY_MODIFIED (outer)
+			   == C_TYPE_VARIABLY_MODIFIED (type));
+    }
+  else if (TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      inner = c_reconstruct_complex_type (TREE_TYPE (type), bottom);
+      outer = c_build_function_type (inner, TYPE_ARG_TYPES (type),
+				     TYPE_NO_NAMED_ARGS_STDARG_P (type));
+    }
+  else if (TREE_CODE (type) == REFERENCE_TYPE
+	   || TREE_CODE (type) == OFFSET_TYPE)
+    gcc_unreachable ();
+  else
+    return bottom;
+
+  return c_build_type_attribute_qual_variant (outer, TYPE_ATTRIBUTES (type),
+					      TYPE_QUALS (type));
+}
 
 /* If NTYPE is a type of a non-variadic function with a prototype
    and OTYPE is a type of a function without a prototype and ATTRS
@@ -365,7 +550,7 @@ qualify_type (tree type, tree like)
    the (possibly) modified ATTRS.  */
 
 static tree
-build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
+c_build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
 {
   if (!prototype_p (otype)
       && prototype_p (ntype)
@@ -376,9 +561,11 @@ build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
 		  "does not take variable arguments", "format");
       attrs = remove_attribute ("format", attrs);
     }
-  return build_type_attribute_variant (ntype, attrs);
+  return c_build_type_attribute_variant (ntype, attrs);
 
 }
+
+
 /* Return the composite type of two compatible types.
 
    We assume that comptypes has already been done and returned
@@ -440,8 +627,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	tree pointed_to_2 = TREE_TYPE (t2);
 	tree target = composite_type_internal (pointed_to_1,
 					       pointed_to_2, cache);
-        t1 = build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
-	t1 = build_type_attribute_variant (t1, attributes);
+	t1 = c_build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
+	t1 = c_build_type_attribute_variant (t1, attributes);
 	return qualify_type (t1, t2);
       }
 
@@ -479,15 +666,15 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	/* Save space: see if the result is identical to one of the args.  */
 	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1)
 	    && (d2_variable || d2_zero || !d1_variable))
-	  return build_type_attribute_variant (t1, attributes);
+	  return c_build_type_attribute_variant (t1, attributes);
 	if (elt == TREE_TYPE (t2) && TYPE_DOMAIN (t2)
 	    && (d1_variable || d1_zero || !d2_variable))
-	  return build_type_attribute_variant (t2, attributes);
+	  return c_build_type_attribute_variant (t2, attributes);
 
 	if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
-	  return build_type_attribute_variant (t1, attributes);
+	  return c_build_type_attribute_variant (t1, attributes);
 	if (elt == TREE_TYPE (t2) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
-	  return build_type_attribute_variant (t2, attributes);
+	  return c_build_type_attribute_variant (t2, attributes);
 
 	/* Merge the element types, and have a size if either arg has
 	   one.  We may have qualifiers on the element types.  To set
@@ -496,13 +683,21 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	   back at the end.  */
 	quals = TYPE_QUALS (strip_array_types (elt));
 	unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
-	t1 = build_array_type (unqual_elt,
-			       TYPE_DOMAIN ((TYPE_DOMAIN (t1)
-					     && (d2_variable
-						 || d2_zero
-						 || !d1_variable))
-					    ? t1
-					    : t2));
+	t1 = c_build_array_type (unqual_elt,
+				 TYPE_DOMAIN ((TYPE_DOMAIN (t1)
+					      && (d2_variable
+						  || d2_zero
+						  || !d1_variable))
+					      ? t1
+					      : t2));
+
+	/* Check that a type which has a varying outermost dimension
+	   got marked has having a variable size.  */
+	bool varsize = (d1_variable && d2_variable)
+		       || (d1_variable && !t2_complete)
+		       || (d2_variable && !t1_complete);
+	gcc_checking_assert (!varsize || C_TYPE_VARIABLE_SIZE (t1));
+
 	/* Ensure a composite type involving a zero-length array type
 	   is a zero-length type not an incomplete type.  */
 	if (d1_zero && d2_zero
@@ -513,7 +708,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	    TYPE_SIZE_UNIT (t1) = size_zero_node;
 	  }
 	t1 = c_build_qualified_type (t1, quals);
-	return build_type_attribute_variant (t1, attributes);
+	return c_build_type_attribute_variant (t1, attributes);
       }
 
     case RECORD_TYPE:
@@ -612,7 +807,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  if (attribute_list_equal (TYPE_ATTRIBUTES (t2), attributes))
 	    return t2;
 	}
-      return build_type_attribute_variant (t1, attributes);
+      return c_build_type_attribute_variant (t1, attributes);
 
     case FUNCTION_TYPE:
       /* Function types: prefer the one that specified arg types.
@@ -628,23 +823,23 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && !TYPE_ARG_TYPES (t2))
-	  return build_functype_attribute_variant (t1, t2, attributes);
+	  return c_build_functype_attribute_variant (t1, t2, attributes);
 	if (valtype == TREE_TYPE (t2) && !TYPE_ARG_TYPES (t1))
-	  return build_functype_attribute_variant (t2, t1, attributes);
+	  return c_build_functype_attribute_variant (t2, t1, attributes);
 
 	/* Simple way if one arg fails to specify argument types.  */
 	if (TYPE_ARG_TYPES (t1) == NULL_TREE)
 	  {
-	    t1 = build_function_type (valtype, TYPE_ARG_TYPES (t2),
-				      TYPE_NO_NAMED_ARGS_STDARG_P (t2));
-	    t1 = build_type_attribute_variant (t1, attributes);
+	    t1 = c_build_function_type (valtype, TYPE_ARG_TYPES (t2),
+					TYPE_NO_NAMED_ARGS_STDARG_P (t2));
+	    t1 = c_build_type_attribute_variant (t1, attributes);
 	    return qualify_type (t1, t2);
 	 }
 	if (TYPE_ARG_TYPES (t2) == NULL_TREE)
 	  {
-	    t1 = build_function_type (valtype, TYPE_ARG_TYPES (t1),
-				      TYPE_NO_NAMED_ARGS_STDARG_P (t1));
-	    t1 = build_type_attribute_variant (t1, attributes);
+	    t1 = c_build_function_type (valtype, TYPE_ARG_TYPES (t1),
+					TYPE_NO_NAMED_ARGS_STDARG_P (t1));
+	    t1 = c_build_type_attribute_variant (t1, attributes);
 	    return qualify_type (t1, t2);
 	  }
 
@@ -739,13 +934,13 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  parm_done: ;
 	  }
 
-	t1 = build_function_type (valtype, newargs);
+	t1 = c_build_function_type (valtype, newargs);
 	t1 = qualify_type (t1, t2);
       }
       /* FALLTHRU */
 
     default:
-      return build_type_attribute_variant (t1, attributes);
+      return c_build_type_attribute_variant (t1, attributes);
     }
 }
 
@@ -822,8 +1017,8 @@ common_pointer_type (tree t1, tree t2)
 
   target_quals |= ENCODE_QUAL_ADDR_SPACE (as_common);
 
-  t1 = build_pointer_type (c_build_qualified_type (target, target_quals));
-  return build_type_attribute_variant (t1, attributes);
+  t1 = c_build_pointer_type (c_build_qualified_type (target, target_quals));
+  return c_build_type_attribute_variant (t1, attributes);
 }
 
 /* Return the common type for two arithmetic types under the usual
@@ -855,13 +1050,13 @@ c_common_type (tree t1, tree t2)
   if (TYPE_ATTRIBUTES (t1) != NULL_TREE)
     {
       tree attrs = affects_type_identity_attributes (TYPE_ATTRIBUTES (t1));
-      t1 = build_type_attribute_variant (t1, attrs);
+      t1 = c_build_type_attribute_variant (t1, attrs);
     }
 
   if (TYPE_ATTRIBUTES (t2) != NULL_TREE)
     {
       tree attrs = affects_type_identity_attributes (TYPE_ATTRIBUTES (t2));
-      t2 = build_type_attribute_variant (t2, attrs);
+      t2 = c_build_type_attribute_variant (t2, attrs);
     }
 
   /* Save time if the two types are the same.  */
@@ -1180,6 +1375,9 @@ comptypes_verify (tree type1, tree type2)
   if (type1 == type2 || !type1 || !type2
       || TREE_CODE (type1) == ERROR_MARK || TREE_CODE (type2) == ERROR_MARK)
     return true;
+
+  gcc_checking_assert (c_verify_type (type1));
+  gcc_checking_assert (c_verify_type (type2));
 
   if (TYPE_CANONICAL (type1) != TYPE_CANONICAL (type2)
       && !TYPE_STRUCTURAL_EQUALITY_P (type1)
@@ -2002,11 +2200,7 @@ array_to_pointer_conversion (location_t loc, tree exp)
 
   copy_warning (exp, orig_exp);
 
-  bool varmod = C_TYPE_VARIABLY_MODIFIED (restype);
-
-  ptrtype = build_pointer_type (restype);
-
-  C_TYPE_VARIABLY_MODIFIED (ptrtype) = varmod;
+  ptrtype = c_build_pointer_type (restype);
 
   if (INDIRECT_REF_P (exp))
     return convert (ptrtype, TREE_OPERAND (exp, 0));
@@ -2750,7 +2944,7 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 {
   gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref)));
   /* The result type of the call is a pointer to the flexible array type.  */
-  tree result_type = build_pointer_type (TREE_TYPE (ref));
+  tree result_type = c_build_pointer_type (TREE_TYPE (ref));
 
   tree call
     = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
@@ -3209,7 +3403,7 @@ build_omp_array_section (location_t loc, tree array, tree index, tree length)
 
       gcc_assert (!error_operand_p (idxtype));
 
-      sectype = build_array_type (eltype, idxtype);
+      sectype = c_build_array_type (eltype, idxtype);
     }
 
   return build3_loc (loc, OMP_ARRAY_SECTION, sectype, array, index, length);
@@ -4887,7 +5081,6 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
   tree eptype = NULL_TREE;
   const char *invalid_op_diag;
   bool int_operands;
-  bool varmod;
 
   int_operands = EXPR_INT_CONST_OPERANDS (xarg);
   if (int_operands)
@@ -5376,11 +5569,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
       gcc_assert (TREE_CODE (arg) != COMPONENT_REF
 		  || !DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)));
 
-      varmod = C_TYPE_VARIABLY_MODIFIED (argtype);
-
-      argtype = build_pointer_type (argtype);
-
-      C_TYPE_VARIABLY_MODIFIED (argtype) = varmod;
+      argtype = c_build_pointer_type (argtype);
 
       /* ??? Cope with user tricks that amount to offsetof.  Delete this
 	 when we have proper support for integer constant expressions.  */
@@ -5659,7 +5848,7 @@ type_or_builtin_type (tree expr, tree *bltin = NULL)
     return type;
 
   if ((*bltin = builtin_decl_implicit (code)))
-    type = build_pointer_type (TREE_TYPE (*bltin));
+    type = c_build_pointer_type (TREE_TYPE (*bltin));
 
   return type;
 }
@@ -5944,7 +6133,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	  /* for array, use qualifiers of element type */
 	  if (flag_isoc23)
 	    t2 = t2_stripped;
-	  result_type = build_pointer_type (qualify_type (t1, t2));
+	  result_type = c_build_pointer_type (qualify_type (t1, t2));
 	}
       /* Objective-C pointer comparisons are a bit more lenient.  */
       else if (objc_have_common_type (type1, type2, -3, NULL_TREE))
@@ -5967,8 +6156,8 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	      inform (op1_loc, "first expression has type %qT", type1);
 	      inform (op2_loc, "second expression has type %qT", type2);
 	    }
-	  result_type = build_pointer_type
-			  (build_qualified_type (void_type_node, qual));
+	  result_type = c_build_pointer_type
+			  (c_build_qualified_type (void_type_node, qual));
 	}
     }
   else if (code1 == POINTER_TYPE
@@ -6922,8 +7111,8 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
     }
 
   /* Remove qualifiers.  */
-  lhstype = build_qualified_type (lhstype, TYPE_UNQUALIFIED);
-  olhstype = build_qualified_type (olhstype, TYPE_UNQUALIFIED);
+  lhstype = c_build_qualified_type (lhstype, TYPE_UNQUALIFIED);
+  olhstype = c_build_qualified_type (olhstype, TYPE_UNQUALIFIED);
 
   /* Convert new value to destination type.  Fold it first, then
      restore any excess precision information, for the sake of
@@ -7573,11 +7762,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	}
       if (!c_mark_addressable (rhs))
 	return error_mark_node;
-      rhs = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (rhs)), rhs);
+      rhs = build1 (ADDR_EXPR, c_build_pointer_type (TREE_TYPE (rhs)), rhs);
       SET_EXPR_LOCATION (rhs, location);
 
       rhs = convert_for_assignment (location, expr_loc,
-				    build_pointer_type (TREE_TYPE (type)),
+				    c_build_pointer_type (TREE_TYPE (type)),
 				    rhs, origtype, errtype,
 				    null_pointer_constant, fundecl, function,
 				    parmnum, warnopt);
@@ -13647,8 +13836,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  if (result_type == NULL_TREE)
 	    {
 	      int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-	      result_type = build_pointer_type
-			      (build_qualified_type (void_type_node, qual));
+	      result_type = c_build_pointer_type
+			      (c_build_qualified_type (void_type_node, qual));
 	    }
 	}
       else if (code0 == POINTER_TYPE
@@ -13680,10 +13869,10 @@ build_binary_op (location_t location, enum tree_code code,
        create a pointer type from its type.  */
       else if (code0 == NULLPTR_TYPE && null_pointer_constant_p (orig_op1))
 	result_type = (INTEGRAL_TYPE_P (type1)
-		       ? build_pointer_type (type1) : type1);
+		       ? c_build_pointer_type (type1) : type1);
       else if (code1 == NULLPTR_TYPE && null_pointer_constant_p (orig_op0))
 	result_type = (INTEGRAL_TYPE_P (type0)
-		       ? build_pointer_type (type0) : type0);
+		       ? c_build_pointer_type (type0) : type0);
       if ((C_BOOLEAN_TYPE_P (TREE_TYPE (orig_op0))
 	   || truth_value_p (TREE_CODE (orig_op0)))
 	  ^ (C_BOOLEAN_TYPE_P (TREE_TYPE (orig_op1))
@@ -13781,8 +13970,8 @@ build_binary_op (location_t location, enum tree_code code,
 	  else
 	    {
 	      int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-	      result_type = build_pointer_type
-			      (build_qualified_type (void_type_node, qual));
+	      result_type = c_build_pointer_type
+			      (c_build_qualified_type (void_type_node, qual));
               pedwarn (location, OPT_Wcompare_distinct_pointer_types,
                        "comparison of distinct pointer types lacks a cast");
 	    }
@@ -15047,8 +15236,8 @@ handle_omp_array_sections (tree &c, enum c_omp_region_type ort)
 	  tree eltype = TREE_TYPE (first);
 	  while (TREE_CODE (eltype) == ARRAY_TYPE)
 	    eltype = TREE_TYPE (eltype);
-	  tree type = build_array_type (eltype, index_type);
-	  tree ptype = build_pointer_type (eltype);
+	  tree type = c_build_array_type (eltype, index_type);
+	  tree ptype = c_build_pointer_type (eltype);
 	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	    t = build_fold_addr_expr (t);
 	  tree t2 = build_fold_addr_expr (first);
@@ -15518,10 +15707,10 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      size = size_binop (MINUS_EXPR, size, size_one_node);
 	      size = save_expr (size);
 	      tree index_type = build_index_type (size);
-	      tree atype = build_array_type (TYPE_MAIN_VARIANT (type),
-					     index_type);
+	      tree atype = c_build_array_type (TYPE_MAIN_VARIANT (type),
+					       index_type);
 	      atype = c_build_qualified_type (atype, TYPE_QUALS (type));
-	      tree ptype = build_pointer_type (type);
+	      tree ptype = c_build_pointer_type (type);
 	      if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		t = build_fold_addr_expr (t);
 	      t = build2 (MEM_REF, atype, t, build_int_cst (ptype, 0));
@@ -17177,17 +17366,17 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
                    || (domain && TYPE_CANONICAL (domain) != domain))
             {
               tree unqualified_canon
-                = build_array_type (TYPE_CANONICAL (element_type),
-                                    domain? TYPE_CANONICAL (domain)
-                                          : NULL_TREE);
+		= c_build_array_type (TYPE_CANONICAL (element_type),
+				      domain ? TYPE_CANONICAL (domain)
+					     : NULL_TREE);
               if (TYPE_REVERSE_STORAGE_ORDER (type))
                 {
                   unqualified_canon
-                    = build_distinct_type_copy (unqualified_canon);
+		    = build_distinct_type_copy (unqualified_canon);
                   TYPE_REVERSE_STORAGE_ORDER (unqualified_canon) = 1;
                 }
               TYPE_CANONICAL (t)
-                = c_build_qualified_type (unqualified_canon, type_quals);
+		= c_build_qualified_type (unqualified_canon, type_quals);
             }
           else
             TYPE_CANONICAL (t) = t;
@@ -17209,6 +17398,12 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
   tree var_type = (orig_qual_type && orig_qual_indirect == 0
 		   ? orig_qual_type
 		   : build_qualified_type (type, type_quals));
+
+  gcc_checking_assert (C_TYPE_VARIABLE_SIZE (var_type)
+		       == C_TYPE_VARIABLE_SIZE (type));
+  gcc_checking_assert (C_TYPE_VARIABLY_MODIFIED (var_type)
+		       == C_TYPE_VARIABLY_MODIFIED (type));
+
   /* A variant type does not inherit the list of incomplete vars from the
      type main variant.  */
   if ((RECORD_OR_UNION_TYPE_P (var_type)

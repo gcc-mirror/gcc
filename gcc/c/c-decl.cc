@@ -716,22 +716,9 @@ add_stmt (tree t)
 
   return t;
 }
-
-/* Build a pointer type using the default pointer mode.  */
 
-static tree
-c_build_pointer_type (tree to_type)
-{
-  addr_space_t as = to_type == error_mark_node? ADDR_SPACE_GENERIC
-					      : TYPE_ADDR_SPACE (to_type);
-  machine_mode pointer_mode;
 
-  if (as != ADDR_SPACE_GENERIC || c_default_pointer_mode == VOIDmode)
-    pointer_mode = targetm.addr_space.pointer_mode (as);
-  else
-    pointer_mode = c_default_pointer_mode;
-  return build_pointer_type_for_mode (to_type, pointer_mode, false);
-}
+
 
 
 /* Return true if we will want to say something if a goto statement
@@ -1923,7 +1910,7 @@ match_builtin_function_types (tree newtype, tree oldtype,
       newargs = TREE_CHAIN (newargs);
     }
 
-  tree trytype = build_function_type (newrettype, tryargs);
+  tree trytype = c_build_function_type (newrettype, tryargs);
 
   /* Allow declaration to change transaction_safe attribute.  */
   tree oldattrs = TYPE_ATTRIBUTES (oldtype);
@@ -1936,7 +1923,7 @@ match_builtin_function_types (tree newtype, tree oldtype,
     oldattrs = tree_cons (get_identifier ("transaction_safe"),
 			  NULL_TREE, oldattrs);
 
-  return build_type_attribute_variant (trytype, oldattrs);
+  return c_build_type_attribute_variant (trytype, oldattrs);
 }
 
 /* Subroutine of diagnose_mismatched_decls.  Check for function type
@@ -3397,9 +3384,9 @@ pushdecl (tree x)
 	      if (TREE_CODE (b_use->decl) == FUNCTION_DECL
 		  && fndecl_built_in_p (b_use->decl))
 		thistype
-		  = build_type_attribute_variant (thistype,
-						  TYPE_ATTRIBUTES
-						  (b_use->u.type));
+		  = c_build_type_attribute_variant (thistype,
+						    TYPE_ATTRIBUTES
+						    (b_use->u.type));
 	      TREE_TYPE (b_use->decl) = thistype;
 	    }
 	  return b_use->decl;
@@ -3497,8 +3484,8 @@ pushdecl (tree x)
 	  b->u.type = TREE_TYPE (b->decl);
 	  /* Propagate the type attributes to the decl.  */
 	  thistype
-	    = build_type_attribute_variant (thistype,
-					    TYPE_ATTRIBUTES (b->u.type));
+	    = c_build_type_attribute_variant (thistype,
+					      TYPE_ATTRIBUTES (b->u.type));
 	  TREE_TYPE (b->decl) = thistype;
 	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true,
 		locus);
@@ -3896,9 +3883,9 @@ implicitly_declare (location_t loc, tree functionid)
 	    }
 	  if (fndecl_built_in_p (decl))
 	    {
-	      newtype = build_type_attribute_variant (newtype,
-						      TYPE_ATTRIBUTES
-						      (TREE_TYPE (decl)));
+	      newtype = c_build_type_attribute_variant (newtype,
+							TYPE_ATTRIBUTES
+							(TREE_TYPE (decl)));
 	      if (!comptypes (newtype, TREE_TYPE (decl)))
 		{
 		  auto_diagnostic_group d;
@@ -4838,8 +4825,8 @@ c_make_fname_decl (location_t loc, tree id, int type_dep)
   tree decl, type, init;
   size_t length = strlen (name);
 
-  type = build_array_type (char_type_node,
-			   build_index_type (size_int (length)));
+  type = c_build_array_type (char_type_node,
+			     build_index_type (size_int (length)));
   type = c_build_qualified_type (type, TYPE_QUAL_CONST);
 
   decl = build_decl (loc, VAR_DECL, id, type);
@@ -7224,8 +7211,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	  array_parm_static = false;
 	}
 
-      bool varmod = C_TYPE_VARIABLY_MODIFIED (type);
-
       switch (declarator->kind)
 	{
 	case cdk_attrs:
@@ -7507,31 +7492,20 @@ grokdeclarator (const struct c_declarator *declarator,
 
 		/* ISO C99 Flexible array members are effectively
 		   identical to GCC's zero-length array extension.  */
-		if (flexible_array_member || array_parm_vla_unspec_p)
-		  itype = build_range_type (sizetype, size_zero_node,
-					    NULL_TREE);
+		if (flexible_array_member)
+		  itype = build_index_type (NULL_TREE);
 	      }
-	    else if (decl_context == PARM)
+
+	    if (array_parm_vla_unspec_p)
 	      {
-		if (array_parm_vla_unspec_p)
-		  {
-		    itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
-		    size_varies = true;
-		  }
-	      }
-	    else if (decl_context == TYPENAME)
-	      {
-		if (array_parm_vla_unspec_p)
-		  {
-		    /* C99 6.7.5.2p4 */
-		    warning (0, "%<[*]%> not in a declaration");
-		    /* We use this to avoid messing up with incomplete
-		       array types of the same type, that would
-		       otherwise be modified below.  */
-		    itype = build_range_type (sizetype, size_zero_node,
-					      NULL_TREE);
-		    size_varies = true;
-		  }
+		/* C99 6.7.5.2p4 */
+		if (decl_context == TYPENAME)
+		  warning (0, "%<[*]%> not in a declaration");
+		/* Array of unspecified size.  */
+		tree upper = build2 (COMPOUND_EXPR, TREE_TYPE (size_zero_node),
+				     integer_zero_node, size_zero_node);
+		itype = build_index_type (upper);
+		size_varies = true;
 	      }
 
 	    /* Complain about arrays of incomplete types.  */
@@ -7562,49 +7536,21 @@ grokdeclarator (const struct c_declarator *declarator,
 	       modify the shared type, so we gcc_assert (itype)
 	       below.  */
 	      {
-		/* Identify typeless storage as introduced in C2Y
-		   and supported also in earlier language modes.  */
-		bool typeless = (char_type_p (type)
-				 && !(type_quals & TYPE_QUAL_ATOMIC))
-				|| (AGGREGATE_TYPE_P (type)
-				    && TYPE_TYPELESS_STORAGE (type));
-
 		addr_space_t as = DECODE_QUAL_ADDR_SPACE (type_quals);
 		if (!ADDR_SPACE_GENERIC_P (as) && as != TYPE_ADDR_SPACE (type))
-		  type = build_qualified_type (type,
-					       ENCODE_QUAL_ADDR_SPACE (as));
-		type = build_array_type (type, itype, typeless);
+		  type = c_build_qualified_type (type,
+						 ENCODE_QUAL_ADDR_SPACE (as));
+		type = c_build_array_type (type, itype);
 	      }
 
 	    if (type != error_mark_node)
 	      {
-		if (size_varies)
-		  {
-		    /* It is ok to modify type here even if itype is
-		       NULL: if size_varies, we're in a
-		       multi-dimensional array and the inner type has
-		       variable size, so the enclosing shared array type
-		       must too.  */
-		    if (size && TREE_CODE (size) == INTEGER_CST)
-		      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
-		    C_TYPE_VARIABLE_SIZE (type) = 1;
-		  }
-
 		/* The GCC extension for zero-length arrays differs from
 		   ISO flexible array members in that sizeof yields
 		   zero.  */
 		if (size && integer_zerop (size))
 		  {
 		    gcc_assert (itype);
-		    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
-		    TYPE_SIZE (type) = bitsize_zero_node;
-		    TYPE_SIZE_UNIT (type) = size_zero_node;
-		    SET_TYPE_STRUCTURAL_EQUALITY (type);
-		  }
-		if (array_parm_vla_unspec_p)
-		  {
-		    gcc_assert (itype);
-		    /* The type is complete.  C99 6.7.5.2p4  */
 		    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
@@ -7732,8 +7678,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
 
-	    type = build_function_type (type, arg_types,
-					arg_info->no_named_args_stdarg_p);
+	    type = c_build_function_type (type, arg_types,
+					  arg_info->no_named_args_stdarg_p);
 	    declarator = declarator->declarator;
 
 	    /* Set the TYPE_CONTEXTs for each tagged type which is local to
@@ -7798,8 +7744,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	default:
 	  gcc_unreachable ();
 	}
-      if (type != error_mark_node)
-	C_TYPE_VARIABLY_MODIFIED (type) = varmod || size_varies;
     }
   *decl_attrs = chainon (returned_attrs, *decl_attrs);
   *decl_attrs = chainon (decl_id_attrs, *decl_attrs);
@@ -8122,7 +8066,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
 	    error_at (loc, "field %qE declared as a function", name);
-	    type = build_pointer_type (type);
+	    type = c_build_pointer_type (type);
 	  }
 	else if (TREE_CODE (type) != ERROR_MARK
 		 && !COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (type))
@@ -9451,7 +9395,7 @@ c_update_type_canonical (tree t)
 	  else
 	    {
 	      tree
-		c = build_qualified_type (TYPE_CANONICAL (t), TYPE_QUALS (x));
+		c = c_build_qualified_type (TYPE_CANONICAL (t), TYPE_QUALS (x));
 	      if (TYPE_STRUCTURAL_EQUALITY_P (c))
 		{
 		  gcc_checking_assert (TYPE_CANONICAL (t) == t);
@@ -9486,8 +9430,8 @@ c_update_type_canonical (tree t)
 	    continue;
 	  if (TYPE_CANONICAL (x) != x || TYPE_REF_CAN_ALIAS_ALL (p))
 	    TYPE_CANONICAL (p)
-	      = build_pointer_type_for_mode (TYPE_CANONICAL (x), TYPE_MODE (p),
-					     false);
+	      = c_build_pointer_type_for_mode (TYPE_CANONICAL (x), TYPE_MODE (p),
+					       false);
 	  else
 	    TYPE_CANONICAL (p) = p;
 	  c_update_type_canonical (p);
@@ -10724,9 +10668,9 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       error_at (loc, "return type is an incomplete type");
       /* Make it return void instead.  */
       TREE_TYPE (decl1)
-	= build_function_type (void_type_node,
-			       TYPE_ARG_TYPES (TREE_TYPE (decl1)),
-			       TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl1)));
+	= c_build_function_type (void_type_node,
+				 TYPE_ARG_TYPES (TREE_TYPE (decl1)),
+				 TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl1)));
     }
 
   if (warn_about_return_type)

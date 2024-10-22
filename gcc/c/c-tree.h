@@ -879,6 +879,13 @@ extern tree c_build_function_call_vec (location_t, const vec<location_t>&,
 				       tree, vec<tree, va_gc> *,
 				       vec<tree, va_gc> *);
 extern tree c_omp_clause_copy_ctor (tree, tree, tree);
+extern tree c_reconstruct_complex_type (tree, tree);
+extern tree c_build_type_attribute_variant (tree ntype, tree attrs);
+extern tree c_build_pointer_type (tree type);
+extern tree c_build_array_type (tree type, tree domain);
+extern tree c_build_function_type (tree type, tree args, bool no = false);
+extern tree c_build_pointer_type_for_mode (tree type, machine_mode mode, bool m);
+
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
