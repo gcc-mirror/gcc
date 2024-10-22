@@ -3331,7 +3331,7 @@ compare_constant (const tree t1, const tree t2)
 
       return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
 	      && ! memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
-			 TREE_STRING_LENGTH (t1)));
+			   TREE_STRING_LENGTH (t1)));
 
     case COMPLEX_CST:
       return (compare_constant (TREE_REALPART (t1), TREE_REALPART (t2))
@@ -3355,6 +3355,11 @@ compare_constant (const tree t1, const tree t2)
 
 	return true;
       }
+
+    case RAW_DATA_CST:
+      return (RAW_DATA_LENGTH (t1) == RAW_DATA_LENGTH (t2)
+	      && ! memcmp (RAW_DATA_POINTER (t1), RAW_DATA_POINTER (t2),
+			   RAW_DATA_LENGTH (t1)));
 
     case CONSTRUCTOR:
       {
