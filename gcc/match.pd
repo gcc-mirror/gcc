@@ -3325,7 +3325,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
-/* Unsigned saturation sub with op_0 imm, case 9 (branch with gt):
+/* Unsigned saturation sub with op_0 imm, case 9 (branch with le):
    SAT_U_SUB = IMM > Y  ? (IMM - Y) : 0.
              = IMM >= Y ? (IMM - Y) : 0.  */
 (match (unsigned_integer_sat_sub @0 @1)
@@ -3343,6 +3343,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    bool less_than_1_p = !wi::eq_p (c2, max) && wi::eq_p (c2_add_1, c0);
   }
   (if (equal_p || less_than_1_p)))))
+
+/* The boundary condition for case 9: IMM = max -1  (branch with ne):
+   SAT_U_SUB = IMM >= Y ? (IMM - Y) : 0.  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (cond^ (ne @1 INTEGER_CST@2) (minus INTEGER_CST@0 @1) integer_zerop)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+     && types_match (type, @1))
+(with
+  {
+   unsigned precision = TYPE_PRECISION (type);
+   wide_int max = wi::mask (precision, false, precision);
+   wide_int c0 = wi::to_wide (@0);
+   wide_int c2 = wi::to_wide (@2);
+   wide_int c0_add_1 = wi::add (c0, wi::uhwi (1, precision));
+  }
+  (if (wi::eq_p (c2, max) && wi::eq_p (c0_add_1, max))))))
 
 /* Unsigned saturation sub with op_1 imm, case 10:
    SAT_U_SUB = X > IMM  ? (X - IMM) : 0.
