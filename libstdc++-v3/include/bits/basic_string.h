@@ -1748,7 +1748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    {
 	      __glibcxx_requires_valid_range(__first, __last);
 	      return _M_replace(size_type(0), size(),
-				std::__to_address(__first), __last - __first);
+				std::to_address(__first), __last - __first);
 	    }
 #endif
 	  else
