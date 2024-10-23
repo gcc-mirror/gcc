@@ -2433,6 +2433,7 @@ toplev::finalize (void)
   ira_costs_cc_finalize ();
   tree_cc_finalize ();
   reginfo_cc_finalize ();
+  varasm_cc_finalize ();
 
   /* save_decoded_options uses opts_obstack, so these must
      be cleaned up together.  */

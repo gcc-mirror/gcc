@@ -8854,4 +8854,57 @@ handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
   switch_to_comdat_section(sect, DECL_NAME (decl));
 }
 
+void
+varasm_cc_finalize ()
+{
+  first_global_object_name = nullptr;
+  weak_global_object_name = nullptr;
+
+  const_labelno = 0;
+  size_directive_output = 0;
+
+  last_assemble_variable_decl = NULL_TREE;
+  first_function_block_is_cold = false;
+  saw_no_split_stack = false;
+  text_section = nullptr;
+  data_section = nullptr;
+  readonly_data_section = nullptr;
+  sdata_section = nullptr;
+  ctors_section = nullptr;
+  dtors_section = nullptr;
+  bss_section = nullptr;
+  sbss_section = nullptr;
+  tls_comm_section = nullptr;
+  comm_section = nullptr;
+  lcomm_section = nullptr;
+  bss_noswitch_section = nullptr;
+  exception_section = nullptr;
+  eh_frame_section = nullptr;
+  in_section = nullptr;
+  in_cold_section_p = false;
+  cold_function_name = NULL_TREE;
+  unnamed_sections = nullptr;
+  section_htab = nullptr;
+  object_block_htab = nullptr;
+  anchor_labelno = 0;
+  shared_constant_pool = nullptr;
+  pending_assemble_externals = NULL_TREE;
+  pending_libcall_symbols = nullptr;
+
+#ifdef ASM_OUTPUT_EXTERNAL
+  pending_assemble_externals_processed = false;
+  pending_assemble_externals_set = nullptr;
+#endif
+
+  weak_decls = NULL_TREE;
+  initial_trampoline = nullptr;
+  const_desc_htab = nullptr;
+  weakref_targets = NULL_TREE;
+  alias_pairs = nullptr;
+  tm_clone_hash = nullptr;
+  trampolines_created = 0;
+  elf_init_array_section = nullptr;
+  elf_fini_array_section = nullptr;
+}
+
 #include "gt-varasm.h"
