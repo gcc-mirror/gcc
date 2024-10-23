@@ -1,3 +1,21 @@
+2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117107
+	PR c++/92687
+	* decl.cc (lookup_decomp_type): Handle null table.
+
+2024-10-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116929
+	* tree.cc (no_linkage_check): Anonymous types can't be accessed
+	in a different TU.
+
 2024-10-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

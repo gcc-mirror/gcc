@@ -1,3 +1,71 @@
+2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117107
+	PR c++/92687
+	* g++.dg/cpp2a/decomp10.C: New test.
+
+2024-10-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116929
+	* g++.dg/modules/linkage-1_a.C: Remove anonymous type test.
+	* g++.dg/modules/linkage-1_b.C: Likewise.
+	* g++.dg/modules/linkage-1_c.C: Likewise.
+	* g++.dg/modules/linkage-2.C: Add note about anonymous types.
+	* g++.dg/modules/enum-14.C: New file.
+
+2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/fp16-aapcs-1.c: Use check-function-bodies.
+	* gcc.target/arm/fp16-aapcs-2.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-4.c: Likewise.
+
+2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: Allow lsl and
+	lsr instructions.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-and-union.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: Likewise.
+
+2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-5.c: Use
+	check-function-bodies.
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c:
+	Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: Likewise.
+
+2024-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr112305.c: Skip at -O0 and -O1 for simulators.
+
 2024-10-21  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
