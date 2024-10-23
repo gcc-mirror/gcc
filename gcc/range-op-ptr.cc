@@ -379,68 +379,25 @@ pointer_plus_operator::op2_range (irange &r, tree type,
   return true;
 }
 
-
-class pointer_or_operator : public range_operator
-{
-public:
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual void wi_fold (irange &r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_pointer_or;
-
 bool
-pointer_or_operator::op1_range (irange &r, tree type,
-				const irange &lhs,
-				const irange &op2 ATTRIBUTE_UNUSED,
-				relation_trio) const
-{
-  if (lhs.undefined_p ())
-    return false;
-  if (lhs.zero_p ())
-    {
-      r.set_zero (type);
-      return true;
-    }
-  r.set_varying (type);
-  return true;
-}
-
-bool
-pointer_or_operator::op2_range (irange &r, tree type,
-				const irange &lhs,
-				const irange &op1,
-				relation_trio) const
-{
-  return pointer_or_operator::op1_range (r, type, lhs, op1);
-}
-
-void
-pointer_or_operator::wi_fold (irange &r, tree type,
-			      const wide_int &lh_lb,
-			      const wide_int &lh_ub,
-			      const wide_int &rh_lb,
-			      const wide_int &rh_ub) const
+operator_bitwise_or::fold_range (prange &r, tree type,
+				 const prange &op1,
+				 const prange &op2,
+				 relation_trio) const
 {
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
-  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
-      && !wi_includes_zero_p (type, rh_lb, rh_ub))
+  if (!op1.zero_p () || !op2.zero_p ())
     r.set_nonzero (type);
-  else if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
+  else if (op1.zero_p () && op2.zero_p ())
     r.set_zero (type);
   else
     r.set_varying (type);
+
+  update_known_bitmask (r, BIT_IOR_EXPR, op1, op2);
+  return true;
 }
+
 
 class operator_pointer_diff : public range_operator
 {
