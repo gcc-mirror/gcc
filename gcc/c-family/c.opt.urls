@@ -490,6 +490,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Winvalid-utf8)
 Wjump-misses-init
 UrlSuffix(gcc/Warning-Options.html#index-Wjump-misses-init)
 
+Wleading-whitespace=
+UrlSuffix(gcc/Warning-Options.html#index-Wleading-whitespace_003d)
+
 Wliteral-suffix
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wliteral-suffix)
 
