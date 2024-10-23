@@ -2496,6 +2496,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
+  s-parame.adb<libgnat/s-parame__aarch64-linux.adb \
   s-taprop.adb<libgnarl/s-taprop__linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
