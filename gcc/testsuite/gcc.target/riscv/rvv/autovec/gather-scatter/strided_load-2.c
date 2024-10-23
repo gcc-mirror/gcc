@@ -40,6 +40,6 @@
 
 TEST_ALL (TEST_LOOP)
 
-/* { dg-final { scan-tree-dump-times " \.MASK_LEN_GATHER_LOAD" 33 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_LOAD " 33 "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.GATHER_LOAD" "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_GATHER_LOAD" "optimized" } } */
