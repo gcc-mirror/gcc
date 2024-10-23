@@ -159,6 +159,7 @@ init_internal_fns ()
 #define load_lanes_direct { -1, -1, false }
 #define mask_load_lanes_direct { -1, -1, false }
 #define gather_load_direct { 3, 1, false }
+#define strided_load_direct { -1, -1, false }
 #define len_load_direct { -1, -1, false }
 #define mask_len_load_direct { -1, 4, false }
 #define mask_store_direct { 3, 2, false }
@@ -168,6 +169,7 @@ init_internal_fns ()
 #define vec_cond_mask_len_direct { 1, 1, false }
 #define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
+#define strided_store_direct { 1, 1, false }
 #define len_store_direct { 3, 3, false }
 #define mask_len_store_direct { 4, 5, false }
 #define vec_set_direct { 3, 3, false }
@@ -3712,6 +3714,64 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   assign_call_lhs (lhs, lhs_rtx, &ops[0]);
 }
 
+/* Expand MASK_LEN_STRIDED_LOAD call CALL by optab OPTAB.  */
+
+static void
+expand_strided_load_optab_fn (ATTRIBUTE_UNUSED internal_fn, gcall *stmt,
+			      direct_optab optab)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree base = gimple_call_arg (stmt, 0);
+  tree stride = gimple_call_arg (stmt, 1);
+
+  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx base_rtx = expand_normal (base);
+  rtx stride_rtx = expand_normal (stride);
+
+  unsigned i = 0;
+  class expand_operand ops[6];
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+
+  create_output_operand (&ops[i++], lhs_rtx, mode);
+  create_address_operand (&ops[i++], base_rtx);
+  create_address_operand (&ops[i++], stride_rtx);
+
+  i = add_mask_and_len_args (ops, i, stmt);
+  expand_insn (direct_optab_handler (optab, mode), i, ops);
+
+  if (!rtx_equal_p (lhs_rtx, ops[0].value))
+    emit_move_insn (lhs_rtx, ops[0].value);
+}
+
+/* Expand MASK_LEN_STRIDED_STORE call CALL by optab OPTAB.  */
+
+static void
+expand_strided_store_optab_fn (ATTRIBUTE_UNUSED internal_fn, gcall *stmt,
+			       direct_optab optab)
+{
+  internal_fn fn = gimple_call_internal_fn (stmt);
+  int rhs_index = internal_fn_stored_value_index (fn);
+
+  tree base = gimple_call_arg (stmt, 0);
+  tree stride = gimple_call_arg (stmt, 1);
+  tree rhs = gimple_call_arg (stmt, rhs_index);
+
+  rtx base_rtx = expand_normal (base);
+  rtx stride_rtx = expand_normal (stride);
+  rtx rhs_rtx = expand_normal (rhs);
+
+  unsigned i = 0;
+  class expand_operand ops[6];
+  machine_mode mode = TYPE_MODE (TREE_TYPE (rhs));
+
+  create_address_operand (&ops[i++], base_rtx);
+  create_address_operand (&ops[i++], stride_rtx);
+  create_input_operand (&ops[i++], rhs_rtx, mode);
+
+  i = add_mask_and_len_args (ops, i, stmt);
+  expand_insn (direct_optab_handler (optab, mode), i, ops);
+}
+
 /* Helper for expand_DIVMOD.  Return true if the sequence starting with
    INSN contains any call insns or insns with {,U}{DIV,MOD} rtxes.  */
 
@@ -4101,6 +4161,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_gather_load_optab_supported_p convert_optab_supported_p
+#define direct_strided_load_optab_supported_p direct_optab_supported_p
 #define direct_len_load_optab_supported_p direct_optab_supported_p
 #define direct_mask_len_load_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
@@ -4109,6 +4170,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_vec_cond_mask_optab_supported_p convert_optab_supported_p
 #define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
+#define direct_strided_store_optab_supported_p direct_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
 #define direct_mask_len_store_optab_supported_p convert_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
@@ -4808,6 +4870,8 @@ internal_fn_len_index (internal_fn fn)
     case IFN_COND_LEN_XOR:
     case IFN_COND_LEN_SHL:
     case IFN_COND_LEN_SHR:
+    case IFN_MASK_LEN_STRIDED_LOAD:
+    case IFN_MASK_LEN_STRIDED_STORE:
       return 4;
 
     case IFN_COND_LEN_NEG:
@@ -4902,6 +4966,10 @@ internal_fn_mask_index (internal_fn fn)
     case IFN_MASK_LEN_STORE:
       return 2;
 
+    case IFN_MASK_LEN_STRIDED_LOAD:
+    case IFN_MASK_LEN_STRIDED_STORE:
+      return 3;
+
     case IFN_MASK_GATHER_LOAD:
     case IFN_MASK_SCATTER_STORE:
     case IFN_MASK_LEN_GATHER_LOAD:
@@ -4925,6 +4993,9 @@ internal_fn_stored_value_index (internal_fn fn)
 {
   switch (fn)
     {
+    case IFN_MASK_LEN_STRIDED_STORE:
+      return 2;
+
     case IFN_MASK_STORE:
     case IFN_MASK_STORE_LANES:
     case IFN_SCATTER_STORE:
