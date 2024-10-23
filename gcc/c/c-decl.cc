@@ -640,6 +640,8 @@ public:
   /* If warn_cxx_compat, a list of typedef names used when defining
      fields in this struct.  */
   auto_vec<tree> typedefs_seen;
+  /* The location of a previous definition of this struct.  */
+  location_t refloc;
 };
 
 
@@ -9000,6 +9002,7 @@ start_struct (location_t loc, enum tree_code code, tree name,
 
   *enclosing_struct_parse_info = struct_parse_info;
   struct_parse_info = new c_struct_parse_info ();
+  struct_parse_info->refloc = refloc;
 
   /* FIXME: This will issue a warning for a use of a type defined
      within a statement expr used within sizeof, et. al.  This is not
@@ -9896,10 +9899,18 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	{
 	  TYPE_STUB_DECL (vistype) = TYPE_STUB_DECL (t);
 	  if (c_type_variably_modified_p (t))
-	    error ("redefinition of struct or union %qT with variably "
-		   "modified type", t);
+	    {
+	      error ("redefinition of struct or union %qT with variably "
+		     "modified type", t);
+	      if (struct_parse_info->refloc != UNKNOWN_LOCATION)
+		inform (struct_parse_info->refloc, "originally defined here");
+	    }
 	  else if (!comptypes_same_p (t, vistype))
-	    error ("redefinition of struct or union %qT", t);
+	    {
+	      error ("redefinition of struct or union %qT", t);
+	      if (struct_parse_info->refloc != UNKNOWN_LOCATION)
+		inform (struct_parse_info->refloc, "originally defined here");
+	    }
 	}
     }
 
