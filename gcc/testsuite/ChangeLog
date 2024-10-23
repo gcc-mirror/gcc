@@ -1,3 +1,15 @@
+2024-10-22  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/115815
+	* gcc.dg/lto/pr115815_0.c: New test.
+
+2024-10-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-pr103750-2.c: Add xfail for ia32.
+
 2024-10-21  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

@@ -1,3 +1,14 @@
+2024-10-22  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/115815
+	* cgraph.cc (cgraph_node_cannot_be_local_p_1): Also check
+	DECL_STATIC_CONSTRUCTOR and DECL_STATIC_DESTRUCTOR.
+	* ipa-visibility.cc (non_local_p): Likewise.
+	(cgraph_node::local_p): Delete extraneous line of tabs.
+
 2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
 
 	Backported from master:
