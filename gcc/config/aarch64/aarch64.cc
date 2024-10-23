@@ -3640,10 +3640,10 @@ aarch64_ptrue_reg (machine_mode mode, unsigned int vl)
 
   rtx_vector_builder builder (VNx16BImode, vl, 2);
 
-  for (int i = 0; i < vl; i++)
+  for (unsigned i = 0; i < vl; i++)
     builder.quick_push (CONST1_RTX (BImode));
 
-  for (int i = 0; i < vl; i++)
+  for (unsigned i = 0; i < vl; i++)
     builder.quick_push (CONST0_RTX (BImode));
 
   rtx const_vec = builder.build ();
