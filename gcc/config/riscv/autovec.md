@@ -2889,3 +2889,32 @@
     DONE;
   }
 )
+
+;; =========================================================================
+;; == Strided Load/Store
+;; =========================================================================
+(define_expand "mask_len_strided_load_<mode>"
+  [(match_operand:V     0 "register_operand")
+   (match_operand       1 "pmode_reg_or_0_operand")
+   (match_operand       2 "pmode_reg_or_0_operand")
+   (match_operand:<VM>  3 "vector_mask_operand")
+   (match_operand       4 "autovec_length_operand")
+   (match_operand       5 "const_0_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_strided_load (<MODE>mode, operands);
+    DONE;
+  })
+
+(define_expand "mask_len_strided_store_<mode>"
+  [(match_operand       0 "pmode_reg_or_0_operand")
+   (match_operand       1 "pmode_reg_or_0_operand")
+   (match_operand:V     2 "register_operand")
+   (match_operand:<VM>  3 "vector_mask_operand")
+   (match_operand       4 "autovec_length_operand")
+   (match_operand       5 "const_0_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_strided_store (<MODE>mode, operands);
+    DONE;
+  })

@@ -700,6 +700,8 @@ bool expand_strcmp (rtx, rtx, rtx, rtx, unsigned HOST_WIDE_INT, bool);
 void emit_vec_extract (rtx, rtx, rtx);
 bool expand_vec_setmem (rtx, rtx, rtx);
 bool expand_vec_cmpmem (rtx, rtx, rtx, rtx);
+void expand_strided_load (machine_mode, rtx *);
+void expand_strided_store (machine_mode, rtx *);
 
 /* Rounding mode bitfield for fixed point VXRM.  */
 enum fixed_point_rounding_mode
