@@ -1,3 +1,31 @@
+2024-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (concat_view::begin): Add space after
+	'requires' starting a requires-clause.
+	(concat_view::end): Likewise.  Refine condition for returning an
+	iterator rather than default_sentinel as per LWG 4166.
+	* testsuite/std/ranges/concat/1.cc (test03): Verify LWG 4166
+	example.
+
+2024-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string::assign): Replace
+	use of __to_address with __niter_base or std::to_address as
+	appropriate.
+	* include/bits/ptr_traits.h (__to_address): Add comment.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Qualify calls
+	to __to_address.
+	* include/bits/stl_algo.h (find): Replace use of __to_address
+	with __niter_base or std::to_address as appropriate. Only use
+	either of them when the range is not empty.
+	* include/bits/stl_iterator.h (__to_address): Remove overload
+	for __normal_iterator.
+	* include/debug/safe_iterator.h (__to_address): Remove overload
+	for _Safe_iterator.
+	* include/std/ranges (views::counted): Replace use of
+	__to_address with std::to_address.
+	* testsuite/24_iterators/normal_iterator/to_address.cc: Removed.
+
 2024-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc:

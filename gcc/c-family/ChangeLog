@@ -1,3 +1,10 @@
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-warn.cc (sizeof_pointer_memaccess_warning): Only compare
+	TYPE_PRECISION of TREE_TYPE (type) to precision of char if
+	TREE_TYPE (type) is integral type.
+
 2024-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117028

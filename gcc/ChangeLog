@@ -1,3 +1,112 @@
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117199
+	* varasm.cc (compare_constant): Handle RAW_DATA_CST.  Formatting fix
+	in the STRING_CST case.
+
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117190
+	* varasm.cc (array_size_for_constructor): For RAW_DATA_CST,
+	use bitsize_int rather than size_int.
+
+2024-10-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def: Add generic version/flag as additional
+	value and architecture family entry; update; add gfx-10-3-generic
+	and gfx11-generic.
+	* config/gcn/gcn-hsa.h (ABI_VERSION_SPEC): Remove
+	(ASM_SPEC): Use generated ABI_VERSION_OPT instead.
+	* config/gcn/gcn-tables.opt: Regenerate
+	* config/gcn/gcn.h (gcn_device_def): Add generic_version and
+	arch_family members.
+	(TARGET_CPU_CPP_BUILTINS): Fix allocation bug, handle '-' in the
+	name and add additional macro defines.
+	* config/gcn/gcn.cc (gcn_devices): Handle it.
+	* config/gcn/gen-gcn-device-macros.awk: Likewise; use ELF name
+	for the macro name; generate ABI_VERSION_OPT.
+	* config/gcn/mkoffload.cc (ELFABIVERSION_AMDGPU_HSA_V6,
+	EF_AMDGPU_GENERIC_VERSION_V, EF_AMDGPU_GENERIC_VERSION_OFFSET,
+	GET_GENERIC_VERSION, SET_GENERIC_VERSION): Define.
+	(get_arch): Call SET_GENERIC_VERSION flag on elf_flags.
+	(copy_early_debug_info): If the arch sets the generic version,
+	use ELFABIVERSION_AMDGPU_HSA_V6.
+
+2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117254
+	* gimple-ssa-warn-access.cc (maybe_warn_nonstring_arg):
+	Check the array domain max is constant before using it.
+
+2024-10-22  Andrew Stubbs  <ams@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* config.gcc (amdgcn): Add gcn-device-macros.h to tm_file.
+	Add gcn-tables.opt to extra_options.
+	* config/gcn/gcn-hsa.h (NO_XNACK): Delete.
+	(NO_SRAM_ECC): Delete.
+	(SRAMOPT): Move definition to generated file gcn-device-macros.h.
+	(XNACKOPT): Likewise.
+	(ASM_SPEC): Redefine using generated values from gcn-device-macros.h.
+	* config/gcn/gcn-opts.h
+	(enum processor_type): Generate from gcn-devices.def.
+	(TARGET_VEGA10): Delete.
+	(TARGET_VEGA20): Delete.
+	(TARGET_GFX908): Delete.
+	(TARGET_GFX90a): Delete.
+	(TARGET_GFX90c): Delete.
+	(TARGET_GFX1030): Delete.
+	(TARGET_GFX1036): Delete.
+	(TARGET_GFX1100): Delete.
+	(TARGET_GFX1103): Delete.
+	(TARGET_XNACK): Redefine to allow for HSACO_ATTR_UNSUPPORTED.
+	(enum hsaco_attr_type): Add HSACO_ATTR_UNSUPPORTED.
+	(TARGET_TGSPLIT): New define.
+	* config/gcn/gcn.cc (gcn_devices): New constant table.
+	(gcn_option_override): Rework to use gcn_devices table.
+	(gcn_omp_device_kind_arch_isa): Likewise.
+	(output_file_start): Likewise.
+	(gcn_hsa_declare_function_name): Rework using TARGET_* macros.
+	* config/gcn/gcn.h (gcn_devices): Declare struct and table.
+	(TARGET_CPU_CPP_BUILTINS): Rework using gcn_devices.
+	* config/gcn/gcn.opt: Move enum data to generated file gcn-tables.opt.
+	Use new names for the default values.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX900): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX906): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX908): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX90a): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX90c): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX1030): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX1036): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX1100): Delete.
+	(EF_AMDGPU_MACH_AMDGCN_GFX1103): Delete.
+	(enum elf_arch_code): Define using gcn-devices.def.
+	(get_arch): Rework using gcn-devices.def.
+	(main): Rework using gcn-devices.def
+	* config/gcn/t-gcn-hsa (gcn-tables.opt): Generate file.
+	(gcn-device-macros.h): Generate file.
+	* config/gcn/t-omp-device: Generate isa list from gcn-devices.def.
+	* config/gcn/gcn-devices.def: New file.
+	* config/gcn/gcn-tables.opt: New file.
+	* config/gcn/gcn-tables.opt.urls: New file.
+	* config/gcn/gen-gcn-device-macros.awk: New file.
+	* config/gcn/gen-opt-tables.awk: New file.
+
+2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117123
+	* tree-ssa-sccvn.cc (visit_phi): First process a non-constant
+	argument edge to handle more equivalences.  Remove the
+	two-arg special case.
+
+2024-10-22  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: Support IMM=1.
+
+2024-10-22  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: Support IMM=max-1.
+
 2024-10-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/116488

@@ -1,3 +1,27 @@
+2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117107
+	PR c++/92687
+	* decl.cc (lookup_decomp_type): Handle null table.
+
+2024-10-22  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (register_specialization): Set elt.hash.
+
+2024-10-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (depset::DB_IS_MEMBER_BIT): Rename to...
+	(depset::DB_IS_PENDING_BIT): ...this.
+	(depset::is_member): Remove.
+	(depset::is_pending_entity): New function.
+	(depset::hash::make_dependency): Mark definitions of
+	namespace-scope types as maybe-pending entities.
+	(depset::hash::add_class_entities): Rename DB_IS_MEMBER_BIT to
+	DB_IS_PENDING_BIT.
+	(depset::hash::find_dependencies): Use is_pending_entity
+	instead of is_member.
+	(module_state::write_pendings): Likewise; adjust comment.
+
 2024-10-18  Alejandro Colomar  <alx@kernel.org>
 
 	* cp-tree.h (array_type_nelts_top)

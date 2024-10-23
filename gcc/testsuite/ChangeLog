@@ -1,3 +1,113 @@
+2024-10-23  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/gnu17-tag-1.c, gcc.dg/gnu23-tag-5.c: New tests.
+
+2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117107
+	PR c++/92687
+	* g++.dg/cpp2a/decomp10.C: New test.
+
+2024-10-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116929
+	* g++.dg/modules/enum-14.C: New test.
+
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117190
+	* c-c++-common/init-5.c: New test.
+
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-c++-common/Wsizeof-pointer-memaccess5.c: New test.
+
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117199
+	* gcc.dg/lto/pr117199_0.c: New test.
+
+2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/fp16-aapcs-1.c: Use check-function-bodies.
+	* gcc.target/arm/fp16-aapcs-2.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-3.c: Likewise.
+	* gcc.target/arm/fp16-aapcs-4.c: Likewise.
+
+2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-4.c: Allow lsl and
+	lsr instructions.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-6.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-8.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/bitfield-and-union.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/union-2.c: Likewise.
+
+2024-10-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/mainline/8m/hard-sp/cmse-5.c: Use
+	check-function-bodies.
+	* gcc.target/arm/cmse/mainline/8m/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8m/softfp-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8m/softfp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard-sp/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/hard/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/soft/cmse-5.c: Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp-sp/cmse-5.c:
+	Likewise.
+	* gcc.target/arm/cmse/mainline/8_1m/softfp/cmse-5.c: Likewise.
+
+2024-10-22  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.dg/tree-ssa/log_ident.c: Add scan for removal of
+	link_error in optimized tree dump.
+
+2024-10-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/torture/pr112305.c: Skip at -O0 and -O1 for simulators.
+
+2024-10-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/inst-4_b.C: Adjust pending-entity count.
+	* g++.dg/modules/member-def-1_c.C: Likewise.
+	* g++.dg/modules/member-def-2_c.C: Likewise.
+	* g++.dg/modules/tpl-spec-3_b.C: Likewise.
+	* g++.dg/modules/tpl-spec-4_b.C: Likewise.
+	* g++.dg/modules/tpl-spec-5_b.C: Likewise.
+	* g++.dg/modules/class-9_a.H: New test.
+	* g++.dg/modules/class-9_b.H: New test.
+	* g++.dg/modules/class-9_c.C: New test.
+
+2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117254
+	* gcc.dg/pr117254.c: New testcase.
+
+2024-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117123
+	* g++.dg/tree-ssa/pr117123.C: New testcase.
+
+2024-10-22  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* g++.dg/cpp23/ext-floating19.C: Fix typo for bfloat16 guard.
+
+2024-10-22  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/sat_u_sub_imm-1_4.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-2_4.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-3_4.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-4_2.c: New test.
+
+2024-10-22  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/sat_u_sub_imm-1_3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-2_3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-3_3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-4_1.c: New test.
+
 2024-10-21  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/116488

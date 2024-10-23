@@ -1,3 +1,26 @@
+2024-10-22  Andrew Stubbs  <ams@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Generate from gcn-devices.def.
+	(gcn_gfx803_s): Delete.
+	(gcn_gfx900_s): Delete.
+	(gcn_gfx906_s): Delete.
+	(gcn_gfx908_s): Delete.
+	(gcn_gfx90a_s): Delete.
+	(gcn_gfx90c_s): Delete.
+	(gcn_gfx1030_s): Delete.
+	(gcn_gfx1036_s): Delete.
+	(gcn_gfx1100_s): Delete.
+	(gcn_gfx1103_s): Delete.
+	(gcn_isa_name_len): Delete.
+	(isa_hsa_name): Rename ...
+	(isa_name): ... to this, and rework using gcn-devices.def.
+	(isa_gcc_name): Delete.
+	(isa_code): Rework using gcn-devices.def.
+	(max_isa_vgprs): Rework using gcn-devices.def.
+	(isa_matches_agent): Update isa_name usage.
+	(GOMP_OFFLOAD_init_device): Improve diagnostic using the name.
+
 2024-10-16  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.oacc-fortran/acc_on_device-1-4.f: New test;
