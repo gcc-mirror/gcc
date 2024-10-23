@@ -293,11 +293,15 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 		     &a->expr->where, gfc_current_intrinsic);
 	  ok = false;
 	}
-      else if (a->expr->rank == -1 && !specific->inquiry)
+      else if (a->expr->rank == -1
+	       && !(specific->inquiry
+		    || (specific->id == GFC_ISYM_RESHAPE
+			&& (gfc_option.allow_std & GFC_STD_F202Y))))
 	{
 	  gfc_error ("Assumed-rank argument at %L is only permitted as actual "
-		     "argument to intrinsic inquiry functions",
-		     &a->expr->where);
+		     "argument to intrinsic inquiry functions or to RESHAPE. "
+		     "The latter is an experimental F202y feature. Use "
+		     "-std=f202y to enable", &a->expr->where);
 	  ok = false;
 	}
       else if (a->expr->rank == -1 && arg != a)
@@ -305,6 +309,13 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	  gfc_error ("Assumed-rank argument at %L is only permitted as first "
 		     "actual argument to the intrinsic inquiry function %s",
 		     &a->expr->where, gfc_current_intrinsic);
+	  ok = false;
+	}
+      else if (a->expr->rank == -1 && specific->id == GFC_ISYM_RESHAPE
+	       && !gfc_is_simply_contiguous (a->expr, true, false))
+	{
+	  gfc_error ("Assumed rank argument to the RESHAPE intrinsic at %L "
+		     "must be contiguous", &a->expr->where);
 	  ok = false;
 	}
     }

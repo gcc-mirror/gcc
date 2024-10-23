@@ -1925,7 +1925,29 @@ gfc_match_associate (void)
       gfc_association_list* a;
 
       /* Match the next association.  */
-      if (gfc_match (" %n =>", newAssoc->name) != MATCH_YES)
+      if (gfc_match (" %n ", newAssoc->name) != MATCH_YES)
+	{
+	  gfc_error ("Expected associate name at %C");
+	  goto assocListError;
+	}
+
+      /* Required for an assumed rank target.  */
+      if (gfc_peek_char () == '(')
+	{
+	  newAssoc->ar = gfc_get_array_ref ();
+	  if (gfc_match_array_ref (newAssoc->ar, NULL, 0, 0) != MATCH_YES)
+	    {
+	      gfc_error ("Bad bounds remapping list at %C");
+	      goto assocListError;
+	    }
+	}
+
+      if (newAssoc->ar && !(gfc_option.allow_std & GFC_STD_F202Y))
+	gfc_error_now ("The bounds remapping list at %C is an experimental "
+		       "F202y feature. Use std=f202y to enable");
+
+      /* Match the next association.  */
+      if (gfc_match (" =>", newAssoc->name) != MATCH_YES)
 	{
 	  gfc_error ("Expected association at %C");
 	  goto assocListError;
@@ -1967,6 +1989,35 @@ gfc_match_associate (void)
 	  gfc_error ("Association target at %L cannot be a BOZ literal "
 		     "constant", &newAssoc->target->where);
 	  goto assocListError;
+	}
+
+      if (newAssoc->target->expr_type == EXPR_VARIABLE
+	  && newAssoc->target->symtree->n.sym->as
+	  && newAssoc->target->symtree->n.sym->as->type == AS_ASSUMED_RANK)
+	{
+	  bool bounds_remapping_list = true;
+	  if (!newAssoc->ar)
+	    bounds_remapping_list = false;
+	  else
+	    for (int dim = 0; dim < newAssoc->ar->dimen; dim++)
+	      if (!newAssoc->ar->start[dim] || !newAssoc->ar->end[dim]
+		  || newAssoc->ar->stride[dim] != NULL)
+		bounds_remapping_list = false;
+
+	  if (!bounds_remapping_list)
+	    {
+	      gfc_error ("The associate name %s with an assumed rank "
+			 "target at %L must have a bounds remapping list "
+			 "(list of lbound:ubound for each dimension)",
+			 newAssoc->name, &newAssoc->target->where);
+	      goto assocListError;
+	    }
+
+	  if (!newAssoc->target->symtree->n.sym->attr.contiguous)
+	    {
+	      gfc_error ("The assumed rank target at %C must be contiguous");
+	      goto assocListError;
+	    }
 	}
 
       /* The `variable' field is left blank for now; because the target is not

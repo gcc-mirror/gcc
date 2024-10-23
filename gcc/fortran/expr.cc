@@ -4371,9 +4371,18 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 	  return false;
 	}
 
+      /* An assumed rank target is an experimental F202y feature.  */
+      if (rvalue->rank == -1 && !(gfc_option.allow_std & GFC_STD_F202Y))
+	{
+	  gfc_error ("The assumed rank target at %L is an experimental F202y "
+		     "feature. Use option -std=f202y to enable",
+		     &rvalue->where);
+	  return false;
+	}
+
       /* The target must be either rank one or it must be simply contiguous
 	 and F2008 must be allowed.  */
-      if (rvalue->rank != 1)
+      if (rvalue->rank != 1 && rvalue->rank != -1)
 	{
 	  if (!gfc_is_simply_contiguous (rvalue, true, false))
 	    {
@@ -4385,6 +4394,21 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 			       "rank 1 at %L", &rvalue->where))
 	    return false;
 	}
+    }
+  else if (rvalue->rank == -1)
+    {
+      gfc_error ("The data-target at %L is an assumed rank object and so the "
+		 "data-pointer-object %s must have a bounds remapping list "
+		 "(list of lbound:ubound for each dimension)",
+		  &rvalue->where, lvalue->symtree->name);
+      return false;
+    }
+
+  if (rvalue->rank == -1 && !gfc_is_simply_contiguous (rvalue, true, false))
+    {
+      gfc_error ("The assumed rank data-target at %L must be contiguous",
+		 &rvalue->where);
+      return false;
     }
 
   /* Now punt if we are dealing with a NULLIFY(X) or X = NULL(X).  */

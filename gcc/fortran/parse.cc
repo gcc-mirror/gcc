@@ -5285,15 +5285,25 @@ parse_associate (void)
 	  if ((!CLASS_DATA (sym)->as && (rank != 0 || corank != 0))
 	      || (CLASS_DATA (sym)->as
 		  && (CLASS_DATA (sym)->as->rank != rank
-		      || CLASS_DATA (sym)->as->corank != corank)))
+		      || CLASS_DATA (sym)->as->corank != corank))
+	      || rank == -1)
 	    {
 	      /* Don't just (re-)set the attr and as in the sym.ts,
 	      because this modifies the target's attr and as.  Copy the
 	      data and do a build_class_symbol.  */
 	      symbol_attribute attr = CLASS_DATA (target)->attr;
 	      gfc_typespec type;
-
-	      if (rank || corank)
+	      if (rank == -1 && a->ar)
+		{
+		  as = gfc_get_array_spec ();
+		  as->rank = a->ar->dimen;
+		  as->corank = 0;
+		  as->type = AS_DEFERRED;
+		  attr.dimension = rank ? 1 : 0;
+		  attr.codimension = as->corank ? 1 : 0;
+		  sym->assoc->variable = true;
+		}
+	       else if (rank || corank)
 		{
 		  as = gfc_get_array_spec ();
 		  as->type = AS_DEFERRED;
@@ -5319,6 +5329,16 @@ parse_associate (void)
 	  else
 	    sym->attr.class_ok = 1;
 	}
+      else if (rank == -1 && a->ar)
+	{
+	  sym->as = gfc_get_array_spec ();
+	  sym->as->rank = a->ar->dimen;
+	  sym->as->corank = a->ar->codimen;
+	  sym->as->type = AS_DEFERRED;
+	  sym->attr.dimension = 1;
+	  sym->attr.codimension = sym->as->corank ? 1 : 0;
+	  sym->attr.pointer = 1;
+	}
       else if ((!sym->as && (rank != 0 || corank != 0))
 	       || (sym->as
 		   && (sym->as->rank != rank || sym->as->corank != corank)))
@@ -5336,6 +5356,7 @@ parse_associate (void)
 	      sym->attr.codimension = 1;
 	    }
 	}
+      gfc_commit_symbols ();
     }
 
   accept_statement (ST_ASSOCIATE);

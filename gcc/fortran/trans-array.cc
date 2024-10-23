@@ -5045,9 +5045,12 @@ done:
 		    se.descriptor_only = 1;
 		    gfc_conv_expr (&se, arg);
 		    /* This is a bare variable, so there is no preliminary
-		       or cleanup code.  */
-		    gcc_assert (se.pre.head == NULL_TREE
-				&& se.post.head == NULL_TREE);
+		       or cleanup code unless -std=f202y and bounds checking
+		       is on.  */
+		    if (!((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+			  && (gfc_option.allow_std & GFC_STD_F202Y)))
+		      gcc_assert (se.pre.head == NULL_TREE
+				  && se.post.head == NULL_TREE);
 		    rank = gfc_conv_descriptor_rank (se.expr);
 		    tmp = fold_build2_loc (input_location, MINUS_EXPR,
 					   gfc_array_index_type,

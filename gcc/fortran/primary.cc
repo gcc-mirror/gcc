@@ -2276,6 +2276,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	}
     }
   else if (sym->ts.type == BT_CLASS
+	   && !(sym->assoc && sym->assoc->ar)
 	   && tgt_expr
 	   && tgt_expr->expr_type == EXPR_VARIABLE
 	   && sym->ts.u.derived != tgt_expr->ts.u.derived)

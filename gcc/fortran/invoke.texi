@@ -1,5 +1,5 @@
 @c Copyright (C) 2004-2024 Free Software Foundation, Inc.
-@c This is part of the GNU Fortran manual.   
+@c This is part of the GNU Fortran manual.
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
@@ -139,7 +139,7 @@ by type.  Explanations are in the following sections.
 -H -P
 -U@var{macro} -cpp -dD -dI -dM -dN -dU -fworking-directory
 -imultilib @var{dir}
--iprefix @var{file} -iquote -isysroot @var{dir} -isystem @var{dir} -nocpp 
+-iprefix @var{file} -iquote -isysroot @var{dir} -isystem @var{dir} -nocpp
 -nostdinc
 -undef
 }
@@ -312,7 +312,7 @@ JIAND, etc...). For a complete list of intrinsics see the full documentation.
 Obsolete flag.  The purpose of this option was to
 enable legacy math intrinsics such as COTAN and degree-valued trigonometric
 functions (e.g. TAND, ATAND, etc...) for compatability with older code. This
-option is no longer operable. The trigonometric functions are now either 
+option is no longer operable. The trigonometric functions are now either
 part of Fortran 2023 or GNU extensions.
 
 @opindex fdec-static
@@ -341,7 +341,7 @@ following the final comma.
 @cindex symbol names
 @cindex character set
 @item -fdollar-ok
-Allow @samp{$} as a valid non-first character in a symbol name. Symbols 
+Allow @samp{$} as a valid non-first character in a symbol name. Symbols
 that start with @samp{$} are rejected since it is unclear which rules to
 apply to implicit typing as different vendors implement different rules.
 Using @samp{$} in @code{IMPLICIT} statements is also rejected.
@@ -606,7 +606,10 @@ beyond the relevant language standard, and warnings are given for the
 Fortran 77 features that are permitted but obsolescent in later
 standards. The deprecated option @samp{-std=f2008ts} acts as an alias for
 @samp{-std=f2018}. It is only present for backwards compatibility with
-earlier gfortran versions and should not be used any more.
+earlier gfortran versions and should not be used any more. @samp{-std=f202y}
+acts as an alias for @samp{-std=f2023} and enables proposed features for
+testing Fortran 202y. As the Fortran 202y standard develops, implementation
+might change or the experimental new features might be removed.
 
 @opindex ftest-forall-temp
 @item -ftest-forall-temp
@@ -718,7 +721,7 @@ Like @option{-dD}, but emit only the macro names, not their expansions.
 @cindex debugging, preprocessor
 @item -dU
 Like @option{dD} except that only macros that are expanded, or whose
-definedness is tested in preprocessor directives, are output; the 
+definedness is tested in preprocessor directives, are output; the
 output is delayed until the use or test of the macro; and @code{'#undef'}
 directives are also output for macros tested but undefined at the time.
 
@@ -908,7 +911,7 @@ with a @option{-D} option.
 Errors are diagnostic messages that report that the GNU Fortran compiler
 cannot compile the relevant piece of source code.  The compiler will
 continue to process the program in an attempt to report further errors
-to aid in debugging, but will not produce any compiled output.  
+to aid in debugging, but will not produce any compiled output.
 
 Warnings are diagnostic messages that report constructions which
 are not inherently erroneous but which are risky or suggest there is
@@ -1027,7 +1030,7 @@ avoid such temporaries.
 @opindex Wc-binding-type
 @cindex warning, C binding type
 @item -Wc-binding-type
-Warn if the a variable might not be C interoperable.  In particular, warn if 
+Warn if the a variable might not be C interoperable.  In particular, warn if
 the variable has been declared using an intrinsic type with default kind
 instead of using a kind parameter defined for C interoperability in the
 intrinsic @code{ISO_C_Binding} module.  This option is implied by
@@ -1050,7 +1053,7 @@ error.
 @cindex warnings, conversion
 @cindex conversion
 @item -Wconversion
-Warn about implicit conversions that are likely to change the value of 
+Warn about implicit conversions that are likely to change the value of
 the expression after conversion. Implied by @option{-Wall}.
 
 @opindex Wconversion-extra
@@ -1191,7 +1194,7 @@ the desired intrinsic/procedure.  This option is implied by @option{-Wall}.
 @cindex warnings, use statements
 @cindex intrinsic
 @item -Wuse-without-only
-Warn if a @code{USE} statement has no @code{ONLY} qualifier and 
+Warn if a @code{USE} statement has no @code{ONLY} qualifier and
 thus implicitly imports all public entities of the used module.
 
 @opindex Wunused-dummy-argument
@@ -1436,8 +1439,8 @@ they are not in the default location expected by the compiler.
 @cindex options, linking
 @cindex linking, static
 
-These options come into play when the compiler links object files into an 
-executable output file. They are meaningless if the compiler is not doing 
+These options come into play when the compiler links object files into an
+executable output file. They are meaningless if the compiler is not doing
 a link step.
 
 @table @gcctabopt
@@ -1609,7 +1612,7 @@ referenced in it. Does not affect common blocks. (Some Fortran compilers
 provide this option under the name @option{-static} or @option{-save}.)
 The default, which is @option{-fautomatic}, uses the stack for local
 variables smaller than the value given by @option{-fmax-stack-var-size}.
-Use the option @option{-frecursive} to use no static memory. 
+Use the option @option{-frecursive} to use no static memory.
 
 Local variables or arrays having an explicit @code{SAVE} attribute are
 silently ignored unless the @option{-pedantic} option is added.
@@ -1880,7 +1883,7 @@ Deprecated alias for @option{-fcheck=array-temps}.
 
 @opindex fmax-array-constructor
 @item -fmax-array-constructor=@var{n}
-This option can be used to increase the upper limit permitted in 
+This option can be used to increase the upper limit permitted in
 array constructors.  The code below requires this option to expand
 the array at compile time.
 

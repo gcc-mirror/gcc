@@ -3034,6 +3034,8 @@ typedef struct gfc_association_list
 
   gfc_expr *target;
 
+  gfc_array_ref *ar;
+
   /* Used for inferring the derived type of an associate name, whose selector
      is a sibling derived type function that has not yet been parsed.  */
   gfc_symbol *derived_types;

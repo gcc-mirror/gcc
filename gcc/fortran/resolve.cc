@@ -5204,6 +5204,7 @@ find_array_spec (gfc_expr *e)
 	  }
 
 	ref->u.ar.as = as;
+	if (ref->u.ar.dimen == -1) ref->u.ar.dimen = as->rank;
 	as = NULL;
 	break;
 
@@ -5808,7 +5809,8 @@ gfc_expression_rank (gfc_expr *e)
 	  break;
 	}
     }
-  if (last_arr_ref && last_arr_ref->u.ar.as)
+  if (last_arr_ref && last_arr_ref->u.ar.as
+      && last_arr_ref->u.ar.as->rank != -1)
     {
       for (i = last_arr_ref->u.ar.as->rank;
 	   i < last_arr_ref->u.ar.as->rank + last_arr_ref->u.ar.as->corank; ++i)
@@ -5952,12 +5954,14 @@ resolve_variable (gfc_expr *e)
 	     && CLASS_DATA (sym)->as
 	     && CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
 	    || (sym->ts.type != BT_CLASS && sym->as
-	        && sym->as->type == AS_ASSUMED_RANK))
-	   && !sym->attr.select_rank_temporary)
+		&& sym->as->type == AS_ASSUMED_RANK))
+	   && !sym->attr.select_rank_temporary
+	   && !(sym->assoc && sym->assoc->ar))
     {
       if (!actual_arg
 	  && !(cs_base && cs_base->current
-	       && cs_base->current->op == EXEC_SELECT_RANK))
+	       && (cs_base->current->op == EXEC_SELECT_RANK
+		   || sym->attr.target)))
 	{
 	  gfc_error ("Assumed-rank variable %s at %L may only be used as "
 		     "actual argument", sym->name, &e->where);
@@ -6001,6 +6005,7 @@ resolve_variable (gfc_expr *e)
 	&& CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
        || (sym->ts.type != BT_CLASS && sym->as
 	   && sym->as->type == AS_ASSUMED_RANK))
+      && !(sym->assoc && sym->assoc->ar)
       && e->ref
       && !(e->ref->type == REF_ARRAY && e->ref->u.ar.type == AR_FULL
 	   && e->ref->next == NULL))
@@ -6117,6 +6122,7 @@ resolve_variable (gfc_expr *e)
       newref->type = REF_ARRAY;
       newref->u.ar.type = AR_FULL;
       newref->u.ar.dimen = 0;
+
       /* Because this is an associate var and the first ref either is a ref to
 	 the _data component or not, no traversal of the ref chain is
 	 needed.  The array ref needs to be inserted after the _data ref,
@@ -9558,6 +9564,22 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (resolve_target && !gfc_resolve_expr (target))
     return;
 
+  if (sym->assoc->ar)
+    {
+      int dim;
+      gfc_array_ref *ar = sym->assoc->ar;
+      for (dim = 0; dim < sym->assoc->ar->dimen; dim++)
+	{
+	  if (!(ar->start[dim] && gfc_resolve_expr (ar->start[dim])
+		&& ar->start[dim]->ts.type == BT_INTEGER)
+	      || !(ar->end[dim] && gfc_resolve_expr (ar->end[dim])
+		   && ar->end[dim]->ts.type == BT_INTEGER))
+	    gfc_error ("(F202y)Missing or invalid bound in ASSOCIATE rank "
+		       "remapping of associate name %s at %L",
+		       sym->name, &sym->declared_at);
+	}
+    }
+
   /* For variable targets, we get some attributes from the target.  */
   if (target->expr_type == EXPR_VARIABLE)
     {
@@ -9747,7 +9769,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (target->ts.type == BT_CLASS)
     gfc_fix_class_refs (target);
 
-  if ((target->rank != 0 || target->corank != 0)
+  if ((target->rank > 0 || target->corank > 0)
       && !sym->attr.select_rank_temporary)
     {
       gfc_array_spec *as;
@@ -16746,7 +16768,9 @@ resolve_symbol (gfc_symbol *sym)
       if (as->type == AS_ASSUMED_RANK && !sym->attr.dummy
 	  && !sym->attr.select_type_temporary
 	  && !(cs_base && cs_base->current
-	       && cs_base->current->op == EXEC_SELECT_RANK))
+	       && (cs_base->current->op == EXEC_SELECT_RANK
+		   || ((gfc_option.allow_std & GFC_STD_F202Y)
+			&& cs_base->current->op == EXEC_BLOCK))))
 	{
 	  gfc_error ("Assumed-rank array at %L must be a dummy argument",
 		     &sym->declared_at);
