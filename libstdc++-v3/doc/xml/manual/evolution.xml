@@ -1135,6 +1135,16 @@ to be used with <code>std::basic_istream</code>.
 Enabled debug assertions by default for unoptimized builds.
 </para>
 
+<para>
+Added warnings when including the headers that were deprecated in C++17
+and removed in C++20:
+<filename class="headerfile">&lt;ccomplex&gt;</filename>,
+<filename class="headerfile">&lt;ciso646&gt;</filename>,
+<filename class="headerfile">&lt;cstdalign&gt;</filename>,
+<filename class="headerfile">&lt;cstdbool&gt;</filename>, and
+<filename class="headerfile">&lt;ctgmath&gt;</filename>.
+</para>
+
 </section>
 
 </section>

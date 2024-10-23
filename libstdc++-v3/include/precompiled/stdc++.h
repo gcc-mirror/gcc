@@ -34,7 +34,6 @@
 #endif
 #include <cctype>
 #include <cfloat>
-#include <ciso646>
 #include <climits>
 #include <csetjmp>
 #include <cstdarg>
@@ -43,6 +42,9 @@
 
 #if __cplusplus >= 201103L
 #include <cstdint>
+#if __cplusplus < 201703L
+#include <ciso646>
+#endif
 #endif
 
 // C++
@@ -108,7 +110,6 @@
 #include <cctype>
 #include <cerrno>
 #include <cfloat>
-#include <ciso646>
 #include <climits>
 #include <clocale>
 #include <cmath>
@@ -124,14 +125,16 @@
 #include <cwctype>
 
 #if __cplusplus >= 201103L
-#include <ccomplex>
 #include <cfenv>
 #include <cinttypes>
+#include <cstdint>
+#include <cuchar>
+#if __cplusplus < 201703L
+#include <ccomplex>
 #include <cstdalign>
 #include <cstdbool>
-#include <cstdint>
 #include <ctgmath>
-#include <cuchar>
+#endif
 #endif
 
 // C++

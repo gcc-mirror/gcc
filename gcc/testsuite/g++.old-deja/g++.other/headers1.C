@@ -12,7 +12,9 @@
 #include <cctype>
 #include <cerrno>
 #include <cfloat>
+#if __cplusplus < 201703L
 #include <ciso646>
+#endif
 #include <climits>
 #include <clocale>
 #include <cmath>

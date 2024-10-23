@@ -32,11 +32,12 @@
 #include <bits/c++config.h>
 
 #if __cplusplus >= 201103L
-# include <ctgmath>
-#else
-# if _GLIBCXX_HAVE_TGMATH_H
-#  include_next <tgmath.h>
-# endif
+# include <cmath>
+extern "C++" {
+# include <complex>
+}
+#elif _GLIBCXX_HAVE_TGMATH_H
+# include_next <tgmath.h>
 #endif
 
 #endif

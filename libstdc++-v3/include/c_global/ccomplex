@@ -41,4 +41,13 @@ extern "C++" {
 #include <complex>
 }
 
+#if __cplusplus >= 202002L && ! _GLIBCXX_USE_DEPRECATED
+#  error "<ccomplex> is not a standard header in C++20, use <complex> instead"
+#elif __cplusplus >= 201703L && defined __DEPRECATED
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wc++23-extensions"
+#  warning "<ccomplex> is deprecated in C++17, use <complex> instead"
+#  pragma GCC diagnostic pop
+#endif
+
 #endif

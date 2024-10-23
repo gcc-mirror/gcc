@@ -40,6 +40,14 @@
 #  if _GLIBCXX_HAVE_STDALIGN_H
 #    include <stdalign.h>
 #  endif
+#  if __cplusplus >= 202002L && ! _GLIBCXX_USE_DEPRECATED
+#    error "<cstdalign> is not a standard header in C++20, remove the #include"
+#  elif __cplusplus >= 201703L && defined __DEPRECATED
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wc++23-extensions"
+#    warning "<cstdalign> is deprecated in C++17, remove the #include"
+#    pragma GCC diagnostic pop
+#  endif
 #endif
 
 #endif

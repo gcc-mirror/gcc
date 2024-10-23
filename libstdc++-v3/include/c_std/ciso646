@@ -37,4 +37,14 @@
 #endif
 
 #include <bits/c++config.h>
+
+#if __cplusplus >= 202002L && ! _GLIBCXX_USE_DEPRECATED
+#  error "<ciso646> is not a standard header in C++20, use <version> to detect implementation-specific macros"
+#elif __cplusplus >= 201703L && defined __DEPRECATED
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wc++23-extensions"
+#  warning "<ciso646> is deprecated in C++17, use <version> to detect implementation-specific macros"
+#  pragma GCC diagnostic pop
+#endif
+
 #endif
