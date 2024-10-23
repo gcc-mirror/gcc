@@ -113,7 +113,7 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
 
   if (!encoder->map)
     {
-      lto_encoder_entry entry = {node, false, false, false};
+      lto_encoder_entry entry (node);
 
       ref = encoder->nodes.length ();
       encoder->nodes.safe_push (entry);
@@ -123,7 +123,7 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
   size_t *slot = encoder->map->get (node);
   if (!slot || !*slot)
     {
-      lto_encoder_entry entry = {node, false, false, false};
+      lto_encoder_entry entry (node);
       ref = encoder->nodes.length ();
       if (!slot)
         encoder->map->put (node, ref + 1);
@@ -168,6 +168,15 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
   return true;
 }
 
+/* Return TRUE if the NODE and its clones are always inlined.  */
+
+bool
+lto_symtab_encoder_only_for_inlining_p (lto_symtab_encoder_t encoder,
+					struct cgraph_node *node)
+{
+  int index = lto_symtab_encoder_lookup (encoder, node);
+  return encoder->nodes[index].only_for_inlining;
+}
 
 /* Return TRUE if we should encode the body of NODE (if any).  */
 
@@ -177,17 +186,6 @@ lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t encoder,
 {
   int index = lto_symtab_encoder_lookup (encoder, node);
   return encoder->nodes[index].body;
-}
-
-/* Specify that we encode the body of NODE in this partition.  */
-
-static void
-lto_set_symtab_encoder_encode_body (lto_symtab_encoder_t encoder,
-				    struct cgraph_node *node)
-{
-  int index = lto_symtab_encoder_encode (encoder, node);
-  gcc_checking_assert (encoder->nodes[index].node == node);
-  encoder->nodes[index].body = true;
 }
 
 /* Return TRUE if we should encode initializer of NODE (if any).  */
@@ -797,13 +795,28 @@ output_refs (lto_symtab_encoder_t encoder)
 
 static void
 add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
-	     bool include_body)
+	     bool include_body, bool not_inlined)
 {
   if (node->clone_of)
-    add_node_to (encoder, node->clone_of, include_body);
+    add_node_to (encoder, node->clone_of, include_body, not_inlined);
+
+  int index = lto_symtab_encoder_encode (encoder, node);
+  gcc_checking_assert (encoder->nodes[index].node == node);
+
   if (include_body)
-    lto_set_symtab_encoder_encode_body (encoder, node);
-  lto_symtab_encoder_encode (encoder, node);
+    encoder->nodes[index].body = true;
+  if (not_inlined)
+    encoder->nodes[index].only_for_inlining = false;
+}
+
+/* Add NODE into encoder as well as nodes it is cloned from.
+   Do it in a way so clones appear first.  */
+
+static void
+add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
+	     bool include_body)
+{
+  add_node_to (encoder, node, include_body, include_body && !node->inlined_to);
 }
 
 /* Add all references in NODE to encoders.  */

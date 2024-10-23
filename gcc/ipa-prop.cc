@@ -5405,9 +5405,15 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node,
       streamer_write_bitpack (&bp);
     }
 
-  streamer_write_uhwi (ob, vec_safe_length (ts->m_vr));
-  for (const ipa_vr &parm_vr : ts->m_vr)
-    parm_vr.streamer_write (ob);
+  /* If all instances of this node are inlined, ipcp info is not useful.  */
+  if (!lto_symtab_encoder_only_for_inlining_p (encoder, node))
+    {
+      streamer_write_uhwi (ob, vec_safe_length (ts->m_vr));
+      for (const ipa_vr &parm_vr : ts->m_vr)
+	parm_vr.streamer_write (ob);
+    }
+  else
+    streamer_write_uhwi (ob, 0);
 }
 
 /* Stream in the aggregate value replacement chain for NODE from IB.  */
