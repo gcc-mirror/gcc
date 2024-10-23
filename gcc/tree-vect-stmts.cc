@@ -2520,7 +2520,8 @@ vect_check_scalar_mask (vec_info *vinfo, stmt_vec_info stmt_info,
       return false;
     }
 
-  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (*mask)))
+  if ((mask_dt == vect_constant_def || mask_dt == vect_external_def)
+      && !VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (*mask)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
