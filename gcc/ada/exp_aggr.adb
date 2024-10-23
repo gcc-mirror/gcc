@@ -1973,30 +1973,35 @@ package body Exp_Aggr is
 
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
-            Choice := First (Choice_List (Assoc));
-            while Present (Choice) loop
-               if Nkind (Choice) = N_Others_Choice then
-                  Others_Assoc := Assoc;
-                  exit;
-               end if;
+            declare
+               First_Range : Boolean := True;
 
-               Bounds := Get_Index_Bounds (Choice);
+            begin
+               Choice := First (Choice_List (Assoc));
+               while Present (Choice) loop
+                  if Nkind (Choice) = N_Others_Choice then
+                     Others_Assoc := Assoc;
+                     exit;
+                  end if;
 
-               if Low /= High
-                 and then No (Loop_Actions (Assoc))
-               then
-                  Set_Loop_Actions (Assoc, New_List);
-               end if;
+                  Bounds := Get_Index_Bounds (Choice);
 
-               Nb_Choices := Nb_Choices + 1;
+                  if First_Range and then Low /= High then
+                     pragma Assert (No (Loop_Actions (Assoc)));
+                     Set_Loop_Actions (Assoc, New_List);
+                     First_Range := False;
+                  end if;
 
-               Table (Nb_Choices) :=
-                  (Choice_Lo   => Low,
-                   Choice_Hi   => High,
-                   Choice_Node => Get_Assoc_Expr (Assoc));
+                  Nb_Choices := Nb_Choices + 1;
 
-               Next (Choice);
-            end loop;
+                  Table (Nb_Choices) :=
+                     (Choice_Lo   => Low,
+                      Choice_Hi   => High,
+                      Choice_Node => Get_Assoc_Expr (Assoc));
+
+                  Next (Choice);
+               end loop;
+            end;
 
             Next (Assoc);
          end loop;
@@ -2059,12 +2064,10 @@ package body Exp_Aggr is
                   end if;
 
                   if First or else not Empty_Range (Low, High) then
-                     First := False;
-                     if Present (Loop_Actions (Others_Assoc)) then
-                        pragma Assert
-                          (Is_Empty_List (Loop_Actions (Others_Assoc)));
-                     else
+                     if First then
+                        pragma Assert (No (Loop_Actions (Others_Assoc)));
                         Set_Loop_Actions (Others_Assoc, New_List);
+                        First := False;
                      end if;
                      Expr := Get_Assoc_Expr (Others_Assoc);
                      Append_List (Gen_Loop (Low, High, Expr), To => New_Code);

@@ -8116,9 +8116,9 @@ package body Exp_Util is
             --  If a component association appears within a loop created for
             --  an array aggregate, attach the actions to the association so
             --  they can be subsequently inserted within the loop. For other
-            --  component associations insert outside of the aggregate. For
+            --  component associations, insert outside of the aggregate. For
             --  an association that will generate a loop, its Loop_Actions
-            --  attribute is already initialized (see exp_aggr.adb).
+            --  field is already initialized (see exp_aggr.adb).
 
             --  The list of Loop_Actions can in turn generate additional ones,
             --  that are inserted before the associated node. If the associated
@@ -8131,27 +8131,12 @@ package body Exp_Util is
                | N_Iterated_Element_Association
             =>
                if Nkind (Parent (P)) in N_Aggregate | N_Delta_Aggregate
-
-                 --  We must not climb up out of an N_Iterated_xxx_Association
-                 --  because the actions might contain references to the loop
-                 --  parameter, except if we come from the Discrete_Choices of
-                 --  N_Iterated_Component_Association which cannot contain any.
-                 --  But it turns out that setting the Loop_Actions field in
-                 --  the case of an N_Component_Association when the field was
-                 --  not already set can lead to gigi assertion failures that
-                 --  are presumably due to malformed trees, so don't do that.
-
-                 and then
-                   not (Nkind (P) = N_Iterated_Component_Association
-                          and then Is_List_Member (N)
-                          and then List_Containing (N) = Discrete_Choices (P))
-                 and then
-                   not (Nkind (P) = N_Component_Association
-                          and then No (Loop_Actions (P)))
+                 and then Present (Loop_Actions (P))
                then
                   if Is_Empty_List (Loop_Actions (P)) then
                      Set_Loop_Actions (P, Ins_Actions);
                      Analyze_List (Ins_Actions);
+
                   else
                      declare
                         Decl : Node_Id;
