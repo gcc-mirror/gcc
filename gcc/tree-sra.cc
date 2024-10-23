@@ -1397,6 +1397,15 @@ static bool
 build_access_from_call_arg (tree expr, gimple *stmt, bool can_be_returned,
 			    enum out_edge_check *oe_check)
 {
+  if (gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+    {
+      tree base = expr;
+      if (TREE_CODE (expr) == ADDR_EXPR)
+	base = get_base_address (TREE_OPERAND (expr, 0));
+      disqualify_base_of_expr (base, "Passed to a returns_twice call.");
+      return false;
+    }
+
   if (TREE_CODE (expr) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (expr, 0));
