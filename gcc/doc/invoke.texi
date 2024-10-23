@@ -380,7 +380,8 @@ Objective-C and Objective-C++ Dialects}.
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model
 -Winvalid-pch  -Winvalid-utf8  -Wno-unicode  -Wjump-misses-init
--Wlarger-than=@var{byte-size}  -Wlogical-not-parentheses  -Wlogical-op
+-Wlarger-than=@var{byte-size}  -Wleading-whitespace=@var{kind}
+-Wlogical-not-parentheses  -Wlogical-op
 -Wlong-long  -Wno-lto-type-mismatch -Wmain  -Wmaybe-uninitialized
 -Wmemset-elt-size  -Wmemset-transposed-args
 -Wmisleading-indentation  -Wmissing-attributes  -Wmissing-braces
@@ -8788,6 +8789,28 @@ horizontal tab characters.  @code{-Wtrailing-whitespace=space} warns about
 those or trailing form feed or vertical tab characters.
 @code{-Wno-trailing-whitespace} or @code{-Wtrailing-whitespace=none}
 disables the warning, which is the default.
+This is a coding style warning.
+
+@opindex Wleading-whitespace=
+@item -Wleading-whitespace=@var{kind}
+Warn about style issues in leading whitespace, but not about the amount of
+indentation.  Some projects use coding styles where only spaces are used
+for indentation, others use only tabs, others use zero or more tabs (for
+multiples of @code{-ftabstop=@var{n}}) followed by zero or fewer than @var{n}
+spaces.  No warning is emitted on lines which contain solely whitespace
+(although @code{-Wtrailing-whitespace=} warning might be emitted), no
+warnings are emitted inside of raw string literals.  Warnings are also emitted
+for leading whitespace inside of multi-line comments.
+@code{-Wleading-whitespace=spaces} warns about leading whitespace other than
+spaces for projects which want to indent just by spaces.
+@code{-Wleading-whitespace=tabs} warns about leading whitespace other than
+horizontal tabs for projects which want to indent just by horizontal tabs.
+@code{-Wleading-whitespace=blanks} warns about leading whitespace other than
+spaces and horizontal tabs, or about horizontal tab after a space in the
+leading whitespace, or about @var{n} or more consecutive spaces in leading
+whitespace (where @var{n} is argument of @code{-ftabstop=@var{n}}, 8 by
+default).
+@code{-Wleading-whitespace=none} disables the warning, which is the default.
 This is a coding style warning.
 
 @opindex Wtrampolines

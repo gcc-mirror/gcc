@@ -609,8 +609,14 @@ struct cpp_options
   /* True if -finput-charset= option has been used explicitly.  */
   bool cpp_input_charset_explicit;
 
+  /* -Wleading-whitespace= value.  */
+  unsigned char cpp_warn_leading_whitespace;
+
   /* -Wtrailing-whitespace= value.  */
   unsigned char cpp_warn_trailing_whitespace;
+
+  /* -ftabstop= value.  */
+  unsigned int cpp_tabstop;
 
   /* Dependency generation.  */
   struct
@@ -738,6 +744,7 @@ enum cpp_warning_reason {
   CPP_W_UNICODE,
   CPP_W_HEADER_GUARD,
   CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER,
+  CPP_W_LEADING_WHITESPACE,
   CPP_W_TRAILING_WHITESPACE
 };
 

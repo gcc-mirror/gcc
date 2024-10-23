@@ -928,6 +928,25 @@ Wjump-misses-init
 C ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization.
 
+Enum
+Name(warn_leading_whitespace_kind) Type(int) UnknownError(argument %qs to %<-Wleading-whitespace=%> not recognized)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(none) Value(0)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(spaces) Value(1)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(tabs) Value(2)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(blanks) Value(3)
+
+Wleading-whitespace=
+C ObjC C++ ObjC++ CPP(cpp_warn_leading_whitespace) CppReason(CPP_W_LEADING_WHITESPACE) Enum(warn_leading_whitespace_kind) Joined RejectNegative Var(warn_leading_whitespace) Init(0) Warning
+Warn about leading whitespace style issues on lines except when in raw string literals.
+
 Wliteral-suffix
 C++ ObjC++ CPP(warn_literal_suffix) CppReason(CPP_W_LITERAL_SUFFIX) Var(cpp_warn_literal_suffix) Init(1) Warning
 Warn when a string or character literal is followed by a ud-suffix which does not begin with an underscore.

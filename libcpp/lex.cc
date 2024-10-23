@@ -818,6 +818,59 @@ _cpp_init_lexer (void)
 #endif
 }
 
+/* Look for leading whitespace style issues on lines which don't contain
+   just whitespace.
+   For -Wleading-whitespace=spaces report if such lines contain leading
+   whitespace other than spaces.
+   For -Wleading-whitespace=tabs report if such lines contain leading
+   whitespace other than tabs.
+   For -Wleading-whitespace=blanks report if such lines contain leading
+   whitespace other than spaces+tabs, or contain in it tab after space,
+   or -ftabstop= or more consecutive spaces.  */
+
+static void
+find_leading_whitespace_issues (cpp_reader *pfile, const uchar *s)
+{
+  const unsigned char *p = NULL;
+  uchar type = 'L';
+  switch (CPP_OPTION (pfile, cpp_warn_leading_whitespace))
+    {
+    case 1: /* spaces */
+      while (*s == ' ')
+	++s;
+      break;
+    case 2: /* tabs */
+      while (*s == '\t')
+	++s;
+      break;
+    case 3: /* blanks */
+      while (*s == '\t')
+	++s;
+      int n;
+      n = CPP_OPTION (pfile, cpp_tabstop);
+      while (*s == ' ')
+	{
+	  if (--n == 0)
+	    break;
+	  ++s;
+	}
+      if (*s == '\t')
+	type = 'T'; /* Tab after space.  */
+      else if (*s == ' ')
+	type = 'S'; /* Too many spaces.  */
+      break;
+    default:
+      abort ();
+    }
+  if (!IS_NVSPACE (*s))
+    return;
+  p = s++;
+  while (IS_NVSPACE (*s))
+    ++s;
+  if (*s != '\n' && *s != '\r')
+    add_line_note (pfile->buffer, p, type);
+}
+
 /* Returns with a logical line that contains no escaped newlines or
    trigraphs.  This is a time-critical inner loop.  */
 void
@@ -836,6 +889,10 @@ _cpp_clean_line (cpp_reader *pfile)
   if (!buffer->from_stage3)
     {
       const uchar *pbackslash = NULL;
+      bool leading_ws_done = true;
+
+      if (CPP_OPTION (pfile, cpp_warn_leading_whitespace))
+	find_leading_whitespace_issues (pfile, s);
 
       /* Fast path.  This is the common case of an un-escaped line with
 	 no trigraphs.  The primary win here is by not writing any
@@ -906,6 +963,7 @@ _cpp_clean_line (cpp_reader *pfile)
       add_line_note (buffer, p - 1, p != d ? ' ' : '\\');
       d = p - 2;
       buffer->next_line = p - 1;
+      leading_ws_done = false;
 
     slow_path:
       while (1)
@@ -915,6 +973,10 @@ _cpp_clean_line (cpp_reader *pfile)
 
 	  if (c == '\n' || c == '\r')
 	    {
+	      if (CPP_OPTION (pfile, cpp_warn_leading_whitespace)
+		  && !leading_ws_done)
+		find_leading_whitespace_issues (pfile, buffer->next_line);
+
 	      /* Handle DOS line endings.  */
 	      if (c == '\r' && s != buffer->rlimit && s[1] == '\n')
 		s++;
@@ -931,9 +993,17 @@ _cpp_clean_line (cpp_reader *pfile)
 	      add_line_note (buffer, p - 1, p != d ? ' ' : '\\');
 	      d = p - 2;
 	      buffer->next_line = p - 1;
+	      leading_ws_done = false;
 	    }
 	  else if (c == '?' && s[1] == '?' && _cpp_trigraph_map[s[2]])
 	    {
+	      if (CPP_OPTION (pfile, cpp_warn_leading_whitespace)
+		  && !leading_ws_done)
+		{
+		  find_leading_whitespace_issues (pfile, buffer->next_line);
+		  leading_ws_done = true;
+		}
+
 	      /* Add a note regardless, for the benefit of -Wtrigraphs.  */
 	      add_line_note (buffer, d, s[2]);
 	      if (CPP_OPTION (pfile, trigraphs))
@@ -1073,6 +1143,39 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 	cpp_warning_with_line (pfile, CPP_W_TRAILING_WHITESPACE,
 			       pfile->line_table->highest_line, col,
 			       "trailing whitespace");
+      else if (note->type == 'S')
+	cpp_warning_with_line (pfile, CPP_W_LEADING_WHITESPACE,
+			       pfile->line_table->highest_line, col,
+			       "too many consecutive spaces in leading "
+			       "whitespace");
+      else if (note->type == 'T')
+	cpp_warning_with_line (pfile, CPP_W_LEADING_WHITESPACE,
+			       pfile->line_table->highest_line, col,
+			       "tab after space in leading whitespace");
+      else if (note->type == 'L')
+	switch (CPP_OPTION (pfile, cpp_warn_leading_whitespace))
+	  {
+	  case 1:
+	    cpp_warning_with_line (pfile, CPP_W_LEADING_WHITESPACE,
+				   pfile->line_table->highest_line, col,
+				   "whitespace other than spaces in leading "
+				   "whitespace");
+	    break;
+	  case 2:
+	    cpp_warning_with_line (pfile, CPP_W_LEADING_WHITESPACE,
+				   pfile->line_table->highest_line, col,
+				   "whitespace other than tabs in leading "
+				   "whitespace");
+	    break;
+	  case 3:
+	    cpp_warning_with_line (pfile, CPP_W_LEADING_WHITESPACE,
+				   pfile->line_table->highest_line, col,
+				   "whitespace other than spaces and tabs in "
+				   "leading whitespace");
+	    break;
+	  default:
+	    abort ();
+	  }
       else if (note->type == 0)
 	/* Already processed in lex_raw_string.  */;
       else
@@ -2532,7 +2635,11 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	    break;
 
 	  case 'W':
-	    /* Don't warn about trailing whitespace in raw string literals.  */
+	  case 'L':
+	  case 'S':
+	  case 'T':
+	    /* Don't warn about leading or trailing whitespace in raw string
+	       literals.  */
 	    note->type = 0;
 	    note++;
 	    break;
