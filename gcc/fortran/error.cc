@@ -39,8 +39,6 @@ static int suppress_errors = 0;
 
 static bool warnings_not_errors = false;
 
-static int terminal_width;
-
 /* True if the error/warnings should be buffered.  */
 static bool buffered_p;
 
@@ -141,21 +139,11 @@ gfc_query_suppress_errors (void)
 }
 
 
-/* Determine terminal width (for trimming source lines in output).  */
-
-static int
-gfc_get_terminal_width (void)
-{
-  return isatty (STDERR_FILENO) ? get_terminal_width () : INT_MAX;
-}
-
-
 /* Per-file error initialization.  */
 
 void
 gfc_error_init_1 (void)
 {
-  terminal_width = gfc_get_terminal_width ();
   gfc_buffer_error (false);
 }
 
