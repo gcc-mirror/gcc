@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
 #include "diagnostic-format-text.h"
+#include "diagnostic-buffer.h"
 #include "text-art/theme.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
@@ -40,6 +41,90 @@ along with GCC; see the file COPYING3.  If not see
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
+
+/* Concrete buffering implementation subclass for JSON output.  */
+
+class diagnostic_text_format_buffer : public diagnostic_per_format_buffer
+{
+public:
+  friend class diagnostic_text_output_format;
+
+  diagnostic_text_format_buffer (diagnostic_output_format &format);
+
+  void dump (FILE *out, int indent) const final override;
+
+  bool empty_p () const final override;
+  void move_to (diagnostic_per_format_buffer &dest) final override;
+  void clear () final override;
+  void flush () final override;
+
+private:
+  diagnostic_output_format &m_format;
+  output_buffer m_output_buffer;
+};
+
+/* class diagnostic_text_format_buffer : public diagnostic_per_format_buffer.  */
+
+diagnostic_text_format_buffer::
+diagnostic_text_format_buffer (diagnostic_output_format &format)
+: m_format (format)
+{
+  m_output_buffer.m_flush_p = false;
+}
+
+void
+diagnostic_text_format_buffer::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sdiagnostic_text_format_buffer:\n", indent, "");
+  m_output_buffer.dump (out, indent + 2);
+}
+
+bool
+diagnostic_text_format_buffer::empty_p () const
+{
+  return output_buffer_last_position_in_text (&m_output_buffer) == nullptr;
+}
+
+void
+diagnostic_text_format_buffer::move_to (diagnostic_per_format_buffer &base_dest)
+{
+  diagnostic_text_format_buffer &dest
+    = static_cast<diagnostic_text_format_buffer &> (base_dest);
+  const char *str = output_buffer_formatted_text (&m_output_buffer);
+  output_buffer_append_r (&dest.m_output_buffer, str, strlen (str));
+
+  obstack_free (m_output_buffer.m_obstack,
+		obstack_base (m_output_buffer.m_obstack));
+  m_output_buffer.m_line_length = 0;
+}
+
+void
+diagnostic_text_format_buffer::clear ()
+{
+  pretty_printer *const pp = m_format.get_printer ();
+  output_buffer *const old_output_buffer = pp_buffer (pp);
+
+  pp_buffer (pp) = &m_output_buffer;
+
+  pp_clear_output_area (pp);
+  gcc_assert (empty_p ());
+
+  pp_buffer (pp) = old_output_buffer;
+}
+
+void
+diagnostic_text_format_buffer::flush ()
+{
+  pretty_printer *const pp = m_format.get_printer ();
+  output_buffer *const old_output_buffer = pp_buffer (pp);
+
+  pp_buffer (pp) = &m_output_buffer;
+
+  pp_really_flush (pp);
+  gcc_assert (empty_p ());
+
+  pp_buffer (pp) = old_output_buffer;
+}
 
 /* class diagnostic_text_output_format : public diagnostic_output_format.  */
 
@@ -74,6 +159,37 @@ diagnostic_text_output_format::dump (FILE *out, int indent) const
 {
   fprintf (out, "%*sdiagnostic_text_output_format\n", indent, "");
   diagnostic_output_format::dump (out, indent);
+  fprintf (out, "%*ssaved_output_buffer:\n", indent + 2, "");
+  if (m_saved_output_buffer)
+    m_saved_output_buffer->dump (out, indent + 4);
+  else
+    fprintf (out, "%*s(none):\n", indent + 4, "");
+}
+
+void
+diagnostic_text_output_format::set_buffer (diagnostic_per_format_buffer *base)
+{
+  diagnostic_text_format_buffer * const buffer
+    = static_cast<diagnostic_text_format_buffer *> (base);
+
+  pretty_printer *const pp = get_printer ();
+
+  if (!m_saved_output_buffer)
+    m_saved_output_buffer = pp_buffer (pp);
+
+  if (buffer)
+    pp_buffer (pp) = &buffer->m_output_buffer;
+  else
+    {
+      gcc_assert (m_saved_output_buffer);
+      pp_buffer (pp) = m_saved_output_buffer;
+    }
+}
+
+diagnostic_per_format_buffer *
+diagnostic_text_output_format::make_per_format_buffer ()
+{
+  return new diagnostic_text_format_buffer (*this);
 }
 
 /* Implementation of diagnostic_output_format::on_report_diagnostic vfunc

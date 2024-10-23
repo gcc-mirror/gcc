@@ -3490,12 +3490,13 @@ bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 #define gfc_syntax_error(ST)	\
   gfc_error ("Syntax error in %s statement at %C", gfc_ascii_statement (ST));
 
-#include "pretty-print.h"  /* For output_buffer.  */
+#include "diagnostic-buffer.h"  /* For diagnostic_buffer.  */
 struct gfc_error_buffer
 {
   bool flag;
-  output_buffer buffer;
-  gfc_error_buffer(void) : flag(false), buffer() {}
+  diagnostic_buffer buffer;
+
+  gfc_error_buffer();
 };
 
 void gfc_push_error (gfc_error_buffer *);

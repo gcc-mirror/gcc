@@ -226,6 +226,7 @@ class diagnostic_diagram;
 class diagnostic_source_effect_info;
 class diagnostic_output_format;
   class diagnostic_text_output_format;
+class diagnostic_buffer;
 
 /* A stack of sets of classifications: each entry in the stack is
    a mapping from option index to diagnostic severity that can be changed
@@ -451,6 +452,25 @@ private:
   enum diagnostics_escape_format m_escape_format;
 };
 
+/* A collection of counters of diagnostics, per-kind
+   (e.g. "3 errors and 1 warning"), for use by both diagnostic_context
+   and by diagnostic_buffer.  */
+
+struct diagnostic_counters
+{
+  diagnostic_counters ();
+
+  void dump (FILE *out, int indent) const;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
+
+  int get_count (diagnostic_t kind) const { return m_count_for_kind[kind]; }
+
+  void move_to (diagnostic_counters &dest);
+  void clear ();
+
+  int m_count_for_kind[DK_LAST_DIAGNOSTIC_KIND];
+};
+
 /* This data structure bundles altogether any information relevant to
    the context of a diagnostic message.  */
 class diagnostic_context
@@ -521,9 +541,6 @@ public:
 
   bool report_diagnostic (diagnostic_info *);
 
-  void check_max_errors (bool flush);
-  void action_after_output (diagnostic_t diag_kind);
-
   diagnostic_t
   classify_diagnostic (diagnostic_option_id option_id,
 		       diagnostic_t new_kind,
@@ -551,7 +568,7 @@ public:
 
   void emit_diagram (const diagnostic_diagram &diagram);
 
-  const diagnostic_output_format *get_output_format () const
+  diagnostic_output_format *get_output_format () const
   {
     return m_output_format;
   }
@@ -621,7 +638,11 @@ public:
 
   int &diagnostic_count (diagnostic_t kind)
   {
-    return m_diagnostic_count[kind];
+    return m_diagnostic_counters.m_count_for_kind[kind];
+  }
+  int diagnostic_count (diagnostic_t kind) const
+  {
+    return m_diagnostic_counters.get_count (kind);
   }
 
   /* Option-related member functions.  */
@@ -679,12 +700,23 @@ public:
     return m_option_classifier.pch_restore (f);
   }
 
+  void set_diagnostic_buffer (diagnostic_buffer *);
+  diagnostic_buffer *get_diagnostic_buffer () const
+  {
+    return m_diagnostic_buffer;
+  }
+  void clear_diagnostic_buffer (diagnostic_buffer &);
+  void flush_diagnostic_buffer (diagnostic_buffer &);
+
 private:
   void error_recursion () ATTRIBUTE_NORETURN;
 
   bool diagnostic_enabled (diagnostic_info *diagnostic);
 
   void get_any_inlining_info (diagnostic_info *diagnostic);
+
+  void check_max_errors (bool flush);
+  void action_after_output (diagnostic_t diag_kind);
 
   /* Data members.
      Ideally, all of these would be private.  */
@@ -698,7 +730,7 @@ private:
   file_cache *m_file_cache;
 
   /* The number of times we have issued diagnostics.  */
-  int m_diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
+  diagnostic_counters m_diagnostic_counters;
 
   /* True if it has been requested that warnings be treated as errors.  */
   bool m_warning_as_error_requested;
@@ -873,6 +905,15 @@ private:
 
   /* Owned by the context.  */
   char **m_original_argv;
+
+  /* Borrowed pointer to the active diagnostic_buffer, if any.
+     If null (the default), then diagnostics that are reported to the
+     context are immediately issued to the output format.
+     If non-null, then diagnostics that are reported to the context
+     are buffered in the buffer, and may be issued to the output format
+     later (if the buffer is flushed), moved to other buffers, or
+     discarded (if the buffer is cleared).  */
+  diagnostic_buffer *m_diagnostic_buffer;
 };
 
 inline void
@@ -1081,19 +1122,6 @@ void default_diagnostic_text_finalizer (diagnostic_text_output_format &,
 					const diagnostic_info *,
 					diagnostic_t);
 void diagnostic_set_caret_max_width (diagnostic_context *context, int value);
-
-inline void
-diagnostic_action_after_output (diagnostic_context *context,
-				diagnostic_t diag_kind)
-{
-  context->action_after_output (diag_kind);
-}
-
-inline void
-diagnostic_check_max_errors (diagnostic_context *context, bool flush = false)
-{
-  context->check_max_errors (flush);
-}
 
 int get_terminal_width (void);
 

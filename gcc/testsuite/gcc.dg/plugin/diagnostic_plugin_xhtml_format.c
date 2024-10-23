@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-diagram.h"
 #include "text-art/canvas.h"
 #include "diagnostic-format.h"
+#include "diagnostic-buffer.h"
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
 #include "make-unique.h"
@@ -246,6 +247,36 @@ element::set_attr (const char *name, label_text value)
 
 } // namespace xml
 
+class xhtml_builder;
+
+/* Concrete buffering implementation subclass for HTML output.  */
+
+class diagnostic_xhtml_format_buffer : public diagnostic_per_format_buffer
+{
+public:
+  friend class xhtml_builder;
+  friend class xhtml_output_format;
+
+  diagnostic_xhtml_format_buffer (xhtml_builder &builder)
+  : m_builder (builder)
+  {}
+
+  void dump (FILE *out, int indent) const final override;
+  bool empty_p () const final override;
+  void move_to (diagnostic_per_format_buffer &dest) final override;
+  void clear () final override;
+  void flush () final override;
+
+  void add_result (std::unique_ptr<xml::element> result)
+  {
+    m_results.push_back (std::move (result));
+  }
+
+private:
+  xhtml_builder &m_builder;
+  std::vector<std::unique_ptr<xml::element>> m_results;
+};
+
 /* A class for managing XHTML output of diagnostics.
 
    Implemented:
@@ -264,12 +295,15 @@ element::set_attr (const char *name, label_text value)
 class xhtml_builder
 {
 public:
+  friend class diagnostic_xhtml_format_buffer;
+
   xhtml_builder (diagnostic_context &context,
 		 pretty_printer &pp,
 		 const line_maps *line_maps);
 
   void on_report_diagnostic (const diagnostic_info &diagnostic,
-			     diagnostic_t orig_diag_kind);
+			     diagnostic_t orig_diag_kind,
+			     diagnostic_xhtml_format_buffer *buffer);
   void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
@@ -310,6 +344,52 @@ make_span (label_text class_)
   auto span = ::make_unique<xml::element> ("span", true);
   span->set_attr ("class", std::move (class_));
   return span;
+}
+
+/* class diagnostic_xhtml_format_buffer : public diagnostic_per_format_buffer.  */
+
+void
+diagnostic_xhtml_format_buffer::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sdiagnostic_xhtml_format_buffer:\n", indent, "");
+  int idx = 0;
+  for (auto &result : m_results)
+    {
+      fprintf (out, "%*sresult[%i]:\n", indent + 2, "", idx);
+      result->dump (out);
+      fprintf (out, "\n");
+      ++idx;
+    }
+}
+
+bool
+diagnostic_xhtml_format_buffer::empty_p () const
+{
+  return m_results.empty ();
+}
+
+void
+diagnostic_xhtml_format_buffer::move_to (diagnostic_per_format_buffer &base)
+{
+  diagnostic_xhtml_format_buffer &dest
+    = static_cast<diagnostic_xhtml_format_buffer &> (base);
+  for (auto &&result : m_results)
+    dest.m_results.push_back (std::move (result));
+  m_results.clear ();
+}
+
+void
+diagnostic_xhtml_format_buffer::clear ()
+{
+  m_results.clear ();
+}
+
+void
+diagnostic_xhtml_format_buffer::flush ()
+{
+  for (auto &&result : m_results)
+    m_builder.m_diagnostics_element->add_child (std::move (result));
+  m_results.clear ();
 }
 
 /* class xhtml_builder.  */
@@ -360,7 +440,8 @@ xhtml_builder::xhtml_builder (diagnostic_context &context,
 
 void
 xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
-				     diagnostic_t orig_diag_kind)
+				     diagnostic_t orig_diag_kind,
+				     diagnostic_xhtml_format_buffer *buffer)
 {
   if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
     {
@@ -374,12 +455,20 @@ xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
 
   auto diag_element
     = make_element_for_diagnostic (diagnostic, orig_diag_kind);
-  if (m_cur_diagnostic_element)
-    /* Nested diagnostic.  */
-    m_cur_diagnostic_element->add_child (std::move (diag_element));
+  if (buffer)
+    {
+      gcc_assert (!m_cur_diagnostic_element);
+      buffer->m_results.push_back (std::move (diag_element));
+    }
   else
-    /* Top-level diagnostic.  */
-    m_cur_diagnostic_element = std::move (diag_element);
+    {
+      if (m_cur_diagnostic_element)
+	/* Nested diagnostic.  */
+	m_cur_diagnostic_element->add_child (std::move (diag_element));
+      else
+	/* Top-level diagnostic.  */
+	m_cur_diagnostic_element = std::move (diag_element);
+    }
 }
 
 std::unique_ptr<xml::element>
@@ -596,8 +685,19 @@ public:
 
   void dump (FILE *out, int indent) const override
   {
-    fprintf (out, "%*xhtml_output_format\n", indent, "");
+    fprintf (out, "%*sxhtml_output_format\n", indent, "");
     diagnostic_output_format::dump (out, indent);
+  }
+
+  diagnostic_per_format_buffer *make_per_format_buffer () final override
+  {
+    return new diagnostic_xhtml_format_buffer (m_builder);
+  }
+  void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
+  {
+    diagnostic_xhtml_format_buffer *buffer
+      = static_cast<diagnostic_xhtml_format_buffer *> (base_buffer);
+    m_buffer = buffer;
   }
 
   void on_begin_group () final override
@@ -610,9 +710,9 @@ public:
   }
   void
   on_report_diagnostic (const diagnostic_info &diagnostic,
-			    diagnostic_t orig_diag_kind) final override
+			diagnostic_t orig_diag_kind) final override
   {
-    m_builder.on_report_diagnostic (diagnostic, orig_diag_kind);
+    m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
   void on_diagram (const diagnostic_diagram &diagram) final override
   {
@@ -632,10 +732,12 @@ protected:
   xhtml_output_format (diagnostic_context &context,
 		       const line_maps *line_maps)
   : diagnostic_output_format (context),
-    m_builder (context, *get_printer (), line_maps)
+    m_builder (context, *get_printer (), line_maps),
+    m_buffer (nullptr)
   {}
 
   xhtml_builder m_builder;
+  diagnostic_xhtml_format_buffer *m_buffer;
 };
 
 class xhtml_stream_output_format : public xhtml_output_format
