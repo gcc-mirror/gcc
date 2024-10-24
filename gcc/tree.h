@@ -2357,13 +2357,15 @@ extern tree vector_element_bits_tree (const_tree);
 
 /* The minimum alignment necessary for objects of this type without
    warning.  The value is an int, measured in bits.  */
+#define TYPE_WARN_IF_NOT_ALIGN_RAW(NODE) \
+    (TYPE_CHECK (NODE)->type_common.warn_if_not_align)
 #define TYPE_WARN_IF_NOT_ALIGN(NODE) \
-    (TYPE_CHECK (NODE)->type_common.warn_if_not_align \
-     ? ((unsigned)1) << ((NODE)->type_common.warn_if_not_align - 1) : 0)
+    (TYPE_WARN_IF_NOT_ALIGN_RAW (NODE) \
+     ? ((unsigned)1) << (TYPE_WARN_IF_NOT_ALIGN_RAW (NODE) - 1) : 0)
 
 /* Specify that TYPE_WARN_IF_NOT_ALIGN(NODE) is X.  */
 #define SET_TYPE_WARN_IF_NOT_ALIGN(NODE, X) \
-    (TYPE_CHECK (NODE)->type_common.warn_if_not_align = ffs_hwi (X))
+    (TYPE_WARN_IF_NOT_ALIGN_RAW (NODE) = ffs_hwi (X))
 
 /* If your language allows you to declare types, and you want debug info
    for them, then you need to generate corresponding TYPE_DECL nodes.
