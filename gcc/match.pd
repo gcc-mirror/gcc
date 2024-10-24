@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
    zerop
    initializer_each_zero_or_onep
    CONSTANT_CLASS_P
+   poly_int_tree_p
    tree_expr_nonnegative_p
    tree_expr_nonzero_p
    integer_valued_real_p
@@ -5470,6 +5471,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (mult (convert1? (exact_div @0 @@1)) (convert2? @1))
   (convert @0))
+
+/* (X /[ex] C1) * (C1 * C2) -> X * C2.  */
+(simplify
+ (mult (convert? (exact_div @0 INTEGER_CST@1)) poly_int_tree_p@2)
+ (with { poly_widest_int factor; }
+  (if (multiple_p (wi::to_poly_widest (@2), wi::to_widest (@1), &factor))
+   (mult (convert @0) { wide_int_to_tree (type, factor); }))))
 
 /* Simplify (A / B) * B + (A % B) -> A.  */
 (for div (trunc_div ceil_div floor_div round_div)
