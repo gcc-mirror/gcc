@@ -5602,6 +5602,19 @@ struct_ptr_hash (const void *a)
   return (intptr_t)*x >> 4;
 }
 
+/* Return true if CODE can be treated as a truncating division.
+
+   EXACT_DIV_EXPR can be treated as a truncating division in which the
+   remainder is known to be zero.  However, if trunc_div_p gates the
+   generation of new IL, the conservative choice for that new IL is
+   TRUNC_DIV_EXPR rather than CODE.  Using CODE (EXACT_DIV_EXPR) would
+   only be correct if the transformation preserves exactness.  */
+inline bool
+trunc_or_exact_div_p (tree_code code)
+{
+  return code == TRUNC_DIV_EXPR || code == EXACT_DIV_EXPR;
+}
+
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
 inline bool
 truth_value_p (enum tree_code code)
