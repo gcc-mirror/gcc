@@ -209,7 +209,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Volatile_Full_Access, Flag),
         Sm (Is_Wrapper, Flag),
         Sm (Kill_Elaboration_Checks, Flag),
-        Sm (Kill_Range_Checks, Flag),
         Sm (Low_Bound_Tested, Flag),
         Sm (Materialize_Entity, Flag),
         Sm (May_Inherit_Delayed_Rep_Aspects, Flag),

@@ -801,7 +801,6 @@ package Gen_IL.Fields is
       Is_Wrapper,
       Itype_Printed,
       Kill_Elaboration_Checks,
-      Kill_Range_Checks,
       Known_To_Have_Preelab_Init,
       Last_Aggregate_Assignment,
       Last_Assignment,

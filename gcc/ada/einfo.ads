@@ -3510,13 +3510,6 @@ package Einfo is
 --       except that the effect is permanent and cannot be undone by a
 --       subsequent pragma Unsuppress.
 
---    Kill_Range_Checks
---       Defined in all entities. Equivalent in effect to the use of pragma
---       Suppress (Range_Checks) for that entity except that the result is
---       permanent and cannot be undone by a subsequent pragma Unsuppress.
---       This is currently only used in one odd situation in Sem_Ch3 for
---       record types, and it would be good to get rid of it???
-
 --    Known_To_Have_Preelab_Init
 --       Defined in all type and subtype entities. If set, then the type is
 --       known to have preelaborable initialization. In the case of a partial
@@ -4973,7 +4966,6 @@ package Einfo is
    --    Is_Unimplemented
    --    Is_Visible_Formal
    --    Kill_Elaboration_Checks
-   --    Kill_Range_Checks
    --    Low_Bound_Tested
    --    Materialize_Entity
    --    Needs_Debug_Info
