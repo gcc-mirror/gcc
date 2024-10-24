@@ -5456,6 +5456,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 						    TYPE_PRECISION (type)), 0))
    (convert @0)))
 
+#if GIMPLE
+/* X / (1 << C) -> X /[ex] (1 << C) if the low C bits of X are clear.  */
+(simplify
+ (trunc_div (with_possible_nonzero_bits2 @0) integer_pow2p@1)
+ (if (INTEGRAL_TYPE_P (type)
+      && !TYPE_UNSIGNED (type)
+      && wi::multiple_of_p (get_nonzero_bits (@0), wi::to_wide (@1), SIGNED))
+  (exact_div @0 @1)))
+#endif
 
 /* (X /[ex] A) * A -> X.  */
 (simplify
