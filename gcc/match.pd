@@ -2873,6 +2873,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match with_possible_nonzero_bits
  INTEGER_CST@0)
 (match with_possible_nonzero_bits
+ POLY_INT_CST@0)
+(match with_possible_nonzero_bits
  SSA_NAME@0
  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) || POINTER_TYPE_P (TREE_TYPE (@0)))))
 /* Slightly extended version, do not make it recursive to keep it cheap.  */
