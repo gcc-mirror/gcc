@@ -166,11 +166,12 @@ package body Exp_Aggr is
    ------------------------------------------------------
 
    function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean;
-   --  True if N is an aggregate (possibly qualified or a dependent expression
-   --  of a conditional expression, and possibly recursively so) that needs to
-   --  be built-in-place in the return object. Such qualified and conditional
-   --  expressions are transparent for this purpose because an enclosing return
-   --  is propagated resp. distributed into these expressions by the expander.
+   --  Return True if N is a simple return whose expression needs to be built
+   --  in place in the return object, assuming the expression is an aggregate,
+   --  possibly qualified or a dependent expression of a conditional expression
+   --  (and possibly recursively). Such qualified and conditional expressions
+   --  are transparent for this purpose since an enclosing return is propagated
+   --  resp. distributed into these expressions by the expander.
 
    function Build_Record_Aggr_Code
      (N   : Node_Id;
@@ -4307,7 +4308,7 @@ package body Exp_Aggr is
          --  finalization of the return object (which is built in place
          --  within the caller's scope).
 
-         or else Is_Build_In_Place_Aggregate_Return (N)
+         or else Is_Build_In_Place_Aggregate_Return (Parent_Node)
       then
          Node := N;
 
@@ -6193,7 +6194,7 @@ package body Exp_Aggr is
                                        (Defining_Identifier (Parent_Node))))
         or else (Parent_Kind = N_Assignment_Statement
                   and then Inside_Init_Proc)
-        or else Is_Build_In_Place_Aggregate_Return (N)
+        or else Is_Build_In_Place_Aggregate_Return (Parent_Node)
       then
          Set_Expansion_Delayed (N, not Static_Array_Aggregate (N));
          return;
@@ -8892,29 +8893,13 @@ package body Exp_Aggr is
 
    function Is_Build_In_Place_Aggregate_Return (N : Node_Id) return Boolean is
       F : Entity_Id;
-      P : Node_Id;
 
    begin
-      P := Parent (N);
-      while Nkind (P) in N_Case_Expression
-                       | N_Case_Expression_Alternative
-                       | N_If_Expression
-                       | N_Qualified_Expression
-      loop
-         P := Parent (P);
-      end loop;
-
-      if Nkind (P) = N_Simple_Return_Statement then
-         null;
-
-      elsif Nkind (Parent (P)) = N_Extended_Return_Statement then
-         P := Parent (P);
-
-      else
+      if Nkind (N) /= N_Simple_Return_Statement then
          return False;
       end if;
 
-      F := Return_Applies_To (Return_Statement_Entity (P));
+      F := Return_Applies_To (Return_Statement_Entity (N));
 
       --  For a build-in-place function, all the returns are done in place
       --  by definition. We also return aggregates in place in other cases
