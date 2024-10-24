@@ -1,4 +1,5 @@
 /* { dg-lto-do link } */
+/* { dg-require-effective-target pie } */
 /* { dg-lto-options { { -O -flto -fpie } } } */
 /* { dg-extra-ld-options { -r -nostdlib -flinker-output=nolto-rel } } */
 
