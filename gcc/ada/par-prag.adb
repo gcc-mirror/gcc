@@ -29,6 +29,7 @@
 --  which require recognition and either partial or complete processing
 --  during parsing, and this unit performs this required processing.
 
+with Fmap;
 with Fname.UF; use Fname.UF;
 with Osint;    use Osint;
 with Rident;   use Rident;
@@ -754,15 +755,6 @@ begin
                   and then
                  Nkind (Selector_Name (Expr1)) = N_Identifier)
             then
-               if Nkind (Expr1) = N_Identifier
-                 and then Chars (Expr1) = Name_System
-               then
-                  Error_Msg_N
-                    ("pragma Source_File_Name may not be used for System",
-                     Arg1);
-                  return Error;
-               end if;
-
                --  Process index argument if present
 
                if Arg_Count = 3 then
@@ -792,6 +784,26 @@ begin
                Unam := Get_Unit_Name (Expr1);
 
                Check_Arg_Is_String_Literal (Arg2);
+
+               if Nkind (Expr1) = N_Identifier
+                 and then Chars (Expr1) = Name_System
+               then
+                  --  We allow pragma Source_File_Name on System if it confirms
+                  --  a mapping that already exists in Fmap. The goal is to
+                  --  accommodate GPRbuild, which uses both a map file and
+                  --  a pragma, while at the same time preventing users from
+                  --  using just a pragma. Using just a pragma is a problem
+                  --  because those are not registered yet when
+                  --  Get_Target_Parameters is called.
+                  if Fmap.Mapped_File_Name (Name_To_Unit_Name (Name_System))
+                    /= Get_Fname (Arg2)
+                  then
+                     Error_Msg_N
+                       ("pragma Source_File_Name may not be used for System",
+                        Arg1);
+                     return Error;
+                  end if;
+               end if;
 
                if Chars (Arg2) = Name_Spec_File_Name then
                   Set_File_Name

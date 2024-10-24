@@ -1034,6 +1034,13 @@ begin
       Sem_Eval.Initialize;
       Sem_Type.Init_Interp_Tables;
 
+      --  If there was a -gnatem switch, initialize the mappings of unit names
+      --  to file names and of file names to path names from the mapping file.
+
+      if Mapping_File_Name /= null then
+         Fmap.Initialize (Mapping_File_Name.all);
+      end if;
+
       --  Capture compilation date and time
 
       Opt.Compilation_Time := System.OS_Lib.Current_Time_String;
@@ -1051,9 +1058,12 @@ begin
             N : File_Name_Type;
 
          begin
-            Name_Buffer (1 .. 10) := "system.ads";
-            Name_Len := 10;
-            N := Name_Find;
+            N := Fmap.Mapped_File_Name (Name_To_Unit_Name (Name_System));
+
+            if N = No_File then
+               N := Name_Find ("system.ads");
+            end if;
+
             S := Load_Source_File (N);
 
             --  Failed to read system.ads, fatal error

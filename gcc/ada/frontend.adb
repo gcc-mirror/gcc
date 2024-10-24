@@ -286,13 +286,6 @@ begin
 
       Save_Config_Cunit_Boolean_Restrictions;
 
-      --  If there was a -gnatem switch, initialize the mappings of unit names
-      --  to file names and of file names to path names from the mapping file.
-
-      if Mapping_File_Name /= null then
-         Fmap.Initialize (Mapping_File_Name.all);
-      end if;
-
       --  Adjust Optimize_Alignment mode from debug switches if necessary
 
       if Debug_Flag_Dot_SS then
