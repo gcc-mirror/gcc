@@ -5497,24 +5497,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				    optab_vector)))
    (eq (trunc_mod @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
 
-/* ((X /[ex] A) +- B) * A  -->  X +- A * B.  */
+/* ((X /[ex] C1) +- C2) * (C1 * C3)  -->  (X * C3) +- (C1 * C2 * C3).  */
 (for op (plus minus)
  (simplify
-  (mult (convert1? (op (convert2? (exact_div @0 INTEGER_CST@@1)) INTEGER_CST@2)) @1)
-  (if (tree_nop_conversion_p (type, TREE_TYPE (@2))
-       && tree_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@2)))
-   (with
-     {
-       wi::overflow_type overflow;
-       wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
-			       TYPE_SIGN (type), &overflow);
-     }
+  (mult (convert1? (op (convert2? (exact_div @0 INTEGER_CST@1))
+		       poly_int_tree_p@2))
+	poly_int_tree_p@3)
+  (with { poly_widest_int factor; }
+   (if (tree_nop_conversion_p (type, TREE_TYPE (@2))
+	&& tree_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@2))
+	&& multiple_p (wi::to_poly_widest (@3), wi::to_widest (@1), &factor))
+    (with
+      {
+	wi::overflow_type overflow;
+        wide_int mul;
+      }
      (if (types_match (type, TREE_TYPE (@2))
- 	 && types_match (TREE_TYPE (@0), TREE_TYPE (@2)) && !overflow)
-      (op @0 { wide_int_to_tree (type, mul); })
+	  && types_match (TREE_TYPE (@0), TREE_TYPE (@2))
+	  && TREE_CODE (@2) == INTEGER_CST
+	  && TREE_CODE (@3) == INTEGER_CST
+	  && (mul = wi::mul (wi::to_wide (@2), wi::to_wide (@3),
+			     TYPE_SIGN (type), &overflow),
+	      !overflow))
+      (op (mult @0 { wide_int_to_tree (type, factor); })
+	  { wide_int_to_tree (type, mul); })
       (with { tree utype = unsigned_type_for (type); }
-       (convert (op (convert:utype @0)
-		    (mult (convert:utype @1) (convert:utype @2))))))))))
+       (convert (op (mult (convert:utype @0)
+			  { wide_int_to_tree (utype, factor); })
+		    (mult (convert:utype @3) (convert:utype @2)))))))))))
 
 /* Canonicalization of binary operations.  */
 
