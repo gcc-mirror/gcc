@@ -2257,16 +2257,16 @@ remove_named_attribute_unsharing (const char *name, tree *attrs)
     }
 }
 
-/* Record the order of the last cgraph entry whose mode we've already set, so
+/* Record the uid of the last cgraph entry whose mode we've already set, so
    that we can perform mode setting incrementally without duplication.  */
-static int last_cgraph_order;
+static int last_cgraph_uid;
 
 /* Set strub modes for functions introduced since the last call.  */
 
 static void
 ipa_strub_set_mode_for_new_functions ()
 {
-  if (symtab->order == last_cgraph_order)
+  if (symtab->cgraph_max_uid == last_cgraph_uid)
     return;
 
   cgraph_node *node;
@@ -2281,13 +2281,13 @@ ipa_strub_set_mode_for_new_functions ()
 	continue;
 
       /*  Already done.  */
-      if (node->order < last_cgraph_order)
+      if (node->get_uid () < last_cgraph_uid)
 	continue;
 
       set_strub_mode (node);
     }
 
-  last_cgraph_order = symtab->order;
+  last_cgraph_uid = symtab->cgraph_max_uid;
 }
 
 /* Return FALSE if NODE is a strub context, and TRUE otherwise.  */
@@ -2663,7 +2663,7 @@ pass_ipa_strub::adjust_at_calls_calls (cgraph_node *node)
 unsigned int
 pass_ipa_strub_mode::execute (function *)
 {
-  last_cgraph_order = 0;
+  last_cgraph_uid = 0;
   ipa_strub_set_mode_for_new_functions ();
 
   /* Verify before any inlining or other transformations.  */
