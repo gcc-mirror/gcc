@@ -1,3 +1,92 @@
+2024-10-23  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113860
+	* gcc.target/aarch64/popcnt-sve.c: Update test.
+	* gcc.target/aarch64/popcnt11.c: New test.
+	* gcc.target/aarch64/popcnt12.c: New test.
+
+2024-10-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117222
+	* g++.dg/pr117222.C: New.
+
+2024-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/105916
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: Include
+	"diagnostic-buffer.h".
+	(class diagnostic_xhtml_format_buffer): New subclass.
+	(class xhtml_builder): Add friend
+	class diagnostic_xhtml_format_buffer.
+	(diagnostic_xhtml_format_buffer::dump): New.
+	(diagnostic_xhtml_format_buffer::empty_p): New.
+	(diagnostic_xhtml_format_buffer::move_to): New.
+	(diagnostic_xhtml_format_buffer::clear): New.
+	(diagnostic_xhtml_format_buffer::flush): New.
+	(xhtml_builder::on_report_diagnostic): Add "buffer" param, and use
+	it.
+	(xhtml_output_format::dump): Fix typo.
+	(xhtml_output_format::make_per_format_buffer): New.
+	(xhtml_output_format::set_buffer): New.
+	(xhtml_output_format::on_report_diagnostic): Fix whitespace.  Pass
+	m_buffer to xhtml_builder::on_report_diagnostic.
+	(xhtml_output_format::xhtml_output_format): Initialize m_buffer.
+	(xhtml_output_format::m_buffer): New field.
+	* gfortran.dg/diagnostic-format-json-pr105916.F90: New test.
+	* gfortran.dg/diagnostic-format-sarif-1.F90: New test.
+	* gfortran.dg/diagnostic-format-sarif-1.py: New support script.
+	* gfortran.dg/diagnostic-format-sarif-pr105916.f90: New test.
+
+2024-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/116733
+	* gfortran.dg/associate_3.f03: Change error message.
+	* gfortran.dg/f202y/f202y.exp: Enable tests of f202y features.
+	* gfortran.dg/f202y/generic_assumed_rank_1.f90: New test.
+	* gfortran.dg/f202y/generic_assumed_rank_2.f90: New test.
+	* gfortran.dg/f202y/generic_assumed_rank_3.f90: New test.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/copysign_3.c: New test.
+	* gcc.target/aarch64/copysign_4.c: New test.
+	* gcc.target/aarch64/fneg-abs_2.c: Fixup test.
+	* gcc.target/aarch64/sve/fneg-abs_2.c: Likewise.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/sve/simd_imm.c: New test.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/insr_s64.c: Allow SVE MOV imm.
+	* gcc.target/aarch64/sve/acle/asm/insr_u64.c: Likewise.
+	* gcc.target/aarch64/sve/fneg-abs_1.c: Update to check for ORRI.
+	* gcc.target/aarch64/sve/fneg-abs_2.c: Likewise.
+	* gcc.target/aarch64/sve/simd_imm_mov.c: New test.
+
+2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117240_avx.c: New test.
+	* gcc.target/i386/pr117240_avx512f.c: New test.
+
+2024-10-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117142
+	* gcc.dg/tree-ssa/pr117142.c: New test.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/Wleading-whitespace-1.c: New test.
+	* c-c++-common/cpp/Wleading-whitespace-2.c: New test.
+	* c-c++-common/cpp/Wleading-whitespace-3.c: New test.
+	* c-c++-common/cpp/Wleading-whitespace-4.c: New test.
+
+2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117232-1.c: New test.
+	* gcc.target/i386/pr117232-apx-1.c: New test.
+
 2024-10-23  Joseph Myers  <josmyers@redhat.com>
 
 	* gcc.dg/gnu17-tag-1.c, gcc.dg/gnu23-tag-5.c: New tests.

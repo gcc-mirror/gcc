@@ -1,3 +1,36 @@
+2024-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/cstdalign/macros.cc: New test.
+
+2024-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document that assertions are
+	enabled for unoptimized builds.
+	* doc/html/*: Regenerate.
+
+2024-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Add GLIBCXX_TESTSUITE_STDS example.
+	* doc/html/manual/test.html: Regenerate.
+
+2024-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (assign(Iter, Iter)): Call
+	std::to_address instead of __to_address.
+
+2024-10-23  François Dumont  <frs.dumont@gmail.com>
+
+	PR libstdc++/115285
+	* include/bits/hashtable.h (_S_forward_key<_Kt>): Always return a temporary
+	key_type instance.
+	* testsuite/23_containers/unordered_map/96088.cc: Adapt to additional instanciation.
+	Also check that mapped_type is not instantiated when there is no insertion.
+	* testsuite/23_containers/unordered_multimap/96088.cc: Adapt to additional
+	instanciation.
+	* testsuite/23_containers/unordered_multiset/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_set/pr115285.cc: New test case.
+
 2024-10-22  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (concat_view::begin): Add space after

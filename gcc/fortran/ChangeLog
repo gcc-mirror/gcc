@@ -1,3 +1,103 @@
+2024-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/105916
+	* error.cc (pp_error_buffer, pp_warning_buffer): Convert from
+	output_buffer * to diagnostic_buffer *.
+	(warningcount_buffered, werrorcount_buffered): Eliminate.
+	(gfc_error_buffer::gfc_error_buffer): Move constructor definition
+	here, and initialize "buffer" using *global_dc.
+	(gfc_output_buffer_empty_p): Delete in favor of
+	diagnostic_buffer::empty_p.
+	(gfc_clear_pp_buffer): Replace with...
+	(gfc_clear_diagnostic_buffer): ...this, moving implementation
+	details to diagnostic_context::clear_diagnostic_buffer.
+	(gfc_warning): Replace buffering implementation with calls
+	to global_dc->get_diagnostic_buffer and
+	global_dc->set_diagnostic_buffer.
+	(gfc_clear_warning): Update for renaming of gfc_clear_pp_buffer
+	and elimination of warningcount_buffered and werrorcount_buffered.
+	(gfc_warning_check): Replace buffering implementation with calls
+	to pp_warning_buffer->empty_p and
+	global_dc->flush_diagnostic_buffer.
+	(gfc_error_opt): Replace buffering implementation with calls to
+	global_dc->get_diagnostic_buffer and set_diagnostic_buffer.
+	(gfc_clear_error): Update for renaming of gfc_clear_pp_buffer.
+	(gfc_error_flag_test): Replace call to gfc_output_buffer_empty_p
+	with call to diagnostic_buffer::empty_p.
+	(gfc_error_check): Replace buffering implementation with calls
+	to pp_error_buffer->empty_p and global_dc->flush_diagnostic_buffer.
+	(gfc_move_error_buffer_from_to): Replace buffering implementation
+	with usage of diagnostic_buffer.
+	(gfc_free_error): Update for renaming of gfc_clear_pp_buffer.
+	(gfc_diagnostics_init): Use "new" directly when creating
+	pp_warning_buffer.  Remove setting of m_flush_p on the two
+	buffers, as this is handled by diagnostic_buffer and by
+	diagnostic_text_format_buffer's constructor.
+	* gfortran.h: Replace #include "pretty-print.h" for output_buffer
+	with #include "diagnostic-buffer.h" for diagnostic_buffer.
+	(struct gfc_error_buffer): Change type of field "buffer" from
+	output_buffer to diagnostic_buffer.  Move definition of constructor
+	into error.cc so that it can use global_dc.
+
+2024-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/116733
+	* array.cc : White space corrections.
+	* expr.cc (gfc_check_pointer_assign): Permit assumed rank
+	target with -std=f202y. Add constraints that the data pointer
+	object must have rank remapping specified and the that the data
+	target be contiguous.
+	* gfortran.h : Add a gfc_array_ref field 'ar' to the structure
+	'gfc_association_list'.
+	* interface.cc (gfc_compare_actual_formal): If -Wsurprising
+	is set, emit a warning if an assumed size array is passed to an
+	assumed rank dummy.
+	* intrinsic.cc (do_ts29113_check): Permit an assumed rank arg.
+	for reshape if -std=f202y and the argument is contiguous.
+	* invoke.texi : Introduce -std=f202y. Whitespace errors.
+	* lang.opt : Accept -std=f202y.
+	* libgfortran.h : Define GFC_STD_F202Y.
+	* match.cc (gfc_match_associate): If -std=f202y an assumed rank
+	selector is allowed if it is contiguous and the associate name
+	has rank remapping specified.
+	* options.cc (gfc_init_options): -std=f202y is equivalent to
+	-std=f2023 with experimental f202y features. White space issues
+	* parse.cc (parse_associate): If the selector is assumed rank,
+	use the 'ar' field of the association list to build an array
+	specification.
+	* primary.cc (gfc_match_varspec): Do not resolve the assumed
+	rank selector of a class associate name at this stage to avoid
+	the rank change.
+	* resolve.cc (find_array_spec): If an array_ref dimension is -1
+	reset it with the rank in the object's array_spec.
+	(gfc_expression_rank): Do not check dimen types for an assumed
+	rank variable expression.
+	(resolve_variable): Do not emit the assumed rank context error
+	if the context is pointer assignment and the variable is a
+	target.
+	(resolve_assoc_var): Resolve the bounds and check for missing
+	bounds in the rank remap of an associate name with an assumed
+	rank selector. Do not correct the rank of an associate name
+	with an assumed rank selector.
+	(resolve_symbol): Allow the reference to an assumed rank object
+	if -std-f202y is enabled and the current operation is
+	EXEC_BLOCK.
+	* st.cc (gfc_free_association_list): Free bounds expressions
+	of the 'ar' field, if present.
+	* trans-array.cc (gfc_conv_ss_startstride): If -std=f202y and
+	bounds checking activated, do not apply the assertion.
+	* trans-expr.cc (gfc_trans_pointer_assignment): An assumed rank
+	target has its offset set to zero.
+	* trans-stmt.cc (trans_associate_var): If the selector is
+	assumed rank, call gfc_trans_pointer_assignment using the 'ar'
+	field in the association list as the array reference for expr1.
+	The data target, expr2, is a copy of the selector expression.
+
+2024-10-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* error.cc (terminal_width, gfc_get_terminal_width): Remove.
+	(gfc_error_init_1): Do not call one to set the other.
+
 2024-10-19  Tobias Burnus  <tburnus@baylibre.com>
 
 	* check.cc (is_c_interoperable): Use _(...) around to mark strings

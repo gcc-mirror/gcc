@@ -1,3 +1,17 @@
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_leading_whitespace and cpp_tabstop members.
+	(enum cpp_warning_reason): Add CPP_W_LEADING_WHITESPACE.
+	* internal.h (struct _cpp_line_note): Document new
+	line note kinds.
+	* init.cc (cpp_create_reader): Set cpp_tabstop to 8.
+	* lex.cc (find_leading_whitespace_issues): New function.
+	(_cpp_clean_line): Use it.
+	(_cpp_process_line_notes): Handle 'L', 'S' and 'T' line notes.
+	(lex_raw_string): Clear type on 'L', 'S' and 'T' line notes
+	inside of raw string literals.
+
 2024-10-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/114423

@@ -1,3 +1,281 @@
+2024-10-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64.cc (aarch64_ptrue_reg): Fix type
+	of induction variable i.
+
+2024-10-23  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117260
+	* gimple-match-exports.cc (maybe_push_res_to_seq): Reject non-const
+	internal functions.
+
+2024-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* ginclude/stdalign.h (__alignas_is_defined): Define for C++.
+	(__alignof_is_defined): Likewise.
+
+2024-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/117275
+	* toplev.cc (toplev::finalize): Call varasm_cc_finalize.
+	* varasm.cc (varasm_cc_finalize): New.
+	* varasm.h (varasm_cc_finalize): New decl.
+
+2024-10-23  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113860
+	* config/aarch64/aarch64-protos.h (aarch64_ptrue_reg): New function.
+	* config/aarch64/aarch64-simd.md (popcount<mode>2): Update pattern to
+	also support V1DI mode.
+	* config/aarch64/aarch64.cc (aarch64_ptrue_reg): New function.
+	* config/aarch64/aarch64.md (popcount<mode>2): Add TARGET_SVE support.
+	* config/aarch64/iterators.md (VDQHSD_V1DI): New mode iterator.
+	(SVE_VDQ_I): Add V1DI.
+	(bitsize): Likewise.
+	(VPRED): Likewise.
+	(VEC_POP_MODE): New mode attribute.
+	(vec_pop_mode): Likewise.
+
+2024-10-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117222
+	* range-op-ptr.cc (operator_pointer_diff::fold_range): New.
+	(operator_pointer_diff::op1_op2_relation_effect): Remove irange
+	variant.
+	(operator_pointer_diff::update_bitmask): Likewise.
+
+2024-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/105916
+	* diagnostic-buffer.h: New file.
+	* diagnostic-format-json.cc: Define INCLUDE_VECTOR.  Include
+	"diagnostic-buffer.h".
+	(class diagnostic_json_format_buffer): New subclass.
+	(class json_output_format): Add friend class
+	diagnostic_json_format_buffer.
+	(json_output_format::make_per_format_buffer): New vfunc
+	implementation.
+	(json_output_format::set_buffer): New vfunc implementation.
+	(json_output_format::json_output_format): Initialize m_buffer.
+	(json_output_format::m_buffer): New field.
+	(diagnostic_json_format_buffer::dump): New.
+	(diagnostic_json_format_buffer::empty_p): New.
+	(diagnostic_json_format_buffer::move_to): New.
+	(diagnostic_json_format_buffer::clear): New.
+	(diagnostic_json_format_buffer::flush): New.
+	(json_output_format::on_report_diagnostic): Implement optional
+	buffering.
+	* diagnostic-format-sarif.cc: Include "diagnostic-buffer.h".
+	(class diagnostic_sarif_format_buffer): New subclass.
+	(class sarif_builder): Add friend
+	class diagnostic_sarif_format_buffer.
+	(sarif_builder::num_results): New accessor.
+	(sarif_builder::get_result): New accessor.
+	(sarif_builder::on_report_diagnostic): Add param "buffer"; use it
+	to implement optional buffering.
+	(diagnostic_sarif_format_buffer::dump): New.
+	(diagnostic_sarif_format_buffer::empty_p): New.
+	(diagnostic_sarif_format_buffer::move_to): New.
+	(diagnostic_sarif_format_buffer::clear): New.
+	(diagnostic_sarif_format_buffer::flush): New.
+	(sarif_output_format::make_per_format_buffer): New vfunc
+	implementation.
+	(sarif_output_format::set_buffer): New vfunc implementation.
+	(sarif_output_format::on_report_diagnostic): Pass m_buffer to
+	sarif_builder::on_report_diagnostic.
+	(sarif_output_format::num_results): New accessor.
+	(sarif_output_format::get_result): New accessor.
+	(diagnostic_output_format::diagnostic_output_format): Initialize
+	m_buffer.
+	(diagnostic_output_format::m_buffer): New field.
+	(diagnostic_output_format::num_results): Get accessor.
+	(diagnostic_output_format::get_result): Get accessor.
+	(selftest::get_message_from_result): New.
+	(selftest::test_buffering): New.
+	(selftest::diagnostic_format_sarif_cc_tests): Call it.
+	* diagnostic-format-text.cc: Include
+	"diagnostic-client-data-hooks.h".
+	(class diagnostic_text_format_buffer): New subclass.
+	(diagnostic_text_format_buffer::diagnostic_text_format_buffer):
+	New.
+	(diagnostic_text_format_buffer::dump): New.
+	(diagnostic_text_format_buffer::empty_p): New.
+	(diagnostic_text_format_buffer::move_to): New.
+	(diagnostic_text_format_buffer::clear): New.
+	(diagnostic_text_format_buffer::flush): New.
+	(diagnostic_text_output_format::dump): Dump m_saved_output_buffer.
+	(diagnostic_text_output_format::set_buffer): New.
+	(diagnostic_text_output_format::make_per_format_buffer): New.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::diagnostic_text_output_format):
+	Initialize m_saved_output_buffer.
+	(diagnostic_text_output_format::set_buffer): New decl.
+	(diagnostic_text_output_format::make_per_format_buffer): New decl.
+	(diagnostic_text_output_format::m_saved_output_buffer): New field.
+	* diagnostic-format.h (class diagnostic_per_format_buffer): New
+	forward decl.
+	(diagnostic_output_format::make_per_format_buffer): New vfunc.
+	(diagnostic_output_format::set_buffer): New vfunc.
+	* diagnostic.cc: Include "diagnostic-buffer.h".
+	(diagnostic_context::initialize): Replace memset with call to
+	"clear" on m_diagnostic_counters.  Initializer
+	m_diagnostic_buffer.
+	(diagnostic_context::finish): Call set_diagnostic_buffer with
+	nullptr.
+	(diagnostic_context::dump): Update for encapsulation of counts
+	into m_diagnostic_counters.  Dump m_diagnostic_buffer.
+	(diagnostic_context::execution_failed_p): Update for encapsulation of
+	counts into m_diagnostic_counters.
+	(diagnostic_context::check_max_errors): Likewise.
+	(diagnostic_context::report_diagnostic): Likewise.  Eliminate
+	diagnostic_check_max_errors in favor of check_max_errors.
+	Update increment of counter to support buffering.  Eliminate
+	diagnostic_action_after_output in favor of action_after_output.
+	Only add fixits to m_edit_context_ptr if buffering is disabled.
+	Only call diagnostic_output_format::after_diagnostic if buffering
+	is disabled.
+	(diagnostic_context::error_recursion):  Eliminate
+	diagnostic_action_after_output in favor of action_after_output.
+	(diagnostic_context::set_diagnostic_buffer): New.
+	(diagnostic_context::clear_diagnostic_buffer): New.
+	(diagnostic_context::flush_diagnostic_buffer): New.
+	(diagnostic_counters::diagnostic_counters): New.
+	(diagnostic_counters::dump): New.
+	(diagnostic_counters::move_to): New.
+	(diagnostic_counters::clear): New.
+	(diagnostic_buffer::diagnostic_buffer): New.
+	(diagnostic_buffer::~diagnostic_buffer): New.
+	(diagnostic_buffer::dump): New.
+	(diagnostic_buffer::empty_p): New.
+	(diagnostic_buffer::move_to): New.
+	(diagnostic_buffer::ensure_per_format_buffer): New.
+	(c_diagnostic_cc_tests): Remove stray newline.
+	* diagnostic.h (class diagnostic_buffer): New forward decl.
+	(struct diagnostic_counters): New.
+	(diagnostic_context::check_max_errors): Make private.
+	(diagnostic_context::action_after_output): Make private.
+	(diagnostic_context::get_output_format): Make non-const.
+	(diagnostic_context::diagnostic_count): Update for change
+	to m_diagnostic_counters.
+	(diagnostic_context::set_diagnostic_buffer): New decl.
+	(diagnostic_context::get_diagnostic_buffer): New decl.
+	(diagnostic_context::clear_diagnostic_buffer): New decl.
+	(diagnostic_context::flush_diagnostic_buffer): New decl.
+	(diagnostic_context::m_diagnostic_count): Replace array with...
+	(diagnostic_context::m_diagnostic_counters): ...this.
+	(diagnostic_context::m_diagnostic_buffer): New field.
+	(diagnostic_action_after_output): Delete.
+	(diagnostic_check_max_errors): Delete.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_mov<VQMOV:mode>):
+	Remove redundant mode check.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.md (copysign<GPF:mode>3): Widen immediate to
+	vector.
+	(copysign<GPF:mode>3_insn): Use VQ_INT_EQUIV in operand 3.
+	* config/aarch64/iterators.md (VQ_INT_EQUIV): New iterator.
+	(vq_int_equiv): Likewise.
+
+2024-10-23  Jason Merrill  <jason@redhat.com>
+
+	* doc/extend.texi (Deprecated Features): Remove text about some
+	no-longer-deprecated features.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (enum simd_immediate_check): Add
+	AARCH64_CHECK_XOR.
+	(aarch64_simd_valid_xor_imm): New function.
+	(aarch64_output_simd_imm): Add AARCH64_CHECK_XOR support.
+	(aarch64_output_simd_xor_imm): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_output_simd_xor_imm): New
+	prototype.
+	(aarch64_simd_valid_xor_imm): New prototype.
+	* config/aarch64/aarch64-simd.md (xor<mode>3<vczle><vczbe>):
+	Use aarch64_reg_or_xor_imm predicate and add an immediate alternative.
+	* config/aarch64/predicates.md (aarch64_reg_or_xor_imm): Add new
+	predicate.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-simd.md (ior<mode>3<vczle><vczbe>):
+	Use aarch64_reg_or_orr_imm predicate.  Combine SVE/AdvSIMD immediates
+	and use aarch64_output_simd_orr_imm.
+	* config/aarch64/aarch64.cc (struct simd_immediate_info): Add SVE_MOV.
+	(aarch64_sve_valid_immediate): Use SVE_MOV for SVE move immediates.
+	(aarch64_simd_valid_imm): Enable SVE SIMD immediates when possible.
+	(aarch64_output_simd_imm): Support emitting SVE SIMD immediates.
+	* config/aarch64/predicates.md (aarch64_orr_imm_sve_advsimd): Remove.
+
+2024-10-23  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-protos.h (enum simd_immediate_check): Move to aarch64.cc.
+	(aarch64_output_simd_mov_immediate): Remove.
+	(aarch64_output_simd_mov_imm): New prototype.
+	(aarch64_output_simd_orr_imm): Likewise.
+	(aarch64_output_simd_and_imm): Likewise.
+	(aarch64_simd_valid_immediate): Remove.
+	(aarch64_simd_valid_and_imm): New prototype.
+	(aarch64_simd_valid_mov_imm): Likewise.
+	(aarch64_simd_valid_orr_imm): Likewise.
+	* config/aarch64/aarch64-simd.md: Use aarch64_output_simd_mov_imm.
+	* config/aarch64/aarch64.cc (enum simd_immediate_check): Moved from aarch64-protos.h.
+	Use AARCH64_CHECK_AND rather than AARCH64_CHECk_BIC.
+	(aarch64_expand_sve_const_vector): Use aarch64_simd_valid_mov_imm.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_can_const_movi_rtx_p): Likewise.
+	(aarch64_secondary_reload): Likewise.
+	(aarch64_legitimate_constant_p): Likewise.
+	(aarch64_advsimd_valid_immediate): Simplify checks on 'which' param.
+	(aarch64_sve_valid_immediate): Add extra param for move vs logical.
+	(aarch64_simd_valid_immediate): Rename to aarch64_simd_valid_imm.
+	(aarch64_simd_valid_mov_imm): New function.
+	(aarch64_simd_valid_orr_imm): Likewise.
+	(aarch64_simd_valid_and_imm): Likewise.
+	(aarch64_mov_operand_p): Use aarch64_simd_valid_mov_imm.
+	(aarch64_simd_scalar_immediate_valid_for_move): Likewise.
+	(aarch64_simd_make_constant): Likewise.
+	(aarch64_expand_vector_init_fallback): Likewise.
+	(aarch64_output_simd_mov_immediate): Rename to aarch64_output_simd_imm.
+	(aarch64_output_simd_orr_imm): New function.
+	(aarch64_output_simd_and_imm): Likewise.
+	(aarch64_output_simd_mov_imm): Likewise.
+	(aarch64_output_scalar_simd_mov_immediate): Use aarch64_output_simd_mov_imm.
+	(aarch64_output_sve_mov_immediate): Use aarch64_simd_valid_imm.
+	(aarch64_output_sve_ptrues): Likewise.
+	* config/aarch64/constraints.md (Do): Use aarch64_simd_valid_orr_imm.
+	(Db): Use aarch64_simd_valid_and_imm.
+	* config/aarch64/predicates.md (aarch64_reg_or_bic_imm): Use aarch64_simd_valid_orr_imm.
+	(aarch64_reg_or_and_imm): Use aarch64_simd_valid_and_imm.
+
+2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117240
+	* config/i386/i386-builtin.def: Add avx/avx512f to vaes
+	ymm/zmm builtins.
+
+2024-10-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117142
+	* tree-sra.cc (build_access_from_call_arg): Disqualify any
+	candidate passed to a function returning twice.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Wleading-whitespace=): Document.
+
+2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117232
+	* config/i386/sse.md (*kortest_cmp<SWI1248_AVX512BWDQ_64:mode>_movqicc):
+	New define_insn_and_split.
+	(*kortest_cmp<SWI1248_AVX512BWDQ_64:mode>_mov<SWI248:mode>cc):
+	Ditto.
+
 2024-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/117199
