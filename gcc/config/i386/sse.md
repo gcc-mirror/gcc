@@ -539,6 +539,9 @@
 (define_mode_iterator VF1_AVX512VL
   [(V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")])
 
+(define_mode_iterator VF1_AVX512BW
+  [(V16SF "TARGET_EVEX512 && TARGET_EVEX512") (V8SF "TARGET_AVX2") V4SF])
+
 (define_mode_iterator VF1_AVX10_2
   [(V16SF "TARGET_AVX10_2_512") V8SF V4SF])
 
@@ -30957,7 +30960,11 @@
   [(V32BF  "V16SF") (V16BF  "V8SF") (V8BF  "V4SF")])
 ;; Converting from SF to BF
 (define_mode_attr sf_cvt_bf16
-  [(V8SF  "V8BF") (V16SF  "V16BF")])
+  [(V4SF "V4BF") (V8SF  "V8BF") (V16SF  "V16BF")])
+
+(define_mode_attr sf_cvt_bf16_lower
+  [(V4SF "v4bf") (V8SF  "v8bf") (V16SF  "v16bf")])
+
 ;; Mapping from BF to SF
 (define_mode_attr sf_bf16
   [(V4SF  "V8BF") (V8SF  "V16BF") (V16SF  "V32BF")])
@@ -31115,6 +31122,17 @@
       DONE;
     }
 })
+
+(define_expand "extend<sf_cvt_bf16_lower><mode>2"
+  [(set (match_operand:VF1_AVX512BW 0 "register_operand")
+	(float_extend:VF1_AVX512BW
+	  (match_operand:<sf_cvt_bf16> 1 "nonimmediate_operand")))]
+  "TARGET_SSE2"
+{
+  ix86_expand_vector_bf2sf_with_vec_perm (operands[0], operands[1]);
+  DONE;
+})
+
 
 (define_insn "avx512f_cvtneps2bf16_<mode><mask_name>"
   [(set (match_operand:<sf_cvt_bf16> 0 "register_operand" "=v")

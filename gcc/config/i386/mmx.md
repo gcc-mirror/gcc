@@ -3012,6 +3012,24 @@
   DONE;
 })
 
+(define_expand "extendv2bfv2sf2"
+  [(set (match_operand:V2SF 0 "register_operand")
+	(float_extend:V2SF
+	  (match_operand:V2BF 1 "nonimmediate_operand")))]
+  "TARGET_SSE2 && TARGET_MMX_WITH_SSE"
+{
+  rtx op0 = gen_reg_rtx (V4SFmode);
+  rtx op1 = gen_reg_rtx (V4BFmode);
+
+  emit_move_insn (op1, lowpart_subreg (V4BFmode,
+				       force_reg (V2BFmode, operands[1]),
+				       V2BFmode));
+  emit_insn (gen_extendv4bfv4sf2 (op0, op1));
+
+  emit_move_insn (operands[0], lowpart_subreg (V2SFmode, op0, V4SFmode));
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel integral arithmetic

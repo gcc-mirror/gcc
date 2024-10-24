@@ -26879,5 +26879,44 @@ ix86_expand_vector_sf2bf_with_vec_perm (rtx dest, rtx src)
   emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), target, vperm_mode));
 }
 
+/* Implement extendv8bf2v8sf2 with vector permutation.  */
+void
+ix86_expand_vector_bf2sf_with_vec_perm (rtx dest, rtx src)
+{
+  machine_mode vperm_mode, src_mode = GET_MODE (src);
+  switch (src_mode)
+    {
+    case V16BFmode:
+      vperm_mode = V32BFmode;
+      break;
+    case V8BFmode:
+      vperm_mode = V16BFmode;
+      break;
+    case V4BFmode:
+      vperm_mode = V8BFmode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  int nelt = GET_MODE_NUNITS (vperm_mode);
+  vec_perm_builder sel (nelt, nelt, 1);
+  sel.quick_grow (nelt);
+  for (int i = 0, k = 0, j = nelt; i != nelt; i++)
+    sel[i] = i & 1 ? j++ : k++;
+
+  vec_perm_indices indices (sel, 2, nelt);
+
+  rtx target = gen_reg_rtx (vperm_mode);
+  rtx op1 = lowpart_subreg (vperm_mode,
+			    force_reg (src_mode, src),
+			    src_mode);
+  rtx op0 = CONST0_RTX (vperm_mode);
+  bool ok = targetm.vectorize.vec_perm_const (vperm_mode, vperm_mode,
+					      target, op0, op1, indices);
+  gcc_assert (ok);
+  emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), target, vperm_mode));
+}
+
 
 #include "gt-i386-expand.h"
