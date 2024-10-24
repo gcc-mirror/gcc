@@ -437,16 +437,15 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
 void
 supergraph::dump_dot_to_file (FILE *fp, const dump_args_t &dump_args) const
 {
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_show_color (pp) = 0;
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_show_color (pp.get ()) = 0;
   /* %qE in logs for SSA_NAMEs should show the ssa names, rather than
      trying to prettify things by showing the underlying var.  */
-  pp_format_decoder (pp) = default_tree_printer;
+  pp_format_decoder (pp.get ()) = default_tree_printer;
 
   pp->set_output_stream (fp);
-  dump_dot_to_pp (pp, dump_args);
-  pp_flush (pp);
-  delete pp;
+  dump_dot_to_pp (pp.get (), dump_args);
+  pp_flush (pp.get ());
 }
 
 /* Dump this graph in .dot format to PATH, using DUMP_ARGS.  */

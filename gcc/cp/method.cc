@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Handle method declarations.  */
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

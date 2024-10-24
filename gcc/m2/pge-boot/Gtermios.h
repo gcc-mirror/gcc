@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_termios_H)
 #   define _termios_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif

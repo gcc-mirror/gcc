@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* trans-const.cc -- convert constant values */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -42,9 +42,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _Output_H
 #define _Output_C
 
+#include "GOutput.h"
 #   include "GFIO.h"
 #   include "GSFIO.h"
 #   include "GStrLib.h"

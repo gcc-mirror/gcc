@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* trans-decl.cc -- Handling of backend function and variable decls, etc */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

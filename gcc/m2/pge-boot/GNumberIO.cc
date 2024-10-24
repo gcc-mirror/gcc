@@ -43,9 +43,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-#define _NumberIO_H
 #define _NumberIO_C
 
+#include "GNumberIO.h"
 #   include "GASCII.h"
 #   include "GStrIO.h"
 #   include "GStrLib.h"
@@ -173,19 +173,19 @@ extern "C" void NumberIO_CardToStr (unsigned int x, unsigned int n, char *a, uns
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
-      a[j] = ' ';
+      const_cast<char *>(a)[j] = ' ';
       j += 1;
       n -= 1;
     }
   while ((i > 0) && (j <= Higha))
     {
-      a[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
+      const_cast<char *>(a)[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
       j += 1;
       i -= 1;
     }
   if (j <= Higha)
     {
-      a[j] = ASCII_nul;
+      const_cast<char *>(a)[j] = ASCII_nul;
     }
 }
 
@@ -271,7 +271,7 @@ extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsi
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
-      a[j] = '0';
+      const_cast<char *>(a)[j] = '0';
       j += 1;
       n -= 1;
     }
@@ -279,18 +279,18 @@ extern "C" void NumberIO_HexToStr (unsigned int x, unsigned int n, char *a, unsi
     {
       if (buf.array[i-1] < 10)
         {
-          a[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
+          const_cast<char *>(a)[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
         }
       else
         {
-          a[j] = ((char) ((buf.array[i-1]+ ((unsigned int) ('A')))-10));
+          const_cast<char *>(a)[j] = ((char) ((buf.array[i-1]+ ((unsigned int) ('A')))-10));
         }
       j += 1;
       i -= 1;
     }
   if (j <= Higha)
     {
-      a[j] = ASCII_nul;
+      const_cast<char *>(a)[j] = ASCII_nul;
     }
 }
 
@@ -350,24 +350,24 @@ extern "C" void NumberIO_IntToStr (int x, unsigned int n, char *a, unsigned int 
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
-      a[j] = ' ';
+      const_cast<char *>(a)[j] = ' ';
       j += 1;
       n -= 1;
     }
   if (Negative)
     {
-      a[j] = '-';
+      const_cast<char *>(a)[j] = '-';
       j += 1;
     }
   while ((i != 0) && (j <= Higha))
     {
-      a[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
+      const_cast<char *>(a)[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
       j += 1;
       i -= 1;
     }
   if (j <= Higha)
     {
-      a[j] = ASCII_nul;
+      const_cast<char *>(a)[j] = ASCII_nul;
     }
 }
 
@@ -491,19 +491,19 @@ extern "C" void NumberIO_OctToStr (unsigned int x, unsigned int n, char *a, unsi
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
-      a[j] = ' ';
+      const_cast<char *>(a)[j] = ' ';
       j += 1;
       n -= 1;
     }
   while ((i > 0) && (j <= Higha))
     {
-      a[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
+      const_cast<char *>(a)[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
       j += 1;
       i -= 1;
     }
   if (j <= Higha)
     {
-      a[j] = ASCII_nul;
+      const_cast<char *>(a)[j] = ASCII_nul;
     }
 }
 
@@ -568,19 +568,19 @@ extern "C" void NumberIO_BinToStr (unsigned int x, unsigned int n, char *a, unsi
   Higha = _a_high;
   while ((n > i) && (j <= Higha))
     {
-      a[j] = ' ';
+      const_cast<char *>(a)[j] = ' ';
       j += 1;
       n -= 1;
     }
   while ((i > 0) && (j <= Higha))
     {
-      a[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
+      const_cast<char *>(a)[j] = ((char) (buf.array[i-1]+ ((unsigned int) ('0'))));
       j += 1;
       i -= 1;
     }
   if (j <= Higha)
     {
-      a[j] = ASCII_nul;
+      const_cast<char *>(a)[j] = ASCII_nul;
     }
 }
 

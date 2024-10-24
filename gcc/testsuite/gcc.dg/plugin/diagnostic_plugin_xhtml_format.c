@@ -689,9 +689,10 @@ public:
     diagnostic_output_format::dump (out, indent);
   }
 
-  diagnostic_per_format_buffer *make_per_format_buffer () final override
+  std::unique_ptr<diagnostic_per_format_buffer>
+  make_per_format_buffer () final override
   {
-    return new diagnostic_xhtml_format_buffer (m_builder);
+    return ::make_unique<diagnostic_xhtml_format_buffer> (m_builder);
   }
   void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
   {
@@ -810,7 +811,7 @@ diagnostic_output_format_init_xhtml (diagnostic_context &context,
   pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
 
-  context.set_output_format (fmt.release ());
+  context.set_output_format (std::move (fmt));
 }
 
 /* Populate CONTEXT in preparation for XHTML output to stderr.  */
@@ -949,9 +950,10 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  global_dc->set_output_format (new xhtml_stream_output_format (*global_dc,
-								line_table,
-								stderr));
+  global_dc->set_output_format
+    (::make_unique<xhtml_stream_output_format> (*global_dc,
+						line_table,
+						stderr));
 
 #if CHECKING_P
   selftest::xhtml_format_selftests ();

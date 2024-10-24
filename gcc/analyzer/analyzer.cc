@@ -494,11 +494,11 @@ get_user_facing_name (const gcall *call)
 label_text
 make_label_text (bool can_colorize, const char *fmt, ...)
 {
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_clear_output_area (pp);
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_clear_output_area (pp.get ());
 
   if (!can_colorize)
-    pp_show_color (pp) = false;
+    pp_show_color (pp.get ()) = false;
 
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
@@ -507,13 +507,12 @@ make_label_text (bool can_colorize, const char *fmt, ...)
   va_start (ap, fmt);
 
   text_info ti (_(fmt), &ap, 0, NULL, &rich_loc);
-  pp_format (pp, &ti);
-  pp_output_formatted_text (pp);
+  pp_format (pp.get (), &ti);
+  pp_output_formatted_text (pp.get ());
 
   va_end (ap);
 
-  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
-  delete pp;
+  label_text result = label_text::take (xstrdup (pp_formatted_text (pp.get ())));
   return result;
 }
 
@@ -524,11 +523,11 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 		   const char *singular_fmt,
 		   const char *plural_fmt, ...)
 {
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_clear_output_area (pp);
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_clear_output_area (pp.get ());
 
   if (!can_colorize)
-    pp_show_color (pp) = false;
+    pp_show_color (pp.get ()) = false;
 
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
@@ -540,13 +539,13 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 
   text_info ti (fmt, &ap, 0, NULL, &rich_loc);
 
-  pp_format (pp, &ti);
-  pp_output_formatted_text (pp);
+  pp_format (pp.get (), &ti);
+  pp_output_formatted_text (pp.get ());
 
   va_end (ap);
 
-  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
-  delete pp;
+  label_text result
+    = label_text::take (xstrdup (pp_formatted_text (pp.get ())));
   return result;
 }
 

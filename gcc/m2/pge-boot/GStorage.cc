@@ -32,9 +32,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _Storage_H
 #define _Storage_C
 
+#include "GStorage.h"
 #   include "GSysStorage.h"
 
 extern "C" void Storage_ALLOCATE (void * *a, unsigned int Size);

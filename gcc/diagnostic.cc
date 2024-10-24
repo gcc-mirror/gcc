@@ -454,19 +454,21 @@ diagnostic_context::execution_failed_p () const
 }
 
 void
-diagnostic_context::set_output_format (diagnostic_output_format *output_format)
+diagnostic_context::
+set_output_format (std::unique_ptr<diagnostic_output_format> output_format)
 {
-  /* Ideally we'd use a std::unique_ptr here.  */
   delete m_output_format;
-  m_output_format = output_format;
+  /* Ideally this field would be a std::unique_ptr.  */
+  m_output_format = output_format.release ();
 }
 
 void
-diagnostic_context::set_client_data_hooks (diagnostic_client_data_hooks *hooks)
+diagnostic_context::
+set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks)
 {
-  /* Ideally we'd use a std::unique_ptr here.  */
   delete m_client_data_hooks;
-  m_client_data_hooks = hooks;
+  /* Ideally the field would be a std::unique_ptr here.  */
+  m_client_data_hooks = hooks.release ();
 }
 
 void
@@ -483,20 +485,21 @@ diagnostic_context::set_original_argv (unique_argv original_argv)
 }
 
 void
-diagnostic_context::set_option_manager (diagnostic_option_manager *mgr,
-					unsigned lang_mask)
+diagnostic_context::
+set_option_manager (std::unique_ptr<diagnostic_option_manager> mgr,
+		    unsigned lang_mask)
 {
   delete m_option_mgr;
-  m_option_mgr = mgr;
+  m_option_mgr = mgr.release ();
   m_lang_mask = lang_mask;
 }
 
 void
-diagnostic_context::set_urlifier (urlifier *urlifier)
+diagnostic_context::set_urlifier (std::unique_ptr<urlifier> urlifier)
 {
-  /* Ideally we'd use a std::unique_ptr here.  */
   delete m_urlifier;
-  m_urlifier = urlifier;
+  /* Ideally the field would be a std::unique_ptr here.  */
+  m_urlifier = urlifier.release ();
 }
 
 void
@@ -1715,7 +1718,7 @@ diagnostic_context::set_diagnostic_buffer (diagnostic_buffer *buffer)
     {
       buffer->ensure_per_format_buffer ();
       gcc_assert (buffer->m_per_format_buffer);
-      m_output_format->set_buffer (buffer->m_per_format_buffer);
+      m_output_format->set_buffer (buffer->m_per_format_buffer.get ());
     }
   else
     m_output_format->set_buffer (nullptr);
@@ -1793,14 +1796,8 @@ diagnostic_counters::clear ()
 /* class diagnostic_buffer.  */
 
 diagnostic_buffer::diagnostic_buffer (diagnostic_context &ctxt)
-: m_ctxt (ctxt),
-  m_per_format_buffer (nullptr)
+: m_ctxt (ctxt)
 {
-}
-
-diagnostic_buffer::~diagnostic_buffer ()
-{
-  delete m_per_format_buffer;
 }
 
 void

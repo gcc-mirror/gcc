@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
    character arrays that a character pointer may point to as a bound
    on the longest string.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

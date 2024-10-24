@@ -38,9 +38,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <limits.h>
-#define _StrIO_H
 #define _StrIO_C
 
+#include "GStrIO.h"
 #   include "GASCII.h"
 #   include "GStdIO.h"
 #   include "Glibc.h"
@@ -204,16 +204,16 @@ extern "C" void StrIO_ReadString (char *a, unsigned int _a_high)
         /* avoid dangling else.  */
         if ((ch == ASCII_cr) || (ch == ASCII_lf))
           {
-            a[n] = ASCII_nul;
+            const_cast<char *>(a)[n] = ASCII_nul;
             n += 1;
           }
         else if (ch == ASCII_ff)
           {
             /* avoid dangling else.  */
-            a[0] = ch;
+            const_cast<char *>(a)[0] = ch;
             if (high > 0)
               {
-                a[1] = ASCII_nul;
+                const_cast<char *>(a)[1] = ASCII_nul;
               }
             ch = ASCII_cr;
           }
@@ -221,18 +221,18 @@ extern "C" void StrIO_ReadString (char *a, unsigned int _a_high)
           {
             /* avoid dangling else.  */
             Echo (ch);
-            a[n] = ch;
+            const_cast<char *>(a)[n] = ch;
             n += 1;
           }
         else if (ch == ASCII_eof)
           {
             /* avoid dangling else.  */
-            a[n] = ch;
+            const_cast<char *>(a)[n] = ch;
             n += 1;
             ch = ASCII_cr;
             if (n <= high)
               {
-                a[n] = ASCII_nul;
+                const_cast<char *>(a)[n] = ASCII_nul;
               }
           }
       }

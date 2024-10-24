@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
       giving values to operands in necessary statements; and
    3. Removing dead statements.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

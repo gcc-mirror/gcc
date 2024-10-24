@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_wrapc_H)
 #   define _wrapc_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif

@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
    which are zero based.  Symbols are written to the module in no
    particular order.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

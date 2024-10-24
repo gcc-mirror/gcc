@@ -38,7 +38,8 @@ public:
 
   /* Vfunc for making an appropriate diagnostic_per_format_buffer
      subclass for this format.  */
-  virtual diagnostic_per_format_buffer *make_per_format_buffer () = 0;
+  virtual std::unique_ptr<diagnostic_per_format_buffer>
+  make_per_format_buffer () = 0;
 
   /* Vfunc to be called when call a diagnostic_buffer is set on
      a diagnostic_context, to update this format.  The per_format_buffer

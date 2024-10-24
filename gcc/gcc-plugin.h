@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #define IN_GCC
 #endif
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

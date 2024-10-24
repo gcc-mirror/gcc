@@ -20,6 +20,7 @@
 #ifndef IN_GEN_AVR_MMCU_TEXI
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

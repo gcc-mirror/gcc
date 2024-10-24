@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_Indexing_H)
 #   define _Indexing_H
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #   ifdef __cplusplus
@@ -154,6 +155,13 @@ EXTERN void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_IndexPro
 */
 
 EXTERN bool Indexing_IsEmpty (Indexing_Index i);
+
+/*
+   FindIndice - returns the indice containing a.
+                It returns zero if a is not found in array i.
+*/
+
+EXTERN unsigned int Indexing_FindIndice (Indexing_Index i, void * a);
 #   ifdef __cplusplus
 }
 #   endif

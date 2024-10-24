@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -295,11 +296,11 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted,
 void
 pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
 {
-  c_pretty_printer *cpp = (c_pretty_printer *) ctxt.m_pp.clone ();
+  auto pp = ctxt.m_pp.clone ();
+  c_pretty_printer *cpp = (c_pretty_printer *)pp.get ();
   cpp->set_padding (pp_none);
   ::print_type (cpp, m_type, &ctxt.m_quoted, m_highlight_color);
   pp_string (&ctxt.m_pp, pp_formatted_text (cpp));
-  delete cpp;
 }
 
 /* Called during diagnostic message formatting process to print a

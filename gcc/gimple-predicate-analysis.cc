@@ -20,6 +20,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"

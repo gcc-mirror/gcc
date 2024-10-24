@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -36,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "make-unique.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -2986,10 +2988,10 @@ c_pretty_printer::c_pretty_printer ()
 
 /* c_pretty_printer's implementation of pretty_printer::clone vfunc.  */
 
-pretty_printer *
+std::unique_ptr<pretty_printer>
 c_pretty_printer::clone () const
 {
-  return new c_pretty_printer (*this);
+  return ::make_unique<c_pretty_printer> (*this);
 }
 
 /* Print the tree T in full, on file FILE.  */

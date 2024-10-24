@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
    for possible use later.  If a line does not match a legal
    construction, then the saved error message is reported.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

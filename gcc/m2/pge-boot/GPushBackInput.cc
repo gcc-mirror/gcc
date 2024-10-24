@@ -43,9 +43,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _PushBackInput_H
 #define _PushBackInput_C
 
+#include "GPushBackInput.h"
 #   include "GFIO.h"
 #   include "GDynamicStrings.h"
 #   include "GASCII.h"

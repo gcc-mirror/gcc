@@ -59,7 +59,6 @@ class diagnostic_buffer
   friend class diagnostic_context;
 
   diagnostic_buffer (diagnostic_context &ctxt);
-  ~diagnostic_buffer ();
 
   void dump (FILE *out, int indent) const;
   void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
@@ -77,7 +76,7 @@ class diagnostic_buffer
   void ensure_per_format_buffer ();
 
   diagnostic_context &m_ctxt;
-  diagnostic_per_format_buffer *m_per_format_buffer;
+  std::unique_ptr<diagnostic_per_format_buffer> m_per_format_buffer;
 
   /* The number of buffered diagnostics of each kind.  */
   diagnostic_counters m_diagnostic_counters;

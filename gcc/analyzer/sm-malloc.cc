@@ -1648,14 +1648,13 @@ private:
 
   static bool sufficiently_similar_p (tree expr_a, tree expr_b)
   {
-    pretty_printer *pp_a = global_dc->m_printer->clone ();
-    pretty_printer *pp_b = global_dc->m_printer->clone ();
-    pp_printf (pp_a, "%qE", expr_a);
-    pp_printf (pp_b, "%qE", expr_b);
-    bool result = (strcmp (pp_formatted_text (pp_a), pp_formatted_text (pp_b))
+    auto pp_a = global_dc->clone_printer ();
+    auto pp_b = global_dc->clone_printer ();
+    pp_printf (pp_a.get (), "%qE", expr_a);
+    pp_printf (pp_b.get (), "%qE", expr_b);
+    bool result = (strcmp (pp_formatted_text (pp_a.get ()),
+			   pp_formatted_text (pp_b.get ()))
 		   == 0);
-    delete pp_a;
-    delete pp_b;
     return result;
   }
 

@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <limits.h>
-#define _Debug_H
 #define _Debug_C
 
+#include "GDebug.h"
 #   include "GASCII.h"
 #   include "GNumberIO.h"
 #   include "GStdIO.h"

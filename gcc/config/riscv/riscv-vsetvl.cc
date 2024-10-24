@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #define IN_TARGET_CODE 1
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
+#define INCLUDE_MEMORY
 #define INCLUDE_ARRAY
 
 #include "config.h"

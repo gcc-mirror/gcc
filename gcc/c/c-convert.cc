@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    Every language front end must have a `convert' function
    but what kind of conversions it does will depend on the language.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

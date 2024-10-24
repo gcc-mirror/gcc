@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -2673,10 +2674,9 @@ attr_access::array_as_string (tree type) const
 
   /* Format the type using the current pretty printer.  The generic tree
      printer does a terrible job.  */
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_printf (pp, "%qT", type);
-  typstr = pp_formatted_text (pp);
-  delete pp;
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_printf (pp.get (), "%qT", type);
+  typstr = pp_formatted_text (pp.get ());
 
   return typstr;
 }

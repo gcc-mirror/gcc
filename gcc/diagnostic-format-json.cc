@@ -72,9 +72,10 @@ public:
     diagnostic_output_format::dump (out, indent);
   }
 
-  diagnostic_per_format_buffer *make_per_format_buffer () final override
+  std::unique_ptr<diagnostic_per_format_buffer>
+  make_per_format_buffer () final override
   {
-    return new diagnostic_json_format_buffer (*this);
+    return ::make_unique<diagnostic_json_format_buffer> (*this);
   }
   void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
   {
@@ -505,7 +506,7 @@ diagnostic_output_format_init_json (diagnostic_context &context,
   pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
 
-  context.set_output_format (fmt.release ());
+  context.set_output_format (std::move (fmt));
 }
 
 /* Populate CONTEXT in preparation for JSON output to stderr.  */

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    would evaluate them.  We use the GNU MP library and the MPFR
    library to do arithmetic, and this file provides the interface.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

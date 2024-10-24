@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This file implements the parts of the language independent aspect
    of diagnostic messages that implicitly use global_dc.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

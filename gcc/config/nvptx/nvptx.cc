@@ -20,6 +20,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include <sstream>
 #include "system.h"

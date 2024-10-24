@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
    type-bound procedures.  */
 
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

@@ -64,6 +64,7 @@
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
 #define INCLUDE_ARRAY
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

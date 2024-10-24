@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    ./ccCJuXGv.lto.ltrans.o
 */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -52,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts-diagnostic.h"
 #include "opt-suggestions.h"
 #include "opts-jobserver.h"
+#include "make-unique.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -2174,7 +2176,8 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
-  global_dc->set_option_manager (new lto_diagnostic_option_manager (), 0);
+  global_dc->set_option_manager
+    (::make_unique<lto_diagnostic_option_manager> (), 0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
     fatal_error (input_location, "%<atexit%> failed");

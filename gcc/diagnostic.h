@@ -21,6 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTIC_H
 #define GCC_DIAGNOSTIC_H
 
+/* This header uses std::unique_ptr, but <memory> can't be directly
+   included due to issues with macros.  Hence it must be included from
+   system.h by defining INCLUDE_MEMORY in any source file using it.  */
+
+#ifndef INCLUDE_MEMORY
+# error "You must define INCLUDE_MEMORY before including system.h to use diagnostic.h"
+#endif
+
 #include "unique-argv.h"
 #include "rich-location.h"
 #include "pretty-print.h"
@@ -574,10 +582,10 @@ public:
   }
 
   /* Various setters for use by option-handling logic.  */
-  void set_output_format (diagnostic_output_format *output_format);
+  void set_output_format (std::unique_ptr<diagnostic_output_format> output_format);
   void set_text_art_charset (enum diagnostic_text_art_charset charset);
-  void set_client_data_hooks (diagnostic_client_data_hooks *hooks);
-  void set_urlifier (urlifier *);
+  void set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks);
+  void set_urlifier (std::unique_ptr<urlifier>);
   void create_edit_context ();
   void set_warning_as_error_requested (bool val)
   {
@@ -672,7 +680,7 @@ public:
   }
 
   void
-  set_option_manager (diagnostic_option_manager *mgr,
+  set_option_manager (std::unique_ptr<diagnostic_option_manager> mgr,
 		      unsigned lang_mask);
 
   unsigned get_lang_mask () const
@@ -700,6 +708,7 @@ public:
     return m_option_classifier.pch_restore (f);
   }
 
+
   void set_diagnostic_buffer (diagnostic_buffer *);
   diagnostic_buffer *get_diagnostic_buffer () const
   {
@@ -707,6 +716,11 @@ public:
   }
   void clear_diagnostic_buffer (diagnostic_buffer &);
   void flush_diagnostic_buffer (diagnostic_buffer &);
+
+  std::unique_ptr<pretty_printer> clone_printer () const
+  {
+    return m_printer->clone ();
+  }
 
 private:
   void error_recursion () ATTRIBUTE_NORETURN;
@@ -722,11 +736,15 @@ private:
      Ideally, all of these would be private.  */
 
 public:
-  /* Where most of the diagnostic formatting work is done.  */
+  /* Where most of the diagnostic formatting work is done.
+     Owned by the context; this would be a std::unique_ptr if
+     diagnostic_context had a proper ctor.  */
   pretty_printer *m_printer;
 
 private:
-  /* Cache of source code.  */
+  /* Cache of source code.
+     Owned by the context; this would be a std::unique_ptr if
+     diagnostic_context had a proper ctor.  */
   file_cache *m_file_cache;
 
   /* The number of times we have issued diagnostics.  */
@@ -818,11 +836,15 @@ public:
   void (*m_adjust_diagnostic_info)(diagnostic_context *, diagnostic_info *);
 
 private:
+  /* Owned by the context; this would be a std::unique_ptr if
+     diagnostic_context had a proper ctor.  */
   diagnostic_option_manager *m_option_mgr;
   unsigned m_lang_mask;
 
   /* An optional hook for adding URLs to quoted text strings in
-     diagnostics.  Only used for the main diagnostic message.  */
+     diagnostics.  Only used for the main diagnostic message.
+     Owned by the context; this would be a std::unique_ptr if
+     diagnostic_context had a proper ctor.  */
   urlifier *m_urlifier;
 
 public:
@@ -865,7 +887,9 @@ private:
   enum diagnostics_escape_format m_escape_format;
 
   /* If non-NULL, an edit_context to which fix-it hints should be
-     applied, for generating patches.  */
+     applied, for generating patches.
+     Owned by the context; this would be a std::unique_ptr if
+     diagnostic_context had a proper ctor.  */
   edit_context *m_edit_context_ptr;
 
   /* Fields relating to diagnostic groups.  */
@@ -879,7 +903,9 @@ private:
   } m_diagnostic_groups;
 
   /* How to output diagnostics (text vs a structured format such as JSON).
-     Must be non-NULL; owned by context.  */
+     Must be non-NULL; owned by context.
+     This would be a std::unique_ptr if diagnostic_context had a proper
+     ctor.  */
   diagnostic_output_format *m_output_format;
 
   /* Callback to set the locations of call sites along the inlining
@@ -891,14 +917,18 @@ private:
   /* A bundle of hooks for providing data to the context about its client
      e.g. version information, plugins, etc.
      Used by SARIF output to give metadata about the client that's
-     producing diagnostics.  */
+     producing diagnostics.
+     Owned by the context; this would be a std::unique_ptr if
+     diagnostic_context had a proper ctor.  */
   diagnostic_client_data_hooks *m_client_data_hooks;
 
   /* Support for diagrams.  */
   struct
   {
     /* Theme to use when generating diagrams.
-       Can be NULL (if text art is disabled).  */
+       Can be NULL (if text art is disabled).
+       Owned by the context; this would be a std::unique_ptr if
+       diagnostic_context had a proper ctor.  */
     text_art::theme *m_theme;
 
   } m_diagrams;

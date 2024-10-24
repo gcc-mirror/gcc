@@ -43,7 +43,8 @@ public:
 
   void dump (FILE *out, int indent) const override;
 
-  diagnostic_per_format_buffer *make_per_format_buffer () final override;
+  std::unique_ptr<diagnostic_per_format_buffer>
+  make_per_format_buffer () final override;
   void set_buffer (diagnostic_per_format_buffer *) final override;
 
   void on_begin_group () override {}

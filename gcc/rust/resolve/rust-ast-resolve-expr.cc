@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#define INCLUDE_MEMORY
 #include "rust-ast-resolve-expr.h"
 #include "rust-ast-resolve-stmt.h"
 #include "rust-ast-resolve-struct-expr-field.h"

@@ -33,9 +33,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   endif
 
 #   include "Gmcrts.h"
-#define _StdIO_H
 #define _StdIO_C
 
+#include "GStdIO.h"
 #   include "GIO.h"
 #   include "GM2RTS.h"
 
@@ -47,12 +47,6 @@ typedef struct StdIO_ProcRead_p StdIO_ProcRead;
 typedef struct StdIO__T1_a StdIO__T1;
 
 typedef struct StdIO__T2_a StdIO__T2;
-
-typedef void (*StdIO_ProcWrite_t) (char);
-struct StdIO_ProcWrite_p { StdIO_ProcWrite_t proc; };
-
-typedef void (*StdIO_ProcRead_t) (char *);
-struct StdIO_ProcRead_p { StdIO_ProcRead_t proc; };
 
 struct StdIO__T1_a { StdIO_ProcWrite array[MaxStack+1]; };
 struct StdIO__T2_a { StdIO_ProcRead array[MaxStack+1]; };

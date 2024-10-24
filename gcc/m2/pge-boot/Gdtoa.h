@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_dtoa_H)
 #   define _dtoa_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
@@ -68,7 +66,7 @@ EXTERN double dtoa_strtod (void * s, bool *error);
           sign       does the string have a sign?
 */
 
-EXTERN void * dtoa_dtoa (double d, dtoa_Mode mode, int ndigits, int *decpt, bool *sign);
+EXTERN void * dtoa_dtoa (double d, int mode, int ndigits, int *decpt, bool *sign);
 #   ifdef __cplusplus
 }
 #   endif

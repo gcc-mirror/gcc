@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Implementation of attribute handlers for user defined attributes and
    internal built-in functions.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

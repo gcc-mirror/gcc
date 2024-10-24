@@ -42,9 +42,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <stdlib.h>
 #include <unistd.h>
-#define _IO_H
 #define _IO_C
 
+#include "GIO.h"
 #   include "GStrLib.h"
 #   include "GSYSTEM.h"
 #   include "Glibc.h"

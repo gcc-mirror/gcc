@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM // for std::equal
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"

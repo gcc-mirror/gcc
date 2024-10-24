@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Utility functions for manipulation with TARGET_MEM_REFs -- tree expressions
    that directly map to addressing modes of the target.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

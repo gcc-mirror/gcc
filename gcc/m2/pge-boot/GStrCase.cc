@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <limits.h>
-#define _StrCase_H
 #define _StrCase_C
 
+#include "GStrCase.h"
 #   include "GASCII.h"
 #   include "GStrLib.h"
 
@@ -92,12 +92,12 @@ extern "C" void StrCase_StrToUpperCase (const char *a_, unsigned int _a_high, ch
   i = 0;
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
-      b[i] = StrCase_Cap (a[i]);
+      const_cast<char *>(b)[i] = StrCase_Cap (a[i]);
       i += 1;
     }
   if (i < highb)
     {
-      b[i] = ASCII_nul;
+      const_cast<char *>(b)[i] = ASCII_nul;
     }
 }
 
@@ -122,12 +122,12 @@ extern "C" void StrCase_StrToLowerCase (const char *a_, unsigned int _a_high, ch
   i = 0;
   while (((i < higha) && (a[i] != ASCII_nul)) && (i < highb))
     {
-      b[i] = StrCase_Lower (a[i]);
+      const_cast<char *>(b)[i] = StrCase_Lower (a[i]);
       i += 1;
     }
   if (i < highb)
     {
-      b[i] = ASCII_nul;
+      const_cast<char *>(b)[i] = ASCII_nul;
     }
 }
 

@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
    The data structures would be more complex in order to work on all the
    variables in a single pass.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

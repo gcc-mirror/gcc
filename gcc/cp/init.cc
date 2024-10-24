@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* High-level class interface.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

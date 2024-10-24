@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
   gcc/vtable-verify.h, because they are used both here and in
   gcc/vtable-verify.cc.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

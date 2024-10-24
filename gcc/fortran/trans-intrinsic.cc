@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* trans-intrinsic.cc-- generate GENERIC trees for calls to intrinsics.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
