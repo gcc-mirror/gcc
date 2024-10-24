@@ -4906,6 +4906,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			- TYPE_PRECISION (TREE_TYPE (@2)))))
   (bit_and (convert @0) (lshift { build_minus_one_cst (type); } @1))))
 
+#if GIMPLE
+/* (X >> C1) << (C1 + C2) -> X << C2 if the low C1 bits of X are zero.  */
+(simplify
+ (lshift (convert? (rshift (with_possible_nonzero_bits2 @0) INTEGER_CST@1))
+         INTEGER_CST@2)
+ (if (INTEGRAL_TYPE_P (type)
+      && wi::ltu_p (wi::to_wide (@1), element_precision (type))
+      && wi::ltu_p (wi::to_wide (@2), element_precision (type))
+      && wi::to_widest (@2) >= wi::to_widest (@1)
+      && wi::to_widest (@1) <= wi::ctz (get_nonzero_bits (@0)))
+  (lshift (convert @0) (minus @2 @1))))
+#endif
+
 /* For (x << c) >> c, optimize into x & ((unsigned)-1 >> c) for
    unsigned x OR truncate into the precision(type) - c lowest bits
    of signed x (if they have mode precision or a precision of 1).  */
