@@ -5091,7 +5091,7 @@ ipa_fn_summary_write (void)
 	}
     }
   streamer_write_char_stream (ob->main_stream, 0);
-  produce_asm (ob, NULL);
+  produce_asm (ob);
   destroy_output_block (ob);
 
   ipa_prop_write_jump_functions ();

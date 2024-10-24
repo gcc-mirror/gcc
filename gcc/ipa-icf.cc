@@ -2216,7 +2216,7 @@ sem_item_optimizer::write_summary (void)
     }
 
   streamer_write_char_stream (ob->main_stream, 0);
-  produce_asm (ob, NULL);
+  produce_asm (ob);
   destroy_output_block (ob);
 }
 

@@ -470,6 +470,9 @@ struct lto_symtab_encoder_d
 {
   vec<lto_encoder_entry> nodes;
   hash_map<symtab_node *, size_t> *map;
+
+  /* Mapping of input order of nodes onto output order.  */
+  hash_map<int_hash<int, -1, -2>, int> *order_remap;
 };
 
 typedef struct lto_symtab_encoder_d *lto_symtab_encoder_t;
@@ -896,7 +899,7 @@ extern void lto_output_fn_decl_ref (struct lto_out_decl_state *,
 extern tree lto_input_var_decl_ref (lto_input_block *, lto_file_decl_data *);
 extern tree lto_input_fn_decl_ref (lto_input_block *, lto_file_decl_data *);
 extern void lto_output_toplevel_asms (void);
-extern void produce_asm (struct output_block *ob, tree fn);
+extern void produce_asm (struct output_block *ob);
 extern void lto_output ();
 extern void produce_asm_for_decls ();
 void lto_output_decl_state_streams (struct output_block *,

@@ -96,6 +96,8 @@ lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
    encoder->nodes.release ();
    if (encoder->map)
      delete encoder->map;
+   if (encoder->order_remap)
+     delete encoder->order_remap;
    free (encoder);
 }
 
@@ -405,7 +407,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   streamer_write_enum (ob->main_stream, LTO_symtab_tags, LTO_symtab_last_tag,
 		       tag);
-  streamer_write_hwi_stream (ob->main_stream, node->order);
+  int output_order = *encoder->order_remap->get (node->order);
+  streamer_write_hwi_stream (ob->main_stream, output_order);
 
   /* In WPA mode, we only output part of the call-graph.  Also, we
      fake cgraph node attributes.  There are two cases that we care.
@@ -602,7 +605,8 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
 
   streamer_write_enum (ob->main_stream, LTO_symtab_tags, LTO_symtab_last_tag,
 		       LTO_symtab_variable);
-  streamer_write_hwi_stream (ob->main_stream, node->order);
+  int output_order = *encoder->order_remap->get (node->order);
+  streamer_write_hwi_stream (ob->main_stream, output_order);
   lto_output_var_decl_ref (ob->decl_state, ob->main_stream, node->decl);
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->externally_visible, 1);
@@ -2111,7 +2115,7 @@ output_cgraph_opt_summary (void)
 	  output_node_opt_summary (ob, cnode, encoder);
 	}
     }
-  produce_asm (ob, NULL);
+  produce_asm (ob);
   destroy_output_block (ob);
 }
 

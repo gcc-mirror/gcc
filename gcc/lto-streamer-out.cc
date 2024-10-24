@@ -2202,12 +2202,11 @@ output_cfg (struct output_block *ob, struct function *fn)
   ob->main_stream = tmp_stream;
 }
 
-
 /* Create the header in the file using OB.  If the section type is for
    a function, set FN to the decl for that function.  */
 
 void
-produce_asm (struct output_block *ob, tree fn)
+produce_symbol_asm (struct output_block *ob, tree fn, int output_order)
 {
   enum lto_section_type section_type = ob->section_type;
   struct lto_function_header header;
@@ -2217,8 +2216,7 @@ produce_asm (struct output_block *ob, tree fn)
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fn));
       section_name = lto_get_section_name (section_type, name,
-					   symtab_node::get (fn)->order,
-					   NULL);
+					   output_order, NULL);
     }
   else
     section_name = lto_get_section_name (section_type, NULL, 0, NULL);
@@ -2243,6 +2241,14 @@ produce_asm (struct output_block *ob, tree fn)
   lto_write_stream (ob->string_stream);
 
   lto_end_section ();
+}
+
+/* Wrapper for unused arguments.  */
+
+void
+produce_asm (struct output_block *ob)
+{
+  produce_symbol_asm (ob, NULL, -1);
 }
 
 
@@ -2402,7 +2408,7 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
 /* Output the body of function NODE->DECL.  */
 
 static void
-output_function (struct cgraph_node *node)
+output_function (struct cgraph_node *node, int output_order)
 {
   tree function;
   struct function *fn;
@@ -2479,7 +2485,7 @@ output_function (struct cgraph_node *node)
     streamer_write_uhwi (ob, 0);
 
   /* Create a section to hold the pickled output of this function.   */
-  produce_asm (ob, function);
+  produce_symbol_asm (ob, function, output_order);
 
   destroy_output_block (ob);
   if (streamer_dump_file)
@@ -2490,7 +2496,7 @@ output_function (struct cgraph_node *node)
 /* Output the body of function NODE->DECL.  */
 
 static void
-output_constructor (struct varpool_node *node)
+output_constructor (struct varpool_node *node, int output_order)
 {
   tree var = node->decl;
   struct output_block *ob;
@@ -2512,7 +2518,7 @@ output_constructor (struct varpool_node *node)
   stream_write_tree (ob, DECL_INITIAL (var), true);
 
   /* Create a section to hold the pickled output of this function.   */
-  produce_asm (ob, var);
+  produce_symbol_asm (ob, var, output_order);
 
   destroy_output_block (ob);
   if (streamer_dump_file)
@@ -2580,7 +2586,7 @@ lto_output_toplevel_asms (void)
 /* Copy the function body or variable constructor of NODE without deserializing. */
 
 static void
-copy_function_or_variable (struct symtab_node *node)
+copy_function_or_variable (struct symtab_node *node, int output_order)
 {
   tree function = node->decl;
   struct lto_file_decl_data *file_data = node->lto_file_data;
@@ -2588,7 +2594,7 @@ copy_function_or_variable (struct symtab_node *node)
   size_t len;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
   char *section_name =
-    lto_get_section_name (LTO_section_function_body, name, node->order, NULL);
+    lto_get_section_name (LTO_section_function_body, name, output_order, NULL);
   size_t i, j;
   struct lto_in_decl_state *in_state;
   struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
@@ -2733,6 +2739,63 @@ cmp_symbol_files (const void *pn1, const void *pn2, void *id_map_)
   return n1->order - n2->order;
 }
 
+/* Compare ints, callback for qsort.  */
+
+static int
+cmp_int (const void *a, const void *b)
+{
+  int ia = *(int const*) a;
+  int ib = *(int const*) b;
+  return ia - ib;
+}
+
+/* Create order mapping independent on symbols outside of the partition.
+   Results in stable order values for incremental LTO.
+
+   Remapping is not done in place, because symbols can be used
+   by multiple partitions.  */
+
+static void
+create_order_remap (lto_symtab_encoder_t encoder)
+{
+  auto_vec<int> orders;
+  unsigned i;
+  struct asm_node* anode;
+  encoder->order_remap = new hash_map<int_hash<int, -1, -2>, int>;
+  unsigned n_nodes = lto_symtab_encoder_size (encoder);
+
+  for (i = 0; i < n_nodes; i++)
+    orders.safe_push (lto_symtab_encoder_deref (encoder, i)->order);
+
+  if (!asm_nodes_output)
+    {
+      for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+	orders.safe_push (anode->order);
+    }
+
+  orders.qsort (cmp_int);
+  int ord = 0;
+  int last_order = -1;
+  for (i = 0; i < orders.length (); i++)
+    {
+      int order = orders[i];
+      if (order != last_order)
+	{
+	  last_order = order;
+	  encoder->order_remap->put (order, ord);
+	  ord++;
+	}
+    }
+
+  /* Asm nodes are currently always output only into first partition.
+     We can remap already here.  */
+  if (!asm_nodes_output)
+    {
+      for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+	anode->order = *encoder->order_remap->get (anode->order);
+    }
+}
+
 /* Main entry point from the pass manager.  */
 
 void
@@ -2744,6 +2807,8 @@ lto_output (void)
   unsigned int i, n_nodes;
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
   auto_vec<symtab_node *> symbols_to_copy;
+
+  create_order_remap (encoder);
 
   prune_offload_funcs ();
 
@@ -2807,6 +2872,8 @@ lto_output (void)
       cgraph_node *cnode;
       varpool_node *vnode;
 
+      int output_order = *encoder->order_remap->get (snode->order);
+
       if (flag_checking)
 	gcc_assert (bitmap_set_bit (output, DECL_UID (snode->decl)));
 
@@ -2821,14 +2888,14 @@ lto_output (void)
 		 at WPA time.  */
 	      || DECL_ARGUMENTS (cnode->decl)
 	      || cnode->declare_variant_alt))
-	output_function (cnode);
+	output_function (cnode, output_order);
       else if ((vnode = dyn_cast <varpool_node *> (snode))
 	       && (DECL_INITIAL (vnode->decl) != error_mark_node
 		   || (!flag_wpa
 		       && flag_incremental_link != INCREMENTAL_LINK_LTO)))
-	output_constructor (vnode);
+	output_constructor (vnode, output_order);
       else
-	copy_function_or_variable (snode);
+	copy_function_or_variable (snode, output_order);
       gcc_assert (lto_get_out_decl_state () == decl_state);
       lto_pop_out_decl_state ();
       lto_record_function_out_decl_state (snode->decl, decl_state);

@@ -4131,7 +4131,7 @@ ipa_odr_summary_write (void)
       odr_enum_map = NULL;
     }
 
-  produce_asm (ob, NULL);
+  produce_asm (ob);
   destroy_output_block (ob);
 }
 
