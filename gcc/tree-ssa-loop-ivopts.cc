@@ -4418,6 +4418,7 @@ force_expr_to_var_cost (tree expr, bool speed)
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
+    case EXACT_DIV_EXPR:
     case TRUNC_DIV_EXPR:
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
@@ -4531,6 +4532,7 @@ force_expr_to_var_cost (tree expr, bool speed)
 	return comp_cost (target_spill_cost [speed], 0);
       break;
 
+    case EXACT_DIV_EXPR:
     case TRUNC_DIV_EXPR:
       /* Division by power of two is usually cheap, so we allow it.  Forbid
 	 anything else.  */
