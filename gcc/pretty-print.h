@@ -587,6 +587,11 @@ extern void pp_separate_with (pretty_printer *, char);
 extern void pp_printf (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 
+extern void pp_printf_n (pretty_printer *, unsigned HOST_WIDE_INT n,
+			 const char *, const char *, ...)
+     ATTRIBUTE_GCC_PPDIAG(3,5)
+     ATTRIBUTE_GCC_PPDIAG(4,5);
+
 extern void pp_verbatim (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_flush (pretty_printer *);

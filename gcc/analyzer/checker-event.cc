@@ -175,9 +175,9 @@ maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const
 void
 checker_event::dump (pretty_printer *pp) const
 {
-  label_text event_desc (get_desc (false));
-  pp_printf (pp, "\"%s\" (depth %i",
-	     event_desc.get (), m_effective_depth);
+  pp_character (pp, '"');
+  print_desc (*pp);
+  pp_printf (pp, "\" (depth %i", m_effective_depth);
 
   if (m_effective_depth != m_original_depth)
     pp_printf (pp, " corrected from %i",
@@ -208,11 +208,11 @@ checker_event::debug () const
    Base implementation of checker_event::prepare_for_emission vfunc;
    subclasses that override this should chain up to it.
 
-   Record PD and EMISSION_ID, and call the get_desc vfunc, so that any
-   side-effects of the call to get_desc take place before
+   Record PD and EMISSION_ID, and call the print_desc vfunc, so that any
+   side-effects of the call to print_desc take place before
    pending_diagnostic::emit is called.
 
-   For example, state_change_event::get_desc can call
+   For example, state_change_event::print_desc can call
    pending_diagnostic::describe_state_change; free_of_non_heap can use this
    to tweak the message (TODO: would be neater to simply capture the
    pertinent data within the sm-state).  */
@@ -225,31 +225,32 @@ checker_event::prepare_for_emission (checker_path *,
   m_pending_diagnostic = pd;
   m_emission_id = emission_id;
 
-  label_text desc = get_desc (false);
+  auto pp = global_dc->clone_printer ();
+  print_desc (*pp.get ());
 }
 
 /* class debug_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    debug_event.
    Use the saved string as the event's description.  */
 
-label_text
-debug_event::get_desc (bool) const
+void
+debug_event::print_desc (pretty_printer &pp) const
 {
-  return label_text::borrow (m_desc);
+  pp_string (&pp, m_desc);
 }
 
 /* class precanned_custom_event : public custom_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    precanned_custom_event.
    Use the saved string as the event's description.  */
 
-label_text
-precanned_custom_event::get_desc (bool) const
+void
+precanned_custom_event::print_desc (pretty_printer &pp) const
 {
-  return label_text::borrow (m_desc);
+  pp_string (&pp, m_desc);
 }
 
 /* class statement_event : public checker_event.  */
@@ -265,17 +266,15 @@ statement_event::statement_event (const gimple *stmt, tree fndecl, int depth,
 {
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    statement_event.
    Use the statement's dump form as the event's description.  */
 
-label_text
-statement_event::get_desc (bool) const
+void
+statement_event::print_desc (pretty_printer &pp) const
 {
-  pretty_printer pp;
   pp_string (&pp, "stmt: ");
   pp_gimple_stmt_1 (&pp, m_stmt, 0, (dump_flags_t)0);
-  return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
 /* class region_creation_event : public checker_event.  */
@@ -285,70 +284,69 @@ region_creation_event::region_creation_event (const event_loc_info &loc_info)
 {
 }
 
-/* The various region_creation_event subclasses' get_desc
+/* The various region_creation_event subclasses' print_desc
    implementations.  */
 
-label_text
-region_creation_event_memory_space::get_desc (bool) const
+void
+region_creation_event_memory_space::print_desc (pretty_printer &pp) const
 {
   switch (m_mem_space)
     {
     default:
-      return label_text::borrow ("region created here");
+      pp_string (&pp, "region created here");
+      return;
     case MEMSPACE_STACK:
-      return label_text::borrow ("region created on stack here");
+      pp_string (&pp, "region created on stack here");
+      return;
     case MEMSPACE_HEAP:
-      return label_text::borrow ("region created on heap here");
+      pp_string (&pp, "region created on heap here");
+      return;
     }
 }
 
-label_text
-region_creation_event_capacity::get_desc (bool can_colorize) const
+void
+region_creation_event_capacity::print_desc (pretty_printer &pp) const
 {
   gcc_assert (m_capacity);
   if (TREE_CODE (m_capacity) == INTEGER_CST)
     {
       unsigned HOST_WIDE_INT hwi = tree_to_uhwi (m_capacity);
-      return make_label_text_n (can_colorize,
-				hwi,
-				"capacity: %wu byte",
-				"capacity: %wu bytes",
-				hwi);
+      return pp_printf_n (&pp,
+			  hwi,
+			  "capacity: %wu byte",
+			  "capacity: %wu bytes",
+			  hwi);
     }
   else
-    return make_label_text (can_colorize,
-			    "capacity: %qE bytes", m_capacity);
+    return pp_printf (&pp, "capacity: %qE bytes", m_capacity);
 }
 
-label_text
-region_creation_event_allocation_size::get_desc (bool can_colorize) const
+void
+region_creation_event_allocation_size::print_desc (pretty_printer &pp) const
 {
   if (m_capacity)
     {
       if (TREE_CODE (m_capacity) == INTEGER_CST)
-	return make_label_text_n (can_colorize,
-				  tree_to_uhwi (m_capacity),
-				  "allocated %E byte here",
-				  "allocated %E bytes here",
-				  m_capacity);
+	pp_printf_n (&pp,
+		     tree_to_uhwi (m_capacity),
+		     "allocated %E byte here",
+		     "allocated %E bytes here",
+		     m_capacity);
       else
-	return make_label_text (can_colorize,
-				"allocated %qE bytes here",
-				m_capacity);
+	pp_printf (&pp,
+		   "allocated %qE bytes here",
+		   m_capacity);
     }
-  return make_label_text (can_colorize, "allocated here");
+  pp_printf (&pp, "allocated here");
 }
 
-label_text
-region_creation_event_debug::get_desc (bool) const
+void
+region_creation_event_debug::print_desc (pretty_printer &pp) const
 {
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
   pp_string (&pp, "region creation: ");
   m_reg->dump_to_pp (&pp, true);
   if (m_capacity)
     pp_printf (&pp, " capacity: %qE", m_capacity);
-  return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
 /* class function_entry_event : public checker_event.  */
@@ -362,15 +360,15 @@ function_entry_event::function_entry_event (const program_point &dst_point)
 {
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    function_entry_event.
 
    Use a string such as "entry to 'foo'" as the event's description.  */
 
-label_text
-function_entry_event::get_desc (bool can_colorize) const
+void
+function_entry_event::print_desc (pretty_printer &pp) const
 {
-  return make_label_text (can_colorize, "entry to %qE", m_effective_fndecl);
+  pp_printf (&pp, "entry to %qE", m_effective_fndecl);
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for
@@ -408,7 +406,7 @@ state_change_event::state_change_event (const supernode *node,
 {
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    state_change_event.
 
    Attempt to generate a nicer human-readable description.
@@ -419,73 +417,43 @@ state_change_event::state_change_event (const supernode *node,
    the diagnostic is about to being emitted, so the description for
    an event can change.  */
 
-label_text
-state_change_event::get_desc (bool can_colorize) const
+void
+state_change_event::print_desc (pretty_printer &pp) const
 {
   if (m_pending_diagnostic)
     {
       region_model *model = m_dst_state.m_region_model;
       tree var = model->get_representative_tree (m_sval);
       tree origin = model->get_representative_tree (m_origin);
-      label_text custom_desc
-	= m_pending_diagnostic->describe_state_change
-	    (evdesc::state_change (can_colorize, var, origin,
-				   m_from, m_to, m_emission_id, *this));
-      if (custom_desc.get ())
+      evdesc::state_change evd (var, origin,
+				m_from, m_to, m_emission_id, *this);
+      if (m_pending_diagnostic->describe_state_change (pp, evd))
 	{
 	  if (flag_analyzer_verbose_state_changes)
 	    {
+	      /* Append debugging information about this event.  */
+
+	      if (var)
+		pp_printf (&pp, " (state of %qE: ", var);
+	      else
+		pp_string (&pp, " (state: ");
+
+	      pp_printf (&pp, "%qs -> %qs, ",
+			 m_from->get_name (),
+			 m_to->get_name ());
+
+	      if (m_origin)
+		pp_printf (&pp, "origin: %qE", origin);
+	      else
+		pp_string (&pp, "NULL origin");
+
 	      /* Get any "meaning" of event.  */
 	      diagnostic_event::meaning meaning = get_meaning ();
-	      pretty_printer meaning_pp;
-	      meaning.dump_to_pp (&meaning_pp);
-
-	      /* Append debug version.  */
-	      if (var)
-		{
-		  if (m_origin)
-		    return make_label_text
-		      (can_colorize,
-		       "%s (state of %qE: %qs -> %qs, origin: %qE, meaning: %s)",
-		       custom_desc.get (),
-		       var,
-		       m_from->get_name (),
-		       m_to->get_name (),
-		       origin,
-		       pp_formatted_text (&meaning_pp));
-		  else
-		    return make_label_text
-		      (can_colorize,
-		       "%s (state of %qE: %qs -> %qs, NULL origin, meaning: %s)",
-		       custom_desc.get (),
-		       var,
-		       m_from->get_name (),
-		       m_to->get_name (),
-		       pp_formatted_text (&meaning_pp));
-		}
-	      else
-		{
-		  if (m_origin)
-		    return make_label_text
-		      (can_colorize,
-		       "%s (state: %qs -> %qs, origin: %qE, meaning: %s)",
-		       custom_desc.get (),
-		       m_from->get_name (),
-		       m_to->get_name (),
-		       origin,
-		       pp_formatted_text (&meaning_pp));
-		  else
-		    return make_label_text
-		      (can_colorize,
-		       "%s (state: %qs -> %qs, NULL origin, meaning: %s)",
-		       custom_desc.get (),
-		       m_from->get_name (),
-		       m_to->get_name (),
-		       pp_formatted_text (&meaning_pp));
-		}
+	      pp_string (&pp, ", meaning: ");
+	      meaning.dump_to_pp (&pp);
+	      pp_string (&pp, ")");
 	    }
-	  else
-	    return custom_desc;
+	  return;
 	}
     }
 
@@ -493,33 +461,27 @@ state_change_event::get_desc (bool can_colorize) const
   if (m_sval)
     {
       label_text sval_desc = m_sval->get_desc ();
+      pp_printf (&pp,
+		 "state of %qs: %qs -> %qs",
+		 sval_desc.get (),
+		 m_from->get_name (),
+		 m_to->get_name ());
       if (m_origin)
 	{
 	  label_text origin_desc = m_origin->get_desc ();
-	  return make_label_text
-	    (can_colorize,
-	     "state of %qs: %qs -> %qs (origin: %qs)",
-	     sval_desc.get (),
-	     m_from->get_name (),
-	     m_to->get_name (),
-	     origin_desc.get ());
+	  pp_printf (&pp, " (origin: %qs)",
+		     origin_desc.get ());
 	}
       else
-	return make_label_text
-	  (can_colorize,
-	   "state of %qs: %qs -> %qs (NULL origin)",
-	   sval_desc.get (),
-	   m_from->get_name (),
-	   m_to->get_name ());
+	pp_string (&pp, " (NULL origin)");
     }
   else
     {
       gcc_assert (m_origin == NULL);
-      return make_label_text
-	(can_colorize,
-	 "global state: %qs -> %qs",
-	 m_from->get_name (),
-	 m_to->get_name ());
+      pp_printf (&pp,
+		 "global state: %qs -> %qs",
+		 m_from->get_name (),
+		 m_to->get_name ());
     }
 }
 
@@ -535,9 +497,9 @@ state_change_event::get_meaning () const
       region_model *model = m_dst_state.m_region_model;
       tree var = model->get_representative_tree (m_sval);
       tree origin = model->get_representative_tree (m_origin);
-      return m_pending_diagnostic->get_meaning_for_state_change
-	(evdesc::state_change (false, var, origin,
-			       m_from, m_to, m_emission_id, *this));
+      evdesc::state_change evd (var, origin,
+				m_from, m_to, m_emission_id, *this);
+      return m_pending_diagnostic->get_meaning_for_state_change (evd);
     }
   else
     return meaning ();
@@ -587,9 +549,9 @@ superedge_event::should_filter_p (int verbosity) const
 	  {
 	    /* Filter events with empty descriptions.  This ought to filter
 	       FALLTHRU, but retain true/false/switch edges.  */
-	    label_text desc = get_desc (false);
-	    gcc_assert (desc.get ());
-	    if (desc.get ()[0] == '\0')
+	    auto pp = global_dc->clone_printer ();
+	    print_desc (*pp.get ());
+	    if (pp_formatted_text (pp.get ()) [0] == '\0')
 	      return true;
 	  }
       }
@@ -651,7 +613,7 @@ cfg_edge_event::get_meaning () const
 
 /* class start_cfg_edge_event : public cfg_edge_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    start_cfg_edge_event.
 
    If -fanalyzer-verbose-edges, then generate low-level descriptions, such
@@ -668,11 +630,11 @@ cfg_edge_event::get_meaning () const
    holds, such as:
      "following 'false' branch (when 'ptr' is non-NULL)..."
 
-   Failing that, return an empty description (which will lead to this event
+   Failing that, print nothing (which will lead to this event
    being filtered).  */
 
-label_text
-start_cfg_edge_event::get_desc (bool can_colorize) const
+void
+start_cfg_edge_event::print_desc (pretty_printer &pp) const
 {
   bool user_facing = !flag_analyzer_verbose_edges;
   label_text edge_desc (m_sedge->get_description (user_facing));
@@ -680,33 +642,31 @@ start_cfg_edge_event::get_desc (bool can_colorize) const
     {
       if (edge_desc.get () && strlen (edge_desc.get ()) > 0)
 	{
-	  label_text cond_desc = maybe_describe_condition (can_colorize);
+	  label_text cond_desc = maybe_describe_condition (pp_show_color (&pp));
 	  label_text result;
 	  if (cond_desc.get ())
-	    return make_label_text (can_colorize,
-				    "following %qs branch (%s)...",
-				    edge_desc.get (), cond_desc.get ());
+	    pp_printf (&pp,
+		       "following %qs branch (%s)...",
+		       edge_desc.get (), cond_desc.get ());
 	  else
-	    return make_label_text (can_colorize,
-				    "following %qs branch...",
-				    edge_desc.get ());
+	    pp_printf (&pp,
+		       "following %qs branch...",
+		       edge_desc.get ());
 	}
-      else
-	return label_text::borrow ("");
     }
   else
     {
       if (strlen (edge_desc.get ()) > 0)
-	return make_label_text (can_colorize,
-				"taking %qs edge SN:%i -> SN:%i",
-				edge_desc.get (),
-				m_sedge->m_src->m_index,
-				m_sedge->m_dest->m_index);
+	return pp_printf (&pp,
+			  "taking %qs edge SN:%i -> SN:%i",
+			  edge_desc.get (),
+			  m_sedge->m_src->m_index,
+			  m_sedge->m_dest->m_index);
       else
-	return make_label_text (can_colorize,
-				"taking edge SN:%i -> SN:%i",
-				m_sedge->m_src->m_index,
-				m_sedge->m_dest->m_index);
+	return pp_printf (&pp,
+			  "taking edge SN:%i -> SN:%i",
+			  m_sedge->m_src->m_index,
+			  m_sedge->m_dest->m_index);
     }
 }
 
@@ -854,7 +814,7 @@ call_event::call_event (const exploded_edge &eedge,
    m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    call_event.
 
    If this call event passes critical state for an sm-based warning,
@@ -865,28 +825,25 @@ call_event::call_event (const exploded_edge &eedge,
    Otherwise, generate a description of the form
    "calling 'foo' from 'bar'".  */
 
-label_text
-call_event::get_desc (bool can_colorize) const
+void
+call_event::print_desc (pretty_printer &pp) const
 {
   if (m_critical_state && m_pending_diagnostic)
     {
       gcc_assert (m_var);
       tree var = fixup_tree_for_diagnostic (m_var);
-      label_text custom_desc
-	= m_pending_diagnostic->describe_call_with_state
-	    (evdesc::call_with_state (can_colorize,
-				      m_src_snode->m_fun->decl,
-				      m_dest_snode->m_fun->decl,
-				      var,
-				      m_critical_state));
-      if (custom_desc.get ())
-	return custom_desc;
+      evdesc::call_with_state evd (m_src_snode->m_fun->decl,
+				   m_dest_snode->m_fun->decl,
+				   var,
+				   m_critical_state);
+      if (m_pending_diagnostic->describe_call_with_state (pp, evd))
+	return;
     }
 
-  return make_label_text (can_colorize,
-			  "calling %qE from %qE",
-			  get_callee_fndecl (),
-			  get_caller_fndecl ());
+  pp_printf (&pp,
+	     "calling %qE from %qE",
+	     get_callee_fndecl (),
+	     get_caller_fndecl ());
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for
@@ -933,7 +890,7 @@ return_event::return_event (const exploded_edge &eedge,
   m_dest_snode = eedge.m_dest->get_supernode ();
 }
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    return_event.
 
    If this return event returns critical state for an sm-based warning,
@@ -944,8 +901,8 @@ return_event::return_event (const exploded_edge &eedge,
    Otherwise, generate a description of the form
    "returning to 'foo' from 'bar'.  */
 
-label_text
-return_event::get_desc (bool can_colorize) const
+void
+return_event::print_desc (pretty_printer &pp) const
 {
   /*  For greatest precision-of-wording, if this is returning the
       state involved in the pending diagnostic, give the pending
@@ -953,19 +910,16 @@ return_event::get_desc (bool can_colorize) const
       itself).  */
   if (m_critical_state && m_pending_diagnostic)
     {
-      label_text custom_desc
-	= m_pending_diagnostic->describe_return_of_state
-	    (evdesc::return_of_state (can_colorize,
-				      m_dest_snode->m_fun->decl,
-				      m_src_snode->m_fun->decl,
-				      m_critical_state));
-      if (custom_desc.get ())
-	return custom_desc;
+      evdesc::return_of_state evd (m_dest_snode->m_fun->decl,
+				   m_src_snode->m_fun->decl,
+				   m_critical_state);
+      if (m_pending_diagnostic->describe_return_of_state (pp, evd))
+	return;
     }
-  return make_label_text (can_colorize,
-			  "returning to %qE from %qE",
-			  m_dest_snode->m_fun->decl,
-			  m_src_snode->m_fun->decl);
+  pp_printf (&pp,
+	     "returning to %qE from %qE",
+	     m_dest_snode->m_fun->decl,
+	     m_src_snode->m_fun->decl);
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for
@@ -987,12 +941,12 @@ return_event::is_return_p () const
 
 /* class start_consolidated_cfg_edges_event : public checker_event.  */
 
-label_text
-start_consolidated_cfg_edges_event::get_desc (bool can_colorize) const
+void
+start_consolidated_cfg_edges_event::print_desc (pretty_printer &pp) const
 {
-  return make_label_text (can_colorize,
-			  "following %qs branch...",
-			  m_edge_sense ? "true" : "false");
+  pp_printf (&pp,
+	     "following %qs branch...",
+	     m_edge_sense ? "true" : "false");
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for
@@ -1007,13 +961,13 @@ start_consolidated_cfg_edges_event::get_meaning () const
 
 /* class inlined_call_event : public checker_event.  */
 
-label_text
-inlined_call_event::get_desc (bool can_colorize) const
+void
+inlined_call_event::print_desc (pretty_printer &pp) const
 {
-  return make_label_text (can_colorize,
-			  "inlined call to %qE from %qE",
-			  m_apparent_callee_fndecl,
-			  m_apparent_caller_fndecl);
+  pp_printf (&pp,
+	     "inlined call to %qE from %qE",
+	     m_apparent_callee_fndecl,
+	     m_apparent_caller_fndecl);
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for
@@ -1027,15 +981,15 @@ inlined_call_event::get_meaning () const
 
 /* class setjmp_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    setjmp_event.  */
 
-label_text
-setjmp_event::get_desc (bool can_colorize) const
+void
+setjmp_event::print_desc (pretty_printer &pp) const
 {
-  return make_label_text (can_colorize,
-			  "%qs called here",
-			  get_user_facing_name (m_setjmp_call));
+  pp_printf (&pp,
+	     "%qs called here",
+	     get_user_facing_name (m_setjmp_call));
 }
 
 /* Implementation of checker_event::prepare_for_emission vfunc for setjmp_event.
@@ -1085,35 +1039,35 @@ rewind_event::rewind_event (const exploded_edge *eedge,
 
 /* class rewind_from_longjmp_event : public rewind_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    rewind_from_longjmp_event.  */
 
-label_text
-rewind_from_longjmp_event::get_desc (bool can_colorize) const
+void
+rewind_from_longjmp_event::print_desc (pretty_printer &pp) const
 {
   const char *src_name
     = get_user_facing_name (m_rewind_info->get_longjmp_call ());
 
   if (get_longjmp_caller () == get_setjmp_caller ())
     /* Special-case: purely intraprocedural rewind.  */
-    return make_label_text (can_colorize,
-			    "rewinding within %qE from %qs...",
-			    get_longjmp_caller (),
-			    src_name);
+    pp_printf (&pp,
+	       "rewinding within %qE from %qs...",
+	       get_longjmp_caller (),
+	       src_name);
   else
-    return make_label_text (can_colorize,
-			    "rewinding from %qs in %qE...",
-			    src_name,
-			    get_longjmp_caller ());
+    pp_printf (&pp,
+	       "rewinding from %qs in %qE...",
+	       src_name,
+	       get_longjmp_caller ());
 }
 
 /* class rewind_to_setjmp_event : public rewind_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    rewind_to_setjmp_event.  */
 
-label_text
-rewind_to_setjmp_event::get_desc (bool can_colorize) const
+void
+rewind_to_setjmp_event::print_desc (pretty_printer &pp) const
 {
   const char *dst_name
     = get_user_facing_name (m_rewind_info->get_setjmp_call ());
@@ -1123,30 +1077,29 @@ rewind_to_setjmp_event::get_desc (bool can_colorize) const
     {
       if (get_longjmp_caller () == get_setjmp_caller ())
 	/* Special-case: purely intraprocedural rewind.  */
-	return make_label_text (can_colorize,
-				"...to %qs (saved at %@)",
-				dst_name,
-				&m_original_setjmp_event_id);
+	pp_printf (&pp,
+		   "...to %qs (saved at %@)",
+		   dst_name,
+		   &m_original_setjmp_event_id);
       else
-	return make_label_text (can_colorize,
-				"...to %qs in %qE (saved at %@)",
-				dst_name,
-				get_setjmp_caller (),
-				&m_original_setjmp_event_id);
+	pp_printf (&pp,
+		   "...to %qs in %qE (saved at %@)",
+		   dst_name,
+		   get_setjmp_caller (),
+		   &m_original_setjmp_event_id);
     }
   else
     {
       if (get_longjmp_caller () == get_setjmp_caller ())
 	/* Special-case: purely intraprocedural rewind.  */
-	return make_label_text (can_colorize,
-				"...to %qs",
-				dst_name,
-				get_setjmp_caller ());
+	pp_printf (&pp,
+		   "...to %qs",
+		   dst_name);
       else
-	return make_label_text (can_colorize,
-				"...to %qs in %qE",
-				dst_name,
-				get_setjmp_caller ());
+	pp_printf (&pp,
+		   "...to %qs in %qE",
+		   dst_name,
+		   get_setjmp_caller ());
     }
 }
 
@@ -1168,7 +1121,7 @@ rewind_to_setjmp_event::prepare_for_emission (checker_path *path,
 
 /* class warning_event : public checker_event.  */
 
-/* Implementation of diagnostic_event::get_desc vfunc for
+/* Implementation of diagnostic_event::print_desc vfunc for
    warning_event.
 
    If the pending diagnostic implements describe_final_event, use it,
@@ -1177,48 +1130,40 @@ rewind_to_setjmp_event::prepare_for_emission (checker_path *path,
 
    Otherwise generate a generic description.  */
 
-label_text
-warning_event::get_desc (bool can_colorize) const
+void
+warning_event::print_desc (pretty_printer &pp) const
 {
   if (m_pending_diagnostic)
     {
       tree var = fixup_tree_for_diagnostic (m_var);
-      label_text ev_desc
-	= m_pending_diagnostic->describe_final_event
-	    (evdesc::final_event (can_colorize, var, m_state, *this));
-      if (ev_desc.get ())
+      evdesc::final_event evd (var, m_state, *this);
+      if (m_pending_diagnostic->describe_final_event (pp, evd))
 	{
 	  if (m_sm && flag_analyzer_verbose_state_changes)
 	    {
 	      if (var)
-		return make_label_text (can_colorize,
-					"%s (%qE is in state %qs)",
-					ev_desc.get (),
-					var, m_state->get_name ());
+		pp_printf (&pp, " (%qE is in state %qs)",
+			   var, m_state->get_name ());
 	      else
-		return make_label_text (can_colorize,
-					"%s (in global state %qs)",
-					ev_desc.get (),
-					m_state->get_name ());
+		pp_printf (&pp, " (in global state %qs)",
+			   m_state->get_name ());
 	    }
-	  else
-	    return ev_desc;
+	  return;
 	}
     }
 
   if (m_sm)
     {
       if (m_var)
-	return make_label_text (can_colorize,
-				"here (%qE is in state %qs)",
-				m_var, m_state->get_name ());
+	pp_printf (&pp, "here (%qE is in state %qs)",
+		   m_var, m_state->get_name ());
       else
-	return make_label_text (can_colorize,
-				"here (in global state %qs)",
-				m_state->get_name ());
+	pp_printf (&pp, "here (in global state %qs)",
+		   m_state->get_name ());
+      return;
     }
   else
-    return label_text::borrow ("here");
+    pp_string (&pp, "here");
 }
 
 /* Implementation of diagnostic_event::get_meaning vfunc for

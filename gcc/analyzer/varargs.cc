@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
@@ -326,12 +327,16 @@ public:
 	    && same_tree_p (m_ap_tree, other.m_ap_tree));
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (const char *fnname = maybe_get_fnname (change))
-      return change.formatted_print ("%qs called here", fnname);
-    return label_text ();
+      {
+	pp_printf (&pp, "%qs called here", fnname);
+	return true;
+      }
+    return false;
   }
 
   diagnostic_event::meaning
@@ -413,38 +418,42 @@ public:
     return "va_list_use_after_va_end";
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (change.m_new_state == m_sm.m_ended)
       m_va_end_event = change.m_event_id;
-    return va_list_sm_diagnostic::describe_state_change (change);
+    return va_list_sm_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
     if (ev.m_expr)
       {
 	if (m_va_end_event.known_p ())
-	  return ev.formatted_print
-	    ("%qs on %qE after %qs at %@",
-	     m_usage_fnname, ev.m_expr, "va_end", &m_va_end_event);
+	  pp_printf (&pp,
+		     "%qs on %qE after %qs at %@",
+		     m_usage_fnname, ev.m_expr, "va_end", &m_va_end_event);
 	else
-	  return ev.formatted_print
-	    ("%qs on %qE after %qs",
-	     m_usage_fnname, ev.m_expr, "va_end");
+	  pp_printf (&pp,
+		     "%qs on %qE after %qs",
+		     m_usage_fnname, ev.m_expr, "va_end");
       }
     else
       {
 	if (m_va_end_event.known_p ())
-	  return ev.formatted_print
-	    ("%qs after %qs at %@",
-	     m_usage_fnname, "va_end", &m_va_end_event);
+	  pp_printf (&pp,
+		     "%qs after %qs at %@",
+		     m_usage_fnname, "va_end", &m_va_end_event);
 	else
-	  return ev.formatted_print
-	    ("%qs after %qs",
-	     m_usage_fnname, "va_end");
+	  pp_printf (&pp,
+		     "%qs after %qs",
+		     m_usage_fnname, "va_end");
       }
+    return true;
   }
 
 private:
@@ -483,41 +492,45 @@ public:
 
   const char *get_kind () const final override { return "va_list_leak"; }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (change.m_new_state == m_sm.m_started)
       {
 	m_start_event = change.m_event_id;
 	m_start_event_fnname = maybe_get_fnname (change);
       }
-    return va_list_sm_diagnostic::describe_state_change (change);
+    return va_list_sm_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
     if (ev.m_expr)
       {
 	if (m_start_event.known_p () && m_start_event_fnname)
-	  return ev.formatted_print
-	    ("missing call to %qs on %qE to match %qs at %@",
-	     "va_end", ev.m_expr, m_start_event_fnname, &m_start_event);
+	  pp_printf (&pp,
+		     "missing call to %qs on %qE to match %qs at %@",
+		     "va_end", ev.m_expr, m_start_event_fnname, &m_start_event);
 	else
-	  return ev.formatted_print
-	    ("missing call to %qs on %qE",
-	     "va_end", ev.m_expr);
+	  pp_printf (&pp,
+		     "missing call to %qs on %qE",
+		     "va_end", ev.m_expr);
       }
     else
       {
 	if (m_start_event.known_p () && m_start_event_fnname)
-	  return ev.formatted_print
-	    ("missing call to %qs to match %qs at %@",
-	     "va_end", m_start_event_fnname, &m_start_event);
+	  pp_printf (&pp,
+		     "missing call to %qs to match %qs at %@",
+		     "va_end", m_start_event_fnname, &m_start_event);
 	else
-	  return ev.formatted_print
-	    ("missing call to %qs",
-	     "va_end");
+	  pp_printf (&pp,
+		     "missing call to %qs",
+		     "va_end");
       }
+    return true;
   }
 
 private:
@@ -782,15 +795,15 @@ public:
       {
       }
 
-      label_text get_desc (bool can_colorize) const override
+      void print_desc (pretty_printer &pp) const override
       {
-	return make_label_text_n
-	  (can_colorize, m_num_variadic_arguments,
-	   "calling %qE from %qE with %i variadic argument",
-	   "calling %qE from %qE with %i variadic arguments",
-	   get_callee_fndecl (),
-	   get_caller_fndecl (),
-	   m_num_variadic_arguments);
+	pp_printf_n (&pp,
+		     m_num_variadic_arguments,
+		     "calling %qE from %qE with %i variadic argument",
+		     "calling %qE from %qE with %i variadic arguments",
+		     get_callee_fndecl (),
+		     get_caller_fndecl (),
+		     m_num_variadic_arguments);
       }
     private:
       int m_num_variadic_arguments;
@@ -900,13 +913,17 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
-    return ev.formatted_print ("%<va_arg%> expected %qT but received %qT"
-			       " for variadic argument %i of %qE",
-			       m_expected_type, m_actual_type,
-			       get_variadic_index_for_diagnostic (),
-			       m_va_list_tree);
+    pp_printf (&pp,
+	       "%<va_arg%> expected %qT but received %qT"
+	       " for variadic argument %i of %qE",
+	       m_expected_type, m_actual_type,
+	       get_variadic_index_for_diagnostic (),
+	       m_va_list_tree);
+    return true;
   }
 
 private:
@@ -944,10 +961,14 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
-    return ev.formatted_print ("%qE has no more arguments (%i consumed)",
-			       m_va_list_tree, get_num_consumed ());
+    pp_printf (&pp,
+	       "%qE has no more arguments (%i consumed)",
+	       m_va_list_tree, get_num_consumed ());
+    return true;
   }
 };
 

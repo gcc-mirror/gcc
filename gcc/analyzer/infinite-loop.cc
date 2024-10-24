@@ -136,7 +136,7 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
     bool user_facing = !flag_analyzer_verbose_edges;
     label_text edge_desc (m_sedge->get_description (user_facing));
@@ -144,21 +144,21 @@ public:
       {
 	if (edge_desc.get () && strlen (edge_desc.get ()) > 0)
 	  {
-	    label_text cond_desc = maybe_describe_condition (can_colorize);
-	    label_text result;
+	    label_text cond_desc
+	      = maybe_describe_condition (pp_show_color (&pp));
 	    if (cond_desc.get ())
-	      return make_label_text
-		(can_colorize,
-		 "%s: always following %qs branch...",
-		 cond_desc.get (), edge_desc.get ());
+	      pp_printf (&pp,
+			 "%s: always following %qs branch...",
+			 cond_desc.get (), edge_desc.get ());
 	    else
-	      return make_label_text
-		(can_colorize,
-		 "if it ever follows %qs branch, it will always do so...",
-		 edge_desc.get ());
+	      pp_printf (&pp,
+			 "if it ever follows %qs branch,"
+			 " it will always do so...",
+			 edge_desc.get ());
 	  }
       }
-    return start_cfg_edge_event::get_desc (can_colorize);
+    else
+      return start_cfg_edge_event::print_desc (pp);
   }
 };
 
@@ -171,9 +171,9 @@ public:
   {
   }
 
-  label_text get_desc (bool) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return label_text::borrow ("looping back...");
+    pp_string (&pp, "looping back...");
   }
 };
 
@@ -221,9 +221,12 @@ public:
     return true;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
-    return ev.formatted_print ("infinite loop here");
+    pp_string (&pp, "infinite loop here");
+    return true;
   }
 
   /* Customize the location where the warning_event appears.  */

@@ -191,6 +191,12 @@ simple_diagnostic_event::~simple_diagnostic_event ()
   free (m_desc);
 }
 
+void
+simple_diagnostic_event::print_desc (pretty_printer &pp) const
+{
+  pp_string (&pp, m_desc);
+}
+
 #if CHECKING_P
 
 namespace selftest {
@@ -209,8 +215,8 @@ test_intraprocedural_path (pretty_printer *event_pp)
   ASSERT_EQ (path.num_events (), 2);
   ASSERT_EQ (path.num_threads (), 1);
   ASSERT_FALSE (path.interprocedural_p ());
-  ASSERT_STREQ (path.get_event (0).get_desc (false).get (), "first `free'");
-  ASSERT_STREQ (path.get_event (1).get_desc (false).get (), "double `free'");
+  ASSERT_STREQ (path.get_event (0).get_desc ().get (), "first `free'");
+  ASSERT_STREQ (path.get_event (1).get_desc ().get (), "double `free'");
 }
 
 /* Run all of the selftests within this file.  */

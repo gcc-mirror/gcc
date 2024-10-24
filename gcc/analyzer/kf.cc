@@ -817,14 +817,19 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_var_decl)
-      return ev.formatted_print ("%qE on a pointer to automatic variable %qE",
-				 m_fndecl, m_var_decl);
+      pp_printf  (&pp,
+		  "%qE on a pointer to automatic variable %qE",
+		  m_fndecl, m_var_decl);
     else
-      return ev.formatted_print ("%qE on a pointer to an on-stack buffer",
-				 m_fndecl);
+      pp_printf  (&pp,
+		  "%qE on a pointer to an on-stack buffer",
+		  m_fndecl);
+    return true;
   }
 
   void mark_interesting_stuff (interesting_t *interest) final override
@@ -969,11 +974,11 @@ kf_realloc::impl_call_post (const call_details &cd) const
     {
     }
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
-      return make_label_text (can_colorize,
-			      "when %qE succeeds, without moving buffer",
-			      get_fndecl ());
+      pp_printf (&pp,
+		 "when %qE succeeds, without moving buffer",
+		 get_fndecl ());
     }
 
     bool update_model (region_model *model,
@@ -1022,11 +1027,11 @@ kf_realloc::impl_call_post (const call_details &cd) const
     {
     }
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
-      return make_label_text (can_colorize,
-			      "when %qE succeeds, moving buffer",
-			      get_fndecl ());
+      pp_printf (&pp,
+		 "when %qE succeeds, moving buffer",
+		 get_fndecl ());
     }
     bool update_model (region_model *model,
 		       const exploded_edge *,
@@ -1164,16 +1169,16 @@ kf_strchr::impl_call_post (const call_details &cd) const
     {
     }
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
       if (m_found)
-	return make_label_text (can_colorize,
-				"when %qE returns non-NULL",
-				get_fndecl ());
+	pp_printf (&pp,
+		   "when %qE returns non-NULL",
+		   get_fndecl ());
       else
-	return make_label_text (can_colorize,
-				"when %qE returns NULL",
-				get_fndecl ());
+	pp_printf (&pp,
+		   "when %qE returns NULL",
+		   get_fndecl ());
     }
 
     bool update_model (region_model *model,
@@ -1520,16 +1525,16 @@ kf_strncpy::impl_call_post (const call_details &cd) const
     {
     }
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
       if (m_truncated_read)
-	return make_label_text (can_colorize,
-				"when %qE truncates the source string",
-				get_fndecl ());
+	pp_printf (&pp,
+		   "when %qE truncates the source string",
+		   get_fndecl ());
       else
-	return make_label_text (can_colorize,
-				"when %qE copies the full source string",
-				get_fndecl ());
+	pp_printf (&pp,
+		   "when %qE copies the full source string",
+		   get_fndecl ());
     }
 
     bool update_model (region_model *model,
@@ -1721,16 +1726,16 @@ kf_strstr::impl_call_post (const call_details &cd) const
     {
     }
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
       if (m_found)
-	return make_label_text (can_colorize,
-				"when %qE returns non-NULL",
-				get_fndecl ());
+	pp_printf (&pp,
+		   "when %qE returns non-NULL",
+		   get_fndecl ());
       else
-	return make_label_text (can_colorize,
-				"when %qE returns NULL",
-				get_fndecl ());
+	pp_printf (&pp,
+		   "when %qE returns NULL",
+		   get_fndecl ());
     }
 
     bool update_model (region_model *model,
@@ -1815,13 +1820,15 @@ public:
       return false;
     }
 
-    label_text describe_final_event (const evdesc::final_event &ev)
-      final override
+    bool
+    describe_final_event (pretty_printer &pp,
+			  const evdesc::final_event &) final override
     {
-      return ev.formatted_print
-	("calling %qD for first time with NULL as argument 1"
-	 " has undefined behavior",
-	 get_callee_fndecl ());
+      pp_printf (&pp,
+		 "calling %qD for first time with NULL as argument 1"
+		 " has undefined behavior",
+		 get_callee_fndecl ());
+      return true;
     }
   };
 
@@ -1845,33 +1852,30 @@ public:
     {
     }
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
       if (m_nonnull_str)
 	{
 	  if (m_found)
-	    return make_label_text
-	      (can_colorize,
-	       "when %qE on non-NULL string returns non-NULL",
-	       get_fndecl ());
+	    pp_printf (&pp,
+		       "when %qE on non-NULL string returns non-NULL",
+		       get_fndecl ());
 	  else
-	    return make_label_text
-	      (can_colorize,
-	       "when %qE on non-NULL string returns NULL",
-	       get_fndecl ());
+	    pp_printf (&pp,
+		       "when %qE on non-NULL string returns NULL",
+		       get_fndecl ());
 	}
       else
 	{
 	  if (m_found)
-	    return make_label_text
-	      (can_colorize,
-	       "when %qE with NULL string (using prior) returns non-NULL",
-	       get_fndecl ());
+	    pp_printf (&pp,
+		       "when %qE with NULL string (using prior) returns"
+		       " non-NULL",
+		       get_fndecl ());
 	  else
-	    return make_label_text
-	      (can_colorize,
-	       "when %qE with NULL string (using prior) returns NULL",
-	       get_fndecl ());
+	    pp_printf (&pp,
+		       "when %qE with NULL string (using prior) returns NULL",
+		       get_fndecl ());
 	}
     }
 

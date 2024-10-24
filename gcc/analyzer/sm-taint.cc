@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "options.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
@@ -180,25 +181,42 @@ public:
 	    && m_has_bounds == other.m_has_bounds);
   }
 
-  label_text describe_state_change (const evdesc::state_change &change) override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (change.m_new_state == m_sm.m_tainted)
       {
 	if (change.m_origin)
-	  return change.formatted_print ("%qE has an unchecked value here"
-					 " (from %qE)",
-					 change.m_expr, change.m_origin);
+	  {
+	    pp_printf (&pp,
+		       "%qE has an unchecked value here (from %qE)",
+		       change.m_expr, change.m_origin);
+	    return true;
+	  }
 	else
-	  return change.formatted_print ("%qE gets an unchecked value here",
-					 change.m_expr);
+	  {
+	    pp_printf (&pp,
+		       "%qE gets an unchecked value here",
+		       change.m_expr);
+	    return true;
+	  }
       }
     else if (change.m_new_state == m_sm.m_has_lb)
-      return change.formatted_print ("%qE has its lower bound checked here",
-				     change.m_expr);
+      {
+	pp_printf (&pp,
+		   "%qE has its lower bound checked here",
+		   change.m_expr);
+	return true;
+      }
     else if (change.m_new_state == m_sm.m_has_ub)
-      return change.formatted_print ("%qE has its upper bound checked here",
-				     change.m_expr);
-    return label_text ();
+      {
+	pp_printf (&pp,
+		   "%qE has its upper bound checked here",
+		   change.m_expr);
+	return true;
+      }
+    return false;
   }
 
   diagnostic_event::meaning
@@ -293,7 +311,9 @@ public:
 	}
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_arg)
       switch (m_has_bounds)
@@ -301,20 +321,29 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value %qE in array lookup"
-	     " without bounds checking",
-	     m_arg);
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value %qE in array lookup"
+		       " without bounds checking",
+		       m_arg);
+	    return true;
+	  }
 	case BOUNDS_UPPER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value %qE"
-	     " in array lookup without checking for negative",
-	     m_arg);
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value %qE"
+		       " in array lookup without checking for negative",
+		       m_arg);
+	    return true;
+	  }
 	case BOUNDS_LOWER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value %qE"
-	     " in array lookup without upper-bounds checking",
-	     m_arg);
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value %qE"
+		       " in array lookup without upper-bounds checking",
+		       m_arg);
+	    return true;
+	  }
 	}
     else
       switch (m_has_bounds)
@@ -322,17 +351,26 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value in array lookup"
-	     " without bounds checking");
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value in array lookup"
+		       " without bounds checking");
+	    return true;
+	  }
 	case BOUNDS_UPPER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value"
-	     " in array lookup without checking for negative");
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value"
+		       " in array lookup without checking for negative");
+	    return true;
+	  }
 	case BOUNDS_LOWER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value"
-	     " in array lookup without upper-bounds checking");
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value"
+		       " in array lookup without upper-bounds checking");
+	    return true;
+	  }
 	}
   }
 };
@@ -402,7 +440,9 @@ public:
 	}
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_arg)
       switch (m_has_bounds)
@@ -410,17 +450,29 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print ("use of attacker-controlled value %qE"
-				     " as offset without bounds checking",
-				     m_arg);
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value %qE"
+		       " as offset without bounds checking",
+		       m_arg);
+	    return true;
+	  }
 	case BOUNDS_UPPER:
-	  return ev.formatted_print ("use of attacker-controlled value %qE"
-				     " as offset without lower-bounds checking",
-				     m_arg);
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value %qE"
+		       " as offset without lower-bounds checking",
+		       m_arg);
+	    return true;
+	  }
 	case BOUNDS_LOWER:
-	  return ev.formatted_print ("use of attacker-controlled value %qE"
-				     " as offset without upper-bounds checking",
-				     m_arg);
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value %qE"
+		       " as offset without upper-bounds checking",
+		       m_arg);
+	    return true;
+	  }
 	}
     else
       switch (m_has_bounds)
@@ -428,16 +480,28 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print ("use of attacker-controlled value"
-				     " as offset without bounds checking");
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value"
+		       " as offset without bounds checking");
+	    return true;
+	  }
 	case BOUNDS_UPPER:
-	  return ev.formatted_print ("use of attacker-controlled value"
-				     " as offset without lower-bounds"
-				     " checking");
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value"
+		       " as offset without lower-bounds"
+		       " checking");
+	    return true;
+	  }
 	case BOUNDS_LOWER:
-	  return ev.formatted_print ("use of attacker-controlled value"
-				     " as offset without upper-bounds"
-				     " checking");
+	  {
+	    pp_printf (&pp,
+		       "use of attacker-controlled value"
+		       " as offset without upper-bounds"
+		       " checking");
+	    return true;
+	  }
 	}
   }
 
@@ -518,7 +582,9 @@ public:
 	}
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_arg)
       switch (m_has_bounds)
@@ -526,17 +592,23 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print ("use of attacker-controlled value %qE"
-				     " as size without bounds checking",
-				     m_arg);
+	  pp_printf (&pp,
+		     "use of attacker-controlled value %qE"
+		     " as size without bounds checking",
+		     m_arg);
+	  return true;
 	case BOUNDS_UPPER:
-	  return ev.formatted_print ("use of attacker-controlled value %qE"
-				     " as size without lower-bounds checking",
-				     m_arg);
+	  pp_printf (&pp,
+		     "use of attacker-controlled value %qE"
+		     " as size without lower-bounds checking",
+		     m_arg);
+	  return true;
 	case BOUNDS_LOWER:
-	  return ev.formatted_print ("use of attacker-controlled value %qE"
-				     " as size without upper-bounds checking",
-				     m_arg);
+	  pp_printf (&pp,
+		     "use of attacker-controlled value %qE"
+		     " as size without upper-bounds checking",
+		     m_arg);
+	  return true;
 	}
     else
       switch (m_has_bounds)
@@ -544,14 +616,20 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print ("use of attacker-controlled value"
-				     " as size without bounds checking");
+	  pp_printf (&pp,
+		     "use of attacker-controlled value"
+		     " as size without bounds checking");
+	  return true;
 	case BOUNDS_UPPER:
-	  return ev.formatted_print ("use of attacker-controlled value"
-				     " as size without lower-bounds checking");
+	  pp_printf (&pp,
+		     "use of attacker-controlled value"
+		     " as size without lower-bounds checking");
+	  return true;
 	case BOUNDS_LOWER:
-	  return ev.formatted_print ("use of attacker-controlled value"
-				     " as size without upper-bounds checking");
+	  pp_printf (&pp,
+		     "use of attacker-controlled value"
+		     " as size without upper-bounds checking");
+	  return true;
 	}
   }
 };
@@ -625,17 +703,20 @@ public:
 			" without checking for zero");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_arg)
-      return ev.formatted_print
-	("use of attacker-controlled value %qE as divisor"
-	 " without checking for zero",
-	 m_arg);
+      pp_printf (&pp,
+		 "use of attacker-controlled value %qE as divisor"
+		 " without checking for zero",
+		 m_arg);
     else
-      return ev.formatted_print
-	("use of attacker-controlled value as divisor"
-	 " without checking for zero");
+      pp_printf (&pp,
+		 "use of attacker-controlled value as divisor"
+		 " without checking for zero");
+    return true;
   }
 };
 
@@ -741,7 +822,9 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_arg)
       switch (m_has_bounds)
@@ -749,20 +832,23 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value %qE as allocation size"
-	     " without bounds checking",
-	     m_arg);
+	  pp_printf (&pp,
+		     "use of attacker-controlled value %qE as allocation size"
+		     " without bounds checking",
+		     m_arg);
+	  return true;
 	case BOUNDS_UPPER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value %qE as allocation size"
-	     " without lower-bounds checking",
-	     m_arg);
+	  pp_printf (&pp,
+		     "use of attacker-controlled value %qE as allocation size"
+		     " without lower-bounds checking",
+		     m_arg);
+	  return true;
 	case BOUNDS_LOWER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value %qE as allocation size"
-	     " without upper-bounds checking",
-	     m_arg);
+	  pp_printf (&pp,
+		     "use of attacker-controlled value %qE as allocation size"
+		     " without upper-bounds checking",
+		     m_arg);
+	  return true;
 	}
     else
       switch (m_has_bounds)
@@ -770,17 +856,20 @@ public:
 	default:
 	  gcc_unreachable ();
 	case BOUNDS_NONE:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value as allocation size"
-	     " without bounds checking");
+	  pp_printf (&pp,
+		     "use of attacker-controlled value as allocation size"
+		     " without bounds checking");
+	  return true;
 	case BOUNDS_UPPER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value as allocation size"
-	     " without lower-bounds checking");
+	  pp_printf (&pp,
+		     "use of attacker-controlled value as allocation size"
+		     " without lower-bounds checking");
+	  return true;
 	case BOUNDS_LOWER:
-	  return ev.formatted_print
-	    ("use of attacker-controlled value as allocation size"
-	     " without upper-bounds checking");
+	  pp_printf (&pp,
+		     "use of attacker-controlled value as allocation size"
+		     " without upper-bounds checking");
+	  return true;
 	}
   }
 
@@ -859,25 +948,33 @@ public:
       return pending_diagnostic::fixup_location (loc, primary);
   }
 
-  label_text describe_state_change (const evdesc::state_change &change) override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (change.m_new_state == m_sm.m_tainted_control_flow)
-      return change.formatted_print
-	("use of attacker-controlled value for control flow");
-    return taint_diagnostic::describe_state_change (change);
+      {
+	pp_printf (&pp,
+		   "use of attacker-controlled value for control flow");
+	return true;
+      }
+    return taint_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (mention_noreturn_attribute_p ())
-      return ev.formatted_print
-	("treating %qE as an assertion failure handler"
-	 " due to %<__attribute__((__noreturn__))%>",
-	 m_assert_failure_fndecl);
+      pp_printf (&pp,
+		 "treating %qE as an assertion failure handler"
+		 " due to %<__attribute__((__noreturn__))%>",
+		 m_assert_failure_fndecl);
     else
-      return ev.formatted_print
-	("treating %qE as an assertion failure handler",
-	 m_assert_failure_fndecl);
+      pp_printf (&pp,
+		 "treating %qE as an assertion failure handler",
+		 m_assert_failure_fndecl);
+    return true;
   }
 
 private:

@@ -702,12 +702,12 @@ kf_PyList_Append::impl_call_post (const call_details &cd) const
   public:
     realloc_success_no_move (const call_details &cd) : call_info (cd) {}
 
-    label_text
-    get_desc (bool can_colorize) const final override
+    void
+    print_desc (pretty_printer &pp) const final override
     {
-      return make_label_text (
-          can_colorize, "when %qE succeeds, without moving underlying buffer",
-          get_fndecl ());
+      pp_printf (&pp,
+		 "when %qE succeeds, without moving underlying buffer",
+		 get_fndecl ());
     }
 
     bool
@@ -812,11 +812,12 @@ kf_PyList_Append::impl_call_post (const call_details &cd) const
   public:
     realloc_success_move (const call_details &cd) : call_info (cd) {}
 
-    label_text
-    get_desc (bool can_colorize) const final override
+    void
+    print_desc (pretty_printer &pp) const final override
     {
-      return make_label_text (can_colorize, "when %qE succeeds, moving buffer",
-                              get_fndecl ());
+      pp_printf (&pp,
+		 "when %qE succeeds, moving buffer",
+		 get_fndecl ());
     }
 
     bool

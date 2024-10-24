@@ -84,8 +84,9 @@ checker_path::dump (pretty_printer *pp) const
     {
       if (i > 0)
 	pp_string (pp, ", ");
-      label_text event_desc (e->get_desc (false));
-      pp_printf (pp, "\"%s\"", event_desc.get ());
+      pp_character (pp, '"');
+      e->print_desc (*pp);
+      pp_character (pp, '"');
     }
   pp_character (pp, ']');
 }
@@ -135,7 +136,7 @@ checker_path::debug () const
   int i;
   FOR_EACH_VEC_ELT (m_events, i, e)
     {
-      label_text event_desc (e->get_desc (false));
+      label_text event_desc (e->get_desc ());
       fprintf (stderr,
 	       "[%i]: %s \"%s\"\n",
 	       i,

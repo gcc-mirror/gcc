@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "bitmap.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
@@ -141,24 +142,31 @@ public:
     return false;
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (change.is_global_p ()
 	&& change.m_new_state == m_sm.m_in_signal_handler)
       {
 	const function *handler = change.m_event.get_dest_function ();
 	gcc_assert (handler);
-	return change.formatted_print ("registering %qD as signal handler",
-				       handler->decl);
+	pp_printf (&pp,
+		   "registering %qD as signal handler",
+		   handler->decl);
+	return true;
       }
-    return label_text ();
+    return false;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
-    return ev.formatted_print ("call to %qD from within signal handler",
-			       m_unsafe_fndecl);
+    pp_printf (&pp,
+	       "call to %qD from within signal handler",
+	       m_unsafe_fndecl);
+    return true;
   }
 
 private:

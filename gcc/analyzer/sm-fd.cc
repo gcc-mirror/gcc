@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "options.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
@@ -292,73 +293,111 @@ public:
     return same_tree_p (m_arg, ((const fd_diagnostic &)base_other).m_arg);
   }
 
-  label_text
-  describe_state_change (const evdesc::state_change &change) override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (change.m_old_state == m_sm.get_start_state ())
       {
 	if (change.m_new_state == m_sm.m_unchecked_read_write
 	    || change.m_new_state == m_sm.m_valid_read_write)
-	  return change.formatted_print ("opened here as read-write");
+	  {
+	    pp_string (&pp, "opened here as read-write");
+	    return true;
+	  }
 
 	if (change.m_new_state == m_sm.m_unchecked_read_only
 	    || change.m_new_state == m_sm.m_valid_read_only)
-	  return change.formatted_print ("opened here as read-only");
+	  {
+	    pp_string (&pp, "opened here as read-only");
+	    return true;
+	  }
 
 	if (change.m_new_state == m_sm.m_unchecked_write_only
 	    || change.m_new_state == m_sm.m_valid_write_only)
-	  return change.formatted_print ("opened here as write-only");
+	  {
+	    pp_string (&pp, "opened here as write-only");
+	    return true;
+	  }
 
 	if (change.m_new_state == m_sm.m_new_datagram_socket)
-	  return change.formatted_print ("datagram socket created here");
+	  {
+	    pp_string (&pp, "datagram socket created here");
+	    return true;
+	  }
 
 	if (change.m_new_state == m_sm.m_new_stream_socket)
-	  return change.formatted_print ("stream socket created here");
+	  {
+	    pp_string (&pp, "stream socket created here");
+	    return true;
+	  }
 
 	if (change.m_new_state == m_sm.m_new_unknown_socket
 	    || change.m_new_state == m_sm.m_connected_stream_socket)
-	  return change.formatted_print ("socket created here");
+	  {
+	    pp_string (&pp, "socket created here");
+	    return true;
+	  }
       }
 
     if (change.m_new_state == m_sm.m_bound_datagram_socket)
-      return change.formatted_print ("datagram socket bound here");
+      {
+	pp_string (&pp, "datagram socket bound here");
+	return true;
+      }
 
     if (change.m_new_state == m_sm.m_bound_stream_socket)
-      return change.formatted_print ("stream socket bound here");
+      {
+	pp_string (&pp, "stream socket bound here");
+	return true;
+      }
 
     if (change.m_new_state == m_sm.m_bound_unknown_socket
 	|| change.m_new_state == m_sm.m_connected_stream_socket)
-	  return change.formatted_print ("socket bound here");
+      {
+	pp_string (&pp, "socket bound here");
+	return true;
+      }
 
     if (change.m_new_state == m_sm.m_listening_stream_socket)
-      return change.formatted_print
-	("stream socket marked as passive here via %qs", "listen");
+      {
+	pp_printf (&pp,
+		   "stream socket marked as passive here via %qs",
+		   "listen");
+	return true;
+      }
 
     if (change.m_new_state == m_sm.m_closed)
-      return change.formatted_print ("closed here");
+      {
+	pp_string (&pp, "closed here");
+	return true;
+      }
 
     if (m_sm.is_unchecked_fd_p (change.m_old_state)
 	&& m_sm.is_valid_fd_p (change.m_new_state))
       {
 	if (change.m_expr)
-	  return change.formatted_print (
-	      "assuming %qE is a valid file descriptor (>= 0)", change.m_expr);
+	  pp_printf (&pp,
+		     "assuming %qE is a valid file descriptor (>= 0)",
+		     change.m_expr);
 	else
-	  return change.formatted_print ("assuming a valid file descriptor");
+	  pp_string (&pp, "assuming a valid file descriptor");
+	return true;
       }
 
     if (m_sm.is_unchecked_fd_p (change.m_old_state)
 	&& change.m_new_state == m_sm.m_invalid)
       {
 	if (change.m_expr)
-	  return change.formatted_print (
-	      "assuming %qE is an invalid file descriptor (< 0)",
-	      change.m_expr);
+	  pp_printf (&pp,
+		     "assuming %qE is an invalid file descriptor (< 0)",
+		     change.m_expr);
 	else
-	  return change.formatted_print ("assuming an invalid file descriptor");
+	  pp_string (&pp, "assuming an invalid file descriptor");
+	return true;
       }
 
-    return label_text ();
+    return false;
   }
 
   diagnostic_event::meaning
@@ -477,37 +516,43 @@ public:
       return ctxt.warn ("leak of file descriptor");
   }
 
-  label_text
-  describe_state_change (const evdesc::state_change &change) final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (m_sm.is_unchecked_fd_p (change.m_new_state))
       {
 	m_open_event = change.m_event_id;
-	return label_text::borrow ("opened here");
+	pp_string (&pp, "opened here");
+	return true;
       }
 
-    return fd_diagnostic::describe_state_change (change);
+    return fd_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
     if (m_open_event.known_p ())
       {
 	if (ev.m_expr)
-	  return ev.formatted_print ("%qE leaks here; was opened at %@",
-				     ev.m_expr, &m_open_event);
+	  pp_printf (&pp,
+		     "%qE leaks here; was opened at %@",
+		     ev.m_expr, &m_open_event);
 	else
-	  return ev.formatted_print ("leaks here; was opened at %@",
-				     &m_open_event);
+	  pp_printf (&pp,
+		     "leaks here; was opened at %@",
+		     &m_open_event);
       }
     else
       {
 	if (ev.m_expr)
-	  return ev.formatted_print ("%qE leaks here", ev.m_expr);
+	  pp_printf (&pp, "%qE leaks here", ev.m_expr);
 	else
-	  return ev.formatted_print ("leaks here");
+	  pp_string (&pp, "leaks here");
       }
+    return true;
   }
 
 private:
@@ -568,17 +613,22 @@ public:
       return warned;
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     switch (m_fd_dir)
       {
       case DIRS_READ:
-	return ev.formatted_print ("%qE on read-only file descriptor %qE",
-				   m_callee_fndecl, m_arg);
+	pp_printf (&pp,
+		   "%qE on read-only file descriptor %qE",
+		   m_callee_fndecl, m_arg);
+	return true;
       case DIRS_WRITE:
-	return ev.formatted_print ("%qE on write-only file descriptor %qE",
-				   m_callee_fndecl, m_arg);
+	pp_printf (&pp,
+		   "%qE on write-only file descriptor %qE",
+		   m_callee_fndecl, m_arg);
+	return true;
       default:
 	gcc_unreachable ();
       }
@@ -614,27 +664,38 @@ public:
     return ctxt.warn ("double %<close%> of file descriptor %qE", m_arg);
   }
 
-  label_text
-  describe_state_change (const evdesc::state_change &change) override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (m_sm.is_unchecked_fd_p (change.m_new_state))
-      return label_text::borrow ("opened here");
+      {
+	pp_string (&pp, "opened here");
+	return true;
+      }
 
     if (change.m_new_state == m_sm.m_closed)
       {
 	m_first_close_event = change.m_event_id;
-	return change.formatted_print ("first %qs here", "close");
+	pp_printf (&pp, "first %qs here", "close");
+	return true;
       }
-    return fd_diagnostic::describe_state_change (change);
+    return fd_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_first_close_event.known_p ())
-      return ev.formatted_print ("second %qs here; first %qs was at %@",
-				 "close", "close", &m_first_close_event);
-    return ev.formatted_print ("second %qs here", "close");
+      pp_printf (&pp,
+		 "second %qs here; first %qs was at %@",
+		 "close", "close", &m_first_close_event);
+    else
+      pp_printf (&pp,
+		 "second %qs here",
+		 "close");
+    return true;
   }
 
 private:
@@ -679,31 +740,41 @@ public:
     return warned;
   }
 
-  label_text
-  describe_state_change (const evdesc::state_change &change) override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (m_sm.is_unchecked_fd_p (change.m_new_state))
-      return label_text::borrow ("opened here");
+      {
+	pp_string (&pp, "opened here");
+	return true;
+      }
 
     if (change.m_new_state == m_sm.m_closed)
       {
 	m_first_close_event = change.m_event_id;
-	return change.formatted_print ("closed here");
+	pp_string (&pp, "closed here");
+	return true;
       }
 
-    return fd_diagnostic::describe_state_change (change);
+    return fd_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_first_close_event.known_p ())
-	return ev.formatted_print (
-	    "%qE on closed file descriptor %qE; %qs was at %@", m_callee_fndecl,
-	    m_arg, "close", &m_first_close_event);
-      else
-	return ev.formatted_print ("%qE on closed file descriptor %qE",
-				  m_callee_fndecl, m_arg);
+      pp_printf (&pp,
+		 "%qE on closed file descriptor %qE;"
+		 " %qs was at %@",
+		 m_callee_fndecl, m_arg,
+		 "close", &m_first_close_event);
+    else
+      pp_printf (&pp,
+		 "%qE on closed file descriptor %qE",
+		 m_callee_fndecl, m_arg);
+    return true;
   }
 
 private:
@@ -748,27 +819,32 @@ public:
     return warned;
   }
 
-  label_text
-  describe_state_change (const evdesc::state_change &change) override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (m_sm.is_unchecked_fd_p (change.m_new_state))
       {
 	m_first_open_event = change.m_event_id;
-	return label_text::borrow ("opened here");
+	pp_string (&pp, "opened here");
+	return true;
       }
 
-    return fd_diagnostic::describe_state_change (change);
+    return fd_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_first_open_event.known_p ())
-      return ev.formatted_print (
-	  "%qE could be invalid: unchecked value from %@", m_arg,
-	  &m_first_open_event);
+      pp_printf (&pp,
+		 "%qE could be invalid: unchecked value from %@", m_arg,
+		 &m_first_open_event);
     else
-      return ev.formatted_print ("%qE could be invalid", m_arg);
+      pp_printf (&pp,
+		 "%qE could be invalid", m_arg);
+    return true;
   }
 
 private:
@@ -856,29 +932,39 @@ public:
 		      m_callee_fndecl, m_arg);
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     switch (m_expected_phase)
       {
       case EXPECTED_PHASE_CAN_TRANSFER:
 	{
 	  if (m_actual_state == m_sm.m_new_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a stream socket to be connected via %qs"
-	       " but %qE has not yet been bound",
-	       m_callee_fndecl, "accept", m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a stream socket to be connected via %qs"
+			 " but %qE has not yet been bound",
+			 m_callee_fndecl, "accept", m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_bound_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a stream socket to be connected via %qs"
-	       " but %qE is not yet listening",
-	       m_callee_fndecl, "accept", m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a stream socket to be connected via %qs"
+			 " but %qE is not yet listening",
+			 m_callee_fndecl, "accept", m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_listening_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a stream socket to be connected via"
-	       " the return value of %qs"
-	       " but %qE is listening; wrong file descriptor?",
-	       m_callee_fndecl, "accept", m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a stream socket to be connected via"
+			 " the return value of %qs"
+			 " but %qE is listening; wrong file descriptor?",
+			 m_callee_fndecl, "accept", m_arg);
+	      return true;
+	    }
 	}
 	break;
       case EXPECTED_PHASE_CAN_BIND:
@@ -886,56 +972,80 @@ public:
 	  if (m_actual_state == m_sm.m_bound_datagram_socket
 	      || m_actual_state == m_sm.m_bound_stream_socket
 	      || m_actual_state == m_sm.m_bound_unknown_socket)
-	    return ev.formatted_print
-	      ("%qE expects a new socket file descriptor"
-	       " but %qE has already been bound",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a new socket file descriptor"
+			 " but %qE has already been bound",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_connected_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a new socket file descriptor"
-	       " but %qE is already connected",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a new socket file descriptor"
+			 " but %qE is already connected",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_listening_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a new socket file descriptor"
-	       " but %qE is already listening",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a new socket file descriptor"
+			 " but %qE is already listening",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	}
 	break;
       case EXPECTED_PHASE_CAN_LISTEN:
 	{
 	  if (m_actual_state == m_sm.m_new_stream_socket
 	      || m_actual_state == m_sm.m_new_unknown_socket)
-	    return ev.formatted_print
-	      ("%qE expects a bound stream socket file descriptor"
-	       " but %qE has not yet been bound",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a bound stream socket file descriptor"
+			 " but %qE has not yet been bound",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_connected_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a bound stream socket file descriptor"
-	       " but %qE is connected",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a bound stream socket file descriptor"
+			 " but %qE is connected",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	}
 	break;
       case EXPECTED_PHASE_CAN_ACCEPT:
 	{
 	  if (m_actual_state == m_sm.m_new_stream_socket
 	      || m_actual_state == m_sm.m_new_unknown_socket)
-	    return ev.formatted_print
-	      ("%qE expects a listening stream socket file descriptor"
-	       " but %qE has not yet been bound",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a listening stream socket file descriptor"
+			 " but %qE has not yet been bound",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_bound_stream_socket
 	      || m_actual_state == m_sm.m_bound_unknown_socket)
-	    return ev.formatted_print
-	      ("%qE expects a listening stream socket file descriptor"
-	       " whereas %qE is bound but not yet listening",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a listening stream socket file descriptor"
+			 " whereas %qE is bound but not yet listening",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	  if (m_actual_state == m_sm.m_connected_stream_socket)
-	    return ev.formatted_print
-	      ("%qE expects a listening stream socket file descriptor"
-	       " but %qE is connected",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a listening stream socket file descriptor"
+			 " but %qE is connected",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	}
 	break;
       case EXPECTED_PHASE_CAN_CONNECT:
@@ -943,12 +1053,20 @@ public:
 	  if (m_actual_state == m_sm.m_bound_datagram_socket
 	      || m_actual_state == m_sm.m_bound_stream_socket
 	      || m_actual_state == m_sm.m_bound_unknown_socket)
-	    return ev.formatted_print
-	      ("%qE expects a new socket file descriptor but %qE is bound",
-	       m_callee_fndecl, m_arg);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a new socket file descriptor"
+			 " but %qE is bound",
+			 m_callee_fndecl, m_arg);
+	      return true;
+	    }
 	  else
-	    return ev.formatted_print
-	      ("%qE expects a new socket file descriptor", m_callee_fndecl);
+	    {
+	      pp_printf (&pp,
+			 "%qE expects a new socket file descriptor",
+			 m_callee_fndecl);
+	      return true;
+	    }
 	}
 	break;
       }
@@ -1025,8 +1143,9 @@ public:
       }
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     switch (m_expected_type)
       {
@@ -1036,16 +1155,21 @@ public:
       case EXPECTED_TYPE_SOCKET:
       case EXPECTED_TYPE_STREAM_SOCKET:
 	if (!m_sm.is_socket_fd_p (m_actual_state))
-	  return ev.formatted_print ("%qE expects a socket file descriptor"
-				     " but %qE is not a socket",
-				     m_callee_fndecl, m_arg);
+	  {
+	    pp_printf (&pp,
+		       "%qE expects a socket file descriptor"
+		       " but %qE is not a socket",
+		       m_callee_fndecl, m_arg);
+	    return true;
+	  }
       }
     gcc_assert (m_expected_type == EXPECTED_TYPE_STREAM_SOCKET);
     gcc_assert (m_sm.is_datagram_socket_fd_p (m_actual_state));
-    return ev.formatted_print
-      ("%qE expects a stream socket file descriptor"
-       " but %qE is a datagram socket",
-       m_callee_fndecl, m_arg);
+    pp_printf (&pp,
+	       "%qE expects a stream socket file descriptor"
+	       " but %qE is a datagram socket",
+	       m_callee_fndecl, m_arg);
+    return true;
   }
 
 private:

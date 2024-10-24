@@ -2581,6 +2581,32 @@ pp_printf (pretty_printer *pp, const char *msg, ...)
   va_end (ap);
 }
 
+/* Format a message into PP using ngettext to handle
+   singular vs plural.  */
+
+void
+pp_printf_n (pretty_printer *pp,
+	     unsigned HOST_WIDE_INT n,
+	     const char *singular_gmsgid, const char *plural_gmsgid, ...)
+{
+  va_list ap;
+
+  va_start (ap, plural_gmsgid);
+
+  unsigned long gtn;
+  if (sizeof n <= sizeof gtn)
+    gtn = n;
+  else
+    /* Use the largest number ngettext can handle, otherwise
+       preserve the six least significant decimal digits for
+       languages where the plural form depends on them.  */
+    gtn = n <= ULONG_MAX ? n : n % 1000000LU + 1000000LU;
+  const char *msg = ngettext (singular_gmsgid, plural_gmsgid, gtn);
+  text_info text (msg, &ap, errno);
+  pp_format (pp, &text);
+  pp_output_formatted_text (pp);
+  va_end (ap);
+}
 
 /* Output MESSAGE verbatim into BUFFER.  */
 void

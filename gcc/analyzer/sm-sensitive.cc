@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "options.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
@@ -102,15 +103,17 @@ public:
 		      m_arg);
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (change.m_new_state == m_sm.m_sensitive)
       {
 	m_first_sensitive_event = change.m_event_id;
-	return change.formatted_print ("sensitive value acquired here");
+	pp_string (&pp, "sensitive value acquired here");
+	return true;
       }
-    return label_text ();
+    return false;
   }
 
   diagnostic_event::meaning
@@ -122,34 +125,48 @@ public:
 					diagnostic_event::NOUN_sensitive);
     return diagnostic_event::meaning ();
   }
-  label_text describe_call_with_state (const evdesc::call_with_state &info)
-    final override
+  bool
+  describe_call_with_state (pretty_printer &pp,
+			    const evdesc::call_with_state &info) final override
   {
     if (info.m_state == m_sm.m_sensitive)
-      return info.formatted_print
-	("passing sensitive value %qE in call to %qE from %qE",
-	 info.m_expr, info.m_callee_fndecl, info.m_caller_fndecl);
-    return label_text ();
+      {
+	pp_printf (&pp,
+		   "passing sensitive value %qE in call to %qE from %qE",
+		   info.m_expr, info.m_callee_fndecl, info.m_caller_fndecl);
+	return true;
+      }
+    return false;
   }
 
-  label_text describe_return_of_state (const evdesc::return_of_state &info)
-    final override
+  bool
+  describe_return_of_state (pretty_printer &pp,
+			    const evdesc::return_of_state &info) final override
   {
     if (info.m_state == m_sm.m_sensitive)
-      return info.formatted_print ("returning sensitive value to %qE from %qE",
-				   info.m_caller_fndecl, info.m_callee_fndecl);
-    return label_text ();
+      {
+	pp_printf (&pp,
+		   "returning sensitive value to %qE from %qE",
+		   info.m_caller_fndecl, info.m_callee_fndecl);
+	return true;
+      }
+    return false;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_first_sensitive_event.known_p ())
-      return ev.formatted_print ("sensitive value %qE written to output file"
-				 "; acquired at %@",
-				 m_arg, &m_first_sensitive_event);
+      pp_printf (&pp,
+		 "sensitive value %qE written to output file"
+		 "; acquired at %@",
+		 m_arg, &m_first_sensitive_event);
     else
-      return ev.formatted_print ("sensitive value %qE written to output file",
-				 m_arg);
+      pp_printf (&pp,
+		 "sensitive value %qE written to output file",
+		 m_arg);
+    return true;
   }
 
 private:

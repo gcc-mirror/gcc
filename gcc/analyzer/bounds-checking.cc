@@ -410,20 +410,25 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev)
-    final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_byte_bound || !m_bit_bound)
       {
 	byte_range out_of_bounds_bytes (0, 0);
 	if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
-	  return describe_final_event_as_bytes (ev, out_of_bounds_bytes);
+	  {
+	    describe_final_event_as_bytes (pp, out_of_bounds_bytes);
+	    return true;
+	  }
       }
-    return describe_final_event_as_bits (ev);
+    describe_final_event_as_bits (pp);
+    return true;
   }
 
-  label_text
-  describe_final_event_as_bytes (const evdesc::final_event &ev,
+  void
+  describe_final_event_as_bytes (pretty_printer &pp,
 				 const byte_range &out_of_bounds_bytes)
   {
     byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
@@ -436,27 +441,34 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write at byte %s but %qE"
-				     " ends at byte %E", start_buf, m_diag_arg,
-				     m_byte_bound);
-	return ev.formatted_print ("out-of-bounds write at byte %s but region"
-				   " ends at byte %E", start_buf,
-				   m_byte_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds write at byte %s but %qE"
+		     " ends at byte %E", start_buf, m_diag_arg,
+		     m_byte_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write at byte %s but region"
+		     " ends at byte %E", start_buf,
+		     m_byte_bound);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write from byte %s till"
-				     " byte %s but %qE ends at byte %E",
-				     start_buf, end_buf, m_diag_arg,
-				     m_byte_bound);
-	return ev.formatted_print ("out-of-bounds write from byte %s till"
-				   " byte %s but region ends at byte %E",
-				   start_buf, end_buf, m_byte_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds write from byte %s till"
+		     " byte %s but %qE ends at byte %E",
+		     start_buf, end_buf, m_diag_arg,
+		     m_byte_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write from byte %s till"
+		     " byte %s but region ends at byte %E",
+		     start_buf, end_buf, m_byte_bound);
       }
   }
 
-  label_text describe_final_event_as_bits (const evdesc::final_event &ev)
+  void
+  describe_final_event_as_bits (pretty_printer &pp)
   {
     bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
     bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
@@ -468,23 +480,29 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write at bit %s but %qE"
-				     " ends at bit %E", start_buf, m_diag_arg,
-				     m_bit_bound);
-	return ev.formatted_print ("out-of-bounds write at bit %s but region"
-				   " ends at bit %E", start_buf,
-				   m_bit_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds write at bit %s but %qE"
+		     " ends at bit %E", start_buf, m_diag_arg,
+		     m_bit_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write at bit %s but region"
+		     " ends at bit %E", start_buf,
+		     m_bit_bound);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write from bit %s till"
-				     " bit %s but %qE ends at bit %E",
-				     start_buf, end_buf, m_diag_arg,
-				     m_bit_bound);
-	return ev.formatted_print ("out-of-bounds write from bit %s till"
-				   " bit %s but region ends at bit %E",
-				   start_buf, end_buf, m_bit_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds write from bit %s till"
+		     " bit %s but %qE ends at bit %E",
+		     start_buf, end_buf, m_diag_arg,
+		     m_bit_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write from bit %s till"
+		     " bit %s but region ends at bit %E",
+		     start_buf, end_buf, m_bit_bound);
       }
   }
 
@@ -576,20 +594,25 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev)
-    final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_byte_bound || !m_bit_bound)
       {
 	byte_range out_of_bounds_bytes (0, 0);
 	if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
-	  return describe_final_event_as_bytes (ev, out_of_bounds_bytes);
+	  {
+	    describe_final_event_as_bytes (pp, out_of_bounds_bytes);
+	    return true;
+	  }
       }
-    return describe_final_event_as_bits (ev);
+    describe_final_event_as_bits (pp);
+    return true;
   }
 
-  label_text
-  describe_final_event_as_bytes (const evdesc::final_event &ev,
+  void
+  describe_final_event_as_bytes (pretty_printer &pp,
 				 const byte_range &out_of_bounds_bytes)
   {
     byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
@@ -602,27 +625,34 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read at byte %s but %qE"
-				     " ends at byte %E", start_buf, m_diag_arg,
-							 m_byte_bound);
-	return ev.formatted_print ("out-of-bounds read at byte %s but region"
-				   " ends at byte %E", start_buf,
-						       m_byte_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds read at byte %s but %qE"
+		     " ends at byte %E", start_buf, m_diag_arg,
+		     m_byte_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read at byte %s but region"
+		     " ends at byte %E", start_buf,
+		     m_byte_bound);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read from byte %s till"
-				     " byte %s but %qE ends at byte %E",
-				     start_buf, end_buf, m_diag_arg,
-				     m_byte_bound);
-	return ev.formatted_print ("out-of-bounds read from byte %s till"
-				   " byte %s but region ends at byte %E",
-				   start_buf, end_buf, m_byte_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds read from byte %s till"
+		     " byte %s but %qE ends at byte %E",
+		     start_buf, end_buf, m_diag_arg,
+		     m_byte_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read from byte %s till"
+		     " byte %s but region ends at byte %E",
+		     start_buf, end_buf, m_byte_bound);
       }
   }
 
-  label_text describe_final_event_as_bits (const evdesc::final_event &ev)
+  void
+  describe_final_event_as_bits (pretty_printer &pp)
   {
     bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
     bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
@@ -634,23 +664,29 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read at bit %s but %qE"
-				     " ends at bit %E", start_buf, m_diag_arg,
-							 m_bit_bound);
-	return ev.formatted_print ("out-of-bounds read at bit %s but region"
-				   " ends at bit %E", start_buf,
-						       m_bit_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds read at bit %s but %qE"
+		     " ends at bit %E", start_buf, m_diag_arg,
+		     m_bit_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read at bit %s but region"
+		     " ends at bit %E", start_buf,
+		     m_bit_bound);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read from bit %s till"
-				     " bit %s but %qE ends at bit %E",
-				     start_buf, end_buf, m_diag_arg,
-				     m_bit_bound);
-	return ev.formatted_print ("out-of-bounds read from bit %s till"
-				   " bit %s but region ends at bit %E",
-				   start_buf, end_buf, m_bit_bound);
+	  pp_printf (&pp,
+		     "out-of-bounds read from bit %s till"
+		     " bit %s but %qE ends at bit %E",
+		     start_buf, end_buf, m_diag_arg,
+		     m_bit_bound);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read from bit %s till"
+		     " bit %s but region ends at bit %E",
+		     start_buf, end_buf, m_bit_bound);
       }
   }
 
@@ -695,17 +731,20 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev)
-    final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     byte_range out_of_bounds_bytes (0, 0);
     if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
-      return describe_final_event_as_bytes (ev, out_of_bounds_bytes);
-    return describe_final_event_as_bits (ev);
+      describe_final_event_as_bytes (pp, out_of_bounds_bytes);
+    else
+      describe_final_event_as_bits (pp);
+    return true;
   }
 
-  label_text
-  describe_final_event_as_bytes (const evdesc::final_event &ev,
+  void
+  describe_final_event_as_bytes (pretty_printer &pp,
 				 const byte_range &out_of_bounds_bytes)
   {
     byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
@@ -718,26 +757,32 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write at byte %s but %qE"
-				     " starts at byte 0",
-				     start_buf, m_diag_arg);
-	return ev.formatted_print ("out-of-bounds write at byte %s but region"
-				   " starts at byte 0", start_buf);
+	  pp_printf (&pp,
+		     "out-of-bounds write at byte %s but %qE"
+		     " starts at byte 0",
+		     start_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write at byte %s but region"
+		     " starts at byte 0", start_buf);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write from byte %s till"
-				     " byte %s but %qE starts at byte 0",
-				     start_buf, end_buf, m_diag_arg);
-	return ev.formatted_print ("out-of-bounds write from byte %s till"
-				   " byte %s but region starts at byte 0",
-				   start_buf, end_buf);;
+	  pp_printf (&pp,
+		     "out-of-bounds write from byte %s till"
+		     " byte %s but %qE starts at byte 0",
+		     start_buf, end_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write from byte %s till"
+		     " byte %s but region starts at byte 0",
+		     start_buf, end_buf);;
       }
   }
 
-  label_text
-  describe_final_event_as_bits (const evdesc::final_event &ev)
+  void
+  describe_final_event_as_bits (pretty_printer &pp)
   {
     bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
     bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
@@ -749,21 +794,27 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write at bit %s but %qE"
-				     " starts at bit 0",
-				     start_buf, m_diag_arg);
-	return ev.formatted_print ("out-of-bounds write at bit %s but region"
-				   " starts at bit 0", start_buf);
+	  pp_printf (&pp,
+		     "out-of-bounds write at bit %s but %qE"
+		     " starts at bit 0",
+		     start_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write at bit %s but region"
+		     " starts at bit 0", start_buf);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds write from bit %s till"
-				     " bit %s but %qE starts at bit 0",
-				     start_buf, end_buf, m_diag_arg);
-	return ev.formatted_print ("out-of-bounds write from bit %s till"
-				   " bit %s but region starts at bit 0",
-				   start_buf, end_buf);;
+	  pp_printf (&pp,
+		     "out-of-bounds write from bit %s till"
+		     " bit %s but %qE starts at bit 0",
+		     start_buf, end_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds write from bit %s till"
+		     " bit %s but region starts at bit 0",
+		     start_buf, end_buf);;
       }
   }
 
@@ -807,17 +858,20 @@ public:
     return warned;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev)
-    final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     byte_range out_of_bounds_bytes (0, 0);
     if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
-      return describe_final_event_as_bytes (ev, out_of_bounds_bytes);
-    return describe_final_event_as_bits (ev);
+      describe_final_event_as_bytes (pp, out_of_bounds_bytes);
+    else
+      describe_final_event_as_bits (pp);
+    return true;
   }
 
-  label_text
-  describe_final_event_as_bytes (const evdesc::final_event &ev,
+  void
+  describe_final_event_as_bytes (pretty_printer &pp,
 				 const byte_range &out_of_bounds_bytes)
   {
     byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
@@ -830,25 +884,33 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read at byte %s but %qE"
-				     " starts at byte 0", start_buf,
-							  m_diag_arg);
-	return ev.formatted_print ("out-of-bounds read at byte %s but region"
-				  " starts at byte 0", start_buf);
+	  pp_printf (&pp,
+		     "out-of-bounds read at byte %s but %qE"
+		     " starts at byte 0",
+		     start_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read at byte %s but region"
+		     " starts at byte 0",
+		     start_buf);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read from byte %s till"
-				     " byte %s but %qE starts at byte 0",
-				     start_buf, end_buf, m_diag_arg);
-	return ev.formatted_print ("out-of-bounds read from byte %s till"
-				   " byte %s but region starts at byte 0",
-				   start_buf, end_buf);;
+	  pp_printf (&pp,
+		     "out-of-bounds read from byte %s till"
+		     " byte %s but %qE starts at byte 0",
+		     start_buf, end_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read from byte %s till"
+		     " byte %s but region starts at byte 0",
+		     start_buf, end_buf);;
       }
   }
 
-  label_text describe_final_event_as_bits (const evdesc::final_event &ev)
+  void
+  describe_final_event_as_bits (pretty_printer &pp)
   {
     bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
     bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
@@ -860,21 +922,27 @@ public:
     if (start == end)
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read at bit %s but %qE"
-				     " starts at bit 0", start_buf,
-							  m_diag_arg);
-	return ev.formatted_print ("out-of-bounds read at bit %s but region"
-				  " starts at bit 0", start_buf);
+	  pp_printf (&pp,
+		     "out-of-bounds read at bit %s but %qE"
+		     " starts at bit 0",
+		     start_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read at bit %s but region"
+		     " starts at bit 0", start_buf);
       }
     else
       {
 	if (m_diag_arg)
-	  return ev.formatted_print ("out-of-bounds read from bit %s till"
-				     " bit %s but %qE starts at bit 0",
-				     start_buf, end_buf, m_diag_arg);
-	return ev.formatted_print ("out-of-bounds read from bit %s till"
-				   " bit %s but region starts at bit 0",
-				   start_buf, end_buf);;
+	  pp_printf (&pp,
+		     "out-of-bounds read from bit %s till"
+		     " bit %s but %qE starts at bit 0",
+		     start_buf, end_buf, m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read from bit %s till"
+		     " bit %s but region starts at bit 0",
+		     start_buf, end_buf);;
       }
   }
 
@@ -968,8 +1036,9 @@ public:
     return warned;
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_offset)
       {
@@ -985,56 +1054,67 @@ public:
 		  {
 		    /* Singular m_num_bytes.  */
 		    if (m_diag_arg)
-		      return ev.formatted_print
-			("write of %E byte at offset %qE exceeds %qE",
-			 m_num_bytes, m_offset, m_diag_arg);
+		      pp_printf (&pp,
+				 "write of %E byte at offset %qE exceeds %qE",
+				 m_num_bytes, m_offset, m_diag_arg);
 		    else
-		      return ev.formatted_print
-			("write of %E byte at offset %qE exceeds the buffer",
-			 m_num_bytes, m_offset);
+		      pp_printf (&pp,
+				 "write of %E byte at offset %qE exceeds"
+				 " the buffer",
+				 m_num_bytes, m_offset);
 		  }
 		else
 		  {
 		    /* Plural m_num_bytes.  */
 		    if (m_diag_arg)
-		      return ev.formatted_print
-			("write of %E bytes at offset %qE exceeds %qE",
-			 m_num_bytes, m_offset, m_diag_arg);
+		      pp_printf (&pp,
+				 "write of %E bytes at offset %qE exceeds %qE",
+				 m_num_bytes, m_offset, m_diag_arg);
 		    else
-		      return ev.formatted_print
-			("write of %E bytes at offset %qE exceeds the buffer",
-			 m_num_bytes, m_offset);
+		      pp_printf (&pp,
+				 "write of %E bytes at offset %qE exceeds"
+				 " the buffer",
+				 m_num_bytes, m_offset);
 		  }
 	      }
 	    else
 	      {
 		/* Known offset, known symbolic size.  */
 		if (m_diag_arg)
-		  return ev.formatted_print
-		    ("write of %qE bytes at offset %qE exceeds %qE",
-		     m_num_bytes, m_offset, m_diag_arg);
+		  pp_printf (&pp,
+			     "write of %qE bytes at offset %qE exceeds %qE",
+			     m_num_bytes, m_offset, m_diag_arg);
 		else
-		  return ev.formatted_print
-		    ("write of %qE bytes at offset %qE exceeds the buffer",
-		     m_num_bytes, m_offset);
+		  pp_printf (&pp,
+			     "write of %qE bytes at offset %qE exceeds"
+			     " the buffer",
+			     m_num_bytes, m_offset);
 	      }
 	  }
 	else
 	  {
 	    /* Known offset, unknown size.  */
 	    if (m_diag_arg)
-	      return ev.formatted_print ("write at offset %qE exceeds %qE",
-					 m_offset, m_diag_arg);
+	      pp_printf (&pp,
+			 "write at offset %qE exceeds %qE",
+			 m_offset, m_diag_arg);
 	    else
-	      return ev.formatted_print ("write at offset %qE exceeds the"
-					 " buffer", m_offset);
+	      pp_printf (&pp,
+			 "write at offset %qE exceeds the buffer",
+			 m_offset);
 	  }
       }
-    /* Unknown offset.  */
-    if (m_diag_arg)
-      return ev.formatted_print ("out-of-bounds write on %qE",
-				 m_diag_arg);
-    return ev.formatted_print ("out-of-bounds write");
+    else
+      {
+	/* Unknown offset.  */
+	if (m_diag_arg)
+	  pp_printf (&pp,
+		     "out-of-bounds write on %qE",
+		     m_diag_arg);
+	else
+	  pp_printf (&pp, "out-of-bounds write");
+      }
+    return true;
   }
 
   enum access_direction get_dir () const final override { return DIR_WRITE; }
@@ -1082,8 +1162,9 @@ public:
     return warned;
   }
 
-  label_text
-  describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_offset)
       {
@@ -1099,56 +1180,68 @@ public:
 		  {
 		    /* Singular m_num_bytes.  */
 		    if (m_diag_arg)
-		      return ev.formatted_print
-			("read of %E byte at offset %qE exceeds %qE",
-			 m_num_bytes, m_offset, m_diag_arg);
+		      pp_printf (&pp,
+				 "read of %E byte at offset %qE exceeds %qE",
+				 m_num_bytes, m_offset, m_diag_arg);
 		    else
-		      return ev.formatted_print
-			("read of %E byte at offset %qE exceeds the buffer",
-			 m_num_bytes, m_offset);
+		      pp_printf (&pp,
+				 "read of %E byte at offset %qE exceeds"
+				 " the buffer",
+				 m_num_bytes, m_offset);
 		  }
 		else
 		  {
 		    /* Plural m_num_bytes.  */
 		    if (m_diag_arg)
-		      return ev.formatted_print
-			("read of %E bytes at offset %qE exceeds %qE",
-			 m_num_bytes, m_offset, m_diag_arg);
+		      pp_printf (&pp,
+				 "read of %E bytes at offset %qE exceeds %qE",
+				 m_num_bytes, m_offset, m_diag_arg);
 		    else
-		      return ev.formatted_print
-			("read of %E bytes at offset %qE exceeds the buffer",
-			 m_num_bytes, m_offset);
+		      pp_printf (&pp,
+				 "read of %E bytes at offset %qE exceeds"
+				 " the buffer",
+				 m_num_bytes, m_offset);
 		  }
 	      }
 	    else
 	      {
 		/* Known offset, known symbolic size.  */
 		if (m_diag_arg)
-		  return ev.formatted_print
-		    ("read of %qE bytes at offset %qE exceeds %qE",
-		     m_num_bytes, m_offset, m_diag_arg);
+		  pp_printf (&pp,
+			     "read of %qE bytes at offset %qE exceeds %qE",
+			     m_num_bytes, m_offset, m_diag_arg);
 		else
-		  return ev.formatted_print
-		    ("read of %qE bytes at offset %qE exceeds the buffer",
-		     m_num_bytes, m_offset);
+		  pp_printf (&pp,
+			     "read of %qE bytes at offset %qE exceeds"
+			     " the buffer",
+			     m_num_bytes, m_offset);
 	      }
 	  }
 	else
 	  {
 	    /* Known offset, unknown size.  */
 	    if (m_diag_arg)
-	      return ev.formatted_print ("read at offset %qE exceeds %qE",
-					 m_offset, m_diag_arg);
+	      pp_printf (&pp,
+			 "read at offset %qE exceeds %qE",
+			 m_offset, m_diag_arg);
 	    else
-	      return ev.formatted_print ("read at offset %qE exceeds the"
-					 " buffer", m_offset);
+	      pp_printf (&pp,
+			 "read at offset %qE exceeds the buffer",
+			 m_offset);
 	  }
       }
-    /* Unknown offset.  */
-    if (m_diag_arg)
-      return ev.formatted_print ("out-of-bounds read on %qE",
-				 m_diag_arg);
-    return ev.formatted_print ("out-of-bounds read");
+    else
+      {
+	/* Unknown offset.  */
+	if (m_diag_arg)
+	  pp_printf (&pp,
+		     "out-of-bounds read on %qE",
+		     m_diag_arg);
+	else
+	  pp_printf (&pp,
+		     "out-of-bounds read");
+      }
+    return true;
   }
 
   enum access_direction get_dir () const final override { return DIR_READ; }

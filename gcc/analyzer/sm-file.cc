@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "options.h"
+#include "diagnostic-core.h"
 #include "diagnostic-path.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
@@ -116,31 +117,48 @@ public:
     return same_tree_p (m_arg, ((const file_diagnostic &)base_other).m_arg);
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (change.m_old_state == m_sm.get_start_state ()
 	&& change.m_new_state == m_sm.m_unchecked)
       // TODO: verify that it's the fopen stmt, not a copy
-      return label_text::borrow ("opened here");
+      {
+	pp_string (&pp, "opened here");
+	return true;
+      }
     if (change.m_old_state == m_sm.m_unchecked
 	&& change.m_new_state == m_sm.m_nonnull)
       {
 	if (change.m_expr)
-	  return change.formatted_print ("assuming %qE is non-NULL",
-					 change.m_expr);
+	  {
+	    pp_printf (&pp,
+		       "assuming %qE is non-NULL",
+		       change.m_expr);
+	    return true;
+	  }
 	else
-	  return change.formatted_print ("assuming FILE * is non-NULL");
+	  {
+	    pp_printf (&pp, "assuming FILE * is non-NULL");
+	    return true;
+	  }
       }
     if (change.m_new_state == m_sm.m_null)
       {
 	if (change.m_expr)
-	  return change.formatted_print ("assuming %qE is NULL",
-					 change.m_expr);
+	  {
+	    pp_printf (&pp, "assuming %qE is NULL",
+		       change.m_expr);
+	    return true;
+	  }
 	else
-	  return change.formatted_print ("assuming FILE * is NULL");
+	  {
+	    pp_printf (&pp, "assuming FILE * is NULL");
+	    return true;
+	  }
       }
-    return label_text ();
+    return false;
   }
 
   diagnostic_event::meaning
@@ -184,24 +202,32 @@ public:
 		      m_arg);
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) override
   {
     if (change.m_new_state == m_sm.m_closed)
       {
 	m_first_fclose_event = change.m_event_id;
-	return change.formatted_print ("first %qs here", "fclose");
+	pp_printf (&pp, "first %qs here", "fclose");
+	return true;
       }
-    return file_diagnostic::describe_state_change (change);
+    return file_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_first_fclose_event.known_p ())
-      return ev.formatted_print ("second %qs here; first %qs was at %@",
-				 "fclose", "fclose",
-				 &m_first_fclose_event);
-    return ev.formatted_print ("second %qs here", "fclose");
+      pp_printf (&pp,
+		 "second %qs here; first %qs was at %@",
+		 "fclose", "fclose",
+		 &m_first_fclose_event);
+    else
+      pp_printf (&pp,
+		 "second %qs here", "fclose");
+    return true;
   }
 
 private:
@@ -233,35 +259,42 @@ public:
       return ctxt.warn ("leak of FILE");
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (change.m_new_state == m_sm.m_unchecked)
       {
 	m_fopen_event = change.m_event_id;
-	return label_text::borrow ("opened here");
+	pp_string (&pp, "opened here");
+	return true;
       }
-    return file_diagnostic::describe_state_change (change);
+    return file_diagnostic::describe_state_change (pp, change);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
     if (m_fopen_event.known_p ())
       {
 	if (ev.m_expr)
-	  return ev.formatted_print ("%qE leaks here; was opened at %@",
-				     ev.m_expr, &m_fopen_event);
+	  pp_printf (&pp,
+		     "%qE leaks here; was opened at %@",
+		     ev.m_expr, &m_fopen_event);
 	else
-	  return ev.formatted_print ("leaks here; was opened at %@",
-				     &m_fopen_event);
+	  pp_printf (&pp,
+		     "leaks here; was opened at %@",
+		     &m_fopen_event);
       }
     else
       {
 	if (ev.m_expr)
-	  return ev.formatted_print ("%qE leaks here", ev.m_expr);
+	  pp_printf (&pp, "%qE leaks here", ev.m_expr);
 	else
-	  return ev.formatted_print ("leaks here");
+	  pp_printf (&pp, "leaks here");
       }
+    return true;
   }
 
 private:

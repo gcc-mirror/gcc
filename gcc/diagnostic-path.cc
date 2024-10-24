@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
 #include "diagnostic-label-effects.h"
+#include "pretty-print-markup.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "selftest-diagnostic-path.h"
@@ -154,6 +155,18 @@ diagnostic_event::meaning::maybe_get_property_str (enum property p)
     }
 }
 
+/* Generate a label_text containing the description of this event
+   (for debugging/logging purposes).  */
+
+label_text
+diagnostic_event::get_desc () const
+{
+  auto pp = global_dc->clone_printer ();
+  pp_show_color (pp.get ()) = false;
+  print_desc (*pp.get ());
+  return label_text::take (xstrdup (pp_formatted_text (pp.get ())));
+}
+
 /* class diagnostic_path.  */
 
 /* Subroutine of diagnostic_path::interprocedural_p.
@@ -261,38 +274,33 @@ class path_label : public range_label
     unsigned event_idx = m_start_idx + range_idx;
     const diagnostic_event &event = m_path.get_event (event_idx);
 
-    /* Get the description of the event, perhaps with colorization:
-       normally, we don't colorize within a range_label, but this
-       is special-cased for diagnostic paths.  */
-    label_text event_text (event.get_desc (m_colorize));
-    gcc_assert (event_text.get ());
-
     const diagnostic_event::meaning meaning (event.get_meaning ());
 
-    pretty_printer pp;
-    pp_show_color (&pp) = m_colorize;
+    auto pp = global_dc->clone_printer ();
+    pp_show_color (pp.get ()) = m_colorize;
     diagnostic_event_id_t event_id (event_idx);
 
-    pp_printf (&pp, "%@", &event_id);
-    pp_space (&pp);
+    pp_printf (pp.get (), "%@", &event_id);
+    pp_space (pp.get ());
 
     if (meaning.m_verb == diagnostic_event::VERB_danger
 	&& m_allow_emojis)
       {
-	pp_unicode_character (&pp, 0x26A0); /* U+26A0 WARNING SIGN.  */
+	pp_unicode_character (pp.get (), 0x26A0); /* U+26A0 WARNING SIGN.  */
 	/* Append U+FE0F VARIATION SELECTOR-16 to select the emoji
 	   variation of the char.  */
-	pp_unicode_character (&pp, 0xFE0F);
+	pp_unicode_character (pp.get (), 0xFE0F);
 	/* U+26A0 WARNING SIGN has East_Asian_Width == Neutral, but in its
 	   emoji variant is printed (by vte at least) with a 2nd half
 	   overlapping the next char.  Hence we add two spaces here: a space
 	   to be covered by this overlap, plus another space of padding.  */
-	pp_string (&pp, "  ");
+	pp_string (pp.get (), "  ");
       }
 
-    pp_printf (&pp, "%s", event_text.get ());
+    event.print_desc (*pp.get ());
 
-    label_text result = label_text::take (xstrdup (pp_formatted_text (&pp)));
+    label_text result
+      = label_text::take (xstrdup (pp_formatted_text (pp.get ())));
     return result;
   }
 
@@ -667,8 +675,8 @@ struct event_range
 	  {
 	    const diagnostic_event &iter_event = m_path.get_event (i);
 	    diagnostic_event_id_t event_id (i);
-	    label_text event_text (iter_event.get_desc (true));
-	    pp_printf (&pp, " %@: %s", &event_id, event_text.get ());
+	    pp_printf (&pp, " %@: ", &event_id);
+	    iter_event.print_desc (pp);
 	    pp_newline (&pp);
 	  }
 	return;
@@ -1102,6 +1110,25 @@ print_path_summary_as_text (const path_summary &ps,
 
 } /* end of anonymous namespace for path-printing code.  */
 
+class element_event_desc : public pp_element
+{
+public:
+  element_event_desc (const diagnostic_event &event)
+  : m_event (event)
+  {
+  }
+
+  void add_to_phase_2 (pp_markup::context &ctxt) final override
+  {
+    auto pp = ctxt.m_pp.clone ();
+    m_event.print_desc (*pp.get ());
+    pp_string (&ctxt.m_pp, pp_formatted_text (pp.get ()));
+  }
+
+private:
+  const diagnostic_event &m_event;
+};
+
 /* Print PATH according to the context's path_format.  */
 
 void
@@ -1121,8 +1148,7 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 	for (unsigned i = 0; i < num_events; i++)
 	  {
 	    const diagnostic_event &event = path.get_event (i);
-	    label_text event_text (event.get_desc (false));
-	    gcc_assert (event_text.get ());
+	    element_event_desc e_event_desc (event);
 	    diagnostic_event_id_t event_id (i);
 	    if (get_context ().show_path_depths_p ())
 	      {
@@ -1135,19 +1161,19 @@ diagnostic_text_output_format::print_path (const diagnostic_path &path)
 		  {
 		    label_text name (logical_loc->get_name_for_path_output ());
 		    inform (event.get_location (),
-			    "%@ %s (fndecl %qs, depth %i)",
-			    &event_id, event_text.get (),
+			    "%@ %e (fndecl %qs, depth %i)",
+			    &event_id, &e_event_desc,
 			    name.get (), stack_depth);
 		  }
 		else
 		  inform (event.get_location (),
-			  "%@ %s (depth %i)",
-			  &event_id, event_text.get (),
+			  "%@ %e (depth %i)",
+			  &event_id, &e_event_desc,
 			  stack_depth);
 	      }
 	    else
 	      inform (event.get_location (),
-		      "%@ %s", &event_id, event_text.get ());
+		      "%@ %e", &event_id, &e_event_desc);
 	  }
       }
       break;

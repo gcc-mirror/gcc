@@ -1668,9 +1668,9 @@ public:
     return true;
   }
 
-  label_text get_desc (bool /*can_colorize*/) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return m_summary->get_desc ();
+    pp_string (&pp, m_summary->get_desc ().get ());
   }
 
 private:
@@ -1884,19 +1884,22 @@ public:
     return false;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_stack_pop_event)
-      return ev.formatted_print
-	("%qs called after enclosing function of %qs returned at %@",
-	 get_user_facing_name (m_longjmp_call),
-	 get_user_facing_name (m_setjmp_call),
-	 m_stack_pop_event->get_id_ptr ());
+      pp_printf (&pp,
+		 "%qs called after enclosing function of %qs returned at %@",
+		 get_user_facing_name (m_longjmp_call),
+		 get_user_facing_name (m_setjmp_call),
+		 m_stack_pop_event->get_id_ptr ());
     else
-      return ev.formatted_print
-	("%qs called after enclosing function of %qs has returned",
-	 get_user_facing_name (m_longjmp_call),
-	 get_user_facing_name (m_setjmp_call));;
+      pp_printf (&pp,
+		 "%qs called after enclosing function of %qs has returned",
+		 get_user_facing_name (m_longjmp_call),
+		 get_user_facing_name (m_setjmp_call));
+    return true;
   }
 
 
@@ -2750,12 +2753,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void
+  print_desc (pretty_printer &pp) const final override
   {
-    return make_label_text
-      (can_colorize,
-       "function %qE marked with %<__attribute__((tainted_args))%>",
-       m_fndecl);
+    pp_printf (&pp,
+	       "function %qE marked with %<__attribute__((tainted_args))%>",
+	       m_fndecl);
   }
 
 private:
@@ -3169,12 +3172,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return make_label_text (can_colorize,
-			    "field %qE of %qT"
-			    " is marked with %<__attribute__((tainted_args))%>",
-			    m_field, DECL_CONTEXT (m_field));
+    pp_printf (&pp,
+	       "field %qE of %qT"
+	       " is marked with %<__attribute__((tainted_args))%>",
+	       m_field, DECL_CONTEXT (m_field));
   }
 
 private:
@@ -3195,12 +3198,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return make_label_text (can_colorize,
-			    "function %qE used as initializer for field %qE"
-			    " marked with %<__attribute__((tainted_args))%>",
-			    get_fndecl (), m_field);
+    pp_printf (&pp,
+	       "function %qE used as initializer for field %qE"
+	       " marked with %<__attribute__((tainted_args))%>",
+	       get_fndecl (), m_field);
   }
 
 private:
@@ -4014,9 +4017,11 @@ public:
     return ctxt.warn ("jump through null pointer");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool describe_final_event (pretty_printer &pp,
+			     const evdesc::final_event &) final override
   {
-    return ev.formatted_print ("jump through null pointer here");
+    pp_string (&pp, "jump through null pointer here");
+    return true;
   }
 
 private:
