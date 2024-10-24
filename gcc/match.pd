@@ -4672,7 +4672,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* If either argument is NaN and other one is not sNaN, return the other
     one.  Avoid the transformation if we get (and honor) a signalling NaN.  */
  (simplify
-  (minmax:c @0 REAL_CST@1)
+  (minmax:C @0 REAL_CST@1)
    (if (real_isnan (TREE_REAL_CST_PTR (@1))
        && (!HONOR_SNANS (@1) || !TREE_REAL_CST (@1).signalling)
        && !tree_expr_maybe_signaling_nan_p (@0))

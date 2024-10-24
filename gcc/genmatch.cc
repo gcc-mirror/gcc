@@ -1107,12 +1107,13 @@ is_a_helper <user_id *>::test (id_base *id)
    index of the first, otherwise return -1.  */
 
 static int
-commutative_op (id_base *id)
+commutative_op (id_base *id, bool compares_are_commutative = false)
 {
   if (operator_id *code = dyn_cast <operator_id *> (id))
     {
       if (commutative_tree_code (code->code)
-	  || commutative_ternary_tree_code (code->code))
+	  || commutative_ternary_tree_code (code->code)
+	  || (compares_are_commutative && comparison_code_p (code->code)))
 	return 0;
       return -1;
     }
@@ -1120,9 +1121,12 @@ commutative_op (id_base *id)
     switch (fn->fn)
       {
       CASE_CFN_FMA:
+      CASE_CFN_HYPOT:
       case CFN_FMS:
       case CFN_FNMA:
       case CFN_FNMS:
+      case CFN_ADD_OVERFLOW:
+      case CFN_MUL_OVERFLOW:
 	return 0;
 
       case CFN_COND_ADD:
@@ -1158,11 +1162,13 @@ commutative_op (id_base *id)
       }
   if (user_id *uid = dyn_cast<user_id *> (id))
     {
-      int res = commutative_op (uid->substitutes[0]);
+      int res = commutative_op (uid->substitutes[0],
+				compares_are_commutative);
       if (res < 0)
 	return -1;
       for (unsigned i = 1; i < uid->substitutes.length (); ++i)
-	if (res != commutative_op (uid->substitutes[i]))
+	if (res != commutative_op (uid->substitutes[i],
+				   compares_are_commutative))
 	  return -1;
       return res;
     }
@@ -5214,27 +5220,11 @@ parser::parse_expr ()
 		{
 		  if (*sp == 'c')
 		    {
-		      if (operator_id *o
-			    = dyn_cast<operator_id *> (e->operation))
-			{
-			  if (!commutative_tree_code (o->code)
-			      && !comparison_code_p (o->code))
-			    fatal_at (token, "operation is not commutative");
-			}
-		      else if (user_id *p = dyn_cast<user_id *> (e->operation))
-			for (unsigned i = 0;
-			     i < p->substitutes.length (); ++i)
-			  {
-			    if (operator_id *q
-				  = dyn_cast<operator_id *> (p->substitutes[i]))
-			      {
-				if (!commutative_tree_code (q->code)
-				    && !comparison_code_p (q->code))
-				  fatal_at (token, "operation %s is not "
-					    "commutative", q->id);
-			      }
-			  }
-		      is_commutative = true;
+		      if (commutative_op (e->operation, true) != -1)
+			is_commutative = true;
+		      else
+			fatal_at (token, "operation %s is not known "
+				  "commutative", e->operation->id);
 		    }
 		  else if (*sp == 'C')
 		    is_commutative = true;
