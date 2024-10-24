@@ -375,6 +375,13 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
       }
 
     default:
+      if (POLY_INT_CST_P (expr))
+	{
+	  unsigned int precision = TYPE_PRECISION (type);
+	  r.set_varying (type);
+	  r.update_bitmask ({ wi::zero (precision), get_nonzero_bits (expr) });
+	  return true;
+	}
       break;
     }
   if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
