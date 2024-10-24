@@ -295,6 +295,9 @@ struct riscv_tune_param
   bool overlap_op_by_pieces;
   unsigned int fusible_ops;
   const struct cpu_vector_cost *vec_costs;
+  const char *function_align = nullptr;
+  const char *jump_align = nullptr;
+  const char *loop_align = nullptr;
 };
 
 
@@ -10282,6 +10285,18 @@ riscv_override_options_internal (struct gcc_options *opts)
   tune_param = opts->x_optimize_size
 		 ? &optimize_size_tune_info
 		 : cpu->tune_param;
+
+  /* If not optimizing for size, set the default
+      alignment to what the target wants.  */
+  if (!opts->x_optimize_size)
+    {
+      if (opts->x_flag_align_loops && !opts->x_str_align_loops)
+	opts->x_str_align_loops = tune_param->loop_align;
+      if (opts->x_flag_align_jumps && !opts->x_str_align_jumps)
+	opts->x_str_align_jumps = tune_param->jump_align;
+      if (opts->x_flag_align_functions && !opts->x_str_align_functions)
+	opts->x_str_align_functions = tune_param->function_align;
+    }
 
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
