@@ -5,7 +5,7 @@
 int a = 128, b, d;
 long e = -2, c;
 int main() {
-  char f = a;
+  signed char f = a;
   int g = f;
   c = (g < 0) - e;
   unsigned char h = g;

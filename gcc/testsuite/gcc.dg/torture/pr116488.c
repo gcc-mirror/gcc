@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-fno-forward-propagate" } */
 int a, b;
-char c, e;
+signed char c, e;
 unsigned char d;
 __attribute__ ((noinline,noclone,noipa))
 void f(int g, short h) {
