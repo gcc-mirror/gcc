@@ -108,3 +108,26 @@ TEST_UNIFORM_Z (aba_11_s32_tied2, svint32_t,
 TEST_UNIFORM_Z (aba_11_s32_untied, svint32_t,
 		z0 = svaba_n_s32 (z1, z2, 11),
 		z0 = svaba (z1, z2, 11))
+
+/*
+** aba_11_s32_zeroop1n:
+**	ptrue	(p[0-7])\.b, all
+**	mov	z0\.s, #11
+**	sabd	z0\.s, \1/m, z0\.s, z1\.s
+**	ret
+*/
+TEST_UNIFORM_Z (aba_11_s32_zeroop1n, svint32_t,
+		z0 = svaba_n_s32 (svdup_s32 (0), z1, 11),
+		z0 = svaba (svdup_s32 (0), z1, 11))
+
+
+/*
+** aba_11_s32_zeroop1:
+**	ptrue	(p[0-7])\.b, all
+**	mov	z0\.s, #11
+**	sabd	z0\.s, \1/m, z0\.s, z1\.s
+**	ret
+*/
+TEST_UNIFORM_Z (aba_11_s32_zeroop1, svint32_t,
+		z0 = svaba_s32 (svdup_s32 (0), z1, svdup_s32 (11)),
+		z0 = svaba (svdup_s32 (0), z1, svdup_s32 (11)))

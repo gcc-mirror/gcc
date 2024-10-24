@@ -81,6 +81,24 @@ unspec_sqrdcmlah (int rot)
 class svaba_impl : public function_base
 {
 public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    /* Fold to svabd if op1 is all zeros.  */
+    tree op1 = gimple_call_arg (f.call, 0);
+    if (!integer_zerop (op1))
+      return NULL;
+    function_instance instance ("svabd", functions::svabd,
+				shapes::binary_opt_n, f.mode_suffix_id,
+				f.type_suffix_ids, GROUP_none, PRED_x);
+    gcall *call = f.redirect_call (instance);
+    /* Add a ptrue as predicate, because unlike svaba, svabd is
+       predicated.  */
+    gimple_call_set_arg (call, 0, build_all_ones_cst (f.gp_type ()));
+    return call;
+  }
+
+public:
   rtx
   expand (function_expander &e) const override
   {

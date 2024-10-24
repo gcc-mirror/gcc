@@ -108,3 +108,25 @@ TEST_UNIFORM_Z (aba_11_s64_tied2, svint64_t,
 TEST_UNIFORM_Z (aba_11_s64_untied, svint64_t,
 		z0 = svaba_n_s64 (z1, z2, 11),
 		z0 = svaba (z1, z2, 11))
+
+/*
+** aba_11_s64_zeroop1n:
+**	ptrue	(p[0-7])\.b, all
+**	mov	z0\.d, #11
+**	sabd	z0\.d, \1/m, z0\.d, z1\.d
+**	ret
+*/
+TEST_UNIFORM_Z (aba_11_s64_zeroop1n, svint64_t,
+		z0 = svaba_n_s64 (svdup_s64 (0), z1, 11),
+		z0 = svaba (svdup_s64 (0), z1, 11))
+
+/*
+** aba_11_s64_zeroop1:
+**	ptrue	(p[0-7])\.b, all
+**	mov	z0\.d, #11
+**	sabd	z0\.d, \1/m, z0\.d, z1\.d
+**	ret
+*/
+TEST_UNIFORM_Z (aba_11_s64_zeroop1, svint64_t,
+		z0 = svaba_s64 (svdup_s64 (0), z1, svdup_s64 (11)),
+		z0 = svaba (svdup_s64 (0), z1, svdup_s64 (11)))
