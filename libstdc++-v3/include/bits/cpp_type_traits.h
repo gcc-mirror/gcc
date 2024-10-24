@@ -472,6 +472,8 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
   template<typename _Tp> struct __memcpyable_integer;
 
   // For heterogeneous types, allow memcpy between equal-sized integers.
+  // N.B. we cannot do the same for equal-sized enums, they're not assignable.
+  // We cannot do it for pointers, because derived-to-base can adjust offset.
   template<typename _Tp, typename _Up>
     struct __memcpyable<_Tp*, _Up*>
     {
@@ -552,6 +554,27 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
   __extension__
   template<>
     struct __memcpyable_integer<unsigned __int128> { enum { __width = 128 }; };
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  template<>
+    struct __memcpyable<_Float32*, float*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<float*, _Float32*> { enum { __value = true }; };
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  template<>
+    struct __memcpyable<_Float64*, double*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<double*, _Float64*> { enum { __value = true }; };
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+  template<>
+    struct __memcpyable<_Float128*, long double*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<long double*, _Float128*> { enum { __value = true }; };
 #endif
 
   // Whether two iterator types can be used with memcmp.
