@@ -1645,8 +1645,7 @@ package body Exp_Aggr is
          if Is_Iterated_Component then
 
             --  Create a new scope for the loop variable so that the
-            --  following Gen_Assign (that ends up calling
-            --  Preanalyze_And_Resolve) can correctly find it.
+            --  following Gen_Assign can correctly find it.
 
             Ent := New_Internal_Entity (E_Loop,
                  Current_Scope, Loc, 'L');
@@ -4410,7 +4409,6 @@ package body Exp_Aggr is
       Dims                 : constant Nat := Number_Dimensions (Typ);
       Max_Others_Replicate : constant Nat := Max_Aggregate_Size (N);
 
-      Ctyp              : Entity_Id := Component_Type (Typ);
       Static_Components : Boolean   := True;
 
       procedure Check_Static_Components;
@@ -4430,7 +4428,7 @@ package body Exp_Aggr is
       --  Return True if the aggregate N is flat (which is not trivial in the
       --  case of multidimensional aggregates).
 
-      function Is_Static_Element (N : Node_Id; Dims : Nat) return Boolean;
+      function Is_Static_Element (N : Node_Id) return Boolean;
       --  Return True if N, an element of a component association list, i.e.
       --  N_Component_Association or N_Iterated_Component_Association, has a
       --  compile-time known value and can be passed as is to the back-end
@@ -4474,7 +4472,7 @@ package body Exp_Aggr is
          then
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
-               if not Is_Static_Element (Assoc, Dims) then
+               if not Is_Static_Element (Assoc) then
                   Static_Components := False;
                   exit;
                end if;
@@ -4699,7 +4697,7 @@ package body Exp_Aggr is
                               --  only if either the element is static or is
                               --  an aggregate (we already know it is OK).
 
-                              elsif not Is_Static_Element (Elmt, Dims)
+                              elsif not Is_Static_Element (Elmt)
                                 and then Nkind (Expr) /= N_Aggregate
                               then
                                  return False;
@@ -4856,7 +4854,7 @@ package body Exp_Aggr is
       -- Is_Static_Element --
       -----------------------
 
-      function Is_Static_Element (N : Node_Id; Dims : Nat) return Boolean is
+      function Is_Static_Element (N : Node_Id) return Boolean is
          Expr : constant Node_Id := Expression (N);
 
       begin
@@ -4873,14 +4871,6 @@ package body Exp_Aggr is
            and then not Expansion_Delayed (Expr)
          then
             return True;
-
-         --  However, one may write static expressions that are syntactically
-         --  ambiguous, so preanalyze the expression before checking it again,
-         --  but only at the innermost level for a multidimensional array.
-
-         elsif Dims = 1 then
-            Preanalyze_And_Resolve (Expr, Ctyp);
-            return Compile_Time_Known_Value (Expr);
 
          else
             return False;
@@ -4921,10 +4911,6 @@ package body Exp_Aggr is
       if Has_Controlled_Component (Typ) then
          return;
       end if;
-
-      --  Special handling for mutably taggeds
-
-      Ctyp := Get_Corresponding_Mutably_Tagged_Type_If_Present (Ctyp);
 
       Check_Static_Components;
 
@@ -5019,8 +5005,12 @@ package body Exp_Aggr is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
 
-      Ctyp : Entity_Id := Component_Type (Typ);
-      --  Ctyp is the corresponding component type.
+      Component_Typ : constant Entity_Id := Component_Type (Typ);
+      --  Component_Typ is the corresponding component type
+
+      Ctyp : constant Entity_Id :=
+        Get_Corresponding_Mutably_Tagged_Type_If_Present (Component_Typ);
+      --  Ctyp is the corresponding component type to be used
 
       Aggr_Dimension : constant Pos := Number_Dimensions (Typ);
       --  Number of aggregate index dimensions
@@ -5355,21 +5345,6 @@ package body Exp_Aggr is
               and then Nkind (First (Choice_List (Assoc))) = N_Others_Choice
             then
                Others_Present (Dim) := True;
-
-               --  An others_clause may be superfluous if previous components
-               --  cover the full given range of a constrained array. In such
-               --  a case an others_clause does not contribute any additional
-               --  components and has not been analyzed. We analyze it now to
-               --  detect type errors in the expression, even though no code
-               --  will be generated for it.
-
-               if Dim = Aggr_Dimension
-                 and then Nkind (Assoc) /= N_Iterated_Component_Association
-                 and then not Analyzed (Expression (Assoc))
-                 and then not Box_Present (Assoc)
-               then
-                  Preanalyze_And_Resolve (Expression (Assoc), Ctyp);
-               end if;
             end if;
          end if;
 
@@ -5392,8 +5367,7 @@ package body Exp_Aggr is
             if Present (Component_Associations (Sub_Aggr)) then
                Assoc := First (Component_Associations (Sub_Aggr));
                while Present (Assoc) loop
-                  Expr := Expression (Assoc);
-                  Compute_Others_Present (Expr, Dim + 1);
+                  Compute_Others_Present (Expression (Assoc), Dim + 1);
                   Next (Assoc);
                end loop;
             end if;
@@ -5965,10 +5939,6 @@ package body Exp_Aggr is
       --  never get here.
 
       pragma Assert (not Raises_Constraint_Error (N));
-
-      --  Special handling for mutably taggeds
-
-      Ctyp := Get_Corresponding_Mutably_Tagged_Type_If_Present (Ctyp);
 
       --  STEP 1a
 
