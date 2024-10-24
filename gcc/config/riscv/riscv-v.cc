@@ -1501,9 +1501,9 @@ expand_const_vector (rtx target, rtx src)
 		    gen_int_mode (builder.inner_bits_size (), new_smode),
 		    NULL_RTX, false, OPTAB_DIRECT);
 		  rtx tmp2 = gen_reg_rtx (new_mode);
-		  rtx and_ops[] = {tmp2, tmp1, scalar};
-		  emit_vlmax_insn (code_for_pred_scalar (AND, new_mode),
-				   BINARY_OP, and_ops);
+		  rtx ior_ops[] = {tmp2, tmp1, scalar};
+		  emit_vlmax_insn (code_for_pred_scalar (IOR, new_mode),
+				   BINARY_OP, ior_ops);
 		  emit_move_insn (result, gen_lowpart (mode, tmp2));
 		}
 	      else
