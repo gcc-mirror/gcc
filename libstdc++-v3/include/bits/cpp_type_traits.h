@@ -556,6 +556,13 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
     struct __memcpyable_integer<unsigned __int128> { enum { __width = 128 }; };
 #endif
 
+#if _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 && _GLIBCXX_LDOUBLE_IS_IEEE_BINARY64
+  template<>
+    struct __memcpyable<double*, long double*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<long double*, double*> { enum { __value = true }; };
+#endif
+
 #if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
   template<>
     struct __memcpyable<_Float32*, float*> { enum { __value = true }; };

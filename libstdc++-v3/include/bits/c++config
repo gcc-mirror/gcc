@@ -836,25 +836,40 @@ namespace std
 # endif
 #endif
 
-// Define if float has the IEEE binary32 format.
 #if __FLT_MANT_DIG__ == 24 \
   && __FLT_MIN_EXP__ == -125 \
   && __FLT_MAX_EXP__ == 128
+// Define if float has the IEEE binary32 format.
 # define _GLIBCXX_FLOAT_IS_IEEE_BINARY32 1
 #endif
 
-// Define if double has the IEEE binary64 format.
 #if __DBL_MANT_DIG__ == 53 \
   && __DBL_MIN_EXP__ == -1021 \
   && __DBL_MAX_EXP__ == 1024
+// Define if double has the IEEE binary64 format.
 # define _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 1
+#elif __FLT_MANT_DIG__ == 24 \
+  && __FLT_MIN_EXP__ == -125 \
+  && __FLT_MAX_EXP__ == 128
+// Define if double has the IEEE binary32 format.
+# define _GLIBCXX_DOUBLE_IS_IEEE_BINARY32 1
 #endif
 
-// Define if long double has the IEEE binary128 format.
 #if __LDBL_MANT_DIG__ == 113 \
   && __LDBL_MIN_EXP__ == -16381 \
   && __LDBL_MAX_EXP__ == 16384
+// Define if long double has the IEEE binary128 format.
 # define _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128 1
+#elif __LDBL_MANT_DIG__ == 53 \
+  && __LDBL_MIN_EXP__ == -1021 \
+  && __LDBL_MAX_EXP__ == 1024
+// Define if long double has the IEEE binary64 format.
+# define _GLIBCXX_LDOUBLE_IS_IEEE_BINARY64 1
+#elif __LDBL_MANT_DIG__ == 24 \
+  && __LDBL_MIN_EXP__ == -125 \
+  && __LDBL_MAX_EXP__ == 128
+// Define if long double has the IEEE binary32 format.
+# define _GLIBCXX_LDOUBLE_IS_IEEE_BINARY32 1
 #endif
 
 #if defined __cplusplus && defined __BFLT16_DIG__
