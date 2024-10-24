@@ -121,7 +121,7 @@ public:
       used_from_other_partition (false), in_other_partition (false),
       address_taken (false), in_init_priority_hash (false),
       need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
-      order (false), next_sharing_asm_name (NULL),
+      order (-1), next_sharing_asm_name (NULL),
       previous_sharing_asm_name (NULL), same_comdat_group (NULL), ref_list (),
       alias_target (NULL), lto_file_data (NULL), aux (NULL),
       x_comdat_group (NULL_TREE), x_section (NULL)
@@ -2819,7 +2819,8 @@ symbol_table::register_symbol (symtab_node *node)
     nodes->previous = node;
   nodes = node;
 
-  node->order = order++;
+  if (node->order == -1)
+    node->order = order++;
 }
 
 /* Register a top-level asm statement ASM_STR.  */
