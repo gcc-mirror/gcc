@@ -1341,7 +1341,14 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
     m_output_format->on_begin_group ();
   m_diagnostic_groups.m_emission_count++;
 
+  /* Run phases 1 and 2 of formatting the message.
+     In particular, some format codes may have side-effects here which need to
+     happen before sending the diagnostic to the output format.
+
+     For example, Fortran's %C and %L formatting codes populate the
+     rich_location.  */
   pp_format (m_printer, &diagnostic->message);
+
   /* Call vfunc in the output format.  This is responsible for
      phase 3 of formatting, and for printing the result.  */
   m_output_format->on_report_diagnostic (*diagnostic, orig_diag_kind);
