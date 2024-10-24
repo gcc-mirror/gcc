@@ -4919,6 +4919,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && wi::to_widest (@2) >= wi::to_widest (@1)
       && wi::to_widest (@1) <= wi::ctz (get_nonzero_bits (@0)))
   (lshift (convert @0) (minus @2 @1))))
+
+/* (X >> C1) * (C2 << C1) -> X * C2 if the low C1 bits of X are zero.  */
+(simplify
+ (mult (convert? (rshift (with_possible_nonzero_bits2 @0) INTEGER_CST@1))
+       poly_int_tree_p@2)
+ (with { poly_widest_int factor; }
+  (if (INTEGRAL_TYPE_P (type)
+       && wi::ltu_p (wi::to_wide (@1), element_precision (type))
+       && wi::to_widest (@1) <= wi::ctz (get_nonzero_bits (@0))
+       && multiple_p (wi::to_poly_widest (@2),
+		      widest_int (1) << tree_to_uhwi (@1),
+		      &factor))
+   (mult (convert @0) { wide_int_to_tree (type, factor); }))))
 #endif
 
 /* For (x << c) >> c, optimize into x & ((unsigned)-1 >> c) for
