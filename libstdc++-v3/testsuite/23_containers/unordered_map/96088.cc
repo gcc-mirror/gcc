@@ -233,9 +233,8 @@ test03()
     um.insert(v.begin(), v.end());
     VERIFY( um.size() == 1 );
 
-    // Allocate array of buckets, a node, the std::string value and the
-    // std::string key (unless COW).
-    constexpr std::size_t increments = _GLIBCXX_USE_CXX11_ABI ? 4 : 3;
+    // Allocate array of buckets, a node, and the 2 std::string (unless COW).
+    constexpr std::size_t increments = _GLIBCXX_USE_CXX11_ABI ? 4 : 2;
 
     VERIFY( __gnu_test::counter::count() == origin + increments );
     VERIFY( __gnu_test::counter::get()._M_increments == increments );
