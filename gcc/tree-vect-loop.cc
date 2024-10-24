@@ -12515,6 +12515,25 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
     move_early_exit_stmts (loop_vinfo);
 
+  /* Remove existing clobber stmts and prefetches.  */
+  for (i = 0; i < nbbs; i++)
+    {
+      basic_block bb = bbs[i];
+      for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);)
+	{
+	  stmt = gsi_stmt (si);
+	  if (gimple_clobber_p (stmt)
+	      || gimple_call_builtin_p (stmt, BUILT_IN_PREFETCH))
+	    {
+	      unlink_stmt_vdef (stmt);
+	      gsi_remove (&si, true);
+	      release_defs (stmt);
+	    }
+	  else
+	    gsi_next (&si);
+	}
+    }
+
   /* Schedule the SLP instances first, then handle loop vectorization
      below.  */
   if (!loop_vinfo->slp_instances.is_empty ())
@@ -12609,65 +12628,54 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	   !gsi_end_p (si);)
 	{
 	  stmt = gsi_stmt (si);
-	  /* During vectorization remove existing clobber stmts and
-	     prefetches.  */
-	  if (gimple_clobber_p (stmt)
-	      || gimple_call_builtin_p (stmt, BUILT_IN_PREFETCH))
-	    {
-	      unlink_stmt_vdef (stmt);
-	      gsi_remove (&si, true);
-	      release_defs (stmt);
-	    }
-	  else
-	    {
-	      /* Ignore vector stmts created in the outer loop.  */
-	      stmt_info = loop_vinfo->lookup_stmt (stmt);
 
-	      /* vector stmts created in the outer-loop during vectorization of
-		 stmts in an inner-loop may not have a stmt_info, and do not
-		 need to be vectorized.  */
-	      stmt_vec_info seen_store = NULL;
-	      if (stmt_info)
+	  /* Ignore vector stmts created in the outer loop.  */
+	  stmt_info = loop_vinfo->lookup_stmt (stmt);
+
+	  /* vector stmts created in the outer-loop during vectorization of
+	     stmts in an inner-loop may not have a stmt_info, and do not
+	     need to be vectorized.  */
+	  stmt_vec_info seen_store = NULL;
+	  if (stmt_info)
+	    {
+	      if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 		{
-		  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+		  gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
+		  for (gimple_stmt_iterator subsi = gsi_start (def_seq);
+		       !gsi_end_p (subsi); gsi_next (&subsi))
 		    {
-		      gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-		      for (gimple_stmt_iterator subsi = gsi_start (def_seq);
-			   !gsi_end_p (subsi); gsi_next (&subsi))
-			{
-			  stmt_vec_info pat_stmt_info
-			    = loop_vinfo->lookup_stmt (gsi_stmt (subsi));
-			  vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
-						    &si, &seen_store);
-			}
 		      stmt_vec_info pat_stmt_info
-			= STMT_VINFO_RELATED_STMT (stmt_info);
-		      if (vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
-						    &si, &seen_store))
-			maybe_set_vectorized_backedge_value (loop_vinfo,
-							     pat_stmt_info);
+			= loop_vinfo->lookup_stmt (gsi_stmt (subsi));
+		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
+						&si, &seen_store);
 		    }
-		  else
-		    {
-		      if (vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
-						    &seen_store))
-			maybe_set_vectorized_backedge_value (loop_vinfo,
-							     stmt_info);
-		    }
+		  stmt_vec_info pat_stmt_info
+		      = STMT_VINFO_RELATED_STMT (stmt_info);
+		  if (vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
+						&si, &seen_store))
+		    maybe_set_vectorized_backedge_value (loop_vinfo,
+							 pat_stmt_info);
 		}
-	      gsi_next (&si);
-	      if (seen_store)
+	      else
 		{
-		  if (STMT_VINFO_GROUPED_ACCESS (seen_store))
-		    /* Interleaving.  If IS_STORE is TRUE, the
-		       vectorization of the interleaving chain was
-		       completed - free all the stores in the chain.  */
-		    vect_remove_stores (loop_vinfo,
-					DR_GROUP_FIRST_ELEMENT (seen_store));
-		  else
-		    /* Free the attached stmt_vec_info and remove the stmt.  */
-		    loop_vinfo->remove_stmt (stmt_info);
+		  if (vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
+						&seen_store))
+		    maybe_set_vectorized_backedge_value (loop_vinfo,
+							 stmt_info);
 		}
+	    }
+	  gsi_next (&si);
+	  if (seen_store)
+	    {
+	      if (STMT_VINFO_GROUPED_ACCESS (seen_store))
+		/* Interleaving.  If IS_STORE is TRUE, the
+		   vectorization of the interleaving chain was
+		   completed - free all the stores in the chain.  */
+		vect_remove_stores (loop_vinfo,
+				    DR_GROUP_FIRST_ELEMENT (seen_store));
+	      else
+		/* Free the attached stmt_vec_info and remove the stmt.  */
+		loop_vinfo->remove_stmt (stmt_info);
 	    }
 	}
 
