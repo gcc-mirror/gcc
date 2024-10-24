@@ -464,6 +464,23 @@ package body Accessibility is
             if Attribute_Name (E) = Name_Access then
                return Accessibility_Level (Prefix (E));
 
+            --  If we have reached a 'Input attribute then this is the
+            --  the result of the expansion of an object declaration with
+            --  an initial value featuring it. Is this the only case ???
+
+            --  For example:
+
+            --    Opaque : aliased Stream_Element_Array :=
+            --      Stream_Element_Array'Input (S);
+
+            elsif Attribute_Name (E) = Name_Input then
+
+               --  Return the level of the enclosing declaration
+
+               return Make_Level_Literal
+                        (Innermost_Master_Scope_Depth
+                          (Enclosing_Declaration (Expr)));
+
             --  Unchecked or unrestricted attributes have unlimited depth
 
             elsif Attribute_Name (E) in Name_Address
