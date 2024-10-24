@@ -100,8 +100,8 @@ package System.File_Control_Block with SPARK_Mode => Off is
       --  defaults at this level). The string is always null-terminated.
 
       Mode : File_Mode;
-      --  The file mode. No checks are made that the mode is consistent
-      --  with the form used to fopen the file.
+      --  The file mode. When sharing files, we check that the mode is
+      --  consistent with the already opened files.
 
       Is_Regular_File : Boolean;
       --  A flag indicating if the file is a regular file

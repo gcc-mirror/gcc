@@ -1042,6 +1042,11 @@ package body System.File_IO is
                      elsif Shared = Yes
                        and then P.Shared_Status = Yes
                      then
+                        if Mode /= P.Mode then
+                           raise Use_Error
+                             with "sharing file in different modes";
+                        end if;
+
                         Stream := P.Stream;
 
                         Record_AFCB;

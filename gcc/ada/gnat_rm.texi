@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 04, 2024
+GNAT Reference Manual , Nov 08, 2024
 
 AdaCore
 
@@ -22891,7 +22891,7 @@ One common use of file sharing in Ada 83 is the use of instantiations of
 Sequential_IO on the same file with different types, to achieve
 heterogeneous input-output.  Although this approach will work in GNAT if
 @code{shared=yes} is specified, it is preferable in Ada to use Stream_IO
-for this purpose (using the stream attributes)
+for this purpose (using the stream attributes).
 
 @node Filenames encoding,File content encoding,Shared Files,The Implementation of Standard I/O
 @anchor{gnat_rm/the_implementation_of_standard_i_o filenames-encoding}@anchor{2e2}@anchor{gnat_rm/the_implementation_of_standard_i_o id22}@anchor{2e3}
