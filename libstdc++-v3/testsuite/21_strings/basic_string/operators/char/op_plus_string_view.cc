@@ -44,6 +44,7 @@ struct convertible_to_lots
   constexpr operator std::string() const { return "convertible_to_lots3"; }
 };
 
+#if __cpp_lib_constexpr_string >= 201907 // constexpr std::string
 using namespace std::literals;
 static_assert( "costa "s + "marbella"sv == "costa marbella"s );
 static_assert( "costa "sv + "marbella"s == "costa marbella"s );
@@ -52,6 +53,7 @@ static_assert( "costa "s + convertible_to_string_view2{} == "costa convertible_t
 static_assert( "costa "s + convertible_to_string_view3{} == "costa convertible_to_sv3 non_const"s );
 static_assert( "costa "s + convertible_to_string_view_and_char_star{} == "costa convertible_to_sv_and_charstar1"s );
 static_assert( "costa "s + convertible_to_lots{} == "costa convertible_to_lots1"s );
+#endif // __cpp_lib_constexpr_string
 
 void
 test01()
