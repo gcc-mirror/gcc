@@ -12,7 +12,7 @@ struct tuple {
   void check_tuple_like() {
     tuple t;
     auto [v, r] = t; // { dg-warning "structured bindings" "" { target c++14_down } }
-    (void)[v, r] {   // { dg-warning "captured structured" "" { target c++17_down } }
+    (void)[v, r] {
         decltype(v) x;
     };
   }
