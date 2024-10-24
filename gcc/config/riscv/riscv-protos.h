@@ -805,6 +805,8 @@ extern bool riscv_use_divmod_expander (void);
 void riscv_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 extern bool
 riscv_option_valid_attribute_p (tree, tree, tree, int);
+extern bool
+riscv_process_target_attr (const char *, location_t);
 extern void
 riscv_override_options_internal (struct gcc_options *);
 extern void riscv_option_override (void);
