@@ -1,3 +1,28 @@
+2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117240_avx.c: New test.
+	* gcc.target/i386/pr117240_avx512f.c: New test.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-c++-common/Wsizeof-pointer-memaccess5.c: New test.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/116891
+	* gcc.dg/pr116891.c: New test.
+	* gcc.target/i386/fma-pr116891.c: New test.
+
 2024-10-22  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
