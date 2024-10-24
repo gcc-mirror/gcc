@@ -70,7 +70,7 @@ main()
   }
 #endif
 #if defined(__STDCPP_FLOAT128_T__) \
-    && (defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY128) \
+    && (defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128) \
 	|| defined(_GLIBCXX_HAVE_FLOAT128_MATH))
   {
     std::float128_t p[2] = {};
