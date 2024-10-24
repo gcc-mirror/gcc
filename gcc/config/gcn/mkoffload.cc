@@ -24,6 +24,7 @@
    This is not a complete assembler.  We presume the source is well
    formed from the compiler and can die horribly if it is not.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
