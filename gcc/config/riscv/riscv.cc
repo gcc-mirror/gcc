@@ -7693,6 +7693,10 @@ riscv_compute_frame_info (void)
 static bool
 riscv_can_inline_p (tree caller, tree callee)
 {
+  /* Do not inline when callee is versioned but caller is not.  */
+  if (DECL_FUNCTION_VERSIONED (callee) && ! DECL_FUNCTION_VERSIONED (caller))
+    return false;
+
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
 
