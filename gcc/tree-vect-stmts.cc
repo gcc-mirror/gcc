@@ -4292,7 +4292,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  return false;
 		}
 	      if (!expand_vec_cond_expr_p (clone_arg_vectype,
-					   arginfo[i].vectype, ERROR_MARK))
+					   arginfo[i].vectype))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
@@ -7425,7 +7425,7 @@ scan_store_can_perm_p (tree vectype, tree init,
 		  || !initializer_zerop (init))
 		{
 		  tree masktype = truth_type_for (vectype);
-		  if (!expand_vec_cond_expr_p (vectype, masktype, VECTOR_CST))
+		  if (!expand_vec_cond_expr_p (vectype, masktype))
 		    return -1;
 		  whole_vector_shift_kind = scan_store_kind_lshift_cond;
 		}
@@ -12432,8 +12432,7 @@ vectorizable_condition (vec_info *vinfo,
 	       && (masked
 		   || (!expand_vec_cmp_expr_p (comp_vectype, vec_cmp_type,
 					       cond_code)
-		       || !expand_vec_cond_expr_p (vectype, vec_cmp_type,
-						   ERROR_MARK))))
+		       || !expand_vec_cond_expr_p (vectype, vec_cmp_type))))
 	return false;
 
       if (slp_node

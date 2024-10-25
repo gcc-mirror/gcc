@@ -7418,8 +7418,7 @@ vect_reduction_update_partial_vector_usage (loop_vec_info loop_vinfo,
     }
   else if (reduc_type == FOLD_LEFT_REDUCTION
 	   && reduc_fn == IFN_LAST
-	   && !expand_vec_cond_expr_p (vectype_in, truth_type_for (vectype_in),
-				       SSA_NAME))
+	   && !expand_vec_cond_expr_p (vectype_in, truth_type_for (vectype_in)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

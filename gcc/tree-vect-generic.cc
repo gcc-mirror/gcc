@@ -1051,7 +1051,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
      VEC_COND_EXPR could be supported individually.  See PR109176.  */
   if (a_is_comparison
       && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (a))
-      && expand_vec_cond_expr_p (type, TREE_TYPE (a), SSA_NAME)
+      && expand_vec_cond_expr_p (type, TREE_TYPE (a))
       && expand_vec_cmp_expr_p (TREE_TYPE (a1), TREE_TYPE (a), code))
     return true;
 

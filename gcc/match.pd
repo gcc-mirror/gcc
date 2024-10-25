@@ -411,7 +411,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        tree ones = build_all_ones_cst (vec_cmp_type);
       }
       (if (expand_vec_cmp_expr_p (vec_cmp_type, vec_truth_type, LT_EXPR)
-	   && expand_vec_cond_expr_p (vec_cmp_type, vec_truth_type, LT_EXPR))
+	   && expand_vec_cond_expr_p (vec_cmp_type, vec_truth_type))
        (view_convert:type (vec_cond (lt:vec_truth_type
 				     (view_convert:vec_cmp_type @0)
 				     { zeros; })
@@ -5805,13 +5805,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (VECTOR_TYPE_P (type)
        && (TREE_CODE_CLASS (op) != tcc_comparison
 	   || types_match (type, TREE_TYPE (@1))
-	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0))
 	   || (optimize_vectors_before_lowering_p ()
 	       /* The following is optimistic on the side of non-support, we are
 		  missing the legacy vcond{,u,eq} cases.  Do this only when
 		  lowering will be able to fixup..  */
-	       && !expand_vec_cond_expr_p (TREE_TYPE (@1),
-					   TREE_TYPE (@0), ERROR_MARK))))
+	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
    (vec_cond @0 (op! @1 @3) (op! @2 @4))))
 
 /* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
@@ -5820,20 +5819,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (VECTOR_TYPE_P (type)
        && (TREE_CODE_CLASS (op) != tcc_comparison
 	   || types_match (type, TREE_TYPE (@1))
-	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0))
 	   || (optimize_vectors_before_lowering_p ()
-	       && !expand_vec_cond_expr_p (TREE_TYPE (@1),
-					   TREE_TYPE (@0), ERROR_MARK))))
+	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
    (vec_cond @0 (op! @1 @3) (op! @2 @3))))
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
   (if (VECTOR_TYPE_P (type)
        && (TREE_CODE_CLASS (op) != tcc_comparison
 	   || types_match (type, TREE_TYPE (@1))
-	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0))
 	   || (optimize_vectors_before_lowering_p ()
-	       && !expand_vec_cond_expr_p (TREE_TYPE (@1),
-					   TREE_TYPE (@0), ERROR_MARK))))
+	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
    (vec_cond @0 (op! @3 @1) (op! @3 @2)))))
 
 #if GIMPLE
