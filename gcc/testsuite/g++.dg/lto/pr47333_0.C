@@ -1,3 +1,6 @@
+/* "WARNING: lto.exp does not support dg-additional-options" */
+#pragma GCC diagnostic ignored "-Wtemplate-body"
+
 namespace std
 {
   typedef unsigned int size_t;
