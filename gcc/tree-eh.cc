@@ -76,7 +76,8 @@ add_stmt_to_eh_lp_fn (struct function *ifun, gimple *t, int num)
   if (!get_eh_throw_stmt_table (ifun))
     set_eh_throw_stmt_table (ifun, hash_map<gimple *, int>::create_ggc (31));
 
-  gcc_assert (!get_eh_throw_stmt_table (ifun)->put (t, num));
+  bool existed = get_eh_throw_stmt_table (ifun)->put (t, num);
+  gcc_assert (!existed);
 }
 
 /* Add statement T in the current function (cfun) to EH landing pad NUM.  */
