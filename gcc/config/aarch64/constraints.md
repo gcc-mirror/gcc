@@ -472,6 +472,12 @@
  (and (match_code "const_vector")
       (match_test "aarch64_simd_valid_and_imm (op)")))
 
+(define_constraint "De"
+  "@internal
+   A constraint that matches vector of immediates for xor."
+ (and (match_code "const_vector")
+      (match_test "aarch64_simd_valid_xor_imm (op)")))
+
 (define_constraint "Dn"
   "@internal
  A constraint that matches vector of immediates."
