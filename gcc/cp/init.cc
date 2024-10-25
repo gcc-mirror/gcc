@@ -408,7 +408,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
     {
       gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type)
 		  || errorcount != 0);
-	
+
       if (TREE_CODE (type) != UNION_TYPE)
 	{
 	  tree field;
@@ -3031,7 +3031,7 @@ maybe_wrap_new_for_constexpr (tree alloc_call, tree elt_type, tree cookie_size)
   if (current_function_decl != NULL_TREE
       && !DECL_DECLARED_CONSTEXPR_P (current_function_decl))
     return alloc_call;
-  
+
   tree call_expr = extract_call_expr (alloc_call);
   if (call_expr == error_mark_node)
     return alloc_call;
@@ -4162,7 +4162,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
       /* This size won't actually be used.  */
       size_exp = size_one_node;
       goto no_destructor;
-    } 
+    }
 
   size_exp = size_in_bytes (type);
 

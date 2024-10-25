@@ -260,7 +260,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 
       if (HOST_STAT_FOR_64BIT_INODES (cur->name, &st))
 	{
-	  /* Dirs that don't exist or have denied permissions are 
+	  /* Dirs that don't exist or have denied permissions are
 	     silently ignored, unless verbose.  */
 	  if ((errno != ENOENT) && (errno != EPERM))
 	    cpp_errno (pfile, CPP_DL_ERROR, cur->name);

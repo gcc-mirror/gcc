@@ -625,7 +625,7 @@ rtx_to_double_int (const_rtx cst)
     }
   else
     gcc_unreachable ();
-  
+
   return r;
 }
 #endif
@@ -4403,7 +4403,7 @@ set_insn_deleted (rtx_insn *insn)
 /* Unlink INSN from the insn chain.
 
    This function knows how to handle sequences.
-   
+
    This function does not invalidate data flow information associated with
    INSN (i.e. does not call df_insn_delete).  That makes this function
    usable for only disconnecting an insn from the chain, and re-emit it

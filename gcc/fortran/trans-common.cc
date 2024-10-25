@@ -16,22 +16,22 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */     
+<http://www.gnu.org/licenses/>.  */
 
 /* The core algorithm is based on Andy Vaught's g95 tree.  Also the
    way to build UNION_TYPE is borrowed from Richard Henderson.
- 
+
    Transform common blocks.  An integral part of this is processing
    equivalence variables.  Equivalenced variables that are not in a
    common block end up in a private block of their own.
 
    Each common block or local equivalence list is declared as a union.
    Variables within the block are represented as a field within the
-   block with the proper offset. 
- 
+   block with the proper offset.
+
    So if two variables are equivalenced, they just point to a common
    area in memory.
- 
+
    Mathematically, laying out an equivalence block is equivalent to
    solving a linear system of equations.  The matrix is usually a
    sparse matrix in which each row contains all zero elements except
@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
    overdetermined, underdetermined or have a unique solution.  If the
    system is inconsistent, the program is not standard conforming.
    The solution vector is integral, since all of the pivots are +1 or -1.
- 
+
    How we lay out an equivalence block is a little less complicated.
    In an equivalence list with n elements, there are n-1 conditions to
    be satisfied.  The conditions partition the variables into what we
@@ -51,43 +51,43 @@ along with GCC; see the file COPYING3.  If not see
    common block is made up of a series of segments that are joined one
    after the other.  In the linear system, a segment is a block
    diagonal.
- 
+
    To lay out a segment we first start with some variable and
    determine its length.  The first variable is assumed to start at
    offset one and extends to however long it is.  We then traverse the
    list of equivalences to find an unused condition that involves at
    least one of the variables currently in the segment.
- 
+
    Each equivalence condition amounts to the condition B+b=C+c where B
    and C are the offsets of the B and C variables, and b and c are
    constants which are nonzero for array elements, substrings or
    structure components.  So for
- 
+
      EQUIVALENCE(B(2), C(3))
    we have
      B + 2*size of B's elements = C + 3*size of C's elements.
- 
+
    If B and C are known we check to see if the condition already
    holds.  If B is known we can solve for C.  Since we know the length
    of C, we can see if the minimum and maximum extents of the segment
    are affected.  Eventually, we make a full pass through the
    equivalence list without finding any new conditions and the segment
    is fully specified.
- 
+
    At this point, the segment is added to the current common block.
    Since we know the minimum extent of the segment, everything in the
    segment is translated to its position in the common block.  The
    usual case here is that there are no equivalence statements and the
    common block is series of segments with one variable each, which is
    a diagonal matrix in the matrix formulation.
- 
+
    Each segment is described by a chain of segment_info structures.  Each
    segment_info structure describes the extents of a single variable within
    the segment.  This list is maintained in the order the elements are
    positioned within the segment.  If two elements have the same starting
    offset the smaller will come first.  If they also have the same size their
-   ordering is undefined. 
-   
+   ordering is undefined.
+
    Once all common blocks have been created, the list of equivalences
    is examined for still-unused equivalence conditions.  We create a
    block for each merged equivalence list.  */
@@ -543,7 +543,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 
 /* Return a field that is the size of the union, if an equivalence has
    overlapping initializers.  Merge the initializers into a single
-   initializer for this new field, then free the old ones.  */ 
+   initializer for this new field, then free the old ones.  */
 
 static tree
 get_init_field (segment_info *head, tree union_type, tree *field_init,
@@ -598,7 +598,7 @@ get_init_field (segment_info *head, tree union_type, tree *field_init,
 			      &chk[s->offset],
 			     (size_t)s->length);
       }
-  
+
   for (i = 0; i < length; i++)
     CONSTRUCTOR_APPEND_ELT (v, NULL, build_int_cst (type, data[i]));
 
@@ -847,7 +847,7 @@ get_mpz (gfc_expr *e)
    array element number (zero based). Bounds and elements are guaranteed
    to be constants.  If something goes wrong we generate an error and
    return zero.  */
- 
+
 static HOST_WIDE_INT
 element_number (gfc_array_ref *ar)
 {
@@ -863,7 +863,7 @@ element_number (gfc_array_ref *ar)
   mpz_init (n);
 
   for (i = 0; i < rank; i++)
-    { 
+    {
       if (ar->dimen_type[i] != DIMEN_ELEMENT)
         gfc_internal_error ("element_number(): Bad dimension type");
 
@@ -871,10 +871,10 @@ element_number (gfc_array_ref *ar)
 	mpz_sub (n, *get_mpz (ar->start[i]), *get_mpz (as->lower[i]));
       else
 	mpz_sub_ui (n, *get_mpz (ar->start[i]), 1);
- 
+
       mpz_mul (n, n, multiplier);
       mpz_add (offset, offset, n);
- 
+
       if (as && as->upper[i] && as->lower[i])
 	{
 	  mpz_sub (extent, *get_mpz (as->upper[i]), *get_mpz (as->lower[i]));
@@ -882,20 +882,20 @@ element_number (gfc_array_ref *ar)
 	}
       else
 	mpz_set_ui (extent, 0);
- 
+
       if (mpz_sgn (extent) < 0)
         mpz_set_ui (extent, 0);
- 
+
       mpz_mul (multiplier, multiplier, extent);
-    } 
- 
+    }
+
   i = mpz_get_ui (offset);
- 
+
   mpz_clear (multiplier);
   mpz_clear (offset);
   mpz_clear (extent);
   mpz_clear (n);
- 
+
   return i;
 }
 
@@ -964,7 +964,7 @@ new_condition (segment_info *v, gfc_equiv *eq1, gfc_equiv *eq2)
 
   a = get_segment_info (eq2->expr->symtree->n.sym,
 			v->offset + offset1 - offset2);
- 
+
   current_segment = add_segments (current_segment, a);
 }
 
@@ -1337,7 +1337,7 @@ finish_equivalences (gfc_namespace *ns)
   for (z = ns->equiv; z; z = z->next)
     for (y = z->eq; y; y = y->eq)
       {
-        if (y->used) 
+        if (y->used)
 	  continue;
         sym = z->expr->symtree->n.sym;
         current_segment = get_segment_info (sym, 0);

@@ -204,7 +204,7 @@ c_finish_omp_taskyield (location_t loc)
 
 
 /* Complete a #pragma omp atomic construct.  For CODE OMP_ATOMIC
-   the expression to be implemented atomically is LHS opcode= RHS. 
+   the expression to be implemented atomically is LHS opcode= RHS.
    For OMP_ATOMIC_READ V = LHS, for OMP_ATOMIC_CAPTURE_{NEW,OLD} LHS
    opcode= RHS with the new or old content of LHS returned.
    LOC is the location of the atomic statement.  The value returned
@@ -1337,7 +1337,7 @@ c_omp_is_loop_iterator (tree decl, struct c_omp_check_loop_iv_data *d)
 /* Helper function called via walk_tree, to diagnose uses
    of associated loop IVs inside of lb, b and incr expressions
    of OpenMP loops.  */
-   
+
 static tree
 c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
 {

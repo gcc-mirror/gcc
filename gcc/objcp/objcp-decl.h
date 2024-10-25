@@ -1,4 +1,4 @@
-/* Process the ObjC-specific declarations and variables for 
+/* Process the ObjC-specific declarations and variables for
    the Objective-C++ compiler.
    Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
@@ -32,7 +32,7 @@ extern int objcp_comptypes (tree, tree);
 extern tree objcp_begin_compound_stmt (int);
 extern tree objcp_end_compound_stmt (tree, int);
 
-/* Now "cover up" the corresponding C++ functions if required (NB: the 
+/* Now "cover up" the corresponding C++ functions if required (NB: the
    OBJCP_ORIGINAL_FUNCTION macro, shown below, can still be used to
    invoke the original C++ functions if needed).  */
 #ifdef OBJCP_REMAP_FUNCTIONS

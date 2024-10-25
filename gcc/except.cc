@@ -3037,7 +3037,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
    SECTION refers to the table associated with the hot part while value 1
    refers to the table associated with the cold part.  If the function has
    not been partitioned, value 0 refers to the single exception table.  */
- 
+
 static void
 output_one_function_exception_table (int section)
 {

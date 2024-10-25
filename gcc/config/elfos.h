@@ -43,10 +43,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 
-/* The biggest alignment supported by ELF in bits. 32-bit ELF 
-   supports section alignment up to (0x80000000 * 8), while 
-   64-bit ELF supports (0x8000000000000000 * 8). If this macro 
-   is not defined, the default is the largest alignment supported 
+/* The biggest alignment supported by ELF in bits. 32-bit ELF
+   supports section alignment up to (0x80000000 * 8), while
+   64-bit ELF supports (0x8000000000000000 * 8). If this macro
+   is not defined, the default is the largest alignment supported
    by 32-bit ELF and representable on a 32-bit host. Use this
    macro to limit the alignment which can be specified using
    the `__attribute__ ((aligned (N)))' construct.  */

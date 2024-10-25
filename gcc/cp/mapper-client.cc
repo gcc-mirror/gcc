@@ -268,7 +268,7 @@ module_client::open_module_client (location_t loc, const char *o,
 			  c = new module_client (fd, fd);
 		      }
 		  }
-		
+
 	      }
 	      break;
 	    }
@@ -297,7 +297,7 @@ module_client::open_module_client (location_t loc, const char *o,
 		  line = l;
 		errmsg = "reading";
 	      }
-	      
+
 	    close (fd);
 	  }
 	}

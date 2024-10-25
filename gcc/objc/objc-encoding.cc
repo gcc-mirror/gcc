@@ -844,7 +844,7 @@ encode_field_decl (tree field_decl)
   encode_field (field_decl,
 		obstack_object_size (&util_obstack),
 		OBJC_ENCODE_DONT_INLINE_DEFS);
-  
+
   /* Null terminate string.  */
   obstack_1grow (&util_obstack, 0);
 

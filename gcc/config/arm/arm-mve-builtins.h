@@ -401,7 +401,7 @@ public:
   bool require_integer_immediate (unsigned int);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);
-  
+
   bool check_num_arguments (unsigned int);
   bool check_gp_argument (unsigned int, unsigned int &, unsigned int &);
   tree resolve_unary (type_class_index = SAME_TYPE_CLASS,

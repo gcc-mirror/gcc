@@ -4067,7 +4067,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
     }
 
   if (fmt->signbit_ro >= 0
-      && (CONST_DOUBLE_AS_FLOAT_P (op0) 
+      && (CONST_DOUBLE_AS_FLOAT_P (op0)
 	  || (optab_handler (neg_optab, mode) != CODE_FOR_nothing
 	      && optab_handler (abs_optab, mode) != CODE_FOR_nothing)))
     {
@@ -4804,7 +4804,7 @@ validate_test_and_branch (tree val, rtx *ptest, machine_mode *pmode, optab *res)
    COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).
    It will be potentially converted into an unsigned variant based on
    UNSIGNEDP to select a proper jump instruction.
-   
+
    PROB is the probability of jumping to LABEL.  If the comparison is against
    zero then VAL contains the expression from which the non-zero RTL is
    derived.  */
@@ -6863,7 +6863,7 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
 /* This function tries to emit an atomic_exchange intruction.  VAL is written
    to *MEM using memory model MODEL. The previous contents of *MEM are returned,
    using TARGET if possible.  */
-   
+
 static rtx
 maybe_emit_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
 {
@@ -6904,7 +6904,7 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
   icode = optab_handler (sync_lock_test_and_set_optab, mode);
 
   /* Legacy sync_lock_test_and_set is an acquire barrier.  If the pattern
-     exists, and the memory model is stronger than acquire, add a release 
+     exists, and the memory model is stronger than acquire, add a release
      barrier before the instruction.  */
 
   if (is_mm_seq_cst (model) || is_mm_release (model) || is_mm_acq_rel (model))
@@ -6943,12 +6943,12 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
   return NULL_RTX;
 }
 
-/* This function tries to implement an atomic exchange operation using a 
+/* This function tries to implement an atomic exchange operation using a
    compare_and_swap loop. VAL is written to *MEM.  The previous contents of
    *MEM are returned, using TARGET if possible.  No memory model is required
    since a compare_and_swap loop is seq-cst.  */
 
-static rtx 
+static rtx
 maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
 {
   machine_mode mode = GET_MODE (mem);
@@ -6998,9 +6998,9 @@ maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 
 /* This function expands the legacy _sync_lock test_and_set operation which is
    generally an atomic exchange.  Some limited targets only allow the
-   constant 1 to be stored.  This is an ACQUIRE operation. 
+   constant 1 to be stored.  This is an ACQUIRE operation.
 
-   TARGET is an optional place to stick the return value.  
+   TARGET is an optional place to stick the return value.
    MEM is where VAL is stored.  */
 
 rtx
@@ -7330,7 +7330,7 @@ expand_asm_reg_clobber_mem_blockage (HARD_REG_SET regs)
   emit_insn (gen_rtx_PARALLEL (VOIDmode, v));
 }
 
-/* This routine will either emit the mem_thread_fence pattern or issue a 
+/* This routine will either emit the mem_thread_fence pattern or issue a
    sync_synchronize to generate a fence for memory model MEMMODEL.  */
 
 void
@@ -7520,7 +7520,7 @@ struct atomic_op_functions
 };
 
 
-/* Fill in structure pointed to by OP with the various optab entries for an 
+/* Fill in structure pointed to by OP with the various optab entries for an
    operation of type CODE.  */
 
 static void
@@ -7594,7 +7594,7 @@ get_atomic_op_for_code (struct atomic_op_functions *op, enum rtx_code code)
 
 /* See if there is a more optimal way to implement the operation "*MEM CODE VAL"
    using memory order MODEL.  If AFTER is true the operation needs to return
-   the value of *MEM after the operation, otherwise the previous value.  
+   the value of *MEM after the operation, otherwise the previous value.
    TARGET is an optional place to place the result.  The result is unused if
    it is const0_rtx.
    Return the result if there is a better sequence, otherwise NULL_RTX.  */
@@ -7627,7 +7627,7 @@ maybe_optimize_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
   return NULL_RTX;
 }
 
-/* Try to emit an instruction for a specific operation varaition. 
+/* Try to emit an instruction for a specific operation varaition.
    OPTAB contains the OP functions.
    TARGET is an optional place to return the result. const0_rtx means unused.
    MEM is the memory location to operate on.
@@ -7636,7 +7636,7 @@ maybe_optimize_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
    MODEL is the memory model, if used.
    AFTER is true if the returned result is the value after the operation.  */
 
-static rtx 
+static rtx
 maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
 	       rtx val, bool use_memmodel, enum memmodel model, bool after)
 {
@@ -7690,17 +7690,17 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
     return (target == const0_rtx ? const0_rtx : ops[0].value);
 
   return NULL_RTX;
-} 
+}
 
 
 /* This function expands an atomic fetch_OP or OP_fetch operation:
    TARGET is an option place to stick the return value.  const0_rtx indicates
-   the result is unused. 
+   the result is unused.
    atomically fetch MEM, perform the operation with VAL and return it to MEM.
    CODE is the operation being performed (OP)
    MEMMODEL is the memory model variant to use.
    AFTER is true to return the result of the operation (OP_fetch).
-   AFTER is false to return the value before the operation (fetch_OP).  
+   AFTER is false to return the value before the operation (fetch_OP).
 
    This function will *only* generate instructions if there is a direct
    optab. No compare and swap loops or libcalls will be generated. */
@@ -7789,7 +7789,7 @@ expand_atomic_fetch_op_no_fallback (rtx target, rtx mem, rtx val,
 
 /* This function expands an atomic fetch_OP or OP_fetch operation:
    TARGET is an option place to stick the return value.  const0_rtx indicates
-   the result is unused. 
+   the result is unused.
    atomically fetch MEM, perform the operation with VAL and return it to MEM.
    CODE is the operation being performed (OP)
    MEMMODEL is the memory model variant to use.
@@ -7811,7 +7811,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 
   result = expand_atomic_fetch_op_no_fallback (target, mem, val, code, model,
 					       after);
-  
+
   if (result)
     return result;
 
@@ -7883,7 +7883,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
       start_sequence ();
 
       /* If the result is used, get a register for it.  */
-      if (!unused_result) 
+      if (!unused_result)
         {
 	  if (!target || !register_operand (target, mode))
 	    target = gen_reg_rtx (mode);
@@ -7902,7 +7902,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	  t1 = expand_simple_unop (mode, code, t1, NULL_RTX, true);
 	}
       else
-	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX, true, 
+	t1 = expand_simple_binop (mode, code, t1, val, NULL_RTX, true,
 				  OPTAB_LIB_WIDEN);
 
       /* For after, copy the value now.  */

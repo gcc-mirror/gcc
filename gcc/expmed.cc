@@ -149,7 +149,7 @@ init_expmed_one_conv (struct init_expmed_rtl *all, scalar_int_mode to_mode,
   if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT
       && pow2p_hwi (from_size))
     from_size --;
-  
+
   /* Assume cost of zero-extend and sign-extend is the same.  */
   which = (to_size < from_size ? all->trunc : all->zext);
 
@@ -1928,7 +1928,7 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
       if (target == 0 || !REG_P (target) || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
 
-      /* In case we're about to clobber a base register or something 
+      /* In case we're about to clobber a base register or something
 	 (see gcc.c-torture/execute/20040625-1.c).   */
       if (reg_mentioned_p (target, op0))
 	target = gen_reg_rtx (mode);
@@ -4405,7 +4405,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   /* Only deduct something for a REM if the last divide done was
      for a different constant.   Then set the constant of the last
      divide.  */
-  max_cost = (unsignedp 
+  max_cost = (unsignedp
 	      ? udiv_cost (speed, compute_mode)
 	      : sdiv_cost (speed, compute_mode));
   if (rem_flag && ! (last_div_const != 0 && op1_is_constant

@@ -20,23 +20,23 @@ along with GCC; see the file COPYING3.  If not see
    Fortran 2003 ISO_C_BINDING intrinsic module.  */
 
 #ifndef NAMED_INTCST
-# define NAMED_INTCST(a,b,c,d) 
+# define NAMED_INTCST(a,b,c,d)
 #endif
 
 #ifndef NAMED_REALCST
-# define NAMED_REALCST(a,b,c,d) 
+# define NAMED_REALCST(a,b,c,d)
 #endif
 
 #ifndef NAMED_CMPXCST
-# define NAMED_CMPXCST(a,b,c,d) 
+# define NAMED_CMPXCST(a,b,c,d)
 #endif
 
 #ifndef NAMED_LOGCST
-# define NAMED_LOGCST(a,b,c) 
+# define NAMED_LOGCST(a,b,c)
 #endif
 
 #ifndef NAMED_CHARKNDCST
-# define NAMED_CHARKNDCST(a,b,c) 
+# define NAMED_CHARKNDCST(a,b,c)
 #endif
 
 #ifndef NAMED_FUNCTION
@@ -54,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 /* The arguments to NAMED_*CST are:
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
-     -- the value it has, for use in trans-types.cc  
+     -- the value it has, for use in trans-types.cc
      -- the standard that supports this type  */
 
 NAMED_INTCST (ISOCBINDING_INT, "c_int", gfc_c_int_kind, GFC_STD_F2003)
@@ -202,10 +202,10 @@ NAMED_LOGCST (ISOCBINDING_BOOL, "c_bool", \
 NAMED_CHARKNDCST (ISOCBINDING_CHAR, "c_char", gfc_default_character_kind)
 
 #ifndef NAMED_CHARCST
-# define NAMED_CHARCST(a,b,c) 
+# define NAMED_CHARCST(a,b,c)
 #endif
 
-/* Use langhooks to deal with host to target translations.  */ 
+/* Use langhooks to deal with host to target translations.  */
 NAMED_CHARCST (ISOCBINDING_NULL_CHAR, "c_null_char", \
 	       lang_hooks.to_target_charset ('\0'))
 NAMED_CHARCST (ISOCBINDING_ALERT, "c_alert", \
@@ -224,7 +224,7 @@ NAMED_CHARCST (ISOCBINDING_VERTICAL_TAB, "c_vertical_tab", \
 	       lang_hooks.to_target_charset ('\v'))
 
 #ifndef DERIVED_TYPE
-# define DERIVED_TYPE(a,b,c) 
+# define DERIVED_TYPE(a,b,c)
 #endif
 
 DERIVED_TYPE (ISOCBINDING_PTR, "c_ptr", \

@@ -18,7 +18,7 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
-   
+
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
@@ -77,7 +77,7 @@ extern int mn10300_protect_label;
         asm_fprintf (FILE, "+");		\
       asm_fprintf (FILE, "%U%s", real_name);	\
     }						\
-  while (0)           
+  while (0)
 
 #undef SIZE_TYPE
 #undef PTRDIFF_TYPE

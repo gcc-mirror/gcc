@@ -5930,7 +5930,7 @@ region_model::update_for_return_gcall (const gcall *call_stmt,
   pop_frame (lhs, NULL, ctxt, call_stmt);
 }
 
-/* Extract calling information from the superedge and update the model for the 
+/* Extract calling information from the superedge and update the model for the
    call  */
 
 void
@@ -5941,7 +5941,7 @@ region_model::update_for_call_superedge (const call_superedge &call_edge,
   update_for_gcall (call_stmt, ctxt, call_edge.get_callee_function ());
 }
 
-/* Extract calling information from the return superedge and update the model 
+/* Extract calling information from the return superedge and update the model
    for the returning call */
 
 void

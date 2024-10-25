@@ -1850,7 +1850,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       target_node
 	= ix86_valid_target_attribute_tree (decl, attrs, &global_options,
 					    &global_options_set, 0);
-    
+
       gcc_assert (target_node);
       if (target_node == error_mark_node)
 	return 0;
@@ -1933,14 +1933,14 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 
       cl_target_option_restore (&global_options, &global_options_set,
 				&cur_target);
-	
+
       if (predicate_list && arg_str == NULL)
 	{
 	  error_at (DECL_SOURCE_LOCATION (decl),
 		    "no dispatcher found for the versioning attributes");
 	  return 0;
 	}
-    
+
       if (predicate_list)
 	{
 	  predicate_decl = ix86_builtins [(int) builtin_fn];
@@ -2008,7 +2008,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       *predicate_list = predicate_chain;
     }
 
-  return priority; 
+  return priority;
 }
 
 /* This builds the processor_model struct type defined in

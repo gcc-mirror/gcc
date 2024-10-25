@@ -1257,14 +1257,14 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   /* [class.access]
 
      In the case of overloaded function names, access control is
-     applied to the function selected by overloaded resolution.  
+     applied to the function selected by overloaded resolution.
 
      We cannot check here, even if RVAL is only a single non-static
      member function, since we do not know what the "this" pointer
      will be.  For:
 
         class A { protected: void f(); };
-        class B : public A { 
+        class B : public A {
           void g(A *p) {
             f(); // OK
             p->f(); // Not OK.
@@ -2669,7 +2669,7 @@ lookup_conversions (tree type)
   lookup_conversions_r (TYPE_BINFO (type), 0, 0, NULL_TREE, NULL_TREE, &convs);
 
   tree list = NULL_TREE;
-  
+
   /* Flatten the list-of-lists */
   for (; convs; convs = TREE_CHAIN (convs))
     {

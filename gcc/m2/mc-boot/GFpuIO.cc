@@ -133,7 +133,7 @@ extern "C" void FpuIO_ReadReal (double *x)
   struct ReadReal__T1_a { char array[MaxLineLength+1]; };
   ReadReal__T1 a;
 
-  /* 
+  /*
 #undef GM2_DEBUG_FPUIO
 if defined(GM2_DEBUG_FPUIO)
 #  define InitString(X) InitStringDB(X, __FILE__, __LINE__)

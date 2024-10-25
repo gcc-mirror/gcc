@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 enum stringop_alg
 {
 #undef DEF_ALG
-#define DEF_ALG(alg, name) alg, 
+#define DEF_ALG(alg, name) alg,
 
 #include "stringop.def"
 last_alg

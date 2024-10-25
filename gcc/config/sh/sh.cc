@@ -377,7 +377,7 @@ TARGET_GNU_ATTRIBUTES (sh_attribute_table,
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P sh_print_operand_punct_valid_p
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA sh_asm_output_addr_const_extra
- 
+
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE sh_output_function_epilogue
 
@@ -814,7 +814,7 @@ register_sh_passes (void)
 		 PASS_POS_INSERT_BEFORE, "sched2", 1);
 }
 
-/* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
+/* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override
    various options, and do some machine dependent initialization.  */
 static void
 sh_option_override (void)
@@ -1012,7 +1012,7 @@ sh_override_options_after_change (void)
       fetched as a pair from a longword boundary.  For size use 16 bit
       alignment to get more compact code.
       Aligning all jumps increases the code size, even if it might
-      result in slightly faster code.  Thus, it is set to the smallest 
+      result in slightly faster code.  Thus, it is set to the smallest
       alignment possible if not specified by the user.  */
   if (flag_align_loops && !str_align_loops)
     str_align_loops = optimize_size ? "2" : "4";
@@ -2265,7 +2265,7 @@ sh_eval_treg_value (rtx op)
     t = 1;
   else
     return -1;
-  
+
   return t ^ (cmpval == cmpop);
 }
 
@@ -2543,7 +2543,7 @@ output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 	     We punt for now, since this is likely very rare.  */
 	  gcc_assert (!REG_P (XEXP (inside, 1)));
 	  break;
-	  
+
 	case LABEL_REF:
 	  return       "mov.l	%1,%0" "\n"
 		 "	mov.l	%1+4,%T0";
@@ -3016,7 +3016,7 @@ bool
 sh_ashlsi_clobbers_t_reg_p (rtx shift_amount)
 {
   gcc_assert (CONST_INT_P (shift_amount));
-  
+
   const int shift_amount_i = INTVAL (shift_amount) & 31;
 
   /* Special case for shift count of 31: use and-rotl sequence.  */
@@ -3036,7 +3036,7 @@ sh_lshrsi_clobbers_t_reg_p (rtx shift_amount)
 
   /* For right shifts the constant might be negative.  */
   const int shift_amount_i = std::abs (INTVAL (shift_amount)) & 31;
- 
+
   /* Special case for shift count of 31: use shll-movt sequence.  */
   if (shift_amount_i == 31)
     return true;
@@ -3046,7 +3046,7 @@ sh_lshrsi_clobbers_t_reg_p (rtx shift_amount)
 }
 
 /* Return true if it is potentially beneficial to use a dynamic shift
-   instruction (shad / shar) instead of a combination of 1/2/8/16 
+   instruction (shad / shar) instead of a combination of 1/2/8/16
    shift instructions for the specified shift count.
    If dynamic shifts are not available, always return false.  */
 bool
@@ -3240,7 +3240,7 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
       /* The lower-subreg pass decides whether to split multi-word regs
 	 into individual regs by looking at the cost for a SET of certain
 	 modes with the following patterns:
-	   (set (reg) (reg)) 
+	   (set (reg) (reg))
 	   (set (reg) (const_int 0))
 	 On machines that support vector-move operations a multi-word move
 	 is the same cost as individual reg move.  On SH there is no
@@ -3336,8 +3336,8 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 		   || GET_MODE (XEXP (x, 0)) == HImode))
 	{
 	  /* Handle SH2A's movu.b and movu.w insn.  */
-	  *total = sh_address_cost (XEXP (XEXP (x, 0), 0), 
-				    GET_MODE (XEXP (x, 0)), 
+	  *total = sh_address_cost (XEXP (XEXP (x, 0), 0),
+				    GET_MODE (XEXP (x, 0)),
 				    MEM_ADDR_SPACE (XEXP (x, 0)), speed)
 		   + COSTS_N_INSNS (1);
 	  return true;
@@ -3352,7 +3352,7 @@ sh_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	  rtx xx = XVECEXP (x, 0, i);
 	  if (GET_CODE (xx) == SET && MEM_P (XEXP (xx, 0)))
 	    {
-	      *total = sh_address_cost (XEXP (XEXP (xx, 0), 0), 
+	      *total = sh_address_cost (XEXP (XEXP (xx, 0), 0),
 					GET_MODE (XEXP (xx, 0)),
 					MEM_ADDR_SPACE (XEXP (xx, 0)), speed)
 		       + COSTS_N_INSNS (1);
@@ -3581,7 +3581,7 @@ sh_max_mov_insn_displacement (machine_mode mode, bool consider_sh2a)
       const int mov_insn_sz = mov_insn_size (mode, consider_sh2a);
       const int mode_sz = GET_MODE_SIZE (mode);
       int r = 15 * mov_insn_sz * disp_scale;
-    
+
       /* If the mov insn will be split into multiple loads/stores, the
 	 maximum possible displacement is a bit smaller.  */
       if (mode_sz > mov_insn_sz)
@@ -3651,7 +3651,7 @@ sh_address_cost (rtx x, machine_mode mode,
       return 3;
     }
 
-  /* 'reg + reg' addressing.  Account a slightly higher cost because of 
+  /* 'reg + reg' addressing.  Account a slightly higher cost because of
      increased pressure on R0.  */
   if (GET_CODE (x) == PLUS && ! CONSTANT_P (XEXP (x, 1)))
     return 3;
@@ -5231,7 +5231,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
 	from = PREV_INSN (from);
 
       /* Don't emit a constant table int the middle of global pointer setting,
-	 since that that would move the addressing base GOT into another table. 
+	 since that that would move the addressing base GOT into another table.
 	 We need the first mov instruction before the _GLOBAL_OFFSET_TABLE_
 	 in the pool anyway, so just move up the whole constant pool.
 
@@ -6065,7 +6065,7 @@ sh_reorg (void)
 		 later insn.  */
 
 	      /* ??? We shouldn't have to use FOUNDINSN here.
-		 This dates back to when we used LOG_LINKS to find 
+		 This dates back to when we used LOG_LINKS to find
 		 the most recent insn which sets the register.  */
 
 	      if (foundinsn
@@ -6765,7 +6765,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 	  if (temp < 0)
 	    {
 	      rtx adj_reg, tmp_reg, mem;
-	      
+
 	      /* If we reached here, the most likely case is the (sibcall)
 		 epilogue.  Put a special push/pop sequence for such case as
 		 the last resort.  This looks lengthy but would not be problem
@@ -6776,7 +6776,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 		  r5 have been reserved as fixed registers or assigned
 		  as global registers, and they change during an
 		  interrupt.  There are possible ways to handle this:
-		     
+
 		  - If we are adjusting the frame pointer (r14), we can do
 		    with a single temp register and an ordinary push / pop
 		    on the stack.
@@ -7274,7 +7274,7 @@ sh_expand_epilogue (bool sibcall_p)
 	/* For an ISR with RESBANK attribute assigned, don't pop PR
 	   register.  */
       if (TEST_HARD_REG_BIT (live_regs_mask, PR_REG)
-	  && !sh_cfun_resbank_handler_p ())	
+	  && !sh_cfun_resbank_handler_p ())
 	{
 	  if (!frame_pointer_needed)
 	    emit_insn (gen_blockage ());
@@ -7334,7 +7334,7 @@ sh_expand_epilogue (bool sibcall_p)
 	    fpscr_deferred = true;
 	  /* For an ISR with RESBANK attribute assigned, don't pop
 	     following registers, R0-R14, MACH, MACL and GBR.  */
-	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j) 
+	  else if (j != PR_REG && TEST_HARD_REG_BIT (live_regs_mask, j)
 		   && ! (sh_cfun_resbank_handler_p ()
 			 && ((j >= FIRST_GENERAL_REG
 			      && j < LAST_GENERAL_REG)
@@ -9195,7 +9195,7 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED, rtx reg)
    In some cases it is possible that a requested offset might seem unaligned
    or inappropriate for the mode size, like offset = 2 and mode size = 4.
    This is compensated by adjusting the base address so that the effective
-   address of the displacement move insn will be aligned. 
+   address of the displacement move insn will be aligned.
 
    This is not the best possible way of rebasing the base address, as it
    does not look at other present displacement addressings around it.
@@ -10411,7 +10411,7 @@ sh_vector_mode_supported_p (machine_mode mode ATTRIBUTE_UNUSED)
 bool
 sh_frame_pointer_required (void)
 {
-/* If needed override this in other tm.h files to cope with various OS 
+/* If needed override this in other tm.h files to cope with various OS
    lossage requiring a frame pointer.  */
   if (SUBTARGET_FRAME_POINTER_REQUIRED)
     return true;
@@ -11399,14 +11399,14 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	 <= sh_max_mov_insn_displacement (mode, false))
     return R0_REGS;
 
-  /* When reload is trying to address a QImode or HImode subreg on the stack, 
+  /* When reload is trying to address a QImode or HImode subreg on the stack,
      force any subreg byte into R0_REGS, as this is going to become a
      displacement address.
      We could restrict this to SUBREG_BYTE (x) > 0, but if the actual reg
      is on the stack, the memref to it might already require a displacement
      and that has to be added to the final address.  At this point we don't
      know the cumulative displacement so we assume the worst case.  */
-  if ((mode == QImode || mode == HImode) && rclass != R0_REGS 
+  if ((mode == QImode || mode == HImode) && rclass != R0_REGS
       && GET_CODE (x) == SUBREG && true_regnum (x) == -1)
     return R0_REGS;
 
@@ -11445,7 +11445,7 @@ sh_legitimize_address_displacement (rtx *offset1, rtx *offset2,
       *offset2 = adj.mov_disp;
       return true;
     }
- 
+
   return false;
 }
 
@@ -11595,7 +11595,7 @@ base_reg_disp::base_reg_disp (rtx br, disp_t d)
 : reg_ (br), disp_ (d)
 {
 }
- 
+
 inline bool
 base_reg_disp::is_reg (void) const
 {
@@ -11940,7 +11940,7 @@ sh_is_logical_t_store_expr (rtx op, rtx_insn* insn)
 	      op_is_t_count++;
 	}
     }
-  
+
   return op_is_t_count == 2;
 }
 

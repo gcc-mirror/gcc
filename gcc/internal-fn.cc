@@ -1054,7 +1054,7 @@ expand_ubsan_result_store (tree lhs, rtx target, scalar_int_mode mode,
 			       profile_probability::very_unlikely ());
     }
   if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
-    /* If this is a scalar in a register that is stored in a wider mode   
+    /* If this is a scalar in a register that is stored in a wider mode
        than the declared mode, compute the result into its declared mode
        and then convert to the wider mode.  Our value is the computed
        expression.  */
@@ -1405,7 +1405,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 		&& JUMP_P (last)
 		&& any_condjump_p (last)
 		&& !find_reg_note (last, REG_BR_PROB, 0))
-	      add_reg_br_prob_note (last, 
+	      add_reg_br_prob_note (last,
 				    profile_probability::very_unlikely ());
 	    emit_jump (done_label);
 	    goto do_error_label;
@@ -1555,7 +1555,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))
-	    add_reg_br_prob_note (last, 
+	    add_reg_br_prob_note (last,
 				  profile_probability::very_unlikely ());
 	  emit_jump (done_label);
         }
@@ -1614,7 +1614,7 @@ can_widen_mult_without_libcall (scalar_int_mode wmode, scalar_int_mode mode,
   if (find_widening_optab_handler (umul_widen_optab, wmode, mode)
       != CODE_FOR_nothing)
     return true;
-    
+
   if (find_widening_optab_handler (smul_widen_optab, wmode, mode)
       != CODE_FOR_nothing)
     return true;
@@ -1631,7 +1631,7 @@ can_widen_mult_without_libcall (scalar_int_mode wmode, scalar_int_mode mode,
   rtx ret = expand_mult (wmode, op0, op1, NULL_RTX, uns, true);
   delete_insns_since (last);
   return ret != NULL_RTX;
-} 
+}
 
 /* Add mul overflow checking to the statement STMT.  */
 
@@ -2035,7 +2035,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	      && JUMP_P (last)
 	      && any_condjump_p (last)
 	      && !find_reg_note (last, REG_BR_PROB, 0))
-	    add_reg_br_prob_note (last, 
+	    add_reg_br_prob_note (last,
 				  profile_probability::very_unlikely ());
 	  emit_jump (done_label);
         }
@@ -2135,7 +2135,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 				       NULL_RTX, NULL, done_label,
 				       profile_probability::very_likely ());
 	    }
-	  
+
 	}
       else if (int_mode_for_size (prec / 2, 1).exists (&hmode)
 	       && 2 * GET_MODE_PRECISION (hmode) == prec)

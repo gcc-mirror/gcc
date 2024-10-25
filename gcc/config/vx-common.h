@@ -1,4 +1,4 @@
-/* Target-independent configuration for VxWorks and VxWorks AE.   
+/* Target-independent configuration for VxWorks and VxWorks AE.
    Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 

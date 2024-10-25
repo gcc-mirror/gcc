@@ -4766,7 +4766,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 
 	  if (!VOID_TYPE_P (TREE_TYPE (else_)))
 	    else_ = build_fold_addr_expr_loc (loc, else_);
- 
+
 	  expr
 	    = build3 (COND_EXPR, type, TREE_OPERAND (expr, 0), then_, else_);
 
@@ -8099,7 +8099,7 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 	  rtype = "teams";
 	else
 	  gcc_unreachable ();
-	
+
 	error ("%qE not specified in enclosing %qs",
 	       DECL_NAME (lang_hooks.decls.omp_report_decl (decl)), rtype);
 	inform (ctx->location, "enclosing %qs", rtype);
@@ -8140,7 +8140,7 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 		}
 	    }
 	}
-      
+
       if (TREE_CODE (decl) == PARM_DECL
 	  || (!is_global_var (decl)
 	      && DECL_CONTEXT (decl) == current_function_decl))
@@ -13874,7 +13874,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   /* Don't call omp_finish_clause on implicitly added OMP_CLAUSE_PRIVATE
      in simd.  Those are only added for the local vars inside of simd body
      and they don't need to be e.g. default constructible.  */
-  if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD) 
+  if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD)
     lang_hooks.decls.omp_finish_clause (clause, pre_p,
 					(ctx->region_type & ORT_ACC) != 0);
   if (gimplify_omp_ctxp)

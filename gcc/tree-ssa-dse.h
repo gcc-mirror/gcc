@@ -1,4 +1,4 @@
-/* Support routines for dead store elimination. 
+/* Support routines for dead store elimination.
    Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.

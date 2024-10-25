@@ -2187,7 +2187,7 @@ maybe_add_sra_candidate (tree var)
   const char *msg;
   tree_node **slot;
 
-  if (!AGGREGATE_TYPE_P (type)) 
+  if (!AGGREGATE_TYPE_P (type))
     {
       reject (var, "not aggregate");
       return false;

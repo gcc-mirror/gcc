@@ -1,6 +1,6 @@
 /* Definitions of target machine for Altera Nios II.
    Copyright (C) 2012-2024 Free Software Foundation, Inc.
-   Contributed by Jonah Graham (jgraham@altera.com), 
+   Contributed by Jonah Graham (jgraham@altera.com),
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
 
@@ -127,7 +127,7 @@
    29     r29      ea      Exception Return Address
    30     r30      ba      Breakpoint Return Address
    31     r31      ra      Return Address
-			   
+
    32     ctl0     status
    33     ctl1     estatus STATUS saved by exception
    34     ctl2     bstatus STATUS saved by break
@@ -141,7 +141,7 @@
    40                      First Pseudo Register
 
    In addition, r12 is used as the static chain register and r13, r14, and r15
-   are clobbered by PLT code sequences.  
+   are clobbered by PLT code sequences.
 
    The definitions for all the hard register numbers are located in nios2.md.
 */

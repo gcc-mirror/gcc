@@ -245,4 +245,4 @@ DEF_PREDICTOR (PRED_FORTRAN_LOOP_PREHEADER, "Fortran loop preheader", \
 
 DEF_PREDICTOR (PRED_FORTRAN_CONTIGUOUS, "Fortran contiguous", \
 	       HITRATE (75), 0)
-	
+

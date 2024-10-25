@@ -276,7 +276,7 @@ _mm512_cvtne2ph_pbf8 (__m512h __A, __m512h __B)
 
 extern __inline__ __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_cvtne2ph_pbf8 (__m512i __W, __mmask64 __U, 
+_mm512_mask_cvtne2ph_pbf8 (__m512i __W, __mmask64 __U,
 			   __m512h __A, __m512h __B)
 {
   return (__m512i) __builtin_ia32_vcvtne2ph2bf8512_mask ((__v32hf) __A,
@@ -375,7 +375,7 @@ _mm512_cvtnes2ph_phf8 (__m512h __A, __m512h __B)
 
 extern __inline__ __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_cvtnes2ph_phf8 (__m512i __W, __mmask64 __U, 
+_mm512_mask_cvtnes2ph_phf8 (__m512i __W, __mmask64 __U,
 			    __m512h __A, __m512h __B)
 {
   return (__m512i) __builtin_ia32_vcvtne2ph2hf8s512_mask ((__v32hf) __A,

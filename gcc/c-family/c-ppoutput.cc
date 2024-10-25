@@ -207,7 +207,7 @@ class token_streamer
       print.streamer = this;
     }
 
-  void begin_pragma () 
+  void begin_pragma ()
   {
     in_pragma = true;
   }

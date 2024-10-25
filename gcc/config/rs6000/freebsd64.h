@@ -237,7 +237,7 @@ extern int dot_symbols;
 
 /************************[  Target stuff  ]***********************************/
 
-/* Define the actual types of some ANSI-mandated types.  
+/* Define the actual types of some ANSI-mandated types.
    Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.cc,
    c-common.cc, and config/<arch>/<arch>.h.  */
 

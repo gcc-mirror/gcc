@@ -1268,7 +1268,7 @@ struct crypto_vv_no_op_type_def : public build_base
     if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
       return nullptr;
     b.append_base_name (instance.base_name);
-      
+
     if (!overloaded_p)
     {
       b.append_name (operand_suffixes[instance.op_info->op]);

@@ -218,7 +218,7 @@ static void setFlag (termios_TERMIOS t, termios_Flag f, bool b)
 
 static void doraw (termios_TERMIOS term)
 {
-  /* 
+  /*
     * from man 3 termios
     *           termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
     *                                   | INLCR | IGNCR | ICRNL | IXON);
@@ -253,7 +253,7 @@ static void doraw (termios_TERMIOS term)
 
 static void dononraw (termios_TERMIOS term)
 {
-  /* 
+  /*
     * we undo these settings, (although we leave the character size alone)
     *
     * from man 3 termios

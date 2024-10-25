@@ -1,6 +1,6 @@
 /* Definitions of ELF target support for Altera Nios II.
    Copyright (C) 2012-2024 Free Software Foundation, Inc.
-   Contributed by Jonah Graham (jgraham@altera.com), 
+   Contributed by Jonah Graham (jgraham@altera.com),
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
 

@@ -781,7 +781,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	  gcc_assert (DECL_P (new_var));
 	  DECL_CHAIN (new_var) = new_decls;
 	  new_decls = new_var;
- 
+
 	  /* Also copy value-expressions.  */
 	  if (VAR_P (new_var) && DECL_HAS_VALUE_EXPR_P (new_var))
 	    {
@@ -1812,7 +1812,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		return NULL;
 	    }
 	}
-     
+
       /* We do not allow CLOBBERs of handled components.  In case
 	 returned value is stored via such handled component, remove
 	 the clobber so stmt verifier is happy.  */
@@ -2670,7 +2670,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 				   (basic_block) old_edge->dest->aux))
 		&& (e->flags & EDGE_EH))
 	      e->probability = old_edge->probability;
-	    
+
           FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
 	    if (e->flags & EDGE_EH)
 	      {
@@ -3889,7 +3889,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
-     automatically replaced by the VAR_DECL.  
+     automatically replaced by the VAR_DECL.
 
      When returning by reference, ensure that RESULT_DECL remaps to
      gimple_val.  */

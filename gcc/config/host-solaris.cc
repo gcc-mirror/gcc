@@ -39,7 +39,7 @@ mmap_fixed (void *addr, size_t len, int prot, int flags, int fd, off_t off)
   void *base;
 
   base = mmap ((caddr_t) addr, len, prot, flags, fd, off);
-  
+
   if (base != addr)
     {
       size_t page_size = getpagesize();
@@ -101,7 +101,7 @@ sol_gt_pch_get_address (size_t size, int fd)
   return addr;
 }
 
-/* Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at 
+/* Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at
    mapping the data at BASE, -1 if we couldn't.  */
 
 static int

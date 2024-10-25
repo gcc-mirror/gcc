@@ -1,4 +1,4 @@
-/* Tree lowering to gimple for middle end use only.  
+/* Tree lowering to gimple for middle end use only.
    This converts the GENERIC functions-as-trees tree representation into
    the GIMPLE form.
    Copyright (C) 2013-2024 Free Software Foundation, Inc.

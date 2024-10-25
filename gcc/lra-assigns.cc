@@ -578,7 +578,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	    = lra_reg_info[conflict_regno].biggest_mode;
 	  int biggest_conflict_nregs
 	    = hard_regno_nregs (conflict_hr, biggest_conflict_mode);
-	  
+
 	  nregs_diff
 	    = (biggest_conflict_nregs
 	       - hard_regno_nregs (conflict_hr,
@@ -697,7 +697,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno, bool first_p
   if (try_only_hard_regno < 0 && regno < lra_new_regno_start)
     {
       enum reg_class pref_class = reg_preferred_class (regno);
-      
+
       if (regno_allocno_class_array[regno] != pref_class)
 	{
 	  hard_regno = find_hard_regno_for_1 (regno, cost, -1, first_p,
@@ -1227,7 +1227,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	    || hard_regno != reg_renumber[conflict_regno])
 	  {
 	    int conflict_hard_regno = reg_renumber[conflict_regno];
-	    
+
 	    biggest_mode = lra_reg_info[conflict_regno].biggest_mode;
 	    biggest_nregs = hard_regno_nregs (conflict_hard_regno,
 					      biggest_mode);
@@ -1568,7 +1568,7 @@ assign_by_spills (void)
 	    {
 	      enum reg_class rclass = lra_get_allocno_class (regno);
 	      enum reg_class spill_class;
-	      
+
 	      if (targetm.spill_class == NULL
 		  || lra_reg_info[regno].restore_rtx == NULL_RTX
 		  || ! bitmap_bit_p (&lra_inheritance_pseudos, regno)
@@ -1718,7 +1718,7 @@ find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
   bool clobber_p = false;
   rtx_insn *prev_insn, *next_insn;
   rtx_insn *start_insn = NULL, *first_insn = NULL, *second_insn = NULL;
-  
+
   EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
     {
       if (start_insn == NULL)
@@ -1790,7 +1790,7 @@ lra_split_hard_reg_for (void)
      either case.  */
   bool asm_p = false, spill_p = false;
   bitmap_head failed_reload_insns, failed_reload_pseudos, over_split_insns;
-  
+
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "\n****** Splitting a hard reg after assignment #%d: ******\n\n",

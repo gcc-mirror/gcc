@@ -660,7 +660,7 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
 
 /* This function will emit cpp macros to indicate the presence of various lock
    free atomic operations.  */
-   
+
 static void
 cpp_atomic_builtins (cpp_reader *pfile)
 {
@@ -741,26 +741,26 @@ cpp_atomic_builtins (cpp_reader *pfile)
      lock free.  */
 #define SIZEOF_NODE(T) (tree_to_uhwi (TYPE_SIZE_UNIT (T)))
 #define SWAP_INDEX(T) ((SIZEOF_NODE (T) < SWAP_LIMIT) ? SIZEOF_NODE (T) : 0)
-  builtin_define_with_int_value ("__GCC_ATOMIC_BOOL_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_BOOL_LOCK_FREE",
 			(have_swap[SWAP_INDEX (boolean_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_CHAR_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_CHAR_LOCK_FREE",
 			(have_swap[SWAP_INDEX (signed_char_type_node)]? 2 : 1));
   if (flag_char8_t)
     builtin_define_with_int_value ("__GCC_ATOMIC_CHAR8_T_LOCK_FREE",
 			(have_swap[SWAP_INDEX (char8_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_CHAR16_T_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_CHAR16_T_LOCK_FREE",
 			(have_swap[SWAP_INDEX (char16_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_CHAR32_T_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_CHAR32_T_LOCK_FREE",
 			(have_swap[SWAP_INDEX (char32_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_WCHAR_T_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_WCHAR_T_LOCK_FREE",
 			(have_swap[SWAP_INDEX (wchar_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_SHORT_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_SHORT_LOCK_FREE",
 		      (have_swap[SWAP_INDEX (short_integer_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_INT_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_INT_LOCK_FREE",
 			(have_swap[SWAP_INDEX (integer_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_LONG_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_LONG_LOCK_FREE",
 		      (have_swap[SWAP_INDEX (long_integer_type_node)]? 2 : 1));
-  builtin_define_with_int_value ("__GCC_ATOMIC_LLONG_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_LLONG_LOCK_FREE",
 		(have_swap[SWAP_INDEX (long_long_integer_type_node)]? 2 : 1));
 
   /* If we're dealing with a "set" value that doesn't exactly correspond
@@ -787,7 +787,7 @@ cpp_atomic_builtins (cpp_reader *pfile)
   psize = POINTER_SIZE_UNITS;
   if (psize >= SWAP_LIMIT)
     psize = 0;
-  builtin_define_with_int_value ("__GCC_ATOMIC_POINTER_LOCK_FREE", 
+  builtin_define_with_int_value ("__GCC_ATOMIC_POINTER_LOCK_FREE",
 			(have_swap[psize]? 2 : 1));
 }
 
@@ -1822,7 +1822,7 @@ struct GTY(()) lazy_hex_fp_value_struct
    Each builtin_define_float_constants invocation calls
    builtin_define_with_hex_fp_value 5 times and builtin_define_float_constants
    is called for FLT, DBL, LDBL and up to NUM_FLOATN_NX_TYPES times for
-   FLTNN*.  */ 
+   FLTNN*.  */
 #define LAZY_HEX_FP_VALUES_CNT (5 * (3 + NUM_FLOATN_NX_TYPES))
 static GTY(()) struct lazy_hex_fp_value_struct
   lazy_hex_fp_values[LAZY_HEX_FP_VALUES_CNT];

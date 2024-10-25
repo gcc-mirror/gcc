@@ -293,7 +293,7 @@ extern int code_for_indirect_jump_scratch;
 #else
 #define IS_LITTLE_ENDIAN_OPTION "%{!mb:"
 #endif
- 
+
 #if TARGET_CPU_DEFAULT & MASK_HARD_SH2A
 #define UNSUPPORTED_SH2A IS_LITTLE_ENDIAN_OPTION \
 "%{m2a*|!m1:%{!m2*:%{!m3*:%{!m4*:%eSH2a does not support little-endian}}}}}"
@@ -1490,7 +1490,7 @@ extern bool current_function_interrupt;
        return X << (Y & 31);
      else
        return X >> (-Y) & 31);
- 
+
    The dynamic shift library routines in lib1funcs.S do not use the sign bit
    like the hardware dynamic shifts and truncate the shift count to 31.
    We define SHIFT_COUNT_TRUNCATED to 0 and express the implied shift count

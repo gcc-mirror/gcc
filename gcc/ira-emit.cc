@@ -573,7 +573,7 @@ change_loop (ira_loop_tree_node_t node)
   if (node != ira_loop_tree_root)
     {
       ira_assert (current_loops != NULL);
-      
+
       if (node->bb != NULL)
 	{
 	  FOR_BB_INSNS (node->bb, insn)

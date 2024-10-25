@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
      -- an internal name
      -- the symbol name in the module, as seen by Fortran code
      -- the value it has
-     -- the standard that supports this type  */ 
+     -- the standard that supports this type  */
 
 NAMED_INTCST (ISOFORTRANENV_FILE_ATOMIC_INT_KIND, "atomic_int_kind", \
               gfc_atomic_int_kind, GFC_STD_F2008)

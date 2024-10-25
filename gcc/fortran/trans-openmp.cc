@@ -2968,7 +2968,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  for (; n != NULL; n = n->next)
 	    {
 	      if (iterator && prev->u2.ns != n->u2.ns)
-		{ 
+		{
 		  BLOCK_SUBBLOCKS (tree_block) = gfc_finish_block (&iter_block);
 		  TREE_VEC_ELT (iterator, 5) = tree_block;
 		  for (tree c = omp_clauses; c != prev_clauses;
@@ -3125,7 +3125,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
 	    }
 	  if (iterator)
-	    { 
+	    {
 	      BLOCK_SUBBLOCKS (tree_block) = gfc_finish_block (&iter_block);
 	      TREE_VEC_ELT (iterator, 5) = tree_block;
 	      for (tree c = omp_clauses; c != prev_clauses;
@@ -4981,7 +4981,7 @@ gfc_trans_oacc_construct (gfc_code *code)
 }
 
 /* update, enter_data, exit_data, cache. */
-static tree 
+static tree
 gfc_trans_oacc_executable_directive (gfc_code *code)
 {
   stmtblock_t block;
@@ -5009,7 +5009,7 @@ gfc_trans_oacc_executable_directive (gfc_code *code)
   gfc_start_block (&block);
   oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 					code->loc, false, true, code->op);
-  stmt = build1_loc (input_location, construct_code, void_type_node, 
+  stmt = build1_loc (input_location, construct_code, void_type_node,
 		     oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);

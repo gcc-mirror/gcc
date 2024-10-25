@@ -1799,7 +1799,7 @@ lower_opt (operand *o, unsigned char grp, bool strip)
   return ne;
 }
 
-/* Determine whether O or its children uses the conditional operation 
+/* Determine whether O or its children uses the conditional operation
    group GRP.  */
 
 static bool
@@ -4613,7 +4613,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 
   fprintf (stderr, "%s decision tree has %u leafs, maximum depth %u and "
 	   "a total number of %u nodes\n",
-	   gimple ? "GIMPLE" : "GENERIC", 
+	   gimple ? "GIMPLE" : "GENERIC",
 	   root->num_leafs, root->max_level, root->total_size);
 
   /* First split out the transform part of equal leafs.  */
@@ -5693,7 +5693,7 @@ parser::parse_for (location_t)
 	      else
 		fatal_at (token, "iterator cannot be used as operator-list");
 	    }
-	  else 
+	  else
 	    op->substitutes.safe_push (idb);
 	}
       op->nargs = arity;
@@ -5756,7 +5756,7 @@ parser::parse_for (location_t)
 void
 parser::parse_operator_list (location_t)
 {
-  const cpp_token *token = peek (); 
+  const cpp_token *token = peek ();
   const char *id = get_ident ();
 
   if (get_operator (id, true) != 0)
@@ -5764,13 +5764,13 @@ parser::parse_operator_list (location_t)
 
   user_id *op = new user_id (id, true);
   int arity = -1;
-  
+
   while ((token = peek_ident ()) != 0)
     {
-      token = peek (); 
+      token = peek ();
       const char *oper = get_ident ();
       id_base *idb = get_operator (oper, true);
-      
+
       if (idb == 0)
 	fatal_at (token, "no such operator '%s'", oper);
 

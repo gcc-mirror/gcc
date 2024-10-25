@@ -4899,7 +4899,7 @@ gfc_match_oacc_routine (void)
 
   new_st.op = EXEC_OACC_ROUTINE;
   new_st.ext.omp_clauses = c;
-  return MATCH_YES;  
+  return MATCH_YES;
 
 cleanup:
   gfc_current_locus = old_loc;
@@ -8770,7 +8770,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		       n->sym->name, &n->where);
 	}
     }
-  
+
   for (n = omp_clauses->lists[OMP_LIST_TO]; n; n = n->next)
     n->sym->mark = 0;
   for (n = omp_clauses->lists[OMP_LIST_FROM]; n; n = n->next)
@@ -11930,7 +11930,7 @@ resolve_oacc_directive_inside_omp_region (gfc_code *code)
       gfc_statement st = omp_code_to_statement (omp_current_ctx->code);
       gfc_statement oacc_st = oacc_code_to_statement (code);
       gfc_error ("The %s directive cannot be specified within "
-		 "a %s region at %L", gfc_ascii_statement (oacc_st), 
+		 "a %s region at %L", gfc_ascii_statement (oacc_st),
 		 gfc_ascii_statement (st), &code->loc);
     }
 }
@@ -11943,7 +11943,7 @@ resolve_omp_directive_inside_oacc_region (gfc_code *code)
       gfc_statement st = oacc_code_to_statement (omp_current_ctx->code);
       gfc_statement omp_st = omp_code_to_statement (code);
       gfc_error ("The %s directive cannot be specified within "
-		 "a %s region at %L", gfc_ascii_statement (omp_st), 
+		 "a %s region at %L", gfc_ascii_statement (omp_st),
 		 gfc_ascii_statement (st), &code->loc);
     }
 }

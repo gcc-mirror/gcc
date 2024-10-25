@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
      size_t	8 bytes
      ptrdiff_t	8 bytes
      wchar	4 bytes
-     
+
   Make GCC agree with types.h.  */
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
    the RTL to avoid scheduling related problems.  For example, the
    store and load could be separated by a call to a pure or const
    function which has no frame and this function might also use SP-16.
-   
+
    On the 64-bit port, I couldn't get SECONDARY_MEMORY_NEEDED to work
    with LRA, so I modified the move patterns to use SP-40.  The HP
    compiler also uses this slot in the frame marker for moving data

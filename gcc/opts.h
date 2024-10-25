@@ -371,7 +371,7 @@ extern bool enum_value_to_arg (const struct cl_enum_arg *enum_args,
 			       const char **argp, int value,
 			       unsigned int lang_mask);
 extern void decode_cmdline_options_to_array (unsigned int argc,
-					     const char **argv, 
+					     const char **argv,
 					     unsigned int lang_mask,
 					     struct cl_decoded_option **decoded_options,
 					     unsigned int *decoded_options_count);
@@ -380,7 +380,7 @@ extern void init_options_struct (struct gcc_options *opts,
 				 struct gcc_options *opts_set);
 extern void init_opts_obstack (void);
 extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
-							  const char **argv, 
+							  const char **argv,
 							  struct cl_decoded_option **decoded_options,
 							  unsigned int *decoded_options_count);
 extern void set_default_handlers (struct cl_option_handlers *handlers,

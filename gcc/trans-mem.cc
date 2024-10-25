@@ -2673,7 +2673,7 @@ expand_block_tm (struct tm_region *region, basic_block bb)
    uninstrumented code path blocks in the list of basic blocks
    returned, false otherwise.  */
 
-static vec<basic_block> 
+static vec<basic_block>
 get_tm_region_blocks (basic_block entry_block,
 		      bitmap exit_blocks,
 		      bitmap irr_blocks,

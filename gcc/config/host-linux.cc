@@ -105,7 +105,7 @@
 #endif
 
 /* Determine a location where we might be able to reliably allocate SIZE
-   bytes.  FD is the PCH file, though we should return with the file 
+   bytes.  FD is the PCH file, though we should return with the file
    unmapped.  */
 
 static void *

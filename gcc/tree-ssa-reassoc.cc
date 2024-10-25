@@ -447,7 +447,7 @@ get_rank (tree e)
 
      To obtain this result during reassociation, we bias the rank
      of the phi definition x_1 upward, when it is recognized as an
-     accumulator pattern.  The artificial rank causes it to be 
+     accumulator pattern.  The artificial rank causes it to be
      added last, providing the desired independence.  */
 
   if (TREE_CODE (e) == SSA_NAME)
@@ -928,7 +928,7 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	}
     }
 
-  /* If CURR->OP is a negate expr without nop conversion in a plus expr: 
+  /* If CURR->OP is a negate expr without nop conversion in a plus expr:
      save it for later inspection in repropagate_negates().  */
   if (negateop != NULL_TREE
       && gimple_assign_rhs_code (SSA_NAME_DEF_STMT (curr->op)) == NEGATE_EXPR)
@@ -1203,7 +1203,7 @@ stmt_is_power_of_op (gimple *stmt, tree op)
     CASE_CFN_POW:
     CASE_CFN_POWI:
       return (operand_equal_p (gimple_call_arg (stmt, 0), op, 0));
-      
+
     default:
       return false;
     }
@@ -6511,7 +6511,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
         result = t5 * y  */
 
   vec_len = repeat_factor_vec.length ();
-  
+
   /* Repeatedly look for opportunities to create a builtin_powi call.  */
   while (true)
     {
@@ -6520,7 +6520,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
       /* First look for the largest cached product of factors from
 	 preceding iterations.  If found, create a builtin_powi for
 	 it if the minimum occurrence count for its factors is at
-	 least 2, or just use this cached product as our next 
+	 least 2, or just use this cached product as our next
 	 multiplicand if the minimum occurrence count is 1.  */
       FOR_EACH_VEC_ELT (repeat_factor_vec, j, rf1)
 	{
@@ -6728,7 +6728,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 
 	  rf1 = &repeat_factor_vec[i];
 	  rf1->count -= power;
-	  
+
 	  FOR_EACH_VEC_ELT_REVERSE (*ops, n, oe)
 	    {
 	      if (oe->op == rf1->factor)
@@ -7134,7 +7134,7 @@ reassociate_bb (basic_block bb)
 		}
 
 	      tree new_lhs = lhs;
-	      /* If the operand vector is now empty, all operands were 
+	      /* If the operand vector is now empty, all operands were
 		 consumed by the __builtin_powi optimization.  */
 	      if (ops.length () == 0)
 		transform_stmt_to_copy (&gsi, stmt, powi_result);
@@ -7225,7 +7225,7 @@ reassociate_bb (basic_block bb)
 						   len != orig_len);
 		    }
 
-		  /* If we combined some repeated factors into a 
+		  /* If we combined some repeated factors into a
 		     __builtin_powi call, multiply that result by the
 		     reassociated operands.  */
 		  if (powi_result)

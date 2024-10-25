@@ -382,7 +382,7 @@ check_label_used (tree label)
 	  /* Avoid crashing later.  */
 	  define_label (location, DECL_NAME (label));
 	}
-      else 
+      else
 	warn_for_unused_label (label);
     }
 }
@@ -1706,7 +1706,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (! TREE_PUBLIC (newdecl))
 	    {
 	      warning_at (newdecl_loc,
-			  OPT_Wshadow, 
+			  OPT_Wshadow,
 			  fndecl_built_in_p (olddecl)
 			  ? G_("shadowing built-in function %q#D")
 			  : G_("shadowing library function %q#D"), olddecl);
@@ -1832,7 +1832,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 			    "new declaration %q#D ambiguates built-in "
 			    "declaration %q#D", newdecl, olddecl);
 	      else
-		warning (OPT_Wshadow, 
+		warning (OPT_Wshadow,
 			 fndecl_built_in_p (olddecl)
 			 ? G_("shadowing built-in function %q#D")
 			 : G_("shadowing library function %q#D"), olddecl);
@@ -1844,7 +1844,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  /* Replace the old RTL to avoid problems with inlining.  */
 	  COPY_DECL_RTL (newdecl, olddecl);
 	}
-      else 
+      else
 	{
 	  /* Even if the types match, prefer the new declarations type
 	     for built-ins which have not been explicitly declared,
@@ -2170,7 +2170,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     versions of G++ silently ignore the linkage-specification
 	     for this example:
 
-	       namespace N { 
+	       namespace N {
                  extern int i;
    	         extern "C" int i;
                }
@@ -2607,7 +2607,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 			      = TYPE_NEXT_VARIANT (TYPE_NEXT_VARIANT (t));
 			    break;
 			  }
-		}	    
+		}
 	      else
 		for (tree t = TYPE_MAIN_VARIANT (remove); ;
 		     t = TYPE_NEXT_VARIANT (t))
@@ -3628,7 +3628,7 @@ lookup_label_1 (tree id, bool making_local_p)
   named_label_entry **slot
     = named_labels->find_slot_with_hash (id, hash, INSERT);
   named_label_entry *old = *slot;
-  
+
   if (old && old->label_decl)
     {
       if (!making_local_p)
@@ -4551,7 +4551,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
     return build_typename_type (context, name, fullname, tag_type);
 
   want_template = TREE_CODE (fullname) == TEMPLATE_ID_EXPR;
-  
+
   if (!t)
     {
       if (complain & tf_error)
@@ -4564,7 +4564,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	}
       return error_mark_node;
     }
-  
+
   /* Pull out the template from an injected-class-name (or multiple).  */
   if (want_template)
     t = maybe_get_template_decl_from_type_decl (t);
@@ -4618,7 +4618,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	return error_mark_node;
       t = TYPE_NAME (t);
     }
-  
+
   if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
     t = TREE_TYPE (t);
 
@@ -5282,7 +5282,7 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
 	name = "top level";
       else if (type_dep == 0)
 	{
-	  /* __FUNCTION__ */	  
+	  /* __FUNCTION__ */
 	  name = fname_as_string (type_dep);
 	  release_name = true;
 	}
@@ -5986,7 +5986,7 @@ start_decl (const cp_declarator *declarator,
 	DECL_INITIAL (decl) = error_mark_node;
     }
   alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) != 0;
-  
+
   if (alias && TREE_CODE (decl) == FUNCTION_DECL)
     record_key_method_defined (decl);
 
@@ -6228,7 +6228,7 @@ start_decl_1 (tree decl, bool initialized)
      (Scalars are always complete types, so there is nothing to
      check.)  This code just sets COMPLETE_P; errors (if necessary)
      are issued below.  */
-  if ((initialized || aggregate_definition_p) 
+  if ((initialized || aggregate_definition_p)
       && !complete_p
       && COMPLETE_TYPE_P (complete_type (type)))
     {
@@ -8250,7 +8250,7 @@ value_dependent_init_p (tree init)
   else
     /* It must be a simple expression, e.g., int i = 3;  */
     return value_dependent_expression_p (init);
-  
+
   return false;
 }
 
@@ -9711,7 +9711,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	      DECL_DECOMP_BASE (decl) = cond;
 	    }
 	}
-      int save_read = DECL_READ_P (decl);	
+      int save_read = DECL_READ_P (decl);
       for (unsigned i = 0; i < count; ++i)
 	{
 	  location_t sloc = input_location;
@@ -10163,7 +10163,7 @@ register_dtor_fn (tree decl)
 	 that any access checks will be done relative to the current
 	 scope, rather than the scope of the anonymous function.  */
       build_cleanup (decl);
-  
+
       /* Now start the function.  */
       cleanup = start_cleanup_fn (ob_parm);
 
@@ -10174,7 +10174,7 @@ register_dtor_fn (tree decl)
       push_deferring_access_checks (dk_no_check);
       fcall = build_cleanup (decl);
       pop_deferring_access_checks ();
-      
+
       /* Create the body of the anonymous function.  */
       compound_stmt = begin_compound_stmt (BCS_FN_BODY);
       finish_expr_stmt (fcall);
@@ -11530,7 +11530,7 @@ build_ptrmemfunc_type (tree type)
   DECL_NONADDRESSABLE_P (field) = 1;
   fields = field;
 
-  field = build_decl (input_location, FIELD_DECL, delta_identifier, 
+  field = build_decl (input_location, FIELD_DECL, delta_identifier,
 		      delta_type_node);
   DECL_NONADDRESSABLE_P (field) = 1;
   DECL_CHAIN (field) = fields;
@@ -11860,10 +11860,10 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
   else if (warn_vla > 0)
     {
       if (name)
-	warning_at (name_loc, OPT_Wvla, 
+	warning_at (name_loc, OPT_Wvla,
 		    "variable length array %qD is used", name);
       else
-	warning (OPT_Wvla, 
+	warning (OPT_Wvla,
                  "variable length array is used");
     }
 
@@ -12502,10 +12502,10 @@ grokdeclarator (const cp_declarator *declarator,
 		  return error_mark_node;
 		if (at_function_scope_p ())
 		  {
-		    /* [dcl.meaning] 
+		    /* [dcl.meaning]
 
 		       A declarator-id shall not be qualified except
-		       for ... 
+		       for ...
 
 		       None of the cases are permitted in block
 		       scope.  */
@@ -12515,7 +12515,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    else if (TYPE_P (qualifying_scope))
 		      error ("invalid use of qualified-name %<%T::%D%>",
 			     qualifying_scope, decl);
-		    else 
+		    else
 		      error ("invalid use of qualified-name %<%D::%D%>",
 			     qualifying_scope, decl);
 		    return error_mark_node;
@@ -14434,7 +14434,7 @@ grokdeclarator (const cp_declarator *declarator,
       if ((rqual || memfn_quals) && TREE_CODE (type) == FUNCTION_TYPE)
         {
           type = apply_memfn_quals (type, memfn_quals, rqual);
-          
+
           /* We have now dealt with these qualifiers.  */
           memfn_quals = TYPE_UNQUALIFIED;
 	  rqual = REF_QUAL_NONE;
@@ -15238,11 +15238,11 @@ grokdeclarator (const cp_declarator *declarator,
 	    && pedantic)
 	  {
 	    if (storage_class == sc_static)
-	      pedwarn (declspecs->locations[ds_storage_class], OPT_Wpedantic, 
+	      pedwarn (declspecs->locations[ds_storage_class], OPT_Wpedantic,
 		       "%<static%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	    else
-	      pedwarn (declspecs->locations[ds_inline], OPT_Wpedantic, 
+	      pedwarn (declspecs->locations[ds_inline], OPT_Wpedantic,
 		       "%<inline%> specifier invalid for function %qs "
 		       "declared out of global scope", name);
 	  }
@@ -15364,7 +15364,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 	    if (storage_class == sc_extern && pedantic)
 	      {
-		pedwarn (input_location, OPT_Wpedantic, 
+		pedwarn (input_location, OPT_Wpedantic,
 			 "cannot explicitly declare member %q#D to have "
 			 "extern linkage", decl);
 		storage_class = sc_none;
@@ -16070,7 +16070,7 @@ grok_special_member_properties (tree decl)
     }
   else if (IDENTIFIER_CONV_OP_P (DECL_NAME (decl)))
     TYPE_HAS_CONVERSION (class_type) = true;
-  
+
   /* Destructors are handled in check_methods.  */
 }
 
@@ -16254,7 +16254,7 @@ grok_op_properties (tree decl, bool complain)
 			    "enumerated type", decl);
 		return false;
 	      }
-      
+
 	    tree type = non_reference (TREE_VALUE (arg));
 	    if (type == error_mark_node)
 	      return false;
@@ -16430,7 +16430,7 @@ grok_op_properties (tree decl, bool complain)
       || operator_code == COMPOUND_EXPR)
     warning_at (loc, OPT_Weffc__,
 		"user-defined %qD always evaluates both arguments", decl);
-  
+
   /* More Effective C++ rule 6.  */
   if (operator_code == POSTINCREMENT_EXPR
       || operator_code == POSTDECREMENT_EXPR
@@ -16651,7 +16651,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   if (TREE_CODE (decl) != TYPE_DECL)
     /* Found not-a-type.  */
     return NULL_TREE;
-  
+
   /* Look for invalid nested type:
      class C {
      class C {};
@@ -17130,7 +17130,7 @@ copy_type_enum (tree dst, tree src)
 }
 
 /* Begin compiling the definition of an enumeration type.
-   NAME is its name, 
+   NAME is its name,
 
    if ENUMTYPE is not NULL_TREE then the type has alredy been found.
 
@@ -17289,7 +17289,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	ENUM_UNDERLYING_TYPE (enumtype) = underlying_type;
       else
 	{
-	  error ("underlying type %qT of %qT must be an integral type", 
+	  error ("underlying type %qT of %qT must be an integral type",
 		 underlying_type, enumtype);
 	  ENUM_UNDERLYING_TYPE (enumtype) = integer_type_node;
 	}
@@ -17319,7 +17319,7 @@ finish_enum_value_list (tree enumtype)
   tree minnode, maxnode;
   tree t;
 
-  bool fixed_underlying_type_p 
+  bool fixed_underlying_type_p
     = ENUM_UNDERLYING_TYPE (enumtype) != NULL_TREE;
 
   /* We built up the VALUES in reverse order.  */
@@ -17747,7 +17747,7 @@ incremented enumerator value is too large for %<long%>"));
   type = value ? TREE_TYPE (value) : NULL_TREE;
 
   decl = build_decl (loc, CONST_DECL, name, type);
-  
+
   DECL_CONTEXT (decl) = enumtype;
   TREE_CONSTANT (decl) = 1;
   TREE_READONLY (decl) = 1;
@@ -19015,7 +19015,7 @@ finish_function (bool inline_p)
 
   /* Possibly warn about unused parameters.  */
   if (warn_unused_parameter
-      && !processing_template_decl 
+      && !processing_template_decl
       && !DECL_CLONED_FUNCTION_P (fndecl))
     do_warn_unused_parameter (fndecl);
 

@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be included last.  */
 #include "target-def.h"
 
-/* Return nonzero if there is a bypass for the output of 
+/* Return nonzero if there is a bypass for the output of
    OUT_INSN and the fp store IN_INSN.  */
 int
 pa_fpstore_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
@@ -83,7 +83,7 @@ pa_fpstore_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 
   return (GET_MODE_SIZE (store_mode) == GET_MODE_SIZE (other_mode));
 }
-  
+
 
 #ifndef DO_FRAME_NOTES
 #ifdef INCOMING_RETURN_ADDR_RTX
@@ -1053,7 +1053,7 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
       gcc_assert (reg);
       gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
-      
+
       base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
       orig = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
 				     base == reg ? 0 : reg);
@@ -1103,7 +1103,7 @@ legitimize_tls_address (rtx addr)
   if (GET_CODE (addr) != SYMBOL_REF)
     return addr;
 
-  switch (SYMBOL_REF_TLS_MODEL (addr)) 
+  switch (SYMBOL_REF_TLS_MODEL (addr))
     {
       case TLS_MODEL_GLOBAL_DYNAMIC:
 	tmp = gen_reg_rtx (Pmode);
@@ -1126,7 +1126,7 @@ legitimize_tls_address (rtx addr)
 	insn = get_insns ();
 	end_sequence ();
 	t2 = gen_reg_rtx (Pmode);
-	emit_libcall_block (insn, t2, t1, 
+	emit_libcall_block (insn, t2, t1,
 			    gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
 				            UNSPEC_TLSLDBASE));
 	emit_insn (gen_tld_offset_load (ret, addr, t2));
@@ -2227,7 +2227,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		  && !HARD_REGISTER_P (operand0))
 		copy_reg_pointer (operand0, operand1);
 	    }
-	  
+
 	  /* When MEMs are broken out, the REG_POINTER flag doesn't
 	     get set.  In some cases, we can set the REG_POINTER flag
 	     from the declaration for the MEM.  */
@@ -2870,7 +2870,7 @@ pa_output_move_double (rtx *operands)
 		      && GET_CODE (operands[0]) == REG);
 
 	  gcc_assert (!reg_overlap_mentioned_p (high_reg, addr));
-	  
+
 	  /* No overlap between high target register and address
 	     register.  (We do this in a non-obvious way to
 	     save a register file writeback)  */
@@ -2885,7 +2885,7 @@ pa_output_move_double (rtx *operands)
 	  operands[0] = XEXP (addr, 0);
 	  gcc_assert (GET_CODE (operands[1]) == REG
 		      && GET_CODE (operands[0]) == REG);
-	  
+
 	  gcc_assert (!reg_overlap_mentioned_p (high_reg, addr));
 	  /* No overlap between high target register and address
 	     register.  (We do this in a non-obvious way to save a
@@ -3106,15 +3106,15 @@ pa_output_fp_move_double (rtx *operands)
   else
     {
       rtx xoperands[2];
-      
+
       gcc_assert (operands[1] == CONST0_RTX (GET_MODE (operands[0])));
-      
+
       /* This is a pain.  You have to be prepared to deal with an
 	 arbitrary address here including pre/post increment/decrement.
 
 	 so avoid this in the MD.  */
       gcc_assert (GET_CODE (operands[0]) == REG);
-      
+
       xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       xoperands[0] = operands[0];
       output_asm_insn ("copy %%r0,%0\n\tcopy %%r0,%1", xoperands);
@@ -4083,7 +4083,7 @@ pa_compute_frame_size (poly_int64 size, int *fregs_live)
      first slot is only used when the frame pointer is needed.  */
   if (size || frame_pointer_needed)
     size += pa_starting_frame_offset ();
-  
+
   /* If the current function calls __builtin_eh_return, then we need
      to allocate stack space for registers that will hold data for
      the exception handler.  */
@@ -4423,7 +4423,7 @@ pa_expand_prologue (void)
      to do for functions which make no calls and allocate no
      frame?  Do we need to allocate a frame, or can we just omit
      the save?   For now we'll just omit the save.
-     
+
      We don't want a note on this insn as the frame marker can
      move if there is a dynamic stack allocation.  */
   if (flag_pic && actual_fsize != 0 && !TARGET_64BIT)
@@ -5234,7 +5234,7 @@ pa_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 		  /* A fpload can't be issued until one cycle before a
 		     preceding arithmetic operation has finished if
 		     the target of the fpload is the destination of the
-		     arithmetic operation. 
+		     arithmetic operation.
 
 		     Exception: For PA7100LC, PA7200 and PA7300, the cost
 		     is 3 cycles, unless they bundle together.   We also
@@ -5873,7 +5873,7 @@ pa_output_global_address (FILE *file, rtx x, int round_constant)
 	default:
 	  gcc_unreachable ();
 	}
-      
+
       if (!read_only_operand (base, VOIDmode) && !flag_pic)
 	fputs ("-$global$", file);
       if (offset)
@@ -5933,7 +5933,7 @@ pa_file_start_mcount (const char *aswhat)
   if (profile_flag)
     fprintf (asm_out_file, "\t.IMPORT _mcount,%s\n", aswhat);
 }
-  
+
 static void
 pa_elf_file_start (void)
 {
@@ -7120,7 +7120,7 @@ const char *
 pa_output_lbranch (rtx dest, rtx_insn *insn, int xdelay)
 {
   rtx xoperands[4];
- 
+
   xoperands[0] = dest;
 
   /* First, free up the delay slot.  */
@@ -7641,7 +7641,7 @@ pa_output_dbra (rtx *operands, rtx_insn *insn, int which_alternative)
 	    }
 	  else
 	    return "addib,%C2 %1,%0,%3";
-      
+
 	case 8:
 	  /* Handle weird backwards branch with a fulled delay slot
 	     which is nullified.  */
@@ -7691,7 +7691,7 @@ pa_output_dbra (rtx *operands, rtx_insn *insn, int which_alternative)
 
 	  return pa_output_lbranch (operands[3], insn, xdelay);
 	}
-      
+
     }
   /* Deal with gross reload from FP register case.  */
   else if (which_alternative == 1)
@@ -8487,7 +8487,7 @@ pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
       pa_output_arg_descriptor (insn);
       if (TARGET_PA_20)
 	return "bve,l,n (%%r22),%%r2\n\tnop";
-      return "ble 0(%%sr4,%%r22)\n\tcopy %%r31,%%r2"; 
+      return "ble 0(%%sr4,%%r22)\n\tcopy %%r31,%%r2";
     }
 
   if (TARGET_PORTABLE_RUNTIME)
@@ -8499,7 +8499,7 @@ pa_output_indirect_call (rtx_insn *insn, rtx call_dest)
     }
 
   /* Now the normal case -- we can reach $$dyncall directly or
-     we're sure that we can get there via a long-branch stub. 
+     we're sure that we can get there via a long-branch stub.
 
      No need to check target flags as the length uniquely identifies
      the remaining cases.  */
@@ -9213,7 +9213,7 @@ pa_asm_out_destructor (rtx symbol, int priority)
    The ASM_OUTPUT_ALIGNED_BSS macro needs to be defined to call this
    function on the SOM port to prevent uninitialized global data from
    being placed in the data section.  */
-   
+
 void
 pa_asm_output_aligned_bss (FILE *stream,
 			   const char *name,
@@ -9379,7 +9379,7 @@ forward_branch_p (rtx_insn *insn)
   gcc_assert (lab != NULL_RTX);
 
   if (INSN_ADDRESSES_SET_P ())
-    return INSN_ADDRESSES (INSN_UID (lab)) > INSN_ADDRESSES (INSN_UID (insn));  
+    return INSN_ADDRESSES (INSN_UID (lab)) > INSN_ADDRESSES (INSN_UID (insn));
 
   while (insn)
     {
@@ -9814,8 +9814,8 @@ pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
    to match the HP Compiler ABI.  */
 
 static rtx
-pa_function_value (const_tree valtype, 
-                   const_tree func ATTRIBUTE_UNUSED, 
+pa_function_value (const_tree valtype,
+                   const_tree func ATTRIBUTE_UNUSED,
                    bool outgoing ATTRIBUTE_UNUSED)
 {
   machine_mode valmode;
@@ -10338,7 +10338,7 @@ pa_select_section (tree exp, int reloc,
    and the function is in a COMDAT group, place the plabel reference in the
    .data.rel.ro.local section.  The linker ignores references to symbols in
    discarded sections from this section.  */
-   
+
 static section *
 pa_elf_select_rtx_section (machine_mode mode, rtx x,
 			   unsigned HOST_WIDE_INT align)
@@ -10489,7 +10489,7 @@ pa_can_change_mode_class (machine_mode from, machine_mode to,
   if (COMPLEX_MODE_P (from) || VECTOR_MODE_P (from)
       || COMPLEX_MODE_P (to) || VECTOR_MODE_P (to))
     return false;
-      
+
   /* There is no way to load QImode or HImode values directly from memory
      to a FP register.  SImode loads to the FP registers are not zero
      extended.  On the 64-bit target, this conflicts with the definition
@@ -10510,7 +10510,7 @@ pa_can_change_mode_class (machine_mode from, machine_mode to,
 }
 
 /* Implement TARGET_MODES_TIEABLE_P.
-   
+
    We should return FALSE for QImode and HImode because these modes
    are not ok in the floating-point registers.  However, this prevents
    tieing these modes to SImode and DImode in the general registers.
@@ -10933,7 +10933,7 @@ pa_section_type_flags (tree decl, const char *name, int reloc)
    must provide patterns for doing indexed integer stores, or the move
    expanders must force the address of an indexed store to a register.
    We have adopted the latter approach.
-   
+
    Another function of pa_legitimate_address_p is to ensure that
    the base register is a valid pointer for indexed instructions.
    On targets that have non-equivalent space registers, we have to
@@ -11260,7 +11260,7 @@ pa_function_arg_size (machine_mode mode, const_tree type)
 {
   HOST_WIDE_INT size;
 
-  size = mode != BLKmode ? GET_MODE_SIZE (mode) : int_size_in_bytes (type); 
+  size = mode != BLKmode ? GET_MODE_SIZE (mode) : int_size_in_bytes (type);
 
   /* The 64-bit runtime does not restrict the size of stack frames,
      but the gcc calling conventions limit argument sizes to 1G.  Our

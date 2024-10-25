@@ -150,12 +150,12 @@ format_warning_substr (location_t fmt_string_loc, tree format_string_cst,
 /* Check that we have a pointer to a string suitable for use as a format.
    The default is to check for a char type.
    For objective-c dialects, this is extended to include references to string
-   objects validated by objc_string_ref_type_p ().  
-   Targets may also provide a string object type that can be used within c and 
+   objects validated by objc_string_ref_type_p ().
+   Targets may also provide a string object type that can be used within c and
    c++ and shared with their respective objective-c dialects. In this case the
    reference to a format string is checked for validity via a hook.
-   
-   The function returns true if strref points to any string type valid for the 
+
+   The function returns true if strref points to any string type valid for the
    language dialect and target.  */
 
 bool
@@ -206,8 +206,8 @@ handle_format_arg_attribute (tree *node, tree atname,
 }
 
 /* Verify that the format_num argument is actually a string reference suitable,
-   for the language dialect and target (in case the format attribute is in 
-   error).  When we know the specific reference type expected, this is also 
+   for the language dialect and target (in case the format attribute is in
+   error).  When we know the specific reference type expected, this is also
    checked.  */
 static bool
 check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
@@ -241,7 +241,7 @@ check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
     return true;
 
   /* Now check that the arg matches the expected type.  */
-  is_char_ref = 
+  is_char_ref =
     (TYPE_MAIN_VARIANT (TREE_TYPE (ref)) == char_type_node);
 
   fmt_flags = format_flags (expected_format_type);
@@ -275,18 +275,18 @@ check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
       *no_add_attrs = true;
       return false;
     }
-  
+
   /* We will assert that objective-c will support either its own string type
      or the target-supplied variant.  */
   if (!is_objc_sref)
     is_target_sref = (*targetcm.string_object_ref_type_p) ((const_tree) ref);
 
-  if (expected_format_type == (int) gcc_objc_string_format_type 
+  if (expected_format_type == (int) gcc_objc_string_format_type
       && (is_objc_sref || is_target_sref))
     return true;
 
   /* We will allow a target string ref to match only itself.  */
-  if (first_target_format_type 
+  if (first_target_format_type
       && expected_format_type >= first_target_format_type
       && is_target_sref)
     return true;
@@ -1719,7 +1719,7 @@ check_format_arg (void *ctx, tree format_tree,
 
       if (params == 0)
 	res->number_other++;
-      else 
+      else
 	{
 	  if (res->number_extra_args == 0)
 	    res->extra_arg_loc = EXPR_LOC_OR_LOC (TREE_VALUE (params),
@@ -1760,7 +1760,7 @@ check_format_arg (void *ctx, tree format_tree,
     }
   res->format_string_loc = EXPR_LOC_OR_LOC (format_tree, input_location);
   format_tree = TREE_OPERAND (format_tree, 0);
-  if (format_types[info->format_type].flags 
+  if (format_types[info->format_type].flags
       & (int) FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL)
     {
       bool objc_str = (info->format_type == gcc_objc_string_format_type);
@@ -1768,7 +1768,7 @@ check_format_arg (void *ctx, tree format_tree,
 	 a valid type.  */
       if (TREE_CODE (format_tree) != CONST_DECL
 	  || !((objc_str && objc_string_ref_type_p (TREE_TYPE (format_tree)))
-		|| (*targetcm.string_object_ref_type_p) 
+		|| (*targetcm.string_object_ref_type_p)
 				     ((const_tree) TREE_TYPE (format_tree))))
 	{
 	  res->number_non_literal++;

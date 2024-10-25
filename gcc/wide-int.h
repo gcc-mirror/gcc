@@ -2121,7 +2121,7 @@ namespace wi
 			    unsigned int, unsigned int);
   unsigned int bitreverse_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 				 unsigned int, unsigned int);
-  
+
   unsigned int lshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			     unsigned int, unsigned int, unsigned int);
   unsigned int lrshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,

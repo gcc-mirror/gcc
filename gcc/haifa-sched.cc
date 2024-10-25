@@ -571,7 +571,7 @@ haifa_classify_insn (const_rtx insn)
    MAX_STAGES provides us with a limit
    after which we give up scheduling; the caller must have unrolled at least
    as many copies of the loop body and recorded delay_pairs for them.
-   
+
    INSNS is the number of real (non-debug) insns in one iteration of
    the loop.  MAX_UID can be used to test whether an insn belongs to
    the first iteration of the loop; all of them have a uid lower than
@@ -1283,7 +1283,7 @@ recompute_todo_spec (rtx_insn *next, bool for_backtrack)
 	}
       return 0;
     }
-  
+
   else if (n_control == 1 && n_replace == 0 && n_spec == 0)
     {
       rtx_insn *pro, *other;
@@ -1293,7 +1293,7 @@ recompute_todo_spec (rtx_insn *next, bool for_backtrack)
       rtx_insn *prev = NULL;
       int i;
       unsigned regno;
-  
+
       if ((current_sched_info->flags & DO_PREDICATION) == 0
 	  || (ORIG_PAT (next) != NULL_RTX
 	      && PREDICATED_PAT (next) == NULL_RTX))

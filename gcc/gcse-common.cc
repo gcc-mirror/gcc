@@ -15,7 +15,7 @@
 
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
-   <http://www.gnu.org/licenses/>. 
+   <http://www.gnu.org/licenses/>.
 
    It is expected that more hunks of gcse.cc and postreload-gcse.cc should
    migrate into this file.  */
@@ -97,7 +97,7 @@ record_last_mem_set_info_common (rtx_insn *insn,
 /* For each block, compute whether X is transparent.  X is either an
    expression or an assignment [though we don't care which, for this context
    an assignment is treated as an expression].  For each block where an
-   element of X is modified, reset the INDX bit in BMAP. 
+   element of X is modified, reset the INDX bit in BMAP.
 
    BLOCKS_WITH_CALLS indicates which blocks contain CALL_INSNs which kill
    memory.

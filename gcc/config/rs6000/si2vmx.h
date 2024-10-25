@@ -3,7 +3,7 @@
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
-   Software Foundation; either version 3 of the License, or (at your option) 
+   Software Foundation; either version 3 of the License, or (at your option)
    any later version.
 
    This file is distributed in the hope that it will be useful, but WITHOUT
@@ -30,7 +30,7 @@
 
 
 /* Specify a default halt action for spu_hcmpeq and spu_hcmpgt intrinsics.
- * Users can override the action by defining it prior to including this 
+ * Users can override the action by defining it prior to including this
  * header file.
  */
 #ifndef SPU_HALT_ACTION
@@ -38,7 +38,7 @@
 #endif
 
 /* Specify a default stop action for the spu_stop intrinsic.
- * Users can override the action by defining it prior to including this 
+ * Users can override the action by defining it prior to including this
  * header file.
  */
 #ifndef SPU_STOP_ACTION
@@ -47,7 +47,7 @@
 
 
 /* Specify a default action for unsupported intrinsic.
- * Users can override the action by defining it prior to including this 
+ * Users can override the action by defining it prior to including this
  * header file.
  */
 #ifndef SPU_UNSUPPORTED_ACTION
@@ -55,7 +55,7 @@
 #endif
 
 
-/* Casting intrinsics - from scalar to quadword 
+/* Casting intrinsics - from scalar to quadword
  */
 
 static __inline qword si_from_uchar(unsigned char c) {
@@ -274,7 +274,7 @@ static __inline qword si_absdb(qword a, qword b)
   return ((qword)(dc));
 }
 
-/* Add intrinsics 
+/* Add intrinsics
  */
 #define si_a(_a, _b)		((qword)(vec_add((vec_uint4)(_a), (vec_uint4)(_b))))
 
@@ -282,14 +282,14 @@ static __inline qword si_absdb(qword a, qword b)
 
 static __inline qword si_ai(qword a, int b)
 {
-  return ((qword)(vec_add((vec_int4)(a), 
+  return ((qword)(vec_add((vec_int4)(a),
 			  vec_splat((vec_int4)(si_from_int(b)), 0))));
 }
 
 
 static __inline qword si_ahi(qword a, short b)
 {
-  return ((qword)(vec_add((vec_short8)(a), 
+  return ((qword)(vec_add((vec_short8)(a),
 			  vec_splat((vec_short8)(si_from_short(b)), 1))));
 }
 
@@ -325,13 +325,13 @@ static __inline qword si_dfa(qword a, qword b)
 
 static __inline qword si_andbi(qword a, signed char b)
 {
-  return ((qword)(vec_and((vec_char16)(a), 
+  return ((qword)(vec_and((vec_char16)(a),
 			  vec_splat((vec_char16)(si_from_char(b)), 3))));
 }
 
 static __inline qword si_andhi(qword a, signed short b)
 {
-  return ((qword)(vec_and((vec_short8)(a), 
+  return ((qword)(vec_and((vec_short8)(a),
 			  vec_splat((vec_short8)(si_from_short(b)), 1))));
 }
 
@@ -373,8 +373,8 @@ static __inline qword si_andi(qword a, signed int b)
 static __inline qword si_fcmeq(qword a, qword b)
 {
   vec_float4 msb = (vec_float4)((vec_uint4){0x80000000, 0x80000000, 0x80000000, 0x80000000});
-  
-  return ((qword)(vec_cmpeq(vec_andc((vec_float4)(a), msb), 
+
+  return ((qword)(vec_cmpeq(vec_andc((vec_float4)(a), msb),
 				  vec_andc((vec_float4)(b), msb))));
 }
 
@@ -408,11 +408,11 @@ static __inline qword si_dfcmeq(qword a, qword b)
   biteq = (vec_uint4) vec_cmpeq((vec_uint4)aabs,(vec_uint4)babs);
   biteq = vec_and(biteq,(vec_uint4)vec_slo((vec_uchar16)biteq,x.v));
 
-  /*  
+  /*
       B)  Check if a is NaN, store in high word
-        
+
       B1) If the high word is greater than max_exp (indicates a NaN)
-      B2) If the low word is greater than 0 
+      B2) If the low word is greater than 0
   */
   a_gt = (vec_uint4)vec_cmpgt(aabs,nan_mask);
 
@@ -435,7 +435,7 @@ static __inline qword si_dfcmeq(qword a, qword b)
 static __inline qword si_fcmgt(qword a, qword b)
 {
   vec_float4 msb = (vec_float4)((vec_uint4){0x80000000, 0x80000000, 0x80000000, 0x80000000});
-  
+
   return ((qword)(vec_cmpgt(vec_andc((vec_float4)(a), msb),
 				  vec_andc((vec_float4)(b), msb))));
 }
@@ -454,7 +454,7 @@ static __inline qword si_dfcmgt(qword a, qword b)
   /* Shift 4 bytes  */
   x.i[3] = 4 << 3;
 
-  // absolute value of a,b 
+  // absolute value of a,b
   vec_uint4 aabs = vec_and((vec_uint4)a, sign_mask);
   vec_uint4 babs = vec_and((vec_uint4)b, sign_mask);
 
@@ -470,7 +470,7 @@ static __inline qword si_dfcmgt(qword a, qword b)
   b_nan = vec_or(b_nan, vec_and((vec_uint4)vec_slo((vec_uchar16)b_nan,x.v),b_inf));
   b_nan = (vec_uint4)vec_perm((vec_uchar16)b_nan, (vec_uchar16)b_nan, splat_hi);
 
-  // A) Check if the exponents are different 
+  // A) Check if the exponents are different
   vec_uint4 gt_hi = (vec_uint4)vec_cmpgt(aabs,babs);
 
   // B) Check if high word equal, and low word greater
@@ -478,7 +478,7 @@ static __inline qword si_dfcmgt(qword a, qword b)
   vec_uint4 eq = (vec_uint4)vec_cmpeq(aabs, babs);
   vec_uint4 eqgt = vec_and(eq,vec_slo(gt_lo,x.v));
 
-  //  If either A or B is true, return true (unless NaNs detected) 
+  //  If either A or B is true, return true (unless NaNs detected)
   vec_uint4 r = vec_or(gt_hi, eqgt);
 
   // splat the high words of the comparison step
@@ -513,19 +513,19 @@ static __inline qword si_fceq(qword a, qword b)
 
 static __inline qword si_ceqbi(qword a, signed char b)
 {
-  return ((qword)(vec_cmpeq((vec_char16)(a), 
+  return ((qword)(vec_cmpeq((vec_char16)(a),
 			    vec_splat((vec_char16)(si_from_char(b)), 3))));
 }
 
 static __inline qword si_ceqhi(qword a, signed short b)
 {
-  return ((qword)(vec_cmpeq((vec_short8)(a), 
+  return ((qword)(vec_cmpeq((vec_short8)(a),
 			  vec_splat((vec_short8)(si_from_short(b)), 1))));
 }
 
 static __inline qword si_ceqi(qword a, signed int b)
 {
-  return ((qword)(vec_cmpeq((vec_int4)(a), 
+  return ((qword)(vec_cmpeq((vec_int4)(a),
 			  vec_splat((vec_int4)(si_from_int(b)), 0))));
 }
 
@@ -560,11 +560,11 @@ static __inline qword si_dfceq(qword a, qword b)
   aabs = vec_and((vec_uint4)a,sign_mask);
   babs = vec_and((vec_uint4)b,sign_mask);
 
-  /*  
+  /*
       B)  Check if a is NaN, store in high word
-        
+
       B1) If the high word is greater than max_exp (indicates a NaN)
-      B2) If the low word is greater than 0 
+      B2) If the low word is greater than 0
   */
   a_gt = (vec_uint4)vec_cmpgt(aabs,nan_mask);
 
@@ -583,7 +583,7 @@ static __inline qword si_dfceq(qword a, qword b)
   result = vec_andc(result, anan);
 
   /*  Promote high words to 64 bits and return  */
-  return ((qword)(vec_perm((vec_uchar16)result, (vec_uchar16)result, hihi_promote))); 
+  return ((qword)(vec_perm((vec_uchar16)result, (vec_uchar16)result, hihi_promote)));
 }
 
 
@@ -639,7 +639,7 @@ static __inline qword si_dfcgt(qword a, qword b)
   /* Shift 4 bytes  */
   x.i[3] = 4 << 3;
 
-  // absolute value of a,b 
+  // absolute value of a,b
   vec_uint4 aabs = vec_and((vec_uint4)a, sign_mask);
   vec_uint4 babs = vec_and((vec_uint4)b, sign_mask);
 
@@ -680,7 +680,7 @@ static __inline qword si_dfcgt(qword a, qword b)
   // pick the one we want
   vec_int4 bval=(vec_int4)vec_sel((vec_uchar16)babs, (vec_uchar16)bneg, (vec_uchar16)bsel);
 
-  // A) Check if the exponents are different 
+  // A) Check if the exponents are different
   vec_uint4 gt_hi = (vec_uint4)vec_cmpgt(aval,bval);
 
   // B) Check if high word equal, and low word greater
@@ -688,7 +688,7 @@ static __inline qword si_dfcgt(qword a, qword b)
   vec_uint4 eq = (vec_uint4)vec_cmpeq(aval, bval);
   vec_uint4 eqgt = vec_and(eq,vec_slo(gt_lo,x.v));
 
-  //  If either A or B is true, return true (unless NaNs detected) 
+  //  If either A or B is true, return true (unless NaNs detected)
   vec_uint4 r = vec_or(gt_hi, eqgt);
 
   // splat the high words of the comparison step
@@ -700,25 +700,25 @@ static __inline qword si_dfcgt(qword a, qword b)
 
 static __inline qword si_cgtbi(qword a, signed char b)
 {
-  return ((qword)(vec_cmpgt((vec_char16)(a), 
+  return ((qword)(vec_cmpgt((vec_char16)(a),
 			    vec_splat((vec_char16)(si_from_char(b)), 3))));
 }
 
 static __inline qword si_cgthi(qword a, signed short b)
 {
-  return ((qword)(vec_cmpgt((vec_short8)(a), 
+  return ((qword)(vec_cmpgt((vec_short8)(a),
 			    vec_splat((vec_short8)(si_from_short(b)), 1))));
 }
 
 static __inline qword si_cgti(qword a, signed int b)
 {
-  return ((qword)(vec_cmpgt((vec_int4)(a), 
+  return ((qword)(vec_cmpgt((vec_int4)(a),
 			    vec_splat((vec_int4)(si_from_int(b)), 0))));
 }
 
 static __inline qword si_clgtbi(qword a, unsigned char b)
 {
-  return ((qword)(vec_cmpgt((vec_uchar16)(a), 
+  return ((qword)(vec_cmpgt((vec_uchar16)(a),
 			    vec_splat((vec_uchar16)(si_from_uchar(b)), 3))));
 }
 
@@ -730,7 +730,7 @@ static __inline qword si_clgthi(qword a, unsigned short b)
 
 static __inline qword si_clgti(qword a, unsigned int b)
 {
-  return ((qword)(vec_cmpgt((vec_uint4)(a), 
+  return ((qword)(vec_cmpgt((vec_uint4)(a),
 			    vec_splat((vec_uint4)(si_from_uint(b)), 0))));
 }
 
@@ -742,7 +742,7 @@ static __inline qword si_dftsv(qword a, char b)
   vec_uint4 sign = (vec_uint4)vec_sra((vec_int4)(a), (vec_uint4)vec_splat(((vec_uint4)si_from_int(31)), 0));
   sign = (vec_uint4)vec_perm((vec_uchar16)sign,(vec_uchar16)sign,splat_hi);
   vec_uint4 aabs = vec_and((vec_uint4)a,sign_mask);
-  
+
   union {
     vec_uchar16 v;
     int i[4];
@@ -750,7 +750,7 @@ static __inline qword si_dftsv(qword a, char b)
 
   /* Shift 4 bytes  */
   x.i[3] = 4 << 3;
-  
+
   /* Nan or +inf or -inf  */
   if (b & 0x70)
   {
@@ -761,21 +761,21 @@ static __inline qword si_dftsv(qword a, char b)
      {
        vec_uint4 a_nan = (vec_uint4)vec_cmpgt(aabs, nan_mask);
        a_nan = vec_or(a_nan, vec_and((vec_uint4)vec_slo((vec_uchar16)a_nan,x.v),a_inf));
-       a_nan = (vec_uint4)vec_perm((vec_uchar16)a_nan, (vec_uchar16)a_nan, splat_hi); 
+       a_nan = (vec_uint4)vec_perm((vec_uchar16)a_nan, (vec_uchar16)a_nan, splat_hi);
        result = vec_or(result, a_nan);
      }
-     /* inf  */ 
+     /* inf  */
      if (b & 0x30)
      {
        a_inf = vec_and((vec_uint4)vec_slo((vec_uchar16)a_inf,x.v), a_inf);
-       a_inf = (vec_uint4)vec_perm((vec_uchar16)a_inf, (vec_uchar16)a_inf, splat_hi); 
+       a_inf = (vec_uint4)vec_perm((vec_uchar16)a_inf, (vec_uchar16)a_inf, splat_hi);
         /* +inf  */
         if (b & 0x20)
           result = vec_or(vec_andc(a_inf, sign), result);
         /* -inf  */
         if (b & 0x10)
           result = vec_or(vec_and(a_inf, sign), result);
-     } 
+     }
   }
   /* 0 or denorm  */
   if (b & 0xF)
@@ -860,7 +860,7 @@ static __inline qword si_clz(qword a)
   cnt = vec_add(cnt, vec_and(tmp1, vec_cmpeq(cnt, eight)));
   cnt = vec_add(cnt, vec_and(tmp2, vec_cmpeq(cnt, sixteen)));
   cnt = vec_add(cnt, vec_and(tmp3, vec_cmpeq(cnt, twentyfour)));
-  
+
   return (qword)((vec_sr((vec_uint4)(cnt), (vec_uint4)(twentyfour))));
 }
 
@@ -901,7 +901,7 @@ static __inline qword si_xsbh(qword a)
   vec_char16 av;
 
   av = (vec_char16)(a);
-  return ((qword)(vec_unpackh(vec_perm(av, av, ((vec_uchar16){1, 3, 5, 7, 9,11,13,15, 
+  return ((qword)(vec_unpackh(vec_perm(av, av, ((vec_uchar16){1, 3, 5, 7, 9,11,13,15,
 						              0, 0, 0, 0, 0, 0, 0, 0})))));
 }
 
@@ -910,9 +910,9 @@ static __inline qword si_xshw(qword a)
   vec_short8 av;
 
   av = (vec_short8)(a);
-  return ((qword)(vec_unpackh(vec_perm(av, av, ((vec_uchar16){2, 3, 6, 7, 
+  return ((qword)(vec_unpackh(vec_perm(av, av, ((vec_uchar16){2, 3, 6, 7,
 					                      10,11,14,15,
-							      0, 0, 0, 0, 
+							      0, 0, 0, 0,
 						              0, 0, 0, 0})))));
 }
 
@@ -921,10 +921,10 @@ static __inline qword si_xswd(qword a)
   vec_int4 av;
 
   av = (vec_int4)(a);
-  return ((qword)(vec_perm(av, vec_sra(av, ((vec_uint4){31,31,31,31})), 
-			   ((vec_uchar16){20, 21, 22, 23,  
-					   4,  5,  6,  7, 
-				          28, 29, 30, 31, 
+  return ((qword)(vec_perm(av, vec_sra(av, ((vec_uint4){31,31,31,31})),
+			   ((vec_uchar16){20, 21, 22, 23,
+					   4,  5,  6,  7,
+				          28, 29, 30, 31,
 				          12, 13, 14, 15}))));
 }
 
@@ -984,7 +984,7 @@ static __inline qword si_gb(qword a)
 }
 
 
-/* Compare and halt 
+/* Compare and halt
  */
 static __inline void si_heq(qword a, qword b)
 {
@@ -1066,8 +1066,8 @@ static __inline void si_hlgti(qword a, unsigned int b)
  */
 static __inline qword si_mpya(qword a, qword b, qword c)
 {
-  return ((qword)(vec_msum(vec_and((vec_short8)(a), 
-				   ((vec_short8){0, -1, 0, -1, 0, -1, 0, -1})), 
+  return ((qword)(vec_msum(vec_and((vec_short8)(a),
+				   ((vec_short8){0, -1, 0, -1, 0, -1, 0, -1})),
 			   (vec_short8)(b), (vec_int4)(c))));
 }
 
@@ -1116,7 +1116,7 @@ static __inline qword si_fsmh(qword a)
 
   in = (vec_uchar16)(a);
   mask = (vec_short8)(vec_splat(in, 3));
-  return ((qword)(vec_sra(vec_sl(mask, ((vec_ushort8){0, 1, 2, 3, 4, 5, 6, 7})), 
+  return ((qword)(vec_sra(vec_sl(mask, ((vec_ushort8){0, 1, 2, 3, 4, 5, 6, 7})),
 			  vec_splat_u16(15))));
 }
 
@@ -1155,7 +1155,7 @@ static __inline qword si_mpyhhau(qword a, qword b, qword c)
  */
 static __inline qword si_fms(qword a, qword b, qword c)
 {
-  return ((qword)(vec_madd((vec_float4)(a), (vec_float4)(b), 
+  return ((qword)(vec_madd((vec_float4)(a), (vec_float4)(b),
 			   vec_sub(((vec_float4){0.0f}), (vec_float4)(c)))));
 }
 
@@ -1231,13 +1231,13 @@ static __inline qword si_mpyu(qword a, qword b)
 
 static __inline qword si_mpyi(qword a, short b)
 {
-  return ((qword)(vec_mulo((vec_short8)(a), 
+  return ((qword)(vec_mulo((vec_short8)(a),
 			   vec_splat((vec_short8)(si_from_short(b)), 1))));
 }
 
 static __inline qword si_mpyui(qword a, unsigned short b)
 {
-  return ((qword)(vec_mulo((vec_ushort8)(a), 
+  return ((qword)(vec_mulo((vec_ushort8)(a),
 			   vec_splat((vec_ushort8)(si_from_ushort(b)), 1))));
 }
 
@@ -1313,19 +1313,19 @@ static __inline qword si_or(qword a, qword b)
 
 static __inline qword si_orbi(qword a, unsigned char b)
 {
-  return ((qword)(vec_or((vec_uchar16)(a), 
+  return ((qword)(vec_or((vec_uchar16)(a),
 			 vec_splat((vec_uchar16)(si_from_uchar(b)), 3))));
 }
 
 static __inline qword si_orhi(qword a, unsigned short b)
 {
-  return ((qword)(vec_or((vec_ushort8)(a), 
+  return ((qword)(vec_or((vec_ushort8)(a),
 			  vec_splat((vec_ushort8)(si_from_ushort(b)), 1))));
 }
 
 static __inline qword si_ori(qword a, unsigned int b)
 {
-  return ((qword)(vec_or((vec_uint4)(a), 
+  return ((qword)(vec_or((vec_uint4)(a),
 			  vec_splat((vec_uint4)(si_from_uint(b)), 0))));
 }
 
@@ -1384,13 +1384,13 @@ static __inline qword si_rot(qword a, qword b)
 
 static __inline qword si_rothi(qword a, int b)
 {
-  return ((qword)(vec_rl((vec_ushort8)(a), 
+  return ((qword)(vec_rl((vec_ushort8)(a),
 			 vec_splat((vec_ushort8)(si_from_int(b)), 1))));
 }
 
 static __inline qword si_roti(qword a, int b)
 {
-  return ((qword)(vec_rl((vec_uint4)(a), 
+  return ((qword)(vec_rl((vec_uint4)(a),
 			 vec_splat((vec_uint4)(si_from_int(b)), 0))));
 }
 
@@ -1526,7 +1526,7 @@ static __inline qword si_rotqbyi(qword a, int count)
     vec_uchar16 v;
     int i[4];
   } left, right;
- 
+
   count <<= 3;
   left.i[3] = count;
   right.i[3] = 0 - count;
@@ -1536,7 +1536,7 @@ static __inline qword si_rotqbyi(qword a, int count)
 static __inline qword si_rotqby(qword a, qword count)
 {
   vec_uchar16 left, right;
- 
+
   left = vec_sl(vec_splat((vec_uchar16)(count), 3), vec_splat_u8(3));
   right = vec_sub(vec_splat_u8(0), left);
   return ((qword)(vec_or(vec_slo((vec_uchar16)(a), left), vec_sro((vec_uchar16)(a), right))));
@@ -1560,7 +1560,7 @@ static __inline qword si_rotqbii(qword a, int count)
 {
   vec_uchar16 x, y;
   vec_uchar16 result;
- 
+
   x = vec_splat((vec_uchar16)(si_from_int(count & 7)), 3);
   y = (vec_uchar16)(vec_sr((vec_uint4)vec_sro((vec_uchar16)(a), ((vec_uchar16)((vec_uint4){0,0,0,120}))),
 			   (vec_uint4)vec_sub(vec_splat_u8(8), x)));
@@ -1572,11 +1572,11 @@ static __inline qword si_rotqbi(qword a, qword count)
 {
   vec_uchar16 x, y;
   vec_uchar16 result;
- 
+
   x = vec_and(vec_splat((vec_uchar16)(count), 3), vec_splat_u8(7));
   y = (vec_uchar16)(vec_sr((vec_uint4)vec_sro((vec_uchar16)(a), ((vec_uchar16)((vec_uint4){0,0,0,120}))),
 			   (vec_uint4)vec_sub(vec_splat_u8(8), x)));
-  
+
   result = vec_or(vec_sll((qword)(a), x), y);
   return ((qword)(result));
 }
@@ -1652,10 +1652,10 @@ static __inline qword si_shufb(qword a, qword b, qword pattern)
 {
   vec_uchar16 pat;
 
-  pat = vec_sel(((vec_uchar16){0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15}), 
+  pat = vec_sel(((vec_uchar16){0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15}),
 		vec_sr((vec_uchar16)(pattern), vec_splat_u8(3)),
 		vec_sra((vec_uchar16)(pattern), vec_splat_u8(7)));
-  return ((qword)(vec_perm(vec_perm(a, b, pattern), 
+  return ((qword)(vec_perm(vec_perm(a, b, pattern),
 			   ((vec_uchar16){0, 0, 0, 0, 0, 0, 0, 0,
 				          0xFF, 0xFF, 0xFF, 0xFF, 0x80, 0x80, 0x80, 0x80}),
 			   pat)));
@@ -1831,7 +1831,7 @@ static __inline qword si_sumb(qword a, qword b)
 {
   vec_uint4 zero = (vec_uint4){0};
   vec_ushort8 sum_a, sum_b;
-  
+
   sum_a = (vec_ushort8)vec_sum4s((vec_uchar16)(a), zero);
   sum_b = (vec_ushort8)vec_sum4s((vec_uchar16)(b), zero);
 
@@ -1848,19 +1848,19 @@ static __inline qword si_xor(qword a, qword b)
 
 static __inline qword si_xorbi(qword a, unsigned char b)
 {
-  return ((qword)(vec_xor((vec_uchar16)(a), 
+  return ((qword)(vec_xor((vec_uchar16)(a),
 			  vec_splat((vec_uchar16)(si_from_uchar(b)), 3))));
 }
 
 static __inline qword si_xorhi(qword a, unsigned short b)
 {
-  return ((qword)(vec_xor((vec_ushort8)(a), 
+  return ((qword)(vec_xor((vec_ushort8)(a),
 			  vec_splat((vec_ushort8)(si_from_ushort(b)), 1))));
 }
 
 static __inline qword si_xori(qword a, unsigned int b)
 {
-  return ((qword)(vec_xor((vec_uint4)(a), 
+  return ((qword)(vec_xor((vec_uint4)(a),
 			  vec_splat((vec_uint4)(si_from_uint(b)), 0))));
 }
 
@@ -2038,7 +2038,7 @@ static __inline void si_stqr(qword a, unsigned int imm)
 
 static __inline void si_stqx(qword a, qword b, qword c)
 {
-  vec_st((vec_uchar16)(a), 
+  vec_st((vec_uchar16)(a),
 	 si_to_uint((qword)(vec_add((vec_uint4)(b), (vec_uint4)(c)))),
 	 (vector unsigned char *)(0));
 }

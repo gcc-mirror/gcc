@@ -7452,7 +7452,7 @@ extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       binding_slot *bslot);
 extern void lazy_load_pendings (tree decl);
 extern module_state *preprocess_module (module_state *, location_t,
-					bool in_purview, 
+					bool in_purview,
 					bool is_import, bool export_p,
 					cpp_reader *reader);
 extern void preprocessed_module (cpp_reader *reader);
@@ -8835,7 +8835,7 @@ set_contract_semantic (tree t, contract_semantic semantic)
 }
 
 /* Inline bodies.  */
-  
+
 inline tree
 ovl_first (tree node)
 {

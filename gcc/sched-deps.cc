@@ -1226,7 +1226,7 @@ add_or_update_dep_1 (dep_t new_dep, bool resolved_p,
 	case DEP_PRESENT:
 	  dep_t present_dep;
 	  sd_iterator_def sd_it;
-      
+
 	  present_dep = sd_find_dep_between_no_cache (DEP_PRO (new_dep),
 						      DEP_CON (new_dep),
 						      resolved_p, &sd_it);
@@ -1550,7 +1550,7 @@ add_dependence (rtx_insn *con, rtx_insn *pro, enum reg_note dep_type)
 			       REG_DEP_TRUE, false);
 	}
     }
-	  
+
   add_dependence_1 (con, pro, dep_type);
 }
 
@@ -2693,7 +2693,7 @@ sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 		    {
 		      ds_t ds = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
 					      MAX_DEP_WEAK);
-		      
+
 		      note_dep (u->insn (), ds);
 		    }
 		  else

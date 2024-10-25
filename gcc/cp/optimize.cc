@@ -510,7 +510,7 @@ maybe_clone_body (tree fn)
 
       clone = fns[idx];
       if (!clone)
-	continue;      
+	continue;
 
       /* Update CLONE's source position information to match FN's.  */
       DECL_SOURCE_LOCATION (clone) = DECL_SOURCE_LOCATION (fn);

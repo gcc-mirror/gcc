@@ -1163,7 +1163,7 @@ emit_stack_restore (enum save_level save_level, rtx sa)
      STACK_POINTER. This renders the HARD_FRAME_POINTER unusable for accessing
      aligned variables, which is reflected in ix86_can_eliminate.
      We normally still have the realigned STACK_POINTER that we can use.
-     But if there is a stack restore still present at reload, it can trigger 
+     But if there is a stack restore still present at reload, it can trigger
      mark_not_eliminable for the STACK_POINTER, leaving no way to eliminate
      FRAME_POINTER into a hard reg.
      To prevent this situation, we force need_drap if we emit a stack
@@ -1237,7 +1237,7 @@ record_new_stack_level (void)
   /* Record the new stack level for nonlocal gotos.  */
   if (cfun->nonlocal_goto_save_area)
     update_nonlocal_goto_save_area ();
- 
+
   /* Record the new stack level for SJLJ exceptions.  */
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
     update_sjlj_context ();

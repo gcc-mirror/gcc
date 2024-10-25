@@ -1759,7 +1759,7 @@ FP_ASM_SPEC "\
    optimised to use word loads. */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   DATA_ALIGNMENT (TYPE, ALIGN)
-  
+
 #define PAD_VARARGS_DOWN \
   (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 

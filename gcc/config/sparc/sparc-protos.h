@@ -99,7 +99,7 @@ extern int register_ok_for_ldd (rtx);
 extern int memory_ok_for_ldd (rtx);
 extern int v9_regcmp_p (enum rtx_code);
 /* Function used for V8+ code generation.  Returns 1 if the high
-   32 bits of REG are 0 before INSN.  */   
+   32 bits of REG are 0 before INSN.  */
 extern int sparc_check_64 (rtx, rtx_insn *);
 extern rtx gen_df_reg (rtx, int);
 extern void sparc_expand_compare_and_swap (rtx op[]);

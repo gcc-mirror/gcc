@@ -1258,7 +1258,7 @@ make_dispatcher_decl (const tree decl)
   fn_type = TREE_TYPE (decl);
   func_type = build_function_type (TREE_TYPE (fn_type),
 				   TYPE_ARG_TYPES (fn_type));
-  
+
   func_decl = build_fn_decl (func_name, func_type);
   XDELETEVEC (func_name);
   TREE_USED (func_decl) = 1;
@@ -1271,7 +1271,7 @@ make_dispatcher_decl (const tree decl)
   /* This will be of type IFUNCs have to be externally visible.  */
   TREE_PUBLIC (func_decl) = 1;
 
-  return func_decl;  
+  return func_decl;
 }
 
 /* Returns true if DECL is multi-versioned using the target attribute, and this

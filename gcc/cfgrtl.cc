@@ -4115,7 +4115,7 @@ fixup_reorder_chain (void)
 	  dest = e_fall->dest;
 	}
 
-      /* We got here if we need to add a new jump insn. 
+      /* We got here if we need to add a new jump insn.
 	 Note force_nonfallthru can delete E_FALL and thus we have to
 	 save E_FALL->src prior to the call to force_nonfallthru.  */
       nb = force_nonfallthru_and_redirect (e_fall, dest, ret_label);
@@ -4946,7 +4946,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
       else
 	{
 	  rtx_insn *last = BB_HEADER (b);
- 
+
 	  while (NEXT_INSN (last))
 	    last = NEXT_INSN (last);
 	  SET_NEXT_INSN (last) = BB_FOOTER (a);
@@ -5057,10 +5057,10 @@ rtl_split_block_before_cond_jump (basic_block bb)
       last = insn;
     }
 
-  /* Did not find everything.  */ 
+  /* Did not find everything.  */
   if (found_code && split_point)
     return split_block (bb, split_point)->dest;
-  else 
+  else
     return NULL;
 }
 
@@ -5455,7 +5455,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
   NULL, /* lv_adjust_loop_header_phi*/
   rtl_extract_cond_bb_edges, /* extract_cond_bb_edges */
-  NULL, /* flush_pending_stmts */  
+  NULL, /* flush_pending_stmts */
   rtl_block_empty_p, /* block_empty_p */
   rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
   rtl_account_profile_record,

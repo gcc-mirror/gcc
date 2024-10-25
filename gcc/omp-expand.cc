@@ -491,7 +491,7 @@ gimple_build_cond_empty (tree cond)
    Add CHILD_FNDECL to decl chain of the supercontext of the block
    ENTRY_BLOCK - this is the block which originally contained the
    code from which CHILD_FNDECL was created.
-   
+
    Together, these actions ensure that the debug info for the outlined
    function will be emitted with the correct lexical scope.  */
 

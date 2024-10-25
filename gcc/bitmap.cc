@@ -340,7 +340,7 @@ bitmap_list_insert_element_after (bitmap head,
 }
 
 /* Return the element for INDX, or NULL if the element doesn't exist.
-   Update the `current' field even if we can't find an element that  
+   Update the `current' field even if we can't find an element that
    would hold the bitmap's bit to make eventual allocation
    faster.  */
 
@@ -418,7 +418,7 @@ bitmap_list_find_element (bitmap head, unsigned int indx)
    splay tree in Sleator and Tarjan's "Self-adjusting Binary Search Trees".
    It is probably not the most efficient form of splay trees, but it should
    be good enough to experiment with this idea of bitmaps-as-trees.
-   
+
    For all functions below, the variable or function argument "t" is a node
    in the tree, and "e" is a temporary or new node in the tree.  The rest
    is sufficiently straigh-forward (and very well explained in the paper)

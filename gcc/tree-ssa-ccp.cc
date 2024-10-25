@@ -250,12 +250,12 @@ debug_lattice_value (ccp_prop_value_t val)
   fprintf (stderr, "\n");
 }
 
-/* Extend NONZERO_BITS to a full mask, based on sgn.  */ 
+/* Extend NONZERO_BITS to a full mask, based on sgn.  */
 
 static widest_int
 extend_mask (const wide_int &nonzero_bits, signop sgn)
 {
-  return widest_int::from (nonzero_bits, sgn); 
+  return widest_int::from (nonzero_bits, sgn);
 }
 
 /* Compute a default value for variable VAR and store it in the
@@ -991,7 +991,7 @@ ccp_folder::value_of_expr (tree op, gimple *)
    Return TRUE when something was optimized.  */
 
 static bool
-ccp_finalize (bool nonzero_p) 
+ccp_finalize (bool nonzero_p)
 {
   bool something_changed;
   unsigned i;
@@ -1335,7 +1335,7 @@ value_mask_to_min_max (widest_int *min, widest_int *max,
    the value, mask pair *VAL and *MASK to the result.  */
 
 void
-bit_value_unop (enum tree_code code, signop type_sgn, int type_precision, 
+bit_value_unop (enum tree_code code, signop type_sgn, int type_precision,
 		widest_int *val, widest_int *mask,
 		signop rtype_sgn, int rtype_precision,
 		const widest_int &rval, const widest_int &rmask)
@@ -1501,7 +1501,7 @@ static const unsigned char gray_code_bit_flips[63] = {
    and R2TYPE and set the value, mask pair *VAL and *MASK to the result.  */
 
 void
-bit_value_binop (enum tree_code code, signop sgn, int width, 
+bit_value_binop (enum tree_code code, signop sgn, int width,
 		 widest_int *val, widest_int *mask,
 		 signop r1type_sgn, int r1type_precision,
 		 const widest_int &r1val, const widest_int &r1mask,

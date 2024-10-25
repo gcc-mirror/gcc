@@ -4176,7 +4176,7 @@ cp_coroutine_transform::wrap_original_function_body ()
       for (tree b = BLOCK_SUBBLOCKS (replace_blk); b; b = BLOCK_CHAIN (b))
 	BLOCK_SUPERCONTEXT (b) = replace_blk;
       BIND_EXPR_BLOCK (first) = replace_blk;
-      /* The top block has one child, so far, and we have now got a 
+      /* The top block has one child, so far, and we have now got a
 	 superblock.  */
       BLOCK_SUPERCONTEXT (replace_blk) = top_block;
       BLOCK_SUBBLOCKS (top_block) = replace_blk;
@@ -5086,7 +5086,7 @@ cp_coroutine_transform::build_ramp_function ()
 
       /* Before initial resume is called, the responsibility for cleanup on
 	 exception falls to the ramp.  After that, the coroutine body code
-	 should do the cleanup.  This is signalled by the flag 
+	 should do the cleanup.  This is signalled by the flag
 	 'initial_await_resume_called'.  */
 
       tree not_iarc

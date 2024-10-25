@@ -563,7 +563,7 @@ static inline bool
 queue_phi_copy_p (var_map map, tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
-    { 
+    {
       if (var_to_partition (map, t) == NO_PARTITION)
         return true;
       return false;

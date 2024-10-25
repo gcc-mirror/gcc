@@ -350,7 +350,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 		  /* Duplicating loop header with combned conditional will
 		     remove this statement in each copy.  But we account for
 		     that later when seeing that condition.
-		     
+
 		     Note that this may be overly optimistic for bit operations
 		     where the static parameter may still result in non-trivial
 		     bit operation.  */

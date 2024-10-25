@@ -959,7 +959,7 @@ set_addressable (varpool_node *node, void *)
   return false;
 }
 
-/* Clear DECL_RTL of NODE. 
+/* Clear DECL_RTL of NODE.
    Helper for call_for_symbol_thunks_and_aliases.  */
 
 static bool
@@ -1903,7 +1903,7 @@ sem_variable::equals (tree t1, tree t2)
 	  return false;
 	return true;
       }
-     
+
     case COMPONENT_REF:
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:

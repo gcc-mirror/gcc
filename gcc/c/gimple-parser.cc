@@ -700,7 +700,7 @@ expr_stmt:
 
    gimple-assign-statement:
      gimple-unary-expression = gimple-assign-rhs
- 
+
    gimple-assign-rhs:
      gimple-cast-expression
      gimple-unary-expression
@@ -1324,7 +1324,7 @@ c_parser_parse_ssa_name_id (tree id, unsigned *version, unsigned *ver_offset)
 /* Get at the actual SSA name ID with VERSION starting at VER_OFFSET.
    TYPE is the type if the SSA name is being declared.  */
 
-static tree 
+static tree
 c_parser_parse_ssa_name (gimple_parser &parser,
 			 tree id, tree type, unsigned version,
 			 unsigned ver_offset)
@@ -1341,7 +1341,7 @@ c_parser_parse_ssa_name (gimple_parser &parser,
 	{
 	  if (! type)
 	    {
-	      c_parser_error (parser, "SSA name undeclared"); 
+	      c_parser_error (parser, "SSA name undeclared");
 	      return error_mark_node;
 	    }
 	  name = make_ssa_name_fn (cfun, type, NULL, version);
@@ -1363,7 +1363,7 @@ c_parser_parse_ssa_name (gimple_parser &parser,
 	  XDELETEVEC (var_name);
 	  if (! parent || parent == error_mark_node)
 	    {
-	      c_parser_error (parser, "base variable or SSA name undeclared"); 
+	      c_parser_error (parser, "base variable or SSA name undeclared");
 	      return error_mark_node;
 	    }
 	  if (!(VAR_P (parent)

@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    linked executables and shared libraries.  */
 #define LDD_SUFFIX "chatr"
 /* Look for lines like "dynamic   /usr/lib/X11R5/libX11.sl"
-   or "static    /usr/lib/X11R5/libX11.sl". 
+   or "static    /usr/lib/X11R5/libX11.sl".
 
    HPUX 10.20 also has lines like "static branch prediction ..."
    so we filter that out explicitly.
@@ -357,7 +357,7 @@ do {						\
 #define GTHREAD_USE_WEAK 0
 
 /* Shared library suffix.  Collect2 strips the version string after
-   this suffix when generating constructor/destructor names.  */ 
+   this suffix when generating constructor/destructor names.  */
 #define SHLIB_SUFFIX ".sl"
 
 /* We don't have named sections.  */

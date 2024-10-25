@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
    Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
-   
+
    This file is part of GCC.
 
    GCC is free software; you can redistribute it and/or modify it
@@ -165,7 +165,7 @@
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
   sprintf (STRING, "*%s%s%u", LOCAL_LABEL_PREFIX, PREFIX, (unsigned int)(NUM))
 #endif
-     
+
 /* Output an element of a dispatch table.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)			\
   do								\
@@ -174,7 +174,7 @@
       asm_fprintf (STREAM, "\t.word\t%LL%d\n", VALUE);		\
     }								\
   while (0)
-	  
+
 
 /* Thumb-2 always uses addr_diff_elf so that the Table Branch instructions
    can be used.  For non-pic code where the offsets do not suitable for
@@ -266,7 +266,7 @@
   fprintf (STREAM, "\t.space\t%d\n", (int) (NBYTES))
 
 /* Align output to a power of two.  Horrible /bin/as.  */
-#ifndef ASM_OUTPUT_ALIGN  
+#ifndef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(STREAM, POWER)			\
   do							\
     {							\
@@ -292,7 +292,7 @@
     }							\
   while (0)
 #endif
-     
+
 /* Output a local common block.  /bin/as can't do this, so hack a
    `.space' into the bss segment.  Note that this is *bad* practice,
    which is guaranteed NOT to work since it doesn't define STATIC
@@ -308,7 +308,7 @@
     }									\
   while (0)
 #endif
-     
+
 /* Output a zero-initialized block.  */
 #ifndef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(STREAM, DECL, NAME, SIZE, ALIGN) \

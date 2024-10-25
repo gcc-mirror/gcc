@@ -147,10 +147,10 @@ private:
 // If there is any known range for b_4 coming into this block, it can refine
 // the results.  This allows for cascading results to be propagated.
 // if b_4 is [100, 200] on entry to the block, feeds into the calculation
-// of a_2 = [92, 192], and finally on the true edge the range would be 
+// of a_2 = [92, 192], and finally on the true edge the range would be
 // an empty range [] because it is not possible for the true edge to be taken.
 //
-// expr_range_in_bb is simply a wrapper which calls ssa_range_in_bb for 
+// expr_range_in_bb is simply a wrapper which calls ssa_range_in_bb for
 // SSA_NAMES and otherwise simply calculates the range of the expression.
 //
 // The constructor takes a flag value to use on edges to check for the

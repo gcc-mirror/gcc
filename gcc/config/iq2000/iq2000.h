@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  
+/* Definitions of target machine for GNU compiler.
    Vitesse IQ2000 processors
    Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
@@ -60,7 +60,7 @@
 /* Storage Layout.  */
 
 #define BITS_BIG_ENDIAN 		0
-#define BYTES_BIG_ENDIAN 		1 
+#define BYTES_BIG_ENDIAN 		1
 #define WORDS_BIG_ENDIAN 		1
 #define BITS_PER_WORD 			32
 #define MAX_BITS_PER_WORD 		64
@@ -295,7 +295,7 @@ typedef struct iq2000_args
   init_cumulative_args (& CUM, FNTYPE, LIBNAME)				\
 
 #define FUNCTION_ARG_REGNO_P(N)						\
-  (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST))			
+  (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST))
 
 
 /* On the IQ2000, R2 and R3 are the only register thus used.  */

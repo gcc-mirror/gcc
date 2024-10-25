@@ -339,7 +339,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
             }
           if (oldSize != static_cast<Indexing_Index__opaque> (i)->ArraySize)
             {
-              /* 
+              /*
                IF Debug
                THEN
                   printf2('increasing memory hunk from %d to %d

@@ -577,7 +577,7 @@ ssa_cache::has_range (tree name) const
   return m_tab[v] != NULL;
 }
 
-// Retrieve the global range of NAME from cache memory if it exists. 
+// Retrieve the global range of NAME from cache memory if it exists.
 // Return the value in R.
 
 bool
@@ -1365,7 +1365,7 @@ ranger_cache::propagate_cache (tree name)
 	  // If the cache couldn't set the value, mark it as failed.
 	  if (!ok_p)
 	    m_update->propagation_failed (bb);
-	  if (DEBUG_RANGE_CACHE) 
+	  if (DEBUG_RANGE_CACHE)
 	    {
 	      if (!ok_p)
 		{
@@ -1384,11 +1384,11 @@ ranger_cache::propagate_cache (tree name)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (m_on_entry.bb_range_p (name, e->dest))
 	      {
-		if (DEBUG_RANGE_CACHE) 
+		if (DEBUG_RANGE_CACHE)
 		  fprintf (dump_file, " bb%d",e->dest->index);
 		m_update->add (e->dest);
 	      }
-	  if (DEBUG_RANGE_CACHE) 
+	  if (DEBUG_RANGE_CACHE)
 	    fprintf (dump_file, "\n");
 	}
     }

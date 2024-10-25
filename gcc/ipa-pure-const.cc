@@ -2377,7 +2377,7 @@ pass_nothrow::execute (function *)
 						  callee_t))
 		  continue;
 	      }
-	
+
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Statement can throw: ");

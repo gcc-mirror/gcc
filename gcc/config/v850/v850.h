@@ -63,7 +63,7 @@
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v850e1
 #undef  MASK_DEFAULT
-#define MASK_DEFAULT            MASK_V850E     /* No practical difference.  */     
+#define MASK_DEFAULT            MASK_V850E     /* No practical difference.  */
 #undef  SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC	"%{!mv*:-mv850e1}"
 #undef  SUBTARGET_CPP_SPEC
@@ -72,7 +72,7 @@
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v850e2
 #undef  MASK_DEFAULT
-#define MASK_DEFAULT            MASK_V850E2	
+#define MASK_DEFAULT            MASK_V850E2
 #undef  SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e2}"
 #undef  SUBTARGET_CPP_SPEC
@@ -99,7 +99,7 @@
 #define TARGET_VERSION		fprintf (stderr, " (Renesas V850E3V5)");
 #endif
 
-#define TARGET_V850E3V5_UP ((TARGET_V850E3V5))     
+#define TARGET_V850E3V5_UP ((TARGET_V850E3V5))
 #define TARGET_V850E2V3_UP ((TARGET_V850E2V3) || TARGET_V850E3V5_UP)
 #define TARGET_V850E2_UP   ((TARGET_V850E2)   || TARGET_V850E2V3_UP)
 #define TARGET_V850E_UP    ((TARGET_V850E)    || TARGET_V850E2_UP)
@@ -127,7 +127,7 @@
 
 #define EXTRA_SPECS \
  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC }, \
- { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC } 
+ { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC }
 
 
 /* Macro to decide when FPU instructions can be used.  */
@@ -308,7 +308,7 @@
 
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
-   
+
 enum reg_class
 {
   NO_REGS, EVEN_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
@@ -353,7 +353,7 @@ enum reg_class
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in reginfo.cc during register
    allocation.  */
- 
+
 #define REGNO_OK_FOR_BASE_P(regno)             \
   (((regno) < FIRST_PSEUDO_REGISTER            \
     && (regno) != CC_REGNUM                    \
@@ -412,7 +412,7 @@ enum reg_class
 
 /* Register containing return address from latest function call.  */
 #define LINK_POINTER_REGNUM LP_REGNUM
-     
+
 /* On some machines the offset between the frame pointer and starting
    offset of the automatic variables is not known until after register
    allocation has been done (for example, because the saved registers
@@ -432,7 +432,7 @@ enum reg_class
 
    Do not define this macro if it would be the same as
    `FRAME_POINTER_REGNUM'.  */
-#undef  HARD_FRAME_POINTER_REGNUM 
+#undef  HARD_FRAME_POINTER_REGNUM
 #define HARD_FRAME_POINTER_REGNUM 29
 
 /* Base register for access to arguments of the function.  */
@@ -578,7 +578,7 @@ struct cum_arg { int nbytes; };
 #define NO_FUNCTION_CSE 1
 
 /* The four different data regions on the v850.  */
-typedef enum 
+typedef enum
 {
   DATA_AREA_NORMAL,
   DATA_AREA_SDA,
@@ -617,7 +617,7 @@ typedef enum
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
-#undef  ASM_OUTPUT_ALIGNED_BSS 
+#undef  ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   v850_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
@@ -634,7 +634,7 @@ typedef enum
 #undef  ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN) \
      v850_output_local (FILE, DECL, NAME, SIZE, ALIGN)
-     
+
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global "
 
@@ -767,26 +767,26 @@ typedef enum
    can appear in the "ghs section" pragma.  These names are used to index
    into the GHS_default_section_names[] and GHS_current_section_names[]
    that are defined in v850.cc, and so the ordering of each must remain
-   consistent. 
+   consistent.
 
-   These arrays give the default and current names for each kind of 
+   These arrays give the default and current names for each kind of
    section defined by the GHS pragmas.  The current names can be changed
-   by the "ghs section" pragma.  If the current names are null, use 
+   by the "ghs section" pragma.  If the current names are null, use
    the default names.  Note that the two arrays have different types.
 
    For the *normal* section kinds (like .data, .text, etc.) we do not
    want to explicitly force the name of these sections, but would rather
-   let the linker (or at least the back end) choose the name of the 
+   let the linker (or at least the back end) choose the name of the
    section, UNLESS the user has forced a specific name for these section
    kinds.  To accomplish this set the name in ghs_default_section_names
    to null.  */
 
 enum GHS_section_kind
-{ 
+{
   GHS_SECTION_KIND_DEFAULT,
 
   GHS_SECTION_KIND_TEXT,
-  GHS_SECTION_KIND_DATA, 
+  GHS_SECTION_KIND_DATA,
   GHS_SECTION_KIND_RODATA,
   GHS_SECTION_KIND_BSS,
   GHS_SECTION_KIND_SDATA,

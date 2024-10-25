@@ -426,7 +426,7 @@ class dynamic_call_info_t : public custom_edge_info
 public:
   dynamic_call_info_t (const gcall *dynamic_call,
   		       const bool is_returning_call = false)
-  : m_dynamic_call (dynamic_call), 
+  : m_dynamic_call (dynamic_call),
     m_is_returning_call (is_returning_call)
   {}
 

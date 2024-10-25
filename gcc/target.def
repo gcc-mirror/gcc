@@ -463,7 +463,7 @@ is emitted.",
 
 /* Return preferred text (sub)section for function DECL.
    Main purpose of this function is to separate cold, normal and hot
-   functions. STARTUP is true when function is known to be used only 
+   functions. STARTUP is true when function is known to be used only
    at startup (from static constructors or it is main()).
    EXIT is true when function is known to be used only at exit
    (from static destructors).
@@ -2569,7 +2569,7 @@ DEFHOOK
 function version at run-time for a given set of function versions.\n\
 @var{arg} points to the callgraph node of the dispatcher function whose\n\
 body must be generated.",
- tree, (void *arg), NULL) 
+ tree, (void *arg), NULL)
 
 /* Target hook is used to get the dispatcher function for a set of function
    versions.  The dispatcher function is called to invoke the right function
@@ -4050,7 +4050,7 @@ implementation returns the lowest possible value of @var{val}.",
  HOST_WIDE_INT, (poly_int64 val, poly_value_estimate_kind kind),
  default_estimated_poly_value)
 
-/* Permit speculative instructions in delay slots during delayed-branch 
+/* Permit speculative instructions in delay slots during delayed-branch
    scheduling.  */
 DEFHOOK
 (no_speculation_in_delay_slots_p,
@@ -4556,7 +4556,7 @@ DEFHOOK
  emits a @code{speculation_barrier} instruction if that is defined.",
 rtx, (machine_mode mode, rtx result, rtx val, rtx failval),
  default_speculation_safe_value)
- 
+
 DEFHOOK
 (predict_doloop_p,
  "Return true if we can predict it is possible to use a low-overhead loop\n\
@@ -6900,7 +6900,7 @@ modifiable by the callee.  The affected registers may be mentioned explicitly\n\
 in the call pattern, or included as clobbers in CALL_INSN_FUNCTION_USAGE.\n\
 The default version of this hook is set to false.  The purpose of this hook\n\
 is to enable the fipa-ra optimization.",
- bool, 
+ bool,
  false)
 
 /* Fill in additional registers set up by prologue into a regset.  */

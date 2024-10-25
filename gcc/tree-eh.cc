@@ -3765,7 +3765,7 @@ sink_clobbers (basic_block bb,
   return todo;
 }
 
-/* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
+/* At the end of inlining, we can lower EH_DISPATCH.  Return true when
    we have found some duplicate labels and removed some edges.  */
 
 static bool
@@ -3814,10 +3814,10 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	      }
 	    do
 	      {
-		/* Filter out duplicate labels that arise when this handler 
-		   is shadowed by an earlier one.  When no labels are 
-		   attached to the handler anymore, we remove 
-		   the corresponding edge and then we delete unreachable 
+		/* Filter out duplicate labels that arise when this handler
+		   is shadowed by an earlier one.  When no labels are
+		   attached to the handler anymore, we remove
+		   the corresponding edge and then we delete unreachable
 		   blocks at the end of this pass.  */
 		if (! seen_values.contains (TREE_VALUE (flt_node)))
 		  {
@@ -4025,7 +4025,7 @@ make_pass_lower_eh_dispatch (gcc::context *ctxt)
 
 /* Walk statements, see what regions and, optionally, landing pads
    are really referenced.
-   
+
    Returns in R_REACHABLEP an sbitmap with bits set for reachable regions,
    and in LP_REACHABLE an sbitmap with bits set for reachable landing pads.
 

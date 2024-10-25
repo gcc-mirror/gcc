@@ -1161,7 +1161,7 @@ aarch64_simd_builtin_type (machine_mode mode,
 
   return type;
 }
- 
+
 static void
 aarch64_init_simd_builtin_types (void)
 {

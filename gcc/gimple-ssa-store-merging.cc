@@ -4227,7 +4227,7 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
     {
       clobber_first = true;
       unsigned HOST_WIDE_INT pos = group->start / BITS_PER_UNIT;
-      FOR_EACH_VEC_ELT (split_stores, i, split_store)      
+      FOR_EACH_VEC_ELT (split_stores, i, split_store)
 	if (split_store->bytepos != pos)
 	  {
 	    clobber_first = false;
@@ -5222,7 +5222,7 @@ pass_store_merging::process_store (gimple *stmt)
       else if (handled_load (def_stmt, &ops[0], bitsize, bitpos,
 			     bitregion_start, bitregion_end))
 	rhs_code = MEM_REF;
-      else if (gimple_assign_rhs_code (def_stmt) == BIT_NOT_EXPR) 
+      else if (gimple_assign_rhs_code (def_stmt) == BIT_NOT_EXPR)
 	{
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	  if (TREE_CODE (rhs1) == SSA_NAME

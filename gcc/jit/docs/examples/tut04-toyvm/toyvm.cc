@@ -776,7 +776,7 @@ compilation_state::create_function (const char *funcname)
             ctxt.new_cast (x, bool_type, loc),
 	    op_blocks[op->op_operand], /* on_true */
 	    next_block, /* on_false */
-            loc); 
+            loc);
 	  break;
 
 	default:

@@ -52,7 +52,7 @@ ccmp_tree_comparison_p (tree t, basic_block bb)
     return (TREE_CODE (TREE_TYPE (t)) == BOOLEAN_TYPE);
 
   /* Check to see if SSA name is set by a comparison operator in
-     the same basic block.  */ 
+     the same basic block.  */
   if (!is_gimple_assign (g))
     return false;
   if (bb != gimple_bb (g))

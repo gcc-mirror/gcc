@@ -109,7 +109,7 @@ create_local_binding (cp_binding_level *level, tree name)
   binding->previous = IDENTIFIER_BINDING (name);
 
   IDENTIFIER_BINDING (name) = binding;
-  
+
   return binding;
 }
 
@@ -148,7 +148,7 @@ search_imported_binding_slot (tree *slot, unsigned ix)
 
   if (TREE_CODE (*slot) != BINDING_VECTOR)
     return NULL;
-  
+
   unsigned clusters = BINDING_VECTOR_NUM_CLUSTERS (*slot);
   binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (*slot);
 
@@ -497,7 +497,7 @@ protected:
   {
     return LOOKUP_FOUND_P (scope);
   }
-  
+
   void mark_seen (tree scope); /* Mark and add to scope vector. */
   static void mark_found (tree scope)
   {
@@ -1079,7 +1079,7 @@ name_lookup::search_qualified (tree scope, bool usings)
 
   if (seen_p (scope))
     found = found_p (scope);
-  else 
+  else
     {
       found = search_namespace (scope);
       if (!found && usings)
@@ -1597,7 +1597,7 @@ name_lookup::adl_template_arg (tree arg)
     {
       tree args = ARGUMENT_PACK_ARGS (arg);
       int i, len = TREE_VEC_LENGTH (args);
-      for (i = 0; i < len; ++i) 
+      for (i = 0; i < len; ++i)
 	adl_template_arg (TREE_VEC_ELT (args, i));
     }
   /* It's not a template template argument, but it is a type template
@@ -1613,7 +1613,7 @@ tree
 name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 {
   gcc_checking_assert (!vec_safe_length (scopes));
-  
+
   /* Gather each associated entity onto the lookup's scope list.  */
   unsigned ix;
   tree arg;
@@ -1653,7 +1653,7 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		 (10.2) is visible if there is an associated entity
 		 attached to M with the same innermost enclosing
 		 non-inline namespace as D.
-		 [basic.lookup.argdep]/4.4 */ 
+		 [basic.lookup.argdep]/4.4 */
 
 	      if (!inst_path)
 		/* Not 2nd phase.  */
@@ -1805,7 +1805,7 @@ fields_linear_search (tree klass, tree name, bool want_type)
 
       if (DECL_NAME (decl) != name)
 	continue;
-      
+
       if (TREE_CODE (decl) == USING_DECL)
 	{
 	  decl = strip_using_decl (decl);
@@ -2217,7 +2217,7 @@ member_name_cmp (const void *a_p, const void *b_p)
 	 some erroneous cases get though. */
       gcc_assert (errorcount);
     }
-  
+
   /* Using source location would be the best thing here, but we can
      get identically-located decls in the following circumstances:
 
@@ -2711,7 +2711,7 @@ strip_using_decl (tree decl)
       /* We have found a type introduced by a using
 	 declaration at class scope that refers to a dependent
 	 type.
-	     
+
 	 using typename :: [opt] nested-name-specifier unqualified-id ;
       */
       decl = make_typename_type (USING_DECL_SCOPE (decl),
@@ -6393,7 +6393,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
       return;
     }
-  
+
   /* We handle these in check_explicit_instantiation_namespace.  */
   if (processing_explicit_instantiation)
     return;
@@ -7588,7 +7588,7 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
          order.  So, iterate over the namespace hash, inserting
          visible names into a vector.  Then sort the vector.  Then
          determine spelling distance.  */
-      
+
       tree ns = lvl->this_entity;
       auto_vec<tree> vec;
 
@@ -7643,7 +7643,7 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  else
 	    maybe_add_fuzzy_binding (vec, binding, kind);
 	}
-	
+
       vec.qsort ([] (const void *a_, const void *b_)
 		 {
 		   return strcmp (IDENTIFIER_POINTER (*(const tree *)a_),
@@ -7658,7 +7658,7 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  /* Ignore internal names with spaces in them.  */
 	  if (strchr (str, ' '))
 	    continue;
-	  
+
 	  /* Don't suggest names that are reserved for use by the
 	     implementation, unless NAME began with an underscore.  */
 	  if (!consider_implementation_names
@@ -8210,7 +8210,7 @@ lookup_elaborated_type (tree name, TAG_how how)
 	      if (how != TAG_how::HIDDEN_FRIEND)
 		/* No longer hidden.  */
 		STAT_TYPE_HIDDEN_P (*slot) = false;
-	      
+
 	      return type;
 	    }
 	  else if (tree decl = strip_using_decl (MAYBE_STAT_DECL (bind)))
@@ -9293,7 +9293,7 @@ pop_namespace (void)
    create that namespace and add it to the container's binding-vector.   */
 
 tree
-add_imported_namespace (tree ctx, tree name, location_t loc, unsigned import, 
+add_imported_namespace (tree ctx, tree name, location_t loc, unsigned import,
 			bool inline_p, bool visible_p)
 {
   // FIXME: Something is not correct about the VISIBLE_P handling.  We
@@ -9397,7 +9397,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	/* FIXME: Handle TEMPLATE_DECLs.  */
 	continue;
-      
+
       /* Ignore this FUNCTION_DECL if it refers to a builtin declaration
 	 of a builtin function.  */
       if (TREE_CODE (fn) == FUNCTION_DECL

@@ -28,11 +28,11 @@
 #define OBJECT_FORMAT_COFF
 
 /* Define the magic numbers that we recognize as COFF.
- 
+
     AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects and AIX V5 adds
     U64_TOCMAGIC (0767), but collect2.cc does not include files in the
     correct order to conditionally define the symbolic name in this macro.
- 
+
     The AIX linker accepts import/export files as object files,
     so accept "#!" (0x2321) magic number.  */
 #define MY_ISCOFF(magic) \
@@ -233,7 +233,7 @@
 /* This is how we tell the assembler that two symbols have the same value.  */
 #define SET_ASM_OP "\t.set "
 
-/* This is how we tell the assembler to equate two values. 
+/* This is how we tell the assembler to equate two values.
    The semantic of AIX assembler's .set do not correspond to middle-end expectations.
    We output aliases as alternative symbols in the front of the definition
    via DECLARE_FUNCTION_NAME and DECLARE_OBJECT_NAME.

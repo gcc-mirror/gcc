@@ -200,7 +200,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		  || strcmp (arg, "objective-c++") == 0
 		  || strcmp (arg, "objective-c++-cpp-output") == 0))
 	    library = 1;
-		
+
 	  saw_speclang = 1;
 	  break;
 

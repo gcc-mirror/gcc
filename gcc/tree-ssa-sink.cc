@@ -433,7 +433,7 @@ statement_sink_location (gimple *stmt, basic_block frombb,
       commondom = select_best_block (frombb, commondom, stmt);
 
       if (commondom == frombb)
-	return false;	
+	return false;
 
       *togsi = gsi_after_labels (commondom);
 
@@ -467,7 +467,7 @@ statement_sink_location (gimple *stmt, basic_block frombb,
   /* This can happen if there are multiple uses in a PHI.  */
   if (!sinkbb)
     return false;
-  
+
   basic_block bestbb = select_best_block (frombb, sinkbb, stmt);
   if (bestbb == frombb
       /* When we sink a store make sure there's not a path to any of

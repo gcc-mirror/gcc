@@ -283,7 +283,7 @@ struct mem_ref
 /* Dumps information about memory reference */
 static void
 dump_mem_details (FILE *file, tree base, tree step,
-	    HOST_WIDE_INT delta, bool write_p) 
+	    HOST_WIDE_INT delta, bool write_p)
 {
   fprintf (file, "(base ");
   print_generic_expr (file, base, TDF_SLIM);
@@ -555,7 +555,7 @@ gather_memory_references_ref (class loop *loop, struct mem_ref_group **refs,
   if (may_be_nonaddressable_p (base))
     return false;
 
-  /* Limit non-constant step prefetching only to the innermost loops and 
+  /* Limit non-constant step prefetching only to the innermost loops and
      only when the step is loop invariant in the entire loop nest. */
   if (!cst_and_fits_in_hwi (step))
     {
@@ -563,16 +563,16 @@ gather_memory_references_ref (class loop *loop, struct mem_ref_group **refs,
         {
           if (dump_file && (dump_flags & TDF_DETAILS))
             {
-              fprintf (dump_file, "Memory expression %p\n",(void *) ref ); 
+              fprintf (dump_file, "Memory expression %p\n",(void *) ref );
 	      print_generic_expr (dump_file, ref, TDF_SLIM);
 	      fprintf (dump_file,":");
               dump_mem_details (dump_file, base, step, delta, write_p);
-              fprintf (dump_file, 
+              fprintf (dump_file,
                        "Ignoring %p, non-constant step prefetching is "
-                       "limited to inner most loops \n", 
+                       "limited to inner most loops \n",
                        (void *) ref);
             }
-            return false;    
+            return false;
          }
       else
         {
@@ -584,12 +584,12 @@ gather_memory_references_ref (class loop *loop, struct mem_ref_group **refs,
 		print_generic_expr (dump_file, ref, TDF_SLIM);
                 fprintf (dump_file,":");
                 dump_mem_details (dump_file, base, step, delta, write_p);
-                fprintf (dump_file, 
+                fprintf (dump_file,
                          "Not prefetching, ignoring %p due to "
                          "loop variant step\n",
                          (void *) ref);
               }
-              return false;                 
+              return false;
             }
         }
     }

@@ -80,7 +80,7 @@ enum rid
      are keywords only in specific contexts)  */
   RID_IN, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF, RID_ONEWAY,
 
-  /* ObjC ("PATTR" reserved words - they do not appear after a '@' 
+  /* ObjC ("PATTR" reserved words - they do not appear after a '@'
      and are keywords only as property attributes)  */
   RID_GETTER, RID_SETTER,
   RID_READONLY, RID_READWRITE,
@@ -197,7 +197,7 @@ enum rid
   RID_AT_PRIVATE,  RID_AT_PROTECTED, RID_AT_PUBLIC,  RID_AT_PACKAGE,
   RID_AT_PROTOCOL, RID_AT_SELECTOR,
   RID_AT_THROW,	   RID_AT_TRY,       RID_AT_CATCH,
-  RID_AT_FINALLY,  RID_AT_SYNCHRONIZED, 
+  RID_AT_FINALLY,  RID_AT_SYNCHRONIZED,
   RID_AT_OPTIONAL, RID_AT_REQUIRED, RID_AT_PROPERTY,
   RID_AT_SYNTHESIZE, RID_AT_DYNAMIC,
   RID_AT_INTERFACE,

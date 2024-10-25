@@ -132,7 +132,7 @@ extern void *ggc_realloc (void *, size_t MEM_STAT_DECL);
    Notes on the different layout strategies
 
    * Embeddable vectors (vec<T, A, vl_embed>)
-   
+
      These vectors are suitable to be embedded in other data
      structures so that they can be pre-allocated in a contiguous
      memory block.

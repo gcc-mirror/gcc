@@ -2170,7 +2170,7 @@ sparc_option_override (void)
 			 || sparc_cpu == PROCESSOR_M8)
 			? 128 : (sparc_cpu == PROCESSOR_NIAGARA7
 				 ? 256 : 512)));
-  
+
 
   /* Disable save slot sharing for call-clobbered registers by default.
      The IRA sharing algorithm works on single registers only and this
@@ -10144,7 +10144,7 @@ supersparc_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
       if (insn_type == TYPE_IALU || insn_type == TYPE_SHIFT)
 	return 0;
     }
-	
+
   return cost;
 }
 
@@ -10386,7 +10386,7 @@ sparc_branch_cost (bool speed_p, bool predictable_p)
       return cost;
     }
 }
-      
+
 static int
 set_extends (rtx_insn *insn)
 {
@@ -11008,7 +11008,7 @@ enum sparc_builtins
   SPARC_BUILTIN_FPCMPUR16SHL,
   SPARC_BUILTIN_FPCMPUR32SHL,
   SPARC_BUILTIN_LAST_FPCMPSHL = SPARC_BUILTIN_FPCMPUR32SHL,
-  
+
   SPARC_BUILTIN_MAX
 };
 
@@ -11555,7 +11555,7 @@ sparc_vis_init_builtins (void)
 	  def_builtin_const ("__builtin_vis_fpcmpugt32", CODE_FOR_fpcmpugt32si_vis,
 			     SPARC_BUILTIN_FPCMPUGT32, di_ftype_v2si_v2si);
 	}
-      
+
       def_builtin_const ("__builtin_vis_fpmax8", CODE_FOR_maxv8qi3,
 			 SPARC_BUILTIN_FPMAX8, v8qi_ftype_v8qi_v8qi);
       def_builtin_const ("__builtin_vis_fpmax16", CODE_FOR_maxv4hi3,
@@ -11610,7 +11610,7 @@ sparc_vis_init_builtins (void)
 	  tree di_ftype_v2si_v2si_si = build_function_type_list (intDI_type_node,
 								 v2si, v2si,
 								 intSI_type_node, 0);
-	  
+
 	  def_builtin_const ("__builtin_vis_fpcmple8shl", CODE_FOR_fpcmple8dishl,
 			     SPARC_BUILTIN_FPCMPLE8SHL, di_ftype_v8qi_v8qi_si);
 	  def_builtin_const ("__builtin_vis_fpcmpgt8shl", CODE_FOR_fpcmpgt8dishl,
@@ -11680,7 +11680,7 @@ sparc_vis_init_builtins (void)
 	  tree si_ftype_v2si_v2si_si = build_function_type_list (intSI_type_node,
 								 v2si, v2si,
 								 intSI_type_node, 0);
-	  
+
 	  def_builtin_const ("__builtin_vis_fpcmple8shl", CODE_FOR_fpcmple8sishl,
 			     SPARC_BUILTIN_FPCMPLE8SHL, si_ftype_v8qi_v8qi_si);
 	  def_builtin_const ("__builtin_vis_fpcmpgt8shl", CODE_FOR_fpcmpgt8sishl,
@@ -13022,7 +13022,7 @@ sparc_expand_vec_perm_bmask (machine_mode vmode, rtx sel)
       t_1 = force_reg (SImode, GEN_INT (0x01010101));
       /* sel = { A*2, A*2+1, B*2, B*2+1, ... } */
       break;
-  
+
     case E_V8QImode:
       /* input = xAxBxCxDxExFxGxH */
       sel = expand_simple_binop (DImode, AND, sel,

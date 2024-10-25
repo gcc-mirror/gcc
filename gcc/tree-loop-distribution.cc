@@ -705,7 +705,7 @@ bb_top_order_cmp_r (const void *x, const void *y, void *loop)
 	      || _loop->get_bb_top_order_index(bb1->index)
 		 != _loop->get_bb_top_order_index(bb2->index));
 
-  return (_loop->get_bb_top_order_index(bb1->index) - 
+  return (_loop->get_bb_top_order_index(bb1->index) -
 	  _loop->get_bb_top_order_index(bb2->index));
 }
 
@@ -1373,7 +1373,7 @@ destroy_loop (class loop *loop)
 
 /* Generates code for PARTITION.  Return whether LOOP needs to be destroyed.  */
 
-static bool 
+static bool
 generate_code_for_partition (class loop *loop,
 			     partition *partition, bool copy_p,
 			     bool keep_lc_phis_p)

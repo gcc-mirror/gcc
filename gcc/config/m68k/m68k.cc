@@ -772,7 +772,7 @@ m68k_get_function_kind (tree func)
   tree a;
 
   gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
-  
+
   a = lookup_attribute ("interrupt", DECL_ATTRIBUTES (func));
   if (a != NULL_TREE)
     return m68k_fk_interrupt_handler;
@@ -1400,7 +1400,7 @@ static bool
 m68k_ok_for_sibcall_p (tree decl, tree exp)
 {
   enum m68k_function_kind kind;
-  
+
   /* We cannot use sibcalls for nested functions because we use the
      static chain register for indirect calls.  */
   if (CALL_EXPR_STATIC_CHAIN (exp))
@@ -1436,7 +1436,7 @@ m68k_ok_for_sibcall_p (tree decl, tree exp)
      the same.  */
   if (decl && m68k_get_function_kind (decl) == kind)
     return true;
-  
+
   return false;
 }
 
@@ -1733,7 +1733,7 @@ m68k_asm_final_postscan_insn (FILE *, rtx_insn *insn, rtx [], int)
   return;
 }
 
-/* Output a dbCC; jCC sequence.  Note we do not handle the 
+/* Output a dbCC; jCC sequence.  Note we do not handle the
    floating point version of this sequence (Fdbcc).
    OPERANDS are as in the two peepholes.  CODE is the code
    returned by m68k_output_branch_<mode>.  */
@@ -2628,19 +2628,19 @@ m68k_wrap_symbol_into_got_ref (rtx x, enum m68k_reloc reloc, rtx temp_reg)
 /* Legitimize PIC addresses.  If the address is already
    position-independent, we return ORIG.  Newly generated
    position-independent addresses go to REG.  If we need more
-   than one register, we lose.  
+   than one register, we lose.
 
    An address is legitimized by making an indirect reference
    through the Global Offset Table with the name of the symbol
-   used as an offset.  
+   used as an offset.
 
-   The assembler and linker are responsible for placing the 
+   The assembler and linker are responsible for placing the
    address of the symbol in the GOT.  The function prologue
    is responsible for initializing a5 to the starting address
    of the GOT.
 
    The assembler is also responsible for translating a symbol name
-   into a constant displacement from the start of the GOT.  
+   into a constant displacement from the start of the GOT.
 
    A quick example may make things a little clearer:
 
@@ -2660,9 +2660,9 @@ m68k_wrap_symbol_into_got_ref (rtx x, enum m68k_reloc reloc, rtx temp_reg)
 
 	movel   a5@(_foo:w), a0
 	movel   #12345, a0@
-   
 
-   That (in a nutshell) is how *all* symbol and label references are 
+
+   That (in a nutshell) is how *all* symbol and label references are
    handled.  */
 
 rtx
@@ -2691,7 +2691,7 @@ legitimize_pic_address (rtx orig, machine_mode mode ATTRIBUTE_UNUSED,
 
       /* legitimize both operands of the PLUS */
       gcc_assert (GET_CODE (XEXP (orig, 0)) == PLUS);
-      
+
       base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
       orig = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
 				     base == reg ? 0 : reg);
@@ -2753,13 +2753,13 @@ m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
      is the simpliest way of generating a call.  The difference between
      __tls_get_addr() and libcall is that the result is returned in D0
      instead of A0.  To workaround this, we use m68k_libcall_value_in_a0_p
-     which temporarily switches returning the result to A0.  */ 
+     which temporarily switches returning the result to A0.  */
 
   m68k_libcall_value_in_a0_p = true;
   a0 = emit_library_call_value (m68k_get_tls_get_addr (), NULL_RTX, LCT_PURE,
 				Pmode, x, Pmode);
   m68k_libcall_value_in_a0_p = false;
-  
+
   insns = get_insns ();
   end_sequence ();
 
@@ -2787,7 +2787,7 @@ m68k_get_m68k_read_tp (void)
 /* Emit instruction sequence that calls __m68k_read_tp.
    A pseudo register with result of __m68k_read_tp call is returned.  */
 
-static rtx 
+static rtx
 m68k_call_m68k_read_tp (void)
 {
   rtx a0;
@@ -2801,7 +2801,7 @@ m68k_call_m68k_read_tp (void)
      is the simpliest way of generating a call.  The difference between
      __m68k_read_tp() and libcall is that the result is returned in D0
      instead of A0.  To workaround this, we use m68k_libcall_value_in_a0_p
-     which temporarily switches returning the result to A0.  */ 
+     which temporarily switches returning the result to A0.  */
 
   /* Emit the call sequence.  */
   m68k_libcall_value_in_a0_p = true;
@@ -2840,7 +2840,7 @@ m68k_legitimize_tls_address (rtx orig)
 	rtx eqv;
 	rtx a0;
 	rtx x;
- 
+
 	/* Attach a unique REG_EQUIV, to allow the RTL optimizers to
 	   share the LDM result with other LD model accesses.  */
 	eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
@@ -4848,7 +4848,7 @@ output_move_const_single (rtx *operands)
    to get the desired constant.  */
 
 /* This code has been fixed for cross-compilation.  */
-  
+
 static int inited_68881_table = 0;
 
 static const char *const strings_68881[7] = {
@@ -4916,7 +4916,7 @@ standard_68881_constant_p (rtx x)
       if (real_identical (r, &values_68881[i]))
         return (codes_68881[i]);
     }
-  
+
   if (GET_MODE (x) == SFmode)
     return 0;
 
@@ -5205,7 +5205,7 @@ m68k_delegitimize_address (rtx orig_x)
   unspec = XEXP (addr.offset, 0);
   if (GET_CODE (unspec) == PLUS && CONST_INT_P (XEXP (unspec, 1)))
     unspec = XEXP (unspec, 0);
-  if (GET_CODE (unspec) != UNSPEC 
+  if (GET_CODE (unspec) != UNSPEC
       || (XINT (unspec, 1) != UNSPEC_RELOC16
 	  && XINT (unspec, 1) != UNSPEC_RELOC32))
     return orig_x;
@@ -5226,7 +5226,7 @@ m68k_delegitimize_address (rtx orig_x)
     x = replace_equiv_address_nv (orig_x, x);
   return x;
 }
-  
+
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
@@ -5240,7 +5240,7 @@ m68k_delegitimize_address (rtx orig_x)
    It is possible for PIC to generate a (plus (label_ref...) (reg...))
    and we handle that just like we would a (plus (symbol_ref...) (reg...)).
 
-   This routine is responsible for distinguishing between -fpic and -fPIC 
+   This routine is responsible for distinguishing between -fpic and -fPIC
    style relocations in an address.  When generating -fpic code the
    offset is output in word mode (e.g. movel a5@(_foo:w), a0).  When generating
    -fPIC code the offset is output in long mode (e.g. movel a5@(_foo:l), a0) */
@@ -6661,7 +6661,7 @@ m68k_sched_variable_issue (FILE *sched_dump ATTRIBUTE_UNUSED,
 
 	case CPU_CFV3:
 	  insn_size = sched_get_attr_size_int (insn);
-	  
+
 	  /* ColdFire V3 and V4 cores have instruction buffers that can
 	     accumulate up to 8 instructions regardless of instructions'
 	     sizes.  So we should take care not to "prefetch" 24 one-word

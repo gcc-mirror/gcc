@@ -944,7 +944,7 @@ regrename_analyze (bitmap bb_mask, bool include_all_block_p)
 	      if (!range_overlaps_hard_reg_set_p (live, chain->regno,
 						  chain->nregs))
 		continue;
-	      
+
 	      n_succs_used++;
 
 	      dest_ri = (class bb_rename_info *)e->dest->aux;
@@ -968,7 +968,7 @@ regrename_analyze (bitmap bb_mask, bool include_all_block_p)
 			  printed = true;
 			  fprintf (dump_file,
 				   "  merging chains %d (->%d) and %d (->%d) [%s]\n",
-				   k, incoming_chain->id, j, chain->id, 
+				   k, incoming_chain->id, j, chain->id,
 				   reg_names[incoming_chain->regno]);
 			}
 

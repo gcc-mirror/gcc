@@ -163,7 +163,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
 	/* Don't print trace for locations that are reserved or from
 	   within a system header.  */
         const line_map_ordinary *m = NULL;
-        location_t l = 
+        location_t l =
           linemap_resolve_location (line_table, resolved_def_loc,
                                     LRK_SPELLING_LOCATION,  &m);
 	location_t l0 = l;
@@ -171,7 +171,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_text_output_format &text_output,
 	  l0 = get_location_from_adhoc_loc (line_table, l0);
 	if (l0 < RESERVED_LOCATION_COUNT || LINEMAP_SYSP (m))
           continue;
-        
+
 	/* We need to print the context of the macro definition only
 	   when the locus of the first displayed diagnostic (displayed
 	   before this trace) was inside the definition of the

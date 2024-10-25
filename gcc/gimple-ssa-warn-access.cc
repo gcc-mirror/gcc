@@ -3286,7 +3286,7 @@ pass_waccess::check_builtin (gcall *stmt)
 	check_memop_access (stmt, dst, NULL_TREE, len);
 	return true;
       }
-	
+
     default:
       if (check_atomic_builtin (stmt))
 	return true;

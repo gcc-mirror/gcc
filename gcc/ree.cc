@@ -891,7 +891,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	 generated more than one insn.
 
          This generates garbage since we throw away the insn when we're
-	 done, only to recreate it later if this test was successful. 
+	 done, only to recreate it later if this test was successful.
 
 	 Make sure to get the mode from the extension (cand->insn).  This
 	 is different than in the code to emit the copy as we have not

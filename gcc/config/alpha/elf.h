@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC  "%{G*} %{relax:-relax} %{mcpu=*:-m%*}"
 
 /* Do not output a .file directive at the beginning of the input file.  */
- 
+
 #undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE false
 

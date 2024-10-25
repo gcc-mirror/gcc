@@ -304,7 +304,7 @@ extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLin
     {
       ArgNo += 1;
     }
-  /* 
+  /*
    IF ArgNo>0
    THEN
       DEC(ArgNo)

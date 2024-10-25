@@ -3545,7 +3545,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
       fundecl = function;
       if (!orig_fundecl)
 	orig_fundecl = fundecl;
-      /* Atomic functions have type checking/casting already done.  They are 
+      /* Atomic functions have type checking/casting already done.  They are
 	 often rewritten and don't match the original parameter list.  */
       if (name && startswith (IDENTIFIER_POINTER (name), "__atomic_"))
         origtypes = NULL;

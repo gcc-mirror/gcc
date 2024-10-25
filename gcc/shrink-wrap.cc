@@ -705,7 +705,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
   if (frame_pointer_needed)
     add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			 HARD_FRAME_POINTER_REGNUM);
-  if (pic_offset_table_rtx 
+  if (pic_offset_table_rtx
       && (unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
     add_to_hard_reg_set (&set_up_by_prologue.set, Pmode,
 			 PIC_OFFSET_TABLE_REGNUM);
@@ -939,7 +939,7 @@ try_shrink_wrapping (edge *entry_edge, rtx_insn *prologue_seq)
 
 	if (dump_file)
 	  fprintf (dump_file, "Duplicated %d to %d\n", bb->index, dup->index);
-	
+
 	if (num == profile_count::zero () || den.nonzero_p ())
 	  bb->count = bb->count.apply_scale (num, den);
 	dup->count -= bb->count;

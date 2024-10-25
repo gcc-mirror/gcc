@@ -239,7 +239,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
 	  offrng[1] = aref.sizrng[1] - 1;
 	else
 	  offrng[1] = HOST_WIDE_INT_M1U;
-	
+
 	offrng[0] = 0;
 	return gimple_call_arg (stmt, 0);
       }
@@ -334,7 +334,7 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
   if (range_type == VR_VARYING)
     {
       if (integral)
-	{	
+	{
 	  /* Use the full range of the type of the expression when
 	     no value range information is available.  */
 	  range[0] = TYPE_MIN_VALUE (exptype);

@@ -383,7 +383,7 @@ scale_ipa_profile_for_fn (struct cgraph_node *node, profile_count orig_count)
   profile_count to = node->count;
   profile_count::adjust_for_ipa_scaling (&to, &orig_count);
   struct cgraph_edge *e;
-  
+
   for (e = node->callees; e; e = e->next_callee)
     e->count = e->count.apply_scale (to, orig_count);
   for (e = node->indirect_calls; e; e = e->next_callee)
@@ -525,7 +525,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		 "Giving up; last block mismatch.\n");
       match = false;
     }
-  else 
+  else
     {
       basic_block srcbb, dstbb;
       struct cgraph_edge *e, *e2;
@@ -647,8 +647,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		  if (srce->probability.initialized_p ())
 		    dste->probability = srce->probability;
 		}
-	    }	
-	  else 
+	    }
+	  else
 	    {
 	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 		{
@@ -822,7 +822,7 @@ stmt_may_terminate_function_p (function *fun, gimple *stmt, bool assume_return_o
    If assume_return_or_eh we can further assume that the function ends
    either by retrn statement or EH (no trapping or infinite loops).
    This is useful when sumarizing function in passes like ipa-modref.
- 
+
    Seeing assume_return_or_eh to false is used to prove that given
    statmeent will be executed even if the function gets into infinite
    loop or trap.  */
@@ -947,7 +947,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
      from the BBs in DFS subtree of A.  If A is always executed there are no
      edges out of this subtree.  This can be tested by checking that A.low == A.preorder
      and B.high == A.postorder.
-    
+
      This is first step. Do backward DFS walk and record preorder, postorder
      and predecessor info.  Initialize stack in postorder.  */
   worklist we = {EXIT_BLOCK_PTR_FOR_FN (fun), NULL};

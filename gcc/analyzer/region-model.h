@@ -352,7 +352,7 @@ class region_model
   void update_for_gcall (const gcall *call_stmt,
                          region_model_context *ctxt,
                          function *callee = NULL);
-  
+
   void update_for_return_gcall (const gcall *call_stmt,
                                 region_model_context *ctxt);
 

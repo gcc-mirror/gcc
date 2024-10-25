@@ -226,7 +226,7 @@ solaris_elf_asm_comdat_section (const char *name, unsigned int flags, tree decl)
      directive since Sun as treats undeclared sections as @progbits,
      which conflicts with .bss* sections which are @nobits.  */
   targetm.asm_out.named_section (section, flags & ~SECTION_LINKONCE, decl);
-  
+
   /* Sun as separates declaration of a group section and of the group
      itself, using the .group directive and the #comdat flag.  */
   fprintf (asm_out_file, "\t.group\t%s," SECTION_NAME_FORMAT ",#comdat\n",

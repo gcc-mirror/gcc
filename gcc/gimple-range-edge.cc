@@ -101,7 +101,7 @@ gimple_outgoing_range::switch_edge_range (irange &r, gswitch *sw, edge e)
   // arguments are 32 bit, causing a trap when we create a case_range.
   // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
   // punt on switches where the labels don't match the argument.
-  if (gimple_switch_num_labels (sw) > 1 && 
+  if (gimple_switch_num_labels (sw) > 1 &&
       TYPE_PRECISION (TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)))) !=
       TYPE_PRECISION (TREE_TYPE (gimple_switch_index (sw))))
     return false;

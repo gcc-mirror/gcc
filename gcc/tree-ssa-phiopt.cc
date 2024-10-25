@@ -1117,10 +1117,10 @@ rhs_is_fed_for_value_replacement (const_tree arg0, const_tree arg1,
   return false;
 }
 
-/* Return TRUE if arg0/arg1 are equal to the rhs/lhs or lhs/rhs of COND. 
+/* Return TRUE if arg0/arg1 are equal to the rhs/lhs or lhs/rhs of COND.
 
    Also return TRUE if arg0/arg1 are equal to the source arguments of a
-   an EQ comparison feeding a BIT_AND_EXPR which feeds COND. 
+   an EQ comparison feeding a BIT_AND_EXPR which feeds COND.
 
    Return FALSE otherwise.  */
 
@@ -1151,9 +1151,9 @@ operand_equal_for_value_replacement (const_tree arg0, const_tree arg1,
   if (!is_gimple_assign (def) || gimple_assign_rhs_code (def) != BIT_AND_EXPR)
     return false;
 
-  /* Now verify arg0/arg1 correspond to the source arguments of an 
+  /* Now verify arg0/arg1 correspond to the source arguments of an
      EQ comparison feeding the BIT_AND_EXPR.  */
-     
+
   tree tmp = gimple_assign_rhs1 (def);
   if (rhs_is_fed_for_value_replacement (arg0, arg1, code, tmp))
     return true;

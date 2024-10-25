@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 // PHI cycle members qa_9, qa_10
 // Initial value : 0
 // modifier stmt: qa_20 = qa_10 + 1;
-// 
+//
 // Based on just this analysis, We can project that qa_9 and qa_10 will have
 // a range of [0, +INF].
 

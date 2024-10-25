@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef VXWORKS_LINK_SPEC
 #define VXWORKS_LINK_SPEC	\
   "-r %{v:-V}"
- 
+
 #undef VXWORKS_LIBGCC_SPEC
 #define VXWORKS_LIBGCC_SPEC	\
   "-lgcc"

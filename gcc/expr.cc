@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned, 
+static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned,
 					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT, bool);
@@ -982,7 +982,7 @@ convert_float_to_wider_int (machine_mode mode, machine_mode fmode, rtx x)
 /* Variant of convert_modes for ABI parameter passing/return.
    Return an rtx for a value that would result from converting X from
    an integer mode IMODE to a narrower floating point mode MODE.  */
- 
+
 rtx
 convert_wider_int_to_float (machine_mode mode, machine_mode imode, rtx x)
 {
@@ -2222,7 +2222,7 @@ block_move_libcall_safe_for_call_parm (void)
 
 /* A subroutine of emit_block_move.  Expand a cpymem or movmem pattern;
    return true if successful.
-  
+
    X is the destination of the copy or move.
    Y is the source of the copy or move.
    SIZE is the size of the block to be moved.
@@ -6090,7 +6090,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  else if (GET_MODE (to_rtx) == VOIDmode)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
 	}
- 
+
       rtx stemp = NULL_RTX, old_to_rtx = NULL_RTX;
       if (offset != 0)
 	{
@@ -6777,7 +6777,7 @@ store_expr (tree exp, rtx target, int call_param_p,
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
      the same as that of TARGET, adjust the constant.  This is needed, for
-     example, in case it is a CONST_DOUBLE or CONST_WIDE_INT and we want 
+     example, in case it is a CONST_DOUBLE or CONST_WIDE_INT and we want
      only a word-sized value.  */
   if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
       && TREE_CODE (exp) != ERROR_MARK
@@ -11088,8 +11088,8 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 #undef REDUCE_BIT_FIELD
 
 
-/* Return TRUE if expression STMT is suitable for replacement.  
-   Never consider memory loads as replaceable, because those don't ever lead 
+/* Return TRUE if expression STMT is suitable for replacement.
+   Never consider memory loads as replaceable, because those don't ever lead
    into constant expressions.  */
 
 static bool
@@ -13933,7 +13933,7 @@ do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
 
 bool
 try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
-	       rtx table_label, rtx default_label, 
+	       rtx table_label, rtx default_label,
 	       profile_probability default_probability)
 {
   rtx index;

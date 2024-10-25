@@ -17,11 +17,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Common FreeBSD configuration. 
+/* Common FreeBSD configuration.
    All FreeBSD architectures should include this file, which will specify
    their commonalities.
-   Adapted from gcc/config/i386/freebsd-elf.h by 
-   David O'Brien <obrien@FreeBSD.org>.  
+   Adapted from gcc/config/i386/freebsd-elf.h by
+   David O'Brien <obrien@FreeBSD.org>.
    Further work by David O'Brien <obrien@FreeBSD.org> and
    Loren J. Rittle <ljrittle@acm.org>.  */
 

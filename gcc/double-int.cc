@@ -1061,7 +1061,7 @@ double_int::set_bit (unsigned bitpos) const
     a.low |= HOST_WIDE_INT_1U << bitpos;
   else
     a.high |= HOST_WIDE_INT_1 <<  (bitpos - HOST_BITS_PER_WIDE_INT);
- 
+
   return a;
 }
 

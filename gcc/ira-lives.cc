@@ -867,7 +867,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  {
 	  case 'g':
 	    return NO_REGS;
-	    
+
 	  default:
 	    /* ??? Is this the best way to handle memory constraints?  */
 	    cn = lookup_constraint (constraints);
@@ -891,7 +891,7 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	      return NO_REGS;
 	    cl = next_cl;
 	    break;
-	    
+
 	  case '0': case '1': case '2': case '3': case '4':
 	  case '5': case '6': case '7': case '8': case '9':
 	    {
@@ -1185,7 +1185,7 @@ find_call_crossed_cheap_reg (rtx_insn *insn)
 	}
     }
   return cheap_reg;
-}  
+}
 
 /* Determine whether INSN is a register to register copy of the type where
    we do not need to make the source and destiniation registers conflict.
@@ -1506,7 +1506,7 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  make_early_clobber_and_input_conflicts ();
 
 	  curr_point++;
-	  
+
 	  /* Mark each used value as live.  */
 	  FOR_EACH_INSN_USE (use, insn)
 	    mark_ref_live (use);
@@ -1660,7 +1660,7 @@ remove_some_program_points_and_update_live_ranges (void)
   live_range_t r, prev_r, next_r;
   sbitmap_iterator sbi;
   bool born_p, dead_p, prev_born_p, prev_dead_p;
-  
+
   auto_sbitmap born (ira_max_point);
   auto_sbitmap dead (ira_max_point);
   bitmap_clear (born);

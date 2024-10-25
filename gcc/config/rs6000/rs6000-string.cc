@@ -1337,7 +1337,7 @@ expand_compare_loop (rtx operands[])
 	{
 	  /* If remainder length < word length, branch to final
 	     cleanup compare.  */
-	  
+
 	  if (!bytes_is_const)
 	    {
 	      do_ifelse (CCmode, LT, cmp_rem, GEN_INT (load_mode_size),
@@ -2695,7 +2695,7 @@ gen_lvx_v4si_move (rtx dest, rtx src)
 
   if (MEM_P (dest))
     return gen_altivec_stvx_v4si_internal (dest, src);
-  else 
+  else
     return gen_altivec_lvx_v4si_internal (dest, src);
 }
 
@@ -2918,7 +2918,7 @@ expand_block_move (rtx operands[], bool might_overlap)
 	    emit_insn (stores[i]);
 	  num_reg = 0;
 	}
-	
+
     }
 
   return 1;

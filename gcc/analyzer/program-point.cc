@@ -342,7 +342,7 @@ program_point::to_json () const
 
 /* Update the callstack to represent a call from caller to callee.
 
-   Generally used to push a custom call to a perticular program point 
+   Generally used to push a custom call to a perticular program point
    where we don't have a superedge representing the call.  */
 void
 program_point::push_to_call_stack (const supernode *caller,

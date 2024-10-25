@@ -627,7 +627,7 @@ struct aarch64_address_info {
 };
 
 #define AARCH64_FUSION_PAIR(x, name) \
-  AARCH64_FUSE_##name##_index, 
+  AARCH64_FUSE_##name##_index,
 /* Supported fusion operations.  */
 enum aarch64_fusion_pairs_index
 {

@@ -833,7 +833,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	      && TREE_CODE (val) == INTEGER_CST
 	      && ENUM_UNDERLYING_TYPE (type)
 	      && !int_fits_type_p (val, ENUM_UNDERLYING_TYPE (type)))
-	    warning_at (loc, OPT_Wconversion, 
+	    warning_at (loc, OPT_Wconversion,
 			"the result of the conversion is unspecified because "
 			"%qE is outside the range of type %qT",
 			expr, type);
@@ -2004,7 +2004,7 @@ type_promotes_to (tree type)
 		 whose underlying type is fixed (10.2) can be converted to a
 		 prvalue of its underlying type. Moreover, if integral promotion
 		 can be applied to its underlying type, a prvalue of an unscoped
-		 enumeration type whose underlying type is fixed can also be 
+		 enumeration type whose underlying type is fixed can also be
 		 converted to a prvalue of the promoted underlying type.  */
 	      return type_promotes_to (prom);
 	    }

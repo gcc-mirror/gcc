@@ -5370,7 +5370,7 @@ main (int argc, const char **argv)
 	if (startswith(attr->name, "*internal_dfa_insn_code"))
 	  outf = dfa_file;
 	else if (startswith (attr->name, "*insn_default_latency"))
-	  outf = latency_file;  
+	  outf = latency_file;
 	else
 	  outf = attr_file;
 

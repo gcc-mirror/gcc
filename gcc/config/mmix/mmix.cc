@@ -761,7 +761,7 @@ mmix_function_value (const_tree valtype,
 
   if (!outgoing)
     return gen_rtx_REG (mode, MMIX_RETURN_VALUE_REGNUM);
-  
+
   /* Return values that fit in a register need no special handling.
      There's no register hole when parameters are passed in global
      registers.  */

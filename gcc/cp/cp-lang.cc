@@ -212,7 +212,7 @@ fold_cplus_constants (const_tree c)
   for (i = 0; i < vec_len; ++i)
     {
       tree elem = TREE_VEC_ELT (elems, i);
-      TREE_VEC_ELT (folded_elems, i) =  
+      TREE_VEC_ELT (folded_elems, i) =
 	(elem && !TYPE_P (elem)) ? cplus_expand_constant (elem) : elem;
 
     }

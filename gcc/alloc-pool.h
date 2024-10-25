@@ -445,7 +445,7 @@ base_pool_allocator <TBlockAllocator>::remove (void *object)
       memset (object, 0xaf, size);
     }
 
-#if CHECKING_P 
+#if CHECKING_P
   /* Mark the element to be free.  */
   allocation_object::get_instance (object)->id = 0;
 #endif

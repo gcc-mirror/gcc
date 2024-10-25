@@ -4976,10 +4976,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	  /* Cost model check occurs at prologue generation.  */
 	  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
 	    scalar_outside_cost += 2 * vect_get_stmt_cost (cond_branch_taken)
-	      + vect_get_stmt_cost (cond_branch_not_taken); 
+	      + vect_get_stmt_cost (cond_branch_not_taken);
 	  /* Cost model check occurs at epilogue generation.  */
 	  else
-	    scalar_outside_cost += 2 * vect_get_stmt_cost (cond_branch_taken); 
+	    scalar_outside_cost += 2 * vect_get_stmt_cost (cond_branch_taken);
 	}
     }
 
@@ -5421,11 +5421,11 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 	      epilogue_cost += record_stmt_cost (cost_vec, 1,
 						 vec_to_scalar, stmt_info, 0,
 						 vect_epilogue);
-	    }	  
+	    }
 	  else
 	    /* Use extracts and reduction op for final reduction.  For N
 	       elements, we have N extracts and N-1 reduction ops.  */
-	    epilogue_cost += record_stmt_cost (cost_vec, 
+	    epilogue_cost += record_stmt_cost (cost_vec,
 					       nelements + nelements - 1,
 					       vector_stmt, stmt_info, 0,
 					       vect_epilogue);
@@ -5433,7 +5433,7 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
     }
 
   if (dump_enabled_p ())
-    dump_printf (MSG_NOTE, 
+    dump_printf (MSG_NOTE,
                  "vect_model_reduction_cost: inside_cost = %d, "
                  "prologue_cost = %d, epilogue_cost = %d .\n", inside_cost,
                  prologue_cost, epilogue_cost);
@@ -5887,10 +5887,10 @@ vect_create_partial_epilog (tree vec_def, tree vectype, code_helper code,
 /* Function vect_create_epilog_for_reduction
 
    Create code at the loop-epilog to finalize the result of a reduction
-   computation. 
-  
+   computation.
+
    STMT_INFO is the scalar reduction stmt that is being vectorized.
-   SLP_NODE is an SLP node containing a group of reduction statements. The 
+   SLP_NODE is an SLP node containing a group of reduction statements. The
      first one in this group is STMT_INFO.
    SLP_NODE_INSTANCE is the SLP node instance containing SLP_NODE
    REDUC_INDEX says which rhs operand of the STMT_INFO is the reduction phi
@@ -6038,7 +6038,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      The first match will be a 1 to allow 0 to be used for non-matching
      indexes.  If there are no matches at all then the vector will be all
      zeroes.
-   
+
      PR92772: This algorithm is broken for architectures that support
      masked vectors, but do not provide fold_extract_last.  */
   if (STMT_VINFO_REDUC_TYPE (reduc_info) == COND_REDUCTION)
@@ -6192,7 +6192,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
 
   /* 2.1 Create new loop-exit-phis to preserve loop-closed form:
-         v_out1 = phi <VECT_DEF> 
+         v_out1 = phi <VECT_DEF>
          Store them in NEW_PHIS.  */
   if (double_reduc)
     loop = outer_loop;
@@ -6501,7 +6501,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
     }
 
   /* 2.3 Create the reduction code, using one of the three schemes described
-         above. In SLP we simply need to extract all the elements from the 
+         above. In SLP we simply need to extract all the elements from the
          vector (without reducing them), so we use scalar shifts.  */
   else if (reduc_fn != IFN_LAST && (!slp_reduc || group_size == 1))
     {
@@ -6772,7 +6772,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 					   bitsize, bitpos);
                   if (slp_reduc)
                     {
-                      /* In SLP we don't need to apply reduction operation, so 
+                      /* In SLP we don't need to apply reduction operation, so
                          we just collect s' values in SCALAR_RESULTS.  */
                       new_temp = new_name;
                       scalar_results.safe_push (new_name);
@@ -6785,12 +6785,12 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
           /* The only case where we need to reduce scalar results in SLP, is
              unrolling.  If the size of SCALAR_RESULTS is greater than
-             REDUC_GROUP_SIZE, we reduce them combining elements modulo 
+             REDUC_GROUP_SIZE, we reduce them combining elements modulo
              REDUC_GROUP_SIZE.  */
           if (slp_reduc)
             {
               tree res, first_res, new_res;
-            
+
               /* Reduce multiple scalar results in case of SLP unrolling.  */
               for (j = group_size; scalar_results.iterate (j, &res);
                    j++)
@@ -6834,7 +6834,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  scalar_results[0] = tmp;
 	}
     }
- 
+
   /* 2.5 Adjust the final result by the initial value of the reduction
 	 variable. (When such adjustment is not needed, then
 	 'adjustment_def' is zero).  For example, if code is PLUS we create:
@@ -6879,7 +6879,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   /* 2.6  Handle the loop-exit phis.  Replace the uses of scalar loop-exit
           phis with new adjusted scalar results, i.e., replace use <s_out0>
-          with use <s_out4>.        
+          with use <s_out4>.
 
      Transform:
         loop_exit:
@@ -6899,7 +6899,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
           v_out2 = reduce <v_out1>
           s_out3 = extract_field <v_out2, 0>
           s_out4 = adjust_result <s_out3>
-          use <s_out4>  
+          use <s_out4>
           use <s_out4> */
 
   gcc_assert (live_out_stmts.size () == scalar_results.length ());
@@ -7817,11 +7817,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
 	      if (!vect_is_simple_use (op.ops[0], loop_vinfo, &dt, &vectype_op))
 		return false;
-	      
+
 	      tree type_op = TREE_TYPE (op.ops[0]);
 
 	      if (!vectype_op)
-		{	      
+		{
 		  vectype_op = get_vectype_for_scalar_type (loop_vinfo,
 							    type_op);
 		  if (!vectype_op)
@@ -11083,7 +11083,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  vec_def = gimple_build (&stmts,
 				  PLUS_EXPR, step_vectype, vec_def, vec_step);
 	  vec_def = gimple_convert (&stmts, vectype, vec_def);
- 
+
 	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
 	  if (i < ncopies)
 	    {
@@ -12414,7 +12414,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
       check_profitability = true;
     }
 
-  /* Make sure there exists a single-predecessor exit bb.  Do this before 
+  /* Make sure there exists a single-predecessor exit bb.  Do this before
      versioning.   */
   edge e = LOOP_VINFO_IV_EXIT (loop_vinfo);
   if (! single_pred_p (e->dest) && !LOOP_VINFO_EARLY_BREAKS (loop_vinfo))

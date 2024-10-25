@@ -893,7 +893,7 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
 
 /* Returns the list of basic blocks immediately dominated by BB, in the
    direction DIR.  */
-auto_vec<basic_block> 
+auto_vec<basic_block>
 get_dominated_by (enum cdi_direction dir, basic_block bb)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
@@ -916,7 +916,7 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
    direction DIR) by some block between N_REGION ones stored in REGION,
    except for blocks in the REGION itself.  */
 
-auto_vec<basic_block> 
+auto_vec<basic_block>
 get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 			 unsigned n_region)
 {
@@ -943,7 +943,7 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
    produce a vector containing all dominated blocks.  The vector will be sorted
    in preorder.  */
 
-auto_vec<basic_block> 
+auto_vec<basic_block>
 get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 {
   auto_vec<basic_block> bbs;
@@ -975,7 +975,7 @@ get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 /* Returns the list of basic blocks including BB dominated by BB, in the
    direction DIR.  The vector will be sorted in preorder.  */
 
-auto_vec<basic_block> 
+auto_vec<basic_block>
 get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
 {
   return get_dominated_to_depth (dir, bb, 0);

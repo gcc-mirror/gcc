@@ -61,7 +61,7 @@ EXTERN void Debug_Halt (const char *Message_, unsigned int _Message_high, const 
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets 
+                 It interprets
  as carriage return, linefeed.
 */
 

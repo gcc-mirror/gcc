@@ -45,7 +45,7 @@ struct GTY(()) emit_status {
 
   /* seq.first and seq.last are the ends of the doubly-linked chain of
      rtl for the current function.  Both are reset to null at the
-     start of rtl generation for the function. 
+     start of rtl generation for the function.
 
      start_sequence saves both of these on seq.next and then starts
      a new, nested sequence of insns.

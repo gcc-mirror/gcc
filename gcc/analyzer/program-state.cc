@@ -1343,7 +1343,7 @@ program_state::on_edge (exploded_graph &eg,
 
 /* Update this program_state to reflect a call to function
    represented by CALL_STMT.
-   currently used only when the call doesn't have a superedge representing 
+   currently used only when the call doesn't have a superedge representing
    the call ( like call via a function pointer )  */
 void
 program_state::push_call (exploded_graph &eg,
@@ -1366,7 +1366,7 @@ program_state::push_call (exploded_graph &eg,
 
 /* Update this program_state to reflect a return from function
    call to which is represented by CALL_STMT.
-   currently used only when the call doesn't have a superedge representing 
+   currently used only when the call doesn't have a superedge representing
    the return */
 void
 program_state::returning_call (exploded_graph &eg,

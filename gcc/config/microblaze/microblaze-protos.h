@@ -37,7 +37,7 @@ extern bool microblaze_expand_block_move (rtx, rtx, rtx, rtx);
 extern void microblaze_expand_divide (rtx *);
 extern void microblaze_expand_conditional_branch (machine_mode, rtx *);
 extern void microblaze_expand_conditional_branch_reg (machine_mode, rtx *);
-extern void microblaze_expand_conditional_branch_sf (rtx *); 
+extern void microblaze_expand_conditional_branch_sf (rtx *);
 extern int microblaze_can_use_return_insn (void);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
@@ -65,6 +65,6 @@ extern void microblaze_eh_return (rtx op0);
 #endif  /* RTX_CODE */
 
 /* Declare functions in microblaze-c.cc.  */
-extern void microblaze_cpp_define (struct cpp_reader *); 
+extern void microblaze_cpp_define (struct cpp_reader *);
 
 #endif  /* GCC_MICROBLAZE_PROTOS_H */

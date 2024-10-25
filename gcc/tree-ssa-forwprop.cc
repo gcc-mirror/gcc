@@ -487,7 +487,7 @@ forward_propagate_into_comparison_1 (gimple *stmt,
    Returns 1 if the stmt was modified and 2 if the CFG needs cleanup,
    otherwise returns 0.  */
 
-static int 
+static int
 forward_propagate_into_comparison (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -1032,7 +1032,7 @@ simplify_gimple_switch_label_vec (gswitch *stmt, tree index_type,
 						       e->dest->index));
 	  else
 	    ei_next (&ei);
-	} 
+	}
       BITMAP_FREE (target_blocks);
     }
 }
@@ -1802,7 +1802,7 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
   if (code1 == SSA_NAME)
     {
       def = SSA_NAME_DEF_STMT (name);
-      
+
       if (def && is_gimple_assign (def)
 	  && can_propagate_from (def))
 	{
@@ -2443,7 +2443,7 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 
 /* Combine an element access with a shuffle.  Returns true if there were
    any changes made, else it returns false.  */
- 
+
 static bool
 simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 {
@@ -2598,7 +2598,7 @@ is_combined_permutation_identity (tree mask1, tree mask2)
 
 /* Combine a shuffle with its arguments.  Returns 1 if there were any
    changes made, 2 if cfg-cleanup needs to run.  Else it returns 0.  */
- 
+
 static int
 simplify_permutation (gimple_stmt_iterator *gsi)
 {

@@ -1760,7 +1760,7 @@ ira_allocno_t *ira_curr_regno_allocno_map;
    IRA_CURR_LOOP_TREE_NODE and IRA_CURR_REGNO_ALLOCNO_MAP.  If BB_P,
    basic block nodes of LOOP_NODE is also processed (before its
    subloop nodes).
-   
+
    If BB_P is set and POSTORDER_FUNC is given, the basic blocks in
    the loop are passed in the *reverse* post-order of the *reverse*
    CFG.  This is only used by ira_create_allocno_live_ranges, which

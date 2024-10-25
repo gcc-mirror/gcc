@@ -1027,7 +1027,7 @@ release_pages (void)
 
   /* First free larger continuous areas to the OS.
      This allows other allocators to grab these areas if needed.
-     This is only done on larger chunks to avoid fragmentation. 
+     This is only done on larger chunks to avoid fragmentation.
      This does not always work because the free_pages list is only
      approximately sorted. */
 
@@ -1068,7 +1068,7 @@ release_pages (void)
       prev = newprev;
    }
 
-  /* Now give back the fragmented pages to the OS, but keep the address 
+  /* Now give back the fragmented pages to the OS, but keep the address
      space to reuse it next time. */
 
   for (p = G.free_pages; p; )
@@ -1088,7 +1088,7 @@ release_pages (void)
           p = p->next;
         }
       /* Give the page back to the kernel, but don't free the mapping.
-         This avoids fragmentation in the virtual memory map of the 
+         This avoids fragmentation in the virtual memory map of the
  	 process. Next time we can reuse it by just touching it. */
       madvise (start, len, MADV_DONTNEED);
       /* Don't count those pages as mapped to not touch the garbage collector
@@ -1247,7 +1247,7 @@ size_t
 ggc_round_alloc_size (size_t requested_size)
 {
   size_t size = 0;
-  
+
   ggc_round_alloc_size_1 (requested_size, NULL, &size);
   return size;
 }

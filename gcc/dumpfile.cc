@@ -348,7 +348,7 @@ get_dump_file_name (struct dump_file_info *dfi, int part) const
     {
       /* (null), LANG, TREE, RTL, IPA.  */
       char suffix = " ltri"[dfi->dkind];
-      
+
       if (snprintf (dump_id, sizeof (dump_id), ".%03d%c", dfi->num, suffix) < 0)
 	dump_id[0] = '\0';
     }

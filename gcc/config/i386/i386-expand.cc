@@ -1010,7 +1010,7 @@ ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
 	    t = gen_reg_rtx (V4SFmode);
 	  else
 	    t = op0;
-	    
+
 	  if (TARGET_SSE_PARTIAL_REG_DEPENDENCY)
 	    emit_move_insn (t, CONST0_RTX (V4SFmode));
 	  else
@@ -1685,7 +1685,7 @@ ix86_emit_binop (enum rtx_code code, machine_mode mode,
 
   op = gen_rtx_SET (dst, gen_rtx_fmt_ee (code, mode, dst, src));
   clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-  
+
   emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clob)));
 }
 
@@ -5758,7 +5758,7 @@ ix86_expand_vec_perm (rtx operands[])
 
   if (TARGET_XOP)
     {
-      /* The XOP VPPERM insn supports three inputs.  By ignoring the 
+      /* The XOP VPPERM insn supports three inputs.  By ignoring the
 	 one_operand_shuffle special case, we avoid creating another
 	 set of constant vectors in memory.  */
       one_operand_shuffle = false;
@@ -7586,7 +7586,7 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp7 = force_reg (V1TImode, gen_lowpart (V1TImode, tmp3));
       rtx tmp8 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_ashlv1ti3 (tmp8, tmp7, GEN_INT (64)));
- 
+
       rtx tmp9 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp10 = gen_reg_rtx (V2DImode);
       emit_insn (gen_ashlv2di3 (tmp10, tmp9, GEN_INT (128 - bits)));
@@ -8582,7 +8582,7 @@ expand_small_cpymem_or_setmem (rtx destmem, rtx srcmem,
    DONE_LABEL is a label after the whole copying sequence. The label is created
    on demand if *DONE_LABEL is NULL.
    MIN_SIZE is minimal size of block copied.  This value gets adjusted for new
-   bounds after the initial copies. 
+   bounds after the initial copies.
 
    DESTMEM/SRCMEM are memory expressions pointing to the copies block,
    DESTPTR/SRCPTR are pointers to the block. DYNAMIC_CHECK indicate whether
@@ -8891,7 +8891,7 @@ expand_set_or_cpymem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
   return dst;
 }
 
-/* Return true if ALG can be used in current context.  
+/* Return true if ALG can be used in current context.
    Assume we expand memset if MEMSET is true.  */
 static bool
 alg_usable_p (enum stringop_alg alg, bool memset, bool have_as)
@@ -9257,7 +9257,7 @@ ix86_copy_addr_to_reg (rtx addr)
 	with specified algorithm.
 
      4) Epilogue: code copying tail of the block that is too small to be
-	handled by main body (or up to size guarded by prologue guard). 
+	handled by main body (or up to size guarded by prologue guard).
 
   Misaligned move sequence
 
@@ -9475,7 +9475,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
-     front of all code.  
+     front of all code.
      For now the misaligned move sequences do not have fast path
      without broadcasting.  */
   if (issetmem && ((CONST_INT_P (val_exp) || misaligned_prologue_used)))
@@ -13793,7 +13793,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (!REG_P (op2))
 	op2 = copy_to_mode_reg (SImode, op2);
 
-      emit_insn (fcode == IX86_BUILTIN_MONITOR 
+      emit_insn (fcode == IX86_BUILTIN_MONITOR
 		 ? gen_sse3_monitor (Pmode, op0, op1, op2)
 		 : gen_monitorx (Pmode, op0, op1, op2));
       return 0;
@@ -16096,7 +16096,7 @@ static const ix86_vec_bcast_map_simode_t ix86_vec_bcast_map_simode[] = {
 };
 
 /* Comparator for bsearch on ix86_vec_bcast_map.  */
-static int 
+static int
 ix86_vec_bcast_map_simode_cmp (const void *key, const void *entry)
 {
   return (*(const unsigned int*)key)
@@ -25312,7 +25312,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
       /* Multiply lower parts and add all */
       t5 = gen_reg_rtx (V2DImode);
-      emit_insn (gen_vec_widen_umult_even_v4si (t5, 
+      emit_insn (gen_vec_widen_umult_even_v4si (t5,
 					gen_lowpart (V4SImode, op1),
 					gen_lowpart (V4SImode, op2)));
       force_expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
@@ -25507,7 +25507,7 @@ ix86_expand_pextr (rtx *operands)
 	return false;
       dst = SUBREG_REG (dst);
     }
-	
+
   if (SUBREG_P (src))
     {
       pos += SUBREG_BYTE (src) * BITS_PER_UNIT;
@@ -26122,7 +26122,7 @@ ix86_gen_bcst_mem (machine_mode mode, rtx x)
       && !CONST_DOUBLE_P (cst)
       && !CONST_FIXED_P (cst))
     return NULL_RTX;
-  
+
   int n_elts = GET_MODE_NUNITS (mode);
   if (CONST_VECTOR_NUNITS (x) != n_elts)
     return NULL_RTX;
@@ -26290,7 +26290,7 @@ do_mem_operand:
 
 /* Return TRUE if OP (in mode MODE) is the leaf of a ternary logic
    expression, such as a register or a memory reference.  */
- 
+
 bool
 ix86_ternlog_leaf_p (rtx op, machine_mode mode)
 {
@@ -26479,7 +26479,7 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  return target;
 	}
       break;
-  
+
     case 0x22: /* ~b&c */
       if ((!op0 || !side_effects_p (op0))
 	  && op1 && register_operand (op1, mode)
@@ -26552,7 +26552,7 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  return target;
 	}
       break;
-  
+
     case 0x5a:  /* a^c */
       if (op0 && ix86_ternlog_leaf_p (op0, mode)
 	  && op2 && ix86_ternlog_leaf_p (op2, mode)

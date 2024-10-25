@@ -327,7 +327,7 @@ tag_function (const char *filename ATTRIBUTE_UNUSED,
       if (gcov_position () - pos < (gcov_position_t) length)
 	{
 	  const char *name;
-	  
+
 	  name = gcov_read_string ();
 	  printf (", `%s'", name ? name : "NULL");
 	  unsigned artificial = gcov_read_unsigned ();
@@ -382,7 +382,7 @@ tag_arcs (const char *filename ATTRIBUTE_UNUSED,
 	  if (flags)
 	    {
 	      char c = '(';
-	      
+
 	      if (flags & GCOV_ARC_ON_TREE)
 		printf ("%ctree", c), c = ',';
 	      if (flags & GCOV_ARC_FAKE)

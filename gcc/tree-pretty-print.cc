@@ -3702,7 +3702,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, TREE_OPERAND (node, 2), spc, flags, false);
       pp_string (pp, " > ");
       break;
-    
+
     case VEC_PERM_EXPR:
       pp_string (pp, " VEC_PERM_EXPR < ");
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);

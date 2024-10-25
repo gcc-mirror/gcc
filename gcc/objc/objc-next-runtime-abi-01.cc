@@ -2846,7 +2846,7 @@ make_err_class:
   return eh_id;
 }
 
-/* For NeXT ABI 0 and 1, the personality routines are just those of the 
+/* For NeXT ABI 0 and 1, the personality routines are just those of the
    underlying language.  */
 
 static tree

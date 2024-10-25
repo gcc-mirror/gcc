@@ -3537,7 +3537,7 @@ builtin_memcpy_read_str (void *data, void *, HOST_WIDE_INT offset,
 }
 
 /* LEN specify length of the block of memcpy/memset operation.
-   Figure out its range and put it into MIN_SIZE/MAX_SIZE. 
+   Figure out its range and put it into MIN_SIZE/MAX_SIZE.
    In some cases we can make very likely guess on max size, then we
    set it into PROBABLE_MAX_SIZE.  */
 
@@ -6428,7 +6428,7 @@ get_builtin_sync_mem (tree loc, machine_mode mode)
 }
 
 /* Make sure an argument is in the right mode.
-   EXP is the tree argument. 
+   EXP is the tree argument.
    MODE is the mode it should be in.  */
 
 static rtx
@@ -6653,15 +6653,15 @@ expand_builtin_atomic_exchange (machine_mode mode, tree exp, rtx target)
 }
 
 /* Expand the __atomic_compare_exchange intrinsic:
-   	bool __atomic_compare_exchange (TYPE *object, TYPE *expect, 
-					TYPE desired, BOOL weak, 
+   	bool __atomic_compare_exchange (TYPE *object, TYPE *expect,
+					TYPE desired, BOOL weak,
 					enum memmodel success,
 					enum memmodel failure)
    EXP is the CALL_EXPR.
    TARGET is an optional place for us to store the results.  */
 
 static rtx
-expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp, 
+expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
 					rtx target)
 {
   rtx expect, desired, mem, oldval;
@@ -6674,14 +6674,14 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
 
   if (failure > success)
     success = MEMMODEL_SEQ_CST;
- 
+
   if (is_mm_release (failure) || is_mm_acq_rel (failure))
     {
       failure = MEMMODEL_SEQ_CST;
       success = MEMMODEL_SEQ_CST;
     }
 
- 
+
   if (!flag_inline_atomics)
     return NULL_RTX;
 
@@ -7160,7 +7160,7 @@ expand_ifn_atomic_op_fetch_cmp_0 (gcall *call)
    EXP is the call expression.  */
 
 static rtx
-expand_builtin_atomic_clear (tree exp) 
+expand_builtin_atomic_clear (tree exp)
 {
   machine_mode mode = int_mode_for_size (BOOL_TYPE_SIZE, 0).require ();
   rtx mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
@@ -7272,9 +7272,9 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
 
 /* Return true if the parameters to call EXP represent an object which will
    always generate lock free instructions.  The first argument represents the
-   size of the object, and the second parameter is a pointer to the object 
-   itself.  If NULL is passed for the object, then the result is based on 
-   typical alignment for an object of the specified size.  Otherwise return 
+   size of the object, and the second parameter is a pointer to the object
+   itself.  If NULL is passed for the object, then the result is based on
+   typical alignment for an object of the specified size.  Otherwise return
    false.  */
 
 static rtx
@@ -7296,7 +7296,7 @@ expand_builtin_atomic_always_lock_free (tree exp)
   return const0_rtx;
 }
 
-/* Return a one or zero if it can be determined that object ARG1 of size ARG 
+/* Return a one or zero if it can be determined that object ARG1 of size ARG
    is lock free on this architecture.  */
 
 static tree
@@ -7304,7 +7304,7 @@ fold_builtin_atomic_is_lock_free (tree arg0, tree arg1)
 {
   if (!flag_inline_atomics)
     return NULL_TREE;
-  
+
   /* If it isn't always lock free, don't generate a result.  */
   if (fold_builtin_atomic_always_lock_free (arg0, arg1) == boolean_true_node)
     return boolean_true_node;
@@ -7314,9 +7314,9 @@ fold_builtin_atomic_is_lock_free (tree arg0, tree arg1)
 
 /* Return true if the parameters to call EXP represent an object which will
    always generate lock free instructions.  The first argument represents the
-   size of the object, and the second parameter is a pointer to the object 
-   itself.  If NULL is passed for the object, then the result is based on 
-   typical alignment for an object of the specified size.  Otherwise return 
+   size of the object, and the second parameter is a pointer to the object
+   itself.  If NULL is passed for the object, then the result is based on
+   typical alignment for an object of the specified size.  Otherwise return
    NULL*/
 
 static rtx
@@ -7333,7 +7333,7 @@ expand_builtin_atomic_is_lock_free (tree exp)
     }
 
   if (!flag_inline_atomics)
-    return NULL_RTX; 
+    return NULL_RTX;
 
   /* If the value is known at compile time, return the RTX for it.  */
   size = fold_builtin_atomic_is_lock_free (arg0, arg1);
@@ -7407,7 +7407,7 @@ expand_builtin_set_thread_pointer (tree exp)
     {
       class expand_operand op;
       rtx val = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
-			     Pmode, EXPAND_NORMAL);      
+			     Pmode, EXPAND_NORMAL);
       create_input_operand (&op, val, Pmode);
       expand_insn (icode, 1, &op);
       return;
@@ -7523,7 +7523,7 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
    LENGTH is the number of chars to compare;
    CONST_STR_N indicates which source string is the constant string;
    IS_MEMCMP indicates whether it's a memcmp or strcmp.
-  
+
    to: (assume const_str_n is 2, i.e., arg2 is a constant string)
 
    target = (int) (unsigned char) var_str[0]
@@ -8568,7 +8568,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
 
-      mode = get_builtin_sync_mode 
+      mode = get_builtin_sync_mode
 				(fcode - BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_1);
       target = expand_builtin_compare_and_swap (mode, exp, true, target);
       if (target)
@@ -8580,7 +8580,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_4:
     case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_8:
     case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_16:
-      mode = get_builtin_sync_mode 
+      mode = get_builtin_sync_mode
 				(fcode - BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_1);
       target = expand_builtin_compare_and_swap (mode, exp, false, target);
       if (target)
@@ -8631,7 +8631,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	unsigned int nargs, z;
 	vec<tree, va_gc> *vec;
 
-	mode = 
+	mode =
 	    get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1);
 	target = expand_builtin_atomic_compare_exchange (mode, exp, target);
 	if (target)
@@ -8680,7 +8680,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       {
 	enum built_in_function lib;
 	mode = get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_ADD_FETCH_1);
-	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_ADD_1 + 
+	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_ADD_1 +
 				       (fcode - BUILT_IN_ATOMIC_ADD_FETCH_1));
 	target = expand_builtin_atomic_fetch_op (mode, exp, target, PLUS, true,
 						 ignore, lib);
@@ -8696,7 +8696,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       {
 	enum built_in_function lib;
 	mode = get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_SUB_FETCH_1);
-	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_SUB_1 + 
+	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_SUB_1 +
 				       (fcode - BUILT_IN_ATOMIC_SUB_FETCH_1));
 	target = expand_builtin_atomic_fetch_op (mode, exp, target, MINUS, true,
 						 ignore, lib);
@@ -8712,7 +8712,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       {
 	enum built_in_function lib;
 	mode = get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_AND_FETCH_1);
-	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_AND_1 + 
+	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_AND_1 +
 				       (fcode - BUILT_IN_ATOMIC_AND_FETCH_1));
 	target = expand_builtin_atomic_fetch_op (mode, exp, target, AND, true,
 						 ignore, lib);
@@ -8728,7 +8728,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       {
 	enum built_in_function lib;
 	mode = get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_NAND_FETCH_1);
-	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_NAND_1 + 
+	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_NAND_1 +
 				       (fcode - BUILT_IN_ATOMIC_NAND_FETCH_1));
 	target = expand_builtin_atomic_fetch_op (mode, exp, target, NOT, true,
 						 ignore, lib);
@@ -8744,7 +8744,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       {
 	enum built_in_function lib;
 	mode = get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_XOR_FETCH_1);
-	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_XOR_1 + 
+	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_XOR_1 +
 				       (fcode - BUILT_IN_ATOMIC_XOR_FETCH_1));
 	target = expand_builtin_atomic_fetch_op (mode, exp, target, XOR, true,
 						 ignore, lib);
@@ -8760,7 +8760,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       {
 	enum built_in_function lib;
 	mode = get_builtin_sync_mode (fcode - BUILT_IN_ATOMIC_OR_FETCH_1);
-	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_OR_1 + 
+	lib = (enum built_in_function)((int)BUILT_IN_ATOMIC_FETCH_OR_1 +
 				       (fcode - BUILT_IN_ATOMIC_OR_FETCH_1));
 	target = expand_builtin_atomic_fetch_op (mode, exp, target, IOR, true,
 						 ignore, lib);
@@ -8779,7 +8779,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (target)
 	return target;
       break;
- 
+
     case BUILT_IN_ATOMIC_FETCH_SUB_1:
     case BUILT_IN_ATOMIC_FETCH_SUB_2:
     case BUILT_IN_ATOMIC_FETCH_SUB_4:
@@ -8803,7 +8803,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (target)
 	return target;
       break;
-  
+
     case BUILT_IN_ATOMIC_FETCH_NAND_1:
     case BUILT_IN_ATOMIC_FETCH_NAND_2:
     case BUILT_IN_ATOMIC_FETCH_NAND_4:
@@ -8815,7 +8815,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (target)
 	return target;
       break;
- 
+
     case BUILT_IN_ATOMIC_FETCH_XOR_1:
     case BUILT_IN_ATOMIC_FETCH_XOR_2:
     case BUILT_IN_ATOMIC_FETCH_XOR_4:
@@ -8827,7 +8827,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (target)
 	return target;
       break;
- 
+
     case BUILT_IN_ATOMIC_FETCH_OR_1:
     case BUILT_IN_ATOMIC_FETCH_OR_2:
     case BUILT_IN_ATOMIC_FETCH_OR_4:
@@ -8848,7 +8848,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
     case BUILT_IN_ATOMIC_CLEAR:
       return expand_builtin_atomic_clear (exp);
- 
+
     case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return expand_builtin_atomic_always_lock_free (exp);
 

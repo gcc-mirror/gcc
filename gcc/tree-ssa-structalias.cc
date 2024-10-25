@@ -931,7 +931,7 @@ constraint_vec_find (vec<constraint_t> vec,
   return found;
 }
 
-/* Union two constraint vectors, TO and FROM.  Put the result in TO. 
+/* Union two constraint vectors, TO and FROM.  Put the result in TO.
    Returns true of TO set is changed.  */
 
 static bool
@@ -1090,7 +1090,7 @@ insert_into_complex (constraint_graph_t graph,
 
 
 /* Condense two variable nodes into a single variable node, by moving
-   all associated info from FROM to TO. Returns true if TO node's 
+   all associated info from FROM to TO. Returns true if TO node's
    constraint set changes after the merge.  */
 
 static bool
@@ -3760,7 +3760,7 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
       }
     case tcc_constant:
       {
-	/* We cannot refer to automatic variables through constants.  */ 
+	/* We cannot refer to automatic variables through constants.  */
 	temp.type = ADDRESSOF;
 	temp.var = nonlocal_id;
 	temp.offset = 0;
@@ -4047,7 +4047,7 @@ make_heapvar (const char *name, bool add_id)
 {
   varinfo_t vi;
   tree heapvar;
-  
+
   heapvar = build_fake_var_decl (ptr_type_node);
   DECL_EXTERNAL (heapvar) = 1;
 
@@ -4162,7 +4162,7 @@ handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
 	 (except through the escape solution).
 	 For all flags we get these implications right except for
 	 not_returned because we miss return functions in ipa-prop.  */
-	 
+
       if (flags & EAF_NO_DIRECT_READ)
 	flags |= EAF_NOT_RETURNED_INDIRECTLY;
     }
@@ -4379,7 +4379,7 @@ determine_global_memory_access (gcall *stmt,
 /* For non-IPA mode, generate constraints necessary for a call on the
    RHS and collect return value constraint to RESULTS to be used later in
    handle_lhs_call.
-  
+
    IMPLICIT_EAF_FLAGS are added to each function argument.  If
    WRITES_GLOBAL_MEMORY is true function is assumed to possibly write to global
    memory.  Similar for READS_GLOBAL_MEMORY.  */
@@ -5197,7 +5197,7 @@ find_func_aliases (struct function *fn, gimple *origt)
      pointer passed by address.  */
   else if (is_gimple_call (t))
     find_func_aliases_for_call (fn, as_a <gcall *> (t));
-    
+
   /* Otherwise, just a regular assignment statement.  Only care about
      operations with pointer result, others are dealt with as escape
      points if they have pointer operands.  */

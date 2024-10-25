@@ -147,7 +147,7 @@ static struct deferred_opt
 } *deferred_opts;
 
 
-extern const unsigned int 
+extern const unsigned int
 c_family_lang_mask = (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX);
 
 /* Defer option CODE with argument ARG.  */
@@ -778,15 +778,15 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
   switch (c_language)
     {
     case clk_c:
-      C_handle_option_auto (&global_options, &global_options_set, 
-                            scode, arg, value, 
+      C_handle_option_auto (&global_options, &global_options_set,
+                            scode, arg, value,
                             c_family_lang_mask, kind,
                             loc, handlers, global_dc);
       break;
 
     case clk_objc:
       ObjC_handle_option_auto (&global_options, &global_options_set,
-                               scode, arg, value, 
+                               scode, arg, value,
                                c_family_lang_mask, kind,
                                loc, handlers, global_dc);
       break;
@@ -1541,7 +1541,7 @@ sanitize_cpp_opts (void)
 
   /* Wlong-long is disabled by default. It is enabled by:
       [-Wpedantic | -Wtraditional] -std=[gnu|c]++98 ; or
-      [-Wpedantic | -Wtraditional] -std=non-c99 
+      [-Wpedantic | -Wtraditional] -std=non-c99
 
       Either -Wlong-long or -Wno-long-long override any other settings.
       ??? These conditions should be handled in c.opt.  */
@@ -1784,13 +1784,13 @@ cb_file_change (cpp_reader *reader, const line_map_ordinary *new_map)
     /* We're starting the main file.  Inform the FE of that.  */
     lang_hooks.preprocess_main_file (reader, line_table, new_map);
 
-  if (new_map 
+  if (new_map
       && (new_map->reason == LC_ENTER || new_map->reason == LC_RENAME))
     {
       /* Signal to plugins that a file is included.  This could happen
 	 several times with the same file path, e.g. because of
 	 several '#include' or '#line' directives...  */
-      invoke_plugin_callbacks 
+      invoke_plugin_callbacks
 	(PLUGIN_INCLUDE_FILE,
 	 const_cast<char*> (ORDINARY_MAP_FILE_NAME (new_map)));
     }

@@ -1572,7 +1572,7 @@ static hash_map<tree, unsigned> *type_align_map;
 /* Return alignment of array's vector type corresponding to scalar type.
    0 if no vector type exists.  */
 static unsigned
-get_vec_alignment_for_array_type (tree type) 
+get_vec_alignment_for_array_type (tree type)
 {
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
   poly_uint64 array_size, vector_size;
@@ -1593,7 +1593,7 @@ get_vec_alignment_for_array_type (tree type)
    offset is a multiple of it's vector alignment.
    0 if no suitable field is found.  */
 static unsigned
-get_vec_alignment_for_record_type (tree type) 
+get_vec_alignment_for_record_type (tree type)
 {
   gcc_assert (TREE_CODE (type) == RECORD_TYPE);
 
@@ -1612,7 +1612,7 @@ get_vec_alignment_for_record_type (tree type)
        field != NULL_TREE;
        field = DECL_CHAIN (field))
     {
-      /* Skip if not FIELD_DECL or if alignment is set by user.  */ 
+      /* Skip if not FIELD_DECL or if alignment is set by user.  */
       if (TREE_CODE (field) != FIELD_DECL
 	  || DECL_USER_ALIGN (field)
 	  || DECL_ARTIFICIAL (field))
@@ -1630,11 +1630,11 @@ get_vec_alignment_for_record_type (tree type)
       if (!tree_fits_uhwi_p (offset_tree))
 	break;
 
-      offset = tree_to_uhwi (offset_tree); 
+      offset = tree_to_uhwi (offset_tree);
       alignment = get_vec_alignment_for_type (TREE_TYPE (field));
 
       /* Get maximum alignment of vectorized field/array among those members
-	 whose offset is multiple of the vector alignment.  */ 
+	 whose offset is multiple of the vector alignment.  */
       if (alignment
 	  && (offset % alignment == 0)
 	  && (alignment > max_align))

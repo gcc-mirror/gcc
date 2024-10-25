@@ -1,6 +1,6 @@
-/*{{{  Comment.  */ 
+/*{{{  Comment.  */
 
-/* Definitions of FR30 target. 
+/* Definitions of FR30 target.
    Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /*}}}*/ 
-/*{{{  Run-time target specifications.  */ 
+/*{{{  Run-time target specifications.  */
 
 #undef  ASM_SPEC
 #define ASM_SPEC ""
@@ -56,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 		   %{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic}"
 
 /*}}}*/ 
-/*{{{  Storage Layout.  */ 
+/*{{{  Storage Layout.  */
 
 #define BITS_BIG_ENDIAN 1
 
@@ -93,7 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
 /*}}}*/ 
-/*{{{  Layout of Source Language Data Types.  */ 
+/*{{{  Layout of Source Language Data Types.  */
 
 #define SHORT_TYPE_SIZE 	16
 #define INT_TYPE_SIZE 		32
@@ -115,7 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /*}}}*/ 
-/*{{{  REGISTER BASICS.  */ 
+/*{{{  REGISTER BASICS.  */
 
 /* Number of hardware registers known to the compiler.  They receive numbers 0
    through `FIRST_PSEUDO_REGISTER-1'; thus, the first pseudo register's number
@@ -139,7 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* A call-used register that can be used during the function prologue.  */
 #define PROLOGUE_TMP_REGNUM	 COMPILER_SCRATCH_REGISTER
-     
+
 /* Register numbers used for passing a function's static chain pointer.  If
    register windows are used, the register number as seen by the called
    function is `STATIC_CHAIN_INCOMING_REGNUM', while the register number as
@@ -161,7 +161,7 @@ along with GCC; see the file COPYING3.  If not see
    determines which register this is.  On other machines, you can choose any
    register you wish for this purpose.  */
 #define FRAME_POINTER_REGNUM	14
-     
+
 /* The register number of the stack pointer register, which must also be a
    fixed register according to `FIXED_REGISTERS'.  On most machines, the
    hardware determines which register this is.  */
@@ -231,7 +231,7 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 /*}}}*/ 
-/*{{{  Register Classes.  */ 
+/*{{{  Register Classes.  */
 
 /* An enumeral type that must be defined with all the register class names as
    enumeral values.  `NO_REGS' must be first.  `ALL_REGS' must be the last
@@ -332,7 +332,7 @@ enum reg_class
 #define CLASS_MAX_NREGS(CLASS, MODE) targetm.hard_regno_nregs (0, MODE)
 
 /*}}}*/ 
-/*{{{  Basic Stack Layout.  */ 
+/*{{{  Basic Stack Layout.  */
 
 /* Define this macro if pushing a word onto the stack moves the stack pointer
    to a smaller address.  */
@@ -367,7 +367,7 @@ enum reg_class
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (SImode, RETURN_POINTER_REGNUM)
 
 /*}}}*/ 
-/*{{{  Register That Address the Stack Frame.  */ 
+/*{{{  Register That Address the Stack Frame.  */
 
 /* The register number of the arg pointer register, which is used to access the
    function's argument list.  On some machines, this is the same as the frame
@@ -379,7 +379,7 @@ enum reg_class
 #define ARG_POINTER_REGNUM 20
 
 /*}}}*/ 
-/*{{{  Eliminating the Frame Pointer and the Arg Pointer.  */ 
+/*{{{  Eliminating the Frame Pointer and the Arg Pointer.  */
 
 /* If defined, this macro specifies a table of register pairs used to eliminate
    unneeded registers that point into the stack frame.  If it is not defined,
@@ -417,7 +417,7 @@ enum reg_class
      (OFFSET) = fr30_compute_frame_size (FROM, TO)
 
 /*}}}*/ 
-/*{{{  Passing Function Arguments on the Stack.  */ 
+/*{{{  Passing Function Arguments on the Stack.  */
 
 /* If defined, the maximum amount of space required for outgoing arguments will
    be computed and placed into the variable
@@ -430,10 +430,10 @@ enum reg_class
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 /*}}}*/ 
-/*{{{  Function Arguments in Registers.  */ 
+/*{{{  Function Arguments in Registers.  */
 
 /* The number of register assigned to holding function arguments.  */
-     
+
 #define FR30_NUM_ARG_REGS	 4
 
 /* A C type for declaring a variable that is used as the first argument of
@@ -478,7 +478,7 @@ enum reg_class
   ((REGNO) >= FIRST_ARG_REGNUM && ((REGNO) < FIRST_ARG_REGNUM + FR30_NUM_ARG_REGS))
 
 /*}}}*/ 
-/*{{{  How Large Values are Returned.  */ 
+/*{{{  How Large Values are Returned.  */
 
 /* Define this macro to be 1 if all structure and union return values must be
    in memory.  Since this results in slower code, this should be defined only
@@ -490,7 +490,7 @@ enum reg_class
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
 /*}}}*/ 
-/*{{{  Generating Code for Profiling.  */ 
+/*{{{  Generating Code for Profiling.  */
 
 /* A C statement or compound statement to output to FILE some assembler code to
    call the profiling subroutine `mcount'.  Before calling, the assembler code
@@ -512,7 +512,7 @@ enum reg_class
 }
 
 /*}}}*/ 
-/*{{{  Trampolines for Nested Functions.  */ 
+/*{{{  Trampolines for Nested Functions.  */
 
 /* A C expression for the size in bytes of the trampoline, as an integer.  */
 #define TRAMPOLINE_SIZE 18
@@ -523,7 +523,7 @@ enum reg_class
 #define TRAMPOLINE_ALIGNMENT 32
 
 /*}}}*/ 
-/*{{{  Addressing Modes.  */ 
+/*{{{  Addressing Modes.  */
 
 /* A number, the maximum number of registers that can appear in a valid memory
    address.  Note that it is up to you to specify a value equal to the maximum
@@ -536,15 +536,15 @@ enum reg_class
 
 /* On the FR30 we only have one real addressing mode - an address in a
    register.  There are three special cases however:
-   
+
    * indexed addressing using small positive offsets from the stack pointer
-   
+
    * indexed addressing using small signed offsets from the frame pointer
 
    * register plus register addressing using R13 as the base register.
 
    At the moment we only support the first two of these special cases.  */
-   
+
 #ifdef REG_OK_STRICT
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			\
   do									\
@@ -617,7 +617,7 @@ enum reg_class
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
 /*}}}*/ 
-/*{{{  Describing Relative Costs of Operations */ 
+/*{{{  Describing Relative Costs of Operations */
 
 /* Define this macro as a C expression which is nonzero if accessing less than
    a word of memory (i.e. a `char' or a `short') is no faster than accessing a
@@ -633,7 +633,7 @@ enum reg_class
 #define SLOW_BYTE_ACCESS 1
 
 /*}}}*/ 
-/*{{{  Dividing the output into sections.  */ 
+/*{{{  Dividing the output into sections.  */
 
 /* A C expression whose value is a string containing the assembler operation
    that should precede instructions and read-only data.  Normally `".text"' is
@@ -668,13 +668,13 @@ enum reg_class
 #define ASM_APP_OFF "#NO_APP\n"
 
 /*}}}*/ 
-/*{{{  Output and Generation of Labels.  */ 
+/*{{{  Output and Generation of Labels.  */
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
 
 /*}}}*/ 
-/*{{{  Output of Assembler Instructions.  */ 
+/*{{{  Output of Assembler Instructions.  */
 
 /* A C compound statement to output to stdio stream STREAM the assembler syntax
    for an instruction operand X.  X is an RTL expression.
@@ -713,7 +713,7 @@ enum reg_class
 #define IMMEDIATE_PREFIX ""
 
 /*}}}*/ 
-/*{{{  Output of Dispatch Tables.  */ 
+/*{{{  Output of Dispatch Tables.  */
 
 /* This macro should be provided on machines where the addresses in a dispatch
    table are relative to the table's own address.
@@ -741,7 +741,7 @@ fprintf (STREAM, "\t.word .L%d-.L%d\n", VALUE, REL)
 fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
 /*}}}*/ 
-/*{{{  Assembler Commands for Alignment.  */ 
+/*{{{  Assembler Commands for Alignment.  */
 
 /* A C statement to output to the stdio stream STREAM an assembler command to
    advance the location counter to a multiple of 2 to the POWER bytes.  POWER
@@ -750,7 +750,7 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
   fprintf ((STREAM), "\t.p2align %d\n", (POWER))
 
 /*}}}*/ 
-/*{{{  Miscellaneous Parameters.  */ 
+/*{{{  Miscellaneous Parameters.  */
 
 /* An alias for a machine mode name.  This is the machine mode that elements of
    a jump-table should have.  */

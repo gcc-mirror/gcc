@@ -126,7 +126,7 @@ count_bb_insns (const_basic_block bb)
 
 /* Determine whether the total insn_cost on non-jump insns in
    basic block BB is less than MAX_COST.  This function returns
-   false if the cost of any instruction could not be estimated. 
+   false if the cost of any instruction could not be estimated.
 
    The cost of the non-jump insns in BB is scaled by REG_BR_PROB_BASE
    as those insns are being speculated.  MAX_COST is scaled with SCALE

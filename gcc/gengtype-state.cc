@@ -280,15 +280,15 @@ state_writer::state_writer ()
 
 
 /* Fatal message while reading state.  */
-static void 
+static void
 fatal_reading_state (struct state_token_st* tok, const char*msg)
 {
   if (tok)
     fatal ("%s:%d:%d: Invalid state file; %s",
-	   tok->stok_file, tok->stok_line, tok->stok_col, 
-	   msg); 
+	   tok->stok_file, tok->stok_line, tok->stok_col,
+	   msg);
   else
-    fatal ("%s:%d: Invalid state file; %s", 
+    fatal ("%s:%d: Invalid state file; %s",
 	   state_path, state_line, msg);
 }
 
@@ -363,7 +363,7 @@ read_a_state_token (void)
     goto again;
   /* Skip comments starting with semi-colon.  */
   if (c == ';')
-    {	
+    {
       do
 	{
 	  c = getc (state_file);
@@ -2366,7 +2366,7 @@ read_state_structures (type_p *structures)
   else
     fatal_reading_state (t0, "Bad structures syntax");
   if (countstruct != nbstruct)
-    fatal_reading_state_printf (NULL_STATE_TOKEN, 
+    fatal_reading_state_printf (NULL_STATE_TOKEN,
 				"expected %d structures but got %d",
 				nbstruct, countstruct);
   if (verbosity_level >= 2)

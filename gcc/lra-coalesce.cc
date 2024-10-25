@@ -226,7 +226,7 @@ lra_coalesce (void)
   int coalesced_moves;
   int max_regno = max_reg_num ();
   bitmap_head involved_insns_bitmap;
-  
+
   timevar_push (TV_LRA_COALESCE);
 
   if (lra_dump_file != NULL)

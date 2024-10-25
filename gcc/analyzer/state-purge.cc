@@ -599,17 +599,17 @@ state_purge_per_ssa_name::process_point (const function_point &point,
 		  superedge *sedge
 		    = map.get_sg ().get_intraprocedural_edge_for_call (cedge);
 		  gcc_assert (sedge);
-		  add_to_worklist 
+		  add_to_worklist
 		    (function_point::after_supernode (sedge->m_src),
 		     worklist, logger);
 	        }
 	      else
 	        {
-	          supernode *callernode 
+	          supernode *callernode
 	            = map.get_sg ().get_supernode_for_stmt (returning_call);
 
 	          gcc_assert (callernode);
-	          add_to_worklist 
+	          add_to_worklist
 	            (function_point::after_supernode (callernode),
 		     worklist, logger);
 	         }

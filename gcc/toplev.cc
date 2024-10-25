@@ -465,7 +465,7 @@ compile_file (void)
 
   if (flag_syntax_only || flag_wpa)
     return;
- 
+
   /* Reset maximum_field_alignment, it can be adjusted by #pragma pack
      and this shouldn't influence any types built by the middle-end
      from now on (like gcov_info_type).  */
@@ -1290,7 +1290,7 @@ process_options ()
     global_dc->create_edit_context ();
 
   /* Avoid any informative notes in the second run of -fcompare-debug.  */
-  if (flag_compare_debug) 
+  if (flag_compare_debug)
     diagnostic_inhibit_notes (global_dc);
 
   if (flag_section_anchors && !target_supports_section_anchors_p ())
@@ -1980,7 +1980,7 @@ target_reinit (void)
      to allow target_reinit being called even after prepare_function_start.  */
   saved_regno_reg_rtx = regno_reg_rtx;
   if (saved_regno_reg_rtx)
-    {  
+    {
       saved_x_rtl = *crtl;
       memset (crtl, '\0', sizeof (*crtl));
       regno_reg_rtx = NULL;

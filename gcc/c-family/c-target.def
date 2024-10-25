@@ -112,5 +112,5 @@ linkage the declaration would normally have.  An example of such function\n\
 is WinMain on Win32 targets.",
  bool, (const char*),
  NULL)
- 
+
 HOOK_VECTOR_END (C90_EMPTY_HACK)

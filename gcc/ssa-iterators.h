@@ -403,19 +403,19 @@ has_single_use (const_tree var)
   const ssa_use_operand_t *const head = &(SSA_NAME_IMM_USE_NODE (var));
   const ssa_use_operand_t *ptr;
   bool single = false;
-   
+
   for (ptr = head->next; ptr != head; ptr = ptr->next)
     if (USE_STMT(ptr) && !is_gimple_debug (USE_STMT (ptr)))
       {
 	if (single)
 	  return false;
-	else 
+	else
 	  single = true;
       }
 
   return single;
 }
-    
+
 /* If VAR has only a single immediate nondebug use, return true, and
    set USE_P and STMT to the use pointer and stmt of occurrence.  */
 inline bool

@@ -3034,7 +3034,7 @@ nonbarrier_call_p (gimple *call)
 }
 
 /* Callback for walk_stmt_load_store_ops.
- 
+
    Return TRUE if OP will dereference the tree stored in DATA, FALSE
    otherwise.
 

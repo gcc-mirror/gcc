@@ -62,7 +62,7 @@ openbsd_gt_pch_get_address (size_t size, int fd)
   return addr;
 }
 
-/* Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at 
+/* Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at
    mapping the data at BASE, -1 if we couldn't.  */
 
 static int

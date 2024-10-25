@@ -286,7 +286,7 @@ extern "C" void SymbolKey_InitTree (SymbolKey_SymbolTree *t)
 
 extern "C" void SymbolKey_KillTree (SymbolKey_SymbolTree *t)
 {
-  /* 
+  /*
     we used to get problems compiling KillTree below - so it was split
     into the two procedures below.
 
@@ -295,10 +295,10 @@ PROCEDURE KillTree (VAR t: SymbolTree) ;
 BEGIN
    IF t#NIL
    THEN
-      Kill(t) ;   Would like to place Kill in here but the compiler 
-                  gives a type incompatible error... so i've split  
-                  the procedure into two. - Problem i think with    
-                  VAR t at the top?                                 
+      Kill(t) ;   Would like to place Kill in here but the compiler
+                  gives a type incompatible error... so i've split
+                  the procedure into two. - Problem i think with
+                  VAR t at the top?
       t := NIL
    END
 END KillTree ;

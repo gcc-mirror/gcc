@@ -201,14 +201,14 @@ supergraph::supergraph (logger *logger)
 	          // maybe call is via a function pointer
 	          if (gcall *call = dyn_cast<gcall *> (stmt))
 	          {
-	            cgraph_edge *edge 
+	            cgraph_edge *edge
 		      = cgraph_node::get (fun->decl)->get_edge (stmt);
 	            if (!edge || !edge->callee)
 	            {
 	              supernode *old_node_for_stmts = node_for_stmts;
 	              node_for_stmts = add_node (fun, bb, call, NULL);
 
-	              superedge *sedge 
+	              superedge *sedge
 	                = new callgraph_superedge (old_node_for_stmts,
 	                  			   node_for_stmts,
 	                  			   SUPEREDGE_INTRAPROCEDURAL_CALL,
@@ -1266,7 +1266,7 @@ callgraph_superedge::get_call_stmt () const
 {
   if (m_cedge)
     return m_cedge->call_stmt;
-  
+
   return m_src->get_final_call ();
 }
 

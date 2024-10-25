@@ -2175,7 +2175,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 				  & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
 		   - offset;
 
-      /* Unpoison shadow memory that corresponds to a variable that is 
+      /* Unpoison shadow memory that corresponds to a variable that is
 	 is subject of use-after-return sanitization.  */
       if (l > 2)
 	{

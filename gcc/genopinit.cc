@@ -250,7 +250,7 @@ main (int argc, const char **argv)
   fprintf (h_file, "#define NUM_OPTAB_PATTERNS  %u\n",
 	   (unsigned) patterns.length ());
 
-  fprintf (h_file, 
+  fprintf (h_file,
 	   "typedef enum optab_tag optab;\n"
 	   "typedef enum optab_tag convert_optab;\n"
 	   "typedef enum optab_tag direct_optab;\n"

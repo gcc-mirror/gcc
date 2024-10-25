@@ -2247,7 +2247,7 @@ public:
   {
     return (CODE == CLZ || CODE == CTZ) ? false : true;
   }
-  
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)

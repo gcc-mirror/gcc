@@ -1362,7 +1362,7 @@ DEF_RTL_EXPR(DEFINE_SUBST, "define_subst", "sEsE", RTX_EXTRA)
       unmodified version of the pattern).
    3: String to substitute for the subst-attribute name in the pattern
       name, for the case that the DEFINE_SUBST is applied to the patten.
-      
+
    The use of DEFINE_SUBST and DEFINE_SUBST_ATTR is explained in the
    GCC internals manual, under "RTL Templates Transformations".  */
 DEF_RTL_EXPR(DEFINE_SUBST_ATTR, "define_subst_attr", "ssss", RTX_EXTRA)

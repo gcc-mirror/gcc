@@ -873,7 +873,7 @@ m32c_matches_constraint_p (rtx value, int constraint)
 		    && A0_OR_PSEUDO (patternr[5])
 		    && GET_MODE (patternr[5]) == HImode)
 		|| RTX_IS ("ms")));
-  case CONSTRAINT_Sd:    
+  case CONSTRAINT_Sd:
     {
       /* This is the common "src/dest" address */
       rtx r;
@@ -2790,7 +2790,7 @@ m32c_print_operand (FILE * file, rtx x, int code)
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P m32c_print_operand_punct_valid_p
 
-static bool 
+static bool
 m32c_print_operand_punct_valid_p (unsigned char c)
 {
   if (c == '&' || c == '!')
@@ -3036,7 +3036,7 @@ m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
 	{
 	  TREE_THIS_VOLATILE (node) = true;
 	}
-    }	
+    }
 }
 
 /* Hash table of pragma info.  */
@@ -3227,7 +3227,7 @@ m32c_immd_dbl_mov (rtx * operands ATTRIBUTE_UNUSED,
   /* ??? This relied on the now-defunct MEM_SCALAR and MEM_IN_STRUCT_P
      flags.  */
   return false;
-}  
+}
 
 /* Expanders */
 
@@ -4099,7 +4099,7 @@ m32c_emit_prologue (void)
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
-  
+
   if (frame_size > 254)
     {
       extra_frame_size = frame_size - 254;

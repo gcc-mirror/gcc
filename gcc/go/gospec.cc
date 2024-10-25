@@ -125,7 +125,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
 
   /* The first input file with an extension of .go.  */
-  const char *first_go_file = NULL;  
+  const char *first_go_file = NULL;
 
   /* Whether we saw any -g option.  */
   bool saw_opt_g = false;

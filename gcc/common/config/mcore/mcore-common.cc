@@ -26,7 +26,7 @@
 
 /* What options are we going to default to specific settings when
    -O* happens; the user can subsequently override these settings.
-  
+
    Omitting the frame pointer is a very good idea on the MCore.
    Scheduling isn't worth anything on the current MCore implementation.  */
 

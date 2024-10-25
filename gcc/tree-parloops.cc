@@ -1,6 +1,6 @@
 /* Loop autoparallelization.
    Copyright (C) 2006-2024 Free Software Foundation, Inc.
-   Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
+   Contributed by Sebastian Pop <pop@cri.ensmp.fr>
    Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
 This file is part of GCC.
@@ -82,8 +82,8 @@ along with GCC; see the file COPYING3.  If not see
    -- if there are several parallelizable loops in a function, it may be
       possible to generate the threads just once (using synchronization to
       ensure that cross-loop dependences are obeyed).
-   -- handling of common reduction patterns for outer loops.  
-    
+   -- handling of common reduction patterns for outer loops.
+
    More info can also be found at http://gcc.gnu.org/wiki/AutoParInGCC  */
 /*
   Reduction handling:
@@ -3038,12 +3038,12 @@ gen_parallel_loop (class loop *loop,
 
   /* We should compute a better number-of-iterations value for outer loops.
      That is, if we have
- 
+
     for (i = 0; i < n; ++i)
       for (j = 0; j < m; ++j)
         ...
 
-    we should compute nit = n * m, not nit = n.  
+    we should compute nit = n * m, not nit = n.
     Also may_be_zero handling would need to be adjusted.  */
 
   type = TREE_TYPE (niter->niter);

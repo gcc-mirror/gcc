@@ -67,7 +67,7 @@ static locus gcc_attribute_locus;
 
 gfc_source_form gfc_current_form;
 static gfc_linebuf *line_head, *line_tail;
-       
+
 locus gfc_current_locus;
 const char *gfc_source_file;
 static FILE *gfc_src_file;
@@ -284,19 +284,19 @@ gfc_scanner_done_1 (void)
   gfc_linebuf *lb;
   gfc_file *f;
 
-  while(line_head != NULL) 
+  while(line_head != NULL)
     {
       lb = line_head->next;
       free (line_head);
       line_head = lb;
     }
-     
-  while(file_head != NULL) 
+
+  while(file_head != NULL)
     {
       f = file_head->next;
       free (file_head->filename);
       free (file_head);
-      file_head = f;    
+      file_head = f;
     }
 }
 
@@ -371,7 +371,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   char *q;
   size_t len;
   int i;
-  
+
   p = path;
   while (*p == ' ' || *p == '\t')  /* someone might do "-I include" */
     if (*p++ == '\0')
@@ -634,7 +634,7 @@ gfc_advance_line (void)
     {
       end_flag = 1;
       return;
-    } 
+    }
 
   if (gfc_current_locus.u.lb->next
       && !gfc_current_locus.u.lb->next->dbg_emitted)
@@ -647,11 +647,11 @@ gfc_advance_line (void)
 
   if (gfc_current_locus.u.lb != NULL)
     gfc_current_locus.nextc = gfc_current_locus.u.lb->line;
-  else 
+  else
     {
       gfc_current_locus.nextc = NULL;
       end_flag = 1;
-    }       
+    }
 }
 
 
@@ -668,7 +668,7 @@ static gfc_char_t
 next_char (void)
 {
   gfc_char_t c;
-  
+
   if (gfc_current_locus.nextc == NULL)
     return '\n';
 
@@ -785,7 +785,7 @@ skip_free_oacc_sentinel (locus start, locus old_loc)
 	      openacc_locus = old_loc;
 	      gfc_current_locus = start;
 	    }
-	  else 
+	  else
 	    r = false;
 	}
       else
@@ -825,7 +825,7 @@ skip_free_omp_sentinel (locus start, locus old_loc)
 	      openmp_locus = old_loc;
 	      gfc_current_locus = start;
 	    }
-	  else 
+	  else
 	    r = false;
 	}
       else
@@ -1105,7 +1105,7 @@ skip_fixed_comments (void)
 	    continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb);
 
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
-	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments, 
+	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments,
 		but directives
 	     2) handle OpenMP conditional compilation, where
 		!$|c$|*$ should be treated as 2 spaces if the characters
@@ -1373,7 +1373,7 @@ restart:
 	skip_comment_line ();
       else
 	gfc_advance_line ();
-      
+
       if (gfc_at_eof ())
 	goto not_continuation;
 
@@ -1478,7 +1478,7 @@ restart:
 	    {
 	      gfc_current_locus.nextc--;
 	      if (warn_ampersand && in_string == INSTRING_WARN)
-		gfc_warning (OPT_Wampersand, 
+		gfc_warning (OPT_Wampersand,
 			     "Missing %<&%> in continued character "
 			     "constant at %C");
 	    }
@@ -1801,7 +1801,7 @@ gfc_gobble_whitespace (void)
    load_line returns whether the line was truncated.
 
    NOTE: The error machinery isn't available at this point, so we can't
-	 easily report line and column numbers consistent with other 
+	 easily report line and column numbers consistent with other
 	 parts of gfortran.  */
 
 static bool
@@ -1861,7 +1861,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       if (c == '\n')
 	{
 	  /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
-	  if (gfc_current_form == FORM_FREE 
+	  if (gfc_current_form == FORM_FREE
 	      && !seen_printable && seen_ampersand)
 	    {
 	      if (pedantic)

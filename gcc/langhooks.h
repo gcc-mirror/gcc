@@ -558,7 +558,7 @@ struct lang_hooks
   struct lang_hooks_for_decls decls;
 
   struct lang_hooks_for_types types;
-  
+
   struct lang_hooks_for_lto lto;
 
   /* Returns a TREE_VEC of the generic parameters of an instantiation of

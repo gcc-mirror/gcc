@@ -455,7 +455,7 @@ scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
 
 bool
 sese_trivially_empty_bb_p (basic_block bb)
-{         
+{
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))

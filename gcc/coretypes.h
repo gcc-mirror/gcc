@@ -479,7 +479,7 @@ typedef unsigned char uchar;
 #if !defined (USED_FOR_TARGET)
 #include "insn-modes.h"
 #include "signop.h"
-#include "wide-int.h" 
+#include "wide-int.h"
 #include "wide-int-print.h"
 
 /* On targets that don't need polynomial offsets, target-specific code

@@ -383,7 +383,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
 				    bool *read_profile_p)
 {
   gcov_type expected = -1;
-  
+
   if (read_profile_p)
     *read_profile_p = false;
 
@@ -397,7 +397,7 @@ expected_loop_iterations_unbounded (const class loop *loop,
   HOST_WIDE_INT max = get_max_loop_iterations_int (loop);
   if (max != -1 && max < expected)
     return max;
- 
+
   return expected;
 }
 

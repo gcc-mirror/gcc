@@ -1880,7 +1880,7 @@ init_pragma (void)
 #endif
 
   global_sso = default_sso;
-  c_register_pragma (0, "scalar_storage_order", 
+  c_register_pragma (0, "scalar_storage_order",
 		     handle_pragma_scalar_storage_order);
 
   /* Allow plugins to register their own pragmas. */

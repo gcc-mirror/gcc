@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE SH_ELF_WCHAR_TYPE
-   
+
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 

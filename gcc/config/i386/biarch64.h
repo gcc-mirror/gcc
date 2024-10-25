@@ -1,6 +1,6 @@
 /* Make configure files to produce biarch compiler defaulting to 64bit mode.
    This file must be included very first, while the OS specific file later
-   to overwrite otherwise wrong defaults. 
+   to overwrite otherwise wrong defaults.
    Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Bo Thorsen <bo@suse.de>.
 

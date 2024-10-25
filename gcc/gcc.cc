@@ -6892,7 +6892,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		     "%{foo=*:bar%*}%{foo=*:one%*two}"
 
 		   matches -foo=hello then it will produce:
-		   
+
 		     barhello onehellotwo
 		*/
 		if (*p == 0 || *p == '}')
@@ -10671,9 +10671,9 @@ static unsigned HOST_WIDE_INT
 get_random_number (void)
 {
   unsigned HOST_WIDE_INT ret = 0;
-  int fd; 
+  int fd;
 
-  fd = open ("/dev/urandom", O_RDONLY); 
+  fd = open ("/dev/urandom", O_RDONLY);
   if (fd >= 0)
     {
       read (fd, &ret, sizeof (HOST_WIDE_INT));
@@ -11125,16 +11125,16 @@ whitespace_to_convert_p (char c, void *)
   return (c == ' ' || c == '\t');
 }
 
-/* Insert backslash before spaces in ORIG (usually a file path), to 
+/* Insert backslash before spaces in ORIG (usually a file path), to
    avoid being broken by spec parser.
 
    This function is needed as do_spec_1 treats white space (' ' and '\t')
    as the end of an argument. But in case of -plugin /usr/gcc install/xxx.so,
    the file name should be treated as a single argument rather than being
-   broken into multiple. Solution is to insert '\\' before the space in a 
+   broken into multiple. Solution is to insert '\\' before the space in a
    file name.
-   
-   This function converts and only converts all occurrence of ' ' 
+
+   This function converts and only converts all occurrence of ' '
    to '\\' + ' ' and '\t' to '\\' + '\t'.  For example:
    "a b"  -> "a\\ b"
    "a  b" -> "a\\ \\ b"

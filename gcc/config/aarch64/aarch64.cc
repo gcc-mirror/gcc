@@ -9105,7 +9105,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
     {
       bool frame_related_p = aarch64_emit_cfi_for_reg_p (regno);
       machine_mode mode = aarch64_reg_save_mode (regno);
-      
+
       rtx reg = gen_rtx_REG (mode, regno);
       poly_int64 offset = frame.reg_offset[regno];
       if (frame_pointer_needed)
@@ -10290,7 +10290,7 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 /* Implement TARGET_CASE_VALUES_THRESHOLD.
    The expansion for a table switch is quite expensive due to the number
    of instructions, the table lookup and hard to predict indirect jump.
-   When optimizing for speed, and -O3 enabled, use the per-core tuning if 
+   When optimizing for speed, and -O3 enabled, use the per-core tuning if
    set, otherwise use tables for >= 11 cases as a tradeoff between size and
    performance.  When optimizing for size, use 8 for smallest codesize.  */
 

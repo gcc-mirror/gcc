@@ -207,7 +207,7 @@ callees_functions_use_frame_header (function *fn)
 	        {
 	          called_fn = DECL_STRUCT_FUNCTION (called_fn_tree);
 		  if (called_fn == NULL
-		      || DECL_WEAK (called_fn_tree) 
+		      || DECL_WEAK (called_fn_tree)
 		      || has_inlined_assembly (called_fn)
 		      || !is_leaf_function (called_fn)
 		      || !called_fn->machine->does_not_use_frame_header)

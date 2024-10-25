@@ -664,7 +664,7 @@ ubsan_maybe_instrument_reference (tree *stmt_p)
 						 UBSAN_REF_BINDING);
   if (op)
     {
-      if (TREE_CODE (stmt) == NOP_EXPR) 
+      if (TREE_CODE (stmt) == NOP_EXPR)
 	TREE_OPERAND (stmt, 0) = op;
       else
 	*stmt_p = op;

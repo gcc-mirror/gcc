@@ -343,7 +343,7 @@ DEFTREECODE (STATIC_ASSERT, "static_assert", tcc_exceptional, 0)
 
 /* Represents an argument pack of types (or templates). An argument
    pack stores zero or more arguments that will be used to instantiate
-   a parameter pack. 
+   a parameter pack.
 
    ARGUMENT_PACK_ARGS retrieves the arguments stored in the argument
    pack.
@@ -361,7 +361,7 @@ DEFTREECODE (STATIC_ASSERT, "static_assert", tcc_exceptional, 0)
 DEFTREECODE (TYPE_ARGUMENT_PACK, "type_argument_pack", tcc_type, 0)
 
 /* Represents an argument pack of values, which can be used either for
-   non-type template arguments or function call arguments. 
+   non-type template arguments or function call arguments.
 
    NONTYPE_ARGUMENT_PACK plays precisely the same role as
    TYPE_ARGUMENT_PACK, but will be used for packing non-type template
@@ -381,7 +381,7 @@ DEFTREECODE (NONTYPE_ARGUMENT_PACK, "nontype_argument_pack", tcc_expression, 1)
 
    Example:
      template<typename... Values>
-     struct tied : tuple<Values&...> { 
+     struct tied : tuple<Values&...> {
        // ...
      };
 
@@ -399,7 +399,7 @@ DEFTREECODE (EXPR_PACK_EXPANSION, "expr_pack_expansion", tcc_expression, 3)
 
 /* Selects the Ith parameter out of an argument pack. This node will
    be used when instantiating pack expansions; see
-   tsubst_pack_expansion. 
+   tsubst_pack_expansion.
 
    ARGUMENT_PACK_SELECT_FROM_PACK contains the *_ARGUMENT_PACK node
    from which the argument will be selected.

@@ -237,7 +237,7 @@ along with GCC; see the file COPYING3.  If not see
 	       false, true, true, ATTRS, false, flag_tm)
 
 /* Builtin used by the implementation of libsanitizer. These
-   functions are mapped to the actual implementation of the 
+   functions are mapped to the actual implementation of the
    libtsan library. */
 #undef DEF_SANITIZER_BUILTIN
 #define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
@@ -1105,7 +1105,7 @@ DEF_BUILTIN_STUB (BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX, "__builtin_alloca_with_ali
    equality with zero.  */
 DEF_BUILTIN_STUB (BUILT_IN_MEMCMP_EQ, "__builtin_memcmp_eq")
 
-/* An internal version of strcmp/strncmp, used when the result is only 
+/* An internal version of strcmp/strncmp, used when the result is only
    tested for equality with zero.  */
 DEF_BUILTIN_STUB (BUILT_IN_STRCMP_EQ, "__builtin_strcmp_eq")
 DEF_BUILTIN_STUB (BUILT_IN_STRNCMP_EQ, "__builtin_strncmp_eq")

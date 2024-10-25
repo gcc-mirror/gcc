@@ -826,7 +826,7 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_UINTR_UNSET;
 	}
       return true;
-    
+
     case OPT_mhreset:
       if (value)
 	{

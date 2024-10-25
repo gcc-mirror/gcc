@@ -158,20 +158,20 @@ emit_add (rtx dest, rtx src0, rtx src1)
 }
 
 /* Generate the code to compare (and possibly branch) two integer values
-   TEST_CODE is the comparison code we are trying to emulate 
+   TEST_CODE is the comparison code we are trying to emulate
      (or implement directly)
-   RESULT is where to store the result of the comparison, 
+   RESULT is where to store the result of the comparison,
      or null to emit a branch
    CMP0 CMP1 are the two comparison operands
    DESTINATION is the destination of the branch, or null to only compare
    */
 
 static void
-gen_int_relational (enum rtx_code code,	
-		    rtx result,	
-		    rtx cmp0,	
-		    rtx cmp1,	
-		    rtx destination)	
+gen_int_relational (enum rtx_code code,
+		    rtx result,
+		    rtx cmp0,
+		    rtx cmp1,
+		    rtx destination)
 {
   machine_mode mode;
   int branch_p;
@@ -183,7 +183,7 @@ gen_int_relational (enum rtx_code code,
   /* Is this a branch or compare.  */
   branch_p = (destination != 0);
 
-  /* Instruction set doesn't support LE or LT, so swap operands and use 
+  /* Instruction set doesn't support LE or LT, so swap operands and use
      GE, GT.  */
   switch (code)
     {
@@ -270,7 +270,7 @@ lm32_expand_scc (rtx operands[])
   rtx op0 = operands[2];
   rtx op1 = operands[3];
 
-  gen_int_relational (code, target, op0, op1, NULL_RTX);  
+  gen_int_relational (code, target, op0, op1, NULL_RTX);
 }
 
 /* Compare OPERANDS[1] with OPERANDS[2] using comparison code
@@ -284,7 +284,7 @@ lm32_expand_conditional_branch (rtx operands[])
   rtx op1 = operands[2];
   rtx destination = operands[3];
 
-  gen_int_relational (code, NULL_RTX, op0, op1, destination);  
+  gen_int_relational (code, NULL_RTX, op0, op1, destination);
 }
 
 /* Generate and emit RTL to save or restore callee save registers.  */
@@ -304,10 +304,10 @@ expand_save_restore (struct lm32_frame_info *info, int op)
 	{
 	  rtx offset_rtx;
 	  rtx mem;
-	  
+
 	  offset_rtx = GEN_INT (offset);
 	  if (satisfies_constraint_K (offset_rtx))
-	    {	
+	    {
               mem = gen_rtx_MEM (word_mode,
                                  gen_rtx_PLUS (Pmode,
                                                stack_pointer_rtx,
@@ -316,23 +316,23 @@ expand_save_restore (struct lm32_frame_info *info, int op)
           else
             {
               /* r10 is caller saved so it can be used as a temp reg.  */
-              rtx r10;        
-               
+              rtx r10;
+
               r10 = gen_rtx_REG (word_mode, 10);
               insn = emit_move_insn (r10, offset_rtx);
               if (op == 0)
                 RTX_FRAME_RELATED_P (insn) = 1;
               insn = emit_add (r10, r10, stack_pointer_rtx);
               if (op == 0)
-                RTX_FRAME_RELATED_P (insn) = 1;                
+                RTX_FRAME_RELATED_P (insn) = 1;
               mem = gen_rtx_MEM (word_mode, r10);
-            }                                                 	    
-	    	    
+            }
+
 	  if (op == 0)
 	    insn = emit_move_insn (mem, gen_rtx_REG (word_mode, regno));
 	  else
 	    insn = emit_move_insn (gen_rtx_REG (word_mode, regno), mem);
-        
+
 	  /* only prologue instructions which set the sp fp or save a
 	     register should be marked as frame related.  */
 	  if (op == 0)
@@ -391,11 +391,11 @@ lm32_expand_prologue (void)
 	{
 	  /* Move sp to fp.  */
 	  insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
-	  RTX_FRAME_RELATED_P (insn) = 1; 
+	  RTX_FRAME_RELATED_P (insn) = 1;
 
-	  /* Add offset - Don't use total_size, as that includes pretend_size, 
+	  /* Add offset - Don't use total_size, as that includes pretend_size,
              which isn't part of this frame?  */
-	  insn = emit_add (frame_pointer_rtx, 
+	  insn = emit_add (frame_pointer_rtx,
 			   frame_pointer_rtx,
 			   GEN_INT (current_frame_info.args_size +
 				    current_frame_info.callee_size +
@@ -513,7 +513,7 @@ lm32_print_operand (FILE * file, rtx op, int letter)
       fprintf (file, "%s", reg_names[regnum]);
     }
   else if (code == HIGH)
-    output_addr_const (file, XEXP (op, 0));  
+    output_addr_const (file, XEXP (op, 0));
   else if (code == MEM)
     output_address (GET_MODE (op), XEXP (op, 0));
   else if (letter == 'z' && GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
@@ -1129,7 +1129,7 @@ lm32_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	          *total = COSTS_N_INSNS (2);
 		return true;
 	      }
-	    /* Fall through.  */ 
+	    /* Fall through.  */
 
 	  default:
             if (satisfies_constraint_K (x))
@@ -1194,32 +1194,32 @@ lm32_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 static bool
 lm32_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 			   bool strict, code_helper)
-{  
-   /* (rM) */                                                    
+{
+   /* (rM) */
   if (strict && REG_P (x) && STRICT_REG_OK_FOR_BASE_P (x))
     return true;
   if (!strict && REG_P (x) && NONSTRICT_REG_OK_FOR_BASE_P (x))
     return true;
-       
-  /* (rM)+literal) */                               
-  if (GET_CODE (x) == PLUS  
-     && REG_P (XEXP (x, 0))                                     
+
+  /* (rM)+literal) */
+  if (GET_CODE (x) == PLUS
+     && REG_P (XEXP (x, 0))
      && ((strict && STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0)))
-         || (!strict && NONSTRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))))                           
-     && GET_CODE (XEXP (x, 1)) == CONST_INT                      
+         || (!strict && NONSTRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))))
+     && GET_CODE (XEXP (x, 1)) == CONST_INT
      && satisfies_constraint_K (XEXP ((x), 1)))
     return true;
-              
-  /* gp(sym)  */   
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_SMALL_P (x)) 
+
+  /* gp(sym)  */
+  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_SMALL_P (x))
     return true;
-    
-  return false;                                
+
+  return false;
 }
 
-/* Check a move is not memory to memory.  */ 
+/* Check a move is not memory to memory.  */
 
-bool 
+bool
 lm32_move_ok (machine_mode mode, rtx operands[2]) {
   if (memory_operand (operands[0], mode))
     return register_or_zero_operand (operands[1], mode);

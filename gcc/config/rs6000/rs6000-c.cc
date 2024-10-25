@@ -809,7 +809,7 @@ is_float128_p (tree t)
 	      && TARGET_LONG_DOUBLE_128
 	      && t == long_double_type_node));
 }
-  
+
 
 /* Return true iff ARGTYPE can be compatibly passed as PARMTYPE.  */
 static bool

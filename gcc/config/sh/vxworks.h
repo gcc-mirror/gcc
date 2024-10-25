@@ -1,8 +1,8 @@
 /* Definitions of target machine for GCC,
-   for SuperH with targeting the VXWorks run time environment. 
+   for SuperH with targeting the VXWorks run time environment.
    Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
-   
+
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify

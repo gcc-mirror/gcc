@@ -413,7 +413,7 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
      :: operator-function-id
      :: qualifier-id
      ( expression )
-     id-expression   
+     id-expression
 
    GNU Extensions:
      __builtin_va_arg ( assignment-expression , type-id )
@@ -422,15 +422,15 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
 
      __builtin_is_virtual_base_of ( type-id , type-id )
 
-     __has_nothrow_assign ( type-id )   
+     __has_nothrow_assign ( type-id )
      __has_nothrow_constructor ( type-id )
      __has_nothrow_copy ( type-id )
-     __has_trivial_assign ( type-id )   
+     __has_trivial_assign ( type-id )
      __has_trivial_constructor ( type-id )
      __has_trivial_copy ( type-id )
      __has_unique_object_representations ( type-id )
      __has_trivial_destructor ( type-id )
-     __has_virtual_destructor ( type-id )     
+     __has_virtual_destructor ( type-id )
      __is_abstract ( type-id )
      __is_base_of ( type-id , type-id )
      __is_class ( type-id )
@@ -877,7 +877,7 @@ cxx_pretty_printer::unary_expression (tree t)
       pp_cxx_left_paren (this);
       type_id (TREE_OPERAND (t, 0));
       pp_cxx_right_paren (this);
-      break;      
+      break;
 
     case NOEXCEPT_EXPR:
       pp_cxx_ws_string (this, "noexcept");
@@ -1692,7 +1692,7 @@ cxx_pretty_printer::direct_declarator (tree t)
 	    /* A function parameter pack or non-type template
 	       parameter pack.  */
 	    pp_cxx_ws_string (this, "...");
-		      
+
 	  id_expression (DECL_NAME (t));
 	}
       abstract_declarator (TREE_TYPE (t));

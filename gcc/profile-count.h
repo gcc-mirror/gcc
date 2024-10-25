@@ -790,7 +790,7 @@ public:
       if (other.ipa ().nonzero_p ()
 	  && !(ipa () == *this))
 	return false;
-	
+
       return ipa_p () == other.ipa_p ();
     }
 
@@ -1072,7 +1072,7 @@ public:
       return *this;
     }
 
-  /* Return true when value is not zero and can be used for scaling. 
+  /* Return true when value is not zero and can be used for scaling.
      This is different from *this > 0 because that requires counter to
      be IPA.  */
   bool nonzero_p () const

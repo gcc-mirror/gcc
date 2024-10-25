@@ -997,7 +997,7 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
    BBINDEX_TO_POSTORDER is array mapping back BB->index to postorder position.
    PENDING will be freed.
 
-   The worklists are bitmaps indexed by postorder positions.  
+   The worklists are bitmaps indexed by postorder positions.
 
    The function implements standard algorithm for dataflow solving with two
    worklists (we are processing WORKLIST and storing new BBs to visit in

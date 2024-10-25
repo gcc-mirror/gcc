@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 // For a COND_EXPR, the TRUE edge will return [1,1] and the false edge a [0,0].
 //
 // For SWITCH_EXPR, it is awkward to calculate ranges.  When a request
-// is made, the entire switch is evaluated and the results cached. 
+// is made, the entire switch is evaluated and the results cached.
 // Any future requests to that switch will use the cached value, providing
 // dramatic decrease in computation time.
 //

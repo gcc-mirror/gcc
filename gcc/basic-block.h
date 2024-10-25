@@ -563,7 +563,7 @@ check_probability (int prob)
   gcc_checking_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
 }
 
-/* Given PROB1 and PROB2, return PROB1*PROB2/REG_BR_PROB_BASE. 
+/* Given PROB1 and PROB2, return PROB1*PROB2/REG_BR_PROB_BASE.
    Used to combine BB probabilities.  */
 
 inline int

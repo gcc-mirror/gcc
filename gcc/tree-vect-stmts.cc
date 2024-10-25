@@ -88,7 +88,7 @@ stmt_in_inner_loop_p (vec_info *vinfo, class _stmt_vec_info *stmt_info)
   return (bb->loop_father == loop->inner);
 }
 
-/* Record the cost of a statement, either by directly informing the 
+/* Record the cost of a statement, either by directly informing the
    target model or by saving it in a vector for later processing.
    Return a preliminary estimate of the statement's cost.  */
 
@@ -8440,7 +8440,7 @@ vectorizable_store (vec_info *vinfo,
       if (slp)
         {
           grouped_store = false;
-          /* VEC_NUM is the number of vect stmts to be created for this 
+          /* VEC_NUM is the number of vect stmts to be created for this
              group.  */
           vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  first_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
@@ -8449,9 +8449,9 @@ vectorizable_store (vec_info *vinfo,
 			  == first_stmt_info));
 	  first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 	  op = vect_get_store_rhs (first_stmt_info);
-        } 
+        }
       else
-        /* VEC_NUM is the number of vect stmts to be created for this 
+        /* VEC_NUM is the number of vect stmts to be created for this
            group.  */
 	vec_num = group_size;
 
@@ -13825,7 +13825,7 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
   /* We can't build a vector type of elements with alignment bigger than
      their size.  */
   else if (nbytes < TYPE_ALIGN_UNIT (scalar_type))
-    scalar_type = lang_hooks.types.type_for_mode (inner_mode, 
+    scalar_type = lang_hooks.types.type_for_mode (inner_mode,
 						  TYPE_UNSIGNED (scalar_type));
 
   /* If we felt back to using the mode fail if there was
@@ -14382,7 +14382,7 @@ supportable_widening_operation (vec_info *vinfo,
 	 vectorization.  */
       /* TODO: Another case in which order doesn't *really* matter is when we
 	 widen and then contract again, e.g. (short)((int)x * y >> 8).
-	 Normally, pack_trunc performs an even/odd permute, whereas the 
+	 Normally, pack_trunc performs an even/odd permute, whereas the
 	 repack from an even/odd expansion would be an interleave, which
 	 would be significantly simpler for e.g. AVX2.  */
       /* In any case, in order to avoid duplicating the code below, recurse

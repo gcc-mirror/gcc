@@ -293,7 +293,7 @@ void init_one_dwarf_reg_size (int regno, machine_mode regmode,
   const unsigned int dnum = DWARF_FRAME_REGNUM (regno);
   const unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
   const unsigned int dcol = DWARF_REG_TO_UNWIND_COLUMN (rnum);
-  
+
   poly_int64 slotoffset = dcol * GET_MODE_SIZE (slotmode);
   poly_int64 regsize = GET_MODE_SIZE (regmode);
 
@@ -2627,7 +2627,7 @@ maybe_record_trace_start_abnormal (rtx_insn *start, rtx_insn *origin)
 
       cur_row->cfa.offset += delta;
     }
-  
+
   maybe_record_trace_start (start, origin);
 
   cur_trace->end_true_args_size = save_args_size;
@@ -3023,7 +3023,7 @@ connect_traces (void)
 		 start of the trace, we can wind up increasing the
 		 size of the unwind info due to extra advance opcodes.
 		 Instead, put the remember immediately before the next
-		 state change.  We know there must be one, because the 
+		 state change.  We know there must be one, because the
 		 state at the beginning and head of the trace differ.  */
 	      add_cfi_insn = before_next_cfi_note (prev_ti->head);
 	      cfi = new_cfi ();

@@ -478,7 +478,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 	}
 
       bitmap_set_bit (in_sese_region, bb->index);
-         
+
       basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->src == dom
@@ -1539,7 +1539,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 
 /* Compute alias-sets for all data references in DRS.  */
 
-static bool 
+static bool
 build_alias_set (scop_p scop)
 {
   int num_vertices = scop->drs.length ();

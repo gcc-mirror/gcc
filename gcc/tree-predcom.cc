@@ -3213,7 +3213,7 @@ pcom_worker::prepare_initializers_chain (chain_p chain)
 	continue;
 
       gcc_assert (laref->distance > 0);
-      chain->inits[n - laref->distance] 
+      chain->inits[n - laref->distance]
 	= PHI_ARG_DEF_FROM_EDGE (laref->stmt, entry);
     }
 

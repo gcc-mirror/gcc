@@ -3288,7 +3288,7 @@ dump_ada_declaration (pretty_printer *pp, tree t, tree type, int spc)
 	    }
 	}
 
-      TREE_VISITED (t) = 1; 
+      TREE_VISITED (t) = 1;
       if (is_interface)
 	{
 	  pp_string (pp, "limited interface  -- ");

@@ -35,7 +35,7 @@
 #endif
 
 /* If __APPLE_ALTIVEC__ is defined, the compiler supports 'vector',
-   'pixel' and 'bool' as context-sensitive AltiVec keywords (in 
+   'pixel' and 'bool' as context-sensitive AltiVec keywords (in
    non-AltiVec contexts, they revert to their original meanings,
    if any), so we do not need to define them as macros.  Also,
    avoid defining them as macros for C++ with strict ANSI, as

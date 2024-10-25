@@ -183,7 +183,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
      switch to the next one.  */
   if (pos + nbits > BITS_PER_BITPACK_WORD)
     {
-      bp->word = val 
+      bp->word = val
 	= streamer_read_uhwi ((class lto_input_block *)bp->stream);
       bp->pos = nbits;
       return val & mask;

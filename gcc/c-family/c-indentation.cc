@@ -324,7 +324,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 		  " the size of the code/headers");
 	  if (!flag_large_source_files)
 	    inform (guard_loc,
-		    "adding %<-flarge-source-files%> will allow for more" 
+		    "adding %<-flarge-source-files%> will allow for more"
 		    " column-tracking support, at the expense of compilation"
 		    " time and memory");
 	}
