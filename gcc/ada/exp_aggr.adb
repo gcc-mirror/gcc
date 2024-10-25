@@ -1329,12 +1329,12 @@ package body Exp_Aggr is
          --  If we get here then we are at a bottom-level (sub-)aggregate
 
          Indexed_Comp :=
-           Checks_Off
-             (Make_Indexed_Component (Loc,
-                Prefix      => New_Copy_Tree (Into),
-                Expressions => New_Indexes));
+           Make_Indexed_Component (Loc,
+             Prefix      => New_Copy_Tree (Into),
+             Expressions => New_Indexes);
 
          Set_Assignment_OK (Indexed_Comp);
+         Set_Kill_Range_Check (Indexed_Comp);
 
          --  Ada 2005 (AI-287): In case of default initialized component, Expr
          --  is not present (and therefore we also initialize Expr_Q to empty).

@@ -6488,19 +6488,6 @@ package body Sem_Ch4 is
       Operator_Check (N);
    end Analyze_Unary_Op;
 
-   ----------------------------------
-   -- Analyze_Unchecked_Expression --
-   ----------------------------------
-
-   procedure Analyze_Unchecked_Expression (N : Node_Id) is
-      Expr : constant Node_Id := Expression (N);
-
-   begin
-      Analyze (Expr, Suppress => All_Checks);
-      Set_Etype (N, Etype (Expr));
-      Save_Interps (Expr, N);
-   end Analyze_Unchecked_Expression;
-
    ---------------------------------------
    -- Analyze_Unchecked_Type_Conversion --
    ---------------------------------------

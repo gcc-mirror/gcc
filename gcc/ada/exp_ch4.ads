@@ -71,7 +71,6 @@ package Exp_Ch4 is
    procedure Expand_N_Selected_Component          (N : Node_Id);
    procedure Expand_N_Slice                       (N : Node_Id);
    procedure Expand_N_Type_Conversion             (N : Node_Id);
-   procedure Expand_N_Unchecked_Expression        (N : Node_Id);
    procedure Expand_N_Unchecked_Type_Conversion   (N : Node_Id);
 
    function Build_Eq_Call

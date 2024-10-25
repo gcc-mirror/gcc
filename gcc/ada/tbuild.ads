@@ -34,12 +34,6 @@ with Uintp;          use Uintp;
 
 package Tbuild is
 
-   function Checks_Off (N : Node_Id) return Node_Id;
-   pragma Inline (Checks_Off);
-   --  Returns an N_Unchecked_Expression node whose expression is the given
-   --  argument. The results is a subexpression identical to the argument,
-   --  except that it will be analyzed and resolved with checks off.
-
    function Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id;
    --  Returns an expression that is a type conversion of expression Expr to
    --  type Typ. If the type of Expr is Typ, then no conversion is required.

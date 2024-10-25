@@ -242,7 +242,6 @@ package body Sem_Res is
    procedure Resolve_Target_Name               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Type_Conversion           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Unary_Op                  (N : Node_Id; Typ : Entity_Id);
-   procedure Resolve_Unchecked_Expression      (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Unchecked_Type_Conversion (N : Node_Id; Typ : Entity_Id);
 
    function Operator_Kind
@@ -3533,9 +3532,6 @@ package body Sem_Res is
 
             when N_Type_Conversion =>
                Resolve_Type_Conversion           (N, Ctx_Type);
-
-            when N_Unchecked_Expression =>
-               Resolve_Unchecked_Expression      (N, Ctx_Type);
 
             when N_Unchecked_Type_Conversion =>
                Resolve_Unchecked_Type_Conversion (N, Ctx_Type);
@@ -9730,7 +9726,9 @@ package body Sem_Res is
             Resolve (Expr, Etype (Index));
             Check_Unset_Reference (Expr);
 
-            Apply_Scalar_Range_Check (Expr, Etype (Index));
+            if not Kill_Range_Check (N) then
+               Apply_Scalar_Range_Check (Expr, Etype (Index));
+            end if;
 
             Next_Index (Index);
             Next (Expr);
@@ -12870,19 +12868,6 @@ package body Sem_Res is
          end if;
       end;
    end Resolve_Unary_Op;
-
-   ----------------------------------
-   -- Resolve_Unchecked_Expression --
-   ----------------------------------
-
-   procedure Resolve_Unchecked_Expression
-     (N   : Node_Id;
-      Typ : Entity_Id)
-   is
-   begin
-      Resolve (Expression (N), Typ, Suppress => All_Checks);
-      Set_Etype (N, Typ);
-   end Resolve_Unchecked_Expression;
 
    ---------------------------------------
    -- Resolve_Unchecked_Type_Conversion --

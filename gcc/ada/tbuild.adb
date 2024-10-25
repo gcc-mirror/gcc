@@ -100,17 +100,6 @@ package body Tbuild is
    end Add_Unique_Serial_Number;
 
    ----------------
-   -- Checks_Off --
-   ----------------
-
-   function Checks_Off (N : Node_Id) return Node_Id is
-   begin
-      return
-        Make_Unchecked_Expression (Sloc (N),
-          Expression => N);
-   end Checks_Off;
-
-   ----------------
    -- Convert_To --
    ----------------
 

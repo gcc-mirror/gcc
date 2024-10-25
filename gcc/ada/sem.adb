@@ -613,9 +613,6 @@ package body Sem is
          when N_Type_Conversion =>
             Analyze_Type_Conversion (N);
 
-         when N_Unchecked_Expression =>
-            Analyze_Unchecked_Expression (N);
-
          when N_Unchecked_Type_Conversion =>
             Analyze_Unchecked_Type_Conversion (N);
 

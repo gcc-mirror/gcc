@@ -424,9 +424,7 @@ package body Pprint is
                   end if;
                end;
 
-            when N_Expression_With_Actions
-               | N_Unchecked_Expression
-            =>
+            when N_Expression_With_Actions =>
                return Expr_Name (Expression (Expr));
 
             when N_Raise_Constraint_Error =>

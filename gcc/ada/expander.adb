@@ -506,9 +506,6 @@ package body Expander is
                when N_Type_Conversion =>
                   Expand_N_Type_Conversion (N);
 
-               when N_Unchecked_Expression =>
-                  Expand_N_Unchecked_Expression (N);
-
                when N_Unchecked_Type_Conversion =>
                   Expand_N_Unchecked_Type_Conversion (N);
 

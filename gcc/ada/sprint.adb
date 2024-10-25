@@ -3550,12 +3550,6 @@ package body Sprint is
             Sprint_Node (Expression (Node));
             Write_Char (')');
 
-         when N_Unchecked_Expression =>
-            Col_Check (10);
-            Write_Str ("`(");
-            Sprint_Node_Sloc (Expression (Node));
-            Write_Char (')');
-
          when N_Unchecked_Type_Conversion =>
             Sprint_Node (Subtype_Mark (Node));
             Write_Char ('!');

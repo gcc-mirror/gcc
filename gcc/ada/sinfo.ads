@@ -1909,9 +1909,11 @@ package Sinfo is
    --    for further details.
 
    --  Kill_Range_Check
-   --    Used in an N_Unchecked_Type_Conversion node to indicate that the
-   --    result should not be subjected to range checks. This is used for the
-   --    implementation of Normalize_Scalars.
+   --    Used in N_Indexed_Component to indicate that its expressions should
+   --    not be subjected to range checks and in N_Unchecked_Type_Conversion
+   --    to indicate that the result of the conversion should not be subjected
+   --    to range checks. This is used for the implementation of aggregates and
+   --    Normalize_Scalars respectively.
 
    --  Label_Construct
    --    Used in an N_Implicit_Label_Declaration node. Refers to an N_Label,
@@ -3830,8 +3832,9 @@ package Sinfo is
       --  Sloc contains a copy of the Sloc value of the Prefix
       --  Prefix
       --  Expressions
-      --  Generalized_Indexing
       --  Atomic_Sync_Required
+      --  Generalized_Indexing
+      --  Kill_Range_Check
       --  plus fields for expression
 
       --  Note: if any of the subscripts requires a range check, then the
@@ -8427,28 +8430,6 @@ package Sinfo is
       --  An N_Scil_Membership_Test node may be associated (via Get_SCIL_Node)
       --  with the N_In node (or a rewriting thereof) corresponding to a
       --  classwide membership test.
-
-      --------------------------
-      -- Unchecked Expression --
-      --------------------------
-
-      --  An unchecked expression is one that must be analyzed and resolved
-      --  with all checks off, regardless of the current setting of scope
-      --  suppress flags.
-
-      --  Sprint syntax: `(expression)
-
-      --  Note: this node is always removed from the tree (and replaced by
-      --  its constituent expression) on completion of analysis, so it only
-      --  appears in intermediate trees, and will never be seen by Gigi.
-
-      --  N_Unchecked_Expression
-      --  Sloc is a copy of the Sloc of the expression
-      --  Expression
-      --  plus fields for expression
-
-      --  Note: in the case where a debug source file is generated, the Sloc
-      --  for this node points to the back quote in the Sprint file output.
 
       -------------------------------
       -- Unchecked Type Conversion --

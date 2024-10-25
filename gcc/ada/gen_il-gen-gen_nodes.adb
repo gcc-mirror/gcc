@@ -478,7 +478,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Prefix, Node_Id),
         Sy (Expressions, List_Id, Default_No_List),
         Sm (Atomic_Sync_Required, Flag),
-        Sm (Generalized_Indexing, Node_Id)));
+        Sm (Generalized_Indexing, Node_Id),
+        Sm (Kill_Range_Check, Flag)));
 
    Cc (N_Null, N_Subexpr);
 
@@ -574,9 +575,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Overflow_Check, Flag),
         Sm (Float_Truncate, Flag),
         Sm (Rounded_Result, Flag)));
-
-   Cc (N_Unchecked_Expression, N_Subexpr,
-       (Sy (Expression, Node_Id, Default_Empty)));
 
    Cc (N_Unchecked_Type_Conversion, N_Subexpr,
        (Sy (Subtype_Mark, Node_Id, Default_Empty),

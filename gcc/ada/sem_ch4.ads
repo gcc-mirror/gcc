@@ -50,7 +50,6 @@ package Sem_Ch4  is
    procedure Analyze_Slice                     (N : Node_Id);
    procedure Analyze_Type_Conversion           (N : Node_Id);
    procedure Analyze_Unary_Op                  (N : Node_Id);
-   procedure Analyze_Unchecked_Expression      (N : Node_Id);
    procedure Analyze_Unchecked_Type_Conversion (N : Node_Id);
 
    procedure Ambiguous_Operands (N : Node_Id);
