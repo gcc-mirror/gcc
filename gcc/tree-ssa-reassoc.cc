@@ -403,7 +403,8 @@ static inline void
 insert_operand_rank (tree e, int64_t rank)
 {
   gcc_assert (rank > 0);
-  gcc_assert (!operand_rank->put (e, rank));
+  bool existed = operand_rank->put (e, rank);
+  gcc_assert (!existed);
 }
 
 /* Given an expression E, return the rank of the expression.  */

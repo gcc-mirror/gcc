@@ -154,7 +154,8 @@ lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
   last_node = encoder->nodes.pop ();
   if (last_node.node != node)
     {
-      gcc_assert (encoder->map->put (last_node.node, index + 1));
+      bool existed = encoder->map->put (last_node.node, index + 1);
+      gcc_assert (existed);
 
       /* Move the last element to the original spot of NODE.  */
       encoder->nodes[index] = last_node;

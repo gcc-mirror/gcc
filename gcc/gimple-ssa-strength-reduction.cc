@@ -473,7 +473,8 @@ get_alternative_base (tree base)
       aff.offset = 0;
       expr = aff_combination_to_tree (&aff);
 
-      gcc_assert (!alt_base_map->put (base, base == expr ? NULL : expr));
+      bool existed = alt_base_map->put (base, base == expr ? NULL : expr);
+      gcc_assert (!existed);
 
       return expr == base ? NULL : expr;
     }
@@ -791,7 +792,8 @@ base_cand_from_table (tree base_in)
 static void
 add_cand_for_stmt (gimple *gs, slsr_cand_t c)
 {
-  gcc_assert (!stmt_cand_map->put (gs, c));
+  bool existed = stmt_cand_map->put (gs, c);
+  gcc_assert (!existed);
 }
 
 /* Given PHI which contains a phi statement, determine whether it

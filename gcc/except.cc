@@ -541,7 +541,8 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
   eh_region new_r;
 
   new_r = gen_eh_region (old_r->type, outer);
-  gcc_assert (!data->eh_map->put (old_r, new_r));
+  bool existed = data->eh_map->put (old_r, new_r);
+  gcc_assert (!existed);
 
   switch (old_r->type)
     {
@@ -586,7 +587,8 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
 	continue;
 
       new_lp = gen_eh_landing_pad (new_r);
-      gcc_assert (!data->eh_map->put (old_lp, new_lp));
+      bool existed = data->eh_map->put (old_lp, new_lp);
+      gcc_assert (!existed);
 
       new_lp->post_landing_pad
 	= data->label_map (old_lp->post_landing_pad, data->label_map_data);

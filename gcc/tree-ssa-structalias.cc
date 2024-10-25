@@ -2889,7 +2889,8 @@ static void
 insert_vi_for_tree (tree t, varinfo_t vi)
 {
   gcc_assert (vi);
-  gcc_assert (!vi_for_tree->put (t, vi));
+  bool existed = vi_for_tree->put (t, vi);
+  gcc_assert (!existed);
 }
 
 /* Find the variable info for tree T in VI_FOR_TREE.  If T does not
