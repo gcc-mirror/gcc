@@ -1,9 +1,5 @@
 // PR c++/95677
-
-// { dg-lto-do link }
-// { dg-lto-options { -flto } }
-
-
+// { dg-do link }
 
 namespace {
   void foo() {
