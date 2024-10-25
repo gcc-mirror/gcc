@@ -1,8 +1,7 @@
 // PR c++/95677
 
-// { dg-do link }
-// { dg-require-effective-target lto }
-// { dg-options "-flto" }
+// { dg-lto-do link }
+// { dg-lto-options { -flto } }
 
 
 
