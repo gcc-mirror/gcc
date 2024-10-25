@@ -1251,7 +1251,7 @@ assign_discriminators (void)
 	    }
 	  /* Allocate a new discriminator for CALL stmt.  */
 	  if (gimple_code (stmt) == GIMPLE_CALL)
-	    curr_discr = next_discriminator_for_locus (curr_locus);
+	    curr_discr = next_discriminator_for_locus (curr_locus_e.line);
 	}
 
       gimple *last = last_nondebug_stmt (bb);
