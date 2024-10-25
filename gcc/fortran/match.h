@@ -303,7 +303,7 @@ match gfc_match_bind_c_stmt (void);
 match gfc_match_bind_c (gfc_symbol *, bool);
 
 /* primary.cc.  */
-match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **);
+match gfc_match_structure_constructor (gfc_symbol *, gfc_symtree *, gfc_expr **);
 match gfc_match_variable (gfc_expr **, int);
 match gfc_match_equiv_variable (gfc_expr **);
 match gfc_match_actual_arglist (int, gfc_actual_arglist **, bool = false);

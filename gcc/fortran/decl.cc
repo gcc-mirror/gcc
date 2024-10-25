@@ -377,6 +377,7 @@ match_data_constant (gfc_expr **result)
   gfc_expr *expr;
   match m;
   locus old_loc;
+  gfc_symtree *symtree;
 
   m = gfc_match_literal_constant (&expr, 1);
   if (m == MATCH_YES)
@@ -437,8 +438,10 @@ match_data_constant (gfc_expr **result)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_find_symbol (name, NULL, 1, &sym))
+  if (gfc_find_sym_tree (name, NULL, 1, &symtree))
     return MATCH_ERROR;
+
+  sym = symtree->n.sym;
 
   if (sym && sym->attr.generic)
     dt_sym = gfc_find_dt_in_generic (sym);
@@ -453,7 +456,7 @@ match_data_constant (gfc_expr **result)
       return MATCH_ERROR;
     }
   else if (dt_sym && gfc_fl_struct (dt_sym->attr.flavor))
-    return gfc_match_structure_constructor (dt_sym, result);
+    return gfc_match_structure_constructor (dt_sym, symtree, result);
 
   /* Check to see if the value is an initialization array expression.  */
   if (sym->value->expr_type == EXPR_ARRAY)
