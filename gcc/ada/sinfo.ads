@@ -828,11 +828,9 @@ package Sinfo is
    --    for a number of purposes, including initialization of constants and
    --    limited type objects (such as tasks), setting discriminant fields,
    --    setting tag values, etc. N_Object_Declaration nodes also have this
-   --    flag defined. Here it is used to indicate that an initialization
+   --    flag defined: here it is used to indicate that an initialization
    --    expression is valid, even where it would normally not be allowed
-   --    (e.g. where the type involved is limited). It is also used to stop
-   --    a Force_Evaluation call for an unchecked conversion, but this usage
-   --    is unclear and not documented ???
+   --    (e.g. where the type involved is limited).
 
    --  Associated_Node
    --    Present in nodes that can denote an entity: identifiers, character
