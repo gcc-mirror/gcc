@@ -24,7 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define BID_128RES
 #include "bid_internal.h"
 
-/* 
+/*
  * Takes a BID32 as input and converts it to a BID128 and returns it.
  */
 TYPE0_FUNCTION_ARGTYPE1_NORND (UINT128, bid32_to_bid128, UINT32, x)

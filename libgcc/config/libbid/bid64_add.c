@@ -50,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *       else
  *         add sign_a*coefficient_a*10^diff_expon, sign_b*coefficient_b
  *             in 128-bit integer arithmetic, then round to 16 decimal digits
- *           
+ *
  *
  ****************************************************************************/
 
@@ -460,10 +460,10 @@ bid64_add (UINT64 x,
     amount = short_recip_scale[extra_digits];
     C0_64 = CT.w[1] >> amount;
 
-    // result coefficient 
+    // result coefficient
     C64 = C0_64 + coefficient_a;
     // filter out difficult (corner) cases
-    // this test ensures the number of digits in coefficient_a does not change 
+    // this test ensures the number of digits in coefficient_a does not change
     // after adding (the appropriately scaled and rounded) coefficient_b
     if ((UINT64) (C64 - 1000000000000000ull - 1) >
 	9000000000000000ull - 2) {
@@ -499,7 +499,7 @@ bid64_add (UINT64 x,
 	amount = short_recip_scale[extra_digits];
 	C0_64 = CT.w[1] >> amount;
 
-	// result coefficient 
+	// result coefficient
 	C64 = C0_64 + coefficient_a;
       } else if (C64 <= 1000000000000000ull) {
 	// less than 16 digits in result
@@ -520,7 +520,7 @@ bid64_add (UINT64 x,
 	amount = short_recip_scale[extra_digits];
 	C0_64 = CT_new.w[1] >> amount;
 
-	// result coefficient 
+	// result coefficient
 	C64_new = C0_64 + coefficient_a;
 	if (C64_new < 10000000000000000ull) {
 	  C64 = C64_new;
@@ -540,9 +540,9 @@ bid64_add (UINT64 x,
   if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
     if (C64 & 1) {
-      // check whether fractional part of initial_P/10^extra_digits is 
+      // check whether fractional part of initial_P/10^extra_digits is
       // exactly .5
-      // this is the same as fractional part of 
+      // this is the same as fractional part of
       //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
       // get remainder

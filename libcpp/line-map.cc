@@ -468,7 +468,7 @@ line_map_new_raw (line_maps *set, bool macro_p, unsigned num)
 {
   unsigned num_maps_allocated = LINEMAPS_ALLOCATED (set, macro_p);
   unsigned num_maps_used = LINEMAPS_USED (set, macro_p);
-  
+
   if (num > num_maps_allocated - num_maps_used)
     {
       /* We need more space!  */
@@ -494,7 +494,7 @@ line_map_new_raw (line_maps *set, bool macro_p, unsigned num)
       /* We are going to execute some dance to try to reduce the
 	 overhead of the memory allocator, in case we are using the
 	 ggc-page.cc one.
-	 
+
 	 The actual size of memory we are going to get back from the
 	 allocator may well be larger than what we ask for.  Use this
 	 hook to find what that size is.  */
@@ -1080,7 +1080,7 @@ linemap_position_for_loc_and_offset (line_maps *set,
   if (column >= (1u << (map->m_column_and_range_bits - map->m_range_bits)))
     return loc;
 
-  location_t r = 
+  location_t r =
     linemap_position_for_line_and_column (set, map, line, column);
   if (linemap_assert_fails (r <= set->highest_location)
       || linemap_assert_fails (map == linemap_lookup (set, r)))
@@ -1277,7 +1277,7 @@ linemap_macro_map_loc_unwind_toward_spelling (const line_maps *set,
   linemap_assert (token_no < MACRO_MAP_NUM_MACRO_TOKENS (map));
 
   location = MACRO_MAP_LOCATIONS (map)[2 * token_no];
-  
+
   return location;
 }
 
@@ -1580,7 +1580,7 @@ linemap_macro_loc_to_spelling_point (const line_maps *set,
    macro.  Otherwise, return LOCATION.  SET is the set of maps
    location come from.  ORIGINAL_MAP is an output parm. If non NULL,
    the function sets *ORIGINAL_MAP to the ordinary (non-macro) map the
-   returned location comes from. 
+   returned location comes from.
 
    This is a subroutine of linemap_resolve_location.  */
 
@@ -1768,14 +1768,14 @@ linemap_location_from_macro_definition_p (const line_maps *set,
     }
 }
 
-/* 
+/*
    Suppose that LOC is the virtual location of a token T coming from
    the expansion of a macro M.  This function then steps up to get the
    location L of the point where M got expanded.  If L is a spelling
    location inside a macro expansion M', then this function returns
    the locus of the point where M' was expanded.  Said otherwise, this
    function returns the location of T in the context that triggered
-   the expansion of M. 
+   the expansion of M.
 
    *LOC_MAP must be set to the map of LOC.  This function then sets it
    to the map of the returned location.  */

@@ -55,7 +55,7 @@ typedef unsigned long long uqword;
 /* ENTRY is the unwind table entry found for a PC part of call chain we're
    unwinding through.  Return whether we should force the generic unwinder
    to resort to "fallback" processing.  */
-   
+
 static int
 force_fallback_processing_for (void * pc, vms_unw_table_entry * entry)
 {
@@ -100,7 +100,7 @@ force_fallback_processing_for (void * pc, vms_unw_table_entry * entry)
     return 0;
 
   /* The OSSD block is found past the header, unwind descriptor area
-     and condition handler pointer, if any.  */  
+     and condition handler pointer, if any.  */
   ossd = (ossddef *)
     /* Beware: uqword pointer arithmetic below.  */
     (unw_info_block
@@ -111,16 +111,16 @@ force_fallback_processing_for (void * pc, vms_unw_table_entry * entry)
   /* "A General Information segment may be omitted if all of its fields
       would have their default values.  If a General Information segment
       is present, it must be the first in the OSSD area."  So ...  */
-  
+
   if (eh_debug)
     printf ("ossd @ 0x%p\n", ossd);
-      
+
   if (eh_debug && ossd->ossd$v_type == OSSD$K_GENERAL_INFO)
     printf ("exc_frame = %d - bot_frame = %d - base_frame = %d\n",
-	    ossd->ossd$v_exception_frame, 
+	    ossd->ossd$v_exception_frame,
 	    ossd->ossd$v_bottom_of_stack,
 	    ossd->ossd$v_base_frame);
-				
+
   return
     ossd->ossd$v_type == OSSD$K_GENERAL_INFO
     && (ossd->ossd$v_exception_frame

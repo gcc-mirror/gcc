@@ -102,15 +102,15 @@ bid64_from_int64 (SINT64 x
       res =
 	x_sign | 0x6c70000000000000ull | (C & 0x0007ffffffffffffull);
     }
-  } else {	// |C| >= 10^16 and the result may be inexact 
+  } else {	// |C| >= 10^16 and the result may be inexact
     // the smallest |C| is 10^16 which has 17 decimal digits
     // the largest |C| is 0x8000000000000000 = 9223372036854775808 w/ 19 digits
-    if (C < 0x16345785d8a0000ull) {	// x < 10^17 
+    if (C < 0x16345785d8a0000ull) {	// x < 10^17
       q = 17;
       ind = 1;	// number of digits to remove for q = 17
     } else if (C < 0xde0b6b3a7640000ull) {	// C < 10^18
       q = 18;
-      ind = 2;	// number of digits to remove for q = 18 
+      ind = 2;	// number of digits to remove for q = 18
     } else {	// C < 10^19
       q = 19;
       ind = 3;	// number of digits to remove for q = 19
@@ -162,7 +162,7 @@ bid64_from_int64 (SINT64 x
     }
     if (res < 0x0020000000000000ull) {	// res < 2^53
       res = x_sign | (((UINT64) ind + 398) << 53) | res;
-    } else {	// res >= 2^53 
+    } else {	// res >= 2^53
       res =
 	x_sign | 0x6000000000000000ull | (((UINT64) ind + 398) << 51) |
 	(res & 0x0007ffffffffffffull);
@@ -200,15 +200,15 @@ bid64_from_uint64 (UINT64 x
     } else {	// x >= 2^53
       res = 0x6c70000000000000ull | (x & 0x0007ffffffffffffull);
     }
-  } else {	// x >= 10^16 and the result may be inexact 
+  } else {	// x >= 10^16 and the result may be inexact
     // the smallest x is 10^16 which has 17 decimal digits
     // the largest x is 0xffffffffffffffff = 18446744073709551615 w/ 20 digits
-    if (x < 0x16345785d8a0000ull) {	// x < 10^17 
+    if (x < 0x16345785d8a0000ull) {	// x < 10^17
       q = 17;
       ind = 1;	// number of digits to remove for q = 17
     } else if (x < 0xde0b6b3a7640000ull) {	// x < 10^18
       q = 18;
-      ind = 2;	// number of digits to remove for q = 18 
+      ind = 2;	// number of digits to remove for q = 18
     } else if (x < 0x8ac7230489e80000ull) {	// x < 10^19
       q = 19;
       ind = 3;	// number of digits to remove for q = 19
@@ -262,7 +262,7 @@ bid64_from_uint64 (UINT64 x
     }
     if (res < 0x0020000000000000ull) {	// res < 2^53
       res = (((UINT64) ind + 398) << 53) | res;
-    } else {	// res >= 2^53 
+    } else {	// res >= 2^53
       res = 0x6000000000000000ull | (((UINT64) ind + 398) << 51) |
 	(res & 0x0007ffffffffffffull);
     }

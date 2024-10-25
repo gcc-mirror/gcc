@@ -188,7 +188,7 @@ bid128_nextup (UINT128 x _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
 	  ind = exp + 6176;
 	  // C1 = C1 * 10^ind
 	  if (ind <= 19) {	// 1 <= P34 - q1 <= 19 <=> 15 <= q1 <= 33
-	    if (q1 <= 19) {	// 64-bit C1, 64-bit 10^ind 
+	    if (q1 <= 19) {	// 64-bit C1, 64-bit 10^ind
 	      __mul_64x64_to_128MACH (C1, C1.w[0], ten2k64[ind]);
 	    } else {	// 20 <= q1 <= 33 => 128-bit C1, 64-bit 10^ind
 	      __mul_128x64_to_128 (C1, ten2k64[ind], C1);
@@ -391,7 +391,7 @@ bid128_nextdown (UINT128 x _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
 	  ind = exp + 6176;
 	  // C1 = C1 * 10^ind
 	  if (ind <= 19) {	// 1 <= P34 - q1 <= 19 <=> 15 <= q1 <= 33
-	    if (q1 <= 19) {	// 64-bit C1, 64-bit 10^ind 
+	    if (q1 <= 19) {	// 64-bit C1, 64-bit 10^ind
 	      __mul_64x64_to_128MACH (C1, C1.w[0], ten2k64[ind]);
 	    } else {	// 20 <= q1 <= 33 => 128-bit C1, 64-bit 10^ind
 	      __mul_128x64_to_128 (C1, ten2k64[ind], C1);
@@ -440,7 +440,7 @@ bid128_nextdown (UINT128 x _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
 void
 bid128_nextafter (UINT128 * pres, UINT128 * px,
 		  UINT128 *
-		  py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM) 
+		  py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM)
 {
   UINT128 x = *px;
   UINT128 y = *py;
@@ -597,7 +597,7 @@ bid128_nextafter (UINT128 x,
 #endif
     BID_SWAP128 (res);
   }
-  // if the operand x is finite but the result is infinite, signal 
+  // if the operand x is finite but the result is infinite, signal
   // overflow and inexact
   if (((x.w[1] & MASK_SPECIAL) != MASK_SPECIAL)
       && ((res.w[1] & MASK_SPECIAL) == MASK_SPECIAL)) {
@@ -634,9 +634,9 @@ bid128_nextafter (UINT128 x,
 #endif
   *pfpsf = tmp_fpsf;	// restore fpsf
   if (res1 && res2) {
-    // set the inexact flag 
+    // set the inexact flag
     *pfpsf |= INEXACT_EXCEPTION;
-    // set the underflow flag 
+    // set the underflow flag
     *pfpsf |= UNDERFLOW_EXCEPTION;
   }
   BID_RETURN (res);

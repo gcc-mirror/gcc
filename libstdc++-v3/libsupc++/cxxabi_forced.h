@@ -1,5 +1,5 @@
 // cxxabi.h subset for cancellation -*- C++ -*-
-  
+
 // Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
@@ -8,12 +8,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 3, or (at your option)
 // any later version.
-// 
+//
 // GCC is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // Under Section 7 of GPL version 3, you are granted additional
 // permissions described in the GCC Runtime Library Exception, version
 // 3.1, as published by the Free Software Foundation.
@@ -39,8 +39,8 @@
 
 #ifdef __cplusplus
 namespace __cxxabiv1
-{  
-  /** 
+{
+  /**
    *  @brief Thrown as part of forced unwinding.
    *  @ingroup exceptions
    *
@@ -52,11 +52,11 @@ namespace __cxxabiv1
     virtual ~__forced_unwind() throw();
 
     // Prevent catch by value.
-    virtual void __pure_dummy() = 0; 
+    virtual void __pure_dummy() = 0;
   };
 }
 #endif // __cplusplus
 
 #pragma GCC visibility pop
 
-#endif // __CXXABI_FORCED_H 
+#endif // __CXXABI_FORCED_H

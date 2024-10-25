@@ -58,7 +58,7 @@ __gthread_once (__gthread_once_t * __guard, void (*__func) (void))
 
   /* Busy-wait until we have exclusive access to the state.  Check if
      another thread managed to perform the init call in the interim.  */
-  
+
   while (!__TAS(&__guard->busy))
     {
       if (__guard->done)

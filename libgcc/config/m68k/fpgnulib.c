@@ -79,7 +79,7 @@
 #define SIGNX(fp)	((fp.l.upper) & SIGNBIT)
 #define MANTXMASK	0x7FFFFFFFL /* mask of upper part */
 
-union double_long 
+union double_long
 {
   double d;
   struct {
@@ -269,7 +269,7 @@ __extendsfdf2 (float a1)
   dl.l.upper |= exp << 20;
   dl.l.upper |= mant >> 3;
   dl.l.lower = mant << 29;
-	
+
   return dl.d;
 }
 
@@ -363,13 +363,13 @@ __fixdfsi (double a1)
 
   dl1.d = a1;
 
-  if (!dl1.l.upper && !dl1.l.lower) 
+  if (!dl1.l.upper && !dl1.l.lower)
     return 0;
 
   exp = EXPD (dl1) - EXCESSD - 31;
   l = MANTD (dl1);
 
-  if (exp > 0) 
+  if (exp > 0)
     {
       /* Return largest integer.  */
       return SIGND (dl1) ? 0x80000000L : 0x7fffffffL;

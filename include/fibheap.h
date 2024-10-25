@@ -3,7 +3,7 @@
    Contributed by Daniel Berlin (dan@cgsoftware.com).
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
@@ -33,8 +33,8 @@ Boston, MA 02110-1301, USA.  */
    Amortized and real worst case time for operations:
 
    ExtractMin: O(lg n) amortized. O(n) worst case.
-   DecreaseKey: O(1) amortized.  O(lg n) worst case. 
-   Insert: O(2) amortized. O(1) actual.  
+   DecreaseKey: O(1) amortized.  O(lg n) worst case.
+   Insert: O(2) amortized. O(1) actual.
    Union: O(1) amortized. O(1) actual.  */
 
 #ifndef _FIBHEAP_H_

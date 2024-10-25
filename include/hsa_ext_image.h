@@ -40,7 +40,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /*__cplusplus*/ 
+#endif /*__cplusplus*/
 
 /** \defgroup ext-images Images and Samplers
  *  @{
@@ -253,7 +253,7 @@ typedef enum {
  * @brief A fixed-size type used to represent ::hsa_ext_image_channel_type_t constants.
  */
 typedef uint32_t hsa_ext_image_channel_type32_t;
-    
+
 /**
  *
  * @brief Channel order associated with the elements of an image. See
@@ -289,7 +289,7 @@ typedef enum {
  * @brief A fixed-size type used to represent ::hsa_ext_image_channel_order_t constants.
  */
 typedef uint32_t hsa_ext_image_channel_order32_t;
-    
+
 
 /**
  * @brief Image format.
@@ -1156,7 +1156,7 @@ typedef enum {
  * @brief A fixed-size type used to represent ::hsa_ext_sampler_coordinate_mode_t constants.
  */
 typedef uint32_t hsa_ext_sampler_coordinate_mode32_t;
-    
+
 
 /**
  * @brief Sampler filter modes. See the <em>Filter Mode</em> section
@@ -1432,9 +1432,9 @@ typedef struct hsa_ext_images_1_pfn_s {
 
 } hsa_ext_images_1_pfn_t;
 /** @} */
-    
+
 #ifdef __cplusplus
 }  // end extern "C" block
-#endif /*__cplusplus*/ 
+#endif /*__cplusplus*/
 
 #endif

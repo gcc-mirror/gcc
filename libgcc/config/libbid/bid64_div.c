@@ -34,7 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *    CA= A*10^(15+j), j=0 for A>=B, 1 otherwise
  *    Q = 0
  *  else
- *    get Q=(int)(coefficient_x/coefficient_y) 
+ *    get Q=(int)(coefficient_x/coefficient_y)
  *        (based on double precision divide)
  *    check for exact divide case
  *    Let R = coefficient_x - Q*coefficient_y
@@ -44,8 +44,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *  endif
  *    if (CA<2^64)
  *      Q += CA/B  (64-bit unsigned divide)
- *    else 
- *      get final Q using double precision divide, followed by 3 integer 
+ *    else
+ *      get final Q using double precision divide, followed by 3 integer
  *          iterations
  *    if exact result, eliminate trailing zeros
  *    check for underflow
@@ -129,7 +129,7 @@ bid64_div (UINT64 x,
     if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
       // check if y is Inf or NaN
       if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
-	// y==Inf, return NaN 
+	// y==Inf, return NaN
 	if ((y & NAN_MASK64) == INFINITY_MASK64) {	// Inf/Inf
 #ifdef SET_STATUS_FLAGS
 	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -551,7 +551,7 @@ if (!unpack_BID64 (&sign_x, &exponent_x, &CX.w[0], (x))) {
   if (((x) & 0x7800000000000000ull) == 0x7800000000000000ull) {
     // check if y is Inf.
     if (((y.w[1] & 0x7c00000000000000ull) == 0x7800000000000000ull))
-      // return NaN 
+      // return NaN
     {
 #ifdef SET_STATUS_FLAGS
       __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -717,7 +717,7 @@ if (!done) {
   __div_256_by_128 (&CQ, &CA4, CY);
 }
 
- 
+
 
 #ifdef SET_STATUS_FLAGS
   if (CA4.w[0] || CA4.w[1]) {
@@ -894,11 +894,11 @@ if (!done) {
     CQ.w[0]++;
     if (!CQ.w[0])
       CQ.w[1]++;
-    break; 
+    break;
   }
 #endif
 #endif
-  
+
     res =
       fast_get_BID64_check_OF (sign_x ^ sign_y, diff_expon, CQ.w[0], rnd_mode,
 			       pfpsf);
@@ -970,7 +970,7 @@ if (!unpack_BID128_value (&sign_x, &exponent_x, &CX, x)) {
   if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
     // check if y is Inf.
     if (((y & 0x7c00000000000000ull) == 0x7800000000000000ull))
-      // return NaN 
+      // return NaN
     {
 #ifdef SET_STATUS_FLAGS
       __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -1120,7 +1120,7 @@ if (__unsigned_compare_gt_128 (CY, CX)) {
     CQ.w[0] = (P256.w[2] >> amount) | (P256.w[3] << (64 - amount));
     CQ.w[1] = 0;
 
-    __mul_64x64_to_128 (CQ2, CQ.w[0], (power10_table_128[ed2].w[0])); 
+    __mul_64x64_to_128 (CQ2, CQ.w[0], (power10_table_128[ed2].w[0]));
 
     __mul_64x64_to_128 (QB256, CQ2.w[0], CY.w[0]);
     QB256.w[1] += CQ2.w[0] * CY.w[1] + CQ2.w[1] * CY.w[0];
@@ -1150,7 +1150,7 @@ if (!done) {
     __set_status_flags (pfpsf, INEXACT_EXCEPTION);
   }
 #ifndef LEAVE_TRAILING_ZEROS
-  else 
+  else
 #endif
 #else
 #ifndef LEAVE_TRAILING_ZEROS
@@ -1330,7 +1330,7 @@ if (!done) {
 #endif
 #endif
 
-  
+
     res =
       fast_get_BID64_check_OF (sign_x ^ sign_y, diff_expon, CQ.w[0], rnd_mode,
 			       pfpsf);
@@ -1366,7 +1366,7 @@ extern SINT8 factors[][2];
 extern UINT8 packed_10000_zeros[];
 
 
-//UINT64* bid64_div128x128(UINT64 res, UINT128 *px, UINT128 *py, unsigned rnd_mode, unsigned *pfpsf) 
+//UINT64* bid64_div128x128(UINT64 res, UINT128 *px, UINT128 *py, unsigned rnd_mode, unsigned *pfpsf)
 
 TYPE0_FUNCTION_ARG128_ARG128 (UINT64, bid64qq_div, x, y)
      UINT256 CA4 =
@@ -1407,7 +1407,7 @@ if (!unpack_BID128_value (&sign_x, &exponent_x, &CX, x)) {
   if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
     // check if y is Inf.
     if (((y.w[1] & 0x7c00000000000000ull) == 0x7800000000000000ull))
-      // return NaN 
+      // return NaN
     {
 #ifdef SET_STATUS_FLAGS
       __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -1576,7 +1576,7 @@ if (!done) {
   __div_256_by_128 (&CQ, &CA4, CY);
 }
 
- 
+
 
 #ifdef SET_STATUS_FLAGS
   if (CA4.w[0] || CA4.w[1]) {
@@ -1584,7 +1584,7 @@ if (!done) {
     __set_status_flags (pfpsf, INEXACT_EXCEPTION);
   }
 #ifndef LEAVE_TRAILING_ZEROS
-  else 
+  else
 #endif
 #else
 #ifndef LEAVE_TRAILING_ZEROS
@@ -1765,7 +1765,7 @@ if (!done) {
 #endif
 #endif
 
-  
+
     res =
       fast_get_BID64_check_OF (sign_x ^ sign_y, diff_expon, CQ.w[0], rnd_mode,
 			       pfpsf);

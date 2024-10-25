@@ -29,7 +29,7 @@ CMPtype
 __bid_netd2 (_Decimal128 x, _Decimal128 y) {
   CMPtype res;
   union decimal128 ux, uy;
- 
+
   ux.d = x;
   uy.d = y;
   res = __bid128_quiet_not_equal (ux.i, uy.i);

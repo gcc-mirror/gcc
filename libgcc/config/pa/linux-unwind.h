@@ -49,8 +49,8 @@ pa32_read_access_ok (void *p)
    In 2.4, the signal trampoline is 4 words, and (CONTEXT)->ra should
    point directly at the beginning of the trampoline and struct rt_sigframe.
 
-   In <= 2.6.5-rc2-pa3, the signal trampoline is 9 words, and 
-   (CONTEXT)->ra points at the 4th word in the trampoline structure.  This 
+   In <= 2.6.5-rc2-pa3, the signal trampoline is 9 words, and
+   (CONTEXT)->ra points at the 4th word in the trampoline structure.  This
    is wrong, it should point at the 5th word.  This is fixed in 2.6.5-rc2-pa4.
 
    To detect these cases, we first take (CONTEXT)->ra, align it to 64-bytes

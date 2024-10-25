@@ -598,7 +598,7 @@ bid_to_bid128 (UINT128 bq) {
 
   if ((comb & 0x1f000) == 0x1f000) {	//NaN
     ba &= 0xfe003fffffffffffULL;	// make exponent 0
-    bcoeff &= 0x00003fffffffffffull;	// NaN payloat is only T.  
+    bcoeff &= 0x00003fffffffffffull;	// NaN payloat is only T.
     if ((bcoeff > 0x0000314dc6448d93ULL) ||	// significand is non-canonical
 	((bcoeff == 0x0000314dc6448d93ULL)
 	 && (bb >= 0x38c15b0a00000000ULL))
@@ -660,7 +660,7 @@ bid32_canonize (UINT32 ba) {
 
   if ((comb & 0x7c0) == 0x7c0) {	//NaN
     ba &= 0xfe0fffff;	// make exponent 0
-    bcoeff &= 0x000fffff;	// NaN payloat is only T.     
+    bcoeff &= 0x000fffff;	// NaN payloat is only T.
     if (bcoeff >= 1000000)
       ba &= 0xfff00000;	//treat non-canonical significand
     return ba;
@@ -698,7 +698,7 @@ bid64_canonize (UINT64 ba) {
 
   if ((comb & 0x1f00) == 0x1f00) {	//NaN
     ba &= 0xfe03ffffffffffffULL;	// make exponent 0
-    bcoeff &= 0x0003ffffffffffffull;	// NaN payloat is only T.  
+    bcoeff &= 0x0003ffffffffffffull;	// NaN payloat is only T.
     if (bcoeff >= 1000000000000000ull)
       ba &= 0xfe00000000000000ull;	// treat non canonical significand and zero G6-G12
     return ba;
@@ -742,7 +742,7 @@ bid128_canonize (UINT128 bq) {
 
   if ((comb & 0x1f000) == 0x1f000) {	//NaN
     ba &= 0xfe003fffffffffffULL;	// make exponent 0
-    bcoeff &= 0x00003fffffffffffull;	// NaN payload is only T.  
+    bcoeff &= 0x00003fffffffffffull;	// NaN payload is only T.
 
     if ((bcoeff > 0x0000314dc6448d93ULL) ||	// significand is non-canonical
 	((bcoeff == 0x0000314dc6448d93ULL)

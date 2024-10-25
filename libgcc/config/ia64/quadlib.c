@@ -43,7 +43,7 @@ _U_Qfne (long double a, long double b)
 {
   return (_U_Qfcmp (a, b, 4) == 0);
 }
-	
+
 int
 _U_Qfgt (long double a, long double b)
 {

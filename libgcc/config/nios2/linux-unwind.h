@@ -86,17 +86,17 @@ nios2_fallback_frame_state (struct _Unwind_Context *context,
       /* The sequential registers.  */
       for (i = 1; i < 24; i++)
 	NIOS2_REG (i, gregs[i-1]);
-      
+
       /* The random registers.  The kernel stores these in a funny order
 	 in the gregs array.  */
       NIOS2_REG (RA_REGNO, gregs[23]);
       NIOS2_REG (FP_REGNO, gregs[24]);
       NIOS2_REG (GP_REGNO, gregs[25]);
       NIOS2_REG (EA_REGNO, gregs[27]);
-      
+
       fs->retaddr_column = EA_REGNO;
       fs->signal_frame = 1;
-      
+
       return _URC_NO_REASON;
     }
 #undef NIOS2_REG

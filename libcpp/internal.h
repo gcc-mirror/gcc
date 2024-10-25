@@ -304,7 +304,7 @@ struct spec_nodes
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
 
   enum {M_EXPORT, M_MODULE, M_IMPORT, M__IMPORT, M_HWM};
-  
+
   /* C++20 modules, only set when module_directives is in effect.
      incoming variants [0], outgoing ones [1] */
   cpp_hashnode *n_modules[M_HWM][2];
@@ -854,7 +854,7 @@ extern size_t _cpp_replacement_text_len (const cpp_macro *);
    It starts initialized to all zeros, and at the end
    'level' is the normalization level of the sequence.  */
 
-struct normalize_state 
+struct normalize_state
 {
   /* The previous starter character.  */
   cppchar_t previous;

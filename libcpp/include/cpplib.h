@@ -266,7 +266,7 @@ struct GTY(()) cpp_token {
   {
     /* An identifier.  */
     struct cpp_identifier GTY ((tag ("CPP_TOKEN_FLD_NODE"))) node;
-	 
+
     /* Inherit padding from this token.  */
     cpp_token * GTY ((tag ("CPP_TOKEN_FLD_SOURCE"))) source;
 
@@ -325,7 +325,7 @@ enum cpp_normalize_level {
   normalized_none
 };
 
-enum cpp_main_search 
+enum cpp_main_search
 {
   CMS_none,    /* A regular source file.  */
   CMS_header,  /* Is a directly-specified header file (eg PCH or
@@ -477,7 +477,7 @@ struct cpp_options
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */
   unsigned char preprocessed;
-  
+
   /* Nonzero means we are going to emit debugging logs during
      preprocessing.  */
   unsigned char debug;
@@ -874,7 +874,7 @@ struct cpp_dir
   /* Is this a user-supplied directory? */
   bool user_supplied_p;
 
-  /* The canonicalized NAME as determined by lrealpath.  This field 
+  /* The canonicalized NAME as determined by lrealpath.  This field
      is only used by hosts that lack reliable inode numbers.  */
   char *canonical_name;
 
@@ -904,7 +904,7 @@ enum cpp_macro_kind {
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct GTY(()) cpp_macro {
-  union cpp_parm_u 
+  union cpp_parm_u
   {
     /* Parameters, if any.  If parameter names use extended identifiers,
        the original spelling of those identifiers, not the canonical
@@ -1245,7 +1245,7 @@ inline location_t cpp_macro_definition_location (cpp_hashnode *node)
   return macro ? macro->line : 0;
 }
 /* Return an idempotent time stamp (possibly from SOURCE_DATE_EPOCH).  */
-enum class CPP_time_kind 
+enum class CPP_time_kind
 {
   FIXED = -1,	/* Fixed time via source epoch.  */
   DYNAMIC = -2,	/* Dynamic via time(2).  */
@@ -1280,7 +1280,7 @@ extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
 extern void cpp_define_unused (cpp_reader *, const char *);
-extern void cpp_define_formatted (cpp_reader *pfile, 
+extern void cpp_define_formatted (cpp_reader *pfile,
 				  const char *fmt, ...) ATTRIBUTE_PRINTF_2;
 extern void cpp_define_formatted_unused (cpp_reader *pfile,
 					 const char *fmt,

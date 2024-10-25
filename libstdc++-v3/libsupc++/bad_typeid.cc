@@ -27,7 +27,7 @@ namespace std {
 
 bad_typeid::~bad_typeid() _GLIBCXX_USE_NOEXCEPT { }
 
-const char* 
+const char*
 bad_typeid::what() const _GLIBCXX_USE_NOEXCEPT
 {
   return "std::bad_typeid";

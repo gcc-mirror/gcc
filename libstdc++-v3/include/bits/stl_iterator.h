@@ -1598,10 +1598,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX17_CONSTEXPR move_iterator
       operator-(difference_type __n) const
       { return move_iterator(_M_current - __n); }
-    
+
       _GLIBCXX17_CONSTEXPR move_iterator&
       operator-=(difference_type __n)
-      { 
+      {
 	_M_current -= __n;
 	return *this;
       }

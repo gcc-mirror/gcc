@@ -84,13 +84,13 @@ typedef void (*cxa_atexit_callback)(void *);
 
 /* This structure holds a routine to call.  There may be extra fields
    at the end of the structure that this code doesn't know about.  */
-struct one_atexit_routine 
+struct one_atexit_routine
 {
   union {
     atexit_callback ac;
     cxa_atexit_callback cac;
   } callback;
-  /* has_arg is 0/2/4 if 'ac' is live, 1/3/5 if 'cac' is live.  
+  /* has_arg is 0/2/4 if 'ac' is live, 1/3/5 if 'cac' is live.
      Higher numbers indicate a later version of the structure that this
      code doesn't understand and will ignore.  */
   int has_arg;
@@ -141,7 +141,7 @@ struct keymgr_atexit_list
    fails to call routines registered while an atexit routine is
    running.  Return 1 if it works properly, and -1 if an error occurred.  */
 
-struct atexit_data 
+struct atexit_data
 {
   int result;
   cxa_atexit_p cxa_atexit;
@@ -194,12 +194,12 @@ find_atexit_10_3 (void)
   unsigned int (*dyld_image_count_fn)(void);
   const char *(*dyld_get_image_name_fn)(unsigned int image_index);
   const void *(*dyld_get_image_header_fn)(unsigned int image_index);
-  const void *(*NSLookupSymbolInImage_fn)(const void *image, 
+  const void *(*NSLookupSymbolInImage_fn)(const void *image,
 					  const char *symbolName,
 					  unsigned int options);
   void *(*NSAddressOfSymbol_fn)(const void *symbol);
   unsigned i, count;
-  
+
   /* Find some dyld functions.  */
   _dyld_func_lookup("__dyld_image_count", &dyld_image_count_fn);
   _dyld_func_lookup("__dyld_get_image_name", &dyld_get_image_name_fn);
@@ -212,14 +212,14 @@ find_atexit_10_3 (void)
       || ! dyld_get_image_header_fn || ! NSLookupSymbolInImage_fn
       || ! NSAddressOfSymbol_fn)
     return NULL;
-  
+
   count = dyld_image_count_fn ();
   for (i = 0; i < count; i++)
     {
       const char * path = dyld_get_image_name_fn (i);
       const void * image;
       const void * symbol;
-      
+
       if (strcmp (path, "/usr/lib/libSystem.B.dylib") != 0)
 	continue;
       image = dyld_get_image_header_fn (i);
@@ -235,14 +235,14 @@ find_atexit_10_3 (void)
 }
 #endif
 
-/* Create (if necessary), find, lock, fill in, and return our globals.  
-   Return NULL on error, in which case the globals will not be locked.  
+/* Create (if necessary), find, lock, fill in, and return our globals.
+   Return NULL on error, in which case the globals will not be locked.
    The caller should call keymgr_set_and_unlock.  */
 static struct keymgr_atexit_list *
 get_globals (void)
 {
   struct keymgr_atexit_list * r;
-  
+
 #ifdef __ppc__
   /* 10.3.9 doesn't have _keymgr_get_and_lock_processwide_ptr_2 so the
      PPC side can't use it.  On 10.4 this just means the error gets
@@ -256,7 +256,7 @@ get_globals (void)
     return NULL;
   r = rr;
 #endif
-  
+
   if (r == NULL)
     {
       r = calloc (sizeof (struct keymgr_atexit_list), 1);
@@ -307,7 +307,7 @@ get_globals (void)
     }
 
   return r;
-  
+
  error:
   _keymgr_set_and_unlock_processwide_ptr (KEYMGR_ATEXIT_LIST, r);
   return NULL;
@@ -325,7 +325,7 @@ add_routine (struct keymgr_atexit_list * g,
   struct atexit_routine_list * s
     = malloc (sizeof (struct atexit_routine_list));
   int result;
-  
+
   if (!s)
     {
       _keymgr_set_and_unlock_processwide_ptr (KEYMGR_ATEXIT_LIST, g);
@@ -382,7 +382,7 @@ cxa_atexit_wrapper (void* routine_param)
   struct keymgr_atexit_list *g;
   struct atexit_routine_list * base = NULL;
   char prev_running = 0;
-  
+
   g = _keymgr_get_and_lock_processwide_ptr (KEYMGR_ATEXIT_LIST);
   if (g)
     {
@@ -425,7 +425,7 @@ our_atexit (void)
   g = _keymgr_get_and_lock_processwide_ptr (KEYMGR_ATEXIT_LIST);
   if (! g || g->version != 0 || g->atexit_status != atexit_status_missing)
     return;
-  
+
   prev_running = g->running_routines;
   g->running_routines = 1;
   g = run_routines (g, NULL);
@@ -450,7 +450,7 @@ atexit_common (const struct one_atexit_routine *r, const void *dso)
 
   if (! g)
     return -1;
-  
+
   if (g->running_routines || g->atexit_status == atexit_status_missing)
     return add_routine (g, r);
 
@@ -497,7 +497,7 @@ atexit_common (const struct one_atexit_routine *r, const void *dso)
 /* These are the actual replacement routines; they just funnel into
    atexit_common.  */
 
-int __cxa_atexit (cxa_atexit_callback func, void* arg, 
+int __cxa_atexit (cxa_atexit_callback func, void* arg,
 		  const void* dso) __attribute__((visibility("hidden")));
 
 int

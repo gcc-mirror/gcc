@@ -1,7 +1,7 @@
 /* Copyright (C) 2013-2024 Free Software Foundation, Inc.
-  
+
    This file is part of GCC.
-  
+
    modify it under the terms of the GNU Library General Public License
    as published by the Free Software Foundation; either version 2, or
    (at your option) any later version.
@@ -45,7 +45,7 @@ extern void __VLTChangePermission (int);
 #ifdef BIG_PAGE_SIZE
 /* TODO - Replace '4096' below with correct big page size.  */
 #define VTV_PAGE_SIZE 4096
-#else 
+#else
 #if defined(__sun__) && defined(__svr4__) && defined(__sparc__)
 #define VTV_PAGE_SIZE 8192
 #elif defined(__loongarch_lp64)

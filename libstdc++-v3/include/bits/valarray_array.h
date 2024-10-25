@@ -160,13 +160,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (__n--)
 	*__a++ = __t;
     }
-  
+
   // fill strided array __a[<__n-1 : __s>] with __t
   template<typename _Tp>
     inline void
     __valarray_fill(_Tp* __restrict__ __a, size_t __n,
 		    size_t __s, const _Tp& __t)
-    { 
+    {
       for (size_t __i = 0; __i < __n; ++__i, __a += __s)
 	*__a = __t;
     }
@@ -180,7 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (size_t __j = 0; __j < __n; ++__j, ++__i)
 	__a[*__i] = __t;
     }
-  
+
   // copy plain array __a[<__n>] in __b[<__n>]
   // For non-fundamental types, it is wrong to say 'memcpy()'
   template<typename _Tp, bool>
@@ -339,9 +339,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit _Array(_Tp* const __restrict__);
       explicit _Array(const valarray<_Tp>&);
       _Array(const _Tp* __restrict__, size_t);
-      
+
       _Tp* begin() const;
-      
+
       _Tp* const __restrict__ _M_data;
     };
 

@@ -3,7 +3,7 @@
    Contributed by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
-   
+
 GCC is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
@@ -44,5 +44,5 @@ extern void sort_pointers (size_t, void **, void **);
 #endif /* SORT_H */
 
 
-   
-   
+
+

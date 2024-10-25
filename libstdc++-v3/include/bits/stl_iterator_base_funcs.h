@@ -244,7 +244,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     _GLIBCXX_NODISCARD [[__gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR _BidirectionalIterator
     prev(_BidirectionalIterator __x, typename
-	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 
+	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1)
     {
       // concept requirements
       __glibcxx_function_requires(_BidirectionalIteratorConcept<

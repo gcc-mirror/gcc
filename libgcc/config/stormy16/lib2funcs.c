@@ -179,7 +179,7 @@ SItype
 __ashlsi3 (SItype a, SItype b)
 {
   word_type i;
-  
+
   if (b & 16)
     a <<= 16;
   if (b & 8)
@@ -195,7 +195,7 @@ SItype
 __ashrsi3 (SItype a, SItype b)
 {
   word_type i;
-  
+
   if (b & 16)
     a >>= 16;
   if (b & 8)
@@ -211,7 +211,7 @@ USItype
 __lshrsi3 (USItype a, USItype b)
 {
   word_type i;
-  
+
   if (b & 16)
     a >>= 16;
   if (b & 8)

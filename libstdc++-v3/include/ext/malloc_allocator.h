@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @brief  An allocator that uses malloc.
    *  @ingroup allocators
    *
-   *  This is precisely the allocator defined in the C++ Standard. 
+   *  This is precisely the allocator defined in the C++ Standard.
    *    - all allocation calls malloc
    *    - all deallocation calls free
    */
@@ -154,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus <= 201703L
       size_type
-      max_size() const _GLIBCXX_USE_NOEXCEPT 
+      max_size() const _GLIBCXX_USE_NOEXCEPT
       { return _M_max_size(); }
 
 #if __cplusplus >= 201103L
@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
       template<typename _Up>
-        void 
+        void
         destroy(_Up* __p)
 	noexcept(std::is_nothrow_destructible<_Up>::value)
 	{ __p->~_Up(); }

@@ -47,7 +47,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  /** 
+  /**
    *  @defgroup locales Locales
    *
    *  Classes and functions for internationalization and localization.

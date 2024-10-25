@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 543. valarray slice default constructor
   inline
-  slice::slice() 
+  slice::slice()
   : _M_off(0), _M_sz(0), _M_st(0) {}
 
   inline

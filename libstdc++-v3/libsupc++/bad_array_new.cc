@@ -23,7 +23,7 @@
 
 #include <new>
 
-namespace std 
+namespace std
 {
 
 bad_array_new_length::~bad_array_new_length() _GLIBCXX_USE_NOEXCEPT { }

@@ -105,7 +105,7 @@ namespace __gnu_parallel
 
       _DifferenceType* __es = new _DifferenceType[__num_samples + 2];
 
-      __equally_split(__sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam], 
+      __equally_split(__sd->_M_starts[__iam + 1] - __sd->_M_starts[__iam],
 		      __num_samples + 1, __es);
 
       for (_DifferenceType __i = 0; __i < __num_samples; ++__i)
@@ -181,7 +181,7 @@ namespace __gnu_parallel
       }
   };
 
-  /** @brief Split by sampling. */ 
+  /** @brief Split by sampling. */
   template<typename _RAIter, typename _Compare,
 	   typename _SortingPlacesIterator>
     struct _SplitConsistently<false, _RAIter, _Compare, _SortingPlacesIterator>
@@ -243,7 +243,7 @@ namespace __gnu_parallel
 	  }
       }
   };
-  
+
   template<bool __stable, typename _RAIter, typename _Compare>
     struct __possibly_stable_sort
     { };
@@ -424,7 +424,7 @@ namespace __gnu_parallel
 	{
 	  __sd._M_num_threads = __num_threads;
 	  __sd._M_source = __begin;
-	  
+
 	  __sd._M_temporary = new _ValueType*[__num_threads];
 
 	  if (!__exact)

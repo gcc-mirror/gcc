@@ -82,7 +82,7 @@ namespace std
 
   using ::intmax_t;
   using ::intptr_t;
-  
+
   using ::uint8_t;
   using ::uint16_t;
   using ::uint32_t;

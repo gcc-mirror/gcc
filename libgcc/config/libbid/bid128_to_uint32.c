@@ -3097,8 +3097,8 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
     //   res = 0
     // else if x > 0
     //   res = +1
-    // else // if x < 0  
-    //   invalid exc  
+    // else // if x < 0
+    //   invalid exc
     ind = q - 1;
     if (ind <= 18) {	// 0 <= ind <= 18
       if ((C1.w[1] == 0) && (C1.w[0] < midpoint64[ind])) {
@@ -3404,8 +3404,8 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
     //   res = 0
     // else if x > 0
     //   res = +1
-    // else // if x < 0  
-    //   invalid exc  
+    // else // if x < 0
+    //   invalid exc
     ind = q - 1;
     if (ind <= 18) {	// 0 <= ind <= 18
       if ((C1.w[1] == 0) && (C1.w[0] < midpoint64[ind])) {

@@ -1,5 +1,5 @@
 // Copyright (C) 2002-2024 Free Software Foundation, Inc.
-//  
+//
 // This file is part of GCC.
 //
 // GCC is free software; you can redistribute it and/or modify
@@ -79,7 +79,7 @@ __cxa_guard_abort (__guard* g) _GLIBCXX_NOTHROW
 namespace
 {
   // A single mutex controlling all static initializations.
-  static __gnu_cxx::__recursive_mutex* static_mutex;  
+  static __gnu_cxx::__recursive_mutex* static_mutex;
 
   typedef char fake_recursive_mutex[sizeof(__gnu_cxx::__recursive_mutex)]
   __attribute__ ((aligned(__alignof__(__gnu_cxx::__recursive_mutex))));
@@ -116,7 +116,7 @@ namespace
 namespace
 {
   // A single condition variable controlling all static initializations.
-  static __gnu_cxx::__cond* static_cond;  
+  static __gnu_cxx::__cond* static_cond;
 
   // using a fake type to avoid initializing a static class.
   typedef char fake_cond_t[sizeof(__gnu_cxx::__cond)]
@@ -219,7 +219,7 @@ __set_and_release (__cxxabiv1::__guard *g)
 //  | _GLIBCXX_GUARD_WAITING_BIT) and some other threads are waiting until
 //				  it is initialized.
 
-namespace __cxxabiv1 
+namespace __cxxabiv1
 {
 #ifdef _GLIBCXX_USE_FUTEX
   namespace
@@ -269,7 +269,7 @@ namespace __cxxabiv1
   }
 
   extern "C"
-  int __cxa_guard_acquire (__guard *g) 
+  int __cxa_guard_acquire (__guard *g)
   {
 #ifdef __GTHREADS
     // If the target can reorder loads, we need to insert a read memory
@@ -315,11 +315,11 @@ namespace __cxxabiv1
 		// This thread should do the initialization.
 		return 1;
 	      }
-	      
+
 	    if (expected == guard_bit)
 	      {
 		// Already initialized.
-		return 0;	
+		return 0;
 	      }
 
 	     if (expected == pending_bit)
@@ -327,7 +327,7 @@ namespace __cxxabiv1
 		 // Use acquire here.
 		 int newv = expected | waiting_bit;
 		 if (!__atomic_compare_exchange_n(gi, &expected, newv, false,
-						  __ATOMIC_ACQ_REL, 
+						  __ATOMIC_ACQ_REL,
 						  __ATOMIC_ACQUIRE))
 		   {
 		     if (expected == guard_bit)
@@ -341,7 +341,7 @@ namespace __cxxabiv1
 		     if (expected == 0)
 		       continue;
 		   }
-		 
+
 		 expected = newv;
 	       }
 
@@ -417,7 +417,7 @@ namespace __cxxabiv1
       }
 #elif defined(__GTHREAD_HAS_COND)
     if (__gthread_active_p())
-      {	
+      {
 	mutex_wrapper mw;
 
 	set_init_in_progress_flag(g, 0);
@@ -426,7 +426,7 @@ namespace __cxxabiv1
 	// the condition variable.
         get_static_cond().broadcast();
 	return;
-      }	
+      }
 #endif
 
     set_init_in_progress_flag(g, 0);
@@ -473,7 +473,7 @@ namespace __cxxabiv1
 
         get_static_cond().broadcast();
 	return;
-      }	
+      }
 #endif
 
     set_init_in_progress_flag(g, 0);

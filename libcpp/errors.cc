@@ -200,7 +200,7 @@ cpp_diagnostic_with_line (cpp_reader * pfile, enum cpp_diagnostic_level level,
 			  const char *msgid, va_list *ap)
 {
   bool ret;
-  
+
   if (!pfile->cb.diagnostic)
     abort ();
   /* Don't override note locations, which will likely make the note

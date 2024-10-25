@@ -586,9 +586,9 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
             struct _cpp_file *file = cpp_get_file (pbuffer);
 	    if (file)
 	      {
-    		/* Generate __TIMESTAMP__ string, that represents 
-		   the date and time of the last modification 
-		   of the current source file. The string constant 
+    		/* Generate __TIMESTAMP__ string, that represents
+		   the date and time of the last modification
+		   of the current source file. The string constant
 		   looks like "Sun Sep 16 01:03:52 1973".  */
 		struct tm *tb = NULL;
 		struct stat *st = _cpp_get_file_stat (file);
@@ -699,7 +699,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	    {
 	      cpp_errno (pfile, CPP_DL_WARNING,
 			 "could not determine date and time");
-		
+
 	      pfile->date = UC"\"??? ?? ????\"";
 	      pfile->time = UC"\"??:??:??\"";
 	    }
@@ -777,7 +777,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
       sprintf ((char *) result, "%u", number);
     }
 
-  return result;      
+  return result;
 }
 
 /* Get an idempotent date.  Either the cached value, the value from
@@ -1477,7 +1477,7 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
       pfile->state.parsing_args = 2;
       return collect_args (pfile, node, pragma_buff, num_args);
     }
-  
+
   /* Back up.  A CPP_EOF is either an EOF from an argument we're
      expanding, or a fake one from lex_direct.  We want to backup the
      former, but not the latter.  We may have skipped padding, in
@@ -1784,7 +1784,7 @@ arg_token_ptr_at (const macro_arg *arg, size_t index,
     case MACRO_ARG_TOKEN_NORMAL:
       tokens_ptr = arg->first;
       break;
-    case MACRO_ARG_TOKEN_STRINGIFIED:      
+    case MACRO_ARG_TOKEN_STRINGIFIED:
       tokens_ptr = (const cpp_token **) &arg->stringified;
       break;
     case MACRO_ARG_TOKEN_EXPANDED:
@@ -1902,12 +1902,12 @@ macro_arg_token_iter_get_location (const macro_arg_token_iter *it)
    want each tokens resulting from function-like macro arguments
    expansion to have a different location or not.
 
-   E.g, consider this function-like macro: 
+   E.g, consider this function-like macro:
 
         #define M(x) x - 3
 
    Then consider us "calling" it (and thus expanding it) like:
-   
+
        M(1+4)
 
    It will be expanded into:
@@ -2045,7 +2045,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
      location that records many things like the locus of the expansion
      point as well as the original locus inside the definition of the
      macro.  This location is called a virtual location.
-     
+
      So the buffer BUFF holds a set of cpp_token*, and the buffer
      VIRT_LOCS holds the virtual locations of the tokens held by BUFF.
 
@@ -2053,7 +2053,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
      context, when the latter is pushed.  The memory allocated to
      store the tokens and their locations is going to be freed once
      the context of macro expansion is popped.
-     
+
      As far as tokens are concerned, the memory overhead of
      -ftrack-macro-expansion is proportional to the number of
      macros that get expanded multiplied by sizeof (location_t).
@@ -2400,7 +2400,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 			    " in ISO C++98",
 			    NODE_NAME (node), src->val.macro_arg.arg_no);
 	  else if (CPP_OPTION (pfile, cpp_warn_c90_c99_compat))
-	    cpp_pedwarning (pfile, 
+	    cpp_pedwarning (pfile,
 			    CPP_OPTION (pfile, cpp_warn_c90_c99_compat) > 0
 			    ? CPP_W_C90_C99_COMPAT : CPP_W_PEDANTIC,
 			    "invoking macro %s argument %d: "
@@ -2693,7 +2693,7 @@ tokens_buff_add_token (_cpp_buff *buffer,
 {
   const cpp_token **result;
   location_t *virt_loc_dest = NULL;
-  unsigned token_index = 
+  unsigned token_index =
     (BUFF_FRONT (buffer) - buffer->base) / sizeof (cpp_token *);
 
   /* Abort if we pass the end the buffer.  */
@@ -2840,7 +2840,7 @@ in_macro_expansion_p (cpp_reader *pfile)
   if (pfile == NULL)
     return false;
 
-  return (pfile->about_to_expand_macro_p 
+  return (pfile->about_to_expand_macro_p
 	  || macro_of_context (pfile->context));
 }
 
@@ -2944,7 +2944,7 @@ consume_next_token_from_context (cpp_reader *pfile,
       *location = (*token)->src_loc;
       FIRST (c).token++;
     }
-  else if ((c)->tokens_kind == TOKENS_KIND_INDIRECT)		
+  else if ((c)->tokens_kind == TOKENS_KIND_INDIRECT)
     {
       *token = *FIRST (c).ptoken;
       *location = (*token)->src_loc;
@@ -3205,7 +3205,7 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 	    _cpp_extend_buff (pfile, &pfile->u_buff, len + 1 + dotme * 2);
 	  unsigned char *buf = BUFF_FRONT (pfile->u_buff);
 	  size_t pos = 0;
-	      
+
 	  if (dotme)
 	    {
 	      buf[pos++] = '.';
@@ -3221,7 +3221,7 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 
 	  tmp->type = CPP_HEADER_NAME;
 	  XDELETEVEC (fname);
-	  
+
 	  result = tmp;
 	}
     }
@@ -3475,7 +3475,7 @@ _cpp_save_parameter (cpp_reader *pfile, unsigned n, cpp_hashnode *node,
 	= XRESIZEVEC (unsigned char, pfile->macro_buffer, len);
       pfile->macro_buffer_len = len;
     }
-  
+
   macro_arg_saved_data *saved = (macro_arg_saved_data *)pfile->macro_buffer;
   saved[n].canonical_node = node;
   saved[n].value = node->value;

@@ -23,7 +23,7 @@
 
 #include <exception>
 
-namespace std 
+namespace std
 {
   nested_exception::~nested_exception() noexcept = default;
 } // namespace std

@@ -89,7 +89,7 @@ namespace __gnu_parallel
 
 	    if (__s.partition_chunk_share > 0.0)
 	      __chunk_size = std::max<_DifferenceType>
-		(__s.partition_chunk_size, (double)__n 
+		(__s.partition_chunk_size, (double)__n
 		 * __s.partition_chunk_share / (double)__num_threads);
 	    else
 	      __chunk_size = __s.partition_chunk_size;
@@ -328,8 +328,8 @@ namespace __gnu_parallel
     *  @param __comp Comparator.
     */
   template<typename _RAIter, typename _Compare>
-    void 
-    __parallel_nth_element(_RAIter __begin, _RAIter __nth, 
+    void
+    __parallel_nth_element(_RAIter __begin, _RAIter __nth,
 			   _RAIter __end, _Compare __comp)
     {
       typedef std::iterator_traits<_RAIter> _TraitsType;

@@ -102,7 +102,7 @@ enum unw_where
   UNW_WHERE_BR,		/* register is saved in a branch register */
   UNW_WHERE_SPREL,	/* register is saved on memstack (sp-relative) */
   UNW_WHERE_PSPREL,	/* register is saved on memstack (psp-relative) */
- 
+
  /* At the end of each prologue these locations get resolved to
      UNW_WHERE_PSPREL and UNW_WHERE_GR, respectively.  */
   UNW_WHERE_SPILL_HOME,	/* register is saved in its spill home */
@@ -154,7 +154,7 @@ typedef struct unw_state_record
   struct unw_reg_state curr;	/* current state */
 
   _Unwind_Personality_Fn personality;
-  
+
 } _Unwind_FrameState;
 
 enum unw_nat_type
@@ -558,7 +558,7 @@ finish_prologue (struct unw_state_record *sr)
     {
       off = sr->spill_offset;
       alloc_spill_area (&off, 16, sr->curr.reg + UNW_REG_F2,
-		        sr->curr.reg + UNW_REG_F31); 
+		        sr->curr.reg + UNW_REG_F31);
       alloc_spill_area (&off,  8, sr->curr.reg + UNW_REG_B1,
 		        sr->curr.reg + UNW_REG_B5);
       alloc_spill_area (&off,  8, sr->curr.reg + UNW_REG_R4,
@@ -581,7 +581,7 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
   sr->first_region = 0;
 
   /* Check if we're done.  */
-  if (sr->when_target < sr->region_start + sr->region_len) 
+  if (sr->when_target < sr->region_start + sr->region_len)
     {
       sr->done = 1;
       return;
@@ -858,7 +858,7 @@ desc_is_active (unsigned char qp, unw_word t, struct unw_state_record *sr)
     return 0;
   if (qp > 0)
     {
-      if ((sr->pr_val & (1UL << qp)) == 0) 
+      if ((sr->pr_val & (1UL << qp)) == 0)
 	return 0;
       sr->pr_mask |= (1UL << qp);
     }
@@ -988,7 +988,7 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
  * macros/constants before including this file:
  *
  *  Types:
- *	unw_word	Unsigned integer type with at least 64 bits 
+ *	unw_word	Unsigned integer type with at least 64 bits
  *
  *  Register names:
  *	UNW_REG_BSP
@@ -1821,7 +1821,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
      designate "condition handlers" with very different arguments than what we
      would be providing.  Such cases are typically identified from OS specific
      bits in the unwind information block header, and checked by the target
-     MD_UNW_COMPATIBLE_PERSONALITY_P macro. 
+     MD_UNW_COMPATIBLE_PERSONALITY_P macro.
 
      We just pretend there is no personality from our standpoint in such
      situations, and expect GCC not to set the identifying bits itself so that
@@ -1884,7 +1884,7 @@ skip_unwind_info:
      For other frames the procedure is by definition non-leaf so the pfs
      is saved and restored and thus effectively dead in the body; only
      the cfm need therefore be restored.
-     
+
      Here we have 2 cases:
        - either the pfs is saved and restored and thus effectively dead
 	 like in regular frames; then we do nothing special and restore
@@ -2112,7 +2112,7 @@ uw_advance_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 
 /* Fill in CONTEXT for top-of-stack.  The only valid registers at this
    level will be the return address and the CFA.  Note that CFA = SP+16.  */
-   
+
 #define uw_init_context(CONTEXT)					\
   do {									\
     /* ??? There is a whole lot o code in uw_install_context that	\
@@ -2199,7 +2199,7 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	}
     }
 
-  /* The value in uc_bsp that we've computed is that for the 
+  /* The value in uc_bsp that we've computed is that for the
      target function.  The value that we install below will be
      adjusted by the BR.RET instruction based on the contents
      of AR.PFS.  So we must unadjust that here.  */
@@ -2418,7 +2418,7 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	";;					\n\t"
 	"mov.m ar.rsc = r29			\n\t"
 	";;					\n\t"
-	/* This must be done before setting AR.BSPSTORE, otherwise 
+	/* This must be done before setting AR.BSPSTORE, otherwise
 	   AR.BSP will be initialized with a random displacement
 	   below the value we want, based on the current number of
 	   dirty stacked registers.  */

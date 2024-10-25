@@ -60,7 +60,7 @@ r23	=	0xffeef
 	.type \name , @function
 \name:
 .endm
-    
+
     /* Start a function in its own section, so that it
        can be subject to linker garbage collection.  */
 .macro START_FUNC name
@@ -68,12 +68,12 @@ r23	=	0xffeef
 	START_ANOTHER_FUNC \name
 .endm
 
-.macro END_ANOTHER_FUNC name	
+.macro END_ANOTHER_FUNC name
 	.size \name , . - \name
 .endm
 
     /* End the function.  Set the size.  */
-.macro END_FUNC name	
+.macro END_FUNC name
 	END_ANOTHER_FUNC \name
 	.popsection
 .endm

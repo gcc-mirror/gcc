@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  See https://gcc.gnu.org/onlinedocs/libstdc++/manual/strings.html#strings.string.character_types
    *  for advice on how to make use of this class for @a unusual character
-   *  types. Also, check out include/ext/pod_char_traits.h.  
+   *  types. Also, check out include/ext/pod_char_traits.h.
    */
   template<typename _CharT>
     struct char_traits
@@ -945,7 +945,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX20_CONSTEXPR char_type*
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      { 
+      {
 	if (__n == 0)
 	  return __s1;
 #if __cplusplus >= 202002L

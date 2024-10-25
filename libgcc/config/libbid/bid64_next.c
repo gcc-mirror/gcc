@@ -99,7 +99,7 @@ bid64_nextup (UINT64 x _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
     } else {	// -MAXFP <= x <= -MINFP - 1 ulp OR MINFP <= x <= MAXFP - 1 ulp
       // can add/subtract 1 ulp to the significand
 
-      // Note: we could check here if x >= 10^16 to speed up the case q1 =16 
+      // Note: we could check here if x >= 10^16 to speed up the case q1 =16
       // q1 = nr. of decimal digits in x (1 <= q1 <= 54)
       //  determine first the nr. of bits in x
       if (C1 >= MASK_BINARY_OR2) {	// x >= 2^53
@@ -193,17 +193,17 @@ bid64_nextdown (UINT64 x _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
   UINT64 C1;			// C1 represents x_signif (UINT64)
 
   // check for NaNs and infinities
-  if ((x & MASK_NAN) == MASK_NAN) {	// check for NaN 
+  if ((x & MASK_NAN) == MASK_NAN) {	// check for NaN
     if ((x & 0x0003ffffffffffffull) > 999999999999999ull)
-      x = x & 0xfe00000000000000ull;	// clear G6-G12 and the payload bits 
+      x = x & 0xfe00000000000000ull;	// clear G6-G12 and the payload bits
     else
-      x = x & 0xfe03ffffffffffffull;	// clear G6-G12 
-    if ((x & MASK_SNAN) == MASK_SNAN) {	// SNaN 
+      x = x & 0xfe03ffffffffffffull;	// clear G6-G12
+    if ((x & MASK_SNAN) == MASK_SNAN) {	// SNaN
       // set invalid flag
       *pfpsf |= INVALID_EXCEPTION;
       // return quiet (SNaN)
       res = x & 0xfdffffffffffffffull;
-    } else {	// QNaN 
+    } else {	// QNaN
       res = x;
     }
     BID_RETURN (res);
@@ -244,11 +244,11 @@ bid64_nextdown (UINT64 x _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
     } else {	// -MAXFP + 1ulp <= x <= -MINFP OR MINFP + 1 ulp <= x <= MAXFP
       // can add/subtract 1 ulp to the significand
 
-      // Note: we could check here if x >= 10^16 to speed up the case q1 =16 
+      // Note: we could check here if x >= 10^16 to speed up the case q1 =16
       // q1 = nr. of decimal digits in x (1 <= q1 <= 16)
       //  determine first the nr. of bits in x
       if (C1 >= 0x0020000000000000ull) {	// x >= 2^53
-	// split the 64-bit value in two 32-bit halves to avoid 
+	// split the 64-bit value in two 32-bit halves to avoid
 	// rounding errors
 	if (C1 >= 0x0000000100000000ull) {	// x >= 2^32
 	  tmp1.d = (double) (C1 >> 32);	// exact conversion
@@ -447,7 +447,7 @@ bid64_nextafter (UINT64 x,
     *pfpsf |= OVERFLOW_EXCEPTION;
   }
   // if the result is in (-10^emin, 10^emin), and is different from the
-  // operand x, signal underflow and inexact 
+  // operand x, signal underflow and inexact
   tmp1 = 0x00038d7ea4c68000ull;	// +100...0[16] * 10^emin
   tmp2 = res & 0x7fffffffffffffffull;
   tmp_fpsf = *pfpsf;	// save fpsf

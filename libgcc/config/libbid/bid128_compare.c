@@ -33,7 +33,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_equal, x, y)
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -72,9 +72,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //   If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -90,9 +90,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   // If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -104,7 +104,7 @@ else
 
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -175,7 +175,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_greater, x,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, rather than 
+  // if either number is NAN, the comparison is unordered, rather than
   // equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -201,7 +201,7 @@ if ((x.w[1] & MASK_INF) == MASK_INF) {
     res = 0;
     BID_RETURN (res);
   }
-  // x is pos infinity, it is greater, unless y is positive infinity => 
+  // x is pos infinity, it is greater, unless y is positive infinity =>
   // return y!=pos_infinity
   else {
     res = (((y.w[1] & MASK_INF) != MASK_INF)
@@ -222,9 +222,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -240,9 +240,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -255,7 +255,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -286,7 +286,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -295,7 +295,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -328,7 +328,7 @@ if (diff > 0) {	// to simplify the loop below,
   if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -348,7 +348,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to_192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -377,7 +377,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -398,7 +398,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to_192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -428,7 +428,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 1
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -476,9 +476,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -494,9 +494,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -509,7 +509,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -540,7 +540,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison of the 
+  // if exponents are the same, then we have a simple comparison of the
   // significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -549,7 +549,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if (sig_x.w[1] >= sig_y.w[1] && sig_x.w[0] >= sig_y.w[0]
     && exp_x > exp_y) {
@@ -577,7 +577,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -597,7 +597,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -627,7 +627,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -649,7 +649,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -679,8 +679,8 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
-  // rather than 
+  // if either number is NAN, the comparison is unordered,
+  // rather than
   // equal : return 1
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -706,7 +706,7 @@ if ((x.w[1] & MASK_INF) == MASK_INF) {
     res = 0;
     BID_RETURN (res);
   }
-  // x is pos infinity, it is greater, unless y is positive infinity => 
+  // x is pos infinity, it is greater, unless y is positive infinity =>
   // return y!=pos_infinity
   else {
     res = (((y.w[1] & MASK_INF) != MASK_INF)
@@ -727,9 +727,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -745,9 +745,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -760,7 +760,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -791,7 +791,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison of the 
+  // if exponents are the same, then we have a simple comparison of the
   // significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -800,7 +800,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if (sig_x.w[1] >= sig_y.w[1] && sig_x.w[0] >= sig_y.w[0]
     && exp_x > exp_y) {
@@ -828,7 +828,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -848,7 +848,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -878,7 +878,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -900,7 +900,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -928,7 +928,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_less, x, y)
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -976,9 +976,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -994,9 +994,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -1009,7 +1009,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -1040,7 +1040,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison of the 
+  // if exponents are the same, then we have a simple comparison of the
   // significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -1049,7 +1049,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -1079,7 +1079,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -1099,7 +1099,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -1128,7 +1128,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -1150,7 +1150,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -1179,7 +1179,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_less_equal,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -1205,7 +1205,7 @@ if ((x.w[1] & MASK_INF) == MASK_INF) {
     res = 1;
     BID_RETURN (res);
   }
-  // x is pos infinity, it is greater, unless y is positive infinity => 
+  // x is pos infinity, it is greater, unless y is positive infinity =>
   // return y!=pos_infinity
   else {
     res = (((y.w[1] & MASK_INF) == MASK_INF)
@@ -1226,9 +1226,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -1244,9 +1244,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -1259,7 +1259,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -1290,7 +1290,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison of the 
+  // if exponents are the same, then we have a simple comparison of the
   // significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1]) || (sig_x.w[1] == sig_y.w[1] &&
@@ -1301,7 +1301,7 @@ if (exp_y == exp_x) {
 							MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -1331,7 +1331,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -1351,7 +1351,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -1381,7 +1381,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -1403,7 +1403,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
       // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -1480,9 +1480,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -1498,9 +1498,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -1513,7 +1513,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -1544,7 +1544,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -1553,7 +1553,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -1583,7 +1583,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -1603,7 +1603,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -1633,7 +1633,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -1655,7 +1655,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -1683,7 +1683,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_not_equal,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -1722,9 +1722,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -1740,9 +1740,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -1754,7 +1754,7 @@ else
 
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -1825,7 +1825,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_not_greater,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -1871,9 +1871,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -1889,9 +1889,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //    If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -1904,7 +1904,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -1935,7 +1935,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -1944,7 +1944,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -1974,7 +1974,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -1994,7 +1994,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -2024,7 +2024,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -2046,7 +2046,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -2075,7 +2075,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_quiet_not_less, x,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 1
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -2123,9 +2123,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -2141,9 +2141,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -2156,7 +2156,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -2188,7 +2188,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
 
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -2197,7 +2197,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if (sig_x.w[1] >= sig_y.w[1] && sig_x.w[0] >= sig_y.w[0]
     && exp_x > exp_y) {
@@ -2225,7 +2225,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -2245,7 +2245,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -2275,7 +2275,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -2297,7 +2297,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -2374,7 +2374,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_signaling_greater,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -2417,9 +2417,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -2435,9 +2435,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -2450,7 +2450,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -2481,7 +2481,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -2490,7 +2490,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -2523,7 +2523,7 @@ if (diff > 0) {	// to simplify the loop below,
   if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -2543,7 +2543,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to_192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -2572,7 +2572,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -2594,7 +2594,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to_192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -2624,7 +2624,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 1
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -2669,9 +2669,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -2687,9 +2687,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -2702,7 +2702,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -2733,7 +2733,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -2742,7 +2742,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if (sig_x.w[1] >= sig_y.w[1] && sig_x.w[0] >= sig_y.w[0]
     && exp_x > exp_y) {
@@ -2770,7 +2770,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -2790,7 +2790,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -2820,7 +2820,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -2842,7 +2842,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -2872,7 +2872,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 1
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -2915,9 +2915,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -2933,9 +2933,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -2948,7 +2948,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -2979,7 +2979,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -2988,7 +2988,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if (sig_x.w[1] >= sig_y.w[1] && sig_x.w[0] >= sig_y.w[0]
     && exp_x > exp_y) {
@@ -3016,7 +3016,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -3036,7 +3036,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -3066,7 +3066,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -3088,7 +3088,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -3117,7 +3117,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int, bid128_signaling_less, x,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -3162,9 +3162,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -3180,9 +3180,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -3195,7 +3195,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -3226,7 +3226,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -3235,7 +3235,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -3265,7 +3265,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -3285,7 +3285,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -3315,7 +3315,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -3337,7 +3337,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -3367,7 +3367,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -3410,9 +3410,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -3428,9 +3428,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -3443,7 +3443,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -3474,7 +3474,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -3483,7 +3483,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -3513,7 +3513,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -3533,7 +3533,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -3563,7 +3563,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -3585,7 +3585,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -3659,9 +3659,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -3677,9 +3677,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -3692,7 +3692,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -3723,7 +3723,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -3732,7 +3732,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -3762,7 +3762,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -3782,7 +3782,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -3812,7 +3812,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -3863,7 +3863,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -3906,9 +3906,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -3924,9 +3924,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -3939,7 +3939,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -3970,7 +3970,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
   BID_RETURN (res);
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -3979,7 +3979,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if ((sig_x.w[1] > sig_y.w[1]
      || (sig_x.w[1] == sig_y.w[1] && sig_x.w[0] > sig_y.w[0]))
@@ -4009,7 +4009,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -4029,7 +4029,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -4058,7 +4058,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]
@@ -4080,7 +4080,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   // adjust the y significand upwards
 __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_y);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
 if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_x.w[1]
     && (sig_n_prime192.w[0] == sig_x.w[0])) {
@@ -4110,7 +4110,7 @@ BID128_FUNCTION_ARG2_NORND_CUSTOMRESTYPE (int,
      char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 1
 if (((x.w[1] & MASK_NAN) == MASK_NAN)
     || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
@@ -4155,9 +4155,9 @@ sig_x.w[0] = x.w[0];
 exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF X IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
@@ -4173,9 +4173,9 @@ sig_y.w[1] = y.w[1] & 0x0001ffffffffffffull;
 sig_y.w[0] = y.w[0];
 
   // CHECK IF Y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //   1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   //     If the value exceeds that, it is interpreted as 0.
 if ((sig_y.w[1] > 0x0001ed09bead87c0ull)
     || ((sig_y.w[1] == 0x0001ed09bead87c0ull)
@@ -4188,7 +4188,7 @@ else
   // ZERO (CASE4)
   // some properties:
   //    (+ZERO == -ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore
   //    ignore the exponent field
   //    (Any non-canonical # is considered 0)
 if (non_canon_x || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
@@ -4220,7 +4220,7 @@ if (((x.w[1] ^ y.w[1]) & MASK_SIGN) == MASK_SIGN) {
 }
   // REDUNDANT REPRESENTATIONS (CASE6)
 
-  // if exponents are the same, then we have a simple comparison 
+  // if exponents are the same, then we have a simple comparison
   // of the significands
 if (exp_y == exp_x) {
   res = (((sig_x.w[1] > sig_y.w[1])
@@ -4229,7 +4229,7 @@ if (exp_y == exp_x) {
 					       MASK_SIGN));
   BID_RETURN (res);
 }
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
 if (sig_x.w[1] >= sig_y.w[1] && sig_x.w[0] >= sig_y.w[0]
     && exp_x > exp_y) {
@@ -4257,7 +4257,7 @@ if (diff > 0) {	// to simplify the loop below,
     __mul_128x128_to_256 (sig_n_prime256, sig_x, ten2k128[diff - 20]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
 	&& sig_n_prime256.w[1] == sig_y.w[1]
@@ -4277,7 +4277,7 @@ if (diff > 0) {	// to simplify the loop below,
   //else { //128 by 64 bit multiply -> 192 bits
   __mul_64x128_to192 (sig_n_prime192, ten2k64[diff], sig_x);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
       && (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -4307,7 +4307,7 @@ if (diff > 19) {	//128 by 128 bit multiply -> 256 bits
   __mul_128x128_to_256 (sig_n_prime256, sig_y, ten2k128[diff - 20]);
 
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   // (converse if negative)
   if (sig_n_prime256.w[3] == 0 && (sig_n_prime256.w[2] == 0)
       && sig_n_prime256.w[1] == sig_x.w[1]

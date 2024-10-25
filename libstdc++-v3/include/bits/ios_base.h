@@ -56,8 +56,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // as permitted (but not required) in the standard, in order to provide
   // better type safety in iostream calls.  A side effect is that in C++98
   // expressions involving them are not compile-time constants.
-  enum _Ios_Fmtflags 
-    { 
+  enum _Ios_Fmtflags
+    {
       _S_boolalpha 	= 1L << 0,
       _S_dec 		= 1L << 1,
       _S_fixed 		= 1L << 2,
@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   enum __attribute__((__flag_enum__)) _Ios_Openmode
-    { 
+    {
       _S_app 		= 1L << 0,
       _S_ate 		= 1L << 1,
       _S_bin 		= 1L << 2,
@@ -177,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   enum _Ios_Iostate
-    { 
+    {
       _S_goodbit 		= 0,
       _S_badbit 		= 1L << 0,
       _S_eofbit 		= 1L << 1,
@@ -223,12 +223,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __a = __a ^ __b; }
 
 
-  enum _Ios_Seekdir 
-    { 
+  enum _Ios_Seekdir
+    {
       _S_beg = 0,
       _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
       _S_end = _GLIBCXX_STDIO_SEEK_END,
-      _S_ios_seekdir_end = 1L << 16 
+      _S_ios_seekdir_end = 1L << 16
     };
 
 #if __cplusplus >= 201103L
@@ -282,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   public:
 
-    /** 
+    /**
      *  @brief These are thrown to indicate problems with io.
      *  @ingroup exceptions
      *
@@ -611,7 +611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // 0 => OK to delete.
       int
-      _M_remove_reference() 
+      _M_remove_reference()
       {
         // Be race-detector-friendly.  For more info see bits/c++config.
         _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_refcount);

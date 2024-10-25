@@ -29,7 +29,7 @@ CMPtype
 __bid_ltdd2 (_Decimal64 x, _Decimal64 y) {
   CMPtype res;
   union decimal64 ux, uy;
- 
+
   ux.d = x;
   uy.d = y;
   res = -__bid64_quiet_less (ux.i, uy.i);

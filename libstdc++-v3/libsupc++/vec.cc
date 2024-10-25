@@ -1,7 +1,7 @@
 // New abi Support -*- C++ -*-
 
 // Copyright (C) 2000-2024 Free Software Foundation, Inc.
-//  
+//
 // This file is part of GCC.
 //
 // GCC is free software; you can redistribute it and/or modify
@@ -33,13 +33,13 @@
 
 namespace __cxxabiv1
 {
-  namespace 
+  namespace
   {
-    struct uncatch_exception 
+    struct uncatch_exception
     {
       uncatch_exception();
       ~uncatch_exception () { __cxa_begin_catch (&p->unwindHeader); }
-      
+
       __cxa_exception* p;
 
     private:
@@ -127,7 +127,7 @@ namespace __cxxabiv1
       }
     return base;
   }
-  
+
   extern "C" void *
   __cxa_vec_new3(std::size_t element_count,
 		 std::size_t element_size,
@@ -142,7 +142,7 @@ namespace __cxxabiv1
     char *base = static_cast<char *>(alloc (size));
     if (!base)
       return base;
-    
+
     if (padding_size)
       {
 	base += padding_size;
@@ -167,7 +167,7 @@ namespace __cxxabiv1
       }
     return base;
   }
-  
+
   // Construct array.
   extern "C" __cxa_vec_ctor_return_type
   __cxa_vec_ctor(void *array_address,
@@ -178,7 +178,7 @@ namespace __cxxabiv1
   {
     std::size_t ix = 0;
     char *ptr = static_cast<char *>(array_address);
-    
+
     __try
       {
 	if (constructor)
@@ -195,7 +195,7 @@ namespace __cxxabiv1
       }
     _GLIBCXX_CXA_VEC_CTOR_RETURN (array_address);
   }
-  
+
   // Construct an array by copying.
   extern "C" __cxa_vec_ctor_return_type
   __cxa_vec_cctor(void *dest_array,
@@ -208,11 +208,11 @@ namespace __cxxabiv1
     std::size_t ix = 0;
     char *dest_ptr = static_cast<char *>(dest_array);
     char *src_ptr = static_cast<char *>(src_array);
-    
+
     __try
       {
 	if (constructor)
-	  for (; ix != element_count; 
+	  for (; ix != element_count;
 	       ix++, src_ptr += element_size, dest_ptr += element_size)
 	    constructor(dest_ptr, src_ptr);
       }
@@ -226,7 +226,7 @@ namespace __cxxabiv1
       }
     _GLIBCXX_CXA_VEC_CTOR_RETURN (dest_array);
   }
-  
+
   // Destruct array.
   extern "C" void
   __cxa_vec_dtor(void *array_address,
@@ -314,7 +314,7 @@ namespace __cxxabiv1
       return;
 
     char* base = static_cast<char *>(array_address);
-  
+
     if (padding_size)
       {
 	std::size_t element_count = reinterpret_cast<std::size_t *>(base)[-1];
@@ -404,14 +404,14 @@ namespace __aeabiv1
     reinterpret_cast<std::size_t *>(array_address)[-2] = element_size;
     reinterpret_cast<std::size_t *>(array_address)[-1] = element_count;
     return abi::__cxa_vec_ctor (array_address,
-				element_count, element_size, 
+				element_count, element_size,
 				constructor, /*destructor=*/NULL);
   }
-  
+
   extern "C" void *
   __aeabi_vec_cctor_nocookie_nodtor (void *dest_array,
-				     void *src_array, 
-				     std::size_t element_size, 
+				     void *src_array,
+				     std::size_t element_size,
 				     std::size_t element_count,
 				     void *(*constructor) (void *, void *))
   {
@@ -421,73 +421,73 @@ namespace __aeabiv1
   }
 
   extern "C" void *
-  __aeabi_vec_new_cookie_noctor (std::size_t element_size, 
+  __aeabi_vec_new_cookie_noctor (std::size_t element_size,
 				 std::size_t element_count)
   {
-    return abi::__cxa_vec_new(element_count, element_size, 
+    return abi::__cxa_vec_new(element_count, element_size,
 			      2 * sizeof (std::size_t),
 			      /*constructor=*/NULL, /*destructor=*/NULL);
   }
 
   extern "C" void *
-  __aeabi_vec_new_nocookie (std::size_t element_size, 
+  __aeabi_vec_new_nocookie (std::size_t element_size,
 			    std::size_t element_count,
 			    abi::__cxa_cdtor_type constructor)
   {
-    return abi::__cxa_vec_new (element_count, element_size, 0, constructor, 
+    return abi::__cxa_vec_new (element_count, element_size, 0, constructor,
 			       NULL);
   }
 
   extern "C" void *
-  __aeabi_vec_new_cookie_nodtor (std::size_t element_size, 
+  __aeabi_vec_new_cookie_nodtor (std::size_t element_size,
 				 std::size_t element_count,
 				 abi::__cxa_cdtor_type constructor)
   {
-    return abi::__cxa_vec_new(element_count, element_size, 
+    return abi::__cxa_vec_new(element_count, element_size,
 			      2 * sizeof (std::size_t),
 			      constructor, NULL);
   }
 
   extern "C" void *
-  __aeabi_vec_new_cookie(std::size_t element_size, 
+  __aeabi_vec_new_cookie(std::size_t element_size,
 			 std::size_t element_count,
 			 abi::__cxa_cdtor_type constructor,
 			 abi::__cxa_cdtor_type destructor)
   {
-    return abi::__cxa_vec_new (element_count, element_size, 
+    return abi::__cxa_vec_new (element_count, element_size,
 			       2 * sizeof (std::size_t),
 			       constructor, destructor);
   }
 
-  
+
   extern "C" void *
-  __aeabi_vec_dtor (void *array_address, 
+  __aeabi_vec_dtor (void *array_address,
 		    abi::__cxa_cdtor_type destructor,
-		    std::size_t element_size, 
+		    std::size_t element_size,
 		    std::size_t element_count)
   {
-    abi::__cxa_vec_dtor (array_address, element_count, element_size, 
+    abi::__cxa_vec_dtor (array_address, element_count, element_size,
 			 destructor);
     return reinterpret_cast<std::size_t*> (array_address) - 2;
   }
 
   extern "C" void *
-  __aeabi_vec_dtor_cookie (void *array_address, 
+  __aeabi_vec_dtor_cookie (void *array_address,
 			   abi::__cxa_cdtor_type destructor)
   {
     if (!array_address)
       return NULL;
 
-    abi::__cxa_vec_dtor (array_address, 
+    abi::__cxa_vec_dtor (array_address,
 			 reinterpret_cast<std::size_t *>(array_address)[-1],
 			 reinterpret_cast<std::size_t *>(array_address)[-2],
 			 destructor);
     return reinterpret_cast<std::size_t*> (array_address) - 2;
   }
-  
-  
+
+
   extern "C" void
-  __aeabi_vec_delete (void *array_address, 
+  __aeabi_vec_delete (void *array_address,
 		      abi::__cxa_cdtor_type destructor)
   {
     if (!array_address)
@@ -500,7 +500,7 @@ namespace __aeabiv1
   }
 
   extern "C" void
-  __aeabi_vec_delete3 (void *array_address, 
+  __aeabi_vec_delete3 (void *array_address,
 		       abi::__cxa_cdtor_type destructor,
 		       void (*dealloc) (void *, std::size_t))
   {

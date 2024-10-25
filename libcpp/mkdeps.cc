@@ -355,7 +355,7 @@ deps_add_module_target (struct mkdeps *d, const char *m,
 			const char *cmi, bool is_header_unit, bool is_exported)
 {
   gcc_assert (!d->module_name);
-  
+
   d->module_name = xstrdup (m);
   d->is_header_unit = is_header_unit;
   d->is_exported = is_exported;

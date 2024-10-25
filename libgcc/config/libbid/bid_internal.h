@@ -109,7 +109,7 @@ UINT64 M;                                        \
  *      Add/Subtract Macros
  *
  *********************************************************************/
-// add 64-bit value to 128-bit 
+// add 64-bit value to 128-bit
 #define __add_128_64(R128, A128, B64)    \
 {                                        \
 UINT64 R64H;                             \
@@ -119,7 +119,7 @@ UINT64 R64H;                             \
 	  R64H ++;                           \
     (R128).w[1] = R64H;                  \
 }
-// subtract 64-bit value from 128-bit 
+// subtract 64-bit value from 128-bit
 #define __sub_128_64(R128, A128, B64)    \
 {                                        \
 UINT64 R64H;                             \
@@ -129,7 +129,7 @@ UINT64 R64H;                             \
     (R128).w[1] = R64H;                  \
 	(R128).w[0] = (A128).w[0] - (B64);     \
 }
-// add 128-bit value to 128-bit 
+// add 128-bit value to 128-bit
 // assume no carry-out
 #define __add_128_128(R128, A128, B128)  \
 {                                        \
@@ -177,7 +177,7 @@ UINT64 X1, X0=X;                              \
 	S = X1 - Y;                               \
 	CY = ((S>X1) || (X1>X0)) ? 1 : 0;          \
 }
-// increment C128 and check for rounding overflow: 
+// increment C128 and check for rounding overflow:
 // if (C_128) = 10^34 then (C_128) = 10^33 and increment the exponent
 #define INCREMENT(C_128, exp)                                           \
 {                                                                       \
@@ -191,8 +191,8 @@ UINT64 X1, X0=X;                              \
   }                                                                     \
 }
 // decrement C128 and check for rounding underflow, but only at the
-// boundary: if C_128 = 10^33 - 1 and exp > 0 then C_128 = 10^34 - 1 
-// and decrement the exponent 
+// boundary: if C_128 = 10^33 - 1 and exp > 0 then C_128 = 10^34 - 1
+// and decrement the exponent
 #define DECREMENT(C_128, exp)                                           \
 {                                                                       \
   C_128.w[0]--;                                                         \
@@ -322,7 +322,7 @@ UINT64 CXH, CXL, CYH, CYL, PL, PH, PM;  \
                                         \
 	(P) = PH + (PM>>32);                \
 }
-// get full 64x64bit product 
+// get full 64x64bit product
 //
 #define __mul_64x64_to_128_full(P, CX, CY)     \
 {                                         \
@@ -1012,7 +1012,7 @@ get_BID64 (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 
 
 //
-//   No overflow/underflow checking 
+//   No overflow/underflow checking
 //
 __BID_INLINE__ UINT64
 fast_get_BID64 (UINT64 sgn, int expon, UINT64 coeff) {
@@ -1129,7 +1129,7 @@ fast_get_BID64_check_OF (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 
 
 //
-//   No overflow/underflow checking 
+//   No overflow/underflow checking
 //   or checking for coefficients equal to 10^16 (after rounding)
 //
 __BID_INLINE__ UINT64
@@ -1222,7 +1222,7 @@ get_BID64_UF (UINT64 sgn, int expon, UINT64 coeff, UINT64 R, int rmode,
   amount = recip_scale[extra_digits];
 
   C64 = QH >> amount;
-  //__shr_128(C128, Q_high, amount); 
+  //__shr_128(C128, Q_high, amount);
 
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
@@ -1301,7 +1301,7 @@ get_BID64_UF (UINT64 sgn, int expon, UINT64 coeff, UINT64 R, int rmode,
 
 
 //
-//   This pack macro doesnot check for coefficients above 2^53 
+//   This pack macro doesnot check for coefficients above 2^53
 //
 __BID_INLINE__ UINT64
 get_BID64_small_mantissa (UINT64 sgn, int expon, UINT64 coeff,
@@ -1799,7 +1799,7 @@ unpack_BID128_value (UINT64 * psign_x, int *pexponent_x,
       pcoefficient_x->w[1] = x.w[1] & SINFINITY_MASK64;
     }
     *pexponent_x = 0;
-    return 0;	// NaN or Infinity 
+    return 0;	// NaN or Infinity
   }
 
   coeff.w[0] = x.w[0];
@@ -1853,7 +1853,7 @@ unpack_BID128 (UINT64 * psign_x, int *pexponent_x,
       pcoefficient_x->w[0] = 0;
     }
     *pexponent_x = 0;
-    return 0;	// NaN or Infinity 
+    return 0;	// NaN or Infinity
   }
 
   coeff.w[0] = px->w[0];
@@ -2060,8 +2060,8 @@ get_BID128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 coeff,
 
 
 //
-//  Macro used for conversions from string 
-//        (no additional arguments given for rounding mode, status flags) 
+//  Macro used for conversions from string
+//        (no additional arguments given for rounding mode, status flags)
 //
 __BID_INLINE__ UINT128 *
 get_BID128_string (UINT128 * pres, UINT64 sgn, int expon, UINT128 coeff) {
@@ -2183,7 +2183,7 @@ unpack_BID32 (UINT32 * psign_x, int *pexponent_x,
 }
 
 //
-//   General pack macro for BID32 
+//   General pack macro for BID32
 //
 __BID_INLINE__ UINT32
 get_BID32 (UINT32 sgn, int expon, UINT64 coeff, int rmode,

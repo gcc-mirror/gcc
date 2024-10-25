@@ -348,7 +348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * A random number generator that produces pseudorandom numbers via
    * linear function:
    * @f[
-   *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m 
+   *     x_{i+1}\leftarrow(ax_{i} + c) \bmod m
    * @f]
    *
    * The template parameter @p _UIntType must be an unsigned integral type
@@ -562,7 +562,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * This algorithm was originally invented by Makoto Matsumoto and
    * Takuji Nishimura.
    *
-   * @tparam __w  Word size, the number of bits in each element of 
+   * @tparam __w  Word size, the number of bits in each element of
    *              the state vector.
    * @tparam __n  The degree of recursion.
    * @tparam __m  The period parameter.
@@ -800,7 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * A discrete random number generator that produces pseudorandom
    * numbers using:
    * @f[
-   *     x_{i}\leftarrow(x_{i - s} - x_{i - r} - carry_{i-1}) \bmod m 
+   *     x_{i}\leftarrow(x_{i - s} - x_{i - r} - carry_{i-1}) \bmod m
    * @f]
    *
    * The size of the state is @f$r@f$
@@ -2108,7 +2108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * The formula for the normal probability density function is
    * @f[
    *     p(x|\mu,\sigma) = \frac{1}{\sigma \sqrt{2 \pi}}
-   *            e^{- \frac{{x - \mu}^ {2}}{2 \sigma ^ {2}} } 
+   *            e^{- \frac{{x - \mu}^ {2}}{2 \sigma ^ {2}} }
    * @f]
    *
    * @headerfile random
@@ -2335,7 +2335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * The formula for the normal probability mass function is
    * @f[
    *     p(x|m,s) = \frac{1}{sx\sqrt{2\pi}}
-   *                \exp{-\frac{(\ln{x} - m)^2}{2s^2}} 
+   *                \exp{-\frac{(\ln{x} - m)^2}{2s^2}}
    * @f]
    *
    * @headerfile random
@@ -2560,7 +2560,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * The formula for the gamma probability density function is:
    * @f[
    *     p(x|\alpha,\beta) = \frac{1}{\beta\Gamma(\alpha)}
-   *                         (x/\beta)^{\alpha - 1} e^{-x/\beta} 
+   *                         (x/\beta)^{\alpha - 1} e^{-x/\beta}
    * @f]
    *
    * @headerfile random
@@ -3247,7 +3247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @f[
    *     p(x|m,n) = \frac{\Gamma((m+n)/2)}{\Gamma(m/2)\Gamma(n/2)}
    *                (\frac{m}{n})^{m/2} x^{(m/2)-1}
-   *                (1 + \frac{mx}{n})^{-(m+n)/2} 
+   *                (1 + \frac{mx}{n})^{-(m+n)/2}
    * @f]
    *
    * @headerfile random
@@ -3486,7 +3486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * The formula for the normal probability mass function is:
    * @f[
    *     p(x|n) = \frac{1}{\sqrt(n\pi)} \frac{\Gamma((n+1)/2)}{\Gamma(n/2)}
-   *              (1 + \frac{x^2}{n}) ^{-(n+1)/2} 
+   *              (1 + \frac{x^2}{n}) ^{-(n+1)/2}
    * @f]
    *
    * @headerfile random
@@ -3605,7 +3605,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
 	  typedef typename std::gamma_distribution<result_type>::param_type
 	    param_type;
-	
+
 	  const result_type __g = _M_gd(__urng, param_type(__p.n() / 2, 2));
 	  return _M_nd(__urng) * std::sqrt(__p.n() / __g);
         }
@@ -5097,7 +5097,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * The formula for the normal probability density function is:
    * @f[
    *     p(x|\alpha,\beta) = \frac{\alpha}{\beta} (\frac{x}{\beta})^{\alpha-1}
-   *                         \exp{(-(\frac{x}{\beta})^\alpha)} 
+   *                         \exp{(-(\frac{x}{\beta})^\alpha)}
    * @f]
    *
    * @headerfile random
@@ -5314,7 +5314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * The formula for the normal probability mass function is
    * @f[
    *     p(x|a,b) = \frac{1}{b}
-   *                \exp( \frac{a-x}{b} - \exp(\frac{a-x}{b})) 
+   *                \exp( \frac{a-x}{b} - \exp(\frac{a-x}{b}))
    * @f]
    *
    * @headerfile random
@@ -6048,7 +6048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_impl_three_way_comparison < 201907L
   /**
-    * @brief Return true if two piecewise constant distributions have 
+    * @brief Return true if two piecewise constant distributions have
     *        different parameters.
    */
   template<typename _RealType>

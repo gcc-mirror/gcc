@@ -64,7 +64,7 @@ if ((y.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
 if ((y.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
   // check if x is not Inf.
   if (((x.w[1] & 0x7c00000000000000ull) < 0x7800000000000000ull)) {
-    // return NaN 
+    // return NaN
 #ifdef SET_STATUS_FLAGS
     // set status flags
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -167,8 +167,8 @@ if ((UINT32) total_digits <= 34) {
   if (rnd_mode == 0)
 #endif
     if (CR.w[0] & 1) {
-      // check whether fractional part of initial_P/10^extra_digits is 
-      // exactly .5 this is the same as fractional part of 
+      // check whether fractional part of initial_P/10^extra_digits is
+      // exactly .5 this is the same as fractional part of
       // (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
       // get remainder

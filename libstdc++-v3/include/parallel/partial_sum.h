@@ -119,7 +119,7 @@ namespace __gnu_parallel
 #       pragma omp single
 	{
 	  __num_threads = omp_get_num_threads();
-	    
+
 	  __borders = new _DifferenceType[__num_threads + 2];
 
 	  if (__s.partial_sum_dilation == 1.0f)

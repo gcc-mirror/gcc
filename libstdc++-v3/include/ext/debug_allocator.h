@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _M_extra is the number of objects that correspond to the
       // extra space where debug information is stored.
       size_type 		_M_extra;
-      
+
       _Alloc			_M_allocator;
 
       template<typename _Alloc2,
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type _S_extra()
       {
 	const std::size_t __obj_size = sizeof(value_type);
-	return (sizeof(size_type) + __obj_size - 1) / __obj_size; 
+	return (sizeof(size_type) + __obj_size - 1) / __obj_size;
       }
 
     public:
@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NODISCARD pointer
       allocate(size_type __n)
       {
-        pointer __res = _M_allocator.allocate(__n + _M_extra);      
+        pointer __res = _M_allocator.allocate(__n + _M_extra);
 	size_type* __ps = reinterpret_cast<size_type*>(__res);
 	*__ps = __n;
         return __res + _M_extra;

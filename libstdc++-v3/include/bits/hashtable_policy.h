@@ -1042,7 +1042,7 @@ namespace __detail
       insert(const_iterator __hint, const value_type& __v)
       {
 	__hashtable& __h = _M_conjure_hashtable();
-	__node_gen_type __node_gen(__h);	
+	__node_gen_type __node_gen(__h);
 	return __h._M_insert(__hint, __v, __node_gen, __unique_keys{});
       }
 

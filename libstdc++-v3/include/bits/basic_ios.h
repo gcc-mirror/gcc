@@ -55,7 +55,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Template class basic_ios, virtual base class for all
-   *  stream classes. 
+   *  stream classes.
    *  @ingroup io
    *
    *  @tparam _CharT  Type of character stream.
@@ -473,7 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  accessible to users.
       */
       basic_ios()
-      : ios_base(), _M_tie(0), _M_fill(char_type()), _M_fill_init(false), 
+      : ios_base(), _M_tie(0), _M_fill(char_type()), _M_fill_init(false),
 	_M_streambuf(0), _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { }
 

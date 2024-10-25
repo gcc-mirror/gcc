@@ -883,7 +883,7 @@ read_original_directory (cpp_reader *pfile)
 	  /* Smash the string directly, it's dead at this point  */
 	  char *smashy = (char *)text;
 	  smashy[len - 3] = 0;
-	  
+
 	  pfile->cb.dir_change (pfile, smashy + 1);
 	}
 

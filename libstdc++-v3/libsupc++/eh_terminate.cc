@@ -43,12 +43,12 @@ using namespace __cxxabiv1;
 void
 __cxxabiv1::__terminate (std::terminate_handler handler) throw ()
 {
-  __try 
+  __try
     {
       handler ();
       std::abort ();
-    } 
-  __catch(...) 
+    }
+  __catch(...)
     { std::abort (); }
 }
 

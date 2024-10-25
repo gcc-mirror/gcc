@@ -23,7 +23,7 @@
 
 #include <new>
 
-namespace std 
+namespace std
 {
 // From N3639.  This was voted in and then back out of C++14, and is now
 // just here for backward link compatibility with code built with 4.9.

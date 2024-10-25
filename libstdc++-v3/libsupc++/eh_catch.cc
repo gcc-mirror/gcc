@@ -58,7 +58,7 @@ __cxxabiv1::__cxa_begin_catch (void *exc_obj_in) _GLIBCXX_NOTHROW
       // Remember for end_catch and rethrow.
       globals->caughtExceptions = header;
 
-      // ??? No sensible value to return; we don't know what the 
+      // ??? No sensible value to return; we don't know what the
       // object is, much less where it is in relation to the header.
       return 0;
     }

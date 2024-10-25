@@ -69,7 +69,7 @@ __cxa_type_match(_Unwind_Exception* ue_header,
       // here, so there's no backwards compatibility problem.
       thrown_ptr = __get_object_from_ue (ue_header);
     }
-  
+
   __cxa_type_match_result result = ctm_succeeded;
 
   // Pointer types need to adjust the actual pointer, not

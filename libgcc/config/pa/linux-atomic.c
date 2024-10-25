@@ -24,9 +24,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#define EFAULT  14 
+#define EFAULT  14
 #define EBUSY   16
-#define ENOSYS 251 
+#define ENOSYS 251
 
 #define _ASM_EFAULT "-14"
 
@@ -306,7 +306,7 @@ __sync_val_compare_and_swap_4 (volatile void *ptr, unsigned int oldval,
 {
   long fail;
   unsigned int actual_oldval;
-    
+
   while (1)
     {
       actual_oldval = atomic_load_4 ((volatile unsigned int *)ptr);
@@ -315,7 +315,7 @@ __sync_val_compare_and_swap_4 (volatile void *ptr, unsigned int oldval,
 	return actual_oldval;
 
       fail = __kernel_cmpxchg (ptr, actual_oldval, newval);
-  
+
       if (__builtin_expect (!fail, 1))
 	return actual_oldval;
     }

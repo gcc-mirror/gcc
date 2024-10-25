@@ -72,7 +72,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   INVO_CONTEXT_BLK local_icb;
   INVO_CONTEXT_BLK *icb = &local_icb;
-    
+
   CHFCTX * chfctx;
   CHF$MECH_ARRAY * chfmech;
   CHF64$SIGNAL_ARRAY *chfsig64;
@@ -90,7 +90,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
       const uint try_bs_copy_mask = (1 << 16);
 
       eh_debug = EH_DEBUG ? atoi (EH_DEBUG) : 0;
-      
+
       /* Fetch and clear the try_bs_copy bit.  */
       try_bs_copy = (uint)eh_debug & try_bs_copy_mask;
       eh_debug &= ~try_bs_copy_mask;
@@ -124,9 +124,9 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   /* Beware: we might be unwinding through nested condition handlers, so the
      dispatcher frame we seek might not be the first one on the way up.  Loop
-     thus.  */     
+     thus.  */
   do {
-    
+
     /* Seek the next dispatcher frame up the "current" point.  Stop if we
        either get past the target context or hit the bottom-of-stack along
        the way.  */
@@ -134,7 +134,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
     FAIL_IF (status == 0);
     FAIL_IF ((uw_reg)icb->libicb$ih_sp > (uw_reg)context->psp
 	     || DENOTES_BOTTOM_OF_STACK (icb));
-    
+
     if (eh_debug)
       printf ("frame%s sp @ 0x%llx, pc @ 0x%llx bsp=0x%llx\n",
 	      DENOTES_VMS_DISPATCHER_FRAME (icb) ? " (dispatcher)" : "",
@@ -162,13 +162,13 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   chfctx = icb->libicb$ph_chfctx_addr;
   FAIL_IF (chfctx == 0);
-  
+
   chfmech = (CHF$MECH_ARRAY *)chfctx->chfctx$q_mcharglst;
   FAIL_IF (chfmech == 0);
 
   chfsig64 = (CHF64$SIGNAL_ARRAY *)chfmech->chf$ph_mch_sig64_addr;
   FAIL_IF (chfsig64 == 0);
- 
+
   intstk = (INTSTK *)chfmech->chf$q_mch_esf_addr;
   FAIL_IF (intstk == 0 || intstk->intstk$b_subtype == DYN$C_SSENTRY);
 
@@ -222,7 +222,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
   context->unat_loc = (uw_loc)&intstk->intstk$q_unat;
 
   /* Branch register locations.  */
-  
+
   {
     uw_reg * ctxregs = (uw_reg *)&intstk->intstk$q_b0;
 
@@ -241,7 +241,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
     uw_reg q_bspstore = (uw_reg) intstk->intstk$q_bspstore;
     uw_reg q_bspbase  = (uw_reg) intstk->intstk$q_bspbase;
     uw_reg ih_bspbase = (uw_reg) icb->libicb$ih_bspbase;
-    
+
     if (eh_debug)
       printf ("q_bspstore = 0x%lx, q_bsp = 0x%lx, q_bspbase = 0x%lx\n"
 	      "ih_bspbase = 0x%lx\n",
@@ -263,7 +263,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 	/* Not clear if these are the proper arguments here.  This is what
 	   looked the closest to what is performed in the Linux case.  */
       }
-    
+
   }
 
   context->bsp = (uw_reg)intstk->intstk$q_bsp;
@@ -274,7 +274,7 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   /* We're directly setting up the "context" for a VMS exception handler.
      The "previous SP" for it is the SP upon the handler's entry, that is
-     the SP at the condition/interruption/exception point.  */  
+     the SP at the condition/interruption/exception point.  */
   context->psp = (uw_reg)icb->libicb$ih_sp;
 
   /* Previous Frame State location.  What eventually ends up in pfs_loc is
@@ -305,4 +305,4 @@ ia64_vms_fallback_frame_state (struct _Unwind_Context *context,
 
   return _URC_NO_REASON;
 }
-     
+

@@ -146,7 +146,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 > 0x05, 1<=q<=34
       // <=> C * 10^(21-q) > 0x05, 1<=q<=34
       if (q == 21) {
-	// C > 5 
+	// C > 5
 	if (C1.w[1] != 0 || C1.w[0] > 0x05ull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -503,7 +503,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 > 0x05, 1<=q<=34
       // <=> C * 10^(21-q) > 0x05, 1<=q<=34
       if (q == 21) {
-	// C > 5 
+	// C > 5
 	if (C1.w[1] != 0 || C1.w[0] > 0x05ull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -1477,7 +1477,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 >= 0x0a, 1<=q<=34
       // <=> C * 10^(21-q) >= 0x0a, 1<=q<=34
       if (q == 21) {
-	// C >= a 
+	// C >= a
 	if (C1.w[1] != 0 || C1.w[0] >= 0x0aull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -1502,7 +1502,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // if n > 2^64 - 1 then n is too large
       // <=> c(0)c(1)...c(19).c(20)...c(q-1) > 2^64 - 1
       // <=> 0.c(0)c(1)...c(19)c(20)...c(q-1) * 10^20 > 2^64 - 1
-      // <=> 0.c(0)c(1)...c(19)c(20)...c(q-1) * 10^21 > 10 * (2^64 - 1) 
+      // <=> 0.c(0)c(1)...c(19)c(20)...c(q-1) * 10^21 > 10 * (2^64 - 1)
       // <=> C * 10^(21-q) > 0x9fffffffffffffff6, 1<=q<=34
       if (q == 1) {
 	// C * 10^20 > 0x9fffffffffffffff6
@@ -1811,7 +1811,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 >= 0x0a, 1<=q<=34
       // <=> C * 10^(21-q) >= 0x0a, 1<=q<=34
       if (q == 21) {
-	// C >= a 
+	// C >= a
 	if (C1.w[1] != 0 || C1.w[0] >= 0x0aull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -1836,7 +1836,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // if n > 2^64 - 1 then n is too large
       // <=> c(0)c(1)...c(19).c(20)...c(q-1) > 2^64 - 1
       // <=> 0.c(0)c(1)...c(19)c(20)...c(q-1) * 10^20 > 2^64 - 1
-      // <=> 0.c(0)c(1)...c(19)c(20)...c(q-1) * 10^21 > 10 * (2^64 - 1) 
+      // <=> 0.c(0)c(1)...c(19)c(20)...c(q-1) * 10^21 > 10 * (2^64 - 1)
       // <=> C * 10^(21-q) > 0x9fffffffffffffff6, 1<=q<=34
       if (q == 1) {
 	// C * 10^20 > 0x9fffffffffffffff6
@@ -2153,7 +2153,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 >= 0x0a, 1<=q<=34
       // <=> C * 10^(21-q) >= 0x0a, 1<=q<=34
       if (q == 21) {
-	// C >= a 
+	// C >= a
 	if (C1.w[1] != 0 || C1.w[0] >= 0x0aull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -2438,7 +2438,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 >= 0x0a, 1<=q<=34
       // <=> C * 10^(21-q) >= 0x0a, 1<=q<=34
       if (q == 21) {
-	// C >= a 
+	// C >= a
 	if (C1.w[1] != 0 || C1.w[0] >= 0x0aull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -2762,7 +2762,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 >= 0x05, 1<=q<=34
       // <=> C * 10^(21-q) >= 0x05, 1<=q<=34
       if (q == 21) {
-	// C >= 5 
+	// C >= 5
 	if (C1.w[1] != 0 || C1.w[0] >= 0x05ull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;
@@ -3105,7 +3105,7 @@ if ((C1.w[1] > 0x0001ed09bead87c0ull)
       // <=> 0.c(0)c(1)...c(q-1) * 10^21 >= 0x05, 1<=q<=34
       // <=> C * 10^(21-q) >= 0x05, 1<=q<=34
       if (q == 21) {
-	// C >= 5 
+	// C >= 5
 	if (C1.w[1] != 0 || C1.w[0] >= 0x05ull) {
 	  // set invalid flag
 	  *pfpsf |= INVALID_EXCEPTION;

@@ -75,7 +75,7 @@ namespace __parallel
   template<typename _RAIter1, typename _RAIter2, typename _Predicate>
     pair<_RAIter1, _RAIter2>
     __mismatch_switch(_RAIter1 __begin1, _RAIter1 __end1,
-                      _RAIter2 __begin2, _Predicate __pred, 
+                      _RAIter2 __begin2, _Predicate __pred,
                       random_access_iterator_tag, random_access_iterator_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(true))
@@ -153,7 +153,7 @@ namespace __parallel
   template<typename _RAIter1, typename _RAIter2, typename _Predicate>
     pair<_RAIter1, _RAIter2>
     __mismatch_switch(_RAIter1 __begin1, _RAIter1 __end1,
-                      _RAIter2 __begin2, _RAIter2 __end2, _Predicate __pred, 
+                      _RAIter2 __begin2, _RAIter2 __end2, _Predicate __pred,
                       random_access_iterator_tag, random_access_iterator_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(true))
@@ -202,14 +202,14 @@ namespace __parallel
   // Sequential fallback
   template<typename _IIter1, typename _IIter2>
     inline bool
-    equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
+    equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
           __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2); }
 
   // Sequential fallback
   template<typename _IIter1, typename _IIter2, typename _Predicate>
     inline bool
-    equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
+    equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
           _Predicate __pred, __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2, __pred); }
 
@@ -232,7 +232,7 @@ namespace __parallel
   template<typename _IIter1, typename _IIter2, typename _Predicate>
     _GLIBCXX20_CONSTEXPR
     inline bool
-    equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
+    equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
           _Predicate __pred)
     {
 #if __cplusplus > 201703L
@@ -281,7 +281,7 @@ namespace __parallel
   template<typename _RAIter1, typename _RAIter2, typename _Predicate>
     inline bool
     __equal_switch(_RAIter1 __begin1, _RAIter1 __end1,
-		   _RAIter2 __begin2, _RAIter2 __end2, _Predicate __pred, 
+		   _RAIter2 __begin2, _RAIter2 __end2, _Predicate __pred,
 		   random_access_iterator_tag, random_access_iterator_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(true))
@@ -338,8 +338,8 @@ namespace __parallel
   // Sequential fallback
   template<typename _IIter1, typename _IIter2>
     inline bool
-    lexicographical_compare(_IIter1 __begin1, _IIter1 __end1, 
-                            _IIter2 __begin2, _IIter2 __end2, 
+    lexicographical_compare(_IIter1 __begin1, _IIter1 __end1,
+                            _IIter2 __begin2, _IIter2 __end2,
                             __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_A::lexicographical_compare(__begin1, __end1,
                                                      __begin2, __end2); }
@@ -347,8 +347,8 @@ namespace __parallel
   // Sequential fallback
   template<typename _IIter1, typename _IIter2, typename _Predicate>
     inline bool
-    lexicographical_compare(_IIter1 __begin1, _IIter1 __end1, 
-                            _IIter2 __begin2, _IIter2 __end2, 
+    lexicographical_compare(_IIter1 __begin1, _IIter1 __end1,
+                            _IIter2 __begin2, _IIter2 __end2,
                             _Predicate __pred, __gnu_parallel::sequential_tag)
     { return _GLIBCXX_STD_A::lexicographical_compare(
                __begin1, __end1, __begin2, __end2, __pred); }
@@ -358,7 +358,7 @@ namespace __parallel
            typename _Predicate, typename _IteratorTag1, typename _IteratorTag2>
     inline bool
     __lexicographical_compare_switch(_IIter1 __begin1, _IIter1 __end1,
-                                     _IIter2 __begin2, _IIter2 __end2, 
+                                     _IIter2 __begin2, _IIter2 __end2,
                                      _Predicate __pred,
                                      _IteratorTag1, _IteratorTag2)
     { return _GLIBCXX_STD_A::lexicographical_compare(
@@ -371,7 +371,7 @@ namespace __parallel
     __lexicographical_compare_switch(_RAIter1 __begin1, _RAIter1 __end1,
                                      _RAIter2 __begin2, _RAIter2 __end2,
                                      _Predicate __pred,
-                                     random_access_iterator_tag, 
+                                     random_access_iterator_tag,
                                      random_access_iterator_tag)
     {
       if (_GLIBCXX_PARALLEL_CONDITION(true))
@@ -390,9 +390,9 @@ namespace __parallel
           if ((__end1 - __begin1) < (__end2 - __begin2))
             {
               typedef pair<_RAIter1, _RAIter2> _SpotType;
-              _SpotType __mm = __mismatch_switch(__begin1, __end1, __begin2, 
-                                             _EqualFromLessCompare(__pred), 
-                                             random_access_iterator_tag(), 
+              _SpotType __mm = __mismatch_switch(__begin1, __end1, __begin2,
+                                             _EqualFromLessCompare(__pred),
+                                             random_access_iterator_tag(),
                                              random_access_iterator_tag());
 
               return (__mm.first == __end1)
@@ -401,9 +401,9 @@ namespace __parallel
           else
             {
               typedef pair<_RAIter2, _RAIter1> _SpotType;
-              _SpotType __mm = __mismatch_switch(__begin2, __end2, __begin1, 
-                                             _EqualFromLessCompare(__pred), 
-                                             random_access_iterator_tag(), 
+              _SpotType __mm = __mismatch_switch(__begin2, __end2, __begin1,
+                                             _EqualFromLessCompare(__pred),
+                                             random_access_iterator_tag(),
                                              random_access_iterator_tag());
 
               return (__mm.first != __end2)

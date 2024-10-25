@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Define a nested type if some predicate holds.
   template<bool, typename>
-    struct __enable_if 
+    struct __enable_if
     { };
 
   template<typename _Tp>
@@ -68,12 +68,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Given an integral builtin type, return the corresponding unsigned type.
   template<typename _Tp>
     struct __add_unsigned
-    { 
+    {
     private:
       typedef __enable_if<std::__is_integer<_Tp>::__value, _Tp> __if_type;
-      
+
     public:
-      typedef typename __if_type::__type __type; 
+      typedef typename __if_type::__type __type;
     };
 
   template<>
@@ -111,12 +111,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Given an integral builtin type, return the corresponding signed type.
   template<typename _Tp>
     struct __remove_unsigned
-    { 
+    {
     private:
       typedef __enable_if<std::__is_integer<_Tp>::__value, _Tp> __if_type;
-      
+
     public:
-      typedef typename __if_type::__type __type; 
+      typedef typename __if_type::__type __type;
     };
 
   template<>
@@ -277,4 +277,4 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #pragma GCC diagnostic pop
 
-#endif 
+#endif

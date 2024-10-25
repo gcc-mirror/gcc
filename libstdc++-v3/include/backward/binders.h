@@ -173,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename _Operation::second_argument_type _Arg2_type;
       return binder2nd<_Operation>(__fn, _Arg2_type(__x));
-    } 
+    }
   /** @}  */
 
 _GLIBCXX_END_NAMESPACE_VERSION

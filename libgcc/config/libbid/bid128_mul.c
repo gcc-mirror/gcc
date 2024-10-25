@@ -140,7 +140,7 @@ bid64qq_mul (UINT128 x, UINT128 y
 	// x is non-canonical if coefficient is larger than 10^34 -1
 	C1.w[1] = 0;
 	C1.w[0] = 0;
-      } else {	// canonical          
+      } else {	// canonical
 	;
       }
     }
@@ -153,7 +153,7 @@ bid64qq_mul (UINT128 x, UINT128 y
       // G0_G1=11 => non-canonical
       y_exp = (y.w[HIGH_128W] << 2) & MASK_EXP;	// biased and shifted left 49 bits
       C2.w[1] = 0;	// significand high
-      C2.w[0] = 0;	// significand low 
+      C2.w[0] = 0;	// significand low
     } else {	// G0_G1 != 11
       y_exp = y.w[HIGH_128W] & MASK_EXP;	// biased and shifted left 49 bits
       if (C2.w[1] > 0x0001ed09bead87c0ull ||
@@ -169,7 +169,7 @@ bid64qq_mul (UINT128 x, UINT128 y
     p_sign = x_sign ^ y_sign;	// sign of the product
 
     true_p_exp = (x_exp >> 49) - 6176 + (y_exp >> 49) - 6176;
-    // true_p_exp, p_exp are used only for 0 * 0, 0 * f, or f * 0 
+    // true_p_exp, p_exp are used only for 0 * 0, 0 * f, or f * 0
     if (true_p_exp < -398)
       p_exp = 0;	// cannot be less than EXP_MIN
     else if (true_p_exp > 369)
@@ -359,7 +359,7 @@ bid128_mul (UINT128 x,
 	// x is non-canonical if coefficient is larger than 10^34 -1
 	C1.w[1] = 0;
 	C1.w[0] = 0;
-      } else {	// canonical          
+      } else {	// canonical
 	;
       }
     }
@@ -371,7 +371,7 @@ bid128_mul (UINT128 x,
       // G0_G1=11 => non-canonical
       y_exp = (y.w[1] << 2) & MASK_EXP;	// biased and shifted left 49 bits
       C2.w[1] = 0;	// significand high
-      C2.w[0] = 0;	// significand low 
+      C2.w[0] = 0;	// significand low
     } else {	// G0_G1 != 11
       y_exp = y.w[1] & MASK_EXP;	// biased and shifted left 49 bits
       if (C2.w[1] > 0x0001ed09bead87c0ull ||
@@ -387,7 +387,7 @@ bid128_mul (UINT128 x,
     p_sign = x_sign ^ y_sign;	// sign of the product
 
     true_p_exp = (x_exp >> 49) - 6176 + (y_exp >> 49) - 6176;
-    // true_p_exp, p_exp are used only for 0 * 0, 0 * f, or f * 0 
+    // true_p_exp, p_exp are used only for 0 * 0, 0 * f, or f * 0
     if (true_p_exp < -6176)
       p_exp = 0;	// cannot be less than EXP_MIN
     else if (true_p_exp > 6111)

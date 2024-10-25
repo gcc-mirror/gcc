@@ -1,6 +1,6 @@
 /* C6X ABI compliant unwinding routines
    Copyright (C) 2011-2024 Free Software Foundation, Inc.
- 
+
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
    Free Software Foundation; either version 3, or (at your option) any
@@ -142,7 +142,7 @@ unwind_restore_pair (_Unwind_Context * context, int reg, _uw *ptr)
 }
 
 static const int
-unwind_frame_regs[13] = 
+unwind_frame_regs[13] =
 {
   R_A15, R_B15, R_B14, R_B13, R_B12, R_B11, R_B10, R_B3,
   R_A14, R_A13, R_A12, R_A11, R_A10
@@ -456,7 +456,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	  _Unwind_VRS_Set (context, _UVRSC_CORE, R_B3, _UVRSD_UINT32, &reg);
 	  continue;
 	}
-      
+
       /* Reserved.  */
       return _URC_FAILURE;
     }
@@ -513,7 +513,7 @@ _Unwind_Ptr
 _Unwind_GetRegionStart (_Unwind_Context *context)
 {
   _Unwind_Control_Block *ucbp;
- 
+
   ucbp = (_Unwind_Control_Block *) _Unwind_GetGR (context, UNWIND_POINTER_REG);
   return (_Unwind_Ptr) ucbp->pr_cache.fnstart;
 }
@@ -523,7 +523,7 @@ _Unwind_GetLanguageSpecificData (_Unwind_Context *context)
 {
   _Unwind_Control_Block *ucbp;
   _uw *ptr;
- 
+
   ucbp = (_Unwind_Control_Block *) _Unwind_GetGR (context, UNWIND_POINTER_REG);
   ptr = (_uw *) ucbp->pr_cache.ehtp;
   /* Skip the personality routine address.  */

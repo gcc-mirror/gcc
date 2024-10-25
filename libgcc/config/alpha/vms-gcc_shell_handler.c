@@ -59,7 +59,7 @@ get_dyn_handler_pointer (REG fp)
      the handler_data field from there.  This field contains the offset
      from FP at which the address of the currently installed handler is
      to be found.  */
-  
+
   PDSCDEF * pd = PV_FOR (fp);
   /* Procedure descriptor pointer for the live subprogram with FP as the frame
      pointer, and to which _gcc_shell_handler is attached as a condition
@@ -79,11 +79,11 @@ get_dyn_handler_pointer (REG fp)
     case PDSC$K_KIND_FP_STACK:    /* [3.4.2 PD for stack frame procedures]  */
       handler_data_offset = 40;
       break;
-	
+
     case PDSC$K_KIND_FP_REGISTER: /* [3.4.5 PD for reg frame procedures]  */
       handler_data_offset = 32;
       break;
-      
+
     default:
       handler_data_offset = 0;
       break;
@@ -95,7 +95,7 @@ get_dyn_handler_pointer (REG fp)
 
   /* Otherwise, fetch the fp offset at which the real handler address is to be
      found, then fetch and return the latter in turn.  */
-     
+
   handler_slot_offset = REG_AT ((REG)pd + handler_data_offset);
 
   return (ADDR) REG_AT (fp + handler_slot_offset);
@@ -120,4 +120,4 @@ __gcc_shell_handler (struct chf$signal_array *sig_arr,
 
   return ret;
 }
-   
+

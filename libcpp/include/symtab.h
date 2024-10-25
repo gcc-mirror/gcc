@@ -52,7 +52,7 @@ struct ht
   hashnode *entries;
   /* Call back, allocate a node.  */
   hashnode (*alloc_node) (cpp_hash_table *);
-  /* Call back, allocate something that hangs off a node like a cpp_macro.  
+  /* Call back, allocate something that hangs off a node like a cpp_macro.
      NULL means use the usual allocator.  */
   void * (*alloc_subobject) (size_t);
 

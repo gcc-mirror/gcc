@@ -1228,7 +1228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_set_length(0); }
 
       /**
-       *  Returns true if the %string is empty.  Equivalent to 
+       *  Returns true if the %string is empty.  Equivalent to
        *  <code>*this == ""</code>.
        */
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
@@ -4156,7 +4156,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>& __in, basic_string<wchar_t>& __str,
 	    wchar_t __delim);
-#endif  
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -4414,7 +4414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline string
   to_string(float __val)
   {
-    const int __n = 
+    const int __n =
       __gnu_cxx::__numeric_traits<float>::__max_exponent10 + 20;
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%f", __val);
@@ -4424,7 +4424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline string
   to_string(double __val)
   {
-    const int __n = 
+    const int __n =
       __gnu_cxx::__numeric_traits<double>::__max_exponent10 + 20;
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%f", __val);
@@ -4434,7 +4434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline string
   to_string(long double __val)
   {
-    const int __n = 
+    const int __n =
       __gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 20;
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%Lf", __val);
@@ -4443,12 +4443,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif // _GLIBCXX_USE_C99_STDIO
 
 #if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_WCHAR
-  inline int 
+  inline int
   stoi(const wstring& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa<long, int>(&std::wcstol, "stoi", __str.c_str(),
 					__idx, __base); }
 
-  inline long 
+  inline long
   stol(const wstring& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa(&std::wcstol, "stol", __str.c_str(),
 			     __idx, __base); }

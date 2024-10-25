@@ -720,7 +720,7 @@ __gcov_dump_one (struct gcov_root *root)
     return;
 
   gcov_do_dump (root->list, root->run_counted, 0);
-  
+
   root->dumped = 1;
   root->run_counted = 1;
 }
@@ -729,7 +729,7 @@ __gcov_dump_one (struct gcov_root *root)
 struct gcov_root __gcov_root;
 
 /* Exactly one of these will be live in the process image.  */
-struct gcov_master __gcov_master = 
+struct gcov_master __gcov_master =
   {GCOV_VERSION, 0};
 
 /* Dynamic pool for gcov_kvp structures.  */

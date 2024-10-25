@@ -106,7 +106,7 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
      up if we're handed anything else.  */
   if (pkind != PDSC$K_KIND_FP_STACK && pkind != PDSC$K_KIND_FP_REGISTER)
     return _URC_END_OF_STACK;
-  
+
   if (eh_debug)
     printf ("FALLBACK: CTX FP = 0x%p, PV = 0x%p, EN = 0x%llx, RA = 0x%p\n",
 	    ADDR_AT (context->reg[29]), pv, pv->pdsc$q_entry, context->ra);
@@ -149,7 +149,7 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
       status = LIB$GET_PREV_INVO_CONTEXT (&icb);
       GIVEUP_ON_FAILURE (status);
 
-      new_cfa = (ADDR) icb.libicb$q_ireg[30];      
+      new_cfa = (ADDR) icb.libicb$q_ireg[30];
     }
   else
     {
@@ -158,10 +158,10 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
 	 register value + frame size.  Note that the frame base may differ
 	 from CONTEXT->cfa, typically if the caller has performed dynamic
 	 stack allocations.  */
-      
+
       int  base_reg  = pv->pdsc$w_flags & PDSC$M_BASE_REG_IS_FP ? 29 : 30;
       ADDR base_addr = ADDR_AT (context->reg[base_reg]);
-      
+
       new_cfa = base_addr + pv->pdsc$l_size;
     }
 
@@ -201,7 +201,7 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
 	for (i = 0, j = 0; i < 32; i++)
 	  if ((1 << i) & pv->pdsc$l_ireg_mask)
 	    UPDATE_FS_FOR_CFA_GR (fs, i, rsa_addr + 8 * ++j, new_cfa);
-	
+
 	/* ??? floating point registers ?  */
 
 	break;
@@ -214,10 +214,10 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
 
 	fs->regs.how[RA_COLUMN] = REG_SAVED_REG;
 	fs->regs.reg[RA_COLUMN].loc.reg = pv->pdsc$b_save_ra;
-	
+
 	fs->regs.how[29] = REG_SAVED_REG;
 	fs->regs.reg[29].loc.reg = pv->pdsc$b_save_fp;
-	
+
 	break;
       }
 
@@ -274,12 +274,12 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
       UPDATE_FS_FOR_CFA_GR (fs, 26, &mechargs->chf$q_mch_savr26, new_cfa);
       UPDATE_FS_FOR_CFA_GR (fs, 27, &mechargs->chf$q_mch_savr27, new_cfa);
       UPDATE_FS_FOR_CFA_GR (fs, 28, &mechargs->chf$q_mch_savr28, new_cfa);
-      
+
       /* Registers R2 to R7 are available from the rei frame pointer.  */
-      
+
       for (i = 2; i <= 7; i ++)
 	UPDATE_FS_FOR_CFA_GR (fs, i, rei_frame_addr+(i - 2)*8, new_cfa);
-      
+
       /* ??? floating point registers ?  */
     }
 

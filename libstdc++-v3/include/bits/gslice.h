@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @param  __l  Array of dimension lengths.
      *  @param  __s  Array of dimension strides between array elements.
      */
-    gslice(size_t __o, const valarray<size_t>& __l, 
+    gslice(size_t __o, const valarray<size_t>& __l,
 	   const valarray<size_t>& __s);
 
     // XXX: the IS says the copy-ctor and copy-assignment operators are
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ///  Return array of sizes of slice dimensions.
     valarray<size_t> size() const;
-    
+
     ///  Return array of array strides for each dimension.
     valarray<size_t> stride() const;
 
@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_increment_use()
       { ++_M_count; }
-      
+
       size_t
       _M_decrement_use()
       { return --_M_count; }

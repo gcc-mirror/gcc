@@ -56,7 +56,7 @@ namespace __gnu_parallel
 
     // Bit results.
     int __bits_left;
-    
+
     static uint32_t
     __scale_down(uint64_t __x,
 #if _GLIBCXX_SCALE_DOWN_FPU

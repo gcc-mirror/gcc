@@ -41,7 +41,7 @@ struct unw_table_entry
 
 /* Accessors to fields of an unwind info block header.  In this common file to
    be visible from all the units involved in a target implementation.  */
-   
+
 #ifndef __USING_SJLJ_EXCEPTIONS__
 #define UNW_VER(x)		((x) >> 48)
 #define UNW_FLAG_MASK		0x0000ffff00000000

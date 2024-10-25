@@ -84,7 +84,7 @@ call_ ## FUNC (void)					\
    (defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__))
 #define BSD_DL_ITERATE_PHDR_AVAILABLE
 #endif
- 
+
 #if defined(OBJECT_FORMAT_ELF) \
     && !defined(OBJECT_FORMAT_FLAT) \
     && defined(HAVE_LD_EH_FRAME_HDR) \

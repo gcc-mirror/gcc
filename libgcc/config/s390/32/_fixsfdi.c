@@ -87,7 +87,7 @@ __fixsfdi (float a1)
       }
 
     /* Number big number & +/- inf */
-    if (exp >= 40) {      
+    if (exp >= 40) {
       /* Don't throw an exception for -1p+63  */
       if (!SIGN (fl1) || exp > 40 || FRAC (fl1) != 0)
 	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */

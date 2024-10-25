@@ -61,7 +61,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  implementation defined type.
    *  Note: In versions of GCC up to and including GCC 3.3, streamoff
    *  was typedef long.
-  */  
+  */
 #ifdef __INT64_TYPE__
   typedef __INT64_TYPE__          streamoff;
 #else

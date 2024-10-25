@@ -189,7 +189,7 @@ extern "C" void __cxa_tm_cleanup (void *, void *, unsigned int) throw();
 
 // Invokes given handler, dying appropriately if the user handler was
 // so inconsiderate as to return.
-extern void __terminate(std::terminate_handler) throw () 
+extern void __terminate(std::terminate_handler) throw ()
   __attribute__((__noreturn__));
 extern void __unexpected(std::terminate_handler)
   __attribute__((__noreturn__));
@@ -318,7 +318,7 @@ __gxx_caught_object(_Unwind_Exception* eo)
 #else // !__ARM_EABI_UNWINDER__
 // This is the primary exception class we report -- "GNUCC++\0".
 const _Unwind_Exception_Class __gxx_primary_exception_class
-= ((((((((_Unwind_Exception_Class) 'G' 
+= ((((((((_Unwind_Exception_Class) 'G'
 	 << 8 | (_Unwind_Exception_Class) 'N')
 	<< 8 | (_Unwind_Exception_Class) 'U')
        << 8 | (_Unwind_Exception_Class) 'C')
@@ -330,7 +330,7 @@ const _Unwind_Exception_Class __gxx_primary_exception_class
 // This is the dependent (from std::rethrow_exception) exception class we report
 // "GNUCC++\x01"
 const _Unwind_Exception_Class __gxx_dependent_exception_class
-= ((((((((_Unwind_Exception_Class) 'G' 
+= ((((((((_Unwind_Exception_Class) 'G'
 	 << 8 | (_Unwind_Exception_Class) 'N')
 	<< 8 | (_Unwind_Exception_Class) 'U')
        << 8 | (_Unwind_Exception_Class) 'C')

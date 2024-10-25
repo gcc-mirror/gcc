@@ -230,7 +230,7 @@ struct gcov_info
 
   gcov_merge_fn merge[GCOV_COUNTERS];  /* merge functions (null for
 					  unused) */
-  
+
   gcov_unsigned_t n_functions;		/* number of functions */
 
 #ifndef IN_GCOV_TOOL
@@ -268,7 +268,7 @@ struct indirect_call_tuple
   /* Pointer to counters.  */
   gcov_type *counters;
 };
-  
+
 /* Exactly one of these will be active in the process.  */
 extern struct gcov_master __gcov_master;
 extern struct gcov_kvp *__gcov_kvp_dynamic_pool;

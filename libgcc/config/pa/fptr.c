@@ -67,7 +67,7 @@ _dl_read_access_allowed (unsigned int addr)
 
 /* __canonicalize_funcptr_for_compare must be hidden so that it is not
    placed in the dynamic symbol table.  Like millicode functions, it
-   must be linked into all binaries in order access the got table of 
+   must be linked into all binaries in order access the got table of
    that binary.  However, we don't use the millicode calling convention
    and the routine must be a normal function so that it can be compiled
    as pic code.  */

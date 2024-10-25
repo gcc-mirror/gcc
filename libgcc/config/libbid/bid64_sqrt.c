@@ -33,9 +33,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *  - scale coefficient x to between 31 and 33 decimal digits
  *  - in parallel, check for exact case and return if true
  *  - get high part of result coefficient using double precision sqrt
- *  - compute remainder and refine coefficient in one iteration (which 
+ *  - compute remainder and refine coefficient in one iteration (which
  *                                 modifies it by at most 1)
- *  - result exponent is easy to compute from the adjusted arg. exponent 
+ *  - result exponent is easy to compute from the adjusted arg. exponent
  *
  ****************************************************************************/
 
@@ -299,7 +299,7 @@ C256.w[0] = A10.w[0];
 CS.w[0] = short_sqrt128 (A10);
 CS.w[1] = 0;
 mul_factor = 0;
-	   // check for exact result  
+	   // check for exact result
 if (CS.w[0] < 10000000000000000ull) {
   if (CS.w[0] * CS.w[0] == A10.w[0]) {
     __sqr64_fast (S2, CS.w[0]);
@@ -518,7 +518,7 @@ if (!((rnd_mode) & 3)) {
 				/*__add_carry_out(M256.w[0], Carry, M256.w[0], C8.w[0]);
 				M256.w[1] = M256.w[1] + Carry + C8.w[1];
 				M256.w[0]++;
-				if(!M256.w[0]) 
+				if(!M256.w[0])
 				{
 					M256.w[1]++;
 				}

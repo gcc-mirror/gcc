@@ -76,10 +76,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_CXX11
 
   /// A string of @c char
-  typedef basic_string<char>    string;   
+  typedef basic_string<char>    string;
 
   /// A string of @c wchar_t
-  typedef basic_string<wchar_t> wstring;   
+  typedef basic_string<wchar_t> wstring;
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   /// A string of @c char8_t
@@ -88,10 +88,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
 #if __cplusplus >= 201103L
   /// A string of @c char16_t
-  typedef basic_string<char16_t> u16string; 
+  typedef basic_string<char16_t> u16string;
 
   /// A string of @c char32_t
-  typedef basic_string<char32_t> u32string; 
+  typedef basic_string<char32_t> u32string;
 #endif
 
   /** @}  */

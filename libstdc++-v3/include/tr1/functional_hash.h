@@ -130,7 +130,7 @@ namespace tr1
 	  return __result;
 	}
     };
-  
+
   template<>
     struct _Fnv_hash_base<8>
     {

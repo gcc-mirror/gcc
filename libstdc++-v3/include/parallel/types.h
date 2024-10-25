@@ -62,7 +62,7 @@ namespace __gnu_parallel
       parallel_taskqueue
     };
 
-  /// Strategies for run-time algorithm selection: 
+  /// Strategies for run-time algorithm selection:
   // force_sequential, force_parallel, heuristic.
   enum _AlgorithmStrategy
     {
@@ -71,16 +71,16 @@ namespace __gnu_parallel
       force_parallel
     };
 
-  /// Sorting algorithms: 
+  /// Sorting algorithms:
   // multi-way mergesort, quicksort, load-balanced quicksort.
-  enum _SortAlgorithm 
-    { 
-      MWMS, 
-      QS, 
-      QS_BALANCED 
+  enum _SortAlgorithm
+    {
+      MWMS,
+      QS,
+      QS_BALANCED
     };
 
-  /// Merging algorithms: 
+  /// Merging algorithms:
   // bubblesort-alike, loser-tree variants, enum __sentinel.
   enum _MultiwayMergeAlgorithm
     {
@@ -88,26 +88,26 @@ namespace __gnu_parallel
     };
 
   /// Partial sum algorithms: recursive, linear.
-  enum _PartialSumAlgorithm 
-    { 
-      RECURSIVE, 
-      LINEAR 
+  enum _PartialSumAlgorithm
+    {
+      RECURSIVE,
+      LINEAR
     };
 
   /// Sorting/merging algorithms: sampling, __exact.
-  enum _SplittingAlgorithm 
-    { 
-      SAMPLING, 
-      EXACT 
+  enum _SplittingAlgorithm
+    {
+      SAMPLING,
+      EXACT
     };
 
   /// Find algorithms:
   // growing blocks, equal-sized blocks, equal splitting.
-  enum _FindAlgorithm 
-    { 
-      GROWING_BLOCKS, 
-      CONSTANT_SIZE_BLOCKS, 
-      EQUAL_SPLIT 
+  enum _FindAlgorithm
+    {
+      GROWING_BLOCKS,
+      CONSTANT_SIZE_BLOCKS,
+      EQUAL_SPLIT
     };
 
   /**

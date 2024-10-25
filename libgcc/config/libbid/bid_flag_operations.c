@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // Note the following definitions from bid_conf.h: if the status flags are
 // global, they have a fixed name recognized by the library functions:
 // _IDEC_glbflags; pfpsf, defined as &_IDEC_glbflags, can be used instead; no
-// argument is passed for the status flags to the library functions; if the 
+// argument is passed for the status flags to the library functions; if the
 // status flags are local then they are passed as an arument, always by
 // reference, to the library functions
 //
@@ -67,7 +67,7 @@ void
 lowerFlags (_IDEC_flags * pflagsmask _EXC_FLAGS_PARAM) {
   // *pflagsmask is the logical OR of the flags to be cleared, e.g.
   // *pflagsmask =INVALID_EXCEPTION | ZERO_DIVIDE_EXCEPTION | OVERFLOW_EXCEPTION
-  // UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION to clear all five IEEE 754R 
+  // UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION to clear all five IEEE 754R
   // exception flags
   *pfpsf = *pfpsf & ~(*pflagsmask & BID_IEEE_FLAGS);
 }
@@ -75,8 +75,8 @@ lowerFlags (_IDEC_flags * pflagsmask _EXC_FLAGS_PARAM) {
 void
 lowerFlags (_IDEC_flags flagsmask _EXC_FLAGS_PARAM) {
   // flagsmask is the logical OR of the flags to be cleared, e.g.
-  // flagsmask = INVALID_EXCEPTION | ZERO_DIVIDE_EXCEPTION | OVERFLOW_EXCEPTION 
-  // UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION to clear all five IEEE 754R    
+  // flagsmask = INVALID_EXCEPTION | ZERO_DIVIDE_EXCEPTION | OVERFLOW_EXCEPTION
+  // UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION to clear all five IEEE 754R
   // exception flags
   *pfpsf = *pfpsf & ~(flagsmask & BID_IEEE_FLAGS);
 }
@@ -86,10 +86,10 @@ lowerFlags (_IDEC_flags flagsmask _EXC_FLAGS_PARAM) {
 void
 testFlags (_IDEC_flags * praised,
 	   _IDEC_flags * pflagsmask _EXC_FLAGS_PARAM) {
-  // *praised is a pointer to the result, i.e. the logical OR of the flags 
+  // *praised is a pointer to the result, i.e. the logical OR of the flags
   // selected by *pflagsmask that are set; e.g. if
   // *pflagsmask = INVALID_EXCEPTION | UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION
-  // and only the invalid and inexact flags are raised (set) then upon return 
+  // and only the invalid and inexact flags are raised (set) then upon return
   // *praised = INVALID_EXCEPTION | INEXACT_EXCEPTION
   *praised = *pfpsf & (*pflagsmask & BID_IEEE_FLAGS);
 }
@@ -97,7 +97,7 @@ testFlags (_IDEC_flags * praised,
 _IDEC_flags
 testFlags (_IDEC_flags flagsmask _EXC_FLAGS_PARAM) {
   _IDEC_flags raised;
-  // the raturn value raised is the logical OR of the flags  
+  // the raturn value raised is the logical OR of the flags
   // selected by flagsmask, that are set; e.g. if
   // flagsmask = INVALID_EXCEPTION | UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION and
   // only the invalid and inexact flags are raised (set) then the return value
@@ -156,9 +156,9 @@ void
 restoreFlags (_IDEC_flags flagsvalues,
 	      _IDEC_flags flagsmask _EXC_FLAGS_PARAM) {
   // restore the status flags selected by flagsmask to the values speciafied
-  // (as a logical OR) in flagsvalues; e.g. if 
+  // (as a logical OR) in flagsvalues; e.g. if
   // flagsmask = INVALID_EXCEPTION | UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION
-  // and only the invalid and inexact flags are raised (set) in flagsvalues 
+  // and only the invalid and inexact flags are raised (set) in flagsvalues
   // then upon return the invalid status flag will be set, the underflow status
   // flag will be clear, and the inexact status flag will be set
   *pfpsf = *pfpsf & ~(flagsmask & BID_IEEE_FLAGS);
@@ -176,7 +176,7 @@ saveFlags (_IDEC_flags * pflagsvalues,
   // *pflagsmask; e.g. if
   // *pflagsmask = INVALID_EXCEPTION | UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION
   // and only the invalid and inexact flags are raised (set) in the status word,
-  // then upon return the value in *pflagsvalues will have the invalid status 
+  // then upon return the value in *pflagsvalues will have the invalid status
   // flag set, the underflow status flag clear, and the inexact status flag set
   *pflagsvalues = *pfpsf & (*pflagsmask & BID_IEEE_FLAGS);
 }
@@ -184,11 +184,11 @@ saveFlags (_IDEC_flags * pflagsvalues,
 _IDEC_flags
 saveFlags (_IDEC_flags flagsmask _EXC_FLAGS_PARAM) {
   _IDEC_flags flagsvalues;
-  // return the status flags specified (as a logical OR) in flagsmask; e.g. if 
+  // return the status flags specified (as a logical OR) in flagsmask; e.g. if
   // flagsmask = INVALID_EXCEPTION | UNDERFLOW_EXCEPTION | INEXACT_EXCEPTION
   // and only the invalid and inexact flags are raised (set) in the status word,
-  // then the return value will have the invalid status  flag set, the 
-  // underflow status flag clear, and the inexact status flag set 
+  // then the return value will have the invalid status  flag set, the
+  // underflow status flag clear, and the inexact status flag set
   flagsvalues = *pfpsf & (flagsmask & BID_IEEE_FLAGS);
   return (flagsvalues);
 }

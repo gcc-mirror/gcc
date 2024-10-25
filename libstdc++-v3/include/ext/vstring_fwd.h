@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef __versa_string<char>                              __vstring;
   typedef __vstring                                         __sso_string;
-  typedef 
+  typedef
   __versa_string<char, std::char_traits<char>,
 		 std::allocator<char>, __rc_string_base>    __rc_string;
 
@@ -71,13 +71,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   typedef __versa_string<char16_t>                          __u16vstring;
   typedef __u16vstring                                      __u16sso_string;
-  typedef 
+  typedef
   __versa_string<char16_t, std::char_traits<char16_t>,
 		 std::allocator<char16_t>, __rc_string_base> __u16rc_string;
 
   typedef __versa_string<char32_t>                          __u32vstring;
   typedef __u32vstring                                      __u32sso_string;
-  typedef 
+  typedef
   __versa_string<char32_t, std::char_traits<char32_t>,
 		 std::allocator<char32_t>, __rc_string_base> __u32rc_string;
 #endif // C++11

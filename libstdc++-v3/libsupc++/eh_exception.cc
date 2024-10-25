@@ -36,7 +36,7 @@ abi::__forced_unwind::~__forced_unwind() throw() { }
 
 abi::__foreign_exception::~__foreign_exception() throw() { }
 
-const char* 
+const char*
 std::exception::what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT
 {
   // NB: Another elegant option would be returning typeid(*this).name()
@@ -45,7 +45,7 @@ std::exception::what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT
   return "std::exception";
 }
 
-const char* 
+const char*
 std::bad_exception::what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_USE_NOEXCEPT
 {
   return "std::bad_exception";
