@@ -549,7 +549,7 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
     {
       if (gimple_assign_rhs_code (assign) == COND_EXPR
 	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (assign)))
-	return cond_expr_maps[swap];
+	gcc_unreachable ();
       if (TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison
 	  && swap)
 	return op1_op0_map;

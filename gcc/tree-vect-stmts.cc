@@ -12290,6 +12290,7 @@ vectorizable_condition (vec_info *vinfo,
     return false; /* FORNOW */
 
   cond_expr = gimple_assign_rhs1 (stmt);
+  gcc_assert (! COMPARISON_CLASS_P (cond_expr));
 
   if (!vect_is_simple_cond (cond_expr, vinfo, stmt_info, slp_node,
 			    &comp_vectype, &dts[0], vectype)
@@ -14257,12 +14258,7 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
 	{
 	  if (gimple_assign_rhs_code (ass) == COND_EXPR
 	      && COMPARISON_CLASS_P (gimple_assign_rhs1 (ass)))
-	    {
-	      if (operand < 2)
-		*op = TREE_OPERAND (gimple_assign_rhs1 (ass), operand);
-	      else
-		*op = gimple_op (ass, operand);
-	    }
+	    gcc_unreachable ();
 	  else if (gimple_assign_rhs_code (ass) == VIEW_CONVERT_EXPR)
 	    *op = TREE_OPERAND (gimple_assign_rhs1 (ass), 0);
 	  else
