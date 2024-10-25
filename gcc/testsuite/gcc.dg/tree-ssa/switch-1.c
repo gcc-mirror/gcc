@@ -107,4 +107,4 @@ int foo5 (int x)
   }
 }
 
-/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: BT:10-62 600-700 JT:1000-1021 111111" "switchlower1" } } */
+/* { dg-final { scan-tree-dump ";; GIMPLE switch case clusters: BT:10-62 600-700 BT:1000-1021 111111" "switchlower1" } } */

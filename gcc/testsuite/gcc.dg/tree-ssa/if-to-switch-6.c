@@ -39,4 +39,4 @@ int main(int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "Condition chain" "iftoswitch" } } */
+/* { dg-final { scan-tree-dump "Condition chain" "iftoswitch" } } */

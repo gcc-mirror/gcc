@@ -1783,55 +1783,62 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
     return clusters.copy ();
 
   unsigned l = clusters.length ();
-  auto_vec<min_cluster_item> min;
-  min.reserve (l + 1);
+  vec<cluster *> output;
 
-  min.quick_push (min_cluster_item (0, 0, 0));
+  output.create (l);
 
-  for (unsigned i = 1; i <= l; i++)
+  /* Look at sliding BITS_PER_WORD sized windows in the switch value space
+     and determine if they are suitable for a bit test cluster.  Worst case
+     this can examine every value BITS_PER_WORD-1 times.  */
+  unsigned end;
+  for (unsigned i = 0; i < l; i += end)
     {
-      /* Set minimal # of clusters with i-th item to infinite.  */
-      min.quick_push (min_cluster_item (INT_MAX, INT_MAX, INT_MAX));
+      HOST_WIDE_INT values = 0;
+      hash_set<basic_block> targets;
+      cluster *start_cluster = clusters[i];
 
-      for (unsigned j = 0; j < i; j++)
+      end = 0;
+      while (i + end < l)
 	{
-	  if (min[j].m_count + 1 < min[i].m_count
-	      && can_be_handled (clusters, j, i - 1))
-	    min[i] = min_cluster_item (min[j].m_count + 1, j, INT_MAX);
+	  cluster *end_cluster = clusters[i + end];
+
+	  /* Does value range fit into the BITS_PER_WORD window?  */
+	  HOST_WIDE_INT w = cluster::get_range (start_cluster->get_low (),
+						end_cluster->get_high ());
+	  if (w == 0 || w > BITS_PER_WORD)
+	    break;
+
+	  /* Compute # of values tested for new case.  */
+	  HOST_WIDE_INT r = 1;
+	  if (!end_cluster->is_single_value_p ())
+	    r = cluster::get_range (end_cluster->get_low (),
+			            end_cluster->get_high ());
+	  if (r == 0)
+	    break;
+
+	  /* Check for max # of targets.  */
+	  if (targets.elements() == m_max_case_bit_tests
+	      && !targets.contains (end_cluster->m_case_bb))
+	    break;
+
+	  targets.add (end_cluster->m_case_bb);
+	  values += r;
+	  end++;
 	}
 
-      gcc_checking_assert (min[i].m_count != INT_MAX);
-    }
-
-  /* No result.  */
-  if (min[l].m_count == l)
-    return clusters.copy ();
-
-  vec<cluster *> output;
-  output.create (4);
-
-  /* Find and build the clusters.  */
-  for (unsigned end = l;;)
-    {
-      int start = min[end].m_start;
-
-      if (is_beneficial (clusters, start, end - 1))
+      if (is_beneficial (values, targets.elements ()))
 	{
-	  bool entire = start == 0 && end == clusters.length ();
-	  output.safe_push (new bit_test_cluster (clusters, start, end - 1,
-						  entire));
+	  output.safe_push (new bit_test_cluster (clusters, i, i + end - 1,
+						  i == 0 && end == l));
 	}
       else
-	for (int i = end - 1; i >= start; i--)
+	{
 	  output.safe_push (clusters[i]);
-
-      end = start;
-
-      if (start <= 0)
-	break;
+	  /* ??? Might be able to skip more.  */
+	  end = 1;
+	}
     }
 
-  output.reverse ();
   return output;
 }
 

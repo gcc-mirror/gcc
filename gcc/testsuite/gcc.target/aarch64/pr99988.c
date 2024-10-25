@@ -1,5 +1,5 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-O2 -mbranch-protection=standard" } */
+/* { dg-options "-O2 -mbranch-protection=standard -fno-bit-tests" } */
 /* { dg-final { scan-assembler-times {bti j} 13 } } */
 int a;
 int c();
