@@ -1890,7 +1890,7 @@ nvptx_expand_call (rtx retval, rtx address)
   if (varargs)
     XVECEXP (pat, 0, vec_pos++) = gen_rtx_USE (VOIDmode, varargs);
 
-  gcc_assert (vec_pos = XVECLEN (pat, 0));
+  gcc_assert (vec_pos == XVECLEN (pat, 0));
 
   nvptx_emit_forking (parallel, true);
   emit_call_insn (pat);
