@@ -2157,7 +2157,8 @@ jobserver_info::disconnect ()
 {
   if (!pipe_path.empty ())
     {
-      gcc_assert (close (pipefd) == 0);
+      int res = close (pipefd);
+      gcc_assert (res == 0);
       pipefd = -1;
     }
 }
@@ -2182,5 +2183,6 @@ jobserver_info::return_token ()
 {
   int fd = pipe_path.empty () ? wfd : pipefd;
   char c = 'G';
-  gcc_assert (write (fd, &c, 1) == 1);
+  int res = write (fd, &c, 1);
+  gcc_assert (res == 1);
 }
