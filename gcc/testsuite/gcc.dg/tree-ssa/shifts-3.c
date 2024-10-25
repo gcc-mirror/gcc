@@ -58,7 +58,7 @@ f6 (unsigned int x)
 /* { dg-final { scan-tree-dump-not {<[a-z]*_div_expr,} "optimized" } } */
 /* { dg-final { scan-tree-dump-not {<rshift_expr,} "optimized" } } */
 /* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 5,} "optimized" } } */
-/* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 9,} "optimized" } } */
+/* { dg-final { scan-tree-dump {<(?:widen_)?mult_expr, [^,]*, [^,]*, 9,} "optimized" } } */
 /* { dg-final { scan-tree-dump {<(?:widen_)?mult_expr, [^,]*, [^,]*, 22,} "optimized" } } */
 /* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 3,} "optimized" } } */
 /* { dg-final { scan-tree-dump {<mult_expr, [^,]*, [^,]*, 100,} "optimized" } } */
