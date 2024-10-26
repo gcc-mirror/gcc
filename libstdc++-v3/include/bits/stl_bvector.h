@@ -1319,7 +1319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 	emplace_back(_Args&&... __args)
 	{
-	  push_back(bool(__args...));
+	  push_back(bool(std::forward<_Args>(__args)...));
 #if __cplusplus > 201402L
 	  return back();
 #endif
@@ -1329,7 +1329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX20_CONSTEXPR
 	iterator
 	emplace(const_iterator __pos, _Args&&... __args)
-	{ return insert(__pos, bool(__args...)); }
+	{ return insert(__pos, bool(std::forward<_Args>(__args)...)); }
 #endif
 
     protected:
