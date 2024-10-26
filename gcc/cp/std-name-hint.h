@@ -135,7 +135,7 @@ std_name_hint_lookup::find (const char *str, size_t len)
 {
   enum
     {
-      TOTAL_KEYWORDS = 487,
+      TOTAL_KEYWORDS = 488,
       MIN_WORD_LENGTH = 2,
       MAX_WORD_LENGTH = 39,
       MIN_HASH_VALUE = 7,
@@ -146,501 +146,501 @@ std_name_hint_lookup::find (const char *str, size_t len)
     {
 #line 130 "std-name-hint.gperf"
       {"regular", "<concepts>", cxx20},
-#line 292 "std-name-hint.gperf"
+#line 294 "std-name-hint.gperf"
       {"reverse_iterator", "<iterator>", cxx98},
-#line 454 "std-name-hint.gperf"
+#line 456 "std-name-hint.gperf"
       {"range_error", "<stdexcept>", cxx98},
-#line 408 "std-name-hint.gperf"
+#line 410 "std-name-hint.gperf"
       {"set", "<set>", cxx98},
-#line 231 "std-name-hint.gperf"
-      {"setbase", "<iomanip>", cxx98},
-#line 325 "std-name-hint.gperf"
-      {"reinterpret_pointer_cast", "<memory>", cxx17},
-#line 288 "std-name-hint.gperf"
-      {"next", "<iterator>", cxx11},
-#line 171 "std-name-hint.gperf"
-      {"format", "<format>", cxx20},
-#line 181 "std-name-hint.gperf"
-      {"formatter", "<format>", cxx20},
-#line 196 "std-name-hint.gperf"
-      {"basic_filebuf", "<fstream>", cxx98},
-#line 575 "std-name-hint.gperf"
-      {"pair", "<utility>", cxx98},
-#line 276 "std-name-hint.gperf"
-      {"begin", "<iterator>", cxx11},
-#line 179 "std-name-hint.gperf"
-      {"formattable", "<format>", cxx23},
-#line 541 "std-name-hint.gperf"
-      {"bad_cast", "<typeinfo>", cxx98},
 #line 233 "std-name-hint.gperf"
+      {"setbase", "<iomanip>", cxx98},
+#line 327 "std-name-hint.gperf"
+      {"reinterpret_pointer_cast", "<memory>", cxx17},
+#line 290 "std-name-hint.gperf"
+      {"next", "<iterator>", cxx11},
+#line 173 "std-name-hint.gperf"
+      {"format", "<format>", cxx20},
+#line 183 "std-name-hint.gperf"
+      {"formatter", "<format>", cxx20},
+#line 198 "std-name-hint.gperf"
+      {"basic_filebuf", "<fstream>", cxx98},
+#line 577 "std-name-hint.gperf"
+      {"pair", "<utility>", cxx98},
+#line 278 "std-name-hint.gperf"
+      {"begin", "<iterator>", cxx11},
+#line 181 "std-name-hint.gperf"
+      {"formattable", "<format>", cxx23},
+#line 543 "std-name-hint.gperf"
+      {"bad_cast", "<typeinfo>", cxx98},
+#line 235 "std-name-hint.gperf"
       {"setiosflags", "<iomanip>", cxx98},
-#line 393 "std-name-hint.gperf"
+#line 395 "std-name-hint.gperf"
       {"print", "<print>", cxx23},
-#line 221 "std-name-hint.gperf"
+#line 223 "std-name-hint.gperf"
       {"promise", "<future>", cxx11},
-#line 581 "std-name-hint.gperf"
+#line 583 "std-name-hint.gperf"
       {"bad_variant_access", "<variant>", cxx17},
-#line 328 "std-name-hint.gperf"
+#line 330 "std-name-hint.gperf"
       {"to_address", "<memory>", cxx20},
-#line 420 "std-name-hint.gperf"
+#line 422 "std-name-hint.gperf"
       {"basic_spanbuf", "<spanstream>", cxx23},
 #line 106 "std-name-hint.gperf"
       {"same_as", "<concepts>", cxx20},
-#line 336 "std-name-hint.gperf"
+#line 338 "std-name-hint.gperf"
       {"pmr", "<memory_resource>", cxx17},
-#line 180 "std-name-hint.gperf"
+#line 182 "std-name-hint.gperf"
       {"formatted_size", "<format>", cxx20},
-#line 275 "std-name-hint.gperf"
+#line 277 "std-name-hint.gperf"
       {"back_inserter", "<iterator>", cxx98},
-#line 251 "std-name-hint.gperf"
+#line 253 "std-name-hint.gperf"
       {"nouppercase", "<ios>", cxx98},
-#line 250 "std-name-hint.gperf"
+#line 252 "std-name-hint.gperf"
       {"nounitbuf", "<ios>", cxx98},
-#line 433 "std-name-hint.gperf"
+#line 435 "std-name-hint.gperf"
       {"basic_stringbuf", "<sstream>", cxx98},
-#line 592 "std-name-hint.gperf"
+#line 594 "std-name-hint.gperf"
       {"vector", "<vector>", cxx98},
-#line 246 "std-name-hint.gperf"
+#line 248 "std-name-hint.gperf"
       {"noshowbase", "<ios>", cxx98},
-#line 219 "std-name-hint.gperf"
+#line 221 "std-name-hint.gperf"
       {"future", "<future>", cxx11},
-#line 340 "std-name-hint.gperf"
+#line 342 "std-name-hint.gperf"
       {"pmr::new_delete_resource", "<memory_resource>", cxx17},
-#line 337 "std-name-hint.gperf"
+#line 339 "std-name-hint.gperf"
       {"pmr::get_default_resource", "<memory_resource>", cxx17},
-#line 343 "std-name-hint.gperf"
+#line 345 "std-name-hint.gperf"
       {"pmr::set_default_resource", "<memory_resource>", cxx17},
-#line 455 "std-name-hint.gperf"
+#line 457 "std-name-hint.gperf"
       {"runtime_error", "<stdexcept>", cxx98},
-#line 516 "std-name-hint.gperf"
+#line 518 "std-name-hint.gperf"
       {"tuple", "<tuple>", cxx11},
 #line 132 "std-name-hint.gperf"
       {"regular_invocable", "<concepts>", cxx20},
 #line 116 "std-name-hint.gperf"
       {"swappable", "<concepts>", cxx20},
-#line 186 "std-name-hint.gperf"
+#line 188 "std-name-hint.gperf"
       {"runtime_format", "<format>", cxx26},
-#line 211 "std-name-hint.gperf"
+#line 213 "std-name-hint.gperf"
       {"not_fn", "<functional>", cxx17},
 #line 142 "std-name-hint.gperf"
       {"byte", "<cstddef>", cxx17},
-#line 518 "std-name-hint.gperf"
-      {"tuple_element", "<tuple>", cxx11},
-#line 519 "std-name-hint.gperf"
-      {"tuple_element_t", "<tuple>", cxx14},
-#line 584 "std-name-hint.gperf"
-      {"variant", "<variant>", cxx17},
-#line 386 "std-name-hint.gperf"
-      {"ends", "<ostream>", cxx98},
 #line 520 "std-name-hint.gperf"
+      {"tuple_element", "<tuple>", cxx11},
+#line 521 "std-name-hint.gperf"
+      {"tuple_element_t", "<tuple>", cxx14},
+#line 586 "std-name-hint.gperf"
+      {"variant", "<variant>", cxx17},
+#line 388 "std-name-hint.gperf"
+      {"ends", "<ostream>", cxx98},
+#line 522 "std-name-hint.gperf"
       {"tuple_size", "<tuple>", cxx11},
 #line 123 "std-name-hint.gperf"
       {"equality_comparable", "<concepts>", cxx20},
-#line 247 "std-name-hint.gperf"
+#line 249 "std-name-hint.gperf"
       {"noshowpoint", "<ios>", cxx98},
-#line 394 "std-name-hint.gperf"
+#line 396 "std-name-hint.gperf"
       {"println", "<print>", cxx23},
-#line 248 "std-name-hint.gperf"
+#line 250 "std-name-hint.gperf"
       {"noshowpos", "<ios>", cxx98},
-#line 388 "std-name-hint.gperf"
+#line 390 "std-name-hint.gperf"
       {"flush_emit", "<ostream>", cxx20},
-#line 585 "std-name-hint.gperf"
+#line 587 "std-name-hint.gperf"
       {"variant_alternative", "<variant>", cxx17},
-#line 537 "std-name-hint.gperf"
+#line 539 "std-name-hint.gperf"
       {"void_t", "<type_traits>", cxx17},
-#line 586 "std-name-hint.gperf"
+#line 588 "std-name-hint.gperf"
       {"variant_alternative_t", "<variant>", cxx17},
 #line 134 "std-name-hint.gperf"
       {"relation", "<concepts>", cxx20},
-#line 461 "std-name-hint.gperf"
+#line 463 "std-name-hint.gperf"
       {"float32_t", "<stdfloat>", cxx23},
-#line 459 "std-name-hint.gperf"
+#line 461 "std-name-hint.gperf"
       {"float128_t", "<stdfloat>", cxx23},
-#line 381 "std-name-hint.gperf"
+#line 383 "std-name-hint.gperf"
       {"nullopt", "<optional>", cxx17},
-#line 291 "std-name-hint.gperf"
+#line 293 "std-name-hint.gperf"
       {"prev", "<iterator>", cxx11},
-#line 425 "std-name-hint.gperf"
+#line 427 "std-name-hint.gperf"
       {"spanbuf", "<spanstream>", cxx23},
-#line 513 "std-name-hint.gperf"
-      {"make_from_tuple", "<tuple>", cxx17},
-#line 253 "std-name-hint.gperf"
-      {"right", "<ios>", cxx98},
-#line 210 "std-name-hint.gperf"
-      {"mem_fn", "<functional>", cxx11},
 #line 515 "std-name-hint.gperf"
+      {"make_from_tuple", "<tuple>", cxx17},
+#line 255 "std-name-hint.gperf"
+      {"right", "<ios>", cxx98},
+#line 212 "std-name-hint.gperf"
+      {"mem_fn", "<functional>", cxx11},
+#line 517 "std-name-hint.gperf"
       {"tie", "<tuple>", cxx11},
-#line 197 "std-name-hint.gperf"
+#line 199 "std-name-hint.gperf"
       {"basic_fstream", "<fstream>", cxx98},
-#line 573 "std-name-hint.gperf"
+#line 575 "std-name-hint.gperf"
       {"move", "<utility>", cxx11},
-#line 462 "std-name-hint.gperf"
+#line 464 "std-name-hint.gperf"
       {"float64_t", "<stdfloat>", cxx23},
 #line 127 "std-name-hint.gperf"
       {"movable", "<concepts>", cxx20},
-#line 282 "std-name-hint.gperf"
+#line 284 "std-name-hint.gperf"
       {"front_inserter", "<iterator>", cxx98},
-#line 296 "std-name-hint.gperf"
+#line 298 "std-name-hint.gperf"
       {"map", "<map>", cxx98},
-#line 460 "std-name-hint.gperf"
+#line 462 "std-name-hint.gperf"
       {"float16_t", "<stdfloat>", cxx23},
 #line 56 "std-name-hint.gperf"
       {"bitset", "<bitset>", cxx11},
-#line 205 "std-name-hint.gperf"
+#line 207 "std-name-hint.gperf"
       {"bind_front", "<functional>", cxx20},
-#line 574 "std-name-hint.gperf"
+#line 576 "std-name-hint.gperf"
       {"move_if_noexcept", "<utility>", cxx11},
-#line 274 "std-name-hint.gperf"
+#line 276 "std-name-hint.gperf"
       {"advance", "<iterator>", cxx98},
-#line 287 "std-name-hint.gperf"
+#line 289 "std-name-hint.gperf"
       {"move_iterator", "<iterator>", cxx11},
-#line 161 "std-name-hint.gperf"
+#line 163 "std-name-hint.gperf"
       {"terminate", "<exception>", cxx98},
-#line 531 "std-name-hint.gperf"
+#line 533 "std-name-hint.gperf"
       {"negation", "<type_traits>", cxx17},
-#line 318 "std-name-hint.gperf"
+#line 320 "std-name-hint.gperf"
       {"make_obj_using_allocator", "<memory>", cxx20},
-#line 321 "std-name-hint.gperf"
+#line 323 "std-name-hint.gperf"
       {"make_unique", "<memory>", cxx14},
-#line 255 "std-name-hint.gperf"
-      {"showbase", "<ios>", cxx98},
-#line 416 "std-name-hint.gperf"
-      {"span", "<span>", cxx20},
-#line 185 "std-name-hint.gperf"
-      {"range_formatter", "<format>", cxx23},
-#line 299 "std-name-hint.gperf"
-      {"addressof", "<memory>", cxx11},
-#line 571 "std-name-hint.gperf"
-      {"make_integer_sequence", "<utility>", cxx14},
-#line 184 "std-name-hint.gperf"
-      {"range_format", "<format>", cxx23},
-#line 322 "std-name-hint.gperf"
-      {"make_unique_for_overwrite", "<memory>", cxx20},
-#line 421 "std-name-hint.gperf"
-      {"basic_spanstream", "<spanstream>", cxx23},
 #line 257 "std-name-hint.gperf"
+      {"showbase", "<ios>", cxx98},
+#line 418 "std-name-hint.gperf"
+      {"span", "<span>", cxx20},
+#line 187 "std-name-hint.gperf"
+      {"range_formatter", "<format>", cxx23},
+#line 301 "std-name-hint.gperf"
+      {"addressof", "<memory>", cxx11},
+#line 573 "std-name-hint.gperf"
+      {"make_integer_sequence", "<utility>", cxx14},
+#line 186 "std-name-hint.gperf"
+      {"range_format", "<format>", cxx23},
+#line 324 "std-name-hint.gperf"
+      {"make_unique_for_overwrite", "<memory>", cxx20},
+#line 423 "std-name-hint.gperf"
+      {"basic_spanstream", "<spanstream>", cxx23},
+#line 259 "std-name-hint.gperf"
       {"showpos", "<ios>", cxx98},
-#line 550 "std-name-hint.gperf"
+#line 552 "std-name-hint.gperf"
       {"as_const", "<utility>", cxx17},
-#line 308 "std-name-hint.gperf"
+#line 310 "std-name-hint.gperf"
       {"bad_weak_ptr", "<memory>", cxx11},
-#line 168 "std-name-hint.gperf"
+#line 170 "std-name-hint.gperf"
       {"basic_format_context", "<format>", cxx20},
-#line 434 "std-name-hint.gperf"
+#line 436 "std-name-hint.gperf"
       {"basic_stringstream", "<sstream>", cxx98},
-#line 539 "std-name-hint.gperf"
+#line 541 "std-name-hint.gperf"
       {"type_index", "<typeindex>", cxx11},
-#line 169 "std-name-hint.gperf"
+#line 171 "std-name-hint.gperf"
       {"basic_format_parse_context", "<format>", cxx20},
-#line 160 "std-name-hint.gperf"
+#line 162 "std-name-hint.gperf"
       {"make_exception_ptr", "<exception>", cxx11},
-#line 468 "std-name-hint.gperf"
+#line 470 "std-name-hint.gperf"
       {"basic_streambuf", "<streambuf>", cxx98},
-#line 167 "std-name-hint.gperf"
+#line 169 "std-name-hint.gperf"
       {"basic_format_args", "<format>", cxx20},
-#line 588 "std-name-hint.gperf"
+#line 590 "std-name-hint.gperf"
       {"variant_size", "<variant>", cxx17},
-#line 407 "std-name-hint.gperf"
+#line 409 "std-name-hint.gperf"
       {"multiset", "<set>", cxx98},
 #line 133 "std-name-hint.gperf"
       {"predicate", "<concepts>", cxx20},
-#line 397 "std-name-hint.gperf"
-      {"queue", "<queue>", cxx98},
-#line 353 "std-name-hint.gperf"
-      {"recursive_timed_mutex", "<mutex>", cxx11},
 #line 399 "std-name-hint.gperf"
+      {"queue", "<queue>", cxx98},
+#line 355 "std-name-hint.gperf"
+      {"recursive_timed_mutex", "<mutex>", cxx11},
+#line 401 "std-name-hint.gperf"
       {"ranges::enable_borrowed_range", "<ranges>", cxx20},
-#line 533 "std-name-hint.gperf"
+#line 535 "std-name-hint.gperf"
       {"remove_cvref", "<type_traits>", cxx20},
-#line 206 "std-name-hint.gperf"
-      {"function", "<functional>", cxx11},
-#line 532 "std-name-hint.gperf"
-      {"negation_v", "<type_traits>", cxx17},
-#line 534 "std-name-hint.gperf"
-      {"remove_cvref_t", "<type_traits>", cxx20},
-#line 289 "std-name-hint.gperf"
-      {"ostream_iterator", "<iterator>", cxx98},
-#line 587 "std-name-hint.gperf"
-      {"variant_npos", "<variant>", cxx17},
-#line 244 "std-name-hint.gperf"
-      {"left", "<ios>", cxx98},
-#line 200 "std-name-hint.gperf"
-      {"fstream", "<fstream>", cxx98},
-#line 590 "std-name-hint.gperf"
-      {"visit", "<variant>", cxx17},
 #line 208 "std-name-hint.gperf"
+      {"function", "<functional>", cxx11},
+#line 534 "std-name-hint.gperf"
+      {"negation_v", "<type_traits>", cxx17},
+#line 536 "std-name-hint.gperf"
+      {"remove_cvref_t", "<type_traits>", cxx20},
+#line 291 "std-name-hint.gperf"
+      {"ostream_iterator", "<iterator>", cxx98},
+#line 589 "std-name-hint.gperf"
+      {"variant_npos", "<variant>", cxx17},
+#line 246 "std-name-hint.gperf"
+      {"left", "<ios>", cxx98},
+#line 202 "std-name-hint.gperf"
+      {"fstream", "<fstream>", cxx98},
+#line 592 "std-name-hint.gperf"
+      {"visit", "<variant>", cxx17},
+#line 210 "std-name-hint.gperf"
       {"invoke", "<functional>", cxx17},
 #line 137 "std-name-hint.gperf"
       {"ranges::swap", "<concepts>", cxx20},
-#line 283 "std-name-hint.gperf"
+#line 285 "std-name-hint.gperf"
       {"inserter", "<iterator>", cxx98},
-#line 362 "std-name-hint.gperf"
+#line 364 "std-name-hint.gperf"
       {"launder", "<new>", cxx17},
-#line 228 "std-name-hint.gperf"
+#line 230 "std-name-hint.gperf"
       {"put_time", "<iomanip>", cxx11},
-#line 237 "std-name-hint.gperf"
+#line 239 "std-name-hint.gperf"
       {"boolalpha", "<ios>", cxx98},
-#line 361 "std-name-hint.gperf"
+#line 363 "std-name-hint.gperf"
       {"hardware_destructive_interference_size", "<new>", cxx17},
-#line 199 "std-name-hint.gperf"
+#line 201 "std-name-hint.gperf"
       {"basic_ofstream", "<fstream>", cxx98},
-#line 324 "std-name-hint.gperf"
+#line 326 "std-name-hint.gperf"
       {"pointer_traits", "<memory>", cxx11},
 #line 131 "std-name-hint.gperf"
       {"invocable", "<concepts>", cxx20},
-#line 426 "std-name-hint.gperf"
+#line 428 "std-name-hint.gperf"
       {"spanstream", "<spanstream>", cxx23},
-#line 182 "std-name-hint.gperf"
+#line 184 "std-name-hint.gperf"
       {"make_format_args", "<format>", cxx20},
 #line 121 "std-name-hint.gperf"
       {"move_constructible", "<concepts>", cxx20},
 #line 114 "std-name-hint.gperf"
       {"floating_point", "<concepts>", cxx20},
-#line 258 "std-name-hint.gperf"
+#line 260 "std-name-hint.gperf"
       {"skipws", "<ios>", cxx98},
-#line 241 "std-name-hint.gperf"
+#line 243 "std-name-hint.gperf"
       {"hex", "<ios>", cxx98},
-#line 568 "std-name-hint.gperf"
+#line 570 "std-name-hint.gperf"
       {"index_sequence_for", "<utility>", cxx14},
-#line 567 "std-name-hint.gperf"
+#line 569 "std-name-hint.gperf"
       {"index_sequence", "<utility>", cxx14},
-#line 350 "std-name-hint.gperf"
+#line 352 "std-name-hint.gperf"
       {"mutex", "<mutex>", cxx11},
-#line 284 "std-name-hint.gperf"
+#line 286 "std-name-hint.gperf"
       {"istream_iterator", "<iterator>", cxx98},
-#line 334 "std-name-hint.gperf"
+#line 336 "std-name-hint.gperf"
       {"weak_ptr", "<memory>", cxx11},
-#line 173 "std-name-hint.gperf"
+#line 175 "std-name-hint.gperf"
       {"format_context", "<format>", cxx20},
-#line 451 "std-name-hint.gperf"
+#line 453 "std-name-hint.gperf"
       {"logic_error", "<stdexcept>", cxx98},
-#line 372 "std-name-hint.gperf"
+#line 374 "std-name-hint.gperf"
       {"numbers::ln2_v", "<numbers>", cxx20},
-#line 371 "std-name-hint.gperf"
+#line 373 "std-name-hint.gperf"
       {"numbers::ln10_v", "<numbers>", cxx20},
-#line 368 "std-name-hint.gperf"
-      {"numbers::inv_pi_v", "<numbers>", cxx20},
-#line 235 "std-name-hint.gperf"
-      {"setw", "<iomanip>", cxx98},
-#line 369 "std-name-hint.gperf"
-      {"numbers::inv_sqrt3_v", "<numbers>", cxx20},
 #line 370 "std-name-hint.gperf"
+      {"numbers::inv_pi_v", "<numbers>", cxx20},
+#line 237 "std-name-hint.gperf"
+      {"setw", "<iomanip>", cxx98},
+#line 371 "std-name-hint.gperf"
+      {"numbers::inv_sqrt3_v", "<numbers>", cxx20},
+#line 372 "std-name-hint.gperf"
       {"numbers::inv_sqrtpi_v", "<numbers>", cxx20},
-#line 230 "std-name-hint.gperf"
+#line 232 "std-name-hint.gperf"
       {"resetiosflags", "<iomanip>", cxx98},
-#line 303 "std-name-hint.gperf"
+#line 305 "std-name-hint.gperf"
       {"allocator", "<memory>", cxx98},
 #line 135 "std-name-hint.gperf"
       {"equivalence_relation", "<concepts>", cxx20},
-#line 272 "std-name-hint.gperf"
+#line 274 "std-name-hint.gperf"
       {"ws", "<istream>", cxx98},
 #line 44 "std-name-hint.gperf"
       {"any_cast", "<any>", cxx17},
-#line 198 "std-name-hint.gperf"
+#line 200 "std-name-hint.gperf"
       {"basic_ifstream", "<fstream>", cxx98},
-#line 175 "std-name-hint.gperf"
+#line 177 "std-name-hint.gperf"
       {"format_parse_context", "<format>", cxx20},
-#line 341 "std-name-hint.gperf"
+#line 343 "std-name-hint.gperf"
       {"pmr::polymorphic_allocator", "<memory_resource>", cxx17},
-#line 419 "std-name-hint.gperf"
+#line 421 "std-name-hint.gperf"
       {"basic_ospanstream", "<spanstream>", cxx23},
-#line 572 "std-name-hint.gperf"
+#line 574 "std-name-hint.gperf"
       {"make_pair", "<utility>", cxx98},
-#line 172 "std-name-hint.gperf"
+#line 174 "std-name-hint.gperf"
       {"format_args", "<format>", cxx20},
-#line 475 "std-name-hint.gperf"
+#line 477 "std-name-hint.gperf"
       {"stof", "<string>", cxx11},
-#line 339 "std-name-hint.gperf"
+#line 341 "std-name-hint.gperf"
       {"pmr::monotonic_buffer_resource", "<memory_resource>", cxx17},
-#line 342 "std-name-hint.gperf"
+#line 344 "std-name-hint.gperf"
       {"pmr::pool_options", "<memory_resource>", cxx17},
-#line 256 "std-name-hint.gperf"
+#line 258 "std-name-hint.gperf"
       {"showpoint", "<ios>", cxx98},
-#line 446 "std-name-hint.gperf"
+#line 448 "std-name-hint.gperf"
       {"stacktrace", "<stacktrace>", cxx23},
-#line 589 "std-name-hint.gperf"
+#line 591 "std-name-hint.gperf"
       {"variant_size_v", "<variant>", cxx17},
-#line 212 "std-name-hint.gperf"
+#line 214 "std-name-hint.gperf"
       {"reference_wrapper", "<functional>", cxx11},
-#line 262 "std-name-hint.gperf"
+#line 264 "std-name-hint.gperf"
       {"cerr", "<iostream>", cxx98},
-#line 300 "std-name-hint.gperf"
+#line 302 "std-name-hint.gperf"
       {"align", "<memory>", cxx11},
-#line 438 "std-name-hint.gperf"
+#line 440 "std-name-hint.gperf"
       {"stringbuf", "<sstream>", cxx98},
-#line 469 "std-name-hint.gperf"
+#line 471 "std-name-hint.gperf"
       {"streambuf", "<streambuf>", cxx98},
-#line 306 "std-name-hint.gperf"
+#line 308 "std-name-hint.gperf"
       {"allocator_traits", "<memory>", cxx11},
-#line 183 "std-name-hint.gperf"
+#line 185 "std-name-hint.gperf"
       {"make_wformat_args", "<format>", cxx20},
-#line 583 "std-name-hint.gperf"
+#line 585 "std-name-hint.gperf"
       {"monostate", "<variant>", cxx17},
-#line 387 "std-name-hint.gperf"
+#line 389 "std-name-hint.gperf"
       {"flush", "<ostream>", cxx98},
-#line 527 "std-name-hint.gperf"
+#line 529 "std-name-hint.gperf"
       {"enable_if", "<type_traits>", cxx11},
-#line 352 "std-name-hint.gperf"
+#line 354 "std-name-hint.gperf"
       {"recursive_mutex", "<mutex>", cxx11},
-#line 418 "std-name-hint.gperf"
+#line 420 "std-name-hint.gperf"
       {"basic_ispanstream", "<spanstream>", cxx23},
-#line 178 "std-name-hint.gperf"
+#line 180 "std-name-hint.gperf"
       {"format_to_n", "<format>", cxx20},
-#line 338 "std-name-hint.gperf"
+#line 340 "std-name-hint.gperf"
       {"pmr::memory_resource", "<memory_resource>", cxx17},
 #line 124 "std-name-hint.gperf"
       {"equality_comparable_with", "<concepts>", cxx20},
-#line 493 "std-name-hint.gperf"
-      {"errc", "<system_error>", cxx11},
-#line 344 "std-name-hint.gperf"
-      {"pmr::synchronized_pool_resource", "<memory_resource>", cxx17},
-#line 385 "std-name-hint.gperf"
-      {"endl", "<ostream>", cxx98},
 #line 495 "std-name-hint.gperf"
+      {"errc", "<system_error>", cxx11},
+#line 346 "std-name-hint.gperf"
+      {"pmr::synchronized_pool_resource", "<memory_resource>", cxx17},
+#line 387 "std-name-hint.gperf"
+      {"endl", "<ostream>", cxx98},
+#line 497 "std-name-hint.gperf"
       {"error_code", "<system_error>", cxx11},
-#line 528 "std-name-hint.gperf"
+#line 530 "std-name-hint.gperf"
       {"enable_if_t", "<type_traits>", cxx14},
-#line 390 "std-name-hint.gperf"
+#line 392 "std-name-hint.gperf"
       {"ostream", "<ostream>", cxx98},
-#line 374 "std-name-hint.gperf"
-      {"numbers::log2e_v", "<numbers>", cxx20},
-#line 373 "std-name-hint.gperf"
-      {"numbers::log10e_v", "<numbers>", cxx20},
-#line 364 "std-name-hint.gperf"
-      {"nothrow_t", "<new>", cxx98},
-#line 512 "std-name-hint.gperf"
-      {"ignore", "<tuple>", cxx11},
-#line 360 "std-name-hint.gperf"
-      {"hardware_constructive_interference_size", "<new>", cxx17},
-#line 396 "std-name-hint.gperf"
-      {"priority_queue", "<queue>", cxx98},
-#line 424 "std-name-hint.gperf"
-      {"ospanstream", "<spanstream>", cxx23},
-#line 316 "std-name-hint.gperf"
-      {"enable_shared_from_this", "<memory>", cxx11},
-#line 265 "std-name-hint.gperf"
-      {"cout", "<iostream>", cxx98},
-#line 552 "std-name-hint.gperf"
-      {"cmp_greater", "<utility>", cxx20},
-#line 490 "std-name-hint.gperf"
-      {"basic_string_view", "<string_view>", cxx17},
-#line 249 "std-name-hint.gperf"
-      {"noskipws", "<ios>", cxx98},
-#line 177 "std-name-hint.gperf"
-      {"format_to", "<format>", cxx20},
-#line 502 "std-name-hint.gperf"
-      {"make_error_code", "<system_error>", cxx11},
-#line 174 "std-name-hint.gperf"
-      {"format_error", "<format>", cxx20},
-#line 347 "std-name-hint.gperf"
-      {"call_once", "<mutex>", cxx11},
-#line 377 "std-name-hint.gperf"
-      {"numbers::sqrt2_v", "<numbers>", cxx20},
-#line 378 "std-name-hint.gperf"
-      {"numbers::sqrt3_v", "<numbers>", cxx20},
-#line 242 "std-name-hint.gperf"
-      {"hexfloat", "<ios>", cxx11},
-#line 326 "std-name-hint.gperf"
-      {"shared_ptr", "<memory>", cxx11},
-#line 569 "std-name-hint.gperf"
-      {"integer_sequence", "<utility>", cxx14},
-#line 271 "std-name-hint.gperf"
-      {"istream", "<istream>", cxx98},
 #line 376 "std-name-hint.gperf"
-      {"numbers::pi_v", "<numbers>", cxx20},
-#line 259 "std-name-hint.gperf"
-      {"unitbuf", "<ios>", cxx98},
-#line 294 "std-name-hint.gperf"
-      {"list", "<list>", cxx98},
+      {"numbers::log2e_v", "<numbers>", cxx20},
+#line 375 "std-name-hint.gperf"
+      {"numbers::log10e_v", "<numbers>", cxx20},
+#line 366 "std-name-hint.gperf"
+      {"nothrow_t", "<new>", cxx98},
+#line 514 "std-name-hint.gperf"
+      {"ignore", "<tuple>", cxx11},
+#line 362 "std-name-hint.gperf"
+      {"hardware_constructive_interference_size", "<new>", cxx17},
+#line 398 "std-name-hint.gperf"
+      {"priority_queue", "<queue>", cxx98},
+#line 426 "std-name-hint.gperf"
+      {"ospanstream", "<spanstream>", cxx23},
+#line 318 "std-name-hint.gperf"
+      {"enable_shared_from_this", "<memory>", cxx11},
+#line 267 "std-name-hint.gperf"
+      {"cout", "<iostream>", cxx98},
 #line 554 "std-name-hint.gperf"
+      {"cmp_greater", "<utility>", cxx20},
+#line 492 "std-name-hint.gperf"
+      {"basic_string_view", "<string_view>", cxx17},
+#line 251 "std-name-hint.gperf"
+      {"noskipws", "<ios>", cxx98},
+#line 179 "std-name-hint.gperf"
+      {"format_to", "<format>", cxx20},
+#line 504 "std-name-hint.gperf"
+      {"make_error_code", "<system_error>", cxx11},
+#line 176 "std-name-hint.gperf"
+      {"format_error", "<format>", cxx20},
+#line 349 "std-name-hint.gperf"
+      {"call_once", "<mutex>", cxx11},
+#line 379 "std-name-hint.gperf"
+      {"numbers::sqrt2_v", "<numbers>", cxx20},
+#line 380 "std-name-hint.gperf"
+      {"numbers::sqrt3_v", "<numbers>", cxx20},
+#line 244 "std-name-hint.gperf"
+      {"hexfloat", "<ios>", cxx11},
+#line 328 "std-name-hint.gperf"
+      {"shared_ptr", "<memory>", cxx11},
+#line 571 "std-name-hint.gperf"
+      {"integer_sequence", "<utility>", cxx14},
+#line 273 "std-name-hint.gperf"
+      {"istream", "<istream>", cxx98},
+#line 378 "std-name-hint.gperf"
+      {"numbers::pi_v", "<numbers>", cxx20},
+#line 261 "std-name-hint.gperf"
+      {"unitbuf", "<ios>", cxx98},
+#line 296 "std-name-hint.gperf"
+      {"list", "<list>", cxx98},
+#line 556 "std-name-hint.gperf"
       {"cmp_less", "<utility>", cxx20},
-#line 422 "std-name-hint.gperf"
+#line 424 "std-name-hint.gperf"
       {"ispanstream", "<spanstream>", cxx23},
-#line 423 "std-name-hint.gperf"
+#line 425 "std-name-hint.gperf"
       {"ispanstream", "<spanstream>", cxx23},
-#line 470 "std-name-hint.gperf"
+#line 472 "std-name-hint.gperf"
       {"wstreambuf", "<streambuf>", cxx98},
-#line 432 "std-name-hint.gperf"
+#line 434 "std-name-hint.gperf"
       {"basic_ostringstream", "<sstream>", cxx98},
-#line 503 "std-name-hint.gperf"
+#line 505 "std-name-hint.gperf"
       {"make_error_condition", "<system_error>", cxx11},
-#line 570 "std-name-hint.gperf"
+#line 572 "std-name-hint.gperf"
       {"make_index_sequence", "<utility>", cxx14},
-#line 405 "std-name-hint.gperf"
+#line 407 "std-name-hint.gperf"
       {"counting_semaphore", "<semaphore>", cxx20},
-#line 355 "std-name-hint.gperf"
+#line 357 "std-name-hint.gperf"
       {"timed_mutex", "<mutex>", cxx11},
-#line 297 "std-name-hint.gperf"
+#line 299 "std-name-hint.gperf"
       {"multimap", "<map>", cxx98},
-#line 227 "std-name-hint.gperf"
+#line 229 "std-name-hint.gperf"
       {"put_money", "<iomanip>", cxx11},
-#line 309 "std-name-hint.gperf"
+#line 311 "std-name-hint.gperf"
       {"const_pointer_cast", "<memory>", cxx11},
 #line 45 "std-name-hint.gperf"
       {"make_any", "<any>", cxx17},
-#line 465 "std-name-hint.gperf"
+#line 467 "std-name-hint.gperf"
       {"stop_source", "<stop_token>", cxx20},
-#line 548 "std-name-hint.gperf"
+#line 550 "std-name-hint.gperf"
       {"unordered_set", "<unordered_set>", cxx11},
-#line 582 "std-name-hint.gperf"
+#line 584 "std-name-hint.gperf"
       {"holds_alternative", "<variant>", cxx17},
-#line 514 "std-name-hint.gperf"
+#line 516 "std-name-hint.gperf"
       {"make_tuple", "<tuple>", cxx11},
 #line 47 "std-name-hint.gperf"
       {"array", "<array>", cxx11},
-#line 517 "std-name-hint.gperf"
+#line 519 "std-name-hint.gperf"
       {"tuple_cat", "<tuple>", cxx11},
-#line 323 "std-name-hint.gperf"
+#line 325 "std-name-hint.gperf"
       {"owner_less", "<memory>", cxx11},
-#line 158 "std-name-hint.gperf"
+#line 160 "std-name-hint.gperf"
       {"exception", "<exception>", cxx98},
-#line 159 "std-name-hint.gperf"
+#line 161 "std-name-hint.gperf"
       {"exception_ptr", "<exception>", cxx11},
-#line 207 "std-name-hint.gperf"
+#line 209 "std-name-hint.gperf"
       {"hash", "<functional>", cxx11},
-#line 521 "std-name-hint.gperf"
+#line 523 "std-name-hint.gperf"
       {"tuple_size_v", "<tuple>", cxx17},
-#line 431 "std-name-hint.gperf"
+#line 433 "std-name-hint.gperf"
       {"basic_istringstream", "<sstream>", cxx98},
 #line 153 "std-name-hint.gperf"
       {"uintptr_t", "<cstdint>", cxx11},
-#line 476 "std-name-hint.gperf"
+#line 478 "std-name-hint.gperf"
       {"stoi", "<string>", cxx11},
-#line 466 "std-name-hint.gperf"
+#line 468 "std-name-hint.gperf"
       {"stop_token", "<stop_token>", cxx20},
 #line 151 "std-name-hint.gperf"
       {"uint_least8_t", "<cstdint>", cxx11},
-#line 380 "std-name-hint.gperf"
+#line 382 "std-name-hint.gperf"
       {"make_optional", "<optional>", cxx17},
-#line 345 "std-name-hint.gperf"
+#line 347 "std-name-hint.gperf"
       {"pmr::unsynchronized_pool_resource", "<memory_resource>", cxx17},
 #line 48 "std-name-hint.gperf"
       {"to_array", "<array>", cxx20},
 #line 104 "std-name-hint.gperf"
       {"complex_literals", "<complex>", cxx14},
-#line 411 "std-name-hint.gperf"
+#line 413 "std-name-hint.gperf"
       {"shared_mutex", "<shared_mutex>", cxx17},
-#line 375 "std-name-hint.gperf"
+#line 377 "std-name-hint.gperf"
       {"numbers::phi_v", "<numbers>", cxx20},
-#line 499 "std-name-hint.gperf"
-      {"is_error_code_enum_v", "<system_error>", cxx17},
-#line 155 "std-name-hint.gperf"
-      {"deque", "<deque>", cxx98},
-#line 412 "std-name-hint.gperf"
-      {"shared_timed_mutex", "<shared_mutex>", cxx14},
-#line 290 "std-name-hint.gperf"
-      {"ostreambuf_iterator", "<iterator>", cxx98},
 #line 501 "std-name-hint.gperf"
+      {"is_error_code_enum_v", "<system_error>", cxx17},
+#line 157 "std-name-hint.gperf"
+      {"deque", "<deque>", cxx98},
+#line 414 "std-name-hint.gperf"
+      {"shared_timed_mutex", "<shared_mutex>", cxx14},
+#line 292 "std-name-hint.gperf"
+      {"ostreambuf_iterator", "<iterator>", cxx98},
+#line 503 "std-name-hint.gperf"
       {"is_error_condition_enum_v", "<system_error>", cxx17},
 #line 148 "std-name-hint.gperf"
       {"uint_least16_t", "<cstdint>", cxx11},
-#line 305 "std-name-hint.gperf"
+#line 307 "std-name-hint.gperf"
       {"allocator_arg_t", "<memory>", cxx11},
-#line 366 "std-name-hint.gperf"
+#line 368 "std-name-hint.gperf"
       {"numbers::e_v", "<numbers>", cxx20},
-#line 209 "std-name-hint.gperf"
+#line 211 "std-name-hint.gperf"
       {"invoke_r", "<functional>", cxx23},
-#line 441 "std-name-hint.gperf"
+#line 443 "std-name-hint.gperf"
       {"wostringstream", "<sstream>", cxx98},
 #line 122 "std-name-hint.gperf"
       {"copy_constructible", "<concepts>", cxx20},
@@ -648,33 +648,33 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"uint_least32_t", "<cstdint>", cxx11},
 #line 108 "std-name-hint.gperf"
       {"convertible_to", "<concepts>", cxx20},
-#line 234 "std-name-hint.gperf"
+#line 236 "std-name-hint.gperf"
       {"setprecision", "<iomanip>", cxx98},
-#line 498 "std-name-hint.gperf"
-      {"is_error_code_enum", "<system_error>", cxx11},
-#line 453 "std-name-hint.gperf"
-      {"overflow_error", "<stdexcept>", cxx98},
-#line 414 "std-name-hint.gperf"
-      {"source_location", "<source_location>", cxx20},
 #line 500 "std-name-hint.gperf"
+      {"is_error_code_enum", "<system_error>", cxx11},
+#line 455 "std-name-hint.gperf"
+      {"overflow_error", "<stdexcept>", cxx98},
+#line 416 "std-name-hint.gperf"
+      {"source_location", "<source_location>", cxx20},
+#line 502 "std-name-hint.gperf"
       {"is_error_condition_enum", "<system_error>", cxx11},
-#line 400 "std-name-hint.gperf"
+#line 402 "std-name-hint.gperf"
       {"ranges::enable_view", "<ranges>", cxx20},
-#line 218 "std-name-hint.gperf"
+#line 220 "std-name-hint.gperf"
       {"async", "<future>", cxx11},
 #line 103 "std-name-hint.gperf"
       {"complex", "<complex>", cxx98},
 #line 150 "std-name-hint.gperf"
       {"uint_least64_t", "<cstdint>", cxx11},
-#line 232 "std-name-hint.gperf"
+#line 234 "std-name-hint.gperf"
       {"setfill", "<iomanip>", cxx98},
 #line 79 "std-name-hint.gperf"
       {"chrono::parse", "<chrono>", cxx20},
-#line 285 "std-name-hint.gperf"
+#line 287 "std-name-hint.gperf"
       {"istreambuf_iterator", "<iterator>", cxx98},
-#line 473 "std-name-hint.gperf"
+#line 475 "std-name-hint.gperf"
       {"char_traits", "<string>", cxx98},
-#line 263 "std-name-hint.gperf"
+#line 265 "std-name-hint.gperf"
       {"cin", "<iostream>", cxx98},
 #line 61 "std-name-hint.gperf"
       {"chrono::duration_cast", "<chrono>", cxx11},
@@ -682,7 +682,7 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"uintmax_t", "<cstdint>", cxx11},
 #line 43 "std-name-hint.gperf"
       {"any", "<any>", cxx17},
-#line 389 "std-name-hint.gperf"
+#line 391 "std-name-hint.gperf"
       {"noemit_on_flush", "<ostream>", cxx20},
 #line 66 "std-name-hint.gperf"
       {"chrono::get_tzdb_list", "<chrono>", cxx20},
@@ -690,107 +690,109 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"chrono::weeks", "<chrono>", cxx20},
 #line 65 "std-name-hint.gperf"
       {"chrono::get_tzdb", "<chrono>", cxx20},
-#line 302 "std-name-hint.gperf"
+#line 304 "std-name-hint.gperf"
       {"allocate_shared_for_overwrite", "<memory>", cxx20},
-#line 547 "std-name-hint.gperf"
+#line 549 "std-name-hint.gperf"
       {"unordered_multiset", "<unordered_set>", cxx11},
-#line 194 "std-name-hint.gperf"
+#line 196 "std-name-hint.gperf"
       {"forward_list", "<forward_list>", cxx11},
-#line 496 "std-name-hint.gperf"
+#line 498 "std-name-hint.gperf"
       {"error_condition", "<system_error>", cxx11},
-#line 542 "std-name-hint.gperf"
+#line 544 "std-name-hint.gperf"
       {"bad_typeid", "<typeinfo>", cxx98},
 #line 60 "std-name-hint.gperf"
       {"chrono::duration", "<chrono>", cxx11},
-#line 510 "std-name-hint.gperf"
+#line 512 "std-name-hint.gperf"
       {"apply", "<tuple>", cxx17},
 #line 95 "std-name-hint.gperf"
       {"chrono::zoned_time", "<chrono>", cxx20},
-#line 477 "std-name-hint.gperf"
-      {"stol", "<string>", cxx11},
 #line 479 "std-name-hint.gperf"
-      {"stoll", "<string>", cxx11},
-#line 480 "std-name-hint.gperf"
-      {"stoul", "<string>", cxx11},
+      {"stol", "<string>", cxx11},
 #line 481 "std-name-hint.gperf"
+      {"stoll", "<string>", cxx11},
+#line 482 "std-name-hint.gperf"
+      {"stoul", "<string>", cxx11},
+#line 483 "std-name-hint.gperf"
       {"stoull", "<string>", cxx11},
-#line 220 "std-name-hint.gperf"
+#line 222 "std-name-hint.gperf"
       {"packaged_task", "<future>", cxx11},
-#line 544 "std-name-hint.gperf"
+#line 546 "std-name-hint.gperf"
       {"unordered_map", "<unordered_map>", cxx11},
 #line 77 "std-name-hint.gperf"
       {"chrono::months", "<chrono>", cxx20},
 #line 76 "std-name-hint.gperf"
       {"chrono::minutes", "<chrono>", cxx11},
-#line 545 "std-name-hint.gperf"
+#line 547 "std-name-hint.gperf"
       {"unordered_multimap", "<unordered_map>", cxx11},
 #line 78 "std-name-hint.gperf"
       {"chrono::nanoseconds", "<chrono>", cxx11},
-#line 286 "std-name-hint.gperf"
+#line 288 "std-name-hint.gperf"
       {"iterator_traits", "<iterator>", cxx98},
-#line 404 "std-name-hint.gperf"
+#line 406 "std-name-hint.gperf"
       {"binary_semaphore", "<semaphore>", cxx20},
-#line 281 "std-name-hint.gperf"
+#line 283 "std-name-hint.gperf"
       {"end", "<iterator>", cxx11},
-#line 429 "std-name-hint.gperf"
+#line 431 "std-name-hint.gperf"
       {"wspanbuf", "<spanstream>", cxx23},
-#line 252 "std-name-hint.gperf"
+#line 254 "std-name-hint.gperf"
       {"oct", "<ios>", cxx98},
-#line 245 "std-name-hint.gperf"
+#line 247 "std-name-hint.gperf"
       {"noboolalpha", "<ios>", cxx98},
-#line 450 "std-name-hint.gperf"
+#line 452 "std-name-hint.gperf"
       {"length_error", "<stdexcept>", cxx98},
-#line 560 "std-name-hint.gperf"
+#line 562 "std-name-hint.gperf"
       {"in_place", "<utility>", cxx17},
-#line 563 "std-name-hint.gperf"
+#line 565 "std-name-hint.gperf"
       {"in_place_t", "<utility>", cxx17},
-#line 384 "std-name-hint.gperf"
+#line 386 "std-name-hint.gperf"
       {"emit_on_flush", "<ostream>", cxx20},
-#line 440 "std-name-hint.gperf"
+#line 442 "std-name-hint.gperf"
       {"wistringstream", "<sstream>", cxx98},
-#line 327 "std-name-hint.gperf"
+#line 329 "std-name-hint.gperf"
       {"static_pointer_cast", "<memory>", cxx11},
-#line 260 "std-name-hint.gperf"
+#line 262 "std-name-hint.gperf"
       {"uppercase", "<ios>", cxx98},
-#line 277 "std-name-hint.gperf"
+#line 279 "std-name-hint.gperf"
       {"common_iterator", "<iterator>", cxx20},
 #line 117 "std-name-hint.gperf"
       {"swappable_with", "<concepts>", cxx20},
-#line 359 "std-name-hint.gperf"
+#line 361 "std-name-hint.gperf"
       {"bad_alloc", "<new>", cxx98},
-#line 391 "std-name-hint.gperf"
+#line 393 "std-name-hint.gperf"
       {"wostream", "<ostream>", cxx98},
-#line 348 "std-name-hint.gperf"
+#line 155 "std-name-hint.gperf"
+      {"observable", "<cstdlib>", cxx11},
+#line 350 "std-name-hint.gperf"
       {"lock", "<mutex>", cxx11},
-#line 504 "std-name-hint.gperf"
+#line 506 "std-name-hint.gperf"
       {"system_category", "<system_error>", cxx11},
 #line 128 "std-name-hint.gperf"
       {"copyable", "<concepts>", cxx20},
 #line 139 "std-name-hint.gperf"
       {"condition_variable", "<condition_variable>", cxx11},
-#line 240 "std-name-hint.gperf"
+#line 242 "std-name-hint.gperf"
       {"fixed", "<ios>", cxx98},
-#line 553 "std-name-hint.gperf"
+#line 555 "std-name-hint.gperf"
       {"cmp_greater_equal", "<utility>", cxx20},
-#line 508 "std-name-hint.gperf"
+#line 510 "std-name-hint.gperf"
       {"thread", "<thread>", cxx11},
-#line 439 "std-name-hint.gperf"
+#line 441 "std-name-hint.gperf"
       {"stringstream", "<sstream>", cxx98},
 #line 58 "std-name-hint.gperf"
       {"chrono::clock_cast", "<chrono>", cxx20},
-#line 579 "std-name-hint.gperf"
+#line 581 "std-name-hint.gperf"
       {"unreachable", "<utility>", cxx23},
-#line 428 "std-name-hint.gperf"
+#line 430 "std-name-hint.gperf"
       {"wospanstream", "<spanstream>", cxx23},
-#line 330 "std-name-hint.gperf"
+#line 332 "std-name-hint.gperf"
       {"unique_ptr", "<memory>", cxx11},
-#line 562 "std-name-hint.gperf"
+#line 564 "std-name-hint.gperf"
       {"in_place_index_t", "<utility>", cxx17},
-#line 363 "std-name-hint.gperf"
+#line 365 "std-name-hint.gperf"
       {"nothrow", "<new>", cxx98},
 #line 64 "std-name-hint.gperf"
       {"chrono::get_leap_second_info", "<chrono>", cxx20},
-#line 204 "std-name-hint.gperf"
+#line 206 "std-name-hint.gperf"
       {"bind", "<functional>", cxx11},
 #line 89 "std-name-hint.gperf"
       {"chrono::time_zone", "<chrono>", cxx20},
@@ -800,23 +802,23 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"uint_fast32_t", "<cstdint>", cxx11},
 #line 87 "std-name-hint.gperf"
       {"chrono::time_point", "<chrono>", cxx11},
-#line 444 "std-name-hint.gperf"
+#line 446 "std-name-hint.gperf"
       {"stack", "<stack>", cxx98},
-#line 215 "std-name-hint.gperf"
+#line 217 "std-name-hint.gperf"
       {"unwrap_reference", "<functional>", cxx20},
 #line 88 "std-name-hint.gperf"
       {"chrono::time_point_cast", "<chrono>", cxx11},
-#line 223 "std-name-hint.gperf"
+#line 225 "std-name-hint.gperf"
       {"generator", "<generator>", cxx23},
-#line 216 "std-name-hint.gperf"
+#line 218 "std-name-hint.gperf"
       {"unwrap_reference_t", "<functional>", cxx20},
-#line 382 "std-name-hint.gperf"
+#line 384 "std-name-hint.gperf"
       {"optional", "<optional>", cxx17},
 #line 112 "std-name-hint.gperf"
       {"signed_integral", "<concepts>", cxx20},
-#line 456 "std-name-hint.gperf"
+#line 458 "std-name-hint.gperf"
       {"underflow_error", "<stdexcept>", cxx98},
-#line 239 "std-name-hint.gperf"
+#line 241 "std-name-hint.gperf"
       {"defaultfloat", "<ios>", cxx11},
 #line 146 "std-name-hint.gperf"
       {"uint_fast64_t", "<cstdint>", cxx11},
@@ -824,27 +826,27 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"semiregular", "<concepts>", cxx20},
 #line 111 "std-name-hint.gperf"
       {"integral", "<concepts>", cxx20},
-#line 243 "std-name-hint.gperf"
+#line 245 "std-name-hint.gperf"
       {"internal", "<ios>", cxx98},
 #line 144 "std-name-hint.gperf"
       {"uint_fast16_t", "<cstdint>", cxx11},
-#line 329 "std-name-hint.gperf"
+#line 331 "std-name-hint.gperf"
       {"uninitialized_construct_using_allocator", "<memory>", cxx20},
 #line 81 "std-name-hint.gperf"
       {"chrono::remote_version", "<chrono>", cxx20},
-#line 458 "std-name-hint.gperf"
+#line 460 "std-name-hint.gperf"
       {"bfloat16_t", "<stdfloat>", cxx23},
-#line 576 "std-name-hint.gperf"
+#line 578 "std-name-hint.gperf"
       {"piecewise_construct", "<utility>", cxx11},
-#line 577 "std-name-hint.gperf"
+#line 579 "std-name-hint.gperf"
       {"piecewise_construct_t", "<utility>", cxx11},
-#line 278 "std-name-hint.gperf"
+#line 280 "std-name-hint.gperf"
       {"const_iterator", "<iterator>", cxx23},
-#line 484 "std-name-hint.gperf"
+#line 486 "std-name-hint.gperf"
       {"to_wstring", "<string>", cxx17},
-#line 356 "std-name-hint.gperf"
+#line 358 "std-name-hint.gperf"
       {"try_lock", "<mutex>", cxx11},
-#line 561 "std-name-hint.gperf"
+#line 563 "std-name-hint.gperf"
       {"in_place_index", "<utility>", cxx17},
 #line 51 "std-name-hint.gperf"
       {"atomic_ref", "<atomic>", cxx20},
@@ -852,115 +854,115 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"unsigned_integral", "<concepts>", cxx20},
 #line 94 "std-name-hint.gperf"
       {"chrono::years", "<chrono>", cxx20},
-#line 229 "std-name-hint.gperf"
+#line 231 "std-name-hint.gperf"
       {"quoted", "<iomanip>", cxx14},
 #line 115 "std-name-hint.gperf"
       {"assignable_from", "<concepts>", cxx20},
 #line 53 "std-name-hint.gperf"
       {"atomic_uintmax_t", "<atomic>", cxx20},
-#line 162 "std-name-hint.gperf"
-      {"uncaught_exceptions", "<exception>", cxx17},
-#line 331 "std-name-hint.gperf"
-      {"uses_allocator", "<memory>", cxx11},
-#line 472 "std-name-hint.gperf"
-      {"basic_string", "<string>", cxx98},
-#line 311 "std-name-hint.gperf"
-      {"default_delete", "<memory>", cxx11},
 #line 164 "std-name-hint.gperf"
-      {"expected", "<expected>", cxx23},
+      {"uncaught_exceptions", "<exception>", cxx17},
+#line 333 "std-name-hint.gperf"
+      {"uses_allocator", "<memory>", cxx11},
+#line 474 "std-name-hint.gperf"
+      {"basic_string", "<string>", cxx98},
 #line 313 "std-name-hint.gperf"
+      {"default_delete", "<memory>", cxx11},
+#line 166 "std-name-hint.gperf"
+      {"expected", "<expected>", cxx23},
+#line 315 "std-name-hint.gperf"
       {"destroy_at", "<memory>", cxx20},
-#line 536 "std-name-hint.gperf"
+#line 538 "std-name-hint.gperf"
       {"type_identity_t", "<type_traits>", cxx20},
 #line 63 "std-name-hint.gperf"
       {"chrono::from_stream", "<chrono>", cxx20},
-#line 427 "std-name-hint.gperf"
+#line 429 "std-name-hint.gperf"
       {"wispanstream", "<spanstream>", cxx23},
 #line 52 "std-name-hint.gperf"
       {"atomic_signed_lock_free", "<atomic>", cxx11},
-#line 266 "std-name-hint.gperf"
+#line 268 "std-name-hint.gperf"
       {"wcerr", "<iostream>", cxx98},
-#line 511 "std-name-hint.gperf"
+#line 513 "std-name-hint.gperf"
       {"forward_as_tuple", "<tuple>", cxx11},
-#line 187 "std-name-hint.gperf"
+#line 189 "std-name-hint.gperf"
       {"vformat", "<format>", cxx20},
-#line 332 "std-name-hint.gperf"
+#line 334 "std-name-hint.gperf"
       {"uses_allocator_construction_args", "<memory>", cxx20},
-#line 269 "std-name-hint.gperf"
+#line 271 "std-name-hint.gperf"
       {"wcout", "<iostream>", cxx98},
-#line 314 "std-name-hint.gperf"
+#line 316 "std-name-hint.gperf"
       {"destroy_n", "<memory>", cxx20},
-#line 226 "std-name-hint.gperf"
+#line 228 "std-name-hint.gperf"
       {"get_time", "<iomanip>", cxx11},
-#line 555 "std-name-hint.gperf"
+#line 557 "std-name-hint.gperf"
       {"cmp_less_equal", "<utility>", cxx20},
 #line 80 "std-name-hint.gperf"
       {"chrono::reload_tzdb", "<chrono>", cxx20},
-#line 523 "std-name-hint.gperf"
+#line 525 "std-name-hint.gperf"
       {"conjunction", "<type_traits>", cxx17},
 #line 75 "std-name-hint.gperf"
       {"chrono::milliseconds", "<chrono>", cxx11},
 #line 59 "std-name-hint.gperf"
       {"chrono::days", "<chrono>", cxx20},
-#line 474 "std-name-hint.gperf"
+#line 476 "std-name-hint.gperf"
       {"stod", "<string>", cxx11},
-#line 478 "std-name-hint.gperf"
+#line 480 "std-name-hint.gperf"
       {"stold", "<string>", cxx11},
-#line 267 "std-name-hint.gperf"
+#line 269 "std-name-hint.gperf"
       {"wcin", "<iostream>", cxx98},
-#line 529 "std-name-hint.gperf"
+#line 531 "std-name-hint.gperf"
       {"invoke_result", "<type_traits>", cxx17},
-#line 530 "std-name-hint.gperf"
+#line 532 "std-name-hint.gperf"
       {"invoke_result_t", "<type_traits>", cxx17},
 #line 50 "std-name-hint.gperf"
       {"atomic", "<atomic>", cxx11},
 #line 71 "std-name-hint.gperf"
       {"chrono::leap_second_info", "<chrono>", cxx20},
-#line 238 "std-name-hint.gperf"
+#line 240 "std-name-hint.gperf"
       {"dec", "<ios>", cxx98},
-#line 157 "std-name-hint.gperf"
+#line 159 "std-name-hint.gperf"
       {"current_exception", "<exception>", cxx11},
 #line 119 "std-name-hint.gperf"
       {"constructible_from", "<concepts>", cxx20},
 #line 100 "std-name-hint.gperf"
       {"weak_equality", "<compare>", cxx20},
-#line 333 "std-name-hint.gperf"
+#line 335 "std-name-hint.gperf"
       {"uses_allocator_v", "<memory>", cxx17},
 #line 69 "std-name-hint.gperf"
       {"chrono::hours", "<chrono>", cxx11},
 #line 109 "std-name-hint.gperf"
       {"common_reference_with", "<concepts>", cxx20},
-#line 483 "std-name-hint.gperf"
+#line 485 "std-name-hint.gperf"
       {"to_string", "<string>", cxx17},
-#line 524 "std-name-hint.gperf"
+#line 526 "std-name-hint.gperf"
       {"conjunction_v", "<type_traits>", cxx17},
-#line 578 "std-name-hint.gperf"
+#line 580 "std-name-hint.gperf"
       {"to_underlying", "<utility>", cxx23},
-#line 402 "std-name-hint.gperf"
+#line 404 "std-name-hint.gperf"
       {"scoped_allocator_adaptor", "<scoped_allocator>", cxx11},
-#line 310 "std-name-hint.gperf"
+#line 312 "std-name-hint.gperf"
       {"construct_at", "<memory>", cxx20},
-#line 564 "std-name-hint.gperf"
+#line 566 "std-name-hint.gperf"
       {"in_place_type", "<utility>", cxx17},
-#line 320 "std-name-hint.gperf"
+#line 322 "std-name-hint.gperf"
       {"make_shared_for_overwrite", "<memory>", cxx20},
-#line 166 "std-name-hint.gperf"
+#line 168 "std-name-hint.gperf"
       {"basic_format_arg", "<format>", cxx20},
 #line 73 "std-name-hint.gperf"
       {"chrono::locate_zone", "<chrono>", cxx20},
 #line 72 "std-name-hint.gperf"
       {"chrono::local_t", "<chrono>", cxx20},
-#line 170 "std-name-hint.gperf"
+#line 172 "std-name-hint.gperf"
       {"basic_format_string", "<format>", cxx20},
-#line 565 "std-name-hint.gperf"
+#line 567 "std-name-hint.gperf"
       {"in_place_type_t", "<utility>", cxx17},
-#line 279 "std-name-hint.gperf"
+#line 281 "std-name-hint.gperf"
       {"counted_iterator", "<iterator>", cxx20},
-#line 448 "std-name-hint.gperf"
+#line 450 "std-name-hint.gperf"
       {"domain_error", "<stdexcept>", cxx98},
 #line 84 "std-name-hint.gperf"
       {"chrono::steady_clock", "<chrono>", cxx11},
-#line 188 "std-name-hint.gperf"
+#line 190 "std-name-hint.gperf"
       {"vformat_to", "<format>", cxx20},
 #line 54 "std-name-hint.gperf"
       {"atomic_unsigned_lock_free", "<atomic>", cxx11},
@@ -976,105 +978,105 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"chrono::system_clock", "<chrono>", cxx11},
 #line 140 "std-name-hint.gperf"
       {"condition_variable_any", "<condition_variable>", cxx11},
-#line 214 "std-name-hint.gperf"
+#line 216 "std-name-hint.gperf"
       {"unwrap_ref_decay_t", "<functional>", cxx20},
 #line 136 "std-name-hint.gperf"
       {"strict_weak_order", "<concepts>", cxx20},
-#line 437 "std-name-hint.gperf"
+#line 439 "std-name-hint.gperf"
       {"ostringstream", "<sstream>", cxx98},
-#line 317 "std-name-hint.gperf"
+#line 319 "std-name-hint.gperf"
       {"get_deleter", "<memory>", cxx11},
-#line 367 "std-name-hint.gperf"
+#line 369 "std-name-hint.gperf"
       {"numbers::egamma_v", "<numbers>", cxx20},
-#line 566 "std-name-hint.gperf"
+#line 568 "std-name-hint.gperf"
       {"in_range", "<utility>", cxx20},
-#line 558 "std-name-hint.gperf"
+#line 560 "std-name-hint.gperf"
       {"exchange", "<utility>", cxx14},
-#line 551 "std-name-hint.gperf"
+#line 553 "std-name-hint.gperf"
       {"cmp_equal", "<utility>", cxx20},
-#line 556 "std-name-hint.gperf"
+#line 558 "std-name-hint.gperf"
       {"cmp_not_equal", "<utility>", cxx20},
-#line 435 "std-name-hint.gperf"
+#line 437 "std-name-hint.gperf"
       {"istringstream", "<sstream>", cxx98},
-#line 436 "std-name-hint.gperf"
+#line 438 "std-name-hint.gperf"
       {"istringstream", "<sstream>", cxx98},
-#line 442 "std-name-hint.gperf"
+#line 444 "std-name-hint.gperf"
       {"wstringbuf", "<sstream>", cxx98},
-#line 225 "std-name-hint.gperf"
+#line 227 "std-name-hint.gperf"
       {"get_money", "<iomanip>", cxx11},
-#line 191 "std-name-hint.gperf"
+#line 193 "std-name-hint.gperf"
       {"wformat_parse_context", "<format>", cxx20},
-#line 482 "std-name-hint.gperf"
+#line 484 "std-name-hint.gperf"
       {"string", "<string>", cxx98},
-#line 280 "std-name-hint.gperf"
+#line 282 "std-name-hint.gperf"
       {"distance", "<iterator>", cxx98},
-#line 557 "std-name-hint.gperf"
+#line 559 "std-name-hint.gperf"
       {"declval", "<utility>", cxx11},
-#line 254 "std-name-hint.gperf"
+#line 256 "std-name-hint.gperf"
       {"scientific", "<ios>", cxx98},
 #line 98 "std-name-hint.gperf"
       {"strong_equality", "<compare>", cxx20},
-#line 487 "std-name-hint.gperf"
+#line 489 "std-name-hint.gperf"
       {"u8string", "<string>", cxx20},
-#line 190 "std-name-hint.gperf"
+#line 192 "std-name-hint.gperf"
       {"wformat_context", "<format>", cxx20},
-#line 312 "std-name-hint.gperf"
+#line 314 "std-name-hint.gperf"
       {"destroy", "<memory>", cxx20},
-#line 559 "std-name-hint.gperf"
+#line 561 "std-name-hint.gperf"
       {"forward", "<utility>", cxx11},
-#line 535 "std-name-hint.gperf"
+#line 537 "std-name-hint.gperf"
       {"type_identity", "<type_traits>", cxx20},
-#line 464 "std-name-hint.gperf"
+#line 466 "std-name-hint.gperf"
       {"stop_callback", "<stop_token>", cxx20},
 #line 86 "std-name-hint.gperf"
       {"chrono::tai_clock", "<chrono>", cxx20},
 #line 91 "std-name-hint.gperf"
       {"chrono::tzdb_list", "<chrono>", cxx20},
-#line 301 "std-name-hint.gperf"
+#line 303 "std-name-hint.gperf"
       {"allocate_shared", "<memory>", cxx11},
 #line 90 "std-name-hint.gperf"
       {"chrono::tzdb", "<chrono>", cxx20},
 #line 126 "std-name-hint.gperf"
       {"totally_ordered_with", "<concepts>", cxx20},
-#line 525 "std-name-hint.gperf"
+#line 527 "std-name-hint.gperf"
       {"disjunction", "<type_traits>", cxx17},
 #line 110 "std-name-hint.gperf"
       {"common_with", "<concepts>", cxx20},
-#line 202 "std-name-hint.gperf"
+#line 204 "std-name-hint.gperf"
       {"ofstream", "<fstream>", cxx98},
-#line 349 "std-name-hint.gperf"
+#line 351 "std-name-hint.gperf"
       {"lock_guard", "<mutex>", cxx11},
 #line 118 "std-name-hint.gperf"
       {"destructible", "<concepts>", cxx20},
-#line 176 "std-name-hint.gperf"
+#line 178 "std-name-hint.gperf"
       {"format_string", "<format>", cxx20},
-#line 410 "std-name-hint.gperf"
+#line 412 "std-name-hint.gperf"
       {"shared_lock", "<shared_mutex>", cxx14},
-#line 315 "std-name-hint.gperf"
+#line 317 "std-name-hint.gperf"
       {"dynamic_pointer_cast", "<memory>", cxx11},
 #line 101 "std-name-hint.gperf"
       {"weak_ordering", "<compare>", cxx20},
-#line 201 "std-name-hint.gperf"
+#line 203 "std-name-hint.gperf"
       {"ifstream", "<fstream>", cxx98},
-#line 452 "std-name-hint.gperf"
+#line 454 "std-name-hint.gperf"
       {"out_of_range", "<stdexcept>", cxx98},
-#line 264 "std-name-hint.gperf"
+#line 266 "std-name-hint.gperf"
       {"clog", "<iostream>", cxx98},
 #line 62 "std-name-hint.gperf"
       {"chrono::file_clock", "<chrono>", cxx20},
-#line 526 "std-name-hint.gperf"
+#line 528 "std-name-hint.gperf"
       {"disjunction_v", "<type_traits>", cxx17},
-#line 485 "std-name-hint.gperf"
+#line 487 "std-name-hint.gperf"
       {"u16string", "<string>", cxx11},
-#line 351 "std-name-hint.gperf"
+#line 353 "std-name-hint.gperf"
       {"once_flag", "<mutex>", cxx11},
-#line 491 "std-name-hint.gperf"
+#line 493 "std-name-hint.gperf"
       {"string_view", "<string_view>", cxx17},
-#line 304 "std-name-hint.gperf"
+#line 306 "std-name-hint.gperf"
       {"allocator_arg", "<memory>", cxx11},
-#line 486 "std-name-hint.gperf"
+#line 488 "std-name-hint.gperf"
       {"u32string", "<string>", cxx11},
-#line 213 "std-name-hint.gperf"
+#line 215 "std-name-hint.gperf"
       {"unwrap_ref_decay", "<functional>", cxx20},
 #line 70 "std-name-hint.gperf"
       {"chrono::leap_second", "<chrono>", cxx20},
@@ -1084,39 +1086,39 @@ std_name_hint_lookup::find (const char *str, size_t len)
       {"derived_from", "<concepts>", cxx20},
 #line 99 "std-name-hint.gperf"
       {"strong_ordering", "<compare>", cxx20},
-#line 497 "std-name-hint.gperf"
+#line 499 "std-name-hint.gperf"
       {"generic_category", "<system_error>", cxx11},
 #line 125 "std-name-hint.gperf"
       {"totally_ordered", "<concepts>", cxx20},
-#line 494 "std-name-hint.gperf"
+#line 496 "std-name-hint.gperf"
       {"error_category", "<system_error>", cxx11},
 #line 82 "std-name-hint.gperf"
       {"chrono::round", "<chrono>", cxx17},
-#line 357 "std-name-hint.gperf"
+#line 359 "std-name-hint.gperf"
       {"unique_lock", "<mutex>", cxx11},
-#line 319 "std-name-hint.gperf"
+#line 321 "std-name-hint.gperf"
       {"make_shared", "<memory>", cxx11},
-#line 507 "std-name-hint.gperf"
+#line 509 "std-name-hint.gperf"
       {"this_thread", "<thread>", cxx11},
-#line 449 "std-name-hint.gperf"
+#line 451 "std-name-hint.gperf"
       {"invalid_argument", "<stdexcept>", cxx98},
-#line 354 "std-name-hint.gperf"
+#line 356 "std-name-hint.gperf"
       {"scoped_lock", "<mutex>", cxx17},
-#line 268 "std-name-hint.gperf"
+#line 270 "std-name-hint.gperf"
       {"wclog", "<iostream>", cxx98},
-#line 506 "std-name-hint.gperf"
+#line 508 "std-name-hint.gperf"
       {"jthread", "<thread>", cxx20},
 #line 97 "std-name-hint.gperf"
       {"partial_ordering", "<compare>", cxx20},
 #line 68 "std-name-hint.gperf"
       {"chrono::high_resolution_clock", "<chrono>", cxx11},
-#line 307 "std-name-hint.gperf"
+#line 309 "std-name-hint.gperf"
       {"assume_aligned", "<memory>", cxx20},
-#line 488 "std-name-hint.gperf"
+#line 490 "std-name-hint.gperf"
       {"wstring", "<string>", cxx98},
-#line 192 "std-name-hint.gperf"
+#line 194 "std-name-hint.gperf"
       {"wformat_string", "<format>", cxx20},
-#line 189 "std-name-hint.gperf"
+#line 191 "std-name-hint.gperf"
       {"wformat_args", "<format>", cxx20}
     };
 
@@ -1142,7 +1144,7 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,    -1,    24,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    25,    26,    27,    -1,
          -1,    -1,    28,    29,    -1,    -1,    30,
-       -629,  -456,    -2,    33,    -1,    34,    -1,
+       -630,  -457,    -2,    33,    -1,    34,    -1,
          35,    -1,    36,    -1,    -1,    -1,    -1,
          37,    -1,    38,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    39,    -1,    -1,    -1,
@@ -1184,8 +1186,8 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,   152,   153,    -1,    -1,    -1,    -1,
          -1,    -1,   154,    -1,   155,   156,    -1,
          -1,    -1,   157,    -1,    -1,   158,    -1,
-        159,   160,    -1,    -1,    -1,  -933,    -1,
-        163,   164,    -1,   165,  -326,    -2,    -1,
+        159,   160,    -1,    -1,    -1,  -934,    -1,
+        163,   164,    -1,   165,  -327,    -2,    -1,
          -1,   166,    -1,    -1,    -1,    -1,   167,
         168,    -1,   169,    -1,    -1,    -1,   170,
         171,   172,   173,    -1,    -1,    -1,   174,
@@ -1195,11 +1197,11 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,   185,    -1,   186,   187,    -1,   188,
         189,   190,   191,   192,    -1,   193,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   194,    -1, -1005,  -292,
+         -1,    -1,    -1,   194,    -1, -1006,  -293,
          -2,    -1,    -1,    -1,   197,    -1,    -1,
         198,   199,   200,   201,    -1,    -1,    -1,
         202,   203,    -1,    -1,    -1,    -1,   204,
-         -1,    -1, -1030,  -282,    -2,    -1,   207,
+         -1,    -1, -1031,  -283,    -2,    -1,   207,
          -1,    -1,    -1,   208,   209,    -1,    -1,
          -1,   210,    -1,    -1,    -1,   211,    -1,
         212,    -1,    -1,   213,    -1,    -1,   214,
@@ -1227,7 +1229,7 @@ std_name_hint_lookup::find (const char *str, size_t len)
         275,   276,    -1,   277,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,   278,    -1,
          -1,    -1,    -1,    -1,   279,   280,   281,
-      -1225,   284,  -205,    -2,    -1,    -1,    -1,
+      -1226,   284,  -206,    -2,    -1,    -1,    -1,
          -1,   285,    -1,    -1,    -1,    -1,   286,
         287,   288,    -1,    -1,   289,   290,   291,
          -1,    -1,    -1,    -1,   292,    -1,    -1,
@@ -1237,115 +1239,115 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,    -1,    -1,   300,   301,   302,    -1,
          -1,    -1,    -1,   303,   304,    -1,    -1,
         305,   306,    -1,    -1,    -1,   307,    -1,
-         -1,    -1,    -1,    -1,   308,    -1,    -1,
-        309,   310,    -1,    -1,    -1,    -1,   311,
-         -1,    -1,   312,   313,   314,    -1,    -1,
-         -1,   315,   316,    -1,   317,    -1,   318,
-         -1,    -1,   319,   320,   321,   322,    -1,
-        323,    -1,   324,   325,    -1,    -1,    -1,
-        326,   327,    -1,   328,   329,    -1,   330,
-         -1,    -1,   331,    -1,   332,    -1,    -1,
-         -1,    -1,   333,   334,   335,    -1,    -1,
-         -1,   336,    -1,    -1,   337,   338,    -1,
-         -1,    -1,    -1, -1367,  -148,    -2,    -1,
-        341,    -1,    -1,    -1,    -1,    -1,    -1,
-        342,    -1,    -1,   343,    -1,    -1,    -1,
-         -1,   344,   345,    -1,   346,    -1,    -1,
-         -1,   347,    -1,    -1,   348,   349,    -1,
-         -1,    -1,    -1,    -1,   350,   351,    -1,
-        352,   353,    -1,    -1,    -1,    -1,   354,
-         -1,   355,    -1,    -1,    -1,    -1,    -1,
+        308,    -1,    -1,    -1,   309,    -1,    -1,
+        310,   311,    -1,    -1,    -1,    -1,   312,
+         -1,    -1,   313,   314,   315,    -1,    -1,
+         -1,   316,   317,    -1,   318,    -1,   319,
+         -1,    -1,   320,   321,   322,   323,    -1,
+        324,    -1,   325,   326,    -1,    -1,    -1,
+        327,   328,    -1,   329,   330,    -1,   331,
+         -1,    -1,   332,    -1,   333,    -1,    -1,
+         -1,    -1,   334,   335,   336,    -1,    -1,
+         -1,   337,    -1,    -1,   338,   339,    -1,
+         -1,    -1,    -1, -1368,  -148,    -2,    -1,
+        342,    -1,    -1,    -1,    -1,    -1,    -1,
+        343,    -1,    -1,   344,    -1,    -1,    -1,
+         -1,   345,   346,    -1,   347,    -1,    -1,
+         -1,   348,    -1,    -1,   349,   350,    -1,
+         -1,    -1,    -1,    -1,   351,   352,    -1,
+        353,   354,    -1,    -1,    -1,    -1,   355,
+         -1,   356,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   356,    -1,   357,    -1,
-         -1,    -1,    -1,    -1,   358,    -1,    -1,
+         -1,    -1,    -1,   357,    -1,   358,    -1,
+         -1,    -1,    -1,    -1,   359,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,   359,    -1,
-        360,   361,    -1,   362,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,   363,    -1,   364,
-         -1,   365,    -1,   366,    -1,    -1,    -1,
-        367,   368,   369,    -1,    -1,   370,    -1,
-         -1,    -1,    -1,   371,    -1,    -1,    -1,
+         -1,    -1,    -1,    -1,    -1,   360,    -1,
+        361,   362,    -1,   363,    -1,    -1,    -1,
+         -1,    -1,    -1,    -1,   364,    -1,   365,
+         -1,   366,    -1,   367,    -1,    -1,    -1,
+        368,   369,   370,    -1,    -1,   371,    -1,
+         -1,    -1,    -1,   372,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        372,    -1,   373,    -1,    -1,    -1,   374,
-         -1,    -1,    -1,    -1,   375,    -1,   376,
-         -1,    -1,    -1,   377,    -1,    -1,    -1,
-        378,    -1,   379,   380,    -1,    -1,    -1,
-        381,    -1,   382,    -1,   383,   384,    -1,
-         -1,   385,    -1,    -1,    -1,    -1,    -1,
-        386,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,   387,   388,
+        373,    -1,   374,    -1,    -1,    -1,   375,
+         -1,    -1,    -1,    -1,   376,    -1,   377,
+         -1,    -1,    -1,   378,    -1,    -1,    -1,
+        379,    -1,   380,   381,    -1,    -1,    -1,
+        382,    -1,   383,    -1,   384,   385,    -1,
+         -1,   386,    -1,    -1,    -1,    -1,    -1,
+        387,    -1,    -1,    -1,    -1,    -1,    -1,
+         -1,    -1,    -1,    -1,    -1,   388,   389,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,   389,   390,    -1,
-         -1,    -1,    -1,    -1,    -1,   391,    -1,
+         -1,    -1,    -1,    -1,   390,   391,    -1,
          -1,    -1,    -1,    -1,    -1,   392,    -1,
-         -1,    -1,    -1,    -1,   393,    -1,   394,
-         -1,    -1,    -1,    -1,    -1,    -1,   395,
-        396,   397,    -1,    -1,   398,   399,    -1,
-        400,   401,   402,   403,   404,   405,   406,
-        407,    -1,   408,    -1,    -1,   409,   410,
-         -1,    -1,    -1,   411,    -1,    -1,    -1,
-         -1,   412,    -1,   413,    -1,    -1,   414,
+         -1,    -1,    -1,    -1,    -1,   393,    -1,
+         -1,    -1,    -1,    -1,   394,    -1,   395,
+         -1,    -1,    -1,    -1,    -1,    -1,   396,
+        397,   398,    -1,    -1,   399,   400,    -1,
+        401,   402,   403,   404,   405,   406,   407,
+        408,    -1,   409,    -1,    -1,   410,   411,
+         -1,    -1,    -1,   412,    -1,    -1,    -1,
+         -1,   413,    -1,   414,    -1,    -1,   415,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,   415,    -1,    -1,    -1,   416,    -1,
+         -1,   416,    -1,    -1,    -1,   417,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        417,    -1,    -1,   418,    -1,    -1,   419,
+        418,    -1,    -1,   419,    -1,    -1,   420,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   420,   421,    -1,    -1,
-         -1,    -1,    -1,    -1,   422,    -1,    -1,
+         -1,    -1,    -1,   421,   422,    -1,    -1,
          -1,    -1,    -1,    -1,   423,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,   424,    -1,    -1,
-         -1,    -1,    -1,    -1, -1704,   -62,    -2,
-         -1,    -1,    -1,    -1,   427,    -1,    -1,
-         -1,    -1,    -1,   428,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,   429,    -1,    -1,
+         -1,    -1,    -1,    -1,   425,    -1,    -1,
+         -1,    -1,    -1,    -1, -1705,   -62,    -2,
+         -1,    -1,    -1,    -1,   428,    -1,    -1,
+         -1,    -1,    -1,   429,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        430,    -1,    -1,    -1,    -1,    -1,   431,
-         -1,    -1,    -1,    -1,   432,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,   433,    -1,
-         -1,    -1,    -1,   434,    -1,    -1,   435,
-         -1,    -1,    -1,    -1,    -1,    -1,   436,
-        437,    -1,    -1,   438,    -1,    -1,    -1,
-         -1,    -1,   439,   440,    -1,    -1,    -1,
-        441,    -1,   442,    -1,   443,    -1,    -1,
-        444,    -1,    -1,    -1,   445,    -1,    -1,
+         -1,    -1,    -1,    -1,   430,    -1,    -1,
+         -1,    -1,    -1,    -1,    -1,    -1,    -1,
+        431,    -1,    -1,    -1,    -1,    -1,   432,
+         -1,    -1,    -1,    -1,   433,    -1,    -1,
+         -1,    -1,    -1,    -1,    -1,   434,    -1,
+         -1,    -1,    -1,   435,    -1,    -1,   436,
+         -1,    -1,    -1,    -1,    -1,    -1,   437,
+        438,    -1,    -1,   439,    -1,    -1,    -1,
+         -1,    -1,   440,   441,    -1,    -1,    -1,
+        442,    -1,   443,    -1,   444,    -1,    -1,
+        445,    -1,    -1,    -1,   446,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,    -1,   446,
-         -1,   447,    -1,    -1,    -1,    -1,    -1,
-        448,    -1,    -1,    -1,    -1,    -1,    -1,
+         -1,    -1,    -1,    -1,    -1,    -1,   447,
+         -1,   448,    -1,    -1,    -1,    -1,    -1,
+        449,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   449,    -1,   450,    -1,
-         -1,    -1,    -1,    -1,   451,    -1,    -1,
-         -1,    -1,    -1,   452,    -1,    -1,    -1,
-         -1,    -1,   453,    -1,    -1,   454,    -1,
+         -1,    -1,    -1,   450,    -1,   451,    -1,
+         -1,    -1,    -1,    -1,   452,    -1,    -1,
+         -1,    -1,    -1,   453,    -1,    -1,    -1,
+         -1,    -1,   454,    -1,    -1,   455,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,   455,    -1,    -1,    -1,   456,    -1,
+         -1,   456,    -1,    -1,    -1,   457,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   457,    -1,   458,   459,
-         -1,    -1,    -1,    -1,    -1,    -1,   460,
-         -1,    -1,    -1,    -1,   461,    -1,    -1,
-         -1,    -1,   462,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,   463,    -1,    -1,
-         -1,    -1,    -1,   464,    -1,    -1,    -1,
+         -1,    -1,    -1,   458,    -1,   459,   460,
+         -1,    -1,    -1,    -1,    -1,    -1,   461,
+         -1,    -1,    -1,    -1,   462,    -1,    -1,
+         -1,    -1,   463,    -1,    -1,    -1,    -1,
+         -1,    -1,    -1,    -1,   464,    -1,    -1,
          -1,    -1,    -1,   465,    -1,    -1,    -1,
+         -1,    -1,    -1,   466,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,   466,    -1,    -1,
+         -1,    -1,    -1,    -1,   467,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,   467,    -1,    -1,    -1,   468,
+         -1,    -1,   468,    -1,    -1,    -1,   469,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,    -1,   469,
+         -1,    -1,    -1,    -1,    -1,    -1,   470,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -1354,22 +1356,22 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,   470,    -1,    -1,    -1,    -1,    -1,
+         -1,   471,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   471,    -1,   472,    -1,
+         -1,    -1,    -1,   472,    -1,   473,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,   473,    -1,    -1,    -1,    -1,
+         -1,    -1,   474,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,   474,    -1,
-         -1,   475,    -1,    -1,    -1,    -1,    -1,
+         -1,    -1,    -1,    -1,    -1,   475,    -1,
+         -1,   476,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        476,    -1,    -1,    -1,    -1,    -1,    -1,
+        477,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -1380,14 +1382,14 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,   477,    -1,    -1,
+         -1,    -1,    -1,    -1,   478,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   478,   479,   480,    -1,
+         -1,    -1,    -1,   479,   480,   481,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,   481,    -1,
+         -1,    -1,    -1,    -1,    -1,   482,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -1402,12 +1404,12 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,   482,    -1,    -1,    -1,    -1,    -1,
+         -1,   483,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,   483,    -1,    -1,    -1,
+         -1,    -1,    -1,   484,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
@@ -1415,12 +1417,12 @@ std_name_hint_lookup::find (const char *str, size_t len)
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-         -1,    -1,    -1,    -1,    -1,   484,    -1,
          -1,    -1,    -1,    -1,    -1,   485,    -1,
+         -1,    -1,    -1,    -1,    -1,   486,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
          -1,    -1,    -1,    -1,    -1,    -1,    -1,
-        486
+        487
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
