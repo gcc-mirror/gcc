@@ -711,19 +711,19 @@ TokenCollector::visit (TypePath &path)
 void
 TokenCollector::visit (PathIdentSegment &segment)
 {
-  if (segment.is_super_segment ())
+  if (segment.is_super_path_seg ())
     {
       push (Rust::Token::make (SUPER, segment.get_locus ()));
     }
-  else if (segment.is_crate_segment ())
+  else if (segment.is_crate_path_seg ())
     {
       push (Rust::Token::make (CRATE, segment.get_locus ()));
     }
-  else if (segment.is_lower_self ())
+  else if (segment.is_lower_self_seg ())
     {
       push (Rust::Token::make (SELF, segment.get_locus ()));
     }
-  else if (segment.is_big_self ())
+  else if (segment.is_big_self_seg ())
     {
       push (Rust::Token::make (SELF_ALIAS, segment.get_locus ()));
     }
