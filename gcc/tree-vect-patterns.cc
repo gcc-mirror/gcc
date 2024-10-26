@@ -5610,42 +5610,7 @@ check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
       break;
 
     default:
-      if (TREE_CODE_CLASS (rhs_code) == tcc_comparison)
-	{
-	  tree vecitype, comp_vectype;
-
-	  /* If the comparison can throw, then is_gimple_condexpr will be
-	     false and we can't make a COND_EXPR/VEC_COND_EXPR out of it.  */
-	  if (stmt_could_throw_p (cfun, def_stmt))
-	    return false;
-
-	  comp_vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (rhs1));
-	  if (comp_vectype == NULL_TREE)
-	    return false;
-
-	  tree mask_type = get_mask_type_for_scalar_type (vinfo,
-							  TREE_TYPE (rhs1));
-	  if (mask_type
-	      && expand_vec_cmp_expr_p (comp_vectype, mask_type, rhs_code))
-	    return false;
-
-	  if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE)
-	    {
-	      scalar_mode mode = SCALAR_TYPE_MODE (TREE_TYPE (rhs1));
-	      tree itype
-		= build_nonstandard_integer_type (GET_MODE_BITSIZE (mode), 1);
-	      vecitype = get_vectype_for_scalar_type (vinfo, itype);
-	      if (vecitype == NULL_TREE)
-		return false;
-	    }
-	  else
-	    vecitype = comp_vectype;
-	  if (! expand_vec_cond_expr_p (vecitype, comp_vectype, rhs_code))
-	    return false;
-	}
-      else
-	return false;
-      break;
+      return false;
     }
 
   bool res = stmts.add (def_stmt);
