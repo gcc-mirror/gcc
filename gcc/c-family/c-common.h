@@ -167,6 +167,7 @@ enum rid
   /* C++ extensions */
   RID_ADDRESSOF,
   RID_BUILTIN_LAUNDER,
+  RID_BUILTIN_OBSERVABLE,
   RID_BUILTIN_BIT_CAST,
 
   /* C++11 */

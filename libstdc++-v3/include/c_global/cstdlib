@@ -187,6 +187,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   div(long __i, long __j) _GLIBCXX_NOTHROW { return ldiv(__i, __j); }
 #endif
 
+#if __has_builtin (__builtin_observable)
+  inline void
+  observable() _GLIBCXX_NOTHROW { return __builtin_observable (); }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
