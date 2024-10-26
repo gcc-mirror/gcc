@@ -1,3 +1,19 @@
+2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84868
+	* gfortran.dg/pr84868.f90: New test.
+
+2024-10-24  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117240_avx.c: New test.
+	* gcc.target/i386/pr117240_avx512f.c: New test.
+
 2024-10-22  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2024-10-24  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117240
+	* config/i386/i386-builtin.def: Add avx/avx512f to vaes
+	ymm/zmm builtins.
+
 2024-10-21  Jeevitha  <jeevitha@linux.ibm.com>
 
 	Backported from master:
