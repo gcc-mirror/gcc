@@ -8008,6 +8008,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_SHUFFLE:
     case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
+    case RID_BUILTIN_OBSERVABLE:
     case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_OPERATOR_NEW:
     case RID_BUILTIN_OPERATOR_DELETE:
@@ -8049,6 +8050,22 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		error_at (loc, "wrong number of arguments to "
 			       "%<__builtin_launder%>");
+		postfix_expression = error_mark_node;
+	      }
+	    break;
+
+	  case RID_BUILTIN_OBSERVABLE:
+	    if (vec->length () == 0)
+	      {
+		tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
+		releasing_vec vec;
+		postfix_expression = finish_call_expr (fn, &vec, false, false,
+						       tf_warning_or_error);
+	      }
+	    else
+	      {
+		error_at (loc, "%<__builtin_observable%> does not take"
+			  " arguments");
 		postfix_expression = error_mark_node;
 	      }
 	    break;

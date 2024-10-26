@@ -440,6 +440,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_operator_new", RID_BUILTIN_OPERATOR_NEW, D_CXXONLY },
   { "__builtin_operator_delete", RID_BUILTIN_OPERATOR_DELETE, D_CXXONLY },
+  { "__builtin_observable", RID_BUILTIN_OBSERVABLE, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
   { "__builtin_stdc_bit_ceil", RID_BUILTIN_STDC, D_CONLY },
