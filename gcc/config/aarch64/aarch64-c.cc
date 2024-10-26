@@ -382,11 +382,10 @@ aarch64_pragma_aarch64 (cpp_reader *)
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  */
 static tree
-aarch64_resolve_overloaded_builtin (unsigned int uncast_location,
+aarch64_resolve_overloaded_builtin (location_t location,
 				    tree fndecl, void *uncast_arglist)
 {
   vec<tree, va_gc> empty = {};
-  location_t location = (location_t) uncast_location;
   vec<tree, va_gc> *arglist = (uncast_arglist
 			       ? (vec<tree, va_gc> *) uncast_arglist
 			       : &empty);

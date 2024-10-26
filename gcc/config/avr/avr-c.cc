@@ -48,11 +48,10 @@ enum avr_builtin_id
 /* Implement `TARGET_RESOLVE_OVERLOADED_PLUGIN'.  */
 
 static tree
-avr_resolve_overloaded_builtin (unsigned int iloc, tree fndecl, void *vargs)
+avr_resolve_overloaded_builtin (location_t loc, tree fndecl, void *vargs)
 {
   tree type0, type1, fold = NULL_TREE;
   avr_builtin_id id = AVR_BUILTIN_COUNT;
-  location_t loc = (location_t) iloc;
   vec<tree, va_gc> &args = * (vec<tree, va_gc> *) vargs;
 
   switch (DECL_MD_FUNCTION_CODE (fndecl))

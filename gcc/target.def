@@ -2497,7 +2497,7 @@ arguments passed to the built-in function.  The result is a\n\
 complete expression that implements the operation, usually\n\
 another @code{CALL_EXPR}.\n\
 @var{arglist} really has type @samp{VEC(tree,gc)*}",
- tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
+ tree, (location_t loc, tree fndecl, void *arglist), NULL)
 
 DEFHOOK
 (check_builtin_call,
