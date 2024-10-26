@@ -55,10 +55,16 @@ public:
 
   location_t get_locus () const { return locus; }
 
-  bool is_super_segment () const { return as_string ().compare ("super") == 0; }
-  bool is_crate_segment () const { return as_string ().compare ("crate") == 0; }
-  bool is_lower_self () const { return as_string ().compare ("self") == 0; }
-  bool is_big_self () const { return as_string ().compare ("Self") == 0; }
+  bool is_super_path_seg () const
+  {
+    return as_string ().compare ("super") == 0;
+  }
+  bool is_crate_path_seg () const
+  {
+    return as_string ().compare ("crate") == 0;
+  }
+  bool is_lower_self_seg () const { return as_string ().compare ("self") == 0; }
+  bool is_big_self_seg () const { return as_string ().compare ("Self") == 0; }
 };
 
 // A binding of an identifier to a type used in generic arguments in paths
@@ -560,17 +566,17 @@ public:
 
   bool is_super_path_seg () const
   {
-    return !has_generic_args () && get_ident_segment ().is_super_segment ();
+    return !has_generic_args () && get_ident_segment ().is_super_path_seg ();
   }
 
   bool is_crate_path_seg () const
   {
-    return !has_generic_args () && get_ident_segment ().is_crate_segment ();
+    return !has_generic_args () && get_ident_segment ().is_crate_path_seg ();
   }
 
   bool is_lower_self_seg () const
   {
-    return !has_generic_args () && get_ident_segment ().is_lower_self ();
+    return !has_generic_args () && get_ident_segment ().is_lower_self_seg ();
   }
 };
 
@@ -950,16 +956,19 @@ public:
 
   bool is_crate_path_seg () const
   {
-    return get_ident_segment ().is_crate_segment ();
+    return get_ident_segment ().is_crate_path_seg ();
   }
   bool is_super_path_seg () const
   {
-    return get_ident_segment ().is_super_segment ();
+    return get_ident_segment ().is_super_path_seg ();
   }
-  bool is_big_self_seg () const { return get_ident_segment ().is_big_self (); }
+  bool is_big_self_seg () const
+  {
+    return get_ident_segment ().is_big_self_seg ();
+  }
   bool is_lower_self_seg () const
   {
-    return get_ident_segment ().is_lower_self ();
+    return get_ident_segment ().is_lower_self_seg ();
   }
 };
 
