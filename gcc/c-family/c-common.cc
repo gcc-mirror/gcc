@@ -432,6 +432,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
+  { "__builtin_observable", RID_BUILTIN_OBSERVABLE, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
   { "__builtin_stdc_bit_ceil", RID_BUILTIN_STDC, D_CONLY },
