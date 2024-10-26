@@ -65,7 +65,6 @@ issue-1272.rs
 issue-1289.rs
 issue-1447.rs
 issue-1483.rs
-issue-1589.rs
 issue-1725-1.rs
 issue-1725-2.rs
 issue-1786.rs
@@ -175,7 +174,6 @@ sizeof-stray-infer-var-bug.rs
 specify-crate-name.rs
 stmt_with_block_dot.rs
 struct-expr-parse.rs
-trait-cycle.rs
 traits1.rs
 traits10.rs
 traits11.rs
