@@ -1382,7 +1382,7 @@ has returned, such calls are erroneous. For example:
 
   package body P is
 
-     type Less_Nested is not null access procedure;
+     type Less_Nested is access procedure;
      Global : Less_Nested;
 
      procedure P1 is
