@@ -51,6 +51,12 @@ if ![info exists ::env(GUALITY_GDB_NAME)] {
     }
     setenv GUALITY_GDB_NAME "$guality_gdb_name"
 }
+
+if [info exists ::env(DEBUGINFOD_URLS)] {
+  set orig_debuginfod_urls "$::env(DEBUGINFOD_URLS)"
+  setenv DEBUGINFOD_URLS ""
+}
+
 report_gdb $::env(GUALITY_GDB_NAME) [info script]
 
 global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
@@ -89,6 +95,10 @@ if {[check_guality "
 
 if [info exists guality_gdb_name] {
     unsetenv GUALITY_GDB_NAME
+}
+
+if [info exists ::env(DEBUGINFOD_URLS)] {
+  setenv DEBUGINFOD_URLS "$orig_debuginfod_urls"
 }
 
 torture-finish
