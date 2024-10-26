@@ -1,3 +1,10 @@
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116551
+	* gcc-interface/trans.cc (node_is_atomic) <N_Identifier>: Return
+	false if the type of the entity is an unconstrained array type.
+	(node_is_volatile_full_access) <N_Identifier>: Likewise.
+
 2024-10-14  Steve Baird  <baird@adacore.com>
 
 	PR ada/114593
