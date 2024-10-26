@@ -151,6 +151,8 @@ uint_least64_t, "<cstdint>", cxx11
 uint_least8_t, "<cstdint>", cxx11
 uintmax_t, "<cstdint>", cxx11
 uintptr_t, "<cstdint>", cxx11
+# <cstdlib>
+observable, "<cstdlib>", cxx11
 # <deque>
 deque, "<deque>", cxx98
 # <exception>
