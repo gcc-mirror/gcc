@@ -1,3 +1,16 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* objcp-decl.cc: Remove trailing whitespace.
+	* objcp-lang.cc: Likewise.
+	* objcp-decl.h: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* objcp-decl.cc
+	* objcp-lang.cc: Likewise.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Make-lang.in (cc1objplus$(exeext)): Remove $(NETLIBS).

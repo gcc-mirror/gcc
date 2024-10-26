@@ -1,3 +1,91 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* crtstuff.c: Remove trailing whitespace.
+	* libgcov.h: Likewise.
+	* config/alpha/crtfastmath.c: Likewise.
+	* config/alpha/vms-gcc_shell_handler.c: Likewise.
+	* config/alpha/vms-unwind.h: Likewise.
+	* config/pa/linux-atomic.c: Likewise.
+	* config/pa/linux-unwind.h: Likewise.
+	* config/pa/quadlib.c: Likewise.
+	* config/pa/fptr.c: Likewise.
+	* config/s390/32/_fixsfdi.c: Likewise.
+	* config/s390/32/_fixunssfdi.c: Likewise.
+	* config/s390/32/_fixunsdfdi.c: Likewise.
+	* config/c6x/pr-support.c: Likewise.
+	* config/lm32/_udivsi3.c: Likewise.
+	* config/lm32/libgcc_lm32.h: Likewise.
+	* config/lm32/_udivmodsi4.c: Likewise.
+	* config/lm32/_mulsi3.c: Likewise.
+	* config/lm32/_modsi3.c: Likewise.
+	* config/lm32/_umodsi3.c: Likewise.
+	* config/lm32/_divsi3.c: Likewise.
+	* config/darwin-crt3.c: Likewise.
+	* config/msp430/mpy.c: Likewise.
+	* config/ia64/tf-signs.c: Likewise.
+	* config/ia64/fde-vms.c: Likewise.
+	* config/ia64/unwind-ia64.c: Likewise.
+	* config/ia64/vms-unwind.h: Likewise.
+	* config/ia64/sfp-exceptions.c: Likewise.
+	* config/ia64/quadlib.c: Likewise.
+	* config/ia64/unwind-ia64.h: Likewise.
+	* config/rl78/vregs.h: Likewise.
+	* config/arm/bpabi.c: Likewise.
+	* config/arm/unwind-arm.c: Likewise.
+	* config/arm/pr-support.c: Likewise.
+	* config/arm/linux-atomic.c: Likewise.
+	* config/arm/bpabi-lib.h: Likewise.
+	* config/frv/frvend.c: Likewise.
+	* config/frv/cmovw.c: Likewise.
+	* config/frv/frvbegin.c: Likewise.
+	* config/frv/cmovd.c: Likewise.
+	* config/frv/cmovh.c: Likewise.
+	* config/aarch64/cpuinfo.c: Likewise.
+	* config/i386/crtfastmath.c: Likewise.
+	* config/i386/cygming-crtend.c: Likewise.
+	* config/i386/32/tf-signs.c: Likewise.
+	* config/i386/crtprec.c: Likewise.
+	* config/i386/sfp-exceptions.c: Likewise.
+	* config/i386/w32-unwind.h: Likewise.
+	* config/m32r/initfini.c: Likewise.
+	* config/sparc/crtfastmath.c: Likewise.
+	* config/gcn/amdgcn_veclib.h: Likewise.
+	* config/nios2/linux-atomic.c: Likewise.
+	* config/nios2/linux-unwind.h: Likewise.
+	* config/nios2/lib2-mul.c: Likewise.
+	* config/nios2/lib2-nios2.h: Likewise.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise.
+	* config/rs6000/darwin-fallback.c: Likewise.
+	* config/rs6000/ibm-ldouble.c: Likewise.
+	* config/rs6000/sfp-machine.h: Likewise.
+	* config/rs6000/darwin-asm.h: Likewise.
+	* config/rs6000/darwin-crt2.c: Likewise.
+	* config/rs6000/aix-unwind.h: Likewise.
+	* config/rs6000/sfp-exceptions.c: Likewise.
+	* config/gthr-vxworks.c: Likewise.
+	* config/riscv/atomic.c: Likewise.
+	* config/visium/memcpy.c: Likewise.
+	* config/darwin-crt-tm.c: Likewise.
+	* config/stormy16/lib2funcs.c: Likewise.
+	* config/arc/ieee-754/divtab-arc-sf.c: Likewise.
+	* config/arc/ieee-754/divtab-arc-df.c: Likewise.
+	* config/arc/initfini.c: Likewise.
+	* config/sol2/gmon.c: Likewise.
+	* config/microblaze/divsi3_table.c: Likewise.
+	* config/m68k/fpgnulib.c: Likewise.
+	* libgcov-driver.c: Likewise.
+	* unwind-dw2.c: Likewise.
+	* fp-bit.c: Likewise.
+	* dfp-bit.h: Likewise.
+	* dfp-bit.c: Likewise.
+	* libgcov-driver-system.c: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* libgcov-util.c: Add #define INCLUDE_MEMORY.
+
 2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/aarch64/t-aarch64: Always use -Werror

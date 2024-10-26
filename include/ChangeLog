@@ -1,3 +1,21 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* dyn-string.h: Remove trailing whitespace.
+	* libiberty.h: Likewise.
+	* xregex.h: Likewise.
+	* splay-tree.h: Likewise.
+	* partition.h: Likewise.
+	* plugin-api.h: Likewise.
+	* demangle.h: Likewise.
+	* vtv-change-permission.h: Likewise.
+	* fibheap.h: Likewise.
+	* hsa_ext_image.h: Likewise.
+	* hashtab.h: Likewise.
+	* libcollector.h: Likewise.
+	* sort.h: Likewise.
+	* symcat.h: Likewise.
+	* hsa_ext_amd.h: Likewise.
+
 2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gomp-constants.h (GOMP_OMP_PREDEF_ALLOC_MAX,

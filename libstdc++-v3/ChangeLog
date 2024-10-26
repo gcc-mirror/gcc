@@ -1,3 +1,172 @@
+2024-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/operators/char/op_plus_string_view.cc:
+	Check __cpp_lib_constexpr_string.
+
+2024-10-25  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/basic_string.h: Implement the four operator+
+	overloads between basic_string and (types convertible to)
+	basic_string_view.
+	* include/bits/version.def: Bump the feature-testing macro.
+	* include/bits/version.h: Regenerate.
+	* testsuite/21_strings/basic_string/operators/char/op_plus_fspath_neg.cc: New test.
+	* testsuite/21_strings/basic_string/operators/char/op_plus_string_view.cc: New test.
+	* testsuite/21_strings/basic_string/operators/char/op_plus_string_view_compat.cc:
+	New test.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/debug/debug.h: Remove trailing whitespace.
+	* include/parallel/base.h: Likewise.
+	* include/parallel/types.h: Likewise.
+	* include/parallel/settings.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/partition.h: Likewise.
+	* include/parallel/random_number.h: Likewise.
+	* include/parallel/find_selectors.h: Likewise.
+	* include/parallel/partial_sum.h: Likewise.
+	* include/parallel/list_partition.h: Likewise.
+	* include/parallel/search.h: Likewise.
+	* include/parallel/algorithmfwd.h: Likewise.
+	* include/parallel/random_shuffle.h: Likewise.
+	* include/parallel/multiway_mergesort.h: Likewise.
+	* include/parallel/sort.h: Likewise.
+	* include/parallel/algobase.h: Likewise.
+	* include/parallel/numericfwd.h: Likewise.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/losertree.h: Likewise.
+	* include/bits/basic_ios.h: Likewise.
+	* include/bits/stringfwd.h: Likewise.
+	* include/bits/ostream_insert.h: Likewise.
+	* include/bits/stl_heap.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/stl_iterator_base_funcs.h: Likewise.
+	* include/bits/valarray_before.h: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/bits/postypes.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* include/bits/localefwd.h: Likewise.
+	* include/bits/stl_algo.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/bits/stl_function.h: Likewise.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/valarray_after.h: Likewise.
+	* include/bits/char_traits.h: Likewise.
+	* include/bits/gslice.h: Likewise.
+	* include/bits/locale_facets_nonio.h: Likewise.
+	* include/bits/mask_array.h: Likewise.
+	* include/bits/specfun.h: Likewise.
+	* include/bits/random.h: Likewise.
+	* include/bits/slice_array.h: Likewise.
+	* include/bits/valarray_array.h: Likewise.
+	* include/tr1/float.h: Likewise.
+	* include/tr1/functional_hash.h: Likewise.
+	* include/tr1/math.h: Likewise.
+	* include/tr1/hashtable_policy.h: Likewise.
+	* include/tr1/stdio.h: Likewise.
+	* include/tr1/complex.h: Likewise.
+	* include/tr1/stdbool.h: Likewise.
+	* include/tr1/stdarg.h: Likewise.
+	* include/tr1/inttypes.h: Likewise.
+	* include/tr1/fenv.h: Likewise.
+	* include/tr1/stdlib.h: Likewise.
+	* include/tr1/wchar.h: Likewise.
+	* include/tr1/tgmath.h: Likewise.
+	* include/tr1/limits.h: Likewise.
+	* include/tr1/wctype.h: Likewise.
+	* include/tr1/stdint.h: Likewise.
+	* include/tr1/ctype.h: Likewise.
+	* include/tr1/random.h: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/ext/debug_allocator.h: Likewise.
+	* include/ext/vstring_fwd.h: Likewise.
+	* include/ext/pointer.h: Likewise.
+	* include/ext/pod_char_traits.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/type_traits.h: Likewise.
+	* include/ext/ropeimpl.h: Likewise.
+	* include/ext/codecvt_specializations.h: Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* include/ext/atomicity.h: Likewise.
+	* include/ext/concurrence.h: Likewise.
+	* include/c_compatibility/wchar.h: Likewise.
+	* include/c_compatibility/stdint.h: Likewise.
+	* include/backward/hash_fun.h: Likewise.
+	* include/backward/binders.h: Likewise.
+	* include/backward/hashtable.h: Likewise.
+	* include/backward/auto_ptr.h: Likewise.
+	* libsupc++/eh_arm.cc: Likewise.
+	* libsupc++/unwind-cxx.h: Likewise.
+	* libsupc++/si_class_type_info.cc: Likewise.
+	* libsupc++/vec.cc: Likewise.
+	* libsupc++/class_type_info.cc: Likewise.
+	* libsupc++/vmi_class_type_info.cc: Likewise.
+	* libsupc++/guard_error.cc: Likewise.
+	* libsupc++/bad_typeid.cc: Likewise.
+	* libsupc++/eh_personality.cc: Likewise.
+	* libsupc++/atexit_arm.cc: Likewise.
+	* libsupc++/pmem_type_info.cc: Likewise.
+	* libsupc++/vterminate.cc: Likewise.
+	* libsupc++/eh_terminate.cc: Likewise.
+	* libsupc++/bad_cast.cc: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/eh_throw.cc: Likewise.
+	* libsupc++/bad_alloc.cc: Likewise.
+	* libsupc++/nested_exception.cc: Likewise.
+	* libsupc++/pointer_type_info.cc: Likewise.
+	* libsupc++/pbase_type_info.cc: Likewise.
+	* libsupc++/bad_array_new.cc: Likewise.
+	* libsupc++/pure.cc: Likewise.
+	* libsupc++/eh_exception.cc: Likewise.
+	* libsupc++/bad_array_length.cc: Likewise.
+	* libsupc++/cxxabi.h: Likewise.
+	* libsupc++/guard.cc: Likewise.
+	* libsupc++/eh_catch.cc: Likewise.
+	* libsupc++/cxxabi_forced.h: Likewise.
+	* libsupc++/tinfo.h: Likewise.
+
+2024-10-24  François Dumont  <frs.dumont@gmail.com>
+
+	* testsuite/23_containers/unordered_map/96088.cc (test03): Fix increments
+	value when _GLIBCXX_USE_CXX11_ABI is equal to 0.
+
+2024-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/complex/ext_c++23.cc: Fix typo in macro.
+	* testsuite/26_numerics/headers/cmath/constexpr_std_c++23.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++23.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/nextafter_c++23.cc:
+	Likewise.
+
+2024-10-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__throw_bad_variant_access(unsigned)):
+	Define new function as inline friend, with namespace-scope
+	declaration using noreturn attribute.
+	(__throw_bad_variant_access(const char*)): Remove.
+	(__throw_bad_variant_access(bool)): Remove.
+	(visit, visit<R>): Adjust calls to __throw_bad_variant_access.
+
+2024-10-24  Ricardo Jesus  <rjj@nvidia.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h (__VEXT): Replace uses
+	of __builtin_shuffle with __builtin_shufflevector.
+	(__aarch64_lsl_128): Move shift amount to a template parameter.
+	(__aarch64_lsr_128): Move shift amount to a template parameter.
+	(__aarch64_recursion): Update call sites of __aarch64_lsl_128
+	and __aarch64_lsr_128.
+
 2024-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/18_support/headers/cstdalign/macros.cc: New test.

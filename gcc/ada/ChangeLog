@@ -1,3 +1,304 @@
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use gnu_fat_type as the type
+	context for a XUB type.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Update some calls to
+	create_type_decl.
+	* gcc-interface/gigi.h (create_type_decl): Add can_be_nameless parameter.
+	* gcc-interface/utils.cc (create_type_decl): Add can_be_nameless
+	parameter.  Set DECL_NAMELESS on type decl.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/utils.cc (record_builtin_type, create_type_stub_decl):
+	Set DECL_NAMELESS on type decls.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Pass 'true' to
+	create_type_decl when creating XUA type.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Set TYPE_NAMELESS on
+	XUB types.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Pass artificial_p to
+	build_unc_object_type.
+	* gcc-interface/gigi.h (build_unc_object_type): Update.
+	* gcc-interface/utils.cc (build_unc_object_type) Add artificial_p
+	parameter.
+	(build_unc_object_type_from_ptr): Update.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/decl.cc (is_artificial): New function.
+	(gnat_to_gnu_entity): Use it.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Call_to_gnu): If the formal is passed by
+	reference and the actual is a type conversion but not addressable,
+	create the temporary in the target type of the conversion if this
+	is needed to enforce strict aliasing.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116551
+	* gcc-interface/trans.cc (node_is_atomic) <N_Identifier>: Return
+	false if the type of the entity is an unconstrained array type.
+	(node_is_volatile_full_access) <N_Identifier>: Likewise.
+
+2024-10-25  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): Temporarily disable warning.
+
+2024-10-25  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb: (Analyze_With_Clause): Check for self-referential
+	with clause. Give a warning, and set Is_Implicit_With, which we
+	are reusing in this obscure case even though it's not really
+	implicit.
+	(Analyze_Context): Remove check for self-referential with clause.
+	It wasn't correct -- it only triggered for Acts_As_Spec
+	subprograms. Corrected check is now in Analyze_With_Clause.
+	(Implicit_With): Rename to be Is_Implicit_With. Misc cleanup,
+	comment fixes.
+	(Process_Spec_Clauses): Remove default for Exit_On_Self parameter.
+	Use "exit when" instead of if statement.
+	* sinfo.ads (Implicit_With): Rename to be Is_Implicit_With.
+	Document new use for self-referential withs.
+	* ali.adb (Scan_ALI): Use an aggregate to initialize Withs entry.
+	* exp_put_image.adb (Preload_Root_Buffer_Type): Make this a
+	once-only procedure.
+	* sem_util.ads (Is_Ancestor_Package): Fix comment -- a libraryunit
+	is an ancestor of itself, but this doesn't return True in that
+	case.
+	* sem_util.adb (Is_Ancestor_Package): Better to initialize things
+	on their declaration.
+	* lib-load.adb: Minor comment fix.
+	* sem_prag.adb: Implicit_With --> Is_Implicit_With. Minor comment
+	fix.
+	* gen_il-fields.ads: Implicit_With --> Is_Implicit_With.
+	* gen_il-gen-gen_nodes.adb: Likewise
+	* lib.adb: Likewise
+	* lib-writ.adb: Likewise
+	* rtsfind.adb: Likewise
+	* sem_cat.adb: Likewise
+	* sem_ch12.adb: Likewise
+	* sem_ch8.adb: Likewise
+	* sem_elab.adb: Likewise
+	* sem_warn.adb: Likewise
+	* gcc-interface/trans.cc: (Implicit_With): Rename to be
+	Is_Implicit_With.
+
+2024-10-25  Tom Tromey  <tromey@adacore.com>
+
+	* gcc-interface/trans.cc (namespace_map): New global.
+	(Compilation_Unit_to_gnu): Also handle N_With_Clause and
+	N_Use_Package_Clause.
+	(get_or_create_namespace, get_namespace): New functions.
+	(gnat_to_gnu) <N_Package_Renaming_Declaration>: Call
+	get_namespace.
+	<N_Use_Package_Clause, N_With_Clause>: Likewise.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression.In_Expanded_Body): Tweak comments.
+
+2024-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Entity): If the entity is an access-to-subprogram
+	type declaration that pre/postcondition contracts, build the
+	wrapper
+	(if not previously done as part of processing aspects).
+	* sem_ch3.adb (Build_Access_Subprogram_Wrapper): Add missing support
+	for building the wrapper when the access type has pragmas
+	Pre_Class/Post_Class.
+	(Build_Access_Subprogram_Wrapper_Declaration): New subprogram.
+	* sem_ch3.ads (Build_Access_Subprogram_Wrapper): Spec moved to the
+	public part of the package.
+	* sem_prag.adb (Analyze_Pre_Post_Condition): Store in the tree copy of
+	class-wide pre/postcondition expression; required to merge it with
+	inherited conditions.
+	(Is_Valid_Assertion_Kind): Added Pre_Class and Post_Class.
+
+2024-10-25  Richard Kenner  <kenner@adacore.com>
+
+	* doc/gnat_ugn/about_this_guide.rst: Numerous changes to language
+	and style and add some LLVM-specific information.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Likewise.
+	* doc/gnat_ugn/example_of_binder_output.rst: Likewise.
+	* doc/gnat_ugn/getting_started_with_gnat.rst: Likewise.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Likewise.
+	* doc/gnat_ugn/gnat_utility_programs.rst: Likewise.
+	* doc/gnat_ugn/inline_assembler.rst: Likewise.
+	* doc/gnat_ugn/platform_specific_information.rst: Likewise.
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Likewise.
+	* gnat_ugn.texi: Regenerate.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/43485
+	* libgnarl/a-retide.adb: Add with clause for System.Soft_Links.
+	(Delay_Until): Defer and undefer abort around the call to the
+	Timed_Delay routine of System.Task_Primitives.Operations.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression.In_Expanded_Body): Also return True
+	for the body of a helper/wrapper built for class-wide preconditions.
+
+2024-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Analyze_Pre_Post_Condition): Allow the use of
+	pragma Pre_Class/Post_Class with abstract subprograms.
+
+2024-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Record_Type_Definition): For tagged types, add
+	the missing decoration to the First_Entity in the corresponding
+	class-wide type entity.
+
+2024-10-25  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Adjust documentation.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-10-25  Richard Kenner  <kenner@adacore.com>
+
+	* comperr.ads (Compiler_Error): Update documentation.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* uintp.ads (Type_Size_For): New function declaration.
+	* uintp.adb (Type_Size_For): New function body.
+	* exp_imgv.adb (Rewrite_Object_Image): Call Type_Size_For to get
+	the size of a narrower integer type.
+
+2024-10-25  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: update
+	simpler accessibility model
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-10-25  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst:
+	Minor wording improvments.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-10-25  squirek  <squirek@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb: Modify stack size and update
+	documentation.
+
+2024-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* gen_il-fields.ads: New node field (Is_Expanded_Prefixed_Call).
+	* gen_il-gen-gen_nodes.adb: New semantic field for N_Function_Call
+	and N_Procedure_Call_Statement nodes.
+	* sem_ch4.adb (Complete_Object_Operation): Mark the rewritten node
+	with the Is_Expanded_Prefixed_Call flag.
+	* sem_res.adb (Check_Prefixed_Call): Code cleanup and addition of
+	documentation.
+	(Resolve_Actuals): Add a null-exclusion check on the
+	prefix of the call when it is an access-type.
+	* sinfo.ads: Adding new semantic flag (Is_Expanded_Prefixed_Call)
+	to N_Function_Call and N_Procedure_Call_Statement nodes.
+	* debug.adb: Adding documentation for switch d_P.
+
+2024-10-25  Raphaël AMIARD  <amiard@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): change the call to
+	`Error_Msg_GNAT_Extension` to allow this aspect in core
+	extensions. Put the code path in core extensions.
+	* exp_util.adb (Name_Of_Controlled_Prim_Op): Put the code path
+	in core extensions
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.ads (Interp ): Add Opnd_Typ component and remove default
+	value for Abstract_Op component.
+	(Add_One_Interp): Rename Opnd_Type parameter to Opnd_Typ.
+	* sem_type.adb (Add_One_Interp): Likewise.
+	(Add_One_Interp.Add_Entry): Record the operand type as well.
+	(Collect_Interp): Record Empty for the operand type.
+	(Disambiguate.Is_Ambiguous_Boolean_Operator): New predicate.
+	(Disambiguate): Use it to detect recorded ambiguity cases.
+	* sem_ch4.adb (Find_Comparison_Equality_Types): Add commentary.
+
+2024-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Freeze_Actual_Profile): Do not report error
+	on incomplete types, since they do not cause freezing.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* namet.adb (Append_Decoded_With_Brackets): Fix condition for the
+	cheap test at the beginning of the loop.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115507
+	* rtsfind.ads (RE_Id): Add RE_Enum_[Wide_]Wide_String_To_String.
+	(RE_Unit_Table): Add entries for the new values.
+	* exp_attr.adb (Is_User_Defined_Enumeration_Type): New predicate.
+	(Expand_N_Attribute_Reference) <Attribute_Wide_Value>: Build a call
+	to RE_Enum_Wide_String_To_String for user-defined enumeration types.
+	<Attribute_Wide_Wide_Value>: Likewise with
+	RE_Enum_Wide_Wide_String_To_String.
+	* exp_imgv.adb (Expand_Value_Attribute): Adjust to above.
+	* libgnat/s-wchwts.ads (Enum_Wide_String_To_String): New function.
+	(Enum_Wide_Wide_String_To_String): Likewise.
+	* libgnat/s-wchwts.adb: Add clauses for System.Case_Util.
+	(Normalize_String): New local procedure.
+	(Enum_Wide_String_To_String): New function body.
+	(Enum_Wide_Wide_String_To_String): Likewise.
+
+2024-10-25  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Add checks for incomplete
+	type actuals.
+
+2024-10-25  Raphaël AMIARD  <amiard@adacore.com>
+
+	* par-ch5.adb (P_Sequence_Of_Statements): Forbid repr clauses in
+	handled_statements.
+
+2024-10-25  Raphaël AMIARD  <amiard@adacore.com>
+
+	* sem_util.ads: Introduce Inspect_Deferred_Constant_Completion
+	on a single object declaration, to better factorize the code
+	* sem_util.adb: Introduce aforementioned overload
+	* sem_ch4.adb (Analyze_Expression_With_Actions): Check deferred
+	constant completions
+	* sem_ch5.adb (Analyze_Statements): Check deferred constant
+	completions
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals.Is_Legal_Copy): Return True for an
+	initialization procedure with a full access formal parameter.
+	(Expand_Actuals.Requires_Atomic_Or_Volatile_Copy): Return True if
+	the formal parameter is of a full access unconstrained array type.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* gcc-interface/misc.cc: Add #define INCLUDE_MEMORY
+	* gcc-interface/trans.cc: Likewise.
+	* gcc-interface/utils.cc: Likewise.
+
 2024-10-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/116498

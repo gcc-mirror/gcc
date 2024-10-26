@@ -1,3 +1,15 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* docs/examples/tut04-toyvm/toyvm.cc: Remove trailing whitespace.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* dummy-frontend.cc: Add #define INCLUDE_MEMORY.
+	* jit-playback.cc: Likewise.
+	* jit-recording.cc: Likewise.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

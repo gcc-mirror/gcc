@@ -1,3 +1,23 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-encoding.cc: Remove trailing whitespace.
+	* objc-map.h: Likewise.
+	* objc-next-runtime-abi-01.cc: Likewise.
+	* objc-act.cc: Likewise.
+	* objc-map.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* objc-act.cc: Add #define INCLUDE_MEMORY.
+	* objc-encoding.cc: Likewise.
+	* objc-gnu-runtime-abi-01.cc: Likewise.
+	* objc-lang.cc: Likewise.
+	* objc-next-runtime-abi-01.cc: Likewise.
+	* objc-next-runtime-abi-02.cc: Likewise.
+	* objc-runtime-shared-support.cc: Likewise.
+
 2024-05-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.cc (WEAK_PROTOCOLS_AFTER): New.

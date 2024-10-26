@@ -1,3 +1,269 @@
+2024-10-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/58195
+	* gcc.target/aarch64/csel-neg-1.c: New test.
+	* gcc.target/aarch64/csel-neg-2.c: New test.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR lto/47333
+	* g++.dg/lto/pr47333_0.C: Ignore -Wtemplate-body.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR lto/62026
+	* g++.dg/lto/pr62026_0.C: Pass -Wno-return-type.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR c++/95677
+	* g++.dg/lto/pr95677_0.C: Use dg-lto-*.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/lto/tbaa_0.c: Use dg-lto directives, pass -std=gnu89, and
+	use -flto-partition=none.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/lto/tbaa-1.c: Move to...
+	* gcc.dg/lto/tbaa_0.c: ...here.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR target/47333
+	* g++.dg/lto/pr47333.C: Move to...
+	* g++.dg/lto/pr47333_0.C: ...here.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR lto/62026
+	* g++.dg/lto/pr62026.C: Move to...
+	* g++.dg/lto/pr62026_0.C: ...here.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR c++/95677
+	* g++.dg/lto/pr95677.C: Move to...
+	* g++.dg/lto/pr95677_0.C: ...here.
+
+2024-10-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/cpunative/info_25: New file.
+	* gcc.target/aarch64/cpunative/info_26: New file.
+	* gcc.target/aarch64/cpunative/native_cpu_25.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_26.c: New test.
+
+2024-10-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/117292
+	* gcc.target/aarch64/sve/single_5.c: Remove xfails.
+	* gcc.target/aarch64/pr117292.c: New test.
+
+2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79685
+	* gfortran.dg/use_rename_13.f90: New test.
+
+2024-10-25  Sam James  <sam@gentoo.org>
+
+	PR rtl-optimization/115933
+	* gcc.dg/pr115933.c: New test.
+
+2024-10-25  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/mf8-reinterpret.c: New test.
+
+2024-10-25  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/movv16qi_2.c: Test mfloat as well.
+	* gcc.target/aarch64/movv16qi_3.c: Ditto.
+	* gcc.target/aarch64/movv2x16qi_1.c: Ditto.
+	* gcc.target/aarch64/movv3x16qi_1.c: Ditto.
+	* gcc.target/aarch64/movv4x16qi_1.c: Ditto.
+	* gcc.target/aarch64/movv8qi_2.c: Ditto.
+	* gcc.target/aarch64/movv8qi_3.c: Ditto.
+	* gcc.target/aarch64/mfloat-init-1.c: New test.
+
+2024-10-25  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.dg/tree-ssa/pow_fold_1.c: New test.
+
+2024-10-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u16.c: New test.
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u32.c: New test.
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u64.c: New test.
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u8.c: New test.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/117201
+	PR lto/117288
+	* gcc.dg/lto/pr117201_0.c: New test.
+	* gcc.dg/lto/pr117288_0.c: New test.
+
+2024-10-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/shifts-3.c: Accept widen_mult for f2 too.
+
+2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/116551
+	* gnat.dg/specs/vfa3.ads: New test.
+
+2024-10-25  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve2/acle/asm/aba_s32.c: New tests.
+	* gcc.target/aarch64/sve2/acle/asm/aba_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aba_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aba_u64.c: Likewise.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/class-10_a.H: New test.
+	* g++.dg/modules/class-10_b.C: New test.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/clone-2_a.C: New test.
+	* g++.dg/modules/clone-2_b.C: New test.
+	* g++.dg/modules/clone-3_a.C: New test.
+	* g++.dg/modules/clone-3_b.C: New test.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115007
+	* g++.dg/modules/virt-6_a.C: New test.
+	* g++.dg/modules/virt-6_b.C: New test.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/virt-5_a.C: New test.
+	* g++.dg/modules/virt-5_b.C: New test.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Convert call outcomes
+	from "get_desc" to print_desc".
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Update for changes to
+	pending_diagnostic vfuncs.
+
+2024-10-24  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/stack-check-2.c: Use -fno-ipa-icf.
+
+2024-10-24  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR ipa/113197
+	* gcc.dg/lto/pr113197_0.c: Require effective target pie.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* gcc.dg/plugin/diagnostic_group_plugin.c: Update for use of
+	std::unique_ptr.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: Likewise.
+	* gcc.dg/plugin/ggcplug.c: Likewise.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cnt_fold_6.c: New test.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/shifts-3.c: New test.
+	* gcc.dg/tree-ssa/shifts-4.c: Likewise.
+	* gcc.target/aarch64/sve/cnt_fold_5.c: Likewise.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cnt_fold_4.c: New test.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/shifts-1.c: New test.
+	* gcc.dg/tree-ssa/shifts-2.c: Likewise.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/mulexactdiv-5.c: New test.
+	* gcc.dg/tree-ssa/mulexactdiv-6.c: Likewise.
+	* gcc.dg/tree-ssa/mulexactdiv-7.c: Likewise.
+	* gcc.dg/tree-ssa/mulexactdiv-8.c: Likewise.
+	* gcc.target/aarch64/sve/cnt_fold_3.c: Likewise.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/mulexactdiv-1.c: New test.
+	* gcc.dg/tree-ssa/mulexactdiv-2.c: Likewise.
+	* gcc.dg/tree-ssa/mulexactdiv-3.c: Likewise.
+	* gcc.dg/tree-ssa/mulexactdiv-4.c: Likewise.
+	* gcc.target/aarch64/sve/cnt_fold_1.c: Likewise.
+	* gcc.target/aarch64/sve/cnt_fold_2.c: Likewise.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/tree-ssa/cmpexactdiv-6.c: New test.
+
+2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117259
+	* g++.dg/ubsan/pr117259.C: New test.
+
+2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117209
+	* gcc.dg/asan/pr117209.c: New test.
+
+2024-10-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve2/acle/asm/sra_s32.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/sra_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sra_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sra_u64.c: Likewise.
+
+2024-10-24  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/sve/const_fold_lsl_1.c: New test.
+
+2024-10-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/acle/asm/div_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mul_s16.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/acle/asm/mul_s32.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/mul_s64.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/acle/asm/mul_s8.c: Likewise.
+	* gcc.target/aarch64/sve/div_const_run.c: New test.
+	* gcc.target/aarch64/sve/mul_const_run.c: Likewise.
+
+2024-10-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/index_const_fold.c: New test.
+
+2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/116488
+	PR rtl-optimization/117226
+	* gcc.dg/torture/pr116488.c (c, e): Change type from char to
+	signed char.
+	* gcc.dg/torture/pr117226.c (main): Change f type from char to
+	signed char.
+
+2024-10-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_s_add-run-16.c: New test.
+
 2024-10-23  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	PR target/113860

@@ -1,3 +1,179 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* state-purge.cc: Remove trailing whitespace.
+	* region-model.h: Likewise.
+	* region-model.cc: Likewise.
+	* program-point.cc: Likewise.
+	* exploded-graph.h: Likewise.
+	* program-state.cc: Likewise.
+	* supergraph.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* bounds-checking.cc
+	(concrete_buffer_overflow::describe_final_event): Convert return
+	type from label_text to bool.  Add "pp" param and either print to
+	it and return true, or return false.
+	(concrete_buffer_overflow::describe_final_event_as_bytes): Convert
+	to print to a pp rather than returning a label_text.
+	(concrete_buffer_overflow::describe_final_event_as_bits):
+	Likewise.
+	(class concrete_buffer_over_read): Analogous changes to above.
+	(class concrete_buffer_underwrite): Likewise.
+	(class concrete_buffer_under_read): Likewise.
+	(class symbolic_buffer_overflow): Likewise.
+	(class symbolic_buffer_over_read): Likewise.
+	* call-details.cc (class overlapping_buffers): Likewise.
+	* call-info.cc (call_info::print): Reimplement.
+	(class call_info::add_events_to_path::call_event): Convert
+	"get_desc" vfunc to "print_desc", dropping return type, adding
+	"pp" param, and printing to it.
+	(class succeed_or_fail_call_info): Likewise.
+	* call-info.h (class call_info): Likewise.
+	(class succeed_or_fail_call_info): Likewise.
+	* checker-event.cc (checker_event::dump): Reimplement.
+	(checker_event::prepare_for_emission): Update for change from
+	get_desc to print_desc.
+	(debug_event::get_desc): Convert to...
+	(debug_event::print_desc): ...this.
+	(precanned_custom_event::get_desc): Convert to...
+	(precanned_custom_event::print_desc): ...this.
+	(statement_event::get_desc): Convert to...
+	(statement_event::print_desc): ...this.
+	(region_creation_event_memory_space::get_desc): Convert to...
+	(region_creation_event_memory_space::print_desc): ...this.
+	(region_creation_event_capacity::get_desc): Convert to...
+	(region_creation_event_capacity::print_desc): ...this.
+	(region_creation_event_allocation_size::get_desc): Convert to...
+	(region_creation_event_allocation_size::print_desc): ...this.
+	(region_creation_event_debug::get_desc): Convert to...
+	(region_creation_event_debug::print_desc): ...this.
+	(function_entry_event::get_desc): Convert to...
+	(function_entry_event::print_desc): ...this.
+	(state_change_event::get_desc): Convert to...
+	(state_change_event::print_desc): ...this.
+	(state_change_event::get_meaning): Update for change to
+	pending_diagnostic::get_meaning_for_state_change.
+	(superedge_event::should_filter_p): Convert from usage of get_desc
+	to print_desc.
+	(start_cfg_edge_event::get_desc): Convert to...
+	(start_cfg_edge_event::print_desc): ...this.
+	(call_event::get_desc): Convert to...
+	(call_event::print_desc): ...this.
+	(return_event::get_desc): Convert to...
+	(return_event::print_desc): ...this.
+	(start_consolidated_cfg_edges_event::get_desc): Convert to...
+	(start_consolidated_cfg_edges_event::print_desc): ...this.
+	(inlined_call_event::get_desc): Convert to...
+	(inlined_call_event::print_desc): ...this.
+	(setjmp_event::get_desc): Convert to...
+	(setjmp_event::print_desc): ...this.
+	(rewind_from_longjmp_event::get_desc): Convert to...
+	(rewind_from_longjmp_event::print_desc): ...this.
+	(rewind_to_setjmp_event::get_desc): Convert to...
+	(rewind_to_setjmp_event::print_desc): ...this.
+	(warning_event::get_desc): Convert to...
+	(warning_event::print_desc): ...this.
+	* checker-event.h: Convert the various "get_desc" vfunc decls to
+	"print_desc".
+	* checker-path.cc (checker_path::dump): Convert to usage of
+	checker_event::print_desc.
+	(checker_path::debug): Convert to debug form of
+	checker_event::get_desc.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	(diagnostic_manager::prune_system_headers): Likewise.
+	* engine.cc (call_summary_edge_info::get_desc): Convert to...
+	(call_summary_edge_info::print_desc): ...this.
+	(stale_jmp_buf::describe_final_event): Update for change to
+	this vfunc.
+	(tainted_args_function_custom_event::get_desc): Convert to...
+	(tainted_args_function_custom_event::print_desc): ...this.
+	(tainted_args_field_custom_event::get_desc): Convert to...
+	(tainted_args_field_custom_event::print_desc): ...this.
+	(tainted_args_callback_custom_event::get_desc): Convert to...
+	(tainted_args_callback_custom_event::print_desc): ...this.
+	(jump_through_null::describe_final_event): Update for change to
+	this vfunc.
+	* infinite-loop.cc (perpetual_start_cfg_edge_event::get_desc):
+	Convert to...
+	(perpetual_start_cfg_edge_event::print_desc): ...this.
+	(looping_back_event::get_desc): Convert to...
+	(looping_back_event::print_desc): ...this.
+	(looping_back_event::describe_final_event): Update for change to
+	this vfunc.
+	* infinite-recursion.cc (class infinite_recursion_diagnostic):
+	Update for changes to pending_diagnostic.
+	* kf.cc (class putenv_of_auto_var): Likewise.
+	(kf_realloc::impl_call_post): Update for changes to call_info.
+	(kf_strchr::impl_call_post): Likewise.
+	(kf_strncpy::impl_call_post): Likewise.
+	(kf_strstr::impl_call_post): Likewise.
+	(class kf_strtok::undefined_behavior): Update for changes to
+	pending_diagnostic.
+	(class strtok_call_info): Update for changes to call_info.
+	* pending-diagnostic.cc (evdesc::event_desc::formatted_print):
+	Delete.
+	* pending-diagnostic.h (struct event_desc): Delete.
+	(struct state_change): Drop event_desc base class.
+	(struct call_with_state): Likewise.
+	(struct return_of_state): Likewise.
+	(struct final_event): Likewise.
+	(pending_event::describe_state_change): Convert return
+	type from label_text to bool.  Add "pp" param and either print to
+	it and return true, or return false.  Do the latter for the base
+	class implementation.
+	(pending_event::describe_call_with_state): Likewise.
+	(pending_event::describe_return_of_state): Likewise.
+	(pending_event::describe_final_event): Likewise.
+	* region-model.cc
+	(poisoned_value_diagnostic::describe_final_event): Update for
+	change to this vfunc.
+	(shift_count_negative_diagnostic::describe_final_event): Likewise.
+	(shift_count_overflow_diagnostic::describe_final_event): Likewise.
+	(ptrdiff_region_creation_event::get_desc): Convert to...
+	(ptrdiff_region_creation_event::print_desc): ...this.
+	(undefined_ptrdiff_diagnostic::describe_final_event): Update for
+	change to this vfunc.
+	(write_to_const_diagnostic::describe_final_event): Likewise.
+	(write_to_string_literal_diagnostic::describe_final_event):
+	Likewise.
+	(dubious_allocation_size::describe_final_event): Likewise.
+	(null_terminator_check_event::get_desc): Convert to...
+	(null_terminator_check_event::print_desc): ...this.
+	(float_as_size_arg::describe_final_event): Update for change to
+	this vfunc.
+	(exposure_through_uninit_copy::describe_final_event): Likewise.
+	* sm-fd.cc: Include "diagnostic-core.h".  Update throughout for
+	changes to pending_diagnostic vfuncs.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* varargs.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* analyzer-logging.cc: Add #define INCLUDE_MEMORY
+	(logger::logger): Update for m_pp becoming a unique_ptr.
+	(logger::~logger): Likewise.
+	(logger::log_va_partial): Likewise.
+	(logger::end_log_line): Likewise.
+	* analyzer-logging.h (logger::get_printer): Likewise.
+	(logger::m_pp): Convert to a unique_ptr.
+	* analyzer.cc (make_label_text): Use
+	diagnostic_context::clone_printer and use unique_ptr.
+	(make_label_text_n): Likewise.
+	* bar-chart.cc: Add #define INCLUDE_MEMORY
+	* pending-diagnostic.cc (evdesc::event_desc::formatted_print):
+	Use diagnostic_context::clone_printer and use unique_ptr.
+	* sm-malloc.cc (sufficiently_similar_p): Likewise.
+	* supergraph.cc (supergraph::dump_dot_to_file): Likewise.
+
 2024-09-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

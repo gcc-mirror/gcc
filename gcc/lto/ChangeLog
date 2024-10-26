@@ -1,3 +1,27 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/117201
+	PR lto/117288
+	* lto-common.cc (compare_tree_sccs_1): Handle RAW_DATA_CST.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-object.cc: Remove trailing whitespace.
+	* lto-symtab.cc: Likewise.
+	* lto-partition.cc: Likewise.
+	* lang-specs.h: Likewise.
+	* lto-lang.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* lto-common.cc: Add #define INCLUDE_MEMORY.
+	* lto-dump.cc: Likewise.
+	* lto-partition.cc: Likewise.
+	* lto-symtab.cc: Likewise.
+	* lto.cc: Likewise.
+
 2024-09-03  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR lto/116535

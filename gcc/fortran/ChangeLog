@@ -1,3 +1,77 @@
+2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79685
+	* decl.cc (match_data_constant): Find the symtree instead of
+	the symbol so the use renamed symbols are found. Pass this and
+	the derived type to gfc_match_structure_constructor.
+	* match.h: Update prototype of gfc_match_structure_contructor.
+	* primary.cc (gfc_match_structure_constructor): Remove call to
+	gfc_get_ha_sym_tree and use caller supplied symtree instead.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.cc: Remove trailing whitespace.
+	* trans-common.cc: Likewise.
+	* match.h: Likewise.
+	* scanner.cc: Likewise.
+	* gfortranspec.cc: Likewise.
+	* io.cc: Likewise.
+	* iso-c-binding.def: Likewise.
+	* iso-fortran-env.def: Likewise.
+	* types.def: Likewise.
+	* openmp.cc: Likewise.
+	* f95-lang.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* arith.cc: Add #define INCLUDE_MEMORY.
+	* array.cc: Likewise.
+	* bbt.cc: Likewise.
+	* check.cc: Likewise.
+	* class.cc: Likewise.
+	* constructor.cc: Likewise.
+	* convert.cc: Likewise.
+	* cpp.cc: Likewise.
+	* data.cc: Likewise.
+	* decl.cc: Likewise.
+	* dependency.cc: Likewise.
+	* dump-parse-tree.cc: Likewise.
+	* error.cc: Likewise.
+	* expr.cc: Likewise.
+	* f95-lang.cc: Likewise.
+	* frontend-passes.cc: Likewise.
+	* interface.cc: Likewise.
+	* intrinsic.cc: Likewise.
+	* io.cc: Likewise.
+	* iresolve.cc: Likewise.
+	* match.cc: Likewise.
+	* matchexp.cc: Likewise.
+	* misc.cc: Likewise.
+	* module.cc: Likewise.
+	* openmp.cc: Likewise.
+	* options.cc: Likewise.
+	* parse.cc: Likewise.
+	* primary.cc: Likewise.
+	* resolve.cc: Likewise.
+	* scanner.cc: Likewise.
+	* simplify.cc: Likewise.
+	* st.cc: Likewise.
+	* symbol.cc: Likewise.
+	* target-memory.cc: Likewise.
+	* trans-array.cc: Likewise.
+	* trans-common.cc: Likewise.
+	* trans-const.cc: Likewise.
+	* trans-decl.cc: Likewise.
+	* trans-expr.cc: Likewise.
+	* trans-intrinsic.cc: Likewise.
+	* trans-io.cc: Likewise.
+	* trans-openmp.cc: Likewise.
+	* trans-stmt.cc: Likewise.
+	* trans-types.cc: Likewise.
+	* trans.cc: Likewise.
+
 2024-10-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR fortran/105916

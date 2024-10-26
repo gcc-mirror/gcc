@@ -1,3 +1,17 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* util/optional.h: Remove trailing whitespace.
+	* util/expected.h: Likewise.
+	* util/rust-unicode-data.h: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* resolve/rust-ast-resolve-expr.cc: Add #define INCLUDE_MEMORY.
+	* rust-attribs.cc: Likewise.
+	* rust-system.h: Likewise.
+
 2024-10-18  Alejandro Colomar  <alx@kernel.org>
 
 	* backend/rust-tree.h (array_type_nelts_top)

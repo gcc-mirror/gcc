@@ -1,3 +1,24 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc: Remove trailing whitespace.
+	* gimple-parser.cc: Likewise.
+	* c-parser.cc: Likewise.
+	* c-decl.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* c-aux-info.cc: Add #define INCLUDE_MEMORY.
+	* c-convert.cc: Likewise.
+	* c-errors.cc: Likewise.
+	* c-fold.cc: Likewise.
+	* c-lang.cc: Likewise.
+	* c-objc-common.cc: Likewise.
+	(pp_markup::element_quoted_type::print_type): Use unique_ptr.
+	* c-typeck.cc: Add #define INCLUDE_MEMORY.
+	* gimple-parser.cc: Likewise.
+
 2024-10-23  Joseph Myers  <josmyers@redhat.com>
 
 	* c-decl.cc (c_struct_parse_info): Add member refloc.

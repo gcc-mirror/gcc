@@ -1,3 +1,7 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* f7-renames.h: Remove trailing whitespace.
+
 2024-06-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/115419

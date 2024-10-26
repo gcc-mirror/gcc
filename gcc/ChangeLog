@@ -1,3 +1,1060 @@
+2024-10-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/58195
+	* simplify-rtx.cc (simplify_context::simplify_ternary_operation): Handle
+	`a != 0 ? -a : 0` and `a == 0 ? 0 : -a`.
+
+2024-10-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/driver-aarch64.cc (host_detect_local_cpu): Support
+	3 cores and 3 variants. If there is one core but multiple variant,
+	then treat the variant as being all.
+
+2024-10-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/117292
+	* config/aarch64/aarch64-simd.md (xor<mode>3<vczle><vczbe>): Use
+	'De' constraint.
+	* config/aarch64/constraints.md (De): Add new constraint.
+
+2024-10-25  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (MODE_d_mf8): New.
+	(MODE_q_mf8): New.
+	(QUAL_mf8): New.
+	(VREINTERPRET_BUILTINS1): Add mf8 entry.
+	(VREINTERPRET_BUILTINS): Ditto.
+	(VREINTERPRETQ_BUILTINS1): Ditto.
+	(VREINTERPRETQ_BUILTINS): Ditto.
+	(aarch64_lookup_simd_type_in_table): Match modal_float bit
+
+2024-10-25  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_init_simd_builtin_types): Initialise FP8 simd types.
+	* config/aarch64/aarch64-builtins.h
+	(enum aarch64_type_qualifiers): Add qualifier_modal_float bit.
+	* config/aarch64/aarch64-simd-builtin-types.def:
+	Add Mfloat8x{8|16}_t types.
+	* config/aarch64/arm_neon.h: Add mfloat8x{8|16}_t typedefs.
+
+2024-10-25  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* match.pd: Fold pow (1.0/x, y) -> pow (x, -y) and
+	pow (0.0, x) -> 0.0.
+
+2024-10-25  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Remove unsigned branch form 3 for SAT_ADD, and
+	add simplify to branchless instead.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117249
+	* tree-ssa-structalias.cc (insert_vi_for_tree): Move put calls out of
+	gcc_assert.
+	* lto-cgraph.cc (lto_symtab_encoder_delete_node): Likewise.
+	* gimple-ssa-strength-reduction.cc (get_alternative_base,
+	add_cand_for_stmt): Likewise.
+	* tree-eh.cc (add_stmt_to_eh_lp_fn): Likewise.
+	* except.cc (duplicate_eh_regions_1): Likewise.
+	* tree-ssa-reassoc.cc (insert_operand_rank): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_expand_call): Use == rather than = in
+	gcc_assert.
+	* opts-common.cc (jobserver_info::disconnect): Call close outside of
+	gcc_assert and only check result in it.
+	(jobserver_info::return_token): Call write outside of gcc_assert and
+	only check result in it.
+	* genautomata.cc (output_default_latencies): Move j++ side-effect
+	outside of gcc_assert.
+	* tree-ssa-loop-ivopts.cc (get_alias_ptr_type_for_ptr_address): Use
+	== rather than = in gcc_assert.
+	* cgraph.cc (symbol_table::create_edge): Move ++edges_max_uid
+	side-effect outside of gcc_assert.
+
+2024-10-25  Richard Biener  <rguenther@suse.de>
+
+	* optabs-tree.h (expand_vec_cond_expr_p): Default the
+	comparison code to ERROR_MARK.
+	* match.pd: Remove unneded expand_vec_cond_expr_p args.
+	* tree-vect-generic.cc (expand_vector_condition): Likewise.
+	* tree-vect-loop.cc (vect_reduction_update_partial_vector_usage):
+	Likewise.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Likewise.
+	(scan_store_can_perm_p): Likewise.
+	(vectorizable_condition): Likewise.
+
+2024-10-25  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (commutative_op): Add paramter to indicate whether
+	all compares should be considered commutative.  Handle
+	hypot, add_overflow and mul_overflow.
+	(parser::parse_expr): Simplify 'c' handling by using
+	commutative_op and error out when the operation is not.
+	* match.pd ((minmax:c @0 NaN@1) -> @0): Use :C, we know
+	what we are doing.
+
+2024-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117277
+	* tree-vect-loop.cc (vect_transform_loop): Remove CLOBBERs
+	and prefetches before doing any code generation.
+
+2024-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116575
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Handle
+	gaps, aka NULL scalar stmt.
+	(vect_build_slp_tree_2): Allow gaps in the middle of a
+	grouped mask load.  When the mask of a grouped mask load
+	is uniform do single-lane discovery for the mask and
+	insert a splat VEC_PERM_EXPR node.
+	(vect_optimize_slp_pass::decide_masked_load_lanes): New
+	function.
+	(vect_optimize_slp_pass::run): Call it.
+
+2024-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_check_scalar_mask): Only check
+	the scalar type for constant or extern defs.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* lra-assigns.cc: Remove trailing whitespace.
+	* symtab.cc: Likewise.
+	* stmt.cc: Likewise.
+	* cgraphbuild.cc: Likewise.
+	* cfgcleanup.cc: Likewise.
+	* loop-init.cc: Likewise.
+	* df-problems.cc: Likewise.
+	* diagnostic-macro-unwinding.cc: Likewise.
+	* langhooks.h: Likewise.
+	* except.cc: Likewise.
+	* tree-vect-loop.cc: Likewise.
+	* coverage.cc: Likewise.
+	* hash-table.cc: Likewise.
+	* ggc-page.cc: Likewise.
+	* gimple-ssa-strength-reduction.cc: Likewise.
+	* tree-parloops.cc: Likewise.
+	* internal-fn.cc: Likewise.
+	* ipa-split.cc: Likewise.
+	* calls.cc: Likewise.
+	* reorg.cc: Likewise.
+	* sbitmap.h: Likewise.
+	* omp-offload.cc: Likewise.
+	* cfgrtl.cc: Likewise.
+	* reginfo.cc: Likewise.
+	* gengtype.h: Likewise.
+	* omp-general.h: Likewise.
+	* ipa-comdats.cc: Likewise.
+	* gimple-range-edge.h: Likewise.
+	* tree-ssa-structalias.cc: Likewise.
+	* target.def: Likewise.
+	* basic-block.h: Likewise.
+	* graphite-isl-ast-to-gimple.cc: Likewise.
+	* auto-profile.cc: Likewise.
+	* optabs.cc: Likewise.
+	* gengtype-lex.l: Likewise.
+	* optabs.def: Likewise.
+	* ira-build.cc: Likewise.
+	* ira.cc: Likewise.
+	* function.h: Likewise.
+	* tree-ssa-propagate.cc: Likewise.
+	* gcov-io.cc: Likewise.
+	* builtin-types.def: Likewise.
+	* ddg.cc: Likewise.
+	* lra-spills.cc: Likewise.
+	* cfg.cc: Likewise.
+	* bitmap.cc: Likewise.
+	* gimple-range-gori.h: Likewise.
+	* tree-ssa-loop-im.cc: Likewise.
+	* cfghooks.h: Likewise.
+	* genmatch.cc: Likewise.
+	* explow.cc: Likewise.
+	* lto-streamer-in.cc: Likewise.
+	* graphite-scop-detection.cc: Likewise.
+	* ipa-prop.cc: Likewise.
+	* gcc.cc: Likewise.
+	* vec.h: Likewise.
+	* cfgexpand.cc: Likewise.
+	* config/alpha/vms.h: Likewise.
+	* config/alpha/alpha.cc: Likewise.
+	* config/alpha/driver-alpha.cc: Likewise.
+	* config/alpha/elf.h: Likewise.
+	* config/iq2000/iq2000.h: Likewise.
+	* config/iq2000/iq2000.cc: Likewise.
+	* config/pa/pa-64.h: Likewise.
+	* config/pa/som.h: Likewise.
+	* config/pa/pa.cc: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/pa/pa32-regs.h: Likewise.
+	* config/c6x/c6x.cc: Likewise.
+	* config/openbsd-stdint.h: Likewise.
+	* config/elfos.h: Likewise.
+	* config/lm32/lm32.cc: Likewise.
+	* config/lm32/lm32.h: Likewise.
+	* config/lm32/lm32-protos.h: Likewise.
+	* config/darwin-c.cc: Likewise.
+	* config/rx/rx.cc: Likewise.
+	* config/host-darwin.h: Likewise.
+	* config/netbsd.h: Likewise.
+	* config/ia64/ia64.cc: Likewise.
+	* config/ia64/freebsd.h: Likewise.
+	* config/avr/avr-c.cc: Likewise.
+	* config/avr/avr.cc: Likewise.
+	* config/avr/avr-arch.h: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/avr/stdfix.h: Likewise.
+	* config/avr/gen-avr-mmcu-specs.cc: Likewise.
+	* config/avr/avr-log.cc: Likewise.
+	* config/avr/elf.h: Likewise.
+	* config/avr/gen-avr-mmcu-texi.cc: Likewise.
+	* config/avr/avr-devices.cc: Likewise.
+	* config/nvptx/nvptx.cc: Likewise.
+	* config/vx-common.h: Likewise.
+	* config/sol2.cc: Likewise.
+	* config/rl78/rl78.cc: Likewise.
+	* config/cris/cris.cc: Likewise.
+	* config/arm/symbian.h: Likewise.
+	* config/arm/unknown-elf.h: Likewise.
+	* config/arm/linux-eabi.h: Likewise.
+	* config/arm/arm.cc: Likewise.
+	* config/arm/arm-mve-builtins.h: Likewise.
+	* config/arm/bpabi.h: Likewise.
+	* config/arm/vxworks.h: Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/arm/aout.h: Likewise.
+	* config/arm/elf.h: Likewise.
+	* config/host-linux.cc: Likewise.
+	* config/sh/sh_treg_combine.cc: Likewise.
+	* config/sh/vxworks.h: Likewise.
+	* config/sh/elf.h: Likewise.
+	* config/sh/netbsd-elf.h: Likewise.
+	* config/sh/sh.cc: Likewise.
+	* config/sh/embed-elf.h: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/darwin-driver.cc: Likewise.
+	* config/m32c/m32c.cc: Likewise.
+	* config/frv/frv.cc: Likewise.
+	* config/openbsd.h: Likewise.
+	* config/aarch64/aarch64-protos.h: Likewise.
+	* config/aarch64/aarch64-builtins.cc: Likewise.
+	* config/aarch64/aarch64-cost-tables.h: Likewise.
+	* config/aarch64/aarch64.cc: Likewise.
+	* config/bfin/bfin.cc: Likewise.
+	* config/bfin/bfin.h: Likewise.
+	* config/bfin/bfin-protos.h: Likewise.
+	* config/i386/gmm_malloc.h: Likewise.
+	* config/i386/djgpp.h: Likewise.
+	* config/i386/sol2.h: Likewise.
+	* config/i386/stringop.def: Likewise.
+	* config/i386/i386-features.cc: Likewise.
+	* config/i386/openbsdelf.h: Likewise.
+	* config/i386/cpuid.h: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/smmintrin.h: Likewise.
+	* config/i386/avx10_2-512convertintrin.h: Likewise.
+	* config/i386/i386-options.cc: Likewise.
+	* config/i386/i386-opts.h: Likewise.
+	* config/i386/i386-expand.cc: Likewise.
+	* config/i386/avx512dqintrin.h: Likewise.
+	* config/i386/wmmintrin.h: Likewise.
+	* config/i386/gnu-user.h: Likewise.
+	* config/i386/host-mingw32.cc: Likewise.
+	* config/i386/avx10_2bf16intrin.h: Likewise.
+	* config/i386/cygwin.h: Likewise.
+	* config/i386/driver-i386.cc: Likewise.
+	* config/i386/biarch64.h: Likewise.
+	* config/i386/host-cygwin.cc: Likewise.
+	* config/i386/cygming.h: Likewise.
+	* config/i386/i386-builtins.cc: Likewise.
+	* config/i386/avx10_2convertintrin.h: Likewise.
+	* config/i386/i386.cc: Likewise.
+	* config/i386/gas.h: Likewise.
+	* config/i386/freebsd.h: Likewise.
+	* config/mingw/winnt-cxx.cc: Likewise.
+	* config/mingw/winnt.cc: Likewise.
+	* config/h8300/h8300.cc: Likewise.
+	* config/host-solaris.cc: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/m32r/m32r.cc: Likewise.
+	* config/darwin.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	* config/sparc/sparc-protos.h: Likewise.
+	* config/sparc/sysv4.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/sparc/linux.h: Likewise.
+	* config/sparc/freebsd.h: Likewise.
+	* config/sparc/sparc.cc: Likewise.
+	* config/gcn/gcn-run.cc: Likewise.
+	* config/gcn/gcn.cc: Likewise.
+	* config/gcn/gcn-tree.cc: Likewise.
+	* config/kopensolaris-gnu.h: Likewise.
+	* config/nios2/nios2.h: Likewise.
+	* config/nios2/elf.h: Likewise.
+	* config/nios2/nios2.cc: Likewise.
+	* config/host-netbsd.cc: Likewise.
+	* config/rtems.h: Likewise.
+	* config/pdp11/pdp11.cc: Likewise.
+	* config/pdp11/pdp11.h: Likewise.
+	* config/mn10300/mn10300.cc: Likewise.
+	* config/mn10300/linux.h: Likewise.
+	* config/moxie/moxie.h: Likewise.
+	* config/moxie/moxie.cc: Likewise.
+	* config/rs6000/aix71.h: Likewise.
+	* config/rs6000/vec_types.h: Likewise.
+	* config/rs6000/xcoff.h: Likewise.
+	* config/rs6000/rs6000.cc: Likewise.
+	* config/rs6000/rs6000-internal.h: Likewise.
+	* config/rs6000/rs6000-p8swap.cc: Likewise.
+	* config/rs6000/rs6000-c.cc: Likewise.
+	* config/rs6000/aix.h: Likewise.
+	* config/rs6000/rs6000-logue.cc: Likewise.
+	* config/rs6000/rs6000-string.cc: Likewise.
+	* config/rs6000/rs6000-call.cc: Likewise.
+	* config/rs6000/ppu_intrinsics.h: Likewise.
+	* config/rs6000/altivec.h: Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/host-darwin.cc: Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/spu2vmx.h: Likewise.
+	* config/rs6000/linux.h: Likewise.
+	* config/rs6000/si2vmx.h: Likewise.
+	* config/rs6000/driver-rs6000.cc: Likewise.
+	* config/rs6000/freebsd.h: Likewise.
+	* config/vxworksae.h: Likewise.
+	* config/mips/frame-header-opt.cc: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/mips/mips.cc: Likewise.
+	* config/mips/sde.h: Likewise.
+	* config/darwin-protos.h: Likewise.
+	* config/mcore/mcore-elf.h: Likewise.
+	* config/mcore/mcore.h: Likewise.
+	* config/mcore/mcore.cc: Likewise.
+	* config/epiphany/epiphany.cc: Likewise.
+	* config/fr30/fr30.h: Likewise.
+	* config/fr30/fr30.cc: Likewise.
+	* config/riscv/riscv-vector-builtins-shapes.cc: Likewise.
+	* config/riscv/riscv-vector-builtins-bases.cc: Likewise.
+	* config/visium/visium.h: Likewise.
+	* config/mmix/mmix.cc: Likewise.
+	* config/v850/v850.cc: Likewise.
+	* config/v850/v850-c.cc: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/stormy16/stormy16.cc: Likewise.
+	* config/stormy16/stormy16-protos.h: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/arc/arc.cc: Likewise.
+	* config/vxworks.cc: Likewise.
+	* config/microblaze/microblaze-c.cc: Likewise.
+	* config/microblaze/microblaze-protos.h: Likewise.
+	* config/microblaze/microblaze.h: Likewise.
+	* config/microblaze/microblaze.cc: Likewise.
+	* config/freebsd-spec.h: Likewise.
+	* config/m68k/m68kelf.h: Likewise.
+	* config/m68k/m68k.cc: Likewise.
+	* config/m68k/netbsd-elf.h: Likewise.
+	* config/m68k/linux.h: Likewise.
+	* config/freebsd.h: Likewise.
+	* config/host-openbsd.cc: Likewise.
+	* regcprop.cc: Likewise.
+	* dumpfile.cc: Likewise.
+	* combine.cc: Likewise.
+	* tree-ssa-forwprop.cc: Likewise.
+	* ipa-profile.cc: Likewise.
+	* hw-doloop.cc: Likewise.
+	* opts.cc: Likewise.
+	* gcc-ar.cc: Likewise.
+	* tree-cfg.cc: Likewise.
+	* incpath.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+	* function.cc: Likewise.
+	* genattrtab.cc: Likewise.
+	* rtl.def: Likewise.
+	* genchecksum.cc: Likewise.
+	* profile.cc: Likewise.
+	* df-core.cc: Likewise.
+	* tree-pretty-print.cc: Likewise.
+	* tree.h: Likewise.
+	* plugin.cc: Likewise.
+	* tree-ssa-loop-ch.cc: Likewise.
+	* emit-rtl.cc: Likewise.
+	* haifa-sched.cc: Likewise.
+	* gimple-range-edge.cc: Likewise.
+	* range-op.cc: Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* dwarf2cfi.cc: Likewise.
+	* recog.cc: Likewise.
+	* vtable-verify.cc: Likewise.
+	* system.h: Likewise.
+	* regrename.cc: Likewise.
+	* tree-ssa-dom.cc: Likewise.
+	* loop-unroll.cc: Likewise.
+	* lra-constraints.cc: Likewise.
+	* pretty-print.cc: Likewise.
+	* ifcvt.cc: Likewise.
+	* ipa.cc: Likewise.
+	* alloc-pool.h: Likewise.
+	* collect2.cc: Likewise.
+	* pointer-query.cc: Likewise.
+	* cfgloop.cc: Likewise.
+	* toplev.cc: Likewise.
+	* sese.cc: Likewise.
+	* gengtype.cc: Likewise.
+	* gimplify-me.cc: Likewise.
+	* double-int.cc: Likewise.
+	* bb-reorder.cc: Likewise.
+	* dwarf2out.cc: Likewise.
+	* tree-ssa-loop-ivcanon.cc: Likewise.
+	* tree-ssa-reassoc.cc: Likewise.
+	* cgraph.cc: Likewise.
+	* sel-sched.cc: Likewise.
+	* attribs.cc: Likewise.
+	* expr.cc: Likewise.
+	* tree-ssa-scopedtables.h: Likewise.
+	* gimple-range-cache.cc: Likewise.
+	* ipa-pure-const.cc: Likewise.
+	* tree-inline.cc: Likewise.
+	* genhooks.cc: Likewise.
+	* gimple-range-phi.h: Likewise.
+	* shrink-wrap.cc: Likewise.
+	* tree.cc: Likewise.
+	* gimple.cc: Likewise.
+	* backend.h: Likewise.
+	* opts-common.cc: Likewise.
+	* cfg-flags.def: Likewise.
+	* gcse-common.cc: Likewise.
+	* tree-ssa-scopedtables.cc: Likewise.
+	* ccmp.cc: Likewise.
+	* builtins.def: Likewise.
+	* builtin-attrs.def: Likewise.
+	* postreload.cc: Likewise.
+	* sched-deps.cc: Likewise.
+	* ipa-inline-transform.cc: Likewise.
+	* tree-vect-generic.cc: Likewise.
+	* ipa-polymorphic-call.cc: Likewise.
+	* builtins.cc: Likewise.
+	* sel-sched-ir.cc: Likewise.
+	* trans-mem.cc: Likewise.
+	* ipa-visibility.cc: Likewise.
+	* cgraph.h: Likewise.
+	* tree-ssa-phiopt.cc: Likewise.
+	* genopinit.cc: Likewise.
+	* ipa-inline.cc: Likewise.
+	* omp-low.cc: Likewise.
+	* ipa-utils.cc: Likewise.
+	* tree-ssa-math-opts.cc: Likewise.
+	* tree-ssa-ifcombine.cc: Likewise.
+	* gimple-range.cc: Likewise.
+	* ipa-fnsummary.cc: Likewise.
+	* ira-color.cc: Likewise.
+	* value-prof.cc: Likewise.
+	* varasm.cc: Likewise.
+	* ipa-icf.cc: Likewise.
+	* ira-emit.cc: Likewise.
+	* lto-streamer.h: Likewise.
+	* lto-wrapper.cc: Likewise.
+	* regs.h: Likewise.
+	* gengtype-parse.cc: Likewise.
+	* alias.cc: Likewise.
+	* lto-streamer.cc: Likewise.
+	* real.h: Likewise.
+	* wide-int.h: Likewise.
+	* targhooks.cc: Likewise.
+	* gimple-ssa-warn-access.cc: Likewise.
+	* real.cc: Likewise.
+	* ipa-reference.cc: Likewise.
+	* bitmap.h: Likewise.
+	* ginclude/float.h: Likewise.
+	* ginclude/stddef.h: Likewise.
+	* ginclude/stdarg.h: Likewise.
+	* ginclude/stdatomic.h: Likewise.
+	* optabs.h: Likewise.
+	* sel-sched-ir.h: Likewise.
+	* convert.cc: Likewise.
+	* cgraphunit.cc: Likewise.
+	* lra-remat.cc: Likewise.
+	* tree-if-conv.cc: Likewise.
+	* gcov-dump.cc: Likewise.
+	* tree-predcom.cc: Likewise.
+	* dominance.cc: Likewise.
+	* gimple-range-cache.h: Likewise.
+	* ipa-devirt.cc: Likewise.
+	* rtl.h: Likewise.
+	* ubsan.cc: Likewise.
+	* tree-ssa.cc: Likewise.
+	* ssa.h: Likewise.
+	* cse.cc: Likewise.
+	* jump.cc: Likewise.
+	* hwint.h: Likewise.
+	* caller-save.cc: Likewise.
+	* coretypes.h: Likewise.
+	* ipa-fnsummary.h: Likewise.
+	* tree-ssa-strlen.cc: Likewise.
+	* modulo-sched.cc: Likewise.
+	* cgraphclones.cc: Likewise.
+	* lto-cgraph.cc: Likewise.
+	* hw-doloop.h: Likewise.
+	* data-streamer.h: Likewise.
+	* compare-elim.cc: Likewise.
+	* profile-count.h: Likewise.
+	* tree-vect-loop-manip.cc: Likewise.
+	* ree.cc: Likewise.
+	* reload.cc: Likewise.
+	* tree-ssa-loop-split.cc: Likewise.
+	* tree-into-ssa.cc: Likewise.
+	* gcse.cc: Likewise.
+	* cfgloopmanip.cc: Likewise.
+	* df.h: Likewise.
+	* fold-const.cc: Likewise.
+	* wide-int.cc: Likewise.
+	* gengtype-state.cc: Likewise.
+	* sanitizer.def: Likewise.
+	* tree-ssa-sink.cc: Likewise.
+	* target-hooks-macros.h: Likewise.
+	* tree-ssa-pre.cc: Likewise.
+	* gimple-pretty-print.cc: Likewise.
+	* ipa-utils.h: Likewise.
+	* tree-outof-ssa.cc: Likewise.
+	* tree-ssa-coalesce.cc: Likewise.
+	* gimple-match.h: Likewise.
+	* tree-ssa-loop-niter.cc: Likewise.
+	* tree-loop-distribution.cc: Likewise.
+	* tree-emutls.cc: Likewise.
+	* tree-eh.cc: Likewise.
+	* varpool.cc: Likewise.
+	* ssa-iterators.h: Likewise.
+	* asan.cc: Likewise.
+	* reload1.cc: Likewise.
+	* cfgloopanal.cc: Likewise.
+	* tree-vectorizer.cc: Likewise.
+	* simplify-rtx.cc: Likewise.
+	* opts-global.cc: Likewise.
+	* gimple-ssa-store-merging.cc: Likewise.
+	* expmed.cc: Likewise.
+	* tree-ssa-loop-prefetch.cc: Likewise.
+	* tree-ssa-dse.h: Likewise.
+	* tree-vect-stmts.cc: Likewise.
+	* gimple-fold.cc: Likewise.
+	* lra-coalesce.cc: Likewise.
+	* data-streamer-out.cc: Likewise.
+	* diagnostic.cc: Likewise.
+	* tree-ssa-alias.cc: Likewise.
+	* tree-vect-patterns.cc: Likewise.
+	* common/common-target.def: Likewise.
+	* common/config/rx/rx-common.cc: Likewise.
+	* common/config/msp430/msp430-common.cc: Likewise.
+	* common/config/avr/avr-common.cc: Likewise.
+	* common/config/i386/i386-common.cc: Likewise.
+	* common/config/pdp11/pdp11-common.cc: Likewise.
+	* common/config/rs6000/rs6000-common.cc: Likewise.
+	* common/config/mcore/mcore-common.cc: Likewise.
+	* graphite.cc: Likewise.
+	* gimple-low.cc: Likewise.
+	* genmodes.cc: Likewise.
+	* gimple-loop-jam.cc: Likewise.
+	* lto-streamer-out.cc: Likewise.
+	* predict.cc: Likewise.
+	* omp-expand.cc: Likewise.
+	* gimple-array-bounds.cc: Likewise.
+	* predict.def: Likewise.
+	* opts.h: Likewise.
+	* tree-stdarg.cc: Likewise.
+	* gimplify.cc: Likewise.
+	* ira-lives.cc: Likewise.
+	* loop-doloop.cc: Likewise.
+	* lra.cc: Likewise.
+	* gimple-iterator.h: Likewise.
+	* tree-sra.cc: Likewise.
+
+2024-10-25  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svaba_impl::fold): Fold svaba to svabd if op1 is all zeros.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* tree.h (TYPE_WARN_IF_NOT_ALIGN_RAW): New accessor.
+	(TYPE_WARN_IF_NOT_ALIGN): Use it.
+	(SET_TYPE_WARN_IF_NOT_ALIGN): Likewise.
+
+2024-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116953
+	* config/avr/avr.cc (avr_out_sbxx_branch): Revert previous fix
+	for PR116953 (r15-4078).  Run extract_constrain_insn_cached
+	on the current insn after calling jump_over_one_insn_p.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* diagnostic-format-json.cc (make_json_for_path): Add "ref_pp"
+	param and use when obtaining event descriptions.
+	(json_output_format::on_report_diagnostic): Pass this format's
+	printer as the above.
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Clone this format's printer
+	and use it to obtain the text of the message.
+	* diagnostic-path.cc: Include "pretty-print-markup.h".
+	(diagnostic_event::get_desc): New.
+	(path_label::get_text): Update for changes to diagnostic_event.
+	(event_range::print): Likewise.
+	(class element_event_desc): New.
+	(diagnostic_text_output_format::print_path): Update for changes to
+	diagnostic_event.
+	* diagnostic-path.h (diagnostic_event::get_desc): Replace with...
+	(diagnostic_event::print_desc): ...this.
+	(diagnostic_event::get_desc): Add this back for debugging, without
+	the bool param.
+	* pretty-print.cc (pp_printf_n): New.
+	* pretty-print.h (pp_printf_n): New decl.
+	* selftest-diagnostic-path.h (test_diagnostic_event::get_desc):
+	Convert to...
+	(test_diagnostic_event::print_desc): ...this.
+	* simple-diagnostic-path.cc (simple_diagnostic_event::print_desc):
+	New.
+	(selftest::test_intraprocedural_path): Use debug form of get_desc.
+	* simple-diagnostic-path.h (simple_diagnostic_event::get_desc):
+	Convert to...
+	(simple_diagnostic_event::print_desc): ...this, moving
+	implementation to test_diagnostic_event.
+
+2024-10-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR other/116613
+	* config/gcn/mkoffload.cc: Add '#define INCLUDE_MEMORY'.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* asan.cc: Add #define INCLUDE_MEMORY.
+	* attribs.cc: Likewise.
+	(attr_access::array_as_string): Use
+	diagnostic_context::clone_printer and use unique_ptr.
+	* auto-profile.cc: Add #define INCLUDE_MEMORY.
+	* calls.cc: Likewise.
+	* cfganal.cc: Likewise.
+	* cfgexpand.cc: Likewise.
+	* cfghooks.cc: Likewise.
+	* cfgloop.cc: Likewise.
+	* cgraph.cc: Likewise.
+	* cgraphclones.cc: Likewise.
+	* cgraphunit.cc: Likewise.
+	* collect-utils.cc: Likewise.
+	* collect2.cc: Likewise.
+	* common/config/aarch64/aarch64-common.cc: Likewise.
+	* common/config/arm/arm-common.cc: Likewise.
+	* common/config/avr/avr-common.cc: Likewise.
+	* config/aarch64/aarch64-cc-fusion.cc: Likewise.
+	* config/aarch64/aarch64-early-ra.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: Likewise.
+	* config/arc/arc.cc: Likewise.
+	* config/arm/aarch-common.cc: Likewise.
+	* config/arm/arm-mve-builtins.cc: Likewise.
+	* config/avr/avr-devices.cc: Likewise.
+	* config/avr/driver-avr.cc: Likewise.
+	* config/bpf/bpf.cc: Likewise.
+	* config/bpf/btfext-out.cc: Likewise.
+	* config/bpf/core-builtins.cc: Likewise.
+	* config/darwin.cc: Likewise.
+	* config/i386/driver-i386.cc: Likewise.
+	* config/i386/i386-builtins.cc: Likewise.
+	* config/i386/i386-expand.cc: Likewise.
+	* config/i386/i386-features.cc: Likewise.
+	* config/i386/i386-options.cc: Likewise.
+	* config/loongarch/loongarch-builtins.cc: Likewise.
+	* config/mingw/winnt-cxx.cc: Likewise.
+	* config/mingw/winnt.cc: Likewise.
+	* config/mips/mips.cc: Likewise.
+	* config/msp430/driver-msp430.cc: Likewise.
+	* config/nvptx/mkoffload.cc: Likewise.
+	* config/nvptx/nvptx.cc: Likewise.
+	* config/riscv/riscv-avlprop.cc: Likewise.
+	* config/riscv/riscv-vector-builtins.cc: Likewise.
+	* config/riscv/riscv-vsetvl.cc: Likewise.
+	* config/rs6000/driver-rs6000.cc: Likewise.
+	* config/rs6000/host-darwin.cc: Likewise.
+	* config/rs6000/rs6000-c.cc: Likewise.
+	* config/s390/s390-c.cc: Likewise.
+	* config/s390/s390.cc: Likewise.
+	* config/sol2-cxx.cc: Likewise.
+	* config/vms/vms-c.cc: Likewise.
+	* config/xtensa/xtensa-dynconfig.cc: Likewise.
+	* coroutine-passes.cc: Likewise.
+	* coverage.cc: Likewise.
+	* data-streamer-in.cc: Likewise.
+	* data-streamer-out.cc: Likewise.
+	* data-streamer.cc: Likewise.
+	* diagnostic-buffer.h (diagnostic_buffer::~diagnostic_buffer):
+	Delete.
+	(diagnostic_buffer::m_per_format_buffer): Use std::unique_ptr.
+	* diagnostic-client-data-hooks.h (make_compiler_data_hooks): Use
+	std::unique_ptr for return type.
+	* diagnostic-format-json.cc
+	(json_output_format::make_per_format_buffer): Likewise.
+	(diagnostic_output_format_init_json): Update for usage of
+	std::unique_ptr in set_output_format.
+	* diagnostic-format-sarif.cc
+	(sarif_output_format::make_per_format_buffer): Use std::unique_ptr
+	for return type.
+	(diagnostic_output_format_init_sarif): Update for usage of
+	std::unique_ptr.
+	(test_message_with_embedded_link): Likewise for set_urlifier.
+	* diagnostic-format-text.cc: Add #define INCLUDE_MEMORY.  Include
+	"make-unique.h".
+	(diagnostic_text_output_format::set_buffer): Use std::unique_ptr.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::set_buffer): Likewise.
+	* diagnostic-format.h
+	(diagnostic_output_format::make_per_format_buffer): Likewise.
+	* diagnostic-global-context.cc:
+	* diagnostic-macro-unwinding.cc: Likewise.
+	* diagnostic-show-locus.cc: Likewise.
+	* diagnostic-spec.cc: Likewise.
+	* diagnostic.cc (diagnostic_context::set_output_format): Use
+	std::unique_ptr for input.
+	(diagnostic_context::set_client_data_hooks): Likewise.
+	(diagnostic_context::set_option_manager): Likewise.
+	(diagnostic_context::set_urlifier): Likewise.
+	(diagnostic_context::set_diagnostic_buffer): Update for use of
+	std::unique_ptr.
+	(diagnostic_buffer::diagnostic_buffer): Likewise.
+	(diagnostic_buffer::~diagnostic_buffer): Delete.
+	* diagnostic.h: Complain if INCLUDE_MEMORY was not defined.
+	(diagnostic_context::set_output_format): Use std::unique_ptr for
+	input.
+	(diagnostic_context::set_client_data_hooks): Likewise.
+	(diagnostic_context::set_option_manager): Likewise.
+	(diagnostic_context::set_urlifier): Likewise.
+	(diagnostic_context::clone_printer): New.
+	(diagnostic_context::m_printer): Update comment.
+	(diagnostic_context::m_option_mgr): Likewise.
+	(diagnostic_context::m_urlifier): Likewise.
+	(diagnostic_context::m_edit_context_ptr): Likewise.
+	(diagnostic_context::m_output_format): Likewise.
+	(diagnostic_context::m_client_data_hooks): Likewise.
+	(diagnostic_context::m_theme): Likewise.
+	* digraph.cc: Add #define INCLUDE_MEMORY.
+	* dwarf2out.cc: Likewise.
+	* edit-context.cc: Likewise.
+	* except.cc: Likewise.
+	* expr.cc: Likewise.
+	* file-prefix-map.cc: Likewise.
+	* final.cc: Likewise.
+	* fwprop.cc: Likewise.
+	* gcc-plugin.h: Likewise.
+	* gcc-rich-location.cc: Likewise.
+	* gcc-urlifier.cc: Likewise.  Add #include "make-unique.h".
+	(make_gcc_urlifier): Use std::unique_ptr and ::make_unique.
+	* gcc-urlifier.h (make_gcc_urlifier): Use std::unique_ptr.
+	* gcc.cc: Add #define INCLUDE_MEMORY.  Include
+	"pretty-print-urlifier.h".
+	* gcov-dump.cc: Add #define INCLUDE_MEMORY.
+	* gcov-tool.cc: Likewise.
+	* gengtype.cc (open_base_files): Likewise to output.
+	* genmatch.cc: Likewise.
+	* gimple-fold.cc: Likewise.
+	* gimple-harden-conditionals.cc: Likewise.
+	* gimple-harden-control-flow.cc: Likewise.
+	* gimple-if-to-switch.cc: Likewise.
+	* gimple-lower-bitint.cc: Likewise.
+	* gimple-predicate-analysis.cc: Likewise.
+	* gimple-pretty-print.cc: Likewise.
+	* gimple-range-cache.cc: Likewise.
+	* gimple-range-edge.cc: Likewise.
+	* gimple-range-fold.cc: Likewise.
+	* gimple-range-gori.cc: Likewise.
+	* gimple-range-infer.cc: Likewise.
+	* gimple-range-op.cc: Likewise.
+	* gimple-range-path.cc: Likewise.
+	* gimple-range-phi.cc: Likewise.
+	* gimple-range-trace.cc: Likewise.
+	* gimple-range.cc: Likewise.
+	* gimple-ssa-backprop.cc: Likewise.
+	* gimple-ssa-sprintf.cc: Likewise.
+	* gimple-ssa-store-merging.cc: Likewise.
+	* gimple-ssa-strength-reduction.cc: Likewise.
+	* gimple-ssa-warn-access.cc: Likewise.
+	* gimple-ssa-warn-alloca.cc: Likewise.
+	* gimple-ssa-warn-restrict.cc: Likewise.
+	* gimple-streamer-in.cc: Likewise.
+	* gimple-streamer-out.cc: Likewise.
+	* gimple.cc: Likewise.
+	* gimplify.cc: Likewise.
+	* graph.cc: Likewise.
+	* graphviz.cc: Likewise.
+	* input.cc: Likewise.
+	* ipa-cp.cc: Likewise.
+	* ipa-devirt.cc: Likewise.
+	* ipa-fnsummary.cc: Likewise.
+	* ipa-free-lang-data.cc: Likewise.
+	* ipa-icf-gimple.cc: Likewise.
+	* ipa-icf.cc: Likewise.
+	* ipa-inline-analysis.cc: Likewise.
+	* ipa-inline.cc: Likewise.
+	* ipa-modref-tree.cc: Likewise.
+	* ipa-modref.cc: Likewise.
+	* ipa-param-manipulation.cc: Likewise.
+	* ipa-polymorphic-call.cc: Likewise.
+	* ipa-predicate.cc: Likewise.
+	* ipa-profile.cc: Likewise.
+	* ipa-prop.cc: Likewise.
+	* ipa-pure-const.cc: Likewise.
+	* ipa-reference.cc: Likewise.
+	* ipa-split.cc: Likewise.
+	* ipa-sra.cc: Likewise.
+	* ipa-strub.cc: Likewise.
+	* ipa-utils.cc: Likewise.
+	* langhooks.cc: Likewise.
+	* late-combine.cc: Likewise.
+	* lto-cgraph.cc: Likewise.
+	* lto-compress.cc: Likewise.
+	* lto-opts.cc: Likewise.
+	* lto-section-in.cc: Likewise.
+	* lto-section-out.cc: Likewise.
+	* lto-streamer-in.cc: Likewise.
+	* lto-streamer-out.cc: Likewise.
+	* lto-streamer.cc: Likewise.
+	* lto-wrapper.cc: Likewise.  Include "make-unique.h".
+	(main): Use ::make_unique when creating option manager.
+	* multiple_target.cc: Likewise.
+	* omp-expand.cc: Likewise.
+	* omp-general.cc: Likewise.
+	* omp-low.cc: Likewise.
+	* omp-oacc-neuter-broadcast.cc: Likewise.
+	* omp-offload.cc: Likewise.
+	* omp-simd-clone.cc: Likewise.
+	* optc-gen.awk: Likewise in output.
+	* optc-save-gen.awk: Likewise in output.
+	* options-urls-cc-gen.awk: Likewise in output.
+	* opts-common.cc: Likewise.
+	* opts-global.cc: Likewise.
+	* opts.cc: Likewise.
+	* pair-fusion.cc: Likewise.
+	* passes.cc: Likewise.
+	* pointer-query.cc: Likewise.
+	* predict.cc: Likewise.
+	* pretty-print.cc (pretty_printer::clone): Use std::unique_ptr and
+	::make_unique.
+	* pretty-print.h: Complain if INCLUDE_MEMORY is not defined.
+	(pretty_printer::clone): Use std::unique_ptr.
+	* print-rtl.cc: Add #define INCLUDE_MEMORY.
+	* print-tree.cc: Likewise.
+	* profile-count.cc: Likewise.
+	* range-op-float.cc: Likewise.
+	* range-op-ptr.cc: Likewise.
+	* range-op.cc: Likewise.
+	* range.cc: Likewise.
+	* read-rtl-function.cc: Likewise.
+	* rtl-error.cc: Likewise.
+	* rtl-ssa/accesses.cc: Likewise.
+	* rtl-ssa/blocks.cc: Likewise.
+	* rtl-ssa/changes.cc: Likewise.
+	* rtl-ssa/functions.cc: Likewise.
+	* rtl-ssa/insns.cc: Likewise.
+	* rtl-ssa/movement.cc: Likewise.
+	* rtl-tests.cc: Likewise.
+	* sanopt.cc: Likewise.
+	* sched-rgn.cc: Likewise.
+	* selftest-diagnostic-path.cc: Likewise.
+	* selftest-diagnostic.cc: Likewise.
+	* splay-tree-utils.cc: Likewise.
+	* sreal.cc: Likewise.
+	* stmt.cc: Likewise.
+	* substring-locations.cc: Likewise.
+	* symtab-clones.cc: Likewise.
+	* symtab-thunks.cc: Likewise.
+	* symtab.cc: Likewise.
+	* text-art/box-drawing.cc: Likewise.
+	* text-art/canvas.cc: Likewise.
+	* text-art/ruler.cc: Likewise.
+	* text-art/selftests.cc: Likewise.
+	* text-art/theme.cc: Likewise.
+	* toplev.cc: Likewise.  Include "make-unique.h".
+	(general_init): Use ::make_unique when setting option_manager.
+	* trans-mem.cc: Add #define INCLUDE_MEMORY.
+	* tree-affine.cc: Likewise.
+	* tree-call-cdce.cc: Likewise.
+	* tree-cfg.cc: Likewise.
+	* tree-chrec.cc: Likewise.
+	* tree-dfa.cc: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Include "make-unique.h".
+	(make_compiler_data_hooks): Use std::unique_ptr and ::make_unique.
+	* tree-diagnostic.cc: Add #define INCLUDE_MEMORY.
+	* tree-dump.cc: Likewise.
+	* tree-inline.cc: Likewise.
+	* tree-into-ssa.cc: Likewise.
+	* tree-logical-location.cc: Likewise.
+	* tree-nested.cc: Likewise.
+	* tree-nrv.cc: Likewise.
+	* tree-object-size.cc: Likewise.
+	* tree-outof-ssa.cc: Likewise.
+	* tree-pretty-print.cc: Likewise.
+	* tree-profile.cc: Likewise.
+	* tree-scalar-evolution.cc: Likewise.
+	* tree-sra.cc: Likewise.
+	* tree-ssa-address.cc: Likewise.
+	* tree-ssa-alias.cc: Likewise.
+	* tree-ssa-ccp.cc: Likewise.
+	* tree-ssa-coalesce.cc: Likewise.
+	* tree-ssa-copy.cc: Likewise.
+	* tree-ssa-dce.cc: Likewise.
+	* tree-ssa-dom.cc: Likewise.
+	* tree-ssa-forwprop.cc: Likewise.
+	* tree-ssa-ifcombine.cc: Likewise.
+	* tree-ssa-loop-ch.cc: Likewise.
+	* tree-ssa-loop-im.cc: Likewise.
+	* tree-ssa-loop-manip.cc: Likewise.
+	* tree-ssa-loop-niter.cc: Likewise.
+	* tree-ssa-loop-split.cc: Likewise.
+	* tree-ssa-math-opts.cc: Likewise.
+	* tree-ssa-operands.cc: Likewise.
+	* tree-ssa-phiprop.cc: Likewise.
+	* tree-ssa-pre.cc: Likewise.
+	* tree-ssa-propagate.cc: Likewise.
+	* tree-ssa-reassoc.cc: Likewise.
+	* tree-ssa-sccvn.cc: Likewise.
+	* tree-ssa-scopedtables.cc: Likewise.
+	* tree-ssa-sink.cc: Likewise.
+	* tree-ssa-strlen.cc: Likewise.
+	* tree-ssa-structalias.cc: Likewise.
+	* tree-ssa-ter.cc: Likewise.
+	* tree-ssa-uninit.cc: Likewise.
+	* tree-ssa.cc: Likewise.
+	* tree-ssanames.cc: Likewise.
+	* tree-stdarg.cc: Likewise.
+	* tree-streamer-in.cc: Likewise.
+	* tree-streamer-out.cc: Likewise.
+	* tree-streamer.cc: Likewise.
+	* tree-switch-conversion.cc: Likewise.
+	* tree-tailcall.cc: Likewise.
+	* tree-vrp.cc: Likewise.
+	* tree.cc: Likewise.
+	* ubsan.cc: Likewise.
+	* value-pointer-equiv.cc: Likewise.
+	* value-prof.cc: Likewise.
+	* value-query.cc: Likewise.
+	* value-range-pretty-print.cc: Likewise.
+	* value-range-storage.cc: Likewise.
+	* value-range.cc: Likewise.
+	* value-relation.cc: Likewise.
+	* var-tracking.cc: Likewise.
+	* varpool.cc: Likewise.
+	* vr-values.cc: Likewise.
+	* wide-int-print.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Add
+	comment about interaction of this code with pretty-print
+	formatting phaes.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* value-query.cc (range_query::get_tree_range): Use get_nonzero_bits
+	to populate the irange_bitmask of a POLY_INT_CST.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Simplify (X >> C1) * (C2 << C1) -> X * C2 if the
+	low C1 bits of X are zero.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssanames.cc (get_nonzero_bits): Handle POLY_INT_CSTs.
+	* match.pd (with_possible_nonzero_bits): Likewise.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Simplify (X >> C1) << (C1 + C2) -> X << C2 if the
+	low C1 bits of X are zero.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Generalise ((X /[ex] A) +- B) * A -> X +- A * B rule
+	to ((X /[ex] C1) +- C2) * (C1 * C3) -> (X * C3) +- (C1 * C2 * C3).
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Simplify (X /[ex] C1) * (C1 * C2) -> X * C2.
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Simplify X / (1 << C) to X /[ex] (1 << C) if the
+	low C bits of X are clear
+
+2024-10-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Extend some rules to handle exact_div like trunc_div.
+	* tree.h (trunc_or_exact_div_p): New function.
+	* tree-ssa-loop-niter.cc (is_rshift_by_1): Use it.
+	* tree-ssa-loop-ivopts.cc (force_expr_to_var_cost): Handle
+	EXACT_DIV_EXPR.
+
+2024-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-mixed.h (operator_bitwise_or::fold_range): Add prange
+	variant.
+	* range-op-ptr.cc (class pointer_or_operator): Remove.
+	(pointer_or_operator::op1_range): Remove.
+	(pointer_or_operator::op2_range): Remove.
+	(pointer_or_operator::wi_fold): Remove.
+	(operator_bitwise_or::fold_range): New prange variant.
+
+2024-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-ptr.cc (class pointer_and_operator): Remove.
+	(pointer_and_operator::wi_fold): Remove.
+
+2024-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-ptr.cc (class pointer_min_max_operator): Remove.
+	(pointer_min_max_operator::wi_fold): Remove.
+
+2024-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-ptr.cc (pointer_plus_operator::wi_fold): Remove.
+	(pointer_plus_operator::op2_range): Remove irange variant.
+	(pointer_plus_operator::update_bitmask): Likewise.
+
+2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117209
+	* asan.cc (maybe_cast_to_ptrmode): Formatting fix.
+	(build_check_stmt): Don't copy *iter into gsi, perform all
+	the updates on iter directly.
+
+2024-10-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(svsra_impl::fold): Fold svsra to svlsr/svasr if op1 is all zeros.
+
+2024-10-24  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svlsl_impl::fold):
+	Try constant folding.
+	* config/aarch64/aarch64-sve-builtins.cc (aarch64_const_binop):
+	Return 0 if shift is out of range.
+
+2024-10-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdiv_impl::fold):
+	Fold division by -1 to svneg.
+	(svmul_impl::fold): Fold multiplication by -1 to svneg.
+
+2024-10-24  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svindex_impl::fold): Add constant folding.
+
+2024-10-24  Wang Pengcheng  <wangpengcheng.pp@bytedance.com>
+
+	* config/riscv/riscv.cc (struct riscv_tune_param): Add new
+	tune options.
+	(riscv_override_options_internal): Override the default alignment
+	when not optimizing for size.
+
 2024-10-23  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* config/aarch64/aarch64.cc (aarch64_ptrue_reg): Fix type

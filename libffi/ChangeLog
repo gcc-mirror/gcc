@@ -1,3 +1,8 @@
+2024-10-24  Yang Yujie  <yangyujie@loongson.cn>
+
+	* src/loongarch64/ffi.c: Avoid defining floats
+	in struct call_context if the ABI is soft-float.
+
 2024-10-16  Joseph Myers  <josmyers@redhat.com>
 
 	* testsuite/libffi.call/va_struct2.c (test_fn): Cast n to void.

@@ -1,3 +1,111 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* vtable-class-hierarchy.cc: Remove trailing whitespace.
+	* typeck2.cc: Likewise.
+	* decl.cc: Likewise.
+	* init.cc: Likewise.
+	* semantics.cc: Likewise.
+	* module.cc: Likewise.
+	* rtti.cc: Likewise.
+	* cxx-pretty-print.cc: Likewise.
+	* cvt.cc: Likewise.
+	* mangle.cc: Likewise.
+	* name-lookup.h: Likewise.
+	* coroutines.cc: Likewise.
+	* error.cc: Likewise.
+	* lambda.cc: Likewise.
+	* tree.cc: Likewise.
+	* g++spec.cc: Likewise.
+	* decl2.cc: Likewise.
+	* cp-tree.h: Likewise.
+	* parser.cc: Likewise.
+	* pt.cc: Likewise.
+	* call.cc: Likewise.
+	* lex.cc: Likewise.
+	* cp-lang.cc: Likewise.
+	* cp-tree.def: Likewise.
+	* constexpr.cc: Likewise.
+	* typeck.cc: Likewise.
+	* name-lookup.cc: Likewise.
+	* optimize.cc: Likewise.
+	* search.cc: Likewise.
+	* mapper-client.cc: Likewise.
+	* ptree.cc: Likewise.
+	* class.cc: Likewise.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_in::read_class_def): Propagate some missing
+	flags from the streamed-in definition.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (post_load_processing): Mark COMDAT as needed, emit
+	declarations if maybe_clone_body fails.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115007
+	* module.cc (module_state::read_cluster): Replace
+	DECL_ABSTRACT_P with DECL_MAYBE_IN_CHARGE_CDTOR_P.
+	(post_load_processing): Check and mark TREE_ASM_WRITTEN.
+	* semantics.cc (expand_or_defer_fn_1): Use the more specific
+	module_maybe_has_cmi_p instead of modules_p.
+
+2024-10-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* decl2.cc (import_export_class): Use TYPE_CONTAINS_VPTR_P
+	instead of TYPE_POLYMORPHIC_P.
+	(import_export_decl): Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* call.cc: Add #define INCLUDE_MEMORY.
+	* class.cc: Likewise.
+	* constexpr.cc: Likewise.
+	* constraint.cc: Likewise.
+	* contracts.cc: Likewise.
+	* coroutines.cc: Likewise.
+	* cp-gimplify.cc: Likewise.
+	* cp-lang.cc: Likewise.
+	* cp-objcp-common.cc: Likewise.
+	* cp-ubsan.cc: Likewise.
+	* cvt.cc: Likewise.
+	* cxx-pretty-print.cc: Likewise.  Add #include "cp-tree.h".
+	(cxx_pretty_printer::clone): Use std::unique_ptr and
+	::make_unique.
+	* cxx-pretty-print.h (cxx_pretty_printer::clone): Use
+	std::unique_ptr.
+	* decl2.cc: Add #define INCLUDE_MEMORY.
+	* dump.cc: Likewise.
+	* except.cc: Likewise.
+	* expr.cc: Likewise.
+	* friend.cc: Likewise.
+	* init.cc: Likewise.
+	* lambda.cc: Likewise.
+	* logic.cc: Likewise.
+	* mangle.cc: Likewise.
+	* method.cc: Likewise.
+	* optimize.cc: Likewise.
+	* pt.cc: Likewise.
+	* ptree.cc: Likewise.
+	* rtti.cc: Likewise.
+	* search.cc: Likewise.
+	* semantics.cc: Likewise.
+	* tree.cc: Likewise.
+	* typeck.cc: Likewise.
+	* typeck2.cc: Likewise.
+	* vtable-class-hierarchy.cc: Likewise.
+
+2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117259
+	* typeck.cc (get_member_function_from_ptrfunc): Use force_target_expr
+	rather than save_expr for instance_ptr and function.  Don't call it
+	for TREE_CONSTANT.
+
 2024-10-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/117107

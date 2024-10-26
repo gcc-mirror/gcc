@@ -1,3 +1,8 @@
+2024-10-25  Ian Lance Taylor  <iant@golang.org>
+
+	* macho.c (dwarf_section_names): Add __debug_addr and
+	__debug_line_str.
+
 2024-10-18  Ian Lance Taylor  <iant@golang.org>
 
 	* dwarf.c (resolve_unit_addrs_overlap_walk): New static function.

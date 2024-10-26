@@ -1,3 +1,40 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.cc: Remove trailing whitespace.
+	* stub-objc.cc: Likewise.
+	* c-pragma.cc: Likewise.
+	* c-ppoutput.cc: Likewise.
+	* c-indentation.cc: Likewise.
+	* c-ada-spec.cc: Likewise.
+	* c-opts.cc: Likewise.
+	* c-common.cc: Likewise.
+	* c-format.cc: Likewise.
+	* c-omp.cc: Likewise.
+	* c-objc.h: Likewise.
+	* c-cppbuiltin.cc: Likewise.
+	* c-attribs.cc: Likewise.
+	* c-target.def: Likewise.
+	* c-common.h: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* c-ada-spec.cc: Add #define INCLUDE_MEMORY.
+	* c-attribs.cc: Likewise.
+	* c-common.cc: Likewise.
+	* c-format.cc: Likewise.
+	* c-gimplify.cc: Likewise.
+	* c-indentation.cc: Likewise.
+	* c-opts.cc: Likewise.
+	* c-pch.cc: Likewise.
+	* c-pragma.cc: Likewise.
+	* c-pretty-print.cc: Likewise.  Add #include "make-unique.h".
+	(c_pretty_printer::clone): Use std::unique_ptr and ::make_unique.
+	* c-pretty-print.h (c_pretty_printer::clone): Use std::unique_ptr.
+	* c-type-mismatch.cc: Add #define INCLUDE_MEMORY.
+	* c-warn.cc: Likewise.
+
 2024-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt.urls: Regenerate.
