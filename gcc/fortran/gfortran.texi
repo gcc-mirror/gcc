@@ -1192,7 +1192,7 @@ extensions.
 @menu
 * Extensions implemented in GNU Fortran::
 * Extensions not implemented in GNU Fortran::
-* Experimental features for Fortran 202Y::
+* Experimental features for future Fortran versions::
 @end menu
 
 
@@ -2702,19 +2702,19 @@ descriptor occurred, use @code{INQUIRE} to get the file position,
 count the characters up to the next @code{NEW_LINE} and then start
 reading from the position marked previously.
 
-@node Experimental features for Fortran 202Y
-@section Experimental features for Fortran 202Y
-@cindex Fortran 202Y
+@node Experimental features for future Fortran versions
+@section Experimental features future Fortran versions
+@cindex Future Fortran versions
 
 GNU Fortran supports some experimental features which have been
 proposed and accepted by the J3 standards committee.  These
 exist to give users a chance to try them out, and to provide
 a reference implementation.
 
-As these features have not been finalized, there is a chance that the
-version in the upcoming standard will differ from what GNU Fortran
-currently implements.  Stability of these implementations is therefore
-not guaranteed.
+As these features have not been included in the worklist for Fortran
+202Y by WG5, there is a chance that a version in any upcoming standard
+will differ from what GNU Fortran currently implements.  These
+features are therefore currently classified as an extension.
 
 @menu
 * Unsigned integers::
@@ -2723,11 +2723,12 @@ not guaranteed.
 @node Unsigned integers
 @subsection Unsigned integers
 @cindex Unsigned integers
-GNU Fortran supports unsigned integers according to
+If the @option{-funsigned} option is given, GNU Fortran supports
+unsigned integers according to
 @uref{https://j3-fortran.org/doc/year/24/24-116.txt, J3/24-116}.  The
-data type is called @code{UNSIGNED}.  For an unsigned type with $n$ bits,
-it implements integer arithmetic modulo @code{2**n}, comparable to the
-@code{unsigned} data type in C.
+data type is called @code{UNSIGNED}.  For an unsigned type with @code{n}
+bits, it implements integer arithmetic modulo @code{2**n}, comparable
+to the @code{unsigned} data type in C.
 
 The data type has @code{KIND} numbers comparable to other Fortran data
 types, which can be selected via the @code{SELECTED_UNSIGNED_KIND}
@@ -2771,31 +2772,75 @@ formatted and unformatted I/O.  For formatted I/O, the @code{B},
 values and values which would overflow are rejected with
 @code{-pedantic}.
 
-As of now, the following intrinsics take unsigned arguments:
+The following intrinsics take unsigned arguments:
 @itemize @bullet
-@item @code{BLT}, @code{BLE}, @code{BGE} and @code{BGT}. These intrinsics
-      are actually redundant because comparison operators could be used
-      directly.
-@item @code{IAND}, @code{IOR}, @code{IEOR} and @code{NOT}
-@item @code{BIT_SIZE}, @code{DIGITS} and @code{HUGE}
-@item @code{DSHIFTL} and @code{DSHIFTR}
-@item @code{IBCLR}, @code{IBITS} and @code{IBSET}
-@item @code{MIN} and @code{MAX}
-@item @code{ISHFT}, @code{ISHFTC}, @code{SHIFTL}, @code{SHIFTR} and
-      @code{SHIFTA}.
-@item @code{MERGE_BITS}
-@item @code{MOD} and @code{MODULO}
-@item @code{MVBITS}
-@item @code{RANGE}
-@item @code{TRANSFER}
-@item @code{SUM}, @code{PRODUCT}, @code{MATMUL} and @code{DOT_PRODUCT}
-@item @code{IANY}, @code{IALL} and @code{IPARITY}
-@item @code{RANDOM_NUMBER}
-@item @code{CSHIFT} and @code{EOSHIFT}
-@item @code{FINDLOC}
-@item @code{MAXVAL} and @code{MINVAL}
-@item @code{MAXLOC} and @code{MINLOC}.
+@item @code{BGE}, @pxref{BGE}
+@item @code{BGT}, @pxref{BGT}
+@item @code{BIT_SIZE}, @pxref{BIT_SIZE}
+@item @code{BLE}, @pxref{BLE}
+@item @code{BLT}, @pxref{BLT}
+@item @code{CSHIFT}, @pxref{CSHIFT}
+@item @code{DIGITS}, @pxref{DIGITS}
+@item @code{DOT_PRODUCT}, @pxref{DOT_PRODUCT}
+@item @code{DSHIFTL}, @pxref{DSHIFTL}
+@item @code{DSHIFTR}, @pxref{DSHIFTR}
+@item @code{EOSHIFT}, @pxref{EOSHIFT}
+@item @code{FINDLOC}, @pxref{FINDLOC}
+@item @code{HUGE}, @pxref{HUGE}
+@item @code{IALL}, @pxref{IALL}
+@item @code{IAND}, @pxref{IAND}
+@item @code{IANY}, @pxref{IANY}
+@item @code{IBCLR}, @pxref{IBCLR}
+@item @code{IBITS}, @pxref{IBITS}
+@item @code{IBSET}, @pxref{IBSET}
+@item @code{IEOR}, @pxref{IEOR}
+@item @code{IOR}, @pxref{IOR}
+@item @code{IPARITY}, @pxref{IPARITY}
+@item @code{ISHFT}, @pxref{ISHFT}
+@item @code{ISHFTC}, @pxref{ISHFTC}
+@item @code{MATMUL}, @pxref{MATMUL}
+@item @code{MAX}, @pxref{MAX}
+@item @code{MAXLOC}, @pxref{MAXLOC}
+@item @code{MAXVAL}, @pxref{MAXVAL}
+@item @code{MERGE}, @pxref{MERGE}
+@item @code{MERGE_BITS}, @pxref{MERGE_BITS}
+@item @code{MIN}, @pxref{MIN}
+@item @code{MINLOC}, @pxref{MINLOC}
+@item @code{MINVAL}, @pxref{MINVAL}
+@item @code{MOD}, @pxref{MOD}
+@item @code{MODULO}, @pxref{MODULO}
+@item @code{MVBITS}, @pxref{MVBITS}
+@item @code{NOT}, @pxref{NOT}
+@item @code{PRODUCT}, @pxref{PRODUCT}
+@item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
+@item @code{RANGE}, @pxref{RANGE}
+@item @code{SHIFTA}, @pxref{SHIFTA}
+@item @code{SHIFTL}, @pxref{SHIFTL}
+@item @code{SHIFTR}, @pxref{SHIFTR}
+@item @code{SUM}, @pxref{SUM}
+@item @code{TRANSPOSE}, @pxref{TRANSPOSE}
+@item @code{TRANSFER}, @pxref{TRANSFER}
 @end itemize
+
+The following intinsics are enabled with @option{-funsigned}:
+@itemize @bullet
+@item @code{UINT}, @pxref{UINT}
+@item @code{SELECTED_UNSIGNED_KIND}, @pxref{SELECTED_UNSIGNED_KIND}
+@end itemize
+
+The following intrinsics will take unsigned arguments
+in the future:
+@itemize @bullet
+@item @code{MASKL}, @pxref{MASKL}
+@item @code{MASKR}, @pxref{MASKR}
+@end itemize
+
+The following intrinsics are not yet implemented in GNU Fortran,
+but will take unsigned arguments once they have been:
+@itemize @bullet
+@item @code{OUT_OF_RANGE}
+@end itemize
+
 The following constants have been added to the intrinsic
 @code{ISO_C_BINDING} module: @code{c_unsigned},
 @code{c_unsigned_short}, @code{c_unsigned_char},

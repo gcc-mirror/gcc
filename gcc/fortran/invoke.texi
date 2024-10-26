@@ -617,6 +617,7 @@ Enhance test coverage by forcing most forall assignments to use temporary.
 
 @opindex funsigned
 @item -funsigned
+@anchor{-funsigned}
 Allow the experimental unsigned extension.
 @end table
 
