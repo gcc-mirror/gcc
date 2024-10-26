@@ -1,3 +1,13 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117259
+	* typeck.cc (get_member_function_from_ptrfunc): Use force_target_expr
+	rather than save_expr for instance_ptr and function.  Don't call it
+	for TREE_CONSTANT.
+
 2024-10-22  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

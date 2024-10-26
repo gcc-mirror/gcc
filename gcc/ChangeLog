@@ -1,3 +1,50 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117249
+	* tree-ssa-structalias.cc (insert_vi_for_tree): Move put calls out of
+	gcc_assert.
+	* lto-cgraph.cc (lto_symtab_encoder_delete_node): Likewise.
+	* gimple-ssa-strength-reduction.cc (get_alternative_base,
+	add_cand_for_stmt): Likewise.
+	* tree-eh.cc (add_stmt_to_eh_lp_fn): Likewise.
+	* except.cc (duplicate_eh_regions_1): Likewise.
+	* tree-ssa-reassoc.cc (insert_operand_rank): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_expand_call): Use == rather than = in
+	gcc_assert.
+	* opts-common.cc (jobserver_info::disconnect): Call close outside of
+	gcc_assert and only check result in it.
+	(jobserver_info::return_token): Call write outside of gcc_assert and
+	only check result in it.
+	* genautomata.cc (output_default_latencies): Move j++ side-effect
+	outside of gcc_assert.
+	* tree-ssa-loop-ivopts.cc (get_alias_ptr_type_for_ptr_address): Use
+	== rather than = in gcc_assert.
+	* cgraph.cc (symbol_table::create_edge): Move ++edges_max_uid
+	side-effect outside of gcc_assert.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117209
+	* asan.cc (maybe_cast_to_ptrmode): Formatting fix.
+	(build_check_stmt): Don't copy *iter into gsi, perform all
+	the updates on iter directly.
+
+2024-10-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-10-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116953
+	* config/avr/avr.cc (avr_out_sbxx_branch): Revert previous fix
+	for PR116953 (r15-4078).  Run extract_constrain_insn_cached
+	on the current insn after calling jump_over_one_insn_p.
+
 2024-10-23  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
