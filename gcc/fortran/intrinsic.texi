@@ -321,6 +321,7 @@ Some basic guidelines for editing this document:
 * @code{TTYNAM}:        TTYNAM,    Get the name of a terminal device
 * @code{UBOUND}:        UBOUND,    Upper dimension bounds of an array
 * @code{UCOBOUND}:      UCOBOUND,  Upper codimension bounds of an array
+* @code{UINT}:          UINT,      Convert to an unsigned integer type
 * @code{UMASK}:         UMASK,     Set the file creation mask
 * @code{UNLINK}:        UNLINK,    Remove a file from the file system
 * @code{UNPACK}:        UNPACK,    Unpack an array of rank one into an array
