@@ -2532,6 +2532,8 @@ operation_could_trap_helper_p (enum tree_code op,
 
     case COMPLEX_EXPR:
     case CONSTRUCTOR:
+    case VEC_DUPLICATE_EXPR:
+    case PAREN_EXPR:
       /* Constructing an object cannot trap.  */
       return false;
 
