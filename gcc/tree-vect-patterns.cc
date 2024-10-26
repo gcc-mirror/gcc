@@ -6240,8 +6240,6 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
   tree lhs = NULL_TREE, rhs1, rhs2, tmp, rhs1_type, rhs2_type;
   tree vectype1, vectype2;
   stmt_vec_info pattern_stmt_info;
-  tree rhs1_op0 = NULL_TREE, rhs1_op1 = NULL_TREE;
-  tree rhs1_op0_type = NULL_TREE, rhs1_op1_type = NULL_TREE;
 
   /* Check for MASK_LOAD and MASK_STORE as well as COND_OP calls requiring mask
      conversion.  */
@@ -6331,59 +6329,12 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
     {
       vectype1 = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
 
+      gcc_assert (! COMPARISON_CLASS_P (rhs1));
       if (TREE_CODE (rhs1) == SSA_NAME)
 	{
 	  rhs1_type = integer_type_for_mask (rhs1, vinfo);
 	  if (!rhs1_type)
 	    return NULL;
-	}
-      else if (COMPARISON_CLASS_P (rhs1))
-	{
-	  /* Check whether we're comparing scalar booleans and (if so)
-	     whether a better mask type exists than the mask associated
-	     with boolean-sized elements.  This avoids unnecessary packs
-	     and unpacks if the booleans are set from comparisons of
-	     wider types.  E.g. in:
-
-	       int x1, x2, x3, x4, y1, y1;
-	       ...
-	       bool b1 = (x1 == x2);
-	       bool b2 = (x3 == x4);
-	       ... = b1 == b2 ? y1 : y2;
-
-	     it is better for b1 and b2 to use the mask type associated
-	     with int elements rather bool (byte) elements.  */
-	  rhs1_op0 = TREE_OPERAND (rhs1, 0);
-	  rhs1_op1 = TREE_OPERAND (rhs1, 1);
-	  if (!rhs1_op0 || !rhs1_op1)
-	    return NULL;
-	  rhs1_op0_type = integer_type_for_mask (rhs1_op0, vinfo);
-	  rhs1_op1_type = integer_type_for_mask (rhs1_op1, vinfo);
-
-	  if (!rhs1_op0_type)
-	    rhs1_type = TREE_TYPE (rhs1_op0);
-	  else if (!rhs1_op1_type)
-	    rhs1_type = TREE_TYPE (rhs1_op1);
-	  else if (TYPE_PRECISION (rhs1_op0_type)
-		   != TYPE_PRECISION (rhs1_op1_type))
-	    {
-	      int tmp0 = (int) TYPE_PRECISION (rhs1_op0_type)
-			 - (int) TYPE_PRECISION (TREE_TYPE (lhs));
-	      int tmp1 = (int) TYPE_PRECISION (rhs1_op1_type)
-			 - (int) TYPE_PRECISION (TREE_TYPE (lhs));
-	      if ((tmp0 > 0 && tmp1 > 0) || (tmp0 < 0 && tmp1 < 0))
-		{
-		  if (abs (tmp0) > abs (tmp1))
-		    rhs1_type = rhs1_op1_type;
-		  else
-		    rhs1_type = rhs1_op0_type;
-		}
-	      else
-		rhs1_type = build_nonstandard_integer_type
-		  (TYPE_PRECISION (TREE_TYPE (lhs)), 1);
-	    }
-	  else
-	    rhs1_type = rhs1_op0_type;
 	}
       else
 	return NULL;
@@ -6400,54 +6351,8 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
 	 its vector type) and behave as though the comparison was an SSA
 	 name from the outset.  */
       if (known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
-		    TYPE_VECTOR_SUBPARTS (vectype2))
-	  && !rhs1_op0_type
-	  && !rhs1_op1_type)
+		    TYPE_VECTOR_SUBPARTS (vectype2)))
 	return NULL;
-
-      /* If rhs1 is invariant and we can promote it leave the COND_EXPR
-         in place, we can handle it in vectorizable_condition.  This avoids
-	 unnecessary promotion stmts and increased vectorization factor.  */
-      if (COMPARISON_CLASS_P (rhs1)
-	  && INTEGRAL_TYPE_P (rhs1_type)
-	  && known_le (TYPE_VECTOR_SUBPARTS (vectype1),
-		       TYPE_VECTOR_SUBPARTS (vectype2)))
-	{
-	  enum vect_def_type dt;
-	  if (vect_is_simple_use (TREE_OPERAND (rhs1, 0), vinfo, &dt)
-	      && dt == vect_external_def
-	      && vect_is_simple_use (TREE_OPERAND (rhs1, 1), vinfo, &dt)
-	      && (dt == vect_external_def
-		  || dt == vect_constant_def))
-	    {
-	      tree wide_scalar_type = build_nonstandard_integer_type
-		(vector_element_bits (vectype1), TYPE_UNSIGNED (rhs1_type));
-	      tree vectype3 = get_vectype_for_scalar_type (vinfo,
-							   wide_scalar_type);
-	      if (expand_vec_cond_expr_p (vectype1, vectype3, TREE_CODE (rhs1)))
-		return NULL;
-	    }
-	}
-
-      /* If rhs1 is a comparison we need to move it into a
-	 separate statement.  */
-      if (TREE_CODE (rhs1) != SSA_NAME)
-	{
-	  tmp = vect_recog_temp_ssa_var (TREE_TYPE (rhs1), NULL);
-	  if (rhs1_op0_type
-	      && TYPE_PRECISION (rhs1_op0_type) != TYPE_PRECISION (rhs1_type))
-	    rhs1_op0 = build_mask_conversion (vinfo, rhs1_op0,
-					      vectype2, stmt_vinfo);
-	  if (rhs1_op1_type
-	      && TYPE_PRECISION (rhs1_op1_type) != TYPE_PRECISION (rhs1_type))
-	    rhs1_op1 = build_mask_conversion (vinfo, rhs1_op1,
-				      vectype2, stmt_vinfo);
-	  pattern_stmt = gimple_build_assign (tmp, TREE_CODE (rhs1),
-					      rhs1_op0, rhs1_op1);
-	  rhs1 = tmp;
-	  append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, vectype2,
-				  rhs1_type);
-	}
 
       if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype1),
 		    TYPE_VECTOR_SUBPARTS (vectype2)))
