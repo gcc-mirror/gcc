@@ -27,8 +27,22 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
   rust_assert (concrete != nullptr);
   TyTy::BaseType *resolved_type = concrete;
 
-  auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
-    constant.get_mappings ().get_nodeid ());
+  tl::optional<Resolver::CanonicalPath> canonical_path;
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path = nr_ctx.values.to_canonical_path (
+	constant.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path = ctx->get_mappings ().lookup_canonical_path (
+	constant.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path);
 
   HIR::Expr *const_value_expr = constant.get_expr ().get ();
   tree const_expr
@@ -75,8 +89,22 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
       fntype->override_context ();
     }
 
-  auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
-    func.get_mappings ().get_nodeid ());
+  tl::optional<Resolver::CanonicalPath> canonical_path;
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      canonical_path
+	= nr_ctx.values.to_canonical_path (func.get_mappings ().get_nodeid ());
+    }
+  else
+    {
+      canonical_path = ctx->get_mappings ().lookup_canonical_path (
+	func.get_mappings ().get_nodeid ());
+    }
+
+  rust_assert (canonical_path);
 
   // FIXME: How do we get the proper visibility here?
   auto vis = HIR::Visibility (HIR::Visibility::VisType::PUBLIC);
