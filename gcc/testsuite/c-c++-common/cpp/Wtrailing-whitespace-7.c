@@ -1,6 +1,6 @@
 /* This test uses intentionally DOS line endings (CR+LF).  */
 /* { dg-do compile { target { c || c++11 } } } */
-/* { dg-options "-Wtrailing-whitespace=blank" } */
+/* { dg-options "-Wtrailing-whitespace=blanks" } */
 
 int i;   
 /* { dg-warning "trailing whitespace" "" { target *-*-* } .-1 } */

@@ -1492,18 +1492,18 @@ EnumValue
 Enum(warn_trailing_whitespace_kind) String(none) Value(0)
 
 EnumValue
-Enum(warn_trailing_whitespace_kind) String(blank) Value(1)
+Enum(warn_trailing_whitespace_kind) String(blanks) Value(1)
 
 EnumValue
-Enum(warn_trailing_whitespace_kind) String(space) Value(2)
+Enum(warn_trailing_whitespace_kind) String(any) Value(2)
 
 Wtrailing-whitespace=
 C ObjC C++ ObjC++ CPP(cpp_warn_trailing_whitespace) CppReason(CPP_W_TRAILING_WHITESPACE) Enum(warn_trailing_whitespace_kind) Joined RejectNegative Var(warn_trailing_whitespace) Init(0) Warning
 Warn about trailing whitespace on lines except when in raw string literals.
 
 Wtrailing-whitespace
-C ObjC C++ ObjC++ Alias(Wtrailing-whitespace=,blank,none) Warning
-Warn about trailing whitespace on lines except when in raw string literals.   Equivalent to Wtrailing-whitespace=blank when enabled or Wtrailing-whitespace=none when disabled.
+C ObjC C++ ObjC++ Alias(Wtrailing-whitespace=,blanks,none) Warning
+Warn about trailing whitespace on lines except when in raw string literals.   Equivalent to Wtrailing-whitespace=blanks when enabled or Wtrailing-whitespace=none when disabled.
 
 Wtrigraphs
 C ObjC C++ ObjC++ CPP(warn_trigraphs) CppReason(CPP_W_TRIGRAPHS) Var(cpp_warn_trigraphs) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)

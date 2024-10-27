@@ -8784,8 +8784,8 @@ This warning is enabled by @option{-Wall}.
 Warn about trailing whitespace at the end of lines, including inside of
 comments, but excluding trailing whitespace in raw string literals.
 @code{-Wtrailing-whitespace} is equivalent to
-@code{-Wtrailing-whitespace=blank} and warns just about trailing space and
-horizontal tab characters.  @code{-Wtrailing-whitespace=space} warns about
+@code{-Wtrailing-whitespace=blanks} and warns just about trailing space and
+horizontal tab characters.  @code{-Wtrailing-whitespace=any} warns about
 those or trailing form feed or vertical tab characters.
 @code{-Wno-trailing-whitespace} or @code{-Wtrailing-whitespace=none}
 disables the warning, which is the default.
