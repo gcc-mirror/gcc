@@ -1,6 +1,7 @@
 /* N3356 - if declarations.  */
 /* PR c/117019 */
 /* { dg-do run } */
+/* { dg-require-effective-target sync_int_long } */
 /* { dg-options "-std=c2y -Wc23-c2y-compat" } */
 /* Test C2Y if declarations.  Valid usages.  */
 
