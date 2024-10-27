@@ -1791,10 +1791,12 @@ gfc_trans_class_init_assign (gfc_code *code)
 {
   stmtblock_t block;
   tree tmp;
+  bool cmp_flag = true;
   gfc_se dst,src,memsz;
   gfc_expr *lhs, *rhs, *sz;
   gfc_component *cmp;
   gfc_symbol *sym;
+  gfc_ref *ref;
 
   gfc_start_block (&block);
 
@@ -1812,24 +1814,25 @@ gfc_trans_class_init_assign (gfc_code *code)
   rhs->rank = 0;
 
   /* Check def_init for initializers.  If this is an INTENT(OUT) dummy with all
-     default initializer components NULL, return NULL_TREE and use the passed
-     value as required by F2018(8.5.10).  */
+     default initializer components NULL, use the passed value even though
+     F2018(8.5.10) asserts that it should considered to be undefined. This is
+     needed for consistency with other brands.  */
   sym = code->expr1->expr_type == EXPR_VARIABLE ? code->expr1->symtree->n.sym
 						: NULL;
   if (code->op != EXEC_ALLOCATE
       && sym && sym->attr.dummy
       && sym->attr.intent == INTENT_OUT)
     {
-      if (!lhs->ref && lhs->symtree->n.sym->attr.dummy)
+      ref = rhs->ref;
+      while (ref && ref->next)
+	ref = ref->next;
+      cmp = ref->u.c.component->ts.u.derived->components;
+      for (; cmp; cmp = cmp->next)
 	{
-	  cmp = rhs->ref->next->u.c.component->ts.u.derived->components;
-	  for (; cmp; cmp = cmp->next)
-	    {
-	      if (cmp->initializer)
-		break;
-	      else if (!cmp->next)
-		return NULL_TREE;
-	    }
+	  if (cmp->initializer)
+	    break;
+	  else if (!cmp->next)
+	    cmp_flag = false;
 	}
     }
 
@@ -1843,7 +1846,7 @@ gfc_trans_class_init_assign (gfc_code *code)
       gfc_add_full_array_ref (lhs, tmparr);
       tmp = gfc_trans_class_array_init_assign (rhs, lhs, code->expr1);
     }
-  else
+  else if (cmp_flag)
     {
       /* Scalar initialization needs the _data component.  */
       gfc_add_data_component (lhs);
@@ -1873,6 +1876,8 @@ gfc_trans_class_init_assign (gfc_code *code)
 			    tmp, build_empty_stmt (input_location));
 	}
     }
+  else
+    tmp = build_empty_stmt (input_location);
 
   if (code->expr1->symtree->n.sym->attr.dummy
       && (code->expr1->symtree->n.sym->attr.optional
