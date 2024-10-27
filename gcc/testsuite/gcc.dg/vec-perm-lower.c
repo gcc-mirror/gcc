@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgimple -O2" } */
+/* { dg-options "-fgimple -O2 -Wno-psabi" } */
 
 typedef char v8qi __attribute__ ((vector_size (8)));
 typedef char v16qi __attribute__ ((vector_size (16)));
