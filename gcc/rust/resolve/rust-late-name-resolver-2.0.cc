@@ -273,9 +273,18 @@ Late::visit (AST::StructStruct &s)
 }
 
 void
+Late::visit (AST::StructExprStruct &s)
+{
+  auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());
+
+  ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
+		 Definition (resolved->get_node_id ()));
+}
+
+void
 Late::visit (AST::StructExprStructBase &s)
 {
-  auto resolved = ctx.types.get (s.get_struct_name ().as_string ());
+  auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
@@ -285,7 +294,7 @@ Late::visit (AST::StructExprStructBase &s)
 void
 Late::visit (AST::StructExprStructFields &s)
 {
-  auto resolved = ctx.types.get (s.get_struct_name ().as_string ());
+  auto resolved = ctx.types.resolve_path (s.get_struct_name ().get_segments ());
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
