@@ -46,12 +46,15 @@
 #undef  TARGET_LINKER_EMULATION
 #if TARGET_BIG_ENDIAN_DEFAULT
 #define TARGET_LINKER_EMULATION "armelfb_linux_eabi"
+#define TARGET_FDPIC_LINKER_EMULATION "armelfb_linux_fdpiceabi"
 #else
 #define TARGET_LINKER_EMULATION "armelf_linux_eabi"
+#define TARGET_FDPIC_LINKER_EMULATION "armelf_linux_fdpiceabi"
 #endif
 
 #undef  SUBTARGET_EXTRA_LINK_SPEC
-#define SUBTARGET_EXTRA_LINK_SPEC " -m " TARGET_LINKER_EMULATION
+#define SUBTARGET_EXTRA_LINK_SPEC " -m %{mfdpic: " \
+  TARGET_FDPIC_LINKER_EMULATION ";:" TARGET_LINKER_EMULATION "}"
 
 /* GNU/Linux on ARM currently supports three dynamic linkers:
    - ld-linux.so.2 - for the legacy ABI

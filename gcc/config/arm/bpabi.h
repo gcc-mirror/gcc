@@ -55,7 +55,7 @@
 #define TARGET_FIX_V4BX_SPEC " %{mcpu=arm8|mcpu=arm810|mcpu=strongarm*"\
   "|march=armv4|mcpu=fa526|mcpu=fa626:--fix-v4bx}"
 
-#define TARGET_FDPIC_ASM_SPEC ""
+#define TARGET_FDPIC_ASM_SPEC "%{mfdpic: --fdpic}"
 
 #define BE8_LINK_SPEC							\
   "%{!r:%{!mbe32:%:be8_linkopt(%{mlittle-endian:little}"		\
