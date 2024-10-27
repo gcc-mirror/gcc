@@ -74,10 +74,8 @@ issue-1589.rs
 issue-1725-1.rs
 issue-1725-2.rs
 issue-1786.rs
-issue-1813.rs
 issue-1893.rs
 issue-1901.rs
-issue-1930.rs
 issue-1981.rs
 issue-2019-1.rs
 issue-2019-2.rs
@@ -142,7 +140,6 @@ match4.rs
 match5.rs
 match9.rs
 method2.rs
-multi_reference_type.rs
 multiple_bindings1.rs
 multiple_bindings2.rs
 name_resolution2.rs

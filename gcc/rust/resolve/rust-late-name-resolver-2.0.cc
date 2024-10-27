@@ -126,8 +126,14 @@ Late::new_label (Identifier name, NodeId id)
 void
 Late::visit (AST::LetStmt &let)
 {
-  // so we don't need that method
-  DefaultResolver::visit (let);
+  DefaultASTVisitor::visit_outer_attrs (let);
+  if (let.has_type ())
+    visit (let.get_type ());
+  // visit expression before pattern
+  // this makes variable shadowing work properly
+  if (let.has_init_expr ())
+    visit (let.get_init_expr ());
+  visit (let.get_pattern ());
 
   // how do we deal with the fact that `let a = blipbloup` should look for a
   // label and cannot go through function ribs, but `let a = blipbloup()` can?
