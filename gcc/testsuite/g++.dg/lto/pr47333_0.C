@@ -1,3 +1,4 @@
+/* { dg-require-effective-target sync_int_long } */
 /* "WARNING: lto.exp does not support dg-additional-options" */
 #pragma GCC diagnostic ignored "-Wtemplate-body"
 
