@@ -626,12 +626,32 @@ template <Namespace N>
 tl::optional<Rib &>
 ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {
+  return dfs_node (starting_point, to_find).map ([] (Node &x) -> Rib & {
+    return x.rib;
+  });
+}
+
+template <Namespace N>
+tl::optional<const Rib &>
+ForeverStack<N>::dfs_rib (const ForeverStack<N>::Node &starting_point,
+			  NodeId to_find) const
+{
+  return dfs_node (starting_point, to_find).map ([] (Node &x) -> Rib & {
+    return x.rib;
+  });
+}
+
+template <Namespace N>
+tl::optional<typename ForeverStack<N>::Node &>
+ForeverStack<N>::dfs_node (ForeverStack<N>::Node &starting_point,
+			   NodeId to_find)
+{
   if (starting_point.id == to_find)
-    return starting_point.rib;
+    return starting_point;
 
   for (auto &child : starting_point.children)
     {
-      auto candidate = dfs_rib (child.second, to_find);
+      auto candidate = dfs_node (child.second, to_find);
 
       if (candidate.has_value ())
 	return candidate;
@@ -641,16 +661,16 @@ ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
 }
 
 template <Namespace N>
-tl::optional<const Rib &>
-ForeverStack<N>::dfs_rib (const ForeverStack<N>::Node &starting_point,
-			  NodeId to_find) const
+tl::optional<const typename ForeverStack<N>::Node &>
+ForeverStack<N>::dfs_node (const ForeverStack<N>::Node &starting_point,
+			   NodeId to_find) const
 {
   if (starting_point.id == to_find)
-    return starting_point.rib;
+    return starting_point;
 
   for (auto &child : starting_point.children)
     {
-      auto candidate = dfs_rib (child.second, to_find);
+      auto candidate = dfs_node (child.second, to_find);
 
       if (candidate.has_value ())
 	return candidate;
@@ -735,6 +755,13 @@ ForeverStack<N>::as_debug_string ()
   stream_node (stream, 0, root);
 
   return stream.str ();
+}
+
+template <Namespace N>
+bool
+ForeverStack<N>::is_module_descendant (NodeId parent, NodeId child) const
+{
+  return dfs_node (dfs_node (root, parent).value (), child).has_value ();
 }
 
 // FIXME: Can we add selftests?

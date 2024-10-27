@@ -521,6 +521,12 @@ public:
 
   std::string as_debug_string ();
 
+  /**
+   * Used to check if a module is a descendant of another module
+   * Intended for use in the privacy checker
+   */
+  bool is_module_descendant (NodeId parent, NodeId child) const;
+
 private:
   /**
    * A link between two Nodes in our trie data structure. This class represents
@@ -635,6 +641,10 @@ private:
   tl::optional<Rib &> dfs_rib (Node &starting_point, NodeId to_find);
   tl::optional<const Rib &> dfs_rib (const Node &starting_point,
 				     NodeId to_find) const;
+  // FIXME: Documentation
+  tl::optional<Node &> dfs_node (Node &starting_point, NodeId to_find);
+  tl::optional<const Node &> dfs_node (const Node &starting_point,
+				       NodeId to_find) const;
 };
 
 } // namespace Resolver2_0
