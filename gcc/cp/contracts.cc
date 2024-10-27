@@ -2114,13 +2114,17 @@ build_contract_check (tree contract)
 
 /* Add the contract statement CONTRACT to the current block if valid.  */
 
-static void
+static bool
 emit_contract_statement (tree contract)
 {
   /* Only add valid contracts.  */
-  if (get_contract_semantic (contract) != CCS_INVALID
-      && CONTRACT_CONDITION (contract) != error_mark_node)
-    add_stmt (contract);
+  if (contract == error_mark_node
+      || CONTRACT_CONDITION (contract) == error_mark_node
+      || get_contract_semantic (contract) == CCS_INVALID)
+    return false;
+
+  add_stmt (contract);
+  return true;
 }
 
 /* Generate the statement for the given contract attribute by adding the
@@ -2193,7 +2197,15 @@ remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
 	{
 	  contract = copy_node (contract);
 	  remap_contract (fn, condfn, contract, /*duplicate_p=*/false);
-	  emit_contract_statement (contract);
+	  if (!emit_contract_statement (contract))
+	    continue;
+	  if (flag_contract_disable_check_epochs)
+	    continue;
+	  /* Insert a std::observable () epoch marker.  */
+	  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
+	  releasing_vec vec;
+	  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+	  finish_expr_stmt (fn);
 	}
     }
 }

@@ -1916,6 +1916,10 @@ fcontract-disable-optimized-checks
 C++ Var(flag_contract_disable_optimized_checks) Init(0)
 -fcontract-disable-optimized-checks	Disable optimisation of contract checks.
 
+fcontract-disable-check-epochs
+C++ Var(flag_contract_disable_check_epochs) Init(0)
+-fcontract-disable-epoch-checks	Disable insertion of epoch markers after each contract check.
+
 fcoroutines
 C++ LTO Var(flag_coroutines)
 Enable C++ coroutines (experimental).
