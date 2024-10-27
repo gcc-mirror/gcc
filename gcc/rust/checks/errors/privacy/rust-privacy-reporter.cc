@@ -22,6 +22,7 @@
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
 #include "rust-attribute-values.h"
+#include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
 namespace Privacy {
@@ -93,6 +94,14 @@ static bool
 is_child_module (Analysis::Mappings &mappings, NodeId parent,
 		 NodeId possible_child)
 {
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      return nr_ctx.values.is_module_descendant (parent, possible_child);
+    }
+
   auto children = mappings.lookup_module_children (parent);
 
   if (!children)
