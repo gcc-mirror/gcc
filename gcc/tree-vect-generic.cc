@@ -168,7 +168,15 @@ do_unop (gimple_stmt_iterator *gsi, tree inner_type, tree a,
 	 tree b ATTRIBUTE_UNUSED, tree bitpos, tree bitsize,
 	 enum tree_code code, tree type ATTRIBUTE_UNUSED)
 {
-  a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
+  tree rhs_type = inner_type;
+
+  /* For ABSU_EXPR, use the signed type for the rhs if the rhs was signed. */
+  if (code == ABSU_EXPR
+      && ANY_INTEGRAL_TYPE_P (TREE_TYPE (a))
+      && !TYPE_UNSIGNED (TREE_TYPE (a)))
+    rhs_type = signed_type_for (rhs_type);
+
+  a = tree_vec_extract (gsi, rhs_type, a, bitsize, bitpos);
   return gimplify_build1 (gsi, code, inner_type, a);
 }
 
