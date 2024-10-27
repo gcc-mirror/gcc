@@ -1,3 +1,17 @@
+2024-10-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117234
+	* g++.dg/eh/noncall-fp-1.C: New test.
+	* g++.target/aarch64/sve/noncall-eh-fp-1.C: New test.
+	* gcc.dg/tree-ssa/trapping-1.c: New test.
+	* gcc.target/aarch64/sve/trapping-1.c: New test.
+
+2024-10-26  Sam James  <sam@gentoo.org>
+
+	PR testsuite/117299
+	* gcc.dg/lto/tbaa_0.c: Move to...
+	* gcc.dg/tbaa.c: ...here.
+
 2024-10-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/58195

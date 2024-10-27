@@ -1,3 +1,30 @@
+2024-10-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117234
+	* tree-eh.cc (operation_could_trap_helper_p): Treat
+	PAREN_EXPR and VEC_DUPLICATE_EXPR like constructing
+	expressions.
+
+2024-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_get_operand_map): Mark
+	COMPARISON_CLASS_P COND_EXPR condition path unreachable.
+	* tree-vect-stmts.cc (vect_is_simple_use): Likewise.
+	(vectorizable_condition): Assert the COND_EXPR condition isn't
+	COMPARISON_CLASS_P.
+
+2024-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_ctz_ffs_pattern): Create
+	a separate pattern stmt for the comparison in the generated
+	COND_EXPR.
+
+2024-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Build
+	separate comparion pattern for the condition of a COND_EXPR
+	pattern.
+
 2024-10-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/58195

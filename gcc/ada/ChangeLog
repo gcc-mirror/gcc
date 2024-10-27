@@ -1,3 +1,10 @@
+2024-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/62122
+	* doc/gnat_rm/implementation_defined_attributes.rst
+	(Unrestricted_Access): Remove null exclusion.
+	* gnat_rm.texi: Regenerate.
+
 2024-10-25  Tom Tromey  <tromey@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use gnu_fat_type as the type

@@ -1,3 +1,16 @@
+2024-10-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* intrinsic.texi: Add menu item for UINT.
+
+2024-10-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Correct reference to make clear that UNSIGNED
+	will not be part of F202Y.
+	Other clarifications.
+	Extend table of intrinsics, add links.
+	* intrinsic.texi: Add descriptions for UNSIGNED arguments.
+	* invoke.texi: Add anchor for -funsigned.
+
 2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/79685
