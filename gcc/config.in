@@ -1018,6 +1018,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'fmemopen', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_FMEMOPEN
+#endif
+
+
 /* Define to 1 if we found a declaration for 'fprintf_unlocked', otherwise
    define to 0. */
 #ifndef USED_FOR_TARGET

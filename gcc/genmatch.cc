@@ -585,6 +585,138 @@ diag_vfprintf (FILE *f, int err_no, const char *msg, va_list *ap)
   fprintf (f, "%s", q);
 }
 
+#if defined(GENMATCH_SELFTESTS) && defined(HAVE_DECL_FMEMOPEN)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+
+static void
+test_diag_vfprintf (const char *expected, const char *msg, ...)
+{
+  char buf[256];
+  va_list ap;
+  FILE *f = fmemopen (buf, 256, "w");
+  gcc_assert (f != NULL);
+  va_start (ap, msg);
+  diag_vfprintf (f, 0, msg, &ap);
+  va_end (ap);
+  fclose (f);
+  gcc_assert (strcmp (buf, expected) == 0);
+}
+
+#pragma GCC diagnostic pop
+
+static void
+genmatch_diag_selftests (void)
+{
+  /* Verify that plain text is passed through unchanged.  */
+  test_diag_vfprintf ("unformatted", "unformatted");
+
+  /* Verify various individual format codes, in the order listed in the
+     comment for pp_format above.  For each code, we append a second
+     argument with a known bit pattern (0x12345678), to ensure that we
+     are consuming arguments correctly.  */
+  test_diag_vfprintf ("-27 12345678", "%d %x", -27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%i %x", -5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%u %x", 10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%o %x", 15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%x %x", 0xcafebabe, 0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%ld %x", (long)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%li %x", (long)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%lu %x", (long)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%lo %x", (long)15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%lx %x", (long)0xcafebabe,
+		      0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%lld %x", (long long)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%lli %x", (long long)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%llu %x", (long long)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%llo %x", (long long)15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%llx %x", (long long)0xcafebabe,
+		      0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%wd %x", HOST_WIDE_INT_C (-27),
+		      0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%wi %x", HOST_WIDE_INT_C (-5),
+		      0x12345678);
+  test_diag_vfprintf ("10 12345678", "%wu %x", HOST_WIDE_INT_UC (10),
+		      0x12345678);
+  test_diag_vfprintf ("17 12345678", "%wo %x", HOST_WIDE_INT_C (15),
+		      0x12345678);
+  test_diag_vfprintf ("0xcafebabe 12345678", "%wx %x",
+		      HOST_WIDE_INT_C (0xcafebabe), 0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%zd %x", (ssize_t)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%zi %x", (ssize_t)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%zu %x", (size_t)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%zo %x", (size_t)15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%zx %x", (size_t)0xcafebabe,
+		      0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%td %x", (ptrdiff_t)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%ti %x", (ptrdiff_t)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%tu %x", (ptrdiff_t)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%to %x", (ptrdiff_t)15, 0x12345678);
+  test_diag_vfprintf ("1afebabe 12345678", "%tx %x", (ptrdiff_t)0x1afebabe,
+		      0x12345678);
+  test_diag_vfprintf ("1.000000 12345678", "%f %x", 1.0, 0x12345678);
+  test_diag_vfprintf ("A 12345678", "%c %x", 'A', 0x12345678);
+  test_diag_vfprintf ("hello world 12345678", "%s %x", "hello world",
+		      0x12345678);
+
+  /* Not nul-terminated.  */
+  char arr[5] = { '1', '2', '3', '4', '5' };
+  test_diag_vfprintf ("123 12345678", "%.*s %x", 3, arr, 0x12345678);
+  test_diag_vfprintf ("1234 12345678", "%.*s %x", -1, "1234", 0x12345678);
+  test_diag_vfprintf ("12345 12345678", "%.*s %x", 7, "12345", 0x12345678);
+
+  /* We can't test for %p; the pointer is printed in an implementation-defined
+     manner.  */
+  test_diag_vfprintf ("normal colored normal 12345678",
+		      "normal %rcolored%R normal %x",
+		      "error", 0x12345678);
+
+  /* TODO:
+     %m: strerror(text->err_no) - does not consume a value *ap.  */
+  test_diag_vfprintf ("% 12345678", "%% %x", 0x12345678);
+  test_diag_vfprintf ("' 12345678", "%< %x", 0x12345678);
+  test_diag_vfprintf ("' 12345678", "%> %x", 0x12345678);
+  test_diag_vfprintf ("' 12345678", "%' %x", 0x12345678);
+  test_diag_vfprintf ("abc 12345678", "%.*s %x", 3, "abcdef", 0x12345678);
+  test_diag_vfprintf ("abc 12345678", "%.3s %x", "abcdef", 0x12345678);
+
+  /* Verify flag 'q'.  */
+  test_diag_vfprintf ("'foo' 12345678", "%qs %x", "foo", 0x12345678);
+
+  /* Verify %Z.  */
+  int v[] = { 1, 2, 3 }; 
+  test_diag_vfprintf ("1, 2, 3 12345678", "%Z %x", v, 3, 0x12345678);
+
+  int v2[] = { 0 }; 
+  test_diag_vfprintf ("0 12345678", "%Z %x", v2, 1, 0x12345678);
+
+  /* Verify that combinations work, along with unformatted text.  */
+  test_diag_vfprintf ("the quick brown fox jumps over the lazy dog",
+		      "the %s %s %s jumps over the %s %s",
+		      "quick", "brown", "fox", "lazy", "dog");
+  test_diag_vfprintf ("item 3 of 7", "item %i of %i", 3, 7);
+  test_diag_vfprintf ("problem with 'bar' at line 10",
+		      "problem with %qs at line %i", "bar", 10);
+
+  /* Verified numbered args.  */
+  test_diag_vfprintf ("foo: second bar: first",
+		      "foo: %2$s bar: %1$s", "first", "second");
+  test_diag_vfprintf ("foo: 1066 bar: 1776",
+		      "foo: %2$i bar: %1$i", 1776, 1066);
+  test_diag_vfprintf ("foo: second bar: 1776",
+		      "foo: %2$s bar: %1$i", 1776, "second");
+  test_diag_vfprintf ("foo: sec bar: 3360",
+		      "foo: %3$.*2$s bar: %1$o", 1776, 3, "second");
+  test_diag_vfprintf ("foo: seco bar: 3360",
+		      "foo: %2$.4s bar: %1$o", 1776, "second");
+}
+#else
+static void
+genmatch_diag_selftests (void)
+{
+}
+#endif
+
 static bool
 #if GCC_VERSION >= 4001
 __attribute__((format (gcc_diag, 5, 0)))
@@ -6081,6 +6213,8 @@ main (int argc, char **argv)
       usage ();
       return 1;
     }
+
+  genmatch_diag_selftests ();
 
   if (!s_include_file)
     s_include_file = s_header_file;

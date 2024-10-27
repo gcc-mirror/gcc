@@ -3474,6 +3474,14 @@ test_pp_format ()
 		    "foo: second bar: 1776",
 		    "foo: %2$s bar: %1$i",
 		    1776, "second");
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: sec bar: 3360",
+		    "foo: %3$.*2$s bar: %1$o",
+		    1776, 3, "second");
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: seco bar: 3360",
+		    "foo: %2$.4s bar: %1$o",
+		    1776, "second");
 }
 
 static void

@@ -3143,6 +3143,7 @@ else
 BUILD_CPPLIB = $(CPPLIB) $(LIBIBERTY)
 build/genmatch$(build_exeext): BUILD_LIBDEPS += $(LIBINTL_DEP) $(LIBICONV_DEP)
 build/genmatch$(build_exeext): BUILD_LIBS += $(LIBINTL) $(LIBICONV)
+build/genmatch.o: BUILD_CPPFLAGS += -DGENMATCH_SELFTESTS
 endif
 
 build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
