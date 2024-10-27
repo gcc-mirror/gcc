@@ -943,6 +943,13 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 					  stmt_to_move_alt))
     return false;
 
+  /* Do not make conditional undefs unconditional.  */
+  if ((TREE_CODE (arg0) == SSA_NAME
+       && ssa_name_maybe_undef_p (arg0))
+      || (TREE_CODE (arg1) == SSA_NAME
+	  && ssa_name_maybe_undef_p (arg1)))
+    return false;
+
     /* At this point we know we have a GIMPLE_COND with two successors.
      One successor is BB, the other successor is an empty block which
      falls through into BB.
@@ -981,13 +988,6 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       arg_true = arg1;
       arg_false = arg0;
     }
-
-  /* Do not make conditional undefs unconditional.  */
-  if ((TREE_CODE (arg_true) == SSA_NAME
-       && ssa_name_maybe_undef_p (arg_true))
-      || (TREE_CODE (arg_false) == SSA_NAME
-	  && ssa_name_maybe_undef_p (arg_false)))
-    return false;
 
   tree type = TREE_TYPE (gimple_phi_result (phi));
   {
