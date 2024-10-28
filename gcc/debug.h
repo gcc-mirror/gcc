@@ -57,7 +57,7 @@ struct gcc_debug_hooks
 
   /* Record the beginning of block N, counting from 1 and not
      including the function-scope block, at LINE.  */
-  void (* begin_block) (unsigned int line, unsigned int n);
+  void (* begin_block) (unsigned int line, unsigned int n, tree block);
 
   /* Record the end of a block.  Arguments as for begin_block.  */
   void (* end_block) (unsigned int line, unsigned int n);
@@ -223,6 +223,7 @@ extern void debug_nothing_int_int_charstar_int_bool (unsigned int,
 						     int, bool);
 extern void debug_nothing_int (unsigned int);
 extern void debug_nothing_int_int (unsigned int, unsigned int);
+extern void debug_nothing_int_int_tree (unsigned int, unsigned int, tree);
 extern void debug_nothing_tree (tree);
 extern void debug_nothing_tree_tree (tree, tree);
 extern void debug_nothing_tree_int (tree, int);

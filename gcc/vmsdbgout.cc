@@ -154,7 +154,7 @@ static void vmsdbgout_define (unsigned int, const char *);
 static void vmsdbgout_undef (unsigned int, const char *);
 static void vmsdbgout_start_source_file (unsigned int, const char *);
 static void vmsdbgout_end_source_file (unsigned int);
-static void vmsdbgout_begin_block (unsigned int, unsigned int);
+static void vmsdbgout_begin_block (unsigned int, unsigned int, tree);
 static void vmsdbgout_end_block (unsigned int, unsigned int);
 static bool vmsdbgout_ignore_block (const_tree);
 static void vmsdbgout_source_line (unsigned int, unsigned int, const char *,
@@ -1230,7 +1230,8 @@ vmsdbgout_end_epilogue (unsigned int line, const char *file)
    a lexical block.  */
 
 static void
-vmsdbgout_begin_block (unsigned line, unsigned blocknum)
+vmsdbgout_begin_block (unsigned line, unsigned blocknum,
+		       tree block ATTRIBUTE_UNUSED)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.begin_block) (line, blocknum);

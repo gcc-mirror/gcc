@@ -2299,7 +2299,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	      /* Output debugging info about the symbol-block beginning.  */
 	      if (!DECL_IGNORED_P (current_function_decl))
-		debug_hooks->begin_block (last_linenum, n);
+		debug_hooks->begin_block (last_linenum, n, NOTE_BLOCK (insn));
 
 	      /* Mark this block as output.  */
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
