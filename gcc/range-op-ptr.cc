@@ -388,7 +388,7 @@ operator_bitwise_or::fold_range (prange &r, tree type,
 {
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
-  if (!op1.zero_p () || !op2.zero_p ())
+  if (!range_includes_zero_p (op1) || !range_includes_zero_p (op2))
     r.set_nonzero (type);
   else if (op1.zero_p () && op2.zero_p ())
     r.set_zero (type);
