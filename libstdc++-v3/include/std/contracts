@@ -1,0 +1,106 @@
+// Contracts support header for -*- C++ -*-
+
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
+//
+// This file is part of GCC.
+//
+// GCC is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3, or (at your option)
+// any later version.
+//
+// GCC is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file contracts
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_CONTRACTS
+#define _GLIBCXX_CONTRACTS 1
+
+#pragma GCC system_header
+
+#include <source_location>
+#include <cstdint>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace contracts
+{
+  // From P2900R7
+  enum class assertion_kind {
+    pre = 1,
+    post = 2,
+    assert = 3
+    /* to be extended with implementation−defined values and by future extensions */
+	/* Implementation−defined values should have a minimum value of 1000. */
+  };
+	
+  enum class evaluation_semantic {
+    enforce = 1,
+    observe = 2
+    // quick_enforce = 3, // not explicitly provided
+	// ignore = 4,
+	// not explicitly provided
+	// assume = 5
+	// expected as a future extension
+	/* to be extended with implementation−defined values and by future extensions */
+	/* Implementation−defined values should have a minimum value of 1000. */
+  };
+	
+  enum class detection_mode  {
+    predicate_false = 1,
+    evaluation_exception = 2
+    /* to be extended with implementation−defined values and by future extensions 
+	 Implementation−defined values should have a minimum value of 1000. */
+  };
+  
+  using __vendor_ext = void;
+  
+  class contract_violation {
+    int version;
+    __vendor_ext* _M_ext;
+    const char* _M_comment;
+    detection_mode _M_detection_mode;
+    assertion_kind _M_assertion_kind;
+    std::source_location _M_source_location;
+    evaluation_semantic _M_evaluation_semantic;
+  public:
+    // cannot be copied or moved
+	contract_violation(const contract_violation&) = delete;
+	
+	// cannot be assigned to
+	contract_violation& operator=(const contract_violation&) = delete;
+
+	/* see below */
+	~ contract_violation();
+
+	const char* comment() const noexcept { return _M_comment; }
+	detection_mode mode() const noexcept { return _M_detection_mode; }
+	assertion_kind kind() const noexcept { return _M_assertion_kind; }
+	std::source_location location() const noexcept { return _M_source_location; }
+	evaluation_semantic semantic() const noexcept { return _M_evaluation_semantic; }
+	};
+	
+//void invoke_default_contract_violation_handler(const contract_violation&);
+
+} // namespace contracts
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // _GLIBCXX_CONTRACTS
