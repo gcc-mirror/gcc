@@ -54,10 +54,10 @@ static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
 static int dump_one_header (splay_tree_node, void *);
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
-static void cb_ident (cpp_reader *, unsigned int, const cpp_string *);
-static void cb_def_pragma (cpp_reader *, unsigned int);
-static void cb_define (cpp_reader *, unsigned int, cpp_hashnode *);
-static void cb_undef (cpp_reader *, unsigned int, cpp_hashnode *);
+static void cb_ident (cpp_reader *, location_t, const cpp_string *);
+static void cb_def_pragma (cpp_reader *, location_t);
+static void cb_define (cpp_reader *, location_t, cpp_hashnode *);
+static void cb_undef (cpp_reader *, location_t, cpp_hashnode *);
 
 void
 init_c_lex (void)
@@ -164,7 +164,7 @@ dump_time_statistics (void)
 
 static void
 cb_ident (cpp_reader * ARG_UNUSED (pfile),
-	  unsigned int ARG_UNUSED (line),
+	  location_t ARG_UNUSED (line),
 	  const cpp_string * ARG_UNUSED (str))
 {
   if (!flag_no_ident)
