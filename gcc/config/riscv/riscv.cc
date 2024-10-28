@@ -295,9 +295,9 @@ struct riscv_tune_param
   bool overlap_op_by_pieces;
   unsigned int fusible_ops;
   const struct cpu_vector_cost *vec_costs;
-  const char *function_align = nullptr;
-  const char *jump_align = nullptr;
-  const char *loop_align = nullptr;
+  const char *function_align;
+  const char *jump_align;
+  const char *loop_align;
 };
 
 
@@ -457,6 +457,9 @@ static const struct riscv_tune_param rocket_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for Sifive 7 Series.  */
@@ -476,6 +479,9 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for Sifive p400 Series.  */
@@ -495,6 +501,9 @@ static const struct riscv_tune_param sifive_p400_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for Sifive p600 Series.  */
@@ -514,6 +523,9 @@ static const struct riscv_tune_param sifive_p600_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for T-HEAD c906.  */
@@ -533,6 +545,9 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for xiangshan nanhu.  */
@@ -552,6 +567,9 @@ static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_ZEXTW | RISCV_FUSE_ZEXTH,          /* fusible_ops */
   NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for a generic ooo profile.  */
@@ -571,6 +589,9 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   true,						/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -590,6 +611,9 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
 };
 
 static bool riscv_avoid_shrink_wrapping_separate ();
