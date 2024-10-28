@@ -39,4 +39,4 @@ PATH/include-chain-1-1.h:2:5: note: previous declaration of 'q' with type 'int'
 
 /* Use a Python script to verify various properties about the generated
    .sarif file:
-   { dg-final { run-sarif-pytest include-chain-1.c "test-include-chain-1.py" } } */
+   { dg-final { run-sarif-pytest include-chain-1.c "include-chain-1.py" } } */

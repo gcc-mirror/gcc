@@ -19,4 +19,4 @@ int missing_semicolon (void)
 
 /* Use a Python script to verify various properties about the generated
    .sarif file:
-   { dg-final { run-sarif-pytest missing-semicolon.c "test-missing-semicolon.py" } } */
+   { dg-final { run-sarif-pytest missing-semicolon.c "missing-semicolon.py" } } */

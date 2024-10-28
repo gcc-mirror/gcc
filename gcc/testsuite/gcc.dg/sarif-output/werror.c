@@ -15,4 +15,4 @@ static int ununsed;
 
 /* Use a Python script to verify various properties about the generated
    .sarif file:
-   { dg-final { run-sarif-pytest werror.c "test-werror.py" } } */
+   { dg-final { run-sarif-pytest werror.c "werror.py" } } */
