@@ -741,9 +741,11 @@ PrivacyReporter::visit (HIR::EmptyStmt &)
 void
 PrivacyReporter::visit (HIR::LetStmt &stmt)
 {
-  check_type_privacy (stmt.get_type ());
+  if (stmt.has_type ())
+    check_type_privacy (stmt.get_type ());
 
-  stmt.get_init_expr ().accept_vis (*this);
+  if (stmt.has_init_expr ())
+    stmt.get_init_expr ().accept_vis (*this);
 }
 
 void

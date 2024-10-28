@@ -570,10 +570,11 @@ public:
   static std::string variant_type_string (VariantType type);
 
   VariantDef (HirId id, DefId defid, std::string identifier, RustIdent ident,
-	      std::unique_ptr<HIR::Expr> &&discriminant);
+	      tl::optional<std::unique_ptr<HIR::Expr>> &&discriminant);
 
   VariantDef (HirId id, DefId defid, std::string identifier, RustIdent ident,
-	      VariantType type, std::unique_ptr<HIR::Expr> &&discriminant,
+	      VariantType type,
+	      tl::optional<std::unique_ptr<HIR::Expr>> &&discriminant,
 	      std::vector<StructFieldType *> fields);
 
   static VariantDef &get_error_node ();
@@ -596,7 +597,10 @@ public:
   bool lookup_field (const std::string &lookup, StructFieldType **field_lookup,
 		     size_t *index) const;
 
+  bool has_discriminant () const;
+
   HIR::Expr &get_discriminant ();
+  const HIR::Expr &get_discriminant () const;
 
   std::string as_string () const;
 
@@ -614,8 +618,10 @@ private:
   std::string identifier;
   RustIdent ident;
   VariantType type;
+
   // can either be a structure or a discriminant value
-  std::unique_ptr<HIR::Expr> discriminant;
+  tl::optional<std::unique_ptr<HIR::Expr>> discriminant;
+
   std::vector<StructFieldType *> fields;
 };
 

@@ -24,6 +24,7 @@
 #include "rust-common.h"
 #include "rust-hir-visibility.h"
 #include "rust-hir-generic-param.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
@@ -141,7 +142,11 @@ public:
 
   Identifier get_type_representation () const { return type_representation; }
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   Analysis::NodeMapping get_type_mappings () const;
 
@@ -414,7 +419,11 @@ public:
 
   ImplicitSelfKind get_self_kind () const { return self_kind; }
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   Analysis::NodeMapping get_mappings () { return mappings; }
 
@@ -482,7 +491,11 @@ public:
 
   Pattern &get_param_name () { return *param_name; }
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
@@ -1112,7 +1125,11 @@ public:
 
   WhereClause &get_where_clause () { return where_clause; }
 
-  Type &get_type_aliased () { return *existing_type; }
+  Type &get_type_aliased ()
+  {
+    rust_assert (existing_type);
+    return *existing_type;
+  }
 
   Identifier get_new_type_name () const { return new_type_name; }
 
@@ -1766,7 +1783,11 @@ public:
   void accept_vis (HIRImplVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   Expr &get_expr () { return *const_expr; }
 
@@ -1844,9 +1865,17 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  Expr &get_expr () { return *expr; }
+  Expr &get_expr ()
+  {
+    rust_assert (expr);
+    return *expr;
+  }
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   ItemKind get_item_kind () const override { return ItemKind::Static; }
 
@@ -2028,9 +2057,17 @@ public:
 
   bool has_expr () const { return expr != nullptr; }
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
-  Expr &get_expr () { return *expr; }
+  Expr &get_expr ()
+  {
+    rust_assert (expr);
+    return *expr;
+  }
 
   const std::string trait_identifier () const override final
   {
@@ -2274,9 +2311,13 @@ public:
 
   location_t get_locus () const override final { return locus; }
 
-  Type &get_type () { return *impl_type; };
+  Type &get_type ()
+  {
+    rust_assert (impl_type);
+    return *impl_type;
+  };
 
-  bool has_type () { return impl_type == nullptr; }
+  bool has_type () { return impl_type != nullptr; }
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
@@ -2436,7 +2477,11 @@ public:
 
   Identifier get_param_name () const { return name; }
 
-  Type &get_type () { return *param_type; }
+  Type &get_type ()
+  {
+    rust_assert (param_type);
+    return *param_type;
+  }
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 };

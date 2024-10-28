@@ -203,14 +203,13 @@ TypeCheckExpr::visit (HIR::CallExpr &expr)
 	  ok = adt->lookup_variant_by_id (variant_id, &lookup_variant);
 	  rust_assert (ok);
 
-	  variant = std::move (*lookup_variant);
+	  variant = std::move (*lookup_variant->clone ());
 	}
       else
 	{
 	  rust_assert (adt->number_of_variants () == 1);
-	  variant = std::move (*adt->get_variants ().at (0));
+	  variant = std::move (*adt->get_variants ().at (0)->clone ());
 	}
-
       infered
 	= TyTy::TypeCheckCallExpr::go (function_tyty, expr, variant, context);
       return;

@@ -99,8 +99,16 @@ public:
   Identifier &get_identifier () { return identifier; }
   const Identifier &get_identifier () const { return identifier; }
 
-  Type &get_type () { return *type; }
-  const Type &get_type () const { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
+  const Type &get_type () const
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   location_t get_locus () const { return locus; }
 };
@@ -633,7 +641,11 @@ public:
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
 
   TypePath &get_trait () { return *trait; }
 

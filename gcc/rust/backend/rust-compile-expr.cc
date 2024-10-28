@@ -1200,7 +1200,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
       // this assumes all fields are in order from type resolution and if a
       // base struct was specified those fields are filed via accessors
       std::vector<tree> arguments;
-      for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+      for (size_t i = 0; i < expr.num_params (); i++)
 	{
 	  auto &argument = expr.get_arguments ().at (i);
 	  auto rvalue = CompileExpr::Compile (*argument, ctx);
