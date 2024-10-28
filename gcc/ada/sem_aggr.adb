@@ -1649,10 +1649,6 @@ package body Sem_Aggr is
       --  for discrete choices such as "L .. H => Expr" or the OTHERS choice).
       --  In this event we do not resolve Expr unless expansion is disabled.
       --  To know why, see the DELAYED COMPONENT RESOLUTION note above.
-      --
-      --  NOTE: In the case of "... => <>", we pass the N_Component_Association
-      --  node as Expr, since there is no Expression and we need a Sloc for the
-      --  error message.
 
       function Resolve_Iterated_Component_Association
         (N         : Node_Id;
@@ -2039,13 +2035,6 @@ package body Sem_Aggr is
                end if;
             end if;
 
-            --  If it's "... => <>", nothing to resolve
-
-            if Nkind (Expr) = N_Component_Association then
-               pragma Assert (Box_Present (Expr));
-               return Success;
-            end if;
-
             --  Ada 2005 (AI-231): Propagate the type to the nested aggregate.
             --  Required to check the null-exclusion attribute (if present).
             --  This value may be overridden later on.
@@ -2062,13 +2051,6 @@ package body Sem_Aggr is
             end if;
 
          else
-            --  If it's "... => <>", nothing to resolve
-
-            if Nkind (Expr) = N_Component_Association then
-               pragma Assert (Box_Present (Expr));
-               return Success;
-            end if;
-
             --  Do not resolve the expressions of discrete or others choices
             --  unless the expression covers a single component, or else the
             --  expander is inactive or this is a spec expression.
@@ -3095,15 +3077,13 @@ package body Sem_Aggr is
 
                if Box_Present (Assoc) then
 
-                  --  Ada 2005 (AI-287): In case of default initialization of a
-                  --  component the expander will generate calls to the
-                  --  corresponding initialization subprogram. We need to call
-                  --  Resolve_Aggr_Expr to check the rules about
-                  --  dimensionality.
+                  --  Ada 2005 (AI-287): In case of default initialization of
+                  --  a component, the expander will generate calls to the
+                  --  corresponding initialization subprogram. Check that we
+                  --  have a single dimension.
 
-                  if not Resolve_Aggr_Expr
-                           (Assoc, Single_Elmt => Single_Choice)
-                  then
+                  if Present (Next_Index (Index)) then
+                     Error_Msg_N ("nested array aggregate expected", Assoc);
                      return Failure;
                   end if;
 
@@ -3635,13 +3615,13 @@ package body Sem_Aggr is
 
             if Box_Present (Assoc) then
 
-               --  Ada 2005 (AI-287): In case of default initialization of a
-               --  component the expander will generate calls to the
-               --  corresponding initialization subprogram. We need to call
-               --  Resolve_Aggr_Expr to check the rules about
-               --  dimensionality.
+               --  Ada 2005 (AI-287): In case of default initialization of
+               --  a component, the expander will generate calls to the
+               --  corresponding initialization subprogram. Check that we
+               --  have a single dimension.
 
-               if not Resolve_Aggr_Expr (Assoc, Single_Elmt => False) then
+               if Present (Next_Index (Index)) then
+                  Error_Msg_N ("nested array aggregate expected", Assoc);
                   return Failure;
                end if;
 
