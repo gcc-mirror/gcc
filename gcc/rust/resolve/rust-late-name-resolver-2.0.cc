@@ -100,7 +100,7 @@ Late::setup_builtin_types ()
     }
 
   // ...here!
-  auto *unit_type = TyTy::TupleType::get_unit_type (next_hir_id ());
+  auto *unit_type = TyTy::TupleType::get_unit_type ();
   ty_ctx.insert_builtin (unit_type->get_ref (), next_node_id (), unit_type);
 }
 

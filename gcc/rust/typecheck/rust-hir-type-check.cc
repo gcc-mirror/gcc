@@ -206,7 +206,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_return_type ())
-    ret_type = TyTy::TupleType::get_unit_type (fn.get_mappings ().get_hirid ());
+    ret_type = TyTy::TupleType::get_unit_type ();
   else
     {
       auto resolved

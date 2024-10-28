@@ -88,7 +88,7 @@ TypeCheckType::visit (HIR::BareFunctionType &fntype)
     {
       // needs a new implicit ID
       HirId ref = mappings.get_next_hir_id ();
-      return_type = TyTy::TupleType::get_unit_type (ref);
+      return_type = TyTy::TupleType::get_unit_type ();
       context->insert_implicit_type (ref, return_type);
     }
 

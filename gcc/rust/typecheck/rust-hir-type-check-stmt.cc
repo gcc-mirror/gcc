@@ -44,7 +44,7 @@ TypeCheckStmt::visit (HIR::ExprStmt &stmt)
 void
 TypeCheckStmt::visit (HIR::EmptyStmt &stmt)
 {
-  infered = TyTy::TupleType::get_unit_type (stmt.get_mappings ().get_hirid ());
+  infered = TyTy::TupleType::get_unit_type ();
 }
 
 void
@@ -74,7 +74,7 @@ TypeCheckStmt::visit (HIR::ConstantItem &constant)
 void
 TypeCheckStmt::visit (HIR::LetStmt &stmt)
 {
-  infered = TyTy::TupleType::get_unit_type (stmt.get_mappings ().get_hirid ());
+  infered = TyTy::TupleType::get_unit_type ();
 
   HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   TyTy::BaseType *init_expr_ty = nullptr;
