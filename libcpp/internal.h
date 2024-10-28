@@ -85,6 +85,7 @@ struct dummy
   {
     double d;
     int *p;
+    location_t l;
   } u;
 };
 

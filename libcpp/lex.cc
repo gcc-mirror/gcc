@@ -4997,7 +4997,8 @@ _cpp_aligned_alloc (cpp_reader *pfile, size_t len)
 void *
 _cpp_commit_buff (cpp_reader *pfile, size_t size)
 {
-  void *ptr = BUFF_FRONT (pfile->a_buff);
+  const auto buff = pfile->a_buff;
+  void *ptr = BUFF_FRONT (buff);
 
   if (pfile->hash_table->alloc_subobject)
     {
@@ -5006,7 +5007,12 @@ _cpp_commit_buff (cpp_reader *pfile, size_t size)
       ptr = copy;
     }
   else
-    BUFF_FRONT (pfile->a_buff) += size;
+    {
+      BUFF_FRONT (buff) += size;
+      /* Make sure the remaining space is maximally aligned for whatever this
+	 buffer holds next.  */
+      BUFF_FRONT (buff) += BUFF_ROOM (buff) % DEFAULT_ALIGNMENT;
+    }
 
   return ptr;
 }
