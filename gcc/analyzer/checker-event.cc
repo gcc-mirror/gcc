@@ -187,8 +187,8 @@ checker_event::dump (pretty_printer *pp) const
       if (m_effective_fndecl != m_original_fndecl)
 	pp_printf (pp, " corrected from %qE", m_original_fndecl);
     }
-  pp_printf (pp, ", m_loc=%x)",
-	     get_location ());
+  pp_printf (pp, ", m_loc=%llx)",
+	     (unsigned long long) get_location ());
 }
 
 /* Dump this event to stderr (for debugging/logging purposes).  */

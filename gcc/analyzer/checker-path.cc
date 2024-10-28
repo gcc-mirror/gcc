@@ -280,8 +280,9 @@ checker_path::inject_any_inlined_call_events (logger *logger)
 	      logger->log_partial ("  %qE", iter.get_block ());
 	      if (!flag_dump_noaddr)
 		logger->log_partial (" (%p)", iter.get_block ());
-	      logger->log_partial (", fndecl: %qE, callsite: 0x%x",
-				   iter.get_fndecl (), iter.get_callsite ());
+	      logger->log_partial (", fndecl: %qE, callsite: 0x%llx",
+				   iter.get_fndecl (),
+				   (unsigned long long) iter.get_callsite ());
 	      if (iter.get_callsite ())
 		dump_location (logger->get_printer (), iter.get_callsite ());
 	      logger->end_log_line ();
