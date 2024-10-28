@@ -147,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cgraph.h"
 #include "opts.h"
+#include "output.h"
 
 const int max_custom_roles = 32;
 static contract_role contract_build_roles[max_custom_roles] = {
@@ -1807,12 +1808,19 @@ get_pseudo_contract_violation_type ()
 			      integer_type_node,
 			      get_contracts_source_location_type(),
 			      integer_type_node };
-
+	  const char *names[] = { "version",
+				  "ext",
+				  "_M_comment",
+				  "_M_detection_mode",
+				  "_M_assertion_kind",
+				  "_M_source_location",
+				  "_M_evaluation_semantic" };
+	  unsigned n = 0;
 	  for (tree type : types)
 	    {
-	      /* finish_builtin_struct wants fieldss chained in reverse.  */
+	      /* finish_builtin_struct wants fields chained in reverse.  */
 	      tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
-				  NULL_TREE, type);
+				  get_identifier(names[n++]), type);
 	      DECL_CHAIN (next) = fields;
 	      fields = next;
 	    }
@@ -1979,10 +1987,11 @@ get_evaluation_semantic(tree contract)
 
 /* Build P2900R7 contract_violation layout compatible object. */
 static tree
-build_contract_violation_P2900 (tree contract)
+build_contract_violation_P2900 (tree contract, bool is_const)
 {
   int assertion_kind = get_contract_assertion_kind (contract);
   int evaluation_semantic = get_evaluation_semantic (contract);
+
   /* we hardcode CDM_PREDICATE_FALSE because that's all we support for now */
   int detection_mode = CDM_PREDICATE_FALSE;
 
@@ -2005,6 +2014,7 @@ build_contract_violation_P2900 (tree contract)
     (EXPR_LOCATION (contract), "Lcontract_violation.",
      get_pseudo_contract_violation_type (), /*is_const*/true);
 
+  TREE_CONSTANT (viol_) = is_const;
   DECL_INITIAL (viol_) = ctor;
   varpool_node::finalize_decl (viol_);
 
@@ -2014,12 +2024,12 @@ build_contract_violation_P2900 (tree contract)
 /* Return a VAR_DECL to pass to handle_contract_violation.  */
 
 static tree
-build_contract_violation (tree contract)
+build_contract_violation (tree contract, bool is_const)
 {
   if (flag_contracts_nonattr)
-    return build_contract_violation_P2900(contract);
+    return build_contract_violation_P2900 (contract, is_const);
 
-  return build_contract_violation_cpp20(contract);
+  return build_contract_violation_cpp20 (contract);
 }
 
 /* Return handle_contract_violation(), declaring it if needed.  */
@@ -2027,6 +2037,10 @@ build_contract_violation (tree contract)
 static tree
 declare_handle_contract_violation ()
 {
+  /* We may need to declare new types, ensure they are not considered
+     attached to a named module.  */
+  auto module_kind_override = make_temp_override
+    (module_kind, module_kind & ~(MK_PURVIEW | MK_ATTACH | MK_EXPORTING));
   tree fnname = get_identifier ("handle_contract_violation");
   tree viol_name = get_identifier ("contract_violation");
   tree l = lookup_qualified_name (global_namespace, fnname,
@@ -2090,14 +2104,13 @@ declare_handle_contract_violation ()
 /* Build the call to handle_contract_violation for CONTRACT.  */
 
 static void
-build_contract_handler_call (tree contract)
+build_contract_handler_call (tree violation)
 {
   /* We may need to declare new types, ensure they are not considered
      attached to a named module.  */
   auto module_kind_override = make_temp_override
     (module_kind, module_kind & ~(MK_PURVIEW | MK_ATTACH | MK_EXPORTING));
 
-  tree violation = build_contract_violation (contract);
   tree violation_fn = declare_handle_contract_violation ();
   tree call = build_call_n (violation_fn, 1, build_address (violation));
   finish_expr_stmt (call);
@@ -2127,16 +2140,122 @@ build_contract_check (tree contract)
   if (semantic == CCS_ASSUME)
     return build_assume_call (loc, condition);
 
-  tree if_stmt = begin_if_stmt ();
-  tree cond = build_x_unary_op (loc,
+  /* Only wrap the contract check in a try-catch if it might throw.  */
+  if (!flag_contracts_nonattr
+      || !flag_exceptions
+      || expr_noexcept_p (condition, tf_none))
+    {
+      tree if_stmt = begin_if_stmt ();
+      tree cond = build_x_unary_op (loc,
 				TRUTH_NOT_EXPR,
 				condition, NULL_TREE,
 				tf_warning_or_error);
-  finish_if_stmt_cond (cond, if_stmt);
+      finish_if_stmt_cond (cond, if_stmt);
+      /* Using the P2900 names here c++2a ENFORCE=NEVER, OBSERVE=MAYBE.  */
+      if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE)
+	{
+	  tree violation = build_contract_violation (contract, /*is_const*/true);
+	  build_contract_handler_call (violation);
+	}
+      if (semantic == CCS_QUICK)
+	{
+	  tree fn = builtin_decl_explicit (BUILT_IN_ABORT);
+	  releasing_vec vec;
+	  finish_expr_stmt (finish_call_expr (fn, &vec, false, false,
+					      tf_warning_or_error));
+	}
+      else if (semantic == CCS_ENFORCE)
+	/* FIXME: we should not call this when exceptions are disabled.  */
+	finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
+      finish_then_clause (if_stmt);
+      /* Finish the if stmt, but do not try to add it.  */
+      tree scope = IF_SCOPE (if_stmt);
+      IF_SCOPE (if_stmt) = NULL;
+      return do_poplevel (scope);
+  }
 
-  /* Using the P2900 names here c++24 ENFORCE=NEVER, OBSERVE=MAYBE.  */
-  if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE)
-    build_contract_handler_call (contract);
+  /* Build a statement expression to hold a contract check wrapped in a
+     try-catch expr.  */
+  tree cc_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  BIND_EXPR_BODY (cc_bind) = push_stmt_list ();
+  /* An anonymous var.  */
+  tree cond_ = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
+  /* compiler-generated.  */
+  DECL_ARTIFICIAL (cond_) = true;
+  DECL_IGNORED_P (cond_) = true;
+  DECL_CONTEXT (cond_) = current_function_decl;
+  layout_decl (cond_, 0);
+  add_decl_expr (cond_);
+
+  /* We don't need to track whether we had an exception if there will be no
+     violation object or handler.  */
+  tree excp_ = NULL_TREE;
+  if (semantic == CCS_NEVER || semantic == CCS_MAYBE)
+    {
+      excp_ = build_decl (loc, VAR_DECL, NULL, boolean_type_node);
+      /* compiler-generated.  */
+      DECL_ARTIFICIAL (excp_) = true;
+      DECL_IGNORED_P (excp_) = true;
+      DECL_INITIAL (excp_) = boolean_false_node;
+      DECL_CONTEXT (excp_) = current_function_decl;
+      layout_decl (excp_, 0);
+      add_decl_expr (excp_);
+      TREE_CHAIN (cond_) = excp_;
+    }
+  BIND_EXPR_VARS (cc_bind) = cond_;
+
+  tree violation = NULL_TREE;
+  if (semantic == CCS_NEVER || semantic == CCS_MAYBE)
+    violation = build_contract_violation (contract, /*is_const*/false);
+
+  /* Wrap the contract check in a try-catch.  */
+  tree check_try = begin_try_block ();
+  tree check_try_stmt = begin_compound_stmt (BCS_TRY_BLOCK);
+  finish_expr_stmt (cp_build_init_expr (cond_, condition));
+  finish_compound_stmt (check_try_stmt);
+  finish_try_block (check_try);
+
+  tree handler = begin_handler ();
+  finish_handler_parms (NULL_TREE, handler); /* catch (...) */
+  if (semantic == CCS_NEVER || semantic == CCS_MAYBE)
+    {
+      /* Update the violation object type.  */
+      tree v_type = get_pseudo_contract_violation_type ();
+      tree memb = lookup_member (v_type, get_identifier ("_M_detection_mode"),
+		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+      tree r  = build_class_member_access_expr (violation, memb, NULL_TREE,
+						false, tf_warning_or_error);
+      r = cp_build_init_expr (r, build_int_cst (integer_type_node,
+					    CDM_EVAL_EXCEPTION));
+      finish_expr_stmt (r);
+      build_contract_handler_call (violation);
+      /* Note we had an exception.  */
+      finish_expr_stmt (cp_build_init_expr (excp_, boolean_true_node));
+    }
+  else if (semantic == CCS_QUICK)
+   finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
+  /* Nevertheless, the contract check failed.  */
+  finish_expr_stmt (cp_build_init_expr (cond_, boolean_false_node));
+  finish_handler (handler);
+  finish_handler_sequence (check_try);
+
+  tree if_not_cond = begin_if_stmt ();
+  tree cond = build_x_unary_op (loc,
+				TRUTH_NOT_EXPR,
+				cond_, NULL_TREE,
+				tf_warning_or_error);
+  finish_if_stmt_cond (cond, if_not_cond);
+
+  if (semantic == CCS_NEVER || semantic == CCS_MAYBE)
+    {
+      tree if_not_excp = begin_if_stmt ();
+      cond = build_x_unary_op (loc, TRUTH_NOT_EXPR, excp_, NULL_TREE,
+			       tf_warning_or_error);
+      finish_if_stmt_cond (cond, if_not_excp);
+      build_contract_handler_call (violation);
+      finish_then_clause (if_not_excp);
+      finish_if_stmt (if_not_excp);
+    }
   if (semantic == CCS_QUICK)
     {
       tree fn = builtin_decl_explicit (BUILT_IN_ABORT);
@@ -2145,12 +2264,12 @@ build_contract_check (tree contract)
 					  tf_warning_or_error));
     }
   else if (semantic == CCS_ENFORCE)
+    /* FIXME: we should not call this when exceptions are disabled.  */
     finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
-
-  finish_then_clause (if_stmt);
-  tree scope = IF_SCOPE (if_stmt);
-  IF_SCOPE (if_stmt) = NULL;
-  return do_poplevel (scope);
+  finish_then_clause (if_not_cond);
+  finish_if_stmt (if_not_cond);
+  BIND_EXPR_BODY (cc_bind) = pop_stmt_list (BIND_EXPR_BODY (cc_bind));
+  return cc_bind;
 }
 
 /* Add the contract statement CONTRACT to the current block if valid.  */
