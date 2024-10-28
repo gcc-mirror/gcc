@@ -87,9 +87,9 @@ enum lc_reason
    gcc there is a single line_maps instance: "line_table", declared in
    gcc/input.h and defined in gcc/input.cc.
 
-   The values of the keys are intended to be internal to libcpp,
-   but for ease-of-understanding the implementation, they are currently
-   assigned as follows:
+   The values of the keys are intended to be internal to libcpp, but for
+   ease-of-understanding the implementation, they are currently assigned as
+   follows in the case of 32-bit location_t:
 
   Actual     | Value                         | Meaning
   -----------+-------------------------------+-------------------------------
@@ -292,6 +292,12 @@ enum lc_reason
    To further see how location_t works in practice, see the
    worked example in libcpp/location-example.txt.  */
 typedef unsigned int location_t;
+typedef int64_t location_diff_t;
+
+/* Sometimes we need a type that has the same size as location_t but that does
+   not represent a location.  This typedef provides more clarity in those
+   cases.  */
+typedef location_t line_map_uint_t;
 
 /* Do not track column numbers higher than this one.  As a result, the
    range of column_bits is [12, 18] (or 0 if column numbers are
@@ -310,6 +316,10 @@ const location_t LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
 
 /* Highest possible source location encoded within an ordinary map.  */
 const location_t LINE_MAP_MAX_LOCATION = 0x70000000;
+
+/* This is the number of range bits suggested to enable, if range tracking is
+   desired.  */
+const int line_map_suggested_range_bits = 5;
 
 /* A range of source locations.
 
@@ -728,15 +738,15 @@ struct GTY(()) maps_info_ordinary {
   line_map_ordinary * GTY ((length ("%h.used"))) maps;
 
   /* The total number of allocated maps.  */
-  unsigned int allocated;
+  line_map_uint_t allocated;
 
   /* The number of elements used in maps. This number is smaller
      or equal to ALLOCATED.  */
-  unsigned int used;
+  line_map_uint_t used;
 
   /* The index of the last ordinary map that was looked up with
      linemap_lookup.  */
-  mutable unsigned int m_cache;
+  mutable line_map_uint_t m_cache;
 };
 
 struct GTY(()) maps_info_macro {
@@ -745,15 +755,15 @@ struct GTY(()) maps_info_macro {
   line_map_macro * GTY ((length ("%h.used"))) maps;
 
   /* The total number of allocated maps.  */
-  unsigned int allocated;
+  line_map_uint_t allocated;
 
   /* The number of elements used in maps. This number is smaller
      or equal to ALLOCATED.  */
-  unsigned int used;
+  line_map_uint_t used;
 
   /* The index of the last macro map that was looked up with
      linemap_lookup.  */
-  mutable unsigned int m_cache;
+  mutable line_map_uint_t m_cache;
 };
 
 /* Data structure to associate a source_range together with an arbitrary
@@ -780,7 +790,7 @@ struct htab;
 struct GTY(()) location_adhoc_data_map {
   struct htab * GTY((skip)) htab;
   location_t curr_loc;
-  unsigned int allocated;
+  line_map_uint_t allocated;
   struct location_adhoc_data GTY((length ("%h.allocated"))) *data;
 };
 
@@ -861,13 +871,13 @@ public:
   /* The default value of range_bits in ordinary line maps.  */
   unsigned int default_range_bits;
 
-  unsigned int m_num_optimized_ranges;
-  unsigned int m_num_unoptimized_ranges;
+  line_map_uint_t m_num_optimized_ranges;
+  line_map_uint_t m_num_unoptimized_ranges;
 };
 
 /* Returns the number of allocated maps so far. MAP_KIND shall be TRUE
    if we are interested in macro maps, FALSE otherwise.  */
-inline unsigned int
+inline line_map_uint_t
 LINEMAPS_ALLOCATED (const line_maps *set, bool map_kind)
 {
   if (map_kind)
@@ -878,7 +888,7 @@ LINEMAPS_ALLOCATED (const line_maps *set, bool map_kind)
 
 /* As above, but by reference (e.g. as an lvalue).  */
 
-inline unsigned int &
+inline line_map_uint_t &
 LINEMAPS_ALLOCATED (line_maps *set, bool map_kind)
 {
   if (map_kind)
@@ -889,7 +899,7 @@ LINEMAPS_ALLOCATED (line_maps *set, bool map_kind)
 
 /* Returns the number of used maps so far. MAP_KIND shall be TRUE if
    we are interested in macro maps, FALSE otherwise.*/
-inline unsigned int
+inline line_map_uint_t
 LINEMAPS_USED (const line_maps *set, bool map_kind)
 {
   if (map_kind)
@@ -900,7 +910,7 @@ LINEMAPS_USED (const line_maps *set, bool map_kind)
 
 /* As above, but by reference (e.g. as an lvalue).  */
 
-inline unsigned int &
+inline line_map_uint_t &
 LINEMAPS_USED (line_maps *set, bool map_kind)
 {
   if (map_kind)
@@ -911,7 +921,7 @@ LINEMAPS_USED (line_maps *set, bool map_kind)
 
 /* Return the map at a given index.  */
 inline line_map *
-LINEMAPS_MAP_AT (const line_maps *set, bool map_kind, int index)
+LINEMAPS_MAP_AT (const line_maps *set, bool map_kind, line_map_uint_t index)
 {
   if (map_kind)
     return &set->info_macro.maps[index];
@@ -925,29 +935,29 @@ LINEMAPS_MAP_AT (const line_maps *set, bool map_kind, int index)
 inline line_map *
 LINEMAPS_LAST_MAP (const line_maps *set, bool map_kind)
 {
+  linemap_assert (LINEMAPS_USED (set, map_kind));
   return LINEMAPS_MAP_AT (set, map_kind,
 			  LINEMAPS_USED (set, map_kind) - 1);
 }
 
 /* Returns the INDEXth ordinary map.  */
 inline line_map_ordinary *
-LINEMAPS_ORDINARY_MAP_AT (const line_maps *set, int index)
+LINEMAPS_ORDINARY_MAP_AT (const line_maps *set, line_map_uint_t index)
 {
-  linemap_assert (index >= 0
-		  && (unsigned int)index < LINEMAPS_USED (set, false));
+  linemap_assert (index < LINEMAPS_USED (set, false));
   return (line_map_ordinary *)LINEMAPS_MAP_AT (set, false, index);
 }
 
 /* Return the number of ordinary maps allocated in the line table
    SET.  */
-inline unsigned int
+inline line_map_uint_t
 LINEMAPS_ORDINARY_ALLOCATED (const line_maps *set)
 {
   return LINEMAPS_ALLOCATED (set, false);
 }
 
 /* Return the number of ordinary maps used in the line table SET.  */
-inline unsigned int
+inline line_map_uint_t
 LINEMAPS_ORDINARY_USED (const line_maps *set)
 {
   return LINEMAPS_USED (set, false);
@@ -963,23 +973,22 @@ LINEMAPS_LAST_ORDINARY_MAP (const line_maps *set)
 
 /* Returns the INDEXth macro map.  */
 inline line_map_macro *
-LINEMAPS_MACRO_MAP_AT (const line_maps *set, int index)
+LINEMAPS_MACRO_MAP_AT (const line_maps *set, line_map_uint_t index)
 {
-  linemap_assert (index >= 0
-		  && (unsigned int)index < LINEMAPS_USED (set, true));
+  linemap_assert (index < LINEMAPS_USED (set, true));
   return (line_map_macro *)LINEMAPS_MAP_AT (set, true, index);
 }
 
 /* Returns the number of macro maps that were allocated in the line
    table SET.  */
-inline unsigned int
+inline line_map_uint_t
 LINEMAPS_MACRO_ALLOCATED (const line_maps *set)
 {
   return LINEMAPS_ALLOCATED (set, true);
 }
 
 /* Returns the number of macro maps used in the line table SET.  */
-inline unsigned int
+inline line_map_uint_t
 LINEMAPS_MACRO_USED (const line_maps *set)
 {
   return LINEMAPS_USED (set, true);
@@ -1044,7 +1053,7 @@ extern location_t linemap_line_start
 (class line_maps *set, linenum_type to_line,  unsigned int max_column_hint);
 
 /* Allocate a raw block of line maps, zero initialized.  */
-extern line_map *line_map_new_raw (line_maps *, bool, unsigned);
+extern line_map *line_map_new_raw (line_maps *, bool, line_map_uint_t);
 
 /* Add a mapping of logical source line to physical source file and
    line number. This function creates an "ordinary map", which is a
@@ -1094,8 +1103,8 @@ extern void linemap_module_reparent
 
 /* Restore the linemap state such that the map at LWM-1 continues.
    Return start location of the new map.  */
-extern unsigned linemap_module_restore
-  (line_maps *, unsigned lwm);
+extern location_t linemap_module_restore
+  (line_maps *, line_map_uint_t lwm);
 
 /* Given a logical source location, returns the map which the
    corresponding (source file, line, column) triplet can be deduced
@@ -1106,7 +1115,7 @@ extern unsigned linemap_module_restore
 extern const line_map *linemap_lookup
   (const line_maps *, location_t);
 
-unsigned linemap_lookup_macro_index (const line_maps *, location_t);
+line_map_uint_t linemap_lookup_macro_index (const line_maps *, location_t);
 
 /* Returns TRUE if the line table set tracks token locations across
    macro expansion, FALSE otherwise.  */
@@ -1165,7 +1174,8 @@ inline linenum_type
 SOURCE_COLUMN (const line_map_ordinary *ord_map, location_t loc)
 {
   return ((loc - ord_map->start_location)
-	  & ((1 << ord_map->m_column_and_range_bits) - 1)) >> ord_map->m_range_bits;
+	  & ((location_t (1) << ord_map->m_column_and_range_bits) - 1))
+    >> ord_map->m_range_bits;
 }
 
 
@@ -1244,9 +1254,10 @@ const struct line_map *first_map_in_common (const line_maps *set,
    comes before the token of POST, 0 if PRE denotes the location of
    the same token as the token for POST, and a negative value
    otherwise.  */
-int linemap_compare_locations (const line_maps *set,
-			       location_t   pre,
-			       location_t   post);
+int
+linemap_compare_locations (const line_maps *set,
+			   location_t pre,
+			   location_t post);
 
 /* Return TRUE if LOC_A denotes the location a token that comes
    topogically before the token denoted by location LOC_B, or if they
@@ -1413,12 +1424,13 @@ void linemap_dump_location (const line_maps *, location_t, FILE *);
 /* Dump line map at index IX in line table SET to STREAM.  If STREAM
    is NULL, use stderr.  IS_MACRO is true if the caller wants to
    dump a macro map, false otherwise.  */
-void linemap_dump (FILE *, const line_maps *, unsigned, bool);
+void linemap_dump (FILE *, const line_maps *, line_map_uint_t, bool);
 
 /* Dump line table SET to STREAM.  If STREAM is NULL, stderr is used.
    NUM_ORDINARY specifies how many ordinary maps to dump.  NUM_MACRO
    specifies how many macro maps to dump.  */
-void line_table_dump (FILE *, const line_maps *, unsigned int, unsigned int);
+void line_table_dump (FILE *, const line_maps *,
+		      line_map_uint_t, line_map_uint_t);
 
 /* An enum for distinguishing the various parts within a location_t.  */
 
