@@ -3565,12 +3565,15 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	  DR_GROUP_NEXT_ELEMENT (lastinfo) = stmtinfo_b;
 	  lastinfo = stmtinfo_b;
 
-	  STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a)
-	    = !can_group_stmts_p (stmtinfo_a, stmtinfo_b, false);
+	  if (! STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
+	    {
+	      STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a)
+		= !can_group_stmts_p (stmtinfo_a, stmtinfo_b, false);
 
-	  if (dump_enabled_p () && STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Load suitable for SLP vectorization only.\n");
+	      if (dump_enabled_p () && STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Load suitable for SLP vectorization only.\n");
+	    }
 
 	  if (init_b == init_prev
 	      && !to_fixup.add (DR_GROUP_FIRST_ELEMENT (stmtinfo_a))
@@ -3614,7 +3617,11 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	    {
 	      DR_GROUP_NEXT_ELEMENT (g) = DR_GROUP_NEXT_ELEMENT (next);
 	      if (!newgroup)
-		newgroup = next;
+		{
+		  newgroup = next;
+		  STMT_VINFO_SLP_VECT_ONLY (newgroup)
+		    = STMT_VINFO_SLP_VECT_ONLY (grp);
+		}
 	      else
 		DR_GROUP_NEXT_ELEMENT (ng) = next;
 	      ng = next;
