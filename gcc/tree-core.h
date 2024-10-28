@@ -241,11 +241,18 @@ enum tree_code_class {
 };
 
 /* OMP_CLAUSE codes.  Do not reorder, as this is used to index into
-   the tables omp_clause_num_ops and omp_clause_code_name.  */
+   the tables omp_clause_num_ops and omp_clause_code_name.
+
+   Note additionally that there are various range checks such as
+   for OMP_CLAUSE_SIZE or OMP_CLAUSE_DECL; clauses having those shall
+   be inside that range, those that have not shall be outside.  */
+
 enum omp_clause_code {
   /* Clause zero is special-cased inside the parser
      (c_parser_omp_variable_list).  */
   OMP_CLAUSE_ERROR = 0,
+
+  /* Range START below for: OMP_CLAUSE_DECL  */
 
   /* OpenACC/OpenMP clause: private (variable_list).  */
   OMP_CLAUSE_PRIVATE,
@@ -258,6 +265,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: lastprivate (variable_list).  */
   OMP_CLAUSE_LASTPRIVATE,
+
+  /* Range START below for: OMP_CLAUSE_REDUCTION_CODE and
+     OMP_CLAUSE_REDUCTION_{INIT,MERGE,{DECL_,}PLACEHOLDER,OMP_ORIG_REF}  */
 
   /* OpenACC/OpenMP clause: reduction (operator:variable_list).
      OMP_CLAUSE_REDUCTION_CODE: The tree_code of the operator.
@@ -276,6 +286,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: in_reduction (operator:variable_list).  */
   OMP_CLAUSE_IN_REDUCTION,
+
+  /* Range END above for: OMP_CLAUSE_REDUCTION_CODE  and
+     OMP_CLAUSE_REDUCTION_{INIT,MERGE,{DECL_,}PLACEHOLDER,OMP_ORIG_REF}  */
 
   /* OpenMP clause: copyin (variable_list).  */
   OMP_CLAUSE_COPYIN,
@@ -330,11 +343,16 @@ enum omp_clause_code {
   /* OpenMP clause: exclusive (variable-list).  */
   OMP_CLAUSE_EXCLUSIVE,
 
+  /* Range START below for: OMP_CLAUSE_SIZE  */
+  /* Range START below for: OMP_CLAUSE_MOTION_PRESENT  */
+
   /* OpenMP clause: from (variable-list).  */
   OMP_CLAUSE_FROM,
 
   /* OpenMP clause: to (variable-list).  */
   OMP_CLAUSE_TO,
+
+  /* Range END above for: OMP_CLAUSE_MOTION_PRESENT  */
 
   /* OpenACC clauses: {copy, copyin, copyout, create, delete, deviceptr,
      device, host (self), present, present_or_copy (pcopy), present_or_copyin
@@ -353,6 +371,8 @@ enum omp_clause_code {
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
   OMP_CLAUSE__CACHE_,
+
+  /* Range END above for: OMP_CLAUSE_SIZE */
 
   /* OpenACC clause: gang [(gang-argument-list)].
      Where
@@ -385,6 +405,8 @@ enum omp_clause_code {
 
   /* Internal clause: temporary for inscan reductions.  */
   OMP_CLAUSE__SCANTEMP_,
+
+  /* Range END above for: OMP_CLAUSE_DECL  */
 
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
