@@ -884,6 +884,7 @@ package body Ch6 is
 
                      if not (Paren_Count (Expr) /= 0
                               or else Nkind (Expr) in N_Aggregate
+                                                    | N_Delta_Aggregate
                                                     | N_Extension_Aggregate
                                                     | N_Quantified_Expression)
                      then
