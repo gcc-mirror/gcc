@@ -32,7 +32,12 @@ enum contract_level
   CONTRACT_AXIOM
 };
 
-/* The concrete semantics determine the behavior of a contract.  */
+/* The concrete semantics determine the behavior of a contract.
+   CCS_IGNORE -> ignore
+   CCS_MAYBE  -> observe
+   CCS_NEVER  -> enforce
+   CCS_QUICK  -> quick_enforce
+*/
 
 enum contract_semantic
 {
