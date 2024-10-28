@@ -13300,6 +13300,12 @@ package body Exp_Util is
             elsif Is_Ignored_For_Finalization (Obj_Id) then
                null;
 
+            --  Ignored Ghost objects do not need any cleanup actions because
+            --  they will not appear in the final tree.
+
+            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+               null;
+
             --  Conversely, if one of the above cases created a Master_Node,
             --  finalization actions are required for the associated object.
 
@@ -13307,12 +13313,6 @@ package body Exp_Util is
               and then Is_RTE (Obj_Typ, RE_Master_Node)
             then
                return True;
-
-            --  Ignored Ghost objects do not need any cleanup actions because
-            --  they will not appear in the final tree.
-
-            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-               null;
 
             --  The object is of the form:
             --    Obj : [constant] Typ [:= Expr];

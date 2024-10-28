@@ -986,6 +986,11 @@ package body Exp_Ch7 is
 
       Set_Finalize_Address_For_Node (Master_Node, Fin_Id);
 
+      --  Propagate the Ghost policy from the procedure to the node
+
+      Set_Is_Ignored_Ghost_Entity
+        (Master_Node, Is_Ignored_Ghost_Entity (Fin_Id));
+
       Insert_After_And_Analyze
         (Master_Node_Ins, Master_Node_Attach, Suppress => All_Checks);
    end Attach_Object_To_Master_Node;
@@ -2529,6 +2534,12 @@ package body Exp_Ch7 is
                elsif Is_Ignored_For_Finalization (Obj_Id) then
                   null;
 
+               --  Ignored Ghost objects do not need any cleanup actions
+               --  because they will not appear in the final tree.
+
+               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+                  null;
+
                --  Conversely, if one of the above cases created a Master_Node,
                --  finalization actions are required for the associated object.
 
@@ -2536,12 +2547,6 @@ package body Exp_Ch7 is
                  and then Is_RTE (Obj_Typ, RE_Master_Node)
                then
                   Processing_Actions (Decl);
-
-               --  Ignored Ghost objects do not need any cleanup actions
-               --  because they will not appear in the final tree.
-
-               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-                  null;
 
                --  The object is of the form:
                --    Obj : [constant] Typ [:= Expr];
