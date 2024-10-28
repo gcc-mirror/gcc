@@ -539,15 +539,20 @@ package body Exp_Ch6 is
                Build_Anonymous_Collection (Ptr_Typ);
             end if;
 
-            --  Access-to-controlled types should always have a collection
+            --  Named access-to-controlled types must have a collection, but
+            --  anonymous access-to-controlled types need not.
 
-            pragma Assert (Present (Finalization_Collection (Ptr_Typ)));
+            if Present (Finalization_Collection (Ptr_Typ)) then
+               Actual :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     New_Occurrence_Of
+                       (Finalization_Collection (Ptr_Typ), Loc),
+                   Attribute_Name => Name_Unrestricted_Access);
 
-            Actual :=
-              Make_Attribute_Reference (Loc,
-                Prefix =>
-                  New_Occurrence_Of (Finalization_Collection (Ptr_Typ), Loc),
-                Attribute_Name => Name_Unrestricted_Access);
+            else pragma Assert (Ekind (Ptr_Typ) = E_Anonymous_Access_Type);
+               Actual := Make_Null (Loc);
+            end if;
 
          --  Tagged types
 

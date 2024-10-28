@@ -1304,6 +1304,19 @@ package body Exp_Ch7 is
          return;
       end if;
 
+      --  For the access result type of a function that is a library unit,
+      --  we cannot create a finalization collection attached to the unit as
+      --  this would cause premature finalization of objects created through
+      --  the access result type, which may be returned from the function.
+
+      if Is_Local_Anonymous_Access (Ptr_Typ)
+        and then Ekind (Unit_Id) = E_Function
+        and then Parent (Ptr_Typ) =
+                   Result_Definition (Subprogram_Specification (Unit_Id))
+      then
+         return;
+      end if;
+
       --  Determine whether the current semantic unit already has an anonymous
       --  collection which services the designated type.
 
