@@ -93,10 +93,11 @@ package Scans is
       Tok_Raise,                    -- RAISE
       Tok_Right_Curly_Bracket,      -- }
 
+      Tok_Left_Bracket,    -- [
+
       Tok_Dot,             -- .            Namext
       Tok_Apostrophe,      -- '            Namext
 
-      Tok_Left_Bracket,    -- [            Namext
       Tok_Left_Paren,      -- (            Namext, Consk
 
       Tok_Delta,           -- DELTA        Atkwd, Sterm, Consk
