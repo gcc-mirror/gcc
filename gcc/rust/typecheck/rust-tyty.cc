@@ -1747,9 +1747,13 @@ TupleType::TupleType (HirId ref, HirId ty_ref, location_t locus,
 {}
 
 TupleType *
-TupleType::get_unit_type (HirId ref)
+TupleType::get_unit_type ()
 {
-  return new TupleType (ref, BUILTINS_LOCATION);
+  static TupleType *ret = nullptr;
+  if (ret == nullptr)
+    ret = new TupleType (Analysis::Mappings::get ().get_next_hir_id (),
+			 BUILTINS_LOCATION);
+  return ret;
 }
 
 size_t

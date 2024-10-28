@@ -447,7 +447,7 @@ public:
 	     std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ());
 
-  static TupleType *get_unit_type (HirId ref);
+  static TupleType *get_unit_type ();
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;

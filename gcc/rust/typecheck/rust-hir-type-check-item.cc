@@ -558,8 +558,7 @@ TypeCheckItem::visit (HIR::Function &function)
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_function_return_type ())
-    ret_type
-      = TyTy::TupleType::get_unit_type (function.get_mappings ().get_hirid ());
+    ret_type = TyTy::TupleType::get_unit_type ();
   else
     {
       auto resolved

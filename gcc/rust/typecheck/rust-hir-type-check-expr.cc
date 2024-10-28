@@ -131,12 +131,7 @@ TypeCheckExpr::visit (HIR::TupleExpr &expr)
 {
   if (expr.is_unit ())
     {
-      auto unit_node_id = resolver->get_unit_type_node_id ();
-      if (!context->lookup_builtin (unit_node_id, &infered))
-	{
-	  rust_error_at (expr.get_locus (),
-			 "failed to lookup builtin unit type");
-	}
+      infered = TyTy::TupleType::get_unit_type ();
       return;
     }
 
@@ -165,10 +160,9 @@ TypeCheckExpr::visit (HIR::ReturnExpr &expr)
   location_t expr_locus = expr.has_return_expr ()
 			    ? expr.get_expr ()->get_locus ()
 			    : expr.get_locus ();
-  TyTy::BaseType *expr_ty
-    = expr.has_return_expr ()
-	? TypeCheckExpr::Resolve (expr.get_expr ().get ())
-	: TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  TyTy::BaseType *expr_ty = expr.has_return_expr ()
+			      ? TypeCheckExpr::Resolve (expr.get_expr ().get ())
+			      : TyTy::TupleType::get_unit_type ();
 
   coercion_site (expr.get_mappings ().get_hirid (),
 		 TyTy::TyWithLocation (fn_return_tyty),
@@ -242,7 +236,7 @@ TypeCheckExpr::visit (HIR::CallExpr &expr)
 void
 TypeCheckExpr::visit (HIR::AssignmentExpr &expr)
 {
-  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  infered = TyTy::TupleType::get_unit_type ();
 
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
@@ -256,7 +250,7 @@ TypeCheckExpr::visit (HIR::AssignmentExpr &expr)
 void
 TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 {
-  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  infered = TyTy::TupleType::get_unit_type ();
 
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ().get ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ().get ());
@@ -465,7 +459,7 @@ TypeCheckExpr::visit (HIR::IfExpr &expr)
 
   TypeCheckExpr::Resolve (expr.get_if_block ().get ());
 
-  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  infered = TyTy::TupleType::get_unit_type ();
 }
 
 void
@@ -538,8 +532,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 
       if (s->is_unit_check_needed () && !resolved->is_unit ())
 	{
-	  auto unit
-	    = TyTy::TupleType::get_unit_type (s->get_mappings ().get_hirid ());
+	  auto unit = TyTy::TupleType::get_unit_type ();
 	  resolved
 	    = unify_site (s->get_mappings ().get_hirid (),
 			  TyTy::TyWithLocation (unit),
@@ -550,8 +543,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
   if (expr.has_expr ())
     infered = TypeCheckExpr::Resolve (expr.get_final_expr ().get ())->clone ();
   else if (expr.is_tail_reachable ())
-    infered
-      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+    infered = TyTy::TupleType::get_unit_type ();
   else if (expr.has_label ())
     {
       TyTy::BaseType *loop_context_type = context->pop_loop_context ();
@@ -563,8 +555,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 		  != TyTy::InferType::GENERAL));
 
       infered = loop_context_type_infered ? loop_context_type
-					  : TyTy::TupleType::get_unit_type (
-					    expr.get_mappings ().get_hirid ());
+					  : TyTy::TupleType::get_unit_type ();
     }
   else
     {
@@ -773,8 +764,7 @@ TypeCheckExpr::visit (HIR::InlineAsm &expr)
   if (expr.options.count (AST::InlineAsmOption::NORETURN) == 1)
     infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
   else
-    infered
-      = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+    infered = TyTy::TupleType::get_unit_type ();
 }
 
 void
@@ -1295,10 +1285,8 @@ TypeCheckExpr::visit (HIR::LoopExpr &expr)
 	  && (((TyTy::InferType *) loop_context_type)->get_infer_kind ()
 	      != TyTy::InferType::GENERAL));
 
-  infered
-    = loop_context_type_infered
-	? loop_context_type
-	: TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  infered = loop_context_type_infered ? loop_context_type
+				      : TyTy::TupleType::get_unit_type ();
 }
 
 void
@@ -1319,7 +1307,7 @@ TypeCheckExpr::visit (HIR::WhileLoopExpr &expr)
     }
 
   context->pop_loop_context ();
-  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+  infered = TyTy::TupleType::get_unit_type ();
 }
 
 void
@@ -1506,8 +1494,7 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 
   if (kase_block_tys.size () == 0)
     {
-      infered
-	= TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
+      infered = TyTy::TupleType::get_unit_type ();
       return;
     }
 

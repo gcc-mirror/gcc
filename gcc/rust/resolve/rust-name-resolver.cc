@@ -435,8 +435,7 @@ Resolver::generate_builtins ()
   set_never_type_node_id (never_node_id);
 
   // unit type ()
-  TyTy::TupleType *unit_tyty
-    = TyTy::TupleType::get_unit_type (mappings.get_next_hir_id ());
+  TyTy::TupleType *unit_tyty = TyTy::TupleType::get_unit_type ();
   std::vector<std::unique_ptr<AST::Type> > elems;
   AST::TupleType *unit_type
     = new AST::TupleType (std::move (elems), BUILTINS_LOCATION);
