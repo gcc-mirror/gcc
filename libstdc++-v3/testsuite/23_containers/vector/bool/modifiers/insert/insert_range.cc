@@ -1,4 +1,4 @@
-// { dg-do compile { target c++23 } }
+// { dg-do run { target c++23 } }
 
 #include <vector>
 #include <span>
@@ -29,7 +29,7 @@ do_test()
   v.insert_range(v.begin(), Range(a, a+4));
   VERIFY( eq(v, {a, a+4}) );
   v.clear();
-  v.insert_range(v.begin(), Range(a, a+5));
+  v.insert_range(v.begin(), Range(a+4, a+9));
   VERIFY( eq(v, {a+4, a+9}) );
   v.insert_range(v.begin(), Range(a, a+4));
   VERIFY( eq(v, a) );
@@ -41,7 +41,7 @@ do_test()
   VERIFY( eq(v, a) );
   v.resize(3);
   v.insert_range(v.begin()+1, Range(a+4, a+9));
-  v.insert_range(v.begin()+1, Range(a+1, a+3));
+  v.insert_range(v.begin()+1, Range(a+1, a+4));
   v.resize(9);
   VERIFY( eq(v, a) );
   v.insert_range(v.begin(), Range(a, a));
@@ -84,7 +84,7 @@ test_ranges()
     bool val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
-  do_test_a<rvalue_input_range>();
+  do_test<rvalue_input_range, std::allocator<bool>>();
 
   return true;
 }
@@ -93,7 +93,7 @@ constexpr bool
 test_constexpr()
 {
   // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::span<bool>, std::allocator<bool>>;
+  do_test<std::span<bool>, std::allocator<bool>>();
   return true;
 }
 

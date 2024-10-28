@@ -1,4 +1,4 @@
-// { dg-do compile { target c++23 } }
+// { dg-do run { target c++23 } }
 
 #include <vector>
 #include <span>
@@ -71,7 +71,7 @@ test_ranges()
     bool val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
-  do_test_a<rvalue_input_range>();
+  do_test<rvalue_input_range>(std::allocator<int>());
 
   return true;
 }
@@ -80,7 +80,7 @@ constexpr bool
 test_constexpr()
 {
   // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::span<bool>, std::allocator<bool>>;
+  do_test<std::span<bool>>(std::allocator<bool>());
   return true;
 }
 

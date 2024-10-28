@@ -1,4 +1,4 @@
-// { dg-do compile { target c++23 } }
+// { dg-do run { target c++23 } }
 
 #include <vector>
 #include <span>
@@ -22,29 +22,37 @@ do_test()
     return true;
   };
 
-  Range r4(a, a+4);
-  Range r9(a);
-
+  // assign to empty vector
   std::vector<bool, Alloc> v;
   v.assign_range(Range(a, a));
   VERIFY( v.empty() );
   VERIFY( v.capacity() == 0 );
-  v.assign_range(r4);
+  v.assign_range(Range(a, a+4));
   VERIFY( eq(v, {a, 4}) );
   v.clear();
-  v.assign_range(r9); // larger than v.capacity()
+  v.assign_range(Range(a)); // larger than v.capacity()
   VERIFY( eq(v, a) );
-  v.assign_range(r9); // equal to size() and equal to capacity()
+  v.clear();
+  v.assign_range(Range(a, a+4)); // smaller than v.capacity()
+  VERIFY( eq(v, {a, 4}) );
+  v.clear();
+  v.assign_range(Range(a)); // equal to v.capacity()
+  VERIFY( eq(v, a) );
+
+  // assign to non-empty vector
+  v.assign_range(Range(a, a+4)); // smaller than size()
+  VERIFY( eq(v, {a, 4}) );
+  v.assign_range(Range(a)); // larger than size(), equal to capacity()
   VERIFY( eq(v, a) );
   v.resize(1);
-  v.assign_range(r4); // larger than size(), smaller than capacity()
+  v.assign_range(Range(a, a+4)); // larger than size(), smaller than capacity()
   VERIFY( eq(v, {a, 4}) );
   v.clear();
   v.resize(4);
-  v.assign_range(r4); // equal to size(), smaller than capacity()
+  v.assign_range(Range(a, a+4)); // equal to size(), smaller than capacity()
   VERIFY( eq(v, {a, 4}) );
   v.shrink_to_fit();
-  v.assign_range(r9); // larger than capacity()
+  v.assign_range(Range(a)); // larger than capacity()
   VERIFY( eq(v, a) );
   v.assign_range(Range(a, a));
   VERIFY( v.empty() );
@@ -95,7 +103,7 @@ constexpr bool
 test_constexpr()
 {
   // XXX: this doesn't test the non-forward_range code paths are constexpr.
-  do_test<std::span<short>, std::allocator<bool>>;
+  do_test<std::span<short>, std::allocator<bool>>();
   return true;
 }
 
