@@ -26952,9 +26952,9 @@ vrax1q_u64 (uint64x2_t __a, uint64x2_t __b)
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vxarq_u64 (uint64x2_t __a, uint64x2_t __b, const int imm6)
+vxarq_u64 (uint64x2_t __a, uint64x2_t __b, const int __imm6)
 {
-  return __builtin_aarch64_xarqv2di_uuus (__a, __b,imm6);
+  return __builtin_aarch64_xarqv2di_uuus (__a, __b, __imm6);
 }
 
 __extension__ extern __inline uint8x16_t
