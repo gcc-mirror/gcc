@@ -1,3 +1,25 @@
+2024-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+		    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* gcc.target/arm/bti-1.c: Check for asm instructions starting
+	with a tab.
+	* gcc.target/arm/bti-2.c: Likewise.
+	* gcc.target/arm/pac-1.c: Likewise.
+	* gcc.target/arm/pac-2.c: Likewise.
+	* gcc.target/arm/pac-3.c: Likewise.
+	* gcc.target/arm/pac-4.c: Likewise.
+	* gcc.target/arm/pac-6.c: Likewise.
+	* gcc.target/arm/pac-7.c: Likewise.
+	* gcc.target/arm/pac-8.c: Likewise.
+	* gcc.target/arm/pac-9.c: Likewise.
+	* gcc.target/arm/pac-10.c: Likewise.
+	* gcc.target/arm/pac-11.c: Likewise.
+	* gcc.target/arm/pac-15.c: Likewise.
+	* gcc.target/arm/pac-sibcall.c: Likewise.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
