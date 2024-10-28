@@ -1270,7 +1270,7 @@ dump_line_table_statistics (void)
 /* Get location one beyond the final location in ordinary map IDX.  */
 
 static location_t
-get_end_location (class line_maps *set, unsigned int idx)
+get_end_location (class line_maps *set, line_map_uint_t idx)
 {
   if (idx == LINEMAPS_ORDINARY_USED (set) - 1)
     return set->highest_location;
@@ -1300,7 +1300,7 @@ write_digit_row (FILE *stream, int indent,
   fprintf (stream, "|");
   for (int column = 1; column < max_col; column++)
     {
-      location_t column_loc = loc + (column << map->m_range_bits);
+      location_t column_loc = loc + (location_t (column) << map->m_range_bits);
       write_digit (stream, column_loc / divisor);
     }
   fprintf (stream, "\n");
@@ -1314,8 +1314,8 @@ dump_location_range (FILE *stream,
 		     location_t start, location_t end)
 {
   fprintf (stream,
-	   "  location_t interval: %u <= loc < %u\n",
-	   start, end);
+	   "  location_t interval: %llu <= loc < %llu\n",
+	   (unsigned long long) start, (unsigned long long) end);
 }
 
 /* Write a labelled description of a half-closed (START) / half-open (END)
@@ -1342,15 +1342,18 @@ dump_location_info (FILE *stream)
   dump_labelled_location_range (stream, "RESERVED LOCATIONS",
 				0, RESERVED_LOCATION_COUNT);
 
+  using ULL = unsigned long long;
+
   /* Visualize the ordinary line_map instances, rendering the sources. */
-  for (unsigned int idx = 0; idx < LINEMAPS_ORDINARY_USED (line_table); idx++)
+  for (line_map_uint_t idx = 0; idx < LINEMAPS_ORDINARY_USED (line_table);
+       idx++)
     {
       location_t end_location = get_end_location (line_table, idx);
       /* half-closed: doesn't include this one. */
 
       const line_map_ordinary *map
 	= LINEMAPS_ORDINARY_MAP_AT (line_table, idx);
-      fprintf (stream, "ORDINARY MAP: %i\n", idx);
+      fprintf (stream, "ORDINARY MAP: %llu\n", (ULL) idx);
       dump_location_range (stream,
 			   MAP_START_LOCATION (map), end_location);
       fprintf (stream, "  file: %s\n", ORDINARY_MAP_FILE_NAME (map));
@@ -1386,18 +1389,18 @@ dump_location_info (FILE *stream)
 
       const line_map_ordinary *includer_map
 	= linemap_included_from_linemap (line_table, map);
-      fprintf (stream, "  included from location: %d",
-	       linemap_included_from (map));
+      fprintf (stream, "  included from location: %llu",
+	       (ULL) linemap_included_from (map));
       if (includer_map) {
-	fprintf (stream, " (in ordinary map %d)",
-		 int (includer_map - line_table->info_ordinary.maps));
+	fprintf (stream, " (in ordinary map %llu)",
+		 ULL (includer_map - line_table->info_ordinary.maps));
       }
       fprintf (stream, "\n");
 
       /* Render the span of source lines that this "map" covers.  */
       for (location_t loc = MAP_START_LOCATION (map);
 	   loc < end_location;
-	   loc += (1 << map->m_range_bits) )
+	   loc += (location_t (1) << map->m_range_bits))
 	{
 	  gcc_assert (pure_location_p (line_table, loc) );
 
@@ -1413,16 +1416,16 @@ dump_location_info (FILE *stream)
 	      if (!line_text)
 		break;
 	      fprintf (stream,
-		       "%s:%3i|loc:%5i|%.*s\n",
+		       "%s:%3i|loc:%5llu|%.*s\n",
 		       exploc.file, exploc.line,
-		       loc,
+		       (ULL) loc,
 		       (int)line_text.length (), line_text.get_buffer ());
 
 	      /* "loc" is at column 0, which means "the whole line".
 		 Render the locations *within* the line, by underlining
 		 it, showing the location_t numeric values
 		 at each column.  */
-	      size_t max_col = (1 << map->m_column_and_range_bits) - 1;
+	      auto max_col = (ULL (1) << map->m_column_and_range_bits) - 1;
 	      if (max_col > line_text.length ())
 		max_col = line_text.length () + 1;
 
@@ -1459,19 +1462,19 @@ dump_location_info (FILE *stream)
 				LINEMAPS_MACRO_LOWEST_LOCATION (line_table));
 
   /* Visualize the macro line_map instances, rendering the sources. */
-  for (unsigned int i = 0; i < LINEMAPS_MACRO_USED (line_table); i++)
+  for (line_map_uint_t i = 0; i < LINEMAPS_MACRO_USED (line_table); i++)
     {
       /* Each macro map that is allocated owns location_t values
 	 that are *lower* that the one before them.
 	 Hence it's meaningful to view them either in order of ascending
 	 source locations, or in order of ascending macro map index.  */
       const bool ascending_location_ts = true;
-      unsigned int idx = (ascending_location_ts
-			  ? (LINEMAPS_MACRO_USED (line_table) - (i + 1))
-			  : i);
+      auto idx = (ascending_location_ts
+		  ? (LINEMAPS_MACRO_USED (line_table) - (i + 1))
+		  : i);
       const line_map_macro *map = LINEMAPS_MACRO_MAP_AT (line_table, idx);
-      fprintf (stream, "MACRO %i: %s (%u tokens)\n",
-	       idx,
+      fprintf (stream, "MACRO %llu: %s (%u tokens)\n",
+	       (ULL) idx,
 	       linemap_map_get_macro_name (map),
 	       MACRO_MAP_NUM_MACRO_TOKENS (map));
       dump_location_range (stream,
@@ -1479,10 +1482,10 @@ dump_location_info (FILE *stream)
 			   (map->start_location
 			    + MACRO_MAP_NUM_MACRO_TOKENS (map)));
       inform (map->get_expansion_point_location (),
-	      "expansion point is location %i",
-	      map->get_expansion_point_location ());
-      fprintf (stream, "  map->start_location: %u\n",
-	       map->start_location);
+	      "expansion point is location %llu",
+	      (ULL) map->get_expansion_point_location ());
+      fprintf (stream, "  map->start_location: %llu\n",
+	       (ULL) map->start_location);
 
       fprintf (stream, "  macro_locations:\n");
       for (unsigned int i = 0; i < MACRO_MAP_NUM_MACRO_TOKENS (map); i++)
@@ -1502,24 +1505,26 @@ dump_location_info (FILE *stream)
 	     This would explain there being up to 4 location_ts slots
 	     that may be uninitialized.  */
 
-	  fprintf (stream, "    %u: %u, %u\n",
+	  fprintf (stream, "    %u: %llu, %llu\n",
 		   i,
-		   x,
-		   y);
+		   (ULL) x,
+		   (ULL) y);
 	  if (x == y)
 	    {
 	      if (x < MAP_START_LOCATION (map))
-		inform (x, "token %u has %<x-location == y-location == %u%>",
-			i, x);
+		inform (x, "token %u has %<x-location == y-location == %llu%>",
+			i, (ULL) x);
 	      else
 		fprintf (stream,
-			 "x-location == y-location == %u encodes token # %u\n",
-			 x, x - MAP_START_LOCATION (map));
-		}
+			 "x-location == y-location == %llu"
+			 " encodes token # %u\n",
+			 (ULL) x,
+			 (unsigned int)(x - MAP_START_LOCATION (map)));
+	    }
 	  else
 	    {
-	      inform (x, "token %u has %<x-location == %u%>", i, x);
-	      inform (x, "token %u has %<y-location == %u%>", i, y);
+	      inform (x, "token %u has %<x-location == %llu%>", i, (ULL) x);
+	      inform (x, "token %u has %<y-location == %llu%>", i, (ULL) y);
 	    }
 	}
       fprintf (stream, "\n");
@@ -1535,7 +1540,7 @@ dump_location_info (FILE *stream)
 
   /* Visualize ad-hoc values.  */
   dump_labelled_location_range (stream, "AD-HOC LOCATIONS",
-				MAX_LOCATION_T + 1, UINT_MAX);
+				MAX_LOCATION_T + 1, location_t (-1));
 }
 
 /* string_concat's constructor.  */
@@ -2035,13 +2040,13 @@ assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
 class line_table_case
 {
 public:
-  line_table_case (int default_range_bits, int base_location)
+  line_table_case (int default_range_bits, location_t base_location)
   : m_default_range_bits (default_range_bits),
     m_base_location (base_location)
   {}
 
   int m_default_range_bits;
-  int m_base_location;
+  location_t m_base_location;
 };
 
 /* Constructor.  Store the old value of line_table, and create a new
@@ -2131,9 +2136,9 @@ test_accessing_ordinary_linemaps (const line_table_case &case_)
   location_t loc_start_of_very_long_line
     = linemap_position_for_column (line_table, 2000);
   location_t loc_too_wide
-    = linemap_position_for_column (line_table, 4097);
+    = linemap_position_for_column (line_table, LINE_MAP_MAX_COLUMN_NUMBER + 1);
   location_t loc_too_wide_2
-    = linemap_position_for_column (line_table, 4098);
+    = linemap_position_for_column (line_table, LINE_MAP_MAX_COLUMN_NUMBER + 2);
 
   /* ...and back to a sane line length.  */
   linemap_line_start (line_table, 6, 100);
@@ -3864,11 +3869,11 @@ static const location_t boundary_locations[] = {
   LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES + 0x100,
 
   /* Values near LINE_MAP_MAX_LOCATION_WITH_COLS.  */
-  LINE_MAP_MAX_LOCATION_WITH_COLS - 0x100,
+  LINE_MAP_MAX_LOCATION_WITH_COLS - 0x200,
   LINE_MAP_MAX_LOCATION_WITH_COLS - 1,
   LINE_MAP_MAX_LOCATION_WITH_COLS,
   LINE_MAP_MAX_LOCATION_WITH_COLS + 1,
-  LINE_MAP_MAX_LOCATION_WITH_COLS + 0x100,
+  LINE_MAP_MAX_LOCATION_WITH_COLS + 0x200,
 };
 
 /* Run TESTCASE multiple times, once for each case in our test matrix.  */
@@ -3883,10 +3888,9 @@ for_each_line_table_case (void (*testcase) (const line_table_case &))
 
   /* Run all tests with:
      (a) line_table->default_range_bits == 0, and
-     (b) line_table->default_range_bits == 5.  */
-  int num_cases_tested = 0;
-  for (int default_range_bits = 0; default_range_bits <= 5;
-       default_range_bits += 5)
+     (b) line_table->default_range_bits == line_map_suggested_range_bits.  */
+
+  for (int default_range_bits: {0, line_map_suggested_range_bits})
     {
       /* ...and use each of the "interesting" location values as
 	 the starting location within line_table.  */
@@ -3894,15 +3898,9 @@ for_each_line_table_case (void (*testcase) (const line_table_case &))
       for (int loc_idx = 0; loc_idx < num_boundary_locations; loc_idx++)
 	{
 	  line_table_case c (default_range_bits, boundary_locations[loc_idx]);
-
 	  testcase (c);
-
-	  num_cases_tested++;
 	}
     }
-
-  /* Verify that we fully covered the test matrix.  */
-  ASSERT_EQ (num_cases_tested, 2 * 12);
 }
 
 /* Verify that when presented with a consecutive pair of locations with

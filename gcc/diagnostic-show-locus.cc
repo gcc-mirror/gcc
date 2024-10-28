@@ -4017,12 +4017,12 @@ test_one_liner_fixit_validation_adhoc_locations ()
 {
   /* Generate a range that's too long to be packed, so must
      be stored as an ad-hoc location (given the defaults
-     of 5 bits or 0 bits of packed range); 41 columns > 2**5.  */
+     of 5 or 7 bits or 0 bits of packed range); 150 columns > 2**7.  */
   const location_t c7 = linemap_position_for_column (line_table, 7);
-  const location_t c47 = linemap_position_for_column (line_table, 47);
-  const location_t loc = make_location (c7, c7, c47);
+  const location_t c157 = linemap_position_for_column (line_table, 157);
+  const location_t loc = make_location (c7, c7, c157);
 
-  if (c47 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+  if (c157 > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
   ASSERT_TRUE (IS_ADHOC_LOC (loc));
@@ -4036,7 +4036,18 @@ test_one_liner_fixit_validation_adhoc_locations ()
 
     test_diagnostic_context dc;
     ASSERT_STREQ (" foo = bar.field;\n"
-		  "       ^~~~~~~~~~                               \n"
+		  "       ^~~~~~~~~~                               "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          \n"
 		  "       test\n",
 		  dc.test_show_locus (richloc));
   }
@@ -4044,29 +4055,62 @@ test_one_liner_fixit_validation_adhoc_locations ()
   /* Remove.  */
   {
     rich_location richloc (line_table, loc);
-    source_range range = source_range::from_locations (loc, c47);
+    source_range range = source_range::from_locations (loc, c157);
     richloc.add_fixit_remove (range);
     /* It should not have been discarded by the validator.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
     ASSERT_STREQ (" foo = bar.field;\n"
-		  "       ^~~~~~~~~~                               \n"
-		  "       -----------------------------------------\n",
+		  "       ^~~~~~~~~~                               "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          \n"
+		  "       -----------------------------------------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------\n",
 		  dc.test_show_locus (richloc));
   }
 
   /* Replace.  */
   {
     rich_location richloc (line_table, loc);
-    source_range range = source_range::from_locations (loc, c47);
+    source_range range = source_range::from_locations (loc, c157);
     richloc.add_fixit_replace (range, "test");
     /* It should not have been discarded by the validator.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
 
     test_diagnostic_context dc;
     ASSERT_STREQ (" foo = bar.field;\n"
-		  "       ^~~~~~~~~~                               \n"
+		  "       ^~~~~~~~~~                               "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          \n"
 		  "       test\n",
 		  dc.test_show_locus (richloc));
   }
@@ -4556,12 +4600,12 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 {
   /* Generate a range that's too long to be packed, so must
      be stored as an ad-hoc location (given the defaults
-     of 5 bits or 0 bits of packed range); 41 columns > 2**5.  */
+     of 5 bits or 7 bits or 0 bits of packed range); 150 columns > 2**7.  */
   const location_t c12 = linemap_position_for_column (line_table, 12);
-  const location_t c52 = linemap_position_for_column (line_table, 52);
-  const location_t loc = make_location (c12, c12, c52);
+  const location_t c162 = linemap_position_for_column (line_table, 162);
+  const location_t loc = make_location (c12, c12, c162);
 
-  if (c52 > LINE_MAP_MAX_LOCATION_WITH_COLS)
+  if (c162 > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
   ASSERT_TRUE (IS_ADHOC_LOC (loc));
@@ -4579,7 +4623,18 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
 					   ";\n"
-		  "          ^~~~~~~~~~~~~~~~                     \n"
+		  "          ^~~~~~~~~~~~~~~~                     "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          \n"
 		  "          test\n",
 		dc.test_show_locus (richloc));
   }
@@ -4587,7 +4642,7 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
   /* Remove.  */
   {
     rich_location richloc (line_table, loc);
-    source_range range = source_range::from_locations (loc, c52);
+    source_range range = source_range::from_locations (loc, c162);
     richloc.add_fixit_remove (range);
     /* It should not have been discarded by the validator.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
@@ -4598,15 +4653,37 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
 					   ";\n"
-		  "          ^~~~~~~~~~~~~~~~                     \n"
-		  "          -------------------------------------\n",
+		  "          ^~~~~~~~~~~~~~~~                     "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          \n"
+		  "          -------------------------------------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------"
+		  "----------\n",
 		dc.test_show_locus (richloc));
   }
 
   /* Replace.  */
   {
     rich_location richloc (line_table, loc);
-    source_range range = source_range::from_locations (loc, c52);
+    source_range range = source_range::from_locations (loc, c162);
     richloc.add_fixit_replace (range, "test");
     /* It should not have been discarded by the validator.  */
     ASSERT_EQ (1, richloc.get_num_fixit_hints ());
@@ -4617,7 +4694,18 @@ test_one_liner_fixit_validation_adhoc_locations_utf8 ()
 			     "_bar.\xf0\x9f\x98\x82"
 				    "_field\xcf\x80"
 					   ";\n"
-		  "          ^~~~~~~~~~~~~~~~                     \n"
+		  "          ^~~~~~~~~~~~~~~~                     "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          "
+		  "          \n"
 		  "          test\n",
 		dc.test_show_locus (richloc));
   }
