@@ -1067,7 +1067,7 @@ package body Sem_Aggr is
 
    function Is_Null_Aggregate (N : Node_Id) return Boolean is
    begin
-      return Ada_Version >= Ada_2022
+      return Nkind (N) = N_Aggregate
         and then Is_Homogeneous_Aggregate (N)
         and then Is_Empty_List (Expressions (N))
         and then Is_Empty_List (Component_Associations (N));
