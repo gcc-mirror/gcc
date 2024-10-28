@@ -1937,10 +1937,24 @@ get_evaluation_semantic(tree contract)
 {
   contract_semantic semantic = get_contract_semantic (contract);
 
-  if (checked_contract_p (semantic))
-    return CES_ENFORCE;
+  if (!flag_contracts_nonattr)
+    {
+      if (checked_contract_p (semantic))
+	return CES_ENFORCE;
+      return CES_OBSERVE;
+    }
 
-  return CES_OBSERVE;
+  switch (semantic)
+    {
+      default:
+	gcc_unreachable ();
+      case CCS_MAYBE:
+	return CES_OBSERVE;
+	break;
+      case CCS_NEVER:
+	return CES_ENFORCE;
+	break;
+    }
 }
 
 /* Build P2900R7 contract_violation layout compatible object. */
