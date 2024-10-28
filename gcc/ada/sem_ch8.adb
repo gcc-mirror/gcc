@@ -8535,7 +8535,7 @@ package body Sem_Ch8 is
                         Current_Entity (Selector_Name (N));
                begin
                   if Present (F)
-                    and then Is_Overloadable (F)
+                    and then Is_Subprogram (F)
                     and then Present (First_Entity (F))
                     and then not Is_Tagged_Type (Etype (First_Entity (F)))
                   then
