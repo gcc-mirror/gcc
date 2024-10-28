@@ -1,3 +1,44 @@
+2024-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/Wtrailing-whitespace-2.c: Use
+	-Wtrailing-whitespace=blanks rather than -Wtrailing-whitespace=blank.
+	* c-c++-common/cpp/Wtrailing-whitespace-3.c: Use
+	-Wtrailing-whitespace=any rather than -Wtrailing-whitespace=space.
+	* c-c++-common/cpp/Wtrailing-whitespace-7.c: Use
+	-Wtrailing-whitespace=blanks rather than -Wtrailing-whitespace=blank.
+	* c-c++-common/cpp/Wtrailing-whitespace-8.c: Use
+	-Wtrailing-whitespace=any rather than -Wtrailing-whitespace=space.
+
+2024-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vec-perm-lower.c: Add -Wno-psabi to dg-options.
+
+2024-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115070
+	PR fortran/115348
+	* gfortran.dg/pr115070.f90: New test.
+	* gfortran.dg/pr115348.f90: New test.
+
+2024-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	* gcc.target/arm/bti-1.c: Check for asm instructions starting
+	with a tab.
+	* gcc.target/arm/bti-2.c: Likewise.
+	* gcc.target/arm/pac-1.c: Likewise.
+	* gcc.target/arm/pac-2.c: Likewise.
+	* gcc.target/arm/pac-3.c: Likewise.
+	* gcc.target/arm/pac-4.c: Likewise.
+	* gcc.target/arm/pac-6.c: Likewise.
+	* gcc.target/arm/pac-7.c: Likewise.
+	* gcc.target/arm/pac-8.c: Likewise.
+	* gcc.target/arm/pac-9.c: Likewise.
+	* gcc.target/arm/pac-10.c: Likewise.
+	* gcc.target/arm/pac-11.c: Likewise.
+	* gcc.target/arm/pac-15.c: Likewise.
+	* gcc.target/arm/pac-sibcall.c: Likewise.
+
 2024-10-26  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/117234

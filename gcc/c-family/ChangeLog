@@ -1,3 +1,8 @@
+2024-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (warn_trailing_whitespace_kind): Change blank
+	to blanks and space to any.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ubsan.cc: Remove trailing whitespace.

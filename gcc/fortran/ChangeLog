@@ -1,3 +1,12 @@
+2024-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115070
+	PR fortran/115348
+	* trans-expr.cc (gfc_trans_class_init_assign): If all the
+	components of the default initializer are null for a scalar,
+	build an empty statement to prevent prior declarations from
+	disappearing.
+
 2024-10-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* intrinsic.texi: Add menu item for UINT.

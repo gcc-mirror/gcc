@@ -1,3 +1,35 @@
+2024-10-27  Fangrui Song  <maskray@gcc.gnu.org>
+
+	* config/arm/bpabi.h (TARGET_FDPIC_ASM_SPEC): Transform -mfdpic.
+	* config/arm/linux-eabi.h (TARGET_FDPIC_LINKER_EMULATION): Define.
+	(SUBTARGET_EXTRA_LINK_SPEC): Use TARGET_FDPIC_LINKER_EMULATION
+	if -mfdpic.
+
+2024-10-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (TARGET_DIFFERENT_ADDR_DISPLACEMENT_P):
+	Add new target hook to always return true.
+	* config/xtensa/xtensa.md (movsi_internal):
+	Revert the previous changes.
+
+2024-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (gcc_AC_CHECK_DECLS): Add fmemopen.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* Makefile.in (build/genmatch.o): Add -DGENMATCH_SELFTESTS to
+	BUILD_CPPFLAGS for stage2+ genmatch.
+	* genmatch.cc (test_diag_vfprintf, genmatch_diag_selftests): New
+	functions.
+	(main): Call genmatch_diag_selftests.
+	* pretty-print.cc (test_pp_format): Add two tests, one for %M$.*N$s
+	and one for %M$.Ns.
+
+2024-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Wtrailing-whitespace=): Change
+	blank argument to blanks and space argument to any.
+
 2024-10-26  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/117234

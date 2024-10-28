@@ -1,3 +1,45 @@
+2024-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/ranges_base.h (__container_compatible_range): New
+	concept.
+	* include/bits/stl_bvector.h (vector(from_range, R&&, const Alloc&))
+	(assign_range, insert_range, append_range): Define.
+	* include/bits/stl_uninitialized.h (__do_uninit_copy): Support
+	non-common ranges.
+	(__uninitialized_copy_a): Likewise.
+	* include/bits/stl_vector.h (_Vector_base::_M_append_range_to):
+	New function.
+	(_Vector_base::_M_append_range): Likewise.
+	(vector(from_range, R&&, const Alloc&), assign_range): Define.
+	(append_range): Define.
+	(insert_range): Declare.
+	* include/debug/vector (vector(from_range, R&&, const Alloc&))
+	(assign_range, insert_range, append_range): Define.
+	* include/bits/vector.tcc (insert_range): Define.
+	* testsuite/util/testsuite_iterators.h (input_iterator_wrapper_rval):
+	New class template.
+	* testsuite/23_containers/vector/bool/cons/from_range.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/assign/assign_range.cc:
+	New test.
+	* testsuite/23_containers/vector/bool/modifiers/insert/append_range.cc:
+	New test.
+	* testsuite/23_containers/vector/bool/modifiers/insert/insert_range.cc:
+	New test.
+	* testsuite/23_containers/vector/cons/from_range.cc: New test.
+	* testsuite/23_containers/vector/modifiers/append_range.cc: New test.
+	* testsuite/23_containers/vector/modifiers/assign/assign_range.cc:
+	New test.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	New test.
+
+2024-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (emplace_back, emplace): Forward
+	parameter pack to preserve value category.
+	* testsuite/23_containers/vector/bool/emplace_rvalue.cc: New
+	test.
+
 2024-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/operators/char/op_plus_string_view.cc:
