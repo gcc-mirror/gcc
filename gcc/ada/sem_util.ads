@@ -705,10 +705,6 @@ package Sem_Util is
    --  these names is supposed to be a selected component name, an expanded
    --  name, a defining program unit name or an identifier.
 
-   procedure Diagnose_Iterated_Component_Association (N : Node_Id);
-   --  Emit an error if iterated component association N is actually an illegal
-   --  quantified expression lacking a quantifier.
-
    function Discriminated_Size (Comp : Entity_Id) return Boolean;
    --  If a component size is not static then a warning will be emitted
    --  in Ravenscar or other restricted contexts. When a component is non-

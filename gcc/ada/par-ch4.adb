@@ -3083,7 +3083,7 @@ package body Ch4 is
                   return P_Identifier;
                end if;
 
-            --  For [all | some]  indicates a quantified expression
+            --  Quantified expression or iterated component association
 
             when Tok_For =>
                if Token_Is_At_Start_Of_Line then
@@ -3103,9 +3103,18 @@ package body Ch4 is
                           ("quantified expression must be parenthesized",
                            Sloc (Node1));
                      end if;
+
+                  --  If no quantifier keyword, this is an iterated component
+                  --  in an aggregate or an ill-formed quantified expression.
+
                   else
                      Restore_Scan_State (Scan_State);  -- To FOR
                      Node1 := P_Iterated_Component_Association;
+
+                     if not (Lparen and then Token = Tok_Right_Paren) then
+                        Error_Msg
+                          ("construct must be parenthesized", Sloc (Node1));
+                     end if;
                   end if;
 
                   return Node1;
@@ -3983,12 +3992,17 @@ package body Ch4 is
                  ("quantified expression must be parenthesized!", Result);
             end if;
 
-         else
-            --  If no quantifier keyword, this is an iterated component in
-            --  an aggregate.
+         --  If no quantifier keyword, this is an iterated component in
+         --  an aggregate or an ill-formed quantified expression.
 
+         else
             Restore_Scan_State (Scan_State);
             Result := P_Iterated_Component_Association;
+
+            if not (Lparen and then Token = Tok_Right_Paren) then
+               Error_Msg_N
+                 ("construct must be parenthesized!", Result);
+            end if;
          end if;
 
       --  Declare expression
