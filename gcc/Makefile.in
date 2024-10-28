@@ -1703,6 +1703,7 @@ OBJS = \
 	sanopt.o \
 	sancov.o \
 	simple-diagnostic-path.o \
+	tree-assume.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \

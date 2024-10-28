@@ -1353,60 +1353,6 @@ public:
   const pass_data &data;
   bool final_p;
 }; // class pass_vrp
-
-const pass_data pass_data_assumptions =
-{
-  GIMPLE_PASS, /* type */
-  "assumptions", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_ASSUMPTIONS, /* tv_id */
-  PROP_ssa, /* properties_required */
-  PROP_assumptions_done, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_end */
-};
-
-class pass_assumptions : public gimple_opt_pass
-{
-public:
-  pass_assumptions (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_assumptions, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate (function *fun) final override { return fun->assume_function; }
-  unsigned int execute (function *) final override
-    {
-      assume_query query;
-      if (dump_file)
-	fprintf (dump_file, "Assumptions :\n--------------\n");
-
-      for (tree arg = DECL_ARGUMENTS (cfun->decl); arg; arg = DECL_CHAIN (arg))
-	{
-	  tree name = ssa_default_def (cfun, arg);
-	  if (!name || !gimple_range_ssa_p (name))
-	    continue;
-	  tree type = TREE_TYPE (name);
-	  if (!value_range::supports_type_p (type))
-	    continue;
-	  value_range assume_range (type);
-	  // Set the global range of NAME to anything calculated.
-	  if (query.assume_range_p (assume_range, name))
-	    set_range_info (name, assume_range);
-	}
-      if (dump_file)
-	{
-	  fputc ('\n', dump_file);
-	  gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
-	  if (dump_flags & TDF_DETAILS)
-	    query.dump (dump_file);
-	}
-      return TODO_discard_function;
-    }
-
-}; // class pass_assumptions
-
 } // anon namespace
 
 gimple_opt_pass *
@@ -1425,10 +1371,4 @@ gimple_opt_pass *
 make_pass_fast_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt, pass_data_fast_vrp);
-}
-
-gimple_opt_pass *
-make_pass_assumptions (gcc::context *ctx)
-{
-  return new pass_assumptions (ctx);
 }
