@@ -193,6 +193,14 @@ package Rtsfind is
 
       Interfaces_C_Strings,
 
+      --  Package SPARK
+
+      SPARK,
+
+      --  Children of SPARK
+
+      SPARK_Big_Integers,
+
       --  Package System
 
       System,
@@ -575,6 +583,7 @@ package Rtsfind is
 
      RE_Big_Integer,             -- Ada.Numerics.Big_Numbers.Big_Integers
      RO_GH_Big_Integer,          -- Ada.Numerics.Big_Numbers.Big_Integers_Ghost
+     RO_SP_Big_Integer,          -- SPARK.Big_Integers
 
      RE_Names,                           -- Ada.Interrupts.Names
 
@@ -2222,6 +2231,7 @@ package Rtsfind is
 
      RE_Big_Integer             => Ada_Numerics_Big_Numbers_Big_Integers,
      RO_GH_Big_Integer          => Ada_Numerics_Big_Numbers_Big_Integers_Ghost,
+     RO_SP_Big_Integer          => SPARK_Big_Integers,
 
      RE_Names                            => Ada_Interrupts_Names,
 

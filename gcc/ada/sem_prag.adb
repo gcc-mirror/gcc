@@ -20498,6 +20498,9 @@ package body Sem_Prag is
                    or else
                  Is_RTE (Base_Type (Etype (Expression (Variant))),
                          RO_GH_Big_Integer)
+                   or else
+                 Is_RTE (Base_Type (Etype (Expression (Variant))),
+                         RO_SP_Big_Integer)
                then
                   if Chars (Variant) = Name_Increases then
                      Error_Msg_N
@@ -30966,6 +30969,8 @@ package body Sem_Prag is
            Is_RTE (Base_Type (Etype (Expr)), RE_Big_Integer)
              or else
            Is_RTE (Base_Type (Etype (Expr)), RO_GH_Big_Integer)
+             or else
+           Is_RTE (Base_Type (Etype (Expr)), RO_SP_Big_Integer)
          then
             if Chars (Direction) = Name_Increases then
                Error_Msg_N
