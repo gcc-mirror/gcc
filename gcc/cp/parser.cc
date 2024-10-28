@@ -13250,7 +13250,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      bool const_p = false;
 	      
 	      for (cp_token *tok = cp_lexer_peek_token (parser->lexer);
-		   tok && tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST;
+		   tok && (tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST);
 		   tok = cp_lexer_peek_token (parser->lexer))
 		{
 		  if (!flag_contracts_nonattr_mutable_keyword &&
@@ -31560,7 +31560,7 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
   else
     {
       for (cp_token *tok = cp_lexer_peek_token (parser->lexer);
-	   tok && tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST;
+	   tok && (tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST);
 	   tok = cp_lexer_peek_token (parser->lexer))
 	{
 	  if (!flag_contracts_nonattr_mutable_keyword &&
