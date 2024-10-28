@@ -776,6 +776,36 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
   return true;
 }
 
+/* Returns true if inner_cond_bb contains just the condition or 1/2 statements
+   that define lhs or rhs with an integer conversion. */
+
+static bool
+can_combine_bbs_with_short_circuit (basic_block inner_cond_bb, tree lhs, tree rhs)
+{
+  gimple_stmt_iterator gsi;
+  gsi = gsi_start_nondebug_after_labels_bb (inner_cond_bb);
+  /* If only the condition, this should be allowed. */
+  if (gsi_one_before_end_p (gsi))
+    return true;
+  /* Can have up to 2 statements defining each of lhs/rhs. */
+  for (int i = 0; i < 2; i++)
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (!is_gimple_assign (stmt)
+	  || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
+	return false;
+      /* The defining statement needs to match either the lhs or rhs of
+	 the condition. */
+      if (lhs != gimple_assign_lhs (stmt)
+	  && rhs != gimple_assign_lhs (stmt))
+	return false;
+      gsi_next_nondebug (&gsi);
+      if (gsi_one_before_end_p (gsi))
+	return true;
+    }
+  return false;
+}
+
 /* If-convert on a and pattern with a common else block.  The inner
    if is specified by its INNER_COND_BB, the outer by OUTER_COND_BB.
    inner_inv, outer_inv indicate whether the conditions are inverted.
@@ -951,8 +981,11 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	      = param_logical_op_non_short_circuit;
 	  if (!logical_op_non_short_circuit || sanitize_coverage_p ())
 	    return false;
-	  /* Only do this optimization if the inner bb contains only the conditional. */
-	  if (!gsi_one_before_end_p (gsi_start_nondebug_after_labels_bb (inner_cond_bb)))
+	  /* Only do this optimization if the inner bb contains only the conditional
+	     or there is one or 2 statements which are nop conversion for the comparison. */
+	  if (!can_combine_bbs_with_short_circuit (inner_cond_bb,
+						   gimple_cond_lhs (inner_cond),
+						   gimple_cond_rhs (inner_cond)))
 	    return false;
 	  t1 = fold_build2_loc (gimple_location (inner_cond),
 				inner_cond_code,
