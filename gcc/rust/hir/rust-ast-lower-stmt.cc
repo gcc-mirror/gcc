@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "optional.h"
 #include "rust-ast-lower-item.h"
 #include "rust-ast-lower-stmt.h"
 #include "rust-ast-lower-type.h"
@@ -68,12 +69,16 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
 {
   HIR::Pattern *variables
     = ASTLoweringPattern::translate (stmt.get_pattern (), true);
-  HIR::Type *type = stmt.has_type ()
-		      ? ASTLoweringType::translate (stmt.get_type ())
-		      : nullptr;
-  HIR::Expr *init_expression
-    = stmt.has_init_expr () ? ASTLoweringExpr::translate (stmt.get_init_expr ())
-			    : nullptr;
+
+  auto type
+    = stmt.has_type () ? tl::optional<std::unique_ptr<Type>> (
+	std::unique_ptr<Type> (ASTLoweringType::translate (stmt.get_type ())))
+		       : tl::nullopt;
+  auto init_expression
+    = stmt.has_init_expr ()
+	? tl::optional<std::unique_ptr<Expr>> (std::unique_ptr<HIR::Expr> (
+	  ASTLoweringExpr::translate (stmt.get_init_expr ())))
+	: tl::nullopt;
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -81,8 +86,7 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::LetStmt (mapping, std::unique_ptr<HIR::Pattern> (variables),
-			std::unique_ptr<HIR::Expr> (init_expression),
-			std::unique_ptr<HIR::Type> (type),
+			std::move (init_expression), std::move (type),
 			stmt.get_outer_attrs (), stmt.get_locus ());
 }
 

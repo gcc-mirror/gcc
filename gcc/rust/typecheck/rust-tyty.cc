@@ -18,6 +18,7 @@
 
 #include "rust-tyty.h"
 
+#include "optional.h"
 #include "rust-tyty-visitor.h"
 #include "rust-hir-map.h"
 #include "rust-location.h"
@@ -1343,7 +1344,7 @@ VariantDef::variant_type_string (VariantType type)
 
 VariantDef::VariantDef (HirId id, DefId defid, std::string identifier,
 			RustIdent ident,
-			std::unique_ptr<HIR::Expr> &&discriminant)
+			tl::optional<std::unique_ptr<HIR::Expr>> &&discriminant)
   : id (id), defid (defid), identifier (identifier), ident (ident),
     discriminant (std::move (discriminant))
 
@@ -1354,7 +1355,7 @@ VariantDef::VariantDef (HirId id, DefId defid, std::string identifier,
 
 VariantDef::VariantDef (HirId id, DefId defid, std::string identifier,
 			RustIdent ident, VariantType type,
-			std::unique_ptr<HIR::Expr> &&discriminant,
+			tl::optional<std::unique_ptr<HIR::Expr>> &&discriminant,
 			std::vector<StructFieldType *> fields)
   : id (id), defid (defid), identifier (identifier), ident (ident), type (type),
     discriminant (std::move (discriminant)), fields (fields)
@@ -1369,7 +1370,7 @@ VariantDef::get_error_node ()
   static VariantDef node
     = VariantDef (UNKNOWN_HIRID, UNKNOWN_DEFID, "",
 		  {Resolver::CanonicalPath::create_empty (), UNKNOWN_LOCATION},
-		  nullptr);
+		  tl::nullopt);
 
   return node;
 }
@@ -1461,15 +1462,28 @@ VariantDef::lookup_field (const std::string &lookup,
 HIR::Expr &
 VariantDef::get_discriminant ()
 {
-  rust_assert (discriminant != nullptr);
-  return *discriminant;
+  return *discriminant.value ();
+}
+
+const HIR::Expr &
+VariantDef::get_discriminant () const
+{
+  return *discriminant.value ();
+}
+
+bool
+VariantDef::has_discriminant () const
+{
+  return discriminant.has_value ();
 }
 
 std::string
 VariantDef::as_string () const
 {
   if (type == VariantType::NUM)
-    return identifier + " = " + discriminant->as_string ();
+    return identifier
+	   + (has_discriminant () ? " = " + get_discriminant ().as_string ()
+				  : "");
 
   std::string buffer;
   for (size_t i = 0; i < fields.size (); ++i)
@@ -1516,8 +1530,13 @@ VariantDef::clone () const
   for (auto &f : fields)
     cloned_fields.push_back ((StructFieldType *) f->clone ());
 
+  auto &&discriminant_opt = has_discriminant ()
+			      ? tl::optional<std::unique_ptr<HIR::Expr>> (
+				get_discriminant ().clone_expr ())
+			      : tl::nullopt;
+
   return new VariantDef (id, defid, identifier, ident, type,
-			 discriminant->clone_expr (), cloned_fields);
+			 std::move (discriminant_opt), cloned_fields);
 }
 
 VariantDef *
@@ -1527,8 +1546,13 @@ VariantDef::monomorphized_clone () const
   for (auto &f : fields)
     cloned_fields.push_back ((StructFieldType *) f->monomorphized_clone ());
 
+  auto discriminant_opt = has_discriminant ()
+			    ? tl::optional<std::unique_ptr<HIR::Expr>> (
+			      get_discriminant ().clone_expr ())
+			    : tl::nullopt;
+
   return new VariantDef (id, defid, identifier, ident, type,
-			 discriminant->clone_expr (), cloned_fields);
+			 std::move (discriminant_opt), cloned_fields);
 }
 
 const RustIdent &

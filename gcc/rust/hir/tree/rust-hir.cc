@@ -2669,12 +2669,12 @@ LetStmt::as_string () const
 
   if (has_type ())
     {
-      str += " : " + type->as_string ();
+      str += " : " + get_type ().as_string ();
     }
 
   if (has_init_expr ())
     {
-      str += " = " + init_expr->as_string ();
+      str += " = " + get_init_expr ().as_string ();
     }
 
   return str;

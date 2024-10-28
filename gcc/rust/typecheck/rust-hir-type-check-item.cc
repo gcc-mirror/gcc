@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-item.h"
+#include "optional.h"
 #include "rust-canonical-path.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-type-check-enumitem.h"
@@ -222,7 +223,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
     new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
 			  struct_decl.get_mappings ().get_defid (),
 			  struct_decl.get_identifier ().as_string (), ident,
-			  TyTy::VariantDef::VariantType::TUPLE, nullptr,
+			  TyTy::VariantDef::VariantType::TUPLE, tl::nullopt,
 			  std::move (fields)));
 
   // Process #[repr(X)] attribute, if any
@@ -304,7 +305,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
     new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
 			  struct_decl.get_mappings ().get_defid (),
 			  struct_decl.get_identifier ().as_string (), ident,
-			  TyTy::VariantDef::VariantType::STRUCT, nullptr,
+			  TyTy::VariantDef::VariantType::STRUCT, tl::nullopt,
 			  std::move (fields)));
 
   // Process #[repr(X)] attribute, if any
@@ -437,7 +438,7 @@ TypeCheckItem::visit (HIR::Union &union_decl)
     new TyTy::VariantDef (union_decl.get_mappings ().get_hirid (),
 			  union_decl.get_mappings ().get_defid (),
 			  union_decl.get_identifier ().as_string (), ident,
-			  TyTy::VariantDef::VariantType::STRUCT, nullptr,
+			  TyTy::VariantDef::VariantType::STRUCT, tl::nullopt,
 			  std::move (fields)));
 
   auto *type

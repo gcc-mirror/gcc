@@ -22,6 +22,7 @@
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 #include "rust-hir-expr.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
@@ -97,11 +98,9 @@ class LetStmt : public Stmt
 
   std::unique_ptr<Pattern> variables_pattern;
 
-  // bool has_type;
-  std::unique_ptr<Type> type;
+  tl::optional<std::unique_ptr<Type>> type;
 
-  // bool has_init_expr;
-  std::unique_ptr<Expr> init_expr;
+  tl::optional<std::unique_ptr<Expr>> init_expr;
 
   location_t locus;
 
@@ -110,17 +109,18 @@ public:
   bool has_outer_attrs () const { return !outer_attrs.empty (); }
 
   // Returns whether let statement has a given return type.
-  bool has_type () const { return type != nullptr; }
+  bool has_type () const { return type.has_value (); }
 
   // Returns whether let statement has an initialisation expression.
-  bool has_init_expr () const { return init_expr != nullptr; }
+  bool has_init_expr () const { return init_expr.has_value (); }
 
   std::string as_string () const override;
 
   LetStmt (Analysis::NodeMapping mappings,
 	   std::unique_ptr<Pattern> variables_pattern,
-	   std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
-	   AST::AttrVec outer_attrs, location_t locus);
+	   tl::optional<std::unique_ptr<Expr>> init_expr,
+	   tl::optional<std::unique_ptr<Type>> type, AST::AttrVec outer_attrs,
+	   location_t locus);
 
   // Copy constructor with clone
   LetStmt (LetStmt const &other);
@@ -143,9 +143,29 @@ public:
   }
   std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
 
-  HIR::Type &get_type () { return *type; }
+  HIR::Type &get_type ()
+  {
+    rust_assert (*type);
+    return *type.value ();
+  }
 
-  HIR::Expr &get_init_expr () { return *init_expr; }
+  const HIR::Type &get_type () const
+  {
+    rust_assert (*type);
+    return *type.value ();
+  }
+
+  HIR::Expr &get_init_expr ()
+  {
+    rust_assert (*init_expr);
+    return *init_expr.value ();
+  }
+
+  const HIR::Expr &get_init_expr () const
+  {
+    rust_assert (*init_expr);
+    return *init_expr.value ();
+  }
 
   HIR::Pattern &get_pattern () { return *variables_pattern; }
 

@@ -17,13 +17,16 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-stmt.h"
+#include "optional.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
 
 LetStmt::LetStmt (Analysis::NodeMapping mappings,
 		  std::unique_ptr<Pattern> variables_pattern,
-		  std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
+		  tl::optional<std::unique_ptr<Expr>> init_expr,
+		  tl::optional<std::unique_ptr<Type>> type,
 		  AST::AttrVec outer_attrs, location_t locus)
   : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attrs)),
     variables_pattern (std::move (variables_pattern)), type (std::move (type)),
@@ -38,10 +41,13 @@ LetStmt::LetStmt (LetStmt const &other)
     variables_pattern = other.variables_pattern->clone_pattern ();
 
   // guard to prevent null dereference (always required)
-  if (other.init_expr != nullptr)
-    init_expr = other.init_expr->clone_expr ();
-  if (other.type != nullptr)
-    type = other.type->clone_type ();
+  if (other.has_init_expr ())
+    init_expr = other.get_init_expr ().clone_expr ();
+
+  if (other.has_type ())
+    type = other.get_type ().clone_type ();
+  else
+    type = tl::nullopt;
 }
 
 LetStmt &
@@ -57,14 +63,14 @@ LetStmt::operator= (LetStmt const &other)
     variables_pattern = nullptr;
 
   // guard to prevent null dereference (always required)
-  if (other.init_expr != nullptr)
-    init_expr = other.init_expr->clone_expr ();
+  if (other.has_init_expr ())
+    init_expr = other.get_init_expr ().clone_expr ();
   else
     init_expr = nullptr;
-  if (other.type != nullptr)
-    type = other.type->clone_type ();
+  if (other.has_type ())
+    type = other.get_type ().clone_type ();
   else
-    type = nullptr;
+    type = tl::nullopt;
 
   return *this;
 }

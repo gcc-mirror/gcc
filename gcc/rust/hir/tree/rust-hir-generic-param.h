@@ -156,7 +156,11 @@ public:
   bool has_default_expression () { return default_expression != nullptr; }
 
   std::string get_name () { return name; }
-  Type &get_type () { return *type; }
+  Type &get_type ()
+  {
+    rust_assert (type);
+    return *type;
+  }
   Expr &get_default_expression () { return *default_expression; }
 
 protected:
