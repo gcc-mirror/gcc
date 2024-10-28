@@ -230,7 +230,7 @@ directory_iterator(const path& p, directory_options options, error_code* ecptr)
 const fs::directory_entry&
 fs::directory_iterator::operator*() const noexcept
 {
-  return _M_dir->entry;
+  return (*_M_dir).entry;
 }
 
 fs::directory_iterator&
@@ -327,25 +327,25 @@ fs::recursive_directory_iterator::~recursive_directory_iterator() = default;
 fs::directory_options
 fs::recursive_directory_iterator::options() const noexcept
 {
-  return _M_dirs->options;
+  return (*_M_dirs).options;
 }
 
 int
 fs::recursive_directory_iterator::depth() const noexcept
 {
-  return int(_M_dirs->size()) - 1;
+  return int((*_M_dirs).size()) - 1;
 }
 
 bool
 fs::recursive_directory_iterator::recursion_pending() const noexcept
 {
-  return _M_dirs->pending;
+  return (*_M_dirs).pending;
 }
 
 const fs::directory_entry&
 fs::recursive_directory_iterator::operator*() const noexcept
 {
-  return _M_dirs->top().entry;
+  return (*_M_dirs).top().entry;
 }
 
 fs::recursive_directory_iterator&
@@ -453,7 +453,7 @@ fs::recursive_directory_iterator::pop()
 void
 fs::recursive_directory_iterator::disable_recursion_pending() noexcept
 {
-  _M_dirs->pending = false;
+  (*_M_dirs).pending = false;
 }
 
 // Used to implement filesystem::remove_all.
