@@ -16129,6 +16129,32 @@ performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_ctzg (@var{arg}, @var{prec})}
 @enddefbuiltin
 
+@defbuiltin{@var{type1} __builtin_stdc_rotate_left (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
+The @code{__builtin_stdc_rotate_left} function is available only
+in C.  It is type-generic, the first argument can be any unsigned integer
+(standard, extended or bit-precise) and second argument any signed or
+unsigned integer or @code{char}.  No integral argument promotions are
+performed on the arguments.  It is equivalent to
+@code{(@var{type1}) ((@var{arg1} << (@var{arg2} % @var{prec}))
+| (@var{arg1} >> ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
+where @var{prec} is bit width of @var{type1}, except that side-effects
+in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
+undefined if @var{arg2} is negative.
+@enddefbuiltin
+
+@defbuiltin{@var{type1} __builtin_stdc_rotate_right (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
+The @code{__builtin_stdc_rotate_right} function is available only
+in C.  It is type-generic, the first argument can be any unsigned integer
+(standard, extended or bit-precise) and second argument any signed or
+unsigned integer or @code{char}.  No integral argument promotions are
+performed on the arguments.  It is equivalent to
+@code{(@var{type1}) ((@var{arg1} >> (@var{arg2} % @var{prec}))
+| (@var{arg1} << ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
+where @var{prec} is bit width of @var{type1}, except that side-effects
+in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
+undefined if @var{arg2} is negative.
+@enddefbuiltin
+
 @defbuiltin{double __builtin_powi (double, int)}
 @defbuiltinx{float __builtin_powif (float, int)}
 @defbuiltinx{{long double} __builtin_powil (long double, int)}

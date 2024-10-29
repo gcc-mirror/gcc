@@ -448,6 +448,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_stdc_has_single_bit", RID_BUILTIN_STDC, D_CONLY },
   { "__builtin_stdc_leading_ones", RID_BUILTIN_STDC, D_CONLY },
   { "__builtin_stdc_leading_zeros", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_rotate_left", RID_BUILTIN_STDC, D_CONLY },
+  { "__builtin_stdc_rotate_right", RID_BUILTIN_STDC, D_CONLY },
   { "__builtin_stdc_trailing_ones", RID_BUILTIN_STDC, D_CONLY },
   { "__builtin_stdc_trailing_zeros", RID_BUILTIN_STDC, D_CONLY },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },

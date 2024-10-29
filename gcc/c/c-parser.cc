@@ -74,6 +74,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "analyzer/analyzer-language.h"
 #include "toplev.h"
+#include "asan.h"
+#include "c-family/c-ubsan.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -12262,12 +12264,15 @@ c_parser_postfix_expression (c_parser *parser)
 	      C_BUILTIN_STDC_HAS_SINGLE_BIT,
 	      C_BUILTIN_STDC_LEADING_ONES,
 	      C_BUILTIN_STDC_LEADING_ZEROS,
+	      C_BUILTIN_STDC_ROTATE_LEFT,
+	      C_BUILTIN_STDC_ROTATE_RIGHT,
 	      C_BUILTIN_STDC_TRAILING_ONES,
 	      C_BUILTIN_STDC_TRAILING_ZEROS,
 	      C_BUILTIN_STDC_MAX
 	    } stdc_rid = C_BUILTIN_STDC_MAX;
 	    const char *name
 	      = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	    unsigned num_args = 1;
 	    switch (name[sizeof ("__builtin_stdc_") - 1])
 	      {
 	      case 'b':
@@ -12316,6 +12321,13 @@ c_parser_postfix_expression (c_parser *parser)
 		else
 		  stdc_rid = C_BUILTIN_STDC_LEADING_ZEROS;
 		break;
+	      case 'r':
+		if (name[sizeof ("__builtin_stdc_rotate_") - 1] == 'l')
+		  stdc_rid = C_BUILTIN_STDC_ROTATE_LEFT;
+		else
+		  stdc_rid = C_BUILTIN_STDC_ROTATE_RIGHT;
+		num_args = 2;
+		break;
 	      case 't':
 		if (name[sizeof ("__builtin_stdc_trailing_") - 1] == 'o')
 		  stdc_rid = C_BUILTIN_STDC_TRAILING_ONES;
@@ -12334,7 +12346,7 @@ c_parser_postfix_expression (c_parser *parser)
 		break;
 	      }
 
-	    if (vec_safe_length (cexpr_list) != 1)
+	    if (vec_safe_length (cexpr_list) != num_args)
 	      {
 		error_at (loc, "wrong number of arguments to %qs", name);
 		expr.set_error ();
@@ -12406,6 +12418,77 @@ c_parser_postfix_expression (c_parser *parser)
 	       without evaluating arg multiple times, type being
 	       __typeof (arg) and prec __builtin_popcountg ((type) ~0)).  */
 	    int prec = TYPE_PRECISION (type);
+	    if (num_args == 2)
+	      {
+		/* Expand:
+		   __builtin_stdc_rotate_left (arg1, arg2) as
+		   arg1 r<< (arg2 % prec)
+		   __builtin_stdc_rotate_right (arg1, arg2) as
+		   arg1 r>> (arg2 % prec).  */
+		arg_p = &(*cexpr_list)[1];
+		*arg_p = convert_lvalue_to_rvalue (loc, *arg_p, true, true);
+		if (!INTEGRAL_TYPE_P (TREE_TYPE (arg_p->value)))
+		  {
+		    error_at (loc, "%qs operand not an integral type", name);
+		    expr.set_error ();
+		    break;
+		  }
+		if (TREE_CODE (TREE_TYPE (arg_p->value)) == ENUMERAL_TYPE)
+		  {
+		    error_at (loc, "argument %u in call to function "
+				   "%qs has enumerated type", 2, name);
+		    expr.set_error ();
+		    break;
+		  }
+		tree arg1 = save_expr (arg);
+		tree arg2 = save_expr (arg_p->value);
+		tree_code code;
+		if (stdc_rid == C_BUILTIN_STDC_ROTATE_LEFT)
+		  code = LROTATE_EXPR;
+		else
+		  code = RROTATE_EXPR;
+
+		if (TREE_CODE (arg2) == INTEGER_CST
+		    && tree_int_cst_sgn (arg2) < 0)
+		  warning_at (loc, OPT_Wshift_count_negative,
+			      "rotate count is negative");
+
+		tree instrument_expr = NULL_TREE;
+		if (sanitize_flags_p (SANITIZE_SHIFT))
+		  instrument_expr = ubsan_instrument_shift (loc, code,
+							    arg1, arg2);
+
+		/* Promote arg2 to unsigned just so that we don't
+		   need to deal with arg2 type not being able to represent
+		   prec.  In the end gimplification uses unsigned int
+		   for all shifts/rotates anyway.  */
+		if (TYPE_PRECISION (TREE_TYPE (arg2))
+		    < TYPE_PRECISION (integer_type_node))
+		  arg2 = fold_convert (unsigned_type_node, arg2);
+
+		if (TYPE_UNSIGNED (TREE_TYPE (arg2)))
+		  arg2 = build2_loc (loc, TRUNC_MOD_EXPR, TREE_TYPE (arg2),
+				     arg2, build_int_cst (TREE_TYPE (arg2),
+							  prec));
+		else
+		  {
+		    /* When second argument is signed, just do the modulo in
+		       unsigned type, that results in better generated code
+		       (for power of 2 precisions bitwise AND).  */
+		    tree utype = c_common_unsigned_type (TREE_TYPE (arg2));
+		    arg2 = build2_loc (loc, TRUNC_MOD_EXPR, utype,
+				       fold_convert (utype, arg2),
+				       build_int_cst (utype, prec));
+		  }
+
+		expr.value = build2_loc (loc, code, TREE_TYPE (arg1), arg1,
+					 arg2);
+		if (instrument_expr)
+		  expr.value = build2_loc (loc, COMPOUND_EXPR,
+					   TREE_TYPE (expr.value),
+					   instrument_expr, expr.value);
+		break;
+	      }
 	    tree barg1 = arg;
 	    switch (stdc_rid)
 	      {

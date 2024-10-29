@@ -328,6 +328,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case EXACT_DIV_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
     case BIT_AND_EXPR:
@@ -389,7 +391,10 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && tree_int_cst_sgn (op0) < 0)
 	warning_at (loc, OPT_Wshift_negative_value,
 		    "left shift of negative value");
-      if ((code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+      if ((code == LSHIFT_EXPR
+	   || code == RSHIFT_EXPR
+	   || code == LROTATE_EXPR
+	   || code == RROTATE_EXPR)
 	  && TREE_CODE (orig_op1) != INTEGER_CST
 	  && TREE_CODE (op1) == INTEGER_CST
 	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
