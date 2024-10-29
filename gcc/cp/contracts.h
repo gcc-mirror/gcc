@@ -36,13 +36,15 @@ enum contract_level
 
 enum contract_semantic
 {
-  CCS_INVALID,
-  CCS_IGNORE,
-  CCS_ASSUME,
-  CCS_NEVER,
-  CCS_MAYBE
+  CCS_INVALID = 0,
+  CCS_IGNORE = 1,
+  CCS_ASSUME = 2,
+  CCS_NEVER = 3,
+  CCS_ENFORCE = CCS_NEVER,
+  CCS_MAYBE = 4,
+  CCS_OBSERVE = CCS_MAYBE,
+  CCS_QUICK = 5
 };
-
 
 /* True if the contract is unchecked.  */
 
@@ -86,14 +88,15 @@ enum constract_assertion_kind {
   CAK_ASSERT = 3
 };
 
-enum constract_evaluation_semantic {
+enum contract_evaluation_semantic {
   CES_INVALID = 0,
-  CES_ENFORCE = 1 ,
-  CES_OBSERVE = 2
+  CES_ENFORCE = 1,
+  CES_OBSERVE = 2,
+  CES_QUICK = 3
 };
 
 enum constract_detection_mode {
-  CDM_PREDICATE_FALSE = 1 ,
+  CDM_PREDICATE_FALSE = 1,
   CDM_EVAL_EXCEPTION = 2
 };
 
