@@ -835,17 +835,6 @@ walk_stmt_load_store_addr_ops (gimple *stmt, void *data,
 	    ;
 	  else if (TREE_CODE (op) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), op, data);
-	  /* COND_EXPR and VCOND_EXPR rhs1 argument is a comparison
-	     tree with two operands.  */
-	  else if (i == 1 && COMPARISON_CLASS_P (op))
-	    {
-	      if (TREE_CODE (TREE_OPERAND (op, 0)) == ADDR_EXPR)
-		ret |= visit_addr (stmt, TREE_OPERAND (TREE_OPERAND (op, 0),
-						       0), op, data);
-	      if (TREE_CODE (TREE_OPERAND (op, 1)) == ADDR_EXPR)
-		ret |= visit_addr (stmt, TREE_OPERAND (TREE_OPERAND (op, 1),
-						       0), op, data);
-	    }
 	}
     }
   else if (gcall *call_stmt = dyn_cast <gcall *> (stmt))

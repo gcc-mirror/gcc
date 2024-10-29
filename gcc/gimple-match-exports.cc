@@ -489,12 +489,6 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[i]))
       return NULL_TREE;
 
-  if (num_ops > 0 && COMPARISON_CLASS_P (ops[0]))
-    for (unsigned int i = 0; i < 2; ++i)
-      if (TREE_CODE (TREE_OPERAND (ops[0], i)) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0], i)))
-	return NULL_TREE;
-
   if (res_op->code.is_tree_code ())
     {
       auto code = tree_code (res_op->code);
@@ -786,11 +780,7 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 	    }
 	  case GIMPLE_TERNARY_RHS:
 	    {
-	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      if (code == COND_EXPR && COMPARISON_CLASS_P (rhs1))
-		rhs1 = valueize_condition (rhs1);
-	      else
-		rhs1 = valueize_op (rhs1);
+	      tree rhs1 = valueize_op (gimple_assign_rhs1 (stmt));
 	      tree rhs2 = valueize_op (gimple_assign_rhs2 (stmt));
 	      tree rhs3 = valueize_op (gimple_assign_rhs3 (stmt));
 	      res_op->set_op (code, type, rhs1, rhs2, rhs3);

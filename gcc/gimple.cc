@@ -475,6 +475,9 @@ gimple_build_assign_1 (tree lhs, enum tree_code subcode, tree op1,
         gimple_build_with_ops_stat (GIMPLE_ASSIGN, (unsigned)subcode, num_ops
 				    PASS_MEM_STAT));
   gimple_assign_set_lhs (p, lhs);
+  /* For COND_EXPR, op1 should not be a comparison. */
+  if (op1 && subcode == COND_EXPR)
+    gcc_assert (!COMPARISON_CLASS_P  (op1));
   gimple_assign_set_rhs1 (p, op1);
   if (op2)
     {
