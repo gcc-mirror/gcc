@@ -10748,17 +10748,14 @@ proc check_effective_target_apxf { } {
 # Return 1 if avx10.2 instructions can be compiled.
 proc check_effective_target_avx10_2 { } {
     return [check_no_compiler_messages avx10.2 object {
-	typedef int __v8si __attribute__ ((__vector_size__ (32)));
-	typedef char __mmask8;
-
-	__v8si
-	_mm256_mask_vpdpbssd_epi32 (__v8si __A, __mmask8 __U,
-				    __v8si __B, __v8si __C)
+	void
+	foo ()
 	{
-	  return (__v8si) __builtin_ia32_vpdpbssd_v8si_mask ((__v8si)__A,
-							     (__v8si)__B,
-							     (__v8si)__C,
-							     (__mmask8)__U);
+	  __asm__ volatile ("vdpphps\t%ymm4, %ymm5, %ymm6");
+	  __asm__ volatile ("vcvthf82ph\t%xmm5, %ymm6");
+	  __asm__ volatile ("vaddnepbf16\t%ymm4, %ymm5, %ymm6");
+	  __asm__ volatile ("vcvtph2ibs\t%ymm5, %ymm6");
+	  __asm__ volatile ("vminmaxpd\t$123, %ymm4, %ymm5, %ymm6");
 	}
     } "-mavx10.2" ]
 }
@@ -10766,17 +10763,14 @@ proc check_effective_target_avx10_2 { } {
 # Return 1 if avx10.2-512 instructions can be compiled.
 proc check_effective_target_avx10_2_512 { } {
     return [check_no_compiler_messages avx10.2-512 object {
-	typedef int __v16si __attribute__ ((__vector_size__ (64)));
-	typedef short __mmask16;
-
-	__v16si
-	_mm512_vpdpbssd_epi32 (__v16si __A, __mmask16 __U,
-			       __v16si __B, __v16si __C)
+	void
+	foo ()
 	{
-	  return (__v16si) __builtin_ia32_vpdpbssd_v16si_mask ((__v16si)__A,
-							       (__v16si)__B,
-							       (__v16si)__C,
-							       (__mmask16)__U);
+	  __asm__ volatile ("vdpphps\t%zmm4, %zmm5, %zmm6");
+	  __asm__ volatile ("vcvthf82ph\t%ymm5, %zmm6");
+	  __asm__ volatile ("vaddnepbf16\t%zmm4, %zmm5, %zmm6");
+	  __asm__ volatile ("vcvtph2ibs\t%zmm5, %zmm6");
+	  __asm__ volatile ("vminmaxpd\t$123, %zmm4, %zmm5, %zmm6");
 	}
     } "-mavx10.2-512" ]
 }
