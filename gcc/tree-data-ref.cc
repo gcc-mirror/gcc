@@ -3004,6 +3004,8 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	  && DR_BASE_ADDRESS (b)
 	  && operand_equal_p (DR_BASE_ADDRESS (a), DR_BASE_ADDRESS (b))
 	  && operand_equal_p (DR_OFFSET (a), DR_OFFSET (b))
+	  && tree_size_a
+	  && tree_size_b
 	  && poly_int_tree_p (tree_size_a)
 	  && poly_int_tree_p (tree_size_b)
 	  && !ranges_maybe_overlap_p (wi::to_poly_widest (DR_INIT (a)),
