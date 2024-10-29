@@ -323,6 +323,8 @@ Some basic guidelines for editing this document:
 * @code{UCOBOUND}:      UCOBOUND,  Upper codimension bounds of an array
 * @code{UINT}:          UINT,      Convert to an unsigned integer type
 * @code{UMASK}:         UMASK,     Set the file creation mask
+* @code{UMASKL}:        UMASKL,    Unsigned left justified mask
+* @code{UMASKR}:        UMASKR,    Unsigned right justified mask
 * @code{UNLINK}:        UNLINK,    Remove a file from the file system
 * @code{UNPACK}:        UNPACK,    Unpack an array of rank one into an array
 * @code{VERIFY}:        VERIFY,    Scan a string for the absence of a set of characters
@@ -14964,6 +14966,79 @@ Subroutine, function
 
 @end table
 
+@node UMASKL
+@section @code{UMASKL} --- Unsigned left justified mask
+@fnindex UMASKL
+@cindex mask, left justified
+
+@table @asis
+@item @emph{Description}:
+@code{UMASKL(I[, KIND])} has its leftmost @var{I} bits set to 1, and the
+remaining bits set to 0.
+
+@item @emph{Standard}:
+Extension (@pxref{Unsigned integers})
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = UMASKL(I[, KIND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{UNSIGNED}.
+@item @var{KIND} @tab Shall be a scalar constant expression of type
+@code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{UNSIGNED}. If @var{KIND} is present, it
+specifies the kind value of the return type; otherwise, it is of the
+default unsigned kind.
+
+@item @emph{See also}:
+@ref{MASKL}, @*
+@ref{MASKR}, @*
+@ref{UMASKR}
+@end table
+
+@node UMASKR
+@section @code{UMASKR} --- Unsigned right justified mask
+@fnindex UMASKR
+@cindex mask, right justified
+
+@table @asis
+@item @emph{Description}:
+@code{UMASKL(I[, KIND])} has its rightmost @var{I} bits set to 1, and the
+remaining bits set to 0.
+
+@item @emph{Standard}:
+Extension (@pxref{Unsigned integers})
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = MASKR(I[, KIND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{UNSIGNED}.
+@item @var{KIND} @tab Shall be a scalar constant expression of type
+@code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{UNSIGNED}. If @var{KIND} is present, it
+specifies the kind value of the return type; otherwise, it is of the
+default integer kind.
+
+@item @emph{See also}:
+@ref{MASKL}, @*
+@ref{MASKR}, @*
+@ref{UMASKL}
+@end table
 
 
 @node UNLINK

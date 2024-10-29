@@ -2012,6 +2012,20 @@ gfc_resolve_mask (gfc_expr *f, gfc_expr *i ATTRIBUTE_UNUSED,
     f->value.function.name = gfc_get_string ("__maskr_i%d", f->ts.kind);
 }
 
+void
+gfc_resolve_umasklr (gfc_expr *f, gfc_expr *i ATTRIBUTE_UNUSED,
+		  gfc_expr *kind)
+{
+  f->ts.type = BT_UNSIGNED;
+  f->ts.kind = kind ? mpz_get_si (kind->value.integer)
+		    : gfc_default_unsigned_kind;
+
+  if (f->value.function.isym->id == GFC_ISYM_UMASKL)
+    f->value.function.name = gfc_get_string ("__maskl_m%d", f->ts.kind);
+  else
+    f->value.function.name = gfc_get_string ("__maskr_m%d", f->ts.kind);
+}
+
 
 void
 gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,

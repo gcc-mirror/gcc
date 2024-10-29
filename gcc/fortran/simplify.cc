@@ -5200,6 +5200,84 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
   return result;
 }
 
+/* Similar to gfc_simplify_maskr, but code paths are different enough to make
+   this into a separate function.  */
+
+gfc_expr *
+gfc_simplify_umaskr (gfc_expr *i, gfc_expr *kind_arg)
+{
+  gfc_expr *result;
+  int kind, arg, k;
+
+  if (i->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = get_kind (BT_UNSIGNED, kind_arg, "UMASKR", gfc_default_unsigned_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+
+  bool fail = gfc_extract_int (i, &arg);
+  gcc_assert (!fail);
+
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &i->where);
+
+  /* MASKR(n) = 2^n - 1 */
+  mpz_set_ui (result->value.integer, 1);
+  mpz_mul_2exp (result->value.integer, result->value.integer, arg);
+  mpz_sub_ui (result->value.integer, result->value.integer, 1);
+
+  gfc_convert_mpz_to_unsigned (result->value.integer,
+			       gfc_unsigned_kinds[k].bit_size,
+			       false);
+
+  return result;
+}
+
+/* Likewise, similar to gfc_simplify_maskl.  */
+
+gfc_expr *
+gfc_simplify_umaskl (gfc_expr *i, gfc_expr *kind_arg)
+{
+  gfc_expr *result;
+  int kind, arg, k;
+  mpz_t z;
+
+  if (i->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = get_kind (BT_UNSIGNED, kind_arg, "UMASKL", gfc_default_integer_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+
+  bool fail = gfc_extract_int (i, &arg);
+  gcc_assert (!fail);
+
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &i->where);
+
+  /* MASKL(n) = 2^bit_size - 2^(bit_size - n) */
+  mpz_init_set_ui (z, 1);
+  mpz_mul_2exp (z, z, gfc_unsigned_kinds[k].bit_size);
+  mpz_set_ui (result->value.integer, 1);
+  mpz_mul_2exp (result->value.integer, result->value.integer,
+		gfc_integer_kinds[k].bit_size - arg);
+  mpz_sub (result->value.integer, z, result->value.integer);
+  mpz_clear (z);
+
+  gfc_convert_mpz_to_unsigned (result->value.integer,
+			       gfc_unsigned_kinds[k].bit_size,
+			       false);
+
+  return result;
+}
+
 
 gfc_expr *
 gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)

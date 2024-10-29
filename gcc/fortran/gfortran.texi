@@ -2825,14 +2825,9 @@ The following intrinsics take unsigned arguments:
 The following intinsics are enabled with @option{-funsigned}:
 @itemize @bullet
 @item @code{UINT}, @pxref{UINT}
+@item @code{UMASKL}, @pxref{UMASKL}
+@item @code{UMASKR}, @pxref{UMASKR}
 @item @code{SELECTED_UNSIGNED_KIND}, @pxref{SELECTED_UNSIGNED_KIND}
-@end itemize
-
-The following intrinsics will take unsigned arguments
-in the future:
-@itemize @bullet
-@item @code{MASKL}, @pxref{MASKL}
-@item @code{MASKR}, @pxref{MASKR}
 @end itemize
 
 The following intrinsics are not yet implemented in GNU Fortran,

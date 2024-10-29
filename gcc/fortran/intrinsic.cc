@@ -2568,6 +2568,22 @@ add_functions (void)
 
   make_generic ("maskr", GFC_ISYM_MASKR, GFC_STD_F2008);
 
+  add_sym_2 ("umaskl", GFC_ISYM_UMASKL, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_mask, gfc_simplify_umaskl, gfc_resolve_umasklr,
+	     i, BT_INTEGER, di, REQUIRED,
+	     kind, BT_INTEGER, di, OPTIONAL);
+
+  make_generic ("umaskl", GFC_ISYM_UMASKL, GFC_STD_F2008);
+
+  add_sym_2 ("umaskr", GFC_ISYM_UMASKR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_mask, gfc_simplify_umaskr, gfc_resolve_umasklr,
+	     i, BT_INTEGER, di, REQUIRED,
+	     kind, BT_INTEGER, di, OPTIONAL);
+
+  make_generic ("umaskr", GFC_ISYM_UMASKR, GFC_STD_F2008);
+
   add_sym_2 ("matmul", GFC_ISYM_MATMUL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_matmul, gfc_simplify_matmul, gfc_resolve_matmul,
 	     ma, BT_REAL, dr, REQUIRED, mb, BT_REAL, dr, REQUIRED);
