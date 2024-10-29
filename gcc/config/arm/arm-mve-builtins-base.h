@@ -206,8 +206,12 @@ extern const function_base *const vsliq;
 extern const function_base *const vsriq;
 extern const function_base *const vst1q;
 extern const function_base *const vstrbq;
+extern const function_base *const vstrbq_scatter;
+extern const function_base *const vstrdq_scatter;
 extern const function_base *const vstrhq;
+extern const function_base *const vstrhq_scatter;
 extern const function_base *const vstrwq;
+extern const function_base *const vstrwq_scatter;
 extern const function_base *const vsubq;
 extern const function_base *const vuninitializedq;
 

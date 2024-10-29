@@ -239,6 +239,40 @@ public:
   }
 };
 
+  /* Builds the vstrq_scatter*offset intrinsics.  */
+class vstrq_scatter_impl : public store_truncating
+{
+public:
+  using store_truncating::store_truncating;
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code icode;
+    machine_mode memory_mode = e.memory_vector_mode ();
+
+    switch (e.pred)
+      {
+      case PRED_none:
+	icode = (e.vector_mode (0) == memory_mode
+		 /* Non-truncating store case.  */
+		 ? code_for_mve_vstrq_scatter_offset (memory_mode)
+		 /* Truncating store case.  */
+		 : code_for_mve_vstrq_truncate_scatter_offset (memory_mode));
+	break;
+
+      case PRED_p:
+	icode = (e.vector_mode (0) == memory_mode
+		 ? code_for_mve_vstrq_scatter_offset_p (memory_mode)
+		 : code_for_mve_vstrq_truncate_scatter_offset_p (memory_mode));
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+    return e.use_exact_insn (icode);
+  }
+};
+
 /* Builds the vldrq* intrinsics.  */
 class vldrq_impl : public load_extending
 {
@@ -1207,8 +1241,12 @@ FUNCTION_ONLY_N_NO_F (vsliq, VSLIQ)
 FUNCTION_ONLY_N_NO_F (vsriq, VSRIQ)
 FUNCTION (vst1q, vst1_impl,)
 FUNCTION (vstrbq, vstrq_impl, (QImode, opt_scalar_mode ()))
+FUNCTION (vstrbq_scatter, vstrq_scatter_impl, (QImode, opt_scalar_mode ()))
+FUNCTION (vstrdq_scatter, vstrq_scatter_impl, (DImode, opt_scalar_mode ()))
 FUNCTION (vstrhq, vstrq_impl, (HImode, HFmode))
+FUNCTION (vstrhq_scatter, vstrq_scatter_impl, (HImode, HFmode))
 FUNCTION (vstrwq, vstrq_impl, (SImode, SFmode))
+FUNCTION (vstrwq_scatter, vstrq_scatter_impl, (SImode, SFmode))
 FUNCTION_WITH_RTX_M_N (vsubq, MINUS, VSUBQ)
 FUNCTION (vuninitializedq, vuninitializedq_impl,)
 

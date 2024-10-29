@@ -207,6 +207,10 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 #define TYPES_signed_32(S, D) \
   S (s32)
 
+/* s64 _u64.  */
+#define TYPES_integer_64(S, D) \
+  S (s64), S (u64)
+
 /* All the type combinations allowed by vcvtq.  */
 #define TYPES_cvt(S, D) \
   D (f16, s16), \
@@ -314,6 +318,7 @@ DEF_MVE_TYPES_ARRAY (integer_8);
 DEF_MVE_TYPES_ARRAY (integer_8_16);
 DEF_MVE_TYPES_ARRAY (integer_16_32);
 DEF_MVE_TYPES_ARRAY (integer_32);
+DEF_MVE_TYPES_ARRAY (integer_64);
 DEF_MVE_TYPES_ARRAY (poly_8_16);
 DEF_MVE_TYPES_ARRAY (signed_16_32);
 DEF_MVE_TYPES_ARRAY (signed_32);
