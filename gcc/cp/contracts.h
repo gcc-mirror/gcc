@@ -88,11 +88,13 @@ enum constract_assertion_kind {
   CAK_ASSERT = 3
 };
 
+/* Per P2900R11.  */
 enum contract_evaluation_semantic {
   CES_INVALID = 0,
-  CES_ENFORCE = 1,
+  CES_IGNORE = 1,
   CES_OBSERVE = 2,
-  CES_QUICK = 3
+  CES_ENFORCE = 3,
+  CES_QUICK = 4
 };
 
 enum constract_detection_mode {
