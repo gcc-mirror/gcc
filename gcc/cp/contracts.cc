@@ -146,6 +146,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "intl.h"
 #include "cgraph.h"
+#include "opts.h"
 
 const int max_custom_roles = 32;
 static contract_role contract_build_roles[max_custom_roles] = {
@@ -761,8 +762,14 @@ grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
   else
     contract = build4_loc (loc, code, type, mode, NULL_TREE, NULL_TREE, result);
 
-  /* Determine the concrete semantic.  */
-  set_contract_semantic (contract, compute_concrete_semantic (contract));
+  /* Determine the evaluation semantic:
+     First, apply the c++2a rules
+     FIXME: this is a convenience to avoid updating many tests.  */
+  contract_semantic semantic = compute_concrete_semantic (contract);
+  if (flag_contracts_nonattr
+      && OPTION_SET_P (flag_contract_evaluation_semantic))
+    semantic = static_cast<contract_semantic>(flag_contract_evaluation_semantic);
+  set_contract_semantic (contract, semantic);
 
   /* If the contract is deferred, don't do anything with the condition.  */
   if (TREE_CODE (condition) == DEFERRED_PARSE)
@@ -1888,12 +1895,21 @@ get_contract_role_name (tree contract)
 /* Build C++20 contract_violation layout compatible object. */
 
 static tree
-build_contract_violation_cpp20 (tree contract, contract_continuation cmode)
+build_contract_violation_cpp20 (tree contract)
 {
   expanded_location loc = expand_location (EXPR_LOCATION (contract));
   const char *function = fndecl_name (DECL_ORIGIN (current_function_decl));
   const char *level = get_contract_level_name (contract);
   const char *role = get_contract_role_name (contract);
+
+  /* Get the continuation mode.  */
+  contract_continuation cmode;
+  switch (get_contract_semantic (contract))
+    {
+    case CCS_NEVER: cmode = NEVER_CONTINUE; break;
+    case CCS_MAYBE: cmode = MAYBE_CONTINUE; break;
+    default: gcc_unreachable ();
+    }
 
   /* Must match the type layout in get_pseudo_contract_violation_type.  */
   tree ctor = build_constructor_va
@@ -1930,8 +1946,7 @@ get_contract_assertion_kind(tree contract)
   gcc_unreachable ();
 }
 
-/* Get constract_evaluation_semantic of the specified contract. Used when building
- P2900R7 contract_violation object. */
+/* Get contract_evaluation_semantic of the specified contract.  */
 static int
 get_evaluation_semantic(tree contract)
 {
@@ -1944,16 +1959,17 @@ get_evaluation_semantic(tree contract)
       return CES_OBSERVE;
     }
 
+  /* Used when building P2900R10 contract_violation object. Note that we do not
+     build such objects unless we are going to use them - so that we should not
+     get asked for 'ignore' or 'quick'.  */
   switch (semantic)
     {
       default:
 	gcc_unreachable ();
-      case CCS_MAYBE:
+      case CCS_OBSERVE:
 	return CES_OBSERVE;
-	break;
-      case CCS_NEVER:
+      case CCS_ENFORCE:
 	return CES_ENFORCE;
-	break;
     }
 }
 
@@ -1986,12 +2002,12 @@ build_contract_violation_P2900 (tree contract)
 /* Return a VAR_DECL to pass to handle_contract_violation.  */
 
 static tree
-build_contract_violation (tree contract, contract_continuation cmode)
+build_contract_violation (tree contract)
 {
   if (flag_contracts_nonattr)
     return build_contract_violation_P2900(contract);
 
-  return build_contract_violation_cpp20(contract, cmode);
+  return build_contract_violation_cpp20(contract);
 }
 
 /* Return handle_contract_violation(), declaring it if needed.  */
@@ -2062,15 +2078,14 @@ declare_handle_contract_violation ()
 /* Build the call to handle_contract_violation for CONTRACT.  */
 
 static void
-build_contract_handler_call (tree contract,
-			     contract_continuation cmode)
+build_contract_handler_call (tree contract)
 {
   /* We may need to declare new types, ensure they are not considered
      attached to a named module.  */
   auto module_kind_override = make_temp_override
     (module_kind, module_kind & ~(MK_PURVIEW | MK_ATTACH | MK_EXPORTING));
 
-  tree violation = build_contract_violation (contract, cmode);
+  tree violation = build_contract_violation (contract);
   tree violation_fn = declare_handle_contract_violation ();
   tree call = build_call_n (violation_fn, 1, build_address (violation));
   finish_expr_stmt (call);
@@ -2107,17 +2122,17 @@ build_contract_check (tree contract)
 				tf_warning_or_error);
   finish_if_stmt_cond (cond, if_stmt);
 
-  /* Get the continuation mode.  */
-  contract_continuation cmode;
-  switch (semantic)
+  /* Using the P2900 names here c++24 ENFORCE=NEVER, OBSERVE=MAYBE.  */
+  if (semantic == CCS_ENFORCE || semantic == CCS_OBSERVE)
+    build_contract_handler_call (contract);
+  if (semantic == CCS_QUICK)
     {
-    case CCS_NEVER: cmode = NEVER_CONTINUE; break;
-    case CCS_MAYBE: cmode = MAYBE_CONTINUE; break;
-    default: gcc_unreachable ();
+      tree fn = builtin_decl_explicit (BUILT_IN_ABORT);
+      releasing_vec vec;
+      finish_expr_stmt (finish_call_expr (fn, &vec, false, false,
+					  tf_warning_or_error));
     }
-
-  build_contract_handler_call (contract, cmode);
-  if (cmode == NEVER_CONTINUE)
+  else if (semantic == CCS_ENFORCE)
     finish_expr_stmt (build_call_a (terminate_fn, 0, nullptr));
 
   finish_then_clause (if_stmt);
