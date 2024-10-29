@@ -104,6 +104,15 @@ public:
   {
     /* No-op.  */
   }
+  void update_printer () final override
+  {
+    m_printer = m_context.clone_printer ();
+    pp_show_color (m_printer.get ()) = false;
+  }
+  bool follows_reference_printer_p () const final override
+  {
+    return false;
+  }
 
 protected:
   json_output_format (diagnostic_context &context,
@@ -501,9 +510,6 @@ static void
 diagnostic_output_format_init_json (diagnostic_context &context,
 				    std::unique_ptr<json_output_format> fmt)
 {
-  /* Suppress normal textual path output.  */
-  context.set_path_format (DPF_NONE);
-
   /* Don't colorize the text.  */
   pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);

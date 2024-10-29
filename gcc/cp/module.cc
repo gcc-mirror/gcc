@@ -4698,7 +4698,7 @@ noisy_p ()
   if (quiet_flag)
     return false;
 
-  pp_needs_newline (global_dc->m_printer) = true;
+  pp_needs_newline (global_dc->get_reference_printer ()) = true;
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 
   return true;

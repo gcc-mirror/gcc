@@ -479,7 +479,7 @@ gfc_diagnostic_build_kind_prefix (diagnostic_context *context,
   gcc_assert (diagnostic->kind < DK_LAST_DIAGNOSTIC_KIND);
   const char *text = _(diagnostic_kind_text[diagnostic->kind]);
   const char *text_cs = "", *text_ce = "";
-  pretty_printer *const pp = context->m_printer;
+  pretty_printer *const pp = context->get_reference_printer ();
 
   if (diagnostic_kind_color[diagnostic->kind])
     {
@@ -951,7 +951,7 @@ gfc_diagnostics_init (void)
   diagnostic_text_starter (global_dc) = gfc_diagnostic_text_starter;
   diagnostic_start_span (global_dc) = gfc_diagnostic_start_span;
   diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
-  diagnostic_format_decoder (global_dc) = gfc_format_decoder;
+  global_dc->set_format_decoder (gfc_format_decoder);
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
   pp_warning_buffer = new diagnostic_buffer (*global_dc);

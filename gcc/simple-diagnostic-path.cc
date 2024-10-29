@@ -226,7 +226,7 @@ simple_diagnostic_path_cc_tests ()
 {
   /* In a few places we use the global dc's printer to determine
      colorization so ensure this off during the tests.  */
-  pretty_printer *global_pp = global_dc->m_printer;
+  pretty_printer *global_pp = global_dc->get_reference_printer ();
   const bool saved_show_color = pp_show_color (global_pp);
   pp_show_color (global_pp) = false;
 

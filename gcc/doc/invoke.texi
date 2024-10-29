@@ -307,6 +307,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}
 -fdiagnostics-urls=@r{[}auto@r{|}never@r{|}always@r{]}
 -fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}
+-fdiagnostics-add-output=@var{DIAGNOSTICS-OUTPUT-SPEC}
+-fdiagnostics-set-output=@var{DIAGNOSTICS-OUTPUT-SPEC}
 -fno-diagnostics-json-formatting
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret
 -fno-diagnostics-show-event-links
@@ -5902,6 +5904,10 @@ Select a different format for printing diagnostics.
 @var{FORMAT} is @samp{text}, @samp{sarif-stderr}, @samp{sarif-file},
 @samp{json}, @samp{json-stderr}, or @samp{json-file}.
 
+Using this option replaces any additional ``output sinks'' added by
+@option{-fdiagnostics-add-output=}, or that set by
+@option{-fdiagnostics-set-output=}.
+
 The default is @samp{text}.
 
 The @samp{sarif-stderr} and @samp{sarif-file} formats both emit
@@ -5915,6 +5921,97 @@ The @samp{json-stderr} and @samp{json-file} formats are identical, apart from
 where the JSON is emitted to.  With @samp{json-stderr}, the JSON is emitted
 to stderr, whereas with @samp{json-file} it is written to
 @file{@var{source}.gcc.json}.
+
+@opindex fdiagnostics-add-output
+@item -fdiagnostics-add-output=@var{DIAGNOSTICS-OUTPUT-SPEC}
+Add an additional ``output sink'' for emitting diagnostics.
+
+@var{DIAGNOSTICS-OUTPUT-SPEC} should specify a scheme, optionally followed
+by @code{:} and one or more @var{KEY}=@var{VALUE} pairs, in this form:
+
+@smallexample
+@var{SCHEME}
+@var{SCHEME}:@var{KEY}=@var{VALUE}
+@var{SCHEME}:@var{KEY}=@var{VALUE},@var{KEY2}=@var{VALUE2}
+@end smallexample
+
+etc.
+
+@var{SCHEME} can be
+
+@table @gcctabopt
+
+@item text
+Emit diagnostics to stderr using GCC's classic text output format.
+
+Supported keys are:
+
+@table @gcctabopt
+
+@item color=@r{[}yes@r{|}no@r{]}
+Override colorization settings from @option{-fdiagnostics-color} for this
+text output.
+
+@end table
+
+@item sarif
+Emit diagnostics to a file in SARIF format.
+
+Supported keys are:
+
+@table @gcctabopt
+
+@item file=@var{FILENAME}
+Specify the filename to write the SARIF output to, potentially with a
+leading absolute or relative path.  If not specified, it defaults to
+@file{@var{source}.sarif}.
+
+@item version=@r{[}2.1@r{|}2.2-prerelease@r{]}
+Specify the version of SARIF to use for the output.  If not specified,
+defaults to 2.1.  @code{2.2-prerelease} uses an unofficial draft of the
+future SARIF 2.2 specification and should only be used for experimentation
+in this release.
+
+@end table
+
+@end table
+
+For example,
+
+@smallexample
+-fdiagnostics-add-output=sarif:version=2.1,file=foo.2.1.sarif
+-fdiagnostics-add-output=sarif:version=2.2-prerelease,file=foo.2.2.sarif
+@end smallexample
+
+would add a pair of outputs, each writing to a different file, using
+versions 2.1 and 2.2 of the SARIF standard respectively.
+
+In EBNF:
+
+@smallexample
+
+@var{diagnostics-output-specifier} = @var{diagnostics-output-name}
+                                   | @var{diagnostics-output-name}, ":", @var{key-value-pairs};
+
+@var{diagnostics-output-name} = "text" | "sarif";
+
+@var{key-value-pairs} = @var{key-value-pair}
+                      | @var{key-value-pair} "," @var{key-value-pairs};
+
+@var{key-value-pair} = @var{key} "=" @var{value};
+
+@var{key} = ? string without a '=' ? ;
+@var{value} = ? string without a ',' ? ;
+
+@end smallexample
+
+@opindex fdiagnostics-set-output
+@item -fdiagnostics-set-output=@var{DIAGNOSTICS-OUTPUT-SPEC}
+This works in a similar way to @option{-fdiagnostics-add-output=} except
+that instead of adding an additional ``output sink'' for diagnostics, it
+replaces all existing output sinks, such as from @option{-fdiagnostics-format=},
+@option{-fdiagnostics-add-output=}, or a prior call to
+@option{-fdiagnostics-set-output=}.
 
 @opindex fno-diagnostics-json-formatting
 @opindex fdiagnostics-json-formatting

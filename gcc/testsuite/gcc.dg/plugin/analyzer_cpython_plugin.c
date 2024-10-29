@@ -529,7 +529,7 @@ dump_refcnt_info (const hash_map<const region *, int> &region_to_refcnt,
   region_model_manager *mgr = model->get_manager ();
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
+  pp_show_color (&pp) = pp_show_color (global_dc->get_reference_printer ());
   pp.set_output_stream (stderr);
 
   for (const auto &region_refcnt : region_to_refcnt)

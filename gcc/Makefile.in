@@ -1849,7 +1849,8 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o \
-	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
+	opts.o opts-common.o opts-diagnostic.o options.o \
+	vec.o hooks.o common/common-targhooks.o \
 	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o \
 	options-urls.o
 

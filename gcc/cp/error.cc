@@ -275,20 +275,15 @@ cp_seen_error ()
 void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->m_printer;
-  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
-  context->m_printer = new (pp) cxx_pretty_printer ();
-
-  /* It is safe to free this object because it was previously XNEW()'d.  */
-  base->~pretty_printer ();
-  XDELETE (base);
+  cxx_pretty_printer *pp = new cxx_pretty_printer ();
+  pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
+  context->set_pretty_printer (std::unique_ptr<pretty_printer> (pp));
 
   c_common_diagnostics_set_defaults (context);
   diagnostic_text_starter (context) = cp_diagnostic_text_starter;
   /* diagnostic_finalizer is already c_diagnostic_text_finalizer.  */
-  diagnostic_format_decoder (context) = cp_printer;
+  context->set_format_decoder (cp_printer);
   context->m_adjust_diagnostic_info = cp_adjust_diagnostic_info;
-  pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
 }
 
 /* Dump an '@module' name suffix for DECL, if any.  */

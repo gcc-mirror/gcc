@@ -564,6 +564,12 @@ UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-colu
 fdiagnostics-format=
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-format)
 
+fdiagnostics-add-output=
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-add-output)
+
+fdiagnostics-set-output=
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-set-output)
+
 fdiagnostics-escape-format=
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-escape-format)
 

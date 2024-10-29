@@ -1297,7 +1297,7 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
 
   {
     test_diagnostic_context dc;
-    diagnostic_text_output_format text_output (dc);
+    diagnostic_text_output_format text_output (dc, false);
     path_print_policy policy (text_output);
     path_summary summary (policy, path, false);
     ASSERT_EQ (summary.get_num_ranges (), 9);

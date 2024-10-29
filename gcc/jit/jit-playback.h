@@ -276,7 +276,7 @@ public:
   get_first_error () const;
 
   void
-  add_diagnostic (diagnostic_context *context,
+  add_diagnostic (const char *text,
 		  const diagnostic_info &diagnostic);
 
   void

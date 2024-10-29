@@ -316,13 +316,18 @@ public:
 
   const xml::document &get_document () const { return *m_document; }
 
+  void set_printer (pretty_printer &pp)
+  {
+    m_printer = &pp;
+  }
+
 private:
   std::unique_ptr<xml::element>
   make_element_for_diagnostic (const diagnostic_info &diagnostic,
 			       diagnostic_t orig_diag_kind);
 
   diagnostic_context &m_context;
-  pretty_printer &m_printer;
+  pretty_printer *m_printer;
   const line_maps *m_line_maps;
 
   std::unique_ptr<xml::document> m_document;
@@ -400,7 +405,7 @@ xhtml_builder::xhtml_builder (diagnostic_context &context,
 			      pretty_printer &pp,
 			      const line_maps *line_maps)
 : m_context (context),
-  m_printer (pp),
+  m_printer (&pp),
   m_line_maps (line_maps)
 {
   gcc_assert (m_line_maps);
@@ -565,10 +570,10 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 
   auto message_span = make_span (label_text::borrow ("gcc-message"));
   xhtml_token_printer tok_printer (*this, *message_span.get ());
-  m_printer.set_token_printer (&tok_printer);
-  pp_output_formatted_text (&m_printer, m_context.get_urlifier ());
-  m_printer.set_token_printer (nullptr);
-  pp_clear_output_area (&m_printer);
+  m_printer->set_token_printer (&tok_printer);
+  pp_output_formatted_text (m_printer, m_context.get_urlifier ());
+  m_printer->set_token_printer (nullptr);
+  pp_clear_output_area (m_printer);
   diag_element->add_child (std::move (message_span));
 
   if (diagnostic.metadata)
@@ -626,10 +631,10 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
     // TODO: ideally we'd like to capture elements within the following:
     diagnostic_show_locus (&m_context, diagnostic.richloc, diagnostic.kind,
-			   &m_printer);
+			   m_printer);
     pre->add_text
-      (label_text::take (xstrdup (pp_formatted_text (&m_printer))));
-    pp_clear_output_area (&m_printer);
+      (label_text::take (xstrdup (pp_formatted_text (m_printer))));
+    pp_clear_output_area (m_printer);
     diag_element->add_child (std::move (pre));
   }
 
@@ -722,6 +727,23 @@ public:
   void after_diagnostic (const diagnostic_info &)
   {
     /* No-op, but perhaps could show paths here.  */
+  }
+  bool follows_reference_printer_p () const final override
+  {
+    return false;
+  }
+  void update_printer () final override
+  {
+    m_printer = m_context.clone_printer ();
+
+    /* Don't colorize the text.  */
+    pp_show_color (m_printer.get ()) = false;
+
+    /* No textual URLs.  */
+    m_printer->set_url_format (URL_FORMAT_NONE);
+
+    /* Update the builder to use the new printer.  */
+    m_builder.set_printer (*get_printer ());
   }
 
   const xml::document &get_document () const

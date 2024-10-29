@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "dwarf2.h"
+#include "make-unique.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, pp_token_list &);
@@ -412,16 +413,9 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->m_printer;
-  c_pretty_printer *pp = XNEW (c_pretty_printer);
-  context->m_printer = new (pp) c_pretty_printer ();
-
-  /* It is safe to free this object because it was previously XNEW()'d.  */
-  base->~pretty_printer ();
-  XDELETE (base);
-
+  context->set_pretty_printer (::make_unique<c_pretty_printer> ());
   c_common_diagnostics_set_defaults (context);
-  diagnostic_format_decoder (context) = &c_tree_printer;
+  context->set_format_decoder (&c_tree_printer);
 }
 
 int

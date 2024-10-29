@@ -50,6 +50,7 @@ compilation is specified by a string called a "spec".  */
 #include "opts-jobserver.h"
 #include "common/common-target.h"
 #include "gcc-urlifier.h"
+#include "opts-diagnostic.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -4368,6 +4369,14 @@ driver_handle_option (struct gcc_options *opts,
 					 opts->x_flag_diagnostics_json_formatting);
 	  break;
 	}
+
+    case OPT_fdiagnostics_add_output_:
+      handle_OPT_fdiagnostics_add_output_ (*opts, *dc, arg, loc);
+      break;
+
+    case OPT_fdiagnostics_set_output_:
+      handle_OPT_fdiagnostics_set_output_ (*opts, *dc, arg, loc);
+      break;
 
     case OPT_fdiagnostics_text_art_charset_:
       dc->set_text_art_charset ((enum diagnostic_text_art_charset)value);

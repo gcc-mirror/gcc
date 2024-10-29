@@ -280,7 +280,7 @@ function_point::print_source_line (pretty_printer *pp) const
   diagnostic_source_print_policy source_policy (tmp_dc);
   gcc_assert (pp);
   source_policy.print (*pp, richloc, DK_ERROR, nullptr);
-  pp_string (pp, pp_formatted_text (tmp_dc.m_printer));
+  pp_string (pp, pp_formatted_text (tmp_dc.get_reference_printer ()));
 }
 
 /* class program_point.  */

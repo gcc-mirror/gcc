@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "target.h"
 #include "diagnostic-format-text.h"
+#include "make-unique.h"
 
 #include <mpfr.h>
 
@@ -981,6 +982,49 @@ struct ggc_root_tab jit_root_tab[] =
     LAST_GGC_ROOT_TAB
   };
 
+/* Subclass of diagnostic_output_format for libgccjit: like text
+   output, but capture the message and call add_diagnostic with it
+   on the active playback context.  */
+
+class jit_diagnostic_listener : public diagnostic_text_output_format
+{
+public:
+  jit_diagnostic_listener (diagnostic_context &dc,
+			   gcc::jit::playback::context &playback_ctxt)
+  : diagnostic_text_output_format (dc),
+    m_playback_ctxt (playback_ctxt)
+  {
+  }
+
+  void dump (FILE *out, int indent) const final override
+  {
+    fprintf (out, "%*sjit_diagnostic_listener\n", indent, "");
+    fprintf (out, "%*sm_playback_context: %p\n",
+	     indent + 2, "",
+	     (void *)&m_playback_ctxt);
+  }
+
+  void on_report_diagnostic (const diagnostic_info &info,
+			     diagnostic_t orig_diag_kind)
+  {
+    JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
+
+    /* Let the text output format do most of the work.  */
+    diagnostic_text_output_format::on_report_diagnostic (info, orig_diag_kind);
+
+    const char *text = pp_formatted_text (get_printer ());
+
+    /* Delegate to the playback context (and thence to the
+       recording context).  */
+    gcc::jit::active_playback_ctxt->add_diagnostic (text, info);
+
+    pp_clear_output_area (get_printer ());
+  }
+
+private:
+  gcc::jit::playback::context &m_playback_ctxt;
+};
+
 /* JIT-specific implementation of diagnostic callbacks.  */
 
 /* Implementation of "begin_diagnostic".  */
@@ -992,24 +1036,22 @@ jit_begin_diagnostic (diagnostic_text_output_format &,
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
 
-  /* No-op (apart from logging); the real error-handling is done in the
-     "end_diagnostic" hook.  */
+  /* No-op (apart from logging); the real error-handling is done by the
+     jit_diagnostic_listener.  */
 }
 
 /* Implementation of "end_diagnostic".  */
 
 static void
-jit_end_diagnostic (diagnostic_text_output_format &text_output,
-		    const diagnostic_info *diagnostic,
+jit_end_diagnostic (diagnostic_text_output_format &,
+		    const diagnostic_info *,
 		    diagnostic_t)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
 
-  /* Delegate to the playback context (and thence to the
-     recording context).  */
-  gcc_assert (diagnostic);
-  gcc::jit::active_playback_ctxt->add_diagnostic (&text_output.get_context (), *diagnostic); // FIXME
+  /* No-op (apart from logging); the real error-handling is done by the
+     jit_diagnostic_listener.  */
 }
 
 /* Language hooks.  */
@@ -1030,6 +1072,10 @@ jit_langhook_init (void)
   gcc_assert (global_dc);
   diagnostic_text_starter (global_dc) = jit_begin_diagnostic;
   diagnostic_text_finalizer (global_dc) = jit_end_diagnostic;
+  auto sink
+    = ::make_unique<jit_diagnostic_listener> (*global_dc,
+					      *gcc::jit::active_playback_ctxt);
+  global_dc->set_output_format (std::move (sink));
 
   build_common_tree_nodes (false);
 

@@ -32,12 +32,14 @@ along with GCC; see the file COPYING3.  If not see
 class diagnostic_text_output_format : public diagnostic_output_format
 {
 public:
-  diagnostic_text_output_format (diagnostic_context &context)
+  diagnostic_text_output_format (diagnostic_context &context,
+				 bool follows_reference_printer = false)
   : diagnostic_output_format (context),
     m_saved_output_buffer (nullptr),
     m_column_policy (context),
     m_last_module (nullptr),
-    m_includes_seen (nullptr)
+    m_includes_seen (nullptr),
+    m_follows_reference_printer (follows_reference_printer)
   {}
   ~diagnostic_text_output_format ();
 
@@ -51,12 +53,16 @@ public:
   void on_end_group () override {}
   void on_report_diagnostic (const diagnostic_info &,
 			     diagnostic_t orig_diag_kind) override;
+  void on_report_verbatim (text_info &) final override;
   void on_diagram (const diagnostic_diagram &diagram) override;
-  void after_diagnostic (const diagnostic_info &) final override;
+  void after_diagnostic (const diagnostic_info &) override;
   bool machine_readable_stderr_p () const final override
   {
     return false;
   }
+  bool follows_reference_printer_p () const final override;
+
+  void update_printer () override;
 
   /* Helpers for writing lang-specific starters/finalizers for text output.  */
   char *build_prefix (const diagnostic_info &) const;
@@ -77,7 +83,7 @@ public:
   }
   diagnostic_location_print_policy get_location_print_policy () const;
 
-private:
+protected:
   void print_any_cwe (const diagnostic_info &diagnostic);
   void print_any_rules (const diagnostic_info &diagnostic);
   void print_option_information (const diagnostic_info &diagnostic,
@@ -98,6 +104,14 @@ private:
   /* Include files that report_current_module has already listed the
      include path for.  */
   hash_set<location_t, false, location_hash> *m_includes_seen;
+
+  /* If true, this is the initial default text output format created
+     when the diagnostic_context was created, and, in particular, before
+     initializations of color and m_url_format.  Hence this should follow
+     the dc's reference printer for these.
+     If false, this text output was created after the dc was created, and
+     thus tracks its own values for color and m_url_format.  */
+  bool m_follows_reference_printer;
 };
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_TEXT_H */

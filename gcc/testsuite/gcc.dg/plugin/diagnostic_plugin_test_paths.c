@@ -147,7 +147,7 @@ example_1 ()
     {
       auto_diagnostic_group d;
       gcc_rich_location richloc (gimple_location (call_to_PyList_Append));
-      simple_diagnostic_path path (global_dc->m_printer);
+      simple_diagnostic_path path (global_dc->get_reference_printer ());
       diagnostic_event_id_t alloc_event_id
 	= path.add_event (gimple_location (call_to_PyList_New),
 			  example_a_fun->decl, 0,
@@ -335,7 +335,7 @@ example_2 ()
       auto_diagnostic_group d;
 
       gcc_rich_location richloc (call_to_free.m_loc);
-      test_diagnostic_path path (global_dc->m_printer);
+      test_diagnostic_path path (global_dc->get_reference_printer ());
       path.add_entry (entry_to_test, 0, "test");
       path.add_call (call_to_make_boxed_int, 0,
 		     entry_to_make_boxed_int, "make_boxed_int");
@@ -420,7 +420,7 @@ example_3 ()
       auto_diagnostic_group d;
 
       gcc_rich_location richloc (call_to_fprintf.m_loc);
-      test_diagnostic_path path (global_dc->m_printer);
+      test_diagnostic_path path (global_dc->get_reference_printer ());
       path.add_entry (entry_to_test, 1, "test");
       path.add_call (call_to_register_handler, 1,
 		     entry_to_register_handler, "register_handler");
@@ -495,7 +495,7 @@ example_4 ()
       auto_diagnostic_group d;
 
       gcc_rich_location richloc (call_to_acquire_lock_a_in_bar.m_loc);
-      test_diagnostic_path path (global_dc->m_printer);
+      test_diagnostic_path path (global_dc->get_reference_printer ());
       diagnostic_thread_id_t thread_1 = path.add_thread ("Thread 1");
       diagnostic_thread_id_t thread_2 = path.add_thread ("Thread 2");
       path.add_entry (entry_to_foo, 0, "foo", thread_1);

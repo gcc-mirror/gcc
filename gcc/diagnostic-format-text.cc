@@ -160,6 +160,9 @@ void
 diagnostic_text_output_format::dump (FILE *out, int indent) const
 {
   fprintf (out, "%*sdiagnostic_text_output_format\n", indent, "");
+  fprintf (out, "%*sm_follows_reference_printer: %s\n",
+	   indent, "",
+	   m_follows_reference_printer ? "true" : "false");
   diagnostic_output_format::dump (out, indent);
   fprintf (out, "%*ssaved_output_buffer:\n", indent + 2, "");
   if (m_saved_output_buffer)
@@ -220,6 +223,13 @@ on_report_diagnostic (const diagnostic_info &diagnostic,
   (*diagnostic_text_finalizer (&m_context)) (*this,
 					     &diagnostic,
 					     orig_diag_kind);
+}
+
+void
+diagnostic_text_output_format::on_report_verbatim (text_info &text)
+{
+  pp_format_verbatim (get_printer (), &text);
+  pp_newline_and_flush (get_printer ());
 }
 
 void
@@ -313,6 +323,30 @@ diagnostic_text_output_format::append_note (location_t location,
   pp_newline (pp);
   diagnostic_show_locus (context, &richloc, DK_NOTE, pp);
   va_end (ap);
+}
+
+bool
+diagnostic_text_output_format::follows_reference_printer_p () const
+{
+  return m_follows_reference_printer;
+}
+
+void
+diagnostic_text_output_format::
+update_printer ()
+{
+  pretty_printer *copy_from_pp
+    = (m_follows_reference_printer
+       ? get_context ().get_reference_printer ()
+       : m_printer.get ());
+  const bool show_color = pp_show_color (copy_from_pp);
+  const diagnostic_url_format url_format = copy_from_pp->get_url_format ();
+
+  m_printer = get_context ().clone_printer ();
+
+  pp_show_color (m_printer.get ()) = show_color;
+  m_printer->set_url_format (url_format);
+  // ...etc
 }
 
 /* If DIAGNOSTIC has a CWE identifier, print it.

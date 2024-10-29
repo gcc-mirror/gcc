@@ -1440,6 +1440,14 @@ fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|sarif-stderr|sarif-file|json|json-stderr|json-file]	Select output format.
 
+fdiagnostics-add-output=
+Common Joined RejectNegative
+Add output format.
+
+fdiagnostics-set-output=
+Common Joined RejectNegative
+Set output format.
+
 fdiagnostics-escape-format=
 Common Joined RejectNegative Enum(diagnostics_escape_format)
 -fdiagnostics-escape-format=[unicode|bytes]	Select how to escape non-printable-ASCII bytes in the source for diagnostics that suggest it.
@@ -1486,10 +1494,6 @@ Enum(diagnostics_output_format) String(sarif-stderr) Value(DIAGNOSTICS_OUTPUT_FO
 
 EnumValue
 Enum(diagnostics_output_format) String(sarif-file) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE)
-
-EnumValue
-Enum(diagnostics_output_format) String(sarif-file-2.2-prerelease) Value(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE)
-; undocumented
 
 fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)

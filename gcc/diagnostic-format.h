@@ -55,12 +55,21 @@ public:
   virtual void on_report_diagnostic (const diagnostic_info &,
 				     diagnostic_t orig_diag_kind) = 0;
 
+  virtual void on_report_verbatim (text_info &);
+
   virtual void on_diagram (const diagnostic_diagram &diagram) = 0;
   virtual void after_diagnostic (const diagnostic_info &) = 0;
   virtual bool machine_readable_stderr_p () const = 0;
+  virtual bool follows_reference_printer_p () const = 0;
+
+  /* Vfunc called when the diagnostic_context changes its
+     reference printer (either to a new subclass of pretty_printer
+     or when color/url options change).
+     Subclasses should update their m_printer accordingly.  */
+  virtual void update_printer () = 0;
 
   diagnostic_context &get_context () const { return m_context; }
-  pretty_printer *get_printer () const { return m_context.m_printer; }
+  pretty_printer *get_printer () const { return m_printer.get (); }
 
   text_art::theme *get_diagram_theme () const
   {
@@ -71,10 +80,13 @@ public:
 
 protected:
   diagnostic_output_format (diagnostic_context &context)
-  : m_context (context)
+  : m_context (context),
+    m_printer (context.clone_printer ())
   {}
 
+protected:
   diagnostic_context &m_context;
+  std::unique_ptr<pretty_printer> m_printer;
 };
 
 extern void

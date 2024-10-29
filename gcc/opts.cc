@@ -2936,7 +2936,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_show_location_:
-      diagnostic_prefixing_rule (dc) = (diagnostic_prefixing_rule_t) value;
+      dc->set_prefixing_rule ((diagnostic_prefixing_rule_t) value);
       break;
 
     case OPT_fdiagnostics_show_caret:
@@ -2974,6 +2974,14 @@ common_handle_option (struct gcc_options *opts,
 					 opts->x_flag_diagnostics_json_formatting);
 	  break;
 	}
+
+    case OPT_fdiagnostics_add_output_:
+      handle_OPT_fdiagnostics_add_output_ (*opts, *dc, arg, loc);
+      break;
+
+    case OPT_fdiagnostics_set_output_:
+      handle_OPT_fdiagnostics_set_output_ (*opts, *dc, arg, loc);
+      break;
 
     case OPT_fdiagnostics_text_art_charset_:
       dc->set_text_art_charset ((enum diagnostic_text_art_charset)value);
@@ -3059,7 +3067,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fmessage_length_:
-      pp_set_line_maximum_length (dc->m_printer, value);
+      pp_set_line_maximum_length (dc->get_reference_printer (), value);
       diagnostic_set_caret_max_width (dc, value);
       break;
 

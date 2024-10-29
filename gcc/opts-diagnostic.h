@@ -59,4 +59,15 @@ private:
   void *m_opts;
 };
 
+extern void
+handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
+				     diagnostic_context &dc,
+				     const char *arg,
+				     location_t loc);
+
+extern void
+handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
+				     diagnostic_context &dc,
+				     const char *arg,
+				     location_t loc);
 #endif

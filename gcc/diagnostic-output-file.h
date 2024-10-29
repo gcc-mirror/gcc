@@ -27,6 +27,12 @@ along with GCC; see the file COPYING3.  If not see
 class diagnostic_output_file
 {
 public:
+  diagnostic_output_file ()
+  : m_outf (nullptr),
+    m_owned (false),
+    m_filename ()
+  {
+  }
   diagnostic_output_file (FILE *outf, bool owned, label_text filename)
   : m_outf (outf),
     m_owned (owned),
@@ -60,7 +66,26 @@ public:
   diagnostic_output_file &
   operator= (const diagnostic_output_file &other) = delete;
   diagnostic_output_file &
-  operator= (diagnostic_output_file &&other) = delete;
+  operator= (diagnostic_output_file &&other)
+  {
+    if (m_owned)
+      {
+	gcc_assert (m_outf);
+	fclose (m_outf);
+      }
+
+    m_outf = other.m_outf;
+    other.m_outf = nullptr;
+
+    m_owned = other.m_owned;
+    other.m_owned = false;
+
+    m_filename = std::move (other.m_filename);
+
+    if (m_owned)
+      gcc_assert (m_outf);
+    return *this;
+  }
 
   operator bool () const { return m_outf != nullptr; }
   FILE *get_open_file () const { return m_outf; }

@@ -12429,7 +12429,7 @@ escaped_string::escape (const char *unescaped)
 	  continue;
 	}
 
-      if (c != '\n' || !pp_is_wrapping_line (global_dc->m_printer))
+      if (c != '\n' || !pp_is_wrapping_line (global_dc->get_reference_printer ()))
 	{
 	  if (escaped == NULL)
 	    {
@@ -15901,7 +15901,7 @@ test_escaped_strings (void)
   ASSERT_STREQ ("foobar", (const char *) msg);
 
   /* Ensure that we have -fmessage-length set to 0.  */
-  pretty_printer *pp = global_dc->m_printer;
+  pretty_printer *pp = global_dc->get_reference_printer ();
   saved_cutoff = pp_line_cutoff (pp);
   pp_line_cutoff (pp) = 0;
 

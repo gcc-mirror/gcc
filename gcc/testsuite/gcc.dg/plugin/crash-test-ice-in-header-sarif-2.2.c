@@ -1,7 +1,7 @@
 /* Test of an ICE triggered within a header file with SARIF 2.2  */
 
 /* { dg-do compile } */
-/* { dg-options "-fdiagnostics-format=sarif-file-2.2-prerelease" } */
+/* { dg-options "-fdiagnostics-set-output=sarif:version=2.2-prerelease" } */
 /* { dg-additional-options "-fno-report-bug" } */
 
 #include "crash-test-ice-in-header.h"  /* { dg-ice "" } */

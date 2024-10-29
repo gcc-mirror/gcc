@@ -63,16 +63,23 @@ proc scan-sarif-file-not { args } {
 # The first argument is the version of the SARIF schema to validate against
 # If present can be "2.1" or "2.2"
 # If absent, validate against 2.1
+#
+# If present, the second argument is the expected filename of the .sarif file
 
 proc verify-sarif-file { args } {
     global srcdir subdir
 
     set testcase [testname-for-summary]
     set filename [lindex $testcase 0]
-    set output_file "[file tail $filename].sarif"
 
     set version [lindex $args 0]
     verbose "sarif version: $version" 2
+
+    set output_file [lindex $args 1]
+    verbose "output_file: $output_file" 2
+    if { $output_file == "" } {
+	set output_file "[file tail $filename].sarif"
+    }
 
     if { ![check_effective_target_recent_python3] } {
 	unsupported "$testcase verify-sarif-file: python3 is missing"

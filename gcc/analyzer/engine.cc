@@ -6327,7 +6327,7 @@ run_checkers ()
     get_or_create_any_logfile ();
     if (dump_fout)
       the_logger.set_logger (new logger (dump_fout, 0, 0,
-					 *global_dc->m_printer));
+					 *global_dc->get_reference_printer ()));
     LOG_SCOPE (the_logger.get_logger ());
 
     impl_run_checkers (the_logger.get_logger ());
