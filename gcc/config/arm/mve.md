@@ -3416,29 +3416,91 @@
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_scatter_base_<mode>"))
   (set_attr "length" "4")])
 
+;; Vector gather loads with offset
 ;;
 ;; [vldrbq_gather_offset_s vldrbq_gather_offset_u]
+;; [vldrhq_gather_offset_s vldrhq_gather_offset_u]
+;; [vldrhq_gather_offset_f]
+;; [vldrwq_gather_offset_s vldrwq_gather_offset_u]
+;; [vldrwq_gather_offset_f]
+;; [vldrdq_gather_offset_s vldrdq_gather_offset_u]
 ;;
-(define_insn "mve_vldrbq_gather_offset_<supf><mode>"
-  [(set (match_operand:MVE_2 0 "s_register_operand" "=&w")
-	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VLDRBGOQ))
+(define_insn "@mve_vldrq_gather_offset_<mode>"
+  [(set (match_operand:MVE_VLD_ST_scatter 0 "s_register_operand" "=&w")
+	(unspec:MVE_VLD_ST_scatter
+	    [(match_operand:SI 1 "register_operand" "r")
+	     (match_operand:<MVE_scatter_offset> 2 "s_register_operand" "w")
+	     (mem:BLK (scratch))]
+	 VLDRGOQ))
   ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   if (!strcmp ("<supf>","s") && <V_sz_elem> == 8)
-     output_asm_insn ("vldrb.u8\t%q0, [%m1, %q2]",ops);
-   else
-     output_asm_insn ("vldrb.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrbq_gather_offset_<supf><mode>"))
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vldr<MVE_elem_ch>.<MVE_u_elem>\t%q0, [%1, %q2]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_offset_<mode>"))
   (set_attr "length" "4")])
+
+;; Extending vector gather loads with offset
+;;
+;; [vldrbq_gather_offset_s vldrbq_gather_offset_u]
+;; [vldrhq_gather_offset_s vldrhq_gather_offset_u]
+;;
+(define_insn "@mve_vldrq_gather_offset_extend_<mode><US>"
+  [(set (match_operand:<MVE_wide_n_TYPE> 0 "s_register_operand" "=&w")
+	(SE:<MVE_wide_n_TYPE>
+	  (unspec:MVE_w_narrow_TYPE
+	    [(match_operand:SI 1 "register_operand" "r")
+	     (match_operand:<MVE_wide_n_TYPE> 2 "s_register_operand" "w")
+	     (mem:BLK (scratch))]
+	   VLDRGOQ_EXT)))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MVE_wide_n_TYPE>mode))"
+  "vldr<MVE_elem_ch>.<US><MVE_wide_n_sz_elem>\t%q0, [%1, %q2]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_offset_extend_<mode><US>"))
+  (set_attr "length" "4")])
+
+;; Predicated gather loads with offset
+;;
+;; [vldrbq_gather_offset_z_s vldrbq_gather_offset_z_u]
+;; [vldrhq_gather_offset_z_s vldrhq_gather_offset_z_u]
+;; [vldrhq_gather_offset_z_f]
+;; [vldrwq_gather_offset_z_s vldrwq_gather_offset_z_u]
+;; [vldrwq_gather_offset_z_f]
+;; [vldrdq_gather_offset_z_s vldrdq_gather_offset_z_u]
+;;
+(define_insn "@mve_vldrq_gather_offset_z_<mode>"
+  [(set (match_operand:MVE_VLD_ST_scatter 0 "s_register_operand" "=&w")
+	(unspec:MVE_VLD_ST_scatter
+	    [(match_operand:SI 1 "register_operand" "r")
+	     (match_operand:<MVE_scatter_offset> 2 "s_register_operand" "w")
+	     (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")
+	     (mem:BLK (scratch))]
+	 VLDRGOQ_Z))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vpst\n\tvldr<MVE_elem_ch>t.<MVE_u_elem>\t%q0, [%1, %q2]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_offset_<mode>"))
+  (set_attr "length" "8")])
+
+;; Predicated extending gather loads with offset
+;;
+;; [vldrbq_gather_offset_z_s vldrbq_gather_offset_z_u]
+;; [vldrhq_gather_offset_z_s vldrhq_gather_offset_z_u]
+;;
+(define_insn "@mve_vldrq_gather_offset_z_extend_<mode><US>"
+  [(set (match_operand:<MVE_wide_n_TYPE> 0 "s_register_operand" "=&w")
+	(SE:<MVE_wide_n_TYPE>
+	   (unspec:MVE_w_narrow_TYPE
+	     [(match_operand:SI 1 "register_operand" "r")
+	      (match_operand:<MVE_wide_n_TYPE> 2 "s_register_operand" "w")
+	      (match_operand:<MVE_wide_n_VPRED> 3 "vpr_register_operand" "Up")
+	      (mem:BLK (scratch))]
+	VLDRGOQ_EXT_Z)))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MVE_wide_n_TYPE>mode))"
+  "vpst\n\tvldr<MVE_elem_ch>t.<US><MVE_wide_n_sz_elem>\t%q0, [%1, %q2]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_offset_extend_<mode><US>"))
+  (set_attr "length" "8")])
 
 ;;
 ;; [vldrwq_gather_base_s vldrwq_gather_base_u]
@@ -3483,32 +3545,6 @@
   (set_attr "length" "8")])
 
 ;;
-;; [vldrbq_gather_offset_z_s vldrbq_gather_offset_z_u]
-;;
-(define_insn "mve_vldrbq_gather_offset_z_<supf><mode>"
-  [(set (match_operand:MVE_2 0 "s_register_operand" "=&w")
-	(unspec:MVE_2 [(match_operand:<MVE_B_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_2 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")]
-	 VLDRBGOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   if (!strcmp ("<supf>","s") && <V_sz_elem> == 8)
-     output_asm_insn ("vpst\n\tvldrbt.u8\t%q0, [%m1, %q2]",ops);
-   else
-     output_asm_insn ("vpst\n\tvldrbt.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrbq_gather_offset_<supf><mode>"))
-  (set_attr "length" "8")])
-
-;;
 ;; [vldrwq_gather_base_z_s vldrwq_gather_base_z_u]
 ;;
 (define_insn "mve_vldrwq_gather_base_z_<supf>v4si"
@@ -3528,56 +3564,6 @@
    return "";
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_<supf>v4si"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrhq_gather_offset_s vldrhq_gather_offset_u]
-;;
-(define_insn "mve_vldrhq_gather_offset_<supf><mode>"
-  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
-	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")]
-	VLDRHGOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
-     output_asm_insn ("vldrh.u16\t%q0, [%m1, %q2]",ops);
-   else
-     output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_offset_<supf><mode>"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrhq_gather_offset_z_s vldrhq_gather_offset_z_u]
-;;
-(define_insn "mve_vldrhq_gather_offset_z_<supf><mode>"
-  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
-	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")
-	]VLDRHGOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
-     output_asm_insn ("vpst\n\tvldrht.u16\t%q0, [%m1, %q2]",ops);
-   else
-     output_asm_insn ("vpst\n\tvldrht.<supf><V_sz_elem>\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_offset_<supf><mode>"))
   (set_attr "length" "8")])
 
 ;;
@@ -3674,49 +3660,6 @@
   (set_attr "length" "8")])
 
 ;;
-;; [vldrdq_gather_offset_s vldrdq_gather_offset_u]
-;;
-(define_insn "mve_vldrdq_gather_offset_<supf>v2di"
- [(set (match_operand:V2DI 0 "s_register_operand" "=&w")
-       (unspec:V2DI [(match_operand:V2DI 1 "memory_operand" "Us")
-		     (match_operand:V2DI 2 "s_register_operand" "w")]
-	VLDRDGOQ))
- ]
- "TARGET_HAVE_MVE"
-{
-  rtx ops[3];
-  ops[0] = operands[0];
-  ops[1] = operands[1];
-  ops[2] = operands[2];
-  output_asm_insn ("vldrd.u64\t%q0, [%m1, %q2]",ops);
-  return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_offset_<supf>v2di"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrdq_gather_offset_z_s vldrdq_gather_offset_z_u]
-;;
-(define_insn "mve_vldrdq_gather_offset_z_<supf>v2di"
- [(set (match_operand:V2DI 0 "s_register_operand" "=&w")
-       (unspec:V2DI [(match_operand:V2DI 1 "memory_operand" "Us")
-		     (match_operand:V2DI 2 "s_register_operand" "w")
-		     (match_operand:V2QI 3 "vpr_register_operand" "Up")]
-	VLDRDGOQ))
- ]
- "TARGET_HAVE_MVE"
-{
-  rtx ops[3];
-  ops[0] = operands[0];
-  ops[1] = operands[1];
-  ops[2] = operands[2];
-  output_asm_insn ("vpst\n\tvldrdt.u64\t%q0, [%m1, %q2]",ops);
-  return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_offset_<supf>v2di"))
-  (set_attr "length" "8")])
-
-;;
 ;; [vldrdq_gather_shifted_offset_s vldrdq_gather_shifted_offset_u]
 ;;
 (define_insn "mve_vldrdq_gather_shifted_offset_<supf>v2di"
@@ -3757,50 +3700,6 @@
    return "";
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_shifted_offset_<supf>v2di"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrhq_gather_offset_f]
-;;
-(define_insn "mve_vldrhq_gather_offset_fv8hf"
-  [(set (match_operand:V8HF 0 "s_register_operand" "=&w")
-	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
-		      (match_operand:V8HI 2 "s_register_operand" "w")]
-	 VLDRHQGO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrh.f16\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_offset_fv8hf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrhq_gather_offset_z_f]
-;;
-(define_insn "mve_vldrhq_gather_offset_z_fv8hf"
-  [(set (match_operand:V8HF 0 "s_register_operand" "=&w")
-	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
-		      (match_operand:V8HI 2 "s_register_operand" "w")
-		      (match_operand:V8BI 3 "vpr_register_operand" "Up")]
-	 VLDRHQGO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   output_asm_insn ("vpst\n\tvldrht.f16\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_offset_fv8hf"))
   (set_attr "length" "8")])
 
 ;;
@@ -3888,94 +3787,6 @@
    return "";
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_fv4sf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrwq_gather_offset_f]
-;;
-(define_insn "mve_vldrwq_gather_offset_fv4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
-		       (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VLDRWQGO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrw.u32\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_offset_fv4sf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrwq_gather_offset_s vldrwq_gather_offset_u]
-;;
-(define_insn "mve_vldrwq_gather_offset_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
-		       (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VLDRWGOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrw.u32\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_offset_<supf>v4si"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrwq_gather_offset_z_f]
-;;
-(define_insn "mve_vldrwq_gather_offset_z_fv4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
-		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	 VLDRWQGO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   output_asm_insn ("vpst\n\tvldrwt.u32\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_offset_fv4sf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrwq_gather_offset_z_s vldrwq_gather_offset_z_u]
-;;
-(define_insn "mve_vldrwq_gather_offset_z_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
-		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	 VLDRWGOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   output_asm_insn ("vpst\n\tvldrwt.u32\t%q0, [%m1, %q2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_offset_<supf>v4si"))
   (set_attr "length" "8")])
 
 ;;
