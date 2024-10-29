@@ -5632,6 +5632,8 @@ vect_optimize_slp_pass::build_vertices ()
   hash_set<slp_tree> visited;
   unsigned i;
   slp_instance instance;
+  m_vertices.truncate (0);
+  m_leafs.truncate (0);
   FOR_EACH_VEC_ELT (m_vinfo->slp_instances, i, instance)
     build_vertices (visited, SLP_INSTANCE_TREE (instance));
 }
@@ -7244,6 +7246,8 @@ vect_optimize_slp_pass::run ()
     }
   else
     remove_redundant_permutations ();
+  free_graph (m_slpg);
+  build_graph ();
   decide_masked_load_lanes ();
   free_graph (m_slpg);
 }
