@@ -496,7 +496,7 @@ gnatmake-re: ../stamp-tools
 	$(GNATLINK) -v gnatmake -o ../../gnatmake$(exeext) \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
-# Note the use of the "mv" command in order to allow gnatlink to be linked with
+# Note the use of the "mv" command in order to allow gnatlink to be linked
 # with the former version of gnatlink itself which cannot override itself.
 # gnatlink-re cannot be run at the same time as gnatmake-re, hence the
 # dependency
