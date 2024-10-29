@@ -84,6 +84,17 @@ package Sem_Res is
    --
    --  The parameter T is the Typ for the corresponding resolve call.
 
+   function Is_Ambiguous_Operand
+     (Operand        : Node_Id;
+      In_Interp_Expr : Boolean := False;
+      Report_Errors  : Boolean := True) return Boolean;
+   --  Examine the interpretations of the given overloaded operand in a type
+   --  conversion or interpolated expression. Returns True if the call is
+   --  ambiguous; reports errors for ambiguous calls unless Report_Errors is
+   --  set to False. In_Interp_Expr is True when the operand is an
+   --  interpolated expression; used to improve the clarity of reported
+   --  error messages.
+
    procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id);
    --  Performs a preanalysis of expression node N. During preanalysis, N is
    --  analyzed and then resolved against type T, but no expansion is carried

@@ -39,7 +39,6 @@ with Sem;            use Sem;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Dim;        use Sem_Dim;
 with Sem_Res;        use Sem_Res;
-with Sem_Type;       use Sem_Type;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -147,102 +146,21 @@ package body Sem_Ch2 is
       --------------------------
 
       procedure Check_Ambiguous_Call (Func_Call : Node_Id) is
-
-         procedure Report_Interpretation (Nam : Entity_Id; Typ : Entity_Id);
-         --  Report an interpretation of the function call. When calling a
-         --  standard operator, use the location of the type, which may be
-         --  user-defined.
-
-         ---------------------------
-         -- Report_Interpretation --
-         ---------------------------
-
-         procedure Report_Interpretation (Nam : Entity_Id; Typ : Entity_Id) is
-         begin
-            if Sloc (Nam) = Standard_Location then
-               Error_Msg_Sloc := Sloc (Typ);
-            else
-               Error_Msg_Sloc := Sloc (Nam);
-            end if;
-
-            if Nkind (Parent (Nam)) = N_Full_Type_Declaration then
-               Error_Msg_N
-                 ("\\possible interpretation (inherited)#!", Func_Call);
-            else
-               Error_Msg_N ("\\possible interpretation#!", Func_Call);
-            end if;
-         end Report_Interpretation;
-
-      --  Start of processing for Check_Ambiguous_Call
+         Result : Boolean;
+         pragma Unreferenced (Result);
 
       begin
          Check_Parameterless_Call (Func_Call);
 
          if Is_Overloaded (Func_Call) then
-            declare
-               I   : Interp_Index;
-               I1  : Interp_Index;
-               It  : Interp;
-               It1 : Interp;
-               N1  : Entity_Id;
-               T1  : Entity_Id;
+            Result :=
+              Is_Ambiguous_Operand
+                (Operand        => Func_Call,
+                 In_Interp_Expr => True,
+                 Report_Errors  => True);
 
-            begin
-               --  Remove procedure calls, as they cannot syntactically appear
-               --  in interpolated expressions. These calls were not removed by
-               --  type checking because interpolated expressions do not impose
-               --  a context type.
-
-               Get_First_Interp (Func_Call, I, It);
-               while Present (It.Nam) loop
-                  if It.Typ = Standard_Void_Type then
-                     Remove_Interp (I);
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-
-               Get_First_Interp (Func_Call, I, It);
-
-               if No (It.Nam) then
-                  Error_Msg_N ("illegal expression", Func_Call);
-                  return;
-               end if;
-
-               I1  := I;
-               It1 := It;
-
-               --  The node may be labeled overloaded, but still contain only
-               --  one interpretation because others were discarded earlier. If
-               --  this is the case, retain the single interpretation.
-
-               Get_Next_Interp (I, It);
-
-               if Present (It.Typ) then
-                  N1  := It1.Nam;
-                  T1  := It1.Typ;
-
-                  It1 := Disambiguate
-                           (N   => Func_Call,
-                            I1  => I1,
-                            I2  => I,
-                            Typ => Any_Type);
-
-                  if It1 = No_Interp then
-                     Error_Msg_NE ("ambiguous call to&", Func_Call,
-                       Entity (Name (Func_Call)));
-
-                     --  Report the first two interpretations
-
-                     Report_Interpretation (It.Nam, It.Typ);
-                     Report_Interpretation (N1, T1);
-
-                     return;
-                  end if;
-               end if;
-
-               Set_Etype (Func_Call, It1.Typ);
-            end;
+            --  Discard Result because the function has been invoked to report
+            --  ambiguities (if any); no further action required.
          end if;
       end Check_Ambiguous_Call;
 
