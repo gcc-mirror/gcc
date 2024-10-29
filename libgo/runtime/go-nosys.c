@@ -504,7 +504,7 @@ strerror_r (int errnum, char *buf, size_t buflen)
 
 #endif /* ! HAVE_STRERROR_R */
 
-#ifndef HAVE_SYSCALL
+#if !defined(HAVE_SYSCALL) && !defined(__GNU__) /* GNU/Hurd already has a stub */
 int
 syscall(int number __attribute__ ((unused)), ...)
 {

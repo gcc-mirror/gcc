@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build aix || rtems
-// +build aix rtems
+//go:build aix || hurd || rtems
+// +build aix hurd rtems
 
 // These are stubs.
 
