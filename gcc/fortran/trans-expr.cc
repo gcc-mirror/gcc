@@ -1890,6 +1890,8 @@ gfc_trans_class_init_assign (gfc_code *code)
     }
 
   gfc_add_expr_to_block (&block, tmp);
+  gfc_free_expr (lhs);
+  gfc_free_expr (rhs);
 
   return gfc_finish_block (&block);
 }

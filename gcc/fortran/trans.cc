@@ -1128,6 +1128,9 @@ get_final_proc_ref (gfc_se *se, gfc_expr *expr, tree class_container)
 
   if (POINTER_TYPE_P (TREE_TYPE (se->expr)))
     se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+
+  if (expr->ts.type != BT_DERIVED && !using_class_container)
+    gfc_free_expr (final_wrapper);
 }
 
 
@@ -1155,6 +1158,7 @@ get_elem_size (gfc_se *se, gfc_expr *expr, tree class_container)
 
       gfc_conv_expr (se, class_size);
       gcc_assert (se->post.head == NULL_TREE);
+      gfc_free_expr (class_size);
     }
 }
 
@@ -1467,6 +1471,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2,
 
   gfc_add_expr_to_block (block, tmp);
   gfc_add_block_to_block (block, &final_se.post);
+  gfc_free_expr (expr);
 
   return true;
 }
