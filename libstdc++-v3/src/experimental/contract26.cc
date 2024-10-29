@@ -26,6 +26,7 @@
 #include <contracts>
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 # include <iostream>
+# include <cxxabi.h>
 #endif
 
 __attribute__ ((weak)) void
@@ -71,7 +72,7 @@ handle_contract_violation (const std::contracts::contract_violation &violation)
   delimiter = ", ";
 
   std::cerr << delimiter << "mode:";
-  switch ( violation.mode())
+  switch (violation.mode())
   {
     case std::contracts::detection_mode::predicate_false:
       std::cerr << " predicate_false";
@@ -83,6 +84,26 @@ handle_contract_violation (const std::contracts::contract_violation &violation)
       std::cerr << "unknown";
   }
   delimiter = ", ";
+
+  if (violation.evaluation_exception ())
+    {
+      /* Based on the impl. in vterminate.cc.  */
+      std::type_info *t = __cxxabiv1::__cxa_current_exception_type();
+      if (t)
+	{
+	  int status = -1;
+	  char *dem = 0;
+	  // Note that "name" is the mangled name.
+	  char const *name = t->name();
+	  dem = __cxxabiv1::__cxa_demangle(name, 0, 0, &status);
+	  std::cerr << ": threw an instance of '";
+	  std::cerr << ( status == 0 ? dem : name) << "'";
+	}
+      else
+	std::cerr << ": threw an unknown type";
+    }
+  std::cerr << delimiter << "terminating:"
+	    << (violation.is_terminating () ? " yes" : " no");
 
   if (delimiter[0] == ',')
     std::cerr << ']';
