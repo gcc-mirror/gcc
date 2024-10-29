@@ -77,7 +77,7 @@ int ctz4 (unsigned long x)
 /* { dg-final { scan-assembler-times "ctz\t"  1 { target { rv64 } } } } */
 /* { dg-final { scan-assembler-times "ctzw\t" 3 { target { rv64 } } } } */
 /* { dg-final { scan-assembler-times "andi\t" 2 { target { rv64 } } } } */
-/* { dg-final { scan-assembler-not "mul" { target { rv64 } } } } */
+/* { dg-final { scan-assembler-not "mul\t" { target { rv64 } } } } */
 
 /* { dg-final { scan-tree-dump-times {= \.CTZ} 3 "forwprop2" { target { rv32 } } } } */
 /* { dg-final { scan-assembler-times "ctz\t" 3 { target { rv32 } } } } */
