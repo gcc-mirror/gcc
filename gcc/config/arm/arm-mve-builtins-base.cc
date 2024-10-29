@@ -417,33 +417,56 @@ class vldrq_gather_impl : public load_extending
 public:
   using load_extending::load_extending;
 
+  CONSTEXPR vldrq_gather_impl (bool shifted,
+			       type_suffix_index signed_memory_type,
+			       type_suffix_index unsigned_memory_type,
+			       type_suffix_index float_memory_type)
+    : load_extending (signed_memory_type, unsigned_memory_type, float_memory_type),
+      m_shifted (shifted)
+  {}
+
+  CONSTEXPR vldrq_gather_impl (bool shifted,
+			       type_suffix_index signed_memory_type,
+			       type_suffix_index unsigned_memory_type)
+    : load_extending (signed_memory_type, unsigned_memory_type, NUM_TYPE_SUFFIXES),
+      m_shifted (shifted)
+  {}
+
+  /* Shifted offset (true) or plain offset (false).  */
+  bool m_shifted;
+
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
+    machine_mode memory_mode = e.memory_vector_mode ();
+    rtx_code extend = (e.type_suffix (0).unsigned_p
+		       ? ZERO_EXTEND
+		       : SIGN_EXTEND);
+
     switch (e.pred)
       {
       case PRED_none:
-	if (e.vector_mode (0) == e.memory_vector_mode ())
-	  /* Non-extending load case.  */
-	  icode = code_for_mve_vldrq_gather_offset (e.vector_mode (0));
-	else
-	  /* Extending load case.  */
-	  icode = code_for_mve_vldrq_gather_offset_extend
-	    (e.memory_vector_mode (),
-	     e.type_suffix (0).unsigned_p
-	     ? ZERO_EXTEND
-	     : SIGN_EXTEND);
+	icode = (e.vector_mode (0) == memory_mode
+		 /* Non-extending load case.  */
+		 ? (m_shifted
+		    ? code_for_mve_vldrq_gather_shifted_offset (memory_mode)
+		    : code_for_mve_vldrq_gather_offset (memory_mode))
+		 /* Extending load case.  */
+		 : (m_shifted
+		    ? code_for_mve_vldrq_gather_shifted_offset_extend_v4si (extend)
+		    : code_for_mve_vldrq_gather_offset_extend (memory_mode,
+							       extend)));
 	break;
 
       case PRED_z:
-	if (e.vector_mode (0) == e.memory_vector_mode ())
-	  icode = code_for_mve_vldrq_gather_offset_z (e.vector_mode (0));
-	else
-	  icode = code_for_mve_vldrq_gather_offset_z_extend
-	    (e.memory_vector_mode (),
-	     e.type_suffix (0).unsigned_p
-	     ? ZERO_EXTEND
-	     : SIGN_EXTEND);
+	icode = (e.vector_mode (0) == memory_mode
+		 ? (m_shifted
+		    ? code_for_mve_vldrq_gather_shifted_offset_z (memory_mode)
+		    : code_for_mve_vldrq_gather_offset_z (memory_mode))
+		 : (m_shifted
+		    ? code_for_mve_vldrq_gather_shifted_offset_z_extend_v4si (extend)
+		    : code_for_mve_vldrq_gather_offset_z_extend (memory_mode,
+								 extend)));
 	break;
 
       default:
@@ -1251,12 +1274,15 @@ FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
 FUNCTION (vld1q, vld1_impl,)
 FUNCTION (vldrbq, vldrq_impl, (TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
-FUNCTION (vldrbq_gather, vldrq_gather_impl, (TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
-FUNCTION (vldrdq_gather, vldrq_gather_impl, (TYPE_SUFFIX_s64, TYPE_SUFFIX_u64, NUM_TYPE_SUFFIXES))
+FUNCTION (vldrbq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
+FUNCTION (vldrdq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s64, TYPE_SUFFIX_u64, NUM_TYPE_SUFFIXES))
+FUNCTION (vldrdq_gather_shifted, vldrq_gather_impl, (true, TYPE_SUFFIX_s64, TYPE_SUFFIX_u64, NUM_TYPE_SUFFIXES))
 FUNCTION (vldrhq, vldrq_impl, (TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
-FUNCTION (vldrhq_gather, vldrq_gather_impl, (TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
+FUNCTION (vldrhq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
+FUNCTION (vldrhq_gather_shifted, vldrq_gather_impl, (true, TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
 FUNCTION (vldrwq, vldrq_impl, (TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
-FUNCTION (vldrwq_gather, vldrq_gather_impl, (TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
+FUNCTION (vldrwq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
+FUNCTION (vldrwq_gather_shifted, vldrq_gather_impl, (true, TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
 FUNCTION_PRED_P_S (vmaxavq, VMAXAVQ)
 FUNCTION_WITHOUT_N_NO_U_F (vmaxaq, VMAXAQ)
 FUNCTION_ONLY_F (vmaxnmaq, VMAXNMAQ)

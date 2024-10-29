@@ -3566,55 +3566,87 @@
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_<supf>v4si"))
   (set_attr "length" "8")])
 
+;; Gather loads with shifted offset
+;;
+;; [vldrhq_gather_shifted_offset_s vldrhq_gather_shifted_offset_u]
+;; [vldrhq_gather_shifted_offset_f]
+;; [vldrwq_gather_shifted_offset_s vldrwq_gather_shifted_offset_u]
+;; [vldrwq_gather_shifted_offset_f]
+;; [vldrdq_gather_shifted_offset_s vldrdq_gather_shifted_offset_u]
+;;
+(define_insn "@mve_vldrq_gather_shifted_offset_<mode>"
+  [(set (match_operand:MVE_VLD_ST_scatter_shifted 0 "s_register_operand" "=&w")
+	(unspec:MVE_VLD_ST_scatter_shifted
+		[(match_operand:SI 1 "register_operand" "r")
+		 (match_operand:<MVE_scatter_offset> 2 "s_register_operand" "w")
+		 (mem:BLK (scratch))]
+	VLDRGSOQ))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vldr<MVE_elem_ch>.<MVE_u_elem>\t%q0, [%1, %q2, uxtw #<MVE_scatter_shift>]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_shifted_offset_<mode>"))
+  (set_attr "length" "4")])
+
+;; Extending gather loads with shifted offset
 ;;
 ;; [vldrhq_gather_shifted_offset_s vldrhq_gather_shifted_offset_u]
 ;;
-(define_insn "mve_vldrhq_gather_shifted_offset_<supf><mode>"
-  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
-	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")]
-	VLDRHGSOQ))
+(define_insn "@mve_vldrq_gather_shifted_offset_extend_v4si<US>"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
+	(SE:V4SI
+	  (unspec:V4HI
+	    [(match_operand:SI 1 "register_operand" "r")
+	     (match_operand:V4SI 2 "s_register_operand" "w")
+	     (mem:BLK (scratch))]
+	   VLDRGSOQ_EXT)))
   ]
   "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-      if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
-     output_asm_insn ("vldrh.u16\t%q0, [%m1, %q2, uxtw #1]",ops);
-   else
-     output_asm_insn ("vldrh.<supf><V_sz_elem>\t%q0, [%m1, %q2, uxtw #1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_shifted_offset_<supf><mode>"))
+  "vldrh.<US>32\t%q0, [%1, %q2, uxtw #1]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_shifted_offset_extend_v4si<US>"))
   (set_attr "length" "4")])
 
+;; Predicated gather loads with shifted offset
 ;;
 ;; [vldrhq_gather_shifted_offset_z_s vldrhq_gather_shited_offset_z_u]
+;; [vldrhq_gather_shifted_offset_z_f]
+;; [vldrwq_gather_shifted_offset_z_s vldrwq_gather_shifted_offset_z_u]
+;; [vldrwq_gather_shifted_offset_z_f]
+;; [vldrdq_gather_shifted_offset_z_s vldrdq_gather_shifted_offset_z_u]
 ;;
-(define_insn "mve_vldrhq_gather_shifted_offset_z_<supf><mode>"
-  [(set (match_operand:MVE_5 0 "s_register_operand" "=&w")
-	(unspec:MVE_5 [(match_operand:<MVE_H_ELEM> 1 "memory_operand" "Us")
-		       (match_operand:MVE_5 2 "s_register_operand" "w")
-		       (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")
-	]VLDRHGSOQ))
+(define_insn "@mve_vldrq_gather_shifted_offset_z_<mode>"
+  [(set (match_operand:MVE_VLD_ST_scatter_shifted 0 "s_register_operand" "=&w")
+	(unspec:MVE_VLD_ST_scatter_shifted
+		[(match_operand:SI 1 "register_operand" "r")
+		 (match_operand:<MVE_scatter_offset> 2 "s_register_operand" "w")
+		 (match_operand:<MVE_VPRED> 3 "vpr_register_operand" "Up")
+		 (mem:BLK (scratch))]
+	VLDRGSOQ_Z))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vpst\n\tvldr<MVE_elem_ch>t.<MVE_u_elem>\t%q0, [%1, %q2, uxtw #<MVE_scatter_shift>]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_shifted_offset_<mode>"))
+  (set_attr "length" "8")])
+
+;; Predicated extending gather loads with shifted offset
+;;
+;; [vldrhq_gather_shifted_offset_z_s vldrhq_gather_shifted_offset_z_u]
+;;
+(define_insn "@mve_vldrq_gather_shifted_offset_z_extend_v4si<US>"
+  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
+	(SE:V4SI
+	  (unspec:V4HI
+	    [(match_operand:SI 1 "register_operand" "r")
+	     (match_operand:V4SI 2 "s_register_operand" "w")
+	     (match_operand:V4BI 3 "vpr_register_operand" "Up")
+	     (mem:BLK (scratch))]
+	   VLDRGSOQ_EXT_Z)))
   ]
   "TARGET_HAVE_MVE"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   if (!strcmp ("<supf>","s") && <V_sz_elem> == 16)
-     output_asm_insn ("vpst\n\tvldrht.u16\t%q0, [%m1, %q2, uxtw #1]",ops);
-   else
-     output_asm_insn ("vpst\n\tvldrht.<supf><V_sz_elem>\t%q0, [%m1, %q2, uxtw #1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_shifted_offset_<supf><mode>"))
-  (set_attr "length" "8")])
+  "vpst\n\tvldrht.<US>32\t%q0, [%1, %q2, uxtw #1]"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_shifted_offset_extend_v4si<US>"))
+  (set_attr "length" "4")])
 
 ;;
 ;; [vldrdq_gather_base_s vldrdq_gather_base_u]
@@ -3660,93 +3692,6 @@
   (set_attr "length" "8")])
 
 ;;
-;; [vldrdq_gather_shifted_offset_s vldrdq_gather_shifted_offset_u]
-;;
-(define_insn "mve_vldrdq_gather_shifted_offset_<supf>v2di"
-  [(set (match_operand:V2DI 0 "s_register_operand" "=&w")
-	(unspec:V2DI [(match_operand:V2DI 1 "memory_operand" "Us")
-		      (match_operand:V2DI 2 "s_register_operand" "w")]
-	 VLDRDGSOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrd.u64\t%q0, [%m1, %q2, uxtw #3]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_shifted_offset_<supf>v2di"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrdq_gather_shifted_offset_z_s vldrdq_gather_shifted_offset_z_u]
-;;
-(define_insn "mve_vldrdq_gather_shifted_offset_z_<supf>v2di"
-  [(set (match_operand:V2DI 0 "s_register_operand" "=&w")
-	(unspec:V2DI [(match_operand:V2DI 1 "memory_operand" "Us")
-		      (match_operand:V2DI 2 "s_register_operand" "w")
-		      (match_operand:V2QI 3 "vpr_register_operand" "Up")]
-	 VLDRDGSOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vpst\n\tvldrdt.u64\t%q0, [%m1, %q2, uxtw #3]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_shifted_offset_<supf>v2di"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrhq_gather_shifted_offset_f]
-;;
-(define_insn "mve_vldrhq_gather_shifted_offset_fv8hf"
-  [(set (match_operand:V8HF 0 "s_register_operand" "=&w")
-	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
-		      (match_operand:V8HI 2 "s_register_operand" "w")]
-	 VLDRHQGSO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrh.f16\t%q0, [%m1, %q2, uxtw #1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_shifted_offset_fv8hf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrhq_gather_shifted_offset_z_f]
-;;
-(define_insn "mve_vldrhq_gather_shifted_offset_z_fv8hf"
-  [(set (match_operand:V8HF 0 "s_register_operand" "=&w")
-	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
-		      (match_operand:V8HI 2 "s_register_operand" "w")
-		      (match_operand:V8BI 3 "vpr_register_operand" "Up")]
-	 VLDRHQGSO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   output_asm_insn ("vpst\n\tvldrht.f16\t%q0, [%m1, %q2, uxtw #1]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrhq_gather_shifted_offset_fv8hf"))
-  (set_attr "length" "8")])
-
-;;
 ;; [vldrwq_gather_base_f]
 ;;
 (define_insn "mve_vldrwq_gather_base_fv4sf"
@@ -3787,94 +3732,6 @@
    return "";
 }
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_fv4sf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrwq_gather_shifted_offset_f]
-;;
-(define_insn "mve_vldrwq_gather_shifted_offset_fv4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
-		      (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VLDRWQGSO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrw.u32\t%q0, [%m1, %q2, uxtw #2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_shifted_offset_fv4sf"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrwq_gather_shifted_offset_s vldrwq_gather_shifted_offset_u]
-;;
-(define_insn "mve_vldrwq_gather_shifted_offset_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
-		      (match_operand:V4SI 2 "s_register_operand" "w")]
-	 VLDRWGSOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   output_asm_insn ("vldrw.u32\t%q0, [%m1, %q2, uxtw #2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_shifted_offset_<supf>v4si"))
-  (set_attr "length" "4")])
-
-;;
-;; [vldrwq_gather_shifted_offset_z_f]
-;;
-(define_insn "mve_vldrwq_gather_shifted_offset_z_fv4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
-	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
-		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	 VLDRWQGSO_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   output_asm_insn ("vpst\n\tvldrwt.u32\t%q0, [%m1, %q2, uxtw #2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_shifted_offset_fv4sf"))
-  (set_attr "length" "8")])
-
-;;
-;; [vldrwq_gather_shifted_offset_z_s vldrwq_gather_shifted_offset_z_u]
-;;
-(define_insn "mve_vldrwq_gather_shifted_offset_z_<supf>v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
-		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
-	 VLDRWGSOQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[4];
-   ops[0] = operands[0];
-   ops[1] = operands[1];
-   ops[2] = operands[2];
-   ops[3] = operands[3];
-   output_asm_insn ("vpst\n\tvldrwt.u32\t%q0, [%m1, %q2, uxtw #2]",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_shifted_offset_<supf>v4si"))
   (set_attr "length" "8")])
 
 ;; Vector scatter stores with shifted offset
