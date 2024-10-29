@@ -27344,6 +27344,9 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
   if (op_mode == VOIDmode)
     op_mode = GET_MODE (op1);
 
+  if (CONST_SCALAR_INT_P (op1))
+    canonicalize_comparison (op_mode, &code, &op1);
+
   switch (op_mode)
     {
     case E_QImode:
@@ -27419,6 +27422,9 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   op_mode = GET_MODE (op0);
   if (op_mode == VOIDmode)
     op_mode = GET_MODE (op1);
+
+  if (CONST_SCALAR_INT_P (op1))
+    canonicalize_comparison (op_mode, &cmp_code, &op1);
 
   switch (op_mode)
     {
