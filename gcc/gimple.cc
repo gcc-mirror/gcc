@@ -51,12 +51,36 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref.h"
 #include "dbgcnt.h"
 
-/* All the tuples have their operand vector (if present) at the very bottom
-   of the structure.  Therefore, the offset required to find the
-   operands vector the size of the structure minus the size of the 1
-   element tree array at the end (see gimple_ops).  */
+/* All the tuples have their operand vector (if present) at the very bottom of
+   the structure.  Therefore, the offset required to find the operands vector is
+   the size of the structure minus the size of the 1-element tree array at the
+   end (see gimple_ops).  An adjustment may be required if there is tail
+   padding, as may happen on a host (e.g. sparc) where a pointer has 4-byte
+   alignment while a uint64_t has 8-byte alignment.
+
+   Unfortunately, we can't use offsetof to do this computation 100%
+   straightforwardly, because these structs use inheritance and so are not
+   standard layout types.  However, the fact that they are not standard layout
+   types also means that tail padding will be reused in inheritance, which makes
+   it possible to check for the problematic case with the following logic
+   instead.  If tail padding is detected, the offset should be decreased
+   accordingly.  */
+
+template<typename G>
+static constexpr size_t
+get_tail_padding_adjustment ()
+{
+  struct padding_check : G
+  {
+    tree t;
+  };
+  return sizeof (padding_check) == sizeof (G) ? sizeof (tree) : 0;
+}
+
 #define DEFGSSTRUCT(SYM, STRUCT, HAS_TREE_OP) \
-	(HAS_TREE_OP ? sizeof (struct STRUCT) - sizeof (tree) : 0),
+  (HAS_TREE_OP \
+   ? sizeof (STRUCT) - sizeof (tree) - get_tail_padding_adjustment<STRUCT> () \
+   : 0),
 EXPORTED_CONST size_t gimple_ops_offset_[] = {
 #include "gsstruct.def"
 };
