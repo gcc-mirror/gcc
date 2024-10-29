@@ -5135,6 +5135,20 @@ Bit @var{i} of the mask is set if element @var{i} of the result should
 be loaded from memory and clear if element @var{i} of the result should be undefined.
 Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
 
+@cindex @code{mask_len_strided_load@var{m}} instruction pattern
+@item @samp{mask_len_strided_load@var{m}}
+Load several separate memory locations into a destination vector of mode @var{m}.
+Operand 0 is a destination vector of mode @var{m}.
+Operand 1 is a scalar base address and operand 2 is a scalar stride of Pmode.
+operand 3 is mask operand, operand 4 is length operand and operand 5 is bias operand.
+The instruction can be seen as a special case of @code{mask_len_gather_load@var{m}@var{n}}
+with an offset vector that is a @code{vec_series} with zero as base and operand 2 as step.
+For each element the load address is operand 1 + @var{i} * operand 2.
+Similar to mask_len_load, the instruction loads at most (operand 4 + operand 5) elements from memory.
+Element @var{i} of the mask (operand 3) is set if element @var{i} of the result should
+be loaded from memory and clear if element @var{i} of the result should be zero.
+Mask elements @var{i} with @var{i} > (operand 4 + operand 5) are ignored.
+
 @cindex @code{scatter_store@var{m}@var{n}} instruction pattern
 @item @samp{scatter_store@var{m}@var{n}}
 Store a vector of mode @var{m} into several distinct memory locations.
@@ -5171,6 +5185,19 @@ a len operand (operand 6) as well as a bias operand (operand 7).  The instructio
 at most (operand 6 + operand 7) elements of (operand 4) to memory.
 Bit @var{i} of the mask is set if element @var{i} of (operand 4) should be stored.
 Mask elements @var{i} with @var{i} > (operand 6 + operand 7) are ignored.
+
+@cindex @code{mask_len_strided_store@var{m}} instruction pattern
+@item @samp{mask_len_strided_store@var{m}}
+Store a vector of mode m into several distinct memory locations.
+Operand 0 is a scalar base address and operand 1 is scalar stride of Pmode.
+Operand 2 is the vector of values that should be stored, which is of mode @var{m}.
+operand 3 is mask operand, operand 4 is length operand and operand 5 is bias operand.
+The instruction can be seen as a special case of @code{mask_len_scatter_store@var{m}@var{n}}
+with an offset vector that is a @code{vec_series} with zero as base and operand 1 as step.
+For each element the store address is operand 0 + @var{i} * operand 1.
+Similar to mask_len_store, the instruction stores at most (operand 4 + operand 5) elements of
+mask (operand 3) to memory.  Element @var{i} of the mask is set if element @var{i} of (operand 3)
+should be stored.  Mask elements @var{i} with @var{i} > (operand 4 + operand 5) are ignored.
 
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
