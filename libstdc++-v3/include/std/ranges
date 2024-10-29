@@ -2664,8 +2664,8 @@ namespace views::__adaptor
       begin() const
 	requires random_access_range<const _Vp> && sized_range<const _Vp>
       {
-	return ranges::next(ranges::begin(_M_base), _M_count,
-			    ranges::end(_M_base));
+	return ranges::begin(_M_base) + ranges::min(ranges::distance(_M_base),
+						    _M_count);
       }
 
       constexpr auto
