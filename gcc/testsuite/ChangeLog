@@ -1,3 +1,27 @@
+2024-10-28  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2024-10-28  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/107467
+	PR middle-end/115110
+	* g++.dg/lto/pr107467_0.C: New test.
+
+2024-10-28  Sam James  <sam@gentoo.org>
+
+	Revert:
+	2024-10-28  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/107467
+	PR middle-end/115110
+	* g++.dg/lto/pr107467_0.C: New test.
+
+2024-10-28  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/107467
+	PR middle-end/115110
+	* g++.dg/lto/pr107467_0.C: New test.
+
 2024-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
