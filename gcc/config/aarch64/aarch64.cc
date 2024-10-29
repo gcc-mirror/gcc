@@ -14286,7 +14286,7 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
               /* BFM.  */
 	      if (speed)
 		*cost += extra_cost->alu.bfi;
-	      *cost += rtx_cost (op1, VOIDmode, (enum rtx_code) code, 1, speed);
+	      *cost += rtx_cost (op1, VOIDmode, code, 1, speed);
             }
 
 	  return true;
@@ -14666,8 +14666,7 @@ cost_minus:
 	      *cost += extra_cost->alu.extend_arith;
 
 	    op1 = aarch64_strip_extend (op1, true);
-	    *cost += rtx_cost (op1, VOIDmode,
-			       (enum rtx_code) GET_CODE (op1), 0, speed);
+	    *cost += rtx_cost (op1, VOIDmode, GET_CODE (op1), 0, speed);
 	    return true;
 	  }
 
@@ -14678,9 +14677,7 @@ cost_minus:
 	     || aarch64_shift_p (GET_CODE (new_op1)))
 	    && code != COMPARE)
 	  {
-	    *cost += aarch64_rtx_mult_cost (new_op1, MULT,
-					    (enum rtx_code) code,
-					    speed);
+	    *cost += aarch64_rtx_mult_cost (new_op1, MULT, code, speed);
 	    return true;
 	  }
 
@@ -14781,8 +14778,7 @@ cost_plus:
 	      *cost += extra_cost->alu.extend_arith;
 
 	    op0 = aarch64_strip_extend (op0, true);
-	    *cost += rtx_cost (op0, VOIDmode,
-			       (enum rtx_code) GET_CODE (op0), 0, speed);
+	    *cost += rtx_cost (op0, VOIDmode, GET_CODE (op0), 0, speed);
 	    return true;
 	  }
 
@@ -14896,8 +14892,7 @@ cost_plus:
 		  && aarch64_mask_and_shift_for_ubfiz_p (int_mode, op1,
 							 XEXP (op0, 1)))
 		{
-		  *cost += rtx_cost (XEXP (op0, 0), int_mode,
-				     (enum rtx_code) code, 0, speed);
+		  *cost += rtx_cost (XEXP (op0, 0), int_mode, code, 0, speed);
 		  if (speed)
 		    *cost += extra_cost->alu.bfx;
 
@@ -14907,8 +14902,7 @@ cost_plus:
 		{
 		/* We possibly get the immediate for free, this is not
 		   modelled.  */
-		  *cost += rtx_cost (op0, int_mode,
-				     (enum rtx_code) code, 0, speed);
+		  *cost += rtx_cost (op0, int_mode, code, 0, speed);
 		  if (speed)
 		    *cost += extra_cost->alu.logical;
 
@@ -14943,10 +14937,8 @@ cost_plus:
 		}
 
 	      /* In both cases we want to cost both operands.  */
-	      *cost += rtx_cost (new_op0, int_mode, (enum rtx_code) code,
-				 0, speed);
-	      *cost += rtx_cost (op1, int_mode, (enum rtx_code) code,
-				 1, speed);
+	      *cost += rtx_cost (new_op0, int_mode, code, 0, speed);
+	      *cost += rtx_cost (op1, int_mode, code, 1, speed);
 
 	      return true;
 	    }
@@ -14967,7 +14959,7 @@ cost_plus:
       /* MVN-shifted-reg.  */
       if (op0 != x)
         {
-	  *cost += rtx_cost (op0, mode, (enum rtx_code) code, 0, speed);
+	  *cost += rtx_cost (op0, mode, code, 0, speed);
 
           if (speed)
             *cost += extra_cost->alu.log_shift;
@@ -14983,7 +14975,7 @@ cost_plus:
           rtx newop1 = XEXP (op0, 1);
           rtx op0_stripped = aarch64_strip_shift (newop0);
 
-	  *cost += rtx_cost (newop1, mode, (enum rtx_code) code, 1, speed);
+	  *cost += rtx_cost (newop1, mode, code, 1, speed);
 	  *cost += rtx_cost (op0_stripped, mode, XOR, 0, speed);
 
           if (speed)
@@ -15149,7 +15141,7 @@ cost_plus:
 		  && known_eq (INTVAL (XEXP (op1, 1)),
 			       GET_MODE_BITSIZE (mode) - 1))
 		{
-		  *cost += rtx_cost (op0, mode, (rtx_code) code, 0, speed);
+		  *cost += rtx_cost (op0, mode, code, 0, speed);
 		  /* We already demanded XEXP (op1, 0) to be REG_P, so
 		     don't recurse into it.  */
 		  return true;
@@ -15212,7 +15204,7 @@ cost_plus:
 
       /* We can trust that the immediates used will be correct (there
 	 are no by-register forms), so we need only cost op0.  */
-      *cost += rtx_cost (XEXP (x, 0), VOIDmode, (enum rtx_code) code, 0, speed);
+      *cost += rtx_cost (XEXP (x, 0), VOIDmode, code, 0, speed);
       return true;
 
     case MULT:
@@ -15402,12 +15394,11 @@ cost_plus:
 	       && aarch64_vec_fpconst_pow_of_2 (XEXP (x, 1)) > 0)
 	      || aarch64_fpconst_pow_of_2 (XEXP (x, 1)) > 0))
 	{
-	  *cost += rtx_cost (XEXP (x, 0), VOIDmode, (rtx_code) code,
-			     0, speed);
+	  *cost += rtx_cost (XEXP (x, 0), VOIDmode, code, 0, speed);
 	  return true;
 	}
 
-      *cost += rtx_cost (x, VOIDmode, (enum rtx_code) code, 0, speed);
+      *cost += rtx_cost (x, VOIDmode, code, 0, speed);
       return true;
 
     case ABS:
@@ -27369,13 +27360,13 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
 
     case E_SFmode:
       cmp_mode = SFmode;
-      cc_mode = aarch64_select_cc_mode ((rtx_code) code, op0, op1);
+      cc_mode = aarch64_select_cc_mode (code, op0, op1);
       icode = cc_mode == CCFPEmode ? CODE_FOR_fcmpesf : CODE_FOR_fcmpsf;
       break;
 
     case E_DFmode:
       cmp_mode = DFmode;
-      cc_mode = aarch64_select_cc_mode ((rtx_code) code, op0, op1);
+      cc_mode = aarch64_select_cc_mode (code, op0, op1);
       icode = cc_mode == CCFPEmode ? CODE_FOR_fcmpedf : CODE_FOR_fcmpdf;
       break;
 
@@ -27406,7 +27397,7 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
   *gen_seq = get_insns ();
   end_sequence ();
 
-  return gen_rtx_fmt_ee ((rtx_code) code, cc_mode,
+  return gen_rtx_fmt_ee (code, cc_mode,
 			 gen_rtx_REG (cc_mode, CC_REGNUM), const0_rtx);
 }
 
@@ -27443,12 +27434,12 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
 
     case E_SFmode:
       cmp_mode = SFmode;
-      cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
+      cc_mode = aarch64_select_cc_mode (cmp_code, op0, op1);
       break;
 
     case E_DFmode:
       cmp_mode = DFmode;
-      cc_mode = aarch64_select_cc_mode ((rtx_code) cmp_code, op0, op1);
+      cc_mode = aarch64_select_cc_mode (cmp_code, op0, op1);
       break;
 
     default:
@@ -27469,7 +27460,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   end_sequence ();
 
   target = gen_rtx_REG (cc_mode, CC_REGNUM);
-  aarch64_cond = aarch64_get_condition_code_1 (cc_mode, (rtx_code) cmp_code);
+  aarch64_cond = aarch64_get_condition_code_1 (cc_mode, cmp_code);
 
   if (bit_code != AND)
     {
@@ -27508,7 +27499,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   *gen_seq = get_insns ();
   end_sequence ();
 
-  return gen_rtx_fmt_ee ((rtx_code) cmp_code, VOIDmode, target, const0_rtx);
+  return gen_rtx_fmt_ee (cmp_code, VOIDmode, target, const0_rtx);
 }
 
 #undef TARGET_GEN_CCMP_FIRST
