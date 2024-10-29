@@ -14,10 +14,10 @@ int main(int, char**)
   foo (1);
 }
 // { dg-output "contract violation in function foo at .*5: i > 3.*(\n|\r\n|\r)" }
-// { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false.(\n|\r\n|\r)" }
+// { dg-output ".assertion_kind: pre, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
 
 // { dg-output "contract violation in function foo at .*7: i > 5.*(\n|\r\n|\r)" }
-// { dg-output ".assertion_kind: assert, semantic: observe, mode: predicate_false.(\n|\r\n|\r)" }
+// { dg-output ".assertion_kind: assert, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
 
 // { dg-output "contract violation in function foo at .*5: r > 4.*(\n|\r\n|\r)" }
-// { dg-output ".assertion_kind: post, semantic: observe, mode: predicate_false.(\n|\r\n|\r)" }
+// { dg-output ".assertion_kind: post, semantic: observe, mode: predicate_false, terminating: no.(\n|\r\n|\r)" }
