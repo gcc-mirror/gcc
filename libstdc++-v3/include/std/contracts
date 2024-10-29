@@ -34,6 +34,7 @@
 
 #include <source_location>
 #include <cstdint>
+#include <bits/exception_ptr.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -41,7 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace contracts
 {
-  // From P2900R7
+  // From P2900R11
   enum class assertion_kind {
     pre = 1,
     post = 2,
@@ -49,28 +50,28 @@ namespace contracts
     /* to be extended with implementation−defined values and by future extensions */
 	/* Implementation−defined values should have a minimum value of 1000. */
   };
-	
+
   enum class evaluation_semantic {
-    enforce = 1,
-    observe = 2
-    // quick_enforce = 3, // not explicitly provided
-	// ignore = 4,
+      ignore = 1,
+      observe = 2,
+      enforce = 3,
+      quick_enforce = 4
 	// not explicitly provided
 	// assume = 5
 	// expected as a future extension
 	/* to be extended with implementation−defined values and by future extensions */
 	/* Implementation−defined values should have a minimum value of 1000. */
   };
-	
+
   enum class detection_mode  {
     predicate_false = 1,
     evaluation_exception = 2
-    /* to be extended with implementation−defined values and by future extensions 
+    /* to be extended with implementation−defined values and by future extensions
 	 Implementation−defined values should have a minimum value of 1000. */
   };
-  
+
   using __vendor_ext = void;
-  
+
   class contract_violation {
     int version;
     __vendor_ext* _M_ext;
@@ -82,7 +83,7 @@ namespace contracts
   public:
     // cannot be copied or moved
 	contract_violation(const contract_violation&) = delete;
-	
+
 	// cannot be assigned to
 	contract_violation& operator=(const contract_violation&) = delete;
 
@@ -91,11 +92,20 @@ namespace contracts
 
 	const char* comment() const noexcept { return _M_comment; }
 	detection_mode mode() const noexcept { return _M_detection_mode; }
+	std::exception_ptr evaluation_exception () const noexcept {
+	  if (_M_detection_mode == std::contracts::detection_mode::evaluation_exception)
+	    return std::current_exception ();
+	  return nullptr;
+	}
+	bool is_terminating () const noexcept {
+	  return _M_evaluation_semantic == std::contracts::evaluation_semantic::enforce
+	        || _M_evaluation_semantic == std::contracts::evaluation_semantic::quick_enforce;
+	}
 	assertion_kind kind() const noexcept { return _M_assertion_kind; }
 	std::source_location location() const noexcept { return _M_source_location; }
 	evaluation_semantic semantic() const noexcept { return _M_evaluation_semantic; }
 	};
-	
+
 //void invoke_default_contract_violation_handler(const contract_violation&);
 
 } // namespace contracts
