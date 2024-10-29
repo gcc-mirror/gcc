@@ -1,3 +1,51 @@
+2024-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/bool/cons/from_range.cc: Use
+	dg-do run instead of compile.
+	(test_ranges): Use do_test instead of do_test_a for rvalue
+	range.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+	* testsuite/23_containers/vector/bool/modifiers/assign/assign_range.cc:
+	Use dg-do run instead of compile.
+	(do_test): Use same test logic for vector<bool> as for primary
+	template.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+	* testsuite/23_containers/vector/bool/modifiers/insert/append_range.cc:
+	Use dg-do run instead of compile.
+	(test_ranges): Use do_test instead of do_test_a for rvalue
+	range.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+	* testsuite/23_containers/vector/bool/modifiers/insert/insert_range.cc:
+	Use dg-do run instead of compile.
+	(do_test): Fix incorrect function arguments to match intended
+	results.
+	(test_ranges): Use do_test instead of do_test_a for rvalue
+	range.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+	* testsuite/23_containers/vector/cons/from_range.cc: Use dg-do
+	run instead of compile.
+	(test_ranges): Fix ill-formed call to do_test.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+	* testsuite/23_containers/vector/modifiers/append_range.cc:
+	Use dg-do run instead of compile.
+	(test_constexpr): Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/assign_range.cc:
+	Use dg-do run instead of compile.
+	(do_test): Do not reuse input ranges.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	Use dg-do run instead of compile.
+	(do_test): Fix incorrect function arguments to match intended
+	results.
+	(test_constexpr): Call function template instead of just
+	instantiating it.
+
 2024-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/111055

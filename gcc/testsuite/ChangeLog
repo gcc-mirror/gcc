@@ -1,3 +1,60 @@
+2024-10-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/sarif-output/test-bad-pragma.py: Rename to...
+	* gcc.dg/sarif-output/bad-pragma.py: ...this.
+	* gcc.dg/sarif-output/bad-pragma.c: Update for script renaming.
+	* gcc.dg/sarif-output/test-include-chain-1.py: Rename to...
+	* gcc.dg/sarif-output/include-chain-1.py: ...this.
+	* gcc.dg/sarif-output/include-chain-1.c: Update for script renaming.
+	* gcc.dg/sarif-output/test-include-chain-2.py: Rename to...
+	* gcc.dg/sarif-output/include-chain-2.py: ...this.
+	* gcc.dg/sarif-output/include-chain-2.c: Update for script renaming.
+	* gcc.dg/sarif-output/test-missing-semicolon.py: Rename to...
+	* gcc.dg/sarif-output/missing-semicolon.py: ...this.
+	* gcc.dg/sarif-output/missing-semicolon.c: Update for script renaming.
+	* gcc.dg/sarif-output/test-no-diagnostics.py: Rename to...
+	* gcc.dg/sarif-output/no-diagnostics.py: ...this.
+	* gcc.dg/sarif-output/no-diagnostics.c: Update for script renaming.
+	* gcc.dg/sarif-output/test-werror.py: Rename to...
+	* gcc.dg/sarif-output/werror.py: ...this.
+	* gcc.dg/sarif-output/werror.c: Update for script renaming.
+
+2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117330
+	* gcc.dg/torture/pr117330-1.c: New test.
+
+2024-10-28  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.dg/lto/pr47333_0.C: Require target that supports atomic
+	operations on int and long types.
+
+2024-10-28  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/107467
+	PR middle-end/115110
+	* g++.dg/lto/pr107467_0.C: New test.
+
+2024-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117307
+	* gcc.dg/vect/pr117307.c: New testcase.
+
+2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111285
+	* g++.dg/torture/vect-absu-1.C: New test.
+
+2024-10-28  xuli  <xuli1@eswincomputing.com>
+
+	PR target/117286
+	* gcc.target/riscv/rvv/base/pr117286.c: New test.
+
+2024-10-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr53533-1.c: Adjust assembly scan.
+	* gcc.target/i386/pr53533-3.c: Likewise.
+
 2024-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/cpp/Wtrailing-whitespace-2.c: Use

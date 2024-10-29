@@ -1,3 +1,62 @@
+2024-10-28  Sam James  <sam@gentoo.org>
+
+	* opts-common.cc (prune_options): Fix typo.
+
+2024-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-ptr.cc (operator_bitwise_or::fold_range): Fix logic
+	for setting nonzero.
+
+2024-10-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/arm_neon.h (vxarq_u64): Rename imm6 to __imm6.
+
+2024-10-28  Jason Merrill  <jason@redhat.com>
+
+	* doc/install.texi (Prerequisites): Update to C++14.
+
+2024-10-28  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117316
+	* config/riscv/riscv.cc (riscv_tune_param): Drop initializer.
+	(*_tune_info): Add initializers for code alignments.
+
+2024-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117307
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_accesses):
+	Properly compute STMT_VINFO_SLP_VECT_ONLY.  Set it on all
+	parts of a split group.
+
+2024-10-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* tree-core.h (enum omp_clause_code): Add comments to cross ref to
+	OMP_CLAUSE_DECL etc. and mark the ranges used in the range checks.
+
+2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111285
+	* tree-vect-generic.cc (do_unop): Use a signed type for the
+	operand if the operation was ABSU_EXPR.
+
+2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Move
+	check for maybe_undef_p earlier.
+
+2024-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (check_bool_pattern): For comparisons
+	we do nothing if we can expand them or we can't replace them
+	with a ? -1 : 0 condition - but the latter would require
+	expanding the comparison which we proved we can't.  So do
+	nothing, aka not think vec_cond{u,eq,} will save us.
+
+2024-10-28  xuli  <xuli1@eswincomputing.com>
+
+	PR target/117286
+	* config/riscv/riscv-vector-builtins-bases.cc: Do not expand NULL return.
+
 2024-10-27  Fangrui Song  <maskray@gcc.gnu.org>
 
 	* config/arm/bpabi.h (TARGET_FDPIC_ASM_SPEC): Transform -mfdpic.
