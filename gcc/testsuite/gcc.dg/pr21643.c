@@ -1,6 +1,6 @@
 /* PR tree-optimization/21643 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-reassoc1-details --param logical-op-non-short-circuit=1 -fno-bit-tests" } */
+/* { dg-options "-O2 -fdump-tree-reassoc1-details --param logical-op-non-short-circuit=1" } */
 
 int
 f1 (unsigned char c)
