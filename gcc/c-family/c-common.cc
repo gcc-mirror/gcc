@@ -7046,7 +7046,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	{
 	  int eltsize
 	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (initial_value)));
-	  maxindex = size_int (TREE_STRING_LENGTH (initial_value)/eltsize - 1);
+	  maxindex = size_int (TREE_STRING_LENGTH (initial_value) / eltsize
+			       - 1);
 	}
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
@@ -7061,23 +7062,25 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	  else
 	    {
 	      tree curindex;
-	      unsigned HOST_WIDE_INT cnt;
+	      unsigned HOST_WIDE_INT cnt = 1;
 	      constructor_elt *ce;
 	      bool fold_p = false;
 
 	      if ((*v)[0].index)
 		maxindex = (*v)[0].index, fold_p = true;
+	      if (TREE_CODE ((*v)[0].value) == RAW_DATA_CST)
+		cnt = 0;
 
 	      curindex = maxindex;
 
-	      for (cnt = 1; vec_safe_iterate (v, cnt, &ce); cnt++)
+	      for (; vec_safe_iterate (v, cnt, &ce); cnt++)
 		{
 		  bool curfold_p = false;
 		  if (ce->index)
 		    curindex = ce->index, curfold_p = true;
-		  else
+		  if (!ce->index || TREE_CODE (ce->value) == RAW_DATA_CST)
 		    {
-		      if (fold_p)
+		      if (fold_p || curfold_p)
 			{
 			  /* Since we treat size types now as ordinary
 			     unsigned types, we need an explicit overflow
@@ -7085,9 +7088,17 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 			  tree orig = curindex;
 		          curindex = fold_convert (sizetype, curindex);
 			  overflow_p |= tree_int_cst_lt (curindex, orig);
+			  curfold_p = false;
 			}
-		      curindex = size_binop (PLUS_EXPR, curindex,
-					     size_one_node);
+		      if (TREE_CODE (ce->value) == RAW_DATA_CST)
+			curindex
+			  = size_binop (PLUS_EXPR, curindex,
+					size_int (RAW_DATA_LENGTH (ce->value)
+						  - ((ce->index || !cnt)
+						     ? 1 : 0)));
+		      else
+			curindex = size_binop (PLUS_EXPR, curindex,
+					       size_one_node);
 		    }
 		  if (tree_int_cst_lt (maxindex, curindex))
 		    maxindex = curindex, fold_p = curfold_p;
