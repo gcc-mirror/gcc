@@ -1920,6 +1920,25 @@ fcontract-semantic=
 C++ Joined RejectNegative
 -fcontract-semantic=<level>:<semantic>	Specify the concrete semantics for level.
 
+Enum
+Name(p2900_semantic) Type(int)  UnknownError(unrecognized contract evaluation semantic %qs)
+
+EnumValue
+Enum(p2900_semantic) String(ignore) Value(1)
+
+EnumValue
+Enum(p2900_semantic) String(enforce) Value(3)
+
+EnumValue
+Enum(p2900_semantic) String(observe) Value(4)
+
+EnumValue
+Enum(p2900_semantic) String(quick_enforce) Value(5)
+
+fcontract-evaluation-semantic=
+C++ Joined RejectNegative Enum(p2900_semantic) Var(flag_contract_evaluation_semantic) Init (3)
+-fcontract-evaluation-semantic=[ignore,observe,enforce,quick_enforce]	Select the contract evaluation semantic (defaults to enforce).
+
 fcontract-disable-optimized-checks
 C++ Var(flag_contract_disable_optimized_checks) Init(0)
 -fcontract-disable-optimized-checks	Disable optimisation of contract checks.
