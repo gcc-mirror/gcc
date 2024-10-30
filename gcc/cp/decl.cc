@@ -6894,15 +6894,20 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 
   if (sized_array_p)
     {
+      poly_uint64 midx;
       /* Minus 1 is used for zero sized arrays.  */
       if (integer_all_onesp (max_index))
 	return new_init;
 
-      if (tree_fits_uhwi_p (max_index))
-	max_index_cst = tree_to_uhwi (max_index);
+      if (tree_fits_poly_uint64_p (max_index))
+	midx = tree_to_poly_uint64 (max_index);
       /* sizetype is sign extended, not zero extended.  */
       else
-	max_index_cst = tree_to_uhwi (fold_convert (size_type_node, max_index));
+	midx = tree_to_poly_uint64 (fold_convert (size_type_node, max_index));
+
+      /* For VLA vectors, we restict the number of elements in the constructor
+	 to lower bound of the VLA elements.  */
+      max_index_cst = constant_lower_bound (midx);
     }
 
   /* Loop until there are no more initializers.  */

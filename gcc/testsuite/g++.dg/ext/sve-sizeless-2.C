@@ -161,6 +161,15 @@ statements (int n)
   svint8_t init_sve_sc5 = {};
   svint8_t init_sve_sc6 = { sve_sc1 };
   svint8_t init_sve_sc7 = { sve_sh1 }; // { dg-error {cannot convert 'svint16_t' to 'svint8_t'} }
+  svint32_t init_sve_vc1 = { 0, 1 };
+  svint32_t init_sve_vc2 = { 0, bar () };
+  svint32_t init_sve_vc3 = { bar (), n };
+  svint32_t init_sve_vc4 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  svint32_t init_sve_vc5 = { 0, 1, bar (), 3, 4, 5, n, 7 };
+  svint32_t init_sve_vc6 = { 0, 1, 2, 3, 4, 5, 6, 7, 8 }; // { dg-error {too many initializers for 'svint32_t'} }
+  svint32_t init_sve_vc7 = { 0, 1, 2, 3, bar (), 5, 6, 7, n }; // { dg-error {too many initializers for 'svint32_t'} }
+  svint32_t init_sve_vc8 = { 0, bar (), 2, 3, 4, n, 5, 6, 7, 8, 9 }; // { dg-error {too many initializers for 'svint32_t'} }
+  svint32_t init_sve_vc9 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }; // { dg-error {too many initializers for 'svint32_t'} }
 
   // Constructor calls.
 
