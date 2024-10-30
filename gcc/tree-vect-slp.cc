@@ -8859,9 +8859,8 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	}
       while (si < li_scalar_costs.length ()
 	     && li_scalar_costs[si].first == sl);
-      unsigned dummy;
-      finish_cost (scalar_target_cost_data, nullptr,
-		   &dummy, &scalar_cost, &dummy);
+      scalar_target_cost_data->finish_cost (nullptr);
+      scalar_cost = scalar_target_cost_data->body_cost ();
 
       /* Complete the target-specific vector cost calculation.  */
       class vector_costs *vect_target_cost_data = init_cost (bb_vinfo, false);
@@ -8872,8 +8871,10 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	}
       while (vi < li_vector_costs.length ()
 	     && li_vector_costs[vi].first == vl);
-      finish_cost (vect_target_cost_data, scalar_target_cost_data,
-		   &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost);
+      vect_target_cost_data->finish_cost (scalar_target_cost_data);
+      vec_prologue_cost = vect_target_cost_data->prologue_cost ();
+      vec_inside_cost = vect_target_cost_data->body_cost ();
+      vec_epilogue_cost = vect_target_cost_data->epilogue_cost ();
       delete scalar_target_cost_data;
       delete vect_target_cost_data;
 

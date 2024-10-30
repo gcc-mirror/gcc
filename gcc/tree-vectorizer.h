@@ -1897,7 +1897,7 @@ extern void dump_stmt_cost (FILE *, int, enum vect_cost_for_stmt,
 			    stmt_vec_info, slp_tree, tree, int, unsigned,
 			    enum vect_cost_model_location);
 
-/* Alias targetm.vectorize.add_stmt_cost.  */
+/* Dump and add costs.  */
 
 inline unsigned
 add_stmt_cost (vector_costs *costs, int count,
@@ -1923,28 +1923,11 @@ add_stmt_cost (vector_costs *costs, int count, enum vect_cost_for_stmt kind,
   return add_stmt_cost (costs, count, kind, NULL, NULL, NULL_TREE, 0, where);
 }
 
-/* Alias targetm.vectorize.add_stmt_cost.  */
-
 inline unsigned
 add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 {
   return add_stmt_cost (costs, i->count, i->kind, i->stmt_info, i->node,
 			i->vectype, i->misalign, i->where);
-}
-
-/* Alias targetm.vectorize.finish_cost.  */
-
-inline void
-finish_cost (vector_costs *costs, const vector_costs *scalar_costs,
-	     unsigned *prologue_cost, unsigned *body_cost,
-	     unsigned *epilogue_cost, unsigned *suggested_unroll_factor = NULL)
-{
-  costs->finish_cost (scalar_costs);
-  *prologue_cost = costs->prologue_cost ();
-  *body_cost = costs->body_cost ();
-  *epilogue_cost = costs->epilogue_cost ();
-  if (suggested_unroll_factor)
-    *suggested_unroll_factor = costs->suggested_unroll_factor ();
 }
 
 inline void

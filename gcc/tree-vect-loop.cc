@@ -4984,9 +4984,13 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   /* Complete the target-specific cost calculations.  */
-  finish_cost (loop_vinfo->vector_costs, loop_vinfo->scalar_costs,
-	       &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost,
-	       suggested_unroll_factor);
+  loop_vinfo->vector_costs->finish_cost (loop_vinfo->scalar_costs);
+  vec_prologue_cost = loop_vinfo->vector_costs->prologue_cost ();
+  vec_inside_cost = loop_vinfo->vector_costs->body_cost ();
+  vec_epilogue_cost = loop_vinfo->vector_costs->epilogue_cost ();
+  if (suggested_unroll_factor)
+    *suggested_unroll_factor
+      = loop_vinfo->vector_costs->suggested_unroll_factor ();
 
   if (suggested_unroll_factor && *suggested_unroll_factor > 1
       && LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo) != MAX_VECTORIZATION_FACTOR
