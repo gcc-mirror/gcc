@@ -477,6 +477,36 @@ public:
   }
 };
 
+  /* Builds the vldrq_gather_base intrinsics.  */
+class vldrq_gather_base_impl : public load_extending
+{
+public:
+  using load_extending::load_extending;
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code icode;
+    rtx insns;
+
+    switch (e.pred)
+      {
+      case PRED_none:
+	icode = code_for_mve_vldrq_gather_base (e.vector_mode (0));
+	break;
+
+      case PRED_z:
+	icode = code_for_mve_vldrq_gather_base_z (e.vector_mode (0));
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+    insns = e.use_exact_insn (icode);
+
+    return insns;
+  }
+};
+
   /* Implements vctp8q, vctp16q, vctp32q and vctp64q intrinsics.  */
 class vctpq_impl : public function_base
 {
@@ -1276,12 +1306,14 @@ FUNCTION (vld1q, vld1_impl,)
 FUNCTION (vldrbq, vldrq_impl, (TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
 FUNCTION (vldrbq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
 FUNCTION (vldrdq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s64, TYPE_SUFFIX_u64, NUM_TYPE_SUFFIXES))
+FUNCTION (vldrdq_gather_base, vldrq_gather_base_impl, (TYPE_SUFFIX_s64, TYPE_SUFFIX_u64))
 FUNCTION (vldrdq_gather_shifted, vldrq_gather_impl, (true, TYPE_SUFFIX_s64, TYPE_SUFFIX_u64, NUM_TYPE_SUFFIXES))
 FUNCTION (vldrhq, vldrq_impl, (TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
 FUNCTION (vldrhq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
 FUNCTION (vldrhq_gather_shifted, vldrq_gather_impl, (true, TYPE_SUFFIX_s16, TYPE_SUFFIX_u16, TYPE_SUFFIX_f16))
 FUNCTION (vldrwq, vldrq_impl, (TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
 FUNCTION (vldrwq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
+FUNCTION (vldrwq_gather_base, vldrq_gather_base_impl, (TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
 FUNCTION (vldrwq_gather_shifted, vldrq_gather_impl, (true, TYPE_SUFFIX_s32, TYPE_SUFFIX_u32, TYPE_SUFFIX_f32))
 FUNCTION_PRED_P_S (vmaxavq, VMAXAVQ)
 FUNCTION_WITHOUT_N_NO_U_F (vmaxaq, VMAXAQ)
