@@ -4509,6 +4509,11 @@ package body Exp_Aggr is
             return False;
          end if;
 
+         if not (UI_Is_In_Int_Range (Lov) and UI_Is_In_Int_Range (Hiv)) then
+            --  guard against raising C_E in UI_To_Int
+            return False;
+         end if;
+
          --  Determine if set of alternatives is suitable for conversion and
          --  build an array containing the values in sequence.
 
