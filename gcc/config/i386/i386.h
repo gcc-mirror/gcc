@@ -2539,8 +2539,7 @@ enum ix86_fpcmp_strategy {
 
 enum ix86_stack_slot
 {
-  SLOT_TEMP = 0,
-  SLOT_CW_STORED,
+  SLOT_CW_STORED = 0,
   SLOT_CW_ROUNDEVEN,
   SLOT_CW_TRUNC,
   SLOT_CW_FLOOR,
