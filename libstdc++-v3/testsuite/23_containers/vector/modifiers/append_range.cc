@@ -69,7 +69,7 @@ test_ranges()
   do_test_a<test_forward_range<short>>();
   do_test_a<test_input_range<short>>();
 
-  // Not lvalue-convertible to bool
+  // Not lvalue-convertible to int
   struct C {
     C(int v) : val(v) { }
     operator int() && { return val; }
