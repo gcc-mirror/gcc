@@ -585,7 +585,7 @@ diag_vfprintf (FILE *f, int err_no, const char *msg, va_list *ap)
   fprintf (f, "%s", q);
 }
 
-#if defined(GENMATCH_SELFTESTS) && defined(HAVE_DECL_FMEMOPEN)
+#if defined(GENMATCH_SELFTESTS) && HAVE_DECL_FMEMOPEN
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
 
