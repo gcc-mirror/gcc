@@ -1494,7 +1494,7 @@ contract_active_p (tree contract)
 static bool
 has_active_contract_condition (tree d, tree_code c)
 {
-  for (tree as = DECL_CONTRACTS (d) ; as != NULL_TREE; as = TREE_CHAIN (as))
+  for (tree as = DECL_CONTRACTS (d) ; as != NULL_TREE; as = CONTRACT_CHAIN (as))
     {
       tree contract = TREE_VALUE (TREE_VALUE (as));
       if (TREE_CODE (contract) == c && contract_active_p (contract))
