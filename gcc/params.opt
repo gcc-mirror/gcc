@@ -1187,7 +1187,7 @@ Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) Intege
 Maximum number of loop peels to enhance alignment of data references in a loop.
 
 -param=vect-max-version-for-alias-checks=
-Common Joined UInteger Var(param_vect_max_version_for_alias_checks) Init(10) Param Optimization
+Common Joined UInteger Var(param_vect_max_version_for_alias_checks) Init(15) Param Optimization
 Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check.
 
 -param=vect-max-version-for-alignment-checks=
