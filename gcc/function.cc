@@ -3745,6 +3745,8 @@ assign_parms (tree fndecl)
      now that all parameters have been copied out of hard registers.  */
   emit_insn (all.first_conversion_insn);
 
+  do_pending_stack_adjust ();
+
   /* Estimate reload stack alignment from scalar return mode.  */
   if (SUPPORTS_STACK_ALIGNMENT)
     {
