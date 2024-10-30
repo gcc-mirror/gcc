@@ -2567,6 +2567,7 @@ process_pending_assemble_externals (void)
   pending_assemble_externals_processed = true;
   pending_libcall_symbols = NULL_RTX;
   delete pending_assemble_externals_set;
+  pending_assemble_externals_set = nullptr;
 #endif
 }
 
@@ -8748,6 +8749,7 @@ varasm_cc_finalize ()
 
 #ifdef ASM_OUTPUT_EXTERNAL
   pending_assemble_externals_processed = false;
+  delete pending_assemble_externals_set;
   pending_assemble_externals_set = nullptr;
 #endif
 
