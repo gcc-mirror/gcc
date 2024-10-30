@@ -4416,6 +4416,85 @@ package body Sem_Aggr is
          Resolve_Delta_Record_Aggregate (N, Typ);
       end if;
 
+      declare
+         Assoc  : Node_Id;
+         Choice : Node_Id;
+
+         procedure Check_For_Bad_Dd_Component_Choice (Choice : Node_Id);
+         --  Enforce the GNAT RM rule that a deep delta aggregate choice
+         --  cannot name a discriminant-dependent component if the
+         --  immediately enclosing object's subtype is unconstrained and the
+         --  prefix of the component includes at least one array indexing.
+         --  [Note: The motivation for this rule is unclear. The GNAT RM
+         --  gives a rationale for this particular rule, but it still
+         --  seems dubious.]
+
+         ---------------------------------------
+         -- Check_For_Bad_Dd_Component_Choice --
+         ---------------------------------------
+
+         procedure Check_For_Bad_Dd_Component_Choice (Choice : Node_Id) is
+            Pref         : Node_Id := Choice;
+            Dd_Comp_Name : Node_Id := Empty;
+         begin
+            loop
+               case Nkind (Pref) is
+                  when N_Selected_Component =>
+                     declare
+                        Comp : constant Entity_Id
+                          := Entity (Selector_Name (Pref));
+
+                        Enclosing_Type : Entity_Id := Etype (Prefix (Pref));
+                     begin
+                        if Is_Declared_Within_Variant (Comp)
+                          or else Has_Discriminant_Dependent_Constraint (Comp)
+                        then
+                           if not Has_Discriminants (Enclosing_Type) then
+                              --  a deep delta array aggregate choice like
+                              --     (Index_Value).Record_Component => ...
+                              Enclosing_Type := Component_Type (Etype (N));
+                           end if;
+
+                           if not Is_Constrained (Enclosing_Type) then
+                              Dd_Comp_Name := Selector_Name (Pref);
+                           end if;
+                        end if;
+                     end;
+
+                  when N_Indexed_Component =>
+                     exit when Present (Dd_Comp_Name);
+
+                  when N_Identifier =>
+                     return;
+
+                  when others =>
+                     exit;
+               end case;
+               Pref := Prefix (Pref);
+            end loop;
+
+            if Present (Dd_Comp_Name) then
+               --  It would be difficult to explain the whole rule briefly,
+               --  so we just say "illegal".
+
+               Error_Msg_N
+                 ("illegal discriminant-dependent component &" &
+                  " in deep delta aggregate choice", Dd_Comp_Name);
+            end if;
+         end Check_For_Bad_Dd_Component_Choice;
+
+      begin
+         Assoc := First (Component_Associations (N));
+         while Present (Assoc) loop
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               Check_For_Bad_Dd_Component_Choice (Choice);
+               Next (Choice);
+            end loop;
+            Next (Assoc);
+         end loop;
+      end;
+
       Set_Etype (N, Typ);
    end Resolve_Delta_Aggregate;
 
@@ -4745,10 +4824,11 @@ package body Sem_Aggr is
 
       Deltas : constant List_Id := Component_Associations (N);
 
-      Assoc       : Node_Id;
-      Choice      : Node_Id;
-      Comp_Type   : Entity_Id := Empty; -- init to avoid warning
-      Deep_Choice : Boolean;
+      Assoc        : Node_Id;
+      Choice       : Node_Id;
+      Comp_Type    : Entity_Id := Empty; -- init to avoid warning
+      Deep_Choice  : Boolean;
+      Choice_Count : Natural := 0;
 
    --  Start of processing for Resolve_Delta_Record_Aggregate
 
@@ -4759,6 +4839,8 @@ package body Sem_Aggr is
       while Present (Assoc) loop
          Choice := First (Choice_List (Assoc));
          while Present (Choice) loop
+            Choice_Count := Choice_Count + 1;
+
             Deep_Choice := Nkind (Choice) /= N_Identifier;
             if Deep_Choice then
                Error_Msg_GNAT_Extension
@@ -4813,6 +4895,117 @@ package body Sem_Aggr is
 
          Next (Assoc);
       end loop;
+
+      declare
+         type Choice_Info is record
+            Choice : Node_Id;
+            Depth  : Natural; -- 0 indicates non-record selector
+         end record;
+
+         Info          : array (1 .. Choice_Count) of Choice_Info;
+         Current_Index : Natural := 0;
+
+         function Choice_Depth (Choice : Node_Id) return Natural;
+         --  Given a choice in record delta aggregate, return 1 for
+         --  "Abc", 3 for "Aa.Bb.Cc", and 0 if anything other than
+         --  record component selectors are involved.
+
+         procedure Check_For_Bad_Overlap (Info1, Info2 : Choice_Info);
+         --  If the two choices overlap illegally, then generate an error
+         --  message. If deep delta aggregates are not enabled, then choices
+         --  should be N_Identifier nodes and depths should each be 1.
+
+         ------------------
+         -- Choice_Depth --
+         ------------------
+
+         function Choice_Depth (Choice : Node_Id) return Natural is
+            Prefix_Depth : Natural;
+         begin
+            case Nkind (Choice) is
+               when N_Identifier =>
+                  return 1;
+               when N_Selected_Component =>
+                  Prefix_Depth := Choice_Depth (Prefix (Choice));
+                  if Prefix_Depth = 0 then
+                     return 0;
+                  else
+                     return Prefix_Depth + 1;
+                  end if;
+               when others =>
+                  return 0;
+            end case;
+         end Choice_Depth;
+
+         ---------------------------
+         -- Check_For_Bad_Overlap --
+         ---------------------------
+
+         procedure Check_For_Bad_Overlap (Info1, Info2 : Choice_Info) is
+            Choice1, Choice2 : Node_Id;
+         begin
+            if Info1.Depth = 0 or Info2.Depth = 0 then
+               --  We're not interested in cases involving array indexing
+               return;
+            end if;
+            if Info1.Depth > Info2.Depth then
+               --  Normalize
+               Check_For_Bad_Overlap (Info1 => Info2, Info2 => Info1);
+               return;
+            end if;
+            pragma Assert (Info1.Depth <= Info2.Depth);
+            Choice1 := Info1.Choice;
+            Choice2 := Info2.Choice;
+
+            --  Adjust deeper choice to match depth of the other choice
+            for Count in 1 .. Info2.Depth - Info1.Depth loop
+               pragma Assert (Nkind (Choice2) = N_Selected_Component);
+               Choice2 := Prefix (Choice2);
+            end loop;
+
+            --  Traverse the two choices; return if Entity mismatch found.
+            loop
+               pragma Assert (Nkind (Choice1) = Nkind (Choice2));
+               if Nkind (Choice1) = N_Identifier then
+                  exit when Entity (Choice1) = Entity (Choice2);
+                  return; -- no overlap if entities differ
+               end if;
+               if Entity (Selector_Name (Choice1)) /=
+                  Entity (Selector_Name (Choice2))
+               then
+                  return; -- no overlap if selected entities differ
+               end if;
+               Choice1 := Prefix (Choice1);
+               Choice2 := Prefix (Choice2);
+            end loop;
+
+            --  Illegal overlap detected
+            Error_Msg_Sloc := Sloc (Info2.Choice);
+            Error_Msg_NE
+              ("record delta aggregate choice overlaps with choice & #",
+               Info1.Choice, Info2.Choice);
+         end Check_For_Bad_Overlap;
+
+      begin
+         Assoc := First (Deltas);
+         while Present (Assoc) loop
+            Choice := First (Choice_List (Assoc));
+            while Present (Choice) loop
+               Current_Index := Current_Index + 1;
+               Info (Current_Index) := (Choice => Choice,
+                                        Depth => Choice_Depth (Choice));
+
+               --  Check against previous Info elements
+               for Prev_Index in 1 .. Current_Index - 1 loop
+                  Check_For_Bad_Overlap
+                    (Info (Prev_Index), Info (Current_Index));
+               end loop;
+
+               Next (Choice);
+            end loop;
+            Next (Assoc);
+         end loop;
+      end;
    end Resolve_Delta_Record_Aggregate;
 
    ------------------------------
