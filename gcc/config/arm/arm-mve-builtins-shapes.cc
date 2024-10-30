@@ -1552,6 +1552,44 @@ struct load_ext_gather : public overloaded_base<0>
   }
 };
 
+/* <T0>_t vfoo[_t0](<X>_t, const int)
+
+   where <X> has the same width as <T0> but is of unsigned type.
+
+   Example: vldrwq_gather_base
+   int32x4_t [__arm_]vldrwq_gather_base_s32(uint32x4_t addr, const int offset)
+   float32x4_t [__arm_]vldrwq_gather_base_z_f32(uint32x4_t addr, const int offset, mve_pred16_t p)  */
+struct load_gather_base_def : public nonoverloaded_base
+{
+  bool
+  explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  bool
+  mode_after_pred () const override
+  {
+    return false;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,vu0,ss64", group, MODE_none, preserve_user_namespace);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int multiple = c.type_suffix (0).element_bits / 8;
+    int bound = 127 * multiple;
+    return c.require_immediate_range_multiple (1, -bound, bound, multiple);
+  }
+};
+SHAPE (load_gather_base)
+
 /* <T0>_t vfoo[_t0](<X>_t const *, <Y>_t)
 
    where <X> might be tied to <t0> (for non-extending loads) or might

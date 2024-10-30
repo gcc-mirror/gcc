@@ -64,6 +64,7 @@ namespace arm_mve
     extern const function_shape *const load;
     extern const function_shape *const load_ext;
     extern const function_shape *const load_ext_gather_offset;
+    extern const function_shape *const load_gather_base;
     extern const function_shape *const mvn;
     extern const function_shape *const store;
     extern const function_shape *const store_scatter_base;
