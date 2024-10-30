@@ -11807,6 +11807,65 @@ riscv_frm_mode_needed (rtx_insn *cur_insn, int code)
   return mode;
 }
 
+/* If the current function needs a single VXRM mode, return it.  Else
+   return VXRM_MODE_NONE.
+
+   This is called on the first insn in the chain and scans the full function
+   once to collect VXRM mode settings.  If a single mode is needed, it will
+   often be better to set it once at the start of the function rather than
+   at an anticipation point.  */
+static int
+singleton_vxrm_need (void)
+{
+  /* Only needed for vector code.  */
+  if (!TARGET_VECTOR)
+    return VXRM_MODE_NONE;
+
+  /* If ENTRY has more than once successor, then don't optimize, just to
+     keep things simple.  */
+  if (EDGE_COUNT (ENTRY_BLOCK_PTR_FOR_FN (cfun)->succs) > 1)
+    return VXRM_MODE_NONE;
+
+  /* Walk the IL noting if VXRM is needed and if there's more than one
+     mode needed.  */
+  bool found = false;
+  int saved_vxrm_mode;
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (!INSN_P (insn) || DEBUG_INSN_P (insn))
+	continue;
+
+      int code = recog_memoized (insn);
+      if (code < 0)
+	continue;
+
+      int vxrm_mode = get_attr_vxrm_mode (insn);
+      if (vxrm_mode == VXRM_MODE_NONE)
+	continue;
+
+      /* If this is the first VXRM need, note it.  */
+      if (!found)
+	{
+	  saved_vxrm_mode = vxrm_mode;
+	  found = true;
+	  continue;
+	}
+
+      /* Not the first VXRM need.  If this is different than
+	 the saved need, then we're not going to be able to
+	 optimize and we can stop scanning now.  */
+      if (saved_vxrm_mode != vxrm_mode)
+	return VXRM_MODE_NONE;
+
+      /* Same mode as we've seen, keep scanning.  */
+    }
+
+  /* If we got here we scanned the whole function.  If we found
+     some VXRM state, then we can optimize.  If we didn't find
+     VXRM state, then there's nothing to optimize.  */
+  return found ? saved_vxrm_mode : VXRM_MODE_NONE;
+}
+
 /* Return mode that entity must be switched into
    prior to the execution of insn.  */
 
@@ -11818,6 +11877,16 @@ riscv_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
   switch (entity)
     {
     case RISCV_VXRM:
+      /* If CUR_INSN is the first insn in the function, then determine if we
+	 want to signal a need in ENTRY->succs to allow for aggressive
+	 elimination of subsequent sets of VXRM.  */
+      if (insn == get_first_nonnote_insn ())
+	{
+	  int need = singleton_vxrm_need ();
+	  if (need != VXRM_MODE_NONE)
+	    return need;
+	}
+
       return code >= 0 ? get_attr_vxrm_mode (insn) : VXRM_MODE_NONE;
     case RISCV_FRM:
       return riscv_frm_mode_needed (insn, code);
