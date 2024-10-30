@@ -1337,6 +1337,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 
+  template<typename _Tp>
+    [[__gnu__::__always_inline__]]
+    inline _Tp*
+    __shared_ptr_deref(_Tp* __p)
+    {
+      __glibcxx_assert(__p != nullptr);
+      return __p;
+    }
+
   // Define operator* and operator-> for shared_ptr<T>.
   template<typename _Tp, _Lock_policy _Lp,
 	   bool = is_array<_Tp>::value, bool = is_void<_Tp>::value>
@@ -1347,10 +1356,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       element_type&
       operator*() const noexcept
-      {
-	__glibcxx_assert(_M_get() != nullptr);
-	return *_M_get();
-      }
+      { return *std::__shared_ptr_deref(_M_get()); }
 
       element_type*
       operator->() const noexcept
@@ -1392,10 +1398,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[__deprecated__("shared_ptr<T[]>::operator* is absent from C++17")]]
       element_type&
       operator*() const noexcept
-      {
-	__glibcxx_assert(_M_get() != nullptr);
-	return *_M_get();
-      }
+      { return *std::__shared_ptr_deref(_M_get()); }
 
       [[__deprecated__("shared_ptr<T[]>::operator-> is absent from C++17")]]
       element_type*
@@ -1406,13 +1409,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
       element_type&
       operator[](ptrdiff_t __i) const noexcept
       {
-	__glibcxx_assert(_M_get() != nullptr);
-	__glibcxx_assert(!extent<_Tp>::value || __i < extent<_Tp>::value);
-	return _M_get()[__i];
+	if constexpr (extent<_Tp>::value)
+	  __glibcxx_assert(__i < extent<_Tp>::value);
+	return std::__shared_ptr_deref(_M_get())[__i];
       }
+#pragma GCC diagnostic pop
 
     private:
       element_type*
