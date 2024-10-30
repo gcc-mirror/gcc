@@ -2692,11 +2692,23 @@ package body Exp_Ch3 is
            and then Tagged_Type_Expansion
            and then Nkind (Exp_Q) /= N_Raise_Expression
          then
-            Append_To (Res,
-              Make_Tag_Assignment_From_Type
-                (Default_Loc,
-                 New_Copy_Tree (Lhs, New_Scope => Proc_Id),
-                 Underlying_Type (Typ)));
+            --  Get the relevant type for the call to
+            --  Make_Tag_Assignment_From_Type, which, for concurrent types is
+            --  their corresponding record.
+
+            declare
+               T : Entity_Id := Underlying_Type (Typ);
+            begin
+               if Ekind (T) in E_Protected_Type | E_Task_Type then
+                  T := Corresponding_Record_Type (T);
+               end if;
+
+               Append_To (Res,
+                 Make_Tag_Assignment_From_Type
+                   (Default_Loc,
+                    New_Copy_Tree (Lhs, New_Scope => Proc_Id),
+                    T));
+            end;
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
