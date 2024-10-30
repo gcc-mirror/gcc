@@ -5751,6 +5751,9 @@ package body Exp_Aggr is
          Index_Id   : constant Entity_Id := Make_Temporary (Loc, 'I', N);
          Index_Type : constant Entity_Id := Etype (First_Index (Etype (N)));
          Size_Id    : constant Entity_Id := Make_Temporary (Loc, 'I', N);
+         Size_Type  : constant Entity_Id :=
+                        Integer_Type_For
+                          (Esize (Index_Type), Is_Unsigned_Type (Index_Type));
          TmpE       : constant Entity_Id := Make_Temporary (Loc, 'A', N);
 
          Assoc    : Node_Id := First (Component_Associations (N));
@@ -5767,7 +5770,7 @@ package body Exp_Aggr is
          Size_Expr_Code := New_List (
            Make_Object_Declaration (Loc,
              Defining_Identifier => Size_Id,
-             Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
+             Object_Definition   => New_Occurrence_Of (Size_Type, Loc),
              Expression          => Make_Integer_Literal (Loc, 0)));
 
          --  First pass: execute the iterators to count the number of elements
@@ -5801,32 +5804,35 @@ package body Exp_Aggr is
 
          Insert_Actions (N, Size_Expr_Code);
 
-         --  Build a constrained subtype with the calculated length
-         --  and declare the proper bounded aggregate object.
+         --  Build a constrained subtype with the bounds deduced from
+         --  the size computed above and declare the aggregate object.
          --  The index type is some discrete type, so the bounds of the
-         --  constructed array are computed as T'Val (T'Pos (ineger bound));
+         --  constrained subtype are computed as T'Val (integer bounds).
 
          declare
+            --  Pos_Lo := Index_Type'Pos (Index_Type'First)
+
             Pos_Lo : constant Node_Id :=
               Make_Attribute_Reference (Loc,
-                Prefix => New_Occurrence_Of (Index_Type, Loc),
+                Prefix         => New_Occurrence_Of (Index_Type, Loc),
                 Attribute_Name => Name_Pos,
-                Expressions => New_List (
+                Expressions    => New_List (
                   Make_Attribute_Reference (Loc,
                     Prefix => New_Occurrence_Of (Index_Type, Loc),
                     Attribute_Name => Name_First)));
 
+            --  Corresponding index value, i.e. Index_Type'First
+
             Aggr_Lo : constant Node_Id :=
                Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Index_Type, Loc),
-                 Attribute_Name => Name_Val,
-                 Expressions => New_List (New_Copy_Tree (Pos_Lo)));
+                 Prefix         => New_Occurrence_Of (Index_Type, Loc),
+                 Attribute_Name => Name_First);
 
-            --  Hi = Index_type'Pos (Lo + Size -1).
+            --  Pos_Hi := Pos_Lo + Size - 1
 
             Pos_Hi : constant Node_Id :=
                Make_Op_Add (Loc,
-                 Left_Opnd => New_Copy_Tree (Pos_Lo),
+                 Left_Opnd  => Pos_Lo,
                  Right_Opnd =>
                    Make_Op_Subtract (Loc,
                      Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
@@ -5838,7 +5844,7 @@ package body Exp_Aggr is
                Make_Attribute_Reference (Loc,
                  Prefix => New_Occurrence_Of (Index_Type, Loc),
                  Attribute_Name => Name_Val,
-                 Expressions => New_List (New_Copy_Tree (Pos_Hi)));
+                 Expressions    => New_List (Pos_Hi));
 
             SubE : constant Entity_Id := Make_Temporary (Loc, 'T');
             SubD : constant Node_Id :=
@@ -5861,6 +5867,7 @@ package body Exp_Aggr is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => TmpE,
                    Object_Definition   => New_Occurrence_Of (SubE, Loc));
+
          begin
             Insert_Actions (N, New_List (SubD, TmpD));
          end;
