@@ -1,3 +1,15 @@
+2024-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20241029-1.c: New test.
+
+2024-10-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-08-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/116415
+	* gcc.target/powerpc/pr116415.c: New test.
+
 2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

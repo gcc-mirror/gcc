@@ -1,3 +1,19 @@
+2024-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/117327
+	* reorg.cc (find_end_label): Do not return a dangling label at the
+	end of the function and adjust commentary.
+
+2024-10-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-08-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/116415
+	* config/rs6000/rs6000.h (TI_OR_PTI_MODE): New define.
+	* config/rs6000/rs6000-p8swap.cc (rs6000_analyze_swaps): Use it to
+	handle PTImode identically to TImode.
+
 2024-10-24  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
