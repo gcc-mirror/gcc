@@ -1,3 +1,353 @@
+2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	Revert:
+	2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/if-to-switch-6.c: Allow condition chain.
+	* gcc.dg/tree-ssa/switch-1.c: Allow more bit tests.
+	* gcc.dg/pr21643.c: Use -fno-bit-tests
+	* gcc.target/aarch64/pr99988.c: Use -fno-bit-tests
+
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc.dg/plugin/analyzer_cpython_plugin.c (dump_refcnt_info):
+	Update for global_dc's m_printer becoming reference printer.
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2.2.c: Replace usage
+	of -fdiagnostics-format=sarif-file-2.2-prerelease with
+	-fdiagnostics-set-output=sarif:version=2.2-prerelease.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c: Update for
+	global_dc's m_printer becoming reference printer.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.c: Update for
+	changes to output formats.
+	* gcc.dg/plugin/expensive_selftests_plugin.c: Update for
+	global_dc's m_printer becoming reference printer.
+	* gcc.dg/sarif-output/add-output-sarif-defaults.c: New test.
+	* gcc.dg/sarif-output/bad-binary-op.c: New test.
+	* gcc.dg/sarif-output/bad-binary-op.py: New support script.
+	* gcc.dg/sarif-output/multiple-outputs.c: New test.
+	* gcc.dg/sarif-output/multiple-outputs.py: New support script.
+	* lib/scansarif.exp (verify-sarif-file): Add an optional second
+	argument specifying the expected filename of the .sarif file.
+
+2024-10-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117346
+	* gcc.target/aarch64/imm_choice_comparison-1.c: New test.
+
+2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/if-to-switch-6.c: Allow condition chain.
+	* gcc.dg/tree-ssa/switch-1.c: Allow more bit tests.
+	* gcc.dg/pr21643.c: Use -fno-bit-tests
+	* gcc.target/aarch64/pr99988.c: Use -fno-bit-tests
+
+2024-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20241029-1.c: New test.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117313
+	* c-c++-common/init-6.c: New test.
+
+2024-10-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/30854
+	PR c++/116634
+	* g++.dg/coroutines/coro-bad-alloc-02-no-op-new-nt.C: Adjust
+	diagnostic.
+	* g++.dg/diagnostic/aggr-init1.C: New test.
+
+2024-10-29  Co-Authored-By: Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/attribute-15.c: Add _zmmul1p0 to arch string.
+	* gcc.target/riscv/attribute-16.c: Ditto.
+	* gcc.target/riscv/attribute-17.c: Ditto.
+	* gcc.target/riscv/attribute-18.c: Ditto.
+	* gcc.target/riscv/attribute-19.c: Ditto.
+	* gcc.target/riscv/pr110696.c: Ditto.
+	* gcc.target/riscv/target-attr-01.c: Ditto.
+	* gcc.target/riscv/target-attr-02.c: Ditto.
+	* gcc.target/riscv/target-attr-03.c: Ditto.
+	* gcc.target/riscv/target-attr-04.c: Ditto.
+	* gcc.target/riscv/target-attr-08.c: Ditto.
+	* gcc.target/riscv/target-attr-11.c: Ditto.
+	* gcc.target/riscv/target-attr-14.c: Ditto.
+	* gcc.target/riscv/target-attr-15.c: Ditto.
+	* gcc.target/riscv/target-attr-16.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114352-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr114352-3.c: Likewise.
+	* gcc.dg/pr90838.c: Fix search string for rv64.
+
+2024-10-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117341
+	* g++.dg/torture/pr117341-1.C: New test.
+
+2024-10-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-32.c: New test.
+	* gcc.target/riscv/cmo-64.c: New test.
+
+2024-10-29  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add strided folder.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-1-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-f64.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st-run-1-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st.h: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st_data.h: New test.
+	* gcc.target/riscv/rvv/autovec/strided/strided_ld_st_run.h: New test.
+
+2024-10-29  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-1.c:
+	Adjust IR for MASK_LEN_LOAD check.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_load-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-1.c:
+	Ditto but for store.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-2.c:
+	Ditto.
+
+2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117333
+	* gcc.dg/torture/pr117333.c: New testcase.
+
+2024-10-29  Alfie Richards  <Alfie.Richards@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/pr112337.c: Call intrinsic instead of builtin.
+
+2024-10-29  Alfie Richards  <Alfie.Richards@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vst1q_p_f16.c: Remove `return`.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst1q_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst2q_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vst4q_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_p_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_s16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_s8.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_u16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_p_u8.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_s16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_s8.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_u16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_scatter_offset_u8.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrbq_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_p_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_base_wb_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_p_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_offset_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_p_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_p_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrdq_scatter_shifted_offset_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_p_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_p_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_p_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_f16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_p_f16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_p_s16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_p_u16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_s16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_u16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_offset_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_f16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_p_f16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_p_s16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_p_u16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_s16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_u16.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_scatter_shifted_offset_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrhq_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_p_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_p_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_p_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_base_wb_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_offset_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_p_f32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_p_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_p_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_s32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_scatter_shifted_offset_u32.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vstrwq_u32.c: Likewise.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117030
+	* gcc.dg/builtin-stdc-rotate-1.c: New test.
+	* gcc.dg/builtin-stdc-rotate-2.c: New test.
+	* gcc.dg/ubsan/builtin-stdc-rotate-1.c: New test.
+	* gcc.dg/ubsan/builtin-stdc-rotate-2.c: New test.
+
 2024-10-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/sarif-output/test-bad-pragma.py: Rename to...

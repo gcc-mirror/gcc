@@ -1,3 +1,9 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Update for
+	m_printer becoming reference printer.
+
 2024-10-24  David Malcolm  <dmalcolm@redhat.com>
 	    Gaius Mulley  <gaiusmod2@gmail.com>
 

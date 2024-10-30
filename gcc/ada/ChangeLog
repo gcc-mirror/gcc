@@ -1,3 +1,13 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* gcc-interface/misc.cc (internal_error_function): Update for
+	m_printer becoming reference printer.
+
+2024-10-29  Marc Poulhiès  <poulhies@adacore.com>
+
+	* types.h: fix static_assert.
+
 2024-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/62122

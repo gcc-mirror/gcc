@@ -1,3 +1,26 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-format.cc (selftest::test_type_mismatch_range_labels): Update
+	for m_printer becoming reference printer.
+	(selftest::test_type_mismatch_range_labels): Likewise.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117313
+	* c-common.cc (complete_array_type): For RAW_DATA_CST elements
+	advance curindex by RAW_DATA_LENGTH or one less than that if
+	ce->index is non-NULL.  Handle even the first element if
+	it is RAW_DATA_CST.  Formatting fix.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117030
+	* c-common.cc (c_common_reswords): Add __builtin_stdc_rotate_left
+	and __builtin_stdc_rotate_right.
+	* c-ubsan.cc (ubsan_instrument_shift): For {L,R}ROTATE_EXPR
+	just check if op1 is negative.
+
 2024-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (warn_trailing_whitespace_kind): Change blank

@@ -1,3 +1,11 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* analyzer-language.cc (on_finish_translation_unit): Update for
+	m_printer becoming reference printer.
+	* engine.cc (run_checkers): Likewise.
+	* program-point.cc (function_point::print_source_line): Likewise.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* state-purge.cc: Remove trailing whitespace.

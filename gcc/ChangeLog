@@ -1,3 +1,686 @@
+2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	Revert:
+	2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/117091
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests):
+	Change clustering algorithm to simple greedy.
+
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* Makefile.in (OBJS-libcommon-target): Add opts-diagnostic.o.
+	* common.opt (fdiagnostics-add-output=): New.
+	(fdiagnostics-set-output=): New.
+	(diagnostics_output_format): Drop sarif-file-2.2-prerelease from
+	enum.
+	* common.opt.urls: Regenerate.
+	* diagnostic-buffer.h (diagnostic_buffer::~diagnostic_buffer): New.
+	(diagnostic_buffer::ensure_per_format_buffer): Rename to...
+	(diagnostic_buffer::ensure_per_format_buffers): ...this.
+	(diagnostic_buffer::m_per_format_buffer): Replace with...
+	(diagnostic_buffer::m_per_format_buffers): ...this, updating type.
+	* diagnostic-format-json.cc (json_output_format::update_printer):
+	New.
+	(json_output_format::follows_reference_printer_p): New.
+	(diagnostic_output_format_init_json): Drop redundant call to
+	set_path_format, as this is not a text output format.
+	* diagnostic-format-sarif.cc: Include "diagnostic-format-text.h".
+	(sarif_builder::set_printer): New.
+	(sarif_builder::sarif_builder): Add "printer" param and use it for
+	m_printer.
+	(sarif_builder::make_location_object::escape_nonascii_renderer::render):
+	Rather than using dc.m_printer, create a
+	diagnostic_text_output_format instance and use its printer.
+	(sarif_output_format::follows_reference_printer_p): New.
+	(sarif_output_format::update_printer): New.
+	(sarif_output_format::sarif_output_format): Pass in correct
+	printer to m_builder's ctor.
+	(diagnostic_output_format_init_sarif): Drop redundant call to
+	set_path_format, as this is not a text output format.  Replace
+	calls to pp_show_color and set_token_printer with call to
+	update_printer.  Drop redundant call to set_show_highlight_colors,
+	as this printer does not show colors.
+	(diagnostic_output_format_init_sarif_file): Split out file opening
+	into...
+	(diagnostic_output_format_open_sarif_file): ...this new function.
+	(make_sarif_sink): New.
+	(selftest::test_make_location_object): Provide a pp for the
+	builder.
+	* diagnostic-format-sarif.h
+	(diagnostic_output_format_open_sarif_file): New decl.
+	(make_sarif_sink): New decl.
+	* diagnostic-format-text.cc (diagnostic_text_output_format::dump):
+	Dump sm_follows_reference_printer.
+	(diagnostic_text_output_format::on_report_verbatim): New.
+	(diagnostic_text_output_format::follows_reference_printer_p): New.
+	(diagnostic_text_output_format::update_printer): New.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::diagnostic_text_output_format):
+	Add optional "follows_reference_printer" param.
+	(diagnostic_text_output_format::on_report_verbatim): New decl.
+	(diagnostic_text_output_format::after_diagnostic): Drop "final".
+	(diagnostic_text_output_format::follows_reference_printer_p): New
+	decl.
+	(class diagnostic_text_output_format): Convert private members to
+	protected.
+	(diagnostic_text_output_format::m_follows_reference_printer): New
+	field.
+	* diagnostic-format.h
+	(diagnostic_output_format::on_report_verbatim): New vfunc.
+	(diagnostic_output_format::follows_reference_printer_p): New vfunc.
+	(diagnostic_output_format::update_printer): New vfunc.
+	(diagnostic_output_format::get_printer): Use m_printer rather than
+	a printer from m_context.
+	(diagnostic_output_format::diagnostic_output_format): Initialize
+	m_printer by cloning the context's printer.
+	(diagnostic_output_format::m_printer): New field.
+	* diagnostic-global-context.cc (verbatim): Reimplement in terms of
+	global_dc->report_verbatim, moving existing implementation to
+	diagnostic_text_output_format::on_report_verbatim.
+	(fnotice): Support multiple output sinks by using a new
+	global_dc->supports_fnotice_on_stderr_p.
+	* diagnostic-output-file.h
+	(diagnostic_output_file::diagnostic_output_file): New default ctor.
+	(diagnostic_output_file::operator=): Implement move assignment.
+	* diagnostic-path.cc (selftest::test_interprocedural_path_1): Pass
+	false for new param of text_output's ctor.
+	* diagnostic-show-locus.cc
+	(selftest::test_layout_x_offset_display_utf8): Use reference
+	printer.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	(selftest::test_one_liner_fixit_remove): Likewise.
+	* diagnostic.cc: Include "pretty-print-urlifier.h".
+	(diagnostic_set_caret_max_width): Update for global_dc's m_printer
+	becoming reference printer.
+	(diagnostic_context::initialize): Update for m_printer becoming
+	m_reference_printer.  Use ::make_unique to create it.  Update for
+	m_output_format becoming m_output_sinks.
+	(diagnostic_context::color_init): Update the reference printer,
+	then update the printers for any output sinks that follow it.
+	(diagnostic_context::urls_init): Likewise.
+	(diagnostic_context::finish): Update comment.  Update for
+	m_output_format becoming m_output_sinks.  Update for m_printer
+	becoming m_reference_printer and use "delete" on it rather than
+	XDELETE.
+	(diagnostic_context::dump): Update for m_printer becoming
+	reference printer, and for multiple output sinks.
+	(diagnostic_context::set_output_format): Reimplement for
+	supporting multiple output sinks.
+	(diagnostic_context::get_output_format): Likewise.
+	(diagnostic_context::add_sink): New.
+	(diagnostic_context::supports_fnotice_on_stderr_p): New.
+	(diagnostic_context::set_pretty_printer): New.
+	(diagnostic_context::refresh_output_sinks): New.
+	(diagnostic_context::set_format_decoder): New.
+	(diagnostic_context::set_show_highlight_colors): New.
+	(diagnostic_context::set_prefixing_rule): New.
+	(diagnostic_context::report_diagnostic): Update to support
+	multiple output sinks.
+	(diagnostic_context::report_verbatim): New.
+	(diagnostic_context::emit_diagram): Update to support multiple
+	output sinks.
+	(diagnostic_context::error_recursion): Update to use
+	m_reference_printer.
+	(fancy_abort): Likewise.
+	(diagnostic_context::end_group): Update to support multiple
+	output sinks.
+	(diagnostic_output_format::dump): Implement.
+	(diagnostic_output_format::on_report_verbatim): Likewise.
+	(diagnostic_output_format_init): Drop
+	DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE.
+	(diagnostic_context::set_diagnostic_buffer): Reimplement to
+	support multiple output sinks.
+	(diagnostic_context::clear_diagnostic_buffer): Likewise.
+	(diagnostic_context::flush_diagnostic_buffer): Likewise.
+	(diagnostic_buffer::diagnostic_buffer): Initialize
+	m_per_format_buffers.
+	(diagnostic_buffer::~diagnostic_buffer): New dtor.
+	(diagnostic_buffer::dump): Reimplement to support multiple output
+	sinks.
+	(diagnostic_buffer::empty_p): Likewise.
+	(diagnostic_buffer::move_to): Likewise.
+	(diagnostic_buffer::ensure_per_format_buffer): Likewise, renaming
+	to...
+	(diagnostic_buffer::ensure_per_format_buffers): ...this.
+	* diagnostic.h
+	(DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE_2_2_PRERELEASE): Delete.
+	(class diagnostic_context): Add friend class diagnostic_buffer.
+	(diagnostic_context::set_pretty_printer): New decl.
+	(diagnostic_context::refresh_output_sinks): New decl.
+	(diagnostic_context::report_verbatim): New decl.
+	(diagnostic_context::get_output_format): Drop.
+	(diagnostic_context::set_show_highlight_colors): Drop body.
+	(diagnostic_context::set_format_decoder): New decl.
+	(diagnostic_context::set_prefixing_rule): New decl.
+	(diagnostic_context::clone_printer): Reimplement.
+	(diagnostic_context::get_reference_printer): New accessor.
+	(diagnostic_context::add_sink): New decl.
+	(diagnostic_context::supports_fnotice_on_stderr_p): New decl.
+	(diagnostic_context::m_printer): Replace with...
+	(diagnostic_context::m_reference_printer): ...this, and make
+	private.
+	(diagnostic_context::m_output_format): Replace with...
+	(diagnostic_context::m_output_sinks): ...this.
+	(diagnostic_format_decoder): Delete.
+	(diagnostic_prefixing_rule): Delete.
+	(diagnostic_ready_p): Delete.
+	* doc/invoke.texi: Document -fdiagnostics-add-output= and
+	-fdiagnostics-set-output=.
+	* gcc.cc: Include "opts-diagnostic.h".
+	(driver_handle_option): Handle cases OPT_fdiagnostics_add_output_
+	and OPT_fdiagnostics_set_output_.
+	* opts-diagnostic.cc: New file.
+	* opts-diagnostic.h (handle_OPT_fdiagnostics_add_output_): New decl.
+	(handle_OPT_fdiagnostics_set_output_): New decl.
+	* opts-global.cc (init_options_once): Update for global_dc's
+	m_printer becoming reference printer.  Call
+	global_dc->refresh_output_sinks.
+	* opts.cc (common_handle_option): Replace use of
+	diagnostic_prefixing_rule with dc->set_prefixing_rule.  Handle
+	cases OPT_fdiagnostics_add_output_ and
+	OPT_fdiagnostics_set_output_.  Update for m_printer becoming
+	reference printer.
+	* selftest-diagnostic.cc
+	(selftest::test_diagnostic_context::test_diagnostic_context):
+	Update for m_printer becoming reference printer.
+	(test_diagnostic_context::test_show_locus): Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::opts_diagnostic_cc_tests.
+	* selftest.h (selftest::opts_diagnostic_cc_tests): New decl.
+	* simple-diagnostic-path.cc
+	(selftest::simple_diagnostic_path_cc_tests): Use reference
+	printer.
+	* toplev.cc (announce_function): Update for global_dc's m_printer
+	becoming reference printer.
+	(toplev::main): Likewise.
+	* tree-diagnostic.cc (tree_diagnostics_defaults): Replace use of
+	diagnostic_format_decoder with context->set_format_decoder.
+	* tree-diagnostic.h
+	(tree_dump_pretty_printer::tree_dump_pretty_printer): Update for
+	global_dc's m_printer becoming reference printer.
+	* tree.cc (escaped_string::escape): Likewise.
+	(selftest::test_escaped_strings): Likewise.
+
+2024-10-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117346
+	* config/aarch64/aarch64.cc (aarch64_gen_ccmp_first): Call
+	canonicalize_comparison before figuring out the cmp_mode/cc_mode.
+	(aarch64_gen_ccmp_next): Likewise.
+
+2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/117091
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests):
+	Change clustering algorithm to simple greedy.
+
+2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/117091
+	* gimple-if-to-switch.cc (if_chain::is_beneficial): Update
+	find_bit_test call.
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests):
+	Get max_c argument and bail out early if all case labels are
+	unique.
+	(switch_decision_tree::compute_cases_per_edge): Record number of
+	targets per label and return.
+	(switch_decision_tree::analyze_switch_statement): ... pass to
+	find_bit_tests.
+	* tree-switch-conversion.h: Update prototypes.
+
+2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
+
+	* common.opt: Enable -fbit-tests and -fjump-tables only at -O1.
+	* opts.cc (default_options_table): Dito.
+
+2024-10-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/117327
+	* reorg.cc (find_end_label): Do not return a dangling label at the
+	end of the function and adjust commentary.
+
+2024-10-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117349
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Remove
+	unnecessary casts to rtx_code.
+	(aarch64_gen_ccmp_first): Likewise.
+	(aarch64_gen_ccmp_next): Likewise.
+
+2024-10-29  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* common/config/riscv/riscv-common.cc: M implies Zmmul.
+
+2024-10-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* config.gcc: Add riscv_cmo.h.
+	* config/riscv/riscv_cmo.h: New file.
+
+2024-10-29  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/autovec.md (mask_len_strided_load_<mode>): Add
+	new pattern for MASK_LEN_STRIDED_LOAD.
+	(mask_len_strided_store_<mode>): Ditto but for store.
+	* config/riscv/riscv-protos.h (expand_strided_load): Add new
+	func decl to expand strided load.
+	(expand_strided_store): Ditto but for store.
+	* config/riscv/riscv-v.cc (expand_strided_load): Add new
+	func impl to expand strided load.
+	(expand_strided_store): Ditto but for store.
+
+2024-10-29  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* tree-vect-stmts.cc (vect_get_strided_load_store_ops): Handle
+	MASK_LEN_STRIDED_LOAD{STORE} after supported check.
+	(vectorizable_store): Generate MASK_LEN_STRIDED_LOAD when the offset
+	of gater is not vector type.
+	(vectorizable_load): Ditto but for store.
+
+2024-10-29  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* internal-fn.cc (strided_load_direct): Add new define direct
+	for strided load.
+	(strided_store_direct): Ditto but for store.
+	(expand_strided_load_optab_fn): Add new func to expand the IFN
+	MASK_LEN_STRIDED_LOAD in middle-end.
+	(expand_strided_store_optab_fn): Ditto but for store.
+	(direct_strided_load_optab_supported_p): Add define for stride
+	load optab supported.
+	(direct_strided_store_optab_supported_p): Ditto but for store.
+	(internal_fn_len_index): Add strided load/store len index.
+	(internal_fn_mask_index): Ditto but for mask.
+	(internal_fn_stored_value_index): Add strided store value index.
+	* internal-fn.def (MASK_LEN_STRIDED_LOAD): Add new IFN for
+	strided load.
+	(MASK_LEN_STRIDED_STORE): Ditto but for store.
+	* optabs.def (mask_len_strided_load_optab): Add strided load optab.
+	(mask_len_strided_store_optab): Add strided store optab.
+
+2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (type_conversion_p): Remove.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+	(vect_vect_recog_func_ptrs): Remove vect_recog_mixed_size_cond_pattern
+	entry.
+
+2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_recog_mask_conversion_pattern):
+	Remove COMPARISON_CLASS_P rhs1 of COND_EXPR case and assert
+	it doesn't happen.
+
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/117275
+	* varasm.cc (process_pending_assemble_externals): Reset
+	pending_assemble_externals_set to nullptr after deleting it.
+	(varasm_cc_finalize): Delete pending_assemble_externals_set.
+
+2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117343
+	* tree-vect-slp.cc (vect_optimize_slp_pass::build_vertices):
+	Support re-building the SLP graph.
+	(vect_optimize_slp_pass::run): Re-build the SLP graph before
+	decide_masked_load_lanes.
+
+2024-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117333
+	* tree-data-ref.cc (dr_may_alias_p): Guard against NULL
+	access size.
+
+2024-10-29  Alfie Richards  <Alfie.Richards@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vld1q_impl): Add support
+	for predicated version.
+	(vst1q_impl): Likewise.
+	(vstrq_impl): New class.
+	(vldrq_impl): New class.
+	(vldrbq): New.
+	(vldrhq): New.
+	(vldrwq): New.
+	(vstrbq): New.
+	(vstrhq): New.
+	(vstrwq): New.
+	* config/arm/arm-mve-builtins-base.def (vld1q): Add predicated
+	version.
+	(vldrbq): New.
+	(vldrhq): New.
+	(vldrwq): New.
+	(vst1q): Add predicated version.
+	(vstrbq): New.
+	(vstrhq): New.
+	(vstrwq): New.
+	(vrev32q): Update types to float_16.
+	* config/arm/arm-mve-builtins-base.h (vldrbq): New.
+	(vldrhq): New.
+	(vldrwq): New.
+	(vstrbq): New.
+	(vstrhq): New.
+	(vstrwq): New.
+	* config/arm/arm-mve-builtins-functions.h (memory_vector_mode):
+	Remove conversion of floating point vectors to integer.
+	* config/arm/arm-mve-builtins.cc (TYPES_float16): Change to...
+	(TYPES_float_16): ...this.
+	(TYPES_float_32): New.
+	(float16): Change to...
+	(float_16): ...this.
+	(float_32): New.
+	(preds_z_or_none): New.
+	(function_resolver::check_gp_argument): Add support for _z
+	predicate.
+	* config/arm/arm_mve.h (vstrbq): Remove.
+	(vstrbq_p): Likewise.
+	(vstrhq): Likewise.
+	(vstrhq_p): Likewise.
+	(vstrwq): Likewise.
+	(vstrwq_p): Likewise.
+	(vst1q_p): Likewise.
+	(vld1q_z): Likewise.
+	(vldrbq_s8): Likewise.
+	(vldrbq_u8): Likewise.
+	(vldrbq_s16): Likewise.
+	(vldrbq_u16): Likewise.
+	(vldrbq_s32): Likewise.
+	(vldrbq_u32): Likewise.
+	(vstrbq_s8): Likewise.
+	(vstrbq_s32): Likewise.
+	(vstrbq_s16): Likewise.
+	(vstrbq_u8): Likewise.
+	(vstrbq_u32): Likewise.
+	(vstrbq_u16): Likewise.
+	(vstrbq_p_s8): Likewise.
+	(vstrbq_p_s32): Likewise.
+	(vstrbq_p_s16): Likewise.
+	(vstrbq_p_u8): Likewise.
+	(vstrbq_p_u32): Likewise.
+	(vstrbq_p_u16): Likewise.
+	(vldrbq_z_s16): Likewise.
+	(vldrbq_z_u8): Likewise.
+	(vldrbq_z_s8): Likewise.
+	(vldrbq_z_s32): Likewise.
+	(vldrbq_z_u16): Likewise.
+	(vldrbq_z_u32): Likewise.
+	(vldrhq_s32): Likewise.
+	(vldrhq_s16): Likewise.
+	(vldrhq_u32): Likewise.
+	(vldrhq_u16): Likewise.
+	(vldrhq_z_s32): Likewise.
+	(vldrhq_z_s16): Likewise.
+	(vldrhq_z_u32): Likewise.
+	(vldrhq_z_u16): Likewise.
+	(vldrwq_s32): Likewise.
+	(vldrwq_u32): Likewise.
+	(vldrwq_z_s32): Likewise.
+	(vldrwq_z_u32): Likewise.
+	(vldrhq_f16): Likewise.
+	(vldrhq_z_f16): Likewise.
+	(vldrwq_f32): Likewise.
+	(vldrwq_z_f32): Likewise.
+	(vstrhq_f16): Likewise.
+	(vstrhq_s32): Likewise.
+	(vstrhq_s16): Likewise.
+	(vstrhq_u32): Likewise.
+	(vstrhq_u16): Likewise.
+	(vstrhq_p_f16): Likewise.
+	(vstrhq_p_s32): Likewise.
+	(vstrhq_p_s16): Likewise.
+	(vstrhq_p_u32): Likewise.
+	(vstrhq_p_u16): Likewise.
+	(vstrwq_f32): Likewise.
+	(vstrwq_s32): Likewise.
+	(vstrwq_u32): Likewise.
+	(vstrwq_p_f32): Likewise.
+	(vstrwq_p_s32): Likewise.
+	(vstrwq_p_u32): Likewise.
+	(vst1q_p_u8): Likewise.
+	(vst1q_p_s8): Likewise.
+	(vld1q_z_u8): Likewise.
+	(vld1q_z_s8): Likewise.
+	(vst1q_p_u16): Likewise.
+	(vst1q_p_s16): Likewise.
+	(vld1q_z_u16): Likewise.
+	(vld1q_z_s16): Likewise.
+	(vst1q_p_u32): Likewise.
+	(vst1q_p_s32): Likewise.
+	(vld1q_z_u32): Likewise.
+	(vld1q_z_s32): Likewise.
+	(vld1q_z_f16): Likewise.
+	(vst1q_p_f16): Likewise.
+	(vld1q_z_f32): Likewise.
+	(vst1q_p_f32): Likewise.
+	(__arm_vstrbq_s8): Likewise.
+	(__arm_vstrbq_s32): Likewise.
+	(__arm_vstrbq_s16): Likewise.
+	(__arm_vstrbq_u8): Likewise.
+	(__arm_vstrbq_u32): Likewise.
+	(__arm_vstrbq_u16): Likewise.
+	(__arm_vldrbq_s8): Likewise.
+	(__arm_vldrbq_u8): Likewise.
+	(__arm_vldrbq_s16): Likewise.
+	(__arm_vldrbq_u16): Likewise.
+	(__arm_vldrbq_s32): Likewise.
+	(__arm_vldrbq_u32): Likewise.
+	(__arm_vstrbq_p_s8): Likewise.
+	(__arm_vstrbq_p_s32): Likewise.
+	(__arm_vstrbq_p_s16): Likewise.
+	(__arm_vstrbq_p_u8): Likewise.
+	(__arm_vstrbq_p_u32): Likewise.
+	(__arm_vstrbq_p_u16): Likewise.
+	(__arm_vldrbq_z_s8): Likewise.
+	(__arm_vldrbq_z_s32): Likewise.
+	(__arm_vldrbq_z_s16): Likewise.
+	(__arm_vldrbq_z_u8): Likewise.
+	(__arm_vldrbq_z_u32): Likewise.
+	(__arm_vldrbq_z_u16): Likewise.
+	(__arm_vldrhq_s32): Likewise.
+	(__arm_vldrhq_s16): Likewise.
+	(__arm_vldrhq_u32): Likewise.
+	(__arm_vldrhq_u16): Likewise.
+	(__arm_vldrhq_z_s32): Likewise.
+	(__arm_vldrhq_z_s16): Likewise.
+	(__arm_vldrhq_z_u32): Likewise.
+	(__arm_vldrhq_z_u16): Likewise.
+	(__arm_vldrwq_s32): Likewise.
+	(__arm_vldrwq_u32): Likewise.
+	(__arm_vldrwq_z_s32): Likewise.
+	(__arm_vldrwq_z_u32): Likewise.
+	(__arm_vstrhq_s32): Likewise.
+	(__arm_vstrhq_s16): Likewise.
+	(__arm_vstrhq_u32): Likewise.
+	(__arm_vstrhq_u16): Likewise.
+	(__arm_vstrhq_p_s32): Likewise.
+	(__arm_vstrhq_p_s16): Likewise.
+	(__arm_vstrhq_p_u32): Likewise.
+	(__arm_vstrhq_p_u16): Likewise.
+	(__arm_vstrwq_s32): Likewise.
+	(__arm_vstrwq_u32): Likewise.
+	(__arm_vstrwq_p_s32): Likewise.
+	(__arm_vstrwq_p_u32): Likewise.
+	(__arm_vst1q_p_u8): Likewise.
+	(__arm_vst1q_p_s8): Likewise.
+	(__arm_vld1q_z_u8): Likewise.
+	(__arm_vld1q_z_s8): Likewise.
+	(__arm_vst1q_p_u16): Likewise.
+	(__arm_vst1q_p_s16): Likewise.
+	(__arm_vld1q_z_u16): Likewise.
+	(__arm_vld1q_z_s16): Likewise.
+	(__arm_vst1q_p_u32): Likewise.
+	(__arm_vst1q_p_s32): Likewise.
+	(__arm_vld1q_z_u32): Likewise.
+	(__arm_vld1q_z_s32): Likewise.
+	(__arm_vldrwq_f32): Likewise.
+	(__arm_vldrwq_z_f32): Likewise.
+	(__arm_vldrhq_z_f16): Likewise.
+	(__arm_vldrhq_f16): Likewise.
+	(__arm_vstrwq_p_f32): Likewise.
+	(__arm_vstrwq_f32): Likewise.
+	(__arm_vstrhq_f16): Likewise.
+	(__arm_vstrhq_p_f16): Likewise.
+	(__arm_vld1q_z_f16): Likewise.
+	(__arm_vst1q_p_f16): Likewise.
+	(__arm_vld1q_z_f32): Likewise.
+	(__arm_vst2q_f32): Likewise.
+	(__arm_vst1q_p_f32): Likewise.
+	(__arm_vstrbq): Likewise.
+	(__arm_vstrbq_p): Likewise.
+	(__arm_vstrhq): Likewise.
+	(__arm_vstrhq_p): Likewise.
+	(__arm_vstrwq): Likewise.
+	(__arm_vstrwq_p): Likewise.
+	(__arm_vst1q_p): Likewise.
+	(__arm_vld1q_z): Likewise.
+	* config/arm/arm_mve_builtins.def:
+	(vstrbq_s): Delete.
+	(vstrbq_u): Likewise.
+	(vldrbq_s): Likewise.
+	(vldrbq_u): Likewise.
+	(vstrbq_p_s): Likewise.
+	(vstrbq_p_u): Likewise.
+	(vldrbq_z_s): Likewise.
+	(vldrbq_z_u): Likewise.
+	(vld1q_u): Likewise.
+	(vld1q_s): Likewise.
+	(vldrhq_z_u): Likewise.
+	(vldrhq_u): Likewise.
+	(vldrhq_z_s): Likewise.
+	(vldrhq_s): Likewise.
+	(vld1q_f): Likewise.
+	(vldrhq_f): Likewise.
+	(vldrhq_z_f): Likewise.
+	(vldrwq_f): Likewise.
+	(vldrwq_s): Likewise.
+	(vldrwq_u): Likewise.
+	(vldrwq_z_f): Likewise.
+	(vldrwq_z_s): Likewise.
+	(vldrwq_z_u): Likewise.
+	(vst1q_u): Likewise.
+	(vst1q_s): Likewise.
+	(vstrhq_p_u): Likewise.
+	(vstrhq_u): Likewise.
+	(vstrhq_p_s): Likewise.
+	(vstrhq_s): Likewise.
+	(vst1q_f): Likewise.
+	(vstrhq_f): Likewise.
+	(vstrhq_p_f): Likewise.
+	(vstrwq_f): Likewise.
+	(vstrwq_s): Likewise.
+	(vstrwq_u): Likewise.
+	(vstrwq_p_f): Likewise.
+	(vstrwq_p_s): Likewise.
+	(vstrwq_p_u): Likewise.
+	* config/arm/iterators.md (MVE_w_narrow_TYPE): New iterator.
+	(MVE_w_narrow_type): New iterator.
+	(MVE_wide_n_TYPE): New attribute.
+	(MVE_wide_n_type): New attribute.
+	(MVE_wide_n_sz_elem): New attribute.
+	(MVE_wide_n_VPRED): New attribute.
+	(MVE_elem_ch): New attribute.
+	(supf): Remove VSTRBQ_S, VSTRBQ_U, VLDRBQ_S, VLDRBQ_U, VLD1Q_S,
+	VLD1Q_U, VLDRHQ_S, VLDRHQ_U, VLDRWQ_S, VLDRWQ_U, VST1Q_S, VST1Q_U,
+	VSTRHQ_S, VSTRHQ_U, VSTRWQ_S, VSTRWQ_U.
+	(VSTRBQ, VLDRBQ, VLD1Q, VLDRHQ, VLDRWQ, VST1Q, VSTRHQ, VSTRWQ):
+	Delete.
+	* config/arm/mve.md (mve_vstrbq_<supf><mode>): Remove.
+	(mve_vldrbq_<supf><mode>): Likewise.
+	(mve_vstrbq_p_<supf><mode>): Likewise.
+	(mve_vldrbq_z_<supf><mode>): Likewise.
+	(mve_vldrhq_fv8hf): Likewise.
+	(mve_vldrhq_<supf><mode>): Likewise.
+	(mve_vldrhq_z_fv8hf): Likewise.
+	(mve_vldrhq_z_<supf><mode>): Likewise.
+	(mve_vldrwq_fv4sf): Likewise.
+	(mve_vldrwq_<supf>v4si): Likewise.
+	(mve_vldrwq_z_fv4sf): Likewise.
+	(mve_vldrwq_z_<supf>v4si): Likewise.
+	(@mve_vld1q_f<mode>): Likewise.
+	(@mve_vld1q_<supf><mode>): Likewise.
+	(mve_vstrhq_fv8hf): Likewise.
+	(mve_vstrhq_p_fv8hf): Likewise.
+	(mve_vstrhq_p_<supf><mode>): Likewise.
+	(mve_vstrhq_<supf><mode>): Likewise.
+	(mve_vstrwq_fv4sf): Likewise.
+	(mve_vstrwq_p_fv4sf): Likewise.
+	(mve_vstrwq_p_<supf>v4si): Likewise.
+	(mve_vstrwq_<supf>v4si): Likewise.
+	(@mve_vst1q_f<mode>): Likewise.
+	(@mve_vst1q_<supf><mode>): Likewise.
+	(@mve_vstrq_<mode>): New.
+	(@mve_vstrq_p_<mode>): New.
+	(@mve_vstrq_truncate_<mode>): New.
+	(@mve_vstrq_p_truncate_<mode>): New.
+	(@mve_vldrq_<mode>): New.
+	(@mve_vldrq_z_<mode>): New.
+	(@mve_vldrq_extend_<mode><US>): New.
+	(@mve_vldrq_z_extend_<mode><US>): New.
+	* config/arm/unspecs.md:
+	(VSTRBQ_S): Remove.
+	(VSTRBQ_U): Likewise.
+	(VLDRBQ_S): Likewise.
+	(VLDRBQ_U): Likewise.
+	(VLD1Q_F): Likewise.
+	(VLD1Q_S): Likewise.
+	(VLD1Q_U): Likewise.
+	(VLDRHQ_F): Likewise.
+	(VLDRHQ_U): Likewise.
+	(VLDRHQ_S): Likewise.
+	(VLDRWQ_F): Likewise.
+	(VLDRWQ_S): Likewise.
+	(VLDRWQ_U): Likewise.
+	(VSTRHQ_F): Likewise.
+	(VST1Q_S): Likewise.
+	(VST1Q_U): Likewise.
+	(VSTRHQ_U): Likewise.
+	(VSTRWQ_S): Likewise.
+	(VSTRWQ_U): Likewise.
+	(VSTRWQ_F): Likewise.
+	(VST1Q_F): Likewise.
+	(VLDRQ): New.
+	(VLDRQ_Z): Likewise.
+	(VLDRQ_EXT): Likewise.
+	(VLDRQ_EXT_Z): Likewise.
+	(VSTRQ): Likewise.
+	(VSTRQ_P): Likewise.
+	(VSTRQ_TRUNC): Likewise.
+	(VSTRQ_TRUNC_P): Likewise.
+
+2024-10-29  Alfie Richards  <Alfie.Richards@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins.cc
+	(function_expander::use_contiguous_load_insn): Add support for
+	PRED_z.
+	(function_expander::use_contiguous_store_insn): Add support for
+	PRED_p.
+
+2024-10-29  Alfie Richards  <Alfie.Richards@arm.com>
+
+	* config/arm/arm-mve-builtins-functions.h
+	(load_extending): New class.
+	(store_truncating): New class.
+	* config/arm/arm-protos.h (arm_mve_data_mode): New helper function.
+	* config/arm/arm.cc (arm_mve_data_mode): New helper function.
+
+2024-10-29  Alfie Richards  <Alfie.Richards@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc:
+	(load_ext): New.
+	* config/arm/arm-mve-builtins-shapes.h:
+	(load_ext): New.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117030
+	* doc/extend.texi (__builtin_stdc_rotate_left,
+	__builtin_stdc_rotate_right): Document.
+
 2024-10-28  Sam James  <sam@gentoo.org>
 
 	* opts-common.cc (prune_options): Fix typo.

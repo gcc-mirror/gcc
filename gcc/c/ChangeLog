@@ -1,3 +1,19 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-objc-common.cc: Include "make-unique.h".
+	(c_initialize_diagnostics): Use unique_ptr for pretty_printer.
+	Use context->set_format_decoder.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117030
+	* c-parser.cc: Include asan.h and c-family/c-ubsan.h.
+	(c_parser_postfix_expression): Handle __builtin_stdc_rotate_left
+	and __builtin_stdc_rotate_right.
+	* c-fold.cc (c_fully_fold_internal): Handle LROTATE_EXPR and
+	RROTATE_EXPR.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.cc: Remove trailing whitespace.

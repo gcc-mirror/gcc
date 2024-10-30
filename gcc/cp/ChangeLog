@@ -1,3 +1,19 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* error.cc (cxx_initialize_diagnostics): Use unique_ptr for
+	pretty_printer.  Use context->set_format_decoder.
+	* module.cc (noisy_p): Update for global_dc's m_printer becoming
+	reference printer.
+
+2024-10-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/30854
+	PR c++/116634
+	* error.cc (dump_aggr_init_expr_args): Remove.
+	(dump_call_expr_args): Handle AGGR_INIT_EXPR.
+	(dump_expr): Combine AGGR_INIT_EXPR and CALL_EXPR cases.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* vtable-class-hierarchy.cc: Remove trailing whitespace.

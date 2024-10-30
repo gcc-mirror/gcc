@@ -1,3 +1,18 @@
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* dummy-frontend.cc: Include "make-unique.h".
+	(class jit_diagnostic_listener): New.
+	(jit_begin_diagnostic): Update comment.
+	(jit_end_diagnostic): Drop call to add_diagnostic.
+	(jit_langhook_init): Set the output format to a new
+	jit_diagnostic_listener.
+	* jit-playback.cc (playback::context::add_diagnostic): Add "text"
+	param and use that rather than trying to get the text from a
+	pretty_printer.
+	* jit-playback.h (playback::context::add_diagnostic): Add "text"
+	param.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* docs/examples/tut04-toyvm/toyvm.cc: Remove trailing whitespace.
