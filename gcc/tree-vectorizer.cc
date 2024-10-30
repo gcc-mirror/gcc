@@ -1326,6 +1326,7 @@ pass_vectorize::execute (function *fun)
 	    if (g)
 	      {
 		fold_loop_internal_call (g, boolean_false_node);
+		loop->dont_vectorize = false;
 		ret |= TODO_cleanup_cfg;
 		g = NULL;
 	      }
@@ -1335,6 +1336,7 @@ pass_vectorize::execute (function *fun)
 	    if (g)
 	      {
 		fold_loop_internal_call (g, boolean_false_node);
+		loop->dont_vectorize = false;
 		ret |= TODO_cleanup_cfg;
 	      }
 	  }
