@@ -2480,8 +2480,7 @@ applied with @option{-std=c11}) and a new value of
 @itemx c2x
 @itemx iso9899:2024
 ISO C23, the 2023 revision of the ISO C standard (expected to be
-published in 2024).  The support for this version is experimental and
-incomplete.  The name @samp{c2x} is deprecated.
+published in 2024).  The name @samp{c2x} is deprecated.
 
 @item c2y
 The next version of the ISO C standard, still under development.  The
@@ -2506,8 +2505,7 @@ GNU dialect of ISO C17.  This is the default for C code.
 
 @item gnu23
 @itemx gnu2x
-GNU dialect of ISO C23.  The support for this version is experimental
-and incomplete.  The name @samp{gnu2x} is deprecated.
+GNU dialect of ISO C23.  The name @samp{gnu2x} is deprecated.
 
 @item gnu2y
 The next version of the ISO C standard, still under development, plus
