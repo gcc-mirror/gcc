@@ -5186,13 +5186,41 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond,
 
   /* Case ranges are a GNU extension.  */
   if (high_value)
-    pedwarn (loc, OPT_Wpedantic,
-	     "range expressions in switch statements are non-standard");
+    {
+      if (c_dialect_cxx ())
+	pedwarn (loc, OPT_Wpedantic,
+		 "range expressions in switch statements are non-standard");
+      else if (warn_c23_c2y_compat > 0)
+	{
+	  if (pedantic && !flag_isoc2y)
+	    pedwarn (loc, OPT_Wc23_c2y_compat,
+		     "ISO C does not support range expressions in switch "
+		     "statements before C2Y");
+	  else
+	    warning_at (loc, OPT_Wc23_c2y_compat,
+			"ISO C does not support range expressions in switch "
+			"statements before C2Y");
+	}
+      else if (warn_c23_c2y_compat && pedantic && !flag_isoc2y)
+	pedwarn (loc, OPT_Wpedantic,
+		 "ISO C does not support range expressions in switch "
+		 "statements before C2Y");
+    }
 
   type = TREE_TYPE (cond);
   if (low_value)
     {
       low_value = check_case_value (loc, low_value);
+      tree tem = NULL_TREE;
+      if (high_value
+	  && !c_dialect_cxx ()
+	  && low_value != error_mark_node
+	  && !int_fits_type_p (low_value, type)
+	  && pedwarn (loc, OPT_Wpedantic,
+		      "conversion of %qE to %qT in range expression changes "
+		      "value to %qE", low_value, type,
+		      (tem = fold_convert (type, low_value))))
+	low_value = tem;
       low_value = convert_and_check (loc, type, low_value);
       low_value = fold (low_value);
       if (low_value == error_mark_node)
@@ -5201,6 +5229,15 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond,
   if (high_value)
     {
       high_value = check_case_value (loc, high_value);
+      tree tem = NULL_TREE;
+      if (!c_dialect_cxx ()
+	  && high_value != error_mark_node
+	  && !int_fits_type_p (high_value, type)
+	  && pedwarn (loc, OPT_Wpedantic,
+		      "conversion of %qE to %qT in range expression changes "
+		      "value to %qE", high_value, type,
+		      (tem = fold_convert (type, high_value))))
+	high_value = tem;
       high_value = convert_and_check (loc, type, high_value);
       high_value = fold (high_value);
       if (high_value == error_mark_node)
@@ -5215,7 +5252,10 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond,
       if (tree_int_cst_equal (low_value, high_value))
 	high_value = NULL_TREE;
       else if (!tree_int_cst_lt (low_value, high_value))
-	warning_at (loc, 0, "empty range specified");
+	{
+	  warning_at (loc, 0, "empty range specified");
+	  goto error_out;
+	}
     }
 
   /* Look up the LOW_VALUE in the table of case labels we already
