@@ -12382,6 +12382,14 @@ c_parser_postfix_expression (c_parser *parser)
 		expr.set_error ();
 		break;
 	      }
+	    if (TYPE_MAIN_VARIANT (TREE_TYPE (arg_p->value))
+		== char_type_node)
+	      {
+		error_at (loc, "argument 1 in call to function "
+			  "%qs has %<char%> type", name);
+		expr.set_error ();
+		break;
+	      }
 	    tree arg = arg_p->value;
 	    tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg));
 	    /* Expand:
