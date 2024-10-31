@@ -83,14 +83,14 @@ AARCH64_CORE("emag",        emag,      xgene1,    V8A,  (CRC, CRYPTO), emag, 0x5
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    V8A,  (), xgene1, 0x50, 0x000, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("falkor",      falkor,    falkor,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
-AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("falkor",      falkor,    cortexa57,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
 
 /* Samsung ('S') cores. */
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  V8A,  (CRC, CRYPTO), exynosm1,  0x53, 0x001, -1)
 
 /* HXT ('h') cores. */
-AARCH64_CORE("phecda",      phecda,    falkor,    V8A,  (CRC, CRYPTO), qdf24xx,   0x68, 0x000, -1)
+AARCH64_CORE("phecda",      phecda,    cortexa57,    V8A,  (CRC, CRYPTO), qdf24xx,   0x68, 0x000, -1)
 
 /* ARMv8.1-A Architecture Processors.  */
 
@@ -150,7 +150,7 @@ AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, R
 AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("saphira",     saphira,    saphira,    V8_4A,  (CRYPTO), saphira,   0x51, 0xC01, -1)
+AARCH64_CORE("saphira",     saphira,    cortexa57,    V8_4A,  (CRYPTO), saphira,   0x51, 0xC01, -1)
 
 /* ARMv8.6-A Architecture Processors.  */
 
