@@ -420,6 +420,9 @@ diagnostic_context::finish ()
       m_client_data_hooks = nullptr;
     }
 
+  delete m_option_mgr;
+  m_option_mgr = nullptr;
+
   delete m_urlifier;
   m_urlifier = nullptr;
 
