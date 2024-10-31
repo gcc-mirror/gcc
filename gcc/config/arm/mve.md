@@ -3917,312 +3917,50 @@
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vstrq_scatter_base_wb_<mode>"))
   (set_attr "length" "8")])
 
-(define_expand "mve_vldrwq_gather_base_wb_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (unspec:V4SI [(const_int 0)] VLDRWGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_result = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_<supf>v4si_insn (ignore_result, operands[0],
-						 operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "mve_vldrwq_gather_base_nowb_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (unspec:V4SI [(const_int 0)] VLDRWGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_<supf>v4si_insn (operands[0], ignore_wb,
-						 operands[1], operands[2]));
-  DONE;
-})
-
+;; Vector gather loads with base and write-back
 ;;
 ;; [vldrwq_gather_base_wb_s vldrwq_gather_base_wb_u]
-;;
-(define_insn "mve_vldrwq_gather_base_wb_<supf>v4si_insn"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_operand:V4SI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (mem:BLK (scratch))]
-	 VLDRWGBWBQ))
-   (set (match_operand:V4SI 1 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_dup 2) (match_dup 3)]
-	 VLDRWGBWBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[2];
-   ops[2] = operands[3];
-   output_asm_insn ("vldrw.u32\t%q0, [%q1, %2]!",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_wb_<supf>v4si_insn"))
-  (set_attr "length" "4")])
-
-(define_expand "mve_vldrwq_gather_base_wb_z_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:V4BI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VLDRWGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_result = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_z_<supf>v4si_insn (ignore_result, operands[0],
-						   operands[1], operands[2],
-						   operands[3]));
-  DONE;
-})
-(define_expand "mve_vldrwq_gather_base_nowb_z_<supf>v4si"
-  [(match_operand:V4SI 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:V4BI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VLDRWGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_z_<supf>v4si_insn (operands[0], ignore_wb,
-						   operands[1], operands[2],
-						   operands[3]));
-  DONE;
-})
-
-;;
-;; [vldrwq_gather_base_wb_z_s vldrwq_gather_base_wb_z_u]
-;;
-(define_insn "mve_vldrwq_gather_base_wb_z_<supf>v4si_insn"
-  [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_operand:V4SI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (match_operand:V4BI 4 "vpr_register_operand" "Up")
-		      (mem:BLK (scratch))]
-	 VLDRWGBWBQ))
-   (set (match_operand:V4SI 1 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_dup 2) (match_dup 3)]
-	 VLDRWGBWBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[2];
-   ops[2] = operands[3];
-   output_asm_insn ("vpst\;vldrwt.u32\t%q0, [%q1, %2]!",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_wb_<supf>v4si_insn"))
-  (set_attr "length" "8")])
-
-(define_expand "mve_vldrwq_gather_base_wb_fv4sf"
-  [(match_operand:V4SI 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (unspec:V4SI [(const_int 0)] VLDRWQGBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_result = gen_reg_rtx (V4SFmode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_fv4sf_insn (ignore_result, operands[0],
-					    operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "mve_vldrwq_gather_base_nowb_fv4sf"
-  [(match_operand:V4SF 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (unspec:V4SI [(const_int 0)] VLDRWQGBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_fv4sf_insn (operands[0], ignore_wb,
-					    operands[1], operands[2]));
-  DONE;
-})
-
-;;
 ;; [vldrwq_gather_base_wb_f]
-;;
-(define_insn "mve_vldrwq_gather_base_wb_fv4sf_insn"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
-	(unspec:V4SF [(match_operand:V4SI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (mem:BLK (scratch))]
-	 VLDRWQGBWB_F))
-   (set (match_operand:V4SI 1 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_dup 2) (match_dup 3)]
-	 VLDRWQGBWB_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[2];
-   ops[2] = operands[3];
-   output_asm_insn ("vldrw.u32\t%q0, [%q1, %2]!",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_wb_fv4sf_insn"))
-  (set_attr "length" "4")])
-
-(define_expand "mve_vldrwq_gather_base_wb_z_fv4sf"
-  [(match_operand:V4SI 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:V4BI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VLDRWQGBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_result = gen_reg_rtx (V4SFmode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_z_fv4sf_insn (ignore_result, operands[0],
-					      operands[1], operands[2],
-					      operands[3]));
-  DONE;
-})
-
-(define_expand "mve_vldrwq_gather_base_nowb_z_fv4sf"
-  [(match_operand:V4SF 0 "s_register_operand")
-   (match_operand:V4SI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:V4BI 3 "vpr_register_operand")
-   (unspec:V4SI [(const_int 0)] VLDRWQGBWB_F)]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-  rtx ignore_wb = gen_reg_rtx (V4SImode);
-  emit_insn (
-  gen_mve_vldrwq_gather_base_wb_z_fv4sf_insn (operands[0], ignore_wb,
-					      operands[1], operands[2],
-					      operands[3]));
-  DONE;
-})
-
-;;
-;; [vldrwq_gather_base_wb_z_f]
-;;
-(define_insn "mve_vldrwq_gather_base_wb_z_fv4sf_insn"
-  [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
-	(unspec:V4SF [(match_operand:V4SI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (match_operand:V4BI 4 "vpr_register_operand" "Up")
-		      (mem:BLK (scratch))]
-	 VLDRWQGBWB_F))
-   (set (match_operand:V4SI 1 "s_register_operand" "=&w")
-	(unspec:V4SI [(match_dup 2) (match_dup 3)]
-	 VLDRWQGBWB_F))
-  ]
-  "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[2];
-   ops[2] = operands[3];
-   output_asm_insn ("vpst\;vldrwt.u32\t%q0, [%q1, %2]!",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrwq_gather_base_wb_fv4sf_insn"))
-  (set_attr "length" "8")])
-
-(define_expand "mve_vldrdq_gather_base_wb_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand")
-   (match_operand:V2DI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (unspec:V2DI [(const_int 0)] VLDRDGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_result = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vldrdq_gather_base_wb_<supf>v2di_insn (ignore_result, operands[0],
-						 operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "mve_vldrdq_gather_base_nowb_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand")
-   (match_operand:V2DI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (unspec:V2DI [(const_int 0)] VLDRDGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vldrdq_gather_base_wb_<supf>v2di_insn (operands[0], ignore_wb,
-						 operands[1], operands[2]));
-  DONE;
-})
-
-
-;;
 ;; [vldrdq_gather_base_wb_s vldrdq_gather_base_wb_u]
 ;;
-(define_insn "mve_vldrdq_gather_base_wb_<supf>v2di_insn"
-  [(set (match_operand:V2DI 0 "s_register_operand" "=&w")
-	(unspec:V2DI [(match_operand:V2DI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (mem:BLK (scratch))]
-	 VLDRDGBWBQ))
-   (set (match_operand:V2DI 1 "s_register_operand" "=&w")
-	(unspec:V2DI [(match_dup 2) (match_dup 3)]
-	 VLDRDGBWBQ))
+(define_insn "@mve_vldrq_gather_base_wb_<mode>"
+  [(set (match_operand:MVE_4 0 "s_register_operand" "=&w")
+	(unspec:MVE_4 [(match_operand:<MVE_scatter_offset> 2 "s_register_operand" "1")
+		       (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
+		       (mem:BLK (scratch))]
+	 VLDRGBWBQ))
+   (set (match_operand:<MVE_scatter_offset> 1 "s_register_operand" "=&w")
+	(unspec:<MVE_scatter_offset> [(match_dup 2) (match_dup 3)]
+	 VLDRGBWBQ))
   ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[2];
-   ops[2] = operands[3];
-   output_asm_insn ("vldrd.64\t%q0, [%q1, %2]!",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_base_wb_<supf>v2di_insn"))
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vldr<MVE_elem_ch>.u<V_sz_elem>\t%q0, [%q1, %3]!"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_base_wb_<mode>"))
   (set_attr "length" "4")])
 
-(define_expand "mve_vldrdq_gather_base_wb_z_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand")
-   (match_operand:V2DI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:V2QI 3 "vpr_register_operand")
-   (unspec:V2DI [(const_int 0)] VLDRDGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_result = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vldrdq_gather_base_wb_z_<supf>v2di_insn (ignore_result, operands[0],
-						   operands[1], operands[2],
-						   operands[3]));
-  DONE;
-})
-
-(define_expand "mve_vldrdq_gather_base_nowb_z_<supf>v2di"
-  [(match_operand:V2DI 0 "s_register_operand")
-   (match_operand:V2DI 1 "s_register_operand")
-   (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:V2QI 3 "vpr_register_operand")
-   (unspec:V2DI [(const_int 0)] VLDRDGBWBQ)]
-  "TARGET_HAVE_MVE"
-{
-  rtx ignore_wb = gen_reg_rtx (V2DImode);
-  emit_insn (
-  gen_mve_vldrdq_gather_base_wb_z_<supf>v2di_insn (operands[0], ignore_wb,
-						   operands[1], operands[2],
-						   operands[3]));
-  DONE;
-})
+;; Predicated vector gather loads with base and write-back
+;;
+;; [vldrwq_gather_base_wb_z_s vldrwq_gather_base_wb_z_u]
+;; [vldrwq_gather_base_wb_z_f]
+;; [vldrdq_gather_base_wb_z_s vldrdq_gather_base_wb_z_u]
+;;
+(define_insn "@mve_vldrq_gather_base_wb_z_<mode>"
+  [(set (match_operand:MVE_4 0 "s_register_operand" "=&w")
+	(unspec:MVE_4 [(match_operand:<MVE_scatter_offset> 2 "s_register_operand" "1")
+		       (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
+		       (match_operand:<MVE_VPRED> 4 "vpr_register_operand" "Up")
+		       (mem:BLK (scratch))]
+	 VLDRGBWBQ_Z))
+   (set (match_operand:<MVE_scatter_offset> 1 "s_register_operand" "=&w")
+	(unspec:<MVE_scatter_offset> [(match_dup 2) (match_dup 3)]
+	 VLDRGBWBQ_Z))
+  ]
+  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
+   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "vpst\;vldr<MVE_elem_ch>t.u<V_sz_elem>\t%q0, [%q1, %3]!"
+ [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrq_gather_base_wb_<mode>"))
+  (set_attr "length" "8")])
 
 (define_insn "get_fpscr_nzcvqc"
  [(set (match_operand:SI 0 "register_operand" "=r")
@@ -4238,32 +3976,6 @@
  "TARGET_HAVE_MVE"
  "vmsr\\tFPSCR_nzcvqc, %0"
  [(set_attr "type" "mve_move")])
-
-;;
-;; [vldrdq_gather_base_wb_z_s vldrdq_gather_base_wb_z_u]
-;;
-(define_insn "mve_vldrdq_gather_base_wb_z_<supf>v2di_insn"
-  [(set (match_operand:V2DI 0 "s_register_operand" "=&w")
-	(unspec:V2DI [(match_operand:V2DI 2 "s_register_operand" "1")
-		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (match_operand:V2QI 4 "vpr_register_operand" "Up")
-		      (mem:BLK (scratch))]
-	 VLDRDGBWBQ))
-   (set (match_operand:V2DI 1 "s_register_operand" "=&w")
-	(unspec:V2DI [(match_dup 2) (match_dup 3)]
-	 VLDRDGBWBQ))
-  ]
-  "TARGET_HAVE_MVE"
-{
-   rtx ops[3];
-   ops[0] = operands[0];
-   ops[1] = operands[2];
-   ops[2] = operands[3];
-   output_asm_insn ("vpst\;vldrdt.u64\t%q0, [%q1, %2]!",ops);
-   return "";
-}
- [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_vldrdq_gather_base_wb_<supf>v2di_insn"))
-  (set_attr "length" "8")])
 
 ;;
 ;; [vadciq_u, vadciq_s]

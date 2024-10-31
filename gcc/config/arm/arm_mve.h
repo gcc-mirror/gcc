@@ -73,16 +73,6 @@
 #define vuninitializedq_s64(void) __arm_vuninitializedq_s64(void)
 #define vuninitializedq_f16(void) __arm_vuninitializedq_f16(void)
 #define vuninitializedq_f32(void) __arm_vuninitializedq_f32(void)
-#define vldrdq_gather_base_wb_s64(__addr, __offset) __arm_vldrdq_gather_base_wb_s64(__addr, __offset)
-#define vldrdq_gather_base_wb_u64(__addr, __offset) __arm_vldrdq_gather_base_wb_u64(__addr, __offset)
-#define vldrdq_gather_base_wb_z_s64(__addr, __offset, __p) __arm_vldrdq_gather_base_wb_z_s64(__addr, __offset, __p)
-#define vldrdq_gather_base_wb_z_u64(__addr, __offset, __p) __arm_vldrdq_gather_base_wb_z_u64(__addr, __offset, __p)
-#define vldrwq_gather_base_wb_f32(__addr, __offset) __arm_vldrwq_gather_base_wb_f32(__addr, __offset)
-#define vldrwq_gather_base_wb_s32(__addr, __offset) __arm_vldrwq_gather_base_wb_s32(__addr, __offset)
-#define vldrwq_gather_base_wb_u32(__addr, __offset) __arm_vldrwq_gather_base_wb_u32(__addr, __offset)
-#define vldrwq_gather_base_wb_z_f32(__addr, __offset, __p) __arm_vldrwq_gather_base_wb_z_f32(__addr, __offset, __p)
-#define vldrwq_gather_base_wb_z_s32(__addr, __offset, __p) __arm_vldrwq_gather_base_wb_z_s32(__addr, __offset, __p)
-#define vldrwq_gather_base_wb_z_u32(__addr, __offset, __p) __arm_vldrwq_gather_base_wb_z_u32(__addr, __offset, __p)
 #define vst2q_s8(__addr, __value) __arm_vst2q_s8(__addr, __value)
 #define vst2q_u8(__addr, __value) __arm_vst2q_u8(__addr, __value)
 #define vld2q_s8(__addr) __arm_vld2q_s8(__addr)
@@ -216,86 +206,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vpnot (mve_pred16_t __a)
 {
   return __builtin_mve_vpnotv16bi (__a);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrdq_gather_base_wb_s64 (uint64x2_t * __addr, const int __offset)
-{
-  int64x2_t
-  result = __builtin_mve_vldrdq_gather_base_nowb_sv2di (*__addr, __offset);
-  *__addr = __builtin_mve_vldrdq_gather_base_wb_sv2di (*__addr, __offset);
-  return result;
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrdq_gather_base_wb_u64 (uint64x2_t * __addr, const int __offset)
-{
-  uint64x2_t
-  result = __builtin_mve_vldrdq_gather_base_nowb_uv2di (*__addr, __offset);
-  *__addr = __builtin_mve_vldrdq_gather_base_wb_uv2di (*__addr, __offset);
-  return result;
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrdq_gather_base_wb_z_s64 (uint64x2_t * __addr, const int __offset, mve_pred16_t __p)
-{
-  int64x2_t
-  result = __builtin_mve_vldrdq_gather_base_nowb_z_sv2di (*__addr, __offset, __p);
-  *__addr = __builtin_mve_vldrdq_gather_base_wb_z_sv2di (*__addr, __offset, __p);
-  return result;
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrdq_gather_base_wb_z_u64 (uint64x2_t * __addr, const int __offset, mve_pred16_t __p)
-{
-  uint64x2_t
-  result = __builtin_mve_vldrdq_gather_base_nowb_z_uv2di (*__addr, __offset, __p);
-  *__addr = __builtin_mve_vldrdq_gather_base_wb_z_uv2di (*__addr, __offset, __p);
-  return result;
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_gather_base_wb_s32 (uint32x4_t * __addr, const int __offset)
-{
-  int32x4_t
-  result = __builtin_mve_vldrwq_gather_base_nowb_sv4si (*__addr, __offset);
-  *__addr = __builtin_mve_vldrwq_gather_base_wb_sv4si (*__addr, __offset);
-  return result;
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_gather_base_wb_u32 (uint32x4_t * __addr, const int __offset)
-{
-  uint32x4_t
-  result = __builtin_mve_vldrwq_gather_base_nowb_uv4si (*__addr, __offset);
-  *__addr = __builtin_mve_vldrwq_gather_base_wb_uv4si (*__addr, __offset);
-  return result;
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_gather_base_wb_z_s32 (uint32x4_t * __addr, const int __offset, mve_pred16_t __p)
-{
-  int32x4_t
-  result = __builtin_mve_vldrwq_gather_base_nowb_z_sv4si (*__addr, __offset, __p);
-  *__addr = __builtin_mve_vldrwq_gather_base_wb_z_sv4si (*__addr, __offset, __p);
-  return result;
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_gather_base_wb_z_u32 (uint32x4_t * __addr, const int __offset, mve_pred16_t __p)
-{
-  uint32x4_t
-  result = __builtin_mve_vldrwq_gather_base_nowb_z_uv4si (*__addr, __offset, __p);
-  *__addr = __builtin_mve_vldrwq_gather_base_wb_z_uv4si (*__addr, __offset, __p);
-  return result;
 }
 
 __extension__ extern __inline void
@@ -726,26 +636,6 @@ __arm_vst4q_f32 (float32_t * __addr, float32x4x4_t __value)
   union { float32x4x4_t __i; __builtin_neon_xi __o; } __rv;
   __rv.__i = __value;
   __builtin_mve_vst4qv4sf (__addr, __rv.__o);
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_gather_base_wb_f32 (uint32x4_t * __addr, const int __offset)
-{
-  float32x4_t
-  result = __builtin_mve_vldrwq_gather_base_nowb_fv4sf (*__addr, __offset);
-  *__addr = __builtin_mve_vldrwq_gather_base_wb_fv4sf (*__addr, __offset);
-  return result;
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__arm_vldrwq_gather_base_wb_z_f32 (uint32x4_t * __addr, const int __offset, mve_pred16_t __p)
-{
-  float32x4_t
-  result = __builtin_mve_vldrwq_gather_base_nowb_z_fv4sf (*__addr, __offset, __p);
-  *__addr = __builtin_mve_vldrwq_gather_base_wb_z_fv4sf (*__addr, __offset, __p);
-  return result;
 }
 
 __extension__ extern __inline float16x8x4_t

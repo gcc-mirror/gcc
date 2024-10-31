@@ -611,39 +611,6 @@ arm_quadop_unone_unone_unone_none_pred_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   (arm_quadop_unone_unone_unone_none_pred_qualifiers)
 
 static enum arm_type_qualifiers
-arm_ldrgbwbxu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
-#define LDRGBWBXU_QUALIFIERS (arm_ldrgbwbxu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbxu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBWBXU_Z_QUALIFIERS (arm_ldrgbwbxu_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbs_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned, qualifier_immediate};
-#define LDRGBWBS_QUALIFIERS (arm_ldrgbwbs_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate};
-#define LDRGBWBU_QUALIFIERS (arm_ldrgbwbu_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbs_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBWBS_Z_QUALIFIERS (arm_ldrgbwbs_z_qualifiers)
-
-static enum arm_type_qualifiers
-arm_ldrgbwbu_z_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate,
-      qualifier_predicate};
-#define LDRGBWBU_Z_QUALIFIERS (arm_ldrgbwbu_z_qualifiers)
-
-static enum arm_type_qualifiers
 arm_lsll_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_none};
 #define LSLL_QUALIFIERS (arm_lsll_qualifiers)

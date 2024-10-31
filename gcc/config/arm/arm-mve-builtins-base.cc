@@ -483,25 +483,58 @@ class vldrq_gather_base_impl : public load_extending
 public:
   using load_extending::load_extending;
 
+  machine_mode memory_vector_mode (const function_instance &fi) const override
+  {
+    unsigned int element_bits = fi.type_suffix (0).element_bits;
+    type_suffix_index suffix = find_type_suffix (TYPE_unsigned, element_bits);
+    return type_suffixes[suffix].vector_mode;
+  }
+
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
-    rtx insns;
+    rtx insns, base_ptr, new_base;
+    machine_mode base_mode;
+
+    if ((e.mode_suffix_id != MODE_none)
+	&& (e.mode_suffix_id != MODE_wb))
+      gcc_unreachable ();
+
+    /* In _wb mode, the start offset is passed via a pointer,
+       dereference it.  */
+    if (e.mode_suffix_id == MODE_wb)
+      {
+	base_mode = e.memory_vector_mode ();
+	rtx base = gen_reg_rtx (base_mode);
+	base_ptr = e.args[0];
+	emit_insn (gen_rtx_SET (base, gen_rtx_MEM (base_mode, base_ptr)));
+	e.args[0] = base;
+	new_base = gen_reg_rtx (base_mode);
+	e.args.quick_insert (0, new_base);
+      }
 
     switch (e.pred)
       {
       case PRED_none:
-	icode = code_for_mve_vldrq_gather_base (e.vector_mode (0));
+	icode = (e.mode_suffix_id == MODE_none)
+	  ? code_for_mve_vldrq_gather_base (e.vector_mode (0))
+	  : code_for_mve_vldrq_gather_base_wb (e.vector_mode (0));
 	break;
 
       case PRED_z:
-	icode = code_for_mve_vldrq_gather_base_z (e.vector_mode (0));
+	icode = (e.mode_suffix_id == MODE_none)
+	  ? code_for_mve_vldrq_gather_base_z (e.vector_mode (0))
+	  : code_for_mve_vldrq_gather_base_wb_z (e.vector_mode (0));
 	break;
 
       default:
 	gcc_unreachable ();
       }
     insns = e.use_exact_insn (icode);
+
+    /* Update offset as appropriate.  */
+    if (e.mode_suffix_id == MODE_wb)
+      emit_insn (gen_rtx_SET (gen_rtx_MEM (base_mode, base_ptr), new_base));
 
     return insns;
   }

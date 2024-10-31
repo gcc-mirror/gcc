@@ -1558,7 +1558,8 @@ struct load_ext_gather : public overloaded_base<0>
 
    Example: vldrwq_gather_base
    int32x4_t [__arm_]vldrwq_gather_base_s32(uint32x4_t addr, const int offset)
-   float32x4_t [__arm_]vldrwq_gather_base_z_f32(uint32x4_t addr, const int offset, mve_pred16_t p)  */
+   float32x4_t [__arm_]vldrwq_gather_base_z_f32(uint32x4_t addr, const int offset, mve_pred16_t p)
+   int64x2_t [__arm_]vldrdq_gather_base_wb_s64(uint64x2_t *addr, const int offset)  */
 struct load_gather_base_def : public nonoverloaded_base
 {
   bool
@@ -1578,6 +1579,7 @@ struct load_gather_base_def : public nonoverloaded_base
 	 bool preserve_user_namespace) const override
   {
     build_all (b, "v0,vu0,ss64", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,b,ss64", group, MODE_wb, preserve_user_namespace);
   }
 
   bool
