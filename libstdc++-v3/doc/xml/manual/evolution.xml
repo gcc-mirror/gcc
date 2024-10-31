@@ -1145,6 +1145,11 @@ and removed in C++20:
 <filename class="headerfile">&lt;ctgmath&gt;</filename>.
 </para>
 
+<para>
+Nested <code>result_type</code> and <code>argument_type</code> removed from
+<classname>std::hash</classname> specializations for C++20.
+</para>
+
 </section>
 
 </section>

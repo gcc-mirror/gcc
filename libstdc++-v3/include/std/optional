@@ -1732,10 +1732,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Hash.
 
-  template<typename _Tp, typename _Up = remove_const_t<_Tp>,
-	   bool = __poison_hash<_Up>::__enable_hash_call>
-    struct __optional_hash_call_base
+  template<typename _Tp, typename _Up = remove_const_t<_Tp>>
+    struct __optional_hash
+#if ! _GLIBCXX_INLINE_VERSION
+    : public __hash_empty_base<_Up>
+#endif
     {
+#if __cplusplus < 202002L
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = optional<_Tp>;
+#endif
+
       size_t
       operator()(const optional<_Tp>& __t) const
       noexcept(noexcept(hash<_Up>{}(*__t)))
@@ -1747,17 +1754,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  template<typename _Tp, typename _Up>
-    struct __optional_hash_call_base<_Tp, _Up, false> {};
-
   template<typename _Tp>
     struct hash<optional<_Tp>>
-    : private __poison_hash<remove_const_t<_Tp>>,
-      public __optional_hash_call_base<_Tp>
-    {
-      using result_type [[__deprecated__]] = size_t;
-      using argument_type [[__deprecated__]] = optional<_Tp>;
-    };
+    : public __conditional_t<__is_hash_enabled_for<remove_const_t<_Tp>>,
+			     __optional_hash<_Tp>,
+			     __hash_not_enabled<_Tp>>
+    { };
 
   template<typename _Tp>
     struct __is_fast_hash<hash<optional<_Tp>>> : __is_fast_hash<hash<_Tp>>

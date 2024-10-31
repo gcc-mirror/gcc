@@ -48,3 +48,37 @@ int main()
   std::variant<int> x2 = 42;
   VERIFY(std::hash<int>()(x) == std::hash<std::variant<int>>()(x2));
 }
+
+// Check for presence/absence of nested types.
+
+template<typename T> using res_type = typename std::hash<T>::result_type;
+template<typename T> using arg_type = typename std::hash<T>::argument_type;
+
+template<typename Variant, typename = void>
+constexpr bool has_res_type = false;
+template<typename Variant>
+constexpr bool has_res_type<Variant, std::void_t<res_type<Variant>>> = true;
+template<typename Variant, typename = void>
+constexpr bool has_arg_type = false;
+template<typename Variant>
+constexpr bool has_arg_type<Variant, std::void_t<arg_type<Variant>>> = true;
+
+template<typename... Ts>
+constexpr bool has_no_types
+  = ! has_res_type<std::variant<Ts...>> && ! has_arg_type<std::variant<Ts...>>;
+
+#if __cplusplus >= 202002L
+// Nested types result_type and argument_type are not present in C++20
+static_assert( has_no_types<int> );
+static_assert( has_no_types<int, double> );
+#else
+// Nested types result_type and argument_type are deprecated in C++17.
+using R1 = std::hash<std::variant<int>>::result_type; // { dg-warning "deprecated" "" { target c++17_only } }
+using A1 = std::hash<std::variant<int>>::argument_type; // { dg-warning "deprecated" "" { target c++17_only } }
+using R2 = std::hash<std::variant<char, int>>::result_type; // { dg-warning "deprecated" "" { target c++17_only } }
+using A2 = std::hash<std::variant<char, int>>::argument_type; // { dg-warning "deprecated" "" { target c++17_only } }
+#endif
+
+// Disabled specializations do not have the nested types.
+static_assert( has_no_types<S> );
+static_assert( has_no_types<int, S> );

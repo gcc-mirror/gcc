@@ -49,3 +49,36 @@ int main()
   std::optional<const int> x3 = x2;
   VERIFY(std::hash<int>()(x) == std::hash<std::optional<const int>>()(x3));
 }
+
+// Check for presence/absence of nested types.
+
+template<typename T> using res_type = typename std::hash<T>::result_type;
+template<typename T> using arg_type = typename std::hash<T>::argument_type;
+
+template<typename Opt, typename = void>
+constexpr bool has_res_type = false;
+template<typename Opt>
+constexpr bool has_res_type<Opt, std::void_t<res_type<Opt>>> = true;
+template<typename Opt, typename = void>
+constexpr bool has_arg_type = false;
+template<typename Opt>
+constexpr bool has_arg_type<Opt, std::void_t<arg_type<Opt>>> = true;
+
+template<typename T>
+constexpr bool has_no_types
+  = ! has_res_type<std::optional<T>> && ! has_arg_type<std::optional<T>>;
+
+#if __cplusplus >= 202002L
+// Nested types result_type and argument_type are not present in C++20
+static_assert( has_no_types<int> );
+static_assert( has_no_types<double> );
+#else
+// Nested types result_type and argument_type are deprecated in C++17.
+using R1 = std::hash<std::optional<int>>::result_type; // { dg-warning "deprecated" "" { target c++17_only } }
+using A1 = std::hash<std::optional<int>>::argument_type; // { dg-warning "deprecated" "" { target c++17_only } }
+using R2 = std::hash<std::optional<char>>::result_type; // { dg-warning "deprecated" "" { target c++17_only } }
+using A2 = std::hash<std::optional<char>>::argument_type; // { dg-warning "deprecated" "" { target c++17_only } }
+#endif
+
+// Disabled specializations do not have the nested types.
+static_assert( has_no_types<S> );

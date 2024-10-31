@@ -52,43 +52,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Result, typename _Arg>
     struct __hash_base
     {
+#if __cplusplus < 202002L
       typedef _Result     result_type _GLIBCXX17_DEPRECATED;
       typedef _Arg      argument_type _GLIBCXX17_DEPRECATED;
+#endif
     };
+
+#if ! _GLIBCXX_INLINE_VERSION
+  // Some std::hash specializations inherit this for ABI compatibility reasons.
+  template<typename _Tp> struct __hash_empty_base { };
+#endif
 
   /// Primary class template hash.
   template<typename _Tp>
     struct hash;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions"
   template<typename _Tp, typename = void>
-    struct __poison_hash
-    {
-      static constexpr bool __enable_hash_call = false;
-    private:
-      // Private rather than deleted to be non-trivially-copyable.
-      __poison_hash(__poison_hash&&);
-      ~__poison_hash();
-    };
+    constexpr bool __is_hash_enabled_for = false;
 
   template<typename _Tp>
-    struct __poison_hash<_Tp, __void_t<decltype(hash<_Tp>()(declval<_Tp>()))>>
-    {
-      static constexpr bool __enable_hash_call = true;
-    };
+    constexpr bool
+    __is_hash_enabled_for<_Tp,
+			  __void_t<decltype(hash<_Tp>()(declval<_Tp>()))>>
+      = true;
+#pragma GCC diagnostic pop
 
-  // Helper struct for SFINAE-poisoning non-enum types.
-  template<typename _Tp, bool = is_enum<_Tp>::value>
-    struct __hash_enum
+  // Helper struct for defining disabled specializations of std::hash.
+  template<typename _Tp>
+    struct __hash_not_enabled
     {
-    private:
-      // Private rather than deleted to be non-trivially-copyable.
-      __hash_enum(__hash_enum&&);
-      ~__hash_enum();
+      __hash_not_enabled(__hash_not_enabled&&) = delete;
+      ~__hash_not_enabled() = delete;
     };
 
   // Helper struct for hash with enum types.
-  template<typename _Tp>
-    struct __hash_enum<_Tp, true> : public __hash_base<size_t, _Tp>
+  template<typename _Tp, bool = true>
+    struct __hash_enum : public __hash_base<size_t, _Tp>
     {
       size_t
       operator()(_Tp __val) const noexcept
@@ -99,9 +100,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// Primary class template hash, usable for enum types only.
-  // Use with non-enum types still SFINAES.
   template<typename _Tp>
-    struct hash : __hash_enum<_Tp>
+    struct hash
+    : __conditional_t<__is_enum(_Tp), __hash_enum<_Tp>, __hash_not_enabled<_Tp>>
     { };
 
   /// Partial specializations for pointer types.

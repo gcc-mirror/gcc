@@ -1094,7 +1094,8 @@ namespace __variant
 	= __gen_vtable_impl<_Array_type, std::index_sequence<>>::_S_apply();
     };
 
-  template<size_t _Np, typename _Tp>
+#if ! _GLIBCXX_INLINE_VERSION
+  template<size_t _Nm, typename _Tp>
     struct _Base_dedup : public _Tp { };
 
   template<typename _Variant, typename __indices>
@@ -1103,7 +1104,9 @@ namespace __variant
   template<typename... _Types, size_t... __indices>
     struct _Variant_hash_base<variant<_Types...>,
 			      std::index_sequence<__indices...>>
-    : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
+    : _Base_dedup<__indices, __hash_empty_base<remove_const_t<_Types>>>...
+    { };
+#endif
 
   // Equivalent to decltype(get<_Np>(as-variant(declval<_Variant>())))
   template<size_t _Np, typename _Variant,
@@ -1987,9 +1990,14 @@ namespace __detail::__variant
 #endif
 
   /// @cond undocumented
-  template<bool, typename... _Types>
-    struct __variant_hash_call_base_impl
+  template<typename... _Types>
+    struct __variant_hash
     {
+#if __cplusplus < 202002L
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = variant<_Types...>;
+#endif
+
       size_t
       operator()(const variant<_Types...>& __t) const
       noexcept((is_nothrow_invocable_v<hash<decay_t<_Types>>, _Types> && ...))
@@ -2009,31 +2017,26 @@ namespace __detail::__variant
 	return __ret;
       }
     };
-
-  template<typename... _Types>
-    struct __variant_hash_call_base_impl<false, _Types...> {};
-
-  template<typename... _Types>
-    using __variant_hash_call_base =
-    __variant_hash_call_base_impl<(__poison_hash<remove_const_t<_Types>>::
-				   __enable_hash_call &&...), _Types...>;
   /// @endcond
 
   template<typename... _Types>
     struct hash<variant<_Types...>>
-    : private __detail::__variant::_Variant_hash_base<
-	variant<_Types...>, std::index_sequence_for<_Types...>>,
-      public __variant_hash_call_base<_Types...>
-    {
-      using result_type [[__deprecated__]] = size_t;
-      using argument_type [[__deprecated__]] = variant<_Types...>;
-    };
+    : __conditional_t<(__is_hash_enabled_for<remove_const_t<_Types>> && ...),
+		      __variant_hash<_Types...>,
+		      __hash_not_enabled<variant<_Types...>>>
+#if ! _GLIBCXX_INLINE_VERSION
+      , __detail::__variant::_Variant_hash_base<variant<_Types...>,
+						index_sequence_for<_Types...>>
+#endif
+    { };
 
   template<>
     struct hash<monostate>
     {
+#if __cplusplus < 202002L
       using result_type [[__deprecated__]] = size_t;
       using argument_type [[__deprecated__]] = monostate;
+#endif
 
       size_t
       operator()(const monostate&) const noexcept
