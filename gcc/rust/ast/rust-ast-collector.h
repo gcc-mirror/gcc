@@ -23,6 +23,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
 #include "rust-ast-full.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
@@ -39,9 +40,16 @@ public:
     Token,
   };
 
+  enum class Comment
+  {
+    Regular,
+    Internal,
+  };
+
   CollectItem (TokenPtr token) : token (token), kind (Kind::Token) {}
-  CollectItem (std::string comment, bool internal = false)
-    : comment (comment), kind (internal ? Kind::InternalComment : Kind::Comment)
+  CollectItem (std::string comment, Comment type = Comment::Regular)
+    : comment (comment),
+      kind (type == Comment::Internal ? Kind::InternalComment : Kind::Comment)
   {}
   CollectItem (Kind kind) : kind (kind) { rust_assert (kind != Kind::Token); }
   CollectItem (size_t level) : indent_level (level), kind (Kind::Indentation) {}

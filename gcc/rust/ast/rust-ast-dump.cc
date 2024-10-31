@@ -28,10 +28,10 @@ Dump::Dump (std::ostream &stream)
 {}
 
 Dump::Dump (std::ostream &stream, bool print_internal,
-	    std::vector<std::string> blacklist)
+	    std::set<std::string> excluded_node)
   : stream (stream), indentation (Indent ()), print_internal (print_internal)
 {
-  internal_blacklist = blacklist;
+  excluded_node = excluded_node;
 }
 
 bool

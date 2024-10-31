@@ -62,8 +62,7 @@
 #include "selftest.h"
 #include "tm.h"
 #include "rust-target.h"
-#include <sstream>
-#include <vector>
+#include "rust-system.h"
 
 extern bool saw_errors (void);
 
@@ -401,7 +400,7 @@ Session::enable_dump (std::string arg)
 			     arg.c_str (), ":");
 	      return false;
 	    }
-	  handle_internal_blacklist (arg);
+	  handle_excluded_node (arg);
 	  options.enable_dump_option (CompileOptions::INTERNAL_DUMP);
 	}
     }
@@ -423,13 +422,15 @@ Session::enable_dump (std::string arg)
  */
 
 void
-Session::handle_internal_blacklist (std::string arg)
+Session::handle_excluded_node (std::string arg)
 {
-  std::istringstream blist_str (arg.substr (arg.find (":") + 1, 50));
+  const int size_node_string = 50;
+  std::istringstream blist_str (
+    arg.substr (arg.find (":") + 1, size_node_string));
   std::string token;
   while (std::getline (blist_str, token, ','))
     {
-      options.add_blacklist (token);
+      options.add_excluded (token);
     }
 }
 
@@ -1078,7 +1079,7 @@ Session::dump_ast_pretty_internal (AST::Crate &crate) const
       return;
     }
 
-  std::vector<std::string> str_tmp = options.get_blacklist ();
+  std::set<std::string> str_tmp = options.get_excluded ();
 
   AST::Dump (out, true, str_tmp).go (crate);
 

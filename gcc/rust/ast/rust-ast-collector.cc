@@ -108,7 +108,7 @@ TokenCollector::begin_internal_comment (std::string comment)
 {
   std::string symbol_begin ("(");
 
-  tokens.push_back ({comment + symbol_begin, true});
+  tokens.push_back ({comment + symbol_begin, CollectItem::Comment::Internal});
 }
 
 void
@@ -116,7 +116,7 @@ TokenCollector::end_internal_comment (std::string comment)
 {
   std::string symbol_end (")!");
 
-  tokens.push_back ({symbol_end + comment, true});
+  tokens.push_back ({symbol_end + comment, CollectItem::Comment::Internal});
 }
 
 void

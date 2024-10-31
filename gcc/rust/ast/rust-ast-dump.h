@@ -22,6 +22,7 @@
 #include "rust-ast.h"
 #include "rust-ast-full.h"
 #include "rust-dump.h"
+#include "rust-system.h"
 
 #include "rust-ast-collector.h"
 
@@ -33,7 +34,7 @@ class Dump
 public:
   Dump (std::ostream &stream);
   Dump (std::ostream &stream, bool print_internal,
-	std::vector<std::string> blacklist);
+	std::set<std::string> excluded_node);
 
   /**
    * Run the visitor on an entire crate and its items
@@ -76,17 +77,17 @@ public:
 	  case AST::CollectItem::Kind::InternalComment:
 	    if (print_internal)
 	      {
-		bool is_blacklisted = false;
+		bool is_excluded = false;
 		std::string comment = item.get_internal_comment ();
-		for (auto &node : internal_blacklist)
+		for (auto &node : excluded_node)
 		  {
 		    if (comment.find (node) != std::string::npos)
 		      {
-			is_blacklisted = true;
+			is_excluded = true;
 			break;
 		      }
 		  }
-		if (!is_blacklisted)
+		if (!is_excluded)
 		  stream << " /* " << comment << " */ ";
 	      }
 	    break;
@@ -103,7 +104,7 @@ private:
   std::ostream &stream;
   Indent indentation;
   bool print_internal;
-  std::vector<std::string> internal_blacklist;
+  std::set<std::string> excluded_node;
 
   static bool require_spacing (TokenPtr previous, TokenPtr current);
 };
