@@ -780,16 +780,8 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, M, U, F) \
+#define ENTRY(N, S, M, U) \
   AARCH64_##N,
-
-#undef ENTRY_VHSDF
-#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC, EXTENSIONS) \
-  AARCH64_##NAME##_f16, \
-  AARCH64_##NAME##q_f16, \
-  AARCH64_##NAME##_f32, \
-  AARCH64_##NAME##q_f32, \
-  AARCH64_##NAME##q_f64,
 
 enum aarch64_builtins
 {
@@ -1602,16 +1594,8 @@ enum class aarch64_builtin_signatures
 };
 
 #undef ENTRY
-#define ENTRY(N, S, M, U, F) \
-  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, F},
-
-#undef ENTRY_VHSDF
-#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC, EXTENSIONS) \
-  ENTRY (NAME##_f16, SIGNATURE, V4HF, UNSPEC, EXTENSIONS) \
-  ENTRY (NAME##q_f16, SIGNATURE, V8HF, UNSPEC, EXTENSIONS) \
-  ENTRY (NAME##_f32, SIGNATURE, V2SF, UNSPEC, EXTENSIONS) \
-  ENTRY (NAME##q_f32, SIGNATURE, V4SF, UNSPEC, EXTENSIONS) \
-  ENTRY (NAME##q_f64, SIGNATURE, V2DF, UNSPEC, EXTENSIONS)
+#define ENTRY(N, S, M, U) \
+  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, REQUIRED_EXTENSIONS},
 
 /* Initialize pragma builtins.  */
 
