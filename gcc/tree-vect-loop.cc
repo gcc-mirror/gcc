@@ -12166,11 +12166,6 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
   LOOP_VINFO_BBS (epilogue_vinfo) = epilogue_bbs;
   LOOP_VINFO_NBBS (epilogue_vinfo) = epilogue->num_nodes;
 
-  /* Advance data_reference's with the number of iterations of the previous
-     loop and its prologue.  */
-  vect_update_inits_of_drs (epilogue_vinfo, advance, PLUS_EXPR);
-
-
   /* The EPILOGUE loop is a copy of the original loop so they share the same
      gimple UIDs.  In this loop we update the loop_vec_info of the EPILOGUE to
      point to the copied statements.  We also create a mapping of all LHS' in
@@ -12292,6 +12287,10 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	}
       DR_STMT (dr) = STMT_VINFO_STMT (stmt_vinfo);
     }
+
+  /* Advance data_reference's with the number of iterations of the previous
+     loop and its prologue.  */
+  vect_update_inits_of_drs (epilogue_vinfo, advance, PLUS_EXPR);
 
   epilogue_vinfo->shared->datarefs_copy.release ();
   epilogue_vinfo->shared->save_datarefs ();
