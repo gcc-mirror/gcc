@@ -4006,8 +4006,8 @@ __lsx_vssrln_w_d (v2i64 _1, v2i64 _2)
 {
   return __builtin_lsx_vssrln_w_d (_1, _2);
 }
-v16i8
-__lsx_vorn_v (v16i8 _1, v16i8 _2)
+v16u8
+__lsx_vorn_v (v16u8 _1, v16u8 _2)
 {
   return __builtin_lsx_vorn_v (_1, _2);
 }

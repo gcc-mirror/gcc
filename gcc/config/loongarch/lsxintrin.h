@@ -4745,11 +4745,11 @@ __m128i __lsx_vssrln_w_d (__m128i _1, __m128i _2)
 }
 
 /* Assembly instruction format:	vd, vj, vk.  */
-/* Data types in instruction templates:  V16QI, V16QI, V16QI.  */
+/* Data types in instruction templates:  UV16QI, UV16QI, UV16QI.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m128i __lsx_vorn_v (__m128i _1, __m128i _2)
 {
-  return (__m128i)__builtin_lsx_vorn_v ((v16i8)_1, (v16i8)_2);
+  return (__m128i)__builtin_lsx_vorn_v ((v16u8)_1, (v16u8)_2);
 }
 
 /* Assembly instruction format:	vd, i13.  */

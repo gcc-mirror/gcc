@@ -3564,11 +3564,11 @@ __m256i __lasx_xvssrln_w_d (__m256i _1, __m256i _2)
 }
 
 /* Assembly instruction format:	xd, xj, xk.  */
-/* Data types in instruction templates:  V32QI, V32QI, V32QI.  */
+/* Data types in instruction templates:  UV32QI, UV32QI, UV32QI.  */
 extern __inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __m256i __lasx_xvorn_v (__m256i _1, __m256i _2)
 {
-  return (__m256i)__builtin_lasx_xvorn_v ((v32i8)_1, (v32i8)_2);
+  return (__m256i)__builtin_lasx_xvorn_v ((v32u8)_1, (v32u8)_2);
 }
 
 /* Assembly instruction format:	xd, i13.  */
