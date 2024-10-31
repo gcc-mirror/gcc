@@ -1634,8 +1634,8 @@ static bool c_parser_nth_token_starts_std_attributes (c_parser *,
 static tree c_parser_std_attribute_specifier_sequence (c_parser *);
 static void c_parser_external_declaration (c_parser *);
 static void c_parser_asm_definition (c_parser *);
-static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
-					   bool, bool, tree * = NULL,
+static tree c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
+					   bool, bool, bool, tree * = NULL,
 					   vec<c_token> * = NULL,
 					   bool have_attrs = false,
 					   tree attrs = NULL,
@@ -2060,7 +2060,8 @@ c_parser_external_declaration (c_parser *parser)
 	 an @interface or @protocol with prefix attributes).  We can
 	 only tell which after parsing the declaration specifiers, if
 	 any, and the first declarator.  */
-      c_parser_declaration_or_fndef (parser, true, true, true, false, true);
+      c_parser_declaration_or_fndef (parser, true, true, true, false, true,
+				     false);
       break;
     }
 }
@@ -2145,7 +2146,13 @@ handle_assume_attribute (location_t here, tree attrs, bool nested)
    parsed in the caller (in contexts where such attributes had to be
    parsed to determine whether what follows is a declaration or a
    statement); HAVE_ATTRS says whether there were any such attributes
-   (even empty).
+   (even empty).  If SIMPLE_OK, the construct can be a simple-declaration;
+   in that case, the ';' is not consumed (left to the caller so that it
+   can figure out if there was a simple-declaration or not), there must
+   be an initializer, and only one object may be declared.  When SIMPLE_OK
+   is true we are called from c_parser_selection_header.
+
+   Returns the resulting declaration, if there was any with an initializer.
 
    declaration:
      declaration-specifiers init-declarator-list[opt] ;
@@ -2166,6 +2173,10 @@ handle_assume_attribute (location_t here, tree attrs, bool nested)
    init-declarator:
      declarator simple-asm-expr[opt] gnu-attributes[opt]
      declarator simple-asm-expr[opt] gnu-attributes[opt] = initializer
+
+   simple-declaration:
+     attribute-specifier-sequence[opt] declaration-specifiers declarator
+       = initializer
 
    GNU extensions:
 
@@ -2213,10 +2224,11 @@ handle_assume_attribute (location_t here, tree attrs, bool nested)
      declaration-specifiers[opt] __RTL (gimple-or-rtl-pass-list) declarator
        declaration-list[opt] compound-statement  */
 
-static void
+static tree
 c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			       bool static_assert_ok, bool empty_ok,
 			       bool nested, bool start_attr_ok,
+			       bool simple_ok,
 			       tree *objc_foreach_object_declaration
 			       /* = NULL */,
 			       vec<c_token> *omp_declare_simd_clauses
@@ -2232,6 +2244,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
   tree all_prefix_attrs;
   bool diagnosed_no_specs = false;
   location_t here = c_parser_peek_token (parser)->location;
+  tree result = NULL_TREE;
 
   add_debug_begin_stmt (c_parser_peek_token (parser)->location);
 
@@ -2239,7 +2252,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       && c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT))
     {
       c_parser_static_assert_declaration (parser);
-      return;
+      return result;
     }
   specs = build_null_declspecs ();
 
@@ -2325,13 +2338,13 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
   if (parser->error)
     {
       c_parser_skip_to_end_of_block_or_statement (parser);
-      return;
+      return result;
     }
   if (nested && !specs->declspecs_seen_p)
     {
       c_parser_error (parser, "expected declaration specifiers");
       c_parser_skip_to_end_of_block_or_statement (parser);
-      return;
+      return result;
     }
 
   finish_declspecs (specs);
@@ -2366,6 +2379,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  break;
 	}
     }
+
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       bool handled_assume = false;
@@ -2383,7 +2397,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      c_parser_pragma (parser, pragma_external, NULL, NULL_TREE);
 	    }
 	  c_parser_consume_token (parser);
-	  return;
+	  return result;
 	}
       if (specs->typespec_kind == ctsk_none
 	  && lookup_attribute ("gnu", "assume", specs->attrs))
@@ -2425,7 +2439,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       c_parser_consume_token (parser);
       if (oacc_routine_data)
 	c_finish_oacc_routine (oacc_routine_data, NULL_TREE, false);
-      return;
+      return result;
     }
 
   /* Provide better error recovery.  Note that a type name here is usually
@@ -2438,7 +2452,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       c_parser_error (parser, "expected %<;%>, identifier or %<(%>");
       parser->error = false;
       shadow_tag_warned (specs, 1);
-      return;
+      return result;
     }
   else if (c_dialect_objc () && !any_auto_type_p)
     {
@@ -2448,7 +2462,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  case CPP_PLUS:
 	  case CPP_MINUS:
 	    if (c_parser_objc_diagnose_bad_element_prefix (parser, specs))
-	      return;
+	      return result;
 	    if (specs->attrs)
 	      {
 		warning_at (c_parser_peek_token (parser)->location,
@@ -2460,7 +2474,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	      c_parser_objc_method_definition (parser);
 	    else
 	      c_parser_objc_methodproto (parser);
-	    return;
+	    return result;
 	    break;
 	  default:
 	    break;
@@ -2475,15 +2489,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	case RID_AT_INTERFACE:
 	  {
 	    if (c_parser_objc_diagnose_bad_element_prefix (parser, specs))
-	      return;
+	      return result;
 	    c_parser_objc_class_definition (parser, specs->attrs);
-	    return;
+	    return result;
 	  }
 	  break;
 	case RID_AT_IMPLEMENTATION:
 	  {
 	    if (c_parser_objc_diagnose_bad_element_prefix (parser, specs))
-	      return;
+	      return result;
 	    if (specs->attrs)
 	      {
 		warning_at (c_parser_peek_token (parser)->location,
@@ -2492,15 +2506,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		specs->attrs = NULL_TREE;
 	      }
 	    c_parser_objc_class_definition (parser, NULL_TREE);
-	    return;
+	    return result;
 	  }
 	  break;
 	case RID_AT_PROTOCOL:
 	  {
 	    if (c_parser_objc_diagnose_bad_element_prefix (parser, specs))
-	      return;
+	      return result;
 	    c_parser_objc_protocol_definition (parser, specs->attrs);
-	    return;
+	    return result;
 	  }
 	  break;
 	case RID_AT_ALIAS:
@@ -2532,6 +2546,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
   prefix_attrs = specs->attrs;
   all_prefix_attrs = prefix_attrs;
   specs->attrs = NULL_TREE;
+  bool more_than_one_decl = false;
   while (true)
     {
       struct c_declarator *declarator;
@@ -2554,8 +2569,10 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 				       omp_declare_simd_clauses);
 	  if (oacc_routine_data)
 	    c_finish_oacc_routine (oacc_routine_data, NULL_TREE, false);
-	  c_parser_skip_to_end_of_block_or_statement (parser);
-	  return;
+	  /* This check is here purely to improve the diagnostic.  */
+	  if (!simple_ok)
+	    c_parser_skip_to_end_of_block_or_statement (parser);
+	  return result;
 	}
       if (flag_openmp || flag_openmp_simd)
 	{
@@ -2572,7 +2589,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		    "%<__auto_type%> requires a plain identifier"
 		    " as declarator");
 	  c_parser_skip_to_end_of_block_or_statement (parser);
-	  return;
+	  return result;
 	}
       if (std_auto_type_p)
 	{
@@ -2585,7 +2602,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			"%<auto%> requires a plain identifier, possibly with"
 			" attributes, as declarator");
 	      c_parser_skip_to_end_of_block_or_statement (parser);
-	      return;
+	      return result;
 	    }
 	  underspec_name = d->u.id.id;
 	}
@@ -2626,7 +2643,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  error_at (here, "attributes should be specified before the "
 			    "declarator in a function definition");
 		  c_parser_skip_to_end_of_block_or_statement (parser);
-		  return;
+		  return result;
 		}
 	    }
 	  if (c_parser_next_token_is (parser, CPP_EQ))
@@ -2766,6 +2783,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		  maybe_warn_string_init (init_loc, TREE_TYPE (d), init);
 		  finish_decl (d, init_loc, init.value,
 			       init.original_type, asm_name);
+		  result = d;
 		}
 	    }
 	  else
@@ -2776,7 +2794,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			    "%qs requires an initialized data declaration",
 			    any_auto_type_p ? auto_type_keyword : "constexpr");
 		  c_parser_skip_to_end_of_block_or_statement (parser);
-		  return;
+		  return result;
 		}
 
 	      location_t lastloc = UNKNOWN_LOCATION;
@@ -2869,13 +2887,14 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
 	    {
+	      more_than_one_decl = true;
 	      if (any_auto_type_p || specs->constexpr_p)
 		{
 		  error_at (here,
 			    "%qs may only be used with a single declarator",
 			    any_auto_type_p ? auto_type_keyword : "constexpr");
 		  c_parser_skip_to_end_of_block_or_statement (parser);
-		  return;
+		  return result;
 		}
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
@@ -2887,8 +2906,9 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	    }
 	  else if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    {
-	      c_parser_consume_token (parser);
-	      return;
+	      if (!simple_ok)
+		c_parser_consume_token (parser);
+	      return result;
 	    }
 	  else if (c_parser_next_token_is_keyword (parser, RID_IN))
 	    {
@@ -2897,13 +2917,20 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		 Objective-C foreach statement.  Do not consume the
 		 token, so that the caller can use it to determine
 		 that this indeed is a foreach context.  */
-	      return;
+	      return result;
 	    }
 	  else
 	    {
-	      c_parser_error (parser, "expected %<,%> or %<;%>");
-	      c_parser_skip_to_end_of_block_or_statement (parser);
-	      return;
+	      if (!simple_ok)
+		{
+		  c_parser_error (parser, "expected %<,%> or %<;%>");
+		  c_parser_skip_to_end_of_block_or_statement (parser);
+		}
+	      /* It's not valid to use if (int i = 2, j = 3).  */
+	      else if (more_than_one_decl)
+		error_at (here, "declaration in condition can only declare "
+			  "a single object");
+	      return result;
 	    }
 	}
       else if (any_auto_type_p || specs->constexpr_p)
@@ -2912,14 +2939,19 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 		    "%qs requires an initialized data declaration",
 		    any_auto_type_p ? auto_type_keyword : "constexpr");
 	  c_parser_skip_to_end_of_block_or_statement (parser);
-	  return;
+	  return result;
 	}
       else if (!fndef_ok)
 	{
-	  c_parser_error (parser, "expected %<=%>, %<,%>, %<;%>, "
-			  "%<asm%> or %<__attribute__%>");
-	  c_parser_skip_to_end_of_block_or_statement (parser);
-	  return;
+	  if (simple_ok && c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	    /* Let c_parser_selection_header emit the error.  */;
+	  else
+	    {
+	      c_parser_error (parser, "expected %<=%>, %<,%>, %<;%>, "
+			      "%<asm%> or %<__attribute__%>");
+	      c_parser_skip_to_end_of_block_or_statement (parser);
+	    }
+	  return result;
 	}
       /* Function definition (nested or otherwise).  */
       if (nested)
@@ -2988,7 +3020,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       while (c_parser_next_token_is_not (parser, CPP_EOF)
 	     && c_parser_next_token_is_not (parser, CPP_OPEN_BRACE))
 	c_parser_declaration_or_fndef (parser, false, false, false,
-				       true, false);
+				       true, false, false);
       debug_nonbind_markers_p = save_debug_nonbind_markers_p;
       store_parm_decls ();
       if (omp_declare_simd_clauses)
@@ -3018,7 +3050,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  pop_scope ();
 
 	  finish_function (endloc);
-	  return;
+	  return result;
 	}
       /* If the definition was marked with __GIMPLE then parse the
          function body as GIMPLE.  */
@@ -3059,6 +3091,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 
       break;
     }
+
+  return result;
 }
 
 /* Parse an asm-definition (asm() outside a function body).  This is a
@@ -7378,7 +7412,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  mark_valid_location_for_stdc_pragma (false);
 	  bool fallthru_attr_p = false;
 	  c_parser_declaration_or_fndef (parser, true, !have_std_attrs,
-					 true, true, true, NULL,
+					 true, true, true, false, NULL,
 					 NULL, have_std_attrs, std_attrs,
 					 NULL, &fallthru_attr_p);
 
@@ -7421,7 +7455,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 		}
 	      mark_valid_location_for_stdc_pragma (false);
 	      c_parser_declaration_or_fndef (parser, true, true, true, true,
-					     true);
+					     true, false);
 	      if (in_omp_loop_block)
 		omp_for_parse_state->want_nested_loop = want_nested_loop;
 	      /* Following the old parser, __extension__ does not
@@ -8075,11 +8109,12 @@ c_parser_condition (c_parser *parser)
   return cond;
 }
 
-/* Parse a parenthesized condition from an if, do or while statement.
+/* Parse a parenthesized condition from a do or while statement.
 
    condition:
      ( expression )
 */
+
 static tree
 c_parser_paren_condition (c_parser *parser)
 {
@@ -8088,6 +8123,108 @@ c_parser_paren_condition (c_parser *parser)
   if (!parens.require_open (parser))
     return error_mark_node;
   cond = c_parser_condition (parser);
+  parens.skip_until_found_close (parser);
+  return cond;
+}
+
+/* Parse a selection-header:
+
+   selection-header:
+     expression
+     declaration expression
+     simple-declaration
+
+   simple-declaration:
+     attribute-specifier-sequence[opt] declaration-specifiers declarator
+       = initializer
+
+  SWITCH_P is true if we are called from c_parser_switch_statement; in
+  that case, don't perform the truthvalue conversion.  */
+
+static c_expr
+c_parser_selection_header (c_parser *parser, bool switch_p)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_expr expr;
+  bool parse_expr = true;
+  tree std_attrs;
+  bool have_std_attrs = c_parser_nth_token_starts_std_attributes (parser, 1);
+  if (have_std_attrs)
+    std_attrs = c_parser_std_attribute_specifier_sequence (parser);
+  else
+    std_attrs = NULL_TREE;
+  if (c_parser_next_tokens_start_declaration (parser))
+    {
+      pedwarn_c23 (loc, OPT_Wpedantic,
+		   "ISO C does not support if declarations before C2Y");
+      expr.value
+	= c_parser_declaration_or_fndef (parser,
+					 /*fndef_ok=*/false,
+					 /*static_assert_ok=*/false,
+					 /*empty_ok=*/false,
+					 /*nested=*/true,
+					 /*start_attr_ok=*/true,
+					 /*simple_ok=*/true,
+					 /*objc_foreach_object_decl=*/nullptr,
+					 /*omp_declare_simd_clauses=*/nullptr,
+					 have_std_attrs,
+					 std_attrs);
+      if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+	c_parser_consume_token (parser);
+      else
+	{
+	  /* A simple-declaration is a declaration that can appear in
+	     place of the controlling expression of a selection statement.
+	     In that case, there shall be an initializer.  */
+	  if (!expr.value)
+	    {
+	      error_at (loc, "declaration in the controlling expression must "
+			"have an initializer");
+	      expr.original_type = error_mark_node;
+	      expr.set_error ();
+	      return expr;
+	    }
+	  parse_expr = false;
+	}
+      if (expr.value)
+	{
+	  expr.original_type = TREE_TYPE (expr.value);
+	  expr = convert_lvalue_to_rvalue (loc, expr, /*convert_p=*/true,
+					   /*read_p=*/true);
+	}
+    }
+  else if (have_std_attrs)
+    {
+      c_parser_error (parser, "expected declaration");
+      expr.original_type = error_mark_node;
+      expr.set_error ();
+      return expr;
+    }
+
+  if (parse_expr)
+    expr = c_parser_expression_conv (parser);
+  if (!switch_p)
+    {
+      expr.value = c_objc_common_truthvalue_conversion (loc, expr.value);
+      expr.value = c_fully_fold (expr.value, false, NULL);
+      if (warn_sequence_point)
+	verify_sequence_points (expr.value);
+    }
+  return expr;
+}
+
+/* Parse a selection-header enclosed in parentheses:
+
+   ( selection-header )
+*/
+
+static tree
+c_parser_paren_selection_header (c_parser *parser)
+{
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return error_mark_node;
+  tree cond = c_parser_selection_header (parser, /*switch_p=*/false).value;
   parens.skip_until_found_close (parser);
   return cond;
 }
@@ -8244,8 +8381,8 @@ c_parser_maybe_reclassify_token (c_parser *parser)
 /* Parse an if statement (C90 6.6.4, C99 6.8.4, C11 6.8.4).
 
    if-statement:
-     if ( expression ) statement
-     if ( expression ) statement else statement
+     if ( selection-header ) statement
+     if ( selection-header ) statement else statement
 
    CHAIN is a vector of if-else-if conditions.
    IF_P is used to track whether there's a (possibly labeled) if statement
@@ -8268,7 +8405,7 @@ c_parser_if_statement (c_parser *parser, bool *if_p, vec<tree> *chain)
   c_parser_consume_token (parser);
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
-  cond = c_parser_paren_condition (parser);
+  cond = c_parser_paren_selection_header (parser);
   in_if_block = parser->in_if_block;
   parser->in_if_block = true;
   first_body = c_parser_if_body (parser, &nested_if, if_tinfo);
@@ -8355,7 +8492,10 @@ c_parser_switch_statement (c_parser *parser, bool *if_p, tree before_labels)
       if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
 	  && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
 	explicit_cast_p = true;
-      ce = c_parser_expression (parser);
+      ce = c_parser_selection_header (parser, /*switch_p=*/true);
+      /* The call above already performed convert_lvalue_to_rvalue, but
+	 if it parsed an expression, read_p was false.  Make sure we mark
+	 the expression as read.  */
       ce = convert_lvalue_to_rvalue (switch_cond_loc, ce, true, true);
       expr = ce.value;
       /* ??? expr has no valid location?  */
@@ -8667,7 +8807,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 	       || c_parser_nth_token_starts_std_attributes (parser, 1))
 	{
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true,
-					 &object_expression);
+					 false, &object_expression);
 	  parser->objc_could_be_foreach_context = false;
 
 	  if (c_parser_next_token_is_keyword (parser, RID_IN))
@@ -8698,7 +8838,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
 	      c_parser_declaration_or_fndef (parser, true, true, true, true,
-					     true, &object_expression);
+					     true, false, &object_expression);
 	      parser->objc_could_be_foreach_context = false;
 
 	      restore_extension_diagnostics (ext);
@@ -14050,7 +14190,7 @@ c_parser_objc_methodprotolist (c_parser *parser)
 	    }
 	  else
 	    c_parser_declaration_or_fndef (parser, false, false, true,
-					   false, true);
+					   false, true, false);
 	  break;
 	}
     }
@@ -21170,12 +21310,12 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
 	  while (c_parser_next_token_is (parser, CPP_KEYWORD)
 		 && c_parser_peek_token (parser)->keyword == RID_EXTENSION);
 	  c_parser_declaration_or_fndef (parser, true, true, true, false, true,
-					 NULL, NULL, false, NULL, &data);
+					 false, NULL, NULL, false, NULL, &data);
 	  restore_extension_diagnostics (ext);
 	}
       else
 	c_parser_declaration_or_fndef (parser, true, true, true, false, true,
-				       NULL, NULL, false, NULL, &data);
+				       false, NULL, NULL, false, NULL, &data);
     }
 }
 
@@ -23136,7 +23276,8 @@ c_parser_omp_loop_nest (c_parser *parser, bool *if_p)
       /* This is a declaration, which must be added to the pre_body code.  */
       tree this_pre_body = push_stmt_list ();
       c_in_omp_for = true;
-      c_parser_declaration_or_fndef (parser, true, true, true, true, true);
+      c_parser_declaration_or_fndef (parser, true, true, true, true, true,
+				     false);
       c_in_omp_for = false;
       this_pre_body = pop_stmt_list (this_pre_body);
       append_to_statement_list_force (this_pre_body,
@@ -25378,12 +25519,12 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
 	  while (c_parser_next_token_is (parser, CPP_KEYWORD)
 		 && c_parser_peek_token (parser)->keyword == RID_EXTENSION);
 	  c_parser_declaration_or_fndef (parser, true, true, true, false, true,
-					 NULL, &clauses);
+					 false, NULL, &clauses);
 	  restore_extension_diagnostics (ext);
 	}
       else
 	c_parser_declaration_or_fndef (parser, true, true, true, false, true,
-				       NULL, &clauses);
+				       false, NULL, &clauses);
       break;
     case pragma_struct:
     case pragma_param:
@@ -25412,7 +25553,7 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
 	      || c_parser_nth_token_starts_std_attributes (parser, 1))
 	    {
 	      c_parser_declaration_or_fndef (parser, true, true, true, true,
-					     true, NULL, &clauses,
+					     true, false, NULL, &clauses,
 					     have_std_attrs, std_attrs);
 	      restore_extension_diagnostics (ext);
 	      break;
@@ -25422,7 +25563,7 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
       else if (c_parser_next_tokens_start_declaration (parser))
 	{
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true,
-					 NULL, &clauses, have_std_attrs,
+					 false, NULL, &clauses, have_std_attrs,
 					 std_attrs);
 	  break;
 	}
