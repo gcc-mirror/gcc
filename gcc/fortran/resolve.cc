@@ -6153,6 +6153,15 @@ resolve_variable (gfc_expr *e)
 	  e->ref = newref;
 	}
     }
+  else if (sym->assoc && sym->ts.type == BT_CHARACTER && sym->ts.deferred)
+    {
+      gfc_ref *ref;
+      for (ref = e->ref; ref; ref = ref->next)
+	if (ref->type == REF_SUBSTRING)
+	  break;
+      if (ref == NULL)
+	e->ts = sym->ts;
+    }
 
   if (e->ref && !gfc_resolve_ref (e))
     return false;
@@ -9871,6 +9880,15 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* Fix up the type-spec for CHARACTER types.  */
   if (sym->ts.type == BT_CHARACTER && !sym->attr.select_type_temporary)
     {
+      gfc_ref *ref;
+      for (ref = target->ref; ref; ref = ref->next)
+	if (ref->type == REF_SUBSTRING
+	    && ((ref->u.ss.start
+		 && ref->u.ss.start->expr_type != EXPR_CONSTANT)
+		|| (ref->u.ss.end
+		    && ref->u.ss.end->expr_type != EXPR_CONSTANT)))
+	  break;
+
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
@@ -9889,9 +9907,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 		gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 				  target->value.character.length);
 	}
-      else if ((!sym->ts.u.cl->length
-		|| sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+      else if (((!sym->ts.u.cl->length
+		 || sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 		&& target->expr_type != EXPR_VARIABLE)
+	       || ref)
 	{
 	  if (!sym->ts.deferred)
 	    {
@@ -9901,7 +9920,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
 	  /* This is reset in trans-stmt.cc after the assignment
 	     of the target expression to the associate name.  */
-	  sym->attr.allocatable = 1;
+	  if (ref && sym->as)
+	    sym->attr.pointer = 1;
+	  else
+	    sym->attr.allocatable = 1;
 	}
     }
 
@@ -11508,8 +11530,9 @@ resolve_block_construct (gfc_code* code)
 {
   gfc_namespace *ns = code->ext.block.ns;
 
-  /* For an ASSOCIATE block, the associations (and their targets) are already
-     resolved during resolve_symbol. Resolve the BLOCK's namespace.  */
+  /* For an ASSOCIATE block, the associations (and their targets) will be
+     resolved by gfc_resolve_symbol, during resolution of the BLOCK's
+     namespace.  */
   gfc_resolve (ns);
 }
 
