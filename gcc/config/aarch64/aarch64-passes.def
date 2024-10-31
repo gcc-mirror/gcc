@@ -23,7 +23,6 @@ INSERT_PASS_AFTER (pass_regrename, 1, pass_fma_steering);
 INSERT_PASS_BEFORE (pass_reorder_blocks, 1, pass_track_speculation);
 INSERT_PASS_BEFORE (pass_late_thread_prologue_and_epilogue, 1, pass_switch_pstate_sm);
 INSERT_PASS_BEFORE (pass_late_thread_prologue_and_epilogue, 1, pass_late_track_speculation);
-INSERT_PASS_AFTER (pass_machine_reorg, 1, pass_tag_collision_avoidance);
 INSERT_PASS_BEFORE (pass_shorten_branches, 1, pass_insert_bti);
 INSERT_PASS_AFTER (pass_if_after_combine, 1, pass_cc_fusion);
 INSERT_PASS_BEFORE (pass_early_remat, 1, pass_ldp_fusion);

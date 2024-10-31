@@ -36,8 +36,6 @@ AARCH64_EXTRA_TUNING_OPTION ("rename_fma_regs", RENAME_FMA_REGS)
    are not considered cheap.  */
 AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 
-AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
-
 AARCH64_EXTRA_TUNING_OPTION ("cse_sve_vl_constants", CSE_SVE_VL_CONSTANTS)
 
 AARCH64_EXTRA_TUNING_OPTION ("use_new_vector_costs", USE_NEW_VECTOR_COSTS)
