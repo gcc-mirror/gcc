@@ -947,16 +947,15 @@ namespace __detail
 		_RangeHash, _Unused, _RehashPolicy, _Traits, __uniq>
     { };
 
-  /**
-   *  Primary class template _Insert_base.
-   *
-   *  Defines @c insert member functions appropriate to all _Hashtables.
-   */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
+  // Defines `insert` member functions for _Hashtables.
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    struct _Insert_base
+    struct _Insert
     {
     protected:
       using __hashtable_base = _Hashtable_base<_Key, _Value, _ExtractKey,
@@ -981,19 +980,14 @@ namespace __detail
       using __node_alloc_type = typename __hashtable_alloc::__node_alloc_type;
       using __node_gen_type = _AllocNode<__node_alloc_type>;
 
+      [[__gnu__::__always_inline__]]
       __hashtable&
       _M_conjure_hashtable()
       { return *(static_cast<__hashtable*>(this)); }
 
-      template<typename _InputIterator, typename _NodeGetter>
+      template<typename _InputIterator>
 	void
-	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			_NodeGetter&, true_type __uks);
-
-      template<typename _InputIterator, typename _NodeGetter>
-	void
-	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			_NodeGetter&, false_type __uks);
+	_M_insert_range_multi(_InputIterator __first, _InputIterator __last);
 
     public:
       using iterator = _Node_iterator<_Value, __constant_iterators::value,
@@ -1011,16 +1005,40 @@ namespace __detail
       insert(const value_type& __v)
       {
 	__hashtable& __h = _M_conjure_hashtable();
-	__node_gen_type __node_gen(__h);
-	return __h._M_insert(__v, __node_gen, __unique_keys{});
+	if constexpr (__unique_keys::value)
+	  return __h._M_emplace_uniq(__v);
+	else
+	  return __h._M_emplace_multi(__h.cend(), __v);
       }
 
       iterator
       insert(const_iterator __hint, const value_type& __v)
       {
 	__hashtable& __h = _M_conjure_hashtable();
-	__node_gen_type __node_gen(__h);
-	return __h._M_insert(__hint, __v, __node_gen, __unique_keys{});
+	if constexpr (__unique_keys::value)
+	  return __h._M_emplace_uniq(__v).first;
+	else
+	  return __h._M_emplace_multi(__hint, __v);
+      }
+
+      __ireturn_type
+      insert(value_type&& __v)
+      {
+	__hashtable& __h = _M_conjure_hashtable();
+	if constexpr (__unique_keys::value)
+	  return __h._M_emplace_uniq(std::move(__v));
+	else
+	  return __h._M_emplace_multi(__h.cend(), std::move(__v));
+      }
+
+      iterator
+      insert(const_iterator __hint, value_type&& __v)
+      {
+	__hashtable& __h = _M_conjure_hashtable();
+	if constexpr (__unique_keys::value)
+	  return __h._M_emplace_uniq(std::move(__v)).first;
+	else
+	  return __h._M_emplace_multi(__hint, std::move(__v));
       }
 
 #ifdef __glibcxx_unordered_map_try_emplace // C++ >= 17 && HOSTED
@@ -1056,39 +1074,52 @@ namespace __detail
 	insert(_InputIterator __first, _InputIterator __last)
 	{
 	  __hashtable& __h = _M_conjure_hashtable();
-	  __node_gen_type __node_gen(__h);
-	  return _M_insert_range(__first, __last, __node_gen, __unique_keys{});
+	  if constexpr (__unique_keys::value)
+	    for (; __first != __last; ++__first)
+	      __h._M_emplace_uniq(*__first);
+	  else
+	    return _M_insert_range_multi(__first, __last);
+	}
+
+      // This overload is only defined for maps, not sets.
+      template<typename _Pair,
+	       typename = _Require<__not_<is_same<_Key, _Value>>,
+				   is_constructible<value_type, _Pair&&>>>
+	__ireturn_type
+	insert(_Pair&& __v)
+	{
+	  __hashtable& __h = this->_M_conjure_hashtable();
+	  if constexpr (__unique_keys::value)
+	    return __h._M_emplace_uniq(std::forward<_Pair>(__v));
+	  else
+	    return __h._M_emplace_multi(__h.cend(), std::forward<_Pair>(__v));
+	}
+
+      // This overload is only defined for maps, not sets.
+      template<typename _Pair,
+	       typename = _Require<__not_<is_same<_Key, _Value>>,
+				   is_constructible<value_type, _Pair&&>>>
+	iterator
+	insert(const_iterator __hint, _Pair&& __v)
+	{
+	  __hashtable& __h = this->_M_conjure_hashtable();
+	  if constexpr (__unique_keys::value)
+	    return __h._M_emplace_uniq(std::forward<_Pair>(__v));
+	  else
+	    return __h._M_emplace_multi(__hint, std::forward<_Pair>(__v));
 	}
     };
+#pragma GCC diagnostic pop
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
-    template<typename _InputIterator, typename _NodeGetter>
+    template<typename _InputIterator>
       void
-      _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		   _Hash, _RangeHash, _Unused,
-		   _RehashPolicy, _Traits>::
-      _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      _NodeGetter& __node_gen, true_type __uks)
-      {
-	__hashtable& __h = _M_conjure_hashtable();
-	for (; __first != __last; ++__first)
-	  __h._M_insert(*__first, __node_gen, __uks);
-      }
-
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    template<typename _InputIterator, typename _NodeGetter>
-      void
-      _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		   _Hash, _RangeHash, _Unused,
-		   _RehashPolicy, _Traits>::
-      _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      _NodeGetter& __node_gen, false_type __uks)
+      _Insert<_Key, _Value, _Alloc, _ExtractKey, _Equal, _Hash, _RangeHash,
+	      _Unused, _RehashPolicy, _Traits>::
+      _M_insert_range_multi(_InputIterator __first, _InputIterator __last)
       {
 	using __rehash_guard_t = typename __hashtable::__rehash_guard_t;
 	using __pair_type = std::pair<bool, std::size_t>;
@@ -1105,119 +1136,12 @@ namespace __detail
 						__n_elt);
 
 	if (__do_rehash.first)
-	  __h._M_rehash(__do_rehash.second, __uks);
+	  __h._M_rehash(__do_rehash.second, false_type{});
 
 	__rehash_guard._M_guarded_obj = nullptr;
 	for (; __first != __last; ++__first)
-	  __h._M_insert(*__first, __node_gen, __uks);
+	  __h._M_emplace_multi(__h.cend(), *__first);
       }
-
-  /**
-   *  Primary class template _Insert.
-   *
-   *  Defines @c insert member functions that depend on _Hashtable policies,
-   *  via partial specializations.
-   */
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits,
-	   bool _Constant_iterators = _Traits::__constant_iterators::value>
-    struct _Insert;
-
-  /// Specialization.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    struct _Insert<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		   _Hash, _RangeHash, _Unused,
-		   _RehashPolicy, _Traits, true>
-    : public _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-			  _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>
-    {
-      using __base_type = _Insert_base<_Key, _Value, _Alloc, _ExtractKey,
-				       _Equal, _Hash, _RangeHash, _Unused,
-				       _RehashPolicy, _Traits>;
-
-      using value_type = typename __base_type::value_type;
-      using iterator = typename __base_type::iterator;
-      using const_iterator =  typename __base_type::const_iterator;
-      using __ireturn_type = typename __base_type::__ireturn_type;
-
-      using __unique_keys = typename __base_type::__unique_keys;
-      using __hashtable = typename __base_type::__hashtable;
-      using __node_gen_type = typename __base_type::__node_gen_type;
-
-      using __base_type::insert;
-
-      __ireturn_type
-      insert(value_type&& __v)
-      {
-	__hashtable& __h = this->_M_conjure_hashtable();
-	__node_gen_type __node_gen(__h);
-	return __h._M_insert(std::move(__v), __node_gen, __unique_keys{});
-      }
-
-      iterator
-      insert(const_iterator __hint, value_type&& __v)
-      {
-	__hashtable& __h = this->_M_conjure_hashtable();
-	__node_gen_type __node_gen(__h);
-	return __h._M_insert(__hint, std::move(__v), __node_gen,
-			     __unique_keys{});
-      }
-    };
-
-  /// Specialization.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    struct _Insert<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		   _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, false>
-    : public _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-			  _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>
-    {
-      using __base_type = _Insert_base<_Key, _Value, _Alloc, _ExtractKey,
-				       _Equal, _Hash, _RangeHash, _Unused,
-				       _RehashPolicy, _Traits>;
-      using value_type = typename __base_type::value_type;
-      using iterator = typename __base_type::iterator;
-      using const_iterator =  typename __base_type::const_iterator;
-
-      using __unique_keys = typename __base_type::__unique_keys;
-      using __hashtable = typename __base_type::__hashtable;
-      using __ireturn_type = typename __base_type::__ireturn_type;
-
-      using __base_type::insert;
-
-      template<typename _Pair>
-	using __is_cons = std::is_constructible<value_type, _Pair&&>;
-
-      template<typename _Pair>
-	using _IFcons = std::enable_if<__is_cons<_Pair>::value>;
-
-      template<typename _Pair>
-	using _IFconsp = typename _IFcons<_Pair>::type;
-
-      template<typename _Pair, typename = _IFconsp<_Pair>>
-	__ireturn_type
-	insert(_Pair&& __v)
-	{
-	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_emplace(__unique_keys{}, std::forward<_Pair>(__v));
-	}
-
-      template<typename _Pair, typename = _IFconsp<_Pair>>
-	iterator
-	insert(const_iterator __hint, _Pair&& __v)
-	{
-	  __hashtable& __h = this->_M_conjure_hashtable();
-	  return __h._M_emplace(__hint, __unique_keys{},
-				std::forward<_Pair>(__v));
-	}
-   };
 
   template<typename _Policy>
     using __has_load_factor = typename _Policy::__has_load_factor;

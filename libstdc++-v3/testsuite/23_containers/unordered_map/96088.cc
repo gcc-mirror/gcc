@@ -47,7 +47,8 @@ test01()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 void
@@ -67,7 +68,8 @@ test02()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 std::size_t
@@ -96,7 +98,8 @@ test11()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 std::size_t
@@ -124,7 +127,8 @@ test12()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 struct hash_string_functor
@@ -154,7 +158,8 @@ test21()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 struct hash_string_view_noexcept_functor
@@ -184,7 +189,8 @@ test22()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 struct hash_string_view_functor
@@ -214,7 +220,8 @@ test23()
   VERIFY( um.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 4 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
+  // Allocated another node and a pair<const std::string, std::string>:
+  VERIFY( __gnu_test::counter::get()._M_increments == 7 );
 }
 
 void

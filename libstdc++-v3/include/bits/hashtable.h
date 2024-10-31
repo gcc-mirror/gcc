@@ -371,13 +371,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename _ExtractKeya, typename _Equala,
 	       typename _Hasha, typename _RangeHasha, typename _Unuseda,
 	       typename _RehashPolicya, typename _Traitsa>
-	friend struct __detail::_Insert_base;
-
-      template<typename _Keya, typename _Valuea, typename _Alloca,
-	       typename _ExtractKeya, typename _Equala,
-	       typename _Hasha, typename _RangeHasha, typename _Unuseda,
-	       typename _RehashPolicya, typename _Traitsa,
-	       bool _Constant_iteratorsa>
 	friend struct __detail::_Insert;
 
       template<typename _Keya, typename _Valuea, typename _Alloca,
@@ -940,77 +933,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _Args>
 	std::pair<iterator, bool>
-	_M_emplace(true_type __uks, _Args&&... __args);
+	_M_emplace_uniq(_Args&&... __args);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // variable templates
+      template<typename _Arg, typename _DArg = __remove_cvref_t<_Arg>,
+	       typename = _ExtractKey>
+	static constexpr bool __is_key_type = false;
+
+      template<typename _Arg>
+	static constexpr bool
+	__is_key_type<_Arg, key_type, __detail::_Identity> = true;
+
+      template<typename _Arg, typename _Arg1, typename _Arg2>
+	static constexpr bool
+	__is_key_type<_Arg, pair<_Arg1, _Arg2>, __detail::_Select1st>
+	  = is_same<__remove_cvref_t<_Arg1>, key_type>::value;
+#pragma GCC diagnostic pop
 
       template<typename... _Args>
 	iterator
-	_M_emplace(false_type __uks, _Args&&... __args)
-	{ return _M_emplace(cend(), __uks, std::forward<_Args>(__args)...); }
-
-      // Emplace with hint, useless when keys are unique.
-      template<typename... _Args>
-	iterator
-	_M_emplace(const_iterator, true_type __uks, _Args&&... __args)
-	{ return _M_emplace(__uks, std::forward<_Args>(__args)...).first; }
-
-      template<typename... _Args>
-	iterator
-	_M_emplace(const_iterator, false_type __uks, _Args&&... __args);
-
-      template<typename _Kt, typename _Arg, typename _NodeGenerator>
-	std::pair<iterator, bool>
-	_M_insert_unique(_Kt&&, _Arg&&, _NodeGenerator&);
-
-      template<typename _Arg, typename _NodeGenerator>
-	std::pair<iterator, bool>
-	_M_insert_unique_aux(_Arg&& __arg, _NodeGenerator& __node_gen)
-	{
-	  using _Kt = decltype(_ExtractKey{}(std::forward<_Arg>(__arg)));
-	  constexpr bool __is_key_type
-	    = is_same<__remove_cvref_t<_Kt>, key_type>::value;
-	  using _Fwd_key = __conditional_t<__is_key_type, _Kt&&, key_type>;
-	  return _M_insert_unique(
-	    static_cast<_Fwd_key>(_ExtractKey{}(std::forward<_Arg>(__arg))),
-	    std::forward<_Arg>(__arg), __node_gen);
-	}
-
-      template<typename _Arg, typename _NodeGenerator>
-	std::pair<iterator, bool>
-	_M_insert(_Arg&& __arg, _NodeGenerator& __node_gen,
-		  true_type /* __uks */)
-	{
-	  using __detail::_Identity;
-	  using _Vt = __conditional_t<is_same<_ExtractKey, _Identity>::value
-					|| __is_pair<__remove_cvref_t<_Arg>>,
-				      _Arg&&, value_type>;
-	  return _M_insert_unique_aux(
-		   static_cast<_Vt>(std::forward<_Arg>(__arg)), __node_gen);
-	}
-
-      template<typename _Arg, typename _NodeGenerator>
-	iterator
-	_M_insert(_Arg&& __arg, _NodeGenerator& __node_gen,
-		  false_type __uks)
-	{
-	  return _M_insert(cend(), std::forward<_Arg>(__arg),
-			   __node_gen, __uks);
-	}
-
-      // Insert with hint, not used when keys are unique.
-      template<typename _Arg, typename _NodeGenerator>
-	iterator
-	_M_insert(const_iterator, _Arg&& __arg,
-		  _NodeGenerator& __node_gen, true_type __uks)
-	{
-	  return
-	    _M_insert(std::forward<_Arg>(__arg), __node_gen, __uks).first;
-	}
-
-      // Insert with hint when keys are not unique.
-      template<typename _Arg, typename _NodeGenerator>
-	iterator
-	_M_insert(const_iterator, _Arg&&,
-		  _NodeGenerator&, false_type __uks);
+	_M_emplace_multi(const_iterator, _Args&&... __args);
 
       size_type
       _M_erase(true_type __uks, const key_type&);
@@ -1022,19 +965,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_erase(size_type __bkt, __node_base_ptr __prev_n, __node_ptr __n);
 
     public:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       // Emplace
       template<typename... _Args>
 	__ireturn_type
 	emplace(_Args&&... __args)
-	{ return _M_emplace(__unique_keys{}, std::forward<_Args>(__args)...); }
+	{
+	  if constexpr (__unique_keys::value)
+	    return _M_emplace_uniq(std::forward<_Args>(__args)...);
+	  else
+	    return _M_emplace_multi(cend(), std::forward<_Args>(__args)...);
+	}
 
       template<typename... _Args>
 	iterator
 	emplace_hint(const_iterator __hint, _Args&&... __args)
 	{
-	  return _M_emplace(__hint, __unique_keys{},
-			    std::forward<_Args>(__args)...);
+	  if constexpr (__unique_keys::value)
+	    return _M_emplace_uniq(std::forward<_Args>(__args)...).first;
+	  else
+	    return _M_emplace_multi(__hint, std::forward<_Args>(__args)...);
 	}
+#pragma GCC diagnostic pop
 
       // Insert member functions via inheritance.
 
@@ -1328,9 +1281,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_bucket_count = __bkt_count;
 	  }
 
-	__alloc_node_gen_t __node_gen(*this);
 	for (; __f != __l; ++__f)
-	  _M_insert(*__f, __node_gen, __uks);
+	  _M_emplace_multi(cend(), *__f);
       }
 
   template<typename _Key, typename _Value, typename _Alloc,
@@ -2160,6 +2112,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __prev_n;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -2168,33 +2122,69 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-      _M_emplace(true_type /* __uks */, _Args&&... __args)
+      _M_emplace_uniq(_Args&&... __args)
       -> pair<iterator, bool>
       {
-	// First build the node to get access to the hash code
-	_Scoped_node __node { this, std::forward<_Args>(__args)...  };
-	const key_type& __k = _ExtractKey{}(__node._M_node->_M_v());
+	const key_type* __kp = nullptr;
+
+	if constexpr (sizeof...(_Args) == 1)
+	  {
+	    if constexpr (__is_key_type<_Args...>)
+	      {
+		const auto& __key = _ExtractKey{}(__args...);
+		__kp = std::__addressof(__key);
+	      }
+	  }
+	else if constexpr (sizeof...(_Args) == 2)
+	  {
+	    pair<const _Args&...> __refs(__args...);
+	    if constexpr (__is_key_type<pair<_Args...>>)
+	      {
+		const auto& __key = _ExtractKey{}(__refs);
+		__kp = std::__addressof(__key);
+	      }
+	  }
+
+	_Scoped_node __node { __node_ptr(), this }; // Do not create node yet.
+	__hash_code __code = 0;
+	size_type __bkt = 0;
+
+	if (__kp == nullptr)
+	  {
+	    // Didn't extract a key from the args, so build the node.
+	    __node._M_node
+		  = this->_M_allocate_node(std::forward<_Args>(__args)...);
+	    const key_type& __key = _ExtractKey{}(__node._M_node->_M_v());
+	    __kp = std::__addressof(__key);
+	  }
+
 	const size_type __size = size();
 	if (__size <= __small_size_threshold())
 	  {
 	    for (auto __it = _M_begin(); __it; __it = __it->_M_next())
-	      if (this->_M_key_equals(__k, *__it))
-		// There is already an equivalent node, no insertion
+	      if (this->_M_key_equals(*__kp, *__it))
+		// There is already an equivalent node, no insertion.
 		return { iterator(__it), false };
 	  }
 
-	__hash_code __code = this->_M_hash_code(__k);
-	size_type __bkt = _M_bucket_index(__code);
+	__code = this->_M_hash_code(*__kp);
+	__bkt = _M_bucket_index(__code);
+
 	if (__size > __small_size_threshold())
-	  if (__node_ptr __p = _M_find_node(__bkt, __k, __code))
-	    // There is already an equivalent node, no insertion
+	  if (__node_ptr __p = _M_find_node(__bkt, *__kp, __code))
+	    // There is already an equivalent node, no insertion.
 	    return { iterator(__p), false };
+
+	if (!__node._M_node)
+	  __node._M_node
+		= this->_M_allocate_node(std::forward<_Args>(__args)...);
 
 	// Insert the node
 	auto __pos = _M_insert_unique_node(__bkt, __code, __node._M_node);
 	__node._M_node = nullptr;
 	return { __pos, true };
       }
+#pragma GCC diagnostic pop
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -2204,12 +2194,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-      _M_emplace(const_iterator __hint, false_type /* __uks */,
-		 _Args&&... __args)
+      _M_emplace_multi(const_iterator __hint, _Args&&... __args)
       -> iterator
       {
 	// First build the node to get its hash code.
-	_Scoped_node __node { this, std::forward<_Args>(__args)...  };
+	_Scoped_node __node { this, std::forward<_Args>(__args)... };
 	const key_type& __k = _ExtractKey{}(__node._M_node->_M_v());
 
 	auto __res = this->_M_compute_hash_code(__hint._M_cur, __k);
@@ -2334,71 +2323,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ++_M_element_count;
       return iterator(__node);
     }
-
-  // Insert v if no element with its key is already present.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    template<typename _Kt, typename _Arg, typename _NodeGenerator>
-      auto
-      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-      _M_insert_unique(_Kt&& __k, _Arg&& __v,
-		       _NodeGenerator& __node_gen)
-      -> pair<iterator, bool>
-      {
-	const size_type __size = size();
-	if (__size <= __small_size_threshold())
-	  for (auto __it = _M_begin(); __it; __it = __it->_M_next())
-	    if (this->_M_key_equals_tr(__k, *__it))
-	      return { iterator(__it), false };
-
-	__hash_code __code = this->_M_hash_code_tr(__k);
-	size_type __bkt = _M_bucket_index(__code);
-
-	if (__size > __small_size_threshold())
-	  if (__node_ptr __node = _M_find_node_tr(__bkt, __k, __code))
-	    return { iterator(__node), false };
-
-	_Scoped_node __node {
-	  __node_builder_t::_S_build(std::forward<_Kt>(__k),
-				     std::forward<_Arg>(__v),
-				     __node_gen),
-	  this
-	};
-	auto __pos
-	  = _M_insert_unique_node(__bkt, __code, __node._M_node);
-	__node._M_node = nullptr;
-	return { __pos, true };
-      }
-
-  // Insert v unconditionally.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    template<typename _Arg, typename _NodeGenerator>
-      auto
-      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-      _M_insert(const_iterator __hint, _Arg&& __v,
-		_NodeGenerator& __node_gen,
-		false_type /* __uks */)
-      -> iterator
-      {
-	// First allocate new node so that we don't do anything if it throws.
-	_Scoped_node __node{ __node_gen(std::forward<_Arg>(__v)), this };
-
-	// Second compute the hash code so that we don't rehash if it throws.
-	auto __res = this->_M_compute_hash_code(
-	  __hint._M_cur, _ExtractKey{}(__node._M_node->_M_v()));
-
-	auto __pos
-	  = _M_insert_multi_node(__res.first, __res.second, __node._M_node);
-	__node._M_node = nullptr;
-	return __pos;
-      }
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
