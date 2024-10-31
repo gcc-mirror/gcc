@@ -167,7 +167,10 @@ gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *outerse, gfc_expr *expr)
   if (last_caf_ref == NULL)
     return NULL_TREE;
 
-  tree comp = last_caf_ref->u.c.component->caf_token, caf;
+  tree comp = last_caf_ref->u.c.component->caf_token
+		? gfc_comp_caf_token (last_caf_ref->u.c.component)
+		: NULL_TREE,
+       caf;
   gfc_se se;
   bool comp_ref = !last_caf_ref->u.c.component->attr.dimension;
   if (comp == NULL_TREE && comp_ref)
@@ -9917,10 +9920,12 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 	  if (cm->ts.type == BT_CLASS)
 	    field = gfc_class_data_get (field);
 
-	  token = is_array ? gfc_conv_descriptor_token (field)
-			   : fold_build3_loc (input_location, COMPONENT_REF,
-					      TREE_TYPE (cm->caf_token), dest,
-					      cm->caf_token, NULL_TREE);
+	  token
+	    = is_array
+		? gfc_conv_descriptor_token (field)
+		: fold_build3_loc (input_location, COMPONENT_REF,
+				   TREE_TYPE (gfc_comp_caf_token (cm)), dest,
+				   gfc_comp_caf_token (cm), NULL_TREE);
 
 	  if (is_array)
 	    {

@@ -9124,6 +9124,7 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
     {
       /* Every other type of array.  */
       se->want_pointer = (ctree) ? 0 : 1;
+      se->want_coarray = expr->corank;
       gfc_conv_expr_descriptor (se, expr);
 
       if (size)
@@ -10141,9 +10142,11 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  && caf_dereg_mode != GFC_CAF_COARRAY_NOCOARRAY)
 		{
 		  if (c->caf_token)
-		    caf_token = fold_build3_loc (input_location, COMPONENT_REF,
-						 TREE_TYPE (c->caf_token),
-						 decl, c->caf_token, NULL_TREE);
+		    caf_token
+		      = fold_build3_loc (input_location, COMPONENT_REF,
+					 TREE_TYPE (gfc_comp_caf_token (c)),
+					 decl, gfc_comp_caf_token (c),
+					 NULL_TREE);
 		  else if (attr->dimension && !attr->proc_pointer)
 		    caf_token = gfc_conv_descriptor_token (comp);
 		}
@@ -10366,8 +10369,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 
 		  gfc_init_se (&se, NULL);
 		  token = fold_build3_loc (input_location, COMPONENT_REF,
-					   pvoid_type_node, decl, c->caf_token,
-					   NULL_TREE);
+					   pvoid_type_node, decl,
+					   gfc_comp_caf_token (c), NULL_TREE);
 		  comp = gfc_conv_scalar_to_descriptor (&se, comp,
 							c->ts.type == BT_CLASS
 							? CLASS_DATA (c)->attr
@@ -10584,15 +10587,10 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		    dst_tok = gfc_conv_descriptor_token (dcmp);
 		  else
 		    {
-		      /* For a scalar allocatable component the caf_token is
-			 the next component.  */
-		      if (!c->caf_token)
-			  c->caf_token = c->next->backend_decl;
-		      dst_tok = fold_build3_loc (input_location,
-						 COMPONENT_REF,
-						 pvoid_type_node, dest,
-						 c->caf_token,
-						 NULL_TREE);
+		      dst_tok
+			= fold_build3_loc (input_location, COMPONENT_REF,
+					   pvoid_type_node, dest,
+					   gfc_comp_caf_token (c), NULL_TREE);
 		    }
 		  tmp
 		    = duplicate_allocatable_coarray (dcmp, dst_tok, comp, ctype,
@@ -11477,8 +11475,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   else if (expr1->ts.type == BT_CHARACTER && expr1->ts.u.cl->backend_decl)
     {
       tmp = TYPE_SIZE_UNIT (TREE_TYPE (gfc_typenode_for_spec (&expr1->ts)));
-      tmp = fold_build2_loc (input_location, MULT_EXPR,
-			     gfc_array_index_type, tmp,
+      tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			     fold_convert (gfc_array_index_type, tmp),
 			     expr1->ts.u.cl->backend_decl);
     }
   else if (UNLIMITED_POLY (expr1) && expr2->ts.type != BT_CLASS)

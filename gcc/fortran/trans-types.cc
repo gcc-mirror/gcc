@@ -2817,7 +2817,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   tree *chain = NULL;
   bool got_canonical = false;
   bool unlimited_entity = false;
-  gfc_component *c, *last_c = nullptr;
+  gfc_component *c;
   gfc_namespace *ns;
   tree tmp;
   bool coarray_flag, class_coarray_flag;
@@ -3127,16 +3127,12 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       gcc_assert (field);
       /* Overwrite for class array to supply different bounds for different
 	 types.  */
-      if (class_coarray_flag || !c->backend_decl)
+      if (class_coarray_flag || !c->backend_decl || c->attr.caf_token)
 	c->backend_decl = field;
-      if (c->attr.caf_token && last_c)
-	last_c->caf_token = field;
 
       if (c->attr.pointer && (c->attr.dimension || c->attr.codimension)
 	  && !(c->ts.type == BT_DERIVED && strcmp (c->name, "_data") == 0))
 	GFC_DECL_PTR_ARRAY_P (c->backend_decl) = 1;
-
-      last_c = c;
     }
 
   /* Now lay out the derived type, including the fields.  */
@@ -3162,24 +3158,24 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 
 copy_derived_types:
 
-  for (c = derived->components; c; c = c->next)
-    {
-      /* Do not add a caf_token field for class container components.  */
-      if ((codimen || coarray_flag)
-	  && !c->attr.dimension && !c->attr.codimension
-	  && (c->attr.allocatable || c->attr.pointer)
-	  && !derived->attr.is_class)
-	{
-	  /* Provide sufficient space to hold "_caf_symbol".  */
-	  char caf_name[GFC_MAX_SYMBOL_LEN + 6];
-	  gfc_component *token;
-	  snprintf (caf_name, sizeof (caf_name), "_caf_%s", c->name);
-	  token = gfc_find_component (derived, caf_name, true, true, NULL);
-	  gcc_assert (token);
-	  c->caf_token = token->backend_decl;
-	  suppress_warning (c->caf_token);
-	}
-    }
+  if (!derived->attr.vtype)
+    for (c = derived->components; c; c = c->next)
+      {
+	/* Do not add a caf_token field for class container components.  */
+	if ((codimen || coarray_flag) && !c->attr.dimension
+	    && !c->attr.codimension && (c->attr.allocatable || c->attr.pointer)
+	    && !derived->attr.is_class)
+	  {
+	    /* Provide sufficient space to hold "_caf_symbol".  */
+	    char caf_name[GFC_MAX_SYMBOL_LEN + 6];
+	    gfc_component *token;
+	    snprintf (caf_name, sizeof (caf_name), "_caf_%s", c->name);
+	    token = gfc_find_component (derived, caf_name, true, true, NULL);
+	    gcc_assert (token);
+	    gfc_comp_caf_token (c) = token->backend_decl;
+	    suppress_warning (gfc_comp_caf_token (c));
+	  }
+      }
 
   for (gfc_symbol *dt = gfc_derived_types; dt; dt = dt->dt_next)
     {

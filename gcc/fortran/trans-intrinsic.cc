@@ -1326,7 +1326,8 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 				      arr_desc_token_offset);
 	    }
 	  else if (ref->u.c.component->caf_token)
-	    tmp2 = compute_component_offset (ref->u.c.component->caf_token,
+	    tmp2 = compute_component_offset (gfc_comp_caf_token (
+					       ref->u.c.component),
 					     TREE_TYPE (tmp));
 	  else
 	    tmp2 = integer_zero_node;
@@ -1932,6 +1933,14 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
     se->string_length = argse.string_length;
 }
 
+static bool
+has_ref_after_cafref (gfc_expr *expr)
+{
+  for (gfc_ref *ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen)
+      return ref->next;
+  return false;
+}
 
 /* Send data to a remote coarray.  */
 
@@ -1949,8 +1958,16 @@ conv_caf_send (gfc_code *code) {
 
   gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
 
-  lhs_expr = code->ext.actual->expr;
-  rhs_expr = code->ext.actual->next->expr;
+  lhs_expr
+    = code->ext.actual->expr->expr_type == EXPR_FUNCTION
+	  && code->ext.actual->expr->value.function.isym->id == GFC_ISYM_CAF_GET
+	? code->ext.actual->expr->value.function.actual->expr
+	: code->ext.actual->expr;
+  rhs_expr = code->ext.actual->next->expr->expr_type == EXPR_FUNCTION
+		 && code->ext.actual->next->expr->value.function.isym->id
+		      == GFC_ISYM_CAF_GET
+	       ? code->ext.actual->next->expr->value.function.actual->expr
+	       : code->ext.actual->next->expr;
   lhs_is_coindexed = gfc_is_coindexed (lhs_expr);
   rhs_is_coindexed = gfc_is_coindexed (rhs_expr);
   may_require_tmp = gfc_check_dependency (lhs_expr, rhs_expr, true) == 0
@@ -2165,6 +2182,9 @@ conv_caf_send (gfc_code *code) {
       gfc_add_block_to_block (&block, &lhs_se.post);
       return gfc_finish_block (&block);
     }
+  else if (rhs_expr->expr_type == EXPR_FUNCTION
+	   && rhs_expr->value.function.isym->id == GFC_ISYM_CAF_GET)
+    rhs_expr = rhs_expr->value.function.actual->expr;
 
   gfc_add_block_to_block (&block, &lhs_se.pre);
 
@@ -2276,7 +2296,8 @@ conv_caf_send (gfc_code *code) {
 
   if (!rhs_is_coindexed)
     {
-      if (lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
+      if (lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp
+	  || has_ref_after_cafref (lhs_expr))
 	{
 	  tree reference, dst_realloc;
 	  reference = conv_expr_ref_to_caf_ref (&block, lhs_expr);
@@ -2313,7 +2334,8 @@ conv_caf_send (gfc_code *code) {
 	caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
       rhs_image_index = gfc_caf_get_image_index (&block, rhs_expr, caf_decl);
       tmp = rhs_se.expr;
-      if (rhs_caf_attr.alloc_comp || rhs_caf_attr.pointer_comp)
+      if (rhs_caf_attr.alloc_comp || rhs_caf_attr.pointer_comp
+	  || has_ref_after_cafref (lhs_expr))
 	{
 	  tmp_stat = gfc_find_stat_co (lhs_expr);
 

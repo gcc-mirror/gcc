@@ -85,6 +85,8 @@ static bitmap_obstack labels_obstack;
 /* True when simplifying a EXPR_VARIABLE argument to an inquiry function.  */
 static bool inquiry_argument = false;
 
+/* True when we are on left hand side in an assignment of a coarray.  */
+static bool caf_lhs = false;
 
 /* Is the symbol host associated?  */
 static bool
@@ -5578,7 +5580,7 @@ gfc_resolve_ref (gfc_expr *expr)
 {
   int current_part_dimension, n_components, seen_part_dimension, dim;
   gfc_ref *ref, **prev, *array_ref;
-  bool equal_length;
+  bool equal_length, old_caf_lhs;
 
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_ARRAY && ref->u.ar.as == NULL)
@@ -5588,13 +5590,18 @@ gfc_resolve_ref (gfc_expr *expr)
 	break;
       }
 
+  old_caf_lhs = caf_lhs;
+  caf_lhs = false;
   for (prev = &expr->ref; *prev != NULL;
        prev = *prev == NULL ? prev : &(*prev)->next)
     switch ((*prev)->type)
       {
       case REF_ARRAY:
 	if (!resolve_array_ref (&(*prev)->u.ar))
-	  return false;
+	  {
+	    caf_lhs = old_caf_lhs;
+	    return false;
+	  }
 	break;
 
       case REF_COMPONENT:
@@ -5604,7 +5611,10 @@ gfc_resolve_ref (gfc_expr *expr)
       case REF_SUBSTRING:
 	equal_length = false;
 	if (!gfc_resolve_substring (*prev, &equal_length))
-	  return false;
+	  {
+	    caf_lhs = old_caf_lhs;
+	    return false;
+	  }
 
 	if (expr->expr_type != EXPR_SUBSTRING && equal_length)
 	  {
@@ -5618,6 +5628,7 @@ gfc_resolve_ref (gfc_expr *expr)
 	  }
 	break;
       }
+  caf_lhs = old_caf_lhs;
 
   /* Check constraints on part references.  */
 
@@ -5923,21 +5934,6 @@ add_caf_get_intrinsic (gfc_expr *e)
   *e = *wrapper;
   free (wrapper);
 }
-
-
-static void
-remove_caf_get_intrinsic (gfc_expr *e)
-{
-  gcc_assert (e->expr_type == EXPR_FUNCTION && e->value.function.isym
-	      && e->value.function.isym->id == GFC_ISYM_CAF_GET);
-  gfc_expr *e2 = e->value.function.actual->expr;
-  e->value.function.actual->expr = NULL;
-  gfc_free_actual_arglist (e->value.function.actual);
-  gfc_free_shape (&e->shape, e->rank);
-  *e = *e2;
-  free (e2);
-}
-
 
 /* Resolve a variable expression.  */
 
@@ -6284,13 +6280,18 @@ resolve_variable (gfc_expr *e)
 	t = false;
 
       if (sym->as)
-	for (n = 0; n < sym->as->rank; n++)
-	  {
-	     if (!gfc_resolve_expr (sym->as->lower[n]))
-	       t = false;
-	     if (!gfc_resolve_expr (sym->as->upper[n]))
-	       t = false;
-	  }
+	{
+	  bool old_caf_lhs = caf_lhs;
+	  caf_lhs = false;
+	  for (n = 0; n < sym->as->rank; n++)
+	    {
+	      if (!gfc_resolve_expr (sym->as->lower[n]))
+		t = false;
+	      if (!gfc_resolve_expr (sym->as->upper[n]))
+		t = false;
+	    }
+	  caf_lhs = old_caf_lhs;
+	}
       specification_expr = saved_specification_expr;
 
       if (t)
@@ -6365,7 +6366,8 @@ resolve_procedure:
   if (t)
     gfc_expression_rank (e);
 
-  if (t && flag_coarray == GFC_FCOARRAY_LIB && gfc_is_coindexed (e))
+  if (t && flag_coarray == GFC_FCOARRAY_LIB && !caf_lhs
+      && gfc_is_coindexed (e))
     add_caf_get_intrinsic (e);
 
   if (sym->attr.ext_attr & (1 << EXT_ATTR_DEPRECATED) && sym != sym->result)
@@ -10906,15 +10908,9 @@ find_reachable_labels (gfc_code *block)
     }
 }
 
-
 static void
 resolve_lock_unlock_event (gfc_code *code)
 {
-  if (code->expr1->expr_type == EXPR_FUNCTION
-      && code->expr1->value.function.isym
-      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
-    remove_caf_get_intrinsic (code->expr1);
-
   if ((code->op == EXEC_LOCK || code->op == EXEC_UNLOCK)
       && (code->expr1->ts.type != BT_DERIVED
 	  || code->expr1->expr_type != EXPR_VARIABLE
@@ -11993,45 +11989,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   if (lhs->ts.type == BT_CLASS && rhs->ts.type != BT_CLASS)
     gfc_find_vtab (&rhs->ts);
 
-  bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
-      && (lhs_coindexed
-	  || caf_possible_reallocate (lhs)
-	  || (code->expr2->expr_type == EXPR_FUNCTION
-	      && code->expr2->value.function.isym
-	      && code->expr2->value.function.isym->id == GFC_ISYM_CAF_GET
-	      && (code->expr1->rank == 0 || code->expr2->rank != 0)
-	      && !gfc_expr_attr (rhs).allocatable
-	      && !gfc_has_vector_subscript (rhs)));
-
-  gfc_check_assign (lhs, rhs, 1, !caf_convert_to_send);
-
-  /* Insert a GFC_ISYM_CAF_SEND intrinsic, when the LHS is a coindexed variable.
-     Additionally, insert this code when the RHS is a CAF as we then use the
-     GFC_ISYM_CAF_SEND intrinsic just to avoid a temporary; but do not do so if
-     the LHS is (re)allocatable or has a vector subscript.  If the LHS is a
-     noncoindexed array and the RHS is a coindexed scalar, use the normal code
-     path.  */
-  if (caf_convert_to_send)
-    {
-      if (code->expr2->expr_type == EXPR_FUNCTION
-	  && code->expr2->value.function.isym
-	  && code->expr2->value.function.isym->id == GFC_ISYM_CAF_GET)
-	remove_caf_get_intrinsic (code->expr2);
-      code->op = EXEC_CALL;
-      gfc_get_sym_tree (GFC_PREFIX ("caf_send"), ns, &code->symtree, true);
-      code->resolved_sym = code->symtree->n.sym;
-      code->resolved_sym->attr.flavor = FL_PROCEDURE;
-      code->resolved_sym->attr.intrinsic = 1;
-      code->resolved_sym->attr.subroutine = 1;
-      code->resolved_isym = gfc_intrinsic_subroutine_by_id (GFC_ISYM_CAF_SEND);
-      gfc_commit_symbol (code->resolved_sym);
-      code->ext.actual = gfc_get_actual_arglist ();
-      code->ext.actual->expr = lhs;
-      code->ext.actual->next = gfc_get_actual_arglist ();
-      code->ext.actual->next->expr = rhs;
-      code->expr1 = NULL;
-      code->expr2 = NULL;
-    }
+  gfc_check_assign (lhs, rhs, 1);
 
   return false;
 }
@@ -12956,7 +12914,22 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 start:
       t = true;
       if (code->op != EXEC_COMPCALL && code->op != EXEC_CALL_PPC)
-	t = gfc_resolve_expr (code->expr1);
+	{
+	  switch (code->op)
+	    {
+	    case EXEC_ASSIGN:
+	    case EXEC_LOCK:
+	    case EXEC_UNLOCK:
+	    case EXEC_EVENT_POST:
+	    case EXEC_EVENT_WAIT:
+	      caf_lhs = gfc_is_coindexed (code->expr1);
+	      break;
+	    default:
+	      break;
+	    }
+	  t = gfc_resolve_expr (code->expr1);
+	  caf_lhs = false;
+	}
       forall_flag = forall_save;
       gfc_do_concurrent_flag = do_concurrent_save;
 
@@ -13077,15 +13050,46 @@ start:
 	  if (!t)
 	    break;
 
-	  if (code->expr1->ts.type == BT_CLASS)
-	   gfc_find_vtab (&code->expr2->ts);
+	  if (flag_coarray == GFC_FCOARRAY_LIB
+	      && (gfc_is_coindexed (code->expr1)
+		  || caf_possible_reallocate (code->expr1)
+		  || (code->expr2->expr_type == EXPR_FUNCTION
+		      && code->expr2->value.function.isym
+		      && code->expr2->value.function.isym->id
+			   == GFC_ISYM_CAF_GET
+		      && (code->expr1->rank == 0 || code->expr2->rank != 0)
+		      && !gfc_expr_attr (code->expr2).allocatable
+		      && !gfc_has_vector_subscript (code->expr2))))
+	    {
+	      /* Insert a GFC_ISYM_CAF_SEND intrinsic, when the LHS is a
+		 coindexed variable.  Additionally, insert this code when the
+		 RHS is a CAF as we then use the GFC_ISYM_CAF_SEND intrinsic
+		 just to avoid a temporary; but do not do so if the LHS is
+		 (re)allocatable or has a vector subscript.  If the LHS is a
+		 noncoindexed array and the RHS is a coindexed scalar, use the
+		 normal code path.  */
+	      code->op = EXEC_CALL;
+	      gfc_get_sym_tree (GFC_PREFIX ("caf_send"), ns, &code->symtree,
+				true);
+	      code->resolved_sym = code->symtree->n.sym;
+	      code->resolved_sym->attr.flavor = FL_PROCEDURE;
+	      code->resolved_sym->attr.intrinsic = 1;
+	      code->resolved_sym->attr.subroutine = 1;
+	      code->resolved_isym
+		= gfc_intrinsic_subroutine_by_id (GFC_ISYM_CAF_SEND);
+	      gfc_commit_symbol (code->resolved_sym);
+	      code->ext.actual = gfc_get_actual_arglist ();
+	      code->ext.actual->expr = code->expr1;
+	      code->ext.actual->next = gfc_get_actual_arglist ();
+	      code->ext.actual->next->expr = code->expr2;
 
-	  /* Remove a GFC_ISYM_CAF_GET inserted for a coindexed variable on
-	     the LHS.  */
-	  if (code->expr1->expr_type == EXPR_FUNCTION
-	      && code->expr1->value.function.isym
-	      && code->expr1->value.function.isym->id == GFC_ISYM_CAF_GET)
-	    remove_caf_get_intrinsic (code->expr1);
+	      code->expr1 = NULL;
+	      code->expr2 = NULL;
+	      break;
+	    }
+
+	  if (code->expr1->ts.type == BT_CLASS)
+	    gfc_find_vtab (&code->expr2->ts);
 
 	  /* If this is a pointer function in an lvalue variable context,
 	     the new code will have to be resolved afresh. This is also the
@@ -16204,6 +16208,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		token->attr.artificial = 1;
 		token->attr.caf_token = 1;
 	      }
+	    c->caf_token = token;
 	  }
     }
 
