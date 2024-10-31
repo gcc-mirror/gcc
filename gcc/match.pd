@@ -3396,10 +3396,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    simplify (X != 0 ? X + ~0 : 0) to (X - X != 0).  */
 (simplify
  (cond (ne@1 @0 integer_zerop)
-       (nop_convert? (plus (nop_convert? @0) integer_all_onesp))
+       (nop_convert1? (plus (nop_convert2?@2 @0) integer_all_onesp))
        integer_zerop)
  (if (INTEGRAL_TYPE_P (type))
-   (minus @0 (convert @1))))
+   (with { tree itype = TREE_TYPE (@2); }
+    (convert (minus @2 (convert:itype @1))))))
 
 /* Signed saturation sub, case 1:
    T minus = (T)((UT)X - (UT)Y);
