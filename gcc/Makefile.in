@@ -1572,6 +1572,7 @@ OBJS = \
 	jump.o \
 	langhooks.o \
 	late-combine.o \
+	lazy-diagnostic-path.o \
 	lcm.o \
 	lists.o \
 	loop-doloop.o \

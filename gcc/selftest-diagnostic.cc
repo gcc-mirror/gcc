@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "diagnostic.h"
+#include "diagnostic-format.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 
@@ -44,6 +45,7 @@ test_diagnostic_context::test_diagnostic_context ()
   diagnostic_start_span (this) = start_span_cb;
   m_source_printing.min_margin_width = 6;
   m_source_printing.max_width = 80;
+  pp_buffer (get_output_format (0).get_printer ())->m_flush_p = false;
 }
 
 test_diagnostic_context::~test_diagnostic_context ()
