@@ -3822,6 +3822,19 @@ operator_bitwise_or::op1_range (irange &r, tree type,
       r.set_zero (type);
       return true;
     }
+
+  //   if (A < 0 && B < 0)
+  // Sometimes gets translated to
+  //   _1 = A | B
+  //   if (_1 < 0))
+  // It is useful for ranger to recognize a positive LHS means the RHS
+  // operands are also positive when dealing with the ELSE range..
+  if (TYPE_SIGN (type) == SIGNED && wi::ge_p (lhs.lower_bound (), 0, SIGNED))
+    {
+      unsigned prec = TYPE_PRECISION (type);
+      r.set (type, wi::zero (prec), wi::max_value (prec, SIGNED));
+      return true;
+    }
   r.set_varying (type);
   return true;
 }

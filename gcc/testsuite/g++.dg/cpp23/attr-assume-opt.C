@@ -38,5 +38,40 @@ f3 (int x, int y, int z)
   return 1;
 }
 
+// This is the same as f2, except there is more complicated flow and 
+// required a range-op update to bitwise or.
+
+void barn(int x);
+// assume (x+12 == 14 && y >= 0 && y + 10 < 13 && z + 4 >= 4 && z - 2 < 18)
+// in different order and form with function calls to cause branches.
+bool assume_func (int x, int y, int z)
+{
+  if (z - 2 >= 18)
+    return false;
+  if (x+12 != 14)
+    return false;
+  barn (x);
+  if (y < 0)
+    return false;
+  if (z + 4 < 4)
+    return false;
+  barn (y);
+  if (y + 10 >= 13)
+    return false;
+  barn (z);
+  return true;
+}
+
+int
+f2b (int x, int y, int z)
+{
+  [[assume (assume_func (x, y, z))]];
+  unsigned q = x + y + z;
+  if (q*2 > 46)
+    return 0;
+  return 1;
+}
+
+
 /* { dg-final { scan-tree-dump-times "return 0" 0 "vrp2" } } */
-/* { dg-final { scan-tree-dump-times "return 1" 3 "vrp2" } } */
+/* { dg-final { scan-tree-dump-times "return 1" 4 "vrp2" } } */
