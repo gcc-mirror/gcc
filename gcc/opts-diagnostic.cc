@@ -107,7 +107,7 @@ public:
   class handler
   {
   public:
-    handler (std::string name) : m_name (name) {}
+    handler (std::string name) : m_name (std::move (name)) {}
     virtual ~handler () {}
 
     const std::string &get_name () const { return m_name; }
