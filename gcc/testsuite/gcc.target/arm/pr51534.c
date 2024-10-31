@@ -3,8 +3,9 @@
 
 /* { dg-do assemble { target { arm_hard_ok } } } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -mfloat-abi=hard -O3" } */
+/* { dg-options "-save-temps -O3" } */
 /* { dg-add-options arm_neon } */
+/* { dg-additional-options "-mfloat-abi=hard" } */
 
 #include <arm_neon.h>
 
