@@ -955,12 +955,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	iterator
 	_M_emplace_multi(const_iterator, _Args&&... __args);
 
-      size_type
-      _M_erase(true_type __uks, const key_type&);
-
-      size_type
-      _M_erase(false_type __uks, const key_type&);
-
       iterator
       _M_erase(size_type __bkt, __node_base_ptr __prev_n, __node_ptr __n);
 
@@ -1002,8 +996,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return erase(const_iterator(__it)); }
 
       size_type
-      erase(const key_type& __k)
-      { return _M_erase(__unique_keys{}, __k); }
+      erase(const key_type& __k);
 
       iterator
       erase(const_iterator, const_iterator);
@@ -2372,6 +2365,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __result;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -2379,7 +2374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_erase(true_type /* __uks */, const key_type& __k)
+    erase(const key_type& __k)
     -> size_type
     {
       __node_base_ptr __prev_n;
@@ -2409,77 +2404,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __n = static_cast<__node_ptr>(__prev_n->_M_nxt);
 	}
 
-      _M_erase(__bkt, __prev_n, __n);
-      return 1;
-    }
-
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_erase(false_type /* __uks */, const key_type& __k)
-    -> size_type
-    {
-      std::size_t __bkt;
-      __node_base_ptr __prev_n;
-      __node_ptr __n;
-      if (size() <= __small_size_threshold())
+      if constexpr (__unique_keys::value)
 	{
-	  __prev_n = _M_find_before_node(__k);
-	  if (!__prev_n)
-	    return 0;
-
-	  // We found a matching node, erase it.
-	  __n = static_cast<__node_ptr>(__prev_n->_M_nxt);
-	  __bkt = _M_bucket_index(*__n);
+	  _M_erase(__bkt, __prev_n, __n);
+	  return 1;
 	}
       else
 	{
-	  __hash_code __code = this->_M_hash_code(__k);
-	  __bkt = _M_bucket_index(__code);
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 526. Is it undefined if a function in the standard changes
+	  // in parameters?
+	  // We use one loop to find all matching nodes and another to
+	  // deallocate them so that the key stays valid during the first loop.
+	  // It might be invalidated indirectly when destroying nodes.
+	  __node_ptr __n_last = __n->_M_next();
+	  while (__n_last && this->_M_node_equals(*__n, *__n_last))
+	    __n_last = __n_last->_M_next();
 
-	  // Look for the node before the first matching node.
-	  __prev_n = _M_find_before_node(__bkt, __k, __code);
-	  if (!__prev_n)
-	    return 0;
+	  std::size_t __n_last_bkt
+	    = __n_last ? _M_bucket_index(*__n_last) : __bkt;
 
-	  __n = static_cast<__node_ptr>(__prev_n->_M_nxt);
+	  // Deallocate nodes.
+	  size_type __result = 0;
+	  do
+	    {
+	      __node_ptr __p = __n->_M_next();
+	      this->_M_deallocate_node(__n);
+	      __n = __p;
+	      ++__result;
+	    }
+	  while (__n != __n_last);
+
+	  _M_element_count -= __result;
+	  if (__prev_n == _M_buckets[__bkt])
+	    _M_remove_bucket_begin(__bkt, __n_last, __n_last_bkt);
+	  else if (__n_last_bkt != __bkt)
+	    _M_buckets[__n_last_bkt] = __prev_n;
+	  __prev_n->_M_nxt = __n_last;
+	  return __result;
 	}
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 526. Is it undefined if a function in the standard changes
-      // in parameters?
-      // We use one loop to find all matching nodes and another to deallocate
-      // them so that the key stays valid during the first loop. It might be
-      // invalidated indirectly when destroying nodes.
-      __node_ptr __n_last = __n->_M_next();
-      while (__n_last && this->_M_node_equals(*__n, *__n_last))
-	__n_last = __n_last->_M_next();
-
-      std::size_t __n_last_bkt = __n_last ? _M_bucket_index(*__n_last) : __bkt;
-
-      // Deallocate nodes.
-      size_type __result = 0;
-      do
-	{
-	  __node_ptr __p = __n->_M_next();
-	  this->_M_deallocate_node(__n);
-	  __n = __p;
-	  ++__result;
-	}
-      while (__n != __n_last);
-
-      _M_element_count -= __result;
-      if (__prev_n == _M_buckets[__bkt])
-	_M_remove_bucket_begin(__bkt, __n_last, __n_last_bkt);
-      else if (__n_last_bkt != __bkt)
-	_M_buckets[__n_last_bkt] = __prev_n;
-      __prev_n->_M_nxt = __n_last;
-      return __result;
     }
+#pragma GCC diagnostic pop
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
