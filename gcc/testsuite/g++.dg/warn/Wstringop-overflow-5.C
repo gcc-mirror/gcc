@@ -24,7 +24,7 @@ extern Bucket _Bucket_default_instance_;
 Bucket::Bucket ()
 {
   memset (&_has_bits_, 0, sizeof _has_bits_);
-  memset (&cumulative_count_, 0,    // { dg-bogus "\\\[-Warray-bounds|-wstringop-overflow" }
+  memset (&cumulative_count_, 0,    // { dg-bogus "\\\[-Warray-bounds|-Wstringop-overflow" }
 	 static_cast<size_t>(reinterpret_cast<char*>(&upper_bound_)
 			     - reinterpret_cast<char*>(&cumulative_count_))
 	 + sizeof upper_bound_);
