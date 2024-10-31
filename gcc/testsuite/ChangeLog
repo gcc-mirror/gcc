@@ -1,3 +1,10 @@
+2024-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117318.c: New test.
+
 2024-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20241029-1.c: New test.
