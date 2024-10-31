@@ -31,24 +31,21 @@ with Types; use Types;
 package Exp_Sel is
 
    function Build_Abort_Block
-     (Loc         : Source_Ptr;
-      Abr_Blk_Ent : Entity_Id;
-      Cln_Blk_Ent : Entity_Id;
-      Blk         : Node_Id) return Node_Id;
+     (Loc     : Source_Ptr;
+      Blk_Ent : Entity_Id;
+      Blk     : Node_Id) return Node_Id;
    --  Generate:
    --    begin
    --       Blk
    --    exception
    --       when Abort_Signal => null;
    --    end;
-   --  Abr_Blk_Ent is the name of the generated block, Cln_Blk_Ent is the name
-   --  of the encapsulated cleanup block, Blk is the actual block name.
+   --  Blk_Ent is the identifier of Blk.
    --  The exception handler code is built by Build_Abort_Block_Handler.
 
    function Build_Abort_Block_Handler (Loc : Source_Ptr) return Node_Id;
    --  Generate:
-   --    when others =>
-   --      null;
+   --    when Abort_Signal => null;
    --  This is an exception handler to stop propagation of aborts, without
    --  modifying the deferral level.
 

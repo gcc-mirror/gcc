@@ -40,24 +40,19 @@ package body Exp_Sel is
    -----------------------
 
    function Build_Abort_Block
-     (Loc         : Source_Ptr;
-      Abr_Blk_Ent : Entity_Id;
-      Cln_Blk_Ent : Entity_Id;
-      Blk         : Node_Id) return Node_Id
+     (Loc     : Source_Ptr;
+      Blk_Ent : Entity_Id;
+      Blk     : Node_Id) return Node_Id
    is
    begin
       return
         Make_Block_Statement (Loc,
-          Identifier   => New_Occurrence_Of (Abr_Blk_Ent, Loc),
-
-          Declarations => No_List,
-
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements =>
                 New_List (
                   Make_Implicit_Label_Declaration (Loc,
-                    Defining_Identifier => Cln_Blk_Ent,
+                    Defining_Identifier => Blk_Ent,
                     Label_Construct     => Blk),
                   Blk),
 
