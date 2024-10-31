@@ -158,7 +158,7 @@ get_time (struct timevar_time_def *now)
   now->wall = 0;
   now->ggc_mem = timevar_ggc_mem_total;
 
-#if _POSIX_C_SOURCE >= 199309L
+#ifdef HAVE_CLOCK_GETTIME
   struct timespec ts;
   clock_gettime (CLOCK_MONOTONIC, &ts);
   now->wall = ts.tv_sec * 1000000000 + ts.tv_nsec;

@@ -883,6 +883,12 @@
 #endif
 
 
+/* Define to 1 if you have the `clock_gettime' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_CLOCK_GETTIME
+#endif
+
+
 /* Define if <time.h> defines clock_t. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_CLOCK_T
