@@ -12468,7 +12468,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
       if (!op0)
 	op0 = expand_expr_real (treeop0, NULL_RTX, VOIDmode, modifier,
-				NULL, inner_reference_p);
+				NULL, inner_reference_p || mode == BLKmode);
 
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))
@@ -12505,7 +12505,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
-      else if (reduce_bit_field)
+      else if (reduce_bit_field && mode != BLKmode)
 	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
 				  TYPE_UNSIGNED (type), NULL_RTX,
 				  mode, mode, false, NULL);
