@@ -85,7 +85,10 @@ appear, it is also valid to write a C-style brace block.  The entire
 brace block, including the outermost pair of braces, is considered to be
 the string constant.  Double quote characters inside the braces are not
 special.  Therefore, if you write string constants in the C code, you
-need not escape each quote character with a backslash.
+need not escape each quote character with a backslash. Note escaped quotes
+are treated the same as a plain quote character and if you need a escaped
+quote in a C string, you need an extra backslash to escape the backslash
+like @code{"a=\\"c\\";"}.
 
 A vector contains an arbitrary number of pointers to expressions.  The
 number of elements in the vector is explicitly present in the vector.
