@@ -219,7 +219,7 @@ package body Diagnostics.Utils is
      (if D.Warn_Err then "error"
       else
        (case D.Kind is
-        when Diagnostics.Error => "error",
+        when Diagnostics.Error | Non_Serious_Error => "error",
         when Warning | Restriction_Warning | Default_Warning |
              Tagless_Warning => "warning",
         when Style => "style",

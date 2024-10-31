@@ -411,21 +411,21 @@ package body Errout is
 
          --  No duplicate, so error/warning will be posted on instance
 
-         Warn_On_Instance := Is_Warning_Msg;
+         Warn_On_Instance := Error_Msg_Kind = Warning;
       end if;
 
       --  Ignore warning message that is suppressed for this location. Note
       --  that style checks are not considered warning messages for this
       --  purpose.
 
-      if Is_Warning_Msg
+      if Error_Msg_Kind = Warning
         and then Warnings_Suppressed (Orig_Loc) /= No_String
       then
          return;
 
       --  For style messages, check too many messages so far
 
-      elsif Is_Style_Msg
+      elsif Error_Msg_Kind = Style
         and then Maximum_Messages /= 0
         and then Warnings_Detected >= Maximum_Messages
       then
@@ -435,7 +435,7 @@ package body Errout is
       --  probably null (i.e. when loop executes only if invalid values
       --  present). In either case warnings in the loop are likely to be junk.
 
-      elsif Is_Warning_Msg and then Present (N) then
+      elsif Error_Msg_Kind = Warning and then Present (N) then
 
          declare
             P : Node_Id;
@@ -556,21 +556,21 @@ package body Errout is
                --  Case of inlined body
 
                if Inlined_Body (X) then
-                  if Is_Info_Msg then
+                  if Error_Msg_Kind = Info then
                      Error_Msg_Internal
                        (Msg      => "info: in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status);
 
-                  elsif Is_Warning_Msg then
+                  elsif Error_Msg_Kind = Warning then
                      Error_Msg_Internal
                        (Msg      => Warn_Insertion & "in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status);
 
-                  elsif Is_Style_Msg then
+                  elsif Error_Msg_Kind = Style then
                      Error_Msg_Internal
                        (Msg      => "style: in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
@@ -588,21 +588,21 @@ package body Errout is
                --  Case of generic instantiation
 
                else
-                  if Is_Info_Msg then
+                  if Error_Msg_Kind = Info then
                      Error_Msg_Internal
                        (Msg      => "info: in instantiation #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status);
 
-                  elsif Is_Warning_Msg then
+                  elsif Error_Msg_Kind = Warning then
                      Error_Msg_Internal
                        (Msg      => Warn_Insertion & "in instantiation #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
                         Msg_Cont => Msg_Cont_Status);
 
-                  elsif Is_Style_Msg then
+                  elsif Error_Msg_Kind = Style then
                      Error_Msg_Internal
                        (Msg      => "style: in instantiation #",
                         Span     => To_Span (Actual_Error_Loc),
@@ -1016,7 +1016,7 @@ package body Errout is
 
       if Suppress_Message
         and then not All_Errors_Mode
-        and then not Is_Warning_Msg
+        and then Error_Msg_Kind /= Warning
         and then not Is_Unconditional_Msg
       then
          if not Continuation then
@@ -1042,7 +1042,7 @@ package body Errout is
          return;
       end if;
 
-      if Is_Info_Msg then
+      if Error_Msg_Kind = Info then
 
          --  Immediate return if info messages are suppressed
 
@@ -1074,17 +1074,14 @@ package body Errout is
             return;
          end if;
 
-      end if;
-
       --  Special check for warning message to see if it should be output
 
-      if Is_Warning_Msg then
+      elsif Error_Msg_Kind = Warning then
 
          --  Immediate return if warning message and warnings are suppressed
 
          if Warnings_Suppressed (Optr) /= No_String
-              or else
-            Warnings_Suppressed (Sptr) /= No_String
+           or else Warnings_Suppressed (Sptr) /= No_String
          then
             Cur_Msg := No_Error_Msg;
             return;
@@ -1137,7 +1134,7 @@ package body Errout is
       --  where we do this special processing, bypassing message output.
 
       if Ignore_Errors_Enable > 0 then
-         if Is_Serious_Error then
+         if Error_Msg_Kind = Erroutc.Error then
             Handle_Serious_Error;
          end if;
 
@@ -1223,9 +1220,9 @@ package body Errout is
 
             --  Update warning msg flag and message doc char if needed
 
-            if Is_Warning_Msg then
-               if not Errors.Table (Cur_Msg).Warn then
-                  Errors.Table (Cur_Msg).Warn := True;
+            if Error_Msg_Kind = Warning then
+               if Errors.Table (Cur_Msg).Kind /= Warning then
+                  Errors.Table (Cur_Msg).Kind := Warning;
                   Errors.Table (Cur_Msg).Warn_Chr := Warning_Msg_Char;
 
                elsif Warning_Msg_Char /= "  " then
@@ -1237,11 +1234,6 @@ package body Errout is
          return;
       end if;
 
-      --  Warning, Style and Info attributes are mutually exclusive
-
-      pragma Assert (Boolean'Pos (Is_Warning_Msg) + Boolean'Pos (Is_Info_Msg) +
-        Boolean'Pos (Is_Style_Msg) <= 1);
-
       --  Here we build a new error object
 
       Errors.Append
@@ -1250,42 +1242,40 @@ package body Errout is
           Prev                => No_Error_Msg,
           Sptr                => Span,
           Optr                => Opan,
-          Insertion_Sloc      => (if Has_Insertion_Line then Error_Msg_Sloc
-                                  else No_Location),
+          Insertion_Sloc      =>
+            (if Has_Insertion_Line then Error_Msg_Sloc else No_Location),
           Sfile               => Get_Source_File_Index (Sptr),
           Line                => Get_Physical_Line_Number (Sptr),
           Col                 => Get_Column_Number (Sptr),
           Compile_Time_Pragma => Is_Compile_Time_Msg,
-          Warn                => Is_Warning_Msg,
-          Info                => Is_Info_Msg,
-          Check               => Is_Check_Msg,
           Warn_Err            => False, -- reset below
           Warn_Chr            => Warning_Msg_Char,
           Warn_Runtime_Raise  => Is_Runtime_Raise,
-          Style               => Is_Style_Msg,
-          Serious             => Is_Serious_Error,
           Uncond              => Is_Unconditional_Msg,
           Msg_Cont            => Continuation,
-          Deleted             => False));
+          Deleted             => False,
+          Kind                => Error_Msg_Kind));
       Cur_Msg := Errors.Last;
 
       --  Test if warning to be treated as error
 
       Warn_Err :=
-        (Is_Warning_Msg or Is_Style_Msg)
-          and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
-                      or else
-                    Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
+        Error_Msg_Kind in Warning | Style
+        and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
+                  or else Warning_Treated_As_Error
+                            (Get_Warning_Tag (Cur_Msg)));
 
       --  Propagate Warn_Err to this message and preceding continuations.
-      --  Likewise, propagate Is_Warning_Msg and Is_Runtime_Raise, because the
+      --  Likewise, propagate Error_Msg_Kind and Is_Runtime_Raise, because the
       --  current continued message could have been escalated from warning to
       --  error.
 
       for J in reverse 1 .. Errors.Last loop
-         Errors.Table (J).Warn_Err           := Warn_Err;
-         Errors.Table (J).Warn               := Is_Warning_Msg;
+         Errors.Table (J).Warn_Err := Warn_Err;
+
+         Errors.Table (J).Kind := Error_Msg_Kind;
          Errors.Table (J).Warn_Runtime_Raise := Is_Runtime_Raise;
+
          exit when not Errors.Table (J).Msg_Cont;
       end loop;
 
@@ -1311,13 +1301,14 @@ package body Errout is
          --  there are lots of messages.
 
          if Last_Error_Msg /= No_Error_Msg
-           and then Errors.Table (Cur_Msg).Sfile =
-                    Errors.Table (Last_Error_Msg).Sfile
+           and then Errors.Table (Cur_Msg).Sfile
+                    = Errors.Table (Last_Error_Msg).Sfile
            and then (Sptr > Errors.Table (Last_Error_Msg).Sptr.Ptr
-                       or else
-                          (Sptr = Errors.Table (Last_Error_Msg).Sptr.Ptr
-                             and then
-                               Optr > Errors.Table (Last_Error_Msg).Optr.Ptr))
+                     or else (Sptr = Errors.Table (Last_Error_Msg).Sptr.Ptr
+                              and then Optr
+                                       > Errors.Table (Last_Error_Msg)
+                                           .Optr
+                                           .Ptr))
          then
             Prev_Msg := Last_Error_Msg;
             Next_Msg := No_Error_Msg;
@@ -1333,10 +1324,10 @@ package body Errout is
 
                if Errors.Table (Cur_Msg).Sfile = Errors.Table (Next_Msg).Sfile
                then
-                  exit when Sptr < Errors.Table (Next_Msg).Sptr.Ptr
+                  exit when
+                    Sptr < Errors.Table (Next_Msg).Sptr.Ptr
                     or else (Sptr = Errors.Table (Next_Msg).Sptr.Ptr
-                              and then
-                             Optr < Errors.Table (Next_Msg).Optr.Ptr);
+                             and then Optr < Errors.Table (Next_Msg).Optr.Ptr);
                end if;
 
                Prev_Msg := Next_Msg;
@@ -1354,10 +1345,9 @@ package body Errout is
          --  deletion, but otherwise such messages are discarded at this stage.
 
          if Prev_Msg /= No_Error_Msg
-           and then Errors.Table (Prev_Msg).Line =
-                                             Errors.Table (Cur_Msg).Line
-           and then Errors.Table (Prev_Msg).Sfile =
-                                             Errors.Table (Cur_Msg).Sfile
+           and then Errors.Table (Prev_Msg).Line = Errors.Table (Cur_Msg).Line
+           and then Errors.Table (Prev_Msg).Sfile
+                    = Errors.Table (Cur_Msg).Sfile
            and then Compiler_State = Parsing
            and then not All_Errors_Mode
          then
@@ -1365,9 +1355,7 @@ package body Errout is
             --  delete continuation lines; we attempted to delete those earlier
             --  if the parent message was deleted.
 
-            if not Errors.Table (Cur_Msg).Uncond
-              and then not Continuation
-            then
+            if not Errors.Table (Cur_Msg).Uncond and then not Continuation then
                --  Don't delete if prev msg is warning and new msg is an error.
                --  This is because we don't want a real error masked by a
                --  warning. In all other cases (that is parse errors for the
@@ -1375,13 +1363,8 @@ package body Errout is
                --  message. This helps to avoid junk extra messages from
                --  cascaded parsing errors
 
-               if not (Errors.Table (Prev_Msg).Warn
-                         or else
-                       Errors.Table (Prev_Msg).Style)
-                 or else
-                      (Errors.Table (Cur_Msg).Warn
-                         or else
-                       Errors.Table (Cur_Msg).Style)
+               if Errors.Table (Prev_Msg).Kind not in Warning | Style
+                 or else Errors.Table (Cur_Msg).Kind in Warning | Style
                then
                   --  All tests passed, delete the message by simply returning
                   --  without any further processing.
@@ -1413,42 +1396,26 @@ package body Errout is
          end if;
       end if;
 
-      --  Bump appropriate statistics counts
+      Increase_Error_Msg_Count (Errors.Table (Cur_Msg));
 
-      if Errors.Table (Cur_Msg).Info then
-         Info_Messages := Info_Messages + 1;
+      if Errors.Table (Cur_Msg).Kind = Erroutc.Error then
+         Handle_Serious_Error;
 
-      elsif Errors.Table (Cur_Msg).Warn
-        or else Errors.Table (Cur_Msg).Style
-      then
-         Warnings_Detected := Warnings_Detected + 1;
+      --  If not serious error, set Fatal_Error to indicate ignored error
 
-      elsif Errors.Table (Cur_Msg).Check then
-         Check_Messages := Check_Messages + 1;
-
-      else
-         Total_Errors_Detected := Total_Errors_Detected + 1;
-
-         if Errors.Table (Cur_Msg).Serious then
-            Serious_Errors_Detected := Serious_Errors_Detected + 1;
-            Handle_Serious_Error;
-
-         --  If not serious error, set Fatal_Error to indicate ignored error
-
-         else
-            declare
-               U : constant Unit_Number_Type := Get_Source_Unit (Sptr);
-            begin
-               if Fatal_Error (U) = None then
-                  Set_Fatal_Error (U, Error_Ignored);
-               end if;
-            end;
-         end if;
+      elsif Errors.Table (Cur_Msg).Kind = Non_Serious_Error then
+         declare
+            U : constant Unit_Number_Type := Get_Source_Unit (Sptr);
+         begin
+            if Fatal_Error (U) = None then
+               Set_Fatal_Error (U, Error_Ignored);
+            end if;
+         end;
       end if;
 
       --  Record warning message issued
 
-      if Errors.Table (Cur_Msg).Warn
+      if Errors.Table (Cur_Msg).Kind = Warning
         and then not Errors.Table (Cur_Msg).Msg_Cont
       then
          Warning_Msg := Cur_Msg;
@@ -1478,10 +1445,7 @@ package body Errout is
             Has_Insertion_Line := False;
 
             Error_Msg_Internal
-              (Msg      => Msg,
-               Span     => Span,
-               Opan     => Opan,
-               Msg_Cont => True);
+              (Msg => Msg, Span => Span, Opan => Opan, Msg_Cont => True);
          end;
       end if;
    end Error_Msg_Internal;
@@ -1553,7 +1517,7 @@ package body Errout is
 
       --  Special handling for warning messages
 
-      if Is_Warning_Msg then
+      if Error_Msg_Kind = Warning then
 
          --  Suppress if no warnings set for either entity or node
 
@@ -1570,7 +1534,7 @@ package body Errout is
 
       if All_Errors_Mode
         or else Is_Unconditional_Msg
-        or else Is_Warning_Msg
+        or else Error_Msg_Kind = Warning
         or else OK_Node (N)
         or else (Msg (Msg'First) = '\' and then not Last_Killed)
       then
@@ -1715,7 +1679,7 @@ package body Errout is
             Tag : constant String := Get_Warning_Tag (Cur);
 
          begin
-            if CE.Warn
+            if CE.Kind = Warning
               and then not CE.Deleted
               and then
                    (Warning_Specifically_Suppressed (CE.Sptr.Ptr, CE.Text, Tag)
@@ -2498,9 +2462,15 @@ package body Errout is
 
       Write_Str ("{""kind"":");
 
-      if Errors.Table (E).Warn and then not Errors.Table (E).Warn_Err then
+      if Errors.Table (E).Kind = Warning and then not Errors.Table (E).Warn_Err
+      then
          Write_Str ("""warning""");
-      elsif Errors.Table (E).Info or else Errors.Table (E).Check then
+      elsif Errors.Table (E).Kind in
+              Info
+              | High_Check
+              | Medium_Check
+              | Low_Check
+      then
          Write_Str ("""note""");
       else
          Write_Str ("""error""");
@@ -2629,7 +2599,7 @@ package body Errout is
                if Debug_Flag_FF then
                   if Errors.Table (E).Msg_Cont then
                      Write_Str ("  ");
-                  elsif not Errors.Table (E).Info then
+                  elsif Errors.Table (E).Kind /= Info then
                      Write_Eol;
                   end if;
                end if;
@@ -2648,7 +2618,7 @@ package body Errout is
                --  continuation messages.
 
                if Debug_Flag_FF
-                 and then not Errors.Table (E).Info
+                 and then Errors.Table (E).Kind /= Info
                then
                   if Errors.Table (E).Msg_Cont then
                      declare
@@ -2664,8 +2634,8 @@ package body Errout is
                   else
                      declare
                         SGR_Span : constant String :=
-                        (if Errors.Table (E).Info then SGR_Note
-                           elsif Errors.Table (E).Warn
+                        (if Errors.Table (E).Kind = Info then SGR_Note
+                           elsif Errors.Table (E).Kind = Warning
                              and then not Errors.Table (E).Warn_Err
                            then SGR_Warning
                            else SGR_Error);
@@ -3644,7 +3614,7 @@ package body Errout is
                --  not remove style messages here. They are warning messages
                --  but not ones we want removed in this context.
 
-               and then (Errors.Table (E).Warn
+               and then (Errors.Table (E).Kind = Warning
                            or else
                          Errors.Table (E).Warn_Runtime_Raise)
 
@@ -3652,7 +3622,7 @@ package body Errout is
 
                and then not Errors.Table (E).Uncond
             then
-               if Errors.Table (E).Warn then
+               if Errors.Table (E).Kind = Warning then
                   Warnings_Detected := Warnings_Detected - 1;
                end if;
 
@@ -3876,9 +3846,9 @@ package body Errout is
       K : Node_Kind;
 
    begin
-      Suppress_Message := Error_Msg_Node_1 in Error | Any_Type;
+      Suppress_Message := Error_Msg_Node_1 in Types.Error | Any_Type;
 
-      if Error_Msg_Node_1 = Error then
+      if Error_Msg_Node_1 = Types.Error then
          Set_Msg_Blank;
          Set_Msg_Str ("<error>");
 
@@ -4291,9 +4261,9 @@ package body Errout is
       Msglen := 0;
       Flag_Source := Get_Source_File_Index (Flag);
 
-      --  Skip info: at start, we have recorded this in Is_Info_Msg, and this
-      --  will be used (Info field in error message object) to put back the
-      --  string when it is printed. We need to do this, or we get confused
+      --  Skip info: at start, we have recorded this in Error_Msg_Kind, and
+      --  this will be used (Info field in error message object) to put back
+      --  the string when it is printed. We need to do this, or we get confused
       --  with instantiation continuations.
 
       if Text'Length > 6
@@ -4413,16 +4383,16 @@ package body Errout is
                else
                   --  Switch the message from a warning to an error if the flag
                   --  -gnatwE is specified to treat run-time exception warnings
-                  --  as errors.
+                  --  as non-serious errors.
 
-                  if Is_Warning_Msg
+                  if Error_Msg_Kind = Warning
                     and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
                   then
-                     Is_Warning_Msg   := False;
+                     Error_Msg_Kind := Non_Serious_Error;
                      Is_Runtime_Raise := True;
                   end if;
 
-                  if Is_Warning_Msg then
+                  if Error_Msg_Kind = Warning then
                      Set_Msg_Str ("will be raised at run time");
                   else
                      Set_Msg_Str ("would have been raised at run time");
@@ -4432,7 +4402,7 @@ package body Errout is
             --   ']' (may be/might have been raised at run time)
 
             when ']' =>
-               if Is_Warning_Msg then
+               if Error_Msg_Kind = Warning then
                   Set_Msg_Str ("may be raised at run time");
                else
                   Set_Msg_Str ("might have been raised at run time");
@@ -4454,7 +4424,7 @@ package body Errout is
       P : Node_Id;
 
    begin
-      if Is_Serious_Error then
+      if Error_Msg_Kind = Erroutc.Error then
 
          --  We always set Error_Posted on the node itself
 

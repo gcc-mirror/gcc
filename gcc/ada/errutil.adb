@@ -66,8 +66,7 @@ package body Errutil is
    --  be one of the special insertion characters (see documentation in spec).
    --  Flag is the location at which the error is to be posted, which is used
    --  to determine whether or not the # insertion needs a file name. The
-   --  variables Msg_Buffer, Msglen, Is_Style_Msg, Is_Warning_Msg, and
-   --  Is_Unconditional_Msg are set on return.
+   --  variables Msg_Buffer, Msglen and Is_Unconditional_Msg are set on return.
 
    ------------------
    -- Error_Msg_AP --
@@ -194,15 +193,12 @@ package body Errutil is
       --  Immediate return if warning message and warnings are suppressed.
       --  Note that style messages are not warnings for this purpose.
 
-      if Is_Warning_Msg and then Warnings_Suppressed (Sptr) /= No_String then
+      if Error_Msg_Kind = Warning
+        and then Warnings_Suppressed (Sptr) /= No_String
+      then
          Cur_Msg := No_Error_Msg;
          return;
       end if;
-
-      --  Warning, Style and Info attributes are mutually exclusive
-
-      pragma Assert (Boolean'Pos (Is_Warning_Msg) + Boolean'Pos (Is_Info_Msg) +
-        Boolean'Pos (Is_Style_Msg) <= 1);
 
       --  Otherwise build error message object for new message
 
@@ -218,19 +214,15 @@ package body Errutil is
             Line                => Get_Physical_Line_Number (Sptr),
             Col                 => Get_Column_Number (Sptr),
             Compile_Time_Pragma => Is_Compile_Time_Msg,
-            Warn                => Is_Warning_Msg,
-            Info                => Is_Info_Msg,
-            Check               => Is_Check_Msg,
             Warn_Err            => Warning_Mode = Treat_As_Error,
             Warn_Runtime_Raise  => Is_Runtime_Raise,
             Warn_Chr            => Warning_Msg_Char,
-            Style               => Is_Style_Msg,
-            Serious             => Is_Serious_Error,
             Uncond              => Is_Unconditional_Msg,
             Msg_Cont            => Continuation,
-            Deleted             => False));
+            Deleted             => False,
+            Kind                => Error_Msg_Kind));
 
-      Cur_Msg  := Errors.Last;
+      Cur_Msg := Errors.Last;
       Prev_Msg := No_Error_Msg;
       Next_Msg := First_Error_Msg;
 
@@ -257,18 +249,14 @@ package body Errutil is
       --  deletion, but otherwise such messages are discarded at this stage.
 
       if Prev_Msg /= No_Error_Msg
-        and then Errors.Table (Prev_Msg).Line =
-        Errors.Table (Cur_Msg).Line
-        and then Errors.Table (Prev_Msg).Sfile =
-        Errors.Table (Cur_Msg).Sfile
+        and then Errors.Table (Prev_Msg).Line = Errors.Table (Cur_Msg).Line
+        and then Errors.Table (Prev_Msg).Sfile = Errors.Table (Cur_Msg).Sfile
       then
          --  Don't delete unconditional messages and at this stage, don't
          --  delete continuation lines (we attempted to delete those earlier
          --  if the parent message was deleted.
 
-         if not Errors.Table (Cur_Msg).Uncond
-           and then not Continuation
-         then
+         if not Errors.Table (Cur_Msg).Uncond and then not Continuation then
 
             --  Don't delete if prev msg is warning and new msg is an error.
             --  This is because we don't want a real error masked by a warning.
@@ -276,13 +264,8 @@ package body Errutil is
             --  are not unconditional) we do delete the message. This helps to
             --  avoid junk extra messages from cascaded parsing errors
 
-            if not (Errors.Table (Prev_Msg).Warn
-                     or else
-                    Errors.Table (Prev_Msg).Style)
-              or else
-                   (Errors.Table (Cur_Msg).Warn
-                     or else
-                    Errors.Table (Cur_Msg).Style)
+            if Errors.Table (Prev_Msg).Kind not in Warning | Erroutc.Style
+              or else Errors.Table (Cur_Msg).Kind in Warning | Erroutc.Style
             then
                --  All tests passed, delete the message by simply returning
                --  without any further processing.
@@ -310,27 +293,7 @@ package body Errutil is
 
       Errors.Table (Cur_Msg).Next := Next_Msg;
 
-      --  Bump appropriate statistics counts
-
-      if Errors.Table (Cur_Msg).Info then
-         Info_Messages := Info_Messages + 1;
-
-      elsif Errors.Table (Cur_Msg).Warn
-        or else Errors.Table (Cur_Msg).Style
-      then
-         Warnings_Detected := Warnings_Detected + 1;
-
-      elsif Errors.Table (Cur_Msg).Check then
-         Check_Messages := Check_Messages + 1;
-
-      else
-         Total_Errors_Detected := Total_Errors_Detected + 1;
-
-         if Errors.Table (Cur_Msg).Serious then
-            Serious_Errors_Detected := Serious_Errors_Detected + 1;
-         end if;
-      end if;
-
+      Increase_Error_Msg_Count (Errors.Table (Cur_Msg));
    end Error_Msg;
 
    -----------------

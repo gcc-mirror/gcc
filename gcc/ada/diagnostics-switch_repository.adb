@@ -582,14 +582,16 @@ package body Diagnostics.Switch_Repository is
    -------------------
 
    function Get_Switch_Id (E : Error_Msg_Object) return Switch_Id is
-
+      Switch_Name : constant String :=
+        (if E.Warn_Chr = "$ " then "gnatel"
+         elsif E.Warn_Chr in "? " | "  " then ""
+         elsif E.Kind in Erroutc.Warning | Erroutc.Info
+         then "gnatw" & E.Warn_Chr
+         elsif E.Kind in Erroutc.Style then "gnatw" & E.Warn_Chr
+         else "");
    begin
-      if E.Warn_Chr = "$ " then
-         return Get_Switch_Id ("gnatel");
-      elsif E.Warn or E.Info then
-         return Get_Switch_Id ("gnatw" & E.Warn_Chr);
-      elsif E.Style then
-         return Get_Switch_Id ("gnaty" & E.Warn_Chr);
+      if Switch_Name /= "" then
+         return Get_Switch_Id (Switch_Name);
       else
          return No_Switch_Id;
       end if;

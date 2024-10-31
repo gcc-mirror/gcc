@@ -31,6 +31,19 @@ with Types; use Types;
 
 package Erroutc is
 
+   type Error_Msg_Type is
+     (Error,  -- Default value
+      Non_Serious_Error,
+      --  An error message that is not considered fatal an the analys of
+      --  the source file can resume.
+      Warning,
+      Style, --  A special kind of warning only triggered by a style check
+      Info,
+      Low_Check,  --  A type of GNATProve Check messages
+      Medium_Check, --  A type of GNATProve Check messages
+      High_Check --  A type of GNATProve Check messages
+     );
+
    Class_Flag : Boolean := False;
    --  This flag is set True when outputting a reference to a class-wide
    --  type, and is used by Add_Class to insert 'Class at the proper point
@@ -63,34 +76,19 @@ package Erroutc is
    --  Set true to indicate that the current message originates from a
    --  Compile_Time_Warning or Compile_Time_Error pragma.
 
-   Is_Serious_Error : Boolean := False;
-   --  Set True for a serious error (i.e. any message that is not a warning
-   --  or style message, and that does not contain a | insertion character).
-
    Is_Unconditional_Msg : Boolean := False;
    --  Set True to indicate that the current message contains the insertion
    --  character ! and is thus to be treated as an unconditional message.
 
-   Is_Warning_Msg : Boolean := False;
-   --  Set True to indicate if current message is warning message (contains ?
-   --  or contains < and Error_Msg_Warn is True).
-
    Is_Runtime_Raise : Boolean := False;
    --  Set to True to indicate that the current message is a warning about a
    --  constraint error that will be raised at runtime (contains [ and switch
-   --  -gnatwE was given).
+   --  -gnatwE was given)..
 
-   Is_Info_Msg : Boolean := False;
-   --  Set True to indicate that the current message starts with the characters
-   --  "info: " and is to be treated as an information message. This string
-   --  will be prepended to the message and all its continuations.
-
-   Is_Check_Msg : Boolean := False;
-   --  Set True to indicate that the current message starts with one of
-   --  "high: ", "medium: ", "low: " and is to be treated as a check message.
+   Error_Msg_Kind : Error_Msg_Type := Error;
 
    Warning_Msg_Char : String (1 .. 2);
-   --  Warning switch, valid only if Is_Warning_Msg is True
+   --  Diagnostics switch:
    --    "  "      -- ?   or <   appeared on its own in message
    --    "? "      -- ??  or <<  appeared in message
    --    "x "      -- ?x? or <x< appeared in message
@@ -99,10 +97,6 @@ package Erroutc is
    --    "_x"      -- ?_x? appeared in message (x = a .. z | A .. Z)
    --  In the case of the < sequences, this is set only if the message is
    --  actually a warning, i.e. if Error_Msg_Warn is True
-
-   Is_Style_Msg : Boolean := False;
-   --  Set True to indicate if the current message is a style message
-   --  (i.e. a message whose text starts with the characters "(style)").
 
    Kill_Message : Boolean := False;
    --  A flag used to kill weird messages (e.g. those containing uninterpreted
@@ -230,15 +224,6 @@ package Erroutc is
       --  True if the message originates from a Compile_Time_Warning or
       --  Compile_Time_Error pragma
 
-      Warn : Boolean;
-      --  True if warning message
-
-      Info : Boolean;
-      --  True if info message
-
-      Check : Boolean;
-      --  True if check message
-
       Warn_Err : Boolean;
       --  True if this is a warning message which is to be treated as an error
       --  as a result of a match with a Warning_As_Error pragma.
@@ -249,12 +234,6 @@ package Erroutc is
 
       Warn_Chr : String (1 .. 2);
       --  See Warning_Msg_Char
-
-      Style : Boolean;
-      --  True if style message (starts with "(style)")
-
-      Serious : Boolean;
-      --  True if serious error message (not a warning and no | character)
 
       Uncond : Boolean;
       --  True if unconditional message (i.e. insertion character ! appeared)
@@ -271,6 +250,8 @@ package Erroutc is
       Deleted : Boolean;
       --  If this flag is set, the message is not printed. This is used
       --  in the circuit for deleting duplicate/redundant error messages.
+
+      Kind : Error_Msg_Type;
    end record;
 
    package Errors is new Table.Table (
@@ -472,6 +453,8 @@ package Erroutc is
    procedure dmsg (Id : Error_Msg_Id);
    --  Debugging routine to dump an error message
 
+   procedure Decrease_Error_Msg_Count (E : Error_Msg_Object);
+
    procedure Debug_Output (N : Node_Id);
    --  Called from Error_Msg_N and Error_Msg_NE to generate line of debug
    --  output giving node number (of node N) if the debug X switch is set.
@@ -494,6 +477,9 @@ package Erroutc is
    function Get_Warning_Tag (Id : Error_Msg_Id) return String;
    --  Given an error message ID, return tag showing warning message class, or
    --  the null string if this option is not enabled or this is not a warning.
+
+   procedure Increase_Error_Msg_Count (E : Error_Msg_Object);
+   --  Increase the error count for the given kind of error message
 
    function Matches (S : String; P : String) return Boolean;
    --  Returns true if the String S matches the pattern P, which can contain
@@ -533,19 +519,6 @@ package Erroutc is
    procedure Prescan_Message (Msg : String);
    --  Scans message text and sets the following variables:
    --
-   --    Is_Warning_Msg is set True if Msg is a warning message (contains a
-   --    question mark character), and False otherwise.
-   --
-   --    Is_Style_Msg is set True if Msg is a style message (starts with
-   --    "(style)") and False otherwise.
-   --
-   --    Is_Info_Msg is set True if Msg is an information message (starts
-   --    with "info: ". Such messages must contain a ? sequence since they
-   --    are also considered to be warning messages, and get a tag.
-   --
-   --    Is_Serious_Error is set to True unless the message is a warning or
-   --    style message or contains the character | (non-serious error).
-   --
    --    Is_Unconditional_Msg is set True if the message contains the character
    --    ! and is otherwise set False.
    --
@@ -557,6 +530,17 @@ package Erroutc is
    --
    --    Has_Insertion_Line is set True if the message contains the character #
    --    and is otherwise set False.
+   --
+   --    Error_Msg_Kind is set to one of the following values:
+   --      * Style             - if the message starts with "(style)"
+   --      * Info              - if the message starts with "info: "
+   --      * Warning           - if the message contains a "?" and they
+   --                            are neither Info or Style messages.
+   --      * Low_Check         - if the message starts with "low: "
+   --      * Medium_Check      - if the message starts with "medium: "
+   --      * High_Check        - if the message starts with "high: "
+   --      * Non_Serious_Error - if the message contains "|"
+   --      * Error             - otherwise
    --
    --  We need to know right away these aspects of a message, since we will
    --  test these values before doing the full error scan.

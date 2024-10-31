@@ -51,9 +51,10 @@ package body Diagnostics.Converter is
 
    function Get_Diagnostics_Kind (E_Msg : Error_Msg_Object)
                                   return Diagnostic_Kind
-   is (if E_Msg.Warn then Get_Warning_Kind (E_Msg)
-      elsif E_Msg.Style then Style
-      elsif E_Msg.Info then Info
+   is (if E_Msg.Kind = Erroutc.Warning then Get_Warning_Kind (E_Msg)
+      elsif E_Msg.Kind = Erroutc.Style then Style
+      elsif E_Msg.Kind = Erroutc.Info then Info
+      elsif E_Msg.Kind = Erroutc.Non_Serious_Error then Non_Serious_Error
       else Error);
 
    -----------------------------------
@@ -126,13 +127,11 @@ package body Diagnostics.Converter is
 
       D.Kind := Get_Diagnostics_Kind (E_Msg);
 
-      if E_Msg.Warn or E_Msg.Style or E_Msg.Info then
+      if E_Msg.Kind in Erroutc.Warning | Erroutc.Style | Erroutc.Info then
          D.Switch := Get_Switch_Id (E_Msg);
       end if;
 
       D.Warn_Err := E_Msg.Warn_Err;
-
-      D.Serious := E_Msg.Serious;
 
       --  Convert the primary location
 

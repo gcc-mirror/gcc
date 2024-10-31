@@ -197,21 +197,29 @@ package body Diagnostics is
       procedure Update_Diagnostic_Count (Diagnostic : Diagnostic_Type) is
 
       begin
-         if Diagnostic.Kind = Error then
-            Total_Errors_Detected := Total_Errors_Detected + 1;
-
-            if Diagnostic.Serious then
+         case Diagnostic.Kind is
+            when Error =>
+               Total_Errors_Detected := Total_Errors_Detected + 1;
                Serious_Errors_Detected := Serious_Errors_Detected + 1;
-            end if;
-         elsif Diagnostic.Kind in Warning | Style then
-            Warnings_Detected := Warnings_Detected + 1;
 
-            if Diagnostic.Warn_Err then
-               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-            end if;
-         elsif Diagnostic.Kind in Info then
-            Info_Messages := Info_Messages + 1;
-         end if;
+            when Non_Serious_Error =>
+               Total_Errors_Detected := Total_Errors_Detected + 1;
+
+            when Warning
+               | Default_Warning
+               | Tagless_Warning
+               | Restriction_Warning
+               | Style
+            =>
+               Warnings_Detected := Warnings_Detected + 1;
+
+               if Diagnostic.Warn_Err then
+                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+               end if;
+
+            when Info =>
+               Info_Messages := Info_Messages + 1;
+         end case;
       end Update_Diagnostic_Count;
 
       procedure Handle_Serious_Error;
@@ -265,7 +273,7 @@ package body Diagnostics is
          Update_Diagnostic_Count (Diagnostic);
       end if;
 
-      if Diagnostic.Kind = Error and then Diagnostic.Serious then
+      if Diagnostic.Kind = Error then
          Handle_Serious_Error;
       end if;
    end Record_Diagnostic;

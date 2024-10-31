@@ -145,29 +145,7 @@ package body Erroutc is
          loop
             Errors.Table (D).Deleted := True;
 
-            --  Adjust error message count
-
-            if Errors.Table (D).Info then
-
-               Info_Messages := Info_Messages - 1;
-
-            elsif Errors.Table (D).Warn or else Errors.Table (D).Style then
-               Warnings_Detected := Warnings_Detected - 1;
-
-               --  Note: we do not need to decrement Warnings_Treated_As_Errors
-               --  because this only gets incremented if we actually output the
-               --  message, which we won't do if we are deleting it here!
-
-            elsif Errors.Table (D).Check then
-               Check_Messages := Check_Messages - 1;
-
-            else
-               Total_Errors_Detected := Total_Errors_Detected - 1;
-
-               if Errors.Table (D).Serious then
-                  Serious_Errors_Detected := Serious_Errors_Detected - 1;
-               end if;
-            end if;
+            Decrease_Error_Msg_Count (Errors.Table (D));
 
             --  Substitute shorter of the two error messages
 
@@ -278,7 +256,7 @@ package body Erroutc is
    begin
       for J in 1 .. Errors.Last loop
          begin
-            if Errors.Table (J).Warn
+            if Errors.Table (J).Kind = Warning
                and then Errors.Table (J).Compile_Time_Pragma
                and then not Errors.Table (J).Deleted
             then
@@ -288,6 +266,32 @@ package body Erroutc is
       end loop;
       return Result;
    end Count_Compile_Time_Pragma_Warnings;
+
+   ------------------------------
+   -- Decrease_Error_Msg_Count --
+   ------------------------------
+
+   procedure Decrease_Error_Msg_Count (E : Error_Msg_Object) is
+
+   begin
+      case E.Kind is
+         when Info =>
+            Info_Messages := Info_Messages - 1;
+
+         when Warning | Style =>
+            Warnings_Detected := Warnings_Detected - 1;
+
+         when High_Check | Medium_Check | Low_Check =>
+            Check_Messages := Check_Messages - 1;
+
+         when Error =>
+            Total_Errors_Detected := Total_Errors_Detected - 1;
+            Serious_Errors_Detected := Serious_Errors_Detected - 1;
+
+         when Non_Serious_Error =>
+            Total_Errors_Detected := Total_Errors_Detected - 1;
+      end case;
+   end Decrease_Error_Msg_Count;
 
    ------------------
    -- Debug_Output --
@@ -334,13 +338,10 @@ package body Erroutc is
 
       w ("  Line               = ", Int (E.Line));
       w ("  Col                = ", Int (E.Col));
-      w ("  Info               = ", E.Info);
-      w ("  Warn               = ", E.Warn);
+      w ("  Kind               = ", E.Kind'Img);
       w ("  Warn_Err           = ", E.Warn_Err);
       w ("  Warn_Runtime_Raise = ", E.Warn_Runtime_Raise);
       w ("  Warn_Chr           = '" & E.Warn_Chr & ''');
-      w ("  Style              = ", E.Style);
-      w ("  Serious            = ", E.Serious);
       w ("  Uncond             = ", E.Uncond);
       w ("  Msg_Cont           = ", E.Msg_Cont);
       w ("  Deleted            = ", E.Deleted);
@@ -371,7 +372,7 @@ package body Erroutc is
    ------------------------
 
    function Get_Warning_Option (Id : Error_Msg_Id) return String is
-      Style    : constant Boolean         := Errors.Table (Id).Style;
+      Is_Style : constant Boolean         := Errors.Table (Id).Kind in Style;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
 
    begin
@@ -380,7 +381,7 @@ package body Erroutc is
       then
          if Warn_Chr = "$ " then
             return "-gnatel";
-         elsif Style then
+         elsif Is_Style then
             return "-gnaty" & Warn_Chr (1);
          elsif Warn_Chr (2) = ' ' then
             return "-gnatw" & Warn_Chr (1);
@@ -414,6 +415,32 @@ package body Erroutc is
       return "";
    end Get_Warning_Tag;
 
+   ------------------------------
+   -- Increase_Error_Msg_Count --
+   ------------------------------
+
+   procedure Increase_Error_Msg_Count (E : Error_Msg_Object) is
+
+   begin
+      case E.Kind is
+         when Info =>
+            Info_Messages := Info_Messages + 1;
+
+         when Warning | Style =>
+            Warnings_Detected := Warnings_Detected + 1;
+
+         when High_Check | Medium_Check | Low_Check =>
+            Check_Messages := Check_Messages + 1;
+
+         when Error =>
+            Total_Errors_Detected := Total_Errors_Detected + 1;
+            Serious_Errors_Detected := Serious_Errors_Detected + 1;
+
+         when Non_Serious_Error =>
+            Total_Errors_Detected := Total_Errors_Detected + 1;
+      end case;
+   end Increase_Error_Msg_Count;
+
    --------------------
    -- Has_Switch_Tag --
    --------------------
@@ -421,14 +448,10 @@ package body Erroutc is
    function Has_Switch_Tag (Id : Error_Msg_Id) return Boolean
    is (Has_Switch_Tag (Errors.Table (Id)));
 
-   function Has_Switch_Tag (E_Msg : Error_Msg_Object) return Boolean
-   is
-      Warn     : constant Boolean         := E_Msg.Warn;
-      Style    : constant Boolean         := E_Msg.Style;
-      Info     : constant Boolean         := E_Msg.Info;
-      Warn_Chr : constant String (1 .. 2) := E_Msg.Warn_Chr;
+   function Has_Switch_Tag (E_Msg : Error_Msg_Object) return Boolean is
    begin
-      return (Warn or Style or Info) and then Warn_Chr /= "  ";
+      return
+        E_Msg.Kind in Warning | Info | Style and then E_Msg.Warn_Chr /= "  ";
    end Has_Switch_Tag;
 
    -------------
@@ -836,7 +859,7 @@ package body Erroutc is
 
       --  For info messages, prefix message with "info: "
 
-      elsif E_Msg.Info then
+      elsif E_Msg.Kind = Info then
          Txt := new String'(SGR_Note & "info: " & SGR_Reset & Txt.all);
 
       --  Warning treated as error
@@ -852,12 +875,12 @@ package body Erroutc is
 
       --  Normal warning, prefix with "warning: "
 
-      elsif E_Msg.Warn then
+      elsif E_Msg.Kind = Warning then
          Txt := new String'(SGR_Warning & "warning: " & SGR_Reset & Txt.all);
 
       --  No prefix needed for style message, "(style)" is there already
 
-      elsif E_Msg.Style then
+      elsif E_Msg.Kind = Style then
          if Txt (Txt'First .. Txt'First + 6) = "(style)" then
             Txt := new String'(SGR_Warning & "(style)" & SGR_Reset
                                & Txt (Txt'First + 7 .. Txt'Last));
@@ -865,7 +888,7 @@ package body Erroutc is
 
       --  No prefix needed for check message, severity is there already
 
-      elsif E_Msg.Check then
+      elsif E_Msg.Kind in High_Check | Medium_Check | Low_Check then
 
          --  The message format is "severity: ..."
          --
@@ -989,35 +1012,46 @@ package body Erroutc is
 
          --  Set initial values of globals (may be changed during scan)
 
-         Is_Serious_Error     := True;
+         Error_Msg_Kind       := Error;
          Is_Unconditional_Msg := False;
-         Is_Warning_Msg       := False;
          Is_Runtime_Raise     := False;
          Warning_Msg_Char     := "  ";
 
          --  Check style message
 
-         Is_Style_Msg :=
-           Msg'Length > 7
-             and then Msg (Msg'First .. Msg'First + 6) = "(style)";
+         if Msg'Length > 7
+           and then Msg (Msg'First .. Msg'First + 6) = "(style)"
+         then
+            Error_Msg_Kind := Style;
 
-         --  Check info message
+            --  Check info message
 
-         Is_Info_Msg :=
-           Msg'Length > 6
-             and then Msg (Msg'First .. Msg'First + 5) = "info: ";
+         elsif Msg'Length > 6
+           and then Msg (Msg'First .. Msg'First + 5) = "info: "
+         then
+            Error_Msg_Kind := Info;
 
-         --  Check check message
+            --  Check high check message
 
-         Is_Check_Msg :=
-           (Msg'Length > 8
-             and then Msg (Msg'First .. Msg'First + 7) = "medium: ")
-           or else
-           (Msg'Length > 6
-             and then Msg (Msg'First .. Msg'First + 5) = "high: ")
-           or else
-           (Msg'Length > 5
-             and then Msg (Msg'First .. Msg'First + 4) = "low: ");
+         elsif Msg'Length > 6
+           and then Msg (Msg'First .. Msg'First + 5) = "high: "
+         then
+            Error_Msg_Kind := High_Check;
+
+            --  Check medium check message
+
+         elsif Msg'Length > 8
+           and then Msg (Msg'First .. Msg'First + 7) = "medium: "
+         then
+            Error_Msg_Kind := Medium_Check;
+
+            --  Check low check message
+
+         elsif Msg'Length > 5
+           and then Msg (Msg'First .. Msg'First + 4) = "low: "
+         then
+            Error_Msg_Kind := Low_Check;
+         end if;
       end if;
 
       Has_Double_Exclam  := False;
@@ -1045,7 +1079,10 @@ package body Erroutc is
                --  characters and not the generic ? or ?? warning insertion
                --  characters.
 
-               Is_Warning_Msg := not (Is_Style_Msg or else Is_Info_Msg);
+               if Error_Msg_Kind not in Style | Info then
+                  Error_Msg_Kind := Warning;
+               end if;
+
                J := J + 1;
                Warning_Msg_Char := Parse_Message_Class;
 
@@ -1079,7 +1116,7 @@ package body Erroutc is
          --  Non-serious error (| insertion)
 
          elsif Msg (J) = '|' then
-            Is_Serious_Error := False;
+            Error_Msg_Kind := Non_Serious_Error;
             J := J + 1;
 
          --  Error code ([] insertion)
@@ -1095,10 +1132,6 @@ package body Erroutc is
             J := J + 1;
          end if;
       end loop;
-
-      if Is_Info_Msg or Is_Warning_Msg or Is_Style_Msg or Is_Check_Msg then
-         Is_Serious_Error := False;
-      end if;
    end Prescan_Message;
 
    --------------------
@@ -1122,16 +1155,7 @@ package body Erroutc is
            and then Errors.Table (E).Sptr.Ptr > From
            and then Errors.Table (E).Sptr.Ptr < To
          then
-            if Errors.Table (E).Warn or else Errors.Table (E).Style then
-               Warnings_Detected := Warnings_Detected - 1;
-
-            else
-               Total_Errors_Detected := Total_Errors_Detected - 1;
-
-               if Errors.Table (E).Serious then
-                  Serious_Errors_Detected := Serious_Errors_Detected - 1;
-               end if;
-            end if;
+            Decrease_Error_Msg_Count (Errors.Table (E));
 
             return True;
 
