@@ -3,7 +3,7 @@
 /* { dg-require-profiling "-fprofile-generate" } */
 /* { dg-require-ifunc "" } */
 
-void *foo_ifunc2() __attribute__((ifunc("foo_resolver")));
+void foo_ifunc2() __attribute__((ifunc("foo_resolver")));
 
 void bar(void)
 {
