@@ -32,12 +32,12 @@
   DEF_SME_ZA_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
 #endif
 
-#define REQUIRED_EXTENSIONS 0
+#define REQUIRED_EXTENSIONS streaming_compatible (0)
 DEF_SME_FUNCTION (arm_has_sme, bool_inherent, none, none)
 DEF_SME_FUNCTION (arm_in_streaming_mode, bool_inherent, none, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_SME
+#define REQUIRED_EXTENSIONS streaming_compatible (AARCH64_FL_SME)
 DEF_SME_FUNCTION (svcntsb, count_inherent, none, none)
 DEF_SME_FUNCTION (svcntsd, count_inherent, none, none)
 DEF_SME_FUNCTION (svcntsh, count_inherent, none, none)
@@ -49,7 +49,7 @@ DEF_SME_ZA_FUNCTION (svzero, inherent_za, za, none)
 DEF_SME_ZA_FUNCTION (svzero_mask, inherent_mask_za, za, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SM_ON
+#define REQUIRED_EXTENSIONS streaming_only (0)
 DEF_SME_ZA_FUNCTION (svaddha, unary_za_m, za_s_integer, za_m)
 DEF_SME_ZA_FUNCTION (svaddva, unary_za_m, za_s_integer, za_m)
 DEF_SME_ZA_FUNCTION (svld1_hor, load_za, all_za, none)
@@ -70,9 +70,7 @@ DEF_SME_ZA_FUNCTION (svwrite_hor, write_za_m, za_all_data, za_m)
 DEF_SME_ZA_FUNCTION (svwrite_ver, write_za_m, za_all_data, za_m)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
-			     | AARCH64_FL_SME_I16I64 \
-			     | AARCH64_FL_SM_ON)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_I16I64)
 DEF_SME_ZA_FUNCTION (svaddha, unary_za_m, za_d_integer, za_m)
 DEF_SME_ZA_FUNCTION (svaddva, unary_za_m, za_d_integer, za_m)
 DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, mop_i16i64, za_m)
@@ -83,14 +81,12 @@ DEF_SME_ZA_FUNCTION (svusmopa, binary_za_int_m, mop_i16i64_unsigned, za_m)
 DEF_SME_ZA_FUNCTION (svusmops, binary_za_int_m, mop_i16i64_unsigned, za_m)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
-			     | AARCH64_FL_SME_F64F64 \
-			     | AARCH64_FL_SM_ON)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_F64F64)
 DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, za_d_float, za_m)
 DEF_SME_ZA_FUNCTION (svmops, binary_za_m, za_d_float, za_m)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SME2
+#define REQUIRED_EXTENSIONS streaming_compatible (AARCH64_FL_SME2)
 DEF_SME_FUNCTION (svldr_zt, ldr_zt, none, none)
 DEF_SME_FUNCTION (svstr_zt, str_zt, none, none)
 DEF_SME_FUNCTION (svzero_zt, inherent_zt, none, none)
@@ -100,7 +96,7 @@ DEF_SME_FUNCTION (svzero_zt, inherent_zt, none, none)
    which will then be resolved to either an integer function or a
    floating-point function.  They are needed because the integer and
    floating-point functions have different architecture requirements.  */
-#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SME2 | AARCH64_FL_SM_ON
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2)
 DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, za_s_data, vg1x24, none)
 DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, d_za, vg1x24, none)
 DEF_SME_ZA_FUNCTION_GS (svadd_write, binary_za_slice_opt_single, za_s_integer,
@@ -172,10 +168,8 @@ DEF_SME_ZA_FUNCTION_GS (svwrite_hor, write_za, za_bhsd_data, vg24, none)
 DEF_SME_ZA_FUNCTION_GS (svwrite_ver, write_za, za_bhsd_data, vg24, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
-			     | AARCH64_FL_SME2 \
-			     | AARCH64_FL_SME_I16I64 \
-			     | AARCH64_FL_SM_ON)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					    | AARCH64_FL_SME_I16I64)
 DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, za_d_integer, vg1x24, none)
 DEF_SME_ZA_FUNCTION_GS (svadd_write, binary_za_slice_opt_single, za_d_integer,
 			vg1x24, none)
@@ -198,10 +192,8 @@ DEF_SME_ZA_FUNCTION_GS (svvdot_lane, dot_za_slice_lane, za_d_h_integer,
 			vg1x4, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
-			     | AARCH64_FL_SME2 \
-			     | AARCH64_FL_SME_F64F64 \
-			     | AARCH64_FL_SM_ON)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					    | AARCH64_FL_SME_F64F64)
 DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, za_d_float, vg1x24, none)
 DEF_SME_ZA_FUNCTION_GS (svmla, binary_za_slice_opt_single, za_d_float,
 			vg1x24, none)

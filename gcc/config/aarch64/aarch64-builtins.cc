@@ -1595,7 +1595,8 @@ enum class aarch64_builtin_signatures
 
 #undef ENTRY
 #define ENTRY(N, S, M, U) \
-  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, REQUIRED_EXTENSIONS},
+  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, \
+   aarch64_required_extensions::REQUIRED_EXTENSIONS},
 
 /* Initialize pragma builtins.  */
 
@@ -1605,7 +1606,7 @@ struct aarch64_pragma_builtins_data
   aarch64_builtin_signatures signature;
   machine_mode mode;
   int unspec;
-  aarch64_feature_flags required_extensions;
+  aarch64_required_extensions required_extensions;
 };
 
 static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
@@ -2333,37 +2334,45 @@ aarch64_report_missing_registers (location_t location, tree fndecl)
   reported_missing_registers_p = true;
 }
 
-/* Check whether all the AARCH64_FL_* values in REQUIRED_EXTENSIONS are
-   enabled, given that those extensions are required for function FNDECL.
-   Report an error against LOCATION if not.  */
+/* Check whether the requirements in REQUIRED_EXTENSIONS are met, given that
+   those requirements come from calling function FNDECL.  Report an error
+   against LOCATION if not.  */
 bool
 aarch64_check_required_extensions (location_t location, tree fndecl,
-				   aarch64_feature_flags required_extensions)
+				   aarch64_required_extensions
+				     required_extensions)
 {
-  if ((required_extensions & ~aarch64_isa_flags) == 0)
+  aarch64_feature_flags sm_state_extensions = 0;
+  if (!TARGET_STREAMING)
+    {
+      if (required_extensions.sm_off == 0)
+	{
+	  error_at (location, "ACLE function %qD can only be called when"
+		    " SME streaming mode is enabled", fndecl);
+	  return false;
+	}
+      sm_state_extensions |= required_extensions.sm_off & ~AARCH64_FL_SM_OFF;
+    }
+  if (!TARGET_NON_STREAMING)
+    {
+      if (required_extensions.sm_on == 0)
+	{
+	  error_at (location, "ACLE function %qD cannot be called when"
+		    " SME streaming mode is enabled", fndecl);
+	  return false;
+	}
+      sm_state_extensions |= required_extensions.sm_on & ~AARCH64_FL_SM_ON;
+    }
+
+  if ((sm_state_extensions & ~aarch64_isa_flags) == 0)
     return true;
 
-  auto missing_extensions = required_extensions & ~aarch64_asm_isa_flags;
-
+  auto missing_extensions = sm_state_extensions & ~aarch64_asm_isa_flags;
   if (missing_extensions == 0)
     {
       /* All required extensions are enabled in aarch64_asm_isa_flags, so the
 	 error must be the use of general-regs-only.  */
       aarch64_report_missing_registers (location, fndecl);
-      return false;
-    }
-
-  if (missing_extensions & AARCH64_FL_SM_OFF)
-    {
-      error_at (location, "ACLE function %qD cannot be called when"
-		" SME streaming mode is enabled", fndecl);
-      return false;
-    }
-
-  if (missing_extensions & AARCH64_FL_SM_ON)
-    {
-      error_at (location, "ACLE function %qD can only be called when"
-		" SME streaming mode is enabled", fndecl);
       return false;
     }
 
@@ -2392,12 +2401,47 @@ aarch64_check_required_extensions (location_t location, tree fndecl,
   gcc_unreachable ();
 }
 
+/* Return the ISA extensions required by function CODE.  */
+static aarch64_required_extensions
+aarch64_general_required_extensions (unsigned int code)
+{
+  using ext = aarch64_required_extensions;
+  switch (code)
+    {
+    case AARCH64_TME_BUILTIN_TSTART:
+    case AARCH64_TME_BUILTIN_TCOMMIT:
+    case AARCH64_TME_BUILTIN_TTEST:
+    case AARCH64_TME_BUILTIN_TCANCEL:
+      return ext::streaming_compatible (AARCH64_FL_TME);
+
+    case AARCH64_LS64_BUILTIN_LD64B:
+    case AARCH64_LS64_BUILTIN_ST64B:
+    case AARCH64_LS64_BUILTIN_ST64BV:
+    case AARCH64_LS64_BUILTIN_ST64BV0:
+      return ext::streaming_compatible (AARCH64_FL_LS64);
+
+    default:
+      if (code >= AARCH64_MEMTAG_BUILTIN_START
+	  && code <= AARCH64_MEMTAG_BUILTIN_END)
+	return ext::streaming_compatible (AARCH64_FL_MEMTAG);
+
+      if (auto builtin_data = aarch64_get_pragma_builtin (code))
+	return builtin_data->required_extensions;
+    }
+  return ext::streaming_compatible (0);
+}
+
 bool
 aarch64_general_check_builtin_call (location_t location, vec<location_t>,
-			    unsigned int code, tree fndecl,
-			    unsigned int nargs ATTRIBUTE_UNUSED, tree *args)
+				    unsigned int code, tree fndecl,
+				    unsigned int nargs ATTRIBUTE_UNUSED,
+				    tree *args)
 {
   tree decl = aarch64_builtin_decls[code];
+  auto required_extensions = aarch64_general_required_extensions (code);
+  if (!aarch64_check_required_extensions (location, decl, required_extensions))
+    return false;
+
   switch (code)
     {
     case AARCH64_RSR:
@@ -2423,34 +2467,6 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
 	  }
 	break;
       }
-
-    case AARCH64_TME_BUILTIN_TSTART:
-    case AARCH64_TME_BUILTIN_TCOMMIT:
-    case AARCH64_TME_BUILTIN_TTEST:
-    case AARCH64_TME_BUILTIN_TCANCEL:
-      return aarch64_check_required_extensions (location, decl,
-						AARCH64_FL_TME);
-
-    case AARCH64_LS64_BUILTIN_LD64B:
-    case AARCH64_LS64_BUILTIN_ST64B:
-    case AARCH64_LS64_BUILTIN_ST64BV:
-    case AARCH64_LS64_BUILTIN_ST64BV0:
-      return aarch64_check_required_extensions (location, decl,
-						AARCH64_FL_LS64);
-
-    default:
-      break;
-    }
-
-  if (code >= AARCH64_MEMTAG_BUILTIN_START
-      && code <= AARCH64_MEMTAG_BUILTIN_END)
-    return aarch64_check_required_extensions (location, decl,
-					      AARCH64_FL_MEMTAG);
-
-  if (auto builtin_data = aarch64_get_pragma_builtin (code))
-    {
-      auto flags = builtin_data->required_extensions;
-      return aarch64_check_required_extensions (location, decl, flags);
     }
 
   return true;
