@@ -59,8 +59,8 @@ package System.Image_F is
    --  according to the rules for image for fixed-point types (RM 3.5(34)).
    --  For0 and Aft0 are the values of the Fore and Aft attributes for the
    --  fixed point type whose mantissa type is Int and whose small is Num/Den.
-   --  This function is used only for fixed point whose Small is an integer or
-   --  its reciprocal (see package System.Image_R for the handling of other
+   --  This function is used only for fixed point whose Small is the ratio of
+   --  two Int values (see package System.Image_R for the handling of other
    --  ordinary fixed-point types). The caller guarantees that S is long enough
    --  to hold the result and has a lower bound of 1.
 
