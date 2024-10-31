@@ -591,6 +591,10 @@ FUNCTION (svaesd, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesd))
 FUNCTION (svaese, fixed_insn_function, (CODE_FOR_aarch64_sve2_aese))
 FUNCTION (svaesimc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesimc))
 FUNCTION (svaesmc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesmc))
+FUNCTION (svamax, cond_or_uncond_unspec_function,
+	  (UNSPEC_COND_FAMAX, UNSPEC_FAMAX))
+FUNCTION (svamin, cond_or_uncond_unspec_function,
+	  (UNSPEC_COND_FAMIN, UNSPEC_FAMIN))
 FUNCTION (svbcax, CODE_FOR_MODE0 (aarch64_sve2_bcax),)
 FUNCTION (svbdep, unspec_based_function, (UNSPEC_BDEP, UNSPEC_BDEP, -1))
 FUNCTION (svbext, unspec_based_function, (UNSPEC_BEXT, UNSPEC_BEXT, -1))

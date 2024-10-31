@@ -368,8 +368,3 @@ DEF_SVE_FUNCTION (svuzp2q, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip1q, binary, all_data, none)
 DEF_SVE_FUNCTION (svzip2q, binary, all_data, none)
 #undef REQUIRED_EXTENSIONS
-
-#define REQUIRED_EXTENSIONS ssve (AARCH64_FL_FAMINMAX)
-DEF_SVE_FUNCTION (svamax, binary_opt_single_n, all_float, mxz)
-DEF_SVE_FUNCTION (svamin, binary_opt_single_n, all_float, mxz)
-#undef REQUIRED_EXTENSIONS

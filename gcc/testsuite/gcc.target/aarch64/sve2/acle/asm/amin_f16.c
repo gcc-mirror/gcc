@@ -3,7 +3,10 @@
 
 #include "test_sve_acle.h"
 
-#pragma GCC target "+sve+faminmax"
+#pragma GCC target "+sve2+faminmax"
+#if STREAMING_COMPATIBLE
+#pragma GCC target "+sme2"
+#endif
 
 /*
 ** amin_f16_m_tied1:
