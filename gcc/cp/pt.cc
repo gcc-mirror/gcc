@@ -31731,12 +31731,16 @@ add_mergeable_specialization (bool decl_p, spec_entry *elt, tree decl,
       auto *slot = type_specializations->find_slot (elt, INSERT);
 
       /* We don't distinguish different constrained partial type
-	 specializations, so there could be duplicates.  Everything else
-	 must be new.   */
-      if (!(flags & 2 && *slot))
+	 specializations, so there could be duplicates.  In that case we
+	 must propagate TYPE_CANONICAL so that they are treated as the
+	 same type.  Everything else must be new.   */
+      if (*slot)
 	{
-	  gcc_checking_assert (!*slot);
-
+	  gcc_checking_assert (flags & 2);
+	  TYPE_CANONICAL (elt->spec) = TYPE_CANONICAL ((*slot)->spec);
+	}
+      else
+	{
 	  auto entry = ggc_alloc<spec_entry> ();
 	  *entry = *elt;
 	  *slot = entry;
