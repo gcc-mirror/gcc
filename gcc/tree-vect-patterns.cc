@@ -5426,16 +5426,18 @@ vect_recog_gcond_pattern (vec_info *vinfo,
   if (VECTOR_TYPE_P (scalar_type))
     return NULL;
 
-  if (code == NE_EXPR
-      && zerop (rhs)
-      && VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
-    return NULL;
+  /* If the input is a boolean then try to figure out the precision that the
+     vector type should use.  We cannot use the scalar precision as this would
+     later mismatch.  This is similar to what recog_bool does.  */
+  if (VECT_SCALAR_BOOLEAN_TYPE_P (scalar_type))
+    {
+      if (tree stype = integer_type_for_mask (lhs, vinfo))
+	scalar_type = stype;
+    }
 
-  tree vecitype = get_vectype_for_scalar_type (vinfo, scalar_type);
-  if (vecitype == NULL_TREE)
+  tree vectype = get_mask_type_for_scalar_type (vinfo, scalar_type);
+  if (vectype == NULL_TREE)
     return NULL;
-
-  tree vectype = truth_type_for (vecitype);
 
   tree new_lhs = vect_recog_temp_ssa_var (boolean_type_node, NULL);
   gimple *new_stmt = gimple_build_assign (new_lhs, code, lhs, rhs);
@@ -5666,7 +5668,6 @@ vect_recog_bool_pattern (vec_info *vinfo,
   else
     return NULL;
 }
-
 
 /* A helper for vect_recog_mask_conversion_pattern.  Build
    conversion of MASK to a type suitable for masking VECTYPE.

@@ -4911,37 +4911,16 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	     from them.  It's highly likely that the resulting SLP tree here if both
 	     arguments have a def will be incompatible, but we rely on it being split
 	     later on.  */
-	  if (auto varg = loop_vinfo->lookup_def (args0))
-	    {
-	      vec<stmt_vec_info> stmts;
-	      vec<tree> remain = vNULL;
-	      stmts.create (1);
-	      stmts.quick_push (vect_stmt_to_vectorize (varg));
+	  auto varg = loop_vinfo->lookup_def (args0);
+	  vec<stmt_vec_info> stmts;
+	  vec<tree> remain = vNULL;
+	  stmts.create (1);
+	  stmts.quick_push (vect_stmt_to_vectorize (varg));
 
-	      vect_build_slp_instance (vinfo, slp_inst_kind_gcond,
-				       stmts, roots, remain,
-				       max_tree_size, &limit,
-				       bst_map, NULL, force_single_lane);
-	    }
-	  else
-	    {
-	      /* Create a new SLP instance.  */
-	      slp_instance new_instance = XNEW (class _slp_instance);
-	      vec<tree> ops;
-	      ops.create (1);
-	      ops.quick_push (args0);
-	      slp_tree invnode = vect_create_new_slp_node (ops);
-	      SLP_TREE_DEF_TYPE (invnode) = vect_external_def;
-	      SLP_INSTANCE_TREE (new_instance) = invnode;
-	      SLP_INSTANCE_LOADS (new_instance) = vNULL;
-	      SLP_INSTANCE_ROOT_STMTS (new_instance) = roots;
-	      SLP_INSTANCE_REMAIN_DEFS (new_instance) = vNULL;
-	      SLP_INSTANCE_KIND (new_instance) = slp_inst_kind_gcond;
-	      new_instance->reduc_phis = NULL;
-	      new_instance->cost_vec = vNULL;
-	      new_instance->subgraph_entries = vNULL;
-	      vinfo->slp_instances.safe_push (new_instance);
-	    }
+	  vect_build_slp_instance (vinfo, slp_inst_kind_gcond,
+				   stmts, roots, remain,
+				   max_tree_size, &limit,
+				   bst_map, NULL, force_single_lane);
 	}
 
 	/* Find and create slp instances for inductions that have been forced
