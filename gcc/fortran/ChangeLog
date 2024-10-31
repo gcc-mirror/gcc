@@ -1,3 +1,11 @@
+2024-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-expr.cc (gfc_trans_class_init_assign): Free intermediate
+	gfc_expr's.
+	* trans.cc (get_final_proc_ref): Likewise.
+	(get_elem_size): Likewise.
+	(gfc_add_finalizer_call): Likewise.
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

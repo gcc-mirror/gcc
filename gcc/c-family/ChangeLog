@@ -1,3 +1,18 @@
+2024-10-30  Joseph Myers  <josmyers@redhat.com>
+
+	* c.opt (std=c23, std=gnu23, std=iso9899:2024): Do not mark as
+	experimental and incomplete.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117021
+	* c-common.cc (c_add_case_label): Emit different diagnostics for C
+	on case ranges.  Diagnose for C using pedwarn conversions of range
+	expressions changing value and don't emit further conversion
+	diagnostics if the pedwarn has been diagnosed.  For empty ranges
+	bail out after emitting warning, don't add anything into splay
+	trees nor add a CASE_LABEL_EXPR.
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

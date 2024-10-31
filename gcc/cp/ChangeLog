@@ -1,3 +1,9 @@
+2024-10-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116607
+	* contracts.cc (has_active_contract_condition): Use the
+	CONTRACT_CHAIN macro to advance through the attribute list.
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

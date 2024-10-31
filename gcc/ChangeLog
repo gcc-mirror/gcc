@@ -1,3 +1,146 @@
+2024-10-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* tree-vectorizer.cc (pass_vectorize::execute): Reset dont_vectorize
+	to scalar loop when setting IFN_LOOP_VECTORIZED to false.
+
+2024-10-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* params.opt: Adjust param_vect_max_version_for_alias_checks
+
+2024-10-30  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/cpp.texi (__STDC_VERSION__): Do not refer to C23 support as
+	experimental.
+	* doc/invoke.texi (std=c23, std=gnu23): Do not document as
+	experimental and incomplete.
+	* doc/standards.texi: Do not refer to C23 support as experimental
+	and incomplete.
+
+2024-10-30  Andi Kleen  <ak@gcc.gnu.org>
+
+	* timevar.cc (struct tms): Remove.
+	(RUSAGE_SELF): Remove.
+	(TICKS_PER_SECOND): Remove.
+	(USE_TIMES): Remove.
+	(HAVE_USER_TIME): Remove.
+	(HAVE_SYS_TIME): Remove.
+	(HAVE_WALL_TIME): Remove.
+	(USE_GETRUSAGE): Remove.
+	(USE_CLOCK): Remove.
+	(NANOSEC_PER_SEC): Remove.
+	(TICKS_TO_NANOSEC): Remove.
+	(CLOCKS_TO_NANOSEC): Remove.
+	(timer::named_items::push): Remove sys/user.
+	(get_time): Remove clock and times and getruage code.
+	(timevar_accumulate): Remove sys/user.
+	(timevar_diff): Dito.
+	(timer::validate_phases): Dito.
+	(timer::print_row): Dito.
+	(timer::all_zero): Dito.
+	(timer::print): Dito.
+	(make_json_for_timevar_time_def): Dito.
+	* timevar.h (struct timevar_time_def): Dito.
+
+2024-10-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (finish_cost): Inline everywhere and remove.
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters):
+	Inline finish_cost.
+	* tree-vect-slp.cc (vect_bb_vectorization_profitable_p): Likewise.
+
+2024-10-30  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/aarch64/aarch64.cc (dispatch_function_versions): Adding
+	DECL_EXTERNAL, TREE_PUBLIC and hidden DECL_VISIBILITY to
+	__init_cpu_features_resolver and __aarch64_cpu_features.
+
+2024-10-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (singleton_vxrm_need): New function.
+	(riscv_mode_needed): See if there is a singleton need and if so,
+	claim it happens on the first insn in the chain.
+
+2024-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117318
+	* config/i386/sse.md (*avx512vl_<code>v2div2qi2_mask_store_1):
+	Rename to ..
+	(avx512vl_<code>v2div2qi2_mask_store_1): .. this.
+	(avx512vl_<code>v2div2qi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code><mode>v4qi2_mask_store_1): Rename to ..
+	(avx512vl_<code><mode>v4qi2_mask_store_1): .. this.
+	(avx512vl_<code><mode>v4qi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code><mode>v8qi2_mask_store_1): Rename to ..
+	(avx512vl_<code><mode>v8qi2_mask_store_1): .. this.
+	(avx512vl_<code><mode>v8qi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code><mode>v4hi2_mask_store_1): Rename to ..
+	(avx512vl_<code><mode>v4hi2_mask_store_1): .. this.
+	(avx512vl_<code><mode>v4hi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code>v2div2hi2_mask_store_1): Rename to ..
+	(avx512vl_<code>v2div2hi2_mask_store_1): .. this.
+	(avx512vl_<code>v2div2hi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code>v2div2si2_mask_store_1): Rename to ..
+	(avx512vl_<code>v2div2si2_mask_store_1): .. this.
+	(avx512vl_<code>v2div2si2_mask_store_2): Change to
+	define_expand.
+	(*avx512f_<code>v8div16qi2_mask_store_1): Rename to ..
+	(avx512f_<code>v8div16qi2_mask_store_1): .. this.
+	(avx512f_<code>v8div16qi2_mask_store_2): Change to
+	define_expand.
+
+2024-10-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (STRS_QUALIFIERS): Delete.
+	(STRU_QUALIFIERS): Delete.
+	(STRS_P_QUALIFIERS): Delete.
+	(STRU_P_QUALIFIERS): Delete.
+	(LDRS_QUALIFIERS): Delete.
+	(LDRU_QUALIFIERS): Delete.
+	(LDRS_Z_QUALIFIERS): Delete.
+	(LDRU_Z_QUALIFIERS): Delete.
+
+2024-10-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (check_bool_pattern): Remove.
+	(adjust_bool_pattern_cast): Likewise.
+	(adjust_bool_pattern): Likewise.
+	(sort_after_uid): Likewise.
+	(adjust_bool_stmts): Likewise.
+	(vect_recog_bool_pattern): Remove calls to check_bool_pattern
+	and fold as if it returns false.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117296
+	* function.cc (assign_parms): Call do_pending_stack_adjust.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117348
+	* genmatch.cc: Replace defined(HAVE_DECL_FMEMOPEN)
+	test with HAVE_DECL_FMEMOPEN.
+
+2024-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum ix86_stack_slot): Remove SLOT_TEMP.
+	* config/i386/i386-expand.cc (ix86_expand_builtin)
+	<case IX86_BUILTIN_LDMXCSR>: Use assign_stack_temp instead of
+	assign_386_stack_local with SLOT_TEMP.
+	<case IX86_BUILTIN_LDMXCSR>: Ditto.
+	(ix86_expand_divmod_libfunc): Ditto.
+	* config/i386/i386.md (floatunssi<mode>2): Ditto.
+	* config/i386/sync.md (atomic_load<mode>): Ditto.
+	(atomic_store<mode>): Ditto.
+
+2024-10-30  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: Simplify (x != 0 ? x + ~0 : 0) to (x - x != 0).
+
 2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
 
 	Revert:

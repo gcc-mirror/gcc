@@ -1,3 +1,9 @@
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression): Diagnose if
+	first __builtin_stdc_* argument has char type even when
+	-funsigned-char.
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

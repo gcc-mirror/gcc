@@ -1,3 +1,34 @@
+2024-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/cons/from_range.cc: Fix copy &
+	paste error in comment.
+	* testsuite/23_containers/vector/modifiers/append_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/assign/assign_range.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	Likewise.
+
+2024-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using_exceptions.xml: Fix typos and grammatical
+	errors.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+
+2024-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_DOUBLE_IS_IEEE_BINARY32):
+	Define.
+	(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY64): Define.
+	(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY32): Define.
+	* include/bits/cpp_type_traits.h (__memcpyable): Define
+	specializations when double and long double are compatible.
+
+2024-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__memcpyable): Add
+	specializations for compatible floating-point types.
+
 2024-10-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/112641

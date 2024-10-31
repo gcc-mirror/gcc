@@ -1,3 +1,74 @@
+2024-10-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/vect/bb-slp-77.c: New test.
+
+2024-10-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* g++.dg/alias-checks.C: New test.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-stdc-bit-3.c: New test.
+	* gcc.dg/builtin-stdc-rotate-3.c: New test.
+
+2024-10-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/116607
+	* g++.dg/contracts/pr116607.C: New test.
+
+2024-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117318.c: New test.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117296
+	* gcc.target/i386/pr117296.c: New test.
+
+2024-10-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117335
+	* gfortran.dg/pr115070.f90: Delete.
+	* gfortran.dg/ieee/pr115070.f90: Moved to ieee directory to
+	prevent failures on incompatible architectures.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117021
+	* gcc.dg/switch-6.c: Expect different diagnostics.  Add -std=gnu23
+	to dg-options.
+	* gcc.dg/switch-7.c: Expect different diagnostics.  Add -std=c23
+	to dg-options.
+	* gcc.dg/gnu23-switch-1.c: New test.
+	* gcc.dg/gnu23-switch-2.c: New test.
+	* gcc.dg/c23-switch-1.c: New test.
+	* gcc.dg/c2y-switch-1.c: New test.
+	* gcc.dg/c2y-switch-2.c: New test.
+	* gcc.dg/c2y-switch-3.c: New test.
+
+2024-10-30  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/117301
+	* lib/target-supports.exp (check_effective_target_avx10_2):
+	Use inline asm instead of intrin for check_effective_target.
+	(check_effective_target_avx10_2_512): Ditto.
+
+2024-10-30  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/sat_u_sub_imm-run-5.c: add run case for imm=1.
+	* gcc.target/riscv/sat_u_sub_imm-run-6.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-run-7.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-run-8.c: Ditto.
+	* gcc.target/riscv/sat_u_sub_imm-5_3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-6_3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-7_3.c: New test.
+	* gcc.target/riscv/sat_u_sub_imm-8_1.c: New test.
+
+2024-10-30  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.dg/tree-ssa/phi-opt-44.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-45.c: New test.
+
 2024-10-29  Andi Kleen  <ak@gcc.gnu.org>
 
 	Revert:
