@@ -1,3 +1,39 @@
+2024-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2024-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117318
+	* config/i386/sse.md (*avx512vl_<code>v2div2qi2_mask_store_1):
+	Rename to ..
+	(avx512vl_<code>v2div2qi2_mask_store_1): .. this.
+	(avx512vl_<code>v2div2qi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code><mode>v4qi2_mask_store_1): Rename to ..
+	(avx512vl_<code><mode>v4qi2_mask_store_1): .. this.
+	(avx512vl_<code><mode>v4qi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code><mode>v8qi2_mask_store_1): Rename to ..
+	(avx512vl_<code><mode>v8qi2_mask_store_1): .. this.
+	(avx512vl_<code><mode>v8qi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code><mode>v4hi2_mask_store_1): Rename to ..
+	(avx512vl_<code><mode>v4hi2_mask_store_1): .. this.
+	(avx512vl_<code><mode>v4hi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code>v2div2hi2_mask_store_1): Rename to ..
+	(avx512vl_<code>v2div2hi2_mask_store_1): .. this.
+	(avx512vl_<code>v2div2hi2_mask_store_2): Change to
+	define_expand.
+	(*avx512vl_<code>v2div2si2_mask_store_1): Rename to ..
+	(avx512vl_<code>v2div2si2_mask_store_1): .. this.
+	(avx512vl_<code>v2div2si2_mask_store_2): Change to
+	define_expand.
+	(*avx512f_<code>v8div16qi2_mask_store_1): Rename to ..
+	(avx512f_<code>v8div16qi2_mask_store_1): .. this.
+	(avx512f_<code>v8div16qi2_mask_store_2): Change to
+	define_expand.
+
 2024-10-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/117327
