@@ -15081,7 +15081,7 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm,
 	       && !memcmp (new_name + 4, "St11align_val_tRKSt9nothrow_t", 29)))
     {
       /* _ZnXYSt11align_val_t or _ZnXYSt11align_val_tRKSt9nothrow_t matches
-	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or  or
+	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or
 	 _ZdXPvSt11align_val_tRKSt9nothrow_t.  */
       if (delete_len == 20 && !memcmp (delete_name + 5, "St11align_val_t", 15))
 	return true;
