@@ -112,7 +112,7 @@ is
    pragma Export (C, Multiply_With_Ovflo_Check64, "__gnat_mulv64");
    --  Raises Constraint_Error if product of operands overflows 64
    --  bits, otherwise returns the 64-bit signed integer product.
-   --  GIGI may also call this routine directly.
+   --  The code generator may also generate direct calls to this routine.
    --
    --  The multiplication is done using pencil and paper algorithm using base
    --  2**32. The multiplication is done on unsigned values, then the correct

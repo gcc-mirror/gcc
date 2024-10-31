@@ -96,7 +96,7 @@ is
    pragma Export (C, Multiply_With_Ovflo_Check128, "__gnat_mulv128");
    --  Raises Constraint_Error if product of operands overflows 128
    --  bits, otherwise returns the 128-bit signed integer product.
-   --  Gigi may also call this routine directly.
+   --  The code generator may also generate direct calls to this routine.
 
    function Same_Sign (X, Y : Big_Integer) return Boolean is
      (X = Big (Int128'(0))
