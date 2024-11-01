@@ -212,7 +212,7 @@ namespace std
     return false;
 #endif
   }
-# endif
+#endif
 
 
   /**
