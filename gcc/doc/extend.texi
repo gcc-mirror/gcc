@@ -7564,6 +7564,11 @@ Enable/disable the generation of the AMX-TRANSPOSE instructions.
 @itemx no-amx-fp8
 Enable/disable the generation of the AMX-FP8 instructions.
 
+@cindex @code{target("movrs")} function attribute, x86
+@item movrs
+@itemx no-movrs
+Enable/disable the generation of the MOVRS instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

@@ -2698,6 +2698,9 @@ Target supporting hardware divmod insn or divmod libcall for SImode.
 @item hard_float
 Target supports FPU instructions.
 
+@item movrs
+Target supports the execution of @code{movrs} instructions.
+
 @item non_strict_align
 Target does not require strict alignment.
 

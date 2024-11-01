@@ -1296,8 +1296,8 @@ expand_builtin_prefetch (tree exp)
     }
   else
     op1 = expand_normal (arg1);
-  /* Argument 1 must be either zero or one.  */
-  if (INTVAL (op1) != 0 && INTVAL (op1) != 1)
+  /* Argument 1 must be 0, 1 or 2.  */
+  if (INTVAL (op1) < 0 || INTVAL (op1) > 2)
     {
       warning (0, "invalid second argument to %<__builtin_prefetch%>;"
 	       " using zero");

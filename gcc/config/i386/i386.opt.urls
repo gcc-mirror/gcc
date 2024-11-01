@@ -625,3 +625,6 @@ UrlSuffix(gcc/x86-Options.html#index-mamx-transpose)
 mamx-fp8
 UrlSuffix(gcc/x86-Options.html#index-mamx-fp8)
 
+mmovrs
+UrlSuffix(gcc/x86-Options.html#index-mmovrs)
+

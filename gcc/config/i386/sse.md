@@ -251,6 +251,9 @@
   UNSPEC_UFIX_SATURATION
   UNSPEC_MINMAXNEPBF16
   UNSPEC_MINMAX
+
+  ;; For MOVRS suppport
+  UNSPEC_VMOVRS
 ])
 
 (define_c_enum "unspecv" [
@@ -507,6 +510,12 @@
    (V8HI "TARGET_AVX512VL && TARGET_AVX512BW")
    (V16SI "TARGET_EVEX512") (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
    (V8DI "TARGET_EVEX512") (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
+(define_mode_iterator VI1248_AVX10_2
+  [(V64QI "TARGET_AVX10_2_512") V32QI V16QI
+   (V32HI "TARGET_AVX10_2_512") V16HI V8HI
+   (V16SI "TARGET_AVX10_2_512") V8SI V4SI
+   (V8DI "TARGET_AVX10_2_512") V4DI V2DI])
 
 (define_mode_iterator VF_AVX512VL
   [(V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
@@ -32562,3 +32571,15 @@
   "vminmax<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %2<round_saeonly_scalar_mask_op4>, %3}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<ssescalarmode>")])
+
+(define_insn "avx10_2_vmovrs<ssemodesuffix><mode><mask_name>"
+  [(set (match_operand:VI1248_AVX10_2 0 "register_operand" "=v")
+	(unspec:VI1248_AVX10_2
+	  [(match_operand:VI1248_AVX10_2 1 "memory_operand" "m")]
+	  UNSPEC_VMOVRS))]
+  "TARGET_AVX10_2_256 && TARGET_MOVRS"
+  "vmovrs<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "memory" "load")
+   (set_attr "mode" "<sseinsnmode>")])

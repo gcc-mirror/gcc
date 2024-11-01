@@ -138,6 +138,7 @@
 #define bit_AMX_FP16    (1 << 21)
 #define bit_HRESET      (1 << 22)
 #define bit_AVXIFMA     (1 << 23)
+#define bit_MOVRS	(1 << 31)
 
 /* %edx */
 #define bit_AVXVNNIINT8 (1 << 4)

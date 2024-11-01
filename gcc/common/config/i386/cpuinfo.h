@@ -918,6 +918,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_RAOINT);
 	  if (edx & bit_USER_MSR)
 	    set_feature (FEATURE_USER_MSR);
+	  if (eax & bit_MOVRS)
+	    set_feature (FEATURE_MOVRS);
 	  if (avx_usable)
 	    {
 	      if (eax & bit_AVXVNNI)

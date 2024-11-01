@@ -170,4 +170,6 @@
 
 #include <avx10_2copyintrin.h>
 
+#include <movrsintrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */

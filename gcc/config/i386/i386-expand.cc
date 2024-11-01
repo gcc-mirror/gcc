@@ -13027,6 +13027,10 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case CHAR_FTYPE_PCCHAR:
+    case SHORT_FTYPE_PCSHORT:
+    case INT_FTYPE_PCINT:
+    case INT64_FTYPE_PCINT64:
     case UINT64_FTYPE_PUNSIGNED:
     case V2DI_FTYPE_PV2DI:
     case V4DI_FTYPE_PV4DI:
