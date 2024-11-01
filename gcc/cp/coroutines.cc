@@ -4135,6 +4135,9 @@ struct local_vars_frame_data
 static tree
 register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 {
+  if (TREE_CODE (*stmt) != BIND_EXPR)
+    return NULL_TREE;
+
   local_vars_frame_data *lvd = (local_vars_frame_data *) d;
 
   /* As we enter a bind expression - record the vars there and then recurse.
@@ -4142,88 +4145,86 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
      The bind index is a growing count of how many bind indices we've seen.
      We build a space in the frame for each local var.  */
 
-  if (TREE_CODE (*stmt) == BIND_EXPR)
+  tree lvar;
+  unsigned serial = 0;
+  for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL; lvar = DECL_CHAIN (lvar))
     {
-      tree lvar;
-      unsigned serial = 0;
-      for (lvar = BIND_EXPR_VARS (*stmt); lvar != NULL;
-	   lvar = DECL_CHAIN (lvar))
+      bool existed;
+      local_var_info &local_var
+	= lvd->local_var_uses->get_or_insert (lvar, &existed);
+      gcc_checking_assert (!existed);
+      local_var.def_loc = DECL_SOURCE_LOCATION (lvar);
+      tree lvtype = TREE_TYPE (lvar);
+      local_var.frame_type = lvtype;
+      local_var.field_idx = local_var.field_id = NULL_TREE;
+
+      /* Make sure that we only present vars to the tests below.  */
+      if (TREE_CODE (lvar) != PARM_DECL
+	  && TREE_CODE (lvar) != VAR_DECL)
+	continue;
+
+      /* We don't move static vars into the frame. */
+      local_var.is_static = TREE_STATIC (lvar);
+      if (local_var.is_static)
+	continue;
+
+      poly_uint64 size;
+      if (TREE_CODE (lvtype) == ARRAY_TYPE
+	  && !poly_int_tree_p (DECL_SIZE_UNIT (lvar), &size))
 	{
-	  bool existed;
-	  local_var_info &local_var
-	    = lvd->local_var_uses->get_or_insert (lvar, &existed);
-	  gcc_checking_assert (!existed);
-	  local_var.def_loc = DECL_SOURCE_LOCATION (lvar);
-	  tree lvtype = TREE_TYPE (lvar);
-	  local_var.frame_type = lvtype;
-	  local_var.field_idx = local_var.field_id = NULL_TREE;
-
-	  /* Make sure that we only present vars to the tests below.  */
-	  if (TREE_CODE (lvar) != PARM_DECL
-	      && TREE_CODE (lvar) != VAR_DECL)
-	    continue;
-
-	  /* We don't move static vars into the frame. */
-	  local_var.is_static = TREE_STATIC (lvar);
-	  if (local_var.is_static)
-	    continue;
-
-	  poly_uint64 size;
-	  if (TREE_CODE (lvtype) == ARRAY_TYPE
-	      && !poly_int_tree_p (DECL_SIZE_UNIT (lvar), &size))
-	    {
-	      sorry_at (local_var.def_loc, "variable length arrays are not"
-			" yet supported in coroutines");
-	      /* Ignore it, this is broken anyway.  */
-	      continue;
-	    }
-
-	  lvd->local_var_seen = true;
-	  /* If this var is a lambda capture proxy, we want to leave it alone,
-	     and later rewrite the DECL_VALUE_EXPR to indirect through the
-	     frame copy of the pointer to the lambda closure object.  */
-	  local_var.is_lambda_capture = is_capture_proxy (lvar);
-	  if (local_var.is_lambda_capture)
-	    continue;
-
-	  /* If a variable has a value expression, then that's what needs
-	     to be processed.  */
-	  local_var.has_value_expr_p = DECL_HAS_VALUE_EXPR_P (lvar);
-	  if (local_var.has_value_expr_p)
-	    continue;
-
-	  /* Make names depth+index unique, so that we can support nested
-	     scopes with identically named locals and still be able to
-	     identify them in the coroutine frame.  */
-	  tree lvname = DECL_NAME (lvar);
-	  char *buf = NULL;
-
-	  /* The outermost bind scope contains the artificial variables that
-	     we inject to implement the coro state machine.  We want to be able
-	     to inspect these in debugging.  */
-	  if (lvname != NULL_TREE && lvd->nest_depth == 0)
-	    buf = xasprintf ("%s", IDENTIFIER_POINTER (lvname));
-	  else if (lvname != NULL_TREE)
-	    buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
-			     lvd->nest_depth, lvd->bind_indx);
-	  else
-	    buf = xasprintf ("_D%u_%u_%u", lvd->nest_depth, lvd->bind_indx,
-			     serial++);
-
-	  /* TODO: Figure out if we should build a local type that has any
-	     excess alignment or size from the original decl.  */
-	  local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
-						      lvtype, lvd->loc);
-	  free (buf);
-	  /* We don't walk any of the local var sub-trees, they won't contain
-	     any bind exprs.  */
+	  sorry_at (local_var.def_loc, "variable length arrays are not"
+		    " yet supported in coroutines");
+	  /* Ignore it, this is broken anyway.  */
+	  continue;
 	}
-      lvd->bind_indx++;
-      lvd->nest_depth++;
-      cp_walk_tree (&BIND_EXPR_BODY (*stmt), register_local_var_uses, d, NULL);
-      *do_subtree = 0; /* We've done this.  */
-      lvd->nest_depth--;
+
+      lvd->local_var_seen = true;
+      /* If this var is a lambda capture proxy, we want to leave it alone,
+	 and later rewrite the DECL_VALUE_EXPR to indirect through the
+	 frame copy of the pointer to the lambda closure object.  */
+      local_var.is_lambda_capture = is_capture_proxy (lvar);
+      if (local_var.is_lambda_capture)
+	continue;
+
+      /* If a variable has a value expression, then that's what needs
+	 to be processed.  */
+      local_var.has_value_expr_p = DECL_HAS_VALUE_EXPR_P (lvar);
+      if (local_var.has_value_expr_p)
+	continue;
+
+      /* Make names depth+index unique, so that we can support nested
+	 scopes with identically named locals and still be able to
+	 identify them in the coroutine frame.  */
+      tree lvname = DECL_NAME (lvar);
+      char *buf = NULL;
+
+      /* The outermost bind scope contains the artificial variables that
+	 we inject to implement the coro state machine.  We want to be able
+	 to inspect these in debugging.  */
+      if (lvname != NULL_TREE && lvd->nest_depth == 0)
+	buf = xasprintf ("%s", IDENTIFIER_POINTER (lvname));
+      else if (lvname != NULL_TREE)
+	buf = xasprintf ("%s_%u_%u", IDENTIFIER_POINTER (lvname),
+			 lvd->nest_depth, lvd->bind_indx);
+      else
+	buf = xasprintf ("_D%u_%u_%u", lvd->nest_depth, lvd->bind_indx,
+			 serial++);
+
+      /* TODO: Figure out if we should build a local type that has any
+	 excess alignment or size from the original decl.  */
+      local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
+						  lvtype, lvd->loc);
+      free (buf);
+      /* We don't walk any of the local var sub-trees, they won't contain
+	 any bind exprs.  */
     }
+  lvd->bind_indx++;
+  lvd->nest_depth++;
+  /* Ensure we only visit each expression once.  */
+  cp_walk_tree_without_duplicates (&BIND_EXPR_BODY (*stmt),
+				   register_local_var_uses, d);
+  *do_subtree = 0; /* We've done this.  */
+  lvd->nest_depth--;
   return NULL_TREE;
 }
 
@@ -4727,7 +4728,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree field_list = NULL_TREE;
   hash_map<tree, local_var_info> local_var_uses;
   local_vars_frame_data local_vars_data (&field_list, &local_var_uses);
-  cp_walk_tree (&fnbody, register_local_var_uses, &local_vars_data, NULL);
+  cp_walk_tree_without_duplicates (&fnbody, register_local_var_uses,
+				   &local_vars_data);
 
   /* Tie off the struct for now, so that we can build offsets to the
      known entries.  */
