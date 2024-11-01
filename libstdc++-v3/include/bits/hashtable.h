@@ -1307,17 +1307,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_bucket_count = __ht._M_bucket_count;
 	      _M_element_count = __ht._M_element_count;
 	      _M_rehash_policy = __ht._M_rehash_policy;
-	      __try
-		{
-		  _M_assign(__ht);
-		}
-	      __catch(...)
-		{
-		  // _M_assign took care of deallocating all memory. Now we
-		  // must make sure this instance remains in a usable state.
-		  _M_reset();
-		  __throw_exception_again;
-		}
+
+	      struct _Guard
+	      {
+		~_Guard() { if (_M_ht) _M_ht->_M_reset(); }
+		_Hashtable* _M_ht;
+	      };
+	      // If _M_assign exits via an exception it will have deallocated
+	      // all memory. This guard will ensure *this is in a usable state.
+	      _Guard __guard{this};
+	      _M_assign(__ht);
+	      __guard._M_ht = nullptr;
 	      return *this;
 	    }
 	  std::__alloc_on_copy(__this_alloc, __that_alloc);
@@ -1390,46 +1390,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
       _M_assign(_Ht&& __ht, _NodeGenerator& __node_gen)
       {
-	__buckets_ptr __buckets = nullptr;
-	if (!_M_buckets)
-	  _M_buckets = __buckets = _M_allocate_buckets(_M_bucket_count);
-
-	__try
+	struct _Guard
+	{
+	  ~_Guard()
 	  {
-	    if (!__ht._M_before_begin._M_nxt)
-	      return;
-
-	    using _FromVal = __conditional_t<is_lvalue_reference<_Ht>::value,
-					     const value_type&, value_type&&>;
-
-	    // First deal with the special first node pointed to by
-	    // _M_before_begin.
-	    __node_ptr __ht_n = __ht._M_begin();
-	    __node_ptr __this_n
-	      = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
-	    this->_M_copy_code(*__this_n, *__ht_n);
-	    _M_update_bbegin(__this_n);
-
-	    // Then deal with other nodes.
-	    __node_ptr __prev_n = __this_n;
-	    for (__ht_n = __ht_n->_M_next(); __ht_n; __ht_n = __ht_n->_M_next())
+	    if (_M_ht)
 	      {
-		__this_n = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
-		__prev_n->_M_nxt = __this_n;
-		this->_M_copy_code(*__this_n, *__ht_n);
-		size_type __bkt = _M_bucket_index(*__this_n);
-		if (!_M_buckets[__bkt])
-		  _M_buckets[__bkt] = __prev_n;
-		__prev_n = __this_n;
+		_M_ht->clear();
+		if (_M_dealloc_buckets)
+		  _M_ht->_M_deallocate_buckets();
 	      }
 	  }
-	__catch(...)
+	  _Hashtable* _M_ht = nullptr;
+	  bool _M_dealloc_buckets = false;
+	};
+	_Guard __guard;
+
+	if (!_M_buckets)
 	  {
-	    clear();
-	    if (__buckets)
-	      _M_deallocate_buckets();
-	    __throw_exception_again;
+	    _M_buckets = _M_allocate_buckets(_M_bucket_count);
+	    __guard._M_dealloc_buckets = true;
 	  }
+
+	if (!__ht._M_before_begin._M_nxt)
+	  return;
+
+	__guard._M_ht = this;
+
+	using _FromVal = __conditional_t<is_lvalue_reference<_Ht>::value,
+					 const value_type&, value_type&&>;
+
+	// First deal with the special first node pointed to by
+	// _M_before_begin.
+	__node_ptr __ht_n = __ht._M_begin();
+	__node_ptr __this_n
+	  = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
+	this->_M_copy_code(*__this_n, *__ht_n);
+	_M_update_bbegin(__this_n);
+
+	// Then deal with other nodes.
+	__node_ptr __prev_n = __this_n;
+	for (__ht_n = __ht_n->_M_next(); __ht_n; __ht_n = __ht_n->_M_next())
+	  {
+	    __this_n = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
+	    __prev_n->_M_nxt = __this_n;
+	    this->_M_copy_code(*__this_n, *__ht_n);
+	    size_type __bkt = _M_bucket_index(*__this_n);
+	    if (!_M_buckets[__bkt])
+	      _M_buckets[__bkt] = __prev_n;
+	    __prev_n = __this_n;
+	  }
+	__guard._M_ht = nullptr;
       }
 
   template<typename _Key, typename _Value, typename _Alloc,
