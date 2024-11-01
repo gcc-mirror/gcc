@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::size_type		 size_type;
       typedef typename _Rep_type::difference_type	 difference_type;
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
       using node_type = typename _Rep_type::node_type;
 #endif
 
@@ -566,7 +566,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
       /// Extract a node.
       node_type
       extract(const_iterator __pos)
