@@ -468,6 +468,10 @@ struct cpp_reader
      one.  */
   bool about_to_expand_macro_p;
 
+  /* True if the preprocessor should diagnose CPP_DOT or CPP_COLON
+     tokens as the first ones coming from macro expansion.  */
+  bool diagnose_dot_colon_from_macro_p;
+
   /* Search paths for include files.  */
   struct cpp_dir *quote_include;	/* "" */
   struct cpp_dir *bracket_include;	/* <> */

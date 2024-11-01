@@ -1,8 +1,8 @@
 // { dg-additional-options {-fmodules-ts -fpreprocessed -fdirectives-only} }
-// { dg-module-cmi !foo }
+// { dg-module-cmi !baz }
 module;
 #define foo baz
-export module foo; // { dg-error "module name 'foo' cannot be an object-like macro" }
+export module baz;
 
 class import {};
 

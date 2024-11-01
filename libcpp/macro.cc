@@ -3076,6 +3076,9 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 	  if (pfile->state.prevent_expansion)
 	    break;
 
+	  if ((result->flags & NO_DOT_COLON) != 0)
+	    pfile->diagnose_dot_colon_from_macro_p = true;
+
 	  /* Conditional macros require that a predicate be evaluated
 	     first.  */
 	  if ((node->flags & NODE_CONDITIONAL) != 0)
@@ -3224,6 +3227,20 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 
 	  result = tmp;
 	}
+    }
+
+  if (pfile->diagnose_dot_colon_from_macro_p
+      && !pfile->about_to_expand_macro_p
+      && result->type != CPP_PADDING
+      && result->type != CPP_COMMENT)
+    {
+      if (result->type == CPP_DOT || result->type == CPP_COLON)
+	cpp_error_with_line (pfile, CPP_DL_ERROR,
+			     result->src_loc, 0,
+			     "%qc in module name or partition "
+			     "comes from or after macro expansion",
+			     result->type == CPP_DOT ? '.' : ':');
+      pfile->diagnose_dot_colon_from_macro_p = false;
     }
 
   return result;

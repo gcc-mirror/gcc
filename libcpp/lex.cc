@@ -3604,6 +3604,78 @@ cpp_maybe_module_directive (cpp_reader *pfile, cpp_token *result)
       /* Maybe tell the tokenizer we expect a header-name down the
 	 road.  */
       pfile->state.directive_file_token = header_count;
+
+      /* According to P3034R1, pp-module-name and pp-module-partition tokens
+	 if any shouldn't be macro expanded and identifiers shouldn't be
+	 defined as object-like macro.  */
+      if (!header_count && peek->type == CPP_NAME)
+	{
+	  int state = 0;
+	  do
+	    {
+	      cpp_token *tok = peek;
+	      if (tok->type == CPP_NAME)
+		{
+		  cpp_hashnode *node = tok->val.node.node;
+		  /* Don't attempt to expand the token.  */
+		  tok->flags |= NO_EXPAND;
+		  if (_cpp_defined_macro_p (node)
+		      && _cpp_maybe_notify_macro_use (pfile, node,
+						      tok->src_loc)
+		      && !cpp_fun_like_macro_p (node))
+		    {
+		      if (state == 0)
+			cpp_error_with_line (pfile, CPP_DL_ERROR,
+					     tok->src_loc, 0,
+					     "module name %qs cannot "
+					     "be an object-like macro",
+					     NODE_NAME (node));
+		      else
+			cpp_error_with_line (pfile, CPP_DL_ERROR,
+					     tok->src_loc, 0,
+					     "module partition %qs cannot "
+					     "be an object-like macro",
+					     NODE_NAME (node));
+		    }
+		}
+	      peek = _cpp_lex_direct (pfile);
+	      backup++;
+	      if (tok->type == CPP_NAME)
+		{
+		  if (peek->type == CPP_DOT)
+		    continue;
+		  else if (peek->type == CPP_COLON && state == 0)
+		    {
+		      ++state;
+		      continue;
+		    }
+		  else if (peek->type == CPP_OPEN_PAREN)
+		    {
+		      if (state == 0)
+			cpp_error_with_line (pfile, CPP_DL_ERROR,
+					     peek->src_loc, 0,
+					     "module name followed by %<(%>");
+		      else
+			cpp_error_with_line (pfile, CPP_DL_ERROR,
+					     peek->src_loc, 0,
+					     "module partition followed by "
+					     "%<(%>");
+		      break;
+		    }
+		  else if (peek->type == CPP_NAME
+			   && _cpp_defined_macro_p (peek->val.node.node))
+		    {
+		      peek->flags |= NO_DOT_COLON;
+		      break;
+		    }
+		  else
+		    break;
+		}
+	      else if (peek->type != CPP_NAME)
+		break;
+	    }
+	  while (true);
+	}
     }
   else
     {

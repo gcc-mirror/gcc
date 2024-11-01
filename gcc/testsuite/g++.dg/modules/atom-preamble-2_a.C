@@ -1,6 +1,5 @@
 // { dg-additional-options "-fmodules-ts" }
-#define malcolm kevin
-export module malcolm;
+export module kevin;
 // { dg-module-cmi kevin }
 
 export class X;

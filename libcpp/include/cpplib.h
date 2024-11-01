@@ -204,6 +204,9 @@ struct GTY(()) cpp_string {
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
 #define COLON_SCOPE	PURE_ZERO /* Adjacent colons in C < 23.  */
+#define NO_DOT_COLON	PURE_ZERO /* Set on CPP_NAME tokens whose expansion
+				     shouldn't start with CPP_DOT or CPP_COLON
+				     after optional CPP_PADDING.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
