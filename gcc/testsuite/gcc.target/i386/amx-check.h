@@ -266,6 +266,9 @@ main ()
 #ifdef AMX_FP8
       && __builtin_cpu_supports ("amx-fp8")
 #endif
+#ifdef AMX_MOVRS
+      && __builtin_cpu_supports ("amx-movrs")
+#endif
 #ifdef __linux__
       && request_perm_xtile_data ()
 #endif

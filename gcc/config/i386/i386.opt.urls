@@ -628,3 +628,6 @@ UrlSuffix(gcc/x86-Options.html#index-mamx-fp8)
 mmovrs
 UrlSuffix(gcc/x86-Options.html#index-mmovrs)
 
+mamx-movrs
+UrlSuffix(gcc/x86-Options.html#index-mamx-movrs)
+

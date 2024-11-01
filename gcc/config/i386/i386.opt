@@ -1410,3 +1410,7 @@ Support AMX-FP8 built-in functions and code generation.
 mmovrs
 Target Mask(ISA2_MOVRS) Var(ix86_isa_flags2) Save
 Support MOVRS built-in functions and code generation.
+
+mamx-movrs
+Target Mask(ISA2_AMX_MOVRS) Var(ix86_isa_flags2) Save
+Support AMX-MOVRS built-in functions and code generation.

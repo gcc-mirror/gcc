@@ -172,4 +172,5 @@
 
 #include <movrsintrin.h>
 
+#include <amxmovrsintrin.h>
 #endif /* _IMMINTRIN_H_INCLUDED */

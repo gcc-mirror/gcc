@@ -268,7 +268,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mamx-tf32",	OPTION_MASK_ISA2_AMX_TF32 },
   { "-mamx-transpose",	OPTION_MASK_ISA2_AMX_TRANSPOSE },
   { "-mamx-fp8", 	OPTION_MASK_ISA2_AMX_FP8 },
-  { "-mmovrs",		OPTION_MASK_ISA2_MOVRS }
+  { "-mmovrs",		OPTION_MASK_ISA2_MOVRS },
+  { "-mamx-movrs",	OPTION_MASK_ISA2_AMX_MOVRS }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -1142,6 +1143,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("amx-transpose", OPT_mamx_transpose),
     IX86_ATTR_ISA ("amx-fp8", OPT_mamx_fp8),
     IX86_ATTR_ISA ("movrs", OPT_mmovrs),
+    IX86_ATTR_ISA ("amx-movrs", OPT_mamx_movrs),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

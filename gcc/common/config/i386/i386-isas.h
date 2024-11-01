@@ -196,4 +196,5 @@ ISA_NAMES_TABLE_START
 			P_NONE, "-mamx-transpose")
   ISA_NAMES_TABLE_ENTRY("amx-fp8", FEATURE_AMX_FP8, P_NONE, "-mamx-fp8")
   ISA_NAMES_TABLE_ENTRY("movrs", FEATURE_MOVRS, P_NONE, "-mmovrs")
+  ISA_NAMES_TABLE_ENTRY("amx-movrs", FEATURE_AMX_MOVRS, P_NONE, "-mamx-movrs")
 ISA_NAMES_TABLE_END

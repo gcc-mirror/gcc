@@ -137,6 +137,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_FP8_SET \
   (OPTION_MASK_ISA2_AMX_TILE_SET | OPTION_MASK_ISA2_AMX_FP8)
 #define OPTION_MASK_ISA2_MOVRS_SET OPTION_MASK_ISA2_MOVRS
+#define OPTION_MASK_ISA2_AMX_MOVRS_SET \
+  (OPTION_MASK_ISA2_AMX_TILE_SET | OPTION_MASK_ISA2_AMX_MOVRS)
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -301,7 +303,7 @@ along with GCC; see the file COPYING3.  If not see
    | OPTION_MASK_ISA2_AMX_BF16_UNSET | OPTION_MASK_ISA2_AMX_FP16_UNSET \
    | OPTION_MASK_ISA2_AMX_COMPLEX_UNSET | OPTION_MASK_ISA2_AMX_AVX512_UNSET \
    | OPTION_MASK_ISA2_AMX_TF32_UNSET | OPTION_MASK_ISA2_AMX_TRANSPOSE_UNSET \
-   | OPTION_MASK_ISA2_AMX_FP8_UNSET)
+   | OPTION_MASK_ISA2_AMX_FP8_UNSET | OPTION_MASK_ISA2_AMX_MOVRS_UNSET)
 #define OPTION_MASK_ISA2_AMX_INT8_UNSET OPTION_MASK_ISA2_AMX_INT8
 #define OPTION_MASK_ISA2_AMX_BF16_UNSET OPTION_MASK_ISA2_AMX_BF16
 #define OPTION_MASK_ISA2_UINTR_UNSET OPTION_MASK_ISA2_UINTR
@@ -336,6 +338,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_TRANSPOSE_UNSET OPTION_MASK_ISA2_AMX_TRANSPOSE
 #define OPTION_MASK_ISA2_AMX_FP8_UNSET OPTION_MASK_ISA2_AMX_FP8
 #define OPTION_MASK_ISA2_MOVRS_UNSET OPTION_MASK_ISA2_MOVRS
+#define OPTION_MASK_ISA2_AMX_MOVRS_UNSET OPTION_MASK_ISA2_AMX_MOVRS
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -1493,6 +1496,20 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_MOVRS_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |=
 	    OPTION_MASK_ISA2_MOVRS_UNSET;
+	}
+      return true;
+
+    case OPT_mamx_movrs:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AMX_MOVRS_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AMX_MOVRS_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AMX_MOVRS_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |=
+	    OPTION_MASK_ISA2_AMX_MOVRS_UNSET;
 	}
       return true;
 

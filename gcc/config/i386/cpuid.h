@@ -169,6 +169,7 @@
 #define bit_AMX_TRANSPOSE	(1 << 5)
 #define bit_AMX_TF32	(1 << 6)
 #define bit_AMX_AVX512  (1 << 7)
+#define bit_AMX_MOVRS	(1 << 8)
 
 /* AVX10 sub leaf (%eax == 0x24) */
 /* %ebx */

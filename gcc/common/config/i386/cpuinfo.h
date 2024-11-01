@@ -1011,6 +1011,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AMX_TRANSPOSE);
 	  if (eax & bit_AMX_FP8)
 	    set_feature (FEATURE_AMX_FP8);
+	  if (eax & bit_AMX_MOVRS)
+	    set_feature (FEATURE_AMX_MOVRS);
 	}
     }
 

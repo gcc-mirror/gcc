@@ -10819,6 +10819,17 @@ proc check_effective_target_amx_fp8 { } {
     } "-mamx-fp8" ]
 }
 
+# Return 1 if amx-movrs instructions can be compiled.
+proc check_effective_target_amx_movrs { } {
+    return [check_no_compiler_messages amx_movrs object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tileloaddrs\t(%%r9), %%tmm3" ::);
+	}
+    } "-mamx-movrs" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {
