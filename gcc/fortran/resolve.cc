@@ -9883,10 +9883,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       gfc_ref *ref;
       for (ref = target->ref; ref; ref = ref->next)
 	if (ref->type == REF_SUBSTRING
-	    && ((ref->u.ss.start
-		 && ref->u.ss.start->expr_type != EXPR_CONSTANT)
-		|| (ref->u.ss.end
-		    && ref->u.ss.end->expr_type != EXPR_CONSTANT)))
+	    && (ref->u.ss.start == NULL
+		|| ref->u.ss.start->expr_type != EXPR_CONSTANT
+		|| ref->u.ss.end == NULL
+		|| ref->u.ss.end->expr_type != EXPR_CONSTANT))
 	  break;
 
       if (!sym->ts.u.cl)
