@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fschedule-insns" } */
 
 typedef float __attribute__ ((vector_size (8))) fvec;
 typedef int __attribute__ ((vector_size (8))) ivec;

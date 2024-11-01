@@ -53,6 +53,8 @@ static const struct default_options aarch_option_optimization_table[] =
     { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 0 },
     /* Enable -fsched-pressure by default when optimizing.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
+    /* Disable early scheduling due to high compile-time overheads.  */
+    { OPT_LEVELS_ALL, OPT_fschedule_insns, NULL, 0 },
     /* Enable redundant extension instructions removal at -O2 and higher.  */
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_mearly_ra_, NULL, AARCH64_EARLY_RA_ALL },
