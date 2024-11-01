@@ -857,6 +857,7 @@ opt_machine_mode aarch64_v64_mode (scalar_mode);
 opt_machine_mode aarch64_v128_mode (scalar_mode);
 opt_machine_mode aarch64_full_sve_mode (scalar_mode);
 bool aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode);
+bool aarch64_valid_fp_move (rtx, rtx, machine_mode);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
 bool aarch64_const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT,
 					    HOST_WIDE_INT);

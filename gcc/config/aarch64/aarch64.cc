@@ -11299,6 +11299,36 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   return aarch64_simd_valid_mov_imm (v_op);
 }
 
+/* Return TRUE if DST and SRC with mode MODE is a valid fp move.  */
+bool
+aarch64_valid_fp_move (rtx dst, rtx src, machine_mode mode)
+{
+  if (!TARGET_FLOAT)
+    return false;
+
+  if (aarch64_reg_or_fp_zero (src, mode))
+    return true;
+
+  if (!register_operand (dst, mode))
+    return false;
+
+  if (MEM_P (src))
+    return true;
+
+  if (!DECIMAL_FLOAT_MODE_P (mode))
+    {
+      if (aarch64_can_const_movi_rtx_p (src, mode)
+	  || aarch64_float_const_representable_p (src)
+	  || aarch64_float_const_zero_rtx_p (src))
+	return true;
+
+      /* Block FP immediates which are split during expand.  */
+      if (aarch64_float_const_rtx_p (src))
+	return false;
+    }
+
+  return can_create_pseudo_p ();
+}
 
 /* Return the fixed registers used for condition codes.  */
 

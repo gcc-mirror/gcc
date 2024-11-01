@@ -1760,14 +1760,33 @@
         && ! (GET_CODE (operands[1]) == CONST_DOUBLE
 	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (<MODE>mode, operands[1]);
+
+    if (!DECIMAL_FLOAT_MODE_P (<MODE>mode)
+	&& GET_CODE (operands[1]) == CONST_DOUBLE
+	&& can_create_pseudo_p ()
+	&& !aarch64_can_const_movi_rtx_p (operands[1], <MODE>mode)
+	&& !aarch64_float_const_representable_p (operands[1])
+	&& !aarch64_float_const_zero_rtx_p (operands[1])
+	&&  aarch64_float_const_rtx_p (operands[1]))
+      {
+	unsigned HOST_WIDE_INT ival;
+	bool res = aarch64_reinterpret_float_as_int (operands[1], &ival);
+	gcc_assert (res);
+
+	machine_mode intmode
+	  = int_mode_for_size (GET_MODE_BITSIZE (<MODE>mode), 0).require ();
+	rtx tmp = gen_reg_rtx (intmode);
+	emit_move_insn (tmp, gen_int_mode (ival, intmode));
+	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
+	DONE;
+      }
   }
 )
 
 (define_insn "*mov<mode>_aarch64"
   [(set (match_operand:HFBF 0 "nonimmediate_operand")
 	(match_operand:HFBF 1 "general_operand"))]
-  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
-    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
+  "aarch64_valid_fp_move (operands[0], operands[1], <MODE>mode)"
   {@ [ cons: =0 , 1   ; attrs: type , arch  ]
      [ w        , Y   ; neon_move   , simd  ] movi\t%0.4h, #0
      [ w        , ?rY ; f_mcr       , fp16  ] fmov\t%h0, %w1
@@ -1790,8 +1809,7 @@
 (define_insn "*mov<mode>_aarch64"
   [(set (match_operand:SFD 0 "nonimmediate_operand")
 	(match_operand:SFD 1 "general_operand"))]
-  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
-    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
+  "aarch64_valid_fp_move (operands[0], operands[1], <MODE>mode)"
   {@ [ cons: =0 , 1   ; attrs: type , arch  ]
      [ w        , Y   ; neon_move   , simd  ] movi\t%0.2s, #0
      [ w        , ?rY ; f_mcr       , *     ] fmov\t%s0, %w1
@@ -1811,8 +1829,7 @@
 (define_insn "*mov<mode>_aarch64"
   [(set (match_operand:DFD 0 "nonimmediate_operand")
 	(match_operand:DFD 1 "general_operand"))]
-  "TARGET_FLOAT && (register_operand (operands[0], <MODE>mode)
-    || aarch64_reg_or_fp_zero (operands[1], <MODE>mode))"
+  "aarch64_valid_fp_move (operands[0], operands[1], <MODE>mode)"
   {@ [ cons: =0 , 1   ; attrs: type , arch  ]
      [ w        , Y   ; neon_move   , simd  ] movi\t%d0, #0
      [ w        , ?rY ; f_mcr       , *     ] fmov\t%d0, %x1
@@ -1826,27 +1843,6 @@
      [ m        , rY  ; store_8     , *     ] str\t%x1, %0
      [ r        , r   ; mov_reg     , *     ] mov\t%x0, %x1
      [ r        , O   ; fconstd     , *     ] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
-  }
-)
-
-(define_split
-  [(set (match_operand:GPF_HF 0 "nonimmediate_operand")
-	(match_operand:GPF_HF 1 "const_double_operand"))]
-  "can_create_pseudo_p ()
-   && !aarch64_can_const_movi_rtx_p (operands[1], <MODE>mode)
-   && !aarch64_float_const_representable_p (operands[1])
-   && !aarch64_float_const_zero_rtx_p (operands[1])
-   &&  aarch64_float_const_rtx_p (operands[1])"
-  [(const_int 0)]
-  {
-    unsigned HOST_WIDE_INT ival;
-    if (!aarch64_reinterpret_float_as_int (operands[1], &ival))
-      FAIL;
-
-    rtx tmp = gen_reg_rtx (<FCVT_TARGET>mode);
-    emit_move_insn (tmp, gen_int_mode (ival, <FCVT_TARGET>mode));
-    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
-    DONE;
   }
 )
 
