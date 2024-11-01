@@ -62,25 +62,21 @@ namespace __detail
 	   typename _Unused, typename _Traits>
     struct _Hashtable_base;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   // Helper function: return distance(first, last) for forward
   // iterators, or 0/1 for input iterators.
   template<typename _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
-    __distance_fw(_Iterator __first, _Iterator __last,
-		  std::input_iterator_tag)
-    { return __first != __last ? 1 : 0; }
-
-  template<typename _Iterator>
-    inline typename std::iterator_traits<_Iterator>::difference_type
-    __distance_fw(_Iterator __first, _Iterator __last,
-		  std::forward_iterator_tag)
-    { return std::distance(__first, __last); }
-
-  template<typename _Iterator>
-    inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last)
-    { return __distance_fw(__first, __last,
-			   std::__iterator_category(__first)); }
+    {
+      using _Cat = typename std::iterator_traits<_Iterator>::iterator_category;
+      if constexpr (is_convertible<_Cat, forward_iterator_tag>::value)
+	return std::distance(__first, __last);
+      else
+	return __first != __last ? 1 : 0;
+    }
+#pragma GCC diagnostic pop
 
   struct _Identity
   {
