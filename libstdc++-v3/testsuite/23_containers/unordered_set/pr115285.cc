@@ -2,8 +2,9 @@
 
 // libstdc++/115285
 
-#include <string>
 #include <unordered_set>
+#include <string>
+#include <vector>
 
 #include <testsuite_hooks.h>
 
