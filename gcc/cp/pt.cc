@@ -12163,7 +12163,10 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 	    }
 	  OMP_TSS_TRAIT_SELECTORS (tss) = nreverse (selectors);
 	}
-      val = tree_cons (varid, ctx, chain);
+      if (varid == error_mark_node)
+	val = error_mark_node;
+      else
+	val = tree_cons (varid, ctx, chain);
     }
   /* If the first attribute argument is an identifier, don't
      pass it through tsubst.  Attributes like mode, format,
