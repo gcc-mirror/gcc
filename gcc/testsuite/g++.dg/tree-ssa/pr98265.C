@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -std=c++14 -fdump-tree-optimized" } */
 extern void __assert_fail(const char*, const char*, int, const char*);
 namespace Eigen {
 enum { AutoAlign };
@@ -345,4 +345,4 @@ Eigen::Matrix<float, 3, 1> should_inline(float x, float y, float z,
 
 // We should inline everything to should_inline
 
-/* { dg-final { scan-tree-dump-times "Function" "optimized" } } */
+/* { dg-final { scan-tree-dump "Function" "optimized" } } */
