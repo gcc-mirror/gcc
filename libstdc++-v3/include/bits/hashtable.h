@@ -1019,7 +1019,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(const_iterator);
 
-      // LWG 2059.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2059. C++0x ambiguity problem with map::erase
       iterator
       erase(iterator __it)
       { return erase(const_iterator(__it)); }
@@ -1041,7 +1042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 1189.
       // reserve, if present, comes from _Rehash_base.
 
-#if __glibcxx_node_extract // >= C++17
+#if __glibcxx_node_extract // >= C++17 && HOSTED
       /// Re-insert an extracted node into a container with unique keys.
       insert_return_type
       _M_reinsert_node(node_type&& __nh)
