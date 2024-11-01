@@ -338,19 +338,19 @@ RUST_SELFTEST_DEPS = crab1$(exeext) $(SELFTEST_DEPS)
 
 # Run the rust selftests
 s-selftest-rust: $(RUST_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(RUST_SELFTEST_FLAGS)
+	$(GCC_FOR_SELFTESTS) $(RUST_SELFTEST_FLAGS)
 	$(STAMP) $@
 
 # Convenience methods for running rust selftests under gdb:
 .PHONY: selftest-rust-gdb
 selftest-rust-gdb: $(RUST_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(RUST_SELFTEST_FLAGS) \
+	$(GCC_FOR_SELFTESTS) $(RUST_SELFTEST_FLAGS) \
 	  -wrapper gdb,--args
 
 # Convenience methods for running rust selftests under valgrind:
 .PHONY: selftest-rust-valgrind
 selftest-rust-valgrind: $(RUST_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(RUST_SELFTEST_FLAGS) \
+	$(GCC_FOR_SELFTESTS) $(RUST_SELFTEST_FLAGS) \
 	  -wrapper valgrind,--leak-check=full
 
 # Install info documentation for the front end, if it is present in the source directory. This target

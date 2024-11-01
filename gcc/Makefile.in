@@ -487,6 +487,9 @@ T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 # Don't use this as a dependency--use $(GCC_PASSES).
 GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld $(TFLAGS)
 
+# The GCC to use when running selftests
+GCC_FOR_SELFTESTS = LC_ALL=C $(GCC_FOR_TARGET)
+
 # Set if the compiler was configured with --with-build-sysroot.
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
 
