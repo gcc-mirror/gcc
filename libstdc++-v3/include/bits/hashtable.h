@@ -169,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Functionality is implemented by decomposition into base classes,
    *  where the derived _Hashtable class is used in _Map_base,
-   *  _Insert, _Rehash_base, and _Equality base classes to access the
+   *  _Rehash_base, and _Equality base classes to access the
    *  "this" pointer. _Hashtable_base is used in the base classes as a
    *  non-recursive, fully-completed-type so that detailed nested type
    *  information, such as iterator type and node type, can be
@@ -180,7 +180,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Base class templates are:
    *    - __detail::_Hashtable_base
    *    - __detail::_Map_base
-   *    - __detail::_Insert
    *    - __detail::_Rehash_base
    *    - __detail::_Equality
    */
@@ -194,9 +193,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __detail::_Map_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 				 _Hash, _RangeHash, _Unused,
 				 _RehashPolicy, _Traits>,
-      public __detail::_Insert<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-			       _Hash, _RangeHash, _Unused,
-			       _RehashPolicy, _Traits>,
       public __detail::_Rehash_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 				    _Hash, _RangeHash, _Unused,
 				    _RehashPolicy, _Traits>,
@@ -237,10 +233,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __node_base_ptr = typename __hashtable_alloc::__node_base_ptr;
       using __buckets_ptr = typename __hashtable_alloc::__buckets_ptr;
 
-      using __insert_base = __detail::_Insert<_Key, _Value, _Alloc, _ExtractKey,
-					      _Equal, _Hash,
-					      _RangeHash, _Unused,
-					      _RehashPolicy, _Traits>;
       using __enable_default_ctor
 	= _Hashtable_enable_default_ctor<_Equal, _Hash, _Alloc>;
       using __rehash_guard_t
@@ -259,9 +251,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef value_type&					reference;
       typedef const value_type&					const_reference;
 
-      using iterator = typename __insert_base::iterator;
+      using iterator
+	= __detail::_Node_iterator<_Value, __constant_iterators::value,
+				   __hash_cached::value>;
 
-      using const_iterator = typename __insert_base::const_iterator;
+      using const_iterator
+	= __detail::_Node_const_iterator<_Value, __constant_iterators::value,
+					 __hash_cached::value>;
 
       using local_iterator = __detail::_Local_iterator<key_type, _Value,
 			_ExtractKey, _Hash, _RangeHash, _Unused,
@@ -284,7 +280,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __hash_code_base =  typename __hashtable_base::__hash_code_base;
       using __hash_code =  typename __hashtable_base::__hash_code;
-      using __ireturn_type = typename __insert_base::__ireturn_type;
+      using __ireturn_type = __conditional_t<__unique_keys::value,
+					     std::pair<iterator, bool>,
+					     iterator>;
 
       using __map_base = __detail::_Map_base<_Key, _Value, _Alloc, _ExtractKey,
 					     _Equal, _Hash, _RangeHash, _Unused,
@@ -354,12 +352,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename _RehashPolicya, typename _Traitsa,
 	       bool _Unique_keysa>
 	friend struct __detail::_Map_base;
-
-      template<typename _Keya, typename _Valuea, typename _Alloca,
-	       typename _ExtractKeya, typename _Equala,
-	       typename _Hasha, typename _RangeHasha, typename _Unuseda,
-	       typename _RehashPolicya, typename _Traitsa>
-	friend struct __detail::_Insert;
 
       template<typename _Keya, typename _Valuea, typename _Alloca,
 	       typename _ExtractKeya, typename _Equala,
@@ -957,6 +949,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       _M_erase(size_type __bkt, __node_base_ptr __prev_n, __node_ptr __n);
 
+      template<typename _InputIterator>
+	void
+	_M_insert_range_multi(_InputIterator __first, _InputIterator __last);
+
     public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
@@ -980,9 +976,107 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    return _M_emplace_multi(__hint, std::forward<_Args>(__args)...);
 	}
-#pragma GCC diagnostic pop
 
-      // Insert member functions via inheritance.
+      // Insert
+      __ireturn_type
+      insert(const value_type& __v)
+      {
+	if constexpr (__unique_keys::value)
+	  return _M_emplace_uniq(__v);
+	else
+	  return _M_emplace_multi(cend(), __v);
+      }
+
+      iterator
+      insert(const_iterator __hint, const value_type& __v)
+      {
+	if constexpr (__unique_keys::value)
+	  return _M_emplace_uniq(__v).first;
+	else
+	  return _M_emplace_multi(__hint, __v);
+      }
+
+      __ireturn_type
+      insert(value_type&& __v)
+      {
+	if constexpr (__unique_keys::value)
+	  return _M_emplace_uniq(std::move(__v));
+	else
+	  return _M_emplace_multi(cend(), std::move(__v));
+      }
+
+      iterator
+      insert(const_iterator __hint, value_type&& __v)
+      {
+	if constexpr (__unique_keys::value)
+	  return _M_emplace_uniq(std::move(__v)).first;
+	else
+	  return _M_emplace_multi(__hint, std::move(__v));
+      }
+
+#ifdef __glibcxx_unordered_map_try_emplace // C++ >= 17 && HOSTED
+      template<typename _KType, typename... _Args>
+	std::pair<iterator, bool>
+	try_emplace(const_iterator, _KType&& __k, _Args&&... __args)
+	{
+	  auto __code = this->_M_hash_code(__k);
+	  std::size_t __bkt = _M_bucket_index(__code);
+	  if (auto __node = _M_find_node(__bkt, __k, __code))
+	    return { iterator(__node), false };
+
+	  _Scoped_node __node {
+	    this,
+	    std::piecewise_construct,
+	    std::forward_as_tuple(std::forward<_KType>(__k)),
+	    std::forward_as_tuple(std::forward<_Args>(__args)...)
+	  };
+	  auto __it = _M_insert_unique_node(__bkt, __code, __node._M_node);
+	  __node._M_node = nullptr;
+	  return { __it, true };
+	}
+#endif
+
+      void
+      insert(initializer_list<value_type> __l)
+      { this->insert(__l.begin(), __l.end()); }
+
+      template<typename _InputIterator>
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{
+	  if constexpr (__unique_keys::value)
+	    for (; __first != __last; ++__first)
+	      _M_emplace_uniq(*__first);
+	  else
+	    return _M_insert_range_multi(__first, __last);
+	}
+
+      // This overload is only defined for maps, not sets.
+      template<typename _Pair,
+	       typename = _Require<__not_<is_same<_Key, _Value>>,
+				   is_constructible<value_type, _Pair&&>>>
+	__ireturn_type
+	insert(_Pair&& __v)
+	{
+	  if constexpr (__unique_keys::value)
+	    return _M_emplace_uniq(std::forward<_Pair>(__v));
+	  else
+	    return _M_emplace_multi(cend(), std::forward<_Pair>(__v));
+	}
+
+      // This overload is only defined for maps, not sets.
+      template<typename _Pair,
+	       typename = _Require<__not_<is_same<_Key, _Value>>,
+				   is_constructible<value_type, _Pair&&>>>
+	iterator
+	insert(const_iterator __hint, _Pair&& __v)
+	{
+	  if constexpr (__unique_keys::value)
+	    return _M_emplace_uniq(std::forward<_Pair>(__v));
+	  else
+	    return _M_emplace_multi(__hint, std::forward<_Pair>(__v));
+	}
+#pragma GCC diagnostic pop
 
       // Erase
       iterator
@@ -2210,6 +2304,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  = _M_insert_multi_node(__res.first, __res.second, __node._M_node);
 	__node._M_node = nullptr;
 	return __pos;
+      }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _InputIterator>
+      void
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+      _M_insert_range_multi(_InputIterator __first, _InputIterator __last)
+      {
+	using __pair_type = std::pair<bool, std::size_t>;
+
+	size_type __n_elt = __detail::__distance_fw(__first, __last);
+	if (__n_elt == 0)
+	  return;
+
+	__rehash_guard_t __rehash_guard(_M_rehash_policy);
+	__pair_type __do_rehash
+	  = _M_rehash_policy._M_need_rehash(_M_bucket_count,
+					    _M_element_count,
+					    __n_elt);
+
+	if (__do_rehash.first)
+	  _M_rehash(__do_rehash.second, false_type{});
+
+	__rehash_guard._M_guarded_obj = nullptr;
+	for (; __first != __last; ++__first)
+	  _M_emplace_multi(cend(), *__first);
       }
 
   template<typename _Key, typename _Value, typename _Alloc,
