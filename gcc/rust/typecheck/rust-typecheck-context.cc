@@ -73,6 +73,12 @@ TypeCheckContext::insert_builtin (HirId id, NodeId ref, TyTy::BaseType *type)
   builtins.push_back (std::unique_ptr<TyTy::BaseType> (type));
 }
 
+const std::vector<std::unique_ptr<TyTy::BaseType>> &
+TypeCheckContext::get_builtins () const
+{
+  return builtins;
+}
+
 void
 TypeCheckContext::insert_type (const Analysis::NodeMapping &mappings,
 			       TyTy::BaseType *type)

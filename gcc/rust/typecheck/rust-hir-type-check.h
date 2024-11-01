@@ -135,6 +135,7 @@ public:
   bool lookup_builtin (NodeId id, TyTy::BaseType **type);
   bool lookup_builtin (std::string name, TyTy::BaseType **type);
   void insert_builtin (HirId id, NodeId ref, TyTy::BaseType *type);
+  const std::vector<std::unique_ptr<TyTy::BaseType>> &get_builtins () const;
 
   void insert_type (const Analysis::NodeMapping &mappings,
 		    TyTy::BaseType *type);
