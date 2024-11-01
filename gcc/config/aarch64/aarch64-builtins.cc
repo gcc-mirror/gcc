@@ -780,7 +780,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, M, U) \
+#define ENTRY(N, S, M0, M1, M2, M3, U) \
   AARCH64_##N,
 
 enum aarch64_builtins
@@ -1593,10 +1593,49 @@ enum class aarch64_builtin_signatures
   binary,
 };
 
+namespace {
+
+struct simd_type {
+  machine_mode mode;
+  aarch64_type_qualifiers qualifiers;
+};
+
+namespace simd_types {
+
+  constexpr simd_type s8 { V8QImode, qualifier_none };
+  constexpr simd_type u8 { V8QImode, qualifier_unsigned };
+  constexpr simd_type s8q { V16QImode, qualifier_none };
+  constexpr simd_type u8q { V16QImode, qualifier_unsigned };
+
+  constexpr simd_type s16 { V4HImode, qualifier_none };
+  constexpr simd_type u16 { V4HImode, qualifier_unsigned };
+  constexpr simd_type s16q { V8HImode, qualifier_none };
+  constexpr simd_type u16q { V8HImode, qualifier_unsigned };
+
+  constexpr simd_type p8 { V8QImode, qualifier_poly };
+  constexpr simd_type p8q { V16QImode, qualifier_poly };
+  constexpr simd_type p16 { V4HImode, qualifier_poly };
+  constexpr simd_type p16q { V8HImode, qualifier_poly };
+
+  constexpr simd_type f16 { V4HFmode, qualifier_none };
+  constexpr simd_type f16q { V8HFmode, qualifier_none };
+  constexpr simd_type f32 { V2SFmode, qualifier_none };
+  constexpr simd_type f32q { V4SFmode, qualifier_none };
+  constexpr simd_type f64q { V2DFmode, qualifier_none };
+
+  constexpr simd_type bf16 { V4BFmode, qualifier_none };
+  constexpr simd_type bf16q { V8BFmode, qualifier_none };
+
+  constexpr simd_type none { VOIDmode, qualifier_none };
+}
+
+}
+
 #undef ENTRY
-#define ENTRY(N, S, M, U) \
-  {#N, aarch64_builtin_signatures::S, E_##M##mode, U, \
-   aarch64_required_extensions::REQUIRED_EXTENSIONS},
+#define ENTRY(N, S, T0, T1, T2, T3, U) \
+  {#N, aarch64_builtin_signatures::S, simd_types::T0, simd_types::T1, \
+    simd_types::T2, simd_types::T3, U, \
+    aarch64_required_extensions::REQUIRED_EXTENSIONS},
 
 /* Initialize pragma builtins.  */
 
@@ -1604,7 +1643,7 @@ struct aarch64_pragma_builtins_data
 {
   const char *name;
   aarch64_builtin_signatures signature;
-  machine_mode mode;
+  simd_type types[4];
   int unspec;
   aarch64_required_extensions required_extensions;
 };
@@ -1616,11 +1655,19 @@ static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
 static tree
 aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
 {
-  auto type = aarch64_simd_builtin_type (builtin_data.mode, qualifier_none);
+  tree type0, type1, type2;
+
   switch (builtin_data.signature)
     {
     case aarch64_builtin_signatures::binary:
-      return build_function_type_list (type, type, type, NULL_TREE);
+      type0 = aarch64_simd_builtin_type (builtin_data.types[0].mode,
+	builtin_data.types[0].qualifiers);
+      type1 = aarch64_simd_builtin_type (builtin_data.types[1].mode,
+	builtin_data.types[1].qualifiers);
+      type2 = aarch64_simd_builtin_type (builtin_data.types[2].mode,
+	builtin_data.types[2].qualifiers);
+      return build_function_type_list (type0, type1, type2, NULL_TREE);
+
     default:
       gcc_unreachable ();
     }
@@ -3337,17 +3384,24 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 			       const aarch64_pragma_builtins_data *builtin_data)
 {
   expand_operand ops[3];
-  auto mode = builtin_data->mode;
   auto op1 = expand_normal (CALL_EXPR_ARG (exp, 0));
   auto op2 = expand_normal (CALL_EXPR_ARG (exp, 1));
-  create_output_operand (&ops[0], target, mode);
-  create_input_operand (&ops[1], op1, mode);
-  create_input_operand (&ops[2], op2, mode);
+  create_output_operand (&ops[0], target, builtin_data->types[0].mode);
+  create_input_operand (&ops[1], op1, builtin_data->types[1].mode);
+  create_input_operand (&ops[2], op2, builtin_data->types[2].mode);
 
   auto unspec = builtin_data->unspec;
-  auto icode = code_for_aarch64 (unspec, mode);
-  expand_insn (icode, 3, ops);
+  insn_code icode;
 
+  switch (builtin_data->signature)
+    {
+    case aarch64_builtin_signatures::binary:
+      icode = code_for_aarch64 (unspec, builtin_data->types[0].mode);
+      expand_insn (icode, 3, ops);
+      break;
+    default:
+      gcc_unreachable();
+    }
   return target;
 }
 
@@ -4186,7 +4240,6 @@ aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
 #undef CF3
 #undef CF4
 #undef CF10
-#undef ENTRY_VHSDF
 #undef VAR1
 #undef VAR2
 #undef VAR3
