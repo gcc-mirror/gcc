@@ -978,7 +978,6 @@ namespace __detail
 
       using __unique_keys = typename _Traits::__unique_keys;
       using __node_alloc_type = typename __hashtable_alloc::__node_alloc_type;
-      using __node_gen_type = _AllocNode<__node_alloc_type>;
 
       [[__gnu__::__always_inline__]]
       __hashtable&

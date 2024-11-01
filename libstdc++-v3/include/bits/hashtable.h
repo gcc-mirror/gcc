@@ -299,12 +299,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    _Equal, _Hash, _RangeHash, _Unused,
 					    _RehashPolicy, _Traits>;
 
-      using __reuse_or_alloc_node_gen_t =
-	__detail::_ReuseOrAllocNode<__node_alloc_type>;
-      using __alloc_node_gen_t =
-	__detail::_AllocNode<__node_alloc_type>;
-      using __node_builder_t =
-	__detail::_NodeBuilder<_ExtractKey>;
+      using __node_builder_t = __detail::_NodeBuilder<_ExtractKey>;
 
       // Simple RAII type for managing a node containing an element
       struct _Scoped_node
@@ -480,6 +475,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	_M_assign_elements(_Ht&&);
 
+      template<typename _Ht>
+	void
+	_M_assign(_Ht&& __ht)
+	{
+	  __detail::_AllocNode<__node_alloc_type> __alloc_node_gen(*this);
+	  _M_assign(std::forward<_Ht>(__ht), __alloc_node_gen);
+	}
+
       template<typename _Ht, typename _NodeGenerator>
 	void
 	_M_assign(_Ht&&, _NodeGenerator&);
@@ -608,6 +611,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable&
       operator=(initializer_list<value_type> __l)
       {
+	using __reuse_or_alloc_node_gen_t =
+	  __detail::_ReuseOrAllocNode<__node_alloc_type>;
+
 	__reuse_or_alloc_node_gen_t __roan(_M_begin(), *this);
 	_M_before_begin._M_nxt = nullptr;
 	clear();
@@ -1308,10 +1314,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_bucket_count = __ht._M_bucket_count;
 	      _M_element_count = __ht._M_element_count;
 	      _M_rehash_policy = __ht._M_rehash_policy;
-	      __alloc_node_gen_t __alloc_node_gen(*this);
 	      __try
 		{
-		  _M_assign(__ht, __alloc_node_gen);
+		  _M_assign(__ht);
 		}
 	      __catch(...)
 		{
@@ -1340,6 +1345,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
       _M_assign_elements(_Ht&& __ht)
       {
+	using __reuse_or_alloc_node_gen_t =
+	  __detail::_ReuseOrAllocNode<__node_alloc_type>;
+
 	__buckets_ptr __former_buckets = nullptr;
 	std::size_t __former_bucket_count = _M_bucket_count;
 	__rehash_guard_t __rehash_guard(_M_rehash_policy);
@@ -1517,8 +1525,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      __alloc_node_gen_t __alloc_node_gen(*this);
-      _M_assign(__ht, __alloc_node_gen);
+      _M_assign(__ht);
     }
 
   template<typename _Key, typename _Value, typename _Alloc,
@@ -1572,8 +1579,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
-      __alloc_node_gen_t __alloc_node_gen(*this);
-      _M_assign(__ht, __alloc_node_gen);
+      _M_assign(__ht);
     }
 
   template<typename _Key, typename _Value, typename _Alloc,
@@ -1612,12 +1618,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else
 	{
-	  __alloc_node_gen_t __alloc_gen(*this);
-
 	  using _Fwd_Ht = __conditional_t<
 	    __move_if_noexcept_cond<value_type>::value,
 	    const _Hashtable&, _Hashtable&&>;
-	  _M_assign(std::forward<_Fwd_Ht>(__ht), __alloc_gen);
+	  _M_assign(std::forward<_Fwd_Ht>(__ht));
 	  __ht.clear();
 	}
     }
