@@ -490,14 +490,6 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
     }
 
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
-  if (tyseg->needs_generic_substitutions () && !reciever_is_generic)
-    {
-      location_t locus = segments.back ().get_locus ();
-      tyseg = SubstMapper::InferSubst (tyseg, locus);
-      if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-	return;
-    }
-
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
 
   // name scope first
