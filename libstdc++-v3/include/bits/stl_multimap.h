@@ -171,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Rep_type::reverse_iterator	 reverse_iterator;
       typedef typename _Rep_type::const_reverse_iterator const_reverse_iterator;
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
       using node_type = typename _Rep_type::node_type;
 #endif
 
@@ -632,7 +632,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
       /// Extract a node.
       node_type
       extract(const_iterator __pos)

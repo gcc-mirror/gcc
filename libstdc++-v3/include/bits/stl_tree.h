@@ -71,7 +71,7 @@
 #if __cplusplus >= 201103L
 # include <ext/aligned_buffer.h>
 #endif
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
 # include <bits/node_handle.h>
 #endif
 
@@ -1010,7 +1010,7 @@ namespace __rb_tree
 #endif
 } // namespace __rb_tree
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
   template<typename _Tree1, typename _Cmp2>
     struct _Rb_tree_merge_helper { };
 #endif
@@ -1451,7 +1451,7 @@ namespace __rb_tree
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
       using node_type = _Node_handle<_Key, _Val, _Node_allocator>;
       using insert_return_type = _Node_insert_return<
 	__conditional_t<is_same_v<_Key, _Val>, const_iterator, iterator>,
@@ -3219,7 +3219,7 @@ namespace __rb_tree
       return true;
     }
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17
   // Allow access to internals of compatible _Rb_tree specializations.
   template<typename _Key, typename _Val, typename _Sel, typename _Cmp1,
 	   typename _Alloc, typename _Cmp2>
