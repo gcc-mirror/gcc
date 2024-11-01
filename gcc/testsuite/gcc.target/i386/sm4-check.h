@@ -1,7 +1,11 @@
 #include <stdlib.h>
-#include "m256-check.h"
+#include "m512-check.h"
 
+#ifdef AVX10_2_512
+static void sm4_avx512f_test (void);
+#else
 static void sm4_test (void);
+#endif
 
 typedef union
 {
@@ -156,18 +160,46 @@ compute_sm4##name##4 (int *dst, int *src1, int *src2, int vl) \
   if (check_union256i_d (res2, dst2))			      \
     abort ();
 
+#define SM4_AVX512F_SIMULATE(name)			      \
+  union512i_d src5, src6, res3;				      \
+  int dst3[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};    \
+							      \
+  src5.x = _mm512_set_epi32 (111, 222, 333, 444, 555, 666, 777, 888,  \
+                             999, 123, 456, 789, 135, 792, 468, 147); \
+  src6.x = _mm512_set_epi32 (258, 369, 159, 483, 726, 162, 738, 495,  \
+                             174, 285, 396, 186, 429, 752, 198, 765); \
+  res3.x = _mm512_set_epi32 (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); \
+							      \
+  res3.x = _mm512_sm4##name##4_epi32 (src5.x, src6.x);	      \
+							      \
+  compute_sm4##name##4 (dst3, src5.a, src6.a, 512);	      \
+							      \
+  if (check_union512i_d (res3, dst3))			      \
+    abort ();
+
 static void
 __attribute__ ((noinline))
 do_test (void)
 {
+#ifdef AVX10_512BIT
+  sm4_avx512f_test ();
+#else
   sm4_test ();
+#endif
 }
 
 int
 main ()
 {
   /* Check CPU support for SM4.  */
-  if (__builtin_cpu_supports ("sm4"))
+  if (__builtin_cpu_supports ("sm4")
+#ifdef AVX10_2
+      && __builtin_cpu_supports ("avx10.2")
+#endif
+#ifdef AVX10_2_512
+      && __builtin_cpu_supports ("avx10.2-512")
+#endif
+      )
     {
       do_test ();
 #ifdef DEBUG

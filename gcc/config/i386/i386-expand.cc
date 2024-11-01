@@ -11415,6 +11415,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16QI_FTYPE_V8HI_V8HI:
     case V16HF_FTYPE_V16HF_V16HF:
     case V16SF_FTYPE_V16SF_V16SF:
+    case V16SI_FTYPE_V16SI_V16SI:
     case V8QI_FTYPE_V8QI_V8QI:
     case V8QI_FTYPE_V4HI_V4HI:
     case V8HI_FTYPE_V8HI_V8HI:

@@ -30067,25 +30067,29 @@
    (set_attr "mode" "OI")])
 
 (define_insn "vsm4key4_<mode>"
-  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
-        (unspec:VI4_AVX
-          [(match_operand:VI4_AVX 1 "register_operand" "x")
-           (match_operand:VI4_AVX 2 "vector_operand" "xBm")]
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand" "=x,v")
+        (unspec:VI4_AVX10_2
+          [(match_operand:VI4_AVX10_2 1 "register_operand" "x,v")
+           (match_operand:VI4_AVX10_2 2 "vector_operand" "xBm,vBm")]
           UNSPEC_SM4KEY4))]
   "TARGET_SM4"
   "vsm4key4\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "other")
+   (set_attr "prefix" "maybe_evex")
+   (set_attr "isa" "avx,avx10_2")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vsm4rnds4_<mode>"
-  [(set (match_operand:VI4_AVX 0 "register_operand" "=x")
-        (unspec:VI4_AVX
-          [(match_operand:VI4_AVX 1 "register_operand" "x")
-           (match_operand:VI4_AVX 2 "vector_operand" "xBm")]
+  [(set (match_operand:VI4_AVX10_2 0 "register_operand" "=x,v")
+        (unspec:VI4_AVX10_2
+          [(match_operand:VI4_AVX10_2 1 "register_operand" "x,v")
+           (match_operand:VI4_AVX10_2 2 "vector_operand" "xBm,vBm")]
           UNSPEC_SM4RNDS4))]
   "TARGET_SM4"
   "vsm4rnds4\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "other")
+   (set_attr "prefix" "maybe_evex")
+   (set_attr "isa" "avx,avx10_2")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn_and_split "avx512f_<castmode><avxsizesuffix>_<castmode>"
