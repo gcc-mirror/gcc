@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-mannotate-tablejump" } */
+/* { dg-additional-options "-O -mannotate-tablejump" } */
 
 extern void asdf(int);
 void foo(int x) {
