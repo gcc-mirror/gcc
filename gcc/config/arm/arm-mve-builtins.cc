@@ -535,6 +535,13 @@ handle_arm_mve_h (bool preserve_user_namespace)
       return;
     }
 
+  if (!handle_arm_mve_types_p)
+    {
+      error ("this definition requires MVE types, please include %qs",
+	     "arm_mve_types.h");
+      return;
+    }
+
   /* Define MVE functions.  */
   function_table = new hash_table<registered_function_hasher> (1023);
   function_builder builder;
