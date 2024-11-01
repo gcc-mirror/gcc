@@ -223,7 +223,7 @@ public:
 
   bool
   describe_final_event (pretty_printer &pp,
-			const evdesc::final_event &ev) final override
+			const evdesc::final_event &) final override
   {
     pp_string (&pp, "infinite loop here");
     return true;
