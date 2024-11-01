@@ -4253,7 +4253,8 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_UMINUS:
       if (op1->ts.type == BT_INTEGER
 	  || op1->ts.type == BT_REAL
-	  || op1->ts.type == BT_COMPLEX)
+	  || op1->ts.type == BT_COMPLEX
+	  || op1->ts.type == BT_UNSIGNED)
 	{
 	  e->ts = op1->ts;
 	  break;
