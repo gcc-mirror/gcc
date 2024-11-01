@@ -411,24 +411,7 @@ package body Errutil is
 
          while E /= No_Error_Msg loop
             if not Errors.Table (E).Deleted then
-               if Full_Path_Name_For_Brief_Errors then
-                  Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
-               else
-                  Write_Name (Reference_Name (Errors.Table (E).Sfile));
-               end if;
-
-               Write_Char (':');
-               Write_Int (Int (Physical_To_Logical
-                                (Errors.Table (E).Line,
-                                 Errors.Table (E).Sfile)));
-               Write_Char (':');
-
-               if Errors.Table (E).Col < 10 then
-                  Write_Char ('0');
-               end if;
-
-               Write_Int (Int (Errors.Table (E).Col));
-               Write_Str (": ");
+               Output_Msg_Location (E);
                Output_Msg_Text (E);
                Write_Eol;
             end if;

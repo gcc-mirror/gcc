@@ -512,6 +512,13 @@ package Erroutc is
    --  that match or are less than the last Source_Reference pragma are listed
    --  as all blanks, avoiding output of junk line numbers.
 
+   procedure Output_Msg_Location (E : Error_Msg_Id);
+   --  Write the location of the error message in the following format:
+   --
+   --  <File_Name>:<Line>:<Col>:
+   --
+   --  If Full_Path_Name_For_Brief_Errors then full path of the file is used.
+
    procedure Output_Msg_Text (E : Error_Msg_Id);
    --  Outputs characters of text in the text of the error message E. Note that
    --  no end of line is output, the caller is responsible for adding the end

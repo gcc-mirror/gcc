@@ -2635,28 +2635,7 @@ package body Errout is
                end if;
 
                if Use_Prefix then
-                  Write_Str (SGR_Locus);
-
-                  if Full_Path_Name_For_Brief_Errors then
-                     Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
-                  else
-                     Write_Name (Reference_Name (Errors.Table (E).Sfile));
-                  end if;
-
-                  Write_Char (':');
-                  Write_Int (Int (Physical_To_Logical
-                           (Errors.Table (E).Line,
-                              Errors.Table (E).Sfile)));
-                  Write_Char (':');
-
-                  if Errors.Table (E).Col < 10 then
-                     Write_Char ('0');
-                  end if;
-
-                  Write_Int (Int (Errors.Table (E).Col));
-                  Write_Str (": ");
-
-                  Write_Str (SGR_Reset);
+                  Output_Msg_Location (E);
                end if;
 
                Output_Msg_Text (E);

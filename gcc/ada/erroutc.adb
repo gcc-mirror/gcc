@@ -774,6 +774,35 @@ package body Erroutc is
       end loop;
    end Output_Text_Within;
 
+   -------------------------
+   -- Output_Msg_Location --
+   -------------------------
+
+   procedure Output_Msg_Location (E : Error_Msg_Id) is
+      E_Obj : constant Error_Msg_Object := Errors.Table (E);
+   begin
+      Write_Str (SGR_Locus);
+
+      if Full_Path_Name_For_Brief_Errors then
+         Write_Name (Full_Ref_Name (E_Obj.Sfile));
+      else
+         Write_Name (Reference_Name (E_Obj.Sfile));
+      end if;
+
+      Write_Char (':');
+      Write_Int (Int (Physical_To_Logical (E_Obj.Line, E_Obj.Sfile)));
+      Write_Char (':');
+
+      if E_Obj.Col < 10 then
+         Write_Char ('0');
+      end if;
+
+      Write_Int (Int (E_Obj.Col));
+      Write_Str (": ");
+
+      Write_Str (SGR_Reset);
+   end Output_Msg_Location;
+
    ---------------------
    -- Output_Msg_Text --
    ---------------------
