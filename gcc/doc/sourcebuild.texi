@@ -2656,6 +2656,9 @@ Target supports the execution of @code{amx-fp16} instructions.
 @item amx_tf32
 Target supports the execution of @code{amx-tf32} instructions.
 
+@item amx_transpose
+Target supports the execution of @code{amx-transpose} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 

@@ -74,7 +74,7 @@ void init_fp16_max_tile_zero_buffer (uint8_t* buf)
 }
 #endif
 
-#if defined (AMX_AVX512)
+#if defined (AMX_AVX512) || defined (AMX_BF16)
 /* Transformation functions between bf16/float */
 static uint16_t make_f32_bf16 (float f)
 {
@@ -176,6 +176,44 @@ static float silence_snan_fp32 (float x)
       ((tmp.u & 0x00400000) == 0))
     tmp.u = tmp.u | 0x00400000;
   return tmp.f;
+}
+
+void init_pair_tile_src (int tmm_num, __tilepair *src, uint8_t *_buffer, int z)
+{
+  int rows, colsb, start, i, j, t, elements[2];
+  uint16_t *buffer = (uint16_t *) _buffer;
+  uint16_t *ptr = (uint16_t *) src->buf;
+  __tilecfg_u tmp;
+
+  _tile_storeconfig (tmp.a);
+
+  tmm_num &= ~1;
+
+  rows = tmp.s.rows[tmm_num];
+  colsb = tmp.s.colsb[tmm_num];
+  start = tmp.s.start_row;
+
+  zero_pair_tile_src (src);
+  
+  for (t = 0; t < 2; t++)
+    elements[t] = tmp.s.colsb[tmm_num + t] / 4;
+
+  src->colsb = (tmp.s.colsb[tmm_num] + tmp.s.colsb[tmm_num + 1]) / 2;
+  src->rows = rows;
+
+  while (start < 2 * rows)
+  {
+    int r = start / 2;
+    int w = start % 2;
+
+    if (start < 2 * rows - z)
+      for (t = 0; t < 2; t++)
+	if (tmp.s.colsb[tmm_num + t] > 0)
+	  for (i = 0; i < elements[t]; i++)
+	    ptr[t * rows * colsb / 2 + r * elements[t] * 2 + 2 * i + w] =
+	      buffer[start * colsb / 2 + t * elements[0] + i];
+    start++;
+  }
 }
 
 #endif

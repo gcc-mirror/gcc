@@ -136,6 +136,8 @@
 
 #include <amxtf32intrin.h>
 
+#include <amxtransposeintrin.h>
+
 #include <prfchwintrin.h>
 
 #include <keylockerintrin.h>
