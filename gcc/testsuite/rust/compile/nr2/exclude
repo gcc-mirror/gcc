@@ -220,4 +220,5 @@ issue-3032-2.rs
 # https://github.com/Rust-GCC/gccrs/issues/3189
 if_let_expr_simple.rs
 iflet.rs
+issue-3033.rs
 # please don't delete the trailing newline
