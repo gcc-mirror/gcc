@@ -1297,7 +1297,7 @@ expand_builtin_prefetch (tree exp)
   else
     op1 = expand_normal (arg1);
   /* Argument 1 must be 0, 1 or 2.  */
-  if (INTVAL (op1) < 0 || INTVAL (op1) > 2)
+  if (IN_RANGE (INTVAL (op1), 0, 2))
     {
       warning (0, "invalid second argument to %<__builtin_prefetch%>;"
 	       " using zero");
@@ -1315,7 +1315,7 @@ expand_builtin_prefetch (tree exp)
   else
     op2 = expand_normal (arg2);
   /* Argument 2 must be 0, 1, 2, or 3.  */
-  if (INTVAL (op2) < 0 || INTVAL (op2) > 3)
+  if (IN_RANGE (INTVAL (op2), 0, 3))
     {
       warning (0, "invalid third argument to %<__builtin_prefetch%>; using zero");
       op2 = const0_rtx;
