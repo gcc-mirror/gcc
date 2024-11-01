@@ -1,3 +1,92 @@
+2024-10-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* gcc.target/powerpc/pr114759-1.c: New test.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/aarch64-ssve.exp: Add tests for trn[12]q,
+	uzp[12].c, and zip[12]q.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_bf16.c: Skip for
+	STREAMING_COMPATIBLE.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u8.c: Likewise.
+
 2024-10-30  David Malcolm  <dmalcolm@redhat.com>
 
 	Backported from master:

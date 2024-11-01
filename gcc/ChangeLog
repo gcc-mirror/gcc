@@ -1,3 +1,30 @@
+2024-10-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-08-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/114759
+	* config/rs6000/rs6000.cc (rs6000_override_options_after_change): Move
+	the disabling of shrink-wrapping from here....
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_prologue): ...to here.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.def (svtrn1q, svtrn2q)
+	(svuzp1q, svuzp2q, svzip1q, svzip2q): Require SM_OFF.
+
+2024-10-31  Yangyu Chen  <cyy@cyyself.name>
+
+	Backported from master:
+	2024-10-30  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/aarch64/aarch64.cc (dispatch_function_versions): Adding
+	DECL_EXTERNAL, TREE_PUBLIC and hidden DECL_VISIBILITY to
+	__init_cpu_features_resolver and __aarch64_cpu_features.
+
 2024-10-30  David Malcolm  <dmalcolm@redhat.com>
 
 	Backported from master:
