@@ -8,7 +8,7 @@
 extern void exit (int);
 
 enum locality { none, low, moderate, high, bogus };
-enum rws { read, write, read-shared };
+enum rws { read, write, read_shared };
 
 int arr[10];
 

@@ -15,7 +15,7 @@ void exit (int);
 #define READ_ACCESS 0
 
 enum locality { none, low, moderate, high };
-enum rws { read, write, read-shared };
+enum rws { read, write, read_shared };
 
 int arr[10];
 
