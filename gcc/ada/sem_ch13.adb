@@ -12153,7 +12153,7 @@ package body Sem_Ch13 is
       --  Checks for gaps in the given Rectype. Compute After_Last, the bit
       --  number after the last component. Warn is True on the initial call,
       --  and warnings are given for gaps. For a type extension, this is called
-      --  recursively to compute After_Last for the parent type; in this case
+      --  recursively to compute After_Last on the parent subtype; in this case
       --  Warn is False and the warnings are suppressed.
 
       procedure Component_Order_Check (Rectype : Entity_Id);
@@ -12326,8 +12326,11 @@ package body Sem_Ch13 is
       procedure Record_Hole_Check
         (Rectype : Entity_Id; After_Last : out Uint; Warn : Boolean)
       is
-         Decl : constant Node_Id := Declaration_Node (Base_Type (Rectype));
-         --  Full declaration of record type
+         Base_Typ : constant Entity_Id := Base_Type (Rectype);
+         --  Base type of record type
+
+         Decl : constant Node_Id := Declaration_Node (Base_Typ);
+         --  Full declaration of base type of record type
 
          procedure Check_Component_List
            (DS   : List_Id;
@@ -12422,15 +12425,12 @@ package body Sem_Ch13 is
             Citem := First (DS);
             while Present (Citem) loop
                if Nkind (Citem) = N_Discriminant_Specification then
-                  declare
-                     Ent : constant Entity_Id :=
-                             Defining_Identifier (Citem);
-                  begin
-                     if Ekind (Ent) = E_Discriminant then
-                        Ncomps := Ncomps + 1;
-                        Comps (Ncomps) := Ent;
-                     end if;
-                  end;
+                  Ncomps := Ncomps + 1;
+                  Comps (Ncomps) := Defining_Identifier (Citem);
+
+                  --  Check that we pick discriminants from the proper view
+
+                  pragma Assert (Ekind (Comps (Ncomps)) = E_Discriminant);
                end if;
 
                Next (Citem);
@@ -12507,46 +12507,71 @@ package body Sem_Ch13 is
 
          --  Local variables
 
-         Sbit : Uint;
-         --  Starting bit for call to Check_Component_List. Zero for an
-         --  untagged type. The size of the Tag for a nonderived tagged
-         --  type. Parent size for a type extension.
+         Decl_For_Discriminants : Node_Id;
+         --  Declaration node for the view that provides discriminants
 
          Record_Definition : Node_Id;
          --  Record_Definition containing Component_List to pass to
          --  Check_Component_List.
 
+         Sbit : Uint;
+         --  Starting bit for call to Check_Component_List. Zero for an
+         --  untagged type. The size of the Tag for a nonderived tagged
+         --  type. Parent size for a type extension.
+
       --  Start of processing for Record_Hole_Check
 
       begin
-         if Is_Tagged_Type (Rectype) then
+         --  The tag is not present in the list of components of a tagged type
+
+         if Is_Tagged_Type (Base_Typ) then
             Sbit := UI_From_Int (System_Address_Size);
          else
             Sbit := Uint_0;
          end if;
 
-         After_Last := Uint_0;
+         After_Last := Sbit;
 
-         if Nkind (Decl) = N_Full_Type_Declaration then
-            Record_Definition := Type_Definition (Decl);
+         --  We need the full declaration of the base type of the record type
 
-            --  If we have a record extension, set Sbit to point after the last
-            --  component of the parent type, by calling Record_Hole_Check
-            --  recursively.
-
-            if Nkind (Record_Definition) = N_Derived_Type_Definition then
-               Record_Definition := Record_Extension_Part (Record_Definition);
-               Record_Hole_Check (Underlying_Type (Parent_Subtype (Rectype)),
-                                  After_Last => Sbit, Warn => False);
-            end if;
-
-            if Nkind (Record_Definition) = N_Record_Definition then
-               Check_Component_List
-                 (Discriminant_Specifications (Decl),
-                  Component_List (Record_Definition),
-                  Sbit, After_Last);
-            end if;
+         if Nkind (Decl) /= N_Full_Type_Declaration then
+            return;
          end if;
+
+         Record_Definition := Type_Definition (Decl);
+
+         --  If we have a record extension, set Sbit to point after the last
+         --  component of the parent subtype, by calling Record_Hole_Check
+         --  recursively on this parent subtype.
+
+         if Nkind (Record_Definition) = N_Derived_Type_Definition then
+            Record_Definition := Record_Extension_Part (Record_Definition);
+            Record_Hole_Check
+              (Underlying_Type (Parent_Subtype (Base_Typ)),
+               After_Last => Sbit,
+               Warn       => False);
+         end if;
+
+         pragma Assert (Nkind (Record_Definition) = N_Record_Definition);
+
+         --  If the type has a private declaration that does not specify
+         --  unknown discriminants, this declaration provides the (known)
+         --  discriminants, if any.
+
+         if Has_Private_Declaration (Base_Typ)
+           and then not Partial_View_Has_Unknown_Discr (Base_Typ)
+         then
+            Decl_For_Discriminants :=
+              Declaration_Node (Incomplete_Or_Partial_View (Base_Typ));
+         else
+            Decl_For_Discriminants := Decl;
+         end if;
+
+         Check_Component_List
+           (Discriminant_Specifications (Decl_For_Discriminants),
+            Component_List (Record_Definition),
+            Sbit => Sbit,
+            Abit => After_Last);
       end Record_Hole_Check;
 
    --  Start of processing for Check_Record_Representation_Clause
