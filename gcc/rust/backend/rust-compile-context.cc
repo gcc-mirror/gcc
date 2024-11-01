@@ -33,19 +33,8 @@ Context::Context ()
 void
 Context::setup_builtins ()
 {
-  auto builtins = resolver->get_builtin_types ();
-  for (auto it = builtins.begin (); it != builtins.end (); it++)
-    {
-      HirId ref;
-      bool ok = tyctx->lookup_type_by_node_id ((*it)->get_node_id (), &ref);
-      rust_assert (ok);
-
-      TyTy::BaseType *lookup;
-      ok = tyctx->lookup_type (ref, &lookup);
-      rust_assert (ok);
-
-      TyTyResolveCompile::compile (this, lookup);
-    }
+  for (auto &builtin : tyctx->get_builtins ())
+    TyTyResolveCompile::compile (this, builtin.get ());
 }
 
 hashval_t
