@@ -1189,12 +1189,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp1, typename _Tp2>
     inline constexpr size_t tuple_size_v<const pair<_Tp1, _Tp2>> = 2;
+#endif
 
+#if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // variable templates
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // inline variables
   template<typename _Tp>
     inline constexpr bool __is_pair = false;
 
   template<typename _Tp, typename _Up>
     inline constexpr bool __is_pair<pair<_Tp, _Up>> = true;
+#pragma GCC diagnostic pop
 #endif
 
   /// @cond undocumented
