@@ -325,13 +325,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__node_ptr _M_node;
       };
 
-      template<typename _Ht>
-	static constexpr
-	__conditional_t<std::is_lvalue_reference<_Ht>::value,
-			const value_type&, value_type&&>
-	__fwd_value_for(value_type& __val) noexcept
-	{ return std::move(__val); }
-
       // Compile-time diagnostics.
 
       // _Hash_code_base has everything protected, so use this derived type to
@@ -1406,11 +1399,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (!__ht._M_before_begin._M_nxt)
 	      return;
 
+	    using _FromVal = __conditional_t<is_lvalue_reference<_Ht>::value,
+					     const value_type&, value_type&&>;
+
 	    // First deal with the special first node pointed to by
 	    // _M_before_begin.
 	    __node_ptr __ht_n = __ht._M_begin();
 	    __node_ptr __this_n
-	      = __node_gen(__fwd_value_for<_Ht>(__ht_n->_M_v()));
+	      = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
 	    this->_M_copy_code(*__this_n, *__ht_n);
 	    _M_update_bbegin(__this_n);
 
@@ -1418,7 +1414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __node_ptr __prev_n = __this_n;
 	    for (__ht_n = __ht_n->_M_next(); __ht_n; __ht_n = __ht_n->_M_next())
 	      {
-		__this_n = __node_gen(__fwd_value_for<_Ht>(__ht_n->_M_v()));
+		__this_n = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
 		__prev_n->_M_nxt = __this_n;
 		this->_M_copy_code(*__this_n, *__ht_n);
 		size_type __bkt = _M_bucket_index(*__this_n);
