@@ -1,0 +1,2 @@
+# Bypass hidden attribute warnings in MinGW until it is implemented
+LIBGCC2_CFLAGS += -Wno-error=attributes
