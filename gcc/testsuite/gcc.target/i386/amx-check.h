@@ -219,6 +219,9 @@ main ()
 #ifdef AMX_COMPLEX
       && __builtin_cpu_supports ("amx-complex")
 #endif
+#ifdef AMX_AVX512
+      && __builtin_cpu_supports ("amx-avx512")
+#endif
 #ifdef __linux__
       && request_perm_xtile_data ()
 #endif

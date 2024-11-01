@@ -995,6 +995,17 @@ get_available_features (struct __processor_model *cpu_model,
 	}
     }
 
+  /* Get Advanced Features at level 0x1e (eax = 0x1e, ecx = 1). */
+  if (max_cpuid_level >= 0x1e)
+    {
+      __cpuid_count (0x1e, 1, eax, ebx, ecx, edx);
+      if (amx_usable)
+	{
+	  if (eax & bit_AMX_AVX512)
+	    set_feature (FEATURE_AMX_AVX512);
+	}
+    }
+
   /* Get Advanced Features at level 0x24 (eax = 0x24, ecx = 0).  */
   if (avx10_set && max_cpuid_level >= 0x24)
     {

@@ -162,6 +162,10 @@
 #define bit_AESKLE	( 1<<0 )
 #define bit_WIDEKL	( 1<<2 )
 
+/* AMX sub leaf (%eax == 0x1e, %ecx == 1) */
+/* %eax */
+#define bit_AMX_AVX512  (1 << 7)
+
 /* AVX10 sub leaf (%eax == 0x24) */
 /* %ebx */
 #define bit_AVX10_256	(1 << 17)

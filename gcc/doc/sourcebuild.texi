@@ -2644,6 +2644,9 @@ Target supports the execution of @code{amx-int8} instructions.
 @item amx_bf16
 Target supports the execution of @code{amx-bf16} instructions.
 
+@item amx_avx512
+Target supports the execution of @code{amx-avx512} instructions.
+
 @item amx_complex
 Target supports the execution of @code{amx-complex} instructions.
 

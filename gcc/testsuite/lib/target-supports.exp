@@ -10775,6 +10775,17 @@ proc check_effective_target_avx10_2_512 { } {
     } "-mavx10.2-512" ]
 }
 
+# Return 1 if amx-avx512 instructions can be compiled.
+proc check_effective_target_amx_avx512 { } {
+    return [check_no_compiler_messages amx_avx512 object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tilemovrow\t%%edx, %%tmm2, %%zmm1" ::);
+	}
+    } "-mamx-avx512" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

@@ -132,6 +132,8 @@
 
 #include <amxcomplexintrin.h>
 
+#include <amxavx512intrin.h>
+
 #include <prfchwintrin.h>
 
 #include <keylockerintrin.h>

@@ -613,3 +613,6 @@ UrlSuffix(gcc/x86-Options.html#index-mavx10_002e2-512)
 mavx10.2
 UrlSuffix(gcc/x86-Options.html#index-mavx10_002e2)
 
+mamx-avx512
+UrlSuffix(gcc/x86-Options.html#index-mamx-avx512)
+
