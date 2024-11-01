@@ -229,15 +229,29 @@ omp_adjust_chunk_size (tree chunk_size, bool simd_schedule, bool offload)
   if (!simd_schedule || integer_zerop (chunk_size))
     return chunk_size;
 
-  poly_uint64 vf = omp_max_vf (offload);
-  if (known_eq (vf, 1U))
-    return chunk_size;
-
+  tree vf;
   tree type = TREE_TYPE (chunk_size);
-  chunk_size = fold_build2 (PLUS_EXPR, type, chunk_size,
-			    build_int_cst (type, vf - 1));
-  return fold_build2 (BIT_AND_EXPR, type, chunk_size,
-		      build_int_cst (type, -vf));
+
+  if (offload)
+    {
+      cfun->curr_properties &= ~PROP_gimple_lomp_dev;
+      vf = build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_GOMP_MAX_VF,
+					 unsigned_type_node, 0);
+      vf = fold_convert (type, vf);
+    }
+  else
+    {
+      poly_uint64 vf_num = omp_max_vf (false);
+      if (known_eq (vf_num, 1U))
+	return chunk_size;
+      vf = build_int_cst (type, vf_num);
+    }
+
+  tree vf_minus_one = fold_build2 (MINUS_EXPR, type, vf,
+				   build_int_cst (type, 1));
+  tree negative_vf = fold_build1 (NEGATE_EXPR, type, vf);
+  chunk_size = fold_build2 (PLUS_EXPR, type, chunk_size, vf_minus_one);
+  return fold_build2 (BIT_AND_EXPR, type, chunk_size, negative_vf);
 }
 
 /* Collect additional arguments needed to emit a combined

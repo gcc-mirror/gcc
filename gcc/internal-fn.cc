@@ -511,6 +511,14 @@ expand_GOMP_SIMT_VF (internal_fn, gcall *)
 /* This should get expanded in omp_device_lower pass.  */
 
 static void
+expand_GOMP_MAX_VF (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in omp_device_lower pass.  */
+
+static void
 expand_GOMP_TARGET_REV (internal_fn, gcall *)
 {
   gcc_unreachable ();

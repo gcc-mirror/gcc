@@ -2754,6 +2754,9 @@ execute_omp_device_lower ()
 	  case IFN_GOMP_SIMT_VF:
 	    rhs = build_int_cst (type, vf);
 	    break;
+	  case IFN_GOMP_MAX_VF:
+	    rhs = build_int_cst (type, omp_max_vf (false));
+	    break;
 	  case IFN_GOMP_SIMT_ORDERED_PRED:
 	    rhs = vf == 1 ? integer_zero_node : NULL_TREE;
 	    if (rhs || !lhs)
