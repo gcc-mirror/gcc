@@ -1003,6 +1003,8 @@ get_available_features (struct __processor_model *cpu_model,
 	{
 	  if (eax & bit_AMX_AVX512)
 	    set_feature (FEATURE_AMX_AVX512);
+	  if (eax & bit_AMX_TF32)
+	    set_feature (FEATURE_AMX_TF32);
 	}
     }
 

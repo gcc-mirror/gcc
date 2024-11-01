@@ -1394,3 +1394,7 @@ mamx-avx512
 Target Mask(ISA2_AMX_AVX512) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512,
 AVX10.2-512 and AMX-AVX512 built-in functions and code generation.
+
+mamx-tf32
+Target Mask(ISA2_AMX_TF32) Var(ix86_isa_flags2) Save
+Support AMX-TF32 built-in functions and code generation.

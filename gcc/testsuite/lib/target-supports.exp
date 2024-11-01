@@ -10786,6 +10786,17 @@ proc check_effective_target_amx_avx512 { } {
     } "-mamx-avx512" ]
 }
 
+# Return 1 if amx-tf32 instructions can be compiled.
+proc check_effective_target_amx_tf32 { } {
+    return [check_no_compiler_messages amx_tf32 object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tmmultf32ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-tf32" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

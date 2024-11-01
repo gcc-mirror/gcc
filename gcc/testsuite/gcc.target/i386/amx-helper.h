@@ -157,4 +157,25 @@ for (int j = 0; j < 32; j++)	\
     abort();			\
 }
 
+/* Mask low 13bits to zero */
+static float zero_lower_mantissa_bits_fp32 (float x)
+{
+  union32f_ud tmp;
+  tmp.f = x;
+  tmp.u = tmp.u & 0xffffe000;
+  return tmp.f;
+}
+
+/* Handle SNAN */
+static float silence_snan_fp32 (float x)
+{
+  union32f_ud tmp;
+  tmp.f = x;
+  if ((((tmp.u & 0x7f800000) >> 23) == 0xff) &&
+      ((tmp.u & 0x007fffff) != 0) &&
+      ((tmp.u & 0x00400000) == 0))
+    tmp.u = tmp.u | 0x00400000;
+  return tmp.f;
+}
+
 #endif

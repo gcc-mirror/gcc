@@ -164,6 +164,7 @@
 
 /* AMX sub leaf (%eax == 0x1e, %ecx == 1) */
 /* %eax */
+#define bit_AMX_TF32	(1 << 6)
 #define bit_AMX_AVX512  (1 << 7)
 
 /* AVX10 sub leaf (%eax == 0x24) */
