@@ -52,8 +52,9 @@ void test01()
     VERIFY( 1 == v1.get_allocator().get_personality() );
     VERIFY( 2 == v2.get_allocator().get_personality() );
 
-    VERIFY( counter_type::move_count == 1  );
-    VERIFY( counter_type::destructor_count == 2 );
+    VERIFY( counter_type::move_count == 0  );
+  // 1 element in v1 destroyed.
+    VERIFY( counter_type::destructor_count == 1 );
   }
 
   // Check there's nothing left allocated or constructed.
@@ -130,8 +131,9 @@ void test03()
     VERIFY( 1 == v1.get_allocator().get_personality() );
     VERIFY( 2 == v2.get_allocator().get_personality() );
 
-    VERIFY( counter_type::move_count == 1  );
-    VERIFY( counter_type::destructor_count == i + 1 );
+    VERIFY( counter_type::move_count == 0  );
+    // (i - 1) elements in v2 destroyed, and 1 element in v1 destroyed.
+    VERIFY( counter_type::destructor_count == i );
   }
 
   // Check there's nothing left allocated or constructed.

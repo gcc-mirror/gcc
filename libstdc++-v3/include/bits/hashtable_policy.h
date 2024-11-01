@@ -172,24 +172,39 @@ namespace __detail
       ~_ReuseOrAllocNode()
       { _M_h._M_deallocate_nodes(_M_nodes); }
 
-      template<typename... _Args>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      template<typename _Arg>
 	__node_ptr
-	operator()(_Args&&... __args)
+	operator()(_Arg&& __arg)
 	{
 	  if (!_M_nodes)
-	    return _M_h._M_allocate_node(std::forward<_Args>(__args)...);
+	    return _M_h._M_allocate_node(std::forward<_Arg>(__arg));
+
+	  using value_type = typename _NodeAlloc::value_type::value_type;
 
 	  __node_ptr __node = _M_nodes;
-	  _M_nodes = _M_nodes->_M_next();
-	  __node->_M_nxt = nullptr;
-	  auto& __a = _M_h._M_node_allocator();
-	  __node_alloc_traits::destroy(__a, __node->_M_valptr());
-	  _NodePtrGuard<__hashtable_alloc, __node_ptr> __guard { _M_h, __node };
-	  __node_alloc_traits::construct(__a, __node->_M_valptr(),
-					 std::forward<_Args>(__args)...);
-	  __guard._M_ptr = nullptr;
+	  if constexpr (is_assignable<value_type&, _Arg>::value)
+	    {
+	      __node->_M_v() = std::forward<_Arg>(__arg);
+	      _M_nodes = _M_nodes->_M_next();
+	      __node->_M_nxt = nullptr;
+	    }
+	  else
+	    {
+	      _M_nodes = _M_nodes->_M_next();
+	      __node->_M_nxt = nullptr;
+	      auto& __a = _M_h._M_node_allocator();
+	      __node_alloc_traits::destroy(__a, __node->_M_valptr());
+	      _NodePtrGuard<__hashtable_alloc, __node_ptr>
+		__guard{ _M_h, __node };
+	      __node_alloc_traits::construct(__a, __node->_M_valptr(),
+					     std::forward<_Arg>(__arg));
+	      __guard._M_ptr = nullptr;
+	    }
 	  return __node;
 	}
+#pragma GCC diagnostic pop
 
     private:
       __node_ptr _M_nodes;
