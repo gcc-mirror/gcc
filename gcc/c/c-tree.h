@@ -776,12 +776,22 @@ extern struct c_switch *c_switch_stack;
 extern bool null_pointer_constant_p (const_tree);
 
 
-inline
-bool c_type_variably_modified_p (tree t)
+inline bool
+c_type_variably_modified_p (tree t)
 {
   return error_mark_node != t && C_TYPE_VARIABLY_MODIFIED (t);
 }
 
+inline bool
+c_type_unspecified_p (tree t)
+{
+  return error_mark_node != t
+	 && C_TYPE_VARIABLE_SIZE (t) && TREE_CODE (t) == ARRAY_TYPE
+	 && TYPE_DOMAIN (t) && TYPE_MAX_VALUE (TYPE_DOMAIN (t))
+	 && TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) == COMPOUND_EXPR
+	 && integer_zerop (TREE_OPERAND (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0))
+	 && integer_zerop (TREE_OPERAND (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 1));
+}
 
 extern bool char_type_p (tree);
 extern tree c_objc_common_truthvalue_conversion (location_t, tree,
@@ -883,9 +893,9 @@ extern tree c_reconstruct_complex_type (tree, tree);
 extern tree c_build_type_attribute_variant (tree ntype, tree attrs);
 extern tree c_build_pointer_type (tree type);
 extern tree c_build_array_type (tree type, tree domain);
+extern tree c_build_array_type_unspecified (tree type);
 extern tree c_build_function_type (tree type, tree args, bool no = false);
 extern tree c_build_pointer_type_for_mode (tree type, machine_mode mode, bool m);
-
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

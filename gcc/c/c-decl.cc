@@ -7501,10 +7501,6 @@ grokdeclarator (const struct c_declarator *declarator,
 		/* C99 6.7.5.2p4 */
 		if (decl_context == TYPENAME)
 		  warning (0, "%<[*]%> not in a declaration");
-		/* Array of unspecified size.  */
-		tree upper = build2 (COMPOUND_EXPR, TREE_TYPE (size_zero_node),
-				     integer_zero_node, size_zero_node);
-		itype = build_index_type (upper);
 		size_varies = true;
 	      }
 
@@ -7540,7 +7536,10 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (!ADDR_SPACE_GENERIC_P (as) && as != TYPE_ADDR_SPACE (type))
 		  type = c_build_qualified_type (type,
 						 ENCODE_QUAL_ADDR_SPACE (as));
-		type = c_build_array_type (type, itype);
+		if (array_parm_vla_unspec_p)
+		  type = c_build_array_type_unspecified (type);
+		else
+		  type = c_build_array_type (type, itype);
 	      }
 
 	    if (type != error_mark_node)

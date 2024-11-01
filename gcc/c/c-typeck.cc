@@ -358,7 +358,7 @@ qualify_type (tree type, tree like)
 }
 
 
-/* Check consistency of type TYP.E  For derived types, we test that
+/* Check consistency of type TYPE.  For derived types, we test that
    C_TYPE_VARIABLE_SIZE and C_TYPE_VARIABLY_MODIFIED are consistent with
    the requirements of the base type.  We also check that arrays with a
    non-constant length are marked with C_TYPE_VARIABLE_SIZE. If any
@@ -489,6 +489,17 @@ c_build_array_type (tree type, tree domain)
 
   return c_set_type_bits (ret, type);
 }
+
+
+/* Build an array type of unspecified size.  */
+tree
+c_build_array_type_unspecified (tree type)
+{
+  tree upper = build2 (COMPOUND_EXPR, TREE_TYPE (size_zero_node),
+		       integer_zero_node, size_zero_node);
+  return c_build_array_type (type, build_index_type (upper));
+}
+
 
 tree
 c_build_type_attribute_qual_variant (tree type, tree attrs, int quals)
@@ -660,15 +671,23 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	d2_variable = (!d2_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
-	d1_variable = d1_variable || (d1_zero && C_TYPE_VARIABLE_SIZE (t1));
-	d2_variable = d2_variable || (d2_zero && C_TYPE_VARIABLE_SIZE (t2));
+
+	bool use1 = TYPE_DOMAIN (t1)
+		    && (d2_variable || d2_zero || !d1_variable);
+	bool use2 = TYPE_DOMAIN (t2)
+		    && (d1_variable || d1_zero || !d2_variable);
+
+	/* If the first is an unspecified size pick the other one.  */
+	if (d2_variable && c_type_unspecified_p (t1))
+	  {
+	    gcc_assert (use1 && use2);
+	    use1 = false;
+	  }
 
 	/* Save space: see if the result is identical to one of the args.  */
-	if (elt == TREE_TYPE (t1) && TYPE_DOMAIN (t1)
-	    && (d2_variable || d2_zero || !d1_variable))
+	if (elt == TREE_TYPE (t1) && use1)
 	  return c_build_type_attribute_variant (t1, attributes);
-	if (elt == TREE_TYPE (t2) && TYPE_DOMAIN (t2)
-	    && (d1_variable || d1_zero || !d2_variable))
+	if (elt == TREE_TYPE (t2) && use2)
 	  return c_build_type_attribute_variant (t2, attributes);
 
 	if (elt == TREE_TYPE (t1) && !TYPE_DOMAIN (t2) && !TYPE_DOMAIN (t1))
@@ -683,13 +702,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	   back at the end.  */
 	quals = TYPE_QUALS (strip_array_types (elt));
 	unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
-	t1 = c_build_array_type (unqual_elt,
-				 TYPE_DOMAIN ((TYPE_DOMAIN (t1)
-					      && (d2_variable
-						  || d2_zero
-						  || !d1_variable))
-					      ? t1
-					      : t2));
+	t1 = c_build_array_type (unqual_elt, TYPE_DOMAIN (use1 ? t1 : t2));
 
 	/* Check that a type which has a varying outermost dimension
 	   got marked has having a variable size.  */
@@ -1658,8 +1671,6 @@ comptypes_internal (const_tree type1, const_tree type2,
 	d2_variable = (!d2_zero
 		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
 			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
-	d1_variable = d1_variable || (d1_zero && C_TYPE_VARIABLE_SIZE (t1));
-	d2_variable = d2_variable || (d2_zero && C_TYPE_VARIABLE_SIZE (t2));
 
 	if (d1_variable != d2_variable)
 	  data->different_types_p = true;
