@@ -46,7 +46,6 @@ asan_files = \
 	asan_suppressions.cpp \
 	asan_thread.cpp \
 	asan_win.cpp \
-	asan_win_dll_thunk.cpp \
 	asan_win_dynamic_runtime_thunk.cpp \
   asan_interceptors_vfork.S
 

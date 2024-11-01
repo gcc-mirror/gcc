@@ -47,7 +47,6 @@ sanitizer_common_files = \
 	sanitizer_netbsd.cpp \
 	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
-	sanitizer_platform_limits_openbsd.cpp \
 	sanitizer_platform_limits_posix.cpp \
 	sanitizer_platform_limits_solaris.cpp \
 	sanitizer_posix.cpp \
@@ -74,15 +73,18 @@ sanitizer_common_files = \
 	sanitizer_symbolizer.cpp \
 	sanitizer_symbolizer_libbacktrace.cpp \
 	sanitizer_symbolizer_libcdep.cpp \
+	sanitizer_symbolizer_markup.cpp \
 	sanitizer_symbolizer_posix_libcdep.cpp \
 	sanitizer_symbolizer_win.cpp \
 	sanitizer_termination.cpp \
 	sanitizer_thread_arg_retval.cpp \
+	sanitizer_thread_history.cpp \
 	sanitizer_thread_registry.cpp \
 	sanitizer_tls_get_addr.cpp \
 	sanitizer_unwind_linux_libcdep.cpp \
 	sanitizer_unwind_win.cpp \
-	sanitizer_win.cpp
+	sanitizer_win.cpp \
+	sanitizer_win_interception.cpp
 
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 

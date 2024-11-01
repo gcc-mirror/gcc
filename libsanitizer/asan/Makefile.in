@@ -160,8 +160,7 @@ am__objects_1 = asan_activation.lo asan_allocator.lo asan_debugging.lo \
 	asan_posix.lo asan_premap_shadow.lo asan_report.lo asan_rtl.lo \
 	asan_shadow_setup.lo asan_stack.lo asan_stats.lo \
 	asan_suppressions.lo asan_thread.lo asan_win.lo \
-	asan_win_dll_thunk.lo asan_win_dynamic_runtime_thunk.lo \
-	asan_interceptors_vfork.lo
+	asan_win_dynamic_runtime_thunk.lo asan_interceptors_vfork.lo
 am_libasan_la_OBJECTS = $(am__objects_1)
 libasan_la_OBJECTS = $(am_libasan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -457,7 +456,6 @@ asan_files = \
 	asan_suppressions.cpp \
 	asan_thread.cpp \
 	asan_win.cpp \
-	asan_win_dll_thunk.cpp \
 	asan_win_dynamic_runtime_thunk.cpp \
   asan_interceptors_vfork.S
 
@@ -619,7 +617,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_suppressions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_win.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_win_dll_thunk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asan_win_dynamic_runtime_thunk.Plo@am__quote@
 
 .S.o:

@@ -147,6 +147,7 @@ struct ImplicitConversionData {
   const TypeDescriptor &FromType;
   const TypeDescriptor &ToType;
   /* ImplicitConversionCheckKind */ unsigned char Kind;
+  unsigned int BitfieldBits;
 };
 
 /// \brief Implict conversion that changed the value.
@@ -158,6 +159,7 @@ RECOVERABLE(implicit_conversion, ImplicitConversionData *Data, ValueHandle Src,
 enum BuiltinCheckKind : unsigned char {
   BCK_CTZPassedZero,
   BCK_CLZPassedZero,
+  BCK_AssumePassedFalse,
 };
 
 struct InvalidBuiltinData {
@@ -215,19 +217,11 @@ enum CFITypeCheckKind : unsigned char {
   CFITCK_VMFCall,
 };
 
-struct CFIBadIcallData {
-  SourceLocation Loc;
-  const TypeDescriptor &Type;
-};
-
 struct CFICheckFailData {
   CFITypeCheckKind CheckKind;
   SourceLocation Loc;
   const TypeDescriptor &Type;
 };
-
-/// \brief Handle control flow integrity failure for indirect function calls.
-RECOVERABLE(cfi_bad_icall, CFIBadIcallData *Data, ValueHandle Function)
 
 /// \brief Handle control flow integrity failures.
 RECOVERABLE(cfi_check_fail, CFICheckFailData *Data, ValueHandle Function,

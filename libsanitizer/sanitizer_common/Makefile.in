@@ -133,7 +133,6 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_mutex.lo \
 	sanitizer_netbsd.lo sanitizer_platform_limits_freebsd.lo \
 	sanitizer_platform_limits_linux.lo \
-	sanitizer_platform_limits_openbsd.lo \
 	sanitizer_platform_limits_posix.lo \
 	sanitizer_platform_limits_solaris.lo sanitizer_posix.lo \
 	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
@@ -148,12 +147,13 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_stoptheworld_mac.lo sanitizer_suppressions.lo \
 	sanitizer_symbolizer.lo sanitizer_symbolizer_libbacktrace.lo \
-	sanitizer_symbolizer_libcdep.lo \
+	sanitizer_symbolizer_libcdep.lo sanitizer_symbolizer_markup.lo \
 	sanitizer_symbolizer_posix_libcdep.lo \
 	sanitizer_symbolizer_win.lo sanitizer_termination.lo \
-	sanitizer_thread_arg_retval.lo sanitizer_thread_registry.lo \
-	sanitizer_tls_get_addr.lo sanitizer_unwind_linux_libcdep.lo \
-	sanitizer_unwind_win.lo sanitizer_win.lo
+	sanitizer_thread_arg_retval.lo sanitizer_thread_history.lo \
+	sanitizer_thread_registry.lo sanitizer_tls_get_addr.lo \
+	sanitizer_unwind_linux_libcdep.lo sanitizer_unwind_win.lo \
+	sanitizer_win.lo sanitizer_win_interception.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -409,7 +409,6 @@ sanitizer_common_files = \
 	sanitizer_netbsd.cpp \
 	sanitizer_platform_limits_freebsd.cpp \
 	sanitizer_platform_limits_linux.cpp \
-	sanitizer_platform_limits_openbsd.cpp \
 	sanitizer_platform_limits_posix.cpp \
 	sanitizer_platform_limits_solaris.cpp \
 	sanitizer_posix.cpp \
@@ -436,15 +435,18 @@ sanitizer_common_files = \
 	sanitizer_symbolizer.cpp \
 	sanitizer_symbolizer_libbacktrace.cpp \
 	sanitizer_symbolizer_libcdep.cpp \
+	sanitizer_symbolizer_markup.cpp \
 	sanitizer_symbolizer_posix_libcdep.cpp \
 	sanitizer_symbolizer_win.cpp \
 	sanitizer_termination.cpp \
 	sanitizer_thread_arg_retval.cpp \
+	sanitizer_thread_history.cpp \
 	sanitizer_thread_registry.cpp \
 	sanitizer_tls_get_addr.cpp \
 	sanitizer_unwind_linux_libcdep.cpp \
 	sanitizer_unwind_win.cpp \
-	sanitizer_win.cpp
+	sanitizer_win.cpp \
+	sanitizer_win_interception.cpp
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
 libsanitizer_common_la_LIBADD = $(SANITIZER_COMMON_TARGET_DEPENDENT_OBJECTS)
@@ -568,7 +570,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_netbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_freebsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_linux.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_posix.Plo@am__quote@
@@ -594,16 +595,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_libbacktrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_markup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_posix_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_termination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_arg_retval.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_history.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_registry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_tls_get_addr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_unwind_linux_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_unwind_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_win.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_win_interception.Plo@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
