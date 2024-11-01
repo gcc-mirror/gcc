@@ -1270,6 +1270,8 @@ struct codeview_custom_type
     {
       uint32_t base_type;
       uint32_t attributes;
+      uint32_t containing_class;
+      uint16_t ptr_to_mem_type;
     } lf_pointer;
     struct
     {
@@ -3393,6 +3395,10 @@ write_lf_pointer (codeview_custom_type *t)
       uint16_t kind;
       uint32_t base_type;
       uint32_t attributes;
+      (following only if CV_PTR_MODE_PMEM or CV_PTR_MODE_PMFUNC in attributes)
+      uint32_t containing_class;
+      uint16_t ptr_to_mem_type;
+      uint16_t padding;
     } ATTRIBUTE_PACKED;
   */
 
@@ -3413,6 +3419,20 @@ write_lf_pointer (codeview_custom_type *t)
   fputs (integer_asm_op (4, false), asm_out_file);
   fprint_whex (asm_out_file, t->lf_pointer.attributes);
   putc ('\n', asm_out_file);
+
+  if ((t->lf_pointer.attributes & CV_PTR_MODE_MASK) == CV_PTR_MODE_PMEM
+      || (t->lf_pointer.attributes & CV_PTR_MODE_MASK) == CV_PTR_MODE_PMFUNC)
+    {
+      fputs (integer_asm_op (4, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_pointer.containing_class);
+      putc ('\n', asm_out_file);
+
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_pointer.ptr_to_mem_type);
+      putc ('\n', asm_out_file);
+
+      write_cv_padding (2);
+    }
 
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
@@ -5886,6 +5906,30 @@ get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
       return_type = T_VOID;
     }
 
+  /* Handle pointer to member function.  */
+  if (containing_class_type == 0)
+    {
+      dw_die_ref obj_ptr = get_AT_ref (type, DW_AT_object_pointer);
+
+      if (obj_ptr)
+	{
+	  dw_die_ref obj_ptr_type = get_AT_ref (obj_ptr, DW_AT_type);
+
+	  if (obj_ptr_type
+	      && dw_get_die_tag (obj_ptr_type) == DW_TAG_pointer_type)
+	    {
+	      dw_die_ref cont_class = get_AT_ref (obj_ptr_type, DW_AT_type);
+
+	      if (dw_get_die_tag (cont_class) == DW_TAG_const_type)
+		cont_class = get_AT_ref (cont_class, DW_AT_type);
+
+	      containing_class_type = get_type_num (cont_class, in_struct,
+						    false);
+	      this_type = get_type_num (obj_ptr_type, in_struct, false);
+	    }
+	}
+    }
+
   /* Count the arguments.  */
 
   first_child = dw_get_die_child (type);
@@ -6121,6 +6165,61 @@ get_type_num_array_type (dw_die_ref type, bool in_struct)
   return element_type;
 }
 
+/* Translate a DW_TAG_ptr_to_member_type DIE, that is a pointer to member
+   function or field, into an LF_POINTER record.  */
+
+static uint32_t
+get_type_num_ptr_to_member_type (dw_die_ref type, bool in_struct)
+{
+  uint32_t base_type_num;
+  uint32_t containing_class;
+  dw_die_ref base_type;
+  codeview_custom_type *ct;
+
+  base_type = get_AT_ref (type, DW_AT_type);
+
+  base_type_num = get_type_num (base_type, in_struct, false);
+  if (base_type_num == 0)
+    return 0;
+
+  containing_class = get_type_num (get_AT_ref (type, DW_AT_containing_type),
+				   in_struct, false);
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_POINTER;
+  ct->lf_pointer.base_type = base_type_num;
+
+  if (TARGET_64BIT)
+    {
+      ct->lf_pointer.attributes = CV_PTR_64;
+      ct->lf_pointer.attributes |= 8 << 13;
+    }
+  else
+    {
+      ct->lf_pointer.attributes = CV_PTR_NEAR32;
+      ct->lf_pointer.attributes |= 4 << 13;
+    }
+
+  ct->lf_pointer.containing_class = containing_class;
+
+  if (base_type && dw_get_die_tag (base_type) == DW_TAG_subroutine_type)
+    {
+      ct->lf_pointer.attributes |= CV_PTR_MODE_PMFUNC;
+      ct->lf_pointer.ptr_to_mem_type = CV_PMTYPE_F_Single;
+    }
+  else
+    {
+      ct->lf_pointer.attributes |= CV_PTR_MODE_PMEM;
+      ct->lf_pointer.ptr_to_mem_type = CV_PMTYPE_D_Single;
+    }
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DIE representing a type definition, add a CodeView type if
    necessary, and return its number.  If it's something we can't handle, return
    0.  We keep a hash table so that we're not adding the same type multiple
@@ -6196,6 +6295,10 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
 
     case DW_TAG_subroutine_type:
       num = get_type_num_subroutine_type (type, in_struct, 0, 0, 0);
+      break;
+
+    case DW_TAG_ptr_to_member_type:
+      num = get_type_num_ptr_to_member_type (type, in_struct);
       break;
 
     default:
