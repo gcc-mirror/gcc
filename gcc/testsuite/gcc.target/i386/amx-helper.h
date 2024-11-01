@@ -116,6 +116,17 @@ void init_fp32_max_tile_buffer (uint8_t *buf)
       ptr[i * 16 + j] = 2.5f * i + 1.25f * j;
 }
 
+/* Init tile fp32 buffer with zero */
+void init_fp32_max_tile_zero_buffer (uint8_t *buf)
+{
+  int i, j;
+  float* ptr = (float *) buf;
+
+  for (i = 0; i < 16; i++)
+    for (j = 0; j < 16; j++)
+      ptr[i * 16 + j] = 0.0f;
+}
+
 /* Init tile buffer with int32 */
 void init_int32_max_tile_buffer (uint8_t *buf)
 {
@@ -125,6 +136,53 @@ void init_int32_max_tile_buffer (uint8_t *buf)
   for (i = 0; i < 16; i++)
     for (j = 0; j < 16; j++)
       ptr[i * 16 + j] = (uint32_t) (3 * j - 16 * i);
+}
+
+void
+init_fp8_max_tile_buffer (uint8_t *buf)
+{
+  int i, j;
+
+  for (i = 0; i < 16; i++)
+    for (j = 0; j < 64; j++)
+      {
+        int idx = i * 64 + j;
+
+        /* Positive Infinity (S11111.00) */
+        if (idx % 128 == 0)
+          buf[idx] = 0x7C;
+
+        /* Negative Infinity (S11111.00 with sign bit set) */
+        else if (idx % 128 == 1)
+          buf[idx] = 0xFC;
+
+        /* Positive NaN (S11111.01) */
+        else if (idx % 128 == 2)
+          buf[idx] = 0x7D;
+
+        /* Negative NaN (S11111.01 with sign bit set) */
+        else if (idx % 128 == 3)
+          buf[idx] = 0xFD;
+
+        /* insert Positive NaN (S11111.10) */
+        else if (idx % 128 == 4)
+          buf[idx] = 0x7E;
+
+        /* Negative NaN (S11111.10 with sign bit set) */
+        else if (idx % 128 == 5)
+          buf[idx] = 0xFE;
+
+        /* Positive NaN (S11111.11) */
+        else if (idx % 128 == 6)
+          buf[idx] = 0x7F;
+
+        /* Negative NaN (S11111.11 with sign bit set) */
+        else if (idx % 128 == 7)
+          buf[idx] = 0xFF;
+
+        else
+          buf[idx] = (uint8_t) ((idx * 251) & 0xFF);
+      }
 }
 
 #define COMPARE_ZMM(A, B)	\

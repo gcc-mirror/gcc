@@ -7559,6 +7559,11 @@ Enable/disable the generation of the AMX-TF32 instructions.
 @itemx no-amx-transpose
 Enable/disable the generation of the AMX-TRANSPOSE instructions.
 
+@cindex @code{target("amx-fp8")} function attribute, x86
+@item amx-fp8
+@itemx no-amx-fp8
+Enable/disable the generation of the AMX-FP8 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

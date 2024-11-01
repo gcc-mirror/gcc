@@ -10808,6 +10808,17 @@ proc check_effective_target_amx_transpose { } {
     } "-mamx-transpose" ]
 }
 
+# Return 1 if amx-fp8 instructions can be compiled.
+proc check_effective_target_amx_fp8 { } {
+    return [check_no_compiler_messages amx_fp8 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbf8ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-fp8" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

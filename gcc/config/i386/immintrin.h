@@ -138,6 +138,8 @@
 
 #include <amxtransposeintrin.h>
 
+#include <amxfp8intrin.h>
+
 #include <prfchwintrin.h>
 
 #include <keylockerintrin.h>

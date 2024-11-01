@@ -92,6 +92,7 @@ extern void test_avx10_2_512 (void)		__attribute__((__target__("avx10.2-512")));
 extern void test_amx_avx512 (void)		__attribute__((__target__("amx-avx512")));
 extern void test_amx_tf32 (void)		__attribute__((__target__("amx-tf32")));
 extern void test_amx_transpose (void)		__attribute__((__target__("amx-transpose")));
+extern void test_amx_fp8 (void)                 __attribute__((__target__("amx-fp8")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx512vpopcntdq(void)	__attribute__((__target__("no-avx512vpopcntdq")));
@@ -185,6 +186,7 @@ extern void test_no_avx10_2_512 (void)		__attribute__((__target__("no-avx10.2-51
 extern void test_no_amx_avx512 (void)		__attribute__((__target__("no-amx-avx512")));
 extern void test_no_amx_tf32 (void)		__attribute__((__target__("no-amx-tf32")));
 extern void test_no_amx_transpose (void)	__attribute__((__target__("no-amx-transpose")));
+extern void test_no_amx_fp8 (void)              __attribute__((__target__("no-amx-fp8")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));

@@ -263,6 +263,9 @@ main ()
 #ifdef AMX_TRANSPOSE
       && __builtin_cpu_supports ("amx-transpose")
 #endif
+#ifdef AMX_FP8
+      && __builtin_cpu_supports ("amx-fp8")
+#endif
 #ifdef __linux__
       && request_perm_xtile_data ()
 #endif
