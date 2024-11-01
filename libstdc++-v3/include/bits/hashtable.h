@@ -610,6 +610,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       _Hashtable&
       operator=(initializer_list<value_type> __l)
       {
@@ -617,16 +619,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_before_begin._M_nxt = nullptr;
 	clear();
 
-	// We consider that all elements of __l are going to be inserted.
+	// We assume that all elements of __l are likely to be inserted.
 	auto __l_bkt_count = _M_rehash_policy._M_bkt_for_elements(__l.size());
 
-	// Do not shrink to keep potential user reservation.
+	// Excess buckets might have been intentionally reserved by the user,
+	// so rehash if we need to grow, but don't shrink.
 	if (_M_bucket_count < __l_bkt_count)
 	  rehash(__l_bkt_count);
 
-	this->_M_insert_range(__l.begin(), __l.end(), __roan, __unique_keys{});
+	_ExtractKey __ex;
+	for (auto& __e : __l)
+	  {
+	    const key_type& __k = __ex(__e);
+
+	    if constexpr (__unique_keys::value)
+	      if (this->size() <= __small_size_threshold())
+		{
+		  auto __it = _M_begin();
+		  for (; __it; __it = __it->_M_next())
+		    if (this->_M_key_equals(__k, *__it))
+		      break;
+		  if (__it)
+		    continue; // Found existing element with equivalent key
+		}
+
+	    __hash_code __code = this->_M_hash_code(__k);
+	    size_type __bkt = _M_bucket_index(__code);
+
+	    if constexpr (__unique_keys::value)
+	      if (_M_find_node(__bkt, __k, __code))
+		continue; // Found existing element with equivalent key
+
+	    _M_insert_unique_node(__bkt, __code, __roan(__e));
+	  }
+
 	return *this;
       }
+#pragma GCC diagnostic pop
 
       ~_Hashtable() noexcept;
 
