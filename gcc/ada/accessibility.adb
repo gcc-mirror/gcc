@@ -187,6 +187,15 @@ package body Accessibility is
                  or else (Nkind (Node_Par) = N_Object_Renaming_Declaration
                            and then Comes_From_Iterator (Node_Par))
                then
+                  --  Handle the case of expressions within library level
+                  --  subprograms here by adding one to the level modifier.
+
+                  if Encl_Scop = Standard_Standard
+                    and then Nkind (Node_Par) = N_Subprogram_Body
+                  then
+                     Master_Lvl_Modifier := Master_Lvl_Modifier + 1;
+                  end if;
+
                   --  Note that in some rare cases the scope depth may not be
                   --  set, for example, when we are in the middle of analyzing
                   --  a type and the enclosing scope is said type. In that case
