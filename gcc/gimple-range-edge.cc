@@ -159,8 +159,14 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
       // Remove the case range from the default case.
       int_range_max def_range (type, low, high);
       range_cast (def_range, type);
-      def_range.invert ();
-      default_range.intersect (def_range);
+      // If all possible values are taken, set default_range to UNDEFINED.
+      if (def_range.varying_p ())
+	default_range.set_undefined ();
+      else
+	{
+	  def_range.invert ();
+	  default_range.intersect (def_range);
+	}
 
       // Create/union this case with anything on else on the edge.
       int_range_max case_range (type, low, high);
