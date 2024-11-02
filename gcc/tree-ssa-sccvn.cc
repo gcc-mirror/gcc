@@ -7948,6 +7948,20 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
       && (code == NE_EXPR || code == EQ_EXPR))
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
+      /* (A CMP B) != 0 is the same as (A CMP B).
+	 (A CMP B) == 0 is just (A CMP B) with the edges swapped.  */
+      if (is_gimple_assign (def_stmt)
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)) == tcc_comparison)
+	  {
+	    tree_code nc = gimple_assign_rhs_code (def_stmt);
+	    tree nlhs = vn_valueize (gimple_assign_rhs1 (def_stmt));
+	    tree nrhs = vn_valueize (gimple_assign_rhs2 (def_stmt));
+	    edge nt = true_e;
+	    edge nf = false_e;
+	    if (code == EQ_EXPR)
+	      std::swap (nt, nf);
+	    insert_predicates_for_cond (nc, nlhs, nrhs, nt, nf);
+	  }
       /* (a | b) == 0 ->
 	    on true edge assert: a == 0 & b == 0. */
       /* (a | b) != 0 ->
