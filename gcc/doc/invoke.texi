@@ -25998,8 +25998,7 @@ I/O functions are needed.
 
 @opindex mlra
 @item -mlra
-Enable Local Register Allocation.  This is still experimental for FT32,
-so by default the compiler uses standard reload.
+Does nothing.  Preserved for backward compatibility.
 
 @opindex mnodiv
 @item -mnodiv
