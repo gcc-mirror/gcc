@@ -7895,6 +7895,42 @@ insert_related_predicates_on_edge (enum tree_code code, tree *ops, edge pred_e)
     }
 }
 
+/* Insert on the TRUE_E true and FALSE_E false predicates
+   derived from LHS CODE RHS.  */
+static void
+insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
+			    edge true_e, edge false_e)
+{
+  tree_code icode = invert_tree_comparison (code, HONOR_NANS (lhs));
+  tree ops[2];
+  ops[0] = lhs;
+  ops[1] = rhs;
+  if (true_e)
+    vn_nary_op_insert_pieces_predicated (2, code, boolean_type_node, ops,
+					 boolean_true_node, 0, true_e);
+  if (false_e)
+    vn_nary_op_insert_pieces_predicated (2, code, boolean_type_node, ops,
+					 boolean_false_node, 0, false_e);
+  if (icode != ERROR_MARK)
+    {
+      if (true_e)
+	vn_nary_op_insert_pieces_predicated (2, icode, boolean_type_node, ops,
+					     boolean_false_node, 0, true_e);
+      if (false_e)
+	vn_nary_op_insert_pieces_predicated (2, icode, boolean_type_node, ops,
+					     boolean_true_node, 0, false_e);
+    }
+  /* Relax for non-integers, inverted condition handled
+     above.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
+    {
+      if (true_e)
+	insert_related_predicates_on_edge (code, ops, true_e);
+      if (false_e)
+	insert_related_predicates_on_edge (icode, ops, false_e);
+  }
+}
+
 /* Main stmt worker for RPO VN, process BB.  */
 
 static unsigned
@@ -8098,45 +8134,13 @@ process_bb (rpo_elim &avail, basic_block bb,
 		edge true_e, false_e;
 		extract_true_false_edges_from_block (bb, &true_e, &false_e);
 		enum tree_code code = gimple_cond_code (last);
-		enum tree_code icode
-		  = invert_tree_comparison (code, HONOR_NANS (lhs));
-		tree ops[2];
-		ops[0] = lhs;
-		ops[1] = rhs;
 		if ((do_region && bitmap_bit_p (exit_bbs, true_e->dest->index))
 		    || !can_track_predicate_on_edge (true_e))
 		  true_e = NULL;
 		if ((do_region && bitmap_bit_p (exit_bbs, false_e->dest->index))
 		    || !can_track_predicate_on_edge (false_e))
 		  false_e = NULL;
-		if (true_e)
-		  vn_nary_op_insert_pieces_predicated
-		    (2, code, boolean_type_node, ops,
-		     boolean_true_node, 0, true_e);
-		if (false_e)
-		  vn_nary_op_insert_pieces_predicated
-		    (2, code, boolean_type_node, ops,
-		     boolean_false_node, 0, false_e);
-		if (icode != ERROR_MARK)
-		  {
-		    if (true_e)
-		      vn_nary_op_insert_pieces_predicated
-			(2, icode, boolean_type_node, ops,
-			 boolean_false_node, 0, true_e);
-		    if (false_e)
-		      vn_nary_op_insert_pieces_predicated
-			(2, icode, boolean_type_node, ops,
-			 boolean_true_node, 0, false_e);
-		  }
-		/* Relax for non-integers, inverted condition handled
-		   above.  */
-		if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
-		  {
-		    if (true_e)
-		      insert_related_predicates_on_edge (code, ops, true_e);
-		    if (false_e)
-		      insert_related_predicates_on_edge (icode, ops, false_e);
-		  }
+		insert_predicates_for_cond (code, lhs, rhs, true_e, false_e);
 	      }
 	    break;
 	  }
