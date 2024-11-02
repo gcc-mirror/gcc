@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Constants for in-built types.  */
 
 #define T_VOID			0x0003
+#define T_HRESULT		0x0008
 #define T_CHAR			0x0010
 #define T_SHORT			0x0011
 #define T_LONG			0x0012

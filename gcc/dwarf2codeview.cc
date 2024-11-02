@@ -6220,6 +6220,29 @@ get_type_num_ptr_to_member_type (dw_die_ref type, bool in_struct)
   return ct->num;
 }
 
+/* Return the type number that corresponds to a DW_TAG_typedef DIE: either the
+   type number of the base type, or follow MSVC in having a special value
+   for the HRESULT used by COM.  */
+
+static uint32_t
+get_type_num_typedef (dw_die_ref type, bool in_struct)
+{
+  uint32_t num;
+
+  num = get_type_num (get_AT_ref (type, DW_AT_type), in_struct, false);
+
+  if (num == T_LONG)
+    {
+      const char *name = get_AT_string (type, DW_AT_name);
+
+      /* longs typedef'd as "HRESULT" get their own type */
+      if (name && !strcmp (name, "HRESULT"))
+	num = T_HRESULT;
+    }
+
+  return num;
+}
+
 /* Process a DIE representing a type definition, add a CodeView type if
    necessary, and return its number.  If it's something we can't handle, return
    0.  We keep a hash table so that we're not adding the same type multiple
@@ -6254,9 +6277,7 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
       break;
 
     case DW_TAG_typedef:
-      /* FIXME - signed longs typedef'd as "HRESULT" should get their
-		 own type (T_HRESULT) */
-      num = get_type_num (get_AT_ref (type, DW_AT_type), in_struct, false);
+      num = get_type_num_typedef (type, in_struct);
       break;
 
     case DW_TAG_pointer_type:
