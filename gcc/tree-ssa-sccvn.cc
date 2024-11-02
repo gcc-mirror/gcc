@@ -7901,6 +7901,21 @@ static void
 insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
 			    edge true_e, edge false_e)
 {
+  /* If both edges are null, then there is nothing to be done. */
+  if (!true_e && !false_e)
+    return;
+
+  /* Canonicalize the comparison so the rhs are constants.  */
+  if (CONSTANT_CLASS_P (lhs))
+    {
+      std::swap (lhs, rhs);
+      code = swap_tree_comparison (code);
+    }
+
+  /* If the lhs is not a ssa name, don't record anything. */
+  if (TREE_CODE (lhs) != SSA_NAME)
+    return;
+
   tree_code icode = invert_tree_comparison (code, HONOR_NANS (lhs));
   tree ops[2];
   ops[0] = lhs;
@@ -7929,6 +7944,27 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
       if (false_e)
 	insert_related_predicates_on_edge (icode, ops, false_e);
   }
+  if (integer_zerop (rhs)
+      && (code == NE_EXPR || code == EQ_EXPR))
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (lhs);
+      /* (a | b) == 0 ->
+	    on true edge assert: a == 0 & b == 0. */
+      /* (a | b) != 0 ->
+	    on false edge assert: a == 0 & b == 0. */
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR)
+	{
+	  edge e = code == EQ_EXPR ? true_e : false_e;
+	  tree nlhs;
+
+	  nlhs = vn_valueize (gimple_assign_rhs1 (def_stmt));
+	  insert_predicates_for_cond (EQ_EXPR, nlhs, rhs, e, nullptr);
+
+	  nlhs = vn_valueize (gimple_assign_rhs2 (def_stmt));
+	  insert_predicates_for_cond (EQ_EXPR, nlhs, rhs, e, nullptr);
+	}
+    }
 }
 
 /* Main stmt worker for RPO VN, process BB.  */
