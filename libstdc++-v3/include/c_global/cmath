@@ -2626,7 +2626,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr int
   ilogb(_Float16 __x)
-  { return _Float16(__builtin_ilogbf(__x)); }
+  { return __builtin_ilogbf(__x); }
 
   constexpr _Float16
   lgamma(_Float16 __x)
@@ -2634,11 +2634,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long long
   llrint(_Float16 __x)
-  { return _Float16(__builtin_llrintf(__x)); }
+  { return __builtin_llrintf(__x); }
 
   constexpr long long
   llround(_Float16 __x)
-  { return _Float16(__builtin_llroundf(__x)); }
+  { return __builtin_llroundf(__x); }
 
   constexpr _Float16
   log1p(_Float16 __x)
@@ -2655,11 +2655,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long
   lrint(_Float16 __x)
-  { return _Float16(__builtin_lrintf(__x)); }
+  { return __builtin_lrintf(__x); }
 
   constexpr long
   lround(_Float16 __x)
-  { return _Float16(__builtin_lroundf(__x)); }
+  { return __builtin_lroundf(__x); }
 
   constexpr _Float16
   nearbyint(_Float16 __x)
@@ -3348,7 +3348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr int
   ilogb(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_ilogbf(__x)); }
+  { return __builtin_ilogbf(__x); }
 
   constexpr __gnu_cxx::__bfloat16_t
   lgamma(__gnu_cxx::__bfloat16_t __x)
@@ -3356,11 +3356,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long long
   llrint(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_llrintf(__x)); }
+  { return __builtin_llrintf(__x); }
 
   constexpr long long
   llround(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_llroundf(__x)); }
+  { return __builtin_llroundf(__x); }
 
   constexpr __gnu_cxx::__bfloat16_t
   log1p(__gnu_cxx::__bfloat16_t __x)
@@ -3377,11 +3377,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   constexpr long
   lrint(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_lrintf(__x)); }
+  { return __builtin_lrintf(__x); }
 
   constexpr long
   lround(__gnu_cxx::__bfloat16_t __x)
-  { return __gnu_cxx::__bfloat16_t(__builtin_lroundf(__x)); }
+  { return __builtin_lroundf(__x); }
 
   constexpr __gnu_cxx::__bfloat16_t
   nearbyint(__gnu_cxx::__bfloat16_t __x)
