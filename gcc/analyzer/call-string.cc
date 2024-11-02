@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/supergraph.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -103,18 +104,18 @@ call_string::print (pretty_printer *pp) const
      "funcname" : str},
      ...for each element in the callstring].  */
 
-json::value *
+std::unique_ptr<json::value>
 call_string::to_json () const
 {
-  json::array *arr = new json::array ();
+  auto arr = ::make_unique<json::array> ();
 
   for (const call_string::element_t &e : m_elements)
     {
-      json::object *e_obj = new json::object ();
+      auto e_obj = ::make_unique<json::object> ();
       e_obj->set_integer ("src_snode_idx", e.m_callee->m_index);
       e_obj->set_integer ("dst_snode_idx", e.m_caller->m_index);
       e_obj->set_string ("funcname", function_name (e.m_caller->m_fun));
-      arr->append (e_obj);
+      arr->append (std::move (e_obj));
     }
 
   return arr;

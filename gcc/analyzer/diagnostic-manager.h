@@ -42,7 +42,7 @@ public:
   void add_note (std::unique_ptr<pending_note> pn);
   void add_event (std::unique_ptr<checker_event> event);
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   void dump_dot_id (pretty_printer *pp) const;
   void dump_as_dot_node (pretty_printer *pp) const;
@@ -157,7 +157,7 @@ public:
 
   engine *get_engine () const { return m_eng; }
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   bool add_diagnostic (const state_machine *sm,
 		       const pending_location &ploc,

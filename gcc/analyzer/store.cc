@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
 #include "text-art/tree-widget.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -231,10 +232,10 @@ bit_range::dump () const
    This is intended for debugging the analyzer rather
    than serialization.  */
 
-json::object *
+std::unique_ptr<json::object>
 bit_range::to_json () const
 {
-  json::object *obj = new json::object ();
+  auto obj = ::make_unique<json::object> ();
   obj->set ("start_bit_offset",
 	    bit_offset_to_json (m_start_bit_offset));
   obj->set ("size_in_bits",
@@ -505,10 +506,10 @@ byte_range::dump () const
    This is intended for debugging the analyzer rather
    than serialization.  */
 
-json::object *
+std::unique_ptr<json::object>
 byte_range::to_json () const
 {
-  json::object *obj = new json::object ();
+  auto obj = ::make_unique<json::object> ();
   obj->set ("start_byte_offset",
 	    byte_offset_to_json (m_start_byte_offset));
   obj->set ("size_in_bytes",
@@ -770,10 +771,10 @@ binding_map::dump (bool simple) const
    {KEY_DESC : SVALUE_DESC,
     ...for the various key/value pairs in this binding_map}.  */
 
-json::object *
+std::unique_ptr<json::object>
 binding_map::to_json () const
 {
-  json::object *map_obj = new json::object ();
+  auto map_obj = ::make_unique<json::object> ();
 
   auto_vec <const binding_key *> binding_keys;
   for (map_t::iterator iter = m_map.begin ();
@@ -1419,10 +1420,10 @@ binding_cluster::validate () const
     "touched": true/false,
     "map" : object for the binding_map.  */
 
-json::object *
+std::unique_ptr<json::object>
 binding_cluster::to_json () const
 {
-  json::object *cluster_obj = new json::object ();
+  auto cluster_obj = ::make_unique<json::object> ();
 
   cluster_obj->set_bool ("escaped", m_escaped);
   cluster_obj->set_bool ("touched", m_touched);
@@ -2636,10 +2637,10 @@ store::validate () const
     ...for each parent region,
     "called_unknown_fn": true/false}.  */
 
-json::object *
+std::unique_ptr<json::object>
 store::to_json () const
 {
-  json::object *store_obj = new json::object ();
+  auto store_obj = ::make_unique<json::object> ();
 
   /* Sort into some deterministic order.  */
   auto_vec<const region *> base_regions;
@@ -2662,7 +2663,7 @@ store::to_json () const
     {
       gcc_assert (parent_reg);
 
-      json::object *clusters_in_parent_reg_obj = new json::object ();
+      auto clusters_in_parent_reg_obj = ::make_unique<json::object> ();
 
       const region *base_reg;
       unsigned j;
@@ -2678,7 +2679,8 @@ store::to_json () const
 					   cluster->to_json ());
 	}
       label_text parent_reg_desc = parent_reg->get_desc ();
-      store_obj->set (parent_reg_desc.get (), clusters_in_parent_reg_obj);
+      store_obj->set (parent_reg_desc.get (),
+		      std::move (clusters_in_parent_reg_obj));
     }
 
   store_obj->set_bool ("called_unknown_fn", m_called_unknown_fn);

@@ -239,7 +239,7 @@ class exploded_node : public dnode<eg_traits>
   void dump_processed_stmts (pretty_printer *pp) const;
   void dump_saved_diagnostics (pretty_printer *pp) const;
 
-  json::object *to_json (const extrinsic_state &ext_state) const;
+  std::unique_ptr<json::object> to_json (const extrinsic_state &ext_state) const;
 
   /* The result of on_stmt.  */
   struct on_stmt_flags
@@ -387,7 +387,7 @@ class exploded_edge : public dedge<eg_traits>
     const final override;
   void dump_dot_label (pretty_printer *pp) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   //private:
   const superedge *const m_sedge;
@@ -688,7 +688,7 @@ public:
 
   void dump () const;
 
-  json::array *to_json () const;
+  std::unique_ptr<json::array> to_json () const;
 
 private:
   struct per_node_data
@@ -732,7 +732,7 @@ public:
     return m_scc.get_scc_id (snode.m_index);
   }
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
 private:
   class key_t
@@ -867,7 +867,7 @@ public:
   void dump_states_for_supernode (FILE *, const supernode *snode) const;
   void dump_exploded_nodes () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   exploded_node *get_node_by_index (int idx) const;
 

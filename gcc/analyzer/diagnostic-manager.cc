@@ -740,10 +740,10 @@ saved_diagnostic::add_event (std::unique_ptr<checker_event> event)
     "pending_diagnostic": str,
     "idx": int}.  */
 
-json::object *
+std::unique_ptr<json::object>
 saved_diagnostic::to_json () const
 {
-  json::object *sd_obj = new json::object ();
+  auto sd_obj = ::make_unique<json::object> ();
 
   if (m_sm)
     sd_obj->set_string ("sm", m_sm->get_name ());
@@ -1216,18 +1216,18 @@ diagnostic_manager::add_event (std::unique_ptr<checker_event> event)
 /* Return a new json::object of the form
    {"diagnostics"  : [obj for saved_diagnostic]}.  */
 
-json::object *
+std::unique_ptr<json::object>
 diagnostic_manager::to_json () const
 {
-  json::object *dm_obj = new json::object ();
+  auto dm_obj = ::make_unique<json::object> ();
 
   {
-    json::array *sd_arr = new json::array ();
+    auto sd_arr = ::make_unique<json::array> ();
     int i;
     saved_diagnostic *sd;
     FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
       sd_arr->append (sd->to_json ());
-    dm_obj->set ("diagnostics", sd_arr);
+    dm_obj->set ("diagnostics", std::move (sd_arr));
   }
 
   return dm_obj;

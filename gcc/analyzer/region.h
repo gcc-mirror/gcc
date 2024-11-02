@@ -176,7 +176,7 @@ public:
   void dump (bool simple) const;
   void dump () const;
 
-  json::value *to_json () const;
+  std::unique_ptr<json::value> to_json () const;
 
 
   bool maybe_print_for_user (pretty_printer *pp,

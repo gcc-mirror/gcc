@@ -232,10 +232,10 @@ region_to_value_map::dump (bool simple) const
    This is intended for debugging the analyzer rather than
    serialization.  */
 
-json::object *
+std::unique_ptr<json::object>
 region_to_value_map::to_json () const
 {
-  json::object *map_obj = new json::object ();
+  auto map_obj = ::make_unique<json::object> ();
 
   auto_vec<const region *> regs;
   for (iterator iter = begin (); iter != end (); ++iter)
@@ -512,10 +512,10 @@ region_model::debug () const
    This is intended for debugging the analyzer rather than
    serialization.  */
 
-json::object *
+std::unique_ptr<json::object>
 region_model::to_json () const
 {
-  json::object *model_obj = new json::object ();
+  auto model_obj = ::make_unique<json::object> ();
   model_obj->set ("store", m_store.to_json ());
   model_obj->set ("constraints", m_constraints->to_json ());
   if (m_current_frame)

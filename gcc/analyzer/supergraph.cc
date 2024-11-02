@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -462,29 +463,29 @@ supergraph::dump_dot (const char *path, const dump_args_t &dump_args) const
    {"nodes" : [objs for snodes],
     "edges" : [objs for sedges]}.  */
 
-json::object *
+std::unique_ptr<json::object>
 supergraph::to_json () const
 {
-  json::object *sgraph_obj = new json::object ();
+  auto sgraph_obj = ::make_unique<json::object> ();
 
   /* Nodes.  */
   {
-    json::array *nodes_arr = new json::array ();
+    auto nodes_arr = ::make_unique<json::array> ();
     unsigned i;
     supernode *n;
     FOR_EACH_VEC_ELT (m_nodes, i, n)
       nodes_arr->append (n->to_json ());
-    sgraph_obj->set ("nodes", nodes_arr);
+    sgraph_obj->set ("nodes", std::move (nodes_arr));
   }
 
   /* Edges.  */
   {
-    json::array *edges_arr = new json::array ();
+    auto edges_arr = ::make_unique<json::array> ();
     unsigned i;
     superedge *n;
     FOR_EACH_VEC_ELT (m_edges, i, n)
       edges_arr->append (n->to_json ());
-    sgraph_obj->set ("edges", edges_arr);
+    sgraph_obj->set ("edges", std::move (edges_arr));
   }
 
   return sgraph_obj;
@@ -717,10 +718,10 @@ supernode::dump_dot_id (pretty_printer *pp) const
     "phis": [str],
     "stmts" : [str]}.  */
 
-json::object *
+std::unique_ptr<json::object>
 supernode::to_json () const
 {
-  json::object *snode_obj = new json::object ();
+  auto snode_obj = ::make_unique<json::object> ();
 
   snode_obj->set_integer ("idx", m_index);
   snode_obj->set_integer ("bb_idx", m_bb->index);
@@ -980,10 +981,10 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
     "dst_idx": int, the index of the destination supernode,
     "desc"   : str.  */
 
-json::object *
+std::unique_ptr<json::object>
 superedge::to_json () const
 {
-  json::object *sedge_obj = new json::object ();
+  auto sedge_obj = ::make_unique<json::object> ();
   sedge_obj->set_string ("kind", edge_kind_to_string (m_kind));
   sedge_obj->set_integer ("src_idx", m_src->m_index);
   sedge_obj->set_integer ("dst_idx", m_dest->m_index);

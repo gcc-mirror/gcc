@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-selftests.h"
 #include "text-art/tree-widget.h"
 #include "text-art/dump.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -98,18 +99,18 @@ extrinsic_state::dump () const
 /* Return a new json::object of the form
    {"checkers"  : array of objects, one for each state_machine}.  */
 
-json::object *
+std::unique_ptr<json::object>
 extrinsic_state::to_json () const
 {
-  json::object *ext_state_obj = new json::object ();
+  auto ext_state_obj = ::make_unique<json::object> ();
 
   {
-    json::array *checkers_arr = new json::array ();
+    auto checkers_arr = ::make_unique<json::array> ();
     unsigned i;
     state_machine *sm;
     FOR_EACH_VEC_ELT (m_checkers, i, sm)
       checkers_arr->append (sm->to_json ());
-    ext_state_obj->set ("checkers", checkers_arr);
+    ext_state_obj->set ("checkers", std::move (checkers_arr));
   }
 
   return ext_state_obj;
@@ -276,10 +277,10 @@ sm_state_map::dump (bool simple) const
    {"global"  : (optional) value for global state,
     SVAL_DESC : value for state}.  */
 
-json::object *
+std::unique_ptr<json::object>
 sm_state_map::to_json () const
 {
-  json::object *map_obj = new json::object ();
+  auto map_obj = ::make_unique<json::object> ();
 
   if (m_global_state != m_sm.get_start_state ())
     map_obj->set ("global", m_global_state->to_json ());
@@ -1185,10 +1186,10 @@ program_state::dump () const
     "checkers" : { STATE_NAME : object per sm_state_map },
     "valid" : true/false}.  */
 
-json::object *
+std::unique_ptr<json::object>
 program_state::to_json (const extrinsic_state &ext_state) const
 {
-  json::object *state_obj = new json::object ();
+  auto state_obj = ::make_unique<json::object> ();
 
   state_obj->set ("store", m_region_model->get_store ()->to_json ());
   state_obj->set ("constraints",
@@ -1199,7 +1200,7 @@ program_state::to_json (const extrinsic_state &ext_state) const
 
   /* Provide m_checker_states as an object, using names as keys.  */
   {
-    json::object *checkers_obj = new json::object ();
+    auto checkers_obj = ::make_unique<json::object> ();
 
     int i;
     sm_state_map *smap;
@@ -1207,7 +1208,7 @@ program_state::to_json (const extrinsic_state &ext_state) const
       if (!smap->is_empty_p ())
 	checkers_obj->set (ext_state.get_name (i), smap->to_json ());
 
-    state_obj->set ("checkers", checkers_obj);
+    state_obj->set ("checkers", std::move (checkers_obj));
   }
 
   state_obj->set_bool ("valid", m_valid);

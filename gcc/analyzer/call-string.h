@@ -72,7 +72,7 @@ public:
 
   void print (pretty_printer *pp) const;
 
-  json::value *to_json () const;
+  std::unique_ptr<json::value> to_json () const;
 
   bool empty_p () const { return m_elements.is_empty (); }
 

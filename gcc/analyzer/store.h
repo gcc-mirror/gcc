@@ -239,7 +239,7 @@ struct bit_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   bool empty_p () const
   {
@@ -315,7 +315,7 @@ struct byte_range
   void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   bool empty_p () const
   {
@@ -546,7 +546,7 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   void add_to_tree_widget (text_art::tree_widget &parent_widget,
 			   const text_art::dump_widget_info &dwi) const;
@@ -615,7 +615,7 @@ public:
 
   void validate () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,
@@ -758,7 +758,7 @@ public:
 
   void validate () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,

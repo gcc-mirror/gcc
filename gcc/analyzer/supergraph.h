@@ -168,7 +168,7 @@ public:
   void dump_dot_to_file (FILE *fp, const dump_args_t &) const;
   void dump_dot (const char *path, const dump_args_t &) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   int num_nodes () const { return m_nodes.length (); }
   int num_edges () const { return m_edges.length (); }
@@ -255,7 +255,7 @@ class supernode : public dnode<supergraph_traits>
   void dump_dot (graphviz_out *gv, const dump_args_t &args) const override;
   void dump_dot_id (pretty_printer *pp) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   location_t get_start_location () const;
   location_t get_end_location () const;
@@ -323,7 +323,7 @@ class superedge : public dedge<supergraph_traits>
   virtual void dump_label_to_pp (pretty_printer *pp,
 				 bool user_facing) const = 0;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   enum edge_kind get_kind () const { return m_kind; }
 

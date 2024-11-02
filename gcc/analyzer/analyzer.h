@@ -416,16 +416,16 @@ extern void log_stashed_constants (logger *logger);
 
 extern FILE *get_or_create_any_logfile ();
 
-extern json::value *
+extern std::unique_ptr<json::value>
 tree_to_json (tree node);
 
-extern json::value *
+extern std::unique_ptr<json::value>
 diagnostic_event_id_to_json (const diagnostic_event_id_t &);
 
-extern json::value *
+extern std::unique_ptr<json::value>
 bit_offset_to_json (const bit_offset_t &offset);
 
-extern json::value *
+extern std::unique_ptr<json::value>
 byte_offset_to_json (const byte_offset_t &offset);
 
 extern tristate

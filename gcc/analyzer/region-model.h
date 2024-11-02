@@ -177,7 +177,7 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
@@ -286,7 +286,7 @@ class region_model
 
   void debug () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
