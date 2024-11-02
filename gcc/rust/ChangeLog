@@ -1,3 +1,10 @@
+2024-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117361
+	* Make-lang.in (s-selftest-rust): Use GCC_FOR_SELFTESTS.
+	(selftest-rust-gdb): Likewise.
+	(selftest-rust-valgrind): Likewise.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* util/optional.h: Remove trailing whitespace.

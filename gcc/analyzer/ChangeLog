@@ -1,3 +1,10 @@
+2024-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/117373
+	* infinite-loop.cc
+	(infinite_loop_diagnostic::describe_final_event): Fix
+	-Wunused-parameter warning
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

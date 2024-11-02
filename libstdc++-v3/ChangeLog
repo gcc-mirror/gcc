@@ -1,3 +1,62 @@
+2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unordered_map.h: Check __glibcxx_node_extract and
+	__glibcxx_unordered_map_try_emplace instead of __cplusplus.
+	* include/bits/unordered_set.h: Check __glibcxx_node_extract
+	instead of __cplusplus.
+
+2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Improve comments.
+
+2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/forward_list.h
+	(forward_list(from_range, R&&, const Alloc&), assign_range)
+	(prepend_range, insert_range_after): Define.
+	* include/bits/stl_list.h (list(from_range, R&&, const Alloc&))
+	(assign_range, prepend_range, append_range, insert_range):
+	Define.
+	* include/debug/forward_list
+	(forward_list(from_range, R&&, const Alloc&), assign_range)
+	(prepend_range, insert_range_after): Define.
+	* include/debug/list (list(from_range, R&&, const Alloc&))
+	(assign_range, prepend_range, append_range, insert_range):
+	Define.
+	* testsuite/23_containers/forward_list/cons/from_range.cc: New
+	test.
+	* testsuite/23_containers/forward_list/modifiers/assign_range.cc:
+	New test.
+	* testsuite/23_containers/forward_list/modifiers/insert_range_after.cc:
+	New test.
+	* testsuite/23_containers/forward_list/modifiers/prepend_range.cc:
+	New test.
+	* testsuite/23_containers/list/cons/from_range.cc: New test.
+	* testsuite/23_containers/list/modifiers/append_range.cc: New
+	test.
+	* testsuite/23_containers/list/modifiers/assign/assign_range.cc:
+	New test.
+	* testsuite/23_containers/list/modifiers/insert/insert_range.cc:
+	New test.
+	* testsuite/23_containers/list/modifiers/prepend_range.cc: New
+	test.
+
+2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_set/pr115285.cc: Include
+	missing header for std::vector.
+
+2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/typeinfo: Remove whitespace in #endif
+
+2024-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new (operator new): Add attribute align_alloc(2) to
+	overloads taking a std::align_val_t argument.
+	* testsuite/18_support/new_aligned_warn.cc: New test.
+
 2024-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/vector/cons/from_range.cc: Fix copy &

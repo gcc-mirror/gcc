@@ -1,3 +1,27 @@
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114461
+	* include/cpplib.h: Implement C++26 P3034R1
+	- Module Declarations Shouldn’t be Macros (or more precisely
+	its expected intent).
+	(NO_DOT_COLON): Define.
+	* internal.h (struct cpp_reader): Add diagnose_dot_colon_from_macro_p
+	member.
+	* lex.cc (cpp_maybe_module_directive): For pp-module, if
+	module keyword is followed by CPP_NAME, ensure all CPP_NAME
+	tokens possibly matching module name and module partition
+	syntax aren't expanded and aren't defined as object-like macros.
+	Verify first token after that doesn't start with open paren.
+	If the next token after module name/partition is CPP_NAME defined
+	as macro, set NO_DOT_COLON flag on it.
+	* macro.cc (cpp_get_token_1): Set
+	pfile->diagnose_dot_colon_from_macro_p if token to be expanded has
+	NO_DOT_COLON bit set in flags.  Before returning, if
+	pfile->diagnose_dot_colon_from_macro_p is true and not returning
+	CPP_PADDING or CPP_COMMENT and not during macro expansion preparation,
+	set pfile->diagnose_dot_colon_from_macro_p to false and diagnose
+	if returning CPP_DOT or CPP_COLON.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* directives.cc: Remove trailing whitespace.

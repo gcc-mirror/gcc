@@ -1,3 +1,395 @@
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/117407
+	* builtins.cc (expand_builtin_prefetch): Use !IN_RANGE rather
+	than IN_RANGE.
+
+2024-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_bitwise_or::op1_range): If LHS is signed
+	positive, so are both operands.
+
+2024-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117287
+	* Makefile.in (IBJS): Add tree-assume.o
+	* gimple-range.cc (assume_query::assume_range_p): Remove.
+	(assume_query::range_of_expr): Remove.
+	(assume_query::assume_query): Move to tree-assume.cc.
+	(assume_query::~assume_query): Remove.
+	(assume_query::calculate_op): Move to tree-assume.cc.
+	(assume_query::calculate_phi): Likewise.
+	(assume_query::check_taken_edge): Remove.
+	(assume_query::calculate_stmt): Move to tree-assume.cc.
+	(assume_query::dump): Remove.
+	* gimple-range.h (class assume_query): Move to tree-assume.cc
+	* tree-assume.cc: New
+	* tree-vrp.cc (struct pass_data_assumptions): Move to tree-assume.cc.
+	(class pass_assumptions): Likewise.
+	(make_pass_assumptions): Likewise.
+
+2024-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (class fur_edge): Relocate from here.
+	(fur_edge::fur_edge): Also move to:
+	* gimple-range-fold.h (class fur_edge): Relocate to here.
+	(fur_edge::fur_edge): Likewise.
+
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/standards.texi (C++ Language): Mention also the 2024
+	revision and -std=gnu++23 option.
+	* doc/invoke.texi (-std=): Adjust description of c++23, c++2b,
+	gnu++23 and gnu++2b now that ISO C++ 14882:2024 is published.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* builtins.cc (expand_builtin_prefetch): Use IN_RANGE to
+	avoid second usage of INTVAL.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/cmpccxaddintrin.h (_cmpccxadd_epi32): Do not do
+	type conversion for pointer.
+	(_cmpccxadd_epi64): Ditto.
+
+2024-11-01  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/116887
+	* varasm.cc (default_section_type_flags): Always set
+	SECTION_RELRO if name is .data.rel.ro{,.local}.
+
+2024-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117361
+	* Makefile.in (GCC_FOR_SELFTESTS): New.
+
+2024-11-01  Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AMX-MOVRS.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_MOVRS_SET): New.
+	(OPTION_MASK_ISA2_AMX_MOVRS_UNSET): Ditto.
+	(ix86_handle_option): Handle -mamx-movrs.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_MOVRS.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-movrs.
+	* config.gcc: Add amxmovrsintrin.h.
+	* config/i386/cpuid.h (bit_AMX_MOVRS): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Define __AMX_MOVRS__.
+	* config/i386/i386-isa.def (AMX_MOVRS): Add DEF_PTA(AMX_MOVRS).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle amx-movrs.
+	* config/i386/i386.opt: Add option -mamx-movrs.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include amxmovrsintrin.h
+	* doc/extend.texi: Document amx-movrs.
+	* doc/invoke.texi: Document -mamx-movrs.
+	* doc/sourcebuild.texi: Document target amx-movrs.
+	* config/i386/amxmovrsintrin.h: New file.
+
+2024-11-01  Hu, Lin1  <lin1.hu@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* builtins.cc (expand_builtin_prefetch): Expand for
+	prefetchrst2.
+	* common/config/i386/cpuinfo.h (get_available_features): Detect movrs.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_MOVRS_SET): New.
+	(OPTION_MASK_ISA2_MOVRS_UNSET): Ditto.
+	(ix86_handle_option): Handle -mmovrs.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_features): Add FEATURE_MOVRS.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for movrs.
+	* config.gcc: Add movrsintrin.h
+	* config/i386/cpuid.h (bit_MOVRS): New.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (CHAR, PCCHAR), (SHORT, PCSHORT), (INT, PCINT),
+	(INT64, PCINT64).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add
+	__MOVRS__.
+	* config/i386/i386-expand.cc (ix86_expand_special_args_builtin): Define
+	__MOVRS__.
+	* config/i386/i386-isa.def (MOVRS): Add DEF_PTA(MOVRS)
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle movrs.
+	* config/i386/i386.md (movrs<mode>): New.
+	* config/i386/i386.opt: Add option -mmovrs.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include movrsintrin.h
+	* config/i386/sse.md (unspecv): Add UNSPEC_VMOVRS.
+	(VI1248_AVX10_2): New.
+	(avx10_2_movrs_vmovrs<ssemodesuffix><mode><mask_name>): New define_insn.
+	* config/i386/xmmintrin.h: Add prefetchrst2.
+	* doc/extend.texi: Document movrs.
+	* doc/invoke.texi: Document -mmovrs.
+	* doc/rtl.texi: Document extension of prefetchrst2.
+	* doc/sourcebuild.texi: Document target movrs.
+	* config/i386/movrsintrin.h: New.
+
+2024-11-01  Liwei Xu  <liwei.xu@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_available_features): Detect amx-fp8.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_FP8_SET): New macros.
+	(OPTION_MASK_ISA2_AMX_FP8_UNSET): Ditto.
+	(ix86_handle_option): Handle -mamx-fp8.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_FP8.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for amx-fp8.
+	* config.gcc: Add amxfp8intrin.h.
+	* config/i386/cpuid.h (bit_AMX_FP8): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Define __AMX_FP8__.
+	* config/i386/i386-isa.def (AMX_FP8): Add DEF_PTA for AMX_FP8.
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Add new ATTR.
+	* config/i386/i386.opt: Add -mamx-fp8.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include amxfp8intrin.h.
+	* doc/extend.texi: Document -mamx-fp8.
+	* doc/invoke.texi: Document -mamx-fp8.
+	* doc/sourcebuild.texi: Document -mamx-fp8.
+	* config/i386/amxfp8intrin.h: New file.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AMX-TRANSPOSE.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_TRANSPOSE_SET,
+	OPTION_MASK_ISA2_AMX_TRANSPOSE_UNSET): New.
+	(ix86_handle_option): Handle -mamx-transpose.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_TRANSPOSE.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-transpose.
+	* config.gcc: Add amxtransposeintrin.h.
+	* config/i386/cpuid.h (bit_AMX_TRANSPOSE): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AMX_TRANSPOSE__.
+	* config/i386/i386-isa.def (AMX_TRANSPOSE): Add
+	DEF_PTA(AMX_TRANSPOSE).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle amx-transpose.
+	* config/i386/i386.opt: Add option -mamx-transpose.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include amxtransposeintrin.h.
+	* doc/extend.texi: Document amx-transpose.
+	* doc/invoke.texi: Document -mamx-transpose.
+	* doc/sourcebuild.texi: Document target amx-transpose.
+	* config/i386/amxtransposeintrin.h: New file.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AMX-TF32.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AMX_TF32_SET,
+	OPTION_MASK_ISA2_AMX_TF32_UNSET): New.
+	(ix86_handle_option): Handle -mamx-tf32.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_TF32.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-tf32.
+	* config.gcc: Add amxtf32intrin.h
+	* config/i386/cpuid.h (bit_AMX_TF32): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Handle amx-tf32.
+	* config/i386/i386-isa.def (AMX_TF32): Add DEF_PTA(AMX_TF32).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle amx-tf32.
+	* config/i386/i386.opt: Add option -mamx-tf32.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include amxtf32intrin.h.
+	* doc/extend.texi: Document amx-tf32.
+	* doc/invoke.texi: Document -mamx-tf32.
+	* doc/sourcebuild.texi: Document target amx-tf32.
+	* config/i386/amxtf32intrin.h: New file.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+	    Yu, Bing  <bing1.yu@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AMX-AVX512.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AMX_AVX512_SET,
+	OPTION_MASK_ISA2_AMX_AVX512_UNSET): New.
+	(ix86_handle_option): Handle -mamx-avx512.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_AVX512.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-avx512.
+	* config.gcc: Add amxavx512intrin.h
+	* config/i386/cpuid.h (bit_AMX_AVX512): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Handle amx-avx512.
+	* config/i386/i386-isa.def (AMX_AVX512): Add DEF_PTA(AMX_AVX512).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle amx-avx512.
+	* config/i386/i386.opt: Add option -mamx-avx512.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include amxavx512intrin.h
+	* doc/extend.texi: Document amx-avx512.
+	* doc/invoke.texi: Document -mamx-avx512.
+	* doc/sourcebuild.texi: Document target amx-avx512.
+	* config/i386/amxavx512intrin.h: New file.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (V16SI, V16SI, V16SI).
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle
+	V16SI_FTYPE_V16SI_V16SI.
+	* config/i386/sm4intrin.h: Add zmm insns.
+	* config/i386/sse.md (vsm4key4_<mode>): Add EVEX pattern.
+	(vsm4rnds4_<mode>): Ditto.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svmax, svamin): Move
+	definitions to...
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: ...here.
+	* config/aarch64/aarch64-sve-builtins-base.def (svmax, svamin): Move
+	definitions to...
+	* config/aarch64/aarch64-sve-builtins-sve2.def: ...here.  Require
+	SME2 in streaming mode.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add aarch64-protos.h to target_gtfiles.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_required_extensions): New structure.
+	(aarch64_check_required_extensions): Change the type of the
+	required_extensions parameter from aarch64_feature_flags to
+	aarch64_required_extensions.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_builder::add_unique_function): Likewise.
+	(function_builder::add_overloaded_function): Likewise.
+	(function_builder::get_attributes): Likewise.
+	(function_builder::add_function): Likewise.
+	(function_group_info): Change the type of required_extensions
+	in the same way.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_pragma_builtins_data::required_extensions): Change the type
+	from aarch64_feature_flags to aarch64_required_extensions.
+	(aarch64_check_required_extensions): Likewise change the type
+	of the required_extensions parameter.  Separate the requirements
+	for non-streaming mode and streaming mode, ORing them together
+	for streaming-compatible mode.
+	(aarch64_general_required_extensions): New function.
+	(aarch64_general_check_builtin_call): Use it.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(registered_function::required_extensions): Change the type
+	from aarch64_feature_flags to aarch64_required_extensions.
+	(DEF_NEON_SVE_FUNCTION, DEF_SME_ZA_FUNCTION_GS): Update accordingly.
+	(function_builder::get_attributes): Change the type of the
+	required_extensions parameter from aarch64_feature_flags to
+	aarch64_required_extensions.
+	(function_builder::add_function): Likewise.
+	(function_builder::add_unique_function): Likewise.
+	(function_builder::add_overloaded_function): Likewise.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Update
+	REQUIRED_EXTENSIONS definitions to use aarch64_required_extensions.
+	* config/aarch64/aarch64-sve-builtins-base.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Likewise.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (ENTRY): Remove the features
+	argument and get the features from REQUIRED_EXTENSIONS instead.
+	(ENTRY_VHSDF): Move definition to...
+	* config/aarch64/aarch64-simd-pragma-builtins.def: ...here.
+	Move the architecture requirements to REQUIRED_EXTENSIONS.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.def (svtrn1q, svtrn2q)
+	(svuzp1q, svuzp2q, svzip1q, svzip2q): Require SM_OFF.
+
+2024-10-31  Andi Kleen  <ak@gcc.gnu.org>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for HAVE_CLOCK_GETTIME.
+	* timevar.cc (get_time): Use HAVE_CLOCK_GETTIME.
+
+2024-10-31  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Use IOR op.
+
+2024-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add lazy-diagnostic-path.o.
+	* lazy-diagnostic-path.cc: New file.
+	* lazy-diagnostic-path.h: New file.
+	* selftest-diagnostic.cc: Include "diagnostic-format.h".
+	(test_diagnostic_context::test_diagnostic_context): Turn off
+	flushing for the output format's printer.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::lazy_diagnostic_path_cc_tests.
+	* selftest.h (selftest::lazy_diagnostic_path_cc_tests): New decl.
+
+2024-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* opts-diagnostic.cc (output_factory::handler::handler): Use
+	std::move on name.
+
+2024-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::finish): Delete and reset
+	m_option_mgr.
+
+2024-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/117176
+	* tree-vect-patterns.cc (vect_recog_gcond_pattern): Lower all gconds.
+	* tree-vect-slp.cc (vect_analyze_slp): No longer check for in vect def.
+
+2024-10-31  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv.cc (riscv_can_inline_p): Refuse to inline
+	when callee is versioned but caller is not.
+
+2024-10-31  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv-protos.h (riscv_process_target_attr): New.
+	* config/riscv/riscv-target-attr.cc (riscv_process_target_attr):
+	Split into two functions with const char *args argument
+
+2024-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117354
+	* expr.cc (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Pass
+	true as inner_reference_p argument to expand_expr_real if
+	mode is BLKmode.  Don't call extract_bit_field if mode is BLKmode.
+
+2024-10-31  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/predicates.md: Use flag_plt instead of TARGET_PLT.
+	* config/riscv/riscv.opt: alias common option fplt to mplt.
+
+2024-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (valid_new_delete_pair_p): Fix up duplicate "or  or"
+	in comment.
+
+2024-10-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/114785
+	PR middle-end/116949
+	* gimple-match-exports.cc (maybe_push_res_to_seq): Remove special
+	handling of COMPARISON_CLASS_P in COND_EXPR/VEC_COND_EXPR.
+	(gimple_extract): Likewise.
+	* gimple-walk.cc (walk_stmt_load_store_addr_ops): Likewise.
+	* gimple.cc (gimple_build_assign_1): Add assert for COND_EXPR
+	so its 1st operand is not a comparison.
+
 2024-10-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* tree-vectorizer.cc (pass_vectorize::execute): Reset dont_vectorize

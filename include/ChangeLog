@@ -1,3 +1,7 @@
+2024-10-31  Mark Wielaard  <mark@klomp.org>
+
+	* safe-ctype.h: Change accidently to accidentally.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* dyn-string.h: Remove trailing whitespace.

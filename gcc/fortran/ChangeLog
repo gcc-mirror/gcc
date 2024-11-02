@@ -1,3 +1,25 @@
+2024-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* resolve.cc (resolve_operator): Also handle BT_UNSIGNED.
+
+2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* resolve.cc (resolve_assoc_var): Extract a substring reference
+	with missing as well as non-constant start or end.
+
+2024-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* resolve.cc (resolve_variable): The typespec of an expression,
+	which is not a substring, can be shared with a deferred length
+	associate name.
+	(resolve_assoc_var): Extract a substring reference with non-
+	constant start or end. Use it to flag up the need for array
+	associate name to be a pointer.
+	(resolve_block_construct): Change comment from past to future
+	tense.
+
 2024-10-30  Harald Anlauf  <anlauf@gmx.de>
 
 	* trans-expr.cc (gfc_trans_class_init_assign): Free intermediate

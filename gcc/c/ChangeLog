@@ -1,3 +1,56 @@
+2024-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117361
+	* Make-lang.in (s-selftest-c): Use GCC_FOR_SELFTESTS.
+	(selftest-c-gdb): Likewise.
+	(selftest-c-valgrind): Likewise.
+
+2024-10-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117145
+	PR c/117245
+	PR c/100420
+	* c-decl.cc (c_build_pointer_type): Move to c-typeck.cc
+	(grokdeclarator): Simplify logic.
+	(match_builtin_function_types): Adapt.
+	(push_decl): Adapt.
+	(implicitly_declare): Adapt.
+	(c_update_type_canonical): Adapt.
+	(c_make_fname_decl): Adapt.
+	(start_function): Adapt.
+	* c-objc-common.h: Add LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE.
+	* c-tree.h: Add prototypes.
+	* c-typeck.cc (c_verify_type): New function.
+	(c_set_type_bits). New function.
+	(c_build_pointer_type): Moved from c-decl.cc.
+	(c_build_pointer_type_for_mode): New function.
+	(c_build_function_type): New function.
+	(c_build_array_type): New function.
+	(c_build_type_attribute_variant): New function.
+	(c_reconstruct_complex_type): New function.
+	(c_build_functype_attribute_variant): Renamed.
+	(array_to_pointer_conversion): Simplify logic.
+	(composite_type_internal): Simplify logic..
+	(build_unary_op): Simplify logic..
+	(comptypes_verify): Add checking assertions.
+	(c_build_qualified_type): Add checking assertions.
+	(c_build_function_call_vec): Adapt.
+	(qualify_type): Adapt.
+	(build_functype_attribute_variant): Adapt.
+	(common_pointer_type): Adapt.
+	(c_common_type): Adapt.
+	(convert_for_assignment): Adapt.
+	(type_or_builtin_type): Adapt.
+	(build_access_with_size_for_counted_by): Adapt.
+	(build_conditional_expr): Adapt.
+	(build_modify_expr): Adapt.
+	(build_binary_op): Adapt.
+	(build_omp_array_section): Adapt.
+	(handle_omp_array_sections): Adapt.
+	(c_finish_omp_clauses): Adapt.
+	* c-parser.cc (c_parser_typeof_specifier): Adapt.
+	(c_parser_generic_selection): Adapt.
+
 2024-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_postfix_expression): Diagnose if

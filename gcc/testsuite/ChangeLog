@@ -1,3 +1,438 @@
+2024-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/cpp23/attr-assume-opt.C (f2b): Alternate flow test.
+
+2024-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117287
+	* g++.dg/cpp23/pr117287-attr.C: New.
+
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114461
+	* g++.dg/modules/cpp-7.C: New test.
+	* g++.dg/modules/cpp-8.C: New test.
+	* g++.dg/modules/cpp-9.C: New test.
+	* g++.dg/modules/cpp-10.C: New test.
+	* g++.dg/modules/cpp-11.C: New test.
+	* g++.dg/modules/cpp-12.C: New test.
+	* g++.dg/modules/cpp-13.C: New test.
+	* g++.dg/modules/cpp-14.C: New test.
+	* g++.dg/modules/cpp-15.C: New test.
+	* g++.dg/modules/cpp-16.C: New test.
+	* g++.dg/modules/cpp-17.C: New test.
+	* g++.dg/modules/cpp-18.C: New test.
+	* g++.dg/modules/cpp-19.C: New test.
+	* g++.dg/modules/cpp-20.C: New test.
+	* g++.dg/modules/pmp-4.C: New test.
+	* g++.dg/modules/pmp-5.C: New test.
+	* g++.dg/modules/pmp-6.C: New test.
+	* g++.dg/modules/token-6.C: New test.
+	* g++.dg/modules/token-7.C: New test.
+	* g++.dg/modules/token-8.C: New test.
+	* g++.dg/modules/token-9.C: New test.
+	* g++.dg/modules/token-10.C: New test.
+	* g++.dg/modules/token-11.C: New test.
+	* g++.dg/modules/token-12.C: New test.
+	* g++.dg/modules/token-13.C: New test.
+	* g++.dg/modules/token-14.C: New test.
+	* g++.dg/modules/token-15.C: New test.
+	* g++.dg/modules/token-16.C: New test.
+	* g++.dg/modules/dir-only-3.C: Expect an error.
+	* g++.dg/modules/dir-only-4.C: Expect an error.
+	* g++.dg/modules/dir-only-5.C: New test.
+	* g++.dg/modules/atom-preamble-2_a.C: In export module malcolm;
+	replace malcolm with kevin.  Don't define malcolm macro.
+	* g++.dg/modules/atom-preamble-4.C: Expect an error.
+	* g++.dg/modules/atom-preamble-5.C: New test.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/cmpccxadd-1b.c: New test.
+
+2024-11-01  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.c-torture/execute/builtin-prefetch-1.c (rws): Use
+	"read_shared" instead of "read-shared" as the identifier for
+	enum value.
+	* gcc.dg/builtin-prefetch-1.c (rws): Likewise.
+
+2024-11-01  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/jump-table-annotate.c
+	(dg-additional-options): Add -O.
+
+2024-11-01  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/101887
+	* g++.dg/init/delete5.C: Add testcase from PR c++/101887.
+
+2024-11-01  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/116887
+	* gcc.dg/pr116887.c: New test.
+
+2024-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_38.f90: Add -pedantic and adjust error
+	message.
+	* gfortran.dg/unsigned_40.f90: New test.
+
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/declare-variant-10.C: New test.
+
+2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_69.f90: Activate commented out tests.
+	* gfortran.dg/associate_70.f90: Test correct functioning of
+	references in associate_69.f90 tests.
+
+2024-11-01  Hu, Lin1  <lin1.hu@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-movrs.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Add new check for amx-movrs.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mamx-movrs.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add amx-movrs.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_amx_movrs): New.
+	* gcc.target/i386/amxmovrs-asmatt-1.c: New test.
+	* gcc.target/i386/amxmovrs-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxmovrs-t2rpntlvw-2.c: Ditto.
+	* gcc.target/i386/amxmovrs-tileloaddrs-2.c: Ditto.
+
+2024-11-01  Hu, Lin1  <lin1.hu@intel.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mmovrs.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.c-torture/execute/builtin-prefetch-1.c: Expand rws.
+	* gcc.dg/builtin-prefetch-1.c: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mmovrs.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add movrs.
+	* gcc.target/i386/sse-23.c: Ditto
+	* gcc.target/i386/avx10_2-512-movrs-1.c: New test.
+	* gcc.target/i386/avx10_2-movrs-1.c: Ditto.
+	* gcc.target/i386/movrs-1.c: Ditto.
+
+2024-11-01  Liwei Xu  <liwei.xu@intel.com>
+	    Hu, Lin1  <lin1.hu@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-fp8.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Check for amx-fp8.
+	* gcc.target/i386/amx-helper.h: Ditto.
+	* gcc.target/i386/fp8-helper.h: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mamx-fp8.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp: New proc.
+	* gcc.target/i386/amxfp8-asmatt-1.c: New test.
+	* gcc.target/i386/amxfp8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp8-dpbf8ps-2.c: Ditto.
+	* gcc.target/i386/amxfp8-dpbhf8ps-2.c: Ditto.
+	* gcc.target/i386/amxfp8-dphbf8ps-2.c: Ditto.
+	* gcc.target/i386/amxfp8-dphf8ps-2.c: Ditto.
+	* gcc.target/i386/fp-emulation.h: Emulates NaN behaviour.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-transpose.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Add new check for amx-transpose.
+	(__tilepair): New.
+	(zero_pair_tile_src): New.
+	(check_pair_tile_register): New.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/amx-helper.h: Add amx-transpose support.
+	(init_pair_tile_src): New function.
+	* gcc.target/i386/sse-12.c: Add -mamx-tranpose.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add amx-transpose.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_amx_transposed): New.
+	* gcc.target/i386/amxtranspose-asmatt-1.c: New test.
+	* gcc.target/i386/amxtranspose-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtranspose-2rpntlvw-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-conjtcmmimfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-conjtfp16-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-tcmmimfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-tcmmrlfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-tdpbf16ps-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-tdpfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-tmmultf32ps-2.c: Ditto.
+	* gcc.target/i386/amxtranspose-transposed-2.c: Ditto.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-tf32.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Add cpu check for AMX-TF32.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mamx-tf32.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add amx-tf32.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_amx_tf32): New.
+	* gcc.target/i386/amx-helper.h: New file for tf32 support.
+	* gcc.target/i386/amxtf32-asmatt-1.c: New test.
+	* gcc.target/i386/amxtf32-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtf32-mmultf32ps-2.c: Ditto.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+	    Yu, Bing  <bing1.yu@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-avx512.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Add cpu check for AMX-AVX512.
+	* gcc.target/i386/amx-helper.h: Support amx-avx512.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mamx-avx512.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add amx-avx512.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_amx_avx512): New.
+	* gcc.target/i386/amxavx512-asmatt-1.c: New test.
+	* gcc.target/i386/amxavx512-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxavx512-cvtrowd2ps-2.c: Ditto.
+	* gcc.target/i386/amxavx512-cvtrowps2pbf16-2.c: Ditto.
+	* gcc.target/i386/amxavx512-cvtrowps2ph-2.c: Ditto.
+	* gcc.target/i386/amxavx512-movrow-2.c: Ditto.
+
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/sm4-check.h: Add zmm test.
+	* gcc.target/i386/sm4-avx10_2-1.c: New test.
+	* gcc.target/i386/sm4-avx10_2-512-1.c: Ditto.
+	* gcc.target/i386/sm4key4-avx10_2-512-2.c: Ditto.
+	* gcc.target/i386/sm4rnds4-avx10_2-512-2.c: Ditto.
+
+2024-11-01  Sam James  <sam@gentoo.org>
+
+	PR debug/15736
+	PR debug/46240
+	* g++.dg/debug/pr15736.cc: Move to...
+	* g++.dg/debug/pr15736.C: ...here.
+	* g++.dg/debug/pr46240.cc: Move to...
+	* g++.dg/debug/pr46240.C: ...here.
+
+2024-11-01  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/111520
+	* g++.dg/torture/harden-comp-pr111520.cc: Move to...
+	* g++.dg/torture/harden-comp-pr111520.C: ...here.
+
+2024-11-01  Sam James  <sam@gentoo.org>
+
+	PR c++/90313
+	* g++.dg/torture/pr90313.cc: Move to...
+	* g++.dg/torture/pr90313.C: ...here.
+
+2024-11-01  Sam James  <sam@gentoo.org>
+
+	PR target/66655
+	* g++.dg/pr66655.C: Adjust filename in dg-additional-sources.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR target/66655
+	* g++.dg/pr66655_1.cc: Move to...
+	* g++.dg/pr66655_1.C: ...here.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR other/42965
+	* g++.dg/warn/unused-result1-Werror.c: Move to...
+	* g++.dg/warn/unused-result1-Werror.C: ...here.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/105820
+	* g++.dg/tree-ssa/pr105820.c: Move to...
+	* g++.dg/tree-ssa/pr105820.C: ...here.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR target/47333
+	* g++.dg/lto/pr47333_0.C: Move to...
+	* g++.dg/torture/pr47333.C: ...here.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR c++/95677
+	* g++.dg/lto/pr95677_0.C: Move to...
+	* g++.dg/torture/pr95677.C: ...here.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/amin_1.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/amax_f16.c: Enabled sve2 and
+	(for streaming mode) sme2.
+	* gcc.target/aarch64/sve2/acle/asm/amax_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/amax_f64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/amin_f16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/amin_f32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/amin_f64.c: Likewise.
+
+2024-10-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/aarch64-ssve.exp: Add tests for trn[12]q,
+	uzp[12].c, and zip[12]q.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_bf16.c: Skip for
+	STREAMING_COMPATIBLE.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/trn2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/uzp2q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip1q_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/zip2q_u8.c: Likewise.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR testsuite/117183
+	* gcc.dg/c23-constexpr-2a.c: Use dg-do run.
+
+2024-10-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117145
+	PR c/117245
+	PR c/100420
+	* gcc.dg/c23-tag-composite-11.c: New test.
+	* gcc.dg/Warray-parameter-4.c: Resolve xfails.
+	* gcc.dg/Wvla-parameter-2.c: Resolve xfails.
+	* gcc.dg/Wvla-parameter-3.c: Resolve xfails.
+	* gcc.dg/pr117145-1.c: New test.
+	* gcc.dg/pr117145-2.c: New test.
+	* gcc.dg/pr117245.c: New test.
+
+2024-10-31  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/pr114115.c (foo_ifunc2): Return void.
+
+2024-10-31  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/simulate-thread/simulate-thread.h
+	(simulate_thread_wrapper_final_verify): Mark noinline.
+
+2024-10-31  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/slp-interleave-5.c: New test.
+
+2024-10-31  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Fix and rework f3.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR middle-end/90348
+	PR tree-optimization/106073
+	* gcc.dg/pr106073.c: New test.
+
+2024-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/117176
+	* gcc.dg/vect/vect-early-break_130-pr117176.c: New test.
+
+2024-10-31  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/declare-variant-9.C: New test.
+
+2024-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117354
+	* gcc.dg/bitint-113.c: New test.
+
+2024-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_70.f90: New test.
+
+2024-10-31  Sam James  <sam@gentoo.org>
+
+	PR middle-end/92936
+	* gcc.dg/Wstringop-overflow-59.c: Fix dg-* syntax.
+
 2024-10-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* gcc.dg/vect/bb-slp-77.c: New test.

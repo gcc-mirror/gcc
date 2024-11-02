@@ -1,3 +1,7 @@
+2024-10-31  Mark Wielaard  <mark@klomp.org>
+
+	* cplus-dem.c: Change preceeded to preceded.
+
 2024-10-10  Simon Martin  <simon@nasilyan.com>
 
 	* cp-demangle.c (d_dump): Fix compilation when CP_DEMANGLE_DEBUG
