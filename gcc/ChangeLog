@@ -1,3 +1,9 @@
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/cmpccxaddintrin.h (_cmpccxadd_epi32): Do not do
+	type conversion for pointer.
+	(_cmpccxadd_epi64): Ditto.
+
 2024-10-30  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

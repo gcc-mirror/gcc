@@ -1,3 +1,23 @@
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/cmpccxadd-1b.c: New test.
+
+2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79685
+	* gfortran.dg/use_rename_13.f90: New test.
+
+2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2023-12-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112459
+	* gfortran.dg/pr112459.f90: New test.
+
 2024-10-30  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
