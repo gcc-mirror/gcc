@@ -203,7 +203,6 @@ extern void loongarch_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern tree loongarch_builtin_decl (unsigned int, bool);
 extern rtx loongarch_expand_builtin (tree, rtx, rtx subtarget ATTRIBUTE_UNUSED,
 				     machine_mode, int);
-extern tree loongarch_builtin_vectorized_function (unsigned int, tree, tree);
 extern rtx loongarch_gen_const_int_vector_shuffle (machine_mode, int);
 extern tree loongarch_build_builtin_va_list (void);
 

@@ -8103,14 +8103,6 @@ loongarch_set_handled_components (sbitmap components)
 	cfun->machine->reg_is_wrapped_separately[regno] = true;
 }
 
-/* Initialize the GCC target structure.  */
-#undef TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
-#undef TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
-#undef TARGET_ASM_ALIGNED_DI_OP
-#define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
-
 /* Use the vshuf instruction to implement all 128-bit constant vector
    permuatation.  */
 
