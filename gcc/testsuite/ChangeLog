@@ -1,3 +1,23 @@
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/cmpccxadd-1b.c: New test.
+
+2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-10-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/79685
+	* gfortran.dg/use_rename_13.f90: New test.
+
+2024-11-01  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2024-07-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ppx-2.c: New test.
+	* gcc.target/i386/apx-ppx-3.c: Likewise.
+
 2024-10-31  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

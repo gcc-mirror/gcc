@@ -1,3 +1,23 @@
+2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/cmpccxaddintrin.h (_cmpccxadd_epi32): Do not do
+	type conversion for pointer.
+	(_cmpccxadd_epi64): Ditto.
+
+2024-11-01  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2024-07-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.cc (ix86_expand_prologue): Set apx_ppx_used
+	flag in m.fs with TARGET_APX_PPX && !crtl->calls_eh_return.
+	(ix86_emit_save_regs): Emit ppx is available only when
+	TARGET_APX_PPX && !crtl->calls_eh_return.
+	(ix86_expand_epilogue): Don't restore reg using mov when
+	apx_ppx_used flag is true.
+	* config/i386/i386.h (struct machine_frame_state):
+	Add apx_ppx_used flag.
+
 2024-10-31  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
