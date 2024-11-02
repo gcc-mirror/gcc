@@ -8159,6 +8159,16 @@ process_bb (rpo_elim &avail, basic_block bb,
 		val = vn_nary_op_lookup_pieces (2, gimple_cond_code (last),
 						boolean_type_node, ops,
 						&vnresult);
+		/* Got back a ssa name, then try looking up `val != 0`
+		   as it might have been recorded that way.  */
+		if (val && TREE_CODE (val) == SSA_NAME)
+		  {
+		    ops[0] = val;
+		    ops[1] = build_zero_cst (TREE_TYPE (val));
+		    val = vn_nary_op_lookup_pieces (2, NE_EXPR,
+						    boolean_type_node, ops,
+						    &vnresult);
+		  }
 		/* Did we get a predicated value?  */
 		if (! val && vnresult && vnresult->predicated_values)
 		  {
