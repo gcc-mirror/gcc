@@ -1275,7 +1275,7 @@
   "ISA_HAS_LSX"
 {
   if (which_alternative == 1)
-    return "vldi.<lsxfmt>\t%w0,0";
+    return "vrepli.b\t%w0,0";
 
   return "vreplgr2vr.<lsxfmt>\t%w0,%z1";
 }

@@ -1402,7 +1402,7 @@
   "ISA_HAS_LASX"
 {
   if (which_alternative == 1)
-    return "xvldi.b\t%u0,0" ;
+    return "xvrepli.b\t%u0,0";
 
   return "xvreplgr2vr.<lasxfmt>\t%u0,%z1";
 }
