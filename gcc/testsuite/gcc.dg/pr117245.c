@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target trampolines } */
 /* { dg-options "" } */
 
 void a() {
