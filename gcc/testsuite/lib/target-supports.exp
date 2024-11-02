@@ -639,6 +639,7 @@ proc check_effective_target_trampolines { } {
     if { [istarget avr-*-*]
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
+	 || [istarget ft32-*-*]
 	 || [istarget pru-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0;
