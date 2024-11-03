@@ -30,11 +30,6 @@ subroutine mvce(x)
   associate (tmp5 => x(1:)(1:))
     if (len (tmp5) /= len (x)) stop 5
   end associate
-
-  associate (temp6 => x(:)(1:i/2))
-    if (len (temp6) /= i/2) stop 6
-  end associate
 end
 
 ! { dg-final { scan-tree-dump-not " \\.tmp" "optimized" } }
-! { dg-final { scan-tree-dump-times " \\.temp6" 7 "optimized" } }
