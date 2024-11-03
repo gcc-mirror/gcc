@@ -15555,8 +15555,7 @@ This built-in inhibits re-association of the floating-point expression
 @var{expr} with expressions consuming the return value of the built-in. The
 expression @var{expr} itself can be reordered, and the whole expression
 @var{expr} can be reordered with operands after the barrier. The barrier is
-only relevant when @code{-fassociative-math} is active, since otherwise
-floating-point is not treated as associative.
+relevant when @code{-fassociative-math} is active.
 
 @smallexample
 float x0 = a + b - b;
@@ -15566,6 +15565,19 @@ float x1 = __builtin_assoc_barrier(a + b) - b;
 @noindent
 means that, with @code{-fassociative-math}, @code{x0} can be optimized to
 @code{x0 = a} but @code{x1} cannot.
+
+It is also relevant when @code{-ffp-contract=fast} is active;
+it will prevent contraction between expressions.
+
+@smallexample
+float x0 = a * b + c;
+float x1 = __builtin_assoc_barrier (a * b) + c;
+@end smallexample
+
+@noindent
+means that, with @code{-ffp-contract=fast}, @code{x0} may be optimized to
+use a fused multiply-add instruction but @code{x1} cannot.
+
 @enddefbuiltin
 
 @defbuiltin{{void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)}
