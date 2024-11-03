@@ -1931,6 +1931,10 @@ fcontract-evaluation-semantic=
 C++ Joined RejectNegative Enum(p2900_semantic) Var(flag_contract_evaluation_semantic) Init (3)
 -fcontract-evaluation-semantic=[ignore|observe|enforce|quick_enforce]	Select the contract evaluation semantic (defaults to enforce).
 
+fcontract-checks-outlined
+C++ Var(flag_contract_checks_outlined) Init(1)
+-fcontract-checks-outlined	Build contract checks as an out-of-line function.
+
 fcontract-disable-optimized-checks
 C++ Var(flag_contract_disable_optimized_checks) Init(0)
 -fcontract-disable-optimized-checks	Disable optimisation of contract checks.
