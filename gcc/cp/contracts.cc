@@ -1121,6 +1121,38 @@ remap_dummy_this (tree fn, tree *expr)
   walk_tree (expr, remap_dummy_this_1, fn, NULL);
 }
 
+/* Replace uses of user's placeholder var with the actual return value.  */
+
+struct replace_tree
+{
+  tree from, to;
+};
+
+static tree
+remap_retval_1 (tree *here, int *do_subtree, void *d)
+{
+  replace_tree *data = (replace_tree *) d;
+
+  if (*here == data->from)
+    {
+      *here = data->to;
+      *do_subtree = 0;
+    }
+  else
+    *do_subtree = 1;
+  return NULL_TREE;
+}
+
+static void
+remap_retval (tree fndecl, tree contract)
+{
+  struct replace_tree data;
+  data.from = POSTCONDITION_IDENTIFIER (contract);
+  gcc_checking_assert (DECL_RESULT (fndecl));
+  data.to = DECL_RESULT (fndecl);
+  walk_tree (&CONTRACT_CONDITION (contract), remap_retval_1, &data, NULL);
+}
+
 /* Contract matching.  */
 
 /* True if the contract is valid.  */
@@ -1588,8 +1620,10 @@ handle_contracts_p (tree decl1)
 static bool
 outline_contracts_p (tree decl1)
 {
-  return (!DECL_CONSTRUCTOR_P (decl1)
-	  && !DECL_DESTRUCTOR_P (decl1));
+  bool cdtor = DECL_CONSTRUCTOR_P (decl1) || DECL_DESTRUCTOR_P (decl1);
+  if (flag_contracts_nonattr)
+    return flag_contract_checks_outlined && !cdtor;
+  return !cdtor;
 }
 
 /* Build the precondition checking function for D.  */
@@ -1693,7 +1727,8 @@ get_contracts_source_location_type ()
     private:
 	const __impl* _M_impl = nullptr;
     };  */
-  const tree type = build_pointer_type (contracts_source_location_impl_type);
+  const tree type
+    = build_pointer_type (get_contracts_source_location_impl_type ());
 
   tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
 			  NULL_TREE, type);
@@ -2140,6 +2175,18 @@ build_contract_check (tree contract)
   if (semantic == CCS_ASSUME)
     return build_assume_call (loc, condition);
 
+  /* When we are building a post condition in-line, we need to refer to the
+     actual function return, not the user's placeholder variable.  */
+  if (flag_contracts_nonattr
+      && !flag_contract_checks_outlined
+      && POSTCONDITION_P (contract))
+    {
+      remap_retval (current_function_decl, contract);
+      condition = CONTRACT_CONDITION (contract);
+      if (condition == error_mark_node)
+	return NULL_TREE;
+    }
+
   /* Only wrap the contract check in a try-catch if it might throw.  */
   if (!flag_contracts_nonattr
       || !flag_exceptions
@@ -2302,14 +2349,12 @@ emit_contract_statement (tree contract)
 /* Generate the statement for the given contract attribute by adding the
    statement to the current block. Returns the next contract in the chain.  */
 
-static tree
+static void
 emit_contract_attr (tree attr)
 {
-  gcc_assert (TREE_CODE (attr) == TREE_LIST);
+  gcc_checking_assert (TREE_CODE (attr) == TREE_LIST);
 
   emit_contract_statement (CONTRACT_STATEMENT (attr));
-
-  return CONTRACT_CHAIN (attr);
 }
 
 /* Add the statements of contract attributes ATTRS to the current block.  */
@@ -2318,15 +2363,14 @@ static void
 emit_contract_conditions (tree attrs, tree_code code)
 {
   if (!attrs) return;
-  gcc_assert (TREE_CODE (attrs) == TREE_LIST);
-  gcc_assert (code == PRECONDITION_STMT || code == POSTCONDITION_STMT);
-  while (attrs)
+  gcc_checking_assert (TREE_CODE (attrs) == TREE_LIST);
+  gcc_checking_assert (code == PRECONDITION_STMT || code == POSTCONDITION_STMT);
+  for (attrs = find_contract (attrs); attrs; attrs = CONTRACT_CHAIN (attrs))
     {
       tree contract = CONTRACT_STATEMENT (attrs);
-      if (TREE_CODE (contract) == code)
-	attrs = emit_contract_attr (attrs);
-      else
-	attrs = CONTRACT_CHAIN (attrs);
+      if (TREE_CODE (contract) != code)
+	continue;
+      emit_contract_attr (attrs);
     }
 }
 
@@ -2624,6 +2668,11 @@ maybe_apply_function_contracts (tree fndecl)
   /* We should not have reached here with nothing to do... */
   gcc_checking_assert (do_pre || do_post);
 
+  if (contract_any_deferred_p (DECL_CONTRACTS (fndecl)))
+    {
+      //debug_tree (DECL_CONTRACTS (fndecl));
+    }
+
   /* This copies the approach used for function try blocks.  */
   tree fnbody = pop_stmt_list (DECL_SAVED_TREE (fndecl));
   DECL_SAVED_TREE (fndecl) = push_stmt_list ();
@@ -2689,9 +2738,10 @@ finish_function_contracts (tree fndecl)
     {
       tree contract = CONTRACT_STATEMENT (ca);
       if (!CONTRACT_CONDITION (contract)
-	  || CONTRACT_CONDITION_DEFERRED_P (contract)
 	  || CONTRACT_CONDITION (contract) == error_mark_node)
 	return;
+      /* We are generating code, deferred parses should be complete.  */
+      gcc_checking_assert (!CONTRACT_CONDITION_DEFERRED_P (contract));
     }
 
   int flags = SF_DEFAULT | SF_PRE_PARSED;
