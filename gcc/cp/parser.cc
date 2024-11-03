@@ -12636,6 +12636,14 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
        removed the need for that.  */
     cp_parser_function_body (parser, false);
 
+    /* We need to parse deferred contract conditions before we try to call
+       finish_function (which will try to emit the contracts).  */
+    for (tree a = DECL_ATTRIBUTES (fco); a; a = TREE_CHAIN (a))
+      {
+	if (cxx_contract_attribute_p (a))
+	  cp_parser_late_contract_condition (parser, fco, a);
+      }
+
     finish_lambda_function (body);
   }
 
