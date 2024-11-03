@@ -1,3 +1,25 @@
+2024-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/113814
+	* pt.cc (add_mergeable_specialization): Propagate
+	TYPE_CANONICAL.
+
+2024-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116317
+	* module.cc
+	(depset::DB_MAYBE_RECURSIVE_BIT): New flag.
+	(depset::DB_ENTRY_BIT): New flag.
+	(depset::is_maybe_recursive): New accessor.
+	(depset::is_entry): New accessor.
+	(depset::hash::writing_merge_key): New field.
+	(trees_out::decl_value): Inform dep_hash while we're writing the
+	merge key information for a decl.
+	(depset::hash::add_dependency): Find recursive deps and mark the
+	entry point.
+	(sort_cluster): Ensure that the entry dep is streamed first.
+
 2024-11-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/117361

@@ -1,3 +1,19 @@
+2024-11-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* check.cc (gfc_check_mask): Handle BT_INSIGNED.
+	* gfortran.h (enum gfc_isym_id): Add GFC_ISYM_UMASKL and
+	GFC_ISYM_UMASKR.
+	* gfortran.texi: List UMASKL and UMASKR, remove unsigned future
+	unsigned arguments for MASKL and MASKR.
+	* intrinsic.cc (add_functions): Add UMASKL and UMASKR.
+	* intrinsic.h (gfc_simplify_umaskl): New function.
+	(gfc_simplify_umaskr): New function.
+	(gfc_resolve_umasklr): New function.
+	* intrinsic.texi: Document UMASKL and UMASKR.
+	* iresolve.cc (gfc_resolve_umasklr): New function.
+	* simplify.cc (gfc_simplify_umaskr): New function.
+	(gfc_simplify_umaskl): New function.
+
 2024-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* resolve.cc (resolve_operator): Also handle BT_UNSIGNED.

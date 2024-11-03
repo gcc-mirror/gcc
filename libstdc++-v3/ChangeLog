@@ -1,3 +1,17 @@
+2024-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/117406
+	* include/c_global/cmath (std::ilogb(_Float16), std::llrint(_Float16),
+	std::llround(_Float16), std::lrint(_Float16), std::lround(_Float16)):
+	Don't cast __builtin_* return to _Float16.
+	(std::ilogb(__gnu_cxx::__bfloat16_t),
+	std::llrint(__gnu_cxx::__bfloat16_t),
+	std::llround(__gnu_cxx::__bfloat16_t),
+	std::lrint(__gnu_cxx::__bfloat16_t),
+	std::lround(__gnu_cxx::__bfloat16_t)): Don't cast __builtin_* return to
+	__gnu_cxx::__bfloat16_t.
+	* testsuite/26_numerics/headers/cmath/117406.cc: New test.
+
 2024-11-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unordered_map.h: Check __glibcxx_node_extract and
