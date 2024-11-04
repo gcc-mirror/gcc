@@ -14202,6 +14202,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	    return const0_rtx;
 	  }
 
+	if (!IN_RANGE (INTVAL (op1), 0, 2))
+	  {
+	    warning (0, "invalid second argument to"
+		     " %<__builtin_ia32_prefetch%>; using zero");
+	    op1 = const0_rtx;
+	  }
+
 	if (INTVAL (op3) == 1)
 	  {
 	    if (INTVAL (op2) < 2 || INTVAL (op2) > 3)
@@ -14224,6 +14231,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  }
 	else
 	  {
+	    if (INTVAL (op3) != 0)
+	      warning (0, "invalid forth argument to"
+			  " %<__builtin_ia32_prefetch%>; using zero");
+
 	    if (!address_operand (op0, VOIDmode))
 	      {
 		op0 = convert_memory_address (Pmode, op0);
