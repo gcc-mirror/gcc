@@ -103,23 +103,6 @@ TopLevel::visit (AST::Module &module)
 void
 TopLevel::visit (AST::Trait &trait)
 {
-  // FIXME: This Self injection is dodgy. It even lead to issues with metadata
-  // export in the past (#2349). We cannot tell appart injected parameters from
-  // regular ones. Dumping generic parameters highlights this Self in metadata,
-  // during debug or proc macro collection. This is clearly a hack.
-  //
-  // For now I'll keep it here in the new name resolver even if it should
-  // probably not be there. We need to find another way to solve this.
-  // Maybe an additional attribute to Trait ?
-  //
-  // From old resolver:
-  //// we need to inject an implicit self TypeParam here
-  //// FIXME: which location should be used for Rust::Identifier `Self`?
-  AST::TypeParam *implicit_self
-    = new AST::TypeParam ({"Self"}, trait.get_locus ());
-  trait.insert_implict_self (
-    std::unique_ptr<AST::GenericParam> (implicit_self));
-
   insert_or_error_out (trait.get_identifier ().as_string (), trait,
 		       Namespace::Types);
 

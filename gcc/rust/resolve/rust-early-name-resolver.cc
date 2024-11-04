@@ -353,6 +353,8 @@ EarlyNameResolver::visit (AST::TraitItemType &)
 void
 EarlyNameResolver::visit (AST::Trait &trait)
 {
+  // shouldn't need to visit trait.get_implicit_self ()
+
   for (auto &generic : trait.get_generic_params ())
     generic->accept_vis (*this);
 

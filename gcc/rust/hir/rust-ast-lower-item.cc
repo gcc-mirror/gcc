@@ -572,6 +572,12 @@ ASTLoweringItem::visit (AST::Trait &trait)
       generic_params = lower_generic_params (trait.get_generic_params ());
     }
 
+  // TODO: separate "Self" from normal generic parameters
+  //       in HIR as well as in AST?
+  HIR::GenericParam *self_param
+    = ASTLowerGenericParam::translate (trait.get_implicit_self ());
+  generic_params.emplace (generic_params.begin (), self_param);
+
   std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
   if (trait.has_type_param_bounds ())
     {

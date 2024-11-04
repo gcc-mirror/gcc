@@ -1,9 +1,6 @@
 attr-mismatch-crate-name.rs
 attr_deprecated.rs
 attr_deprecated_2.rs
-auto_trait_super_trait.rs
-auto_trait_valid.rs
-auto_trait_invalid.rs
 bad=file-name.rs
 bounds1.rs
 break-rust2.rs
@@ -152,7 +149,6 @@ privacy1.rs
 privacy3.rs
 privacy4.rs
 privacy5.rs
-privacy6.rs
 privacy8.rs
 macros/proc/attribute_non_function.rs
 macros/proc/derive_non_function.rs
@@ -171,8 +167,6 @@ specify-crate-name.rs
 stmt_with_block_dot.rs
 struct-expr-parse.rs
 traits1.rs
-traits10.rs
-traits11.rs
 traits12.rs
 traits2.rs
 traits3.rs
@@ -181,7 +175,6 @@ traits5.rs
 traits6.rs
 traits7.rs
 traits8.rs
-traits9.rs
 type-bindings1.rs
 unconstrained_type_param.rs
 undeclared_label.rs
@@ -191,7 +184,6 @@ v0-mangle1.rs
 v0-mangle2.rs
 while_break_expr.rs
 negative_impls.rs
-auto_trait.rs
 exhaustiveness1.rs
 exhaustiveness2.rs
 exhaustiveness3.rs
@@ -199,7 +191,6 @@ trait13.rs
 trait14.rs
 issue-2324-1.rs
 issue-2324-2.rs
-issue-2725.rs
 issue-2987.rs
 issue-3045-1.rs
 issue-3045-2.rs
