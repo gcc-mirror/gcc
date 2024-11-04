@@ -222,4 +222,5 @@ if_let_expr_simple.rs
 iflet.rs
 issue-3033.rs
 issue-3009.rs
+issue-2323.rs
 # please don't delete the trailing newline
