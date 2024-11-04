@@ -2292,8 +2292,8 @@
 ;; -------------------------------------------------------------------------------
 
 (define_insn "@pred_strided_load<mode>"
-  [(set (match_operand:V 0 "register_operand"              "=vr,    vr,    vd,    vr,    vr,    vd")
-	(if_then_else:V
+  [(set (match_operand:V_VLS 0 "register_operand"              "=vr,    vr,    vd,    vr,    vr,    vd")
+	(if_then_else:V_VLS
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,   Wc1,    vm,    vmWc1,   Wc1,    vm")
 	     (match_operand 5 "vector_length_operand"    "   rK,    rK,    rK,       rK,    rK,    rK")
@@ -2302,10 +2302,10 @@
 	     (match_operand 8 "const_int_operand"        "    i,     i,     i,        i,     i,     i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:V
-	    [(match_operand:V 3 "memory_operand"         "     m,     m,     m,    m,     m,     m")
-	     (match_operand 4 "<V:stride_predicate>"     "<V:stride_load_constraint>")] UNSPEC_STRIDED)
-	  (match_operand:V 2 "vector_merge_operand"      "     0,    vu,    vu,    0,    vu,    vu")))]
+	  (unspec:V_VLS
+	    [(match_operand:V_VLS 3 "memory_operand"         "     m,     m,     m,    m,     m,     m")
+	     (match_operand 4 "<V_VLS:stride_predicate>"     "<V_VLS:stride_load_constraint>")] UNSPEC_STRIDED)
+	  (match_operand:V_VLS 2 "vector_merge_operand"      "     0,    vu,    vu,    0,    vu,    vu")))]
   "TARGET_VECTOR"
   "@
   vlse<sew>.v\t%0,%3,%z4%p1
@@ -2318,17 +2318,17 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_strided_store<mode>"
-  [(set (match_operand:V 0 "memory_operand"                 "+m,    m")
-	(if_then_else:V
+  [(set (match_operand:V_VLS 0 "memory_operand"                 "+m,    m")
+	(if_then_else:V_VLS
 	  (unspec:<VM>
 	    [(match_operand:<VM> 1 "vector_mask_operand" "vmWc1,    vmWc1")
 	     (match_operand 4 "vector_length_operand"    "   rK,       rK")
 	     (match_operand 5 "const_int_operand"        "    i,        i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (unspec:V
-	    [(match_operand 2 "<V:stride_predicate>"     "<V:stride_store_constraint>")
-	     (match_operand:V 3 "register_operand"       "   vr,       vr")] UNSPEC_STRIDED)
+	  (unspec:V_VLS
+	    [(match_operand 2 "<V_VLS:stride_predicate>"     "<V_VLS:stride_store_constraint>")
+	     (match_operand:V_VLS 3 "register_operand"       "   vr,       vr")] UNSPEC_STRIDED)
 	  (match_dup 0)))]
   "TARGET_VECTOR"
   "@
