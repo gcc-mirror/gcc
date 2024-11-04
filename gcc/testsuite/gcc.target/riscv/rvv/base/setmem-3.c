@@ -5,15 +5,17 @@
 
 #define MIN_VECTOR_BYTES (__riscv_v_min_vlen / 8)
 
-/* Small memsets shouldn't be vectorised.
+/* Vectorise with no loop.
 ** f1:
 **  (
-**  sb\s+a1,0\(a0\)
-**  ...
+**  vsetivli\s+zero,\d+,e8,m1,ta,ma
 **  |
-**  li\s+a2,\d+
-**  tail\s+memset
+**  li\s+a\d+,\d+
+**  vsetvli\s+zero,a\d+,e8,m1,ta,ma
 **  )
+**  vmv\.v\.x\s+v\d+,a1
+**  vse8\.v\s+v\d+,0\(a0\)
+**  ret
 */
 void *
 f1 (void *a, int const b)
