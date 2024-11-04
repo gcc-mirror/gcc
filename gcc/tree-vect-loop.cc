@@ -3143,17 +3143,15 @@ start_over:
 				       " epilogue loop.\n");
     }
 
-  /* Check the costings of the loop make vectorizing worthwhile.  */
-  res = vect_analyze_loop_costing (loop_vinfo, suggested_unroll_factor);
-  if (res < 0)
-    {
-      ok = opt_result::failure_at (vect_location,
-				   "Loop costings may not be worthwhile.\n");
-      goto again;
-    }
-  if (!res)
+  /* If the epilogue needs peeling for gaps but the main loop doesn't give
+     up on the epilogue.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      && LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
+      && (LOOP_VINFO_PEELING_FOR_GAPS (orig_loop_vinfo)
+	  != LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)))
     return opt_result::failure_at (vect_location,
-				   "Loop costings not worthwhile.\n");
+				   "Epilogue loop requires peeling for gaps "
+				   "but main loop does not.\n");
 
   /* If an epilogue loop is required make sure we can create one.  */
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
@@ -3173,6 +3171,18 @@ start_over:
           goto again;
         }
     }
+
+  /* Check the costings of the loop make vectorizing worthwhile.  */
+  res = vect_analyze_loop_costing (loop_vinfo, suggested_unroll_factor);
+  if (res < 0)
+    {
+      ok = opt_result::failure_at (vect_location,
+				   "Loop costings may not be worthwhile.\n");
+      goto again;
+    }
+  if (!res)
+    return opt_result::failure_at (vect_location,
+				   "Loop costings not worthwhile.\n");
 
   /* During peeling, we need to check if number of loop iterations is
      enough for both peeled prolog loop and vector loop.  This check
