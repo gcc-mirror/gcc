@@ -3233,12 +3233,13 @@ public:
 
 private:
   vec<span> *spans;
+  bool locs_exhausted_p;
 
 public:
   loc_spans ()
     /* Do not preallocate spans, as that causes
        --enable-detailed-mem-stats problems.  */
-    : spans (nullptr)
+    : spans (nullptr), locs_exhausted_p (false)
   {
   }
   ~loc_spans ()
@@ -3292,6 +3293,22 @@ public:
 public:
   /* Propagate imported linemaps to us, if needed.  */
   bool maybe_propagate (module_state *import, location_t loc);
+
+public:
+  /* Whether we can no longer represent new imported locations.  */
+  bool locations_exhausted_p () const
+  {
+    return locs_exhausted_p;
+  }
+  void report_location_exhaustion (location_t loc)
+  {
+    if (!locs_exhausted_p)
+      {
+	/* Just give the notice once.  */
+	locs_exhausted_p = true;
+	inform (loc, "unable to represent further imported source locations");
+      }
+  }
 
 public:
   const span *ordinary (location_t);
@@ -16453,6 +16470,21 @@ module_state::write_location (bytes_out &sec, location_t loc)
     }
   else if (IS_ORDINARY_LOC (loc))
     {
+      /* If we ran out of locations for imported decls, this location could
+	 be a module unit's location.  In that case, remap the location
+	 to be where we imported the module from.  */
+      if (spans.locations_exhausted_p () || CHECKING_P)
+	{
+	  const line_map_ordinary *map
+	    = linemap_check_ordinary (linemap_lookup (line_table, loc));
+	  if (MAP_MODULE_P (map) && loc == MAP_START_LOCATION (map))
+	    {
+	      gcc_checking_assert (spans.locations_exhausted_p ());
+	      write_location (sec, linemap_included_from (map));
+	      return;
+	    }
+	}
+
       const ord_loc_info *info = nullptr;
       unsigned offset = 0;
       if (unsigned hwm = ord_loc_remap->length ())
@@ -16783,13 +16815,7 @@ module_state::read_prepare_maps (const module_state_config *cfg)
   ordinary_locs.first = ordinary_locs.second = 0;
   macro_locs.first = macro_locs.second = 0;
 
-  static bool informed = false;
-  if (!informed)
-    {
-      /* Just give the notice once.  */
-      informed = true;
-      inform (loc, "unable to represent further imported source locations");
-    }
+  spans.report_location_exhaustion (loc);
 
   return false;
 }
