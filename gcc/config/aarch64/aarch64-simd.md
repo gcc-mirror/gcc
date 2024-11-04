@@ -9999,3 +9999,101 @@
   "TARGET_FAMINMAX"
   "<faminmax_op>\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
 )
+
+;; fpm unary instructions for brain float modes.
+(define_insn "@aarch64_<fpm_unary_bf_uns_op><V8BF_ONLY:mode><VB:mode>"
+  [(set (match_operand:V8BF_ONLY 0 "register_operand" "=w")
+	(unspec:V8BF_ONLY
+	 [(match_operand:VB 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_UNARY_UNS))]
+  "TARGET_FP8"
+  "<fpm_unary_bf_uns_op>\t%0.<V8BF_ONLY:Vtype>, %1.<VB:Vtype>"
+)
+
+;; fpm unary instructions for half float modes.
+(define_insn "@aarch64_<fpm_unary_hf_uns_op><V8HF_ONLY:mode><VB:mode>"
+  [(set (match_operand:V8HF_ONLY 0 "register_operand" "=w")
+	(unspec:V8HF_ONLY
+	 [(match_operand:VB 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_UNARY_UNS))]
+  "TARGET_FP8"
+  "<fpm_unary_hf_uns_op>\t%0.<V8HF_ONLY:Vtype>, %1.<VB:Vtype>"
+)
+
+;; fpm unary instructions for brain float modes, where the input is
+;; lowered from V16QI to V8QI.
+(define_insn
+  "@aarch64_lower_<fpm_unary_bf_uns_op><V8BF_ONLY:mode><V16QI_ONLY:mode>"
+  [(set (match_operand:V8BF_ONLY 0 "register_operand" "=w")
+	(unspec:V8BF_ONLY
+	 [(match_operand:V16QI_ONLY 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_UNARY_LOW_UNS))]
+  "TARGET_FP8"
+  {
+    operands[1] = force_lowpart_subreg (V8QImode,
+					operands[1],
+					recog_data.operand[1]->mode);
+    return "<fpm_unary_bf_uns_op>\t%0.<V8BF_ONLY:Vtype>, %1.8b";
+  }
+)
+
+;; fpm unary instructions for half float modes, where the input is
+;; lowered from V16QI to V8QI.
+(define_insn
+  "@aarch64_lower_<fpm_unary_hf_uns_op><V8HF_ONLY:mode><V16QI_ONLY:mode>"
+  [(set (match_operand:V8HF_ONLY 0 "register_operand" "=w")
+	(unspec:V8HF_ONLY
+	 [(match_operand:V16QI_ONLY 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_UNARY_LOW_UNS))]
+  "TARGET_FP8"
+  {
+    operands[1] = force_lowpart_subreg (V8QImode,
+					operands[1],
+					recog_data.operand[1]->mode);
+    return "<fpm_unary_hf_uns_op>\t%0.<V8HF_ONLY:Vtype>, %1.8b";
+  }
+)
+
+;; fpm binary instructions.
+(define_insn
+  "@aarch64_<fpm_uns_op><VB:mode><VCVTFPM:mode><VH_SF:mode>"
+  [(set (match_operand:VB 0 "register_operand" "=w")
+	(unspec:VB
+	 [(match_operand:VCVTFPM 1 "register_operand" "w")
+	  (match_operand:VH_SF 2 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_BINARY_UNS))]
+  "TARGET_FP8"
+  "<fpm_uns_op>\t%0.<VB:Vtype>, %1.<VCVTFPM:Vtype>, %2.<VH_SF:Vtype>"
+)
+
+;; fpm ternary instructions.
+(define_insn
+  "@aarch64_<fpm_uns_op><V16QI_ONLY:mode><V8QI_ONLY:mode><V4SF_ONLY:mode><V4SF_ONLY:mode>"
+  [(set (match_operand:V16QI_ONLY 0 "register_operand" "=w")
+	(unspec:V16QI_ONLY
+	 [(match_operand:V8QI_ONLY 1 "register_operand" "w")
+	  (match_operand:V4SF_ONLY 2 "register_operand" "w")
+	  (match_operand:V4SF_ONLY 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_TERNARY_VCVT_UNS))]
+  "TARGET_FP8"
+  {
+    operands[1] = force_reg (V16QImode, operands[1]);
+    return "<fpm_uns_op>\t%1.16b, %2.<V4SF_ONLY:Vtype>, %3.<V4SF_ONLY:Vtype>";
+  }
+)
+
+;; fpm scale instructions
+(define_insn "@aarch64_<fpm_uns_op><VHSDF:mode><VHSDI:mode>"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
+		       (match_operand:VHSDI 2 "register_operand" "w")]
+		      FPM_SCALE_UNS))]
+  "TARGET_FP8"
+  "<fpm_uns_op>\t%0.<VHSDF:Vtype>, %1.<VHSDF:Vtype>, %2.<VHSDI:Vtype>"
+)

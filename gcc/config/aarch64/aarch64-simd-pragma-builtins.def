@@ -20,19 +20,66 @@
 
 
 #undef ENTRY_BINARY
-#define ENTRY_BINARY(N, S, T0, T1, T2, U) \
-  ENTRY (N, S, T0, T1, T2, none, U)
+#define ENTRY_BINARY(N, T0, T1, T2, U)		\
+  ENTRY (N, binary, T0, T1, T2, none, false, U)
+
+#undef ENTRY_BINARY_FPM
+#define ENTRY_BINARY_FPM(N, T0, T1, T2, U)	\
+  ENTRY (N, binary, T0, T1, T2, none, true, U)
+
+#undef ENTRY_TERNARY_FPM
+#define ENTRY_TERNARY_FPM(N, T0, T1, T2, T3, U) \
+  ENTRY (N, ternary, T0, T1, T2, T3, true, U)
+
+#undef ENTRY_UNARY_FPM
+#define ENTRY_UNARY_FPM(N, T0, T1, U) \
+  ENTRY (N, unary, T0, T1, none, none, true, U)
 
 #undef ENTRY_VHSDF
-#define ENTRY_VHSDF(NAME, SIGNATURE, UNSPEC) \
-  ENTRY_BINARY (NAME##_f16, SIGNATURE, f16, f16, f16, UNSPEC) \
-  ENTRY_BINARY (NAME##q_f16, SIGNATURE, f16q, f16q, f16q, UNSPEC) \
-  ENTRY_BINARY (NAME##_f32, SIGNATURE, f32, f32, f32, UNSPEC) \
-  ENTRY_BINARY (NAME##q_f32, SIGNATURE, f32q, f32q, f32q, UNSPEC) \
-  ENTRY_BINARY (NAME##q_f64, SIGNATURE, f64q, f64q, f64q, UNSPEC)
+#define ENTRY_VHSDF(NAME, UNSPEC) \
+  ENTRY_BINARY (NAME##_f16, f16, f16, f16, UNSPEC)		\
+  ENTRY_BINARY (NAME##q_f16, f16q, f16q, f16q, UNSPEC)		\
+  ENTRY_BINARY (NAME##_f32, f32, f32, f32, UNSPEC)		\
+  ENTRY_BINARY (NAME##q_f32, f32q, f32q, f32q, UNSPEC)		\
+  ENTRY_BINARY (NAME##q_f64, f64q, f64q, f64q, UNSPEC)
+
+#undef ENTRY_VHSDF_VHSDI
+#define ENTRY_VHSDF_VHSDI(NAME, UNSPEC)			\
+  ENTRY_BINARY (NAME##_f16, f16, f16, s16, UNSPEC)	\
+  ENTRY_BINARY (NAME##q_f16, f16q, f16q, s16q, UNSPEC)	\
+  ENTRY_BINARY (NAME##_f32, f32, f32, s32, UNSPEC)	\
+  ENTRY_BINARY (NAME##q_f32, f32q, f32q, s32q, UNSPEC)	\
+  ENTRY_BINARY (NAME##q_f64, f64q, f64q, s64q, UNSPEC)
 
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
-ENTRY_VHSDF (vamax, binary, UNSPEC_FAMAX)
-ENTRY_VHSDF (vamin, binary, UNSPEC_FAMIN)
+ENTRY_VHSDF (vamax, UNSPEC_FAMAX)
+ENTRY_VHSDF (vamin, UNSPEC_FAMIN)
+#undef REQUIRED_EXTENSIONS
+
+// fpm conversion
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
+ENTRY_UNARY_FPM (vcvt1_bf16_mf8_fpm, bf16q, f8, UNSPEC_VCVT1)
+ENTRY_UNARY_FPM (vcvt1_high_bf16_mf8_fpm, bf16q, f8q, UNSPEC_VCVT1_HIGH)
+ENTRY_UNARY_FPM (vcvt1_low_bf16_mf8_fpm, bf16q, f8q, UNSPEC_VCVT1_LOW)
+ENTRY_UNARY_FPM (vcvt1_f16_mf8_fpm, f16q, f8, UNSPEC_VCVT1)
+ENTRY_UNARY_FPM (vcvt1_high_f16_mf8_fpm, f16q, f8q, UNSPEC_VCVT1_HIGH)
+ENTRY_UNARY_FPM (vcvt1_low_f16_mf8_fpm, f16q, f8q, UNSPEC_VCVT1_LOW)
+ENTRY_UNARY_FPM (vcvt2_bf16_mf8_fpm, bf16q, f8, UNSPEC_VCVT2)
+ENTRY_UNARY_FPM (vcvt2_high_bf16_mf8_fpm, bf16q, f8q, UNSPEC_VCVT2_HIGH)
+ENTRY_UNARY_FPM (vcvt2_low_bf16_mf8_fpm, bf16q, f8q, UNSPEC_VCVT2_LOW)
+ENTRY_UNARY_FPM (vcvt2_f16_mf8_fpm, f16q, f8, UNSPEC_VCVT2)
+ENTRY_UNARY_FPM (vcvt2_high_f16_mf8_fpm, f16q, f8q, UNSPEC_VCVT2_HIGH)
+ENTRY_UNARY_FPM (vcvt2_low_f16_mf8_fpm, f16q, f8q, UNSPEC_VCVT2_LOW)
+
+ENTRY_BINARY_FPM (vcvt_mf8_f16_fpm, f8, f16, f16, UNSPEC_VCVT)
+ENTRY_BINARY_FPM (vcvtq_mf8_f16_fpm, f8q, f16q, f16q, UNSPEC_VCVT)
+ENTRY_BINARY_FPM (vcvt_mf8_f32_fpm, f8, f32q, f32q, UNSPEC_VCVT)
+
+ENTRY_TERNARY_FPM (vcvt_high_mf8_f32_fpm, f8q, f8, f32q, f32q, UNSPEC_VCVT_HIGH)
+#undef REQUIRED_EXTENSIONS
+
+// fpm scaling
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
+ENTRY_VHSDF_VHSDI (vscale, UNSPEC_FSCALE)
 #undef REQUIRED_EXTENSIONS

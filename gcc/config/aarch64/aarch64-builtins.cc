@@ -780,7 +780,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, M0, M1, M2, M3, U) \
+#define ENTRY(N, S, M0, M1, M2, M3, USES_FPMR, U)	\
   AARCH64_##N,
 
 enum aarch64_builtins
@@ -1591,6 +1591,8 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 enum class aarch64_builtin_signatures
 {
   binary,
+  ternary,
+  unary,
 };
 
 namespace {
@@ -1602,6 +1604,9 @@ struct simd_type {
 
 namespace simd_types {
 
+  constexpr simd_type f8 { V8QImode, qualifier_modal_float };
+  constexpr simd_type f8q { V16QImode, qualifier_modal_float };
+
   constexpr simd_type s8 { V8QImode, qualifier_none };
   constexpr simd_type u8 { V8QImode, qualifier_unsigned };
   constexpr simd_type s8q { V16QImode, qualifier_none };
@@ -1611,6 +1616,11 @@ namespace simd_types {
   constexpr simd_type u16 { V4HImode, qualifier_unsigned };
   constexpr simd_type s16q { V8HImode, qualifier_none };
   constexpr simd_type u16q { V8HImode, qualifier_unsigned };
+
+  constexpr simd_type s32 { V2SImode, qualifier_none };
+  constexpr simd_type s32q { V4SImode, qualifier_none };
+
+  constexpr simd_type s64q { V2DImode, qualifier_none };
 
   constexpr simd_type p8 { V8QImode, qualifier_poly };
   constexpr simd_type p8q { V16QImode, qualifier_poly };
@@ -1632,10 +1642,10 @@ namespace simd_types {
 }
 
 #undef ENTRY
-#define ENTRY(N, S, T0, T1, T2, T3, U) \
+#define ENTRY(N, S, T0, T1, T2, T3, USES_FPMR, U)		      \
   {#N, aarch64_builtin_signatures::S, simd_types::T0, simd_types::T1, \
-    simd_types::T2, simd_types::T3, U, \
-    aarch64_required_extensions::REQUIRED_EXTENSIONS},
+      simd_types::T2, simd_types::T3, U, USES_FPMR,		      \
+      aarch64_required_extensions::REQUIRED_EXTENSIONS},
 
 /* Initialize pragma builtins.  */
 
@@ -1645,6 +1655,7 @@ struct aarch64_pragma_builtins_data
   aarch64_builtin_signatures signature;
   simd_type types[4];
   int unspec;
+  bool uses_fpmr;
   aarch64_required_extensions required_extensions;
 };
 
@@ -1652,25 +1663,40 @@ static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
 #include "aarch64-simd-pragma-builtins.def"
 };
 
+static unsigned int
+aarch64_get_number_of_args (const aarch64_pragma_builtins_data &builtin_data)
+{
+  if (builtin_data.signature == aarch64_builtin_signatures::unary)
+    return 1;
+  else if (builtin_data.signature == aarch64_builtin_signatures::binary)
+    return 2;
+  else if (builtin_data.signature == aarch64_builtin_signatures::ternary)
+    return 3;
+  else
+    // No other signature supported.
+    gcc_unreachable ();
+}
+
 static tree
 aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
 {
-  tree type0, type1, type2;
+  tree return_type
+    = aarch64_simd_builtin_type (builtin_data.types[0].mode,
+				 builtin_data.types[0].qualifiers);
 
-  switch (builtin_data.signature)
+  vec<tree, va_gc> *arg_types = NULL;
+  auto nargs = aarch64_get_number_of_args (builtin_data);
+  for (unsigned int i = 1; i <= nargs; ++i)
     {
-    case aarch64_builtin_signatures::binary:
-      type0 = aarch64_simd_builtin_type (builtin_data.types[0].mode,
-	builtin_data.types[0].qualifiers);
-      type1 = aarch64_simd_builtin_type (builtin_data.types[1].mode,
-	builtin_data.types[1].qualifiers);
-      type2 = aarch64_simd_builtin_type (builtin_data.types[2].mode,
-	builtin_data.types[2].qualifiers);
-      return build_function_type_list (type0, type1, type2, NULL_TREE);
-
-    default:
-      gcc_unreachable ();
+      auto type = aarch64_simd_builtin_type (builtin_data.types[i].mode,
+					     builtin_data.types[i].qualifiers);
+      vec_safe_push (arg_types, type);
     }
+
+  if (builtin_data.uses_fpmr == true)
+    vec_safe_push (arg_types, uint64_type_node);
+
+  return build_function_type_vec (return_type, arg_types);
 }
 
 static void
@@ -3383,25 +3409,78 @@ static rtx
 aarch64_expand_pragma_builtin (tree exp, rtx target,
 			       const aarch64_pragma_builtins_data *builtin_data)
 {
-  expand_operand ops[3];
-  auto op1 = expand_normal (CALL_EXPR_ARG (exp, 0));
-  auto op2 = expand_normal (CALL_EXPR_ARG (exp, 1));
+  auto nargs = aarch64_get_number_of_args (*builtin_data);
+
+  expand_operand ops[5];
   create_output_operand (&ops[0], target, builtin_data->types[0].mode);
-  create_input_operand (&ops[1], op1, builtin_data->types[1].mode);
-  create_input_operand (&ops[2], op2, builtin_data->types[2].mode);
+  for (unsigned int i = 1; i <= nargs; ++i)
+    create_input_operand (&ops[i],
+			  expand_normal (CALL_EXPR_ARG (exp, i - 1)),
+			  builtin_data->types[i].mode);
 
-  auto unspec = builtin_data->unspec;
-  insn_code icode;
-
-  switch (builtin_data->signature)
+  if (builtin_data->uses_fpmr == true)
     {
-    case aarch64_builtin_signatures::binary:
-      icode = code_for_aarch64 (unspec, builtin_data->types[0].mode);
-      expand_insn (icode, 3, ops);
-      break;
-    default:
-      gcc_unreachable();
+      auto fpm_input = expand_normal (CALL_EXPR_ARG (exp, nargs));
+      auto fpmr = gen_rtx_REG (DImode, FPM_REGNUM);
+      emit_move_insn (fpmr, fpm_input);
     }
+
+  enum insn_code icode;
+  switch (builtin_data->unspec)
+    {
+    case UNSPEC_FAMAX:
+    case UNSPEC_FAMIN:
+      icode = code_for_aarch64 (builtin_data->unspec,
+				builtin_data->types[0].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    case UNSPEC_VCVT1:
+    case UNSPEC_VCVT1_HIGH:
+    case UNSPEC_VCVT2:
+    case UNSPEC_VCVT2_HIGH:
+      icode = code_for_aarch64 (builtin_data->unspec,
+				builtin_data->types[0].mode,
+				builtin_data->types[1].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    case UNSPEC_VCVT1_LOW:
+    case UNSPEC_VCVT2_LOW:
+      icode = code_for_aarch64_lower (builtin_data->unspec,
+				      builtin_data->types[0].mode,
+				      builtin_data->types[1].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    case UNSPEC_FSCALE:
+      icode = code_for_aarch64 (builtin_data->unspec,
+				builtin_data->types[1].mode,
+				builtin_data->types[2].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    case UNSPEC_VCVT:
+      icode = code_for_aarch64 (builtin_data->unspec,
+				builtin_data->types[0].mode,
+				builtin_data->types[1].mode,
+				builtin_data->types[2].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    case UNSPEC_VCVT_HIGH:
+      icode = code_for_aarch64 (builtin_data->unspec,
+				builtin_data->types[0].mode,
+				builtin_data->types[1].mode,
+				builtin_data->types[2].mode,
+				builtin_data->types[3].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   return target;
 }
 

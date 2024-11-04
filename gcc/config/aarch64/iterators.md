@@ -41,6 +41,9 @@
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator SI_ONLY [SI])
 (define_mode_iterator DI_ONLY [DI])
+(define_mode_iterator V8QI_ONLY [V8QI])
+(define_mode_iterator V16QI_ONLY [V16QI])
+(define_mode_iterator V4SF_ONLY [V4SF])
 
 ;; Iterator for all integer modes (up to 64-bit)
 (define_mode_iterator ALLI [QI HI SI DI])
@@ -163,6 +166,12 @@
 (define_mode_iterator VHSDF [(V4HF "TARGET_SIMD_F16INST")
 			     (V8HF "TARGET_SIMD_F16INST")
 			     V2SF V4SF V2DF])
+(define_mode_iterator VH_SF [(V4HF "TARGET_SIMD_F16INST")
+			     (V8HF "TARGET_SIMD_F16INST")
+			     V4SF])
+
+;; Advanced SIMD Integer modes.
+(define_mode_iterator VHSDI [V4HI V8HI V2SI V4SI V2DI])
 
 ;; Advanced SIMD Float modes, and DF.
 (define_mode_iterator VDQF_DF [V2SF V4SF V2DF DF])
@@ -426,6 +435,12 @@
 			     (V8HF "TARGET_SIMD_F16INST")
 			     V2SF V4SF])
 
+;; Modes available for Advanced SIMD FP8 conversion operations.
+(define_mode_iterator VCVTFPM [V8QI
+			       (V4HF "TARGET_SIMD_F16INST")
+			       (V8HF "TARGET_SIMD_F16INST")
+			       V4SF])
+
 ;; Iterators for single modes, for "@" patterns.
 (define_mode_iterator VNx16QI_ONLY [VNx16QI])
 (define_mode_iterator VNx16SI_ONLY [VNx16SI])
@@ -635,6 +650,10 @@
 ;; Bfloat16 modes to which V4SF can be converted
 (define_mode_iterator V4SF_TO_BF [V4BF V8BF])
 
+;; Float16 and Bfloat16 modes separately
+(define_mode_iterator V8HF_ONLY [V8HF])
+(define_mode_iterator V8BF_ONLY [V8BF])
+
 (define_mode_iterator SVE_BHSx24 [VNx32QI VNx16HI VNx8SI
 				  VNx16BF VNx16HF VNx8SF
 				  VNx64QI VNx32HI VNx16SI
@@ -699,6 +718,7 @@
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
     UNSPEC_FNEG		; Used in aarch64-simd.md.
+    UNSPEC_FSCALE	; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
     UNSPEC_SMAXV	; Used in aarch64-simd.md.
     UNSPEC_SMINV	; Used in aarch64-simd.md.
@@ -736,6 +756,14 @@
     UNSPEC_SSHLL	; Used in aarch64-simd.md.
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
+    UNSPEC_VCVT		; Used in aarch64-simd.md.
+    UNSPEC_VCVT_HIGH	; Used in aarch64-simd.md.
+    UNSPEC_VCVT1	; Used in aarch64-simd.md.
+    UNSPEC_VCVT1_HIGH	; Used in aarch64-simd.md.
+    UNSPEC_VCVT1_LOW	; Used in aarch64-simd.md.
+    UNSPEC_VCVT2	; Used in aarch64-simd.md.
+    UNSPEC_VCVT2_HIGH	; Used in aarch64-simd.md.
+    UNSPEC_VCVT2_LOW	; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_TBLQ		; Used in vector permute patterns.
     UNSPEC_TBX		; Used in vector permute patterns.
@@ -4659,3 +4687,40 @@
 
 (define_code_attr faminmax_op
   [(smax "famax") (smin "famin")])
+
+;; Iterators and attributes for fpm instructions
+
+(define_int_iterator FPM_UNARY_UNS
+  [UNSPEC_VCVT1
+   UNSPEC_VCVT1_HIGH
+   UNSPEC_VCVT2
+   UNSPEC_VCVT2_HIGH])
+
+(define_int_iterator FPM_UNARY_LOW_UNS [UNSPEC_VCVT1_LOW UNSPEC_VCVT2_LOW])
+
+(define_int_iterator FPM_BINARY_UNS [UNSPEC_VCVT])
+
+(define_int_iterator FPM_SCALE_UNS [UNSPEC_FSCALE])
+
+(define_int_iterator FPM_TERNARY_VCVT_UNS [UNSPEC_VCVT_HIGH])
+
+(define_int_attr fpm_unary_bf_uns_op
+  [(UNSPEC_VCVT1 "bf1cvtl")
+   (UNSPEC_VCVT1_HIGH "bf1cvtl2")
+   (UNSPEC_VCVT1_LOW "bf1cvtl")
+   (UNSPEC_VCVT2 "bf2cvtl")
+   (UNSPEC_VCVT2_HIGH "bf2cvtl2")
+   (UNSPEC_VCVT2_LOW "bf2cvtl")])
+
+(define_int_attr fpm_unary_hf_uns_op
+  [(UNSPEC_VCVT1 "f1cvtl")
+   (UNSPEC_VCVT1_HIGH "f1cvtl2")
+   (UNSPEC_VCVT1_LOW "f1cvtl")
+   (UNSPEC_VCVT2 "f2cvtl")
+   (UNSPEC_VCVT2_HIGH "f2cvtl2")
+   (UNSPEC_VCVT2_LOW "f2cvtl")])
+
+(define_int_attr fpm_uns_op
+  [(UNSPEC_FSCALE "fscale")
+   (UNSPEC_VCVT "fcvtn")
+   (UNSPEC_VCVT_HIGH "fcvtn2")])
