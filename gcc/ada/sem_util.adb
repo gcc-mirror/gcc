@@ -3581,9 +3581,9 @@ package body Sem_Util is
       end if;
    end Check_No_Hidden_State;
 
-   ---------------------------------------------
-   -- Check_Nonoverridable_Aspect_Consistency --
-   ---------------------------------------------
+   --------------------------------------------
+   -- Check_Inherited_Nonoverridable_Aspects --
+   --------------------------------------------
 
    procedure Check_Inherited_Nonoverridable_Aspects
      (Inheritor      : Entity_Id;
@@ -6303,11 +6303,11 @@ package body Sem_Util is
       end if;
    end Corresponding_Generic_Type;
 
-   --------------------------------
-   -- Corresponding_Primitive_Op --
-   --------------------------------
+   --------------------------------------
+   -- Corresponding_Op_Of_Derived_Type --
+   --------------------------------------
 
-   function Corresponding_Primitive_Op
+   function Corresponding_Op_Of_Derived_Type
      (Ancestor_Op     : Entity_Id;
       Descendant_Type : Entity_Id) return Entity_Id
    is
@@ -6329,7 +6329,7 @@ package body Sem_Util is
 
       begin
          while Present (E) and then E /= Prim loop
-            if not Is_Tagged_Type (E)
+            if Is_Type (E) and then not Is_Tagged_Type (E)
               and then Contains (Direct_Primitive_Operations (E), Prim)
             then
                return E;
@@ -6338,37 +6338,40 @@ package body Sem_Util is
             Next_Entity (E);
          end loop;
 
-         pragma Assert (False);
+         --  If a primitive is not found, then return Empty, and in that case
+         --  the ancestor subprogram will be returned (which can occur in
+         --  class-wide subprogram cases, which are not primitives).
+
          return Empty;
       end Find_Untagged_Type_Of;
-
-      Typ  : constant Entity_Id :=
-               (if Is_Dispatching_Operation (Ancestor_Op)
-                 then Find_Dispatching_Type (Ancestor_Op)
-                 else Find_Untagged_Type_Of (Ancestor_Op));
 
       ------------------------------
       -- Profile_Matches_Ancestor --
       ------------------------------
 
       function Profile_Matches_Ancestor (S : Entity_Id) return Boolean is
-         F1 : Entity_Id := First_Formal (Ancestor_Op);
-         F2 : Entity_Id := First_Formal (S);
+         F1          : Entity_Id := First_Formal (Ancestor_Op);
+         F2          : Entity_Id := First_Formal (S);
+         Impl_Type_1 : Entity_Id;
+         Impl_Type_2 : Entity_Id;
 
       begin
          if Ekind (Ancestor_Op) /= Ekind (S) then
             return False;
          end if;
 
-         --  ??? This should probably account for anonymous access formals,
-         --  but the parent function (Corresponding_Primitive_Op) is currently
-         --  only called for user-defined literal functions, which can't have
-         --  such formals. But if this is ever used in a more general context
-         --  it should be extended to handle such formals (and result types).
+         --  ??? This function should probably be extended to account for
+         --  anonymous access formals and anonymous access result types.
 
          while Present (F1) and then Present (F2) loop
-            if Etype (F1) = Etype (F2)
-              or else Is_Ancestor (Typ, Etype (F2))
+            Impl_Type_1 := Implementation_Base_Type (Etype (F1));
+            Impl_Type_2 := Implementation_Base_Type (Etype (F2));
+
+            if Impl_Type_1 = Impl_Type_2
+              or else Is_Ancestor (Impl_Type_1, Impl_Type_2)
+              or else (Is_Interface (Impl_Type_1)
+                         and then
+                       Is_Progenitor (Impl_Type_1, Impl_Type_2))
             then
                Next_Formal (F1);
                Next_Formal (F2);
@@ -6377,22 +6380,40 @@ package body Sem_Util is
             end if;
          end loop;
 
+         Impl_Type_1 := Implementation_Base_Type (Etype (Ancestor_Op));
+         Impl_Type_2 := Implementation_Base_Type (Etype (S));
+
          return No (F1)
            and then No (F2)
-           and then (Etype (Ancestor_Op) = Etype (S)
-                      or else Is_Ancestor (Typ, Etype (S)));
+           and then (Impl_Type_1 = Impl_Type_2
+                       or else
+                     Is_Ancestor (Impl_Type_1, Impl_Type_2)
+                       or else
+                     (Is_Interface (Impl_Type_1)
+                       and then Is_Progenitor (Impl_Type_1, Impl_Type_2)));
       end Profile_Matches_Ancestor;
 
       --  Local variables
 
       Elmt : Elmt_Id;
       Subp : Entity_Id;
+      Typ  : constant Entity_Id :=
+               (if Is_Dispatching_Operation (Ancestor_Op)
+                then Find_Dispatching_Type (Ancestor_Op)
+                else Find_Untagged_Type_Of (Ancestor_Op));
 
-   --  Start of processing for Corresponding_Primitive_Op
+   --  Start of processing for Corresponding_Op_Of_Derived_Type
 
    begin
-      pragma Assert (Is_Ancestor (Typ, Descendant_Type)
-                      or else Is_Progenitor (Typ, Descendant_Type));
+      --  If Ancestor_Op isn't a primitive of the parent type, then simply
+      --  return it (it can be a nonprimitive class-wide subprogram).
+
+      if No (Typ)
+        or else (not Is_Ancestor (Typ, Descendant_Type)
+                  and then not Is_Progenitor (Typ, Descendant_Type))
+      then
+         return Ancestor_Op;
+      end if;
 
       Elmt := First_Elmt (Primitive_Operations (Descendant_Type));
 
@@ -6432,7 +6453,7 @@ package body Sem_Util is
 
       pragma Assert (False);
       return Empty;
-   end Corresponding_Primitive_Op;
+   end Corresponding_Op_Of_Derived_Type;
 
    --------------------
    -- Current_Entity --
@@ -14511,6 +14532,281 @@ package body Sem_Util is
       return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound (Ind)));
    end Indexed_Component_Bit_Offset;
 
+   ------------------------------------
+   -- Inherit_Nonoverridable_Aspects --
+   ------------------------------------
+
+   procedure Inherit_Nonoverridable_Aspects
+     (Typ : Entity_Id; From_Typ : Entity_Id)
+   is
+
+      procedure Inherit_Nonoverridable_Aspect (Item : Node_Id);
+      --  Inherited nonoverridable aspects usually depend on operations of the
+      --  derived type, inherited or overridden. If an aspect is not explicitly
+      --  specified but rather is inherited, then its components (which usually
+      --  denote subprograms) must generally be associated with operations of
+      --  the derived type (with some exceptions, such as inherited class-wide
+      --  operations for indexing aspects). Item is a nonoverridable element
+      --  of From_Typ's Rep_Item list. A new aspect item is created and is
+      --  associated with the appropriate operations of the derived type,
+      --  and that aspect item is inserted at the beginning of Typ's Rep_Item
+      --  list. For an aspect that specifies a subprogram name, this procedure
+      --  also identifies which subprograms are denoted by the derived type's
+      --  inherited aspect (including inherited, overriding, and in some cases
+      --  new subprograms of the derived type).
+
+      -----------------------------------
+      -- Inherit_Nonoverridable_Aspect --
+      -----------------------------------
+
+      procedure Inherit_Nonoverridable_Aspect (Item : Node_Id) is
+         Loc            : constant Source_Ptr := Sloc (Typ);
+         Assoc          : Node_Id;
+         New_Item       : Node_Id;
+         Item_Aspect_Id : constant Nonoverridable_Aspect_Id :=
+           Get_Aspect_Id (Item);
+
+      begin
+         New_Item := Make_Aspect_Specification (
+           Sloc => Loc,
+           Identifier => Identifier (Item),
+           Expression => New_Copy_Tree (Expression (Item)));
+         Set_Entity (New_Item, Typ);
+
+         --  We are trying here to implement RM 13.1(15.5):
+         --    if the name denotes one or more primitive subprograms of
+         --    the type, the inherited aspect is a name that denotes the
+         --    corresponding primitive subprogram(s) of the derived type;
+
+         case Item_Aspect_Id is
+            when Aspect_Aggregate =>
+               Assoc := First (Component_Associations (Expression (New_Item)));
+
+               --  Replace aggregate operations coming from the aspect of the
+               --  parent type with the corresponding operations of the derived
+               --  type (which can be inherited or overriding).
+
+               while Present (Assoc) loop
+                  pragma Assert (Nkind (Expression (Assoc)) = N_Identifier);
+
+                  Set_Entity
+                    (Expression (Assoc),
+                     Corresponding_Op_Of_Derived_Type
+                       (Ancestor_Op     => Entity (Expression (Assoc)),
+                        Descendant_Type => Typ));
+                  Next (Assoc);
+               end loop;
+
+            when Aspect_Integer_Literal
+               | Aspect_Real_Literal
+               | Aspect_String_Literal
+            =>
+               Set_Entity
+                 (Expression (New_Item),
+                  Corresponding_Op_Of_Derived_Type
+                    (Ancestor_Op     => Entity (Expression (Item)),
+                     Descendant_Type => Typ));
+
+            --  Build corresponding attribute definition clause for following
+            --  name-valued aspects (needed later in Is_Confirming).
+
+            when Aspect_Default_Iterator
+               | Aspect_Constant_Indexing
+               | Aspect_Variable_Indexing
+            =>
+               declare
+                  Expr_Copy : constant Node_Id :=
+                    New_Copy_Tree (Expression (Item));
+
+                  Aitem : constant Node_Id :=
+                    Make_Attribute_Definition_Clause (Loc,
+                      Name       => New_Occurrence_Of (Typ, Loc),
+                      Chars      => Chars (Identifier (Item)),
+                      Expression => Expr_Copy);
+
+                  New_Entity            : Entity_Id := Empty;
+                  Parent_Indexing_Subps : Elist_Id;
+                  New_Indexing_Subps    : Elist_Id;
+                  Subp_Elmt             : Elmt_Id;
+
+               begin
+                  Set_Parent (Aitem, New_Item);
+
+                  if Nkind (Expr_Copy) in N_Has_Entity
+                    and then Present (Entity (Expr_Copy))
+                  then
+                     if Present (Primitive_Operations (Typ)) then
+
+                        --  Indexing aspects allow multiple subprograms
+
+                        if Item_Aspect_Id in Aspect_Constant_Indexing
+                                           | Aspect_Variable_Indexing
+                        then
+                           Parent_Indexing_Subps := Aspect_Subprograms (Item);
+                           Subp_Elmt := First_Elmt (Parent_Indexing_Subps);
+
+                           New_Indexing_Subps := No_Elist;
+
+                           --  First collect the functions of the derived type
+                           --  that correspond to the functions inherited from
+                           --  an ancestor type (From_Typ). Note that in some
+                           --  cases these may be class-wide functions rather
+                           --  than primitives.
+
+                           while Present (Subp_Elmt) loop
+                              New_Entity := Corresponding_Op_Of_Derived_Type
+                                              (Ancestor_Op => Node (Subp_Elmt),
+                                               Descendant_Type => Typ);
+
+                              --  Add the corresponding subprogram to the new
+                              --  aspect's list of subprograms.
+
+                              Append_New_Elmt (New_Entity, New_Indexing_Subps);
+
+                              Next_Elmt (Subp_Elmt);
+                           end loop;
+
+                           --  Traverse the primitive operations of the type
+                           --  to locate any indexing functions that have been
+                           --  added to the type (i.e., that have been neither
+                           --  inherited, nor override any of the inherited
+                           --  indexing functions).
+
+                           --  ??? Note that this doesn't currently account for
+                           --  the possibility of added nonprimitive indexing
+                           --  functions (class-wide functions of the derived
+                           --  type). This presumably would require traversing
+                           --  all of the declarations of the immediately
+                           --  enclosing declaration list, which perhaps we
+                           --  should arguably be doing in any case, rather
+                           --  than separately gathering inherited, overriding,
+                           --  and new indexing functions (and which might also
+                           --  be more efficient). Perhaps this could/should be
+                           --  done in Analyze_Aspects_At_Freeze_Point, but
+                           --  experimenting with that led to difficulties.
+
+                           declare
+                              Prim_Ops   : constant Elist_Id :=
+                                Primitive_Operations (Typ);
+                              Prim_Elmt  : Elmt_Id := First_Elmt (Prim_Ops);
+                              Prim_Id    : Entity_Id;
+                              Valid_Func : Boolean;
+
+                           begin
+                              while Present (Prim_Elmt) loop
+                                 Prim_Id := Node (Prim_Elmt);
+
+                                 if Chars (Prim_Id) = Chars (Expression (Item))
+                                   and then
+                                     not Is_Inherited_Operation (Prim_Id)
+                                   and then
+                                     not Is_Overriding_Subprogram (Prim_Id)
+                                 then
+                                    --  Verify that the new primitive has
+                                    --  a correct profile to qualify as an
+                                    --  indexing function for Typ.
+
+                                    Check_Function_For_Indexing_Aspect
+                                      (New_Item, Typ, Prim_Id, Valid_Func);
+
+                                    if Valid_Func then
+                                       Append_New_Elmt
+                                         (Prim_Id, New_Indexing_Subps);
+                                    end if;
+                                 end if;
+
+                                 Next_Elmt (Prim_Elmt);
+                              end loop;
+                           end;
+
+                           --  Save new list of indexing functions on aspect
+
+                           Set_Aspect_Subprograms
+                             (New_Item, New_Indexing_Subps);
+
+                        --  Item_Aspect_Id = Aspect_Default_Iterator
+
+                        else
+                           New_Entity := Corresponding_Op_Of_Derived_Type
+                                           (Ancestor_Op => Entity (Expr_Copy),
+                                            Descendant_Type => Typ);
+                        end if;
+                     end if;
+
+                     Set_Entity (Expr_Copy, New_Entity);
+
+                     --  We want the Entity attributes of the two expressions
+                     --  to agree.
+
+                     Set_Entity (Expression (New_Item), Entity (Expr_Copy));
+
+                  end if;
+
+                  Set_From_Aspect_Specification (Aitem);
+                  Set_Is_Delayed_Aspect (Aitem);
+                  Set_Aspect_Rep_Item (New_Item, Aitem);
+                  Set_Parent (Aitem, New_Item);
+               end;
+
+            --  Nothing special to do for the other nonoverridable aspects
+
+            when Aspect_Implicit_Dereference
+               | Aspect_Iterator_Element
+               | Aspect_Max_Entry_Queue_Length
+               | Aspect_No_Controlled_Parts
+            =>
+               return;
+         end case;
+
+         Set_Expression_Copy (New_Item, New_Copy_Tree (Expression (New_Item)));
+
+         --  Place new aspect spec in list of rep clauses, to ensure
+         --  later resolution.
+
+         Set_Next_Rep_Item (New_Item, First_Rep_Item (Typ));
+         Set_First_Rep_Item (Typ, New_Item);
+         Set_Is_Delayed_Aspect (New_Item);
+         Set_Has_Delayed_Aspects (Typ);
+      end Inherit_Nonoverridable_Aspect;
+
+      --  Local declarations
+
+      Item : Node_Id;
+
+   --  Start of processing for Inherit_Nonoverridable_Aspects
+
+   begin
+      --  Typ may be the full type of a type derived from a private type,
+      --  in which case the full type primitive operations list can be empty.
+      --  In that case its nonoverridable aspects shouldn't be updated, and
+      --  we rely on the private view's aspect having been updated. (It's not
+      --  clear whether this is appropriate handling for these???)
+
+      if Has_Private_Declaration (Typ)
+        and then
+          (No (Direct_Primitive_Operations (Typ))
+            or else Is_Empty_Elmt_List (Direct_Primitive_Operations (Typ)))
+      then
+         return;
+      end if;
+
+      --  Inherit and update any nonoverridable aspects that come from the
+      --  parent type that should refer to inherited or overriding operations.
+
+      Item := First_Rep_Item (From_Typ);
+
+      while Present (Item) loop
+         if Nkind (Item) = N_Aspect_Specification
+           and then Get_Aspect_Id (Item) in Nonoverridable_Aspect_Id
+           and then Entity (Item) = Base_Type (From_Typ)
+         then
+            Inherit_Nonoverridable_Aspect (Item);
+         end if;
+
+         Item := Next_Rep_Item (Item);
+      end loop;
+   end Inherit_Nonoverridable_Aspects;
+
    -----------------------------
    -- Inherit_Predicate_Flags --
    -----------------------------
@@ -15652,6 +15948,9 @@ package body Sem_Util is
                raise Program_Error;
          end case;
       end Names_Match;
+
+   --  Start of processing for Is_Confirming
+
    begin
       --  allow users to disable "shall be confirming" check, at least for now
       if Relaxed_RM_Semantics then
@@ -15668,20 +15967,8 @@ package body Sem_Util is
             | Aspect_Iterator_Element
             | Aspect_Constant_Indexing
             | Aspect_Variable_Indexing =>
-            declare
-               Item_1 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_1);
-               Item_2 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_2);
-            begin
-               if Nkind (Item_1) /= N_Attribute_Definition_Clause
-                 or Nkind (Item_2) /= N_Attribute_Definition_Clause
-               then
-                  pragma Assert (Serious_Errors_Detected > 0);
-                  return True;
-               end if;
-
-               return Names_Match (Expression (Item_1),
-                                   Expression (Item_2));
-            end;
+            return Names_Match (Expression (Aspect_Spec_1),
+                                Expression (Aspect_Spec_2));
 
          --  A confirming aspect for Implicit_Dereference on a derived type
          --  has already been checked in Analyze_Aspect_Implicit_Dereference,

@@ -169,9 +169,19 @@ package body Sem_Ch13 is
    --  node N for the given type (entity) of the aspect does not appear too
    --  late according to the rules in RM 13.1(9) and 13.1(10).
 
+   procedure Check_Iterator_Functions (Typ : Entity_Id; Expr : Node_Id);
+   --  Check that there is a single function in the type's Default_Iterator
+   --  aspect that has the proper type structure. Expr is the name given in
+   --  the aspect specification.
+
    procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
    --  Called if both Storage_Pool and Storage_Size attribute definition
    --  clauses (SP and SS) are present for entity Ent. Issue error message.
+
+   function Check_Primitive_Function
+     (Subp : Entity_Id; Ent : Entity_Id) return Boolean;
+   --  Common legality checks for primitive-denoting aspects. Checks that
+   --  Subp is a primitive subprogram of the type Ent.
 
    procedure Freeze_Entity_Checks (N : Node_Id);
    --  Called from Analyze_Freeze_Entity and Analyze_Generic_Freeze Entity
@@ -971,10 +981,18 @@ package body Sem_Ch13 is
    -- Analyze_Aspects_At_Freeze_Point --
    -------------------------------------
 
-   procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id) is
+   procedure Analyze_Aspects_At_Freeze_Point
+     (E                   : Entity_Id;
+      Nonoverridable_Only : Boolean := False)
+   is
       procedure Analyze_Aspect_Default_Value (ASN : Node_Id);
       --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
       --  the aspect specification node ASN.
+
+      procedure Check_Indexing_Functions (ASN : Node_Id);
+      --  Check that the function in a Constant_Indexing or Variable_Indexing
+      --  aspect has the proper profile. If the name is overloaded, check that
+      --  some interpretation is legal.
 
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
@@ -1000,6 +1018,184 @@ package body Sem_Ch13 is
 
          Check_Aspect_Too_Late (ASN);
       end Analyze_Aspect_Default_Value;
+
+      ------------------------------
+      -- Check_Indexing_Functions --
+      ------------------------------
+
+      procedure Check_Indexing_Functions (ASN : Node_Id) is
+         Aspect : constant Aspect_Id := Get_Aspect_Id (ASN);
+         Expr   : constant Node_Id   := Expression (ASN);
+
+         Indexing_Found : Boolean := False;
+
+         procedure Check_Inherited_Indexing;
+         --  For a derived type, check that the specification of an indexing
+         --  aspect can only be confirming (i.e., that it uses the same name
+         --  as the parent type's aspect).
+         --
+         --  AI12-0160: The uses of Constant_Indexing and Variable_Indexing
+         --  aspects have to be the same for all descendants of an indexable
+         --  container type.
+
+         ------------------------------
+         -- Check_Inherited_Indexing --
+         ------------------------------
+
+         procedure Check_Inherited_Indexing is
+            Inherited      : Node_Id;
+            Other_Indexing : Node_Id;
+
+         begin
+            if Aspect = Aspect_Constant_Indexing then
+               Inherited :=
+                 Find_Aspect (Etype (E), Aspect_Constant_Indexing);
+               Other_Indexing :=
+                 Find_Aspect (Etype (E), Aspect_Variable_Indexing);
+
+            else pragma Assert (Aspect = Aspect_Variable_Indexing);
+               Inherited :=
+                  Find_Aspect (Etype (E), Aspect_Variable_Indexing);
+               Other_Indexing :=
+                 Find_Aspect (Etype (E), Aspect_Constant_Indexing);
+            end if;
+
+            if Present (Inherited) then
+
+               --  Check if this is a confirming specification. The name
+               --  may be overloaded between the parent operation and the
+               --  inherited one, so we check that the Chars fields match.
+
+               if Same_Name (Expression (Inherited), Expression (ASN)) then
+                  Indexing_Found := True;
+
+               --  Indicate the operation that must be overridden, rather than
+               --  redefining the indexing aspect.
+
+               else
+                  Error_Msg_NE
+                    ("overriding of inherited indexing aspect" &
+                       " must be confirming", ASN, E);
+                  Error_Msg_NE
+                    ("\\override & instead",
+                     ASN, Entity (Expression (Inherited)));
+               end if;
+
+            --  If not inherited and the parent has another indexing function
+            --  this is illegal, because it leads to inconsistent results in
+            --  class-wide calls.
+
+            elsif Present (Other_Indexing) then
+               Error_Msg_N
+                 ("cannot specify one indexing aspect for derived type"
+                   & " if the other indexing aspect is specified for the"
+                   & " parent and this aspect is not", ASN);
+            end if;
+         end Check_Inherited_Indexing;
+
+      --  Start of processing for Check_Indexing_Functions
+
+      begin
+         --  If the aspect specification was effectively inherited from the
+         --  parent type (so constructed anew by analysis), then no point
+         --  in validating.
+
+         if not Comes_From_Source (ASN) then
+            return;
+         end if;
+
+         if not Is_Overloaded (Expr) then
+            Check_Function_For_Indexing_Aspect
+              (ASN, E, Entity (Expr), Valid => Indexing_Found);
+
+         else
+            declare
+               I     : Interp_Index;
+               It    : Interp;
+               Valid : Boolean;
+
+            begin
+               Get_First_Interp (Expr, I, It);
+               while Present (It.Nam) loop
+
+                  --  Check that each interpretation is a function valid for
+                  --  use as an indexing function. (Note that the rules for
+                  --  indexing aspects are to be treated as legality rules,
+                  --  as per AI22-0084. If this is ever changed to treat these
+                  --  as resolution rules, then we'll have to keep track of
+                  --  whether there are further interpretations to be tested,
+                  --  and condition the error reporting within Illegal_Indexing
+                  --  on that.)
+
+                  if Is_Overloadable (It.Nam) then
+                     Check_Function_For_Indexing_Aspect
+                       (ASN, E, It.Nam, Valid);
+                     Indexing_Found := Indexing_Found or Valid;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+         end if;
+
+         if not Indexing_Found and then not Error_Posted (ASN) then
+            Error_Msg_NE
+              ("indexing aspect requires a local function that applies to "
+               & "type&", Expr, E);
+         end if;
+
+         --  ??? Is Is_Derived_Type the right test here? A derived type's
+         --  ancestor might or might not have the aspect specified, and
+         --  the derived type itself might or might not have an explicit
+         --  aspect specification (as opposed to an aspect specification
+         --  implicitly introduced by the compiler). So lots of cases to
+         --  consider.
+
+         if Is_Derived_Type (E)
+           --  See comment re this debug flag in exp_ch5.adb
+           and then not Debug_Flag_Dot_XX
+         then
+            Check_Inherited_Indexing;
+         end if;
+
+         --  If partial declaration exists, verify that it is not tagged.
+
+         if Ekind (Current_Scope) = E_Package
+           and then Has_Private_Declaration (E)
+           and then
+             List_Containing (Parent (E)) =
+               Private_Declarations
+                 (Specification (Unit_Declaration_Node (Current_Scope)))
+         then
+            declare
+               Decl : Node_Id;
+
+            begin
+               Decl :=
+                 First (Visible_Declarations
+                          (Specification
+                             (Unit_Declaration_Node (Current_Scope))));
+
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Private_Type_Declaration
+                    and then E = Full_View (Defining_Identifier (Decl))
+                    and then Tagged_Present (Decl)
+                    and then No (Aspect_Specifications (Decl))
+                    --  Don't complain about compiler-generated
+                    --  confirming specifications for inherited aspects.
+                    and then Comes_From_Source (ASN)
+                  then
+                     Error_Msg_NE
+                       ("indexing aspect cannot be specified on full view "
+                        & "if partial view is tagged", ASN, E);
+                     return;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end;
+         end if;
+      end Check_Indexing_Functions;
 
       -------------------------------------
       -- Make_Pragma_From_Boolean_Aspect --
@@ -1139,9 +1335,14 @@ package body Sem_Ch13 is
       --  package it may be frozen from an object declaration in the enclosing
       --  scope, so install the package declarations to complete the analysis
       --  of the aspects, if any. If the package itself is frozen the type will
-      --  have been frozen as well.
+      --  have been frozen as well. We don't do this in the case where formal
+      --  Nonoverridable_Only is True, because that formal is only passed True
+      --  at the ends of certain declaration lists (like visible-part lists),
+      --  not when this procedure is called at arbitrary freeze points.
 
-      if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
+      if not Nonoverridable_Only
+        and then not Scope_Within_Or_Same (Current_Scope, Scope (E))
+      then
          if Is_Type (E) and then From_Nested_Package (E) then
             declare
                Pack : constant Entity_Id := Scope (E);
@@ -1179,6 +1380,16 @@ package body Sem_Ch13 is
 
             if Is_Delayed_Aspect (ASN) then
                A_Id := Get_Aspect_Id (ASN);
+
+               --  When Nonoverridable_Only is True (such as at the end of
+               --  a visible part), we only want to process aspects that are
+               --  nonoverridable, and skip others.
+
+               if Nonoverridable_Only
+                 and then A_Id not in Nonoverridable_Aspect_Id
+               then
+                  goto Skip_Aspect;
+               end if;
 
                case A_Id is
 
@@ -1250,6 +1461,11 @@ package body Sem_Ch13 is
                         Error_Msg_NE
                           ("aspect must be fully defined before & is frozen",
                            ASN, E);
+
+                     elsif A_Id in Aspect_Constant_Indexing
+                                 | Aspect_Variable_Indexing
+                     then
+                        Check_Indexing_Functions (ASN);
                      end if;
 
                   when Aspect_Integer_Literal
@@ -1294,6 +1510,24 @@ package body Sem_Ch13 is
                            ASN);
                      end if;
 
+                     --  Inherited nonoverridable aspect: analysis will
+                     --  verify that it is consistent.
+
+                     --  If the aspect is not Comes_From_Source, then it's
+                     --  an inherited aspect, in which case the aspect's
+                     --  operations have already been set and there's no need
+                     --  to resolve it.
+
+                     --  Does this test of Is_Derived_Type make sense here,
+                     --  and is the call to Resolve_Aspect_Aggregate even
+                     --  needed here??? (It's called other places.)
+
+                     if Is_Derived_Type (E)
+                       and then Comes_From_Source (ASN)
+                     then
+                        Resolve_Aspect_Aggregate (E, Expression (ASN));
+                     end if;
+
                   when Aspect_Finalizable =>
                      Validate_Finalizable_Aspect (E, ASN);
 
@@ -1309,27 +1543,34 @@ package body Sem_Ch13 is
             end if;
          end if;
 
+      <<Skip_Aspect>>
          Next_Rep_Item (ASN);
       end loop;
 
-      --  Make a second pass for a Full_Access_Only entry, see above why
+      if not Nonoverridable_Only then
+         --  Make a second pass for a Full_Access_Only entry, see above why
 
-      ASN := First_Rep_Item (E);
-      while Present (ASN) loop
-         if Nkind (ASN) = N_Aspect_Specification then
-            exit when Entity (ASN) /= E;
+         ASN := First_Rep_Item (E);
+         while Present (ASN) loop
+            if Nkind (ASN) = N_Aspect_Specification then
+               exit when Entity (ASN) /= E;
 
-            if Get_Aspect_Id (ASN) = Aspect_Full_Access_Only then
-               Make_Pragma_From_Boolean_Aspect (ASN);
-               Ritem := Aspect_Rep_Item (ASN);
-               if Present (Ritem) then
-                  Analyze (Ritem);
+               if Get_Aspect_Id (ASN) = Aspect_Full_Access_Only then
+                  Make_Pragma_From_Boolean_Aspect (ASN);
+                  Ritem := Aspect_Rep_Item (ASN);
+                  if Present (Ritem) then
+                     Analyze (Ritem);
+                  end if;
                end if;
             end if;
-         end if;
 
-         Next_Rep_Item (ASN);
-      end loop;
+            Next_Rep_Item (ASN);
+         end loop;
+      end if;
+
+      --  Would be nice to have a comment explaining what this is about. ???
+      --  Also, it's not clear whether this should be done in the case where
+      --  Nonoverridable_Only is True.
 
       if In_Instance
         and then E /= Base_Type (E)
@@ -4797,30 +5038,45 @@ package body Sem_Ch13 is
               and then Nkind (Type_Definition (N)) = N_Derived_Type_Definition
               and then not In_Instance_Body
             then
+               --  Locate the nearest ancestor type that has an explicit aspect
+               --  corresponding to E's aspect, and flag an error on that if
+               --  E's aspect does not confirm the aspect inherited from the
+               --  ancestor.
+
                --  In order to locate the parent type we must go first to its
                --  base type because the frontend introduces an implicit base
                --  type even if there is no constraint attached to it, since
                --  this is closer to the Ada semantics.
 
                declare
-                  Parent_Type      : constant Entity_Id :=
-                    Etype (Base_Type (E));
-                  Inherited_Aspect : constant Node_Id :=
-                    Find_Aspect (Parent_Type, A_Id);
+                  Ancestor_Type   : Entity_Id := Etype (Base_Type (E));
+                  Ancestor_Aspect : Node_Id   := Find_Aspect
+                                                   (Ancestor_Type, A_Id);
                begin
-                  if Present (Inherited_Aspect)
-                    and then not Is_Confirming
-                                   (A_Id, Inherited_Aspect, Aspect)
-                  then
-                     Error_Msg_Name_1 := Aspect_Names (A_Id);
-                     Error_Msg_Sloc := Sloc (Inherited_Aspect);
+                  while Present (Ancestor_Aspect) loop
+                     if Comes_From_Source (Ancestor_Aspect)
+                       and then
+                         not Is_Confirming (A_Id, Ancestor_Aspect, Aspect)
+                     then
+                        Error_Msg_Name_1 := Aspect_Names (A_Id);
+                        Error_Msg_Sloc := Sloc (Ancestor_Aspect);
 
-                     Error_Msg_N
-                       ("overriding aspect specification for "
-                          & "nonoverridable aspect % does not confirm "
-                          & "aspect specification inherited from #",
-                        Aspect);
-                  end if;
+                        Error_Msg_N
+                          ("overriding aspect specification for "
+                             & "nonoverridable aspect % does not confirm "
+                             & "aspect specification inherited from #",
+                           Aspect);
+
+                        exit;
+                     end if;
+
+                     if not Is_Derived_Type (Ancestor_Type) then
+                        exit;
+                     end if;
+
+                     Ancestor_Type := Etype (Base_Type (Ancestor_Type));
+                     Ancestor_Aspect := Find_Aspect (Ancestor_Type, A_Id);
+                  end loop;
                end;
             end if;
 
@@ -5057,18 +5313,6 @@ package body Sem_Ch13 is
       --  returned, otherwise there is no error, and False is returned. Size
       --  and Value_Size are considered to conflict, but for compatibility,
       --  this is merely a warning.
-
-      procedure Check_Indexing_Functions;
-      --  Check that the function in Constant_Indexing or Variable_Indexing
-      --  attribute has the proper type structure. If the name is overloaded,
-      --  check that some interpretation is legal.
-
-      procedure Check_Iterator_Functions;
-      --  Check that there is a single function in Default_Iterator attribute
-      --  that has the proper type structure.
-
-      function Check_Primitive_Function (Subp : Entity_Id) return Boolean;
-      --  Common legality check for the previous two
 
       -----------------------------------
       -- Analyze_Put_Image_TSS_Definition --
@@ -5431,533 +5675,6 @@ package body Sem_Ch13 is
             end if;
          end if;
       end Analyze_Stream_TSS_Definition;
-
-      ------------------------------
-      -- Check_Indexing_Functions --
-      ------------------------------
-
-      procedure Check_Indexing_Functions is
-         Indexing_Found : Boolean := False;
-
-         procedure Check_Inherited_Indexing;
-         --  For a derived type, check that for a derived type, a specification
-         --  of an indexing aspect can only be confirming, i.e. uses the same
-         --  name as in the parent type.
-         --  AI12-0160: Verify that an indexing cannot be specified for
-         --  a derived type unless it is specified for the parent.
-
-         procedure Check_One_Function (Subp : Entity_Id);
-         --  Check one possible interpretation. Sets Indexing_Found True if a
-         --  legal indexing function is found.
-
-         procedure Illegal_Indexing (Msg : String);
-         --  Diagnose illegal indexing function if not overloaded. In the
-         --  overloaded case indicate that no legal interpretation  exists.
-
-         ------------------------------
-         -- Check_Inherited_Indexing --
-         ------------------------------
-
-         procedure Check_Inherited_Indexing is
-            Inherited      : Node_Id;
-            Other_Indexing : Node_Id;
-
-         begin
-            if Attr = Name_Constant_Indexing then
-               Inherited :=
-                 Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
-               Other_Indexing :=
-                 Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
-
-            else pragma Assert (Attr = Name_Variable_Indexing);
-               Inherited :=
-                  Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
-               Other_Indexing :=
-                 Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
-            end if;
-
-            if Present (Inherited) then
-               if Debug_Flag_Dot_XX then
-                  null;
-
-               --  OK if current attribute_definition_clause is expansion of
-               --  inherited aspect.
-
-               elsif Aspect_Rep_Item (Inherited) = N then
-                  null;
-
-               --  Check if this is a confirming specification. The name
-               --  may be overloaded between the parent operation and the
-               --  inherited one, so we check that the Chars fields match.
-
-               elsif Is_Entity_Name (Expression (Inherited))
-                 and then Chars (Entity (Expression (Inherited))) =
-                    Chars (Entity (Expression (N)))
-               then
-                  Indexing_Found := True;
-
-               --  Indicate the operation that must be overridden, rather than
-               --  redefining the indexing aspect.
-
-               else
-                  Illegal_Indexing
-                    ("indexing function already inherited from parent type");
-                  Error_Msg_NE
-                    ("!override & instead",
-                     N, Entity (Expression (Inherited)));
-               end if;
-
-            --  If not inherited and the parent has another indexing function
-            --  this is illegal, because it leads to inconsistent results in
-            --  class-wide calls.
-
-            elsif Present (Other_Indexing) then
-               Error_Msg_N
-                 ("cannot specify indexing operation on derived type"
-                   & " if not specified for parent", N);
-            end if;
-         end Check_Inherited_Indexing;
-
-         ------------------------
-         -- Check_One_Function --
-         ------------------------
-
-         procedure Check_One_Function (Subp : Entity_Id) is
-            Default_Element : Node_Id;
-            Ret_Type        : constant Entity_Id := Etype (Subp);
-
-         begin
-            if not Is_Overloadable (Subp) then
-               Illegal_Indexing ("illegal indexing function for type&");
-               return;
-
-            elsif Scope (Subp) /= Scope (Ent) then
-               if Nkind (Expr) = N_Expanded_Name then
-
-                  --  Indexing function can't be declared elsewhere
-
-                  Illegal_Indexing
-                    ("indexing function must be declared"
-                      & " in scope of type&");
-               end if;
-
-               if Is_Derived_Type (Ent) then
-                  Check_Inherited_Indexing;
-               end if;
-
-               return;
-
-            elsif No (First_Formal (Subp)) then
-               Illegal_Indexing
-                 ("Indexing requires a function that applies to type&");
-               return;
-
-            elsif No (Next_Formal (First_Formal (Subp))) then
-               Illegal_Indexing
-                 ("indexing function must have at least two parameters");
-               return;
-
-            elsif Is_Derived_Type (Ent) then
-               Check_Inherited_Indexing;
-            end if;
-
-            if not Check_Primitive_Function (Subp) then
-               Illegal_Indexing
-                 ("Indexing aspect requires a function that applies to type&");
-               return;
-            end if;
-
-            --  If partial declaration exists, verify that it is not tagged.
-
-            if Ekind (Current_Scope) = E_Package
-              and then Has_Private_Declaration (Ent)
-              and then From_Aspect_Specification (N)
-              and then
-                List_Containing (Parent (Ent)) =
-                  Private_Declarations
-                    (Specification (Unit_Declaration_Node (Current_Scope)))
-              and then Nkind (N) = N_Attribute_Definition_Clause
-            then
-               declare
-                  Decl : Node_Id;
-
-               begin
-                  Decl :=
-                     First (Visible_Declarations
-                              (Specification
-                                 (Unit_Declaration_Node (Current_Scope))));
-
-                  while Present (Decl) loop
-                     if Nkind (Decl) = N_Private_Type_Declaration
-                       and then Ent = Full_View (Defining_Identifier (Decl))
-                       and then Tagged_Present (Decl)
-                       and then No (Aspect_Specifications (Decl))
-                     then
-                        Illegal_Indexing
-                          ("Indexing aspect cannot be specified on full view "
-                           & "if partial view is tagged");
-                        return;
-                     end if;
-
-                     Next (Decl);
-                  end loop;
-               end;
-            end if;
-
-            --  An indexing function must return either the default element of
-            --  the container, or a reference type. For variable indexing it
-            --  must be the latter.
-
-            Default_Element :=
-              Find_Value_Of_Aspect
-               (Etype (First_Formal (Subp)), Aspect_Iterator_Element);
-
-            if Present (Default_Element) then
-               Analyze (Default_Element);
-            end if;
-
-            --  For variable_indexing the return type must be a reference type
-
-            if Attr = Name_Variable_Indexing then
-               if not Has_Implicit_Dereference (Ret_Type) then
-                  Illegal_Indexing
-                     ("variable indexing must return a reference type");
-                  return;
-
-               elsif Is_Access_Constant
-                       (Etype (First_Discriminant (Ret_Type)))
-               then
-                  Illegal_Indexing
-                    ("variable indexing must return an access to variable");
-                  return;
-               end if;
-
-            else
-               if Has_Implicit_Dereference (Ret_Type)
-                 and then not
-                   Is_Access_Constant
-                     (Etype (Get_Reference_Discriminant (Ret_Type)))
-               then
-                  Illegal_Indexing
-                    ("constant indexing must return an access to constant");
-                  return;
-
-               elsif Is_Access_Type (Etype (First_Formal (Subp)))
-                 and then not Is_Access_Constant (Etype (First_Formal (Subp)))
-               then
-                  Illegal_Indexing
-                    ("constant indexing must apply to an access to constant");
-                  return;
-               end if;
-            end if;
-
-            --  All checks succeeded
-
-            Indexing_Found := True;
-         end Check_One_Function;
-
-         -----------------------
-         --  Illegal_Indexing --
-         -----------------------
-
-         procedure Illegal_Indexing (Msg : String) is
-         begin
-            Error_Msg_NE (Msg, N, Ent);
-         end Illegal_Indexing;
-
-      --  Start of processing for Check_Indexing_Functions
-
-      begin
-         if In_Instance then
-            Check_Inherited_Indexing;
-         end if;
-
-         Analyze (Expr);
-
-         if not Is_Overloaded (Expr) then
-            Check_One_Function (Entity (Expr));
-
-         else
-            declare
-               I  : Interp_Index;
-               It : Interp;
-
-            begin
-               Indexing_Found := False;
-               Get_First_Interp (Expr, I, It);
-               while Present (It.Nam) loop
-
-                  --  Note that analysis will have added the interpretation
-                  --  that corresponds to the dereference. We only check the
-                  --  subprogram itself. Ignore homonyms that may come from
-                  --  derived types in the context.
-
-                  if Is_Overloadable (It.Nam)
-                    and then Comes_From_Source (It.Nam)
-                  then
-                     Check_One_Function (It.Nam);
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-            end;
-         end if;
-
-         if not Indexing_Found and then not Error_Posted (N) then
-            Error_Msg_NE
-              ("aspect Indexing requires a local function that applies to "
-               & "type&", Expr, Ent);
-         end if;
-      end Check_Indexing_Functions;
-
-      ------------------------------
-      -- Check_Iterator_Functions --
-      ------------------------------
-
-      procedure Check_Iterator_Functions is
-         function Valid_Default_Iterator (Subp     : Entity_Id;
-                                          Ref_Node : Node_Id := Empty)
-                                          return Boolean;
-         --  Check one possible interpretation for validity. If
-         --  Ref_Node is present report errors on violations.
-
-         ----------------------------
-         -- Valid_Default_Iterator --
-         ----------------------------
-
-         function Valid_Default_Iterator (Subp     : Entity_Id;
-                                          Ref_Node : Node_Id := Empty)
-                                          return Boolean
-         is
-            Return_Type : constant Entity_Id := Etype (Etype (Subp));
-            Return_Node : Node_Id;
-            Root_T      : constant Entity_Id := Root_Type (Return_Type);
-            Formal      : Entity_Id;
-
-            function Valid_Iterator_Name (E : Entity_Id) return Boolean
-            is (Chars (E) in Name_Forward_Iterator | Name_Reversible_Iterator);
-
-            function Valid_Iterator_Name (L : Elist_Id) return Boolean;
-
-            -------------------------
-            -- Valid_Iterator_Name --
-            -------------------------
-
-            function Valid_Iterator_Name (L : Elist_Id) return Boolean
-            is
-               Iface_Elmt : Elmt_Id := First_Elmt (L);
-            begin
-               while Present (Iface_Elmt) loop
-                  if Valid_Iterator_Name (Node (Iface_Elmt)) then
-                     return True;
-                  end if;
-                  Next_Elmt (Iface_Elmt);
-               end loop;
-
-               return False;
-            end Valid_Iterator_Name;
-
-         begin
-            if Subp = Any_Id then
-               if Present (Ref_Node) then
-
-                  --  Subp is not resolved and an error will be posted about
-                  --  it later
-
-                  Error_Msg_N ("improper function for default iterator!",
-                     Ref_Node);
-               end if;
-
-               return False;
-            end if;
-
-            if not Check_Primitive_Function (Subp) then
-               if Present (Ref_Node) then
-                  if Debug_Flag_Underscore_DD then
-                     Record_Default_Iterator_Not_Primitive_Error
-                       (Ref_Node, Subp);
-                  else
-                     Error_Msg_N ("improper function for default iterator!",
-                        Ref_Node);
-                     Error_Msg_Sloc := Sloc (Subp);
-                     Error_Msg_NE
-                        ("\\default iterator defined # "
-                        & "must be a primitive function",
-                        Ref_Node, Subp);
-                  end if;
-               end if;
-
-               return False;
-            end if;
-
-            --  The return type must be derived from a type in an instance
-            --  of Iterator.Interfaces, and thus its root type must have a
-            --  predefined name.
-
-            if not Valid_Iterator_Name (Root_T)
-               and then not (Has_Interfaces (Return_Type) and then
-                  Valid_Iterator_Name (Interfaces (Return_Type)))
-            then
-               if Present (Ref_Node) then
-
-                  Return_Node := Result_Definition (Parent (Subp));
-
-                  Error_Msg_N ("improper function for default iterator!",
-                     Ref_Node);
-                  Error_Msg_Sloc := Sloc (Return_Node);
-                  Error_Msg_NE ("\\return type & # "
-                     & "must inherit from either "
-                     & "Forward_Iterator or Reversible_Iterator",
-                     Ref_Node, Return_Node);
-               end if;
-
-               return False;
-            end if;
-
-            Formal := First_Formal (Subp);
-
-            --  False if any subsequent formal has no default expression
-
-            Next_Formal (Formal);
-            while Present (Formal) loop
-               if No (Expression (Parent (Formal))) then
-                  if Present (Ref_Node) then
-                     Error_Msg_N ("improper function for default iterator!",
-                        Ref_Node);
-                     Error_Msg_Sloc := Sloc (Formal);
-                     Error_Msg_NE ("\\formal parameter & # "
-                        & "must have a default expression",
-                        Ref_Node, Formal);
-                  end if;
-
-                  return False;
-               end if;
-
-               Next_Formal (Formal);
-            end loop;
-
-            --  True if all subsequent formals have default expressions
-
-            return True;
-         end Valid_Default_Iterator;
-
-         Ignore : Boolean;
-
-      --  Start of processing for Check_Iterator_Functions
-
-      begin
-         Analyze (Expr);
-
-         if not Is_Entity_Name (Expr) then
-            Error_Msg_N ("aspect Iterator must be a function name", Expr);
-         end if;
-
-         if not Is_Overloaded (Expr) then
-            if Entity (Expr) /= Any_Id
-              and then not Check_Primitive_Function (Entity (Expr))
-            then
-               Error_Msg_NE
-                 ("aspect Indexing requires a function that applies to type&",
-                  Entity (Expr), Ent);
-            end if;
-
-            --  Flag the default_iterator as well as the denoted function.
-
-            Ignore := Valid_Default_Iterator (Entity (Expr), Expr);
-
-         else
-            declare
-               Default : Entity_Id := Empty;
-               I       : Interp_Index;
-               It      : Interp;
-
-            begin
-               Get_First_Interp (Expr, I, It);
-               while Present (It.Nam) loop
-                  if not Check_Primitive_Function (It.Nam)
-                    or else not Valid_Default_Iterator (It.Nam)
-                  then
-                     Remove_Interp (I);
-
-                  elsif Present (Default) then
-
-                     --  An explicit one should override an implicit one
-
-                     if Comes_From_Source (Default) =
-                          Comes_From_Source (It.Nam)
-                     then
-                        Error_Msg_N ("default iterator must be unique", Expr);
-                        Error_Msg_Sloc := Sloc (Default);
-                        Error_Msg_N ("\\possible interpretation#", Expr);
-                        Error_Msg_Sloc := Sloc (It.Nam);
-                        Error_Msg_N ("\\possible interpretation#", Expr);
-
-                     elsif Comes_From_Source (It.Nam) then
-                        Default := It.Nam;
-                     end if;
-                  else
-                     Default := It.Nam;
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-
-               if Present (Default) then
-                  Set_Entity (Expr, Default);
-                  Set_Is_Overloaded (Expr, False);
-               else
-                  Error_Msg_N
-                    ("no interpretation is a valid default iterator!", Expr);
-               end if;
-            end;
-         end if;
-      end Check_Iterator_Functions;
-
-      -------------------------------
-      -- Check_Primitive_Function  --
-      -------------------------------
-
-      function Check_Primitive_Function (Subp : Entity_Id) return Boolean is
-         Ctrl : Entity_Id;
-
-      begin
-         if Ekind (Subp) /= E_Function then
-            return False;
-         end if;
-
-         if No (First_Formal (Subp)) then
-            return False;
-         else
-            Ctrl := Etype (First_Formal (Subp));
-         end if;
-
-         --  To be a primitive operation subprogram has to be in same scope.
-
-         if Scope (Ctrl) /= Scope (Subp) then
-            return False;
-         end if;
-
-         --  Type of formal may be the class-wide type, an access to such,
-         --  or an incomplete view.
-
-         if Ctrl = Ent
-           or else Ctrl = Class_Wide_Type (Ent)
-           or else
-             (Ekind (Ctrl) = E_Anonymous_Access_Type
-               and then (Designated_Type (Ctrl) = Ent
-                           or else
-                         Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
-           or else
-             (Ekind (Ctrl) = E_Incomplete_Type
-               and then Full_View (Ctrl) = Ent)
-         then
-            null;
-         else
-            return False;
-         end if;
-
-         return True;
-      end Check_Primitive_Function;
 
       ----------------------
       -- Duplicate_Clause --
@@ -6745,7 +6462,7 @@ package body Sem_Ch13 is
          -----------------------
 
          when Attribute_Constant_Indexing =>
-            Check_Indexing_Functions;
+            null;
 
          ---------
          -- CPU --
@@ -6801,19 +6518,31 @@ package body Sem_Ch13 is
          ----------------------
 
          when Attribute_Default_Iterator => Default_Iterator : declare
-            Func : Entity_Id;
-            Typ  : Entity_Id;
-
          begin
             --  If target type is untagged, further checks are irrelevant
 
             if not Is_Tagged_Type (U_Ent) then
                Error_Msg_N
-                 ("aspect Default_Iterator applies to tagged type", Nam);
+                 ("aspect Default_Iterator can only apply to a tagged type",
+                  Nam);
                return;
             end if;
 
-            Check_Iterator_Functions;
+            declare
+               Parent_Aspect : constant Node_Id :=
+                 Find_Aspect (U_Ent, Aspect_Default_Iterator);
+            begin
+               --  If the attribute definition clause comes from an aspect that
+               --  is not Comes_From_Source, then the aspect must be inherited
+               --  from a parent type, in which case the operation has already
+               --  been set properly, and there's no need to do the check.
+
+               if No (Parent_Aspect)
+                 or else Comes_From_Source (Parent_Aspect)
+               then
+                  Check_Iterator_Functions (Typ => U_Ent, Expr => Expr);
+               end if;
+            end;
 
             Analyze (Expr);
 
@@ -6822,33 +6551,6 @@ package body Sem_Ch13 is
             then
                Error_Msg_N ("aspect Iterator must be a function", Expr);
                return;
-            else
-               Func := Entity (Expr);
-            end if;
-
-            --  The type of the first parameter must be T, T'class, or a
-            --  corresponding access type (5.5.1 (8/3). If function is
-            --  parameterless label type accordingly.
-
-            if No (First_Formal (Func)) then
-               Typ := Any_Type;
-            else
-               Typ := Etype (First_Formal (Func));
-            end if;
-
-            if Typ = U_Ent
-              or else Typ = Class_Wide_Type (U_Ent)
-              or else (Is_Access_Type (Typ)
-                        and then Designated_Type (Typ) = U_Ent)
-              or else (Is_Access_Type (Typ)
-                        and then Designated_Type (Typ) =
-                                          Class_Wide_Type (U_Ent))
-            then
-               null;
-
-            else
-               Error_Msg_NE
-                 ("Default_Iterator must be a primitive of&", Func, U_Ent);
             end if;
          end Default_Iterator;
 
@@ -7882,7 +7584,7 @@ package body Sem_Ch13 is
          -----------------------
 
          when Attribute_Variable_Indexing =>
-            Check_Indexing_Functions;
+            null;
 
          -----------
          -- Write --
@@ -11403,7 +11105,6 @@ package body Sem_Ch13 is
          --  name. Legality rules are checked separately.
 
          when Aspect_Constant_Indexing
-            | Aspect_Default_Iterator
             | Aspect_Iterator_Element
             | Aspect_Variable_Indexing
          =>
@@ -11422,6 +11123,18 @@ package body Sem_Ch13 is
             Set_Etype (Expression (ASN), Etype (Expr));
             Set_Is_Overloaded (Expression (ASN), False);
             Analyze (Expression (ASN));
+            return;
+
+         when Aspect_Default_Iterator =>
+
+            --  If the aspect is not Comes_From_Source, then it's an inherited
+            --  aspect, in which case the aspect's operation has already been
+            --  set, and there's no need to call Check_Iterator_Functions.
+
+            if Comes_From_Source (ASN) then
+               Check_Iterator_Functions
+                 (Typ => Entity (ASN), Expr => Expression (ASN));
+            end if;
             return;
 
          --  Finalizable, legality checks in Validate_Finalizable_Aspect
@@ -11498,7 +11211,18 @@ package body Sem_Ch13 is
             return;
 
          when Aspect_Aggregate =>
-            Resolve_Aspect_Aggregate (Entity (ASN), Expression (ASN));
+
+            --  If the aspect is not Comes_From_Source, then it's
+            --  an inherited aspect, in which case the aspect's
+            --  operations have already been set and there's no need
+            --  to resolve it.
+
+            --  Is it even necessary to be calling Resolve_Aspect_Aggr here???
+
+            if Comes_From_Source (ASN) then
+               Resolve_Aspect_Aggregate (Entity (ASN), Expression (ASN));
+            end if;
+
             return;
 
          when Aspect_Stable_Properties =>
@@ -12056,6 +11780,467 @@ package body Sem_Ch13 is
          Check_Expr_Constants (Expr);
       end if;
    end Check_Constant_Address_Clause;
+
+   ----------------------------------------
+   -- Check_Function_For_Indexing_Aspect --
+   ----------------------------------------
+
+   procedure Check_Function_For_Indexing_Aspect
+     (ASN   : Node_Id;
+      Typ   : Entity_Id;
+      Subp  : Entity_Id;
+      Valid : out Boolean)
+   is
+      Aspect : constant Aspect_Id := Get_Aspect_Id (ASN);
+
+      procedure Illegal_Indexing (Msg : String);
+      --  Report error on illegal candidate for indexing function
+
+      function Is_CW_Or_Access_To_CW
+        (Param_Type    : Entity_Id;
+         Specific_Type : Entity_Id) return Boolean;
+      --  Is Param_Type either Specific_Type'Class or an anonymous
+      --  access-to-Specific_Type'Class type?
+
+      function Look_Through_Anon_Access (Typ : Entity_Id) return Entity_Id;
+      --  For an appropriate access type, return designated type;
+      --  otherwise return argument.
+
+      function Subp_Is_Dispatching_Op_Of_Typ
+        (Subp : Entity_Id;
+         Typ  : Entity_Id) return Boolean;
+      --  Is subprogram Subp is a dispatching operation of type Typ?
+
+      ----------------------
+      -- Illegal_Indexing --
+      ----------------------
+
+      --  NOTE: If the semantics of indexing aspects are ever changed
+      --  to be treated like resolution rules instead of legality rules,
+      --  then this procedure could be modified to only issue the error
+      --  if an appropriate function has not yet been found and there are
+      --  no further operations yet to be considered as interpretations
+      --  (i.e., return immediately without a message if Indexing_Found
+      --  or no further candidate functions are yet to be considered).
+
+      procedure Illegal_Indexing (Msg : String) is
+      begin
+         Error_Msg_NE (Msg, ASN, Typ);
+      end Illegal_Indexing;
+
+      ---------------------------
+      -- Is_CW_Or_Access_To_CW --
+      ---------------------------
+
+      function Is_CW_Or_Access_To_CW
+        (Param_Type    : Entity_Id;
+         Specific_Type : Entity_Id) return Boolean
+      is
+         Typ : constant Entity_Id :=
+           Look_Through_Anon_Access (Param_Type);
+
+         Aspect_Specification_Is_Inherited : constant Boolean :=
+           Is_Derived_Type (Specific_Type)
+             and then Has_Aspect (Etype (Specific_Type), Aspect);
+      begin
+         if not Is_Class_Wide_Type (Typ) then
+            return False;
+         end if;
+
+         declare
+            Specific_1 : constant Entity_Id :=
+              Implementation_Base_Type (Find_Specific_Type (Typ));
+            Specific_2 : constant Entity_Id :=
+              Implementation_Base_Type (Specific_Type);
+         begin
+            if Aspect_Specification_Is_Inherited then
+               return Is_Ancestor (T1 => Specific_1, T2 => Specific_2);
+            else
+               return Specific_1 = Specific_2;
+            end if;
+         end;
+      end Is_CW_Or_Access_To_CW;
+
+      ------------------------------
+      -- Look_Through_Anon_Access --
+      ------------------------------
+
+      function Look_Through_Anon_Access
+        (Typ : Entity_Id) return Entity_Id
+      is
+         Result : Entity_Id := Typ;
+      begin
+         if Is_Anonymous_Access_Type (Typ)
+           and then Is_Access_Object_Type (Typ)
+         then
+            Result := Designated_Type (Typ);
+         end if;
+
+         return Implementation_Base_Type (Result);
+      end Look_Through_Anon_Access;
+
+      -----------------------------------
+      -- Subp_Is_Dispatching_Op_Of_Typ --
+      -----------------------------------
+
+      function Subp_Is_Dispatching_Op_Of_Typ
+        (Subp : Entity_Id; Typ : Entity_Id) return Boolean
+      is
+         Base_Typ         : constant Entity_Id :=
+           Implementation_Base_Type (Typ);
+         Dispatching_Type : Entity_Id := Find_Dispatching_Type (Subp);
+      begin
+         if No (Dispatching_Type) then
+            return False;
+         end if;
+         Dispatching_Type := Implementation_Base_Type (Dispatching_Type);
+
+         return Base_Typ = Dispatching_Type
+           and then
+             --  test whether first formal is controlling
+             Base_Typ = Look_Through_Anon_Access
+                          (Etype (First_Formal (Subp)));
+      end Subp_Is_Dispatching_Op_Of_Typ;
+
+      --  Local variables
+
+      Ret_Type : constant Entity_Id := Etype (Subp);
+
+   --  Start of processing for Check_Function_For_Indexing_Aspect
+
+   begin
+      Valid := False;
+
+      --  If the subprogram isn't declared in the same scope as the type
+      --  E, then it shouldn't be considered (see AI22-0084 as well as
+      --  RM 4.1.6(2/5-3/5), though the latter are apparently intended
+      --  as legality rules, not resolution rules).
+
+      if Scope (Subp) /= Scope (Typ) then
+         return;
+
+      elsif not Is_Overloadable (Subp) or else No (Ret_Type) then
+         Illegal_Indexing ("illegal indexing function for type&");
+         return;
+
+      elsif No (First_Formal (Subp)) then
+         Illegal_Indexing
+           ("indexing aspect requires a function that applies to type&");
+         return;
+
+      elsif No (Next_Formal (First_Formal (Subp))) then
+         Error_Msg_Sloc := Sloc (Subp);
+         Illegal_Indexing
+            ("at least two parameters required for indexing function "
+             & "defined #");
+         return;
+
+      elsif not Subp_Is_Dispatching_Op_Of_Typ
+                  (Subp => Subp, Typ => Typ)
+         and then not Is_CW_Or_Access_To_CW
+                        (Param_Type => Etype (First_Formal (Subp)),
+                         Specific_Type => Typ)
+      then
+         Illegal_Indexing
+           ("indexing aspect requires function with first formal "
+             & "applying to type& or its class-wide type");
+         return;
+
+      elsif Aspect = Aspect_Constant_Indexing
+         and then Is_Anonymous_Access_Type (Etype (First_Formal (Subp)))
+         and then not Is_Access_Constant (Etype (First_Formal (Subp)))
+      then
+         Illegal_Indexing
+           ("Constant_Indexing must apply to function with "
+             & "access-to-constant formal");
+         return;
+      end if;
+
+      --  For variable_indexing the return type must be a reference type
+
+      if Aspect = Aspect_Variable_Indexing then
+         if not Has_Implicit_Dereference (Ret_Type) then
+            Illegal_Indexing
+               ("function for Variable_Indexing must return "
+                & "a reference type");
+            return;
+
+         elsif Is_Access_Constant
+                 (Etype (First_Discriminant (Ret_Type)))
+         then
+            Illegal_Indexing
+              ("function for Variable_Indexing must return an "
+               & "access-to-variable result");
+            return;
+         end if;
+      end if;
+
+      Valid := True;
+
+      --  Add the acceptable subprogram to the indexing aspect's list
+      --  of subprograms.
+
+      declare
+         Subp_List : Elist_Id := Aspect_Subprograms (ASN);
+      begin
+         Append_New_Elmt (Subp, Subp_List);
+         Set_Aspect_Subprograms (ASN, Subp_List);
+      end;
+   end Check_Function_For_Indexing_Aspect;
+
+   ------------------------------
+   -- Check_Iterator_Functions --
+   ------------------------------
+
+   procedure Check_Iterator_Functions (Typ : Entity_Id; Expr : Node_Id) is
+
+      function Valid_Default_Iterator
+        (Subp     : Entity_Id;
+         Ref_Node : Node_Id := Empty) return Boolean;
+      --  Check one possible interpretation for validity. If
+      --  Ref_Node is present report errors on violations.
+
+      ----------------------------
+      -- Valid_Default_Iterator --
+      ----------------------------
+
+      function Valid_Default_Iterator
+        (Subp     : Entity_Id;
+         Ref_Node : Node_Id := Empty) return Boolean
+      is
+         Return_Type : constant Entity_Id := Etype (Etype (Subp));
+         Return_Node : Node_Id;
+         Root_T      : constant Entity_Id := Root_Type (Return_Type);
+         Formal      : Entity_Id;
+
+         function Valid_Iterator_Name (E : Entity_Id) return Boolean
+         is (Chars (E) in Name_Forward_Iterator | Name_Reversible_Iterator);
+
+         function Valid_Iterator_Name (L : Elist_Id) return Boolean;
+
+         -------------------------
+         -- Valid_Iterator_Name --
+         -------------------------
+
+         function Valid_Iterator_Name (L : Elist_Id) return Boolean
+         is
+            Iface_Elmt : Elmt_Id := First_Elmt (L);
+         begin
+            while Present (Iface_Elmt) loop
+               if Valid_Iterator_Name (Node (Iface_Elmt)) then
+                  return True;
+               end if;
+               Next_Elmt (Iface_Elmt);
+            end loop;
+
+            return False;
+         end Valid_Iterator_Name;
+
+      --  Start of processing for Valid_Default_Iterator
+
+      begin
+         if Subp = Any_Id then
+            if Present (Ref_Node) then
+
+               --  Subp is not resolved and an error will be posted about
+               --  it later
+
+               Error_Msg_N ("improper function for default iterator!",
+                  Ref_Node);
+            end if;
+
+            return False;
+         end if;
+
+         if not Check_Primitive_Function (Subp, Typ) then
+            if Present (Ref_Node) then
+               if Debug_Flag_Underscore_DD then
+                  Record_Default_Iterator_Not_Primitive_Error
+                    (Ref_Node, Subp);
+               else
+                  Error_Msg_N ("improper function for default iterator!",
+                     Ref_Node);
+                  Error_Msg_Sloc := Sloc (Subp);
+                  Error_Msg_NE
+                     ("\\default iterator defined # "
+                     & "must be a local primitive or class-wide function",
+                     Ref_Node, Subp);
+               end if;
+            end if;
+
+            return False;
+         end if;
+
+         --  The return type must be derived from a type in an instance
+         --  of Iterator.Interfaces, and thus its root type must have a
+         --  predefined name.
+
+         if not Valid_Iterator_Name (Root_T)
+            and then not (Has_Interfaces (Return_Type) and then
+               Valid_Iterator_Name (Interfaces (Return_Type)))
+         then
+            if Present (Ref_Node) then
+
+               Return_Node := Result_Definition (Parent (Subp));
+
+               Error_Msg_N ("improper function for default iterator!",
+                  Ref_Node);
+               Error_Msg_Sloc := Sloc (Return_Node);
+               Error_Msg_NE ("\\return type & # "
+                  & "must inherit from either "
+                  & "Forward_Iterator or Reversible_Iterator",
+                  Ref_Node, Return_Node);
+            end if;
+
+            return False;
+         end if;
+
+         Formal := First_Formal (Subp);
+
+         --  False if any subsequent formal has no default expression
+
+         Next_Formal (Formal);
+         while Present (Formal) loop
+            if No (Expression (Parent (Formal))) then
+               if Present (Ref_Node) then
+                  Error_Msg_N ("improper function for default iterator!",
+                     Ref_Node);
+                  Error_Msg_Sloc := Sloc (Formal);
+                  Error_Msg_NE ("\\formal parameter & # "
+                     & "must have a default expression",
+                     Ref_Node, Formal);
+               end if;
+
+               return False;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         --  True if all subsequent formals have default expressions
+
+         return True;
+      end Valid_Default_Iterator;
+
+      Ignore : Boolean;
+
+   --  Start of processing for Check_Iterator_Functions
+
+   begin
+      Analyze (Expr);
+
+      if not Is_Entity_Name (Expr) then
+         Error_Msg_N ("aspect Default_Iterator must be a function name", Expr);
+      end if;
+
+      if not Is_Overloaded (Expr) then
+         if Entity (Expr) /= Any_Id
+           and then not Check_Primitive_Function (Entity (Expr), Typ)
+         then
+            Error_Msg_NE
+              ("aspect Default_Iterator requires a local function applying "
+                 & "to type&", Entity (Expr), Typ);
+         end if;
+
+         --  Flag the default_iterator as well as the denoted function.
+
+         Ignore := Valid_Default_Iterator (Entity (Expr), Expr);
+
+      else
+         declare
+            Default : Entity_Id := Empty;
+            I       : Interp_Index;
+            It      : Interp;
+
+         begin
+            Get_First_Interp (Expr, I, It);
+            while Present (It.Nam) loop
+               if not Check_Primitive_Function (It.Nam, Typ)
+                 or else not Valid_Default_Iterator (It.Nam)
+               then
+                  Remove_Interp (I);
+
+               elsif Present (Default) then
+
+                  --  An explicit one should override an implicit one
+
+                  if Comes_From_Source (Default) =
+                       Comes_From_Source (It.Nam)
+                  then
+                     Error_Msg_N ("default iterator must be unique", Expr);
+                     Error_Msg_Sloc := Sloc (Default);
+                     Error_Msg_N ("\\possible interpretation#", Expr);
+                     Error_Msg_Sloc := Sloc (It.Nam);
+                     Error_Msg_N ("\\possible interpretation#", Expr);
+
+                  elsif Comes_From_Source (It.Nam) then
+                     Default := It.Nam;
+                  end if;
+               else
+                  Default := It.Nam;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+
+            if Present (Default) then
+               Set_Entity (Expr, Default);
+               Set_Is_Overloaded (Expr, False);
+            else
+               Error_Msg_N
+                 ("no interpretation is a valid default iterator!", Expr);
+            end if;
+         end;
+      end if;
+   end Check_Iterator_Functions;
+
+   -------------------------------
+   -- Check_Primitive_Function  --
+   -------------------------------
+
+   function Check_Primitive_Function
+     (Subp : Entity_Id; Ent : Entity_Id) return Boolean
+   is
+      Ctrl : Entity_Id;
+
+   begin
+      if Ekind (Subp) /= E_Function then
+         return False;
+      end if;
+
+      if No (First_Formal (Subp)) then
+         return False;
+      else
+         Ctrl := Etype (First_Formal (Subp));
+      end if;
+
+      --  To be a primitive operation subprogram has to be in same scope.
+
+      if Scope (Ctrl) /= Scope (Subp) then
+         return False;
+      end if;
+
+      --  Type of formal may be the class-wide type, an access to such,
+      --  or an incomplete view.
+
+      if Ctrl = Ent
+        or else Ctrl = Class_Wide_Type (Ent)
+        or else
+          (Ekind (Ctrl) = E_Anonymous_Access_Type
+            and then (Designated_Type (Ctrl) = Ent
+                        or else
+                      Designated_Type (Ctrl) = Class_Wide_Type (Ent)))
+        or else
+          (Ekind (Ctrl) = E_Incomplete_Type
+            and then Full_View (Ctrl) = Ent)
+      then
+         null;
+      else
+         return False;
+      end if;
+
+      return True;
+   end Check_Primitive_Function;
 
    ---------------------------
    -- Check_Pool_Size_Clash --
@@ -15627,10 +15812,22 @@ package body Sem_Ch13 is
          if Nkind (N) in N_Attribute_Definition_Clause | N_Pragma
            and then From_Aspect_Specification (N)
          then
-            Error_Msg_NE
-              ("aspect specification causes premature freezing of&", N, T);
-            Set_Has_Delayed_Freeze (T, False);
-            return True;
+            --  If an attribute_definition_clause or pragma comes from
+            --  an aspect_specification that is not Comes_From_Source (as when
+            --  it's an inherited aspect), then we assume it must be OK, since
+            --  it was generated by the compiler.
+
+            if Present (Parent (N))
+              and then not Comes_From_Source (Parent (N))
+            then
+               return False;
+
+            else
+               Error_Msg_NE
+                 ("aspect specification causes premature freezing of&", N, T);
+               Set_Has_Delayed_Freeze (T, False);
+               return True;
+            end if;
          end if;
 
          Too_Late;
@@ -16889,6 +17086,8 @@ package body Sem_Ch13 is
      (Typ  : Entity_Id;
       Expr : Node_Id)
    is
+      Impl_Typ : constant Entity_Id := Implementation_Base_Type (Typ);
+
       function Valid_Empty          (E : Entity_Id) return Boolean;
       function Valid_Add_Named      (E : Entity_Id) return Boolean;
       function Valid_Add_Unnamed    (E : Entity_Id) return Boolean;
@@ -16924,7 +17123,9 @@ package body Sem_Ch13 is
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
       begin
-         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ) then
+         if Implementation_Base_Type (Etype (E)) /= Impl_Typ
+           or else Scope (E) /= Scope (Typ)
+         then
             return False;
 
          elsif Ekind (E) = E_Function then
@@ -16947,7 +17148,8 @@ package body Sem_Ch13 is
          if Ekind (E) = E_Procedure
            and then Scope (E) = Scope (Typ)
            and then Number_Formals (E) = 3
-           and then Etype (First_Formal (E)) = Typ
+           and then
+             Implementation_Base_Type (Etype (First_Formal (E))) = Impl_Typ
            and then Ekind (First_Formal (E)) = E_In_Out_Parameter
          then
             F2 := Next_Formal (First_Formal (E));
@@ -16970,21 +17172,22 @@ package body Sem_Ch13 is
          return Ekind (E) = E_Procedure
            and then Scope (E) = Scope (Typ)
            and then Number_Formals (E) = 2
-           and then Etype (First_Formal (E)) = Typ
+           and then
+             Implementation_Base_Type (Etype (First_Formal (E))) = Impl_Typ
            and then Ekind (First_Formal (E)) = E_In_Out_Parameter
            and then
              not Is_Limited_Type (Etype (Next_Formal (First_Formal (E))));
       end Valid_Add_Unnamed;
 
       -----------------------
-      -- Valid_Nmw_Indexed --
+      -- Valid_New_Indexed --
       -----------------------
 
       function Valid_New_Indexed (E : Entity_Id) return Boolean is
       begin
          return Ekind (E) = E_Function
            and then Scope (E) = Scope (Typ)
-           and then Etype (E) = Typ
+           and then Implementation_Base_Type (Etype (E)) = Impl_Typ
            and then Number_Formals (E) = 2
            and then Is_Discrete_Type (Etype (First_Formal (E)))
            and then Etype (First_Formal (E)) =
@@ -18181,7 +18384,16 @@ package body Sem_Ch13 is
            and then not Is_Aliased (Param_Id);
       end Matching;
 
+   --  Start of processing for Validate_Literal_Aspect
+
    begin
+      --  If the aspect specification was effectively inherited from the parent
+      --  type (so constructed anew by analysis), then no point in validating.
+
+      if not Comes_From_Source (ASN) then
+         return;
+      end if;
+
       if not Is_Type (Typ) then
          Error_Msg_N ("aspect can only be specified for a type", ASN);
          return;

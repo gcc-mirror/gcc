@@ -49,7 +49,7 @@ package body Diagnostics.Constructors is
                   (Msg =>
                      "default iterator defined " &
                      Sloc_To_String (Subp, Sloc (Expr)) &
-                     " must be a primitive function",
+                     " must be a local primitive or class-wide function",
                    Locations =>
                      (1 => Primary_Labeled_Span (Subp)))));
    end Make_Default_Iterator_Not_Primitive_Error;

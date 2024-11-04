@@ -8545,14 +8545,11 @@ package body Sem_Ch4 is
       --  that if the argument is a parameter association we must match it
       --  by name and not by position.
 
-      function Find_Indexing_Operations
+      function Indexing_Interpretations
         (T           : Entity_Id;
-         Nam         : Name_Id;
-         Is_Constant : Boolean) return Node_Id;
-      --  Return a reference to the primitive operation of type T denoted by
-      --  name Nam. If the operation is overloaded, the reference carries all
-      --  interpretations. Flag Is_Constant should be set when the context is
-      --  constant indexing.
+         Aspect_Kind : Aspect_Id) return Node_Id;
+      --  Return a set of interpretations reflecting all of the functions
+      --  associated with an indexing aspect of type T of the given kind.
 
       --------------------------
       -- Constant_Indexing_OK --
@@ -8733,224 +8730,53 @@ package body Sem_Ch4 is
       end Expr_Matches_In_Formal;
 
       ------------------------------
-      -- Find_Indexing_Operations --
+      -- Indexing_Interpretations --
       ------------------------------
 
-      function Find_Indexing_Operations
+      function Indexing_Interpretations
         (T           : Entity_Id;
-         Nam         : Name_Id;
-         Is_Constant : Boolean) return Node_Id
+         Aspect_Kind : Aspect_Id) return Node_Id
       is
-         procedure Inspect_Declarations
-           (Typ : Entity_Id;
-            Ref : in out Node_Id);
-         --  Traverse the declarative list where type Typ resides and collect
-         --  all suitable interpretations in node Ref.
+         pragma Assert (Aspect_Kind in Aspect_Constant_Indexing
+                                     | Aspect_Variable_Indexing);
 
-         procedure Inspect_Primitives
-           (Typ : Entity_Id;
-            Ref : in out Node_Id);
-         --  Traverse the list of primitive operations of type Typ and collect
-         --  all suitable interpretations in node Ref.
-
-         function Is_OK_Candidate
-           (Subp_Id : Entity_Id;
-            Typ     : Entity_Id) return Boolean;
-         --  Determine whether subprogram Subp_Id is a suitable indexing
-         --  operation for type Typ. To qualify as such, the subprogram must
-         --  be a function, have at least two parameters, and the type of the
-         --  first parameter must be either Typ, or Typ'Class, or access [to
-         --  constant] with designated type Typ or Typ'Class.
-
-         procedure Record_Interp (Subp_Id : Entity_Id; Ref : in out Node_Id);
-         --  Store subprogram Subp_Id as an interpretation in node Ref
-
-         --------------------------
-         -- Inspect_Declarations --
-         --------------------------
-
-         procedure Inspect_Declarations
-           (Typ : Entity_Id;
-            Ref : in out Node_Id)
-         is
-            Typ_Decl : constant Node_Id := Declaration_Node (Typ);
-            Decl     : Node_Id;
-            Subp_Id  : Entity_Id;
-
-         begin
-            --  Ensure that the routine is not called with itypes, which lack a
-            --  declarative node.
-
-            pragma Assert (Present (Typ_Decl));
-            pragma Assert (Is_List_Member (Typ_Decl));
-
-            Decl := First (List_Containing (Typ_Decl));
-            while Present (Decl) loop
-               if Nkind (Decl) = N_Subprogram_Declaration then
-                  Subp_Id := Defining_Entity (Decl);
-
-                  if Is_OK_Candidate (Subp_Id, Typ) then
-                     Record_Interp (Subp_Id, Ref);
-                  end if;
-               end if;
-
-               Next (Decl);
-            end loop;
-         end Inspect_Declarations;
-
-         ------------------------
-         -- Inspect_Primitives --
-         ------------------------
-
-         procedure Inspect_Primitives
-           (Typ : Entity_Id;
-            Ref : in out Node_Id)
-         is
-            Prim_Elmt : Elmt_Id;
-            Prim_Id   : Entity_Id;
-
-         begin
-            Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
-            while Present (Prim_Elmt) loop
-               Prim_Id := Node (Prim_Elmt);
-
-               if Is_OK_Candidate (Prim_Id, Typ) then
-                  Record_Interp (Prim_Id, Ref);
-               end if;
-
-               Next_Elmt (Prim_Elmt);
-            end loop;
-         end Inspect_Primitives;
-
-         ---------------------
-         -- Is_OK_Candidate --
-         ---------------------
-
-         function Is_OK_Candidate
-           (Subp_Id : Entity_Id;
-            Typ     : Entity_Id) return Boolean
-         is
-            Formal     : Entity_Id;
-            Formal_Typ : Entity_Id;
-            Param_Typ  : Node_Id;
-
-         begin
-            --  To classify as a suitable candidate, the subprogram must be a
-            --  function whose name matches the argument of aspect Constant or
-            --  Variable_Indexing.
-
-            if Ekind (Subp_Id) = E_Function and then Chars (Subp_Id) = Nam then
-               Formal := First_Formal (Subp_Id);
-
-               --  The candidate requires at least two parameters
-
-               if Present (Formal) and then Present (Next_Formal (Formal)) then
-                  Formal_Typ := Empty;
-                  Param_Typ  := Parameter_Type (Parent (Formal));
-
-                  --  Use the designated type when the first parameter is of an
-                  --  access type.
-
-                  if Nkind (Param_Typ) = N_Access_Definition
-                    and then Present (Subtype_Mark (Param_Typ))
-                  then
-                     --  When the context is a constant indexing, the access
-                     --  definition must be access-to-constant. This does not
-                     --  apply to variable indexing.
-
-                     if not Is_Constant
-                       or else Constant_Present (Param_Typ)
-                     then
-                        Formal_Typ := Etype (Subtype_Mark (Param_Typ));
-                     end if;
-
-                  --  Otherwise use the parameter type
-
-                  else
-                     Formal_Typ := Etype (Param_Typ);
-                  end if;
-
-                  if Present (Formal_Typ) then
-
-                     --  Use the specific type when the parameter type is
-                     --  class-wide.
-
-                     if Is_Class_Wide_Type (Formal_Typ) then
-                        Formal_Typ := Etype (Base_Type (Formal_Typ));
-                     end if;
-
-                     --  Use the full view when the parameter type is private
-                     --  or incomplete.
-
-                     if Is_Incomplete_Or_Private_Type (Formal_Typ)
-                       and then Present (Full_View (Formal_Typ))
-                     then
-                        Formal_Typ := Full_View (Formal_Typ);
-                     end if;
-
-                     --  The type of the first parameter must denote the type
-                     --  of the container or acts as its ancestor type.
-
-                     return
-                       Formal_Typ = Typ
-                         or else Is_Ancestor (Formal_Typ, Typ);
-                  end if;
-               end if;
-            end if;
-
-            return False;
-         end Is_OK_Candidate;
-
-         -------------------
-         -- Record_Interp --
-         -------------------
-
-         procedure Record_Interp (Subp_Id : Entity_Id; Ref : in out Node_Id) is
-         begin
-            if Present (Ref) then
-               Add_One_Interp (Ref, Subp_Id, Etype (Subp_Id));
-
-            --  Otherwise this is the first interpretation. Create a reference
-            --  where all remaining interpretations will be collected.
-
-            else
-               Ref := New_Occurrence_Of (Subp_Id, Sloc (T));
-            end if;
-         end Record_Interp;
-
-         --  Local variables
-
-         Ref : Node_Id;
-         Typ : Entity_Id;
-
-      --  Start of processing for Find_Indexing_Operations
+         Indexing_Aspect    : constant Node_Id := Find_Aspect (T, Aspect_Kind);
+         Indexing_Func_Elmt : Elmt_Id;
+         Subp_Id            : Entity_Id;
+         Indexing_Func      : Node_Id := Empty;
 
       begin
-         Typ := T;
-
-         --  Use the specific type when the parameter type is class-wide
-
-         if Is_Class_Wide_Type (Typ) then
-            Typ := Root_Type (Typ);
+         if No (Indexing_Aspect)
+           --  Protect against the case where there was an error on the aspect
+           or else No (Aspect_Subprograms (Indexing_Aspect))
+         then
+            return Empty;
          end if;
 
-         Ref := Empty;
-         Typ := Underlying_Type (Base_Type (Typ));
+         Indexing_Func_Elmt :=
+           First_Elmt (Aspect_Subprograms (Indexing_Aspect));
 
-         Inspect_Primitives (Typ, Ref);
+         pragma Assert (Present (Indexing_Func_Elmt));
 
-         --  Now look for explicit declarations of an indexing operation.
-         --  If the type is private the operation may be declared in the
-         --  visible part that contains the partial view.
+         while Present (Indexing_Func_Elmt) loop
+            Subp_Id := Node (Indexing_Func_Elmt);
 
-         if Is_Private_Type (T) then
-            Inspect_Declarations (T, Ref);
-         end if;
+            if Present (Indexing_Func) then
+               Add_One_Interp (Indexing_Func, Subp_Id, Etype (Subp_Id));
 
-         Inspect_Declarations (Typ, Ref);
+            --  Otherwise this is the first interpretation. Create a
+            --  reference where all remaining interpretations will be
+            --  collected.
 
-         return Ref;
-      end Find_Indexing_Operations;
+            else
+               Indexing_Func := New_Occurrence_Of (Subp_Id, Sloc (N));
+            end if;
+
+            Next_Elmt (Indexing_Func_Elmt);
+         end loop;
+
+         return Indexing_Func;
+      end Indexing_Interpretations;
 
       --  Local variables
 
@@ -8960,11 +8786,6 @@ package body Sem_Ch4 is
       Func      : Entity_Id;
       Func_Name : Node_Id;
       Indexing  : Node_Id;
-
-      Is_Constant_Indexing : Boolean := False;
-      --  This flag reflects the nature of the container indexing. Note that
-      --  the context may be suited for constant indexing, but the type may
-      --  lack a Constant_Indexing annotation.
 
    --  Start of processing for Try_Container_Indexing
 
@@ -8995,13 +8816,13 @@ package body Sem_Ch4 is
          Error_Msg_NW (Warn_On_Dereference, "?d?implicit dereference", N);
       end if;
 
-      C_Type := Pref_Typ;
+      C_Type := Base_Type (Pref_Typ);
 
       --  If indexing a class-wide container, obtain indexing primitive from
       --  specific type.
 
       if Is_Class_Wide_Type (C_Type) then
-         C_Type := Etype (Base_Type (C_Type));
+         C_Type := Etype (C_Type);
       end if;
 
       --  Check whether the type has a specified indexing aspect
@@ -9009,21 +8830,18 @@ package body Sem_Ch4 is
       Func_Name := Empty;
 
       --  The context is suitable for constant indexing, so obtain the name of
-      --  the indexing function from aspect Constant_Indexing.
+      --  the indexing functions from aspect Constant_Indexing.
 
       if Constant_Indexing_OK then
          Func_Name :=
-           Find_Value_Of_Aspect (Pref_Typ, Aspect_Constant_Indexing);
+           Indexing_Interpretations (C_Type, Aspect_Constant_Indexing);
       end if;
-
-      if Present (Func_Name) then
-         Is_Constant_Indexing := True;
 
       --  Otherwise attempt variable indexing
 
-      else
+      if No (Func_Name) then
          Func_Name :=
-           Find_Value_Of_Aspect (Pref_Typ, Aspect_Variable_Indexing);
+           Indexing_Interpretations (C_Type, Aspect_Variable_Indexing);
       end if;
 
       --  The type is not subject to either form of indexing, therefore the
@@ -9045,31 +8863,6 @@ package body Sem_Ch4 is
          else
             return False;
          end if;
-
-      --  If the container type is derived from another container type, the
-      --  value of the inherited aspect is the Reference operation declared
-      --  for the parent type.
-
-      --  However, Reference is also a primitive operation of the type, and the
-      --  inherited operation has a different signature. We retrieve the right
-      --  ones (the function may be overloaded) from the list of primitive
-      --  operations of the derived type.
-
-      --  Note that predefined containers are typically all derived from one of
-      --  the Controlled types. The code below is motivated by containers that
-      --  are derived from other types with a Reference aspect.
-      --  Note as well that we need to examine the base type, given that
-      --  the container object may be a constrained subtype or itype that
-      --  does not have an explicit declaration.
-
-      elsif Is_Derived_Type (C_Type)
-        and then Etype (First_Formal (Entity (Func_Name))) /= Pref_Typ
-      then
-         Func_Name :=
-           Find_Indexing_Operations
-             (T           => Base_Type (C_Type),
-              Nam         => Chars (Func_Name),
-              Is_Constant => Is_Constant_Indexing);
       end if;
 
       Assoc := New_List (Relocate_Node (Prefix));

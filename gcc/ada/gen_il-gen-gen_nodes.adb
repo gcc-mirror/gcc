@@ -1257,6 +1257,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Class_Present, Flag),
         Sm (Aspect_On_Partial_View, Flag),
         Sm (Aspect_Rep_Item, Node_Id),
+        Sm (Aspect_Subprograms, Elist_Id),
         Sm (Entity_Or_Associated_Node, Node_Id), -- just Entity
         Sm (Expression_Copy, Node_Id),
         Sm (Is_Boolean_Aspect, Flag),

@@ -6020,9 +6020,15 @@ package body Freeze is
                then
                   null;
                else
-                  Error_Msg_N
-                    ("Iterator_Element requires indexing aspect",
-                     Iterator_Aspect);
+                  if Get_Aspect_Id (Iterator_Aspect) = Aspect_Iterator_Element
+                  then
+                     Error_Msg_N ("Iterator_Element requires indexing aspect",
+                       Iterator_Aspect);
+
+                  else
+                     Error_Msg_N ("Default_Iterator requires indexing aspect",
+                       Iterator_Aspect);
+                  end if;
                end if;
             end if;
          end;
@@ -6662,6 +6668,36 @@ package body Freeze is
 
                Pop_Scope;
             end if;
+         end;
+      end if;
+
+      if Is_Derived_Type (E) and then Is_First_Subtype (E) then
+
+         --  If a derived type's parent type is not already frozen and has
+         --  delayed aspects, analyze the parent type's aspects at this point,
+         --  so that the following call to update the type's inherited aspects
+         --  will be effective.
+
+         if not Is_Frozen (Etype (E))
+           and then Has_Delayed_Aspects (Etype (E))
+         then
+            Analyze_Aspects_At_Freeze_Point (Etype (E));
+            Set_Has_Delayed_Aspects (Etype (E), False);
+         end if;
+
+         --  Identify the various subprograms associated with any inherited
+         --  nonoverridable aspects at this point rather than allowing them
+         --  to be resolved during analysis.
+
+         Inherit_Nonoverridable_Aspects (E, Etype (E));
+
+         declare
+            Iface : Node_Id := First (Abstract_Interface_List (E));
+         begin
+            while Present (Iface) loop
+               Inherit_Nonoverridable_Aspects (E, Entity (Iface));
+               Next (Iface);
+            end loop;
          end;
       end if;
 

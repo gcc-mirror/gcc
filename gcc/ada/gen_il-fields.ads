@@ -77,6 +77,7 @@ package Gen_IL.Fields is
       Aspect_On_Partial_View,
       Aspect_Rep_Item,
       Aspect_Specifications,
+      Aspect_Subprograms,
       Assignment_OK,
       Attribute_Name,
       At_End_Proc,

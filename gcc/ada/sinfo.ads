@@ -820,6 +820,11 @@ package Sinfo is
    --    Present in N_Aspect_Specification nodes. Points to the corresponding
    --    pragma/attribute definition node used to process the aspect.
 
+   --  Aspect_Subprograms
+   --    Present in N_Aspect_Specification nodes. Contains a list of the
+   --    subprograms that the aspect is associated with. Currently only used
+   --    for indexing aspects.
+
    --  Assignment_OK
    --    This flag is set in a subexpression node for an object, indicating
    --    that the associated object can be modified, even if this would not
@@ -7579,6 +7584,7 @@ package Sinfo is
       --  Aspect_Rep_Item
       --  Expression (set to Empty if none)
       --  Entity entity to which the aspect applies
+      --  Aspect_Subprograms (set to No_Elist if no associated subprograms)
       --  Next_Rep_Item
       --  Class_Present Set if 'Class present
       --  Is_Ignored

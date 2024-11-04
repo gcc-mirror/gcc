@@ -1732,6 +1732,14 @@ package body Sem_Ch7 is
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
 
+         --  A type's nonoverridable aspects need to be resolved at the end
+         --  of the enclosing list of declarations, not only at freeze points
+         --  (see 13.1.1 (11/5)). (Perhaps the proc name should be changed???)
+
+         if Is_Type (E) and then Has_Delayed_Aspects (E) then
+            Analyze_Aspects_At_Freeze_Point (E, Nonoverridable_Only => True);
+         end if;
+
          Next_Entity (E);
       end loop;
 
