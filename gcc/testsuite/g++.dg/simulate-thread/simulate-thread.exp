@@ -30,9 +30,18 @@ set-torture-options [list \
 	{ -O3 -g -std=c++11 } \
 	{ -Os -g } ]
 
+if [info exists ::env(DEBUGINFOD_URLS)] {
+  set orig_debuginfod_urls "$::env(DEBUGINFOD_URLS)"
+  setenv DEBUGINFOD_URLS ""
+}
+
 if [gdb-exists] {
   gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
   gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/simulate-thread/*.c]] "" ""
+}
+
+if [info exists ::env(DEBUGINFOD_URLS)] {
+  setenv DEBUGINFOD_URLS "$orig_debuginfod_urls"
 }
 
 torture-finish
