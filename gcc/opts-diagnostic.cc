@@ -69,13 +69,13 @@ public:
   void
   report_unknown_key (const char *unparsed_arg,
 		      const std::string &key,
-		      const std::string &format_name,
+		      const std::string &scheme_name,
 		      auto_vec<const char *> &known_keys) const;
 
   void
   report_missing_key (const char *unparsed_arg,
 		      const std::string &key,
-		      const std::string &format_name,
+		      const std::string &scheme_name,
 		      const char *metavar) const;
 
   diagnostic_output_file
@@ -88,13 +88,13 @@ public:
   const char *m_option_name;
 };
 
-struct name_and_params
+struct scheme_name_and_params
 {
-  std::string m_format;
+  std::string m_scheme_name;
   std::vector<std::pair<std::string, std::string>> m_kvs;
 };
 
-static std::unique_ptr<name_and_params>
+static std::unique_ptr<scheme_name_and_params>
 parse (const context &ctxt, const char *unparsed_arg);
 
 /* Class for parsing the arguments of -fdiagnostics-add-output= and
@@ -104,18 +104,20 @@ parse (const context &ctxt, const char *unparsed_arg);
 class output_factory
 {
 public:
-  class handler
+  class scheme_handler
   {
   public:
-    handler (std::string name) : m_name (std::move (name)) {}
-    virtual ~handler () {}
+    scheme_handler (std::string scheme_name)
+    : m_scheme_name (std::move (scheme_name))
+    {}
+    virtual ~scheme_handler () {}
 
-    const std::string &get_name () const { return m_name; }
+    const std::string &get_scheme_name () const { return m_scheme_name; }
 
     virtual std::unique_ptr<diagnostic_output_format>
     make_sink (const context &ctxt,
 	       const char *unparsed_arg,
-	       const name_and_params &parsed_arg) const = 0;
+	       const scheme_name_and_params &parsed_arg) const = 0;
 
   protected:
     bool
@@ -179,7 +181,7 @@ public:
     }
 
   private:
-    const std::string m_name;
+    const std::string m_scheme_name;
   };
 
   output_factory ();
@@ -187,34 +189,34 @@ public:
   std::unique_ptr<diagnostic_output_format>
   make_sink (const context &ctxt,
 	     const char *unparsed_arg,
-	     const name_and_params &parsed_arg);
+	     const scheme_name_and_params &parsed_arg);
 
-  const handler *get_handler (std::string name);
+  const scheme_handler *get_scheme_handler (const std::string &scheme_name);
 
 private:
-  std::vector<std::unique_ptr<handler>> m_handlers;
+  std::vector<std::unique_ptr<scheme_handler>> m_scheme_handlers;
 };
 
-class text_handler : public output_factory::handler
+class text_scheme_handler : public output_factory::scheme_handler
 {
 public:
-  text_handler () : handler ("text") {}
+  text_scheme_handler () : scheme_handler ("text") {}
 
   std::unique_ptr<diagnostic_output_format>
   make_sink (const context &ctxt,
 	     const char *unparsed_arg,
-	     const name_and_params &parsed_arg) const final override;
+	     const scheme_name_and_params &parsed_arg) const final override;
 };
 
-class sarif_handler : public output_factory::handler
+class sarif_scheme_handler : public output_factory::scheme_handler
 {
 public:
-  sarif_handler () : handler ("sarif") {}
+  sarif_scheme_handler () : scheme_handler ("sarif") {}
 
   std::unique_ptr<diagnostic_output_format>
   make_sink (const context &ctxt,
 	     const char *unparsed_arg,
-	     const name_and_params &parsed_arg) const final override;
+	     const scheme_name_and_params &parsed_arg) const final override;
 };
 
 /* struct context.  */
@@ -234,7 +236,7 @@ context::report_error (const char *gmsgid, ...) const
 void
 context::report_unknown_key (const char *unparsed_arg,
 			     const std::string &key,
-			     const std::string &format_name,
+			     const std::string &scheme_name,
 			     auto_vec<const char *> &known_keys) const
 {
   pp_markup::comma_separated_quoted_strings e (known_keys);
@@ -242,13 +244,13 @@ context::report_unknown_key (const char *unparsed_arg,
     ("%<%s%s%>:"
      " unknown key %qs for format %qs; known keys: %e",
      m_option_name, unparsed_arg,
-     key.c_str (), format_name.c_str (), &e);
+     key.c_str (), scheme_name.c_str (), &e);
 }
 
 void
 context::report_missing_key (const char *unparsed_arg,
 			     const std::string &key,
-			     const std::string &format_name,
+			     const std::string &scheme_name,
 			     const char *metavar) const
 {
   report_error
@@ -256,17 +258,17 @@ context::report_missing_key (const char *unparsed_arg,
      " missing required key %qs for format %qs;"
      " try %<%s%s:%s=%s%>",
      m_option_name, unparsed_arg,
-     key.c_str (), format_name.c_str (),
-     m_option_name, format_name.c_str (), key.c_str (), metavar);
+     key.c_str (), scheme_name.c_str (),
+     m_option_name, scheme_name.c_str (), key.c_str (), metavar);
 }
 
-std::unique_ptr<name_and_params>
+std::unique_ptr<scheme_name_and_params>
 parse (const context &ctxt, const char *unparsed_arg)
 {
-  name_and_params result;
+  scheme_name_and_params result;
   if (const char *const colon = strchr (unparsed_arg, ':'))
     {
-      result.m_format = std::string (unparsed_arg, colon - unparsed_arg);
+      result.m_scheme_name = std::string (unparsed_arg, colon - unparsed_arg);
       /* Expect zero of more of KEY=VALUE,KEY=VALUE, etc  .*/
       const char *iter = colon + 1;
       const char *last_separator = ":";
@@ -283,7 +285,7 @@ parse (const context &ctxt, const char *unparsed_arg)
 		 " after %qs;"
 		 " got %qs",
 		 ctxt.m_option_name, unparsed_arg,
-		 result.m_format.c_str (),
+		 result.m_scheme_name.c_str (),
 		 last_separator,
 		 iter);
 	      return nullptr;
@@ -306,25 +308,25 @@ parse (const context &ctxt, const char *unparsed_arg)
 	}
     }
   else
-    result.m_format = unparsed_arg;
-  return ::make_unique<name_and_params> (std::move (result));
+    result.m_scheme_name = unparsed_arg;
+  return ::make_unique<scheme_name_and_params> (std::move (result));
 }
 
-/* class output_factory::handler.  */
+/* class output_factory::scheme_handler.  */
 
 /* class output_factory.  */
 
 output_factory::output_factory ()
 {
-  m_handlers.push_back (::make_unique<text_handler> ());
-  m_handlers.push_back (::make_unique<sarif_handler> ());
+  m_scheme_handlers.push_back (::make_unique<text_scheme_handler> ());
+  m_scheme_handlers.push_back (::make_unique<sarif_scheme_handler> ());
 }
 
-const output_factory::handler *
-output_factory::get_handler (std::string name)
+const output_factory::scheme_handler *
+output_factory::get_scheme_handler (const std::string &scheme_name)
 {
-  for (auto &iter : m_handlers)
-    if (iter->get_name () == name)
+  for (auto &iter : m_scheme_handlers)
+    if (iter->get_scheme_name () == scheme_name)
       return iter.get ();
   return nullptr;
 }
@@ -332,31 +334,31 @@ output_factory::get_handler (std::string name)
 std::unique_ptr<diagnostic_output_format>
 output_factory::make_sink (const context &ctxt,
 			   const char *unparsed_arg,
-			   const name_and_params &parsed_arg)
+			   const scheme_name_and_params &parsed_arg)
 {
-  auto handler = get_handler (parsed_arg.m_format);
-  if (!handler)
+  auto scheme_handler = get_scheme_handler (parsed_arg.m_scheme_name);
+  if (!scheme_handler)
     {
       auto_vec<const char *> strings;
-      for (auto &iter : m_handlers)
-	strings.safe_push (iter->get_name ().c_str ());
+      for (auto &iter : m_scheme_handlers)
+	strings.safe_push (iter->get_scheme_name ().c_str ());
       pp_markup::comma_separated_quoted_strings e (strings);
       ctxt.report_error ("%<%s%s%>:"
 			 " unrecognized format %qs; known formats: %e",
 			 ctxt.m_option_name, unparsed_arg,
-			 parsed_arg.m_format.c_str (), &e);
+			 parsed_arg.m_scheme_name.c_str (), &e);
       return nullptr;
     }
 
-  return handler->make_sink (ctxt, unparsed_arg, parsed_arg);
+  return scheme_handler->make_sink (ctxt, unparsed_arg, parsed_arg);
 }
 
-/* class text_handler : public output_factory::handler.  */
+/* class text_scheme_handler : public output_factory::scheme_handler.  */
 
 std::unique_ptr<diagnostic_output_format>
-text_handler::make_sink (const context &ctxt,
-			 const char *unparsed_arg,
-			 const name_and_params &parsed_arg) const
+text_scheme_handler::make_sink (const context &ctxt,
+				const char *unparsed_arg,
+				const scheme_name_and_params &parsed_arg) const
 {
   bool show_color = pp_show_color (ctxt.m_dc.get_reference_printer ());
   for (auto& iter : parsed_arg.m_kvs)
@@ -373,7 +375,8 @@ text_handler::make_sink (const context &ctxt,
       /* Key not found.  */
       auto_vec<const char *> known_keys;
       known_keys.safe_push ("color");
-      ctxt.report_unknown_key (unparsed_arg, key, get_name (), known_keys);
+      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
+			       known_keys);
       return nullptr;
     }
 
@@ -397,12 +400,12 @@ context::open_output_file (label_text &&filename) const
   return diagnostic_output_file (outf, true, std::move (filename));
 }
 
-/* class sarif_handler : public output_factory::handler.  */
+/* class sarif_scheme_handler : public output_factory::scheme_handler.  */
 
 std::unique_ptr<diagnostic_output_format>
-sarif_handler::make_sink (const context &ctxt,
-			  const char *unparsed_arg,
-			  const name_and_params &parsed_arg) const
+sarif_scheme_handler::make_sink (const context &ctxt,
+				 const char *unparsed_arg,
+				 const scheme_name_and_params &parsed_arg) const
 {
   enum sarif_version version = sarif_version::v2_1_0;
   label_text filename;
@@ -434,7 +437,8 @@ sarif_handler::make_sink (const context &ctxt,
       auto_vec<const char *> known_keys;
       known_keys.safe_push ("file");
       known_keys.safe_push ("version");
-      ctxt.report_unknown_key (unparsed_arg, key, get_name (), known_keys);
+      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
+			       known_keys);
       return nullptr;
     }
 
@@ -549,7 +553,7 @@ struct parser_test
     pp_buffer (m_fmt.get_printer ())->m_flush_p = false;
   }
 
-  std::unique_ptr<gcc::diagnostics_output_spec::name_and_params>
+  std::unique_ptr<gcc::diagnostics_output_spec::scheme_name_and_params>
   parse (const char *unparsed_arg)
   {
     return gcc::diagnostics_output_spec::parse (m_ctxt, unparsed_arg);
@@ -585,7 +589,7 @@ test_output_arg_parsing ()
   {
     parser_test pt;
     auto result = pt.parse ("foo");
-    ASSERT_EQ (result->m_format, "foo");
+    ASSERT_EQ (result->m_scheme_name, "foo");
     ASSERT_EQ (result->m_kvs.size (), 0);
     ASSERT_FALSE (pt.execution_failed_p ());
   }
@@ -633,7 +637,7 @@ test_output_arg_parsing ()
   {
     parser_test pt;
     auto result = pt.parse ("foo:key=value");
-    ASSERT_EQ (result->m_format, "foo");
+    ASSERT_EQ (result->m_scheme_name, "foo");
     ASSERT_EQ (result->m_kvs.size (), 1);
     ASSERT_EQ (result->m_kvs[0].first, "key");
     ASSERT_EQ (result->m_kvs[0].second, "value");
@@ -657,7 +661,7 @@ test_output_arg_parsing ()
   {
     parser_test pt;
     auto result = pt.parse ("foo:color=red,shape=circle");
-    ASSERT_EQ (result->m_format, "foo");
+    ASSERT_EQ (result->m_scheme_name, "foo");
     ASSERT_EQ (result->m_kvs.size (), 2);
     ASSERT_EQ (result->m_kvs[0].first, "color");
     ASSERT_EQ (result->m_kvs[0].second, "red");
