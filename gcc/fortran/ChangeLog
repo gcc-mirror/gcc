@@ -1,3 +1,9 @@
+2024-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/116040
+	* trans-stmt.cc (trans_associate_var): Copy chunk in 14-branch
+	that correctly handles class function selectors.
+
 2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
