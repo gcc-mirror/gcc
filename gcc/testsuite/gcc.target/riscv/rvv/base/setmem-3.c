@@ -21,13 +21,13 @@ f1 (void *a, int const b)
   return __builtin_memset (a, b, MIN_VECTOR_BYTES - 1);
 }
 
-/* Vectorise+inline minimum vector register width using requested lmul.
+/* Vectorised code should use smallest lmul known to fit length.
 ** f2:
 **  (
-**  vsetivli\s+zero,\d+,e8,m8,ta,ma
+**  vsetivli\s+zero,\d+,e8,m1,ta,ma
 **  |
 **  li\s+a\d+,\d+
-**  vsetvli\s+zero,a\d+,e8,m8,ta,ma
+**  vsetvli\s+zero,a\d+,e8,m1,ta,ma
 **  )
 **  vmv\.v\.x\s+v\d+,a1
 **  vse8\.v\s+v\d+,0\(a0\)

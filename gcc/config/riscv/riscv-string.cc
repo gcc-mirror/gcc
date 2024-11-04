@@ -1062,6 +1062,9 @@ struct stringop_info {
 
    MAX_EW is the maximum element width that the caller wants to use and
    LENGTH_IN is the length of the stringop in bytes.
+
+   This is currently used for cpymem and setmem.  If expand_vec_cmpmem switches
+   to using it too then check_vectorise_memory_operation can be removed.
 */
 
 static bool
@@ -1600,41 +1603,39 @@ check_vectorise_memory_operation (rtx length_in, HOST_WIDE_INT &lmul_out)
 bool
 expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
 {
-  HOST_WIDE_INT lmul;
+  stringop_info info;
+
   /* Check we are able and allowed to vectorise this operation;
      bail if not.  */
-  if (!check_vectorise_memory_operation (length_in, lmul))
+  if (!use_vector_stringop_p (info, 1, length_in) || info.need_loop)
     return false;
 
-  machine_mode vmode
-      = riscv_vector::get_vector_mode (QImode, BYTES_PER_RISCV_VECTOR * lmul)
-	    .require ();
   rtx dst_addr = copy_addr_to_reg (XEXP (dst_in, 0));
-  rtx dst = change_address (dst_in, vmode, dst_addr);
+  rtx dst = change_address (dst_in, info.vmode, dst_addr);
 
-  rtx fill_value = gen_reg_rtx (vmode);
+  rtx fill_value = gen_reg_rtx (info.vmode);
   rtx broadcast_ops[] = { fill_value, fill_value_in };
 
   /* If the length is exactly vlmax for the selected mode, do that.
      Otherwise, use a predicated store.  */
-  if (known_eq (GET_MODE_SIZE (vmode), INTVAL (length_in)))
+  if (known_eq (GET_MODE_SIZE (info.vmode), INTVAL (info.avl)))
     {
-      emit_vlmax_insn (code_for_pred_broadcast (vmode), UNARY_OP,
-			  broadcast_ops);
+      emit_vlmax_insn (code_for_pred_broadcast (info.vmode), UNARY_OP,
+		       broadcast_ops);
       emit_move_insn (dst, fill_value);
     }
   else
     {
-      if (!satisfies_constraint_K (length_in))
-	      length_in = force_reg (Pmode, length_in);
-      emit_nonvlmax_insn (code_for_pred_broadcast (vmode), UNARY_OP,
-			  broadcast_ops, length_in);
+      if (!satisfies_constraint_K (info.avl))
+	info.avl = force_reg (Pmode, info.avl);
+      emit_nonvlmax_insn (code_for_pred_broadcast (info.vmode),
+			  riscv_vector::UNARY_OP, broadcast_ops, info.avl);
       machine_mode mask_mode
-	      = riscv_vector::get_vector_mode (BImode, GET_MODE_NUNITS (vmode))
-		      .require ();
+	= riscv_vector::get_vector_mode (BImode, GET_MODE_NUNITS (info.vmode))
+	  .require ();
       rtx mask = CONSTM1_RTX (mask_mode);
-      emit_insn (gen_pred_store (vmode, dst, mask, fill_value, length_in,
-			  get_avl_type_rtx (riscv_vector::NONVLMAX)));
+      emit_insn (gen_pred_store (info.vmode, dst, mask, fill_value, info.avl,
+				 get_avl_type_rtx (riscv_vector::NONVLMAX)));
     }
 
   return true;
