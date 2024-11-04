@@ -475,8 +475,39 @@ struct diagnostic_counters
   int m_count_for_kind[DK_LAST_DIAGNOSTIC_KIND];
 };
 
-/* This data structure bundles altogether any information relevant to
-   the context of a diagnostic message.  */
+/* This class encapsulates the state of the diagnostics subsystem
+   as a whole (either directly, or via owned objects of other classes, to
+   avoid global variables).
+
+   It has responsibility for:
+   - being a central place for clients to report diagnostics
+   - reporting those diagnostics to zero or more output sinks
+     (e.g. text vs SARIF)
+   - proving a "dump" member function for a debug dump of the state of
+     the diagnostics subsytem
+   - direct vs buffered diagnostics (see class diagnostic_buffer)
+   - tracking the original argv of the program (for SARIF output)
+   - crash-handling
+
+   It delegates responsibility to various other classes:
+   - the various output sinks (instances of diagnostic_output_format
+     subclasses)
+   - formatting of messages (class pretty_printer)
+   - an optional urlifier to inject URLs into formatted messages
+   - counting the number of diagnostics reported of each kind
+     (class diagnostic_counters)
+   - calling out to a diagnostic_option_manager to determine if
+     a particular warning is enabled or disabled
+   - tracking pragmas that enable/disable warnings in a range of
+     source code
+   - a cache for use when quoting the user's source code (class file_cache)
+   - a text_art::theme
+   - an edit_context for generating patches from fix-it hints
+   - diagnostic_client_data_hooks for metadata.
+
+   Try to avoid adding new responsibilities to this class itself, to avoid
+   the "blob" anti-pattern.  */
+
 class diagnostic_context
 {
 public:
