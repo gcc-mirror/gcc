@@ -7355,15 +7355,30 @@ static tree
 elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 			bool definition, bool need_for_debug, unsigned int align)
 {
-  tree unit_align = size_int (align / BITS_PER_UNIT);
-  return
-    size_binop (MULT_EXPR,
-		elaborate_expression_1 (size_binop (EXACT_DIV_EXPR,
-						    gnu_expr,
-						    unit_align),
-					gnat_entity, s, definition,
-					need_for_debug),
-		unit_align);
+  /* Nothing more to do if the factor is already explicit in the tree.  */
+  if (TREE_CODE (gnu_expr) == MULT_EXPR
+      && TREE_CONSTANT (TREE_OPERAND (gnu_expr, 1))
+      && value_factor_p (TREE_OPERAND (gnu_expr, 1), align / BITS_PER_UNIT))
+    return
+      size_binop (MULT_EXPR,
+		  elaborate_expression_1 (TREE_OPERAND (gnu_expr, 0),
+					  gnat_entity, s, definition,
+					  need_for_debug),
+		  TREE_OPERAND (gnu_expr, 1));
+
+  /* Otherwise divide by the factor, elaborate the result and multiply back.  */
+  else
+    {
+      tree unit_align = size_int (align / BITS_PER_UNIT);
+      return
+	size_binop (MULT_EXPR,
+		    elaborate_expression_1 (size_binop (EXACT_DIV_EXPR,
+							gnu_expr,
+							unit_align),
+					    gnat_entity, s, definition,
+					    need_for_debug),
+		    unit_align);
+    }
 }
 
 /* Structure to hold internal data for elaborate_reference.  */
