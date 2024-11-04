@@ -16,7 +16,7 @@ typedef UserType Array[my_size];
 class Foo
 {
 public:
-  Foo(Array& m) : m_(m) {};  // { dg-error "invalid initializer for array member" }
+  Foo(Array& m) : m_(m) {};  // { dg-error "array must be initialized" }
 private:
   Array m_;
 };

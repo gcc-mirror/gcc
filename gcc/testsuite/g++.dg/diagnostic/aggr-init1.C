@@ -1,5 +1,6 @@
 // PR c++/116634
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fpermissive }
 
 namespace std {
   using size_t = decltype(sizeof(42));
@@ -20,7 +21,7 @@ private:
 template<int N>
 struct Any final {
     constexpr
-    Any(ConstString (&&_vec)[N]) noexcept: vec(_vec){} // { dg-error "array" }
+    Any(ConstString (&&_vec)[N]) noexcept: vec(_vec){} // { dg-warning "array" }
 
     ConstString vec[N];
 };
