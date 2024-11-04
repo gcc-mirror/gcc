@@ -1,3 +1,15 @@
+2024-11-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/115023
+	* doc/extend.texi (__builtin_assoc_barrier): Document ffp-contract=fast
+	and FMA usage.
+
+2024-11-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117363
+	* match.pd (`a != 0 ? a - 1 : 0`): Fix type handling
+	and nop_convert handling.
+
 2024-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/117384

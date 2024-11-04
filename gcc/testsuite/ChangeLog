@@ -1,3 +1,16 @@
+2024-11-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117363
+	* gcc.dg/torture/pr117363-1.c: New test.
+	* gcc.dg/torture/pr117363-2.c: New test.
+
+2024-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_69.f90: Remove the test that produces a
+	variable string length because the optimized count depends on
+	the platform. This is tested in associate_70.f90.
+
 2024-11-02  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* gcc.dg/pr116887.c: Require effective target fpic.
