@@ -48,17 +48,6 @@ package Errout is
    --  Source_Reference line, then this is initialized to No_Source_File, to
    --  force an initial reference to the real source file name.
 
-   Raise_Exception_On_Error : Nat renames Err_Vars.Raise_Exception_On_Error;
-   --  If this value is non-zero, then any attempt to generate an error
-   --  message raises the exception Error_Msg_Exception, and the error message
-   --  is not output. This is used for defending against junk resulting from
-   --  illegalities, and also for substitution of more appropriate error
-   --  messages from higher semantic levels. It is a counter so that the
-   --  increment/decrement protocol nests neatly.
-
-   Error_Msg_Exception : exception renames Err_Vars.Error_Msg_Exception;
-   --  Exception raised if Raise_Exception_On_Error is true
-
    Current_Node : Node_Id := Empty;
    --  Used by Error_Msg as a default Node_Id.
    --  Relevant only when Opt.Include_Subprogram_In_Messages is set.

@@ -172,10 +172,6 @@ package body Errutil is
          return;
       end if;
 
-      if Raise_Exception_On_Error /= 0 then
-         raise Error_Msg_Exception;
-      end if;
-
       Prescan_Message (Msg);
       Set_Msg_Text (Msg, Sptr);
 

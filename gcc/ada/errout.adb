@@ -996,10 +996,6 @@ package body Errout is
 
       pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');
 
-      if Raise_Exception_On_Error /= 0 then
-         raise Error_Msg_Exception;
-      end if;
-
       Continuation := Msg_Cont;
       Continuation_New_Line := False;
       Suppress_Message := False;

@@ -55,17 +55,6 @@ package Err_Vars is
    --  not get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
 
-   Raise_Exception_On_Error : Nat := 0;
-   --  If this value is non-zero, then any attempt to generate an error
-   --  message raises the exception Error_Msg_Exception, and the error
-   --  message is not output. This is used for defending against junk
-   --  resulting from illegalities, and also for substitution of more
-   --  appropriate error messages from higher semantic levels. It is
-   --  a counter so that the increment/decrement protocol nests neatly.
-
-   Error_Msg_Exception : exception;
-   --  Exception raised if Raise_Exception_On_Error is true
-
    Current_Error_Source_File : Source_File_Index := No_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This
    --  is initialized to Main_Source_File at the start of a compilation, which
