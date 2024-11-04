@@ -380,9 +380,7 @@ begin
       --  Disable Initialize_Scalars for runtime files to avoid circular
       --  dependencies.
 
-      if Initialize_Scalars
-        and then Fname.Is_Predefined_File_Name (File_Name (Main_Source_File))
-      then
+      if Initialize_Scalars and then Is_Predefined_Unit (Main_Unit) then
          Initialize_Scalars   := False;
          Init_Or_Norm_Scalars := Normalize_Scalars;
       end if;
