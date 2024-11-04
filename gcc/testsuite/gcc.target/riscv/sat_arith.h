@@ -176,6 +176,21 @@ sat_s_add_##T##_fmt_4 (T x, T y)                       \
 #define RUN_SAT_S_ADD_FMT_4(T, x, y) sat_s_add_##T##_fmt_4(x, y)
 #define RUN_SAT_S_ADD_FMT_4_WRAP(T, x, y) RUN_SAT_S_ADD_FMT_4(T, x, y)
 
+#define DEF_SAT_S_ADD_IMM_FMT_1(INDEX, T, UT, IMM, MIN, MAX) \
+T __attribute__((noinline))                  \
+sat_s_add_imm_##T##_fmt_1##_##INDEX (T x)             \
+{                                            \
+  T sum = (UT)x + (UT)IMM;                     \
+  return (x ^ IMM) < 0                         \
+    ? sum                                    \
+    : (sum ^ x) >= 0                         \
+      ? sum                                  \
+      : x < 0 ? MIN : MAX;                   \
+}
+
+#define RUN_SAT_S_ADD_IMM_FMT_1(INDEX, T, x, expect) \
+  if (sat_s_add_imm##_##T##_fmt_1##_##INDEX(x) != expect) __builtin_abort ()
+
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
 /******************************************************************************/
