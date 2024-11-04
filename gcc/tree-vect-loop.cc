@@ -1072,6 +1072,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     scalar_loop_scaling (profile_probability::uninitialized ()),
     scalar_loop (NULL),
     orig_loop_info (NULL),
+    drs_advanced_by (NULL_TREE),
     vec_loop_iv_exit (NULL),
     vec_epilogue_loop_iv_exit (NULL),
     scalar_loop_iv_exit (NULL)
@@ -12302,6 +12303,9 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
      loop and its prologue.  */
   vect_update_inits_of_drs (epilogue_vinfo, advance, PLUS_EXPR);
 
+  /* Remember the advancement made.  */
+  LOOP_VINFO_DRS_ADVANCED_BY (epilogue_vinfo) = advance;
+
   epilogue_vinfo->shared->datarefs_copy.release ();
   epilogue_vinfo->shared->save_datarefs ();
 }
@@ -12849,6 +12853,11 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
   if (epilogue)
     {
+      /* Accumulate past advancements made.  */
+      if (LOOP_VINFO_DRS_ADVANCED_BY (loop_vinfo))
+	advance = fold_build2 (PLUS_EXPR, TREE_TYPE (advance),
+			       LOOP_VINFO_DRS_ADVANCED_BY (loop_vinfo),
+			       advance);
       update_epilogue_loop_vinfo (epilogue, advance);
 
       epilogue->simduid = loop->simduid;

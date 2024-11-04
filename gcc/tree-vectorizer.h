@@ -994,6 +994,9 @@ public:
      analysis.  */
   vec<_loop_vec_info *> epilogue_vinfos;
 
+  /* If this is an epilogue loop the DR advancement applied.  */
+  tree drs_advanced_by;
+
   /* The controlling loop IV for the current loop when vectorizing.  This IV
      controls the natural exits of the loop.  */
   edge vec_loop_iv_exit;
@@ -1097,6 +1100,7 @@ public:
 #define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
 #define LOOP_VINFO_INV_PATTERN_DEF_SEQ(L)  (L)->inv_pattern_def_seq
+#define LOOP_VINFO_DRS_ADVANCED_BY(L)      (L)->drs_advanced_by
 
 #define LOOP_VINFO_FULLY_MASKED_P(L)		\
   (LOOP_VINFO_USING_PARTIAL_VECTORS_P (L)	\
