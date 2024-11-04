@@ -436,6 +436,8 @@ public:
   bool require_immediate_one_of (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT,
 				 HOST_WIDE_INT, HOST_WIDE_INT);
   bool require_immediate_range (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT);
+  bool require_immediate_range_multiple (unsigned int, HOST_WIDE_INT,
+					 HOST_WIDE_INT, HOST_WIDE_INT);
 
   bool check ();
 
@@ -443,6 +445,7 @@ private:
   bool argument_exists_p (unsigned int);
 
   bool require_immediate (unsigned int, HOST_WIDE_INT &);
+  bool require_signed_immediate (unsigned int, HOST_WIDE_INT &);
 
   /* The type of the resolved function.  */
   tree m_fntype;

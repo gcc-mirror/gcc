@@ -639,6 +639,20 @@ report_out_of_range (location_t location, tree fndecl, unsigned int argno,
 	    min, max);
 }
 
+/* Report that LOCATION has a call to FNDECL in which argument ARGNO has the
+   value ACTUAL, whereas the function requires a value multiple of MULT in the
+   range [MIN, MAX].  ARGNO counts from zero.  */
+static void
+report_out_of_range_multiple (location_t location, tree fndecl,
+			      unsigned int argno,
+			      HOST_WIDE_INT actual, HOST_WIDE_INT min,
+			      HOST_WIDE_INT max, HOST_WIDE_INT mult)
+{
+  error_at (location, "passing %wd to argument %d of %qE, which expects"
+	    " a value multiple of %wd in the range [%wd, %wd]", actual,
+	    argno + 1, fndecl, mult, min, max);
+}
+
 /* Report that LOCATION has a call to FNDECL in which argument ARGNO has
    the value ACTUAL, whereas the function requires a valid value of
    enum type ENUMTYPE.  ARGNO counts from zero.  */
@@ -1983,6 +1997,26 @@ function_checker::require_immediate (unsigned int argno,
   return true;
 }
 
+/* Check that argument ARGNO is a signed integer constant expression and store
+   its value in VALUE_OUT if so.  The caller should first check that argument
+   ARGNO exists.  */
+bool
+function_checker::require_signed_immediate (unsigned int argno,
+					    HOST_WIDE_INT &value_out)
+{
+  gcc_assert (argno < m_nargs);
+  tree arg = m_args[argno];
+
+  if (!tree_fits_shwi_p (arg))
+    {
+      report_non_ice (location, fndecl, argno);
+      return false;
+    }
+
+  value_out = tree_to_shwi (arg);
+  return true;
+}
+
 /* Check that argument REL_ARGNO is an integer constant expression that has
    a valid value for enumeration type TYPE.  REL_ARGNO counts from the end
    of the predication arguments.  */
@@ -2064,6 +2098,32 @@ function_checker::require_immediate_range (unsigned int rel_argno,
   if (!IN_RANGE (actual, min, max))
     {
       report_out_of_range (location, fndecl, argno, actual, min, max);
+      return false;
+    }
+
+  return true;
+}
+
+/* Check that argument REL_ARGNO is a signed integer constant expression in the
+   range [MIN, MAX].  Also check that REL_ARGNO is a multiple of MULT.  */
+bool
+function_checker::require_immediate_range_multiple (unsigned int rel_argno,
+						    HOST_WIDE_INT min,
+						    HOST_WIDE_INT max,
+						    HOST_WIDE_INT mult)
+{
+  unsigned int argno = m_base_arg + rel_argno;
+  if (!argument_exists_p (argno))
+    return true;
+
+  HOST_WIDE_INT actual;
+  if (!require_signed_immediate (argno, actual))
+    return false;
+
+  if (!IN_RANGE (actual, min, max)
+      || (actual % mult) != 0)
+    {
+      report_out_of_range_multiple (location, fndecl, argno, actual, min, max, mult);
       return false;
     }
 
