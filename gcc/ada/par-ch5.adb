@@ -204,7 +204,7 @@ package body Ch5 is
                null;
 
             --  If not Ada 2012, or not special case above, and no declaration
-            --  seen (as allowed in Ada 2020), give error message.
+            --  seen (as allowed in Ada 2022), give error message.
 
             elsif No (Decl_Loc) then
                Error_Msg_BC -- CODEFIX
