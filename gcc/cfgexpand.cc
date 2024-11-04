@@ -4068,8 +4068,13 @@ expand_gimple_stmt_1 (gimple *stmt)
 	    else
 	      {
 		temp = force_operand (temp, target);
-		if (temp != target)
+		if (temp == target)
+		  ;
+		else if (GET_MODE (target) != BLKmode)
 		  emit_move_insn (target, temp);
+		else
+		  emit_block_move (target, temp, expr_size (lhs),
+				   BLOCK_OP_NORMAL);
 	      }
 	  }
       }
