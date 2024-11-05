@@ -3997,10 +3997,6 @@ package body Exp_Aggr is
 
       --  Local variables
 
-      Aggr_In     : Node_Id;
-      Aggr_Bounds : Range_Nodes;
-      Obj_In      : Node_Id;
-      Obj_Bounds  : Range_Nodes;
       Parent_Kind : Node_Kind;
       Parent_Node : Node_Id;
 
@@ -4025,86 +4021,15 @@ package body Exp_Aggr is
       --  assignment in place unless the bounds of the aggregate are
       --  statically equal to those of the target.
 
-      --  If the aggregate is given by an others choice, the bounds are
-      --  derived from the left-hand side, and the assignment is safe if
-      --  the expression is.
-
       if Is_Array
-        and then Present (Component_Associations (N))
-        and then not Is_Others_Aggregate (N)
+        and then Must_Slide (N, Etype (Name (Parent_Node)), Etype (N))
       then
-         Aggr_In := First_Index (Etype (N));
-
-         --  Context is an assignment
-
-         if Parent_Kind = N_Assignment_Statement then
-            Obj_In := First_Index (Etype (Name (Parent_Node)));
-
-         --  Context is an allocator. Check the bounds of the aggregate against
-         --  those of the designated type, except in the case where the type is
-         --  unconstrained (and then we can directly return true, see below).
-
-         else pragma Assert (Parent_Kind = N_Allocator);
-            declare
-               Desig_Typ : constant Entity_Id :=
-                                         Designated_Type (Etype (Parent_Node));
-            begin
-               if not Is_Constrained (Desig_Typ) then
-                  return True;
-               end if;
-
-               Obj_In := First_Index (Desig_Typ);
-            end;
-         end if;
-
-         while Present (Aggr_In) loop
-            Aggr_Bounds := Get_Index_Bounds (Aggr_In);
-            Obj_Bounds := Get_Index_Bounds (Obj_In);
-
-            --  We require static bounds for the target and a static matching
-            --  of low bound for the aggregate.
-
-            if not Compile_Time_Known_Value (Obj_Bounds.First)
-              or else not Compile_Time_Known_Value (Obj_Bounds.Last)
-              or else not Compile_Time_Known_Value (Aggr_Bounds.First)
-              or else Expr_Value (Aggr_Bounds.First) /=
-                      Expr_Value (Obj_Bounds.First)
-            then
-               return False;
-
-            --  For an assignment statement we require static matching of
-            --  bounds. Ditto for an allocator whose qualified expression
-            --  is a constrained type. If the expression in the allocator
-            --  is an unconstrained array, we accept an upper bound that
-            --  is not static, to allow for nonstatic expressions of the
-            --  base type. Clearly there are further possibilities (with
-            --  diminishing returns) for safely building arrays in place
-            --  here.
-
-            elsif Parent_Kind = N_Assignment_Statement
-              or else Is_Constrained (Etype (Parent_Node))
-            then
-               if not Compile_Time_Known_Value (Aggr_Bounds.Last)
-                 or else Expr_Value (Aggr_Bounds.Last) /=
-                         Expr_Value (Obj_Bounds.Last)
-               then
-                  return False;
-               end if;
-            end if;
-
-            Next_Index (Aggr_In);
-            Next_Index (Obj_In);
-         end loop;
+         return False;
       end if;
 
-      --  Now check the component values themselves, except for an allocator
-      --  for which the target is newly allocated memory.
+      --  Now check the component values themselves
 
-      if Parent_Kind = N_Allocator then
-         return True;
-      else
-         return Safe_Aggregate (N);
-      end if;
+      return Safe_Aggregate (N);
    end In_Place_Assign_OK;
 
    ----------------------------
@@ -4227,16 +4152,8 @@ package body Exp_Aggr is
          or else (Nkind (Parent_Node) = N_Assignment_Statement
                    and then Inside_Init_Proc)
 
-         --  (Ada 2005) An inherently limited type in a return statement, which
-         --  will be handled in a build-in-place fashion, and may be rewritten
-         --  as an extended return and have its own finalization machinery.
-         --  In the case of a simple return, the aggregate needs to be delayed
-         --  until the scope for the return statement has been created, so
-         --  that any finalization chain will be associated with that scope.
-         --  For extended returns, we delay expansion to avoid the creation
-         --  of an unwanted transient scope that could result in premature
-         --  finalization of the return object (which is built in place
-         --  within the caller's scope).
+         --  Simple return statement, which will be handled in a build-in-place
+         --  fashion and will ultimately be rewritten as an extended return.
 
          or else Is_Build_In_Place_Aggregate_Return (Parent_Node)
       then
@@ -6109,9 +6026,8 @@ package body Exp_Aggr is
 
       --  STEP 3
 
-      --  Delay expansion for nested aggregates: it will be taken care of when
-      --  the parent aggregate is expanded, excluding container aggregates as
-      --  these are transformed into subprogram calls later.
+      --  Set the Expansion_Delayed flag in the cases where the transformation
+      --  will be done top down from above.
 
       Parent_Node := Parent (N);
       Parent_Kind := Nkind (Parent_Node);
@@ -6121,17 +6037,48 @@ package body Exp_Aggr is
          Parent_Kind := Nkind (Parent_Node);
       end if;
 
-      if (Parent_Kind = N_Component_Association
+      if
+         --  Internal aggregates (transformed when expanding the parent),
+         --  excluding container aggregates as these are transformed into
+         --  subprogram calls later. So far aggregates with self-references
+         --  are not supported if they appear in a conditional expression.
+
+         (Parent_Kind = N_Component_Association
            and then not Is_Container_Aggregate (Parent (Parent_Node)))
-        or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
-                  and then not Is_Container_Aggregate (Parent_Node))
-        or else (Parent_Kind = N_Object_Declaration
-                  and then (Needs_Finalization (Typ)
-                             or else Is_Special_Return_Object
-                                       (Defining_Identifier (Parent_Node))))
-        or else (Parent_Kind = N_Assignment_Statement
-                  and then Inside_Init_Proc)
-        or else Is_Build_In_Place_Aggregate_Return (Parent_Node)
+
+         or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
+                   and then not Is_Container_Aggregate (Parent_Node))
+
+         --  Allocator (see Convert_Aggr_In_Allocator)
+
+         or else (Nkind (Parent_Node) = N_Allocator
+                   and then (Is_Limited_Type (Typ)
+                              or else Needs_Finalization (Typ)
+                              or else (not Is_Bit_Packed_Array (Typ)
+                                        and then not
+                                          Must_Slide
+                                            (N,
+                                             Designated_Type
+                                               (Etype (Parent_Node)),
+                                             Typ))))
+
+         --  Object declaration (see Convert_Aggr_In_Object_Decl)
+
+         or else (Parent_Kind = N_Object_Declaration
+                   and then (Needs_Finalization (Typ)
+                              or else Is_Special_Return_Object
+                                        (Defining_Identifier (Parent_Node))))
+
+         --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
+         --  assignments in init procs are taken into account.
+
+         or else (Parent_Kind = N_Assignment_Statement
+                   and then Inside_Init_Proc)
+
+         --  Simple return statement, which will be handled in a build-in-place
+         --  fashion and will ultimately be rewritten as an extended return.
+
+         or else Is_Build_In_Place_Aggregate_Return (Parent_Node)
       then
          Set_Expansion_Delayed (N, not Static_Array_Aggregate (N));
          return;
@@ -6149,11 +6096,6 @@ package body Exp_Aggr is
       --  initialized limited components, e.g. tasks. For other cases we
       --  create a temporary. A full analysis for safety of in-place assignment
       --  is delicate.
-
-      --  For allocators we assign to the designated object in place if the
-      --  aggregate meets the same conditions as other in-place assignments.
-      --  In this case the aggregate may not come from source but was created
-      --  for default initialization, e.g. with Initialize_Scalars.
 
       if Requires_Transient_Scope (Typ) then
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
@@ -6175,9 +6117,6 @@ package body Exp_Aggr is
       elsif Parent_Kind = N_Assignment_Statement then
          Maybe_In_Place_OK :=
            In_Place_Assign_OK (N, Get_Base_Object (Name (Parent_Node)));
-
-      elsif Parent_Kind = N_Allocator then
-         Maybe_In_Place_OK := In_Place_Assign_OK (N);
 
       else
          Maybe_In_Place_OK := False;
@@ -6233,10 +6172,6 @@ package body Exp_Aggr is
             Set_Size_Known_At_Compile_Time (Typ, False);
             Set_Etype (Tmp, Typ);
          end if;
-
-      elsif Maybe_In_Place_OK and then Parent_Kind = N_Allocator then
-         Set_Expansion_Delayed (N);
-         return;
 
       --  In the remaining cases the aggregate appears in the RHS of an
       --  assignment, which may be part of the expansion of an object
@@ -9519,17 +9454,16 @@ package body Exp_Aggr is
                Typ_Bounds := Get_Index_Bounds (Typ_Index);
                Obj_Bounds := Get_Index_Bounds (Obj_Index);
 
-               if not Is_OK_Static_Expression (Typ_Bounds.First) or else
-                 not Is_OK_Static_Expression (Obj_Bounds.First) or else
-                 not Is_OK_Static_Expression (Typ_Bounds.Last) or else
-                 not Is_OK_Static_Expression (Obj_Bounds.Last)
-               then
-                  return True;
+               --  We require static bounds and their static matching
 
-               elsif Expr_Value (Typ_Bounds.First)
-                       /= Expr_Value (Obj_Bounds.First)
-                 or else Expr_Value (Typ_Bounds.Last)
-                           /= Expr_Value (Obj_Bounds.Last)
+               if        not Compile_Time_Known_Value (Typ_Bounds.First)
+                 or else not Compile_Time_Known_Value (Obj_Bounds.First)
+                 or else not Compile_Time_Known_Value (Typ_Bounds.Last)
+                 or else not Compile_Time_Known_Value (Obj_Bounds.Last)
+                 or else Expr_Value (Typ_Bounds.First) /=
+                           Expr_Value (Obj_Bounds.First)
+                 or else Expr_Value (Typ_Bounds.Last) /=
+                           Expr_Value (Obj_Bounds.Last)
                then
                   return True;
                end if;
