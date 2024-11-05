@@ -1303,4 +1303,6 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
    the target attribute.  */
 #define TARGET_CLONES_ATTR_SEPARATOR '#'
 
+#define TARGET_HAS_FMV_TARGET_ATTRIBUTE 0
+
 #endif /* ! GCC_RISCV_H */

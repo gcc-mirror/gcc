@@ -13092,6 +13092,10 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P riscv_use_by_pieces_infrastructure_p
 
+#undef TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P \
+  riscv_option_valid_version_attribute_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-riscv.h"
