@@ -168,8 +168,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  not throw and this is enforced by a static assertion.
    *
    *  Functionality is implemented by decomposition into base classes,
-   *  where the derived _Hashtable class is used in _Map_base,
-   *  _Rehash_base, and _Equality base classes to access the
+   *  where the derived _Hashtable class is used in _Map_base and
+   *  _Rehash_base base classes to access the
    *  "this" pointer. _Hashtable_base is used in the base classes as a
    *  non-recursive, fully-completed-type so that detailed nested type
    *  information, such as iterator type and node type, can be
@@ -181,7 +181,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *    - __detail::_Hashtable_base
    *    - __detail::_Map_base
    *    - __detail::_Rehash_base
-   *    - __detail::_Equality
    */
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -196,9 +195,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __detail::_Rehash_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 				    _Hash, _RangeHash, _Unused,
 				    _RehashPolicy, _Traits>,
-      public __detail::_Equality<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-				 _Hash, _RangeHash, _Unused,
-				 _RehashPolicy, _Traits>,
       private __detail::_Hashtable_alloc<
 	__alloc_rebind<_Alloc,
 		       __detail::_Hash_node<_Value,
@@ -293,10 +289,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						   _Hash, _RangeHash, _Unused,
 						   _RehashPolicy, _Traits>;
 
-      using __eq_base = __detail::_Equality<_Key, _Value, _Alloc, _ExtractKey,
-					    _Equal, _Hash, _RangeHash, _Unused,
-					    _RehashPolicy, _Traits>;
-
       using __node_builder_t = __detail::_NodeBuilder<_ExtractKey>;
 
       // Simple RAII type for managing a node containing an element
@@ -352,13 +344,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename _RehashPolicya, typename _Traitsa,
 	       bool _Unique_keysa>
 	friend struct __detail::_Map_base;
-
-      template<typename _Keya, typename _Valuea, typename _Alloca,
-	       typename _ExtractKeya, typename _Equala,
-	       typename _Hasha, typename _RangeHasha, typename _Unuseda,
-	       typename _RehashPolicya, typename _Traitsa,
-	       bool _Unique_keysa>
-	friend struct __detail::_Equality;
 
     public:
       using size_type = typename __hashtable_base::size_type;
@@ -1299,6 +1284,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 #endif // C++17 __glibcxx_node_extract
+
+      bool
+      _M_equal(const _Hashtable& __other) const;
 
     private:
       // Helper rehash method used when keys are unique.
@@ -2797,6 +2785,95 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_bucket_count = __bkt_count;
       _M_buckets = __new_buckets;
     }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
+  // This is for implementing equality comparison for unordered containers,
+  // per N3068, by John Lakos and Pablo Halpern.
+  // Algorithmically, we follow closely the reference implementations therein.
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    bool
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+    _M_equal(const _Hashtable& __other) const
+    {
+      if (size() != __other.size())
+	return false;
+
+      if constexpr (__unique_keys::value)
+	for (auto __x_n = _M_begin(); __x_n; __x_n = __x_n->_M_next())
+	  {
+	    std::size_t __ybkt = __other._M_bucket_index(*__x_n);
+	    auto __prev_n = __other._M_buckets[__ybkt];
+	    if (!__prev_n)
+	      return false;
+
+	    for (__node_ptr __n = static_cast<__node_ptr>(__prev_n->_M_nxt);;
+		 __n = __n->_M_next())
+	      {
+		if (__n->_M_v() == __x_n->_M_v())
+		  break;
+
+		if (!__n->_M_nxt
+		    || __other._M_bucket_index(*__n->_M_next()) != __ybkt)
+		  return false;
+	      }
+	  }
+      else // non-unique keys
+	for (auto __x_n = _M_begin(); __x_n;)
+	  {
+	    std::size_t __x_count = 1;
+	    auto __x_n_end = __x_n->_M_next();
+	    for (; __x_n_end
+		   && key_eq()(_ExtractKey{}(__x_n->_M_v()),
+			       _ExtractKey{}(__x_n_end->_M_v()));
+		 __x_n_end = __x_n_end->_M_next())
+	      ++__x_count;
+
+	    std::size_t __ybkt = __other._M_bucket_index(*__x_n);
+	    auto __y_prev_n = __other._M_buckets[__ybkt];
+	    if (!__y_prev_n)
+	      return false;
+
+	    __node_ptr __y_n = static_cast<__node_ptr>(__y_prev_n->_M_nxt);
+	    for (;;)
+	      {
+		if (key_eq()(_ExtractKey{}(__y_n->_M_v()),
+			     _ExtractKey{}(__x_n->_M_v())))
+		  break;
+
+		auto __y_ref_n = __y_n;
+		for (__y_n = __y_n->_M_next(); __y_n; __y_n = __y_n->_M_next())
+		  if (!__other._M_node_equals(*__y_ref_n, *__y_n))
+		    break;
+
+		if (!__y_n || __other._M_bucket_index(*__y_n) != __ybkt)
+		  return false;
+	      }
+
+	    auto __y_n_end = __y_n;
+	    for (; __y_n_end; __y_n_end = __y_n_end->_M_next())
+	      if (--__x_count == 0)
+		break;
+
+	    if (__x_count != 0)
+	      return false;
+
+	    const_iterator __itx(__x_n), __itx_end(__x_n_end);
+	    const_iterator __ity(__y_n);
+	    if (!std::is_permutation(__itx, __itx_end, __ity))
+	      return false;
+
+	    __x_n = __x_n_end;
+	  }
+
+      return true;
+    }
+#pragma GCC diagnostic pop
 
 #if __cplusplus > 201402L
   template<typename, typename, typename> class _Hash_merge_helper { };
