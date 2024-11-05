@@ -1722,7 +1722,11 @@ gfc_trans_class_init_assign (gfc_code *code)
 	  if (cmp->initializer)
 	    break;
 	  else if (!cmp->next)
-	    return build_empty_stmt (input_location);
+	    {
+	      tmp = build_empty_stmt (input_location);
+	      gfc_add_expr_to_block (&block, tmp);
+	      return gfc_finish_block (&block);
+	    }
 	}
     }
 
