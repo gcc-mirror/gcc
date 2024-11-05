@@ -23651,12 +23651,14 @@ type_unification_real (tree tparms,
 		    /* We replaced all the tparms, substitute again out of
 		       template context.  */
 		    substed = NULL_TREE;
+		  else
+		    processing_template_decl = 1;
 		}
 	      if (!substed)
 		substed = tsubst_template_arg (arg, full_targs, complain,
 					       NULL_TREE);
 
-	      if (!uses_template_parms (substed))
+	      if (!processing_template_decl || !uses_template_parms (substed))
 		arg = convert_template_argument (parm, substed, full_targs,
 						 complain, i, NULL_TREE);
 	      else if (saw_undeduced == 1)
