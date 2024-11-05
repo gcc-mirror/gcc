@@ -11239,6 +11239,8 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
 		   "function returning %qT", valtype);
       /* Remember that this function did return.  */
       current_function_returns_value = 1;
+      /* But suppress NRV  .*/
+      current_function_return_value = error_mark_node;
       /* And signal caller that TREE_NO_WARNING should be set on the
 	 RETURN_EXPR to avoid control reaches end of non-void function
 	 warnings in tree-cfg.cc.  */
@@ -11449,7 +11451,11 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
 
       /* If the conversion failed, treat this just like `return;'.  */
       if (retval == error_mark_node)
-	return retval;
+	{
+	  /* And suppress NRV.  */
+	  current_function_return_value = error_mark_node;
+	  return retval;
+	}
       /* We can't initialize a register from a AGGR_INIT_EXPR.  */
       else if (! cfun->returns_struct
 	       && TREE_CODE (retval) == TARGET_EXPR
