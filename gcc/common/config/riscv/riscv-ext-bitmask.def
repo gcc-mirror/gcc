@@ -1,0 +1,83 @@
+/* RISC-V Extension Bitmask Definitions, corresponding to Extension Bitmask
+   Definitions in RISC-V C API Specification.
+   Copyright (C) 2024 Free Software Foundation, Inc.
+   Contributed by Yangyu Chen (cyy@cyyself.name).
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+#ifndef RISCV_EXT_BITMASK
+#define RISCV_EXT_BITMASK(NAME, GROUP_ID, BIT_POSITION)
+#endif
+
+/* This table should sort the extension by Linux hwprobe order to calculate the
+   minimal feature bits.  */
+
+RISCV_EXT_BITMASK ("i",			0,  8)
+RISCV_EXT_BITMASK ("m",			0, 12)
+RISCV_EXT_BITMASK ("a",			0,  0)
+RISCV_EXT_BITMASK ("f",			0,  5)
+RISCV_EXT_BITMASK ("d",			0,  3)
+RISCV_EXT_BITMASK ("c",			0,  2)
+RISCV_EXT_BITMASK ("v",			0, 21)
+RISCV_EXT_BITMASK ("zba",		0, 27)
+RISCV_EXT_BITMASK ("zbb",		0, 28)
+RISCV_EXT_BITMASK ("zbs",		0, 33)
+RISCV_EXT_BITMASK ("zicboz",		0, 37)
+RISCV_EXT_BITMASK ("zbc",		0, 29)
+RISCV_EXT_BITMASK ("zbkb",		0, 30)
+RISCV_EXT_BITMASK ("zbkc",		0, 31)
+RISCV_EXT_BITMASK ("zbkx",		0, 32)
+RISCV_EXT_BITMASK ("zknd",		0, 41)
+RISCV_EXT_BITMASK ("zkne",		0, 42)
+RISCV_EXT_BITMASK ("zknh",		0, 43)
+RISCV_EXT_BITMASK ("zksed",		0, 44)
+RISCV_EXT_BITMASK ("zksh",		0, 45)
+RISCV_EXT_BITMASK ("zkt",		0, 46)
+RISCV_EXT_BITMASK ("zvbb",		0, 48)
+RISCV_EXT_BITMASK ("zvbc",		0, 49)
+RISCV_EXT_BITMASK ("zvkb",		0, 52)
+RISCV_EXT_BITMASK ("zvkg",		0, 53)
+RISCV_EXT_BITMASK ("zvkned",		0, 54)
+RISCV_EXT_BITMASK ("zvknha",		0, 55)
+RISCV_EXT_BITMASK ("zvknhb",		0, 56)
+RISCV_EXT_BITMASK ("zvksed",		0, 57)
+RISCV_EXT_BITMASK ("zvksh",		0, 58)
+RISCV_EXT_BITMASK ("zvkt",		0, 59)
+RISCV_EXT_BITMASK ("zfh",		0, 35)
+RISCV_EXT_BITMASK ("zfhmin",		0, 36)
+RISCV_EXT_BITMASK ("zihintntl",		0, 39)
+RISCV_EXT_BITMASK ("zvfh",		0, 50)
+RISCV_EXT_BITMASK ("zvfhmin",		0, 51)
+RISCV_EXT_BITMASK ("zfa",		0, 34)
+RISCV_EXT_BITMASK ("ztso",		0, 47)
+RISCV_EXT_BITMASK ("zacas",		0, 26)
+RISCV_EXT_BITMASK ("zicond",		0, 38)
+RISCV_EXT_BITMASK ("zihintpause",	0, 40)
+RISCV_EXT_BITMASK ("zve32x",		0, 60)
+RISCV_EXT_BITMASK ("zve32f",		0, 61)
+RISCV_EXT_BITMASK ("zve64x",		0, 62)
+RISCV_EXT_BITMASK ("zve64f",		0, 63)
+RISCV_EXT_BITMASK ("zve64d",		1,  0)
+RISCV_EXT_BITMASK ("zimop",		1,  1)
+RISCV_EXT_BITMASK ("zca",		1,  2)
+RISCV_EXT_BITMASK ("zcb",		1,  3)
+RISCV_EXT_BITMASK ("zcd",		1,  4)
+RISCV_EXT_BITMASK ("zcf",		1,  5)
+RISCV_EXT_BITMASK ("zcmop",		1,  6)
+RISCV_EXT_BITMASK ("zawrs",		1,  7)
+
+#undef RISCV_EXT_BITMASK
