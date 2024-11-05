@@ -12699,6 +12699,127 @@ riscv_c_mode_for_floating_type (enum tree_index ti)
   return default_mode_for_floating_type (ti);
 }
 
+/* This parses the attribute arguments to target_version in DECL and modifies
+   the feature mask and priority required to select those targets.  */
+static void
+parse_features_for_version (tree decl,
+			    struct riscv_feature_bits &res,
+			    int &priority)
+{
+  tree version_attr = lookup_attribute ("target_version",
+					DECL_ATTRIBUTES (decl));
+  if (version_attr == NULL_TREE)
+    {
+      res.length = 0;
+      priority = 0;
+      return;
+    }
+
+  const char *version_string = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE
+						    (version_attr)));
+  gcc_assert (version_string != NULL);
+  if (strcmp (version_string, "default") == 0)
+    {
+      res.length = 0;
+      priority = 0;
+      return;
+    }
+  struct cl_target_option cur_target;
+  cl_target_option_save (&cur_target, &global_options,
+			 &global_options_set);
+  /* Always set to default option before parsing "arch=+..."  */
+  struct cl_target_option *default_opts
+	= TREE_TARGET_OPTION (target_option_default_node);
+  cl_target_option_restore (&global_options, &global_options_set,
+			    default_opts);
+
+  riscv_process_target_version_attr (TREE_VALUE (version_attr),
+				     DECL_SOURCE_LOCATION (decl));
+
+  priority = global_options.x_riscv_fmv_priority;
+  const char *arch_string = global_options.x_riscv_arch_string;
+  bool parse_res
+    = riscv_minimal_hwprobe_feature_bits (arch_string, &res,
+					  DECL_SOURCE_LOCATION (decl));
+  gcc_assert (parse_res);
+
+  if (arch_string != default_opts->x_riscv_arch_string)
+    free (CONST_CAST (void *, (const void *) arch_string));
+
+  cl_target_option_restore (&global_options, &global_options_set,
+			    &cur_target);
+}
+
+/* Compare priorities of two feature masks.  Return:
+     1: mask1 is higher priority
+    -1: mask2 is higher priority
+     0: masks are equal.
+   Since riscv_feature_bits has total 128 bits to be used as mask, when counting
+   the total 1s in the mask, the 1s in group1 needs to multiply a weight.  */
+static int
+compare_fmv_features (const struct riscv_feature_bits &mask1,
+		      const struct riscv_feature_bits &mask2,
+		      int prio1, int prio2)
+{
+  unsigned length1 = mask1.length, length2 = mask2.length;
+  /* 1.  Compare length, for length == 0 means default version, which should be
+	 the lowest priority).  */
+  if (length1 != length2)
+    return length1 > length2 ? 1 : -1;
+  /* 2.  Compare the priority.  */
+  if (prio1 != prio2)
+    return prio1 > prio2 ? 1 : -1;
+  /* 3.  Compare the total number of 1s in the mask.  */
+  unsigned pop1 = 0, pop2 = 0;
+  for (unsigned i = 0; i < length1; i++)
+    {
+      pop1 += __builtin_popcountll (mask1.features[i]);
+      pop2 += __builtin_popcountll (mask2.features[i]);
+    }
+  if (pop1 != pop2)
+    return pop1 > pop2 ? 1 : -1;
+  /* 4.  Compare the mask bit by bit order.  */
+  for (unsigned i = 0; i < length1; i++)
+    {
+      unsigned long long xor_mask = mask1.features[i] ^ mask2.features[i];
+      if (xor_mask == 0)
+	continue;
+      return TEST_BIT (mask1.features[i], __builtin_ctzll (xor_mask)) ? 1 : -1;
+    }
+  /* 5.  If all bits are equal, return 0.  */
+  return 0;
+}
+
+/* Compare priorities of two version decls.  Return:
+     1: mask1 is higher priority
+    -1: mask2 is higher priority
+     0: masks are equal.  */
+int
+riscv_compare_version_priority (tree decl1, tree decl2)
+{
+  struct riscv_feature_bits mask1, mask2;
+  int prio1, prio2;
+
+  parse_features_for_version (decl1, mask1, prio1);
+  parse_features_for_version (decl2, mask2, prio2);
+
+  return compare_fmv_features (mask1, mask2, prio1, prio2);
+}
+
+/* This function returns true if FN1 and FN2 are versions of the same function,
+   that is, the target_version attributes of the function decls are different.
+   This assumes that FN1 and FN2 have the same signature.  */
+
+bool
+riscv_common_function_versions (tree fn1, tree fn2)
+{
+  if (TREE_CODE (fn1) != FUNCTION_DECL
+      || TREE_CODE (fn2) != FUNCTION_DECL)
+    return false;
+
+  return riscv_compare_version_priority (fn1, fn2) != 0;
+}
+
 /* On riscv we have an ABI defined safe buffer.  This constant is used to
    determining the probe offset for alloca.  */
 
@@ -13095,6 +13216,12 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #undef TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P \
   riscv_option_valid_version_attribute_p
+
+#undef TARGET_COMPARE_VERSION_PRIORITY
+#define TARGET_COMPARE_VERSION_PRIORITY riscv_compare_version_priority
+
+#undef TARGET_OPTION_FUNCTION_VERSIONS
+#define TARGET_OPTION_FUNCTION_VERSIONS riscv_common_function_versions
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
