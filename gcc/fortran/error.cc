@@ -43,7 +43,7 @@ static bool warnings_not_errors = false;
 /* True if the error/warnings should be buffered.  */
 static bool buffered_p;
 
-static gfc_error_buffer error_buffer;
+static gfc_error_buffer *error_buffer;
 static diagnostic_buffer *pp_error_buffer, *pp_warning_buffer;
 
 gfc_error_buffer::gfc_error_buffer ()
@@ -707,7 +707,7 @@ gfc_error_now (const char *gmsgid, ...)
   diagnostic_info diagnostic;
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
-  error_buffer.flag = true;
+  error_buffer->flag = true;
 
   va_start (argp, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &argp, &rich_loc, DK_ERROR);
@@ -842,7 +842,7 @@ gfc_internal_error (const char *gmsgid, ...)
 void
 gfc_clear_error (void)
 {
-  error_buffer.flag = false;
+  error_buffer->flag = false;
   warnings_not_errors = false;
   gfc_clear_diagnostic_buffer (pp_error_buffer);
 }
@@ -853,7 +853,7 @@ gfc_clear_error (void)
 bool
 gfc_error_flag_test (void)
 {
-  return (error_buffer.flag
+  return (error_buffer->flag
 	  || !pp_error_buffer->empty_p ());
 }
 
@@ -864,10 +864,10 @@ gfc_error_flag_test (void)
 bool
 gfc_error_check (void)
 {
-  if (error_buffer.flag
+  if (error_buffer->flag
       || ! pp_error_buffer->empty_p ())
     {
-      error_buffer.flag = false;
+      error_buffer->flag = false;
       global_dc->flush_diagnostic_buffer (*pp_error_buffer);
       return true;
     }
@@ -903,7 +903,7 @@ gfc_move_error_buffer_from_to (gfc_error_buffer * buffer_from,
 void
 gfc_push_error (gfc_error_buffer *err)
 {
-  gfc_move_error_buffer_from_to (&error_buffer, err);
+  gfc_move_error_buffer_from_to (error_buffer, err);
 }
 
 
@@ -912,7 +912,7 @@ gfc_push_error (gfc_error_buffer *err)
 void
 gfc_pop_error (gfc_error_buffer *err)
 {
-  gfc_move_error_buffer_from_to (err, &error_buffer);
+  gfc_move_error_buffer_from_to (err, error_buffer);
 }
 
 
@@ -955,9 +955,8 @@ gfc_diagnostics_init (void)
   global_dc->m_source_printing.caret_chars[0] = '1';
   global_dc->m_source_printing.caret_chars[1] = '2';
   pp_warning_buffer = new diagnostic_buffer (*global_dc);
-  /* pp_error_buffer is statically allocated.  This simplifies memory
-     management when using gfc_push/pop_error. */
-  pp_error_buffer = &(error_buffer.buffer);
+  error_buffer = new gfc_error_buffer ();
+  pp_error_buffer = &(error_buffer->buffer);
 }
 
 void
@@ -970,4 +969,7 @@ gfc_diagnostics_finish (void)
   diagnostic_text_finalizer (global_dc) = gfc_diagnostic_text_finalizer;
   global_dc->m_source_printing.caret_chars[0] = '^';
   global_dc->m_source_printing.caret_chars[1] = '^';
+  delete error_buffer;
+  error_buffer = nullptr;
+  pp_error_buffer = nullptr;
 }
