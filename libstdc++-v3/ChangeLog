@@ -1,3 +1,15 @@
+2024-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR testsuite/113710
+	PR c++/113814
+	* include/bits/stl_pair.h: Remove workaround.
+
+2024-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/117406
+	* testsuite/26_numerics/headers/cmath/117406.cc: Use
+	std::numeric_limits<int>::max() instead of INT_MAX.
+
 2024-11-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/117406

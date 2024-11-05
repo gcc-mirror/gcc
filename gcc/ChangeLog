@@ -1,3 +1,136 @@
+2024-11-04  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv.cc (riscv_use_by_pieces_infrastructure_p):
+	New function.
+	(TARGET_USE_BY_PIECES_INFRASTRUCTURE_P): Define.
+
+2024-11-04  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv-string.cc
+	(use_vector_stringop_p): Add comment.
+	(expand_vec_setmem): Use use_vector_stringop_p instead of
+	check_vectorise_memory_operation.
+
+2024-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (class diagnostic_context): Update leading comment.
+
+2024-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* opts-diagnostic.cc: Apply renamings throughout for clarity: from
+	"name" and "format_name" to "scheme_name", from "m_format" to
+	"m_scheme_name", and from "handler" to "scheme_handler".
+	(output_factory::scheme_handler::get_handler): Pass name by const
+	reference.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* simplify-rtx.cc (extract_ashift_operands_p): Define.
+	(simplify_rotate_op): Likewise.
+	(simplify_context::simplify_binary_operation_1): Use the above in
+	the PLUS, IOR, XOR cases.
+	(test_vector_rotate): Define.
+	(test_vector_ops): Use the above.
+
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/116725
+	* config/i386/sse.md: Fix asm generation.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117398
+	* gimple-range-edge.cc (gimple_outgoing_range::calc_switch_ranges):
+	Check for VARYING and don't call invert () on it.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* simplify-rtx.cc (extract_ashift_operands_p): Define.
+	(simplify_rotate_op): Likewise.
+	(simplify_context::simplify_binary_operation_1): Use the above in
+	the PLUS, IOR, XOR cases.
+	(test_vector_rotate): Define.
+	(test_vector_ops): Use the above.
+
+2024-11-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Fix documentation of LS64 so that it's
+	not implied by Armv8.7-A or Armv9.2-A.
+
+2024-11-04  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add fujitsu-monaka.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc: Include fujitsu-monaka tuning model.
+	* doc/invoke.texi: Document -mcpu=fujitsu-monaka.
+	* config/aarch64/tuning_models/fujitsu_monaka.h: New file.
+
+2024-11-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Update
+	DR inits after adjusting the epilog metadata.
+
+2024-11-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): A DRs
+	main stmt vinfo dr_aux should refer to a pattern stmt
+	which is how move_dr sets this up.  We shouldn't undo this.
+
+2024-11-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop): Move lowest_th
+	compute until after epilogue_vinfos is final.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Simplify (rotate:HI x:HI, 8) -> (bswap:HI x:HI).
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_emit_opt_vec_rotate): Add
+	generation of XAR sequences when possible.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* expmed.h (expand_rotate_as_vec_perm): Declare.
+	* expmed.cc (expand_rotate_as_vec_perm): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_emit_opt_vec_rotate):
+	Declare prototype.
+	* config/aarch64/aarch64.cc (aarch64_emit_opt_vec_rotate): Implement.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_rotate_imm<mode>):
+	Call the above.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_rotate_imm<mode>):
+	New define_insn_and_split.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/iterators.md (SVE_ASIMD_FULL_I): New mode iterator.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_xar<mode>):
+	Use SVE_ASIMD_FULL_I modes.  Use ROTATE code for the rotate step.
+	Adjust output logic.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svxar_impl): Define.
+	(svxar): Use the above.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* simplify-rtx.cc (extract_ashift_operands_p): Define.
+	(simplify_rotate_op): Likewise.
+	(simplify_context::simplify_binary_operation_1): Use the above in
+	the PLUS, IOR, XOR cases.
+	(test_vector_rotate): Define.
+	(test_vector_ops): Use the above.
+
 2024-11-03  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/115023

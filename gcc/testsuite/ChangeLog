@@ -1,3 +1,106 @@
+2024-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/117300
+	* g++.dg/simulate-thread/simulate-thread.exp: Set DEBUGINFOD_URLS
+	to "" and restore it if it exists.
+	* gcc.dg/simulate-thread/simulate-thread.exp: Likewise.
+
+2024-11-04  H.J. Lu  <hjl.tools@gmail.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/117300
+	* g++.dg/guality/guality.exp: Set DEBUGINFOD_URLS to "" and
+	restore it if it exists.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+
+2024-11-04  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113469.c: Expect mf2 setmem.
+	* gcc.target/riscv/rvv/base/setmem-2.c: Update f1 to expect
+	straight-line vector memset.
+	* gcc.target/riscv/rvv/base/setmem-3.c: Likewise.
+
+2024-11-04  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/rvv/base/setmem-3.c: Expect smaller lmul.
+
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: New test.
+	* jit.dg/test-convert-vector.c: New test.
+
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: Mention test-readonly.c.
+	* jit.dg/test-error-assign-readonly.c: New test.
+	* jit.dg/test-readonly.c: New test.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr51534.c: Ensure -mfloat-abi=hard is used.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/acle/data-intrinsics-assembly.c: Use
+	effective-target arm_arch_v6_arm.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/vect-early-break-cbranch.c: Ignore exact
+	branch.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/armv8_2-fp16-neon-2.c: Expect 3 vdup.16 q* r*
+	when in arm_hf_eabi else 2.
+
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/116725
+	* gcc.target/i386/pr116725.c: Add test using those AVX builtins.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117398
+	* gcc.dg/pr117398.c: New.
+
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array7.ads: New test.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/rot_to_bswap.c: New test.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/rotate_xar_1.c: New test.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/vec-rot-exec.c: New test.
+	* gcc.target/aarch64/simd/pr117048_2.c: New test.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	* gcc.target/aarch64/simd/pr117048.c: New test.
+
+2024-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/xar_neon_modes.c: New test.
+	* gcc.target/aarch64/xar_v2di_nonsve.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_s16.c: Scan for EOR rather than
+	XAR.
+	* gcc.target/aarch64/sve2/acle/asm/xar_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/xar_u8.c: Likewise.
+
 2024-11-03  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/117363

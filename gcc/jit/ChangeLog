@@ -1,3 +1,46 @@
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_30): New ABI tag.
+	* docs/topics/expressions.rst: Document gcc_jit_context_convert_vector.
+	* jit-playback.cc (convert_vector): New method.
+	* jit-playback.h: New method.
+	* jit-recording.cc (recording::context::new_convert_vector,
+	recording::convert_vector::replay_into,
+	recording::convert_vector::visit_children,
+	recording::convert_vector::make_debug_string,
+	recording::convert_vector::write_reproducer): New methods.
+	* jit-recording.h (class convert_vector): New class.
+	(context::new_convert_vector): New method.
+	* libgccjit.cc (gcc_jit_context_convert_vector): New function.
+	* libgccjit.h (gcc_jit_context_convert_vector): New function.
+	* libgccjit.map: New function.
+
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_29): New ABI tag.
+	* docs/topics/expressions.rst: Document gcc_jit_global_set_readonly.
+	* jit-playback.cc (global_new_decl, new_global,
+	new_global_initialized): New parameter readonly.
+	* jit-playback.h (global_new_decl, new_global,
+	new_global_initialized): New parameter readonly.
+	* jit-recording.cc (recording::global::replay_into): Use
+	m_readonly.
+	(recording::global::write_reproducer): Dump reproducer for
+	gcc_jit_global_set_readonly.
+	* jit-recording.h (get_readonly, set_readonly): New methods.
+	(m_readonly): New attribute.
+	* libgccjit.cc (gcc_jit_global_set_readonly): New function.
+	(gcc_jit_block_add_assignment): Check that we don't assign to a
+	readonly variable.
+	* libgccjit.h (gcc_jit_global_set_readonly): New function.
+	(LIBGCCJIT_HAVE_gcc_jit_global_set_readonly): New define.
+	* libgccjit.map: New function.
+
+2024-11-04  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-builtins.cc (ensure_optimization_builtins_exist): Add
+	missing builtins.
+
 2024-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613
