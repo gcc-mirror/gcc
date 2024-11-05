@@ -26,12 +26,12 @@
  *  This is a Standard C++ Library header.
  */
 
+#ifndef _GLIBCXX_CTGMATH
+#define _GLIBCXX_CTGMATH 1
+
 #ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
 #endif
-
-#ifndef _GLIBCXX_CTGMATH
-#define _GLIBCXX_CTGMATH 1
 
 #if __cplusplus < 201103L
 #  include <bits/c++0x_warning.h>
