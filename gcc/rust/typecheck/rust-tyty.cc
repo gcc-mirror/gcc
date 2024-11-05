@@ -3543,7 +3543,17 @@ bool
 PlaceholderType::can_resolve () const
 {
   auto context = Resolver::TypeCheckContext::get ();
-  return context->lookup_associated_type_mapping (get_ty_ref (), nullptr);
+
+  BaseType *lookup = nullptr;
+  HirId mapping;
+
+  if (!context->lookup_associated_type_mapping (get_ty_ref (), &mapping))
+    return false;
+
+  if (!context->lookup_type (mapping, &lookup))
+    return false;
+
+  return lookup != nullptr;
 }
 
 BaseType *
