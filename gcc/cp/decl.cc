@@ -16191,6 +16191,36 @@ grok_op_properties (tree decl, bool complain)
 	    }
 	}
 
+      /* Check for replaceable global new/delete operators with
+	 const std::nothrow_t & last argument, other replaceable global
+	 new/delete operators are marked in cxx_init_decl_processing.  */
+      if (CP_DECL_CONTEXT (decl) == global_namespace)
+	{
+	  tree args = argtypes;
+	  if (args
+	      && args != void_list_node
+	      && same_type_p (TREE_VALUE (args),
+			      (op_flags & OVL_OP_FLAG_DELETE)
+			      ? ptr_type_node : size_type_node))
+	    {
+	      args = TREE_CHAIN (args);
+	      if (aligned_allocation_fn_p (decl))
+		args = TREE_CHAIN (args);
+	      if (args
+		  && args != void_list_node
+		  && TREE_CHAIN (args) == void_list_node)
+		{
+		  tree t = TREE_VALUE (args);
+		  if (TYPE_REF_P (t)
+		      && !TYPE_REF_IS_RVALUE (t)
+		      && (t = TREE_TYPE (t))
+		      && TYPE_QUALS (t) == TYPE_QUAL_CONST
+		      && is_std_class (t, "nothrow_t"))
+		    DECL_IS_REPLACEABLE_OPERATOR (decl) = 1;
+		}
+	    }
+	}
+
       if (op_flags & OVL_OP_FLAG_DELETE)
 	{
 	  DECL_SET_IS_OPERATOR_DELETE (decl, true);
