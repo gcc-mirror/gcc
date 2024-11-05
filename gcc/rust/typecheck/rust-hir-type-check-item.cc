@@ -231,7 +231,8 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
   auto *type = new TyTy::ADTType (
-    struct_decl.get_mappings ().get_hirid (), mappings.get_next_hir_id (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_mappings ().get_hirid (),
     struct_decl.get_identifier ().as_string (), ident,
     TyTy::ADTType::ADTKind::TUPLE_STRUCT, std::move (variants),
     std::move (substitutions), repr,
@@ -312,7 +313,8 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
   auto *type = new TyTy::ADTType (
-    struct_decl.get_mappings ().get_hirid (), mappings.get_next_hir_id (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_mappings ().get_hirid (),
     struct_decl.get_identifier ().as_string (), ident,
     TyTy::ADTType::ADTKind::STRUCT_STRUCT, std::move (variants),
     std::move (substitutions), repr,
@@ -369,7 +371,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   // multi variant ADT
   auto *type
     = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
-			 mappings.get_next_hir_id (),
+			 enum_decl.get_mappings ().get_hirid (),
 			 enum_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::ENUM, std::move (variants),
 			 std::move (substitutions));
@@ -440,7 +442,7 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 
   auto *type
     = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),
-			 mappings.get_next_hir_id (),
+			 union_decl.get_mappings ().get_hirid (),
 			 union_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::UNION, std::move (variants),
 			 std::move (substitutions));

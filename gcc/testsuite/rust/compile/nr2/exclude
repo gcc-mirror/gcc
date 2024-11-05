@@ -223,4 +223,6 @@ iflet.rs
 issue-3033.rs
 issue-3009.rs
 issue-2323.rs
+issue-2953-1.rs
+issue-2953-2.rs
 # please don't delete the trailing newline
