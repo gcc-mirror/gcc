@@ -28650,7 +28650,7 @@
    (set_attr "btver2_decode" "vector") 
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "maskload<mode><sseintvecmodelower>"
+(define_expand "maskload<mode><sseintvecmodelower>_1"
   [(set (match_operand:V48_128_256 0 "register_operand")
 	(unspec:V48_128_256
 	  [(match_operand:<sseintvecmode> 2 "register_operand")
@@ -28658,13 +28658,28 @@
 	  UNSPEC_MASKMOV))]
   "TARGET_AVX")
 
+(define_expand "maskload<mode><sseintvecmodelower>"
+  [(set (match_operand:V48_128_256 0 "register_operand")
+       (unspec:V48_128_256
+         [(match_operand:<sseintvecmode> 2 "register_operand")
+          (match_operand:V48_128_256 1 "memory_operand")
+          (match_operand:V48_128_256 3 "const0_operand")]
+         UNSPEC_MASKMOV))]
+  "TARGET_AVX"
+{
+  emit_insn (gen_maskload<mode><sseintvecmodelower>_1 (operands[0],
+						       operands[1],
+						       operands[2]));
+  DONE;
+})
+
 (define_expand "maskload<mode><avx512fmaskmodelower>"
   [(set (match_operand:V48_AVX512VL 0 "register_operand")
 	(vec_merge:V48_AVX512VL
 	  (unspec:V48_AVX512VL
 	    [(match_operand:V48_AVX512VL 1 "memory_operand")]
 	    UNSPEC_MASKLOAD)
-	  (match_dup 0)
+          (match_operand:V48_AVX512VL 3 "const0_operand")
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512F")
 
@@ -28674,7 +28689,7 @@
 	  (unspec:VI12HFBF_AVX512VL
 	    [(match_operand:VI12HFBF_AVX512VL 1 "memory_operand")]
 	    UNSPEC_MASKLOAD)
-	  (match_dup 0)
+          (match_operand:VI12HFBF_AVX512VL 3 "const0_operand")
 	  (match_operand:<avx512fmaskmode> 2 "register_operand")))]
   "TARGET_AVX512BW")
 
