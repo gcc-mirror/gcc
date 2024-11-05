@@ -20,6 +20,10 @@
 #include "rust-ast.h"
 #include "rust-hir.h"
 #include "rust-hir-item.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 namespace Rust {
 namespace Privacy {
@@ -61,7 +65,22 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
 	     "cannot use non-module path as privacy restrictor");
 
   NodeId ref_node_id = UNKNOWN_NODEID;
-  if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (ast_node_id))
+	{
+	  ref_node_id = *id;
+	}
+      else
+	{
+	  invalid_path.emit ();
+	  return false;
+	}
+    }
+  else if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
     {
       invalid_path.emit ();
       return false;
