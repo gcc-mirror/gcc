@@ -880,11 +880,9 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
   if (lhs.value != error_mark_node
       && rhs.value != error_mark_node)
     {
-      /* If we parsed a comparison or an identifier and the next token
-	 is a '?' then parse a conditional expression.  */
-      if ((COMPARISON_CLASS_P (rhs.value)
-	   || SSA_VAR_P (rhs.value))
-	  && c_parser_next_token_is (parser, CPP_QUERY))
+      /* If we parsed an identifier and the next token  is a '?' then parse
+	 a conditional expression.  */
+      if (SSA_VAR_P (rhs.value) && c_parser_next_token_is (parser, CPP_QUERY))
 	{
 	  struct c_expr trueval, falseval;
 	  c_parser_consume_token (parser);
