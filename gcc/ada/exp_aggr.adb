@@ -296,13 +296,6 @@ package body Exp_Aggr is
    --    Indexes is the current list of expressions used to index the object we
    --    are writing into.
 
-   procedure Convert_Array_Aggr_In_Allocator (N : Node_Id; Target : Node_Id);
-   --  If the aggregate appears within an allocator and can be expanded in
-   --  place, this routine generates the individual assignments to components
-   --  of the designated object. This is an optimization over the general
-   --  case, where a temporary is first created on the stack and then used to
-   --  construct the allocated object on the heap.
-
    procedure Convert_To_Positional
      (N                 : Node_Id;
       Handle_Bit_Packed : Boolean := False);
@@ -3519,10 +3512,7 @@ package body Exp_Aggr is
           Make_Explicit_Dereference (Loc, New_Occurrence_Of (Temp, Loc)));
 
    begin
-      if Is_Array_Type (Typ) then
-         Convert_Array_Aggr_In_Allocator (N, Occ);
-
-      elsif Has_Default_Init_Comps (Aggr) then
+      if Has_Default_Init_Comps (Aggr) then
          declare
             Init_Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
 
@@ -3741,66 +3731,6 @@ package body Exp_Aggr is
 
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
-
-   -------------------------------------
-   -- Convert_Array_Aggr_In_Allocator --
-   -------------------------------------
-
-   procedure Convert_Array_Aggr_In_Allocator (N : Node_Id; Target : Node_Id) is
-      Aggr : constant Node_Id   := Unqualify (Expression (N));
-      Typ  : constant Entity_Id := Etype (Aggr);
-      Ctyp : constant Entity_Id := Component_Type (Typ);
-
-      Aggr_Code : List_Id;
-      New_Aggr  : Node_Id;
-
-   begin
-      --  The target is an explicit dereference of the allocated object
-
-      --  If the assignment can be done directly by the back end, then
-      --  reset Set_Expansion_Delayed and do not expand further.
-
-      if not CodePeer_Mode
-        and then Aggr_Assignment_OK_For_Backend (Aggr)
-      then
-         New_Aggr := New_Copy_Tree (Aggr);
-         Set_Expansion_Delayed (New_Aggr, False);
-
-         --  In the case of Target's type using the Designated_Storage_Model
-         --  aspect with a Copy_To procedure, insert a temporary and have the
-         --  back end handle the assignment to it. Copy the result to the
-         --  original target.
-
-         if Has_Designated_Storage_Model_Aspect
-              (Etype (Prefix (Expression (Target))))
-           and then Present (Storage_Model_Copy_To
-                               (Storage_Model_Object
-                                  (Etype (Prefix (Expression (Target))))))
-         then
-            Aggr_Code :=
-              Build_Assignment_With_Temporary (Target, Typ, New_Aggr);
-
-         else
-            Aggr_Code :=
-              New_List (
-                Make_OK_Assignment_Statement (Sloc (New_Aggr),
-                  Name       => Target,
-                  Expression => New_Aggr));
-         end if;
-
-      --  Or else, generate component assignments to it, as for an aggregate
-      --  that appears on the right-hand side of an assignment statement.
-      else
-         Aggr_Code :=
-           Build_Array_Aggr_Code (Aggr,
-             Ctype       => Ctyp,
-             Index       => First_Index (Typ),
-             Into        => Target,
-             Scalar_Comp => Is_Scalar_Type (Ctyp));
-      end if;
-
-      Insert_Actions (N, Aggr_Code);
-   end Convert_Array_Aggr_In_Allocator;
 
    ------------------------
    -- In_Place_Assign_OK --
@@ -9028,11 +8958,29 @@ package body Exp_Aggr is
             New_Aggr := New_Copy_Tree (N);
             Set_Expansion_Delayed (New_Aggr, False);
 
-            Aggr_Code :=
-              New_List (
-                Make_OK_Assignment_Statement (Sloc (New_Aggr),
-                  Name       => Target,
-                  Expression => New_Aggr));
+            --  In case of Target's type having the Designated_Storage_Model
+            --  aspect with a Copy_To procedure, first insert a temporary and
+            --  have the back end handle the assignment to it, then copy the
+            --  result to the original target.
+
+            if Nkind (Target) = N_Unchecked_Type_Conversion
+              and then Nkind (Expression (Target)) = N_Explicit_Dereference
+              and then Has_Designated_Storage_Model_Aspect
+                         (Etype (Prefix (Expression (Target))))
+              and then Present (Storage_Model_Copy_To
+                                  (Storage_Model_Object
+                                     (Etype (Prefix (Expression (Target))))))
+            then
+               Aggr_Code :=
+                 Build_Assignment_With_Temporary (Target, Typ, New_Aggr);
+
+            else
+               Aggr_Code :=
+                 New_List (
+                   Make_OK_Assignment_Statement (Sloc (New_Aggr),
+                     Name       => Target,
+                     Expression => New_Aggr));
+            end if;
 
          --  Or else, generate component assignments to it
 
@@ -9043,8 +8991,7 @@ package body Exp_Aggr is
                  Ctype       => Component_Type (Typ),
                  Index       => First_Index (Typ),
                  Into        => Target,
-                 Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)),
-                 Indexes     => No_List);
+                 Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)));
          end if;
 
       --  Directly or indirectly (e.g. access protected procedure) a record
