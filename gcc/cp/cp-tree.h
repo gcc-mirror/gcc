@@ -715,7 +715,7 @@ struct GTY(()) template_parm_index {
 };
 
 struct GTY(()) ptrmem_cst {
-  struct tree_common common;
+  struct tree_typed typed;
   tree member;
   location_t locus;
 };
@@ -1378,14 +1378,14 @@ struct GTY (()) tree_deferred_noexcept {
   (((struct tree_static_assert *)STATIC_ASSERT_CHECK (NODE))->location)
 
 struct GTY (()) tree_static_assert {
-  struct tree_common common;
+  struct tree_base base;
   tree condition;
   tree message;
   location_t location;
 };
 
 struct GTY (()) tree_argument_pack_select {
-  struct tree_common common;
+  struct tree_base base;
   tree argument_pack;
   int index;
 };
@@ -1425,7 +1425,7 @@ extern const struct cp_trait cp_traits[];
   (((struct tree_trait_expr *)TRAIT_EXPR_CHECK (NODE))->locus)
 
 struct GTY (()) tree_trait_expr {
-  struct tree_common common;
+  struct tree_typed typed;
   tree type1;
   tree type2;
   location_t locus;
