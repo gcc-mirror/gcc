@@ -1296,11 +1296,13 @@
 
 ;; After all the combinations and propagations of ROTATE have been
 ;; attempted split any remaining vector rotates into SHL + USRA sequences.
+;; Don't match this after reload as the various possible sequence for this
+;; require temporary registers.
 (define_insn_and_split "*aarch64_simd_rotate_imm<mode>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=&w")
 	(rotate:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		      (match_operand:VDQ_I 2 "aarch64_simd_lshift_imm")))]
-  "TARGET_SIMD"
+  "TARGET_SIMD && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(set (match_dup 3)
@@ -1316,7 +1318,7 @@
     if (aarch64_emit_opt_vec_rotate (operands[0], operands[1], operands[2]))
       DONE;
 
-    operands[3] = reload_completed ? operands[0] : gen_reg_rtx (<MODE>mode);
+    operands[3] = gen_reg_rtx (<MODE>mode);
     rtx shft_amnt = unwrap_const_vec_duplicate (operands[2]);
     int bitwidth = GET_MODE_UNIT_SIZE (<MODE>mode) * BITS_PER_UNIT;
     operands[4]

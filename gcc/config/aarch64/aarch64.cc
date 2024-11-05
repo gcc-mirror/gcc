@@ -16030,6 +16030,8 @@ aarch64_emit_opt_vec_rotate (rtx dst, rtx reg, rtx amnt_vec)
   gcc_assert (CONST_INT_P (amnt));
   HOST_WIDE_INT rotamnt = UINTVAL (amnt);
   machine_mode mode = GET_MODE (reg);
+  /* Don't end up here after reload.  */
+  gcc_assert (can_create_pseudo_p ());
   /* Rotates by half the element width map down to REV* instructions and should
      always be preferred when possible.  */
   if (rotamnt == GET_MODE_UNIT_BITSIZE (mode) / 2
@@ -16037,11 +16039,10 @@ aarch64_emit_opt_vec_rotate (rtx dst, rtx reg, rtx amnt_vec)
     return true;
   /* 64 and 128-bit vector modes can use the XAR instruction
      when available.  */
-  else if (can_create_pseudo_p ()
-	   && ((TARGET_SHA3 && mode == V2DImode)
-	       || (TARGET_SVE2
-		   && (known_eq (GET_MODE_SIZE (mode), 8)
-		       || known_eq (GET_MODE_SIZE (mode), 16)))))
+  else if ((TARGET_SHA3 && mode == V2DImode)
+	   || (TARGET_SVE2
+	       && (known_eq (GET_MODE_SIZE (mode), 8)
+		   || known_eq (GET_MODE_SIZE (mode), 16))))
     {
       rtx zeroes = aarch64_gen_shareable_zero (mode);
       rtx xar_op
