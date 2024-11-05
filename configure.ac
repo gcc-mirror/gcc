@@ -991,6 +991,13 @@ case "${target}" in
     ;;
 esac
 
+# The ARM simulator has been deprecated for all ARM targets.
+case "${target}" in
+  arm*-*-*)
+    noconfigdirs="$noconfigdirs sim"
+    ;;
+esac
+
 case "${target}" in
   *-*-chorusos)
     ;;
@@ -1002,7 +1009,7 @@ case "${target}" in
     ;;
   arm-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
-    noconfigdirs="$noconfigdirs sim target-rda"
+    noconfigdirs="$noconfigdirs target-rda"
     ;;
   powerpc-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
