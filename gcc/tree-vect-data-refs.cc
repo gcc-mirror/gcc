@@ -4319,6 +4319,13 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
       masked_p = (ifn == IFN_MASK_LOAD || ifn == IFN_MASK_STORE);
     }
 
+  /* ???  For epilogues we adjust DR_REF to make the following stmt-based
+     analysis work, but this adjustment doesn't work for epilogues of
+     epilogues during transform, so disable gather/scatter in that case.  */
+  if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+      && LOOP_VINFO_EPILOGUE_P (LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo)))
+    return false;
+
   /* True if we should aim to use internal functions rather than
      built-in functions.  */
   bool use_ifn_p = (DR_IS_READ (dr)
