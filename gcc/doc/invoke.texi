@@ -21653,11 +21653,11 @@ and the features that they enable by default:
 @item @samp{armv8-a} @tab Armv8-A @tab @samp{+fp}, @samp{+simd}
 @item @samp{armv8.1-a} @tab Armv8.1-A @tab @samp{armv8-a}, @samp{+crc}, @samp{+lse}, @samp{+rdma}
 @item @samp{armv8.2-a} @tab Armv8.2-A @tab @samp{armv8.1-a}
-@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}, @samp{+pauth}
-@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+flagm}, @samp{+fp16fml}, @samp{+dotprod}
-@item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
+@item @samp{armv8.3-a} @tab Armv8.3-A @tab @samp{armv8.2-a}, @samp{+pauth}, @samp{+fcma}, @samp{+jscvt}
+@item @samp{armv8.4-a} @tab Armv8.4-A @tab @samp{armv8.3-a}, @samp{+flagm}, @samp{+fp16fml}, @samp{+dotprod}, @samp{+rcpc2}
+@item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}, @samp{+frintts}, @samp{+flagm2}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
-@item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}
+@item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+wfxt}, @samp{+xs}
 @item @samp{armv8.8-a} @tab Armv8.8-a @tab @samp{armv8.7-a}, @samp{+mops}
 @item @samp{armv8.9-a} @tab Armv8.9-a @tab @samp{armv8.8-a}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
@@ -21997,6 +21997,8 @@ Enable the instructions to accelerate memory operations like @code{memcpy},
 @option{-march=armv8.8-a}
 @item flagm
 Enable the Flag Manipulation instructions Extension.
+@item flagm2
+Enable the FlagM2 flag conversion instructions.
 @item pauth
 Enable the Pointer Authentication Extension.
 @item cssc
@@ -22020,6 +22022,16 @@ instructions.
 @item sme2p1
 Enable the Scalable Matrix Extension version 2.1.  This also enables SME2
 instructions.
+@item fcma
+Enable the complex number SIMD extensions.
+@item jscvt
+Enable the @code{fjcvtzs} JavaScript conversion instruction.
+@item frintts
+Enable floating-point round to integral value instructions.
+@item wfxt
+Enable @code{wfet} and @code{wfit} instructions.
+@item xs
+Enable the XS memory attribute extension.
 @item lse128
 Enable the LSE128 128-bit atomic instructions extension.  This also
 enables LSE instructions.
@@ -22030,6 +22042,8 @@ This also enables the LSE128 extension.
 Enable support for Armv9.4-a Guarded Control Stack extension.
 @item the
 Enable support for Armv8.9-a/9.4-a translation hardening extension.
+@item rcpc2
+Enable the RCpc2 extension.
 @item rcpc3
 Enable the RCpc3 (Release Consistency) extension.
 @item fp8
