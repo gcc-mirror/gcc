@@ -12820,6 +12820,42 @@ riscv_common_function_versions (tree fn1, tree fn2)
   return riscv_compare_version_priority (fn1, fn2) != 0;
 }
 
+/* Implement TARGET_MANGLE_DECL_ASSEMBLER_NAME, to add function multiversioning
+   suffixes.  */
+
+tree
+riscv_mangle_decl_assembler_name (tree decl, tree id)
+{
+  /* For function version, add the target suffix to the assembler name.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (decl))
+    {
+      std::string name = IDENTIFIER_POINTER (id) + std::string (".");
+      tree target_attr = lookup_attribute ("target_version",
+					   DECL_ATTRIBUTES (decl));
+
+      if (target_attr == NULL_TREE)
+	{
+	  name += "default";
+	  return get_identifier (name.c_str ());
+	}
+
+      const char *version_string = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE
+							(target_attr)));
+
+      /* Replace non-alphanumeric characters with underscores as the suffix.  */
+      for (const char *c = version_string; *c; c++)
+	name += ISALNUM (*c) == 0 ? '_' : *c;
+
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	SET_DECL_RTL (decl, NULL);
+
+      id = get_identifier (name.c_str ());
+    }
+
+  return id;
+}
+
 /* On riscv we have an ABI defined safe buffer.  This constant is used to
    determining the probe offset for alloca.  */
 
@@ -13222,6 +13258,9 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 
 #undef TARGET_OPTION_FUNCTION_VERSIONS
 #define TARGET_OPTION_FUNCTION_VERSIONS riscv_common_function_versions
+
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME riscv_mangle_decl_assembler_name
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
