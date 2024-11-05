@@ -301,12 +301,12 @@ package body Errout is
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
    begin
-      Error_Msg (Msg, To_Span (Flag_Location), Current_Node);
+      Error_Msg (Msg, To_Span (Flag_Location), Empty);
    end Error_Msg;
 
    procedure Error_Msg (Msg : String; Flag_Span : Source_Span) is
    begin
-      Error_Msg (Msg, Flag_Span, Current_Node);
+      Error_Msg (Msg, Flag_Span, Empty);
    end Error_Msg;
 
    procedure Error_Msg

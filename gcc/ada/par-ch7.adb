@@ -127,7 +127,6 @@ package body Ch7 is
          Scopes (Scope.Last).Sloc := Token_Ptr;
          Name_Node := P_Defining_Program_Unit_Name;
          Scopes (Scope.Last).Labl := Name_Node;
-         Current_Node := Name_Node;
 
          if Aspect_Specifications_Present then
             Aspect_Sloc := Token_Ptr;
@@ -173,7 +172,6 @@ package body Ch7 is
          Scopes (Scope.Last).Sloc := Token_Ptr;
          Name_Node := P_Defining_Program_Unit_Name;
          Scopes (Scope.Last).Labl := Name_Node;
-         Current_Node := Name_Node;
 
          --  Case of renaming declaration
 
