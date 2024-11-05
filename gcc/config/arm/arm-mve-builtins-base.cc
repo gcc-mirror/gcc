@@ -203,11 +203,6 @@ class vstrq_impl : public store_truncating
 public:
   using store_truncating::store_truncating;
 
-  unsigned int call_properties (const function_instance &) const override
-  {
-    return CP_WRITE_MEMORY;
-  }
-
   rtx expand (function_expander &e) const override
   {
     insn_code icode;
@@ -368,11 +363,6 @@ class vldrq_impl : public load_extending
 {
 public:
   using load_extending::load_extending;
-
-  unsigned int call_properties (const function_instance &) const override
-  {
-    return CP_READ_MEMORY;
-  }
 
   rtx expand (function_expander &e) const override
   {
