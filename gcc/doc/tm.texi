@@ -10822,6 +10822,13 @@ the function declaration to hold a pointer to a target-specific
 @code{struct cl_target_option} structure.
 @end deftypefn
 
+@defmac TARGET_CLONES_ATTR_SEPARATOR
+Define this char-typed macro to select a character that separates each
+target specific attributes from the @code{attribute(target_clones("..."))}
+attribute string.  This macro should be carefully chosen to avoid conflicts
+with the target specific attributes.  The default value is @code{','}.
+@end defmac
+
 @deftypefn {Target Hook} void TARGET_OPTION_SAVE (struct cl_target_option *@var{ptr}, struct gcc_options *@var{opts}, struct gcc_options *@var{opts_set})
 This hook is called to save any additional target-specific information
 in the @code{struct cl_target_option} structure for function-specific

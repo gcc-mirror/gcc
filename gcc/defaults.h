@@ -874,6 +874,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_HAS_FMV_TARGET_ATTRIBUTE 1
 #endif
 
+/* Select a attribute separator for function multiversioning.  */
+#ifndef TARGET_CLONES_ATTR_SEPARATOR
+#define TARGET_CLONES_ATTR_SEPARATOR ','
+#endif
 
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no

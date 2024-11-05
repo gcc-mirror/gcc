@@ -15229,7 +15229,9 @@ get_target_clone_attr_len (tree arglist)
       const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
       size_t len = strlen (str);
       str_len_sum += len + 1;
-      for (const char *p = strchr (str, ','); p; p = strchr (p + 1, ','))
+      for (const char *p = strchr (str, TARGET_CLONES_ATTR_SEPARATOR);
+	   p;
+	   p = strchr (p + 1, TARGET_CLONES_ATTR_SEPARATOR))
 	argnum++;
       argnum++;
     }

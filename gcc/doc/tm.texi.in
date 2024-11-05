@@ -7101,6 +7101,13 @@ on this implementation detail.
 
 @hook TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P
 
+@defmac TARGET_CLONES_ATTR_SEPARATOR
+Define this char-typed macro to select a character that separates each
+target specific attributes from the @code{attribute(target_clones("..."))}
+attribute string.  This macro should be carefully chosen to avoid conflicts
+with the target specific attributes.  The default value is @code{','}.
+@end defmac
+
 @hook TARGET_OPTION_SAVE
 
 @hook TARGET_OPTION_RESTORE

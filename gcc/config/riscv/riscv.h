@@ -1298,4 +1298,9 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 		STACK_BOUNDARY / BITS_PER_UNIT)		   \
     : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
 
+/* According to the RISC-V C API, the arch string may contains ','. To avoid
+   the conflict with the default separator, we choose '#' as the separator for
+   the target attribute.  */
+#define TARGET_CLONES_ATTR_SEPARATOR '#'
+
 #endif /* ! GCC_RISCV_H */
