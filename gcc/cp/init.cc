@@ -2980,8 +2980,9 @@ std_placement_new_fn_p (tree alloc_fn)
   if (DECL_NAMESPACE_SCOPE_P (alloc_fn))
     {
       tree first_arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
-      if ((TREE_VALUE (first_arg) == ptr_type_node)
-	  && TREE_CHAIN (first_arg) == void_list_node)
+      if (first_arg
+	  && (TREE_VALUE (first_arg) == ptr_type_node)
+	  && (TREE_CHAIN (first_arg) == void_list_node))
 	return true;
     }
   return false;
