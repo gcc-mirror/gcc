@@ -207,4 +207,4 @@ FOO2 (int64_t, imul, *)
 /* { dg-final { scan-assembler-times "ror(?:b|l|w|q)\[^\n\r]*1, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "rol(?:b|l|w|q)\[^\n\r]*1, %(?:|r|e)di(?:|l), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "imul(?:l|q)\[^\n\r]%(?:|r|e)(?:|s|d)i, %(?:r|e)(?:|s|d)i, %(?:|r|e)ax" 3 } } */
-/* { dg-final { scan-assembler-times "imul(?:l|w|q)\[^\n\r]\\(%rdi\\), %(?:|r|e)si, %(?:|r|e)ax" 3 } } */
+/* { dg-final { scan-assembler-times "imul(?:l|w|q)\[^\n\r]\\(%(?:r|e)di\\), %(?:|r|e)si, %(?:|r|e)ax" 3 } } */
