@@ -1,3 +1,9 @@
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117398
+	* gimple-range-edge.cc (gimple_outgoing_range::calc_switch_ranges):
+	Check for VARYING and don't call invert () on it.
+
 2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/cmpccxaddintrin.h (_cmpccxadd_epi32): Do not do

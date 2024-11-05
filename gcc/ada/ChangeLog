@@ -1,3 +1,10 @@
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Selected_Length_Checks.Get_E_Length): For a
+	component of a record with discriminants and if the expression is
+	a selected component, try to build an actual subtype from its
+	prefix instead of from the discriminal.
+
 2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/116551
