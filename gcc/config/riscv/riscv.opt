@@ -523,6 +523,9 @@ Mask(XSFVCP) Var(riscv_sifive_subext)
 
 Mask(XSFCEASE) Var(riscv_sifive_subext)
 
+TargetVariable
+int riscv_fmv_priority = 0
+
 Enum
 Name(isa_spec_class) Type(enum riscv_isa_spec_class)
 Supported ISA specs (for use with the -misa-spec= option):
