@@ -336,7 +336,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __hash_code_base_access : __hash_code_base
       { using __hash_code_base::_M_bucket_index; };
 
-      // To get bucket index we need _RangeHash not to throw.
+      // To get bucket index we need _RangeHash to be non-throwing.
       static_assert(is_nothrow_default_constructible<_RangeHash>::value,
 		    "Functor used to map hash code to bucket index"
 		    " must be nothrow default constructible");
@@ -345,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Functor used to map hash code to bucket index must be"
 		    " noexcept");
 
-      // To compute bucket index we also need _ExtratKey not to throw.
+      // To compute bucket index we also need _ExtractKey to be non-throwing.
       static_assert(is_nothrow_default_constructible<_ExtractKey>::value,
 		    "_ExtractKey must be nothrow default constructible");
       static_assert(noexcept(
