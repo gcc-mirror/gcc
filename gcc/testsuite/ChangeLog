@@ -1,3 +1,67 @@
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117398
+	* gcc.dg/pr117398.c: New.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/memset-inline-4.c: Use effective-target
+	arm_neon_hw.
+	* gcc.target/arm/memset-inline-5.c: Likewise.
+	* gcc.target/arm/memset-inline-6.c: Likewise.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr51534.c: Ensure -mfloat-abi=hard is used.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/acle/data-intrinsics-assembly.c: Use
+	effective-target arm_arch_v6_arm.
+
+2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/vect-early-break-cbranch.c: Ignore exact
+	branch.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/cpp23/attr-assume-opt.C (f2b): Alternate flow test.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117287
+	* g++.dg/cpp23/pr117287-attr.C: New.
+
+2024-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117354
+	* gcc.dg/bitint-113.c: New test.
+
+2024-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117296
+	* gcc.target/i386/pr117296.c: New test.
+
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array7.ads: New test.
+
 2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* gcc.target/i386/cmpccxadd-1b.c: New test.

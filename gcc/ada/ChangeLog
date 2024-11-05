@@ -1,3 +1,21 @@
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113036
+	* freeze.adb (Freeze_Expression): Deal with freezing actions coming
+	from within nested internal loops present in spec expressions.
+
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Also attach pending freeze nodes
+	to the parent in the case of an internal block in a spec expression.
+
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Selected_Length_Checks.Get_E_Length): For a
+	component of a record with discriminants and if the expression is
+	a selected component, try to build an actual subtype from its
+	prefix instead of from the discriminal.
+
 2024-10-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/116551

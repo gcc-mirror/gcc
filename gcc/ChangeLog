@@ -1,3 +1,58 @@
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117398
+	* gimple-range-edge.cc (gimple_outgoing_range::calc_switch_ranges):
+	Check for VARYING and don't call invert () on it.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_bitwise_or::op1_range): If LHS is signed
+	positive, so are both operands.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117287
+	* Makefile.in (IBJS): Add tree-assume.o
+	* gimple-range.cc (assume_query::assume_range_p): Remove.
+	(assume_query::range_of_expr): Remove.
+	(assume_query::assume_query): Move to tree-assume.cc.
+	(assume_query::~assume_query): Remove.
+	(assume_query::calculate_op): Move to tree-assume.cc.
+	(assume_query::calculate_phi): Likewise.
+	(assume_query::check_taken_edge): Remove.
+	(assume_query::calculate_stmt): Move to tree-assume.cc.
+	(assume_query::dump): Remove.
+	* gimple-range.h (class assume_query): Move to tree-assume.cc
+	* tree-assume.cc: New
+	* tree-vrp.cc (struct pass_data_assumptions): Move to tree-assume.cc.
+	(class pass_assumptions): Likewise.
+	(make_pass_assumptions): Likewise.
+
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (class fur_edge): Relocate from here.
+	(fur_edge::fur_edge): Also move to:
+	* gimple-range-fold.h (class fur_edge): Relocate to here.
+	(fur_edge::fur_edge): Likewise.
+
+2024-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117354
+	* expr.cc (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Pass
+	true as inner_reference_p argument to expand_expr_real if
+	mode is BLKmode.  Don't call extract_bit_field if mode is BLKmode.
+
+2024-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117296
+	* function.cc (assign_parms): Call do_pending_stack_adjust.
+
 2024-11-01  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/cmpccxaddintrin.h (_cmpccxadd_epi32): Do not do
