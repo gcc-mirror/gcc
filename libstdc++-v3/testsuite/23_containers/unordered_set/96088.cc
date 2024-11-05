@@ -244,7 +244,7 @@ test03()
     VERIFY( us.size() == 1 );
 
     VERIFY( __gnu_test::counter::count() == origin + increments );
-    VERIFY( __gnu_test::counter::get()._M_increments == increments + 1 );
+    VERIFY( __gnu_test::counter::get()._M_increments == increments );
   }
   VERIFY( __gnu_test::counter::count() == origin );
 

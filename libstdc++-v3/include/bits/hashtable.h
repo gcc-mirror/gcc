@@ -924,25 +924,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::pair<iterator, bool>
 	_M_insert_unique(_Kt&&, _Arg&&, const _NodeGenerator&);
 
-      template<typename _Kt>
-	key_type
-	_S_forward_key(_Kt&& __k)
-	{ return std::forward<_Kt>(__k); }
-
-      static const key_type&
-      _S_forward_key(const key_type& __k)
-      { return __k; }
-
-      static key_type&&
-      _S_forward_key(key_type&& __k)
-      { return std::move(__k); }
-
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
 	_M_insert_unique_aux(_Arg&& __arg, const _NodeGenerator& __node_gen)
 	{
+	  using _Kt = decltype(_ExtractKey{}(std::forward<_Arg>(__arg)));
+	  constexpr bool __is_key_type
+	    = is_same<__remove_cvref_t<_Kt>, key_type>::value;
+	  using _Fwd_key = __conditional_t<__is_key_type, _Kt&&, key_type>;
 	  return _M_insert_unique(
-	    _S_forward_key(_ExtractKey{}(std::forward<_Arg>(__arg))),
+	    static_cast<_Fwd_key>(_ExtractKey{}(std::forward<_Arg>(__arg))),
 	    std::forward<_Arg>(__arg), __node_gen);
 	}
 
@@ -951,10 +942,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
 		  true_type /* __uks */)
 	{
-	  using __to_value
-	    = __detail::_ConvertToValueType<_ExtractKey, value_type>;
+	  using __detail::_Identity;
+	  using _Vt = __conditional_t<is_same<_ExtractKey, _Identity>::value
+					|| __is_pair<__remove_cvref_t<_Arg>>,
+				      _Arg&&, value_type>;
 	  return _M_insert_unique_aux(
-	    __to_value{}(std::forward<_Arg>(__arg)), __node_gen);
+		   static_cast<_Vt>(std::forward<_Arg>(__arg)), __node_gen);
 	}
 
       template<typename _Arg, typename _NodeGenerator>
@@ -962,10 +955,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
 		  false_type __uks)
 	{
-	  using __to_value
-	    = __detail::_ConvertToValueType<_ExtractKey, value_type>;
-	  return _M_insert(cend(),
-	    __to_value{}(std::forward<_Arg>(__arg)), __node_gen, __uks);
+	  return _M_insert(cend(), std::forward<_Arg>(__arg),
+			   __node_gen, __uks);
 	}
 
       // Insert with hint, not used when keys are unique.
