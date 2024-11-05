@@ -1,3 +1,12 @@
+2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/117398
+	* gcc.dg/pr117398.c: New.
+
+2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array7.ads: New test.
+
 2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
