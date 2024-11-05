@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -33,6 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-range.h"
 #include "tree-dfa.h"
+#include "tree-cfg.h"
+#include "gimple-pretty-print.h"
 
 // An assume query utilizes the current range query to implelemtn the assume
 // keyword.
@@ -145,7 +148,7 @@ assume_query::assume_query (function *f, bitmap p) : m_parm_list (p),
     process_stmts (def, lhs_range);
 
   if (dump_file)
-    fprintf (dump_file, "Assumptions :\n--------------\n");
+    fprintf (dump_file, "\n\nAssumptions :\n--------------\n");
 
   // Now export any interesting values that were found.
   bitmap_iterator bi;
@@ -159,6 +162,12 @@ assume_query::assume_query (function *f, bitmap p) : m_parm_list (p),
       if (m_parms.get_range (assume_range, name) && !assume_range.varying_p ())
 	set_range_info (name, assume_range);
     }
+
+  if (dump_file)
+   {
+     fputc ('\n', dump_file);
+     gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
+   }
 }
 
 // This function Will update all the current value of interesting parameters.
@@ -172,6 +181,9 @@ assume_query::assume_query (function *f, bitmap p) : m_parm_list (p),
 void
 assume_query::update_parms (fur_source &src)
 {
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "\nupdate parameters\n");
+
   // Merge any parameter values.
   bitmap_iterator bi;
   unsigned x;
@@ -180,40 +192,85 @@ assume_query::update_parms (fur_source &src)
       tree name = ssa_name (x);
       tree type = TREE_TYPE (name);
 
-      // Find a valu efrom calculations.
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "PARAMETER ");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	}
       value_range glob_range (type);
-      if (!m_path.get_range (glob_range, name)
-	  && !src.get_operand (glob_range, name))
+      // Find a value from calculations.
+      // There will be a value in m_path if GORI calculated an operand value.
+      if (m_path.get_range (glob_range, name))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\n  Calculated path range:");
+	      glob_range.dump (dump_file);
+	    }
+	}
+      // Otherwise, let ranger determine the range at the SRC location.
+      else if (src.get_operand (glob_range, name))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\n  Ranger Computes path range:");
+	      glob_range.dump (dump_file);
+	    }
+	}
+      else
 	glob_range.set_varying (type);
 
-      // Find any current value of parm, and combine them.
+      // Find any current saved value of parm, and combine them.
       value_range parm_range (type);
       if (m_parms.get_range (parm_range, name))
 	glob_range.union_ (parm_range);
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "\n  Combine with previous range:");
+	  parm_range.dump (dump_file);
+	  fputc ('\n', dump_file);
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fprintf (dump_file, " = ");
+	  glob_range.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
       // Set this new value.
       m_parms.set_range (name, glob_range);
     }
   // Now reset the path values for the next path.
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "---------------------\n");
   m_path.clear ();
 }
 
 
 // Evaluate PHI statement, using the provided LHS range.
-// Only process edge that are both taken and returns the LHS of the PHI.
+// Only process edge that are taken and return the LHS of the PHI.
 
 void
 assume_query::calculate_phi (gphi *phi, vrange &lhs_range)
 {
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Processing PHI feeding return value:\n");
+      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
+    }
   for (unsigned x= 0; x < gimple_phi_num_args (phi); x++)
     {
       tree arg = gimple_phi_arg_def (phi, x);
       value_range arg_range (TREE_TYPE (arg));
       edge e = gimple_phi_arg_edge (phi, x);
       value_range edge_range (TREE_TYPE (arg));
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "\nArgument %d (bb%d->bb%d): ", x, e->src->index,
+		   e->dest->index);
+	  print_generic_expr (dump_file, arg, TDF_SLIM);
+	  fputc ('\n', dump_file);
+	}
       // If we can't get an edge range, be conservative and assume the
       // edge can be taken.
-      // NOte this can be either an ssa_name or a constant.
       if (get_range_query (m_func)->range_on_edge (edge_range, e, arg))
 	{
 	  if (gimple_range_ssa_p (arg))
@@ -224,15 +281,25 @@ assume_query::calculate_phi (gphi *phi, vrange &lhs_range)
 	      // An SSA_NAME arg will start with the LHS value.
 	      // Check the range of ARG on the edge leading here.  If that range
 	      // cannot be any value from the LHS of the PHI, then this branch
-	      // will not  be taken to return the LHS value and can be ignored.
+	      // will not be taken to return the LHS value and can be ignored.
 	      arg_range.intersect (edge_range);
 	      if (arg_range.undefined_p ())
-		continue;
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "  IGNORE edge :  LHS range :");
+		      lhs_range.dump (dump_file);
+		      fprintf (dump_file, " Edge produces : ");
+		      edge_range.dump (dump_file);
+		      fputc ('\n', dump_file);
+		    }
+		  continue;
+		}
 
 	      // If the def is in the immediate preceeding block, process it
 	      // with GORI to determine what values can produce this
-	      // argument value.  Otherwise there is more flow, so just query
-	      // the edge for parm ranges and be conservative.
+	      // argument value.  Otherwise there is more CFG flow, so query
+	      // the edge for parm ranges.  This is conservative.
 	      gimple *def_stmt = SSA_NAME_DEF_STMT (arg);
 	      if (def_stmt && gimple_get_lhs (def_stmt) == arg
 		  && gimple_bb (def_stmt) == e->src)
@@ -240,19 +307,27 @@ assume_query::calculate_phi (gphi *phi, vrange &lhs_range)
 		  process_stmts (def_stmt, arg_range);
 		  continue;
 		}
-	      // Fall through to process the edge.
+	      // Fall through to process the parameter values on the edge.
 	    }
 	  else
 	    {
 	      // If this is a constant value that differs from LHS, this
 	      // edge cannot be taken and we can ignore it. Otherwise fall
-	      // thorugh and process the edge.
+	      // thorugh and process the parameters on the edge.
 	      edge_range.intersect (lhs_range);
 	      if (edge_range.undefined_p ())
-		continue;
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file, "  IGNORE : const edge not taken\n");
+		  continue;
+		}
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "  Const edge executed, compute incoming ranges.\n");
+
 	    }
 	}
-      // If this point is reached the edge needs processing.
+      // The parameters on the edge now need calculating.
       fur_edge src (e, get_range_query (m_func));
       update_parms (src);
     }
@@ -271,17 +346,30 @@ assume_query::calculate_op (tree op, gimple *s, vrange &lhs, fur_source &src)
       src.gori ()->compute_operand_range (op_range, s, lhs, op, src)
       && !op_range.varying_p ())
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  Operand ");
+	  print_generic_expr (dump_file, op, TDF_SLIM);
+	  fprintf (dump_file, " calculated as ");
+	  op_range.dump (dump_file);
+	}
       // Set the global range, merging if there is already a range.
       m_path.merge_range (op, op_range);
+      m_path.get_range (op_range, op);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  New path range :");
+	  op_range.dump (dump_file);
+	  fputc ('\n', dump_file);
+	}
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
-      // Terminate if the patway leads to a different block as we
-      // are not analyzing flow.
+      // Terminate if the pathway leads to a different block as we
+      // are not dealing with flow. Ranger will make those queries.
       if (def_stmt && gimple_get_lhs (def_stmt) == op
 	  && gimple_bb (def_stmt) == bb)
 	calculate_stmt (def_stmt, op_range, src);
     }
 }
-
 
 // Evaluate statement S which produces range LHS_RANGE.  Use GORI to
 // determine what values the operands can have to produce the LHS,
@@ -290,6 +378,13 @@ assume_query::calculate_op (tree op, gimple *s, vrange &lhs, fur_source &src)
 void
 assume_query::calculate_stmt (gimple *s, vrange &lhs_range, fur_source &src)
 {
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  Processing stmt with LHS = ");
+      lhs_range.dump (dump_file);
+      fprintf (dump_file, " : ");
+      print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
+    }
   gimple_range_op_handler handler (s);
   if (handler)
     {
@@ -333,7 +428,8 @@ public:
       // Invoke the assume_query to detemine what values these parameters
       // have when the function returns TRUE, and set the globals value of
       // those parameters in this function based on that.  This will later be
-      // utilized by ranger when prcessing the builtin_assumer function.
+      // utilized by ranger when processing builtin IFN_ASSUME function calls.
+      // See gimple-range-infer.cc::check_assume_func ().
       auto_bitmap decls;
       for (tree arg = DECL_ARGUMENTS (fun->decl); arg; arg = DECL_CHAIN (arg))
 	{
