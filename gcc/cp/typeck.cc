@@ -4092,7 +4092,8 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
     tree ar = cp_default_conversion (array, complain);
     tree ind = cp_default_conversion (idx, complain);
 
-    if (!first && flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
+    if (!processing_template_decl
+	&& !first && flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
       ar = first = save_expr (ar);
 
     /* Put the integer in IND to simplify error checking.  */
