@@ -1487,24 +1487,6 @@ namespace __detail
     private:
       using _EqualEBO = _Hashtable_ebo_helper<0, _Equal>;
 
-      static bool
-      _S_equals(__hash_code, const _Hash_node_code_cache<false>&)
-      { return true; }
-
-      static bool
-      _S_node_equals(const _Hash_node_code_cache<false>&,
-		     const _Hash_node_code_cache<false>&)
-      { return true; }
-
-      static bool
-      _S_equals(__hash_code __c, const _Hash_node_code_cache<true>& __n)
-      { return __c == __n._M_hash_code; }
-
-      static bool
-      _S_node_equals(const _Hash_node_code_cache<true>& __lhn,
-		     const _Hash_node_code_cache<true>& __rhn)
-      { return __lhn._M_hash_code == __rhn._M_hash_code; }
-
     protected:
       _Hashtable_base() = default;
 
@@ -1531,31 +1513,49 @@ namespace __detail
 	{
 	  static_assert(
 	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
-	    "key equality predicate must be invocable with two arguments of "
-	    "key type");
+	    "key equality predicate must be invocable with the argument type "
+	    "and the key type");
 	  return _M_eq()(__k, _ExtractKey{}(__n._M_v()));
 	}
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       bool
       _M_equals(const _Key& __k, __hash_code __c,
 		const _Hash_node_value<_Value, __hash_cached::value>& __n) const
-      { return _S_equals(__c, __n) && _M_key_equals(__k, __n); }
+      {
+	if constexpr (__hash_cached::value)
+	  if (__c != __n._M_hash_code)
+	    return false;
+
+	return _M_key_equals(__k, __n);
+      }
 
       template<typename _Kt>
 	bool
 	_M_equals_tr(const _Kt& __k, __hash_code __c,
 		     const _Hash_node_value<_Value,
 					    __hash_cached::value>& __n) const
-	{ return _S_equals(__c, __n) && _M_key_equals_tr(__k, __n); }
+	{
+	  if constexpr (__hash_cached::value)
+	    if (__c != __n._M_hash_code)
+	      return false;
+
+	  return _M_key_equals_tr(__k, __n);
+	}
 
       bool
       _M_node_equals(
 	const _Hash_node_value<_Value, __hash_cached::value>& __lhn,
 	const _Hash_node_value<_Value, __hash_cached::value>& __rhn) const
       {
-	return _S_node_equals(__lhn, __rhn)
-	  && _M_key_equals(_ExtractKey{}(__lhn._M_v()), __rhn);
+	if constexpr (__hash_cached::value)
+	  if (__lhn._M_hash_code != __rhn._M_hash_code)
+	    return false;
+
+	return _M_key_equals(_ExtractKey{}(__lhn._M_v()), __rhn);
       }
+#pragma GCC diagnostic pop
 
       void
       _M_swap(_Hashtable_base& __x)
