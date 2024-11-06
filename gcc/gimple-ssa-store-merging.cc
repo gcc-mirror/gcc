@@ -3245,6 +3245,10 @@ imm_store_chain_info::coalesce_immediate_stores ()
 		      unsigned int min_order = first_order;
 		      unsigned first_nonmergeable_int_order = ~0U;
 		      unsigned HOST_WIDE_INT this_end = end;
+		      unsigned HOST_WIDE_INT this_bitregion_start
+			= new_bitregion_start;
+		      unsigned HOST_WIDE_INT this_bitregion_end
+			= new_bitregion_end;
 		      k = i;
 		      first_nonmergeable_order = ~0U;
 		      for (unsigned int j = i + 1; j < len; ++j)
@@ -3265,6 +3269,19 @@ imm_store_chain_info::coalesce_immediate_stores ()
 				      MEM[(short *)p_5 + 3B] = 1;
 				      MEM[(char *)p_5 + 4B] = _9;
 				      MEM[(char *)p_5 + 2B] = 2;  */
+				  k = 0;
+				  break;
+				}
+			      if (info2->bitregion_start
+				  < this_bitregion_start)
+				this_bitregion_start = info2->bitregion_start;
+			      if (info2->bitregion_end
+				  > this_bitregion_end)
+				this_bitregion_end = info2->bitregion_end;
+			      if (((this_bitregion_end - this_bitregion_start
+				    + 1) / BITS_PER_UNIT)
+				  > (unsigned) param_store_merging_max_size)
+				{
 				  k = 0;
 				  break;
 				}
@@ -5335,7 +5352,9 @@ pass_store_merging::process_store (gimple *stmt)
       || !bitsize.is_constant (&const_bitsize)
       || !bitpos.is_constant (&const_bitpos)
       || !bitregion_start.is_constant (&const_bitregion_start)
-      || !bitregion_end.is_constant (&const_bitregion_end))
+      || !bitregion_end.is_constant (&const_bitregion_end)
+      || ((const_bitregion_end - const_bitregion_start + 1) / BITS_PER_UNIT
+	  > (unsigned) param_store_merging_max_size))
     return terminate_all_aliasing_chains (NULL, stmt);
 
   if (!ins_stmt)
