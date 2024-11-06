@@ -86,6 +86,8 @@ enum cv_sym_type {
   S_DEFRANGE_REGISTER_REL = 0x1145,
   S_LPROC32_ID = 0x1146,
   S_GPROC32_ID = 0x1147,
+  S_INLINESITE = 0x114d,
+  S_INLINESITE_END = 0x114e,
   S_PROC_ID_END = 0x114f
 };
 
@@ -1468,6 +1470,8 @@ static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
 					      int32_t this_adjustment);
 static void write_cv_padding (size_t padding);
 static void flush_deferred_types (void);
+static uint32_t get_func_id (dw_die_ref die);
+static void write_inlinesite_records (dw_die_ref func, dw_die_ref die);
 
 /* Return the file ID corresponding to a given source filename.  */
 
@@ -3324,6 +3328,124 @@ write_optimized_static_local_vars (dw_die_ref die)
   while (c != first_child);
 }
 
+/* Write an S_INLINESITE symbol, to record that a function has been inlined
+   inside another function.  */
+
+static void
+write_s_inlinesite (dw_die_ref parent_func, dw_die_ref die)
+{
+  unsigned int label_num = ++sym_label_num;
+  dw_die_ref func;
+  uint32_t func_id;
+
+  func = get_AT_ref (die, DW_AT_abstract_origin);
+  if (!func)
+    return;
+
+  func_id = get_func_id (func);
+  if (func_id == 0)
+    return;
+
+  /* This is struct inline_site in binutils and INLINESITESYM in Microsoft's
+     cvinfo.h:
+
+      struct inline_site
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t parent;
+	uint32_t end;
+	uint32_t inlinee;
+	uint8_t binary_annotations[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_INLINESITE);
+  putc ('\n', asm_out_file);
+
+  /* parent, filled in by linker */
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  /* end, filled in by linker */
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, func_id);
+  putc ('\n', asm_out_file);
+
+  /* FIXME: there now should follow some "binary annotations", recording how
+	    offsets in the function map to line numbers in the inlined function,
+	    but these require support in GAS.  */
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  write_inlinesite_records (parent_func, die);
+
+  /* Write S_INLINESITE_END symbol.  */
+
+  label_num = ++sym_label_num;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_INLINESITE_END);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Loop through a function, and translate its DW_TAG_inlined_subroutine DIEs
+   into CodeView S_INLINESITE symbols.  */
+
+static void
+write_inlinesite_records (dw_die_ref func, dw_die_ref die)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+  do
+    {
+      c = dw_get_die_sib (c);
+
+      switch (dw_get_die_tag (c))
+	{
+	case DW_TAG_lexical_block:
+	  write_inlinesite_records (func, c);
+	  break;
+
+	case DW_TAG_inlined_subroutine:
+	  write_s_inlinesite (func, c);
+	  break;
+
+	default:
+	  break;
+	}
+    }
+  while (c != first_child);
+}
+
 /* Write an S_GPROC32_ID symbol, representing a global function, or an
    S_LPROC32_ID symbol, for a static function.  */
 
@@ -3449,6 +3571,8 @@ write_function (codeview_symbol *s)
   ASM_OUTPUT_ALIGN (asm_out_file, 2);
 
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  write_inlinesite_records (s->function.die, s->function.die);
 
   frame_base = get_AT (s->function.die, DW_AT_frame_base);
 
