@@ -680,7 +680,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
 
   // setup paths
   CanonicalPath canonical_trait_type = CanonicalPath::create_empty ();
-  bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path (),
+  bool ok = ResolveTypeToCanonicalPath::go (impl_block.get_trait_path_type (),
 					    canonical_trait_type);
   if (!ok)
     {

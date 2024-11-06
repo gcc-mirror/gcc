@@ -19,9 +19,18 @@
 #include "rust-ast-lower-type.h"
 #include "optional.h"
 #include "rust-attribute-values.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace HIR {
+
+HIR::TypePath *
+ASTLowerTypePath::translate (AST::Path &type)
+{
+  rust_assert (type.get_path_kind () == AST::Path::Kind::Type);
+
+  return ASTLowerTypePath::translate (static_cast<AST::TypePath &> (type));
+}
 
 HIR::TypePath *
 ASTLowerTypePath::translate (AST::TypePath &type)

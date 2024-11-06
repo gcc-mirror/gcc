@@ -31,6 +31,7 @@ protected:
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
+  static HIR::TypePath *translate (AST::Path &type);
   static HIR::TypePath *translate (AST::TypePath &type);
 
   void visit (AST::TypePathSegmentFunction &segment) override;

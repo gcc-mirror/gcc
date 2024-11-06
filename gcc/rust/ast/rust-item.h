@@ -3264,6 +3264,13 @@ public:
     return *trait_path;
   }
 
+  Type &get_trait_path_type ()
+  {
+    rust_assert (trait_path->get_path_kind () == Path::Kind::Type);
+
+    return (AST::Type &) static_cast<AST::TypePath &> (*trait_path);
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
