@@ -483,7 +483,7 @@ struct diagnostic_counters
    - being a central place for clients to report diagnostics
    - reporting those diagnostics to zero or more output sinks
      (e.g. text vs SARIF)
-   - proving a "dump" member function for a debug dump of the state of
+   - providing a "dump" member function for a debug dump of the state of
      the diagnostics subsytem
    - direct vs buffered diagnostics (see class diagnostic_buffer)
    - tracking the original argv of the program (for SARIF output)
