@@ -4130,6 +4130,9 @@ match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
       && !gimple_signed_integer_sat_add (phi_result, ops, NULL))
     return false;
 
+  if (!TYPE_UNSIGNED (TREE_TYPE (ops[0])) && TREE_CODE (ops[1]) == INTEGER_CST)
+    ops[1] = fold_convert (TREE_TYPE (ops[0]), ops[1]);
+
   return build_saturation_binary_arith_call_and_insert (gsi, IFN_SAT_ADD,
 							phi_result, ops[0],
 							ops[1]);
