@@ -1,3 +1,105 @@
+2024-11-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr68620.c: Use effective-target arm_neon.
+	* gcc.target/arm/pr78041.c: Use effective-target arm_arch_v7a.
+
+2024-11-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/116623
+	* gcc.target/arm/mve/dlstp-compile-asm-2.c: Align test5 and
+	test8 with changes in r15-1619-g3b9b8d6cfdf.
+
+2024-11-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr98636.c: Use effective-target
+	arm_fp16_alternative.
+
+2024-11-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117449
+	* gcc.c-torture/compile/pr117449.c: New test.
+
+2024-11-05  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR testsuite/117444
+	* gcc.target/powerpc/safe-indirect-jump-3.c: Add -fjump-tables to
+	dg-options.
+
+2024-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116634
+	* g++.dg/diagnostic/aggr-init1.C: Expect warning with -fpermissive.
+	* g++.dg/init/array62.C: Adjust diagnostic.
+	* g++.dg/init/array63.C: Adjust diagnostic.
+	* g++.dg/init/array64.C: Adjust diagnostic.
+
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117099
+	PR c++/117129
+	* g++.dg/parse/crash78.C: New test.
+	* g++.dg/parse/crash78a.C: New test.
+	* g++.dg/parse/crash79.C: New test.
+
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117101
+	* g++.dg/init/new52.C: New test.
+	* g++.dg/init/new53.C: New test.
+
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117158
+	* g++.dg/cpp1z/eval-order13.C: New test.
+	* g++.dg/parse/crash77.C: New test.
+
+2024-11-05  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	PR tree-optimization/110279
+	* gcc.dg/pr110279-1.c: add target selector.
+
+2024-11-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-extendbf2sf.c: New test.
+	* gcc.target/i386/sse2-extendbf2sf.c: New test.
+
+2024-11-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bf16-truncsfbf.c: New test.
+	* gcc.target/i386/avx512bw-truncsfbf.c: New test.
+	* gcc.target/i386/ssse3-truncsfbf.c: New test.
+
+2024-11-05  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117416
+	* gcc.target/i386/pr117416-1.c: New test.
+	* gcc.target/i386/pr117416-2.c: Ditto.
+
+2024-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117433
+	* gcc.dg/pr117433.c: New testcase.
+
+2024-11-05  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/avx10_2-comibf-1.c: New test.
+	* gcc.target/i386/avx10_2-comibf-2.c: Ditto.
+
+2024-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99274
+	* g++.dg/modules/lambda-7.h: Skip ODR-violating declaration when
+	testing ODR deduplication.
+	* g++.dg/modules/lambda-7_b.C: Note we're testing ODR
+	deduplication.
+	* g++.dg/modules/default-arg-1_a.H: New test.
+	* g++.dg/modules/default-arg-1_b.C: New test.
+	* g++.dg/modules/default-arg-2_a.H: New test.
+	* g++.dg/modules/default-arg-2_b.C: New test.
+	* g++.dg/modules/default-arg-3.h: New test.
+	* g++.dg/modules/default-arg-3_a.H: New test.
+	* g++.dg/modules/default-arg-3_b.C: New test.
+
 2024-11-04  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR testsuite/117300

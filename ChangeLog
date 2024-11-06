@@ -1,3 +1,8 @@
+2024-11-05  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac: Add sim to noconfigdirs for ARM targets.
+	* configure: Regenerate.
+
 2024-10-30  Soumya AR  <soumyaa@nvidia.com>
 
 	* MAINTAINERS: Add myself to write after approval and DCO.

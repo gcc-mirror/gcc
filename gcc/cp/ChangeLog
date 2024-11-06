@@ -1,3 +1,57 @@
+2024-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116634
+	* init.cc (can_init_array_with_p): Allow PR59465 case with
+	permerror.
+
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117099
+	PR c++/117129
+	* typeck.cc (check_return_expr): Upon error, set
+	current_function_return_value to error_mark_node.
+
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117101
+	* init.cc (std_placement_new_fn_p): Check first_arg against
+	NULL_TREE.
+
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117158
+	* typeck.cc (cp_build_array_ref): Only wrap array expression
+	into a SAVE_EXPR at template instantiation time.
+
+2024-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117370
+	* cp-tree.h (is_std_class): Declare.
+	* constexpr.cc (is_std_class): New function.
+	(is_std_allocator): Use it.
+	* decl.cc (grok_op_properties): Mark global replaceable
+	operator new/delete operators with const std::nothrow_t & last
+	argument with DECL_IS_REPLACEABLE_OPERATOR.
+
+2024-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99274
+	* module.cc (trees_in::is_matching_decl): Merge default
+	arguments.
+	* tree.cc (cp_tree_equal) <AGGR_INIT_EXPR>: Handle unification
+	of AGGR_INIT_EXPRs with new VAR_DECL slots.
+
+2024-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105443
+	* module.cc (loc_spans::locs_exhausted_p): New field.
+	(loc_spans::loc_spans): Initialise it.
+	(loc_spans::locations_exhausted_p): New function.
+	(module_state::read_prepare_maps): Move inform into...
+	(loc_spans::report_location_exhaustion): ...this new function.
+	(module_state::write_location): Check for writing module
+	locations stored due to resource exhaustion.
+
 2024-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

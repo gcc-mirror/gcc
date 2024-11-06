@@ -1,3 +1,9 @@
+2024-11-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/117445
+	* gimple-parser.cc (c_parser_gimple_statement): Remove
+	support for comparisons before the querry (`?`) token.
+
 2024-11-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/117361

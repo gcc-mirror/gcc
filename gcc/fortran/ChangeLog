@@ -1,3 +1,18 @@
+2024-11-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR fortran/117442
+	* error.cc (error_buffer): Convert to a pointer so it can be
+	heap-allocated.
+	(gfc_error_now): Update for error_buffer being heap-allocated.
+	(gfc_clear_error): Likewise.
+	(gfc_error_flag_test): Likewise.
+	(gfc_error_check): Likewise.
+	(gfc_push_error): Likewise.
+	(gfc_pop_error): Likewise.
+	(gfc_diagnostics_init): Allocate error_buffer on the heap, rather
+	than statically.
+	(gfc_diagnostics_finish): Delete error_buffer.
+
 2024-11-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* check.cc (gfc_check_mask): Handle BT_INSIGNED.

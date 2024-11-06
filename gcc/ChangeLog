@@ -1,3 +1,115 @@
+2024-11-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* match.pd (X != 0 ? X + ~0 : 0): Fix comment.
+
+2024-11-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117449
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_rotate_imm<mode>):
+	Match only when can_create_pseudo_p ().
+	* config/aarch64/aarch64.cc (aarch64_emit_opt_vec_rotate): Assume
+	can_create_pseudo_p ().
+
+2024-11-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_expand_vector_bf2sf_with_vec_perm): New function.
+	* config/i386/i386-protos.h
+	(ix86_expand_vector_bf2sf_with_vec_perm): New Declare.
+	* config/i386/mmx.md (extendv2bfv2sf2): New expander.
+	* config/i386/sse.md (extend<sf_cvt_bf16_lower><mode>2):
+	Ditto.
+	(VF1_AVX512BW): New mode iterator.
+	(sf_cvt_bf16): Add V4SF.
+	(sf_cvt_bf16_lower): New mode attr.
+
+2024-11-05  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_expand_vector_sf2bf_with_vec_perm): New function.
+	* config/i386/i386-protos.h
+	(ix86_expand_vector_sf2bf_with_vec_perm): New declare.
+	* config/i386/mmx.md (truncv2sfv2bf2): New expander.
+	* config/i386/sse.md (truncv4sfv4bf2): Ditto.
+	(truncv8sfv8bf2): Ditto.
+	(truncv16sfv16bf2): Ditto.
+
+2024-11-05  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117416
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Raise warning when
+	op1 isn't in range of [0, 2] and set op1 as const0_rtx, and raise
+	warning when op3 isn't in range of [0, 1].
+
+2024-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/117433
+	* cfgexpand.cc (expand_gimple_stmt_1): Use emit_block_move
+	when moving temp to BLKmode target.
+
+2024-11-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-passes.def: Don't add pass_tag_collision_avoidance.
+	* config/aarch64/aarch64-protos.h (make_pass_tag_collision_avoidance): Remove.
+	* config/aarch64/aarch64-tuning-flags.def (RENAME_LOAD_REGS): Remove.
+	* config/aarch64/tuning_models/qdf24xx.h (qdf24xx_tunings): Set tuning flags to
+	AARCH64_EXTRA_TUNE_NONE.
+	* config/aarch64/falkor-tag-collision-avoidance.cc: Removed.
+	* config/aarch64/t-aarch64 (falkor-tag-collision-avoidance.o): Remove.
+	* config.gcc (aarch64*-*-*): Remove falkor-tag-collision-avoidance.o from extra_objs.
+
+2024-11-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-cores.def (falkor): Use cortex-a57 scheduler.
+	(saphira): Likewise.
+	* config/aarch64/aarch64.md: Don't include falkor.md and saphira.md.
+	* config/aarch64/falkor.md: Removed.
+	* config/aarch64/saphira.md: Removed.
+
+2024-11-05  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_branch): Handle BFmode
+	when TARGET_AVX10_2_256 is enabled.
+	(ix86_prepare_fp_compare_args): Use SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P.
+	(ix86_expand_fp_movcc): Ditto.
+	(ix86_expand_fp_compare): Handle BFmode under IX86_FPCMP_COMI.
+	* config/i386/i386.cc (ix86_multiplication_cost): Use
+	SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P.
+	(ix86_division_cost): Ditto.
+	(ix86_rtx_costs): Ditto.
+	(ix86_vector_costs::add_stmt_cost): Ditto.
+	* config/i386/i386.h (SSE_FLOAT_MODE_SSEMATH_OR_HF_P): Rename to ...
+	(SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P): ...this, and add BFmode.
+	* config/i386/i386.md (*cmpibf): New define_insn.
+
+2024-11-05  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num_typedef): New function.
+	(get_type_num): Call get_type_num_typedef.
+	* dwarf2codeview.h (T_HRESULT): Define.
+
+2024-11-05  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (struct codeview_custom_type): Add new fields to
+	lf_pointer struct in union.
+	(write_lf_pointer): Write containing_class and ptr_to_mem_type if
+	applicable.
+	(get_type_num_subroutine_type): Write correct containing_class_type if
+	this is a pointer to a member function.
+	(get_type_num_ptr_to_member_type): New function.
+	(get_type_num): Call get_type_num_ptr_to_member_type.
+	* dwarf2codeview.h (CV_PTR_MODE_MASK, CV_PTR_MODE_PMEM): Define.
+	(CV_PTR_MODE_PMFUNC, CV_PMTYPE_D_Single, CV_PMTYPE_F_Single): Likewise.
+
+2024-11-05  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (enum cv_leaf_type): Add LF_BCLASS.
+	(struct codeview_subtype): Add lf_bclass to union.
+	(write_cv_padding): Add declaration.
+	(write_lf_fieldlist): Handle LF_BCLASS records.
+	(add_struct_inheritance): New function.
+	(get_type_num_struct): Call add_struct_inheritance.
+
 2024-11-04  Craig Blackmore  <craig.blackmore@embecosm.com>
 
 	* config/riscv/riscv.cc (riscv_use_by_pieces_infrastructure_p):
