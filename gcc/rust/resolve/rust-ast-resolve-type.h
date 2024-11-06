@@ -21,6 +21,8 @@
 
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-resolve-expr.h"
+#include "rust-hir-map.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace Resolver {
@@ -56,6 +58,32 @@ class ResolveType : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
+  static NodeId go (AST::TypePath &type_path)
+  {
+    return ResolveType::go ((AST::Type &) type_path);
+  }
+
+  static NodeId go (AST::Path &type_path)
+  {
+    if (type_path.get_path_kind () == AST::Path::Kind::LangItem)
+      {
+	auto &type = static_cast<AST::LangItemPath &> (type_path);
+
+	Analysis::Mappings::get_lang_item (type);
+
+	type.get_node_id ();
+      }
+
+    rust_assert (type_path.get_path_kind () == AST::Path::Kind::Type);
+
+    // We have to do this dance to first downcast to a typepath, and then upcast
+    // to a Type. The altnernative is to split `go` into `go` and `go_inner` or
+    // something, but eventually this will need to change as we'll need
+    // `ResolveType::` to resolve other kinds of `Path`s as well.
+    return ResolveType::go (
+      (AST::Type &) static_cast<AST::TypePath &> (type_path));
+  }
+
   static NodeId go (AST::Type &type)
   {
     ResolveType resolver;

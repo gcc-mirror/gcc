@@ -152,8 +152,7 @@ RegularPath::as_string () const
 std::string
 LangItemPath::as_string () const
 {
-  // FIXME: Handle #[lang] paths
-  rust_unreachable ();
+  return "#[lang = \"" + LangItem::ToString (kind) + "\"]";
 }
 
 SimplePath
