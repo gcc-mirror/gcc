@@ -1,3 +1,19 @@
+2024-11-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/101463
+	* pt.cc (type_unification_real): Avoid checking dependence of
+	a substituted default template argument if we can assume it's
+	non-dependent.
+
+2024-11-05  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-11-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116634
+	* init.cc (can_init_array_with_p): Allow PR59465 case with
+	permerror.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
