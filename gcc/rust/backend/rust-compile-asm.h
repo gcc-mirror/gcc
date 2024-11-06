@@ -28,8 +28,6 @@ namespace Compile {
 class CompileAsm : private HIRCompileBase
 {
 private:
-  tree translated;
-
   // RELEVANT MEMBER FUNCTIONS
 
   // The limit is 5 because it stands for the 5 things that the C version of

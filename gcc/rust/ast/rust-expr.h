@@ -4810,14 +4810,14 @@ public:
       rust_assert (this->expr != nullptr);
     }
 
-    In (const struct In &other)
+    In (const In &other)
     {
       reg = other.reg;
 
       expr = other.expr->clone_expr ();
     }
 
-    In operator= (const struct In &other)
+    In operator= (const In &other)
     {
       reg = other.reg;
       expr = other.expr->clone_expr ();
@@ -4843,14 +4843,14 @@ public:
       rust_assert (this->expr != nullptr);
     }
 
-    Out (const struct Out &other)
+    Out (const Out &other)
     {
       reg = other.reg;
       late = other.late;
       expr = other.expr->clone_expr ();
     }
 
-    Out operator= (const struct Out &other)
+    Out operator= (const Out &other)
     {
       reg = other.reg;
       late = other.late;
@@ -4876,14 +4876,14 @@ public:
       rust_assert (this->expr != nullptr);
     }
 
-    InOut (const struct InOut &other)
+    InOut (const InOut &other)
     {
       reg = other.reg;
       late = other.late;
       expr = other.expr->clone_expr ();
     }
 
-    InOut operator= (const struct InOut &other)
+    InOut operator= (const InOut &other)
     {
       reg = other.reg;
       late = other.late;
@@ -4913,7 +4913,7 @@ public:
       rust_assert (this->out_expr != nullptr);
     }
 
-    SplitInOut (const struct SplitInOut &other)
+    SplitInOut (const SplitInOut &other)
     {
       reg = other.reg;
       late = other.late;
@@ -4921,7 +4921,7 @@ public:
       out_expr = other.out_expr->clone_expr ();
     }
 
-    SplitInOut operator= (const struct SplitInOut &other)
+    SplitInOut operator= (const SplitInOut &other)
     {
       reg = other.reg;
       late = other.late;
@@ -4953,12 +4953,12 @@ public:
     {
       rust_assert (this->expr != nullptr);
     }
-    Sym (const struct Sym &other)
+    Sym (const Sym &other)
     {
       expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
     }
 
-    Sym operator= (const struct Sym &other)
+    Sym operator= (const Sym &other)
     {
       expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;
@@ -4981,12 +4981,12 @@ public:
       if (label_name.has_value ())
 	this->label_name = label_name.value ();
     }
-    Label (const struct Label &other)
+    Label (const Label &other)
     {
       expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
     }
 
-    Label operator= (const struct Label &other)
+    Label operator= (const Label &other)
     {
       expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;

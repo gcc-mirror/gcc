@@ -3700,7 +3700,6 @@ struct AnonConst
     return *this;
   }
 };
-;
 
 class InlineAsmOperand
 {
@@ -3888,7 +3887,6 @@ private:
   tl::optional<struct Const> cnst;
   tl::optional<struct Sym> sym;
   tl::optional<struct Label> label;
-  location_t locus;
 
 public:
   InlineAsmOperand (const InlineAsmOperand &other)
@@ -3931,6 +3929,7 @@ public:
   struct Sym get_sym () const { return sym.value (); }
   struct Label get_label () const { return label.value (); }
 };
+
 // Inline Assembly Node
 class InlineAsm : public ExprWithoutBlock
 {
@@ -4009,6 +4008,7 @@ public:
 
   {}
 };
+
 } // namespace HIR
 } // namespace Rust
 
