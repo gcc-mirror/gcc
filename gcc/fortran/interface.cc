@@ -3513,12 +3513,17 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
      skip_size_check:
 
-      /* Satisfy F03:12.4.1.3 by ensuring that a procedure pointer actual
-         argument is provided for a procedure pointer formal argument.  */
+      /* Satisfy either: F03:12.4.1.3 by ensuring that a procedure pointer
+	 actual argument is provided for a procedure pointer formal argument;
+	 or: F08:12.5.2.9 (F18:15.5.2.10) by ensuring that the effective
+	 argument shall be an external, internal, module, or dummy procedure.
+	 The interfaces are checked elsewhere.  */
       if (f->sym->attr.proc_pointer
 	  && !((a->expr->expr_type == EXPR_VARIABLE
 		&& (a->expr->symtree->n.sym->attr.proc_pointer
 		    || gfc_is_proc_ptr_comp (a->expr)))
+	       || (a->expr->ts.type == BT_PROCEDURE
+		   && f->sym->ts.interface)
 	       || (a->expr->expr_type == EXPR_FUNCTION
 		   && is_procptr_result (a->expr))))
 	{
