@@ -1,3 +1,10 @@
+2024-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115070
+	PR fortran/115348
+	* gfortran.dg/ieee/pr115070.f90: New test.
+	* gfortran.dg/pr115348.f90: New test.
+
 2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/117398
