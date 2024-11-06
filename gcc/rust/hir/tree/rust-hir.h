@@ -673,7 +673,7 @@ public:
   // Returns whether the lifetime param has an outer attribute.
   bool has_outer_attribute () const override { return outer_attrs.size () > 1; }
 
-  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
+  AST::AttrVec &get_outer_attrs () override { return outer_attrs; }
 
   // Returns whether the lifetime param is in an error state.
   bool is_error () const { return lifetime.is_error (); }
