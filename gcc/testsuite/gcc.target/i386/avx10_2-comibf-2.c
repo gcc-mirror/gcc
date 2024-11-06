@@ -1,5 +1,6 @@
- /* { dg-do run } */
+/* { dg-do run } */
 /* { dg-options "-march=x86-64-v3 -mavx10.2 -O2 -fno-trapping-math" } */
+/* { dg-require-effective-target avx10_2 } */
 
 #include <stdlib.h>
 #include <stdint.h>
