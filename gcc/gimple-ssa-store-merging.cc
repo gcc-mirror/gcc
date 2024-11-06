@@ -1849,14 +1849,15 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 		       unsigned int total_bytes)
 {
   unsigned int first_byte = bitpos / BITS_PER_UNIT;
-  bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
-			|| (bitpos % BITS_PER_UNIT)
-			|| !int_mode_for_size (bitlen, 0).exists ());
   bool empty_ctor_p
     = (TREE_CODE (expr) == CONSTRUCTOR
        && CONSTRUCTOR_NELTS (expr) == 0
        && TYPE_SIZE_UNIT (TREE_TYPE (expr))
-		       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (expr))));
+       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (expr))));
+  bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
+			|| (bitpos % BITS_PER_UNIT)
+			|| (!int_mode_for_size (bitlen, 0).exists ()
+			    && !empty_ctor_p));
 
   if (!sub_byte_op_p)
     {
