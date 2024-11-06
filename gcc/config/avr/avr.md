@@ -4745,6 +4745,37 @@
               (clobber (reg:CC REG_CC))])])
 
 
+;; For operations like  X o= CST, regalloc may spill l-reg X to a d-reg:
+;;    D =  X
+;;    D o= CST
+;;    X =  D
+;; where it is better to instead
+;;    D =  CST
+;;    X o= D
+(define_peephole2
+  [; Move l-reg to d-reg for the purpose of BITOP.
+   (parallel [(set (match_operand:ALL1 0 "d_register_operand")
+                   (match_operand:ALL1 1 "l_register_operand"))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (bitop:ALL1 (match_dup 0)
+                               (match_operand:ALL1 2 "const_operand")))
+              (clobber (reg:CC REG_CC))])
+   ; Move d-reg result back to l-reg.
+   (parallel [(set (match_dup 1)
+                   (match_dup 0))
+              (clobber (reg:CC REG_CC))])]
+  "peep2_reg_dead_p (3, operands[0])"
+  [; "movqi_insn"
+   (parallel [(set (match_dup 0)
+                   (match_dup 2))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 1)
+                   (bitop:ALL1 (match_dup 1)
+                               (match_dup 0)))
+              (clobber (reg:CC REG_CC))])])
+
+
 ;; swap swap swap swap swap swap swap swap swap swap swap swap swap swap swap
 ;; swap
 
