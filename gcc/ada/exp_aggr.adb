@@ -1924,6 +1924,48 @@ package body Exp_Aggr is
    --  Start of processing for Build_Array_Aggr_Code
 
    begin
+      --  If the assignment can be done directly by the back end, then reset
+      --  the Set_Expansion_Delayed flag and do not expand further.
+
+      if Present (Etype (N))
+        and then Aggr_Assignment_OK_For_Backend (N)
+        and then not Possible_Bit_Aligned_Component (Into)
+        and then not Is_Possibly_Unaligned_Slice (Into)
+        and then not CodePeer_Mode
+      then
+         declare
+            New_Aggr : constant Node_Id := Relocate_Node (N);
+            Target   : constant Node_Id :=
+                         (if Nkind (Into) = N_Unchecked_Type_Conversion
+                          then Expression (Into)
+                          else Into);
+         begin
+            Set_Expansion_Delayed (New_Aggr, False);
+
+            --  In the case where the target is the dereference of a prefix
+            --  with Designated_Storage_Model aspect specifying the Copy_To
+            --  procedure, first insert a temporary and have the back end
+            --  handle the assignment to it, then assign the result to the
+            --  original target.
+
+            if Nkind (Target) = N_Explicit_Dereference
+              and then
+                Has_Designated_Storage_Model_Aspect (Etype (Prefix (Target)))
+              and then Present (Storage_Model_Copy_To
+                                 (Storage_Model_Object
+                                   (Etype (Prefix (Target)))))
+            then
+               return Build_Assignment_With_Temporary (Into, Typ, New_Aggr);
+
+            else
+               return New_List (
+                 Make_OK_Assignment_Statement (Loc,
+                   Name       => Into,
+                   Expression => New_Aggr));
+            end if;
+         end;
+      end if;
+
       --  First before we start, a special case. If we have a bit packed
       --  array represented as a modular type, then clear the value to
       --  zero first, to ensure that unused bits are properly cleared.
@@ -4873,17 +4915,17 @@ package body Exp_Aggr is
    --  2. Check for packed array aggregate which can be converted to a
    --     constant so that the aggregate disappears completely.
 
-   --  3. Check case of nested aggregate. Generally nested aggregates are
-   --     handled during the processing of the parent aggregate.
-
-   --  4. Check if the aggregate can be statically processed. If this is the
+   --  3. Check if the aggregate can be statically processed. If this is the
    --     case pass it as is to Gigi. Note that a necessary condition for
    --     static processing is that the aggregate be fully positional.
 
-   --  5. If in-place aggregate expansion is possible (i.e. no need to create
-   --     a temporary) then mark the aggregate as such and return. Otherwise
-   --     create a new temporary and generate the appropriate initialization
-   --     code.
+   --  4. Check if delayed expansion is needed, for example in the cases of
+   --     nested aggregates or aggregates in allocators or declarations.
+
+   --  5. If in-place aggregate expansion is not possible, create a temporary
+   --     and generate the appropriate initialization code.
+
+   --  6. Build and insert the aggregate code
 
    procedure Expand_Array_Aggregate (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -4903,9 +4945,6 @@ package body Exp_Aggr is
 
       Aggr_Index_Typ : array (1 .. Aggr_Dimension) of Entity_Id;
       --  The type of each index
-
-      In_Place_Assign_OK_For_Declaration : Boolean := False;
-      --  True if we are to generate an in-place assignment for a declaration
 
       Maybe_In_Place_OK : Boolean;
       --  If the type is neither controlled nor packed and the aggregate
@@ -4946,8 +4985,8 @@ package body Exp_Aggr is
 
       function Safe_Left_Hand_Side (N : Node_Id) return Boolean;
       --  In addition to Maybe_In_Place_OK, in order for an aggregate to be
-      --  built directly into the target of the assignment it must be free
-      --  of side effects. N is the LHS of an assignment.
+      --  built directly into the target of an assignment, the target must
+      --  be free of side effects. N is the target of the assignment.
 
       procedure Two_Pass_Aggregate_Expansion (N : Node_Id);
       --  If the aggregate consists only of iterated associations then the
@@ -5809,7 +5848,6 @@ package body Exp_Aggr is
       Tmp_Decl : Node_Id;
       --  Holds the declaration of Tmp
 
-      Aggr_Code   : List_Id;
       Parent_Node : Node_Id;
       Parent_Kind : Node_Kind;
 
@@ -5989,6 +6027,8 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  STEP 3
+
       --  Now see if back end processing is possible
 
       if Backend_Processing_Possible (N) then
@@ -6024,7 +6064,7 @@ package body Exp_Aggr is
          return;
       end if;
 
-      --  STEP 3
+      --  STEP 4
 
       --  Set the Expansion_Delayed flag in the cases where the transformation
       --  will be done top down from above.
@@ -6052,7 +6092,8 @@ package body Exp_Aggr is
          --  Allocator (see Convert_Aggr_In_Allocator)
 
          or else (Nkind (Parent_Node) = N_Allocator
-                   and then (Is_Limited_Type (Typ)
+                   and then (Aggr_Assignment_OK_For_Backend (N)
+                              or else Is_Limited_Type (Typ)
                               or else Needs_Finalization (Typ)
                               or else (not Is_Bit_Packed_Array (Typ)
                                         and then not
@@ -6065,15 +6106,35 @@ package body Exp_Aggr is
          --  Object declaration (see Convert_Aggr_In_Object_Decl)
 
          or else (Parent_Kind = N_Object_Declaration
-                   and then (Needs_Finalization (Typ)
+                   and then (Aggr_Assignment_OK_For_Backend (N)
+                              or else Is_Limited_Type (Typ)
+                              or else Needs_Finalization (Typ)
                               or else Is_Special_Return_Object
-                                        (Defining_Identifier (Parent_Node))))
+                                        (Defining_Identifier (Parent_Node))
+                              or else (not Is_Bit_Packed_Array (Typ)
+                                        and then not
+                                          Must_Slide
+                                            (N,
+                                             Etype
+                                               (Defining_Identifier
+                                                 (Parent_Node)),
+                                             Typ))))
 
          --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
-         --  assignments in init procs are taken into account.
+         --  assignments in init procs are taken into account, as well those
+         --  directly performed by the back end.
 
          or else (Parent_Kind = N_Assignment_Statement
-                   and then Inside_Init_Proc)
+                   and then (Inside_Init_Proc
+                              or else
+                                (Aggr_Assignment_OK_For_Backend (N)
+                                  and then not
+                                    Possible_Bit_Aligned_Component
+                                      (Name (Parent_Node))
+                                  and then not
+                                    Is_Possibly_Unaligned_Slice
+                                      (Name (Parent_Node))
+                                  and then not CodePeer_Mode)))
 
          --  Simple return statement, which will be handled in a build-in-place
          --  fashion and will ultimately be rewritten as an extended return.
@@ -6084,43 +6145,28 @@ package body Exp_Aggr is
          return;
       end if;
 
-      --  STEP 4
-
-      --  Check whether in-place aggregate expansion is possible
-
-      --  For object declarations we build the aggregate in place, unless
-      --  the array is bit-packed.
-
-      --  For assignments we do the assignment in place if all the component
-      --  associations have compile-time known values, or are default-
-      --  initialized limited components, e.g. tasks. For other cases we
-      --  create a temporary. A full analysis for safety of in-place assignment
-      --  is delicate.
+      --  Otherwise, if a transient scope is required, create it now
 
       if Requires_Transient_Scope (Typ) then
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
-      --  An array of limited components is built in place
+      --  STEP 5
 
-      if Is_Limited_Type (Typ) then
-         Maybe_In_Place_OK := True;
+      --  Check whether in-place aggregate expansion is possible
 
-      elsif Has_Default_Init_Comps (N) then
-         Maybe_In_Place_OK := False;
+      --  We do assignments in place if all the component associations have
+      --  known safe values, or have default-initialized limited values, e.g.
+      --  protected objects or tasks. For other cases we create a temporary.
 
-      elsif Is_Bit_Packed_Array (Typ)
-        or else Has_Controlled_Component (Typ)
-      then
-         Maybe_In_Place_OK := False;
-
-      elsif Parent_Kind = N_Assignment_Statement then
-         Maybe_In_Place_OK :=
-           In_Place_Assign_OK (N, Get_Base_Object (Name (Parent_Node)));
-
-      else
-         Maybe_In_Place_OK := False;
-      end if;
+      Maybe_In_Place_OK :=
+        Parent_Kind = N_Assignment_Statement
+          and then (Is_Limited_Type (Typ)
+                     or else (not Has_Default_Init_Comps (N)
+                               and then not Is_Bit_Packed_Array (Typ)
+                               and then
+                                 In_Place_Assign_OK
+                                   (N, Get_Base_Object (Name (Parent_Node)))));
 
       --  If this is an array of tasks, it will be expanded into build-in-place
       --  assignments. Build an activation chain for the tasks now.
@@ -6129,57 +6175,9 @@ package body Exp_Aggr is
          Build_Activation_Chain_Entity (N);
       end if;
 
-      --  Perform in-place expansion of aggregate in an object declaration.
-      --  Note: actions generated for the aggregate will be captured in an
-      --  expression-with-actions statement so that they can be transferred
-      --  to freeze actions later if there is an address clause for the
-      --  object. (Note: we don't use a block statement because this would
-      --  cause generated freeze nodes to be elaborated in the wrong scope).
+      --  Check that the target of the assignment is also safe
 
-      --  Arrays of limited components must be built in place. The code
-      --  previously excluded controlled components but this is an old
-      --  oversight: the rules in 7.6 (17) are clear.
-
-      if Comes_From_Source (Parent_Node)
-        and then Parent_Kind = N_Object_Declaration
-        and then Present (Expression (Parent_Node))
-        and then not
-          Must_Slide (N, Etype (Defining_Identifier (Parent_Node)), Typ)
-        and then not Is_Bit_Packed_Array (Typ)
-      then
-         In_Place_Assign_OK_For_Declaration := True;
-         Tmp := Defining_Identifier (Parent_Node);
-         Set_No_Initialization (Parent_Node);
-         Set_Expression (Parent_Node, Empty);
-
-         --  Set kind and type of the entity, for use in the analysis
-         --  of the subsequent assignments. If the nominal type is not
-         --  constrained, build a subtype from the known bounds of the
-         --  aggregate. If the declaration has a subtype mark, use it,
-         --  otherwise use the itype of the aggregate.
-
-         Mutate_Ekind (Tmp, E_Variable);
-
-         if not Is_Constrained (Typ) then
-            Build_Constrained_Type (Positional => False);
-
-         elsif Is_Entity_Name (Object_Definition (Parent_Node))
-           and then Is_Constrained (Entity (Object_Definition (Parent_Node)))
-         then
-            Set_Etype (Tmp, Entity (Object_Definition (Parent_Node)));
-
-         else
-            Set_Size_Known_At_Compile_Time (Typ, False);
-            Set_Etype (Tmp, Typ);
-         end if;
-
-      --  In the remaining cases the aggregate appears in the RHS of an
-      --  assignment, which may be part of the expansion of an object
-      --  declaration. If the aggregate is an actual in a call, itself
-      --  possibly in a RHS, building it in the target is not possible.
-
-      elsif Maybe_In_Place_OK
-        and then Nkind (Parent_Node) not in N_Subprogram_Call
+      if Maybe_In_Place_OK
         and then Safe_Left_Hand_Side (Name (Parent_Node))
       then
          Tmp := Name (Parent_Node);
@@ -6209,8 +6207,6 @@ package body Exp_Aggr is
          --  to suppress redundant length checks.
 
          Set_Etype (N, Etype (Tmp));
-
-      --  Step 5
 
       --  In-place aggregate expansion is not possible
 
@@ -6247,12 +6243,13 @@ package body Exp_Aggr is
          Insert_Action (N, Tmp_Decl);
       end if;
 
-      --  Construct and insert the aggregate code. We can safely suppress index
-      --  checks because this code is guaranteed not to raise CE on index
-      --  checks. However we should *not* suppress all checks.
+      --  STEP 6
+
+      --  Build and insert the aggregate code
 
       declare
-         Target : Node_Id;
+         Aggr_Code : List_Id;
+         Target    : Node_Id;
 
       begin
          if Nkind (Tmp) = N_Defining_Identifier then
@@ -6269,58 +6266,15 @@ package body Exp_Aggr is
 
             --  Name in assignment is explicit dereference
 
-            Target := New_Copy (Tmp);
+            Target := New_Copy_Tree (Tmp);
          end if;
 
-         --  If we are to generate an in-place assignment for a declaration or
-         --  an assignment statement, and the assignment can be done directly
-         --  by the back end, then do not expand further.
-
-         --  ??? We can also do that if in-place expansion is not possible but
-         --  then we could go into an infinite recursion.
-
-         if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
-           and then not CodePeer_Mode
-           and then not Possible_Bit_Aligned_Component (Target)
-           and then not Is_Possibly_Unaligned_Slice (Target)
-           and then Aggr_Assignment_OK_For_Backend (N)
-         then
-
-            --  In the case of an assignment using an access with the
-            --  Designated_Storage_Model aspect with a Copy_To procedure,
-            --  insert a temporary and have the back end handle the assignment
-            --  to it. Copy the result to the original target.
-
-            if Parent_Kind = N_Assignment_Statement
-              and then Nkind (Name (Parent_Node)) = N_Explicit_Dereference
-              and then Has_Designated_Storage_Model_Aspect
-                         (Etype (Prefix (Name (Parent_Node))))
-              and then Present (Storage_Model_Copy_To
-                                  (Storage_Model_Object
-                                     (Etype (Prefix (Name (Parent_Node))))))
-            then
-               Aggr_Code := Build_Assignment_With_Temporary
-                              (Target, Typ, New_Copy_Tree (N));
-
-            else
-               if Maybe_In_Place_OK then
-                  return;
-               end if;
-
-               Aggr_Code := New_List (
-                 Make_Assignment_Statement (Loc,
-                   Name       => Target,
-                   Expression => New_Copy_Tree (N)));
-            end if;
-
-         else
-            Aggr_Code :=
-              Build_Array_Aggr_Code (N,
-                Ctype       => Ctyp,
-                Index       => First_Index (Typ),
-                Into        => Target,
-                Scalar_Comp => Is_Scalar_Type (Ctyp));
-         end if;
+         Aggr_Code :=
+           Build_Array_Aggr_Code (N,
+             Ctype       => Ctyp,
+             Index       => First_Index (Typ),
+             Into        => Target,
+             Scalar_Comp => Is_Scalar_Type (Ctyp));
 
          --  Save the last assignment statement associated with the aggregate
          --  when building a controlled object. This reference is utilized by
@@ -6334,47 +6288,17 @@ package body Exp_Aggr is
          then
             Set_Last_Aggregate_Assignment (Entity (Target), Last (Aggr_Code));
          end if;
+
+         Insert_Actions (N, Aggr_Code);
       end;
 
-      --  If the aggregate is the expression in a declaration, the expanded
-      --  code must be inserted after it. The defining entity might not come
-      --  from source if this is part of an inlined body, but the declaration
-      --  itself will.
-      --  The test below looks very specialized and kludgy???
-
-      if Comes_From_Source (Tmp)
-        or else
-          (Nkind (Parent (N)) = N_Object_Declaration
-            and then Comes_From_Source (Parent (N))
-            and then Tmp = Defining_Entity (Parent (N)))
-      then
-         if Parent_Kind /= N_Object_Declaration or else Is_Frozen (Tmp) then
-            Insert_Actions_After (Parent_Node, Aggr_Code);
-         else
-            declare
-               Comp_Stmt : constant Node_Id :=
-                 Make_Compound_Statement
-                   (Sloc (Parent_Node), Actions => Aggr_Code);
-            begin
-               Insert_Action_After (Parent_Node, Comp_Stmt);
-               Set_Initialization_Statements (Tmp, Comp_Stmt);
-            end;
-         end if;
-      else
-         Insert_Actions (N, Aggr_Code);
-      end if;
-
       --  If the aggregate has been assigned in place, remove the original
-      --  assignment.
+      --  assignment. Otherwise replace the aggregate with the temporary.
 
-      if Parent_Kind = N_Assignment_Statement and then Maybe_In_Place_OK then
+      if Maybe_In_Place_OK then
          Rewrite (Parent_Node, Make_Null_Statement (Loc));
 
-      --  Or else, if a temporary was created, replace the aggregate with it
-
-      elsif Parent_Kind /= N_Object_Declaration
-        or else Tmp /= Defining_Identifier (Parent_Node)
-      then
+      else
          Rewrite (N, New_Occurrence_Of (Tmp, Loc));
          Analyze_And_Resolve (N, Typ);
       end if;
@@ -8878,58 +8802,16 @@ package body Exp_Aggr is
       Target : Node_Id) return List_Id
    is
       Aggr_Code : List_Id;
-      New_Aggr  : Node_Id;
 
    begin
       if Is_Array_Type (Typ) then
-         --  If the assignment can be done directly by the back end, then
-         --  reset Set_Expansion_Delayed and do not expand further.
-
-         if not CodePeer_Mode
-           and then not Possible_Bit_Aligned_Component (Target)
-           and then not Is_Possibly_Unaligned_Slice (Target)
-           and then Aggr_Assignment_OK_For_Backend (N)
-         then
-            New_Aggr := New_Copy_Tree (N);
-            Set_Expansion_Delayed (New_Aggr, False);
-
-            --  In case of Target's type having the Designated_Storage_Model
-            --  aspect with a Copy_To procedure, first insert a temporary and
-            --  have the back end handle the assignment to it, then copy the
-            --  result to the original target.
-
-            if Nkind (Target) = N_Unchecked_Type_Conversion
-              and then Nkind (Expression (Target)) = N_Explicit_Dereference
-              and then Has_Designated_Storage_Model_Aspect
-                         (Etype (Prefix (Expression (Target))))
-              and then Present (Storage_Model_Copy_To
-                                  (Storage_Model_Object
-                                     (Etype (Prefix (Expression (Target))))))
-            then
-               Aggr_Code :=
-                 Build_Assignment_With_Temporary (Target, Typ, New_Aggr);
-
-            else
-               Aggr_Code :=
-                 New_List (
-                   Make_OK_Assignment_Statement (Sloc (New_Aggr),
-                     Name       => Target,
-                     Expression => New_Aggr));
-            end if;
-
-         --  Or else, generate component assignments to it
-
-         else
-            Aggr_Code :=
-              Build_Array_Aggr_Code
-                (N           => N,
-                 Ctype       => Component_Type (Typ),
-                 Index       => First_Index (Typ),
-                 Into        => Target,
-                 Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)));
-         end if;
-
-      --  Directly or indirectly (e.g. access protected procedure) a record
+         Aggr_Code :=
+           Build_Array_Aggr_Code
+             (N           => N,
+              Ctype       => Component_Type (Typ),
+              Index       => First_Index (Typ),
+              Into        => Target,
+              Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)));
 
       else
          Aggr_Code := Build_Record_Aggr_Code (N, Typ, Target);

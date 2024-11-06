@@ -7654,16 +7654,25 @@ package body Exp_Ch3 is
             end if;
          end if;
 
+         --  For a special return object, the initialization must wait until
+         --  after the object is turned into an allocator.
+
          if not Special_Ret_Obj then
             Default_Initialize_Object (Init_After);
 
-            --  Check whether an access object has been initialized above
+            --  Check whether the object has been initialized above
 
-            if Is_Access_Type (Typ) and then Present (Expression (N)) then
-               if Known_Non_Null (Expression (N)) then
-                  Set_Is_Known_Non_Null (Def_Id);
-               elsif Known_Null (Expression (N)) then
-                  Set_Is_Known_Null (Def_Id);
+            if Present (Expression (N)) then
+               if Is_Access_Type (Typ) then
+                  if Known_Non_Null (Expression (N)) then
+                     Set_Is_Known_Non_Null (Def_Id);
+                  elsif Known_Null (Expression (N)) then
+                     Set_Is_Known_Null (Def_Id);
+                  end if;
+               end if;
+
+               if Is_Delayed_Aggregate (Expression (N)) then
+                  Convert_Aggr_In_Object_Decl (N);
                end if;
             end if;
          end if;

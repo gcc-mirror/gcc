@@ -2645,6 +2645,14 @@ package body Sem_Eval is
 
       elsif Nkind (Parent (N)) = N_Attribute_Reference then
          return;
+
+      --  Similarly if the indexed component appears as the name of an
+      --  assignment statement, we don't want to evaluate it,
+
+      elsif Nkind (Parent (N)) = N_Assignment_Statement
+        and then N = Name (Parent (N))
+      then
+         return;
       end if;
 
       --  Note: there are other cases, such as the left side of an assignment,
