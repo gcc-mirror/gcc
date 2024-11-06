@@ -3,9 +3,8 @@
 namespace Rust {
 namespace Compile {
 
-CompileAsm::CompileAsm (Context *ctx)
-  : HIRCompileBase (ctx), translated (error_mark_node)
-{}
+CompileAsm::CompileAsm (Context *ctx) : HIRCompileBase (ctx) {}
+
 tree
 CompileAsm::tree_codegen_asm (HIR::InlineAsm &expr)
 {
