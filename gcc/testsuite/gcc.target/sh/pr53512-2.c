@@ -1,7 +1,7 @@
 /* Verify that the fsca insn is not used when specifying -mno-fsca and
   -funsafe-math-optimizations.  */
 /* { dg-do compile { target { has_fsca } } }  */
-/* { dg-options "-O1 -mno-fsca -funsafe-math-optimizations" } */
+/* { dg-options "-O1 -mno-fsca -funsafe-math-optimizations -fno-math-errno" } */
 /* { dg-final { scan-assembler-not "fsca" } } */
 
 #include <math.h>

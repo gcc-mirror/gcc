@@ -367,6 +367,7 @@ package body System.Multiprocessors.Dispatching_Domains is
       --  Attach the CPU to the task
 
       T.Common.Base_CPU := CPU;
+      T.Common.CPU_Is_Explicit := True;
 
       --  Change the number of tasks attached to a given task in the system
       --  domain if needed.

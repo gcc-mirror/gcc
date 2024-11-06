@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_SHARED_MUTEX
 #define _GLIBCXX_SHARED_MUTEX 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // concurrency
 
@@ -72,7 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef __gthrw
 #define _GLIBCXX_GTHRW(name) \
   __gthrw(pthread_ ## name); \
-  static inline int \
+  inline int \
   __glibcxx_ ## name (pthread_rwlock_t *__rwlock) \
   { \
     if (__gthread_active_p ()) \
@@ -88,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # ifndef PTHREAD_RWLOCK_INITIALIZER
   _GLIBCXX_GTHRW(rwlock_destroy)
   __gthrw(pthread_rwlock_init);
-  static inline int
+  inline int
   __glibcxx_rwlock_init (pthread_rwlock_t *__rwlock)
   {
     if (__gthread_active_p ())
@@ -99,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # endif
 # if _GTHREAD_USE_MUTEX_TIMEDLOCK
    __gthrw(pthread_rwlock_timedrdlock);
-  static inline int
+  inline int
   __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
 				const timespec *__ts)
   {
@@ -109,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return 0;
   }
    __gthrw(pthread_rwlock_timedwrlock);
-  static inline int
+  inline int
   __glibcxx_rwlock_timedwrlock (pthread_rwlock_t *__rwlock,
 				const timespec *__ts)
   {
@@ -120,33 +122,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 # endif
 #else
-  static inline int
+  inline int
   __glibcxx_rwlock_rdlock (pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_rdlock (__rwlock); }
-  static inline int
+  inline int
   __glibcxx_rwlock_tryrdlock (pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_tryrdlock (__rwlock); }
-  static inline int
+  inline int
   __glibcxx_rwlock_wrlock (pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_wrlock (__rwlock); }
-  static inline int
+  inline int
   __glibcxx_rwlock_trywrlock (pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_trywrlock (__rwlock); }
-  static inline int
+  inline int
   __glibcxx_rwlock_unlock (pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_unlock (__rwlock); }
-  static inline int
+  inline int
   __glibcxx_rwlock_destroy(pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_destroy (__rwlock); }
-  static inline int
+  inline int
   __glibcxx_rwlock_init(pthread_rwlock_t *__rwlock)
   { return pthread_rwlock_init (__rwlock, NULL); }
 # if _GTHREAD_USE_MUTEX_TIMEDLOCK
-  static inline int
+  inline int
   __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
 				const timespec *__ts)
   { return pthread_rwlock_timedrdlock (__rwlock, __ts); }
-  static inline int
+  inline int
   __glibcxx_rwlock_timedwrlock (pthread_rwlock_t *__rwlock,
 				const timespec *__ts)
   { return pthread_rwlock_timedwrlock (__rwlock, __ts); }
@@ -330,10 +332,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       unique_lock<mutex> __lk(_M_mut);
       // Wait until we can set the write-entered flag.
-      _M_gate1.wait(__lk, [=]{ return !_M_write_entered(); });
+      _M_gate1.wait(__lk, [this]{ return !_M_write_entered(); });
       _M_state |= _S_write_entered;
       // Then wait until there are no more readers.
-      _M_gate2.wait(__lk, [=]{ return _M_readers() == 0; });
+      _M_gate2.wait(__lk, [this]{ return _M_readers() == 0; });
     }
 
     bool
@@ -365,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     lock_shared()
     {
       unique_lock<mutex> __lk(_M_mut);
-      _M_gate1.wait(__lk, [=]{ return _M_state < _S_max_readers; });
+      _M_gate1.wait(__lk, [this]{ return _M_state < _S_max_readers; });
       ++_M_state;
     }
 
@@ -688,13 +690,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	unique_lock<mutex> __lk(_M_mut);
 	if (!_M_gate1.wait_until(__lk, __abs_time,
-				 [=]{ return !_M_write_entered(); }))
+				 [this]{ return !_M_write_entered(); }))
 	  {
 	    return false;
 	  }
 	_M_state |= _S_write_entered;
 	if (!_M_gate2.wait_until(__lk, __abs_time,
-				 [=]{ return _M_readers() == 0; }))
+				 [this]{ return _M_readers() == 0; }))
 	  {
 	    _M_state ^= _S_write_entered;
 	    // Wake all threads blocked while the write-entered flag was set.
@@ -714,7 +716,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	unique_lock<mutex> __lk(_M_mut);
 	if (!_M_gate1.wait_until(__lk, __abs_time,
-				 [=]{ return _M_state < _S_max_readers; }))
+				 [this]{ return _M_state < _S_max_readers; }))
 	  {
 	    return false;
 	  }

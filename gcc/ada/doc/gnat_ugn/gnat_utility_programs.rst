@@ -18,7 +18,7 @@ This chapter describes a number of utility programs:
   * :ref:`The_Body_Stub_Generator_gnatstub`
   * :ref:`The_Backtrace_Symbolizer_gnatsymbolize`
 
-  It also describes how several of these tools can be used in conjunction
+  It also describes how you can use several of these tools in conjunction
   with project files: :ref:`Using_Project_Files_with_GNAT_Tools`
 
 .. only:: FSF
@@ -42,7 +42,7 @@ The File Cleanup Utility ``gnatclean``
 .. index:: File cleanup tool
 .. index:: gnatclean
 
-``gnatclean`` is a tool that allows the deletion of files produced by the
+``gnatclean`` is a tool that deletes some files produced by the
 compiler, binder and linker, including ALI files, object files, tree files,
 expanded source files, library files, interface copy source files, binder
 generated files and executable files.
@@ -52,21 +52,21 @@ generated files and executable files.
 Running ``gnatclean``
 ---------------------
 
-The ``gnatclean`` command has the form:
+You run the ``gnatclean`` command as follow:
 
   ::
 
       $ gnatclean switches names
 
-where ``names`` is a list of source file names. Suffixes :file:`.ads` and
-:file:`adb` may be omitted. If a project file is specified using switch
-:switch:`-P`, then ``names`` may be completely omitted.
+where ``names`` is a list of source file names. You may omit suffixes :file:`.ads` and
+:file:`adb`. If a project file is specified using switch
+:switch:`-P`, then you may completely omit ``names``.
 
-In normal mode, ``gnatclean`` delete the files produced by the compiler and,
-if switch :switch:`-c` is not specified, by the binder and
-the linker. In informative-only mode, specified by switch
-:switch:`-n`, the list of files that would have been deleted in
-normal mode is listed, but no file is actually deleted.
+In normal mode, ``gnatclean`` deletes the files produced by the compiler and,
+if switch :switch:`-c` is not specified, produced by the binder and
+linker. In information-only mode, specified by switch
+:switch:`-n`, ``gnatclean`` lists the files that would have been deleted in
+normal mode, but doesn't actually delete any files.
 
 
 .. _Switches_for_gnatclean:
@@ -79,22 +79,22 @@ Switches for ``gnatclean``
 .. index:: --version (gnatclean)
 
 :switch:`--version`
-  Display copyright and version, then exit disregarding all other options.
+  Display copyright and version, then exit, disregarding all other options.
 
 .. index:: --help (gnatclean)
 
 :switch:`--help`
-  If :switch:`--version` was not used, display usage, then exit disregarding
-  all other options.
+  If :switch:`--version` was not specified, display usage, then exit
+  disregarding all other options.
 
 :switch:`--subdirs={subdir}`
-  Actual object directory of each project file is the subdirectory subdir of the
-  object directory specified or defaulted in the project file.
+  Actual object directory of each project file, which is the
+  subdirectory ``subdir`` of the object directory specified or defaulted
+  in the project file.
 
 :switch:`--unchecked-shared-lib-imports`
   By default, shared library projects are not allowed to import static library
-  projects. When this switch is used on the command line, this restriction is
-  relaxed.
+  projects. When this switch is specified, this restriction is lifted.
 
 .. index:: -c (gnatclean)
 
@@ -106,15 +106,16 @@ Switches for ``gnatclean``
 .. index:: -D (gnatclean)
 
 :switch:`-D {dir}`
-  Indicate that ALI and object files should normally be found in directory ``dir``.
+  Indicate that ALI and object files should normally be found in
+  directory ``dir``.
 
 .. index:: -F (gnatclean)
 
 :switch:`-F`
-  When using project files, if some errors or warnings are detected during
-  parsing and verbose mode is not in effect (no use of switch
-  -v), then error lines start with the full path name of the project
-  file, rather than its simple file name.
+  When using project files, if some errors or warnings are detected
+  during parsing and verbose mode is not in effect (the switch
+  :switch:`-v` is not specified), error lines start with the full path
+  name of the project file, rather than its simple file name.
 
 .. index:: -h (gnatclean)
 
@@ -130,26 +131,27 @@ Switches for ``gnatclean``
 .. index:: -P (gnatclean)
 
 :switch:`-P{project}`
-  Use project file ``project``. Only one such switch can be used.
-  When cleaning a project file, the files produced by the compilation of the
-  immediate sources or inherited sources of the project files are to be
-  deleted. This is not depending on the presence or not of executable names
-  on the command line.
+  Use project file ``project``. You can specify only one such switch.
+  When cleaning a project file, ``gnatclean`` deletes the files
+  produced by the compilation of the immediate sources or inherited
+  sources of the project files. This does not depend on whether or not
+  you include executable names on the command line.
 
 .. index:: -q (gnatclean)
 
 :switch:`-q`
   Quiet output. If there are no errors, do not output anything, except in
-  verbose mode (switch -v) or in informative-only mode
-  (switch -n).
+  verbose mode (:switch:`-v`) or in information-only mode
+  (:switch:`-n`).
 
 .. index:: -r (gnatclean)
 
 :switch:`-r`
-  When a project file is specified (using switch -P),
-  clean all imported and extended project files, recursively. If this switch
-  is not specified, only the files related to the main project file are to be
-  deleted. This switch has no effect if no project file is specified.
+  When a project file is specified (using :switch:`-P`), clean all
+  imported and extended project files, recursively. If you don't
+  specify this switch, ``gnatclean`` only deletes the files related to
+  the main project file. This switch has no effect if you don't
+  specify a project file.
 
 .. index:: -v (gnatclean)
 
@@ -200,7 +202,7 @@ The GNAT Library Browser ``gnatls``
 
 ``gnatls`` is a tool that outputs information about compiled
 units. It gives the relationship between objects, unit names and source
-files. It can also be used to check the source dependencies of a unit
+files. You can also use it to check the source dependencies of a unit
 as well as various characteristics.
 
 .. _Running_gnatls:
@@ -208,7 +210,7 @@ as well as various characteristics.
 Running ``gnatls``
 ------------------
 
-The ``gnatls`` command has the form
+You run the ``gnatls`` command as follows:
 
   ::
 
@@ -216,15 +218,15 @@ The ``gnatls`` command has the form
 
 The main argument is the list of object or :file:`ali` files
 (see :ref:`The_Ada_Library_Information_Files`)
-for which information is requested.
+for which you are requesting information.
 
-In normal mode, without additional option, ``gnatls`` produces a
-four-column listing. Each line represents information for a specific
+In the default mode, without additional options, ``gnatls`` produces a
+four-column listing. Each line contains information for a specific
 object. The first column gives the full path of the object, the second
-column gives the name of the principal unit in this object, the third
+column gives the name of the principal unit in the object, the third
 column gives the status of the source and the fourth column gives the
 full path of the source representing this unit.
-Here is a simple example of use:
+Here's a simple example:
 
 
   ::
@@ -239,9 +241,9 @@ Here is a simple example of use:
      ./text_io_example.o  text_io_example   OK text_io_example.adb
      ./tgef.o             tgef             DIF tgef.adb
 
-The first line can be interpreted as follows: the main unit which is
+You should interpret the first line as follows: the main unit, which is
 contained in
-object file :file:`demo1.o` is demo1, whose main source is in
+object file :file:`demo1.o`, is demo1, whose main source is in
 :file:`demo1.adb`. Furthermore, the version of the source used for the
 compilation of demo1 has been modified (DIF). Each source file has a status
 qualifier which can be:
@@ -253,9 +255,9 @@ qualifier which can be:
 *MOK (slightly modified)*
   The version of the source file used for the compilation of the
   specified unit differs from the actual source file but not enough to
-  require recompilation. If you use gnatmake with the option
-  :switch:`-m` (minimal recompilation), a file marked
-  MOK will not be recompiled.
+  require recompilation (e.g., only comments have been changed). If
+  you run ``gnatmake`` with the option :switch:`-m` (minimal
+  recompilation), it will not recompile a file marked MOK.
 
 *DIF (modified)*
   No version of the source found on the path corresponds to the source
@@ -275,20 +277,20 @@ qualifier which can be:
 Switches for ``gnatls``
 -----------------------
 
-``gnatls`` recognizes the following switches:
+You can specify the following switches to ``gnatls``:
 
 
 .. index:: --version (gnatls)
 
 :switch:`--version`
-  Display copyright and version, then exit disregarding all other options.
+  Display copyright and version, then exit, disregarding all other options.
 
 
 .. index:: --help (gnatls)
 
 :switch:`--help`
-  If :switch:`--version` was not used, display usage, then exit disregarding
-  all other options.
+  If :switch:`--version` was not specified, display usage, then exit,
+  disregarding all other options.
 
 
 .. index:: -a (gnatls)
@@ -301,7 +303,7 @@ Switches for ``gnatls``
 .. index:: -d (gnatls)
 
 :switch:`-d`
-  List sources from which specified units depend on.
+  List sources that specified units depend on.
 
 
 .. index:: -h (gnatls)
@@ -331,10 +333,10 @@ Switches for ``gnatls``
 .. index:: -files (gnatls)
 
 :switch:`-files={file}`
-  Take as arguments the files listed in text file ``file``.
-  Text file ``file`` may contain empty lines that are ignored.
-  Each nonempty line should contain the name of an existing file.
-  Several such switches may be specified simultaneously.
+  Take as arguments the files listed in text file ``file``, which may
+  contain empty lines that are ignored.  Each nonempty line should
+  contain the name of an existing file.  Several such switches may be
+  specified on the same command.
 
 
 .. index:: -aO (gnatls)
@@ -346,8 +348,8 @@ Switches for ``gnatls``
 .. index:: -I- (gnatls)
 
 :switch:`-aO{dir}`, :switch:`-aI{dir}`, :switch:`-I{dir}`, :switch:`-I-`, :switch:`-nostdinc`
-  Source path manipulation. Same meaning as the equivalent ``gnatmake``
-  flags (:ref:`Switches_for_gnatmake`).
+  Source path manipulation. It has the same meaning as the equivalent
+  ``gnatmake`` switches (:ref:`Switches_for_gnatmake`).
 
 
 .. index:: -aP (gnatls)
@@ -359,14 +361,15 @@ Switches for ``gnatls``
 .. index:: --RTS (gnatls)
 
 :switch:`--RTS={rts-path}`
-  Specifies the default location of the runtime library. Same meaning as the
-  equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
+  Specifies the default location of the runtime library. It has the
+  same meaning as the equivalent ``gnatmake`` switch
+  (:ref:`Switches_for_gnatmake`).
 
 
 .. index:: -v (gnatls)
 
 :switch:`-v`
-  Verbose mode. Output the complete source, object and project paths. Do not use
+  Verbose mode. Output the complete source, object and project paths. Don't use
   the default column layout but instead use long format giving as much as
   information possible on each requested units, including special
   characteristics such as:
@@ -394,8 +397,8 @@ Switches for ``gnatls``
 Example of ``gnatls`` Usage
 ---------------------------
 
-Example of using the verbose switch. Note how the source and
-object paths are affected by the -I switch.
+Here's an example of using the verbose switch. Note how the source and
+object paths are affected by the :switch:`-I` switch.
 
   ::
 
@@ -425,9 +428,9 @@ object paths are affected by the -I switch.
            Flags  => No_Elab_Code
            Source => demo1.adb    modified
 
-The following is an example of use of the dependency list.
-Note the use of the -s switch
-which gives a straight list of source files. This can be useful for
+Here's an example of use of the dependency list.
+Note the use of the :switch:`-s` switch,
+which gives a simple list of source files. You may find this useful for
 building specialized scripts.
 
   ::
@@ -505,7 +508,7 @@ building specialized scripts.
      file name may contain path information; it does not have to follow
      the GNAT file naming rules
 
-   Note that it is no longer necessary to specify the Ada language version;
+   Note that you no longer need to specify the Ada language version;
    ``gnatpp`` can process Ada source code written in any version from Ada 83
    onward without specifying any language version switch.
 
@@ -518,7 +521,7 @@ building specialized scripts.
    The following subsections describe the various switches accepted by
    ``gnatpp``, organized by category.
 
-   You specify a switch by supplying a name and generally also a value.
+   You specify a switch by supplying a name and usually also a value.
    In many cases the values for a switch with a given name are incompatible
    with each other
    (for example the switch that controls the casing of a reserved word may have
@@ -527,7 +530,7 @@ building specialized scripts.
    invocation of ``gnatpp``.
    If more than one is supplied, the last one is used.
    However, some values for the same switch are mutually compatible.
-   You may supply several such switches to ``gnatpp``, but then
+   You may supply several such switches to ``gnatpp``, but
    each must be specified in full, with both the name and the value.
    Abbreviated forms (the name appearing once, followed by each value) are
    not permitted.
@@ -548,10 +551,10 @@ building specialized scripts.
    :switch:`--layout=default|minimal|compact|tall`
 
    :switch:`default`
-     The default layout will follow a compact style but add aligment and put
-     some keywords on a separate line.
+     The default layout is a compact style, but ``gnatpp`` adds
+     alignment and puts some keywords on a separate line.
      
-     Alignment is added in the the following constructs:
+     ``gnatpp`` adds alignment in the the following constructs:
 
      * ``:`` in declarations,
      * ``:=`` in initializations in declarations,
@@ -560,14 +563,14 @@ building specialized scripts.
      * ``at`` keywords in the component clauses in record representation
        clauses.
 
-     In addition, ``in`` and ``out`` keywords in parameter specifications are
-     also lined up.
+     In addition, ``gnatpp`` also lines up ``in`` and ``out`` keywords
+     in parameter specifications.
 
-     The keyword ``is`` is placed on a separate line in a subprogram body in
-     case the spec occupies more than one line.
+     ``gnatpp`` places the keyword ``is`` on a separate line in a
+     subprogram body in case the spec occupies more than one line.
 
-     The keyword ``return`` is placed on a separate line if a subprogram spec
-     does not fit on one line.
+     ``gnatpp`` places the keyword ``return`` on a separate line if a
+     subprogram spec does not fit on one line.
 
    :switch:`minimal`
      The minimal layout will avoid changing the source layout by keeping all
@@ -576,10 +579,10 @@ building specialized scripts.
      the line length limit.
 
    :switch:`compact`
-     The compact layout will avoid adding line breaks and alignment by packing
+     The compact layout avoids adding line breaks and alignment by packing
      as many subexpressions on the same line as possible.
 
-     Whole-line comments that form a paragraph will be filled in typical word
+     Whole-line comments that form a paragraph are filled in typical word
      processor style (that is, moving words between lines to make them similar
      in length, except the last one which may be shorter).
 
@@ -589,7 +592,7 @@ building specialized scripts.
      comment.
 
    :switch:`tall`
-     The tall layout will favor adding lines breaks and alignment. It adds
+     The tall layout favors adding lines breaks and alignment. It adds
      all the alignment and line breaks defined in the ``default`` option,
      and in addition:
 
@@ -628,16 +631,20 @@ building specialized scripts.
 
    .. index:: Casing control in gnatpp
 
-   ``gnatpp`` allows you to specify the casing for reserved words, pragma
-   names, attribute designators and identifiers. For identifiers you may define
-   a general rule for name casing but also override this rule via a set of
-   dictionary files.
+   ``gnatpp`` allows you to specify the casing for reserved words,
+   pragma names, attribute designators, and identifiers. For
+   identifiers, you may define a general rule for name casing but also
+   override this rule via a set of dictionary files.
 
    Three types of casing are supported: 'Lower Case', 'Upper Case', and
-   'Mixed Case'. 'Mixed case' means that the first letter, and also each
-   letter immediately following an underscore, are converted to their
-   uppercase forms and all the other letters are converted to their lowercase
+   'Mixed Case'. 'Mixed case' means that the first letter and each
+   letter immediately following an underscore are converted to their
+   uppercase forms and all other letters are converted to their lowercase
    forms.
+
+
+
+
 
    .. index:: --name-case-as-declared (gnatpp)
 
@@ -690,24 +697,24 @@ building specialized scripts.
 
    :switch:`--enum-case-as-declared, -neD`
      Enumeration literal casing for defining occurrences are as they appear in
-     the source file. Overrides -n casing setting.
+     the source file. Overrides the :switch:`-n` casing setting.
 
    .. index:: --enum-upper-case (gnatpp)
 
    :switch:`--enum-upper-case, -neU`
-     Enumeration literals are in upper case. Overrides -n casing
+     Enumeration literals are in upper case. Overrides the :switch:`-n` casing
      setting.
 
    .. index:: --enum-lower-case (gnatpp)
 
    :switch:`--enum-lower-case, -neL`
-     Enumeration literals are in lower case. Overrides -n casing
+     Enumeration literals are in lower case. Overrides the :switch:`-n` casing
      setting.
 
    .. index:: --enum-mixed-case (gnatpp)
 
    :switch:`--enum-mixed-case, -neM`
-     Enumeration literals are in mixed case. Overrides -n casing
+     Enumeration literals are in mixed case. Overrides the :switch:`-n` casing
      setting.
 
    .. index:: --type-case-as-declared (gnatpp)
@@ -715,37 +722,37 @@ building specialized scripts.
    :switch:`--type-case-as-declared, -ntD`
      Names introduced by type and subtype declarations are always
      cased as they appear in the declaration in the source file.
-     Overrides -n casing setting.
+     Overrides the :switch:`-n` casing setting.
 
    .. index:: --type-upper-case (gnatpp)
 
    :switch:`--type-upper-case, -ntU`
      Names introduced by type and subtype declarations are always in
-     upper case. Overrides -n casing setting.
+     upper case. Overrides the :switch:`-n` casing setting.
 
    .. index:: --type-lower-case (gnatpp)
 
    :switch:`--type-lower-case, -ntL`
      Names introduced by type and subtype declarations are always in
-     lower case. Overrides -n casing setting.
+     lower case. Overrides the :switch:`-n` casing setting.
 
    .. index:: --type-mixed-case (gnatpp)
 
    :switch:`--type-mixed-case, -ntM`
      Names introduced by type and subtype declarations are always in
-     mixed case. Overrides -n casing setting.
+     mixed case. Overrides the :switch:`-n` casing setting.
 
    .. index:: --number-upper-case (gnatpp)
 
    :switch:`--number-upper-case, -nnU`
      Names introduced by number declarations are always in
-     upper case. Overrides -n casing setting.
+     upper case. Overrides the :switch:`-n` casing setting.
 
    .. index:: --number-lower-case (gnatpp)
 
    :switch:`--number-lower-case, -nnL`
      Names introduced by number declarations are always in
-     lower case. Overrides -n casing setting.
+     lower case. Overrides the :switch:`-n` casing setting.
 
    .. index:: --number-mixed-case (gnatpp)
 
@@ -798,7 +805,7 @@ building specialized scripts.
 
    :switch:`--syntax-only`
      Disable the semantic analysis (name resolution) done by libadalang.
-     This means gnatpp will not be able to support any of the
+     This means ``gnatpp`` is not able to support any of the
      "as-declared" switches.
 
    .. index:: --dictionary (gnatpp)
@@ -821,7 +828,7 @@ building specialized scripts.
    :switch:`--dictionary=-, -D=-`
      Do not use the default dictionary file;
      instead, use the casing
-     defined by a ``-n`` switch and any explicit
+     defined by a :switch:`-n` switch and any explicit
      dictionary file(s)
 
    The structure of a dictionary file, and details on the conventions
@@ -846,13 +853,13 @@ building specialized scripts.
    .. index:: --max-line-length (gnatpp)
 
    :switch:`--max-line-length={nnn}, -M={nnn}`
-     Maximum line length, ``nnn`` from 32...256, the default value is 79
+     Maximum line length, ``nnn`` from 32...256. The default value is 79
 
 
    .. index:: --indentation (gnatpp)
 
    :switch:`--indentation={nnn}, -i={nnn}`
-     Indentation level, ``nnn`` from 1...9, the default value is 3
+     Indentation level, ``nnn`` from 1...9. The default value is 3
 
 
    .. index:: --indent-continuation (gnatpp)
@@ -878,8 +885,8 @@ building specialized scripts.
    :switch:`--decimal-grouping={n}`
      Put underscores in decimal literals (numeric literals without a base)
      every ``n`` characters. If a literal already has one or more
-     underscores, it is not modified. For example, with
-     ``--decimal-grouping=3``, ``1000000`` will be changed to
+     underscores, ``gnatpp`` will not modify it. For example, with
+     ``--decimal-grouping=3``, ``1000000`` is changed to
      ``1_000_000``.
 
 
@@ -887,16 +894,16 @@ building specialized scripts.
 
    :switch:`--based-grouping={n}`
      Same as ``--decimal-grouping``, but for based literals. For
-     example, with ``--based-grouping=4``, ``16#0001FFFE#`` will be
+     example, with ``--based-grouping=4``, ``16#0001FFFE#`` is
      changed to ``16#0001_FFFE#``.
 
    .. index:: --call-threshold (gnatpp)
 
    :switch:`--call-threshold={nnn}`
-     If the number of parameter associations is greater than ``nnn`` and if at
-     least one association uses named notation, start each association from
-     a new line. If ``nnn`` is 0, no check for the number of associations
-     is made; this is the default.
+     If the number of parameter associations is greater than ``nnn``
+     and if at least one association uses named notation, start each
+     association from a new line. If ``nnn`` is 0, ``gnatpp`` does not
+     check for the number of associations; this is the default.
 
    .. index:: --par-threshold (gnatpp)
 
@@ -904,7 +911,7 @@ building specialized scripts.
      If the number of parameter specifications is greater than ``nnn``
      (or equal to ``nnn`` in case of a function), start each specification from
      a new line. If ``nnn`` is 0, and :switch:`--no-separate-is` was not
-     specified, then the ``is`` is placed on a separate line. This feature is
+     specified, then the ``is`` is placed on a separate line. This option is
      disabled by default.
 
 
@@ -913,8 +920,8 @@ building specialized scripts.
    Setting the Source Search Path
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   To define the search path for the input source file, ``gnatpp``
-   uses the same switches as the GNAT compiler, with the same effects:
+   To define the search path for the input source file, pass ``gnatpp``
+   the same switches as the GNAT compiler, with the same effects:
 
    .. index:: -I (gnatpp)
 
@@ -935,8 +942,8 @@ building specialized scripts.
    Output File Control
    ^^^^^^^^^^^^^^^^^^^
 
-   By default the output overwrites the input file.
-   The output may be redirected by the following switches:
+   By default, the output overwrites the input file.
+   You can specify the location of the output with the following switches:
 
 
    .. index:: --replace (gnatpp)
@@ -950,11 +957,11 @@ building specialized scripts.
    .. index:: --output-dir (gnatpp)
 
    :switch:`--output-dir={dir}`
-     Generate output file in directory :file:`dir` with the same name as
-     the input file. If :file:`dir` is the same as the directory
-     containing the input file, the input file is not processed; use
-     ``--replace`` if you want to update the input file in
-     place.
+     Generate the output file in directory :file:`dir` with the same
+     name as the input file. If :file:`dir` is the same as the
+     directory containing the input file, ``gnatpp`` does not read or
+     process the input file; use ``--replace`` if you want to update
+     the input file in place.
 
 
    .. index:: --pipe (gnatpp)
@@ -981,7 +988,7 @@ building specialized scripts.
    .. index:: --replace-backup (gnatpp)
 
    :switch:`--replace-backup, -r`
-     Replace the input source file with the reformatted output, and copy the
+     Replace the input source file with the reformatted output and copy the
      original input source into the file whose name is obtained by appending
      the :file:`.npp` suffix to the name of the input file.
      If a file with this name already exists, ``gnatpp`` terminates without
@@ -1018,11 +1025,13 @@ building specialized scripts.
 
      * *b* - Brackets encoding (default value)
 
-   Options ``--output-file`` and ``--output-force`` are allowed only if
-   the call to gnatpp contains only one file to reformat.
+   You may only specify options :switch:`--output-file` and
+   :switch:`--output-force` if the call to ``gnatpp`` contains only
+   one file to reformat.
 
-   Option ``--eol`` and ``--wide-character-encoding`` cannot be used together
-   with the ``--pipe`` option.
+   You may not use the option :switch:`--eol` or
+   :switch:`--wide-character-encoding` together with the
+   :switch:`--pipe` option.
 
 
    .. _Other_gnatpp_Switches:
@@ -1030,25 +1039,26 @@ building specialized scripts.
    Other ``gnatpp`` Switches
    ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   The additional ``gnatpp`` switches are defined in this subsection.
+   You can also use the additional ``gnatpp`` switches defined in
+   this subsection.
 
 
    .. index:: --version  (gnatpp)
 
    :switch:`--version`
-     Display copyright and version, then exit disregarding all other options.
+     Display copyright and version, then exit, disregarding all other options.
 
 
    .. index:: --help  (gnatpp)
 
    :switch:`--help`
-     Display usage, then exit disregarding all other options.
+     Display usage, then exit, disregarding all other options.
 
 
    .. index:: -P  (gnatpp)
 
    :switch:`-P {file}`
-     Indicates the name of the project file that describes the set of sources
+     Specifies the name of the project file that describes the set of sources
      to be processed. The exact set of argument sources depends on other
      options specified; see below.
 
@@ -1056,43 +1066,45 @@ building specialized scripts.
    .. index:: -U  (gnatpp)
 
    :switch:`-U`
-     If a project file is specified and no argument source is explicitly
-     specified (either directly or by means of ``--files`` option), process
-     all the units of the closure of the argument project. Otherwise this
-     option has no effect.
+     If you specify a project file but don't specify a source file,
+     either directly or by means of a :switch:`--files` option,
+     ``gnatpp`` processes all the units of the closure of the
+     specifed project. Otherwise this option has no effect.
 
    :switch:`-U {main_unit}`
-     If a project file is specified and no argument source is explicitly
-     specified (either directly or by means of ``--files`` option), process
-     the closure of units rooted at ``main_unit``. Otherwise this option
-     has no effect.
+     If you specify a project file but don't specify a source file,
+     either directly or by means of :switch:`--files` option,
+     ``gnatpp`` will process the closure of units rooted at
+     ``main_unit``. Otherwise this option has no effect.
 
 
    .. index:: -X  (gnatpp)
 
    :switch:`-X{name}={value}`
-     Indicates that external variable ``name`` in the argument project
-     has the value ``value``. Has no effect if no project is specified.
+     Indicates that external variable ``name`` in the specified project
+     has the value ``value``. Has no effect if you don't specify a project.
 
 
    .. index:: --RTS (gnatpp)
 
    :switch:`--RTS={rts-path}`
-     Specifies the default location of the runtime library. Same meaning as the
-     equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
+     Specifies the default location of the runtime library. It has the
+     same meaning as the equivalent ``gnatmake`` switch
+     (:ref:`Switches_for_gnatmake`).
 
 
    .. index:: --incremental  (gnatpp)
 
    :switch:`--incremental`
-     Incremental processing on a per-file basis. Source files are only
-     processed if they have been modified, or if files they depend on have
-     been modified. This is similar to the way gnatmake/gprbuild only
-     compiles files that need to be recompiled. A project file is required
-     in this mode, and the gnat driver (as in *gnat pretty*) is not
-     supported.
+
+     ``gnatpp`` will perform incremental processing on a per-file
+     basis. It will only process a source file if it has been
+     modified, or if files it depends on have been modified. This is
+     similar to the way ``gnatmake``/``gprbuild`` only compiles files that
+     need to be recompiled. You must specify a project file in this mode,
+     and the gnat driver (as in *gnat pretty*) is not supported.
      (Note: this switch is not yet supported in the libadalang-based
-     version of gnatpp.)
+     version of ``gnatpp``.)
 
 
    .. index:: --pp-off  (gnatpp)
@@ -1112,25 +1124,25 @@ building specialized scripts.
    .. index:: --files (gnatpp)
 
    :switch:`--files={filename}, -files={filename}`
-     Take as arguments the files listed in text file ``file``.
-     Text file ``file`` may contain empty lines that are ignored.
+     Take as arguments the files listed in text file ``file``, which
+     may contain empty lines that are ignored.
      Each nonempty line should contain the name of an existing file.
-     Several such switches may be specified simultaneously.
+     You may specify several such switches on the same command line.
 
 
    .. index:: --ignore (gnatpp)
 
    :switch:`--ignore={filename}`
-     Do not process the sources listed in a specified file. This option cannot
-     be used in incremental mode.
+     ``gnatpp`` will not process the sources listed in the specified file.
+     You can't specify this option in incremental mode.
 
 
    .. index:: --jobs (gnatpp)
 
    :switch:`--jobs={n}, -j={n}`
-     With ``--incremental``, use *n* ``gnatpp`` processes to perform
-     pretty printing in parallel. If *n* is 0, then the maximum number
-     processes is the number of core processors on the platform.
+     With :switch:`--incremental`, use *n* ``gnatpp`` processes to perform
+     pretty printing in parallel. If *n* is 0, the maximum number
+     processes is the number of core processors on the host.
 
 
    .. index:: --verbose (gnatpp)
@@ -1144,9 +1156,9 @@ building specialized scripts.
    :switch:`--quiet, -q`
      Quiet mode
 
-   If a project file is specified and no argument source is explicitly
-   specified (either directly or by means of ``--files`` option), and no
-   ``-U`` is specified, then the set of processed sources is
+   If you specify a project file, but no source files
+   (either directly or by means of a :switch:`--files` option), and you
+   specify the :switch:`-U`, then the set of processed sources is
    all the immediate units of the argument project.
 
 
@@ -1155,9 +1167,10 @@ building specialized scripts.
    Formatting Rules
    ----------------
 
-   The following subsections show how ``gnatpp`` treats, comments, program
-   layout, name casing and how to disable ``gnatpp`` in source code regions.
-   They provide more details of the switches shown above.
+   The following subsections show how ``gnatpp`` treats comments,
+   program layout, and name casing as well as how to disable ``gnatpp`` in
+   source code regions.  They provide more details of the switches
+   shown above.
 
 
    .. _Disabling_Pretty_Printing:
@@ -1165,20 +1178,20 @@ building specialized scripts.
    Disabling Pretty Printing
    ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   Pretty printing is highly heuristic in nature, and sometimes doesn't
-   do exactly what you want. If you wish to format a certain region of
+   Pretty printing is highly heuristic in nature and sometimes doesn't
+   do exactly what you want. If you want to format a certain region of
    code by hand, you can turn off pretty printing in that region by
    surrounding it with special comments that start with ``--!pp off``
-   and ``--!pp on``. The text in that region will then be reproduced
+   and ``--!pp on``. The text in that region is reproduced
    verbatim in the output with no formatting.
 
-   To disable pretty printing for the whole file, put ``--!pp off`` at
+   To disable pretty printing for an entire file, put ``--!pp off`` at
    the top, with no following ``--!pp on``.
 
-   The comments must appear on a line by themselves, with nothing
-   preceding except spaces. The initial text of the comment must be
-   exactly ``--!pp off`` or ``--!pp on`` (case sensitive), but may
-   be followed by arbitrary additional text. For example:
+   You must place each of these comments on a line by themselves, with nothing
+   preceding except spaces. You must have the initial text of the comment be
+   exactly ``--!pp off`` or ``--!pp on`` (case sensitive), but you may
+   follow it by arbitrary additional text. For example:
 
      .. code-block:: ada
 
@@ -1191,17 +1204,17 @@ building specialized scripts.
            --!pp on -- reenable pretty printing
            ...
 
-   You can specify different comment strings using the ``--pp-off``
-   and ``--pp-on`` switches. For example, if you say:
+   You can specify different comment strings using the :switch:`--pp-off`
+   and :switch:`--pp-on` switches. For example, if you say:
 
      ::
 
         $ gnatpp --pp-off=' pp-' *.ad?
 
-   then gnatpp will recognize comments of the form
-   ``-- pp-`` instead of ``--!pp off`` for disabling pretty
-   printing. Note that the leading ``--`` of the comment is not
-   included in the argument to these switches.
+   ``gnatpp`` will recognize comments of the form ``-- pp-`` instead
+   of ``--!pp off`` for disabling pretty printing. Note that you do
+   not include the leading ``--`` of the comment in the argument to
+   these switches.
 
 
    .. _Formatting_Comments:
@@ -1209,17 +1222,17 @@ building specialized scripts.
    Formatting Comments
    ^^^^^^^^^^^^^^^^^^^
 
-   Only ``--layout=compact`` and ``--layout=tall`` format comments.
+   Only :switch:`--layout=compact` and :switch:`--layout=tall` format comments.
 
    Comments in Ada code are of two kinds:
 
-   * a *whole-line comment*, which appears by itself (possibly preceded by
+   * *whole-line comments*, which appear by themselves (possibly preceded by
      white space) on a line
 
-   * an *end-of-line comment*, which follows some other Ada code on
+   * *end-of-line comments*, which follows some other Ada code on
      the same line.
 
-   A whole-line comment is indented according to the surrounding code,
+   ``gnatpp`` indents whole-line comment according to the surrounding code,
    with some exceptions. Comments that start in column 1 are kept
    there. If possible, comments are not moved so far to the right that
    the maximum line length is exceeded. Special-form comments such as
@@ -1227,16 +1240,17 @@ building specialized scripts.
 
    For an end-of-line comment, ``gnatpp`` tries to leave the same
    number of spaces between the end of the preceding Ada code and the
-   beginning of the comment as appear in the original source.
+   beginning of the comment, as it appears in the original source.
 
    For each whole-line comment that does not end with two hyphens or that are
    not special-form comments, ``gnatpp`` inserts spaces if necessary after the
    starting two hyphens to ensure that there are at least two spaces between
    these hyphens and the first non-blank character of the comment.
 
-   With ``--layout=compact``, whole-line comments that form a paragraph will be
-   filled in typical word processor style (that is, moving words between lines
-   to make the lines other than the last similar in length).
+   With :switch:`--layout=compact`, ``gnatpp`` fills in whole-line
+   comments that form a paragraph in typical word processor style
+   (that is, moving words between lines to make the lines other than
+   the last similar in length).
 
 
    .. _Name_Casing:
@@ -1247,22 +1261,23 @@ building specialized scripts.
    ``gnatpp`` always converts the usage occurrence of a (simple) name to
    the same casing as the corresponding defining identifier.
 
-   You control the casing for defining occurrences via the ``--name...``
-   switches. With ``--name-case-as-declared``, which is the default,
+   You control the casing for defining occurrences via the :switch:`--name...`
+   switches. With :switch:`--name-case-as-declared`, which is the default,
    defining occurrences appear exactly as in the source file where they
    are declared. The other values for this switch --
-   ``--name-upper-case``, ``--name-lower-case``, ``--name-mixed-case``
+   :switch:`--name-upper-case`, :switch:`--name-lower-case`, and
+   :switch:``--name-mixed-case``
    -- result in upper, lower, or mixed case, respectively. If
    ``gnatpp`` changes the casing of a defining occurrence, it
-   analogously changes the casing of all the usage occurrences of this
+   similarly changes the casing of all the usage occurrences of this
    name.
 
-   If the defining occurrence of a name is not in the source compilation
-   unit currently being processed by ``gnatpp``, the casing of each
-   reference to this name is changed according to the switch (subject to
-   the dictionary file mechanism described below). Thus ``gnatpp`` acts
-   as though the switch had affected the casing for the defining
-   occurrence of the name.
+   If the defining occurrence of a name is not in the source
+   compilation unit currently being processed by ``gnatpp``,
+   ``gnatpp`` changes the casing of each reference to this name
+   according to the switch (subject to the dictionary file mechanism
+   described below). Thus ``gnatpp`` acts as though the switch had
+   affected the casing for the defining occurrence of the name.
 
    The options
    :switch:`--attribute...`,
@@ -1276,37 +1291,36 @@ building specialized scripts.
    types, named numbers and pragmas, respectively.
    :switch:`--type...` cover subtypes as well.
 
-   Some names may need to be spelled with casing conventions that are not
-   covered by the upper-, lower-, and mixed-case transformations.
-   You can arrange correct casing by placing such names in a
-   *dictionary file*,
-   and then supplying a ``--dictionary`` switch.
-   The casing of names from dictionary files overrides
-   any ``--name...`` switch.
+   You may need some names to be spelled with casing conventions that
+   are not covered by the upper-, lower-, and mixed-case
+   transformations.  You can have ``gnatpp`` produce the correct
+   casing by placing such names in a *dictionary file*, and
+   specifying a :switch:`--dictionary` switch.  Specifying any
+   dictionary files overrides any :switch:`--name...` switch.
 
-   To handle the casing of Ada predefined names and the names from GNAT libraries,
-   ``gnatpp`` assumes a default dictionary file.
-   The name of each predefined entity is spelled with the same casing as is used
-   for the entity in the :title:`Ada Reference Manual` (usually mixed case).
-   The name of each entity in the GNAT libraries is spelled with the same casing
-   as is used in the declaration of that entity.
+   ``gnatpp`` uses a default dictionary file to choose the casing of
+   Ada predefined names and the names from GNAT libraries,
+   
+   Each predefined entity is converted to the same casing as
+   the entity in the :title:`Ada Reference Manual` (usually
+   mixed case) and each entity in the GNAT libraries is cased
+   the same as its declaration in the library.
 
-   The ``--dictionary=-`` switch suppresses the use of
-   the default dictionary file. Instead, the casing for predefined and
-   GNAT-defined names will be established by the
-   ``-n`` switch or explicit dictionary files. For
-   example, by default the names ``Ada.Text_IO`` and
-   ``GNAT.OS_Lib`` will appear as just shown, even in the presence of
-   a ``--name-upper-case`` switch. To ensure that even
-   such names are rendered in uppercase, additionally supply the
-   --dictionary=- switch (or else place these names
-   in upper case in a dictionary file).
+   You can specify the :switch:`--dictionary=-` switch to suppress
+   the use of the default dictionary file. Instead, the casing for
+   predefined and GNAT-defined names is given by the :switch:`-n`
+   switch or explicit dictionary files. For example, by default the
+   names ``Ada.Text_IO`` and ``GNAT.OS_Lib`` appear as just shown,
+   even in the presence of a :switch:`--name-upper-case` switch. To
+   ensure that even such names are rendered in uppercase, you must
+   specify the :switch:`--dictionary=-` switch or place these names
+   in upper case in a dictionary file.
 
-   A dictionary file is a plain text file; each line in this file can be
+   A dictionary file is a plain text file; each line in this file is
    either a blank line (containing only space characters), an Ada comment
    line, or the specification of exactly one *casing schema*.
 
-   A casing schema is a string that has the following syntax:
+   A casing schema is a string with the following syntax:
 
      ::
 
@@ -1318,36 +1332,38 @@ building specialized scripts.
    (See :title:`Ada Reference Manual`, Section 2.3) for the definition of the
    ``identifier`` lexical element and the ``letter_or_digit`` category.)
 
-   The casing schema string can be followed by white space and/or an Ada-style
-   comment; any amount of white space is allowed before the string.
+   You can follow a casing schema string by white space and/or an Ada-style
+   comment. You can also have any amount of white space before the string.
 
-   If a dictionary file is passed as
-   the value of a :switch:`--dictionary={file}` switch
-   then for every
-   simple name and every identifier, ``gnatpp`` checks if the dictionary
-   defines the casing for the name or for some of its parts (the term 'subword'
-   is used below to denote the part of a name which is delimited by '_' or by
-   the beginning or end of the word and which does not contain any '_' inside):
+   If you pass a dictionary file as the value of a
+   :switch:`--dictionary={file}` switch, ``gnatpp`` checks every
+   simple name and identifier to see if the dictionary defines
+   the casing for the name or for some of its parts (the term
+   'subword' is used below to denote the part of a name that is
+   delimited by '_' or by the beginning or end of the word that
+   doesn't contain any '_' characters):
 
-   * if the whole name is in the dictionary, ``gnatpp`` uses for this name
-     the casing defined by the dictionary; no subwords are checked for this word
+   * if the complete name is in the dictionary, ``gnatpp`` uses the
+     casing defined by the dictionary for this name; it does not check
+     any subwords
 
-   * for every subword ``gnatpp`` checks if the dictionary contains the
-     corresponding string of the form ``simple_identifier``,
-     and if it does, the casing of this ``simple_identifier`` is used
-     for this subword
+   * for every subword, ``gnatpp`` checks if the dictionary contains
+     the corresponding string of the form ``simple_identifier``, and
+     if it does, the casing of this ``simple_identifier`` is used for
+     this subword
 
-   * if the whole name does not contain any '_' inside, and if for this name
-     the dictionary contains two entries -- one of the form ``identifier``,
-     and another of the form ``simple_identifier`` -- then the first one
-     is applied to define the casing of this name
+   * if the complete name does not contain any '_' characters and if
+     for this name the dictionary contains two entries -- one of the
+     form ``identifier``, and another of the form
+     ``simple_identifier`` -- ``gnatpp`` uses the first one to obtain
+     the casing of this name
 
-   * if more than one dictionary file is passed as ``gnatpp`` switches, each
-     dictionary adds new casing exceptions and overrides all the existing casing
-     exceptions set by the previous dictionaries
+   * if you pass more than one dictionary file as ``gnatpp`` switches,
+     each dictionary adds new casing exceptions and overrides all the
+     existing casing exceptions set by the previous dictionaries
 
    * when ``gnatpp`` checks if the word or subword is in the dictionary,
-     this check is not case sensitive
+     it uses a check that's not case sensitive
 
    For example, suppose we have the following source to reformat:
 
@@ -1380,7 +1396,7 @@ building specialized scripts.
 
         $ gnatpp --name-mixed-case --dictionary=dict1 --dictionary=dict2 test.adb
 
-   then we will get the following name casing in the ``gnatpp`` output:
+   then we get the following name casing in the ``gnatpp`` output:
 
 
      .. code-block:: ada
@@ -1400,9 +1416,9 @@ building specialized scripts.
    ^^^^^^^^^^^^^^^^^^^^^^^
 
    ``gnatpp`` has some support for preprocessor directives.
-   You can use preprocessor symbols, as in ``$symbol``.
-   In addition, you can use conditional compilation,
-   so long as the program text is syntactically legal Ada code
+   You can use preprocessor symbols such as ``$symbol``.
+   In addition, you can use conditional compilation as
+   long as the program text is syntactically legal Ada code
    after removing all the preprocessor directives (lines starting
    with ``#``). For example, ``gnatpp`` can format the following:
 
@@ -1480,8 +1496,8 @@ building specialized scripts.
    .. index:: --compact (gnatpp)
 
    :switch:`--compact, --no-compact`
-     In calls and similar, ``--compact`` packs as many
-     subexpressions on the same line as possible. Example:
+     In calls and similar constructs, :switch:`--compact` packs as many
+     subexpressions into the same line as is possible. Example:
 
      .. code-block:: ada
 
@@ -1489,10 +1505,11 @@ building specialized scripts.
           (Short_One, Another_Short_One,
            A_Very_Very_Very_Very_Very_Very_Very_Very_Long_One);
 
-     On the contrary, with ``--no-compact``, in calls and similar, if it is
-     necessary to split a line between two subexpressions (because otherwise
-     the construct would exceed --max-line-length), then all such
-     subexpressions are placed on separate lines. Example:
+     On the other hand, if you specify :switch:`--no-compact`,
+     ``gnatpp`` places all such subexpressions on separate lines if
+     it's necessary to split a line between two subexpressions to
+     avoid the construct exceeding :switch:`--max-line-length`. For
+     example:
 
      .. code-block:: ada
 
@@ -1546,15 +1563,14 @@ building specialized scripts.
    .. index:: --indent-named-statements (gnatpp)
 
    :switch:`--indent-named-statements, --no-indent-named-statements`
-     Named block and loop statements are indented with respect to
-     the name.
+     Indent block and loop statements with respect to the name.
 
    .. index:: --split-line-before-op (gnatpp)
 
-   :switch:`--split-line-before-op, --no-split-line-before-op`
-     If it is necessary to split a line at a binary operator, by default
-     the line is split after the operator. With this option, it is split
-     before the operator.
+   :switch:`--split-line-before-op, --no-split-line-before-op` If it
+     is necessary to split a line at a binary operator, by default the
+     line is split after the operator. When you specify this switch,
+     it is split before the operator.
 
    .. index:: --use-on-new-line (gnatpp)
 
@@ -1656,7 +1672,7 @@ building specialized scripts.
   .. index:: ! gnatstub
 
   ``gnatstub`` creates empty but compilable bodies
-  for library unit declarations, and empty but compilable
+  for library unit declarations and empty but compilable
   subunits for body stubs.
 
   ``gnatstub`` is a project-aware tool.
@@ -1668,17 +1684,17 @@ building specialized scripts.
   ``gnatstub`` switches is named ``gnatstub``.
 
 
-  By default, all the program unit bodies generated by ``gnatstub``
+  By default, all program unit bodies generated by ``gnatstub``
   raise ``Program_Error``, which will catch accidental calls of
-  generated stubs. This behavior can be changed with option
-  ``--no-exception`` (see below).
+  generated stubs. You can change this behavior with switch
+  :switch:`--no-exception` (see below).
 
   .. _Running_gnatstub:
 
   Running ``gnatstub``
   --------------------
 
-  ``gnatstub`` invocation has the following form:
+  You invoke ``gnatstub`` like this:
 
     ::
 
@@ -1686,25 +1702,22 @@ building specialized scripts.
 
   where
 
-  * *filename*
-      is the name of the source file that contains a library unit declaration
-      for which a body must be created or a library unit body for which subunits
-      must be created for the body stubs declared in this body.
-      The file name may contain path information.
-      If the name does not follow GNAT file naming conventions and the set
-      of switches does not contain a project file that defines naming
-      conventions, the name of the body file must
-      be provided
-      explicitly as the value of the :switch:`--output={body-name}` option.
-      If the file name follows the GNAT file naming
-      conventions and the name of the body file is not provided,
-      ``gnatstub``
-      takes the naming conventions for the generated source from the
-      project file provided as a parameter of ``-P`` switch if any,
-      or creates the name file to generate using the standard GNAT
-      naming conventions.
+  * *filename* is the name of the source file that contains a library
+      unit declaration for which you want a body to be created or a
+      library unit body for which you want subunits to be created for
+      the body stubs declared in this body.  The file name may contain
+      path information.  If the name does not follow GNAT file naming
+      conventions and the set of switches does not contain a project
+      file that defines naming conventions, you must explicitly
+      provide the name of the body file as the value of the
+      :switch:`--output={body-name}` switch.  If the file name follows
+      the GNAT file naming conventions and you do not provide the name
+      of the body file ``gnatstub`` uses the naming conventions for
+      the generated source from the project file provided as a
+      parameter of a :switch:`-P` switch if any, or creates the name file
+      using the standard GNAT naming conventions.
 
-      Note that it is no longer necessary to specify the Ada language version;
+      Note that you no longer need to specify the Ada language version;
       ``gnatstub`` can process Ada source code written in any version from
       Ada 83 onward without specifying any language version switch.
 
@@ -1720,21 +1733,22 @@ building specialized scripts.
   .. index:: --version (gnatstub)
 
   :switch:`--version`
-    Display copyright and version, then exit disregarding all other options.
+    Display copyright and version, then exit, disregarding all other options.
 
 
   .. index:: --help (gnatstub)
 
   :switch:`--help`
-    Display usage, then exit disregarding all other options.
+    Display usage, then exit, disregarding all other options.
 
 
   .. index:: -P (gnatstub)
 
   :switch:`-P {file}`
-    Indicates the name of the project file that describes the set of sources
-    to be processed. An aggregate project is allowed as the file parameter only
-    if it has exactly one non-aggregate project being aggregated.
+    Indicates the name of the project file that describes the set of
+    sources to be processed. You can specify an aggregate project as
+    the file parameter only if it has exactly one non-aggregate
+    project being aggregated.
 
 
   .. index:: -X (gnatstub)
@@ -1747,14 +1761,15 @@ building specialized scripts.
   .. index:: --RTS (gnatstub)
 
   :switch:`--RTS={rts-path}`
-    Specifies the default location of the runtime library. Same meaning as the
-    equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
+    Specifies the default location of the runtime library. It has the
+    same meaning as the equivalent ``gnatmake`` flag
+    (:ref:`Switches_for_gnatmake`).
 
 
   .. index:: --subunits (gnatstub)
 
   :switch:`--subunits`
-    Generate subunits for body stubs. If this switch is specified,
+    Generate subunits for body stubs. If you specify this switch,
     ``gnatstub`` expects a library unit body as an argument file;
     otherwise a library unit declaration is expected. If a body stub
     already has a corresponding subunit, ``gnatstub`` does not
@@ -1767,7 +1782,7 @@ building specialized scripts.
     If the destination directory already contains a file with the name of the
     body file
     for the argument spec file, replace it with the generated body stub.
-    This switch cannot be used together with ``--subunits``.
+    This switch cannot be used together with :switch:`--subunits`.
 
 
   .. index:: --comment-header-spec (gnatstub)
@@ -1794,8 +1809,8 @@ building specialized scripts.
 
   :switch:`--max-line-length={n}`
     (``n`` is a non-negative integer). Set the maximum line length for
-    the output files. The default is 79. The maximum value that can be
-    specified is 32767.
+    the output files. The default is 79. The maximum value that you can
+    specify is 32767.
 
 
   .. index:: --indentation (gnatstub)
@@ -1809,51 +1824,51 @@ building specialized scripts.
   .. index:: --alphabetical-order (gnatstub)
 
   :switch:`--alphabetical-order`
-    Order local bodies alphabetically. (By default local bodies are ordered
+    Order local bodies alphabetically. By default local bodies are ordered
     in the same way as the corresponding local specs in the argument
-    spec file.)
+    spec file.
 
 
   .. index:: --no-exception (gnatstub)
 
   :switch:`--no-exception`
     Avoid raising Program_Error in the generated bodies of program unit stubs,
-    except in the case of functions, where we have no value to return.
+    except in the case of functions, where there will be value to return.
 
 
   .. index:: --no-local-header (gnatstub)
 
   :switch:`--no-local-header`
-    Do not place local comment header with unit name before body stub for a
+    Do not place a local comment header with unit name before body stub for a
     unit.
 
 
   .. index:: --files (gnatstub)
 
   :switch:`--files={filename}`
-    Take as arguments the files listed in text file ``file``.
-    Text file ``file`` may contain empty lines that are ignored.
-    Each nonempty line should contain the name of an existing file.
-    Several such switches may be specified.
+    Take as arguments the files listed in text file ``file``, which
+    may contain empty lines that are ignored.
+    You should specify the name of an existing file in each non-empty line.
+    You may specify multiple :switch:`--files=` switches.
 
 
   .. index:: --output (gnatstub)
 
-  :switch:`--output={body-name}`
-    Body file name. This should be set if the argument file name does
-    not follow the default GNAT file naming conventions, and the naming
-    conventions are not specified by a project file. If this switch and
-    ``-P`` are both omitted, the name for the body will be obtained
-    according to the default GNAT file naming conventions.
+  :switch:`--output={body-name}` Body file name. You should set this
+    if the argument file name does not follow the default GNAT file
+    naming conventions and the naming conventions are not specified by
+    a project file. If you omit both this switch and :switch:`-P`,
+    ``gnatpp`` will choose the name for the body according to the
+    default GNAT file naming conventions.
 
 
   .. index:: --output-dir (gnatstub)
 
-  :switch:`--output-dir={dir-name}`
-    The directory in which to place the output files.
-    If this switch is not set, the generated library unit body is
-    placed in the current directory, and generated sununits
-    in the directory where the argument body is located.
+  :switch:`--output-dir={dir-name}` The directory in which to place
+    the output files.  If you do not specify this switch, ``gnatpp``
+    places the generated library unit body in the current directory
+    and generated sununits in the directory where the argument body is
+    located.
 
 
   .. index:: --wide-character-encoding (gnatstub)
@@ -1961,7 +1976,7 @@ building specialized scripts.
 
        $ gnatsymbolize [ switches ] filename [ addresses ]
 
-  For instance, consider the following Ada program:
+  For example, consider the following Ada program:
 
      .. code-block:: ada
 
@@ -2022,7 +2037,7 @@ building specialized scripts.
 
   This program, when built and run, prints a list of addresses which
   correspond to the traceback when inside function ``Call_Me_Third``.
-  For instance, on x86-64 GNU/Linux:
+  For example, on x86-64 GNU/Linux:
 
     ::
 
@@ -2035,8 +2050,8 @@ building specialized scripts.
        0x00005586C9D8128C
        0x00005586C9D81069
 
-  ``gnatsymbolize`` can be used to translate those addresses into
-  code locations as follow:
+  You can use ``gnatsymbolize``  to translate those addresses into
+  code locations as follows:
 
     ::
 
@@ -2052,7 +2067,7 @@ building specialized scripts.
   Switches for ``gnatsymbolize``
   ------------------------------
 
-  ``gnatsymbolize`` recognizes the following switches:
+  You can specify the following switches for ``gnatsymbolize``:
 
   .. index:: --help (gnatsymbolize)
 
@@ -2062,7 +2077,7 @@ building specialized scripts.
 
   :switch:`--cache`
     Read the symbolic information from the executable and cache them
-    in memory in order to accelerate the translation of each address
+    in memory to accelerate the translation of each address
     into a symbolic location.
 
     Depending on the size of the executable and the number of addresses
@@ -2070,13 +2085,13 @@ building specialized scripts.
     overall.
 
   :switch:`--dump`
-    If :switch:`--cache` is used, dump the contents of the cache on
+    If you have specified :switch:`--cache`, dump the contents of the cache to
     Standard Output. Has no effect otherwise.
 
   :switch:`--count={N}`
-    Compute the symbolic traceback ``N`` times in a row. This option
-    is mostly useful for measuring the performance of ``gnatsymbolize``,
-    particularly in the case where the cache is being used.
+    Compute the symbolic traceback ``N`` times in a row. You use this switch
+    mostly for measuring the performance of ``gnatsymbolize``,
+    particularly in the case where you have specified the cache to be used.
 
   :switch:`--load`
     Interpret the first address as the load address of the executable.
@@ -2086,14 +2101,14 @@ building specialized scripts.
   ----------------------------------
 
   The translation is performed by reading the DWARF debugging
-  information produced by the compiler for each unit. All units
-  for which the translation is to be done must therefore be compiled
-  such that DWARF debugging information is produced. In most cases,
-  this is done by simply compiling with ``-g``.
+  information produced by the compiler for each unit. You must
+  therefore compile all units for which the translation is to be done
+  in a way that DWARF debugging information is produced. In most cases,
+  you do this by simply compiling with :switch:`-g`.
 
   This program provides a functionality similar to ``addr2line``.
   It has fewer options to tailor its output, but has been designed
-  to require fewer of the DWARF sections to be present in the
+  to require fewer DWARF sections to be present in the
   executable. In particular, it works for code compiled with ``-g1``.
 
 
@@ -2104,7 +2119,7 @@ building specialized scripts.
    Using Project Files with GNAT Tools
    ===================================
 
-   This section describes how project files can be used in conjunction
+   This section describes how you can use project files in conjunction
    with a number of GNAT tools.
    For a comprehensive description of project files and the overall
    GNAT Project Manager facility, please refer to the
@@ -2129,18 +2144,18 @@ building specialized scripts.
       specified, see below.
 
    :switch:`-U`
-      If a project file is supplied, say for project ``proj``,
-      but no sources are specified for ``proj`` (either by a
+      If you supply a project file, say for project ``proj``,
+      but you don't specify any sources for ``proj`` (either by a
       project attribute or through a tool option that provides a list
       of the files to be used), process all the source files
       from projects imported either directly or indirectly by ``proj``.
       Otherwise this option has no effect.
 
    :switch:`-U {source_file}`
-      Similar to :switch:`-U`, but if no sources are specified then
+      Similar to :switch:`-U`, but if you don't specify any sources,
       process only those source files for units in the closure of
       the Ada source contained in ``source_file``. Note that this option
-      expects the source file name but not the Ada unit name as its
+      expects the source file name, not the Ada unit name, as its
       parameter.
 
    :switch:`-X{name}={val}`
@@ -2148,25 +2163,28 @@ building specialized scripts.
       value ``val``. Has no effect if no project has been specified.
 
    :switch:`--subdirs={dir}`
-      Use the ``dir`` subdirectory of the project's object directory (or the ``dir``
-      subdirectory of the project file directory if the project does not specify
-      an object directory) for tool output files. Has no effect if no project
-      has been specified or if :switch:`--no-objects-dir` is specified.
+      Use the ``dir`` subdirectory of the project's object directory
+      (or the ``dir`` subdirectory of the project file directory if
+      the project does not specify an object directory) for tool
+      output files. Has no effect if you haven't specified a project
+      and if you haven't specified the if :switch:`--no-objects-dir`
+      switch.
 
    :switch:`--no-objects-dir`
-      Place all the result files into the current directory (i.e., the directory
-      from which the tool invocation command is issued) instead of the project's
-      object directory. Has no effect if no project has been specified.
+      Place all the result files into the current directory (i.e., the
+      directory from which the tool invocation command is issued)
+      instead of the project's object directory. Has no effect if you
+      haven't specified a project.
 
    :switch:`-eL`
       Follow all symbolic links when processing project files.
 
-   If a project file is specified and there is neither a :switch:`-U` option,
-   nor a :switch:`-U {main_unit}` option, nor some other explicit option to
+   If you specify a project file but neither a :switch:`-U` option,
+   nor a :switch:`-U {main_unit}` option, nor any other explicit option to
    specify the source files, then the sources to be processed are the
    immediate sources of the specified project (i.e., the source files directly
    defined by that project, either implicitly by residing in the project
-   source directories, or explicitly through any of the source-related
+   source directories or explicitly through any of the source-related
    attributes).
 
    .. _Tool-specific_packages_in_project files:
@@ -2178,7 +2196,8 @@ building specialized scripts.
    the package names are given elsewhere in this manual, in the sections that describe
    the respective tools.
 
-   A tool-specific package in a project file may define the ``Default_Switches``
-   attribute indexed by "ada" (as language name). The value of this attribute
-   is a list of switches that will be supplied at tool invocation.
-   Project-specific switches cannot be specified through this attribute.
+   A tool-specific package in a project file may define the
+   ``Default_Switches`` attribute indexed by "ada" (as language
+   name). You set the value of this attribute to a list of switches
+   that you want the tool to use when it's invoked.  You cannot
+   specify project-specific switches through this attribute.

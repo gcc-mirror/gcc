@@ -22,57 +22,58 @@ For information on GNAT Studio please refer to the
 System Requirements
 ===================
 
-Even though any machine can run the GNAT toolset and GNAT Studio IDE, in order
-to get the best experience, we recommend using a machine with as many cores
-as possible since all individual compilations can run in parallel.
+Even though any machine can run the GNAT toolset and GNAT Studio IDE, 
+to get the best experience we recommend using a machine with as many cores
+as possible, allowing individual compilations to run in parallel.
 A comfortable setup for a compiler server is a machine with 24 physical cores
 or more, with at least 48 GB of memory (2 GB per core).
 
-For a desktop machine, a minimum of 4 cores is recommended (8 preferred),
+For a desktop machine, we recommend a minimum of 4 cores (8 is preferred),
 with at least 2GB per core (so 8 to 16GB).
 
-In addition, for running and navigating sources in GNAT Studio smoothly, we
-recommend at least 1.5 GB plus 3 GB of RAM per 1 million source line of code.
-In other words, we recommend at least 3 GB for for 500K lines of code and
+In addition, for running and smoothly navigating sources in GNAT Studio, we
+recommend at least 1.5 GB, plus 3 GB of RAM per million source lines of code.
+So we recommend at least 3 GB for 500K lines of code and
 7.5 GB for 2 million lines of code.
 
-Note that using local and fast drives will also make a difference in terms of
-build and link time. Network drives such as NFS, SMB, or worse, configuration
-management filesystems (such as ClearCase dynamic views) should be avoided as
-much as possible and will produce very degraded performance (typically 2 to 3
-times slower than on local fast drives). If such slow drives cannot be avoided
-for accessing the source code, then you should at least configure your project
-file so that the result of the compilation is stored on a drive local to the
-machine performing the run. This can be achieved by setting the ``Object_Dir``
-project file attribute.
+Using fast, local drives can make a significant difference in build
+and link times. You should avoid network drives such as NFS, SMB, or
+worse, configuration management filesystems (such as ClearCase dynamic
+views) as much as possible since these will produce very degraded
+performance (typically 2 to 3 times slower than on fast, local
+drives). If you cannot avoid using such slow drives for accessing
+source code, you should at least configure your project file so
+the result of the compilation is stored on a drive local to the
+machine performing the compilation. You can do this by setting the
+``Object_Dir`` project file attribute.
 
 .. _Running_GNAT:
 
 Running GNAT
 ============
 
-Three steps are needed to create an executable file from an Ada source
-file:
+You need to take three steps to create an executable file from an Ada
+source file:
 
-*   The source file(s) must be compiled.
-*   The file(s) must be bound using the GNAT binder.
-*   All appropriate object files must be linked to produce an executable.
+*   You must compile the source file(s).
+*   You must bind the file(s) using the GNAT binder.
+*   You must link all appropriate object files to produce an executable.
 
-All three steps are most commonly handled by using the ``gnatmake``
-utility program that, given the name of the main program, automatically
-performs the necessary compilation, binding and linking steps.
+You most commonly perform all three steps by using the ``gnatmake``
+utility program.  You pass it the name of the main program and it automatically
+performs the necessary compilation, binding, and linking steps.
 
 .. _Running_a_Simple_Ada_Program:
 
 Running a Simple Ada Program
 ============================
 
-Any text editor may be used to prepare an Ada program.
-(If Emacs is used, the optional Ada mode may be helpful in laying out the
+You may use any text editor to prepare an Ada program.
+(If you use Emacs, an optional Ada mode may be helpful in laying out the
 program.)
 The program text is a normal text file. We will assume in our initial
 example that you have used your editor to prepare the following
-standard format text file:
+standard format text file named :file:`hello.adb`:
 
 
 .. code-block:: ada
@@ -83,21 +84,18 @@ standard format text file:
      Put_Line ("Hello WORLD!");
   end Hello;
 
-This file should be named :file:`hello.adb`.
 With the normal default file naming conventions, GNAT requires
 that each file
 contain a single compilation unit whose file name is the
-unit name,
-with periods replaced by hyphens; the
+unit name with periods replaced by hyphens; the
 extension is :file:`ads` for a
 spec and :file:`adb` for a body.
 You can override this default file naming convention by use of the
-special pragma ``Source_File_Name`` (for further information please
-see :ref:`Using_Other_File_Names`).
+special pragma ``Source_File_Name`` (see :ref:`Using_Other_File_Names`).
 Alternatively, if you want to rename your files according to this default
 convention, which is probably more convenient if you will be using GNAT
-for all your compilations, then the ``gnatchop`` utility
-can be used to generate correctly-named source files
+for all your compilations, then you use can use the ``gnatchop`` utility
+to generate correctly-named source files
 (see :ref:`Renaming_Files_with_gnatchop`).
 
 You can compile the program using the following command (``$`` is used
@@ -108,16 +106,16 @@ as the command prompt in the examples in this document):
   $ gcc -c hello.adb
 
 
-``gcc`` is the command used to run the compiler. This compiler is
+``gcc`` is the command used to run the compiler. It is
 capable of compiling programs in several languages, including Ada and
-C. It assumes that you have given it an Ada program if the file extension is
-either :file:`.ads` or :file:`.adb`, and it will then call
+C. It assumes you have given it an Ada program if the file extension is
+either :file:`.ads` or :file:`.adb`, in which case it will call
 the GNAT compiler to compile the specified file.
 
 The :switch:`-c` switch is required. It tells ``gcc`` to only do a
 compilation. (For C programs, ``gcc`` can also do linking, but this
-capability is not used directly for Ada programs, so the :switch:`-c`
-switch must always be present.)
+capability is not used directly for Ada programs, so you must always
+specify the :switch:`-c`.)
 
 This compile command generates a file
 :file:`hello.o`, which is the object
@@ -126,11 +124,11 @@ an 'Ada Library Information' file :file:`hello.ali`,
 which contains additional information used to check
 that an Ada program is consistent.
 
-To build an executable file, use either ``gnatmake`` or gprbuild with
-the name of the main file: these tools are builders that will take care of
+To build an executable file, use either ``gnatmake`` or ``gprbuild`` with
+the name of the main file: these tools are builders that perform
 all the necessary build steps in the correct order.
 In particular, these builders automatically recompile any sources that have
-been modified since they were last compiled, or sources that depend
+been modified since they were last compiled, as well as sources that depend
 on such modified sources, so that 'version skew' is avoided.
 
 .. index:: Version skew (avoided by ``gnatmake``)
@@ -139,7 +137,7 @@ on such modified sources, so that 'version skew' is avoided.
 
   $ gnatmake hello.adb
 
-The result is an executable program called :file:`hello`, which can be
+The result is an executable program called :file:`hello`, which you can
 run by entering:
 
 .. code-block:: sh
@@ -160,8 +158,8 @@ appear in response to this command.
 Running a Program with Multiple Units
 =====================================
 
-Consider a slightly more complicated example that has three files: a
-main program, and the spec and body of a package:
+Consider a slightly more complicated example with three files: a
+main program and the spec and body of a package:
 
 
 .. code-block:: ada
@@ -210,15 +208,15 @@ following three separate files:
 Note that there is no required order of compilation when using GNAT.
 In particular it is perfectly fine to compile the main program first.
 Also, it is not necessary to compile package specs in the case where
-there is an accompanying body; you only need to compile the body. If you want
+there is an accompanying body; you only need compile the body. If you want
 to submit these files to the compiler for semantic checking and not code
-generation, then use the :switch:`-gnatc` switch:
+generation, use the :switch:`-gnatc` switch:
 
 .. code-block:: sh
 
   $ gcc -c greetings.ads -gnatc
 
-Although the compilation can be done in separate steps, in practice it is
+Although you can do the compilation in separate steps, in practice it's
 almost always more convenient to use the ``gnatmake`` or ``gprbuild`` tools:
 
 .. code-block:: sh

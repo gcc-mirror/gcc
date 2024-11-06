@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CSTDLIB
 #define _GLIBCXX_CSTDLIB 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 
@@ -219,6 +221,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   using ::llabs;
 
   inline lldiv_t
@@ -226,6 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
   using ::lldiv;
+#pragma GCC diagnostic pop
 #endif
 
 #if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC

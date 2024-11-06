@@ -148,7 +148,7 @@ fail_errmsg:
     error ("%s: %s", fname, errmsg);
   else
     error ("%s: %s: %s", fname, errmsg, xstrerror (err));
-					 
+
   if (lo->fd != -1)
     lto_obj_file_close ((lto_file *) lo);
   free (lo);

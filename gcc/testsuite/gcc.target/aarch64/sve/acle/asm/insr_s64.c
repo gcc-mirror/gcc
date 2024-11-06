@@ -43,8 +43,8 @@ TEST_UNIFORM_Z (insr_0_s64_untied, svint64_t,
 /*
 ** insr_1_s64:
 ** (
-**	mov	(x[0-9]+), #?1
-**	insr	z0\.d, \1
+**	mov	z([0-9]+)\.d, #?1
+**	insr	z0\.d, d\1
 ** |
 **	movi	v([0-9]+)\.2d, 0x1
 **	insr	z0\.d, d\2

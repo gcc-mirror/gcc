@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_CHRONO
 #define _GLIBCXX_CHRONO 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #ifdef _GLIBCXX_NO_FREESTANDING_CHRONO
 # include <bits/requires_hosted.h> // for <ctime> and clocks

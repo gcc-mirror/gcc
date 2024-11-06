@@ -51,7 +51,4 @@ int main ()
   return 0;
 }
 
-/* Vectorization of loops with multiple types and double reduction is not 
-   supported yet.  */       
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail { ! { aarch64*-*-* riscv*-*-* } } } } } */
-      
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" } } */

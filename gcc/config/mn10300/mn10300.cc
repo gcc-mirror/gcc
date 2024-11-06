@@ -475,7 +475,7 @@ mn10300_print_operand_address (FILE *file, rtx addr)
       {
 	rtx base = XEXP (addr, 0);
 	rtx index = XEXP (addr, 1);
-	
+
 	if (REG_P (index) && !REG_OK_FOR_INDEX_P (index))
 	  {
 	    rtx x = base;
@@ -651,7 +651,7 @@ mn10300_get_live_callee_saved_regs (unsigned int * bytes_saved)
       for (i = 0x04000; i < 0x40000; i <<= 1)
 	if ((mask & i) == 0)
 	  ++ count;
-      
+
       mask |= 0x3c000;
     }
 
@@ -748,7 +748,7 @@ static inline unsigned int
 popcount (unsigned int mask)
 {
   unsigned int count = 0;
-  
+
   while (mask)
     {
       ++ count;
@@ -1333,7 +1333,7 @@ mn10300_preferred_reload_class (rtx x, reg_class_t rclass)
   if (x == stack_pointer_rtx && rclass != SP_REGS)
     return (TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS);
   else if (MEM_P (x)
-	   || (REG_P (x) 
+	   || (REG_P (x)
 	       && !HARD_REGISTER_P (x))
 	   || (GET_CODE (x) == SUBREG
 	       && REG_P (SUBREG_REG (x))
@@ -1706,7 +1706,7 @@ mn10300_output_add (rtx operands[3], bool need_flags)
 
   src2_regnum = true_regnum (src2);
   src2_class = REGNO_REG_CLASS (src2_regnum);
-      
+
   if (dest_regnum == src1_regnum)
     return "add %2,%0";
   if (dest_regnum == src2_regnum)
@@ -2296,7 +2296,7 @@ mn10300_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
    move cost above.  This is not a problem.  */
 
 static int
-mn10300_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED, 
+mn10300_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 			  reg_class_t iclass, bool in ATTRIBUTE_UNUSED)
 {
   enum reg_class rclass = (enum reg_class) iclass;
@@ -2410,7 +2410,7 @@ mn10300_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	    }
 	}
       goto do_arith_costs;
-	
+
     case MINUS:
     case AND:
     case IOR:
@@ -2533,7 +2533,7 @@ mn10300_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 	               0xdc		jmp fnaddr
 	<disp>
 
-     Note that the two extra insns are effectively nops; they 
+     Note that the two extra insns are effectively nops; they
      clobber the flags but do not affect the contents of D0 or D1.  */
 
   disp = expand_binop (SImode, sub_optab, fnaddr,
@@ -2631,7 +2631,7 @@ mn10300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       || (TARGET_AM33 && REGNO_REG_CLASS (regno) == ADDRESS_REGS)
       || REGNO_REG_CLASS (regno) == EXTENDED_REGS)
     return GET_MODE_SIZE (mode) <= 4;
-  
+
   return false;
 }
 
@@ -2906,14 +2906,14 @@ mn10300_match_ccmode (rtx insn, machine_mode cc_mode)
 }
 
 /* This function is used to help split:
-   
+
      (set (reg) (and (reg) (int)))
-     
+
    into:
-   
+
      (set (reg) (shift (reg) (int))
      (set (reg) (shift (reg) (int))
-     
+
    where the shitfs will be shorter than the "and" insn.
 
    It returns the number of bits that should be shifted.  A positive
@@ -3038,7 +3038,7 @@ check_liw_constraints (struct liw_data * pliw1, struct liw_data * pliw2)
      check its values prior to any changes made by OP.  */
   if (pliw1->op == LIW_OP_CMP)
     {
-      /* Two sequential comparisons means dead code, which ought to 
+      /* Two sequential comparisons means dead code, which ought to
          have been eliminated given that bundling only happens with
          optimization.  We cannot bundle them in any case.  */
       gcc_assert (pliw1->op != pliw2->op);
@@ -3076,7 +3076,7 @@ check_liw_constraints (struct liw_data * pliw1, struct liw_data * pliw2)
 		  || pliw2->op == LIW_OP_OR
 		  || pliw2->op == LIW_OP_XOR))
 	    return false;
-		  
+
 	  pliw2->src = pliw1->src;
 	  return true;
 	}
@@ -3114,7 +3114,7 @@ mn10300_bundle_liw (void)
       if (liw1.slot == LIW_OP2 || liw2.slot == LIW_OP1)
 	{
 	  struct liw_data temp;
-	  
+
 	  temp = liw1;
 	  liw1 = liw2;
 	  liw2 = temp;
@@ -3191,7 +3191,7 @@ mn10300_insert_setlb_lcc (rtx_insn *label, rtx_insn *branch)
   if (GET_MODE (cmp_reg) == CC_FLOATmode)
     lcc = gen_FLcc (comparison, label);
   else
-    lcc = gen_Lcc (comparison, label);    
+    lcc = gen_Lcc (comparison, label);
 
   rtx_insn *jump = emit_jump_insn_before (lcc, branch);
   mark_jump_label (XVECEXP (lcc, 0, 0), jump, 0);
@@ -3294,7 +3294,7 @@ mn10300_scan_for_setlb_lcc (void)
 
   loop_optimizer_finalize ();
 
-  df_finish_pass (false);  
+  df_finish_pass (false);
 
   DUMP ("SETLB scan complete", NULL_RTX);
 }

@@ -38,26 +38,26 @@ using namespace abi;
 
 // Initial part of a vtable, this structure is used with offsetof, so we don't
 // have to keep alignments consistent manually.
-struct vtable_prefix 
+struct vtable_prefix
 {
   // Offset to most derived object.
   ptrdiff_t whole_object;
 
   // Additional padding if necessary.
 #ifdef _GLIBCXX_VTABLE_PADDING
-  ptrdiff_t padding1;               
+  ptrdiff_t padding1;
 #endif
 
   // Pointer to most derived type_info.
-  const __class_type_info *whole_type;  
+  const __class_type_info *whole_type;
 
   // Additional padding if necessary.
 #ifdef _GLIBCXX_VTABLE_PADDING
-  ptrdiff_t padding2;               
+  ptrdiff_t padding2;
 #endif
 
   // What a class's vptr points to.
-  const void *origin;               
+  const void *origin;
 };
 
 template <typename T>
@@ -76,7 +76,7 @@ convert_to_base (void const *addr, bool is_virtual, ptrdiff_t offset)
   if (is_virtual)
     {
       const void *vtable = *static_cast <const void *const *> (addr);
-      
+
       offset = *adjust_pointer<ptrdiff_t> (vtable, offset);
     }
 
@@ -143,7 +143,7 @@ struct __class_type_info::__dyncast_result
   __sub_kind whole2src;       // path from most derived object to sub object
   __sub_kind dst2src;         // path from target to sub object
   int whole_details;          // details of the whole class hierarchy
-  
+
   __dyncast_result (int details_ = __vmi_class_type_info::__flags_unknown_mask)
     :dst_ptr (NULL), whole2dst (__unknown),
      whole2src (__unknown), dst2src (__unknown),
@@ -152,7 +152,7 @@ struct __class_type_info::__dyncast_result
 
 protected:
   __dyncast_result(const __dyncast_result&);
-  
+
   __dyncast_result&
   operator=(const __dyncast_result&);
 };

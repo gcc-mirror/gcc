@@ -1,7 +1,7 @@
 /* ARM EABI compliant unwinding routines
    Copyright (C) 2004-2024 Free Software Foundation, Inc.
    Contributed by Paul Brook
- 
+
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
    Free Software Foundation; either version 3, or (at your option) any
@@ -167,7 +167,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	  _Unwind_VRS_Set (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32, &reg);
 	  continue;
 	}
-      
+
       if ((op & 0xf0) == 0x80)
 	{
 	  op = (op << 8) | next_unwind_byte (uws);
@@ -200,7 +200,7 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 	{
 	  /* Pop r4-r[4+nnn], [lr].  */
 	  _uw mask;
-	  
+
 	  mask = (0xff0 >> (7 - (op & 7))) & 0xff0;
 	  if (op & 8)
 	    mask |= (1 << R_LR);

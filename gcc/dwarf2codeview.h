@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Constants for in-built types.  */
 
 #define T_VOID			0x0003
+#define T_HRESULT		0x0008
 #define T_CHAR			0x0010
 #define T_SHORT			0x0011
 #define T_LONG			0x0012
@@ -55,8 +56,17 @@ along with GCC; see the file COPYING3.  If not see
 /* LF_POINTER attributes.  */
 #define CV_PTR_NEAR32		0x0a
 #define CV_PTR_64		0x0c
+
+/* enum CV_ptrmode_e in cvinfo.h, shifted by 5 for the lfPointerAttr bitfield */
+#define CV_PTR_MODE_MASK	0xe0
 #define CV_PTR_MODE_LVREF	0x20
+#define CV_PTR_MODE_PMEM	0x40
+#define CV_PTR_MODE_PMFUNC	0x60
 #define CV_PTR_MODE_RVREF	0x80
+
+/* enum CV_pmtype_e in in cvinfo.h */
+#define CV_PMTYPE_D_Single	0x01
+#define CV_PMTYPE_F_Single	0x05
 
 /* LF_MODIFIER values.  */
 #define MOD_const		0x1

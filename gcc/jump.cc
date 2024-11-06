@@ -99,7 +99,7 @@ rebuild_jump_labels (rtx_insn *f)
 }
 
 /* This function is like rebuild_jump_labels, but doesn't run over
-   forced_labels.  It can be used on insn chains that aren't the 
+   forced_labels.  It can be used on insn chains that aren't the
    main function chain.  */
 void
 rebuild_jump_labels_chain (rtx_insn *chain)

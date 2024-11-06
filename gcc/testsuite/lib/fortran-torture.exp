@@ -332,6 +332,8 @@ proc fortran-torture-execute { src } {
 	    catch { remote_file build delete $executable }
         }
 	$status "$testcase execution, $option"
+
+	fortran-delete-unit-files $src
     }
     cleanup-modules ""
 }

@@ -31,7 +31,7 @@ typedef unsigned lang_bitmap;
 /* Variable length structure representing an input file.  A hash table
    ensure uniqueness for a given input file name.  The only function
    allocating input_file-s is input_file_by_name.  */
-struct input_file_st 
+struct input_file_st
 {
   struct outf* inpoutf;  /* Cached corresponding output file, computed
                             in get_output_file_with_visibility.  */
@@ -362,10 +362,10 @@ union_or_struct_p (const_type_p x)
 }
 
 /* Give the file location of a type, if any. */
-inline struct fileloc* 
+inline struct fileloc*
 type_fileloc (type_p t)
 {
-  if (!t) 
+  if (!t)
     return NULL;
   if (union_or_struct_p (t))
     return &t->u.s.line;

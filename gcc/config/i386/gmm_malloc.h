@@ -29,7 +29,7 @@
 #include <errno.h>
 #endif
 
-static __inline__ void * 
+static __inline__ void *
 _mm_malloc (size_t __size, size_t __align)
 {
   void * __malloc_ptr;
@@ -50,7 +50,7 @@ _mm_malloc (size_t __size, size_t __align)
  /* Assume malloc'd pointer is aligned at least to sizeof (void*).
     If necessary, add another sizeof (void*) to store the value
     returned by malloc. Effectively this enforces a minimum alignment
-    of sizeof double. */     
+    of sizeof double. */
     if (__align < 2 * sizeof (void *))
       __align = 2 * sizeof (void *);
 
@@ -62,7 +62,7 @@ _mm_malloc (size_t __size, size_t __align)
   __aligned_ptr = (void *) (((size_t) __malloc_ptr + __align)
 			    & ~((size_t) (__align) - 1));
 
-  /* Store the original pointer just before p.  */	
+  /* Store the original pointer just before p.  */
   ((void **) __aligned_ptr)[-1] = __malloc_ptr;
 
   return __aligned_ptr;

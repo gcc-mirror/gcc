@@ -18,6 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -238,7 +239,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
 	  offrng[1] = aref.sizrng[1] - 1;
 	else
 	  offrng[1] = HOST_WIDE_INT_M1U;
-	
+
 	offrng[0] = 0;
 	return gimple_call_arg (stmt, 0);
       }
@@ -333,7 +334,7 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
   if (range_type == VR_VARYING)
     {
       if (integral)
-	{	
+	{
 	  /* Use the full range of the type of the expression when
 	     no value range information is available.  */
 	  range[0] = TYPE_MIN_VALUE (exptype);
@@ -2587,6 +2588,17 @@ array_elt_at_offset (tree artype, HOST_WIDE_INT off,
 tree
 build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
 {
+  /* Cannot build an array type of functions or methods without
+     an error diagnostic.  */
+  if (FUNC_OR_METHOD_TYPE_P (eltype))
+    {
+      tree arrtype = make_node (ARRAY_TYPE);
+      TREE_TYPE (arrtype) = eltype;
+      TYPE_SIZE (arrtype) = bitsize_zero_node;
+      TYPE_SIZE_UNIT (arrtype) = size_zero_node;
+      return arrtype;
+    }
+
   if (TYPE_SIZE_UNIT (eltype)
       && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
       && !integer_zerop (TYPE_SIZE_UNIT (eltype))

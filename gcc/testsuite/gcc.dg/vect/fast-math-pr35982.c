@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-ffast-math" } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_intfloat_cvt } */

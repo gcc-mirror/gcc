@@ -118,7 +118,7 @@ namespace __gnu_parallel
   /** @brief Random shuffle code executed by each thread.
     *  @param __pus Array of thread-local data records. */
   template<typename _RAIter, typename _RandomNumberGenerator>
-    void 
+    void
     __parallel_random_shuffle_drs_pu(_DRSSorterPU<_RAIter,
 				     _RandomNumberGenerator>* __pus)
     {
@@ -244,7 +244,7 @@ namespace __gnu_parallel
   /** @brief Round up to the next greater power of 2.
     *  @param __x _Integer to round up */
   template<typename _Tp>
-    _Tp 
+    _Tp
     __round_up_to_pow2(_Tp __x)
     {
       if (__x <= 1)
@@ -345,7 +345,7 @@ namespace __gnu_parallel
 #       pragma omp single
 	{
 	  __pus = new _DRSSorterPU<_RAIter, _RandomNumber>[__num_threads];
-	  
+
 	  __sd._M_temporaries = new _ValueType*[__num_threads];
 	  __sd._M_dist = new _DifferenceType*[__num_bins + 1];
 	  __sd._M_bin_proc = new _ThreadIndex[__num_bins];
@@ -490,7 +490,7 @@ namespace __gnu_parallel
 
           // Distribute according to oracles.
           for (_DifferenceType __i = 0; __i < __n; ++__i)
-            ::new(&(__target[(__dist0[__oracles[__i]])++])) 
+            ::new(&(__target[(__dist0[__oracles[__i]])++]))
 		_ValueType(*(__begin + __i));
 
           for (int __b = 0; __b < __num_bins; ++__b)
@@ -503,7 +503,7 @@ namespace __gnu_parallel
           delete[] __dist0;
           delete[] __dist1;
           delete[] __oracles;
-	  
+
 	  for (_DifferenceType __i = 0; __i < __n; ++__i)
 	    __target[__i].~_ValueType();
           ::operator delete(__target);

@@ -23,9 +23,9 @@
 #embed "." gnu::base64("\u{53}\u{41}\u{3d}\u{00003d}") /* { dg-error "'gnu::base64' argument not valid base64 encoded string" } */
 #embed "." gnu::base64("\U00000053\U00000041\U0000003d\U0000003d") /* { dg-error "'gnu::base64' argument not valid base64 encoded string" } */
 #embed "." gnu::base64("\N{LATIN CAPITAL LETTER S}\N{LATIN CAPITAL LETTER A}\N{LATIN CAPITAL LETTER A}\N{LATIN CAPITAL LETTER A}") /* { dg-error "'gnu::base64' argument not valid base64 encoded string" } */
-#embed "embed-18.c" gnu::base64("SA==") /* { dg-error "'gnu::base64' parameter can be only used with \\\".\\\"" } */
-#embed <embed-18.c> gnu::base64("SA==") /* { dg-error "'gnu::base64' parameter can be only used with \\\".\\\"" } */
-#embed <.> gnu::base64("SA==") /* { dg-error "'gnu::base64' parameter can be only used with \\\".\\\"" } */
+#embed "embed-18.c" gnu::base64("SA==") /* { dg-error "'gnu::base64' parameter can be only used with '\\\".\\\"'" } */
+#embed <embed-18.c> gnu::base64("SA==") /* { dg-error "'gnu::base64' parameter can be only used with '\\\".\\\"'" } */
+#embed <.> gnu::base64("SA==") /* { dg-error "'gnu::base64' parameter can be only used with '\\\".\\\"'" } */
 #embed "." gnu::base64("SA==") limit(3) /* { dg-error "'gnu::base64' parameter conflicts with 'limit' or 'gnu::offset' parameters" } */
 #embed "." gnu::base64("SA==") gnu::offset(1) /* { dg-error "'gnu::base64' parameter conflicts with 'limit' or 'gnu::offset' parameters" } */
 #if 1 + __has_embed ("." gnu::base64("") __gnu__::__base64__("")) /* { dg-error "duplicate embed parameter 'gnu::base64'" } */

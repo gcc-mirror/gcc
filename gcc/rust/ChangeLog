@@ -1,3 +1,45 @@
+2024-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117361
+	* Make-lang.in (s-selftest-rust): Use GCC_FOR_SELFTESTS.
+	(selftest-rust-gdb): Likewise.
+	(selftest-rust-valgrind): Likewise.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* util/optional.h: Remove trailing whitespace.
+	* util/expected.h: Likewise.
+	* util/rust-unicode-data.h: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* resolve/rust-ast-resolve-expr.cc: Add #define INCLUDE_MEMORY.
+	* rust-attribs.cc: Likewise.
+	* rust-system.h: Likewise.
+
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* backend/rust-tree.h (array_type_nelts_top)
+	* backend/rust-tree.cc (array_type_nelts_top):
+	Remove function.
+
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* backend/rust-tree.cc (array_type_nelts_top):
+	Rename array_type_nelts => array_type_nelts_minus_one
+
+2024-09-26  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/borrowck/rust-bir.h
+	(class AbstractExpr): Add virtual destructor.
+
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* lang.opt.urls: Regenerate.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

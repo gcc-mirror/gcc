@@ -16,11 +16,28 @@
 
 #include "config/gcn/gcn-opts.h"
 
+extern const struct gcn_device_def {
+  enum processor_type id;
+  const char *name;
+  const char *NAME;
+  enum gcn_isa isa;
+
+  /* Features.  */
+  enum hsaco_attr_type xnack_default;
+  enum hsaco_attr_type sramecc_default;
+  enum hsaco_attr_type wave64_default;
+  enum hsaco_attr_type cumode_default;
+  int max_isa_vgprs;
+  unsigned generic_version;
+  const char *arch_family;
+} gcn_devices[];
+
 #define TARGET_CPU_CPP_BUILTINS()                                              \
   do                                                                           \
     {                                                                          \
+      builtin_define ("__AMDGPU__");                                           \
       builtin_define ("__AMDGCN__");                                           \
-      if (TARGET_GCN5)                                                    \
+      if (TARGET_GCN5)                                                         \
 	builtin_define ("__GCN5__");                                           \
       else if (TARGET_CDNA1)                                                   \
 	builtin_define ("__CDNA1__");                                          \
@@ -32,26 +49,27 @@
 	builtin_define ("__RDNA3__");                                          \
       else                                                                     \
 	gcc_unreachable ();                                                    \
-      if (TARGET_VEGA10)                                                       \
-	builtin_define ("__gfx900__");                                         \
-      else if (TARGET_VEGA20)                                                  \
-	builtin_define ("__gfx906__");                                         \
-      else if (TARGET_GFX908)                                                  \
-	builtin_define ("__gfx908__");                                         \
-      else if (TARGET_GFX90a)                                                  \
-	builtin_define ("__gfx90a__");                                         \
-      else if (TARGET_GFX90c)                                                  \
-	builtin_define ("__gfx90c__");                                         \
-      else if (TARGET_GFX1030)                                                 \
-	builtin_define ("__gfx1030__");                                        \
-      else if (TARGET_GFX1036)                                                 \
-	builtin_define ("__gfx1036__");                                        \
-      else if (TARGET_GFX1100)                                                 \
-	builtin_define ("__gfx1100__");                                        \
-      else if (TARGET_GFX1103)                                                 \
-	builtin_define ("__gfx1103__");                                        \
-      else                                                                     \
-	gcc_unreachable ();                                                    \
+      char *name = (char *)xmalloc (strlen (gcn_devices[gcn_arch].name) + 5);  \
+      sprintf (name, "__%s__", gcn_devices[gcn_arch].name);                    \
+      char *p;                                                                 \
+      if (gcn_devices[gcn_arch].generic_version)                               \
+	while ((p = strchr(name, '-')))                                        \
+	  *p = '_';                                                            \
+      builtin_define (name);                                                   \
+      name = (char *)xmalloc (strlen (gcn_devices[gcn_arch].arch_family) + 5); \
+      sprintf (name, "__%s__", gcn_devices[gcn_arch].arch_family);             \
+      builtin_define (name);                                                   \
+      name = (char *)xmalloc (strlen ("__amdgcn_target_id__") +                \
+			      strlen (gcn_devices[gcn_arch].name) + 4);        \
+      sprintf (name, "__amdgcn_target_id__=\"%s\"", gcn_devices[gcn_arch].name); \
+      builtin_define (name);                                                   \
+      name = (char *)xmalloc (strlen ("__amdgcn_processor__") +                \
+			      strlen (gcn_devices[gcn_arch].name) + 4);        \
+      sprintf (name, "__amdgcn_processor__=\"%s\"", gcn_devices[gcn_arch].name); \
+      if (gcn_devices[gcn_arch].generic_version)                               \
+	while ((p = strchr(name, '-')))                                        \
+	  *p = '_';                                                            \
+      builtin_define (name);                                                   \
   } while (0)
 
 #define ASSEMBLER_DIALECT (TARGET_RDNA2_PLUS ? 1 : 0)
@@ -191,7 +209,7 @@ STATIC_ASSERT (LAST_AVGPR_REG + 1 - FIRST_AVGPR_REG == 256);
 #define HARD_FRAME_POINTER_IS_ARG_POINTER   0
 #define HARD_FRAME_POINTER_IS_FRAME_POINTER 0
 
-#define SGPR_REGNO_P(N)		((N) >= FIRST_SGPR_REG && (N) <= LAST_SGPR_REG)
+#define SGPR_REGNO_P(N)		(/*(N) >= FIRST_SGPR_REG &&*/ (N) <= LAST_SGPR_REG)
 #define VGPR_REGNO_P(N)		((N) >= FIRST_VGPR_REG && (N) <= LAST_VGPR_REG)
 #define AVGPR_REGNO_P(N)        ((N) >= FIRST_AVGPR_REG && (N) <= LAST_AVGPR_REG)
 #define SSRC_REGNO_P(N)		((N) <= SCC_REG && (N) != VCCZ_REG)

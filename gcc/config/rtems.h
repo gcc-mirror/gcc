@@ -1,4 +1,4 @@
-/* Configuration common to all targets running RTEMS. 
+/* Configuration common to all targets running RTEMS.
    Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.

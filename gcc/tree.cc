@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
    It is intended to be language-independent but can occasionally
    calls language-dependent routines.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -513,6 +514,7 @@ tree_node_structure_for_code (enum tree_code code)
     case STRING_CST:		return TS_STRING;
     case VECTOR_CST:		return TS_VECTOR;
     case VOID_CST:		return TS_TYPED;
+    case RAW_DATA_CST:		return TS_RAW_DATA_CST;
 
       /* tcc_exceptional cases.  */
     case BLOCK:			return TS_BLOCK;
@@ -571,6 +573,7 @@ initialize_tree_contains_struct (void)
 	case TS_FIXED_CST:
 	case TS_VECTOR:
 	case TS_STRING:
+	case TS_RAW_DATA_CST:
 	case TS_COMPLEX:
 	case TS_SSA_NAME:
 	case TS_CONSTRUCTOR:
@@ -1026,6 +1029,7 @@ tree_code_size (enum tree_code code)
 	case REAL_CST:		return sizeof (tree_real_cst);
 	case FIXED_CST:		return sizeof (tree_fixed_cst);
 	case COMPLEX_CST:	return sizeof (tree_complex);
+	case RAW_DATA_CST:	return sizeof (tree_raw_data);
 	case VECTOR_CST:	gcc_unreachable ();
 	case STRING_CST:	gcc_unreachable ();
 	default:
@@ -3551,7 +3555,7 @@ build_tree_list_vec (const vec<tree, va_gc> *vec MEM_STAT_DECL)
    purpose and value fields are PURPOSE and VALUE
    and whose TREE_CHAIN is CHAIN.  */
 
-tree 
+tree
 tree_cons (tree purpose, tree value, tree chain MEM_STAT_DECL)
 {
   tree node;
@@ -3698,7 +3702,7 @@ int_byte_position (const_tree field)
    ARRAY_TYPE) minus one.  This counts only elements of the top array.  */
 
 tree
-array_type_nelts (const_tree type)
+array_type_nelts_minus_one (const_tree type)
 {
   tree index_type, min, max;
 
@@ -3728,6 +3732,19 @@ array_type_nelts (const_tree type)
   return (integer_zerop (min)
 	  ? max
 	  : fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, min));
+}
+
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This counts only elements of the top
+   array.  */
+
+tree
+array_type_nelts_top (tree type)
+{
+  return fold_build2_loc (input_location,
+		      PLUS_EXPR, sizetype,
+		      array_type_nelts_minus_one (type),
+		      size_one_node);
 }
 
 /* If arg is static -- a reference to an object in static storage -- then
@@ -5516,7 +5533,7 @@ check_lang_type (const_tree cand, const_tree base)
   return lang_hooks.types.type_hash_eq (cand, base);
 }
 
-/* This function checks to see if TYPE matches the size one of the built-in 
+/* This function checks to see if TYPE matches the size one of the built-in
    atomic types, and returns that core atomic type.  */
 
 static tree
@@ -7130,7 +7147,7 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
 
   if (unsignedp)
     unsignedp = MAX_INT_CACHED_PREC + 1;
-    
+
   if (precision <= MAX_INT_CACHED_PREC)
     {
       itype = nonstandard_integer_type_cache[precision + unsignedp];
@@ -8862,7 +8879,7 @@ static GTY(()) unsigned anon_cnt = 0; /* Saved for PCH.  */
 tree
 make_anon_name ()
 {
-  const char *fmt = 
+  const char *fmt =
 #if !defined (NO_DOT_IN_LABEL)
     "."
 #elif !defined (NO_DOLLAR_IN_LABEL)
@@ -8906,7 +8923,7 @@ get_file_function_name (const char *type)
     p = q = ASTRDUP (first_global_object_name);
   /* If the target is handling the constructors/destructors, they
      will be local to this file and the name is only necessary for
-     debugging purposes. 
+     debugging purposes.
      We also assign sub_I and sub_D sufixes to constructors called from
      the global static constructors.  These are always local.
      OpenMP "declare target" offloaded constructors/destructors use "off_I" and
@@ -9392,7 +9409,7 @@ build_atomic_base (tree type, unsigned int align)
   /* Make sure its not already registered.  */
   if ((t = get_qualified_type (type, TYPE_QUAL_ATOMIC)))
     return t;
-  
+
   t = build_variant_type_copy (type);
   set_type_quals (t, TYPE_QUAL_ATOMIC);
 
@@ -9546,7 +9563,7 @@ build_common_tree_nodes (bool signed_char)
   /* Don't call build_qualified type for atomics.  That routine does
      special processing for atomics, and until they are initialized
      it's better not to make that call.
-     
+
      Check to see if there is a target override for atomic types.  */
 
   atomicQI_type_node = build_atomic_base (unsigned_intQI_type_node,
@@ -9559,7 +9576,7 @@ build_common_tree_nodes (bool signed_char)
 					targetm.atomic_align_for_mode (DImode));
   atomicTI_type_node = build_atomic_base (unsigned_intTI_type_node,
 					targetm.atomic_align_for_mode (TImode));
-  	
+
   access_public_node = get_identifier ("public");
   access_protected_node = get_identifier ("protected");
   access_private_node = get_identifier ("private");
@@ -9848,7 +9865,6 @@ build_common_builtin_nodes (void)
       ftype = build_function_type_list (void_type_node,
 					ptr_type_node,
 					ptr_type_node,
-					integer_type_node,
 					NULL_TREE);
       local_define_builtin ("__builtin_clear_padding", ftype,
 			    BUILT_IN_CLEAR_PADDING,
@@ -10459,6 +10475,15 @@ initializer_zerop (const_tree init, bool *nonzero /* = NULL */)
       *nonzero = true;
       return false;
 
+    case RAW_DATA_CST:
+      for (unsigned int i = 0; i < (unsigned int) RAW_DATA_LENGTH (init); ++i)
+	if (RAW_DATA_POINTER (init)[i])
+	  {
+	    *nonzero = true;
+	    return false;
+	  }
+      return true;
+
     case CONSTRUCTOR:
       {
 	if (TREE_CLOBBER_P (init))
@@ -10872,7 +10897,7 @@ build_call_expr_loc_array (location_t loc, tree fndecl, int n, tree *argarray)
 {
   tree fntype = TREE_TYPE (fndecl);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
- 
+
   return fold_build_call_array_loc (loc, TREE_TYPE (fntype), fn, n, argarray);
 }
 
@@ -12404,7 +12429,7 @@ escaped_string::escape (const char *unescaped)
 	  continue;
 	}
 
-      if (c != '\n' || !pp_is_wrapping_line (global_dc->m_printer))
+      if (c != '\n' || !pp_is_wrapping_line (global_dc->get_reference_printer ()))
 	{
 	  if (escaped == NULL)
 	    {
@@ -13523,7 +13548,7 @@ verify_type_variant (const_tree t, tree tv)
   /* Type variant can differ by:
 
      - TYPE_QUALS: TYPE_READONLY, TYPE_VOLATILE, TYPE_ATOMIC, TYPE_RESTRICT,
-                   ENCODE_QUAL_ADDR_SPACE. 
+                   ENCODE_QUAL_ADDR_SPACE.
      - main variant may be TYPE_COMPLETE_P and variant types !TYPE_COMPLETE_P
        in this case some values may not be set in the variant types
        (see TYPE_COMPLETE_P checks).
@@ -13606,7 +13631,7 @@ verify_type_variant (const_tree t, tree tv)
   else if (TREE_CODE (t) == ARRAY_TYPE)
     verify_variant_match (TYPE_NONALIASED_COMPONENT);
   /* During LTO we merge variant lists from diferent translation units
-     that may differ BY TYPE_CONTEXT that in turn may point 
+     that may differ BY TYPE_CONTEXT that in turn may point
      to TRANSLATION_UNIT_DECL.
      Ada also builds variants of types with different TYPE_CONTEXT.   */
 #if 0
@@ -13784,7 +13809,7 @@ type_with_interoperable_signedness (const_tree type)
 }
 
 /* Return true iff T1 and T2 are structurally identical for what
-   TBAA is concerned.  
+   TBAA is concerned.
    This function is used both by lto.cc canonical type merging and by the
    verifier.  If TRUST_TYPE_CANONICAL we do not look into structure of types
    that have TYPE_CANONICAL defined and assume them equivalent.  This is useful
@@ -14286,7 +14311,7 @@ verify_type (const_tree t)
 	  error ("%<TYPE_ARRAY_MAX_SIZE%> not %<INTEGER_CST%>");
 	  debug_tree (TYPE_ARRAY_MAX_SIZE (t));
 	  error_found = true;
-        } 
+        }
     }
   else if (TYPE_MAX_VALUE_RAW (t))
     {
@@ -14449,7 +14474,7 @@ verify_type (const_tree t)
       error ("%<TYPE_CACHED_VALUES_P%> is set while it should not be");
       error_found = true;
     }
-  
+
   /* ipa-devirt makes an assumption that TYPE_METHOD_BASETYPE is always
      TYPE_MAIN_VARIANT and it would be odd to add methods only to variatns
      of a type. */
@@ -14789,7 +14814,7 @@ is_empty_type (const_tree type)
       return true;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
-    return (integer_minus_onep (array_type_nelts (type))
+    return (integer_minus_onep (array_type_nelts_minus_one (type))
 	    || TYPE_DOMAIN (type) == NULL_TREE
 	    || is_empty_type (TREE_TYPE (type)));
   return false;
@@ -14949,7 +14974,7 @@ get_typenode_from_name (const char *name)
    real declaration.
 
    Keep the size up to date in tree.h !  */
-const builtin_structptr_type builtin_structptr_types[6] = 
+const builtin_structptr_type builtin_structptr_types[6] =
 {
   { fileptr_type_node, ptr_type_node, "FILE" },
   { const_tm_ptr_type_node, const_ptr_type_node, "tm" },
@@ -15056,7 +15081,7 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm,
 	       && !memcmp (new_name + 4, "St11align_val_tRKSt9nothrow_t", 29)))
     {
       /* _ZnXYSt11align_val_t or _ZnXYSt11align_val_tRKSt9nothrow_t matches
-	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or  or
+	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or
 	 _ZdXPvSt11align_val_tRKSt9nothrow_t.  */
       if (delete_len == 20 && !memcmp (delete_name + 5, "St11align_val_t", 15))
 	return true;
@@ -15218,6 +15243,50 @@ tree_cc_finalize (void)
 {
   clear_nonstandard_integer_type_cache ();
   vec_free (bitint_type_cache);
+}
+
+void
+gt_ggc_mx (tree_raw_data *x)
+{
+  gt_ggc_m_9tree_node (x->typed.type);
+  gt_ggc_m_9tree_node (x->owner);
+}
+
+void
+gt_pch_nx (tree_raw_data *x)
+{
+  gt_pch_n_9tree_node (x->typed.type);
+  gt_pch_n_9tree_node (x->owner);
+}
+
+/* For PCH we guarantee that RAW_DATA_CST's RAW_DATA_OWNER is a STRING_CST and
+   RAW_DATA_POINTER points into it.  We don't want to save/restore
+   RAW_DATA_POINTER on its own but want to restore it pointing at the same
+   offset of the STRING_CST as before.  */
+
+void
+gt_pch_nx (tree_raw_data *x, gt_pointer_operator op, void *cookie)
+{
+  op (&x->typed.type, NULL, cookie);
+  gcc_checking_assert (x->owner
+		       && TREE_CODE (x->owner) == STRING_CST
+		       && x->str >= TREE_STRING_POINTER (x->owner)
+		       && (x->str + x->length
+			   <= (TREE_STRING_POINTER (x->owner)
+			       + TREE_STRING_LENGTH (x->owner))));
+  ptrdiff_t off = x->str - (const char *) (x->owner);
+  tree owner = x->owner;
+  op (&x->owner, NULL, cookie);
+  x->owner = owner;
+  /* The above op call relocates x->owner and remembers the address
+     for relocation e.g. if the compiler is position independent.
+     We then restore x->owner back to its previous value and call
+     op again, for x->owner itself this just repeats (uselessly) what
+     the first call did, but as the second argument is now non-NULL
+     and different, it also arranges for &x->str to be noted for the
+     PIE relocation.  */
+  op (&x->owner, &x->str, cookie);
+  x->str = (const char *) (x->owner) + off;
 }
 
 #if CHECKING_P
@@ -15832,7 +15901,7 @@ test_escaped_strings (void)
   ASSERT_STREQ ("foobar", (const char *) msg);
 
   /* Ensure that we have -fmessage-length set to 0.  */
-  pretty_printer *pp = global_dc->m_printer;
+  pretty_printer *pp = global_dc->get_reference_printer ();
   saved_cutoff = pp_line_cutoff (pp);
   pp_line_cutoff (pp) = 0;
 

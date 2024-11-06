@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -234,7 +235,7 @@ format_lex (void)
     }
 
   c = next_char_not_space ();
-  
+
   negative_flag = 0;
   switch (c)
     {
@@ -596,7 +597,7 @@ check_format (bool is_input)
     = G_("Positive width required in format string at %L");
   const char *nonneg_required
     = G_("Nonnegative width required in format string at %L");
-  const char *unexpected_element 
+  const char *unexpected_element
     = G_("Unexpected element %qc in format string at %L");
   const char *unexpected_end
     = G_("Unexpected end of format string in format string at %L");
@@ -890,7 +891,7 @@ data_desc:
 	      error = zero_width;
 	      goto syntax;
 	    }
-	  if (!gfc_notify_std (GFC_STD_F2008, "%<G0%> in format at %L", 
+	  if (!gfc_notify_std (GFC_STD_F2008, "%<G0%> in format at %L",
 			       &format_locus))
 	    return false;
 	  u = format_lex ();
@@ -1301,7 +1302,7 @@ extension_optional_comma:
     }
 
   goto format_item;
-  
+
 syntax:
   if (mode != MODE_FORMAT)
     format_locus.nextc += format_string_pos;
@@ -1344,9 +1345,9 @@ check_format_string (gfc_expr *e, bool is_input)
     for (i=e->value.character.length-1;i>format_string_pos-1;i--)
       if (e->value.character.string[i] != ' ')
         {
-          format_locus.nextc += format_length + 1; 
+          format_locus.nextc += format_length + 1;
           gfc_warning (0,
-		       "Extraneous characters in format at %L", &format_locus); 
+		       "Extraneous characters in format at %L", &format_locus);
           break;
         }
   return rv;
@@ -1699,7 +1700,7 @@ resolve_tag_format (gfc_expr *e)
 	  n = 0;
 	  c = gfc_constructor_first (e->value.constructor);
 	  len = c->expr->value.character.length;
-	  
+
 	  for ( ; c; c = gfc_constructor_next (c))
 	    n += len;
 
@@ -1859,7 +1860,7 @@ resolve_tag (const io_tag *tag, gfc_expr *e)
 
   if (tag == &tag_newunit)
     {
-      if (!gfc_notify_std (GFC_STD_F2008, "NEWUNIT specifier at %L", 
+      if (!gfc_notify_std (GFC_STD_F2008, "NEWUNIT specifier at %L",
 			   &e->where))
 	return false;
     }
@@ -1874,7 +1875,7 @@ resolve_tag (const io_tag *tag, gfc_expr *e)
       if (!gfc_check_vardef_context (e, false, false, false, context))
 	return false;
     }
-  
+
   if (tag == &tag_convert)
     {
       if (!gfc_notify_std (GFC_STD_GNU, "CONVERT tag at %L", &e->where))
@@ -3071,7 +3072,7 @@ dtio_procs_present (gfc_symbol *sym, io_kind k)
 	derived = sym->ts.u.derived;
       else
 	return false;
-      if ((k == M_WRITE || k == M_PRINT) && 
+      if ((k == M_WRITE || k == M_PRINT) &&
 	  (gfc_find_specific_dtio_proc (derived, true, true) != NULL))
 	return true;
       if ((k == M_READ) &&
@@ -3360,7 +3361,7 @@ gfc_resolve_dt (gfc_code *dt_code, gfc_dt *dt, locus *loc)
       /* If we are writing, make sure the internal unit can be changed.  */
       gcc_assert (k != M_PRINT);
       if (k == M_WRITE
-	  && !gfc_check_vardef_context (e, false, false, false, 
+	  && !gfc_check_vardef_context (e, false, false, false,
 					_("internal unit in WRITE")))
 	return false;
     }
@@ -3394,7 +3395,7 @@ gfc_resolve_dt (gfc_code *dt_code, gfc_dt *dt, locus *loc)
 	      e = gfc_get_variable_expr (gfc_find_sym_in_symtree (n->sym));
 	      t = gfc_check_vardef_context (e, false, false, false, NULL);
 	      gfc_free_expr (e);
-    
+
 	      if (!t)
 		{
 		  gfc_error ("NAMELIST %qs in READ statement at %L contains"
@@ -3414,7 +3415,7 @@ gfc_resolve_dt (gfc_code *dt_code, gfc_dt *dt, locus *loc)
 			 "procedure", n->sym->name, dt->namelist->name, loc);
 	      return false;
 	    }
-    
+
 	  if ((n->sym->ts.type == BT_DERIVED)
 	      && (n->sym->ts.u.derived->attr.alloc_comp
 		  || n->sym->ts.u.derived->attr.pointer_comp))
@@ -3424,7 +3425,7 @@ gfc_resolve_dt (gfc_code *dt_code, gfc_dt *dt, locus *loc)
 				   "or POINTER components", n->sym->name,
 				   dt->namelist->name, loc))
 		return false;
-    
+
 	      if (!t)
 		{
 		  gfc_error ("NAMELIST object %qs in namelist %qs at %L has "
@@ -3438,7 +3439,7 @@ gfc_resolve_dt (gfc_code *dt_code, gfc_dt *dt, locus *loc)
     }
 
   if (dt->extra_comma
-      && !gfc_notify_std (GFC_STD_LEGACY, "Comma before i/o item list at %L", 
+      && !gfc_notify_std (GFC_STD_LEGACY, "Comma before i/o item list at %L",
 			  &dt->extra_comma->where))
     return false;
 
@@ -3761,11 +3762,11 @@ static bool
 check_io_constraints (io_kind k, gfc_dt *dt, gfc_code *io_code,
 		      locus *spec_end)
 {
-#define io_constraint(condition, msg, arg)\
+#define io_constraint(condition, msg, where)\
 if (condition) \
   {\
-    if ((arg)->lb != NULL)\
-      gfc_error ((msg), (arg));\
+    if (GFC_LOCUS_IS_SET (*where))\
+      gfc_error ((msg), (where));\
     else\
       gfc_error ((msg), spec_end);\
     return false;\
@@ -4685,7 +4686,7 @@ gfc_match_inquire (void)
     }
 
   gfc_unset_implicit_pure (NULL);
-  
+
   if (inquire->id != NULL && inquire->pending == NULL)
     {
       gfc_error ("INQUIRE statement at %L requires a PENDING= specifier with "
@@ -4797,7 +4798,7 @@ gfc_resolve_wait (gfc_wait *wait)
 
   if (!gfc_reference_st_label (wait->err, ST_LABEL_TARGET))
     return false;
-  
+
   if (!gfc_reference_st_label (wait->end, ST_LABEL_TARGET))
     return false;
 

@@ -2833,7 +2833,7 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 
 Bvariable*
 Gcc_backend::local_variable(Bfunction* function, const std::string& name,
-			    Btype* btype, Bvariable* decl_var, 
+			    Btype* btype, Bvariable* decl_var,
 			    unsigned int flags, Location location)
 {
   tree type_tree = btype->get_tree();

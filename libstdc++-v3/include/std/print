@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_PRINT
 #define _GLIBCXX_PRINT 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // for std::format
 

@@ -1,4 +1,4 @@
-omp-device-properties-gcn: $(srcdir)/config/gcn/gcn.cc
+omp-device-properties-gcn: $(srcdir)/config/gcn/gcn-devices.def
 	echo kind: gpu > $@
 	echo arch: amdgcn gcn >> $@
-	echo isa: gfx900 gfx906 gfx908 gfx90a gfx90c gfx1030 gfx1036 gfx1100 gfx1103 >> $@
+	echo isa: `grep -o -P '(?<=GCN_DEVICE\()gfx[0-9a-f]+(?=,)' $<` >> $@

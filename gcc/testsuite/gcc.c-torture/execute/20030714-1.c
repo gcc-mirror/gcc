@@ -1,4 +1,5 @@
 /* derived from PR optimization/11440  */
+/* { dg-additional-options "-std=gnu17" } */
 
 extern void abort (void);
 extern void exit (int);

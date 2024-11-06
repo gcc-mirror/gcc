@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
    DW_CFA_... = DWARF2 CFA call frame instruction
    DW_TAG_... = DWARF2 DIE tag */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1491,7 +1492,7 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
       return a->v.val_file == b->v.val_file;
     case dw_val_class_decl_ref:
       return a->v.val_decl_ref == b->v.val_decl_ref;
-    
+
     case dw_val_class_const_double:
       return (a->v.val_double.high == b->v.val_double.high
 	      && a->v.val_double.low == b->v.val_double.low);
@@ -2291,9 +2292,9 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 	unsigned r = val1->v.val_unsigned;
 	if (for_eh_or_skip >= 0)
 	  r = DWARF2_FRAME_REG_OUT (r, for_eh_or_skip);
-	gcc_assert (size_of_uleb128 (r) 
+	gcc_assert (size_of_uleb128 (r)
 		    == size_of_uleb128 (val1->v.val_unsigned));
-	dw2_asm_output_data_uleb128 (r, NULL);	
+	dw2_asm_output_data_uleb128 (r, NULL);
       }
       break;
     case DW_OP_fbreg:
@@ -2304,9 +2305,9 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 	unsigned r = val1->v.val_unsigned;
 	if (for_eh_or_skip >= 0)
 	  r = DWARF2_FRAME_REG_OUT (r, for_eh_or_skip);
-	gcc_assert (size_of_uleb128 (r) 
+	gcc_assert (size_of_uleb128 (r)
 		    == size_of_uleb128 (val1->v.val_unsigned));
-	dw2_asm_output_data_uleb128 (r, NULL);	
+	dw2_asm_output_data_uleb128 (r, NULL);
 	dw2_asm_output_data_sleb128 (val2->v.val_int, NULL);
       }
       break;
@@ -2527,7 +2528,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
     }
 }
 
-/* Output a sequence of location operations.  
+/* Output a sequence of location operations.
    The for_eh_or_skip parameter controls whether register numbers are
    converted using DWARF2_FRAME_REG_OUT, which is needed in the case that
    hard reg numbers have been processed via DWARF_FRAME_REGNUM (i.e. for unwind
@@ -2541,7 +2542,7 @@ output_loc_sequence (dw_loc_descr_ref loc, int for_eh_or_skip)
     {
       enum dwarf_location_atom opc = loc->dw_loc_opc;
       /* Output the opcode.  */
-      if (for_eh_or_skip >= 0 
+      if (for_eh_or_skip >= 0
           && opc >= DW_OP_breg0 && opc <= DW_OP_breg31)
 	{
 	  unsigned r = (opc - DW_OP_breg0);
@@ -2549,7 +2550,7 @@ output_loc_sequence (dw_loc_descr_ref loc, int for_eh_or_skip)
 	  gcc_assert (r <= 31);
 	  opc = (enum dwarf_location_atom) (DW_OP_breg0 + r);
 	}
-      else if (for_eh_or_skip >= 0 
+      else if (for_eh_or_skip >= 0
 	       && opc >= DW_OP_reg0 && opc <= DW_OP_reg31)
 	{
 	  unsigned r = (opc - DW_OP_reg0);
@@ -2630,13 +2631,13 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
     case DW_OP_regx:
       {
 	unsigned r = DWARF2_FRAME_REG_OUT (val1->v.val_unsigned, 1);
-	gcc_assert (size_of_uleb128 (r) 
+	gcc_assert (size_of_uleb128 (r)
 		    == size_of_uleb128 (val1->v.val_unsigned));
 	fputc (',', asm_out_file);
 	dw2_asm_output_data_uleb128_raw (r);
       }
       break;
-      
+
     case DW_OP_constu:
     case DW_OP_plus_uconst:
     case DW_OP_piece:
@@ -2691,7 +2692,7 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
     case DW_OP_bregx:
       {
 	unsigned r = DWARF2_FRAME_REG_OUT (val1->v.val_unsigned, 1);
-	gcc_assert (size_of_uleb128 (r) 
+	gcc_assert (size_of_uleb128 (r)
 		    == size_of_uleb128 (val1->v.val_unsigned));
 	fputc (',', asm_out_file);
 	dw2_asm_output_data_uleb128_raw (r);
@@ -3604,7 +3605,7 @@ struct dw_loc_list_hasher : ggc_ptr_hash<cached_dw_loc_list>
 {
 
   typedef const_tree compare_type;
-  
+
   static hashval_t hash (cached_dw_loc_list *);
   static bool equal (cached_dw_loc_list *, const_tree);
 };
@@ -5818,7 +5819,7 @@ splice_child_die (dw_die_ref parent, dw_die_ref child)
 }
 
 /* Create and return a new die with TAG_VALUE as tag.  */
- 
+
 dw_die_ref
 new_die_raw (enum dwarf_tag tag_value)
 {
@@ -5940,7 +5941,7 @@ equate_type_number_to_die (tree type, dw_die_ref type_die)
 }
 
 static dw_die_ref maybe_create_die_with_external_ref (tree);
-struct GTY(()) sym_off_pair 
+struct GTY(()) sym_off_pair
 {
   const char * GTY((skip)) sym;
   unsigned HOST_WIDE_INT off;
@@ -11794,7 +11795,7 @@ output_aranges (void)
 {
   unsigned i;
   unsigned long aranges_length = size_of_aranges ();
-  
+
   if (!XCOFF_DEBUGGING_INFO)
     {
       if (DWARF_INITIAL_LENGTH_SIZE - dwarf_offset_size == 4)
@@ -13048,7 +13049,7 @@ output_one_line_info_table (dw_line_info_table *table)
 	  dw2_asm_output_data (1, DW_LNS_set_prologue_end,
 			       "set prologue end");
 	  break;
-	  
+
 	case LI_set_epilogue_begin:
 	  dw2_asm_output_data (1, DW_LNS_set_epilogue_begin,
 			       "set epilogue begin");
@@ -13668,7 +13669,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   struct array_descr_info info;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
-			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC | 
+			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC |
 			    ENCODE_QUAL_ADDR_SPACE(~0U));
   /* DW_AT_endianity is specified only for base types in the standard.  */
   const bool reverse_type
@@ -17703,7 +17704,7 @@ dw_sra_loc_expr (tree decl, rtx loc)
 	      if (GET_CODE (varloc) == EXPR_LIST)
 		varloc = XEXP (varloc, 0);
 	    }
-	  do 
+	  do
 	    {
 	      if (GET_CODE (varloc) == CONST
 		  || GET_CODE (varloc) == SIGN_EXTEND
@@ -21293,7 +21294,7 @@ compute_frame_pointer_to_fb_displacement (poly_int64 offset)
   frame_pointer_fb_offset = -offset;
 
   /* ??? AVR doesn't set up valid eliminations when there is no stack frame
-     in which to eliminate.  This is because it's stack pointer isn't 
+     in which to eliminate.  This is because it's stack pointer isn't
      directly accessible as a register within the ISA.  To work around
      this, assume that while we cannot provide a proper value for
      frame_pointer_fb_offset, we won't need one either.  We can use
@@ -21382,7 +21383,7 @@ add_desc_attribute (dw_die_ref die, tree decl)
    ??? This is a temporary measure until after we're able to generate
    regular DWARF for the complex Ada type system.  */
 
-static void 
+static void
 add_gnat_descriptive_type_attribute (dw_die_ref die, tree type,
 				     dw_die_ref context_die)
 {
@@ -22465,8 +22466,8 @@ add_calling_convention_attribute (dw_die_ref subr_die, tree decl)
       /* DWARF 2 doesn't provide a way to identify a program's source-level
 	entry point.  DW_AT_calling_convention attributes are only meant
 	to describe functions' calling conventions.  However, lacking a
-	better way to signal the Fortran main program, we used this for 
-	a long time, following existing custom.  Now, DWARF 4 has 
+	better way to signal the Fortran main program, we used this for
+	a long time, following existing custom.  Now, DWARF 4 has
 	DW_AT_main_subprogram, which we add below, but some tools still
 	rely on the old way, which we thus keep.  */
       value = DW_CC_program;
@@ -23055,7 +23056,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
   tree node_or_origin = node ? node : origin;
   tree ultimate_origin;
   dw_die_ref parm_die = NULL;
-  
+
   if (DECL_P (node_or_origin))
     {
       parm_die = lookup_decl_die (node);
@@ -23981,9 +23982,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    {
 	      if (dwarf_version >= 3 || !dwarf_strict)
 		{
-		  /* We should use ranges for non-contiguous code section 
+		  /* We should use ranges for non-contiguous code section
 		     addresses.  Use the actual code range for the initial
-		     section, since the HOT/COLD labels might precede an 
+		     section, since the HOT/COLD labels might precede an
 		     alignment offset.  */
 		  bool range_list_added = false;
 		  add_ranges_by_labels (subr_die, fde->dw_fde_begin,
@@ -24019,7 +24020,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  if (TREE_PUBLIC (decl))
 		    add_AT_flag (seg_die, DW_AT_external, 1);
 
-		  if (decl_name != NULL 
+		  if (decl_name != NULL
 		      && IDENTIFIER_POINTER (decl_name) != NULL)
 		    {
 		      name = dwarf2_name (decl, 1);
@@ -24033,7 +24034,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  if (DECL_ARTIFICIAL (decl))
 		    add_AT_flag (seg_die, DW_AT_artificial, 1);
 
-		  name = concat ("__second_sect_of_", name, NULL); 
+		  name = concat ("__second_sect_of_", name, NULL);
 		  add_AT_low_high_pc (seg_die, fde->dw_fde_second_begin,
                                       fde->dw_fde_second_end, false);
 		  add_name_attribute (seg_die, name);
@@ -28026,7 +28027,7 @@ gen_scheduled_generic_parms_dies (void)
 
   if (!generic_type_instances)
     return;
-  
+
   FOR_EACH_VEC_ELT (*generic_type_instances, i, t)
     if (COMPLETE_TYPE_P (t))
       gen_generic_params_dies (t);
@@ -28797,7 +28798,7 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
      that second line number entry.  */
   /* Recall that this end-of-prologue indication is *not* the same thing
      as the end_prologue debug hook.  The NOTE_INSN_PROLOGUE_END note,
-     to which the hook corresponds, follows the last insn that was 
+     to which the hook corresponds, follows the last insn that was
      emitted by gen_prologue.  What we need is to precede the first insn
      that had been emitted after NOTE_INSN_FUNCTION_BEG, i.e. the first
      insn that corresponds to something the user wrote.  These may be
@@ -29110,7 +29111,7 @@ output_macinfo_op (macinfo_entry *ref)
 			   ? "Define macro" : "Undefine macro");
       dw2_asm_output_data_uleb128 (ref->lineno,
 				   "At line number "
-				   HOST_WIDE_INT_PRINT_UNSIGNED, 
+				   HOST_WIDE_INT_PRINT_UNSIGNED,
 				   ref->lineno);
       dw2_asm_output_nstring (ref->info, -1, "The macro");
       break;
@@ -31755,7 +31756,7 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
 		      get_full_len (*val2->v.val_wide)
 		      * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
 	  break;
-	case dw_val_class_addr:	
+	case dw_val_class_addr:
 	  inchash::add_rtx (val2->v.val_addr, hstate);
 	  break;
 	default:

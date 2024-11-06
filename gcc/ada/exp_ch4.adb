@@ -9271,9 +9271,9 @@ package body Exp_Ch4 is
       Rp2 : constant Boolean :=
               Nkind (Rop) = N_Op_Expon and then Is_Power_Of_2_For_Shift (Rop);
 
-      Ltyp : constant Entity_Id  := Etype (Lop);
-      Rtyp : constant Entity_Id  := Etype (Rop);
-      Typ  : Entity_Id           := Etype (N);
+      Ltyp : constant Entity_Id := Etype (Lop);
+      Rtyp : constant Entity_Id := Etype (Rop);
+      Typ  : Entity_Id          := Etype (N);
 
    begin
       Binary_Op_Validity_Checks (N);
@@ -10031,7 +10031,7 @@ package body Exp_Ch4 is
 
       if Is_Integer_Type (Typ)
         and then Compile_Time_Known_Value (Right_Opnd (N))
-        and then Expr_Value (Right_Opnd (N)) = 0
+        and then Expr_Value (Right_Opnd (N)) = Uint_0
       then
          Rewrite (N, Left_Opnd (N));
          return;

@@ -100,7 +100,7 @@ bid64_quantize (UINT64 x,
     if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
 #ifdef SET_STATUS_FLAGS
       if (((x & 0x7e00000000000000ull) == 0x7e00000000000000ull)	// sNaN
-	  || ((x & 0x7c00000000000000ull) == 0x7800000000000000ull))	//Inf 
+	  || ((x & 0x7c00000000000000ull) == 0x7800000000000000ull))	//Inf
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
       if ((x & NAN_MASK64) != NAN_MASK64)
@@ -156,9 +156,9 @@ bid64_quantize (UINT64 x,
     if (rnd_mode == 0)
 #endif
       if (C64 & 1) {
-	// check whether fractional part of initial_P/10^extra_digits 
+	// check whether fractional part of initial_P/10^extra_digits
 	// is exactly .5
-	// this is the same as fractional part of 
+	// this is the same as fractional part of
 	//   (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
 	// get remainder

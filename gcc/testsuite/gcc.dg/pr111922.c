@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre" } */
+/* { dg-options "-Wno-old-style-definition -O2 -fno-tree-fre" } */
 
 void f2 (void);
 void f4 (int, int, int);

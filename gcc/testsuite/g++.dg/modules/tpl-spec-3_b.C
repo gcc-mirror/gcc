@@ -17,7 +17,8 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Reading 1 pending entities keyed to '::frob'} module } }
+// We read a pending for both '::frob' and '::frob::store'.
+// { dg-final { scan-lang-dump {Reading 2 pending entities keyed to '::frob'} module } }
 // { dg-final { scan-lang-dump-not {Reading definition function_decl '::frob@TPL:.::store@TPL:.<int>'} module } }
 
 // { dg-final { scan-assembler-not {_ZN4frob5storeIiEEvT_:} } }

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1456,7 +1457,7 @@ get_tinfo_desc (unsigned ix)
 				   NULL_TREE, integer_type_node);
 	DECL_CHAIN (fld_flg) = fields;
 	fields = fld_flg;
-	
+
 	tree fld_cnt = build_decl (BUILTINS_LOCATION, FIELD_DECL,
 				   NULL_TREE, integer_type_node);
 	DECL_CHAIN (fld_cnt) = fields;
@@ -1570,7 +1571,7 @@ emit_support_tinfo_1 (tree bltn)
 	 comdat_linkage for details.)  Since we want these objects
 	 to have external linkage so that copies do not have to be
 	 emitted in code outside the runtime library, we make them
-	 non-COMDAT here.  
+	 non-COMDAT here.
 
 	 It might also not be necessary to follow this detail of the
 	 ABI.  */

@@ -511,7 +511,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	  minbound = aref.sizrng[0];
 	}
     }
-			
+
   /* The range of the byte offset into the reference.  Adjusted below.  */
   offset_int offrange[2] = { aref.offrng[0], aref.offrng[1] };
 

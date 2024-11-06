@@ -52,5 +52,5 @@ void
 f ()
 {
   using N::i;
-  using N::i;       // { dg-bogus "conflicts" "See P1787 (CWG36)" { xfail *-*-* } }
+  using N::i;       // { dg-bogus "conflicts" "See P1787 (CWG36)" }
 }

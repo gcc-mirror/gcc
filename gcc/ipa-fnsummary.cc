@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
    present in the callgraph).
 
    We provide access to the ipa_fn_summary data structure and
-   basic logic updating the parameters when inlining is performed. 
+   basic logic updating the parameters when inlining is performed.
 
    The summaries are context sensitive.  Context means
      1) partial assignment of known constant values of operands
@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
    inlined performs analysis via its analyze_function method. */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -1422,7 +1423,7 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 	    lhs_free = true;
 
 	  /* Writes to parameters, parameters passed by value and return value
-	     (either directly or passed via invisible reference) are free.  
+	     (either directly or passed via invisible reference) are free.
 
 	     TODO: We ought to handle testcase like
 	     struct a {int a,b;};
@@ -2261,7 +2262,7 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 }
 
 /* Return probability (based on REG_BR_PROB_BASE) that I-th parameter of STMT
-   will change since last invocation of STMT. 
+   will change since last invocation of STMT.
 
    Value 0 is reserved for compile time invariants.
    For common parameters it is REG_BR_PROB_BASE.  For loop invariants it
@@ -2284,7 +2285,7 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 
   /* We would have to do non-trivial analysis to really work out what
      is the probability of value to change (i.e. when init statement
-     is in a sibling loop of the call). 
+     is in a sibling loop of the call).
 
      We do an conservative estimate: when call is executed N times more often
      than the statement defining value, we take the frequency 1/N.  */
@@ -2356,12 +2357,12 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
 	max = max.max (BASIC_BLOCK_FOR_FN (cfun, index)->count);
       if (dump_file)
 	{
-          fprintf (dump_file, "     Set with count ");	
+          fprintf (dump_file, "     Set with count ");
 	  max.dump (dump_file);
-          fprintf (dump_file, " and used with count ");	
+          fprintf (dump_file, " and used with count ");
 	  bb->count.dump (dump_file);
           fprintf (dump_file, " freq %f\n",
-		   max.to_sreal_scale (bb->count).to_double ());	
+		   max.to_sreal_scale (bb->count).to_double ());
 	}
 
       BITMAP_FREE (info.bb_set);
@@ -2540,7 +2541,7 @@ find_foldable_builtin_expect (basic_block bb)
 /* Return true when the basic blocks contains only clobbers followed by RESX.
    Such BBs are kept around to make removal of dead stores possible with
    presence of EH and will be optimized out by optimize_clobbers later in the
-   game. 
+   game.
 
    NEED_EH is used to recurse in case the clobber has non-EH predecessors
    that can be clobber only, too.. When it is false, the RESX is not necessary
@@ -2711,7 +2712,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 
      When optimizing and analyzing for early inliner, initialize node params
      so we can produce correct BB predicates.  */
-     
+
   if (opt_for_fn (node->decl, optimize))
     {
       calculate_dominance_info (CDI_DOMINATORS);
@@ -3928,7 +3929,7 @@ ipa_call_context::estimate_size_and_time (ipa_call_estimates *estimates,
 	    }
 	  else
 	    {
-	      int prob = e->nonconst_predicate.probability 
+	      int prob = e->nonconst_predicate.probability
 					       (info->conds, m_possible_truths,
 					        m_inline_param_summary);
 	      gcc_checking_assert (prob >= 0);
@@ -4500,9 +4501,9 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
 
   bitpack_d bp = streamer_read_bitpack (ib);
   if (es)
-    es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);	
+    es->is_return_callee_uncaptured = bp_unpack_value (&bp, 1);
   else
-    bp_unpack_value (&bp, 1);	
+    bp_unpack_value (&bp, 1);
 
   p.stream_in (ib);
   if (es)
@@ -4520,9 +4521,9 @@ read_ipa_call_summary (class lto_input_block *ib, struct cgraph_edge *e,
 	  es->param[i].change_prob = streamer_read_uhwi (ib);
 	  bitpack_d bp = streamer_read_bitpack (ib);
 	  es->param[i].points_to_local_or_readonly_memory
-	    = bp_unpack_value (&bp, 1);	
+	    = bp_unpack_value (&bp, 1);
 	  es->param[i].points_to_possible_sra_candidate
-	    = bp_unpack_value (&bp, 1);	
+	    = bp_unpack_value (&bp, 1);
 	}
     }
   else

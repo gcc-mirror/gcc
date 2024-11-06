@@ -2484,7 +2484,7 @@ frv_print_operand_address (FILE * stream, machine_mode /* mode */, rtx x)
 	 See gcc/testsuite/gcc.dg/asm-4.c for an example.  */
       frv_print_operand_memory_reference (stream, x, 0);
       return;
-      
+
     default:
       break;
     }
@@ -6311,7 +6311,7 @@ frv_secondary_reload_class (enum reg_class rclass,
 /* This hook exists to catch the case where secondary_reload_class() is
    called from init_reg_autoinc() in regclass.c - before the reload optabs
    have been initialised.  */
-   
+
 static reg_class_t
 frv_secondary_reload (bool in_p, rtx x, reg_class_t reload_class_i,
 		      machine_mode reload_mode,
@@ -6682,7 +6682,7 @@ frv_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 	default:
 	  break;
 
-	case QUAD_REGS:	
+	case QUAD_REGS:
 	case GPR_REGS:
 	case GR8_REGS:
 	case GR9_REGS:

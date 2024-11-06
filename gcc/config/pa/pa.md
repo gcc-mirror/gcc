@@ -2222,9 +2222,9 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "move_dest_operand"
-			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T")
+			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,?r,?*f")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
@@ -2241,10 +2241,12 @@
    {mfctl|mfctl,w} %%sar,%0
    fcpy,sgl %f1,%0
    fldw%F1 %1,%0
-   fstw%F0 %1,%0"
-  [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore")
+   fstw%F0 %1,%0
+   fstw %1,-40(%%sp)\n\tldw -40(%%sp),%0
+   stw %1,-40(%%sp)\n\tfldw -40(%%sp),%0"
+  [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4")])
+   (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4,8,8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "move_dest_operand"
@@ -4107,9 +4109,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
-			  "=!*r,*r,*r,*r,*r,Q,f,f,T")
+			  "=!*r,*r,*r,*r,*r,Q,f,f,T,?*r,?f")
 	(match_operand:DF 1 "move_src_operand"
-			  "!*rG,J,N,K,RQ,*rG,fG,RT,f"))]
+			  "!*rG,J,N,K,RQ,*rG,fG,RT,f,f,*r"))]
   "(register_operand (operands[0], DFmode)
     || reg_or_0_operand (operands[1], DFmode))
    && !TARGET_SOFT_FLOAT && TARGET_64BIT"
@@ -4122,10 +4124,12 @@
    std%M0 %r1,%0
    fcpy,dbl %f1,%0
    fldd%F1 %1,%0
-   fstd%F0 %1,%0"
-  [(set_attr "type" "move,move,move,shift,load,store,fpalu,fpload,fpstore")
+   fstd%F0 %1,%0
+   fstd %1,-40(%%sp)\n\tldd -40(%%sp),%0
+   std %1,-40(%%sp)\n\tfldd -40(%%sp),%0"
+  [(set_attr "type" "move,move,move,shift,load,store,fpalu,fpload,fpstore,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4")])
+   (set_attr "length" "4,4,4,4,4,4,4,4,4,8,8")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "move_dest_operand"
@@ -4281,9 +4285,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
-			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T")
+			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,?r,?*f")
 	(match_operand:DI 1 "move_src_operand"
-			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && !TARGET_SOFT_FLOAT && TARGET_64BIT"
@@ -4299,10 +4303,12 @@
    {mfctl|mfctl,w} %%sar,%0
    fcpy,dbl %f1,%0
    fldd%F1 %1,%0
-   fstd%F0 %1,%0"
-  [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore")
+   fstd%F0 %1,%0
+   fstd %1,-40(%%sp)\n\tldd -40(%%sp),%0
+   std %1,-40(%%sp)\n\tfldd -40(%%sp),%0"
+  [(set_attr "type" "load,move,move,move,shift,load,store,move,move,fpalu,fpload,fpstore,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4")])
+   (set_attr "length" "4,4,4,4,4,4,4,4,4,4,4,4,8,8")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "move_dest_operand"
@@ -4513,9 +4519,9 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
-			  "=f,!*r,f,*r,T,Q")
+			  "=f,!*r,f,*r,T,Q,?*r,?f")
 	(match_operand:SF 1 "reg_or_0_or_mem_operand"
-			  "fG,!*rG,RT,RQ,f,*rG"))]
+			  "fG,!*rG,RT,RQ,f,*rG,f,*r"))]
   "(register_operand (operands[0], SFmode)
     || reg_or_0_operand (operands[1], SFmode))
    && !TARGET_SOFT_FLOAT
@@ -4526,10 +4532,12 @@
    fldw%F1 %1,%0
    ldw%M1 %1,%0
    fstw%F0 %1,%0
-   stw%M0 %r1,%0"
-  [(set_attr "type" "fpalu,move,fpload,load,fpstore,store")
+   stw%M0 %r1,%0
+   fstw %1,-40(%%sp)\n\tldw -40(%%sp),%0
+   stw %1,-40(%%sp)\n\tfldw -40(%%sp),%0"
+  [(set_attr "type" "fpalu,move,fpload,load,fpstore,store,fpstore_load,store_fpload")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4,4,4,4,4,4")])
+   (set_attr "length" "4,4,4,4,4,4,8,8")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "move_dest_operand"
@@ -7411,7 +7419,6 @@
   /* Ensure the frame pointer move is not optimized.  */
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
-  emit_clobber (frame_pointer_rtx);
   emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);
@@ -7426,7 +7433,7 @@
 })
 
 (define_insn "indirect_goto"
-  [(unspec [(match_operand 0 "register_operand" "=r")] UNSPEC_GOTO)]
+  [(unspec [(match_operand 0 "register_operand" "r")] UNSPEC_GOTO)]
   "GET_MODE (operands[0]) == word_mode"
   "bv%* %%r0(%0)"
   [(set_attr "type" "branch")
@@ -9202,7 +9209,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   /* Ensure the frame pointer move is not optimized.  */
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
-  emit_clobber (frame_pointer_rtx);
   emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);

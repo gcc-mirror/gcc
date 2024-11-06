@@ -1463,7 +1463,7 @@ package body Freeze is
       Par_Prim       : Entity_Id;
       Prim           : Entity_Id;
 
-      type Wrapper_Kind is (No_Wrapper, LSP_Wrapper, Postcond_Wrapper);
+      type Wrapper_Kind is (No_Wrapper, LSP_Wrapper, Condition_Wrapper);
 
       Wrapper_Needed : Wrapper_Kind;
       --  Kind of wrapper needed by a given inherited primitive of tagged
@@ -1471,8 +1471,9 @@ package body Freeze is
       --  * No_Wrapper: No wrapper is needed.
       --  * LSP_Wrapper: Wrapper that handles inherited class-wide pre/post
       --    conditions that call overridden primitives.
-      --  * Postcond_Wrapper: Wrapper that handles postconditions of interface
-      --    primitives.
+      --  * Condition_Wrapper: Wrapper of inherited subprogram that implements
+      --    additional interface primitives of the derived type that have
+      --    class-wide pre-/postconditions.
 
       function Build_DTW_Body
         (Loc          : Source_Ptr;
@@ -1855,9 +1856,9 @@ package body Freeze is
       --  List containing identifiers of built wrappers. Used to defer building
       --  and analyzing their class-wide precondition subprograms.
 
-      Postcond_Candidates_List : Elist_Id := No_Elist;
+      Condition_Candidates_List : Elist_Id := No_Elist;
       --  List containing inherited primitives of tagged type R that implement
-      --  interface primitives that have postconditions.
+      --  interface primitives that have pre-/postconditions.
 
    --  Start of processing for Check_Inherited_Conditions
 
@@ -1907,9 +1908,7 @@ package body Freeze is
             --  When the primitive is an LSP wrapper we climb to the parent
             --  primitive that has the inherited contract.
 
-            if Is_Wrapper (Par_Prim)
-              and then Present (LSP_Subprogram (Par_Prim))
-            then
+            if Is_LSP_Wrapper (Par_Prim) then
                Par_Prim := LSP_Subprogram (Par_Prim);
             end if;
 
@@ -1943,7 +1942,7 @@ package body Freeze is
       end loop;
 
       --  Collect inherited primitives that may need a wrapper to handle
-      --  postconditions of interface primitives; done to improve the
+      --  pre-/postconditions of interface primitives; done to improve the
       --  performance when checking if postcondition wrappers are needed.
 
       Op_Node := First_Elmt (Prim_Ops);
@@ -1952,13 +1951,16 @@ package body Freeze is
 
          if Present (Interface_Alias (Prim))
            and then not Comes_From_Source (Alias (Prim))
-           and then Present (Class_Postconditions (Interface_Alias (Prim)))
+           and then
+             (Present (Class_Preconditions (Interface_Alias (Prim)))
+                or else
+              Present (Class_Postconditions (Interface_Alias (Prim))))
          then
-            if No (Postcond_Candidates_List) then
-               Postcond_Candidates_List := New_Elmt_List;
+            if No (Condition_Candidates_List) then
+               Condition_Candidates_List := New_Elmt_List;
             end if;
 
-            Append_Unique_Elmt (Alias (Prim), Postcond_Candidates_List);
+            Append_Unique_Elmt (Alias (Prim), Condition_Candidates_List);
          end if;
 
          Next_Elmt (Op_Node);
@@ -1986,9 +1988,7 @@ package body Freeze is
             --  When the primitive is an LSP wrapper we climb to the parent
             --  primitive that has the inherited contract.
 
-            if Is_Wrapper (Par_Prim)
-              and then Present (LSP_Subprogram (Par_Prim))
-            then
+            if Is_LSP_Wrapper (Par_Prim) then
                Par_Prim := LSP_Subprogram (Par_Prim);
             end if;
 
@@ -2014,12 +2014,12 @@ package body Freeze is
             --  implements additional interface types, and this inherited
             --  primitive covers an interface primitive of these additional
             --  interface types that has class-wide postconditions, then it
-            --  requires a postconditions wrapper.
+            --  requires a pre-/postconditions wrapper.
 
             if Wrapper_Needed = No_Wrapper
               and then Present (Interfaces (R))
-              and then Present (Postcond_Candidates_List)
-              and then Contains (Postcond_Candidates_List, Prim)
+              and then Present (Condition_Candidates_List)
+              and then Contains (Condition_Candidates_List, Prim)
             then
                declare
                   Elmt       : Elmt_Id;
@@ -2029,7 +2029,8 @@ package body Freeze is
 
                begin
                   Elmt := First_Elmt (Prim_Ops);
-                  while Present (Elmt) loop
+
+                  Search : while Present (Elmt) loop
                      Ent := Node (Elmt);
 
                      --  Perform the search relying on the internal entities
@@ -2039,7 +2040,9 @@ package body Freeze is
                      if Present (Interface_Alias (Ent))
                        and then (Alias (Ent)) = Prim
                        and then
-                         Present (Class_Postconditions (Interface_Alias (Ent)))
+                         (Present (Class_Preconditions (Interface_Alias (Ent)))
+                            or else Present (Class_Postconditions
+                                               (Interface_Alias (Ent))))
                      then
                         Iface := Find_Dispatching_Type (Interface_Alias (Ent));
 
@@ -2052,8 +2055,8 @@ package body Freeze is
                         Iface_Elmt := First_Elmt (Interfaces (R));
                         while Present (Iface_Elmt) loop
                            if Node (Iface_Elmt) = Iface then
-                              Wrapper_Needed := Postcond_Wrapper;
-                              exit;
+                              Wrapper_Needed := Condition_Wrapper;
+                              exit Search;
                            end if;
 
                            Next_Elmt (Iface_Elmt);
@@ -2061,7 +2064,7 @@ package body Freeze is
                      end if;
 
                      Next_Elmt (Elmt);
-                  end loop;
+                  end loop Search;
                end;
             end if;
          end if;
@@ -2108,7 +2111,8 @@ package body Freeze is
 
                --  LSP wrappers reference the parent primitive that has the
                --  the class-wide pre/post condition that calls overridden
-               --  primitives.
+               --  primitives. Condition wrappers do not have this attribute
+               --  (see predicate Is_LSP_Wrapper).
 
                if Wrapper_Needed = LSP_Wrapper then
                   Set_LSP_Subprogram (DTW_Id, Par_Prim);
@@ -2124,11 +2128,12 @@ package body Freeze is
 
                Set_Sloc (DTW_Id, Sloc (Prim));
 
-               --  For inherited class-wide preconditions the DTW wrapper
-               --  reuses the ICW of the parent (which checks the parent
-               --  interpretation of the class-wide preconditions); the
-               --  interpretation of the class-wide preconditions for the
-               --  inherited subprogram is checked at the caller side.
+               --  For LSP_Wrappers of subprograms that inherit class-wide
+               --  preconditions the DTW wrapper reuses the ICW of the parent
+               --  (which checks the parent interpretation of the class-wide
+               --  preconditions); the interpretation of the class-wide
+               --  preconditions for the inherited subprogram is checked
+               --  at the caller side.
 
                --  When the subprogram inherits class-wide postconditions
                --  the DTW also checks the interpretation of the class-wide
@@ -2137,12 +2142,14 @@ package body Freeze is
                --  the class-wide postconditions.
 
                --      procedure Prim (F1 : T1; ...) is
-               --         [ pragma Check (Postcondition, Expr); ]
+               --         [ pragma Postcondition (check => Expr); ]
                --      begin
                --         Par_Prim_ICW (Par_Type (F1), ...);
                --      end;
 
-               if Present (Indirect_Call_Wrapper (Par_Prim)) then
+               if Wrapper_Needed = LSP_Wrapper
+                 and then Present (Indirect_Call_Wrapper (Par_Prim))
+               then
                   DTW_Body :=
                     Build_DTW_Body (Loc,
                       DTW_Spec     => DTW_Spec,
@@ -2150,18 +2157,26 @@ package body Freeze is
                       Par_Prim     => Par_Prim,
                       Wrapped_Subp => Indirect_Call_Wrapper (Par_Prim));
 
-               --  For subprograms that only inherit class-wide postconditions
-               --  the DTW wrapper calls the parent primitive (which on its
-               --  body checks the interpretation of the class-wide post-
-               --  conditions for the parent subprogram), and the DTW checks
-               --  the interpretation of the class-wide postconditions for the
+               --  For LSP_Wrappers of subprograms that only inherit class-wide
+               --  postconditions, and also for Condition_Wrappers (wrappers of
+               --  inherited subprograms that implement additional interface
+               --  primitives that have class-wide pre-/postconditions), the
+               --  DTW wrapper calls the parent primitive (which on its body
+               --  checks the interpretation of the class-wide post-conditions
+               --  for the parent subprogram), and the DTW checks the
+               --  interpretation of the class-wide postconditions for the
                --  inherited subprogram.
 
                --      procedure Prim (F1 : T1; ...) is
-               --         pragma Check (Postcondition, Expr);
+               --         pragma Postcondition (check => Expr);
                --      begin
                --         Par_Prim (Par_Type (F1), ...);
                --      end;
+
+               --  No class-wide preconditions runtime check is generated for
+               --  this wrapper call to the parent primitive, since the check
+               --  is performed by the caller of the DTW wrapper (see routine
+               --  Install_Class_Preconditions_Check).
 
                else
                   DTW_Body :=
@@ -6938,6 +6953,21 @@ package body Freeze is
             end if;
          end;
 
+         --  If the entity is a declaration of an access-to-subprogram type
+         --  with pre/postcondition contracts, build the wrapper (if it hasn't
+         --  already been done during aspect processing), and propagate the
+         --  pre/postcondition pragmas to the wrapper.
+
+         if Ada_Version >= Ada_2022
+           and then Expander_Active
+           and then Ekind (E) = E_Access_Subprogram_Type
+           and then Nkind (Parent (E)) = N_Full_Type_Declaration
+           and then Present (Contract (Designated_Type (E)))
+           and then not Is_Derived_Type (E)
+         then
+            Build_Access_Subprogram_Wrapper (Parent (E));
+         end if;
+
          --  Deal with special cases of freezing for subtype
 
          if E /= Base_Type (E) then
@@ -7992,9 +8022,11 @@ package body Freeze is
          --  generation, and so the size and alignment values for such types
          --  are irrelevant. Ditto for types declared within a generic unit,
          --  which may have components that depend on generic parameters, and
-         --  that will be recreated in an instance.
+         --  that will be recreated in an instance, except for static subtypes
+         --  because they may be referenced in the static expressions of the
+         --  generic unit, which need to be evaluated during its processing.
 
-         if Inside_A_Generic then
+         if Inside_A_Generic and then not Is_Static_Subtype (E) then
             null;
 
          --  Otherwise we call the layout procedure
@@ -8326,10 +8358,9 @@ package body Freeze is
 
       function In_Expanded_Body (N : Node_Id) return Boolean;
       --  Given an N_Handled_Sequence_Of_Statements node, determines whether it
-      --  is the statement sequence of an expander-generated subprogram: body
-      --  created for an expression function, for a predicate function, an init
-      --  proc, a stream subprogram, or a renaming as body. If so, this is not
-      --  a freezing context and the entity will be frozen at a later point.
+      --  is the statement sequence of an expander-generated subprogram body or
+      --  of a renaming_as_body. If so, this is not a freezing context and the
+      --  entity will be frozen at a later point.
 
       function Has_Decl_In_List
         (E : Entity_Id;
@@ -8438,11 +8469,19 @@ package body Freeze is
          then
             return True;
 
+         --  This is the body of a helper/wrapper built for CW preconditions
+
+         elsif Present (Corresponding_Spec (P))
+           and then
+             Present (Class_Preconditions_Subprogram (Corresponding_Spec (P)))
+         then
+            return True;
+
          else
             Id := Defining_Unit_Name (Specification (P));
 
-            --  The following are expander-created bodies, or bodies that
-            --  are not freeze points.
+            --  This is the body of a Type-Specific Support routine or the one
+            --  generated for a renaming_as_body.
 
             if Nkind (Id) = N_Defining_Identifier
               and then (Is_Init_Proc (Id)
@@ -9016,8 +9055,9 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            Freeze_Nodes : List_Id := No_List;
-            Pos          : Int     := Scope_Stack.Last;
+            Freeze_Nodes : List_Id   := No_List;
+            Pos          : Int       := Scope_Stack.Last;
+            Scop         : Entity_Id := Current_Scope;
 
          begin
             if Present (Desig_Typ) then
@@ -9044,12 +9084,18 @@ package body Freeze is
             --  If the expression is within a top-level pragma, as for a pre-
             --  condition on a library-level subprogram, nothing to do.
 
-            if not Is_Compilation_Unit (Current_Scope)
-              and then (Is_Record_Type (Scope (Current_Scope))
-                         or else (Ekind (Current_Scope) in E_Block | E_Loop
-                                   and then Is_Internal (Current_Scope)))
-            then
-               Pos := Pos - 1;
+            if not Is_Compilation_Unit (Scop) then
+               if Is_Record_Type (Scope (Scop)) then
+                  Pos := Pos - 1;
+
+               else
+                  while Ekind (Scop) in E_Block | E_Loop
+                    and then Is_Internal (Scop)
+                  loop
+                     Pos  := Pos - 1;
+                     Scop := Scope (Scop);
+                  end loop;
+               end if;
             end if;
 
             if Is_Non_Empty_List (Freeze_Nodes) then

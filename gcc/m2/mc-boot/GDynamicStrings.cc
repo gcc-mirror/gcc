@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -777,7 +778,7 @@ static void DSdbExit (DynamicStrings_String__opaque s)
 
 static unsigned int Capture (DynamicStrings_String__opaque s)
 {
-  /* 
+  /*
  *   #undef GM2_DEBUG_DYNAMICSTINGS
  *   #if defined(GM2_DEBUG_DYNAMICSTINGS)
  *   #  define DSdbEnter doDSdbEnter
@@ -1362,7 +1363,7 @@ static DynamicStrings_String__opaque AddToGarbage (DynamicStrings_String__opaque
       a = CheckPoisoned (a);
       b = CheckPoisoned (b);
     }
-  /* 
+  /*
    IF (a#NIL) AND (a#b) AND (a^.head^.state=marked)
    THEN
       writeString('warning trying to add to a marked string') ; writeLn

@@ -39,7 +39,7 @@ public:
   void dump_to_pp (pretty_printer *pp, bool) const;
   void dump (bool) const;
 
-  json::value *to_json () const;
+  std::unique_ptr<json::value> to_json () const;
 
   bool operator== (const symbolic_byte_offset &other) const
   {
@@ -72,7 +72,7 @@ public:
 		   region_model_manager &mgr) const;
   void dump (bool, region_model_manager &mgr) const;
 
-  json::value *to_json () const;
+  std::unique_ptr<json::value> to_json () const;
 
   bool empty_p () const;
 

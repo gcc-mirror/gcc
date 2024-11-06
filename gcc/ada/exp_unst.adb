@@ -1176,7 +1176,7 @@ package body Exp_Unst is
                --  is a semantic descendant of the stub.
 
                when N_Body_Stub =>
-                  Visit (Library_Unit (N));
+                  Visit (Stub_Subunit (N));
 
                --  A declaration of a wrapper package indicates a subprogram
                --  instance for which there is no explicit body. Enter the
@@ -2354,7 +2354,7 @@ package body Exp_Unst is
          --  recursively in Visit_Node.
 
          elsif Nkind (N) in N_Body_Stub then
-            Do_Search (Library_Unit (N));
+            Do_Search (Stub_Subunit (N));
 
          --  Skip generic packages
 
@@ -2385,7 +2385,7 @@ package body Exp_Unst is
         or else (Nkind (Unit (N)) = N_Subprogram_Body
                   and then not Acts_As_Spec (N))
       then
-         Do_Search (Library_Unit (N));
+         Do_Search (Spec_Lib_Unit (N));
       end if;
 
       Do_Search (N);

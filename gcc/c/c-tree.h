@@ -90,6 +90,24 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL_BUILTIN_PROTOTYPE(EXP)		\
   DECL_LANG_FLAG_6 (FUNCTION_DECL_CHECK (EXP))
 
+/* For LABEL_DECLs marks canonical name of a loop.  */
+#define C_DECL_LOOP_NAME(EXP) DECL_LANG_FLAG_3 (LABEL_DECL_CHECK (EXP))
+
+/* For LABEL_DECLs marks canonical name of a switch.  During parsing of
+   ObjC foreach named loop both C_DECL_LOOP_NAME and C_DECL_SWITCH_NAME
+   are temporarily set.  */
+#define C_DECL_SWITCH_NAME(EXP) DECL_LANG_FLAG_5 (LABEL_DECL_CHECK (EXP))
+
+/* For LABEL_DECLs marks canonical name of a loop or switch being
+   valid for use in break identifier or continue identifier statements.  */
+#define C_DECL_LOOP_SWITCH_NAME_VALID(EXP) \
+  DECL_LANG_FLAG_6 (LABEL_DECL_CHECK (EXP))
+
+/* For LABEL_DECLs marks canonical loop or switch names which were actually
+   used in one or more break identifier or continue identifier statements.  */
+#define C_DECL_LOOP_SWITCH_NAME_USED(EXP) \
+  DECL_LANG_FLAG_8 (LABEL_DECL_CHECK (EXP))
+
 /* Record whether a decl was declared register.  This is strictly a
    front-end flag, whereas DECL_REGISTER is used for code generation;
    they may differ for structures with volatile fields.  */
@@ -507,6 +525,10 @@ struct c_arg_info {
   BOOL_BITFIELD had_vla_unspec : 1;
   /* True when the arguments are a (...) prototype.  */
   BOOL_BITFIELD no_named_args_stdarg_p : 1;
+  /* True when empty parentheses have been interpreted as (void) in C23 or
+     later.  This is only for use by -Wtraditional and is no longer needed if
+     -Wtraditional is removed.  */
+  BOOL_BITFIELD c23_empty_parens : 1;
 };
 
 /* A declarator.  */
@@ -611,12 +633,15 @@ extern struct obstack parser_obstack;
    to IN_OMP_BLOCK if parsing OpenMP structured block and
    IN_OMP_FOR if parsing OpenMP loop.  If parsing a switch statement,
    this is bitwise ORed with IN_SWITCH_STMT, unless parsing an
-   iteration-statement, OpenMP block or loop within that switch.  */
+   iteration-statement, OpenMP block or loop within that switch.
+   If the innermost iteration/switch statement is named, IN_NAMED_STMT
+   is additionally bitwise ORed into it.  */
 #define IN_SWITCH_STMT		1
 #define IN_ITERATION_STMT	2
 #define IN_OMP_BLOCK		4
 #define IN_OMP_FOR		8
 #define IN_OBJC_FOREACH		16
+#define IN_NAMED_STMT		32
 extern unsigned char in_statement;
 
 extern bool switch_statement_break_seen_p;
@@ -723,6 +748,9 @@ extern struct c_declspecs *declspecs_add_alignas (location_t,
 						  struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 extern size_t c_tree_size (enum tree_code);
+extern int c_get_loop_names (tree, bool, tree *);
+extern void c_release_loop_names (int);
+extern tree c_finish_bc_name (location_t, tree, bool);
 
 /* in c-objc-common.cc */
 extern bool c_objc_common_init (void);
@@ -780,6 +808,7 @@ extern tree composite_type (tree, tree);
 extern tree lookup_field (const_tree, tree);
 extern tree build_component_ref (location_t, tree, tree, location_t,
 				 location_t, bool = true);
+extern tree handle_counted_by_for_component_ref (location_t, tree);
 extern tree build_array_ref (location_t, tree, tree);
 extern tree build_omp_array_section (location_t, tree, tree, tree);
 extern tree build_external_ref (location_t, tree, bool, tree *);
@@ -807,12 +836,13 @@ extern struct c_expr pop_init_level (location_t, int, struct obstack *,
 				     location_t);
 extern void set_init_index (location_t, tree, tree, struct obstack *);
 extern void set_init_label (location_t, tree, location_t, struct obstack *);
+unsigned c_maybe_optimize_large_byte_initializer (void);
 extern void process_init_element (location_t, struct c_expr, bool,
 				  struct obstack *);
 extern tree build_compound_literal (location_t, tree, tree, bool,
 				    unsigned int, struct c_declspecs *);
 extern void check_compound_literal_type (location_t, struct c_type_name *);
-extern tree c_start_switch (location_t, location_t, tree, bool);
+extern tree c_start_switch (location_t, location_t, tree, bool, tree);
 extern void c_finish_switch (tree, tree);
 extern tree build_asm_expr (location_t, tree, tree, tree, tree, tree, bool,
 			    bool);
@@ -828,7 +858,7 @@ extern tree c_finish_stmt_expr (location_t, tree);
 extern tree c_process_expr_stmt (location_t, tree);
 extern tree c_finish_expr_stmt (location_t, tree);
 extern tree c_finish_return (location_t, tree, tree, bool = false);
-extern tree c_finish_bc_stmt (location_t, tree, bool);
+extern tree c_finish_bc_stmt (location_t, tree, bool, tree);
 extern tree c_finish_goto_label (location_t, tree);
 extern tree c_finish_goto_ptr (location_t, c_expr val);
 extern tree c_expr_to_decl (tree, bool *, bool *);
@@ -849,6 +879,13 @@ extern tree c_build_function_call_vec (location_t, const vec<location_t>&,
 				       tree, vec<tree, va_gc> *,
 				       vec<tree, va_gc> *);
 extern tree c_omp_clause_copy_ctor (tree, tree, tree);
+extern tree c_reconstruct_complex_type (tree, tree);
+extern tree c_build_type_attribute_variant (tree ntype, tree attrs);
+extern tree c_build_pointer_type (tree type);
+extern tree c_build_array_type (tree type, tree domain);
+extern tree c_build_function_type (tree type, tree args, bool no = false);
+extern tree c_build_pointer_type_for_mode (tree type, machine_mode mode, bool m);
+
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

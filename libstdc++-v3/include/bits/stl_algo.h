@@ -200,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __tailSize -= __remainder;
 	  // __first here is always pointing to one past the last element of
 	  // next possible match.
-	  _RandomAccessIter __backTrack = __first; 
+	  _RandomAccessIter __backTrack = __first;
 	  while (__unary_pred(--__backTrack))
 	    {
 	      if (--__remainder == 0)
@@ -665,25 +665,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __result;
     }
 
-  template<typename _InputIterator, typename _Size, typename _OutputIterator>
-    _GLIBCXX20_CONSTEXPR
-    _OutputIterator
-    __copy_n(_InputIterator __first, _Size __n,
-	     _OutputIterator __result, input_iterator_tag)
-    {
-      return std::__niter_wrap(__result,
-			       __copy_n_a(__first, __n,
-					  std::__niter_base(__result), true));
-    }
-
-  template<typename _RandomAccessIterator, typename _Size,
-	   typename _OutputIterator>
-    _GLIBCXX20_CONSTEXPR
-    inline _OutputIterator
-    __copy_n(_RandomAccessIterator __first, _Size __n,
-	     _OutputIterator __result, random_access_iterator_tag)
-    { return std::copy(__first, __first + __n, __result); }
-
   /**
    *  @brief Copies the range [first,first+n) into [result,result+n).
    *  @ingroup mutating_algorithms
@@ -714,8 +695,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_can_increment(__first, __n2);
       __glibcxx_requires_can_increment(__result, __n2);
 
-      return std::__copy_n(__first, __n2, __result,
-			   std::__iterator_category(__first));
+      auto __res = std::__copy_n_a(std::__niter_base(__first), __n2,
+				   std::__niter_base(__result), true);
+      return std::__niter_wrap(__result, std::move(__res));
     }
 
   /**
@@ -750,7 +732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
 	    typename iterator_traits<_InputIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
-      
+
       for (; __first != __last; ++__first)
 	if (__pred(*__first))
 	  {
@@ -1331,7 +1313,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
    *  @param  __last    A forward iterator.
    *  @return  first + (last - middle).
    *
-   *  Rotates the elements of the range @p [__first,__last) by 
+   *  Rotates the elements of the range @p [__first,__last) by
    *  @p (__middle - __first) positions so that the element at @p __middle
    *  is moved to @p __first, the element at @p __middle+1 is moved to
    *  @p __first+1 and so on for each element in the range
@@ -1372,13 +1354,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  @return   An iterator designating the end of the resulting sequence.
    *
    *  Copies the elements of the range @p [__first,__last) to the
-   *  range beginning at @result, rotating the copied elements by 
+   *  range beginning at @result, rotating the copied elements by
    *  @p (__middle-__first) positions so that the element at @p __middle
    *  is moved to @p __result, the element at @p __middle+1 is moved
    *  to @p __result+1 and so on for each element in the range @p
    *  [__first,__last).
    *
-   *  Performs 
+   *  Performs
    *  @p *(__result+(n+(__last-__middle))%(__last-__first))=*(__first+n)
    *  for each @p n in the range @p [0,__last-__first).
   */
@@ -1623,7 +1605,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	  ++__result_real_last;
 	  ++__first;
 	}
-      
+
       std::__make_heap(__result_first, __result_real_last, __comp);
       while (__first != __last)
 	{
@@ -3380,7 +3362,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  @ingroup sorting_algorithms
    *  @param  __first  Start of range.
    *  @param  __last   End of range.
-   *  @return  make_pair(m, M), where m is the first iterator i in 
+   *  @return  make_pair(m, M), where m is the first iterator i in
    *           [__first, __last) such that no other element in the range is
    *           smaller, and where M is the last iterator i in [__first, __last)
    *           such that no other element in the range is larger.
@@ -3408,7 +3390,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  @param  __first  Start of range.
    *  @param  __last   End of range.
    *  @param  __comp   Comparison functor.
-   *  @return  make_pair(m, M), where m is the first iterator i in 
+   *  @return  make_pair(m, M), where m is the first iterator i in
    *           [__first, __last) such that no other element in the range is
    *           smaller, and where M is the last iterator i in [__first, __last)
    *           such that no other element in the range is larger.
@@ -3838,7 +3820,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  such that @c *i == @p __val, or @p __last if no such iterator exists.
   */
   template<typename _InputIterator, typename _Tp>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline _InputIterator
     find(_InputIterator __first, _InputIterator __last, const _Tp& __val)
     {
@@ -3852,7 +3834,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       using _ValT = typename iterator_traits<_InputIterator>::value_type;
       if constexpr (__can_use_memchr_for_find<_ValT, _Tp>)
 	if constexpr (is_pointer_v<decltype(std::__niter_base(__first))>
-#if __cpp_lib_concepts
+#if __glibcxx_concepts && __glibcxx_to_address
 			|| contiguous_iterator<_InputIterator>
 #endif
 		     )
@@ -3865,11 +3847,17 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	      return __last;
 	    else if (!__is_constant_evaluated())
 	      {
-		const void* __p0 = std::__to_address(__first);
 		const int __ival = static_cast<int>(__val);
-		if (auto __n = std::distance(__first, __last); __n > 0)
-		  if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
-		    return __first + ((const char*)__p1 - (const char*)__p0);
+		if (auto __n = __last - __first; __n > 0)
+		  {
+#if __glibcxx_concepts && __glibcxx_to_address
+		    const void* __p0 = std::to_address(__first);
+#else
+		    const void* __p0 = std::__niter_base(__first);
+#endif
+		    if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+		      return __first + ((const char*)__p1 - (const char*)__p0);
+		  }
 		return __last;
 	      }
 	  }
@@ -4919,7 +4907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator2>::value_type>)
       __glibcxx_function_requires(_LessThanOpConcept<
 	    typename iterator_traits<_InputIterator2>::value_type,
-	    typename iterator_traits<_InputIterator1>::value_type>)	
+	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
       __glibcxx_requires_irreflexive2(__first1, __last1);
@@ -5402,7 +5390,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator2>::value_type>)
       __glibcxx_function_requires(_LessThanOpConcept<
 	    typename iterator_traits<_InputIterator2>::value_type,
-	    typename iterator_traits<_InputIterator1>::value_type>)	
+	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
       __glibcxx_requires_irreflexive2(__first1, __last1);
@@ -5495,7 +5483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    ++__first1;
 	    ++__first2;
 	  }
-      return std::copy(__first2, __last2, 
+      return std::copy(__first2, __last2,
 		       std::copy(__first1, __last1, __result));
     }
 
@@ -5537,7 +5525,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	    typename iterator_traits<_InputIterator2>::value_type>)
       __glibcxx_function_requires(_LessThanOpConcept<
 	    typename iterator_traits<_InputIterator2>::value_type,
-	    typename iterator_traits<_InputIterator1>::value_type>)	
+	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_sorted_set(__first1, __last1, __first2);
       __glibcxx_requires_sorted_set(__first2, __last2, __first1);
       __glibcxx_requires_irreflexive2(__first1, __last1);

@@ -2,11 +2,11 @@
 // { dg-options "-Woverflow" }
 // PR c++/52654
 int
-operator"" _w(unsigned long long)
+operator ""_w(unsigned long long)
 { return 0; }
 
 int
-operator"" _w(long double)
+operator ""_w(long double)
 { return 0.0L; }
 
 int i = 12345678901234567890123456789012345678901234567890_w;

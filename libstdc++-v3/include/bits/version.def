@@ -699,6 +699,11 @@ ftms = {
 ftms = {
   name = string_view;
   values = {
+    v = 202403;
+    cxxmin = 26;
+    hosted = yes;
+  };
+  values = {
     v = 201803;
     cxxmin = 17;
     hosted = yes;
@@ -1256,7 +1261,7 @@ ftms = {
 ftms = {
   name = constrained_equality;
   values = {
-    v = 202403;
+    v = 202411; // FIXME: 202403 for P2944R3, ??? for P3379R0
     cxxmin = 20;
     extra_cond = "__glibcxx_three_way_comparison";
   };
@@ -1804,6 +1809,15 @@ ftms = {
     v = 202306;
     cxxmin = 26;
     hosted = yes;
+  };
+};
+
+ftms = {
+  name = is_virtual_base_of;
+  values = {
+    v = 202406;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_is_virtual_base_of)";
   };
 };
 

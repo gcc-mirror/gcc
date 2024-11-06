@@ -1,4 +1,4 @@
-// 1999-01-17 bkoz test functionality of basic_filebuf for char_type == char
+// 1999-01-17 bkoz test functionality of basic_istringstream for char_type == char
 
 // Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
@@ -17,8 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.8.1.1 - Template class basic_filebuf 
-// NB: This file is for testing basic_filebuf with NO OTHER INCLUDES.
+// 27.8.1.1 - Template class basic_istringstream
+// NB: This file is for testing basic_istringstream with NO OTHER INCLUDES.
 
 #include <sstream>
 #include <testsuite_hooks.h>

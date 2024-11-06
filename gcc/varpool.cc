@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -136,7 +137,7 @@ varpool_node *
 varpool_node::create_empty (void)
 {
   return new (ggc_alloc<varpool_node> ()) varpool_node ();
-}   
+}
 
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
 varpool_node *
@@ -368,7 +369,7 @@ varpool_node::ctor_useable_for_folding_p (void)
      consistently. As a GNU extension, do not enforce this rule for user defined
      weak variables, so we support interposition on:
      static const int dummy = 0;
-     extern const int foo __attribute__((__weak__, __alias__("dummy"))); 
+     extern const int foo __attribute__((__weak__, __alias__("dummy")));
    */
   if ((!DECL_INITIAL (real_node->decl)
        || (DECL_WEAK (decl) && !DECL_COMDAT (decl)))
@@ -377,7 +378,7 @@ varpool_node::ctor_useable_for_folding_p (void)
     return false;
 
   /* Variables declared `const' with an initializer are considered
-     to not be overwritable with different initializer by default. 
+     to not be overwritable with different initializer by default.
 
      ??? Previously we behaved so for scalar variables but not for array
      accesses.  */
@@ -607,7 +608,7 @@ varpool_node::assemble_decl (void)
   return false;
 }
 
-/* Add NODE to queue starting at FIRST. 
+/* Add NODE to queue starting at FIRST.
    The queue is linked via AUX pointers and terminated by pointer to 1.  */
 
 static void

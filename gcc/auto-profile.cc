@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MAP
+#define INCLUDE_MEMORY
 #define INCLUDE_SET
 #include "system.h"
 #include "coretypes.h"
@@ -473,7 +474,7 @@ string_table::get_index (const char *name) const
   return iter->second;
 }
 
-/* Return the index of a given function DECL. Return -1 if DECL is not 
+/* Return the index of a given function DECL. Return -1 if DECL is not
    found in string table.  */
 
 int

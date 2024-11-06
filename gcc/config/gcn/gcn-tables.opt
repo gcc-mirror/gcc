@@ -1,0 +1,58 @@
+; -*- buffer-read-only: t -*-
+; Generated automatically by gen-opt-tables.awk from gcn-devices.def.
+; Do not edit.
+
+; Copyright (C) 2024 Free Software Foundation, Inc.
+
+; This file is part of GCC.
+
+; GCC is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as
+; published by the Free Software Foundation; either version 3,
+; or (at your option) any later version.
+
+; GCC is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+
+; You should have received a copy of the GNU General Public
+; License along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+Enum
+Name(gpu_type) Type(enum processor_type)
+GCN GPU type to use:
+
+EnumValue
+Enum(gpu_type) String(gfx900) Value(PROCESSOR_GFX900)
+
+EnumValue
+Enum(gpu_type) String(gfx906) Value(PROCESSOR_GFX906)
+
+EnumValue
+Enum(gpu_type) String(gfx908) Value(PROCESSOR_GFX908)
+
+EnumValue
+Enum(gpu_type) String(gfx90a) Value(PROCESSOR_GFX90A)
+
+EnumValue
+Enum(gpu_type) String(gfx90c) Value(PROCESSOR_GFX90C)
+
+EnumValue
+Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
+
+EnumValue
+Enum(gpu_type) String(gfx1036) Value(PROCESSOR_GFX1036)
+
+EnumValue
+Enum(gpu_type) String(gfx10-3-generic) Value(PROCESSOR_GFX10_3_GENERIC)
+
+EnumValue
+Enum(gpu_type) String(gfx1100) Value(PROCESSOR_GFX1100)
+
+EnumValue
+Enum(gpu_type) String(gfx1103) Value(PROCESSOR_GFX1103)
+
+EnumValue
+Enum(gpu_type) String(gfx11-generic) Value(PROCESSOR_GFX11_GENERIC)

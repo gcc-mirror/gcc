@@ -210,6 +210,7 @@ extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
 extern opt_machine_mode arm_get_mask_mode (machine_mode mode);
+extern bool arm_noce_conversion_profitable_p (rtx_insn *,struct noce_if_info *);
 
 #endif /* RTX_CODE */
 
@@ -615,4 +616,7 @@ void arm_initialize_isa (sbitmap, const enum isa_feature *);
 const char * arm_gen_far_branch (rtx *, int, const char * , const char *);
 
 bool arm_mve_immediate_check(rtx, machine_mode, bool);
+
+opt_machine_mode arm_mve_data_mode (scalar_mode, poly_uint64);
+
 #endif /* ! GCC_ARM_PROTOS_H */

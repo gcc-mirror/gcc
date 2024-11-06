@@ -1,5 +1,5 @@
 /* Configuration for an OpenBSD i386 target.
-   
+
    Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -67,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
    The icky part is not here, but in <machine/profile.h>.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
-  fputs (flag_pic ? "\tcall __mcount@PLT\n": "\tcall __mcount\n", FILE);
+  fputs (flag_pic ? "\tcall __mcount@PLT\n" : "\tcall __mcount\n", FILE);
 
 #undef LINK_SPEC
 #define LINK_SPEC \

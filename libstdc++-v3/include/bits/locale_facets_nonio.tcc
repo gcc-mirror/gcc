@@ -30,7 +30,9 @@
 #ifndef _LOCALE_FACETS_NONIO_TCC
 #define _LOCALE_FACETS_NONIO_TCC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -635,8 +637,14 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 
 #if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
       && defined __LONG_DOUBLE_IEEE128__
-extern "C"
-__typeof__(__builtin_snprintf) __glibcxx_snprintfibm128 __asm__("snprintf");
+// The snprintf symbol in glibc that works with __ibm128 format is not visible
+// when compiling with -mabi=ieeelongdouble so we use this name for it instead.
+// N.B. we don't use __typeof__(__builtin_snprintf) for the type because that
+// would inherit __attribute__((format(printf, 3, 4))) and give a warning for
+// passing __ibm128 to %Lf instead of long double. The warning would be wrong
+// because long double in this TU is __ieee128 and snprintf expects __ibm128.
+extern "C" int
+__glibcxx_snprintfibm128(char*, size_t, const char*, ...) __asm__("snprintf");
 
   template<typename _CharT, typename _OutIter>
     _OutIter
@@ -1677,6 +1685,9 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
 #if _GLIBCXX_EXTERN_TEMPLATE
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // extern template
+#pragma GCC diagnostic ignored "-Wlong-long"
   extern template class moneypunct<char, false>;
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
@@ -1890,6 +1901,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     bool
     has_facet<messages<wchar_t> >(const locale&);
 #endif
+#pragma GCC diagnostic pop
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

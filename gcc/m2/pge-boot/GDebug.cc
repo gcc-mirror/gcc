@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <limits.h>
-#define _Debug_H
 #define _Debug_C
 
+#include "GDebug.h"
 #   include "GASCII.h"
 #   include "GNumberIO.h"
 #   include "GStdIO.h"
@@ -56,7 +56,7 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, co
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets 
+                 It interprets
  as carriage return, linefeed.
 */
 
@@ -121,7 +121,7 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, co
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets 
+                 It interprets
  as carriage return, linefeed.
 */
 

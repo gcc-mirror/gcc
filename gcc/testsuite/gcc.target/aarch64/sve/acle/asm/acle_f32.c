@@ -44,11 +44,11 @@ TEST_COMPARE_ZD (acle_s4_f32, svfloat32_t, float32_t,
 
 /*
 ** acle_0_f32:
-**	mov	(z[0-9]+\.s), #0
+**	movi?	[vdz]([0-9]+)\.?(?:[0-9]*[bhsd])?, #?0
 ** (
 **	facge	p0\.s, p1/z, \1, z0\.s
 ** |
-**	facle	p0\.s, p1/z, z0\.s, \1
+**	facle	p0\.s, p1/z, z0\.s, z\1\.s
 ** )
 **	ret
 */

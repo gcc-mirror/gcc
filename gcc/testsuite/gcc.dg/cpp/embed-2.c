@@ -6,7 +6,7 @@
 #endif
 
 int a =
-#embed __FILE__ limit (1) /* { dg-error "#embed before C23 is a GCC extension" } */
+#embed __FILE__ limit (1) /* { dg-error "'#embed' before C23 is a GCC extension" } */
 ;
 int b =
 (__extension__

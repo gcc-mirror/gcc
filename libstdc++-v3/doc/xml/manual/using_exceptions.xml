@@ -274,7 +274,7 @@ exception neutrality and exception safety.
   <para>
     C++ is a language that strives to be as efficient as is possible
     in delivering features. As such, considerable care is used by both
-    language implementer and designers to make sure unused features
+    language implementer and designers to make sure unused features do
     not impose hidden or unexpected costs. The GNU system tries to be
     as flexible and as configurable as possible. So, it should come as
     no surprise that GNU C++ provides an optional language extension,
@@ -282,7 +282,7 @@ exception neutrality and exception safety.
     implicitly generated magic necessary to
     support <literal>try</literal> and <literal>catch</literal> blocks
     and thrown objects. (Language support
-    for <literal>-fno-exceptions</literal> is documented in the GCC 
+    for <literal>-fno-exceptions</literal> is documented in the GCC
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html#Code-Gen-Options">manual</link>.)
   </para>
 
@@ -299,7 +299,7 @@ exception neutrality and exception safety.
   </para>
 
   <para>
-    And what it to be gained, tinkering in the back alleys with a
+    And what is to be gained, tinkering in the back alleys with a
     language like this? Exception handling overhead can be measured
     in the size of the executable binary, and varies with the
     capabilities of the underlying operating system and specific
@@ -344,17 +344,17 @@ exception neutrality and exception safety.
 </programlisting>
 
 <para>
-  In addition, for every object derived from
+  In addition, for most of the classes derived from
   class <classname>exception</classname>, there exists a corresponding
   function with C language linkage. An example:
 </para>
 
 <programlisting>
 #if __cpp_exceptions
-  void __throw_bad_exception(void)
+  void __throw_bad_exception()
   { throw bad_exception(); }
 #else
-  void __throw_bad_exception(void)
+  void __throw_bad_exception()
   { abort(); }
 #endif
 </programlisting>

@@ -1,4 +1,4 @@
-/* { dg-options "-fwrapv" } */
+/* { dg-options "-Wno-old-style-definition -fwrapv" } */
 
 extern void abort (void);
 extern void exit (int);

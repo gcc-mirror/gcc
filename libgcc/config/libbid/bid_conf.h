@@ -567,7 +567,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DECIMAL_CALL_BY_REFERENCE 0
 #endif
 
-// If DECIMAL_GLOBAL_ROUNDING is defined then the rounding mode is a global 
+// If DECIMAL_GLOBAL_ROUNDING is defined then the rounding mode is a global
 // variable _IDEC_glbround, otherwise it is passed as a parameter when needed
 
 #ifndef DECIMAL_GLOBAL_ROUNDING
@@ -579,7 +579,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 // If DECIMAL_GLOBAL_EXCEPTION_FLAGS is defined then the exception status flags
-// are represented by a global variable _IDEC_glbflags, otherwise they are 
+// are represented by a global variable _IDEC_glbflags, otherwise they are
 // passed as a parameter when needed
 
 #ifndef DECIMAL_GLOBAL_EXCEPTION_FLAGS
@@ -591,7 +591,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 // If DECIMAL_ALTERNATE_EXCEPTION_HANDLING is defined then the exception masks
-// are examined and exception handling information is provided to the caller 
+// are examined and exception handling information is provided to the caller
 // if alternate exception handling is necessary
 
 #ifndef DECIMAL_ALTERNATE_EXCEPTION_HANDLING
@@ -604,15 +604,15 @@ typedef unsigned int _IDEC_flags;	// could be a struct with diagnostic info
 #if DECIMAL_ALTERNATE_EXCEPTION_HANDLING
   // If DECIMAL_GLOBAL_EXCEPTION_MASKS is defined then the exception mask bits
   // are represented by a global variable _IDEC_exceptionmasks, otherwise they
-  // are passed as a parameter when needed; DECIMAL_GLOBAL_EXCEPTION_MASKS is 
+  // are passed as a parameter when needed; DECIMAL_GLOBAL_EXCEPTION_MASKS is
   // ignored
   // if DECIMAL_ALTERNATE_EXCEPTION_HANDLING is not defined
   // **************************************************************************
 #define DECIMAL_GLOBAL_EXCEPTION_MASKS 0
   // **************************************************************************
 
-  // If DECIMAL_GLOBAL_EXCEPTION_INFO is defined then the alternate exception  
-  // handling information is represented by a global data structure 
+  // If DECIMAL_GLOBAL_EXCEPTION_INFO is defined then the alternate exception
+  // handling information is represented by a global data structure
   // _IDEC_glbexcepthandling, otherwise it is passed by reference as a
   // parameter when needed; DECIMAL_GLOBAL_EXCEPTION_INFO is ignored
   // if DECIMAL_ALTERNATE_EXCEPTION_HANDLING is not defined
@@ -623,9 +623,9 @@ typedef unsigned int _IDEC_flags;	// could be a struct with diagnostic info
 
 // Notes: 1) rnd_mode from _RND_MODE_ARG is used by the caller of a function
 //           from this library, and can be any name
-//        2) rnd_mode and prnd_mode from _RND_MODE_PARAM are fixed names 
+//        2) rnd_mode and prnd_mode from _RND_MODE_PARAM are fixed names
 //           and *must* be used in the library functions
-//        3) _IDEC_glbround is the fixed name for the global variable holding 
+//        3) _IDEC_glbround is the fixed name for the global variable holding
 //           the rounding mode
 
 #if !DECIMAL_GLOBAL_ROUNDING
@@ -649,10 +649,10 @@ typedef unsigned int _IDEC_flags;	// could be a struct with diagnostic info
 #endif
 
 // Notes: 1) pfpsf from _EXC_FLAGS_ARG is used by the caller of a function
-//           from this library, and can be any name 
-//        2) pfpsf from _EXC_FLAGS_PARAM is a fixed name and *must* be used  
+//           from this library, and can be any name
+//        2) pfpsf from _EXC_FLAGS_PARAM is a fixed name and *must* be used
 //           in the library functions
-//        3) _IDEC_glbflags is the fixed name for the global variable holding 
+//        3) _IDEC_glbflags is the fixed name for the global variable holding
 //           the floating-point status flags
 #if !DECIMAL_GLOBAL_EXCEPTION_FLAGS
 #define _EXC_FLAGS_ARG , pfpsf
@@ -686,7 +686,7 @@ extern BID_THREAD _IDEC_excepthandling _IDEC_glbexcepthandling;
   //           from this library, and can be any name
   //        2) exc_mask and pexc_mask from _EXC_MASKS_PARAM are fixed names
   //           and *must* be used in the library functions
-  //        3) _IDEC_glbexceptionmasks is the fixed name for the global 
+  //        3) _IDEC_glbexceptionmasks is the fixed name for the global
   //           variable holding the floating-point exception masks
 #if !DECIMAL_GLOBAL_EXCEPTION_MASKS
 #if DECIMAL_CALL_BY_REFERENCE
@@ -704,9 +704,9 @@ extern BID_THREAD _IDEC_excepthandling _IDEC_glbexcepthandling;
 
   // Notes: 1) pexc_info from _EXC_INFO_ARG is used by the caller of a function
   //           from this library, and can be any name
-  //        2) pexc_info from _EXC_INFO_PARAM is a fixed name and *must* be  
+  //        2) pexc_info from _EXC_INFO_PARAM is a fixed name and *must* be
   //           used in the library functions
-  //        3) _IDEC_glbexcepthandling is the fixed name for the global  
+  //        3) _IDEC_glbexcepthandling is the fixed name for the global
   //           variable holding the floating-point exception information
 #if !DECIMAL_GLOBAL_EXCEPTION_INFO
 #define _EXC_INFO_ARG , pexc_info

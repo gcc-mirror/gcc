@@ -27,7 +27,7 @@ namespace std {
 
 bad_cast::~bad_cast() _GLIBCXX_USE_NOEXCEPT { }
 
-const char* 
+const char*
 bad_cast::what() const _GLIBCXX_USE_NOEXCEPT
 {
   return "std::bad_cast";

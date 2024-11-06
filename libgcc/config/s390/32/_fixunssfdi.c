@@ -70,7 +70,7 @@ __fixunssfdi (float a1)
 
     /* Negative.  */
     if (SIGN (fl1))
-      { 
+      {
 	/* Value is <= -1.0
 	   C99 Annex F.4 requires an "invalid" exception to be thrown.  */
 	if (EXP (fl1) >= EXPONENT_BIAS)
@@ -89,7 +89,7 @@ __fixunssfdi (float a1)
     if ((EXP (fl1) == 0xff) && (FRAC (fl1) != 0)) /* NaN */
       {
 	/* C99 Annex F.4 requires an "invalid" exception to be thrown.  */
-	fexceptdiv (0.0, 0.0);	
+	fexceptdiv (0.0, 0.0);
 	return 0x0ULL;
       }
 

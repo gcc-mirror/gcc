@@ -22,5 +22,5 @@ test_msum_ui (vector unsigned long long vull_1, vector unsigned long long vull_2
   return vec_msum (vull_1, vull_2, vui128);
 }
 
-/* { dg_final { scan_assembler_times "vmsumudm" 2 } } */
+/* { dg-final { scan-assembler-times "vmsumudm" 2 } } */
 

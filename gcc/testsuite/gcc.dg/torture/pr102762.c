@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 /* We fail to diagnose the invalid __builtin_va_arg_pack use with -flto.  */
 /* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 

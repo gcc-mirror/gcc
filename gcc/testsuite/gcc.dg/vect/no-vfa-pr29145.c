@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-additional-options "-fno-ipa-icf" } */
+/* { dg-additional-options "--param vect-max-version-for-alias-checks=0 -fno-ipa-icf" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

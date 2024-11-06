@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_DEBUG_STRING
 #define _GLIBCXX_DEBUG_STRING 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <string>
 #include <debug/safe_sequence.h>

@@ -225,16 +225,6 @@ namespace ranges
 			      copy_backward_result<_Iter, _Out>>
     __copy_or_move_backward(_Iter __first, _Sent __last, _Out __result);
 
-  template<bool _IsMove, typename _Iter, typename _Out>
-    constexpr void
-    __assign_one(_Iter& __iter, _Out& __result)
-    {
-      if constexpr (_IsMove)
-	  *__result = std::move(*__iter);
-      else
-	  *__result = *__iter;
-    }
-
   template<bool _IsMove,
 	   input_iterator _Iter, sentinel_for<_Iter> _Sent,
 	   weakly_incrementable _Out>
@@ -294,14 +284,14 @@ namespace ranges
 		    __builtin_memmove(__result, __first,
 				      sizeof(_ValueTypeI) * __num);
 		  else if (__num == 1)
-		    ranges::__assign_one<_IsMove>(__first, __result);
+		    std::__assign_one<_IsMove>(__result, __first);
 		  return {__first + __num, __result + __num};
 		}
 	    }
 
 	  for (auto __n = __last - __first; __n > 0; --__n)
 	    {
-	      ranges::__assign_one<_IsMove>(__first, __result);
+	      std::__assign_one<_IsMove>(__result, __first);
 	      ++__first;
 	      ++__result;
 	    }
@@ -311,7 +301,7 @@ namespace ranges
 	{
 	  while (__first != __last)
 	    {
-	      ranges::__assign_one<_IsMove>(__first, __result);
+	      std::__assign_one<_IsMove>(__result, __first);
 	      ++__first;
 	      ++__result;
 	    }
@@ -418,12 +408,13 @@ namespace ranges
 		{
 		  using _ValueTypeI = iter_value_t<_Iter>;
 		  auto __num = __last - __first;
+		  __result -= __num;
 		  if (__num > 1) [[likely]]
-		    __builtin_memmove(__result - __num, __first,
+		    __builtin_memmove(__result, __first,
 				      sizeof(_ValueTypeI) * __num);
 		  else if (__num == 1)
-		    ranges::__assign_one<_IsMove>(__first, __result);
-		  return {__first + __num, __result - __num};
+		    std::__assign_one<_IsMove>(__result, __first);
+		  return {__first + __num, __result};
 		}
 	    }
 
@@ -434,7 +425,7 @@ namespace ranges
 	    {
 	      --__tail;
 	      --__result;
-	      ranges::__assign_one<_IsMove>(__tail, __result);
+	      std::__assign_one<_IsMove>(__result, __tail);
 	    }
 	  return {std::move(__lasti), std::move(__result)};
 	}
@@ -447,7 +438,7 @@ namespace ranges
 	    {
 	      --__tail;
 	      --__result;
-	      ranges::__assign_one<_IsMove>(__tail, __result);
+	      std::__assign_one<_IsMove>(__result, __tail);
 	    }
 	  return {std::move(__lasti), std::move(__result)};
 	}
@@ -591,7 +582,7 @@ namespace ranges
 	if constexpr (sized_sentinel_for<_Sent, _Out>)
 	  {
 	    const auto __len = __last - __first;
-	    return ranges::fill_n(__first, __len, __value);
+	    return ranges::fill_n(std::move(__first), __len, __value);
 	  }
 	else if constexpr (is_scalar_v<_Tp>)
 	  {

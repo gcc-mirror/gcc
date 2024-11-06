@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
    d) We move all GIMPLE statements in the removed blocks into the
       first one.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -254,7 +255,7 @@ if_chain::is_beneficial ()
   else
     output.release ();
 
-  output = bit_test_cluster::find_bit_tests (filtered_clusters);
+  output = bit_test_cluster::find_bit_tests (filtered_clusters, 2);
   r = output.length () < filtered_clusters.length ();
   if (r)
     dump_clusters (&output, "BT can be built");

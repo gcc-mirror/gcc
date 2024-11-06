@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_libc_H)
 #   define _libc_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
@@ -41,6 +39,8 @@ extern "C" {
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
+#include <stdlib.h>
+#   include <sys/types.h>
 #   include "GSYSTEM.h"
 
 #   if defined (_libc_C)
@@ -85,6 +85,17 @@ typedef libc_exitP_t libc_exitP_C;
 
 struct libc_exitP_p { libc_exitP_t proc; };
 
+EXTERN double libc_atof (void * nptr);
+EXTERN int libc_atoi (void * nptr);
+EXTERN ssize_t libc_atol (void * nptr);
+EXTERN long int libc_atoll (void * nptr);
+EXTERN double libc_strtod (void * nptr, void * endptr);
+EXTERN float libc_strtof (void * nptr, void * endptr);
+EXTERN long double libc_strtold (void * nptr, void * endptr);
+EXTERN ssize_t libc_strtol (void * nptr, void * endptr, int base);
+EXTERN long int libc_strtoll (void * nptr, void * endptr, int base);
+EXTERN size_t libc_strtoul (void * nptr, void * endptr, int base);
+EXTERN long unsigned int libc_strtoull (void * nptr, void * endptr, int base);
 EXTERN ssize_t libc_write (int d, void * buf, size_t nbytes);
 EXTERN ssize_t libc_read (int d, void * buf, size_t nbytes);
 EXTERN int libc_system (void * a);
@@ -198,7 +209,7 @@ EXTERN ssize_t libc_lseek (int fd, ssize_t offset, int whence);
    perror - writes errno and string. (ARRAY OF CHAR is translated onto ADDRESS).
 */
 
-EXTERN void libc_perror (const char *str);
+EXTERN void libc_perror (const char *string_, unsigned int _string_high);
 
 /*
    readv - reads an io vector of bytes.

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-std=gnu17 -pedantic-errors" } */
 
 static l; /* { dg-error "type defaults to" } */
 

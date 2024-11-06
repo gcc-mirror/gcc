@@ -20,7 +20,7 @@ extern "C" {
 void
 foo (float32_t *addr, float32x4x2_t value)
 {
-  return vst2q_f32 (addr, value);
+  vst2q_f32 (addr, value);
 }
 
 
@@ -35,7 +35,7 @@ foo (float32_t *addr, float32x4x2_t value)
 void
 foo1 (float32_t *addr, float32x4x2_t value)
 {
-  return vst2q (addr, value);
+  vst2q (addr, value);
 }
 
 #ifdef __cplusplus

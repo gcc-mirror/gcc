@@ -340,7 +340,7 @@ new_emutls_decl (tree decl, tree alias_of)
     varpool_node::get_create (to);
   else if (!alias_of)
     varpool_node::add (to);
-  else 
+  else
     {
       varpool_node *n;
       varpool_node *t = varpool_node::get_for_asmname
@@ -356,7 +356,7 @@ new_emutls_decl (tree decl, tree alias_of)
    This only needs to happen for TLS COMMON variables; non-COMMON
    variables can be initialized statically.  Insert the generated
    call statement at the end of PSTMTS.  */
-   
+
 static void
 emutls_common_1 (tree tls_decl, tree control_decl, tree *pstmts)
 {
@@ -649,7 +649,7 @@ lower_emutls_function_body (struct cgraph_node *node)
     {
       unsigned int i, nedge;
 
-      /* Lower each of the PHI nodes of the block, as we may have 
+      /* Lower each of the PHI nodes of the block, as we may have
 	 propagated &tlsvar into a PHI argument.  These loops are
 	 arranged so that we process each edge at once, and each
 	 PHI argument for that edge.  */

@@ -27,10 +27,9 @@ FROM NameKey IMPORT Name, MakeKey, makekey, KeyToCharStar, NulName, LengthKey, W
 FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert, WriteDebug ;
 FROM M2LexBuf IMPORT UnknownTokenNo, GetTokenNo, MakeVirtual2Tok ;
-FROM M2Error IMPORT InternalError, WriteFormat1, WriteFormat2, WriteFormat0, ErrorStringAt, ErrorStringAt2 ;
-FROM M2MetaError IMPORT MetaError1, MetaError2, MetaErrorsT2, MetaErrors1, MetaErrors2, MetaErrorString1 ;
+FROM M2Error IMPORT InternalError, WriteFormat1, WriteFormat2, WriteFormat0, ErrorStringAt, ErrorStringAt2, WarnStringAt ;
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, Mark, Slice, ConCat, KillString, string ;
-FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf4 ;
+FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4 ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, PushWord, PopWord ;
 FROM M2Options IMPORT PedanticParamNames, ExtendedOpaque ;
@@ -42,6 +41,10 @@ FROM M2LexBuf IMPORT TokenToLocation ;
 
 FROM M2Reserved IMPORT ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
                        NulTok, VarTok, ArrayTok ;
+
+FROM M2MetaError IMPORT MetaError1, MetaError2, MetaErrorsT2, MetaErrors1,
+                        MetaErrors2, MetaErrorString1, MetaErrorStringT1,
+                        MetaErrorString3, MetaErrorStringT3 ;
 
 FROM FifoQueue IMPORT GetEnumerationFromFifoQueue, PutSubrangeIntoFifoQueue,
                       PutConstructorIntoFifoQueue, PutConstIntoFifoQueue ;
@@ -60,7 +63,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeVar, MakeType, PutType,
                         MakeModuleCtor,
                         PutMode, PutDeclared, GetParameterShadowVar,
-                        PutFieldEnumeration, PutSubrange, PutVar, PutConst,
+                        PutFieldEnumeration, PutSubrange, PutVar, PutVarTok, PutConst,
                         PutConstSet, PutConstructor,
                         IsDefImp, IsType, IsRecord, IsRecordField, IsPointer,
                         IsSubrange, IsEnumeration, IsConstString,
@@ -87,6 +90,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeVarient, MakeFieldVarient,
                         MakeArray, PutArraySubscript,
                         MakeSubscript, PutSubscript,
+                        MakeError,
                         PutConstStringKnown, GetString,
                         PutArray, IsArray,
                         GetType, SkipType,
@@ -108,8 +112,15 @@ FROM SymbolTable IMPORT NulSym,
                         ParametersDefinedInDefinition,
                         ParametersDefinedInImplementation,
                         ProcedureParametersDefined,
+                        GetProcedureDeclaredDefinition,
+                        GetProcedureDeclaredForward,
+                        GetProcedureDeclaredProper,
+                        GetParametersDefinedByForward,
+                        GetParametersDefinedByProper,
                         PutProcedureNoReturn,
                         PutProcedureParameterHeapVars,
+                        PutParametersDefinedByForward,
+                        PutParametersDefinedByProper,
                         CheckForUnImplementedExports,
                         CheckForUndeclaredExports,
                         IsHiddenTypeDeclared,
@@ -125,6 +136,10 @@ FROM SymbolTable IMPORT NulSym,
                         RequestSym,
                         PutDeclared,
                         GetPackedEquivalent,
+                        GetVarDeclTok,
+                        GetVarDeclFullTok,
+                        PutVarDeclTok,
+                        GetVarDeclTypeTok,
                         DisplayTrees ;
 
 FROM M2Batch IMPORT MakeDefinitionSource,
@@ -1143,12 +1158,13 @@ PROCEDURE BuildVariable ;
 VAR
    name     : Name ;
    tok,
+   typetok,
    AtAddress,
    Type,
    Var,
    i, n     : CARDINAL ;
 BEGIN
-   PopTF (Type, name) ;
+   PopTFtok (Type, name, typetok) ;
    PopT (n) ;
    i := 1 ;
    WHILE i <= n DO
@@ -1160,11 +1176,12 @@ BEGIN
          PutVariableAtAddress (Var, NulSym) ;
          PutMode (Var, LeftValue)
       END ;
-      PutVar (Var, Type) ;
+      PutVarTok (Var, Type, typetok) ;
       tok := OperandTok (n+1-i) ;
       IF tok # UnknownTokenNo
       THEN
          PutDeclared (tok, Var) ;
+         PutVarDeclTok (Var, tok) ;
          name := OperandT (n+1-i) ;
          (* printf3 ('declaring variable %a at tok %d Type %d \n', name, tok, Type) *)
          (*
@@ -1316,12 +1333,9 @@ BEGIN
    ProcSym := GetDeclareSym (tokno, name) ;
    IF IsUnknown (ProcSym)
    THEN
-      (*
-         May have been compiled in the definition or implementation module,
-         remember that implementation maybe compiled before corresponding
-         definition module.
-         - no definition should always be compilied before implementation modules.
-      *)
+      (* May have been compiled in the definition or implementation module.
+         Note we always see an implementation module before its corresponding
+         definition module.  *)
       ProcSym := MakeProcedure (tokno, name)
    ELSIF IsProcedure (ProcSym)
    THEN
@@ -1386,6 +1400,18 @@ END EndBuildProcedure ;
 
 
 (*
+   EndBuildForward - ends building a forward procedure.
+*)
+
+PROCEDURE EndBuildForward ;
+BEGIN
+   PopN (2) ;
+   EndScope ;
+   M2Error.LeaveErrorScope
+END EndBuildForward ;
+
+
+(*
    BuildProcedureHeading - Builds a procedure heading for the definition
                            module procedures.
 
@@ -1411,6 +1437,8 @@ VAR
    ProcSym  : CARDINAL ;
    NameStart: Name ;
 BEGIN
+   ProcSym := OperandT (1) ;
+   ProcedureParametersDefined (ProcSym) ;
    IF CompilingDefinitionModule()
    THEN
       PopT(ProcSym) ;
@@ -1454,7 +1482,6 @@ END BuildProcedureHeading ;
 
 PROCEDURE BuildFPSection ;
 VAR
-   n         : Name ;
    ProcSym,
    ParamTotal: CARDINAL ;
 BEGIN
@@ -1464,11 +1491,7 @@ BEGIN
    Assert(IsProcedure(ProcSym)) ;
    IF CompilingDefinitionModule()
    THEN
-      IF AreParametersDefinedInDefinition(ProcSym) AND (ParamTotal=0)
-      THEN
-         n := GetSymName(ProcSym) ;
-         WriteFormat1('cannot declare procedure %a twice in the definition module', n)
-      ELSIF AreParametersDefinedInImplementation(ProcSym)
+      IF AreParametersDefinedInImplementation(ProcSym)
       THEN
          CheckFormalParameterSection
       ELSE
@@ -1476,16 +1499,12 @@ BEGIN
          IF ParamTotal=0
          THEN
             ParametersDefinedInDefinition(ProcSym) ;
-            ProcedureParametersDefined(ProcSym)
+            (* ProcedureParametersDefined(ProcSym) *)
          END
       END
    ELSIF CompilingImplementationModule()
    THEN
-      IF AreParametersDefinedInImplementation(ProcSym) AND (ParamTotal=0)
-      THEN
-         n := GetSymName(ProcSym) ;
-         WriteFormat1('cannot declare procedure %a twice in the implementation module', n)
-      ELSIF AreParametersDefinedInDefinition(ProcSym)
+      IF AreParametersDefinedInDefinition(ProcSym) OR GetParametersDefinedByForward (ProcSym)
       THEN
          CheckFormalParameterSection
       ELSE
@@ -1493,20 +1512,19 @@ BEGIN
          IF ParamTotal=0
          THEN
             ParametersDefinedInImplementation(ProcSym) ;
-            ProcedureParametersDefined(ProcSym)
+            (* ProcedureParametersDefined(ProcSym) *)
          END
       END
    ELSIF CompilingProgramModule()
    THEN
-      IF AreProcedureParametersDefined(ProcSym) AND (ParamTotal=0)
+      IF GetParametersDefinedByForward (ProcSym) OR AreProcedureParametersDefined (ProcSym)
       THEN
-         n := GetSymName(ProcSym) ;
-         WriteFormat1('procedure %a parameters already declared in program module', n)
+         CheckFormalParameterSection
       ELSE
          BuildFormalParameterSection ;
          IF ParamTotal=0
          THEN
-            ProcedureParametersDefined(ProcSym)
+            (* ProcedureParametersDefined(ProcSym) *)
          END
       END
    ELSE
@@ -1514,6 +1532,30 @@ BEGIN
    END ;
    Assert(IsProcedure(OperandT(2)))
 END BuildFPSection ;
+
+
+(*
+   BuildProcedureDefinedByForward - indicates that the parameters for ProcSym have
+                                    been defined using the FORWARD keyword.
+*)
+
+PROCEDURE BuildProcedureDefinedByForward (ProcSym: CARDINAL) ;
+BEGIN
+   Assert (IsProcedure (ProcSym)) ;
+   PutParametersDefinedByForward (ProcSym)
+END BuildProcedureDefinedByForward ;
+
+
+(*
+   BuildProcedureDefinedByProper - indicates that the parameters for ProcSym have
+                                   been defined during a proper procedure declaration.
+*)
+
+PROCEDURE BuildProcedureDefinedByProper (ProcSym: CARDINAL) ;
+BEGIN
+   Assert (IsProcedure (ProcSym)) ;
+   PutParametersDefinedByProper (ProcSym)
+END BuildProcedureDefinedByProper ;
 
 
 (*
@@ -1657,6 +1699,7 @@ VAR
    Var,
    Array     : Name ;
    tok       : CARDINAL ;
+   TypeTok,
    ParamTotal,
    TypeSym,
    UnBoundedSym,
@@ -1665,7 +1708,7 @@ VAR
    i, ndim   : CARDINAL ;
 BEGIN
    PopT(ParamTotal) ;
-   PopT(TypeSym) ;
+   PopTtok (TypeSym, TypeTok) ;
    PopTF(Array, ndim) ;
    Assert( (Array=ArrayTok) OR (Array=NulTok) ) ;
    PopT(NoOfIds) ;
@@ -1680,13 +1723,9 @@ BEGIN
       TypeSym := UnBoundedSym
    END ;
    i := 1 ;
-(*
-   WriteString('Procedure ') ; WriteKey(GetSymName(ProcSym)) ;
-   WriteString(' adding No. of identifiers:') ; WriteCard(NoOfIds, 4) ; WriteLn ;
-*)
-   WHILE i<=NoOfIds DO
+   WHILE i <= NoOfIds DO
       IF CompilingDefinitionModule() AND (NOT PedanticParamNames) AND
-         (* we will see the parameters in the implementation module *)
+         (* We will see the parameters in the implementation module.  *)
          ((GetMainModule()=GetCurrentModule()) OR
           (IsHiddenTypeDeclared(GetCurrentModule()) AND ExtendedOpaque))
       THEN
@@ -1694,27 +1733,25 @@ BEGIN
       ELSE
          ParamName := OperandT(NoOfIds+1-i)
       END ;
-      tok := OperandTok(NoOfIds+1-i) ;
+      tok := OperandTok (NoOfIds+1-i) ;
+      (* WarnStringAt (InitString ('building param pos?'), OperandTok (NoOfIds+1-i)) ;  *)
       IF Var=VarTok
       THEN
-         (* VAR parameter *)
-         IF NOT PutVarParam(tok, ProcSym, ParamTotal+i, ParamName, TypeSym, Array=ArrayTok)
+         (* VAR parameter.  *)
+         IF NOT PutVarParam (tok, ProcSym, ParamTotal+i, ParamName,
+                             TypeSym, Array=ArrayTok, TypeTok)
          THEN
             InternalError ('problems adding a VarParameter - wrong param #?')
          END
       ELSE
-         (* Non VAR parameter *)
-         IF NOT PutParam(tok, ProcSym, ParamTotal+i, ParamName, TypeSym, Array=ArrayTok)
+         (* Non VAR parameter.  *)
+         IF NOT PutParam (tok, ProcSym, ParamTotal+i, ParamName,
+                          TypeSym, Array=ArrayTok, TypeTok)
          THEN
             InternalError ('problems adding a Parameter - wrong param #?')
          END
       END ;
-(*
-      WriteString(' parameter') ; WriteCard(ParamTotal+i, 4) ; WriteLn ;
-      WriteKey(Operand(Ptr+i+1)) ; WriteString(' is a parameter with type ') ;
-      WriteKey(GetSymName(TypeSym)) ; WriteLn ;
-*)
-      INC(i)
+      INC (i)
    END ;
    PopN(NoOfIds+1) ;
    PushT(ParamTotal+NoOfIds) ;
@@ -1760,75 +1797,88 @@ VAR
    ParamI,
    ParamIType,
    ParamTotal,
+   TypeTok,
    TypeSym,
    NoOfIds,
+   ProcTok,
    ProcSym,
    pi, i, ndim: CARDINAL ;
 BEGIN
    PopT(ParamTotal) ;
-   PopT(TypeSym) ;
+   PopTtok(TypeSym, TypeTok) ;
    PopTF(Array, ndim) ;
    Assert( (Array=ArrayTok) OR (Array=NulTok) ) ;
    PopT(NoOfIds) ;
    ProcSym := OperandT(NoOfIds+2) ;
+   ProcTok := OperandTok (NoOfIds+2) ;
    Assert(IsProcedure(ProcSym)) ;
    Var := OperandT(NoOfIds+1) ;
    Assert( (Var=VarTok) OR (Var=NulTok) ) ;
-   Unbounded := (Array=ArrayTok) ;  (* ARRAY OF Type, parameter *)
+   Unbounded := (Array=ArrayTok) ;  (* ARRAY OF Type, parameter.  *)
    i := 1 ;
-   pi := NoOfIds ;     (* stack index referencing stacked parameter, i *)
+   pi := NoOfIds ;     (* Stack index referencing stacked parameter i.  *)
 (*
    WriteString('No. of identifiers:') ; WriteCard(NoOfIds, 4) ; WriteLn ;
 *)
+   (* If there are an incorrect number of parameters specified then this
+      will be detcted by EndBuildFormalParameters.  *)
    WHILE i<=NoOfIds DO
       IF ParamTotal+i<=NoOfParam(ProcSym)
       THEN
+         (* WarnStringAt (InitString ('parampos?'), OperandTok (pi)) ;  *)
          IF Unbounded AND (NOT IsUnboundedParam(ProcSym, ParamTotal+i))
          THEN
-            FailParameter('the parameter was declared as an ARRAY OF type',
-                          'the parameter was not declared as an ARRAY OF type',
-                          NulName, ParamTotal+i, ProcSym)
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+                            'the parameter {%3Ea} was not declared as an ARRAY OF type',     (* '{%3EHa}'.  *)
+                            'the parameter {%3EVa} was declared as an ARRAY OF type',
+                            pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), TypeTok)
          ELSIF (NOT Unbounded) AND IsUnboundedParam(ProcSym, ParamTotal+i)
          THEN
-            FailParameter('the parameter was not declared as an ARRAY OF type',
-                          'the parameter was declared as an ARRAY OF type',
-                          NulName, ParamTotal+i, ProcSym)
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+                            'the parameter {%3Ea} was declared as an ARRAY OF type',     (* '{%3EHa}'.  *)
+                            'the parameter {%3EVa} was not declared as an ARRAY OF type',
+                            pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), TypeTok)
          END ;
          IF Unbounded
          THEN
             IF GetDimension(GetNthParam(ProcSym, ParamTotal+1))#ndim
             THEN
-               FailParameter('', 'the dynamic array parameter was declared with different number of dimensions',
-                             NulName, ParamTotal+i, ProcSym)
+               ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+                               'the dynamic array parameter {%3Ea} was declared with a different of dimensions',      (* '{%3EHa}'.  *)
+                               'the dynamic array parameter {%3EVa} was declared with a different of dimensions',
+                               pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), TypeTok)
             END
          END ;
          IF (Var=VarTok) AND (NOT IsVarParam(ProcSym, ParamTotal+i))
          THEN
-            (* expecting non VAR pamarater *)
-            FailParameter('the parameter has been declared as a VAR parameter',
-                          'the parameter was not declared as a VAR parameter',
-                          NulName, ParamTotal+i, ProcSym)
+            (* Expecting non VAR parameter.  *)
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+                            '{%3Ea} was not declared as a {%kVAR} parameter',     (* '{%3EHa}'.  *)
+                            '{%3EVa} was declared as a {%kVAR} parameter',
+                            pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), TypeTok)
          ELSIF (Var=NulTok) AND IsVarParam(ProcSym, ParamTotal+i)
          THEN
-            (* expecting VAR pamarater *)
-            FailParameter('the parameter was not declared as a VAR parameter',
-                          'the parameter has been declared as a VAR parameter',
-                          NulName, ParamTotal+i, ProcSym)
+            (* Expecting VAR pamarater.  *)
+            ParameterError ('declaration of procedure {%%1a} in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+                            '{%3Ea} was declared as a {%kVAR} parameter',       (* '{%3EHa}'.  *)
+                            '{%3EVa} was not declared as a {%kVAR} parameter',
+                            pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), TypeTok)
          END ;
          ParamI := GetParam(ProcSym, ParamTotal+i) ;
          IF PedanticParamNames
          THEN
             IF GetSymName(ParamI)#OperandT(pi)
             THEN
-               (* different parameter names *)
-               FailParameter('',
-                             'the parameter has been declared with a different name',
-                             OperandT (pi), ParamTotal+i, ProcSym)
+               (* Different parameter names.  *)
+               ParameterError ('procedure {%%1a} in the %s differs from the %s, {%%2N} parameter name is inconsistant, %s',
+                            'named as {%3EVa}',
+                            'named as {%3EVa}',
+                            pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), OperandT (pi))
             END
          ELSE
             IF GetSymName (ParamI) = NulName
             THEN
-               PutParamName (OperandTok (pi), ProcSym, ParamTotal+i, OperandT (pi))
+               PutParamName (OperandTok (pi), ProcSym, ParamTotal+i, OperandT (pi), TypeTok)
             END
          END ;
          PutDeclared (OperandTok (pi), GetParameterShadowVar (ParamI)) ;
@@ -1845,111 +1895,69 @@ BEGIN
             (NOT IsUnknown(SkipType(TypeSym))) AND
             (NOT IsUnknown(SkipType(ParamIType)))
          THEN
-            (* different parameter types *)
-            FailParameter('',
-                          'the parameter has been declared with a different type',
-                          OperandT(pi), ParamTotal+i, ProcSym)
+            (* Different parameter types.  *)
+            ParameterError ('declaration in the %s differs from the %s, {%%2N} parameter is inconsistant, %s',
+                            'the parameter {%3Ea} was declared with a different type',  (* '{%3EHa}'.  *)
+                            'the parameter {%3EVa} was declared with a different type',
+                            pi, ParamTotal+i, ProcSym, ProcTok, GetParam (ProcSym, ParamTotal+i), TypeTok)
          END
-      ELSE
-         FailParameter('too many parameters',
-                       'fewer parameters were declared',
-                       NulName, ParamTotal+i, ProcSym)
       END ;
       INC(i) ;
       DEC(pi)
    END ;
-   PopN(NoOfIds+1) ;   (* +1 for the Var/Nul *)
+   PopN(NoOfIds+1) ;   (* +1 for the Var/Nul.  *)
    PushT(ParamTotal+NoOfIds) ;
    Assert(IsProcedure(OperandT(2)))
 END CheckFormalParameterSection ;
 
 
 (*
-   FailParameter - generates an error message indicating that a parameter
-                   declaration has failed.
+   ParameterError - create two error strings chained together.  Both error strings
+                    commence with FmdHeader:
+                    1.  FmtHeader DefinedDesc ParamNo Param.
+                    2.  FmdHeader CurrentDesc ParamNo OperandT(ParamPtr).
+                    The FmtHeader will have a location description for the
+                    defined location and current location inserted by processing %s
+                    prior to passing the completed string to MetaError.
 
-                   The parameters are:
-
-                   CurrentState  - string describing the current failing state.
-                   PreviousState - string describing the old defined state.
-                   Given         - token or identifier that was given.
-                   ParameterNo   - parameter number that has failed.
-                   ProcedureSym  - procedure symbol where parameter has failed.
-
-                   If any parameter is Nul then it is ignored.
+                    Currently the location of the first error is fixed to the
+                    location of ProcSym.
 *)
 
-PROCEDURE FailParameter (CurrentState : ARRAY OF CHAR;
-                         PreviousState: ARRAY OF CHAR;
-                         Given        : Name ;
-                         ParameterNo  : CARDINAL;
-                         ProcedureSym : CARDINAL) ;
+PROCEDURE ParameterError (FmtHeader, DefinedDesc, CurrentDesc: ARRAY OF CHAR;
+                          ParamPtr, ParamNo, ProcSym, ProcTok, Param, TypeTok: CARDINAL) ;
 VAR
-   First       : CARDINAL ;
-   FirstModule,
-   SecondModule,
-   s1, s2, s3  : String ;
+(*   parm, *)
+   Err       : CARDINAL ;
+   CurStr,
+   DefStr,
+   Msg,
+   SrcProcSym,
+   SrcCurDecl: String ;
 BEGIN
-   IF NoOfParam(ProcedureSym)>=ParameterNo
-   THEN
-      IF CompilingDefinitionModule()
-      THEN
-         First := GetDeclaredDef(GetNthParam(ProcedureSym, ParameterNo))
-      ELSE
-         First := GetDeclaredMod(GetNthParam(ProcedureSym, ParameterNo))
-      END
-   ELSE
-      (* ParameterNo does not exist - which is probably the reason why this routine was called.. *)
-      IF CompilingDefinitionModule()
-      THEN
-         First := GetDeclaredDef(ProcedureSym)
-      ELSE
-         First := GetDeclaredMod(ProcedureSym)
-      END
-   END ;
-   IF CompilingDefinitionModule()
-   THEN
-      FirstModule := InitString('definition module') ;
-      SecondModule := InitString('implementation module')
-   ELSIF CompilingImplementationModule()
-   THEN
-      FirstModule := InitString('implementation module') ;
-      SecondModule := InitString('definition module')
-   ELSE
-      Assert (CompilingProgramModule ()) ;
-      FirstModule := InitString('program module') ;
-      SecondModule := InitString('definition module')
-   END ;
-   s2 := Mark(InitStringCharStar(KeyToCharStar(GetSymName(ProcedureSym)))) ;
-   s3 := Mark(FirstModule) ;
-   s1 := Sprintf4(Mark(InitString('declaration of procedure %s in the %s differs from the %s, problem with parameter number %d')),
-                  s2, s3,
-                  SecondModule,
-                  ParameterNo) ;
-   IF NoOfParam(ProcedureSym)>=ParameterNo
-   THEN
-      s2 := Mark(InitStringCharStar(KeyToCharStar(GetSymName(GetNthParam(ProcedureSym, ParameterNo))))) ;
-      s1 := ConCat(s1, Mark(Sprintf1(Mark(InitString(' (%s)')), s2)))
-   END ;
-   IF NOT StrEqual(CurrentState, '')
-   THEN
-      s2 := Mark(InitString(CurrentState)) ;
-      s1 := ConCat(s1, Mark(Sprintf1(Mark(InitString(', %s')), s2)))
-   END ;
-   IF NOT StrEqual(PreviousState, '')
-   THEN
-      s2 := Mark(SecondModule) ;
-      s3 := Mark(InitString(PreviousState)) ;
-      s1 := ConCat(s1, Mark(Sprintf2(Mark(InitString(' in the %s %s')), s2, s3)))
-   END ;
-   IF Given#NulName
-   THEN
-      s2 := Mark(InitStringCharStar(KeyToCharStar(Given))) ;
-      s1 := ConCat(s1, Mark(Sprintf1(Mark(InitString(' (%s)')), s2)))
-   END ;
-   s1 := ConCat(s1, Mark(Sprintf0(Mark(InitString('\n'))))) ;
-   ErrorStringAt2(s1, GetTokenNo(), First)
-END FailParameter ;
+   SrcProcSym := GetSourceDesc (ProcSym) ;
+   SrcCurDecl := GetCurSrcDesc (ProcSym, ProcTok) ;
+   DefStr := InitString (DefinedDesc) ;
+   CurStr := InitString (CurrentDesc) ;
+   Msg := Sprintf3 (Mark (InitString (FmtHeader)), SrcProcSym, SrcCurDecl, DefStr) ;
+   MetaErrorStringT3 (GetDeclared (ProcSym), Msg, ProcSym, ParamNo, Param) ;
+(*
+   It could be improved by using the '{%3EHa}' specifier in the DefinedDesc (see
+   CheckFormalParameterSection) but this requires that the parameter declarations
+   for the definition and forward procedures are saved.  Currently they are only
+   checked against the proper procedure declaration.
+
+   WarnStringAt (InitString ('testing ProcSym decl'), GetDeclared (ProcSym)) ;
+   parm := GetParam (ProcSym, ParamNo) ;
+   WarnStringAt (InitString ('testing param ProcSym GetVarDeclTok'), GetVarDeclTok (parm)) ;
+   WarnStringAt (InitString ('testing param ProcSym GetVarDeclTypeTok'), GetVarDeclTypeTok (parm)) ;
+   WarnStringAt (InitString ('testing param ProcSym GetVarDeclFullTok'), GetVarDeclFullTok (parm)) ;
+   WarnStringAt (InitString ('testing cur pos'), MakeVirtual2Tok (OperandTok (ParamPtr), TypeTok)) ;
+*)
+   Err := MakeError (MakeVirtual2Tok (OperandTok (ParamPtr), TypeTok), OperandT (ParamPtr)) ;
+   Msg := Sprintf3 (Mark (InitString (FmtHeader)), SrcProcSym, SrcCurDecl, CurStr) ;
+   MetaErrorString3 (Msg, ProcSym, ParamNo, Err)
+END ParameterError ;
 
 
 (*
@@ -1973,6 +1981,38 @@ END StartBuildFormalParameters ;
 
 
 (*
+   ParameterMismatch - generate a parameter mismatch error between the current
+                       declaration at tok and a previous ProcSym declaration.
+                       NoOfPar is the current number of parameters.
+*)
+
+PROCEDURE ParameterMismatch (tok: CARDINAL; ProcSym: CARDINAL; NoOfPar: CARDINAL) ;
+VAR
+   MsgCurrent,
+   MsgProcSym,
+   SrcProcSym,
+   SrcCurDecl,
+   CompProcSym,
+   CompCurrent: String ;
+BEGIN
+   SrcProcSym := GetSourceDesc (ProcSym) ;
+   SrcCurDecl := GetCurSrcDesc (ProcSym, tok) ;
+   CompProcSym := GetComparison (NoOfParam (ProcSym), NoOfPar) ;
+   CompCurrent := GetComparison (NoOfPar, NoOfParam (ProcSym)) ;
+   MsgCurrent := Sprintf3 (Mark (InitString ('the %s for {%%1ad} has %s parameters than the %s')),
+                           SrcCurDecl, CompCurrent, SrcProcSym) ;
+   MsgProcSym := Sprintf3 (Mark (InitString ('the %s for {%%1ad} has %s parameters than the %s')),
+                           SrcProcSym, CompProcSym, SrcCurDecl) ;
+   MetaErrorStringT1 (GetDeclared (ProcSym), MsgProcSym, ProcSym) ;
+   MetaErrorStringT1 (tok, MsgCurrent, ProcSym) ;
+   SrcProcSym := KillString (SrcProcSym) ;
+   SrcCurDecl := KillString (SrcCurDecl) ;
+   CompProcSym := KillString (CompProcSym) ;
+   CompCurrent := KillString (CompCurrent)
+END ParameterMismatch ;
+
+
+(*
    EndBuildFormalParameters - Resets the quadruple stack after building
                               Formal Parameters.
 
@@ -1990,26 +2030,139 @@ END StartBuildFormalParameters ;
 
 PROCEDURE EndBuildFormalParameters ;
 VAR
-   n      : Name ;
+   tok    : CARDINAL ;
    NoOfPar: CARDINAL ;
    ProcSym: CARDINAL ;
 BEGIN
-   PopT(NoOfPar) ;
-   PopT(ProcSym) ;
-   PushT(ProcSym) ;
-   Assert(IsProcedure(ProcSym)) ;
-   IF NoOfParam(ProcSym)#NoOfPar
+   PopT (NoOfPar) ;
+   PopTtok (ProcSym, tok) ;
+   PushT (ProcSym) ;
+   Assert (IsProcedure (ProcSym)) ;
+   IF NoOfParam (ProcSym) # NoOfPar
    THEN
-      n := GetSymName(ProcSym) ;
-      IF CompilingDefinitionModule()
+      ParameterMismatch (tok, ProcSym, NoOfPar)
+   END ;
+   Assert (IsProcedure (OperandT (1)))
+END EndBuildFormalParameters ;
+
+
+(*
+   GetComparison - return a simple description from the result of
+                   a comparison between left and right.
+*)
+
+PROCEDURE GetComparison (left, right: CARDINAL) : String ;
+BEGIN
+   IF left < right
+   THEN
+      RETURN InitString ('fewer')
+   ELSIF left > right
+   THEN
+      RETURN InitString ('more')
+   ELSE
+      RETURN InitString ('same')
+   END
+END GetComparison ;
+
+
+(*
+   GetSourceDesc - return a description of where ProcSym was declared.
+*)
+
+PROCEDURE GetSourceDesc (ProcSym: CARDINAL) : String ;
+BEGIN
+   IF AreParametersDefinedInDefinition (ProcSym)
+   THEN
+      RETURN InitString ('definition module')
+   ELSIF GetParametersDefinedByForward (ProcSym)
+   THEN
+      RETURN InitString ('forward declaration')
+   ELSIF GetParametersDefinedByProper (ProcSym)
+   THEN
+      RETURN InitString ('proper declaration')
+   END ;
+   RETURN InitString ('')
+END GetSourceDesc ;
+
+
+(*
+   GetCurSrcDesc - return a description of where ProcSym was declared.
+*)
+
+PROCEDURE GetCurSrcDesc (ProcSym: CARDINAL; tok: CARDINAL) : String ;
+BEGIN
+   IF GetProcedureDeclaredDefinition (ProcSym) = tok
+   THEN
+      RETURN InitString ('definition module')
+   ELSIF GetProcedureDeclaredForward (ProcSym) = tok
+   THEN
+      RETURN InitString ('forward declaration')
+   ELSIF GetProcedureDeclaredProper (ProcSym) = tok
+   THEN
+      RETURN InitString ('proper declaration')
+   END ;
+   RETURN InitString ('')
+END GetCurSrcDesc ;
+
+
+(*
+   GetDeclared -
+*)
+
+PROCEDURE GetDeclared (sym: CARDINAL) : CARDINAL ;
+BEGIN
+   IF IsProcedure (sym)
+   THEN
+      IF AreParametersDefinedInDefinition (sym)
       THEN
-         WriteFormat1('procedure (%a) was declared with fewer parameters in the DEFINITION MODULE', n)
-      ELSE
-         WriteFormat1('procedure (%a) was declared with more parameters in the DEFINITION MODULE', n)
+         RETURN GetProcedureDeclaredDefinition (sym)
+      ELSIF GetParametersDefinedByProper (sym)
+      THEN
+         RETURN GetProcedureDeclaredProper (sym)
+      ELSIF GetParametersDefinedByForward (sym)
+      THEN
+         RETURN GetProcedureDeclaredForward (sym)
       END
    END ;
-   Assert(IsProcedure(OperandT(1)))
-END EndBuildFormalParameters ;
+   RETURN GetDeclaredMod (sym)
+END GetDeclared ;
+
+
+(*
+   ReturnTypeMismatch - generate two errors showing the return type mismatches between
+                        ProcSym and ReturnType at procedure location tok.
+*)
+
+PROCEDURE ReturnTypeMismatch (tok: CARDINAL; ProcSym, ReturnType: CARDINAL) ;
+VAR
+   SrcProcSym,
+   SrcCurDecl,
+   MsgCurrent,
+   MsgProcSym: String ;
+BEGIN
+   SrcProcSym := GetSourceDesc (ProcSym) ;
+   SrcCurDecl := GetCurSrcDesc (ProcSym, tok) ;
+   IF ReturnType = NulSym
+   THEN
+      MsgCurrent := Sprintf2 (Mark (InitString ('there is no return type for {%%1ad} specified in the %s whereas a return type is specified in the %s')),
+                              SrcCurDecl, SrcProcSym) ;
+      MsgProcSym := Sprintf2 (Mark (InitString ('there is no return type for {%%1ad} specified in the %s whereas a return type is specified in the %s')),
+                              SrcCurDecl, SrcProcSym)
+   ELSIF GetType (ProcSym) = NulSym
+   THEN
+      MsgCurrent := Sprintf2 (Mark (InitString ('there is no return type for {%%1ad} specified in the %s whereas a return type is specified in the %s')),
+                              SrcProcSym, SrcCurDecl) ;
+      MsgProcSym := Sprintf2 (Mark (InitString ('there is no return type for {%%1ad} specified in the %s whereas a return type is specified in the %s')),
+                              SrcProcSym, SrcCurDecl)
+   ELSE
+      MsgCurrent := Sprintf2 (Mark (InitString ('the return type for {%%1ad} specified in the %s differs in the %s')),
+                              SrcCurDecl, SrcProcSym) ;
+      MsgProcSym := Sprintf2 (Mark (InitString ('the return type for {%%1ad} specified in the %s differs in the %s')),
+                              SrcCurDecl, SrcProcSym)
+   END ;
+   MetaErrorStringT1 (GetDeclared (ProcSym), MsgProcSym, ProcSym) ;
+   MetaErrorStringT1 (tok, MsgCurrent, ProcSym)
+END ReturnTypeMismatch ;
 
 
 (*
@@ -2030,40 +2183,26 @@ END EndBuildFormalParameters ;
 
 PROCEDURE BuildFunction ;
 VAR
-   PrevSym,
-   TypeSym,
-   ProcSym : CARDINAL ;
+   tok        : CARDINAL ;
+   PrevRetType,
+   RetType,
+   ProcSym    : CARDINAL ;
 BEGIN
-   PopT(TypeSym) ;
-   PopT(ProcSym) ;
-   IF IsProcedure(ProcSym) AND AreProcedureParametersDefined(ProcSym)
+   PopT (RetType) ;
+   PopTtok (ProcSym, tok) ;
+   IF IsProcedure (ProcSym)
    THEN
-      PrevSym := GetType(ProcSym) ;
-      IF (PrevSym#NulSym) AND (PrevSym#TypeSym)
+      IF AreProcedureParametersDefined (ProcSym)
       THEN
-         IF CompilingDefinitionModule()
+         PrevRetType := GetType (ProcSym) ;
+         IF PrevRetType # RetType
          THEN
-            MetaErrorsT2(GetDeclaredDef(ProcSym),
-                         'the return type for procedure {%1a} is defined differently in the definition module as {%1tad} and the implementation module as {%2ad}',
-                         'the return type for procedure {%1a} is defined differently in the definition module as {%1tad} and the implementation module as {%2ad}',
-                         ProcSym, TypeSym)
-         ELSE
-            MetaErrorsT2(GetDeclaredMod(ProcSym),
-                         'the return type for procedure {%1a} is defined differently in the definition module as {%2ad} and the implementation module as {%1tad}',
-                         'the return type for procedure {%1a} is defined differently in the definition module as {%2ad} and the implementation module as {%1tad}',
-                         ProcSym, TypeSym)
+            ReturnTypeMismatch (tok, ProcSym, RetType)
          END
       END
    END ;
-   PutFunction(ProcSym, TypeSym) ;
-(*
-   WriteString('Procedure ') ; WriteKey(GetSymName(ProcSym)) ;
-   WriteString(' has a return argument ') ;
-   WriteKey(GetSymName(TypeSym)) ;
-   WriteString(' checking ') ; WriteKey(GetSymName(GetType(ProcSym))) ;
-   WriteLn ;
-*)
-   PushT(ProcSym)
+   PutFunction (ProcSym, RetType) ;
+   PushTtok (ProcSym, tok)
 END BuildFunction ;
 
 
@@ -2112,6 +2251,34 @@ BEGIN
    Assert (IsProcedure (procedureSym)) ;
    PutProcedureNoReturn (procedureSym, TRUE)
 END BuildNoReturnAttribute ;
+
+
+(*
+   CheckProcedure - checks to see that the top of stack procedure
+                    has not been declared as a procedure function.
+
+                    The Stack:
+
+                    Entry                 Exit
+
+             Ptr ->                                      <- Ptr
+                    +------------+        +------------+
+                    | ProcSym    |        | ProcSym    |
+                    |------------|        |------------|
+*)
+
+PROCEDURE CheckProcedure ;
+VAR
+   ProcSym,
+   tok    : CARDINAL ;
+BEGIN
+   PopTtok (ProcSym, tok) ;
+   PushTtok (ProcSym, tok) ;
+   IF GetType (ProcSym) # NulSym
+   THEN
+      ReturnTypeMismatch (tok, ProcSym, NulSym)
+   END
+END CheckProcedure ;
 
 
 (*

@@ -3,7 +3,7 @@
    lost in forming composite types.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic -Wno-discarded-array-qualifiers" } */
+/* { dg-options "-std=gnu17 -pedantic -Wno-discarded-array-qualifiers" } */
 typedef const char T[1];
 typedef const char T2[1];
 typedef volatile char U[1];

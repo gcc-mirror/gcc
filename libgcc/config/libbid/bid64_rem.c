@@ -30,12 +30,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *  if(exponent_x < exponent_y)
  *    scale coefficient_y so exponents are aligned
  *    perform coefficient divide (64-bit integer divide), unless
- *            coefficient_y is longer than 64 bits (clearly larger 
- *                                               than coefficient_x) 
+ *            coefficient_y is longer than 64 bits (clearly larger
+ *                                               than coefficient_x)
  *  else  // exponent_x > exponent_y
- *     use a loop to scale coefficient_x to 18_digits, divide by 
+ *     use a loop to scale coefficient_x to 18_digits, divide by
  *         coefficient_y (64-bit integer divide), calculate remainder
- *         as new_coefficient_x and repeat until final remainder is obtained 
+ *         as new_coefficient_x and repeat until final remainder is obtained
  *         (when new_exponent_x < exponent_y)
  *
  ****************************************************************************/

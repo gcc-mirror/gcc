@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -38,7 +39,7 @@ static void objcxx_init_ts (void);
 #define LANG_HOOKS_NAME "GNU Objective-C++"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT objc_init
-#undef LANG_HOOKS_GIMPLIFY_EXPR 
+#undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS objcxx_init_ts

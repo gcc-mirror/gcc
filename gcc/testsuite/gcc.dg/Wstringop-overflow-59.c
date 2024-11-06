@@ -172,8 +172,8 @@ void memset_malloc_2_same_size (int i)
     if (i < 1)
       i = 1;
 
-    char a4_1[4];             // { dg-message "at offset \\\[1, 4] into destination object 'a4_1" "note" }
-    char a4_2[4];             // { dg-message "at offset \\\[1, 4] into destination object 'a4_2" "note" }
+    char a4_1[4];             // { dg-message "at offset \\\[1, 4] into destination object 'a4_1'" "note" }
+    char a4_2[4];             // { dg-message "at offset \\\[1, 4] into destination object 'a4_2'" "note" }
     char *p4 = cond1 ? a4_1 : a4_2;
     char *p4_i = p4 + i;
 
@@ -189,8 +189,8 @@ void memset_malloc_2_off (void)
   int i2 = SR (2, INT_MAX);
 
   {
-    char a5[5];               // { dg-warning "at offset [1, 5] into destination object 'a5'
-    char a7[7];               // { dg-warning "at offset [2, 7] into destination object 'a7'
+    char a5[5];               // { dg-message "at offset \\\[1, 5] into destination object 'a5'" "note" }
+    char a7[7];               // { dg-message "at offset \\\[2, 7] into destination object 'a7'" "note" }
     char *p5_p1 = a5 + i1;
     char *p7_p2 = a7 + i2;
     char *p5_7 = cond1 ? p5_p1 : p7_p2;

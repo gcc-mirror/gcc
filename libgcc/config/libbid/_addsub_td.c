@@ -23,7 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "bid_conf.h"
 #include "bid_functions.h"
-#include "bid_gcc_intrinsics.h" 
+#include "bid_gcc_intrinsics.h"
 
 _Decimal128
 __bid_addtd3 (_Decimal128 x, _Decimal128 y) {

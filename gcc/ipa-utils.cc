@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -382,7 +383,7 @@ scale_ipa_profile_for_fn (struct cgraph_node *node, profile_count orig_count)
   profile_count to = node->count;
   profile_count::adjust_for_ipa_scaling (&to, &orig_count);
   struct cgraph_edge *e;
-  
+
   for (e = node->callees; e; e = e->next_callee)
     e->count = e->count.apply_scale (to, orig_count);
   for (e = node->indirect_calls; e; e = e->next_callee)
@@ -524,7 +525,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		 "Giving up; last block mismatch.\n");
       match = false;
     }
-  else 
+  else
     {
       basic_block srcbb, dstbb;
       struct cgraph_edge *e, *e2;
@@ -646,8 +647,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		  if (srce->probability.initialized_p ())
 		    dste->probability = srce->probability;
 		}
-	    }	
-	  else 
+	    }
+	  else
 	    {
 	      for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
 		{
@@ -821,7 +822,7 @@ stmt_may_terminate_function_p (function *fun, gimple *stmt, bool assume_return_o
    If assume_return_or_eh we can further assume that the function ends
    either by retrn statement or EH (no trapping or infinite loops).
    This is useful when sumarizing function in passes like ipa-modref.
- 
+
    Seeing assume_return_or_eh to false is used to prove that given
    statmeent will be executed even if the function gets into infinite
    loop or trap.  */
@@ -907,6 +908,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
      exit block.  */
 
   bitmap ret = BITMAP_ALLOC (NULL);
+  bitmap_tree_view (ret);
   /* A degenerated case when there is no path to exit.  */
   if (!visited.contains (EXIT_BLOCK_PTR_FOR_FN (fun)))
     {
@@ -945,7 +947,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
      from the BBs in DFS subtree of A.  If A is always executed there are no
      edges out of this subtree.  This can be tested by checking that A.low == A.preorder
      and B.high == A.postorder.
-    
+
      This is first step. Do backward DFS walk and record preorder, postorder
      and predecessor info.  Initialize stack in postorder.  */
   worklist we = {EXIT_BLOCK_PTR_FOR_FN (fun), NULL};
@@ -1011,11 +1013,16 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
 	  cstate->low = MIN (cstate->low, (*cstate2)->low);
 	  cstate->high = MAX (cstate->high, (*cstate2)->high);
 	}
-      if (dump_file && (dump_flags & TDF_DETAILS) && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
-	fprintf (dump_file, "BB %i %s preorder %i posorder %i low %i high %i\n",
-		 bb->index, terminating_bbs_set.contains (bb) ? "(terminating)": "",
-		 cstate->dfs_preorder, cstate->dfs_postorder, cstate->low, cstate->high);
-      if (cstate->low == cstate->dfs_preorder && cstate->high == cstate->dfs_postorder
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+	fprintf (dump_file,
+		 "BB %i %s preorder %i posorder %i low %i high %i\n",
+		 bb->index,
+		 terminating_bbs_set.contains (bb) ? "(terminating)" : "",
+		 cstate->dfs_preorder, cstate->dfs_postorder, cstate->low,
+		 cstate->high);
+      if (cstate->low == cstate->dfs_preorder
+	  && cstate->high == cstate->dfs_postorder
 	  && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
 	bitmap_set_bit (ret, bb->index);
       if (terminating_bbs_set.contains (bb))
@@ -1034,7 +1041,7 @@ find_always_executed_bbs (function *fun, bool assume_return_or_eh)
   if (dump_file)
     {
       fprintf (dump_file, "Always executed bbbs %s: ",
-	       assume_return_or_eh ? "(assuming return or EH)": "");
+	       assume_return_or_eh ? "(assuming return or EH)" : "");
       bitmap_print (dump_file, ret, "", "\n");
     }
 

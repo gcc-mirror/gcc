@@ -1,6 +1,6 @@
 /* Configuration file for Symbian OS on ARM processors.
    Copyright (C) 2004-2024 Free Software Foundation, Inc.
-   Contributed by CodeSourcery, LLC   
+   Contributed by CodeSourcery, LLC
 
    This file is part of GCC.
 
@@ -29,7 +29,7 @@
 
    Make all symbols hidden by default.  Symbian OS expects that all
    exported symbols will be explicitly marked with
-   "__declspec(dllexport)".  
+   "__declspec(dllexport)".
 
    Enumeration types use 4 bytes, even if the enumerals are small,
    unless explicitly overridden.
@@ -63,7 +63,7 @@
 #undef SUBTARGET_ASM_FLOAT_SPEC
 #define SUBTARGET_ASM_FLOAT_SPEC \
   "%{!mfpu=*:-mfpu=vfp} %{!mcpu=*:%{!march=*:-march=armv5t}}"
-  
+
 /* Define the __symbian__ macro.  */
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()				\

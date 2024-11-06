@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -179,7 +180,7 @@ tree_diagnostics_defaults (diagnostic_context *context)
 {
   diagnostic_text_starter (context) = default_tree_diagnostic_text_starter;
   diagnostic_text_finalizer (context) = default_diagnostic_text_finalizer;
-  diagnostic_format_decoder (context) = default_tree_printer;
+  context->set_format_decoder (default_tree_printer);
   context->set_set_locations_callback (set_inlining_locations);
   context->set_client_data_hooks (make_compiler_data_hooks ());
 }

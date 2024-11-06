@@ -28,7 +28,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   /* Break PATH, so that the driver can't be found
      by gcc::jit::playback::context::compile ()
      within gcc_jit_context_compile.  */
-  unsetenv ("PATH");
+  setenv ("PATH", "/this/is/not/a/valid/path", 1);
 }
 
 void

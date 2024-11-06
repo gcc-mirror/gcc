@@ -27,7 +27,7 @@
  *  multiple sorted sequences.  Also serves for splitting such
  *  sequence sets.
  *
- *  The algorithm description can be found in 
+ *  The algorithm description can be found in
  *
  *  P. J. Varman, S. D. Scheufler, B. R. Iyer, and G. R. Ricard.
  *  Merging Multiple Lists on Hierarchical-Memory Multiprocessors.
@@ -48,6 +48,10 @@
 
 namespace __gnu_parallel
 {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // *nary_function
+
   /** @brief Compare __a pair of types lexicographically, ascending. */
   template<typename _T1, typename _T2, typename _Compare>
     class _Lexicographic
@@ -100,7 +104,9 @@ namespace __gnu_parallel
       }
     };
 
-  /** 
+#pragma GCC diagnostic pop // -Wdeprecated-declarations
+
+  /**
    *  @brief Splits several sorted sequences at a certain global __rank,
    *  resulting in a splitting point for each sequence.
    *  The sequences are passed via a sequence of random-access
@@ -114,7 +120,7 @@ namespace __gnu_parallel
    *  __result will be stored in. Each element of the sequence is an
    *  iterator that points to the first element on the greater part of
    *  the respective __sequence.
-   *  @param __comp The ordering functor, defaults to std::less<_Tp>. 
+   *  @param __comp The ordering functor, defaults to std::less<_Tp>.
    */
   template<typename _RanSeqs, typename _RankType, typename _RankIterator,
             typename _Compare>
@@ -183,9 +189,12 @@ namespace __gnu_parallel
 
       __r = __rd_log2(__nmax) + 1;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long" // LL literal
       // Pad all lists to this length, at least as long as any ns[__i],
       // equality iff __nmax = 2^__k - 1.
       __l = (1ULL << __r) - 1;
+#pragma GCC diagnostic pop
 
       for (_SeqNumber __i = 0; __i < __m; __i++)
         {
@@ -221,7 +230,7 @@ namespace __gnu_parallel
         __a[__sample[__j].second] += __n + 1;
       for (; __j < __m; __j++)
         __b[__sample[__j].second] -= __n + 1;
-      
+
       // Further refinement.
       while (__n > 0)
         {
@@ -275,7 +284,7 @@ namespace __gnu_parallel
                 std::vector<std::pair<_ValueType, _SeqNumber> >,
                 _LexicographicReverse<_ValueType, _SeqNumber, _Compare> >
                 __pq(__lrcomp);
-              
+
               for (_SeqNumber __i = 0; __i < __m; __i++)
                 if (__b[__i] < __ns[__i])
                   __pq.push(std::make_pair(__S(__i)[__b[__i]], __i));
@@ -368,7 +377,7 @@ namespace __gnu_parallel
     }
 
 
-  /** 
+  /**
    *  @brief Selects the element at a certain global __rank from several
    *  sorted sequences.
    *
@@ -380,7 +389,7 @@ namespace __gnu_parallel
    *  @param __offset The rank of the selected element in the global
    *  subsequence of elements equal to the selected element. If the
    *  selected element is unique, this number is 0.
-   *  @param __comp The ordering functor, defaults to std::less. 
+   *  @param __comp The ordering functor, defaults to std::less.
    */
   template<typename _Tp, typename _RanSeqs, typename _RankType,
            typename _Compare>

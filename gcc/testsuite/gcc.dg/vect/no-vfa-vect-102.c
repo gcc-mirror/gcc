@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "--param vect-max-version-for-alias-checks=0" } */
 
 #include <stdlib.h>
 #include <stdarg.h>

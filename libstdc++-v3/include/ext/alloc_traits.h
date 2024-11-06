@@ -29,7 +29,9 @@
 #ifndef _EXT_ALLOC_TRAITS_H
 #define _EXT_ALLOC_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 # include <bits/alloc_traits.h>
 

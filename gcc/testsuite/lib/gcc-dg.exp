@@ -628,6 +628,7 @@ proc gcc-dg-runtest { testcases flags default-extra-flags } {
 	    set torture_current_flags "$flags_t"
 	    verbose "Testing $nshort, $flags $flags_t" 1
 	    dg-test $test "$flags $flags_t" ${default-extra-flags}
+	    unset torture_current_flags
 	}
     }
 

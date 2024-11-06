@@ -401,7 +401,7 @@ public:
   bool require_integer_immediate (unsigned int);
   bool require_derived_scalar_type (unsigned int, type_class_index,
 				    unsigned int = SAME_SIZE);
-  
+
   bool check_num_arguments (unsigned int);
   bool check_gp_argument (unsigned int, unsigned int &, unsigned int &);
   tree resolve_unary (type_class_index = SAME_TYPE_CLASS,
@@ -433,6 +433,8 @@ public:
 
   bool require_immediate_enum (unsigned int, tree);
   bool require_immediate_lane_index (unsigned int, unsigned int = 1);
+  bool require_immediate_one_of (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT,
+				 HOST_WIDE_INT, HOST_WIDE_INT);
   bool require_immediate_range (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT);
 
   bool check ();
@@ -571,9 +573,13 @@ public:
 class function_shape
 {
 public:
-  virtual bool explicit_type_suffix_p (unsigned int, enum predication_index, enum mode_suffix_index) const = 0;
-  virtual bool explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const = 0;
-  virtual bool skip_overload_p (enum predication_index, enum mode_suffix_index) const = 0;
+  virtual bool explicit_type_suffix_p (unsigned int, enum predication_index,
+				       enum mode_suffix_index,
+				       type_suffix_info) const = 0;
+  virtual bool explicit_mode_suffix_p (enum predication_index,
+				       enum mode_suffix_index) const = 0;
+  virtual bool skip_overload_p (enum predication_index,
+				enum mode_suffix_index) const = 0;
 
   /* Define all functions associated with the given group.  */
   virtual void build (function_builder &,

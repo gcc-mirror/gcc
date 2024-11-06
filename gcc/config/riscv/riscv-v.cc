@@ -1501,9 +1501,9 @@ expand_const_vector (rtx target, rtx src)
 		    gen_int_mode (builder.inner_bits_size (), new_smode),
 		    NULL_RTX, false, OPTAB_DIRECT);
 		  rtx tmp2 = gen_reg_rtx (new_mode);
-		  rtx and_ops[] = {tmp2, tmp1, scalar};
-		  emit_vlmax_insn (code_for_pred_scalar (AND, new_mode),
-				   BINARY_OP, and_ops);
+		  rtx ior_ops[] = {tmp2, tmp1, scalar};
+		  emit_vlmax_insn (code_for_pred_scalar (IOR, new_mode),
+				   BINARY_OP, ior_ops);
 		  emit_move_insn (result, gen_lowpart (mode, tmp2));
 		}
 	      else
@@ -1888,6 +1888,18 @@ get_mask_mode (machine_mode mode)
       nunits = exact_div (nunits, nf);
     }
   return get_vector_mode (BImode, nunits).require ();
+}
+
+/* Return the appropriate LMUL mode for MODE.  */
+
+opt_machine_mode
+get_lmul_mode (scalar_mode mode, int lmul)
+{
+  poly_uint64 lmul_nunits;
+  unsigned int bytes = GET_MODE_SIZE (mode);
+  if (multiple_p (BYTES_PER_RISCV_VECTOR * lmul, bytes, &lmul_nunits))
+    return get_vector_mode (mode, lmul_nunits);
+  return E_VOIDmode;
 }
 
 /* Return the appropriate M1 mode for MODE.  */
@@ -3821,6 +3833,58 @@ expand_load_store (rtx *ops, bool is_load)
     }
 }
 
+/* Expand MASK_LEN_STRIDED_LOAD.  */
+void
+expand_strided_load (machine_mode mode, rtx *ops)
+{
+  rtx v_reg = ops[0];
+  rtx base = ops[1];
+  rtx stride = ops[2];
+  rtx mask = ops[3];
+  rtx len = ops[4];
+  poly_int64 len_val;
+
+  insn_code icode = code_for_pred_strided_load (mode);
+  rtx emit_ops[] = {v_reg, mask, gen_rtx_MEM (mode, base), stride};
+
+  if (poly_int_rtx_p (len, &len_val)
+      && known_eq (len_val, GET_MODE_NUNITS (mode)))
+    emit_vlmax_insn (icode, BINARY_OP_TAMA, emit_ops);
+  else
+    {
+      len = satisfies_constraint_K (len) ? len : force_reg (Pmode, len);
+      emit_nonvlmax_insn (icode, BINARY_OP_TAMA, emit_ops, len);
+    }
+}
+
+/* Expand MASK_LEN_STRIDED_STORE.  */
+void
+expand_strided_store (machine_mode mode, rtx *ops)
+{
+  rtx v_reg = ops[2];
+  rtx base = ops[0];
+  rtx stride = ops[1];
+  rtx mask = ops[3];
+  rtx len = ops[4];
+  poly_int64 len_val;
+  rtx vl_type;
+
+  if (poly_int_rtx_p (len, &len_val)
+      && known_eq (len_val, GET_MODE_NUNITS (mode)))
+    {
+      len = gen_reg_rtx (Pmode);
+      emit_vlmax_vsetvl (mode, len);
+      vl_type = get_avl_type_rtx (VLMAX);
+    }
+  else
+    {
+      len = satisfies_constraint_K (len) ? len : force_reg (Pmode, len);
+      vl_type = get_avl_type_rtx (NONVLMAX);
+    }
+
+  emit_insn (gen_pred_strided_store (mode, gen_rtx_MEM (mode, base),
+				     mask, stride, v_reg, len, vl_type));
+}
 
 /* Return true if the operation is the floating-point operation need FRM.  */
 static bool
@@ -4902,6 +4966,15 @@ expand_vec_ussub (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
   emit_vec_binary_alu (op_0, op_1, op_2, US_MINUS, vec_mode);
 }
 
+/* Expand the standard name ssadd<mode>3 for vector mode,  we can leverage
+   the vector fixed point vector single-width saturating add directly.  */
+
+void
+expand_vec_sssub (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
+{
+  emit_vec_binary_alu (op_0, op_1, op_2, SS_MINUS, vec_mode);
+}
+
 /* Expand the standard name ustrunc<m><n>2 for double vector mode,  like
    DI => SI.  we can leverage the vector fixed point vector narrowing
    fixed-point clip directly.  */
@@ -4912,6 +4985,22 @@ expand_vec_double_ustrunc (rtx op_0, rtx op_1, machine_mode vec_mode)
   insn_code icode;
   rtx zero = CONST0_RTX (Xmode);
   enum unspec unspec = UNSPEC_VNCLIPU;
+  rtx ops[] = {op_0, op_1, zero};
+
+  icode = code_for_pred_narrow_clip_scalar (unspec, vec_mode);
+  emit_vlmax_insn (icode, BINARY_OP_VXRM_RNU, ops);
+}
+
+/* Expand the standard name sstrunc<m><n>2 for double vector mode,  like
+   DI => SI.  we can leverage the vector fixed point vector narrowing
+   fixed-point clip directly.  */
+
+void
+expand_vec_double_sstrunc (rtx op_0, rtx op_1, machine_mode vec_mode)
+{
+  insn_code icode;
+  rtx zero = CONST0_RTX (Xmode);
+  enum unspec unspec = UNSPEC_VNCLIP;
   rtx ops[] = {op_0, op_1, zero};
 
   icode = code_for_pred_narrow_clip_scalar (unspec, vec_mode);
@@ -4932,6 +5021,20 @@ expand_vec_quad_ustrunc (rtx op_0, rtx op_1, machine_mode vec_mode,
   expand_vec_double_ustrunc (op_0, double_rtx, double_mode);
 }
 
+/* Expand the standard name sstrunc<m><n>2 for quad vector mode,  like
+   DI => HI.  we can leverage the vector fixed point vector narrowing
+   fixed-point clip directly.  */
+
+void
+expand_vec_quad_sstrunc (rtx op_0, rtx op_1, machine_mode vec_mode,
+			 machine_mode double_mode)
+{
+  rtx double_rtx = gen_reg_rtx (double_mode);
+
+  expand_vec_double_sstrunc (double_rtx, op_1, vec_mode);
+  expand_vec_double_sstrunc (op_0, double_rtx, double_mode);
+}
+
 /* Expand the standard name ustrunc<m><n>2 for double vector mode,  like
    DI => QI.  we can leverage the vector fixed point vector narrowing
    fixed-point clip directly.  */
@@ -4946,6 +5049,22 @@ expand_vec_oct_ustrunc (rtx op_0, rtx op_1, machine_mode vec_mode,
   expand_vec_double_ustrunc (double_rtx, op_1, vec_mode);
   expand_vec_double_ustrunc (quad_rtx, double_rtx, double_mode);
   expand_vec_double_ustrunc (op_0, quad_rtx, quad_mode);
+}
+
+/* Expand the standard name sstrunc<m><n>2 for oct vector mode,  like
+   DI => QI.  we can leverage the vector fixed point vector narrowing
+   fixed-point clip directly.  */
+
+void
+expand_vec_oct_sstrunc (rtx op_0, rtx op_1, machine_mode vec_mode,
+			machine_mode double_mode, machine_mode quad_mode)
+{
+  rtx double_rtx = gen_reg_rtx (double_mode);
+  rtx quad_rtx = gen_reg_rtx (quad_mode);
+
+  expand_vec_double_sstrunc (double_rtx, op_1, vec_mode);
+  expand_vec_double_sstrunc (quad_rtx, double_rtx, double_mode);
+  expand_vec_double_sstrunc (op_0, quad_rtx, quad_mode);
 }
 
 /* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx10.2-512 -mprefer-vector-width=512 -Ofast" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2-512 -mprefer-vector-width=512 -Ofast" } */
 /* /* { dg-final { scan-assembler-times "vmaxpbf16" 1 } } */
 /* /* { dg-final { scan-assembler-times "vminpbf16" 1 } } */
 

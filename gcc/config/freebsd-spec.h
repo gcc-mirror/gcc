@@ -22,10 +22,10 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* Common FreeBSD configuration. 
+/* Common FreeBSD configuration.
    All FreeBSD architectures should include this file, which will specify
    their commonalities.
-   Adapted from gcc/config/freebsd.h by 
+   Adapted from gcc/config/freebsd.h by
    David O'Brien <obrien@FreeBSD.org>
    Loren J. Rittle <ljrittle@acm.org>.  */
 
@@ -49,7 +49,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Define the default FreeBSD-specific per-CPU hook code.  */
 #define FBSD_TARGET_CPU_CPP_BUILTINS() do {} while (0)
 
-/* Provide a CPP_SPEC appropriate for FreeBSD.  We just deal with the GCC 
+/* Provide a CPP_SPEC appropriate for FreeBSD.  We just deal with the GCC
    option `-posix', and PIC issues.  */
 
 #define FBSD_CPP_SPEC "							\
@@ -58,10 +58,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   %{posix:-D_POSIX_SOURCE}"
 
 /* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
-   the magical crtbegin.o file (see crtstuff.c) which provides part 
-	of the support for getting C++ file-scope static object constructed 
+   the magical crtbegin.o file (see crtstuff.c) which provides part
+	of the support for getting C++ file-scope static object constructed
 	before entering `main'.  */
-   
+
 #define FBSD_STARTFILE_SPEC \
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
@@ -71,9 +71,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 
 /* Provide a ENDFILE_SPEC appropriate for FreeBSD.  Here we tack on
-   the magical crtend.o file (see crtstuff.c) which provides part of 
-	the support for getting C++ file-scope static object constructed 
-	before entering `main', followed by a normal "finalizer" file, 
+   the magical crtend.o file (see crtstuff.c) which provides part of
+	the support for getting C++ file-scope static object constructed
+	before entering `main', followed by a normal "finalizer" file,
 	`crtn.o'.  */
 
 #define FBSD_ENDFILE_SPEC \

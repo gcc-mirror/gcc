@@ -61,7 +61,7 @@ int nfunctions_inlined;
 /* Scale counts of NODE edges by NUM/DEN.  */
 
 static void
-update_noncloned_counts (struct cgraph_node *node, 
+update_noncloned_counts (struct cgraph_node *node,
 			 profile_count num, profile_count den)
 {
   struct cgraph_edge *e;
@@ -570,7 +570,7 @@ save_inline_function_body (struct cgraph_node *node)
   if (dump_file)
     fprintf (dump_file, "\nSaving body of %s for later reuse\n",
 	     node->dump_name ());
- 
+
   gcc_assert (node == cgraph_node::get (node->decl));
 
   /* first_clone will be turned into real function.  */
@@ -731,7 +731,7 @@ inline_transform (struct cgraph_node *node)
   unsigned int todo = 0;
   struct cgraph_edge *e, *next;
   bool has_inline = false;
- 
+
   /* FIXME: Currently the pass manager is adding inline transform more than
      once to some clones.  This needs revisiting after WPA cleanups.  */
   if (cfun->after_inlining)

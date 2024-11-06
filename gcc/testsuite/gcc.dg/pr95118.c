@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre" } */
+/* { dg-options "-std=gnu17 -O2 -fdump-tree-fre" } */
 
 void a();
 void b() {

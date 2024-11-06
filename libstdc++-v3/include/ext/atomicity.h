@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_ATOMICITY_H
 #define _GLIBCXX_ATOMICITY_H	1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/gthr.h>
@@ -124,4 +126,4 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_WRITE_MEM_BARRIER __atomic_thread_fence (__ATOMIC_RELEASE)
 #endif
 
-#endif 
+#endif

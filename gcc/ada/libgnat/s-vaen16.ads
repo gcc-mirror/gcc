@@ -45,6 +45,7 @@ package System.Val_Enum_16 is
       Indexes : System.Address;
       Hash    : Impl.Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Natural
      renames Impl.Value_Enumeration;
@@ -54,6 +55,7 @@ package System.Val_Enum_16 is
       Indexes : System.Address;
       Hash    : Impl.Hash_Function_Ptr;
       Num     : Natural;
+      Is_Wide : Boolean;
       Str     : String)
       return    Boolean
      renames Impl.Valid_Value_Enumeration;

@@ -1,4 +1,4 @@
-/* Process the ObjC-specific declarations and variables for 
+/* Process the ObjC-specific declarations and variables for
    the Objective-C++ compiler.
    Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -29,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Hacks to simulate start_struct() and finish_struct(). */
 
-tree 
+tree
 objcp_start_struct (location_t loc ATTRIBUTE_UNUSED,
 		    enum tree_code code ATTRIBUTE_UNUSED, tree name)
 {
@@ -48,7 +49,7 @@ objcp_start_struct (location_t loc ATTRIBUTE_UNUSED,
   return begin_class_definition (s);
 }
 
-tree 
+tree
 objcp_finish_struct (location_t loc ATTRIBUTE_UNUSED,
 		     tree t, tree fieldlist, tree attributes)
 {
@@ -89,7 +90,7 @@ objcp_xref_tag (enum tree_code code ATTRIBUTE_UNUSED, tree name)
 
 int
 objcp_comptypes (tree type1, tree type2)
-{     
+{
   return comptypes (type1, type2, COMPARE_STRICT);
 }
 

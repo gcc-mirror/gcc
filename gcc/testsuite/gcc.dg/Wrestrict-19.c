@@ -1,7 +1,7 @@
 /* PR middle-end/89934 - ICE on a call with fewer arguments to strncpy
    declared without prototype
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-std=gnu17 -O2 -Wall" } */
 
 typedef __SIZE_TYPE__ size_t;
 

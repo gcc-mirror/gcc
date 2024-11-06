@@ -24,7 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bid_conf.h"
 #include "bid_functions.h"
 #include "bid_gcc_intrinsics.h"
- 
+
 _Decimal32
 __bid_trunctdsd2 (_Decimal128 x) {
   union decimal128 ux;

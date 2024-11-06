@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -179,7 +180,7 @@ matched:
 
 match
 gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
-		     int corank)
+		     int corank, bool coarray_only)
 {
   match m;
   bool matched_bracket = false;
@@ -198,6 +199,8 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
        matched_bracket = true;
        goto coarray;
     }
+  else if (coarray_only && corank != 0)
+    goto coarray;
 
   if (gfc_match_char ('(') != MATCH_YES)
     {
@@ -243,11 +246,12 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
 coarray:
   if (!matched_bracket && gfc_match_char ('[') != MATCH_YES)
     {
-      if (ar->dimen > 0)
+      int dim = coarray_only ? 0 : ar->dimen;
+      if (dim > 0 || coarray_only)
 	{
 	  if (corank != 0)
 	    {
-	      for (int i = ar->dimen; i < GFC_MAX_DIMENSIONS; ++i)
+	      for (int i = dim; i < GFC_MAX_DIMENSIONS; ++i)
 		ar->dimen_type[i] = DIMEN_THIS_IMAGE;
 	      ar->codimen = corank;
 	    }
@@ -866,7 +870,7 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
 {
   int i;
   symbol_attribute *attr;
-  
+
   if (as == NULL)
     return true;
 
@@ -875,7 +879,7 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
   attr = &sym->attr;
   if (gfc_submodule_procedure(attr))
     return true;
-  
+
   if (as->rank
       && !gfc_add_dimension (&sym->attr, sym->name, error_loc))
     return false;
@@ -1387,7 +1391,7 @@ done:
     expr = gfc_get_array_expr (BT_UNKNOWN, 0, &where);
 
   expr->value.constructor = head;
-  if (expr->ts.u.cl)
+  if (expr->ts.type == BT_CHARACTER && expr->ts.u.cl)
     expr->ts.u.cl->length_from_typespec = seen_ts;
 
   *result = expr;
@@ -2454,7 +2458,7 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
 	mpz_set_ui (stride, 1);
       else
 	{
-	  stride_expr = gfc_copy_expr(ar->stride[dimen]); 
+	  stride_expr = gfc_copy_expr(ar->stride[dimen]);
 
 	  if (!gfc_simplify_expr (stride_expr, 1)
 	     || stride_expr->expr_type != EXPR_CONSTANT

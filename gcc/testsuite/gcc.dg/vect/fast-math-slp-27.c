@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-ffast-math" } */
 /* { dg-require-effective-target vect_float } */
 
 float x[2*256+1];

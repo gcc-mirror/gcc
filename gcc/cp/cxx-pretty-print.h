@@ -34,7 +34,7 @@ class cxx_pretty_printer : public c_pretty_printer
 public:
   cxx_pretty_printer ();
 
-  pretty_printer *clone () const override;
+  std::unique_ptr<pretty_printer> clone () const override;
 
   void constant (tree) final override;
   void id_expression (tree) final override;

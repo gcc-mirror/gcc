@@ -188,8 +188,8 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
 { ASM_OUTPUT_ALIGN (FILE, 3); (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM); }
 
-/* This says how to output assembler code to declare an                
-   uninitialized external linkage data object.  */ 
+/* This says how to output assembler code to declare an
+   uninitialized external linkage data object.  */
 
 #define COMMON_ASM_OP "\t.comm\t"
 

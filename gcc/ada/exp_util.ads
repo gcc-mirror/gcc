@@ -789,6 +789,11 @@ package Exp_Util is
    --  Return True if Typ is a library level tagged type. Currently we use
    --  this information to build statically allocated dispatch tables.
 
+   function Is_LSP_Wrapper (E : Entity_Id) return Boolean;
+   --  Return True if E is a wrapper built when a subprogram has class-wide
+   --  preconditions or postconditions affected by overriding (AI12-0195).
+   --  LSP stands for Liskov Substitution Principle.
+
    function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean;
    --  Determine whether node Expr denotes a non build-in-place function call
 

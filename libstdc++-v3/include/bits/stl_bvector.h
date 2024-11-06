@@ -892,6 +892,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Construct a vector from a range.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<bool> _Rg>
+	constexpr
+	vector(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
+	: _Base(__a)
+	{
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      _M_initialize(size_type(ranges::distance(__rg)));
+	      ranges::copy(__rg, begin());
+	    }
+	  else
+	    {
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      for (; __first != __last; ++__first)
+		emplace_back(*__first);
+	    }
+	}
+#endif
+
       _GLIBCXX20_CONSTEXPR
       ~vector() _GLIBCXX_NOEXCEPT { }
 
@@ -994,6 +1019,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       assign(initializer_list<bool> __l)
       { _M_assign_aux(__l.begin(), __l.end(), random_access_iterator_tag()); }
+#endif
+
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Assign a range to the vector.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<bool> _Rg>
+	constexpr void
+	assign_range(_Rg&& __rg)
+	{
+	  static_assert(assignable_from<bool&, ranges::range_reference_t<_Rg>>);
+	  clear();
+	  append_range(std::forward<_Rg>(__rg));
+	}
 #endif
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
@@ -1279,6 +1319,86 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return this->insert(__p, __l.begin(), __l.end()); }
 #endif
 
+#if __glibcxx_ranges_to_container // C++ >= 23
+      /**
+       * @brief Insert a range into the vector.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<bool> _Rg>
+	constexpr iterator
+	insert_range(const_iterator __pos, _Rg&& __rg)
+	{
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      if (auto __n = size_type(ranges::distance(__rg)))
+		{
+		  if (capacity() - size() >= __n)
+		    {
+		      std::copy_backward(__pos._M_const_cast(), end(),
+					 this->_M_impl._M_finish
+					   + difference_type(__n));
+		      auto __i = ranges::copy(__rg, __pos._M_const_cast()).out;
+		      this->_M_impl._M_finish += difference_type(__n);
+		      return __i;
+		    }
+		  else
+		    {
+		      const size_type __len =
+			_M_check_len(__n, "vector<bool>::insert_range");
+		      const iterator __begin = begin(), __end = end();
+		      _Bit_pointer __q = this->_M_allocate(__len);
+		      iterator __start(std::__addressof(*__q), 0);
+		      iterator __i = _M_copy_aligned(__begin,
+						     __pos._M_const_cast(),
+						     __start);
+		      __i = ranges::copy(__rg, __i).out;
+		      iterator __finish = std::copy(__pos._M_const_cast(),
+						    __end, __i);
+		      this->_M_deallocate();
+		      this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
+		      this->_M_impl._M_start = __start;
+		      this->_M_impl._M_finish = __finish;
+		      return __i;
+		    }
+		}
+	      else
+		return __pos._M_const_cast();
+	    }
+	  else
+	    return insert_range(__pos,
+				vector(from_range, __rg, get_allocator()));
+	}
+
+      /**
+       * @brief Append a range at the end of the vector.
+       * @since C++23
+       */
+      template<__detail::__container_compatible_range<bool> _Rg>
+	constexpr void
+	append_range(_Rg&& __rg)
+	{
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      reserve(size() + size_type(ranges::distance(__rg)));
+	      this->_M_impl._M_finish = ranges::copy(__rg, end()).out;
+	    }
+	  else
+	    {
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      size_type __n = size();
+	      const size_type __cap = capacity();
+	      for (; __first != __last && __n < __cap; ++__first, (void)++__n)
+		emplace_back(*__first);
+	      if (__first != __last)
+		{
+		  ranges::subrange __rest(std::move(__first), __last);
+		  append_range(vector(from_range, __rest, get_allocator()));
+		}
+	    }
+	}
+#endif // ranges_to_container
+
       _GLIBCXX20_CONSTEXPR
       void
       pop_back()
@@ -1343,7 +1463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 	emplace_back(_Args&&... __args)
 	{
-	  push_back(bool(__args...));
+	  push_back(bool(std::forward<_Args>(__args)...));
 #if __cplusplus > 201402L
 	  return back();
 #endif
@@ -1353,7 +1473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_GLIBCXX20_CONSTEXPR
 	iterator
 	emplace(const_iterator __pos, _Args&&... __args)
-	{ return insert(__pos, bool(__args...)); }
+	{ return insert(__pos, bool(std::forward<_Args>(__args)...)); }
 #endif
 
     protected:

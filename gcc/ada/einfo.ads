@@ -251,15 +251,12 @@ package Einfo is
 --  kinds of entities. In the latter case the attribute should only be set or
 --  accessed if the Ekind field indicates an appropriate entity.
 
---  There are two kinds of attributes that apply to entities, stored and
---  synthesized. Stored attributes correspond to a field or flag in the entity
---  itself. Such attributes are identified in the table below by giving the
---  field or flag in the attribute that is used to hold the attribute value.
---  Synthesized attributes are not stored directly, but are rather computed as
---  needed from other attributes, or from information in the tree. These are
---  marked "synthesized" in the table below. The stored attributes have both
---  access functions and set procedures to set the corresponding values, while
---  synthesized attributes have only access functions.
+--  Attributes that apply to entities are either "stored" or "synthesized".
+--  Stored attributes are stored as fields in the entity node, and have
+--  automatically-generated access functions and Set_... procedures.
+--  Synthesized attributes are marked "(synthesized)" in the documentation
+--  below, and are computed as needed; these have only (hand-written) access
+--  functions.
 
 --  Note: in the case of Node, Uint, or Elist fields, there are cases where the
 --  same physical field is used for different purposes in different entities,
@@ -2576,9 +2573,12 @@ package Einfo is
 --       entity is associated with a dispatch table.
 
 --    Is_Dispatch_Table_Wrapper
---       Applies to all entities. Set on wrappers built when the subprogram has
---       class-wide preconditions or class-wide postconditions affected by
---       overriding (AI12-0195).
+--       Applies to all entities. Set on wrappers built when a subprogram has
+--       class-wide preconditions or postconditions affected by overriding
+--       (AI12-0195). Also set on wrappers built when an inherited subprogram
+--       implements an interface primitive that has class-wide preconditions
+--       or postconditions. In the former case, the entity also has its
+--       LSP_Subprogram attribute set.
 
 --    Is_Dispatching_Operation
 --       Defined in all entities. Set for procedures, functions, generic

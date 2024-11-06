@@ -1,6 +1,10 @@
 /* { dg-skip-if "too complex for avr" { avr-*-* } } */
-/* { dg-skip-if "ptxas times out" { nvptx-*-* } } */
 /* { dg-skip-if "no chance for bpf" { bpf-*-* } } */
+/* { dg-additional-options -Wa,--no-verify { target { nvptx-*-* && { ! __OPTIMIZE__ } } } }
+   For the very long list of formal parameters, the nvptx back end generates
+   very much boilerplate code.  Without optimizations enabled, that doesn't get
+   cleaned up, and 'ptxas' runs into timeout or gets OOM-killed after a few
+   minutes.  */
 /* { dg-timeout-factor 4.0 } */
 #define LIM1(x) x##0, x##1, x##2, x##3, x##4, x##5, x##6, x##7, x##8, x##9,
 #define LIM2(x) LIM1(x##0) LIM1(x##1) LIM1(x##2) LIM1(x##3) LIM1(x##4) \

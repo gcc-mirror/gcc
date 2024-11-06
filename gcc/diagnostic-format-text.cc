@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -32,7 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-client-data-hooks.h"
 #include "diagnostic-diagram.h"
 #include "diagnostic-format-text.h"
+#include "diagnostic-buffer.h"
 #include "text-art/theme.h"
+#include "make-unique.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -40,6 +43,90 @@ along with GCC; see the file COPYING3.  If not see
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
+
+/* Concrete buffering implementation subclass for JSON output.  */
+
+class diagnostic_text_format_buffer : public diagnostic_per_format_buffer
+{
+public:
+  friend class diagnostic_text_output_format;
+
+  diagnostic_text_format_buffer (diagnostic_output_format &format);
+
+  void dump (FILE *out, int indent) const final override;
+
+  bool empty_p () const final override;
+  void move_to (diagnostic_per_format_buffer &dest) final override;
+  void clear () final override;
+  void flush () final override;
+
+private:
+  diagnostic_output_format &m_format;
+  output_buffer m_output_buffer;
+};
+
+/* class diagnostic_text_format_buffer : public diagnostic_per_format_buffer.  */
+
+diagnostic_text_format_buffer::
+diagnostic_text_format_buffer (diagnostic_output_format &format)
+: m_format (format)
+{
+  m_output_buffer.m_flush_p = false;
+}
+
+void
+diagnostic_text_format_buffer::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sdiagnostic_text_format_buffer:\n", indent, "");
+  m_output_buffer.dump (out, indent + 2);
+}
+
+bool
+diagnostic_text_format_buffer::empty_p () const
+{
+  return output_buffer_last_position_in_text (&m_output_buffer) == nullptr;
+}
+
+void
+diagnostic_text_format_buffer::move_to (diagnostic_per_format_buffer &base_dest)
+{
+  diagnostic_text_format_buffer &dest
+    = static_cast<diagnostic_text_format_buffer &> (base_dest);
+  const char *str = output_buffer_formatted_text (&m_output_buffer);
+  output_buffer_append_r (&dest.m_output_buffer, str, strlen (str));
+
+  obstack_free (m_output_buffer.m_obstack,
+		obstack_base (m_output_buffer.m_obstack));
+  m_output_buffer.m_line_length = 0;
+}
+
+void
+diagnostic_text_format_buffer::clear ()
+{
+  pretty_printer *const pp = m_format.get_printer ();
+  output_buffer *const old_output_buffer = pp_buffer (pp);
+
+  pp_buffer (pp) = &m_output_buffer;
+
+  pp_clear_output_area (pp);
+  gcc_assert (empty_p ());
+
+  pp_buffer (pp) = old_output_buffer;
+}
+
+void
+diagnostic_text_format_buffer::flush ()
+{
+  pretty_printer *const pp = m_format.get_printer ();
+  output_buffer *const old_output_buffer = pp_buffer (pp);
+
+  pp_buffer (pp) = &m_output_buffer;
+
+  pp_really_flush (pp);
+  gcc_assert (empty_p ());
+
+  pp_buffer (pp) = old_output_buffer;
+}
 
 /* class diagnostic_text_output_format : public diagnostic_output_format.  */
 
@@ -67,6 +154,47 @@ diagnostic_text_output_format::~diagnostic_text_output_format ()
       delete m_includes_seen;
       m_includes_seen = nullptr;
     }
+}
+
+void
+diagnostic_text_output_format::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sdiagnostic_text_output_format\n", indent, "");
+  fprintf (out, "%*sm_follows_reference_printer: %s\n",
+	   indent, "",
+	   m_follows_reference_printer ? "true" : "false");
+  diagnostic_output_format::dump (out, indent);
+  fprintf (out, "%*ssaved_output_buffer:\n", indent + 2, "");
+  if (m_saved_output_buffer)
+    m_saved_output_buffer->dump (out, indent + 4);
+  else
+    fprintf (out, "%*s(none):\n", indent + 4, "");
+}
+
+void
+diagnostic_text_output_format::set_buffer (diagnostic_per_format_buffer *base)
+{
+  diagnostic_text_format_buffer * const buffer
+    = static_cast<diagnostic_text_format_buffer *> (base);
+
+  pretty_printer *const pp = get_printer ();
+
+  if (!m_saved_output_buffer)
+    m_saved_output_buffer = pp_buffer (pp);
+
+  if (buffer)
+    pp_buffer (pp) = &buffer->m_output_buffer;
+  else
+    {
+      gcc_assert (m_saved_output_buffer);
+      pp_buffer (pp) = m_saved_output_buffer;
+    }
+}
+
+std::unique_ptr<diagnostic_per_format_buffer>
+diagnostic_text_output_format::make_per_format_buffer ()
+{
+  return ::make_unique<diagnostic_text_format_buffer> (*this);
 }
 
 /* Implementation of diagnostic_output_format::on_report_diagnostic vfunc
@@ -98,6 +226,13 @@ on_report_diagnostic (const diagnostic_info &diagnostic,
 }
 
 void
+diagnostic_text_output_format::on_report_verbatim (text_info &text)
+{
+  pp_format_verbatim (get_printer (), &text);
+  pp_newline_and_flush (get_printer ());
+}
+
+void
 diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
 {
   pretty_printer *const pp = get_printer ();
@@ -117,7 +252,101 @@ void
 diagnostic_text_output_format::
 after_diagnostic (const diagnostic_info &diagnostic)
 {
-  show_any_path (diagnostic);
+  if (const diagnostic_path *path = diagnostic.richloc->get_path ())
+    print_path (*path);
+}
+
+/* Return a malloc'd string describing a location and the severity of the
+   diagnostic, e.g. "foo.c:42:10: error: ".  The caller is responsible for
+   freeing the memory.  */
+char *
+diagnostic_text_output_format::
+build_prefix (const diagnostic_info &diagnostic) const
+{
+  gcc_assert (diagnostic.kind < DK_LAST_DIAGNOSTIC_KIND);
+
+  const char *text = _(get_diagnostic_kind_text (diagnostic.kind));
+  const char *text_cs = "", *text_ce = "";
+  pretty_printer *pp = get_printer ();
+
+  if (const char *color_name = diagnostic_get_color_for_kind (diagnostic.kind))
+    {
+      text_cs = colorize_start (pp_show_color (pp), color_name);
+      text_ce = colorize_stop (pp_show_color (pp));
+    }
+
+  const expanded_location s = diagnostic_expand_location (&diagnostic);
+  label_text location_text = get_location_text (s);
+
+  char *result = build_message_string ("%s %s%s%s", location_text.get (),
+				       text_cs, text, text_ce);
+  return result;
+}
+
+/* Same as build_prefix, but only the source FILE is given.  */
+char *
+diagnostic_text_output_format::file_name_as_prefix (const char *f) const
+{
+  pretty_printer *const pp = get_printer ();
+  const char *locus_cs
+    = colorize_start (pp_show_color (pp), "locus");
+  const char *locus_ce = colorize_stop (pp_show_color (pp));
+  return build_message_string ("%s%s:%s ", locus_cs, f, locus_ce);
+}
+
+/* Add a purely textual note with text GMSGID and with LOCATION.  */
+
+void
+diagnostic_text_output_format::append_note (location_t location,
+					    const char * gmsgid, ...)
+{
+  diagnostic_context *context = &get_context ();
+
+  diagnostic_info diagnostic;
+  va_list ap;
+  rich_location richloc (line_table, location);
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_NOTE);
+  if (context->m_inhibit_notes_p)
+    {
+      va_end (ap);
+      return;
+    }
+  pretty_printer *pp = get_printer ();
+  char *saved_prefix = pp_take_prefix (pp);
+  pp_set_prefix (pp, build_prefix (diagnostic));
+  pp_format (pp, &diagnostic.message);
+  pp_output_formatted_text (pp);
+  pp_destroy_prefix (pp);
+  pp_set_prefix (pp, saved_prefix);
+  pp_newline (pp);
+  diagnostic_show_locus (context, &richloc, DK_NOTE, pp);
+  va_end (ap);
+}
+
+bool
+diagnostic_text_output_format::follows_reference_printer_p () const
+{
+  return m_follows_reference_printer;
+}
+
+void
+diagnostic_text_output_format::
+update_printer ()
+{
+  pretty_printer *copy_from_pp
+    = (m_follows_reference_printer
+       ? get_context ().get_reference_printer ()
+       : m_printer.get ());
+  const bool show_color = pp_show_color (copy_from_pp);
+  const diagnostic_url_format url_format = copy_from_pp->get_url_format ();
+
+  m_printer = get_context ().clone_printer ();
+
+  pp_show_color (m_printer.get ()) = show_color;
+  m_printer->set_url_format (url_format);
+  // ...etc
 }
 
 /* If DIAGNOSTIC has a CWE identifier, print it.
@@ -263,9 +492,11 @@ label_text
 diagnostic_text_output_format::
 get_location_text (const expanded_location &s) const
 {
-  return get_context ().get_location_text (s, pp_show_color (get_printer ()));
+  diagnostic_column_policy column_policy (get_context ());
+  return column_policy.get_location_text (s,
+					  show_column_p (),
+					  pp_show_color (get_printer ()));
 }
-
 
 /* Helpers for writing lang-specific starters/finalizers for text output.  */
 
@@ -294,7 +525,6 @@ maybe_line_and_column (int line, int col)
 void
 diagnostic_text_output_format::report_current_module (location_t where)
 {
-  const diagnostic_context &context = get_context ();
   pretty_printer *pp = get_printer ();
   const line_map_ordinary *map = NULL;
 
@@ -329,7 +559,7 @@ diagnostic_text_output_format::report_current_module (location_t where)
 	      if (first && show_column_p ())
 		{
 		  s.column = SOURCE_COLUMN (map, where);
-		  col = context.converted_column (s);
+		  col = get_column_policy ().converted_column (s);
 		}
 	      const char *line_col = maybe_line_and_column (s.line, col);
 	      static const char *const msgs[] =

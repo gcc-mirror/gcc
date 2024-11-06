@@ -10,7 +10,7 @@
 **   add\s*a0,a1,a0
 **   ...
 */
-/* { dg-final { scan-assembler ".option arch, rv64i2p1_m2p0_a2p1_f2p2_d2p2_c2p0_zicsr2p0_zifencei2p0_zaamo1p0_zalrsc1p0" } } */
+/* { dg-final { scan-assembler ".option arch, rv64i2p1_m2p0_a2p1_f2p2_d2p2_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0" } } */
 long foo () __attribute__((target("arch=rv64gc")));
 long foo (long a, long b)
 {

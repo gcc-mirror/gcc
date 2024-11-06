@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-Wno-stringop-overread" } */
+/* { dg-additional-options "-Wno-old-style-definition -Wno-stringop-overread" } */
 
 int foo (fmt)
 char* fmt;

@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -48,10 +49,7 @@ get_bitmask_from_range (tree type,
     }
 
   wide_int xorv = min ^ max;
-
-  if (xorv != 0)
-    xorv = wi::mask (prec - wi::clz (xorv), false, prec);
-
+  xorv = wi::mask (prec - wi::clz (xorv), false, prec);
   return irange_bitmask (wi::zero (prec), min | xorv);
 }
 

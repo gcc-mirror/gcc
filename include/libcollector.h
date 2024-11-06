@@ -75,7 +75,7 @@ extern "C"
 /* Define the macros that actually get inserted in the caller's code.  */
 #define collector_sample(x)	(collector_sample ? collector_sample(x), 0 : 0)
 #define collector_pause()	(collector_pause ? collector_pause(), 0 : 0)
-#define collector_resume()	(collector_resume ? collector_resume(),0 : 0 
+#define collector_resume()	(collector_resume ? collector_resume(),0 : 0
 #define collector_thread_pause(tid) \
 	(collector_thread_pause ? collector_thread_pause(tid), 0 : 0)
 #define collector_thread_resume(tid) \

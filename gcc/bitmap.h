@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
    sparse sets.  The canonical example in GCC is, of course, the "set of
    sets" for some CFG-based data flow problems (liveness analysis, dominance
    frontiers, etc.).
-   
+
    For random-access sparse sets of unknown universe, the binary tree
    representation is likely to be a more suitable choice.  Theoretical
    access times for the binary tree representation are better than those
@@ -99,7 +99,7 @@ along with GCC; see the file COPYING3.  If not see
    efficiently.  The downside is that many random-access operations are
    relatively slow, because the linked list has to be traversed to test
    membership (i.e. member_p/ add_member/remove_member).
-   
+
    To improve the performance of this set representation, the last
    accessed element and its index are cached.  For membership tests on
    members close to recently accessed members, the cached last element
@@ -176,7 +176,7 @@ along with GCC; see the file COPYING3.  If not see
    of clearing the set, and the relatively large number of operations
    necessary to balance the tree.  Also, iterating the set members is
    not supported.
-   
+
    As for the linked-list representation, the last accessed element and
    its index are cached, so that membership tests on the latest accessed
    members is a constant-time operation.  Other lookups take O(logE)

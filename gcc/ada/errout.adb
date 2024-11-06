@@ -1869,6 +1869,8 @@ package body Errout is
                        | N_Declaration
                        | N_Access_To_Subprogram_Definition
                        | N_Generic_Instantiation
+                       | N_Component_Association
+                       | N_Iterated_Component_Association
                        | N_Later_Decl_Item
                        | N_Use_Package_Clause
                        | N_Array_Type_Definition
@@ -3550,7 +3552,8 @@ package body Errout is
          --  Deal with matching entry in List_Pragmas table
 
          if Full_List
-           and then List_Pragmas_Index <= List_Pragmas.Last
+           and then List_Pragmas_Index in
+                    List_Pragmas.First .. List_Pragmas.Last
            and then S = List_Pragmas.Table (List_Pragmas_Index).Ploc
          then
             case List_Pragmas.Table (List_Pragmas_Index).Ptyp is

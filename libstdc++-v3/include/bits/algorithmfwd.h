@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_ALGORITHMFWD_H
 #define _GLIBCXX_ALGORITHMFWD_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/stl_pair.h>

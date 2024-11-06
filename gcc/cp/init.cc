@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* High-level class interface.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -263,7 +264,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
       else if (TYPE_DOMAIN (type) == NULL_TREE)
 	return NULL_TREE;
       else
-	max_index = array_type_nelts (type);
+	max_index = array_type_nelts_minus_one (type);
 
       /* If we have an error_mark here, we should just return error mark
 	 as we don't know the size of the array yet.  */
@@ -407,7 +408,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
     {
       gcc_assert (!TYPE_HAS_COMPLEX_DFLT (type)
 		  || errorcount != 0);
-	
+
       if (TREE_CODE (type) != UNION_TYPE)
 	{
 	  tree field;
@@ -474,7 +475,7 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
       vec<constructor_elt, va_gc> *v = NULL;
 
       /* Iterate over the array elements, building initializations.  */
-      tree max_index = array_type_nelts (type);
+      tree max_index = array_type_nelts_minus_one (type);
 
       /* If we have an error_mark here, we should just return error mark
 	 as we don't know the size of the array yet.  */
@@ -966,7 +967,9 @@ can_init_array_with_p (tree type, tree init)
 	return true;
     }
 
-  return false;
+  permerror (input_location, "array must be initialized "
+	     "with a brace-enclosed initializer");
+  return true;
 }
 
 /* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
@@ -2979,8 +2982,9 @@ std_placement_new_fn_p (tree alloc_fn)
   if (DECL_NAMESPACE_SCOPE_P (alloc_fn))
     {
       tree first_arg = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
-      if ((TREE_VALUE (first_arg) == ptr_type_node)
-	  && TREE_CHAIN (first_arg) == void_list_node)
+      if (first_arg
+	  && (TREE_VALUE (first_arg) == ptr_type_node)
+	  && (TREE_CHAIN (first_arg) == void_list_node))
 	return true;
     }
   return false;
@@ -3030,7 +3034,7 @@ maybe_wrap_new_for_constexpr (tree alloc_call, tree elt_type, tree cookie_size)
   if (current_function_decl != NULL_TREE
       && !DECL_DECLARED_CONSTEXPR_P (current_function_decl))
     return alloc_call;
-  
+
   tree call_expr = extract_call_expr (alloc_call);
   if (call_expr == error_mark_node)
     return alloc_call;
@@ -4161,7 +4165,7 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
       /* This size won't actually be used.  */
       size_exp = size_one_node;
       goto no_destructor;
-    } 
+    }
 
   size_exp = size_in_bytes (type);
 
@@ -4526,7 +4530,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 		    : location_of (base));
 
   if (TREE_CODE (atype) == ARRAY_TYPE && TYPE_DOMAIN (atype))
-    maxindex = array_type_nelts (atype);
+    maxindex = array_type_nelts_minus_one (atype);
 
   if (maxindex == NULL_TREE || maxindex == error_mark_node)
     return error_mark_node;
@@ -4958,7 +4962,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      if (xvalue)
 		from = move (from);
 	      if (direct_init)
-		from = build_tree_list (NULL_TREE, from);
+		{
+		  /* Wrap the initializer in a CONSTRUCTOR so that
+		     build_vec_init recognizes it as direct-initialization.  */
+		  from = build_constructor_single (init_list_type_node,
+						   NULL_TREE, from);
+		  CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+		}
 	    }
 	  else
 	    from = NULL_TREE;
@@ -5185,7 +5195,7 @@ build_delete (location_t loc, tree otype, tree addr,
 	    error_at (loc, "unknown array size in delete");
 	  return error_mark_node;
 	}
-      return build_vec_delete (loc, addr, array_type_nelts (type),
+      return build_vec_delete (loc, addr, array_type_nelts_minus_one (type),
 			       auto_delete, use_global_delete, complain);
     }
 

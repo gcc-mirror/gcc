@@ -20,6 +20,7 @@
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
 #define INCLUDE_LIST
+#define INCLUDE_MEMORY
 #define INCLUDE_TYPE_TRAITS
 #define INCLUDE_ARRAY
 #include "config.h"
@@ -2089,10 +2090,79 @@ protected:
 
   def_iter_t def_iter;
   insn_info *limit;
-  def_walker (def_info *def, insn_info *limit) :
-    def_iter (def), limit (limit) {}
+
+  // Array of register uses from the candidate insn which occur in MEMs.
+  use_array cand_addr_uses;
+
+  def_walker (def_info *def, insn_info *limit, use_array addr_uses) :
+    def_iter (def), limit (limit), cand_addr_uses (addr_uses) {}
 
   virtual bool iter_valid () const { return *def_iter; }
+
+  // Implemented in {load,store}_walker.
+  virtual bool alias_conflict_p (int &budget) const = 0;
+
+  // Return true if the current (walking) INSN () uses a register R inside a
+  // MEM, where R is also used inside a MEM by the (static) candidate insn, and
+  // those uses see different definitions of that register.  In this case we
+  // can't rely on RTL alias analysis, and for now we conservatively assume that
+  // there is an alias conflict.  See PR116783.
+  bool addr_reg_conflict_p () const
+  {
+    use_array curr_insn_uses = insn ()->uses ();
+    auto cand_use_iter = cand_addr_uses.begin ();
+    auto insn_use_iter = curr_insn_uses.begin ();
+    while (cand_use_iter != cand_addr_uses.end ()
+	   && insn_use_iter != curr_insn_uses.end ())
+      {
+	auto insn_use = *insn_use_iter;
+	auto cand_use = *cand_use_iter;
+	if (insn_use->regno () > cand_use->regno ())
+	  cand_use_iter++;
+	else if (insn_use->regno () < cand_use->regno ())
+	  insn_use_iter++;
+	else
+	  {
+	    // As it stands I believe the alias code (memory_modified_in_insn_p)
+	    // doesn't look at insn notes such as REG_EQU{IV,AL}, so it should
+	    // be safe to skip over uses that only occur in notes.
+	    if (insn_use->includes_address_uses ()
+		&& !insn_use->only_occurs_in_notes ()
+		&& insn_use->def () != cand_use->def ())
+	      {
+		if (dump_file)
+		  {
+		    fprintf (dump_file,
+			     "assuming aliasing of cand i%d and i%d:\n"
+			     "-> insns see different defs of common addr reg r%u\n"
+			     "-> ",
+			     cand_use->insn ()->uid (), insn_use->insn ()->uid (),
+			     insn_use->regno ());
+
+		    // Note that while the following sequence could be made more
+		    // concise by eliding pp_string calls into the pp_printf
+		    // calls, doing so triggers -Wformat-diag.
+		    pretty_printer pp;
+		    pp_string (&pp, "[");
+		    pp_access (&pp, cand_use, 0);
+		    pp_string (&pp, "] in ");
+		    pp_printf (&pp, "i%d", cand_use->insn ()->uid ());
+		    pp_string (&pp, " vs [");
+		    pp_access (&pp, insn_use, 0);
+		    pp_string (&pp, "] in ");
+		    pp_printf (&pp, "i%d", insn_use->insn ()->uid ());
+		    fprintf (dump_file, "%s\n", pp_formatted_text (&pp));
+		  }
+		return true;
+	      }
+
+	    cand_use_iter++;
+	    insn_use_iter++;
+	  }
+      }
+
+    return false;
+  }
 
 public:
   insn_info *insn () const override { return (*def_iter)->insn (); }
@@ -2107,6 +2177,14 @@ public:
     else
       return *(insn ()) < *limit;
   }
+
+  bool conflict_p (int &budget) const override final
+  {
+    if (addr_reg_conflict_p ())
+      return true;
+
+    return alias_conflict_p (budget);
+  }
 };
 
 // alias_walker that iterates over stores.
@@ -2117,12 +2195,14 @@ class store_walker : public def_walker<reverse>
   InsnPredicate tombstone_p;
 
 public:
-  store_walker (def_info *mem_def, rtx mem, insn_info *limit_insn,
+  store_walker (def_info *mem_def, rtx mem,
+		use_array addr_uses,
+		insn_info *limit_insn,
 		InsnPredicate tombstone_fn) :
-    def_walker<reverse> (mem_def, limit_insn),
+    def_walker<reverse> (mem_def, limit_insn, addr_uses),
     cand_mem (mem), tombstone_p (tombstone_fn) {}
 
-  bool conflict_p (int &budget) const override final
+  bool alias_conflict_p (int &budget) const override final
   {
     if (tombstone_p (this->insn ()))
       return false;
@@ -2159,13 +2239,14 @@ public:
     return (*use_iter)->insn ();
   }
 
-  bool conflict_p (int &budget) const override final
+  bool alias_conflict_p (int &budget) const override final
   {
     return load_modified_by_store_p (insn (), cand_store, budget);
   }
 
-  load_walker (def_info *def, insn_info *store, insn_info *limit_insn)
-    : Base (def, limit_insn),
+  load_walker (def_info *def, insn_info *store, use_array addr_uses,
+	       insn_info *limit_insn)
+    : Base (def, limit_insn, addr_uses),
       use_iter (Base::start_use_chain (this->def_iter)),
       cand_store (store) {}
 };
@@ -2544,11 +2625,32 @@ pair_fusion_bb_info::try_fuse_pair (bool load_p, unsigned access_size,
 	   && bitmap_bit_p (&m_tombstone_bitmap, insn->uid ());
   };
 
+  auto_vec<access_info *, 2> addr_use_vec[2];
+  use_array addr_uses[2];
+
+  // Collect the lists of register uses that occur in the candidate MEMs.
+  for (int i = 0; i < 2; i++)
+    {
+      // N.B. it's safe for us to ignore uses that only occur in notes
+      // here (e.g. in a REG_EQUIV expression) since we only pass the
+      // MEM down to the alias machinery, so it can't see any insn-level
+      // notes.
+      for (auto use : insns[i]->uses ())
+	if (use->is_reg ()
+	    && use->includes_address_uses ()
+	    && !use->only_occurs_in_notes ())
+	  addr_use_vec[i].safe_push (use);
+
+      addr_uses[i] = use_array (addr_use_vec[i]);
+    }
+
   store_walker<false, decltype(tombstone_p)>
-    forward_store_walker (mem_defs[0], cand_mems[0], insns[1], tombstone_p);
+    forward_store_walker (mem_defs[0], cand_mems[0], addr_uses[0], insns[1],
+			  tombstone_p);
 
   store_walker<true, decltype(tombstone_p)>
-    backward_store_walker (mem_defs[1], cand_mems[1], insns[0], tombstone_p);
+    backward_store_walker (mem_defs[1], cand_mems[1], addr_uses[1], insns[0],
+			   tombstone_p);
 
   alias_walker *walkers[4] = {};
   if (mem_defs[0])
@@ -2562,8 +2664,10 @@ pair_fusion_bb_info::try_fuse_pair (bool load_p, unsigned access_size,
     {
       // We want to find any loads hanging off the first store.
       mem_defs[0] = memory_access (insns[0]->defs ());
-      load_walker<false> forward_load_walker (mem_defs[0], insns[0], insns[1]);
-      load_walker<true> backward_load_walker (mem_defs[1], insns[1], insns[0]);
+      load_walker<false> forward_load_walker (mem_defs[0], insns[0],
+					      addr_uses[0], insns[1]);
+      load_walker<true> backward_load_walker (mem_defs[1], insns[1],
+					      addr_uses[1], insns[0]);
       walkers[2] = &forward_load_walker;
       walkers[3] = &backward_load_walker;
       m_pass->do_alias_analysis (alias_hazards, walkers, load_p);

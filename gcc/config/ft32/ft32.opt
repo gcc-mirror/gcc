@@ -23,8 +23,8 @@ Target Mask(SIM)
 Target the software simulator.
 
 mlra
-Target Var(ft32_lra_flag) Init(0) Save
-Use LRA instead of reload.
+Target RejectNegative Ignore
+Ignored, but preserved for backward compatibility.
 
 mnodiv
 Target Mask(NODIV)

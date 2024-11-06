@@ -1,4 +1,5 @@
 /* Mismatching decl of foo.  */
+/* { dg-additional-options "-std=gnu17" { target c } } */
 
 int foo ();
 

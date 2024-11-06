@@ -124,3 +124,115 @@
 {
   operands[2] = GEN_INT (1 << UINTVAL(operands[2]));
 })
+
+;; In some cases gimple can give us a sequence with a logical and
+;; of two sCC insns.  This can be implemented an sCC feeding a
+;; conditional zero.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (ne:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (scc_0:X (match_operand:X 2 "register_operand")
+			(match_operand:X 3 "reg_or_0_operand"))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (scc_0:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (if_then_else:X (eq:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 4)))])
+
+;; Similarly but GE/GEU which requires (const_int 1) as an operand.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (ne:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (any_ge:X (match_operand:X 2 "register_operand")
+			 (const_int 1))))
+   (clobber (match_operand:X 3 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 3) (any_ge:X (match_dup 2) (const_int 1)))
+   (set (match_dup 0) (if_then_else:X (eq:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 3)))])
+
+;; Similarly but LU/LTU which allows an arith_operand
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (ne:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (any_lt:X (match_operand:X 2 "register_operand")
+			 (match_operand:X 3 "arith_operand"))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (any_lt:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (if_then_else:X (eq:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 4)))])
+
+;; Finally LE/LEU which requires sle_operand.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (ne:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (any_le:X (match_operand:X 2 "register_operand")
+			 (match_operand:X 3 "sle_operand"))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (any_le:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (if_then_else:X (eq:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 4)))])
+
+
+;; Inverted versions from above.  I tried to get this to work with
+;; iterators, but didn't have any success disambiguating the code attr
+;; for the eq/ne flip we have to do.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (scc_0:X (match_operand:X 2 "register_operand")
+			(match_operand:X 3 "reg_or_0_operand"))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (scc_0:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 4)))])
+
+;; Similarly but GE/GEU which requires (const_int 1) as an operand.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (any_ge:X (match_operand:X 2 "register_operand")
+			 (const_int 1))))
+   (clobber (match_operand:X 3 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 3) (any_ge:X (match_dup 2) (const_int 1)))
+   (set (match_dup 0) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 3)))])
+
+;; Similarly but LU/LTU which allows an arith_operand
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (any_lt:X (match_operand:X 2 "register_operand")
+			 (match_operand:X 3 "arith_operand"))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (any_lt:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 4)))])
+
+;; Finally LE/LEU which requires sle_operand.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+	       (any_le:X (match_operand:X 2 "register_operand")
+			 (match_operand:X 3 "sle_operand"))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (any_le:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 0) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (const_int 0)
+				      (match_dup 4)))])
+
+
+

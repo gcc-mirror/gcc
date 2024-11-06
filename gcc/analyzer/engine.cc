@@ -1438,10 +1438,10 @@ exploded_node::dump (const extrinsic_state &ext_state) const
     "idx"    : int,
     "processed_stmts" : int}.  */
 
-json::object *
+std::unique_ptr<json::object>
 exploded_node::to_json (const extrinsic_state &ext_state) const
 {
-  json::object *enode_obj = new json::object ();
+  auto enode_obj = ::make_unique<json::object> ();
 
   enode_obj->set ("point", get_point ().to_json ());
   enode_obj->set ("state", get_state ().to_json (ext_state));
@@ -1668,9 +1668,9 @@ public:
     return true;
   }
 
-  label_text get_desc (bool /*can_colorize*/) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return m_summary->get_desc ();
+    pp_string (&pp, m_summary->get_desc ().get ());
   }
 
 private:
@@ -1884,19 +1884,22 @@ public:
     return false;
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     if (m_stack_pop_event)
-      return ev.formatted_print
-	("%qs called after enclosing function of %qs returned at %@",
-	 get_user_facing_name (m_longjmp_call),
-	 get_user_facing_name (m_setjmp_call),
-	 m_stack_pop_event->get_id_ptr ());
+      pp_printf (&pp,
+		 "%qs called after enclosing function of %qs returned at %@",
+		 get_user_facing_name (m_longjmp_call),
+		 get_user_facing_name (m_setjmp_call),
+		 m_stack_pop_event->get_id_ptr ());
     else
-      return ev.formatted_print
-	("%qs called after enclosing function of %qs has returned",
-	 get_user_facing_name (m_longjmp_call),
-	 get_user_facing_name (m_setjmp_call));;
+      pp_printf (&pp,
+		 "%qs called after enclosing function of %qs has returned",
+		 get_user_facing_name (m_longjmp_call),
+		 get_user_facing_name (m_setjmp_call));
+    return true;
   }
 
 
@@ -2289,10 +2292,10 @@ exploded_edge::dump_dot_label (pretty_printer *pp) const
     "sedge": (optional) object for the superedge, if any,
     "custom": (optional) str, a description, if this is a custom edge}.  */
 
-json::object *
+std::unique_ptr<json::object>
 exploded_edge::to_json () const
 {
-  json::object *eedge_obj = new json::object ();
+  auto eedge_obj = ::make_unique<json::object> ();
   eedge_obj->set_integer ("src_idx", m_src->m_index);
   eedge_obj->set_integer ("dst_idx", m_dest->m_index);
   if (m_sedge)
@@ -2415,10 +2418,10 @@ strongly_connected_components::dump () const
 
 /* Return a new json::array of per-snode SCC ids.  */
 
-json::array *
+std::unique_ptr<json::array>
 strongly_connected_components::to_json () const
 {
-  json::array *scc_arr = new json::array ();
+  auto scc_arr = ::make_unique<json::array> ();
   for (int i = 0; i < m_sg.num_nodes (); i++)
     scc_arr->append (new json::integer_number (get_scc_id (i)));
   return scc_arr;
@@ -2636,10 +2639,10 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 /* Return a new json::object of the form
    {"scc" : [per-snode-IDs]},  */
 
-json::object *
+std::unique_ptr<json::object>
 worklist::to_json () const
 {
-  json::object *worklist_obj = new json::object ();
+  auto worklist_obj = ::make_unique<json::object> ();
 
   worklist_obj->set ("scc", m_scc.to_json ());
 
@@ -2750,12 +2753,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void
+  print_desc (pretty_printer &pp) const final override
   {
-    return make_label_text
-      (can_colorize,
-       "function %qE marked with %<__attribute__((tainted_args))%>",
-       m_fndecl);
+    pp_printf (&pp,
+	       "function %qE marked with %<__attribute__((tainted_args))%>",
+	       m_fndecl);
   }
 
 private:
@@ -3169,12 +3172,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return make_label_text (can_colorize,
-			    "field %qE of %qT"
-			    " is marked with %<__attribute__((tainted_args))%>",
-			    m_field, DECL_CONTEXT (m_field));
+    pp_printf (&pp,
+	       "field %qE of %qT"
+	       " is marked with %<__attribute__((tainted_args))%>",
+	       m_field, DECL_CONTEXT (m_field));
   }
 
 private:
@@ -3195,12 +3198,12 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  void print_desc (pretty_printer &pp) const final override
   {
-    return make_label_text (can_colorize,
-			    "function %qE used as initializer for field %qE"
-			    " marked with %<__attribute__((tainted_args))%>",
-			    get_fndecl (), m_field);
+    pp_printf (&pp,
+	       "function %qE used as initializer for field %qE"
+	       " marked with %<__attribute__((tainted_args))%>",
+	       get_fndecl (), m_field);
   }
 
 private:
@@ -4014,9 +4017,11 @@ public:
     return ctxt.warn ("jump through null pointer");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool describe_final_event (pretty_printer &pp,
+			     const evdesc::final_event &) final override
   {
-    return ev.formatted_print ("jump through null pointer here");
+    pp_string (&pp, "jump through null pointer here");
+    return true;
   }
 
 private:
@@ -4653,29 +4658,29 @@ exploded_graph::dump_states_for_supernode (FILE *out,
     "ext_state": object for extrinsic_state,
     "diagnostic_manager": object for diagnostic_manager}.  */
 
-json::object *
+std::unique_ptr<json::object>
 exploded_graph::to_json () const
 {
-  json::object *egraph_obj = new json::object ();
+  auto egraph_obj = ::make_unique<json::object> ();
 
   /* Nodes.  */
   {
-    json::array *nodes_arr = new json::array ();
+    auto nodes_arr = ::make_unique<json::array> ();
     unsigned i;
     exploded_node *n;
     FOR_EACH_VEC_ELT (m_nodes, i, n)
       nodes_arr->append (n->to_json (m_ext_state));
-    egraph_obj->set ("nodes", nodes_arr);
+    egraph_obj->set ("nodes", std::move (nodes_arr));
   }
 
   /* Edges.  */
   {
-    json::array *edges_arr = new json::array ();
+    auto edges_arr = ::make_unique<json::array> ();
     unsigned i;
     exploded_edge *n;
     FOR_EACH_VEC_ELT (m_edges, i, n)
       edges_arr->append (n->to_json ());
-    egraph_obj->set ("edges", edges_arr);
+    egraph_obj->set ("edges", std::move (edges_arr));
   }
 
   /* m_sg is JSONified at the top-level.  */
@@ -6090,15 +6095,13 @@ dump_analyzer_json (const supergraph &sg,
       return;
     }
 
-  json::object *toplev_obj = new json::object ();
+  auto toplev_obj = ::make_unique<json::object> ();
   toplev_obj->set ("sgraph", sg.to_json ());
   toplev_obj->set ("egraph", eg.to_json ());
 
   pretty_printer pp;
   toplev_obj->print (&pp, flag_diagnostics_json_formatting);
   pp_formatted_text (&pp);
-
-  delete toplev_obj;
 
   if (gzputs (output, pp_formatted_text (&pp)) == EOF
       || gzclose (output))
@@ -6322,7 +6325,7 @@ run_checkers ()
     get_or_create_any_logfile ();
     if (dump_fout)
       the_logger.set_logger (new logger (dump_fout, 0, 0,
-					 *global_dc->m_printer));
+					 *global_dc->get_reference_printer ()));
     LOG_SCOPE (the_logger.get_logger ());
 
     impl_run_checkers (the_logger.get_logger ());

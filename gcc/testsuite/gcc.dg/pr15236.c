@@ -1,7 +1,7 @@
 /* PR 15236: pedantic switch modifies treatment of non-ISO compliant
    enumerations.  */
 /* { dg-do compile } */
-/* { dg-options "-Wall -Wextra -pedantic-errors -Wconversion" } */
+/* { dg-options "-std=gnu17 -Wall -Wextra -pedantic-errors -Wconversion" } */
 typedef enum OMX_ERRORTYPE
 {
   OMX_ErrorNone = 0,

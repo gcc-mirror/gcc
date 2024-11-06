@@ -3,7 +3,7 @@
    of old-style parameter declarations should only apply when the
    prototype is visible, not for a built-in prototype.  */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 float
 dremf(x, y) /* { dg-warning "conflicting types for built-in function 'dremf'" } */

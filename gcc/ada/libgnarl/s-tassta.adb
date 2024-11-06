@@ -584,7 +584,8 @@ package body System.Tasking.Stages is
       end if;
 
       Initialize_ATCB (Self_ID, State, Discriminants, P, Elaborated,
-        Base_Priority, Base_CPU, Domain, Task_Info, Stack_Size, T, Success);
+        Base_Priority, Base_CPU, CPU /= Unspecified_CPU, Domain, Task_Info,
+        Stack_Size, T, Success);
 
       if not Success then
          Free (T);

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1050,9 +1051,7 @@ io_result (stmtblock_t * block, tree var, gfc_st_label * err_label,
 static void
 set_error_locus (stmtblock_t * block, tree var, locus * where)
 {
-  gfc_file *f;
   tree str, locus_file;
-  int line;
   gfc_st_parameter_field *p = &st_parameter_field[IOPARM_common_filename];
 
   locus_file = fold_build3_loc (input_location, COMPONENT_REF,
@@ -1061,14 +1060,12 @@ set_error_locus (stmtblock_t * block, tree var, locus * where)
   locus_file = fold_build3_loc (input_location, COMPONENT_REF,
 				TREE_TYPE (p->field), locus_file,
 				p->field, NULL_TREE);
-  f = where->lb->file;
-  str = gfc_build_cstring_const (f->filename);
-
+  location_t loc = gfc_get_location (where);
+  str = gfc_build_cstring_const (LOCATION_FILE (loc));
   str = gfc_build_addr_expr (pchar_type_node, str);
   gfc_add_modify (block, locus_file, str);
 
-  line = LOCATION_LINE (where->lb->location);
-  set_parameter_const (block, var, IOPARM_common_line, line);
+  set_parameter_const (block, var, IOPARM_common_line, LOCATION_LINE (loc));
 }
 
 

@@ -29,9 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *
  *  if multiplication is guranteed exact (short coefficients)
  *     call the unpacked arg. equivalent of bid64_add(x*y, z)
- *  else 
+ *  else
  *     get full coefficient_x*coefficient_y product
- *     call subroutine to perform addition of 64-bit argument 
+ *     call subroutine to perform addition of 64-bit argument
  *                                         to 128-bit product
  *
  ****************************************************************************/
@@ -174,7 +174,7 @@ bid64_fma (UINT64 x, UINT64 y,
 	// test if z is Inf of oposite sign
 	if (((z & 0x7c00000000000000ull) == 0x7800000000000000ull)
 	    && (((x ^ y) ^ z) & 0x8000000000000000ull)) {
-	  // return NaN 
+	  // return NaN
 #ifdef SET_STATUS_FLAGS
 	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
@@ -228,7 +228,7 @@ bid64_fma (UINT64 x, UINT64 y,
 	BID_RETURN (((x ^ y) & 0x8000000000000000ull) |
 		    0x7800000000000000ull);
       }
-      // y is 0 
+      // y is 0
       if (((z & 0x7800000000000000ull) != 0x7800000000000000ull)) {
 
 	if (coefficient_z) {
@@ -288,7 +288,7 @@ bid64_fma (UINT64 x, UINT64 y,
   tempy.d = (double) coefficient_y;
   bin_expon_cy = ((tempy.i & MASK_BINARY_EXPONENT) >> 52);
 
-  // magnitude estimate for coefficient_x*coefficient_y is 
+  // magnitude estimate for coefficient_x*coefficient_y is
   //        2^(unbiased_bin_expon_cx + unbiased_bin_expon_cx)
   bin_expon_product = bin_expon_cx + bin_expon_cy;
 
@@ -498,8 +498,8 @@ bid64_fma (UINT64 x, UINT64 y,
 
     res =
       get_add64 (sign_x ^ sign_y,
-		 exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64, 
-		 sign_z, exponent_z, coefficient_z, 
+		 exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64,
+		 sign_z, exponent_z, coefficient_z,
 		 rnd_mode, pfpsf);
     BID_RETURN (res);
   }

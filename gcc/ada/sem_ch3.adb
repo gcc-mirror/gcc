@@ -47,6 +47,7 @@ with Ghost;          use Ghost;
 with Itypes;         use Itypes;
 with Layout;         use Layout;
 with Lib;            use Lib;
+with Lib.Writ;
 with Lib.Xref;       use Lib.Xref;
 with Mutably_Tagged;    use Mutably_Tagged;
 with Namet;          use Namet;
@@ -82,7 +83,9 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
+with Sinput.L;
 with Snames;         use Snames;
+with Stringt;
 with Strub;          use Strub;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
@@ -101,11 +104,6 @@ package body Sem_Ch3 is
    --  Ada 2005 (AI-251): Add the tag components corresponding to all the
    --  abstract interface types implemented by a record type or a derived
    --  record type.
-
-   procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id);
-   --  When an access-to-subprogram type has pre/postconditions, we build a
-   --  subprogram that includes these contracts and is invoked by an indirect
-   --  call through the corresponding access type.
 
    procedure Build_Derived_Type
      (N             : Node_Id;
@@ -3845,6 +3843,12 @@ package body Sem_Ch3 is
       --  E is set to Expression (N) throughout this routine. When Expression
       --  (N) is modified, E is changed accordingly.
 
+      procedure Apply_External_Initialization
+        (Specification : N_Aspect_Specification_Id);
+      --  Transform N with the effects of the External_Initialization aspect
+      --  specified by Specification. Note that Specification is removed from
+      --  N's list of aspects.
+
       procedure Check_Dynamic_Object (Typ : Entity_Id);
       --  A library-level object with nonstatic discriminant constraints may
       --  require dynamic allocation. The declaration is illegal if the
@@ -3880,6 +3884,86 @@ package body Sem_Ch3 is
       --  before the analysis of the object declaration is complete.
 
       --  Any other relevant delayed aspects on object declarations ???
+
+      -----------------------------------
+      -- Apply_External_Initialization --
+      -----------------------------------
+
+      procedure Apply_External_Initialization
+        (Specification : N_Aspect_Specification_Id)
+      is
+         Def : constant Node_Id := Expression (Specification);
+
+         Expr : N_Subexpr_Id;
+
+      begin
+         Remove (Specification);
+
+         Error_Msg_GNAT_Extension
+           ("External_Initialization aspect", Sloc (Specification));
+
+         if Present (E) then
+            Error_Msg_N
+              ("initialization expression not allowed for object with aspect "
+               & "External_Initialization", Specification);
+            return;
+         end if;
+
+         Set_Has_Init_Expression (N);
+         Set_Expression (N, Error);
+         E := Error;
+
+         if Nkind (Def) /= N_String_Literal then
+            Error_Msg_N
+              ("External_Initialization aspect expects a string literal value",
+               Specification);
+            return;
+         end if;
+
+         if not (Is_String_Type (T)
+           or else Is_RTE (Base_Type (T), RE_Stream_Element_Array))
+         then
+            Error_Msg_N
+              ("External_Initialization aspect can only be applied to objects "
+               & "of string types or type Ada.Streams.Stream_Element_Array",
+               Specification);
+            return;
+         end if;
+
+         begin
+            declare
+               Name : constant Valid_Name_Id :=
+                 Stringt.String_To_Name (Strval (Def));
+
+               Source_File_I : constant Source_File_Index :=
+                 Sinput.L.Load_Source_File (File_Name_Type (Name));
+            begin
+               if Source_File_I <= No_Source_File then
+                  Error_Msg_N ("cannot find input file", Specification);
+                  return;
+               end if;
+
+               Lib.Writ.Add_Preprocessing_Dependency (Source_File_I);
+
+               Expr :=
+                 Make_External_Initializer
+                   (Sloc (Specification), Source_File_I);
+            end;
+         exception
+            when Constraint_Error =>
+               --  The most likely cause for a constraint error is a file
+               --  whose size does not fit into Integer. We could modify
+               --  Load_Source_File to report that error with a special
+               --  exception???
+               Error_Msg_N
+                 ("External_Initialization file exceeds maximum length",
+                  Specification);
+               return;
+         end;
+
+         Set_Expression (N, Expr);
+         E := Expr;
+      end Apply_External_Initialization;
 
       --------------------------
       -- Check_Dynamic_Object --
@@ -4393,6 +4477,15 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      declare
+         S : constant Opt_N_Aspect_Specification_Id :=
+           Find_Aspect (Id, Aspect_External_Initialization);
+      begin
+         if Present (S) then
+            Apply_External_Initialization (S);
+         end if;
+      end;
+
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute and carry
       --  out some static checks.
 
@@ -4891,12 +4984,10 @@ package body Sem_Ch3 is
                end if;
             end if;
 
-         --  Case of initialization present but in error. Set initial
-         --  expression as absent (but do not make above complaints).
+         --  Case of initialization present but in error
 
          elsif E = Error then
-            Set_Expression (N, Empty);
-            E := Empty;
+            null;
 
          --  Case of initialization present
 
@@ -6901,19 +6992,78 @@ package body Sem_Ch3 is
    -------------------------------------
 
    procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (Decl);
       Id       : constant Entity_Id  := Defining_Identifier (Decl);
+      Loc      : constant Source_Ptr := Sloc (Decl);
+      Subp     : constant Entity_Id  := Make_Temporary (Loc, 'A');
       Type_Def : constant Node_Id    := Type_Definition (Decl);
-      Specs   :  constant List_Id    :=
-                              Parameter_Specifications (Type_Def);
-      Profile : constant List_Id     := New_List;
-      Subp    : constant Entity_Id   := Make_Temporary (Loc, 'A');
+      Specs    : constant List_Id    := Parameter_Specifications (Type_Def);
 
-      Contracts : constant List_Id := New_List;
-      Form_P    : Node_Id;
-      New_P     : Node_Id;
-      New_Decl  : Node_Id;
-      Spec      : Node_Id;
+      function Build_Access_Subprogram_Wrapper_Declaration return Node_Id;
+      --  Build the declaration and the specification of the wrapper
+
+      -------------------------------------------------
+      -- Build_Access_Subprogram_Wrapper_Declaration --
+      -------------------------------------------------
+
+      function Build_Access_Subprogram_Wrapper_Declaration return Node_Id is
+         Form_P   : Node_Id;
+         New_Decl : Node_Id;
+         New_P    : Node_Id;
+         Profile  : constant List_Id := New_List;
+         Spec     : Node_Id;
+
+      begin
+         Form_P := First (Specs);
+
+         while Present (Form_P) loop
+            New_P := New_Copy_Tree (Form_P);
+            Set_Defining_Identifier (New_P,
+              Make_Defining_Identifier
+               (Loc, Chars (Defining_Identifier (Form_P))));
+            Append (New_P, Profile);
+            Next (Form_P);
+         end loop;
+
+         --  Add to parameter specifications the access parameter that is
+         --  passed in from an indirect call.
+
+         Append (
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier => Make_Temporary (Loc, 'P'),
+              Parameter_Type      => New_Occurrence_Of (Id, Loc)),
+            Profile);
+
+         if Nkind (Type_Def) = N_Access_Procedure_Definition then
+            Spec :=
+              Make_Procedure_Specification (Loc,
+                Defining_Unit_Name       => Subp,
+                Parameter_Specifications => Profile);
+            Mutate_Ekind (Subp, E_Procedure);
+         else
+            Spec :=
+              Make_Function_Specification (Loc,
+                Defining_Unit_Name       => Subp,
+                Parameter_Specifications => Profile,
+                Result_Definition        =>
+                  New_Copy_Tree (Result_Definition (Type_Def)));
+            Mutate_Ekind (Subp, E_Function);
+         end if;
+
+         New_Decl :=
+           Make_Subprogram_Declaration (Loc, Specification => Spec);
+
+         Set_Is_Wrapper (Subp);
+
+         --  The wrapper is declared in the freezing actions to facilitate its
+         --  identification and thus avoid handling it as a primitive operation
+         --  of a tagged type (see Is_Access_To_Subprogram_Wrapper); otherwise
+         --  it may be handled as a dispatching operation and erroneously
+         --  registered in a dispatch table.
+
+         Append_Freeze_Action (Id, New_Decl);
+
+         return New_Decl;
+      end Build_Access_Subprogram_Wrapper_Declaration;
 
       procedure Replace_Type_Name (Expr : Node_Id);
       --  In the expressions for contract aspects, replace occurrences of the
@@ -6945,6 +7095,17 @@ package body Sem_Ch3 is
          Traverse (Expr);
       end Replace_Type_Name;
 
+      --  Local variables
+
+      Has_Wrapper  : constant Boolean :=
+                       Present
+                         (Access_Subprogram_Wrapper (Designated_Type (Id)));
+      Contracts    : List_Id := No_List;
+      Wrapper_Decl : Node_Id;
+      Pragmas      : List_Id := No_List;
+
+   --  Start of processing for Build_Access_Subprogram_Wrapper
+
    begin
       if Ekind (Id) in E_Access_Subprogram_Type
                      | E_Access_Protected_Subprogram_Type
@@ -6959,80 +7120,111 @@ package body Sem_Ch3 is
          return;
       end if;
 
-      declare
-         Asp  : Node_Id;
-         A_Id : Aspect_Id;
+      --  Current state: We are processing the full-type declaration of
+      --  this access-to-subprogram type. Collect its pre/postconditions
+      --  and replace occurrences of the access type with the name of the
+      --  subprogram entity.
 
-      begin
-         Asp := First (Aspect_Specifications (Decl));
-         while Present (Asp) loop
-            A_Id := Get_Aspect_Id (Chars (Identifier (Asp)));
-            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
-               Append (New_Copy_Tree (Asp), Contracts);
-               Replace_Type_Name (Expression (Last (Contracts)));
-            end if;
-            Next (Asp);
-         end loop;
-      end;
+      if not Is_Frozen (Id) then
+         if Present (Aspect_Specifications (Decl)) then
+            declare
+               Asp          : Node_Id;
+               A_Id         : Aspect_Id;
+               New_Contract : Node_Id;
 
-      --  If there are no contract aspects, no need for a wrapper.
+            begin
+               Asp := First (Aspect_Specifications (Decl));
+               while Present (Asp) loop
+                  A_Id := Get_Aspect_Id (Chars (Identifier (Asp)));
 
-      if Is_Empty_List (Contracts) then
-         return;
-      end if;
+                  if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+                     New_Contract := New_Copy_Tree (Asp);
+                     Append_New (New_Contract, Contracts);
+                     Replace_Type_Name (Expression (New_Contract));
+                  end if;
 
-      Form_P := First (Specs);
+                  Next (Asp);
+               end loop;
+            end;
+         end if;
 
-      while Present (Form_P) loop
-         New_P := New_Copy_Tree (Form_P);
-         Set_Defining_Identifier (New_P,
-           Make_Defining_Identifier
-            (Loc, Chars (Defining_Identifier (Form_P))));
-         Append (New_P, Profile);
-         Next (Form_P);
-      end loop;
+         --  No wrapper is needed if there are no contract aspects
 
-      --  Add to parameter specifications the access parameter that is passed
-      --  in from an indirect call.
+         if Is_Empty_List (Contracts) then
+            return;
+         end if;
 
-      Append (
-         Make_Parameter_Specification (Loc,
-           Defining_Identifier => Make_Temporary (Loc, 'P'),
-           Parameter_Type      => New_Occurrence_Of (Id, Loc)),
-         Profile);
+         --  Build the wrapper declaration, propagate the aspects, and link
+         --  the wrapper with its access-type declaration.
 
-      if Nkind (Type_Def) = N_Access_Procedure_Definition then
-         Spec :=
-           Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       => Subp,
-             Parameter_Specifications => Profile);
-         Mutate_Ekind (Subp, E_Procedure);
+         Wrapper_Decl := Build_Access_Subprogram_Wrapper_Declaration;
+         Set_Aspect_Specifications (Wrapper_Decl, Contracts);
+         Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+
+         --  Build the body of this wrapper
+
+         Build_Access_Subprogram_Wrapper_Body (Decl, Wrapper_Decl);
+
+      --  Current status: We are freezing the access-to-subprogram type entity.
+      --  Collect its pragmas pre/postconditions that come from the sources,
+      --  and replace occurrences of the access type with the name of the
+      --  subprogram entity.
+
       else
-         Spec :=
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name       => Subp,
-             Parameter_Specifications => Profile,
-             Result_Definition        =>
-               New_Copy_Tree
-                 (Result_Definition (Type_Definition (Decl))));
-         Mutate_Ekind (Subp, E_Function);
+         if Present (Contract (Designated_Type (Id))) then
+            declare
+               Prag       : Node_Id;
+               New_Pragma : Node_Id;
+
+            begin
+               Prag := Pre_Post_Conditions (Contract (Designated_Type (Id)));
+
+               while Present (Prag) loop
+                  if Comes_From_Source (Prag) then
+                     New_Pragma := New_Copy_Tree (Prag);
+                     Append_New (New_Pragma, Pragmas);
+                     Replace_Type_Name
+                       (First (Pragma_Argument_Associations (New_Pragma)));
+
+                     --  Force reanalyzing the copy since it will be applied to
+                     --  the wrapper.
+
+                     Set_Analyzed (New_Pragma, False);
+                  end if;
+
+                  Prag := Next_Pragma (Prag);
+               end loop;
+            end;
+
+            --  No wrapper is needed if there are no pre/postcondition pragmas
+
+            if Is_Empty_List (Pragmas) then
+               return;
+            end if;
+
+            --  Build the wrapper, if not previously done, and propagate the
+            --  pragmas to the wrapper spec. The access-to-subprogram type
+            --  declaration might have a precondition aspect and a
+            --  postcondition pragma, or vice versa. In such cases,
+            --  Build_Access_Subprogram_Wrapper is called twice: (1) when
+            --  processing the full-type declaration (building the wrapper
+            --  with the aspect), and (2) when freezing the type (adding the
+            --  pragmas after the spec of the wrapper).
+
+            if not Has_Wrapper then
+               Wrapper_Decl := Build_Access_Subprogram_Wrapper_Declaration;
+               Insert_List_After (Wrapper_Decl, Pragmas);
+
+               Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
+               Build_Access_Subprogram_Wrapper_Body (Decl, Wrapper_Decl);
+            else
+               Wrapper_Decl :=
+                 Parent
+                   (Parent (Access_Subprogram_Wrapper (Designated_Type (Id))));
+               Insert_List_After (Wrapper_Decl, Pragmas);
+            end if;
+         end if;
       end if;
-
-      New_Decl :=
-        Make_Subprogram_Declaration (Loc, Specification => Spec);
-      Set_Aspect_Specifications (New_Decl, Contracts);
-      Set_Is_Wrapper (Subp);
-
-      --  The wrapper is declared in the freezing actions to facilitate its
-      --  identification and thus avoid handling it as a primitive operation
-      --  of a tagged type (see Is_Access_To_Subprogram_Wrapper); otherwise it
-      --  may be handled as a dispatching operation and erroneously registered
-      --  in a dispatch table.
-
-      Append_Freeze_Action (Id, New_Decl);
-
-      Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
-      Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
    end Build_Access_Subprogram_Wrapper;
 
    -------------------------------
@@ -17863,8 +18055,8 @@ package body Sem_Ch3 is
                   --  to the backend since we don't know the true size of
                   --  anything at this point.
 
-                  Insert_After_And_Analyze (N,
-                    Make_CW_Size_Compile_Check (T, Root_Class_Typ));
+                  Append_Freeze_Actions (T,
+                    New_List (Make_CW_Size_Compile_Check (T, Root_Class_Typ)));
                end if;
             end if;
          end;
@@ -22977,6 +23169,23 @@ package body Sem_Ch3 is
 
          if Present (Variant_Part (Component_List (Def))) then
             Analyze (Variant_Part (Component_List (Def)));
+         end if;
+
+         --  For tagged types, when compiling in Generate_Code mode, the _Tag
+         --  component is added before the creation of the class-wide entity
+         --  and it is shared by that entity once it is built.
+
+         --  However, when compiling in Check_Syntax or Check_Semantics modes,
+         --  since the _Tag component is not added to the tagged type entity,
+         --  the First_Entity of its class-wide type remains empty, and must
+         --  be explicitly set to prevent spurious errors from being reported.
+
+         if Operating_Mode <= Check_Semantics
+           and then Is_Tagged_Type (T)
+           and then Present (First_Entity (T))
+           and then No (First_Entity (Class_Wide_Type (T)))
+         then
+            Set_First_Entity (Class_Wide_Type (T), First_Entity (T));
          end if;
       end if;
 

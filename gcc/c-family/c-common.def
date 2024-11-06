@@ -58,28 +58,31 @@ DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 DEFTREECODE (PAREN_SIZEOF_EXPR, "paren_sizeof_expr", tcc_expression, 1)
 
 /* Used to represent a `for' statement. The operands are
-   FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, and FOR_SCOPE,
+   FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, FOR_SCOPE, and FOR_NAME
    respectively.  */
-DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 5)
+DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 6)
 
-/* Used to represent a 'while' statement. The operands are WHILE_COND
-   and WHILE_BODY, respectively.  */
-DEFTREECODE (WHILE_STMT, "while_stmt", tcc_statement, 2)
+/* Used to represent a 'while' statement. The operands are WHILE_COND,
+   WHILE_BODY, and WHILE_NAME, respectively.  */
+DEFTREECODE (WHILE_STMT, "while_stmt", tcc_statement, 3)
 
-/* Used to represent a 'do' statement. The operands are DO_COND and
-   DO_BODY, respectively.  */
-DEFTREECODE (DO_STMT, "do_stmt", tcc_statement, 2)
+/* Used to represent a 'do' statement. The operands are DO_COND, DO_BODY,
+   and DO_NAME, respectively.  */
+DEFTREECODE (DO_STMT, "do_stmt", tcc_statement, 3)
 
-/* Used to represent a 'break' statement.  */
-DEFTREECODE (BREAK_STMT, "break_stmt", tcc_statement, 0)
+/* Used to represent a 'break' statement.  The operand BREAK_NAME is
+   the {FOR,WHILE,DO,SWITCH}_NAME to which it applies.  NULL_TREE means
+   innermost.  */
+DEFTREECODE (BREAK_STMT, "break_stmt", tcc_statement, 1)
 
-/* Used to represent a 'continue' statement.  */
-DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_statement, 0)
+/* Used to represent a 'continue' statement.  The operand CONTINUE_NAME is
+   the {FOR,WHILE,DO}_STMT to which it applies.  NULL_TREE means innermost.  */
+DEFTREECODE (CONTINUE_STMT, "continue_stmt", tcc_statement, 1)
 
 /* Used to represent a 'switch' statement. The operands are
-   SWITCH_STMT_COND, SWITCH_STMT_BODY, SWITCH_STMT_TYPE, and
-   SWITCH_STMT_SCOPE, respectively.  */
-DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_statement, 4)
+   SWITCH_STMT_COND, SWITCH_STMT_BODY, SWITCH_STMT_TYPE, SWITCH_STMT_SCOPE,
+   and SWITCH_STMT_NAME, respectively.  */
+DEFTREECODE (SWITCH_STMT, "switch_stmt", tcc_statement, 5)
 
 /* Extensions for C++ Concepts. */
 

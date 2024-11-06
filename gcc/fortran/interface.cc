@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
    formal argument list points to symbols within the same namespace as
    the program unit name.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -3336,6 +3337,16 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  ok = false;
 	  goto match;
 	}
+
+      if (warn_surprising
+	  && a->expr->expr_type == EXPR_VARIABLE
+	  && a->expr->symtree->n.sym->as
+	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SIZE
+	  && f->sym->as
+	  && f->sym->as->type == AS_ASSUMED_RANK)
+	gfc_warning (0, "The assumed-size dummy %qs is being passed at %L to "
+		     "an assumed-rank dummy %qs", a->expr->symtree->name,
+		     &a->expr->where, f->sym->name);
 
       if (a->expr->expr_type == EXPR_NULL
 	  && a->expr->ts.type == BT_UNKNOWN

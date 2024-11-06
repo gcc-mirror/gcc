@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
    keep switch tables in the text section.  */
-   
+
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Use the default action for outputting the case label.  */

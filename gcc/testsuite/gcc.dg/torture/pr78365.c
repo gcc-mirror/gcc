@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-Wno-old-style-definition" } */
 
 int a, b, c;
 char d;

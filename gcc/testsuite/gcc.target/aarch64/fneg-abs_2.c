@@ -9,7 +9,7 @@
 
 /*
 ** f1:
-**	orr	v[0-9]+.2s, #?128, lsl #?24
+**	orr	v[0-9]+.4s, #?128, lsl #?24
 **	ret
 */
 float32_t f1 (float32_t a)

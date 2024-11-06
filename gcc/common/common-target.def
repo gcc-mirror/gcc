@@ -130,7 +130,7 @@ computed relative to GCC's internal directories, false (default) if such\n\
 components should be preserved and directory names containing them passed\n\
 to other tools such as the linker.",
  bool, false)
- 
+
 HOOK_VECTOR_END (C90_EMPTY_HACK)
 
 #undef HOOK_PREFIX

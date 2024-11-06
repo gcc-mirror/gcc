@@ -32,7 +32,9 @@
 #ifndef _POD_CHAR_TRAITS_H
 #define _POD_CHAR_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
@@ -145,7 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static char_type*
       move(char_type* __s1, const char_type* __s2, size_t __n)
-      { 
+      {
 	if (__n == 0)
 	  return __s1;
 	return static_cast<char_type*>
@@ -181,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __c1 == __c2; }
 
       static int_type
-      eof() 
+      eof()
       {
 	int_type __r = { static_cast<typename __gnu_cxx::__conditional_type
 			 <std::__is_integer<int_type>::__value,

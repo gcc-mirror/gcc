@@ -37,9 +37,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include <string.h>
 #include <limits.h>
-#define _bnflex_H
 #define _bnflex_C
 
+#include "Gbnflex.h"
 #   include "GPushBackInput.h"
 #   include "GSymbolKey.h"
 #   include "GASCII.h"
@@ -51,8 +51,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GStdIO.h"
 
 #   define MaxNameLength 8192
-typedef enum {bnflex_identtok, bnflex_literaltok, bnflex_codetok, bnflex_lbecomestok, bnflex_rbecomestok, bnflex_bartok, bnflex_lsparatok, bnflex_rsparatok, bnflex_lcparatok, bnflex_rcparatok, bnflex_lparatok, bnflex_rparatok, bnflex_errortok, bnflex_tfunctok, bnflex_symfunctok, bnflex_squotetok, bnflex_dquotetok, bnflex_moduletok, bnflex_begintok, bnflex_rulestok, bnflex_endtok, bnflex_lesstok, bnflex_gretok, bnflex_tokentok, bnflex_specialtok, bnflex_firsttok, bnflex_followtok, bnflex_BNFtok, bnflex_FNBtok, bnflex_declarationtok, bnflex_epsilontok, bnflex_eoftok} bnflex_TokenType;
-
 static FIO_File f;
 static SymbolKey_SymbolTree ReservedWords;
 static NameKey_Name CurrentToken;

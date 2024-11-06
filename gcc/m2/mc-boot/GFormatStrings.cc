@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -89,7 +90,7 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf3 (DynamicStrings_String f
 extern "C" DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String fmt, const unsigned char *w1_, unsigned int _w1_high, const unsigned char *w2_, unsigned int _w2_high, const unsigned char *w3_, unsigned int _w3_high, const unsigned char *w4_, unsigned int _w4_high);
 
 /*
-   HandleEscape - translates \a, \b, \e, \f, 
+   HandleEscape - translates \a, \b, \e, \f,
 , \r, \x[hex] \[octal] into
                   their respective ascii codes.  It also converts \[any] into
                   a single [any] character.
@@ -719,7 +720,7 @@ extern "C" DynamicStrings_String FormatStrings_Sprintf4 (DynamicStrings_String f
 
 
 /*
-   HandleEscape - translates \a, \b, \e, \f, 
+   HandleEscape - translates \a, \b, \e, \f,
 , \r, \x[hex] \[octal] into
                   their respective ascii codes.  It also converts \[any] into
                   a single [any] character.

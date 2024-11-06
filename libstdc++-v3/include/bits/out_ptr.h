@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_OUT_PTR_H
 #define _GLIBCXX_OUT_PTR_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/version.h>
 

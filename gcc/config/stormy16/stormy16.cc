@@ -150,7 +150,7 @@ xstormy16_rtx_costs (rtx x, machine_mode mode,
         *total = COSTS_N_INSNS (speed_p ? 18 + 5 : 6);
       else if (mode == SImode)
 	*total = COSTS_N_INSNS (speed_p ? 3 * 18 + 14 : 17);
-      else 
+      else
         *total = COSTS_N_INSNS (speed_p ? 18 + 3 : 4);
       return false;
 

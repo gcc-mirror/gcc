@@ -1,4 +1,5 @@
 // { dg-do link { target c++11 } }
+// { dg-require-effective-target lto }
 // { dg-options "-O2 -flto -fdump-rtl-loop2_unroll" }
 // { dg-skip-if "requires hosted libstdc++ for cstdlib rand" { ! hostedlib } }
 
@@ -24,6 +25,7 @@ short *use_find(short *p)
 int main(void)
 {
   short a[1024];
+#pragma GCC unroll 0
   for (int i = 0; i < 1024; i++)
     a[i] = rand ();
 

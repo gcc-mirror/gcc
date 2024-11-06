@@ -4,7 +4,7 @@
    later producing a VAR_DECL tree whose DECL_RTL's mode didn't match
    the VAR_DECL's type's mode.  */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-std=gnu17 -O2" } */
 
 typedef struct sim_state *SIM_DESC;
 typedef enum

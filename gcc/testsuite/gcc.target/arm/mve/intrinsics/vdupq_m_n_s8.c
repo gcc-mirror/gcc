@@ -42,6 +42,22 @@ foo1 (int8x16_t inactive, int8_t a, mve_pred16_t p)
   return vdupq_m (inactive, a, p);
 }
 
+/*
+**foo2:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vdupt.8	q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
+int8x16_t
+foo2 (int8x16_t inactive, mve_pred16_t p)
+{
+  return vdupq_m (inactive, 1, p);
+}
+
 #ifdef __cplusplus
 }
 #endif

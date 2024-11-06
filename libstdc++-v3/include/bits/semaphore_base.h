@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_SEMAPHORE_BASE_H
 #define _GLIBCXX_SEMAPHORE_BASE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/atomic_base.h>
 #include <bits/chrono.h>
@@ -43,6 +45,9 @@
 # include <cerrno>	// errno, EINTR, EAGAIN etc.
 # include <limits.h>	// SEM_VALUE_MAX
 # include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
+#elif defined(_GLIBCXX_USE_POSIX_SEMAPHORE)
+# warning "POSIX semaphore not available, ignoring _GLIBCXX_USE_POSIX_SEMAPHORE"
+# undef _GLIBCXX_USE_POSIX_SEMAPHORE
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

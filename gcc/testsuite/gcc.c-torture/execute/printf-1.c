@@ -1,4 +1,5 @@
 /* { dg-skip-if "requires io" { freestanding } }  */
+/* { dg-xfail-run-if {unexpected PTX 'vprintf' return value} { nvptx-*-* } } */
 
 #include <stdio.h>
 #include <stdlib.h>

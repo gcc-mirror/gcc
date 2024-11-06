@@ -689,10 +689,6 @@ void gfc_finish_decl_attrs (tree, symbol_attribute *);
 /* Allocate the lang-specific part of a decl node.  */
 void gfc_allocate_lang_decl (tree);
 
-/* Get the location suitable for the ME from a gfortran locus; required to get
-   the column number right.  */
-location_t gfc_get_location (locus *);
-
 /* Advance along a TREE_CHAIN.  */
 tree gfc_advance_chain (tree, int);
 
@@ -724,10 +720,7 @@ struct GTY((for_user)) module_htab_entry {
 struct module_htab_entry *gfc_find_module (const char *);
 void gfc_module_add_decl (struct module_htab_entry *, tree);
 
-/* Get and set the current location.  */
-void gfc_save_backend_locus (locus *);
-void gfc_set_backend_locus (locus *);
-void gfc_restore_backend_locus (locus *);
+void gfc_locus_from_location (locus *, location_t);
 
 /* Handle static constructor functions.  */
 extern GTY(()) tree gfc_static_ctors;

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -407,7 +408,7 @@ objc_init (void)
     default:
         objc_default_ivar_visibility = OBJC_IVAR_VIS_PROTECTED;
     }
-      
+
   /* Generate general types and push runtime-specific decls to file scope.  */
   synth_module_prologue ();
 
@@ -3945,7 +3946,7 @@ static GTY(()) objc_map_t interface_map;
 static void
 interface_hash_init (void)
 {
-  interface_map = objc_map_alloc_ggc (200);  
+  interface_map = objc_map_alloc_ggc (200);
 }
 
 static tree
@@ -5244,7 +5245,7 @@ check_duplicates (tree method, int methods, int is_class)
   /* We have two or more methods with the same name but different
      types.  */
   first_method = TREE_VEC_ELT (method, 0);
-  
+
   /* But just how different are those types?  If
      -Wno-strict-selector-match is specified, we shall not complain if
      the differences are solely among types with identical size and
@@ -5254,15 +5255,15 @@ check_duplicates (tree method, int methods, int is_class)
       for (i = 0; i < (size_t) TREE_VEC_LENGTH (method); i++)
 	if (!comp_proto_with_proto (first_method, TREE_VEC_ELT (method, i), 0))
 	  goto issue_warning;
-      
+
       return first_method;
     }
-    
+
  issue_warning:
   if (methods)
     {
       bool type = TREE_CODE (first_method) == INSTANCE_METHOD_DECL;
-      
+
       warning_at (input_location, 0,
 		  "multiple methods named %<%c%E%> found",
 		  (is_class ? '+' : '-'),
@@ -5274,7 +5275,7 @@ check_duplicates (tree method, int methods, int is_class)
   else
     {
       bool type = TREE_CODE (first_method) == INSTANCE_METHOD_DECL;
-      
+
       warning_at (input_location, 0,
 		  "multiple selectors named %<%c%E%> found",
 		  (is_class ? '+' : '-'),
@@ -5283,11 +5284,11 @@ check_duplicates (tree method, int methods, int is_class)
 	      (type ? '-' : '+'),
 	      identifier_to_locale (gen_method_decl (first_method)));
     }
-  
+
   for (i = 0; i < (size_t) TREE_VEC_LENGTH (method); i++)
     {
       bool type = TREE_CODE (TREE_VEC_ELT (method, i)) == INSTANCE_METHOD_DECL;
-      
+
       inform (DECL_SOURCE_LOCATION (TREE_VEC_ELT (method, i)), "also found %<%c%s%>",
 	      (type ? '-' : '+'),
 	      identifier_to_locale (gen_method_decl (TREE_VEC_ELT (method, i))));
@@ -5475,7 +5476,7 @@ lookup_method_in_hash_lists (tree sel_name, int is_class)
 
   if (!is_class)
     method_prototype = objc_map_get (instance_method_map, sel_name);
-  
+
   if (method_prototype == OBJC_MAP_NOT_FOUND)
     {
       method_prototype = objc_map_get (class_method_map, sel_name);
@@ -5603,7 +5604,7 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
       /* We set class_tree to the identifier for 'Class' if this is a
 	 class method, and to NULL_TREE if not.  */
       class_tree = (IS_CLASS (rtype) ? objc_class_name : NULL_TREE);
-      
+
       /* 'rprotos' is the list of protocols that the receiver
 	 supports.  */
       rprotos = (TYPE_HAS_OBJC_INFO (TREE_TYPE (rtype))
@@ -5675,11 +5676,11 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params,
 		 there are protocols attached to the type, we can
 		 still look up the method in the protocols.  Ie, we
 		 are in the following case:
-	     
+
 		 @class MyClass;
 		 MyClass<MyProtocol> *x;
 		 [x method];
-		 
+
 		 If 'MyProtocol' has the method 'method', we can check
 		 and retrieve the method prototype.  */
 	      method_prototype
@@ -5984,7 +5985,7 @@ insert_method_into_method_map (bool class_method, tree method)
   else
     {
       tree new_entry;
-      
+
       /* If an entry already exists, it's more complicated.  We'll
 	 have to check whether the method prototype is the same or
 	 not.  */
@@ -5998,7 +5999,7 @@ insert_method_into_method_map (bool class_method, tree method)
 	  /* If not, create a vector to store both the method already
 	     in the map, and the new one that we are adding.  */
 	  new_entry = make_tree_vec (2);
-	  
+
 	  TREE_VEC_ELT (new_entry, 0) = existing_entry;
 	  TREE_VEC_ELT (new_entry, 1) = method;
 	}
@@ -6023,11 +6024,11 @@ insert_method_into_method_map (bool class_method, tree method)
 	     prototype, and very few, if any, will have more than
 	     2!  */
 	  new_entry = make_tree_vec (TREE_VEC_LENGTH (existing_entry) + 1);
-	  
+
 	  /* Copy the methods from the existing vector.  */
 	  for (i = 0; i < (size_t) TREE_VEC_LENGTH (existing_entry); i++)
 	    TREE_VEC_ELT (new_entry, i) = TREE_VEC_ELT (existing_entry, i);
-	  
+
 	  /* Add the new method at the end.  */
 	  TREE_VEC_ELT (new_entry, i) = method;
 	}
@@ -9625,7 +9626,7 @@ objc_lookup_ivar (tree other, tree id)
           warning (warn_shadow_ivar ? OPT_Wshadow_ivar : OPT_Wshadow,
                    "local declaration of %qE hides instance variable", id);
       }
-        
+
       return other;
     }
 

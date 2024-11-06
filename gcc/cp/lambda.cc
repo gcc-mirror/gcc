@@ -21,6 +21,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -216,7 +217,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
   else if (explicit_init_p)
     {
       tree auto_node = make_auto ();
-      
+
       type = auto_node;
       if (by_reference_p)
 	/* Add the reference now, so deduction doesn't lose
@@ -556,7 +557,8 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 				     integer_zero_node, tf_warning_or_error);
       initializer = build_constructor_va (init_list_type_node, 2,
 					  NULL_TREE, build_address (elt),
-					  NULL_TREE, array_type_nelts (type));
+					  NULL_TREE,
+					  array_type_nelts_minus_one (type));
       type = vla_capture_type (type);
     }
   else if (!dependent_type_p (type)
@@ -1562,7 +1564,7 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
   // synthetic ones.
   int len_a = TREE_VEC_LENGTH (inner_a);
   int len_b = TREE_VEC_LENGTH (inner_b);
-  
+
   for (int ix = 0, len = MAX (len_a, len_b); ix != len; ix++)
     {
       tree parm_a = NULL_TREE;
@@ -1577,7 +1579,7 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
 	  if (DECL_VIRTUAL_P (parm_a))
 	    parm_a = NULL_TREE;
 	}
-      
+
       tree parm_b = NULL_TREE;
       if (ix < len_b)
 	{
@@ -1610,7 +1612,7 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
 	  if (!same_type_p (TREE_TYPE (parm_a), TREE_TYPE (parm_b)))
 	    return false;
 	}
-      else 
+      else
 	{
 	  if (TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm_a))
 	      != TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm_b)))

@@ -751,6 +751,11 @@ remove_useless_values (void)
       }
   *p = &dummy_val;
 
+  if (cselib_preserve_constants)
+    cselib_preserved_hash_table->traverse <void *,
+					   discard_useless_locs> (NULL);
+  gcc_assert (!values_became_useless);
+
   n_useless_values += n_useless_debug_values;
   n_debug_values -= n_useless_debug_values;
   n_useless_debug_values = 0;

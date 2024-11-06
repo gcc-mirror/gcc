@@ -416,7 +416,7 @@ remove_pseudos (rtx *loc, rtx_insn *insn)
   const char *fmt;
   enum rtx_code code;
   bool res = false;
-  
+
   if (*loc == NULL_RTX)
     return res;
   code = GET_CODE (*loc);
@@ -507,7 +507,7 @@ spill_pseudos (void)
       FOR_BB_INSNS_SAFE (bb, insn, curr)
 	{
 	  bool removed_pseudo_p = false;
-	  
+
 	  if (bitmap_bit_p (changed_insns, INSN_UID (insn)))
 	    {
 	      rtx *link_loc, link;
@@ -768,7 +768,7 @@ lra_final_code_change (void)
 	      delete_insn (insn);
 	      continue;
 	    }
-	
+
 	  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
 	  struct lra_insn_reg *reg;
 
@@ -776,7 +776,7 @@ lra_final_code_change (void)
 	    if (reg->regno >= FIRST_PSEUDO_REGISTER
 		&& lra_reg_info [reg->regno].nrefs == 0)
 	      break;
-	  
+
 	  if (reg != NULL)
 	    {
 	      /* Pseudos still can be in debug insns in some very rare
@@ -793,7 +793,7 @@ lra_final_code_change (void)
 	      delete_insn (insn);
 	      continue;
 	    }
-	  
+
 	  struct lra_static_insn_data *static_id = id->insn_static_data;
 	  bool insn_change_p = false;
 

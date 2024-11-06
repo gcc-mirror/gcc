@@ -3,7 +3,7 @@
    PR middle-end/89911 - ICE on a call with no arguments to strnlen
    declared with no prototype
    { dg-do compile }
-   { dg-options "-O2 -fpermissive -Wall" } */
+   { dg-options "-std=gnu17 -O2 -fpermissive -Wall" } */
 
 typedef __SIZE_TYPE__ size_t;
 

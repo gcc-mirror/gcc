@@ -417,10 +417,10 @@ package body Exp_Disp is
                Build_Dispatch_Tables (Declarations (D));
 
             elsif Nkind (D) = N_Package_Body_Stub
-              and then Present (Library_Unit (D))
+              and then Present (Stub_Subunit (D))
             then
                Build_Dispatch_Tables
-                 (Declarations (Proper_Body (Unit (Library_Unit (D)))));
+                 (Declarations (Proper_Body (Unit (Stub_Subunit (D)))));
 
             --  Handle full type declarations and derivations of library level
             --  tagged types

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive -Wall" } */
+/* { dg-options "-std=gnu17 -fpermissive -Wall" } */
 /* Validate expected warnings and errors.  */
 
 #define U	__attribute__((unused))

@@ -4,73 +4,73 @@
 //  Integer imaginary...
 
 constexpr unsigned long long
-operator"" i(unsigned long long n)
+operator ""i(unsigned long long n)
 { return 4 * n + 0; }
 
 constexpr unsigned long long
-operator"" I(unsigned long long n)
+operator ""I(unsigned long long n)
 { return 4 * n + 1; }
 
 constexpr unsigned long long
-operator"" j(unsigned long long n)
+operator ""j(unsigned long long n)
 { return 4 * n + 2; }
 
 constexpr unsigned long long
-operator"" J(unsigned long long n)
+operator ""J(unsigned long long n)
 { return 4 * n + 3; }
 
 //  Floating-point imaginary...
 
 constexpr long double
-operator"" i(long double n)
+operator ""i(long double n)
 { return 4.0L * n + 0.0L; }
 
 constexpr long double
-operator"" I(long double n)
+operator ""I(long double n)
 { return 4.0L * n + 1.0L; }
 
 constexpr long double
-operator"" j(long double n)
+operator ""j(long double n)
 { return 4.0L * n + 2.0L; }
 
 constexpr long double
-operator"" J(long double n)
+operator ""J(long double n)
 { return 4.0L * n + 3.0L; }
 
 //  Fixed-point...
 
 constexpr long double
-operator"" k(long double n)
+operator ""k(long double n)
 { return 4 * (n + 1) + 0; }
 
 constexpr long double
-operator"" K(long double n)
+operator ""K(long double n)
 { return 4 * (n + 1) + 1; }
 
 constexpr long double
-operator"" r(long double n)
+operator ""r(long double n)
 { return 4 * (n + 1) + 2; }
 
 constexpr long double
-operator"" R(long double n)
+operator ""R(long double n)
 { return 4 * (n + 1) + 3; }
 
 //  Machine-defined...
 
 constexpr long double
-operator"" w(long double n)
+operator ""w(long double n)
 { return 4 * (n + 2) + 0; }
 
 constexpr long double
-operator"" W(long double n)
+operator ""W(long double n)
 { return 4 * (n + 2) + 1; }
 
 constexpr long double
-operator"" q(long double n)
+operator ""q(long double n)
 { return 4 * (n + 2) + 2; }
 
 constexpr long double
-operator"" Q(long double n)
+operator ""Q(long double n)
 { return 4 * (n + 2) + 3; }
 
 int

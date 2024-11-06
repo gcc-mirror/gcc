@@ -54,6 +54,8 @@ enum aarch64_type_qualifiers
   /* Lane indices selected in quadtuplets. - must be in range, and flipped for
      bigendian.  */
   qualifier_lane_quadtup_index = 0x1000,
+  /* Modal FP types.  */
+  qualifier_modal_float = 0x2000,
 };
 
 #define ENTRY(E, M, Q, G) E,

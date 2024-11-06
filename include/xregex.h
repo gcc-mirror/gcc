@@ -4,7 +4,7 @@
 #ifndef _XREGEX_H
 #define _XREGEX_H 1
 
-#  define regfree xregfree 
+#  define regfree xregfree
 #  define regexec xregexec
 #  define regcomp xregcomp
 #  define regerror xregerror

@@ -62,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Define because we use the label and we do not need them.  */
 #define NO_PROFILE_COUNTERS 1
- 
+
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
 do									\

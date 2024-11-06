@@ -42,7 +42,9 @@ typedef svuint64_t svuint64_ __attribute__((arm_sve_vector_bits(128)));
   TEST_TYPES_1 (uint64, u64)
 
 #define TEST_VALUES_S_1(B, OP1, OP2)					\
-  F (int##B, s##B, x, OP1, OP2)
+  F (int##B, s##B, x, OP1, OP2)						\
+  F (int##B, s##B, z, OP1, OP2)						\
+  F (int##B, s##B, m, OP1, OP2)
 
 #define TEST_VALUES_S							\
   TEST_VALUES_S_1 (32, INT32_MIN, INT32_MIN)				\
@@ -60,7 +62,11 @@ typedef svuint64_t svuint64_ __attribute__((arm_sve_vector_bits(128)));
   TEST_VALUES_S_1 (32, INT32_MAX, -5)					\
   TEST_VALUES_S_1 (64, INT64_MAX, -5)					\
   TEST_VALUES_S_1 (32, INT32_MIN, -4)					\
-  TEST_VALUES_S_1 (64, INT64_MIN, -4)
+  TEST_VALUES_S_1 (64, INT64_MIN, -4)					\
+  TEST_VALUES_S_1 (32, INT32_MAX, -1)					\
+  TEST_VALUES_S_1 (32, -7, -1)						\
+  TEST_VALUES_S_1 (64, INT64_MIN, -1)					\
+  TEST_VALUES_S_1 (64, 16, -1)
 
 #define TEST_VALUES_U_1(B, OP1, OP2)					\
   F (uint##B, u##B, x, OP1, OP2)

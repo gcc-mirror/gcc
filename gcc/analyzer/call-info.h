@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 namespace ana {
 
 /* Subclass of custom_edge_info for an outcome of a call.
-   This is still abstract; the update_model and get_desc vfuncs must be
+   This is still abstract; the update_model and print_desc vfuncs must be
    implemented.  */
 
 class call_info : public custom_edge_info
@@ -37,7 +37,7 @@ public:
   const gcall *get_call_stmt () const { return m_call_stmt; }
   tree get_fndecl () const { return m_fndecl; }
 
-  virtual label_text get_desc (bool can_colorize) const = 0;
+  virtual void print_desc (pretty_printer &pp) const = 0;
 
   call_details get_call_details (region_model *model,
 				 region_model_context *ctxt) const;
@@ -62,7 +62,7 @@ private:
 class succeed_or_fail_call_info : public call_info
 {
 public:
-  label_text get_desc (bool can_colorize) const final override;
+  void print_desc (pretty_printer &pp) const final override;
 
 protected:
   succeed_or_fail_call_info (const call_details &cd, bool success)

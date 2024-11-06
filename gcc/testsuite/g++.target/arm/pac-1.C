@@ -1,7 +1,8 @@
 /* Check that GCC does .save and .cfi_offset directives with RA_AUTH_CODE pseudo hard-register.  */
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main+mve+pacbti -mbranch-protection=pac-ret -mthumb -mfloat-abi=hard -g -O0" } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_pacbti_ok } */
+/* { dg-add-options arm_arch_v8_1m_main_pacbti } */
+/* { dg-additional-options "-mbranch-protection=pac-ret -mfloat-abi=hard -g -O0" } */
 
 __attribute__((noinline)) void
 fn1 (int a, int b, int c)

@@ -200,7 +200,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   int need_math = (MATH_LIBRARY[0] != '\0');
 
   /* Whether we should link a static libgfortran.  */
-  int static_lib = 0; 
+  int static_lib = 0;
 
   /* Whether we need to link statically.  */
   int static_linking = 0;

@@ -5,8 +5,8 @@
    { dg-do compile }
    { dg-options "-O2 -Wno-array-bounds" } */
 
-extern char a[8];                 // dg-message at offset \\\[3, 6] into destination object 'a'" "note 1" }
-                                  // dg-message at offset \\\[5, 8] into destination object 'a'" "note 2" { target *-*-* } .-1 }
+extern char a[8];                 // { dg-message "at offset \\\[3, 6] into destination object 'a'" "note 1" }
+                                  // { dg-message "at offset \\\[5, 8] into destination object 'a'" "note 2" { target *-*-* } .-1 }
 
 void test_2_notes (int i)
 {
@@ -15,9 +15,9 @@ void test_2_notes (int i)
 }
 
 
-extern char b[8];                 // dg-message at offset \\\[3, 6] into destination object 'b'" "note 1" }
-                                  // dg-message at offset \\\[4, 7] into destination object 'b'" "note 2" { target *-*-* } .-1 }
-                                  // dg-message at offset \\\[5, 8] into destination object 'b'" "note 3" { target *-*-* } .-2 }
+extern char b[8];                 // { dg-message "at offset \\\[3, 6] into destination object 'b'" "note 1" }
+                                  // { dg-message "at offset \\\[4, 7] into destination object 'b'" "note 2" { target *-*-* } .-1 }
+                                  // { dg-message "at offset \\\[5, 8] into destination object 'b'" "note 3" { target *-*-* } .-2 }
 
 void test_3_notes (int i)
 {
@@ -26,10 +26,10 @@ void test_3_notes (int i)
 }
 
 
-extern char c[8];                 // dg-message at offset \\\[3, 6] into destination object 'c'" "note 1" }
-                                  // dg-message at offset \\\[4, 7] into destination object 'c'" "note 2" { target *-*-* } .-1 }
-                                  // dg-message at offset \\\[5, 8] into destination object 'c'" "note 3" { target *-*-* } .-2 }
-                                  // dg-message at offset \\\[6, 8] into destination object 'c'" "note 3" { target *-*-* } .-2 }
+extern char c[8];                 // { dg-message "at offset \\\[3, 6] into destination object 'c'" "note 1" }
+                                  // { dg-message "at offset \\\[4, 7] into destination object 'c'" "note 2" { target *-*-* } .-1 }
+                                  // { dg-message "at offset \\\[5, 8] into destination object 'c'" "note 3" { target *-*-* } .-2 }
+                                  // { dg-message "at offset \\\[6, 8] into destination object 'c'" "note 4" { target *-*-* } .-3 }
 
 void test_4_notes (int i)
 {
@@ -47,11 +47,11 @@ void test_4_notes (int i)
 }
 
 
-extern char d[8];                 // dg-message at offset \\\[3, 6] into destination object 'd'" "note 1" }
-                                  // dg-message at offset \\\[4, 7] into destination object 'd'" "note 2" { target *-*-* } .-1 }
-                                  // dg-message at offset \\\[5, 8] into destination object 'd'" "note 3" { target *-*-* } .-2 }
-                                  // dg-message at offset \\\[6, 8] into destination object 'd'" "note 3" { target *-*-* } .-3 }
-                                  // dg-message at offset \\\[7, 8] into destination object 'd'" "note 3" { target *-*-* } .-4 }
+extern char d[8];                 // { dg-message "at offset \\\[3, 6] into destination object 'd'" "note 1" }
+                                  // { dg-message "at offset \\\[4, 7] into destination object 'd'" "note 2" { target *-*-* } .-1 }
+                                  // { dg-message "at offset \\\[5, 8] into destination object 'd'" "note 3" { target *-*-* } .-2 }
+                                  // { dg-message "at offset \\\[6, 8] into destination object 'd'" "note 4" { target *-*-* } .-3 }
+                                  // { dg-message "at offset \\\[7, 8] into destination object 'd'" "note 5" { target *-*-* } .-4 }
 
 void test_5_notes (int i)
 {

@@ -15,7 +15,7 @@ CONST_FN (4, double, 0);
 
 /*
 ** const_8_double_0:
-**	movi	v([0-9]+)\.2d, .*
+**	movi	v([0-9]+)\.\d+[bhsd], .*
 **	stp	q\1, q\1, \[x0\]
 **	stp	q\1, q\1, \[x0, #?32\]
 **	ret

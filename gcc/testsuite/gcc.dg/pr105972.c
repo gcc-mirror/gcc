@@ -1,6 +1,6 @@
 /* PR c/105972 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g" } */
+/* { dg-options "-Wno-old-style-definition -O2 -g" } */
 
 __attribute__((optimize (0))) int
 foo (void)

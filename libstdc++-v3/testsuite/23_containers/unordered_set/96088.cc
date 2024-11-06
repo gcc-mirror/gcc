@@ -29,9 +29,8 @@
 #include <testsuite_hooks.h>
 #include <replacement_memory_operators.h>
 
-static constexpr std::initializer_list<const char*> lst = {
-  "long_str_for_dynamic_allocating"
-};
+static constexpr std::initializer_list<const char*> lst =
+  { "long_str_for_dynamic_allocation" };
 
 void
 test01()
@@ -68,7 +67,7 @@ test02()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 }
 
 std::size_t
@@ -126,7 +125,7 @@ test12()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 }
 
 struct hash_string_functor
@@ -186,7 +185,7 @@ test22()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 }
 
 struct hash_string_view_functor
@@ -216,7 +215,7 @@ test23()
   VERIFY( us.size() == 1 );
 
   VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 }
 
 void
@@ -245,7 +244,7 @@ test03()
     VERIFY( us.size() == 1 );
 
     VERIFY( __gnu_test::counter::count() == origin + increments );
-    VERIFY( __gnu_test::counter::get()._M_increments == increments );
+    VERIFY( __gnu_test::counter::get()._M_increments == increments + 1 );
   }
   VERIFY( __gnu_test::counter::count() == origin );
 

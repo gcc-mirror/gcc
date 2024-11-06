@@ -55720,7 +55720,7 @@ $as_echo "$gxx_include_dir" >&6; }
   # OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc
 
 
-  WARN_FLAGS="-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi=19 -Wsystem-headers"
+  WARN_FLAGS="-Wall -Wextra -Wwrite-strings -Wcast-qual -Wabi=19"
 
 
 

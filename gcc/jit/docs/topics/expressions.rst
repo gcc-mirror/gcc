@@ -727,6 +727,25 @@ Type-coercion
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitcast
 
+.. function:: gcc_jit_rvalue *
+              gcc_jit_context_convert_vector (gcc_jit_context *ctxt, \
+                                              gcc_jit_location *loc, \
+                                              gcc_jit_rvalue *vector, \
+                                              gcc_jit_type *type)
+
+   Given a vector rvalue, cast it to the type ``type``, doing an element-wise
+   conversion.
+
+   The number of elements in ``vector`` and ``type`` must match.
+   The ``type`` must be a vector type.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_30`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_convert_vector
+
 Lvalues
 -------
 
@@ -988,6 +1007,18 @@ Variables
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_ATTRIBUTES
+
+.. function:: void\
+              gcc_jit_global_set_readonly (gcc_jit_lvalue *global)
+
+   Set the global variable as read-only, meaning you cannot assign to this variable.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_29`; you can test for its
+   presence using:
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_global_set_readonly
 
 Working with pointers, structs and unions
 -----------------------------------------

@@ -66,6 +66,7 @@ FROM M2Reserved IMPORT tokToTok, toktype,
 
 FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     PushTtok, PushTFtok, PopTtok, PopTFtok, OperandTok,
+                    DupFrame, Top,
                     BuildModuleStart,
                     StartBuildDefFile, StartBuildModFile,
                     EndBuildFile,
@@ -152,6 +153,7 @@ FROM P3SymBuild IMPORT P3StartBuildProgModule,
                        StartBuildProcedure,
                        BuildProcedureHeading,
                        EndBuildProcedure,
+                       EndBuildForward,
                        BuildVarAtAddress,
                        BuildConst,
                        BuildSubrange,
@@ -522,6 +524,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -1336,12 +1339,21 @@ WithStatement :=                                                           % VAR
                  "END"                                                     % EndBuildWith %
                =:
 
-ProcedureDeclaration := ProcedureHeading ";" ProcedureBlock                % BuildProcedureEnd ;
-                                                                             PushAutoOn %
+ProcedureDeclaration :=                                                    % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                        ProcedureHeading ";" PostProcedureHeading          % Assert (top = Top ()) %
+                                                                  =:
 
-                        Ident                                              % EndBuildProcedure ;
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                            % EndBuildForward %
+                    =:
+
+ProperProcedure := ProcedureBlock                                          % BuildProcedureEnd ;
+                                                                             PushAutoOn %
+                                   Ident                                   % EndBuildProcedure ;
                                                                              PopAuto %
-                      =:
+                                         =:
 
 DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__"
                             "(" "("                                        % PushAutoOff %

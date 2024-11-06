@@ -1,6 +1,6 @@
 /* Test _Float16.  */
 /* { dg-do run } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-old-style-definition" } */
 /* { dg-add-options float16 } */
 /* { dg-require-effective-target float16_runtime } */
 

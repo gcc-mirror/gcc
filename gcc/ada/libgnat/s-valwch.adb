@@ -67,7 +67,7 @@ package body System.Val_WChar is
       S : String (Str'Range) := Str;
 
    begin
-      Normalize_String (S, F, L);
+      Normalize_String (S, F, L, To_Upper_Case => False);
 
       --  Character literal case
 

@@ -20,7 +20,7 @@ __mulhi3 (int x, int y)
 	rv += x;
       x <<= 1;
       y >>= 1;
-    }  
+    }
 
   return neg ? - rv : rv;
 }

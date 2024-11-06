@@ -130,6 +130,7 @@ along with GCC; see the file COPYING3.  If not see
    More helpful for optimization might be to make the contracts a wrapper
    function that could be inlined into the caller, the callee, or both.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1526,7 +1527,7 @@ contract_active_p (tree contract)
 static bool
 has_active_contract_condition (tree d, tree_code c)
 {
-  for (tree as = DECL_CONTRACTS (d) ; as != NULL_TREE; as = TREE_CHAIN (as))
+  for (tree as = DECL_CONTRACTS (d) ; as != NULL_TREE; as = CONTRACT_CHAIN (as))
     {
       tree contract = TREE_VALUE (TREE_VALUE (as));
       if (TREE_CODE (contract) == c && contract_active_p (contract))

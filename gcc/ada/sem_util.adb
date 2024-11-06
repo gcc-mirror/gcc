@@ -7506,7 +7506,7 @@ package body Sem_Util is
       while Present (Encl_Unit)
         and then Nkind (Unit (Encl_Unit)) = N_Subunit
       loop
-         Encl_Unit := Library_Unit (Encl_Unit);
+         Encl_Unit := Subunit_Parent (Encl_Unit);
       end loop;
 
       pragma Assert (Nkind (Encl_Unit) = N_Compilation_Unit);
@@ -10059,7 +10059,7 @@ package body Sem_Util is
 
    function Get_Body_From_Stub (N : Node_Id) return Node_Id is
    begin
-      return Proper_Body (Unit (Library_Unit (N)));
+      return Proper_Body (Unit (Stub_Subunit (N)));
    end Get_Body_From_Stub;
 
    ---------------------
@@ -12355,6 +12355,27 @@ package body Sem_Util is
         and then Has_Aspect (Etype (Exp), Aspect_Aggregate)
         and then not Is_Record_Aggregate;
    end Is_Container_Aggregate;
+
+   -----------------------------
+   -- Is_Extended_Access_Type --
+   -----------------------------
+
+   function Is_Extended_Access_Type (Ent : Entity_Id) return Boolean is
+      Btype : constant Entity_Id := Available_View (Base_Type (Ent));
+   begin
+      if Has_Aspect (Btype, Aspect_Extended_Access) then
+         declare
+            Aspect_Expr : constant Node_Id :=
+              Expression (Find_Aspect (Btype, Aspect_Extended_Access));
+         begin
+            return No (Aspect_Expr) or else Expr_Value (Aspect_Expr) /= 0;
+         end;
+      elsif Is_Derived_Type (Btype) then
+         return Is_Extended_Access_Type (Etype (Btype));
+      else
+         return False;
+      end if;
+   end Is_Extended_Access_Type;
 
    ---------------------------------
    -- Side_Effect_Free_Statements --
@@ -14811,13 +14832,8 @@ package body Sem_Util is
    -- Inspect_Deferred_Constant_Completion --
    ------------------------------------------
 
-   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
-      Decl : Node_Id;
-
+   procedure Inspect_Deferred_Constant_Completion (Decl : Node_Id) is
    begin
-      Decl := First (Decls);
-      while Present (Decl) loop
-
          --  Deferred constant signature
 
          if Nkind (Decl) = N_Object_Declaration
@@ -14838,6 +14854,15 @@ package body Sem_Util is
               Defining_Identifier (Decl));
          end if;
 
+   end Inspect_Deferred_Constant_Completion;
+
+   procedure Inspect_Deferred_Constant_Completion (Decls : List_Id) is
+      Decl : Node_Id;
+
+   begin
+      Decl := First (Decls);
+      while Present (Decl) loop
+         Inspect_Deferred_Constant_Completion (Decl);
          Next (Decl);
       end loop;
    end Inspect_Deferred_Constant_Completion;
@@ -15149,8 +15174,17 @@ package body Sem_Util is
    -- Is_Aliased_View --
    ---------------------
 
-   function Is_Aliased_View (Obj : Node_Id) return Boolean is
+   function Is_Aliased_View
+     (Obj : Node_Id; For_Extended : Boolean := False) return Boolean
+   is
       E : Entity_Id;
+
+      --  Ensure that For_Extended parameter is propagated in recursive
+      --  calls by hiding the version that has the wrong default.
+
+      function Is_Aliased_View
+        (Obj : Node_Id; For_SF : Boolean := For_Extended) return Boolean
+        renames Sem_Util.Is_Aliased_View;
 
    begin
       if Is_Entity_Name (Obj) then
@@ -15232,10 +15266,33 @@ package body Sem_Util is
       --  rewritten constructs that introduce artificial dereferences.
 
       elsif Nkind (Obj) = N_Explicit_Dereference then
+         --  If For_Extended is False then a dereference of an extended access
+         --  value is, by definition, not aliased.
+         --  This is to prevent covert illegal type conversion via either
+         --    Not_Extended_Type'(Extended_Ptr.all'Access)
+         --  or by passing Extended_Ptr.all as an actual parameter
+         --  corresponding to an explicitly aliased formal parameter
+         --  (which would allow the callee to evaluate Aliased_Param'Access).
+
+         if Is_Extended_Access_Type (Etype (Prefix (Obj)))
+           and then not For_Extended
+         then
+            return False;
+         end if;
+
          return not Is_Captured_Function_Call (Obj)
            and then not
              (Nkind (Parent (Obj)) = N_Object_Renaming_Declaration
                and then Is_Return_Object (Defining_Entity (Parent (Obj))));
+
+      elsif Nkind (Obj) = N_Slice then
+         --  A slice of a bit-packed array is not considered aliased even
+         --  for an extended access type because even extended access types
+         --  don't support bit pointers.
+
+         return For_Extended
+           and then Is_Aliased_View (Prefix (Obj))
+           and then not Is_Bit_Packed_Array (Etype (Obj));
 
       else
          return False;
@@ -15250,10 +15307,8 @@ package body Sem_Util is
      (E1 : Entity_Id;
       E2 : Entity_Id) return Boolean
    is
-      Par : Entity_Id;
-
+      Par : Entity_Id := E2;
    begin
-      Par := E2;
       while Present (Par) and then Par /= Standard_Standard loop
          if Par = E1 then
             return True;
@@ -15666,7 +15721,7 @@ package body Sem_Util is
                                    Expression (Item_2));
             end;
 
-         --  A confirming aspect for Implicit_Derenfence on a derived type
+         --  A confirming aspect for Implicit_Dereference on a derived type
          --  has already been checked in Analyze_Aspect_Implicit_Dereference,
          --  including the presence of renamed discriminants.
 
@@ -20115,7 +20170,7 @@ package body Sem_Util is
       return Is_RCI_Pkg_Decl_Cunit (Cunit)
         or else
          (Nkind (Unit (Cunit)) = N_Package_Body
-           and then Is_RCI_Pkg_Decl_Cunit (Library_Unit (Cunit)));
+           and then Is_RCI_Pkg_Decl_Cunit (Spec_Lib_Unit (Cunit)));
    end Is_RCI_Pkg_Spec_Or_Body;
 
    -----------------------------------------
@@ -22244,9 +22299,7 @@ package body Sem_Util is
             --  Wrappers of class-wide pre/postconditions reference the
             --  parent primitive that has the inherited contract.
 
-            if Is_Wrapper (Subp_Id)
-              and then Present (LSP_Subprogram (Subp_Id))
-            then
+            if Is_LSP_Wrapper (Subp_Id) then
                Subp_Id := LSP_Subprogram (Subp_Id);
             end if;
 
@@ -26967,13 +27020,13 @@ package body Sem_Util is
       K2 : constant Node_Kind := Nkind (N2);
 
    begin
-      if (K1 = N_Identifier or else K1 = N_Defining_Identifier)
-        and then (K2 = N_Identifier or else K2 = N_Defining_Identifier)
+      if K1 in N_Identifier | N_Defining_Identifier
+        and then K2 in N_Identifier | N_Defining_Identifier
       then
          return Chars (N1) = Chars (N2);
 
-      elsif (K1 = N_Selected_Component or else K1 = N_Expanded_Name)
-        and then (K2 = N_Selected_Component or else K2 = N_Expanded_Name)
+      elsif K1 in N_Selected_Component | N_Expanded_Name
+        and then K2 in N_Selected_Component | N_Expanded_Name
       then
          return Same_Name (Selector_Name (N1), Selector_Name (N2))
            and then Same_Name (Prefix (N1), Prefix (N2));
@@ -28993,7 +29046,7 @@ package body Sem_Util is
          Clause := First (Context_Items (Comp_Unit));
          while Present (Clause) loop
             if Nkind (Clause) = N_With_Clause then
-               if Library_Unit (Clause) = U then
+               if Withed_Lib_Unit (Clause) = U then
                   return True;
 
                --  The with_clause may denote a renaming of the unit we are
@@ -29031,7 +29084,7 @@ package body Sem_Util is
           (Nkind (Unit (Curr)) = N_Subprogram_Body
             and then not Acts_As_Spec (Unit (Curr)))
       then
-         if Unit_In_Context (Library_Unit (Curr)) then
+         if Unit_In_Context (Spec_Lib_Unit (Curr)) then
             return True;
          end if;
       end if;
@@ -29039,10 +29092,10 @@ package body Sem_Util is
       --  If the spec is a child unit, examine the parents
 
       if Is_Child_Unit (Curr_Entity) then
-         if Nkind (Unit (Curr)) in N_Unit_Body then
+         if Nkind (Unit (Curr)) in N_Lib_Unit_Body then
             return
               Unit_In_Parent_Context
-                (Parent_Spec (Unit (Library_Unit (Curr))));
+                (Parent_Spec (Unit (Spec_Lib_Unit (Curr))));
          else
             return Unit_In_Parent_Context (Parent_Spec (Unit (Curr)));
          end if;

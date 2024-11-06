@@ -418,9 +418,9 @@
   BUILTIN_VSDQ_I_DI (BINOP_UUS, urshl, 0, NONE)
 
   /* Implemented by <sur><dotprod>_prod<dot_mode>.  */
-  BUILTIN_VB (TERNOP, sdot_prod, 10, NONE)
-  BUILTIN_VB (TERNOPU, udot_prod, 10, NONE)
-  BUILTIN_VB (TERNOP_SUSS, usdot_prod, 10, NONE)
+  BUILTIN_VB (TERNOP, sdot_prod, 0, NONE)
+  BUILTIN_VB (TERNOPU, udot_prod, 0, NONE)
+  BUILTIN_VB (TERNOP_SUSS, usdot_prod, 0, NONE)
   /* Implemented by aarch64_<sur><dotprod>_lane{q}<dot_mode>.  */
   BUILTIN_VB (QUADOP_LANE, sdot_lane, 0, NONE)
   BUILTIN_VB (QUADOPU_LANE, udot_lane, 0, NONE)

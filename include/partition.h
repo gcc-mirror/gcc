@@ -56,7 +56,7 @@ struct partition_elem
   unsigned class_count;
 };
 
-typedef struct partition_def 
+typedef struct partition_def
 {
   /* The number of elements in this partition.  */
   int num_elements;

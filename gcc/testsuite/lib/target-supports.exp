@@ -639,6 +639,7 @@ proc check_effective_target_trampolines { } {
     if { [istarget avr-*-*]
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
+	 || [istarget ft32-*-*]
 	 || [istarget pru-*-*]
 	 || [istarget bpf-*-*] } {
 	return 0;
@@ -859,9 +860,6 @@ proc check_profiling_available { test_what } {
 # in Section 4 of C99 standard. Effectively, it is a target which supports no
 # extra headers or libraries other than what is considered essential.
 proc check_effective_target_freestanding { } {
-    if { [istarget nvptx-*-*] } {
-	return 1
-    }
     return 0
 }
 
@@ -3965,6 +3963,17 @@ proc check_effective_target_floatn_nx_runtime {} {
     return 1
 }
 
+# Return 1 when double is at least as good as _Float32x, i.e. double can
+# be used to emulate _Float32x.
+
+proc check_effective_target_double_float32xplus {} {
+    return [check_no_compiler_messages_nocache double_float32xplus object {
+	_Float32x x;
+	int dummy1[__DBL_MANT_DIG__ >= __FLT32X_MANT_DIG__ ? 1 : -1];
+	int dummy2[__DBL_MAX_EXP__ >= __FLT32X_MAX_EXP__ ? 1 : -1];
+    } [add_options_for_float32x ""]]
+}
+
 # Add options needed to use the _FloatN / _FloatNx type indicated in
 # the function name.
 
@@ -4292,6 +4301,15 @@ proc check_effective_target_vect_int { } {
 # Return 1 if the target supports vector integer division, 0 otherwise.
 proc check_effective_target_vect_int_div { } {
     return [check_effective_target_aarch64_sve]
+}
+
+# Return 1 if the target supports two-way dot products on inpus of hi mode
+# producing si outputs, 0 otherwise.
+
+proc check_effective_target_vect_dotprod_hisi { } {
+    return [check_cached_effective_target_indexed aarch64_sme2 {
+	expr { [check_effective_target_aarch64_sme2]
+    }}]
 }
 
 # Return 1 if the target supports vectorization of early breaks,
@@ -5794,6 +5812,7 @@ foreach { armfunc armflag armdefs } {
 # flags).  See above for setting -march=.
 foreach { armfunc armflag armdefs } {
 	    xscale_arm "-mcpu=xscale -mfloat-abi=soft -marm" "__XSCALE__ && !__thumb__"
+	    cortex_a57 "-mcpu=cortex-a57" __ARM_ARCH_8A__
 	} {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_cpu_FUNC_ok { } {
@@ -10730,17 +10749,14 @@ proc check_effective_target_apxf { } {
 # Return 1 if avx10.2 instructions can be compiled.
 proc check_effective_target_avx10_2 { } {
     return [check_no_compiler_messages avx10.2 object {
-	typedef int __v8si __attribute__ ((__vector_size__ (32)));
-	typedef char __mmask8;
-
-	__v8si
-	_mm256_mask_vpdpbssd_epi32 (__v8si __A, __mmask8 __U,
-				    __v8si __B, __v8si __C)
+	void
+	foo ()
 	{
-	  return (__v8si) __builtin_ia32_vpdpbssd_v8si_mask ((__v8si)__A,
-							     (__v8si)__B,
-							     (__v8si)__C,
-							     (__mmask8)__U);
+	  __asm__ volatile ("vdpphps\t%ymm4, %ymm5, %ymm6");
+	  __asm__ volatile ("vcvthf82ph\t%xmm5, %ymm6");
+	  __asm__ volatile ("vaddnepbf16\t%ymm4, %ymm5, %ymm6");
+	  __asm__ volatile ("vcvtph2ibs\t%ymm5, %ymm6");
+	  __asm__ volatile ("vminmaxpd\t$123, %ymm4, %ymm5, %ymm6");
 	}
     } "-mavx10.2" ]
 }
@@ -10748,19 +10764,71 @@ proc check_effective_target_avx10_2 { } {
 # Return 1 if avx10.2-512 instructions can be compiled.
 proc check_effective_target_avx10_2_512 { } {
     return [check_no_compiler_messages avx10.2-512 object {
-	typedef int __v16si __attribute__ ((__vector_size__ (64)));
-	typedef short __mmask16;
-
-	__v16si
-	_mm512_vpdpbssd_epi32 (__v16si __A, __mmask16 __U,
-			       __v16si __B, __v16si __C)
+	void
+	foo ()
 	{
-	  return (__v16si) __builtin_ia32_vpdpbssd_v16si_mask ((__v16si)__A,
-							       (__v16si)__B,
-							       (__v16si)__C,
-							       (__mmask16)__U);
+	  __asm__ volatile ("vdpphps\t%zmm4, %zmm5, %zmm6");
+	  __asm__ volatile ("vcvthf82ph\t%ymm5, %zmm6");
+	  __asm__ volatile ("vaddnepbf16\t%zmm4, %zmm5, %zmm6");
+	  __asm__ volatile ("vcvtph2ibs\t%zmm5, %zmm6");
+	  __asm__ volatile ("vminmaxpd\t$123, %zmm4, %zmm5, %zmm6");
 	}
     } "-mavx10.2-512" ]
+}
+
+# Return 1 if amx-avx512 instructions can be compiled.
+proc check_effective_target_amx_avx512 { } {
+    return [check_no_compiler_messages amx_avx512 object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tilemovrow\t%%edx, %%tmm2, %%zmm1" ::);
+	}
+    } "-mamx-avx512" ]
+}
+
+# Return 1 if amx-tf32 instructions can be compiled.
+proc check_effective_target_amx_tf32 { } {
+    return [check_no_compiler_messages amx_tf32 object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tmmultf32ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-tf32" ]
+}
+
+# Return 1 if amx-transpose instructions can be compiled.
+proc check_effective_target_amx_transpose { } {
+    return [check_no_compiler_messages amx_transpose object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("ttransposed\t%%tmm1, %%tmm2" ::);
+	}
+    } "-mamx-transpose" ]
+}
+
+# Return 1 if amx-fp8 instructions can be compiled.
+proc check_effective_target_amx_fp8 { } {
+    return [check_no_compiler_messages amx_fp8 object {
+	void
+	foo ()
+	{
+	    __asm__ volatile ("tdpbf8ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-fp8" ]
+}
+
+# Return 1 if amx-movrs instructions can be compiled.
+proc check_effective_target_amx_movrs { } {
+    return [check_no_compiler_messages amx_movrs object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tileloaddrs\t(%%r9), %%tmm3" ::);
+	}
+    } "-mamx-movrs" ]
 }
 
 # Return 1 if sse instructions can be compiled.
@@ -13141,7 +13209,7 @@ proc check_effective_target_arm_v8_1_lob_ok { } {
 		  asm goto ("le lr, %l0" : : : "lr" : loop);
 		  return i != 10;
 		}
-	} "-march=armv8.1-m.main -mthumb" ]
+	} "-mcpu=unset -march=armv8.1-m.main -mthumb" ]
     }
 }
 

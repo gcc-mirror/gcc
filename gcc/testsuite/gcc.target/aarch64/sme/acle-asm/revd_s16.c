@@ -48,7 +48,7 @@ TEST_UNIFORM_Z (revd_s16_z_tied1, svint16_t,
 
 /*
 ** revd_s16_z_untied:
-**	mov	z0\.[bhsd], #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	revd	z0\.q, p0/m, z1\.q
 **	ret
 */

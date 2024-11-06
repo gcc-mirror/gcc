@@ -429,7 +429,7 @@ _mm_cvtne2ph_pbf8 (__m128h __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtne2ph_pbf8 (__m128i __W, __mmask16 __U, 
+_mm_mask_cvtne2ph_pbf8 (__m128i __W, __mmask16 __U,
 			__m128h __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtne2ph2bf8128_mask ((__v8hf) __A,
@@ -462,7 +462,7 @@ _mm256_cvtne2ph_pbf8 (__m256h __A, __m256h __B)
 
 extern __inline__ __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtne2ph_pbf8 (__m256i __W, __mmask32 __U, 
+_mm256_mask_cvtne2ph_pbf8 (__m256i __W, __mmask32 __U,
 			   __m256h __A, __m256h __B)
 {
   return (__m256i) __builtin_ia32_vcvtne2ph2bf8256_mask ((__v16hf) __A,
@@ -495,7 +495,7 @@ _mm_cvtnes2ph_pbf8 (__m128h __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtnes2ph_pbf8 (__m128i __W, __mmask16 __U, 
+_mm_mask_cvtnes2ph_pbf8 (__m128i __W, __mmask16 __U,
 			 __m128h __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtne2ph2bf8s128_mask ((__v8hf) __A,

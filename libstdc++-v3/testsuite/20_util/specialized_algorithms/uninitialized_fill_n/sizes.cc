@@ -24,21 +24,35 @@ void
 test01()
 {
   int i[4] = { };
-  std::uninitialized_fill_n(i, 2.0001, 0xabcd);
+  // Floating-point n should work, but only if it's an integer value.
+  std::uninitialized_fill_n(i, 3.0, 0xabcd);
   VERIFY( i[0] == 0xabcd );
   VERIFY( i[1] == 0xabcd );
   VERIFY( i[2] == 0xabcd );
   VERIFY( i[3] == 0 );
 }
 
-// The standard only requires that n>0 and --n are valid expressions.
+// The standard only requires that `if (n--)` is a valid expression.
 struct Size
 {
   int value;
 
-  void operator--() { --value; }
+  struct testable
+  {
+#if __cplusplus >= 201103L
+    explicit
+#endif
+    operator bool() const { return nonzero; }
 
-  int operator>(void*) { return value != 0; }
+    bool nonzero;
+  };
+
+  testable operator--(int)
+  {
+    testable t = { value != 0 };
+    --value;
+    return t;
+  }
 };
 
 void

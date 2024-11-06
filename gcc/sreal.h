@@ -30,8 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SREAL_BITS SREAL_PART_BITS
 
-#define SREAL_SIGN(v) (v < 0 ? -1: 1)
-#define SREAL_ABS(v) (v < 0 ? -v: v)
+#define SREAL_SIGN(v) (v < 0 ? -1 : 1)
+#define SREAL_ABS(v) (v < 0 ? -v : v)
 
 struct output_block;
 class lto_input_block;

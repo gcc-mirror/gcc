@@ -105,7 +105,7 @@ public:
   void dump (bool simple) const;
   label_text get_desc (bool simple=true) const;
 
-  json::value *to_json () const;
+  std::unique_ptr<json::value> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const dump_widget_info &dwi,

@@ -3,7 +3,7 @@
 
 namespace N
 {
-  int operator"" _X(auto) {} // { dg-error "auto|invalid" }
+  int operator ""_X(auto) {} // { dg-error "auto|invalid" }
 }
 
 namespace N {}

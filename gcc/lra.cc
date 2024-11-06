@@ -69,9 +69,9 @@ along with GCC; see the file COPYING3.	If not see
          | Spilled pseudo |      -------------------
          |    to memory   |<----| Rematerialization |
          |  substitution  |      -------------------
-          ----------------        
+          ----------------
                   | No susbtitions
-                  V                
+                  V
       -------------------------
      | Hard regs substitution, |
      |  devirtalization, and   |------> Finish
@@ -463,7 +463,7 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	      if (! ok_p)
 		{
 		  rtx_insn *insn;
-		  
+
 		  delete_insns_since (last);
 		  /* Generate x = disp; x = x + base; x = x + index_scale.  */
 		  emit_move_insn (x, disp);
@@ -498,7 +498,7 @@ lra_emit_move (rtx x, rtx y)
 {
   int old;
   rtx_insn *insn;
-  
+
   if (GET_CODE (y) != PLUS)
     {
       if (rtx_equal_p (x, y))
@@ -1650,7 +1650,7 @@ lra_update_insn_regno_info (rtx_insn *insn)
   struct lra_static_insn_data *static_data;
   enum rtx_code code;
   rtx link;
-  
+
   if (! INSN_P (insn))
     return;
   data = lra_get_insn_recog_data (insn);
@@ -1883,7 +1883,7 @@ setup_sp_offset (rtx_insn *from, rtx_insn *last)
   return offset;
 }
 
-/* Dump all func insns in a slim form.  */ 
+/* Dump all func insns in a slim form.  */
 void
 lra_dump_insns (FILE *f)
 {
@@ -1891,7 +1891,7 @@ lra_dump_insns (FILE *f)
 }
 
 /* Dump all func insns in a slim form with TITLE when the dump file is open and
-   lra_verbose >=7.  */ 
+   lra_verbose >=7.  */
 void
 lra_dump_insns_if_possible (const char *title)
 {
@@ -1951,7 +1951,7 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
       if (! JUMP_P (insn))
 	{
 	  rtx_insn *last;
-	  
+
 	  if (lra_dump_file != NULL)
 	    {
 	      fprintf (lra_dump_file, "    %s after:\n", title);
@@ -1970,7 +1970,7 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 	  /* Put output reload insns on successor BBs: */
 	  edge_iterator ei;
 	  edge e;
-	  
+
 	  FOR_EACH_EDGE (e, ei, BLOCK_FOR_INSN (insn)->succs)
 	    if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
 	      {
@@ -2052,7 +2052,7 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p,
 	  *loc = subst;
 	  return true;
 	}
-      
+
     }
   else if (code == REG && (int) REGNO (x) == old_regno)
     {
@@ -2368,7 +2368,7 @@ lra (FILE *f, int verbose)
   lra_verbose = verbose;
   lra_asm_error_p = false;
   lra_pmode_pseudo = gen_reg_rtx (Pmode);
-  
+
   timevar_push (TV_LRA);
 
   /* Make sure that the last insn is a note.  Some subsequent passes
@@ -2494,7 +2494,7 @@ lra (FILE *f, int verbose)
 	      else
 		{
 		  bool spill_p = !lra_assign (fails_p);
-		  
+
 		  if (lra_undo_inheritance ())
 		    live_p = false;
 		  if (spill_p && ! fails_p)

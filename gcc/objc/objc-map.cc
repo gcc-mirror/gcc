@@ -58,9 +58,9 @@ objc_map_alloc_ggc (size_t initial_capacity)
   objc_map_t map = ggc_cleared_alloc<objc_map_private> ();
   if (map == NULL)
     OUT_OF_MEMORY;
-  
+
   initial_capacity = next_power_of_two (initial_capacity);
-  
+
   map->number_of_slots = initial_capacity;
   map->mask = initial_capacity - 1;
   map->maximum_load_factor = 70;
@@ -71,7 +71,7 @@ objc_map_alloc_ggc (size_t initial_capacity)
 
   if (map->slots == NULL)
     OUT_OF_MEMORY;
-  
+
   if (map->values == NULL)
     OUT_OF_MEMORY;
 
@@ -100,12 +100,12 @@ objc_map_private_resize (objc_map_t map, size_t new_number_of_slots)
   tree *old_slots = map->slots;
   tree *old_values = map->values;
   size_t i, old_number_of_slots = map->number_of_slots;
-  
+
   if (new_number_of_slots < (map->number_of_non_empty_slots))
     new_number_of_slots = 2 * map->number_of_non_empty_slots;
 
   new_number_of_slots = next_power_of_two (new_number_of_slots);
-  
+
   map->number_of_slots = new_number_of_slots;
   map->mask = map->number_of_slots - 1;
   map->max_number_of_non_empty_slots = (map->number_of_slots * map->maximum_load_factor) / 100;
@@ -124,7 +124,7 @@ objc_map_private_resize (objc_map_t map, size_t new_number_of_slots)
     if (old_slots[i] != OBJC_MAP_PRIVATE_EMPTY_SLOT)
       {
 	size_t k = IDENTIFIER_HASH_VALUE (old_slots[i]) & map->mask;
-	
+
 	if (map->slots[k] == OBJC_MAP_PRIVATE_EMPTY_SLOT)
 	  {
 	    map->slots[k] = old_slots[i];

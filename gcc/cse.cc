@@ -4103,11 +4103,11 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0, rtx op1)
    The main function is cse_insn, and between here and that function
    a couple of helper functions is defined to keep the size of cse_insn
    within reasonable proportions.
-   
+
    Data is shared between the main and helper functions via STRUCT SET,
    that contains all data related for every set in the instruction that
    is being processed.
-   
+
    Note that cse_main processes all sets in the instruction.  Most
    passes in GCC only process simple SET insns or single_set insns, but
    CSE processes insns with multiple sets as well.  */
@@ -4159,7 +4159,7 @@ struct set
    Do not make this change if REG1 is a hard register, because it will
    then be used in the sequel and we may be changing a two-operand insn
    into a three-operand insn.
-   
+
    This is the last transformation that cse_insn will try to do.  */
 
 static void

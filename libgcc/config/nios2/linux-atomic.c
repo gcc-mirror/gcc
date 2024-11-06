@@ -160,7 +160,7 @@ int HIDDEN
 __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 {
   int actual_oldval, fail;
-    
+
   while (1)
     {
       actual_oldval = *ptr;
@@ -169,7 +169,7 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 	return actual_oldval;
 
       fail = __kernel_cmpxchg (actual_oldval, newval, ptr);
-  
+
       if (!fail)
 	return oldval;
     }

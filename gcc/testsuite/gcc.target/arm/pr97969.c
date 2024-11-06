@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arch_v6m_ok } */
-/* { dg-options "-std=c99 -fno-omit-frame-pointer -w -Os" } */
+/* { dg-options "-std=c99 -fno-omit-frame-pointer -w -Os -fpermissive" } */
 /* { dg-add-options arm_arch_v6m } */
 
 typedef int a[23];

@@ -1,3 +1,266 @@
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114461
+	* include/cpplib.h: Implement C++26 P3034R1
+	- Module Declarations Shouldn’t be Macros (or more precisely
+	its expected intent).
+	(NO_DOT_COLON): Define.
+	* internal.h (struct cpp_reader): Add diagnose_dot_colon_from_macro_p
+	member.
+	* lex.cc (cpp_maybe_module_directive): For pp-module, if
+	module keyword is followed by CPP_NAME, ensure all CPP_NAME
+	tokens possibly matching module name and module partition
+	syntax aren't expanded and aren't defined as object-like macros.
+	Verify first token after that doesn't start with open paren.
+	If the next token after module name/partition is CPP_NAME defined
+	as macro, set NO_DOT_COLON flag on it.
+	* macro.cc (cpp_get_token_1): Set
+	pfile->diagnose_dot_colon_from_macro_p if token to be expanded has
+	NO_DOT_COLON bit set in flags.  Before returning, if
+	pfile->diagnose_dot_colon_from_macro_p is true and not returning
+	CPP_PADDING or CPP_COMMENT and not during macro expansion preparation,
+	set pfile->diagnose_dot_colon_from_macro_p to false and diagnose
+	if returning CPP_DOT or CPP_COLON.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* directives.cc: Remove trailing whitespace.
+	* mkdeps.cc: Likewise.
+	* line-map.cc: Likewise.
+	* internal.h: Likewise.
+	* files.cc: Likewise.
+	* init.cc: Likewise.
+	* makeucnid.cc: Likewise.
+	* system.h: Likewise.
+	* include/line-map.h: Likewise.
+	* include/symtab.h: Likewise.
+	* include/cpplib.h: Likewise.
+	* expr.cc: Likewise.
+	* charset.cc: Likewise.
+	* macro.cc: Likewise.
+	* errors.cc: Likewise.
+	* lex.cc: Likewise.
+	* traditional.cc: Likewise.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_leading_whitespace and cpp_tabstop members.
+	(enum cpp_warning_reason): Add CPP_W_LEADING_WHITESPACE.
+	* internal.h (struct _cpp_line_note): Document new
+	line note kinds.
+	* init.cc (cpp_create_reader): Set cpp_tabstop to 8.
+	* lex.cc (find_leading_whitespace_issues): New function.
+	(_cpp_clean_line): Use it.
+	(_cpp_process_line_notes): Handle 'L', 'S' and 'T' line notes.
+	(lex_raw_string): Clear type on 'L', 'S' and 'T' line notes
+	inside of raw string literals.
+
+2024-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/114423
+	* internal.h (struct cpp_reader): Add DIAGNOSTIC_OVERRIDE_LOC
+	field.
+	* directives.cc (destringize_and_run): Set the new field to the
+	location of the _Pragma operator.
+	* errors.cc (cpp_diagnostic_at): Support DIAGNOSTIC_OVERRIDE_LOC to
+	temporarily issue diagnostics at a different location.
+	(cpp_diagnostic_with_line): Likewise.
+
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117028
+	* include/cpplib.h (struct cpp_options): Add named_uc_escape_seqs,
+	octal_constants and cpp_warn_c23_c2y_compat members.
+	(enum cpp_warning_reason): Add CPP_W_C23_C2Y_COMPAT enumerator.
+	* init.cc (struct lang_flags): Add named_uc_escape_seqs and
+	octal_constants bit-fields.
+	(lang_defaults): Add initializers for them into the table.
+	(cpp_set_lang): Initialize named_uc_escape_seqs and octal_constants.
+	(cpp_create_reader): Initialize cpp_warn_c23_c2y_compat to -1.
+	* charset.cc (_cpp_valid_ucn): Test
+	CPP_OPTION (pfile, named_uc_escape_seqs) rather than
+	CPP_OPTION (pfile, delimited_escape_seqs) in \N{} related tests.
+	Change wording of C cpp_pedwarning for \u{} and emit
+	-Wc23-c2y-compat warning for it too if needed.  Formatting fixes.
+	(convert_hex): Change wording of C cpp_pedwarning for \u{} and emit
+	-Wc23-c2y-compat warning for it too if needed.
+	(convert_oct): Likewise.
+	* expr.cc (cpp_classify_number): Handle C2Y 0o or 0O prefixed
+	octal constants.
+	(cpp_interpret_integer): Likewise.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (interpret_float_suffix): ?: operator formatting fixes.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (TTYPE_TABLE): Add CPP_EMBED token type.
+	* files.cc (finish_embed): For limit >= 64 and C preprocessing
+	instead of emitting CPP_NUMBER CPP_COMMA separated sequence for the
+	whole embed emit it just for the first and last byte and in between
+	emit a CPP_EMBED token or tokens if too large.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_trailing_whitespace member.
+	(enum cpp_warning_reason): Add CPP_W_TRAILING_WHITESPACE.
+	* internal.h (struct _cpp_line_note): Document 'W' line note.
+	* lex.cc (_cpp_clean_line): Add 'W' line note for trailing whitespace
+	except for trailing whitespace after backslash.  Formatting fix.
+	(_cpp_process_line_notes): Emit -Wtrailing-whitespace diagnostics.
+	Formatting fixes.
+	(lex_raw_string): Clear type on 'W' notes.
+
+2024-10-14  Jason Merrill  <jason@redhat.com>
+
+	* lex.cc (cpp_output_token): Omit terminal space from name.
+
+2024-10-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/114436
+	* directives.cc (destringize_and_run): If the _Pragma changed the
+	buffer system header state (e.g. because it was "GCC
+	system_header"), propagate that change back to the actual buffer
+	too.
+
+2024-10-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/109704
+	* include/cpplib.h (class cpp_auto_suppress_diagnostics): New class.
+	* errors.cc
+	(cpp_auto_suppress_diagnostics::cpp_auto_suppress_diagnostics): New
+	function.
+	(cpp_auto_suppress_diagnostics::~cpp_auto_suppress_diagnostics): New
+	function.
+	* charset.cc (noop_diagnostic_cb): Remove.
+	(cpp_interpret_string_ranges): Refactor diagnostic suppression logic
+	into new class cpp_auto_suppress_diagnostics.
+	(count_source_chars): Likewise.
+	* directives.cc (cpp_pop_definition): Add cpp_hashnode argument.
+	(lex_identifier_from_string): New static helper function.
+	(push_pop_macro_common): Refactor common logic from
+	do_pragma_push_macro and do_pragma_pop_macro; use
+	lex_identifier_from_string instead of _cpp_lex_identifier.
+	(do_pragma_push_macro): Reimplement using push_pop_macro_common.
+	(do_pragma_pop_macro): Likewise.
+	* internal.h (_cpp_lex_identifier): Remove.
+	* lex.cc (lex_identifier_intern): Remove.
+	(_cpp_lex_identifier): Remove.
+
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (ATTRIBUTE_CPP_PPDIAG): Define.
+	(struct cpp_callbacks): Use ATTRIBUTE_CPP_PPDIAG instead of
+	ATTRIBUTE_FPTR_PRINTF on diagnostic callback.
+	(cpp_error, cpp_warning, cpp_pedwarning, cpp_warning_syshdr): Use
+	ATTRIBUTE_CPP_PPDIAG (3, 4) instead of ATTRIBUTE_PRINTF_3.
+	(cpp_warning_at, cpp_pedwarning_at): Use ATTRIBUTE_CPP_PPDIAG (4, 5)
+	instead of ATTRIBUTE_PRINTF_4.
+	(cpp_error_with_line, cpp_warning_with_line, cpp_pedwarning_with_line,
+	cpp_warning_with_line_syshdr): Use ATTRIBUTE_CPP_PPDIAG (5, 6)
+	instead of ATTRIBUTE_PRINTF_5.
+	(cpp_error_at): Use ATTRIBUTE_CPP_PPDIAG (4, 5) instead of
+	ATTRIBUTE_PRINTF_4.
+	* Makefile.in (po/$(PACKAGE).pot): Use --language=GCC-source rather
+	than --language=c.
+	* errors.cc (cpp_diagnostic_at, cpp_diagnostic,
+	cpp_diagnostic_with_line): Use ATTRIBUTE_CPP_PPDIAG instead of
+	-ATTRIBUTE_FPTR_PRINTF.
+	* charset.cc (cpp_host_to_exec_charset, _cpp_valid_ucn, convert_hex,
+	convert_oct, convert_escape): Fix up -Wformat-diag warnings.
+	(cpp_interpret_string_ranges, count_source_chars): Use
+	ATTRIBUTE_CPP_PPDIAG instead of ATTRIBUTE_FPTR_PRINTF.
+	(narrow_str_to_charconst): Fix up -Wformat-diag warnings.
+	* directives.cc (check_eol_1, directive_diagnostics, lex_macro_node,
+	do_undef, glue_header_name, parse_include, do_include_common,
+	do_include_next, _cpp_parse_embed_params, do_embed, read_flag,
+	do_line, do_linemarker, register_pragma_1, do_pragma_once,
+	do_pragma_push_macro, do_pragma_pop_macro, do_pragma_poison,
+	do_pragma_system_header, do_pragma_warning_or_error, _cpp_do__Pragma,
+	do_else, do_elif, do_endif, parse_answer, do_assert,
+	cpp_define_unused): Likewise.
+	* expr.cc (cpp_classify_number, parse_defined, eval_token,
+	_cpp_parse_expr, reduce, check_promotion): Likewise.
+	* files.cc (_cpp_find_file, finish_base64_embed,
+	_cpp_pop_file_buffer): Likewise.
+	* init.cc (sanity_checks): Likewise.
+	* lex.cc (_cpp_process_line_notes, maybe_warn_bidi_on_char,
+	_cpp_warn_invalid_utf8, _cpp_skip_block_comment,
+	warn_about_normalization, forms_identifier_p, maybe_va_opt_error,
+	identifier_diagnostics_on_lex, cpp_maybe_module_directive): Likewise.
+	* macro.cc (class vaopt_state, builtin_has_include_1,
+	builtin_has_include, builtin_has_embed, _cpp_warn_if_unused_macro,
+	_cpp_builtin_macro_text, builtin_macro, stringify_arg,
+	_cpp_arguments_ok, collect_args, enter_macro_context,
+	_cpp_save_parameter, parse_params, create_iso_definition,
+	_cpp_create_definition, check_trad_stringification): Likewise.
+	* pch.cc (cpp_valid_state): Likewise.
+	* traditional.cc (_cpp_scan_out_logical_line, recursive_macro):
+	Likewise.
+
+2024-10-09  Jason Merrill  <jason@redhat.com>
+
+	* macro.cc (_cpp_pop_context): Fix typo.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR bootstrap/117039
+	* directives.cc (do_pragma_once): Use ' instead of %< and %>.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR preprocessor/89808
+	* include/cpplib.h (cpp_warning_reason): Define
+	CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER.
+	* directives.cc (do_pragma_once): Use
+	CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER.
+
+2024-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update Unicode Copyright years.
+	* makeuname2c.cc (generated_ranges): Adjust Unicode version from 15.1
+	to 16.0.  Add EGYPTIAN HIEROGLYPH- generated range, adjust indexes in
+	following entries.
+	(write_copyright): Update Unicode Copyright years.
+	* generated_cpp_wcwidth.h: Regenerated.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+
+2024-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal.h (_cpp_trigraph_map_s): New type for C++14 or later.
+	(_cpp_trigraph_map_d): New variable for C++14 or later.
+	(_cpp_trigraph_map): Define to _cpp_trigraph_map_d.map for C++14 or
+	later.
+	* init.cc (init_trigraph_map): Define to nothing for C++14 or later.
+	(TRIGRAPH_MAP, END, s): Define differently for C++14 or later.
+
+2024-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96842
+	* include/cpplib.h (struct cpp_options): Add warn_header_guard member.
+	(enum cpp_warning_reason): Add CPP_W_HEADER_GUARD enumerator.
+	* internal.h (struct cpp_reader): Add mi_def_cmacro, mi_loc and
+	mi_def_loc members.
+	(_cpp_defined_macro_p): Constify type pointed by argument type.
+	Formatting fix.
+	* init.cc (cpp_create_reader): Clear
+	CPP_OPTION (pfile, warn_header_guard).
+	* directives.cc (struct if_stack): Add def_loc and mi_def_cmacro
+	members.
+	(DIRECTIVE_TABLE): Add IF_COND flag to define.
+	(do_define): Set ifs->mi_def_cmacro on a define immediately following
+	#ifndef directive for the guard.  Clear pfile->mi_valid.  Formatting
+	fix.
+	(do_endif): Copy over pfile->mi_def_cmacro and pfile->mi_def_loc
+	if ifs->mi_def_cmacro is set and pfile->mi_cmacro isn't a defined
+	macro.
+	(push_conditional): Clear mi_def_cmacro and mi_def_loc members.
+	* files.cc (_cpp_pop_file_buffer): Emit -Wheader-guard diagnostics.
+
 2024-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* files.cc (finish_embed): Initialize toks to tok rather

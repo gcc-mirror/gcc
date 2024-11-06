@@ -365,6 +365,7 @@ GNAT_ADA_OBJS =	\
  ada/fname.o	\
  ada/freeze.o	\
  ada/frontend.o	\
+ ada/generate_minimal_reproducer.o	\
  ada/get_targ.o	\
  ada/ghost.o	\
  ada/gnat_cuda.o \
@@ -492,6 +493,7 @@ GNAT1_C_OBJS+=    \
  ada/errno.o      \
  ada/init.o       \
  ada/initialize.o \
+ ada/mkdir.o      \
  ada/raise.o      \
  ada/raise-gcc.o  \
  ada/rtfinal.o    \
@@ -517,6 +519,7 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/g-speche.o	\
  ada/libgnat/g-table.o	\
  ada/libgnat/g-u3spch.o	\
+ ada/libgnat/i-c.o	\
  ada/libgnat/interfac.o	\
  ada/libgnat/s-addope.o	\
  ada/libgnat/s-addima.o \
@@ -691,6 +694,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/g-byorma.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
+ ada/libgnat/i-c.o	      \
  ada/libgnat/interfac.o   \
  ada/libgnat/s-addope.o   \
  ada/libgnat/s-assert.o   \

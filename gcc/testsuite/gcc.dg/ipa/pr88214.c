@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-Wno-old-style-definition -O2" } */
 
 void i();
   short a;

@@ -290,7 +290,7 @@ discover_loop (hwloop_info loop, basic_block tail_bb, rtx_insn *tail_insn, rtx r
 
   if (!found_tail)
     loop->bad = true;
-  
+
   /* Find the predecessor, and make sure nothing else jumps into this loop.  */
   if (!loop->bad)
     {
@@ -532,7 +532,7 @@ reorder_loops (hwloop_info loops)
 	}
       loops = loops->next;
     }
-  
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (bb->next_bb != EXIT_BLOCK_PTR_FOR_FN (cfun))

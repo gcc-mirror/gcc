@@ -52,7 +52,7 @@ int main() {
   printf("%d\n", m);
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 2 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 3 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
 /* { dg-final { scan-assembler-not {vsetivli} } } */
-/* { dg-final { scan-assembler-times {vsetvli\tzero,\s*[a-x0-9]+,\s*e8,\s*m8,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
-/* { dg-final { scan-assembler-times {li\t[a-x0-9]+,\s*32} 2 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\t[a-x0-9]+,\s*[a-x0-9]+,\s*e8,\s*m1,\s*t[au],\s*m[au]} 3 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {li\t[a-x0-9]+,\s*32} 3 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */

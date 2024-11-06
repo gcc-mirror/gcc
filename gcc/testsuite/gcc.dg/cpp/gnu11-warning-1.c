@@ -3,4 +3,4 @@
 /* { dg-options "-std=gnu11 -pedantic-errors" } */
 
 #warning example text /* { dg-warning "example text" } */
-/* { dg-error "#warning before C23 is a GCC extension" "pedantic" { target *-*-* } .-1 } */
+/* { dg-error "'#warning' before C23 is a GCC extension" "pedantic" { target *-*-* } .-1 } */

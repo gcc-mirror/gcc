@@ -4,7 +4,9 @@
 /* { dg-final { scan-assembler-times "imul" 2 } } */
 /* { dg-final { scan-assembler-not "sal" } } */
 
-unsigned long func(unsigned long x)
+typedef unsigned int uword __attribute__ ((mode (word)));
+
+uword func(uword x)
 {
     return x % 240;
 }

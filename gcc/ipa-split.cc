@@ -54,10 +54,10 @@ along with GCC; see the file COPYING3.  If not see
    2) Via DFS walk find all possible basic blocks where we can split
       and chose best one.
    3) If split point is found, split at the specified BB by creating a clone
-      and updating function to call it.  
+      and updating function to call it.
 
    The decisions what functions to split are in execute_split_functions
-   and consider_split.  
+   and consider_split.
 
    There are several possible future improvements for this pass including:
 
@@ -70,10 +70,11 @@ along with GCC; see the file COPYING3.  If not see
       value computed in header from function parameter in very cheap way, we
       can just recompute it.
    5) Support splitting of nested functions.
-   6) Support non-SSA arguments.  
+   6) Support non-SSA arguments.
    7) There is nothing preventing us from producing multiple parts of single function
       when needed or splitting also the parts.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -319,7 +320,7 @@ verify_non_ssa_vars (class split_point *current, bitmap non_ssa_vars,
 	  else
 	    break;
       }
-    
+
 done:
   BITMAP_FREE (seen);
   worklist.release ();
@@ -577,7 +578,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
 
   /* Splitting functions brings the target out of comdat group; this will
      lead to code duplication if the function is reused by other unit.
-     Limit this duplication.  This is consistent with limit in tree-sra.cc  
+     Limit this duplication.  This is consistent with limit in tree-sra.cc
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
       && current->split_size >= (unsigned int) param_max_inline_insns_auto + 10)
@@ -605,7 +606,7 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
      we can pass more than that.  */
   if (num_args != bitmap_count_bits (current->ssa_names_to_pass))
     {
-      
+
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "  Refused: need to pass non-param values\n");
@@ -711,9 +712,9 @@ consider_split (class split_point *current, bitmap non_ssa_vars,
   if (!best_split_point.split_bbs
       || best_split_point.count
 	 > current->count
-      || (best_split_point.count == current->count 
+      || (best_split_point.count == current->count
 	  && best_split_point.split_size < current->split_size))
-	
+
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  New best split point!\n");
@@ -856,7 +857,7 @@ mark_nonssa_use (gimple *, tree t, tree, void *data)
    for ssa uses and store them in USED_SSA_NAMES and for any non-SSA automatic
    vars stored in NON_SSA_VARS.
 
-   When BB has edge to RETURN_BB, collect uses in RETURN_BB too.  
+   When BB has edge to RETURN_BB, collect uses in RETURN_BB too.
 
    Return false when BB contains something that prevents it from being put into
    split function.  */
@@ -886,7 +887,7 @@ visit_bb (basic_block bb, basic_block return_bb,
       /* FIXME: We can split regions containing EH.  We cannot however
 	 split RESX, EH_DISPATCH and EH_POINTER referring to same region
 	 into different partitions.  This would require tracking of
-	 EH regions and checking in consider_split_point if they 
+	 EH regions and checking in consider_split_point if they
 	 are not used elsewhere.  */
       if (gimple_code (stmt) == GIMPLE_RESX)
 	{

@@ -28,17 +28,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 
 
-#if defined (HAVE_GFC_INTEGER_16)
+#if defined (HAVE_GFC_UINTEGER_16)
 
 /* Prototype for the BLAS ?gemm subroutine, a pointer to which can be
    passed to us by the front-end, in which case we call it for large
    matrices.  */
 
 typedef void (*blas_call)(const char *, const char *, const int *, const int *,
-                          const int *, const GFC_INTEGER_16 *, const GFC_INTEGER_16 *,
-                          const int *, const GFC_INTEGER_16 *, const int *,
-                          const GFC_INTEGER_16 *, GFC_INTEGER_16 *, const int *,
-                          int, int);
+			  const int *, const GFC_UINTEGER_16 *, const GFC_UINTEGER_16 *,
+			  const int *, const GFC_UINTEGER_16 *, const int *,
+			  const GFC_UINTEGER_16 *, GFC_UINTEGER_16 *, const int *,
+			  int, int);
 
 /* The order of loops is different in the case of plain matrix
    multiplication C=MATMUL(A,B), and in the frequent special case where
@@ -69,8 +69,8 @@ typedef void (*blas_call)(const char *, const char *, const int *, const int *,
    see if there is a way to perform the matrix multiplication by a call
    to the BLAS gemm function.  */
 
-extern void matmul_i16 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+extern void matmul_i16 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 export_proto(matmul_i16);
 
@@ -80,17 +80,17 @@ export_proto(matmul_i16);
 
 #ifdef HAVE_AVX
 static void
-matmul_i16_avx (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx")));
 static void
-matmul_i16_avx (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  const GFC_INTEGER_16 * restrict abase;
-  const GFC_INTEGER_16 * restrict bbase;
-  GFC_INTEGER_16 * restrict dest;
+  const GFC_UINTEGER_16 * restrict abase;
+  const GFC_UINTEGER_16 * restrict bbase;
+  GFC_UINTEGER_16 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -132,7 +132,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
         }
 
       retarray->base_addr
-	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_INTEGER_16));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_UINTEGER_16));
       retarray->offset = 0;
     }
   else if (unlikely (compile_options.bounds_check))
@@ -251,7 +251,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
           > POW3(blas_limit)))
     {
       const int m = xcount, n = ycount, k = count, ldc = rystride;
-      const GFC_INTEGER_16 one = 1, zero = 0;
+      const GFC_UINTEGER_16 one = 1, zero = 0;
       const int lda = (axstride == 1) ? aystride : axstride,
 		ldb = (bxstride == 1) ? bystride : bxstride;
 
@@ -289,8 +289,8 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 
 	 from netlib.org, translated to C, and modified for matmul.m4.  */
 
-      const GFC_INTEGER_16 *a, *b;
-      GFC_INTEGER_16 *c;
+      const GFC_UINTEGER_16 *a, *b;
+      GFC_UINTEGER_16 *c;
       const index_type m = xcount, n = ycount, k = count;
 
       /* System generated locals */
@@ -298,11 +298,11 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_UINTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
-      GFC_INTEGER_16 *t1;
+      GFC_UINTEGER_16 *t1;
 
       a = abase;
       b = bbase;
@@ -322,7 +322,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_16)0;
+	  c[i + j * c_dim1] = (GFC_UINTEGER_16)0;
 
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
@@ -339,7 +339,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_16));
+      t1 = malloc (t1_dim * sizeof(GFC_UINTEGER_16));
 
       /* Start turning the crank. */
       i1 = n;
@@ -557,10 +557,10 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) != 1)
 	{
-	  const GFC_INTEGER_16 *restrict abase_x;
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 *restrict dest_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict abase_x;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 *restrict dest_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
@@ -569,7 +569,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 	      for (x = 0; x < xcount; x++)
 		{
 		  abase_x = &abase[x*axstride];
-		  s = (GFC_INTEGER_16) 0;
+		  s = (GFC_UINTEGER_16) 0;
 		  for (n = 0; n < count; n++)
 		    s += abase_x[n] * bbase_y[n];
 		  dest_y[x] = s;
@@ -578,13 +578,13 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 	}
       else
 	{
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
 	      bbase_y = &bbase[y*bystride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase[n*axstride] * bbase_y[n];
 	      dest[y*rystride] = s;
@@ -593,13 +593,13 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
     }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
 	  bbase_y = &bbase[y*bystride];
-	  s = (GFC_INTEGER_16) 0;
+	  s = (GFC_UINTEGER_16) 0;
 	  for (n = 0; n < count; n++)
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
@@ -609,7 +609,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
     {
       for (y = 0; y < ycount; y++)
 	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+	  dest[x*rxstride + y*rystride] = (GFC_UINTEGER_16)0;
 
       for (y = 0; y < ycount; y++)
 	for (n = 0; n < count; n++)
@@ -621,10 +621,10 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      const GFC_INTEGER_16 *restrict abase_x;
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 *restrict dest_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict abase_x;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 *restrict dest_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
@@ -633,7 +633,7 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 	  for (x = 0; x < xcount; x++)
 	    {
 	      abase_x = &abase[x*axstride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase_x[n*aystride] * bbase_y[n*bxstride];
 	      dest_y[x*rxstride] = s;
@@ -649,17 +649,17 @@ matmul_i16_avx (gfc_array_i16 * const restrict retarray,
 
 #ifdef HAVE_AVX2
 static void
-matmul_i16_avx2 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx2 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx2,fma")));
 static void
-matmul_i16_avx2 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx2 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  const GFC_INTEGER_16 * restrict abase;
-  const GFC_INTEGER_16 * restrict bbase;
-  GFC_INTEGER_16 * restrict dest;
+  const GFC_UINTEGER_16 * restrict abase;
+  const GFC_UINTEGER_16 * restrict bbase;
+  GFC_UINTEGER_16 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -701,7 +701,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
         }
 
       retarray->base_addr
-	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_INTEGER_16));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_UINTEGER_16));
       retarray->offset = 0;
     }
   else if (unlikely (compile_options.bounds_check))
@@ -820,7 +820,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
           > POW3(blas_limit)))
     {
       const int m = xcount, n = ycount, k = count, ldc = rystride;
-      const GFC_INTEGER_16 one = 1, zero = 0;
+      const GFC_UINTEGER_16 one = 1, zero = 0;
       const int lda = (axstride == 1) ? aystride : axstride,
 		ldb = (bxstride == 1) ? bystride : bxstride;
 
@@ -858,8 +858,8 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 
 	 from netlib.org, translated to C, and modified for matmul.m4.  */
 
-      const GFC_INTEGER_16 *a, *b;
-      GFC_INTEGER_16 *c;
+      const GFC_UINTEGER_16 *a, *b;
+      GFC_UINTEGER_16 *c;
       const index_type m = xcount, n = ycount, k = count;
 
       /* System generated locals */
@@ -867,11 +867,11 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_UINTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
-      GFC_INTEGER_16 *t1;
+      GFC_UINTEGER_16 *t1;
 
       a = abase;
       b = bbase;
@@ -891,7 +891,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_16)0;
+	  c[i + j * c_dim1] = (GFC_UINTEGER_16)0;
 
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
@@ -908,7 +908,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_16));
+      t1 = malloc (t1_dim * sizeof(GFC_UINTEGER_16));
 
       /* Start turning the crank. */
       i1 = n;
@@ -1126,10 +1126,10 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) != 1)
 	{
-	  const GFC_INTEGER_16 *restrict abase_x;
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 *restrict dest_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict abase_x;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 *restrict dest_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
@@ -1138,7 +1138,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 	      for (x = 0; x < xcount; x++)
 		{
 		  abase_x = &abase[x*axstride];
-		  s = (GFC_INTEGER_16) 0;
+		  s = (GFC_UINTEGER_16) 0;
 		  for (n = 0; n < count; n++)
 		    s += abase_x[n] * bbase_y[n];
 		  dest_y[x] = s;
@@ -1147,13 +1147,13 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 	}
       else
 	{
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
 	      bbase_y = &bbase[y*bystride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase[n*axstride] * bbase_y[n];
 	      dest[y*rystride] = s;
@@ -1162,13 +1162,13 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
     }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
 	  bbase_y = &bbase[y*bystride];
-	  s = (GFC_INTEGER_16) 0;
+	  s = (GFC_UINTEGER_16) 0;
 	  for (n = 0; n < count; n++)
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
@@ -1178,7 +1178,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
     {
       for (y = 0; y < ycount; y++)
 	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+	  dest[x*rxstride + y*rystride] = (GFC_UINTEGER_16)0;
 
       for (y = 0; y < ycount; y++)
 	for (n = 0; n < count; n++)
@@ -1190,10 +1190,10 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      const GFC_INTEGER_16 *restrict abase_x;
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 *restrict dest_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict abase_x;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 *restrict dest_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
@@ -1202,7 +1202,7 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 	  for (x = 0; x < xcount; x++)
 	    {
 	      abase_x = &abase[x*axstride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase_x[n*aystride] * bbase_y[n*bxstride];
 	      dest_y[x*rxstride] = s;
@@ -1218,17 +1218,17 @@ matmul_i16_avx2 (gfc_array_i16 * const restrict retarray,
 
 #ifdef HAVE_AVX512F
 static void
-matmul_i16_avx512f (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx512f (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx512f")));
 static void
-matmul_i16_avx512f (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx512f (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  const GFC_INTEGER_16 * restrict abase;
-  const GFC_INTEGER_16 * restrict bbase;
-  GFC_INTEGER_16 * restrict dest;
+  const GFC_UINTEGER_16 * restrict abase;
+  const GFC_UINTEGER_16 * restrict bbase;
+  GFC_UINTEGER_16 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -1270,7 +1270,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
         }
 
       retarray->base_addr
-	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_INTEGER_16));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_UINTEGER_16));
       retarray->offset = 0;
     }
   else if (unlikely (compile_options.bounds_check))
@@ -1389,7 +1389,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
           > POW3(blas_limit)))
     {
       const int m = xcount, n = ycount, k = count, ldc = rystride;
-      const GFC_INTEGER_16 one = 1, zero = 0;
+      const GFC_UINTEGER_16 one = 1, zero = 0;
       const int lda = (axstride == 1) ? aystride : axstride,
 		ldb = (bxstride == 1) ? bystride : bxstride;
 
@@ -1427,8 +1427,8 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 
 	 from netlib.org, translated to C, and modified for matmul.m4.  */
 
-      const GFC_INTEGER_16 *a, *b;
-      GFC_INTEGER_16 *c;
+      const GFC_UINTEGER_16 *a, *b;
+      GFC_UINTEGER_16 *c;
       const index_type m = xcount, n = ycount, k = count;
 
       /* System generated locals */
@@ -1436,11 +1436,11 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_UINTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
-      GFC_INTEGER_16 *t1;
+      GFC_UINTEGER_16 *t1;
 
       a = abase;
       b = bbase;
@@ -1460,7 +1460,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_16)0;
+	  c[i + j * c_dim1] = (GFC_UINTEGER_16)0;
 
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
@@ -1477,7 +1477,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_16));
+      t1 = malloc (t1_dim * sizeof(GFC_UINTEGER_16));
 
       /* Start turning the crank. */
       i1 = n;
@@ -1695,10 +1695,10 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) != 1)
 	{
-	  const GFC_INTEGER_16 *restrict abase_x;
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 *restrict dest_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict abase_x;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 *restrict dest_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
@@ -1707,7 +1707,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 	      for (x = 0; x < xcount; x++)
 		{
 		  abase_x = &abase[x*axstride];
-		  s = (GFC_INTEGER_16) 0;
+		  s = (GFC_UINTEGER_16) 0;
 		  for (n = 0; n < count; n++)
 		    s += abase_x[n] * bbase_y[n];
 		  dest_y[x] = s;
@@ -1716,13 +1716,13 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 	}
       else
 	{
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
 	      bbase_y = &bbase[y*bystride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase[n*axstride] * bbase_y[n];
 	      dest[y*rystride] = s;
@@ -1731,13 +1731,13 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
     }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
 	  bbase_y = &bbase[y*bystride];
-	  s = (GFC_INTEGER_16) 0;
+	  s = (GFC_UINTEGER_16) 0;
 	  for (n = 0; n < count; n++)
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
@@ -1747,7 +1747,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
     {
       for (y = 0; y < ycount; y++)
 	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+	  dest[x*rxstride + y*rystride] = (GFC_UINTEGER_16)0;
 
       for (y = 0; y < ycount; y++)
 	for (n = 0; n < count; n++)
@@ -1759,10 +1759,10 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      const GFC_INTEGER_16 *restrict abase_x;
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 *restrict dest_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict abase_x;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 *restrict dest_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
@@ -1771,7 +1771,7 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 	  for (x = 0; x < xcount; x++)
 	    {
 	      abase_x = &abase[x*axstride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase_x[n*aystride] * bbase_y[n*bxstride];
 	      dest_y[x*rxstride] = s;
@@ -1789,29 +1789,29 @@ matmul_i16_avx512f (gfc_array_i16 * const restrict retarray,
 
 #if defined(HAVE_AVX) && defined(HAVE_FMA3) && defined(HAVE_AVX128)
 void
-matmul_i16_avx128_fma3 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx128_fma3 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma")));
 internal_proto(matmul_i16_avx128_fma3);
 #endif
 
 #if defined(HAVE_AVX) && defined(HAVE_FMA4) && defined(HAVE_AVX128)
 void
-matmul_i16_avx128_fma4 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_avx128_fma4 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm) __attribute__((__target__("avx,fma4")));
 internal_proto(matmul_i16_avx128_fma4);
 #endif
 
 /* Function to fall back to if there is no special processor-specific version.  */
 static void
-matmul_i16_vanilla (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16_vanilla (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  const GFC_INTEGER_16 * restrict abase;
-  const GFC_INTEGER_16 * restrict bbase;
-  GFC_INTEGER_16 * restrict dest;
+  const GFC_UINTEGER_16 * restrict abase;
+  const GFC_UINTEGER_16 * restrict bbase;
+  GFC_UINTEGER_16 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -1853,7 +1853,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
         }
 
       retarray->base_addr
-	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_INTEGER_16));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_UINTEGER_16));
       retarray->offset = 0;
     }
   else if (unlikely (compile_options.bounds_check))
@@ -1972,7 +1972,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
           > POW3(blas_limit)))
     {
       const int m = xcount, n = ycount, k = count, ldc = rystride;
-      const GFC_INTEGER_16 one = 1, zero = 0;
+      const GFC_UINTEGER_16 one = 1, zero = 0;
       const int lda = (axstride == 1) ? aystride : axstride,
 		ldb = (bxstride == 1) ? bystride : bxstride;
 
@@ -2010,8 +2010,8 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 
 	 from netlib.org, translated to C, and modified for matmul.m4.  */
 
-      const GFC_INTEGER_16 *a, *b;
-      GFC_INTEGER_16 *c;
+      const GFC_UINTEGER_16 *a, *b;
+      GFC_UINTEGER_16 *c;
       const index_type m = xcount, n = ycount, k = count;
 
       /* System generated locals */
@@ -2019,11 +2019,11 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_UINTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
-      GFC_INTEGER_16 *t1;
+      GFC_UINTEGER_16 *t1;
 
       a = abase;
       b = bbase;
@@ -2043,7 +2043,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_16)0;
+	  c[i + j * c_dim1] = (GFC_UINTEGER_16)0;
 
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
@@ -2060,7 +2060,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_16));
+      t1 = malloc (t1_dim * sizeof(GFC_UINTEGER_16));
 
       /* Start turning the crank. */
       i1 = n;
@@ -2278,10 +2278,10 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) != 1)
 	{
-	  const GFC_INTEGER_16 *restrict abase_x;
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 *restrict dest_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict abase_x;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 *restrict dest_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
@@ -2290,7 +2290,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 	      for (x = 0; x < xcount; x++)
 		{
 		  abase_x = &abase[x*axstride];
-		  s = (GFC_INTEGER_16) 0;
+		  s = (GFC_UINTEGER_16) 0;
 		  for (n = 0; n < count; n++)
 		    s += abase_x[n] * bbase_y[n];
 		  dest_y[x] = s;
@@ -2299,13 +2299,13 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 	}
       else
 	{
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
 	      bbase_y = &bbase[y*bystride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase[n*axstride] * bbase_y[n];
 	      dest[y*rystride] = s;
@@ -2314,13 +2314,13 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
     }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
 	  bbase_y = &bbase[y*bystride];
-	  s = (GFC_INTEGER_16) 0;
+	  s = (GFC_UINTEGER_16) 0;
 	  for (n = 0; n < count; n++)
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
@@ -2330,7 +2330,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
     {
       for (y = 0; y < ycount; y++)
 	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+	  dest[x*rxstride + y*rystride] = (GFC_UINTEGER_16)0;
 
       for (y = 0; y < ycount; y++)
 	for (n = 0; n < count; n++)
@@ -2342,10 +2342,10 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      const GFC_INTEGER_16 *restrict abase_x;
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 *restrict dest_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict abase_x;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 *restrict dest_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
@@ -2354,7 +2354,7 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 	  for (x = 0; x < xcount; x++)
 	    {
 	      abase_x = &abase[x*axstride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase_x[n*aystride] * bbase_y[n*bxstride];
 	      dest_y[x*rxstride] = s;
@@ -2371,16 +2371,16 @@ matmul_i16_vanilla (gfc_array_i16 * const restrict retarray,
 
 /* Currently, this is i386 only.  Adjust for other architectures.  */
 
-void matmul_i16 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+void matmul_i16 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  static void (*matmul_p) (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+  static void (*matmul_p) (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 
-  void (*matmul_fn) (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+  void (*matmul_fn) (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm);
 
   matmul_fn = __atomic_load_n (&matmul_p, __ATOMIC_RELAXED);
@@ -2447,13 +2447,13 @@ void matmul_i16 (gfc_array_i16 * const restrict retarray,
 #else  /* Just the vanilla function.  */
 
 void
-matmul_i16 (gfc_array_i16 * const restrict retarray, 
-	gfc_array_i16 * const restrict a, gfc_array_i16 * const restrict b, int try_blas,
+matmul_i16 (gfc_array_m16 * const restrict retarray,
+	gfc_array_m16 * const restrict a, gfc_array_m16 * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {
-  const GFC_INTEGER_16 * restrict abase;
-  const GFC_INTEGER_16 * restrict bbase;
-  GFC_INTEGER_16 * restrict dest;
+  const GFC_UINTEGER_16 * restrict abase;
+  const GFC_UINTEGER_16 * restrict bbase;
+  GFC_UINTEGER_16 * restrict dest;
 
   index_type rxstride, rystride, axstride, aystride, bxstride, bystride;
   index_type x, y, n, count, xcount, ycount;
@@ -2495,7 +2495,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
         }
 
       retarray->base_addr
-	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_INTEGER_16));
+	= xmallocarray (size0 ((array_t *) retarray), sizeof (GFC_UINTEGER_16));
       retarray->offset = 0;
     }
   else if (unlikely (compile_options.bounds_check))
@@ -2614,7 +2614,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
           > POW3(blas_limit)))
     {
       const int m = xcount, n = ycount, k = count, ldc = rystride;
-      const GFC_INTEGER_16 one = 1, zero = 0;
+      const GFC_UINTEGER_16 one = 1, zero = 0;
       const int lda = (axstride == 1) ? aystride : axstride,
 		ldb = (bxstride == 1) ? bystride : bxstride;
 
@@ -2652,8 +2652,8 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 
 	 from netlib.org, translated to C, and modified for matmul.m4.  */
 
-      const GFC_INTEGER_16 *a, *b;
-      GFC_INTEGER_16 *c;
+      const GFC_UINTEGER_16 *a, *b;
+      GFC_UINTEGER_16 *c;
       const index_type m = xcount, n = ycount, k = count;
 
       /* System generated locals */
@@ -2661,11 +2661,11 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 		 i1, i2, i3, i4, i5, i6;
 
       /* Local variables */
-      GFC_INTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
+      GFC_UINTEGER_16 f11, f12, f21, f22, f31, f32, f41, f42,
 		 f13, f14, f23, f24, f33, f34, f43, f44;
       index_type i, j, l, ii, jj, ll;
       index_type isec, jsec, lsec, uisec, ujsec, ulsec;
-      GFC_INTEGER_16 *t1;
+      GFC_UINTEGER_16 *t1;
 
       a = abase;
       b = bbase;
@@ -2685,7 +2685,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
       /* Empty c first.  */
       for (j=1; j<=n; j++)
 	for (i=1; i<=m; i++)
-	  c[i + j * c_dim1] = (GFC_INTEGER_16)0;
+	  c[i + j * c_dim1] = (GFC_UINTEGER_16)0;
 
       /* Early exit if possible */
       if (m == 0 || n == 0 || k == 0)
@@ -2702,7 +2702,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
       if (t1_dim > 65536)
 	t1_dim = 65536;
 
-      t1 = malloc (t1_dim * sizeof(GFC_INTEGER_16));
+      t1 = malloc (t1_dim * sizeof(GFC_UINTEGER_16));
 
       /* Start turning the crank. */
       i1 = n;
@@ -2920,10 +2920,10 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
     {
       if (GFC_DESCRIPTOR_RANK (a) != 1)
 	{
-	  const GFC_INTEGER_16 *restrict abase_x;
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 *restrict dest_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict abase_x;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 *restrict dest_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
@@ -2932,7 +2932,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	      for (x = 0; x < xcount; x++)
 		{
 		  abase_x = &abase[x*axstride];
-		  s = (GFC_INTEGER_16) 0;
+		  s = (GFC_UINTEGER_16) 0;
 		  for (n = 0; n < count; n++)
 		    s += abase_x[n] * bbase_y[n];
 		  dest_y[x] = s;
@@ -2941,13 +2941,13 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	}
       else
 	{
-	  const GFC_INTEGER_16 *restrict bbase_y;
-	  GFC_INTEGER_16 s;
+	  const GFC_UINTEGER_16 *restrict bbase_y;
+	  GFC_UINTEGER_16 s;
 
 	  for (y = 0; y < ycount; y++)
 	    {
 	      bbase_y = &bbase[y*bystride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase[n*axstride] * bbase_y[n];
 	      dest[y*rystride] = s;
@@ -2956,13 +2956,13 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
     }
   else if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
 	  bbase_y = &bbase[y*bystride];
-	  s = (GFC_INTEGER_16) 0;
+	  s = (GFC_UINTEGER_16) 0;
 	  for (n = 0; n < count; n++)
 	    s += abase[n*axstride] * bbase_y[n*bxstride];
 	  dest[y*rxstride] = s;
@@ -2972,7 +2972,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
     {
       for (y = 0; y < ycount; y++)
 	for (x = 0; x < xcount; x++)
-	  dest[x*rxstride + y*rystride] = (GFC_INTEGER_16)0;
+	  dest[x*rxstride + y*rystride] = (GFC_UINTEGER_16)0;
 
       for (y = 0; y < ycount; y++)
 	for (n = 0; n < count; n++)
@@ -2984,10 +2984,10 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
     }
   else
     {
-      const GFC_INTEGER_16 *restrict abase_x;
-      const GFC_INTEGER_16 *restrict bbase_y;
-      GFC_INTEGER_16 *restrict dest_y;
-      GFC_INTEGER_16 s;
+      const GFC_UINTEGER_16 *restrict abase_x;
+      const GFC_UINTEGER_16 *restrict bbase_y;
+      GFC_UINTEGER_16 *restrict dest_y;
+      GFC_UINTEGER_16 s;
 
       for (y = 0; y < ycount; y++)
 	{
@@ -2996,7 +2996,7 @@ matmul_i16 (gfc_array_i16 * const restrict retarray,
 	  for (x = 0; x < xcount; x++)
 	    {
 	      abase_x = &abase[x*axstride];
-	      s = (GFC_INTEGER_16) 0;
+	      s = (GFC_UINTEGER_16) 0;
 	      for (n = 0; n < count; n++)
 		s += abase_x[n*aystride] * bbase_y[n*bxstride];
 	      dest_y[x*rxstride] = s;

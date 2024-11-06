@@ -1,3 +1,266 @@
+2024-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117361
+	* Make-lang.in (s-selftest-c): Use GCC_FOR_SELFTESTS.
+	(selftest-c-gdb): Likewise.
+	(selftest-c-valgrind): Likewise.
+
+2024-10-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117145
+	PR c/117245
+	PR c/100420
+	* c-decl.cc (c_build_pointer_type): Move to c-typeck.cc
+	(grokdeclarator): Simplify logic.
+	(match_builtin_function_types): Adapt.
+	(push_decl): Adapt.
+	(implicitly_declare): Adapt.
+	(c_update_type_canonical): Adapt.
+	(c_make_fname_decl): Adapt.
+	(start_function): Adapt.
+	* c-objc-common.h: Add LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE.
+	* c-tree.h: Add prototypes.
+	* c-typeck.cc (c_verify_type): New function.
+	(c_set_type_bits). New function.
+	(c_build_pointer_type): Moved from c-decl.cc.
+	(c_build_pointer_type_for_mode): New function.
+	(c_build_function_type): New function.
+	(c_build_array_type): New function.
+	(c_build_type_attribute_variant): New function.
+	(c_reconstruct_complex_type): New function.
+	(c_build_functype_attribute_variant): Renamed.
+	(array_to_pointer_conversion): Simplify logic.
+	(composite_type_internal): Simplify logic..
+	(build_unary_op): Simplify logic..
+	(comptypes_verify): Add checking assertions.
+	(c_build_qualified_type): Add checking assertions.
+	(c_build_function_call_vec): Adapt.
+	(qualify_type): Adapt.
+	(build_functype_attribute_variant): Adapt.
+	(common_pointer_type): Adapt.
+	(c_common_type): Adapt.
+	(convert_for_assignment): Adapt.
+	(type_or_builtin_type): Adapt.
+	(build_access_with_size_for_counted_by): Adapt.
+	(build_conditional_expr): Adapt.
+	(build_modify_expr): Adapt.
+	(build_binary_op): Adapt.
+	(build_omp_array_section): Adapt.
+	(handle_omp_array_sections): Adapt.
+	(c_finish_omp_clauses): Adapt.
+	* c-parser.cc (c_parser_typeof_specifier): Adapt.
+	(c_parser_generic_selection): Adapt.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_postfix_expression): Diagnose if
+	first __builtin_stdc_* argument has char type even when
+	-funsigned-char.
+
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-objc-common.cc: Include "make-unique.h".
+	(c_initialize_diagnostics): Use unique_ptr for pretty_printer.
+	Use context->set_format_decoder.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117030
+	* c-parser.cc: Include asan.h and c-family/c-ubsan.h.
+	(c_parser_postfix_expression): Handle __builtin_stdc_rotate_left
+	and __builtin_stdc_rotate_right.
+	* c-fold.cc (c_fully_fold_internal): Handle LROTATE_EXPR and
+	RROTATE_EXPR.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.cc: Remove trailing whitespace.
+	* gimple-parser.cc: Likewise.
+	* c-parser.cc: Likewise.
+	* c-decl.cc: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* c-aux-info.cc: Add #define INCLUDE_MEMORY.
+	* c-convert.cc: Likewise.
+	* c-errors.cc: Likewise.
+	* c-fold.cc: Likewise.
+	* c-lang.cc: Likewise.
+	* c-objc-common.cc: Likewise.
+	(pp_markup::element_quoted_type::print_type): Use unique_ptr.
+	* c-typeck.cc: Add #define INCLUDE_MEMORY.
+	* gimple-parser.cc: Likewise.
+
+2024-10-23  Joseph Myers  <josmyers@redhat.com>
+
+	* c-decl.cc (c_struct_parse_info): Add member refloc.
+	(start_struct): Store refloc in struct_parse_info.
+	(finish_struct): Give "originally defined" message for C23 struct
+	redefinition errors.
+
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117190
+	* c-parser.cc (c_parser_initval): Revert 2024-10-17 changes.
+	Instead peek the 4th token and if it is not CPP_NUMBER,
+	handle it like 3rd token CPP_CLOSE_BRACE for orig_len == INT_MAX.
+	Also, check (2 + 2 * i)th raw token for the orig_len == INT_MAX
+	case and punt if it is not CPP_NUMBER.
+
+2024-10-19  Joseph Myers  <josmyers@redhat.com>
+
+	* c-tree.h (c_arg_info): Add c23_empty_parens.
+	* c-decl.cc (grokparms): Set c23_empty_parens.
+	(build_arg_info): Clear c23_empty_parens.
+	(store_parm_decls_newstyle): Do not give -Wtraditional warning for
+	ISO C function definition if c23_empty_parens.
+
+2024-10-18  Alejandro Colomar  <alx@kernel.org>
+
+	* c-decl.cc (one_element_array_type_p, get_parm_array_spec)
+	* c-fold.cc (c_fold_array_ref):
+	Rename array_type_nelts => array_type_nelts_minus_one
+
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117177
+	* c-parser.cc (c_parser_initval): Instead of doing
+	orig_len == INT_MAX checks before consuming tokens to set
+	last = 1, check it after consuming it and if not followed
+	by CPP_COMMA CPP_NUMBER, call process_init_element once
+	more with the last CPP_NUMBER.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (c_get_loop_names): Add checking assert that
+	c is non-NULL in the loop.
+	(c_finish_bc_name): Likewise.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_expression): Initialize next.original_type
+	to integer_type_node for the CPP_EMBED case.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-tree.h (c_maybe_optimize_large_byte_initializer): Declare.
+	* c-parser.cc (c_parser_initval): Attempt to optimize large char array
+	initializers into RAW_DATA_CST.
+	* c-typeck.cc (c_maybe_optimize_large_byte_initializer): New function.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_braced_init): Handle CPP_EMBED.
+	(c_parser_get_builtin_args): Likewise.
+	(c_parser_expression): Likewise.
+	(c_parser_expr_list): Likewise.
+	* c-typeck.cc (digest_init): Handle RAW_DATA_CST.  Formatting fix.
+	(init_node_successor): New function.
+	(add_pending_init): Handle RAW_DATA_CST.
+	(set_nonincremental_init): Formatting fix.
+	(output_init_element): Handle RAW_DATA_CST.  Formatting fixes.
+	(maybe_split_raw_data): New function.
+	(process_init_element): Use maybe_split_raw_data.  Handle
+	RAW_DATA_CST.
+
+2024-10-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/116016
+	* c-decl.cc (names_builtin_p): Add RID_BUILTIN_COUNTED_BY_REF.
+	* c-parser.cc (has_counted_by_object): New routine.
+	(get_counted_by_ref): New routine.
+	(c_parser_postfix_expression): Handle New RID_BUILTIN_COUNTED_BY_REF.
+	* c-tree.h: New routine handle_counted_by_for_component_ref.
+	* c-typeck.cc (handle_counted_by_for_component_ref): New routine.
+	(build_component_ref): Call the new routine.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117022
+	* c-tree.h: Implement C2Y N3355 - Named loops.
+	(C_DECL_LOOP_NAME, C_DECL_SWITCH_NAME, C_DECL_LOOP_SWITCH_NAME_VALID,
+	C_DECL_LOOP_SWITCH_NAME_USED, IN_NAMED_STMT): Define.
+	(c_get_loop_names, c_release_loop_names, c_finish_bc_name): Declare.
+	(c_start_switch): Add NAME argument.
+	(c_finish_bc_stmt): Likewise.
+	* c-lang.h (struct language_function): Add loop_names and
+	loop_names_hash members.
+	* c-parser.cc (c_parser_external_declaration,
+	c_parser_declaration_or_fndef, c_parser_struct_or_union_specifier,
+	c_parser_parameter_declaration): Adjust c_parser_pragma caller.
+	(get_before_labels): New function.
+	(c_parser_compound_statement_nostart): Call get_before_labels when
+	needed, adjust c_parser_pragma and c_parser_statement_after_labels
+	callers.
+	(c_parser_statement): Call get_before_labels first and pass it to
+	c_parser_statement_after_labels.
+	(c_parser_bc_name): New function.
+	(c_parser_statement_after_labels): Add BEFORE_LABELS argument.  Pass
+	it down to c_parser_switch_statement, c_parser_while_statement,
+	c_parser_do_statement, c_parser_for_statement and c_parser_pragma.
+	Call c_parser_bc_name for RID_BREAK and RID_CONTINUE and pass it as
+	another argument to c_finish_bc_stmt.
+	(c_parser_if_body, c_parser_else_body): Call get_before_labels
+	early and pass it to c_parser_statement_after_labels.
+	(c_parser_switch_statement): Add BEFORE_LABELS argument.  Call
+	c_get_loop_names, if named, pass switch_name to c_start_switch,
+	mark it valid and set IN_NAMED_STMT bit in in_statement before
+	parsing body, otherwise clear IN_NAMED_STMT bit before that parsing.
+	Run c_release_loop_names at the end.
+	(c_parser_while_statement, c_parser_do_statement,
+	c_parser_for_statement): Add BEFORE_LABELS argument.  Call
+	c_get_loop_names, if named, mark it valid and set IN_NAMED_STMT bit
+	in in_statement before parsing body, otherwise clear IN_NAMED_STMT
+	before that parsing, arrange for the loop name if used to be
+	another *_STMT argument.
+	(c_parser_objc_class_instance_variables,
+	c_parser_objc_methodprotolist): Adjust c_parser_pragma callers.
+	(c_parser_pragma): Add BEFORE_LABELS argument.  Pass it down to
+	c_parser_for_statement, c_parser_while_statement or
+	c_parser_do_statement.
+	(c_parser_omp_loop_nest, c_maybe_parse_omp_decl): Adjust
+	c_parser_pragma callers.
+	* c-decl.cc (loop_names, loop_names_hash): New static variables.
+	(add_stmt): Set STATEMENT_LIST_HAS_LABEL after push_stmt_list rather
+	than before it.
+	(c_push_function_context): Save and clear loop_names and
+	loop_names_hash.
+	(c_pop_function_context): Release or delete, restore and clear
+	loop_names and loop_names_hash.
+	(c_get_loop_names, c_release_loop_names, c_finish_bc_name): New
+	functions.
+	* c-typeck.cc (c_start_switch): Add SWITCH_NAME argument, pass it down
+	to build_stmt.
+	(c_finish_bc_stmt): Add NAME argument.  Mark of IN_NAMED_STMT bit
+	of in_statement in swtiches.  Use label for IN_OBJC_FOREACH only if
+	name is NULL.  If name is non-NULL and C_DECL_LOOP_NAME and
+	C_DECL_SWITCH_NAME are both set, assume outer ObjC foreach and
+	dig labels from DECL_CHAIN of name.  Pass NAME to build_stmt
+	otherwise.
+
+2024-10-07  qing zhao  <qing.zhao@oracle.com>
+
+	PR c/116735
+	* c-decl.cc (verify_counted_by_attribute): Remove the attribute
+	when error.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Set alignment for alignof;
+	accept static variables and fix predef allocator check.
+
+2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_declare_target): Set target-used bit
+	in omp_requires_mask.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_requires): Handle self_maps clause.
+
 2024-09-20  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/116726

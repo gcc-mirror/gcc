@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1464,8 +1465,7 @@ gfc_trans_if_1 (gfc_code * code)
 {
   gfc_se if_se;
   tree stmt, elsestmt;
-  locus saved_loc;
-  location_t loc;
+  location_t loc, saved_loc = UNKNOWN_LOCATION;
 
   /* Check for an unconditional ELSE clause.  */
   if (!code->expr1)
@@ -1476,16 +1476,16 @@ gfc_trans_if_1 (gfc_code * code)
   gfc_start_block (&if_se.pre);
 
   /* Calculate the IF condition expression.  */
-  if (code->expr1->where.lb)
+  if (GFC_LOCUS_IS_SET (code->expr1->where))
     {
-      gfc_save_backend_locus (&saved_loc);
-      gfc_set_backend_locus (&code->expr1->where);
+      saved_loc = input_location;
+      input_location = gfc_get_location (&code->expr1->where);
     }
 
   gfc_conv_expr_val (&if_se, code->expr1);
 
-  if (code->expr1->where.lb)
-    gfc_restore_backend_locus (&saved_loc);
+  if (saved_loc != UNKNOWN_LOCATION)
+    input_location = saved_loc;
 
   /* Translate the THEN clause.  */
   stmt = gfc_trans_code (code->next);
@@ -1497,8 +1497,8 @@ gfc_trans_if_1 (gfc_code * code)
     elsestmt = build_empty_stmt (input_location);
 
   /* Build the condition expression and add it to the condition block.  */
-  loc = code->expr1->where.lb ? gfc_get_location (&code->expr1->where)
-			      : input_location;
+  loc = (GFC_LOCUS_IS_SET (code->expr1->where)
+	 ? gfc_get_location (&code->expr1->where) : input_location);
   stmt = fold_build3_loc (loc, COND_EXPR, void_type_node, if_se.expr, stmt,
 			  elsestmt);
 
@@ -1909,7 +1909,53 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       gfc_add_init_cleanup (block, gfc_finish_block (&se.pre), tmp);
     }
+
   /* Now all the other kinds of associate variable.  */
+
+  /* First we do the F202y ASSOCIATE construct with an assumed rank selector.
+     Since this requires rank remapping, the simplest implementation builds an
+     array reference, using the array ref attached to the association_list,
+     followed by gfc_trans_pointer_assignment.  */
+  else if (e->rank == -1 && sym->assoc->ar)
+    {
+      gfc_array_ref *ar;
+      gfc_expr *expr1 = gfc_lval_expr_from_sym (sym);
+      stmtblock_t init;
+      gfc_init_block (&init);
+
+      /* Build the array reference and add to expr1.  */
+      gfc_free_ref_list (expr1->ref);
+      expr1->ref = gfc_get_ref();
+      expr1->ref->type = REF_ARRAY;
+      ar = gfc_copy_array_ref (sym->assoc->ar);
+      expr1->ref->u.ar = *ar;
+      expr1->ref->u.ar.type = AR_SECTION;
+
+      /* For class objects, insert the _data component reference. Since the
+	 associate-name is a pointer, it needs a target, which is created using
+	 its typespec. If unlimited polymorphic, the _len field will be filled
+	 by the pointer assignment.  */
+      if (expr1->ts.type == BT_CLASS)
+	{
+	  need_len_assign = false;
+	  gfc_ref *ref;
+	  gfc_find_component (expr1->ts.u.derived, "_data", true, true, &ref);
+	  ref->next = expr1->ref;
+	  expr1->ref = ref;
+	  expr1->rank = CLASS_DATA (sym)->as->rank;
+	  tmp = gfc_create_var (gfc_typenode_for_spec (&sym->ts), "class");
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	  gfc_add_modify (&init, sym->backend_decl, tmp);
+	}
+
+      /* Do the pointer assignment and clean up.  */
+      gfc_expr *expr2 = gfc_copy_expr (e);
+      gfc_add_expr_to_block (&init,
+			     gfc_trans_pointer_assignment (expr1, expr2));
+      gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL);
+      gfc_free_expr (expr1);
+      gfc_free_expr (expr2);
+    }
   else if ((sym->attr.dimension || sym->attr.codimension) && !class_target
 	   && (sym->as->type == AS_DEFERRED || sym->assoc->variable))
     {
@@ -2078,8 +2124,9 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  gfc_conv_class_to_class (&se, e, sym->ts, false, true, false, false);
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 
-	  /* Set the offset.  */
 	  desc = gfc_class_data_get (se.expr);
+
+	  /* Set the offset.  */
 	  offset = gfc_index_zero_node;
 	  for (n = 0; n < e->rank; n++)
 	    {
@@ -2089,9 +2136,11 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 				     gfc_conv_descriptor_stride_get (desc, dim),
 				     gfc_conv_descriptor_lbound_get (desc, dim));
 	      offset = fold_build2_loc (input_location, MINUS_EXPR,
-				        gfc_array_index_type,
-				        offset, tmp);
+					gfc_array_index_type,
+					offset, tmp);
 	    }
+	  gfc_conv_descriptor_offset_set (&se.pre, desc, offset);
+
 	  if (need_len_assign)
 	    {
 	      if (e->symtree
@@ -2119,7 +2168,6 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	      /* Length assignment done, prevent adding it again below.  */
 	      need_len_assign = false;
 	    }
-	  gfc_conv_descriptor_offset_set (&se.pre, desc, offset);
 	}
       else if (sym->ts.type == BT_CLASS && e->ts.type == BT_CLASS
 	       && CLASS_DATA (e)->attr.dimension)

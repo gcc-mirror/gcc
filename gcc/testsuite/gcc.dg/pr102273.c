@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=zero" } */
+/* { dg-options "-std=gnu17 -ftrivial-auto-var-init=zero" } */
 
 void bar();
 

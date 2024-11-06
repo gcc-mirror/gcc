@@ -42,9 +42,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <string.h>
 #include <limits.h>
-#define _StrLib_H
 #define _StrLib_C
 
+#include "GStrLib.h"
 #   include "GASCII.h"
 
 
@@ -127,13 +127,13 @@ extern "C" void StrLib_StrConCat (const char *a_, unsigned int _a_high, const ch
   j = 0;
   while ((j < Highb) && (i <= Highc))
     {
-      c[i] = b[j];
+      const_cast<char *>(c)[i] = b[j];
       i += 1;
       j += 1;
     }
   if (i <= Highc)
     {
-      c[i] = ASCII_nul;
+      const_cast<char *>(c)[i] = ASCII_nul;
     }
 }
 
@@ -247,12 +247,12 @@ extern "C" void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *
   HighDest = _dest_high;
   while ((n < HighSrc) && (n <= HighDest))
     {
-      dest[n] = src[n];
+      const_cast<char *>(dest)[n] = src[n];
       n += 1;
     }
   if (n <= HighDest)
     {
-      dest[n] = ASCII_nul;
+      const_cast<char *>(dest)[n] = ASCII_nul;
     }
 }
 
@@ -328,13 +328,13 @@ extern "C" void StrLib_StrRemoveWhitePrefix (const char *a_, unsigned int _a_hig
     }
   while ((i < higha) && (j <= highb))
     {
-      b[j] = a[i];
+      const_cast<char *>(b)[j] = a[i];
       i += 1;
       j += 1;
     }
   if (j <= highb)
     {
-      b[j] = ASCII_nul;
+      const_cast<char *>(b)[j] = ASCII_nul;
     }
 }
 

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1498,7 +1499,7 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 	  && multiple_p (mem_ref_offset (*tp),
 			 wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp)))))
 	{
-	  *tp = build3 (BIT_FIELD_REF, TREE_TYPE (*tp), sym, 
+	  *tp = build3 (BIT_FIELD_REF, TREE_TYPE (*tp), sym,
 			TYPE_SIZE (TREE_TYPE (*tp)),
 			int_const_binop (MULT_EXPR,
 					 bitsize_int (BITS_PER_UNIT),
@@ -1531,7 +1532,7 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 		   (mem_ref_offset (*tp),
 		    wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp))),
 		    0, wi::to_offset (DECL_SIZE_UNIT (sym))))
-	       && (! INTEGRAL_TYPE_P (TREE_TYPE (*tp)) 
+	       && (! INTEGRAL_TYPE_P (TREE_TYPE (*tp))
 		   || (wi::to_offset (TYPE_SIZE (TREE_TYPE (*tp)))
 		       == TYPE_PRECISION (TREE_TYPE (*tp))))
 	       && (! INTEGRAL_TYPE_P (TREE_TYPE (sym))
@@ -1655,7 +1656,7 @@ non_rewritable_mem_ref_base (tree ref)
 /* For an lvalue tree LHS return true if it cannot be rewritten into SSA form.
    Otherwise return true.  */
 
-static bool 
+static bool
 non_rewritable_lvalue_p (tree lhs)
 {
   /* A plain decl is always rewritable.  */

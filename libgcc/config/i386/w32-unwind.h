@@ -45,7 +45,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       some foreign code for which no unwind frame can be found. If this is
       a call from the Windows signal handler, then:
 
-   2) We must get the signal context information. 
+   2) We must get the signal context information.
 
       * With the standard exception filter:
 
@@ -120,7 +120,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MD_FALLBACK_FRAME_STATE_FOR i386_w32_fallback_frame_state
 
 static _Unwind_Reason_Code
-i386_w32_fallback_frame_state (struct _Unwind_Context *context, 
+i386_w32_fallback_frame_state (struct _Unwind_Context *context,
 			       _Unwind_FrameState *fs)
 
 {
@@ -136,7 +136,7 @@ i386_w32_fallback_frame_state (struct _Unwind_Context *context,
       PCONTEXT proc_ctx_;
       long new_cfa_;
 
-      if (SIG_SEH1) 
+      if (SIG_SEH1)
 	proc_ctx_ = (PCONTEXT) (*(int*)(ctx_cfa_ + 56));
       else if (SIG_SEH2)
 	proc_ctx_ = (PCONTEXT) (*(int*)(ctx_cfa_ + 8));
@@ -179,9 +179,9 @@ i386_w32_fallback_frame_state (struct _Unwind_Context *context,
      one of it's probes prior to the real SP adjustment. The only
      operations of interest performed is "pushl %ecx", followed by
      ecx clobbering.  */
-  else if (SIG_ALLOCA) 
+  else if (SIG_ALLOCA)
     {
-      /* Only one push between entry in _alloca and the probe trap.  */ 
+      /* Only one push between entry in _alloca and the probe trap.  */
       long new_cfa_ = (long) ctx_cfa_ + 4;
 
       fs->regs.cfa_how = CFA_REG_OFFSET;

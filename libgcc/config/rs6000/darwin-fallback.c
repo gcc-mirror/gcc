@@ -72,7 +72,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
 
   /* For each supported Libc, we have to track the code flow
      all the way back into the kernel.
-  
+
      This code is believed to support all released Libc/Libsystem builds since
      Jaguar 6C115, including all the security updates.  To be precise,
 
@@ -84,7 +84,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
      262~1	63~32		6I34-6I35
      262~1	63~64		6L29-6L60
      262.4.1~1	63~84		6L123-6R172
-     
+
      320~1	71~101		7B85-7D28
      320~1	71~266		7F54-7F56
      320~1	71~288		7F112
@@ -92,7 +92,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
      320.1.3~1	71.1.1~29	7H60-7H105
      320.1.3~1	71.1.1~30	7H110-7H113
      320.1.3~1	71.1.1~31	7H114
-     
+
      That's a big table!  It would be insane to try to keep track of
      every little detail, so we just read the code itself and do what
      it would do.
@@ -101,7 +101,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
   for (;;)
     {
       uint32_t ins = *pc++;
-      
+
       if ((ins & 0xFC000003) == 0x48000000)  /* b instruction */
 	{
 	  pc += ((((int32_t) ins & 0x3FFFFFC) ^ 0x2000000) - 0x2000004) / 4;
@@ -128,7 +128,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
 	}
       if ((ins & 0xFC0007FF) == 0x7C000378) /* or, including mr */
 	{
-	  gprs [ins >> 16 & 0x1F] = (gprs [ins >> 11 & 0x1F] 
+	  gprs [ins >> 16 & 0x1F] = (gprs [ins >> 11 & 0x1F]
 				     | gprs [ins >> 21 & 0x1F]);
 	  continue;
 	}
@@ -248,7 +248,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
 #define UC_DUAL                 50
 #define UC_DUAL_VEC             55
 
-struct gcc_ucontext 
+struct gcc_ucontext
 {
   int onstack;
   sigset_t sigmask;
@@ -260,7 +260,7 @@ struct gcc_ucontext
   struct gcc_mcontext32 *mcontext;
 };
 
-struct gcc_float_vector_state 
+struct gcc_float_vector_state
 {
   double fpregs[32];
   uint32_t fpscr_pad;
@@ -332,12 +332,12 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   _Unwind_Ptr new_cfa;
   int i;
   static _Unwind_Ptr return_addr;
-  
+
   /* Yay!  We're in a Libc that we understand, and it's made a
      system call.  In Jaguar, this is a direct system call with value 103;
      in Panther and Tiger it is a SYS_syscall call for system call number 184,
      and in Leopard it is a direct syscall with number 184.  */
-  
+
   if (gprs[0] == 0x67 /* SYS_SIGRETURN */)
     {
       uctx = (struct gcc_ucontext *) gprs[3];
@@ -387,7 +387,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
       float_vector_state = &m64->fvs;
 
       new_cfa = m64->gpr[1][1];
-      
+
       set_offset (R_CR2, &m64->cr);
       for (i = 0; i < 32; i++)
 	set_offset (i, m64->gpr[i] + 1);
@@ -396,7 +396,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
       set_offset (R_CTR, m64->ctr + 1);
       if (is_vector)
 	set_offset (R_VRSAVE, &m64->vrsave);
-      
+
       /* Sometimes, srr0 points to the instruction that caused the exception,
 	 and sometimes to the next instruction to be executed; we want
 	 the latter.  */
@@ -413,7 +413,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
       int i;
 
       float_vector_state = &m->fvs;
-      
+
       new_cfa = m->gpr[1];
 
       set_offset (R_CR2, &m->cr);
@@ -440,7 +440,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   fs->regs.cfa_how = CFA_REG_OFFSET;
   fs->regs.cfa_reg = __LIBGCC_STACK_POINTER_REGNUM__;
   fs->regs.cfa_offset = new_cfa - old_cfa;;
-  
+
   /* The choice of column for the return address is somewhat tricky.
      Fortunately, the actual choice is private to this file, and
      the space it's reserved from is the GCC register space, not the
@@ -455,7 +455,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
   for (i = 0; i < 32; i++)
     set_offset (32 + i, float_vector_state->fpregs + i);
   set_offset (R_SPEFSCR, &float_vector_state->fpscr);
-  
+
   if (is_vector)
     {
       for (i = 0; i < 32; i++)

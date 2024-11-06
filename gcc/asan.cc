@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2174,7 +2175,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 				  & ~(ASAN_MIN_RED_ZONE_SIZE - HOST_WIDE_INT_1))
 		   - offset;
 
-      /* Unpoison shadow memory that corresponds to a variable that is 
+      /* Unpoison shadow memory that corresponds to a variable that is
 	 is subject of use-after-return sanitization.  */
       if (l > 2)
 	{
@@ -2610,7 +2611,7 @@ maybe_cast_to_ptrmode (location_t loc, tree len, gimple_stmt_iterator *iter,
   if (ptrofftype_p (len))
     return len;
   gimple *g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
-				  NOP_EXPR, len);
+				   NOP_EXPR, len);
   gimple_set_location (g, loc);
   if (before_p)
     gsi_safe_insert_before (iter, g);
@@ -2644,16 +2645,13 @@ build_check_stmt (location_t loc, tree base, tree len,
 		  bool is_non_zero_len, bool before_p, bool is_store,
 		  bool is_scalar_access, unsigned int align = 0)
 {
-  gimple_stmt_iterator gsi = *iter;
   gimple *g;
 
   gcc_assert (!(size_in_bytes > 0 && !is_non_zero_len));
   gcc_assert (size_in_bytes == -1 || size_in_bytes >= 1);
 
-  gsi = *iter;
-
   base = unshare_expr (base);
-  base = maybe_create_ssa_name (loc, base, &gsi, before_p);
+  base = maybe_create_ssa_name (loc, base, iter, before_p);
 
   if (len)
     {
@@ -2704,12 +2702,11 @@ build_check_stmt (location_t loc, tree base, tree len,
 						 align / BITS_PER_UNIT));
   gimple_set_location (g, loc);
   if (before_p)
-    gsi_safe_insert_before (&gsi, g);
+    gsi_safe_insert_before (iter, g);
   else
     {
-      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-      gsi_next (&gsi);
-      *iter = gsi;
+      gsi_insert_after (iter, g, GSI_NEW_STMT);
+      gsi_next (iter);
     }
 }
 

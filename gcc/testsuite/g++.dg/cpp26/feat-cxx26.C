@@ -43,8 +43,8 @@
 
 #ifndef __cpp_range_based_for
 #  error "__cpp_range_based_for"
-#elif __cpp_range_based_for != 201603
-#  error "__cpp_range_based_for != 201603"
+#elif __cpp_range_based_for != 202211
+#  error "__cpp_range_based_for != 202211"
 #endif
 
 #ifndef __cpp_decltype

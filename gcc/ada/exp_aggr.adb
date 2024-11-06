@@ -5946,12 +5946,7 @@ package body Exp_Aggr is
       then
          return;
 
-      elsif Present (Component_Associations (N))
-        and then Nkind (First (Component_Associations (N))) =
-                 N_Iterated_Component_Association
-        and then
-          Present (Iterator_Specification (First (Component_Associations (N))))
-      then
+      elsif Is_Two_Pass_Aggregate (N) then
          Two_Pass_Aggregate_Expansion (N);
          return;
 
@@ -6637,12 +6632,11 @@ package body Exp_Aggr is
 
       Comp      : Node_Id;
       Init_Stat : Node_Id;
-      Siz       : Int;
 
       --  The following are used when the size of the aggregate is not
       --  static and requires a dynamic evaluation.
       Siz_Decl   : Node_Id;
-      Siz_Exp    : Node_Id := Empty;
+      Siz_Exp    : Node_Id;
 
       --  These variables are used to determine the smallest and largest
       --  choice values. Choice_Lo and Choice_Hi are passed to the New_Indexed
@@ -6653,14 +6647,18 @@ package body Exp_Aggr is
 
       Is_Indexed_Aggregate : Boolean := False;
 
-      function Aggregate_Size return Int;
+      function Aggregate_Size return Node_Id;
       --  Compute number of entries in aggregate, including choices
       --  that cover a range or subtype, as well as iterated constructs.
-      --  Return -1 if the size is not known statically, in which case
-      --  allocate a default size for the aggregate, or build an expression
-      --  to estimate the size dynamically.
+      --  The size of the aggregate can either be a statically known in which
+      --  case it is returned as an integer literal, or it can be a dynamic
+      --  expression in which case an empty node is returned.
+      --
+      --  It is not possible to determine the size for all case. When that
+      --  happens this function returns an empty node. In that case we will
+      --  later just allocate a default size for the aggregate.
 
-      function Build_Siz_Exp (Comp : Node_Id) return Int;
+      function Build_Siz_Exp (Comp : Node_Id) return Node_Id;
       --  When the aggregate contains a single Iterated_Component_Association
       --  or Element_Association with non-static bounds, build an expression
       --  to be used as the allocated size of the container. This may be an
@@ -6683,167 +6681,102 @@ package body Exp_Aggr is
       --  that calls the appropriate operation Insert_Op to add the value of
       --  Expr to each container element with an index in the range.
 
+      function To_Int (Expr : N_Subexpr_Id) return Int;
+      --  Return the Int value corresponding to the bound Expr
+
       --------------------
       -- Aggregate_Size --
       --------------------
 
-      function Aggregate_Size return Int is
-         Comp   : Node_Id;
-         Choice : Node_Id;
-         Lo, Hi : Node_Id;
-         Siz    : Int;
-
-         procedure Add_Range_Size;
-         --  Compute number of components specified by a component association
-         --  given by a range or subtype name.
-
-         --------------------
-         -- Add_Range_Size --
-         --------------------
-
-         procedure Add_Range_Size is
-            function To_Int (Expr : N_Subexpr_Id) return Int;
-            --  Return the Int value corresponding to the bound Expr
-
-            ------------
-            -- To_Int --
-            ------------
-
-            function To_Int (Expr : N_Subexpr_Id) return Int is
-            begin
-               --  The bounds of the discrete range are integers or enumeration
-               --  literals
-               return UI_To_Int
-                 ((if Nkind (Expr) = N_Integer_Literal then
-                     Intval (Expr)
-                   else
-                     Enumeration_Pos (Expr)));
-            end To_Int;
-
-            --  Local variables
-
-            Range_Int_Lo : constant Int := To_Int (Lo);
-            Range_Int_Hi : constant Int := To_Int (Hi);
-
-         begin
-            Siz := Siz + Range_Int_Hi - Range_Int_Lo + 1;
-
-            if No (Choice_Lo) or else Range_Int_Lo < To_Int (Choice_Lo) then
-               Choice_Lo   := Lo;
-            end if;
-
-            if No (Choice_Hi) or else Range_Int_Hi > To_Int (Choice_Hi) then
-               Choice_Hi   := Hi;
-            end if;
-         end Add_Range_Size;
+      function Aggregate_Size return Node_Id is
+         Comp         : Node_Id;
+         Comp_Siz_Exp : Node_Id;
+         Siz_Exp      : Node_Id;
 
       --  Start of processing for Aggregate_Size
 
       begin
          --  Aggregate is either all positional or all named
 
-         Siz := List_Length (Expressions (N));
+         Siz_Exp := Make_Integer_Literal (Loc, List_Length (Expressions (N)));
+         Set_Is_Static_Expression (Siz_Exp);
 
          if Present (Component_Associations (N)) then
             Comp := First (Component_Associations (N));
 
-            --  If one or more of the associations is one of the iterated
-            --  forms, and is either an association with nonstatic bounds
-            --  or is an iterator over an iterable object where the size
-            --  cannot be derived, then treat the whole container aggregate as
-            --  having a nonstatic number of elements.
-
-            declare
-               Has_Nonstatic_Length : Boolean := False;
-
-            begin
-               while Present (Comp) loop
-                  if Nkind (Comp) in N_Iterated_Component_Association |
-                                     N_Iterated_Element_Association
-                    and then Build_Siz_Exp (Comp) = -1
-                  then
-                     Has_Nonstatic_Length := True;
-                  end if;
-
-                  Next (Comp);
-               end loop;
-
-               if Has_Nonstatic_Length then
-                  return -1;
-               end if;
-            end;
-
-            --  Otherwise, the aggregate must have associations where all
-            --  choices and bounds are statically known, and we compute
-            --  the number of elements statically by adding up the number
-            --  of elements in each association.
-
-            Comp := First (Component_Associations (N));
-
             while Present (Comp) loop
-               if Present (Choice_List (Comp)) then
-                  Choice := First (Choice_List (Comp));
+               Comp_Siz_Exp := Build_Siz_Exp (Comp);
 
-                  while Present (Choice) loop
-                     Analyze (Choice);
+               if No (Comp_Siz_Exp) then
 
-                     if Nkind (Choice) = N_Range then
-                        Lo := Low_Bound (Choice);
-                        Hi := High_Bound (Choice);
-                        Add_Range_Size;
+                  --  If the size of the component cannot be determined then
+                  --  we cannot continue with the dynamic evalution and we
+                  --  should use the default value instead.
 
-                     --  Choice is subtype_mark; add range based on its bounds
+                  return Empty;
+               else
+                  if Is_Static_Expression (Siz_Exp)
+                     and then Is_Static_Expression (Comp_Siz_Exp)
+                  then
+                     --  Create a simpler version of the expression
 
-                     elsif Is_Entity_Name (Choice)
-                       and then Is_Type (Entity (Choice))
-                     then
-                        Lo := Type_Low_Bound (Entity (Choice));
-                        Hi := Type_High_Bound (Entity (Choice));
-                        Add_Range_Size;
+                     Siz_Exp := Make_Integer_Literal (Loc,
+                                  To_Int (Siz_Exp) + To_Int (Comp_Siz_Exp));
 
-                        Rewrite (Choice,
-                          Make_Range (Loc,
-                            New_Copy_Tree (Lo),
-                            New_Copy_Tree (Hi)));
-
-                     --  Choice is a single discrete value
-
-                     elsif Is_Discrete_Type (Etype (Choice)) then
-                        Lo := Choice;
-                        Hi := Choice;
-                        Add_Range_Size;
-
-                     --  Choice is a single value of some nondiscrete type
-
-                     else
-                        --  Single choice (syntax excludes a subtype
-                        --  indication).
-
-                        Siz := Siz + 1;
-                     end if;
-
-                     Next (Choice);
-                  end loop;
-
-               elsif Nkind (Comp) = N_Iterated_Component_Association then
-
-                  Siz := Siz + Build_Siz_Exp (Comp);
+                     Set_Is_Static_Expression (Siz_Exp);
+                  else
+                     Siz_Exp := Make_Op_Add (Sloc (Comp),
+                                  Left_Opnd  => Siz_Exp,
+                                  Right_Opnd => Comp_Siz_Exp);
+                  end if;
                end if;
+
                Next (Comp);
             end loop;
          end if;
 
-         return Siz;
+         return Siz_Exp;
       end Aggregate_Size;
 
       -------------------
       -- Build_Siz_Exp --
       -------------------
 
-      function Build_Siz_Exp (Comp : Node_Id) return Int is
+      function Build_Siz_Exp (Comp : Node_Id) return Node_Id is
          Lo, Hi       : Node_Id;
-         Temp_Siz_Exp : Node_Id;
          It           : Node_Id;
+         Siz_Exp      : Node_Id := Empty;
+         Choice       : Node_Id;
+         Temp_Siz_Exp : Node_Id;
+         Siz          : Int;
+
+         procedure Update_Choices (Lo : Node_Id; Hi : Node_Id);
+         --  Update the Choice_Lo and Choice_Hi variables with the smallest
+         --  and largest possible node values.
+
+         procedure Update_Choices (Lo : Node_Id; Hi : Node_Id) is
+            --  Local variables
+
+            Range_Int_Lo : constant Int := To_Int (Lo);
+            Range_Int_Hi : constant Int := To_Int (Hi);
+
+         begin
+            if No (Choice_Lo)
+              or else (Is_Static_Expression (Choice_Lo)
+                        and then Range_Int_Lo < To_Int (Choice_Lo))
+            then
+               Choice_Lo := Lo;
+            end if;
+
+            if No (Choice_Hi)
+              or else (Is_Static_Expression (Choice_Hi)
+                        and then Range_Int_Hi > To_Int (Choice_Hi))
+            then
+               Choice_Hi := Hi;
+            end if;
+         end Update_Choices;
+
+      --  Start of processing for Build_Siz_Exp
 
       begin
          if Nkind (Comp) = N_Range then
@@ -6857,59 +6790,27 @@ package body Exp_Aggr is
             if Is_Static_Expression (Lo)
               and then Is_Static_Expression (Hi)
             then
-               if Nkind (Lo) = N_Integer_Literal then
-                  Siz := UI_To_Int (Intval (Hi)) - UI_To_Int (Intval (Lo)) + 1;
-               else
-                  Siz := UI_To_Int (Enumeration_Pos (Hi))
-                       - UI_To_Int (Enumeration_Pos (Lo)) + 1;
-               end if;
+               Update_Choices (Lo, Hi);
 
-               --  Include the static value in the computation of the aggregate
-               --  length in Siz_Exp. This will only end up being used if there
-               --  are one or more associations that have nonstatic ranges.
+               Siz := To_Int (Hi) - To_Int (Lo) + 1;
+               Siz_Exp := Make_Integer_Literal (Loc, Siz);
+               Set_Is_Static_Expression (Siz_Exp);
 
-               if Present (Siz_Exp) then
-                  Siz_Exp := Make_Op_Add (Sloc (Comp),
-                               Left_Opnd  => Siz_Exp,
-                               Right_Opnd => Make_Integer_Literal (Loc, Siz));
-               else
-                  Siz_Exp := Make_Integer_Literal (Loc, Siz);
-               end if;
-
-               return Siz;
-
-            --  The possibility of having multiple associations with nonstatic
-            --  ranges (plus static ranges) means that in general we have to
-            --  accumulate a sum of the various sizes.
-
+               return Siz_Exp;
             else
-               Temp_Siz_Exp :=
-                 Make_Op_Add (Sloc (Comp),
-                   Left_Opnd =>
-                     Make_Op_Subtract (Sloc (Comp),
-                       Left_Opnd => New_Copy_Tree (Hi),
-                       Right_Opnd => New_Copy_Tree (Lo)),
-                   Right_Opnd =>
-                     Make_Integer_Literal (Loc, 1));
-
                --  Capture the nonstatic bounds, for later use in passing on
                --  the call to New_Indexed.
 
                Choice_Lo := Lo;
                Choice_Hi := Hi;
 
-               --  Include this nonstatic length in the total length being
-               --  accumulated in Siz_Exp.
-
-               if Present (Siz_Exp) then
-                  Siz_Exp := Make_Op_Add (Sloc (Comp),
-                               Left_Opnd  => Siz_Exp,
-                               Right_Opnd => Temp_Siz_Exp);
-               else
-                  Siz_Exp := Temp_Siz_Exp;
-               end if;
-
-               return -1;
+               return Make_Op_Add (Sloc (Comp),
+                   Left_Opnd =>
+                     Make_Op_Subtract (Sloc (Comp),
+                       Left_Opnd => New_Copy_Tree (Hi),
+                       Right_Opnd => New_Copy_Tree (Lo)),
+                   Right_Opnd =>
+                     Make_Integer_Literal (Loc, 1));
             end if;
 
          elsif Nkind (Comp) = N_Iterated_Component_Association then
@@ -6921,29 +6822,128 @@ package body Exp_Aggr is
                It := Name (Iterator_Specification (Comp));
                Preanalyze (It);
 
-               --  Handle the simplest cases for now where It denotes a
-               --  top-level one-dimensional array objects".
+               --  Handle the simplest cases for now where It denotes an array
+               --  object.
 
                if Nkind (It) in N_Identifier
                  and then Ekind (Etype (It)) = E_Array_Subtype
-                 and then No (Next_Index (First_Index (Etype (It))))
                then
-                  return Build_Siz_Exp (First_Index (Etype (It)));
+                  declare
+                     Idx_N : Node_Id := First_Index (Etype (It));
+                     Siz_Exp : Node_Id := Empty;
+                  begin
+                     while Present (Idx_N) loop
+                        Temp_Siz_Exp := Build_Siz_Exp (Idx_N);
+
+                        pragma Assert (Present (Temp_Siz_Exp));
+
+                        if Present (Siz_Exp) then
+                           if Is_Static_Expression (Siz_Exp)
+                             and then Is_Static_Expression (Temp_Siz_Exp)
+                           then
+
+                              --  Create a simpler version of the expression
+
+                              Siz_Exp := Make_Integer_Literal (Loc,
+                                           To_Int (Siz_Exp) *
+                                           To_Int (Temp_Siz_Exp));
+
+                              Set_Is_Static_Expression (Siz_Exp);
+                           else
+                              Siz_Exp := Make_Op_Multiply (Sloc (Comp),
+                                           Left_Opnd  => Siz_Exp,
+                                           Right_Opnd => Temp_Siz_Exp);
+                           end if;
+                        else
+                           Siz_Exp := Temp_Siz_Exp;
+                        end if;
+
+                        Next_Index (Idx_N);
+                     end loop;
+
+                     return Siz_Exp;
+                  end;
                end if;
 
-               return -1;
+               return Empty;
             else
                return Build_Siz_Exp (First (Discrete_Choices (Comp)));
             end if;
+
+         elsif Nkind (Comp) = N_Component_Association then
+            Choice := First (Choices (Comp));
+
+            while Present (Choice) loop
+               Analyze (Choice);
+
+               if Nkind (Choice) = N_Range then
+
+                  Temp_Siz_Exp := Build_Siz_Exp (Choice);
+
+               --  Choice is subtype_mark; add range based on its bounds
+
+               elsif Is_Entity_Name (Choice)
+                 and then Is_Type (Entity (Choice))
+               then
+                  Lo := Type_Low_Bound (Entity (Choice));
+                  Hi := Type_High_Bound (Entity (Choice));
+
+                  Rewrite (Choice,
+                    Make_Range (Loc,
+                      New_Copy_Tree (Lo),
+                      New_Copy_Tree (Hi)));
+
+                  Temp_Siz_Exp := Build_Siz_Exp (Choice);
+
+               --  Choice is a single discrete value
+
+               elsif Is_Discrete_Type (Etype (Choice)) then
+                  Update_Choices (Choice, Choice);
+
+                  Temp_Siz_Exp := Make_Integer_Literal (Loc, 1);
+                  Set_Is_Static_Expression (Temp_Siz_Exp);
+
+               --  Choice is a single value of some nondiscrete type
+
+               else
+                  Temp_Siz_Exp := Make_Integer_Literal (Loc, 1);
+                  Set_Is_Static_Expression (Temp_Siz_Exp);
+               end if;
+
+               if Present (Siz_Exp) then
+
+                  if Is_Static_Expression (Siz_Exp)
+                    and then Is_Static_Expression (Temp_Siz_Exp)
+                  then
+                     --  Create a simpler version of the expression
+
+                     Siz_Exp := Make_Integer_Literal
+                        (Loc, To_Int (Siz_Exp) + To_Int (Temp_Siz_Exp));
+
+                     Set_Is_Static_Expression (Siz_Exp);
+                  else
+                     Siz_Exp := Make_Op_Add
+                        (Sloc (Comp),
+                           Left_Opnd  => Siz_Exp,
+                           Right_Opnd => Temp_Siz_Exp);
+                  end if;
+               else
+                  Siz_Exp := Temp_Siz_Exp;
+               end if;
+
+               Next (Choice);
+            end loop;
+
+            return Siz_Exp;
          elsif Nkind (Comp) = N_Iterated_Element_Association then
-            return -1;
+            return Empty;
 
             --  ??? Need to create code for a loop and add to generated code,
             --  as is done for array aggregates with iterated element
             --  associations, instead of using Append operations.
 
          else
-            return -1;
+            return Empty;
          end if;
       end Build_Siz_Exp;
 
@@ -7117,6 +7117,19 @@ package body Exp_Aggr is
                     Statements       => Stats);
       end Expand_Range_Component;
 
+      ------------
+      -- To_Int --
+      ------------
+
+      function To_Int (Expr : N_Subexpr_Id) return Int is
+      begin
+         --  The bounds of the discrete range are integers or enumeration
+         --  literals
+         return UI_To_Int ((if Nkind (Expr) = N_Integer_Literal
+                            then Intval (Expr)
+                            else  Enumeration_Pos (Expr)));
+      end To_Int;
+
    --  Start of processing for Expand_Container_Aggregate
 
    begin
@@ -7135,7 +7148,7 @@ package body Exp_Aggr is
       --  size cannot be determined statically we use a default value
       --  or a dynamic expression.
 
-      Siz := Aggregate_Size;
+      Siz_Exp := Aggregate_Size;
 
       declare
          Count_Type         : Entity_Id := Standard_Natural;
@@ -7160,31 +7173,24 @@ package body Exp_Aggr is
          --  expression if iterated component associations may be involved,
          --  and the default otherwise.
 
-         if Siz = -1 then
-            if No (Siz_Exp)
-              and Present (Default)
-            then
-               Siz := UI_To_Int (Intval (Default));
-               Siz_Exp := Make_Integer_Literal (Loc, Siz);
+         if Present (Siz_Exp) then
+            Siz_Exp := Make_Type_Conversion (Loc,
+               Subtype_Mark =>
+                  New_Occurrence_Of (Count_Type, Loc),
+               Expression => Siz_Exp);
 
-            elsif Present (Siz_Exp) then
-               Siz_Exp := Make_Type_Conversion (Loc,
-                  Subtype_Mark =>
-                    New_Occurrence_Of (Count_Type, Loc),
-                  Expression => Siz_Exp);
+         elsif Present (Default) then
+            Siz_Exp := Make_Integer_Literal (Loc,
+                                             UI_To_Int (Intval (Default)));
 
-            --  If the length isn't known and there's not a default, then use
-            --  zero for the initial container length.
-
-            else
-               Siz_Exp := Make_Type_Conversion (Loc,
-                  Subtype_Mark =>
-                    New_Occurrence_Of (Count_Type, Loc),
-                  Expression => Make_Integer_Literal (Loc, 0));
-            end if;
+         --  If the length isn't known and there's not a default, then use
+         --  zero for the initial container length.
 
          else
-            Siz_Exp := Make_Integer_Literal (Loc, Siz);
+            Siz_Exp := Make_Type_Conversion (Loc,
+               Subtype_Mark =>
+                  New_Occurrence_Of (Count_Type, Loc),
+               Expression => Make_Integer_Literal (Loc, 0));
          end if;
 
          Siz_Decl := Make_Object_Declaration (Loc,
@@ -8871,6 +8877,21 @@ package body Exp_Aggr is
         and then Is_Scalar_Type (Component_Type (Typ))
         and then C in Uint_1 | Uint_2 | Uint_4; -- False if No_Uint
    end Is_Two_Dim_Packed_Array;
+
+   ---------------------------
+   -- Is_Two_Pass_Aggregate --
+   ---------------------------
+
+   function Is_Two_Pass_Aggregate (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Aggregate
+        and then Present (Component_Associations (N))
+        and then Nkind (First (Component_Associations (N))) =
+                   N_Iterated_Component_Association
+        and then
+          Present
+            (Iterator_Specification (First (Component_Associations (N))));
+   end Is_Two_Pass_Aggregate;
 
    --------------------
    -- Late_Expansion --

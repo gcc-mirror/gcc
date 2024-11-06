@@ -30,7 +30,9 @@
 #ifndef _STREAM_ITERATOR_H
 #define _STREAM_ITERATOR_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <iosfwd>
 #include <bits/move.h>

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -627,11 +628,11 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "tainted_args",	      0, 0, true,  false, false, false,
 			      handle_tainted_args_attribute, NULL },
   { "fd_arg",             1, 1, false, true, true, false,
-            handle_fd_arg_attribute, NULL},      
+            handle_fd_arg_attribute, NULL},
   { "fd_arg_read",        1, 1, false, true, true, false,
             handle_fd_arg_attribute, NULL},
   { "fd_arg_write",       1, 1, false, true, true, false,
-            handle_fd_arg_attribute, NULL},         
+            handle_fd_arg_attribute, NULL},
   { "flag_enum",	      0, 0, false, true, false, false,
 			      handle_flag_enum_attribute, NULL },
   { "null_terminated_string_arg", 1, 1, false, true, true, false,
@@ -5035,7 +5036,7 @@ handle_fd_arg_attribute (tree *node, tree name, tree args,
   if (positional_argument (*node, name, TREE_VALUE (args), INTEGER_TYPE))
       return NULL_TREE;
 
-  *no_add_attrs = true;  
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 

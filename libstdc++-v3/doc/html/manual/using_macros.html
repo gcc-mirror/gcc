@@ -82,9 +82,15 @@
 	This is described in more detail in
 	<a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile Time Checks</a>.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_ASSERTIONS</code></span></dt><dd><p>
-	Undefined by default. When defined, enables extra error checking in
-        the form of precondition assertions, such as bounds checking in
-        strings and null pointer checks when dereferencing smart pointers.
+	Defined by default when compiling with no optimization, undefined
+	by default when compiling with optimization.
+	When defined, enables extra error checking in the form of
+	precondition assertions, such as bounds checking in strings
+	and null pointer checks when dereferencing smart pointers.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_NO_ASSERTIONS</code></span></dt><dd><p>
+	Undefined by default.  When defined, prevents the implicit
+	definition of <code class="code">_GLIBCXX_ASSERTIONS</code> when compiling
+	with no optimization.
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_DEBUG</code></span></dt><dd><p>
 	Undefined by default. When defined, compiles user code using
 	the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>.

@@ -72,6 +72,9 @@ typedef __Poly16_t poly16_t;
 typedef __Poly64_t poly64_t;
 typedef __Poly128_t poly128_t;
 
+typedef __Mfloat8x8_t mfloat8x8_t;
+typedef __Mfloat8x16_t mfloat8x16_t;
+
 typedef __fp16 float16_t;
 typedef float float32_t;
 typedef double float64_t;
@@ -26949,9 +26952,9 @@ vrax1q_u64 (uint64x2_t __a, uint64x2_t __b)
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vxarq_u64 (uint64x2_t __a, uint64x2_t __b, const int imm6)
+vxarq_u64 (uint64x2_t __a, uint64x2_t __b, const int __imm6)
 {
-  return __builtin_aarch64_xarqv2di_uuus (__a, __b,imm6);
+  return __builtin_aarch64_xarqv2di_uuus (__a, __b, __imm6);
 }
 
 __extension__ extern __inline uint8x16_t

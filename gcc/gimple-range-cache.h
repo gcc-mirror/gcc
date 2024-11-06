@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SSA_RANGE_CACHE_H
 #define GCC_SSA_RANGE_CACHE_H
 
-#include "gimple-range-gori.h" 
+#include "gimple-range-gori.h"
 #include "gimple-range-infer.h"
 #include "gimple-range-phi.h"
 
@@ -94,7 +94,7 @@ protected:
   bitmap active_p;
 };
 
-// This class provides all the caches a global ranger may need, and makes 
+// This class provides all the caches a global ranger may need, and makes
 // them available for gori-computes to query so outgoing edges can be
 // properly calculated.
 

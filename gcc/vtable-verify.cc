@@ -359,7 +359,7 @@ vtbl_register_mangled_name (tree class_type, tree mangled_name)
 
   gcc_assert (vtbl_mangled_name_types->length() ==
 	      vtbl_mangled_name_ids->length());
-    
+
 
   if (vtbl_find_mangled_name (class_type) == NULL_TREE)
     {
@@ -599,7 +599,7 @@ var_is_used_for_virtual_call_p (tree lhs, int *mem_ref_depth,
 	  if (TREE_CODE (rhs) == ADDR_EXPR
 	      || TREE_CODE (rhs) == MEM_REF)
 	    *mem_ref_depth = *mem_ref_depth + 1;
-	  
+
 	  if (TREE_CODE (rhs) == COMPONENT_REF)
 	    {
 	      while (TREE_CODE (TREE_OPERAND (rhs, 0)) == COMPONENT_REF)

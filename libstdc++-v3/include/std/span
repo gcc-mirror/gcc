@@ -34,7 +34,9 @@
 #ifndef _GLIBCXX_SPAN
 #define _GLIBCXX_SPAN 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_span
 #include <bits/version.h>

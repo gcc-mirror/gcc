@@ -1,3 +1,5 @@
+/* { dg-additional-options "-ffast-math" } */
+
 #include "tree-vect.h"
 
 extern double sqrt (double);

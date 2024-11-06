@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-std=gnu17 -O" } */
 
 #if __SIZEOF_INT__ < 4
 #define int __INT32_TYPE__

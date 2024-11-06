@@ -2171,7 +2171,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
       return immed_wide_int_const (result, result_mode);
     }
 
-  else if (CONST_DOUBLE_AS_FLOAT_P (op) 
+  else if (CONST_DOUBLE_AS_FLOAT_P (op)
 	   && SCALAR_FLOAT_MODE_P (mode)
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (op)))
     {
@@ -2600,7 +2600,7 @@ relational_result (machine_mode mode, machine_mode cmp_mode, rtx res)
 
   return res;
 }
-				       
+
 /* Simplify a logical operation CODE with result mode MODE, operating on OP0
    and OP1, which should be both relational operations.  Return 0 if no such
    simplification is possible.  */
@@ -2820,6 +2820,104 @@ reverse_rotate_by_imm_p (machine_mode mode, unsigned int left, rtx op1)
   return false;
 }
 
+/* Analyse argument X to see if it represents an (ASHIFT X Y) operation
+   and return the expression to be shifted in SHIFT_OPND and the shift amount
+   in SHIFT_AMNT.  This is primarily used to group handling of ASHIFT (X, CST)
+   and (PLUS (X, X)) in one place.  If the expression is not equivalent to an
+   ASHIFT then return FALSE and set SHIFT_OPND and SHIFT_AMNT to NULL.  */
+
+static bool
+extract_ashift_operands_p (rtx x, rtx *shift_opnd, rtx *shift_amnt)
+{
+  if (GET_CODE (x) == ASHIFT)
+    {
+      *shift_opnd = XEXP (x, 0);
+      *shift_amnt = XEXP (x, 1);
+      return true;
+    }
+  if (GET_CODE (x) == PLUS && rtx_equal_p (XEXP (x, 0), XEXP (x, 1)))
+    {
+      *shift_opnd = XEXP (x, 0);
+      *shift_amnt = CONST1_RTX (GET_MODE (x));
+      return true;
+    }
+  *shift_opnd = NULL_RTX;
+  *shift_amnt = NULL_RTX;
+  return false;
+}
+
+/* OP0 and OP1 are combined under an operation of mode MODE that can
+   potentially result in a ROTATE expression.  Analyze the OP0 and OP1
+   and return the resulting ROTATE expression if so.  Return NULL otherwise.
+   This is used in detecting the patterns (X << C1) [+,|,^] (X >> C2) where
+   C1 + C2 == GET_MODE_UNIT_PRECISION (mode).
+   (X << C1) and (C >> C2) would be OP0 and OP1.  */
+
+static rtx
+simplify_rotate_op (rtx op0, rtx op1, machine_mode mode)
+{
+  /* Convert (ior (ashift A CX) (lshiftrt A CY)) where CX+CY equals the
+     mode size to (rotate A CX).  */
+
+  rtx opleft = op0;
+  rtx opright = op1;
+  rtx ashift_opnd, ashift_amnt;
+  /* In some cases the ASHIFT is not a direct ASHIFT.  Look deeper and extract
+     the relevant operands here.  */
+  bool ashift_op_p
+    = extract_ashift_operands_p (op1, &ashift_opnd, &ashift_amnt);
+
+  if (ashift_op_p
+     || GET_CODE (op1) == SUBREG)
+    {
+      opleft = op1;
+      opright = op0;
+    }
+  else
+    {
+      opright = op1;
+      opleft = op0;
+      ashift_op_p
+	= extract_ashift_operands_p (opleft, &ashift_opnd, &ashift_amnt);
+    }
+
+  if (ashift_op_p && GET_CODE (opright) == LSHIFTRT
+      && rtx_equal_p (ashift_opnd, XEXP (opright, 0)))
+    {
+      rtx leftcst = unwrap_const_vec_duplicate (ashift_amnt);
+      rtx rightcst = unwrap_const_vec_duplicate (XEXP (opright, 1));
+
+      if (CONST_INT_P (leftcst) && CONST_INT_P (rightcst)
+	  && (INTVAL (leftcst) + INTVAL (rightcst)
+	      == GET_MODE_UNIT_PRECISION (mode)))
+	return gen_rtx_ROTATE (mode, XEXP (opright, 0), ashift_amnt);
+    }
+
+  /* Same, but for ashift that has been "simplified" to a wider mode
+     by simplify_shift_const.  */
+  scalar_int_mode int_mode, inner_mode;
+
+  if (GET_CODE (opleft) == SUBREG
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (opleft)),
+				 &inner_mode)
+      && GET_CODE (SUBREG_REG (opleft)) == ASHIFT
+      && GET_CODE (opright) == LSHIFTRT
+      && GET_CODE (XEXP (opright, 0)) == SUBREG
+      && known_eq (SUBREG_BYTE (opleft), SUBREG_BYTE (XEXP (opright, 0)))
+      && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
+      && rtx_equal_p (XEXP (SUBREG_REG (opleft), 0),
+		      SUBREG_REG (XEXP (opright, 0)))
+      && CONST_INT_P (XEXP (SUBREG_REG (opleft), 1))
+      && CONST_INT_P (XEXP (opright, 1))
+      && (INTVAL (XEXP (SUBREG_REG (opleft), 1))
+	    + INTVAL (XEXP (opright, 1))
+	 == GET_MODE_PRECISION (int_mode)))
+	return gen_rtx_ROTATE (int_mode, XEXP (opright, 0),
+			       XEXP (SUBREG_REG (opleft), 1));
+  return NULL_RTX;
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -2831,7 +2929,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 					       rtx op0, rtx op1,
 					       rtx trueop0, rtx trueop1)
 {
-  rtx tem, reversed, opleft, opright, elt0, elt1;
+  rtx tem, reversed, elt0, elt1;
   HOST_WIDE_INT val;
   scalar_int_mode int_mode, inner_mode;
   poly_int64 offset;
@@ -2994,6 +3092,18 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 				    simplify_gen_binary (XOR, mode, op1,
 							 XEXP (op0, 1)));
 
+      /* (plus (xor X C1) C2) is (xor X (C1^C2)) if X is either 0 or 1 and
+	 2 * ((X ^ C1) & C2) == 0; based on A + B == A ^ B + 2 * (A & B). */
+      if (CONST_SCALAR_INT_P (op1)
+	  && GET_CODE (op0) == XOR
+	  && CONST_SCALAR_INT_P (XEXP (op0, 1))
+	  && nonzero_bits (XEXP (op0, 0), mode) == 1
+	  && 2 * (INTVAL (XEXP (op0, 1)) & INTVAL (op1)) == 0
+	  && 2 * ((1 ^ INTVAL (XEXP (op0, 1))) & INTVAL (op1)) == 0)
+	return simplify_gen_binary (XOR, mode, XEXP (op0, 0),
+				    simplify_gen_binary (XOR, mode, op1,
+							 XEXP (op0, 1)));
+
       /* Canonicalize (plus (mult (neg B) C) A) to (minus A (mult B C)).  */
       if (!HONOR_SIGN_DEPENDENT_ROUNDING (mode)
 	  && GET_CODE (op0) == MULT
@@ -3017,6 +3127,11 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && (reversed = reversed_comparison (op0, mode)))
 	return
 	  simplify_gen_unary (NEG, mode, reversed, mode);
+
+      /* Convert (plus (ashift A CX) (lshiftrt A CY)) where CX+CY equals the
+	 mode size to (rotate A CX).  */
+      if ((tem = simplify_rotate_op (op0, op1, mode)))
+	return tem;
 
       /* If one of the operands is a PLUS or a MINUS, see if we can
 	 simplify this by the associative law.
@@ -3450,49 +3565,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	return op1;
 
       /* Convert (ior (ashift A CX) (lshiftrt A CY)) where CX+CY equals the
-         mode size to (rotate A CX).  */
-
-      if (GET_CODE (op1) == ASHIFT
-          || GET_CODE (op1) == SUBREG)
-        {
-	  opleft = op1;
-	  opright = op0;
-	}
-      else
-        {
-	  opright = op1;
-	  opleft = op0;
-	}
-
-      if (GET_CODE (opleft) == ASHIFT && GET_CODE (opright) == LSHIFTRT
-          && rtx_equal_p (XEXP (opleft, 0), XEXP (opright, 0))
-          && CONST_INT_P (XEXP (opleft, 1))
-          && CONST_INT_P (XEXP (opright, 1))
-          && (INTVAL (XEXP (opleft, 1)) + INTVAL (XEXP (opright, 1))
-	      == GET_MODE_UNIT_PRECISION (mode)))
-        return gen_rtx_ROTATE (mode, XEXP (opright, 0), XEXP (opleft, 1));
-
-      /* Same, but for ashift that has been "simplified" to a wider mode
-        by simplify_shift_const.  */
-
-      if (GET_CODE (opleft) == SUBREG
-	  && is_a <scalar_int_mode> (mode, &int_mode)
-	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (opleft)),
-				     &inner_mode)
-          && GET_CODE (SUBREG_REG (opleft)) == ASHIFT
-          && GET_CODE (opright) == LSHIFTRT
-          && GET_CODE (XEXP (opright, 0)) == SUBREG
-	  && known_eq (SUBREG_BYTE (opleft), SUBREG_BYTE (XEXP (opright, 0)))
-	  && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
-          && rtx_equal_p (XEXP (SUBREG_REG (opleft), 0),
-                          SUBREG_REG (XEXP (opright, 0)))
-          && CONST_INT_P (XEXP (SUBREG_REG (opleft), 1))
-          && CONST_INT_P (XEXP (opright, 1))
-	  && (INTVAL (XEXP (SUBREG_REG (opleft), 1))
-	      + INTVAL (XEXP (opright, 1))
-	      == GET_MODE_PRECISION (int_mode)))
-	return gen_rtx_ROTATE (int_mode, XEXP (opright, 0),
-			       XEXP (SUBREG_REG (opleft), 1));
+	 mode size to (rotate A CX).  */
+      tem = simplify_rotate_op (op0, op1, mode);
+      if (tem)
+	return tem;
 
       /* If OP0 is (ashiftrt (plus ...) C), it might actually be
          a (sign_extend (plus ...)).  Then check if OP1 is a CONST_INT and
@@ -3822,6 +3898,12 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	    return tem;
 	}
 
+      /* Convert (xor (ashift A CX) (lshiftrt A CY)) where CX+CY equals the
+	 mode size to (rotate A CX).  */
+      tem = simplify_rotate_op (op0, op1, mode);
+      if (tem)
+	return tem;
+
       /* Convert (xor (and (not A) B) A) into A | B.  */
       if (GET_CODE (op0) == AND
 	  && GET_CODE (XEXP (op0, 0)) == NOT
@@ -4072,10 +4154,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
       if (VECTOR_MODE_P (mode) && GET_CODE (op0) == ASHIFTRT
 	  && (CONST_INT_P (XEXP (op0, 1))
 	      || (GET_CODE (XEXP (op0, 1)) == CONST_VECTOR
-		  && CONST_VECTOR_DUPLICATE_P (XEXP (op0, 1))
+		  && const_vec_duplicate_p (XEXP (op0, 1))
 		  && CONST_INT_P (XVECEXP (XEXP (op0, 1), 0, 0))))
 	  && GET_CODE (op1) == CONST_VECTOR
-	  && CONST_VECTOR_DUPLICATE_P (op1)
+	  && const_vec_duplicate_p (op1)
 	  && CONST_INT_P (XVECEXP (op1, 0, 0)))
 	{
 	  unsigned HOST_WIDE_INT shift_count
@@ -4246,6 +4328,14 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 				      mode, op0, new_amount_rtx);
 	}
 #endif
+      /* ROTATE/ROTATERT:HI (X:HI, 8) is BSWAP:HI (X).  Other combinations
+	 such as SImode with a count of 16 do not correspond to RTL BSWAP
+	 semantics.  */
+      tem = unwrap_const_vec_duplicate (trueop1);
+      if (GET_MODE_UNIT_BITSIZE (mode) == (2 * BITS_PER_UNIT)
+	  && CONST_INT_P (tem) && INTVAL (tem) == BITS_PER_UNIT)
+	return simplify_gen_unary (BSWAP, mode, op0, mode);
+
       /* FALLTHRU */
     case ASHIFTRT:
       if (trueop1 == CONST0_RTX (mode))
@@ -4879,10 +4969,10 @@ simplify_ashift:
 
 	unsigned int n_elts, in_n_elts;
 	if ((GET_CODE (trueop0) == CONST_VECTOR
-	     || CONST_SCALAR_INT_P (trueop0) 
+	     || CONST_SCALAR_INT_P (trueop0)
 	     || CONST_DOUBLE_AS_FLOAT_P (trueop0))
 	    && (GET_CODE (trueop1) == CONST_VECTOR
-		|| CONST_SCALAR_INT_P (trueop1) 
+		|| CONST_SCALAR_INT_P (trueop1)
 		|| CONST_DOUBLE_AS_FLOAT_P (trueop1))
 	    && GET_MODE_NUNITS (mode).is_constant (&n_elts)
 	    && GET_MODE_NUNITS (op0_mode).is_constant (&in_n_elts))
@@ -5147,7 +5237,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
     }
 
   if (SCALAR_FLOAT_MODE_P (mode)
-      && CONST_DOUBLE_AS_FLOAT_P (op0) 
+      && CONST_DOUBLE_AS_FLOAT_P (op0)
       && CONST_DOUBLE_AS_FLOAT_P (op1)
       && mode == GET_MODE (op0) && mode == GET_MODE (op1))
     {
@@ -5467,7 +5557,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 
 	case US_PLUS:
 	  result = wi::add (pop0, pop1, UNSIGNED, &overflow);
- clamp_unsigned_saturation: 
+ clamp_unsigned_saturation:
 	  if (overflow != wi::OVF_NONE)
 	    result = wi::max_value (GET_MODE_PRECISION (int_mode), UNSIGNED);
 	  break;
@@ -6893,6 +6983,28 @@ simplify_context::simplify_ternary_operation (rtx_code code, machine_mode mode,
 		  && rtx_equal_p (XEXP (op0, 1), op1))))
 	return op2;
 
+      /* Convert a != 0 ? -a : 0 into "-a".  */
+      if (GET_CODE (op0) == NE
+	  && ! side_effects_p (op0)
+	  && ! HONOR_NANS (mode)
+	  && ! HONOR_SIGNED_ZEROS (mode)
+	  && XEXP (op0, 1) == CONST0_RTX (mode)
+	  && op2 == CONST0_RTX (mode)
+	  && GET_CODE (op1) == NEG
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op1, 0)))
+	return op1;
+
+      /* Convert a == 0 ? 0 : -a into "-a".  */
+      if (GET_CODE (op0) == EQ
+	  && ! side_effects_p (op0)
+	  && ! HONOR_NANS (mode)
+	  && ! HONOR_SIGNED_ZEROS (mode)
+	  && op1 == CONST0_RTX (mode)
+	  && XEXP (op0, 1) == CONST0_RTX (mode)
+	  && GET_CODE (op2) == NEG
+	  && rtx_equal_p (XEXP (op0, 0), XEXP (op2, 0)))
+	return op2;
+
       /* Convert (!c) != {0,...,0} ? a : b into
          c != {0,...,0} ? b : a for vector modes.  */
       if (VECTOR_MODE_P (GET_MODE (op1))
@@ -8315,7 +8427,7 @@ test_scalar_int_ext_ops2 (machine_mode bmode, machine_mode mmode,
 				     lowpart_subreg (bmode, mreg, mmode),
 				     bmode),
 		 simplify_gen_unary (TRUNCATE, smode, mreg, mmode));
-}  
+}
 
 
 /* Verify some simplifications involving scalar expressions.  */
@@ -8615,7 +8727,7 @@ test_vec_merge (machine_mode mode)
 
   /* Intermediate binary op. */
   rtx binop = gen_rtx_PLUS (mode, vm1, vm2);
-  ASSERT_RTX_EQ (gen_rtx_PLUS (mode, op0, op2), 
+  ASSERT_RTX_EQ (gen_rtx_PLUS (mode, op0, op2),
 		 simplify_merge_mask (binop, mask1, 0));
   ASSERT_RTX_EQ (gen_rtx_PLUS (mode, op1, op3),
 		 simplify_merge_mask (binop, mask1, 1));
@@ -8636,6 +8748,46 @@ test_vec_merge (machine_mode mode)
   /* Called indirectly.  */
   ASSERT_RTX_EQ (gen_rtx_VEC_MERGE (mode, op0, op3, mask1),
 		 simplify_rtx (nvm));
+}
+
+/* Test that vector rotate formation works at RTL level.  Try various
+   combinations of (REG << C) [|,^,+] (REG >> (<bitwidth> - C)).  */
+
+static void
+test_vector_rotate (rtx reg)
+{
+  machine_mode mode = GET_MODE (reg);
+  unsigned bitwidth = GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT;
+  rtx plus_rtx = gen_rtx_PLUS (mode, reg, reg);
+  rtx lshftrt_amnt = GEN_INT (bitwidth - 1);
+  lshftrt_amnt = gen_const_vec_duplicate (mode, lshftrt_amnt);
+  rtx lshiftrt_rtx = gen_rtx_LSHIFTRT (mode, reg, lshftrt_amnt);
+  rtx rotate_rtx = gen_rtx_ROTATE (mode, reg, CONST1_RTX (mode));
+  /* Test explicitly the case where ASHIFT (x, 1) is a PLUS (x, x).  */
+  ASSERT_RTX_EQ (rotate_rtx,
+	     simplify_rtx (gen_rtx_IOR (mode, plus_rtx, lshiftrt_rtx)));
+  ASSERT_RTX_EQ (rotate_rtx,
+	     simplify_rtx (gen_rtx_XOR (mode, plus_rtx, lshiftrt_rtx)));
+  ASSERT_RTX_EQ (rotate_rtx,
+	     simplify_rtx (gen_rtx_PLUS (mode, plus_rtx, lshiftrt_rtx)));
+
+  /* Don't go through every possible rotate amount to save execution time.
+     Multiple of BITS_PER_UNIT amounts could conceivably be simplified to
+     other bswap operations sometimes. Go through just the odd amounts.  */
+  for (unsigned i = 3; i < bitwidth - 2; i += 2)
+    {
+      rtx rot_amnt = gen_const_vec_duplicate (mode, GEN_INT (i));
+      rtx ashift_rtx = gen_rtx_ASHIFT (mode, reg, rot_amnt);
+      lshftrt_amnt = gen_const_vec_duplicate (mode, GEN_INT (bitwidth - i));
+      lshiftrt_rtx = gen_rtx_LSHIFTRT (mode, reg, lshftrt_amnt);
+      rotate_rtx = gen_rtx_ROTATE (mode, reg, rot_amnt);
+      ASSERT_RTX_EQ (rotate_rtx,
+		 simplify_rtx (gen_rtx_IOR (mode, ashift_rtx, lshiftrt_rtx)));
+      ASSERT_RTX_EQ (rotate_rtx,
+		 simplify_rtx (gen_rtx_XOR (mode, ashift_rtx, lshiftrt_rtx)));
+      ASSERT_RTX_EQ (rotate_rtx,
+		 simplify_rtx (gen_rtx_PLUS (mode, ashift_rtx, lshiftrt_rtx)));
+    }
 }
 
 /* Test subregs of integer vector constant X, trying elements in
@@ -8809,11 +8961,13 @@ test_vector_ops ()
 	{
 	  rtx scalar_reg = make_test_reg (GET_MODE_INNER (mode));
 	  test_vector_ops_duplicate (mode, scalar_reg);
+	  rtx vector_reg = make_test_reg (mode);
 	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	      && maybe_gt (GET_MODE_NUNITS (mode), 2))
 	    {
 	      test_vector_ops_series (mode, scalar_reg);
 	      test_vector_subregs (mode);
+	      test_vector_rotate (vector_reg);
 	    }
 	  test_vec_merge (mode);
 	}

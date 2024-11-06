@@ -194,7 +194,7 @@ compute_local_program_points (
       /* Collect the stmts that is vectorized and mark their program point.  */
       for (i = 0; i < nbbs; i++)
 	{
-	  int point = 1;
+	  unsigned int point = 1;
 	  basic_block bb = bbs[i];
 	  vec<stmt_point> program_points = vNULL;
 	  if (dump_enabled_p ())
@@ -489,9 +489,15 @@ max_number_of_live_regs (loop_vec_info loop_vinfo, const basic_block bb,
       pair live_range = (*iter).second;
       for (i = live_range.first + 1; i <= live_range.second; i++)
 	{
-	  machine_mode mode = TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
-				? BImode
-				: TYPE_MODE (TREE_TYPE (var));
+	  machine_mode mode;
+	  if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE)
+	    mode = BImode;
+	  /* Constants do not have a mode, just use the biggest so
+	     compute_nregs will return 1.  */
+	  else if (TREE_CODE (var) == INTEGER_CST)
+	    mode = biggest_mode;
+	  else
+	    mode = TYPE_MODE (TREE_TYPE (var));
 	  unsigned int nregs
 	    = compute_nregs_for_mode (loop_vinfo, mode, biggest_mode, lmul);
 	  live_vars_vec[i] += nregs;

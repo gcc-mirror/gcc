@@ -18,7 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/*{{{  Includes */ 
+/*{{{  Includes */
 
 #define IN_TARGET_CODE 1
 
@@ -45,13 +45,13 @@
 #include "target-def.h"
 
 /*}}}*/
-/*{{{  Function Prologues & Epilogues */ 
+/*{{{  Function Prologues & Epilogues */
 
 /* The FR30 stack looks like this:
 
              Before call                       After call
    FP ->|                       |       |                       |
-        +-----------------------+       +-----------------------+       high 
+        +-----------------------+       +-----------------------+       high
         |                       |       |                       |       memory
         |  local variables,     |       |  local variables,     |
         |  reg save area, etc.  |       |  reg save area, etc.  |
@@ -63,32 +63,32 @@
    SP ->| do not fit in regs    |       |                       |
         +-----------------------+       +-----------------------+
                                         |  args that used to be |  \
-                                        | in regs; only created |   |  pretend_size 
-                                   AP-> |   for vararg funcs    |  /  
-                                        +-----------------------+    
-                                        |                       |  \  
+                                        | in regs; only created |   |  pretend_size
+                                   AP-> |   for vararg funcs    |  /
+                                        +-----------------------+
+                                        |                       |  \
                                         |  register save area   |   |
                                         |                       |   |
 					+-----------------------+   |  reg_size
-                                        |    return address     |   | 
+                                        |    return address     |   |
 					+-----------------------+   |
                                    FP ->|   previous frame ptr  |  /
-                                        +-----------------------+    
-                                        |                       |  \   
-                                        |  local variables      |   |  var_size 
-                                        |                       |  /  
-                                        +-----------------------+    
-                                        |                       |  \       
+                                        +-----------------------+
+                                        |                       |  \
+                                        |  local variables      |   |  var_size
+                                        |                       |  /
+                                        +-----------------------+
+                                        |                       |  \
      low                                |  room for args to     |   |
-     memory                             |  other funcs called   |   |  args_size     
+     memory                             |  other funcs called   |   |  args_size
                                         |  from this one        |   |
-                                   SP ->|                       |  /  
-                                        +-----------------------+    
-   
+                                   SP ->|                       |  /
+                                        +-----------------------+
+
    Note, AP is a fake hard register.  It will be eliminated in favor of
    SP or FP as appropriate.
 
-   Note, Some or all of the stack sections above may be omitted if they 
+   Note, Some or all of the stack sections above may be omitted if they
    are not needed.  */
 
 /* Structure to be filled in by fr30_compute_frame_size() with register
@@ -211,7 +211,7 @@ fr30_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 }
 
 /* Returns the number of bytes offset between FROM_REG and TO_REG
-   for the current function.  As a side effect it fills in the 
+   for the current function.  As a side effect it fills in the
    current_frame_info structure, if the data is available.  */
 unsigned int
 fr30_compute_frame_size (int from_reg, int to_reg)
@@ -259,10 +259,10 @@ fr30_compute_frame_size (int from_reg, int to_reg)
 
   /* Calculate the required distance.  */
   return_value = 0;
-  
+
   if (to_reg == STACK_POINTER_REGNUM)
     return_value += args_size + var_size;
-  
+
   if (from_reg == ARG_POINTER_REGNUM)
     return_value += reg_size;
 
@@ -292,7 +292,7 @@ fr30_expand_prologue (void)
   if (current_frame_info.pretend_size)
     {
       int regs_to_save = current_frame_info.pretend_size / UNITS_PER_WORD;
-      
+
       /* Push argument registers into the pretend arg area.  */
       for (regno = FIRST_ARG_REGNUM + FR30_NUM_ARG_REGS; regno --, regs_to_save --;)
         {
@@ -317,7 +317,7 @@ fr30_expand_prologue (void)
   /* Save return address if necessary.  */
   if (current_frame_info.save_rp)
     {
-      insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode, 
+      insn = emit_insn (gen_movsi_push (gen_rtx_REG (Pmode,
       						     RETURN_POINTER_REGNUM)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -329,12 +329,12 @@ fr30_expand_prologue (void)
         {
 	  int enter_size = current_frame_info.frame_size + UNITS_PER_WORD;
 	  rtx pattern;
-	  
+
 	  insn = emit_insn (gen_enter_func (GEN_INT (enter_size)));
           RTX_FRAME_RELATED_P (insn) = 1;
-	  
+
 	  pattern = PATTERN (insn);
-	  
+
 	  /* Also mark all 3 subexpressions as RTX_FRAME_RELATED_P. */
           if (GET_CODE (pattern) == PARALLEL)
             {
@@ -342,7 +342,7 @@ fr30_expand_prologue (void)
               for (x = XVECLEN (pattern, 0); x--;)
 		{
 		  rtx part = XVECEXP (pattern, 0, x);
-		  
+
 		  /* One of the insns in the ENTER pattern updates the
 		     frame pointer.  If we do not actually need the frame
 		     pointer in this function then this is a side effect
@@ -410,7 +410,7 @@ fr30_expand_epilogue (void)
 
   /* Perform the inversion operations of the prologue.  */
   gcc_assert (current_frame_info.initialised);
-  
+
   /* Pop local variables and arguments off the stack.
      If frame_pointer_needed is TRUE then the frame pointer register
      has actually been used as a frame pointer, and we can recover
@@ -433,18 +433,18 @@ fr30_expand_epilogue (void)
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
 	}
     }
-  
+
   if (current_frame_info.save_fp)
     emit_insn (gen_movsi_pop (frame_pointer_rtx));
-  
+
   /* Pop all the registers that were pushed.  */
   if (current_frame_info.save_rp)
     emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, RETURN_POINTER_REGNUM)));
-    
+
   for (regno = 0; regno < STACK_POINTER_REGNUM; regno ++)
     if (current_frame_info.gmask & (1 << regno))
       emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno)));
-  
+
   if (current_frame_info.pretend_size)
     emit_insn (gen_add_to_stack (GEN_INT (current_frame_info.pretend_size)));
 
@@ -494,7 +494,7 @@ fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
 }
 
 /*}}}*/
-/*{{{  Printing operands */ 
+/*{{{  Printing operands */
 
 /* Print a memory address as an operand to reference that memory location.  */
 
@@ -506,7 +506,7 @@ fr30_print_operand_address (FILE *stream, rtx address)
     case SYMBOL_REF:
       output_addr_const (stream, address);
       break;
-      
+
     default:
       fprintf (stderr, "code = %x\n", GET_CODE (address));
       debug_rtx (address);
@@ -521,7 +521,7 @@ void
 fr30_print_operand (FILE *file, rtx x, int code)
 {
   rtx x0;
-  
+
   switch (code)
     {
     case '#':
@@ -529,7 +529,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
       if (dbr_sequence_length () != 0)
 	fputs (":D", file);
       return;
-      
+
     case 'p':
       /* Compute the register name of the second register in a hi/lo
 	 register pair.  */
@@ -538,7 +538,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
       else
 	fprintf (file, "r%d", REGNO (x) + 1);
       return;
-      
+
     case 'b':
       /* Convert GCC's comparison operators into FR30 comparison codes.  */
       switch (GET_CODE (x))
@@ -558,7 +558,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  break;
 	}
       return;
-      
+
     case 'B':
       /* Convert GCC's comparison operators into the complimentary FR30
 	 comparison codes.  */
@@ -587,7 +587,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
       else
 	{
 	  HOST_WIDE_INT val;
-	  
+
 	  val = INTVAL (x);
 
 	  val &= 0xff;
@@ -595,7 +595,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, val);
 	}
       return;
-      
+
     case 'x':
       if (GET_CODE (x) != CONST_INT
 	  || INTVAL (x) < 16
@@ -617,11 +617,11 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  fputs (str, file);
 	}
       return;
-      
+
     case 0:
       /* Handled below.  */
       break;
-      
+
     default:
       fprintf (stderr, "unknown code = %x\n", code);
       output_operand_lossage ("fr30_print_operand: unknown code");
@@ -636,7 +636,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
 
     case MEM:
       x0 = XEXP (x,0);
-      
+
       switch (GET_CODE (x0))
 	{
 	case REG:
@@ -677,11 +677,11 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	      fprintf (file, "@(r15, #" HOST_WIDE_INT_PRINT_DEC ")", val);
 	    }
 	  break;
-	  
+
 	case SYMBOL_REF:
 	  output_address (VOIDmode, x0);
 	  break;
-	  
+
 	default:
 	  fprintf (stderr, "bad MEM code = %x\n", GET_CODE (x0));
 	  debug_rtx (x);
@@ -689,7 +689,7 @@ fr30_print_operand (FILE *file, rtx x, int code)
 	  break;
 	}
       break;
-      
+
     case CONST_DOUBLE :
       /* We handle SFmode constants here as output_addr_const doesn't.  */
       if (GET_MODE (x) == SFmode)
@@ -740,7 +740,7 @@ fr30_function_value_regno_p (const unsigned int regno)
   return (regno == RETURN_VALUE_REGNUM);
 }
 
-/*{{{  Function arguments */ 
+/*{{{  Function arguments */
 
 /* Return true if we should pass an argument on the stack rather than
    in registers.  */
@@ -787,7 +787,7 @@ fr30_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
      register, partial stack space.  */
   if (*cum + fr30_num_arg_regs (arg) <= FR30_NUM_ARG_REGS)
     return 0;
-  
+
   return (FR30_NUM_ARG_REGS - *cum) * UNITS_PER_WORD;
 }
 
@@ -814,7 +814,7 @@ fr30_function_arg_advance (cumulative_args_t cum,
 }
 
 /*}}}*/
-/*{{{  Operand predicates */ 
+/*{{{  Operand predicates */
 
 #ifndef Mmode
 #define Mmode machine_mode
@@ -828,30 +828,30 @@ fr30_check_multiple_regs (rtx *operands, int num_operands, int descending)
   if (descending)
     {
       unsigned int prev_regno = 0;
-      
+
       while (num_operands --)
 	{
 	  if (GET_CODE (operands [num_operands]) != REG)
 	    return 0;
-	  
+
 	  if (REGNO (operands [num_operands]) < prev_regno)
 	    return 0;
-	  
+
 	  prev_regno = REGNO (operands [num_operands]);
 	}
     }
   else
     {
       unsigned int prev_regno = CONDITION_CODE_REGNUM;
-      
+
       while (num_operands --)
 	{
 	  if (GET_CODE (operands [num_operands]) != REG)
 	    return 0;
-	  
+
 	  if (REGNO (operands [num_operands]) > prev_regno)
 	    return 0;
-	  
+
 	  prev_regno = REGNO (operands [num_operands]);
 	}
     }
@@ -895,13 +895,13 @@ fr30_move_double (rtx * operands)
       if (src_code == REG)
 	{
 	  int reverse = (REGNO (dest) == REGNO (src) + 1);
-	  
+
 	  /* We normally copy the low-numbered register first.  However, if
 	     the first register of operand 0 is the same as the second register
 	     of operand 1, we must copy in the opposite order.  */
 	  emit_insn (gen_rtx_SET (operand_subword (dest, reverse, TRUE, mode),
 				  operand_subword (src,  reverse, TRUE, mode)));
-	  
+
 	  emit_insn
 	    (gen_rtx_SET (operand_subword (dest, !reverse, TRUE, mode),
 			  operand_subword (src,  !reverse, TRUE, mode)));
@@ -912,9 +912,9 @@ fr30_move_double (rtx * operands)
 	  rtx dest0 = operand_subword (dest, 0, TRUE, mode);
 	  rtx dest1 = operand_subword (dest, 1, TRUE, mode);
 	  rtx new_mem;
-	  
+
 	  gcc_assert (GET_CODE (addr) == REG);
-	  
+
 	  /* Copy the address before clobbering it.  See PR 34174.  */
 	  emit_insn (gen_rtx_SET (dest1, addr));
 	  emit_insn (gen_rtx_SET (dest0, adjust_address (src, SImode, 0)));
@@ -923,7 +923,7 @@ fr30_move_double (rtx * operands)
 
 	  new_mem = gen_rtx_MEM (SImode, dest1);
 	  MEM_COPY_ATTRIBUTES (new_mem, src);
-	      
+
 	  emit_insn (gen_rtx_SET (dest1, new_mem));
 	}
       else if (src_code == CONST_INT || src_code == CONST_DOUBLE)
@@ -932,7 +932,7 @@ fr30_move_double (rtx * operands)
 	  split_double (src, &words[0], &words[1]);
 	  emit_insn (gen_rtx_SET (operand_subword (dest, 0, TRUE, mode),
 				  words[0]));
-      
+
 	  emit_insn (gen_rtx_SET (operand_subword (dest, 1, TRUE, mode),
 				  words[1]));
 	}
@@ -1006,7 +1006,7 @@ fr30_frame_pointer_required (void)
    target are 32 bit aligned within the trampoline.  That allows us to
    initialize those locations with simple SImode stores.   The alternative
    would be to use HImode stores.  */
-   
+
 static void
 fr30_asm_trampoline_template (FILE *f)
 {

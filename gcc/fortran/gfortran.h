@@ -699,6 +699,8 @@ enum gfc_isym_id
   GFC_ISYM_UBOUND,
   GFC_ISYM_UCOBOUND,
   GFC_ISYM_UMASK,
+  GFC_ISYM_UMASKL,
+  GFC_ISYM_UMASKR,
   GFC_ISYM_UNLINK,
   GFC_ISYM_UNPACK,
   GFC_ISYM_VERIFY,
@@ -754,6 +756,7 @@ enum gfc_param_spec_type
 #define BBT_HEADER(self) int priority; struct self *left, *right
 
 #define NAMED_INTCST(a,b,c,d) a,
+#define NAMED_UINTCST(a,b,c,d) a,
 #define NAMED_KINDARRAY(a,b,c,d) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
 #define NAMED_SUBROUTINE(a,b,c,d) a,
@@ -765,6 +768,7 @@ enum iso_fortran_env_symbol
   ISOFORTRANENV_LAST, ISOFORTRANENV_NUMBER = ISOFORTRANENV_LAST
 };
 #undef NAMED_INTCST
+#undef NANED_UINTCST
 #undef NAMED_KINDARRAY
 #undef NAMED_FUNCTION
 #undef NAMED_SUBROUTINE
@@ -779,6 +783,7 @@ enum iso_fortran_env_symbol
 #define DERIVED_TYPE(a,b,c) a,
 #define NAMED_FUNCTION(a,b,c,d) a,
 #define NAMED_SUBROUTINE(a,b,c,d) a,
+#define NAMED_UINTCST(a,b,c,d) a,
 enum iso_c_binding_symbol
 {
   ISOCBINDING_INVALID = -1,
@@ -795,6 +800,7 @@ enum iso_c_binding_symbol
 #undef DERIVED_TYPE
 #undef NAMED_FUNCTION
 #undef NAMED_SUBROUTINE
+#undef NAMED_UINTCST
 
 enum intmod_id
 {
@@ -1083,11 +1089,19 @@ typedef struct gfc_linebuf
 
 #define gfc_linebuf_linenum(LBUF) (LOCATION_LINE ((LBUF)->location))
 
+/* If nextc = (gfc_char_t*) -1, 'location' is used.  */
 typedef struct
 {
   gfc_char_t *nextc;
-  gfc_linebuf *lb;
+  union
+    {
+      gfc_linebuf *lb;
+      location_t location;
+    } u;
 } locus;
+
+#define GFC_LOCUS_IS_SET(loc) \
+  ((loc).nextc == (gfc_char_t *) -1 || (loc).u.lb != NULL)
 
 /* In order for the "gfc" format checking to work correctly, you must
    have declared a typedef locus first.  */
@@ -3022,6 +3036,8 @@ typedef struct gfc_association_list
 
   gfc_expr *target;
 
+  gfc_array_ref *ar;
+
   /* Used for inferring the derived type of an associate name, whose selector
      is a sibling derived type function that has not yet been parsed.  */
   gfc_symbol *derived_types;
@@ -3200,7 +3216,8 @@ typedef struct
   int flag_init_logical;
   int flag_init_character;
   char flag_init_character_value;
-  int disable_omp_is_initial_device;
+  bool disable_omp_is_initial_device;
+  bool disable_acc_on_device;
 
   int fpe;
   int fpe_summary;
@@ -3434,6 +3451,14 @@ const char * gfc_get_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 bool gfc_find_sym_in_expr (gfc_symbol *, gfc_expr *);
 
 /* error.cc */
+locus gfc_get_location_range (locus *, unsigned, locus *, unsigned, locus *);
+location_t gfc_get_location_with_offset (locus *, unsigned);
+inline location_t
+gfc_get_location (locus *loc)
+{
+  return gfc_get_location_with_offset (loc, 0);
+}
+
 void gfc_error_init_1 (void);
 void gfc_diagnostics_init (void);
 void gfc_diagnostics_finish (void);
@@ -3467,12 +3492,13 @@ bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 #define gfc_syntax_error(ST)	\
   gfc_error ("Syntax error in %s statement at %C", gfc_ascii_statement (ST));
 
-#include "pretty-print.h"  /* For output_buffer.  */
+#include "diagnostic-buffer.h"  /* For diagnostic_buffer.  */
 struct gfc_error_buffer
 {
   bool flag;
-  output_buffer buffer;
-  gfc_error_buffer(void) : flag(false), buffer() {}
+  diagnostic_buffer buffer;
+
+  gfc_error_buffer();
 };
 
 void gfc_push_error (gfc_error_buffer *);
@@ -3496,6 +3522,7 @@ extern bool gfc_seen_div0;
 /* trans-types.cc */
 int gfc_validate_kind (bt, int, bool);
 int gfc_get_int_kind_from_width_isofortranenv (int size);
+int gfc_get_uint_kind_from_width_isofortranenv (int size);
 int gfc_get_real_kind_from_width_isofortranenv (int size);
 tree gfc_get_union_type (gfc_symbol *);
 tree gfc_get_derived_type (gfc_symbol * derived, int codimen = 0);
@@ -3509,6 +3536,7 @@ extern int gfc_default_character_kind;
 extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
 extern int gfc_c_int_kind;
+extern int gfc_c_uint_kind;
 extern int gfc_c_intptr_kind;
 extern int gfc_atomic_int_kind;
 extern int gfc_atomic_logical_kind;
@@ -3614,11 +3642,12 @@ gfc_user_op *gfc_get_uop (const char *);
 gfc_user_op *gfc_find_uop (const char *, gfc_namespace *);
 void gfc_free_symbol (gfc_symbol *&);
 bool gfc_release_symbol (gfc_symbol *&);
-gfc_symbol *gfc_new_symbol (const char *, gfc_namespace *);
+gfc_symbol *gfc_new_symbol (const char *, gfc_namespace *, locus * = NULL);
 gfc_symtree* gfc_find_symtree_in_proc (const char *, gfc_namespace *);
 int gfc_find_symbol (const char *, gfc_namespace *, int, gfc_symbol **);
 bool gfc_find_sym_tree (const char *, gfc_namespace *, int, gfc_symtree **);
-int gfc_get_symbol (const char *, gfc_namespace *, gfc_symbol **);
+int gfc_get_symbol (const char *, gfc_namespace *, gfc_symbol **,
+		    locus * = NULL);
 bool gfc_verify_c_interop (gfc_typespec *);
 bool gfc_verify_c_interop_param (gfc_symbol *);
 bool verify_bind_c_sym (gfc_symbol *, gfc_typespec *, int, gfc_common_head *);
@@ -3627,9 +3656,10 @@ bool verify_com_block_vars_c_interop (gfc_common_head *);
 gfc_symtree *generate_isocbinding_symbol (const char *, iso_c_binding_symbol,
 					  const char *, gfc_symtree *, bool);
 void gfc_save_symbol_data (gfc_symbol *);
-int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
-int gfc_get_ha_symbol (const char *, gfc_symbol **);
-int gfc_get_ha_sym_tree (const char *, gfc_symtree **);
+int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool,
+		     locus * = NULL);
+int gfc_get_ha_symbol (const char *, gfc_symbol **, locus * = NULL);
+int gfc_get_ha_sym_tree (const char *, gfc_symtree **, locus * = NULL);
 
 void gfc_drop_last_undo_checkpoint (void);
 void gfc_restore_last_undo_checkpoint (void);
@@ -3794,6 +3824,7 @@ gfc_expr *gfc_get_structure_constructor_expr (bt, int, locus *);
 gfc_expr *gfc_get_constant_expr (bt, int, locus *);
 gfc_expr *gfc_get_character_expr (int, locus *, const char *, gfc_charlen_t len);
 gfc_expr *gfc_get_int_expr (int, locus *, HOST_WIDE_INT);
+gfc_expr *gfc_get_unsigned_expr (int, locus *, HOST_WIDE_INT);
 gfc_expr *gfc_get_logical_expr (int, locus *, bool);
 gfc_expr *gfc_get_iokind_expr (locus *, io_kind);
 

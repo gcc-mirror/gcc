@@ -383,11 +383,9 @@ typedef unsigned int any_slot;
 #define Slot_Size (sizeof (any_slot) * 8)
 
 /* Slots are 32 bits (for now, but we might want to make that 64).
-   The first bootstrap stage uses -std=gnu++98, so we cannot use
-   static_assert in that case.  */
-#if __cplusplus >= 201402L
-static_assert (Slot_Size == 32);
-#endif
+   The first bootstrap stage uses C++14, so we can only use the 2 argument
+   version of static_assert. */
+static_assert (Slot_Size == 32, "");
 
 /* Definitions of Reason codes for Raise_xxx_Error nodes.  */
 enum RT_Exception_Code

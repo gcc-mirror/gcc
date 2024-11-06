@@ -8,13 +8,13 @@
 
    The UTF-8 encoding of U+0F43 TIBETAN LETTER GHA is: E0 BD 83.  */
 
-foo before_\u0F43_after bar // { dg-error "`before_.U00000f43_after' is not in NFC .-Werror=normalized=." }
+foo before_\u0F43_after bar // { dg-error "'before_.U00000f43_after' is not in NFC .-Werror=normalized=." }
 /* { dg-begin-multiline-output "" }
  foo before_\u0F43_after bar
      ^~~~~~~~~~~~~~~~~~~
    { dg-end-multiline-output "" } */
 
-foo before_གྷ_after bar // { dg-error "`before_.U00000f43_after' is not in NFC .-Werror=normalized=." }
+foo before_གྷ_after bar // { dg-error "'before_.U00000f43_after' is not in NFC .-Werror=normalized=." }
 /* { dg-begin-multiline-output "" }
  foo before_<e0><bd><83>_after bar
      ^~~~~~~~~~~~~~~~~~~~~~~~~

@@ -110,6 +110,7 @@ along with GCC; see the file COPYING3.  If not see
   gcc/vtable-verify.h, because they are used both here and in
   gcc/vtable-verify.cc.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -762,7 +763,7 @@ insert_call_to_register_set (tree class_name,
 
   vec<constructor_elt, va_gc> *array_elements;
   vec_alloc (array_elements, num_args);
-                                                        
+
   tree initial = NULL_TREE;
   tree arg3 = NULL_TREE;
 
@@ -821,7 +822,7 @@ insert_call_to_register_pair (vec<tree> *vtbl_ptr_array, tree arg1,
   else
     call_expr = build_call_expr (vlt_register_pairs_fndecl, 4, arg1, arg2,
                                  size_hint_arg, vtable_address);
-    
+
   append_to_statement_list (call_expr, &body);
   num_calls_to_regpair++;
 }
@@ -851,7 +852,7 @@ output_set_info (tree record_type, vec<tree> vtbl_ptr_array)
     {
       const char *vptr_name = "unknown";
       int vptr_offset = 0;
-      
+
       if (TREE_CODE (vtbl_ptr_array[i]) == POINTER_PLUS_EXPR)
         {
           tree arg0 = TREE_OPERAND (vtbl_ptr_array[i], 0);
@@ -1124,7 +1125,7 @@ bool
 vtv_register_class_hierarchy_information (tree init_routine_body)
 {
   bool registered_something = false;
- 
+
   init_functions ();
 
   if (num_vtable_map_nodes == 0)

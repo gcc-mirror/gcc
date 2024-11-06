@@ -234,7 +234,7 @@ asm(".globl _mcount\n"
     "	ret\n");
 #elif defined __x86_64__
 /* See GLIBC for additional information about this technique.  */
-asm(".globl _mcount\n" 
+asm(".globl _mcount\n"
     "	.type	_mcount, @function\n"
     "_mcount:\n"
     /* The compiler calls _mcount after the prologue, and does not
@@ -289,7 +289,7 @@ asm(".globl _mcount\n"
 	3) if builtin_return_address worked, this could be portable.
    However, it would really have to be optimized for arguments of 0
    and 1 and do something like what we have here in order to avoid the
-   trap per function call performance hit. 
+   trap per function call performance hit.
 	4) the atexit and monsetup calls prevent this from simply
    being a leaf routine that doesn't do a "save" (and would thus have
    access to %o7 and %i7 directly) but the call to write() at the end

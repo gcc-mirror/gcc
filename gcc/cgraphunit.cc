@@ -92,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 	      Interprocedural passes differ from small interprocedural
 	      passes by their ability to operate across whole program
 	      at linktime.  Their analysis stage is performed early to
-	      both reduce linking times and linktime memory usage by	
+	      both reduce linking times and linktime memory usage by
 	      not having to represent whole program in memory.
 
 	   d) LTO streaming.  When doing LTO, everything important gets
@@ -142,7 +142,7 @@ along with GCC; see the file COPYING3.  If not see
 	    out and thus all variables are output to the file.
 
 	    Note that with -fno-toplevel-reorder passes 5 and 6
-	    are combined together in cgraph_output_in_order.  
+	    are combined together in cgraph_output_in_order.
 
    Finally there are functions to manipulate the callgraph from
    backend.
@@ -157,6 +157,7 @@ along with GCC; see the file COPYING3.  If not see
       and apply simple transformations
 */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -279,7 +280,7 @@ symtab_node::needed_p (void)
 static symtab_node symtab_terminator (SYMTAB_SYMBOL);
 static symtab_node *queued_nodes = &symtab_terminator;
 
-/* Add NODE to queue starting at QUEUED_NODES. 
+/* Add NODE to queue starting at QUEUED_NODES.
    The queue is linked via AUX pointers and terminated by pointer to 1.  */
 
 static void
@@ -997,7 +998,7 @@ varpool_node::finalize_decl (tree decl)
 }
 
 /* EDGE is an polymorphic call.  Mark all possible targets as reachable
-   and if there is only one target, perform trivial devirtualization. 
+   and if there is only one target, perform trivial devirtualization.
    REACHABLE_CALL_TARGETS collects target lists we already walked to
    avoid duplicate work.  */
 
@@ -1015,7 +1016,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
   if (cache_token != NULL && !reachable_call_targets->add (cache_token))
     {
       if (symtab->dump_file)
-	dump_possible_polymorphic_call_targets 
+	dump_possible_polymorphic_call_targets
 	  (symtab->dump_file, edge);
 
       for (i = 0; i < targets.length (); i++)
@@ -1701,7 +1702,7 @@ mark_functions_to_output (void)
 
 /* DECL is FUNCTION_DECL.  Initialize datastructures so DECL is a function
    in lowered gimple form.  IN_SSA is true if the gimple is in SSA.
-   
+
    Set current_function_decl and cfun to newly constructed empty function body.
    return basic block in the function body.  */
 

@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *  else
  *      get long product: coefficient_x*coefficient_y
  *      determine number of digits to round off (extra_digits)
- *      rounding is performed as a 128x128-bit multiplication by 
+ *      rounding is performed as a 128x128-bit multiplication by
  *         2^M[extra_digits]/10^extra_digits, followed by a shift
- *         M[extra_digits] is sufficiently large for required accuracy 
+ *         M[extra_digits] is sufficiently large for required accuracy
  *
  ****************************************************************************/
 
@@ -166,7 +166,7 @@ bid64_mul (UINT64 x,
   tempy.d = (double) coefficient_y;
   bin_expon_cy = ((tempy.i & MASK_BINARY_EXPONENT) >> 52);
 
-  // magnitude estimate for coefficient_x*coefficient_y is 
+  // magnitude estimate for coefficient_x*coefficient_y is
   //        2^(unbiased_bin_expon_cx + unbiased_bin_expon_cx)
   bin_expon_product = bin_expon_cx + bin_expon_cy;
 
@@ -298,9 +298,9 @@ bid64_mul (UINT64 x,
       if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
 	if ((C64 & 1) && !round_up) {
-	  // check whether fractional part of initial_P/10^extra_digits 
+	  // check whether fractional part of initial_P/10^extra_digits
 	  // is exactly .5
-	  // this is the same as fractional part of 
+	  // this is the same as fractional part of
 	  // (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
 	  // get remainder

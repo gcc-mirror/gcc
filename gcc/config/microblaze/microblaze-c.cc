@@ -30,10 +30,10 @@
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
-/* Define preprocessor symbols for MicroBlaze.  
+/* Define preprocessor symbols for MicroBlaze.
    Symbols which do not start with __ are deprecated.  */
 
-void 
+void
 microblaze_cpp_define (cpp_reader *pfile)
 {
   builtin_assert ("cpu=microblaze");
@@ -52,7 +52,7 @@ microblaze_cpp_define (cpp_reader *pfile)
       builtin_define ("__BIG_ENDIAN__");
       builtin_define ("__MICROBLAZEEB__");
     }
-  if (!TARGET_SOFT_MUL) 
+  if (!TARGET_SOFT_MUL)
     {
       if (!flag_iso)
         builtin_define ("HAVE_HW_MUL");
@@ -100,4 +100,4 @@ microblaze_cpp_define (cpp_reader *pfile)
         builtin_define ("HAVE_HW_FPU_SQRT");
       builtin_define ("__HAVE_HW_FPU_SQRT__");
     }
-}  
+}

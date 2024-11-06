@@ -296,7 +296,7 @@ public:
      would bring it out of sync with libcpp linemap); point to current
      one.  */
   static lto_location_cache *current_cache;
-  
+
 private:
   static int cmp_loc (const void *pa, const void *pb);
 
@@ -539,9 +539,9 @@ struct lto_out_decl_state
 typedef struct lto_out_decl_state *lto_out_decl_state_ptr;
 
 
-/* Compact representation of a index <-> resolution pair. Unpacked to an 
+/* Compact representation of a index <-> resolution pair. Unpacked to an
    vector later. */
-struct res_pair 
+struct res_pair
 {
   ld_plugin_symbol_resolution_t res;
   unsigned index;

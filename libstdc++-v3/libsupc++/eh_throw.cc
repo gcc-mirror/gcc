@@ -129,7 +129,7 @@ __cxxabiv1::__cxa_rethrow ()
       _Unwind_Resume_or_Rethrow (&header->unwindHeader);
 #endif
 #endif
-  
+
       // Some sort of unwinding error.  Note that terminate is a handler.
       __cxa_begin_catch (&header->unwindHeader);
     }

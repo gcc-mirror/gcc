@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target fma4 } */
-/* { dg-options "-O0 -mfma4" } */
+/* { dg-options "-std=gnu17 -O0 -mfma4" } */
 
 #include "fma4-check.h"
 

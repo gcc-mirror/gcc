@@ -23,7 +23,7 @@ int main()
     SA(!__is_convertible(B*, C*));
     SA(__is_convertible(A, E));
 
-    using std::operator "" s, std::operator "" sv;
+    using std::operator ""s, std::operator ""sv;
 
     auto stringify = []<typename T>(T x) {
         if constexpr (std::is_convertible_v<T, std::string> or

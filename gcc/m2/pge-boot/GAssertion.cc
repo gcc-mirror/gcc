@@ -32,9 +32,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _Assertion_H
 #define _Assertion_C
 
+#include "GAssertion.h"
 #   include "GStrIO.h"
 #   include "GM2RTS.h"
 

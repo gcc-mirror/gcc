@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -302,16 +303,7 @@ public:
 			  const prange &lhs,
 			  const prange &op1,
 			  relation_trio = TRIO_VARYING) const final override;
-  virtual void wi_fold (irange &r, tree type,
-			const wide_int &lh_lb,
-			const wide_int &lh_ub,
-			const wide_int &rh_lb,
-			const wide_int &rh_ub) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio = TRIO_VARYING) const;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
+  void update_bitmask (prange &r, const prange &lh, const irange &rh) const
     { update_known_bitmask (r, POINTER_PLUS_EXPR, lh, rh); }
 } op_pointer_plus;
 
@@ -388,203 +380,59 @@ pointer_plus_operator::op2_range (irange &r, tree type,
   return true;
 }
 
-void
-pointer_plus_operator::wi_fold (irange &r, tree type,
-				const wide_int &lh_lb,
-				const wide_int &lh_ub,
-				const wide_int &rh_lb,
-				const wide_int &rh_ub) const
+bool
+operator_bitwise_or::fold_range (prange &r, tree type,
+				 const prange &op1,
+				 const prange &op2,
+				 relation_trio) const
 {
-  // Check for [0,0] + const, and simply return the const.
-  if (lh_lb == 0 && lh_ub == 0 && rh_lb == rh_ub)
-    {
-      r.set (type, rh_lb, rh_lb);
-      return;
-    }
-
   // For pointer types, we are really only interested in asserting
   // whether the expression evaluates to non-NULL.
-  //
-  // With -fno-delete-null-pointer-checks we need to be more
-  // conservative.  As some object might reside at address 0,
-  // then some offset could be added to it and the same offset
-  // subtracted again and the result would be NULL.
-  // E.g.
-  // static int a[12]; where &a[0] is NULL and
-  // ptr = &a[6];
-  // ptr -= 6;
-  // ptr will be NULL here, even when there is POINTER_PLUS_EXPR
-  // where the first range doesn't include zero and the second one
-  // doesn't either.  As the second operand is sizetype (unsigned),
-  // consider all ranges where the MSB could be set as possible
-  // subtractions where the result might be NULL.
-  if ((!wi_includes_zero_p (type, lh_lb, lh_ub)
-       || !wi_includes_zero_p (type, rh_lb, rh_ub))
-      && !TYPE_OVERFLOW_WRAPS (type)
-      && (flag_delete_null_pointer_checks
-	  || !wi::sign_mask (rh_ub)))
+  if (!range_includes_zero_p (op1) || !range_includes_zero_p (op2))
     r.set_nonzero (type);
-  else if (lh_lb == lh_ub && lh_lb == 0
-	   && rh_lb == rh_ub && rh_lb == 0)
+  else if (op1.zero_p () && op2.zero_p ())
     r.set_zero (type);
   else
-   r.set_varying (type);
-}
+    r.set_varying (type);
 
-bool
-pointer_plus_operator::op2_range (irange &r, tree type,
-				  const irange &lhs ATTRIBUTE_UNUSED,
-				  const irange &op1 ATTRIBUTE_UNUSED,
-				  relation_trio trio) const
-{
-  relation_kind rel = trio.lhs_op1 ();
-  r.set_varying (type);
-
-  // If the LHS and OP1 are equal, the op2 must be zero.
-  if (rel == VREL_EQ)
-    r.set_zero (type);
-  // If the LHS and OP1 are not equal, the offset must be non-zero.
-  else if (rel == VREL_NE)
-    r.set_nonzero (type);
-  else
-    return false;
+  update_known_bitmask (r, BIT_IOR_EXPR, op1, op2);
   return true;
 }
 
-class pointer_min_max_operator : public range_operator
-{
-public:
-  virtual void wi_fold (irange & r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_ptr_min_max;
-
-void
-pointer_min_max_operator::wi_fold (irange &r, tree type,
-				   const wide_int &lh_lb,
-				   const wide_int &lh_ub,
-				   const wide_int &rh_lb,
-				   const wide_int &rh_ub) const
-{
-  // For MIN/MAX expressions with pointers, we only care about
-  // nullness.  If both are non null, then the result is nonnull.
-  // If both are null, then the result is null.  Otherwise they
-  // are varying.
-  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
-      && !wi_includes_zero_p (type, rh_lb, rh_ub))
-    r.set_nonzero (type);
-  else if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
-    r.set_zero (type);
-  else
-    r.set_varying (type);
-}
-
-class pointer_and_operator : public range_operator
-{
-public:
-  virtual void wi_fold (irange &r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_pointer_and;
-
-void
-pointer_and_operator::wi_fold (irange &r, tree type,
-			       const wide_int &lh_lb,
-			       const wide_int &lh_ub,
-			       const wide_int &rh_lb ATTRIBUTE_UNUSED,
-			       const wide_int &rh_ub ATTRIBUTE_UNUSED) const
-{
-  // For pointer types, we are really only interested in asserting
-  // whether the expression evaluates to non-NULL.
-  if (wi_zero_p (type, lh_lb, lh_ub) || wi_zero_p (type, lh_lb, lh_ub))
-    r.set_zero (type);
-  else
-    r.set_varying (type);
-}
-
-
-class pointer_or_operator : public range_operator
-{
-public:
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  virtual bool op1_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op2,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual bool op2_range (irange &r, tree type,
-			  const irange &lhs,
-			  const irange &op1,
-			  relation_trio rel = TRIO_VARYING) const;
-  virtual void wi_fold (irange &r, tree type,
-			const wide_int &lh_lb, const wide_int &lh_ub,
-			const wide_int &rh_lb, const wide_int &rh_ub) const;
-} op_pointer_or;
-
-bool
-pointer_or_operator::op1_range (irange &r, tree type,
-				const irange &lhs,
-				const irange &op2 ATTRIBUTE_UNUSED,
-				relation_trio) const
-{
-  if (lhs.undefined_p ())
-    return false;
-  if (lhs.zero_p ())
-    {
-      r.set_zero (type);
-      return true;
-    }
-  r.set_varying (type);
-  return true;
-}
-
-bool
-pointer_or_operator::op2_range (irange &r, tree type,
-				const irange &lhs,
-				const irange &op1,
-				relation_trio) const
-{
-  return pointer_or_operator::op1_range (r, type, lhs, op1);
-}
-
-void
-pointer_or_operator::wi_fold (irange &r, tree type,
-			      const wide_int &lh_lb,
-			      const wide_int &lh_ub,
-			      const wide_int &rh_lb,
-			      const wide_int &rh_ub) const
-{
-  // For pointer types, we are really only interested in asserting
-  // whether the expression evaluates to non-NULL.
-  if (!wi_includes_zero_p (type, lh_lb, lh_ub)
-      && !wi_includes_zero_p (type, rh_lb, rh_ub))
-    r.set_nonzero (type);
-  else if (wi_zero_p (type, lh_lb, lh_ub) && wi_zero_p (type, rh_lb, rh_ub))
-    r.set_zero (type);
-  else
-    r.set_varying (type);
-}
 
 class operator_pointer_diff : public range_operator
 {
+  using range_operator::fold_range;
   using range_operator::update_bitmask;
   using range_operator::op1_op2_relation_effect;
-  virtual bool op1_op2_relation_effect (irange &lhs_range,
-					tree type,
-					const irange &op1_range,
-					const irange &op2_range,
-					relation_kind rel) const;
+  virtual bool fold_range (irange &r, tree type,
+			   const prange &op1,
+			   const prange &op2,
+			   relation_trio trio) const final override;
   virtual bool op1_op2_relation_effect (irange &lhs_range,
 					tree type,
 					const prange &op1_range,
 					const prange &op2_range,
 					relation_kind rel) const final override;
-  void update_bitmask (irange &r, const irange &lh, const irange &rh) const
-    { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
   void update_bitmask (irange &r,
 		       const prange &lh, const prange &rh) const final override
   { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
 } op_pointer_diff;
+
+bool
+operator_pointer_diff::fold_range (irange &r, tree type,
+				   const prange &op1,
+				   const prange &op2,
+				   relation_trio trio) const
+{
+  gcc_checking_assert (r.supports_type_p (type));
+
+  r.set_varying (type);
+  relation_kind rel = trio.op1_op2 ();
+  op1_op2_relation_effect (r, type, op1, op2, rel);
+  update_bitmask (r, op1, op2);
+  return true;
+}
 
 bool
 operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
@@ -600,16 +448,6 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
     return false;
 
   return minus_op1_op2_relation_effect (lhs_range, type, op1, op2, rel);
-}
-
-bool
-operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
-						const irange &op1_range,
-						const irange &op2_range,
-						relation_kind rel) const
-{
-  return minus_op1_op2_relation_effect (lhs_range, type, op1_range, op2_range,
-					rel);
 }
 
 bool

@@ -116,7 +116,7 @@ simulate_thread_wrapper_other_threads()
 
 /* If the test case defines HOSTILE_PAUSE_ERROR, then the test case
    will fail execution if it had a hostile pause.  */
-int
+__attribute__ ((noinline)) int
 simulate_thread_wrapper_final_verify ()
 {
   int ret = simulate_thread_final_verify ();

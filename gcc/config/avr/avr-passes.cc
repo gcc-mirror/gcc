@@ -1788,7 +1788,8 @@ avr_split_fake_addressing_move (rtx_insn * /*insn*/, rtx *xop)
   HOST_WIDE_INT add = 0, sub = 0;
   int msize = GET_MODE_SIZE (mode);
 
-  AVR_LdSt_Props ap { REGNO (base), store_p, volatile_p, ADDR_SPACE_GENERIC };
+  AVR_LdSt_Props ap { (int) REGNO (base), store_p, volatile_p,
+		      ADDR_SPACE_GENERIC };
 
   switch (addr_code)
     {

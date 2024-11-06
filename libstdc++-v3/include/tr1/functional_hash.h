@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_TR1_FUNCTIONAL_HASH_H
 #define _GLIBCXX_TR1_FUNCTIONAL_HASH_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -69,19 +71,22 @@ namespace tr1
     hash<_Tp>::operator()(_Tp __val) const		\
     { return static_cast<size_t>(__val); }
 
-  _TR1_hashtable_define_trivial_hash(bool);
-  _TR1_hashtable_define_trivial_hash(char);
-  _TR1_hashtable_define_trivial_hash(signed char);
-  _TR1_hashtable_define_trivial_hash(unsigned char);
-  _TR1_hashtable_define_trivial_hash(wchar_t);
-  _TR1_hashtable_define_trivial_hash(short);
-  _TR1_hashtable_define_trivial_hash(int);
-  _TR1_hashtable_define_trivial_hash(long);
-  _TR1_hashtable_define_trivial_hash(long long);
-  _TR1_hashtable_define_trivial_hash(unsigned short);
-  _TR1_hashtable_define_trivial_hash(unsigned int);
-  _TR1_hashtable_define_trivial_hash(unsigned long);
-  _TR1_hashtable_define_trivial_hash(unsigned long long);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
+  _TR1_hashtable_define_trivial_hash(bool)
+  _TR1_hashtable_define_trivial_hash(char)
+  _TR1_hashtable_define_trivial_hash(signed char)
+  _TR1_hashtable_define_trivial_hash(unsigned char)
+  _TR1_hashtable_define_trivial_hash(wchar_t)
+  _TR1_hashtable_define_trivial_hash(short)
+  _TR1_hashtable_define_trivial_hash(int)
+  _TR1_hashtable_define_trivial_hash(long)
+  _TR1_hashtable_define_trivial_hash(long long)
+  _TR1_hashtable_define_trivial_hash(unsigned short)
+  _TR1_hashtable_define_trivial_hash(unsigned int)
+  _TR1_hashtable_define_trivial_hash(unsigned long)
+  _TR1_hashtable_define_trivial_hash(unsigned long long)
+#pragma GCC diagnostic pop
 
 #undef _TR1_hashtable_define_trivial_hash
 
@@ -125,7 +130,7 @@ namespace tr1
 	  return __result;
 	}
     };
-  
+
   template<>
     struct _Fnv_hash_base<8>
     {
@@ -133,6 +138,8 @@ namespace tr1
         static size_t
         hash(const _Tp* __ptr, size_t __clength)
         {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
 	  size_t __result
 	    = static_cast<size_t>(14695981039346656037ULL);
 	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
@@ -142,6 +149,7 @@ namespace tr1
 	      __result *= static_cast<size_t>(1099511628211ULL);
 	    }
 	  return __result;
+#pragma GCC diagnostic pop
 	}
     };
 

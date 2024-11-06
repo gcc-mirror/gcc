@@ -1,7 +1,7 @@
 /* Test __builtin_tgmath: errors that indicate a bad definition of a
    type-generic macro rather than bad arguments in a call to it.  */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 void *p;
 double d;

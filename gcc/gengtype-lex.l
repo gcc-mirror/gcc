@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 struct fileloc lexer_line;
 int lexer_toplevel_done;
 
-static void 
+static void
 update_lineno (const char *l, size_t len)
 {
   while (len-- > 0)
@@ -191,12 +191,12 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|m
 "*"/[^/]	/* do nothing */
 }
 
-<in_comment>"*/"	{ BEGIN(INITIAL); } 
+<in_comment>"*/"	{ BEGIN(INITIAL); }
 <in_struct_comment>"*/"	{ BEGIN(in_struct); }
 
 ["/]    		|
 <in_struct_comment,in_comment>"*"	{
-  error_at_line (&lexer_line, 
+  error_at_line (&lexer_line,
 		 "unterminated comment or string; unexpected EOF");
 }
 

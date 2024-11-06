@@ -363,9 +363,8 @@ struct function_group_info
   const group_suffix_index *groups;
   const predication_index *preds;
 
-  /* The architecture extensions that the functions require, as a set of
-     AARCH64_FL_* flags.  */
-  aarch64_feature_flags required_extensions;
+  /* The architecture extensions that the functions require.  */
+  aarch64_required_extensions required_extensions;
 };
 
 /* Describes a single fully-resolved function (i.e. one that has a
@@ -432,9 +431,9 @@ public:
   ~function_builder ();
 
   void add_unique_function (const function_instance &, tree,
-			    vec<tree> &, aarch64_feature_flags, bool);
+			    vec<tree> &, aarch64_required_extensions, bool);
   void add_overloaded_function (const function_instance &,
-				aarch64_feature_flags);
+				aarch64_required_extensions);
   void add_overloaded_functions (const function_group_info &,
 				 mode_suffix_index);
 
@@ -446,11 +445,11 @@ private:
 
   char *get_name (const function_instance &, bool);
 
-  tree get_attributes (const function_instance &, aarch64_feature_flags);
+  tree get_attributes (const function_instance &, aarch64_required_extensions);
 
   registered_function &add_function (const function_instance &,
 				     const char *, tree, tree,
-				     aarch64_feature_flags, bool, bool);
+				     aarch64_required_extensions, bool, bool);
 
   /* The function type to use for functions that are resolved by
      function_resolver.  */
@@ -637,6 +636,7 @@ public:
   gimple *fold_to_ptrue ();
   gimple *fold_to_vl_pred (unsigned int);
   gimple *fold_const_binary (enum tree_code);
+  gimple *fold_active_lanes_to (tree);
 
   gimple *fold ();
 
@@ -660,6 +660,8 @@ public:
   insn_code direct_optab_handler (optab, unsigned int = 0);
   insn_code direct_optab_handler_for_sign (optab, optab, unsigned int = 0,
 					   machine_mode = E_VOIDmode);
+  insn_code convert_optab_handler_for_sign (optab, optab, unsigned int,
+					    machine_mode, machine_mode);
 
   machine_mode result_mode () const;
 

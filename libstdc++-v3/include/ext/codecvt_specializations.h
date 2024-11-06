@@ -53,11 +53,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   class encoding_state
   {
   public:
-    // Types: 
+    // Types:
     // NB: A conversion descriptor subsumes and enhances the
     // functionality of a simple state type such as mbstate_t.
     typedef iconv_t	descriptor_type;
-    
+
   protected:
     // Name of internal character set encoding.
     std::string	       	_M_int_enc;
@@ -83,15 +83,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     int 		_M_bytes;
 
   public:
-    explicit 
-    encoding_state() 
+    explicit
+    encoding_state()
     : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0), _M_bytes(0)
     { }
 
-    explicit 
-    encoding_state(const char* __int, const char* __ext, 
+    explicit
+    encoding_state(const char* __int, const char* __ext,
 		   int __ibom = 0, int __ebom = 0, int __bytes = 1)
-    : _M_int_enc(__int), _M_ext_enc(__ext), _M_in_desc(0), _M_out_desc(0), 
+    : _M_int_enc(__int), _M_ext_enc(__ext), _M_in_desc(0), _M_out_desc(0),
       _M_ext_bom(__ebom), _M_int_bom(__ibom), _M_bytes(__bytes)
     { init(); }
 
@@ -115,17 +115,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     }
 
     ~encoding_state()
-    { destroy(); } 
+    { destroy(); }
 
     bool
     good() const throw()
-    { 
+    {
       const descriptor_type __err = (iconv_t)(-1);
-      bool __test = _M_in_desc && _M_in_desc != __err; 
+      bool __test = _M_in_desc && _M_in_desc != __err;
       __test &=  _M_out_desc && _M_out_desc != __err;
       return __test;
     }
-    
+
     int
     character_ratio() const
     { return _M_bytes; }
@@ -134,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     internal_encoding() const
     { return _M_int_enc; }
 
-    int 
+    int
     internal_bom() const
     { return _M_int_bom; }
 
@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     external_encoding() const
     { return _M_ext_enc; }
 
-    int 
+    int
     external_bom() const
     { return _M_ext_bom; }
 
@@ -192,12 +192,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     destroy() throw()
     {
       const descriptor_type __err = (iconv_t)(-1);
-      if (_M_in_desc && _M_in_desc != __err) 
+      if (_M_in_desc && _M_in_desc != __err)
 	{
 	  iconv_close(_M_in_desc);
 	  _M_in_desc = 0;
 	}
-      if (_M_out_desc && _M_out_desc != __err) 
+      if (_M_out_desc && _M_out_desc != __err)
 	{
 	  iconv_close(_M_out_desc);
 	  _M_out_desc = 0;
@@ -235,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class codecvt<_InternT, _ExternT, encoding_state>
     : public __codecvt_abstract_base<_InternT, _ExternT, encoding_state>
     {
-    public:      
+    public:
       // Types:
       typedef codecvt_base::result			result;
       typedef _InternT 					intern_type;
@@ -246,52 +246,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Data Members:
       static locale::id 		id;
 
-      explicit 
+      explicit
       codecvt(size_t __refs = 0)
       : __codecvt_abstract_base<intern_type, extern_type, state_type>(__refs)
       { }
 
-      explicit 
+      explicit
       codecvt(state_type& __enc, size_t __refs = 0)
       : __codecvt_abstract_base<intern_type, extern_type, state_type>(__refs)
       { }
 
      protected:
-      virtual 
+      virtual
       ~codecvt() { }
 
       virtual result
-      do_out(state_type& __state, const intern_type* __from, 
+      do_out(state_type& __state, const intern_type* __from,
 	     const intern_type* __from_end, const intern_type*& __from_next,
 	     extern_type* __to, extern_type* __to_end,
 	     extern_type*& __to_next) const;
 
       virtual result
-      do_unshift(state_type& __state, extern_type* __to, 
+      do_unshift(state_type& __state, extern_type* __to,
 		 extern_type* __to_end, extern_type*& __to_next) const;
 
       virtual result
-      do_in(state_type& __state, const extern_type* __from, 
+      do_in(state_type& __state, const extern_type* __from,
 	    const extern_type* __from_end, const extern_type*& __from_next,
-	    intern_type* __to, intern_type* __to_end, 
+	    intern_type* __to, intern_type* __to_end,
 	    intern_type*& __to_next) const;
 
-      virtual int 
+      virtual int
       do_encoding() const throw();
 
-      virtual bool 
+      virtual bool
       do_always_noconv() const throw();
 
-      virtual int 
-      do_length(state_type&, const extern_type* __from, 
+      virtual int
+      do_length(state_type&, const extern_type* __from,
 		const extern_type* __end, size_t __max) const;
 
-      virtual int 
+      virtual int
       do_max_length() const throw();
     };
 
   template<typename _InternT, typename _ExternT>
-    locale::id 
+    locale::id
     codecvt<_InternT, _ExternT, encoding_state>::id;
 
   // This adaptor works around the signature problems of the second
@@ -308,7 +308,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
     codecvt<_InternT, _ExternT, encoding_state>::
-    do_out(state_type& __state, const intern_type* __from, 
+    do_out(state_type& __state, const intern_type* __from,
 	   const intern_type* __from_end, const intern_type*& __from_next,
 	   extern_type* __to, extern_type* __to_end,
 	   extern_type*& __to_next) const
@@ -320,8 +320,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const size_t __fmultiple = sizeof(intern_type);
 	  size_t __fbytes = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(extern_type);
-	  size_t __tbytes = __tmultiple * (__to_end - __to); 
-	  
+	  size_t __tbytes = __tmultiple * (__to_end - __to);
+
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // merry way.
 	  int __int_bom = __state.internal_bom();
 	  if (__int_bom)
-	    {	  
+	    {
 	      size_t __size = __from_end - __from;
 	      intern_type* __cfixed = static_cast<intern_type*>
 		(__builtin_alloca(sizeof(intern_type) * (__size + 1)));
@@ -343,14 +343,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
 	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom,
-                                        &__fbytes, &__cto, &__tbytes); 
+                                        &__fbytes, &__cto, &__tbytes);
 	    }
 	  else
 	    {
 	      intern_type* __cfixed = const_cast<intern_type*>(__from);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
-	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom, &__fbytes, 
-				       &__cto, &__tbytes); 
+	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom, &__fbytes,
+				       &__cto, &__tbytes);
 	    }
 
 	  if (__conv != size_t(-1))
@@ -359,7 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __to_next = reinterpret_cast<extern_type*>(__cto);
 	      __ret = codecvt_base::ok;
 	    }
-	  else 
+	  else
 	    {
 	      if (__fbytes < __fmultiple * (__from_end - __from))
 		{
@@ -371,13 +371,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__ret = codecvt_base::error;
 	    }
 	}
-      return __ret; 
+      return __ret;
     }
 
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
     codecvt<_InternT, _ExternT, encoding_state>::
-    do_unshift(state_type& __state, extern_type* __to, 
+    do_unshift(state_type& __state, extern_type* __to,
 	       extern_type* __to_end, extern_type*& __to_next) const
     {
       result __ret = codecvt_base::error;
@@ -385,14 +385,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  const descriptor_type& __desc = __state.in_descriptor();
 	  const size_t __tmultiple = sizeof(intern_type);
-	  size_t __tlen = __tmultiple * (__to_end - __to); 
-	  
+	  size_t __tlen = __tmultiple * (__to_end - __to);
+
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
 	  size_t __conv = __iconv_adaptor(iconv,__desc, 0, 0,
-                                          &__cto, &__tlen); 
-	  
+                                          &__cto, &__tlen);
+
 	  if (__conv != size_t(-1))
 	    {
 	      __to_next = reinterpret_cast<extern_type*>(__cto);
@@ -403,20 +403,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else
 		__ret = codecvt_base::partial;
 	    }
-	  else 
+	  else
 	    __ret = codecvt_base::error;
 	}
-      return __ret; 
+      return __ret;
     }
-   
+
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
     codecvt<_InternT, _ExternT, encoding_state>::
-    do_in(state_type& __state, const extern_type* __from, 
+    do_in(state_type& __state, const extern_type* __from,
 	  const extern_type* __from_end, const extern_type*& __from_next,
-	  intern_type* __to, intern_type* __to_end, 
+	  intern_type* __to, intern_type* __to_end,
 	  intern_type*& __to_next) const
-    { 
+    {
       result __ret = codecvt_base::error;
       if (__state.good())
 	{
@@ -424,8 +424,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const size_t __fmultiple = sizeof(extern_type);
 	  size_t __flen = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(intern_type);
-	  size_t __tlen = __tmultiple * (__to_end - __to); 
-	  
+	  size_t __tlen = __tmultiple * (__to_end - __to);
+
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
@@ -439,7 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // merry way.
 	  int __ext_bom = __state.external_bom();
 	  if (__ext_bom)
-	    {	  
+	    {
 	      size_t __size = __from_end - __from;
 	      extern_type* __cfixed =  static_cast<extern_type*>
 		(__builtin_alloca(sizeof(extern_type) * (__size + 1)));
@@ -447,24 +447,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
 	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom,
-                                       &__flen, &__cto, &__tlen); 
+                                       &__flen, &__cto, &__tlen);
 	    }
 	  else
 	    {
 	      extern_type* __cfixed = const_cast<extern_type*>(__from);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
 	      __conv = __iconv_adaptor(iconv, __desc, &__cfrom,
-                                       &__flen, &__cto, &__tlen); 
+                                       &__flen, &__cto, &__tlen);
 	    }
 
-	  
+
 	  if (__conv != size_t(-1))
 	    {
 	      __from_next = reinterpret_cast<const extern_type*>(__cfrom);
 	      __to_next = reinterpret_cast<intern_type*>(__cto);
 	      __ret = codecvt_base::ok;
 	    }
-	  else 
+	  else
 	    {
 	      if (__flen < static_cast<size_t>(__from_end - __from))
 		{
@@ -476,37 +476,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		__ret = codecvt_base::error;
 	    }
 	}
-      return __ret; 
+      return __ret;
     }
-  
+
   template<typename _InternT, typename _ExternT>
-    int 
+    int
     codecvt<_InternT, _ExternT, encoding_state>::
     do_encoding() const throw()
     {
       int __ret = 0;
       if (sizeof(_ExternT) <= sizeof(_InternT))
 	__ret = sizeof(_InternT) / sizeof(_ExternT);
-      return __ret; 
+      return __ret;
     }
-  
+
   template<typename _InternT, typename _ExternT>
-    bool 
+    bool
     codecvt<_InternT, _ExternT, encoding_state>::
     do_always_noconv() const throw()
     { return false; }
-  
+
   template<typename _InternT, typename _ExternT>
-    int 
+    int
     codecvt<_InternT, _ExternT, encoding_state>::
-    do_length(state_type&, const extern_type* __from, 
+    do_length(state_type&, const extern_type* __from,
 	      const extern_type* __end, size_t __max) const
     { return std::min(__max, static_cast<size_t>(__end - __from)); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 74.  Garbled text for codecvt::do_max_length
   template<typename _InternT, typename _ExternT>
-    int 
+    int
     codecvt<_InternT, _ExternT, encoding_state>::
     do_max_length() const throw()
     { return 1; }

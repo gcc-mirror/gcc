@@ -654,7 +654,7 @@ setup_save_areas (void)
     }
   else
     {
-      /* We are not sharing slots. 
+      /* We are not sharing slots.
 
 	 Run through all the call-used hard-registers and allocate
 	 space for each in the caller-save area.  Try to allocate space
@@ -851,7 +851,7 @@ save_call_clobbered_regs (void)
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (hard_regs_saved, regno))
 		  n_regs_saved++;
-	      
+
 	      if (cheap
 		  && HARD_REGISTER_P (cheap)
 		  && callee_abi.clobbers_reg_p (GET_MODE (cheap),

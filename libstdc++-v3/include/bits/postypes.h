@@ -35,7 +35,9 @@
 #ifndef _GLIBCXX_POSTYPES_H
 #define _GLIBCXX_POSTYPES_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <cwchar> // For mbstate_t
 
@@ -50,6 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // unspecified. The behaviour in this implementation is as noted
   // below.
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   /**
    *  @brief  Type used by fpos, char_traits<char>, and char_traits<wchar_t>.
    *
@@ -57,12 +61,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  implementation defined type.
    *  Note: In versions of GCC up to and including GCC 3.3, streamoff
    *  was typedef long.
-  */  
+  */
 #ifdef __INT64_TYPE__
   typedef __INT64_TYPE__          streamoff;
 #else
   typedef long long     streamoff;
 #endif
+#pragma GCC diagnostic pop
 
   /// Integral type for I/O operation counts and buffer sizes.
   typedef ptrdiff_t	streamsize; // Signed integral type

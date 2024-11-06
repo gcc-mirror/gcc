@@ -2418,7 +2418,7 @@
 		      (pc)))]
   "reload_completed"
 {
-  return <MODE>mode == CC_NZmode ? "b<oCC> %l0%#": "b<CC> %l0%#";
+  return <MODE>mode == CC_NZmode ? "b<oCC> %l0%#" : "b<CC> %l0%#";
 }
   [(set_attr "slottable" "has_slot")])
 

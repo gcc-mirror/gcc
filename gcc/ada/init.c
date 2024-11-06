@@ -2782,10 +2782,16 @@ __gnat_install_handler ()
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
+#if defined(__arm__)
   mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
 
   /* ARM Bump has to be an even number because of odd/even architecture.  */
   ((mcontext_t *) mcontext)->arm_pc += 2;
+#endif
+
+  /* Other ports, based on dwarf2 unwinding, typically leverage
+     kernel CFI coordinated with libgcc's explicit support for signal
+     frames.  */
 }
 
 static void
@@ -2825,7 +2831,6 @@ static void
 __gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
   __gnat_adjust_context_for_raise (sig, ucontext);
-
   __gnat_sigtramp (sig, (void *) si, (void *) ucontext,
 		   (__sigtramphandler_t *)&__gnat_map_signal);
 }

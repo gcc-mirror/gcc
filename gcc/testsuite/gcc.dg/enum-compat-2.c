@@ -3,7 +3,7 @@
 /* Origin: Joseph Myers <jsm@polyomino.org.uk>, based on
    PR c/6024 from Richard Earnshaw <rearnsha@arm.com> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 /* Original test from PR c/6024.  */
 enum e1 {a, b};

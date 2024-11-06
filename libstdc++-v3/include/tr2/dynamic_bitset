@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR2_DYNAMIC_BITSET
 #define _GLIBCXX_TR2_DYNAMIC_BITSET 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <limits>
 #include <vector>

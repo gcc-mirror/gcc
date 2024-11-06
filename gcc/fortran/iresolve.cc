@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
    code node is passed.  The result type and library subroutine name
    are generally set according to the function arguments.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -175,9 +176,11 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
 
 static void
 resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
-			  gfc_expr *dim, gfc_expr *mask)
+			  gfc_expr *dim, gfc_expr *mask,
+			  bool use_integer = false)
 {
   const char *prefix;
+  bt type;
 
   f->ts = array->ts;
 
@@ -200,9 +203,18 @@ resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
       gfc_resolve_dim_arg (dim);
     }
 
+  /* For those intrinsic like SUM where we use the integer version
+     actually uses unsigned, but we call it as the integer
+     version.  */
+
+  if (use_integer && array->ts.type == BT_UNSIGNED)
+    type = BT_INTEGER;
+  else
+    type = array->ts.type;
+
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%s_%c%d"), prefix, name,
-		      gfc_type_letter (array->ts.type),
+		      gfc_type_letter (type),
 		      gfc_type_abi_kind (&array->ts));
 }
 
@@ -1184,7 +1196,7 @@ gfc_resolve_hypot (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
 void
 gfc_resolve_iall (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("iall", f, array, dim, mask);
+  resolve_transformational ("iall", f, array, dim, mask, true);
 }
 
 
@@ -1212,7 +1224,7 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 void
 gfc_resolve_iany (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("iany", f, array, dim, mask);
+  resolve_transformational ("iany", f, array, dim, mask, true);
 }
 
 
@@ -1418,7 +1430,7 @@ gfc_resolve_long (gfc_expr *f, gfc_expr *a)
 void
 gfc_resolve_iparity (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("iparity", f, array, dim, mask);
+  resolve_transformational ("iparity", f, array, dim, mask, true);
 }
 
 
@@ -1600,6 +1612,7 @@ void
 gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 {
   gfc_expr temp;
+  bt type;
 
   if (a->ts.type == BT_LOGICAL && b->ts.type == BT_LOGICAL)
     {
@@ -1648,8 +1661,16 @@ gfc_resolve_matmul (gfc_expr *f, gfc_expr *a, gfc_expr *b)
 	}
     }
 
+  /* We use the same library version of matmul for INTEGER and UNSIGNED,
+     which we call as the INTEGER version.  */
+
+  if (f->ts.type == BT_UNSIGNED)
+    type = BT_INTEGER;
+  else
+    type = f->ts.type;
+
   f->value.function.name
-    = gfc_get_string (PREFIX ("matmul_%c%d"), gfc_type_letter (f->ts.type),
+    = gfc_get_string (PREFIX ("matmul_%c%d"), gfc_type_letter (type),
 		      gfc_type_abi_kind (&f->ts));
 }
 
@@ -1799,6 +1820,7 @@ gfc_resolve_findloc (gfc_expr *f, gfc_expr *array, gfc_expr *value,
   int i, j, idim;
   int fkind;
   int d_num;
+  bt type;
 
   /* See at the end of the function for why this is necessary.  */
 
@@ -1877,9 +1899,15 @@ gfc_resolve_findloc (gfc_expr *f, gfc_expr *array, gfc_expr *value,
       gfc_convert_type_warn (back, &ts, 2, 0);
     }
 
+  /* Use the INTEGER library function for UNSIGNED.  */
+  if (array->ts.type != BT_UNSIGNED)
+    type = array->ts.type;
+  else
+    type = BT_INTEGER;
+
   f->value.function.name
     = gfc_get_string (PREFIX ("%s%d_%c%d"), name, d_num,
-		      gfc_type_letter (array->ts.type, true),
+		      gfc_type_letter (type, true),
 		      gfc_type_abi_kind (&array->ts));
 
   /* We only have a single library function, so we need to convert
@@ -1982,6 +2010,20 @@ gfc_resolve_mask (gfc_expr *f, gfc_expr *i ATTRIBUTE_UNUSED,
     f->value.function.name = gfc_get_string ("__maskl_i%d", f->ts.kind);
   else
     f->value.function.name = gfc_get_string ("__maskr_i%d", f->ts.kind);
+}
+
+void
+gfc_resolve_umasklr (gfc_expr *f, gfc_expr *i ATTRIBUTE_UNUSED,
+		  gfc_expr *kind)
+{
+  f->ts.type = BT_UNSIGNED;
+  f->ts.kind = kind ? mpz_get_si (kind->value.integer)
+		    : gfc_default_unsigned_kind;
+
+  if (f->value.function.isym->id == GFC_ISYM_UMASKL)
+    f->value.function.name = gfc_get_string ("__maskl_m%d", f->ts.kind);
+  else
+    f->value.function.name = gfc_get_string ("__maskr_m%d", f->ts.kind);
 }
 
 
@@ -2324,7 +2366,7 @@ void
 gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 		     gfc_expr *mask)
 {
-  resolve_transformational ("product", f, array, dim, mask);
+  resolve_transformational ("product", f, array, dim, mask, true);
 }
 
 
@@ -2872,7 +2914,7 @@ gfc_resolve_storage_size (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
 void
 gfc_resolve_sum (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  resolve_transformational ("sum", f, array, dim, mask);
+  resolve_transformational ("sum", f, array, dim, mask, true);
 }
 
 
@@ -3432,12 +3474,14 @@ gfc_resolve_random_number (gfc_code *c)
 {
   const char *name;
   int kind;
+  char type;
 
   kind = gfc_type_abi_kind (&c->ext.actual->expr->ts);
+  type = gfc_type_letter (c->ext.actual->expr->ts.type);
   if (c->ext.actual->expr->rank == 0)
-    name = gfc_get_string (PREFIX ("random_r%d"), kind);
+    name = gfc_get_string (PREFIX ("random_%c%d"), type, kind);
   else
-    name = gfc_get_string (PREFIX ("arandom_r%d"), kind);
+    name = gfc_get_string (PREFIX ("arandom_%c%d"), type, kind);
 
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }

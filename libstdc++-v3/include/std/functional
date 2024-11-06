@@ -43,7 +43,9 @@
 #ifndef _GLIBCXX_FUNCTIONAL
 #define _GLIBCXX_FUNCTIONAL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/stl_function.h> // std::equal_to, std::unary_function etc.

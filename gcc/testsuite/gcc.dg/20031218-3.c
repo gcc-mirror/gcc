@@ -3,7 +3,7 @@
    The problem was that this just to ICE with -O2 -g.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -g" } */
+/* { dg-options "-std=gnu17 -O2 -g" } */
 
 extern __SIZE_TYPE__ strlen (const char *);
 

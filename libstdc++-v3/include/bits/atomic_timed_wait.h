@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_ATOMIC_TIMED_WAIT_H
 #define _GLIBCXX_ATOMIC_TIMED_WAIT_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/atomic_wait.h>
 

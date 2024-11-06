@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
    From the scanner's viewpoint, the higher level subroutines ask for
    new characters and do a lot of jumping backwards.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -66,7 +67,7 @@ static locus gcc_attribute_locus;
 
 gfc_source_form gfc_current_form;
 static gfc_linebuf *line_head, *line_tail;
-       
+
 locus gfc_current_locus;
 const char *gfc_source_file;
 static FILE *gfc_src_file;
@@ -283,19 +284,19 @@ gfc_scanner_done_1 (void)
   gfc_linebuf *lb;
   gfc_file *f;
 
-  while(line_head != NULL) 
+  while(line_head != NULL)
     {
       lb = line_head->next;
       free (line_head);
       line_head = lb;
     }
-     
-  while(file_head != NULL) 
+
+  while(file_head != NULL)
     {
       f = file_head->next;
       free (file_head->filename);
       free (file_head);
-      file_head = f;    
+      file_head = f;
     }
 }
 
@@ -370,7 +371,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   char *q;
   size_t len;
   int i;
-  
+
   p = path;
   while (*p == ' ' || *p == '\t')  /* someone might do "-I include" */
     if (*p++ == '\0')
@@ -536,7 +537,7 @@ gfc_at_eof (void)
   if (line_head == NULL)
     return 1;			/* Null file */
 
-  if (gfc_current_locus.lb == NULL)
+  if (gfc_current_locus.u.lb == NULL)
     return 1;
 
   return 0;
@@ -551,7 +552,7 @@ gfc_at_bol (void)
   if (gfc_at_eof ())
     return 1;
 
-  return (gfc_current_locus.nextc == gfc_current_locus.lb->line);
+  return (gfc_current_locus.nextc == gfc_current_locus.u.lb->line);
 }
 
 
@@ -609,7 +610,7 @@ gfc_start_source_files (void)
     (*debug_hooks->start_source_file) (0, gfc_source_file);
 
   file_changes_cur = 0;
-  report_file_change (gfc_current_locus.lb);
+  report_file_change (gfc_current_locus.u.lb);
 }
 
 void
@@ -629,28 +630,28 @@ gfc_advance_line (void)
   if (gfc_at_end ())
     return;
 
-  if (gfc_current_locus.lb == NULL) 
+  if (gfc_current_locus.u.lb == NULL)
     {
       end_flag = 1;
       return;
-    } 
-
-  if (gfc_current_locus.lb->next
-      && !gfc_current_locus.lb->next->dbg_emitted)
-    {
-      report_file_change (gfc_current_locus.lb->next);
-      gfc_current_locus.lb->next->dbg_emitted = true;
     }
 
-  gfc_current_locus.lb = gfc_current_locus.lb->next;
+  if (gfc_current_locus.u.lb->next
+      && !gfc_current_locus.u.lb->next->dbg_emitted)
+    {
+      report_file_change (gfc_current_locus.u.lb->next);
+      gfc_current_locus.u.lb->next->dbg_emitted = true;
+    }
 
-  if (gfc_current_locus.lb != NULL)	 
-    gfc_current_locus.nextc = gfc_current_locus.lb->line;
-  else 
+  gfc_current_locus.u.lb = gfc_current_locus.u.lb->next;
+
+  if (gfc_current_locus.u.lb != NULL)
+    gfc_current_locus.nextc = gfc_current_locus.u.lb->line;
+  else
     {
       gfc_current_locus.nextc = NULL;
       end_flag = 1;
-    }       
+    }
 }
 
 
@@ -667,7 +668,7 @@ static gfc_char_t
 next_char (void)
 {
   gfc_char_t c;
-  
+
   if (gfc_current_locus.nextc == NULL)
     return '\n';
 
@@ -714,7 +715,7 @@ gfc_define_undef_line (void)
   if (wide_strncmp (gfc_current_locus.nextc, "#define ", 8) == 0)
     {
       tmp = gfc_widechar_to_char (&gfc_current_locus.nextc[8], -1);
-      (*debug_hooks->define) (gfc_linebuf_linenum (gfc_current_locus.lb),
+      (*debug_hooks->define) (gfc_linebuf_linenum (gfc_current_locus.u.lb),
 			      tmp);
       free (tmp);
     }
@@ -722,7 +723,7 @@ gfc_define_undef_line (void)
   if (wide_strncmp (gfc_current_locus.nextc, "#undef ", 7) == 0)
     {
       tmp = gfc_widechar_to_char (&gfc_current_locus.nextc[7], -1);
-      (*debug_hooks->undef) (gfc_linebuf_linenum (gfc_current_locus.lb),
+      (*debug_hooks->undef) (gfc_linebuf_linenum (gfc_current_locus.u.lb),
 			     tmp);
       free (tmp);
     }
@@ -784,7 +785,7 @@ skip_free_oacc_sentinel (locus start, locus old_loc)
 	      openacc_locus = old_loc;
 	      gfc_current_locus = start;
 	    }
-	  else 
+	  else
 	    r = false;
 	}
       else
@@ -824,7 +825,7 @@ skip_free_omp_sentinel (locus start, locus old_loc)
 	      openmp_locus = old_loc;
 	      gfc_current_locus = start;
 	    }
-	  else 
+	  else
 	    r = false;
 	}
       else
@@ -1008,7 +1009,7 @@ skip_fixed_omp_sentinel (locus *start)
     }
   else if (UNLIKELY (c == 'x' || c == 'X'))
     gfc_warning_now (OPT_Wsurprising,
-		     "Ignoring '!$omx' vendor-extension sentinel at %C");
+		     "Ignoring %<!$omx%> vendor-extension sentinel at %C");
   return false;
 }
 
@@ -1099,12 +1100,12 @@ skip_fixed_comments (void)
 	      return;
 	    }
 
-	  if (gfc_current_locus.lb != NULL
-	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
-	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
+	  if (gfc_current_locus.u.lb != NULL
+	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.u.lb))
+	    continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb);
 
 	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
-	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments, 
+	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments,
 		but directives
 	     2) handle OpenMP conditional compilation, where
 		!$|c$|*$ should be treated as 2 spaces if the characters
@@ -1221,9 +1222,9 @@ check_for_digits:
 
       if (col != 6 && c == '!')
 	{
-	  if (gfc_current_locus.lb != NULL
-	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
-	    continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
+	  if (gfc_current_locus.u.lb != NULL
+	      && continue_line < gfc_linebuf_linenum (gfc_current_locus.u.lb))
+	    continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb);
 	  skip_comment_line ();
 	  continue;
 	}
@@ -1305,20 +1306,20 @@ restart:
 	  while (c != '\n');
 
 	  /* Avoid truncation warnings for comment ending lines.  */
-	  gfc_current_locus.lb->truncated = 0;
+	  gfc_current_locus.u.lb->truncated = 0;
 
 	  goto done;
 	}
 
       /* Check to see if the continuation line was truncated.  */
-      if (warn_line_truncation && gfc_current_locus.lb != NULL
-	  && gfc_current_locus.lb->truncated)
+      if (warn_line_truncation && gfc_current_locus.u.lb != NULL
+	  && gfc_current_locus.u.lb->truncated)
 	{
 	  int maxlen = flag_free_line_length;
 	  gfc_char_t *current_nextc = gfc_current_locus.nextc;
 
-	  gfc_current_locus.lb->truncated = 0;
-	  gfc_current_locus.nextc =  gfc_current_locus.lb->line + maxlen;
+	  gfc_current_locus.u.lb->truncated = 0;
+	  gfc_current_locus.nextc =  gfc_current_locus.u.lb->line + maxlen;
 	  gfc_warning_now (OPT_Wline_truncation,
 			   "Line truncated at %L", &gfc_current_locus);
 	  gfc_current_locus.nextc = current_nextc;
@@ -1363,23 +1364,23 @@ restart:
 	 without getting reset (e.g. via input_stmt). It also happens
 	 when pre-including files via -fpre-include=.  */
       if (continue_count == 0
-	  && gfc_current_locus.lb
-	  && continue_line > gfc_linebuf_linenum (gfc_current_locus.lb) + 1)
-	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb) + 1;
+	  && gfc_current_locus.u.lb
+	  && continue_line > gfc_linebuf_linenum (gfc_current_locus.u.lb) + 1)
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb) + 1;
 
       continue_flag = 1;
       if (c == '!')
 	skip_comment_line ();
       else
 	gfc_advance_line ();
-      
+
       if (gfc_at_eof ())
 	goto not_continuation;
 
       /* We've got a continuation line.  If we are on the very next line after
 	 the last continuation, increment the continuation line count and
 	 check whether the limit has been exceeded.  */
-      if (gfc_linebuf_linenum (gfc_current_locus.lb) == continue_line + 1)
+      if (gfc_linebuf_linenum (gfc_current_locus.u.lb) == continue_line + 1)
 	{
 	  if (++continue_count == gfc_option.max_continue_free)
 	    {
@@ -1392,9 +1393,9 @@ restart:
       /* Now find where it continues. First eat any comment lines.  */
       openmp_cond_flag = skip_free_comments ();
 
-      if (gfc_current_locus.lb != NULL
-	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
-	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
+      if (gfc_current_locus.u.lb != NULL
+	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.u.lb))
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb);
 
       if (flag_openmp)
 	if (prev_openmp_flag != openmp_flag && !openacc_flag)
@@ -1461,7 +1462,7 @@ restart:
 		is_openmp = 1;
 	    }
 	  if (omp_acc_err_loc.nextc != gfc_current_locus.nextc
-	      || omp_acc_err_loc.lb != gfc_current_locus.lb)
+	      || omp_acc_err_loc.u.lb != gfc_current_locus.u.lb)
 	    gfc_error_now (is_openmp
 			   ? G_("Wrong OpenACC continuation at %C: "
 				"expected !$ACC, got !$OMP")
@@ -1477,7 +1478,7 @@ restart:
 	    {
 	      gfc_current_locus.nextc--;
 	      if (warn_ampersand && in_string == INSTRING_WARN)
-		gfc_warning (OPT_Wampersand, 
+		gfc_warning (OPT_Wampersand,
 			     "Missing %<&%> in continued character "
 			     "constant at %C");
 	    }
@@ -1511,17 +1512,17 @@ restart:
 	  while (c != '\n');
 
 	  /* Avoid truncation warnings for comment ending lines.  */
-	  gfc_current_locus.lb->truncated = 0;
+	  gfc_current_locus.u.lb->truncated = 0;
 	}
 
       if (c != '\n')
 	goto done;
 
       /* Check to see if the continuation line was truncated.  */
-      if (warn_line_truncation && gfc_current_locus.lb != NULL
-	  && gfc_current_locus.lb->truncated)
+      if (warn_line_truncation && gfc_current_locus.u.lb != NULL
+	  && gfc_current_locus.u.lb->truncated)
 	{
-	  gfc_current_locus.lb->truncated = 0;
+	  gfc_current_locus.u.lb->truncated = 0;
 	  gfc_warning_now (OPT_Wline_truncation,
 			   "Line truncated at %L", &gfc_current_locus);
 	}
@@ -1535,9 +1536,9 @@ restart:
 	 without getting reset (e.g. via input_stmt). It also happens
 	 when pre-including files via -fpre-include=.  */
       if (continue_count == 0
-	  && gfc_current_locus.lb
-	  && continue_line > gfc_linebuf_linenum (gfc_current_locus.lb) + 1)
-	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb) + 1;
+	  && gfc_current_locus.u.lb
+	  && continue_line > gfc_linebuf_linenum (gfc_current_locus.u.lb) + 1)
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb) + 1;
 
       continue_flag = 1;
       old_loc = gfc_current_locus;
@@ -1570,7 +1571,7 @@ restart:
 		is_openmp = 1;
 	    }
 	  if (omp_acc_err_loc.nextc != gfc_current_locus.nextc
-	      || omp_acc_err_loc.lb != gfc_current_locus.lb)
+	      || omp_acc_err_loc.u.lb != gfc_current_locus.u.lb)
 	    gfc_error_now (is_openmp
 			   ? G_("Wrong OpenACC continuation at %C: "
 				"expected !$ACC, got !$OMP")
@@ -1608,7 +1609,7 @@ restart:
       /* We've got a continuation line.  If we are on the very next line after
 	 the last continuation, increment the continuation line count and
 	 check whether the limit has been exceeded.  */
-      if (gfc_linebuf_linenum (gfc_current_locus.lb) == continue_line + 1)
+      if (gfc_linebuf_linenum (gfc_current_locus.u.lb) == continue_line + 1)
 	{
 	  if (++continue_count == gfc_option.max_continue_fixed)
 	    {
@@ -1619,9 +1620,9 @@ restart:
 	    }
 	}
 
-      if (gfc_current_locus.lb != NULL
-	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
-	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
+      if (gfc_current_locus.u.lb != NULL
+	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.u.lb))
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.u.lb);
     }
 
   /* Ready to read first character of continuation line, which might
@@ -1760,7 +1761,7 @@ gfc_gobble_whitespace (void)
 	 line will be scanned multiple times.  */
       if (warn_tabs && c == '\t')
 	{
-	  int cur_linenum = LOCATION_LINE (gfc_current_locus.lb->location);
+	  int cur_linenum = LOCATION_LINE (gfc_current_locus.u.lb->location);
 	  if (cur_linenum != linenum)
 	    {
 	      linenum = cur_linenum;
@@ -1800,7 +1801,7 @@ gfc_gobble_whitespace (void)
    load_line returns whether the line was truncated.
 
    NOTE: The error machinery isn't available at this point, so we can't
-	 easily report line and column numbers consistent with other 
+	 easily report line and column numbers consistent with other
 	 parts of gfortran.  */
 
 static bool
@@ -1860,7 +1861,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       if (c == '\n')
 	{
 	  /* Check for illegal use of ampersand. See F95 Standard 3.3.1.3.  */
-	  if (gfc_current_form == FORM_FREE 
+	  if (gfc_current_form == FORM_FREE
 	      && !seen_printable && seen_ampersand)
 	    {
 	      if (pedantic)
@@ -2424,7 +2425,7 @@ include_stmt (gfc_linebuf *b)
   openacc_flag = 0;
   continue_count = 0;
   continue_line = 0;
-  gfc_current_locus.lb = b;
+  gfc_current_locus.u.lb = b;
   gfc_current_locus.nextc = b->line;
 
   gfc_skip_comments ();
@@ -2782,7 +2783,7 @@ gfc_new_file (void)
   else
     load_file (gfc_source_file, NULL, true);
 
-  gfc_current_locus.lb = line_head;
+  gfc_current_locus.u.lb = line_head;
   gfc_current_locus.nextc = (line_head == NULL) ? NULL : line_head->line;
 
 #if 0 /* Debugging aid.  */

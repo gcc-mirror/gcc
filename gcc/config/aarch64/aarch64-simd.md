@@ -160,7 +160,7 @@
      [?r, w ; neon_to_gp<q>      , *        , *] fmov\t%x0, %d1
      [?w, r ; f_mcr              , *        , *] fmov\t%d0, %1
      [?r, r ; mov_reg            , *        , *] mov\t%0, %1
-     [w , Dn; neon_move<q>       , simd     , *] << aarch64_output_simd_mov_immediate (operands[1], 64);
+     [w , Dn; neon_move<q>       , simd     , *] << aarch64_output_simd_mov_imm (operands[1], 64);
      [w , Dz; f_mcr              , *        , *] fmov\t%d0, xzr
      [w , Dx; neon_move          , simd     , 8] #
   }
@@ -189,7 +189,7 @@
      [?r , w ; multiple           , *   , 8] #
      [?w , r ; multiple           , *   , 8] #
      [?r , r ; multiple           , *   , 8] #
-     [w  , Dn; neon_move<q>       , simd, 4] << aarch64_output_simd_mov_immediate (operands[1], 128);
+     [w  , Dn; neon_move<q>       , simd, 4] << aarch64_output_simd_mov_imm (operands[1], 128);
      [w  , Dz; fmov               , *   , 4] fmov\t%d0, xzr
      [w  , Dx; neon_move          , simd, 8] #
   }
@@ -208,7 +208,6 @@
     else
       {
 	if (FP_REGNUM_P (REGNO (operands[0]))
-	    && <MODE>mode == V2DImode
 	    && aarch64_maybe_generate_simd_constant (operands[0], operands[1],
 						     <MODE>mode))
 	  ;
@@ -568,7 +567,7 @@
 ;; ...
 ;;
 ;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_insn "<sur>dot_prod<vsi2qi><vczle><vczbe>"
+(define_insn "<sur>dot_prod<mode><vsi2qi><vczle><vczbe>"
   [(set (match_operand:VS 0 "register_operand" "=w")
 	(plus:VS
 	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
@@ -582,7 +581,7 @@
 
 ;; These instructions map to the __builtins for the Armv8.6-a I8MM usdot
 ;; (vector) Dot Product operation and the vectorized optab.
-(define_insn "usdot_prod<vsi2qi><vczle><vczbe>"
+(define_insn "usdot_prod<mode><vsi2qi><vczle><vczbe>"
   [(set (match_operand:VS 0 "register_operand" "=w")
 	(plus:VS
 	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
@@ -1075,7 +1074,8 @@
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
 	emit_insn (gen_aarch64_<su>abdv16qi (abd, operands[1], operands[2]));
-	emit_insn (gen_udot_prodv16qi (operands[0], abd, ones, operands[3]));
+	emit_insn (gen_udot_prodv4siv16qi (operands[0], abd, ones,
+					   operands[3]));
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);
@@ -1121,11 +1121,11 @@
 (define_insn "and<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand")
 	(and:VDQ_I (match_operand:VDQ_I 1 "register_operand")
-		   (match_operand:VDQ_I 2 "aarch64_reg_or_bic_imm")))]
+		   (match_operand:VDQ_I 2 "aarch64_reg_or_and_imm")))]
   "TARGET_SIMD"
   {@ [ cons: =0 , 1 , 2   ]
      [ w        , w , w   ] and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
-     [ w        , 0 , Db  ] << aarch64_output_simd_mov_immediate (operands[2], <bitsize>, AARCH64_CHECK_BIC);
+     [ w        , 0 , Db  ] << aarch64_output_simd_and_imm (operands[2], <bitsize>);
   }
   [(set_attr "type" "neon_logic<q>")]
 )
@@ -1134,24 +1134,25 @@
 (define_insn "ior<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand")
 	(ior:VDQ_I (match_operand:VDQ_I 1 "register_operand")
-		   (match_operand:VDQ_I 2 "aarch64_orr_imm_sve_advsimd")))]
+		   (match_operand:VDQ_I 2 "aarch64_reg_or_orr_imm")))]
   "TARGET_SIMD"
-  {@ [ cons: =0 , 1 , 2; attrs: arch ]
-     [ w        , w , w  ; simd      ] orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
-     [ w        , 0 , vsl; sve       ] orr\t%Z0.<Vetype>, %Z0.<Vetype>, #%2
-     [ w        , 0 , Do ; simd      ] \
-       << aarch64_output_simd_mov_immediate (operands[2], <bitsize>, \
-					     AARCH64_CHECK_ORR);
+  {@ [ cons: =0 , 1 , 2  ]
+     [ w        , w , w  ] orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+     [ w        , 0 , Do ] << aarch64_output_simd_orr_imm (operands[2], <bitsize>);
   }
   [(set_attr "type" "neon_logic<q>")]
 )
 
+;; For EOR (vector, register) and SVE EOR (vector, immediate)
 (define_insn "xor<mode>3<vczle><vczbe>"
-  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-        (xor:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		 (match_operand:VDQ_I 2 "register_operand" "w")))]
+  [(set (match_operand:VDQ_I 0 "register_operand")
+        (xor:VDQ_I (match_operand:VDQ_I 1 "register_operand")
+                   (match_operand:VDQ_I 2 "aarch64_reg_or_xor_imm")))]
   "TARGET_SIMD"
-  "eor\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>"
+  {@ [ cons: =0 , 1 , 2  ]
+     [ w        , w , w  ] eor\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
+     [ w        , 0 , De ] << aarch64_output_simd_xor_imm (operands[2], <bitsize>);
+  }
   [(set_attr "type" "neon_logic<q>")]
 )
 
@@ -1291,6 +1292,40 @@
   "TARGET_SIMD"
   "<sra_op>sra\t%<v>0<Vmtype>, %<v>2<Vmtype>, %3"
   [(set_attr "type" "neon_shift_acc<q>")]
+)
+
+;; After all the combinations and propagations of ROTATE have been
+;; attempted split any remaining vector rotates into SHL + USRA sequences.
+;; Don't match this after reload as the various possible sequence for this
+;; require temporary registers.
+(define_insn_and_split "*aarch64_simd_rotate_imm<mode>"
+  [(set (match_operand:VDQ_I 0 "register_operand" "=&w")
+	(rotate:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
+		      (match_operand:VDQ_I 2 "aarch64_simd_lshift_imm")))]
+  "TARGET_SIMD && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 3)
+	(ashift:VDQ_I (match_dup 1)
+		      (match_dup 2)))
+   (set (match_dup 0)
+	(plus:VDQ_I
+	  (lshiftrt:VDQ_I
+	    (match_dup 1)
+	    (match_dup 4))
+	  (match_dup 3)))]
+  {
+    if (aarch64_emit_opt_vec_rotate (operands[0], operands[1], operands[2]))
+      DONE;
+
+    operands[3] = gen_reg_rtx (<MODE>mode);
+    rtx shft_amnt = unwrap_const_vec_duplicate (operands[2]);
+    int bitwidth = GET_MODE_UNIT_SIZE (<MODE>mode) * BITS_PER_UNIT;
+    operands[4]
+      = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+					   bitwidth - INTVAL (shft_amnt));
+  }
+  [(set_attr "length" "8")]
 )
 
 (define_insn "aarch64_<sra_op>rsra_n<mode>_insn"
@@ -3515,21 +3550,31 @@
 )
 
 (define_expand "popcount<mode>2"
-  [(set (match_operand:VDQHSD 0 "register_operand")
-	(popcount:VDQHSD (match_operand:VDQHSD 1 "register_operand")))]
+  [(set (match_operand:VDQHSD_V1DI 0 "register_operand")
+	(popcount:VDQHSD_V1DI
+	  (match_operand:VDQHSD_V1DI 1 "register_operand")))]
   "TARGET_SIMD"
   {
     if (TARGET_SVE)
       {
-	rtx p = aarch64_ptrue_reg (<VPRED>mode);
+	rtx p = aarch64_ptrue_reg (<VPRED>mode, <bitsize> == 64 ? 8 : 16);
 	emit_insn (gen_aarch64_pred_popcount<mode> (operands[0],
 						    p,
 						    operands[1]));
 	DONE;
       }
 
+    if (<MODE>mode == V1DImode)
+      {
+	rtx out = gen_reg_rtx (DImode);
+	emit_insn (gen_popcountdi2 (out, gen_lowpart (DImode, operands[1])));
+	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, out));
+	DONE;
+      }
+
     /* Generate a byte popcount.  */
     machine_mode mode = <bitsize> == 64 ? V8QImode : V16QImode;
+    machine_mode mode2 = <bitsize> == 64 ? V2SImode : V4SImode;
     rtx tmp = gen_reg_rtx (mode);
     auto icode = optab_handler (popcount_optab, mode);
     emit_insn (GEN_FCN (icode) (tmp, gen_lowpart (mode, operands[1])));
@@ -3540,7 +3585,7 @@
 	/* For V4SI and V2SI, we can generate a UDOT with a 0 accumulator and a
 	   1 multiplicand.  For V2DI, another UAADDLP is needed.  */
 	rtx ones = force_reg (mode, CONST1_RTX (mode));
-	auto icode = optab_handler (udot_prod_optab, mode);
+	auto icode = convert_optab_handler (udot_prod_optab, mode2, mode);
 	mode = <bitsize> == 64 ? V2SImode : V4SImode;
 	rtx dest = mode == <MODE>mode ? operands[0] : gen_reg_rtx (mode);
 	rtx zeros = force_reg (mode, CONST0_RTX (mode));
@@ -9044,16 +9089,41 @@
   [(set_attr "type" "crypto_sha3")]
 )
 
-(define_insn "aarch64_xarqv2di"
+(define_insn "*aarch64_xarqv2di_insn"
   [(set (match_operand:V2DI 0 "register_operand" "=w")
-	(rotatert:V2DI
+	(rotate:V2DI
 	 (xor:V2DI
 	  (match_operand:V2DI 1 "register_operand" "%w")
 	  (match_operand:V2DI 2 "register_operand" "w"))
-	 (match_operand:SI 3 "aarch64_simd_shift_imm_di" "Usd")))]
+	 (match_operand:V2DI 3 "aarch64_simd_lshift_imm" "Dl")))]
   "TARGET_SHA3"
-  "xar\\t%0.2d, %1.2d, %2.2d, %3"
+  {
+    operands[3]
+      = GEN_INT (64 - INTVAL (unwrap_const_vec_duplicate (operands[3])));
+    return "xar\\t%0.2d, %1.2d, %2.2d, %3";
+  }
   [(set_attr "type" "crypto_sha3")]
+)
+
+;; The semantics of the vxarq_u64 intrinsics treat the immediate argument as a
+;; right-rotate amount but the recommended representation of rotates by a
+;; constant in RTL is with the left ROTATE code.  Translate between the
+;; intrinsic-provided amount and the RTL operands in the expander here.
+;; The define_insn for XAR will translate back to instruction semantics in its
+;; output logic.
+(define_expand "aarch64_xarqv2di"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(rotate:V2DI
+	 (xor:V2DI
+	  (match_operand:V2DI 1 "register_operand")
+	  (match_operand:V2DI 2 "register_operand"))
+	 (match_operand:SI 3 "aarch64_simd_shift_imm_di")))]
+  "TARGET_SHA3"
+  {
+    operands[3]
+      = aarch64_simd_gen_const_vector_dup (V2DImode,
+					   64 - INTVAL (operands[3]));
+  }
 )
 
 (define_insn "bcaxq<mode>4"

@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 
 */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -304,6 +305,7 @@ sem_function::get_hash (void)
 	   (TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))));
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
       hstate.add_flag (DECL_CXX_DESTRUCTOR_P (decl));
+      hstate.add_flag (DECL_STATIC_CHAIN (decl));
 
       set_hash (hstate.end ());
     }
@@ -655,7 +657,10 @@ sem_function::equals_wpa (sem_item *item,
     }
 
   if (list1 || list2)
-    return return_false_with_msg ("Mismatched number of parameters");
+    return return_false_with_msg ("mismatched number of parameters");
+
+  if (DECL_STATIC_CHAIN (decl) != DECL_STATIC_CHAIN (item->decl))
+    return return_false_with_msg ("static chain mismatch");
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
@@ -876,7 +881,10 @@ sem_function::equals_private (sem_item *item)
         return return_false ();
     }
   if (arg1 || arg2)
-    return return_false_with_msg ("Mismatched number of arguments");
+    return return_false_with_msg ("mismatched number of arguments");
+
+ if (DECL_STATIC_CHAIN (decl) != DECL_STATIC_CHAIN (m_compared_func->decl))
+    return return_false_with_msg ("static chain mismatch");
 
   if (!dyn_cast <cgraph_node *> (node)->has_gimple_body_p ())
     return true;
@@ -951,7 +959,7 @@ set_addressable (varpool_node *node, void *)
   return false;
 }
 
-/* Clear DECL_RTL of NODE. 
+/* Clear DECL_RTL of NODE.
    Helper for call_for_symbol_thunks_and_aliases.  */
 
 static bool
@@ -1895,7 +1903,7 @@ sem_variable::equals (tree t1, tree t2)
 	  return false;
 	return true;
       }
-     
+
     case COMPONENT_REF:
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
@@ -3403,7 +3411,7 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count,
       unsigned total = equal_items + non_singular_classes_count;
       fprintf (dump_file, "Totally needed symbols: %u"
 	       ", fraction of loaded symbols: %.2f%%\n\n", total,
-	       loaded_symbols ? 100.0f * total / loaded_symbols: 0.0f);
+	       loaded_symbols ? 100.0f * total / loaded_symbols : 0.0f);
     }
 
   unsigned int l;

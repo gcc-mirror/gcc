@@ -1,6 +1,6 @@
 /* Reduced from Doom's d_main.c, which is under the GPLv2 or later.  */
 
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-std=gnu17 -Wno-analyzer-too-complex" } */
 
 typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;

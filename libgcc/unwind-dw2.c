@@ -68,7 +68,7 @@
    waste.  However, some runtime libraries supplied with ICC do contain such
    an unorthodox transition, as well as the unwind info to match.  This loss
    of register restoration doesn't matter in practice, because the exception
-   is caught in the native unix abi, where all of the xmm registers are 
+   is caught in the native unix abi, where all of the xmm registers are
    call clobbered.
 
    Ideally, we'd record some bit to notice when we're failing to restore some

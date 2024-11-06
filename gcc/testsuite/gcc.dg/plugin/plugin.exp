@@ -73,6 +73,8 @@ set plugin_test_list [list \
 	  crash-test-ice-stderr.c \
 	  crash-test-write-though-null-stderr.c \
 	  crash-test-ice-sarif.c \
+	  crash-test-ice-in-header-sarif-2.1.c \
+	  crash-test-ice-in-header-sarif-2.2.c \
 	  crash-test-write-though-null-sarif.c } \
     { diagnostic_plugin_xhtml_format.c \
 	  diagnostic-test-xhtml-1.c } \

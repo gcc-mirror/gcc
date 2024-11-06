@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 
 	[(set (reg:CCM) (compare:CCM (operation) (immediate)))
 	 (set (reg) (operation)]
-	 
+
        The mode CCM will be chosen as if by SELECT_CC_MODE.
 
    Note that unlike NOTICE_UPDATE_CC, we do not handle memory operands.
@@ -125,7 +125,7 @@ struct comparison
   /* Whether IN_A is wrapped in a NOT before being compared.  */
   bool not_in_a;
 };
-  
+
 static vec<comparison *> all_compares;
 
 /* Return whether X is a NOT unary expression.  */
@@ -875,13 +875,13 @@ try_eliminate_compare (struct comparison *cmp)
   rtvec v = rtvec_alloc (2);
   RTVEC_ELT (v, 0) = y;
   RTVEC_ELT (v, 1) = x;
-  
+
   rtx pat = gen_rtx_PARALLEL (VOIDmode, v);
-  
+
   /* Succeed if the new instruction is valid.  Note that we may have started
      a change group within maybe_select_cc_mode, therefore we must continue. */
   validate_change (insn, &PATTERN (insn), pat, true);
-  
+
   if (!apply_change_group ())
     return false;
 

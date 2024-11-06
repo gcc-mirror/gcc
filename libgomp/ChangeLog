@@ -1,3 +1,125 @@
+2024-10-22  Andrew Stubbs  <ams@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (EF_AMDGPU_MACH): Generate from gcn-devices.def.
+	(gcn_gfx803_s): Delete.
+	(gcn_gfx900_s): Delete.
+	(gcn_gfx906_s): Delete.
+	(gcn_gfx908_s): Delete.
+	(gcn_gfx90a_s): Delete.
+	(gcn_gfx90c_s): Delete.
+	(gcn_gfx1030_s): Delete.
+	(gcn_gfx1036_s): Delete.
+	(gcn_gfx1100_s): Delete.
+	(gcn_gfx1103_s): Delete.
+	(gcn_isa_name_len): Delete.
+	(isa_hsa_name): Rename ...
+	(isa_name): ... to this, and rework using gcn-devices.def.
+	(isa_gcc_name): Delete.
+	(isa_code): Rework using gcn-devices.def.
+	(max_isa_vgprs): Rework using gcn-devices.def.
+	(isa_matches_agent): Update isa_name usage.
+	(GOMP_OFFLOAD_init_device): Improve diagnostic using the name.
+
+2024-10-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-4.f: New test;
+	same as acc_on_device-1-3.f but using the builtin function.
+
+2024-10-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.oacc-fortran/routine-nohost-1.f90: Add
+	'-fno-inline'.
+
+2024-10-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/82250
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Add
+	'-fno-builtin-acc_on_device'.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Comment.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Comment.
+
+2024-10-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/82250
+	* testsuite/libgomp.oacc-fortran/acc_on_device-2.f90: Fix
+	effective-target keyword.
+
+2024-10-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (TR13): Fix minor typos.
+	(omp_is_initial_device): Improve wording.
+	(acc_on_device): Note how to disable the builtin.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Remove TODO.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Likewise.
+	Add -fno-builtin-acc_on_device.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-1.c: Update
+	dg- as !offloading_enabled now compile-time expands acc_on_device.
+	* testsuite/libgomp.fortran/target-is-initial-device-3.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-2.f90: New test.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/allocate-static.f90: Moved from
+	gcc/testsuite/ as it is a dg-do run test; use real omp_lib_kinds
+	instead of local definition
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Wording cleanup;
+	sort as in Appendix B; add missing items; remove duplicates.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* allocator.c: Add static asserts for news
+	GOMP_OMP{,X}_PREDEF_ALLOC_{MIN,MAX} range values.
+	* libgomp.texi (OpenMP Impl. Status): Allocate directive for
+	static vars is now supported. Refer to PR for allocate clause.
+	(Memory allocation): Update for static vars; minor word tweaking.
+
+2024-09-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (TR13 status): Update semi-duplicated, semi-obsoleted
+	item; remove left-over half-sentence.
+
+2024-09-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Change @emph to @code;
+	add two post-TR13 OpenMP 6.0 items.
+
+2024-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (omp_get_nested,omp_set_nested, OMP_NESTED): Fix
+	note about deprecation - correct is 5.0 not 5.2.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* testsuite/libgomp.c++/range-for-1.C: New test.
+	* testsuite/libgomp.c++/range-for-2.C: New test.
+	* testsuite/libgomp.c++/range-for-3.C: New test.
+	* testsuite/libgomp.c++/range-for-4.C: New test.
+	* testsuite/libgomp.c++/range-for-5.C: New test.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_load_image_to_device): For requires
+	unified_shared_memory, update 'link' vars to point to the host var.
+	* testsuite/libgomp.c-c++-common/target-link-3.c: New test.
+	* testsuite/libgomp.c-c++-common/target-link-4.c: New test.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices):
+	Accept self_maps clause.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices):
+	Likewise.
+	* libgomp.texi (TR13 Impl. Status): Set to 'Y'.
+	* target.c (gomp_requires_to_name, GOMP_offload_register_ver,
+	gomp_target_init): Handle self_maps clause.
+	* testsuite/libgomp.fortran/self_maps.f90: New test.
+
 2024-09-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	* fortran.c (omp_get_device_from_uid_): New function.

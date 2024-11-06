@@ -2644,11 +2644,26 @@ Target supports the execution of @code{amx-int8} instructions.
 @item amx_bf16
 Target supports the execution of @code{amx-bf16} instructions.
 
+@item amx_avx512
+Target supports the execution of @code{amx-avx512} instructions.
+
 @item amx_complex
 Target supports the execution of @code{amx-complex} instructions.
 
 @item amx_fp16
 Target supports the execution of @code{amx-fp16} instructions.
+
+@item amx_movrs
+Target supports the execution of @code{amx-movrs} instructions.
+
+@item amx_tf32
+Target supports the execution of @code{amx-tf32} instructions.
+
+@item amx_transpose
+Target supports the execution of @code{amx-transpose} instructions.
+
+@item amx_fp8
+Target supports the execution of @code{amx-fp8} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -2685,6 +2700,9 @@ Target supporting hardware divmod insn or divmod libcall for SImode.
 
 @item hard_float
 Target supports FPU instructions.
+
+@item movrs
+Target supports the execution of @code{movrs} instructions.
 
 @item non_strict_align
 Target does not require strict alignment.
@@ -4165,7 +4183,7 @@ compiler options from @env{COMPAT_OPTIONS}.  When
 the compiler under test but with combinations of the options from
 @env{COMPAT_OPTIONS}.
 
-To run only the C++ compatibility suite using the compiler under test
+To run only the basic C++ compatibility suite using the compiler under test
 and another version of GCC using specific compiler options, do the
 following from @file{@var{objdir}/gcc}:
 
@@ -4176,6 +4194,22 @@ make -k \
   COMPAT_OPTIONS="@var{lists as shown above}" \
   check-c++ \
   RUNTESTFLAGS="compat.exp"
+@end smallexample
+
+The file @file{struct-layout-1.exp} provides a few more test cases
+exercising pseudo-randomly generated structure layouts.
+Defining @env{RUN_ALL_COMPAT_TESTS} would increase the number of
+generated tests to yield even more coverage.  As an example, to modify
+the above test command to run the maximum number of ABI tests for C++, do:
+
+@smallexample
+rm site.exp
+make -k \
+  ALT_CXX_UNDER_TEST=$@{alt_prefix@}/bin/g++ \
+  COMPAT_OPTIONS="@var{lists as shown above}" \
+  check-c++ \
+  RUNTESTFLAGS="compat.exp struct-layout-1.exp" \
+  RUN_ALL_COMPAT_TESTS=1
 @end smallexample
 
 A test that fails when the source files are compiled with different

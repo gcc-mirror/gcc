@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "case-cfn-macros.h"
 #include "gimplify.h"
+#include "memmodel.h"
+#include "optabs.h"
 #include "optabs-tree.h"
 #include "tree-eh.h"
 #include "dbgcnt.h"
@@ -143,6 +145,16 @@ static inline bool
 optimize_vectors_before_lowering_p ()
 {
   return !cfun || (cfun->curr_properties & PROP_gimple_lvec) == 0;
+}
+
+/* Returns true if the expression T has no side effects
+   including not trapping. */
+static inline bool
+expr_no_side_effects_p (tree t)
+{
+  /* For gimple, there should only be gimple val's here. */
+  gcc_assert (is_gimple_val (t));
+  return true;
 }
 
 /* Return true if pow(cst, x) should be optimized into exp(log(cst) * x).

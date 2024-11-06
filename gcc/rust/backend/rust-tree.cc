@@ -859,19 +859,6 @@ is_empty_class (tree type)
   return CLASSTYPE_EMPTY_P (type);
 }
 
-// forked from gcc/cp/tree.cc array_type_nelts_top
-
-/* Return, as an INTEGER_CST node, the number of elements for TYPE
-   (which is an ARRAY_TYPE).  This counts only elements of the top
-   array.  */
-
-tree
-array_type_nelts_top (tree type)
-{
-  return fold_build2_loc (input_location, PLUS_EXPR, sizetype,
-			  array_type_nelts (type), size_one_node);
-}
-
 // forked from gcc/cp/tree.cc builtin_valid_in_constant_expr_p
 
 /* Test whether DECL is a builtin that may appear in a

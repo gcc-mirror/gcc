@@ -1022,18 +1022,18 @@ create_optional_field_ (pair_p next, type_p type, const char *name,
      The field has a tag of "1".  This allows us to make the presence
      of a field of type TYPE depend on some boolean "desc" being true.  */
   union_fields = create_field (NULL, type, "");
-  union_fields->opt = 
+  union_fields->opt =
     create_string_option (union_fields->opt, "dot", "");
-  union_fields->opt = 
+  union_fields->opt =
     create_string_option (union_fields->opt, "tag", "1");
-  union_type = 
+  union_type =
     new_structure (xasprintf ("%s_%d", "fake_union", id++), TYPE_UNION,
                    &lexer_line, union_fields, NULL, NULL);
 
   /* Create the field and give it the new fake union type.  Add a "desc"
      tag that specifies the condition under which the field is valid.  */
   return create_field_all (next, union_type, name,
-			   create_string_option (0, "desc", cond), 
+			   create_string_option (0, "desc", cond),
 			   this_file, line);
 }
 
@@ -1173,9 +1173,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
   rtvec_tp = create_pointer (find_structure ("rtvec_def", TYPE_STRUCT));
   tree_tp = create_pointer (find_structure ("tree_node", TYPE_UNION));
   mem_attrs_tp = create_pointer (find_structure ("mem_attrs", TYPE_STRUCT));
-  reg_attrs_tp = 
+  reg_attrs_tp =
     create_pointer (find_structure ("reg_attrs", TYPE_STRUCT));
-  basic_block_tp = 
+  basic_block_tp =
     create_pointer (find_structure ("basic_block_def", TYPE_STRUCT));
   constant_tp =
     create_pointer (find_structure ("constant_descriptor_rtx", TYPE_STRUCT));
@@ -1211,10 +1211,10 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	/* NOTE_INSN_MAX is used as the default field for line
 	   number notes.  */
 	if (c == NOTE_INSN_MAX)
-	  note_flds->opt = 
+	  note_flds->opt =
 	    create_string_option (nodot, "default", "");
 	else
-	  note_flds->opt = 
+	  note_flds->opt =
 	    create_string_option (nodot, "tag", note_insn_name[c]);
       }
     note_union_tp = new_structure ("rtx_def_note_subunion", TYPE_UNION,
@@ -1292,7 +1292,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = rtx_tp, subname = "rt_rtx";
 	      else
 		{
-		  error_at_line 
+		  error_at_line
 		    (&lexer_line,
 		     "rtx type `%s' has `0' in position "
 		     HOST_SIZE_T_PRINT_UNSIGNED ", can't handle",
@@ -1355,7 +1355,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      create_string_option (subfields->opt, "desc",
 				    "NOTE_KIND (&%0)");
 	  if (t == symbol_union_tp)
-	    subfields->opt = 
+	    subfields->opt =
 	      create_string_option (subfields->opt, "desc",
 				    "CONSTANT_POOL_ADDRESS_P (&%0)");
 	}
@@ -1724,6 +1724,7 @@ open_base_files (void)
     outf_p gtype_desc_c;
 
     gtype_desc_c = create_file ("GCC", "gtype-desc.cc");
+    oprintf (gtype_desc_c, "#define INCLUDE_MEMORY\n");
     for (ifp = ifiles; *ifp; ifp++)
       oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
     for (int j = 0; j < (int) num_build_headers; j++)
@@ -2153,7 +2154,7 @@ get_output_file_with_visibility (input_file *inpf)
     {
       size_t i;
       for (i = 0; i < nb_plugin_files; i++)
-	if (inpf == plugin_files[i]) 
+	if (inpf == plugin_files[i])
 	  {
 	    inpf->inpoutf = plugin_output;
 	    return plugin_output;
@@ -2361,8 +2362,8 @@ close_output_files (void)
 	    printf ("%s write #%-3d %s\n", progname, nbwrittenfiles, of->name);
 	  free (backupname);
 	}
-      else 
-	{ 
+      else
+	{
 	  /* output file remains unchanged. */
 	  if (verbosity_level >= 2)
 	    printf ("%s keep %s\n", progname, of->name);
@@ -2671,7 +2672,7 @@ walk_type (type_p t, struct walk_type_data *d)
       maybe_undef_p = 1;
     else if (strcmp (oo->name, "desc") == 0 && oo->kind == OPTION_STRING)
       desc = oo->info.string;
-    else if (strcmp (oo->name, "nested_ptr") == 0 
+    else if (strcmp (oo->name, "nested_ptr") == 0
 	     && oo->kind == OPTION_NESTED)
       nested_ptr_d = (const struct nested_ptr_data *) oo->info.nested;
     else if (strcmp (oo->name, "dot") == 0)
@@ -3074,7 +3075,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	      {
 		fprintf (stderr,
 			 "%s:%d: warning: field `%s' is missing `tag' or `default' option\n",
-			 get_input_file_name (d->line->file), d->line->line, 
+			 get_input_file_name (d->line->file), d->line->line,
 			 f->name);
 		continue;
 	      }
@@ -4524,7 +4525,7 @@ write_roots (pair_p variables, bool emit_pch)
 
   for (v = variables; v; v = v->next)
     {
-      outf_p f = 
+      outf_p f =
 	get_output_file_with_visibility (CONST_CAST (input_file*,
 						     v->line.file));
       struct flist *fli;
@@ -4833,7 +4834,7 @@ dump_options (int indent, options_p opt)
 static void
 dump_fileloc (int indent, struct fileloc line)
 {
-  printf ("%*cfileloc: file = %s, line = %d\n", indent, ' ', 
+  printf ("%*cfileloc: file = %s, line = %d\n", indent, ' ',
 	  get_input_file_name (line.file),
 	  line.line);
 }
@@ -5273,7 +5274,7 @@ main (int argc, char **argv)
 	    num_build_headers++;
 	}
       if (verbosity_level >= 1)
-	printf ("%s parsed %d files with %d GTY types\n", 
+	printf ("%s parsed %d files with %d GTY types\n",
 		progname, (int) num_gt_files, type_count);
 
       DBGPRINT_COUNT_TYPE ("structures after parsing", structures);
@@ -5344,7 +5345,7 @@ main (int argc, char **argv)
       DBGPRINT_COUNT_TYPE ("structures before write_state", structures);
 
       if (hit_error)
-	fatal ("didn't write state file %s after errors", 
+	fatal ("didn't write state file %s after errors",
 	       write_state_filename);
 
       DBGPRINTF ("before write_state %s", write_state_filename);

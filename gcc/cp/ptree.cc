@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -123,7 +124,7 @@ cxx_print_decl (FILE *file, tree node, int indent)
 	       (void *) DECL_PENDING_INLINE_INFO (node));
       need_indent = false;
     }
-  
+
   if ((VAR_OR_FUNCTION_DECL_P (node)
        || TREE_CODE (node) == FIELD_DECL
        || TREE_CODE (node) == TYPE_DECL

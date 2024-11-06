@@ -156,8 +156,8 @@ package body Live is
                Traverse (Spec_Of (N));
 
             when N_Package_Body_Stub =>
-               if Present (Library_Unit (N)) then
-                  Traverse (Proper_Body (Unit (Library_Unit (N))));
+               if Present (Subunit_Parent (N)) then
+                  Traverse (Proper_Body (Unit (Stub_Subunit (N))));
                end if;
 
             when N_Package_Body =>
@@ -252,8 +252,8 @@ package body Live is
                Traverse (Spec_Of (N));
 
             when N_Package_Body_Stub =>
-               if Present (Library_Unit (N)) then
-                  Traverse (Proper_Body (Unit (Library_Unit (N))));
+               if Present (Stub_Subunit (N)) then
+                  Traverse (Proper_Body (Unit (Stub_Subunit (N))));
                end if;
 
             when N_Package_Body =>
@@ -321,8 +321,8 @@ package body Live is
                end if;
 
             when N_Package_Body_Stub =>
-               if Present (Library_Unit (N)) then
-                  Traverse (Proper_Body (Unit (Library_Unit (N))));
+               if Present (Stub_Subunit (N)) then
+                  Traverse (Proper_Body (Unit (Stub_Subunit (N))));
                end if;
 
             when N_Expanded_Name

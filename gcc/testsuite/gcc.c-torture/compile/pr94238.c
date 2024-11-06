@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 enum { false, true } a;
 int b, c, d, e, f;
 int fn3();

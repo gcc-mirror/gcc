@@ -3,7 +3,7 @@
    diagnosed.  Bug 17188.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 struct s0 { }; /* { dg-message "note: originally defined here" } */
 struct s0;

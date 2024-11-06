@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -3290,6 +3291,9 @@ diagnose_trait_expr (tree expr, tree args)
       break;
     case CPTK_IS_UNION:
       inform (loc, "  %qT is not a union", t1);
+      break;
+    case CPTK_IS_VIRTUAL_BASE_OF:
+      inform (loc, "  %qT is not a virtual base of %qT", t1, t2);
       break;
     case CPTK_IS_VOLATILE:
       inform (loc, "  %qT is not a volatile type", t1);

@@ -50,6 +50,14 @@ typedef struct __tile
   int colsb;
 } __tile;
 
+typedef struct __tilepair
+{
+  /* Max size of tile register */
+  uint8_t buf[2048];
+  int rows;
+  int colsb;
+} __tilepair;
+
 /* Maxium col/row size in bytes */
 #define MAX_ROWS 16
 #define MAX_COLS 64
@@ -141,6 +149,12 @@ void zero_tile_src (__tile *src)
       src->buf[i * src->colsb + j] = 0;
 }
 
+/* Zero __tilepair src. It should be init first. */
+void zero_pair_tile_src (__tilepair *src)
+{
+  memset(src->buf, 0, 2048);
+}
+
 /* Compare tile config value with __tilecfg_u dst */
 int check_tile_config (__tilecfg_u *src, __tilecfg_u *dst)
 {
@@ -191,6 +205,27 @@ int check_float_tile_register (__tile* ref, __tile* target)
   return 1;
 }
 
+/* Compare pair_tile register value with __tile variable */
+int check_pair_tile_register (__tile* ref_0, __tile* ref_1, __tilepair* target)
+{
+  /* Tile register should be stored from tmm to
+     memory and compare with emulation results. */
+  int rows = target->rows;
+  int colsb = target->colsb;
+  int i, j;
+
+  for (i = 0; i < rows; i++)
+    for (j = 0; j < colsb; j++)
+      {
+	if (ref_0->buf[i * colsb + j] != target->buf[i * colsb + j])
+	  return 0;
+	if (ref_1->buf[i * colsb + j] != target->buf[rows * colsb + i * colsb + j])
+	  return 0;
+      }
+
+  return 1;
+}
+
 #ifndef DO_TEST
 #define DO_TEST do_test
 static void test_amx (void);
@@ -218,6 +253,21 @@ main ()
 #endif
 #ifdef AMX_COMPLEX
       && __builtin_cpu_supports ("amx-complex")
+#endif
+#ifdef AMX_AVX512
+      && __builtin_cpu_supports ("amx-avx512")
+#endif
+#ifdef AMX_TF32
+      && __builtin_cpu_supports ("amx-tf32")
+#endif
+#ifdef AMX_TRANSPOSE
+      && __builtin_cpu_supports ("amx-transpose")
+#endif
+#ifdef AMX_FP8
+      && __builtin_cpu_supports ("amx-fp8")
+#endif
+#ifdef AMX_MOVRS
+      && __builtin_cpu_supports ("amx-movrs")
 #endif
 #ifdef __linux__
       && request_perm_xtile_data ()

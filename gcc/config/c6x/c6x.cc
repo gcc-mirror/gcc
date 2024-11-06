@@ -6398,7 +6398,7 @@ c6x_init_builtins (void)
   tree v2si_ftype_v2hi_v2hi
     = build_function_type_list (V2SI_type_node, V2HI_type_node,
 				V2HI_type_node, NULL_TREE);
-  
+
   def_builtin ("__builtin_c6x_sadd", int_ftype_int_int,
 	       C6X_BUILTIN_SADD);
   def_builtin ("__builtin_c6x_ssub", int_ftype_int_int,

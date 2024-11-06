@@ -1031,7 +1031,7 @@ package body Sem_Cat is
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
               and then
-                not (Implicit_With (Item)
+                not (Is_Implicit_With (Item)
                       or else Limited_Present (Item)
 
                       --  Skip if error already posted on the WITH clause (in

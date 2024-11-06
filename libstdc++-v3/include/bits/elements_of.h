@@ -25,7 +25,9 @@
 #ifndef _GLIBCXX_BITS_ELEMENTS_OF
 #define _GLIBCXX_BITS_ELEMENTS_OF
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

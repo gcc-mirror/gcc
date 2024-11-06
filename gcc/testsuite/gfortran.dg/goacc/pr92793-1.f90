@@ -21,8 +21,8 @@ subroutine check ()
       !$acc  &   & ! { dg-final { scan-tree-dump-times "pr92793-1\\\.f90:26:22\\\] #pragma acc loop" 1 "original" } }
      !$acc &     & ! { dg-final { scan-tree-dump-times "pr92793-1\\\.f90:26:22\\\] #pragma acc loop" 1 "gimple" } }
     !$acc&       reduction  ( +    : sum ) & ! { dg-line sum1 }
- !$acc && ! Fortran location information points to the ':' in 'reduction(+:sum)'.
-   !$acc   &    &  ! { dg-message "36: location of the previous reduction for 'sum'" "" { target *-*-* } sum1 }
+ !$acc && ! Fortran location information points to the 's' in 'reduction(+:sum)'.
+   !$acc   &    &  ! { dg-message "38: location of the previous reduction for 'sum'" "" { target *-*-* } sum1 }
 !$acc&     independent
   do i = 1, 10
       !$acc loop &
@@ -32,7 +32,7 @@ subroutine check ()
   !$acc & reduction(-: diff     ) &
              !$acc&reduction(- :    sum) & ! { dg-line sum2 }
             !$acc & & ! Fortran location information points to the ':' in 'reduction(-:sum)'.
-          !$acc& & ! { dg-warning "32: conflicting reduction operations for 'sum'" "" { target *-*-* } sum2 }
+          !$acc& & ! { dg-warning "37: conflicting reduction operations for 'sum'" "" { target *-*-* } sum2 }
           !$acc       &independent
      do j = 1, 10
            sum &
@@ -107,7 +107,7 @@ subroutine gwv_s_l ()
 !$acc end serial
 end subroutine gwv_s_l
 
-subroutine gwv_r () ! { dg-message "16: enclosing routine" }
+subroutine gwv_r () ! { dg-message "1: enclosing routine" }
   implicit none (type, external)
   integer :: i, j, k
 

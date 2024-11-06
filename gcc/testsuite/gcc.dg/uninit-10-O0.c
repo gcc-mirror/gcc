@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-Wno-old-style-definition -Wall" } */
 /* On Alpha EV4, dead code elimination and cfg simplification conspired
    to leave the register containing 'C' marked live, though all references
    to the variable had been removed.  */

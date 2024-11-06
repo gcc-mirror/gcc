@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-std=gnu17 -O2 -w" } */
 
 int a, c, d;
 float b;

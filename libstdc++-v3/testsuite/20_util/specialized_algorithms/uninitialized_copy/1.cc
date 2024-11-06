@@ -34,4 +34,5 @@ test01(T* result)
   T t[1];
   std::uninitialized_copy(t, t+1, result); // { dg-error "here" }
 }
-// { dg-error "must be constructible from input type" "" { target *-*-* } 0 }
+// { dg-error "no matching function" "construct_at" { target c++20 } 0 }
+// { dg-error "use of deleted function" "T::T(const T&)" { target *-*-* } 0 }

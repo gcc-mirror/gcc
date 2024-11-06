@@ -1312,8 +1312,8 @@ package body Rtsfind is
 
          Set_Corresponding_Spec  (Withn, U.Entity);
          Set_First_Name          (Withn);
-         Set_Implicit_With       (Withn);
-         Set_Library_Unit        (Withn, Cunit (U.Unum));
+         Set_Is_Implicit_With    (Withn);
+         Set_Withed_Lib_Unit     (Withn, Cunit (U.Unum));
          Set_Next_Implicit_With  (Withn, U.First_Implicit_With);
 
          U.First_Implicit_With := Withn;

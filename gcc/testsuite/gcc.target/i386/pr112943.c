@@ -14,7 +14,7 @@ typedef _Decimal64 d64;
 char foo0_u8_0;
 v8u8 foo0_v8u8_0;
 __attribute__((__vector_size__(sizeof(char)))) char foo0_v8s8_0;
-__attribute__((__vector_size__(sizeof(long)))) unsigned long v64u64_0;
+__attribute__((__vector_size__(sizeof(long long)))) unsigned long long v64u64_0;
 _Float16 foo0_f16_0;
 v128f16 foo0_v128f16_0;
 double foo0_f64_0;
@@ -56,7 +56,7 @@ void foo0() {
 		    })v16u8_r)
     .b +
       foo0_v8u8_0 + v8u8_1 + foo0_v8s8_0;
-    long u64_r = u128_r + foo0_f64_0 + (unsigned long)foo0__0;
+    long long u64_r = u128_r + foo0_f64_0 + (unsigned long long)foo0__0;
     short u16_r = u64_r + foo0_f16_0;
     char u8_r = u16_r + foo0_u8_0;
     *foo0_ret = v8u8_r + u8_r;

@@ -30,7 +30,9 @@
 #ifndef __EXCEPTION__
 #define __EXCEPTION__
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/exception.h>

@@ -29,11 +29,19 @@
  *                                                                          *
  ****************************************************************************/
 
-/* On targets where this is implemented, we resort to a signal trampoline to
-   set up the DWARF Call Frame Information that lets unwinders walk through
-   the signal frame up into the interrupted user code.  This file introduces
-   the relevant declarations.  It should only be #included on targets that do
-   implement the signal trampoline.  */
+/* On targets where this is useful, a signal handler trampoline is setup to
+   allow interposing handcrafted DWARF Call Frame Information that lets
+   unwinders walk through a signal frame up into the interrupted user code.
+   This file introduces the relevant declarations.
+
+   For an OS family, in specific CPU configurations where kernel signal CFI
+   is known to be available, the trampoline may directly call the intended
+   handler without any intermediate CFI magic.
+
+   sigtramp*.c offers a convenient spot for picking such alternatives, as
+   it allows testing for precise target predicates and is easily shared
+   by the tasking and non-tasking runtimes for a given OS (e.g. s-intman.adb
+   and init.c:__gnat_error_handler).  */
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,7 +62,8 @@ extern void __gnat_sigtramp (int signo, void *siginfo, void *sigcontext,
 			     __sigtramphandler_t * handler);
 
 /* The signal trampoline is to be called from an established signal handler.
-   It sets up the DWARF CFI and calls HANDLER (SIGNO, SIGINFO, SIGCONTEXT).
+   It calls HANDLER (SIGNO, SIGINFO, SIGCONTEXT) after setting up the DWARF
+   CFI if needed.
 
    The trampoline construct makes it so that the unwinder jumps over it + the
    signal handler + the kernel frame.  For a typical backtrace from the raise

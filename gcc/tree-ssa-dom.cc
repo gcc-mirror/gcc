@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -570,7 +571,7 @@ record_edge_info (basic_block bb)
 
           /* Special case comparing booleans against a constant as we
              know the value of OP0 on both arms of the branch.  i.e., we
-             can record an equivalence for OP0 rather than COND. 
+             can record an equivalence for OP0 rather than COND.
 
 	     However, don't do this if the constant isn't zero or one.
 	     Such conditionals will get optimized more thoroughly during
@@ -1904,7 +1905,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
 
 /* STMT, a GIMPLE_ASSIGN, may create certain equivalences, in either
    the available expressions table or the const_and_copies table.
-   Detect and record those equivalences into AVAIL_EXPRS_STACK. 
+   Detect and record those equivalences into AVAIL_EXPRS_STACK.
 
    We handle only very simple copy equivalences here.  The heavy
    lifing is done by eliminate_redundant_computations.  */

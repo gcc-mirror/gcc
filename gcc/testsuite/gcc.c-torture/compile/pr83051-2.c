@@ -1,4 +1,4 @@
-/* { dg-options "-fno-early-inlining" } */
+/* { dg-options "-std=gnu17 -fno-early-inlining" } */
 /* { dg-require-effective-target non_strict_prototype } */
 
 void

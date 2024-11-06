@@ -83,14 +83,14 @@ AARCH64_CORE("emag",        emag,      xgene1,    V8A,  (CRC, CRYPTO), emag, 0x5
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    V8A,  (), xgene1, 0x50, 0x000, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("falkor",      falkor,    falkor,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
-AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("falkor",      falkor,    cortexa57,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
 
 /* Samsung ('S') cores. */
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  V8A,  (CRC, CRYPTO), exynosm1,  0x53, 0x001, -1)
 
 /* HXT ('h') cores. */
-AARCH64_CORE("phecda",      phecda,    falkor,    V8A,  (CRC, CRYPTO), qdf24xx,   0x68, 0x000, -1)
+AARCH64_CORE("phecda",      phecda,    cortexa57,    V8A,  (CRC, CRYPTO), qdf24xx,   0x68, 0x000, -1)
 
 /* ARMv8.1-A Architecture Processors.  */
 
@@ -132,6 +132,7 @@ AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, V8_2A,  (CRYPTO, PROFI
 
 /* Fujitsu ('F') cores. */
 AARCH64_CORE("a64fx", a64fx, a64fx, V8_2A,  (F16, SVE), a64fx, 0x46, 0x001, -1)
+AARCH64_CORE("fujitsu-monaka", fujitsu_monaka, cortexa57, V9_3A, (F16, FP8, LS64, RNG, CRYPTO, SVE2_AES, SVE2_BITPERM, SVE2_SHA3, SVE2_SM4), fujitsu_monaka, 0x46, 0x003, -1)
 
 /* HiSilicon ('H') cores. */
 AARCH64_CORE("tsv110",  tsv110, tsv110, V8_2A,  (CRYPTO, F16), tsv110,   0x48, 0xd01, -1)
@@ -149,7 +150,7 @@ AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, R
 AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("saphira",     saphira,    saphira,    V8_4A,  (CRYPTO), saphira,   0x51, 0xC01, -1)
+AARCH64_CORE("saphira",     saphira,    cortexa57,    V8_4A,  (CRYPTO), saphira,   0x51, 0xC01, -1)
 
 /* ARMv8.6-A Architecture Processors.  */
 

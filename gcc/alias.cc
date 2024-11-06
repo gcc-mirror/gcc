@@ -671,7 +671,7 @@ component_uses_parent_alias_set_from (const_tree t)
 
       t = TREE_OPERAND (t, 0);
     }
- 
+
   if (found)
     return TREE_OPERAND (found, 0);
 
@@ -738,7 +738,7 @@ get_deref_alias_set (tree t)
    memory reference tree *T or NULL_TREE in which case *T is
    adjusted to point to the outermost component reference that
    can be used for assigning an alias set.  */
- 
+
 tree
 reference_alias_ptr_type_1 (tree *t)
 {
@@ -1258,12 +1258,12 @@ record_component_aliases (tree type, alias_set_type superset)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       {
-	/* LTO non-ODR type merging does not make any difference between 
+	/* LTO non-ODR type merging does not make any difference between
 	   component pointer types.  We may have
 
 	   struct foo {int *a;};
 
-	   as TYPE_CANONICAL of 
+	   as TYPE_CANONICAL of
 
 	   struct bar {float *a;};
 
@@ -2113,7 +2113,7 @@ compare_base_decls (tree base1, tree base2)
   symtab_node *node2 = symtab_node::get (base2);
   if (!node2)
     return 0;
-  
+
   ret = node1->equal_address_to (node2, true);
   return ret;
 }
@@ -2753,7 +2753,7 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
 }
 
 /* Return true if we can determine the exprs corresponding to memrefs
-   X and Y and they do not overlap. 
+   X and Y and they do not overlap.
    If LOOP_VARIANT is set, skip offset-based disambiguation */
 
 bool

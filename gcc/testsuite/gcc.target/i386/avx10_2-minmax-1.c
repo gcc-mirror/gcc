@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx10.2" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
 /* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */

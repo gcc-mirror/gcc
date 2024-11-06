@@ -149,7 +149,7 @@ init_expmed_one_conv (struct init_expmed_rtl *all, scalar_int_mode to_mode,
   if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT
       && pow2p_hwi (from_size))
     from_size --;
-  
+
   /* Assume cost of zero-extend and sign-extend is the same.  */
   which = (to_size < from_size ? all->trunc : all->zext);
 
@@ -1928,7 +1928,7 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
       if (target == 0 || !REG_P (target) || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
 
-      /* In case we're about to clobber a base register or something 
+      /* In case we're about to clobber a base register or something
 	 (see gcc.c-torture/execute/20040625-1.c).   */
       if (reg_mentioned_p (target, op0))
 	target = gen_reg_rtx (mode);
@@ -4405,7 +4405,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   /* Only deduct something for a REM if the last divide done was
      for a different constant.   Then set the constant of the last
      divide.  */
-  max_cost = (unsignedp 
+  max_cost = (unsignedp
 	      ? udiv_cost (speed, compute_mode)
 	      : sdiv_cost (speed, compute_mode));
   if (rem_flag && ! (last_div_const != 0 && op1_is_constant
@@ -6284,6 +6284,50 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
   emit_label (label);
 
   return target;
+}
+
+/* Expand a vector (left) rotate of MODE of X by an immediate AMT as a vector
+   permute operation.  Emit code to put the result in DST if successfull and
+   return it.  Otherwise return NULL.  This is intended to implement vector
+   rotates by byte amounts using vector permutes when the target does not offer
+   native vector rotate operations.  */
+rtx
+expand_rotate_as_vec_perm (machine_mode mode, rtx dst, rtx x, rtx amt)
+{
+  rtx amt_unwrap = unwrap_const_vec_duplicate (amt);
+  /* For now handle only rotate by the same integer constant in all lanes.
+     In principle rotates by any constant vector are representable through
+     permutes as long as the individual rotate amounts are multiples of
+     BITS_PER_UNIT.  */
+  if (!CONST_INT_P (amt_unwrap))
+    return NULL_RTX;
+
+  int rotamnt = INTVAL (amt_unwrap);
+  if (rotamnt % BITS_PER_UNIT != 0)
+    return NULL_RTX;
+  machine_mode qimode;
+  if (!qimode_for_vec_perm (mode).exists (&qimode))
+    return NULL_RTX;
+
+  vec_perm_builder builder;
+  unsigned nunits = GET_MODE_SIZE (GET_MODE_INNER (mode));
+  poly_uint64 total_units = GET_MODE_SIZE (mode);
+  builder.new_vector (total_units, nunits, 3);
+  unsigned rot_bytes = rotamnt / BITS_PER_UNIT;
+  unsigned rot_to_perm = BYTES_BIG_ENDIAN ? rot_bytes : nunits - rot_bytes;
+  for (unsigned j = 0; j < 3 * nunits; j += nunits)
+    for (unsigned i = 0; i < nunits; i++)
+      builder.quick_push ((rot_to_perm + i) % nunits + j);
+
+  rtx perm_src = lowpart_subreg (qimode, x, mode);
+  rtx perm_dst = lowpart_subreg (qimode, dst, mode);
+  rtx res
+    = expand_vec_perm_const (qimode, perm_src, perm_src, builder,
+			     qimode, perm_dst);
+  if (!res)
+    return NULL_RTX;
+  emit_move_insn (dst, lowpart_subreg (mode, res, qimode));
+  return dst;
 }
 
 /* Helper function for canonicalize_cmp_for_target.  Swap between inclusive

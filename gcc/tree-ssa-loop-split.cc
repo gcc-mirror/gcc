@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -487,7 +488,7 @@ compute_new_first_bound (gimple_seq *stmts, class tree_niter_desc *niter,
   /* Depending on the direction of the IVs the new bound for the first
      loop is the minimum or maximum of old bound and border.
      Also, if the guard condition isn't strictly less or greater,
-     we need to adjust the bound.  */ 
+     we need to adjust the bound.  */
   int addbound = 0;
   enum tree_code minmax;
   if (niter->cmp == LT_EXPR)

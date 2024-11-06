@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-mavx10.2 -Ofast" } */
-/* /* { dg-final { scan-assembler-times "vmaxpbf16" 2 } } */
-/* /* { dg-final { scan-assembler-times "vminpbf16" 2 } } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2 -Ofast" } */
+/* { dg-final { scan-assembler-times "vmaxpbf16" 2 } } */
+/* { dg-final { scan-assembler-times "vminpbf16" 2 } } */
 
 void
 maxpbf16_64 (__bf16* restrict dest, __bf16* restrict src1, __bf16* restrict src2)

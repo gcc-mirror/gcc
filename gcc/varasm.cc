@@ -2575,6 +2575,7 @@ process_pending_assemble_externals (void)
   pending_assemble_externals_processed = true;
   pending_libcall_symbols = NULL_RTX;
   delete pending_assemble_externals_set;
+  pending_assemble_externals_set = nullptr;
 #endif
 }
 
@@ -3194,6 +3195,11 @@ const_hash_1 (const tree exp)
 	return hi;
       }
 
+    case RAW_DATA_CST:
+      p = RAW_DATA_POINTER (exp);
+      len = RAW_DATA_LENGTH (exp);
+      break;
+
     case CONSTRUCTOR:
       {
 	unsigned HOST_WIDE_INT idx;
@@ -3326,7 +3332,7 @@ compare_constant (const tree t1, const tree t2)
 
       return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
 	      && ! memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
-			 TREE_STRING_LENGTH (t1)));
+			   TREE_STRING_LENGTH (t1)));
 
     case COMPLEX_CST:
       return (compare_constant (TREE_REALPART (t1), TREE_REALPART (t2))
@@ -3350,6 +3356,11 @@ compare_constant (const tree t1, const tree t2)
 
 	return true;
       }
+
+    case RAW_DATA_CST:
+      return (RAW_DATA_LENGTH (t1) == RAW_DATA_LENGTH (t2)
+	      && ! memcmp (RAW_DATA_POINTER (t1), RAW_DATA_POINTER (t2),
+			   RAW_DATA_LENGTH (t1)));
 
     case CONSTRUCTOR:
       {
@@ -4233,7 +4244,7 @@ output_constant_pool_1 (class constant_descriptor_rtx *desc,
   /* Output the data.
      Pass actual alignment value while emitting string constant to asm code
      as function 'output_constant_pool_1' explicitly passes the alignment as 1
-     assuming that the data is already aligned which prevents the generation 
+     assuming that the data is already aligned which prevents the generation
      of fix-up table entries.  */
   output_constant_pool_2 (desc->mode, x, desc->align);
 
@@ -4887,6 +4898,7 @@ initializer_constant_valid_p_1 (tree value, tree endtype, tree *cache)
     case FIXED_CST:
     case STRING_CST:
     case COMPLEX_CST:
+    case RAW_DATA_CST:
       return null_pointer_node;
 
     case ADDR_EXPR:
@@ -5480,6 +5492,9 @@ array_size_for_constructor (tree val)
     {
       if (TREE_CODE (index) == RANGE_EXPR)
 	index = TREE_OPERAND (index, 1);
+      if (value && TREE_CODE (value) == RAW_DATA_CST)
+	index = size_binop (PLUS_EXPR, index,
+			    bitsize_int (RAW_DATA_LENGTH (value) - 1));
       if (max_index == NULL_TREE || tree_int_cst_lt (max_index, index))
 	max_index = index;
     }
@@ -5671,6 +5686,12 @@ output_constructor_regular_field (oc_local_state *local)
   /* Output the element's initial value.  */
   if (local->val == NULL_TREE)
     assemble_zeros (fieldsize);
+  else if (local->val && TREE_CODE (local->val) == RAW_DATA_CST)
+    {
+      fieldsize *= RAW_DATA_LENGTH (local->val);
+      assemble_string (RAW_DATA_POINTER (local->val),
+		       RAW_DATA_LENGTH (local->val));
+    }
   else
     fieldsize = output_constant (local->val, fieldsize, align2,
 				 local->reverse, false);
@@ -6863,6 +6884,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
+  else if (strcmp (name, ".data.rel.ro") == 0
+	   || strcmp (name, ".data.rel.ro.local") == 0)
+    flags = SECTION_WRITE | SECTION_RELRO;
   else if (decl)
     {
       enum section_category category
@@ -6876,12 +6900,7 @@ default_section_type_flags (tree decl, const char *name, int reloc)
 	flags = SECTION_WRITE;
     }
   else
-    {
-      flags = SECTION_WRITE;
-      if (strcmp (name, ".data.rel.ro") == 0
-	  || strcmp (name, ".data.rel.ro.local") == 0)
-	flags |= SECTION_RELRO;
-    }
+    flags = SECTION_WRITE;
 
   if (decl && DECL_P (decl) && DECL_COMDAT_GROUP (decl))
     flags |= SECTION_LINKONCE;
@@ -8705,7 +8724,7 @@ get_elf_initfini_array_priority_section (int priority,
   if (priority != DEFAULT_INIT_PRIORITY)
     {
       char buf[18];
-      sprintf (buf, "%s.%.5u", 
+      sprintf (buf, "%s.%.5u",
 	       constructor_p ? ".init_array" : ".fini_array",
 	       priority);
       sec = get_section (buf, SECTION_WRITE | SECTION_NOTYPE, NULL_TREE);
@@ -8776,7 +8795,7 @@ default_asm_output_ident_directive (const char *ident_str)
 }
 
 /* Switch to a COMDAT section with COMDAT name of decl.
-   
+
    FIXME:  resolve_unique_section needs to deal better with
    decls with both DECL_SECTION_NAME and DECL_ONE_ONLY.  Once
    that is fixed, this if-else statement can be replaced with
@@ -8832,6 +8851,60 @@ static void
 handle_vtv_comdat_section (section *sect, const_tree decl ATTRIBUTE_UNUSED)
 {
   switch_to_comdat_section(sect, DECL_NAME (decl));
+}
+
+void
+varasm_cc_finalize ()
+{
+  first_global_object_name = nullptr;
+  weak_global_object_name = nullptr;
+
+  const_labelno = 0;
+  size_directive_output = 0;
+
+  last_assemble_variable_decl = NULL_TREE;
+  first_function_block_is_cold = false;
+  saw_no_split_stack = false;
+  text_section = nullptr;
+  data_section = nullptr;
+  readonly_data_section = nullptr;
+  sdata_section = nullptr;
+  ctors_section = nullptr;
+  dtors_section = nullptr;
+  bss_section = nullptr;
+  sbss_section = nullptr;
+  tls_comm_section = nullptr;
+  comm_section = nullptr;
+  lcomm_section = nullptr;
+  bss_noswitch_section = nullptr;
+  exception_section = nullptr;
+  eh_frame_section = nullptr;
+  in_section = nullptr;
+  in_cold_section_p = false;
+  cold_function_name = NULL_TREE;
+  unnamed_sections = nullptr;
+  section_htab = nullptr;
+  object_block_htab = nullptr;
+  anchor_labelno = 0;
+  shared_constant_pool = nullptr;
+  pending_assemble_externals = NULL_TREE;
+  pending_libcall_symbols = nullptr;
+
+#ifdef ASM_OUTPUT_EXTERNAL
+  pending_assemble_externals_processed = false;
+  delete pending_assemble_externals_set;
+  pending_assemble_externals_set = nullptr;
+#endif
+
+  weak_decls = NULL_TREE;
+  initial_trampoline = nullptr;
+  const_desc_htab = nullptr;
+  weakref_targets = NULL_TREE;
+  alias_pairs = nullptr;
+  tm_clone_hash = nullptr;
+  trampolines_created = 0;
+  elf_init_array_section = nullptr;
+  elf_fini_array_section = nullptr;
 }
 
 #include "gt-varasm.h"

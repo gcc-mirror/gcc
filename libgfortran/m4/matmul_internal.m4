@@ -1,5 +1,5 @@
 `void
-'matmul_name` ('rtype` * const restrict retarray, 
+'matmul_name` ('rtype` * const restrict retarray,
 	'rtype` * const restrict a, 'rtype` * const restrict b, int try_blas,
 	int blas_limit, blas_call gemm)
 {

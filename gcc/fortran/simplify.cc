@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -359,7 +360,16 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	      mpz_set_si (e->value.integer, init);
 	    break;
 
-	  case BT_REAL:
+	  case BT_UNSIGNED:
+	    if (init == INT_MIN)
+	      mpz_set_ui (e->value.integer, 0);
+	    else if (init == INT_MAX)
+	      mpz_set (e->value.integer, gfc_unsigned_kinds[i].huge);
+	    else
+	      mpz_set_ui (e->value.integer, init);
+	    break;
+
+	case BT_REAL:
 	    if (init == INT_MIN)
 	      {
 		mpfr_set (e->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);
@@ -420,13 +430,20 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 {
   gfc_expr *result, *a, *b, *c;
 
-  /* Set result to an INTEGER(1) 0 for numeric types and .false. for
+  /* Set result to an UNSIGNED of correct kind for unsigned,
+     INTEGER(1) 0 for other numeric types, and .false. for
      LOGICAL.  Mixed-mode math in the loop will promote result to the
      correct type and kind.  */
   if (matrix_a->ts.type == BT_LOGICAL)
     result = gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+  else if (matrix_a->ts.type == BT_UNSIGNED)
+    {
+      int kind = MAX (matrix_a->ts.kind, matrix_b->ts.kind);
+      result = gfc_get_unsigned_expr (kind, NULL, 0);
+    }
   else
     result = gfc_get_int_expr (1, NULL, 0);
+
   result->where = matrix_a->where;
 
   a = gfc_constructor_lookup_expr (matrix_a->value.constructor, offset_a);
@@ -446,6 +463,7 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 	  case BT_INTEGER:
 	  case BT_REAL:
 	  case BT_COMPLEX:
+	  case BT_UNSIGNED:
 	    if (conj_a && a->ts.type == BT_COMPLEX)
 	      c = gfc_simplify_conjg (a);
 	    else
@@ -2613,6 +2631,10 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	  bnd = gfc_get_int_expr (array->ts.kind, NULL, 0);
 	  break;
 
+	case BT_UNSIGNED:
+	  bnd = gfc_get_unsigned_expr (array->ts.kind, NULL, 0);
+	  break;
+
 	case BT_LOGICAL:
 	  bnd = gfc_get_logical_expr (array->ts.kind, NULL, 0);
 	  break;
@@ -3384,9 +3406,20 @@ gfc_simplify_iachar (gfc_expr *e, gfc_expr *kind)
 static gfc_expr *
 do_bit_and (gfc_expr *result, gfc_expr *e)
 {
-  gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
-  gcc_assert (result->ts.type == BT_INTEGER
-	      && result->expr_type == EXPR_CONSTANT);
+  if (flag_unsigned)
+    {
+      gcc_assert ((e->ts.type == BT_INTEGER || e->ts.type == BT_UNSIGNED)
+		  && e->expr_type == EXPR_CONSTANT);
+      gcc_assert ((result->ts.type == BT_INTEGER
+		   || result->ts.type == BT_UNSIGNED)
+		  && result->expr_type == EXPR_CONSTANT);
+    }
+  else
+    {
+      gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
+      gcc_assert (result->ts.type == BT_INTEGER
+		  && result->expr_type == EXPR_CONSTANT);
+    }
 
   mpz_and (result->value.integer, result->value.integer, e->value.integer);
   return result;
@@ -3403,9 +3436,20 @@ gfc_simplify_iall (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 static gfc_expr *
 do_bit_ior (gfc_expr *result, gfc_expr *e)
 {
-  gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
-  gcc_assert (result->ts.type == BT_INTEGER
-	      && result->expr_type == EXPR_CONSTANT);
+  if (flag_unsigned)
+    {
+      gcc_assert ((e->ts.type == BT_INTEGER || e->ts.type == BT_UNSIGNED)
+		  && e->expr_type == EXPR_CONSTANT);
+      gcc_assert ((result->ts.type == BT_INTEGER
+		   || result->ts.type == BT_UNSIGNED)
+		  && result->expr_type == EXPR_CONSTANT);
+    }
+  else
+    {
+      gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
+      gcc_assert (result->ts.type == BT_INTEGER
+		  && result->expr_type == EXPR_CONSTANT);
+    }
 
   mpz_ior (result->value.integer, result->value.integer, e->value.integer);
   return result;
@@ -3867,9 +3911,20 @@ gfc_simplify_ior (gfc_expr *x, gfc_expr *y)
 static gfc_expr *
 do_bit_xor (gfc_expr *result, gfc_expr *e)
 {
-  gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
-  gcc_assert (result->ts.type == BT_INTEGER
-	      && result->expr_type == EXPR_CONSTANT);
+  if (flag_unsigned)
+    {
+      gcc_assert ((e->ts.type == BT_INTEGER || e->ts.type == BT_UNSIGNED)
+		  && e->expr_type == EXPR_CONSTANT);
+      gcc_assert ((result->ts.type == BT_INTEGER
+		   || result->ts.type == BT_UNSIGNED)
+		  && result->expr_type == EXPR_CONSTANT);
+    }
+  else
+    {
+      gcc_assert (e->ts.type == BT_INTEGER && e->expr_type == EXPR_CONSTANT);
+      gcc_assert (result->ts.type == BT_INTEGER
+		  && result->expr_type == EXPR_CONSTANT);
+    }
 
   mpz_xor (result->value.integer, result->value.integer, e->value.integer);
   return result;
@@ -5141,6 +5196,84 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
   mpz_clear (z);
 
   gfc_convert_mpz_to_signed (result->value.integer, gfc_integer_kinds[k].bit_size);
+
+  return result;
+}
+
+/* Similar to gfc_simplify_maskr, but code paths are different enough to make
+   this into a separate function.  */
+
+gfc_expr *
+gfc_simplify_umaskr (gfc_expr *i, gfc_expr *kind_arg)
+{
+  gfc_expr *result;
+  int kind, arg, k;
+
+  if (i->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = get_kind (BT_UNSIGNED, kind_arg, "UMASKR", gfc_default_unsigned_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+
+  bool fail = gfc_extract_int (i, &arg);
+  gcc_assert (!fail);
+
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &i->where);
+
+  /* MASKR(n) = 2^n - 1 */
+  mpz_set_ui (result->value.integer, 1);
+  mpz_mul_2exp (result->value.integer, result->value.integer, arg);
+  mpz_sub_ui (result->value.integer, result->value.integer, 1);
+
+  gfc_convert_mpz_to_unsigned (result->value.integer,
+			       gfc_unsigned_kinds[k].bit_size,
+			       false);
+
+  return result;
+}
+
+/* Likewise, similar to gfc_simplify_maskl.  */
+
+gfc_expr *
+gfc_simplify_umaskl (gfc_expr *i, gfc_expr *kind_arg)
+{
+  gfc_expr *result;
+  int kind, arg, k;
+  mpz_t z;
+
+  if (i->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  kind = get_kind (BT_UNSIGNED, kind_arg, "UMASKL", gfc_default_integer_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+  k = gfc_validate_kind (BT_UNSIGNED, kind, false);
+
+  bool fail = gfc_extract_int (i, &arg);
+  gcc_assert (!fail);
+
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
+
+  result = gfc_get_constant_expr (BT_UNSIGNED, kind, &i->where);
+
+  /* MASKL(n) = 2^bit_size - 2^(bit_size - n) */
+  mpz_init_set_ui (z, 1);
+  mpz_mul_2exp (z, z, gfc_unsigned_kinds[k].bit_size);
+  mpz_set_ui (result->value.integer, 1);
+  mpz_mul_2exp (result->value.integer, result->value.integer,
+		gfc_integer_kinds[k].bit_size - arg);
+  mpz_sub (result->value.integer, z, result->value.integer);
+  mpz_clear (z);
+
+  gfc_convert_mpz_to_unsigned (result->value.integer,
+			       gfc_unsigned_kinds[k].bit_size,
+			       false);
 
   return result;
 }

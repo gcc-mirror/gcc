@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-Wno-old-style-definition -O2 -ftree-vectorize" } */
 
 struct funny_match
 {

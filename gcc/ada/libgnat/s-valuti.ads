@@ -60,8 +60,9 @@ is
    --  Raises constraint error with message: bad input for 'Value: "xxx"
 
    procedure Normalize_String
-     (S    : in out String;
-      F, L : out Integer)
+     (S             : in out String;
+      F, L          : out Integer;
+      To_Upper_Case : Boolean)
    with
      Post => (if Sp.Only_Space_Ghost (S'Old, S'First, S'Last) then
                 F > L
@@ -76,7 +77,7 @@ is
                     (if L < S'Last then
                       Sp.Only_Space_Ghost (S'Old, L + 1, S'Last))
                   and then
-                    (if S'Old (F) /= ''' then
+                    (if To_Upper_Case and then S'Old (F) /= ''' then
                       (for all J in S'Range =>
                         (if J in F .. L then
                            S (J) = System.Case_Util.To_Upper (S'Old (J))
@@ -84,9 +85,10 @@ is
                            S (J) = S'Old (J)))));
    --  This procedure scans the string S setting F to be the index of the first
    --  non-blank character of S and L to be the index of the last non-blank
-   --  character of S. Any lower case characters present in S will be folded to
-   --  their upper case equivalent except for character literals. If S consists
-   --  of entirely blanks (including when S = "") then we return with F > L.
+   --  character of S. If To_Upper_Case is True and S does not represent a
+   --  character literal, then any lower case characters in S are changed to
+   --  their upper case counterparts. If S consists of only blank characters
+   --  (including when S = "") then we return with F > L.
 
    procedure Scan_Sign
      (Str   : String;

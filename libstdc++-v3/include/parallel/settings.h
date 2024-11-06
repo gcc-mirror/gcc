@@ -84,7 +84,10 @@
 
 #include <parallel/types.h>
 
-/** 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long" // LL literal
+
+/**
   * @brief Determine at compile(?)-time if the parallel variant of an
   * algorithm should be called.
   * @param __c A condition that is convertible to bool that is overruled by
@@ -122,7 +125,7 @@ namespace __gnu_parallel
   struct _Settings
   {
     _AlgorithmStrategy          algorithm_strategy;
-    
+
     _SortAlgorithm              sort_algorithm;
     _PartialSumAlgorithm        partial_sum_algorithm;
     _MultiwayMergeAlgorithm     multiway_merge_algorithm;
@@ -242,7 +245,7 @@ namespace __gnu_parallel
     /// Minimal input size for parallel std::transform.
     _SequenceIndex              transform_minimal_n;
 
-    /// Minimal input size for unique_copy. 
+    /// Minimal input size for unique_copy.
     _SequenceIndex              unique_copy_minimal_n;
 
     _SequenceIndex              workstealing_chunk_size;
@@ -282,7 +285,7 @@ namespace __gnu_parallel
     static void
     set(_Settings&) throw();
 
-    explicit 
+    explicit
     _Settings() :
             algorithm_strategy(heuristic),
             sort_algorithm(MWMS),
@@ -338,5 +341,7 @@ namespace __gnu_parallel
     { }
   };
 }
+
+#pragma GCC diagnostic pop
 
 #endif /* _GLIBCXX_PARALLEL_SETTINGS_H */

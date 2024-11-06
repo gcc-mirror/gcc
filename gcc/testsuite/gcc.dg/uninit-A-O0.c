@@ -2,7 +2,7 @@
    May be a real bug in CSE. */
 
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-Wno-old-style-definition -Wall" } */
 
 struct tree
 {

@@ -72,9 +72,9 @@ static tree
 vxworks_emutls_var_fields (tree type, tree *name)
 {
   tree field, next_field;
-  
+
   *name = get_identifier ("__tls_var");
-  
+
   field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
 		      get_identifier ("size"), unsigned_type_node);
   DECL_CONTEXT (field) = type;
@@ -106,23 +106,23 @@ vxworks_emutls_var_init (tree var, tree decl, tree tmpl_addr)
 {
   vec<constructor_elt, va_gc> *v;
   vec_alloc (v, 3);
-  
+
   tree type = TREE_TYPE (var);
   tree field = TYPE_FIELDS (type);
-  
+
   constructor_elt elt = {field, fold_convert (TREE_TYPE (field), tmpl_addr)};
   v->quick_push (elt);
-  
+
   field = DECL_CHAIN (field);
   elt.index = field;
   elt.value = build_int_cst (TREE_TYPE (field), 0);
   v->quick_push (elt);
-  
+
   field = DECL_CHAIN (field);
   elt.index = field;
   elt.value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
   v->quick_push (elt);
-  
+
   return build_constructor (type, v);
 }
 
@@ -155,7 +155,7 @@ vxworks_override_options (void)
      the toolchain user is expected to provide whatever linker level glue is
      required to get things to operate properly.  */
 
-  targetm.have_ctors_dtors = 
+  targetm.have_ctors_dtors =
     TARGET_VXWORKS_HAVE_CTORS_DTORS || HAVE_INITFINI_ARRAY_SUPPORT;
 
   /* PIC is only supported for RTPs.  flags_pic might be < 0 here, in

@@ -16,4 +16,3 @@
   rewind(522)
   close(522)
 end program
-! { dg-final { remote_file build delete "fort.345" } }

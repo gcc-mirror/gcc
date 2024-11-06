@@ -75,14 +75,13 @@ custom_edge_info::update_state (program_state *state,
 
 /* class call_info : public custom_edge_info.  */
 
-/* Implementation of custom_edge_info::print vfunc for call_info:
-   use get_desc to get a label_text, and print it to PP.  */
+/* Implementation of custom_edge_info::print vfunc for call_info.  */
 
 void
 call_info::print (pretty_printer *pp) const
 {
-  label_text desc (get_desc (pp_show_color (pp)));
-  pp_string (pp, desc.get ());
+  gcc_assert (pp);
+  print_desc (*pp);
 }
 
 /* Implementation of custom_edge_info::add_events_to_path vfunc for
@@ -102,9 +101,9 @@ call_info::add_events_to_path (checker_path *emission_path,
       m_call_info (call_info)
     {}
 
-    label_text get_desc (bool can_colorize) const final override
+    void print_desc (pretty_printer &pp) const final override
     {
-      return m_call_info->get_desc (can_colorize);
+      m_call_info->print_desc (pp);
     }
 
   private:
@@ -154,13 +153,13 @@ call_info::call_info (const call_details &cd,
 
 /* class succeed_or_fail_call_info : public call_info.  */
 
-label_text
-succeed_or_fail_call_info::get_desc (bool can_colorize) const
+void
+succeed_or_fail_call_info::print_desc (pretty_printer &pp) const
 {
   if (m_success)
-    return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
+    pp_printf (&pp, "when %qE succeeds", get_fndecl ());
   else
-    return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
+    pp_printf (&pp, "when %qE fails", get_fndecl ());
 }
 
 } // namespace ana

@@ -13,9 +13,9 @@
 
 #define F7_(name)  __f7_##name
 #define F7P	   __f7_
- 
+
 /* Renames for libf7.c, libf7.h.  */
- 
+
 #define f7_fabs __f7_fabs
 #define f7_neg __f7_neg
 #define f7_add __f7_add
@@ -173,9 +173,9 @@
 #define f7_ne_impl __f7_ne_impl
 #define f7_eq_impl __f7_eq_impl
 #define f7_unord_impl __f7_unord_impl
- 
+
 /* Renames for libf7.c, libf7.h.  */
- 
+
 #define f7_const_1   __f7_const_1
 #define f7_const_1_P __f7_const_1_P
 #define f7_const_2   __f7_const_2
@@ -198,9 +198,9 @@
 #define f7_const_1_ln10_P __f7_const_1_ln10_P
 #define f7_const_sqrt2   __f7_const_sqrt2
 #define f7_const_sqrt2_P __f7_const_sqrt2_P
- 
+
 /* Renames for libf7-asm.sx, f7-wraps.h.  */
- 
+
 #define f7_classify_asm __f7_classify_asm
 #define f7_store_expo_asm __f7_store_expo_asm
 #define f7_clr_asm __f7_clr_asm

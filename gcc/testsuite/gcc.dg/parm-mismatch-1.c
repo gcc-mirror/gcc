@@ -2,7 +2,7 @@
    ().  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 void f0(); /* { dg-message "note: previous declaration of 'f0'" "note" } */
 void f0(int, ...); /* { dg-error "conflicting types for 'f0'" } */

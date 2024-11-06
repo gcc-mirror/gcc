@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -369,7 +370,7 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 		 : EDGE_SUCC (outer_cond_bb, 0));
   edge inner_taken = EDGE_SUCC (inner_cond_bb, 0);
   edge inner_not_taken = EDGE_SUCC (inner_cond_bb, 1);
-  
+
   if (inner_taken->dest != outer2->dest)
     std::swap (inner_taken, inner_not_taken);
   gcc_assert (inner_taken->dest == outer2->dest);
@@ -622,7 +623,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 				boolean_type_node,
 				gimple_cond_lhs (outer_cond),
 				gimple_cond_rhs (outer_cond));
-	  t = fold_build2_loc (gimple_location (inner_cond), 
+	  t = fold_build2_loc (gimple_location (inner_cond),
 			       TRUTH_AND_EXPR, boolean_type_node, t1, t2);
 	  if (result_inv)
 	    {

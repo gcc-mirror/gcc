@@ -355,6 +355,18 @@ package body Exp_Tss is
       return C1 = TSS_Init_Proc (1) and then C2 = TSS_Init_Proc (2);
    end Is_Init_Proc;
 
+   -------------------
+   -- Is_Rep_To_Pos --
+   -------------------
+
+   function Is_Rep_To_Pos (E : Entity_Id) return Boolean is
+      C1 : Character;
+      C2 : Character;
+   begin
+      Get_Last_Two_Chars (Chars (E), C1, C2);
+      return C1 = TSS_Rep_To_Pos (1) and then C2 = TSS_Rep_To_Pos (2);
+   end Is_Rep_To_Pos;
+
    ------------
    -- Is_TSS --
    ------------

@@ -6,10 +6,10 @@ namespace std {
 }
 
 namespace {
-  void  operator"" _a (const char *, std::size_t) {}
+  void  operator ""_a (const char *, std::size_t) {}
 }
 
-void operator"" _a (unsigned long long);
+void operator ""_a (unsigned long long);
 
 template <typename> void f () { ""_a; }
 

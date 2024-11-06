@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-additional-options "-mavx2" { target x86_64-*-* i?86-*-* } } */
 
 typedef float real;

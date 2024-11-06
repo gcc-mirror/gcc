@@ -426,7 +426,7 @@ load_image (const char *filename)
 
   /* Locate the "_init_array" function, and read the kernel's properties.  */
   hsa_executable_symbol_t symbol;
-  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL, 
+  XHSA (hsa_fns.hsa_executable_get_symbol_fn (executable, NULL,
 					      "_init_array.kd", device, 0,
 					      &symbol),
 	"Find '_init_array' function");

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "--param vect-max-version-for-alias-checks=0" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

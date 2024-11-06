@@ -318,7 +318,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
 /* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-  (((N) >= 23 && (N) <= 26) || (! TARGET_SOFT_FLOAT && (N) >= 32 && (N) <= 39)) 
+  (((N) >= 23 && (N) <= 26) || (! TARGET_SOFT_FLOAT && (N) >= 32 && (N) <= 39))
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */

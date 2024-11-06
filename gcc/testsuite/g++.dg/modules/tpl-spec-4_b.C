@@ -14,4 +14,4 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Reading 1 pending entities keyed to '::X'} module } }
+// { dg-final { scan-lang-dump {Reading 2 pending entities keyed to '::X'} module } }

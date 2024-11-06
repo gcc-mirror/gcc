@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    of additions made for properties and optional protocol methods as
    ABI=1 (module version 7).  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2845,7 +2846,7 @@ make_err_class:
   return eh_id;
 }
 
-/* For NeXT ABI 0 and 1, the personality routines are just those of the 
+/* For NeXT ABI 0 and 1, the personality routines are just those of the
    underlying language.  */
 
 static tree

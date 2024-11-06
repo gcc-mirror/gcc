@@ -1,7 +1,8 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target hard_float } */
 /* { dg-options "-O2 -ftrapping-math -fdump-tree-optimized -fdump-rtl-final" } */
 /* { dg-final { scan-tree-dump-times {(?n)= \(int\)} 3 "optimized" } }  */
-/* { dg-final { scan-rtl-dump-times {(?n)^[ \t]*\(fix:SI} 3 "final" } }  */
+/* { dg-final { scan-rtl-dump-times {(?n)^(?!.*REG_EQUIV)(?=.*\(fix:SI)} 3 "final" } }  */
 
 int
 foo_ofr ()

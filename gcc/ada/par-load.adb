@@ -258,8 +258,8 @@ begin
       --  have set our Fatal_Error flag to propagate this condition.
 
       if Unum /= No_Unit then
-         Set_Library_Unit (Curunit, Cunit (Unum));
-         Set_Library_Unit (Cunit (Unum), Curunit);
+         Set_Spec_Lib_Unit (Curunit, Cunit (Unum));
+         Set_Body_Lib_Unit (Cunit (Unum), Curunit);
 
          --  If this is a separate spec for the main unit, then we reset
          --  Main_Unit_Entity to point to the entity for this separate spec
@@ -284,7 +284,7 @@ begin
 
       elsif Nkind (Unit (Curunit)) = N_Subprogram_Body then
          Set_Acts_As_Spec (Curunit, True);
-         Set_Library_Unit (Curunit, Curunit);
+         Set_Spec_Lib_Unit (Curunit, Curunit);
 
       --  Otherwise we do have an error, repeat the load request for the spec
       --  with Required set True to generate an appropriate error message.
@@ -341,7 +341,7 @@ begin
            Error_Node => Name (Unit (Curunit)));
 
       if Unum /= No_Unit then
-         Set_Library_Unit (Curunit, Cunit (Unum));
+         Set_Subunit_Parent (Curunit, Cunit (Unum));
       end if;
    end if;
 
@@ -397,7 +397,7 @@ begin
             --  unit gets a fatal error, so we don't need to worry about that.
 
             if Unum /= No_Unit then
-               Set_Library_Unit (With_Node, Cunit (Unum));
+               Set_Withed_Lib_Unit (With_Node, Cunit (Unum));
 
             --  If the spec isn't found, then try finding the corresponding
             --  body, since it is possible that we have a subprogram body
@@ -414,16 +414,29 @@ begin
                     Renamings  => True);
 
                --  If we got a subprogram body, then mark that we are using
-               --  the body as a spec in the file table, and set the spec
-               --  pointer in the N_With_Clause to point to the body entity.
+               --  the body as a spec in the file table, and set
+               --  Withed_Lib_Unit of the N_With_Clause to point to
+               --  the body entity.
 
                if Unum /= No_Unit
                  and then Nkind (Unit (Cunit (Unum))) = N_Subprogram_Body
                then
                   With_Cunit := Cunit (Unum);
-                  Set_Library_Unit (With_Node, With_Cunit);
-                  Set_Acts_As_Spec (With_Cunit, True);
-                  Set_Library_Unit (With_Cunit, With_Cunit);
+                  Set_Withed_Lib_Unit (With_Node, With_Cunit);
+
+                  --  If we have errors, Acts_As_Spec and Spec_Lib_Unit might
+                  --  not be set; set them for better error recovery.
+
+                  if Serious_Errors_Detected > 0 then
+                     Set_Acts_As_Spec (With_Cunit, True);
+                     Set_Spec_Lib_Unit (With_Cunit, With_Cunit);
+
+                  --  Otherwise, these field should already by set
+
+                  else
+                     pragma Assert (Acts_As_Spec (With_Cunit));
+                     pragma Assert (Spec_Lib_Unit (With_Cunit) = With_Cunit);
+                  end if;
 
                --  If we couldn't find the body, or if it wasn't a body spec
                --  then we are in trouble. We make one more call to Load to
@@ -443,7 +456,7 @@ begin
                   --  Here we create a dummy package unit for the missing unit
 
                   Unum := Create_Dummy_Package_Unit (With_Node, Spec_Name);
-                  Set_Library_Unit (With_Node, Cunit (Unum));
+                  Set_Withed_Lib_Unit (With_Node, Cunit (Unum));
                end if;
             end if;
          end if;

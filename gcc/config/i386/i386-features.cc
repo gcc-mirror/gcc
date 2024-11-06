@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -350,7 +351,7 @@ scalar_chain::mark_dual_mode_def (df_ref def)
 	return;
       n_sse_to_integer++;
     }
- 
+
   if (dump_file)
     fprintf (dump_file,
 	     "  Mark r%d def in insn %d as requiring both modes in chain #%d\n",
@@ -3657,7 +3658,7 @@ ix86_compare_version_priority (tree decl1, tree decl2)
 
 /* V1 and V2 point to function versions with different priorities
    based on the target ISA.  This function compares their priorities.  */
- 
+
 static int
 feature_compare (const void *v1, const void *v2)
 {
@@ -3706,7 +3707,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
   convert_expr = build1 (CONVERT_EXPR, ptr_type_node,
 	     		 build_fold_addr_expr (version_decl));
   result_var = create_tmp_var (ptr_type_node);
-  convert_stmt = gimple_build_assign (result_var, convert_expr); 
+  convert_stmt = gimple_build_assign (result_var, convert_expr);
   return_stmt = gimple_build_return (result_var);
 
   if (predicate_chain == NULL_TREE)
@@ -3733,7 +3734,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
       gimple_seq_add_stmt (&gseq, call_cond_stmt);
 
       predicate_chain = TREE_CHAIN (predicate_chain);
-      
+
       if (and_expr_var == NULL)
 	and_expr_var = cond_var;
       else
@@ -3774,7 +3775,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
   gimple_set_bb (return_stmt, bb2);
 
   bb3 = e23->dest;
-  make_edge (bb1, bb3, EDGE_FALSE_VALUE); 
+  make_edge (bb1, bb3, EDGE_FALSE_VALUE);
 
   remove_edge (e23);
   make_edge (bb2, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
@@ -3935,7 +3936,7 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
   return ret;
 }
 
-tree 
+tree
 ix86_mangle_decl_assembler_name (tree decl, tree id)
 {
   /* For function version, add the target suffix to the assembler name.  */
@@ -3965,7 +3966,7 @@ ix86_get_function_versions_dispatcher (void *decl)
   tree dispatch_decl = NULL;
 
   struct cgraph_function_version_info *default_version_info = NULL;
- 
+
   gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
 
   node = cgraph_node::get (fn);
@@ -3973,7 +3974,7 @@ ix86_get_function_versions_dispatcher (void *decl)
 
   node_v = node->function_version ();
   gcc_assert (node_v != NULL);
- 
+
   if (node_v->dispatcher_resolver != NULL)
     return node_v->dispatcher_resolver;
 
@@ -4129,7 +4130,7 @@ make_resolver_func (const tree default_decl,
    provide the code to dispatch the right function at run-time.  NODE points
    to the dispatcher decl whose body will be created.  */
 
-tree 
+tree
 ix86_generate_version_dispatcher_body (void *node_p)
 {
   tree resolver_decl;

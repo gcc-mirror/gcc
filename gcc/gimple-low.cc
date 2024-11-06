@@ -1236,7 +1236,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
   /* __builtin_setjmp_{setup,receiver} aren't ECF_RETURNS_TWICE and for RTL
      these builtins are modelled as non-local label jumps to the label
      that is passed to these two builtins, so pretend we have a non-local
-     label during GIMPLE passes too.  See PR60003.  */ 
+     label during GIMPLE passes too.  See PR60003.  */
   cfun->has_nonlocal_label = 1;
 
   /* NEXT_LABEL is the label __builtin_longjmp will jump to.  Its address is

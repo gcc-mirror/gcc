@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Build tables of static constructors and destructors and run ld.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -3072,7 +3073,7 @@ static void
 post_ld_pass (bool temp_file) {
   if (!(temp_file && flag_idsym) && !flag_dsym)
     return;
-      
+
   do_dsymutil (output_file);
 }
 #else

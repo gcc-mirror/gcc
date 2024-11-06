@@ -991,6 +991,13 @@ case "${target}" in
     ;;
 esac
 
+# The ARM simulator has been deprecated for all ARM targets.
+case "${target}" in
+  arm*-*-*)
+    noconfigdirs="$noconfigdirs sim"
+    ;;
+esac
+
 case "${target}" in
   *-*-chorusos)
     ;;
@@ -1002,7 +1009,7 @@ case "${target}" in
     ;;
   arm-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
-    noconfigdirs="$noconfigdirs sim target-rda"
+    noconfigdirs="$noconfigdirs target-rda"
     ;;
   powerpc-*-darwin*)
     noconfigdirs="$noconfigdirs ld gas gdb gprof"
@@ -1457,16 +1464,16 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
-# When bootstrapping with GCC, build stage 1 in C++11 mode to ensure that a
-# C++11 compiler can still start the bootstrap.  Otherwise, if building GCC,
-# require C++11 (or higher).
+# When bootstrapping with GCC, build stage 1 in C++14 mode to ensure that a
+# C++14 compiler can still start the bootstrap.  Otherwise, if building GCC,
+# require C++14 (or higher).
 if test "$enable_bootstrap:$GXX" = "yes:yes"; then
-  CXX="$CXX -std=c++11"
+  CXX="$CXX -std=c++14"
 elif test "$have_compiler" = yes; then
-  AX_CXX_COMPILE_STDCXX(11)
+  AX_CXX_COMPILE_STDCXX(14)
 
   if test "${build}" != "${host}"; then
-    AX_CXX_COMPILE_STDCXX(11, [], [], [_FOR_BUILD])
+    AX_CXX_COMPILE_STDCXX(14, [], [], [_FOR_BUILD])
   fi
 fi
 
@@ -3191,6 +3198,15 @@ case "$enable_bootstrap:$ENABLE_GOLD: $configdirs :,$stage1_languages," in
     AC_MSG_ERROR([in a combined tree, bootstrapping with --enable-gold requires c++ in stage1_languages])
     ;;
 esac
+
+# Bootstrapping GCC requires libstdc++-v3 so error out if libstdc++ is disabled with bootstrapping
+# Note C++ is always enabled for stage1 now.
+case "$enable_bootstrap:${noconfigdirs}" in
+  yes:*target-libstdc++-v3*)
+    AC_MSG_ERROR([bootstrapping with --disable-libstdcxx is not supported])
+    ;;
+esac
+
 
 extrasub_build=
 for module in ${build_configdirs} ; do

@@ -1157,9 +1157,9 @@ namespace __detail
 
 #if __cpp_variable_templates
   template<typename _Tp>
-    static constexpr bool __is_unique_ptr = false;
+    constexpr bool __is_unique_ptr = false;
   template<typename _Tp, typename _Del>
-    static constexpr bool __is_unique_ptr<unique_ptr<_Tp, _Del>> = true;
+    constexpr bool __is_unique_ptr<unique_ptr<_Tp, _Del>> = true;
 #endif
 
   /// @} group pointer_abstractions

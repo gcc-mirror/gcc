@@ -320,6 +320,45 @@ build_16_32 (function_builder &b, const char *signature,
     }
 }
 
+/* TYPE is the largest type suffix associated with the arguments of R, but the
+   result is twice as wide.  Return the associated type suffix of
+   EXPECTED_TCLASS if it exists, otherwise report an appropriate error and
+   return NUM_TYPE_SUFFIXES.  */
+static type_suffix_index
+long_type_suffix (function_resolver &r,
+		  type_suffix_index type,
+		  type_class_index expected_tclass)
+{
+  unsigned int element_bits = type_suffixes[type].element_bits;
+  if (expected_tclass == function_resolver::SAME_TYPE_CLASS)
+    expected_tclass = type_suffixes[type].tclass;
+
+  if (type_suffixes[type].integer_p && element_bits < 64)
+    return find_type_suffix (expected_tclass, element_bits * 2);
+
+  r.report_no_such_form (type);
+  return NUM_TYPE_SUFFIXES;
+}
+
+/* Return the type suffix half as wide as TYPE with EXPECTED_TCLASS if it
+   exists, otherwise report an appropriate error and return
+   NUM_TYPE_SUFFIXES.  */
+static type_suffix_index
+half_type_suffix (function_resolver &r,
+		  type_suffix_index type,
+		  type_class_index expected_tclass)
+{
+  unsigned int element_bits = type_suffixes[type].element_bits;
+  if (expected_tclass == function_resolver::SAME_TYPE_CLASS)
+    expected_tclass = type_suffixes[type].tclass;
+
+  if (type_suffixes[type].integer_p && element_bits > 8)
+    return find_type_suffix (expected_tclass, element_bits / 2);
+
+  r.report_no_such_form (type);
+  return NUM_TYPE_SUFFIXES;
+}
+
 /* Declare the function shape NAME, pointing it to an instance
    of class <NAME>_def.  */
 #define SHAPE(NAME) \
@@ -330,7 +369,8 @@ build_16_32 (function_builder &b, const char *signature,
 struct nonoverloaded_base : public function_shape
 {
   bool
-  explicit_type_suffix_p (unsigned int, enum predication_index, enum mode_suffix_index) const override
+  explicit_type_suffix_p (unsigned int, enum predication_index,
+			  enum mode_suffix_index, type_suffix_info) const override
   {
     return true;
   }
@@ -360,7 +400,8 @@ template<unsigned int EXPLICIT_MASK>
 struct overloaded_base : public function_shape
 {
   bool
-  explicit_type_suffix_p (unsigned int i, enum predication_index, enum mode_suffix_index) const override
+  explicit_type_suffix_p (unsigned int i, enum predication_index,
+			  enum mode_suffix_index, type_suffix_info) const override
   {
     return (EXPLICIT_MASK >> i) & 1;
   }
@@ -475,17 +516,22 @@ struct binary_acca_int32_def : public overloaded_base<0>
   {
     unsigned int i, nargs;
     type_suffix_index type;
+    const char *first_type_name;
+
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    first_type_name = (type_suffixes[type].unsigned_p
+		       ? "uint32_t"
+		       : "int32_t");
+    if (!r.require_scalar_type (0, first_type_name))
       return error_mark_node;
 
     unsigned int last_arg = i + 1;
     for (i = 1; i < last_arg; i++)
       if (!r.require_matching_vector_type (i, type))
 	return error_mark_node;
-
-    if (!r.require_integer_immediate (0))
-      return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
@@ -512,17 +558,23 @@ struct binary_acca_int64_def : public overloaded_base<0>
   {
     unsigned int i, nargs;
     type_suffix_index type;
+    const char *first_type_name;
+
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+
+    first_type_name = (type_suffixes[type].unsigned_p
+		       ? "uint64_t"
+		       : "int64_t");
+    if (!r.require_scalar_type (0, first_type_name))
       return error_mark_node;
 
     unsigned int last_arg = i + 1;
     for (i = 1; i < last_arg; i++)
       if (!r.require_matching_vector_type (i, type))
 	return error_mark_node;
-
-    if (!r.require_integer_immediate (0))
-      return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
@@ -611,7 +663,7 @@ struct binary_lshift_unsigned_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "vu0,vs0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "vu0,vs0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -620,6 +672,7 @@ struct binary_lshift_unsigned_def : public overloaded_base<0>
     unsigned int i, nargs;
     type_suffix_index type;
     if (!r.check_gp_argument (2, i, nargs)
+	|| !r.require_integer_immediate (i)
 	|| (type = r.infer_vector_type (i-1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
@@ -633,10 +686,6 @@ struct binary_lshift_unsigned_def : public overloaded_base<0>
 	if (!r.require_matching_vector_type (0, return_type))
 	  return error_mark_node;
       }
-
-    for (; i < nargs; ++i)
-      if (!r.require_integer_immediate (i))
-	return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
   }
@@ -769,15 +818,12 @@ struct binary_move_narrow_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits / 2);
-
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -806,14 +852,12 @@ struct binary_move_narrow_unsigned_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, TYPE_unsigned))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (TYPE_unsigned,
-			  type_suffixes[type].element_bits / 2);
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -865,7 +909,12 @@ SHAPE (binary_opt_n)
    int16x8_t [__arm_]vorrq_m[_s16](int16x8_t inactive, int16x8_t a, int16x8_t b, mve_pred16_t p)
    int16x8_t [__arm_]vorrq_x[_s16](int16x8_t a, int16x8_t b, mve_pred16_t p)
    int16x8_t [__arm_]vorrq[_n_s16](int16x8_t a, const int16_t imm)
-   int16x8_t [__arm_]vorrq_m_n[_s16](int16x8_t a, const int16_t imm, mve_pred16_t p)  */
+   int16x8_t [__arm_]vorrq_m_n[_s16](int16x8_t a, const int16_t imm, mve_pred16_t p)
+
+   No "_n" forms for floating-point, nor 8-bit integers:
+   float16x8_t [__arm_]vorrq[_f16](float16x8_t a, float16x8_t b)
+   float16x8_t [__arm_]vorrq_m[_f16](float16x8_t inactive, float16x8_t a, float16x8_t b, mve_pred16_t p)
+   float16x8_t [__arm_]vorrq_x[_f16](float16x8_t a, float16x8_t b, mve_pred16_t p)  */
 struct binary_orrq_def : public overloaded_base<0>
 {
   bool
@@ -1090,22 +1139,20 @@ struct binary_rshift_narrow_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "vh0,vh0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "vh0,vh0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES)
 	|| !r.require_integer_immediate (i))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits / 2);
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -1137,22 +1184,20 @@ struct binary_rshift_narrow_unsigned_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "vhu0,vhu0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "vhu0,vhu0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, narrow_suffix;
     if (!r.check_gp_argument (3, i, nargs)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES
+	|| ((narrow_suffix = half_type_suffix (r, type, TYPE_unsigned))
+	    == NUM_TYPE_SUFFIXES)
 	|| !r.require_integer_immediate (i))
       return error_mark_node;
-
-    type_suffix_index narrow_suffix
-      = find_type_suffix (TYPE_unsigned,
-			  type_suffixes[type].element_bits / 2);
 
     if (!r.require_matching_vector_type (0, narrow_suffix))
       return error_mark_node;
@@ -1190,14 +1235,12 @@ struct binary_widen_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     if (!r.require_matching_vector_type (i, type))
       return error_mark_node;
@@ -1283,16 +1326,14 @@ struct binary_widen_n_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     tree res;
     if (!r.check_gp_argument (2, i, nargs)
 	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES)
 	|| !r.require_integer_immediate (i))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     /* Check the inactive argument has the wide type.  */
     if (((r.pred == PRED_m) && (r.infer_vector_type (0) == wide_suffix))
@@ -1337,14 +1378,12 @@ struct binary_widen_opt_n_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (i - 1)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     /* Skip last argument, may be scalar, will be checked below by
        finish_opt_n_resolution.  */
@@ -1403,12 +1442,6 @@ struct create_def : public nonoverloaded_base
   {
     build_all (b, "v0,su64,su64", group, MODE_none, preserve_user_namespace);
   }
-
-  tree
-  resolve (function_resolver &r) const override
-  {
-    return r.resolve_uniform (0, 2);
-  }
 };
 SHAPE (create)
 
@@ -1428,7 +1461,9 @@ struct inherent_def : public nonoverloaded_base
 };
 SHAPE (inherent)
 
-/* sv<t0>_t svfoo[_t0](const <t0>_t *)
+/* <T0>_t vfoo[_t0](const <s0>_t *)
+
+   where <s0> is the scalar name of <T0>.
 
    Example: vld1q.
    int8x16_t [__arm_]vld1q[_s8](int8_t const *base)
@@ -1459,6 +1494,24 @@ struct load_def : public overloaded_base<0>
   }
 };
 SHAPE (load)
+
+/* <T0>_t foo_t0 (const <X>_t *)
+
+   where <X> is determined by the function base name.
+
+   Example: vldrq.
+   int32x4_t [__arm_]vldrwq_s32 (int32_t const *base)
+   uint32x4_t [__arm_]vldrhq_z_u32 (uint16_t const *base, mve_pred16_t p)  */
+struct load_ext_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "t0,al", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (load_ext)
 
 /* <T0>_t vfoo[_t0](<T0>_t)
    <T0>_t vfoo_n_t0(<sT0>_t)
@@ -1509,14 +1562,18 @@ struct mvn_def : public overloaded_base<0>
 };
 SHAPE (mvn)
 
-/* void vfoo[_t0](<X>_t *, v<t0>[xN]_t)
+/* void vfoo[_t0](<X>_t *, <T0>[xN]_t)
 
    where <X> might be tied to <t0> (for non-truncating stores) or might
    depend on the function base name (for truncating stores).
 
    Example: vst1q.
    void [__arm_]vst1q[_s8](int8_t *base, int8x16_t value)
-   void [__arm_]vst1q_p[_s8](int8_t *base, int8x16_t value, mve_pred16_t p)  */
+   void [__arm_]vst1q_p[_s8](int8_t *base, int8x16_t value, mve_pred16_t p)
+
+   Example: vstrb.
+   void [__arm_]vstrbq[_s16](int8_t *base, int16x8_t value)
+   void [__arm_]vstrbq_p[_s16](int8_t *base, int16x8_t value, mve_pred16_t p)  */
 struct store_def : public overloaded_base<0>
 {
   void
@@ -1587,7 +1644,7 @@ struct ternary_lshift_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "v0,v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -1682,7 +1739,7 @@ struct ternary_rshift_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
-    build_all (b, "v0,v0,v0,ss32", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,su64", group, MODE_n, preserve_user_namespace);
   }
 
   tree
@@ -1837,9 +1894,16 @@ struct unary_int32_acc_def : public overloaded_base<0>
   {
     unsigned int i, nargs;
     type_suffix_index type;
+    const char *first_type_name;
+
     if (!r.check_gp_argument (2, i, nargs)
-	|| !r.require_integer_immediate (0)
 	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    first_type_name = (type_suffixes[type].unsigned_p
+		       ? "uint32_t"
+		       : "int32_t");
+    if (!r.require_scalar_type (0, first_type_name))
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
@@ -1857,7 +1921,7 @@ struct unary_n_def : public overloaded_base<0>
 {
   bool
   explicit_type_suffix_p (unsigned int, enum predication_index pred,
-			  enum mode_suffix_index) const override
+			  enum mode_suffix_index, type_suffix_info) const override
   {
     return pred != PRED_m;
   }
@@ -1923,15 +1987,13 @@ struct unary_widen_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type, wide_suffix;
     tree res;
     if (!r.check_gp_argument (1, i, nargs)
-	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
+	|| ((wide_suffix = long_type_suffix (r, type, r.SAME_TYPE_CLASS))
+	    == NUM_TYPE_SUFFIXES))
       return error_mark_node;
-
-    type_suffix_index wide_suffix
-      = find_type_suffix (type_suffixes[type].tclass,
-			  type_suffixes[type].element_bits * 2);
 
     /* Check the inactive argument has the wide type.  */
     if ((r.pred == PRED_m)
@@ -1980,6 +2042,425 @@ struct unary_widen_acc_def : public overloaded_base<0>
 };
 SHAPE (unary_widen_acc)
 
+/* <T0>_t vfoo[_t0](T0, T0, uint32_t*)
+
+   Example: vadcq.
+   int32x4_t [__arm_]vadcq[_s32](int32x4_t a, int32x4_t b, unsigned *carry)
+   int32x4_t [__arm_]vadcq_m[_s32](int32x4_t inactive, int32x4_t a, int32x4_t b, unsigned *carry, mve_pred16_t p)  */
+struct vadc_vsbc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,v0,as", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    if (!r.require_matching_vector_type (1, type))
+      return error_mark_node;
+
+    /* Check that last arg is a pointer.  */
+    if (!POINTER_TYPE_P (r.get_argument_type (i)))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (vadc_vsbc)
+
+/* mve_pred16_t foo_t0(uint32_t)
+
+   Example: vctp16q.
+   mve_pred16_t [__arm_]vctp16q(uint32_t a)
+   mve_pred16_t [__arm_]vctp16q_m(uint32_t a, mve_pred16_t p)  */
+struct vctp_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "p,su32", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vctp)
+
+/* <T0>_t foo_t0[_t1](<T1>_t)
+   <T0>_t foo_t0_n[_t1](<T1>_t, const int)
+
+   Example: vcvtq.
+   float32x4_t [__arm_]vcvtq[_f32_s32](int32x4_t a)
+   float32x4_t [__arm_]vcvtq_m[_f32_s32](float32x4_t inactive, int32x4_t a, mve_pred16_t p)
+   float32x4_t [__arm_]vcvtq_x[_f32_s32](int32x4_t a, mve_pred16_t p)
+   float32x4_t [__arm_]vcvtq_n[_f32_s32](int32x4_t a, const int imm6)
+   float32x4_t [__arm_]vcvtq_m_n[_f32_s32](float32x4_t inactive, int32x4_t a, const int imm6, mve_pred16_t p)
+   float32x4_t [__arm_]vcvtq_x_n[_f32_s32](int32x4_t a, const int imm6, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_s32_f32(float32x4_t a)
+   int32x4_t [__arm_]vcvtq_m[_s32_f32](int32x4_t inactive, float32x4_t a, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_x_s32_f32(float32x4_t a, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_n_s32_f32(float32x4_t a, const int imm6)
+   int32x4_t [__arm_]vcvtq_m_n[_s32_f32](int32x4_t inactive, float32x4_t a, const int imm6, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_x_n_s32_f32(float32x4_t a, const int imm6, mve_pred16_t p)  */
+struct vcvt_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int i, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info type_info) const override
+  {
+    if (pred != PRED_m
+	&& ((i == 0 && type_info.integer_p)
+	    || (i == 1 && type_info.float_p)))
+      return true;
+    return false;
+  }
+
+  bool
+  explicit_mode_suffix_p (enum predication_index,
+			  enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v1,su64", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index from_type;
+    tree res;
+    unsigned int nimm = (r.mode_suffix_id == MODE_none) ? 0 : 1;
+
+    if (!r.check_gp_argument (1 + nimm, i, nargs)
+	|| (from_type
+	    = r.infer_vector_type (i - nimm)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    if (nimm > 0
+	&& !r.require_integer_immediate (i))
+      return error_mark_node;
+
+    type_suffix_index to_type;
+
+    if (type_suffixes[from_type].integer_p)
+      {
+	to_type = find_type_suffix (TYPE_float,
+				    type_suffixes[from_type].element_bits);
+      }
+    else
+      {
+	/* This should not happen: when 'from_type' is float, the type
+	   suffixes are not overloaded (except for "m" predication,
+	   handled above). */
+	gcc_assert (r.pred == PRED_m);
+
+	/* Get the return type from the 'inactive' argument.  */
+	to_type = r.infer_vector_type (0);
+      }
+
+    if ((res = r.lookup_form (r.mode_suffix_id, to_type, from_type)))
+	return res;
+
+    return r.report_no_such_form (from_type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    if (c.mode_suffix_id == MODE_none)
+      return true;
+
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (1, 1, bits);
+  }
+};
+SHAPE (vcvt)
+
+/* float16x8_t foo_f16_f32(float16x8_t, float32x4_t)
+
+   Example: vcvttq_f16_f32.
+   float16x8_t [__arm_]vcvttq_f16_f32(float16x8_t a, float32x4_t b)
+   float16x8_t [__arm_]vcvttq_m_f16_f32(float16x8_t a, float32x4_t b, mve_pred16_t p)
+*/
+struct vcvt_f16_f32_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vcvt_f16_f32)
+
+/* float32x4_t foo_f32_f16(float16x8_t)
+
+   Example: vcvttq_f32_f16.
+   float32x4_t [__arm_]vcvttq_f32_f16(float16x8_t a)
+   float32x4_t [__arm_]vcvttq_m_f32_f16(float32x4_t inactive, float16x8_t a, mve_pred16_t p)
+   float32x4_t [__arm_]vcvttq_x_f32_f16(float16x8_t a, mve_pred16_t p)
+*/
+struct vcvt_f32_f16_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vcvt_f32_f16)
+
+/* <T0>_t foo_t0[_t1](<T1>_t)
+
+   Example: vcvtaq.
+   int16x8_t [__arm_]vcvtaq_s16_f16(float16x8_t a)
+   int16x8_t [__arm_]vcvtaq_m[_s16_f16](int16x8_t inactive, float16x8_t a, mve_pred16_t p)
+   int16x8_t [__arm_]vcvtaq_x_s16_f16(float16x8_t a, mve_pred16_t p)
+*/
+struct vcvtx_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info) const override
+  {
+    return pred != PRED_m;
+  }
+
+  bool
+  skip_overload_p (enum predication_index pred, enum mode_suffix_index)
+    const override
+  {
+    return pred != PRED_m;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index from_type;
+    tree res;
+
+    if (!r.check_gp_argument (1, i, nargs)
+	|| (from_type
+	    = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index to_type;
+
+    gcc_assert (r.pred == PRED_m);
+
+    /* Get the return type from the 'inactive' argument.  */
+    to_type = r.infer_vector_type (0);
+
+    if ((res = r.lookup_form (r.mode_suffix_id, to_type, from_type)))
+	return res;
+
+    return r.report_no_such_form (from_type);
+  }
+};
+SHAPE (vcvtx)
+
+/* <T0>_t vfoo[_n]_t0(uint32_t, const int)
+   <T0>_t vfoo[_wb]_t0(uint32_t *, const int)
+
+   Shape for vector increment or decrement and duplicate operations that take
+   an integer or pointer to integer first argument and an immediate, and
+   produce a vector.
+
+   Check that 'imm' is one of 1, 2, 4 or 8.
+
+   Example: vddupq.
+   uint8x16_t [__arm_]vddupq[_n]_u8(uint32_t a, const int imm)
+   uint8x16_t [__arm_]vddupq[_wb]_u8(uint32_t *a, const int imm)
+   uint8x16_t [__arm_]vddupq_m[_n_u8](uint8x16_t inactive, uint32_t a, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vddupq_m[_wb_u8](uint8x16_t inactive, uint32_t *a, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vddupq_x[_n]_u8(uint32_t a, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vddupq_x[_wb]_u8(uint32_t *a, const int imm, mve_pred16_t p)  */
+struct viddup_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int i, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info) const override
+  {
+    return ((i == 0) && (pred != PRED_m));
+  }
+
+  bool
+  skip_overload_p (enum predication_index, enum mode_suffix_index mode) const override
+  {
+    /* For MODE_wb, share the overloaded instance with MODE_n.  */
+    if (mode == MODE_wb)
+      return true;
+
+    return false;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,su32,su64", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,as,su64", group, MODE_wb, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type_suffix = NUM_TYPE_SUFFIXES;
+    if (!r.check_gp_argument (2, i, nargs))
+      return error_mark_node;
+
+    type_suffix = r.type_suffix_ids[0];
+    /* With PRED_m, ther is no type suffix, so infer it from the first (inactive)
+       argument.  */
+    if (type_suffix == NUM_TYPE_SUFFIXES)
+      type_suffix = r.infer_vector_type (0);
+
+    unsigned int last_arg = i - 1;
+    /* Check that last_arg is either scalar or pointer.  */
+    if (!r.scalar_argument_p (last_arg))
+      return error_mark_node;
+
+    if (!r.require_integer_immediate (last_arg + 1))
+      return error_mark_node;
+
+    /* With MODE_n we expect a scalar, with MODE_wb we expect a pointer.  */
+    mode_suffix_index mode_suffix;
+    if (POINTER_TYPE_P (r.get_argument_type (last_arg)))
+      mode_suffix = MODE_wb;
+    else
+      mode_suffix = MODE_n;
+
+    return r.resolve_to (mode_suffix, type_suffix);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_one_of (1, 1, 2, 4, 8);
+  }
+};
+SHAPE (viddup)
+
+/* <T0>_t vfoo[_n]_t0(uint32_t, uint32_t, const int)
+   <T0>_t vfoo[_wb]_t0(uint32_t *, uint32_t, const int)
+
+   Shape for vector increment or decrement with wrap and duplicate operations
+   that take an integer or pointer to integer first argument, an integer second
+   argument and an immediate, and produce a vector.
+
+   Check that 'imm' is one of 1, 2, 4 or 8.
+
+   Example: vdwdupq.
+   uint8x16_t [__arm_]vdwdupq[_n]_u8(uint32_t a, uint32_t b, const int imm)
+   uint8x16_t [__arm_]vdwdupq[_wb]_u8(uint32_t *a, uint32_t b, const int imm)
+   uint8x16_t [__arm_]vdwdupq_m[_n_u8](uint8x16_t inactive, uint32_t a, uint32_t b, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vdwdupq_m[_wb_u8](uint8x16_t inactive, uint32_t *a, uint32_t b, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vdwdupq_x[_n]_u8(uint32_t a, uint32_t b, const int imm, mve_pred16_t p)
+   uint8x16_t [__arm_]vdwdupq_x[_wb]_u8(uint32_t *a, uint32_t b, const int imm, mve_pred16_t p)  */
+struct vidwdup_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int i, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info) const override
+  {
+    return ((i == 0) && (pred != PRED_m));
+  }
+
+  bool
+  skip_overload_p (enum predication_index, enum mode_suffix_index mode) const override
+  {
+    /* For MODE_wb, share the overloaded instance with MODE_n.  */
+    if (mode == MODE_wb)
+      return true;
+
+    return false;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,su32,su32,su64", group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,as,su32,su64", group, MODE_wb, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type_suffix = NUM_TYPE_SUFFIXES;
+    if (!r.check_gp_argument (3, i, nargs))
+      return error_mark_node;
+
+    type_suffix = r.type_suffix_ids[0];
+    /* With PRED_m, ther is no type suffix, so infer it from the first (inactive)
+       argument.  */
+    if (type_suffix == NUM_TYPE_SUFFIXES)
+      type_suffix = r.infer_vector_type (0);
+
+    unsigned int last_arg = i - 2;
+    /* Check that last_arg is either scalar or pointer.  */
+    if (!r.scalar_argument_p (last_arg))
+      return error_mark_node;
+
+    if (!r.scalar_argument_p (last_arg + 1))
+      return error_mark_node;
+
+    if (!r.require_integer_immediate (last_arg + 2))
+      return error_mark_node;
+
+    /* With MODE_n we expect a scalar, with MODE_wb we expect a pointer.  */
+    mode_suffix_index mode_suffix;
+    if (POINTER_TYPE_P (r.get_argument_type (last_arg)))
+      mode_suffix = MODE_wb;
+    else
+      mode_suffix = MODE_n;
+
+    return r.resolve_to (mode_suffix, type_suffix);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_one_of (2, 1, 2, 4, 8);
+  }
+};
+SHAPE (vidwdup)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
 
    i.e. a version of the standard ternary shape in which
@@ -2018,6 +2499,50 @@ struct vpsel_def : public overloaded_base<0>
   }
 };
 SHAPE (vpsel)
+
+/* <T0>_t vfoo[_t0](T0, uint32_t* , const int)
+
+   Check that 'imm' is in [1..32].
+
+   Example: vshlcq.
+   uint8x16_t [__arm_]vshlcq[_u8](uint8x16_t a, uint32_t *b, const int imm)
+   uint8x16_t [__arm_]vshlcq_m[_u8](uint8x16_t a, uint32_t *b, const int imm, mve_pred16_t p)  */
+struct vshlc_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v0,as,su64", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    /* Check that arg #2 is a pointer.  */
+    if (!POINTER_TYPE_P (r.get_argument_type (i - 1)))
+      return error_mark_node;
+
+    if (!r.require_integer_immediate (i))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_range (2, 1, 32);
+  }
+};
+SHAPE (vshlc)
 
 } /* end namespace arm_mve */
 

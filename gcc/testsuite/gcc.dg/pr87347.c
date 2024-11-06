@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wabsolute-value" } */
+/* { dg-options "-std=gnu17 -Wabsolute-value" } */
 
 int a;
 int abs();

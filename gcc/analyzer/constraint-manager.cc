@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "tree-pretty-print.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -446,12 +447,12 @@ bounded_range::dump (bool show_types) const
   pp_newline (&pp);
 }
 
-json::object *
+std::unique_ptr<json::object>
 bounded_range::to_json () const
 {
-  json::object *range_obj = new json::object ();
-  set_json_attr (range_obj, "lower", m_lower);
-  set_json_attr (range_obj, "upper", m_upper);
+  auto range_obj = ::make_unique<json::object> ();
+  set_json_attr (*range_obj, "lower", m_lower);
+  set_json_attr (*range_obj, "upper", m_upper);
   return range_obj;
 }
 
@@ -466,12 +467,12 @@ bounded_range::make_dump_widget (const text_art::dump_widget_info &dwi) const
 /* Subroutine of bounded_range::to_json.  */
 
 void
-bounded_range::set_json_attr (json::object *obj, const char *name, tree value)
+bounded_range::set_json_attr (json::object &obj, const char *name, tree value)
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_printf (&pp, "%E", value);
-  obj->set_string (name, pp_formatted_text (&pp));
+  obj.set_string (name, pp_formatted_text (&pp));
 }
 
 
@@ -715,10 +716,10 @@ bounded_ranges::dump (bool show_types) const
   pp_newline (&pp);
 }
 
-json::value *
+std::unique_ptr<json::value>
 bounded_ranges::to_json () const
 {
-  json::array *arr_obj = new json::array ();
+  auto arr_obj = ::make_unique<json::array> ();
 
   for (unsigned i = 0; i < m_ranges.length (); ++i)
     arr_obj->append (m_ranges[i].to_json ());
@@ -1113,15 +1114,15 @@ equiv_class::print (pretty_printer *pp) const
    {"svals" : [str],
     "constant" : optional str}.  */
 
-json::object *
+std::unique_ptr<json::object>
 equiv_class::to_json () const
 {
-  json::object *ec_obj = new json::object ();
+  auto ec_obj = ::make_unique<json::object> ();
 
-  json::array *sval_arr = new json::array ();
+  auto sval_arr = ::make_unique<json::array> ();
   for (const svalue *sval : m_vars)
     sval_arr->append (sval->to_json ());
-  ec_obj->set ("svals", sval_arr);
+  ec_obj->set ("svals", std::move (sval_arr));
 
   if (m_constant)
     {
@@ -1380,10 +1381,10 @@ constraint::print (pretty_printer *pp, const constraint_manager &cm) const
     "op"  : str,
     "rhs" : int, the EC index}.  */
 
-json::object *
+std::unique_ptr<json::object>
 constraint::to_json () const
 {
-  json::object *con_obj = new json::object ();
+  auto con_obj = ::make_unique<json::object> ();
 
   con_obj->set_integer ("lhs", m_lhs.as_int ());
   con_obj->set_string ("op", constraint_op_code (m_op));
@@ -1468,10 +1469,10 @@ bounded_ranges_constraint::print (pretty_printer *pp,
   m_ranges->dump_to_pp (pp, true);
 }
 
-json::object *
+std::unique_ptr<json::object>
 bounded_ranges_constraint::to_json () const
 {
-  json::object *con_obj = new json::object ();
+  auto con_obj = ::make_unique<json::object> ();
 
   con_obj->set_integer ("ec", m_ec_id.as_int ());
   con_obj->set ("ranges", m_ranges->to_json ());
@@ -1781,33 +1782,33 @@ debug (const constraint_manager &cm)
    {"ecs" : array of objects, one per equiv_class
     "constraints" : array of objects, one per constraint}.  */
 
-json::object *
+std::unique_ptr<json::object>
 constraint_manager::to_json () const
 {
-  json::object *cm_obj = new json::object ();
+  auto cm_obj = ::make_unique<json::object> ();
 
   /* Equivalence classes.  */
   {
-    json::array *ec_arr = new json::array ();
+    auto ec_arr = ::make_unique<json::array> ();
     for (const equiv_class *ec : m_equiv_classes)
       ec_arr->append (ec->to_json ());
-    cm_obj->set ("ecs", ec_arr);
+    cm_obj->set ("ecs", std::move (ec_arr));
   }
 
   /* Constraints.  */
   {
-    json::array *con_arr = new json::array ();
+    auto con_arr = ::make_unique<json::array> ();
     for (const constraint &c : m_constraints)
       con_arr->append (c.to_json ());
-    cm_obj->set ("constraints", con_arr);
+    cm_obj->set ("constraints", std::move (con_arr));
   }
 
   /* m_bounded_ranges_constraints.  */
   {
-    json::array *con_arr = new json::array ();
+    auto con_arr = ::make_unique<json::array> ();
     for (const auto &c : m_bounded_ranges_constraints)
       con_arr->append (c.to_json ());
-    cm_obj->set ("bounded_ranges_constraints", con_arr);
+    cm_obj->set ("bounded_ranges_constraints", std::move (con_arr));
   }
 
   return cm_obj;

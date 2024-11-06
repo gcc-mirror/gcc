@@ -889,7 +889,7 @@ static int yy_get_next_buffer (void)
 				}
 			else
 				/* Can't grow it, we don't own it. */
-				b->yy_ch_buf = NULL;  /* { dg-bogus "leak" "PR analyzer/103546"  */
+				b->yy_ch_buf = NULL;  /* { dg-bogus "leak" "PR analyzer/103546" } */
 
 			if ( ! b->yy_ch_buf )
 				YY_FATAL_ERROR(

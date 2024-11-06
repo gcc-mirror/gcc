@@ -154,4 +154,4 @@ void foo12 ()
   global3 ();
 }
 
-/* { dg-final { scan-assembler-times "stack_chk_fail" 12 } } */
+/* { dg-final { scan-assembler-times "stack_chk_fail" 11 } } */

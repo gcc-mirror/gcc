@@ -256,9 +256,9 @@ host_detect_local_cpu (int argc, const char **argv)
   bool cpu = false;
   unsigned int i = 0;
   unsigned char imp = INVALID_IMP;
-  unsigned int cores[2] = { INVALID_CORE, INVALID_CORE };
+  unsigned int cores[3] = { INVALID_CORE, INVALID_CORE, INVALID_CORE };
   unsigned int n_cores = 0;
-  unsigned int variants[2] = { ALL_VARIANTS, ALL_VARIANTS };
+  unsigned int variants[3] = { ALL_VARIANTS, ALL_VARIANTS, ALL_VARIANTS };
   unsigned int n_variants = 0;
   bool processed_exts = false;
   aarch64_feature_flags extension_flags = 0;
@@ -314,7 +314,7 @@ host_detect_local_cpu (int argc, const char **argv)
 	  unsigned cvariant = parse_field (buf);
 	  if (!contains_core_p (variants, cvariant))
 	    {
-              if (n_variants == 2)
+	      if (n_variants == 3)
                 goto not_found;
 
               variants[n_variants++] = cvariant;
@@ -326,7 +326,7 @@ host_detect_local_cpu (int argc, const char **argv)
 	  unsigned ccore = parse_field (buf);
 	  if (!contains_core_p (cores, ccore))
 	    {
-	      if (n_cores == 2)
+	      if (n_cores == 3)
 		goto not_found;
 
 	      cores[n_cores++] = ccore;
@@ -383,10 +383,14 @@ host_detect_local_cpu (int argc, const char **argv)
   /* Weird cpuinfo format that we don't know how to handle.  */
   if (n_cores == 0
       || n_cores > 2
-      || (n_cores == 1 && n_variants != 1)
       || imp == INVALID_IMP
       || !processed_exts)
     goto not_found;
+
+  /* If we have one core type but multiple variants, consider
+     that as one variant with ALL_VARIANTS instead.  */
+  if (n_cores == 1 && n_variants != 1)
+    variants[0] = ALL_VARIANTS;
 
   /* Simple case, one core type or just looking for the arch. */
   if (n_cores == 1 || arch)

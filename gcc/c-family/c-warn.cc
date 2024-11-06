@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -944,8 +945,9 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the destination; did you mean to "
 			"remove the addressof?", callee);
-	  else if ((TYPE_PRECISION (TREE_TYPE (type))
-		    == TYPE_PRECISION (char_type_node))
+	  else if ((INTEGRAL_TYPE_P (TREE_TYPE (type))
+		    && (TYPE_PRECISION (TREE_TYPE (type))
+			== TYPE_PRECISION (char_type_node)))
 		   || strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
@@ -984,8 +986,9 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the source; did you mean to "
 			"remove the addressof?", callee);
-	  else if ((TYPE_PRECISION (TREE_TYPE (type))
-		    == TYPE_PRECISION (char_type_node))
+	  else if ((INTEGRAL_TYPE_P (TREE_TYPE (type))
+		    && (TYPE_PRECISION (TREE_TYPE (type))
+			== TYPE_PRECISION (char_type_node)))
 		   || strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
@@ -1024,8 +1027,9 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the first source; did you mean to "
 			"remove the addressof?", callee);
-	  else if ((TYPE_PRECISION (TREE_TYPE (type))
-		    == TYPE_PRECISION (char_type_node))
+	  else if ((INTEGRAL_TYPE_P (TREE_TYPE (type))
+		    && (TYPE_PRECISION (TREE_TYPE (type))
+			== TYPE_PRECISION (char_type_node)))
 		   || strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "
@@ -1064,8 +1068,9 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 			"argument to %<sizeof%> in %qD call is the same "
 			"expression as the second source; did you mean to "
 			"remove the addressof?", callee);
-	  else if ((TYPE_PRECISION (TREE_TYPE (type))
-		    == TYPE_PRECISION (char_type_node))
+	  else if ((INTEGRAL_TYPE_P (TREE_TYPE (type))
+		    && (TYPE_PRECISION (TREE_TYPE (type))
+			== TYPE_PRECISION (char_type_node)))
 		   || strop)
 	    warning_at (loc, OPT_Wsizeof_pointer_memaccess,
 			"argument to %<sizeof%> in %qD call is the same "

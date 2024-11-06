@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Wcast-function-type" } */
+/* { dg-additional-options "-std=gnu17" { target c } } */
 
 int f(long);
 

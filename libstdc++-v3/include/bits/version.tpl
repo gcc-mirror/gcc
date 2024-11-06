@@ -44,7 +44,9 @@ h
 // if unwanted, to permit bits and other FTMs to depend on them for condtional
 // computation without exposing extra FTMs to user code.
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 /*{

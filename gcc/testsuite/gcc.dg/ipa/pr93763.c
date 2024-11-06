@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-std=gnu17 -O3" } */
 
 typedef struct a a;
 struct a {

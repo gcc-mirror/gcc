@@ -9,15 +9,15 @@ PROGRAM main
 
   ASSOCIATE ! { dg-error "Expected association list" }
 
-  ASSOCIATE () ! { dg-error "Expected association" }
+  ASSOCIATE () ! { dg-error "Expected associate name" }
 
   ASSOCIATE (a => 1) 5 ! { dg-error "Junk after ASSOCIATE" }
 
   ASSOCIATE (x =>) ! { dg-error "Invalid association target" }
 
-  ASSOCIATE (=> 5) ! { dg-error "Expected association" }
+  ASSOCIATE (=> 5) ! { dg-error "Expected associate name" }
 
-  ASSOCIATE (x => 5, ) ! { dg-error "Expected association" }
+  ASSOCIATE (x => 5, ) ! { dg-error "Expected associate name" }
 
   myname: ASSOCIATE (a => 1)
   END ASSOCIATE ! { dg-error "Expected block name of 'myname'" }

@@ -37,9 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _SFIO_H
 #define _SFIO_C
 
+#include "GSFIO.h"
 #   include "GASCII.h"
 #   include "GDynamicStrings.h"
 #   include "GFIO.h"

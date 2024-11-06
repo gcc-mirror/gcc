@@ -119,7 +119,7 @@ record_type_list (cgraph_node *node, tree list)
   for (; list; list = TREE_CHAIN (list))
     {
       tree type = TREE_VALUE (list);
-      
+
       if (TYPE_P (type))
 	type = lookup_type_for_runtime (type);
       STRIP_NOPS (type);

@@ -37,6 +37,8 @@ namespace aarch64_sve
     extern const function_base *const svadrd;
     extern const function_base *const svadrh;
     extern const function_base *const svadrw;
+    extern const function_base *const svamax;
+    extern const function_base *const svamin;
     extern const function_base *const svand;
     extern const function_base *const svandv;
     extern const function_base *const svasr;

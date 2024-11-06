@@ -400,7 +400,8 @@ test_vdupq_n_f16 (float16_t a)
 {
   return vdupq_n_f16 (a);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 3 } }  */
+/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 3 { target arm_hf_eabi } } }  */
+/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 2 { target { ! arm_hf_eabi } } } }  */
 
 float16x4_t
 test_vdup_lane_f16 (float16x4_t a)

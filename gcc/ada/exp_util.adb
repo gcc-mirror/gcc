@@ -5006,7 +5006,7 @@ package body Exp_Util is
       --  declarations of the package spec.
 
       if Nkind (U) = N_Package_Body then
-         U := Unit (Library_Unit (Cunit (Current_Sem_Unit)));
+         U := Unit (Spec_Lib_Unit (Cunit (Current_Sem_Unit)));
       end if;
 
       if Nkind (U) = N_Package_Declaration then
@@ -6742,6 +6742,7 @@ package body Exp_Util is
                                         | N_Aggregate
                                         | N_Delta_Aggregate
                                         | N_Extension_Aggregate
+                                        | N_Elsif_Part
               and then Nkind (Parent (Par)) not in N_Function_Call
                                                  | N_Procedure_Call_Statement
                                                  | N_Entry_Call_Statement
@@ -8260,6 +8261,7 @@ package body Exp_Util is
                | N_Expanded_Name
                | N_Explicit_Dereference
                | N_Extension_Aggregate
+               | N_External_Initializer
                | N_Floating_Point_Definition
                | N_Formal_Decimal_Fixed_Point_Definition
                | N_Formal_Derived_Type_Definition
@@ -9190,6 +9192,16 @@ package body Exp_Util is
    begin
       return Is_Tagged_Type (Typ) and then Is_Library_Level_Entity (Typ);
    end Is_Library_Level_Tagged_Type;
+
+   --------------------
+   -- Is_LSP_Wrapper --
+   --------------------
+
+   function Is_LSP_Wrapper (E : Entity_Id) return Boolean is
+   begin
+      return Is_Dispatch_Table_Wrapper (E)
+        and then Present (LSP_Subprogram (E));
+   end Is_LSP_Wrapper;
 
    --------------------------
    -- Is_Non_BIP_Func_Call --
@@ -11572,7 +11584,7 @@ package body Exp_Util is
       --  The aspect Finalizable may change the name of the primitives when
       --  present, but it's a GNAT extension.
 
-      if All_Extensions_Allowed then
+      if Core_Extensions_Allowed then
          declare
             Rep : constant Node_Id :=
               Get_Rep_Item (Typ, Name_Finalizable, Check_Parents => True);

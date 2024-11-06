@@ -91,7 +91,7 @@
    Special Registers...
 
    $pc - 32-bit program counter.
-   
+
 */
 
 #define REGISTER_NAMES {	\
@@ -104,7 +104,7 @@
 #define MOXIE_FP     0
 #define MOXIE_SP     1
 #define MOXIE_R0     2
-#define MOXIE_R1     3 
+#define MOXIE_R1     3
 #define MOXIE_R2     4
 #define MOXIE_R3     5
 #define MOXIE_R4     6
@@ -209,7 +209,7 @@ enum reg_class
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 /* A C statement (sans semicolon) for initializing the variable CUM
-   for the state at the beginning of the argument list.  
+   for the state at the beginning of the argument list.
    For moxie, the first arg is passed in register 2 (aka $r0).  */
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
   (CUM = MOXIE_R0)
@@ -300,7 +300,7 @@ enum reg_class
 /* Every structures size must be a multiple of 8 bits.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
 
-/* Look at the fundamental type that is used for a bit-field and use 
+/* Look at the fundamental type that is used for a bit-field and use
    that to impose alignment on the enclosing structure.
    struct s {int a:8}; should have same alignment as "int", not "char".  */
 #define	PCC_BITFIELD_TYPE_MATTERS	1
@@ -314,7 +314,7 @@ enum reg_class
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < FASTEST_ALIGNMENT ? FASTEST_ALIGNMENT : (ALIGN))
-     
+
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
@@ -351,7 +351,7 @@ enum reg_class
 
 #define ELIMINABLE_REGS							\
 {{ FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },			\
- { ARG_POINTER_REGNUM,   HARD_FRAME_POINTER_REGNUM }}			
+ { ARG_POINTER_REGNUM,   HARD_FRAME_POINTER_REGNUM }}
 
 /* This macro returns the initial difference between the specified pair
    of registers.  */

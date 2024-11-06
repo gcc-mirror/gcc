@@ -31,15 +31,15 @@ void nowarn_c32 (char c)
 
 void warn_c32 (char c)
 {
-  extern char warn_a32[32];   // { dg-message "at offset (32|1) into destination object 'warn_a32' of size 32" "pr97027" }
+  extern char warn_a32[32];   // { dg-message "at offset (32|1|17) into destination object 'warn_a32' of size 32" "pr97027" }
 
   void *p = warn_a32 + 1;
-  *(C32*)p = (C32){ c };      // { dg-warning "writing (1 byte|32 bytes) into a region of size (0|31)" "pr97027" }
+  *(C32*)p = (C32){ c };      // { dg-warning "writing (1 byte|16 bytes|32 bytes) into a region of size (0|15|31)" "pr97027" }
 
   /* Verify a local variable too. */
   char a32[32];
   p = a32 + 1;
-  *(C32*)p = (C32){ c };      // { dg-warning "writing (1 byte|32 bytes) into a region of size (0|31)" "pr97027" }
+  *(C32*)p = (C32){ c };      // { dg-warning "writing (1 byte|16 bytes|32 bytes) into a region of size (0|15|31)" "pr97027" }
   sink (p);
 }
 

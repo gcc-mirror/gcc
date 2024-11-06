@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-Wno-old-style-definition -O2 -fdump-tree-vrp1" } */
      
 
 void

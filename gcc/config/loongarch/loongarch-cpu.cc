@@ -265,11 +265,11 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       l1u_present |= cpucfg_cache[16] & 3;	  /* bit[1:0]: unified l1 */
       l1d_present |= cpucfg_cache[16] & 4;	  /* bit[2:2]: l1d */
       l1_szword = l1d_present ? 18 : (l1u_present ? 17 : 0);
-      l1_szword = l1_szword ? cpucfg_cache[l1_szword]: 0;
+      l1_szword = l1_szword ? cpucfg_cache[l1_szword] : 0;
 
       l2d_present |= cpucfg_cache[16] & 24;	  /* bit[4:3]: unified l2 */
       l2d_present |= cpucfg_cache[16] & 128;	  /* bit[7:7]: l2d */
-      l2_szword = l2d_present ? cpucfg_cache[19]: 0;
+      l2_szword = l2d_present ? cpucfg_cache[19] : 0;
 
       native_cache.l1d_line_size
 	= 1 << ((l1_szword & 0x7f000000) >> 24);  /* bit[30:24]: log2(line) */

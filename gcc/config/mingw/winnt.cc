@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -120,7 +121,7 @@ i386_pe_determine_dllexport_p (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && !flag_keep_inline_dllexport)
-    return false; 
+    return false;
 
   if (lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
@@ -185,11 +186,11 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
   tree arg;
   function_args_iterator args_iter;
 
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);  
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   if (prototype_p (type))
     {
-      /* This attribute is ignored for variadic functions.  */ 
+      /* This attribute is ignored for variadic functions.  */
       if (stdarg_p (type))
 	return NULL_TREE;
 
@@ -235,7 +236,7 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
   tree new_id = NULL_TREE;
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    { 
+    {
       unsigned int ccvt = ix86_get_callcvt (TREE_TYPE (decl));
       if ((ccvt & IX86_CALLCVT_STDCALL) != 0)
         {
@@ -279,7 +280,7 @@ i386_pe_assemble_visibility (tree decl, int)
 tree
 i386_pe_mangle_decl_assembler_name (tree decl, tree id)
 {
-  tree new_id = i386_pe_maybe_mangle_decl_assembler_name (decl, id);   
+  tree new_id = i386_pe_maybe_mangle_decl_assembler_name (decl, id);
 
   return (new_id ? new_id : id);
 }
@@ -335,7 +336,7 @@ mingw_pe_encode_section_info (tree decl, rtx rtl, int first)
     flags |= SYMBOL_FLAG_DLLEXPORT;
   else if (i386_pe_determine_dllimport_p (decl))
     flags |= SYMBOL_FLAG_DLLIMPORT;
- 
+
   SYMBOL_REF_FLAGS (symbol) = flags;
 }
 
@@ -367,7 +368,7 @@ i386_pe_binds_local_p (const_tree exp)
       && DECL_DECLARED_INLINE_P (exp))
     return false;
 #endif
-  
+
   return default_binds_local_p_1 (exp, 0);
 }
 
@@ -495,7 +496,7 @@ mingw_pe_asm_named_section (const char *name, unsigned int flags,
       *f++ ='d';  /* This is necessary for older versions of gas.  */
       *f++ ='r';
     }
-  else	
+  else
     {
       if (flags & SECTION_CODE)
         *f++ = 'x';
@@ -527,7 +528,7 @@ mingw_pe_asm_named_section (const char *name, unsigned int flags,
 	 Instead, have the linker pick one, without warning.
 	 If 'selectany' attribute has been specified,  MS compiler
 	 sets 'discard' characteristic, rather than telling linker
-	 to warn of size or content mismatch, so do the same.  */ 
+	 to warn of size or content mismatch, so do the same.  */
       bool discard = (flags & SECTION_CODE)
 		      || (TREE_CODE (decl) != IDENTIFIER_NODE
 			  && lookup_attribute ("selectany",
@@ -555,7 +556,7 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
   rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
   rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 	     * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
-  
+
   mingw_pe_maybe_record_exported_symbol (decl, name, 1);
 
   fprintf (stream, "\t.comm\t");

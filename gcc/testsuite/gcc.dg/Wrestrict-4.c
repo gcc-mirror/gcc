@@ -4,7 +4,7 @@
    without a prototype don't cause an ICE.
    { dg-do compile }
    { dg-prune-output "conflicting types for built-in" }
-   { dg-options "-O2 -Warray-bounds -Wrestrict" } */
+   { dg-options "-std=gnu17 -O2 -Warray-bounds -Wrestrict" } */
 
 void* memcpy ();
 void* memmove ();

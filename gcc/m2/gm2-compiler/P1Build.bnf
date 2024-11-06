@@ -46,7 +46,7 @@ IMPLEMENTATION MODULE P1Build ;
 
 FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken, InsertTokenAndRewind, GetTokenNo ;
 FROM M2Error IMPORT ErrorStringAt ;
-FROM M2Quads IMPORT PushT, PushTF, PushTFtok, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack ;
+FROM M2Quads IMPORT Top, PushT, PushTF, PushTFtok, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack, DupFrame ;
 FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok, BuiltinTok, InlineTok ;
 FROM NameKey IMPORT Name, NulName, makekey ;
 FROM StrLib IMPORT StrCopy, StrConCat, StrEqual ;
@@ -89,6 +89,7 @@ FROM P1SymBuild IMPORT P1StartBuildProgramModule,
                        BuildProcedureHeading,
                        StartBuildProcedure,
                        EndBuildProcedure,
+                       EndBuildForward,
                        AddImportToImportStatement,
                        BuildImportStatement ;
 
@@ -482,6 +483,7 @@ token   'EXIT'            exittok
 token   'EXPORT'          exporttok
 token   'FINALLY'         finallytok
 token   'FOR'             fortok
+token   'FORWARD'         forwardtok
 token   'FROM'            fromtok
 token   'IF'              iftok
 token   'IMPLEMENTATION'  implementationtok
@@ -869,10 +871,20 @@ LoopStatement := "LOOP" StatementSequence "END" =:
 
 WithStatement := "WITH" Designator "DO" StatementSequence "END" =:
 
-ProcedureDeclaration := ProcedureHeading ";" ( ProcedureBlock              % PushAutoOn %
-                        Ident )                                            % EndBuildProcedure %
+ProcedureDeclaration :=                                                    % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                        ProcedureHeading ";" PostProcedureHeading          % Assert (top = Top ()) %
+                                                                  =:
+
+PostProcedureHeading := ProperProcedure | ForwardDeclaration =:
+
+ForwardDeclaration := "FORWARD"                                            % EndBuildForward %
+                    =:
+
+ProperProcedure := ProcedureBlock                                          % PushAutoOn %
+                                  Ident                                    % EndBuildProcedure %
                                                                            % PopAuto %
-                      =:
+                                        =:
 
 DefineBuiltinProcedure := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")"
                           | "__INLINE__"                                   % PushT(InlineTok) %

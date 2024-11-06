@@ -4622,7 +4622,7 @@ word_register_operation_p (const_rtx x)
     case SIGN_EXTRACT:
     case ZERO_EXTRACT:
       return false;
-    
+
     default:
       return true;
     }

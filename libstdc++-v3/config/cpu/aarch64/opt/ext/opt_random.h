@@ -35,13 +35,13 @@
 #ifdef __ARM_NEON
 
 #ifdef __ARM_BIG_ENDIAN
-# define __VEXT(_A,_B,_C) __builtin_shuffle (_A, _B, (__Uint8x16_t) \
-    {16-_C, 17-_C, 18-_C, 19-_C, 20-_C, 21-_C, 22-_C, 23-_C, \
-     24-_C, 25-_C, 26-_C, 27-_C, 28-_C, 29-_C, 30-_C, 31-_C})
+# define __VEXT(_A,_B,_C) __builtin_shufflevector (_A, _B, \
+    16-_C, 17-_C, 18-_C, 19-_C, 20-_C, 21-_C, 22-_C, 23-_C, \
+    24-_C, 25-_C, 26-_C, 27-_C, 28-_C, 29-_C, 30-_C, 31-_C)
 #else
-# define __VEXT(_A,_B,_C) __builtin_shuffle (_B, _A, (__Uint8x16_t) \
-    {_C, _C+1, _C+2, _C+3, _C+4, _C+5, _C+6, _C+7, \
-     _C+8, _C+9, _C+10, _C+11, _C+12, _C+13, _C+14, _C+15})
+# define __VEXT(_A,_B,_C) __builtin_shufflevector (_B, _A, \
+    _C, _C+1, _C+2, _C+3, _C+4, _C+5, _C+6, _C+7, \
+    _C+8, _C+9, _C+10, _C+11, _C+12, _C+13, _C+14, _C+15)
 #endif
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -52,9 +52,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace {
     // Logical Shift right 128-bits by c * 8 bits
 
-    __extension__ extern __inline __Uint32x4_t
+    __extension__
+    template<int __c>
+    extern __inline __Uint32x4_t
     __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-    __aarch64_lsr_128 (__Uint8x16_t __a, __const int __c)
+    __aarch64_lsr_128 (__Uint8x16_t __a)
     {
       const __Uint8x16_t __zero = {0, 0, 0, 0, 0, 0, 0, 0,
 				   0, 0, 0, 0, 0, 0, 0, 0};
@@ -64,9 +66,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Logical Shift left 128-bits by c * 8 bits
 
-    __extension__ extern __inline __Uint32x4_t
+    __extension__
+    template<int __c>
+    extern __inline __Uint32x4_t
     __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-    __aarch64_lsl_128 (__Uint8x16_t __a, __const int __c)
+    __aarch64_lsl_128 (__Uint8x16_t __a)
     {
       const __Uint8x16_t __zero = {0, 0, 0, 0, 0, 0, 0, 0,
 				   0, 0, 0, 0, 0, 0, 0, 0};
@@ -82,14 +86,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       __Uint32x4_t __e)
     {
       __Uint32x4_t __y = (__b >> __sr1);
-      __Uint32x4_t __z = __aarch64_lsr_128 ((__Uint8x16_t) __c, __sr2);
+      __Uint32x4_t __z = __aarch64_lsr_128<__sr2> ((__Uint8x16_t) __c);
 
       __Uint32x4_t __v = __d << __sl1;
 
       __z = __z ^ __a;
       __z = __z ^ __v;
 
-      __Uint32x4_t __x = __aarch64_lsl_128 ((__Uint8x16_t) __a, __sl2);
+      __Uint32x4_t __x = __aarch64_lsl_128<__sl2> ((__Uint8x16_t) __a);
 
       __y = __y & __e;
       __z = __z ^ __x;

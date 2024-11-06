@@ -510,7 +510,7 @@ __gnu_unwind_get_pr_addr (int idx)
 
     default:
       return 0;
-    } 
+    }
 }
 
 /* ABI defined personality routine entry points.  */

@@ -1,5 +1,6 @@
 // PR c++/110102
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fconcepts-diagnostics-depth=2" { target c++20 } }
 // { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } }
 
 // { dg-error "deleted|construct_at" "" { target *-*-* } 0 }

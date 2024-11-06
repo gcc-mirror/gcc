@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-add-options vect_early_break } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_long } */

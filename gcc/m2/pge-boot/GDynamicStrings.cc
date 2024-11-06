@@ -25,8 +25,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -42,7 +40,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
+#include <stddef.h>
+#include <string.h>
+#include <limits.h>
+#include <stdlib.h>
 #   include "GStorage.h"
+#include <unistd.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -777,7 +780,7 @@ static void DSdbExit (DynamicStrings_String__opaque s)
 
 static unsigned int Capture (DynamicStrings_String__opaque s)
 {
-  /* 
+  /*
  *   #undef GM2_DEBUG_DYNAMICSTINGS
  *   #if defined(GM2_DEBUG_DYNAMICSTINGS)
  *   #  define DSdbEnter doDSdbEnter
@@ -1362,7 +1365,7 @@ static DynamicStrings_String__opaque AddToGarbage (DynamicStrings_String__opaque
       a = CheckPoisoned (a);
       b = CheckPoisoned (b);
     }
-  /* 
+  /*
    IF (a#NIL) AND (a#b) AND (a^.head^.state=marked)
    THEN
       writeString('warning trying to add to a marked string') ; writeLn
@@ -2064,7 +2067,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
   DynamicStrings_String__opaque d;
   DynamicStrings_String__opaque t;
   int start;
-  int end;
+  int stop;
   int o;
 
   if (PoisonOn)
@@ -2107,7 +2110,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
                 {
                   start = low-o;
                 }
-              end = Max (Min (MaxBuf, static_cast<unsigned int> (high-o)), 0);
+              stop = Max (Min (MaxBuf, static_cast<unsigned int> (high-o)), 0);
               while (t->contents.len == MaxBuf)
                 {
                   if (t->contents.next == NULL)
@@ -2123,7 +2126,7 @@ extern "C" DynamicStrings_String DynamicStrings_Slice (DynamicStrings_String s, 
                     }
                   t = t->contents.next;
                 }
-              ConcatContentsAddress (&t->contents, &static_cast<DynamicStrings_String__opaque> (s)->contents.buf.array[start], static_cast<unsigned int> (end-start));
+              ConcatContentsAddress (&t->contents, &static_cast<DynamicStrings_String__opaque> (s)->contents.buf.array[start], static_cast<unsigned int> (stop-start));
               o += static_cast<DynamicStrings_String__opaque> (s)->contents.len;
               s = static_cast<DynamicStrings_String> (static_cast<DynamicStrings_String__opaque> (s)->contents.next);
             }

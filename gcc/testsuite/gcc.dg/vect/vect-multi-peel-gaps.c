@@ -6,6 +6,7 @@
    increment by 2 integers at a time, hence the last load needs s[30-33] and
    the penultimate load needs s[28-31].
    This testcase ensures that we do not crash due to that behaviour.  */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target mmap } */
 #include <sys/mman.h>
 #include <stdio.h>

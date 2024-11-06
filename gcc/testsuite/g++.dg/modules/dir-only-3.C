@@ -7,10 +7,12 @@
 # 32 "<command-line>" 2
 # 1 "dir-only-3.C"
 // { dg-additional-options {-fmodules-ts -fpreprocessed -fdirectives-only} }
-// { dg-module-cmi foo }
+// { dg-module-cmi !foo }
 module;
 #define foo baz
 export module foo;
+// { dg-error "module name 'foo' cannot be an object-like macro" "" { target *-*-* } 5 }
+// { dg-prune-output "not writing module" }
 
 class import {};
 

@@ -32,7 +32,9 @@
 #ifndef _GLIBCXX_TR1_TUPLE
 #define _GLIBCXX_TR1_TUPLE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++11-extensions"
@@ -421,8 +423,8 @@ namespace tr1
   // TODO: Put this in some kind of shared file.
   namespace
   {
-    _Swallow_assign ignore;
-  }; // anonymous namespace
+    _Swallow_assign ignore  __attribute__((__unused__));
+  } // anonymous namespace
 }
 
 _GLIBCXX_END_NAMESPACE_VERSION

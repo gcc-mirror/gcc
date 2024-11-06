@@ -26,31 +26,31 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *    Helper add functions (for fma)
  *
  *    __BID_INLINE__ UINT64 get_add64(
- *        UINT64 sign_x, int exponent_x, UINT64 coefficient_x, 
- *        UINT64 sign_y, int exponent_y, UINT64 coefficient_y, 
+ *        UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
+ *        UINT64 sign_y, int exponent_y, UINT64 coefficient_y,
  *  					 int rounding_mode)
  *
  *   __BID_INLINE__ UINT64 get_add128(
- *                       UINT64 sign_x, int exponent_x, UINT64 coefficient_x, 
- *                       UINT64 sign_y, int final_exponent_y, UINT128 CY, 
+ *                       UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
+ *                       UINT64 sign_y, int final_exponent_y, UINT128 CY,
  *                       int extra_digits, int rounding_mode)
  *
  *****************************************************************************
  *
  *  Algorithm description:
  *
- *  get_add64:  same as BID64 add, but arguments are unpacked and there 
+ *  get_add64:  same as BID64 add, but arguments are unpacked and there
  *                                 are no special case checks
  *
- *  get_add128: add 64-bit coefficient to 128-bit product (which contains 
- *                                        16+extra_digits decimal digits), 
+ *  get_add128: add 64-bit coefficient to 128-bit product (which contains
+ *                                        16+extra_digits decimal digits),
  *                         return BID64 result
- *              - the exponents are compared and the two coefficients are 
+ *              - the exponents are compared and the two coefficients are
  *                properly aligned for addition/subtraction
  *              - multiple paths are needed
  *              - final result exponent is calculated and the lower term is
- *                      rounded first if necessary, to avoid manipulating 
- *                      coefficients longer than 128 bits 
+ *                      rounded first if necessary, to avoid manipulating
+ *                      coefficients longer than 128 bits
  *
  ****************************************************************************/
 
@@ -67,7 +67,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 ///////////////////////////////////////////////////////////////////////
 //
-// get_add64() is essentially the same as bid_add(), except that 
+// get_add64() is essentially the same as bid_add(), except that
 //             the arguments are unpacked
 //
 //////////////////////////////////////////////////////////////////////
@@ -327,13 +327,13 @@ get_add64 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
     amount = short_recip_scale[extra_digits];
     C0_64 = CT.w[1] >> amount;
 
-    // result coefficient 
+    // result coefficient
     C64 = C0_64 + coefficient_a;
     // filter out difficult (corner) cases
-    // the following test is equivalent to 
-    // ( (initial_coefficient_a + Ts) < P_ca && 
-    //     (initial_coefficient_a + Ts) > P_ca_m1 ), 
-    // which ensures the number of digits in coefficient_a does not change 
+    // the following test is equivalent to
+    // ( (initial_coefficient_a + Ts) < P_ca &&
+    //     (initial_coefficient_a + Ts) > P_ca_m1 ),
+    // which ensures the number of digits in coefficient_a does not change
     // after adding (the appropriately scaled and rounded) coefficient_b
     if ((UINT64) (C64 - 1000000000000000ull - 1) >
 	9000000000000000ull - 2) {
@@ -371,7 +371,7 @@ get_add64 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
 	amount = short_recip_scale[extra_digits];
 	C0_64 = CT.w[1] >> amount;
 
-	// result coefficient 
+	// result coefficient
 	C64 = C0_64 + coefficient_a;
       } else if (C64 <= 1000000000000000ull) {
 	// less than 16 digits in result
@@ -392,7 +392,7 @@ get_add64 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
 	amount = short_recip_scale[extra_digits];
 	C0_64 = CT_new.w[1] >> amount;
 
-	// result coefficient 
+	// result coefficient
 	C64_new = C0_64 + coefficient_a;
 	if (C64_new < 10000000000000000ull) {
 	  C64 = C64_new;
@@ -412,9 +412,9 @@ get_add64 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
   if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
     if (C64 & 1) {
-      // check whether fractional part of initial_P/10^extra_digits 
+      // check whether fractional part of initial_P/10^extra_digits
       // is exactly .5
-      // this is the same as fractional part of 
+      // this is the same as fractional part of
       //      (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
       // get remainder
@@ -555,7 +555,7 @@ __bid_full_round64 (UINT64 sign, int exponent, UINT128 P,
     if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
       if (C64 & 1) {
-	// check whether fractional part of initial_P/10^extra_digits 
+	// check whether fractional part of initial_P/10^extra_digits
 	// is exactly .5
 
 	// get remainder
@@ -666,7 +666,7 @@ __bid_full_round64_remainder (UINT64 sign, int exponent, UINT128 P,
     if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
       if (!remainder_P && (C64 & 1)) {
-	// check whether fractional part of initial_P/10^extra_digits 
+	// check whether fractional part of initial_P/10^extra_digits
 	// is exactly .5
 
 	// get remainder
@@ -889,7 +889,7 @@ get_add128 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
 	return __bid_full_round64 (sign_y, exponent_y, CT, extra_digits,
 				   rounding_mode, fpsc);
       }
-      // diff_dec2+extra_digits is the number of digits to eliminate from 
+      // diff_dec2+extra_digits is the number of digits to eliminate from
       //                           argument CY
       diff_dec2 = exponent_x - final_exponent_y;
 
@@ -1006,7 +1006,7 @@ get_add128 (UINT64 sign_x, int exponent_x, UINT64 coefficient_x,
     CX.w[0] = (coefficient_x + sign_x) ^ sign_x;
     CX.w[1] = sign_x;
 
-    // check whether CY (rounded to 16 digits) and CX have 
+    // check whether CY (rounded to 16 digits) and CX have
     //                     any digits in the same position
     diff_dec2 = final_exponent_y - exponent_x;
 
@@ -1224,7 +1224,7 @@ BID_normalize (UINT64 sign_z, int exponent_z,
 
 //////////////////////////////////////////////////////////////////////////
 //
-//    0*10^ey + cz*10^ez,   ey<ez  
+//    0*10^ey + cz*10^ez,   ey<ez
 //
 //////////////////////////////////////////////////////////////////////////
 

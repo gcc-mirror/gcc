@@ -23,7 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "bid_internal.h"
 
-// the first entry of nr_digits[i - 1] (where 1 <= i <= 113), indicates 
+// the first entry of nr_digits[i - 1] (where 1 <= i <= 113), indicates
 // the number of decimal digits needed to represent a binary number with i bits;
 // however, if a binary number of i bits may require either k or k + 1 decimal
 // digits, then the first entry of nr_digits[i - 1] is 0; in this case if the
@@ -900,7 +900,7 @@ int shiftright128[] = {
 };
 
 
-// maskhigh128[] contains the mask to apply to the top 128 bits of the 
+// maskhigh128[] contains the mask to apply to the top 128 bits of the
 // 128x128-bit product in order to obtain the high bits of f2*
 // the 64-bit word order is L, H
 UINT64 maskhigh128[] = {
@@ -941,7 +941,7 @@ UINT64 maskhigh128[] = {
 };
 
 
-// onehalf128[] contains the high bits of 1/2 positioned correctly for 
+// onehalf128[] contains the high bits of 1/2 positioned correctly for
 // comparison with the high bits of f2*
 // the 64-bit word order is L, H
 UINT64 onehalf128[] = {
@@ -983,61 +983,61 @@ UINT64 onehalf128[] = {
 
 UINT64 ten2mk64[] = {
   0x199999999999999aULL,	//  10^(-1) * 2^ 64
-  0x028f5c28f5c28f5dULL,	//  10^(-2) * 2^ 64 
-  0x004189374bc6a7f0ULL,	//  10^(-3) * 2^ 64 
-  0x00346dc5d638865aULL,	//  10^(-4) * 2^ 67 
-  0x0029f16b11c6d1e2ULL,	//  10^(-5) * 2^ 70 
-  0x00218def416bdb1bULL,	//  10^(-6) * 2^ 73 
-  0x0035afe535795e91ULL,	//  10^(-7) * 2^ 77 
-  0x002af31dc4611874ULL,	//  10^(-8) * 2^ 80 
-  0x00225c17d04dad2aULL,	//  10^(-9) * 2^ 83 
-  0x0036f9bfb3af7b76ULL,	// 10^(-10) * 2^ 87 
-  0x002bfaffc2f2c92bULL,	// 10^(-11) * 2^ 90 
-  0x00232f33025bd423ULL,	// 10^(-12) * 2^ 93 
-  0x00384b84d092ed04ULL,	// 10^(-13) * 2^ 97 
-  0x002d09370d425737ULL,	// 10^(-14) * 2^100 
-  0x0024075f3dceac2cULL,	// 10^(-15) * 2^103 
-  0x0039a5652fb11379ULL,	// 10^(-16) * 2^107 
+  0x028f5c28f5c28f5dULL,	//  10^(-2) * 2^ 64
+  0x004189374bc6a7f0ULL,	//  10^(-3) * 2^ 64
+  0x00346dc5d638865aULL,	//  10^(-4) * 2^ 67
+  0x0029f16b11c6d1e2ULL,	//  10^(-5) * 2^ 70
+  0x00218def416bdb1bULL,	//  10^(-6) * 2^ 73
+  0x0035afe535795e91ULL,	//  10^(-7) * 2^ 77
+  0x002af31dc4611874ULL,	//  10^(-8) * 2^ 80
+  0x00225c17d04dad2aULL,	//  10^(-9) * 2^ 83
+  0x0036f9bfb3af7b76ULL,	// 10^(-10) * 2^ 87
+  0x002bfaffc2f2c92bULL,	// 10^(-11) * 2^ 90
+  0x00232f33025bd423ULL,	// 10^(-12) * 2^ 93
+  0x00384b84d092ed04ULL,	// 10^(-13) * 2^ 97
+  0x002d09370d425737ULL,	// 10^(-14) * 2^100
+  0x0024075f3dceac2cULL,	// 10^(-15) * 2^103
+  0x0039a5652fb11379ULL,	// 10^(-16) * 2^107
 };
 
-// ten2mk128trunc[] contains T*, the top Ex >= 128 bits of 10^(-k), 
-// for 1 <= k <= 34 
+// ten2mk128trunc[] contains T*, the top Ex >= 128 bits of 10^(-k),
+// for 1 <= k <= 34
 // the 64-bit word order is L, H
 UINT128 ten2mk128trunc[] = {
   {{0x9999999999999999ULL, 0x1999999999999999ULL}},	//  10^(-1) * 2^128
-  {{0x28f5c28f5c28f5c2ULL, 0x028f5c28f5c28f5cULL}},	//  10^(-2) * 2^128 
-  {{0x9db22d0e56041893ULL, 0x004189374bc6a7efULL}},	//  10^(-3) * 2^128 
-  {{0x4af4f0d844d013a9ULL, 0x00346dc5d6388659ULL}},	//  10^(-4) * 2^131 
-  {{0x08c3f3e0370cdc87ULL, 0x0029f16b11c6d1e1ULL}},	//  10^(-5) * 2^134 
-  {{0x6d698fe69270b06cULL, 0x00218def416bdb1aULL}},	//  10^(-6) * 2^137 
-  {{0xaf0f4ca41d811a46ULL, 0x0035afe535795e90ULL}},	//  10^(-7) * 2^141 
-  {{0xbf3f70834acdae9fULL, 0x002af31dc4611873ULL}},	//  10^(-8) * 2^144 
-  {{0x65cc5a02a23e254cULL, 0x00225c17d04dad29ULL}},	//  10^(-9) * 2^147 
-  {{0x6fad5cd10396a213ULL, 0x0036f9bfb3af7b75ULL}},	// 10^(-10) * 2^151 
-  {{0xbfbde3da69454e75ULL, 0x002bfaffc2f2c92aULL}},	// 10^(-11) * 2^154 
-  {{0x32fe4fe1edd10b91ULL, 0x00232f33025bd422ULL}},	// 10^(-12) * 2^157 
-  {{0x84ca19697c81ac1bULL, 0x00384b84d092ed03ULL}},	// 10^(-13) * 2^161 
-  {{0x03d4e1213067bce3ULL, 0x002d09370d425736ULL}},	// 10^(-14) * 2^164 
-  {{0x3643e74dc052fd82ULL, 0x0024075f3dceac2bULL}},	// 10^(-15) * 2^167 
-  {{0x56d30baf9a1e626aULL, 0x0039a5652fb11378ULL}},	// 10^(-16) * 2^171 
-  {{0x12426fbfae7eb521ULL, 0x002e1dea8c8da92dULL}},	// 10^(-17) * 2^174 
-  {{0x41cebfcc8b9890e7ULL, 0x0024e4bba3a48757ULL}},	// 10^(-18) * 2^177 
-  {{0x694acc7a78f41b0cULL, 0x003b07929f6da558ULL}},	// 10^(-19) * 2^181 
-  {{0xbaa23d2ec729af3dULL, 0x002f394219248446ULL}},	// 10^(-20) * 2^184 
-  {{0xfbb4fdbf05baf297ULL, 0x0025c768141d369eULL}},	// 10^(-21) * 2^187 
-  {{0x2c54c931a2c4b758ULL, 0x003c7240202ebdcbULL}},	// 10^(-22) * 2^191 
-  {{0x89dd6dc14f03c5e0ULL, 0x00305b66802564a2ULL}},	// 10^(-23) * 2^194 
-  {{0xd4b1249aa59c9e4dULL, 0x0026af8533511d4eULL}},	// 10^(-24) * 2^197 
-  {{0x544ea0f76f60fd48ULL, 0x003de5a1ebb4fbb1ULL}},	// 10^(-25) * 2^201 
-  {{0x76a54d92bf80caa0ULL, 0x00318481895d9627ULL}},	// 10^(-26) * 2^204 
-  {{0x921dd7a89933d54dULL, 0x00279d346de4781fULL}},	// 10^(-27) * 2^207 
-  {{0x8362f2a75b862214ULL, 0x003f61ed7ca0c032ULL}},	// 10^(-28) * 2^211 
-  {{0xcf825bb91604e810ULL, 0x0032b4bdfd4d668eULL}},	// 10^(-29) * 2^214 
-  {{0x0c684960de6a5340ULL, 0x00289097fdd7853fULL}},	// 10^(-30) * 2^217 
-  {{0x3d203ab3e521dc33ULL, 0x002073accb12d0ffULL}},	// 10^(-31) * 2^220 
-  {{0x2e99f7863b696052ULL, 0x0033ec47ab514e65ULL}},	// 10^(-32) * 2^224 
-  {{0x587b2c6b62bab375ULL, 0x002989d2ef743eb7ULL}},	// 10^(-33) * 2^227 
-  {{0xad2f56bc4efbc2c4ULL, 0x00213b0f25f69892ULL}},	// 10^(-34) * 2^230 
+  {{0x28f5c28f5c28f5c2ULL, 0x028f5c28f5c28f5cULL}},	//  10^(-2) * 2^128
+  {{0x9db22d0e56041893ULL, 0x004189374bc6a7efULL}},	//  10^(-3) * 2^128
+  {{0x4af4f0d844d013a9ULL, 0x00346dc5d6388659ULL}},	//  10^(-4) * 2^131
+  {{0x08c3f3e0370cdc87ULL, 0x0029f16b11c6d1e1ULL}},	//  10^(-5) * 2^134
+  {{0x6d698fe69270b06cULL, 0x00218def416bdb1aULL}},	//  10^(-6) * 2^137
+  {{0xaf0f4ca41d811a46ULL, 0x0035afe535795e90ULL}},	//  10^(-7) * 2^141
+  {{0xbf3f70834acdae9fULL, 0x002af31dc4611873ULL}},	//  10^(-8) * 2^144
+  {{0x65cc5a02a23e254cULL, 0x00225c17d04dad29ULL}},	//  10^(-9) * 2^147
+  {{0x6fad5cd10396a213ULL, 0x0036f9bfb3af7b75ULL}},	// 10^(-10) * 2^151
+  {{0xbfbde3da69454e75ULL, 0x002bfaffc2f2c92aULL}},	// 10^(-11) * 2^154
+  {{0x32fe4fe1edd10b91ULL, 0x00232f33025bd422ULL}},	// 10^(-12) * 2^157
+  {{0x84ca19697c81ac1bULL, 0x00384b84d092ed03ULL}},	// 10^(-13) * 2^161
+  {{0x03d4e1213067bce3ULL, 0x002d09370d425736ULL}},	// 10^(-14) * 2^164
+  {{0x3643e74dc052fd82ULL, 0x0024075f3dceac2bULL}},	// 10^(-15) * 2^167
+  {{0x56d30baf9a1e626aULL, 0x0039a5652fb11378ULL}},	// 10^(-16) * 2^171
+  {{0x12426fbfae7eb521ULL, 0x002e1dea8c8da92dULL}},	// 10^(-17) * 2^174
+  {{0x41cebfcc8b9890e7ULL, 0x0024e4bba3a48757ULL}},	// 10^(-18) * 2^177
+  {{0x694acc7a78f41b0cULL, 0x003b07929f6da558ULL}},	// 10^(-19) * 2^181
+  {{0xbaa23d2ec729af3dULL, 0x002f394219248446ULL}},	// 10^(-20) * 2^184
+  {{0xfbb4fdbf05baf297ULL, 0x0025c768141d369eULL}},	// 10^(-21) * 2^187
+  {{0x2c54c931a2c4b758ULL, 0x003c7240202ebdcbULL}},	// 10^(-22) * 2^191
+  {{0x89dd6dc14f03c5e0ULL, 0x00305b66802564a2ULL}},	// 10^(-23) * 2^194
+  {{0xd4b1249aa59c9e4dULL, 0x0026af8533511d4eULL}},	// 10^(-24) * 2^197
+  {{0x544ea0f76f60fd48ULL, 0x003de5a1ebb4fbb1ULL}},	// 10^(-25) * 2^201
+  {{0x76a54d92bf80caa0ULL, 0x00318481895d9627ULL}},	// 10^(-26) * 2^204
+  {{0x921dd7a89933d54dULL, 0x00279d346de4781fULL}},	// 10^(-27) * 2^207
+  {{0x8362f2a75b862214ULL, 0x003f61ed7ca0c032ULL}},	// 10^(-28) * 2^211
+  {{0xcf825bb91604e810ULL, 0x0032b4bdfd4d668eULL}},	// 10^(-29) * 2^214
+  {{0x0c684960de6a5340ULL, 0x00289097fdd7853fULL}},	// 10^(-30) * 2^217
+  {{0x3d203ab3e521dc33ULL, 0x002073accb12d0ffULL}},	// 10^(-31) * 2^220
+  {{0x2e99f7863b696052ULL, 0x0033ec47ab514e65ULL}},	// 10^(-32) * 2^224
+  {{0x587b2c6b62bab375ULL, 0x002989d2ef743eb7ULL}},	// 10^(-33) * 2^227
+  {{0xad2f56bc4efbc2c4ULL, 0x00213b0f25f69892ULL}},	// 10^(-34) * 2^230
 };
 
 // ten2mk128M[k - 1] = 10^(-k) * 2^exp (k), where 1 <= k <= 4 and
@@ -1214,7 +1214,7 @@ UINT192 ten2mk192truncM[] = {
 };
 
 // shiftright192M[] contains the right shift count to obtain C2* from the top
-// 192 bits of the 192x192-bit product C2 * Kx if 0 <= ind <= 14 where ind is 
+// 192 bits of the 192x192-bit product C2 * Kx if 0 <= ind <= 14 where ind is
 // the index in the table, or from the top 128 bits if 15 <= ind <= 18
 int shiftright192M[] = {
   16,	// 208 - 192
@@ -1345,7 +1345,7 @@ UINT256 ten2mk256truncM[] = {	// the 64-bit word order is LL, LH, HL, HH
 };
 
 // shiftright256M[] contains the right shift count to obtain C2* from the top
-// 192 bits of the 256x256-bit product C2 * Kx 
+// 192 bits of the 256x256-bit product C2 * Kx
 int shiftright256M[] = {
   15,	// 335 - 320
   19,	// 339 - 320
@@ -1376,7 +1376,7 @@ UINT64 maskhigh256M[] = {
   0x0000ffffffffffffULL	//  48 = 368 - 320 bits
 };
 
-// onehalf256M[] contains 1/2 positioned correctly for comparison with the 
+// onehalf256M[] contains 1/2 positioned correctly for comparison with the
 // high bits of f*; the high 128 bits of the 512-bit mask are 0
 UINT64 onehalf256M[] = {
   0x0000000000004000ULL,	//  15 = 335 - 320 bits
@@ -3495,303 +3495,303 @@ UINT192 ten2mxtrunc192[] = {
 UINT256 Kx256[] = {
   {{0xcccccccccccccccdULL, 0xccccccccccccccccULL,
     0xccccccccccccccccULL, 0xccccccccccccccccULL}},
-  // 10^-1 ~= cccccccccccccccc  cccccccccccccccc   
+  // 10^-1 ~= cccccccccccccccc  cccccccccccccccc
   //   cccccccccccccccccccccccccccccccd   * 2^-259
   {{0x70a3d70a3d70a3d8ULL, 0xd70a3d70a3d70a3dULL,
     0x3d70a3d70a3d70a3ULL, 0xa3d70a3d70a3d70aULL}},
-  // 10^-2 ~= a3d70a3d70a3d70a  3d70a3d70a3d70a3   
+  // 10^-2 ~= a3d70a3d70a3d70a  3d70a3d70a3d70a3
   //   d70a3d70a3d70a3d70a3d70a3d70a3d8   * 2^-262
   {{0xc083126e978d4fe0ULL, 0x78d4fdf3b645a1caULL,
     0x645a1cac083126e9ULL, 0x83126e978d4fdf3bULL}},
-  // 10^-3 ~= 83126e978d4fdf3b  645a1cac083126e9   
+  // 10^-3 ~= 83126e978d4fdf3b  645a1cac083126e9
   //   78d4fdf3b645a1cac083126e978d4fe0   * 2^-265
   {{0x67381d7dbf487fccULL, 0xc154c985f06f6944ULL,
     0xd3c36113404ea4a8ULL, 0xd1b71758e219652bULL}},
-  // 10^-4 ~= d1b71758e219652b  d3c36113404ea4a8   
+  // 10^-4 ~= d1b71758e219652b  d3c36113404ea4a8
   //   c154c985f06f694467381d7dbf487fcc   * 2^-269
   {{0x85c67dfe32a0663dULL, 0xcddd6e04c0592103ULL,
     0x0fcf80dc33721d53ULL, 0xa7c5ac471b478423ULL}},
-  // 10^-5 ~= a7c5ac471b478423  fcf80dc33721d53   
+  // 10^-5 ~= a7c5ac471b478423  fcf80dc33721d53
   //   cddd6e04c059210385c67dfe32a0663d   * 2^-272
   {{0x37d1fe64f54d1e97ULL, 0xd7e45803cd141a69ULL,
     0xa63f9a49c2c1b10fULL, 0x8637bd05af6c69b5ULL}},
-  // 10^-6 ~= 8637bd05af6c69b5  a63f9a49c2c1b10f   
+  // 10^-6 ~= 8637bd05af6c69b5  a63f9a49c2c1b10f
   //   d7e45803cd141a6937d1fe64f54d1e97   * 2^-275
   {{0x8c8330a1887b6425ULL, 0x8ca08cd2e1b9c3dbULL,
     0x3d32907604691b4cULL, 0xd6bf94d5e57a42bcULL}},
-  // 10^-7 ~= d6bf94d5e57a42bc  3d32907604691b4c   
+  // 10^-7 ~= d6bf94d5e57a42bc  3d32907604691b4c
   //   8ca08cd2e1b9c3db8c8330a1887b6425   * 2^-279
   {{0x7068f3b46d2f8351ULL, 0x3d4d3d758161697cULL,
     0xfdc20d2b36ba7c3dULL, 0xabcc77118461cefcULL}},
-  // 10^-8 ~= abcc77118461cefc  fdc20d2b36ba7c3d   
+  // 10^-8 ~= abcc77118461cefc  fdc20d2b36ba7c3d
   //   3d4d3d758161697c7068f3b46d2f8351   * 2^-282
   {{0xf387295d242602a7ULL, 0xfdd7645e011abac9ULL,
     0x31680a88f8953030ULL, 0x89705f4136b4a597ULL}},
-  // 10^-9 ~= 89705f4136b4a597  31680a88f8953030   
+  // 10^-9 ~= 89705f4136b4a597  31680a88f8953030
   //   fdd7645e011abac9f387295d242602a7   * 2^-285
   {{0xb8d8422ea03cd10bULL, 0x2fbf06fcce912adcULL,
     0xb573440e5a884d1bULL, 0xdbe6fecebdedd5beULL}},
-  // 10^-10 ~= dbe6fecebdedd5be  b573440e5a884d1b   
+  // 10^-10 ~= dbe6fecebdedd5be  b573440e5a884d1b
   //   2fbf06fcce912adcb8d8422ea03cd10b   * 2^-289
   {{0x93e034f219ca40d6ULL, 0xf2ff38ca3eda88b0ULL,
     0xf78f69a51539d748ULL, 0xafebff0bcb24aafeULL}},
-  // 10^-11 ~= afebff0bcb24aafe  f78f69a51539d748   
+  // 10^-11 ~= afebff0bcb24aafe  f78f69a51539d748
   //   f2ff38ca3eda88b093e034f219ca40d6   * 2^-292
   {{0x4319c3f4e16e9a45ULL, 0xf598fa3b657ba08dULL,
     0xf93f87b7442e45d3ULL, 0x8cbccc096f5088cbULL}},
-  // 10^-12 ~= 8cbccc096f5088cb  f93f87b7442e45d3   
+  // 10^-12 ~= 8cbccc096f5088cb  f93f87b7442e45d3
   //   f598fa3b657ba08d4319c3f4e16e9a45   * 2^-295
   {{0x04f606549be42a07ULL, 0x88f4c3923bf900e2ULL,
     0x2865a5f206b06fb9ULL, 0xe12e13424bb40e13ULL}},
-  // 10^-13 ~= e12e13424bb40e13  2865a5f206b06fb9   
+  // 10^-13 ~= e12e13424bb40e13  2865a5f206b06fb9
   //   88f4c3923bf900e204f606549be42a07   * 2^-299
   {{0x03f805107cb68806ULL, 0x6d909c74fcc733e8ULL,
     0x538484c19ef38c94ULL, 0xb424dc35095cd80fULL}},
-  // 10^-14 ~= b424dc35095cd80f  538484c19ef38c94   
+  // 10^-14 ~= b424dc35095cd80f  538484c19ef38c94
   //   6d909c74fcc733e803f805107cb68806   * 2^-302
   {{0x3660040d3092066bULL, 0x57a6e390ca38f653ULL,
     0x0f9d37014bf60a10ULL, 0x901d7cf73ab0acd9ULL}},
-  // 10^-15 ~= 901d7cf73ab0acd9  f9d37014bf60a10   
+  // 10^-15 ~= 901d7cf73ab0acd9  f9d37014bf60a10
   //   57a6e390ca38f6533660040d3092066b   * 2^-305
   {{0x23ccd3484db670abULL, 0xbf716c1add27f085ULL,
     0x4c2ebe687989a9b3ULL, 0xe69594bec44de15bULL}},
-  // 10^-16 ~= e69594bec44de15b  4c2ebe687989a9b3   
+  // 10^-16 ~= e69594bec44de15b  4c2ebe687989a9b3
   //   bf716c1add27f08523ccd3484db670ab   * 2^-309
   {{0x4fd70f6d0af85a23ULL, 0xff8df0157db98d37ULL,
     0x09befeb9fad487c2ULL, 0xb877aa3236a4b449ULL}},
-  // 10^-17 ~= b877aa3236a4b449  9befeb9fad487c2   
+  // 10^-17 ~= b877aa3236a4b449  9befeb9fad487c2
   //   ff8df0157db98d374fd70f6d0af85a23   * 2^-312
   {{0x0cac0c573bf9e1b6ULL, 0x32d7f344649470f9ULL,
     0x3aff322e62439fcfULL, 0x9392ee8e921d5d07ULL}},
-  // 10^-18 ~= 9392ee8e921d5d07  3aff322e62439fcf   
+  // 10^-18 ~= 9392ee8e921d5d07  3aff322e62439fcf
   //   32d7f344649470f90cac0c573bf9e1b6   * 2^-315
   {{0xe11346f1f98fcf89ULL, 0x1e2652070753e7f4ULL,
     0x2b31e9e3d06c32e5ULL, 0xec1e4a7db69561a5ULL}},
-  // 10^-19 ~= ec1e4a7db69561a5  2b31e9e3d06c32e5   
+  // 10^-19 ~= ec1e4a7db69561a5  2b31e9e3d06c32e5
   //   1e2652070753e7f4e11346f1f98fcf89   * 2^-319
   {{0x4da9058e613fd93aULL, 0x181ea8059f76532aULL,
     0x88f4bb1ca6bcf584ULL, 0xbce5086492111aeaULL}},
-  // 10^-20 ~= bce5086492111aea  88f4bb1ca6bcf584   
+  // 10^-20 ~= bce5086492111aea  88f4bb1ca6bcf584
   //   181ea8059f76532a4da9058e613fd93a   * 2^-322
   {{0xa48737a51a997a95ULL, 0x467eecd14c5ea8eeULL,
     0xd3f6fc16ebca5e03ULL, 0x971da05074da7beeULL}},
-  // 10^-21 ~= 971da05074da7bee  d3f6fc16ebca5e03   
+  // 10^-21 ~= 971da05074da7bee  d3f6fc16ebca5e03
   //   467eecd14c5ea8eea48737a51a997a95   * 2^-325
   {{0x3a71f2a1c428c421ULL, 0x70cb148213caa7e4ULL,
     0x5324c68b12dd6338ULL, 0xf1c90080baf72cb1ULL}},
-  // 10^-22 ~= f1c90080baf72cb1  5324c68b12dd6338   
+  // 10^-22 ~= f1c90080baf72cb1  5324c68b12dd6338
   //   70cb148213caa7e43a71f2a1c428c421   * 2^-329
   {{0x2ec18ee7d0209ce8ULL, 0x8d6f439b43088650ULL,
     0x75b7053c0f178293ULL, 0xc16d9a0095928a27ULL}},
-  // 10^-23 ~= c16d9a0095928a27  75b7053c0f178293   
+  // 10^-23 ~= c16d9a0095928a27  75b7053c0f178293
   //   8d6f439b430886502ec18ee7d0209ce8   * 2^-332
   {{0xf23472530ce6e3edULL, 0xd78c3615cf3a050cULL,
     0xc4926a9672793542ULL, 0x9abe14cd44753b52ULL}},
-  // 10^-24 ~= 9abe14cd44753b52  c4926a9672793542   
+  // 10^-24 ~= 9abe14cd44753b52  c4926a9672793542
   //   d78c3615cf3a050cf23472530ce6e3ed   * 2^-335
   {{0xe9ed83b814a49fe1ULL, 0x8c1389bc7ec33b47ULL,
     0x3a83ddbd83f52204ULL, 0xf79687aed3eec551ULL}},
-  // 10^-25 ~= f79687aed3eec551  3a83ddbd83f52204   
+  // 10^-25 ~= f79687aed3eec551  3a83ddbd83f52204
   //   8c1389bc7ec33b47e9ed83b814a49fe1   * 2^-339
   {{0x87f1362cdd507fe7ULL, 0x3cdc6e306568fc39ULL,
     0x95364afe032a819dULL, 0xc612062576589ddaULL}},
-  // 10^-26 ~= c612062576589dda  95364afe032a819d   
+  // 10^-26 ~= c612062576589dda  95364afe032a819d
   //   3cdc6e306568fc3987f1362cdd507fe7   * 2^-342
   {{0x9ff42b5717739986ULL, 0xca49f1c05120c9c7ULL,
     0x775ea264cf55347dULL, 0x9e74d1b791e07e48ULL}},
-  // 10^-27 ~= 9e74d1b791e07e48  775ea264cf55347d   
+  // 10^-27 ~= 9e74d1b791e07e48  775ea264cf55347d
   //   ca49f1c05120c9c79ff42b5717739986   * 2^-345
   {{0xccb9def1bf1f5c09ULL, 0x76dcb60081ce0fa5ULL,
     0x8bca9d6e188853fcULL, 0xfd87b5f28300ca0dULL}},
-  // 10^-28 ~= fd87b5f28300ca0d  8bca9d6e188853fc   
+  // 10^-28 ~= fd87b5f28300ca0d  8bca9d6e188853fc
   //   76dcb60081ce0fa5ccb9def1bf1f5c09   * 2^-349
   {{0xa3c7e58e327f7cd4ULL, 0x5f16f80067d80c84ULL,
     0x096ee45813a04330ULL, 0xcad2f7f5359a3b3eULL}},
-  // 10^-29 ~= cad2f7f5359a3b3e  96ee45813a04330   
+  // 10^-29 ~= cad2f7f5359a3b3e  96ee45813a04330
   //   5f16f80067d80c84a3c7e58e327f7cd4   * 2^-352
   {{0xb6398471c1ff9710ULL, 0x18df2ccd1fe00a03ULL,
     0xa1258379a94d028dULL, 0xa2425ff75e14fc31ULL}},
-  // 10^-30 ~= a2425ff75e14fc31  a1258379a94d028d   
+  // 10^-30 ~= a2425ff75e14fc31  a1258379a94d028d
   //   18df2ccd1fe00a03b6398471c1ff9710   * 2^-355
   {{0xf82e038e34cc78daULL, 0x4718f0a419800802ULL,
     0x80eacf948770ced7ULL, 0x81ceb32c4b43fcf4ULL}},
-  // 10^-31 ~= 81ceb32c4b43fcf4  80eacf948770ced7   
+  // 10^-31 ~= 81ceb32c4b43fcf4  80eacf948770ced7
   //   4718f0a419800802f82e038e34cc78da   * 2^-358
   {{0x59e338e387ad8e29ULL, 0x0b5b1aa028ccd99eULL,
     0x67de18eda5814af2ULL, 0xcfb11ead453994baULL}},
-  // 10^-32 ~= cfb11ead453994ba  67de18eda5814af2   
+  // 10^-32 ~= cfb11ead453994ba  67de18eda5814af2
   //   b5b1aa028ccd99e59e338e387ad8e29   * 2^-362
   {{0x47e8fa4f9fbe0b54ULL, 0x6f7c154ced70ae18ULL,
     0xecb1ad8aeacdd58eULL, 0xa6274bbdd0fadd61ULL}},
-  // 10^-33 ~= a6274bbdd0fadd61  ecb1ad8aeacdd58e   
+  // 10^-33 ~= a6274bbdd0fadd61  ecb1ad8aeacdd58e
   //   6f7c154ced70ae1847e8fa4f9fbe0b54   * 2^-365
   {{0xd320c83fb2fe6f76ULL, 0xbf967770bdf3be79ULL,
     0xbd5af13bef0b113eULL, 0x84ec3c97da624ab4ULL}},
-  // 10^-34 ~= 84ec3c97da624ab4  bd5af13bef0b113e   
+  // 10^-34 ~= 84ec3c97da624ab4  bd5af13bef0b113e
   //   bf967770bdf3be79d320c83fb2fe6f76   * 2^-368
   {{0x85014065eb30b257ULL, 0x65bd8be79652ca5cULL,
     0x955e4ec64b44e864ULL, 0xd4ad2dbfc3d07787ULL}},
-  // 10^-35 ~= d4ad2dbfc3d07787  955e4ec64b44e864   
+  // 10^-35 ~= d4ad2dbfc3d07787  955e4ec64b44e864
   //   65bd8be79652ca5c85014065eb30b257   * 2^-372
   {{0xd0cdcd1e55c08eacULL, 0xeafe098611dbd516ULL,
     0xdde50bd1d5d0b9e9ULL, 0xaa242499697392d2ULL}},
-  // 10^-36 ~= aa242499697392d2  dde50bd1d5d0b9e9   
+  // 10^-36 ~= aa242499697392d2  dde50bd1d5d0b9e9
   //   eafe098611dbd516d0cdcd1e55c08eac   * 2^-375
   {{0x40a4a418449a0bbdULL, 0xbbfe6e04db164412ULL,
     0x7e50d64177da2e54ULL, 0x881cea14545c7575ULL}},
-  // 10^-37 ~= 881cea14545c7575  7e50d64177da2e54   
+  // 10^-37 ~= 881cea14545c7575  7e50d64177da2e54
   //   bbfe6e04db16441240a4a418449a0bbd   * 2^-378
   {{0x9aa1068d3a9012c8ULL, 0x2cca49a15e8a0683ULL,
     0x96e7bd358c904a21ULL, 0xd9c7dced53c72255ULL}},
-  // 10^-38 ~= d9c7dced53c72255  96e7bd358c904a21   
+  // 10^-38 ~= d9c7dced53c72255  96e7bd358c904a21
   //   2cca49a15e8a06839aa1068d3a9012c8   * 2^-382
   {{0x154d9ed7620cdbd3ULL, 0x8a3b6e1ab2080536ULL,
     0xabec975e0a0d081aULL, 0xae397d8aa96c1b77ULL}},
-  // 10^-39 ~= ae397d8aa96c1b77  abec975e0a0d081a   
+  // 10^-39 ~= ae397d8aa96c1b77  abec975e0a0d081a
   //   8a3b6e1ab2080536154d9ed7620cdbd3   * 2^-385
   {{0x443e18ac4e70afdcULL, 0x3b62be7bc1a0042bULL,
     0x2323ac4b3b3da015ULL, 0x8b61313bbabce2c6ULL}},
-  // 10^-40 ~= 8b61313bbabce2c6  2323ac4b3b3da015   
+  // 10^-40 ~= 8b61313bbabce2c6  2323ac4b3b3da015
   //   3b62be7bc1a0042b443e18ac4e70afdc   * 2^-388
   {{0x6d30277a171ab2f9ULL, 0x5f0463f935ccd378ULL,
     0x6b6c46dec52f6688ULL, 0xdf01e85f912e37a3ULL}},
-  // 10^-41 ~= df01e85f912e37a3  6b6c46dec52f6688   
+  // 10^-41 ~= df01e85f912e37a3  6b6c46dec52f6688
   //   5f0463f935ccd3786d30277a171ab2f9   * 2^-392
   {{0x8a8cec61ac155bfbULL, 0x7f36b660f7d70f93ULL,
     0x55f038b237591ed3ULL, 0xb267ed1940f1c61cULL}},
-  // 10^-42 ~= b267ed1940f1c61c  55f038b237591ed3   
+  // 10^-42 ~= b267ed1940f1c61c  55f038b237591ed3
   //   7f36b660f7d70f938a8cec61ac155bfb   * 2^-395
   {{0x3ba3f04e23444996ULL, 0xcc2bc51a5fdf3fa9ULL,
     0x77f3608e92adb242ULL, 0x8eb98a7a9a5b04e3ULL}},
-  // 10^-43 ~= 8eb98a7a9a5b04e3  77f3608e92adb242   
+  // 10^-43 ~= 8eb98a7a9a5b04e3  77f3608e92adb242
   //   cc2bc51a5fdf3fa93ba3f04e23444996   * 2^-398
   {{0xf9064d49d206dc22ULL, 0xe046082a32fecc41ULL,
     0x8cb89a7db77c506aULL, 0xe45c10c42a2b3b05ULL}},
-  // 10^-44 ~= e45c10c42a2b3b05  8cb89a7db77c506a   
+  // 10^-44 ~= e45c10c42a2b3b05  8cb89a7db77c506a
   //   e046082a32fecc41f9064d49d206dc22   * 2^-402
   {{0xfa6b7107db38b01bULL, 0x4d04d354f598a367ULL,
     0x3d607b97c5fd0d22ULL, 0xb6b00d69bb55c8d1ULL}},
-  // 10^-45 ~= b6b00d69bb55c8d1  3d607b97c5fd0d22   
+  // 10^-45 ~= b6b00d69bb55c8d1  3d607b97c5fd0d22
   //   4d04d354f598a367fa6b7107db38b01b   * 2^-405
   {{0xfb8927397c2d59b0ULL, 0x3d9d75dd9146e91fULL,
     0xcab3961304ca70e8ULL, 0x9226712162ab070dULL}},
-  // 10^-46 ~= 9226712162ab070d  cab3961304ca70e8   
+  // 10^-46 ~= 9226712162ab070d  cab3961304ca70e8
   //   3d9d75dd9146e91ffb8927397c2d59b0   * 2^-408
   {{0xf8db71f5937bc2b2ULL, 0xc8fbefc8e87174ffULL,
     0xaab8f01e6e10b4a6ULL, 0xe9d71b689dde71afULL}},
-  // 10^-47 ~= e9d71b689dde71af  aab8f01e6e10b4a6   
+  // 10^-47 ~= e9d71b689dde71af  aab8f01e6e10b4a6
   //   c8fbefc8e87174fff8db71f5937bc2b2   * 2^-412
   {{0x2d7c5b2adc630228ULL, 0x3a63263a538df733ULL,
     0x5560c018580d5d52ULL, 0xbb127c53b17ec159ULL}},
-  // 10^-48 ~= bb127c53b17ec159  5560c018580d5d52   
+  // 10^-48 ~= bb127c53b17ec159  5560c018580d5d52
   //   3a63263a538df7332d7c5b2adc630228   * 2^-415
   {{0x24637c2249e8ce87ULL, 0x2eb5b82ea93e5f5cULL,
     0xdde7001379a44aa8ULL, 0x95a8637627989aadULL}},
-  // 10^-49 ~= 95a8637627989aad  dde7001379a44aa8   
+  // 10^-49 ~= 95a8637627989aad  dde7001379a44aa8
   //   2eb5b82ea93e5f5c24637c2249e8ce87   * 2^-418
   {{0x3a38c69d430e173eULL, 0x4abc59e441fd6560ULL,
     0x963e66858f6d4440ULL, 0xef73d256a5c0f77cULL}},
-  // 10^-50 ~= ef73d256a5c0f77c  963e66858f6d4440   
+  // 10^-50 ~= ef73d256a5c0f77c  963e66858f6d4440
   //   4abc59e441fd65603a38c69d430e173e   * 2^-422
   {{0x94fa387dcf3e78feULL, 0x6efd14b69b311de6ULL,
     0xde98520472bdd033ULL, 0xbf8fdb78849a5f96ULL}},
-  // 10^-51 ~= bf8fdb78849a5f96  de98520472bdd033   
+  // 10^-51 ~= bf8fdb78849a5f96  de98520472bdd033
   //   6efd14b69b311de694fa387dcf3e78fe   * 2^-425
   {{0xaa61c6cb0c31fa65ULL, 0x259743c548f417ebULL,
     0xe546a8038efe4029ULL, 0x993fe2c6d07b7fabULL}},
-  // 10^-52 ~= 993fe2c6d07b7fab  e546a8038efe4029   
+  // 10^-52 ~= 993fe2c6d07b7fab  e546a8038efe4029
   //   259743c548f417ebaa61c6cb0c31fa65   * 2^-428
   {{0xaa360ade79e990a2ULL, 0x3c25393ba7ecf312ULL,
     0xd53dd99f4b3066a8ULL, 0xf53304714d9265dfULL}},
-  // 10^-53 ~= f53304714d9265df  d53dd99f4b3066a8   
+  // 10^-53 ~= f53304714d9265df  d53dd99f4b3066a8
   //   3c25393ba7ecf312aa360ade79e990a2   * 2^-432
   {{0x882b3be52e5473b5ULL, 0x96842dc95323f5a8ULL,
     0xaa97e14c3c26b886ULL, 0xc428d05aa4751e4cULL}},
-  // 10^-54 ~= c428d05aa4751e4c  aa97e14c3c26b886   
+  // 10^-54 ~= c428d05aa4751e4c  aa97e14c3c26b886
   //   96842dc95323f5a8882b3be52e5473b5   * 2^-435
   {{0xd355c98425105c91ULL, 0xab9cf16ddc1cc486ULL,
     0x55464dd69685606bULL, 0x9ced737bb6c4183dULL}},
-  // 10^-55 ~= 9ced737bb6c4183d  55464dd69685606b   
+  // 10^-55 ~= 9ced737bb6c4183d  55464dd69685606b
   //   ab9cf16ddc1cc486d355c98425105c91   * 2^-438
   {{0xebbc75a03b4d60e7ULL, 0xac2e4f162cfad40aULL,
     0xeed6e2f0f0d56712ULL, 0xfb158592be068d2eULL}},
-  // 10^-56 ~= fb158592be068d2e  eed6e2f0f0d56712   
+  // 10^-56 ~= fb158592be068d2e  eed6e2f0f0d56712
   //   ac2e4f162cfad40aebbc75a03b4d60e7   * 2^-442
   {{0x8963914cfc3de71fULL, 0x568b727823fbdcd5ULL,
     0xf245825a5a445275ULL, 0xc8de047564d20a8bULL}},
-  // 10^-57 ~= c8de047564d20a8b  f245825a5a445275   
+  // 10^-57 ~= c8de047564d20a8b  f245825a5a445275
   //   568b727823fbdcd58963914cfc3de71f   * 2^-445
   {{0xd44fa770c9cb1f4cULL, 0x453c5b934ffcb0aaULL,
     0x5b6aceaeae9d0ec4ULL, 0xa0b19d2ab70e6ed6ULL}},
-  // 10^-58 ~= a0b19d2ab70e6ed6  5b6aceaeae9d0ec4   
+  // 10^-58 ~= a0b19d2ab70e6ed6  5b6aceaeae9d0ec4
   //   453c5b934ffcb0aad44fa770c9cb1f4c   * 2^-448
   {{0xdd0c85f3d4a27f70ULL, 0x37637c75d996f3bbULL,
     0xe2bbd88bbee40bd0ULL, 0x808e17555f3ebf11ULL}},
-  // 10^-59 ~= 808e17555f3ebf11  e2bbd88bbee40bd0   
+  // 10^-59 ~= 808e17555f3ebf11  e2bbd88bbee40bd0
   //   37637c75d996f3bbdd0c85f3d4a27f70   * 2^-451
   {{0x61ada31fba9d98b3ULL, 0x256bfa5628f185f9ULL,
     0x3792f412cb06794dULL, 0xcdb02555653131b6ULL}},
-  // 10^-60 ~= cdb02555653131b6  3792f412cb06794d   
+  // 10^-60 ~= cdb02555653131b6  3792f412cb06794d
   //   256bfa5628f185f961ada31fba9d98b3   * 2^-455
   {{0xe7be1c196217ad5cULL, 0x51232eab53f46b2dULL,
     0x5fa8c3423c052dd7ULL, 0xa48ceaaab75a8e2bULL}},
-  // 10^-61 ~= a48ceaaab75a8e2b  5fa8c3423c052dd7   
+  // 10^-61 ~= a48ceaaab75a8e2b  5fa8c3423c052dd7
   //   51232eab53f46b2de7be1c196217ad5c   * 2^-458
   {{0x52fe7ce11b46244aULL, 0x40e8f222a99055beULL,
     0x1953cf68300424acULL, 0x83a3eeeef9153e89ULL}},
-  // 10^-62 ~= 83a3eeeef9153e89  1953cf68300424ac   
+  // 10^-62 ~= 83a3eeeef9153e89  1953cf68300424ac
   //   40e8f222a99055be52fe7ce11b46244a   * 2^-461
   {{0x51972e34f8703a10ULL, 0x34a7e9d10f4d55fdULL,
     0x8eec7f0d19a03aadULL, 0xd29fe4b18e88640eULL}},
-  // 10^-63 ~= d29fe4b18e88640e  8eec7f0d19a03aad   
+  // 10^-63 ~= d29fe4b18e88640e  8eec7f0d19a03aad
   //   34a7e9d10f4d55fd51972e34f8703a10   * 2^-465
   {{0x0e128b5d938cfb40ULL, 0x2a1fee40d90aab31ULL,
     0x3f2398d747b36224ULL, 0xa87fea27a539e9a5ULL}},
-  // 10^-64 ~= a87fea27a539e9a5  3f2398d747b36224   
+  // 10^-64 ~= a87fea27a539e9a5  3f2398d747b36224
   //   2a1fee40d90aab310e128b5d938cfb40   * 2^-468
   {{0x3e753c4adc70c900ULL, 0xbb4cbe9a473bbc27ULL,
     0x98e947129fc2b4e9ULL, 0x86ccbb52ea94baeaULL}},
-  // 10^-65 ~= 86ccbb52ea94baea  98e947129fc2b4e9   
+  // 10^-65 ~= 86ccbb52ea94baea  98e947129fc2b4e9
   //   bb4cbe9a473bbc273e753c4adc70c900   * 2^-471
   {{0x30bb93aafa4e0e66ULL, 0x9214642a0b92c6a5ULL,
     0x5b0ed81dcc6abb0fULL, 0xd7adf884aa879177ULL}},
-  // 10^-66 ~= d7adf884aa879177  5b0ed81dcc6abb0f   
+  // 10^-66 ~= d7adf884aa879177  5b0ed81dcc6abb0f
   //   9214642a0b92c6a530bb93aafa4e0e66   * 2^-475
   {{0xc0960fbbfb71a51fULL, 0xa8105021a2dbd21dULL,
     0xe272467e3d222f3fULL, 0xac8b2d36eed2dac5ULL}},
-  // 10^-67 ~= ac8b2d36eed2dac5  e272467e3d222f3f   
+  // 10^-67 ~= ac8b2d36eed2dac5  e272467e3d222f3f
   //   a8105021a2dbd21dc0960fbbfb71a51f   * 2^-478
   {{0x66de72fcc927b74cULL, 0xb9a6a6814f1641b1ULL,
     0x1b8e9ecb641b58ffULL, 0x8a08f0f8bf0f156bULL}},
-  // 10^-68 ~= 8a08f0f8bf0f156b  1b8e9ecb641b58ff   
+  // 10^-68 ~= 8a08f0f8bf0f156b  1b8e9ecb641b58ff
   //   b9a6a6814f1641b166de72fcc927b74c   * 2^-481
   {{0xd7ca5194750c5879ULL, 0xf5d770cee4f0691bULL,
     0xf8e431456cf88e65ULL, 0xdcdb1b2798182244ULL}},
-  // 10^-69 ~= dcdb1b2798182244  f8e431456cf88e65   
+  // 10^-69 ~= dcdb1b2798182244  f8e431456cf88e65
   //   f5d770cee4f0691bd7ca5194750c5879   * 2^-485
   {{0xdfd50e105da379faULL, 0x9179270bea59edafULL,
     0x2d835a9df0c6d851ULL, 0xb0af48ec79ace837ULL}},
-  // 10^-70 ~= b0af48ec79ace837  2d835a9df0c6d851   
+  // 10^-70 ~= b0af48ec79ace837  2d835a9df0c6d851
   //   9179270bea59edafdfd50e105da379fa   * 2^-488
   {{0x19773e737e1c6195ULL, 0x0dfa85a321e18af3ULL,
     0x579c487e5a38ad0eULL, 0x8d590723948a535fULL}},
-  // 10^-71 ~= 8d590723948a535f  579c487e5a38ad0e   
+  // 10^-71 ~= 8d590723948a535f  579c487e5a38ad0e
   //   dfa85a321e18af319773e737e1c6195   * 2^-491
   {{0xf58b971f302d68efULL, 0x165da29e9c9c1184ULL,
     0x25c6da63c38de1b0ULL, 0xe2280b6c20dd5232ULL}},
-  // 10^-72 ~= e2280b6c20dd5232  25c6da63c38de1b0   
+  // 10^-72 ~= e2280b6c20dd5232  25c6da63c38de1b0
   //   165da29e9c9c1184f58b971f302d68ef   * 2^-495
   {{0xc46fac18f3578725ULL, 0x4517b54bb07cdad0ULL,
     0x1e38aeb6360b1af3ULL, 0xb4ecd5f01a4aa828ULL}},
-  // 10^-73 ~= b4ecd5f01a4aa828  1e38aeb6360b1af3   
+  // 10^-73 ~= b4ecd5f01a4aa828  1e38aeb6360b1af3
   //   4517b54bb07cdad0c46fac18f3578725   * 2^-498
   {{0x36bfbce0c2ac6c1eULL, 0x9dac910959fd7bdaULL,
     0xb1c6f22b5e6f48c2ULL, 0x90bd77f3483bb9b9ULL}},
-  // 10^-74 ~= 90bd77f3483bb9b9  b1c6f22b5e6f48c2   
+  // 10^-74 ~= 90bd77f3483bb9b9  b1c6f22b5e6f48c2
   //   9dac910959fd7bda36bfbce0c2ac6c1e   * 2^-501
   {{0x2465fb01377a4696ULL, 0x2f7a81a88ffbf95dULL,
     0xb60b1d1230b20e04ULL, 0xe7958cb87392c2c2ULL}}
-  // 10^-75 ~= e7958cb87392c2c2  b60b1d1230b20e04   
+  // 10^-75 ~= e7958cb87392c2c2  b60b1d1230b20e04
   //   2f7a81a88ffbf95d2465fb01377a4696   * 2^-505
 };
 
@@ -4032,302 +4032,302 @@ UINT64 mask256[] = {
 UINT256 ten2mxtrunc256[] = {
   {{0xccccccccccccccccULL, 0xccccccccccccccccULL,
     0xccccccccccccccccULL, 0xccccccccccccccccULL}},
-  // (ten2mx >> 256) = cccccccccccccccc  cccccccccccccccc   
+  // (ten2mx >> 256) = cccccccccccccccc  cccccccccccccccc
   //   cccccccccccccccccccccccccccccccc
   {{0x70a3d70a3d70a3d7ULL, 0xd70a3d70a3d70a3dULL,
     0x3d70a3d70a3d70a3ULL, 0xa3d70a3d70a3d70aULL}},
-  // (ten2mx >> 256) = a3d70a3d70a3d70a  3d70a3d70a3d70a3   
+  // (ten2mx >> 256) = a3d70a3d70a3d70a  3d70a3d70a3d70a3
   //   d70a3d70a3d70a3d70a3d70a3d70a3d7
   {{0xc083126e978d4fdfULL, 0x78d4fdf3b645a1caULL,
     0x645a1cac083126e9ULL, 0x83126e978d4fdf3bULL}},
-  // (ten2mx >> 256) = 83126e978d4fdf3b  645a1cac083126e9   
+  // (ten2mx >> 256) = 83126e978d4fdf3b  645a1cac083126e9
   //   78d4fdf3b645a1cac083126e978d4fdf
   {{0x67381d7dbf487fcbULL, 0xc154c985f06f6944ULL,
     0xd3c36113404ea4a8ULL, 0xd1b71758e219652bULL}},
-  // (ten2mx >> 256) = d1b71758e219652b  d3c36113404ea4a8   
+  // (ten2mx >> 256) = d1b71758e219652b  d3c36113404ea4a8
   //   c154c985f06f694467381d7dbf487fcb
   {{0x85c67dfe32a0663cULL, 0xcddd6e04c0592103ULL,
     0x0fcf80dc33721d53ULL, 0xa7c5ac471b478423ULL}},
-  // (ten2mx >> 256) = a7c5ac471b478423  fcf80dc33721d53   
+  // (ten2mx >> 256) = a7c5ac471b478423  fcf80dc33721d53
   //   cddd6e04c059210385c67dfe32a0663c
   {{0x37d1fe64f54d1e96ULL, 0xd7e45803cd141a69ULL,
     0xa63f9a49c2c1b10fULL, 0x8637bd05af6c69b5ULL}},
-  // (ten2mx >> 256) = 8637bd05af6c69b5  a63f9a49c2c1b10f   
+  // (ten2mx >> 256) = 8637bd05af6c69b5  a63f9a49c2c1b10f
   //   d7e45803cd141a6937d1fe64f54d1e96
   {{0x8c8330a1887b6424ULL, 0x8ca08cd2e1b9c3dbULL,
     0x3d32907604691b4cULL, 0xd6bf94d5e57a42bcULL}},
-  // (ten2mx >> 256) = d6bf94d5e57a42bc  3d32907604691b4c   
+  // (ten2mx >> 256) = d6bf94d5e57a42bc  3d32907604691b4c
   //   8ca08cd2e1b9c3db8c8330a1887b6424
   {{0x7068f3b46d2f8350ULL, 0x3d4d3d758161697cULL,
     0xfdc20d2b36ba7c3dULL, 0xabcc77118461cefcULL}},
-  // (ten2mx >> 256) = abcc77118461cefc  fdc20d2b36ba7c3d   
+  // (ten2mx >> 256) = abcc77118461cefc  fdc20d2b36ba7c3d
   //   3d4d3d758161697c7068f3b46d2f8350
   {{0xf387295d242602a6ULL, 0xfdd7645e011abac9ULL,
     0x31680a88f8953030ULL, 0x89705f4136b4a597ULL}},
-  // (ten2mx >> 256) = 89705f4136b4a597  31680a88f8953030   
+  // (ten2mx >> 256) = 89705f4136b4a597  31680a88f8953030
   //   fdd7645e011abac9f387295d242602a6
   {{0xb8d8422ea03cd10aULL, 0x2fbf06fcce912adcULL,
     0xb573440e5a884d1bULL, 0xdbe6fecebdedd5beULL}},
-  // (ten2mx >> 256) = dbe6fecebdedd5be  b573440e5a884d1b   
+  // (ten2mx >> 256) = dbe6fecebdedd5be  b573440e5a884d1b
   //   2fbf06fcce912adcb8d8422ea03cd10a
   {{0x93e034f219ca40d5ULL, 0xf2ff38ca3eda88b0ULL,
     0xf78f69a51539d748ULL, 0xafebff0bcb24aafeULL}},
-  // (ten2mx >> 256) = afebff0bcb24aafe  f78f69a51539d748   
+  // (ten2mx >> 256) = afebff0bcb24aafe  f78f69a51539d748
   //   f2ff38ca3eda88b093e034f219ca40d5
   {{0x4319c3f4e16e9a44ULL, 0xf598fa3b657ba08dULL,
     0xf93f87b7442e45d3ULL, 0x8cbccc096f5088cbULL}},
-  // (ten2mx >> 256) = 8cbccc096f5088cb  f93f87b7442e45d3   
+  // (ten2mx >> 256) = 8cbccc096f5088cb  f93f87b7442e45d3
   //   f598fa3b657ba08d4319c3f4e16e9a44
   {{0x04f606549be42a06ULL, 0x88f4c3923bf900e2ULL,
     0x2865a5f206b06fb9ULL, 0xe12e13424bb40e13ULL}},
-  // (ten2mx >> 256) = e12e13424bb40e13  2865a5f206b06fb9   
+  // (ten2mx >> 256) = e12e13424bb40e13  2865a5f206b06fb9
   //   88f4c3923bf900e204f606549be42a06
   {{0x03f805107cb68805ULL, 0x6d909c74fcc733e8ULL,
     0x538484c19ef38c94ULL, 0xb424dc35095cd80fULL}},
-  // (ten2mx >> 256) = b424dc35095cd80f  538484c19ef38c94   
+  // (ten2mx >> 256) = b424dc35095cd80f  538484c19ef38c94
   //   6d909c74fcc733e803f805107cb68805
   {{0x3660040d3092066aULL, 0x57a6e390ca38f653ULL,
     0x0f9d37014bf60a10ULL, 0x901d7cf73ab0acd9ULL}},
-  // (ten2mx >> 256) = 901d7cf73ab0acd9  f9d37014bf60a10   
+  // (ten2mx >> 256) = 901d7cf73ab0acd9  f9d37014bf60a10
   //   57a6e390ca38f6533660040d3092066a
   {{0x23ccd3484db670aaULL, 0xbf716c1add27f085ULL,
     0x4c2ebe687989a9b3ULL, 0xe69594bec44de15bULL}},
-  // (ten2mx >> 256) = e69594bec44de15b  4c2ebe687989a9b3   
+  // (ten2mx >> 256) = e69594bec44de15b  4c2ebe687989a9b3
   //   bf716c1add27f08523ccd3484db670aa
   {{0x4fd70f6d0af85a22ULL, 0xff8df0157db98d37ULL,
     0x09befeb9fad487c2ULL, 0xb877aa3236a4b449ULL}},
-  // (ten2mx >> 256) = b877aa3236a4b449  9befeb9fad487c2   
+  // (ten2mx >> 256) = b877aa3236a4b449  9befeb9fad487c2
   //   ff8df0157db98d374fd70f6d0af85a22
   {{0x0cac0c573bf9e1b5ULL, 0x32d7f344649470f9ULL,
     0x3aff322e62439fcfULL, 0x9392ee8e921d5d07ULL}},
-  // (ten2mx >> 256) = 9392ee8e921d5d07  3aff322e62439fcf   
+  // (ten2mx >> 256) = 9392ee8e921d5d07  3aff322e62439fcf
   //   32d7f344649470f90cac0c573bf9e1b5
   {{0xe11346f1f98fcf88ULL, 0x1e2652070753e7f4ULL,
     0x2b31e9e3d06c32e5ULL, 0xec1e4a7db69561a5ULL}},
-  // (ten2mx >> 256) = ec1e4a7db69561a5  2b31e9e3d06c32e5   
+  // (ten2mx >> 256) = ec1e4a7db69561a5  2b31e9e3d06c32e5
   //   1e2652070753e7f4e11346f1f98fcf88
   {{0x4da9058e613fd939ULL, 0x181ea8059f76532aULL,
     0x88f4bb1ca6bcf584ULL, 0xbce5086492111aeaULL}},
-  // (ten2mx >> 256) = bce5086492111aea  88f4bb1ca6bcf584   
+  // (ten2mx >> 256) = bce5086492111aea  88f4bb1ca6bcf584
   //   181ea8059f76532a4da9058e613fd939
   {{0xa48737a51a997a94ULL, 0x467eecd14c5ea8eeULL,
     0xd3f6fc16ebca5e03ULL, 0x971da05074da7beeULL}},
-  // (ten2mx >> 256) = 971da05074da7bee  d3f6fc16ebca5e03   
+  // (ten2mx >> 256) = 971da05074da7bee  d3f6fc16ebca5e03
   //   467eecd14c5ea8eea48737a51a997a94
   {{0x3a71f2a1c428c420ULL, 0x70cb148213caa7e4ULL,
     0x5324c68b12dd6338ULL, 0xf1c90080baf72cb1ULL}},
-  // (ten2mx >> 256) = f1c90080baf72cb1  5324c68b12dd6338   
+  // (ten2mx >> 256) = f1c90080baf72cb1  5324c68b12dd6338
   //   70cb148213caa7e43a71f2a1c428c420
   {{0x2ec18ee7d0209ce7ULL, 0x8d6f439b43088650ULL,
     0x75b7053c0f178293ULL, 0xc16d9a0095928a27ULL}},
-  // (ten2mx >> 256) = c16d9a0095928a27  75b7053c0f178293   
+  // (ten2mx >> 256) = c16d9a0095928a27  75b7053c0f178293
   //   8d6f439b430886502ec18ee7d0209ce7
   {{0xf23472530ce6e3ecULL, 0xd78c3615cf3a050cULL,
     0xc4926a9672793542ULL, 0x9abe14cd44753b52ULL}},
-  // (ten2mx >> 256) = 9abe14cd44753b52  c4926a9672793542   
+  // (ten2mx >> 256) = 9abe14cd44753b52  c4926a9672793542
   //   d78c3615cf3a050cf23472530ce6e3ec
   {{0xe9ed83b814a49fe0ULL, 0x8c1389bc7ec33b47ULL,
     0x3a83ddbd83f52204ULL, 0xf79687aed3eec551ULL}},
-  // (ten2mx >> 256) = f79687aed3eec551  3a83ddbd83f52204   
+  // (ten2mx >> 256) = f79687aed3eec551  3a83ddbd83f52204
   //   8c1389bc7ec33b47e9ed83b814a49fe0
   {{0x87f1362cdd507fe6ULL, 0x3cdc6e306568fc39ULL,
     0x95364afe032a819dULL, 0xc612062576589ddaULL}},
-  // (ten2mx >> 256) = c612062576589dda  95364afe032a819d   
+  // (ten2mx >> 256) = c612062576589dda  95364afe032a819d
   //   3cdc6e306568fc3987f1362cdd507fe6
   {{0x9ff42b5717739985ULL, 0xca49f1c05120c9c7ULL,
     0x775ea264cf55347dULL, 0x9e74d1b791e07e48ULL}},
-  // (ten2mx >> 256) = 9e74d1b791e07e48  775ea264cf55347d   
+  // (ten2mx >> 256) = 9e74d1b791e07e48  775ea264cf55347d
   //   ca49f1c05120c9c79ff42b5717739985
   {{0xccb9def1bf1f5c08ULL, 0x76dcb60081ce0fa5ULL,
     0x8bca9d6e188853fcULL, 0xfd87b5f28300ca0dULL}},
-  // (ten2mx >> 256) = fd87b5f28300ca0d  8bca9d6e188853fc   
+  // (ten2mx >> 256) = fd87b5f28300ca0d  8bca9d6e188853fc
   //   76dcb60081ce0fa5ccb9def1bf1f5c08
   {{0xa3c7e58e327f7cd3ULL, 0x5f16f80067d80c84ULL,
     0x096ee45813a04330ULL, 0xcad2f7f5359a3b3eULL}},
-  // (ten2mx >> 256) = cad2f7f5359a3b3e  96ee45813a04330   
+  // (ten2mx >> 256) = cad2f7f5359a3b3e  96ee45813a04330
   //   5f16f80067d80c84a3c7e58e327f7cd3
   {{0xb6398471c1ff970fULL, 0x18df2ccd1fe00a03ULL,
     0xa1258379a94d028dULL, 0xa2425ff75e14fc31ULL}},
-  // (ten2mx >> 256) = a2425ff75e14fc31  a1258379a94d028d   
+  // (ten2mx >> 256) = a2425ff75e14fc31  a1258379a94d028d
   //   18df2ccd1fe00a03b6398471c1ff970f
   {{0xf82e038e34cc78d9ULL, 0x4718f0a419800802ULL,
     0x80eacf948770ced7ULL, 0x81ceb32c4b43fcf4ULL}},
-  // (ten2mx >> 256) = 81ceb32c4b43fcf4  80eacf948770ced7   
+  // (ten2mx >> 256) = 81ceb32c4b43fcf4  80eacf948770ced7
   //   4718f0a419800802f82e038e34cc78d9
   {{0x59e338e387ad8e28ULL, 0x0b5b1aa028ccd99eULL,
     0x67de18eda5814af2ULL, 0xcfb11ead453994baULL}},
-  // (ten2mx >> 256) = cfb11ead453994ba  67de18eda5814af2   
+  // (ten2mx >> 256) = cfb11ead453994ba  67de18eda5814af2
   //   b5b1aa028ccd99e59e338e387ad8e28
   {{0x47e8fa4f9fbe0b53ULL, 0x6f7c154ced70ae18ULL,
     0xecb1ad8aeacdd58eULL, 0xa6274bbdd0fadd61ULL}},
-  // (ten2mx >> 256) = a6274bbdd0fadd61  ecb1ad8aeacdd58e   
+  // (ten2mx >> 256) = a6274bbdd0fadd61  ecb1ad8aeacdd58e
   //   6f7c154ced70ae1847e8fa4f9fbe0b53
   {{0xd320c83fb2fe6f75ULL, 0xbf967770bdf3be79ULL,
     0xbd5af13bef0b113eULL, 0x84ec3c97da624ab4ULL}},
-  // (ten2mx >> 256) = 84ec3c97da624ab4  bd5af13bef0b113e   
+  // (ten2mx >> 256) = 84ec3c97da624ab4  bd5af13bef0b113e
   //   bf967770bdf3be79d320c83fb2fe6f75
   {{0x85014065eb30b256ULL, 0x65bd8be79652ca5cULL,
     0x955e4ec64b44e864ULL, 0xd4ad2dbfc3d07787ULL}},
-  // (ten2mx >> 256) = d4ad2dbfc3d07787  955e4ec64b44e864   
+  // (ten2mx >> 256) = d4ad2dbfc3d07787  955e4ec64b44e864
   //   65bd8be79652ca5c85014065eb30b256
   {{0xd0cdcd1e55c08eabULL, 0xeafe098611dbd516ULL,
     0xdde50bd1d5d0b9e9ULL, 0xaa242499697392d2ULL}},
-  // (ten2mx >> 256) = aa242499697392d2  dde50bd1d5d0b9e9   
+  // (ten2mx >> 256) = aa242499697392d2  dde50bd1d5d0b9e9
   //   eafe098611dbd516d0cdcd1e55c08eab
   {{0x40a4a418449a0bbcULL, 0xbbfe6e04db164412ULL,
     0x7e50d64177da2e54ULL, 0x881cea14545c7575ULL}},
-  // (ten2mx >> 256) = 881cea14545c7575  7e50d64177da2e54   
+  // (ten2mx >> 256) = 881cea14545c7575  7e50d64177da2e54
   //   bbfe6e04db16441240a4a418449a0bbc
   {{0x9aa1068d3a9012c7ULL, 0x2cca49a15e8a0683ULL,
     0x96e7bd358c904a21ULL, 0xd9c7dced53c72255ULL}},
-  // (ten2mx >> 256) = d9c7dced53c72255  96e7bd358c904a21   
+  // (ten2mx >> 256) = d9c7dced53c72255  96e7bd358c904a21
   //   2cca49a15e8a06839aa1068d3a9012c7
   {{0x154d9ed7620cdbd2ULL, 0x8a3b6e1ab2080536ULL,
     0xabec975e0a0d081aULL, 0xae397d8aa96c1b77ULL}},
-  // (ten2mx >> 256) = ae397d8aa96c1b77  abec975e0a0d081a   
+  // (ten2mx >> 256) = ae397d8aa96c1b77  abec975e0a0d081a
   //   8a3b6e1ab2080536154d9ed7620cdbd2
   {{0x443e18ac4e70afdbULL, 0x3b62be7bc1a0042bULL,
     0x2323ac4b3b3da015ULL, 0x8b61313bbabce2c6ULL}},
-  // (ten2mx >> 256) = 8b61313bbabce2c6  2323ac4b3b3da015   
+  // (ten2mx >> 256) = 8b61313bbabce2c6  2323ac4b3b3da015
   //   3b62be7bc1a0042b443e18ac4e70afdb
   {{0x6d30277a171ab2f8ULL, 0x5f0463f935ccd378ULL,
     0x6b6c46dec52f6688ULL, 0xdf01e85f912e37a3ULL}},
-  // (ten2mx >> 256) = df01e85f912e37a3  6b6c46dec52f6688   
+  // (ten2mx >> 256) = df01e85f912e37a3  6b6c46dec52f6688
   //   5f0463f935ccd3786d30277a171ab2f8
   {{0x8a8cec61ac155bfaULL, 0x7f36b660f7d70f93ULL,
     0x55f038b237591ed3ULL, 0xb267ed1940f1c61cULL}},
-  // (ten2mx >> 256) = b267ed1940f1c61c  55f038b237591ed3   
+  // (ten2mx >> 256) = b267ed1940f1c61c  55f038b237591ed3
   //   7f36b660f7d70f938a8cec61ac155bfa
   {{0x3ba3f04e23444995ULL, 0xcc2bc51a5fdf3fa9ULL,
     0x77f3608e92adb242ULL, 0x8eb98a7a9a5b04e3ULL}},
-  // (ten2mx >> 256) = 8eb98a7a9a5b04e3  77f3608e92adb242   
+  // (ten2mx >> 256) = 8eb98a7a9a5b04e3  77f3608e92adb242
   //   cc2bc51a5fdf3fa93ba3f04e23444995
   {{0xf9064d49d206dc21ULL, 0xe046082a32fecc41ULL,
     0x8cb89a7db77c506aULL, 0xe45c10c42a2b3b05ULL}},
-  // (ten2mx >> 256) = e45c10c42a2b3b05  8cb89a7db77c506a   
+  // (ten2mx >> 256) = e45c10c42a2b3b05  8cb89a7db77c506a
   //   e046082a32fecc41f9064d49d206dc21
   {{0xfa6b7107db38b01aULL, 0x4d04d354f598a367ULL,
     0x3d607b97c5fd0d22ULL, 0xb6b00d69bb55c8d1ULL}},
-  // (ten2mx >> 256) = b6b00d69bb55c8d1  3d607b97c5fd0d22   
+  // (ten2mx >> 256) = b6b00d69bb55c8d1  3d607b97c5fd0d22
   //   4d04d354f598a367fa6b7107db38b01a
   {{0xfb8927397c2d59afULL, 0x3d9d75dd9146e91fULL,
     0xcab3961304ca70e8ULL, 0x9226712162ab070dULL}},
-  // (ten2mx >> 256) = 9226712162ab070d  cab3961304ca70e8   
+  // (ten2mx >> 256) = 9226712162ab070d  cab3961304ca70e8
   //   3d9d75dd9146e91ffb8927397c2d59af
   {{0xf8db71f5937bc2b1ULL, 0xc8fbefc8e87174ffULL,
     0xaab8f01e6e10b4a6ULL, 0xe9d71b689dde71afULL}},
-  // (ten2mx >> 256) = e9d71b689dde71af  aab8f01e6e10b4a6   
+  // (ten2mx >> 256) = e9d71b689dde71af  aab8f01e6e10b4a6
   //   c8fbefc8e87174fff8db71f5937bc2b1
   {{0x2d7c5b2adc630227ULL, 0x3a63263a538df733ULL,
     0x5560c018580d5d52ULL, 0xbb127c53b17ec159ULL}},
-  // (ten2mx >> 256) = bb127c53b17ec159  5560c018580d5d52   
+  // (ten2mx >> 256) = bb127c53b17ec159  5560c018580d5d52
   //   3a63263a538df7332d7c5b2adc630227
   {{0x24637c2249e8ce86ULL, 0x2eb5b82ea93e5f5cULL,
     0xdde7001379a44aa8ULL, 0x95a8637627989aadULL}},
-  // (ten2mx >> 256) = 95a8637627989aad  dde7001379a44aa8   
+  // (ten2mx >> 256) = 95a8637627989aad  dde7001379a44aa8
   //   2eb5b82ea93e5f5c24637c2249e8ce86
   {{0x3a38c69d430e173dULL, 0x4abc59e441fd6560ULL,
     0x963e66858f6d4440ULL, 0xef73d256a5c0f77cULL}},
-  // (ten2mx >> 256) = ef73d256a5c0f77c  963e66858f6d4440   
+  // (ten2mx >> 256) = ef73d256a5c0f77c  963e66858f6d4440
   //   4abc59e441fd65603a38c69d430e173d
   {{0x94fa387dcf3e78fdULL, 0x6efd14b69b311de6ULL,
     0xde98520472bdd033ULL, 0xbf8fdb78849a5f96ULL}},
-  // (ten2mx >> 256) = bf8fdb78849a5f96  de98520472bdd033   
+  // (ten2mx >> 256) = bf8fdb78849a5f96  de98520472bdd033
   //   6efd14b69b311de694fa387dcf3e78fd
   {{0xaa61c6cb0c31fa64ULL, 0x259743c548f417ebULL,
     0xe546a8038efe4029ULL, 0x993fe2c6d07b7fabULL}},
-  // (ten2mx >> 256) = 993fe2c6d07b7fab  e546a8038efe4029   
+  // (ten2mx >> 256) = 993fe2c6d07b7fab  e546a8038efe4029
   //   259743c548f417ebaa61c6cb0c31fa64
   {{0xaa360ade79e990a1ULL, 0x3c25393ba7ecf312ULL,
     0xd53dd99f4b3066a8ULL, 0xf53304714d9265dfULL}},
-  // (ten2mx >> 256) = f53304714d9265df  d53dd99f4b3066a8   
+  // (ten2mx >> 256) = f53304714d9265df  d53dd99f4b3066a8
   //   3c25393ba7ecf312aa360ade79e990a1
   {{0x882b3be52e5473b4ULL, 0x96842dc95323f5a8ULL,
     0xaa97e14c3c26b886ULL, 0xc428d05aa4751e4cULL}},
-  // (ten2mx >> 256) = c428d05aa4751e4c  aa97e14c3c26b886   
+  // (ten2mx >> 256) = c428d05aa4751e4c  aa97e14c3c26b886
   //   96842dc95323f5a8882b3be52e5473b4
   {{0xd355c98425105c90ULL, 0xab9cf16ddc1cc486ULL,
     0x55464dd69685606bULL, 0x9ced737bb6c4183dULL}},
-  // (ten2mx >> 256) = 9ced737bb6c4183d  55464dd69685606b   
+  // (ten2mx >> 256) = 9ced737bb6c4183d  55464dd69685606b
   //   ab9cf16ddc1cc486d355c98425105c90
   {{0xebbc75a03b4d60e6ULL, 0xac2e4f162cfad40aULL,
     0xeed6e2f0f0d56712ULL, 0xfb158592be068d2eULL}},
-  // (ten2mx >> 256) = fb158592be068d2e  eed6e2f0f0d56712   
+  // (ten2mx >> 256) = fb158592be068d2e  eed6e2f0f0d56712
   //   ac2e4f162cfad40aebbc75a03b4d60e6
   {{0x8963914cfc3de71eULL, 0x568b727823fbdcd5ULL,
     0xf245825a5a445275ULL, 0xc8de047564d20a8bULL}},
-  // (ten2mx >> 256) = c8de047564d20a8b  f245825a5a445275   
+  // (ten2mx >> 256) = c8de047564d20a8b  f245825a5a445275
   //   568b727823fbdcd58963914cfc3de71e
   {{0xd44fa770c9cb1f4bULL, 0x453c5b934ffcb0aaULL,
     0x5b6aceaeae9d0ec4ULL, 0xa0b19d2ab70e6ed6ULL}},
-  // (ten2mx >> 256) = a0b19d2ab70e6ed6  5b6aceaeae9d0ec4   
+  // (ten2mx >> 256) = a0b19d2ab70e6ed6  5b6aceaeae9d0ec4
   //   453c5b934ffcb0aad44fa770c9cb1f4b
   {{0xdd0c85f3d4a27f6fULL, 0x37637c75d996f3bbULL,
     0xe2bbd88bbee40bd0ULL, 0x808e17555f3ebf11ULL}},
-  // (ten2mx >> 256) = 808e17555f3ebf11  e2bbd88bbee40bd0   
+  // (ten2mx >> 256) = 808e17555f3ebf11  e2bbd88bbee40bd0
   //   37637c75d996f3bbdd0c85f3d4a27f6f
   {{0x61ada31fba9d98b2ULL, 0x256bfa5628f185f9ULL,
     0x3792f412cb06794dULL, 0xcdb02555653131b6ULL}},
-  // (ten2mx >> 256) = cdb02555653131b6  3792f412cb06794d   
+  // (ten2mx >> 256) = cdb02555653131b6  3792f412cb06794d
   //   256bfa5628f185f961ada31fba9d98b2
   {{0xe7be1c196217ad5bULL, 0x51232eab53f46b2dULL,
     0x5fa8c3423c052dd7ULL, 0xa48ceaaab75a8e2bULL}},
-  // (ten2mx >> 256) = a48ceaaab75a8e2b  5fa8c3423c052dd7   
+  // (ten2mx >> 256) = a48ceaaab75a8e2b  5fa8c3423c052dd7
   //   51232eab53f46b2de7be1c196217ad5b
   {{0x52fe7ce11b462449ULL, 0x40e8f222a99055beULL,
     0x1953cf68300424acULL, 0x83a3eeeef9153e89ULL}},
-  // (ten2mx >> 256) = 83a3eeeef9153e89  1953cf68300424ac   
+  // (ten2mx >> 256) = 83a3eeeef9153e89  1953cf68300424ac
   //   40e8f222a99055be52fe7ce11b462449
   {{0x51972e34f8703a0fULL, 0x34a7e9d10f4d55fdULL,
     0x8eec7f0d19a03aadULL, 0xd29fe4b18e88640eULL}},
-  // (ten2mx >> 256) = d29fe4b18e88640e  8eec7f0d19a03aad   
+  // (ten2mx >> 256) = d29fe4b18e88640e  8eec7f0d19a03aad
   //   34a7e9d10f4d55fd51972e34f8703a0f
   {{0x0e128b5d938cfb3fULL, 0x2a1fee40d90aab31ULL,
     0x3f2398d747b36224ULL, 0xa87fea27a539e9a5ULL}},
-  // (ten2mx >> 256) = a87fea27a539e9a5  3f2398d747b36224   
+  // (ten2mx >> 256) = a87fea27a539e9a5  3f2398d747b36224
   //   2a1fee40d90aab310e128b5d938cfb3f
   {{0x3e753c4adc70c8ffULL, 0xbb4cbe9a473bbc27ULL,
     0x98e947129fc2b4e9ULL, 0x86ccbb52ea94baeaULL}},
-  // (ten2mx >> 256) = 86ccbb52ea94baea  98e947129fc2b4e9   
+  // (ten2mx >> 256) = 86ccbb52ea94baea  98e947129fc2b4e9
   //   bb4cbe9a473bbc273e753c4adc70c8ff
   {{0x30bb93aafa4e0e65ULL, 0x9214642a0b92c6a5ULL,
     0x5b0ed81dcc6abb0fULL, 0xd7adf884aa879177ULL}},
-  // (ten2mx >> 256) = d7adf884aa879177  5b0ed81dcc6abb0f   
+  // (ten2mx >> 256) = d7adf884aa879177  5b0ed81dcc6abb0f
   //   9214642a0b92c6a530bb93aafa4e0e65
   {{0xc0960fbbfb71a51eULL, 0xa8105021a2dbd21dULL,
     0xe272467e3d222f3fULL, 0xac8b2d36eed2dac5ULL}},
-  // (ten2mx >> 256) = ac8b2d36eed2dac5  e272467e3d222f3f   
+  // (ten2mx >> 256) = ac8b2d36eed2dac5  e272467e3d222f3f
   //   a8105021a2dbd21dc0960fbbfb71a51e
   {{0x66de72fcc927b74bULL, 0xb9a6a6814f1641b1ULL,
     0x1b8e9ecb641b58ffULL, 0x8a08f0f8bf0f156bULL}},
-  // (ten2mx >> 256) = 8a08f0f8bf0f156b  1b8e9ecb641b58ff   
+  // (ten2mx >> 256) = 8a08f0f8bf0f156b  1b8e9ecb641b58ff
   //   b9a6a6814f1641b166de72fcc927b74b
   {{0xd7ca5194750c5878ULL, 0xf5d770cee4f0691bULL,
     0xf8e431456cf88e65ULL, 0xdcdb1b2798182244ULL}},
-  // (ten2mx >> 256) = dcdb1b2798182244  f8e431456cf88e65   
+  // (ten2mx >> 256) = dcdb1b2798182244  f8e431456cf88e65
   //   f5d770cee4f0691bd7ca5194750c5878
   {{0xdfd50e105da379f9ULL, 0x9179270bea59edafULL,
     0x2d835a9df0c6d851ULL, 0xb0af48ec79ace837ULL}},
-  // (ten2mx >> 256) = b0af48ec79ace837  2d835a9df0c6d851   
+  // (ten2mx >> 256) = b0af48ec79ace837  2d835a9df0c6d851
   //   9179270bea59edafdfd50e105da379f9
   {{0x19773e737e1c6194ULL, 0x0dfa85a321e18af3ULL,
     0x579c487e5a38ad0eULL, 0x8d590723948a535fULL}},
-  // (ten2mx >> 256) = 8d590723948a535f  579c487e5a38ad0e   
+  // (ten2mx >> 256) = 8d590723948a535f  579c487e5a38ad0e
   //   dfa85a321e18af319773e737e1c6194
   {{0xf58b971f302d68eeULL, 0x165da29e9c9c1184ULL,
     0x25c6da63c38de1b0ULL, 0xe2280b6c20dd5232ULL}},
-  // (ten2mx >> 256) = e2280b6c20dd5232  25c6da63c38de1b0   
+  // (ten2mx >> 256) = e2280b6c20dd5232  25c6da63c38de1b0
   //   165da29e9c9c1184f58b971f302d68ee
   {{0xc46fac18f3578724ULL, 0x4517b54bb07cdad0ULL,
     0x1e38aeb6360b1af3ULL, 0xb4ecd5f01a4aa828ULL}},
-  // (ten2mx >> 256) = b4ecd5f01a4aa828  1e38aeb6360b1af3   
+  // (ten2mx >> 256) = b4ecd5f01a4aa828  1e38aeb6360b1af3
   //   4517b54bb07cdad0c46fac18f3578724
   {{0x36bfbce0c2ac6c1dULL, 0x9dac910959fd7bdaULL,
     0xb1c6f22b5e6f48c2ULL, 0x90bd77f3483bb9b9ULL}},
-  // (ten2mx >> 256) = 90bd77f3483bb9b9  b1c6f22b5e6f48c2   
+  // (ten2mx >> 256) = 90bd77f3483bb9b9  b1c6f22b5e6f48c2
   //   9dac910959fd7bda36bfbce0c2ac6c1d
   {{0x2465fb01377a4695ULL, 0x2f7a81a88ffbf95dULL,
     0xb60b1d1230b20e04ULL, 0xe7958cb87392c2c2ULL}}
-  // (ten2mx >> 256) = e7958cb87392c2c2  b60b1d1230b20e04   
+  // (ten2mx >> 256) = e7958cb87392c2c2  b60b1d1230b20e04
   //   2f7a81a88ffbf95d2465fb01377a4695
 };

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-std=gnu17 -O" } */
 
 extern double copysign ();
 double foo (double x)

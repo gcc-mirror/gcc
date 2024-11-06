@@ -28,8 +28,20 @@ with Diagnostics.JSON_Utils; use Diagnostics.JSON_Utils;
 with Gnatvsn;                use Gnatvsn;
 with Output;                 use Output;
 with Sinput;                 use Sinput;
+with Lib;                    use Lib;
+with Namet;                  use Namet;
+with Osint;                  use Osint;
+with Errout;                 use Errout;
 
 package body Diagnostics.SARIF_Emitter is
+
+   --  We are currently using SARIF 2.1.0
+
+   SARIF_Version : constant String := "2.1.0";
+   pragma Style_Checks ("M100");
+   SARIF_Schema  : constant String :=
+     "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json";
+   pragma Style_Checks ("M79");
 
    type Artifact_Change is record
       File  : String_Ptr;
@@ -84,6 +96,19 @@ package body Diagnostics.SARIF_Emitter is
    --  "fixes": [
    --    <Fix>,
    --    ...
+   --  ]
+
+   procedure Print_Invocations;
+   --  Print an invocations node that consists of
+   --  * a single invocation node that consists of:
+   --    * commandLine
+   --    * executionSuccessful
+   --
+   --  "invocations": [
+   --    {
+   --      "commandLine": <command line arguments provided to the GNAT FE>,
+   --      "executionSuccessful": ["true"|"false"],
+   --    }
    --  ]
 
    procedure Print_Artifact_Change (A : Artifact_Change);
@@ -565,6 +590,63 @@ package body Diagnostics.SARIF_Emitter is
       Write_Char (']');
    end Print_Fixes;
 
+   -----------------------
+   -- Print_Invocations --
+   -----------------------
+
+   procedure Print_Invocations is
+
+      function Compose_Command_Line return String;
+      --  Composes the original command line from the parsed main file name and
+      --  relevant compilation switches
+
+      function Compose_Command_Line return String is
+         Buffer : Bounded_String;
+      begin
+         Append (Buffer, Get_First_Main_File_Name);
+         for I in 1 .. Compilation_Switches_Last loop
+            declare
+               Switch : constant String := Get_Compilation_Switch (I).all;
+            begin
+               if Buffer.Length + Switch'Length + 1 <= Buffer.Max_Length then
+                  Append (Buffer, ' ' & Switch);
+               end if;
+            end;
+         end loop;
+
+         return +Buffer;
+      end Compose_Command_Line;
+
+   begin
+      Write_Str ("""" & "invocations" & """" & ": " & "[");
+      Begin_Block;
+      NL_And_Indent;
+
+      Write_Char ('{');
+      Begin_Block;
+      NL_And_Indent;
+
+      --  Print commandLine
+
+      Write_String_Attribute ("commandLine", Compose_Command_Line);
+      Write_Char (',');
+      NL_And_Indent;
+
+      --  Print executionSuccessful
+
+      Write_String_Attribute
+        ("executionSuccessful",
+         (if Compilation_Errors then "false" else "true"));
+
+      End_Block;
+      NL_And_Indent;
+      Write_Char ('}');
+
+      End_Block;
+      NL_And_Indent;
+      Write_Char (']');
+   end Print_Invocations;
+
    ------------------
    -- Print_Region --
    ------------------
@@ -1044,6 +1126,12 @@ package body Diagnostics.SARIF_Emitter is
       Write_Char (',');
       NL_And_Indent;
 
+      --  A run consists of an invocation
+      Print_Invocations;
+
+      Write_Char (',');
+      NL_And_Indent;
+
       --  A run consists of results
 
       Print_Results (Diags);
@@ -1068,13 +1156,16 @@ package body Diagnostics.SARIF_Emitter is
    ------------------------
 
    procedure Print_SARIF_Report (Diags : Diagnostic_List) is
-
    begin
       Write_Char ('{');
       Begin_Block;
       NL_And_Indent;
 
-      Write_String_Attribute ("version", "2.1.0");
+      Write_String_Attribute ("$schema", SARIF_Schema);
+      Write_Char (',');
+      NL_And_Indent;
+
+      Write_String_Attribute ("version", SARIF_Version);
       Write_Char (',');
       NL_And_Indent;
 

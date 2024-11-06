@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" { target c } } */
 
 #include <stdarg.h>
 

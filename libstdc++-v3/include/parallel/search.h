@@ -44,11 +44,11 @@ namespace __gnu_parallel
    *  @brief Precalculate __advances for Knuth-Morris-Pratt algorithm.
    *  @param __elements Begin iterator of sequence to search for.
    *  @param __length Length of sequence to search for.
-   *  @param __off Returned __offsets. 
+   *  @param __off Returned __offsets.
    */
   template<typename _RAIter, typename _DifferenceTp>
     void
-    __calc_borders(_RAIter __elements, _DifferenceTp __length, 
+    __calc_borders(_RAIter __elements, _DifferenceTp __length,
 		   _DifferenceTp* __off)
     {
       typedef _DifferenceTp _DifferenceType;
@@ -163,7 +163,7 @@ namespace __gnu_parallel
       omp_destroy_lock(&__result_lock);
 
       delete[] __splitters;
-      
+
       // Return iterator on found element.
       return (__begin1 + __result);
     }

@@ -6,7 +6,7 @@
 #embed __FILE__ gnu::offset (1 / 0) /* { dg-error "division by zero in #embed" } */
 #embed __FILE__ __gnu__::__offset__ (+ + +) /* { dg-error "operator '\\\+' has no right operand" } */
 #define FOO 1
-#embed __FILE__ gnu::offset(0 + defined(FOO)) /* { dg-error "'defined' in #embed parameter" } */
+#embed __FILE__ gnu::offset(0 + defined(FOO)) /* { dg-error "'defined' in '#embed' parameter" } */
 #embed __FILE__ gnu::offset (-1) /* { dg-error "negative embed parameter operand" } */
 #embed __FILE__ gnu::offset (-42) /* { dg-error "negative embed parameter operand" } */
 #embed __FILE__ gnu::offset (-9223372036854775807 - 1) /* { dg-error "negative embed parameter operand" } */
@@ -19,7 +19,7 @@
 #endif
 #if 1 + __has_embed (__FILE__ gnu::offset(+ + +)) /* { dg-error "operator '\\\+' has no right operand" } */
 #endif
-#if 1 + __has_embed (__FILE__ gnu::offset(0 + defined(FOO))) /* { dg-error "'defined' in #embed parameter" } */
+#if 1 + __has_embed (__FILE__ gnu::offset(0 + defined(FOO))) /* { dg-error "'defined' in '#embed' parameter" } */
 #endif
 #if 1 + __has_embed (__FILE__ gnu::offset (-1)) /* { dg-error "negative embed parameter operand" } */
 #endif

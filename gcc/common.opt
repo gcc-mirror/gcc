@@ -1440,6 +1440,14 @@ fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|sarif-stderr|sarif-file|json|json-stderr|json-file]	Select output format.
 
+fdiagnostics-add-output=
+Common Joined RejectNegative
+Add output format.
+
+fdiagnostics-set-output=
+Common Joined RejectNegative
+Set output format.
+
 fdiagnostics-escape-format=
 Common Joined RejectNegative Enum(diagnostics_escape_format)
 -fdiagnostics-escape-format=[unicode|bytes]	Select how to escape non-printable-ASCII bytes in the source for diagnostics that suggest it.
@@ -2185,11 +2193,11 @@ Common Var(flag_ivopts) Init(1) Optimization
 Optimize induction variables on trees.
 
 fjump-tables
-Common Var(flag_jump_tables) Init(1) Optimization
+Common Var(flag_jump_tables) Init(0) Optimization
 Use jump tables for sufficiently large switch statements.
 
 fbit-tests
-Common Var(flag_bit_tests) Init(1) Optimization
+Common Var(flag_bit_tests) Init(0) Optimization
 Use bit tests for sufficiently large switch statements.
 
 fkeep-inline-functions

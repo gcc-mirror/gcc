@@ -472,4 +472,43 @@ package body Diagnostics.Constructors is
         (Make_Representation_Too_Late_Error (Rep, Freeze, Def));
    end Record_Representation_Too_Late_Error;
 
+   ------------------------------------------
+   -- Make_Mixed_Container_Aggregate_Error --
+   ------------------------------------------
+
+   function Make_Mixed_Container_Aggregate_Error
+     (Aggr       : Node_Id;
+      Pos_Elem   : Node_Id;
+      Named_Elem : Node_Id) return Diagnostic_Type
+   is
+
+   begin
+      return
+        Make_Diagnostic
+          (Msg       =>
+             "container aggregate cannot be both positional and named",
+           Location  => Primary_Labeled_Span (Aggr),
+           Id        => GNAT0011,
+           Kind      => Diagnostics.Error,
+           Spans     =>
+             (1 => Secondary_Labeled_Span
+               (Pos_Elem, "positional element "),
+             2 => Secondary_Labeled_Span
+               (Named_Elem, "named element")));
+   end Make_Mixed_Container_Aggregate_Error;
+
+   --------------------------------------------
+   -- Record_Mixed_Container_Aggregate_Error --
+   --------------------------------------------
+
+   procedure Record_Mixed_Container_Aggregate_Error
+     (Aggr       : Node_Id;
+      Pos_Elem   : Node_Id;
+      Named_Elem : Node_Id)
+   is
+   begin
+      Record_Diagnostic
+        (Make_Mixed_Container_Aggregate_Error (Aggr, Pos_Elem, Named_Elem));
+   end Record_Mixed_Container_Aggregate_Error;
+
 end Diagnostics.Constructors;

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-g" }
+// { dg-options "-std=gnu17 -g" }
 struct A { struct A *a; } foo ();
 struct B { long b; };
 struct C { struct B c; struct A d; } *e;

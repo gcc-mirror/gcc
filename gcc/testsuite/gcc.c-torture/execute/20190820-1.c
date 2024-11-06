@@ -1,5 +1,6 @@
 /* PR rtl-optimization/91347 */
 /* Reported by John David Anglin <danglin@gcc.gnu.org> */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target int32plus } */
 
 typedef unsigned short __u16;

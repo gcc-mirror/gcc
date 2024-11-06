@@ -51,7 +51,7 @@ extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
    to be either long or long long.  */
 
 #define HOST_BITS_PER_WIDE_INT 64
-#if INT64_T_IS_LONG   
+#if INT64_T_IS_LONG
 #   define HOST_WIDE_INT long
 #   define HOST_WIDE_INT_C(X) X ## L
 #else

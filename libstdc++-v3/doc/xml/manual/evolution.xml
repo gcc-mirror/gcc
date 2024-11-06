@@ -1129,4 +1129,12 @@ to be used with <code>std::basic_istream</code>.
 
 </section>
 
+<section xml:id="api.rel_151"><info><title><constant>15</constant></title></info>
+
+<para>
+Enabled debug assertions by default for unoptimized builds.
+</para>
+
+</section>
+
 </section>

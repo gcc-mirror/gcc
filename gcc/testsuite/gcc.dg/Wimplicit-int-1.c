@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fpermissive" } */
+/* { dg-options "-std=gnu17 -fpermissive" } */
 
 static l; /* { dg-warning "type defaults to" } */
 

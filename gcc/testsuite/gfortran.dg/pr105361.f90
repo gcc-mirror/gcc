@@ -3,7 +3,7 @@
 module x
   implicit none
   type foo
-     real :: r
+     real(4) :: r
   end type foo
   interface read(formatted)
      module procedure read_formatted
@@ -25,17 +25,21 @@ program main
   use x
   implicit none
   type(foo) :: a, b
-  real :: c, d
+  real(4) :: c, d
+  c = 0.0_4
+  d = 0.0_4
   open(10, access="stream") 
   write(10) "1 2" // NEW_LINE('A')
   close(10)
   open(10)
   read(10,*) c, d
-  if ((c /= 1.0) .or. (d /= 2.0)) stop 1
+  if ((abs(c - 1.0_4) .gt. 0.001_4) .or. (abs(d - 2.0_4) .gt. 0.001_4)) stop 1
   rewind(10)
   !print *, c,d
+  a%r = 0.0_4
+  b%r = 0.0_4
   read (10,*) a, b
   close(10, status="delete")
-  if ((a%r /= 1.0) .or. (b%r /= 2.0)) stop 2
+  if ((abs(a%r - 1.0_4) .gt. 0.001_4) .or. (abs(b%r - 2.0_4) .gt. 0.001_4)) stop 2
   !print *, a,b
 end program main

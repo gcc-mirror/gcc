@@ -3,7 +3,7 @@
    union.  Bug 27697 from Frank Victor Fischer.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic -Wdiscarded-array-qualifiers" } */
+/* { dg-options "-std=gnu17 -pedantic -Wdiscarded-array-qualifiers" } */
 
 struct s {
   int a;

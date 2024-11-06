@@ -63,12 +63,12 @@ moxie_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its
-   FUNCTION_DECL; otherwise, FUNC is 0.  
+   FUNCTION_DECL; otherwise, FUNC is 0.
 
    We always return values in register $r0 for moxie.  */
 
 static rtx
-moxie_function_value (const_tree valtype, 
+moxie_function_value (const_tree valtype,
 		      const_tree fntype_or_decl ATTRIBUTE_UNUSED,
 		      bool outgoing ATTRIBUTE_UNUSED)
 {
@@ -118,12 +118,12 @@ moxie_print_operand_address (FILE *file, machine_mode, rtx x)
     case REG:
       fprintf (file, "(%s)", reg_names[REGNO (x)]);
       break;
-      
+
     case PLUS:
       switch (GET_CODE (XEXP (x, 1)))
 	{
 	case CONST_INT:
-	  fprintf (file, "%ld(%s)", 
+	  fprintf (file, "%ld(%s)",
 		   INTVAL(XEXP (x, 1)), reg_names[REGNO (XEXP (x, 0))]);
 	  break;
 	case SYMBOL_REF:
@@ -133,7 +133,7 @@ moxie_print_operand_address (FILE *file, machine_mode, rtx x)
 	case CONST:
 	  {
 	    rtx plus = XEXP (XEXP (x, 1), 0);
-	    if (GET_CODE (XEXP (plus, 0)) == SYMBOL_REF 
+	    if (GET_CODE (XEXP (plus, 0)) == SYMBOL_REF
 		&& CONST_INT_P (XEXP (plus, 1)))
 	      {
 		output_addr_const(file, XEXP (plus, 0));
@@ -234,7 +234,7 @@ moxie_option_override (void)
   /* Set the per-function-data initializer.  */
   init_machine_status = moxie_init_machine_status;
 
-#ifdef TARGET_MOXIEBOX  
+#ifdef TARGET_MOXIEBOX
   target_flags |= MASK_HAS_MULX;
 #endif
 }
@@ -267,9 +267,9 @@ moxie_compute_frame (void)
     if (df_regs_ever_live_p (regno) && (! call_used_or_fixed_reg_p (regno)))
       cfun->machine->callee_saved_reg_size += 4;
 
-  cfun->machine->size_for_adjusting_sp = 
+  cfun->machine->size_for_adjusting_sp =
     crtl->args.pretend_args_size
-    + cfun->machine->local_vars_size 
+    + cfun->machine->local_vars_size
     + (ACCUMULATE_OUTGOING_ARGS
        ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
 }
@@ -298,19 +298,19 @@ moxie_expand_prologue (void)
 
   if (cfun->machine->size_for_adjusting_sp > 0)
     {
-      int i = cfun->machine->size_for_adjusting_sp; 
+      int i = cfun->machine->size_for_adjusting_sp;
       while ((i >= 255) && (i <= 510))
 	{
-	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
-					stack_pointer_rtx, 
+	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+					stack_pointer_rtx,
 					GEN_INT (255)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  i -= 255;
 	}
       if (i <= 255)
 	{
-	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
-					stack_pointer_rtx, 
+	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+					stack_pointer_rtx,
 					GEN_INT (i)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -319,8 +319,8 @@ moxie_expand_prologue (void)
 	  rtx reg = gen_rtx_REG (SImode, MOXIE_R12);
 	  insn = emit_move_insn (reg, GEN_INT (i));
 	  RTX_FRAME_RELATED_P (insn) = 1;
-	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
-					stack_pointer_rtx, 
+	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+					stack_pointer_rtx,
 					reg));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -339,8 +339,8 @@ moxie_expand_epilogue (void)
       if (cfun->machine->callee_saved_reg_size <= 255)
 	{
 	  emit_move_insn (reg, hard_frame_pointer_rtx);
-	  emit_insn (gen_subsi3 
-		     (reg, reg, 
+	  emit_insn (gen_subsi3
+		     (reg, reg,
 		      GEN_INT (cfun->machine->callee_saved_reg_size)));
 	}
       else
@@ -367,7 +367,7 @@ int
 moxie_initial_elimination_offset (int from, int to)
 {
   int ret;
-  
+
   if ((from) == FRAME_POINTER_REGNUM && (to) == HARD_FRAME_POINTER_REGNUM)
     {
       /* Compute this since we need to use cfun->machine->local_vars_size.  */
@@ -392,19 +392,19 @@ moxie_setup_incoming_varargs (cumulative_args_t cum_v,
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int regno;
   int regs = 8 - *cum;
-  
+
   *pretend_size = regs < 0 ? 0 : GET_MODE_SIZE (SImode) * regs;
-  
+
   if (no_rtl)
     return;
-  
+
   for (regno = *cum; regno < 8; regno++)
     {
       rtx reg = gen_rtx_REG (SImode, regno);
       rtx slot = gen_rtx_PLUS (Pmode,
 			       gen_rtx_REG (SImode, ARG_POINTER_REGNUM),
 			       GEN_INT (UNITS_PER_WORD * (3 + (regno-2))));
-      
+
       emit_move_insn (gen_rtx_MEM (SImode, slot), reg);
     }
 }
@@ -430,7 +430,7 @@ moxie_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
   if (*cum < 8)
     return gen_rtx_REG (arg.mode, *cum);
-  else 
+  else
     return NULL_RTX;
 }
 
@@ -567,7 +567,7 @@ moxie_reg_ok_for_base_p (const_rtx reg, bool strict_p)
   if (strict_p)
     return HARD_REGNO_OK_FOR_BASE_P (regno)
 	   || HARD_REGNO_OK_FOR_BASE_P (reg_renumber[regno]);
-  else    
+  else
     return !HARD_REGISTER_NUM_P (regno)
 	   || HARD_REGNO_OK_FOR_BASE_P (regno);
 }

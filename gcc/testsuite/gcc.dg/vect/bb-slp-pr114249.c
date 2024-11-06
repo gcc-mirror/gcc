@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 
 enum { SEG_THIN_POOL } read_only;
 struct {

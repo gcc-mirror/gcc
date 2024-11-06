@@ -29,7 +29,9 @@
 #ifndef _STDIO_SYNC_FILEBUF_H
 #define _STDIO_SYNC_FILEBUF_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
@@ -308,10 +310,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if _GLIBCXX_EXTERN_TEMPLATE
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
   extern template class stdio_sync_filebuf<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class stdio_sync_filebuf<wchar_t>;
 #endif
+#pragma GCC diagnostic pop
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -22,6 +22,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* This file handles the lowering of GIMPLE_SWITCH to an indexed
    load, or a series of bit-test-and-branch expressions.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -133,75 +134,33 @@ gen_log2 (tree op, location_t loc, tree *result, tree type)
   return stmts;
 }
 
-/* Is it possible to efficiently check that a value of TYPE is a power of 2?
-
-   If yes, returns TYPE.  If no, returns NULL_TREE.  May also return another
-   type.  This indicates that logarithm of the variable can be computed but
-   only after it is converted to this type.
-
-   Also see gen_pow2p.  */
-
-static tree
-can_pow2p (tree type)
-{
-  /* __builtin_popcount supports the unsigned type or its long and long long
-     variants.  Choose the smallest out of those that can still fit TYPE.  */
-  int prec = TYPE_PRECISION (type);
-  int i_prec = TYPE_PRECISION (unsigned_type_node);
-  int li_prec = TYPE_PRECISION (long_unsigned_type_node);
-  int lli_prec = TYPE_PRECISION (long_long_unsigned_type_node);
-
-  if (prec <= i_prec)
-    return unsigned_type_node;
-  else if (prec <= li_prec)
-    return long_unsigned_type_node;
-  else if (prec <= lli_prec)
-    return long_long_unsigned_type_node;
-  else
-    return NULL_TREE;
-}
-
-/* Build a sequence of gimple statements checking that OP is a power of 2.  Use
-   special optabs if target supports them.  Return the result as a
-   boolean_type_node ssa name through RESULT.  Assumes that OP's value will
-   be non-negative.  The generated check may give arbitrary answer for negative
-   values.
-
-   Before computing the check, OP may have to be converted to another type.
-   This should be specified in TYPE.  Use can_pow2p to decide what this type
-   should be.
-
-   Should only be used if can_pow2p returns true for type of OP.  */
+/* Build a sequence of gimple statements checking that OP is a power of 2.
+   Return the result as a boolean_type_node ssa name through RESULT.  Assumes
+   that OP's value will be non-negative.  The generated check may give
+   arbitrary answer for negative values.  */
 
 static gimple_seq
-gen_pow2p (tree op, location_t loc, tree *result, tree type)
+gen_pow2p (tree op, location_t loc, tree *result)
 {
   gimple_seq stmts = NULL;
   gimple_stmt_iterator gsi = gsi_last (stmts);
 
-  built_in_function fn;
-  if (type == unsigned_type_node)
-    fn = BUILT_IN_POPCOUNT;
-  else if (type == long_unsigned_type_node)
-    fn = BUILT_IN_POPCOUNTL;
-  else
-    {
-      fn = BUILT_IN_POPCOUNTLL;
-      gcc_checking_assert (type == long_long_unsigned_type_node);
-    }
+  tree type = TREE_TYPE (op);
+  tree utype = unsigned_type_for (type);
 
-  tree orig_type = TREE_TYPE (op);
+  /* Build (op ^ (op - 1)) > (op - 1).  */
   tree tmp1;
-  if (type != orig_type)
-    tmp1 = gimple_convert (&gsi, false, GSI_NEW_STMT, loc, type, op);
-  else
+  if (types_compatible_p (type, utype))
     tmp1 = op;
-  /* Build __builtin_popcount{l,ll} (op) == 1.  */
-  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc,
-			    as_combined_fn (fn), integer_type_node, tmp1);
-  *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, EQ_EXPR,
-			  boolean_type_node, tmp2,
-			  build_one_cst (integer_type_node));
+  else
+    tmp1 = gimple_convert (&gsi, false, GSI_NEW_STMT, loc, utype, op);
+  tree tmp2 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, MINUS_EXPR, utype,
+			    tmp1, build_one_cst (utype));
+  tree tmp3 = gimple_build (&gsi, false, GSI_NEW_STMT, loc, BIT_XOR_EXPR,
+			    utype, tmp1, tmp2);
+  *result = gimple_build (&gsi, false, GSI_NEW_STMT, loc, GT_EXPR,
+			  boolean_type_node, tmp3, tmp2);
+
   return stmts;
 }
 
@@ -371,9 +330,6 @@ switch_conversion::is_exp_index_transform_viable (gswitch *swtch)
   m_exp_index_transform_log2_type = can_log2 (index_type, opt_type);
   if (!m_exp_index_transform_log2_type)
     return false;
-  m_exp_index_transform_pow2p_type = can_pow2p (index_type);
-  if (!m_exp_index_transform_pow2p_type)
-    return false;
 
   /* Check that each case label corresponds only to one value
      (no case 1..3).  */
@@ -467,8 +423,7 @@ switch_conversion::exp_index_transform (gswitch *swtch)
   new_edge2->probability = profile_probability::even ();
 
   tree tmp;
-  gimple_seq stmts = gen_pow2p (index, UNKNOWN_LOCATION, &tmp,
-				m_exp_index_transform_pow2p_type);
+  gimple_seq stmts = gen_pow2p (index, UNKNOWN_LOCATION, &tmp);
   gsi = gsi_last_bb (cond_bb);
   gsi_insert_seq_after (&gsi, stmts, GSI_LAST_NEW_STMT);
   gcond *stmt_cond = gimple_build_cond (NE_EXPR, tmp, boolean_false_node,
@@ -1818,12 +1773,13 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
 }
 
 /* Find bit tests of given CLUSTERS, where all members of the vector
-   are of type simple_cluster.  New clusters are returned.  */
+   are of type simple_cluster.   MAX_C is the approx max number of cases per
+   label.  New clusters are returned.  */
 
 vec<cluster *>
-bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
+bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
 {
-  if (!is_enabled ())
+  if (!is_enabled () || max_c == 1)
     return clusters.copy ();
 
   unsigned l = clusters.length ();
@@ -2252,18 +2208,26 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 }
 
 /* Compute the number of case labels that correspond to each outgoing edge of
-   switch statement.  Record this information in the aux field of the edge.  */
+   switch statement.  Record this information in the aux field of the edge.
+   Return the approx max number of cases per edge.  */
 
-void
+int
 switch_decision_tree::compute_cases_per_edge ()
 {
+  int max_c = 0;
   reset_out_edges_aux (m_switch);
   int ncases = gimple_switch_num_labels (m_switch);
   for (int i = ncases - 1; i >= 1; --i)
     {
       edge case_edge = gimple_switch_edge (cfun, m_switch, i);
       case_edge->aux = (void *) ((intptr_t) (case_edge->aux) + 1);
+      /* For a range case add one extra. That's enough for the bit
+	 cluster heuristic.  */
+      if ((intptr_t)case_edge->aux > max_c)
+	max_c = (intptr_t)case_edge->aux +
+		!!CASE_HIGH (gimple_switch_label (m_switch, i));
     }
+  return max_c;
 }
 
 /* Analyze switch statement and return true when the statement is expanded
@@ -2281,7 +2245,7 @@ switch_decision_tree::analyze_switch_statement ()
   m_case_bbs.reserve (l);
   m_case_bbs.quick_push (default_bb);
 
-  compute_cases_per_edge ();
+  int max_c = compute_cases_per_edge ();
 
   for (unsigned i = 1; i < l; i++)
     {
@@ -2302,7 +2266,7 @@ switch_decision_tree::analyze_switch_statement ()
   reset_out_edges_aux (m_switch);
 
   /* Find bit-test clusters.  */
-  vec<cluster *> output = bit_test_cluster::find_bit_tests (clusters);
+  vec<cluster *> output = bit_test_cluster::find_bit_tests (clusters, max_c);
 
   /* Find jump table clusters.  */
   vec<cluster *> output2;

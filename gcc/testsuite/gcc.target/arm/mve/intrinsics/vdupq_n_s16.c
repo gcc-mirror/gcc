@@ -21,6 +21,18 @@ foo (int16_t a)
   return vdupq_n_s16 (a);
 }
 
+/*
+**foo1:
+**	...
+**	vmov.i16	q[0-9]+, (#0x1)  (?:@.*|)
+**	...
+*/
+int16x8_t
+foo1 ()
+{
+  return vdupq_n_s16 (1);
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -254,7 +254,7 @@ do {									\
 
 /* DWARF bits.  */
 
-/* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets. 
+/* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets.
    Obviously the Dwarf2 folks haven't tried to actually build systems
    with their spec.  On a 64-bit system, only 64-bit relocs become
    RELATIVE relocations.  */

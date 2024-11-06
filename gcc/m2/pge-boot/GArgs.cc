@@ -32,9 +32,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _Args_H
 #define _Args_C
 
+#include "GArgs.h"
 #   include "GUnixArgs.h"
 #   include "GASCII.h"
 
@@ -84,13 +84,13 @@ extern "C" bool Args_GetArg (char *a, unsigned int _a_high, unsigned int n)
       Source = static_cast<Args__T1> (UnixArgs_GetArgV ());
       while ((j < High) && ((*(*Source).array[i]).array[j] != ASCII_nul))
         {
-          a[j] = (*(*Source).array[i]).array[j];
+          const_cast<char *>(a)[j] = (*(*Source).array[i]).array[j];
           j += 1;
         }
     }
   if (j <= High)
     {
-      a[j] = ASCII_nul;
+      const_cast<char *>(a)[j] = ASCII_nul;
     }
   return i < (UnixArgs_GetArgC ());
   /* static analysis guarentees a RETURN statement will be used before here.  */

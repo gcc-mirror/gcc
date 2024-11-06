@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -675,16 +676,21 @@ gfc_match_sym_tree (gfc_symtree **matched_symbol, int host_assoc)
 {
   char buffer[GFC_MAX_SYMBOL_LEN + 1];
   match m;
+  int ret;
 
+  locus loc = gfc_current_locus;
   m = gfc_match_name (buffer);
   if (m != MATCH_YES)
     return m;
-
+  loc = gfc_get_location_range (NULL, 0, &loc, 1, &gfc_current_locus);
   if (host_assoc)
-    return (gfc_get_ha_sym_tree (buffer, matched_symbol))
-	    ? MATCH_ERROR : MATCH_YES;
+    {
+      ret = gfc_get_ha_sym_tree (buffer, matched_symbol, &loc);
+      return ret ? MATCH_ERROR : MATCH_YES;
+    }
 
-  if (gfc_get_sym_tree (buffer, NULL, matched_symbol, false))
+  ret = gfc_get_sym_tree (buffer, NULL, matched_symbol, false, &loc);
+  if (ret)
     return MATCH_ERROR;
 
   return MATCH_YES;
@@ -1920,7 +1926,29 @@ gfc_match_associate (void)
       gfc_association_list* a;
 
       /* Match the next association.  */
-      if (gfc_match (" %n =>", newAssoc->name) != MATCH_YES)
+      if (gfc_match (" %n ", newAssoc->name) != MATCH_YES)
+	{
+	  gfc_error ("Expected associate name at %C");
+	  goto assocListError;
+	}
+
+      /* Required for an assumed rank target.  */
+      if (gfc_peek_char () == '(')
+	{
+	  newAssoc->ar = gfc_get_array_ref ();
+	  if (gfc_match_array_ref (newAssoc->ar, NULL, 0, 0) != MATCH_YES)
+	    {
+	      gfc_error ("Bad bounds remapping list at %C");
+	      goto assocListError;
+	    }
+	}
+
+      if (newAssoc->ar && !(gfc_option.allow_std & GFC_STD_F202Y))
+	gfc_error_now ("The bounds remapping list at %C is an experimental "
+		       "F202y feature. Use std=f202y to enable");
+
+      /* Match the next association.  */
+      if (gfc_match (" =>", newAssoc->name) != MATCH_YES)
 	{
 	  gfc_error ("Expected association at %C");
 	  goto assocListError;
@@ -1962,6 +1990,35 @@ gfc_match_associate (void)
 	  gfc_error ("Association target at %L cannot be a BOZ literal "
 		     "constant", &newAssoc->target->where);
 	  goto assocListError;
+	}
+
+      if (newAssoc->target->expr_type == EXPR_VARIABLE
+	  && newAssoc->target->symtree->n.sym->as
+	  && newAssoc->target->symtree->n.sym->as->type == AS_ASSUMED_RANK)
+	{
+	  bool bounds_remapping_list = true;
+	  if (!newAssoc->ar)
+	    bounds_remapping_list = false;
+	  else
+	    for (int dim = 0; dim < newAssoc->ar->dimen; dim++)
+	      if (!newAssoc->ar->start[dim] || !newAssoc->ar->end[dim]
+		  || newAssoc->ar->stride[dim] != NULL)
+		bounds_remapping_list = false;
+
+	  if (!bounds_remapping_list)
+	    {
+	      gfc_error ("The associate name %s with an assumed rank "
+			 "target at %L must have a bounds remapping list "
+			 "(list of lbound:ubound for each dimension)",
+			 newAssoc->name, &newAssoc->target->where);
+	      goto assocListError;
+	    }
+
+	  if (!newAssoc->target->symtree->n.sym->attr.contiguous)
+	    {
+	      gfc_error ("The assumed rank target at %C must be contiguous");
+	      goto assocListError;
+	    }
 	}
 
       /* The `variable' field is left blank for now; because the target is not

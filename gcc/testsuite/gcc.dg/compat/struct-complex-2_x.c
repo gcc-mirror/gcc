@@ -1,4 +1,4 @@
-/* { dg-options "-O -Wno-psabi" } */
+/* { dg-options "-std=gnu17 -O -Wno-psabi" } */
 
 
 #ifdef __x86_64__

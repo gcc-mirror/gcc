@@ -260,7 +260,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 
       if (HOST_STAT_FOR_64BIT_INODES (cur->name, &st))
 	{
-	  /* Dirs that don't exist or have denied permissions are 
+	  /* Dirs that don't exist or have denied permissions are
 	     silently ignored, unless verbose.  */
 	  if ((errno != ENOENT) && (errno != EPERM))
 	    cpp_errno (pfile, CPP_DL_ERROR, cur->name);
@@ -313,7 +313,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 
       /* Remove this entry from the chain.  */
       *pcur = cur->next;
-      free_path (cur, verbose ? reason: REASON_QUIET);
+      free_path (cur, verbose ? reason : REASON_QUIET);
     }
 
   *pcur = join;
@@ -495,7 +495,7 @@ register_include_chains (cpp_reader *pfile, const char *sysroot,
     { "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH",
       "OBJC_INCLUDE_PATH", "OBJCPLUS_INCLUDE_PATH" };
   cpp_options *cpp_opts = cpp_get_options (pfile);
-  size_t idx = (cpp_opts->objc ? 2: 0);
+  size_t idx = (cpp_opts->objc ? 2 : 0);
 
   if (cpp_opts->cplusplus)
     idx++;

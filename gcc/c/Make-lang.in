@@ -150,13 +150,13 @@ C_SELFTEST_DEPS = cc1$(exeext) $(SELFTEST_DEPS)
 
 # Run the C selftests:
 s-selftest-c: $(C_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS)
+	$(GCC_FOR_SELFTESTS) $(C_SELFTEST_FLAGS)
 	$(STAMP) $@
 
 # Convenience methods for running C selftests under gdb:
 .PHONY: selftest-c-gdb
 selftest-c-gdb: $(C_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS) \
+	$(GCC_FOR_SELFTESTS) $(C_SELFTEST_FLAGS) \
 	  -wrapper gdb,--args
 
 .PHONY: selftest-gdb
@@ -165,7 +165,7 @@ selftest-gdb: selftest-c-gdb
 # Convenience methods for running C selftests under valgrind:
 .PHONY: selftest-c-valgrind
 selftest-c-valgrind: $(C_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS) \
+	$(GCC_FOR_SELFTESTS) $(C_SELFTEST_FLAGS) \
 	  -wrapper valgrind,--leak-check=full
 
 .PHONY: selftest-valgrind

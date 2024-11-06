@@ -67,11 +67,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_c_locale_timepunct = _S_get_c_locale();
 
 	  _M_data->_M_date_format = "%m/%d/%y";
-	  _M_data->_M_date_era_format = "%m/%d/%y";
+	  _M_data->_M_date_era_format = _M_data->_M_date_format;
 	  _M_data->_M_time_format = "%H:%M:%S";
-	  _M_data->_M_time_era_format = "%H:%M:%S";
-	  _M_data->_M_date_time_format = "";
-	  _M_data->_M_date_time_era_format = "";
+	  _M_data->_M_time_era_format = _M_data->_M_time_format;
+	  _M_data->_M_date_time_format = "%a %b %e %T %Y";
+	  _M_data->_M_date_time_era_format = _M_data->_M_date_time_format;
 	  _M_data->_M_am = "AM";
 	  _M_data->_M_pm = "PM";
 	  _M_data->_M_am_pm_format = "%I:%M:%S %p";
@@ -224,11 +224,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_c_locale_timepunct = _S_get_c_locale();
 
 	  _M_data->_M_date_format = L"%m/%d/%y";
-	  _M_data->_M_date_era_format = L"%m/%d/%y";
+	  _M_data->_M_date_era_format = _M_data->_M_date_format;
 	  _M_data->_M_time_format = L"%H:%M:%S";
-	  _M_data->_M_time_era_format = L"%H:%M:%S";
-	  _M_data->_M_date_time_format = L"";
-	  _M_data->_M_date_time_era_format = L"";
+	  _M_data->_M_time_era_format = _M_data->_M_time_format;
+	  _M_data->_M_date_time_format = L"%a %b %e %T %Y";
+	  _M_data->_M_date_time_era_format = _M_data->_M_date_time_format;
 	  _M_data->_M_am = L"AM";
 	  _M_data->_M_pm = L"PM";
 	  _M_data->_M_am_pm_format = L"%I:%M:%S %p";

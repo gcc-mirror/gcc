@@ -104,11 +104,9 @@ void ffpa7_n1 (void (* (* (* [8])[n1])(void))(void));
 // { dg-warning "argument 1 of type 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[8]\\\)\\\[n1]\\\)\\\(void\\\)\\\)\\\(void\\\)' with mismatched bound" "" { target *-*-* } .-1 }
 
 void ffpa9_x (void (* (* (* [9])[*])(void))(void));
-// { dg-message "previously declared as 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[9]\\\)\\\[\\\*]\\\)\\\(void\\\)\\\)\\\(void\\\)'" "pr?????" { xfail *-*-* } .-1 }
-// { dg-message "previously declared as 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[9]\\\)\\\[0]\\\)\\\(void\\\)\\\)\\\(void\\\)'" "" { target *-*-* } .-2 }
+// { dg-message "previously declared as 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[9]\\\)\\\[\\\*]\\\)\\\(void\\\)\\\)\\\(void\\\)'" "pr?????" { target *-*-* } .-1 }
 void ffpa9_x (void (* (* (* [8])[*])(void))(void));
-// { dg-warning "argument 1 of type 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[8]\\\)\\\[\\\*]\\\)\\\(void\\\)\\\)\\\(void\\\)' with mismatched bound" "pr?????" { xfail *-*-* } .-1 }
-// { dg-warning "argument 1 of type 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[8]\\\)\\\[0]\\\)\\\(void\\\)\\\)\\\(void\\\)' with mismatched bound"  "" { target *-*-* } .-2 }
+// { dg-warning "argument 1 of type 'void \\\(\\\* ?\\\(\\\* ?\\\(\\\*\\\[8]\\\)\\\[\\\*]\\\)\\\(void\\\)\\\)\\\(void\\\)' with mismatched bound" "pr?????" { target *-*-* } .-1 }
 
 /* Verify a three-dimensional array of pointers to two-dimensional arrays
    of pointers to function pointers.  */

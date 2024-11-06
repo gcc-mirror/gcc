@@ -22,7 +22,7 @@ extern "C" {
 void
 foo (uint32x4_t addr, int32x4_t value, mve_pred16_t p)
 {
-  return vstrwq_scatter_base_p_s32 (addr, 0, value, p);
+  vstrwq_scatter_base_p_s32 (addr, 0, value, p);
 }
 
 
@@ -39,7 +39,7 @@ foo (uint32x4_t addr, int32x4_t value, mve_pred16_t p)
 void
 foo1 (uint32x4_t addr, int32x4_t value, mve_pred16_t p)
 {
-  return vstrwq_scatter_base_p (addr, 0, value, p);
+  vstrwq_scatter_base_p (addr, 0, value, p);
 }
 
 #ifdef __cplusplus

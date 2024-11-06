@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -84,7 +85,7 @@ along with GCC; see the file COPYING3.  If not see
    gimple_add_histogram_value().  Histograms are stored in a hash table
    that is attached to every intrumented function, see VALUE_HISTOGRAMS
    in function.h.
-   
+
    The value-profile transformations driver is the function
    gimple_value_profile_transformations().  It traverses all statements in
    the to-be-transformed function, and looks for statements with one or

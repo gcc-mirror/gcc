@@ -1,0 +1,17 @@
+/* { dg-do compile } */
+/* { dg-skip-if  "" { *-*-* } { "-flto" } } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -O3 -fdump-rtl-expand-details -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
+
+#include "sat_arith.h"
+
+/*
+** sat_u_sub_imm1_uint64_t_fmt_2:
+** snez\s+[atx][0-9]+,\s*a0
+** sub\s+a0,\s*a0,\s*[atx][0-9]+
+** ret
+*/
+
+DEF_SAT_U_SUB_IMM_FMT_2(uint64_t, 1)
+
+/* { dg-final { scan-rtl-dump-not ".SAT_SUB" "expand" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors -Wno-implicit-int" } */
+/* { dg-options "-std=gnu17 -pedantic-errors -Wno-implicit-int" } */
 
 static l;
 

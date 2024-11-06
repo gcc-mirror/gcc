@@ -1,3 +1,269 @@
+2024-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (std=c++2b, std=c++23, std=gnu++2b, std=gnu++23): Adjust
+	description now that ISO C++ 14882:2024 is published.
+
+2024-10-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117145
+	PR c/117245
+	PR c/100420
+	* c-pretty-print.cc (c_pretty_printer::direct_abstract_declarator):
+	Detect arrays of unspecified size.
+
+2024-10-30  Joseph Myers  <josmyers@redhat.com>
+
+	* c.opt (std=c23, std=gnu23, std=iso9899:2024): Do not mark as
+	experimental and incomplete.
+
+2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117021
+	* c-common.cc (c_add_case_label): Emit different diagnostics for C
+	on case ranges.  Diagnose for C using pedwarn conversions of range
+	expressions changing value and don't emit further conversion
+	diagnostics if the pedwarn has been diagnosed.  For empty ranges
+	bail out after emitting warning, don't add anything into splay
+	trees nor add a CASE_LABEL_EXPR.
+
+2024-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-format.cc (selftest::test_type_mismatch_range_labels): Update
+	for m_printer becoming reference printer.
+	(selftest::test_type_mismatch_range_labels): Likewise.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117313
+	* c-common.cc (complete_array_type): For RAW_DATA_CST elements
+	advance curindex by RAW_DATA_LENGTH or one less than that if
+	ce->index is non-NULL.  Handle even the first element if
+	it is RAW_DATA_CST.  Formatting fix.
+
+2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117030
+	* c-common.cc (c_common_reswords): Add __builtin_stdc_rotate_left
+	and __builtin_stdc_rotate_right.
+	* c-ubsan.cc (ubsan_instrument_shift): For {L,R}ROTATE_EXPR
+	just check if op1 is negative.
+
+2024-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (warn_trailing_whitespace_kind): Change blank
+	to blanks and space to any.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ubsan.cc: Remove trailing whitespace.
+	* stub-objc.cc: Likewise.
+	* c-pragma.cc: Likewise.
+	* c-ppoutput.cc: Likewise.
+	* c-indentation.cc: Likewise.
+	* c-ada-spec.cc: Likewise.
+	* c-opts.cc: Likewise.
+	* c-common.cc: Likewise.
+	* c-format.cc: Likewise.
+	* c-omp.cc: Likewise.
+	* c-objc.h: Likewise.
+	* c-cppbuiltin.cc: Likewise.
+	* c-attribs.cc: Likewise.
+	* c-target.def: Likewise.
+	* c-common.h: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* c-ada-spec.cc: Add #define INCLUDE_MEMORY.
+	* c-attribs.cc: Likewise.
+	* c-common.cc: Likewise.
+	* c-format.cc: Likewise.
+	* c-gimplify.cc: Likewise.
+	* c-indentation.cc: Likewise.
+	* c-opts.cc: Likewise.
+	* c-pch.cc: Likewise.
+	* c-pragma.cc: Likewise.
+	* c-pretty-print.cc: Likewise.  Add #include "make-unique.h".
+	(c_pretty_printer::clone): Use std::unique_ptr and ::make_unique.
+	* c-pretty-print.h (c_pretty_printer::clone): Use std::unique_ptr.
+	* c-type-mismatch.cc: Add #define INCLUDE_MEMORY.
+	* c-warn.cc: Likewise.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wleading-whitespace=): New option.
+	* c-opts.cc (c_common_post_options): Set cpp_opts->cpp_tabstop
+	to global_dc->m_tabstop.
+
+2024-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117230
+	* c-warn.cc (sizeof_pointer_memaccess_warning): Only compare
+	TYPE_PRECISION of TREE_TYPE (type) to precision of char if
+	TREE_TYPE (type) is integral type.
+
+2024-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117028
+	* c.opt (Wc23-c2y-compat): Add CPP and CppReason parameters.
+	* c-opts.cc (set_std_c2y): Use CLK_STDC2Y or CLK_GNUC2Y rather
+	than CLK_STDC23 and CLK_GNUC23.  Formatting fix.
+	* c-lex.cc (interpret_integer): Handle C2Y 0o or 0O prefixed
+	and wb/WB/uwb/UWB suffixed octal constants.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-opts.cc (c_common_init_options, c_common_handle_option,
+	c_common_finish, set_std_c89, set_std_c99, set_std_c11,
+	set_std_c17, set_std_c23, set_std_cxx98, set_std_cxx11,
+	set_std_cxx14, set_std_cxx17, set_std_cxx20, set_std_cxx23,
+	set_std_cxx26): ?: operator formatting fixes.
+
+2024-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ppoutput.cc (token_streamer::stream): Add special code to spell
+	CPP_EMBED token.
+	* c-lex.cc (c_lex_with_flags): Handle CPP_EMBED.  Formatting fix.
+	* c-common.cc (c_parse_error): Handle CPP_EMBED.
+	(braced_list_to_string): Optimize RAW_DATA_CST surrounded by
+	INTEGER_CSTs which match some bytes before or after RAW_DATA_CST in
+	its owner.
+
+2024-10-15  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/116016
+	* c-common.cc: Add new __builtin_counted_by_ref.
+	* c-common.h (enum rid): Add RID_BUILTIN_COUNTED_BY_REF.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117022
+	* c-common.def (FOR_STMT, WHILE_STMT, DO_STMT, BREAK_STMT,
+	CONTINUE_STMT, SWITCH_STMT): Add an extra operand, *_NAME
+	and document it.
+	* c-common.h (bc_hash_map_t): New typedef.
+	(struct bc_state): Add bc_hash_map member.
+	(WHILE_NAME, DO_NAME, FOR_NAME, BREAK_NAME, CONTINUE_NAME,
+	SWITCH_STMT_NAME): Define.
+	* c-pretty-print.cc (c_pretty_printer::statement): Print
+	BREAK_STMT or CONTINUE_STMT operand if any.
+	* c-gimplify.cc (bc_hash_map): New static variable.
+	(note_named_bc, release_named_bc): New functions.
+	(save_bc_state): Save and clear bc_hash_map.
+	(restore_bc_state): Assert NULL and restore bc_hash_map.
+	(genericize_c_loop): Add NAME argument, call note_named_bc
+	and release_named_bc if non-NULL around the body walk.
+	(genericize_for_stmt, genericize_while_stmt, genericize_do_stmt):
+	Adjust callers of it.
+	(genericize_switch_stmt): Rename break_block variable to blab.
+	Call note_named_bc and release_named_bc if SWITCH_STMT_NAME is
+	non-NULL around the body walk.
+	(genericize_continue_stmt): Handle non-NULL CONTINUE_NAME.
+	(genericize_break_stmt): Handle non-NULL BREAK_NAME.
+	(c_genericize): Delete and clear bc_hash_map.
+
+2024-10-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/117157
+	* c.opt.urls: Regenerate.
+
+2024-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wtrailing-whitespace=): New option.
+	(Wtrailing-whitespace): New alias.
+	* c.opt.urls: Regenerate.
+
+2024-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (c_common_has_attribute,
+	c_common_lex_availability_macro): Fix up -Wformat-diag warnings.
+
+2024-10-09  Jason Merrill  <jason@redhat.com>
+
+	* c-ppoutput.cc (preprocess_file): Set directives_only flag.
+
+2024-10-09  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR preprocessor/89808
+	* c.opt (Wpragma_once_outside_header): Define new option.
+	* c.opt.urls: Regenerate.
+
+2024-10-07  Jason Merrill  <jason@redhat.com>
+
+	* c-ppoutput.cc (preprocess_file): For modules,
+	use directives-only scan even with flag_no_output.
+	(directives_only_cb): Respect flag_no_output.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Explicit -Wdeprecated enables
+	deprecations from later standards.
+
+2024-10-03  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wdeprecated-literal-operator.
+	* c-opts.cc (c_common_post_options): Default on in C++23.
+	* c.opt.urls: Regenerate.
+
+2024-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/96842
+	* c.opt (Wheader-guard): New option.
+	* c.opt.urls: Regenerated.
+	* c-ppoutput.cc (init_pp_output): Initialize also cb->get_suggestion.
+
+2024-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Don't define __cpp_concepts
+	before C++17.
+
+2024-09-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* c-format.cc (selftest::test_type_mismatch_range_labels):
+	Explicitly pass in dc.m_printer to diagnostic_show_locus.
+
+2024-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/116847
+	* c-pch.cc: Include diagnostic.h.
+	(c_common_write_pch): Call global_dc->pch_save.
+	(c_common_read_pch): Call global_dc->pch_restore.
+
+2024-09-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR other/116801
+	* c.opt.urls: Regenerate.
+
+2024-09-25  Marek Polacek  <polacek@redhat.com>
+
+	* c-pretty-print.cc (c_pretty_printer::primary_expression): Use
+	TARGET_EXPR accessors.
+	(c_pretty_printer::expression): Likewise.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107637
+	* c.opt (frange-for-ext-temps): New option.
+	* c-opts.cc (c_common_post_options): Set flag_range_for_ext_temps
+	for C++23 or later or for C++11 or later in !flag_iso mode if
+	the option wasn't set by user.
+	* c-cppbuiltin.cc (c_cpp_builtins): Change __cpp_range_based_for
+	value for flag_range_for_ext_temps from 201603L to 202212L in C++17
+	or later.
+	* c-omp.cc (c_find_nested_loop_xform_r): Handle CLEANUP_POINT_EXPR
+	like TRY_FINALLY_EXPR.
+
 2024-09-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/116613

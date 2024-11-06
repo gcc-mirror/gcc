@@ -29,7 +29,9 @@
 #ifndef _TYPEINFO
 #define _TYPEINFO
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/exception.h>
 #if __cplusplus >= 201103L
@@ -210,7 +212,7 @@ namespace std
     return false;
 #endif
   }
-# endif
+#endif
 
 
   /**

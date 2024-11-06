@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -780,7 +781,7 @@ remap_decls (tree decls, vec<tree, va_gc> **nonlocalized_list,
 	  gcc_assert (DECL_P (new_var));
 	  DECL_CHAIN (new_var) = new_decls;
 	  new_decls = new_var;
- 
+
 	  /* Also copy value-expressions.  */
 	  if (VAR_P (new_var) && DECL_HAS_VALUE_EXPR_P (new_var))
 	    {
@@ -1811,7 +1812,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		return NULL;
 	    }
 	}
-     
+
       /* We do not allow CLOBBERs of handled components.  In case
 	 returned value is stored via such handled component, remove
 	 the clobber so stmt verifier is happy.  */
@@ -2669,7 +2670,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 				   (basic_block) old_edge->dest->aux))
 		&& (e->flags & EDGE_EH))
 	      e->probability = old_edge->probability;
-	    
+
           FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
 	    if (e->flags & EDGE_EH)
 	      {
@@ -3888,7 +3889,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
-     automatically replaced by the VAR_DECL.  
+     automatically replaced by the VAR_DECL.
 
      When returning by reference, ensure that RESULT_DECL remaps to
      gimple_val.  */
@@ -5130,9 +5131,23 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
       if (DECL_P (modify_dest))
 	suppress_warning (modify_dest, OPT_Wuninitialized);
 
+      /* If we have a return slot, we can assign it the result directly,
+	 except in the case where it is a global variable that is only
+	 written to because, the callee being permitted to read or take
+	 the address of its DECL_RESULT, this could invalidate the flag
+	 on the global variable; instead we preventively remove the store,
+	 which would have happened later if the call was not inlined.  */
       if (gimple_call_return_slot_opt_p (call_stmt))
 	{
-	  return_slot = modify_dest;
+	  tree base = get_base_address (modify_dest);
+
+	  if (VAR_P (base)
+	      && (TREE_STATIC (base) || DECL_EXTERNAL (base))
+	      && varpool_node::get (base)->writeonly)
+	    return_slot = NULL;
+	  else
+	    return_slot = modify_dest;
+
 	  modify_dest = NULL;
 	}
     }

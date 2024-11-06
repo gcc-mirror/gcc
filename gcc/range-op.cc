@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1960,7 +1961,7 @@ operator_minus::update_bitmask (irange &r, const irange &lh,
   update_known_bitmask (r, MINUS_EXPR, lh, rh);
 }
 
-void 
+void
 operator_minus::wi_fold (irange &r, tree type,
 			 const wide_int &lh_lb, const wide_int &lh_ub,
 			 const wide_int &rh_lb, const wide_int &rh_ub) const
@@ -2251,7 +2252,7 @@ operator_mult::wi_op_overflows (wide_int &res, tree type,
    return overflow;
 }
 
-void 
+void
 operator_mult::wi_fold (irange &r, tree type,
 			const wide_int &lh_lb, const wide_int &lh_ub,
 			const wide_int &rh_lb, const wide_int &rh_ub) const
@@ -3819,6 +3820,19 @@ operator_bitwise_or::op1_range (irange &r, tree type,
   if (lhs.zero_p ())
     {
       r.set_zero (type);
+      return true;
+    }
+
+  //   if (A < 0 && B < 0)
+  // Sometimes gets translated to
+  //   _1 = A | B
+  //   if (_1 < 0))
+  // It is useful for ranger to recognize a positive LHS means the RHS
+  // operands are also positive when dealing with the ELSE range..
+  if (TYPE_SIGN (type) == SIGNED && wi::ge_p (lhs.lower_bound (), 0, SIGNED))
+    {
+      unsigned prec = TYPE_PRECISION (type);
+      r.set (type, wi::zero (prec), wi::max_value (prec, SIGNED));
       return true;
     }
   r.set_varying (type);

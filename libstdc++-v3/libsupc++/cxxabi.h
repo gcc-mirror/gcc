@@ -41,7 +41,9 @@
 #ifndef _CXXABI_H
 #define _CXXABI_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC visibility push(default)
 
@@ -150,10 +152,10 @@ namespace __cxxabiv1
   __cxa_deleted_virtual(void) __attribute__ ((__noreturn__));
 
   // Exception handling auxiliary.
-  void 
+  void
   __cxa_bad_cast() __attribute__((__noreturn__));
 
-  void 
+  void
   __cxa_bad_typeid() __attribute__((__noreturn__));
 
   void
@@ -616,7 +618,7 @@ namespace __cxxabiv1
   __cxa_get_globals_fast() _GLIBCXX_NOTHROW __attribute__ ((__const__));
 
   // Free the space allocated for the primary exception.
-  void 
+  void
   __cxa_free_exception(void*) _GLIBCXX_NOTHROW;
 
   // Throw the exception.
@@ -631,10 +633,10 @@ namespace __cxxabiv1
   void*
   __cxa_begin_catch(void*) _GLIBCXX_NOTHROW;
 
-  void 
+  void
   __cxa_end_catch();
 
-  void 
+  void
   __cxa_rethrow() __attribute__((__noreturn__));
 
   // Returns the type_info for the currently handled exception [15.3/8], or

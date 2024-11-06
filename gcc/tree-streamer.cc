@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -60,6 +61,7 @@ streamer_check_handled_ts_structures (void)
   handled_p[TS_FIXED_CST] = true;
   handled_p[TS_VECTOR] = true;
   handled_p[TS_STRING] = true;
+  handled_p[TS_RAW_DATA_CST] = true;
   handled_p[TS_COMPLEX] = true;
   handled_p[TS_IDENTIFIER] = true;
   handled_p[TS_DECL_MINIMAL] = true;

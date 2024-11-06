@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file tr1/inttypes.h
- *  This is a TR1 C++ Library header. 
+ *  This is a TR1 C++ Library header.
  */
 
 #ifndef _GLIBCXX_TR1_INTTYPES_H

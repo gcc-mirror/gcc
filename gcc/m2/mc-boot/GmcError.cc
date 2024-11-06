@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -312,7 +313,7 @@ static bool translateNameToCharStar (char *a, unsigned int _a_high, unsigned int
   unsigned int i;
   unsigned int h;
 
-  /* 
+  /*
    translateNameToString - takes a format specification string, a, and
                            if they consist of of %a then this is translated
                            into a String and %a is replaced by %s.
@@ -422,7 +423,7 @@ static DynamicStrings_String doFormat1 (const char *a_, unsigned int _a_high, co
   memcpy (a, a_, _a_high+1);
   memcpy (w, w_, _w_high+1);
 
-  /* 
+  /*
    DoFormat1 -
   */
   if (translateNameToCharStar ((char *) a, _a_high, 1))
@@ -905,7 +906,7 @@ extern "C" void mcError_errorFormat0 (mcError_error e, const char *a_, unsigned 
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  /* 
+  /*
    errorFormat routines provide a printf capability for the error handle.
   */
   if (static_cast<mcError_error__opaque> (e)->s == NULL)
@@ -1094,7 +1095,7 @@ extern "C" void mcError_warnFormat0 (const char *a_, unsigned int _a_high)
   /* make a local copy of each unbounded array.  */
   memcpy (a, a_, _a_high+1);
 
-  /* 
+  /*
    WarnFormat0 - displays the source module and line together
                  with the encapsulated format string.
                  Used for simple warning messages tied to the current token.

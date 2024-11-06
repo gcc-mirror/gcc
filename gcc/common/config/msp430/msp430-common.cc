@@ -57,7 +57,7 @@ msp430_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 	}
       break;
     }
-      
+
   return true;
 }
 

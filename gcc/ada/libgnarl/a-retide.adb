@@ -31,11 +31,13 @@
 
 with Ada.Exceptions;
 
+with System.Soft_Links;
 with System.Tasking;
 with System.Task_Primitives.Operations;
 
 package body Ada.Real_Time.Delays is
 
+   package SSL  renames System.Soft_Links;
    package STPO renames System.Task_Primitives.Operations;
 
    ----------------
@@ -62,7 +64,9 @@ package body Ada.Real_Time.Delays is
          Ada.Exceptions.Raise_Exception
            (Program_Error'Identity, "potentially blocking operation");
       else
+         SSL.Abort_Defer.all;
          STPO.Timed_Delay (Self_Id, To_Duration (T), Absolute_RT);
+         SSL.Abort_Undefer.all;
       end if;
    end Delay_Until;
 

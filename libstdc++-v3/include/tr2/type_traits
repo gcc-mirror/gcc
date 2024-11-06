@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR2_TYPE_TRAITS
 #define _GLIBCXX_TR2_TYPE_TRAITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 #include <type_traits>
 #include <bits/c++config.h>
 

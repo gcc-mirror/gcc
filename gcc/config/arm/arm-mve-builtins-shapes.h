@@ -62,6 +62,7 @@ namespace arm_mve
     extern const function_shape *const create;
     extern const function_shape *const inherent;
     extern const function_shape *const load;
+    extern const function_shape *const load_ext;
     extern const function_shape *const mvn;
     extern const function_shape *const store;
     extern const function_shape *const ternary;
@@ -77,7 +78,16 @@ namespace arm_mve
     extern const function_shape *const unary_n;
     extern const function_shape *const unary_widen;
     extern const function_shape *const unary_widen_acc;
+    extern const function_shape *const vadc_vsbc;
+    extern const function_shape *const vctp;
+    extern const function_shape *const vcvt;
+    extern const function_shape *const vcvt_f16_f32;
+    extern const function_shape *const vcvt_f32_f16;
+    extern const function_shape *const vcvtx;
+    extern const function_shape *const viddup;
+    extern const function_shape *const vidwdup;
     extern const function_shape *const vpsel;
+    extern const function_shape *const vshlc;
 
   } /* end namespace arm_mve::shapes */
 } /* end namespace arm_mve */

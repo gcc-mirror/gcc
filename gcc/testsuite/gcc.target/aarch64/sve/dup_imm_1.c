@@ -99,7 +99,7 @@ DEF_SET_IMM (int32_t, -32763, imm_m32763)
 
 /* { dg-final { scan-assembler {\tmov\tz[0-9]+\.b, #-1\n} } } */
 
-/* { dg-final { scan-assembler {\tmov\tz[0-9]+\.b, #0\n} } } */
+/* { dg-final { scan-assembler {\tmov(?:i\td|\tz)([0-9]+)(?:\.[bhsd])?, #0\n} } } */
 
 /* { dg-final { scan-assembler {\tmov\tz[0-9]+\.b, #1\n} } } */
 /* { dg-final { scan-assembler {\tmov\tz[0-9]+\.h, #1\n} } } */

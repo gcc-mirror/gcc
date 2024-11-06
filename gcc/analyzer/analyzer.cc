@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-event-id.h"
 #include "tree-dfa.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -223,15 +224,15 @@ get_diagnostic_tree_for_gassign (const gassign *assign_stmt)
    This is intended for debugging the analyzer rather than serialization and
    thus is a string (or null, for NULL_TREE).  */
 
-json::value *
+std::unique_ptr<json::value>
 tree_to_json (tree node)
 {
   if (!node)
-    return new json::literal (json::JSON_NULL);
+    return ::make_unique<json::literal> (json::JSON_NULL);
 
   pretty_printer pp;
   dump_generic_node (&pp, node, 0, TDF_VOPS|TDF_MEMSYMS, false);
-  return new json::string (pp_formatted_text (&pp));
+  return ::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Generate a JSON value for EVENT_ID.
@@ -239,41 +240,41 @@ tree_to_json (tree node)
    thus is a string matching those seen in event messags (or null,
    for unknown).  */
 
-json::value *
+std::unique_ptr<json::value>
 diagnostic_event_id_to_json (const diagnostic_event_id_t &event_id)
 {
   if (event_id.known_p ())
     {
       pretty_printer pp;
       pp_printf (&pp, "%@", &event_id);
-      return new json::string (pp_formatted_text (&pp));
+      return ::make_unique<json::string> (pp_formatted_text (&pp));
     }
   else
-    return new json::literal (json::JSON_NULL);
+    return ::make_unique<json::literal> (json::JSON_NULL);
 }
 
 /* Generate a JSON value for OFFSET.
    This is intended for debugging the analyzer rather than serialization and
    thus is a string.  */
 
-json::value *
+std::unique_ptr<json::value>
 bit_offset_to_json (const bit_offset_t &offset)
 {
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
-  return new json::string (pp_formatted_text (&pp));
+  return ::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Generate a JSON value for OFFSET.
    This is intended for debugging the analyzer rather than serialization and
    thus is a string.  */
 
-json::value *
+std::unique_ptr<json::value>
 byte_offset_to_json (const byte_offset_t &offset)
 {
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
-  return new json::string (pp_formatted_text (&pp));
+  return ::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Workaround for lack of const-correctness of ssa_default_def.  */
@@ -494,11 +495,11 @@ get_user_facing_name (const gcall *call)
 label_text
 make_label_text (bool can_colorize, const char *fmt, ...)
 {
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_clear_output_area (pp);
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_clear_output_area (pp.get ());
 
   if (!can_colorize)
-    pp_show_color (pp) = false;
+    pp_show_color (pp.get ()) = false;
 
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
@@ -507,13 +508,12 @@ make_label_text (bool can_colorize, const char *fmt, ...)
   va_start (ap, fmt);
 
   text_info ti (_(fmt), &ap, 0, NULL, &rich_loc);
-  pp_format (pp, &ti);
-  pp_output_formatted_text (pp);
+  pp_format (pp.get (), &ti);
+  pp_output_formatted_text (pp.get ());
 
   va_end (ap);
 
-  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
-  delete pp;
+  label_text result = label_text::take (xstrdup (pp_formatted_text (pp.get ())));
   return result;
 }
 
@@ -524,11 +524,11 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 		   const char *singular_fmt,
 		   const char *plural_fmt, ...)
 {
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_clear_output_area (pp);
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_clear_output_area (pp.get ());
 
   if (!can_colorize)
-    pp_show_color (pp) = false;
+    pp_show_color (pp.get ()) = false;
 
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
 
@@ -540,13 +540,13 @@ make_label_text_n (bool can_colorize, unsigned HOST_WIDE_INT n,
 
   text_info ti (fmt, &ap, 0, NULL, &rich_loc);
 
-  pp_format (pp, &ti);
-  pp_output_formatted_text (pp);
+  pp_format (pp.get (), &ti);
+  pp_output_formatted_text (pp.get ());
 
   va_end (ap);
 
-  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
-  delete pp;
+  label_text result
+    = label_text::take (xstrdup (pp_formatted_text (pp.get ())));
   return result;
 }
 

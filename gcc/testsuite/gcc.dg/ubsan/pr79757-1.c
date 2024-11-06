@@ -1,7 +1,7 @@
 /* PR sanitizer/79757 */
 /* { dg-do compile } */
 /* { dg-require-effective-target int128 } */
-/* { dg-options "-fsanitize=undefined" } */
+/* { dg-options "-Wno-old-style-definition -fsanitize=undefined" } */
 
 unsigned __int128 x, y;
 

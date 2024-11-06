@@ -3,4 +3,4 @@
 int foo()
 {
 }
-/* { dg-final { scan-assembler ".attribute arch, \"rv32i2p1_m2p0_a2p1_f2p2_d2p2_c2p0_zicsr2p0_zifencei2p0_zaamo1p0_zalrsc1p0_zca1p0_zcd1p0_zcf1p0\"" } } */
+/* { dg-final { scan-assembler ".attribute arch, \"rv32i2p1_m2p0_a2p1_f2p2_d2p2_c2p0_zicsr2p0_zifencei2p0_zmmul1p0_zaamo1p0_zalrsc1p0_zca1p0_zcd1p0_zcf1p0\"" } } */

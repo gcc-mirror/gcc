@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* trans-types.cc -- gfortran backend types */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -119,6 +120,7 @@ int gfc_default_character_kind;
 int gfc_default_logical_kind;
 int gfc_default_complex_kind;
 int gfc_c_int_kind;
+int gfc_c_uint_kind;
 int gfc_c_intptr_kind;
 int gfc_atomic_int_kind;
 int gfc_atomic_logical_kind;
@@ -226,6 +228,26 @@ get_int_kind_from_name (const char *name)
   return get_int_kind_from_node (get_typenode_from_name (name));
 }
 
+static int
+get_unsigned_kind_from_node (tree type)
+{
+  int i;
+
+  if (!type)
+    return -2;
+
+  for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+    if (gfc_unsigned_kinds[i].bit_size == TYPE_PRECISION (type))
+      return gfc_unsigned_kinds[i].kind;
+
+  return -1;
+}
+
+static int
+get_uint_kind_from_name (const char *name)
+{
+  return get_unsigned_kind_from_node (get_typenode_from_name (name));
+}
 
 /* Get the kind number corresponding to an integer of given size,
    following the required return values for ISO_FORTRAN_ENV INT* constants:
@@ -243,6 +265,26 @@ gfc_get_int_kind_from_width_isofortranenv (int size)
   /* Look for a kind with larger storage size.  */
   for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
     if (gfc_integer_kinds[i].bit_size > size)
+      return -2;
+
+  return -1;
+}
+
+/* Same, but for unsigned.  */
+
+int
+gfc_get_uint_kind_from_width_isofortranenv (int size)
+{
+  int i;
+
+  /* Look for a kind with matching storage size.  */
+  for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+    if (gfc_unsigned_kinds[i].bit_size == size)
+      return gfc_unsigned_kinds[i].kind;
+
+  /* Look for a kind with larger storage size.  */
+  for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+    if (gfc_unsigned_kinds[i].bit_size > size)
       return -2;
 
   return -1;
@@ -312,6 +354,18 @@ get_int_kind_from_minimal_width (int size)
   return -2;
 }
 
+static int
+get_uint_kind_from_width (int size)
+{
+  int i;
+
+  for (i = 0; gfc_unsigned_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].bit_size == size)
+      return gfc_integer_kinds[i].kind;
+
+  return -2;
+}
+
 
 /* Generate the CInteropKind_t objects for the C interoperable
    kinds.  */
@@ -333,6 +387,10 @@ gfc_init_c_interop_kinds (void)
 #define NAMED_INTCST(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
   c_interop_kinds_table[a].f90_type = BT_INTEGER; \
+  c_interop_kinds_table[a].value = c;
+#define NAMED_UINTCST(a,b,c,d) \
+  strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
+  c_interop_kinds_table[a].f90_type = BT_UNSIGNED; \
   c_interop_kinds_table[a].value = c;
 #define NAMED_REALCST(a,b,c,d) \
   strncpy (c_interop_kinds_table[a].name, b, strlen(b) + 1); \
@@ -745,6 +803,9 @@ gfc_init_kinds (void)
 
   /* Pick a kind the same size as the C "int" type.  */
   gfc_c_int_kind = INT_TYPE_SIZE / 8;
+
+  /* UNSIGNED has the same as INT.  */
+  gfc_c_uint_kind = gfc_c_int_kind;
 
   /* Choose atomic kinds to match C's int.  */
   gfc_atomic_int_kind = gfc_c_int_kind;
@@ -1651,7 +1712,12 @@ gfc_get_dtype_rank_type (int rank, tree etype)
 	  && TYPE_STRING_FLAG (ptype))
 	n = BT_CHARACTER;
       else
-	n = BT_INTEGER;
+	{
+	  if (TYPE_UNSIGNED (etype))
+	    n = BT_UNSIGNED;
+	  else
+	    n = BT_INTEGER;
+	}
       break;
 
     case BOOLEAN_TYPE:
@@ -2671,10 +2737,10 @@ gfc_get_union_type (gfc_symbol *un)
         /* The map field's declaration. */
         map_field = gfc_add_field_to_struct(typenode, get_identifier(map->name),
                                             map_type, &chain);
-        if (map->loc.lb)
-          gfc_set_decl_location (map_field, &map->loc);
-        else if (un->declared_at.lb)
-          gfc_set_decl_location (map_field, &un->declared_at);
+	if (GFC_LOCUS_IS_SET (map->loc))
+	  gfc_set_decl_location (map_field, &map->loc);
+	else if (GFC_LOCUS_IS_SET (un->declared_at))
+	  gfc_set_decl_location (map_field, &un->declared_at);
 
         DECL_PACKED (map_field) |= TYPE_PACKED (typenode);
         DECL_NAMELESS(map_field) = true;
@@ -3050,9 +3116,9 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       field = gfc_add_field_to_struct (typenode,
 				       get_identifier (c->name),
 				       field_type, &chain);
-      if (c->loc.lb)
+      if (GFC_LOCUS_IS_SET (c->loc))
 	gfc_set_decl_location (field, &c->loc);
-      else if (derived->declared_at.lb)
+      else if (GFC_LOCUS_IS_SET (derived->declared_at))
 	gfc_set_decl_location (field, &derived->declared_at);
 
       gfc_finish_decl_attrs (field, &c->attr);

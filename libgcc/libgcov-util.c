@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define IN_GCOV_TOOL 1
 
+#define INCLUDE_MEMORY
 #include "libgcov.h"
 #include "intl.h"
 #include "diagnostic.h"

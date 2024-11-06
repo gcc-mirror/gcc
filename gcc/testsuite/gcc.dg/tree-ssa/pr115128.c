@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -w" } */
+/* { dg-options "-std=gnu17 -O3 -w" } */
 
 long XXH3_len_4to8_64b_len, XXH3_len_0to16_64b___trans_tmp_3, XXH3_mix2Accs_acc,
     XXH3_64bits_internal___trans_tmp_8;

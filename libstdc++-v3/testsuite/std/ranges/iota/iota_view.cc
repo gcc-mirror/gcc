@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <ranges>
+#include <vector>
 #include <testsuite_hooks.h>
 
 void
@@ -118,6 +119,16 @@ test07()
   static_assert(!requires { iota(nullptr, nullptr); });
 }
 
+void
+test08()
+{
+  // LWC 4001 - iota_view should provide empty
+  std::vector<int> v;
+  auto it = std::back_inserter(v);
+  auto r = std::views::iota(it);
+  VERIFY( !r.empty() );
+}
+
 int
 main()
 {
@@ -128,4 +139,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }

@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU_SPEC "%(asm_cpu_default) " ASM_XBRACE_COMMENT_SPEC
 
 /* Don't include ASM_PIC_SPEC.  While the Solaris 10+ assembler accepts -K PIC,
-   it gives many warnings: 
+   it gives many warnings:
 	Absolute relocation is used for symbol "<symbol>"
    GNU as doesn't recognize -K at all.  */
 #undef ASM_SPEC

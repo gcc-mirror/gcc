@@ -249,6 +249,25 @@ PROCEDURE PCEndBuildProcedure ;
 
 
 (*
+   EndBuildForward - Ends building a forward declaration.
+
+                     The Stack:
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | ProcSym    |
+                     |------------|
+                     | NameStart  |
+                     |------------|
+                                           Empty
+*)
+
+PROCEDURE PCEndBuildForward ;
+
+
+(*
    BuildImportOuterModule - Builds imported identifiers into an outer module
                             from a definition module.
 

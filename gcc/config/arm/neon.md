@@ -2989,7 +2989,7 @@
 ;; ...
 ;;
 ;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_insn "<sup>dot_prod<vsi2qi>"
+(define_insn "<sup>dot_prod<mode><vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand" "=w")
 	(plus:VCVTI
 	  (unspec:VCVTI [(match_operand:<VSI2QI> 1 "register_operand" "w")
@@ -3002,7 +3002,7 @@
 )
 
 ;; These instructions map to the __builtins for the Dot Product operations
-(define_expand "neon_<sup>dot<vsi2qi>"
+(define_expand "neon_<sup>dot<mode><vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand" "=w")
 	(plus:VCVTI
 	  (unspec:VCVTI [(match_operand:<VSI2QI> 2 "register_operand")
@@ -3013,7 +3013,7 @@
 )
 
 ;; These instructions map to the __builtins for the Dot Product operations.
-(define_insn "neon_usdot<vsi2qi>"
+(define_insn "neon_usdot<mode><vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand" "=w")
 	(plus:VCVTI
 	  (unspec:VCVTI
@@ -3112,7 +3112,7 @@
 )
 
 ;; Auto-vectorizer pattern for usdot
-(define_expand "usdot_prod<vsi2qi>"
+(define_expand "usdot_prod<mode><vsi2qi>"
   [(set (match_operand:VCVTI 0 "register_operand")
 	(plus:VCVTI (unspec:VCVTI [(match_operand:<VSI2QI> 1
 							"register_operand")

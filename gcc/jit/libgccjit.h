@@ -1052,6 +1052,11 @@ gcc_jit_global_set_initializer (gcc_jit_lvalue *global,
 				const void *blob,
 				size_t num_bytes);
 
+extern void
+gcc_jit_global_set_readonly (gcc_jit_lvalue *global);
+
+#define LIBGCCJIT_HAVE_gcc_jit_global_set_readonly
+
 /* Upcasting.  */
 extern gcc_jit_object *
 gcc_jit_lvalue_as_object (gcc_jit_lvalue *lvalue);
@@ -1332,6 +1337,16 @@ gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 				  gcc_jit_location *loc,
 				  gcc_jit_rvalue *ptr,
 				  gcc_jit_rvalue *index);
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_convert_vector
+
+/* Given a vector rvalue, cast it to the type ``type``, doing an element-wise
+   conversion.  */
+extern gcc_jit_rvalue *
+gcc_jit_context_convert_vector (gcc_jit_context *ctxt,
+				gcc_jit_location *loc,
+				gcc_jit_rvalue *vector,
+				gcc_jit_type *type);
 
 /* Field access is provided separately for both lvalues and rvalues.  */
 

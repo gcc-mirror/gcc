@@ -997,16 +997,17 @@ proc check-function-bodies { args } {
 	error "too many arguments to check-function-bodies"
     }
 
+    upvar 2 dg-extra-tool-flags extra_tool_flags
+    set flags $extra_tool_flags
+
+    global torture_current_flags
+    if { [info exists torture_current_flags] } {
+	append flags " " $torture_current_flags
+    }
+
     if { [llength $args] >= 3 } {
 	set required_flags [lindex $args 2]
 
-	upvar 2 dg-extra-tool-flags extra_tool_flags
-	set flags $extra_tool_flags
-
-	global torture_current_flags
-	if { [info exists torture_current_flags] } {
-	    append flags " " $torture_current_flags
-	}
 	foreach required_flag $required_flags {
 	    switch -- $required_flag {
 		target -
@@ -1043,7 +1044,14 @@ proc check-function-bodies { args } {
 
     global srcdir
     set input_filename "$srcdir/$filename"
-    set output_filename "[file rootname [file tail $filename]].s"
+    set output_filename "[file rootname [file tail $filename]]"
+    if { [string match "* -flto *" " ${flags} "]
+	 && ![string match "* -fno-use-linker-plugin *" " ${flags} "]
+	 && ![string match "* -ffat-lto-objects *" " ${flags} "] } {
+	append output_filename ".ltrans0.ltrans.s"
+    } else {
+	append output_filename ".s"
+    }
 
     set prefix [lindex $args 0]
     set prefix_len [string length $prefix]

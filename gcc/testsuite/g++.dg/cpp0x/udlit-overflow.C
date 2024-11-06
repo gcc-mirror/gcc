@@ -2,12 +2,12 @@
 // PR c++/52654
 
 int
-operator"" _w(const char*)
+operator ""_w(const char*)
 { return 0; }
 
 template<char...>
   int
-  operator"" _tw()
+  operator ""_tw()
   { return 0; }
 
 int i = 12345678901234567890123456789012345678901234567890_w;

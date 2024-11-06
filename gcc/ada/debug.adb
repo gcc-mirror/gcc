@@ -150,7 +150,7 @@ package body Debug is
    --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
    --  d_k  In CodePeer mode disable expansion of assertion checks
    --  d_l  Disable strict alignment of array types with aliased component
-   --  d_m
+   --  d_m  Run adareducer on crash
    --  d_n
    --  d_o
    --  d_p  Ignore assertion pragmas for elaboration
@@ -177,10 +177,10 @@ package body Debug is
    --  d_J
    --  d_K  (Reserved) Enable reporting a warning on known-problem issues
    --  d_L  Output trace information on elaboration checking
-   --  d_M
+   --  d_M  Ignore Source_File_Name and Source_File_Name_Project pragmas
    --  d_N
    --  d_O
-   --  d_P
+   --  d_P  Enable runtime check for null prefix of prefixed subprogram call
    --  d_Q
    --  d_R  For LLVM, dump the representation of records
    --  d_S
@@ -1039,6 +1039,14 @@ package body Debug is
    --       causes output to be generated showing each call or instantiation as
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
+
+   --  d_P  For prefixed subprogram calls with an access-type prefix, generate
+   --       a null-excluding runtime check on the prefix, even when the called
+   --       subprogram has a first access parameter that does not exclude null
+   --       (that is the case only for class-wide parameter, as controlling
+   --       parameters are automatically null-excluding). In such a case,
+   --       P.Proc is equivalent to Proc(P.all'Access); see RM 6.4(9.1/5).
+   --       This includes a dereference, and thus a null check.
 
    --  d_R  In the LLVM backend, output the internal representation of
    --       each record

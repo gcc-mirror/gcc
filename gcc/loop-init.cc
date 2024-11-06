@@ -378,7 +378,7 @@ pass_loop2::gate (function *fun)
       if (current_loops)
 	loop_optimizer_finalize ();
       return false;
-    } 
+    }
 }
 
 } // anon namespace

@@ -4,6 +4,7 @@
 #include "sat_arith.h"
 
 DEF_SAT_U_SUB_IMM_FMT_2(uint32_t, 0)
+DEF_SAT_U_SUB_IMM_FMT_2(uint32_t, 1)
 DEF_SAT_U_SUB_IMM_FMT_2(uint32_t, 2)
 DEF_SAT_U_SUB_IMM_FMT_2(uint32_t, 6)
 DEF_SAT_U_SUB_IMM_FMT_2(uint32_t, 2147483647)

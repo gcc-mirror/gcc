@@ -49,7 +49,7 @@ public:
 
     const char *get_name () const { return m_name; }
     virtual void dump_to_pp (pretty_printer *pp) const;
-    virtual json::value *to_json () const;
+    virtual std::unique_ptr<json::value> to_json () const;
 
     unsigned get_id () const { return m_id; }
 
@@ -180,7 +180,7 @@ public:
 
   void dump_to_pp (pretty_printer *pp) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   state_t get_start_state () const { return m_start; }
 

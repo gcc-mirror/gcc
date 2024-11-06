@@ -25,8 +25,8 @@ contains
   end subroutine bla
 end
 
-! { dg-final { scan-tree-dump-times "line 15 .* bound mismatch for dimension 1 of array .'.*.'" 1 "original" } }
-! { dg-final { scan-tree-dump-times "line 15 .* bound mismatch for dimension 2 of array .'.*.'" 1 "original" } }
+! { dg-final { scan-tree-dump-times "around line 15.* bound mismatch for dimension 1 of array .'.*.'" 1 "original" } }
+! { dg-final { scan-tree-dump-times "around line 15.* bound mismatch for dimension 2 of array .'.*.'" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "line 24 .* bound mismatch for dimension 1 of array .'d%%m.'" 1 "original" } }
-! { dg-final { scan-tree-dump-times "line 24 .* bound mismatch for dimension 2 of array .'d%%m.'" 1 "original" } }
+! { dg-final { scan-tree-dump-times "At line 24 .* bound mismatch for dimension 1 of array .'d%%m.'" 1 "original" } }
+! { dg-final { scan-tree-dump-times "At line 24 .* bound mismatch for dimension 2 of array .'d%%m.'" 1 "original" } }

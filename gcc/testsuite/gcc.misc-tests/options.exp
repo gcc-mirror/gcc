@@ -21,12 +21,6 @@
 
 load_lib gcc-defs.exp
 
-# disable for non-profile targets explitly, rather than
-# rely on check-effective target.  We're explicitly trying to check
-# profiling works, and if it doesn't check-effective-target will
-# simply skip the tests, rather than have this test shout at us.
-if [ istarget "nvptx-*-*" ] { return 0 }
-
 # These tests don't run runtest_file_p consistently if it
 # doesn't return the same values, so disable parallelization
 # of this *.exp file.  The first parallel runtest to reach
@@ -73,7 +67,9 @@ proc check_for_all_options {language gcc_options compiler_pattern as_pattern ld_
     pass $test
 }
 
-check_for_all_options c {--coverage} {-fprofile-arcs -ftest-coverage} {} {-lgcov}
+if { [check_profiling_available "-fprofile-arcs"] } {
+    check_for_all_options c {--coverage} {-fprofile-arcs -ftest-coverage} {} {-lgcov}
+}
 
 proc get_dump_flags {} {
     set res [list]

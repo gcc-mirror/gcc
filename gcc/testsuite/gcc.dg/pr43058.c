@@ -1,6 +1,6 @@
 /* PR debug/43058 */
 /* { dg-do compile } */
-/* { dg-options "-g -O2" } */
+/* { dg-options "-std=gnu17 -g -O2" } */
 /* { dg-timeout-factor 4 } */
 
 extern void *f1 (void *, void *, void *);

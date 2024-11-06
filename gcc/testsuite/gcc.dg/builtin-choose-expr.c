@@ -35,7 +35,7 @@
 
 
 extern void abort ();
-extern void exit ();
+extern void exit (int);
 
 void bad ()
 {

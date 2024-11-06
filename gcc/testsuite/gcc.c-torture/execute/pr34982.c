@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 extern void abort (void);
 
 static void something();

@@ -23,6 +23,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1369,7 +1370,7 @@ tree
 begin_while_stmt (void)
 {
   tree r;
-  r = build_stmt (input_location, WHILE_STMT, NULL_TREE, NULL_TREE);
+  r = build_stmt (input_location, WHILE_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   add_stmt (r);
   WHILE_BODY (r) = do_pushlevel (sk_block);
   begin_cond (&WHILE_COND (r));
@@ -1426,7 +1427,8 @@ finish_while_stmt (tree while_stmt)
 tree
 begin_do_stmt (void)
 {
-  tree r = build_stmt (input_location, DO_STMT, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (input_location, DO_STMT, NULL_TREE, NULL_TREE,
+		       NULL_TREE);
   begin_maybe_infinite_loop (boolean_true_node);
   add_stmt (r);
   DO_BODY (r) = push_stmt_list ();
@@ -1547,7 +1549,7 @@ begin_for_stmt (tree scope, tree init)
   tree r;
 
   r = build_stmt (input_location, FOR_STMT, NULL_TREE, NULL_TREE,
-		  NULL_TREE, NULL_TREE, NULL_TREE);
+		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -1638,6 +1640,33 @@ finish_for_expr (tree expr, tree for_stmt)
   FOR_EXPR (for_stmt) = expr;
 }
 
+/* During parsing of the body, range for uses "__for_{range,begin,end} "
+   decl names to make those unaccessible by code in the body.
+   Find those decls and store into RANGE_FOR_DECL array, so that they
+   can be changed later to ones with underscore instead of space, so that
+   it can be inspected in the debugger.  */
+
+void
+find_range_for_decls (tree range_for_decl[3])
+{
+  gcc_assert (CPTI_FOR_BEGIN__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 1
+	      && CPTI_FOR_END__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 2
+	      && CPTI_FOR_RANGE_IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 3
+	      && CPTI_FOR_BEGIN_IDENTIFIER == CPTI_FOR_BEGIN__IDENTIFIER + 3
+	      && CPTI_FOR_END_IDENTIFIER == CPTI_FOR_END__IDENTIFIER + 3);
+  for (int i = 0; i < 3; i++)
+    {
+      tree id = cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER + i];
+      if (IDENTIFIER_BINDING (id)
+	  && IDENTIFIER_BINDING (id)->scope == current_binding_level)
+	{
+	  range_for_decl[i] = IDENTIFIER_BINDING (id)->value;
+	  gcc_assert (VAR_P (range_for_decl[i])
+		      && DECL_ARTIFICIAL (range_for_decl[i]));
+	}
+    }
+}
+
 /* Finish the body of a for-statement, which may be given by
    FOR_STMT.  The increment-EXPR for the loop must be
    provided.
@@ -1671,21 +1700,20 @@ finish_for_stmt (tree for_stmt)
      Change it to ones with underscore instead of space, so that it can
      be inspected in the debugger.  */
   tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
-  gcc_assert (CPTI_FOR_BEGIN__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 1
-	      && CPTI_FOR_END__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 2
-	      && CPTI_FOR_RANGE_IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 3
-	      && CPTI_FOR_BEGIN_IDENTIFIER == CPTI_FOR_BEGIN__IDENTIFIER + 3
-	      && CPTI_FOR_END_IDENTIFIER == CPTI_FOR_END__IDENTIFIER + 3);
-  for (int i = 0; i < 3; i++)
+  find_range_for_decls (range_for_decl);
+
+  /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
+     for-range-initializer whose lifetime is extended are destructed
+     here.  */
+  if (flag_range_for_ext_temps
+      && range_for_decl[0]
+      && FOR_INIT_STMT (for_stmt))
     {
-      tree id = cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER + i];
-      if (IDENTIFIER_BINDING (id)
-	  && IDENTIFIER_BINDING (id)->scope == current_binding_level)
-	{
-	  range_for_decl[i] = IDENTIFIER_BINDING (id)->value;
-	  gcc_assert (VAR_P (range_for_decl[i])
-		      && DECL_ARTIFICIAL (range_for_decl[i]));
-	}
+      tree stmt = pop_stmt_list (FOR_INIT_STMT (for_stmt));
+      FOR_INIT_STMT (for_stmt) = NULL_TREE;
+      stmt = build_stmt (EXPR_LOCATION (for_stmt), EXPR_STMT, stmt);
+      stmt = maybe_cleanup_point_expr_void (stmt);
+      add_stmt (stmt);
     }
 
   add_stmt (do_poplevel (scope));
@@ -1758,7 +1786,7 @@ finish_break_stmt (void)
   if (!block_may_fallthru (cur_stmt_list))
     return void_node;
   note_break_stmt ();
-  return add_stmt (build_stmt (input_location, BREAK_STMT));
+  return add_stmt (build_stmt (input_location, BREAK_STMT, NULL_TREE));
 }
 
 /* Finish a continue-statement.  */
@@ -1766,7 +1794,7 @@ finish_break_stmt (void)
 tree
 finish_continue_stmt (void)
 {
-  return add_stmt (build_stmt (input_location, CONTINUE_STMT));
+  return add_stmt (build_stmt (input_location, CONTINUE_STMT, NULL_TREE));
 }
 
 /* Begin a switch-statement.  Returns a new SWITCH_STMT if
@@ -1778,7 +1806,8 @@ begin_switch_stmt (void)
   tree r, scope;
 
   scope = do_pushlevel (sk_cond);
-  r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE, scope);
+  r = build_stmt (input_location, SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE,
+		  scope, NULL_TREE);
 
   begin_cond (&SWITCH_STMT_COND (r));
 
@@ -3001,7 +3030,7 @@ perform_koenig_lookup (cp_expr fn_expr, vec<tree, va_gc> *args,
 
   if (fn && template_id && fn != error_mark_node)
     fn = build2 (TEMPLATE_ID_EXPR, unknown_type_node, fn, tmpl_args);
-  
+
   return cp_expr (fn, loc);
 }
 
@@ -5221,7 +5250,7 @@ expand_or_defer_fn_1 (tree fn)
 	 demand, so we also need to keep the body.  Otherwise we don't
 	 need it anymore.  */
       if (!DECL_DECLARED_CONSTEXPR_P (fn)
-	  && !(modules_p () && vague_linkage_p (fn)))
+	  && !(module_maybe_has_cmi_p () && vague_linkage_p (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
@@ -9622,7 +9651,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SHARED
 	      && DECL_P (t))
 	    bitmap_clear_bit (&aligned_head, DECL_UID (t));
-	    
+
 	  if (VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	    share_name = "threadprivate";
 	  else switch (cxx_omp_predetermined_sharing_1 (t))
@@ -10428,7 +10457,7 @@ finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
     {
       tree lobj = *i;
       if (TREE_CODE (lobj) == TARGET_EXPR)
-	lobj = TREE_OPERAND (lobj, 0);
+	lobj = TARGET_EXPR_SLOT (lobj);
 
       tree lt = TREE_TYPE (lobj);
       gcc_assert (LAMBDA_TYPE_P (lt) && CLASS_TYPE_P (lt));
@@ -12368,7 +12397,7 @@ pointer_interconvertible_base_of_p (tree base, tree derived)
   if (!NON_UNION_CLASS_TYPE_P (base)
       || !NON_UNION_CLASS_TYPE_P (derived))
     return false;
-    
+
   if (same_type_p (base, derived))
     return true;
 
@@ -12914,6 +12943,11 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_UNION:
       return type_code1 == UNION_TYPE;
 
+    case CPTK_IS_VIRTUAL_BASE_OF:
+      return (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
+	      && lookup_base (type2, type1, ba_require_virtual,
+			      NULL, tf_none) != NULL_TREE);
+
     case CPTK_IS_VOLATILE:
       return CP_TYPE_VOLATILE_P (type1);
 
@@ -13131,6 +13165,13 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       if (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
 	  && !same_type_ignoring_top_level_qualifiers_p (type1, type2)
+	  && !complete_type_or_else (type2, NULL_TREE))
+	/* We already issued an error.  */
+	return error_mark_node;
+      break;
+
+    case CPTK_IS_VIRTUAL_BASE_OF:
+      if (NON_UNION_CLASS_TYPE_P (type1) && NON_UNION_CLASS_TYPE_P (type2)
 	  && !complete_type_or_else (type2, NULL_TREE))
 	/* We already issued an error.  */
 	return error_mark_node;

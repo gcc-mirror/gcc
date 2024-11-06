@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1243,7 +1244,7 @@ access_path_may_continue_p (tree ref_type1, bool end_struct_past_end1,
 
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
-   on an indirect reference may alias.  
+   on an indirect reference may alias.
    REF1_ALIAS_SET, BASE1_ALIAS_SET, REF2_ALIAS_SET and BASE2_ALIAS_SET
    are the respective alias sets.  */
 
@@ -1366,7 +1367,7 @@ aliasing_component_refs_p (tree ref1,
     }
 
   /* If we didn't find a common base, try the other way around.  */
-  if (cmp_outer <= 0 
+  if (cmp_outer <= 0
       || (end_struct_ref1
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref1), type2) <= 0))
     {
@@ -1415,7 +1416,7 @@ aliasing_component_refs_p (tree ref1,
    We do not assume that the containers of FIELD1 and FIELD2 are of the
    same type or size.
 
-   Return 0 in case the base address of component_refs are same then 
+   Return 0 in case the base address of component_refs are same then
    FIELD1 and FIELD2 have same address. Note that FIELD1 and FIELD2
    may not be of same type or size.
 
@@ -1447,7 +1448,7 @@ nonoverlapping_component_refs_p_1 (const_tree field1, const_tree field2)
 
   /* ??? Bitfields can overlap at RTL level so punt on them.
      FIXME: RTL expansion should be fixed by adjusting the access path
-     when producing MEM_ATTRs for MEMs which are wider than 
+     when producing MEM_ATTRs for MEMs which are wider than
      the bitfields similarly as done in set_mem_attrs_minus_bitpos.  */
   if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
     return -1;
@@ -1886,7 +1887,7 @@ ncr_type_uid (const_tree field)
      as the Fortran compiler smuggles type punning into COMPONENT_REFs
      for common blocks instead of using unions like everyone else.  */
   tree type = DECL_FIELD_CONTEXT (field);
-  /* With LTO types considered same_type_for_tbaa_p 
+  /* With LTO types considered same_type_for_tbaa_p
      from different translation unit may not have same
      main variant.  They however have same TYPE_CANONICAL.  */
   if (TYPE_CANONICAL (type))
@@ -2070,7 +2071,7 @@ decl_refs_may_alias_p (tree ref1, tree base1,
       && nonoverlapping_refs_since_match_p (NULL, ref1, NULL, ref2, false) == 1)
     return false;
 
-  return true;     
+  return true;
 }
 
 /* Return true if access with BASE is view converted.
@@ -2159,7 +2160,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      use the usual conflict check rather than a subset test.
      ???  We could introduce -fvery-strict-aliasing when the language
      does not allow decls to have a dynamic type that differs from their
-     static type.  Then we can check 
+     static type.  Then we can check
      !alias_set_subset_of (base1_alias_set, base2_alias_set) instead.  */
   if (base1_alias_set != base2_alias_set
       && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
@@ -3483,7 +3484,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		  if (res)
 		    break;
 		  /* Remember if we drop an array-ref that we need to
-		     double-check not being at struct end.  */ 
+		     double-check not being at struct end.  */
 		  if (TREE_CODE (base) == ARRAY_REF
 		      || TREE_CODE (base) == ARRAY_RANGE_REF)
 		    innermost_dropped_array_ref = base;

@@ -27,6 +27,7 @@ CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -41,6 +42,7 @@ compilation is specified by a string called a "spec".  */
 #include "gcc.h"
 #include "diagnostic.h"
 #include "diagnostic-format.h"
+#include "pretty-print-urlifier.h"
 #include "flags.h"
 #include "opts.h"
 #include "filenames.h"
@@ -48,6 +50,7 @@ compilation is specified by a string called a "spec".  */
 #include "opts-jobserver.h"
 #include "common/common-target.h"
 #include "gcc-urlifier.h"
+#include "opts-diagnostic.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -4367,6 +4370,14 @@ driver_handle_option (struct gcc_options *opts,
 	  break;
 	}
 
+    case OPT_fdiagnostics_add_output_:
+      handle_OPT_fdiagnostics_add_output_ (*opts, *dc, arg, loc);
+      break;
+
+    case OPT_fdiagnostics_set_output_:
+      handle_OPT_fdiagnostics_set_output_ (*opts, *dc, arg, loc);
+      break;
+
     case OPT_fdiagnostics_text_art_charset_:
       dc->set_text_art_charset ((enum diagnostic_text_art_charset)value);
       break;
@@ -6890,7 +6901,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		     "%{foo=*:bar%*}%{foo=*:one%*two}"
 
 		   matches -foo=hello then it will produce:
-		   
+
 		     barhello onehellotwo
 		*/
 		if (*p == 0 || *p == '}')
@@ -10669,9 +10680,9 @@ static unsigned HOST_WIDE_INT
 get_random_number (void)
 {
   unsigned HOST_WIDE_INT ret = 0;
-  int fd; 
+  int fd;
 
-  fd = open ("/dev/urandom", O_RDONLY); 
+  fd = open ("/dev/urandom", O_RDONLY);
   if (fd >= 0)
     {
       read (fd, &ret, sizeof (HOST_WIDE_INT));
@@ -11123,16 +11134,16 @@ whitespace_to_convert_p (char c, void *)
   return (c == ' ' || c == '\t');
 }
 
-/* Insert backslash before spaces in ORIG (usually a file path), to 
+/* Insert backslash before spaces in ORIG (usually a file path), to
    avoid being broken by spec parser.
 
    This function is needed as do_spec_1 treats white space (' ' and '\t')
    as the end of an argument. But in case of -plugin /usr/gcc install/xxx.so,
    the file name should be treated as a single argument rather than being
-   broken into multiple. Solution is to insert '\\' before the space in a 
+   broken into multiple. Solution is to insert '\\' before the space in a
    file name.
-   
-   This function converts and only converts all occurrence of ' ' 
+
+   This function converts and only converts all occurrence of ' '
    to '\\' + ' ' and '\t' to '\\' + '\t'.  For example:
    "a b"  -> "a\\ b"
    "a  b" -> "a\\ \\ b"

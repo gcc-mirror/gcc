@@ -30,7 +30,9 @@
 #ifndef _HASHTABLE_H
 #define _HASHTABLE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/hashtable_policy.h>
 #include <bits/enable_special_members.h>
@@ -52,7 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __cache_default
       =  __not_<__and_<// Do not cache for fast hasher.
 		       __is_fast_hash<_Hash>,
-		       // Mandatory to have erase not throwing.
+		       // Mandatory for the rehash process.
 		       __is_nothrow_invocable<const _Hash&, const _Tp&>>>;
 
   // Helper to conditionally delete the default constructor.
@@ -175,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Pattern" (CRTP) technique, but uses a reconstructed, not
    *  explicitly passed, template pattern.
    *
-   *  Base class templates are: 
+   *  Base class templates are:
    *    - __detail::_Hashtable_base
    *    - __detail::_Map_base
    *    - __detail::_Insert
@@ -487,7 +489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Ht, typename _NodeGenerator>
 	void
-	_M_assign(_Ht&&, const _NodeGenerator&);
+	_M_assign(_Ht&&, _NodeGenerator&);
 
       void
       _M_move_assign(_Hashtable&&, true_type);
@@ -925,13 +927,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert_unique(_Kt&&, _Arg&&, const _NodeGenerator&);
+	_M_insert_unique(_Kt&&, _Arg&&, _NodeGenerator&);
 
       template<typename _Kt>
-	static __conditional_t<
-	  __and_<__is_nothrow_invocable<_Hash&, const key_type&>,
-		 __not_<__is_nothrow_invocable<_Hash&, _Kt>>>::value,
-	  key_type, _Kt&&>
+	key_type
 	_S_forward_key(_Kt&& __k)
 	{ return std::forward<_Kt>(__k); }
 
@@ -945,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert_unique_aux(_Arg&& __arg, const _NodeGenerator& __node_gen)
+	_M_insert_unique_aux(_Arg&& __arg, _NodeGenerator& __node_gen)
 	{
 	  return _M_insert_unique(
 	    _S_forward_key(_ExtractKey{}(std::forward<_Arg>(__arg))),
@@ -954,7 +953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
-	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
+	_M_insert(_Arg&& __arg, _NodeGenerator& __node_gen,
 		  true_type /* __uks */)
 	{
 	  using __to_value
@@ -965,7 +964,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Arg, typename _NodeGenerator>
 	iterator
-	_M_insert(_Arg&& __arg, const _NodeGenerator& __node_gen,
+	_M_insert(_Arg&& __arg, _NodeGenerator& __node_gen,
 		  false_type __uks)
 	{
 	  using __to_value
@@ -978,7 +977,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(const_iterator, _Arg&& __arg,
-		  const _NodeGenerator& __node_gen, true_type __uks)
+		  _NodeGenerator& __node_gen, true_type __uks)
 	{
 	  return
 	    _M_insert(std::forward<_Arg>(__arg), __node_gen, __uks).first;
@@ -988,7 +987,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Arg, typename _NodeGenerator>
 	iterator
 	_M_insert(const_iterator, _Arg&&,
-		  const _NodeGenerator&, false_type __uks);
+		  _NodeGenerator&, false_type __uks);
 
       size_type
       _M_erase(true_type __uks, const key_type&);
@@ -1020,7 +1019,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iterator
       erase(const_iterator);
 
-      // LWG 2059.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2059. C++0x ambiguity problem with map::erase
       iterator
       erase(iterator __it)
       { return erase(const_iterator(__it)); }
@@ -1042,7 +1042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // DR 1189.
       // reserve, if present, comes from _Rehash_base.
 
-#if __glibcxx_node_extract // >= C++17
+#if __glibcxx_node_extract // >= C++17 && HOSTED
       /// Re-insert an extracted node into a container with unique keys.
       insert_return_type
       _M_reinsert_node(node_type&& __nh)
@@ -1418,7 +1418,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-      _M_assign(_Ht&& __ht, const _NodeGenerator& __node_gen)
+      _M_assign(_Ht&& __ht, _NodeGenerator& __node_gen)
       {
 	__buckets_ptr __buckets = nullptr;
 	if (!_M_buckets)
@@ -1660,8 +1660,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ~_Hashtable() noexcept
     {
       // Getting a bucket index from a node shall not throw because it is used
-      // in methods (erase, swap...) that shall not throw. Need a complete
-      // type to check this, so do it in the destructor not at class scope.
+      // during the rehash process. This static_assert purpose is limited to usage
+      // of _Hashtable with _Hashtable_traits requesting non-cached hash code.
+      // Need a complete type to check this, so do it in the destructor not at
+      // class scope.
       static_assert(noexcept(declval<const __hash_code_base_access&>()
 			._M_bucket_index(declval<const __node_value_type&>(),
 					 (std::size_t)0)),
@@ -1704,7 +1706,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  __x._M_buckets = _M_buckets;
 	  _M_buckets = &_M_single_bucket;
-	}	
+	}
       else
 	std::swap(_M_buckets, __x._M_buckets);
 
@@ -2317,7 +2319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
       _M_insert_unique(_Kt&& __k, _Arg&& __v,
-		       const _NodeGenerator& __node_gen)
+		       _NodeGenerator& __node_gen)
       -> pair<iterator, bool>
       {
 	const size_type __size = size();
@@ -2355,7 +2357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
       _M_insert(const_iterator __hint, _Arg&& __v,
-		const _NodeGenerator& __node_gen,
+		_NodeGenerator& __node_gen,
 		false_type /* __uks */)
       -> iterator
       {

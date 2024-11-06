@@ -295,7 +295,7 @@ FUNC_END (__riscv_restore_0)
 
 #else
 
-#ifdef __riscv_32e
+#ifdef __riscv_abi_rve
 FUNC_BEGIN(__riscv_save_2)
 FUNC_BEGIN(__riscv_save_1)
 FUNC_BEGIN(__riscv_save_0)
@@ -309,7 +309,7 @@ FUNC_BEGIN(__riscv_save_0)
   sw s0, 4(sp)
   .cfi_offset 8, -8
   sw ra, 8(sp)
-  .cfi_offset 1, 0
+  .cfi_offset 1, -4
   jr t0
   .cfi_endproc
 FUNC_END(__riscv_save_2)
@@ -421,8 +421,9 @@ FUNC_BEGIN (__riscv_save_0)
   addi sp, sp, -16
   .cfi_def_cfa_offset 16
   sw s2, 0(sp)
+  .cfi_offset 18, -16
   sw s1, 4(sp)
-  .cfi_offset 9, -16
+  .cfi_offset 9, -12
   sw s0, 8(sp)
   .cfi_offset 8, -8
   sw ra, 12(sp)
@@ -529,6 +530,6 @@ FUNC_END (__riscv_restore_2)
 FUNC_END (__riscv_restore_1)
 FUNC_END (__riscv_restore_0)
 
-#endif /* __riscv_32e */
+#endif /* __riscv_abi_rve */
 
 #endif /* __riscv_xlen == 64 */

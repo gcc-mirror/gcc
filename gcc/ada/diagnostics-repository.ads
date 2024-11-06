@@ -101,6 +101,11 @@ package Diagnostics.Repository is
         (Status        => Active,
          Human_Id      => new String'("Representation_Too_Late_Error"),
          Documentation => new String'("./error_codes/GNAT0010.md"),
+         Switch        => No_Switch_Id),
+      GNAT0011         =>
+        (Status        => Active,
+         Human_Id      => new String'("Mixed_Container_Aggregate_Error"),
+         Documentation => new String'("./error_codes/GNAT0011.md"),
          Switch        => No_Switch_Id));
 
    procedure Print_Diagnostic_Repository;

@@ -10,9 +10,15 @@ struct S {
   }
 };
 
+// this is an ODR violation to include this header in multiple TUs
+// (the lambda is a different type in each TU, see [basic.def.odr] p15.6);
+// keep the check that we can emit the lambda from a header unit,
+// but skip it when checking ODR deduplication.
+#ifndef CHECK_ODR_VIOLATIONS
 inline int d(int x, int (*f)(int) = [](int x) { return x * 5; }) {
   return f(x);
 }
+#endif
 
 // unevaluated lambdas
 #if __cplusplus >= 202002L

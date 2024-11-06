@@ -60,7 +60,7 @@ static void v850_print_operand_address (FILE *, machine_mode, rtx);
 const char * GHS_default_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 const char * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_KINDS];
 
-/* Track the current data area set by the data area pragma (which 
+/* Track the current data area set by the data area pragma (which
    can be nested).  Tested by check_default_data_area.  */
 data_area_stack_element * data_area_stack = NULL;
 
@@ -193,7 +193,7 @@ v850_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
   size = arg.promoted_size_in_bytes ();
   if (size < 1)
     size = 1;
-  
+
   if (!TARGET_GCC_ABI)
     align = UNITS_PER_WORD;
   else if (arg.type)
@@ -449,7 +449,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	case CONST_INT:
 	  fprintf (file, "%d", (INTVAL (x) >= 0) ? 0 : -1);
 	  break;
-	  
+
 	case CONST_DOUBLE:
 	  const_double_split (x, &high, &low);
 	  fprintf (file, "%ld", (long) high);
@@ -465,7 +465,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	case CONST_INT:
 	  fprintf (file, "%ld", (long) INTVAL (x));
 	  break;
-	  
+
 	case CONST_DOUBLE:
 	  const_double_split (x, &high, &low);
 	  fprintf (file, "%ld", (long) low);
@@ -483,12 +483,12 @@ v850_print_operand (FILE * file, rtx x, int code)
       break;
     case 'O':
       gcc_assert (special_symbolref_operand (x, VOIDmode));
-      
+
       if (GET_CODE (x) == CONST)
 	x = XEXP (XEXP (x, 0), 0);
       else
 	gcc_assert (GET_CODE (x) == SYMBOL_REF);
-      
+
       if (SYMBOL_REF_ZDA_P (x))
 	fprintf (file, "zdaoff");
       else if (SYMBOL_REF_SDA_P (x))
@@ -504,12 +504,12 @@ v850_print_operand (FILE * file, rtx x, int code)
       break;
     case 'Q':
       gcc_assert (special_symbolref_operand (x, VOIDmode));
-      
+
       if (GET_CODE (x) == CONST)
 	x = XEXP (XEXP (x, 0), 0);
       else
 	gcc_assert (GET_CODE (x) == SYMBOL_REF);
-      
+
       if (SYMBOL_REF_ZDA_P (x))
 	fprintf (file, "r0");
       else if (SYMBOL_REF_SDA_P (x))
@@ -534,7 +534,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	      fprintf (file, "[r0]");
 	  }
 	  break;
-	  
+
 	case CONST_INT:
 	  {
 	    unsigned HOST_WIDE_INT v = INTVAL (x);
@@ -542,7 +542,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	    /* Trickery to avoid problems with shifting
 	       32-bits at a time on a 32-bit host.  */
 	    v = v >> 16;
-	    v = v >> 16;	  
+	    v = v >> 16;
 	    fprintf (file, HOST_WIDE_INT_PRINT_HEX, v);
 	    break;
 	  }
@@ -622,7 +622,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	case CONST_DOUBLE:
 	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
 	  break;
-	  
+
 	case CONST_INT:
 	case SYMBOL_REF:
 	case CONST:
@@ -756,7 +756,7 @@ v850_print_operand_punct_valid_p (unsigned char code)
    output_addr_const will normally barf at this, but it is OK to omit
    the truncate and just emit the difference of the two labels.  The
    .hword directive will automatically handle the truncation for us.
-   
+
    Returns true if rtx was handled, false otherwise.  */
 
 static bool
@@ -852,7 +852,7 @@ output_move_single (rtx * operands)
 	       || GET_CODE (src) == SYMBOL_REF
 	       || GET_CODE (src) == CONST)
 	{
-	  if (TARGET_V850E_UP) 
+	  if (TARGET_V850E_UP)
 	    return "mov hilo(%1),%0";
 	  else
 	    return "movhi hi(%1),%.,%0\n\tmovea lo(%1),%0,%0";
@@ -1018,7 +1018,7 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
     case E_SFmode:
       max_offset = (1 << 8);
       break;
-      
+
     default:
       break;
     }
@@ -1472,7 +1472,7 @@ compute_register_save_size (long * p_reg_saved)
 	 registers that need to be saved.  To detect this we note that the
 	 helper functions always push at least register r29 (provided
 	 that the function is not an interrupt handler).  */
-	 
+
       if (TARGET_PROLOG_FUNCTION
           && (i == 2 || ((i >= 20) && (i < 30))))
 	{
@@ -1510,7 +1510,7 @@ compute_register_save_size (long * p_reg_saved)
 	      }
 	}
     }
-  
+
   if (p_reg_saved)
     *p_reg_saved = reg_saved;
 
@@ -1640,7 +1640,7 @@ expand_prologue (void)
 	emit_insn (gen_save_interrupt ());
 
       actual_fsize -= INTERRUPT_FIXED_SAVE_SIZE;
-      
+
       if (((1L << LINK_POINTER_REGNUM) & reg_saved) != 0)
 	actual_fsize -= INTERRUPT_ALL_SAVE_SIZE;
 
@@ -1724,7 +1724,7 @@ expand_prologue (void)
 	      rtx insn = emit_insn (save_all);
 	      INSN_CODE (insn) = code;
 	      actual_fsize -= alloc_stack;
-	      
+
 	    }
 	  else
 	    save_all = NULL_RTX;
@@ -1753,13 +1753,13 @@ expand_prologue (void)
 	    init_stack_alloc = compute_register_save_size (NULL);
 	  else
 	    init_stack_alloc = actual_fsize;
-	      
+
 	  /* Save registers at the beginning of the stack frame.  */
 	  offset = init_stack_alloc - 4;
-	  
+
 	  if (init_stack_alloc)
 	    increment_stack (- (signed) init_stack_alloc, true);
-	  
+
 	  /* Save the return pointer first.  */
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == LINK_POINTER_REGNUM)
 	    {
@@ -1770,7 +1770,7 @@ expand_prologue (void)
 				 save_regs[--num_save]));
 	      offset -= 4;
 	    }
-	  
+
 	  for (i = 0; i < num_save; i++)
 	    {
 	      F (emit_move_insn (gen_rtx_MEM (SImode,
@@ -1865,7 +1865,7 @@ expand_epilogue (void)
 	    }
 
 	  code = recog (restore_all, NULL, NULL);
-	  
+
 	  if (code >= 0)
 	    {
 	      rtx insn;
@@ -1967,10 +1967,10 @@ v850_get_data_area (tree decl)
 {
   if (lookup_attribute ("sda", DECL_ATTRIBUTES (decl)) != NULL_TREE)
     return DATA_AREA_SDA;
-  
+
   if (lookup_attribute ("tda", DECL_ATTRIBUTES (decl)) != NULL_TREE)
     return DATA_AREA_TDA;
-  
+
   if (lookup_attribute ("zda", DECL_ATTRIBUTES (decl)) != NULL_TREE)
     return DATA_AREA_ZDA;
 
@@ -1983,7 +1983,7 @@ static void
 v850_set_data_area (tree decl, v850_data_area data_area)
 {
   tree name;
-  
+
   switch (data_area)
     {
     case DATA_AREA_SDA: name = get_identifier ("sda"); break;
@@ -2036,7 +2036,7 @@ v850_handle_data_area_attribute (tree *node, tree name,
     data_area = DATA_AREA_ZDA;
   else
     gcc_unreachable ();
-  
+
   switch (TREE_CODE (decl))
     {
     case VAR_DECL:
@@ -2059,7 +2059,7 @@ v850_handle_data_area_attribute (tree *node, tree name,
 	  *no_add_attrs = true;
 	}
       break;
-      
+
     default:
       break;
     }
@@ -2113,7 +2113,7 @@ v850_encode_data_area (tree decl, rtx symbol)
       if (DECL_SECTION_NAME (decl))
 	{
 	  const char *name = DECL_SECTION_NAME (decl);
-	  
+
 	  if (streq (name, ".zdata") || streq (name, ".zbss"))
 	    v850_set_data_area (decl, DATA_AREA_ZDA);
 
@@ -2140,7 +2140,7 @@ v850_encode_data_area (tree decl, rtx symbol)
 	  else if (size <= small_memory_max [(int) SMALL_MEMORY_ZDA])
 	    v850_set_data_area (decl, DATA_AREA_ZDA);
 	}
-      
+
       if (v850_get_data_area (decl) == DATA_AREA_NORMAL)
 	return;
     }
@@ -2182,7 +2182,7 @@ construct_restore_jr (rtx op)
   unsigned long int last;
   int i;
   static char buff [256]; /* XXX */
-  
+
   if (count <= 2)
     {
       error ("bogus JR construction: %d", count);
@@ -2194,7 +2194,7 @@ construct_restore_jr (rtx op)
   gcc_assert (GET_CODE (XVECEXP (op, 0, 1)) == SET);
   gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS);
   gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) == CONST_INT);
-    
+
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1));
 
   /* Each pop will remove 4 bytes from the stack....  */
@@ -2212,12 +2212,12 @@ construct_restore_jr (rtx op)
   for (i = 2; i < count; i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
-      
+
       gcc_assert (GET_CODE (vector_element) == SET);
       gcc_assert (GET_CODE (SET_DEST (vector_element)) == REG);
       gcc_assert (register_is_ok_for_epilogue (SET_DEST (vector_element),
 					       SImode));
-      
+
       mask |= 1 << REGNO (SET_DEST (vector_element));
     }
 
@@ -2239,7 +2239,7 @@ construct_restore_jr (rtx op)
     {
       gcc_assert (!stack_bytes);
       gcc_assert (mask & (1 << 29));
-      
+
       last = 29;
     }
 
@@ -2247,16 +2247,16 @@ construct_restore_jr (rtx op)
      We ignore this here, and generate a JR anyway.  We will
      be popping more registers than is strictly necessary, but
      it does save code space.  */
-  
+
   if (TARGET_LONG_CALLS)
     {
       char name[40];
-      
+
       if (first == last)
 	sprintf (name, "__return_%s", reg_names [first]);
       else
 	sprintf (name, "__return_%s_%s", reg_names [first], reg_names [last]);
-      
+
       sprintf (buff, "movhi hi(%s), r0, r6\n\tmovea lo(%s), r6, r6\n\tjmp r6",
 	       name, name);
     }
@@ -2267,7 +2267,7 @@ construct_restore_jr (rtx op)
       else
 	sprintf (buff, "jr __return_%s_%s", reg_names [first], reg_names [last]);
     }
-  
+
   return buff;
 }
 
@@ -2287,8 +2287,8 @@ construct_save_jarl (rtx op)
   unsigned long int last;
   int i;
   static char buff [255]; /* XXX */
-  
-  if (count <= (TARGET_LONG_CALLS ? 3 : 2)) 
+
+  if (count <= (TARGET_LONG_CALLS ? 3 : 2))
     {
       error ("bogus JARL construction: %d", count);
       return NULL;
@@ -2299,7 +2299,7 @@ construct_save_jarl (rtx op)
   gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) == PLUS);
   gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0)) == REG);
   gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) == CONST_INT);
-    
+
   /* Work out how many bytes to push onto the stack after storing the
      registers.  */
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
@@ -2319,16 +2319,16 @@ construct_save_jarl (rtx op)
   for (i = 1; i < count - (TARGET_LONG_CALLS ? 3 : 2); i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
-      
+
       gcc_assert (GET_CODE (vector_element) == SET);
       gcc_assert (GET_CODE (SET_SRC (vector_element)) == REG);
       gcc_assert (register_is_ok_for_epilogue (SET_SRC (vector_element),
 					       SImode));
-      
+
       mask |= 1 << REGNO (SET_SRC (vector_element));
     }
 
-  /* Scan for the first register to push.  */  
+  /* Scan for the first register to push.  */
   for (first = 0; first < 32; first++)
     {
       if (mask & (1 << first))
@@ -2346,7 +2346,7 @@ construct_save_jarl (rtx op)
     {
       gcc_assert (!stack_bytes);
       gcc_assert (mask & (1 << 29));
-      
+
       last = 29;
     }
 
@@ -2354,16 +2354,16 @@ construct_save_jarl (rtx op)
      We ignore this here, and generate a JARL anyway.  We will
      be pushing more registers than is strictly necessary, but
      it does save code space.  */
-  
+
   if (TARGET_LONG_CALLS)
     {
       char name[40];
-      
+
       if (first == last)
 	sprintf (name, "__save_%s", reg_names [first]);
       else
 	sprintf (name, "__save_%s_%s", reg_names [first], reg_names [last]);
-      
+
       if (TARGET_V850E3V5_UP)
 	sprintf (buff, "mov hilo(%s), r11\n\tjarl [r11], r10", name);
       else
@@ -2404,12 +2404,12 @@ v850_output_aligned_bss (FILE * file,
     case DATA_AREA_TDA:
       switch_to_section (tdata_section);
       break;
-      
+
     default:
       switch_to_section (bss_section);
       break;
     }
-  
+
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
 #ifdef ASM_DECLARE_OBJECT_NAME
   last_assemble_variable_decl = decl;
@@ -2448,13 +2448,13 @@ v850_output_common (FILE * file,
 	case DATA_AREA_TDA:
 	  fprintf (file, "%s", TCOMMON_ASM_OP);
 	  break;
-      
+
 	default:
 	  fprintf (file, "%s", COMMON_ASM_OP);
 	  break;
 	}
     }
-  
+
   assemble_name (file, name);
   fprintf (file, ",%u,%u\n", size, align / BITS_PER_UNIT);
 }
@@ -2470,7 +2470,7 @@ v850_output_local (FILE * file,
   fprintf (file, "%s", LOCAL_ASM_OP);
   assemble_name (file, name);
   fprintf (file, "\n");
-  
+
   ASM_OUTPUT_ALIGNED_DECL_COMMON (file, decl, name, size, align);
 }
 
@@ -2488,7 +2488,7 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
 
   /* Initialize the default names of the v850 specific sections,
      if this has not been done before.  */
-  
+
   if (GHS_default_section_names [(int) GHS_SECTION_KIND_SDATA] == NULL)
     {
       GHS_default_section_names [(int) GHS_SECTION_KIND_SDATA]
@@ -2499,14 +2499,14 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
 
       GHS_default_section_names [(int) GHS_SECTION_KIND_TDATA]
 	= ".tdata";
-      
+
       GHS_default_section_names [(int) GHS_SECTION_KIND_ZDATA]
 	= ".zdata";
 
       GHS_default_section_names [(int) GHS_SECTION_KIND_ROZDATA]
 	= ".rozdata";
     }
-  
+
   if (current_function_decl == NULL_TREE
       && (VAR_P (decl)
 	  || TREE_CODE (decl) == CONST_DECL
@@ -2526,23 +2526,23 @@ v850_insert_attributes (tree decl, tree * attr_ptr ATTRIBUTE_UNUSED )
 	    {
 	    default:
 	      gcc_unreachable ();
-	      
+
 	    case DATA_AREA_SDA:
 	      kind = ((TREE_READONLY (decl))
 		      ? GHS_SECTION_KIND_ROSDATA
 		      : GHS_SECTION_KIND_SDATA);
 	      break;
-	      
+
 	    case DATA_AREA_TDA:
 	      kind = GHS_SECTION_KIND_TDATA;
 	      break;
-	      
+
 	    case DATA_AREA_ZDA:
 	      kind = ((TREE_READONLY (decl))
 		      ? GHS_SECTION_KIND_ROZDATA
 		      : GHS_SECTION_KIND_ZDATA);
 	      break;
-	      
+
 	    case DATA_AREA_NORMAL:		 /* default data area */
 	      if (TREE_READONLY (decl))
 		kind = GHS_SECTION_KIND_RODATA;
@@ -2585,7 +2585,7 @@ construct_dispose_instruction (rtx op)
   int		     i;
   static char        buff[ 120 ]; /* XXX */
   int                use_callt = 0;
-  
+
   if (count <= 2)
     {
       error ("bogus DISPOSE construction: %d", count);
@@ -2597,7 +2597,7 @@ construct_dispose_instruction (rtx op)
   gcc_assert (GET_CODE (XVECEXP (op, 0, 1)) == SET);
   gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 1))) == PLUS);
   gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1)) == CONST_INT);
-    
+
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 1)), 1));
 
   /* Each pop will remove 4 bytes from the stack....  */
@@ -2617,7 +2617,7 @@ construct_dispose_instruction (rtx op)
   for (i = 2; i < count; i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
-      
+
       gcc_assert (GET_CODE (vector_element) == SET);
       gcc_assert (GET_CODE (SET_DEST (vector_element)) == REG);
       gcc_assert (register_is_ok_for_epilogue (SET_DEST (vector_element),
@@ -2642,7 +2642,7 @@ construct_dispose_instruction (rtx op)
 	  for (i = 20; i < 32; i++)
 	    if (mask & (1 << i))
 	      break;
-	  
+
 	  if (i == 31)
 	    sprintf (buff, "callt ctoff(__callt_return_r31c)");
 	  else
@@ -2654,31 +2654,31 @@ construct_dispose_instruction (rtx op)
     {
       static char        regs [100]; /* XXX */
       int                done_one;
-      
+
       /* Generate the DISPOSE instruction.  Note we could just issue the
 	 bit mask as a number as the assembler can cope with this, but for
 	 the sake of our readers we turn it into a textual description.  */
       regs[0] = 0;
       done_one = 0;
-      
+
       for (i = 20; i < 32; i++)
 	{
 	  if (mask & (1 << i))
 	    {
 	      int first;
-	      
+
 	      if (done_one)
 		strcat (regs, ", ");
 	      else
 		done_one = 1;
-	      
+
 	      first = i;
 	      strcat (regs, reg_names[ first ]);
-	      
+
 	      for (i++; i < 32; i++)
 		if ((mask & (1 << i)) == 0)
 		  break;
-	      
+
 	      if (i > first + 1)
 		{
 		  strcat (regs, " - ");
@@ -2686,10 +2686,10 @@ construct_dispose_instruction (rtx op)
 		}
 	    }
 	}
-      
+
       sprintf (buff, "dispose %d {%s}, r31", stack_bytes / 4, regs);
     }
-  
+
   return buff;
 }
 
@@ -2706,7 +2706,7 @@ construct_prepare_instruction (rtx op)
   int		     i;
   static char        buff[ 120 ]; /* XXX */
   int		     use_callt = 0;
-  
+
   if (XVECLEN (op, 0) <= 1)
     {
       error ("bogus PREPEARE construction: %d", XVECLEN (op, 0));
@@ -2718,7 +2718,7 @@ construct_prepare_instruction (rtx op)
   gcc_assert (GET_CODE (XVECEXP (op, 0, 0)) == SET);
   gcc_assert (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) == PLUS);
   gcc_assert (GET_CODE (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)) == CONST_INT);
-    
+
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
 
 
@@ -2736,10 +2736,10 @@ construct_prepare_instruction (rtx op)
   for (i = 1; i < XVECLEN (op, 0); i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
-      
+
       if (GET_CODE (vector_element) == CLOBBER)
 	continue;
-      
+
       gcc_assert (GET_CODE (vector_element) == SET);
       gcc_assert (GET_CODE (SET_SRC (vector_element)) == REG);
       gcc_assert (register_is_ok_for_epilogue (SET_SRC (vector_element),
@@ -2762,7 +2762,7 @@ construct_prepare_instruction (rtx op)
 	  sprintf (buff, "callt ctoff(__callt_save_r2_r%d)", (mask & (1 << 31)) ? 31 : 29 );
 	  return buff;
 	}
-      
+
       for (i = 20; i < 32; i++)
 	if (mask & (1 << i))
 	  break;
@@ -2778,31 +2778,31 @@ construct_prepare_instruction (rtx op)
       static char        regs [100]; /* XXX */
       int                done_one;
 
-      
+
       /* Generate the PREPARE instruction.  Note we could just issue the
 	 bit mask as a number as the assembler can cope with this, but for
-	 the sake of our readers we turn it into a textual description.  */      
+	 the sake of our readers we turn it into a textual description.  */
       regs[0] = 0;
       done_one = 0;
-      
+
       for (i = 20; i < 32; i++)
 	{
 	  if (mask & (1 << i))
 	    {
 	      int first;
-	      
+
 	      if (done_one)
 		strcat (regs, ", ");
 	      else
 		done_one = 1;
-	      
+
 	      first = i;
 	      strcat (regs, reg_names[ first ]);
-	      
+
 	      for (i++; i < 32; i++)
 		if ((mask & (1 << i)) == 0)
 		  break;
-	      
+
 	      if (i > first + 1)
 		{
 		  strcat (regs, " - ");
@@ -2810,10 +2810,10 @@ construct_prepare_instruction (rtx op)
 		}
 	    }
 	}
-      	 
+
       sprintf (buff, "prepare {%s}, %d", regs, (- stack_bytes) / 4);
     }
-  
+
   return buff;
 }
 
@@ -2914,7 +2914,7 @@ v850_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 /* Worker function for TARGET_FUNCTION_VALUE.  */
 
 static rtx
-v850_function_value (const_tree valtype, 
+v850_function_value (const_tree valtype,
                     const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
                     bool outgoing ATTRIBUTE_UNUSED)
 {
@@ -3064,7 +3064,7 @@ v850_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
 			      + (GET_MODE_NUNITS (mode) * UNITS_PER_WORD))))
     return true;
 
-  return false;  
+  return false;
 }
 
 static int
@@ -3176,7 +3176,7 @@ v850_gen_movdi (rtx * operands)
   if (REGNO (operands[1]) & 1)
     /* Use two store word instructions to synthesise a store double.  */
     return "st.w %1, %0 ; st.w %R1, %R0 ";
-  
+
   return "st.dw %1, %0";
 }
 

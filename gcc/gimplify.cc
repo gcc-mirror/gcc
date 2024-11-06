@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1396,6 +1397,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 
 	  if (flag_openmp
 	      && !is_global_var (t)
+	      && !TREE_STATIC (t)
 	      && DECL_CONTEXT (t) == current_function_decl
 	      && TREE_USED (t)
 	      && (attr = lookup_attribute ("omp allocate", DECL_ATTRIBUTES (t)))
@@ -1427,11 +1429,17 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 			  "%<allocate%> directive for %qD inside a target "
 			  "region must specify an %<allocator%> clause", t);
 	      /* Skip for omp_default_mem_alloc (= 1),
-		 unless align is present. */
+		 unless align is present.  For C/C++, there should be always a
+		 statement list following if TREE_USED, except for, e.g., using
+		 this decl in a static_assert; in that case, only a single
+		 DECL_EXPR remains, which can be skipped here.  */
 	      else if (!errorcount
 		       && (align != NULL_TREE
 			   || alloc == NULL_TREE
-			   || !integer_onep (alloc)))
+			   || !integer_onep (alloc))
+		       && (lang_GNU_Fortran ()
+			   || (TREE_CODE (BIND_EXPR_BODY (bind_expr))
+			       != DECL_EXPR)))
 		{
 		  /* Fortran might already use a pointer type internally;
 		     use that pointer except for type(C_ptr) and type(C_funptr);
@@ -1993,17 +2001,14 @@ gimple_add_init_for_auto_var (tree decl,
 {
   gcc_assert (auto_var_p (decl));
   gcc_assert (init_type > AUTO_INIT_UNINITIALIZED);
-  location_t loc = EXPR_LOCATION (decl);
+
+  const location_t loc = DECL_SOURCE_LOCATION (decl);
   tree decl_size = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+  tree init_type_node = build_int_cst (integer_type_node, (int) init_type);
+  tree decl_name;
 
-  tree init_type_node
-    = build_int_cst (integer_type_node, (int) init_type);
-
-  tree decl_name = NULL_TREE;
   if (DECL_NAME (decl))
-
     decl_name = build_string_literal (DECL_NAME (decl));
-
   else
     {
       char decl_name_anonymous[3 + (HOST_BITS_PER_INT + 2) / 3];
@@ -2019,7 +2024,7 @@ gimple_add_init_for_auto_var (tree decl,
   gimplify_assign (decl, call, seq_p);
 }
 
-/* Generate padding initialization for automatic vairable DECL.
+/* Generate padding initialization for automatic variable DECL.
    C guarantees that brace-init with fewer initializers than members
    aggregate will initialize the rest of the aggregate as-if it were
    static initialization.  In turn static initialization guarantees
@@ -4761,7 +4766,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 
 	  if (!VOID_TYPE_P (TREE_TYPE (else_)))
 	    else_ = build_fold_addr_expr_loc (loc, else_);
- 
+
 	  expr
 	    = build3 (COND_EXPR, type, TREE_OPERAND (expr, 0), then_, else_);
 
@@ -5377,6 +5382,52 @@ gimplify_init_ctor_eval (tree object, vec<constructor_elt, va_gc> *elts,
 	  && TREE_CODE (TREE_TYPE (value)) != VECTOR_TYPE)
 	gimplify_init_ctor_eval (cref, CONSTRUCTOR_ELTS (value),
 				 pre_p, cleared);
+      else if (TREE_CODE (value) == RAW_DATA_CST)
+	{
+	  if (RAW_DATA_LENGTH (value) <= 32)
+	    {
+	      for (unsigned int i = 0; i < (unsigned) RAW_DATA_LENGTH (value);
+		   ++i)
+		if (!cleared || RAW_DATA_POINTER (value)[i])
+		  {
+		    if (i)
+		      {
+			tree p
+			  = fold_build2 (PLUS_EXPR, TREE_TYPE (purpose),
+					 purpose,
+					 build_int_cst (TREE_TYPE (purpose),
+							i));
+			cref = build4 (ARRAY_REF, array_elt_type,
+				       unshare_expr (object), p, NULL_TREE,
+				       NULL_TREE);
+		      }
+		    tree init
+		      = build2 (INIT_EXPR, TREE_TYPE (cref), cref,
+				build_int_cst (TREE_TYPE (value),
+					       ((const unsigned char *)
+						RAW_DATA_POINTER (value))[i]));
+		    gimplify_and_add (init, pre_p);
+		    ggc_free (init);
+		  }
+	    }
+	  else
+	    {
+	      tree rtype = build_array_type_nelts (TREE_TYPE (value),
+						   RAW_DATA_LENGTH (value));
+	      tree rctor = build_constructor_single (rtype, bitsize_zero_node,
+						     value);
+	      tree addr = build_fold_addr_expr (cref);
+	      cref = build2 (MEM_REF, rtype, addr,
+			     build_int_cst (ptr_type_node, 0));
+	      rctor = tree_output_constant_def (rctor);
+	      if (!useless_type_conversion_p (rtype, TREE_TYPE (rctor)))
+		rctor = build1 (VIEW_CONVERT_EXPR, rtype, rctor);
+	      if (gimplify_expr (&cref, pre_p, NULL, is_gimple_lvalue,
+				 fb_lvalue) != GS_ERROR)
+		gimplify_seq_add_stmt (pre_p,
+				       gimple_build_assign (cref, rctor));
+	    }
+	}
       else
 	{
 	  tree init = build2 (INIT_EXPR, TREE_TYPE (cref), cref, value);
@@ -8050,7 +8101,7 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 	  rtype = "teams";
 	else
 	  gcc_unreachable ();
-	
+
 	error ("%qE not specified in enclosing %qs",
 	       DECL_NAME (lang_hooks.decls.omp_report_decl (decl)), rtype);
 	inform (ctx->location, "enclosing %qs", rtype);
@@ -8091,7 +8142,7 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 		}
 	    }
 	}
-      
+
       if (TREE_CODE (decl) == PARM_DECL
 	  || (!is_global_var (decl)
 	      && DECL_CONTEXT (decl) == current_function_decl))
@@ -13329,6 +13380,17 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  break;
 
 	case OMP_CLAUSE_ALLOCATE:
+	  decl = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	  if (decl
+	      && TREE_CODE (decl) == INTEGER_CST
+	      && wi::eq_p (wi::to_widest (decl), GOMP_OMP_PREDEF_ALLOC_THREADS)
+	      && (code == OMP_TARGET || code == OMP_TASK || code == OMP_TASKLOOP))
+	    warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
+			"allocator with access trait set to %<thread%> "
+			"results in undfined behavior for %qs directive",
+			code == OMP_TARGET ? "target"
+					   : (code == OMP_TASK
+					      ? "task" : "taskloop"));
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (error_operand_p (decl))
 	    {
@@ -13814,7 +13876,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   /* Don't call omp_finish_clause on implicitly added OMP_CLAUSE_PRIVATE
      in simd.  Those are only added for the local vars inside of simd body
      and they don't need to be e.g. default constructible.  */
-  if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD) 
+  if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD)
     lang_hooks.decls.omp_finish_clause (clause, pre_p,
 					(ctx->region_type & ORT_ACC) != 0);
   if (gimplify_omp_ctxp)

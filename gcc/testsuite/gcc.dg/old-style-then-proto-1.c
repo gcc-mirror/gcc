@@ -2,7 +2,7 @@
    Mismatched qualifiers used to be wrongly forbidden.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 void f1() {}
 void f1(void); /* { dg-warning "prototype for 'f1' follows non-prototype definition" } */

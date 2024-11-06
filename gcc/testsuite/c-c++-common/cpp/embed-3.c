@@ -53,20 +53,20 @@
 /* { dg-error "unbalanced '\\\)'" "" { target *-*-* } .-1 } */
 /* { dg-error "unbalanced '\\\['" "" { target *-*-* } .-2 } */
 /* { dg-error "unbalanced '\\\('" "" { target *-*-* } .-3 } */
-#embed limit(1) /* { dg-error "#embed expects \\\"FILENAME\\\" or <FILENAME>" } */
+#embed limit(1) /* { dg-error "'#embed' expects '\\\"FILENAME\\\"' or '<FILENAME>'" } */
 #define FOO 1
-#embed __FILE__ limit(0 + defined(FOO)) /* { dg-error "'defined' in #embed parameter" } */
-#embed /* { dg-error "#embed expects \\\"FILENAME\\\" or <FILENAME>" } */
+#embed __FILE__ limit(0 + defined(FOO)) /* { dg-error "'defined' in '#embed' parameter" } */
+#embed /* { dg-error "'#embed' expects '\\\"FILENAME\\\"' or '<FILENAME>'" } */
 #embed "
 /* { dg-warning "missing terminating \\\" character" "" { target *-*-* } .-1 } */
- /* { dg-error "#embed expects \\\"FILENAME\\\" or <FILENAME>" "" { target *-*-* } .-2 } */
+ /* { dg-error "'#embed' expects '\\\"FILENAME\\\"' or '<FILENAME>'" "" { target *-*-* } .-2 } */
 #embed <
 /* { dg-error "empty filename in #embed" "" { target *-*-* } .-1 } */
-/* { dg-error "missing terminating > character" "" { target *-*-* } .-2 } */
-#embed >  /* { dg-error "#embed expects \\\"FILENAME\\\" or <FILENAME>" } */
+/* { dg-error "missing terminating '>' character" "" { target *-*-* } .-2 } */
+#embed >  /* { dg-error "'#embed' expects '\\\"FILENAME\\\"' or '<FILENAME>'" } */
 #embed "" /* { dg-error "empty filename in #embed" } */
 #embed <> /* { dg-error "empty filename in #embed" } */
-#embed embed-4.c  /* { dg-error "#embed expects \\\"FILENAME\\\" or <FILENAME>" } */
+#embed embed-4.c  /* { dg-error "'#embed' expects '\\\"FILENAME\\\"' or '<FILENAME>'" } */
 #embed __FILE__ foo: /* { dg-error "expected parameter name" } */
 /* { dg-error "unknown embed parameter 'foo'" "" { target *-*-* } .-1 } */
 #embed __FILE__ bar:: /* { dg-error "expected parameter name" } */

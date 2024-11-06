@@ -10,5 +10,5 @@
 #ifdef __COUNTER__  /* Macro not expanded. */
 #endif
 
-#if __COUNTER__ == 0  /* { dg-error "__COUNTER__ expanded inside directive with -fdirectives-only" } */
+#if __COUNTER__ == 0  /* { dg-error "'__COUNTER__' expanded inside directive with '-fdirectives-only'" } */
 #endif

@@ -97,14 +97,14 @@ bfin_globalize_label (FILE *stream, const char *name)
   fputc ('\n',stream);
 }
 
-static void 
-output_file_start (void) 
+static void
+output_file_start (void)
 {
   FILE *file = asm_out_file;
   int i;
 
   fprintf (file, ".file \"%s\";\n", LOCATION_FILE (input_location));
-  
+
   for (i = 0; arg_regs[i] >= 0; i++)
     ;
   max_arg_registers = i;	/* how many arg reg used  */
@@ -417,7 +417,7 @@ expand_prologue_reg_save (rtx spreg, int saveall, bool is_inthandler)
 	}
     }
   for (i = REG_P7 + 1; i < REG_CC; i++)
-    if (saveall 
+    if (saveall
 	|| (is_inthandler
 	    && (df_regs_ever_live_p (i)
 		|| (!leaf_function_p () && call_used_or_fixed_reg_p (i)))))
@@ -548,7 +548,7 @@ expand_epilogue_reg_restore (rtx spreg, bool saveall, bool is_inthandler)
    it.
 
    Normally, this macro will push all remaining incoming registers on the
-   stack and set PRETEND_SIZE to the length of the registers pushed.  
+   stack and set PRETEND_SIZE to the length of the registers pushed.
 
    Blackfin specific :
    - VDSP C compiler manual (our ABI) says that a variable args function
@@ -590,7 +590,7 @@ setup_incoming_varargs (cumulative_args_t cum,
    be accessed via the stack pointer) in functions that seem suitable.  */
 
 static bool
-bfin_frame_pointer_required (void) 
+bfin_frame_pointer_required (void)
 {
   e_funkind fkind = funkind (TREE_TYPE (current_function_decl));
 
@@ -906,7 +906,7 @@ do_unlink (rtx spreg, HOST_WIDE_INT frame_size, bool all, int epilogue_p)
 
   if (stack_frame_needed_p ())
     emit_insn (gen_unlink ());
-  else 
+  else
     {
       rtx postinc = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, spreg));
 
@@ -968,7 +968,7 @@ expand_interrupt_handler_prologue (rtx spreg, e_funkind fkind, bool all)
       emit_insn (gen_movsi_low (p5reg, p5reg, chipid));
       emit_insn (gen_dummy_load (p5reg, bfin_cc_rtx));
     }
-  
+
   if (lookup_attribute ("nesting", attrs))
     {
       rtx srcreg = gen_rtx_REG (Pmode, ret_regs[fkind]);
@@ -1046,7 +1046,7 @@ bfin_load_pic_reg (rtx dest)
      pic reg, since the caller always passes a usable one.  */
   if (local_info_node && local_info_node->local)
     return pic_offset_table_rtx;
-      
+
   if (OPTION_SET_P (bfin_library_id))
     addr = plus_constant (Pmode, pic_offset_table_rtx,
 			   -4 - bfin_library_id * 4);
@@ -1236,7 +1236,7 @@ bfin_delegitimize_address (rtx orig_x)
    32-bit instruction.  */
 
 int
-effective_address_32bit_p (rtx op, machine_mode mode) 
+effective_address_32bit_p (rtx op, machine_mode mode)
 {
   HOST_WIDE_INT offset;
 
@@ -1312,7 +1312,7 @@ print_address_operand (FILE *file, rtx x)
 
     case PRE_DEC:
       fprintf (file, "--");
-      output_address (VOIDmode, XEXP (x, 0));    
+      output_address (VOIDmode, XEXP (x, 0));
       break;
     case POST_INC:
       output_address (VOIDmode, XEXP (x, 0));
@@ -1390,7 +1390,7 @@ print_operand (FILE *file, rtx x, char code)
 	  output_operand_lossage ("invalid %%j value");
 	}
       break;
-    
+
     case 'J':					 /* reverse logic */
       switch (GET_CODE(x))
 	{
@@ -1491,7 +1491,7 @@ print_operand (FILE *file, rtx x, char code)
 	      else
 		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
-	  else 
+	  else
 	    fprintf (file, "%s", reg_names[REGNO (x)]);
 	  break;
 
@@ -1620,7 +1620,7 @@ print_operand (FILE *file, rtx x, char code)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.  
+   For a library call, FNTYPE is 0.
    VDSP C Compiler manual, our ABI says that
    first 3 words of arguments will use R0, R1 and R2.
 */
@@ -1718,7 +1718,7 @@ bfin_arg_partial_bytes (cumulative_args_t cum, const function_arg_info &arg)
 {
   int bytes = arg.promoted_size_in_bytes ();
   int bytes_left = get_cumulative_args (cum)->nregs * UNITS_PER_WORD;
-  
+
   if (bytes == -1)
     return 0;
 
@@ -1759,7 +1759,7 @@ bfin_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 
 /* Return true when register may be used to pass function parameters.  */
 
-bool 
+bool
 function_arg_regno_p (int n)
 {
   int i;
@@ -2701,7 +2701,7 @@ bfin_valid_reg_p (unsigned int regno, int strict, machine_mode mode,
 
 /* Recognize an RTL expression that is a valid memory address for an
    instruction.  The MODE argument is the machine mode for the MEM expression
-   that wants to use this address. 
+   that wants to use this address.
 
    Blackfin addressing modes are as follows:
 
@@ -2710,7 +2710,7 @@ bfin_valid_reg_p (unsigned int regno, int strict, machine_mode mode,
 
       B [ Preg + uimm15 ]
       W [ Preg + uimm16m2 ]
-      [ Preg + uimm17m4 ] 
+      [ Preg + uimm17m4 ]
 
       [preg++]
       [preg--]
@@ -2888,8 +2888,8 @@ bfin_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else
 	*total = cost2;
       return true;
-      
-    case ASHIFT: 
+
+    case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
       if (mode == DImode)
@@ -2904,7 +2904,7 @@ bfin_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	*total += rtx_cost (op0, mode, code, 0, speed);
 
       return true;
-	  
+
     case IOR:
     case AND:
     case XOR:
@@ -3152,11 +3152,11 @@ output_push_multiple (rtx insn, rtx *operands)
 {
   char buf[80];
   int ok;
-  
+
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
   ok = analyze_push_multiple_operation (PATTERN (insn));
   gcc_assert (ok);
-  
+
   if (first_dreg_to_save == 8)
     sprintf (buf, "[--sp] = ( p5:%d );\n", first_preg_to_save);
   else if (first_preg_to_save == 6)
@@ -3176,7 +3176,7 @@ output_pop_multiple (rtx insn, rtx *operands)
 {
   char buf[80];
   int ok;
-  
+
   /* Validate the insn again, and compute first_[dp]reg_to_save. */
   ok = analyze_pop_multiple_operation (PATTERN (insn));
   gcc_assert (ok);
@@ -3856,7 +3856,7 @@ static void
 hwloop_fail (hwloop_info loop)
 {
   rtx insn = loop->loop_end;
-  
+
   if (DPREG_P (loop->iter_reg))
     {
       /* If loop->iter_reg is a DREG or PREG, we can split it here
@@ -3880,7 +3880,7 @@ hwloop_fail (hwloop_info loop)
     }
   else
     {
-      splitting_loops = 1;  
+      splitting_loops = 1;
       try_split (PATTERN (insn), safe_as_a <rtx_insn *> (insn), 1);
       splitting_loops = 0;
     }
@@ -4132,7 +4132,7 @@ workaround_rts_anomaly (void)
 
       if (BARRIER_P (insn))
 	return;
-      
+
       if (NOTE_P (insn) || LABEL_P (insn))
 	continue;
 
@@ -4286,7 +4286,7 @@ indirect_call_p (rtx pat)
   pat = XEXP (pat, 0);
   gcc_assert (GET_CODE (pat) == MEM);
   pat = XEXP (pat, 0);
-  
+
   return REG_P (pat);
 }
 
@@ -4329,7 +4329,7 @@ workaround_speculation (void)
       int delay_needed = 0;
 
       next = find_next_insn_start (insn);
-      
+
       if (NOTE_P (insn) || BARRIER_P (insn))
 	continue;
       if (JUMP_TABLE_DATA_P (insn))
@@ -4344,7 +4344,7 @@ workaround_speculation (void)
       pat = PATTERN (insn);
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
-      
+
       if (GET_CODE (pat) == ASM_INPUT || asm_noperands (pat) >= 0)
 	{
 	  np_check_regno = -1;
@@ -4603,7 +4603,7 @@ add_sched_insns_for_speculation (void)
 	  if (GET_CODE (PATTERN (next)) == UNSPEC_VOLATILE
 	      && get_attr_type (next) == TYPE_STALL)
 	    continue;
-	  emit_insn_before (gen_stall (GEN_INT (1)), next);	  
+	  emit_insn_before (gen_stall (GEN_INT (1)), next);
 	}
     }
 }
@@ -4719,7 +4719,7 @@ bfin_comp_type_attributes (const_tree type1, const_tree type2)
 
   if (kind1 != kind2)
     return 0;
-  
+
   /*  Check for mismatched modifiers */
   if (!lookup_attribute ("nesting", TYPE_ATTRIBUTES (type1))
       != !lookup_attribute ("nesting", TYPE_ATTRIBUTES (type2)))
@@ -4744,9 +4744,9 @@ bfin_comp_type_attributes (const_tree type1, const_tree type2)
    struct attribute_spec.handler.  */
 
 static tree
-bfin_handle_longcall_attribute (tree *node, tree name, 
-				tree args ATTRIBUTE_UNUSED, 
-				int flags ATTRIBUTE_UNUSED, 
+bfin_handle_longcall_attribute (tree *node, tree name,
+				tree args ATTRIBUTE_UNUSED,
+				int flags ATTRIBUTE_UNUSED,
 				bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE
@@ -5154,7 +5154,7 @@ bfin_init_builtins (void)
     = build_function_type_list (integer_type_node,
 				build_pointer_type (integer_type_node),
 				NULL_TREE);
-  
+
   /* Add the remaining MMX insns with somewhat more complicated types.  */
   def_builtin ("__builtin_bfin_csync", void_ftype_void, BFIN_BUILTIN_CSYNC);
   def_builtin ("__builtin_bfin_ssync", void_ftype_void, BFIN_BUILTIN_SSYNC);
@@ -5746,7 +5746,7 @@ bfin_conditional_register_usage (void)
 #define TARGET_EXPAND_BUILTIN bfin_expand_builtin
 
 #undef TARGET_ASM_GLOBALIZE_LABEL
-#define TARGET_ASM_GLOBALIZE_LABEL bfin_globalize_label 
+#define TARGET_ASM_GLOBALIZE_LABEL bfin_globalize_label
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START output_file_start

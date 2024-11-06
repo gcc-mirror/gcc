@@ -4112,7 +4112,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
      non-perfect nests but allow if-conversion versioned loops inside.  */
   class loop *loop_to_version = loop;
   if (flow_loop_nested_p (outermost, loop))
-    { 
+    {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "trying to apply versioning to outer loop %d\n",

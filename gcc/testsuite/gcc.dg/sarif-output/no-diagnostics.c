@@ -10,4 +10,4 @@ int nonempty;
 
 /* Use a Python script to verify various properties about the generated
    .sarif file:
-   { dg-final { run-sarif-pytest no-diagnostics.c "test-no-diagnostics.py" } } */
+   { dg-final { run-sarif-pytest no-diagnostics.c "no-diagnostics.py" } } */

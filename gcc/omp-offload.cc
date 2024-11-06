@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -778,7 +779,7 @@ oacc_xform_loop (gcall *call)
 
 /* Transform a GOACC_TILE call.  Determines the element loop span for
    the specified loop of the nest.  This is 1 if we're not tiling.
-   
+
    GOACC_TILE (collapse_count, loop_no, tile_arg, gwv_tile, gwv_element);  */
 
 static void
@@ -1422,7 +1423,7 @@ oacc_loop_process (oacc_loop *loop, int fn_level)
       tree e_mask_arg = build_int_cst (unsigned_type_node, loop->e_mask);
       tree chunk_arg = loop->chunk_size;
       gcall *call;
-      
+
       for (ix = 0; loop->ifns.iterate (ix, &call); ix++)
 	{
 	  switch (gimple_call_internal_fn (call))
@@ -1501,7 +1502,7 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
       bool auto_par = (loop->flags & OLF_AUTO) != 0;
       bool seq_par = (loop->flags & OLF_SEQ) != 0;
       bool tiling = (loop->flags & OLF_TILE) != 0;
-      
+
       this_mask = ((loop->flags >> OLF_DIM_BASE)
 		   & (GOMP_DIM_MASK (GOMP_DIM_MAX) - 1));
 
@@ -1656,7 +1657,7 @@ oacc_loop_auto_partitions (oacc_loop *loop, unsigned outer_mask,
       /* Find the first outermost available partition. */
       while (this_mask <= outer_mask)
 	this_mask <<= 1;
-      
+
       /* Grab two axes if tiling, and we've not assigned anything  */
       if (tiling && !(loop->mask | loop->e_mask))
 	this_mask |= this_mask << 1;
@@ -2190,7 +2191,7 @@ execute_oacc_device_lower ()
 	    oacc_xform_tile (call);
 	    rescan = true;
 	    break;
-	    
+
 	  case IFN_GOACC_LOOP:
 	    oacc_xform_loop (call);
 	    rescan = true;

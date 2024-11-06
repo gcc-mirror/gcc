@@ -21,78 +21,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 DEFINITION MODULE P2SymBuild ;
 
-(*
-   Title      : P2SymBuild
-   Author     : Gaius Mulley
-   Date       : 24/6/87
-   LastEdit   : Sat Dec  9 11:10:57 EST 1989
-   System     : UNIX (GNU Modula-2)
-   Description: pass 2 symbol creation.
-*)
-
-EXPORT QUALIFIED P2StartBuildDefModule,
-                 P2EndBuildDefModule,
-                 P2StartBuildImplementationModule,
-                 P2EndBuildImplementationModule,
-                 P2StartBuildProgramModule,
-                 P2EndBuildProgramModule,
-                 StartBuildInnerModule,
-                 EndBuildInnerModule,
-                 BuildImportOuterModule,
-                 BuildExportOuterModule,
-                 BuildImportInnerModule,
-                 BuildExportInnerModule,
-                 BlockStart, BlockEnd, BlockBegin, BlockFinally,
-                 BuildNumber,
-                 BuildString,
-                 BuildConst,
-                 BuildSubrange, BuildAligned,
-                 BuildTypeAlignment, BuildVarAlignment,
-                 P2BuildDefaultFieldAlignment, BuildPragmaConst,
-                 BuildVariable,
-                 StartBuildEnumeration,
-                 BuildType,
-                 StartBuildFormalParameters,
-                 EndBuildFormalParameters,
-                 BuildProcedureHeading,
-                 BuildFPSection,
-                 BuildVarArgs,
-                 BuildFormalVarArgs,
-                 BuildOptArg,
-                 StartBuildProcedure,
-                 EndBuildProcedure,
-                 BuildNoReturnAttribute,
-                 BuildFunction,
-                 BuildOptFunction,
-                 BuildPointerType,
-                 BuildSetType,
-                 BuildRecord,
-                 BuildFieldRecord,
-                 StartBuildVarient,
-                 EndBuildVarient,
-                 BuildVarientSelector,
-                 StartBuildVarientFieldRecord,
-                 EndBuildVarientFieldRecord,
-                 BuildNulName,
-                 BuildTypeEnd,
-                 StartBuildArray, BuildArrayComma,
-                 EndBuildArray,
-                 BuildFieldArray,
-                 BuildProcedureType,
-                 BuildFormalType,
-                 SeenCast,
-                 SeenSet,
-                 SeenArray,
-                 SeenConstructor,
-                 SeenUnknown,
-                 SeenString,
-                 SeenBoolean,
-                 SeenCType, SeenRType, SeenZType,
-                 DetermineType, PushType, PopType,
-                 PushRememberConstant,
-                 PopRememberConstant,
-                 RememberConstant ;
-
 
 (*
    BlockStart - tokno is the module/procedure/implementation/definition token
@@ -865,10 +793,50 @@ PROCEDURE EndBuildProcedure ;
 
 
 (*
+   EndBuildForward - ends building a forward procedure.
+*)
+
+PROCEDURE EndBuildForward ;
+
+
+(*
    BuildNoReturnAttribute - provide an interface to the symbol table module.
 *)
 
 PROCEDURE BuildNoReturnAttribute (procedureSym: CARDINAL) ;
+
+
+(*
+   BuildProcedureDefinedByForward - indicates that the parameters for ProcSym have
+                                    been defined using the FORWARD keyword.
+*)
+
+PROCEDURE BuildProcedureDefinedByForward (ProcSym: CARDINAL) ;
+
+
+(*
+   BuildProcedureDefinedByProper - indicates that the parameters for ProcSym have
+                                   been defined during a proper procedure declaration.
+*)
+
+PROCEDURE BuildProcedureDefinedByProper (ProcSym: CARDINAL) ;
+
+
+(*
+   CheckProcedure - checks to see that the top of stack procedure
+                    has not been declared as a procedure function.
+
+                    The Stack:
+
+                    Entry                 Exit
+
+             Ptr ->                                      <- Ptr
+                    +------------+        +------------+
+                    | ProcSym    |        | ProcSym    |
+                    |------------|        |------------|
+*)
+
+PROCEDURE CheckProcedure ;
 
 
 (*

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -42,22 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 
    gfc_get_*	get a backend tree representation of a decl or type  */
 
-static gfc_file *gfc_current_backend_file;
-
 const char gfc_msg_fault[] = N_("Array reference out of bounds");
 
-
-/* Return a location_t suitable for 'tree' for a gfortran locus.  The way the
-   parser works in gfortran, loc->lb->location contains only the line number
-   and LOCATION_COLUMN is 0; hence, the column has to be added when generating
-   locations for 'tree'.  Cf. error.cc's gfc_format_decoder.  */
-
-location_t
-gfc_get_location (locus *loc)
-{
-  return linemap_position_for_loc_and_offset (line_table, loc->lb->location,
-					      loc->nextc - loc->lb->line);
-}
 
 /* Advance along TREE_CHAIN n times.  */
 
@@ -71,6 +58,14 @@ gfc_advance_chain (tree t, int n)
     }
   return t;
 }
+
+void
+gfc_locus_from_location (locus *where, location_t loc)
+{
+  where->nextc = (gfc_char_t *) -1;
+  where->u.location = loc;
+}
+
 
 static int num_var;
 
@@ -580,7 +575,7 @@ trans_runtime_error_vararg (tree errorfunc, locus* where, const char* msgid,
   tree fntype;
   char *message;
   const char *p;
-  int line, nargs, i;
+  int nargs, i;
   location_t loc;
 
   /* Compute the number of extra arguments from the format string.  */
@@ -597,13 +592,13 @@ trans_runtime_error_vararg (tree errorfunc, locus* where, const char* msgid,
 
   if (where)
     {
-      line = LOCATION_LINE (where->lb->location);
-      message = xasprintf ("At line %d of file %s",  line,
-			   where->lb->file->filename);
+      location_t loc = gfc_get_location (where);
+      message = xasprintf ("At line %d of file %s",  LOCATION_LINE (loc),
+			   LOCATION_FILE (loc));
     }
   else
     message = xasprintf ("In file '%s', around line %d",
-			 gfc_source_file, LOCATION_LINE (input_location) + 1);
+			 gfc_source_file, LOCATION_LINE (input_location));
 
   arg = gfc_build_addr_expr (pchar_type_node,
 			     gfc_build_localized_cstring_const (message));
@@ -704,14 +699,13 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
     }
   else
     {
+      location_t loc = where ? gfc_get_location (where) : input_location;
       if (once)
-	cond = fold_build2_loc (gfc_get_location (where), TRUTH_AND_EXPR,
-				boolean_type_node, tmpvar,
+	cond = fold_build2_loc (loc, TRUTH_AND_EXPR, boolean_type_node, tmpvar,
 				fold_convert (boolean_type_node, cond));
 
-      tmp = fold_build3_loc (gfc_get_location (where), COND_EXPR, void_type_node,
-			     cond, body,
-			     build_empty_stmt (gfc_get_location (where)));
+      tmp = fold_build3_loc (loc, COND_EXPR, void_type_node, cond, body,
+			     build_empty_stmt (loc));
       gfc_add_expr_to_block (pblock, tmp);
     }
 }
@@ -1134,6 +1128,9 @@ get_final_proc_ref (gfc_se *se, gfc_expr *expr, tree class_container)
 
   if (POINTER_TYPE_P (TREE_TYPE (se->expr)))
     se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
+
+  if (expr->ts.type != BT_DERIVED && !using_class_container)
+    gfc_free_expr (final_wrapper);
 }
 
 
@@ -1161,6 +1158,7 @@ get_elem_size (gfc_se *se, gfc_expr *expr, tree class_container)
 
       gfc_conv_expr (se, class_size);
       gcc_assert (se->post.head == NULL_TREE);
+      gfc_free_expr (class_size);
     }
 }
 
@@ -1473,6 +1471,7 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2,
 
   gfc_add_expr_to_block (block, tmp);
   gfc_add_block_to_block (block, &final_se.post);
+  gfc_free_expr (expr);
 
   return true;
 }
@@ -2290,42 +2289,6 @@ gfc_add_block_to_block (stmtblock_t * block, stmtblock_t * append)
 }
 
 
-/* Save the current locus.  The structure may not be complete, and should
-   only be used with gfc_restore_backend_locus.  */
-
-void
-gfc_save_backend_locus (locus * loc)
-{
-  loc->lb = XCNEW (gfc_linebuf);
-  loc->lb->location = input_location;
-  loc->lb->file = gfc_current_backend_file;
-}
-
-
-/* Set the current locus.  */
-
-void
-gfc_set_backend_locus (locus * loc)
-{
-  gfc_current_backend_file = loc->lb->file;
-  input_location = gfc_get_location (loc);
-}
-
-
-/* Restore the saved locus. Only used in conjunction with
-   gfc_save_backend_locus, to free the memory when we are done.  */
-
-void
-gfc_restore_backend_locus (locus * loc)
-{
-  /* This only restores the information captured by gfc_save_backend_locus,
-     intentionally does not use gfc_get_location.  */
-  input_location = loc->lb->location;
-  gfc_current_backend_file = loc->lb->file;
-  free (loc->lb);
-}
-
-
 /* Translate an executable statement. The tree cond is used by gfc_trans_do.
    This static function is wrapped by gfc_trans_code_cond and
    gfc_trans_code.  */
@@ -2351,8 +2314,7 @@ trans_code (gfc_code * code, tree cond)
 	  gfc_add_expr_to_block (&block, res);
 	}
 
-      gfc_current_locus = code->loc;
-      gfc_set_backend_locus (&code->loc);
+      input_location = gfc_get_location (&code->loc);
 
       switch (code->op)
 	{
@@ -2690,7 +2652,7 @@ trans_code (gfc_code * code, tree cond)
 	  gfc_internal_error ("gfc_trans_code(): Bad statement code");
 	}
 
-      gfc_set_backend_locus (&code->loc);
+      input_location = gfc_get_location (&code->loc);
 
       if (res != NULL_TREE && ! IS_EMPTY_STMT (res))
 	{

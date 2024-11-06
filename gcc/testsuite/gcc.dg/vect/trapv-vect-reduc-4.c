@@ -1,5 +1,5 @@
 /* Disabling epilogues until we find a better way to deal with scans.  */
-/* { dg-additional-options "--param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "-ftrapv --param vect-epilogues-nomask=0" } */
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 

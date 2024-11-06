@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -72,7 +73,7 @@ contains_polymorphic_type_p (const_tree type)
 }
 
 /* Return true if it seems valid to use placement new to build EXPECTED_TYPE
-   at position CUR_OFFSET within TYPE.  
+   at position CUR_OFFSET within TYPE.
 
    POD can be changed to an instance of a polymorphic type by
    placement new.  Here we play safe and assume that any
@@ -112,10 +113,10 @@ possible_placement_new (tree type, tree expected_type,
      }
    and we look for type at offset sizeof(int), we end up with B and offset 0.
    If the same is produced by multiple inheritance, we end up with A and offset
-   sizeof(int). 
+   sizeof(int).
 
    If we cannot find corresponding class, give up by setting
-   THIS->OUTER_TYPE to OTR_TYPE and THIS->OFFSET to NULL. 
+   THIS->OUTER_TYPE to OTR_TYPE and THIS->OFFSET to NULL.
    Return true when lookup was successful.
 
    When CONSIDER_PLACEMENT_NEW is false, reject contexts that may be made
@@ -296,7 +297,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 		 Because of the way the bases are packed into a class, the
 		 field's size may be smaller than type size, so it needs
 		 to be done with a care.  */
-		
+
 	      if (pos <= (unsigned HOST_WIDE_INT)cur_offset
 		  && (pos + size) >= (unsigned HOST_WIDE_INT)cur_offset
 				     + POINTER_SIZE
@@ -442,7 +443,7 @@ no_useful_type_info:
 	      if (speculative)
 		return true;
 	      clear_outer_type (otr_type);
-	      invalid = true; 
+	      invalid = true;
 	      return false;
 	    }
 	}
@@ -624,7 +625,7 @@ ipa_polymorphic_call_context::dump (FILE *f, bool newline) const
 	fprintf (f, "nothing known");
       if (outer_type || offset)
 	{
-	  fprintf (f, "Outer type%s:", dynamic ? " (dynamic)":"");
+	  fprintf (f, "Outer type%s:", dynamic ? " (dynamic)" : "");
 	  print_generic_expr (f, outer_type, TDF_SLIM);
 	  if (maybe_derived_type)
 	    fprintf (f, " (or a derived type)");
@@ -742,8 +743,8 @@ ipa_polymorphic_call_context::set_by_decl (tree base, HOST_WIDE_INT off)
   outer_type = TYPE_MAIN_VARIANT (TREE_TYPE (base));
   offset = off;
   /* Make very conservative assumption that all objects
-     may be in construction. 
- 
+     may be in construction.
+
      It is up to caller to revisit this via
      get_dynamic_type or decl_maybe_in_construction_p.  */
   maybe_in_construction = true;
@@ -752,7 +753,7 @@ ipa_polymorphic_call_context::set_by_decl (tree base, HOST_WIDE_INT off)
 }
 
 /* CST is an invariant (address of decl), try to get meaningful
-   polymorphic call context for polymorphic call of method 
+   polymorphic call context for polymorphic call of method
    if instance of OTR_TYPE that is located at offset OFF of this invariant.
    Return FALSE if nothing meaningful can be found.  */
 
@@ -799,7 +800,7 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	 && !SSA_NAME_IS_DEFAULT_DEF (op)
 	 /* We might be called via fold_stmt during cfgcleanup where
 	    SSA form need not be up-to-date.  */
-	 && !name_registered_for_update_p (op) 
+	 && !name_registered_for_update_p (op)
 	 && (gimple_assign_single_p (SSA_NAME_DEF_STMT (op))
 	     || gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI))
     {
@@ -809,7 +810,7 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	    *global_visited = new hash_set<tree>;
 	  if ((*global_visited)->add (op))
 	    goto done;
-	}	
+	}
       else
 	{
 	  if (!visited)
@@ -1002,7 +1003,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 
 	  /* Handle the case we inlined into a thunk.  In this case
 	     thunk has THIS pointer of type bar, but it really receives
-	     address to its base type foo which sits in bar at 
+	     address to its base type foo which sits in bar at
 	     0-thunk.fixed_offset.  It starts with code that adds
 	     think.fixed_offset to the pointer to compensate for this.
 
@@ -1071,7 +1072,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	     not part of outer type.  */
 	  if (otr_type && !contains_type_p (outer_type, offset,
 					    otr_type))
-	    { 
+	    {
 	      invalid = true;
 	      if (instance)
 		*instance = base_pointer;
@@ -1110,7 +1111,7 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
       && gimple_assign_single_p (SSA_NAME_DEF_STMT (base_pointer)))
     base_type = TREE_TYPE (gimple_assign_rhs1
 			    (SSA_NAME_DEF_STMT (base_pointer)));
- 
+
   if (base_type && POINTER_TYPE_P (base_type))
     combine_speculation_with (TYPE_MAIN_VARIANT (TREE_TYPE (base_type)),
 			      offset,
@@ -1329,7 +1330,7 @@ extr_type_from_vtbl_ptr_store (gimple *stmt, struct type_change_info *tci,
       /* FIXME: We should support construction contexts.  */
       return NULL;
     }
- 
+
   *type_offset = tree_to_shwi (BINFO_OFFSET (binfo)) * BITS_PER_UNIT;
   return DECL_CONTEXT (vtable);
 }
@@ -1605,14 +1606,14 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   /* We need to obtain reference to virtual table pointer.  It is better
      to look it up in the code rather than build our own.  This require bit
      of pattern matching, but we end up verifying that what we found is
-     correct. 
+     correct.
 
      What we pattern match is:
 
        tmp = instance->_vptr.A;   // vtbl ptr load
        tmp2 = tmp[otr_token];	  // vtable lookup
        OBJ_TYPE_REF(tmp2;instance->0) (instance);
- 
+
      We want to start alias oracle walk from vtbl pointer load,
      but we may not be able to identify it, for example, when PRE moved the
      load around.  */
@@ -1674,7 +1675,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	    }
 	}
     }
- 
+
   /* If we failed to look up the reference in code, build our own.  */
   if (!instance_ref)
     {
@@ -1739,7 +1740,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 			 &tci, NULL, &function_entry_reached, aa_walk_budget);
 
   /* If we did not find any type changing statements, we may still drop
-     maybe_in_construction flag if the context already have outer type. 
+     maybe_in_construction flag if the context already have outer type.
 
      Here we make special assumptions about both constructors and
      destructors which are all the functions that are allowed to alter the
@@ -1777,7 +1778,7 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
      only these).  We then must detect that statements in section 2 change
      the dynamic type and can try to derive the new type.  That is enough
      and we can stop, we will never see the calls into constructors of
-     sub-objects in this code. 
+     sub-objects in this code.
 
      Therefore if the static outer type was found (outer_type)
      we can safely ignore tci.speculative that is set on calls and give up
@@ -1887,14 +1888,14 @@ ipa_polymorphic_call_context::speculation_consistent_p (tree spec_outer_type,
     return false;
 
   /* If outer type already contains speculation as a filed,
-     it is useless.  We already know from OUTER_TYPE 
+     it is useless.  We already know from OUTER_TYPE
      SPEC_TYPE and that it is not in the construction.  */
   if (contains_type_p (outer_type, offset - spec_offset,
 		       spec_outer_type, false, false))
     return false;
 
   /* If speculative outer type is not more specified than outer
-     type, just give up. 
+     type, just give up.
      We can only decide this safely if we can compare types with OUTER_TYPE.
    */
   if ((!in_lto_p || odr_type_p (outer_type))
@@ -1906,7 +1907,7 @@ ipa_polymorphic_call_context::speculation_consistent_p (tree spec_outer_type,
 }
 
 /* Improve THIS with speculation described by NEW_OUTER_TYPE, NEW_OFFSET,
-   NEW_MAYBE_DERIVED_TYPE 
+   NEW_MAYBE_DERIVED_TYPE
    If OTR_TYPE is set, assume the context is used with OTR_TYPE.  */
 
 bool
@@ -2194,7 +2195,7 @@ ipa_polymorphic_call_context::combine_with (ipa_polymorphic_call_context ctx,
       /* It may be easy to check if second context permits the first
 	 and set INVALID otherwise.  This is not easy to do in general;
 	 contains_type_p may return false negatives for non-comparable
-	 types.  
+	 types.
 
 	 If OTR_TYPE is known, we however can expect that
 	 restrict_to_inner_class should have discovered the same base

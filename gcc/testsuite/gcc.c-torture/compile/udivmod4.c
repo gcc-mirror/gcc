@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fpermissive" } */
+/* { dg-additional-options "-std=gnu17 -fpermissive" } */
 
 long long
 xlrandom ()

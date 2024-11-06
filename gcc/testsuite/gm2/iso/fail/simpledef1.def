@@ -1,0 +1,6 @@
+DEFINITION MODULE simpledef1 ;
+
+PROCEDURE foo ;
+PROCEDURE foo ;
+
+END simpledef1.

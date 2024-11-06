@@ -304,7 +304,7 @@ struct spec_nodes
   cpp_hashnode *n__VA_OPT__;		/* C++ vararg macros */
 
   enum {M_EXPORT, M_MODULE, M_IMPORT, M__IMPORT, M_HWM};
-  
+
   /* C++20 modules, only set when module_directives is in effect.
      incoming variants [0], outgoing ones [1] */
   cpp_hashnode *n_modules[M_HWM][2];
@@ -318,8 +318,9 @@ struct _cpp_line_note
 
   /* Type of note.  The 9 'from' trigraph characters represent those
      trigraphs, '\\' an escaped newline, ' ' an escaped newline with
-     intervening space, 0 represents a note that has already been handled,
-     and anything else is invalid.  */
+     intervening space, 'W' trailing whitespace, 'L', 'S' and 'T' for
+     leading whitespace issues, 0 represents a note that
+     has already been handled, and anything else is invalid.  */
   unsigned int type;
 };
 
@@ -467,6 +468,10 @@ struct cpp_reader
      one.  */
   bool about_to_expand_macro_p;
 
+  /* True if the preprocessor should diagnose CPP_DOT or CPP_COLON
+     tokens as the first ones coming from macro expansion.  */
+  bool diagnose_dot_colon_from_macro_p;
+
   /* Search paths for include files.  */
   struct cpp_dir *quote_include;	/* "" */
   struct cpp_dir *bracket_include;	/* <> */
@@ -495,9 +500,11 @@ struct cpp_reader
      been used.  */
   bool seen_once_only;
 
-  /* Multiple include optimization.  */
+  /* Multiple include optimization and -Wheader-guard warning.  */
   const cpp_hashnode *mi_cmacro;
   const cpp_hashnode *mi_ind_cmacro;
+  const cpp_hashnode *mi_def_cmacro;
+  location_t mi_loc, mi_def_loc;
   bool mi_valid;
 
   /* Lexing.  */
@@ -614,6 +621,10 @@ struct cpp_reader
      zero of said file.  */
   location_t main_loc;
 
+  /* If non-zero, override diagnostic locations (other than DK_NOTE
+     diagnostics) to this one.  */
+  location_t diagnostic_override_loc;
+
   /* Returns true iff we should warn about UTF-8 bidirectional control
      characters.  */
   bool warn_bidi_p () const
@@ -666,6 +677,12 @@ struct cpp_embed_params
    compiler that supports C99.  */
 #if HAVE_DESIGNATED_INITIALIZERS
 extern const unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
+#elif __cpp_constexpr >= 201304L
+extern const struct _cpp_trigraph_map_s {
+  unsigned char map[UCHAR_MAX + 1];
+  constexpr _cpp_trigraph_map_s ();
+} _cpp_trigraph_map_d;
+#define _cpp_trigraph_map _cpp_trigraph_map_d.map
 #else
 extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #endif
@@ -696,7 +713,8 @@ _cpp_in_main_source_file (cpp_reader *pfile)
 }
 
 /* True if NODE is a macro for the purposes of ifdef, defined etc.  */
-inline bool _cpp_defined_macro_p (cpp_hashnode *node)
+inline bool
+_cpp_defined_macro_p (const cpp_hashnode *node)
 {
   /* Do not treat conditional macros as being defined.  This is due to
      the powerpc port using conditional macros for 'vector', 'bool',
@@ -785,7 +803,6 @@ extern cpp_token *_cpp_lex_direct (cpp_reader *);
 extern unsigned char *_cpp_spell_ident_ucns (unsigned char *, cpp_hashnode *);
 extern int _cpp_equiv_tokens (const cpp_token *, const cpp_token *);
 extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
-extern cpp_hashnode *_cpp_lex_identifier (cpp_reader *, const char *);
 extern int _cpp_remaining_tokens_num_in_context (cpp_context *);
 extern void _cpp_init_lexer (void);
 static inline void *_cpp_reserve_room (cpp_reader *pfile, size_t have,
@@ -841,7 +858,7 @@ extern size_t _cpp_replacement_text_len (const cpp_macro *);
    It starts initialized to all zeros, and at the end
    'level' is the normalization level of the sequence.  */
 
-struct normalize_state 
+struct normalize_state
 {
   /* The previous starter character.  */
   cppchar_t previous;

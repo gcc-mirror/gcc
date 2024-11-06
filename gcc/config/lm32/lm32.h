@@ -52,7 +52,7 @@
 %{muser-enabled} \
 "
 
-/* Let link script define all link options. 
+/* Let link script define all link options.
    Default to using simulator link script.  */
 
 #undef  STARTFILE_SPEC
@@ -162,7 +162,7 @@ do {                                                    \
 
 enum reg_class
 {
-  NO_REGS,                                      
+  NO_REGS,
   GENERAL_REGS,
   ALL_REGS,
   LIM_REG_CLASSES

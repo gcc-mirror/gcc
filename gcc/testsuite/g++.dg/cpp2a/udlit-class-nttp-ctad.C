@@ -17,7 +17,7 @@ template <typename CharT, std::size_t N>
 fixed_string(const CharT (&str)[N]) -> fixed_string<CharT, N>;
 
 template <fixed_string fs>
-constexpr std::size_t operator"" _udl() {
+constexpr std::size_t operator ""_udl() {
   return decltype(fs)::length;
 }
 

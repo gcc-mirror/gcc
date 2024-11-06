@@ -8,7 +8,7 @@
 
 /* { dg-do run { target epiphany-*-* i?86-*-* x86_64-*-* s390*-*-* } } */
 /* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && { ia32 && { ! nonpic } } } } */
-/* { dg-options "-O2 -foptimize-sibling-calls -fno-ipa-cp" } */
+/* { dg-options "-Wno-old-style-definition -O2 -foptimize-sibling-calls -fno-ipa-cp" } */
 
 extern void abort (void);
 extern void exit (int);

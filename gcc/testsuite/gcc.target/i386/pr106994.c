@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=skylake -Ofast" } */
+/* { dg-options "-std=gnu17 -march=skylake -Ofast" } */
 
 typedef struct {
   float ymin, ymax;

@@ -7,32 +7,32 @@
 #include <cassert>
 
 template<char...>
-  int operator"" _abc();
+  int operator ""_abc();
 
 template<>
   int
-  operator"" _abc<>()
+  operator ""_abc<>()
   { return -1; }
 
 template<>
   int
-  operator"" _abc<'L','U','E'>()
+  operator ""_abc<'L','U','E'>()
   { return 42; }
 
 template<>
   int
-  operator"" _abc<'6','6','6'>()
+  operator ""_abc<'6','6','6'>()
   { return 21; }
 
 void
 test1()
 {
-  int i = operator"" _abc<'1','2','3'>();
+  int i = operator ""_abc<'1','2','3'>();
   assert(i == 45);
-  int universal_meaning = operator"" _abc<'L','U','E'>();
+  int universal_meaning = operator ""_abc<'L','U','E'>();
   assert(universal_meaning == 42);
-  int b = operator"" _abc<'6','6','6'>();
-  int z = operator"" _abc<>();
+  int b = operator ""_abc<'6','6','6'>();
+  int z = operator ""_abc<>();
   assert(z == -1);
   int j = 123_abc;
   assert(j == i);
@@ -47,5 +47,5 @@ main()
 }
 
 template<char... Chars>
-  int operator"" _abc()
+  int operator ""_abc()
   { return 42 + sizeof...(Chars); }

@@ -3,7 +3,7 @@
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
-   Software Foundation; either version 3 of the License, or (at your option) 
+   Software Foundation; either version 3 of the License, or (at your option)
    any later version.
 
    This file is distributed in the hope that it will be useful, but WITHOUT
@@ -202,7 +202,7 @@ static __inline vec_int4 spu_and(vec_int4 a, signed int b)
  * =======
  */
 #define spu_avg(_a, _b)		vec_avg(_a, _b)
-  
+
 
 /* spu_bisled
  * spu_bisled_d
@@ -1070,12 +1070,12 @@ static __inline vec_float4 spu_nand(vec_float4 a, vec_float4 b)
 
 static __inline vec_ullong2 spu_nand(vec_ullong2 a, vec_ullong2 b)
 {
-  return ((vec_ullong2)(si_nand((qword)(a), (qword)(b)))); 
+  return ((vec_ullong2)(si_nand((qword)(a), (qword)(b))));
 }
 
 static __inline vec_llong2 spu_nand(vec_llong2 a, vec_llong2 b)
 {
-  return ((vec_llong2)(si_nand((qword)(a), (qword)(b)))); 
+  return ((vec_llong2)(si_nand((qword)(a), (qword)(b))));
 }
 
 static __inline vec_double2 spu_nand(vec_double2 a, vec_double2 b)
@@ -1653,7 +1653,7 @@ static __inline vec_double2 spu_rlmaskqwbytebc(vec_double2 a, int count)
 static __inline vec_uchar16 spu_rlqwbyte(vec_uchar16 a, int count)
 {
   return ((vec_uchar16)(si_rotqby((qword)(a), si_from_int(count))));
-}  
+}
 
 static __inline vec_char16 spu_rlqwbyte(vec_char16 a, int count)
 {
@@ -1663,7 +1663,7 @@ static __inline vec_char16 spu_rlqwbyte(vec_char16 a, int count)
 static __inline vec_ushort8 spu_rlqwbyte(vec_ushort8 a, int count)
 {
   return ((vec_ushort8)(si_rotqby((qword)(a), si_from_int(count))));
-}  
+}
 
 static __inline vec_short8 spu_rlqwbyte(vec_short8 a, int count)
 {
@@ -2304,7 +2304,7 @@ static __inline vec_int4 spu_subx(vec_int4 a, vec_int4 b, vec_int4 c)
 static __inline vec_ushort8 spu_sumb(vec_uchar16 a, vec_uchar16 b)
 {
   return ((vec_ushort8)(si_sumb((qword)(a), (qword)(b))));
-}  
+}
 
 
 /* spu_sync

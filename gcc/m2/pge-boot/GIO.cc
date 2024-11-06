@@ -42,9 +42,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <stdlib.h>
 #include <unistd.h>
-#define _IO_H
 #define _IO_C
 
+#include "GIO.h"
 #   include "GStrLib.h"
 #   include "GSYSTEM.h"
 #   include "Glibc.h"
@@ -217,7 +217,7 @@ static void setFlag (termios_TERMIOS t, termios_Flag f, bool b)
 
 static void doraw (termios_TERMIOS term)
 {
-  /* 
+  /*
     * from man 3 termios
     *           termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
     *                                   | INLCR | IGNCR | ICRNL | IXON);
@@ -252,7 +252,7 @@ static void doraw (termios_TERMIOS term)
 
 static void dononraw (termios_TERMIOS term)
 {
-  /* 
+  /*
     * we undo these settings, (although we leave the character size alone)
     *
     * from man 3 termios

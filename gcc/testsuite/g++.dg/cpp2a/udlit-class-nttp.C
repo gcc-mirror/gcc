@@ -9,7 +9,7 @@ struct literal_class {
 };
 
 template <literal_class>
-constexpr int operator"" _udl() {
+constexpr int operator ""_udl() {
   return 1;
 }
 

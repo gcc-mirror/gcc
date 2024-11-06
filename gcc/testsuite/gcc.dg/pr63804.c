@@ -1,6 +1,6 @@
 /* PR rtl-optimization/63804 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g" } */
+/* { dg-options "-std=gnu17 -O2 -g" } */
 
 struct A { int gen; } e;
 int a, d;

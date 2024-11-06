@@ -85,6 +85,11 @@ package Sem_Ch3 is
    procedure Access_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Process an access type declaration
 
+   procedure Build_Access_Subprogram_Wrapper (Decl : Node_Id);
+   --  When an access-to-subprogram type has pre/postconditions, we build a
+   --  subprogram that includes these contracts and is invoked by an indirect
+   --  call through the corresponding access type.
+
    procedure Build_Itype_Reference (Ityp : Entity_Id; Nod : Node_Id);
    --  Create a reference to an internal type, for use by Gigi. The back-end
    --  elaborates itypes on demand, i.e. when their first use is seen. This can

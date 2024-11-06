@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    has been sorted into the right order and has NULL arguments in the
    correct places for missing optional arguments.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -637,13 +638,46 @@ int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is integer or real or unsigned; allow character for
+   F2003 or later.  */
+
+static bool
+int_or_real_or_char_or_unsigned_check_f2003 (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
+      && e->ts.type != BT_UNSIGNED)
+    {
+      if (e->ts.type == BT_CHARACTER)
+	return gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Character for "
+			       "%qs argument of %qs intrinsic at %L",
+			       gfc_current_intrinsic_arg[n]->name,
+			       gfc_current_intrinsic, &e->where);
+      else
+	{
+	  if (gfc_option.allow_std & GFC_STD_F2003)
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or CHARACTER or UNSIGNED",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	  else
+	    gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		       "or REAL or UNSIGNED",
+		       gfc_current_intrinsic_arg[n]->name,
+		       gfc_current_intrinsic, &e->where);
+	}
+      return false;
+    }
+
+  return true;
+}
+
 /* Check that an expression is an intrinsic type.  */
 static bool
 intrinsic_type_check (gfc_expr *e, int n)
 {
   if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
       && e->ts.type != BT_COMPLEX && e->ts.type != BT_CHARACTER
-      && e->ts.type != BT_LOGICAL)
+      && e->ts.type != BT_LOGICAL && e->ts.type != BT_UNSIGNED)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be of intrinsic type",
 		 gfc_current_intrinsic_arg[n]->name,
@@ -2804,11 +2838,23 @@ gfc_check_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 	return false;
       break;
 
+    case BT_UNSIGNED:
+      /* Check comes later.  */
+      break;
+
     default:
       gfc_error ("%qs argument of %qs intrinsic at %L must be numeric "
 		 "or LOGICAL", gfc_current_intrinsic_arg[0]->name,
 		 gfc_current_intrinsic, &vector_a->where);
       return false;
+    }
+
+  if (gfc_invalid_unsigned_ops (vector_a, vector_b))
+    {
+      gfc_error ("Argument types of %qs intrinsic at %L must match (%s/%s)",
+		 gfc_current_intrinsic, &vector_a->where,
+		 gfc_typename(&vector_a->ts), gfc_typename(&vector_b->ts));
+       return false;
     }
 
   if (!rank_check (vector_a, 0, 1))
@@ -3060,6 +3106,12 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	case BT_COMPLEX:
 	case BT_CHARACTER:
 	  break;
+
+	case BT_UNSIGNED:
+	  if (flag_unsigned)
+	    break;
+
+	  gcc_fallthrough();
 
 	default:
 	  gfc_error ("Missing %qs argument to %qs intrinsic at %L for %qs "
@@ -4092,7 +4144,8 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
     }
 
   if ((matrix_a->ts.type == BT_LOGICAL && gfc_numeric_ts (&matrix_b->ts))
-      || (gfc_numeric_ts (&matrix_a->ts) && matrix_b->ts.type == BT_LOGICAL))
+      || (gfc_numeric_ts (&matrix_a->ts) && matrix_b->ts.type == BT_LOGICAL)
+      || gfc_invalid_unsigned_ops (matrix_a, matrix_b))
     {
       gfc_error ("Argument types of %qs intrinsic at %L must match (%s/%s)",
 		 gfc_current_intrinsic, &matrix_a->where,
@@ -4167,7 +4220,17 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
   gfc_expr *a, *m, *d, *k, *b;
 
   a = ap->expr;
-  if (!int_or_real_or_char_check_f2003 (a, 0) || !array_check (a, 0))
+
+  if (flag_unsigned)
+    {
+      if (!int_or_real_or_char_or_unsigned_check_f2003 (a, 0))
+	return false;
+    }
+  else
+    if (!int_or_real_or_char_check_f2003 (a, 0))
+      return false;
+
+  if (!array_check (a, 0))
     return false;
 
   d = ap->next->expr;
@@ -4246,6 +4309,9 @@ gfc_check_findloc (gfc_actual_arglist *ap)
   a1 = a->ts.type == BT_CHARACTER;
   v1 = v->ts.type == BT_CHARACTER;
   if ((a1 && !v1) || (!a1 && v1))
+    goto incompat;
+
+  if (flag_unsigned && gfc_invalid_unsigned_ops (a,v))
     goto incompat;
 
   /* Check the kind of the characters argument match.  */
@@ -4367,8 +4433,15 @@ check_reduction (gfc_actual_arglist *ap)
 bool
 gfc_check_minval_maxval (gfc_actual_arglist *ap)
 {
-  if (!int_or_real_or_char_check_f2003 (ap->expr, 0)
-      || !array_check (ap->expr, 0))
+  if (flag_unsigned)
+    {
+      if (!int_or_real_or_char_or_unsigned_check_f2003 (ap->expr, 0))
+	return false;
+    }
+  else if (!int_or_real_or_char_check_f2003 (ap->expr, 0))
+    return false;
+
+  if (!array_check (ap->expr, 0))
     return false;
 
   return check_reduction (ap);
@@ -4393,7 +4466,12 @@ gfc_check_mask (gfc_expr *i, gfc_expr *kind)
 {
   int k;
 
-  if (!type_check (i, 0, BT_INTEGER))
+  if (flag_unsigned)
+    {
+      if (!type_check2 (i, 0, BT_INTEGER, BT_UNSIGNED))
+	return false;
+    }
+  else if (!type_check (i, 0, BT_INTEGER))
     return false;
 
   if (!nonnegative_check ("I", i))
@@ -4405,7 +4483,7 @@ gfc_check_mask (gfc_expr *i, gfc_expr *kind)
   if (kind)
     gfc_extract_int (kind, &k);
   else
-    k = gfc_default_integer_kind;
+    k = i->ts.type == BT_UNSIGNED ? gfc_default_unsigned_kind : gfc_default_integer_kind;
 
   if (!less_than_bitsizekind ("I", i, k))
     return false;
@@ -4417,7 +4495,19 @@ gfc_check_mask (gfc_expr *i, gfc_expr *kind)
 bool
 gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
 {
-  if (ap->expr->ts.type != BT_INTEGER)
+  bt type = ap->expr->ts.type;
+
+  if (flag_unsigned)
+    {
+      if (type != BT_INTEGER && type != BT_UNSIGNED)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER "
+		     "or UNSIGNED", gfc_current_intrinsic_arg[0]->name,
+		     gfc_current_intrinsic, &ap->expr->where);
+	  return false;
+	}
+    }
+  else if (ap->expr->ts.type != BT_INTEGER)
     {
       gfc_error ("%qs argument of %qs intrinsic at %L must be INTEGER",
                  gfc_current_intrinsic_arg[0]->name,
@@ -5531,32 +5621,32 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 
   if (expr->expr_type == EXPR_NULL && expr->ts.type == BT_UNKNOWN)
     {
-      *msg = "NULL() is not interoperable";
+      *msg = _("NULL() is not interoperable");
       return false;
     }
 
   if (expr->ts.type == BT_BOZ)
     {
-      *msg = "BOZ literal constant";
+      *msg = _("BOZ literal constant");
       return false;
     }
 
   if (expr->ts.type == BT_CLASS)
     {
-      *msg = "Expression is polymorphic";
+      *msg = _("Expression is polymorphic");
       return false;
     }
 
   if (expr->ts.type == BT_DERIVED && !expr->ts.u.derived->attr.is_bind_c
       && !expr->ts.u.derived->ts.is_iso_c)
     {
-      *msg = "Expression is a noninteroperable derived type";
+      *msg = _("Expression is a noninteroperable derived type");
       return false;
     }
 
   if (expr->ts.type == BT_PROCEDURE)
     {
-      *msg = "Procedure unexpected as argument";
+      *msg = _("Procedure unexpected as argument");
       return false;
     }
 
@@ -5566,14 +5656,14 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
       for (i = 0; gfc_logical_kinds[i].kind; i++)
         if (gfc_logical_kinds[i].kind == expr->ts.kind)
           return true;
-      *msg = "Extension to use a non-C_Bool-kind LOGICAL";
+      *msg = _("Extension to use a non-C_Bool-kind LOGICAL");
       return false;
     }
 
   if (gfc_notification_std (GFC_STD_GNU) && expr->ts.type == BT_CHARACTER
       && expr->ts.kind != 1)
     {
-      *msg = "Extension to use a non-C_CHAR-kind CHARACTER";
+      *msg = _("Extension to use a non-C_CHAR-kind CHARACTER");
       return false;
     }
 
@@ -5594,7 +5684,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 	&& expr->ts.u.cl
 	&& !gfc_length_one_character_type_p (&expr->ts))
       {
-	*msg = "Type shall have a character length of 1";
+	*msg = _("Type shall have a character length of 1");
 	return false;
       }
     }
@@ -5605,7 +5695,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 
   if (gfc_is_coarray (expr))
     {
-      *msg = "Coarrays are not interoperable";
+      *msg = _("Coarrays are not interoperable");
       return false;
     }
 
@@ -5616,7 +5706,7 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
       gfc_array_ref *ar = gfc_find_array_ref (expr);
       if (ar->type == AR_FULL && ar->as->type == AS_ASSUMED_SIZE)
 	{
-	  *msg = "Assumed-size arrays are not interoperable";
+	  *msg = _("Assumed-size arrays are not interoperable");
 	  return false;
 	}
     }
@@ -6982,8 +7072,14 @@ gfc_check_random_init (gfc_expr *repeatable, gfc_expr *image_distinct)
 bool
 gfc_check_random_number (gfc_expr *harvest)
 {
-  if (!type_check (harvest, 0, BT_REAL))
-    return false;
+  if (flag_unsigned)
+    {
+      if (!type_check2 (harvest, 0, BT_REAL, BT_UNSIGNED))
+	return false;
+    }
+  else
+    if (!type_check (harvest, 0, BT_REAL))
+      return false;
 
   if (!variable_check (harvest, 0, false))
     return false;

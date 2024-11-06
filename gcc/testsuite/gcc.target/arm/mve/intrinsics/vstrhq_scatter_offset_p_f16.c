@@ -22,7 +22,7 @@ extern "C" {
 void
 foo (float16_t *base, uint16x8_t offset, float16x8_t value, mve_pred16_t p)
 {
-  return vstrhq_scatter_offset_p_f16 (base, offset, value, p);
+  vstrhq_scatter_offset_p_f16 (base, offset, value, p);
 }
 
 
@@ -39,7 +39,7 @@ foo (float16_t *base, uint16x8_t offset, float16x8_t value, mve_pred16_t p)
 void
 foo1 (float16_t *base, uint16x8_t offset, float16x8_t value, mve_pred16_t p)
 {
-  return vstrhq_scatter_offset_p (base, offset, value, p);
+  vstrhq_scatter_offset_p (base, offset, value, p);
 }
 
 #ifdef __cplusplus

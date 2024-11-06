@@ -10,11 +10,12 @@ void exit (int);
 #define MODERATE_TEMPORAL_LOCALITY 1
 #define HIGH_TEMPORAL_LOCALITY 3
 
+#define READ_SHARED 2
 #define WRITE_ACCESS 1
 #define READ_ACCESS 0
 
 enum locality { none, low, moderate, high };
-enum rw { read, write };
+enum rws { read, write, read_shared };
 
 int arr[10];
 

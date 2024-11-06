@@ -13,7 +13,7 @@ TEST_UNIFORM_Z (dup_1_f16, svfloat16_t,
 
 /*
 ** dup_0_f16:
-**	mov	z0\.h, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f16, svfloat16_t,
@@ -120,7 +120,7 @@ TEST_UNIFORM_Z (dup_1_f16_z, svfloat16_t,
 
 /*
 ** dup_0_f16_z:
-**	mov	z0\.[bhsd], #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f16_z, svfloat16_t,
@@ -170,7 +170,7 @@ TEST_UNIFORM_Z (dup_1_f16_x, svfloat16_t,
 
 /*
 ** dup_0_f16_x:
-**	mov	z0\.h, #0
+**	movi?	[vdz]0\.?(?:[0-9]*[bhsd])?, #?0
 **	ret
 */
 TEST_UNIFORM_Z (dup_0_f16_x, svfloat16_t,

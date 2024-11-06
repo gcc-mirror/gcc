@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -407,7 +408,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes);
 static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
-   HandleEscape - translates 
+   HandleEscape - translates
  and \t into their respective ascii codes.
 */
 
@@ -893,7 +894,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest)
 
 
 /*
-   HandleEscape - translates 
+   HandleEscape - translates
  and \t into their respective ascii codes.
 */
 
@@ -1408,7 +1409,7 @@ extern "C" bool FIO_Exists (const char *fname_, unsigned int _fname_high)
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  /* 
+  /*
    The following functions are wrappers for the above.
   */
   return FIO_exists (const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high));
@@ -1466,7 +1467,7 @@ extern "C" void FIO_Close (FIO_File f)
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
-      /* 
+      /*
          we allow users to close files which have an error status
   */
       if (fd != NULL)
@@ -1798,7 +1799,7 @@ extern "C" bool FIO_EOLN (FIO_File f)
   FIO_FileDescriptor fd;
 
   CheckAccess (f, FIO_openedforread, false);
-  /* 
+  /*
       we will read a character and then push it back onto the input stream,
       having noted the file status, we also reset the status.
   */

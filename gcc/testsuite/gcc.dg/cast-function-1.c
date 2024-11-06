@@ -6,7 +6,7 @@
    prototype than the actual one.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-std=gnu17 -O3" } */
 
 int foo1(int);
 int foo2();

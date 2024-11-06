@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
-/* { dg-options "-march=rv32gc -mtune=sifive-7-series -mbranch-cost=1 -fdump-rtl-ce1" { target { rv32 } } } */
-/* { dg-options "-march=rv64gc -mtune=sifive-7-series -mbranch-cost=1 -fdump-rtl-ce1" { target { rv64 } } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-O1" "-Os" } } */
+/* { dg-options "-march=rv32gc -mtune=sifive-7-series -mbranch-cost=1 -fno-ssa-phiopt -fdump-rtl-ce1" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc -mtune=sifive-7-series -mbranch-cost=1 -fno-ssa-phiopt -fdump-rtl-ce1" { target { rv64 } } } */
 
 int
 foo (long a, long b)
@@ -22,7 +22,7 @@ foo (long a, long b)
 1:
  */
 
-/* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_try_cmove_arith" 1 "ce1" { xfail { rv32 && { any-opts "-O1" } } } } } */
+/* { dg-final { scan-rtl-dump-times "if-conversion succeeded through noce_try_cmove_arith" 1 "ce1" } }
 /* { dg-final { scan-assembler-times "\\ssnez\\s" 1 } } */
-/* { dg-final { scan-assembler-times "\\sbne\\s\[^\\s\]+\\s# movcc\\s" 1 { xfail { rv32 && { any-opts "-O1" } } } } } */
-/* { dg-final { scan-assembler-not "\\sbeq\\s" { xfail { rv32 && { any-opts "-O1" } } } } } */
+/* { dg-final { scan-assembler-times "\\sbne\\s\[^\\s\]+\\s# movcc\\s" 1 } } */
+/* { dg-final { scan-assembler-not "\\sbeq\\s" } } */

@@ -1643,7 +1643,7 @@
 
 ;; We can use dmac as well here.  To be investigated which version
 ;; brings more.
-(define_expand "sdot_prodv2hi"
+(define_expand "sdot_prodsiv2hi"
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:V2HI 1 "register_operand" "")
    (match_operand:V2HI 2 "register_operand" "")
@@ -1656,7 +1656,7 @@
  DONE;
 })
 
-(define_expand "udot_prodv2hi"
+(define_expand "udot_prodsiv2hi"
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:V2HI 1 "register_operand" "")
    (match_operand:V2HI 2 "register_operand" "")
@@ -1669,7 +1669,7 @@
  DONE;
 })
 
-(define_expand "sdot_prodv4hi"
+(define_expand "sdot_prodv2siv4hi"
   [(match_operand:V2SI 0 "register_operand" "")
    (match_operand:V4HI 1 "register_operand" "")
    (match_operand:V4HI 2 "register_operand" "")
@@ -1688,7 +1688,7 @@
  DONE;
 })
 
-(define_expand "udot_prodv4hi"
+(define_expand "udot_prodv2siv4hi"
   [(match_operand:V2SI 0 "register_operand" "")
    (match_operand:V4HI 1 "register_operand" "")
    (match_operand:V4HI 2 "register_operand" "")

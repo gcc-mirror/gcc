@@ -1,5 +1,5 @@
 /* Test C23 constexpr.  Valid code, execution test.  */
-/* { dg-do link } */
+/* { dg-do run } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-additional-sources "c23-constexpr-2b.c" } */
 

@@ -32,7 +32,9 @@
 #ifndef _GLIBCXX_MEMORY_RESOURCE
 #define _GLIBCXX_MEMORY_RESOURCE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // polymorphic allocation
 

@@ -1813,7 +1813,15 @@
 (define_expand "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand")))]
-  "TARGET_64BIT")
+  "TARGET_64BIT"
+{
+  if (SUBREG_P (operands[1]) && SUBREG_PROMOTED_VAR_P (operands[1])
+      && SUBREG_PROMOTED_UNSIGNED_P (operands[1]))
+    {
+      emit_insn (gen_movdi (operands[0], SUBREG_REG (operands[1])));
+      DONE;
+    }
+})
 
 (define_insn_and_split "*zero_extendsidi2_internal"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
@@ -1894,7 +1902,15 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(sign_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT")
+  "TARGET_64BIT"
+{
+  if (SUBREG_P (operands[1]) && SUBREG_PROMOTED_VAR_P (operands[1])
+      && SUBREG_PROMOTED_SIGNED_P (operands[1]))
+    {
+      emit_insn (gen_movdi (operands[0], SUBREG_REG (operands[1])));
+      DONE;
+    }
+})
 
 (define_insn "*extendsidi2_internal"
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
@@ -2745,12 +2761,6 @@
     FAIL;
 })
 
-;; Inlining general memmove is a pessimisation: we can't avoid having to decide
-;; which direction to go at runtime, which is costly in instruction count
-;; however for situations where the entire move fits in one vector operation
-;; we can do all reads before doing any writes so we don't have to worry
-;; so generate the inline vector code in such situations
-;; nb. prefer scalar path for tiny memmoves.
 (define_expand "movmem<mode>"
   [(parallel [(set (match_operand:BLK 0 "general_operand")
    (match_operand:BLK 1 "general_operand"))
@@ -2758,10 +2768,8 @@
     (use (match_operand:SI 3 "const_int_operand"))])]
   "TARGET_VECTOR"
 {
-  if ((INTVAL (operands[2]) >= TARGET_MIN_VLEN / 8)
-	&& (INTVAL (operands[2]) <= TARGET_MIN_VLEN)
-	&& riscv_vector::expand_block_move (operands[0], operands[1],
-	     operands[2]))
+  if (riscv_vector::expand_block_move (operands[0], operands[1], operands[2],
+				       true))
     DONE;
   else
     FAIL;
@@ -3126,6 +3134,38 @@
 
 	operands[6] = GEN_INT (trailing);
 	operands[7] = GEN_INT (mask >> trailing);
+}
+[(set_attr "type" "branch")])
+
+(define_insn_and_split "*branch<ANYI:mode>_shiftedarith_<optab>_shifted"
+  [(set (pc)
+	(if_then_else (any_eq
+		    (and:ANYI (match_operand:ANYI 1 "register_operand" "r")
+			  (match_operand 2 "shifted_const_arith_operand" "i"))
+		    (match_operand 3 "shifted_const_arith_operand" "i"))
+	 (label_ref (match_operand 0 "" ""))
+	 (pc)))
+   (clobber (match_scratch:X 4 "=&r"))
+   (clobber (match_scratch:X 5 "=&r"))]
+  "!SMALL_OPERAND (INTVAL (operands[2]))
+    && !SMALL_OPERAND (INTVAL (operands[3]))
+    && SMALL_AFTER_COMMON_TRAILING_SHIFT (INTVAL (operands[2]),
+					     INTVAL (operands[3]))"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4) (lshiftrt:X (match_dup 1) (match_dup 7)))
+   (set (match_dup 4) (and:X (match_dup 4) (match_dup 8)))
+   (set (match_dup 5) (match_dup 9))
+   (set (pc) (if_then_else (any_eq (match_dup 4) (match_dup 5))
+			   (label_ref (match_dup 0)) (pc)))]
+{
+  HOST_WIDE_INT mask1 = INTVAL (operands[2]);
+  HOST_WIDE_INT mask2 = INTVAL (operands[3]);
+  int trailing_shift = COMMON_TRAILING_ZEROS (mask1, mask2);
+
+  operands[7] = GEN_INT (trailing_shift);
+  operands[8] = GEN_INT (mask1 >> trailing_shift);
+  operands[9] = GEN_INT (mask2 >> trailing_shift);
 }
 [(set_attr "type" "branch")])
 
@@ -4392,12 +4432,33 @@
   }
 )
 
+(define_expand "sssub<mode>3"
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "register_operand")
+   (match_operand:ANYI 2 "register_operand")]
+  ""
+  {
+    riscv_expand_sssub (operands[0], operands[1], operands[2]);
+    DONE;
+  }
+)
+
 (define_expand "ustrunc<mode><anyi_double_truncated>2"
   [(match_operand:<ANYI_DOUBLE_TRUNCATED> 0 "register_operand")
    (match_operand:ANYI_DOUBLE_TRUNC       1 "register_operand")]
   ""
   {
     riscv_expand_ustrunc (operands[0], operands[1]);
+    DONE;
+  }
+)
+
+(define_expand "sstrunc<mode><anyi_double_truncated>2"
+  [(match_operand:<ANYI_DOUBLE_TRUNCATED> 0 "register_operand")
+   (match_operand:ANYI_DOUBLE_TRUNC       1 "register_operand")]
+  ""
+  {
+    riscv_expand_sstrunc (operands[0], operands[1]);
     DONE;
   }
 )
@@ -4412,12 +4473,32 @@
   }
 )
 
+(define_expand "sstrunc<mode><anyi_quad_truncated>2"
+  [(match_operand:<ANYI_QUAD_TRUNCATED> 0 "register_operand")
+   (match_operand:ANYI_QUAD_TRUNC       1 "register_operand")]
+  ""
+  {
+    riscv_expand_sstrunc (operands[0], operands[1]);
+    DONE;
+  }
+)
+
 (define_expand "ustrunc<mode><anyi_oct_truncated>2"
   [(match_operand:<ANYI_OCT_TRUNCATED> 0 "register_operand")
    (match_operand:ANYI_OCT_TRUNC       1 "register_operand")]
   ""
   {
     riscv_expand_ustrunc (operands[0], operands[1]);
+    DONE;
+  }
+)
+
+(define_expand "sstrunc<mode><anyi_oct_truncated>2"
+  [(match_operand:<ANYI_OCT_TRUNCATED> 0 "register_operand")
+   (match_operand:ANYI_OCT_TRUNC       1 "register_operand")]
+  ""
+  {
+    riscv_expand_sstrunc (operands[0], operands[1]);
     DONE;
   }
 )

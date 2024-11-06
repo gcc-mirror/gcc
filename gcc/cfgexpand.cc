@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -639,8 +640,9 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
 	  unsigned *v;
-	  /* Nested function lowering might introduce LHSs
-	     that are COMPONENT_REFs.  */
+	  /* Handle only plain var clobbers.
+	     Nested functions lowering and C++ front-end inserts clobbers
+	     which are not just plain variables.  */
 	  if (!VAR_P (lhs))
 	    continue;
 	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
@@ -2186,7 +2188,7 @@ static bool
 stack_protect_return_slot_p ()
 {
   basic_block bb;
-  
+
   FOR_ALL_BB_FN (bb, cfun)
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3611,7 +3613,7 @@ expand_asm_stmt (gasm *stmt)
       ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
       if (nlabels > 0)
 	emit_jump_insn (gen_rtx_SET (output_rvec[0], body));
-      else 
+      else
 	emit_insn (gen_rtx_SET (output_rvec[0], body));
     }
   else
@@ -4066,8 +4068,13 @@ expand_gimple_stmt_1 (gimple *stmt)
 	    else
 	      {
 		temp = force_operand (temp, target);
-		if (temp != target)
+		if (temp == target)
+		  ;
+		else if (GET_MODE (target) != BLKmode)
 		  emit_move_insn (target, temp);
+		else
+		  emit_block_move (target, temp, expr_size (lhs),
+				   BLOCK_OP_NORMAL);
 	      }
 	  }
       }

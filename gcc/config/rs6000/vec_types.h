@@ -3,7 +3,7 @@
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
-   Software Foundation; either version 3 of the License, or (at your option) 
+   Software Foundation; either version 3 of the License, or (at your option)
    any later version.
 
    This file is distributed in the hope that it will be useful, but WITHOUT
@@ -20,7 +20,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* Single token vector data types for the PowerPC SIMD/Vector Multi-media 
+/* Single token vector data types for the PowerPC SIMD/Vector Multi-media
    eXtension */
 
 #ifndef _VEC_TYPES_H_

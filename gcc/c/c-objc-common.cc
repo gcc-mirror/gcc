@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -32,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "dwarf2.h"
+#include "make-unique.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, pp_token_list &);
@@ -295,11 +297,11 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted,
 void
 pp_markup::element_quoted_type::print_type (pp_markup::context &ctxt)
 {
-  c_pretty_printer *cpp = (c_pretty_printer *) ctxt.m_pp.clone ();
+  auto pp = ctxt.m_pp.clone ();
+  c_pretty_printer *cpp = (c_pretty_printer *)pp.get ();
   cpp->set_padding (pp_none);
   ::print_type (cpp, m_type, &ctxt.m_quoted, m_highlight_color);
   pp_string (&ctxt.m_pp, pp_formatted_text (cpp));
-  delete cpp;
 }
 
 /* Called during diagnostic message formatting process to print a
@@ -411,16 +413,9 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->m_printer;
-  c_pretty_printer *pp = XNEW (c_pretty_printer);
-  context->m_printer = new (pp) c_pretty_printer ();
-
-  /* It is safe to free this object because it was previously XNEW()'d.  */
-  base->~pretty_printer ();
-  XDELETE (base);
-
+  context->set_pretty_printer (::make_unique<c_pretty_printer> ());
   c_common_diagnostics_set_defaults (context);
-  diagnostic_format_decoder (context) = &c_tree_printer;
+  context->set_format_decoder (&c_tree_printer);
 }
 
 int

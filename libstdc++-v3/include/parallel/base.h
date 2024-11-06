@@ -45,9 +45,9 @@
  * @namespace std::__parallel
  * @brief GNU parallel code, replaces standard behavior with parallel behavior.
  */
-namespace std _GLIBCXX_VISIBILITY(default) 
-{ 
-  namespace __parallel { } 
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+  namespace __parallel { }
 }
 
 /**
@@ -64,14 +64,14 @@ namespace __gnu_parallel
  * @namespace __gnu_sequential
  * @brief GNU sequential classes for public use.
  */
-namespace __gnu_sequential 
-{ 
+namespace __gnu_sequential
+{
   // Import whatever is the serial version.
 #ifdef _GLIBCXX_PARALLEL
   using namespace std::_GLIBCXX_STD_A;
 #else
   using namespace std;
-#endif   
+#endif
 }
 
 
@@ -82,14 +82,14 @@ namespace __gnu_parallel
   // and active, which imples that the OpenMP runtime is actually
   // going to be linked in.
   inline _ThreadIndex
-  __get_max_threads() 
-  { 
+  __get_max_threads()
+  {
     _ThreadIndex __i = omp_get_max_threads();
-    return __i > 1 ? __i : 1; 
+    return __i > 1 ? __i : 1;
   }
 
 
-  inline bool 
+  inline bool
   __is_parallel(const _Parallelism __p) { return __p != sequential; }
 
 
@@ -150,6 +150,9 @@ namespace __gnu_parallel
     max(const _Tp& __a, const _Tp& __b)
     { return (__a > __b) ? __a : __b; }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // *nary_function
+
   /** @brief Constructs predicate for equality from strict weak
    *  ordering predicate
    */
@@ -165,7 +168,6 @@ namespace __gnu_parallel
       bool operator()(const _T1& __a, const _T2& __b)
       { return !_M_comp(__a, __b) && !_M_comp(__b, __a); }
     };
-
 
   /** @brief Similar to std::unary_negate,
    *  but giving the argument types explicitly. */
@@ -296,6 +298,8 @@ namespace __gnu_parallel
   template<typename _Tp>
     struct _Multiplies<_Tp, _Tp, _Tp>
     : public std::multiplies<_Tp> { };
+
+#pragma GCC diagnostic pop // -Wdeprecated-declarations
 
   /** @brief _Iterator associated with __gnu_parallel::_PseudoSequence.
    *  If features the usual random-access iterator functionality.

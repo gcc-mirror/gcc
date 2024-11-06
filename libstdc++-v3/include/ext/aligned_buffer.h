@@ -29,7 +29,9 @@
 #ifndef _ALIGNED_BUFFER_H
 #define _ALIGNED_BUFFER_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #if __cplusplus >= 201103L
 # include <type_traits>

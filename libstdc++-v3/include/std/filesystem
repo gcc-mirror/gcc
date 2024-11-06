@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_FILESYSTEM
 #define _GLIBCXX_FILESYSTEM 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h>
 

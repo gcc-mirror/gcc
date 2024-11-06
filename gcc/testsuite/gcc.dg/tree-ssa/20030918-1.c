@@ -2,7 +2,7 @@
    references after propagating &equot[0] into p.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-dominator-opts" } */
+/* { dg-options "-Wno-old-style-definition -O -ftree-dominator-opts" } */
 
 static unsigned short equot[(6 +3)];
 int

@@ -2,6 +2,7 @@
    in regs and on the stack.  We test 16 cases, trying to catch multiple
    targets (some use 3 regs for argument passing, some use 12, etc.).
    We test both the arguments and the `lastarg' (the argument to va_start).  */
+/* { dg-additional-options "-std=gnu17" } */
 
 #include <stdarg.h>
 

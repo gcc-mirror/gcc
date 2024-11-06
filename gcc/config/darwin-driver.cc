@@ -191,8 +191,8 @@ darwin_find_version_from_kernel (void)
 
 /* When running on a Darwin system and using that system's headers and
    libraries, default the -mmacosx-version-min flag to be the version
-   of the system on which the compiler is running.  
-   
+   of the system on which the compiler is running.
+
    When building cross or native cross compilers, default to the OSX
    version of the target (as provided by the most specific target header
    included in tm.h).  This may be overidden by setting the flag explicitly
@@ -287,7 +287,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	case OPT_arch:
 	  /* Support provision of a single -arch xxxx flag as a means of
 	     specifying the sub-target/multi-lib.  Translate this into -m32/64
-	     as appropriate.  */  
+	     as appropriate.  */
 	  if (!strcmp ((*decoded_options)[i].arg, "i386"))
 	    seenX86 = true;
 	  else if (!strcmp ((*decoded_options)[i].arg, "x86_64"))
@@ -307,7 +307,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 		      * sizeof (struct cl_decoded_option)));
 	  }
 	  --i;
-	  --*decoded_options_count; 
+	  --*decoded_options_count;
 	  break;
 
 	case OPT_m32:
@@ -370,7 +370,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
     {
       if (seenX86_64 || seenM64)
 	{
-	  const char *op = (seenX86_64? "-arch x86_64": "-m64");
+	  const char *op = (seenX86_64 ? "-arch x86_64" : "-m64");
 	  warning (0, "%qs conflicts with %<-arch i386%> (%qs ignored)",
 		   op, op);
 	}
@@ -384,7 +384,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 		    " (%<-m32%> ignored)");
       if (! seenM64) /* Add -m64 if the User didn't. */
 	appendM64 = true;
-    }  
+    }
 #elif DARWIN_PPC
   if (seenX86 || seenX86_64)
     warning (0, "this compiler does not support x86"
@@ -393,7 +393,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
     {
       if (seenPPC64 || seenM64)
 	{
-	  const char *op = (seenPPC64? "-arch ppc64": "-m64");
+	  const char *op = (seenPPC64 ? "-arch ppc64" : "-m64");
 	  warning (0, "%qs conflicts with %<-arch ppc%> (%qs ignored)",
 		   op, op);
 	}

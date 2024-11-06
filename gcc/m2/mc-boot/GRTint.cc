@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -257,7 +258,7 @@ static int Max (int i, int j)
 
 static int Min (int i, int j)
 {
-  /* 
+  /*
    Max - returns the minimum: i or j.
   */
   if (i < j)

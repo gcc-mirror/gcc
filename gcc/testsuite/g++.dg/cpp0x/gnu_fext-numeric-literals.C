@@ -4,73 +4,73 @@
 //  Integer imaginary...
 
 constexpr unsigned long long
-operator"" i(unsigned long long n) // { dg-warning "1:integer suffix .i. shadowed by implementation" "" { target c++11_only } }
+operator ""i(unsigned long long n) // { dg-warning "1:integer suffix .i. shadowed by implementation" "" { target c++11_only } }
 { return 4 * n + 0; }
 
 constexpr unsigned long long
-operator"" I(unsigned long long n) // { dg-warning "1:integer suffix .I. shadowed by implementation" }
+operator ""I(unsigned long long n) // { dg-warning "1:integer suffix .I. shadowed by implementation" }
 { return 4 * n + 1; }
 
 constexpr unsigned long long
-operator"" j(unsigned long long n) // { dg-warning "1:integer suffix .j. shadowed by implementation" }
+operator ""j(unsigned long long n) // { dg-warning "1:integer suffix .j. shadowed by implementation" }
 { return 4 * n + 2; }
 
 constexpr unsigned long long
-operator"" J(unsigned long long n) // { dg-warning "1:integer suffix .J. shadowed by implementation" }
+operator ""J(unsigned long long n) // { dg-warning "1:integer suffix .J. shadowed by implementation" }
 { return 4 * n + 3; }
 
 //  Floating-point imaginary...
 
 constexpr long double
-operator"" i(long double n) // { dg-warning "1:floating-point suffix .i. shadowed by implementation" "" { target c++11_only } }
+operator ""i(long double n) // { dg-warning "1:floating-point suffix .i. shadowed by implementation" "" { target c++11_only } }
 { return 4.0L * n + 0.0L; }
 
 constexpr long double
-operator"" I(long double n) // { dg-warning "1:floating-point suffix .I. shadowed by implementation" }
+operator ""I(long double n) // { dg-warning "1:floating-point suffix .I. shadowed by implementation" }
 { return 4.0L * n + 1.0L; }
 
 constexpr long double
-operator"" j(long double n) // { dg-warning "1:floating-point suffix .j. shadowed by implementation" }
+operator ""j(long double n) // { dg-warning "1:floating-point suffix .j. shadowed by implementation" }
 { return 4.0L * n + 2.0L; }
 
 constexpr long double
-operator"" J(long double n) // { dg-warning "1:floating-point suffix .J. shadowed by implementation" }
+operator ""J(long double n) // { dg-warning "1:floating-point suffix .J. shadowed by implementation" }
 { return 4.0L * n + 3.0L; }
 
 //  Fixed-point...
 
 constexpr long double
-operator"" k(long double n) // { dg-warning "1:floating-point suffix .k. shadowed by implementation" }
+operator ""k(long double n) // { dg-warning "1:floating-point suffix .k. shadowed by implementation" }
 { return 4 * (n + 1) + 0; }
 
 constexpr long double
-operator"" K(long double n) // { dg-warning "1:floating-point suffix .K. shadowed by implementation" }
+operator ""K(long double n) // { dg-warning "1:floating-point suffix .K. shadowed by implementation" }
 { return 4 * (n + 1) + 1; }
 
 constexpr long double
-operator"" r(long double n) // { dg-warning "1:floating-point suffix .r. shadowed by implementation" }
+operator ""r(long double n) // { dg-warning "1:floating-point suffix .r. shadowed by implementation" }
 { return 4 * (n + 1) + 2; }
 
 constexpr long double
-operator"" R(long double n) // { dg-warning "1:floating-point suffix .R. shadowed by implementation" }
+operator ""R(long double n) // { dg-warning "1:floating-point suffix .R. shadowed by implementation" }
 { return 4 * (n + 1) + 3; }
 
 //  Machine-defined...
 
 constexpr long double
-operator"" w(long double n) // { dg-warning "1:floating-point suffix .w. shadowed by implementation" }
+operator ""w(long double n) // { dg-warning "1:floating-point suffix .w. shadowed by implementation" }
 { return 4 * (n + 2) + 0; }
 
 constexpr long double
-operator"" W(long double n) // { dg-warning "1:floating-point suffix .W. shadowed by implementation" }
+operator ""W(long double n) // { dg-warning "1:floating-point suffix .W. shadowed by implementation" }
 { return 4 * (n + 2) + 1; }
 
 constexpr long double
-operator"" q(long double n) // { dg-warning "1:floating-point suffix .q. shadowed by implementation" }
+operator ""q(long double n) // { dg-warning "1:floating-point suffix .q. shadowed by implementation" }
 { return 4 * (n + 2) + 2; }
 
 constexpr long double
-operator"" Q(long double n) // { dg-warning "1:floating-point suffix .Q. shadowed by implementation" }
+operator ""Q(long double n) // { dg-warning "1:floating-point suffix .Q. shadowed by implementation" }
 { return 4 * (n + 2) + 3; }
 
 int

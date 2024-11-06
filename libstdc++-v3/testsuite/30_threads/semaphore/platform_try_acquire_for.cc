@@ -5,3 +5,5 @@
 // { dg-add-options libatomic }
 
 #include "try_acquire_for.cc"
+
+// { dg-prune-output "ignoring _GLIBCXX_USE_POSIX_SEMAPHORE" }

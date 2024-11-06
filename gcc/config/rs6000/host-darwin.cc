@@ -19,6 +19,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -92,7 +93,7 @@ segv_handler (int sig ATTRIBUTE_UNUSED,
       || (faulting_insn & 0xFC1F8000) == 0xBC018000 /* stmw xxx, -yyy(%r1) */)
     {
       char *shell_name;
-      
+
       fnotice (stderr, "Out of stack space.\n");
       shell_name = getenv ("SHELL");
       if (shell_name != NULL)
@@ -109,23 +110,23 @@ segv_handler (int sig ATTRIBUTE_UNUSED,
 	    { "zsh", "limit stacksize 32m" }
 	  };
 	  size_t i;
-	  
+
 	  for (i = 0; i < ARRAY_SIZE (shell_commands); i++)
 	    if (strcmp (shell_commands[i][0], shell_name + 1) == 0)
 	      {
-		fnotice (stderr, 
+		fnotice (stderr,
 			 "Try running '%s' in the shell to raise its limit.\n",
 			 shell_commands[i][1]);
 	      }
 	}
-      
+
       if (global_dc->m_abort_on_error)
 	fancy_abort (__FILE__, __LINE__, __FUNCTION__);
 
       exit (FATAL_EXIT_CODE);
     }
 
-  fprintf (stderr, "[address=%08lx pc=%08x]\n", 
+  fprintf (stderr, "[address=%08lx pc=%08x]\n",
 	   uc->uc_mcontext->MC_FLD(es).MC_FLD(dar),
 	   uc->uc_mcontext->MC_FLD(ss).MC_FLD(srr0));
   internal_error ("segmentation fault");
@@ -147,7 +148,7 @@ darwin_rs6000_extra_signals (void)
   sigemptyset(&sact.sa_mask);
   sact.sa_flags = SA_ONSTACK | SA_SIGINFO;
   sact.sa_sigaction = segv_handler;
-  if (sigaction (SIGSEGV, &sact, 0) < 0) 
+  if (sigaction (SIGSEGV, &sact, 0) < 0)
     fatal_error (input_location, "While setting up signal handler: %m");
 }
 

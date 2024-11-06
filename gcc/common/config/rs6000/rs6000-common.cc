@@ -176,7 +176,7 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
 	  if (invert)
 	    opts->x_rs6000_debug &= ~mask;
-	  else	
+	  else
 	    opts->x_rs6000_debug |= mask;
 	}
       break;

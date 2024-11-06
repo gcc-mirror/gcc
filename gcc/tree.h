@@ -654,7 +654,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE)
 
 /* Nonzero if TYPE represents a vector integer type.  */
-                
+
 #define VECTOR_INTEGER_TYPE_P(TYPE)			\
   (VECTOR_TYPE_P (TYPE)					\
    && TREE_CODE (TREE_TYPE (TYPE)) == INTEGER_TYPE)
@@ -1164,6 +1164,14 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_STRING_LENGTH(NODE) (STRING_CST_CHECK (NODE)->string.length)
 #define TREE_STRING_POINTER(NODE) \
   ((const char *)(STRING_CST_CHECK (NODE)->string.str))
+
+/* In a RAW_DATA_CST */
+#define RAW_DATA_LENGTH(NODE) \
+  (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.length)
+#define RAW_DATA_POINTER(NODE) \
+  (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.str)
+#define RAW_DATA_OWNER(NODE) \
+  (RAW_DATA_CST_CHECK (NODE)->raw_data_cst.owner)
 
 /* In a COMPLEX_CST node.  */
 #define TREE_REALPART(NODE) (COMPLEX_CST_CHECK (NODE)->complex.real)
@@ -2349,13 +2357,15 @@ extern tree vector_element_bits_tree (const_tree);
 
 /* The minimum alignment necessary for objects of this type without
    warning.  The value is an int, measured in bits.  */
+#define TYPE_WARN_IF_NOT_ALIGN_RAW(NODE) \
+    (TYPE_CHECK (NODE)->type_common.warn_if_not_align)
 #define TYPE_WARN_IF_NOT_ALIGN(NODE) \
-    (TYPE_CHECK (NODE)->type_common.warn_if_not_align \
-     ? ((unsigned)1) << ((NODE)->type_common.warn_if_not_align - 1) : 0)
+    (TYPE_WARN_IF_NOT_ALIGN_RAW (NODE) \
+     ? ((unsigned)1) << (TYPE_WARN_IF_NOT_ALIGN_RAW (NODE) - 1) : 0)
 
 /* Specify that TYPE_WARN_IF_NOT_ALIGN(NODE) is X.  */
 #define SET_TYPE_WARN_IF_NOT_ALIGN(NODE, X) \
-    (TYPE_CHECK (NODE)->type_common.warn_if_not_align = ffs_hwi (X))
+    (TYPE_WARN_IF_NOT_ALIGN_RAW (NODE) = ffs_hwi (X))
 
 /* If your language allows you to declare types, and you want debug info
    for them, then you need to generate corresponding TYPE_DECL nodes.
@@ -2418,7 +2428,7 @@ extern tree vector_element_bits_tree (const_tree);
 	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
 	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
 
-/* The same as TYPE_QUALS without the address space and atomic 
+/* The same as TYPE_QUALS without the address space and atomic
    qualifications.  */
 #define TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC(NODE)		\
   ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
@@ -4921,7 +4931,8 @@ extern tree build_method_type_directly (tree, tree, tree);
 extern tree build_method_type (tree, tree);
 extern tree build_offset_type (tree, tree);
 extern tree build_complex_type (tree, bool named = false);
-extern tree array_type_nelts (const_tree);
+extern tree array_type_nelts_minus_one (const_tree);
+extern tree array_type_nelts_top (tree);
 
 extern tree value_member (tree, tree);
 extern tree purpose_member (const_tree, tree);
@@ -5591,6 +5602,19 @@ struct_ptr_hash (const void *a)
 {
   const void * const * x = (const void * const *) a;
   return (intptr_t)*x >> 4;
+}
+
+/* Return true if CODE can be treated as a truncating division.
+
+   EXACT_DIV_EXPR can be treated as a truncating division in which the
+   remainder is known to be zero.  However, if trunc_div_p gates the
+   generation of new IL, the conservative choice for that new IL is
+   TRUNC_DIV_EXPR rather than CODE.  Using CODE (EXACT_DIV_EXPR) would
+   only be correct if the transformation preserves exactness.  */
+inline bool
+trunc_or_exact_div_p (tree_code code)
+{
+  return code == TRUNC_DIV_EXPR || code == EXACT_DIV_EXPR;
 }
 
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
@@ -6757,6 +6781,9 @@ extern location_t set_block (location_t loc, tree block);
 extern void gt_ggc_mx (tree &);
 extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
+extern void gt_ggc_mx (tree_raw_data *);
+extern void gt_pch_nx (tree_raw_data *);
+extern void gt_pch_nx (tree_raw_data *, gt_pointer_operator, void *);
 
 extern bool nonnull_arg_p (const_tree);
 extern bool is_empty_type (const_tree);

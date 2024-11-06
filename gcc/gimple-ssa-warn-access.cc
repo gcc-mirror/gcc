@@ -20,6 +20,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -55,6 +56,7 @@
 #include "demangle.h"
 #include "attr-fnspec.h"
 #include "pointer-query.h"
+#include "pretty-print-markup.h"
 
 /* Return true if tree node X has an associated location.  */
 
@@ -606,7 +608,8 @@ maybe_warn_nonstring_arg (tree fndecl, GimpleOrTree exp)
 	{
 	  if (tree arrbnd = TYPE_DOMAIN (type))
 	    {
-	      if ((arrbnd = TYPE_MAX_VALUE (arrbnd)))
+	      if ((arrbnd = TYPE_MAX_VALUE (arrbnd))
+		  && TREE_CODE (arrbnd) == INTEGER_CST)
 		{
 		  asize = wi::to_offset (arrbnd) + 1;
 		  known_size = true;
@@ -2942,15 +2945,14 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
 	return false;
 
       /* Print a note with the valid memory models.  */
-      pretty_printer pp;
-      pp_show_color (&pp) = pp_show_color (global_dc->m_printer);
+      auto_vec<const char *> strings;
       for (unsigned i = 0; valid[i] != UCHAR_MAX; ++i)
 	{
 	  const char *modname = memory_models[valid[i]].modname;
-	  pp_printf (&pp, "%s%qs", i ? ", " : "", modname);
+	  strings.safe_push (modname);
 	}
-
-      inform (loc, "valid models are %s", pp_formatted_text (&pp));
+      pp_markup::comma_separated_quoted_strings e (strings);
+      inform (loc, "valid models are %e", &e);
       return true;
     }
 
@@ -2992,19 +2994,16 @@ pass_waccess::maybe_warn_memmodel (gimple *stmt, tree ord_sucs,
 
 	/* Print a note with the valid failure memory models which are
 	   those with a value less than or equal to the success mode.  */
-	char buf[120];
-	*buf = '\0';
+	auto_vec<const char *> strings;
 	for (unsigned i = 0;
 	     memory_models[i].modval <= memmodel_base (sucs); ++i)
 	  {
-	    if (*buf)
-	      strcat (buf, ", ");
-
 	    const char *modname = memory_models[valid[i]].modname;
-	    sprintf (buf + strlen (buf), "'%s'", modname);
+	    strings.safe_push (modname);
 	  }
+	pp_markup::comma_separated_quoted_strings e (strings);
 
-	inform (loc, "valid models are %s", buf);
+	inform (loc, "valid models are %e", &e);
 	return true;
       }
 
@@ -3287,7 +3286,7 @@ pass_waccess::check_builtin (gcall *stmt)
 	check_memop_access (stmt, dst, NULL_TREE, len);
 	return true;
       }
-	
+
     default:
       if (check_atomic_builtin (stmt))
 	return true;

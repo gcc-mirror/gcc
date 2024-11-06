@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -459,7 +460,7 @@ get_symbol_initial_value (lto_symtab_encoder_t encoder, tree expr)
 
 
 /* Output reference to tree T to the stream.
-   Assume that T is already in encoder cache. 
+   Assume that T is already in encoder cache.
    This is used to stream tree bodies where we know the DFS walk arranged
    everything to cache.  Must be matched with stream_read_tree_ref.  */
 
@@ -1158,6 +1159,9 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	  DFS_follow_tree_edge (value);
 	}
     }
+
+  if (code == RAW_DATA_CST)
+    DFS_follow_tree_edge (RAW_DATA_OWNER (expr));
 
   if (code == OMP_CLAUSE)
     {

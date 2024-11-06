@@ -224,7 +224,7 @@ enum cfg_bb_flags
 /* For iterating over insns in basic block when we might remove the
    current insn.  */
 #define FOR_BB_INSNS_SAFE(BB, INSN, CURR)			\
-  for ((INSN) = BB_HEAD (BB), (CURR) = (INSN) ? NEXT_INSN ((INSN)): NULL;	\
+  for ((INSN) = BB_HEAD (BB), (CURR) = (INSN) ? NEXT_INSN ((INSN)) : NULL;	\
        (INSN) && (INSN) != NEXT_INSN (BB_END (BB));	\
        (INSN) = (CURR), (CURR) = (INSN) ? NEXT_INSN ((INSN)) : NULL)
 
@@ -563,7 +563,7 @@ check_probability (int prob)
   gcc_checking_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
 }
 
-/* Given PROB1 and PROB2, return PROB1*PROB2/REG_BR_PROB_BASE. 
+/* Given PROB1 and PROB2, return PROB1*PROB2/REG_BR_PROB_BASE.
    Used to combine BB probabilities.  */
 
 inline int

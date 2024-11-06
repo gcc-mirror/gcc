@@ -9,27 +9,27 @@
 #include <complex>
 #include <cassert>
 
-long double operator"" _v(long double);
-std::string operator"" _w(const char16_t*, size_t);
-unsigned operator"" _w(const char*);
+long double operator ""_v(long double);
+std::string operator ""_w(const char16_t*, size_t);
+unsigned operator ""_w(const char*);
 
 std::complex<double>
-operator"" _i(long double y)
+operator ""_i(long double y)
 { return std::complex<double>(0.0L, y); }
 
 void
 test1()
 {
-  long double x = operator"" _v(1.2L);
+  long double x = operator ""_v(1.2L);
   assert(x == 2.2L);
 
-  std::string s = operator"" _w(u"one", 3);
+  std::string s = operator ""_w(u"one", 3);
   assert(s == "boo");
 
-  unsigned u = operator"" _w("Hello, World!");
+  unsigned u = operator ""_w("Hello, World!");
   assert(u == 13U);
 
-  std::complex<double> i = operator"" _i(2.0);
+  std::complex<double> i = operator ""_i(2.0);
   assert(i == std::complex<double>(0.0, 2.0));
 }
 
@@ -40,13 +40,13 @@ main()
 }
 
 long double
-operator"" _v(long double x)
+operator ""_v(long double x)
 { return x + 1.0L; }
 
 std::string
-operator"" _w(const char16_t*, size_t)
+operator ""_w(const char16_t*, size_t)
 { return std::string("boo"); }
 
 unsigned
-operator"" _w(const char* str)
+operator ""_w(const char* str)
 { return strlen(str); }

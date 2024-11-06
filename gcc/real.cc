@@ -1260,7 +1260,7 @@ real_isnan (const REAL_VALUE_TYPE *r)
   return (r->cl == rvc_nan);
 }
 
-/* Determine whether a floating-point value X is a signaling NaN.  */ 
+/* Determine whether a floating-point value X is a signaling NaN.  */
 bool real_issignaling_nan (const REAL_VALUE_TYPE *r)
 {
   return real_isnan (r) && r->signalling;
@@ -5603,6 +5603,6 @@ build_sinatan_real (REAL_VALUE_TYPE * r, tree type)
   mpfr_sqrt (mpfr_c, mpfr_c, MPFR_RNDZ);
 
   real_from_mpfr (r, mpfr_c, fmt, MPFR_RNDZ);
-  
+
   mpfr_clears (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
 }

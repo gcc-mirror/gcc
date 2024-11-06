@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /************************[  Target stuff  ]***********************************/
 
-/* Define the actual types of some ANSI-mandated types.  
+/* Define the actual types of some ANSI-mandated types.
    Needs to agree with <machine/ansi.h>.  GCC defaults come from c-decl.cc,
    c-common.cc, and config/<arch>/<arch>.h.  */
 
@@ -111,7 +111,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* DWARF bits.  */
 
-/* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets. 
+/* Follow Irix 6 and not the Dwarf2 draft in using 64-bit offsets.
    Obviously the Dwarf2 folks havn't tried to actually build systems
    with their spec.  On a 64-bit system, only 64-bit relocs become
    RELATIVE relocations.  */

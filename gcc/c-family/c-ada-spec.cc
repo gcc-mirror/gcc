@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -3287,7 +3288,7 @@ dump_ada_declaration (pretty_printer *pp, tree t, tree type, int spc)
 	    }
 	}
 
-      TREE_VISITED (t) = 1; 
+      TREE_VISITED (t) = 1;
       if (is_interface)
 	{
 	  pp_string (pp, "limited interface  -- ");

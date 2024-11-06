@@ -83,33 +83,6 @@ interesting_t::dump_to_pp (pretty_printer *pp, bool simple) const
   pp_string (pp, "]}");
 }
 
-/* Generate a label_text by printing FMT.
-
-   Use a clone of the global_dc for formatting callbacks.
-
-   Use this evdesc::event_desc's m_colorize flag to control colorization
-   (so that e.g. we can disable it for JSON output).  */
-
-label_text
-evdesc::event_desc::formatted_print (const char *fmt, ...) const
-{
-  pretty_printer *pp = global_dc->m_printer->clone ();
-
-  pp_show_color (pp) = m_colorize;
-
-  rich_location rich_loc (line_table, UNKNOWN_LOCATION);
-  va_list ap;
-  va_start (ap, fmt);
-  text_info ti (_(fmt), &ap, 0, nullptr, &rich_loc);
-  pp_format (pp, &ti);
-  pp_output_formatted_text (pp);
-  va_end (ap);
-
-  label_text result = label_text::take (xstrdup (pp_formatted_text (pp)));
-  delete pp;
-  return result;
-}
-
 /* class diagnostic_emission_context.  */
 
 /* Get the pending_diagnostic being emitted.  */

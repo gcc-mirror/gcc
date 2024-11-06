@@ -1,11 +1,13 @@
 /* { dg-do run } */
 /* { dg-options "-march=x86-64-v3 -O2 -flax-vector-conversions" } */
+/* { dg-require-effective-target avx2 } */
+
 #include <x86intrin.h>
 
-#include "avx-check.h"
+#include "avx2-check.h"
 
 #ifndef TEST
-#define TEST avx_test
+#define TEST avx2_test
 #endif
 
 typedef short __v2hi __attribute__ ((__vector_size__ (4)));

@@ -1270,14 +1270,14 @@ _mm_cmp_pbh_mask (__m128bh __A, __m128bh __B, const int __imm)
 #else
 #define _mm256_mask_cmp_pbh_mask(A, B, C, D)			      \
   ((__mmask16) __builtin_ia32_cmppbf16256_mask ((B), (C), (D), (A)))
-		
+
 #define _mm256_cmp_pbh_mask(A, B, C)				      \
   ((__mmask16) __builtin_ia32_cmppbf16256_mask ((A), (B), (C),	      \
 						(__mmask16) (-1)))
 
 #define _mm_mask_cmp_pbh_mask(A, B, C, D)			      \
   ((__mmask8) __builtin_ia32_cmppbf16128_mask ((B), (C), (D), (A)))
-		
+
 #define _mm_cmp_pbh_mask(A, B, C)				      \
   ((__mmask8) __builtin_ia32_cmppbf16128_mask ((A), (B), (C),	      \
 					       (__mmask8) (-1)))

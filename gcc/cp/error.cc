@@ -84,7 +84,6 @@ static void dump_type_prefix (cxx_pretty_printer *, tree, int);
 static void dump_type_suffix (cxx_pretty_printer *, tree, int);
 static void dump_function_name (cxx_pretty_printer *, tree, int);
 static void dump_call_expr_args (cxx_pretty_printer *, tree, int, bool);
-static void dump_aggr_init_expr_args (cxx_pretty_printer *, tree, int, bool);
 static void dump_expr_list (cxx_pretty_printer *, tree, int);
 static void dump_global_iord (cxx_pretty_printer *, tree);
 static void dump_parameters (cxx_pretty_printer *, tree, int);
@@ -276,20 +275,15 @@ cp_seen_error ()
 void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base = context->m_printer;
-  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
-  context->m_printer = new (pp) cxx_pretty_printer ();
-
-  /* It is safe to free this object because it was previously XNEW()'d.  */
-  base->~pretty_printer ();
-  XDELETE (base);
+  cxx_pretty_printer *pp = new cxx_pretty_printer ();
+  pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
+  context->set_pretty_printer (std::unique_ptr<pretty_printer> (pp));
 
   c_common_diagnostics_set_defaults (context);
   diagnostic_text_starter (context) = cp_diagnostic_text_starter;
   /* diagnostic_finalizer is already c_diagnostic_text_finalizer.  */
-  diagnostic_format_decoder (context) = cp_printer;
+  context->set_format_decoder (cp_printer);
   context->m_adjust_diagnostic_info = cp_adjust_diagnostic_info;
-  pp_format_postprocessor (pp) = new cxx_format_postprocessor ();
 }
 
 /* Dump an '@module' name suffix for DECL, if any.  */
@@ -867,7 +861,7 @@ dump_typename (cxx_pretty_printer *pp, tree t, int flags)
 const char *
 class_key_or_enum_as_string (tree t)
 {
-  if (TREE_CODE (t) == ENUMERAL_TYPE) 
+  if (TREE_CODE (t) == ENUMERAL_TYPE)
     {
       if (SCOPED_ENUM_P (t))
         return "enum class";
@@ -929,7 +923,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 		&& TYPE_LANG_SPECIFIC (t) && CLASSTYPE_TEMPLATE_INFO (t)
 		&& (TREE_CODE (CLASSTYPE_TI_TEMPLATE (t)) != TEMPLATE_DECL
 		    || PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
-      
+
       if (! (flags & TFF_UNQUALIFIED_NAME))
 	dump_scope (pp, CP_DECL_CONTEXT (decl), flags | TFF_SCOPE);
       flags &= ~TFF_UNQUALIFIED_NAME;
@@ -1276,7 +1270,7 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     dump_scope (pp, CP_DECL_CONTEXT (t), flags);
   flags &= ~TFF_UNQUALIFIED_NAME;
   if ((flags & TFF_DECL_SPECIFIERS)
-      && DECL_TEMPLATE_PARM_P (t) 
+      && DECL_TEMPLATE_PARM_P (t)
       && TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (t)))
     pp_string (pp, "...");
   if (DECL_NAME (t))
@@ -2210,7 +2204,7 @@ dump_template_parms (cxx_pretty_printer *pp, tree info,
               && (!ARGUMENT_PACK_P (arg)
                   || TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg)) > 0))
             pp_separate_with_comma (pp);
-          
+
           if (!arg)
             pp_string (pp, M_("<template parameter error>"));
           else
@@ -2253,46 +2247,15 @@ dump_template_parms (cxx_pretty_printer *pp, tree info,
 static void
 dump_call_expr_args (cxx_pretty_printer *pp, tree t, int flags, bool skipfirst)
 {
-  tree arg;
-  call_expr_arg_iterator iter;
-  
-  pp_cxx_left_paren (pp);
-  FOR_EACH_CALL_EXPR_ARG (arg, iter, t)
-    {
-      if (skipfirst)
-	skipfirst = false;
-      else
-	{
-	  dump_expr (pp, arg, flags | TFF_EXPR_IN_PARENS);
-	  if (more_call_expr_args_p (&iter))
-	    pp_separate_with_comma (pp);
-	}
-    }
-  pp_cxx_right_paren (pp);
-}
+  const int len = call_expr_nargs (t);
 
-/* Print out the arguments of AGGR_INIT_EXPR T as a parenthesized list
-   using flags FLAGS.  Skip over the first argument if SKIPFIRST is
-   true.  */
-
-static void
-dump_aggr_init_expr_args (cxx_pretty_printer *pp, tree t, int flags,
-                          bool skipfirst)
-{
-  tree arg;
-  aggr_init_expr_arg_iterator iter;
-  
   pp_cxx_left_paren (pp);
-  FOR_EACH_AGGR_INIT_EXPR_ARG (arg, iter, t)
+  for (int i = skipfirst; i < len; ++i)
     {
-      if (skipfirst)
-	skipfirst = false;
-      else
-	{
-	  dump_expr (pp, arg, flags | TFF_EXPR_IN_PARENS);
-	  if (more_aggr_init_expr_args_p (&iter))
-	    pp_separate_with_comma (pp);
-	}
+      tree arg = get_nth_callarg (t, i);
+      dump_expr (pp, arg, flags | TFF_EXPR_IN_PARENS);
+      if (i + 1 < len)
+	pp_separate_with_comma (pp);
     }
   pp_cxx_right_paren (pp);
 }
@@ -2451,28 +2414,9 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case AGGR_INIT_EXPR:
-      {
-	tree fn = NULL_TREE;
-
-	if (TREE_CODE (AGGR_INIT_EXPR_FN (t)) == ADDR_EXPR)
-	  fn = TREE_OPERAND (AGGR_INIT_EXPR_FN (t), 0);
-
-	if (fn && TREE_CODE (fn) == FUNCTION_DECL)
-	  {
-	    if (DECL_CONSTRUCTOR_P (fn))
-	      dump_type (pp, DECL_CONTEXT (fn), flags);
-	    else
-	      dump_decl (pp, fn, 0);
-	  }
-	else
-	  dump_expr (pp, AGGR_INIT_EXPR_FN (t), 0);
-      }
-      dump_aggr_init_expr_args (pp, t, flags, true);
-      break;
-
     case CALL_EXPR:
       {
-	tree fn = CALL_EXPR_FN (t);
+	tree fn = cp_get_callee (t);
 	bool skipfirst = false;
 
 	/* Deal with internal functions.  */
@@ -2494,8 +2438,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    && NEXT_CODE (fn) == METHOD_TYPE
 	    && call_expr_nargs (t))
 	  {
-	    tree ob = CALL_EXPR_ARG (t, 0);
-	    if (TREE_CODE (ob) == ADDR_EXPR)
+	    tree ob = get_nth_callarg (t, 0);
+	    if (is_dummy_object (ob))
+	      /* Don't print dummy object.  */;
+	    else if (TREE_CODE (ob) == ADDR_EXPR)
 	      {
 		dump_expr (pp, TREE_OPERAND (ob, 0),
                            flags | TFF_EXPR_IN_PARENS);
@@ -2514,7 +2460,13 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    pp_string (cxx_pp, M_("<ubsan routine call>"));
 	    break;
 	  }
-	dump_expr (pp, fn, flags | TFF_EXPR_IN_PARENS);
+
+	if (TREE_CODE (fn) == FUNCTION_DECL
+	    && DECL_CONSTRUCTOR_P (fn)
+	    && is_dummy_object (get_nth_callarg (t, 0)))
+	  dump_type (pp, DECL_CONTEXT (fn), flags);
+	else
+	  dump_expr (pp, fn, flags | TFF_EXPR_IN_PARENS);
 	dump_call_expr_args (pp, t, flags, skipfirst);
       }
       break;
@@ -2525,8 +2477,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	 it initializes anything other that the parameter slot for the
 	 default argument.  Note we may have cleared out the first
 	 operand in expand_expr, so don't go killing ourselves.  */
-      if (TREE_OPERAND (t, 1))
-	dump_expr (pp, TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
+      if (TARGET_EXPR_INITIAL (t))
+	dump_expr (pp, TARGET_EXPR_INITIAL (t), flags | TFF_EXPR_IN_PARENS);
       break;
 
     case POINTER_PLUS_EXPR:
@@ -3937,7 +3889,7 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
   t = t0;
 
   if (template_backtrace_limit
-      && n_total > template_backtrace_limit) 
+      && n_total > template_backtrace_limit)
     {
       int skip = n_total - template_backtrace_limit;
       int head = template_backtrace_limit / 2;
@@ -3948,7 +3900,7 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
          skip = 2;
          head = (template_backtrace_limit - 1) / 2;
        }
-     
+
       for (n = 0; n < head; n++)
 	{
 	  gcc_assert (t != NULL);
@@ -3975,14 +3927,14 @@ print_instantiation_partial_context (diagnostic_text_output_format &text_output,
 			   "contexts, use -ftemplate-backtrace-limit=0 to "
 			   "disable ]\n"),
 			 "locus", xloc.file, xloc.line, skip);
-	  
+
 	  do {
 	    loc = t->locus;
 	    t = t->next;
 	  } while (t != NULL && --skip > 0);
 	}
     }
-  
+
   while (t != NULL)
     {
       while (t->next != NULL && t->locus == t->next->locus)

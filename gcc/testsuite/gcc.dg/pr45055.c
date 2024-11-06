@@ -1,6 +1,6 @@
 /* PR debug/45055 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftracer -fsched-pressure -funroll-loops -fschedule-insns -fcompare-debug" } */
+/* { dg-options "-std=gnu17 -O2 -ftracer -fsched-pressure -funroll-loops -fschedule-insns -fcompare-debug" } */
 /* { dg-require-effective-target scheduling } */
 
 int colormap[10];

@@ -4255,6 +4255,8 @@ package body Sem_Ch5 is
                  ("implicit label declaration for & is hidden#",
                   Identifier (S));
             end if;
+         else
+            Inspect_Deferred_Constant_Completion (S);
          end if;
 
          Next (S);

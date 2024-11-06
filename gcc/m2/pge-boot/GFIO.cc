@@ -52,9 +52,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _FIO_H
 #define _FIO_C
 
+#include "GFIO.h"
 #   include "GSYSTEM.h"
 #   include "GASCII.h"
 #   include "GStrLib.h"
@@ -67,9 +67,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef unsigned int FIO_File;
 
-FIO_File FIO_StdErr;
-FIO_File FIO_StdOut;
-FIO_File FIO_StdIn;
 #   define MaxBufferLength (1024*16)
 #   define MaxErrorString (1024*8)
 #   define CreatePermissions 0666
@@ -414,7 +411,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes);
 static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
-   HandleEscape - translates 
+   HandleEscape - translates
  and \t into their respective ascii codes.
 */
 
@@ -643,7 +640,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
             {
               fd->buffer->left = 0;
             }
-          fd->buffer->contents = reinterpret_cast<FIO__T7 *> (fd->buffer->address);  /* provides easy access for reading characters  */
+          fd->buffer->contents = static_cast<FIO__T7 *> (fd->buffer->address);  /* provides easy access for reading characters  */
           fd->state = fstate;  /* provides easy access for reading characters  */
         }
     }
@@ -900,7 +897,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest)
 
 
 /*
-   HandleEscape - translates 
+   HandleEscape - translates
  and \t into their respective ascii codes.
 */
 
@@ -917,7 +914,7 @@ static void HandleEscape (char *dest, unsigned int _dest_high, const char *src_,
       if (src[(*i)+1] == 'n')
         {
           /* requires a newline  */
-          dest[(*j)] = ASCII_nl;
+          const_cast<char *>(dest)[(*j)] = ASCII_nl;
           (*j) += 1;
           (*i) += 2;
         }
@@ -925,7 +922,7 @@ static void HandleEscape (char *dest, unsigned int _dest_high, const char *src_,
         {
           /* avoid dangling else.  */
           /* requires a tab (yuck) tempted to fake this but I better not..  */
-          dest[(*j)] = ASCII_tab;
+          const_cast<char *>(dest)[(*j)] = ASCII_tab;
           (*j) += 1;
           (*i) += 2;
         }
@@ -934,7 +931,7 @@ static void HandleEscape (char *dest, unsigned int _dest_high, const char *src_,
           /* avoid dangling else.  */
           /* copy escaped character  */
           (*i) += 1;
-          dest[(*j)] = src[(*i)];
+          const_cast<char *>(dest)[(*j)] = src[(*i)];
           (*j) += 1;
           (*i) += 1;
         }
@@ -958,7 +955,7 @@ static void Cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
     {
       for (i=0; i<=_a_high; i++)
         {
-          a[i] = b[i];
+          const_cast<unsigned char *>(a)[i] = b[i];
         }
     }
   else
@@ -1008,7 +1005,7 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
         }
       else
         {
-          dest[j] = src[i];
+          const_cast<char *>(dest)[j] = src[i];
           i += 1;
           j += 1;
         }
@@ -1021,13 +1018,13 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
           Cast ((unsigned char *) &p, (sizeof (p)-1), (const unsigned char *) w, _w_high);
           while ((j < HighDest) && ((*p) != ASCII_nul))
             {
-              dest[j] = (*p);
+              const_cast<char *>(dest)[j] = (*p);
               j += 1;
               p += 1;
             }
           if (j < HighDest)
             {
-              dest[j] = ASCII_nul;
+              const_cast<char *>(dest)[j] = ASCII_nul;
             }
           j = StrLib_StrLen ((const char *) dest, _dest_high);
           i += 2;
@@ -1035,7 +1032,7 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
       else if (src[i+1] == 'd')
         {
           /* avoid dangling else.  */
-          dest[j] = ASCII_nul;
+          const_cast<char *>(dest)[j] = ASCII_nul;
           Cast ((unsigned char *) &c, (sizeof (c)-1), (const unsigned char *) w, _w_high);
           NumberIO_CardToStr (c, 0, (char *) &str.array[0], MaxErrorString);
           StrLib_StrConCat ((const char *) dest, _dest_high, (const char *) &str.array[0], MaxErrorString, (char *) dest, _dest_high);
@@ -1045,7 +1042,7 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
       else
         {
           /* avoid dangling else.  */
-          dest[j] = src[i];
+          const_cast<char *>(dest)[j] = src[i];
           i += 1;
           j += 1;
         }
@@ -1059,14 +1056,14 @@ static void StringFormat1 (char *dest, unsigned int _dest_high, const char *src_
         }
       else
         {
-          dest[j] = src[i];
+          const_cast<char *>(dest)[j] = src[i];
           i += 1;
           j += 1;
         }
     }
   if (j < HighDest)
     {
-      dest[j] = ASCII_nul;
+      const_cast<char *>(dest)[j] = ASCII_nul;
     }
 }
 
@@ -1316,7 +1313,7 @@ static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_h
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  if ((InitializeFile (f, &fname, StrLib_StrLen ((const char *) fname, _fname_high), state, use, towrite, bufsize)) == f)
+  if ((InitializeFile (f, const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high), state, use, towrite, bufsize)) == f)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       if (f == Error)
@@ -1415,10 +1412,10 @@ extern "C" bool FIO_Exists (const char *fname_, unsigned int _fname_high)
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  /* 
+  /*
    The following functions are wrappers for the above.
   */
-  return FIO_exists (&fname, StrLib_StrLen ((const char *) fname, _fname_high));
+  return FIO_exists (const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1430,7 +1427,7 @@ extern "C" FIO_File FIO_OpenToRead (const char *fname_, unsigned int _fname_high
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  return FIO_openToRead (&fname, StrLib_StrLen ((const char *) fname, _fname_high));
+  return FIO_openToRead (const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1442,7 +1439,7 @@ extern "C" FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_hig
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  return FIO_openToWrite (&fname, StrLib_StrLen ((const char *) fname, _fname_high));
+  return FIO_openToWrite (const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high));
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1454,7 +1451,7 @@ extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_h
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  return FIO_openForRandom (&fname, StrLib_StrLen ((const char *) fname, _fname_high), towrite, newfile);
+  return FIO_openForRandom (const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high), towrite, newfile);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1473,7 +1470,7 @@ extern "C" void FIO_Close (FIO_File f)
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
-      /* 
+      /*
          we allow users to close files which have an error status
   */
       if (fd != NULL)
@@ -1805,7 +1802,7 @@ extern "C" bool FIO_EOLN (FIO_File f)
   FIO_FileDescriptor fd;
 
   CheckAccess (f, FIO_openedforread, false);
-  /* 
+  /*
       we will read a character and then push it back onto the input stream,
       having noted the file status, we also reset the status.
   */
@@ -1970,7 +1967,7 @@ extern "C" void FIO_WriteString (FIO_File f, const char *a_, unsigned int _a_hig
   memcpy (a, a_, _a_high+1);
 
   l = StrLib_StrLen ((const char *) a, _a_high);
-  if ((FIO_WriteNBytes (f, l, &a)) != l)
+  if ((FIO_WriteNBytes (f, l, const_cast<void*> (static_cast<const void*>(a)))) != l)
     {}  /* empty.  */
 }
 
@@ -1997,12 +1994,12 @@ extern "C" void FIO_ReadString (FIO_File f, char *a, unsigned int _a_high)
         /* avoid gcc warning by using compound statement even if not strictly necessary.  */
         if (((ch == ASCII_nl) || (! (FIO_IsNoError (f)))) || (FIO_EOF (f)))
           {
-            a[i] = ASCII_nul;
+            const_cast<char *>(a)[i] = ASCII_nul;
             i += 1;
           }
         else
           {
-            a[i] = ch;
+            const_cast<char *>(a)[i] = ch;
             i += 1;
           }
       }
@@ -2226,7 +2223,7 @@ extern "C" void FIO_GetFileName (FIO_File f, char *a, unsigned int _a_high)
               i = 0;
               while (((*p) != ASCII_nul) && (i <= _a_high))
                 {
-                  a[i] = (*p);
+                  const_cast<char *>(a)[i] = (*p);
                   p += 1;
                   i += 1;
                 }

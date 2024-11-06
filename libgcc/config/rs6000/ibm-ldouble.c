@@ -177,7 +177,7 @@ IBM128_TYPE
 __gcc_qmul (double a, double b, double c, double d)
 {
   double xh, xl, t, tau, u, v, w;
-  
+
   t = a * c;			/* Highest order double term.  */
 
   if (unlikely (t == 0)		/* Preserve -0.  */
@@ -185,7 +185,7 @@ __gcc_qmul (double a, double b, double c, double d)
     return t;
 
   /* Sum terms of two highest orders. */
-  
+
   /* Use fused multiply-add to get low part of a * c.  */
 #ifndef __NO_FPRS__
   asm ("fmsub %0,%1,%2,%3" : "=f"(tau) : "f"(a), "f"(c), "f"(t));
@@ -209,9 +209,9 @@ IBM128_TYPE
 __gcc_qdiv (double a, double b, double c, double d)
 {
   double xh, xl, s, sigma, t, tau, u, v, w;
-  
+
   t = a / c;                    /* highest order double term */
-  
+
   if (unlikely (t == 0)		/* Preserve -0.  */
       || nonfinite (t))
     return t;
@@ -230,7 +230,7 @@ __gcc_qdiv (double a, double b, double c, double d)
   s = c * t;                    /* (s,sigma) = c*t exactly.  */
   w = -(-b + d * t);	/* Written to get fnmsub for speed, but not
 			   numerically necessary.  */
-  
+
   /* Use fused multiply-add to get low part of c * t.	 */
 #ifndef __NO_FPRS__
   asm ("fmsub %0,%1,%2,%3" : "=f"(sigma) : "f"(c), "f"(t), "f"(s));
@@ -238,7 +238,7 @@ __gcc_qdiv (double a, double b, double c, double d)
   sigma = fmsub (c, t, s);
 #endif
   v = a - s;
-  
+
   tau = ((v-sigma)+w)/c;   /* Correction to t.  */
   u = t + tau;
 

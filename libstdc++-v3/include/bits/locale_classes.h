@@ -34,7 +34,9 @@
 #ifndef _LOCALE_CLASSES_H
 #define _LOCALE_CLASSES_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/localefwd.h>
 #include <string>

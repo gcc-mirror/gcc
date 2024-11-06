@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* High-level class interface.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -65,6 +66,7 @@ struct lookup_base_data_s
   bool repeated_base;	/* Whether there are repeated bases in the
 			    hierarchy.  */
   bool want_any;	/* Whether we want any matching binfo.  */
+  bool require_virtual;	/* Whether we require a virtual path.  */
 };
 
 /* Worker function for lookup_base.  See if we've found the desired
@@ -93,11 +95,18 @@ dfs_lookup_base (tree binfo, void *data_)
 
   if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), data->base))
     {
+      const bool via_virtual
+	= binfo_via_virtual (binfo, data->t) != NULL_TREE;
+
+      if (data->require_virtual && !via_virtual)
+	/* Skip this result if we require virtual inheritance
+	   and this is not a virtual base.  */
+	return dfs_skip_bases;
+
       if (!data->binfo)
 	{
 	  data->binfo = binfo;
-	  data->via_virtual
-	    = binfo_via_virtual (data->binfo, data->t) != NULL_TREE;
+	  data->via_virtual = via_virtual;
 
 	  if (!data->repeated_base)
 	    /* If there are no repeated bases, we can stop now.  */
@@ -124,7 +133,7 @@ dfs_lookup_base (tree binfo, void *data_)
 	    }
 
 	  /* Prefer one via a non-virtual path.  */
-	  if (!binfo_via_virtual (binfo, data->t))
+	  if (!via_virtual)
 	    {
 	      data->binfo = binfo;
 	      data->via_virtual = false;
@@ -271,6 +280,7 @@ lookup_base (tree t, tree base, base_access access,
       data.repeated_base = (offset == -1) && CLASSTYPE_REPEATED_BASE_P (t);
       data.want_any = access == ba_any;
       data.offset = offset;
+      data.require_virtual = (access & ba_require_virtual);
 
       dfs_walk_once (t_binfo, dfs_lookup_base, NULL, &data);
       binfo = data.binfo;
@@ -1247,14 +1257,14 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   /* [class.access]
 
      In the case of overloaded function names, access control is
-     applied to the function selected by overloaded resolution.  
+     applied to the function selected by overloaded resolution.
 
      We cannot check here, even if RVAL is only a single non-static
      member function, since we do not know what the "this" pointer
      will be.  For:
 
         class A { protected: void f(); };
-        class B : public A { 
+        class B : public A {
           void g(A *p) {
             f(); // OK
             p->f(); // Not OK.
@@ -1281,7 +1291,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       && !dguide_name_p (name))
     rval = build_baselink (rval_binfo, basetype_path, rval,
 			   (IDENTIFIER_CONV_OP_P (name)
-			   ? TREE_TYPE (name): NULL_TREE));
+			    ? TREE_TYPE (name) : NULL_TREE));
   return rval;
 }
 
@@ -2661,7 +2671,7 @@ lookup_conversions (tree type)
   lookup_conversions_r (TYPE_BINFO (type), 0, 0, NULL_TREE, NULL_TREE, &convs);
 
   tree list = NULL_TREE;
-  
+
   /* Flatten the list-of-lists */
   for (; convs; convs = TREE_CHAIN (convs))
     {

@@ -83,7 +83,7 @@ bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
     res = 0;
     BID_RETURN (res);
   }
-  // unpack x 
+  // unpack x
   x_exp = x.w[1] & MASK_EXP;	// biased and shifted left 49 bit positions
   C1_hi = x.w[1] & MASK_COEFF;
   C1_lo = x.w[0];
@@ -168,7 +168,7 @@ bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
     res = 0;
     BID_RETURN (res);
   }
-  // unpack x 
+  // unpack x
   x_exp = x.w[1] & MASK_EXP;	// biased and shifted left 49 bit positions
   C1_hi = x.w[1] & MASK_COEFF;
   C1_lo = x.w[0];
@@ -343,7 +343,7 @@ bid128_isCanonical (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   // not NaN or infinity; extract significand to ensure it is canonical
   sig_x.w[1] = x.w[1] & 0x0001ffffffffffffull;
   sig_x.w[0] = x.w[0];
-  // a canonical number has a coefficient < 10^34 
+  // a canonical number has a coefficient < 10^34
   //    (0x0001ed09_bead87c0_378d8e64_00000000)
   if ((sig_x.w[1] > 0x0001ed09bead87c0ull) ||	// significand is non-canonical
       ((sig_x.w[1] == 0x0001ed09bead87c0ull) && (sig_x.w[0] > 0x378d8e63ffffffffull)) ||	// significand is non-canonical
@@ -486,7 +486,7 @@ bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
     BID_RETURN (res);
   }
   exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
-  // if exponent is less than -6176, the number may be subnormal 
+  // if exponent is less than -6176, the number may be subnormal
   // (less than the smallest normal value)
   //  the smallest normal value is 1 x 10^-6143 = 10^33 x 10^-6176
   //  if (exp_x - 6176 < -6143)
@@ -654,7 +654,7 @@ bid128_totalOrder (UINT128 x,
 	res = 0;	// y is a number, return 1
 	BID_RETURN (res);
       } else {
-	// x and y are both +NaN; 
+	// x and y are both +NaN;
 	pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
 	pyld_x.w[0] = x.w[0];
 	pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
@@ -707,7 +707,7 @@ bid128_totalOrder (UINT128 x,
     BID_RETURN (res);
   }
   // OPPOSITE SIGNS (CASE 3)
-  // if signs are opposite, return 1 if x is negative 
+  // if signs are opposite, return 1 if x is negative
   // (if x < y, totalOrder is true)
   if (((x.w[1] & MASK_SIGN) == MASK_SIGN) ^ ((y.w[1] & MASK_SIGN) ==
 					     MASK_SIGN)) {
@@ -739,9 +739,9 @@ bid128_totalOrder (UINT128 x,
   exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF x IS CANONICAL
-  // 9999999999999999999999999999999999 (decimal) = 
+  // 9999999999999999999999999999999999 (decimal) =
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   // If the value exceeds that, it is interpreted as 0.
   if ((((sig_x.w[1] > 0x0001ed09bead87c0ull) ||
 	((sig_x.w[1] == 0x0001ed09bead87c0ull) &&
@@ -761,9 +761,9 @@ bid128_totalOrder (UINT128 x,
   sig_y.w[0] = y.w[0];
 
   // CHECK IF y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   // If the value exceeds that, it is interpreted as 0.
   if ((((sig_y.w[1] > 0x0001ed09bead87c0ull) ||
 	((sig_y.w[1] == 0x0001ed09bead87c0ull) &&
@@ -778,10 +778,10 @@ bid128_totalOrder (UINT128 x,
     }
   }
   // ZERO (CASE 5)
-  // if x and y represent the same entities, and both are negative 
+  // if x and y represent the same entities, and both are negative
   // return true iff exp_x <= exp_y
   if (x_is_zero && y_is_zero) {
-    // we know that signs must be the same because we would have caught it 
+    // we know that signs must be the same because we would have caught it
     // in case3 if signs were different
     // totalOrder(x,y) iff exp_x >= exp_y for negative numbers
     // totalOrder(x,y) iff exp_x <= exp_y for positive numbers
@@ -818,7 +818,7 @@ bid128_totalOrder (UINT128 x,
   }
   // if |exp_x - exp_y| < 33, it comes down to the compensated significand
   if (exp_x > exp_y) {
-    // if exp_x is 33 greater than exp_y, it is definitely larger, 
+    // if exp_x is 33 greater than exp_y, it is definitely larger,
     // so no need for compensation
     if (exp_x - exp_y > 33) {
       res = ((x.w[1] & MASK_SIGN) == MASK_SIGN);
@@ -830,12 +830,12 @@ bid128_totalOrder (UINT128 x,
       __mul_128x128_to_256 (sig_n_prime256, sig_x,
 			    ten2k128[exp_x - exp_y - 20]);
       // the compensated significands are equal (ie "x and y represent the same
-      // entities") return 1 if (negative && expx > expy) || 
+      // entities") return 1 if (negative && expx > expy) ||
       // (positive && expx < expy)
       if ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
 	  && (sig_n_prime256.w[1] == sig_y.w[1])
 	  && (sig_n_prime256.w[0] == sig_y.w[0])) {
-	// the case exp_x == exp_y  cannot occur, because all bits must be 
+	// the case exp_x == exp_y  cannot occur, because all bits must be
 	// the same - would have been caught if (x == y)
 	res = ((exp_x <= exp_y) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
 	BID_RETURN (res);
@@ -850,7 +850,7 @@ bid128_totalOrder (UINT128 x,
       BID_RETURN (res);
     }
     __mul_64x128_to_192 (sig_n_prime192, ten2k64[exp_x - exp_y], sig_x);
-    // if positive, return whichever significand is larger 
+    // if positive, return whichever significand is larger
     // (converse if negative)
     if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
 	&& (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -865,7 +865,7 @@ bid128_totalOrder (UINT128 x,
 				     MASK_SIGN));
     BID_RETURN (res);
   }
-  // if exp_x is 33 less than exp_y, it is definitely smaller, 
+  // if exp_x is 33 less than exp_y, it is definitely smaller,
   // no need for compensation
   if (exp_y - exp_x > 33) {
     res = ((x.w[1] & MASK_SIGN) != MASK_SIGN);
@@ -949,7 +949,7 @@ bid128_totalOrderMag (UINT128 x,
       res = 0;	// y is a number, return 0
       BID_RETURN (res);
     } else {
-      // x and y are both +NaN; 
+      // x and y are both +NaN;
       pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
       pyld_x.w[0] = x.w[0];
       pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
@@ -1022,9 +1022,9 @@ bid128_totalOrderMag (UINT128 x,
   exp_x = (x.w[1] >> 49) & 0x000000000003fffull;
 
   // CHECK IF x IS CANONICAL
-  // 9999999999999999999999999999999999 (decimal) = 
+  // 9999999999999999999999999999999999 (decimal) =
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   // If the value exceeds that, it is interpreted as 0.
   if ((((sig_x.w[1] > 0x0001ed09bead87c0ull) ||
 	((sig_x.w[1] == 0x0001ed09bead87c0ull) &&
@@ -1044,9 +1044,9 @@ bid128_totalOrderMag (UINT128 x,
   sig_y.w[0] = y.w[0];
 
   // CHECK IF y IS CANONICAL
-  // 9999999999999999999999999999999999(decimal) = 
+  // 9999999999999999999999999999999999(decimal) =
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
-  // [0, 10^34) is the 754r supported canonical range.  
+  // [0, 10^34) is the 754r supported canonical range.
   // If the value exceeds that, it is interpreted as 0.
   if ((((sig_y.w[1] > 0x0001ed09bead87c0ull) ||
 	((sig_y.w[1] == 0x0001ed09bead87c0ull) &&
@@ -1062,7 +1062,7 @@ bid128_totalOrderMag (UINT128 x,
   }
   // ZERO (CASE 4)
   if (x_is_zero && y_is_zero) {
-    // we know that signs must be the same because we would have caught it 
+    // we know that signs must be the same because we would have caught it
     // in case3 if signs were different
     // totalOrder(x,y) iff exp_x <= exp_y for positive numbers
     if (exp_x == exp_y) {
@@ -1098,7 +1098,7 @@ bid128_totalOrderMag (UINT128 x,
   }
   // if |exp_x - exp_y| < 33, it comes down to the compensated significand
   if (exp_x > exp_y) {
-    // if exp_x is 33 greater than exp_y, it is definitely larger, 
+    // if exp_x is 33 greater than exp_y, it is definitely larger,
     // so no need for compensation
     if (exp_x - exp_y > 33) {
       res = 0;	// difference cannot be greater than 10^33
@@ -1109,12 +1109,12 @@ bid128_totalOrderMag (UINT128 x,
       __mul_128x128_to_256 (sig_n_prime256, sig_x,
 			    ten2k128[exp_x - exp_y - 20]);
       // the compensated significands are equal (ie "x and y represent the same
-      // entities") return 1 if (negative && expx > expy) || 
+      // entities") return 1 if (negative && expx > expy) ||
       // (positive && expx < expy)
       if ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
 	  && (sig_n_prime256.w[1] == sig_y.w[1])
 	  && (sig_n_prime256.w[0] == sig_y.w[0])) {
-	// the case (exp_x == exp_y) cannot occur, because all bits must be 
+	// the case (exp_x == exp_y) cannot occur, because all bits must be
 	// the same - would have been caught if (x == y)
 	res = (exp_x <= exp_y);
 	BID_RETURN (res);
@@ -1127,7 +1127,7 @@ bid128_totalOrderMag (UINT128 x,
       BID_RETURN (res);
     }
     __mul_64x128_to_192 (sig_n_prime192, ten2k64[exp_x - exp_y], sig_x);
-    // if positive, return whichever significand is larger 
+    // if positive, return whichever significand is larger
     // (converse if negative)
     if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
 	&& (sig_n_prime192.w[0] == sig_y.w[0])) {
@@ -1140,7 +1140,7 @@ bid128_totalOrderMag (UINT128 x,
 		   && sig_n_prime192.w[0] < sig_y.w[0])));
     BID_RETURN (res);
   }
-  // if exp_x is 33 less than exp_y, it is definitely smaller, 
+  // if exp_x is 33 less than exp_y, it is definitely smaller,
   // no need for compensation
   if (exp_y - exp_x > 33) {
     res = 1;

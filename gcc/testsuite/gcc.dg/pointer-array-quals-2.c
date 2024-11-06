@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-std=gnu17 -pedantic-errors" } */
 /* Origin: Martin Uecker <uecker@eecs.berkeley.edu> */
 void tvoid(void* x);
 void transpose0(double* out, const double* in) { }

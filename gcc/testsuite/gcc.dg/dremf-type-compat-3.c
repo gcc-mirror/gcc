@@ -5,7 +5,7 @@
    16666.  Test with -pedantic-errors, where the problem should still
    be diagnosed.  */
 /* { dg-do compile } */
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-std=gnu17 -pedantic-errors" } */
 
 float dremf (float, float); /* { dg-error "prototype declaration" } */
 

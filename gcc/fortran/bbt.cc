@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
    This implementation is based on Stefan Nilsson's article in the
    July 1997 Doctor Dobb's Journal, "Treaps in Java".  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

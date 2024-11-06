@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -349,7 +350,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 		  /* Duplicating loop header with combned conditional will
 		     remove this statement in each copy.  But we account for
 		     that later when seeing that condition.
-		     
+
 		     Note that this may be overly optimistic for bit operations
 		     where the static parameter may still result in non-trivial
 		     bit operation.  */

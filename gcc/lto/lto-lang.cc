@@ -502,7 +502,7 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 {
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
-  
+
   /* Ensure we have a variadic function.  */
   gcc_assert (!prototype_p (*node) || stdarg_p (*node));
 

@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_ldtoa_H)
 #   define _ldtoa_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
@@ -68,7 +66,7 @@ EXTERN long double ldtoa_strtold (void *s, bool *error);
            sign       does the string have a sign?
 */
 
-EXTERN void * ldtoa_ldtoa (long double d, ldtoa_Mode mode, int ndigits, int *decpt, bool *sign);
+EXTERN void * ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, bool *sign);
 #   ifdef __cplusplus
 }
 #   endif

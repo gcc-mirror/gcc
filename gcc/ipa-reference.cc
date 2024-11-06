@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    traumatic, promote some statics to registers, and improve aliasing
    information.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -913,10 +914,10 @@ propagate (void)
       if (!node->alias && opt_for_fn (node->decl, flag_ipa_reference))
 	{
 	  node_g = &node_info->global;
-	  bool read_all = 
+	  bool read_all =
 		(node_g->statics_read == all_module_statics
 		 || bitmap_equal_p (node_g->statics_read, all_module_statics));
-	  bool written_all = 
+	  bool written_all =
 		(node_g->statics_written == all_module_statics
 		 || bitmap_equal_p (node_g->statics_written,
 				    all_module_statics));

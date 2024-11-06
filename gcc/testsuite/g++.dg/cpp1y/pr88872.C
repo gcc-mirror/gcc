@@ -6,7 +6,7 @@ struct a {
   int c;
 };
 void d();
-template <char...> constexpr a operator"" _n() { return d; }
+template <char...> constexpr a operator ""_n() { return d; }
 struct e;
 struct f {
   e operator[](int);

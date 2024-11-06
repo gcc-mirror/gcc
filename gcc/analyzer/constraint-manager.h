@@ -85,7 +85,7 @@ struct bounded_range
   void dump_to_pp (pretty_printer *pp, bool show_types) const;
   void dump (bool show_types) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
@@ -112,7 +112,7 @@ struct bounded_range
   tree m_upper;
 
 private:
-  static void set_json_attr (json::object *obj, const char *name, tree value);
+  static void set_json_attr (json::object &obj, const char *name, tree value);
 };
 
 /* A collection of bounded_range instances, suitable
@@ -135,7 +135,7 @@ public:
   void dump_to_pp (pretty_printer *pp, bool show_types) const;
   void dump (bool show_types) const;
 
-  json::value *to_json () const;
+  std::unique_ptr<json::value> to_json () const;
 
   void add_to_dump_widget (text_art::tree_widget &parent,
 			   const text_art::dump_widget_info &dwi) const;
@@ -271,7 +271,7 @@ public:
 
   void print (pretty_printer *pp) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,
@@ -351,7 +351,7 @@ class constraint
 
   void print (pretty_printer *pp, const constraint_manager &cm) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,
@@ -398,7 +398,7 @@ public:
 
   void print (pretty_printer *pp, const constraint_manager &cm) const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   bool operator== (const bounded_ranges_constraint &other) const;
   bool operator!= (const bounded_ranges_constraint &other) const
@@ -442,7 +442,7 @@ public:
   void dump (FILE *fp) const;
   void dump () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;

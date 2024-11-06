@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu17" } */
+
 extern int ok (int);
 extern void exit ();
 static int gen_x86_64_shrd (int);

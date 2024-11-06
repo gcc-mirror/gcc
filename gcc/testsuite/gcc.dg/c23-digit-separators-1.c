@@ -5,6 +5,7 @@
 _Static_assert (123'45'6 == 123456);
 _Static_assert (0'123 == 0123);
 _Static_assert (0x1'23 == 0x123);
+_Static_assert (0b1'01 == 0b101);
 
 #define m(x) 0
 

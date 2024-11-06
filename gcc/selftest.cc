@@ -257,7 +257,7 @@ read_file (const location &loc, const char *path)
       /* Allow 1 extra byte for 0-termination.  */
       if (alloc_sz < (total_sz + 1))
 	{
-	  size_t new_alloc_sz = alloc_sz ? alloc_sz * 2: total_sz + 1;
+	  size_t new_alloc_sz = alloc_sz ? alloc_sz * 2 : total_sz + 1;
 	  result = (char *)xrealloc (result, new_alloc_sz);
 	  alloc_sz = new_alloc_sz;
 	}

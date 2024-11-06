@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_MUTEX
 #include "libgccjit.h"
 #include "system.h"
@@ -722,7 +723,8 @@ global_new_decl (location *loc,
 		 const char *name,
 		 enum global_var_flags flags,
 		 const std::vector<std::pair<gcc_jit_variable_attribute,
-					     std::string>> &attributes)
+					     std::string>> &attributes,
+		 bool readonly)
 {
   gcc_assert (type);
   gcc_assert (name);
@@ -761,7 +763,7 @@ global_new_decl (location *loc,
       break;
     }
 
-  if (TYPE_READONLY (type_tree))
+  if (TYPE_READONLY (type_tree) || readonly)
     TREE_READONLY (inner) = 1;
 
   if (loc)
@@ -814,10 +816,11 @@ new_global (location *loc,
 	    const char *name,
 	    enum global_var_flags flags,
 	    const std::vector<std::pair<gcc_jit_variable_attribute,
-					std::string>> &attributes)
+					std::string>> &attributes,
+	    bool readonly)
 {
   tree inner =
-    global_new_decl (loc, kind, type, name, flags, attributes);
+    global_new_decl (loc, kind, type, name, flags, attributes, readonly);
 
   return global_finalize_lvalue (inner);
 }
@@ -964,9 +967,10 @@ new_global_initialized (location *loc,
 			const char *name,
 			enum global_var_flags flags,
 			const std::vector<std::pair<gcc_jit_variable_attribute,
-						    std::string>> &attributes)
+						    std::string>> &attributes,
+			bool readonly)
 {
-  tree inner = global_new_decl (loc, kind, type, name, flags, attributes);
+  tree inner = global_new_decl (loc, kind, type, name, flags, attributes, readonly);
 
   vec<constructor_elt, va_gc> *constructor_elements = NULL;
 
@@ -1688,6 +1692,34 @@ new_array_access (location *loc,
 
       return new lvalue (this, t_indirection);
     }
+}
+
+/* Construct a playback::rvalue instance (wrapping a tree) for a
+   vector conversion.  */
+
+playback::rvalue *
+playback::context::
+convert_vector (location *loc,
+		   rvalue *vector,
+		   type *type)
+{
+  gcc_assert (vector);
+  gcc_assert (type);
+
+  /* For comparison, see:
+       c/c-common.cc: c_build_vec_convert
+  */
+
+  tree t_vector = vector->as_tree ();
+
+  tree t_result =
+    build_call_expr_internal_loc (UNKNOWN_LOCATION, IFN_VEC_CONVERT,
+      type->as_tree (), 1, t_vector);
+
+  if (loc)
+    set_tree_location (t_result, loc);
+
+  return new rvalue (this, t_result);
 }
 
 /* Construct a tree for a field access.  */
@@ -3686,14 +3718,9 @@ add_error_va (location *loc, const char *fmt, va_list ap)
 
 void
 playback::context::
-add_diagnostic (diagnostic_context *diag_context,
+add_diagnostic (const char *text,
 		const diagnostic_info &diagnostic)
 {
-  /* At this point the text has been formatted into the pretty-printer's
-     output buffer.  */
-  pretty_printer *pp = diag_context->m_printer;
-  const char *text = pp_formatted_text (pp);
-
   /* Get location information (if any) from the diagnostic.
      The recording::context::add_error[_va] methods require a
      recording::location.  We can't lookup the playback::location
@@ -3713,7 +3740,6 @@ add_diagnostic (diagnostic_context *diag_context,
     }
 
   m_recording_ctxt->add_error (rec_loc, "%s", text);
-  pp_clear_output_area (pp);
 }
 
 /* Dealing with the linemap API.  */

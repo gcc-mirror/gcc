@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -628,7 +629,7 @@ host_detect_local_cpu (int argc, const char **argv)
   arch = strcmp (argv[0], "cpu") == 0;
   if (!arch && strcmp (argv[0], "tune"))
     return NULL;
-  
+
   if (arch)
     cpu = "powerpc";
 

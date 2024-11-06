@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-diagram.h"
 #include "text-art/canvas.h"
 #include "diagnostic-format.h"
+#include "diagnostic-buffer.h"
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
 #include "make-unique.h"
@@ -246,6 +247,36 @@ element::set_attr (const char *name, label_text value)
 
 } // namespace xml
 
+class xhtml_builder;
+
+/* Concrete buffering implementation subclass for HTML output.  */
+
+class diagnostic_xhtml_format_buffer : public diagnostic_per_format_buffer
+{
+public:
+  friend class xhtml_builder;
+  friend class xhtml_output_format;
+
+  diagnostic_xhtml_format_buffer (xhtml_builder &builder)
+  : m_builder (builder)
+  {}
+
+  void dump (FILE *out, int indent) const final override;
+  bool empty_p () const final override;
+  void move_to (diagnostic_per_format_buffer &dest) final override;
+  void clear () final override;
+  void flush () final override;
+
+  void add_result (std::unique_ptr<xml::element> result)
+  {
+    m_results.push_back (std::move (result));
+  }
+
+private:
+  xhtml_builder &m_builder;
+  std::vector<std::unique_ptr<xml::element>> m_results;
+};
+
 /* A class for managing XHTML output of diagnostics.
 
    Implemented:
@@ -264,14 +295,16 @@ element::set_attr (const char *name, label_text value)
 class xhtml_builder
 {
 public:
+  friend class diagnostic_xhtml_format_buffer;
+
   xhtml_builder (diagnostic_context &context,
+		 pretty_printer &pp,
 		 const line_maps *line_maps);
 
-  void on_report_diagnostic (diagnostic_context &context,
-			     const diagnostic_info &diagnostic,
-			     diagnostic_t orig_diag_kind);
-  void emit_diagram (diagnostic_context &context,
-		     const diagnostic_diagram &diagram);
+  void on_report_diagnostic (const diagnostic_info &diagnostic,
+			     diagnostic_t orig_diag_kind,
+			     diagnostic_xhtml_format_buffer *buffer);
+  void emit_diagram (const diagnostic_diagram &diagram);
   void end_group ();
 
   std::unique_ptr<xml::element> take_current_diagnostic ()
@@ -283,13 +316,18 @@ public:
 
   const xml::document &get_document () const { return *m_document; }
 
+  void set_printer (pretty_printer &pp)
+  {
+    m_printer = &pp;
+  }
+
 private:
   std::unique_ptr<xml::element>
-  make_element_for_diagnostic (diagnostic_context &context,
-			       const diagnostic_info &diagnostic,
+  make_element_for_diagnostic (const diagnostic_info &diagnostic,
 			       diagnostic_t orig_diag_kind);
 
   diagnostic_context &m_context;
+  pretty_printer *m_printer;
   const line_maps *m_line_maps;
 
   std::unique_ptr<xml::document> m_document;
@@ -313,13 +351,61 @@ make_span (label_text class_)
   return span;
 }
 
+/* class diagnostic_xhtml_format_buffer : public diagnostic_per_format_buffer.  */
+
+void
+diagnostic_xhtml_format_buffer::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sdiagnostic_xhtml_format_buffer:\n", indent, "");
+  int idx = 0;
+  for (auto &result : m_results)
+    {
+      fprintf (out, "%*sresult[%i]:\n", indent + 2, "", idx);
+      result->dump (out);
+      fprintf (out, "\n");
+      ++idx;
+    }
+}
+
+bool
+diagnostic_xhtml_format_buffer::empty_p () const
+{
+  return m_results.empty ();
+}
+
+void
+diagnostic_xhtml_format_buffer::move_to (diagnostic_per_format_buffer &base)
+{
+  diagnostic_xhtml_format_buffer &dest
+    = static_cast<diagnostic_xhtml_format_buffer &> (base);
+  for (auto &&result : m_results)
+    dest.m_results.push_back (std::move (result));
+  m_results.clear ();
+}
+
+void
+diagnostic_xhtml_format_buffer::clear ()
+{
+  m_results.clear ();
+}
+
+void
+diagnostic_xhtml_format_buffer::flush ()
+{
+  for (auto &&result : m_results)
+    m_builder.m_diagnostics_element->add_child (std::move (result));
+  m_results.clear ();
+}
+
 /* class xhtml_builder.  */
 
 /* xhtml_builder's ctor.  */
 
 xhtml_builder::xhtml_builder (diagnostic_context &context,
+			      pretty_printer &pp,
 			      const line_maps *line_maps)
 : m_context (context),
+  m_printer (&pp),
   m_line_maps (line_maps)
 {
   gcc_assert (m_line_maps);
@@ -358,25 +444,40 @@ xhtml_builder::xhtml_builder (diagnostic_context &context,
 /* Implementation of "on_report_diagnostic" for XHTML output.  */
 
 void
-xhtml_builder::on_report_diagnostic (diagnostic_context &context,
-				     const diagnostic_info &diagnostic,
-				     diagnostic_t orig_diag_kind)
+xhtml_builder::on_report_diagnostic (const diagnostic_info &diagnostic,
+				     diagnostic_t orig_diag_kind,
+				     diagnostic_xhtml_format_buffer *buffer)
 {
-  // TODO: handle (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
+  if (diagnostic.kind == DK_ICE || diagnostic.kind == DK_ICE_NOBT)
+    {
+      /* Print a header for the remaining output to stderr, and
+	 return, attempting to print the usual ICE messages to
+	 stderr.  Hopefully this will be helpful to the user in
+	 indicating what's gone wrong (also for DejaGnu, for pruning
+	 those messages).   */
+      fnotice (stderr, "Internal compiler error:\n");
+    }
 
   auto diag_element
-    = make_element_for_diagnostic (context, diagnostic, orig_diag_kind);
-  if (m_cur_diagnostic_element)
-    /* Nested diagnostic.  */
-    m_cur_diagnostic_element->add_child (std::move (diag_element));
+    = make_element_for_diagnostic (diagnostic, orig_diag_kind);
+  if (buffer)
+    {
+      gcc_assert (!m_cur_diagnostic_element);
+      buffer->m_results.push_back (std::move (diag_element));
+    }
   else
-    /* Top-level diagnostic.  */
-    m_cur_diagnostic_element = std::move (diag_element);
+    {
+      if (m_cur_diagnostic_element)
+	/* Nested diagnostic.  */
+	m_cur_diagnostic_element->add_child (std::move (diag_element));
+      else
+	/* Top-level diagnostic.  */
+	m_cur_diagnostic_element = std::move (diag_element);
+    }
 }
 
 std::unique_ptr<xml::element>
-xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
-					    const diagnostic_info &diagnostic,
+xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 					    diagnostic_t orig_diag_kind)
 {
   class xhtml_token_printer : public token_printer
@@ -469,10 +570,10 @@ xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
 
   auto message_span = make_span (label_text::borrow ("gcc-message"));
   xhtml_token_printer tok_printer (*this, *message_span.get ());
-  context.m_printer->set_token_printer (&tok_printer);
-  pp_output_formatted_text (context.m_printer, context.get_urlifier ());
-  context.m_printer->set_token_printer (nullptr);
-  pp_clear_output_area (context.m_printer);
+  m_printer->set_token_printer (&tok_printer);
+  pp_output_formatted_text (m_printer, m_context.get_urlifier ());
+  m_printer->set_token_printer (nullptr);
+  pp_clear_output_area (m_printer);
   diag_element->add_child (std::move (message_span));
 
   if (diagnostic.metadata)
@@ -529,10 +630,11 @@ xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
     auto pre = ::make_unique<xml::element> ("pre", true);
     pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
     // TODO: ideally we'd like to capture elements within the following:
-    diagnostic_show_locus (&context, diagnostic.richloc, diagnostic.kind);
+    diagnostic_show_locus (&m_context, diagnostic.richloc, diagnostic.kind,
+			   m_printer);
     pre->add_text
-      (label_text::take (xstrdup (pp_formatted_text (context.m_printer))));
-    pp_clear_output_area (context.m_printer);
+      (label_text::take (xstrdup (pp_formatted_text (m_printer))));
+    pp_clear_output_area (m_printer);
     diag_element->add_child (std::move (pre));
   }
 
@@ -543,8 +645,7 @@ xhtml_builder::make_element_for_diagnostic (diagnostic_context &context,
    for XHTML output.  */
 
 void
-xhtml_builder::emit_diagram (diagnostic_context &/*context*/,
-			     const diagnostic_diagram &/*diagram*/)
+xhtml_builder::emit_diagram (const diagnostic_diagram &/*diagram*/)
 {
   /* We must be within the emission of a top-level diagnostic.  */
   gcc_assert (m_cur_diagnostic_element);
@@ -574,23 +675,6 @@ xhtml_builder::flush_to_file (FILE *outf)
   fprintf (outf, "\n");
 }
 
-/* Callback for diagnostic_context::ice_handler_cb for when an ICE
-   occurs.  */
-
-static void
-xhtml_ice_handler (diagnostic_context *context)
-{
-  /* Attempt to ensure that a .xhtml file is written out.  */
-  diagnostic_finish (context);
-
-  /* Print a header for the remaining output to stderr, and
-     return, attempting to print the usual ICE messages to
-     stderr.  Hopefully this will be helpful to the user in
-     indicating what's gone wrong (also for DejaGnu, for pruning
-     those messages).   */
-  fnotice (stderr, "Internal compiler error:\n");
-}
-
 class xhtml_output_format : public diagnostic_output_format
 {
 public:
@@ -604,6 +688,24 @@ public:
     gcc_assert (!pending_diag);
   }
 
+  void dump (FILE *out, int indent) const override
+  {
+    fprintf (out, "%*sxhtml_output_format\n", indent, "");
+    diagnostic_output_format::dump (out, indent);
+  }
+
+  std::unique_ptr<diagnostic_per_format_buffer>
+  make_per_format_buffer () final override
+  {
+    return ::make_unique<diagnostic_xhtml_format_buffer> (m_builder);
+  }
+  void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
+  {
+    diagnostic_xhtml_format_buffer *buffer
+      = static_cast<diagnostic_xhtml_format_buffer *> (base_buffer);
+    m_buffer = buffer;
+  }
+
   void on_begin_group () final override
   {
     /* No-op,  */
@@ -614,17 +716,34 @@ public:
   }
   void
   on_report_diagnostic (const diagnostic_info &diagnostic,
-			    diagnostic_t orig_diag_kind) final override
+			diagnostic_t orig_diag_kind) final override
   {
-    m_builder.on_report_diagnostic (m_context, diagnostic, orig_diag_kind);
+    m_builder.on_report_diagnostic (diagnostic, orig_diag_kind, m_buffer);
   }
   void on_diagram (const diagnostic_diagram &diagram) final override
   {
-    m_builder.emit_diagram (m_context, diagram);
+    m_builder.emit_diagram (diagram);
   }
   void after_diagnostic (const diagnostic_info &)
   {
     /* No-op, but perhaps could show paths here.  */
+  }
+  bool follows_reference_printer_p () const final override
+  {
+    return false;
+  }
+  void update_printer () final override
+  {
+    m_printer = m_context.clone_printer ();
+
+    /* Don't colorize the text.  */
+    pp_show_color (m_printer.get ()) = false;
+
+    /* No textual URLs.  */
+    m_printer->set_url_format (URL_FORMAT_NONE);
+
+    /* Update the builder to use the new printer.  */
+    m_builder.set_printer (*get_printer ());
   }
 
   const xml::document &get_document () const
@@ -636,10 +755,12 @@ protected:
   xhtml_output_format (diagnostic_context &context,
 		       const line_maps *line_maps)
   : diagnostic_output_format (context),
-    m_builder (context, line_maps)
+    m_builder (context, *get_printer (), line_maps),
+    m_buffer (nullptr)
   {}
 
   xhtml_builder m_builder;
+  diagnostic_xhtml_format_buffer *m_buffer;
 };
 
 class xhtml_stream_output_format : public xhtml_output_format
@@ -708,14 +829,11 @@ static void
 diagnostic_output_format_init_xhtml (diagnostic_context &context,
 				     std::unique_ptr<xhtml_output_format> fmt)
 {
-  /* Override callbacks.  */
-  context.set_ice_handler_callback (xhtml_ice_handler);
-
   /* Don't colorize the text.  */
-  pp_show_color (context.m_printer) = false;
+  pp_show_color (fmt->get_printer ()) = false;
   context.set_show_highlight_colors (false);
 
-  context.set_output_format (fmt.release ());
+  context.set_output_format (std::move (fmt));
 }
 
 /* Populate CONTEXT in preparation for XHTML output to stderr.  */
@@ -751,7 +869,7 @@ diagnostic_output_format_init_xhtml_file (diagnostic_context &context,
 namespace selftest {
 
 /* A subclass of xhtml_output_format for writing selftests.
-   The JSON output is cached internally, rather than written
+   The XML output is cached internally, rather than written
    out to a file.  */
 
 class test_xhtml_diagnostic_context : public test_diagnostic_context
@@ -854,9 +972,10 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  global_dc->set_output_format (new xhtml_stream_output_format (*global_dc,
-								line_table,
-								stderr));
+  global_dc->set_output_format
+    (::make_unique<xhtml_stream_output_format> (*global_dc,
+						line_table,
+						stderr));
 
 #if CHECKING_P
   selftest::xhtml_format_selftests ();

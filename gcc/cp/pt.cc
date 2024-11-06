@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_ALGORITHM // for std::equal
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -48,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "builtins.h"
 #include "omp-general.h"
+#include "pretty-print-markup.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -1160,6 +1162,7 @@ maybe_process_partial_specialization (tree type)
 		  elt.tmpl = tmpl;
 		  CLASSTYPE_TI_ARGS (inst)
 		    = elt.args = INNERMOST_TEMPLATE_ARGS (elt.args);
+		  elt.hash = 0; /* Recalculate after changing tmpl/args.  */
 
 		  spec_entry **slot
 		    = type_specializations->find_slot (&elt, INSERT);
@@ -1281,7 +1284,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
   spec_entry elt;
   elt.tmpl = tmpl;
   elt.args = args;
-  elt.spec = NULL_TREE;
+  elt.hash = hash;
 
   spec_hash_table *specializations;
   if (DECL_CLASS_TEMPLATE_P (tmpl))
@@ -1289,9 +1292,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
   else
     specializations = decl_specializations;
 
-  if (hash == 0)
-    hash = spec_hasher::hash (&elt);
-  if (spec_entry *found = specializations->find_with_hash (&elt, hash))
+  if (spec_entry *found = specializations->find (&elt))
     return found->spec;
 
   return NULL_TREE;
@@ -1546,11 +1547,9 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
   elt.tmpl = tmpl;
   elt.args = args;
   elt.spec = spec;
+  elt.hash = hash;
 
-  if (hash == 0)
-    hash = spec_hasher::hash (&elt);
-
-  spec_entry **slot = decl_specializations->find_slot_with_hash (&elt, hash, INSERT);
+  spec_entry **slot = decl_specializations->find_slot (&elt, INSERT);
   if (*slot)
     fn = (*slot)->spec;
   else
@@ -1738,7 +1737,9 @@ spec_hasher::hash (tree tmpl, tree args)
 hashval_t
 spec_hasher::hash (spec_entry *e)
 {
-  return spec_hasher::hash (e->tmpl, e->args);
+  if (e->hash == 0)
+    e->hash = hash (e->tmpl, e->args);
+  return e->hash;
 }
 
 /* Recursively calculate a hash value for a template argument ARG, for use
@@ -1750,7 +1751,7 @@ hashval_t
 iterative_hash_template_arg (tree arg, hashval_t val)
 {
   if (arg == NULL_TREE)
-    return iterative_hash_object (arg, val);
+    return iterative_hash_hashval_t (0, val);
 
   if (!TYPE_P (arg))
     /* Strip nop-like things, but not the same as STRIP_NOPS.  */
@@ -1761,7 +1762,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
   enum tree_code code = TREE_CODE (arg);
 
-  val = iterative_hash_object (code, val);
+  val = iterative_hash_hashval_t (code, val);
 
   switch (code)
     {
@@ -1776,7 +1777,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return val;
 
     case IDENTIFIER_NODE:
-      return iterative_hash_object (IDENTIFIER_HASH_VALUE (arg), val);
+      return iterative_hash_hashval_t (IDENTIFIER_HASH_VALUE (arg), val);
 
     case TREE_VEC:
       for (tree elt : tree_vec_range (arg))
@@ -1935,7 +1936,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
 	default:
 	  if (tree canonical = TYPE_CANONICAL (arg))
-	    val = iterative_hash_object (TYPE_HASH (canonical), val);
+	    val = iterative_hash_hashval_t (TYPE_HASH (canonical), val);
 	  else if (tree ti = TYPE_TEMPLATE_INFO (arg))
 	    {
 	      val = iterative_hash_template_arg (TI_TEMPLATE (ti), val);
@@ -1972,7 +1973,6 @@ reregister_specialization (tree spec, tree tinfo, tree new_spec)
 
   elt.tmpl = most_general_template (TI_TEMPLATE (tinfo));
   elt.args = TI_ARGS (tinfo);
-  elt.spec = NULL_TREE;
 
   entry = decl_specializations->find (&elt);
   if (entry != NULL)
@@ -2070,6 +2070,10 @@ get_template_for_ordering (tree list)
 {
   gcc_assert (TREE_CODE (list) == TREE_LIST);
   tree f = TREE_VALUE (list);
+  if (f == NULL_TREE)
+    /* Also handle a list from resolve_address_of_overloaded_function with the
+       function in TREE_PURPOSE.  */
+    f = TREE_PURPOSE (list);
   if (tree ti = DECL_TEMPLATE_INFO (f))
     return TI_TEMPLATE (ti);
   return f;
@@ -2083,7 +2087,7 @@ get_template_for_ordering (tree list)
 
    Note that we don't compare constraints on the functions
    themselves, but rather those of their templates. */
-static tree
+tree
 most_constrained_function (tree candidates)
 {
   // Try to find the best candidate in a first pass.
@@ -2764,9 +2768,9 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
   /* Put together a list of the black listed attributes that the primary
      template is declared with that the specialization is not, in case
      it's not apparent from the most recent declaration of the primary.  */
-  pretty_printer str;
+  auto_vec<const char *> mismatches;
   unsigned nattrs = decls_mismatched_attributes (tmpl, spec, attrlist,
-						 blacklist, &str);
+						 blacklist, mismatches);
 
   if (!nattrs)
     return;
@@ -2775,11 +2779,14 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
   if (warning_at (DECL_SOURCE_LOCATION (spec), OPT_Wmissing_attributes,
 		  "explicit specialization %q#D may be missing attributes",
 		  spec))
-    inform (DECL_SOURCE_LOCATION (tmpl),
-	    nattrs > 1
-	    ? G_("missing primary template attributes %s")
-	    : G_("missing primary template attribute %s"),
-	    pp_formatted_text (&str));
+    {
+      pp_markup::comma_separated_quoted_strings e (mismatches);
+      inform (DECL_SOURCE_LOCATION (tmpl),
+	      nattrs > 1
+	      ? G_("missing primary template attributes %e")
+	      : G_("missing primary template attribute %e"),
+	      &e);
+    }
 }
 
 /* Check to see if the function just declared, as indicated in
@@ -4132,7 +4139,7 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
          class initializer.  In this case, the TREE_PURPOSE will be a
          _TYPE node (representing the base class expansion we're
          initializing) and the TREE_VALUE will be a TREE_LIST
-         containing the initialization arguments. 
+         containing the initialization arguments.
 
          The resulting expansion looks somewhat different from most
          expansions. Rather than returning just one _EXPANSION, we
@@ -4176,7 +4183,7 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
             {
               /* Determine which parameter packs will be expanded in this
                  argument.  */
-              cp_walk_tree (&TREE_VALUE (value), &find_parameter_packs_r, 
+              cp_walk_tree (&TREE_VALUE (value), &find_parameter_packs_r,
                             &ppd, ppd.visited);
             }
         }
@@ -9271,6 +9278,7 @@ coerce_template_parms (tree parms,
 	    {
 	      /* We don't know how many args we have yet, just use the
 		 unconverted (and still packed) ones for now.  */
+	      ggc_free (new_inner_args);
 	      new_inner_args = orig_inner_args;
 	      arg_idx = nargs;
 	      break;
@@ -9325,7 +9333,8 @@ coerce_template_parms (tree parms,
 		  = make_pack_expansion (conv, complain);
 
               /* We don't know how many args we have yet, just
-                 use the unconverted ones for now.  */
+		 use the unconverted (but unpacked) ones for now.  */
+	      ggc_free (new_inner_args);
               new_inner_args = inner_args;
 	      arg_idx = nargs;
               break;
@@ -9437,6 +9446,12 @@ coerce_template_parms (tree parms,
   if (CHECKING_P && !NON_DEFAULT_TEMPLATE_ARGS_COUNT (new_inner_args))
     SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (new_inner_args,
 					 TREE_VEC_LENGTH (new_inner_args));
+
+  /* If we expanded packs in inner_args and aren't returning it now, the
+     expanded vec is garbage.  */
+  if (inner_args != new_inner_args
+      && inner_args != orig_inner_args)
+    ggc_free (inner_args);
 
   return return_full_args ? new_args : new_inner_args;
 }
@@ -10007,8 +10022,6 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
   tree t;
   spec_entry **slot;
   spec_entry *entry;
-  spec_entry elt;
-  hashval_t hash;
 
   if (identifier_p (d1))
     {
@@ -10224,11 +10237,10 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 	}
 
       /* If we already have this specialization, return it.  */
+      spec_entry elt;
       elt.tmpl = gen_tmpl;
       elt.args = arglist;
-      elt.spec = NULL_TREE;
-      hash = spec_hasher::hash (&elt);
-      entry = type_specializations->find_with_hash (&elt, hash);
+      entry = type_specializations->find (&elt);
 
       if (entry)
 	return entry->spec;
@@ -10291,7 +10303,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 		    {
 		      /* Completion could have caused us to register the desired
 			 specialization already, so check the table again.  */
-		      entry = type_specializations->find_with_hash (&elt, hash);
+		      entry = type_specializations->find (&elt);
 		      if (entry)
 			return entry->spec;
 		    }
@@ -10512,7 +10524,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
 		 use it for hash table lookup.  */
 	      elt.tmpl = found;
 	      elt.args = arglist = INNERMOST_TEMPLATE_ARGS (arglist);
-	      hash = spec_hasher::hash (&elt);
+	      elt.hash = 0; /* Recalculate after changing tmpl/args.  */
 	    }
 	}
 
@@ -10520,7 +10532,7 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
       SET_TYPE_TEMPLATE_INFO (t, build_template_info (found, arglist));
 
       elt.spec = t;
-      slot = type_specializations->find_slot_with_hash (&elt, hash, INSERT);
+      slot = type_specializations->find_slot (&elt, INSERT);
       gcc_checking_assert (*slot == NULL);
       entry = ggc_alloc<spec_entry> ();
       *entry = elt;
@@ -12167,7 +12179,10 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 	    }
 	  OMP_TSS_TRAIT_SELECTORS (tss) = nreverse (selectors);
 	}
-      val = tree_cons (varid, ctx, chain);
+      if (varid == error_mark_node)
+	val = error_mark_node;
+      else
+	val = tree_cons (varid, ctx, chain);
     }
   /* If the first attribute argument is an identifier, don't
      pass it through tsubst.  Attributes like mode, format,
@@ -12529,7 +12544,7 @@ instantiate_class_template (tree type)
 
           if (PACK_EXPANSION_P (BINFO_TYPE (pbase_binfo)))
             {
-              expanded_bases = 
+              expanded_bases =
 		tsubst_pack_expansion (BINFO_TYPE (pbase_binfo),
 				       args, tf_error, NULL_TREE);
               if (expanded_bases == error_mark_node)
@@ -12545,7 +12560,7 @@ instantiate_class_template (tree type)
                 base = TREE_VEC_ELT (expanded_bases, idx);
               else
                 /* Substitute to figure out the base class.  */
-                base = tsubst (BINFO_TYPE (pbase_binfo), args, tf_error, 
+                base = tsubst (BINFO_TYPE (pbase_binfo), args, tf_error,
                                NULL_TREE);
 
               if (base == error_mark_node)
@@ -12808,7 +12823,7 @@ instantiate_class_template (tree type)
 		/* friend class C<T>;  */
 		friend_type = tsubst (friend_type, args,
 				      tf_warning_or_error, NULL_TREE);
-	      
+
 	      /* Otherwise it's
 
 		   friend class C;
@@ -13483,7 +13498,12 @@ extract_locals_r (tree *tp, int *walk_subtrees, void *data_)
        outermost tree.  Nested *_EXTRA_ARGS should naturally be empty since
        the outermost (extra-args) tree will intercept any substitution before
        a nested tree can.  */
-    gcc_checking_assert (tree_extra_args (*tp) == NULL_TREE);
+    gcc_checking_assert (tree_extra_args (*tp) == NULL_TREE
+			/* Except a lambda nested inside an extra-args tree
+			   can have extra args if we deferred partial
+			   substitution into it at template parse time.  But
+			   we don't walk LAMBDA_EXPR_EXTRA_ARGS anyway.  */
+			 || TREE_CODE (*tp) == LAMBDA_EXPR);
 
   if (TREE_CODE (*tp) == DECL_EXPR)
     {
@@ -13768,7 +13788,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
       if (arg_pack)
         {
-          int my_len = 
+          int my_len =
             TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack));
 
 	  /* Don't bother trying to do a partial substitution with
@@ -15250,7 +15270,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
                return the local specialization (which will be a single
                parm).  */
             tree spec = retrieve_local_specialization (t);
-            if (spec 
+            if (spec
                 && TREE_CODE (spec) == PARM_DECL
                 && TREE_CODE (TREE_TYPE (spec)) != TYPE_PACK_EXPANSION)
               RETURN (spec);
@@ -16128,7 +16148,7 @@ tsubst_exception_specification (tree fntype,
                   spec = tsubst (TREE_VALUE (specs), args, complain, in_decl);
                 if (spec == error_mark_node)
                   return spec;
-                new_specs = add_exception_specifier (new_specs, spec, 
+                new_specs = add_exception_specifier (new_specs, spec,
                                                      complain);
               }
 
@@ -18143,7 +18163,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
       tree orig_decl = NULL_TREE;
       tree init_sl = NULL_TREE;
       cp_convert_omp_range_for (this_pre_body, init_sl, decl, orig_decl, init,
-				orig_init, cond, incr);
+				orig_init, cond, incr, true);
       if (orig_decl)
 	{
 	  if (orig_declv == NULL_TREE)
@@ -18186,7 +18206,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
 	      TREE_VEC_ELT (rhs, 1) = RECUR (TREE_VEC_ELT (rhs, 1));
 	      TREE_VEC_ELT (rhs, 2) = RECUR (TREE_VEC_ELT (rhs, 2));
 	      cond = build2 (TREE_CODE (cond), TREE_TYPE (cond),
-			     lhs, rhs);	      
+			     lhs, rhs);
 	    }
 	  else
 	    cond = RECUR (cond);
@@ -19172,6 +19192,18 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	RECUR (OMP_FOR_PRE_BODY (t));
 	pre_body = pop_stmt_list (pre_body);
 
+	tree sl = NULL_TREE;
+	if (flag_range_for_ext_temps
+	    && OMP_FOR_INIT (t) != NULL_TREE
+	    && !processing_template_decl)
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	    if (TREE_VEC_ELT (OMP_FOR_INIT (t), i)
+		&& TREE_VEC_ELT (OMP_FOR_COND (t), i) == global_namespace)
+	      {
+		sl = push_stmt_list ();
+		break;
+	      }
+
 	if (OMP_FOR_INIT (t) != NULL_TREE)
 	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
 	    {
@@ -19227,9 +19259,34 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    add_stmt (t);
 	  }
 
+	if (sl)
+	  {
+	    /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
+	       for-range-initializer whose lifetime is extended are destructed
+	       here.  */
+	    sl = pop_stmt_list (sl);
+	    sl = maybe_cleanup_point_expr_void (sl);
+	    add_stmt (sl);
+	  }
+
 	add_stmt (finish_omp_for_block (finish_omp_structured_block (stmt),
 					t));
 	pop_omp_privatization_clauses (r);
+
+	if (any_range_for && !processing_template_decl && t)
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	    if (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i)
+		&& TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t),
+					    i)) == TREE_LIST)
+	      {
+		tree v = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (t), i);
+		if (TREE_CHAIN (v) == NULL_TREE
+		    || TREE_CODE (TREE_CHAIN (v)) != TREE_VEC)
+		  continue;
+		v = TREE_VEC_ELT (TREE_CHAIN (v), 0);
+		gcc_assert (VAR_P (v) && DECL_NAME (v) == NULL_TREE);
+		DECL_NAME (v) = for_range_identifier;
+	      }
       }
       break;
 
@@ -23842,11 +23899,14 @@ resolve_overloaded_unification (tree tparms,
 	tree fn = *iter;
 	if (flag_noexcept_type)
 	  maybe_instantiate_noexcept (fn, tf_none);
-	if (try_one_overload (tparms, targs, tempargs, parm, TREE_TYPE (fn),
+	if (TREE_CODE (fn) == FUNCTION_DECL && !constraints_satisfied_p (fn))
+	  continue;
+	tree elem = TREE_TYPE (fn);
+	if (try_one_overload (tparms, targs, tempargs, parm, elem,
 			      strict, sub_strict, addr_p, explain_p)
-	    && (!goodfn || !decls_match (goodfn, fn)))
+	    && (!goodfn || !same_type_p (goodfn, elem)))
 	  {
-	    goodfn = fn;
+	    goodfn = elem;
 	    ++good;
 	  }
       }
@@ -23855,6 +23915,9 @@ resolve_overloaded_unification (tree tparms,
      to function or pointer to member function argument if the set of
      overloaded functions does not contain function templates and at most
      one of a set of overloaded functions provides a unique match.
+
+     CWG2918 allows multiple functions to match if they all have the same type,
+     so that we can choose the most constrained later.
 
      So if we found multiple possibilities, we return success but don't
      deduce anything.  */
@@ -24430,7 +24493,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
           int idx, level;
           template_parm_level_and_index (TREE_PURPOSE (pack), &level, &idx);
 
-          TREE_VEC_ELT (TREE_TYPE (pack), i - start) = 
+          TREE_VEC_ELT (TREE_TYPE (pack), i - start) =
             TMPL_ARG (targs, level, idx);
         }
     }
@@ -24489,7 +24552,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
           TMPL_ARG (targs, level, idx) = result;
         }
       else if (ARGUMENT_PACK_INCOMPLETE_P (old_pack)
-               && (ARGUMENT_PACK_ARGS (old_pack) 
+               && (ARGUMENT_PACK_ARGS (old_pack)
                    == ARGUMENT_PACK_EXPLICIT_ARGS (old_pack)))
         {
           /* We only had the explicitly-provided arguments before, but
@@ -25123,7 +25186,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       }
 
     case REFERENCE_TYPE:
-      if (!TYPE_REF_P (arg))
+      if (!TYPE_REF_P (arg)
+	  || TYPE_REF_IS_RVALUE (parm) != TYPE_REF_IS_RVALUE (arg))
 	return unify_type_mismatch (explain_p, parm, arg);
       return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
 		    strict & UNIFY_ALLOW_MORE_CV_QUAL, explain_p);
@@ -31628,8 +31692,7 @@ match_mergeable_specialization (bool decl_p, spec_entry *elt)
 {
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
-  hashval_t hash = spec_hasher::hash (elt);
-  auto *slot = specializations->find_slot_with_hash (elt, hash, NO_INSERT);
+  auto *slot = specializations->find_slot (elt, NO_INSERT);
 
   if (slot)
     return (*slot)->spec;
@@ -31677,10 +31740,9 @@ void
 add_mergeable_specialization (bool decl_p, spec_entry *elt, tree decl,
 			      unsigned flags)
 {
-  hashval_t hash = spec_hasher::hash (elt);
   if (decl_p)
     {
-      auto *slot = decl_specializations->find_slot_with_hash (elt, hash, INSERT);
+      auto *slot = decl_specializations->find_slot (elt, INSERT);
 
       gcc_checking_assert (!*slot);
       auto entry = ggc_alloc<spec_entry> ();
@@ -31689,15 +31751,19 @@ add_mergeable_specialization (bool decl_p, spec_entry *elt, tree decl,
     }
   else
     {
-      auto *slot = type_specializations->find_slot_with_hash (elt, hash, INSERT);
+      auto *slot = type_specializations->find_slot (elt, INSERT);
 
       /* We don't distinguish different constrained partial type
-	 specializations, so there could be duplicates.  Everything else
-	 must be new.   */
-      if (!(flags & 2 && *slot))
+	 specializations, so there could be duplicates.  In that case we
+	 must propagate TYPE_CANONICAL so that they are treated as the
+	 same type.  Everything else must be new.   */
+      if (*slot)
 	{
-	  gcc_checking_assert (!*slot);
-
+	  gcc_checking_assert (flags & 2);
+	  TYPE_CANONICAL (elt->spec) = TYPE_CANONICAL ((*slot)->spec);
+	}
+      else
+	{
 	  auto entry = ggc_alloc<spec_entry> ();
 	  *entry = *elt;
 	  *slot = entry;

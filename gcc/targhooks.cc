@@ -1770,7 +1770,7 @@ void
 default_addr_space_diagnose_usage (addr_space_t, location_t)
 {
 }
-	 
+
 
 /* The default hook for TARGET_ADDR_SPACE_CONVERT. This hook should never be
    called for targets with only a generic address space.  */
@@ -2233,7 +2233,7 @@ reg_class_t
 default_preferred_reload_class (rtx x ATTRIBUTE_UNUSED,
 			        reg_class_t rclass)
 {
-#ifdef PREFERRED_RELOAD_CLASS 
+#ifdef PREFERRED_RELOAD_CLASS
   return (reg_class_t) PREFERRED_RELOAD_CLASS (x, (enum reg_class) rclass);
 #else
   return rclass;

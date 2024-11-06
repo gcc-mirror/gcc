@@ -1,6 +1,6 @@
 /* PR c/68533 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 struct T { int t; };
 

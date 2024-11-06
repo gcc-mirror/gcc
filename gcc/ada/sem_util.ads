@@ -1460,6 +1460,11 @@ package Sem_Util is
    function Is_Container_Aggregate (Exp : Node_Id) return Boolean;
    --  Is the given expression a container aggregate?
 
+   function Is_Extended_Access_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Returns True if Ent is a type (or a subtype thereof)
+   --  for which the Extended_Access aspect has been specified, either
+   --  explicitly or by inheritance.
+
    function Is_Function_With_Side_Effects (Subp : Entity_Id) return Boolean;
    --  Return True if Subp is a function with side effects, ie. it has a
    --  (direct or inherited) pragma Side_Effects with static value True.
@@ -1718,6 +1723,11 @@ package Sem_Util is
    --  prefix is an access type, rewrite the access type node N (which is the
    --  prefix, e.g. of an indexed component) as an explicit dereference.
 
+   procedure Inspect_Deferred_Constant_Completion (Decl : Node_Id);
+   --  If Decl is a constant object declaration without a default value, check
+   --  whether it has been completed by a full constant declaration or an
+   --  Import pragma. Emit an error message if that is not the case.
+
    procedure Inspect_Deferred_Constant_Completion (Decls : List_Id);
    --  Examine all deferred constants in the declaration list Decls and check
    --  whether they have been completed by a full constant declaration or an
@@ -1763,7 +1773,8 @@ package Sem_Util is
    function Is_Actual_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter in a subprogram or entry call
 
-   function Is_Aliased_View (Obj : Node_Id) return Boolean;
+   function Is_Aliased_View
+     (Obj : Node_Id; For_Extended : Boolean := False) return Boolean;
    --  Determine if Obj is an aliased view, i.e. the name of an object to which
    --  'Access or 'Unchecked_Access can apply. Note that this routine uses the
    --  rules of the language, it does not take into account the restriction
@@ -1771,11 +1782,14 @@ package Sem_Util is
    --  and Obj violates the restriction. The caller is responsible for calling
    --  Restrict.Check_No_Implicit_Aliasing if True is returned, but there is a
    --  requirement for obeying the restriction in the call context.
+   --  If For_Extended is True, then slightly different rules apply (as per
+   --  the definition of the Extended_Access aspect); for example, a slice
+   --  of an aliased array is considered to be aliased.
 
    function Is_Ancestor_Package
      (E1 : Entity_Id;
       E2 : Entity_Id) return Boolean;
-   --  Determine whether package E1 is an ancestor of E2
+   --  True if package E1 is an ancestor of E2 other than E2 itself
 
    function Is_Atomic_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an atomic
@@ -3051,8 +3065,8 @@ package Sem_Util is
    --  capture actual value information, but we can capture conditional tests.
 
    function Same_Name (N1, N2 : Node_Id) return Boolean;
-   --  Determine if two (possibly expanded) names are the same name. This is
-   --  a purely syntactic test, and N1 and N2 need not be analyzed.
+   --  True if two identifiers or expanded names are the same name. This
+   --  is a purely syntactic test, and N1 and N2 need not be analyzed.
 
    function Same_Object (Node1, Node2 : Node_Id) return Boolean;
    --  Determine if Node1 and Node2 are known to designate the same object.

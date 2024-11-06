@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -588,7 +589,7 @@ extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high)
 
 extern "C" void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message)
 {
-  /* 
+  /*
    The following are the runtime exception handler routines.
   */
   RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), filename, line, column, scope, message);

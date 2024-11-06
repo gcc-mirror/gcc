@@ -613,7 +613,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
 	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
-		                "%s: not used because `%.*s' is poisoned",
+		                "%s: not used because %<%.*s%> is poisoned",
 		                name, m.name_length, namebuf);
 	  goto fail;
 	}
@@ -635,7 +635,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 
 	  if (CPP_OPTION (r, warn_invalid_pch))
 	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
-		                "%s: not used because `%.*s' not defined",
+		                "%s: not used because %<%.*s%> not defined",
 		                name, m.name_length, namebuf);
 	  goto fail;
 	}
@@ -647,10 +647,12 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
 	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
-	       "%s: not used because `%.*s' defined as `%s' not `%.*s'",
-		       name, m.name_length, namebuf, newdefn + m.name_length,
-		       m.definition_length - m.name_length,
-		       namebuf +  m.name_length);
+				"%s: not used because %<%.*s%> defined as "
+				"%<%s%> not %<%.*s%>",
+				name, m.name_length, namebuf,
+				newdefn + m.name_length,
+				m.definition_length - m.name_length,
+				namebuf +  m.name_length);
 	  goto fail;
 	}
     }
@@ -688,7 +690,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	{
 	  if (CPP_OPTION (r, warn_invalid_pch))
 	    cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
-		                "%s: not used because `%s' is defined",
+		                "%s: not used because %qs is defined",
 		                name, first);
 	  goto fail;
 	}
@@ -708,7 +710,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
     {
       if (CPP_OPTION (r, warn_invalid_pch))
 	cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
-		            "%s: not used because `__COUNTER__' is invalid",
+		            "%s: not used because %<__COUNTER__%> is invalid",
 		            name);
       goto fail;
     }

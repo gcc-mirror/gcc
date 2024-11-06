@@ -362,9 +362,9 @@ extern void poplevel_class (void);
    don't accidentally mix integers.  */
 enum class LOOK_where
 {
-  BLOCK = 1 << 0,  /* Consider block scopes.  */ 
-  CLASS = 1 << 1,  /* Consider class scopes.  */ 
-  NAMESPACE = 1 << 2,  /* Consider namespace scopes.  */ 
+  BLOCK = 1 << 0,  /* Consider block scopes.  */
+  CLASS = 1 << 1,  /* Consider class scopes.  */
+  NAMESPACE = 1 << 2,  /* Consider namespace scopes.  */
 
   ALL = BLOCK | CLASS | NAMESPACE,
   BLOCK_NAMESPACE = BLOCK | NAMESPACE,

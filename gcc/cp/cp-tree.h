@@ -5731,7 +5731,8 @@ enum base_access_flags {
   ba_unique = 1 << 0,  /* Must be a unique base.  */
   ba_check_bit = 1 << 1,   /* Check access.  */
   ba_check = ba_unique | ba_check_bit,
-  ba_ignore_scope = 1 << 2 /* Ignore access allowed by local scope.  */
+  ba_ignore_scope = 1 << 2, /* Ignore access allowed by local scope.  */
+  ba_require_virtual = 1 << 3 /* Require a virtual base.  */
 };
 
 /* This type is used for parameters and variables which hold
@@ -5847,9 +5848,14 @@ public:
 /* Entry in the specialization hash table.  */
 struct GTY((for_user)) spec_entry
 {
-  tree tmpl;  /* The general template this is a specialization of.  */
-  tree args;  /* The args for this (maybe-partial) specialization.  */
-  tree spec;  /* The specialization itself.  */
+  /* The general template this is a specialization of.  */
+  tree tmpl;
+  /* The args for this (maybe-partial) specialization.  */
+  tree args;
+  /* The specialization itself.  */
+  tree spec = NULL_TREE;
+  /* The cached result of hash_tmpl_and_args (tmpl, args).  */
+  hashval_t hash = 0;
 };
 
 /* in class.cc */
@@ -7454,7 +7460,7 @@ extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       binding_slot *bslot);
 extern void lazy_load_pendings (tree decl);
 extern module_state *preprocess_module (module_state *, location_t,
-					bool in_purview, 
+					bool in_purview,
 					bool is_import, bool export_p,
 					cpp_reader *reader);
 extern void preprocessed_module (cpp_reader *reader);
@@ -7482,7 +7488,8 @@ extern bool maybe_clone_body			(tree);
 extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
 				  tree, bool);
 extern void cp_convert_omp_range_for (tree &, tree &, tree &,
-				      tree &, tree &, tree &, tree &, tree &);
+				      tree &, tree &, tree &, tree &, tree &,
+				      bool);
 extern void cp_finish_omp_range_for (tree, tree);
 extern bool cp_maybe_parse_omp_decl (tree, tree);
 extern bool parsing_nsdmi (void);
@@ -7594,6 +7601,7 @@ extern int template_args_equal                  (tree, tree);
 extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern tree most_specialized_partial_spec       (tree, tsubst_flags_t, bool = false);
+extern tree most_constrained_function		(tree);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,
@@ -7817,6 +7825,7 @@ extern tree begin_for_stmt			(tree, tree);
 extern void finish_init_stmt			(tree);
 extern void finish_for_cond		(tree, tree, bool, tree, bool);
 extern void finish_for_expr			(tree, tree);
+extern void find_range_for_decls		(tree[3]);
 extern void finish_for_stmt			(tree);
 extern tree begin_range_for_stmt		(tree, tree);
 extern void finish_range_for_decl		(tree, tree, tree);
@@ -8120,7 +8129,6 @@ extern tree build_exception_variant		(tree, tree);
 extern void fixup_deferred_exception_variants   (tree, tree);
 extern tree bind_template_template_parm		(tree, tree);
 extern tree array_type_nelts_total		(tree);
-extern tree array_type_nelts_top		(tree);
 extern bool array_of_unknown_bound_p		(const_tree);
 extern tree break_out_target_exprs		(tree, bool = false);
 extern tree build_ctor_subob_ref		(tree, tree, tree);
@@ -8707,6 +8715,7 @@ extern bool is_rvalue_constant_expression (tree);
 extern bool is_nondependent_constant_expression (tree);
 extern bool is_nondependent_static_init_expression (tree);
 extern bool is_static_init_expression    (tree);
+extern bool is_std_class (tree, const char *);
 extern bool is_std_allocator (tree);
 extern bool potential_rvalue_constant_expression (tree);
 extern bool require_potential_constant_expression (tree);
@@ -8789,7 +8798,7 @@ extern tree coro_get_actor_function		(tree);
 extern tree coro_get_destroy_function		(tree);
 extern tree coro_get_ramp_function		(tree);
 
-extern tree* co_await_get_resume_call		(tree await_expr);
+extern tree co_await_get_resume_call		(tree await_expr);
 
 
 /* contracts.cc */
@@ -8874,7 +8883,7 @@ set_contract_const (tree t, int mut)
 }
 
 /* Inline bodies.  */
-  
+
 inline tree
 ovl_first (tree node)
 {

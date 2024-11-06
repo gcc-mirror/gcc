@@ -1,5 +1,5 @@
 // Copyright (C) 2007-2024 Free Software Foundation, Inc.
-//  
+//
 // This file is part of GCC.
 //
 // GCC is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 namespace __aeabiv1
 {
   extern "C" int
-  __aeabi_atexit (void *object, 
+  __aeabi_atexit (void *object,
 		  void (*destructor) (void *),
 		  void *dso_handle) throw ()
   {

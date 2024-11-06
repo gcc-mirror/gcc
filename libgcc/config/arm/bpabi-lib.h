@@ -1,6 +1,6 @@
 /* Configuration file for ARM BPABI targets, library renames.
    Copyright (C) 2010-2024 Free Software Foundation, Inc.
-   Contributed by CodeSourcery, LLC   
+   Contributed by CodeSourcery, LLC
 
    This file is part of GCC.
 

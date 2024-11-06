@@ -70,6 +70,11 @@
   (and (match_code "const_int")
        (match_test "ival == 8")))
 
+(define_constraint "P"
+  "A 5-bit signed immediate for vmv.v.i."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -16, 15)")))
+
 (define_constraint "K"
   "A 5-bit unsigned immediate for CSR access instructions."
   (and (match_code "const_int")

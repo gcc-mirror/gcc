@@ -16,7 +16,7 @@ struct fixed_string {
 // Missing deduction guide.
 
 template <fixed_string fs>
-constexpr std::size_t operator"" _udl() {
+constexpr std::size_t operator ""_udl() {
   return decltype(fs)::length;
 }
 

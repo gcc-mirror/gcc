@@ -30,7 +30,9 @@
 #ifndef _COMPARE
 #define _COMPARE
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_three_way_comparison
 #include <bits/version.h>

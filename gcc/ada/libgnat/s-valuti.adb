@@ -67,8 +67,9 @@ is
    ----------------------
 
    procedure Normalize_String
-     (S    : in out String;
-      F, L : out Integer)
+     (S             : in out String;
+      F, L          : out Integer;
+      To_Upper_Case : Boolean)
    is
    begin
       F := S'First;
@@ -106,9 +107,9 @@ is
          L := L - 1;
       end loop;
 
-      --  Except in the case of a character literal, convert to upper case
+      --  Convert to upper case if requested and not a character literal
 
-      if S (F) /= ''' then
+      if To_Upper_Case and then S (F) /= ''' then
          for J in F .. L loop
             S (J) := To_Upper (S (J));
             pragma Loop_Invariant

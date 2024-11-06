@@ -66,7 +66,7 @@ public:
   {
     pp_format_decoder (this) = default_tree_printer;
     if (outf == stderr)
-      pp_show_color (this) = pp_show_color (global_dc->m_printer);
+      pp_show_color (this) = pp_show_color (global_dc->get_reference_printer ());
     set_output_stream (outf);
   }
   ~tree_dump_pretty_printer ()

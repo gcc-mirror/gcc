@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17 " } */
 
 static l; /* { dg-error "type defaults to" } */
 

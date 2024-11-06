@@ -7,4 +7,4 @@ import "cpp-5_a.H";
 
 Q
 
-// { dg-final { scan-file cpp-5_c.i {\nimport  "[^\n]*cpp-5_a.H";\n\n0\n} } }
+// { dg-final { scan-file cpp-5_c.i {\nimport "[^\n]*cpp-5_a.H";\n\n0\n} } }

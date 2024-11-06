@@ -1613,7 +1613,8 @@ package body Exp_Ch6 is
 
       function Requires_Atomic_Or_Volatile_Copy return Boolean;
       --  Returns whether a copy is required as per RM C.6(19) and gives a
-      --  warning in this case.
+      --  warning in this case. This also handles the special case of a base
+      --  array type with full access semantics.
 
       ---------------------------
       -- Add_Call_By_Copy_Code --
@@ -2269,15 +2270,22 @@ package body Exp_Ch6 is
 
       function Is_Legal_Copy return Boolean is
       begin
-         --  An attempt to copy a value of such a type can only occur if
-         --  representation clauses give the actual a misaligned address.
+         --  Calls to the initialization procedure of full access types may
+         --  require a copy in order to implement the full access semantics.
 
-         if Is_By_Reference_Type (Etype (Formal))
+         if Is_Init_Proc (Subp) and then Is_Full_Access (Etype (Formal)) then
+            return True;
+
+         --  In the other cases, a copy is not allowed for by-reference types
+         --  or if the parameter is aliased or explicitly passed by reference.
+
+         elsif Is_By_Reference_Type (Etype (Formal))
            or else Is_Aliased (Formal)
            or else (Mechanism (Formal) = By_Reference
                      and then not Has_Foreign_Convention (Subp))
          then
-
+            --  An attempt to copy a value of such types can only occur if
+            --  representation clauses give the actual a misaligned address.
             --  The actual may in fact be properly aligned but there is not
             --  enough front-end information to determine this. In that case
             --  gigi will emit an error or a warning if a copy is not legal,
@@ -2383,6 +2391,15 @@ package body Exp_Ch6 is
                Error_Msg_N
                  ("??volatile actual passed by copy (RM C.6(19))", Actual);
             end if;
+            return True;
+         end if;
+
+         --  Special case for the base type of a full access array type: full
+         --  access semantics cannot be enforced for the base type inside the
+         --  called subprogram so we do it at the call site by means of a copy.
+
+         if Ekind (E_Formal) = E_Array_Type and then Is_Full_Access (E_Formal)
+         then
             return True;
          end if;
 
@@ -7731,9 +7748,7 @@ package body Exp_Ch6 is
                --  Wrappers of class-wide pre/postconditions reference the
                --  parent primitive that has the inherited contract.
 
-               if Is_Wrapper (Subp_Id)
-                 and then Present (LSP_Subprogram (Subp_Id))
-               then
+               if Is_LSP_Wrapper (Subp_Id) then
                   Subp_Id := LSP_Subprogram (Subp_Id);
                end if;
 
@@ -7778,6 +7793,35 @@ package body Exp_Ch6 is
       --  thunk.
 
       elsif Is_Thunk (Current_Scope) then
+         return;
+
+      --  The call to the inherited primitive in a dispatch table wrapper must
+      --  not have the class-wide precondition check since it is installed in
+      --  the caller of the wrapper. This is also required to avoid the wrong
+      --  evaluation of class-wide preconditions in Condition_Wrappers (ie.
+      --  wrappers of inherited primitives that implement additional interface
+      --  primitives that have preconditions).
+
+      --  For example:
+      --    type Typ is tagged null record;
+      --    procedure Prim (X : T) with Pre'Class => False;
+
+      --    type Iface is interface;
+      --    procedure Prim (X : Iface) is abstract with Pre'Class => True;
+
+      --    type DT is new Typ and Iface with null record;
+      --    <internally built dispatch table wrapper of inherited Prim>
+
+      --  The class-wide preconditions of the wrapper must not fail due to the
+      --  disjunction of the class-wide preconditions of subprograms Typ.Prim
+      --  and Iface.Prim. If the precondition check were placed in the
+      --  wrapper's call to the inherited parent primitive, its class-wide
+      --  condition would incorrectly be reported as failed at runtime.
+
+      elsif Is_Dispatch_Table_Wrapper (Current_Scope)
+        or else (Chars (Current_Scope) = Name_uWrapped_Statements
+                   and then Is_Dispatch_Table_Wrapper (Scope (Current_Scope)))
+      then
          return;
       end if;
 

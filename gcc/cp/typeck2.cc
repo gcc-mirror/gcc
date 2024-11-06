@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    including computing the types of the result, C and C++ specific error
    checks, and some optimization.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -71,11 +72,11 @@ binfo_or_else (tree base, tree type)
 void
 cxx_readonly_error (location_t loc, tree arg, enum lvalue_use errstring)
 {
- 
+
 /* This macro is used to emit diagnostics to ensure that all format
    strings are complete sentences, visible to gettext and checked at
    compile time.  */
- 
+
 #define ERROR_FOR_ASSIGNMENT(LOC, AS, ASM, IN, DE, ARG)			\
   do {                                                                  \
     switch (errstring)                                                  \
@@ -2214,7 +2215,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 	  /* This provides a better instantiation backtrace in case of
 	     error.  */
 	  if (fn && DECL_USE_TEMPLATE (fn))
-	    push_tinst_level_loc (fn, 
+	    push_tinst_level_loc (fn,
 				  (current_instantiation () != actual_inst)
 				  ? DECL_SOURCE_LOCATION (fn)
 				  : input_location);
@@ -2573,7 +2574,7 @@ build_functional_cast (location_t loc, tree exp, tree parms,
 {
   tree result = build_functional_cast_1 (loc, exp, parms, complain);
   protected_set_expr_location (result, loc);
-  return result;  
+  return result;
 }
 
 

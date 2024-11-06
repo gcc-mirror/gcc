@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-rtl-expand-details" } */
+/* { dg-options "-Wno-old-style-definition -O2 -fdump-rtl-expand-details" } */
     
 
 union tree_node;

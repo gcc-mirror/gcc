@@ -19,6 +19,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -149,8 +150,10 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
    class ("b", "f", etc.) and a numerical bit count.  */
 
 /* _f16.  */
-#define TYPES_float16(S, D) \
-  S (f16)
+#define TYPES_float_16(S, D) S (f16)
+
+/* _f32.  */
+#define TYPES_float_32(S, D) S (f32)
 
 /* _f16 _f32.  */
 #define TYPES_all_float(S, D) \
@@ -204,6 +207,36 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 /* s32 .  */
 #define TYPES_signed_32(S, D) \
   S (s32)
+
+/* All the type combinations allowed by vcvtq.  */
+#define TYPES_cvt(S, D) \
+  D (f16, s16), \
+  D (f16, u16), \
+  \
+  D (f32, s32), \
+  D (f32, u32), \
+  \
+  D (s16, f16), \
+  D (s32, f32), \
+  \
+  D (u16, f16), \
+  D (u32, f32)
+
+/* vcvt[bt]q_f16_f132.  */
+#define TYPES_cvt_f16_f32(S, D) \
+  D (f16, f32)
+
+/* vcvt[bt]q_f32_f16.  */
+#define TYPES_cvt_f32_f16(S, D) \
+  D (f32, f16)
+
+/* All the type combinations allowed by vcvtXq.  */
+#define TYPES_cvtx(S, D) \
+  D (s16, f16), \
+  D (s32, f32), \
+  \
+  D (u16, f16), \
+  D (u32, f32)
 
 #define TYPES_reinterpret_signed1(D, A) \
   D (A, s8), D (A, s16), D (A, s32), D (A, s64)
@@ -273,7 +306,8 @@ static const type_suffix_pair types_none[] = {
 
 DEF_MVE_TYPES_ARRAY (all_integer);
 DEF_MVE_TYPES_ARRAY (all_integer_with_64);
-DEF_MVE_TYPES_ARRAY (float16);
+DEF_MVE_TYPES_ARRAY (float_16);
+DEF_MVE_TYPES_ARRAY (float_32);
 DEF_MVE_TYPES_ARRAY (all_float);
 DEF_MVE_TYPES_ARRAY (all_signed);
 DEF_MVE_TYPES_ARRAY (all_unsigned);
@@ -284,6 +318,10 @@ DEF_MVE_TYPES_ARRAY (integer_32);
 DEF_MVE_TYPES_ARRAY (poly_8_16);
 DEF_MVE_TYPES_ARRAY (signed_16_32);
 DEF_MVE_TYPES_ARRAY (signed_32);
+DEF_MVE_TYPES_ARRAY (cvt);
+DEF_MVE_TYPES_ARRAY (cvt_f16_f32);
+DEF_MVE_TYPES_ARRAY (cvt_f32_f16);
+DEF_MVE_TYPES_ARRAY (cvtx);
 DEF_MVE_TYPES_ARRAY (reinterpret_integer);
 DEF_MVE_TYPES_ARRAY (reinterpret_float);
 
@@ -307,6 +345,11 @@ static const predication_index preds_mx_or_none[] = {
 static const predication_index preds_p_or_none[] = {
   PRED_p, PRED_none, NUM_PREDS
 };
+
+/* Used by functions that have the z predicated form, in addition to
+   an unpredicated form.  */
+static const predication_index preds_z_or_none[]
+  = {PRED_z, PRED_none, NUM_PREDS};
 
 /* A list of all MVE ACLE functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
@@ -596,6 +639,20 @@ report_not_enum (location_t location, tree fndecl, unsigned int argno,
 	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
 }
 
+/* Report that LOCATION has a call to FNDECL in which argument ARGNO has
+   the value ACTUAL, whereas the function requires one of VALUE0..3.
+   ARGNO counts from zero.  */
+static void
+report_not_one_of (location_t location, tree fndecl, unsigned int argno,
+		   HOST_WIDE_INT actual, HOST_WIDE_INT value0,
+		   HOST_WIDE_INT value1, HOST_WIDE_INT value2,
+		   HOST_WIDE_INT value3)
+{
+  error_at (location, "passing %wd to argument %d of %qE, which expects"
+	    " %wd, %wd, %wd or %wd", actual, argno + 1, fndecl, value0, value1,
+	    value2, value3);
+}
+
 /* Checks that the mve.fp extension is enabled, given that REQUIRES_FLOAT
    indicates whether it is required or not for function FNDECL.
    Report an error against LOCATION if not.  */
@@ -703,6 +760,7 @@ function_instance::has_inactive_argument () const
     return false;
 
   if (mode_suffix_id == MODE_r
+      || (base == functions::vbicq && mode_suffix_id == MODE_n)
       || base == functions::vcmlaq
       || base == functions::vcmlaq_rot90
       || base == functions::vcmlaq_rot180
@@ -715,6 +773,12 @@ function_instance::has_inactive_argument () const
       || base == functions::vcmpltq
       || base == functions::vcmpcsq
       || base == functions::vcmphiq
+      || base == functions::vctp16q
+      || base == functions::vctp32q
+      || base == functions::vctp64q
+      || base == functions::vctp8q
+      || (base == functions::vcvtbq && type_suffix (0).element_bits == 16)
+      || (base == functions::vcvttq && type_suffix (0).element_bits == 16)
       || base == functions::vfmaq
       || base == functions::vfmasq
       || base == functions::vfmsq
@@ -755,6 +819,7 @@ function_instance::has_inactive_argument () const
       || (base == functions::vrshlq && mode_suffix_id == MODE_n)
       || base == functions::vrshrnbq
       || base == functions::vrshrntq
+      || base == functions::vshlcq
       || base == functions::vshrnbq
       || base == functions::vshrntq
       || base == functions::vsliq
@@ -823,7 +888,8 @@ function_builder::get_name (const function_instance &instance,
   for (unsigned int i = 0; i < 2; ++i)
     if (!overloaded_p
 	|| instance.shape->explicit_type_suffix_p (i, instance.pred,
-						   instance.mode_suffix_id))
+						   instance.mode_suffix_id,
+						   instance.type_suffix (i)))
       append_name (instance.type_suffix (i).string);
   return finish_name ();
 }
@@ -1001,9 +1067,11 @@ function_builder::add_overloaded_functions (const function_group_info &group,
   for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
     {
       unsigned int explicit_type0
-	= (*group.shape)->explicit_type_suffix_p (0, group.preds[pi], mode);
+	= (*group.shape)->explicit_type_suffix_p (0, group.preds[pi], mode,
+						  type_suffixes[NUM_TYPE_SUFFIXES]);
       unsigned int explicit_type1
-	= (*group.shape)->explicit_type_suffix_p (1, group.preds[pi], mode);
+	= (*group.shape)->explicit_type_suffix_p (1, group.preds[pi], mode,
+						  type_suffixes[NUM_TYPE_SUFFIXES]);
 
       if ((*group.shape)->skip_overload_p (group.preds[pi], mode))
 	continue;
@@ -1601,6 +1669,7 @@ function_resolver::check_gp_argument (unsigned int nops,
 
 	case PRED_p:
 	case PRED_x:
+	case PRED_z:
 	  /* Add final predicate.  */
 	  nargs = nops + 1;
 	  break;
@@ -1925,6 +1994,36 @@ function_checker::require_immediate_enum (unsigned int rel_argno, tree type)
   return false;
 }
 
+/* Check that argument REL_ARGNO is an integer constant expression that
+   has one of the given values.  */
+bool
+function_checker::require_immediate_one_of (unsigned int rel_argno,
+					    HOST_WIDE_INT value0,
+					    HOST_WIDE_INT value1,
+					    HOST_WIDE_INT value2,
+					    HOST_WIDE_INT value3)
+{
+  unsigned int argno = m_base_arg + rel_argno;
+  if (!argument_exists_p (argno))
+    return true;
+
+  HOST_WIDE_INT actual;
+  if (!require_immediate (argno, actual))
+    return false;
+
+  if (actual != value0
+      && actual != value1
+      && actual != value2
+      && actual != value3)
+    {
+      report_not_one_of (location, fndecl, argno, actual,
+			 value0, value1, value2, value3);
+      return false;
+    }
+
+  return true;
+}
+
 /* Check that argument REL_ARGNO is an integer constant expression in the
    range [MIN, MAX].  REL_ARGNO counts from the end of the predication
    arguments.  */
@@ -2237,6 +2336,8 @@ function_expander::use_contiguous_load_insn (insn_code icode)
 
   add_output_operand (icode);
   add_mem_operand (mem_mode, get_contiguous_base ());
+  if (pred == PRED_z)
+    add_input_operand (icode, args[1]);
   return generate_insn (icode);
 }
 
@@ -2249,6 +2350,8 @@ function_expander::use_contiguous_store_insn (insn_code icode)
 
   add_mem_operand (mem_mode, get_contiguous_base ());
   add_input_operand (icode, args[1]);
+  if (pred == PRED_p)
+    add_input_operand (icode, args[2]);
   return generate_insn (icode);
 }
 

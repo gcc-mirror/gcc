@@ -1,5 +1,4 @@
 /* PR tree-optimization/59417 */
-/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-O1" "-O2" "-Os" } { "" } } */
 
 int a, b, d;
 short c;

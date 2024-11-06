@@ -32,4 +32,4 @@ PATH/include-chain-2.h:6:3: warning: double-'free' of 'ptr' [CWE-415] [-Wanalyze
 
 /* Use a Python script to verify various properties about the generated
    .sarif file:
-   { dg-final { run-sarif-pytest include-chain-2.c "test-include-chain-2.py" } } */
+   { dg-final { run-sarif-pytest include-chain-2.c "include-chain-2.py" } } */

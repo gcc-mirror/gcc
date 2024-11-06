@@ -144,7 +144,7 @@ struct loop_size
      instructions after exit are not executed.  */
   int last_iteration;
   int last_iteration_eliminated_by_peeling;
-  
+
   /* If some IV computation will become constant.  */
   bool constant_iv;
 
@@ -253,7 +253,7 @@ constant_after_peeling (tree op, gimple *stmt, class loop *loop)
    iteration of the loop.
    EDGE_TO_CANCEL (if non-NULL) is an non-exit edge eliminated in the last iteration
    of loop.
-   Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT. 
+   Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT.
    Stop estimating after UPPER_BOUND is met.  Return true in this case.  */
 
 static bool
@@ -455,8 +455,8 @@ estimated_unrolled_size (struct loop_size *size,
 
 /* Loop LOOP is known to not loop.  See if there is an edge in the loop
    body that can be remove to make the loop to always exit and at
-   the same time it does not make any code potentially executed 
-   during the last iteration dead.  
+   the same time it does not make any code potentially executed
+   during the last iteration dead.
 
    After complete unrolling we still may get rid of the conditional
    on the exit in the last copy even if we have no idea what it does.
@@ -646,14 +646,14 @@ static vec<edge> edges_to_remove;
 static bitmap peeled_loops;
 
 /* Cancel all fully unrolled loops by putting __builtin_unreachable
-   on the latch edge.  
+   on the latch edge.
    We do it after all unrolling since unlooping moves basic blocks
    across loop boundaries trashing loop closed SSA form as well
-   as SCEV info needed to be intact during unrolling. 
+   as SCEV info needed to be intact during unrolling.
 
    IRRED_INVALIDATED is used to bookkeep if information about
    irreducible regions may become invalid as a result
-   of the transformation.  
+   of the transformation.
    LOOP_CLOSED_SSA_INVALIDATED is used to bookkepp the case
    when we need to go into loop closed SSA form.  */
 
@@ -736,12 +736,12 @@ try_unroll_loop_completely (class loop *loop,
 
   /* See if we proved number of iterations to be low constant.
 
-     EXIT is an edge that will be removed in all but last iteration of 
+     EXIT is an edge that will be removed in all but last iteration of
      the loop.
 
      EDGE_TO_CACNEL is an edge that will be removed from the last iteration
      of the unrolled sequence and is expected to make the final loop not
-     rolling. 
+     rolling.
 
      If the number of execution of loop is determined by standard induction
      variable test, then EXIT and EDGE_TO_CANCEL are the two edges leaving
@@ -1087,7 +1087,7 @@ adjust_loop_info_after_peeling (class loop *loop, int npeel, bool precise)
 /* If the loop is expected to iterate N times and is
    small enough, duplicate the loop body N+1 times before
    the loop itself.  This way the hot path will never
-   enter the loop.  
+   enter the loop.
    Parameters are the same as for try_unroll_loops_completely */
 
 static bool

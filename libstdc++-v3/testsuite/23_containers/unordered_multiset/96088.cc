@@ -28,9 +28,8 @@
 #include <testsuite_hooks.h>
 #include <replacement_memory_operators.h>
 
-static constexpr std::initializer_list<const char*> lst = {
-  "long_str_for_dynamic_allocating"
-};
+static constexpr std::initializer_list<const char*> lst =
+  { "long_str_for_dynamic_allocation" };
 
 void
 test01()

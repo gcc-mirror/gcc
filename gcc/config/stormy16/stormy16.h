@@ -292,7 +292,7 @@ enum reg_class
 
 /* This declaration must be present, but it can be an abort if profiling is
    not implemented.  */
-     
+
 #define FUNCTION_PROFILER(FILE, LABELNO) xstormy16_function_profiler ()
 
 

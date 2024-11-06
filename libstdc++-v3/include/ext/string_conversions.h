@@ -29,7 +29,9 @@
 #ifndef _STRING_CONVERSIONS_H
 #define _STRING_CONVERSIONS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

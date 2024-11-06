@@ -55,7 +55,7 @@ caller_float (float16_t *x0, float16_t *x1, float32_t *x2, float64_t *x3)
 		svptrue_pat_b32 (SV_VL3));
 }
 
-/* { dg-final { scan-assembler {\tmov\tz0\.[bhsd], #0\n} } } */
+/* { dg-final { scan-assembler {\tmov(\tz0\.[bhsd]|i\td0), #0\n} } } */
 /* { dg-final { scan-assembler {\tfmov\tz1\.h, #1\.0} } } */
 /* { dg-final { scan-assembler {\tfmov\tz2\.s, #2\.0} } } */
 /* { dg-final { scan-assembler {\tfmov\tz3\.d, #3\.0} } } */

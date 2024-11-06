@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_PARALLEL_NUMERICFWD_H
 #define _GLIBCXX_PARALLEL_NUMERICFWD_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <parallel/tags.h>
 #include <parallel/settings.h>
@@ -95,7 +97,7 @@ namespace __parallel
 
   template<typename _IIter, typename _OIter, typename _BinaryOper>
     _OIter
-    adjacent_difference(_IIter, _IIter, _OIter, _BinaryOper, 
+    adjacent_difference(_IIter, _IIter, _OIter, _BinaryOper,
                         __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename _OIter>
@@ -105,7 +107,7 @@ namespace __parallel
 
   template<typename _IIter, typename _OIter, typename _BinaryOper>
     _OIter
-    adjacent_difference(_IIter, _IIter, _OIter, _BinaryOper, 
+    adjacent_difference(_IIter, _IIter, _OIter, _BinaryOper,
                         __gnu_parallel::_Parallelism);
 
   template<typename _IIter, typename _OIter, typename _BinaryOper,
@@ -116,9 +118,9 @@ namespace __parallel
 
   template<typename _IIter, typename _OIter, typename _BinaryOper>
     _OIter
-    __adjacent_difference_switch(_IIter, _IIter, _OIter, _BinaryOper, 
-                               random_access_iterator_tag, 
-                               random_access_iterator_tag, 
+    __adjacent_difference_switch(_IIter, _IIter, _OIter, _BinaryOper,
+                               random_access_iterator_tag,
+                               random_access_iterator_tag,
                                __gnu_parallel::_Parallelism __parallelism
                                = __gnu_parallel::parallel_unbalanced);
 
@@ -167,7 +169,7 @@ namespace __parallel
            typename _BinaryFunction1, typename _BinaryFunction2,
            typename _Tag1, typename _Tag2>
     _Tp
-    __inner_product_switch(_IIter1, _IIter1, _IIter2, _Tp, _BinaryFunction1, 
+    __inner_product_switch(_IIter1, _IIter1, _IIter2, _Tp, _BinaryFunction1,
                          _BinaryFunction2, _Tag1, _Tag2);
 
 

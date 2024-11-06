@@ -85,7 +85,7 @@ gcov_is_error (void)
 GCOV_LINKAGE inline void
 gcov_rewrite (void)
 {
-  gcov_var.mode = -1; 
+  gcov_var.mode = -1;
   gcov_var.error = GCOV_FILE_NO_ERROR;
   fseek (gcov_var.file, 0L, SEEK_SET);
 }

@@ -1,6 +1,6 @@
 /* PR c/17023 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-old-style-definition" } */
 
 void
 f(a, b)

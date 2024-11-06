@@ -146,8 +146,8 @@ class diagnostic_event
      calls, returns, and frame nesting.  */
   virtual int get_stack_depth () const = 0;
 
-  /* Get a localized (and possibly colorized) description of this event.  */
-  virtual label_text get_desc (bool can_colorize) const = 0;
+  /* Print a localized (and possibly colorized) description of this event.  */
+  virtual void print_desc (pretty_printer &pp) const = 0;
 
   /* Get a logical_location for this event, or nullptr if there is none.  */
   virtual const logical_location *get_logical_location () const = 0;
@@ -166,6 +166,8 @@ class diagnostic_event
   maybe_add_sarif_properties (sarif_object &/*thread_flow_loc_obj*/) const
   {
   }
+
+  label_text get_desc () const;
 };
 
 /* Abstract base class representing a thread of execution within

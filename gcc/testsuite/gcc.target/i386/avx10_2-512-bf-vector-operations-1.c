@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx10.2-512 -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2-512 -O2" } */
 /* { dg-final { scan-assembler-times "vmulnepbf16\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "vaddnepbf16\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vdivnepbf16\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */

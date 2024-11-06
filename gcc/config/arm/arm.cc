@@ -76,6 +76,7 @@
 #include "opts.h"
 #include "aarch-common.h"
 #include "aarch-common-protos.h"
+#include "machmode.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -814,6 +815,9 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P arm_modes_tieable_p
+
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P arm_noce_conversion_profitable_p
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS arm_can_change_mode_class
@@ -11908,7 +11912,7 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
     case CONST_DOUBLE:
       if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT
-	  && (mode == SFmode || !TARGET_VFP_SINGLE))
+	  && (mode == SFmode || mode == HFmode || !TARGET_VFP_SINGLE))
 	{
 	  if (vfp3_const_double_rtx (x))
 	    {
@@ -11933,12 +11937,18 @@ arm_rtx_costs_internal (rtx x, enum rtx_code code, enum rtx_code outer_code,
       return true;
 
     case CONST_VECTOR:
-      /* Fixme.  */
       if (((TARGET_NEON && TARGET_HARD_FLOAT
 	    && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode)))
 	   || TARGET_HAVE_MVE)
 	  && simd_immediate_valid_for_move (x, mode, NULL, NULL))
 	*cost = COSTS_N_INSNS (1);
+      else if (TARGET_HAVE_MVE)
+	{
+	  /* 128-bit vector requires two vldr.64 on MVE.  */
+	  *cost = COSTS_N_INSNS (2);
+	  if (speed_p)
+	    *cost += extra_cost->ldst.loadd * 2;
+	}
       else
 	*cost = COSTS_N_INSNS (4);
       return true;
@@ -15358,9 +15368,9 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
   HOST_WIDE_INT srcoffset, dstoffset;
   HOST_WIDE_INT src_autoinc, dst_autoinc;
   rtx mem, addr;
-  
+
   gcc_assert (interleave_factor >= 1 && interleave_factor <= 4);
-  
+
   /* Use hard registers if we have aligned source or destination so we can use
      load/store multiple with contiguous registers.  */
   if (dst_aligned || src_aligned)
@@ -15374,7 +15384,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
   src = copy_addr_to_reg (XEXP (srcbase, 0));
 
   srcoffset = dstoffset = 0;
-  
+
   /* Calls to arm_gen_load_multiple and arm_gen_store_multiple update SRC/DST.
      For copying the last bytes we want to subtract this offset again.  */
   src_autoinc = dst_autoinc = 0;
@@ -15428,14 +15438,14 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
 
       remaining -= block_size_bytes;
     }
-  
+
   /* Copy any whole words left (note these aren't interleaved with any
      subsequent halfword/byte load/stores in the interests of simplicity).  */
-  
+
   words = remaining / UNITS_PER_WORD;
 
   gcc_assert (words < interleave_factor);
-  
+
   if (src_aligned && words > 1)
     {
       emit_insn (arm_gen_load_multiple (regnos, words, src, TRUE, srcbase,
@@ -15481,11 +15491,11 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
     }
 
   remaining -= words * UNITS_PER_WORD;
-  
+
   gcc_assert (remaining < 4);
-  
+
   /* Copy a halfword if necessary.  */
-  
+
   if (remaining >= 2)
     {
       halfword_tmp = gen_reg_rtx (SImode);
@@ -15509,11 +15519,11 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
       remaining -= 2;
       srcoffset += 2;
     }
-  
+
   gcc_assert (remaining < 2);
-  
+
   /* Copy last byte.  */
-  
+
   if ((remaining & 1) != 0)
     {
       byte_tmp = gen_reg_rtx (SImode);
@@ -15534,9 +15544,9 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
       remaining--;
       srcoffset++;
     }
-  
+
   /* Store last halfword if we haven't done so already.  */
-  
+
   if (halfword_tmp)
     {
       addr = plus_constant (Pmode, dst, dstoffset - dst_autoinc);
@@ -15555,7 +15565,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
       emit_move_insn (mem, gen_lowpart (QImode, byte_tmp));
       dstoffset++;
     }
-  
+
   gcc_assert (remaining == 0 && srcoffset == dstoffset);
 }
 
@@ -15574,7 +15584,7 @@ arm_adjust_block_mem (rtx mem, HOST_WIDE_INT length, rtx *loop_reg,
 		      rtx *loop_mem)
 {
   *loop_reg = copy_addr_to_reg (XEXP (mem, 0));
-  
+
   /* Although the new mem does not refer to a known location,
      it does keep up to LENGTH bytes of alignment.  */
   *loop_mem = change_address (mem, BLKmode, *loop_reg);
@@ -15594,14 +15604,14 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 {
   rtx src_reg, dest_reg, final_src, test;
   HOST_WIDE_INT leftover;
-  
+
   leftover = length % bytes_per_iter;
   length -= leftover;
-  
+
   /* Create registers and memory references for use within the loop.  */
   arm_adjust_block_mem (src, bytes_per_iter, &src_reg, &src);
   arm_adjust_block_mem (dest, bytes_per_iter, &dest_reg, &dest);
-  
+
   /* Calculate the value that SRC_REG should have after the last iteration of
      the loop.  */
   final_src = expand_simple_binop (Pmode, PLUS, src_reg, GEN_INT (length),
@@ -15610,7 +15620,7 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
   /* Emit the start of the loop.  */
   rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
-  
+
   /* Emit the loop body.  */
   arm_block_move_unaligned_straight (dest, src, bytes_per_iter,
 				     interleave_factor);
@@ -15618,11 +15628,11 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
   /* Move on to the next block.  */
   emit_move_insn (src_reg, plus_constant (Pmode, src_reg, bytes_per_iter));
   emit_move_insn (dest_reg, plus_constant (Pmode, dest_reg, bytes_per_iter));
-  
+
   /* Emit the loop condition.  */
   test = gen_rtx_NE (VOIDmode, src_reg, final_src);
   emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
-  
+
   /* Mop up any left-over bytes.  */
   if (leftover)
     arm_block_move_unaligned_straight (dest, src, leftover, interleave_factor);
@@ -15636,7 +15646,7 @@ static int
 arm_cpymemqi_unaligned (rtx *operands)
 {
   HOST_WIDE_INT length = INTVAL (operands[2]);
-  
+
   if (optimize_size)
     {
       bool src_aligned = MEM_ALIGN (operands[1]) >= BITS_PER_WORD;
@@ -15647,7 +15657,7 @@ arm_cpymemqi_unaligned (rtx *operands)
 	 resulting code can be smaller.  */
       unsigned int interleave_factor = (src_aligned || dst_aligned) ? 2 : 1;
       HOST_WIDE_INT bytes_per_iter = (src_aligned || dst_aligned) ? 8 : 4;
-      
+
       if (length > 12)
 	arm_block_move_unaligned_loop (operands[0], operands[1], length,
 				       interleave_factor, bytes_per_iter);
@@ -15665,7 +15675,7 @@ arm_cpymemqi_unaligned (rtx *operands)
       else
 	arm_block_move_unaligned_straight (operands[0], operands[1], length, 4);
     }
-  
+
   return 1;
 }
 
@@ -24727,11 +24737,11 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
 	    inc_val = GET_MODE_SIZE (GET_MODE (x));
 	    if (code == POST_INC || code == POST_DEC)
-	      asm_fprintf (stream, "], #%s%d",(code == POST_INC)
-					      ? "": "-", inc_val);
+	      asm_fprintf (stream, "], #%s%d", (code == POST_INC)
+					       ? "" : "-", inc_val);
 	    else
-	      asm_fprintf (stream, ", #%s%d]!",(code == PRE_INC)
-					       ? "": "-", inc_val);
+	      asm_fprintf (stream, ", #%s%d]!", (code == PRE_INC)
+						? "" : "-", inc_val);
 	  }
 	else if (code == POST_MODIFY || code == PRE_MODIFY)
 	  {
@@ -24740,9 +24750,9 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	    if (postinc_reg && CONST_INT_P (postinc_reg))
 	      {
 		if (code == POST_MODIFY)
-		  asm_fprintf (stream, "], #%wd",INTVAL (postinc_reg));
+		  asm_fprintf (stream, "], #%wd", INTVAL (postinc_reg));
 		else
-		  asm_fprintf (stream, ", #%wd]!",INTVAL (postinc_reg));
+		  asm_fprintf (stream, ", #%wd]!", INTVAL (postinc_reg));
 	      }
 	  }
 	else if (code == PLUS)
@@ -31156,10 +31166,10 @@ int
 vfp3_const_double_for_fract_bits (rtx operand)
 {
   REAL_VALUE_TYPE r0;
-  
+
   if (!CONST_DOUBLE_P (operand))
     return 0;
-  
+
   r0 = *CONST_DOUBLE_REAL_VALUE (operand);
   if (exact_real_inverse (DFmode, &r0)
       && !REAL_VALUE_NEGATIVE (r0))
@@ -32421,7 +32431,7 @@ arm_autoinc_modes_ok_p (machine_mode mode, enum arm_auto_incmodes code)
 	  else
 	    return false;
 	}
-      
+
       return true;
 
     case ARM_POST_DEC:
@@ -32438,10 +32448,10 @@ arm_autoinc_modes_ok_p (machine_mode mode, enum arm_auto_incmodes code)
 	return false;
 
       return true;
-     
+
     default:
       return false;
-      
+
     }
 
   return false;
@@ -32452,7 +32462,7 @@ arm_autoinc_modes_ok_p (machine_mode mode, enum arm_auto_incmodes code)
    Additionally, the default expansion code is not available or suitable
    for post-reload insn splits (this can occur when the register allocator
    chooses not to do a shift in NEON).
-   
+
    This function is used in both initial expand and post-reload splits, and
    handles all kinds of 64-bit shifts.
 
@@ -33522,7 +33532,7 @@ arm_asan_shadow_offset (void)
 
 /* This is a temporary fix for PR60655.  Ideally we need
    to handle most of these cases in the generic part but
-   currently we reject minus (..) (sym_ref).  We try to 
+   currently we reject minus (..) (sym_ref).  We try to
    ameliorate the case with minus (sym_ref1) (sym_ref2)
    where they are in the same section.  */
 
@@ -33845,7 +33855,7 @@ arm_valid_target_attribute_tree (tree args, struct gcc_options *opts,
   return build_target_option_node (opts, opts_set);
 }
 
-static void 
+static void
 add_attribute (const char * mode, tree *attributes)
 {
   size_t len = strlen (mode);
@@ -33876,7 +33886,7 @@ arm_insert_attributes (tree fndecl, tree * attributes)
   /* Nested definitions must inherit mode.  */
   if (current_function_decl)
    {
-     mode = TARGET_THUMB ? "thumb" : "arm";      
+     mode = TARGET_THUMB ? "thumb" : "arm";
      add_attribute (mode, attributes);
      return;
    }
@@ -35231,6 +35241,32 @@ arm_mve_dlstp_check_inc_counter (loop *loop, rtx_insn* vctp_insn,
   return vctp_insn;
 }
 
+/* Helper function to 'arm_mve_dlstp_check_dec_counter' to make sure DEC_INSN
+   is of the expected form:
+   (set (reg a) (plus (reg a) (const_int)))
+   where (reg a) is the same as CONDCOUNT.
+   Return a rtx with the set if it is in the right format or NULL_RTX
+   otherwise.  */
+
+static rtx
+check_dec_insn (rtx_insn *dec_insn, rtx condcount)
+{
+  if (!NONDEBUG_INSN_P (dec_insn))
+    return NULL_RTX;
+  rtx dec_set = single_set (dec_insn);
+  if (!dec_set
+      || !REG_P (SET_DEST (dec_set))
+      || GET_CODE (SET_SRC (dec_set)) != PLUS
+      || !REG_P (XEXP (SET_SRC (dec_set), 0))
+      || !CONST_INT_P (XEXP (SET_SRC (dec_set), 1))
+      || REGNO (SET_DEST (dec_set))
+	  != REGNO (XEXP (SET_SRC (dec_set), 0))
+      || REGNO (SET_DEST (dec_set)) != REGNO (condcount))
+    return NULL_RTX;
+
+  return dec_set;
+}
+
 /* Helper function to `arm_mve_loop_valid_for_dlstp`.  In the case of a
    counter that is decrementing, ensure that it is decrementing by the
    right amount in each iteration and that the target condition is what
@@ -35247,30 +35283,19 @@ arm_mve_dlstp_check_dec_counter (loop *loop, rtx_insn* vctp_insn,
      loop latch.  Here we simply need to verify that this counter is the same
      reg that is also used in the vctp_insn and that it is not otherwise
      modified.  */
-  rtx_insn *dec_insn = BB_END (loop->latch);
+  rtx dec_set = check_dec_insn (BB_END (loop->latch), condcount);
   /* If not in the loop latch, try to find the decrement in the loop header.  */
-  if (!NONDEBUG_INSN_P (dec_insn))
+  if (dec_set == NULL_RTX)
   {
     df_ref temp = df_bb_regno_only_def_find (loop->header, REGNO (condcount));
     /* If we haven't been able to find the decrement, bail out.  */
     if (!temp)
       return NULL;
-    dec_insn = DF_REF_INSN (temp);
+    dec_set = check_dec_insn (DF_REF_INSN (temp), condcount);
+
+    if (dec_set == NULL_RTX)
+      return NULL;
   }
-
-  rtx dec_set = single_set (dec_insn);
-
-  /* Next, ensure that it is a PLUS of the form:
-     (set (reg a) (plus (reg a) (const_int)))
-     where (reg a) is the same as condcount.  */
-  if (!dec_set
-      || !REG_P (SET_DEST (dec_set))
-      || !REG_P (XEXP (SET_SRC (dec_set), 0))
-      || !CONST_INT_P (XEXP (SET_SRC (dec_set), 1))
-      || REGNO (SET_DEST (dec_set))
-	  != REGNO (XEXP (SET_SRC (dec_set), 0))
-      || REGNO (SET_DEST (dec_set)) != REGNO (condcount))
-    return NULL;
 
   decrementnum = INTVAL (XEXP (SET_SRC (dec_set), 1));
 
@@ -36074,6 +36099,90 @@ arm_get_mask_mode (machine_mode mode)
   return default_get_mask_mode (mode);
 }
 
+/* Helper function to determine whether SEQ represents a sequence of
+   instructions representing the Armv8.1-M Mainline conditional arithmetic
+   instructions: csinc, csneg and csinv. The cinc instruction is generated
+   using a different mechanism.  */
+
+static bool
+arm_is_v81m_cond_insn (rtx_insn *seq)
+{
+  rtx_insn *curr_insn = seq;
+  rtx set = NULL_RTX;
+  /* The pattern may start with a simple set with register operands.  Skip
+     through any of those.  */
+  while (curr_insn)
+    {
+      set = single_set (curr_insn);
+      if (!set
+	  || !REG_P (SET_DEST (set)))
+	return false;
+
+      if (!REG_P (SET_SRC (set)))
+	break;
+      curr_insn = NEXT_INSN (curr_insn);
+    }
+
+  if (!set)
+    return false;
+
+  /* The next instruction should be one of:
+     NEG: for csneg,
+     PLUS: for csinc,
+     NOT: for csinv.  */
+  if (GET_CODE (SET_SRC (set)) != NEG
+      && GET_CODE (SET_SRC (set)) != PLUS
+      && GET_CODE (SET_SRC (set)) != NOT)
+    return false;
+
+  curr_insn = NEXT_INSN (curr_insn);
+  if (!curr_insn)
+    return false;
+
+  /* The next instruction should be a COMPARE.  */
+  set = single_set (curr_insn);
+  if (!set
+      || !REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != COMPARE)
+    return false;
+
+  curr_insn = NEXT_INSN (curr_insn);
+  if (!curr_insn)
+    return false;
+
+  /* And the last instruction should be an IF_THEN_ELSE.  */
+  set = single_set (curr_insn);
+  if (!set
+      || !REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+    return false;
+
+  return !NEXT_INSN (curr_insn);
+}
+
+/* For Armv8.1-M Mainline we have both conditional execution through IT blocks,
+   as well as conditional arithmetic instructions controlled by
+   TARGET_COND_ARITH.  To generate the latter we rely on a special part of the
+   "ce" pass that generates code for targets that don't support conditional
+   execution of general instructions known as "noce".  These transformations
+   happen before 'reload_completed'.  However, "noce" also triggers for some
+   unwanted patterns [PR 116444] that prevent "ce" optimisations after reload.
+   To make sure we can get both we use the TARGET_NOCE_CONVERSION_PROFITABLE_P
+   hook to only allow "noce" to generate the patterns that are profitable.  */
+
+bool
+arm_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *)
+{
+  if (!TARGET_COND_ARITH
+      || reload_completed)
+    return true;
+
+  if (arm_is_v81m_cond_insn (seq))
+    return true;
+
+  return false;
+}
+
 /* Output assembly to read the thread pointer from the appropriate TPIDR
    register into DEST.  If PRED_P also emit the %? that can be used to
    output the predication code.  */
@@ -36102,6 +36211,20 @@ arm_output_load_tpidr (rtx dst, bool pred_p)
 	    pred_p ? "%?" : "", tpidr_coproc_num);
   output_asm_insn (buf, &dst);
   return "";
+}
+
+/* Return the MVE vector mode that has NUNITS elements of mode INNER_MODE.  */
+opt_machine_mode
+arm_mve_data_mode (scalar_mode inner_mode, poly_uint64 nunits)
+{
+  enum mode_class mclass
+    = (SCALAR_FLOAT_MODE_P (inner_mode) ? MODE_VECTOR_FLOAT : MODE_VECTOR_INT);
+  machine_mode mode;
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
+    if (inner_mode == GET_MODE_INNER (mode)
+	&& known_eq (nunits, GET_MODE_NUNITS (mode)))
+      return mode;
+  return opt_machine_mode ();
 }
 
 #include "gt-arm.h"

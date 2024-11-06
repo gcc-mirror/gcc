@@ -59,7 +59,7 @@ extern void darwin_set_default_type_attributes (tree);
 extern int machopic_reloc_rw_mask (void);
 extern section *machopic_select_section (tree, int, unsigned HOST_WIDE_INT);
 
-extern section *darwin_function_section (tree, enum node_frequency, bool, bool); 
+extern section *darwin_function_section (tree, enum node_frequency, bool, bool);
 extern section *darwin_tm_clone_table_section (void);
 extern void darwin_function_switched_text_sections (FILE *, tree, bool);
 
@@ -105,11 +105,11 @@ extern void darwin_asm_declare_constant_name (FILE *, const char *,
 extern void darwin_output_aligned_bss (FILE *, tree, const char *,
 				       unsigned HOST_WIDE_INT, unsigned int);
 
-extern void darwin_asm_output_aligned_decl_local (FILE *, tree, const char *, 
-						  unsigned HOST_WIDE_INT, 
+extern void darwin_asm_output_aligned_decl_local (FILE *, tree, const char *,
+						  unsigned HOST_WIDE_INT,
 						  unsigned int);
 extern void darwin_asm_output_aligned_decl_common (FILE *, tree, const char *,
-						   unsigned HOST_WIDE_INT, 
+						   unsigned HOST_WIDE_INT,
 						   unsigned int);
 
 extern bool darwin_binds_local_p (const_tree);

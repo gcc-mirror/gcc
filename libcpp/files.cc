@@ -278,7 +278,7 @@ open_file (_cpp_file *file)
 	/* The call to stat may have reset errno.  */
 	errno = EACCES;
     }
-#endif    
+#endif
   else if (errno == ENOTDIR)
     errno = ENOENT;
 
@@ -375,7 +375,7 @@ maybe_shorter_path (const char * file)
     {
       return file2;
     }
-  else 
+  else
     {
       free (file2);
       return NULL;
@@ -461,7 +461,7 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch,
     }
   else
     {
-      file->err_no = ENOENT; 
+      file->err_no = ENOENT;
       file->path = NULL;
     }
 
@@ -530,7 +530,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 
   /* Ensure we get no confusion between cached files and directories.  */
   if (start_dir == NULL)
-    cpp_error_at (pfile, CPP_DL_ICE, loc, "NULL directory in find_file");
+    cpp_error_at (pfile, CPP_DL_ICE, loc, "NULL directory in %<find_file%>");
 
   void **hash_slot
     = htab_find_slot_with_hash (pfile->file_hash, fname,
@@ -607,7 +607,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir,
 			   " but they were invalid");
 		if (!cpp_get_options (pfile)->warn_invalid_pch)
 		  cpp_error (pfile, CPP_DL_NOTE,
-			     "use -Winvalid-pch for more information");
+			     "use %<-Winvalid-pch%> for more information");
 	      }
 
 	    if (kind == _cpp_FFK_PRE_INCLUDE)
@@ -1239,15 +1239,19 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
   if (params->limit < limit)
     limit = params->limit;
 
-  /* For sizes larger than say 64 bytes, this is just a temporary
-     solution, we should emit a single new token which the FEs will
-     handle as an optimization.  */
+  size_t embed_tokens = 0;
+  if (!CPP_OPTION (pfile, cplusplus)
+      && CPP_OPTION (pfile, lang) != CLK_ASM
+      && limit >= 64)
+    embed_tokens = ((limit - 2) / INT_MAX) + (((limit - 2) % INT_MAX) != 0);
+
   size_t max = INTTYPE_MAXIMUM (size_t) / sizeof (cpp_token);
-  if (limit > max / 2
+  if ((embed_tokens ? (embed_tokens > (max - 3) / 2) : (limit > max / 2))
       || (limit
 	  ? (params->prefix.count > max
 	     || params->suffix.count > max
-	     || (limit * 2 - 1 + params->prefix.count
+	     || ((embed_tokens ? embed_tokens * 2 + 3 : limit * 2 - 1)
+		 + params->prefix.count
 		 + params->suffix.count > max))
 	  : params->if_empty.count > max))
     {
@@ -1281,13 +1285,16 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
 			"%s is too large", file->path);
 	  return 0;
 	}
+      if (embed_tokens && i == 0)
+	i = limit - 2;
     }
   uchar *s = len ? _cpp_unaligned_alloc (pfile, len) : NULL;
   _cpp_buff *tok_buff = NULL;
   cpp_token *tok = &pfile->directive_result, *toks = tok;
   size_t count = 0;
   if (limit)
-    count = (params->prefix.count + limit * 2 - 1
+    count = (params->prefix.count
+	     + (embed_tokens ? embed_tokens * 2 + 3 : limit * 2 - 1)
 	     + params->suffix.count) - 1;
   else if (params->if_empty.count)
     count = params->if_empty.count - 1;
@@ -1338,6 +1345,34 @@ finish_embed (cpp_reader *pfile, _cpp_file *file,
 	  tok->type = CPP_COMMA;
 	  tok->flags = NO_EXPAND;
 	  tok++;
+	}
+      if (i == 0 && embed_tokens)
+	{
+	  ++i;
+	  for (size_t j = 0; j < embed_tokens; ++j)
+	    {
+	      tok->src_loc = params->loc;
+	      tok->type = CPP_EMBED;
+	      tok->flags = NO_EXPAND;
+	      tok->val.str.text = &buffer[i];
+	      tok->val.str.len
+		= limit - 1 - i > INT_MAX ? INT_MAX : limit - 1 - i;
+	      i += tok->val.str.len;
+	      if (tok->val.str.len < 32 && j)
+		{
+		  /* Avoid CPP_EMBED with a fewer than 32 bytes, shrink the
+		     previous CPP_EMBED by 64 and grow this one by 64.  */
+		  tok[-2].val.str.len -= 64;
+		  tok->val.str.text -= 64;
+		  tok->val.str.len += 64;
+		}
+	      tok++;
+	      tok->src_loc = params->loc;
+	      tok->type = CPP_COMMA;
+	      tok->flags = NO_EXPAND;
+	      tok++;
+	    }
+	  --i;
 	}
     }
   if (limit && params->suffix.count)
@@ -1415,7 +1450,8 @@ finish_base64_embed (cpp_reader *pfile, const char *fname, bool angle,
     {
       if (!params->has_embed)
 	cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
-		      "'gnu::base64' parameter can be only used with \".\"");
+		      "%<gnu::base64%> parameter can be only used with "
+		      "%<\".\"%>");
       return 0;
     }
   tokenrun *cur_run = &params->base64.base_run;
@@ -1431,7 +1467,7 @@ finish_base64_embed (cpp_reader *pfile, const char *fname, bool angle,
 	    {
 	    fail:
 	      cpp_error_at (pfile, CPP_DL_ERROR, params->loc,
-			    "'gnu::base64' argument not valid base64 "
+			    "%<gnu::base64%> argument not valid base64 "
 			    "encoded string");
 	      free (buf);
 	      return 0;
@@ -2253,7 +2289,26 @@ _cpp_pop_file_buffer (cpp_reader *pfile, _cpp_file *file,
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
   if (pfile->mi_valid && file->cmacro == NULL)
-    file->cmacro = pfile->mi_cmacro;
+    {
+      file->cmacro = pfile->mi_cmacro;
+      if (pfile->mi_cmacro
+	  && pfile->mi_def_cmacro
+	  && pfile->cb.get_suggestion)
+	{
+	  auto mi_cmacro = (const char *) NODE_NAME (pfile->mi_cmacro);
+	  auto mi_def_cmacro = (const char *) NODE_NAME (pfile->mi_def_cmacro);
+	  const char *names[] = { mi_def_cmacro, NULL };
+	  if (pfile->cb.get_suggestion (pfile, mi_cmacro, names)
+	      && cpp_warning_with_line (pfile, CPP_W_HEADER_GUARD,
+					pfile->mi_loc, 0,
+					"header guard %qs followed by "
+					"%<#define%> of a different macro",
+					mi_cmacro))
+	    cpp_error_at (pfile, CPP_DL_NOTE, pfile->mi_def_loc,
+			  "%qs is defined here; did you mean %qs?",
+			  mi_def_cmacro, mi_cmacro);
+	}
+    }
 
   /* Invalidate control macros in the #including file.  */
   pfile->mi_valid = false;

@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_ATOMIC_FUTEX_H
 #define _GLIBCXX_ATOMIC_FUTEX_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <atomic>
 #if ! (defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1)

@@ -340,7 +340,7 @@ ipa_comdats (void)
   FOR_EACH_DEFINED_SYMBOL (symbol)
     {
       struct cgraph_node *fun;
-      symbol->aux = NULL; 
+      symbol->aux = NULL;
       if (!symbol->get_comdat_group ()
 	  && !symbol->alias
 	  && (!(fun = dyn_cast <cgraph_node *> (symbol))

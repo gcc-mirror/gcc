@@ -21,7 +21,7 @@ extern "C" {
 void
 foo (int16_t *addr, int16x8x4_t value)
 {
-  return vst4q_s16 (addr, value);
+  vst4q_s16 (addr, value);
 }
 
 
@@ -37,7 +37,7 @@ foo (int16_t *addr, int16x8x4_t value)
 void
 foo1 (int16_t *addr, int16x8x4_t value)
 {
-  return vst4q (addr, value);
+  vst4q (addr, value);
 }
 
 #ifdef __cplusplus

@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -636,6 +637,19 @@ streamer_alloc_tree (class lto_input_block *ib, class data_in *data_in,
 	= (enum omp_clause_code) streamer_read_uhwi (ib);
       return build_omp_clause (UNKNOWN_LOCATION, subcode);
     }
+  else if (code == RAW_DATA_CST)
+    {
+      unsigned HOST_WIDE_INT len = streamer_read_uhwi (ib);
+      if (len == 0)
+	result = streamer_read_string_cst (data_in, ib);
+      else
+	{
+	  unsigned HOST_WIDE_INT off = streamer_read_uhwi (ib);
+	  result = make_node (code);
+	  RAW_DATA_LENGTH (result) = len;
+	  RAW_DATA_POINTER (result) = (const char *) (uintptr_t) off;
+	}
+    }
   else
     {
       /* For all other nodes, materialize the tree with a raw
@@ -1048,6 +1062,22 @@ lto_input_ts_constructor_tree_pointers (class lto_input_block *ib,
 }
 
 
+/* Read all pointer fields in the TS_RAW_DATA_CST structure of EXPR from
+   input block IB.  DATA_IN contains tables and descriptors for the
+   file being read.  */
+
+static void
+lto_input_ts_raw_data_cst_tree_pointers (class lto_input_block *ib,
+					 class data_in *data_in, tree expr)
+{
+  RAW_DATA_OWNER (expr) = stream_read_tree_ref (ib, data_in);
+  gcc_checking_assert (RAW_DATA_OWNER (expr)
+		       && TREE_CODE (RAW_DATA_OWNER (expr)) == STRING_CST);
+  RAW_DATA_POINTER (expr) = (TREE_STRING_POINTER (RAW_DATA_OWNER (expr))
+			     + (uintptr_t) RAW_DATA_POINTER (expr));
+}
+
+
 /* Read all pointer fields in the TS_OMP_CLAUSE structure of EXPR from
    input block IB.  DATA_IN contains tables and descriptors for the
    file being read.  */
@@ -1128,6 +1158,9 @@ streamer_read_tree_body (class lto_input_block *ib, class data_in *data_in,
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     lto_input_ts_constructor_tree_pointers (ib, data_in, expr);
+
+  if (code == RAW_DATA_CST)
+    lto_input_ts_raw_data_cst_tree_pointers (ib, data_in, expr);
 
   if (code == OMP_CLAUSE)
     lto_input_ts_omp_clause_tree_pointers (ib, data_in, expr);

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/svalue.h"
 #include "analyzer/program-state.h"
 #include "analyzer/pending-diagnostic.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -77,13 +78,13 @@ state_machine::state::dump_to_pp (pretty_printer *pp) const
 
 /* Return a new json::string describing the state.  */
 
-json::value *
+std::unique_ptr<json::value>
 state_machine::state::to_json () const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   dump_to_pp (&pp);
-  return new json::string (pp_formatted_text (&pp));
+  return ::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* class state_machine.  */
@@ -151,19 +152,19 @@ state_machine::dump_to_pp (pretty_printer *pp) const
    {"name" : str,
     "states" : [str]}.  */
 
-json::object *
+std::unique_ptr<json::object>
 state_machine::to_json () const
 {
-  json::object *sm_obj = new json::object ();
+  auto sm_obj = ::make_unique<json::object> ();
 
   sm_obj->set_string ("name", m_name);
   {
-    json::array *states_arr = new json::array ();
+    auto states_arr = ::make_unique<json::array> ();
     unsigned i;
     state *s;
     FOR_EACH_VEC_ELT (m_states, i, s)
       states_arr->append (s->to_json ());
-    sm_obj->set ("states", states_arr);
+    sm_obj->set ("states", std::move (states_arr));
   }
 
   return sm_obj;

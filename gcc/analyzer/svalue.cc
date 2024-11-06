@@ -104,11 +104,11 @@ svalue::get_desc (bool simple) const
 
 /* Return a new json::string describing the svalue.  */
 
-json::value *
+std::unique_ptr<json::value>
 svalue::to_json () const
 {
   label_text desc = get_desc (true);
-  json::value *sval_js = new json::string (desc.get ());
+  auto sval_js = ::make_unique<json::string> (desc.get ());
   return sval_js;
 }
 

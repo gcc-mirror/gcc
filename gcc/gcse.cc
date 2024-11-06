@@ -1798,7 +1798,7 @@ prune_expressions (bool pre_p)
    make the existing occurrences of expressions fully redundant.  This
    routine examines the set of insertions and deletions and if the ratio
    of insertions to deletions is too high for a particular expression, then
-   the expression is removed from the insertion/deletion sets. 
+   the expression is removed from the insertion/deletion sets.
 
    N_ELEMS is the number of elements in the hash table.  */
 
@@ -2407,7 +2407,7 @@ single_set_gcse (rtx_insn *insn)
 {
   struct set_data s;
   rtx pattern;
-  
+
   gcc_assert (INSN_P (insn));
 
   /* Optimize common case.  */
@@ -2808,10 +2808,10 @@ compute_code_hoist_data (void)
    instruction FROM, if live ranges of inputs are shrunk.  Also
    maintain live_in information if live range of register referred
    in FROM is shrunk.
-   
+
    Return 0 if register pressure doesn't change, otherwise return
    the number by which register pressure is decreased.
-   
+
    NOTE: Register pressure won't be increased in this function.  */
 
 static int
@@ -3979,7 +3979,7 @@ gcse_or_cprop_is_too_expensive (const char *pass)
   unsigned HOST_WIDE_INT memory_request
     = ((unsigned HOST_WIDE_INT)n_basic_blocks_for_fn (cfun)
        * SBITMAP_SET_SIZE (max_reg_num ()) * sizeof (SBITMAP_ELT_TYPE));
-  
+
   /* Trying to perform global optimizations on flow graphs which have
      a high connectivity will take a long time and is unlikely to be
      particularly useful.

@@ -34,7 +34,9 @@
 #ifndef _BASIC_STRING_H
 #define _BASIC_STRING_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <ext/alloc_traits.h>
 #include <debug/debug.h>
@@ -1226,7 +1228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { _M_set_length(0); }
 
       /**
-       *  Returns true if the %string is empty.  Equivalent to 
+       *  Returns true if the %string is empty.  Equivalent to
        *  <code>*this == ""</code>.
        */
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
@@ -1730,18 +1732,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	basic_string&
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-#if __cplusplus >= 202002L
-	  if constexpr (contiguous_iterator<_InputIterator>
-			  && is_same_v<iter_value_t<_InputIterator>, _CharT>)
-#else
-	  if constexpr (__is_one_of<_InputIterator, const_iterator, iterator,
-				    const _CharT*, _CharT*>::value)
-#endif
+	  using _IterTraits = iterator_traits<_InputIterator>;
+	  if constexpr (is_pointer<decltype(std::__niter_base(__first))>::value
+			  && is_same<typename _IterTraits::value_type,
+				     _CharT>::value)
 	    {
 	      __glibcxx_requires_valid_range(__first, __last);
 	      return _M_replace(size_type(0), size(),
-				std::__to_address(__first), __last - __first);
+				std::__niter_base(__first), __last - __first);
 	    }
+#if __cplusplus >= 202002L
+	  else if constexpr (contiguous_iterator<_InputIterator>
+			       && is_same_v<iter_value_t<_InputIterator>,
+					    _CharT>)
+	    {
+	      __glibcxx_requires_valid_range(__first, __last);
+	      return _M_replace(size_type(0), size(),
+				std::to_address(__first), __last - __first);
+	    }
+#endif
 	  else
 	    return *this = basic_string(__first, __last, get_allocator());
 	}
@@ -3745,6 +3754,54 @@ _GLIBCXX_END_NAMESPACE_CXX11
     { return std::move(__lhs.append(1, __rhs)); }
 #endif
 
+#if __glibcxx_string_view >= 202403L
+  // const string & + string_view
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+	       type_identity_t<basic_string_view<_CharT, _Traits>> __rhs)
+    {
+      using _Str = basic_string<_CharT, _Traits, _Alloc>;
+      return std::__str_concat<_Str>(__lhs.data(), __lhs.size(),
+				      __rhs.data(), __rhs.size(),
+				      __lhs.get_allocator());
+    }
+
+  // string && + string_view
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	       type_identity_t<basic_string_view<_CharT, _Traits>> __rhs)
+    {
+      return std::move(__lhs.append(__rhs));
+    }
+
+  // string_view + const string &
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(type_identity_t<basic_string_view<_CharT, _Traits>> __lhs,
+	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    {
+      using _Str = basic_string<_CharT, _Traits, _Alloc>;
+      return std::__str_concat<_Str>(__lhs.data(), __lhs.size(),
+				      __rhs.data(), __rhs.size(),
+				      __rhs.get_allocator());
+    }
+
+  // string_view + string &&
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    [[nodiscard]]
+    constexpr basic_string<_CharT, _Traits, _Alloc>
+    operator+(type_identity_t<basic_string_view<_CharT, _Traits>> __lhs,
+	       basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    {
+      return std::move(__rhs.insert(0, __lhs));
+    }
+#endif
+
   // operator ==
   /**
    *  @brief  Test equivalence of two strings.
@@ -4147,7 +4204,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
     basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>& __in, basic_string<wchar_t>& __str,
 	    wchar_t __delim);
-#endif  
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -4397,13 +4454,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return __str;
   }
 #elif _GLIBCXX_USE_C99_STDIO
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
   // NB: (v)snprintf vs sprintf.
 
   _GLIBCXX_NODISCARD
   inline string
   to_string(float __val)
   {
-    const int __n = 
+    const int __n =
       __gnu_cxx::__numeric_traits<float>::__max_exponent10 + 20;
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%f", __val);
@@ -4413,7 +4472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline string
   to_string(double __val)
   {
-    const int __n = 
+    const int __n =
       __gnu_cxx::__numeric_traits<double>::__max_exponent10 + 20;
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%f", __val);
@@ -4423,20 +4482,21 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline string
   to_string(long double __val)
   {
-    const int __n = 
+    const int __n =
       __gnu_cxx::__numeric_traits<long double>::__max_exponent10 + 20;
     return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
 					   "%Lf", __val);
   }
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_USE_C99_STDIO
 
 #if defined(_GLIBCXX_USE_WCHAR_T) && _GLIBCXX_USE_C99_WCHAR
-  inline int 
+  inline int
   stoi(const wstring& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa<long, int>(&std::wcstol, "stoi", __str.c_str(),
 					__idx, __base); }
 
-  inline long 
+  inline long
   stol(const wstring& __str, size_t* __idx = 0, int __base = 10)
   { return __gnu_cxx::__stoa(&std::wcstol, "stol", __str.c_str(),
 			     __idx, __base); }

@@ -3621,7 +3621,7 @@ static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, c
   j = 0;
   while ((((i < HighSrc) && (src[i] != ASCII_nul)) && (j < HighDest)) && (src[i] != '%'))
     {
-      dest[j] = src[i];
+      const_cast<char *>(dest)[j] = src[i];
       i += 1;
       j += 1;
     }
@@ -3630,7 +3630,7 @@ static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, c
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (src[i+1] == 's')
         {
-          dest[j] = ASCII_nul;
+          const_cast<char *>(dest)[j] = ASCII_nul;
           NameKey_GetKey (n, (char *) &str.array[0], MaxString);
           StrLib_StrConCat ((const char *) dest, _dest_high, (const char *) &str.array[0], MaxString, (char *) dest, _dest_high);
           j = StrLib_StrLen ((const char *) dest, _dest_high);
@@ -3639,7 +3639,7 @@ static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, c
       else if (src[i+1] == 'd')
         {
           /* avoid dangling else.  */
-          dest[j] = ASCII_nul;
+          const_cast<char *>(dest)[j] = ASCII_nul;
           NumberIO_CardToStr (n, 0, (char *) &str.array[0], MaxString);
           StrLib_StrConCat ((const char *) dest, _dest_high, (const char *) &str.array[0], MaxString, (char *) dest, _dest_high);
           j = StrLib_StrLen ((const char *) dest, _dest_high);
@@ -3648,7 +3648,7 @@ static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, c
       else
         {
           /* avoid dangling else.  */
-          dest[j] = src[i];
+          const_cast<char *>(dest)[j] = src[i];
           i += 1;
           j += 1;
         }
@@ -3656,13 +3656,13 @@ static void Format1 (const char *src_, unsigned int _src_high, unsigned int n, c
   /* and finish off copying src into dest  */
   while (((i < HighSrc) && (src[i] != ASCII_nul)) && (j < HighDest))
     {
-      dest[j] = src[i];
+      const_cast<char *>(dest)[j] = src[i];
       i += 1;
       j += 1;
     }
   if (j < HighDest)
     {
-      dest[j] = ASCII_nul;
+      const_cast<char *>(dest)[j] = ASCII_nul;
     }
 }
 
@@ -7490,9 +7490,9 @@ static bool FindStr (pge_CodeHunk *code, unsigned int *i, const char *str_, unsi
   /* make a local copy of each unbounded array.  */
   memcpy (str, str_, _str_high+1);
 
-  j = StrLib_StrLen ((const char *) str, _str_high);
   t = (*code);
   k = (StrLib_StrLen ((const char *) &(*code)->codetext.array[0], MaxCodeHunkLength))+1;
+  j = StrLib_StrLen ((const char *) str, _str_high);
   while (t != NULL)
     {
       do {
@@ -7804,7 +7804,7 @@ static void OrSet (pge_SetDesc *to, pge_SetDesc from)
 
 
           default:
-            Debug_Halt ((const char *) "unknown element in enumeration type", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "OrSet", 5, 4133);
+            Debug_Halt ((const char *) "unknown element in enumeration type", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "OrSet", 5, 4134);
             break;
         }
       from = from->next;

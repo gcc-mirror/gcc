@@ -68,7 +68,7 @@ __do_catch (const type_info *thr_type,
   if (typeid (*this) != typeid (*thr_type))
     return false;     // not both same kind of pointers
 #endif
-  
+
   if (!(outer & 1))
     // We're not the same and our outer pointers are not all const qualified
     // Therefore there must at least be a qualification conversion involved
@@ -94,14 +94,14 @@ __do_catch (const type_info *thr_type,
   if (catch_fqual & ~throw_fqual)
     /* But not the reverse.  */
     return false;
-  
+
   if (tflags & ~__flags)
     // We're less qualified.
     return false;
-  
+
   if (!(__flags & __const_mask))
     outer &= ~1;
-  
+
   return __pointer_catch (thrown_type, thr_obj, outer);
 }
 

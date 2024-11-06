@@ -55,7 +55,9 @@
 #ifndef _GLIBCXX_UTILITY
 #define _GLIBCXX_UTILITY 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 /**
  * @defgroup utilities Utilities

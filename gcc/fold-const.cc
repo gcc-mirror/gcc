@@ -263,7 +263,7 @@ div_if_zero_remainder (const_tree arg1, const_tree arg2)
 			 SIGNED, &quo))
     return wide_int_to_tree (TREE_TYPE (arg1), quo);
 
-  return NULL_TREE; 
+  return NULL_TREE;
 }
 
 /* This is nonzero if we should defer warnings about undefined
@@ -2343,7 +2343,7 @@ fold_convert_const_real_from_real (tree type, const_tree arg1)
      and the operand is a signaling NaN.  */
   if (HONOR_SNANS (arg1)
       && REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg1)))
-    return NULL_TREE; 
+    return NULL_TREE;
 
   /* With flag_rounding_math we should respect the current rounding mode
      unless the conversion is exact.  */
@@ -3360,8 +3360,14 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
       case STRING_CST:
 	return (TREE_STRING_LENGTH (arg0) == TREE_STRING_LENGTH (arg1)
 		&& ! memcmp (TREE_STRING_POINTER (arg0),
-			      TREE_STRING_POINTER (arg1),
-			      TREE_STRING_LENGTH (arg0)));
+			     TREE_STRING_POINTER (arg1),
+			     TREE_STRING_LENGTH (arg0)));
+
+      case RAW_DATA_CST:
+	return (RAW_DATA_LENGTH (arg0) == RAW_DATA_LENGTH (arg1)
+		&& ! memcmp (RAW_DATA_POINTER (arg0),
+			     RAW_DATA_POINTER (arg1),
+			     RAW_DATA_LENGTH (arg0)));
 
       case ADDR_EXPR:
 	gcc_checking_assert (!(flags & OEP_ADDRESS_OF));
@@ -3849,10 +3855,10 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		     Double check this so we won't get false
 		     positives for GENERIC.  */
 		  || (c0->index
-		      && (TREE_CODE (c0->index) != INTEGER_CST 
+		      && (TREE_CODE (c0->index) != INTEGER_CST
 			  || compare_tree_int (c0->index, i)))
 		  || (c1->index
-		      && (TREE_CODE (c1->index) != INTEGER_CST 
+		      && (TREE_CODE (c1->index) != INTEGER_CST
 			  || compare_tree_int (c1->index, i))))
 		return false;
 	    }
@@ -3959,6 +3965,10 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
     case STRING_CST:
       hstate.add ((const void *) TREE_STRING_POINTER (t),
 		  TREE_STRING_LENGTH (t));
+      return;
+    case RAW_DATA_CST:
+      hstate.add ((const void *) RAW_DATA_POINTER (t),
+		  RAW_DATA_LENGTH (t));
       return;
     case COMPLEX_CST:
       hash_operand (TREE_REALPART (t), hstate, flags);
@@ -4310,7 +4320,7 @@ operand_equal_for_comparison_p (tree arg0, tree arg1)
    two different values, which will be stored in *CVAL1 and *CVAL2; if
    they are nonzero it means that some operands have already been found.
    No variables may be used anywhere else in the expression except in the
-   comparisons.  
+   comparisons.
 
    If this is true, return 1.  Otherwise, return zero.  */
 
@@ -6440,7 +6450,7 @@ unextend (tree c, int p, int unsignedp, tree mask)
      A || ~B
    or
      A && ~B
-   LOC is the location of the resulting expression.  OP is the inner 
+   LOC is the location of the resulting expression.  OP is the inner
    logical operation; the left-hand side in the examples above, while CMPOP
    is the right-hand side.  RHS_ONLY is used to prevent us from accidentally
    removing a condition that guards another, as in
@@ -7989,7 +7999,7 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 
   if (NULL_TREE == i_type || TYPE_PRECISION (i_type) != total_bytes)
     return 0;
-  
+
   value = TREE_FIXED_CST (expr);
   i_value = double_int_to_tree (i_type, value.data);
 
@@ -8463,6 +8473,48 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		}
 
 	      curpos = pos;
+	      if (val && TREE_CODE (val) == RAW_DATA_CST)
+		{
+		  if (count)
+		    return 0;
+		  if (off == -1
+		      || (curpos >= off
+			  && (curpos + RAW_DATA_LENGTH (val)
+			      <= (HOST_WIDE_INT) off + len)))
+		    {
+		      if (ptr)
+			memcpy (ptr + (curpos - o), RAW_DATA_POINTER (val),
+				RAW_DATA_LENGTH (val));
+		      if (mask)
+			memset (mask + curpos, 0, RAW_DATA_LENGTH (val));
+		    }
+		  else if (curpos + RAW_DATA_LENGTH (val) > off
+			   && curpos < (HOST_WIDE_INT) off + len)
+		    {
+		      /* Partial overlap.  */
+		      unsigned char *p = NULL;
+		      int no = 0;
+		      int l;
+		      gcc_assert (mask == NULL);
+		      if (curpos >= off)
+			{
+			  if (ptr)
+			    p = ptr + curpos - off;
+			  l = MIN ((HOST_WIDE_INT) off + len - curpos,
+				   RAW_DATA_LENGTH (val));
+			}
+		      else
+			{
+			  p = ptr;
+			  no = off - curpos;
+			  l = len;
+			}
+		      if (p)
+			memcpy (p, RAW_DATA_POINTER (val) + no, l);
+		    }
+		  curpos += RAW_DATA_LENGTH (val);
+		  val = NULL_TREE;
+		}
 	      if (val)
 		do
 		  {
@@ -10086,7 +10138,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	     side-effects.  */
 	  && simple_condition_p (TREE_OPERAND (arg1, 0)))
 	{
-	  tem = fold_build2_loc (loc, ncode, type, 
+	  tem = fold_build2_loc (loc, ncode, type,
 				 arg0, TREE_OPERAND (arg1, 0));
 	  return fold_build2_loc (loc, icode, type, tem,
 				  TREE_OPERAND (arg1, 1));
@@ -12338,7 +12390,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
     case TRUNC_DIV_EXPR:
       /* Fall through */
-      
+
     case FLOOR_DIV_EXPR:
       /* Simplify A / (B << N) where A and B are positive and B is
 	 a power of 2, to A >> (N + log2(B)).  */
@@ -12599,10 +12651,10 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
 	  l0 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
 	  l1 = fold_convert_loc (loc, type, TREE_OPERAND (arg0, 1));
-	  
+
 	  n0 = fold_build1_loc (loc, TRUTH_NOT_EXPR, type, l0);
 	  n1 = fold_build1_loc (loc, TRUTH_NOT_EXPR, type, l1);
-	  
+
 	  if ((operand_equal_p (n0, a0, 0)
 	       && operand_equal_p (n1, a1, 0))
 	      || (operand_equal_p (n0, a1, 0)
@@ -13712,6 +13764,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	{
 	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (op2);
 	  unsigned bitsize = TYPE_PRECISION (TREE_TYPE (arg1));
+	  if (BYTES_BIG_ENDIAN)
+	    bitpos = TYPE_PRECISION (type) - bitpos - bitsize;
 	  wide_int tem = (wi::to_wide (arg0)
 			  & wi::shifted_mask (bitpos, bitsize, true,
 					      TYPE_PRECISION (type)));
@@ -13838,6 +13892,9 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index,
       else
 	first_p = false;
 
+      if (TREE_CODE (cval) == RAW_DATA_CST)
+	max_index += RAW_DATA_LENGTH (cval) - 1;
+
       /* Do we have match?  */
       if (wi::cmp (access_index, index, index_sgn) >= 0)
 	{
@@ -13937,10 +13994,26 @@ fold (tree expr)
 	    && TREE_CODE (op0) == CONSTRUCTOR
 	    && ! type_contains_placeholder_p (TREE_TYPE (op0)))
 	  {
-	    tree val = get_array_ctor_element_at_index (op0,
-							wi::to_offset (op1));
+	    unsigned int idx;
+	    tree val
+	      = get_array_ctor_element_at_index (op0, wi::to_offset (op1),
+						 &idx);
 	    if (val)
-	      return val;
+	      {
+		if (TREE_CODE (val) != RAW_DATA_CST)
+		  return val;
+		if (CONSTRUCTOR_ELT (op0, idx)->index == NULL_TREE
+		    || (TREE_CODE (CONSTRUCTOR_ELT (op0, idx)->index)
+			!= INTEGER_CST))
+		  return t;
+		offset_int o
+		  = (wi::to_offset (op1)
+		     - wi::to_offset (CONSTRUCTOR_ELT (op0, idx)->index));
+		gcc_checking_assert (o < RAW_DATA_LENGTH (val));
+		return build_int_cst (TREE_TYPE (val),
+				      ((const unsigned char *)
+				       RAW_DATA_POINTER (val))[o.to_uhwi ()]);
+	      }
 	  }
 
 	return t;

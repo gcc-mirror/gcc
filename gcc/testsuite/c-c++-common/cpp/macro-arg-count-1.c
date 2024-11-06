@@ -4,7 +4,7 @@
 void test_1 ()
 {
   MACRO_1(42); /* { dg-line "use_of_MACRO_1" } */
-  /* { dg-error "macro \"MACRO_1\" requires 2 arguments, but only 1 given" "" { target *-*-* } use_of_MACRO_1 } */
+  /* { dg-error "macro 'MACRO_1' requires 2 arguments, but only 1 given" "" { target *-*-* } use_of_MACRO_1 } */
   /* { dg-begin-multiline-output "" }
    MACRO_1(42);
              ^
@@ -28,7 +28,7 @@ void test_1 ()
 void test_2 ()
 {
   MACRO_2(1, 2, 3); /* { dg-line "use_of_MACRO_2" } */
-  /* { dg-error "macro \"MACRO_2\" passed 3 arguments, but takes just 2" "" { target *-*-* } use_of_MACRO_2 } */
+  /* { dg-error "macro 'MACRO_2' passed 3 arguments, but takes just 2" "" { target *-*-* } use_of_MACRO_2 } */
   /* { dg-begin-multiline-output "" }
    MACRO_2(1, 2, 3);
                   ^

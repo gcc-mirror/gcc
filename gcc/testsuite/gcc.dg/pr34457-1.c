@@ -2,7 +2,7 @@
 /* { dg-do link } */
 /* { dg-require-effective-target trampolines } */
 /* { dg-require-effective-target lto } */
-/* { dg-options "-flto -O2" } */
+/* { dg-options "-std=gnu17 -flto -O2" } */
 /* { dg-additional-sources "pr34457-2.c" } */
    
 

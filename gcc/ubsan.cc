@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -678,7 +679,7 @@ ubsan_create_data (const char *name, int loccnt, const location_t *ploc, ...)
     {
       location_t loc = LOCATION_LOCUS (ploc[j]);
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, ubsan_source_location (loc));
-    } 
+    }
 
   size_t nelts = vec_safe_length (saved_args);
   for (i = 0; i < nelts; i++)

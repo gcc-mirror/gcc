@@ -342,7 +342,7 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
   if (token->type != CPP_OPEN_PAREN)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "missing '(' after \"__has_attribute\"");
+		 "missing %<(%> after %<__has_attribute%>");
       return 0;
     }
   token = get_token_no_padding (pfile);
@@ -464,13 +464,13 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
   else
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "macro \"__has_attribute\" requires an identifier");
+		 "macro %<__has_attribute%> requires an identifier");
       return 0;
     }
 
   if (get_token_no_padding (pfile)->type != CPP_CLOSE_PAREN)
     cpp_error (pfile, CPP_DL_ERROR,
-	       "missing ')' after \"__has_attribute\"");
+	       "missing %<)%> after %<__has_attribute%>");
 
   return result;
 }
@@ -484,7 +484,7 @@ c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
   if (token->type != CPP_OPEN_PAREN)
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "missing '(' after \"__has_%s\"", builtin);
+		 "missing %<(%> after %<__has_%s%>", builtin);
       return 0;
     }
 
@@ -497,14 +497,14 @@ c_common_lex_availability_macro (cpp_reader *pfile, const char *builtin)
       if (token->type != CPP_CLOSE_PAREN)
 	{
 	  cpp_error (pfile, CPP_DL_ERROR,
-		     "expected ')' after \"%s\"", name);
+		     "expected %<)%> after %<%s%>", name);
 	  name = "";
 	}
     }
   else
     {
       cpp_error (pfile, CPP_DL_ERROR,
-		 "macro \"__has_%s\" requires an identifier", builtin);
+		 "macro %<__has_%s%> requires an identifier", builtin);
       if (token->type == CPP_CLOSE_PAREN)
 	return 0;
     }
@@ -783,6 +783,48 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
       *value = build_string (tok->val.str.len, (const char *)tok->val.str.text);
       break;
 
+    case CPP_EMBED:
+      *value = make_node (RAW_DATA_CST);
+      TREE_TYPE (*value) = integer_type_node;
+      RAW_DATA_LENGTH (*value) = tok->val.str.len;
+      if (pch_file)
+	{
+	  /* When writing PCH headers, copy the data over, such that
+	     the owner is a STRING_CST.  */
+	  int off = 0;
+	  if (tok->val.str.len <= INT_MAX - 2)
+	    /* See below.  */
+	    off = 1;
+	  tree owner = build_string (tok->val.str.len + 2 * off,
+				     (const char *) tok->val.str.text - off);
+	  TREE_TYPE (owner) = build_array_type_nelts (unsigned_char_type_node,
+						      tok->val.str.len);
+	  RAW_DATA_OWNER (*value) = owner;
+	  RAW_DATA_POINTER (*value) = TREE_STRING_POINTER (owner) + off;
+	}
+      else
+	{
+	  /* Otherwise add another dummy RAW_DATA_CST as owner which
+	     indicates the data is owned by libcpp.  */
+	  RAW_DATA_POINTER (*value) = (const char *) tok->val.str.text;
+	  tree owner = make_node (RAW_DATA_CST);
+	  TREE_TYPE (owner) = integer_type_node;
+	  RAW_DATA_LENGTH (owner) = tok->val.str.len;
+	  RAW_DATA_POINTER (owner) = (const char *) tok->val.str.text;
+	  if (tok->val.str.len <= INT_MAX - 2)
+	    {
+	      /* The preprocessor surrounds at least smaller CPP_EMBEDs
+		 in between CPP_NUMBER CPP_COMMA before and
+		 CPP_COMMA CPP_NUMBER after, so the actual libcpp buffer
+		 holds those 2 extra bytes around it.  Don't do that if
+		 CPP_EMBED is at the maximum ~ 2GB size.  */
+	      RAW_DATA_LENGTH (owner) += 2;
+	      RAW_DATA_POINTER (owner)--;
+	    }
+	  RAW_DATA_OWNER (*value) = owner;
+	}
+      break;
+
       /* This token should not be visible outside cpplib.  */
     case CPP_MACRO_ARG:
       gcc_unreachable ();
@@ -802,7 +844,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 	  add_flags |= PREV_FALLTHROUGH;
 	  goto retry_after_at;
 	}
-       goto retry;
+      goto retry;
 
     default:
       *value = NULL_TREE;
@@ -899,6 +941,10 @@ interpret_integer (const cpp_token *token, unsigned int flags,
 	{
 	  max_bits_per_digit = 3;
 	  prefix_len = 1;
+	  if (token->val.str.len > 2
+	      && (token->val.str.text[1] == 'o'
+		  || token->val.str.text[1] == 'O'))
+	    prefix_len = 2;
 	}
       else if ((flags & CPP_N_RADIX) == CPP_N_HEX)
 	{

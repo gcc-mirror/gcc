@@ -62,6 +62,7 @@ package Sem_Prag is
       Pragma_Elaborate_Body               => True,
       Pragma_Exceptional_Cases            => True,
       Pragma_Export                       => True,
+      Pragma_Extended_Access              => True,
       Pragma_Extensions_Visible           => True,
       Pragma_Favor_Top_Level              => True,
       Pragma_First_Controlling_Parameter  => True,

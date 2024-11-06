@@ -50,7 +50,7 @@ pdp11_handle_option (struct gcc_options *opts,
       opts->x_target_flags &= ~MASK_40;
       opts->x_target_flags |= MASK_45;
       return true;
-      
+
     case OPT_msoft_float:
       opts->x_target_flags &= ~MASK_AC0;
       return true;

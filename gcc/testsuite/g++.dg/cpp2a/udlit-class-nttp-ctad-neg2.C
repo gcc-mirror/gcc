@@ -17,4 +17,4 @@ template <typename CharT, std::size_t N>
 fixed_string(const CharT (&str)[N]) -> fixed_string<CharT, N>;
 
 template <fixed_string...>
-int operator"" _udl();     // { dg-error "5:literal operator template .int operator\"\"_udl\\(\\). has invalid parameter list" }
+int operator ""_udl();     // { dg-error "5:literal operator template .int operator\"\"_udl\\(\\). has invalid parameter list" }

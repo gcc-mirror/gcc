@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
    Note that this pass does not deal with direct redundancies,
    such as cos(-x)->cos(x).  match.pd handles those cases instead.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -663,8 +664,14 @@ remove_unused_var (tree var)
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  gsi_remove (&gsi, true);
-  release_defs (stmt);
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    remove_phi_node (&gsi, true);
+  else
+    {
+      unlink_stmt_vdef (stmt);
+      gsi_remove (&gsi, true);
+      release_defs (stmt);
+    }
 }
 
 /* Note that we're replacing OLD_RHS with NEW_RHS in STMT.  */

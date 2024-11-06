@@ -38,6 +38,21 @@ typedef int __gthread_recursive_mutex_t;
 #define __GTHREAD_MUTEX_INIT_FUNCTION(mx) do {} while (0)
 #define __GTHREAD_RECURSIVE_MUTEX_INIT 0
 
+#ifdef __has_attribute
+# if __has_attribute(__always_inline__)
+#  define __GTHREAD_ALWAYS_INLINE __attribute__((__always_inline__))
+# endif
+#endif
+#ifndef __GTHREAD_ALWAYS_INLINE
+# define __GTHREAD_ALWAYS_INLINE
+#endif
+
+#ifdef __cplusplus
+# define __GTHREAD_INLINE inline __GTHREAD_ALWAYS_INLINE
+#else
+# define __GTHREAD_INLINE static inline
+#endif
+
 #define UNUSED __attribute__((__unused__))
 
 #ifdef _LIBOBJC
@@ -207,85 +222,85 @@ __gthread_objc_condition_signal (objc_condition_t condition UNUSED)
 
 #else /* _LIBOBJC */
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_active_p (void)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_once (__gthread_once_t *__once UNUSED, void (*__func) (void) UNUSED)
 {
   return 0;
 }
 
-static inline int UNUSED
+__GTHREAD_INLINE int UNUSED
 __gthread_key_create (__gthread_key_t *__key UNUSED, void (*__func) (void *) UNUSED)
 {
   return 0;
 }
 
-static int UNUSED
+__GTHREAD_INLINE int UNUSED
 __gthread_key_delete (__gthread_key_t __key UNUSED)
 {
   return 0;
 }
 
-static inline void *
+__GTHREAD_INLINE void *
 __gthread_getspecific (__gthread_key_t __key UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_setspecific (__gthread_key_t __key UNUSED, const void *__v UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_destroy (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_lock (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_trylock (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_unlock (__gthread_mutex_t *__mutex UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_lock (__mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_trylock (__mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_unlock (__mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_destroy (__mutex);
@@ -294,5 +309,7 @@ __gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
 #endif /* _LIBOBJC */
 
 #undef UNUSED
+#undef __GTHREAD_INLINE
+#undef __GTHREAD_ALWAYS_INLINE
 
 #endif /* ! GCC_GTHR_SINGLE_H */

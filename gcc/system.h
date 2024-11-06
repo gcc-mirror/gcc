@@ -56,8 +56,8 @@ along with GCC; see the file COPYING3.  If not see
    the names to 64bit capable functions for LARGE_FILES support. These
    redefs are pointless here so we can override them.  */
 
-#undef fopen 
-#undef freopen 
+#undef fopen
+#undef freopen
 
 #define fopen(PATH, MODE) fopen_unlocked (PATH, MODE)
 #define fdopen(FILDES, MODE) fdopen_unlocked (FILDES, MODE)
@@ -400,7 +400,7 @@ extern int errno;
 
 /* This macro rounds x down to the y boundary.  */
 #define ROUND_DOWN(x,y) ((x) & ~((y) - 1))
- 	
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif

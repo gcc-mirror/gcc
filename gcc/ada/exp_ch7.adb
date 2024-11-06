@@ -2672,9 +2672,10 @@ package body Exp_Ch7 is
                Process_Package_Body (Decl);
 
             elsif Nkind (Decl) = N_Package_Body_Stub
-              and then Present (Library_Unit (Decl))
+              and then Present (Stub_Subunit (Decl))
             then
-               Process_Package_Body (Proper_Body (Unit (Library_Unit (Decl))));
+               Process_Package_Body
+                 (Proper_Body (Unit (Stub_Subunit (Decl))));
             end if;
 
             Decl := Prev;

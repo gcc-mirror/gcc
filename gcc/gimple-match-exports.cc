@@ -489,12 +489,6 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[i]))
       return NULL_TREE;
 
-  if (num_ops > 0 && COMPARISON_CLASS_P (ops[0]))
-    for (unsigned int i = 0; i < 2; ++i)
-      if (TREE_CODE (TREE_OPERAND (ops[0], i)) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (ops[0], i)))
-	return NULL_TREE;
-
   if (res_op->code.is_tree_code ())
     {
       auto code = tree_code (res_op->code);
@@ -522,6 +516,11 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	{
 	  /* Generate the given function if we can.  */
 	  internal_fn ifn = as_internal_fn (fn);
+
+	  /* We can't and should not emit calls to non-const functions.  */
+	  if (!(internal_fn_flags (ifn) & ECF_CONST))
+	    return NULL_TREE;
+
 	  new_stmt = build_call_internal (ifn, res_op);
 	  if (!new_stmt)
 	    return NULL_TREE;
@@ -781,11 +780,7 @@ gimple_extract (gimple *stmt, gimple_match_op *res_op,
 	    }
 	  case GIMPLE_TERNARY_RHS:
 	    {
-	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      if (code == COND_EXPR && COMPARISON_CLASS_P (rhs1))
-		rhs1 = valueize_condition (rhs1);
-	      else
-		rhs1 = valueize_op (rhs1);
+	      tree rhs1 = valueize_op (gimple_assign_rhs1 (stmt));
 	      tree rhs2 = valueize_op (gimple_assign_rhs2 (stmt));
 	      tree rhs3 = valueize_op (gimple_assign_rhs3 (stmt));
 	      res_op->set_op (code, type, rhs1, rhs2, rhs3);
@@ -1400,6 +1395,29 @@ directly_supported_p (code_helper code, tree type, optab_subtype query_type)
   return (direct_internal_fn_p (ifn)
 	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
 }
+
+/* As above, overloading the function for conversion-type optabs.  */
+bool
+directly_supported_p (code_helper code, tree otype, tree itype,
+		      optab_subtype query_type)
+{
+  if (code.is_tree_code ())
+    {
+      convert_optab optab = optab_for_tree_code (tree_code (code), itype,
+						query_type);
+      return (optab != unknown_optab
+	      && convert_optab_handler (optab, TYPE_MODE (otype),
+					TYPE_MODE (itype)) != CODE_FOR_nothing);
+    }
+  gcc_assert (query_type == optab_default
+	      || (query_type == optab_vector && VECTOR_TYPE_P (itype))
+	      || (query_type == optab_scalar && !VECTOR_TYPE_P (itype)));
+  internal_fn ifn = associated_internal_fn (combined_fn (code), itype);
+  return (direct_internal_fn_p (ifn)
+	  && direct_internal_fn_supported_p (ifn, tree_pair (otype, itype),
+					     OPTIMIZE_FOR_SPEED));
+}
+
 
 /* A wrapper around the internal-fn.cc versions of get_conditional_internal_fn
    for a code_helper CODE operating on type TYPE.  */

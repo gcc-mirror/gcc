@@ -29,7 +29,9 @@
 #ifndef _STDIO_FILEBUF_H
 #define _STDIO_FILEBUF_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

@@ -27,7 +27,7 @@
 
 std::bad_alloc::~bad_alloc() _GLIBCXX_USE_NOEXCEPT { }
 
-const char* 
+const char*
 std::bad_alloc::what() const _GLIBCXX_USE_NOEXCEPT
 {
   return "std::bad_alloc";

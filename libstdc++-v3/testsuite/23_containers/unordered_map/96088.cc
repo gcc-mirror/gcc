@@ -29,46 +29,45 @@
 #include <testsuite_hooks.h>
 #include <replacement_memory_operators.h>
 
-static constexpr std::initializer_list<std::pair<const char*, int>> lst = {
-    {"long_str_for_dynamic_allocating", 1}
-};
+static constexpr std::initializer_list<std::pair<const char*, const char*>> lst =
+  { { "long_str_for_dynamic_allocation", "long_str_for_dynamic_allocation" } };
 
 void
 test01()
 {
   __gnu_test::counter::reset();
-  std::unordered_map<std::string, int> um;
+  std::unordered_map<std::string, std::string> um;
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
-
-  um.insert(lst.begin(), lst.end());
-  VERIFY( um.size() == 1 );
-
-  VERIFY( __gnu_test::counter::count() == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
   VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+
+  um.insert(lst.begin(), lst.end());
+  VERIFY( um.size() == 1 );
+
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 void
 test02()
 {
   __gnu_test::counter::reset();
-  std::unordered_map<std::string, int,
+  std::unordered_map<std::string, std::string,
 		     std::hash<std::string_view>,
 		     std::equal_to<std::string_view>> um;
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 std::size_t
@@ -84,20 +83,20 @@ test11()
   typedef std::size_t (*hash_string_t)(const std::string&) noexcept;
   __gnu_test::counter::reset();
   hash_string_t hasher = &hash_string_f;
-  std::unordered_map<std::string, int,
+  std::unordered_map<std::string, std::string,
 		     hash_string_t,
 		     std::equal_to<std::string>> um(0, hasher);
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 std::size_t
@@ -113,19 +112,19 @@ test12()
   typedef std::size_t (*hash_stringview_t) (const std::string_view&) noexcept;
   __gnu_test::counter::reset();
   hash_stringview_t hasher = &hash_string_view_f;
-  std::unordered_map<std::string, int, hash_stringview_t,
+  std::unordered_map<std::string, std::string, hash_stringview_t,
 		     std::equal_to<std::string_view>> um(0, hasher);
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 struct hash_string_functor
@@ -142,20 +141,20 @@ void
 test21()
 {
   __gnu_test::counter::reset();
-  std::unordered_map<std::string, int,
+  std::unordered_map<std::string, std::string,
 		     hash_string_functor,
 		     std::equal_to<std::string>> um;
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 struct hash_string_view_noexcept_functor
@@ -172,20 +171,20 @@ void
 test22()
 {
   __gnu_test::counter::reset();
-  std::unordered_map<std::string, int,
+  std::unordered_map<std::string, std::string,
 		     hash_string_view_noexcept_functor,
 		     std::equal_to<std::string_view>> um;
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 struct hash_string_view_functor
@@ -202,40 +201,40 @@ void
 test23()
 {
   __gnu_test::counter::reset();
-  std::unordered_map<std::string, int,
+  std::unordered_map<std::string, std::string,
 		     hash_string_view_functor,
 		     std::equal_to<std::string_view>> um;
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 4 );
 
   um.insert(lst.begin(), lst.end());
   VERIFY( um.size() == 1 );
 
-  VERIFY( __gnu_test::counter::count() == 3 );
-  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+  VERIFY( __gnu_test::counter::count() == 4 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 5 );
 }
 
 void
 test03()
 {
-  std::vector<std::pair<std::string, int>> v;
+  std::vector<std::pair<std::string, std::string>> v;
   v.insert(v.end(), lst.begin(), lst.end());
 
   const auto origin = __gnu_test::counter::count();
 
   {
     __gnu_test::counter::reset();
-    std::unordered_map<std::string, int,
+    std::unordered_map<std::string, std::string,
 		       std::hash<std::string_view>,
 		       std::equal_to<std::string_view>> um;
     um.insert(v.begin(), v.end());
     VERIFY( um.size() == 1 );
 
-    // Allocate array of buckets, a node, and the std::string (unless COW).
-    constexpr std::size_t increments = _GLIBCXX_USE_CXX11_ABI ? 3 : 2;
+    // Allocate array of buckets, a node, and the 2 std::string (unless COW).
+    constexpr std::size_t increments = _GLIBCXX_USE_CXX11_ABI ? 4 : 2;
 
     VERIFY( __gnu_test::counter::count() == origin + increments );
     VERIFY( __gnu_test::counter::get()._M_increments == increments );
@@ -250,7 +249,7 @@ test03()
 
   {
     __gnu_test::counter::reset();
-    std::unordered_map<std::string, int,
+    std::unordered_map<std::string, std::string,
 		       std::hash<std::string_view>,
 		       std::equal_to<std::string_view>> um;
     um.insert(std::make_move_iterator(v.begin()),

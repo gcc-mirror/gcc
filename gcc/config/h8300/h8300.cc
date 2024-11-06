@@ -317,7 +317,7 @@ h8300_option_override (void)
 	       "%<-msx%> - option ignored");
    }
 
-#ifdef H8300_LINUX 
+#ifdef H8300_LINUX
  if ((TARGET_NORMAL_MODE))
    {
       error ("%<-mn%> is not supported for linux targets");
@@ -811,7 +811,7 @@ h8300_expand_prologue (void)
 
   if (h8300_monitor_function_p (current_function_decl))
  /* The monitor function act as normal functions, which means it
-    can accept parameters and return values. In addition to this, 
+    can accept parameters and return values. In addition to this,
     interrupts are masked in prologue and return with "rte" in epilogue. */
     emit_insn (gen_monitor_prologue ());
 
@@ -1484,7 +1484,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       if ((exact_log2 ((bitint >> 8) & 0xff)) == -1)
 	bitint = exact_log2 (bitint & 0xff);
       else
-        bitint = exact_log2 ((bitint >> 8) & 0xff);	      
+        bitint = exact_log2 ((bitint >> 8) & 0xff);
       gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
@@ -1493,7 +1493,7 @@ h8300_print_operand (FILE *file, rtx x, int code)
       if ((exact_log2 ((bitint >> 8) & 0xff)) == -1 )
 	bitint = exact_log2 (bitint & 0xff);
       else
-	bitint = (exact_log2 ((bitint >> 8) & 0xff));      
+	bitint = (exact_log2 ((bitint >> 8) & 0xff));
       gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
@@ -2358,7 +2358,7 @@ h8300_bitfield_length (rtx op, rtx op2)
   if (GET_CODE (op) == REG)
     op = op2;
   gcc_assert (GET_CODE (op) != REG);
-  
+
   size = GET_MODE_SIZE (GET_MODE (op));
   operand_length = h8300_classify_operand (op, size, &opclass);
 
@@ -2521,7 +2521,7 @@ h8300_insn_length_from_table (rtx_insn *insn, rtx * operands)
 
     case LENGTH_TABLE_BITFIELD:
       return h8300_bitfield_length (operands[0], operands[1]);
-      
+
     case LENGTH_TABLE_BITBRANCH:
       return h8300_bitfield_length (operands[1], operands[2]) - 2;
 
@@ -4100,7 +4100,7 @@ output_a_shift (rtx operands[4], rtx_code code)
   /* This case must be taken care of by one of the two splitters
      that convert a variable shift into a loop.  */
   gcc_assert (GET_CODE (operands[2]) == CONST_INT);
-  
+
   n = INTVAL (operands[2]);
 
   /* If the count is negative, make it 0.  */
@@ -4113,7 +4113,7 @@ output_a_shift (rtx operands[4], rtx_code code)
     n = GET_MODE_BITSIZE (mode);
 
   get_shift_alg (shift_type, shift_mode, n, &info);
-  
+
   switch (info.alg)
     {
     case SHIFT_SPECIAL:
@@ -4134,7 +4134,7 @@ output_a_shift (rtx operands[4], rtx_code code)
       for (; n > 0; n--)
 	output_asm_insn (info.shift1, operands);
       return "";
-      
+
     case SHIFT_ROT_AND:
       {
 	int m = GET_MODE_BITSIZE (mode) - n;
@@ -4146,18 +4146,18 @@ output_a_shift (rtx operands[4], rtx_code code)
 	/* Not all possibilities of rotate are supported.  They shouldn't
 	   be generated, but let's watch for 'em.  */
 	gcc_assert (info.shift1);
-	
+
 	/* Emit two bit rotates first.  */
 	if (info.shift2 != NULL)
 	  {
 	    for (; m > 1; m -= 2)
 	      output_asm_insn (info.shift2, operands);
 	  }
-	
+
 	/* Now single bit rotates for any residual.  */
 	for (; m > 0; m--)
 	  output_asm_insn (info.shift1, operands);
-	
+
 	/* Now mask off the high bits.  */
 	switch (mode)
 	  {
@@ -4201,7 +4201,7 @@ output_a_shift (rtx operands[4], rtx_code code)
 	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
 	}
       return "";
-      
+
     default:
       gcc_unreachable ();
     }
@@ -4381,7 +4381,7 @@ compute_a_shift_cc (rtx operands[3], rtx_code code)
   enum shift_mode shift_mode;
   struct shift_info info;
   int n;
-  
+
   switch (mode)
     {
     case E_QImode:
@@ -4415,7 +4415,7 @@ compute_a_shift_cc (rtx operands[3], rtx_code code)
   /* This case must be taken care of by one of the two splitters
      that convert a variable shift into a loop.  */
   gcc_assert (GET_CODE (operands[2]) == CONST_INT);
-  
+
   n = INTVAL (operands[2]);
 
   /* If the count is negative, make it 0.  */
@@ -4426,9 +4426,9 @@ compute_a_shift_cc (rtx operands[3], rtx_code code)
      do the intuitive thing.  */
   else if ((unsigned int) n > GET_MODE_BITSIZE (mode))
     n = GET_MODE_BITSIZE (mode);
-  
+
   get_shift_alg (shift_type, shift_mode, n, &info);
-  
+
   switch (info.alg)
     {
     case SHIFT_SPECIAL:
@@ -4441,11 +4441,11 @@ compute_a_shift_cc (rtx operands[3], rtx_code code)
     case SHIFT_INLINE:
       return (info.cc_inline == OLD_CC_SET_ZN
 	      || info.cc_inline == OLD_CC_SET_ZNV);
-      
+
     case SHIFT_ROT_AND:
       /* This case always ends with an and instruction.  */
       return true;
-      
+
     case SHIFT_LOOP:
       /* A loop to shift by a "large" constant value.
 	 If we have shift-by-2 insns, use them.  */
@@ -4454,10 +4454,10 @@ compute_a_shift_cc (rtx operands[3], rtx_code code)
 	  if (n % 2)
 	    return (info.cc_inline == OLD_CC_SET_ZN
 		    || info.cc_inline == OLD_CC_SET_ZNV);
-		
+
 	}
       return false;
-      
+
     default:
       gcc_unreachable ();
     }

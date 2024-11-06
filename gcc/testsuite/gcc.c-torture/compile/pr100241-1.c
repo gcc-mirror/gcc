@@ -1,5 +1,6 @@
 /* { dg-require-visibility "" } */
 /* { dg-options "-fvisibility=internal -fPIC" { target fpic } } */
+/* { dg-additional-options "-std=gnu17" } */
 
 extern char num_4x4_blocks_high_lookup, num_4x4_blocks_wide_lookup,
     vp9_foreach_transformed_block_in_plane_xd_0_0_0;

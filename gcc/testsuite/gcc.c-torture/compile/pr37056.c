@@ -1,4 +1,3 @@
-/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-O2" "-Os" } { "" } } */
 extern void abort (void);
 
 static union {

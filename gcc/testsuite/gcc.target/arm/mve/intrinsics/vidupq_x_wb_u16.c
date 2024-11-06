@@ -42,22 +42,6 @@ foo1 (uint32_t *a, mve_pred16_t p)
   return vidupq_x_u16 (a, 1, p);
 }
 
-/*
-**foo2:
-**	...
-**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
-**	...
-**	vpst(?:	@.*|)
-**	...
-**	vidupt.u16	q[0-9]+, (?:ip|fp|r[0-9]+), #[0-9]+(?:	@.*|)
-**	...
-*/
-uint16x8_t
-foo2 (mve_pred16_t p)
-{
-  return vidupq_x_u16 (1, 1, p);
-}
-
 #ifdef __cplusplus
 }
 #endif

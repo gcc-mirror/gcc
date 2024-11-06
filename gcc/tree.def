@@ -309,6 +309,14 @@ DEFTREECODE (VECTOR_CST, "vector_cst", tcc_constant, 0)
 /* Contents are TREE_STRING_LENGTH and the actual contents of the string.  */
 DEFTREECODE (STRING_CST, "string_cst", tcc_constant, 0)
 
+/* Contents are RAW_DATA_LENGTH and the actual content
+   of the raw data, plus RAW_DATA_OWNER for owner of the
+   data.  That can be either a STRING_CST, used e.g. when writing
+   PCH header, or another RAW_DATA_CST representing data owned by
+   libcpp and representing the original range (if possible).
+   TREE_TYPE is the type of each of the RAW_DATA_LENGTH elements.  */
+DEFTREECODE (RAW_DATA_CST, "raw_data_cst", tcc_constant, 0)
+
 /* Declarations.  All references to names are represented as ..._DECL
    nodes.  The decls in one binding context are chained through the
    TREE_CHAIN field.  Each DECL has a DECL_NAME field which contains

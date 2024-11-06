@@ -1196,7 +1196,7 @@ inline wide_int_storage::wide_int_storage (const T &x)
 inline wide_int_storage::wide_int_storage (const wide_int_storage &x)
 {
   memcpy (this, &x, sizeof (wide_int_storage));
-  if (UNLIKELY (precision > WIDE_INT_MAX_INL_PRECISION))
+  if (UNLIKELY (x.precision > WIDE_INT_MAX_INL_PRECISION))
     {
       u.valp = XNEWVEC (HOST_WIDE_INT, CEIL (precision, HOST_BITS_PER_WIDE_INT));
       memcpy (u.valp, x.u.valp, len * sizeof (HOST_WIDE_INT));
@@ -1219,9 +1219,9 @@ wide_int_storage::operator = (const wide_int_storage &x)
       XDELETEVEC (u.valp);
     }
   memcpy (this, &x, sizeof (wide_int_storage));
-  if (UNLIKELY (precision > WIDE_INT_MAX_INL_PRECISION))
+  if (UNLIKELY (x.precision > WIDE_INT_MAX_INL_PRECISION))
     {
-      u.valp = XNEWVEC (HOST_WIDE_INT, CEIL (precision, HOST_BITS_PER_WIDE_INT));
+      u.valp = XNEWVEC (HOST_WIDE_INT, CEIL (x.precision, HOST_BITS_PER_WIDE_INT));
       memcpy (u.valp, x.u.valp, len * sizeof (HOST_WIDE_INT));
     }
   return *this;
@@ -2121,7 +2121,7 @@ namespace wi
 			    unsigned int, unsigned int);
   unsigned int bitreverse_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 				 unsigned int, unsigned int);
-  
+
   unsigned int lshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			     unsigned int, unsigned int, unsigned int);
   unsigned int lrshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,

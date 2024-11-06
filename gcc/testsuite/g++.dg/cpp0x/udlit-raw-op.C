@@ -5,7 +5,7 @@
 #include <cstring>
 
 int
-operator"" _raw_umber(const char * str)
+operator ""_raw_umber(const char * str)
 {
   return strlen(str);
 }

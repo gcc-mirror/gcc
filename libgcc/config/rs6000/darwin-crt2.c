@@ -59,10 +59,10 @@ typedef struct _Sinfo_Node {
         } _Tinfo_Node ;
 
 /* KeyMgr 3.x is the first one supporting GCC3 stuff natively.  */
-#define KEYMGR_API_MAJOR_GCC3           3       
+#define KEYMGR_API_MAJOR_GCC3           3
 /* ... with these keys.  */
 #define KEYMGR_GCC3_LIVE_IMAGE_LIST	301     /* loaded images  */
-#define KEYMGR_GCC3_DW2_OBJ_LIST	302     /* Dwarf2 object list  */   
+#define KEYMGR_GCC3_DW2_OBJ_LIST	302     /* Dwarf2 object list  */
 
 /* Node of KEYMGR_GCC3_LIVE_IMAGE_LIST.  Info about each resident image.  */
 struct live_images {
@@ -79,15 +79,15 @@ struct live_images {
 
 
 /* These routines are used only on Darwin versions before 10.2.
-   Later versions have equivalent code in the system.  
+   Later versions have equivalent code in the system.
    Eventually, they might go away, although it might be a long time...  */
 
-static void darwin_unwind_dyld_remove_image_hook 
+static void darwin_unwind_dyld_remove_image_hook
   (struct mach_header *m, unsigned long s);
-static void darwin_unwind_dyld_remove_image_hook 
+static void darwin_unwind_dyld_remove_image_hook
   (struct mach_header *m, unsigned long s);
 extern void __darwin_gcc3_preregister_frame_info (void);
-     
+
 static void
 darwin_unwind_dyld_add_image_hook (struct mach_header *mh, unsigned long slide)
 {

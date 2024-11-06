@@ -92,10 +92,19 @@ preprocess_file (cpp_reader *pfile)
      cpp_scan_nooutput or cpp_get_token next.  */
   if (flag_no_output && pfile->buffer)
     {
-      /* Scan -included buffers, then the main file.  */
-      while (pfile->buffer->prev)
-	cpp_scan_nooutput (pfile);
-      cpp_scan_nooutput (pfile);
+      if (flag_modules)
+	{
+	  /* For macros from imported headers we need directives_only_cb.  */
+	  cpp_get_options (pfile)->directives_only = true;
+	  scan_translation_unit_directives_only (pfile);
+	}
+      else
+	{
+	  /* Scan -included buffers, then the main file.  */
+	  while (pfile->buffer->prev)
+	    cpp_scan_nooutput (pfile);
+	  cpp_scan_nooutput (pfile);
+	}
     }
   else if (cpp_get_options (pfile)->traditional)
     scan_translation_unit_trad (pfile);
@@ -164,6 +173,7 @@ init_pp_output (FILE *out_stream)
   cb->has_builtin = c_common_has_builtin;
   cb->has_feature = c_common_has_feature;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
+  cb->get_suggestion = cb_get_suggestion;
   cb->remap_filename = remap_macro_filename;
 
   /* Initialize the print structure.  */
@@ -197,7 +207,7 @@ class token_streamer
       print.streamer = this;
     }
 
-  void begin_pragma () 
+  void begin_pragma ()
   {
     in_pragma = true;
   }
@@ -299,6 +309,60 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
 	maybe_print_line (UNKNOWN_LOCATION);
       in_pragma = false;
     }
+  else if (token->type == CPP_EMBED)
+    {
+      char buf[76 + 6];
+      maybe_print_line (token->src_loc);
+      gcc_checking_assert (token->val.str.len != 0);
+      fputs ("#embed \".\" __gnu__::__base64__(", print.outf);
+      if (token->val.str.len > 30)
+	{
+	  fputs (" \\\n", print.outf);
+	  print.src_line++;
+	}
+      buf[0] = '"';
+      memcpy (buf + 1 + 76, "\" \\\n", 5);
+      unsigned int j = 1;
+      static const char base64_enc[] =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+      for (unsigned i = 0; ; i += 3)
+	{
+	  unsigned char a = token->val.str.text[i];
+	  unsigned char b = 0, c = 0;
+	  unsigned int n = token->val.str.len - i;
+	  if (n > 1)
+	    b = token->val.str.text[i + 1];
+	  if (n > 2)
+	    c = token->val.str.text[i + 2];
+	  unsigned long v = ((((unsigned long) a) << 16)
+			     | (((unsigned long) b) << 8)
+			     | c);
+	  buf[j++] = base64_enc[(v >> 18) & 63];
+	  buf[j++] = base64_enc[(v >> 12) & 63];
+	  buf[j++] = base64_enc[(v >> 6) & 63];
+	  buf[j++] = base64_enc[v & 63];
+	  if (j == 76 + 1 || n <= 3)
+	    {
+	      if (n < 3)
+		{
+		  buf[j - 1] = '=';
+		  if (n == 1)
+		    buf[j - 2] = '=';
+		}
+	      if (n <= 3)
+		memcpy (buf + j, "\")", 3);
+	      else
+		print.src_line++;
+	      fputs (buf, print.outf);
+	      j = 1;
+	      if (n <= 3)
+		break;
+	    }
+	}
+      print.printed = true;
+      maybe_print_line (token->src_loc);
+      return;
+    }
   else
     {
       if (cpp_get_options (parse_in)->debug)
@@ -388,28 +452,31 @@ directives_only_cb (cpp_reader *pfile, CPP_DO_task task, void *data_, ...)
       gcc_unreachable ();
 
     case CPP_DO_print:
-      {
-	print.src_line += va_arg (args, unsigned);
+      if (!flag_no_output)
+	{
+	  print.src_line += va_arg (args, unsigned);
 
-	const void *buf = va_arg (args, const void *);
-	size_t size = va_arg (args, size_t);
-	fwrite (buf, 1, size, print.outf);
-      }
+	  const void *buf = va_arg (args, const void *);
+	  size_t size = va_arg (args, size_t);
+	  fwrite (buf, 1, size, print.outf);
+	}
       break;
 
     case CPP_DO_location:
-      maybe_print_line (va_arg (args, location_t));
+      if (!flag_no_output)
+	maybe_print_line (va_arg (args, location_t));
       break;
 
     case CPP_DO_token:
       {
 	const cpp_token *token = va_arg (args, const cpp_token *);
-	location_t spelling_loc = va_arg (args, location_t);
-	streamer->stream (pfile, token, spelling_loc);
+	unsigned flags = 0;
 	if (streamer->filter)
+	  flags = lang_hooks.preprocess_token (pfile, token, streamer->filter);
+	if (!flag_no_output)
 	  {
-	    unsigned flags = lang_hooks.preprocess_token
-	      (pfile, token, streamer->filter);
+	    location_t spelling_loc = va_arg (args, location_t);
+	    streamer->stream (pfile, token, spelling_loc);
 	    if (flags & lang_hooks::PT_begin_pragma)
 	      streamer->begin_pragma ();
 	  }

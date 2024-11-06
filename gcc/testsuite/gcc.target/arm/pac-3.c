@@ -6,6 +6,6 @@
 
 #include "pac.h"
 
-/* { dg-final { scan-assembler-times "pacbti\tip, lr, sp" 2 } } */
-/* { dg-final { scan-assembler-times "aut\tip, lr, sp" 2 } } */
+/* { dg-final { scan-assembler-times "\tpacbti\tip, lr, sp" 2 } } */
+/* { dg-final { scan-assembler-times "\taut\tip, lr, sp" 2 } } */
 /* { dg-final { scan-assembler-not "\tbti" } } */

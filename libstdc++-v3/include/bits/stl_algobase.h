@@ -77,6 +77,7 @@
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
+# include <bits/ptr_traits.h> // std::to_address
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -308,155 +309,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __a;
     }
 
-  // Fallback implementation of the function in bits/stl_iterator.h used to
-  // remove the __normal_iterator wrapper. See copy, fill, ...
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    inline _Iterator
-    __niter_base(_Iterator __it)
-    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
-    { return __it; }
-
-#if __cplusplus < 201103L
-  template<typename _Ite, typename _Seq>
-    _Ite
-    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
-		 std::random_access_iterator_tag>&);
-
- template<typename _Ite, typename _Cont, typename _Seq>
-    _Ite
-    __niter_base(const ::__gnu_debug::_Safe_iterator<
-		 ::__gnu_cxx::__normal_iterator<_Ite, _Cont>, _Seq,
-		 std::random_access_iterator_tag>&);
-#else
-  template<typename _Ite, typename _Seq>
-    _GLIBCXX20_CONSTEXPR
-    decltype(std::__niter_base(std::declval<_Ite>()))
-    __niter_base(const ::__gnu_debug::_Safe_iterator<_Ite, _Seq,
-		 std::random_access_iterator_tag>&)
-    noexcept(std::is_nothrow_copy_constructible<_Ite>::value);
-#endif
-
-  // Reverse the __niter_base transformation to get a
-  // __normal_iterator back again (this assumes that __normal_iterator
-  // is only used to wrap random access iterators, like pointers).
-  template<typename _From, typename _To>
-    _GLIBCXX20_CONSTEXPR
-    inline _From
-    __niter_wrap(_From __from, _To __res)
-    { return __from + (std::__niter_base(__res) - std::__niter_base(__from)); }
-
-  // No need to wrap, iterator already has the right type.
-  template<typename _Iterator>
-    _GLIBCXX20_CONSTEXPR
-    inline _Iterator
-    __niter_wrap(const _Iterator&, _Iterator __res)
-    { return __res; }
-
-  // All of these auxiliary structs serve two purposes.  (1) Replace
-  // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
-  // because the input and output ranges are permitted to overlap.)
-  // (2) If we're using random access iterators, then write the loop as
-  // a for loop with an explicit count.
-
-  template<bool _IsMove, bool _IsSimple, typename _Category>
-    struct __copy_move
-    {
-      template<typename _II, typename _OI>
-	_GLIBCXX20_CONSTEXPR
-	static _OI
-	__copy_m(_II __first, _II __last, _OI __result)
-	{
-	  for (; __first != __last; ++__result, (void)++__first)
-	    *__result = *__first;
-	  return __result;
-	}
-    };
-
-#if __cplusplus >= 201103L
-  template<typename _Category>
-    struct __copy_move<true, false, _Category>
-    {
-      template<typename _II, typename _OI>
-	_GLIBCXX20_CONSTEXPR
-	static _OI
-	__copy_m(_II __first, _II __last, _OI __result)
-	{
-	  for (; __first != __last; ++__result, (void)++__first)
-	    *__result = std::move(*__first);
-	  return __result;
-	}
-    };
-#endif
-
-  template<>
-    struct __copy_move<false, false, random_access_iterator_tag>
-    {
-      template<typename _II, typename _OI>
-	_GLIBCXX20_CONSTEXPR
-	static _OI
-	__copy_m(_II __first, _II __last, _OI __result)
-	{
-	  typedef typename iterator_traits<_II>::difference_type _Distance;
-	  for(_Distance __n = __last - __first; __n > 0; --__n)
-	    {
-	      *__result = *__first;
-	      ++__first;
-	      ++__result;
-	    }
-	  return __result;
-	}
-
-      template<typename _Tp, typename _Up>
-	static void
-	__assign_one(_Tp* __to, _Up* __from)
-	{ *__to = *__from; }
-    };
-
-#if __cplusplus >= 201103L
-  template<>
-    struct __copy_move<true, false, random_access_iterator_tag>
-    {
-      template<typename _II, typename _OI>
-	_GLIBCXX20_CONSTEXPR
-	static _OI
-	__copy_m(_II __first, _II __last, _OI __result)
-	{
-	  typedef typename iterator_traits<_II>::difference_type _Distance;
-	  for(_Distance __n = __last - __first; __n > 0; --__n)
-	    {
-	      *__result = std::move(*__first);
-	      ++__first;
-	      ++__result;
-	    }
-	  return __result;
-	}
-
-      template<typename _Tp, typename _Up>
-	static void
-	__assign_one(_Tp* __to, _Up* __from)
-	{ *__to = std::move(*__from); }
-    };
-#endif
-
-  template<bool _IsMove>
-    struct __copy_move<_IsMove, true, random_access_iterator_tag>
-    {
-      template<typename _Tp, typename _Up>
-	_GLIBCXX20_CONSTEXPR
-	static _Up*
-	__copy_m(_Tp* __first, _Tp* __last, _Up* __result)
-	{
-	  const ptrdiff_t _Num = __last - __first;
-	  if (__builtin_expect(_Num > 1, true))
-	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
-	  else if (_Num == 1)
-	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
-	      __assign_one(__result, __first);
-	  return __result + _Num;
-	}
-    };
-
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Ref, typename _Ptr>
@@ -506,20 +358,124 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	_GLIBCXX_STD_C::_Deque_iterator<_CharT, _CharT&, _CharT*>);
 #endif // HOSTED
 
-  template<bool _IsMove, typename _II, typename _OI>
-    _GLIBCXX20_CONSTEXPR
-    inline _OI
-    __copy_move_a2(_II __first, _II __last, _OI __result)
-    {
-      typedef typename iterator_traits<_II>::iterator_category _Category;
-#ifdef __cpp_lib_is_constant_evaluated
-      if (std::is_constant_evaluated())
-	return std::__copy_move<_IsMove, false, _Category>::
-	  __copy_m(__first, __last, __result);
+#if __cpp_lib_concepts
+  // N.B. this is not the same as nothrow-forward-iterator, which doesn't
+  // require noexcept operations, it just says it's undefined if they throw.
+  // Here we require them to be actually noexcept.
+  template<typename _Iter>
+    concept __nothrow_contiguous_iterator
+      = contiguous_iterator<_Iter> && requires (_Iter __i) {
+	// If this operation can throw then the iterator could cause
+	// the algorithm to exit early via an exception, in which case
+	// we can't use memcpy.
+	{ *__i } noexcept;
+      };
+
+  template<typename _OutIter, typename _InIter, typename _Sent = _InIter>
+    concept __memcpyable_iterators
+      = __nothrow_contiguous_iterator<_OutIter>
+	  && __nothrow_contiguous_iterator<_InIter>
+	  && sized_sentinel_for<_Sent, _InIter>
+	  && requires (_OutIter __o, _InIter __i, _Sent __s) {
+	    requires !!__memcpyable<decltype(std::to_address(__o)),
+				    decltype(std::to_address(__i))>::__value;
+	    { __i != __s } noexcept;
+	  };
 #endif
-      return std::__copy_move<_IsMove, __memcpyable<_OI, _II>::__value,
-			      _Category>::__copy_m(__first, __last, __result);
+
+#if __cplusplus < 201103L
+  // Used by __copy_move_a2, __copy_n_a and __copy_move_backward_a2 to
+  // get raw pointers so that calls to __builtin_memmove will compile,
+  // because C++98 can't use 'if constexpr' so statements that use memmove
+  // with pointer arguments need to also compile for arbitrary iterator types.
+  template<typename _Iter> __attribute__((__always_inline__))
+    inline void* __ptr_or_null(_Iter) { return 0; }
+  template<typename _Tp> __attribute__((__always_inline__))
+  inline void* __ptr_or_null(_Tp* __p) { return (void*)__p; }
+# define _GLIBCXX_TO_ADDR(P) std::__ptr_or_null(P)
+  // Used to advance output iterators (std::advance requires InputIterator).
+  template<typename _Iter> __attribute__((__always_inline__))
+    inline void __ptr_advance(_Iter&, ptrdiff_t) { }
+  template<typename _Tp> __attribute__((__always_inline__))
+    inline void __ptr_advance(_Tp*& __p, ptrdiff_t __n) { __p += __n; }
+# define _GLIBCXX_ADVANCE(P, N) std::__ptr_advance(P, N)
+#else
+  // For C++11 mode the __builtin_memmove calls are guarded by 'if constexpr'
+  // so we know the iterators used with memmove are guaranteed to be pointers.
+# define _GLIBCXX_TO_ADDR(P) P
+# define _GLIBCXX_ADVANCE(P, N) P += N
+#endif
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
+  template<bool _IsMove, typename _OutIter, typename _InIter>
+    __attribute__((__always_inline__)) _GLIBCXX20_CONSTEXPR
+    inline void
+    __assign_one(_OutIter& __out, _InIter& __in)
+    {
+#if __cplusplus >= 201103L
+      if constexpr (_IsMove)
+	*__out = std::move(*__in);
+      else
+#endif
+	*__out = *__in;
     }
+
+  template<bool _IsMove, typename _InIter, typename _Sent, typename _OutIter>
+    _GLIBCXX20_CONSTEXPR
+    inline _OutIter
+    __copy_move_a2(_InIter __first, _Sent __last, _OutIter __result)
+    {
+      typedef __decltype(*__first) _InRef;
+      typedef __decltype(*__result) _OutRef;
+      if _GLIBCXX_CONSTEXPR (!__is_trivially_assignable(_OutRef, _InRef))
+	{ } /* Skip the optimizations and use the loop at the end. */
+      else if (std::__is_constant_evaluated())
+	{ } /* Skip the optimizations and use the loop at the end. */
+      else if _GLIBCXX_CONSTEXPR (__memcpyable<_OutIter, _InIter>::__value)
+	{
+	  ptrdiff_t __n = std::distance(__first, __last);
+	  if (__builtin_expect(__n > 1, true))
+	    {
+	      __builtin_memmove(_GLIBCXX_TO_ADDR(__result),
+				_GLIBCXX_TO_ADDR(__first),
+				__n * sizeof(*__first));
+	      _GLIBCXX_ADVANCE(__result, __n);
+	    }
+	  else if (__n == 1)
+	    {
+	      std::__assign_one<_IsMove>(__result, __first);
+	      ++__result;
+	    }
+	  return __result;
+	}
+#if __cpp_lib_concepts
+      else if constexpr (__memcpyable_iterators<_OutIter, _InIter, _Sent>)
+	{
+	  if (auto __n = __last - __first; __n > 1) [[likely]]
+	    {
+	      void* __dest = std::to_address(__result);
+	      const void* __src = std::to_address(__first);
+	      size_t __nbytes = __n * sizeof(iter_value_t<_InIter>);
+	      // Advance the iterators first, in case doing so throws.
+	      __result += __n;
+	      __first += __n;
+	      __builtin_memmove(__dest, __src, __nbytes);
+	    }
+	  else if (__n == 1)
+	    {
+	      std::__assign_one<_IsMove>(__result, __first);
+	      ++__result;
+	    }
+	  return __result;
+	}
+#endif
+
+      for (; __first != __last; ++__result, (void)++__first)
+	std::__assign_one<_IsMove>(__result, __first);
+      return __result;
+    }
+#pragma GCC diagnostic pop
 
   template<bool _IsMove,
 	   typename _Tp, typename _Ref, typename _Ptr, typename _OI>
@@ -542,12 +498,14 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __copy_move_a1(_II, _II, _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>);
 
   template<bool _IsMove, typename _II, typename _OI>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_a1(_II __first, _II __last, _OI __result)
     { return std::__copy_move_a2<_IsMove>(__first, __last, __result); }
 
   template<bool _IsMove, typename _II, typename _OI>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_a(_II __first, _II __last, _OI __result)
@@ -582,12 +540,56 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 		  const ::__gnu_debug::_Safe_iterator<_IIte, _ISeq, _ICat>&,
 		  const ::__gnu_debug::_Safe_iterator<_OIte, _OSeq, _OCat>&);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // for if-constexpr
   template<typename _InputIterator, typename _Size, typename _OutputIterator>
     _GLIBCXX20_CONSTEXPR
     _OutputIterator
     __copy_n_a(_InputIterator __first, _Size __n, _OutputIterator __result,
 	       bool)
     {
+      typedef __decltype(*__first) _InRef;
+      typedef __decltype(*__result) _OutRef;
+      if _GLIBCXX_CONSTEXPR (!__is_trivially_assignable(_OutRef, _InRef))
+	{ } /* Skip the optimizations and use the loop at the end. */
+#ifdef __cpp_lib_is_constant_evaluated
+      else if (std::is_constant_evaluated())
+	{ } /* Skip the optimizations and use the loop at the end. */
+#endif
+      else if _GLIBCXX_CONSTEXPR (__memcpyable<_OutputIterator,
+					       _InputIterator>::__value)
+	{
+	  if (__builtin_expect(__n > 1, true))
+	    {
+	      __builtin_memmove(_GLIBCXX_TO_ADDR(__result),
+				_GLIBCXX_TO_ADDR(__first),
+				__n * sizeof(*__first));
+	      _GLIBCXX_ADVANCE(__result, __n);
+	    }
+	  else if (__n == 1)
+	    *__result++ = *__first;
+	  return __result;
+	}
+#if __cpp_lib_concepts
+      else if constexpr (__memcpyable_iterators<_OutputIterator,
+						_InputIterator>)
+	{
+	  if (__n > 1) [[likely]]
+	    {
+	      void* __dest = std::to_address(__result);
+	      const void* __src = std::to_address(__first);
+	      size_t __nbytes = __n * sizeof(iter_value_t<_InputIterator>);
+	      // Advance the iterators first, in case doing so throws.
+	      __result += __n;
+	      __first += __n;
+	      __builtin_memmove(__dest, __src, __nbytes);
+	    }
+	  else if (__n == 1)
+	    *__result++ = *__first;
+	  return __result;
+	}
+#endif
+
       if (__n > 0)
 	{
 	  while (true)
@@ -602,6 +604,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	}
       return __result;
     }
+#pragma GCC diagnostic pop
 
 #if _GLIBCXX_HOSTED
   template<typename _CharT, typename _Size>
@@ -689,107 +692,72 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #define _GLIBCXX_MOVE3(_Tp, _Up, _Vp) std::copy(_Tp, _Up, _Vp)
 #endif
 
-  template<bool _IsMove, bool _IsSimple, typename _Category>
-    struct __copy_move_backward
-    {
-      template<typename _BI1, typename _BI2>
-	_GLIBCXX20_CONSTEXPR
-	static _BI2
-	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-	{
-	  while (__first != __last)
-	    *--__result = *--__last;
-	  return __result;
-	}
-    };
-
-#if __cplusplus >= 201103L
-  template<typename _Category>
-    struct __copy_move_backward<true, false, _Category>
-    {
-      template<typename _BI1, typename _BI2>
-	_GLIBCXX20_CONSTEXPR
-	static _BI2
-	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-	{
-	  while (__first != __last)
-	    *--__result = std::move(*--__last);
-	  return __result;
-	}
-    };
-#endif
-
-  template<>
-    struct __copy_move_backward<false, false, random_access_iterator_tag>
-    {
-      template<typename _BI1, typename _BI2>
-	_GLIBCXX20_CONSTEXPR
-	static _BI2
-	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-	{
-	  typename iterator_traits<_BI1>::difference_type
-	    __n = __last - __first;
-	  for (; __n > 0; --__n)
-	    *--__result = *--__last;
-	  return __result;
-	}
-    };
-
-#if __cplusplus >= 201103L
-  template<>
-    struct __copy_move_backward<true, false, random_access_iterator_tag>
-    {
-      template<typename _BI1, typename _BI2>
-	_GLIBCXX20_CONSTEXPR
-	static _BI2
-	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
-	{
-	  typename iterator_traits<_BI1>::difference_type
-	    __n = __last - __first;
-	  for (; __n > 0; --__n)
-	    *--__result = std::move(*--__last);
-	  return __result;
-	}
-    };
-#endif
-
-  template<bool _IsMove>
-    struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
-    {
-      template<typename _Tp, typename _Up>
-	_GLIBCXX20_CONSTEXPR
-	static _Up*
-	__copy_move_b(_Tp* __first, _Tp* __last, _Up* __result)
-	{
-	  const ptrdiff_t _Num = __last - __first;
-	  if (__builtin_expect(_Num > 1, true))
-	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
-	  else if (_Num == 1)
-	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
-	      __assign_one(__result - 1, __first);
-	  return __result - _Num;
-	}
-    };
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
   template<bool _IsMove, typename _BI1, typename _BI2>
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
     {
-      typedef typename iterator_traits<_BI1>::iterator_category _Category;
+      typedef __decltype(*__first) _InRef;
+      typedef __decltype(*__result) _OutRef;
+      if _GLIBCXX_CONSTEXPR (!__is_trivially_assignable(_OutRef, _InRef))
+       { } /* Skip the optimizations and use the loop at the end. */
 #ifdef __cpp_lib_is_constant_evaluated
-      if (std::is_constant_evaluated())
-	return std::__copy_move_backward<_IsMove, false, _Category>::
-	  __copy_move_b(__first, __last, __result);
+      else if (std::is_constant_evaluated())
+       { } /* Skip the optimizations and use the loop at the end. */
 #endif
-      return std::__copy_move_backward<_IsMove,
-				       __memcpyable<_BI2, _BI1>::__value,
-				       _Category>::__copy_move_b(__first,
-								 __last,
-								 __result);
+      else if _GLIBCXX_CONSTEXPR (__memcpyable<_BI2, _BI1>::__value)
+	{
+	  ptrdiff_t __n = std::distance(__first, __last);
+	  std::advance(__result, -__n);
+	  if (__builtin_expect(__n > 1, true))
+	    {
+	      __builtin_memmove(_GLIBCXX_TO_ADDR(__result),
+				_GLIBCXX_TO_ADDR(__first),
+				__n * sizeof(*__first));
+	    }
+	  else if (__n == 1)
+	    std::__assign_one<_IsMove>(__result, __first);
+	  return __result;
+	}
+#if __cpp_lib_concepts
+      else if constexpr (__memcpyable_iterators<_BI2, _BI1>)
+	{
+	  if (auto __n = __last - __first; __n > 1) [[likely]]
+	    {
+	      const void* __src = std::to_address(__first);
+	      // Advance the iterators first, in case doing so throws.
+	      __result -= __n;
+	      __first += __n;
+	      void* __dest = std::to_address(__result);
+	      size_t __nbytes = __n * sizeof(iter_value_t<_BI1>);
+	      __builtin_memmove(__dest, __src, __nbytes);
+	    }
+	  else if (__n == 1)
+	    {
+	      --__result;
+	      std::__assign_one<_IsMove>(__result, __first);
+	    }
+	  return __result;
+	}
+#endif
+
+      while (__first != __last)
+	{
+	  --__last;
+	  --__result;
+	  std::__assign_one<_IsMove>(__result, __last);
+	}
+      return __result;
     }
+#pragma GCC diagnostic pop
+
+#undef _GLIBCXX_TO_ADDR
+#undef _GLIBCXX_ADVANCE
 
   template<bool _IsMove, typename _BI1, typename _BI2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     __copy_move_backward_a1(_BI1 __first, _BI1 __last, _BI2 __result)
@@ -818,6 +786,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 			    _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>);
 
   template<bool _IsMove, typename _II, typename _OI>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_backward_a(_II __first, _II __last, _OI __result)
@@ -873,6 +842,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
@@ -908,6 +878,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _BI2
     move_backward(_BI1 __first, _BI1 __last, _BI2 __result)
@@ -937,6 +908,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     __fill_a1(_ForwardIterator __first, _ForwardIterator __last,
 	      const _Tp& __value)
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       // We can optimize this loop by moving the load from __value outside
       // the loop, but only if we know that making that copy is trivial,
       // and the assignment in the loop is also trivial (so that the identity
@@ -951,6 +924,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	    && __is_same(_Tp, __typeof__(*__first))
 #endif
 	    && sizeof(_Tp) <= sizeof(long long);
+#pragma GCC diagnostic pop
 
       // When the condition is true, we use a copy of __value,
       // otherwise we just use another reference.
@@ -964,26 +938,31 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #pragma GCC diagnostic pop
 
   // Specialization: for char types we can use memset.
-  template<typename _Tp>
+  template<typename _Up, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline typename
-    __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, void>::__type
-    __fill_a1(_Tp* __first, _Tp* __last, const _Tp& __c)
+    __gnu_cxx::__enable_if<__is_byte<_Up>::__value
+			     && (__are_same<_Up, _Tp>::__value // for std::byte
+				   || __memcpyable_integer<_Tp>::__value),
+			   void>::__type
+    __fill_a1(_Up* __first, _Up* __last, const _Tp& __x)
     {
-      const _Tp __tmp = __c;
+      // This hoists the load out of the loop and also ensures that we don't
+      // use memset for cases where the assignment would be ill-formed.
+      const _Up __val = __x;
 #if __cpp_lib_is_constant_evaluated
       if (std::is_constant_evaluated())
 	{
 	  for (; __first != __last; ++__first)
-	    *__first = __tmp;
-	  return;
+	    *__first = __val;
 	}
 #endif
       if (const size_t __len = __last - __first)
-	__builtin_memset(__first, static_cast<unsigned char>(__tmp), __len);
+	__builtin_memset(__first, static_cast<unsigned char>(__val), __len);
     }
 
   template<typename _Ite, typename _Cont, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline void
     __fill_a1(::__gnu_cxx::__normal_iterator<_Ite, _Cont> __first,
@@ -1003,6 +982,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	    const bool&);
 
   template<typename _FIte, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline void
     __fill_a(_FIte __first, _FIte __last, const _Tp& __value)
@@ -1028,6 +1008,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
    *  to @c memset or @c wmemset.
   */
   template<typename _ForwardIterator, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline void
     fill(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
@@ -1040,6 +1021,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       std::__fill_a(__first, __last, __value);
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
   // Used by fill_n, generate_n, etc. to convert _Size to an integral type:
   inline _GLIBCXX_CONSTEXPR int
   __size_to_integer(int __n) { return __n; }
@@ -1089,9 +1072,11 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   __extension__ inline _GLIBCXX_CONSTEXPR long long
   __size_to_integer(__float128 __n) { return (long long)__n; }
 #endif
+#pragma GCC diagnostic pop
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wlong-long"
   template<typename _OutputIterator, typename _Size, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
@@ -1130,6 +1115,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	       std::input_iterator_tag);
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
@@ -1142,6 +1128,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
@@ -1154,6 +1141,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OutputIterator
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value,
@@ -1189,6 +1177,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   // DR 865. More algorithms that throw away information
   // DR 426. search_n(), fill_n(), and generate_n() with negative n
   template<typename _OI, typename _Size, typename _Tp>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline _OI
     fill_n(_OI __first, _Size __n, const _Tp& __value)
@@ -1268,6 +1257,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     }
 
   template<typename _II1, typename _II2>
+    __attribute__((__always_inline__))
     _GLIBCXX20_CONSTEXPR
     inline bool
     __equal_aux(_II1 __first1, _II1 __last1, _II2 __first2)
@@ -1574,6 +1564,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #if __cplusplus >= 201402L
       return std::__bit_width(make_unsigned_t<_Tp>(__n)) - 1;
 #else
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
       // Use +__n so it promotes to at least int.
       return (sizeof(+__n) * __CHAR_BIT__ - 1)
 	       - (sizeof(+__n) == sizeof(long long)
@@ -1581,6 +1573,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 		    : (sizeof(+__n) == sizeof(long)
 			 ? __builtin_clzl(+__n)
 			 : __builtin_clz(+__n)));
+#pragma GCC diagnostic pop
 #endif
     }
 

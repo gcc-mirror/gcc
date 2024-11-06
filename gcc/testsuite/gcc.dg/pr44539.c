@@ -1,6 +1,6 @@
 /* PR tree-optimization/44539 */
 /* { dg-do compile } */
-/* { dg-options "-ftracer -freorder-blocks -O2" } */
+/* { dg-options "-std=gnu17 -ftracer -freorder-blocks -O2" } */
 
 void bar (int file);
 extern int baz (void);

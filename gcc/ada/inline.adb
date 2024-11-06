@@ -498,7 +498,7 @@ package body Inline is
          --  package of the subprogram to find more calls to be inlined.
 
          if Comp = Cunit (Main_Unit)
-           or else Comp = Library_Unit (Cunit (Main_Unit))
+           or else Comp = Spec_Or_Body_Lib_Unit (Cunit (Main_Unit))
          then
             Add_Call (E);
             return Inline_Package;
@@ -2897,7 +2897,7 @@ package body Inline is
                         then
                            Child_Spec :=
                              Defining_Entity
-                               ((Unit (Library_Unit (Cunit (Main_Unit)))));
+                               ((Unit (Spec_Lib_Unit (Cunit (Main_Unit)))));
 
                            Comp :=
                              Parent (Unit_Declaration_Node (Body_Entity (P)));
@@ -4712,11 +4712,11 @@ package body Inline is
       --  done in Analyze_Inlined_Bodies.
 
       while Nkind (Unit (Comp)) = N_Subunit loop
-         Comp := Library_Unit (Comp);
+         Comp := Subunit_Parent (Comp);
       end loop;
 
       return Comp = Cunit (Main_Unit)
-        or else Comp = Library_Unit (Cunit (Main_Unit));
+        or else Comp = Spec_Or_Body_Lib_Unit (Cunit (Main_Unit));
    end In_Main_Unit_Or_Subunit;
 
    ----------------

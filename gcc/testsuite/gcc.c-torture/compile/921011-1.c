@@ -1,5 +1,3 @@
-/* { dg-skip-if "ptxas times out" { nvptx-*-* } { "-O1" } { "" } } */
-
 void
 fun (nb)
      int nb;

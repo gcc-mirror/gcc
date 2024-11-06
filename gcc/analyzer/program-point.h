@@ -184,7 +184,7 @@ public:
   void print (pretty_printer *pp, const format &f) const;
   void dump () const;
 
-  json::object *to_json () const;
+  std::unique_ptr<json::object> to_json () const;
 
   hashval_t hash () const;
   bool operator== (const program_point &other) const

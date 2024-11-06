@@ -487,6 +487,9 @@ T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 # Don't use this as a dependency--use $(GCC_PASSES).
 GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include -L$(objdir)/../ld $(TFLAGS)
 
+# The GCC to use when running selftests
+GCC_FOR_SELFTESTS = LC_ALL=C $(GCC_FOR_TARGET)
+
 # Set if the compiler was configured with --with-build-sysroot.
 SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
 
@@ -1572,6 +1575,7 @@ OBJS = \
 	jump.o \
 	langhooks.o \
 	late-combine.o \
+	lazy-diagnostic-path.o \
 	lcm.o \
 	lists.o \
 	loop-doloop.o \
@@ -1699,6 +1703,7 @@ OBJS = \
 	sanopt.o \
 	sancov.o \
 	simple-diagnostic-path.o \
+	tree-assume.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -1849,7 +1854,8 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o \
-	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
+	opts.o opts-common.o opts-diagnostic.o options.o \
+	vec.o hooks.o common/common-targhooks.o \
 	hash-table.o file-find.o spellcheck.o selftest.o opt-suggestions.o \
 	options-urls.o
 
@@ -3143,6 +3149,7 @@ else
 BUILD_CPPLIB = $(CPPLIB) $(LIBIBERTY)
 build/genmatch$(build_exeext): BUILD_LIBDEPS += $(LIBINTL_DEP) $(LIBICONV_DEP)
 build/genmatch$(build_exeext): BUILD_LIBS += $(LIBINTL) $(LIBICONV)
+build/genmatch.o: BUILD_CPPFLAGS += -DGENMATCH_SELFTESTS
 endif
 
 build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
@@ -3640,12 +3647,12 @@ $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	$(SHELL) $(srcdir)/doc/install.texi2html
 
 # Regenerate the .opt.urls files from the generated html, and from the .opt
-# files.  Doing so requires all languages that have their own HTML manuals
-# to be enabled.
+# files.
 .PHONY: regenerate-opt-urls
 OPT_URLS_HTML_DEPS = $(build_htmldir)/gcc/Option-Index.html \
 	$(build_htmldir)/gdc/Option-Index.html \
 	$(build_htmldir)/gfortran/Option-Index.html
+$(OPT_URLS_HTML_DEPS): %/Option-Index.html: %/index.html
 
 regenerate-opt-urls: $(srcdir)/regenerate-opt-urls.py $(OPT_URLS_HTML_DEPS)
 	$(srcdir)/regenerate-opt-urls.py $(build_htmldir) $(shell dirname $(srcdir))

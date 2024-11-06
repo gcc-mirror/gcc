@@ -783,6 +783,26 @@ namespace __gnu_test
       }
     };
 
+  // An input iterator type with an rvalue reference type.
+  template<typename T>
+    struct input_iterator_wrapper_rval : input_iterator_wrapper<T>
+    {
+      using input_iterator_wrapper<T>::input_iterator_wrapper;
+
+      using input_iterator_wrapper<T>::operator++;
+
+      input_iterator_wrapper_rval&
+      operator++()
+      {
+	input_iterator_wrapper<T>::operator++();
+	return *this;
+      }
+
+      T&&
+      operator*() const
+      { return std::move(input_iterator_wrapper<T>::operator*()); }
+    };
+
   // A type meeting the minimum std::range requirements
   template<typename T, template<typename> class Iter>
     class test_range

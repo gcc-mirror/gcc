@@ -743,14 +743,14 @@ _mm_cmpeq_pi8 (__m64 __m1, __m64 __m2)
   __mu1.as_m64 = __m1;
   __mu2.as_m64 = __m2;
 
-  __res.as_char[0] = (__mu1.as_char[0] == __mu2.as_char[0])? -1: 0;
-  __res.as_char[1] = (__mu1.as_char[1] == __mu2.as_char[1])? -1: 0;
-  __res.as_char[2] = (__mu1.as_char[2] == __mu2.as_char[2])? -1: 0;
-  __res.as_char[3] = (__mu1.as_char[3] == __mu2.as_char[3])? -1: 0;
-  __res.as_char[4] = (__mu1.as_char[4] == __mu2.as_char[4])? -1: 0;
-  __res.as_char[5] = (__mu1.as_char[5] == __mu2.as_char[5])? -1: 0;
-  __res.as_char[6] = (__mu1.as_char[6] == __mu2.as_char[6])? -1: 0;
-  __res.as_char[7] = (__mu1.as_char[7] == __mu2.as_char[7])? -1: 0;
+  __res.as_char[0] = (__mu1.as_char[0] == __mu2.as_char[0]) ? -1 : 0;
+  __res.as_char[1] = (__mu1.as_char[1] == __mu2.as_char[1]) ? -1 : 0;
+  __res.as_char[2] = (__mu1.as_char[2] == __mu2.as_char[2]) ? -1 : 0;
+  __res.as_char[3] = (__mu1.as_char[3] == __mu2.as_char[3]) ? -1 : 0;
+  __res.as_char[4] = (__mu1.as_char[4] == __mu2.as_char[4]) ? -1 : 0;
+  __res.as_char[5] = (__mu1.as_char[5] == __mu2.as_char[5]) ? -1 : 0;
+  __res.as_char[6] = (__mu1.as_char[6] == __mu2.as_char[6]) ? -1 : 0;
+  __res.as_char[7] = (__mu1.as_char[7] == __mu2.as_char[7]) ? -1 : 0;
 
   return (__m64) __res.as_m64;
 #endif
@@ -778,14 +778,14 @@ _mm_cmpgt_pi8 (__m64 __m1, __m64 __m2)
   __mu1.as_m64 = __m1;
   __mu2.as_m64 = __m2;
 
-  __res.as_char[0] = (__mu1.as_char[0] > __mu2.as_char[0])? -1: 0;
-  __res.as_char[1] = (__mu1.as_char[1] > __mu2.as_char[1])? -1: 0;
-  __res.as_char[2] = (__mu1.as_char[2] > __mu2.as_char[2])? -1: 0;
-  __res.as_char[3] = (__mu1.as_char[3] > __mu2.as_char[3])? -1: 0;
-  __res.as_char[4] = (__mu1.as_char[4] > __mu2.as_char[4])? -1: 0;
-  __res.as_char[5] = (__mu1.as_char[5] > __mu2.as_char[5])? -1: 0;
-  __res.as_char[6] = (__mu1.as_char[6] > __mu2.as_char[6])? -1: 0;
-  __res.as_char[7] = (__mu1.as_char[7] > __mu2.as_char[7])? -1: 0;
+  __res.as_char[0] = (__mu1.as_char[0] > __mu2.as_char[0]) ? -1 : 0;
+  __res.as_char[1] = (__mu1.as_char[1] > __mu2.as_char[1]) ? -1 : 0;
+  __res.as_char[2] = (__mu1.as_char[2] > __mu2.as_char[2]) ? -1 : 0;
+  __res.as_char[3] = (__mu1.as_char[3] > __mu2.as_char[3]) ? -1 : 0;
+  __res.as_char[4] = (__mu1.as_char[4] > __mu2.as_char[4]) ? -1 : 0;
+  __res.as_char[5] = (__mu1.as_char[5] > __mu2.as_char[5]) ? -1 : 0;
+  __res.as_char[6] = (__mu1.as_char[6] > __mu2.as_char[6]) ? -1 : 0;
+  __res.as_char[7] = (__mu1.as_char[7] > __mu2.as_char[7]) ? -1 : 0;
 
   return (__m64) __res.as_m64;
 #endif
@@ -815,10 +815,10 @@ _mm_cmpeq_pi16 (__m64 __m1, __m64 __m2)
   __mu1.as_m64 = __m1;
   __mu2.as_m64 = __m2;
 
-  __res.as_short[0] = (__mu1.as_short[0] == __mu2.as_short[0])? -1: 0;
-  __res.as_short[1] = (__mu1.as_short[1] == __mu2.as_short[1])? -1: 0;
-  __res.as_short[2] = (__mu1.as_short[2] == __mu2.as_short[2])? -1: 0;
-  __res.as_short[3] = (__mu1.as_short[3] == __mu2.as_short[3])? -1: 0;
+  __res.as_short[0] = (__mu1.as_short[0] == __mu2.as_short[0]) ? -1 : 0;
+  __res.as_short[1] = (__mu1.as_short[1] == __mu2.as_short[1]) ? -1 : 0;
+  __res.as_short[2] = (__mu1.as_short[2] == __mu2.as_short[2]) ? -1 : 0;
+  __res.as_short[3] = (__mu1.as_short[3] == __mu2.as_short[3]) ? -1 : 0;
 
   return (__m64) __res.as_m64;
 #endif
@@ -846,10 +846,10 @@ _mm_cmpgt_pi16 (__m64 __m1, __m64 __m2)
   __mu1.as_m64 = __m1;
   __mu2.as_m64 = __m2;
 
-  __res.as_short[0] = (__mu1.as_short[0] > __mu2.as_short[0])? -1: 0;
-  __res.as_short[1] = (__mu1.as_short[1] > __mu2.as_short[1])? -1: 0;
-  __res.as_short[2] = (__mu1.as_short[2] > __mu2.as_short[2])? -1: 0;
-  __res.as_short[3] = (__mu1.as_short[3] > __mu2.as_short[3])? -1: 0;
+  __res.as_short[0] = (__mu1.as_short[0] > __mu2.as_short[0]) ? -1 : 0;
+  __res.as_short[1] = (__mu1.as_short[1] > __mu2.as_short[1]) ? -1 : 0;
+  __res.as_short[2] = (__mu1.as_short[2] > __mu2.as_short[2]) ? -1 : 0;
+  __res.as_short[3] = (__mu1.as_short[3] > __mu2.as_short[3]) ? -1 : 0;
 
   return (__m64) __res.as_m64;
 #endif
@@ -879,8 +879,8 @@ _mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
   __mu1.as_m64 = __m1;
   __mu2.as_m64 = __m2;
 
-  __res.as_int[0] = (__mu1.as_int[0] == __mu2.as_int[0])? -1: 0;
-  __res.as_int[1] = (__mu1.as_int[1] == __mu2.as_int[1])? -1: 0;
+  __res.as_int[0] = (__mu1.as_int[0] == __mu2.as_int[0]) ? -1 : 0;
+  __res.as_int[1] = (__mu1.as_int[1] == __mu2.as_int[1]) ? -1 : 0;
 
   return (__m64) __res.as_m64;
 #endif
@@ -908,8 +908,8 @@ _mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
   __mu1.as_m64 = __m1;
   __mu2.as_m64 = __m2;
 
-  __res.as_int[0] = (__mu1.as_int[0] > __mu2.as_int[0])? -1: 0;
-  __res.as_int[1] = (__mu1.as_int[1] > __mu2.as_int[1])? -1: 0;
+  __res.as_int[0] = (__mu1.as_int[0] > __mu2.as_int[0]) ? -1 : 0;
+  __res.as_int[1] = (__mu1.as_int[1] > __mu2.as_int[1]) ? -1 : 0;
 
   return (__m64) __res.as_m64;
 #endif

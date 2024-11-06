@@ -252,19 +252,19 @@ CPP_SELFTEST_FLAGS = -xc++ $(SELFTEST_FLAGS)
 
 # Run the C++ selftests
 s-selftest-c++: $(CPP_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS)
+	$(GCC_FOR_SELFTESTS) $(CPP_SELFTEST_FLAGS)
 	$(STAMP) $@
 
 # Convenience method for running C++ selftests under gdb:
 .PHONY: selftest-c++-gdb
 selftest-c++-gdb: $(CPP_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS) \
+	$(GCC_FOR_SELFTESTS) $(CPP_SELFTEST_FLAGS) \
 	  -wrapper gdb,--args
 
 # Convenience method for running C++ selftests under valgrind:
 .PHONY: selftest-c++-valgrind
 selftest-c++-valgrind: $(CPP_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS) \
+	$(GCC_FOR_SELFTESTS) $(CPP_SELFTEST_FLAGS) \
 	  -wrapper valgrind,--leak-check=full
 
 # 'make check' in gcc/ looks for check-c++, as do all toplevel C++-related

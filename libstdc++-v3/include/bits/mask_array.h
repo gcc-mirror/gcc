@@ -32,7 +32,9 @@
 #ifndef _MASK_ARRAY_H
 #define _MASK_ARRAY_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -69,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ///  Copy constructor.  Both slices refer to the same underlying array.
       mask_array (const mask_array&);
-      
+
       ///  Assignment operator.  Assigns elements to corresponding elements
       ///  of @a a.
       mask_array& operator=(const mask_array&);

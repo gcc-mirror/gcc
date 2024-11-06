@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -35,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "diagnostic.h"
 #include "pretty-print.h"
+#include "pretty-print-markup.h"
 #include "tree-pretty-print.h"
 #include "intl.h"
 
@@ -380,7 +382,7 @@ lookup_scoped_attribute_spec (const_tree ns, const_tree name)
   struct substring attr;
   scoped_attributes *attrs;
 
-  const char *ns_str = (ns != NULL_TREE) ? IDENTIFIER_POINTER (ns): NULL;
+  const char *ns_str = (ns != NULL_TREE) ? IDENTIFIER_POINTER (ns) : NULL;
 
   attrs = find_attribute_namespace (ns_str);
 
@@ -1256,7 +1258,7 @@ make_dispatcher_decl (const tree decl)
   fn_type = TREE_TYPE (decl);
   func_type = build_function_type (TREE_TYPE (fn_type),
 				   TYPE_ARG_TYPES (fn_type));
-  
+
   func_decl = build_fn_decl (func_name, func_type);
   XDELETEVEC (func_name);
   TREE_USED (func_decl) = 1;
@@ -1269,7 +1271,7 @@ make_dispatcher_decl (const tree decl)
   /* This will be of type IFUNCs have to be externally visible.  */
   TREE_PUBLIC (func_decl) = 1;
 
-  return func_decl;  
+  return func_decl;
 }
 
 /* Returns true if DECL is multi-versioned using the target attribute, and this
@@ -2196,15 +2198,14 @@ has_attribute (tree node, tree attrs, const char *aname)
    the "template" function declaration TMPL and DECL.  The word "template"
    doesn't necessarily refer to a C++ template but rather a declaration
    whose attributes should be matched by those on DECL.  For a non-zero
-   return value set *ATTRSTR to a string representation of the list of
-   mismatched attributes with quoted names.
+   return value append the names of the mismatcheed attributes to OUTATTRS.
    ATTRLIST is a list of additional attributes that SPEC should be
    taken to ultimately be declared with.  */
 
 unsigned
 decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 			     const char* const blacklist[],
-			     pretty_printer *attrstr)
+			     auto_vec<const char *> &outattrs)
 {
   if (TREE_CODE (tmpl) != FUNCTION_DECL)
     return 0;
@@ -2278,11 +2279,7 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 
 	  if (!found)
 	    {
-	      if (nattrs)
-		pp_string (attrstr, ", ");
-	      pp_begin_quote (attrstr, pp_show_color (global_dc->m_printer));
-	      pp_string (attrstr, blacklist[i]);
-	      pp_end_quote (attrstr, pp_show_color (global_dc->m_printer));
+	      outattrs.safe_push (blacklist[i]);
 	      ++nattrs;
 	    }
 
@@ -2312,23 +2309,24 @@ maybe_diag_alias_attributes (tree alias, tree target)
     "returns_twice", NULL
   };
 
-  pretty_printer attrnames;
   if (warn_attribute_alias > 1)
     {
       /* With -Wattribute-alias=2 detect alias declarations that are more
 	 restrictive than their targets first.  Those indicate potential
 	 codegen bugs.  */
+      auto_vec<const char *> mismatches;
       if (unsigned n = decls_mismatched_attributes (alias, target, NULL_TREE,
-						    blacklist, &attrnames))
+						    blacklist, mismatches))
 	{
 	  auto_diagnostic_group d;
+	  pp_markup::comma_separated_quoted_strings e (mismatches);
 	  if (warning_n (DECL_SOURCE_LOCATION (alias),
 			 OPT_Wattribute_alias_, n,
 			 "%qD specifies more restrictive attribute than "
-			 "its target %qD: %s",
+			 "its target %qD: %e",
 			 "%qD specifies more restrictive attributes than "
-			 "its target %qD: %s",
-			 alias, target, pp_formatted_text (&attrnames)))
+			 "its target %qD: %e",
+			 alias, target, &e))
 	    inform (DECL_SOURCE_LOCATION (target),
 		    "%qD target declared here", alias);
 	  return;
@@ -2338,17 +2336,19 @@ maybe_diag_alias_attributes (tree alias, tree target)
   /* Detect alias declarations that are less restrictive than their
      targets.  Those suggest potential optimization opportunities
      (solved by adding the missing attribute(s) to the alias).  */
+  auto_vec<const char *> mismatches;
   if (unsigned n = decls_mismatched_attributes (target, alias, NULL_TREE,
-						blacklist, &attrnames))
+						blacklist, mismatches))
     {
       auto_diagnostic_group d;
+      pp_markup::comma_separated_quoted_strings e (mismatches);
       if (warning_n (DECL_SOURCE_LOCATION (alias),
 		     OPT_Wmissing_attributes, n,
 		     "%qD specifies less restrictive attribute than "
-		     "its target %qD: %s",
+		     "its target %qD: %e",
 		     "%qD specifies less restrictive attributes than "
-		     "its target %qD: %s",
-		     alias, target, pp_formatted_text (&attrnames)))
+		     "its target %qD: %e",
+		     alias, target, &e))
 	inform (DECL_SOURCE_LOCATION (target),
 		"%qD target declared here", alias);
     }
@@ -2674,10 +2674,9 @@ attr_access::array_as_string (tree type) const
 
   /* Format the type using the current pretty printer.  The generic tree
      printer does a terrible job.  */
-  pretty_printer *pp = global_dc->m_printer->clone ();
-  pp_printf (pp, "%qT", type);
-  typstr = pp_formatted_text (pp);
-  delete pp;
+  std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
+  pp_printf (pp.get (), "%qT", type);
+  typstr = pp_formatted_text (pp.get ());
 
   return typstr;
 }

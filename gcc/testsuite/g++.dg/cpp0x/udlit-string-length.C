@@ -4,33 +4,33 @@
 typedef decltype(sizeof(0)) size_type;
 
 constexpr size_type
-operator"" _len(const char*, size_type len)
+operator ""_len(const char*, size_type len)
 {
   return len;
 }
 
 #if __cpp_char8_t
 constexpr size_type
-operator"" _len(const char8_t*, size_type len)
+operator ""_len(const char8_t*, size_type len)
 {
   return len;
 }
 #endif
 
 constexpr size_type
-operator"" _len(const wchar_t*, size_type len)
+operator ""_len(const wchar_t*, size_type len)
 {
   return len;
 }
 
 constexpr size_type
-operator"" _len(const char16_t*, size_type len)
+operator ""_len(const char16_t*, size_type len)
 {
   return len;
 }
 
 constexpr size_type
-operator"" _len(const char32_t*, size_type len)
+operator ""_len(const char32_t*, size_type len)
 {
   return len;
 }

@@ -67,4 +67,29 @@ _mm256_sm4rnds4_epi32 (__m256i __A, __m256i __B)
 #pragma GCC pop_options
 #endif /* __DISABLE_SM4__ */
 
+#if !defined (__SM4__) || !defined (__AVX10_2_512__)
+#pragma GCC push_options
+#pragma GCC target("sm4,avx10.2-512")
+#define __DISABLE_SM4_512__
+#endif /* __SM4_512__ */
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_sm4key4_epi32 (__m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_vsm4key4512 ((__v16si) __A, (__v16si) __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_sm4rnds4_epi32 (__m512i __A, __m512i __B)
+{
+  return (__m512i) __builtin_ia32_vsm4rnds4512 ((__v16si) __A, (__v16si) __B);
+}
+
+#ifdef __DISABLE_SM4_512__
+#undef __DISABLE_SM4_512__
+#pragma GCC pop_options
+#endif /* __DISABLE_SM4_512__ */
+
 #endif /* _SM4INTRIN_H_INCLUDED */

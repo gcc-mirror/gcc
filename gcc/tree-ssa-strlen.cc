@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1266,7 +1267,7 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
 		  else
 		    pdata->maxbound = pdata->maxlen;
 		}
-	      else	
+	      else
 		pdata->maxlen = build_all_ones_cst (size_type_node);
 	    }
 	  else

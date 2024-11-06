@@ -7544,6 +7544,36 @@ Enable/disbale the generation of the AVX10.2 instructions.
 @itemx no-avx10.2-512
 Enable/disable the generation of the AVX10.2 512 bit instructions.
 
+@cindex @code{target("amx-avx512")} function attribute, x86
+@item amx-avx512
+@itemx no-amx-avx512
+Enable/disable the generation of the AMX-AVX512 instructions.
+
+@cindex @code{target("amx-tf32")} function attribute, x86
+@item amx-tf32
+@itemx no-amx-tf32
+Enable/disable the generation of the AMX-TF32 instructions.
+
+@cindex @code{target("amx-transpose")} function attribute, x86
+@item amx-transpose
+@itemx no-amx-transpose
+Enable/disable the generation of the AMX-TRANSPOSE instructions.
+
+@cindex @code{target("amx-fp8")} function attribute, x86
+@item amx-fp8
+@itemx no-amx-fp8
+Enable/disable the generation of the AMX-FP8 instructions.
+
+@cindex @code{target("movrs")} function attribute, x86
+@item movrs
+@itemx no-movrs
+Enable/disable the generation of the MOVRS instructions.
+
+@cindex @code{target("amx-movrs")} function attribute, x86
+@item amx-movrs
+@itemx no-amx-movrs
+Enable/disable the generation of the AMX-MOVRS instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
@@ -12548,6 +12578,35 @@ The list below describes the supported modifiers and their effects for RISC-V.
 @item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
 @end multitable
 
+@anchor{shOperandmodifiers}
+@subsubsection SH Operand Modifiers
+
+The list below describes the supported modifiers and their effects for the SH family of processors.
+
+@multitable @columnfractions .10 .90
+@headitem Modifier @tab Description
+@item @code{.} @tab Print ''@code{.s}'' if the instruction needs a delay slot.
+@item @code{,} @tab Print ''@code{LOCAL_LABEL_PREFIX}''.
+@item @code{@@} @tab Print ''@code{trap}'', ''@code{rte}'' or ''@code{rts}'' depending on the interrupt pragma used.
+@item @code{#} @tab Print ''@code{nop}'' if there is nothing to put in the delay slot.
+@item @code{'} @tab Print likelihood suffix (''@code{/u}'' for unlikely).
+@item @code{>} @tab Print branch target if ''@code{-fverbose-asm}''.
+@item @code{O} @tab Require a constant operand and print the constant expression with no punctuation.
+@item @code{R} @tab Print the ''@code{LSW}'' of a dp value - changes if in little endian.
+@item @code{S} @tab Print the ''@code{MSW}'' of a dp value - changes if in little endian.
+@item @code{T} @tab Print the next word of a dp value - same as ''@code{R}'' in big endian mode.
+@item @code{M} @tab Print ''@code{.b }'', ''@code{.w}'', ''@code{.l}'', ''@code{.s}'', ''@code{.d}'', suffix if operand is a MEM.
+@item @code{N} @tab Print ''@code{r63}'' if the operand is ''@code{const_int 0}''.
+@item @code{d} @tab Print a ''@code{V2SF}'' as ''@code{dN}'' instead of ''@code{fpN}''.
+@item @code{m} @tab Print the pair ''@code{base,offset}'' or ''@code{base,index}'' for LD and ST.
+@item @code{U} @tab Like ''@code{%m}'' for ''@code{LD}'' and ''@code{ST}'', ''@code{HI}'' and ''@code{LO}''.
+@item @code{V} @tab Print the position of a single bit set.
+@item @code{W} @tab Print the position of a single bit cleared.
+@item @code{t} @tab Print a memory address which is a register.
+@item @code{u} @tab Print the lowest 16 bits of ''@code{CONST_INT}'', as an unsigned value.
+@item @code{o} @tab Print an operator.
+@end multitable
+
 @lowersections
 @include md.texi
 @raisesections
@@ -15124,11 +15183,12 @@ evaluate code depending on the value of a constant expression.  This
 built-in function returns @var{exp1} if @var{const_exp}, which is an
 integer constant expression, is nonzero.  Otherwise it returns @var{exp2}.
 
-This built-in function is analogous to the @samp{? :} operator in C,
-except that the expression returned has its type unaltered by promotion
-rules.  Also, the built-in function does not evaluate the expression
-that is not chosen.  For example, if @var{const_exp} evaluates to @code{true},
-@var{exp2} is not evaluated even if it has side effects.
+Like the @samp{? :} operator, this built-in function does not evaluate the
+expression that is not chosen.  For example, if @var{const_exp} evaluates to
+@code{true}, @var{exp2} is not evaluated even if it has side effects.  On the
+other hand, @code{__builtin_choose_expr} differs from @samp{? :} in that the
+first operand must be a compile-time constant, and the other operands are not
+subject to the @samp{? :} type constraints and promotions.
 
 This built-in function can return an lvalue if the chosen argument is an
 lvalue.
@@ -15287,6 +15347,61 @@ initializers of variables usable in constant expressions.   For more details
 refer to the latest revision of the C++ standard.
 @enddefbuiltin
 
+@defbuiltin{@var{type} __builtin_counted_by_ref (@var{ptr})}
+The built-in function @code{__builtin_counted_by_ref} checks whether the array
+object pointed by the pointer @var{ptr} has another object associated with it
+that represents the number of elements in the array object through the
+@code{counted_by} attribute (i.e. the counted-by object). If so, returns a
+pointer to the corresponding counted-by object.
+If such counted-by object does not exist, returns a null pointer.
+
+This built-in function is only available in C for now.
+
+The argument @var{ptr} must be a pointer to an array.
+The @var{type} of the returned value is a pointer type pointing to the
+corresponding type of the counted-by object or a void pointer type in case
+of a null pointer being returned.
+
+For example:
+
+@smallexample
+struct foo1 @{
+  int counter;
+  struct bar1 array[] __attribute__((counted_by (counter)));
+@} *p;
+
+struct foo2 @{
+  int other;
+  struct bar2 array[];
+@} *q;
+@end smallexample
+
+@noindent
+the following call to the built-in
+
+@smallexample
+__builtin_counted_by_ref (p->array)
+@end smallexample
+
+@noindent
+returns:
+
+@smallexample
+&p->counter with type @code{int *}.
+@end smallexample
+
+@noindent
+However, the following call to the built-in
+
+@smallexample
+__builtin_counted_by_ref (q->array)
+@end smallexample
+
+@noindent
+returns a null pointer to @code{void}.
+
+@enddefbuiltin
+
 @defbuiltin{void __builtin_clear_padding (@var{ptr})}
 The built-in function @code{__builtin_clear_padding} function clears
 padding bits inside of the object representation of object pointed by
@@ -15440,8 +15555,7 @@ This built-in inhibits re-association of the floating-point expression
 @var{expr} with expressions consuming the return value of the built-in. The
 expression @var{expr} itself can be reordered, and the whole expression
 @var{expr} can be reordered with operands after the barrier. The barrier is
-only relevant when @code{-fassociative-math} is active, since otherwise
-floating-point is not treated as associative.
+relevant when @code{-fassociative-math} is active.
 
 @smallexample
 float x0 = a + b - b;
@@ -15451,6 +15565,19 @@ float x1 = __builtin_assoc_barrier(a + b) - b;
 @noindent
 means that, with @code{-fassociative-math}, @code{x0} can be optimized to
 @code{x0 = a} but @code{x1} cannot.
+
+It is also relevant when @code{-ffp-contract=fast} is active;
+it will prevent contraction between expressions.
+
+@smallexample
+float x0 = a * b + c;
+float x1 = __builtin_assoc_barrier (a * b) + c;
+@end smallexample
+
+@noindent
+means that, with @code{-ffp-contract=fast}, @code{x0} may be optimized to
+use a fused multiply-add instruction but @code{x1} cannot.
+
 @enddefbuiltin
 
 @defbuiltin{{void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)}
@@ -16042,6 +16169,32 @@ in C.  It is type-generic, the argument can be any unsigned integer
 (standard, extended or bit-precise).  No integral argument promotions are
 performed on the argument.  It is equivalent to
 @code{(unsigned int) __builtin_ctzg (@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{@var{type1} __builtin_stdc_rotate_left (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
+The @code{__builtin_stdc_rotate_left} function is available only
+in C.  It is type-generic, the first argument can be any unsigned integer
+(standard, extended or bit-precise) and second argument any signed or
+unsigned integer or @code{char}.  No integral argument promotions are
+performed on the arguments.  It is equivalent to
+@code{(@var{type1}) ((@var{arg1} << (@var{arg2} % @var{prec}))
+| (@var{arg1} >> ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
+where @var{prec} is bit width of @var{type1}, except that side-effects
+in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
+undefined if @var{arg2} is negative.
+@enddefbuiltin
+
+@defbuiltin{@var{type1} __builtin_stdc_rotate_right (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
+The @code{__builtin_stdc_rotate_right} function is available only
+in C.  It is type-generic, the first argument can be any unsigned integer
+(standard, extended or bit-precise) and second argument any signed or
+unsigned integer or @code{char}.  No integral argument promotions are
+performed on the arguments.  It is equivalent to
+@code{(@var{type1}) ((@var{arg1} >> (@var{arg2} % @var{prec}))
+| (@var{arg1} << ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
+where @var{prec} is bit width of @var{type1}, except that side-effects
+in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
+undefined if @var{arg2} is negative.
 @enddefbuiltin
 
 @defbuiltin{double __builtin_powi (double, int)}
@@ -29183,7 +29336,6 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * C++ Attributes::      Variable, function, and type attributes for C++ only.
 * Function Multiversioning::   Declaring multiple function versions.
 * Type Traits::         Compiler support for type traits.
-* C++ Concepts::        Improved support for generic programming.
 * Deprecated Features:: Things will disappear from G++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
@@ -29955,9 +30107,24 @@ If @var{base_type} is a base class of @var{derived_type}
 Top-level cv-qualifications of @var{base_type} and
 @var{derived_type} are ignored.  For the purposes of this trait, a
 class type is considered is own base.
+The trait is @code{true} even if @var{base_type} is an ambiguous or
+inaccessible base class of @var{derived_type}.
 Requires: if @code{__is_class (base_type)} and @code{__is_class (derived_type)}
 are @code{true} and @var{base_type} and @var{derived_type} are not the same
 type (disregarding cv-qualifiers), @var{derived_type} shall be a complete
+type.  A diagnostic is produced if this requirement is not met.
+@enddefbuiltin
+
+@defbuiltin{bool __builtin_is_virtual_base_of (@var{base_type}, @var{derived_type})}
+If @var{base_type} is a virtual base class of @var{derived_type}
+([class.derived], [class.mi]) then the trait is @code{true},
+otherwise it is @code{false}.
+Top-level cv-qualifications of @var{base_type} and
+@var{derived_type} are ignored.
+The trait is @code{true} even if @var{base_type} is an ambiguous or
+inaccessible virtual base class of @var{derived_type}.
+Requires: if @code{__is_class (base_type)} and @code{__is_class (derived_type)}
+are @code{true}, @var{derived_type} shall be a complete
 type.  A diagnostic is produced if this requirement is not met.
 @enddefbuiltin
 
@@ -30045,49 +30212,6 @@ from @code{0} to @code{@var{length}-1}.  This is provided for
 efficient implementation of @code{std::make_integer_sequence}.
 @enddefbuiltin
 
-
-@node C++ Concepts
-@section C++ Concepts
-
-C++ concepts provide much-improved support for generic programming. In
-particular, they allow the specification of constraints on template arguments.
-The constraints are used to extend the usual overloading and partial
-specialization capabilities of the language, allowing generic data structures
-and algorithms to be ``refined'' based on their properties rather than their
-type names.
-
-The following keywords are reserved for concepts.
-
-@table @code
-@kindex assumes
-@item assumes
-States an expression as an assumption, and if possible, verifies that the
-assumption is valid. For example, @code{assume(n > 0)}.
-
-@kindex axiom
-@item axiom
-Introduces an axiom definition. Axioms introduce requirements on values.
-
-@kindex forall
-@item forall
-Introduces a universally quantified object in an axiom. For example,
-@code{forall (int n) n + 0 == n}.
-
-@kindex concept
-@item concept
-Introduces a concept definition. Concepts are sets of syntactic and semantic
-requirements on types and their values.
-
-@kindex requires
-@item requires
-Introduces constraints on template arguments or requirements for a member
-function of a class template.
-@end table
-
-The front end also exposes a number of internal mechanism that can be used
-to simplify the writing of type traits. Note that some of these traits are
-likely to be removed in the future.
-
 @defbuiltin{bool __is_same (@var{type1}, @var{type2})}
 A binary type trait: @code{true} whenever the @var{type1} and
 @var{type2} refer to the same type.
@@ -30112,16 +30236,6 @@ future version.
 The use of default arguments in function pointers, function typedefs
 and other places where they are not permitted by the standard is
 deprecated and will be removed from a future version of G++.
-
-G++ allows floating-point literals to appear in integral constant expressions,
-e.g.@: @samp{ enum E @{ e = int(2.2 * 3.7) @} }
-This extension is deprecated and will be removed from a future version.
-
-G++ allows static data members of const floating-point type to be declared
-with an initializer in a class definition. The standard only allows
-initializers for static members of const integral types and const
-enumeration types so this extension has been deprecated and will be removed
-from a future version.
 
 G++ allows attributes to follow a parenthesized direct initializer,
 e.g.@: @samp{ int f (0) __attribute__ ((something)); } This extension

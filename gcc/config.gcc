@@ -272,7 +272,7 @@ esac
 
 # Obsolete configurations.
 case ${target} in
-     ia64*-*-*				\
+     ia64*-*-hpux* | ia64*-*-*vms* | ia64*-*-elf*	\
    | nios2*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -351,8 +351,8 @@ aarch64*-*-*)
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
 	d_target_objs="aarch64-d.o"
-	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o aarch64-sve-builtins-sve2.o aarch64-sve-builtins-sme.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o aarch-bti-insert.o aarch64-cc-fusion.o aarch64-early-ra.o aarch64-ldp-fusion.o"
-	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.h \$(srcdir)/config/aarch64/aarch64-builtins.cc \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
+	extra_objs="aarch64-builtins.o aarch-common.o aarch64-sve-builtins.o aarch64-sve-builtins-shapes.o aarch64-sve-builtins-base.o aarch64-sve-builtins-sve2.o aarch64-sve-builtins-sme.o cortex-a57-fma-steering.o aarch64-speculation.o aarch-bti-insert.o aarch64-cc-fusion.o aarch64-early-ra.o aarch64-ldp-fusion.o"
+	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-protos.h \$(srcdir)/config/aarch64/aarch64-builtins.h \$(srcdir)/config/aarch64/aarch64-builtins.cc \$(srcdir)/config/aarch64/aarch64-sve-builtins.h \$(srcdir)/config/aarch64/aarch64-sve-builtins.cc"
 	target_has_targetm_common=yes
 	;;
 alpha*-*-*)
@@ -458,7 +458,9 @@ i[34567]86-*-* | x86_64-*-*)
 		       avx10_2bf16intrin.h avx10_2-512bf16intrin.h
 		       avx10_2satcvtintrin.h avx10_2-512satcvtintrin.h
 		       avx10_2minmaxintrin.h avx10_2-512minmaxintrin.h
-		       avx10_2copyintrin.h"
+		       avx10_2copyintrin.h amxavx512intrin.h amxtf32intrin.h
+		       amxtransposeintrin.h amxfp8intrin.h movrsintrin.h
+		       amxmovrsintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
@@ -558,7 +560,7 @@ riscv*)
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o"
 	extra_objs="${extra_objs} thead.o riscv-target-attr.o"
 	d_target_objs="riscv-d.o"
-	extra_headers="riscv_vector.h riscv_crypto.h riscv_bitmanip.h riscv_th_vector.h"
+	extra_headers="riscv_vector.h riscv_crypto.h riscv_bitmanip.h riscv_th_vector.h riscv_cmo.h"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.cc"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.h"
 	;;
@@ -1806,11 +1808,12 @@ ft32-*-elf)
 	tmake_file="${tmake_file} ft32/t-ft32"
 	;;
 amdgcn-*-amdhsa)
-	tm_file="elfos.h gcn/gcn-hsa.h gcn/gcn.h newlib-stdint.h"
+	tm_file="elfos.h gcn/gcn-hsa.h gcn/gcn.h newlib-stdint.h ./gcn-device-macros.h"
 	tmake_file="gcn/t-gcn-hsa"
 	native_system_header_dir=/include
 	extra_modes=gcn/gcn-modes.def
 	extra_objs="${extra_objs} gcn-tree.o"
+	extra_options="${extra_options} gcn/gcn-tables.opt"
 	case "$host" in
 	x86_64*-*-linux-gnu )
 		if test "$ac_cv_search_dlopen" != no; then

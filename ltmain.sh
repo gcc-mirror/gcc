@@ -4968,19 +4968,41 @@ func_mode_link ()
 	arg="$func_quote_for_eval_result"
 	;;
 
-      # -64, -mips[0-9] enable 64-bit mode on the SGI compiler
-      # -r[0-9][0-9]* specifies the processor on the SGI compiler
-      # -xarch=*, -xtarget=* enable 64-bit mode on the Sun compiler
-      # +DA*, +DD* enable 64-bit mode on the HP compiler
-      # -q* pass through compiler args for the IBM compiler
-      # -m*, -t[45]*, -txscale* pass through architecture-specific
-      # compiler args for GCC
-      # -F/path gives path to uninstalled frameworks, gcc on darwin
-      # -p, -pg, --coverage, -fprofile-* pass through profiling flag for GCC
-      # @file GCC response files
-      # -tp=* Portland pgcc target processor selection
+      # Flags to be passed through unchanged, with rationale:
+      # -64, -mips[0-9]      enable 64-bit mode for the SGI compiler
+      # -r[0-9][0-9]*        specify processor for the SGI compiler
+      # -xarch=*, -xtarget=* enable 64-bit mode for the Sun compiler
+      # +DA*, +DD*           enable 64-bit mode for the HP compiler
+      # -q*                  compiler args for the IBM compiler
+      # -m*, -t[45]*, -txscale* architecture-specific flags for GCC
+      # -F/path              path to uninstalled frameworks, gcc on darwin
+      # -p, -pg, --coverage, -fprofile-*  profiling flags for GCC
+      # -fstack-protector*   stack protector flags for GCC
+      # @file                GCC response files
+      # -tp=*                Portland pgcc target processor selection
+      # -O*, -g*, -flto*, -fwhopr*, -fuse-linker-plugin GCC link-time optimization
+      # -specs=*             GCC specs files
+      # -stdlib=*            select c++ std lib with clang
+      # -fdiagnostics-color* simply affects output
+      # -frecord-gcc-switches used to verify flags were respected
+      # -fsanitize=*         Clang/GCC memory and address sanitizer
+      # -fno-sanitize*       Clang/GCC memory and address sanitizer
+      # -shared-libsan       Link with shared sanitizer runtimes (Clang)
+      # -static-libsan       Link with static sanitizer runtimes (Clang)
+      # -fuse-ld=*           Linker select flags for GCC
+      # -rtlib=*             select c runtime lib with clang
+      # --unwindlib=*        select unwinder library with clang
+      # -f{file|debug|macro|profile}-prefix-map=* needed for lto linking
+      # -Wa,*                Pass flags directly to the assembler
+      # -Werror, -Werror=*   Report (specified) warnings as errors
       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
-      -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*)
+      -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*| \
+      -O*|-g*|-flto*|-fwhopr*|-fuse-linker-plugin|-fstack-protector*| \
+      -stdlib=*|-rtlib=*|--unwindlib=*| \
+      -specs=*|-fsanitize=*|-fno-sanitize*|-shared-libsan|-static-libsan| \
+      -ffile-prefix-map=*|-fdebug-prefix-map=*|-fmacro-prefix-map=*|-fprofile-prefix-map=*| \
+      -fdiagnostics-color*|-frecord-gcc-switches| \
+      -fuse-ld=*|-Wa,*|-Werror|-Werror=*)
         func_quote_for_eval "$arg"
 	arg="$func_quote_for_eval_result"
         func_append compile_command " $arg"

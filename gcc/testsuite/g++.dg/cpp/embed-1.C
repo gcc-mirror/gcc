@@ -6,9 +6,9 @@
 #endif
 
 int a =
-#embed __FILE__ limit (1) // { dg-error "#embed is a GCC extension" }
+#embed __FILE__ limit (1) // { dg-error "'#embed' is a GCC extension" }
 ;
 int b =
 (__extension__
-#embed __FILE__ limit (1) // { dg-error "#embed is a GCC extension" }
+#embed __FILE__ limit (1) // { dg-error "'#embed' is a GCC extension" }
 );

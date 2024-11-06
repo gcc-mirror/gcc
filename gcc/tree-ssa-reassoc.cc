@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -404,7 +405,8 @@ static inline void
 insert_operand_rank (tree e, int64_t rank)
 {
   gcc_assert (rank > 0);
-  gcc_assert (!operand_rank->put (e, rank));
+  bool existed = operand_rank->put (e, rank);
+  gcc_assert (!existed);
 }
 
 /* Given an expression E, return the rank of the expression.  */
@@ -446,7 +448,7 @@ get_rank (tree e)
 
      To obtain this result during reassociation, we bias the rank
      of the phi definition x_1 upward, when it is recognized as an
-     accumulator pattern.  The artificial rank causes it to be 
+     accumulator pattern.  The artificial rank causes it to be
      added last, providing the desired independence.  */
 
   if (TREE_CODE (e) == SSA_NAME)
@@ -927,7 +929,7 @@ eliminate_plus_minus_pair (enum tree_code opcode,
 	}
     }
 
-  /* If CURR->OP is a negate expr without nop conversion in a plus expr: 
+  /* If CURR->OP is a negate expr without nop conversion in a plus expr:
      save it for later inspection in repropagate_negates().  */
   if (negateop != NULL_TREE
       && gimple_assign_rhs_code (SSA_NAME_DEF_STMT (curr->op)) == NEGATE_EXPR)
@@ -1202,7 +1204,7 @@ stmt_is_power_of_op (gimple *stmt, tree op)
     CASE_CFN_POW:
     CASE_CFN_POWI:
       return (operand_equal_p (gimple_call_arg (stmt, 0), op, 0));
-      
+
     default:
       return false;
     }
@@ -6346,7 +6348,6 @@ static void
 break_up_subtract_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  basic_block son;
   unsigned int uid = 1;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -6378,10 +6379,6 @@ break_up_subtract_bb (basic_block bb)
 	       && can_reassociate_op_p (gimple_assign_rhs1 (stmt)))
 	plus_negates.safe_push (gimple_assign_lhs (stmt));
     }
-  for (son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    break_up_subtract_bb (son);
 }
 
 /* Used for repeated factor analysis.  */
@@ -6515,7 +6512,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
         result = t5 * y  */
 
   vec_len = repeat_factor_vec.length ();
-  
+
   /* Repeatedly look for opportunities to create a builtin_powi call.  */
   while (true)
     {
@@ -6524,7 +6521,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
       /* First look for the largest cached product of factors from
 	 preceding iterations.  If found, create a builtin_powi for
 	 it if the minimum occurrence count for its factors is at
-	 least 2, or just use this cached product as our next 
+	 least 2, or just use this cached product as our next
 	 multiplicand if the minimum occurrence count is 1.  */
       FOR_EACH_VEC_ELT (repeat_factor_vec, j, rf1)
 	{
@@ -6732,7 +6729,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 
 	  rf1 = &repeat_factor_vec[i];
 	  rf1->count -= power;
-	  
+
 	  FOR_EACH_VEC_ELT_REVERSE (*ops, n, oe)
 	    {
 	      if (oe->op == rf1->factor)
@@ -7007,7 +7004,6 @@ static bool
 reassociate_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
-  basic_block son;
   gimple *stmt = last_nondebug_stmt (bb);
   bool cfg_cleanup_needed = false;
 
@@ -7139,7 +7135,7 @@ reassociate_bb (basic_block bb)
 		}
 
 	      tree new_lhs = lhs;
-	      /* If the operand vector is now empty, all operands were 
+	      /* If the operand vector is now empty, all operands were
 		 consumed by the __builtin_powi optimization.  */
 	      if (ops.length () == 0)
 		transform_stmt_to_copy (&gsi, stmt, powi_result);
@@ -7230,7 +7226,7 @@ reassociate_bb (basic_block bb)
 						   len != orig_len);
 		    }
 
-		  /* If we combined some repeated factors into a 
+		  /* If we combined some repeated factors into a
 		     __builtin_powi call, multiply that result by the
 		     reassociated operands.  */
 		  if (powi_result)
@@ -7270,10 +7266,6 @@ reassociate_bb (basic_block bb)
 	    }
 	}
     }
-  for (son = first_dom_son (CDI_POST_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_POST_DOMINATORS, son))
-    cfg_cleanup_needed |= reassociate_bb (son);
 
   return cfg_cleanup_needed;
 }
@@ -7382,10 +7374,39 @@ debug_ops_vector (vec<operand_entry *> ops)
 /* Bubble up return status from reassociate_bb.  */
 
 static bool
-do_reassoc (void)
+do_reassoc ()
 {
-  break_up_subtract_bb (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  return reassociate_bb (EXIT_BLOCK_PTR_FOR_FN (cfun));
+  bool cfg_cleanup_needed = false;
+  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (cfun));
+
+  unsigned sp = 0;
+  for (auto son = first_dom_son (CDI_DOMINATORS, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+       son; son = next_dom_son (CDI_DOMINATORS, son))
+    worklist[sp++] = son;
+  while (sp)
+    {
+      basic_block bb = worklist[--sp];
+      break_up_subtract_bb (bb);
+      for (auto son = first_dom_son (CDI_DOMINATORS, bb);
+	   son; son = next_dom_son (CDI_DOMINATORS, son))
+	worklist[sp++] = son;
+    }
+
+  for (auto son = first_dom_son (CDI_POST_DOMINATORS,
+				 EXIT_BLOCK_PTR_FOR_FN (cfun));
+       son; son = next_dom_son (CDI_POST_DOMINATORS, son))
+    worklist[sp++] = son;
+  while (sp)
+    {
+      basic_block bb = worklist[--sp];
+      cfg_cleanup_needed |= reassociate_bb (bb);
+      for (auto son = first_dom_son (CDI_POST_DOMINATORS, bb);
+	   son; son = next_dom_son (CDI_POST_DOMINATORS, son))
+	worklist[sp++] = son;
+    }
+
+  free (worklist);
+  return cfg_cleanup_needed;
 }
 
 /* Initialize the reassociation pass.  */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param ipa-cp-value-list-size=0 -Os -fno-inline" } */
+/* { dg-options "-Wno-old-style-definition --param ipa-cp-value-list-size=0 -Os -fno-inline" } */
 
 struct _wincore
 {

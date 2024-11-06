@@ -22,6 +22,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -808,7 +809,7 @@ is_float128_p (tree t)
 	      && TARGET_LONG_DOUBLE_128
 	      && t == long_double_type_node));
 }
-  
+
 
 /* Return true iff ARGTYPE can be compatibly passed as PARMTYPE.  */
 static bool

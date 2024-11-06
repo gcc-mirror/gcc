@@ -679,7 +679,11 @@ mingw_ansi_fputs (const char *str, FILE *fp)
   /* Don't mess up stdio functions with Windows APIs.  */
   fflush (fp);
 
-  if (GetConsoleMode (h, &mode) && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+  if (GetConsoleMode (h, &mode)
+#ifdef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+      && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+#endif
+      )
     /* If it is a console, and doesn't support ANSI escape codes, translate
        them as needed.  */
     for (;;)
@@ -788,6 +792,78 @@ output_buffer::pop_formatted_chunks ()
   gcc_assert (old_top);
   m_cur_formatted_chunks = old_top->m_prev;
   obstack_free (&m_chunk_obstack, old_top);
+}
+
+static const int bytes_per_hexdump_line = 16;
+
+static void
+print_hexdump_line (FILE *out, int indent,
+		    const void *buf, size_t size, size_t line_start_idx)
+{
+  fprintf (out, "%*s%08lx: ", indent, "", (unsigned long)line_start_idx);
+  for (size_t offset = 0; offset < bytes_per_hexdump_line; ++offset)
+    {
+      const size_t idx = line_start_idx + offset;
+      if (idx < size)
+	fprintf (out, "%02x ", ((const unsigned char *)buf)[idx]);
+      else
+	fprintf (out, "   ");
+    }
+  fprintf (out, "| ");
+  for (size_t offset = 0; offset < bytes_per_hexdump_line; ++offset)
+    {
+      const size_t idx = line_start_idx + offset;
+      if (idx < size)
+	{
+	  unsigned char ch = ((const unsigned char *)buf)[idx];
+	  if (!ISPRINT (ch))
+	    ch = '.';
+	  fputc (ch, out);
+	}
+      else
+	break;
+    }
+  fprintf (out, "\n");
+
+}
+
+static void
+print_hexdump (FILE *out, int indent, const void *buf, size_t size)
+{
+  for (size_t idx = 0; idx < size; idx += bytes_per_hexdump_line)
+    print_hexdump_line (out, indent, buf, size, idx);
+}
+
+/* Dump state of this output_buffer to OUT, for debugging.  */
+
+void
+output_buffer::dump (FILE *out, int indent) const
+{
+  {
+    size_t obj_size = obstack_object_size (&m_formatted_obstack);
+    fprintf (out, "%*sm_formatted_obstack current object: length %li:\n",
+	     indent, "", (long)obj_size);
+    print_hexdump (out, indent + 2,
+		   m_formatted_obstack.object_base, obj_size);
+  }
+  {
+    size_t obj_size = obstack_object_size (&m_chunk_obstack);
+    fprintf (out, "%*sm_chunk_obstack current object: length %li:\n",
+	     indent, "", (long)obj_size);
+    print_hexdump (out, indent + 2,
+		   m_chunk_obstack.object_base, obj_size);
+  }
+
+  int depth = 0;
+  for (pp_formatted_chunks *iter = m_cur_formatted_chunks;
+       iter;
+       iter = iter->m_prev, depth++)
+    {
+      fprintf (out, "%*spp_formatted_chunks: depth %i\n",
+	       indent, "",
+	       depth);
+      iter->dump (out, indent + 2);
+    }
 }
 
 #ifndef PTRDIFF_MAX
@@ -925,7 +1001,7 @@ pp_write_text_to_stream (pretty_printer *pp)
    Flush the formatted text of pretty-printer PP onto the attached stream.
    Replace characters in PPF that have special meaning in a GraphViz .dot
    file.
-   
+
    This routine is not very fast, but it doesn't have to be as this is only
    be used by routines dumping intermediate representations in graph form.  */
 
@@ -1180,7 +1256,7 @@ allocate_object (size_t sz, obstack &s)
   /* We must not be half-way through an object.  */
   gcc_assert (obstack_base (&s) == obstack_next_free (&s));
 
-  obstack_grow (&s, obstack_base (&s), sz);
+  obstack_blank (&s, sz);
   void *buf = obstack_finish (&s);
   return buf;
 }
@@ -1486,7 +1562,6 @@ pp_token_list::apply_urlifier (const urlifier &urlifier)
 void
 pp_token_list::dump (FILE *out) const
 {
-  fprintf (out, "[");
   for (auto iter = m_first; iter; iter = iter->m_next)
     {
       iter->dump (out);
@@ -1513,11 +1588,13 @@ pp_formatted_chunks::append_formatted_chunk (obstack &s, const char *content)
 }
 
 void
-pp_formatted_chunks::dump (FILE *out) const
+pp_formatted_chunks::dump (FILE *out, int indent) const
 {
   for (size_t idx = 0; m_args[idx]; ++idx)
     {
-      fprintf (out, "%i: ", (int)idx);
+      fprintf (out, "%*s%i: ",
+	       indent, "",
+	       (int)idx);
       m_args[idx]->dump (out);
     }
 }
@@ -2442,10 +2519,10 @@ pretty_printer::~pretty_printer ()
 
 /* Base class implementation of pretty_printer::clone vfunc.  */
 
-pretty_printer *
+std::unique_ptr<pretty_printer>
 pretty_printer::clone () const
 {
-  return new pretty_printer (*this);
+  return ::make_unique<pretty_printer> (*this);
 }
 
 /* Append a string delimited by START and END to the output area of
@@ -2504,6 +2581,32 @@ pp_printf (pretty_printer *pp, const char *msg, ...)
   va_end (ap);
 }
 
+/* Format a message into PP using ngettext to handle
+   singular vs plural.  */
+
+void
+pp_printf_n (pretty_printer *pp,
+	     unsigned HOST_WIDE_INT n,
+	     const char *singular_gmsgid, const char *plural_gmsgid, ...)
+{
+  va_list ap;
+
+  va_start (ap, plural_gmsgid);
+
+  unsigned long gtn;
+  if (sizeof n <= sizeof gtn)
+    gtn = n;
+  else
+    /* Use the largest number ngettext can handle, otherwise
+       preserve the six least significant decimal digits for
+       languages where the plural form depends on them.  */
+    gtn = n <= ULONG_MAX ? n : n % 1000000LU + 1000000LU;
+  const char *msg = ngettext (singular_gmsgid, plural_gmsgid, gtn);
+  text_info text (msg, &ap, errno);
+  pp_format (pp, &text);
+  pp_output_formatted_text (pp);
+  va_end (ap);
+}
 
 /* Output MESSAGE verbatim into BUFFER.  */
 void
@@ -3013,6 +3116,36 @@ pretty_printer::end_url ()
     pp_string (this, get_end_url_string (this));
 }
 
+/* Dump state of this pretty_printer to OUT, for debugging.  */
+
+void
+pretty_printer::dump (FILE *out, int indent) const
+{
+  fprintf (out, "%*sm_show_color: %s\n",
+	   indent, "",
+	   m_show_color ? "true" : "false");
+
+  fprintf (out, "%*sm_url_format: ", indent, "");
+  switch (m_url_format)
+    {
+    case URL_FORMAT_NONE:
+      fprintf (out, "none");
+      break;
+    case URL_FORMAT_ST:
+      fprintf (out, "st");
+      break;
+    case URL_FORMAT_BEL:
+      fprintf (out, "bel");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  fprintf (out, "\n");
+
+  fprintf (out, "%*sm_buffer:\n", indent, "");
+  m_buffer->dump (out, indent + 2);
+}
+
 /* class pp_markup::context.  */
 
 void
@@ -3067,6 +3200,19 @@ pp_markup::context::push_back_any_text ()
   m_formatted_token_list->push_back_text
     (label_text::borrow (XOBFINISH (cur_obstack,
 				    const char *)));
+}
+
+void
+pp_markup::comma_separated_quoted_strings::add_to_phase_2 (context &ctxt)
+{
+  for (unsigned i = 0; i < m_strings.length (); i++)
+    {
+      if (i > 0)
+	pp_string (&ctxt.m_pp, ", ");
+      ctxt.begin_quote ();
+      pp_string (&ctxt.m_pp, m_strings[i]);
+      ctxt.end_quote ();
+    }
 }
 
 /* Color names for expressing "expected" vs "actual" values.  */
@@ -3291,10 +3437,10 @@ test_pp_format ()
   }
 
   /* Verify %Z.  */
-  int v[] = { 1, 2, 3 }; 
+  int v[] = { 1, 2, 3 };
   ASSERT_PP_FORMAT_3 ("1, 2, 3 12345678", "%Z %x", v, 3, 0x12345678);
 
-  int v2[] = { 0 }; 
+  int v2[] = { 0 };
   ASSERT_PP_FORMAT_3 ("0 12345678", "%Z %x", v2, 1, 0x12345678);
 
   /* Verify %e.  */
@@ -3327,6 +3473,14 @@ test_pp_format ()
   assert_pp_format (SELFTEST_LOCATION,
 		    "foo: second bar: 1776",
 		    "foo: %2$s bar: %1$i",
+		    1776, "second");
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: sec bar: 3360",
+		    "foo: %3$.*2$s bar: %1$o",
+		    1776, 3, "second");
+  assert_pp_format (SELFTEST_LOCATION,
+		    "foo: seco bar: 3360",
+		    "foo: %2$.4s bar: %1$o",
 		    1776, "second");
 }
 
@@ -3644,6 +3798,54 @@ test_pp_format_stack ()
 
   ASSERT_STREQ (pp_formatted_text (&pp),
 		"In function: `test_fn'\nunexpected foo: 42 bar: `test'");
+}
+
+/* Verify usage of pp_printf from within a pp_element's
+   add_to_phase_2 vfunc.  */
+static void
+test_pp_printf_within_pp_element ()
+{
+  class kv_element : public pp_element
+  {
+  public:
+    kv_element (const char *key, int value)
+    : m_key (key), m_value (value)
+    {
+    }
+
+    void add_to_phase_2 (pp_markup::context &ctxt) final override
+    {
+      /* We can't call pp_printf directly on ctxt.m_pp from within
+	 formatting.  As a workaround, work with a clone of the pp.  */
+      std::unique_ptr<pretty_printer> pp (ctxt.m_pp.clone ());
+      pp_printf (pp.get (), "(%qs: %qi)", m_key, m_value);
+      pp_string (&ctxt.m_pp, pp_formatted_text (pp.get ()));
+    }
+
+  private:
+    const char *m_key;
+    int m_value;
+  };
+
+  auto_fix_quotes fix_quotes;
+
+  kv_element e1 ("foo", 42);
+  kv_element e2 ("bar", 1066);
+  ASSERT_PP_FORMAT_2 ("before (`foo': `42') (`bar': `1066') after",
+		      "before %e %e after",
+		      &e1, &e2);
+  assert_pp_format_colored (SELFTEST_LOCATION,
+			    ("before "
+			     "(`\33[01m\33[Kfoo\33[m\33[K'"
+			     ": "
+			     "`\33[01m\33[K42\33[m\33[K')"
+			     " "
+			     "(`\33[01m\33[Kbar\33[m\33[K'"
+			     ": "
+			     "`\33[01m\33[K1066\33[m\33[K')"
+			     " after"),
+			    "before %e %e after",
+			    &e1, &e2);
 }
 
 /* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
@@ -4065,6 +4267,35 @@ static void test_utf8 ()
 
 }
 
+/* Verify that class comma_separated_quoted_strings works as expected.  */
+
+static void
+test_comma_separated_quoted_strings ()
+{
+  auto_fix_quotes fix_quotes;
+
+  auto_vec<const char *> none;
+  pp_markup::comma_separated_quoted_strings e_none (none);
+
+  auto_vec<const char *> one;
+  one.safe_push ("one");
+  pp_markup::comma_separated_quoted_strings e_one (one);
+
+  auto_vec<const char *> many;
+  many.safe_push ("0");
+  many.safe_push ("1");
+  many.safe_push ("2");
+  pp_markup::comma_separated_quoted_strings e_many (many);
+
+  ASSERT_PP_FORMAT_3 ("none: () one: (`one') many: (`0', `1', `2')",
+		      "none: (%e) one: (%e) many: (%e)",
+		      &e_none, &e_one, &e_many);
+  assert_pp_format_colored (SELFTEST_LOCATION,
+			    "one: (`[01m[Kone[m[K')",
+			    "one: (%e)",
+			    &e_one);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -4076,12 +4307,14 @@ pretty_print_cc_tests ()
   test_custom_tokens_1 ();
   test_custom_tokens_2 ();
   test_pp_format_stack ();
+  test_pp_printf_within_pp_element ();
   test_prefixes_and_wrapping ();
   test_urls ();
   test_urls_from_braces ();
   test_null_urls ();
   test_urlification ();
   test_utf8 ();
+  test_comma_separated_quoted_strings ();
 }
 
 } // namespace selftest

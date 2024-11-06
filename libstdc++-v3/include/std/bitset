@@ -42,7 +42,9 @@
 #ifndef _GLIBCXX_BITSET
 #define _GLIBCXX_BITSET 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error

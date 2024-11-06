@@ -311,12 +311,14 @@ should_colorize (void)
   if ((handle != INVALID_HANDLE_VALUE) && (handle != NULL))
     isconsole = GetConsoleMode (handle, &mode);
 
+#ifdef ENABLE_VIRTUAL_TERMINAL_PROCESSING
   if (isconsole)
     {
       /* Try to enable processing of VT100 escape sequences */
       mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
       SetConsoleMode (handle, mode);
     }
+#endif
 
   return isconsole;
 #else
@@ -404,7 +406,11 @@ auto_enable_urls ()
   /* If ansi escape sequences aren't supported by the console, then URLs will
      print mangled from mingw_ansi_fputs's console API translation. It wouldn't
      be useful even if this weren't the case.  */
-  if (GetConsoleMode (handle, &mode) && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+  if (GetConsoleMode (handle, &mode)
+#ifdef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+      && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+#endif
+      )
     return false;
 #endif
 

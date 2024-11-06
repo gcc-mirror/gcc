@@ -18,6 +18,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -85,7 +86,7 @@
 	    Blocks are added to this list if their incoming edges are
 	    found executable.
 
-	SSA_EDGE_WORKLIST contains the list of statements that we 
+	SSA_EDGE_WORKLIST contains the list of statements that we
 	    need to revisit.
 
    5- Simulation terminates when all three work lists are drained.

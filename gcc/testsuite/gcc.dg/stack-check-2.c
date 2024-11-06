@@ -12,7 +12,7 @@
    depend on to elide stack probes.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection -fdump-tree-tailc -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fstack-clash-protection -fdump-tree-tailc -fdump-tree-optimized -fno-ipa-icf" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 
 extern void foo (void) __attribute__ ((__noreturn__));

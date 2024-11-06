@@ -106,7 +106,7 @@ namespace aarch64_sve
     extern const function_base *const svpmullb_pair;
     extern const function_base *const svpmullt;
     extern const function_base *const svpmullt_pair;
-    extern const function_base *const svpsel;
+    extern const function_base *const svpsel_lane;
     extern const function_base *const svqabs;
     extern const function_base *const svqcadd;
     extern const function_base *const svqcvt;

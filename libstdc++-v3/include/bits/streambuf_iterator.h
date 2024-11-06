@@ -30,7 +30,9 @@
 #ifndef _STREAMBUF_ITERATOR_H
 #define _STREAMBUF_ITERATOR_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <streambuf>
 #include <bits/stl_iterator_base_types.h>

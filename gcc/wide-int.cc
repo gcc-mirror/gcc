@@ -1313,7 +1313,7 @@ wi_pack (HOST_WIDE_INT *result,
 }
 
 /* Multiply Op1 by Op2.  If HIGH is set, only the upper half of the
-   result is returned.  
+   result is returned.
 
    If HIGH is not set, throw away the upper half after the check is
    made to see if it overflows.  Unfortunately there is no better way

@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -239,7 +240,7 @@ static M2Dependent_ModuleChain LookupModuleN (M2Dependent_DependencyState state,
 static M2Dependent_ModuleChain LookupModule (M2Dependent_DependencyState state, void * name, void * libname);
 
 /*
-   toCString - replace any character sequence 
+   toCString - replace any character sequence
  into a newline.
 */
 
@@ -617,7 +618,7 @@ static M2Dependent_ModuleChain LookupModule (M2Dependent_DependencyState state, 
 
 
 /*
-   toCString - replace any character sequence 
+   toCString - replace any character sequence
  into a newline.
 */
 

@@ -1,7 +1,7 @@
 /* Test for attribute sentinel.  */
 /* Origin: Kaveh Ghazi <ghazi@caip.rutgers.edu> */
 /* { dg-do compile } */
-/* { dg-options "-Wformat" } */
+/* { dg-options "-std=gnu17 -Wformat" } */
 
 #include <stddef.h> /* For NULL, which must be (ptr)0.  */
 

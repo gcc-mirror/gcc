@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
    etc., to convert the initial value. Refer to trans-expr.cc and
    trans-array.cc.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -272,8 +273,6 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   gfc_symbol *symbol;
   gfc_typespec *last_ts;
   mpz_t offset;
-  const char *msg = "F18(R841): data-implied-do object at %L is neither an "
-		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
   init = symbol->value;
@@ -384,9 +383,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 		     declarations.  Therefore, check which is the most
 		     recent.  */
 		  gfc_expr *exprd;
-		  exprd = (LOCATION_LINE (con->expr->where.lb->location)
-			   > LOCATION_LINE (rvalue->where.lb->location))
-			  ? con->expr : rvalue;
+		  exprd = (linemap_location_before_p (line_table,
+					 gfc_get_location (&con->expr->where),
+					 gfc_get_location (&rvalue->where))
+			   ? rvalue : con->expr);
 		  if (gfc_notify_std (GFC_STD_GNU,
 				      "re-initialization of %qs at %L",
 				      symbol->name, &exprd->where) == false)
@@ -522,7 +522,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	     violates F18(R841). If the error is removed, the expected result
 	     is obtained. Leaving the code in place ensures a clean error
 	     recovery.  */
-	  gfc_error (msg, &lvalue->where);
+	  gfc_error ("data-implied-do object at %L is neither an array-element "
+		     "nor a scalar-structure-component (F2018: R841)",
+		     &lvalue->where);
 
 	  /* This breaks with the other reference types in that the output
 	     constructor has to be of type COMPLEX, whereas the lvalue is
@@ -605,14 +607,17 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 
   /* Overwriting an existing initializer is non-standard but usually only
      provokes a warning from other compilers.  */
-  if (init != NULL && init->where.lb && rvalue->where.lb)
+  if (init != NULL
+      && GFC_LOCUS_IS_SET (init->where)
+      && GFC_LOCUS_IS_SET (rvalue->where))
     {
       /* Order in which the expressions arrive here depends on whether
 	 they are from data statements or F95 style declarations.
 	 Therefore, check which is the most recent.  */
-      expr = (LOCATION_LINE (init->where.lb->location)
-	      > LOCATION_LINE (rvalue->where.lb->location))
-	   ? init : rvalue;
+      expr = (linemap_location_before_p (line_table,
+					 gfc_get_location (&init->where),
+					 gfc_get_location (&rvalue->where))
+	      ? rvalue : init);
       if (gfc_notify_std (GFC_STD_GNU, "re-initialization of %qs at %L",
 			  symbol->name, &expr->where) == false)
 	return false;

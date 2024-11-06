@@ -140,7 +140,7 @@ namespace __gnu_parallel
 	if (__bi1._M_current == __bi1._M_end)       // __bi2 is sup
 	  return false;
 	return !(__bi1.__comp)(*__bi2, *__bi1);     // normal compare
-      } 
+      }
     };
 
   template<typename _RAIter, typename _Compare>
@@ -1139,7 +1139,7 @@ namespace __gnu_parallel
 
       // (Settings::multiway_merge_splitting
       //  == __gnu_parallel::_Settings::EXACT).
-      std::vector<_RAIter1>* __offsets = 
+      std::vector<_RAIter1>* __offsets =
 	new std::vector<_RAIter1>[__num_threads];
       std::vector<std::pair<_RAIter1, _RAIter1> > __se(__k);
 
@@ -2067,6 +2067,6 @@ namespace __gnu_parallel
 	(__seqs_begin, __seqs_end, __target, __length, __comp,
 	 exact_tag(__tag.__get_num_threads()));
     }
-}; // namespace __gnu_parallel
+} // namespace __gnu_parallel
 
 #endif /* _GLIBCXX_PARALLEL_MULTIWAY_MERGE_H */

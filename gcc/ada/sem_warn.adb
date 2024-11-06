@@ -2484,7 +2484,7 @@ package body Sem_Warn is
          Item := First (Context_Items (Cnode));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause
-              and then not Implicit_With (Item)
+              and then not Is_Implicit_With (Item)
               and then In_Extended_Main_Source_Unit (Item)
 
               --  Guard for no entity present. Not clear under what conditions
@@ -2583,13 +2583,16 @@ package body Sem_Warn is
 
                         if No (Ent) then
 
+                           --  Check entities in the extended system if
+                           --  specified.
+
+                           if Check_System_Aux (Lunit) then
+                              null;
+
                            --  If in spec, just set the flag
 
-                           if Unit = Spec_Unit then
+                           elsif Unit = Spec_Unit then
                               Set_No_Entities_Ref_In_Spec (Item);
-
-                           elsif Check_System_Aux (Lunit) then
-                              null;
 
                            --  Else the warning may be needed
 

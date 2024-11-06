@@ -32,9 +32,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _ASCII_H
 #define _ASCII_C
 
+#include "GASCII.h"
 
 #   define ASCII_nul (char) 000
 #   define ASCII_soh (char) 001

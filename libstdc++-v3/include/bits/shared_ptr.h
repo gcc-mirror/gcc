@@ -1160,9 +1160,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_variable_templates
   template<typename _Tp>
-    static constexpr bool __is_shared_ptr = false;
+    constexpr bool __is_shared_ptr = false;
   template<typename _Tp>
-    static constexpr bool __is_shared_ptr<shared_ptr<_Tp>> = true;
+    constexpr bool __is_shared_ptr<shared_ptr<_Tp>> = true;
 #endif
 
   /// @} relates shared_ptr

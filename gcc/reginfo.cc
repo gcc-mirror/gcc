@@ -269,7 +269,7 @@ init_reg_sets_1 (void)
   for (i = 0; i < N_REG_CLASSES; i++)
     {
       bool any_nonfixed = false;
-      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)	
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
 	  {
 	    reg_class_size[i]++;
@@ -753,11 +753,11 @@ globalize_reg (tree decl, int i)
   if (global_regs[i])
     {
       auto_diagnostic_group d;
-      warning_at (loc, 0, 
+      warning_at (loc, 0,
 		  "register of %qD used for multiple global register variables",
 		  decl);
       inform (DECL_SOURCE_LOCATION (global_regs_decl[i]),
-	      "conflicts with %qD", global_regs_decl[i]); 
+	      "conflicts with %qD", global_regs_decl[i]);
       return;
     }
 

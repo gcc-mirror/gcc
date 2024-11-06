@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #define INCLUDE_STRING
 #include "config.h"
@@ -424,15 +425,18 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 
   for (;;)
     {
+      gfc_gobble_whitespace ();
       cur_loc = gfc_current_locus;
 
       m = gfc_match_name (n);
       if (m == MATCH_YES && strcmp (n, "omp_all_memory") == 0)
 	{
+	  locus loc = gfc_get_location_range (NULL, 0, &cur_loc, 1,
+					      &gfc_current_locus);
 	  if (!has_all_memory)
 	    {
-	      gfc_error ("%<omp_all_memory%> at %C not permitted in this "
-			 "clause");
+	      gfc_error ("%<omp_all_memory%> at %L not permitted in this "
+			 "clause", &loc);
 	      goto cleanup;
 	    }
 	  *has_all_memory = true;
@@ -444,7 +448,7 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 	      tail->next = p;
 	      tail = tail->next;
 	    }
-	  tail->where = cur_loc;
+	  tail->where = loc;
 	  goto next_item;
 	}
       if (m == MATCH_YES)
@@ -476,7 +480,8 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 		}
 	      if (gfc_is_coindexed (expr))
 		{
-		  gfc_error ("List item shall not be coindexed at %C");
+		  gfc_error ("List item shall not be coindexed at %L",
+			     &expr->where);
 		  goto cleanup;
 		}
 	    }
@@ -491,7 +496,8 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 	    }
 	  tail->sym = sym;
 	  tail->expr = expr;
-	  tail->where = cur_loc;
+	  tail->where = gfc_get_location_range (NULL, 0, &cur_loc, 1,
+						&gfc_current_locus);
 	  if (reject_common_vars && sym->attr.in_common)
 	    {
 	      gcc_assert (allow_common);
@@ -511,16 +517,18 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
       if (!allow_common)
 	goto syntax;
 
-      m = gfc_match (" / %n /", n);
+      m = gfc_match ("/ %n /", n);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_NO)
 	goto syntax;
 
+      cur_loc = gfc_get_location_range (NULL, 0, &cur_loc, 1,
+					&gfc_current_locus);
       st = gfc_find_symtree (gfc_current_ns->common_root, n);
       if (st == NULL)
 	{
-	  gfc_error ("COMMON block /%s/ not found at %C", n);
+	  gfc_error ("COMMON block %</%s/%> not found at %L", n, &cur_loc);
 	  goto cleanup;
 	}
       for (sym = st->n.common->head; sym; sym = sym->common_next)
@@ -699,14 +707,17 @@ gfc_match_omp_doacross_sink (gfc_omp_namelist **list, bool depend)
 
   for (;;)
     {
+      gfc_gobble_whitespace ();
       cur_loc = gfc_current_locus;
 
       if (gfc_match_name (n) != MATCH_YES)
 	goto syntax;
+      locus loc = gfc_get_location_range (NULL, 0, &cur_loc, 1,
+					  &gfc_current_locus);
       if (UNLIKELY (strcmp (n, "omp_all_memory") == 0))
 	{
 	  gfc_error ("%<omp_all_memory%> used with dependence-type "
-		     "other than OUT or INOUT at %C");
+		     "other than OUT or INOUT at %L", &loc);
 	  goto cleanup;
 	}
       sym = NULL;
@@ -733,7 +744,7 @@ gfc_match_omp_doacross_sink (gfc_omp_namelist **list, bool depend)
 	}
       tail->sym = sym;
       tail->expr = NULL;
-      tail->where = cur_loc;
+      tail->where = loc;
       if (gfc_match_char ('+') == MATCH_YES)
 	{
 	  if (gfc_match_literal_constant (&tail->expr, 0) != MATCH_YES)
@@ -4888,7 +4899,7 @@ gfc_match_oacc_routine (void)
 
   new_st.op = EXEC_OACC_ROUTINE;
   new_st.ext.omp_clauses = c;
-  return MATCH_YES;  
+  return MATCH_YES;
 
 cleanup:
   gfc_current_locus = old_loc;
@@ -7857,9 +7868,12 @@ is_predefined_allocator (gfc_expr *expr)
 	  && expr->ts.kind == gfc_c_intptr_kind
 	  && expr->expr_type == EXPR_CONSTANT
 	  && ((mpz_sgn (expr->value.integer) > 0
-	       && mpz_cmp_si (expr->value.integer, 8) <= 0)
-	      || (mpz_cmp_si (expr->value.integer, 200) >= 0
-		  && mpz_cmp_si (expr->value.integer, 200) <= 0)));
+	       && mpz_cmp_si (expr->value.integer,
+			      GOMP_OMP_PREDEF_ALLOC_MAX) <= 0)
+	      || (mpz_cmp_si (expr->value.integer,
+			      GOMP_OMPX_PREDEF_ALLOC_MIN) >= 0
+		  && mpz_cmp_si (expr->value.integer,
+				 GOMP_OMPX_PREDEF_ALLOC_MAX) <= 0)));
 }
 
 /* Resolve declarative ALLOCATE statement. Note: Common block vars only appear
@@ -8756,7 +8770,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		       n->sym->name, &n->where);
 	}
     }
-  
+
   for (n = omp_clauses->lists[OMP_LIST_TO]; n; n = n->next)
     n->sym->mark = 0;
   for (n = omp_clauses->lists[OMP_LIST_FROM]; n; n = n->next)
@@ -9084,10 +9098,30 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  gfc_error ("List item %qs with allocatable components is not "
 			     "permitted in map clause at %L", n->sym->name,
 			     &n->where);
+		if (!openacc
+		    && (list == OMP_LIST_MAP
+			|| list == OMP_LIST_FROM
+			|| list == OMP_LIST_TO)
+		    && ((n->expr && n->expr->ts.type == BT_CLASS)
+			|| (!n->expr && n->sym->ts.type == BT_CLASS)))
+		  gfc_warning (OPT_Wopenmp,
+			       "Mapping polymorphic list item at %L is "
+			       "unspecified behavior", &n->where);
 		if (list == OMP_LIST_MAP && !openacc)
 		  switch (code->op)
 		    {
 		    case EXEC_OMP_TARGET:
+		    case EXEC_OMP_TARGET_PARALLEL:
+		    case EXEC_OMP_TARGET_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+		    case EXEC_OMP_TARGET_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_LOOP:
 		    case EXEC_OMP_TARGET_DATA:
 		      switch (n->u.map.op)
 			{
@@ -9110,8 +9144,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			  gfc_error ("TARGET%s with map-type other than TO, "
 				     "FROM, TOFROM, or ALLOC on MAP clause "
 				     "at %L",
-				     code->op == EXEC_OMP_TARGET
-				     ? "" : " DATA", &n->where);
+				     code->op == EXEC_OMP_TARGET_DATA
+				     ? " DATA" : "", &n->where);
 			  break;
 			}
 		      break;
@@ -9378,6 +9412,33 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    && n->sym == omp_clauses->detach->symtree->n.sym)
 		  gfc_error ("DETACH event handle %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
+
+		if (!openacc
+		    && list == OMP_LIST_FIRSTPRIVATE
+		    && ((n->expr && n->expr->ts.type == BT_CLASS)
+			|| (!n->expr && n->sym->ts.type == BT_CLASS)))
+		  switch (code->op)
+		    {
+		    case EXEC_OMP_TARGET:
+		    case EXEC_OMP_TARGET_PARALLEL:
+		    case EXEC_OMP_TARGET_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+		    case EXEC_OMP_TARGET_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+		    case EXEC_OMP_TARGET_TEAMS_LOOP:
+		      gfc_warning (OPT_Wopenmp,
+				   "FIRSTPRIVATE with polymorphic list item at "
+				   "%L is unspecified behavior", &n->where);
+		      break;
+		    default:
+		      break;
+		    }
+
 		switch (list)
 		  {
 		  case OMP_LIST_REDUCTION_TASK:
@@ -11869,7 +11930,7 @@ resolve_oacc_directive_inside_omp_region (gfc_code *code)
       gfc_statement st = omp_code_to_statement (omp_current_ctx->code);
       gfc_statement oacc_st = oacc_code_to_statement (code);
       gfc_error ("The %s directive cannot be specified within "
-		 "a %s region at %L", gfc_ascii_statement (oacc_st), 
+		 "a %s region at %L", gfc_ascii_statement (oacc_st),
 		 gfc_ascii_statement (st), &code->loc);
     }
 }
@@ -11882,7 +11943,7 @@ resolve_omp_directive_inside_oacc_region (gfc_code *code)
       gfc_statement st = oacc_code_to_statement (omp_current_ctx->code);
       gfc_statement omp_st = omp_code_to_statement (code);
       gfc_error ("The %s directive cannot be specified within "
-		 "a %s region at %L", gfc_ascii_statement (omp_st), 
+		 "a %s region at %L", gfc_ascii_statement (omp_st),
 		 gfc_ascii_statement (st), &code->loc);
     }
 }

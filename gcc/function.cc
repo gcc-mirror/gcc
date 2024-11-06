@@ -2387,7 +2387,7 @@ split_complex_args (vec<tree> *args)
    the hidden struct return argument, and (abi willing) complex args.
    Return the new parameter list.  */
 
-static vec<tree> 
+static vec<tree>
 assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
 {
   tree fndecl = current_function_decl;
@@ -3746,6 +3746,8 @@ assign_parms (tree fndecl)
   /* Output all parameter conversion instructions (possibly including calls)
      now that all parameters have been copied out of hard registers.  */
   emit_insn (all.first_conversion_insn);
+
+  do_pending_stack_adjust ();
 
   /* Estimate reload stack alignment from scalar return mode.  */
   if (SUPPORTS_STACK_ALIGNMENT)
@@ -5106,7 +5108,7 @@ expand_function_start (tree subr)
   else if (DECL_MODE (res) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
     set_parm_rtl (res, NULL_RTX);
-  else 
+  else
     {
       /* Compute the return values into a pseudo reg, which we will copy
 	 into the true return register after the cleanups are done.  */

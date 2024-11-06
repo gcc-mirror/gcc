@@ -75,6 +75,8 @@ struct riscv_implied_info_t
 /* Implied ISA info, must end with NULL sentinel.  */
 static const riscv_implied_info_t riscv_implied_info[] =
 {
+  {"m", "zmmul"},
+
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
@@ -96,6 +98,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zabha", "zaamo"},
   {"zacas", "zaamo"},
+  {"zawrs", "zalrsc"},
 
   {"zcmop", "zca"},
 
@@ -1567,191 +1570,196 @@ riscv_arch_str (bool version_p)
     return std::string();
 }
 
-/* Type for pointer to member of gcc_options.  */
+/* Type for pointer to member of gcc_options and cl_target_option.  */
 typedef int (gcc_options::*opt_var_ref_t);
+typedef int (cl_target_option::*cl_opt_var_ref_t);
 
 /* Types for recording extension to internal flag.  */
 struct riscv_ext_flag_table_t {
   const char *ext;
   opt_var_ref_t var_ref;
+  cl_opt_var_ref_t cl_var_ref;
   int mask;
 };
+
+#define RISCV_EXT_FLAG_ENTRY(NAME, VAR, MASK) \
+  {NAME, &gcc_options::VAR, &cl_target_option::VAR, MASK}
 
 /* Mapping table between extension to internal flag.  */
 static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 {
-  {"e", &gcc_options::x_target_flags, MASK_RVE},
-  {"m", &gcc_options::x_target_flags, MASK_MUL},
-  {"a", &gcc_options::x_target_flags, MASK_ATOMIC},
-  {"f", &gcc_options::x_target_flags, MASK_HARD_FLOAT},
-  {"d", &gcc_options::x_target_flags, MASK_DOUBLE_FLOAT},
-  {"c", &gcc_options::x_target_flags, MASK_RVC},
-  {"v", &gcc_options::x_target_flags, MASK_FULL_V},
-  {"v", &gcc_options::x_target_flags, MASK_VECTOR},
+  RISCV_EXT_FLAG_ENTRY ("e", x_target_flags, MASK_RVE),
+  RISCV_EXT_FLAG_ENTRY ("m", x_target_flags, MASK_MUL),
+  RISCV_EXT_FLAG_ENTRY ("a", x_target_flags, MASK_ATOMIC),
+  RISCV_EXT_FLAG_ENTRY ("f", x_target_flags, MASK_HARD_FLOAT),
+  RISCV_EXT_FLAG_ENTRY ("d", x_target_flags, MASK_DOUBLE_FLOAT),
+  RISCV_EXT_FLAG_ENTRY ("c", x_target_flags, MASK_RVC),
+  RISCV_EXT_FLAG_ENTRY ("v", x_target_flags, MASK_FULL_V),
+  RISCV_EXT_FLAG_ENTRY ("v", x_target_flags, MASK_VECTOR),
 
-  {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
-  {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
-  {"zicond",   &gcc_options::x_riscv_zi_subext, MASK_ZICOND},
+  RISCV_EXT_FLAG_ENTRY ("zicsr",    x_riscv_zi_subext, MASK_ZICSR),
+  RISCV_EXT_FLAG_ENTRY ("zifencei", x_riscv_zi_subext, MASK_ZIFENCEI),
+  RISCV_EXT_FLAG_ENTRY ("zicond",   x_riscv_zi_subext, MASK_ZICOND),
 
-  {"za64rs",  &gcc_options::x_riscv_za_subext, MASK_ZA64RS},
-  {"za128rs", &gcc_options::x_riscv_za_subext, MASK_ZA128RS},
-  {"zawrs",   &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
-  {"zaamo",   &gcc_options::x_riscv_za_subext, MASK_ZAAMO},
-  {"zalrsc",  &gcc_options::x_riscv_za_subext, MASK_ZALRSC},
-  {"zabha",   &gcc_options::x_riscv_za_subext, MASK_ZABHA},
-  {"zacas",   &gcc_options::x_riscv_za_subext, MASK_ZACAS},
+  RISCV_EXT_FLAG_ENTRY ("za64rs",  x_riscv_za_subext, MASK_ZA64RS),
+  RISCV_EXT_FLAG_ENTRY ("za128rs", x_riscv_za_subext, MASK_ZA128RS),
+  RISCV_EXT_FLAG_ENTRY ("zawrs",   x_riscv_za_subext, MASK_ZAWRS),
+  RISCV_EXT_FLAG_ENTRY ("zaamo",   x_riscv_za_subext, MASK_ZAAMO),
+  RISCV_EXT_FLAG_ENTRY ("zalrsc",  x_riscv_za_subext, MASK_ZALRSC),
+  RISCV_EXT_FLAG_ENTRY ("zabha",   x_riscv_za_subext, MASK_ZABHA),
+  RISCV_EXT_FLAG_ENTRY ("zacas",   x_riscv_za_subext, MASK_ZACAS),
 
-  {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
-  {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
-  {"zbc",    &gcc_options::x_riscv_zb_subext, MASK_ZBC},
-  {"zbs",    &gcc_options::x_riscv_zb_subext, MASK_ZBS},
+  RISCV_EXT_FLAG_ENTRY ("zba", x_riscv_zb_subext, MASK_ZBA),
+  RISCV_EXT_FLAG_ENTRY ("zbb", x_riscv_zb_subext, MASK_ZBB),
+  RISCV_EXT_FLAG_ENTRY ("zbc", x_riscv_zb_subext, MASK_ZBC),
+  RISCV_EXT_FLAG_ENTRY ("zbs", x_riscv_zb_subext, MASK_ZBS),
 
-  {"zfinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZFINX},
-  {"zdinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZDINX},
-  {"zhinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZHINX},
-  {"zhinxmin", &gcc_options::x_riscv_zinx_subext, MASK_ZHINXMIN},
+  RISCV_EXT_FLAG_ENTRY ("zfinx",    x_riscv_zinx_subext, MASK_ZFINX),
+  RISCV_EXT_FLAG_ENTRY ("zdinx",    x_riscv_zinx_subext, MASK_ZDINX),
+  RISCV_EXT_FLAG_ENTRY ("zhinx",    x_riscv_zinx_subext, MASK_ZHINX),
+  RISCV_EXT_FLAG_ENTRY ("zhinxmin", x_riscv_zinx_subext, MASK_ZHINXMIN),
 
-  {"zbkb",   &gcc_options::x_riscv_zk_subext, MASK_ZBKB},
-  {"zbkc",   &gcc_options::x_riscv_zk_subext, MASK_ZBKC},
-  {"zbkx",   &gcc_options::x_riscv_zk_subext, MASK_ZBKX},
-  {"zknd",   &gcc_options::x_riscv_zk_subext, MASK_ZKND},
-  {"zkne",   &gcc_options::x_riscv_zk_subext, MASK_ZKNE},
-  {"zknh",   &gcc_options::x_riscv_zk_subext, MASK_ZKNH},
-  {"zkr",    &gcc_options::x_riscv_zk_subext, MASK_ZKR},
-  {"zksed",  &gcc_options::x_riscv_zk_subext, MASK_ZKSED},
-  {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
-  {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
+  RISCV_EXT_FLAG_ENTRY ("zbkb",  x_riscv_zk_subext, MASK_ZBKB),
+  RISCV_EXT_FLAG_ENTRY ("zbkc",  x_riscv_zk_subext, MASK_ZBKC),
+  RISCV_EXT_FLAG_ENTRY ("zbkx",  x_riscv_zk_subext, MASK_ZBKX),
+  RISCV_EXT_FLAG_ENTRY ("zknd",  x_riscv_zk_subext, MASK_ZKND),
+  RISCV_EXT_FLAG_ENTRY ("zkne",  x_riscv_zk_subext, MASK_ZKNE),
+  RISCV_EXT_FLAG_ENTRY ("zknh",  x_riscv_zk_subext, MASK_ZKNH),
+  RISCV_EXT_FLAG_ENTRY ("zkr",   x_riscv_zk_subext, MASK_ZKR),
+  RISCV_EXT_FLAG_ENTRY ("zksed", x_riscv_zk_subext, MASK_ZKSED),
+  RISCV_EXT_FLAG_ENTRY ("zksh",  x_riscv_zk_subext, MASK_ZKSH),
+  RISCV_EXT_FLAG_ENTRY ("zkt",   x_riscv_zk_subext, MASK_ZKT),
 
-  {"zihintntl", &gcc_options::x_riscv_zi_subext, MASK_ZIHINTNTL},
-  {"zihintpause", &gcc_options::x_riscv_zi_subext, MASK_ZIHINTPAUSE},
-  {"ziccamoa", &gcc_options::x_riscv_zi_subext, MASK_ZICCAMOA},
-  {"ziccif", &gcc_options::x_riscv_zi_subext, MASK_ZICCIF},
-  {"zicclsm", &gcc_options::x_riscv_zi_subext, MASK_ZICCLSM},
-  {"ziccrse", &gcc_options::x_riscv_zi_subext, MASK_ZICCRSE},
+  RISCV_EXT_FLAG_ENTRY ("zihintntl",   x_riscv_zi_subext, MASK_ZIHINTNTL),
+  RISCV_EXT_FLAG_ENTRY ("zihintpause", x_riscv_zi_subext, MASK_ZIHINTPAUSE),
+  RISCV_EXT_FLAG_ENTRY ("ziccamoa",    x_riscv_zi_subext, MASK_ZICCAMOA),
+  RISCV_EXT_FLAG_ENTRY ("ziccif",      x_riscv_zi_subext, MASK_ZICCIF),
+  RISCV_EXT_FLAG_ENTRY ("zicclsm",     x_riscv_zi_subext, MASK_ZICCLSM),
+  RISCV_EXT_FLAG_ENTRY ("ziccrse",     x_riscv_zi_subext, MASK_ZICCRSE),
 
-  {"zicboz", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOZ},
-  {"zicbom", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOM},
-  {"zicbop", &gcc_options::x_riscv_zicmo_subext, MASK_ZICBOP},
-  {"zic64b", &gcc_options::x_riscv_zicmo_subext, MASK_ZIC64B},
+  RISCV_EXT_FLAG_ENTRY ("zicboz", x_riscv_zicmo_subext, MASK_ZICBOZ),
+  RISCV_EXT_FLAG_ENTRY ("zicbom", x_riscv_zicmo_subext, MASK_ZICBOM),
+  RISCV_EXT_FLAG_ENTRY ("zicbop", x_riscv_zicmo_subext, MASK_ZICBOP),
+  RISCV_EXT_FLAG_ENTRY ("zic64b", x_riscv_zicmo_subext, MASK_ZIC64B),
 
-  {"zimop",    &gcc_options::x_riscv_mop_subext, MASK_ZIMOP},
-  {"zcmop",    &gcc_options::x_riscv_mop_subext, MASK_ZCMOP},
+  RISCV_EXT_FLAG_ENTRY ("zimop", x_riscv_mop_subext, MASK_ZIMOP),
+  RISCV_EXT_FLAG_ENTRY ("zcmop", x_riscv_mop_subext, MASK_ZCMOP),
 
-  {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
-  {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},
-  {"zve64x",   &gcc_options::x_target_flags, MASK_VECTOR},
-  {"zve64f",   &gcc_options::x_target_flags, MASK_VECTOR},
-  {"zve64d",   &gcc_options::x_target_flags, MASK_VECTOR},
+  RISCV_EXT_FLAG_ENTRY ("zve32x", x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve32f", x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve64x", x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve64f", x_target_flags, MASK_VECTOR),
+  RISCV_EXT_FLAG_ENTRY ("zve64d", x_target_flags, MASK_VECTOR),
 
   /* We don't need to put complete ELEN/ELEN_FP info here, due to the
      implication relation of vector extension.
      e.g. v -> zve64d ... zve32x, so v has set MASK_VECTOR_ELEN_FP_64,
      MASK_VECTOR_ELEN_FP_32, MASK_VECTOR_ELEN_64 and MASK_VECTOR_ELEN_32
      due to the extension implication.  */
-  {"zve32x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32},
-  {"zve32f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
-  {"zve64x",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
-  {"zve64f",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
-  {"zve64d",   &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
-  {"zvfbfmin", &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_BF_16},
-  {"zvfbfwma", &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_BF_16},
-  {"zvfhmin",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
-  {"zvfh",     &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
+  RISCV_EXT_FLAG_ENTRY ("zve32x",   x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32),
+  RISCV_EXT_FLAG_ENTRY ("zve32f",   x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32),
+  RISCV_EXT_FLAG_ENTRY ("zve64x",   x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64),
+  RISCV_EXT_FLAG_ENTRY ("zve64f",   x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32),
+  RISCV_EXT_FLAG_ENTRY ("zve64d",   x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64),
+  RISCV_EXT_FLAG_ENTRY ("zvfbfmin", x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_BF_16),
+  RISCV_EXT_FLAG_ENTRY ("zvfbfwma", x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_BF_16),
+  RISCV_EXT_FLAG_ENTRY ("zvfhmin",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16),
+  RISCV_EXT_FLAG_ENTRY ("zvfh",     x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16),
 
-  {"zvbb",     &gcc_options::x_riscv_zvb_subext, MASK_ZVBB},
-  {"zvbc",     &gcc_options::x_riscv_zvb_subext, MASK_ZVBC},
-  {"zvkb",     &gcc_options::x_riscv_zvb_subext, MASK_ZVKB},
-  {"zvkg",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKG},
-  {"zvkned",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNED},
-  {"zvknha",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNHA},
-  {"zvknhb",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKNHB},
-  {"zvksed",   &gcc_options::x_riscv_zvk_subext, MASK_ZVKSED},
-  {"zvksh",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKSH},
-  {"zvkn",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKN},
-  {"zvknc",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKNC},
-  {"zvkng",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKNG},
-  {"zvks",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKS},
-  {"zvksc",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKSC},
-  {"zvksg",    &gcc_options::x_riscv_zvk_subext, MASK_ZVKSG},
-  {"zvkt",     &gcc_options::x_riscv_zvk_subext, MASK_ZVKT},
+  RISCV_EXT_FLAG_ENTRY ("zvbb",   x_riscv_zvb_subext, MASK_ZVBB),
+  RISCV_EXT_FLAG_ENTRY ("zvbc",   x_riscv_zvb_subext, MASK_ZVBC),
+  RISCV_EXT_FLAG_ENTRY ("zvkb",   x_riscv_zvb_subext, MASK_ZVKB),
+  RISCV_EXT_FLAG_ENTRY ("zvkg",   x_riscv_zvk_subext, MASK_ZVKG),
+  RISCV_EXT_FLAG_ENTRY ("zvkned", x_riscv_zvk_subext, MASK_ZVKNED),
+  RISCV_EXT_FLAG_ENTRY ("zvknha", x_riscv_zvk_subext, MASK_ZVKNHA),
+  RISCV_EXT_FLAG_ENTRY ("zvknhb", x_riscv_zvk_subext, MASK_ZVKNHB),
+  RISCV_EXT_FLAG_ENTRY ("zvksed", x_riscv_zvk_subext, MASK_ZVKSED),
+  RISCV_EXT_FLAG_ENTRY ("zvksh",  x_riscv_zvk_subext, MASK_ZVKSH),
+  RISCV_EXT_FLAG_ENTRY ("zvkn",   x_riscv_zvk_subext, MASK_ZVKN),
+  RISCV_EXT_FLAG_ENTRY ("zvknc",  x_riscv_zvk_subext, MASK_ZVKNC),
+  RISCV_EXT_FLAG_ENTRY ("zvkng",  x_riscv_zvk_subext, MASK_ZVKNG),
+  RISCV_EXT_FLAG_ENTRY ("zvks",   x_riscv_zvk_subext, MASK_ZVKS),
+  RISCV_EXT_FLAG_ENTRY ("zvksc",  x_riscv_zvk_subext, MASK_ZVKSC),
+  RISCV_EXT_FLAG_ENTRY ("zvksg",  x_riscv_zvk_subext, MASK_ZVKSG),
+  RISCV_EXT_FLAG_ENTRY ("zvkt",   x_riscv_zvk_subext, MASK_ZVKT),
 
-  {"zvl32b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
-  {"zvl64b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},
-  {"zvl128b",   &gcc_options::x_riscv_zvl_flags, MASK_ZVL128B},
-  {"zvl256b",   &gcc_options::x_riscv_zvl_flags, MASK_ZVL256B},
-  {"zvl512b",   &gcc_options::x_riscv_zvl_flags, MASK_ZVL512B},
-  {"zvl1024b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL1024B},
-  {"zvl2048b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL2048B},
-  {"zvl4096b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL4096B},
-  {"zvl8192b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL8192B},
-  {"zvl16384b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL16384B},
-  {"zvl32768b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL32768B},
-  {"zvl65536b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL65536B},
+  RISCV_EXT_FLAG_ENTRY ("zvl32b",    x_riscv_zvl_flags, MASK_ZVL32B),
+  RISCV_EXT_FLAG_ENTRY ("zvl64b",    x_riscv_zvl_flags, MASK_ZVL64B),
+  RISCV_EXT_FLAG_ENTRY ("zvl128b",   x_riscv_zvl_flags, MASK_ZVL128B),
+  RISCV_EXT_FLAG_ENTRY ("zvl256b",   x_riscv_zvl_flags, MASK_ZVL256B),
+  RISCV_EXT_FLAG_ENTRY ("zvl512b",   x_riscv_zvl_flags, MASK_ZVL512B),
+  RISCV_EXT_FLAG_ENTRY ("zvl1024b",  x_riscv_zvl_flags, MASK_ZVL1024B),
+  RISCV_EXT_FLAG_ENTRY ("zvl2048b",  x_riscv_zvl_flags, MASK_ZVL2048B),
+  RISCV_EXT_FLAG_ENTRY ("zvl4096b",  x_riscv_zvl_flags, MASK_ZVL4096B),
+  RISCV_EXT_FLAG_ENTRY ("zvl8192b",  x_riscv_zvl_flags, MASK_ZVL8192B),
+  RISCV_EXT_FLAG_ENTRY ("zvl16384b", x_riscv_zvl_flags, MASK_ZVL16384B),
+  RISCV_EXT_FLAG_ENTRY ("zvl32768b", x_riscv_zvl_flags, MASK_ZVL32768B),
+  RISCV_EXT_FLAG_ENTRY ("zvl65536b", x_riscv_zvl_flags, MASK_ZVL65536B),
 
-  {"zfbfmin",   &gcc_options::x_riscv_zf_subext, MASK_ZFBFMIN},
-  {"zfhmin",    &gcc_options::x_riscv_zf_subext, MASK_ZFHMIN},
-  {"zfh",       &gcc_options::x_riscv_zf_subext, MASK_ZFH},
-  {"zvfbfmin",  &gcc_options::x_riscv_zf_subext, MASK_ZVFBFMIN},
-  {"zvfbfwma",  &gcc_options::x_riscv_zf_subext, MASK_ZVFBFWMA},
-  {"zvfhmin",   &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
-  {"zvfh",      &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
+  RISCV_EXT_FLAG_ENTRY ("zfbfmin",  x_riscv_zf_subext, MASK_ZFBFMIN),
+  RISCV_EXT_FLAG_ENTRY ("zfhmin",   x_riscv_zf_subext, MASK_ZFHMIN),
+  RISCV_EXT_FLAG_ENTRY ("zfh",      x_riscv_zf_subext, MASK_ZFH),
+  RISCV_EXT_FLAG_ENTRY ("zvfbfmin", x_riscv_zf_subext, MASK_ZVFBFMIN),
+  RISCV_EXT_FLAG_ENTRY ("zvfbfwma", x_riscv_zf_subext, MASK_ZVFBFWMA),
+  RISCV_EXT_FLAG_ENTRY ("zvfhmin",  x_riscv_zf_subext, MASK_ZVFHMIN),
+  RISCV_EXT_FLAG_ENTRY ("zvfh",     x_riscv_zf_subext, MASK_ZVFH),
 
-  {"zfa",       &gcc_options::x_riscv_zfa_subext, MASK_ZFA},
+  RISCV_EXT_FLAG_ENTRY ("zfa", x_riscv_zfa_subext, MASK_ZFA),
 
-  {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
+  RISCV_EXT_FLAG_ENTRY ("zmmul", x_riscv_zm_subext, MASK_ZMMUL),
 
   /* Code-size reduction extensions.  */
-  {"zca",     &gcc_options::x_riscv_zc_subext, MASK_ZCA},
-  {"zcb",     &gcc_options::x_riscv_zc_subext, MASK_ZCB},
-  {"zce",     &gcc_options::x_riscv_zc_subext, MASK_ZCE},
-  {"zcf",     &gcc_options::x_riscv_zc_subext, MASK_ZCF},
-  {"zcd",     &gcc_options::x_riscv_zc_subext, MASK_ZCD},
-  {"zcmp",    &gcc_options::x_riscv_zc_subext, MASK_ZCMP},
-  {"zcmt",    &gcc_options::x_riscv_zc_subext, MASK_ZCMT},
+  RISCV_EXT_FLAG_ENTRY ("zca",  x_riscv_zc_subext, MASK_ZCA),
+  RISCV_EXT_FLAG_ENTRY ("zcb",  x_riscv_zc_subext, MASK_ZCB),
+  RISCV_EXT_FLAG_ENTRY ("zce",  x_riscv_zc_subext, MASK_ZCE),
+  RISCV_EXT_FLAG_ENTRY ("zcf",  x_riscv_zc_subext, MASK_ZCF),
+  RISCV_EXT_FLAG_ENTRY ("zcd",  x_riscv_zc_subext, MASK_ZCD),
+  RISCV_EXT_FLAG_ENTRY ("zcmp", x_riscv_zc_subext, MASK_ZCMP),
+  RISCV_EXT_FLAG_ENTRY ("zcmt", x_riscv_zc_subext, MASK_ZCMT),
 
-  {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
-  {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
+  RISCV_EXT_FLAG_ENTRY ("svinval", x_riscv_sv_subext, MASK_SVINVAL),
+  RISCV_EXT_FLAG_ENTRY ("svnapot", x_riscv_sv_subext, MASK_SVNAPOT),
 
-  {"ztso", &gcc_options::x_riscv_ztso_subext, MASK_ZTSO},
+  RISCV_EXT_FLAG_ENTRY ("ztso", x_riscv_ztso_subext, MASK_ZTSO),
 
-  {"xcvmac",        &gcc_options::x_riscv_xcv_subext, MASK_XCVMAC},
-  {"xcvalu",        &gcc_options::x_riscv_xcv_subext, MASK_XCVALU},
-  {"xcvelw",        &gcc_options::x_riscv_xcv_subext, MASK_XCVELW},
-  {"xcvsimd",       &gcc_options::x_riscv_xcv_subext, MASK_XCVSIMD},
-  {"xcvbi",         &gcc_options::x_riscv_xcv_subext, MASK_XCVBI},
+  RISCV_EXT_FLAG_ENTRY ("xcvmac",  x_riscv_xcv_subext, MASK_XCVMAC),
+  RISCV_EXT_FLAG_ENTRY ("xcvalu",  x_riscv_xcv_subext, MASK_XCVALU),
+  RISCV_EXT_FLAG_ENTRY ("xcvelw",  x_riscv_xcv_subext, MASK_XCVELW),
+  RISCV_EXT_FLAG_ENTRY ("xcvsimd", x_riscv_xcv_subext, MASK_XCVSIMD),
+  RISCV_EXT_FLAG_ENTRY ("xcvbi",   x_riscv_xcv_subext, MASK_XCVBI),
 
-  {"xtheadba",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBA},
-  {"xtheadbb",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBB},
-  {"xtheadbs",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBS},
-  {"xtheadcmo",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADCMO},
-  {"xtheadcondmov", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADCONDMOV},
-  {"xtheadfmemidx", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADFMEMIDX},
-  {"xtheadfmv",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADFMV},
-  {"xtheadint",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADINT},
-  {"xtheadmac",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMAC},
-  {"xtheadmemidx",  &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMIDX},
-  {"xtheadmempair", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMPAIR},
-  {"xtheadsync",    &gcc_options::x_riscv_xthead_subext, MASK_XTHEADSYNC},
-  {"xtheadvector",  &gcc_options::x_riscv_xthead_subext, MASK_XTHEADVECTOR},
-  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32},
-  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64},
-  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32},
-  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64},
-  {"xtheadvector",  &gcc_options::x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16},
-  {"xtheadvector",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
-  {"xtheadvector",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},
-  {"xtheadvector",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL128B},
-  {"xtheadvector",  &gcc_options::x_riscv_zf_subext, MASK_ZVFHMIN},
-  {"xtheadvector",  &gcc_options::x_riscv_zf_subext, MASK_ZVFH},
-  {"xtheadvector",  &gcc_options::x_target_flags, MASK_FULL_V},
-  {"xtheadvector",  &gcc_options::x_target_flags, MASK_VECTOR},
+  RISCV_EXT_FLAG_ENTRY ("xtheadba",      x_riscv_xthead_subext, MASK_XTHEADBA),
+  RISCV_EXT_FLAG_ENTRY ("xtheadbb",      x_riscv_xthead_subext, MASK_XTHEADBB),
+  RISCV_EXT_FLAG_ENTRY ("xtheadbs",      x_riscv_xthead_subext, MASK_XTHEADBS),
+  RISCV_EXT_FLAG_ENTRY ("xtheadcmo",     x_riscv_xthead_subext, MASK_XTHEADCMO),
+  RISCV_EXT_FLAG_ENTRY ("xtheadcondmov", x_riscv_xthead_subext, MASK_XTHEADCONDMOV),
+  RISCV_EXT_FLAG_ENTRY ("xtheadfmemidx", x_riscv_xthead_subext, MASK_XTHEADFMEMIDX),
+  RISCV_EXT_FLAG_ENTRY ("xtheadfmv",     x_riscv_xthead_subext, MASK_XTHEADFMV),
+  RISCV_EXT_FLAG_ENTRY ("xtheadint",     x_riscv_xthead_subext, MASK_XTHEADINT),
+  RISCV_EXT_FLAG_ENTRY ("xtheadmac",     x_riscv_xthead_subext, MASK_XTHEADMAC),
+  RISCV_EXT_FLAG_ENTRY ("xtheadmemidx",  x_riscv_xthead_subext, MASK_XTHEADMEMIDX),
+  RISCV_EXT_FLAG_ENTRY ("xtheadmempair", x_riscv_xthead_subext, MASK_XTHEADMEMPAIR),
+  RISCV_EXT_FLAG_ENTRY ("xtheadsync",    x_riscv_xthead_subext, MASK_XTHEADSYNC),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_xthead_subext, MASK_XTHEADVECTOR),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_32),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_64),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_32),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_64),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_vector_elen_flags, MASK_VECTOR_ELEN_FP_16),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_flags, MASK_ZVL32B),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_flags, MASK_ZVL64B),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zvl_flags, MASK_ZVL128B),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zf_subext, MASK_ZVFHMIN),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_riscv_zf_subext, MASK_ZVFH),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_target_flags, MASK_FULL_V),
+  RISCV_EXT_FLAG_ENTRY ("xtheadvector",  x_target_flags, MASK_VECTOR),
 
-  {"xventanacondops", &gcc_options::x_riscv_xventana_subext, MASK_XVENTANACONDOPS},
+  RISCV_EXT_FLAG_ENTRY ("xventanacondops", x_riscv_xventana_subext, MASK_XVENTANACONDOPS),
 
-  {"xsfvcp",   &gcc_options::x_riscv_sifive_subext, MASK_XSFVCP},
-  {"xsfcease", &gcc_options::x_riscv_sifive_subext, MASK_XSFCEASE},
+  RISCV_EXT_FLAG_ENTRY ("xsfvcp",   x_riscv_sifive_subext, MASK_XSFVCP),
+  RISCV_EXT_FLAG_ENTRY ("xsfcease", x_riscv_sifive_subext, MASK_XSFCEASE),
 
-  {NULL, NULL, 0}
+  {NULL, NULL, NULL, 0}
 };
 
 /* Apply SUBSET_LIST to OPTS if OPTS is not null.  */
@@ -1781,6 +1789,43 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
 	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
 	}
     }
+}
+
+/* Check if the ISA extension of the "subset" is a subset of the "opts".  */
+
+bool
+riscv_ext_is_subset (struct cl_target_option *opts,
+		     struct cl_target_option *subset)
+{
+  const riscv_ext_flag_table_t *arch_ext_flag_tab;
+  for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
+       arch_ext_flag_tab->ext;
+       ++arch_ext_flag_tab)
+    {
+      if (subset->*arch_ext_flag_tab->cl_var_ref & arch_ext_flag_tab->mask)
+	{
+	  if (!(opts->*arch_ext_flag_tab->cl_var_ref & arch_ext_flag_tab->mask))
+	    return false;
+	}
+    }
+  return true;
+}
+
+/* Return the mask of ISA extension in x_target_flags of gcc_options.  */
+
+int
+riscv_x_target_flags_isa_mask (void)
+{
+  int mask = 0;
+  const riscv_ext_flag_table_t *arch_ext_flag_tab;
+  for (arch_ext_flag_tab = &riscv_ext_flag_table[0];
+       arch_ext_flag_tab->ext;
+       ++arch_ext_flag_tab)
+    {
+      if (arch_ext_flag_tab->var_ref == &gcc_options::x_target_flags)
+	mask |= arch_ext_flag_tab->mask;
+    }
+  return mask;
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch

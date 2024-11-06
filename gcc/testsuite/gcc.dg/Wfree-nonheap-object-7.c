@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wfree-nonheap-object" } */
+/* { dg-options "-std=gnu17 -O2 -Wfree-nonheap-object" } */
 
 struct local_caches *get_local_caches_lcs;
 void *calloc(long, long);

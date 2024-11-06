@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-loop-distribute-patterns -fdump-tree-ivopts" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fno-tree-loop-distribute-patterns -fdump-tree-ivopts" } */
 /* { dg-skip-if "PR68644" { hppa*-*-* powerpc*-*-* } } */
 
 void

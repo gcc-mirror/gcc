@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-old-style-definition" } */
 
 #define CONCAT_(A,B) A ## B
 #define CONCAT(A,B) CONCAT_(A,B)

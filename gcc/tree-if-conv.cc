@@ -525,7 +525,7 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
 
 /* Add condition NC to the predicate list of basic block BB.  LOOP is
    the loop to be if-converted. Use predicate of cd-equivalent block
-   for join bb if it exists: we call basic blocks bb1 and bb2 
+   for join bb if it exists: we call basic blocks bb1 and bb2
    cd-equivalent if they are executed under the same condition.  */
 
 static inline void
@@ -1133,15 +1133,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 
     case GIMPLE_CALL:
       {
-	/* There are some IFN_s that are used to replace builtins but have the
-	   same semantics.  Even if MASK_CALL cannot handle them vectorable_call
-	   will insert the proper selection, so do not block conversion.  */
-	int flags = gimple_call_flags (stmt);
-	if ((flags & ECF_CONST)
-	    && !(flags & ECF_LOOPING_CONST_OR_PURE)
-	    && gimple_call_combined_fn (stmt) != CFN_LAST)
-	  return true;
-
 	tree fndecl = gimple_call_fndecl (stmt);
 	if (fndecl)
 	  {
@@ -1159,6 +1150,15 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		    return true;
 		  }
 	  }
+
+	/* There are some IFN_s that are used to replace builtins but have the
+	   same semantics.  Even if MASK_CALL cannot handle them vectorable_call
+	   will insert the proper selection, so do not block conversion.  */
+	int flags = gimple_call_flags (stmt);
+	if ((flags & ECF_CONST)
+	    && !(flags & ECF_LOOPING_CONST_OR_PURE)
+	    && gimple_call_combined_fn (stmt) != CFN_LAST)
+	  return true;
 
 	return false;
       }
@@ -1477,10 +1477,12 @@ predicate_bbs (loop_p loop)
 		{
 		  tree low = build2_loc (loc, GE_EXPR,
 					 boolean_type_node,
-					 index, CASE_LOW (label));
+					 index, fold_convert_loc (loc, TREE_TYPE (index),
+						 CASE_LOW (label)));
 		  tree high = build2_loc (loc, LE_EXPR,
 					  boolean_type_node,
-					  index, CASE_HIGH (label));
+					  index, fold_convert_loc (loc, TREE_TYPE (index),
+						  CASE_HIGH (label)));
 		  case_cond = build2_loc (loc, TRUTH_AND_EXPR,
 					  boolean_type_node,
 					  low, high);
@@ -1489,7 +1491,8 @@ predicate_bbs (loop_p loop)
 		case_cond = build2_loc (loc, EQ_EXPR,
 					boolean_type_node,
 					index,
-					CASE_LOW (gimple_switch_label (sw, i)));
+					fold_convert_loc (loc, TREE_TYPE (index),
+							  CASE_LOW (label)));
 	      if (i > 1)
 		switch_cond = build2_loc (loc, TRUTH_OR_EXPR,
 					  boolean_type_node,
@@ -2907,6 +2910,7 @@ predicate_statements (loop_p loop)
 		 This will cause the vectorizer to match the "in branch"
 		 clone variants, and serves to build the mask vector
 		 in a natural way.  */
+	      tree mask = cond;
 	      gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
 	      tree orig_fn = gimple_call_fn (call);
 	      int orig_nargs = gimple_call_num_args (call);
@@ -2914,7 +2918,18 @@ predicate_statements (loop_p loop)
 	      args.safe_push (orig_fn);
 	      for (int i = 0; i < orig_nargs; i++)
 		args.safe_push (gimple_call_arg (call, i));
-	      args.safe_push (cond);
+	      /* If `swap', we invert the mask used for the if branch for use
+		 when masking the function call.  */
+	      if (swap)
+		{
+		  gimple_seq stmts = NULL;
+		  tree true_val
+		    = constant_boolean_node (true, TREE_TYPE (mask));
+		  mask = gimple_build (&stmts, BIT_XOR_EXPR,
+				       TREE_TYPE (mask), mask, true_val);
+		  gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+		}
+	      args.safe_push (mask);
 
 	      /* Replace the call with a IFN_MASK_CALL that has the extra
 		 condition parameter. */
@@ -3075,7 +3090,7 @@ combine_blocks (class loop *loop, bool loop_versioned)
 	    }
 	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (vphi)))
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (last_vdef) = 1;
-	  gsi = gsi_for_stmt (vphi); 
+	  gsi = gsi_for_stmt (vphi);
 	  remove_phi_node (&gsi, true);
 	}
 
@@ -3133,7 +3148,7 @@ combine_blocks (class loop *loop, bool loop_versioned)
 	    }
 	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (vphi)))
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (last_vdef) = 1;
-	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi); 
+	  gimple_stmt_iterator gsi = gsi_for_stmt (vphi);
 	  remove_phi_node (&gsi, true);
 	}
     }
@@ -3206,7 +3221,7 @@ combine_blocks (class loop *loop, bool loop_versioned)
    will be if-converted, the new copy of the loop will not,
    and the LOOP_VECTORIZED internal call will be guarding which
    loop to execute.  The vectorizer pass will fold this
-   internal call into either true or false. 
+   internal call into either true or false.
 
    Note that this function intentionally invalidates profile.  Both edges
    out of LOOP_VECTORIZED must have 100% probability so the profile remains

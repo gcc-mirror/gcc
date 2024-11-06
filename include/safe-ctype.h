@@ -112,7 +112,7 @@ extern const unsigned char  _sch_tolower[256];
 #define TOUPPER(c) _sch_toupper[(c) & 0xff]
 #define TOLOWER(c) _sch_tolower[(c) & 0xff]
 
-/* Prevent the users of safe-ctype.h from accidently using the routines
+/* Prevent the users of safe-ctype.h from accidentally using the routines
    from ctype.h.  Initially, the approach was to produce an error when
    detecting that ctype.h has been included.  But this was causing
    trouble as ctype.h might get indirectly included as a result of

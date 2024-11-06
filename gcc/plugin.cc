@@ -276,7 +276,7 @@ parse_plugin_arg_opt (const char *arg)
         }
       else if (*ptr == '=')
         {
-	  if (!key_parsed) 
+	  if (!key_parsed)
 	    {
 	      key_len = len;
 	      len = 0;

@@ -1,4 +1,3 @@
-/* { dg-skip-if "can't read function data" { nvptx-*-* } } */
 void foo(void);
 void bar(void);
 

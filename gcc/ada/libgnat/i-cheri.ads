@@ -467,20 +467,4 @@ is
      External_Name => "__builtin_cheri_stack_get";
    --  Get the Capability Stack Pointer (CSP)
 
-   ---------------------------
-   -- Capability Exceptions --
-   ---------------------------
-
-   Capability_Bound_Error : exception;
-   --  An out-of-bounds access was attempted
-
-   Capability_Permission_Error : exception;
-   --  An attempted access exceeded the permissions granted by a capability
-
-   Capability_Sealed_Error : exception;
-   --  A sealed capability was dereferenced
-
-   Capability_Tag_Error : exception;
-   --  An invalid capability was dereferenced
-
 end Interfaces.CHERI;

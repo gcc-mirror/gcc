@@ -57,7 +57,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
    IEEE_TYPE: the corresponding (encoded) IEEE754 type;
 	(eg decimal32)
-   
+
    TO_INTERNAL: the name of the decNumber function to convert an
    encoded value into the decNumber internal representation;
 
@@ -257,7 +257,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
     BFP_VIA_TYPE: Type to which to cast a variable of BPF_TYPE for a
     call to sprintf.
-    
+
     STR_TO_BFP: The function to read the value from a string.  */
 
 #if BFP_KIND == 1
@@ -411,7 +411,7 @@ extern _Float128 __strtoieee128 (const char *, char **);
 #elif WIDTH_TO == 128
 #define DFP_TO_DFP	DPD_BID_NAME(__dpd_extendsdtd2,__bid_extendsdtd2)
 #endif
-#elif WIDTH == 64	
+#elif WIDTH == 64
 #if WIDTH_TO == 32
 #define DFP_TO_DFP	DPD_BID_NAME(__dpd_truncddsd2,__bid_truncddsd2)
 #elif WIDTH_TO == 128

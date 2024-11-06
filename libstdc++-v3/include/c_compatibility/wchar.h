@@ -111,6 +111,6 @@ using std::wcstoull;
 
 #endif  //_GLIBCXX_USE_WCHAR_T
 
-#endif 
+#endif
 
 #endif

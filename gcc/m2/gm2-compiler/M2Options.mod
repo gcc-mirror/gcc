@@ -617,7 +617,7 @@ END SetCheckAll ;
                   TRUE is returned.
 *)
 
-PROCEDURE SetAutoInit (value: BOOLEAN) ;
+PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
 BEGIN
    AutoInit := value ;
    RETURN TRUE
@@ -2005,16 +2005,6 @@ PROCEDURE GetDumpDecl () : BOOLEAN ;
 BEGIN
    RETURN DumpDecl
 END GetDumpDecl ;
-
-
-(*
-   GetDumpLangGimple - return TRUE if the gimple flag is set from SetM2Dump.
-*)
-
-PROCEDURE GetDumpGimple () : BOOLEAN ;
-BEGIN
-   RETURN DumpGimple
-END GetDumpGimple ;
 
 
 BEGIN

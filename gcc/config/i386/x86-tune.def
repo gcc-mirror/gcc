@@ -534,6 +534,14 @@ DEF_TUNE (X86_TUNE_AVOID_512FMA_CHAINS, "avoid_fma512_chains", m_ZNVER5)
 DEF_TUNE (X86_TUNE_V2DF_REDUCTION_PREFER_HADDPD,
 	  "v2df_reduction_prefer_haddpd", m_NONE)
 
+/* X86_TUNE_SSE_MOVCC_USE_BLENDV: Prefer blendv instructions to
+   3-instruction sequence (op1 & mask) | (op2 & ~mask)
+   for vector condition move.
+   For Crestmont, 4-operand vex blendv instructions come from MSROM
+   which is slow.  */
+DEF_TUNE (X86_TUNE_SSE_MOVCC_USE_BLENDV,
+	  "sse_movcc_use_blendv", ~m_CORE_ATOM)
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
@@ -550,7 +558,7 @@ DEF_TUNE (X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL, "256_unaligned_store_optimal"
 
 /* X86_TUNE_AVX256_SPLIT_REGS: if true, AVX256 ops are split into two AVX128 ops.  */
 DEF_TUNE (X86_TUNE_AVX256_SPLIT_REGS, "avx256_split_regs",m_BDVER | m_BTVER2
-	  | m_ZNVER1)
+	  | m_ZNVER1 | m_CORE_ATOM)
 
 /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
    the auto-vectorizer.  */
@@ -560,6 +568,11 @@ DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2
 /* X86_TUNE_AVX256_OPTIMAL: Use 256-bit AVX instructions instead of 512-bit AVX
    instructions in the auto-vectorizer.  */
 DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_CORE_AVX512)
+
+/* X86_TUNE_AVX256_AVOID_VEC_PERM: Avoid using 256-bit cross-lane
+   vector permutation instructions in the auto-vectorizer.  */
+DEF_TUNE (X86_TUNE_AVX256_AVOID_VEC_PERM,
+	 "avx256_avoid_vec_perm", m_CORE_ATOM)
 
 /* X86_TUNE_AVX256_SPLIT_REGS: if true, AVX512 ops are split into two AVX256 ops.  */
 DEF_TUNE (X86_TUNE_AVX512_SPLIT_REGS, "avx512_split_regs", m_ZNVER4)

@@ -153,15 +153,15 @@ doloop_condition_get (rtx_insn *doloop_pat)
 	    return 0;
 	  cmp_arg1 = XEXP (SET_SRC (cmp_orig), 0);
           cmp_arg2 = XEXP (SET_SRC (cmp_orig), 1);
-	  if (cmp_arg2 != const0_rtx 
+	  if (cmp_arg2 != const0_rtx
 	      || GET_CODE (cmp_arg1) != PLUS)
 	    return 0;
 	  reg_orig = XEXP (cmp_arg1, 0);
-	  if (XEXP (cmp_arg1, 1) != GEN_INT (-1) 
+	  if (XEXP (cmp_arg1, 1) != GEN_INT (-1)
 	      || !REG_P (reg_orig))
 	    return 0;
 	  cc_reg = SET_DEST (cmp_orig);
-	  
+
 	  inc = XVECEXP (PATTERN (prev_insn), 0, 1);
 	}
       else
@@ -223,7 +223,7 @@ doloop_condition_get (rtx_insn *doloop_pat)
     return 0;
 
   if (rtx_equal_p (XEXP (condition, 0), reg)
-      /* For the third case:  */  
+      /* For the third case:  */
       || ((cc_reg != NULL_RTX)
 	  && (XEXP (condition, 0) == cc_reg)
 	  && (rtx_equal_p (reg_orig, reg)))

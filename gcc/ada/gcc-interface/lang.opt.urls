@@ -7,10 +7,10 @@ UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Opti
 ;   duplicate: 'gcc/Standard-Libraries.html#index-Wall-1'
 ;   duplicate: 'gcc/Warning-Options.html#index-Wall'
 Wall
-LangUrlSuffix_D(gdc/Warnings.html#index-Wall)
+LangUrlSuffix_D(gdc/Warnings.html#index-Wall) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wall)
 
 nostdinc
-UrlSuffix(gcc/Directory-Options.html#index-nostdinc) LangUrlSuffix_D(gdc/Directory-Options.html#index-nostdinc)
+UrlSuffix(gcc/Directory-Options.html#index-nostdinc) LangUrlSuffix_D(gdc/Directory-Options.html#index-nostdinc) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-nostdinc)
 
 nostdlib
 UrlSuffix(gcc/Link-Options.html#index-nostdlib)
@@ -19,6 +19,8 @@ UrlSuffix(gcc/Link-Options.html#index-nostdlib)
 ;   duplicate: 'gcc/Code-Gen-Options.html#index-fshort-enums'
 ;   duplicate: 'gcc/Non-bugs.html#index-fshort-enums-3'
 ;   duplicate: 'gcc/Structures-unions-enumerations-and-bit-fields-implementation.html#index-fshort-enums-1'
+fshort-enums
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fshort-enums)
 
 ; skipping UrlSuffix for 'fsigned-char' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-fsigned-char'

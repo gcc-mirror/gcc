@@ -27,7 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bid_internal.h"
 
 #define FENCE __fence
-//#define FENCE 
+//#define FENCE
 
 //#define DOUBLE_EXTENDED_ON
 
@@ -53,7 +53,7 @@ __div_128_by_128 (UINT128 * pCQ, UINT128 * pCR, UINT128 CX, UINT128 CY) {
       pCR->w[0] = CX.w[0] - pCQ->w[0] * CY.w[0];
     } else {
 
-      // This path works for CX<2^116 only 
+      // This path works for CX<2^116 only
 
       // 2^64
       d64.i = 0x43f0000000000000;
@@ -328,7 +328,7 @@ __div_128_by_128 (UINT128 * pCQ, UINT128 * pCR, UINT128 CX0, UINT128 CY) {
 
   if (CY.w[1] < (UINT64) (1 << (64 - 51))
       && (__unsigned_compare_gt_128 (CX, CY51))) {
-    // Q > 2^51 
+    // Q > 2^51
 
     // 2^(-49)*CX/CY
     d49.i = 0x3ce0000000000000ull;
@@ -397,7 +397,7 @@ __div_256_by_128 (UINT128 * pCQ, UINT256 * pCA4, UINT128 CY) {
   int_double t64, d49, d60;
   double lx, ly, lq, d128, d192;
 
-  // the quotient is assumed to be at most 113 bits, 
+  // the quotient is assumed to be at most 113 bits,
   // as needed by BID128 divide routines
 
   // initial dividend
@@ -467,7 +467,7 @@ __div_256_by_128 (UINT128 * pCQ, UINT256 * pCA4, UINT128 CY) {
 			       &&
 			       (__unsigned_compare_gt_128 (CA4, CY51))))
   {
-    // Q > 2^51 
+    // Q > 2^51
 
     // 2^(-49)*CA4/CY
     d49.i = 0x3ce0000000000000ull;

@@ -23,14 +23,14 @@
    <http://www.gnu.org/licenses/>.  */
 
 extern long long __divdi3 (long long, long long);
-extern unsigned long long __udivdi3 (unsigned long long, 
+extern unsigned long long __udivdi3 (unsigned long long,
 				     unsigned long long);
 extern long long __gnu_ldivmod_helper (long long, long long, long long *);
 
 
 long long
-__gnu_ldivmod_helper (long long a, 
-		      long long b, 
+__gnu_ldivmod_helper (long long a,
+		      long long b,
 		      long long *remainder)
 {
   long long quotient;

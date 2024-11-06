@@ -474,7 +474,11 @@ package body Namet is
 
             P := 1;
             while P < Temp.Length loop
-               if Temp.Chars (P + 1) in 'A' .. 'Z' then
+               --  Cheap test for the common case of no encoding
+
+               if Temp.Chars (P + 1) in 'A' .. 'Z'
+                 and then Temp.Chars (P + 1) /= 'W'
+               then
                   P := P + 1;
 
                --  Uhh encoding
@@ -1519,6 +1523,17 @@ package body Namet is
    begin
       return Buf.Chars (1 .. Buf.Length);
    end To_String;
+
+   ----------------------
+   -- Unlock_If_Locked --
+   ----------------------
+
+   procedure Unlock_If_Locked is
+   begin
+      if Name_Chars.Locked then
+         Unlock;
+      end if;
+   end Unlock_If_Locked;
 
    ------------
    -- Unlock --

@@ -58,8 +58,10 @@ FROM SymbolTable IMPORT NulSym,
                         IsSubscript, IsSubrange, IsSet, IsHiddenType,
                         IsError, GetSymName, GetScope, IsExported,
                         GetType, SkipType, GetDeclaredDef, GetDeclaredMod,
-                        GetDeclaredModule, GetDeclaredDefinition, GetScope,
-                        GetFirstUsed, IsNameAnonymous, GetErrorScope ;
+                        GetDeclaredFor, GetDeclaredModule,
+                        GetDeclaredDefinition, GetScope,
+                        GetFirstUsed, IsNameAnonymous, GetErrorScope,
+                        GetVarDeclTok, GetVarDeclTypeTok, GetVarDeclFullTok ;
 
 IMPORT M2ColorString ;
 IMPORT M2Error ;
@@ -71,6 +73,8 @@ CONST
    ColorDebug = FALSE ;
 
 TYPE
+   GetTokProcedure = PROCEDURE (CARDINAL) : CARDINAL ;
+
    errorType = (none, error, warning, note, chained, aborta) ;
    colorType = (unsetColor, noColor, quoteColor, filenameColor, errorColor,
                 warningColor, noteColor, keywordColor, locusColor,
@@ -704,9 +708,21 @@ END killErrorBlock ;
                        )
                  =:
 
-   op := {'a'|'q'|'t'|'d'|'n'|'s'|'D'|'I'|'U'|'E'|'W'|'A'} then =:
+   op := {'a'|'q'|'t'|'d'|'n'|'s'|'B'|'D'|'F'|'G'|'H'|'M'|'U'|'E'|'V'|'W'|'A'} then =:
 
    then := [ ':' ebnf ] =:
+*)
+
+(*
+    {%1V}     set the error message location to the name of the symbol declared.
+              For example foo: bar
+                          ^^^  some error message.
+    {%1H}     set the error message location to the whole declaration of the symbol.
+              For example foo: bar
+                          ^^^^^^^^ some error message.
+    {%1B}     set the error message location to the type declaration of the symbol.
+              For example foo: bar
+                               ^^^ some error message.
 *)
 
 
@@ -1186,6 +1202,72 @@ END chooseError ;
 
 
 (*
+   doErrorScopeModule -
+*)
+
+PROCEDURE doErrorScopeModule (VAR eb: errorBlock; sym: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF IsModule (scope)
+   THEN
+      IF IsInnerModule (scope)
+      THEN
+         doError (eb, GetDeclaredMod (sym))
+      ELSE
+         doError (eb, GetDeclaredMod (sym))
+      END
+   ELSE
+      Assert (IsDefImp (scope)) ;
+      (* if this fails then we need to skip to the outer scope.
+         REPEAT
+            OuterModule := GetScope(OuterModule)
+         UNTIL GetScope(OuterModule)=NulSym.  *)
+      IF GetDeclaredModule (sym) = UnknownTokenNo
+      THEN
+         doError (eb, GetDeclaredDef (sym))
+      ELSE
+         doError (eb, GetDeclaredMod (sym))
+      END
+   END
+END doErrorScopeModule ;
+
+
+(*
+   doErrorScopeForward -
+*)
+
+PROCEDURE doErrorScopeForward (VAR eb: errorBlock; sym: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF IsModule (scope)
+   THEN
+      IF IsInnerModule (scope)
+      THEN
+         doError (eb, GetDeclaredFor (sym))
+      ELSE
+         doError (eb, GetDeclaredFor (sym))
+      END
+   ELSE
+      Assert (IsDefImp (scope)) ;
+      (* if this fails then we need to skip to the outer scope.
+         REPEAT
+            OuterModule := GetScope(OuterModule)
+         UNTIL GetScope(OuterModule)=NulSym.  *)
+      IF GetDeclaredModule (sym) = UnknownTokenNo
+      THEN
+         doError (eb, GetDeclaredDef (sym))
+      ELSE
+         doError (eb, GetDeclaredFor (sym))
+      END
+   END
+END doErrorScopeForward ;
+
+
+(*
    doErrorScopeMod - potentially create an error referring to the definition
                      module, fall back to the implementation or program module if
                      there is no declaration in the definition module.
@@ -1206,31 +1288,80 @@ BEGIN
       THEN
          doError (eb, GetDeclaredMod (sym))
       ELSE
-         IF IsModule (scope)
-         THEN
-            IF IsInnerModule (scope)
-            THEN
-               doError (eb, GetDeclaredMod (sym))
-            ELSE
-               doError (eb, GetDeclaredMod (sym))
-            END
-         ELSE
-            Assert (IsDefImp (scope)) ;
-            (* if this fails then we need to skip to the outer scope.
-            REPEAT
-             OuterModule := GetScope(OuterModule)
-            UNTIL GetScope(OuterModule)=NulSym ;  *)
-            IF GetDeclaredModule (sym) = UnknownTokenNo
-            THEN
-               doError (eb, GetDeclaredDef (sym))
-            ELSE
-               doError (eb, GetDeclaredMod (sym))
-            END
-         END
+         doErrorScopeModule (eb, sym)
       END
    END ;
    M2Error.LeaveErrorScope
 END doErrorScopeMod ;
+
+
+(*
+   doErrorScopeFor - potentially create an error referring to the
+                     forward declaration, definition module, fall back
+                     to the implementation or program module if
+                     there is no declaration in the definition module.
+*)
+
+PROCEDURE doErrorScopeFor (VAR eb: errorBlock; sym: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF scope = NulSym
+   THEN
+      M2Error.EnterErrorScope (NIL) ;
+      doError (eb, GetDeclaredFor (sym))
+   ELSE
+      M2Error.EnterErrorScope (GetErrorScope (scope)) ;
+      IF IsProcedure (scope)
+      THEN
+         doError (eb, GetDeclaredFor (sym))
+      ELSE
+         doErrorScopeForward (eb, sym)
+      END
+   END ;
+   M2Error.LeaveErrorScope
+END doErrorScopeFor ;
+
+
+(*
+   doDeclaredMod - creates an error note where sym[bol] was declared.
+*)
+
+PROCEDURE declaredMod (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+BEGIN
+   IF bol <= HIGH (sym)
+   THEN
+      doErrorScopeMod (eb, sym[bol])
+   END
+END declaredMod ;
+
+
+(*
+   doErrorScopeDefinition - use the declaration in the definitio module if one is available.
+*)
+
+PROCEDURE doErrorScopeDefinition (VAR eb: errorBlock; sym: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF IsModule (scope)
+   THEN
+      (* No definition module for a program module.  *)
+      doError (eb, GetDeclaredMod (sym))
+   ELSE
+      Assert (IsDefImp (scope)) ;
+      IF GetDeclaredDefinition (sym) = UnknownTokenNo
+      THEN
+         (* Fall back to the implementation module if no declaration exists
+            in the definition module.  *)
+         doError (eb, GetDeclaredMod (sym))
+      ELSE
+         doError (eb, GetDeclaredDef (sym))
+      END
+   END
+END doErrorScopeDefinition ;
 
 
 (*
@@ -1247,12 +1378,73 @@ BEGIN
    IF scope = NulSym
    THEN
       M2Error.EnterErrorScope (NIL) ;
-      doError (eb, GetDeclaredDef (sym))
+      doError (eb, GetDeclaredFor (sym))
    ELSE
       M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsProcedure (scope)
       THEN
          doError (eb, GetDeclaredDef (sym))
+      ELSE
+         doErrorScopeDefinition (eb, sym)
+      END
+   END ;
+   M2Error.LeaveErrorScope
+END doErrorScopeDef ;
+
+
+(*
+   doDeclaredDef - creates an error note where sym[bol] was declared.
+*)
+
+PROCEDURE declaredDef (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+BEGIN
+   IF bol <= HIGH (sym)
+   THEN
+      doErrorScopeDef (eb, sym[bol])
+   END
+END declaredDef ;
+
+
+(*
+   doDeclaredFor - creates an error note where sym[bol] was declared.
+*)
+
+PROCEDURE declaredFor (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+BEGIN
+   IF bol <= HIGH (sym)
+   THEN
+      doErrorScopeFor (eb, sym[bol])
+   END
+END declaredFor ;
+
+
+(*
+   doErrorScopeProc - determine the location for the error or warning from
+                      the default declaration.  For example parameters can be
+                      declared in definition, forward or in modules (proper procedure).
+                      Use GetVarParamTok to obtain a variable or parameter location.
+*)
+
+PROCEDURE doErrorScopeProc (VAR eb: errorBlock; sym: CARDINAL;
+                            GetVarParamTok: GetTokProcedure) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF scope = NulSym
+   THEN
+      M2Error.EnterErrorScope (NIL) ;
+      doError (eb, GetDeclaredDef (sym))
+   ELSE
+      M2Error.EnterErrorScope (GetErrorScope (scope)) ;
+      IF IsProcedure (scope)
+      THEN
+         IF IsVar (sym) OR IsParameter (sym)
+         THEN
+            doError (eb, GetVarParamTok (sym))
+         ELSE
+            doError (eb, GetDeclaredDef (sym))
+         END
       ELSE
          IF IsModule (scope)
          THEN
@@ -1275,36 +1467,49 @@ BEGIN
                doError (eb, GetDeclaredDef (sym))
             END
          END
-   END
+      END
    END ;
    M2Error.LeaveErrorScope
-END doErrorScopeDef ;
+END doErrorScopeProc ;
 
 
 (*
-   declaredDef - creates an error note where sym[bol] was declared.
+   doDeclaredVar - creates an error note where sym[bol] was declared.
 *)
 
-PROCEDURE declaredDef (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+PROCEDURE declaredVar (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
 BEGIN
    IF bol <= HIGH (sym)
    THEN
-      doErrorScopeDef (eb, sym[bol])
+      doErrorScopeProc (eb, sym[bol], GetVarDeclTok)
    END
-END declaredDef ;
+END declaredVar ;
 
 
 (*
-   doDeclaredMod - creates an error note where sym[bol] was declared.
+   doDeclaredType - creates an error note where sym[bol] was declared.
 *)
 
-PROCEDURE declaredMod (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+PROCEDURE declaredType (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
 BEGIN
    IF bol <= HIGH (sym)
    THEN
-      doErrorScopeMod (eb, sym[bol])
+      doErrorScopeProc (eb, sym[bol], GetVarDeclTypeTok)
    END
-END declaredMod ;
+END declaredType ;
+
+
+(*
+   doDeclaredFull - creates an error note where sym[bol] was declared.
+*)
+
+PROCEDURE declaredFull (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+BEGIN
+   IF bol <= HIGH (sym)
+   THEN
+      doErrorScopeProc (eb, sym[bol], GetVarDeclFullTok)
+   END
+END declaredFull ;
 
 
 (*
@@ -1479,7 +1684,9 @@ END copySym ;
 
 
 (*
-   op := {'a'|'q'|'t'|'d'|'n'|'s'| 'u' |'D'|'I'|'U'|'E'|'W'} then =:
+   op := {'!'|'a'|'c'|'d'|'k'|'n'|'p'|'q'|'s'|'t'|'u'|
+          'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'K'|'M'|'N'|
+          'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'} then =:
 *)
 
 PROCEDURE op (VAR eb: errorBlock;
@@ -1495,39 +1702,43 @@ BEGIN
 
       '!':  eb.positive := NOT eb.positive |
       'a':  doName (eb, sym, bol) |
-      'q':  doQualified (eb, sym, bol) |
-      't':  doType (eb, sym, bol) |
+      'c':  eb.currentCol := readColor (eb) ;
+            DEC (eb.ini) |
       'd':  doDesc (eb, sym, bol) |
+      'k':  unquotedKeyword (eb) ;
+            DEC (eb.ini) |
       'n':  doNumber (eb, sym, bol) |
-      'N':  doCount (eb, sym, bol) |
+      'p':  popColor (eb) |
+      'q':  doQualified (eb, sym, bol) |
       's':  doSkipType (eb, sym, bol) |
-      'D':  declaredDef (eb, sym, bol) |
-      'M':  declaredMod (eb, sym, bol) |
-      'U':  used (eb, sym, bol) |
-      'E':  eb.type := error |
+      't':  doType (eb, sym, bol) |
+      'u':  eb.quotes := FALSE |
       'A':  eb.type := aborta ;
             seenAbort := TRUE |
-      'W':  eb.type := warning |
-      'O':  eb.type := note |
+      'B':  declaredType (eb, sym, bol) |
       'C':  eb.chain := TRUE |
+      'D':  declaredDef (eb, sym, bol) |
+      'E':  eb.type := error |
+      'F':  filename (eb) ;
+            DEC (eb.ini) |
+      'G':  declaredFor (eb, sym, bol) |
+      'H':  declaredFull (eb, sym, bol) |
+      'K':  keyword (eb) ;
+            DEC (eb.ini) |
+      'M':  declaredMod (eb, sym, bol) |
+      'N':  doCount (eb, sym, bol) |
+      'O':  eb.type := note |
+      'P':  pushColor (eb) |
+      'Q':  resetDictionary |
       'R':  eb.root := TRUE |
       'S':  doGetSkipType (eb, sym, bol) |
       'T':  doGetType (eb, sym, bol) |
-      'P':  pushColor (eb) |
-      'p':  popColor (eb) |
-      'c':  eb.currentCol := readColor (eb) ;
-            DEC (eb.ini) |
-      'K':  keyword (eb) ;
-            DEC (eb.ini) |
-      'k':  unquotedKeyword (eb) ;
-            DEC (eb.ini) |
-      'Q':  resetDictionary |
+      'U':  used (eb, sym, bol) |
+      'V':  declaredVar (eb, sym, bol) |
+      'W':  eb.type := warning |
       'X':  pushOutput (eb) |
       'Y':  processDefine (eb) |
       'Z':  popOutput (eb) |
-      'F':  filename (eb) ;
-            DEC (eb.ini) |
-      'u':  eb.quotes := FALSE |
       ':':  ifNonNulThen (eb, sym) ;
             DEC (eb.ini) |
       '1':  InternalError ('incorrect format spec, expecting %1 rather than % spec 1') |
@@ -1536,7 +1747,7 @@ BEGIN
       '4':  InternalError ('incorrect format spec, expecting %4 rather than % spec 4')
 
       ELSE
-         InternalFormat (eb, 'expecting one of [akqtdnpsuCDEFKNOPQRSTUWXYZ:<>%]', __LINE__)
+         InternalFormat (eb, 'expecting one of [akqtdnpsuCDEFGKNOPQRSTUWXYZ:<>%]', __LINE__)
       END ;
       INC (eb.ini)
    END ;

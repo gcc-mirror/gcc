@@ -139,6 +139,8 @@ class AbstractExpr : public Visitable
 public:
   explicit AbstractExpr (ExprKind kind) : kind (kind) {}
   WARN_UNUSED_RESULT ExprKind get_kind () const { return kind; }
+
+  virtual ~AbstractExpr () {}
 };
 
 class InitializerExpr : public VisitableImpl<AbstractExpr, InitializerExpr>

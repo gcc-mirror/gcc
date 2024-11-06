@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -211,7 +212,7 @@ fold_cplus_constants (const_tree c)
   for (i = 0; i < vec_len; ++i)
     {
       tree elem = TREE_VEC_ELT (elems, i);
-      TREE_VEC_ELT (folded_elems, i) =  
+      TREE_VEC_ELT (folded_elems, i) =
 	(elem && !TYPE_P (elem)) ? cplus_expand_constant (elem) : elem;
 
     }

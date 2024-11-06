@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1009,7 +1010,7 @@ ix86_expand_vector_move_misalign (machine_mode mode, rtx operands[])
 	    t = gen_reg_rtx (V4SFmode);
 	  else
 	    t = op0;
-	    
+
 	  if (TARGET_SSE_PARTIAL_REG_DEPENDENCY)
 	    emit_move_insn (t, CONST0_RTX (V4SFmode));
 	  else
@@ -1684,7 +1685,7 @@ ix86_emit_binop (enum rtx_code code, machine_mode mode,
 
   op = gen_rtx_SET (dst, gen_rtx_fmt_ee (code, mode, dst, src));
   clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
-  
+
   emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clob)));
 }
 
@@ -2530,6 +2531,10 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
       emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
       return;
 
+    case E_BFmode:
+      gcc_assert (TARGET_AVX10_2_256 && !flag_trapping_math);
+      goto simple;
+
     case E_DImode:
       if (TARGET_64BIT)
 	goto simple;
@@ -2796,9 +2801,9 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   bool unordered_compare = ix86_unordered_fp_compare (code);
   rtx op0 = *pop0, op1 = *pop1;
   machine_mode op_mode = GET_MODE (op0);
-  bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HF_P (op_mode);
+  bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (op_mode);
 
-  if (op_mode == BFmode)
+  if (op_mode == BFmode && (!TARGET_AVX10_2_256 || flag_trapping_math))
     {
       rtx op = gen_lowpart (HImode, op0);
       if (CONST_INT_P (op))
@@ -2917,10 +2922,14 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
     {
     case IX86_FPCMP_COMI:
       tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
-      if (TARGET_AVX10_2_256 && (code == EQ || code == NE))
-	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_OPTCOMX);
-      if (unordered_compare)
-	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+      /* We only have vcomsbf16, No vcomubf16 nor vcomxbf16 */
+      if (GET_MODE (op0) != E_BFmode)
+	{
+	  if (TARGET_AVX10_2_256 && (code == EQ || code == NE))
+	    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_OPTCOMX);
+	  if (unordered_compare)
+	    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+	}
       cmp_mode = CCFPmode;
       emit_insn (gen_rtx_SET (gen_rtx_REG (CCFPmode, FLAGS_REG), tmp));
       break;
@@ -3095,6 +3104,8 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
       && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))) == 16)
     {
       tmp = SUBREG_REG (op0);
+      if (GET_MODE (tmp) == V8HFmode || GET_MODE (tmp) == V8BFmode)
+	tmp = gen_lowpart (V8HImode, tmp);
       tmp = gen_rtx_UNSPEC (CCZmode, gen_rtvec (2, tmp, tmp), UNSPEC_PTEST);
     }
   else
@@ -3144,12 +3155,17 @@ ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
    dest = op0 == op1 ? 0 : op0 < op1 ? -1 : op0 > op1 ? 1 : 2.  */
 
 void
-ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1)
+ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
 {
   gcc_checking_assert (ix86_fp_comparison_strategy (GT) != IX86_FPCMP_ARITH);
+  rtx zero = NULL_RTX;
+  if (op2 != const0_rtx
+      && (TARGET_IEEE_FP || TARGET_ZERO_EXTEND_WITH_AND)
+      && GET_MODE (dest) == SImode)
+    zero = force_reg (SImode, const0_rtx);
   rtx gt = ix86_expand_fp_compare (GT, op0, op1);
-  rtx l0 = gen_label_rtx ();
-  rtx l1 = gen_label_rtx ();
+  rtx l0 = op2 == const0_rtx ? gen_label_rtx () : NULL_RTX;
+  rtx l1 = op2 == const0_rtx ? gen_label_rtx () : NULL_RTX;
   rtx l2 = TARGET_IEEE_FP ? gen_label_rtx () : NULL_RTX;
   rtx lend = gen_label_rtx ();
   rtx tmp;
@@ -3163,30 +3179,183 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1)
       jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
       add_reg_br_prob_note (jmp, profile_probability:: very_unlikely ());
     }
-  rtx eq = gen_rtx_fmt_ee (UNEQ, VOIDmode,
-			   gen_rtx_REG (CCFPmode, FLAGS_REG), const0_rtx);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, eq,
-			      gen_rtx_LABEL_REF (VOIDmode, l0), pc_rtx);
-  jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-  add_reg_br_prob_note (jmp, profile_probability::unlikely ());
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, gt,
-			      gen_rtx_LABEL_REF (VOIDmode, l1), pc_rtx);
-  jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-  add_reg_br_prob_note (jmp, profile_probability::even ());
-  emit_move_insn (dest, constm1_rtx);
-  emit_jump (lend);
-  emit_label (l0);
-  emit_move_insn (dest, const0_rtx);
-  emit_jump (lend);
-  emit_label (l1);
-  emit_move_insn (dest, const1_rtx);
+  if (op2 == const0_rtx)
+    {
+      rtx eq = gen_rtx_fmt_ee (UNEQ, VOIDmode,
+			       gen_rtx_REG (CCFPmode, FLAGS_REG), const0_rtx);
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, eq,
+				  gen_rtx_LABEL_REF (VOIDmode, l0), pc_rtx);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+      add_reg_br_prob_note (jmp, profile_probability::unlikely ());
+      tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, gt,
+				  gen_rtx_LABEL_REF (VOIDmode, l1), pc_rtx);
+      jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+      add_reg_br_prob_note (jmp, profile_probability::even ());
+      emit_move_insn (dest, constm1_rtx);
+      emit_jump (lend);
+      emit_label (l0);
+      emit_move_insn (dest, const0_rtx);
+      emit_jump (lend);
+      emit_label (l1);
+      emit_move_insn (dest, const1_rtx);
+    }
+  else
+    {
+      rtx lt_tmp = NULL_RTX;
+      if (GET_MODE (dest) != SImode || !TARGET_ZERO_EXTEND_WITH_AND)
+	{
+	  lt_tmp = gen_reg_rtx (QImode);
+	  ix86_expand_setcc (lt_tmp, UNLT, gen_rtx_REG (CCFPmode, FLAGS_REG),
+			     const0_rtx);
+	  if (GET_MODE (dest) != QImode)
+	    {
+	      tmp = gen_reg_rtx (GET_MODE (dest));
+	      emit_insn (gen_rtx_SET (tmp,
+				      gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							   lt_tmp)));
+	      lt_tmp = tmp;
+	    }
+	}
+      rtx gt_tmp;
+      if (zero)
+	{
+	  /* If TARGET_IEEE_FP and dest has SImode, emit SImode clear
+	     before the floating point comparison and use setcc_si_slp
+	     pattern to hide it from the combiner, so that it doesn't
+	     undo it.  Similarly for TARGET_ZERO_EXTEND_WITH_AND, where
+	     the ZERO_EXTEND normally emitted would need to be AND
+	     with flags clobber.  */
+	  tmp = ix86_expand_compare (GT, XEXP (gt, 0), const0_rtx);
+	  PUT_MODE (tmp, QImode);
+	  emit_insn (gen_setcc_si_slp (zero, tmp, zero));
+	  gt_tmp = zero;
+	}
+      else
+	{
+	  gt_tmp = gen_reg_rtx (QImode);
+	  ix86_expand_setcc (gt_tmp, GT, XEXP (gt, 0), const0_rtx);
+	  if (GET_MODE (dest) != QImode)
+	    {
+	      tmp = gen_reg_rtx (GET_MODE (dest));
+	      emit_insn (gen_rtx_SET (tmp,
+				      gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							   gt_tmp)));
+	      gt_tmp = tmp;
+	    }
+	}
+      if (lt_tmp)
+	{
+	  tmp = expand_simple_binop (GET_MODE (dest), MINUS, gt_tmp, lt_tmp,
+				     dest, 0, OPTAB_DIRECT);
+	  if (!rtx_equal_p (tmp, dest))
+	    emit_move_insn (dest, tmp);
+	}
+      else
+	{
+	  /* For TARGET_ZERO_EXTEND_WITH_AND emit sbb directly, as we can't
+	     do ZERO_EXTEND without clobbering flags.  */
+	  tmp = ix86_expand_compare (UNLT, XEXP (gt, 0), const0_rtx);
+	  PUT_MODE (tmp, SImode);
+	  emit_insn (gen_subsi3_carry (dest, gt_tmp,
+				       force_reg (GET_MODE (dest), const0_rtx),
+				       XEXP (gt, 0), tmp));
+	}
+    }
   emit_jump (lend);
   if (l2)
     {
       emit_label (l2);
-      emit_move_insn (dest, const2_rtx);
+      emit_move_insn (dest, op2 == const0_rtx ? const2_rtx : op2);
     }
   emit_label (lend);
+}
+
+/* Expand integral op0 <=> op1, i.e.
+   dest = op0 == op1 ? 0 : op0 < op1 ? -1 : 1.  */
+
+void
+ix86_expand_int_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
+{
+  gcc_assert (INTVAL (op2));
+  rtx zero1 = NULL_RTX, zero2 = NULL_RTX;
+  if (TARGET_ZERO_EXTEND_WITH_AND && GET_MODE (dest) == SImode)
+    {
+      zero1 = force_reg (SImode, const0_rtx);
+      if (INTVAL (op2) != 1)
+	zero2 = force_reg (SImode, const0_rtx);
+    }
+
+  /* Not using ix86_expand_int_compare here, so that it doesn't swap
+     operands nor optimize CC mode - we need a mode usable for both
+     LT and GT resp. LTU and GTU comparisons with the same unswapped
+     operands.  */
+  rtx flags = gen_rtx_REG (INTVAL (op2) != 1 ? CCGCmode : CCmode, FLAGS_REG);
+  rtx tmp = gen_rtx_COMPARE (GET_MODE (flags), op0, op1);
+  emit_insn (gen_rtx_SET (flags, tmp));
+  rtx lt_tmp = NULL_RTX;
+  if (zero2)
+    {
+      /* For TARGET_ZERO_EXTEND_WITH_AND, emit setcc_si_slp to avoid
+	 ZERO_EXTEND.  */
+      tmp = ix86_expand_compare (LT, flags, const0_rtx);
+      PUT_MODE (tmp, QImode);
+      emit_insn (gen_setcc_si_slp (zero2, tmp, zero2));
+      lt_tmp = zero2;
+    }
+  else if (!zero1)
+    {
+      lt_tmp = gen_reg_rtx (QImode);
+      ix86_expand_setcc (lt_tmp, INTVAL (op2) != 1 ? LT : LTU, flags,
+			 const0_rtx);
+      if (GET_MODE (dest) != QImode)
+	{
+	  tmp = gen_reg_rtx (GET_MODE (dest));
+	  emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							    lt_tmp)));
+	  lt_tmp = tmp;
+	}
+    }
+  rtx gt_tmp;
+  if (zero1)
+    {
+      /* For TARGET_ZERO_EXTEND_WITH_AND, emit setcc_si_slp to avoid
+	 ZERO_EXTEND.  */
+      tmp = ix86_expand_compare (INTVAL (op2) != 1 ? GT : GTU, flags,
+				 const0_rtx);
+      PUT_MODE (tmp, QImode);
+      emit_insn (gen_setcc_si_slp (zero1, tmp, zero1));
+      gt_tmp = zero1;
+    }
+  else
+    {
+      gt_tmp = gen_reg_rtx (QImode);
+      ix86_expand_setcc (gt_tmp, INTVAL (op2) != 1 ? GT : GTU, flags,
+			 const0_rtx);
+      if (GET_MODE (dest) != QImode)
+	{
+	  tmp = gen_reg_rtx (GET_MODE (dest));
+	  emit_insn (gen_rtx_SET (tmp, gen_rtx_ZERO_EXTEND (GET_MODE (dest),
+							    gt_tmp)));
+	  gt_tmp = tmp;
+	}
+    }
+  if (lt_tmp)
+    {
+      tmp = expand_simple_binop (GET_MODE (dest), MINUS, gt_tmp, lt_tmp, dest,
+				 0, OPTAB_DIRECT);
+      if (!rtx_equal_p (tmp, dest))
+	emit_move_insn (dest, tmp);
+    }
+  else
+    {
+      /* For TARGET_ZERO_EXTEND_WITH_AND emit sbb directly, as we can't
+	 do ZERO_EXTEND without clobbering flags.  */
+      tmp = ix86_expand_compare (LTU, flags, const0_rtx);
+      PUT_MODE (tmp, SImode);
+      emit_insn (gen_subsi3_carry (dest, gt_tmp,
+				   force_reg (GET_MODE (dest), const0_rtx),
+				   flags, tmp));
+    }
 }
 
 /* Expand comparison setting or clearing carry flag.  Return true when
@@ -4254,23 +4423,23 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
   switch (mode)
     {
     case E_V2SFmode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	gen = gen_mmx_blendvps;
       break;
     case E_V4SFmode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	gen = gen_sse4_1_blendvps;
       break;
     case E_V2DFmode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	gen = gen_sse4_1_blendvpd;
       break;
     case E_SFmode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	gen = gen_sse4_1_blendvss;
       break;
     case E_DFmode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	gen = gen_sse4_1_blendvsd;
       break;
     case E_V8QImode:
@@ -4278,7 +4447,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V4HFmode:
     case E_V4BFmode:
     case E_V2SImode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	{
 	  gen = gen_mmx_pblendvb_v8qi;
 	  blend_mode = V8QImode;
@@ -4288,14 +4457,14 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V2HImode:
     case E_V2HFmode:
     case E_V2BFmode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	{
 	  gen = gen_mmx_pblendvb_v4qi;
 	  blend_mode = V4QImode;
 	}
       break;
     case E_V2QImode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	gen = gen_mmx_pblendvb_v2qi;
       break;
     case E_V16QImode:
@@ -4305,18 +4474,18 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V4SImode:
     case E_V2DImode:
     case E_V1TImode:
-      if (TARGET_SSE4_1)
+      if (TARGET_SSE_MOVCC_USE_BLENDV && TARGET_SSE4_1)
 	{
 	  gen = gen_sse4_1_pblendvb;
 	  blend_mode = V16QImode;
 	}
       break;
     case E_V8SFmode:
-      if (TARGET_AVX)
+      if (TARGET_AVX && TARGET_SSE_MOVCC_USE_BLENDV)
 	gen = gen_avx_blendvps256;
       break;
     case E_V4DFmode:
-      if (TARGET_AVX)
+      if (TARGET_AVX && TARGET_SSE_MOVCC_USE_BLENDV)
 	gen = gen_avx_blendvpd256;
       break;
     case E_V32QImode:
@@ -4325,7 +4494,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V16BFmode:
     case E_V8SImode:
     case E_V4DImode:
-      if (TARGET_AVX2)
+      if (TARGET_AVX2 && TARGET_SSE_MOVCC_USE_BLENDV)
 	{
 	  gen = gen_avx2_pblendvb;
 	  blend_mode = V32QImode;
@@ -4475,7 +4644,7 @@ ix86_expand_fp_movcc (rtx operands[])
       && !ix86_fp_comparison_operator (operands[1], VOIDmode))
     return false;
 
-  if (SSE_FLOAT_MODE_SSEMATH_OR_HF_P (mode))
+  if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
     {
       machine_mode cmode;
 
@@ -5597,7 +5766,7 @@ ix86_expand_vec_perm (rtx operands[])
 
   if (TARGET_XOP)
     {
-      /* The XOP VPPERM insn supports three inputs.  By ignoring the 
+      /* The XOP VPPERM insn supports three inputs.  By ignoring the
 	 one_operand_shuffle special case, we avoid creating another
 	 set of constant vectors in memory.  */
       one_operand_shuffle = false;
@@ -7425,7 +7594,7 @@ ix86_expand_v1ti_ashiftrt (rtx operands[])
       rtx tmp7 = force_reg (V1TImode, gen_lowpart (V1TImode, tmp3));
       rtx tmp8 = gen_reg_rtx (V1TImode);
       emit_insn (gen_sse2_ashlv1ti3 (tmp8, tmp7, GEN_INT (64)));
- 
+
       rtx tmp9 = force_reg (V2DImode, gen_lowpart (V2DImode, tmp3));
       rtx tmp10 = gen_reg_rtx (V2DImode);
       emit_insn (gen_ashlv2di3 (tmp10, tmp9, GEN_INT (128 - bits)));
@@ -8421,7 +8590,7 @@ expand_small_cpymem_or_setmem (rtx destmem, rtx srcmem,
    DONE_LABEL is a label after the whole copying sequence. The label is created
    on demand if *DONE_LABEL is NULL.
    MIN_SIZE is minimal size of block copied.  This value gets adjusted for new
-   bounds after the initial copies. 
+   bounds after the initial copies.
 
    DESTMEM/SRCMEM are memory expressions pointing to the copies block,
    DESTPTR/SRCPTR are pointers to the block. DYNAMIC_CHECK indicate whether
@@ -8730,7 +8899,7 @@ expand_set_or_cpymem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
   return dst;
 }
 
-/* Return true if ALG can be used in current context.  
+/* Return true if ALG can be used in current context.
    Assume we expand memset if MEMSET is true.  */
 static bool
 alg_usable_p (enum stringop_alg alg, bool memset, bool have_as)
@@ -9096,7 +9265,7 @@ ix86_copy_addr_to_reg (rtx addr)
 	with specified algorithm.
 
      4) Epilogue: code copying tail of the block that is too small to be
-	handled by main body (or up to size guarded by prologue guard). 
+	handled by main body (or up to size guarded by prologue guard).
 
   Misaligned move sequence
 
@@ -9314,7 +9483,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
   /* Do the cheap promotion to allow better CSE across the
      main loop and epilogue (ie one load of the big constant in the
-     front of all code.  
+     front of all code.
      For now the misaligned move sequences do not have fast path
      without broadcasting.  */
   if (issetmem && ((CONST_INT_P (val_exp) || misaligned_prologue_used)))
@@ -11254,6 +11423,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16QI_FTYPE_V8HI_V8HI:
     case V16HF_FTYPE_V16HF_V16HF:
     case V16SF_FTYPE_V16SF_V16SF:
+    case V16SI_FTYPE_V16SI_V16SI:
     case V8QI_FTYPE_V8QI_V8QI:
     case V8QI_FTYPE_V4HI_V4HI:
     case V8HI_FTYPE_V8HI_V8HI:
@@ -12865,6 +13035,10 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 0;
       break;
+    case CHAR_FTYPE_PCCHAR:
+    case SHORT_FTYPE_PCSHORT:
+    case INT_FTYPE_PCINT:
+    case INT64_FTYPE_PCINT64:
     case UINT64_FTYPE_PUNSIGNED:
     case V2DI_FTYPE_PV2DI:
     case V4DI_FTYPE_PV4DI:
@@ -13577,13 +13751,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 
     case IX86_BUILTIN_LDMXCSR:
       op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
-      target = assign_386_stack_local (SImode, SLOT_TEMP);
+      target = assign_stack_temp (SImode, GET_MODE_SIZE (SImode));
       emit_move_insn (target, op0);
       emit_insn (gen_sse_ldmxcsr (target));
       return 0;
 
     case IX86_BUILTIN_STMXCSR:
-      target = assign_386_stack_local (SImode, SLOT_TEMP);
+      target = assign_stack_temp (SImode, GET_MODE_SIZE (SImode));
       emit_insn (gen_sse_stmxcsr (target));
       return copy_to_mode_reg (SImode, target);
 
@@ -13632,7 +13806,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (!REG_P (op2))
 	op2 = copy_to_mode_reg (SImode, op2);
 
-      emit_insn (fcode == IX86_BUILTIN_MONITOR 
+      emit_insn (fcode == IX86_BUILTIN_MONITOR
 		 ? gen_sse3_monitor (Pmode, op0, op1, op2)
 		 : gen_monitorx (Pmode, op0, op1, op2));
       return 0;
@@ -14028,6 +14202,13 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	    return const0_rtx;
 	  }
 
+	if (!IN_RANGE (INTVAL (op1), 0, 2))
+	  {
+	    warning (0, "invalid second argument to"
+		     " %<__builtin_ia32_prefetch%>; using zero");
+	    op1 = const0_rtx;
+	  }
+
 	if (INTVAL (op3) == 1)
 	  {
 	    if (INTVAL (op2) < 2 || INTVAL (op2) > 3)
@@ -14050,6 +14231,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	  }
 	else
 	  {
+	    if (INTVAL (op3) != 0)
+	      warning (0, "invalid forth argument to"
+			  " %<__builtin_ia32_prefetch%>; using zero");
+
 	    if (!address_operand (op0, VOIDmode))
 	      {
 		op0 = convert_memory_address (Pmode, op0);
@@ -15935,7 +16120,7 @@ static const ix86_vec_bcast_map_simode_t ix86_vec_bcast_map_simode[] = {
 };
 
 /* Comparator for bsearch on ix86_vec_bcast_map.  */
-static int 
+static int
 ix86_vec_bcast_map_simode_cmp (const void *key, const void *entry)
 {
   return (*(const unsigned int*)key)
@@ -18103,6 +18288,8 @@ quarter:
   else if (use_vec_merge)
     {
 do_vec_merge:
+      if (!nonimmediate_operand (val, inner_mode))
+	val = force_reg (inner_mode, val);
       tmp = gen_rtx_VEC_DUPLICATE (mode, val);
       tmp = gen_rtx_VEC_MERGE (mode, tmp, target,
 			       GEN_INT (HOST_WIDE_INT_1U << elt));
@@ -25149,7 +25336,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
       /* Multiply lower parts and add all */
       t5 = gen_reg_rtx (V2DImode);
-      emit_insn (gen_vec_widen_umult_even_v4si (t5, 
+      emit_insn (gen_vec_widen_umult_even_v4si (t5,
 					gen_lowpart (V4SImode, op1),
 					gen_lowpart (V4SImode, op2)));
       force_expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
@@ -25344,7 +25531,7 @@ ix86_expand_pextr (rtx *operands)
 	return false;
       dst = SUBREG_REG (dst);
     }
-	
+
   if (SUBREG_P (src))
     {
       pos += SUBREG_BYTE (src) * BITS_PER_UNIT;
@@ -25580,7 +25767,7 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
 			    rtx op0, rtx op1,
 			    rtx *quot_p, rtx *rem_p)
 {
-  rtx rem = assign_386_stack_local (mode, SLOT_TEMP);
+  rtx rem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
 
   rtx quot = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
 				      mode, op0, mode, op1, mode,
@@ -25959,7 +26146,7 @@ ix86_gen_bcst_mem (machine_mode mode, rtx x)
       && !CONST_DOUBLE_P (cst)
       && !CONST_FIXED_P (cst))
     return NULL_RTX;
-  
+
   int n_elts = GET_MODE_NUNITS (mode);
   if (CONST_VECTOR_NUNITS (x) != n_elts)
     return NULL_RTX;
@@ -26127,7 +26314,7 @@ do_mem_operand:
 
 /* Return TRUE if OP (in mode MODE) is the leaf of a ternary logic
    expression, such as a register or a memory reference.  */
- 
+
 bool
 ix86_ternlog_leaf_p (rtx op, machine_mode mode)
 {
@@ -26316,7 +26503,7 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  return target;
 	}
       break;
-  
+
     case 0x22: /* ~b&c */
       if ((!op0 || !side_effects_p (op0))
 	  && op1 && register_operand (op1, mode)
@@ -26389,7 +26576,7 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  return target;
 	}
       break;
-  
+
     case 0x5a:  /* a^c */
       if (op0 && ix86_ternlog_leaf_p (op0, mode)
 	  && op2 && ix86_ternlog_leaf_p (op2, mode)
@@ -26654,5 +26841,82 @@ ix86_expand_trunc_with_avx2_noavx512f (rtx output, rtx input, machine_mode cvt_m
   gcc_assert (ok);
   emit_move_insn (output, gen_lowpart (out_mode, d.target));
 }
+
+/* Implement truncv8sfv8bf2 with vector permutation.  */
+void
+ix86_expand_vector_sf2bf_with_vec_perm (rtx dest, rtx src)
+{
+  machine_mode vperm_mode, src_mode = GET_MODE (src);
+  switch (src_mode)
+    {
+    case V16SFmode:
+      vperm_mode = V32BFmode;
+      break;
+    case V8SFmode:
+      vperm_mode = V16BFmode;
+      break;
+    case V4SFmode:
+      vperm_mode = V8BFmode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  int nelt = GET_MODE_NUNITS (vperm_mode);
+  vec_perm_builder sel (nelt, nelt, 1);
+  sel.quick_grow (nelt);
+  for (int i = 0; i != nelt; i++)
+    sel[i] = (2 * i + 1) % nelt;
+  vec_perm_indices indices (sel, 1, nelt);
+
+  rtx target = gen_reg_rtx (vperm_mode);
+  rtx op0 = lowpart_subreg (vperm_mode,
+			    force_reg (src_mode, src),
+			    src_mode);
+  bool ok = targetm.vectorize.vec_perm_const (vperm_mode, vperm_mode,
+					      target, op0, op0, indices);
+  gcc_assert (ok);
+  emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), target, vperm_mode));
+}
+
+/* Implement extendv8bf2v8sf2 with vector permutation.  */
+void
+ix86_expand_vector_bf2sf_with_vec_perm (rtx dest, rtx src)
+{
+  machine_mode vperm_mode, src_mode = GET_MODE (src);
+  switch (src_mode)
+    {
+    case V16BFmode:
+      vperm_mode = V32BFmode;
+      break;
+    case V8BFmode:
+      vperm_mode = V16BFmode;
+      break;
+    case V4BFmode:
+      vperm_mode = V8BFmode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  int nelt = GET_MODE_NUNITS (vperm_mode);
+  vec_perm_builder sel (nelt, nelt, 1);
+  sel.quick_grow (nelt);
+  for (int i = 0, k = 0, j = nelt; i != nelt; i++)
+    sel[i] = i & 1 ? j++ : k++;
+
+  vec_perm_indices indices (sel, 2, nelt);
+
+  rtx target = gen_reg_rtx (vperm_mode);
+  rtx op1 = lowpart_subreg (vperm_mode,
+			    force_reg (src_mode, src),
+			    src_mode);
+  rtx op0 = CONST0_RTX (vperm_mode);
+  bool ok = targetm.vectorize.vec_perm_const (vperm_mode, vperm_mode,
+					      target, op0, op1, indices);
+  gcc_assert (ok);
+  emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), target, vperm_mode));
+}
+
 
 #include "gt-i386-expand.h"

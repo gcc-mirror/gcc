@@ -74,7 +74,7 @@ if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
       // return +inf
       res.w[1] = 0x7800000000000000ull;
       res.w[0] = 0x0000000000000000ull;
-    } else {	// x is -inf 
+    } else {	// x is -inf
       // return -inf
       res.w[1] = 0xf800000000000000ull;
       res.w[0] = 0x0000000000000000ull;
@@ -226,7 +226,7 @@ case ROUNDING_TO_NEAREST:
   if ((q + exp) >= 0) {	// exp < 0 and 1 <= -exp <= q
     // need to shift right -exp digits from the coefficient; exp will be 0
     ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
-    // chop off ind digits from the lower part of C1 
+    // chop off ind digits from the lower part of C1
     // C1 = C1 + 1/2 * 10^x where the result C1 fits in 127 bits
     tmp64 = C1.w[0];
     if (ind <= 19) {
@@ -286,9 +286,9 @@ case ROUNDING_TO_NEAREST:
 	     fstar.w[0] >= ten2mk128[ind - 1].w[0])) {
 	  // set the inexact flag
 	  *pfpsf |= INEXACT_EXCEPTION;
-	}	// else the result is exact 
-      } else {	// the result is inexact; f2* <= 1/2  
-	// set the inexact flag 
+	}	// else the result is exact
+      } else {	// the result is inexact; f2* <= 1/2
+	// set the inexact flag
 	*pfpsf |= INEXACT_EXCEPTION;
       }
     } else if (ind - 1 <= 21) {	// 3 <= ind - 1 <= 21 => 3 <= shift <= 63
@@ -379,7 +379,7 @@ case ROUNDING_TIES_AWAY:
   if ((q + exp) >= 0) {	// exp < 0 and 1 <= -exp <= q
     // need to shift right -exp digits from the coefficient; exp will be 0
     ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
-    // chop off ind digits from the lower part of C1 
+    // chop off ind digits from the lower part of C1
     // C1 = C1 + 1/2 * 10^x where the result C1 fits in 127 bits
     tmp64 = C1.w[0];
     if (ind <= 19) {
@@ -504,9 +504,9 @@ case ROUNDING_TIES_AWAY:
 case ROUNDING_DOWN:
   if ((q + exp) > 0) {	// exp < 0 and 1 <= -exp < q
     // need to shift right -exp digits from the coefficient; exp will be 0
-    ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x' 
+    ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
     // (number of digits to be chopped off)
-    // chop off ind digits from the lower part of C1 
+    // chop off ind digits from the lower part of C1
     // FOR ROUND_TO_NEAREST, WE ADD 1/2 ULP(y) then truncate
     // FOR ROUND_TO_ZERO, WE DON'T NEED TO ADD 1/2 ULP
     // FOR ROUND_TO_POSITIVE_INFINITY, WE TRUNCATE, THEN ADD 1 IF POSITIVE
@@ -613,9 +613,9 @@ case ROUNDING_DOWN:
 case ROUNDING_UP:
   if ((q + exp) > 0) {	// exp < 0 and 1 <= -exp < q
     // need to shift right -exp digits from the coefficient; exp will be 0
-    ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x' 
+    ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
     // (number of digits to be chopped off)
-    // chop off ind digits from the lower part of C1 
+    // chop off ind digits from the lower part of C1
     // FOR ROUND_TO_NEAREST, WE ADD 1/2 ULP(y) then truncate
     // FOR ROUND_TO_ZERO, WE DON'T NEED TO ADD 1/2 ULP
     // FOR ROUND_TO_POSITIVE_INFINITY, WE TRUNCATE, THEN ADD 1 IF POSITIVE
@@ -627,7 +627,7 @@ case ROUNDING_UP:
     //   C1.w[0] = C1.w[0] + midpoint128[ind - 20].w[0];
     //   C1.w[1] = C1.w[1] + midpoint128[ind - 20].w[1];
     // }
-    // if (C1.w[0] < tmp64) C1.w[1]++;  
+    // if (C1.w[0] < tmp64) C1.w[1]++;
     // if carry-out from C1.w[0], increment C1.w[1]
     // calculate C* and f*
     // C* is actually floor(C*) in this case
@@ -643,10 +643,10 @@ case ROUNDING_UP:
       res.w[0] = P256.w[2];
       // redundant fstar.w[3] = 0;
       // redundant fstar.w[2] = 0;
-      // redundant fstar.w[1] = P256.w[1]; 
+      // redundant fstar.w[1] = P256.w[1];
       // redundant fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if ((P256.w[1] > ten2mk128[ind - 1].w[1])
 	  || (P256.w[1] == ten2mk128[ind - 1].w[1]
@@ -668,7 +668,7 @@ case ROUNDING_UP:
       fstar.w[1] = P256.w[1];
       fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if (fstar.w[2] || fstar.w[1] > ten2mk128[ind - 1].w[1] ||
 	  (fstar.w[1] == ten2mk128[ind - 1].w[1] &&
@@ -690,7 +690,7 @@ case ROUNDING_UP:
       fstar.w[1] = P256.w[1];
       fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if (fstar.w[3] || fstar.w[2]
 	  || fstar.w[1] > ten2mk128[ind - 1].w[1]
@@ -724,7 +724,7 @@ case ROUNDING_TO_ZERO:
     // need to shift right -exp digits from the coefficient; exp will be 0
     ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
     // (number of digits to be chopped off)
-    // chop off ind digits from the lower part of C1 
+    // chop off ind digits from the lower part of C1
     // FOR ROUND_TO_NEAREST, WE ADD 1/2 ULP(y) then truncate
     // FOR ROUND_TO_ZERO, WE DON'T NEED TO ADD 1/2 ULP
     // FOR ROUND_TO_POSITIVE_INFINITY, WE TRUNCATE, THEN ADD 1 IF POSITIVE
@@ -736,7 +736,7 @@ case ROUNDING_TO_ZERO:
     //   C1.w[0] = C1.w[0] + midpoint128[ind - 20].w[0];
     //   C1.w[1] = C1.w[1] + midpoint128[ind - 20].w[1];
     // }
-    // if (C1.w[0] < tmp64) C1.w[1]++;  
+    // if (C1.w[0] < tmp64) C1.w[1]++;
     // if carry-out from C1.w[0], increment C1.w[1]
     // calculate C* and f*
     // C* is actually floor(C*) in this case
@@ -752,10 +752,10 @@ case ROUNDING_TO_ZERO:
       res.w[0] = P256.w[2];
       // redundant fstar.w[3] = 0;
       // redundant fstar.w[2] = 0;
-      // redundant fstar.w[1] = P256.w[1]; 
+      // redundant fstar.w[1] = P256.w[1];
       // redundant fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if ((P256.w[1] > ten2mk128[ind - 1].w[1])
 	  || (P256.w[1] == ten2mk128[ind - 1].w[1]
@@ -771,7 +771,7 @@ case ROUNDING_TO_ZERO:
       fstar.w[1] = P256.w[1];
       fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if (fstar.w[2] || fstar.w[1] > ten2mk128[ind - 1].w[1] ||
 	  (fstar.w[1] == ten2mk128[ind - 1].w[1] &&
@@ -787,7 +787,7 @@ case ROUNDING_TO_ZERO:
       fstar.w[1] = P256.w[1];
       fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if (fstar.w[3] || fstar.w[2]
 	  || fstar.w[1] > ten2mk128[ind - 1].w[1]
@@ -860,7 +860,7 @@ if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
     // return +inf
     res.w[1] = 0x7800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
-  } else {	// x is -inf 
+  } else {	// x is -inf
     // return -inf
     res.w[1] = 0xf800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
@@ -955,7 +955,7 @@ if (exp >= 0) {	// -exp <= 0
 } else if ((q + exp) >= 0) {	// exp < 0 and 1 <= -exp <= q
   // need to shift right -exp digits from the coefficient; the exp will be 0
   ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
-  // chop off ind digits from the lower part of C1 
+  // chop off ind digits from the lower part of C1
   // C1 = C1 + 1/2 * 10^x where the result C1 fits in 127 bits
   tmp64 = C1.w[0];
   if (ind <= 19) {
@@ -1059,13 +1059,13 @@ BID128_FUNCTION_ARG1_NORND (bid128_round_integral_negative, x)
      UINT64 x_sign;
      UINT64 x_exp;
      int exp;			// unbiased exponent
-  // Note: C1.w[1], C1.w[0] represent x_signif_hi, x_signif_lo 
+  // Note: C1.w[1], C1.w[0] represent x_signif_hi, x_signif_lo
   // (all are UINT64)
      BID_UI64DOUBLE tmp1;
      unsigned int x_nr_bits;
      int q, ind, shift;
      UINT128 C1;
-  // UINT128 res is C* at first - represents up to 34 decimal digits ~ 
+  // UINT128 res is C* at first - represents up to 34 decimal digits ~
   // 113 bits
      UINT256 fstar;
      UINT256 P256;
@@ -1099,7 +1099,7 @@ if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
     // return +inf
     res.w[1] = 0x7800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
-  } else {	// x is -inf 
+  } else {	// x is -inf
     // return -inf
     res.w[1] = 0xf800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
@@ -1202,9 +1202,9 @@ if (exp >= 0) {	// -exp <= 0
   BID_RETURN (res);
 } else if ((q + exp) > 0) {	// exp < 0 and 1 <= -exp < q
   // need to shift right -exp digits from the coefficient; the exp will be 0
-  ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x' 
+  ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
   // (number of digits to be chopped off)
-  // chop off ind digits from the lower part of C1 
+  // chop off ind digits from the lower part of C1
   // FOR ROUND_TO_NEAREST, WE ADD 1/2 ULP(y) then truncate
   // FOR ROUND_TO_ZERO, WE DON'T NEED TO ADD 1/2 ULP
   // FOR ROUND_TO_POSITIVE_INFINITY, WE TRUNCATE, THEN ADD 1 IF POSITIVE
@@ -1315,13 +1315,13 @@ BID128_FUNCTION_ARG1_NORND (bid128_round_integral_positive, x)
      UINT64 x_sign;
      UINT64 x_exp;
      int exp;			// unbiased exponent
-  // Note: C1.w[1], C1.w[0] represent x_signif_hi, x_signif_lo 
+  // Note: C1.w[1], C1.w[0] represent x_signif_hi, x_signif_lo
   // (all are UINT64)
      BID_UI64DOUBLE tmp1;
      unsigned int x_nr_bits;
      int q, ind, shift;
      UINT128 C1;
-  // UINT128 res is C* at first - represents up to 34 decimal digits ~ 
+  // UINT128 res is C* at first - represents up to 34 decimal digits ~
   // 113 bits
      UINT256 fstar;
      UINT256 P256;
@@ -1355,7 +1355,7 @@ if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
     // return +inf
     res.w[1] = 0x7800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
-  } else {	// x is -inf 
+  } else {	// x is -inf
     // return -inf
     res.w[1] = 0xf800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
@@ -1390,7 +1390,7 @@ if ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) {	// G0_G1=11
   // test for input equal to zero
 if ((C1.w[1] == 0x0ull) && (C1.w[0] == 0x0ull)) {
   // x is 0
-  // return 0 preserving the sign bit and the preferred exponent 
+  // return 0 preserving the sign bit and the preferred exponent
   // of MAX(Q(x), 0)
   if (x_exp <= (0x1820ull << 49)) {
     res.w[1] = (x.w[1] & 0x8000000000000000ull) | 0x3040000000000000ull;
@@ -1405,12 +1405,12 @@ if ((C1.w[1] == 0x0ull) && (C1.w[0] == 0x0ull)) {
   // if (exp <= -p) return -0.0 or +1.0
 if (x_exp <= 0x2ffc000000000000ull) {	// 0x2ffc000000000000ull == -34
   if (x_sign) {
-    // if negative, return negative 0, because we know the coefficient 
+    // if negative, return negative 0, because we know the coefficient
     // is non-zero (would have been caught above)
     res.w[1] = 0xb040000000000000ull;
     res.w[0] = 0x0000000000000000ull;
   } else {
-    // if positive, return positive 1, because we know coefficient is 
+    // if positive, return positive 1, because we know coefficient is
     // non-zero (would have been caught above)
     res.w[1] = 0x3040000000000000ull;
     res.w[0] = 0x0000000000000001ull;
@@ -1458,9 +1458,9 @@ if (exp >= 0) {	// -exp <= 0
   BID_RETURN (res);
 } else if ((q + exp) > 0) {	// exp < 0 and 1 <= -exp < q
   // need to shift right -exp digits from the coefficient; exp will be 0
-  ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x' 
+  ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
   // (number of digits to be chopped off)
-  // chop off ind digits from the lower part of C1 
+  // chop off ind digits from the lower part of C1
   // FOR ROUND_TO_NEAREST, WE ADD 1/2 ULP(y) then truncate
   // FOR ROUND_TO_ZERO, WE DON'T NEED TO ADD 1/2 ULP
   // FOR ROUND_TO_POSITIVE_INFINITY, WE TRUNCATE, THEN ADD 1 IF POSITIVE
@@ -1472,7 +1472,7 @@ if (exp >= 0) {	// -exp <= 0
   //   C1.w[0] = C1.w[0] + midpoint128[ind - 20].w[0];
   //   C1.w[1] = C1.w[1] + midpoint128[ind - 20].w[1];
   // }
-  // if (C1.w[0] < tmp64) C1.w[1]++;  
+  // if (C1.w[0] < tmp64) C1.w[1]++;
   // if carry-out from C1.w[0], increment C1.w[1]
   // calculate C* and f*
   // C* is actually floor(C*) in this case
@@ -1490,10 +1490,10 @@ if (exp >= 0) {	// -exp <= 0
     if (!x_sign) {	// if positive
       // redundant fstar.w[3] = 0;
       // redundant fstar.w[2] = 0;
-      // redundant fstar.w[1] = P256.w[1]; 
+      // redundant fstar.w[1] = P256.w[1];
       // redundant fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if ((P256.w[1] > ten2mk128[ind - 1].w[1])
 	  || (P256.w[1] == ten2mk128[ind - 1].w[1]
@@ -1514,7 +1514,7 @@ if (exp >= 0) {	// -exp <= 0
       fstar.w[1] = P256.w[1];
       fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if (fstar.w[2] || fstar.w[1] > ten2mk128[ind - 1].w[1] ||
 	  (fstar.w[1] == ten2mk128[ind - 1].w[1] &&
@@ -1535,7 +1535,7 @@ if (exp >= 0) {	// -exp <= 0
       fstar.w[1] = P256.w[1];
       fstar.w[0] = P256.w[0];
       // fraction f* > 10^(-x) <=> inexact
-      // f* is in the right position to be compared with 
+      // f* is in the right position to be compared with
       // 10^(-x) from ten2mk128[]
       if (fstar.w[3] || fstar.w[2]
 	  || fstar.w[1] > ten2mk128[ind - 1].w[1]
@@ -1610,7 +1610,7 @@ if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
     // return +inf
     res.w[1] = 0x7800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
-  } else {	// x is -inf 
+  } else {	// x is -inf
     // return -inf
     res.w[1] = 0xf800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
@@ -1706,7 +1706,7 @@ if (exp >= 0) {	// -exp <= 0
   // need to shift right -exp digits from the coefficient; the exp will be 0
   ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
   // (number of digits to be chopped off)
-  // chop off ind digits from the lower part of C1 
+  // chop off ind digits from the lower part of C1
   // FOR ROUND_TO_NEAREST, WE ADD 1/2 ULP(y) then truncate
   // FOR ROUND_TO_ZERO, WE DON'T NEED TO ADD 1/2 ULP
   // FOR ROUND_TO_POSITIVE_INFINITY, WE TRUNCATE, THEN ADD 1 IF POSITIVE
@@ -1718,7 +1718,7 @@ if (exp >= 0) {	// -exp <= 0
   //   C1.w[0] = C1.w[0] + midpoint128[ind - 20].w[0];
   //   C1.w[1] = C1.w[1] + midpoint128[ind - 20].w[1];
   // }
-  // if (C1.w[0] < tmp64) C1.w[1]++;  
+  // if (C1.w[0] < tmp64) C1.w[1]++;
   // if carry-out from C1.w[0], increment C1.w[1]
   // calculate C* and f*
   // C* is actually floor(C*) in this case
@@ -1760,14 +1760,14 @@ BID128_FUNCTION_ARG1_NORND (bid128_round_integral_nearest_away, x)
      UINT64 x_sign;
      UINT64 x_exp;
      int exp;			// unbiased exponent
-  // Note: C1.w[1], C1.w[0] represent x_signif_hi, x_signif_lo 
+  // Note: C1.w[1], C1.w[0] represent x_signif_hi, x_signif_lo
   // (all are UINT64)
      UINT64 tmp64;
      BID_UI64DOUBLE tmp1;
      unsigned int x_nr_bits;
      int q, ind, shift;
      UINT128 C1;
-  // UINT128 res is C* at first - represents up to 34 decimal digits ~ 
+  // UINT128 res is C* at first - represents up to 34 decimal digits ~
   // 113 bits
   // UINT256 fstar;
      UINT256 P256;
@@ -1801,7 +1801,7 @@ if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// x is NAN
     // return +inf
     res.w[1] = 0x7800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
-  } else {	// x is -inf 
+  } else {	// x is -inf
     // return -inf
     res.w[1] = 0xf800000000000000ull;
     res.w[0] = 0x0000000000000000ull;
@@ -1896,7 +1896,7 @@ if (exp >= 0) {	// -exp <= 0
 } else if ((q + exp) >= 0) {	// exp < 0 and 1 <= -exp <= q
   // need to shift right -exp digits from the coefficient; the exp will be 0
   ind = -exp;	// 1 <= ind <= 34; ind is a synonym for 'x'
-  // chop off ind digits from the lower part of C1 
+  // chop off ind digits from the lower part of C1
   // C1 = C1 + 1/2 * 10^x where the result C1 fits in 127 bits
   tmp64 = C1.w[0];
   if (ind <= 19) {

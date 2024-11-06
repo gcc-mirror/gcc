@@ -156,7 +156,7 @@ rx_legitimize_address (rtx x,
 
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == PLUS
-      && REG_P (XEXP (XEXP (x, 0), 0)) 
+      && REG_P (XEXP (XEXP (x, 0), 0))
       && REG_P (XEXP (x, 1)))
     return force_reg (SImode, x);
 
@@ -232,7 +232,7 @@ rx_is_legitimate_address (machine_mode mode, rtx x,
 
 	    switch (GET_MODE_SIZE (mode))
 	      {
-	      default: 
+	      default:
 	      case 4: factor = 4; break;
 	      case 2: factor = 2; break;
 	      case 1: factor = 1; break;
@@ -299,7 +299,7 @@ rx_is_restricted_memory_address (rtx mem, machine_mode mode)
     case PLUS:
       {
 	rtx base, index;
-	
+
 	/* Only allow REG+INT addressing.  */
 	base = XEXP (mem, 0);
 	index = XEXP (mem, 1);
@@ -688,7 +688,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	    fprintf (file, "#");
 	    /* Trickery to avoid problems with shifting 32 bits at a time.  */
 	    v = v >> 16;
-	    v = v >> 16;	  
+	    v = v >> 16;
 	    rx_print_integer (file, v);
 	    break;
 	  }
@@ -1002,14 +1002,14 @@ rx_gen_move_template (rtx * operands, bool is_movu)
     {
       gcc_assert (GET_MODE (src) != DImode);
       gcc_assert (GET_MODE (src) != DFmode);
-      
+
       src_template = "(%A1 - __pid_base)[%P1]";
     }
   else if (MEM_P (src) && rx_small_data_operand (XEXP (src, 0)))
     {
       gcc_assert (GET_MODE (src) != DImode);
       gcc_assert (GET_MODE (src) != DFmode);
-      
+
       src_template = "%%gp(%A1)[%G1]";
     }
   else
@@ -1019,7 +1019,7 @@ rx_gen_move_template (rtx * operands, bool is_movu)
     {
       gcc_assert (GET_MODE (dest) != DImode);
       gcc_assert (GET_MODE (dest) != DFmode);
-      
+
       dst_template = "%%gp(%A0)[%G0]";
     }
   else
@@ -1151,7 +1151,7 @@ rx_function_value (const_tree ret_type,
       && ! VECTOR_MODE_P (mode)
       )
     return gen_rtx_REG (SImode, FUNC_RETURN_REGNUM);
-    
+
   return gen_rtx_REG (mode, FUNC_RETURN_REGNUM);
 }
 
@@ -1279,7 +1279,7 @@ rx_conditional_register_usage (void)
 
 	  /* This is for fast interrupt handlers.  Any register in
 	     the range r10 to r13 (inclusive) that is currently
-	     marked as fixed is now a viable, call-used register.  */	  
+	     marked as fixed is now a viable, call-used register.  */
 	  for (r = 10; r <= 13; r++)
 	    if (fixed_regs[r])
 	      {
@@ -1363,7 +1363,7 @@ rx_set_current_function (tree fndecl)
 
   current_is_fast_interrupt
     = fndecl ? is_fast_interrupt_func (fndecl) : false;
-      
+
   if (prev_was_fast_interrupt != current_is_fast_interrupt)
     {
       use_fixed_regs = current_is_fast_interrupt;
@@ -1790,7 +1790,7 @@ rx_expand_prologue (void)
 		    break;
 		  }
 	      }
-	    
+
 	  /* We have assumed that there are at least two registers pushed... */
 	  gcc_assert (acc_high != 0);
 
@@ -1939,7 +1939,7 @@ rx_emit_stack_popm (rtx * operands, bool is_popm)
 
   gcc_assert (CONST_INT_P (operands[0]));
   stack_adjust = INTVAL (operands[0]);
-  
+
   gcc_assert (GET_CODE (operands[1]) == PARALLEL);
   last_reg = XVECLEN (operands[1], 0) - (is_popm ? 2 : 3);
 
@@ -1987,13 +1987,13 @@ gen_rx_rtsd_vector (unsigned int adjust, unsigned int low, unsigned int high)
 
   return vector;
 }
-  
+
 /* Generate a PARALLEL which will satisfy the rx_load_multiple_vector predicate.  */
 
 static rtx
 gen_rx_popm_vector (unsigned int low, unsigned int high)
 {
-  unsigned int i;  
+  unsigned int i;
   unsigned int count = (high - low) + 2;
   rtx vector;
 
@@ -2877,7 +2877,7 @@ rx_func_attr_inlinable (const_tree decl)
 {
   return ! is_fast_interrupt_func (decl)
     &&   ! is_interrupt_func (decl)
-    &&   ! is_naked_func (decl);  
+    &&   ! is_naked_func (decl);
 }
 
 static bool
@@ -2961,7 +2961,7 @@ rx_is_legitimate_constant (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	  gcc_unreachable ();
 	}
       break;
-      
+
     case LABEL_REF:
     case SYMBOL_REF:
       return true;
@@ -3001,7 +3001,7 @@ rx_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
       && ((INTVAL (b) > 128) || INTVAL (b) < -127))
     /* Try to discourage REG + <large OFF> when optimizing for size.  */
     return COSTS_N_INSNS (2);
-    
+
   return COSTS_N_INSNS (1);
 }
 
@@ -3421,7 +3421,7 @@ rx_adjust_insn_length (rtx_insn *insn, int current_length)
       zero = false;
       factor = 2;
       break;
-      
+
     case CODE_FOR_plussi3_zero_extendqi:
     case CODE_FOR_andsi3_zero_extendqi:
     case CODE_FOR_iorsi3_zero_extendqi:
@@ -3436,7 +3436,7 @@ rx_adjust_insn_length (rtx_insn *insn, int current_length)
       zero = true;
       factor = 1;
       break;
-      
+
     case CODE_FOR_plussi3_sign_extendqi:
     case CODE_FOR_andsi3_sign_extendqi:
     case CODE_FOR_iorsi3_sign_extendqi:
@@ -3451,7 +3451,7 @@ rx_adjust_insn_length (rtx_insn *insn, int current_length)
       zero = false;
       factor = 1;
       break;
-    }      
+    }
 
   /* We are expecting: (SET (REG) (<OP> (REG) (<EXTEND> (MEM)))).  */
   extend = single_set (insn);
@@ -3466,7 +3466,7 @@ rx_adjust_insn_length (rtx_insn *insn, int current_length)
 
   gcc_assert ((zero && (GET_CODE (extend) == ZERO_EXTEND))
 	      || (! zero && (GET_CODE (extend) == SIGN_EXTEND)));
-    
+
   mem = XEXP (extend, 0);
   gcc_checking_assert (MEM_P (mem));
   if (REG_P (XEXP (mem, 0)))

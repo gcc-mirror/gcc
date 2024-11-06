@@ -48,9 +48,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _Indexing_H
 #define _Indexing_C
 
+#include "GIndexing.h"
 #   include "Glibc.h"
 #   include "GStorage.h"
 #   include "GSYSTEM.h"
@@ -66,10 +66,7 @@ typedef void * *Indexing_PtrToAddress;
 
 typedef unsigned char *Indexing_PtrToByte;
 
-typedef Indexing__T2 *Indexing_Index;
-
-typedef void (*Indexing_IndexProcedure_t) (void *);
-struct Indexing_IndexProcedure_p { Indexing_IndexProcedure_t proc; };
+typedef Indexing__T2 *Indexing_Index__opaque;
 
 struct Indexing__T2_r {
                         void *ArrayStart;
@@ -178,6 +175,13 @@ extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_Inde
 
 extern "C" bool Indexing_IsEmpty (Indexing_Index i);
 
+/*
+   FindIndice - returns the indice containing a.
+                It returns zero if a is not found in array i.
+*/
+
+extern "C" unsigned int Indexing_FindIndice (Indexing_Index i, void * a);
+
 
 /*
    InitIndexTuned - creates a dynamic array with low indice.
@@ -188,7 +192,7 @@ extern "C" bool Indexing_IsEmpty (Indexing_Index i);
 
 extern "C" Indexing_Index Indexing_InitIndexTuned (unsigned int low, unsigned int minsize, unsigned int growfactor)
 {
-  Indexing_Index i;
+  Indexing_Index__opaque i;
 
   Storage_ALLOCATE ((void **) &i, sizeof (Indexing__T2));
   i->Low = low;
@@ -200,7 +204,7 @@ extern "C" Indexing_Index Indexing_InitIndexTuned (unsigned int low, unsigned in
   i->Used = 0;
   i->Map = (unsigned int) 0;
   i->GrowFactor = growfactor;
-  return i;
+  return static_cast<Indexing_Index> (i);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -224,9 +228,9 @@ extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
 
 extern "C" Indexing_Index Indexing_KillIndex (Indexing_Index i)
 {
-  Storage_DEALLOCATE (&i->ArrayStart, i->ArraySize);
+  Storage_DEALLOCATE (&static_cast<Indexing_Index__opaque> (i)->ArrayStart, static_cast<Indexing_Index__opaque> (i)->ArraySize);
   Storage_DEALLOCATE ((void **) &i, sizeof (Indexing__T2));
-  return NULL;
+  return static_cast<Indexing_Index> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -238,7 +242,7 @@ extern "C" Indexing_Index Indexing_KillIndex (Indexing_Index i)
 
 extern "C" Indexing_Index Indexing_DebugIndex (Indexing_Index i)
 {
-  i->Debug = true;
+  static_cast<Indexing_Index__opaque> (i)->Debug = true;
   return i;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -259,7 +263,7 @@ extern "C" bool Indexing_InBounds (Indexing_Index i, unsigned int n)
     }
   else
     {
-      return (n >= i->Low) && (n <= i->High);
+      return (n >= static_cast<Indexing_Index__opaque> (i)->Low) && (n <= static_cast<Indexing_Index__opaque> (i)->High);
     }
   ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
@@ -279,7 +283,7 @@ extern "C" unsigned int Indexing_HighIndice (Indexing_Index i)
     }
   else
     {
-      return i->High;
+      return static_cast<Indexing_Index__opaque> (i)->High;
     }
   ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
@@ -299,7 +303,7 @@ extern "C" unsigned int Indexing_LowIndice (Indexing_Index i)
     }
   else
     {
-      return i->Low;
+      return static_cast<Indexing_Index__opaque> (i)->Low;
     }
   ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
@@ -321,21 +325,21 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
   if (! (Indexing_InBounds (i, n)))
     {
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
-      if (n < i->Low)
+      if (n < static_cast<Indexing_Index__opaque> (i)->Low)
         {
           M2RTS_HALT (-1);
           __builtin_unreachable ();
         }
       else
         {
-          oldSize = i->ArraySize;
-          while (((n-i->Low)*sizeof (void *)) >= i->ArraySize)
+          oldSize = static_cast<Indexing_Index__opaque> (i)->ArraySize;
+          while (((n-static_cast<Indexing_Index__opaque> (i)->Low)*sizeof (void *)) >= static_cast<Indexing_Index__opaque> (i)->ArraySize)
             {
-              i->ArraySize = i->ArraySize*i->GrowFactor;
+              static_cast<Indexing_Index__opaque> (i)->ArraySize = static_cast<Indexing_Index__opaque> (i)->ArraySize*static_cast<Indexing_Index__opaque> (i)->GrowFactor;
             }
-          if (oldSize != i->ArraySize)
+          if (oldSize != static_cast<Indexing_Index__opaque> (i)->ArraySize)
             {
-              /* 
+              /*
                IF Debug
                THEN
                   printf2('increasing memory hunk from %d to %d
@@ -343,25 +347,25 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
                           oldSize, ArraySize)
                END ;
   */
-              Storage_REALLOCATE (&i->ArrayStart, i->ArraySize);
+              Storage_REALLOCATE (&static_cast<Indexing_Index__opaque> (i)->ArrayStart, static_cast<Indexing_Index__opaque> (i)->ArraySize);
               /* and initialize the remainder of the array to NIL  */
-              b = i->ArrayStart;
+              b = static_cast<Indexing_Index__opaque> (i)->ArrayStart;
               b = reinterpret_cast<void *> (reinterpret_cast<char *> (b)+oldSize);
-              b = libc_memset (b, 0, static_cast<size_t> (i->ArraySize-oldSize));
+              b = libc_memset (b, 0, static_cast<size_t> (static_cast<Indexing_Index__opaque> (i)->ArraySize-oldSize));
             }
-          i->High = n;
+          static_cast<Indexing_Index__opaque> (i)->High = n;
         }
     }
-  b = i->ArrayStart;
-  b = reinterpret_cast<void *> (reinterpret_cast<char *> (b)+(n-i->Low)*sizeof (void *));
+  b = static_cast<Indexing_Index__opaque> (i)->ArrayStart;
+  b = reinterpret_cast<void *> (reinterpret_cast<char *> (b)+(n-static_cast<Indexing_Index__opaque> (i)->Low)*sizeof (void *));
   p = static_cast<PutIndice__T1> (b);
-  (*p) = reinterpret_cast<unsigned int *> (a);
-  i->Used += 1;
-  if (i->Debug)
+  (*p) = static_cast<unsigned int *> (a);
+  static_cast<Indexing_Index__opaque> (i)->Used += 1;
+  if (static_cast<Indexing_Index__opaque> (i)->Debug)
     {
       if (n < 32)
         {
-          i->Map |= (1 << (n ));
+          static_cast<Indexing_Index__opaque> (i)->Map |= (1 << (n ));
         }
     }
 }
@@ -381,12 +385,12 @@ extern "C" void * Indexing_GetIndice (Indexing_Index i, unsigned int n)
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
-  b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
-  b += (n-i->Low)*sizeof (void *);
+  b = static_cast<Indexing_PtrToByte> (static_cast<Indexing_Index__opaque> (i)->ArrayStart);
+  b += (n-static_cast<Indexing_Index__opaque> (i)->Low)*sizeof (void *);
   p = (Indexing_PtrToAddress) (b);
-  if (i->Debug)
+  if (static_cast<Indexing_Index__opaque> (i)->Debug)
     {
-      if (((n < 32) && (! ((((1 << (n)) & (i->Map)) != 0)))) && ((*p) != NULL))
+      if (((n < 32) && (! ((((1 << (n)) & (static_cast<Indexing_Index__opaque> (i)->Map)) != 0)))) && ((*p) != NULL))
         {
           M2RTS_HALT (-1);
           __builtin_unreachable ();
@@ -408,9 +412,9 @@ extern "C" bool Indexing_IsIndiceInIndex (Indexing_Index i, void * a)
   Indexing_PtrToByte b;
   Indexing_PtrToAddress p;
 
-  j = i->Low;
-  b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
-  while (j <= i->High)
+  j = static_cast<Indexing_Index__opaque> (i)->Low;
+  b = static_cast<Indexing_PtrToByte> (static_cast<Indexing_Index__opaque> (i)->ArrayStart);
+  while (j <= static_cast<Indexing_Index__opaque> (i)->High)
     {
       p = (Indexing_PtrToAddress) (b);
       if ((*p) == a)
@@ -437,9 +441,9 @@ extern "C" void Indexing_RemoveIndiceFromIndex (Indexing_Index i, void * a)
   Indexing_PtrToAddress p;
   Indexing_PtrToByte b;
 
-  j = i->Low;
-  b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
-  while (j <= i->High)
+  j = static_cast<Indexing_Index__opaque> (i)->Low;
+  b = static_cast<Indexing_PtrToByte> (static_cast<Indexing_Index__opaque> (i)->ArrayStart);
+  while (j <= static_cast<Indexing_Index__opaque> (i)->High)
     {
       p = (Indexing_PtrToAddress) (b);
       b += sizeof (void *);
@@ -463,13 +467,13 @@ extern "C" void Indexing_DeleteIndice (Indexing_Index i, unsigned int j)
 
   if (Indexing_InBounds (i, j))
     {
-      b = static_cast<Indexing_PtrToByte> (i->ArrayStart);
-      b += sizeof (void *)*(j-i->Low);
+      b = static_cast<Indexing_PtrToByte> (static_cast<Indexing_Index__opaque> (i)->ArrayStart);
+      b += sizeof (void *)*(j-static_cast<Indexing_Index__opaque> (i)->Low);
       p = (Indexing_PtrToAddress) (b);
       b += sizeof (void *);
-      p = static_cast<Indexing_PtrToAddress> (libc_memmove (reinterpret_cast<void *> (p), reinterpret_cast<void *> (b), static_cast<size_t> ((i->High-j)*sizeof (void *))));
-      i->High -= 1;
-      i->Used -= 1;
+      p = static_cast<Indexing_PtrToAddress> (libc_memmove (reinterpret_cast <void *> (p), reinterpret_cast <void *> (b), static_cast<size_t> ((static_cast<Indexing_Index__opaque> (i)->High-j)*sizeof (void *))));
+      static_cast<Indexing_Index__opaque> (i)->High -= 1;
+      static_cast<Indexing_Index__opaque> (i)->Used -= 1;
     }
   else
     {
@@ -489,7 +493,7 @@ extern "C" void Indexing_IncludeIndiceIntoIndex (Indexing_Index i, void * a)
   if (! (Indexing_IsIndiceInIndex (i, a)))
     {
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
-      if (i->Used == 0)
+      if (static_cast<Indexing_Index__opaque> (i)->Used == 0)
         {
           Indexing_PutIndice (i, Indexing_LowIndice (i), a);
         }
@@ -524,7 +528,36 @@ extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_Inde
 
 extern "C" bool Indexing_IsEmpty (Indexing_Index i)
 {
-  return i->Used == 0;
+  return static_cast<Indexing_Index__opaque> (i)->Used == 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   FindIndice - returns the indice containing a.
+                It returns zero if a is not found in array i.
+*/
+
+extern "C" unsigned int Indexing_FindIndice (Indexing_Index i, void * a)
+{
+  unsigned int j;
+  Indexing_PtrToAddress p;
+  Indexing_PtrToByte b;
+
+  j = static_cast<Indexing_Index__opaque> (i)->Low;
+  b = static_cast<Indexing_PtrToByte> (static_cast<Indexing_Index__opaque> (i)->ArrayStart);
+  while (j <= static_cast<Indexing_Index__opaque> (i)->High)
+    {
+      p = (Indexing_PtrToAddress) (b);
+      b += sizeof (void *);
+      if ((*p) == a)
+        {
+          return j;
+        }
+      j += 1;
+    }
+  return 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

@@ -18,12 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
+#include "make-unique.h"
 
 static void pp_cxx_unqualified_id (cxx_pretty_printer *, tree);
 static void pp_cxx_nested_name_specifier (cxx_pretty_printer *, tree);
@@ -411,22 +413,24 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
      :: operator-function-id
      :: qualifier-id
      ( expression )
-     id-expression   
+     id-expression
 
    GNU Extensions:
      __builtin_va_arg ( assignment-expression , type-id )
      __builtin_offsetof ( type-id, offsetof-expression )
      __builtin_addressof ( expression )
 
-     __has_nothrow_assign ( type-id )   
+     __builtin_is_virtual_base_of ( type-id , type-id )
+
+     __has_nothrow_assign ( type-id )
      __has_nothrow_constructor ( type-id )
      __has_nothrow_copy ( type-id )
-     __has_trivial_assign ( type-id )   
+     __has_trivial_assign ( type-id )
      __has_trivial_constructor ( type-id )
      __has_trivial_copy ( type-id )
      __has_unique_object_representations ( type-id )
      __has_trivial_destructor ( type-id )
-     __has_virtual_destructor ( type-id )     
+     __has_virtual_destructor ( type-id )
      __is_abstract ( type-id )
      __is_base_of ( type-id , type-id )
      __is_class ( type-id )
@@ -873,7 +877,7 @@ cxx_pretty_printer::unary_expression (tree t)
       pp_cxx_left_paren (this);
       type_id (TREE_OPERAND (t, 0));
       pp_cxx_right_paren (this);
-      break;      
+      break;
 
     case NOEXCEPT_EXPR:
       pp_cxx_ws_string (this, "noexcept");
@@ -1688,7 +1692,7 @@ cxx_pretty_printer::direct_declarator (tree t)
 	    /* A function parameter pack or non-type template
 	       parameter pack.  */
 	    pp_cxx_ws_string (this, "...");
-		      
+
 	  id_expression (DECL_NAME (t));
 	}
       abstract_declarator (TREE_TYPE (t));
@@ -2925,8 +2929,8 @@ cxx_pretty_printer::cxx_pretty_printer ()
 
 /* cxx_pretty_printer's implementation of pretty_printer::clone vfunc.  */
 
-pretty_printer *
+std::unique_ptr<pretty_printer>
 cxx_pretty_printer::clone () const
 {
-  return new cxx_pretty_printer (*this);
+  return ::make_unique<cxx_pretty_printer> (*this);
 }

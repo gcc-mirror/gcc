@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -538,7 +539,7 @@ avail_expr_hash (class expr_hash_elt *p)
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
 	      inchash::add_expr (base, hstate,
-				 TREE_CODE (base) == MEM_REF 
+				 TREE_CODE (base) == MEM_REF
 				 ? OEP_ADDRESS_OF : 0);
 	      hstate.add_object (offset);
 	      hstate.add_object (size);
@@ -1020,7 +1021,7 @@ const_and_copies::pop_to_marker (void)
     }
 }
 
-/* Record that X has the value Y and that X's previous value is PREV_X. 
+/* Record that X has the value Y and that X's previous value is PREV_X.
 
    This variant does not follow the value chain for Y.  */
 
@@ -1050,7 +1051,7 @@ const_and_copies::record_const_or_copy (tree x, tree y)
   record_const_or_copy (x, y, SSA_NAME_VALUE (x));
 }
 
-/* Record that X has the value Y and that X's previous value is PREV_X. 
+/* Record that X has the value Y and that X's previous value is PREV_X.
 
    This variant follow's Y value chain.  */
 

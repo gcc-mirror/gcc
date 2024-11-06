@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    in the proper order, and counts the time used by each.
    Error messages and low-level interface to malloc also handled here.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1589,14 +1590,9 @@ pass_manager::pass_manager (context *ctxt)
 #define POP_INSERT_PASSES()
 #define NEXT_PASS(PASS, NUM) PASS ## _ ## NUM = NULL
 #define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
+#define NEXT_PASS_WITH_ARGS(PASS, NUM, ...) NEXT_PASS (PASS, NUM)
 #define TERMINATE_PASS_LIST(PASS)
 #include "pass-instances.def"
-#undef INSERT_PASSES_AFTER
-#undef PUSH_INSERT_PASSES_WITHIN
-#undef POP_INSERT_PASSES
-#undef NEXT_PASS
-#undef NEXT_PASS_WITH_ARG
-#undef TERMINATE_PASS_LIST
 
   /* Initialize the pass_lists array.  */
 #define DEF_PASS_LIST(LIST) pass_lists[PASS_LIST_NO_##LIST] = &LIST;
@@ -1641,14 +1637,19 @@ pass_manager::pass_manager (context *ctxt)
       PASS ## _ ## NUM->set_pass_param (0, ARG);	\
     } while (0)
 
-#include "pass-instances.def"
+#define NEXT_PASS_WITH_ARGS(PASS, NUM, ...)		\
+    do {						\
+      NEXT_PASS (PASS, NUM);				\
+      static constexpr bool values[] = { __VA_ARGS__ };	\
+      unsigned i = 0;					\
+      for (bool value : values)				\
+	{						\
+	  PASS ## _ ## NUM->set_pass_param (i, value);	\
+	  i++;						\
+	}						\
+    } while (0)
 
-#undef INSERT_PASSES_AFTER
-#undef PUSH_INSERT_PASSES_WITHIN
-#undef POP_INSERT_PASSES
-#undef NEXT_PASS
-#undef NEXT_PASS_WITH_ARG
-#undef TERMINATE_PASS_LIST
+#include "pass-instances.def"
 
   /* Register the passes with the tree dump code.  */
   register_dump_files (all_lowering_passes);

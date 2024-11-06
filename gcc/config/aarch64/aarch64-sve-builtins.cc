@@ -19,6 +19,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -82,9 +83,8 @@ public:
   /* The decl itself.  */
   tree decl;
 
-  /* The architecture extensions that the function requires, as a set of
-     AARCH64_FL_* flags.  */
-  aarch64_feature_flags required_extensions;
+  /* The architecture extensions that the function requires.  */
+  aarch64_required_extensions required_extensions;
 
   /* True if the decl represents an overloaded function that needs to be
      resolved by function_resolver.  */
@@ -882,11 +882,15 @@ static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 /* Used by SME instructions that always merge into ZA.  */
 static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
 
+#define NONSTREAMING_SVE(X) nonstreaming_only (AARCH64_FL_SVE | (X))
+#define SVE_AND_SME(X, Y) streaming_compatible (AARCH64_FL_SVE | (X), (Y))
+#define SSVE(X) SVE_AND_SME (X, X)
+
 /* A list of all arm_sve.h functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
 #define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
-    preds_##PREDS, REQUIRED_EXTENSIONS },
+    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS },
 #include "aarch64-sve-builtins.def"
 };
 
@@ -894,7 +898,7 @@ static CONSTEXPR const function_group_info function_groups[] = {
 static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 #define DEF_NEON_SVE_FUNCTION(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &neon_sve_bridge_functions::NAME, &shapes::SHAPE, types_##TYPES, \
-    groups_##GROUPS, preds_##PREDS, 0 },
+    groups_##GROUPS, preds_##PREDS, aarch64_required_extensions::ssve (0) },
 #include "aarch64-neon-sve-bridge-builtins.def"
 };
 
@@ -902,10 +906,12 @@ static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 static CONSTEXPR const function_group_info sme_function_groups[] = {
 #define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
-    preds_##PREDS, REQUIRED_EXTENSIONS },
+    preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS },
 #define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
-    groups_##GROUPS, preds_##PREDS, (REQUIRED_EXTENSIONS | AARCH64_FL_ZA_ON) },
+    groups_##GROUPS, preds_##PREDS, \
+    aarch64_required_extensions::REQUIRED_EXTENSIONS \
+      .and_also (AARCH64_FL_ZA_ON) },
 #include "aarch64-sve-builtins-sme.def"
 };
 
@@ -1147,7 +1153,10 @@ aarch64_const_binop (enum tree_code code, tree arg1, tree arg2)
       /* Return 0 for division by 0, like SDIV and UDIV do.  */
       if (code == TRUNC_DIV_EXPR && integer_zerop (arg2))
 	return arg2;
-
+      /* Return 0 if shift amount is out of range. */
+      if (code == LSHIFT_EXPR
+	  && wi::geu_p (wi::to_wide (arg2), TYPE_PRECISION (type)))
+	return build_int_cst (type, 0);
       if (!poly_int_binop (poly_res, code, arg1, arg2, sign, &overflow))
 	return NULL_TREE;
       return force_fit_type (type, poly_res, false,
@@ -1283,7 +1292,7 @@ function_builder::function_builder (handle_pragma_index pragma_index,
 				    bool function_nulls)
 {
   m_overload_type = build_function_type (void_type_node, void_list_node);
-  m_direct_overloads = lang_GNU_CXX ();
+  m_direct_overloads = lang_GNU_CXX () || in_lto_p;
 
   if (initial_indexes[pragma_index] == 0)
     {
@@ -1413,16 +1422,17 @@ add_shared_state_attribute (const char *name, bool is_in, bool is_out,
 }
 
 /* Return the appropriate function attributes for INSTANCE, which requires
-   the feature flags in REQUIRED_EXTENSIONS.  */
+   the architecture extensions in REQUIRED_EXTENSIONS.  */
 tree
 function_builder::get_attributes (const function_instance &instance,
-				  aarch64_feature_flags required_extensions)
+				  aarch64_required_extensions
+				    required_extensions)
 {
   tree attrs = NULL_TREE;
 
-  if (required_extensions & AARCH64_FL_SM_ON)
+  if (required_extensions.sm_off == 0)
     attrs = add_attribute ("arm", "streaming", NULL_TREE, attrs);
-  else if (!(required_extensions & AARCH64_FL_SM_OFF))
+  else if (required_extensions.sm_on != 0)
     attrs = add_attribute ("arm", "streaming_compatible", NULL_TREE, attrs);
 
   attrs = add_shared_state_attribute ("in", true, false,
@@ -1448,12 +1458,13 @@ function_builder::get_attributes (const function_instance &instance,
 
 /* Add a function called NAME with type FNTYPE and attributes ATTRS.
    INSTANCE describes what the function does and OVERLOADED_P indicates
-   whether it is overloaded.  REQUIRED_EXTENSIONS are the set of
-   architecture extensions that the function requires.  */
+   whether it is overloaded.  REQUIRED_EXTENSIONS describes the architecture
+   extensions that the function requires.  */
 registered_function &
 function_builder::add_function (const function_instance &instance,
 				const char *name, tree fntype, tree attrs,
-				aarch64_feature_flags required_extensions,
+				aarch64_required_extensions
+				  required_extensions,
 				bool overloaded_p,
 				bool placeholder_p)
 {
@@ -1493,7 +1504,7 @@ function_builder::add_function (const function_instance &instance,
 
 /* Add a built-in function for INSTANCE, with the argument types given
    by ARGUMENT_TYPES and the return type given by RETURN_TYPE.
-   REQUIRED_EXTENSIONS are the set of architecture extensions that the
+   REQUIRED_EXTENSIONS describes the architecture extensions that the
    function requires.  FORCE_DIRECT_OVERLOADS is true if there is a
    one-to-one mapping between "short" and "full" names, and if standard
    overload resolution therefore isn't necessary.  */
@@ -1502,7 +1513,7 @@ function_builder::
 add_unique_function (const function_instance &instance,
 		     tree return_type,
 		     vec<tree> &argument_types,
-		     aarch64_feature_flags required_extensions,
+		     aarch64_required_extensions required_extensions,
 		     bool force_direct_overloads)
 {
   /* Add the function under its full (unique) name.  */
@@ -1540,7 +1551,7 @@ add_unique_function (const function_instance &instance,
 }
 
 /* Add one function decl for INSTANCE, to be used with manual overload
-   resolution.  REQUIRED_EXTENSIONS are the set of architecture extensions
+   resolution.  REQUIRED_EXTENSIONS describes the architecture extensions
    that the function requires.
 
    For simplicity, deal with duplicate attempts to add the same function,
@@ -1551,7 +1562,7 @@ add_unique_function (const function_instance &instance,
 void
 function_builder::
 add_overloaded_function (const function_instance &instance,
-			 aarch64_feature_flags required_extensions)
+			 aarch64_required_extensions required_extensions)
 {
   auto &name_map = overload_names[m_function_nulls];
   if (!name_map)
@@ -1561,8 +1572,12 @@ add_overloaded_function (const function_instance &instance,
   tree id = get_identifier (name);
   if (registered_function **map_value = name_map->get (id))
     gcc_assert ((*map_value)->instance == instance
-		&& ((*map_value)->required_extensions
-		    & ~required_extensions) == 0);
+		&& (required_extensions.sm_off == 0
+		    || ((*map_value)->required_extensions.sm_off
+			& ~required_extensions.sm_off) == 0)
+		&& (required_extensions.sm_on == 0
+		    || ((*map_value)->required_extensions.sm_on
+			& ~required_extensions.sm_on) == 0));
   else
     {
       registered_function &rfn
@@ -3636,6 +3651,33 @@ gimple_folder::fold_const_binary (enum tree_code code)
   return NULL;
 }
 
+/* Fold the active lanes to X and set the inactive lanes according to the
+   predication.  Return the new statement.  */
+gimple *
+gimple_folder::fold_active_lanes_to (tree x)
+{
+  /* If predication is _x or the predicate is ptrue, fold to X.  */
+  if (pred == PRED_x
+      || is_ptrue (gimple_call_arg (call, 0), type_suffix (0).element_bytes))
+    return gimple_build_assign (lhs, x);
+
+  /* If the predication is _z or _m, calculate a vector that supplies the
+     values of inactive lanes (the first vector argument for m and a zero
+     vector from z).  */
+  tree vec_inactive;
+  if (pred == PRED_z)
+    vec_inactive = build_zero_cst (TREE_TYPE (lhs));
+  else
+    vec_inactive = gimple_call_arg (call, 1);
+  if (operand_equal_p (x, vec_inactive, 0))
+    return gimple_build_assign (lhs, x);
+
+  gimple_seq stmts = NULL;
+  tree pred = convert_pred (stmts, vector_type (0), 0);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  return gimple_build_assign (lhs, VEC_COND_EXPR, pred, x, vec_inactive);
+}
+
 /* Try to fold the call.  Return the new statement on success and null
    on failure.  */
 gimple *
@@ -3688,6 +3730,21 @@ function_expander::direct_optab_handler_for_sign (optab signed_op,
     mode = vector_mode (suffix_i);
   optab op = type_suffix (suffix_i).unsigned_p ? unsigned_op : signed_op;
   return ::direct_optab_handler (op, mode);
+}
+
+/* Choose between signed and unsigned convert optabs SIGNED_OP and
+   UNSIGNED_OP based on the signedness of type suffix SUFFIX_I, then
+   pick the appropriate optab handler for "converting" from FROM_MODE
+   to TO_MODE.  */
+insn_code
+function_expander::convert_optab_handler_for_sign (optab signed_op,
+						   optab unsigned_op,
+						   unsigned int suffix_i,
+						   machine_mode to_mode,
+						   machine_mode from_mode)
+{
+  optab op = type_suffix (suffix_i).unsigned_p ? unsigned_op : signed_op;
+  return ::convert_optab_handler (op, to_mode, from_mode);
 }
 
 /* Return true if X overlaps any input.  */

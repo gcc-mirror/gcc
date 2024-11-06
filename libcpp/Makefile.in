@@ -263,7 +263,7 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	  --keyword=SYNTAX_ERROR --keyword=SYNTAX_ERROR2 \
 	  --copyright-holder="Free Software Foundation, Inc." \
 	  --msgid-bugs-address="https://gcc.gnu.org/bugs/" \
-	  --language=c -o po/$(PACKAGE).pot.tmp $^
+	  --language=GCC-source -o po/$(PACKAGE).pot.tmp $^
 	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
 	rm po/$(PACKAGE).pot.tmp
 

@@ -30,7 +30,9 @@
 #ifndef _ENABLE_SPECIAL_MEMBERS_H
 #define _ENABLE_SPECIAL_MEMBERS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

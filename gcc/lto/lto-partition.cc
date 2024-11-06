@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -238,7 +239,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
 }
 
 /* If symbol NODE is really part of other symbol's definition (i.e. it is
-   internal label, thunk, alias or so), return the outer symbol. 
+   internal label, thunk, alias or so), return the outer symbol.
    When add_symbol_to_partition_1 is called on the outer symbol it must
    eventually add NODE, too.  */
 static symtab_node *
@@ -278,7 +279,7 @@ add_symbol_to_partition (ltrans_partition part, symtab_node *node)
 
   /* If we have duplicated symbol contained in something we cannot duplicate,
      we are very badly screwed.  The other way is possible, so we do not
-     assert this in add_symbol_to_partition_1. 
+     assert this in add_symbol_to_partition_1.
 
      Be lax about comdats; they may or may not be duplicated and we may
      end up in need to duplicate keyed comdat because it has unkeyed alias.  */
@@ -430,7 +431,7 @@ account_reference_p (symtab_node *n1, symtab_node *n2)
      otherwise.  Do not account references to external symbols: they will
      never become local.  Finally do not account references to duplicated
      symbols: they will be always local.  */
-  if (n1 == n2 
+  if (n1 == n2
       || !n2->definition
       || n2->get_partitioning_class () != SYMBOL_PARTITION)
     return false;
@@ -1152,7 +1153,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 
       if (!symbol_partitioned_p (order[i]))
         add_symbol_to_partition (partition, order[i]);
-	  
+
 
       /* Once we added a new node to the partition, we also want to add
          all referenced variables unless they was already added into some
@@ -1160,7 +1161,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	 add_symbol_to_partition adds possibly multiple nodes and
 	 variables that are needed to satisfy needs of ORDER[i].
          We remember last visited cgraph and varpool node from last iteration
-         of outer loop that allows us to process every new addition. 
+         of outer loop that allows us to process every new addition.
 
 	 At the same time we compute size of the boundary into COST.  Every
          callgraph or IPA reference edge leaving the partition contributes into
@@ -1311,7 +1312,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	 Later we stop building partition if its size is 9/8 of the target wight.  */
       if (partition->insns < partition_size * 7 / 8
 	  || best_cost == -1
-	  || (!cost 
+	  || (!cost
 	      || ((sreal)best_internal * (sreal) cost
 		  < ((sreal) internal * (sreal)best_cost))))
 	{
@@ -1436,7 +1437,7 @@ must_not_rename (symtab_node *node, const char *name)
 		 name);
       return true;
     }
-  /* Avoid mangling of already mangled clones. 
+  /* Avoid mangling of already mangled clones.
      ???  should have a flag whether a symbol has a 'private' name already,
      since we produce some symbols like that i.e. for global constructors
      that are not really clones.
@@ -1600,7 +1601,7 @@ promote_symbol (symtab_node *node)
 	     IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
 
   /* Promoting a symbol also promotes all transparent aliases with exception
-     of weakref where the visibility flags are always wrong and set to 
+     of weakref where the visibility flags are always wrong and set to
      !PUBLIC.  */
   ipa_ref *ref;
   for (unsigned i = 0; node->iterate_direct_aliases (i, ref); i++)
@@ -1771,7 +1772,7 @@ lto_promote_cross_file_statics (void)
   delete lto_clone_numbers;
 }
 
-/* Rename statics in the whole unit in the case that 
+/* Rename statics in the whole unit in the case that
    we do -flto-partition=none.  */
 
 void

@@ -943,6 +943,18 @@ make_location (cp_token *caret, cp_token *start, cp_token *end)
   return make_location (caret->location, start->location, end->location);
 }
 
+/* Location for the whitespace between two tokens.  */
+
+static location_t
+location_between (cp_token *stok, cp_token *etok)
+{
+  location_t s = get_finish (stok->location);
+  s = linemap_position_for_loc_and_offset (line_table, s, 1);
+  location_t e = get_start (etok->location);
+  e = linemap_position_for_loc_and_offset (line_table, e, -1);
+  return make_location (s, s, e);
+}
+
 /* nonzero if we are presently saving tokens.  */
 
 static inline int
@@ -11914,6 +11926,11 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 		 "lambda templates are only available with "
 		 "%<-std=c++20%> or %<-std=gnu++20%>");
 
+      /* Even though the whole lambda may be a default argument, its
+	 template-parameter-list is a context where it's OK to create
+	 new parameters.  */
+      auto lvf = make_temp_override (parser->local_variables_forbidden_p, 0u);
+
       cp_lexer_consume_token (parser->lexer);
 
       template_param_list = cp_parser_template_parameter_list (parser);
@@ -14523,11 +14540,13 @@ warn_for_range_copy (tree decl, tree expr)
   else if (!CP_TYPE_CONST_P (type))
     return;
 
-  /* Since small trivially copyable types are cheap to copy, we suppress the
-     warning for them.  64B is a common size of a cache line.  */
+  /* Since small trivially constructible types are cheap to construct, we
+     suppress the warning for them.  64B is a common size of a cache line.  */
+  tree vec = make_tree_vec (1);
+  TREE_VEC_ELT (vec, 0) = TREE_TYPE (expr);
   if (TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
       || (tree_to_uhwi (TYPE_SIZE_UNIT (type)) <= 64
-	  && trivially_copyable_p (type)))
+	  && is_trivially_xible (INIT_EXPR, type, vec)))
     return;
 
   /* If we can initialize a reference directly, suggest that to avoid the
@@ -14609,6 +14628,15 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 	{
 	  range_temp = build_range_temp (range_expr);
 	  pushdecl (range_temp);
+	  if (flag_range_for_ext_temps)
+	    {
+	      /* P2718R0 - put the range_temp declaration and everything
+		 until end of the range for body into an extra STATEMENT_LIST
+		 which will have CLEANUP_POINT_EXPR around it, so that all
+		 temporaries are destroyed at the end of it.  */
+	      gcc_assert (FOR_INIT_STMT (statement) == NULL_TREE);
+	      FOR_INIT_STMT (statement) = push_stmt_list ();
+	    }
 	  cp_finish_decl (range_temp, range_expr,
 			  /*is_constant_init*/false, NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
@@ -18438,6 +18466,8 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	if (cxx_dialect == cxx98)
 	  maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
 
+	token = cp_lexer_peek_token (parser->lexer);
+
 	/* Consume the string.  */
 	cp_expr str = cp_parser_userdef_string_literal (parser,
 							/*lookup_udlit=*/false);
@@ -18453,13 +18483,24 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	  {
 	    string_tree = str;
 	    /* Look for the suffix identifier.  */
-	    token = cp_lexer_peek_token (parser->lexer);
-	    if (token->type == CPP_NAME)
+	    cp_token *id_tok = cp_lexer_peek_token (parser->lexer);
+	    if (id_tok->type == CPP_NAME)
 	      {
 		id = cp_parser_identifier (parser);
-		end_loc = token->location;
+		end_loc = id_tok->location;
+
+		/* Deprecated by CWG2521 in C++23.  */
+		if (warn_deprecated_literal_operator)
+		  {
+		    gcc_rich_location
+		      space (location_between (token, id_tok));
+		    space.add_fixit_remove ();
+		    warning_at (&space, OPT_Wdeprecated_literal_operator,
+				"space between quotes and suffix is "
+				"deprecated in C++23");
+		  }
 	      }
-	    else if (token->type == CPP_KEYWORD)
+	    else if (id_tok->type == CPP_KEYWORD)
 	      {
 		error ("unexpected keyword;"
 		       " remove space between quotes and suffix identifier");
@@ -19952,9 +19993,11 @@ cp_parser_template_argument (cp_parser* parser)
 
      -- the name of a non-type template-parameter; or
 
-     -- the name of an object or function with external linkage...
+     -- the name of an object or function with external (or internal,
+	since C++11) linkage...
 
-     -- the address of an object or function with external linkage...
+     -- the address of an object or function with external (or internal,
+	since C++11) linkage...
 
      -- a pointer to member...  */
   /* Look for a non-type template parameter.  */
@@ -20017,11 +20060,16 @@ cp_parser_template_argument (cp_parser* parser)
 	    probe = TREE_OPERAND (probe, 1);
 	  if (VAR_P (probe))
 	    {
-	      /* A variable without external linkage might still be a
+	      /* A variable without valid linkage might still be a
 		 valid constant-expression, so no error is issued here
 		 if the external-linkage check fails.  */
-	      if (!address_p && !DECL_EXTERNAL_LINKAGE_P (probe))
-		cp_parser_simulate_error (parser);
+	      if (!address_p)
+		{
+		  linkage_kind linkage = decl_linkage (probe);
+		  if (linkage != lk_external
+		      && (cxx_dialect < cxx11 || linkage != lk_internal))
+		    cp_parser_simulate_error (parser);
+		}
 	    }
 	  else if (is_overloaded_fn (argument))
 	    /* All overloaded functions are allowed; if the external
@@ -21107,8 +21155,8 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       /* In a default argument we may not be creating new parameters.  */
       if (parser->local_variables_forbidden_p & LOCAL_VARS_FORBIDDEN)
 	{
-	  /* If this assert turns out to be false, do error() instead.  */
-	  gcc_assert (tentative);
+	  if (!tentative)
+	    error_at (loc, "invalid use of concept-name %qD", con);
 	  return error_mark_node;
 	}
       return build_constrained_parameter (con, proto, args);
@@ -28071,7 +28119,7 @@ cp_parser_class_head (cp_parser* parser,
 
   /* If this type was already complete, and we see another definition,
      that's an error.  Likewise if the type is already being defined:
-     this can happen, eg, when it's defined from within an expression 
+     this can happen, eg, when it's defined from within an expression
      (c++/84605).  */
   if (type != error_mark_node
       && (COMPLETE_TYPE_P (type) || TYPE_BEING_DEFINED (type)))
@@ -33314,7 +33362,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, cp_parser_flags flags,
 	     use a qualified name.
 
 	     Parse with an empty set of declaration specifiers since we're
-	     trying to match a decl-specifier-seq of the first parameter.  
+	     trying to match a decl-specifier-seq of the first parameter.
 	     This must be non-null so that cp_parser_simple_type_specifier
 	     will recognize a constrained placeholder type such as:
 	     'C<int> auto' where C is a type concept.  */
@@ -34033,7 +34081,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 					   parser->lexer);
   cast = build_functional_cast (combined_loc, type, expression_list,
                                 tf_warning_or_error);
-  
+
   /* [expr.const]/1: In an integral constant expression "only type
      conversions to integral or enumeration type can be used".  */
   if (TREE_CODE (type) == TYPE_DECL)
@@ -45017,7 +45065,8 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 void
 cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
 			  tree &decl, tree &orig_decl, tree &init,
-			  tree &orig_init, tree &cond, tree &incr)
+			  tree &orig_init, tree &cond, tree &incr,
+			  bool tmpl_p)
 {
   tree begin, end, range_temp_decl = NULL_TREE;
   tree iter_type, begin_expr, end_expr;
@@ -45075,11 +45124,29 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
       else
 	{
 	  range_temp = build_range_temp (init);
-	  DECL_NAME (range_temp) = NULL_TREE;
+	  tree name = DECL_NAME (range_temp);
+	  /* Temporarily clear DECL_NAME of the __for_range temporary.
+	     While it contains a space at the end and outside of templates
+	     it works even without doing this, when cp_convert_omp_range_for
+	     is called from tsubst_omp_for_iterator, all the associated loops
+	     are in a single scope and so loop nests with 2 or more range
+	     based for loops would error.  */
+	  if (tmpl_p)
+	    DECL_NAME (range_temp) = NULL_TREE;
 	  pushdecl (range_temp);
+	  /* Restore the name back.  This is needed for cp_finish_decl
+	     lifetime extension of temporaries, and can be helpful for user
+	     during debugging after the DECL_NAME is changed to __for_range
+	     without space at the end.  */
+	  if (tmpl_p)
+	    DECL_NAME (range_temp) = name;
 	  cp_finish_decl (range_temp, init,
 			  /*is_constant_init*/false, NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
+	  /* And clear the name again.  pop_scope requires that the name
+	     used during pushdecl didn't change.  */
+	  if (tmpl_p)
+	    DECL_NAME (range_temp) = NULL_TREE;
 	  range_temp_decl = range_temp;
 	  range_temp = convert_from_reference (range_temp);
 	}
@@ -45179,7 +45246,7 @@ cp_convert_omp_range_for (tree &this_pre_body, tree &sl,
      the whole loop nest.  The remaining elements are decls of derived
      decomposition variables that are bound inside the loop body.  This
      structure is further mangled by finish_omp_for into the form required
-     for the OMP_FOR_ORIG_DECLS field of the OMP_FOR tree node.  */\
+     for the OMP_FOR_ORIG_DECLS field of the OMP_FOR tree node.  */
   unsigned decomp_cnt = decomp ? decomp->count : 0;
   tree v = make_tree_vec (decomp_cnt + 3);
   TREE_VEC_ELT (v, 0) = range_temp_decl;
@@ -45748,7 +45815,7 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
 	  cp_convert_omp_range_for (this_pre_body, sl, decl,
 				    orig_decl, init, orig_init,
-				    cond, incr);
+				    cond, incr, false);
 
 	  if (omp_for_parse_state->ordered_cl)
 	    error_at (OMP_CLAUSE_LOCATION (omp_for_parse_state->ordered_cl),
@@ -46011,10 +46078,29 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
   /* Pop and remember the init block.  */
   if (sl)
-    add_stmt (pop_stmt_list (sl));
+    {
+      sl = pop_stmt_list (sl);
+      /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
+	 for-range-initializer whose lifetime is extended are destructed
+	 here.  */
+      if (flag_range_for_ext_temps
+	  && is_range_for
+	  && !processing_template_decl)
+	sl = maybe_cleanup_point_expr_void (sl);
+      add_stmt (sl);
+    }
+  tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+  if (is_range_for && !processing_template_decl)
+    find_range_for_decls (range_for_decl);
   finish_compound_stmt (init_scope);
   init_block = pop_stmt_list (init_block);
   omp_for_parse_state->init_blockv[depth] = init_block;
+
+  if (is_range_for && !processing_template_decl)
+    for (int i = 0; i < 3; i++)
+      if (range_for_decl[i])
+	DECL_NAME (range_for_decl[i])
+	  = cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER + i];
 
   /* Return the init placeholder rather than the remembered init block.
      Again, this is just a unique cookie that will be used to reassemble
@@ -49912,6 +49998,9 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
   int device_type = 0;
   bool indirect = false;
   bool only_device_type_or_indirect = true;
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
       || (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)))

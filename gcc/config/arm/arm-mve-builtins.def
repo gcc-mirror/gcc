@@ -36,6 +36,7 @@
 DEF_MVE_MODE (n, none, none, none)
 DEF_MVE_MODE (offset, none, none, bytes)
 DEF_MVE_MODE (r, none, none, none)
+DEF_MVE_MODE (wb, none, none, none)
 
 #define REQUIRES_FLOAT false
 DEF_MVE_TYPE (mve_pred16_t, boolean_type_node)

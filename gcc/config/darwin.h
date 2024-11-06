@@ -852,7 +852,7 @@ ASM_OPTIONS ASM_MMACOSX_VERSION_MIN_SPEC
 #define TARGET_ASM_DECLARE_CONSTANT_NAME darwin_asm_declare_constant_name
 
 /* Wrap new method names in quotes so the assembler doesn't gag.
-   Make Objective-C internal symbols local and in doing this, we need 
+   Make Objective-C internal symbols local and in doing this, we need
    to accommodate the name mangling done by c++ on file scope locals.  */
 
 int darwin_label_is_anonymous_local_objc_name (const char *name);
@@ -1209,7 +1209,7 @@ void add_framework_path (char *);
 #undef GTM_SELF_SPECS
 #define GTM_SELF_SPECS ""
 
-/* Darwin disables section anchors by default.  
+/* Darwin disables section anchors by default.
    They should be enabled per arch where support exists in that arch.  */
 #define TARGET_ASM_OUTPUT_ANCHOR NULL
 #define DARWIN_SECTION_ANCHORS 0
@@ -1240,7 +1240,7 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 #undef STACK_CHECK_STATIC_BUILTIN
 #define STACK_CHECK_STATIC_BUILTIN 1
 
-/* When building cross-compilers (and native crosses) we shall default to 
+/* When building cross-compilers (and native crosses) we shall default to
    providing an osx-version-min of this unless overridden by the User.
    10.5 is the only version that fully supports all our archs so that's the
    fall-back default.  */

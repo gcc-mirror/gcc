@@ -613,3 +613,21 @@ UrlSuffix(gcc/x86-Options.html#index-mavx10_002e2-512)
 mavx10.2
 UrlSuffix(gcc/x86-Options.html#index-mavx10_002e2)
 
+mamx-avx512
+UrlSuffix(gcc/x86-Options.html#index-mamx-avx512)
+
+mamx-tf32
+UrlSuffix(gcc/x86-Options.html#index-mamx-tf32)
+
+mamx-transpose
+UrlSuffix(gcc/x86-Options.html#index-mamx-transpose)
+
+mamx-fp8
+UrlSuffix(gcc/x86-Options.html#index-mamx-fp8)
+
+mmovrs
+UrlSuffix(gcc/x86-Options.html#index-mmovrs)
+
+mamx-movrs
+UrlSuffix(gcc/x86-Options.html#index-mamx-movrs)
+

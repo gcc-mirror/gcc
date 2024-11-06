@@ -1,7 +1,7 @@
 /* PR c/83656 - missing -Wbuiltin-declaration-mismatch on declaration
    without prototype
    { dg-do compile }
-   { dg-options "-Wbuiltin-declaration-mismatch" } */
+   { dg-options "-std=gnu17 -Wbuiltin-declaration-mismatch" } */
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 typedef __SIZE_TYPE__    size_t;

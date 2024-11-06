@@ -4,8 +4,8 @@
 void test_1 ()
 {
   MACRO_1(42); /* { dg-line "use_of_MACRO_1" } */
-  /* { dg-error "-:macro \"MACRO_1\" requires 2 arguments, but only 1 given" "" { target c } use_of_MACRO_1 } */
-  /* { dg-error "macro \"MACRO_1\" requires 2 arguments, but only 1 given" "" { target c++ } use_of_MACRO_1 } */
+  /* { dg-error "-:macro 'MACRO_1' requires 2 arguments, but only 1 given" "" { target c } use_of_MACRO_1 } */
+  /* { dg-error "macro 'MACRO_1' requires 2 arguments, but only 1 given" "" { target c++ } use_of_MACRO_1 } */
   /* { dg-message "-: macro .MACRO_1. defined here" "" { target *-*-* } def_of_MACRO_1 } */
   /* { dg-error "'MACRO_1' was not declared in this scope" "" { target c++ } use_of_MACRO_1 } */
   /* { dg-bogus "had not yet been defined" "" { target *-*-* } use_of_MACRO_1 } */
@@ -15,8 +15,8 @@ void test_1 ()
 void test_2 ()
 {
   MACRO_2(1, 2, 3); /* { dg-line "use_of_MACRO_2" } */
-  /* { dg-error "-:macro \"MACRO_2\" passed 3 arguments, but takes just 2" "" { target c } use_of_MACRO_2 } */
-  /* { dg-error "macro \"MACRO_2\" passed 3 arguments, but takes just 2" "" { target c++ } use_of_MACRO_2 } */
+  /* { dg-error "-:macro 'MACRO_2' passed 3 arguments, but takes just 2" "" { target c } use_of_MACRO_2 } */
+  /* { dg-error "macro 'MACRO_2' passed 3 arguments, but takes just 2" "" { target c++ } use_of_MACRO_2 } */
   /* { dg-message "-: macro .MACRO_2. defined here" "" { target *-*-* } def_of_MACRO_2 } */
   /* { dg-error "'MACRO_2' was not declared in this scope" "" { target c++ } use_of_MACRO_2 } */
   /* { dg-bogus "had not yet been defined" "" { target *-*-* } use_of_MACRO_2 } */

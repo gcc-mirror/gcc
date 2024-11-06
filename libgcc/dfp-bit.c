@@ -181,7 +181,7 @@ d32_compare_op (dfp_binary_func op, _Decimal32 arg_a, _Decimal32 arg_b)
   b32.c = arg_b;
   decSingleToWider (&a32.f, &a);
   decSingleToWider (&b32.f, &b);
-  return dfp_compare_op (op, a, b);  
+  return dfp_compare_op (op, a, b);
 }
 #else
 /* decFloat comparisons are supported for decDouble (64 bits) and
@@ -193,7 +193,7 @@ dnn_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 
   a.c = arg_a;
   b.c = arg_b;
-  return dfp_compare_op (op, a.f, b.f);  
+  return dfp_compare_op (op, a.f, b.f);
 }
 #endif
 
@@ -624,7 +624,7 @@ DFP_TO_BFP (DFP_C_TYPE f)
   return STR_TO_BFP (buf, NULL);
 }
 #endif
-                                                                                
+
 #if defined (L_sf_to_sd) || defined (L_sf_to_dd) || defined (L_sf_to_td) \
  || defined (L_df_to_sd) || defined (L_df_to_dd) || defined (L_df_to_td) \
  || defined (L_kf_to_sd) || defined (L_kf_to_dd) || defined (L_kf_to_td) \

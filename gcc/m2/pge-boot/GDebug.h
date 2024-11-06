@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_Debug_H)
 #   define _Debug_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
@@ -60,7 +58,7 @@ EXTERN void Debug_Halt (const char *Message_, unsigned int _Message_high, const 
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets 
+                 It interprets
  as carriage return, linefeed.
 */
 

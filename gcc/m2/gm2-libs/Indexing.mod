@@ -343,6 +343,34 @@ END IncludeIndiceIntoIndex ;
 
 
 (*
+   FindIndice - returns the indice containing a.
+                It returns zero if a is not found in array i.
+*)
+
+PROCEDURE FindIndice (i: Index; a: ADDRESS) : CARDINAL ;
+VAR
+   j: CARDINAL ;
+   p: PtrToAddress ;
+   b: PtrToByte ;
+BEGIN
+   WITH i^ DO
+      j := Low ;
+      b := ArrayStart ;
+      WHILE j <= High DO
+         p := VAL (PtrToAddress, b) ;
+         INC (b, TSIZE (ADDRESS)) ;
+         IF p^ = a
+         THEN
+            RETURN j
+         END ;
+         INC (j)
+      END
+   END ;
+   RETURN 0
+END FindIndice ;
+
+
+(*
    ForeachIndiceInIndexDo - for each j indice of i, call procedure p(i[j])
 *)
 

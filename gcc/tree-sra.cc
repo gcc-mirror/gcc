@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
       Finally, if a parameter got scalarized, the scalar replacements are
       initialized with values from respective parameter aggregates.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1397,6 +1398,15 @@ static bool
 build_access_from_call_arg (tree expr, gimple *stmt, bool can_be_returned,
 			    enum out_edge_check *oe_check)
 {
+  if (gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+    {
+      tree base = expr;
+      if (TREE_CODE (expr) == ADDR_EXPR)
+	base = get_base_address (TREE_OPERAND (expr, 0));
+      disqualify_base_of_expr (base, "Passed to a returns_twice call.");
+      return false;
+    }
+
   if (TREE_CODE (expr) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (expr, 0));
@@ -2177,7 +2187,7 @@ maybe_add_sra_candidate (tree var)
   const char *msg;
   tree_node **slot;
 
-  if (!AGGREGATE_TYPE_P (type)) 
+  if (!AGGREGATE_TYPE_P (type))
     {
       reject (var, "not aggregate");
       return false;

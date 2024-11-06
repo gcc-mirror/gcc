@@ -30,3 +30,4 @@ LIB2ADDEH += \
 	$(srcdir)/config/aarch64/__arm_za_disable.S
 
 SHLIB_MAPFILES += $(srcdir)/config/aarch64/libgcc-sme.ver
+LIBGCC2_CFLAGS += -Werror -Wno-prio-ctor-dtor

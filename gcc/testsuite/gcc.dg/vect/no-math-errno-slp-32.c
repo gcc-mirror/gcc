@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
+/* { dg-additional-options "-fno-math-errno" } */
 
 double x[256];
 

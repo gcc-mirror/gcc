@@ -147,15 +147,17 @@ void test5 (uint8_t *a, uint8_t *b, uint8_t *c,  uint8_t *d, int n)
 /*
 ** test5:
 **...
-**	dlstp.8	lr, r[0-9]+
+**	(?:mov	(r[0-9]+), r3)?
+**...
+**	dlstp.8	lr, (?:r[0-9]+|ip)
 **...
 **	vldrb.8	q[0-9]+, \[r1\]
 **	vldrb.8	q[0-9]+, \[r2\]
 **...
 **	vadd.i8	(q[0-9]+), q[0-9]+, q[0-9]+
 **...
-**	vstrb.8	\1, \[r2\]
-**	vstrb.8	\1, \[r3\]
+**	vstrb.8	\2, \[r2\]
+**	vstrb.8	\2, \[(r3|\1)\]
 **	letp	lr, .*
 **...
 */
@@ -247,7 +249,7 @@ void test8 (int32_t *a, int32_t *b, int32_t *c, int n, int g)
 **...
 **	dlstp.32	lr, r3
 **	vldrw.32	q[0-9]+, \[r0\], #16
-**	vctp.32	r4
+**	vctp.32	(?:r4|ip)
 **	vpst
 **	vldrwt.32	q[0-9]+, \[r1\], #16
 **...

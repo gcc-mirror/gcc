@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (AARCH64_UNWIND_H) && !defined (__ILP32__)
 #define AARCH64_UNWIND_H
 
-#include "aarch64-unwind-def.h"
+#include "config/aarch64/aarch64-unwind-def.h"
 
 #include "ansidecl.h"
 #include <stdbool.h>

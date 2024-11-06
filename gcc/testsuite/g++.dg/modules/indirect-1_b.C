@@ -48,7 +48,5 @@ namespace bar
 // { dg-final { scan-lang-dump {Lazily binding '::foo::Scoped'@'foo' section:} module } }
 // { dg-final { scan-lang-dump-not {Lazily binding '::foo::Scoped@foo:.::[ABCD]'@'foo' section:} module } }
 
-// { dg_final { scan-lang-dump {Wrote named import:-[0-9]* const_decl:'::foo::Plain@\(foo\)::C'@foo} module } }
-// { dg_final { scan-lang-dump {Wrote named import:-[0-9]* const_decl:'::foo::Plain@\(foo\)::B'@foo} module } }
-// { dg_final { scan-lang-dump {Wrote named import:-[0-9]* const_decl:'::foo::Scoped@\(foo\)::C'@foo} module } }
-// { dg_final { scan-lang-dump {Wrote named import:-[0-9]* const_decl:'::foo::Scoped@\(foo\)::B'@foo} module } }
+// { dg-final { scan-lang-dump-times {Wrote import:-[0-9]* type_decl:'::foo::Plain@foo:.'@foo} 2 module } }
+// { dg-final { scan-lang-dump-times {Wrote import:-[0-9]* type_decl:'::foo::Scoped@foo:.'@foo} 2 module } }

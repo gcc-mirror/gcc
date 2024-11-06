@@ -1,4 +1,5 @@
 /* PR tree-optimization/71109 */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target non_strict_prototype } */
 
 struct S { int g, h; signed char i; int j; signed char k; int l[4]; } a, c;

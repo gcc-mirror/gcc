@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -103,7 +104,7 @@ get_range_strlen (tree, bitmap, strlen_range_kind, c_strlen_data *, unsigned);
 	to method that was partitioned elsehwere.
 	In this case we have static VAR_DECL or FUNCTION_DECL
 	that has no corresponding callgraph/varpool node
-	declaring the body.  
+	declaring the body.
      3) COMDAT functions referred by external vtables that
         we devirtualize only during final compilation stage.
         At this time we already decided that we will not output
@@ -173,7 +174,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 
      As observed in PR20991 for already optimized out comdat virtual functions
      it may be tempting to not necessarily give up because the copy will be
-     output elsewhere when corresponding vtable is output.  
+     output elsewhere when corresponding vtable is output.
      This is however not possible - ABI specify that COMDATs are output in
      units where they are used and when the other unit was compiled with LTO
      it is possible that vtable was kept public while the function itself
@@ -2702,7 +2703,7 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
 /* Fold a call to the __strncat_chk builtin with arguments DEST, SRC,
    LEN, and SIZE.  */
 
-static bool 
+static bool
 gimple_fold_builtin_strncat_chk (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
@@ -3864,7 +3865,7 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
    simplified form of the call as a tree.  FCODE is the BUILT_IN_*
    code of the function to be simplified.  */
 
-static bool 
+static bool
 gimple_fold_builtin_fprintf (gimple_stmt_iterator *gsi,
 			     tree fp, tree fmt, tree arg,
 			     enum built_in_function fcode)
@@ -4190,7 +4191,7 @@ static bool
 gimple_fold_builtin_acc_on_device (gimple_stmt_iterator *gsi, tree arg0)
 {
   /* Defer folding until we know which compiler we're in.  */
-  if (symtab->state != EXPANSION)
+  if (ENABLE_OFFLOADING && symtab->state != EXPANSION)
     return false;
 
   unsigned val_host = GOMP_DEVICE_HOST;
@@ -4202,7 +4203,7 @@ gimple_fold_builtin_acc_on_device (gimple_stmt_iterator *gsi, tree arg0)
 #endif
 
   location_t loc = gimple_location (gsi_stmt (*gsi));
-  
+
   tree host_eq = make_ssa_name (boolean_type_node);
   gimple *host_ass = gimple_build_assign
     (host_eq, EQ_EXPR, arg0, build_int_cst (TREE_TYPE (arg0), val_host));
@@ -6778,7 +6779,7 @@ fold_stmt_inplace (gimple_stmt_iterator *gsi)
   return changed;
 }
 
-/* Canonicalize and possibly invert the boolean EXPR; return NULL_TREE 
+/* Canonicalize and possibly invert the boolean EXPR; return NULL_TREE
    if EXPR is null or we don't know how.
    If non-null, the result always has boolean type.  */
 
@@ -6953,7 +6954,7 @@ and_var_with_comparison (tree type, tree var, bool invert,
   /* We can only deal with variables whose definitions are assignments.  */
   if (!is_gimple_assign (stmt))
     return NULL_TREE;
-  
+
   /* If we have an inverted comparison, apply DeMorgan's law and rewrite
      !var AND (op2a code2 op2b) => !(var OR !(op2a code2 op2b))
      Then we only have to consider the simpler non-inverted cases.  */
@@ -7025,7 +7026,7 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
       tree t;
       tree partial = NULL_TREE;
       bool is_and = (innercode == BIT_AND_EXPR);
-      
+
       /* Check for boolean identities that don't require recursive examination
 	 of inner1/inner2:
 	 inner1 AND (inner1 AND inner2) => inner1 AND inner2 => var
@@ -7081,7 +7082,7 @@ and_var_with_comparison_1 (tree type, gimple *stmt,
 	  /* Save partial result for later.  */
 	  partial = t;
 	}
-      
+
       /* Compute the second partial result, (inner2 AND (op2a code op2b)) */
       if (TREE_CODE (inner2) == SSA_NAME
 	  && is_gimple_assign (s = SSA_NAME_DEF_STMT (inner2))
@@ -7203,7 +7204,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 	      for (i = 0; i < gimple_phi_num_args (stmt); i++)
 		{
 		  tree arg = gimple_phi_arg_def (stmt, i);
-		  
+
 		  /* If this PHI has itself as an argument, ignore it.
 		     If all the other args produce the same result,
 		     we're still OK.  */
@@ -7430,7 +7431,7 @@ or_var_with_comparison (tree type, tree var, bool invert,
   /* We can only deal with variables whose definitions are assignments.  */
   if (!is_gimple_assign (stmt))
     return NULL_TREE;
-  
+
   /* If we have an inverted comparison, apply DeMorgan's law and rewrite
      !var OR (op2a code2 op2b) => !(var AND !(op2a code2 op2b))
      Then we only have to consider the simpler non-inverted cases.  */
@@ -7488,7 +7489,7 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
       if (t)
 	return t;
     }
-  
+
   /* If the definition is an AND or OR expression, we may be able to
      simplify by reassociating.  */
   if (TREE_CODE (TREE_TYPE (var)) == BOOLEAN_TYPE
@@ -7500,7 +7501,7 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
       tree t;
       tree partial = NULL_TREE;
       bool is_or = (innercode == BIT_IOR_EXPR);
-      
+
       /* Check for boolean identities that don't require recursive examination
 	 of inner1/inner2:
 	 inner1 OR (inner1 OR inner2) => inner1 OR inner2 => var
@@ -7522,7 +7523,7 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 		? boolean_true_node
 		: or_var_with_comparison (type, inner1, false, code2, op2a,
 					  op2b, outer_cond_bb));
-      
+
       /* Next, redistribute/reassociate the OR across the inner tests.
 	 Compute the first partial result, (inner1 OR (op2a code op2b))  */
       if (TREE_CODE (inner1) == SSA_NAME
@@ -7546,7 +7547,7 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 	      else if (integer_zerop (t))
 		return inner2;
 	    }
-	  
+
 	  /* Handle the AND case, where we are redistributing:
 	     (inner1 AND inner2) OR (op2a code2 op2b)
 	     => (t AND (inner2 OR (op2a code op2b)))  */
@@ -7556,7 +7557,7 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 	  /* Save partial result for later.  */
 	  partial = t;
 	}
-      
+
       /* Compute the second partial result, (inner2 OR (op2a code op2b)) */
       if (TREE_CODE (inner2) == SSA_NAME
 	  && is_gimple_assign (s = SSA_NAME_DEF_STMT (inner2))
@@ -7582,12 +7583,12 @@ or_var_with_comparison_1 (tree type, gimple *stmt,
 	      else if (partial && same_bool_result_p (t, partial))
 		return t;
 	    }
-	  
+
 	  /* Handle the AND case, where we are redistributing:
 	     (inner1 AND inner2) OR (op2a code2 op2b)
 	     => (t AND (inner1 OR (op2a code2 op2b)))
 	     => (t AND partial)  */
-	  else 
+	  else
 	    {
 	      if (integer_zerop (t))
 		return boolean_false_node;
@@ -7679,7 +7680,7 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
 	      for (i = 0; i < gimple_phi_num_args (stmt); i++)
 		{
 		  tree arg = gimple_phi_arg_def (stmt, i);
-		  
+
 		  /* If this PHI has itself as an argument, ignore it.
 		     If all the other args produce the same result,
 		     we're still OK.  */
@@ -8233,7 +8234,7 @@ fold_array_ctor_reference (tree type, tree ctor,
       unsigned ctor_idx;
       tree val = get_array_ctor_element_at_index (ctor, access_index,
 						  &ctor_idx);
-      if (!val && ctor_idx >= CONSTRUCTOR_NELTS  (ctor))
+      if (!val && ctor_idx >= CONSTRUCTOR_NELTS (ctor))
 	return build_zero_cst (type);
 
       /* native-encode adjacent ctor elements.  */
@@ -8260,10 +8261,27 @@ fold_array_ctor_reference (tree type, tree ctor,
 	{
 	  if (bufoff + elt_sz > sizeof (buf))
 	    elt_sz = sizeof (buf) - bufoff;
-	  int len = native_encode_expr (val, buf + bufoff, elt_sz,
+	  int len;
+	  if (TREE_CODE (val) == RAW_DATA_CST)
+	    {
+	      gcc_assert (inner_offset == 0);
+	      if (!elt->index || TREE_CODE (elt->index) != INTEGER_CST)
+		return NULL_TREE;
+	      inner_offset = (access_index
+			      - wi::to_offset (elt->index)).to_uhwi ();
+	      len = MIN (sizeof (buf) - bufoff,
+			 (unsigned) (RAW_DATA_LENGTH (val) - inner_offset));
+	      memcpy (buf + bufoff, RAW_DATA_POINTER (val) + inner_offset,
+		      len);
+	      access_index += len - 1;
+	    }
+	  else
+	    {
+	      len = native_encode_expr (val, buf + bufoff, elt_sz,
 					inner_offset / BITS_PER_UNIT);
-	  if (len != (int) elt_sz - inner_offset / BITS_PER_UNIT)
-	    return NULL_TREE;
+	      if (len != (int) elt_sz - inner_offset / BITS_PER_UNIT)
+		return NULL_TREE;
+	    }
 	  inner_offset = 0;
 	  bufoff += len;
 
@@ -8305,8 +8323,23 @@ fold_array_ctor_reference (tree type, tree ctor,
       return native_interpret_expr (type, buf, size / BITS_PER_UNIT);
     }
 
-  if (tree val = get_array_ctor_element_at_index (ctor, access_index))
+  unsigned ctor_idx;
+  if (tree val = get_array_ctor_element_at_index (ctor, access_index,
+						  &ctor_idx))
     {
+      if (TREE_CODE (val) == RAW_DATA_CST)
+	{
+	  if (size != BITS_PER_UNIT || elt_sz != 1 || inner_offset != 0)
+	    return NULL_TREE;
+	  constructor_elt *elt = CONSTRUCTOR_ELT (ctor, ctor_idx);
+	  if (elt->index == NULL_TREE || TREE_CODE (elt->index) != INTEGER_CST)
+	    return NULL_TREE;
+	  *suboff += access_index.to_uhwi () * BITS_PER_UNIT;
+	  unsigned o = (access_index - wi::to_offset (elt->index)).to_uhwi ();
+	  return build_int_cst (TREE_TYPE (val),
+				((const unsigned char *)
+				 RAW_DATA_POINTER (val))[o]);
+	}
       if (!size && TREE_CODE (val) != CONSTRUCTOR)
 	{
 	  /* For the final reference to the entire accessed element
@@ -8728,7 +8761,7 @@ fold_const_aggregate_ref (tree t)
 }
 
 /* Lookup virtual method with index TOKEN in a virtual table V
-   at OFFSET.  
+   at OFFSET.
    Set CAN_REFER if non-NULL to false if method
    is not referable or if the virtual table is ill-formed (such as rewriten
    by non-C++ produced symbol). Otherwise just return NULL in that calse.  */

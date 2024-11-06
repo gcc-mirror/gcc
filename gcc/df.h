@@ -219,7 +219,7 @@ typedef void (*df_confluence_function_0) (basic_block);
    Return true if BB input data has changed.  */
 typedef bool (*df_confluence_function_n) (edge);
 
-/* Transfer function for blocks. 
+/* Transfer function for blocks.
    Return true if BB output data has changed.  */
 typedef bool (*df_transfer_function) (int);
 

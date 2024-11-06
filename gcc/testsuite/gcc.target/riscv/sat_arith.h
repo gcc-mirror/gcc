@@ -353,6 +353,66 @@ sat_u_sub_imm_type_check##_##INDEX##_##T##_fmt_4 (T x)    \
   return x > IMM ? x - IMM : 0;                           \
 }
 
+#define DEF_SAT_S_SUB_FMT_1(T, UT, MIN, MAX) \
+T __attribute__((noinline))                  \
+sat_s_sub_##T##_fmt_1 (T x, T y)             \
+{                                            \
+  T minus = (UT)x - (UT)y;                   \
+  return (x ^ y) >= 0                        \
+    ? minus                                  \
+    : (minus ^ x) >= 0                       \
+      ? minus                                \
+      : x < 0 ? MIN : MAX;                   \
+}
+#define DEF_SAT_S_SUB_FMT_1_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_1(T, UT, MIN, MAX)
+
+#define DEF_SAT_S_SUB_FMT_2(T, UT, MIN, MAX) \
+T __attribute__((noinline))                  \
+sat_s_sub_##T##_fmt_2 (T x, T y)             \
+{                                            \
+  T minus = (UT)x - (UT)y;                   \
+  if ((x ^ y) >= 0 || (minus ^ x) >= 0)      \
+    return minus;                            \
+  return x < 0 ? MIN : MAX;                  \
+}
+#define DEF_SAT_S_SUB_FMT_2_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_2(T, UT, MIN, MAX)
+
+#define DEF_SAT_S_SUB_FMT_3(T, UT, MIN, MAX)             \
+T __attribute__((noinline))                              \
+sat_s_sub_##T##_fmt_3 (T x, T y)                         \
+{                                                        \
+  T minus;                                               \
+  bool overflow = __builtin_sub_overflow (x, y, &minus); \
+  return overflow ? x < 0 ? MIN : MAX : minus;           \
+}
+#define DEF_SAT_S_SUB_FMT_3_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_3(T, UT, MIN, MAX)
+
+#define DEF_SAT_S_SUB_FMT_4(T, UT, MIN, MAX)           \
+T __attribute__((noinline))                            \
+sat_s_sub_##T##_fmt_4 (T x, T y)                       \
+{                                                      \
+  T minus;                                               \
+  bool overflow = __builtin_sub_overflow (x, y, &minus); \
+  return !overflow ? minus : x < 0 ? MIN : MAX;          \
+}
+#define DEF_SAT_S_SUB_FMT_4_WRAP(T, UT, MIN, MAX) \
+  DEF_SAT_S_SUB_FMT_4(T, UT, MIN, MAX)
+
+#define RUN_SAT_S_SUB_FMT_1(T, x, y) sat_s_sub_##T##_fmt_1(x, y)
+#define RUN_SAT_S_SUB_FMT_1_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_1(T, x, y)
+
+#define RUN_SAT_S_SUB_FMT_2(T, x, y) sat_s_sub_##T##_fmt_2(x, y)
+#define RUN_SAT_S_SUB_FMT_2_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_2(T, x, y)
+
+#define RUN_SAT_S_SUB_FMT_3(T, x, y) sat_s_sub_##T##_fmt_3(x, y)
+#define RUN_SAT_S_SUB_FMT_3_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_3(T, x, y)
+
+#define RUN_SAT_S_SUB_FMT_4(T, x, y) sat_s_sub_##T##_fmt_4(x, y)
+#define RUN_SAT_S_SUB_FMT_4_WRAP(T, x, y) RUN_SAT_S_SUB_FMT_4(T, x, y)
+
 /******************************************************************************/
 /* Saturation Truncate (unsigned and signed)                                  */
 /******************************************************************************/
@@ -404,5 +464,125 @@ sat_u_trunc_##WT##_to_##NT##_fmt_4 (WT x)      \
 
 #define RUN_SAT_U_TRUNC_FMT_4(NT, WT, x) sat_u_trunc_##WT##_to_##NT##_fmt_4 (x)
 #define RUN_SAT_U_TRUNC_FMT_4_WRAP(NT, WT, x) RUN_SAT_U_TRUNC_FMT_4(NT, WT, x)
+
+#define DEF_SAT_S_TRUNC_FMT_1(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_1 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN <= x && x <= (WT)NT_MAX           \
+    ? trunc                                           \
+    : x < 0 ? NT_MIN : NT_MAX;                        \
+}
+#define DEF_SAT_S_TRUNC_FMT_1_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_1(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_2(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_2 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN < x && x < (WT)NT_MAX             \
+    ? trunc                                           \
+    : x < 0 ? NT_MIN : NT_MAX;                        \
+}
+#define DEF_SAT_S_TRUNC_FMT_2_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_2(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_3(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_3 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN < x && x <= (WT)NT_MAX            \
+    ? trunc                                           \
+    : x < 0 ? NT_MIN : NT_MAX;                        \
+}
+#define DEF_SAT_S_TRUNC_FMT_3_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_3(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_4(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_4 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN <= x && x < (WT)NT_MAX            \
+    ? trunc                                           \
+    : x < 0 ? NT_MIN : NT_MAX;                        \
+}
+#define DEF_SAT_S_TRUNC_FMT_4_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_4(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_5(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_5 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN > x || x > (WT)NT_MAX             \
+    ? x < 0 ? NT_MIN : NT_MAX                         \
+    : trunc;                                          \
+}
+#define DEF_SAT_S_TRUNC_FMT_5_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_5(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_6(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_6 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN >= x || x > (WT)NT_MAX            \
+    ? x < 0 ? NT_MIN : NT_MAX                         \
+    : trunc;                                          \
+}
+#define DEF_SAT_S_TRUNC_FMT_6_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_6(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_7(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_7 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN >= x || x >= (WT)NT_MAX           \
+    ? x < 0 ? NT_MIN : NT_MAX                         \
+    : trunc;                                          \
+}
+#define DEF_SAT_S_TRUNC_FMT_7_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_7(NT, WT, NT_MIN, NT_MAX)
+
+#define DEF_SAT_S_TRUNC_FMT_8(NT, WT, NT_MIN, NT_MAX) \
+NT __attribute__((noinline))                          \
+sat_s_trunc_##WT##_to_##NT##_fmt_8 (WT x)             \
+{                                                     \
+  NT trunc = (NT)x;                                   \
+  return (WT)NT_MIN > x || x >= (WT)NT_MAX            \
+    ? x < 0 ? NT_MIN : NT_MAX                         \
+    : trunc;                                          \
+}
+#define DEF_SAT_S_TRUNC_FMT_8_WRAP(NT, WT, NT_MIN, NT_MAX) \
+  DEF_SAT_S_TRUNC_FMT_8(NT, WT, NT_MIN, NT_MAX)
+
+#define RUN_SAT_S_TRUNC_FMT_1(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_1 (x)
+#define RUN_SAT_S_TRUNC_FMT_1_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_1(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_2(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_2 (x)
+#define RUN_SAT_S_TRUNC_FMT_2_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_2(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_3(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_3 (x)
+#define RUN_SAT_S_TRUNC_FMT_3_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_3(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_4(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_4 (x)
+#define RUN_SAT_S_TRUNC_FMT_4_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_4(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_5(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_5 (x)
+#define RUN_SAT_S_TRUNC_FMT_5_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_5(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_6(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_6 (x)
+#define RUN_SAT_S_TRUNC_FMT_6_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_6(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_7(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_7 (x)
+#define RUN_SAT_S_TRUNC_FMT_7_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_7(NT, WT, x)
+
+#define RUN_SAT_S_TRUNC_FMT_8(NT, WT, x) sat_s_trunc_##WT##_to_##NT##_fmt_8 (x)
+#define RUN_SAT_S_TRUNC_FMT_8_WRAP(NT, WT, x) RUN_SAT_S_TRUNC_FMT_8(NT, WT, x)
 
 #endif

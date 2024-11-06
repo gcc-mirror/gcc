@@ -25,36 +25,11 @@ DEFINITION MODULE P1SymBuild ;
    Title      : P1SymBuild
    Author     : Gaius Mulley
    Date       : 24/6/87
-   LastEdit   : Sat Dec  9 11:34:34 EST 1989
    System     : UNIX (GNU Modula-2)
    Description: Builds symbol entities, types, constants, variables,
                 procedures, modules and scopes.
                 All procedures are only called during Pass 1.
 *)
-
-EXPORT QUALIFIED P1StartBuildDefinitionModule,
-                 P1EndBuildDefinitionModule,
-                 P1StartBuildImplementationModule,
-                 P1EndBuildImplementationModule,
-                 P1StartBuildProgramModule,
-                 P1EndBuildProgramModule,
-                 StartBuildInnerModule,
-                 EndBuildInnerModule,
-                 BuildImportOuterModule,
-                 BuildExportOuterModule,
-                 BuildImportInnerModule,
-                 BuildExportInnerModule,
-                 StartBuildEnumeration,
-                 EndBuildEnumeration,
-                 BuildHiddenType,
-                 StartBuildProcedure,
-                 EndBuildProcedure,
-                 BuildProcedureHeading,
-                 BuildNulName,
-                 BuildTypeEnd,
-                 CheckExplicitExported,
-                 BuildImportStatement,
-                 AddImportToImportStatement ;
 
 
 (*
@@ -494,6 +469,27 @@ PROCEDURE EndBuildProcedure ;
 *)
 
 PROCEDURE BuildProcedureHeading ;
+
+
+(*
+   EndBuildForward - Ends building a forward procedure declaration.
+
+                     The Stack:
+
+                     (This procedure is not defined in definition module)
+
+                     Entry                 Exit
+
+              Ptr ->
+                     +------------+
+                     | ProcSym    |
+                     |------------|
+                     | NameStart  |
+                     |------------|
+                                           Empty
+*)
+
+PROCEDURE EndBuildForward ;
 
 
 (*

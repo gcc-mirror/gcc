@@ -1,17 +1,17 @@
 /* Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
-   
+
    GCC is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
    Software Foundation; either version 3, or (at your option) any later
    version.
-   
+
    GCC is distributed in the hope that it will be useful, but WITHOUT ANY
    WARRANTY; without even the implied warranty of MERCHANTABILITY or
    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
    for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
@@ -184,7 +184,7 @@ gcn_lockless_update (location_t loc, gimple_stmt_iterator *gsi,
 }
 
 /* Helper function for gcn_reduction_update.
-   
+
    Insert code to lockfully update *PTR with *PTR OP VAR just before
    GSI.  This is necessary for types larger than 64 bits, where there
    is no cmp&swap instruction to implement a lockless scheme.  We use
@@ -488,7 +488,7 @@ gcn_goacc_reduction_teardown (gcall *call)
 }
 
 /* Implement TARGET_GOACC_REDUCTION.
- 
+
    Expand calls to the GOACC REDUCTION internal function, into a sequence of
    gimple instructions.  */
 

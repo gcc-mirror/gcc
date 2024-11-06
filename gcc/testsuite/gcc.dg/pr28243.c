@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
-/* { dg-options "-O2 -ftracer -fPIC" } */
+/* { dg-options "-std=gnu17 -O2 -ftracer -fPIC" } */
 
 struct displayfuncs {
   void (*init) ();

@@ -71,7 +71,7 @@ extern char *bfin_asm_long (void);
 extern char *bfin_asm_short (void);
 extern int log2constp (unsigned HOST_WIDE_INT);
 
-extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);	  
+extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
 extern HOST_WIDE_INT bfin_initial_elimination_offset (int, int);
 
 extern int effective_address_32bit_p (rtx, machine_mode);

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -195,7 +196,7 @@ var_info_hasher::equal (const value_type &p1, const compare_type &p2)
 }
 
 
-/* Each entry in VAR_INFOS contains an element of type STRUCT 
+/* Each entry in VAR_INFOS contains an element of type STRUCT
    VAR_INFO_D.  */
 static hash_table<var_info_hasher> *var_infos;
 
@@ -1400,7 +1401,7 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	/* Do not insert debug stmts if the stmt ends the BB.  */
 	if (stmt_ends_bb_p (stmt))
 	  continue;
-	
+
 	tracked_var = target_for_debug_bind (var);
 	if (tracked_var)
 	  {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-early-inlining -fipa-sra"  } */
+/* { dg-options "-std=gnu17 -O2 -fno-early-inlining -fipa-sra"  } */
 
 struct S
 {

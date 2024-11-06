@@ -130,4 +130,14 @@ package Diagnostics.Constructors is
       Freeze : Node_Id;
       Def    : Node_Id);
 
+   function Make_Mixed_Container_Aggregate_Error
+     (Aggr       : Node_Id;
+      Pos_Elem   : Node_Id;
+      Named_Elem : Node_Id) return Diagnostic_Type;
+
+   procedure Record_Mixed_Container_Aggregate_Error
+     (Aggr       : Node_Id;
+      Pos_Elem   : Node_Id;
+      Named_Elem : Node_Id);
+
 end Diagnostics.Constructors;

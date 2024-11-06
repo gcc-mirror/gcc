@@ -1,4 +1,5 @@
 /* http://gcc.gnu.org/ml/gcc-patches/2004-02/msg01307.html */
+/* { dg-additional-options "-std=gnu17" } */
 
 typedef struct xdef xdef;
 struct xdef

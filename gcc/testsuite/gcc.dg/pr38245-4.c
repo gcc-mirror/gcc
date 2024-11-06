@@ -1,6 +1,6 @@
 /* PR rtl-optimization/38245 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-std=gnu17" } */
 
 #include "pr38245-3.h"
 

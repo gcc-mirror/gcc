@@ -436,7 +436,7 @@ public:
 
   /* Return 0 if symbol is known to have different address than S2,
      Return 1 if symbol is known to have same address as S2,
-     return 2 otherwise. 
+     return 2 otherwise.
 
      If MEMORY_ACCESSED is true, assume that both memory pointer to THIS
      and S2 is going to be accessed.  This eliminates the situations when
@@ -923,7 +923,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Walk the alias chain to return the function cgraph_node is alias of.
      Walk through thunk, too.
-     When AVAILABILITY is non-NULL, get minimal availability in the chain. 
+     When AVAILABILITY is non-NULL, get minimal availability in the chain.
      When REF is non-NULL, assume that reference happens in symbol REF
      when determining the availability.  */
   cgraph_node *function_symbol (enum availability *avail = NULL,
@@ -932,7 +932,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* Walk the alias chain to return the function cgraph_node is alias of.
      Walk through non virtual thunks, too.  Thus we return either a function
      or a virtual thunk node.
-     When AVAILABILITY is non-NULL, get minimal availability in the chain.  
+     When AVAILABILITY is non-NULL, get minimal availability in the chain.
      When REF is non-NULL, assume that reference happens in symbol REF
      when determining the availability.  */
   cgraph_node *function_or_virtual_thunk_symbol
@@ -1097,7 +1097,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      present.  */
   bool get_untransformed_body ();
 
-  /* Prepare function body.  When doing LTO, read cgraph_node's body from disk 
+  /* Prepare function body.  When doing LTO, read cgraph_node's body from disk
      if it is not already present.  When some IPA transformations are scheduled,
      apply them.  */
   bool get_body ();
@@ -1180,7 +1180,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
     When setting the flag be careful about possible interposition and
     do not set the flag for functions that can be interposed and set pure
-    flag for functions that can bind to other definition. 
+    flag for functions that can bind to other definition.
 
     Return true if any change was done. */
 
@@ -1256,7 +1256,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      all uses of COMDAT function does not make it necessarily disappear from
      the program unless we are compiling whole program or we do LTO.  In this
      case we know we win since dynamic linking will not really discard the
-     linkonce section.  
+     linkonce section.
 
      If WILL_INLINE is true, assume that function will be inlined into all the
      direct calls.  */
@@ -1269,7 +1269,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   bool can_remove_if_no_direct_calls_and_refs_p (void);
 
   /* Return true when function cgraph_node and its aliases can be removed from
-     callgraph if all direct calls are eliminated. 
+     callgraph if all direct calls are eliminated.
      If WILL_INLINE is true, assume that function will be inlined into all the
      direct calls.  */
   bool can_remove_if_no_direct_calls_p (bool will_inline = false);
@@ -2229,7 +2229,7 @@ public:
   friend struct cgraph_node;
   friend struct cgraph_edge;
 
-  symbol_table (): 
+  symbol_table ():
   cgraph_count (0), cgraph_max_uid (1), cgraph_max_summary_id (0),
   edges_count (0), edges_max_uid (1), edges_max_summary_id (0),
   cgraph_released_summary_ids (), edge_released_summary_ids (),

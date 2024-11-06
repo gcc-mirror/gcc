@@ -861,6 +861,10 @@ Enum(parloops_schedule_type) String(runtime) Value(PARLOOPS_SCHEDULE_RUNTIME)
 Common Joined UInteger Var(param_partial_inlining_entry_probability) Init(70) Optimization IntegerRange(0, 100) Param
 Maximum probability of the entry BB of split region (in percent relative to entry BB of the function) to make partial inlining happen.
 
+-param=phiopt-factor-max-stmts-live=
+Common Joined UInteger Var(param_phiopt_factor_max_stmts_live) Init(5) Optimization IntegerRange(0, 100) Param
+Maximum number of statements allowed inbetween the statement and the end to considered not extending the liferange.
+
 -param=predictable-branch-outcome=
 Common Joined UInteger Var(param_predictable_branch_outcome) Init(2) IntegerRange(0, 50) Param Optimization
 Maximal estimated outcome of branch considered predictable.
@@ -923,6 +927,10 @@ outgoing range calculator.
 -param=relation-block-limit=
 Common Joined UInteger Var(param_relation_block_limit) Init(200) IntegerRange(0, 9999) Param Optimization
 Maximum number of relations the oracle will register in a basic block.
+
+-param=transitive-relations-work-bound=
+Common Joined UInteger Var(param_transitive_relations_work_bound) Init(256) IntegerRange(0, 9999) Param Optimization
+Work bound when discovering transitive relations from existing relations.
 
 -param=rpo-vn-max-loop-depth=
 Common Joined UInteger Var(param_rpo_vn_max_loop_depth) Init(7) IntegerRange(2, 65536) Param Optimization
@@ -1179,7 +1187,7 @@ Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) Intege
 Maximum number of loop peels to enhance alignment of data references in a loop.
 
 -param=vect-max-version-for-alias-checks=
-Common Joined UInteger Var(param_vect_max_version_for_alias_checks) Init(10) Param Optimization
+Common Joined UInteger Var(param_vect_max_version_for_alias_checks) Init(15) Param Optimization
 Bound on number of runtime checks inserted by the vectorizer's loop versioning for alias check.
 
 -param=vect-max-version-for-alignment-checks=

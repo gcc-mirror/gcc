@@ -51,11 +51,11 @@ rx_handle_option (struct gcc_options *opts,
       return value >= 0 && value <= 4;
 
     case OPT_mcpu_:
-      if ((enum rx_cpu_types) value == RX200 || 
+      if ((enum rx_cpu_types) value == RX200 ||
           (enum rx_cpu_types) value == RX100)
 	opts->x_target_flags |= MASK_NO_USE_FPU;
       break;
-      
+
     case OPT_fpu:
       if (opts->x_rx_cpu_type == RX200)
 	error_at (loc, "the RX200 cpu does not have FPU hardware");

@@ -13,4 +13,4 @@ int nonempty;
 
 /* Use a Python script to verify various properties about the generated
    .sarif file:
-   { dg-final { run-sarif-pytest bad-pragma.c "test-bad-pragma.py" } } */
+   { dg-final { run-sarif-pytest bad-pragma.c "bad-pragma.py" } } */

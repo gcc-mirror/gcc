@@ -176,8 +176,19 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   op0 = unshare_expr (op0);
   op1 = unshare_expr (op1);
 
-  t = fold_convert_loc (loc, op1_utype, op1);
-  t = fold_build2 (GT_EXPR, boolean_type_node, t, uprecm1);
+  if (code == LROTATE_EXPR || code == RROTATE_EXPR)
+    {
+      /* For rotates just check for negative op1.  */
+      if (TYPE_UNSIGNED (type1))
+	return NULL_TREE;
+      t = fold_build2 (LT_EXPR, boolean_type_node, op1,
+		       build_int_cst (type1, 0));
+    }
+  else
+    {
+      t = fold_convert_loc (loc, op1_utype, op1);
+      t = fold_build2 (GT_EXPR, boolean_type_node, t, uprecm1);
+    }
 
   /* If this is not a signed operation, don't perform overflow checks.
      Also punt on bit-fields.  */
@@ -664,7 +675,7 @@ ubsan_maybe_instrument_reference (tree *stmt_p)
 						 UBSAN_REF_BINDING);
   if (op)
     {
-      if (TREE_CODE (stmt) == NOP_EXPR) 
+      if (TREE_CODE (stmt) == NOP_EXPR)
 	TREE_OPERAND (stmt, 0) = op;
       else
 	*stmt_p = op;

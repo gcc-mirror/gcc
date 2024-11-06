@@ -17,27 +17,27 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Common OpenBSD configuration. 
+/* Common OpenBSD configuration.
    All OpenBSD architectures include this file, which is intended as
-   a repository for common defines. 
+   a repository for common defines.
 
    Some defines are common to all architectures, a few of them are
    triggered by OBSD_* guards, so that we won't override architecture
    defaults by mistakes.
 
-   OBSD_HAS_CORRECT_SPECS: 
+   OBSD_HAS_CORRECT_SPECS:
       another mechanism provides correct specs already.
-   OBSD_NO_DYNAMIC_LIBRARIES: 
+   OBSD_NO_DYNAMIC_LIBRARIES:
       no implementation of dynamic libraries.
-   OBSD_OLD_GAS: 
+   OBSD_OLD_GAS:
       older flavor of gas which needs help for PIC.
    OBSD_HAS_DECLARE_FUNCTION_NAME, OBSD_HAS_DECLARE_FUNCTION_SIZE,
-   OBSD_HAS_DECLARE_OBJECT: 
+   OBSD_HAS_DECLARE_OBJECT:
       PIC support, FUNCTION_NAME/FUNCTION_SIZE are independent, whereas
       the corresponding logic for OBJECTS is necessarily coupled.
 
    There are also a few `default' defines such as ASM_WEAKEN_LABEL,
-   intended as common ground for arch that don't provide 
+   intended as common ground for arch that don't provide
    anything suitable.  */
 
 /* OPENBSD_NATIVE is defined only when gcc is configured as part of
@@ -104,7 +104,7 @@ while (0)
 
 /* CPP_SPEC appropriate for OpenBSD. We deal with -posix and -pthread.
    XXX the way threads are handled currently is not very satisfying,
-   since all code must be compiled with -pthread to work. 
+   since all code must be compiled with -pthread to work.
    This two-stage defines makes it easy to pick that for targets that
    have subspecs.  */
 #ifdef CPP_CPU_SPEC
@@ -122,8 +122,8 @@ while (0)
 #define CPP_SPEC OBSD_CPP_SPEC
 
 #ifdef OBSD_OLD_GAS
-/* ASM_SPEC appropriate for OpenBSD.  For some architectures, OpenBSD 
-   still uses a special flavor of gas that needs to be told when generating 
+/* ASM_SPEC appropriate for OpenBSD.  For some architectures, OpenBSD
+   still uses a special flavor of gas that needs to be told when generating
    pic code.  */
 #undef ASM_SPEC
 #define ASM_SPEC "%{" FPIE1_OR_FPIC1_SPEC ":-k} %{" FPIE2_OR_FPIC2_SPEC ":-k -K}"
@@ -152,7 +152,7 @@ while (0)
 
 
 /* - we use . - _func instead of a local label,
-   - we put extra spaces in expressions such as 
+   - we put extra spaces in expressions such as
      .type _func , @function
      This is more readable for a human being and confuses c++filt less.  */
 
@@ -161,11 +161,11 @@ while (0)
 /* Define the strings used for the .type and .size directives.
    These strings generally do not vary from one system running OpenBSD
    to another, but if a given system needs to use different pseudo-op
-   names for these, they may be overridden in the arch specific file.  */ 
+   names for these, they may be overridden in the arch specific file.  */
 
 /* OpenBSD assembler is hacked to have .type & .size support even in a.out
-   format object files.  Functions size are supported but not activated 
-   yet (look for GRACE_PERIOD_EXPIRED in gas/config/obj-aout.c).  
+   format object files.  Functions size are supported but not activated
+   yet (look for GRACE_PERIOD_EXPIRED in gas/config/obj-aout.c).
    SET_ASM_OP is needed for attribute alias to work.  */
 
 #undef TYPE_ASM_OP
@@ -191,12 +191,12 @@ while (0)
 
 /* These macros generate the special .type and .size directives which
    are used to set the corresponding fields of the linker symbol table
-   entries under OpenBSD.  These macros also have to output the starting 
+   entries under OpenBSD.  These macros also have to output the starting
    labels for the relevant functions/objects.  */
 
 #ifndef OBSD_HAS_DECLARE_FUNCTION_NAME
 /* Extra assembler code needed to declare a function properly.
-   Some assemblers may also need to also have something extra said 
+   Some assemblers may also need to also have something extra said
    about the function's return value.  We allow for that here.  */
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
@@ -238,7 +238,7 @@ while (0)
 /* Output the size directive for a decl in rest_of_decl_compilation
    in the case where we did not do so before the initializer.
    Once we find the error_mark_node, we know that the value of
-   size_directive_output was set by ASM_DECLARE_OBJECT_NAME 
+   size_directive_output was set by ASM_DECLARE_OBJECT_NAME
    when it was run for the same decl.  */
 #undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
@@ -260,11 +260,11 @@ do {									 \
 
 /* Those are `generic' ways to weaken/globalize a label. We shouldn't need
    to override a processor specific definition. Hence, #ifndef ASM_*
-   In case overriding turns out to be needed, one can always #undef ASM_* 
+   In case overriding turns out to be needed, one can always #undef ASM_*
    before including this file.  */
 
 /* Tell the assembler that a symbol is weak.  */
-/* Note: netbsd arm32 assembler needs a .globl here. An override may 
+/* Note: netbsd arm32 assembler needs a .globl here. An override may
    be needed when/if we go for arm32 support.  */
 #ifndef ASM_WEAKEN_LABEL
 #define ASM_WEAKEN_LABEL(FILE,NAME) \

@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CSIGNAL
 #define _GLIBCXX_CSIGNAL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <signal.h>

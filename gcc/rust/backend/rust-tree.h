@@ -2993,8 +2993,6 @@ extern location_t rs_expr_location (const_tree);
 extern int
 is_empty_class (tree type);
 
-extern tree array_type_nelts_top (tree);
-
 extern bool
 is_really_empty_class (tree, bool);
 

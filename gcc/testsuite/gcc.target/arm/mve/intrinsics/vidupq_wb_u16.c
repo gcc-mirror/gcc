@@ -34,18 +34,6 @@ foo1 (uint32_t *a)
   return vidupq_u16 (a, 1);
 }
 
-/*
-**foo2:
-**	...
-**	vidup.u16	q[0-9]+, (?:ip|fp|r[0-9]+), #[0-9]+(?:	@.*|)
-**	...
-*/
-uint16x8_t
-foo2 ()
-{
-  return vidupq_u16 (1, 1);
-}
-
 #ifdef __cplusplus
 }
 #endif

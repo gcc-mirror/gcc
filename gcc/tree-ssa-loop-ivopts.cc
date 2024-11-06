@@ -1461,7 +1461,8 @@ find_givs_in_bb (struct ivopts_data *data, basic_block bb)
   gimple_stmt_iterator bsi;
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-    find_givs_in_stmt (data, gsi_stmt (bsi));
+    if (!is_gimple_debug (gsi_stmt (bsi)))
+      find_givs_in_stmt (data, gsi_stmt (bsi));
 }
 
 /* Finds general ivs.  */
@@ -4368,6 +4369,7 @@ force_expr_to_var_cost (tree expr, bool speed)
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
+    case EXACT_DIV_EXPR:
     case TRUNC_DIV_EXPR:
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
@@ -4481,6 +4483,7 @@ force_expr_to_var_cost (tree expr, bool speed)
 	return comp_cost (target_spill_cost [speed], 0);
       break;
 
+    case EXACT_DIV_EXPR:
     case TRUNC_DIV_EXPR:
       /* Division by power of two is usually cheap, so we allow it.  Forbid
 	 anything else.  */
@@ -7561,7 +7564,7 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     case IFN_MASK_LEN_LOAD:
     case IFN_MASK_LEN_STORE:
       /* The second argument contains the correct alias type.  */
-      gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
+      gcc_assert (use->op_p == gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));
 
     default:

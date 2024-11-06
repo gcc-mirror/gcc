@@ -282,7 +282,7 @@ long_sqrt128 (UINT128 * pCS, UINT256 C256) {
     if (ES.w[0])
       ES.w[1]--;
 
-    // A*RS*eps 
+    // A*RS*eps
     __mul_128x128_to_256 (AE, ES, ARS1);
 
     __add_carry_out (S.w[0], CY, ARS00.w[0], AE.w[0]);
@@ -290,7 +290,7 @@ long_sqrt128 (UINT128 * pCS, UINT256 C256) {
     __add_carry_in_out (S.w[2], CY, ARS00.w[2], AE.w[2], CY);
     S.w[3] = ARS00.w[3] + AE.w[3] + CY;
   } else {
-    // A*RS*eps 
+    // A*RS*eps
     __mul_128x128_to_256 (AE, ES, ARS1);
 
     __sub_borrow_out (S.w[0], CY, ARS00.w[0], AE.w[0]);

@@ -22,9 +22,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 /*****************************************************************************
- * 
+ *
  *  BID128 fma   x * y + z
- * 
+ *
  ****************************************************************************/
 
 #include "bid_internal.h"
@@ -45,9 +45,9 @@ rounding_correction (unsigned int rnd_mode,
   UINT64 C_hi, C_lo;
 
   // general correction from RN to RA, RM, RP, RZ
-  // Note: if the result is negative, then is_inexact_lt_midpoint, 
-  // is_inexact_gt_midpoint, is_midpoint_lt_even, and is_midpoint_gt_even 
-  // have to be considered as if determined for the absolute value of the 
+  // Note: if the result is negative, then is_inexact_lt_midpoint,
+  // is_inexact_gt_midpoint, is_midpoint_lt_even, and is_midpoint_gt_even
+  // have to be considered as if determined for the absolute value of the
   // result (so they seem to be reversed)
 
   if (is_inexact_lt_midpoint || is_inexact_gt_midpoint ||
@@ -60,10 +60,10 @@ rounding_correction (unsigned int rnd_mode,
   C_hi = res.w[1] & MASK_COEFF;
   C_lo = res.w[0];
   if ((!sign && ((rnd_mode == ROUNDING_UP && is_inexact_lt_midpoint) ||
-      ((rnd_mode == ROUNDING_TIES_AWAY || rnd_mode == ROUNDING_UP) && 
-      is_midpoint_gt_even))) || 
+      ((rnd_mode == ROUNDING_TIES_AWAY || rnd_mode == ROUNDING_UP) &&
+      is_midpoint_gt_even))) ||
       (sign && ((rnd_mode == ROUNDING_DOWN && is_inexact_lt_midpoint) ||
-      ((rnd_mode == ROUNDING_TIES_AWAY || rnd_mode == ROUNDING_DOWN) && 
+      ((rnd_mode == ROUNDING_TIES_AWAY || rnd_mode == ROUNDING_DOWN) &&
       is_midpoint_gt_even)))) {
     // C = C + 1
     C_lo = C_lo + 1;
@@ -85,7 +85,7 @@ rounding_correction (unsigned int rnd_mode,
     if (C_lo == 0xffffffffffffffffull)
       C_hi--;
     // check if we crossed into the lower decade
-    if (C_hi == 0x0000314dc6448d93ull && C_lo == 0x38c15b09ffffffffull) { 
+    if (C_hi == 0x0000314dc6448d93ull && C_lo == 0x38c15b09ffffffffull) {
       // C = 10^33 - 1
       if (exp > 0) {
         C_hi = 0x0001ed09bead87c0ull; // 10^34 - 1
@@ -304,10 +304,10 @@ add_and_round (int q3,
     __mul_128x128_to_256 (R256, P128, C3);
   } else if (scale <= 38) { // 10^scale fits in 128 bits
     __mul_128x128_to_256 (R256, ten2k128[scale - 20], C3);
-  } else if (scale <= 57) { // 39 <= scale <= 57 
+  } else if (scale <= 57) { // 39 <= scale <= 57
     // 10^scale fits in 192 bits but C3 * 10^scale fits in 223 or 230 bits
-    // (10^67 has 223 bits; 10^69 has 230 bits);  
-    // must split the computation:  
+    // (10^67 has 223 bits; 10^69 has 230 bits);
+    // must split the computation:
     // 10^scale * C3 = 10*38 * 10^(scale-38) * C3 where 10^38 takes 127
     // bits and so 10^(scale-38) * C3 fits in 128 bits with certainty
     // Note that 1 <= scale - 38 <= 19 => 10^(scale-38) fits in 64 bits
@@ -317,21 +317,21 @@ add_and_round (int q3,
   } else { // 58 <= scale <= 66
     // 10^scale takes between 193 and 220 bits,
     // and C3 * 10^scale fits in 223 bits (10^67/10^69 has 223/230 bits)
-    // must split the computation: 
+    // must split the computation:
     // 10^scale * C3 = 10*38 * 10^(scale-38) * C3 where 10^38 takes 127
-    // bits and so 10^(scale-38) * C3 fits in 128 bits with certainty 
+    // bits and so 10^(scale-38) * C3 fits in 128 bits with certainty
     // Note that 20 <= scale - 38 <= 30 => 10^(scale-38) fits in 128 bits
     // Calculate first 10^(scale-38) * C3, which fits in 128 bits; because
     // 10^(scale-38) takes more than 64 bits, C3 will take less than 64
     __mul_64x128_to_128 (R128, C3.w[0], ten2k128[scale - 58]);
-    // now calculate 10*38 * 10^(scale-38) * C3 
+    // now calculate 10*38 * 10^(scale-38) * C3
     __mul_128x128_to_256 (R256, R128, ten2k128[18]);
   }
-  // C3 * 10^scale is now in R256 
+  // C3 * 10^scale is now in R256
 
-  // for Cases (15), (16), (17) C4 > C3 * 10^scale because C4 has at least 
-  // one extra digit; for Cases (2), (3), (4), (5), or (6) any order is 
-  // possible 
+  // for Cases (15), (16), (17) C4 > C3 * 10^scale because C4 has at least
+  // one extra digit; for Cases (2), (3), (4), (5), or (6) any order is
+  // possible
   // add/subtract C4 and C3 * 10^scale; the exponent is e4
   if (p_sign == z_sign) { // R256 = C4 + R256
     // calculate R256 = C4 + C3 * 10^scale = C4 + R256 which is exact,
@@ -342,23 +342,23 @@ add_and_round (int q3,
     // R256 = C3 * 10^scale - C4 = R256 - C4 which is exact,
     // but may require rounding
 
-    // compare first R256 = C3 * 10^scale and C4 
+    // compare first R256 = C3 * 10^scale and C4
     if (R256.w[3] > C4.w[3] || (R256.w[3] == C4.w[3] && R256.w[2] > C4.w[2]) ||
         (R256.w[3] == C4.w[3] && R256.w[2] == C4.w[2] && R256.w[1] > C4.w[1]) ||
         (R256.w[3] == C4.w[3] && R256.w[2] == C4.w[2] && R256.w[1] == C4.w[1] &&
         R256.w[0] >= C4.w[0])) { // C3 * 10^scale >= C4
       // calculate R256 = C3 * 10^scale - C4 = R256 - C4, which is exact,
-      // but may require rounding 
+      // but may require rounding
       sub256 (R256, C4, &R256);
-      // flip p_sign too, because the result has the sign of z 
+      // flip p_sign too, because the result has the sign of z
       p_sign = z_sign;
     } else { // if C4 > C3 * 10^scale
       // calculate R256 = C4 - C3 * 10^scale = C4 - R256, which is exact,
-      // but may require rounding  
+      // but may require rounding
       sub256 (C4, R256, &R256);
     }
     // if the result is pure zero, the sign depends on the rounding mode
-    // (x*y and z had opposite signs) 
+    // (x*y and z had opposite signs)
     if (R256.w[3] == 0x0ull && R256.w[2] == 0x0ull &&
         R256.w[1] == 0x0ull && R256.w[0] == 0x0ull) {
       if (rnd_mode != ROUNDING_DOWN)
@@ -368,7 +368,7 @@ add_and_round (int q3,
       // the exponent is max (e4, expmin)
       if (e4 < -6176)
         e4 = expmin;
-      // assemble result 
+      // assemble result
       res.w[1] = p_sign | ((UINT64) (e4 + 6176) << 49);
       res.w[0] = 0x0;
       *ptrres = res;
@@ -424,7 +424,7 @@ add_and_round (int q3,
     e4 = e4 + x0 + incr_exp;
     if (rnd_mode != ROUNDING_TO_NEAREST) {
       // for RM, RP, RZ, RA apply correction in order to determine tininess
-      // but do not save the result; apply the correction to 
+      // but do not save the result; apply the correction to
       // (-1)^p_sign * significand * 10^0
       P128.w[1] = p_sign | 0x3040000000000000ull | R128.w[1];
       P128.w[0] = R128.w[0];
@@ -442,7 +442,7 @@ add_and_round (int q3,
   }
   // at this point we have the result rounded with unbounded exponent in
   // res and we know its tininess:
-  // res = (-1)^p_sign * significand * 10^e4, 
+  // res = (-1)^p_sign * significand * 10^e4,
   // where q (significand) = ind <= p34
   // Note: res is correct only if expmin <= e4 <= expmax
 
@@ -480,7 +480,7 @@ add_and_round (int q3,
     } else if (x0 == ind) { // 1 <= x0 = ind <= p34 = 34
       // this is <, =, or > 1/2 ulp
       // compare the ind-digit value in the significand of res with
-      // 1/2 ulp = 5*10^(ind-1), i.e. determine whether it is 
+      // 1/2 ulp = 5*10^(ind-1), i.e. determine whether it is
       // less than, equal to, or greater than 1/2 ulp (significand of res)
       R128.w[1] = res.w[1] & MASK_COEFF;
       R128.w[0] = res.w[0];
@@ -496,12 +496,12 @@ add_and_round (int q3,
           is_inexact_gt_midpoint = 1;
         }
       } else { // if (ind <= 38) {
-        if (R128.w[1] < midpoint128[ind - 20].w[1] || 
-            (R128.w[1] == midpoint128[ind - 20].w[1] && 
+        if (R128.w[1] < midpoint128[ind - 20].w[1] ||
+            (R128.w[1] == midpoint128[ind - 20].w[1] &&
             R128.w[0] < midpoint128[ind - 20].w[0])) { // < 1/2 ulp
           lt_half_ulp = 1;
           is_inexact_lt_midpoint = 1;
-        } else if (R128.w[1] == midpoint128[ind - 20].w[1] && 
+        } else if (R128.w[1] == midpoint128[ind - 20].w[1] &&
             R128.w[0] == midpoint128[ind - 20].w[0]) { // = 1/2 ulp
           eq_half_ulp = 1;
           is_midpoint_gt_even = 1;
@@ -550,7 +550,7 @@ add_and_round (int q3,
       res.w[1] =
         p_sign | ((UINT64) (e4 + 6176) << 49) | (res.w[1] & MASK_COEFF);
       // avoid a double rounding error
-      if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+      if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
           is_midpoint_lt_even) { // double rounding error upward
         // res = res - 1
         res.w[0]--;
@@ -562,7 +562,7 @@ add_and_round (int q3,
         // is not possible in Cases (2)-(6) or (15)-(17) which may get here
         is_midpoint_lt_even = 0;
         is_inexact_lt_midpoint = 1;
-      } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+      } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
           is_midpoint_gt_even) { // double rounding error downward
         // res = res + 1
         res.w[0]++;
@@ -572,7 +572,7 @@ add_and_round (int q3,
         is_inexact_gt_midpoint = 1;
       } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
         	 !is_inexact_lt_midpoint && !is_inexact_gt_midpoint) {
-        // if this second rounding was exact the result may still be 
+        // if this second rounding was exact the result may still be
         // inexact because of the first rounding
         if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
           is_inexact_gt_midpoint = 1;
@@ -677,7 +677,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
   UINT256 R256;
 
   // the following are based on the table of special cases for fma; the NaN
-  // behavior is similar to that of the IA-64 Architecture fma 
+  // behavior is similar to that of the IA-64 Architecture fma
 
   // identify cases where at least one operand is NaN
 
@@ -725,14 +725,14 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
       z.w[1] = z.w[1] & 0xffffc00000000000ull;
       z.w[0] = 0x0ull;
     }
-    if ((z.w[1] & MASK_SNAN) == MASK_SNAN) { // z is SNAN 
-      // set invalid flag 
+    if ((z.w[1] & MASK_SNAN) == MASK_SNAN) { // z is SNAN
+      // set invalid flag
       *pfpsf |= INVALID_EXCEPTION;
-      // return quiet (z) 
+      // return quiet (z)
       res.w[1] = z.w[1] & 0xfc003fffffffffffull; // clear out also G[6]-G[16]
       res.w[0] = z.w[0];
-    } else { // z is QNaN 
-      // return z  
+    } else { // z is QNaN
+      // return z
       res.w[1] = z.w[1] & 0xfc003fffffffffffull; // clear out G[6]-G[16]
       res.w[0] = z.w[0];
       // if x = SNaN signal invalid exception
@@ -756,14 +756,14 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
       x.w[1] = x.w[1] & 0xffffc00000000000ull;
       x.w[0] = 0x0ull;
     }
-    if ((x.w[1] & MASK_SNAN) == MASK_SNAN) { // x is SNAN 
-      // set invalid flag 
+    if ((x.w[1] & MASK_SNAN) == MASK_SNAN) { // x is SNAN
+      // set invalid flag
       *pfpsf |= INVALID_EXCEPTION;
-      // return quiet (x) 
+      // return quiet (x)
       res.w[1] = x.w[1] & 0xfc003fffffffffffull; // clear out also G[6]-G[16]
       res.w[0] = x.w[0];
-    } else { // x is QNaN 
-      // return x  
+    } else { // x is QNaN
+      // return x
       res.w[1] = x.w[1] & 0xfc003fffffffffffull; // clear out G[6]-G[16]
       res.w[0] = x.w[0];
     }
@@ -795,7 +795,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
         // x is non-canonical if coefficient is larger than 10^34 -1
         C1.w[1] = 0;
         C1.w[0] = 0;
-      } else { // canonical          
+      } else { // canonical
         ;
       }
     }
@@ -809,7 +809,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
       // non-canonical
       y_exp = (y.w[1] << 2) & MASK_EXP; // biased and shifted left 49 bits
       C2.w[1] = 0; // significand high
-      C2.w[0] = 0; // significand low 
+      C2.w[0] = 0; // significand low
     } else { // G0_G1 != 11
       y_exp = y.w[1] & MASK_EXP; // biased and shifted left 49 bits
       if (C2.w[1] > 0x0001ed09bead87c0ull ||
@@ -832,7 +832,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
       // non-canonical
       z_exp = (z.w[1] << 2) & MASK_EXP; // biased and shifted left 49 bits
       C3.w[1] = 0; // significand high
-      C3.w[0] = 0; // significand low 
+      C3.w[0] = 0; // significand low
     } else { // G0_G1 != 11
       z_exp = z.w[1] & MASK_EXP; // biased and shifted left 49 bits
       if (C3.w[1] > 0x0001ed09bead87c0ull ||
@@ -873,7 +873,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
           res.w[1] = z_sign | MASK_INF;
           res.w[0] = 0x0;
         } else {
-          // return QNaN Indefinite 
+          // return QNaN Indefinite
           res.w[1] = 0x7c00000000000000ull;
           res.w[0] = 0x0000000000000000ull;
           // set invalid flag
@@ -1079,7 +1079,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
       if (scale == 0) {
         res.w[1] = z.w[1]; // & MASK_COEFF, which is redundant
         res.w[0] = z.w[0];
-      } else if (q3 <= 19) { // z fits in 64 bits 
+      } else if (q3 <= 19) { // z fits in 64 bits
         if (scale <= 19) { // 10^scale fits in 64 bits
           // 64 x 64 C3.w[0] * ten2k64[scale]
           __mul_64x64_to_128MACH (res, C3.w[0], ten2k64[scale]);
@@ -1087,7 +1087,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
           // 64 x 128 C3.w[0] * ten2k128[scale - 20]
           __mul_128x64_to_128 (res, C3.w[0], ten2k128[scale - 20]);
         }
-      } else { // z fits in 128 bits, but 10^scale must fit in 64 bits 
+      } else { // z fits in 128 bits, but 10^scale must fit in 64 bits
         // 64 x 128 ten2k64[scale] * C3
         __mul_128x64_to_128 (res, ten2k64[scale], C3);
       }
@@ -1104,8 +1104,8 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
   } else {
     ; // continue with x = f, y = f, z = 0 or x = f, y = f, z = f
   }
-  e1 = (x_exp >> 49) - 6176; // unbiased exponent of x 
-  e2 = (y_exp >> 49) - 6176; // unbiased exponent of y 
+  e1 = (x_exp >> 49) - 6176; // unbiased exponent of x
+  e2 = (y_exp >> 49) - 6176; // unbiased exponent of y
   e3 = (z_exp >> 49) - 6176; // unbiased exponent of z
   e4 = e1 + e2; // unbiased exponent of the exact x * y
 
@@ -1294,10 +1294,10 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
         e4 = e4 + 1;
 	if (q4 + e4 == expmin + p34) *pfpsf |= (INEXACT_EXCEPTION | UNDERFLOW_EXCEPTION);
       }
-      // res is now the coefficient of the result rounded to the destination 
+      // res is now the coefficient of the result rounded to the destination
       // precision, with unbounded exponent; the exponent is e4; q4=digits(res)
     } else { // if (q4 <= p34)
-      // C4 * 10^e4 is the result rounded to the destination precision, with  
+      // C4 * 10^e4 is the result rounded to the destination precision, with
       // unbounded exponent (which is exact)
 
       if ((q4 + e4 <= p34 + expmax) && (e4 > expmax)) {
@@ -1322,8 +1322,8 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
         res.w[1] = C4.w[1];
         res.w[0] = C4.w[0];
       }
-      // res is the coefficient of the result rounded to the destination 
-      // precision, with unbounded exponent (it has q4 digits); the exponent 
+      // res is the coefficient of the result rounded to the destination
+      // precision, with unbounded exponent (it has q4 digits); the exponent
       // is e4 (exact result)
     }
 
@@ -1396,7 +1396,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
               }
             }
           }
-          e4 = e4 + x0; // expmin 
+          e4 = e4 + x0; // expmin
         } else if (x0 == q4) {
           // the second rounding is for 0.d(0)d(1)...d(q4-1) * 10^emin
           // determine relationship with 1/2 ulp
@@ -1412,12 +1412,12 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
               is_inexact_gt_midpoint = 1;
             }
           } else { // if (q4 <= 34)
-            if (res.w[1] < midpoint128[q4 - 20].w[1] || 
-                (res.w[1] == midpoint128[q4 - 20].w[1] && 
+            if (res.w[1] < midpoint128[q4 - 20].w[1] ||
+                (res.w[1] == midpoint128[q4 - 20].w[1] &&
                 res.w[0] < midpoint128[q4 - 20].w[0])) { // < 1/2 ulp
               lt_half_ulp = 1;
               is_inexact_lt_midpoint = 1;
-            } else if (res.w[1] == midpoint128[q4 - 20].w[1] && 
+            } else if (res.w[1] == midpoint128[q4 - 20].w[1] &&
                 res.w[0] == midpoint128[q4 - 20].w[0]) { // = 1/2 ulp
               eq_half_ulp = 1;
               is_midpoint_gt_even = 1;
@@ -1444,7 +1444,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
           is_inexact_lt_midpoint = 1;
         }
         // avoid a double rounding error
-        if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+        if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
             is_midpoint_lt_even) { // double rounding error upward
           // res = res - 1
           res.w[0]--;
@@ -1456,7 +1456,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
           // not possible for f * f + 0
           is_midpoint_lt_even = 0;
           is_inexact_lt_midpoint = 1;
-        } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+        } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
             is_midpoint_gt_even) { // double rounding error downward
           // res = res + 1
           res.w[0]++;
@@ -1466,7 +1466,7 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
           is_inexact_gt_midpoint = 1;
         } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
         	   !is_inexact_lt_midpoint && !is_inexact_gt_midpoint) {
-          // if this second rounding was exact the result may still be 
+          // if this second rounding was exact the result may still be
           // inexact because of the first rounding
           if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
             is_inexact_gt_midpoint = 1;
@@ -1591,15 +1591,15 @@ bid128_ext_fma (int *ptr_is_midpoint_lt_even,
           ; // leave res unchanged
         } else if (q4 <= 19) { // x * y fits in 64 bits
           if (scale <= 19) { // 10^scale fits in 64 bits
-            // 64 x 64 C3.w[0] * ten2k64[scale] 
+            // 64 x 64 C3.w[0] * ten2k64[scale]
             __mul_64x64_to_128MACH (res, C3.w[0], ten2k64[scale]);
-          } else { // 10^scale fits in 128 bits 
+          } else { // 10^scale fits in 128 bits
             // 64 x 128 C3.w[0] * ten2k128[scale - 20]
             __mul_128x64_to_128 (res, C3.w[0], ten2k128[scale - 20]);
           }
           res.w[1] = p_sign | (p_exp & MASK_EXP) | res.w[1];
         } else { // x * y fits in 128 bits, but 10^scale must fit in 64 bits
-          // 64 x 128 ten2k64[scale] * C3 
+          // 64 x 128 ten2k64[scale] * C3
           __mul_128x64_to_128 (res, ten2k64[scale], C3);
           res.w[1] = p_sign | (p_exp & MASK_EXP) | res.w[1];
         }
@@ -1706,7 +1706,7 @@ delta_ge_zero:
         res.w[1] = z_sign | ((UINT64) (e3 + 6176) << 49) | C3.w[1];
         res.w[0] = C3.w[0];
       }
-      
+
       // use the following to avoid double rounding errors when operating on
       // mixed formats in rounding to nearest, and for correcting the result
       // if not rounding to nearest
@@ -1727,7 +1727,7 @@ delta_ge_zero:
           if (q4 == 1) {
             R64 = C4.w[0];
           } else {
-            // if q4 > 1 then truncate C4 from q4 digits to 1 digit; 
+            // if q4 > 1 then truncate C4 from q4 digits to 1 digit;
             // x = q4-1, 1 <= x <= 67 and check if this operation is exact
             if (q4 <= 18) { // 2 <= q4 <= 18
               round64_2_18 (q4, q4 - 1, C4.w[0], &R64, &incr_exp,
@@ -1843,9 +1843,9 @@ delta_ge_zero:
       //          endif
       //        endif
       //      endif
-      //    endif 
-      if ((e3 == expmin && (q3 + scale) < p34) || 
-          (e3 == expmin && (q3 + scale) == p34 && 
+      //    endif
+      if ((e3 == expmin && (q3 + scale) < p34) ||
+          (e3 == expmin && (q3 + scale) == p34 &&
 	   (res.w[1] & MASK_COEFF) == 0x0000314dc6448d93ull &&	// 10^33_high
 	   res.w[0] == 0x38c15b0a00000000ull &&	// 10^33_low
 	   z_sign != p_sign)) {
@@ -1892,7 +1892,7 @@ delta_ge_zero:
       e3 = e3 - scale;
       // now z_sign, z_exp, and res correspond to a z scaled to p34 = 34 digits
 
-      // determine whether x * y is less than, equal to, or greater than 
+      // determine whether x * y is less than, equal to, or greater than
       // 1/2 ulp (z)
       if (q4 <= 19) {
         if (C4.w[0] < midpoint64[q4 - 1]) { // < 1/2 ulp
@@ -1903,46 +1903,46 @@ delta_ge_zero:
           gt_half_ulp = 1;
         }
       } else if (q4 <= 38) {
-        if (C4.w[2] == 0 && (C4.w[1] < midpoint128[q4 - 20].w[1] || 
-            (C4.w[1] == midpoint128[q4 - 20].w[1] && 
+        if (C4.w[2] == 0 && (C4.w[1] < midpoint128[q4 - 20].w[1] ||
+            (C4.w[1] == midpoint128[q4 - 20].w[1] &&
             C4.w[0] < midpoint128[q4 - 20].w[0]))) { // < 1/2 ulp
           lt_half_ulp = 1;
-        } else if (C4.w[2] == 0 && C4.w[1] == midpoint128[q4 - 20].w[1] && 
+        } else if (C4.w[2] == 0 && C4.w[1] == midpoint128[q4 - 20].w[1] &&
             C4.w[0] == midpoint128[q4 - 20].w[0]) { // = 1/2 ulp
           eq_half_ulp = 1;
         } else { // > 1/2 ulp
           gt_half_ulp = 1;
         }
       } else if (q4 <= 58) {
-        if (C4.w[3] == 0 && (C4.w[2] < midpoint192[q4 - 39].w[2] || 
-            (C4.w[2] == midpoint192[q4 - 39].w[2] && 
-            C4.w[1] < midpoint192[q4 - 39].w[1]) || 
-            (C4.w[2] == midpoint192[q4 - 39].w[2] && 
-            C4.w[1] == midpoint192[q4 - 39].w[1] && 
+        if (C4.w[3] == 0 && (C4.w[2] < midpoint192[q4 - 39].w[2] ||
+            (C4.w[2] == midpoint192[q4 - 39].w[2] &&
+            C4.w[1] < midpoint192[q4 - 39].w[1]) ||
+            (C4.w[2] == midpoint192[q4 - 39].w[2] &&
+            C4.w[1] == midpoint192[q4 - 39].w[1] &&
             C4.w[0] < midpoint192[q4 - 39].w[0]))) { // < 1/2 ulp
           lt_half_ulp = 1;
-        } else if (C4.w[3] == 0 && C4.w[2] == midpoint192[q4 - 39].w[2] && 
-            C4.w[1] == midpoint192[q4 - 39].w[1] && 
+        } else if (C4.w[3] == 0 && C4.w[2] == midpoint192[q4 - 39].w[2] &&
+            C4.w[1] == midpoint192[q4 - 39].w[1] &&
             C4.w[0] == midpoint192[q4 - 39].w[0]) { // = 1/2 ulp
           eq_half_ulp = 1;
         } else { // > 1/2 ulp
           gt_half_ulp = 1;
         }
       } else {
-        if (C4.w[3] < midpoint256[q4 - 59].w[3] || 
-            (C4.w[3] == midpoint256[q4 - 59].w[3] && 
-            C4.w[2] < midpoint256[q4 - 59].w[2]) || 
-            (C4.w[3] == midpoint256[q4 - 59].w[3] && 
-            C4.w[2] == midpoint256[q4 - 59].w[2] && 
-            C4.w[1] < midpoint256[q4 - 59].w[1]) || 
-            (C4.w[3] == midpoint256[q4 - 59].w[3] && 
-            C4.w[2] == midpoint256[q4 - 59].w[2] && 
-            C4.w[1] == midpoint256[q4 - 59].w[1] && 
+        if (C4.w[3] < midpoint256[q4 - 59].w[3] ||
+            (C4.w[3] == midpoint256[q4 - 59].w[3] &&
+            C4.w[2] < midpoint256[q4 - 59].w[2]) ||
+            (C4.w[3] == midpoint256[q4 - 59].w[3] &&
+            C4.w[2] == midpoint256[q4 - 59].w[2] &&
+            C4.w[1] < midpoint256[q4 - 59].w[1]) ||
+            (C4.w[3] == midpoint256[q4 - 59].w[3] &&
+            C4.w[2] == midpoint256[q4 - 59].w[2] &&
+            C4.w[1] == midpoint256[q4 - 59].w[1] &&
             C4.w[0] < midpoint256[q4 - 59].w[0])) { // < 1/2 ulp
           lt_half_ulp = 1;
-        } else if (C4.w[3] == midpoint256[q4 - 59].w[3] && 
-            C4.w[2] == midpoint256[q4 - 59].w[2] && 
-            C4.w[1] == midpoint256[q4 - 59].w[1] && 
+        } else if (C4.w[3] == midpoint256[q4 - 59].w[3] &&
+            C4.w[2] == midpoint256[q4 - 59].w[2] &&
+            C4.w[1] == midpoint256[q4 - 59].w[1] &&
             C4.w[0] == midpoint256[q4 - 59].w[0]) { // = 1/2 ulp
           eq_half_ulp = 1;
         } else { // > 1/2 ulp
@@ -1962,7 +1962,7 @@ delta_ge_zero:
           if (res.w[0] == 0x0ull)
             res.w[1]++;
           // check for rounding overflow, when coeff == 10^34
-          if ((res.w[1] & MASK_COEFF) == 0x0001ed09bead87c0ull && 
+          if ((res.w[1] & MASK_COEFF) == 0x0001ed09bead87c0ull &&
               res.w[0] == 0x378d8e6400000000ull) { // coefficient = 10^34
             e3 = e3 + 1;
             // coeff = 10^33
@@ -1978,7 +1978,7 @@ delta_ge_zero:
             is_inexact_gt_midpoint = 1; // if (z_sign), as if for absolute value
           }
         } else { // if (eq_half_ulp && !(res.w[0] & 0x01))
-          // leave unchanged 
+          // leave unchanged
           res.w[1] = z_sign | (z_exp & MASK_EXP) | res.w[1];
           is_midpoint_gt_even = 1; // if (z_sign), as if for absolute value
         }
@@ -2007,7 +2007,7 @@ delta_ge_zero:
         }
       } else { // if (p_sign != z_sign)
         // consider two cases, because C3 * 10^scale = 10^33 is a special case
-        if (res.w[1] != 0x0000314dc6448d93ull || 
+        if (res.w[1] != 0x0000314dc6448d93ull ||
             res.w[0] != 0x38c15b0a00000000ull) { // C3 * 10^scale != 10^33
           if (lt_half_ulp) {
             res.w[1] = z_sign | (z_exp & MASK_EXP) | res.w[1];
@@ -2065,7 +2065,7 @@ delta_ge_zero:
         } else { // if C3 * 10^scale = 10^33
           e3 = (z_exp >> 49) - 6176;
           if (e3 > expmin) {
-            // the result is exact if exp > expmin and C4 = d*10^(q4-1), 
+            // the result is exact if exp > expmin and C4 = d*10^(q4-1),
             // where d = 1, 2, 3, ..., 9; it could be tiny too, but exact
             if (q4 == 1) {
               // if q4 = 1 the result is exact
@@ -2076,7 +2076,7 @@ delta_ge_zero:
               e3 = e3 - 1;
               res.w[1] = z_sign | (z_exp & MASK_EXP) | res.w[1];
             } else {
-              // if q4 > 1 then truncate C4 from q4 digits to 1 digit; 
+              // if q4 > 1 then truncate C4 from q4 digits to 1 digit;
               // x = q4-1, 1 <= x <= 67 and check if this operation is exact
               if (q4 <= 18) { // 2 <= q4 <= 18
         	round64_2_18 (q4, q4 - 1, C4.w[0], &R64, &incr_exp,
@@ -2121,7 +2121,7 @@ delta_ge_zero:
         	  z_sign | (z_exp & MASK_EXP) | 0x0001ed09bead87c0ull;
         	res.w[0] = 0x378d8e6400000000ull - R64;
               } else {
-        	// We want R64 to be the top digit of C4, but we actually 
+        	// We want R64 to be the top digit of C4, but we actually
         	// obtained (C4 * 10^(-q4+1))RN; a correction may be needed,
         	// because the top digit is (C4 * 10^(-q4+1))RZ
         	// however, if incr_exp = 1 then R64 = 10 with certainty
@@ -2200,7 +2200,7 @@ delta_ge_zero:
             // tininess is C4 > 050...0 [q4 digits] which is met because
             // the msd of C4 is not zero)
             // the result is tiny and inexact in all rounding modes;
-            // it is either 100...0 or 0999...9 (use lt_half_ulp, eq_half_ulp, 
+            // it is either 100...0 or 0999...9 (use lt_half_ulp, eq_half_ulp,
             // gt_half_ulp to calculate)
             // if (lt_half_ulp || eq_half_ulp) res = 10^33 stays unchanged
 
@@ -2259,14 +2259,14 @@ delta_ge_zero:
       if ((q3 <= delta && delta < p34 && p34 < delta + q4) || // Case (2)
           (delta < q3 && p34 < delta + q4)) { // Case (4)
         // round first the sum x * y + z with unbounded exponent
-        // scale C3 up by scale = p34 - q3, 1 <= scale <= p34-1, 
+        // scale C3 up by scale = p34 - q3, 1 <= scale <= p34-1,
         // 1 <= scale <= 33
         // calculate res = C3 * 10^scale
         scale = p34 - q3;
         x0 = delta + q4 - p34;
       } else if (delta + q4 < q3) { // Case (6)
         // make Case (6) look like Case (3) or Case (5) with scale = 0
-        // by scaling up C4 by 10^(q3 - delta - q4) 
+        // by scaling up C4 by 10^(q3 - delta - q4)
         scale = q3 - delta - q4; // 1 <= scale <= 33
         if (q4 <= 19) { // 1 <= scale <= 19; C4 fits in 64 bits
           if (scale <= 19) { // 10^scale fits in 64 bits
@@ -2285,7 +2285,7 @@ delta_ge_zero:
         // e4 does not need adjustment, as it is not used from this point on
         scale = 0;
         x0 = 0;
-        // now Case (6) looks like Case (3) or Case (5) with scale = 0 
+        // now Case (6) looks like Case (3) or Case (5) with scale = 0
       } else { // if Case (3) or Case (5)
         // Note: Case (3) is similar to Case (2), but scale differs and the
         // result is exact, unless it is tiny (so x0 = 0 when calculating the
@@ -2395,12 +2395,12 @@ delta_ge_zero:
         // R256.w[3] and R256.w[2] are always 0
         if (incr_exp) {
           // R256 = 10^(q4-x0), 1 <= q4 - x0 <= q4 - 25, 1 <= q4 - x0 <= 43
-          if (q4 - x0 <= 19) { // 1 <= q4 - x0 <= 19  
+          if (q4 - x0 <= 19) { // 1 <= q4 - x0 <= 19
             R256.w[0] = ten2k64[q4 - x0];
             // R256.w[1] stays 0
             // R256.w[2] stays 0
             // R256.w[3] stays 0
-          } else { // 20 <= q4 - x0 <= 33 
+          } else { // 20 <= q4 - x0 <= 33
             R256.w[0] = ten2k128[q4 - x0 - 20].w[0];
             R256.w[1] = ten2k128[q4 - x0 - 20].w[1];
             // R256.w[2] stays 0
@@ -2440,7 +2440,7 @@ delta_ge_zero:
               &is_inexact_gt_midpoint);
           // incr_exp is 0 with certainty in this case
           // avoid a double rounding error
-          if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+          if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
               is_midpoint_lt_even) { // double rounding error upward
             // res = res - 1
             res.w[0]--;
@@ -2452,7 +2452,7 @@ delta_ge_zero:
             // not possible in Cases (2)-(6) or (15)-(17) which may get here
             is_midpoint_lt_even = 0;
             is_inexact_lt_midpoint = 1;
-          } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+          } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
               is_midpoint_gt_even) { // double rounding error downward
             // res = res + 1
             res.w[0]++;
@@ -2463,7 +2463,7 @@ delta_ge_zero:
           } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
         	     !is_inexact_lt_midpoint
         	     && !is_inexact_gt_midpoint) {
-            // if this second rounding was exact the result may still be 
+            // if this second rounding was exact the result may still be
             // inexact because of the first rounding
             if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
               is_inexact_gt_midpoint = 1;
@@ -2526,7 +2526,7 @@ delta_ge_zero:
               res.w[0]--;
               if (res.w[0] == 0xffffffffffffffffull)
         	res.w[1]--;
-              // if the result is pure zero, the sign depends on the rounding 
+              // if the result is pure zero, the sign depends on the rounding
               // mode (x*y and z had opposite signs)
               if (res.w[1] == 0x0ull && res.w[0] == 0x0ull) {
         	if (rnd_mode != ROUNDING_DOWN)
@@ -2557,7 +2557,7 @@ delta_ge_zero:
         res.w[1] = res.w[1] - R128.w[1];
         if (res.w[0] > tmp64)
           res.w[1]--; // borrow
-        // if res < 10^33 and exp > expmin need to decrease x0 and 
+        // if res < 10^33 and exp > expmin need to decrease x0 and
         // increase scale by 1
         if (e3 > expmin && ((res.w[1] < 0x0000314dc6448d93ull ||
         		     (res.w[1] == 0x0000314dc6448d93ull &&
@@ -2578,7 +2578,7 @@ delta_ge_zero:
           goto case2_repeat;
         }
         // else this is the result rounded with unbounded exponent;
-        // because the result has opposite sign to that of C4 which was 
+        // because the result has opposite sign to that of C4 which was
         // rounded, need to change the rounding indicators
         if (is_inexact_lt_midpoint) {
           is_inexact_lt_midpoint = 0;
@@ -2615,7 +2615,7 @@ delta_ge_zero:
             res.w[0]--;
             if (res.w[0] == 0xffffffffffffffffull)
               res.w[1]--;
-            // if the result is pure zero, the sign depends on the rounding 
+            // if the result is pure zero, the sign depends on the rounding
             // mode (x*y and z had opposite signs)
             if (res.w[1] == 0x0ull && res.w[0] == 0x0ull) {
               if (rnd_mode != ROUNDING_DOWN)
@@ -2647,7 +2647,7 @@ delta_ge_zero:
           is_tiny = 1;
         }
 	if (((res.w[1] & 0x7fffffffffffffffull) == 0x0000314dc6448d93ull) &&
-            (res.w[0] == 0x38c15b0a00000000ull) &&  // 10^33*10^-6176                                                                      
+            (res.w[0] == 0x38c15b0a00000000ull) &&  // 10^33*10^-6176
             (z_sign != p_sign)) is_tiny = 1;
       } else if (e3 < expmin) {
         // the result is tiny, so we must truncate more of res
@@ -2689,8 +2689,8 @@ delta_ge_zero:
 
         // at this point ind >= x0; because delta >= 2 on this path, the case
         // ind = x0 can occur only in Case (2) or case (3), when C3 has one
-        // digit (q3 = 1) equal to 1 (C3 = 1), e3 is expmin (e3 = expmin), 
-        // the signs of x * y and z are opposite, and through cancellation 
+        // digit (q3 = 1) equal to 1 (C3 = 1), e3 is expmin (e3 = expmin),
+        // the signs of x * y and z are opposite, and through cancellation
         // the most significant decimal digit in res has the weight
         // 10^(emin-1); however, it is clear that in this case the most
         // significant digit is 9, so the result before rounding is
@@ -2734,7 +2734,7 @@ delta_ge_zero:
           }
         }
         // avoid a double rounding error
-        if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+        if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
             is_midpoint_lt_even) { // double rounding error upward
           // res = res - 1
           res.w[0]--;
@@ -2746,7 +2746,7 @@ delta_ge_zero:
           // not possible in Cases (2)-(6) which may get here
           is_midpoint_lt_even = 0;
           is_inexact_lt_midpoint = 1;
-        } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+        } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
             is_midpoint_gt_even) { // double rounding error downward
           // res = res + 1
           res.w[0]++;
@@ -2756,7 +2756,7 @@ delta_ge_zero:
           is_inexact_gt_midpoint = 1;
         } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
         	   !is_inexact_lt_midpoint && !is_inexact_gt_midpoint) {
-          // if this second rounding was exact the result may still be 
+          // if this second rounding was exact the result may still be
           // inexact because of the first rounding
           if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
             is_inexact_gt_midpoint = 1;
@@ -2803,7 +2803,7 @@ delta_ge_zero:
       }
       // now check for significand = 10^34 (may have resulted from going
       // back to case2_repeat)
-      if (res.w[1] == 0x0001ed09bead87c0ull && 
+      if (res.w[1] == 0x0001ed09bead87c0ull &&
           res.w[0] == 0x378d8e6400000000ull) { // if  res = 10^34
         res.w[1] = 0x0000314dc6448d93ull; // res = 10^33
         res.w[0] = 0x38c15b0a00000000ull;
@@ -2834,15 +2834,15 @@ delta_ge_zero:
 
       // we get here only if delta <= 1 in Cases (2), (3), (4), (5), or (6) and
       // the signs of x*y and z are opposite; in these cases massive
-      // cancellation can occur, so it is better to scale either C3 or C4 and 
-      // to perform the subtraction before rounding; rounding is performed 
-      // next, depending on the number of decimal digits in the result and on 
+      // cancellation can occur, so it is better to scale either C3 or C4 and
+      // to perform the subtraction before rounding; rounding is performed
+      // next, depending on the number of decimal digits in the result and on
       // the exponent value
       // Note: overlow is not possible in this case
       // this is similar to Cases (15), (16), and (17)
 
-      if (delta + q4 < q3) { // from Case (6) 
-        // Case (6) with 0<= delta <= 1 is similar to Cases (15), (16), and 
+      if (delta + q4 < q3) { // from Case (6)
+        // Case (6) with 0<= delta <= 1 is similar to Cases (15), (16), and
         // (17) if we swap (C3, C4), (q3, q4), (e3, e4), (z_sign, p_sign)
         // and call add_and_round; delta stays positive
         // C4.w[3] = 0 and C4.w[2] = 0, so swap just the low part of C4 with C3
@@ -2862,8 +2862,8 @@ delta_ge_zero:
         z_sign = p_sign;
         p_sign = tmp_sign;
       } else { // from Cases (2), (3), (4), (5)
-        // In Cases (2), (3), (4), (5) with 0 <= delta <= 1 C3 has to be 
-        // scaled up by q4 + delta - q3; this is the same as in Cases (15), 
+        // In Cases (2), (3), (4), (5) with 0 <= delta <= 1 C3 has to be
+        // scaled up by q4 + delta - q3; this is the same as in Cases (15),
         // (16), and (17) if we just change the sign of delta
         delta = -delta;
       }
@@ -2925,7 +2925,7 @@ delta_ge_zero:
         if (p_sign == z_sign) {
           is_inexact_lt_midpoint = 1;
         } else { // if (p_sign != z_sign)
-          if (res.w[1] != 0x0000314dc6448d93ull || 
+          if (res.w[1] != 0x0000314dc6448d93ull ||
               res.w[0] != 0x38c15b0a00000000ull) { // res != 10^33
             is_inexact_gt_midpoint = 1;
           } else { // res = 10^33 and exact is a special case
@@ -2951,12 +2951,12 @@ delta_ge_zero:
         	  is_inexact_lt_midpoint = 1;
         	}
               } else { // if (20 <= q3 <=34)
-        	if (C3.w[1] < midpoint128[q3 - 20].w[1] || 
-                    (C3.w[1] == midpoint128[q3 - 20].w[1] && 
+        	if (C3.w[1] < midpoint128[q3 - 20].w[1] ||
+                    (C3.w[1] == midpoint128[q3 - 20].w[1] &&
                     C3.w[0] < midpoint128[q3 - 20].w[0])) { // C3 < 1/2 ulp
         	  // res = 10^33, unchanged
         	  is_inexact_gt_midpoint = 1;
-        	} else if (C3.w[1] == midpoint128[q3 - 20].w[1] && 
+        	} else if (C3.w[1] == midpoint128[q3 - 20].w[1] &&
                     C3.w[0] == midpoint128[q3 - 20].w[0]) { // C3 = 1/2 ulp
         	  // res = 10^33, unchanged
         	  is_midpoint_lt_even = 1;
@@ -2976,7 +2976,7 @@ delta_ge_zero:
           res.w[0] = res.w[0] - 1;
           if (res.w[0] == 0xffffffffffffffffull)
             res.w[1]--;
-          // if it is (10^33-1)*10^e4 then the corect result is 
+          // if it is (10^33-1)*10^e4 then the corect result is
           // (10^34-1)*10(e4-1)
           if (res.w[1] == 0x0000314dc6448d93ull &&
               res.w[0] == 0x38c15b09ffffffffull) {
@@ -3074,7 +3074,7 @@ delta_ge_zero:
                (delta < p34 && p34 < q4 && q4 < delta + q3)) { // Case (12)
 
       // round C3 to nearest to q3 - x0 digits, where x0 = e4 - e3,
-      // 1 <= x0 <= q3 - 1 <= p34 - 1 
+      // 1 <= x0 <= q3 - 1 <= p34 - 1
       x0 = e4 - e3; // or x0 = delta + q3 - q4
       if (q3 <= 18) { // 2 <= q3 <= 18
         round64_2_18 (q3, x0, C3.w[0], &R64, &incr_exp,
@@ -3100,7 +3100,7 @@ delta_ge_zero:
         __mul_64x128_to_128 (C3, ten2k64[1], P128);
       }
       e3 = e3 + x0; // this is e4
-      // now add/subtract the 256-bit C4 and the new (and shorter) 128-bit C3; 
+      // now add/subtract the 256-bit C4 and the new (and shorter) 128-bit C3;
       // the result will have the sign of x * y; the exponent is e4
       R256.w[3] = 0;
       R256.w[2] = 0;
@@ -3110,7 +3110,7 @@ delta_ge_zero:
         add256 (C4, R256, &R256);
       } else { // if (p_sign != z_sign) { // R256 = C4 - R256
         sub256 (C4, R256, &R256); // the result cannot be pure zero
-        // because the result has opposite sign to that of R256 which was 
+        // because the result has opposite sign to that of R256 which was
         // rounded, need to change the rounding indicators
         lsb = C4.w[0] & 0x01;
         if (is_inexact_lt_midpoint) {
@@ -3164,16 +3164,16 @@ delta_ge_zero:
       }
       // determine the number of decimal digits in R256
       ind = nr_digits256 (R256); // ind >= p34
-      // if R256 is sum, then ind > p34; if R256 is a difference, then 
+      // if R256 is sum, then ind > p34; if R256 is a difference, then
       // ind >= p34; this means that we can calculate the result rounded to
       // the destination precision, with unbounded exponent, starting from R256
       // and using the indicators from the rounding of C3 to avoid a double
-      // rounding error 
+      // rounding error
 
       if (ind < p34) {
         ;
       } else if (ind == p34) {
-        // the result rounded to the destination precision with 
+        // the result rounded to the destination precision with
         // unbounded exponent
         // is (-1)^p_sign * R256 * 10^e4
         res.w[1] = R256.w[1];
@@ -3225,7 +3225,7 @@ delta_ge_zero:
         res.w[0] = R128.w[0];
 
         // avoid a double rounding error
-        if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+        if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
             is_midpoint_lt_even) { // double rounding error upward
           // res = res - 1
           res.w[0]--;
@@ -3238,15 +3238,15 @@ delta_ge_zero:
           // (35 digits in all), possibly followed by a number of zeros; this
           // not possible in Cases (2)-(6) or (15)-(17) which may get here
           // if this is 10^33 - 1 make it 10^34 - 1 and decrement exponent
-          if (res.w[1] == 0x0000314dc6448d93ull && 
+          if (res.w[1] == 0x0000314dc6448d93ull &&
             res.w[0] == 0x38c15b09ffffffffull) { // 10^33 - 1
             res.w[1] = 0x0001ed09bead87c0ull; // 10^34 - 1
             res.w[0] = 0x378d8e63ffffffffull;
             e4--;
           }
-        } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+        } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
             is_midpoint_gt_even) { // double rounding error downward
-          // res = res + 1 
+          // res = res + 1
           res.w[0]++;
           if (res.w[0] == 0)
             res.w[1]++;
@@ -3288,7 +3288,7 @@ delta_ge_zero:
         }
       } else {
         // for RM, RP, RZ, RA apply correction in order to determine tininess
-        // but do not save the result; apply the correction to 
+        // but do not save the result; apply the correction to
         // (-1)^p_sign * res * 10^0
         P128.w[1] = p_sign | 0x3040000000000000ull | res.w[1];
         P128.w[0] = res.w[0];
@@ -3310,7 +3310,7 @@ delta_ge_zero:
 
       // at this point we have the result rounded with unbounded exponent in
       // res and we know its tininess:
-      // res = (-1)^p_sign * significand * 10^e4, 
+      // res = (-1)^p_sign * significand * 10^e4,
       // where q (significand) = ind = p34
       // Note: res is correct only if expmin <= e4 <= expmax
 
@@ -3356,7 +3356,7 @@ delta_ge_zero:
         } else if (x0 == ind) { // 1 <= x0 = ind <= p34 = 34
           // this is <, =, or > 1/2 ulp
           // compare the ind-digit value in the significand of res with
-          // 1/2 ulp = 5*10^(ind-1), i.e. determine whether it is 
+          // 1/2 ulp = 5*10^(ind-1), i.e. determine whether it is
           // less than, equal to, or greater than 1/2 ulp (significand of res)
           R128.w[1] = res.w[1] & MASK_COEFF;
           R128.w[0] = res.w[0];
@@ -3372,12 +3372,12 @@ delta_ge_zero:
               is_inexact_gt_midpoint = 1;
             }
           } else { // if (ind <= 38)
-            if (R128.w[1] < midpoint128[ind - 20].w[1] || 
-                (R128.w[1] == midpoint128[ind - 20].w[1] && 
+            if (R128.w[1] < midpoint128[ind - 20].w[1] ||
+                (R128.w[1] == midpoint128[ind - 20].w[1] &&
                 R128.w[0] < midpoint128[ind - 20].w[0])) { // < 1/2 ulp
               lt_half_ulp = 1;
               is_inexact_lt_midpoint = 1;
-            } else if (R128.w[1] == midpoint128[ind - 20].w[1] && 
+            } else if (R128.w[1] == midpoint128[ind - 20].w[1] &&
                 R128.w[0] == midpoint128[ind - 20].w[0]) { // = 1/2 ulp
               eq_half_ulp = 1;
               is_midpoint_gt_even = 1;
@@ -3428,7 +3428,7 @@ delta_ge_zero:
             p_sign | ((UINT64) (e4 + 6176) << 49) | (res.
         					     w[1] & MASK_COEFF);
           // avoid a double rounding error
-          if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+          if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
                 is_midpoint_lt_even) { // double rounding error upward
             // res = res - 1
             res.w[0]--;
@@ -3440,7 +3440,7 @@ delta_ge_zero:
             // not possible in this underflow case
             is_midpoint_lt_even = 0;
             is_inexact_lt_midpoint = 1;
-          } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+          } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
                 is_midpoint_gt_even) { // double rounding error downward
             // res = res + 1
             res.w[0]++;
@@ -3451,7 +3451,7 @@ delta_ge_zero:
           } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
         	     !is_inexact_lt_midpoint
         	     && !is_inexact_gt_midpoint) {
-            // if this second rounding was exact the result may still be 
+            // if this second rounding was exact the result may still be
             // inexact because of the first rounding
             if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
               is_inexact_gt_midpoint = 1;
@@ -4131,10 +4131,10 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
         		_EXC_INFO_ARG);
 #endif
 
-  if ((rnd_mode == ROUNDING_DOWN) || (rnd_mode == ROUNDING_UP) || 
+  if ((rnd_mode == ROUNDING_DOWN) || (rnd_mode == ROUNDING_UP) ||
       (rnd_mode == ROUNDING_TO_ZERO) || // no double rounding error is possible
       ((res.w[HIGH_128W] & MASK_NAN) == MASK_NAN) || //res=QNaN (cannot be SNaN)
-      ((res.w[HIGH_128W] & MASK_ANY_INF) == MASK_INF)) { // result is infinity  
+      ((res.w[HIGH_128W] & MASK_ANY_INF) == MASK_INF)) { // result is infinity
 #if DECIMAL_CALL_BY_REFERENCE
     bid128_to_bid64 (&res1, &res _RND_MODE_ARG _EXC_FLAGS_ARG);
 #else
@@ -4150,7 +4150,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
           && ((res1 & MASK_BINARY_SIG1) < 1000000000000000ull)
           && (is_inexact_lt_midpoint0 || is_inexact_gt_midpoint0
               || is_midpoint_lt_even0 || is_midpoint_gt_even0)) {
-        // set the inexact flag and the underflow flag                                                                                     
+        // set the inexact flag and the underflow flag
 	*pfpsf |= (INEXACT_EXCEPTION | UNDERFLOW_EXCEPTION);
     } else if (is_inexact_lt_midpoint0 || is_inexact_gt_midpoint0 ||
                is_midpoint_lt_even0 || is_midpoint_gt_even0) {
@@ -4184,7 +4184,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
   C.w[0] = res.w[LOW_128W];
 
   if ((C.w[1] == 0x0 && C.w[0] == 0x0) ||	// result is zero
-      (unbexp <= (-398 - 35)) || (unbexp >= (369 + 16))) { 
+      (unbexp <= (-398 - 35)) || (unbexp >= (369 + 16))) {
       // clear under/overflow
 #if DECIMAL_CALL_BY_REFERENCE
     bid128_to_bid64 (&res1, &res _RND_MODE_ARG _EXC_FLAGS_ARG);
@@ -4239,7 +4239,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
          C.w[0] >= nr_digits[nr_bits - 1].threshold_lo))
       q++;
   }
-  // if q > 16, round to nearest even to 16 digits (but for underflow it may 
+  // if q > 16, round to nearest even to 16 digits (but for underflow it may
   // have to be truncated even more)
   if (q > 16) {
     x0 = q - 16;
@@ -4258,23 +4258,23 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
       unbexp++;
     q = 16; // need to set in case denormalization is necessary
   } else {
-    // the result does not require a second rounding (and it must have 
+    // the result does not require a second rounding (and it must have
     // been exact in the first rounding, since q <= 16)
     res1 = C.w[0];
   }
 
   // avoid a double rounding error
-  if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+  if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
       is_midpoint_lt_even) { // double rounding error upward
-    // res = res - 1 
-    res1--; // res1 becomes odd 
+    // res = res - 1
+    res1--; // res1 becomes odd
     is_midpoint_lt_even = 0;
     is_inexact_lt_midpoint = 1;
     if (res1 == 0x00038d7ea4c67fffull) { // 10^15 - 1
-      res1 = 0x002386f26fc0ffffull; // 10^16 - 1 
+      res1 = 0x002386f26fc0ffffull; // 10^16 - 1
       unbexp--;
     }
-  } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+  } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
       is_midpoint_gt_even) { // double rounding error downward
     // res = res + 1
     res1++; // res1 becomes odd (so it cannot be 10^16)
@@ -4282,7 +4282,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
     is_inexact_gt_midpoint = 1;
   } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
              !is_inexact_lt_midpoint && !is_inexact_gt_midpoint) {
-    // if this second rounding was exact the result may still be 
+    // if this second rounding was exact the result may still be
     // inexact because of the first rounding
     if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
       is_inexact_gt_midpoint = 1;
@@ -4292,14 +4292,14 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
     }
   } else if (is_midpoint_gt_even &&
              (is_inexact_gt_midpoint0 || is_midpoint_lt_even0)) {
-    // pulled up to a midpoint 
+    // pulled up to a midpoint
     is_inexact_lt_midpoint = 1;
     is_inexact_gt_midpoint = 0;
     is_midpoint_lt_even = 0;
     is_midpoint_gt_even = 0;
   } else if (is_midpoint_lt_even &&
              (is_inexact_lt_midpoint0 || is_midpoint_gt_even0)) {
-    // pulled down to a midpoint 
+    // pulled down to a midpoint
     is_inexact_lt_midpoint = 0;
     is_inexact_gt_midpoint = 1;
     is_midpoint_lt_even = 0;
@@ -4307,7 +4307,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
   } else {
     ;
   }
-  // this is the result rounded correctly to nearest even, with unbounded exp. 
+  // this is the result rounded correctly to nearest even, with unbounded exp.
 
   // check for overflow
   if (q + unbexp > P16 + expmax16) {
@@ -4320,7 +4320,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
     // 10^(unbexp - expmax16) and the product will fit in 16 decimal digits
     scale = unbexp - expmax16;
     res1 = res1 * ten2k64[scale]; // res1 * 10^scale
-    unbexp = expmax16; // unbexp - scale 
+    unbexp = expmax16; // unbexp - scale
   } else {
     ; // continue
   }
@@ -4378,13 +4378,13 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
         is_inexact_lt_midpoint = 1;
       }
       // avoid a double rounding error
-      if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) && 
+      if ((is_inexact_gt_midpoint0 || is_midpoint_lt_even0) &&
           is_midpoint_lt_even) { // double rounding error upward
         // res = res - 1
         res1--; // res1 becomes odd
         is_midpoint_lt_even = 0;
         is_inexact_lt_midpoint = 1;
-      } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) && 
+      } else if ((is_inexact_lt_midpoint0 || is_midpoint_gt_even0) &&
           is_midpoint_gt_even) { // double rounding error downward
         // res = res + 1
         res1++; // res1 becomes odd
@@ -4392,7 +4392,7 @@ bid64qqq_fma (UINT128 x, UINT128 y, UINT128 z
         is_inexact_gt_midpoint = 1;
       } else if (!is_midpoint_lt_even && !is_midpoint_gt_even &&
         	 !is_inexact_lt_midpoint && !is_inexact_gt_midpoint) {
-        // if this rounding was exact the result may still be 
+        // if this rounding was exact the result may still be
         // inexact because of the previous roundings
         if (is_inexact_gt_midpoint0 || is_midpoint_lt_even0) {
           is_inexact_gt_midpoint = 1;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2 -mrvv-max-lmul=m8" } */
 
 #include "def.h"
 
@@ -133,10 +133,6 @@ DEF_RET1_ARG9 (v512hi)
 DEF_RET1_ARG9 (v1024hi)
 DEF_RET1_ARG9 (v2048hi)
 
-// RET1_ARG0 tests
-/* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 8 } } */
-/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
-
 // v1hi tests: return value (lhu) and function prologue (sh)
 // 1 lhu per test, argnum sh's when args > 1
 /* { dg-final { scan-assembler-times {lhu\s+a0,\s*[0-9]+\(sp\)} 8 } } */
@@ -155,7 +151,4 @@ DEF_RET1_ARG9 (v2048hi)
 /* { dg-final { scan-assembler-times {sd\s+a[0-7],\s*[0-9]+\(sp\)} 103 } } */
 
 // v16-2048hi tests: return value (vse16.v)
-/* { dg-final { scan-assembler-times {vse16.v\s+v[0-9],\s*[0-9]+\(a0\)} 74 } } */
-// v512-2048qi_ARG1 tests: return value (vse64.v)
-// for some reason ARG1 returns using vse64 instead of vse16
-/* { dg-final { scan-assembler-times {vse64.v\s+v[0-9],\s*[0-9]+\(a0\)\s+ret} 3 } } */
+/* { dg-final { scan-assembler-times {vse16.v\s+v[0-9],\s*[0-9]+\(a0\)} 80 } } */

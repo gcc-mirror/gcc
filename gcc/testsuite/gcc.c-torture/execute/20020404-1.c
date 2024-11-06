@@ -1,4 +1,5 @@
 /* { dg-require-effective-target int32plus } */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-skip-if "pointers can be truncated" { m32c-*-* } } */
 /* Extracted from GDB sources. */
 

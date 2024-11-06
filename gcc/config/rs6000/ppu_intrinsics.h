@@ -34,7 +34,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /*
  * unsigned int __cntlzw(unsigned int)
@@ -113,7 +113,7 @@ extern "C" {
  * void __mtfsb1(int)
  * double __setflm(double)
  *
- * dcbt intrinsics 
+ * dcbt intrinsics
  * void __protected_unlimited_stream_set (unsigned int direction, const void *add, unsigned int ID)
  * void __protected_stream_set (unsigned int direction, const void *add, unsigned int ID)
  * void __protected_stream_stop_all (void)
@@ -178,7 +178,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
 #ifdef __powerpc64__
 #define __mtspr(spr, value) \
   __asm__ volatile ("mtspr %0,%1" : : "n" (spr), "r" (value))
-  
+
 #define __mfspr(spr) __extension__				\
   ({ unsigned long long result;					\
   __asm__ volatile ("mfspr %0,%1" : "=r" (result) : "n" (spr)); \
@@ -211,7 +211,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
 
 #define __dcbf(base) \
   __asm__ volatile ("dcbf %y0" : "=Z" (*(__V4SI*) (base)) : : "memory")
-  
+
 #define __dcbz(base) \
   __asm__ volatile ("dcbz %y0" : "=Z" (*(__V4SI*) (base)) : : "memory")
 
@@ -226,7 +226,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
 
 #define __icbi(base) \
   __asm__ volatile ("icbi %y0" : "=Z" (*(__V4SI*) (base)) : : "memory")
-  
+
 #define __dcbt_TH1000(EATRUNC, D, UG, ID)				\
   __asm__ volatile ("dcbt %y0,8"					\
 	   : "=Z" (*(__V4SI*) (__SIZE_TYPE__)((((__SIZE_TYPE__) (EATRUNC)) & ~0x7F)	\
@@ -390,7 +390,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
 
 #define __mtfsf(mask,value) \
   __asm__ volatile ("mtfsf %0,%1" : : "n" (mask), "d" ((double) (value)))
-  
+
 #define __mtfsfi(bits,field) \
   __asm__ volatile ("mtfsfi %0,%1" : : "n" (bits), "n" (field))
 
@@ -406,10 +406,10 @@ typedef int __V4SI __attribute__((vector_size(16)));
 
 /* __builtin_fabs may perform unnecessary rounding.  */
 
-/* Rename __fabs and __fabsf to work around internal prototypes defined 
-   in bits/mathcalls.h with some glibc versions.  */ 
-#define __fabs __ppu_fabs 
-#define __fabsf __ppu_fabsf 
+/* Rename __fabs and __fabsf to work around internal prototypes defined
+   in bits/mathcalls.h with some glibc versions.  */
+#define __fabs __ppu_fabs
+#define __fabsf __ppu_fabsf
 
 static __inline__ double __fabs(double x) __attribute__((always_inline));
 static __inline__ double

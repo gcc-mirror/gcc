@@ -33,7 +33,9 @@
 #ifndef _GLIBCXX_DECIMAL_IMPL
 #define _GLIBCXX_DECIMAL_IMPL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

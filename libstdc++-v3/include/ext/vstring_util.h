@@ -30,7 +30,9 @@
 #ifndef _VSTRING_UTIL_H
 #define _VSTRING_UTIL_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 

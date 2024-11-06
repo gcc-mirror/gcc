@@ -1,16 +1,14 @@
 ! { dg-do run }
 ! { dg-additional-options "-cpp" }
 
+! Disable the acc_on_device builtin; we want to test the libgomp library function.
+! { dg-additional-options -fno-builtin-acc_on_device }
+
 ! { dg-additional-options "-fopt-info-all-omp" }
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
 ! { dg-additional-options "-foffload=-fopt-info-all-omp" }
 ! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
 ! for testing/documenting aspects of that functionality.
-
-! TODO: Have to disable the acc_on_device builtin for we want to test the
-! libgomp library function?  The command line option
-! '-fno-builtin-acc_on_device' is valid for C/C++/ObjC/ObjC++ but not for
-! Fortran.
 
 use openacc
 implicit none

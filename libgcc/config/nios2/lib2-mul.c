@@ -29,14 +29,14 @@ __mulsi3 (SItype a, SItype b)
 {
   SItype res = 0;
   USItype cnt = a;
-  
+
   while (cnt)
     {
       if (cnt & 1)
-	res += b;	  
+	res += b;
       b <<= 1;
       cnt >>= 1;
     }
-    
+
   return res;
 }

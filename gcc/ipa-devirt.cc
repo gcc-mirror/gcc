@@ -105,6 +105,7 @@ along with GCC; see the file COPYING3.  If not see
   pass_ipa_devirt performs simple speculative devirtualization.
 */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -752,7 +753,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	{
 	  /* Extra paranoia; compare the sizes.  We do not have information
 	     about virtual inheritance offsets, so just be sure that these
-	     match. 
+	     match.
 	     Do this as very last check so the not very informative error
 	     is not output too often.  */
 	  if (DECL_SIZE (prevailing->decl) != DECL_SIZE (vtable->decl))
@@ -1113,7 +1114,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 	    {
 	      tree i1 = TYPE_DOMAIN (t1);
 	      tree i2 = TYPE_DOMAIN (t2);
-	
+
 	      if (i1 && i2
 		  && TYPE_MAX_VALUE (i1)
 		  && TYPE_MAX_VALUE (i2)
@@ -1533,7 +1534,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		  warn_odr (t1, t2, f1, f2, warn, warned,
 			    G_("a type with different number of fields "
 			       "is defined in another translation unit"));
-		
+
 		return false;
 	      }
 	  }
@@ -1778,7 +1779,7 @@ add_type_duplicate (odr_type val, tree type)
 	  if (symtab->dump_file)
 	    {
 	      fprintf (symtab->dump_file, "ODR base violation\n");
-	    
+
 	      print_node (symtab->dump_file, "", val->type, 0);
 	      putc ('\n',symtab->dump_file);
 	      print_node (symtab->dump_file, "", type, 0);
@@ -2146,8 +2147,8 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
   unsigned int i;
   fprintf (f, "%*s type %i: ", indent * 2, "", t->id);
   print_generic_expr (f, t->type, TDF_SLIM);
-  fprintf (f, "%s", t->anonymous_namespace ? " (anonymous namespace)":"");
-  fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)":"");
+  fprintf (f, "%s", t->anonymous_namespace ? " (anonymous namespace)" : "");
+  fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)" : "");
   if (TYPE_NAME (t->type))
     {
       if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t->type)))
@@ -2329,7 +2330,7 @@ build_type_inheritance_graph (void)
 }
 
 /* Return true if N has reference from live virtual table
-   (and thus can be a destination of polymorphic call). 
+   (and thus can be a destination of polymorphic call).
    Be conservatively correct when callgraph is not built or
    if the method may be referred externally.  */
 
@@ -2347,7 +2348,7 @@ referenced_from_vtable_p (struct cgraph_node *node)
 
   /* Keep this test constant time.
      It is unlikely this can happen except for the case where speculative
-     devirtualization introduced many speculative edges to this node. 
+     devirtualization introduced many speculative edges to this node.
      In this case the target is very likely alive anyway.  */
   if (node->ref_list.referring.length () > 100)
     return true;
@@ -2407,7 +2408,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
       /* The only case when method of anonymous namespace becomes unreferable
 	 is when we completely optimized it out.  */
       if (flag_ltrans
-	  || !target 
+	  || !target
 	  || !type_in_anonymous_namespace_p (DECL_CONTEXT (target)))
 	*completep = false;
       return;
@@ -2430,7 +2431,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     }
 
   /* Method can only be called by polymorphic call if any
-     of vtables referring to it are alive. 
+     of vtables referring to it are alive.
 
      While this holds for non-anonymous functions, too, there are
      cases where we want to keep them in the list; for example
@@ -2496,7 +2497,7 @@ maybe_record_node (vec <cgraph_node *> &nodes,
     *completep = false;
 }
 
-/* See if BINFO's type matches OUTER_TYPE.  If so, look up 
+/* See if BINFO's type matches OUTER_TYPE.  If so, look up
    BINFO of subtype of OTR_TYPE at OFFSET and in that BINFO find
    method in vtable and insert method to NODES array
    or BASES_TO_CONSIDER if this array is non-NULL.
@@ -2600,15 +2601,15 @@ record_target_from_binfo (vec <cgraph_node *> &nodes,
     /* Walking bases that have no virtual method is pointless exercise.  */
     if (polymorphic_type_binfo_p (base_binfo))
       record_target_from_binfo (nodes, bases_to_consider, base_binfo, otr_type,
-				type_binfos, 
+				type_binfos,
 				otr_token, outer_type, offset, inserted,
 				matched_vtables, anonymous, completep);
   if (BINFO_VTABLE (binfo))
     type_binfos.pop ();
 }
-     
+
 /* Look up virtual methods matching OTR_TYPE (with OFFSET and OTR_TOKEN)
-   of TYPE, insert them to NODES, recurse into derived nodes. 
+   of TYPE, insert them to NODES, recurse into derived nodes.
    INSERTED is used to avoid duplicate insertions of methods into NODES.
    MATCHED_VTABLES are used to avoid duplicate walking vtables.
    Clear COMPLETEP if unreferable target is found.
@@ -2652,7 +2653,7 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
 				type->anonymous_namespace, completep);
     }
   for (i = 0; i < type->derived_types.length (); i++)
-    possible_polymorphic_call_targets_1 (nodes, inserted, 
+    possible_polymorphic_call_targets_1 (nodes, inserted,
 					 matched_vtables,
 					 otr_type,
 					 type->derived_types[i],
@@ -2824,7 +2825,7 @@ subbinfo_with_vtable_at_offset (tree binfo, unsigned HOST_WIDE_INT offset,
 }
 
 /* T is known constant value of virtual table pointer.
-   Store virtual table to V and its offset to OFFSET. 
+   Store virtual table to V and its offset to OFFSET.
    Return false if T does not look like virtual table reference.  */
 
 bool
@@ -2832,7 +2833,7 @@ vtable_pointer_value_to_vtable (const_tree t, tree *v,
 				unsigned HOST_WIDE_INT *offset)
 {
   /* We expect &MEM[(void *)&virtual_table + 16B].
-     We obtain object's BINFO from the context of the virtual table. 
+     We obtain object's BINFO from the context of the virtual table.
      This one contains pointer to virtual table represented via
      POINTER_PLUS_EXPR.  Verify that this pointer matches what
      we propagated through.
@@ -3025,7 +3026,7 @@ class final_warning_record *final_warning_records;
    temporarily change to one of base types.  INCLUDE_DERIVED_TYPES make
    us to walk the inheritance graph for all derivations.
 
-   If COMPLETEP is non-NULL, store true if the list is complete. 
+   If COMPLETEP is non-NULL, store true if the list is complete.
    CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
    in the target cache.  If user needs to visit every target list
    just once, it can memoize them.
@@ -3205,7 +3206,7 @@ possible_polymorphic_call_targets (tree otr_type,
       else
 	target = NULL;
 
-      /* In the case we get complete method, we don't need 
+      /* In the case we get complete method, we don't need
 	 to walk derivations.  */
       if (target && DECL_FINAL_P (target))
 	context.speculative_maybe_derived_type = false;
@@ -3253,7 +3254,7 @@ possible_polymorphic_call_targets (tree otr_type,
       if (target && DECL_CXX_DESTRUCTOR_P (target))
 	context.maybe_in_construction = false;
 
-      /* In the case we get complete method, we don't need 
+      /* In the case we get complete method, we don't need
 	 to walk derivations.  */
       if (target && DECL_FINAL_P (target))
 	{
@@ -3676,7 +3677,7 @@ ipa_devirt (void)
     }
 
   FOR_EACH_DEFINED_FUNCTION (n)
-    {	
+    {
       bool update = false;
       if (!opt_for_fn (n->decl, flag_devirtualize))
 	continue;
@@ -3703,7 +3704,7 @@ ipa_devirt (void)
 	      possible_polymorphic_call_targets (e);
 
 	    if (dump_file)
-	      dump_possible_polymorphic_call_targets 
+	      dump_possible_polymorphic_call_targets
 		(dump_file, e, (dump_flags & TDF_DETAILS));
 
 	    npolymorphic++;
@@ -4167,7 +4168,7 @@ ipa_odr_read_section (struct lto_file_decl_data *file_data, const char *data,
       const char *rname = streamer_read_string (data_in, &ib);
       unsigned int nvals = streamer_read_uhwi (&ib);
       char *name;
-  
+
       obstack_grow (&odr_enum_obstack, rname, strlen (rname) + 1);
       name = XOBFINISH (&odr_enum_obstack, char *);
 

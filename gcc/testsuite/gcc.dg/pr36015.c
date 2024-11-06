@@ -1,7 +1,7 @@
 /* PR target/36015 */
 /* { dg-do run } */
-/* { dg-options "-O0" } */
-/* { dg-options "-O0 -mregparm=3" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
+/* { dg-options "-std=gnu17 -O0" } */
+/* { dg-options "-std=gnu17 -O0 -mregparm=3" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 static int test ();
 

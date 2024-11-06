@@ -8,12 +8,12 @@
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
    any later version.
-   
+
    GCC is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
@@ -6142,7 +6142,6 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
       && REGNO (xreg) >= REG_22
       && (xval == const0_rtx
 	  || (IN_RANGE (avr_int16 (xval, 2), 0, 63)
-	      && eqne_p
 	      && reg_unused_after (insn, xreg))))
     {
       xop[2] = avr_word (xval, 2);
@@ -13609,6 +13608,10 @@ avr_out_sbxx_branch (rtx_insn *insn, rtx operands[])
   rtx_code comp = GET_CODE (operands[0]);
   bool long_jump = get_attr_length (insn) >= 4;
   bool reverse = long_jump || jump_over_one_insn_p (insn, operands[3]);
+
+  // PR116953: jump_over_one_insn_p may call extract on the next insn,
+  // clobbering recog_data.operand.  Thus, restore recog_data.
+  extract_constrain_insn_cached (insn);
 
   if (comp == GE)
     comp = EQ;

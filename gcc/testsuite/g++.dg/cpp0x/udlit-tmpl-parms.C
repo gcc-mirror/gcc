@@ -3,4 +3,4 @@
 class Foo { };
 
 template<char...>
-  Foo operator"" _Foo();
+  Foo operator ""_Foo();

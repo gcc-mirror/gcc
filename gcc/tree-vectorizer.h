@@ -161,6 +161,46 @@ struct vect_scalar_ops_slice_hash : typed_noop_remove<vect_scalar_ops_slice>
   static bool equal (const value_type &, const compare_type &);
 };
 
+/* Describes how we're going to vectorize an individual load or store,
+   or a group of loads or stores.  */
+enum vect_memory_access_type {
+  /* An access to an invariant address.  This is used only for loads.  */
+  VMAT_INVARIANT,
+
+  /* A simple contiguous access.  */
+  VMAT_CONTIGUOUS,
+
+  /* A contiguous access that goes down in memory rather than up,
+     with no additional permutation.  This is used only for stores
+     of invariants.  */
+  VMAT_CONTIGUOUS_DOWN,
+
+  /* A simple contiguous access in which the elements need to be permuted
+     after loading or before storing.  Only used for loop vectorization;
+     SLP uses separate permutes.  */
+  VMAT_CONTIGUOUS_PERMUTE,
+
+  /* A simple contiguous access in which the elements need to be reversed
+     after loading or before storing.  */
+  VMAT_CONTIGUOUS_REVERSE,
+
+  /* An access that uses IFN_LOAD_LANES or IFN_STORE_LANES.  */
+  VMAT_LOAD_STORE_LANES,
+
+  /* An access in which each scalar element is loaded or stored
+     individually.  */
+  VMAT_ELEMENTWISE,
+
+  /* A hybrid of VMAT_CONTIGUOUS and VMAT_ELEMENTWISE, used for grouped
+     SLP accesses.  Each unrolled iteration uses a contiguous load
+     or store for the whole group, but the groups from separate iterations
+     are combined in the same way as for VMAT_ELEMENTWISE.  */
+  VMAT_STRIDED_SLP,
+
+  /* The access uses gather loads or scatter stores.  */
+  VMAT_GATHER_SCATTER
+};
+
 /************************************************************************
   SLP
  ************************************************************************/
@@ -228,6 +268,10 @@ struct _slp_tree {
 
   int vertex;
 
+  /* Classifies how the load or store is going to be implemented
+     for loop vectorization.  */
+  vect_memory_access_type memory_access_type;
+
   /* If not NULL this is a cached failed SLP discovery attempt with
      the lanes that failed during SLP discovery as 'false'.  This is
      a copy of the matches array.  */
@@ -252,7 +296,8 @@ enum slp_instance_kind {
     slp_inst_kind_reduc_group,
     slp_inst_kind_reduc_chain,
     slp_inst_kind_bb_reduc,
-    slp_inst_kind_ctor
+    slp_inst_kind_ctor,
+    slp_inst_kind_gcond
 };
 
 /* SLP instance is a sequence of stmts in a loop that can be packed into
@@ -269,9 +314,6 @@ public:
   /* For slp_inst_kind_bb_reduc the defs that were not vectorized, NULL
      otherwise.  */
   vec<tree> remain_defs;
-
-  /* The unrolling factor required to vectorized this SLP instance.  */
-  poly_uint64 unrolling_factor;
 
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
@@ -295,7 +337,6 @@ public:
 
 /* Access Functions.  */
 #define SLP_INSTANCE_TREE(S)                     (S)->root
-#define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_ROOT_STMTS(S)               (S)->root_stmts
 #define SLP_INSTANCE_REMAIN_DEFS(S)              (S)->remain_defs
@@ -315,6 +356,7 @@ public:
 #define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
 #define SLP_TREE_LANES(S)			 (S)->lanes
 #define SLP_TREE_CODE(S)			 (S)->code
+#define SLP_TREE_MEMORY_ACCESS_TYPE(S)		 (S)->memory_access_type
 
 enum vect_partial_vector_style {
     vect_partial_vectors_none,
@@ -977,6 +1019,10 @@ public:
   /* Statements whose VUSES need updating if early break vectorization is to
      happen.  */
   auto_vec<gimple*> early_break_vuses;
+
+  /* Record statements that are needed to be live for early break vectorization
+     but may not have an LC PHI node materialized yet in the exits.  */
+  auto_vec<stmt_vec_info> early_break_live_ivs;
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -1036,6 +1082,8 @@ public:
 #define LOOP_VINFO_EARLY_BRK_STORES(L)     (L)->early_break_stores
 #define LOOP_VINFO_EARLY_BREAKS_VECT_PEELED(L)  \
   (single_pred ((L)->loop->latch) != (L)->vec_loop_iv_exit->src)
+#define LOOP_VINFO_EARLY_BREAKS_LIVE_IVS(L)  \
+  (L)->early_break_live_ivs
 #define LOOP_VINFO_EARLY_BRK_DEST_BB(L)    (L)->early_break_dest_bb
 #define LOOP_VINFO_EARLY_BRK_VUSES(L)      (L)->early_break_vuses
 #define LOOP_VINFO_LOOP_CONDS(L)           (L)->conds
@@ -1201,46 +1249,6 @@ enum vec_load_store_type {
   VLS_LOAD,
   VLS_STORE,
   VLS_STORE_INVARIANT
-};
-
-/* Describes how we're going to vectorize an individual load or store,
-   or a group of loads or stores.  */
-enum vect_memory_access_type {
-  /* An access to an invariant address.  This is used only for loads.  */
-  VMAT_INVARIANT,
-
-  /* A simple contiguous access.  */
-  VMAT_CONTIGUOUS,
-
-  /* A contiguous access that goes down in memory rather than up,
-     with no additional permutation.  This is used only for stores
-     of invariants.  */
-  VMAT_CONTIGUOUS_DOWN,
-
-  /* A simple contiguous access in which the elements need to be permuted
-     after loading or before storing.  Only used for loop vectorization;
-     SLP uses separate permutes.  */
-  VMAT_CONTIGUOUS_PERMUTE,
-
-  /* A simple contiguous access in which the elements need to be reversed
-     after loading or before storing.  */
-  VMAT_CONTIGUOUS_REVERSE,
-
-  /* An access that uses IFN_LOAD_LANES or IFN_STORE_LANES.  */
-  VMAT_LOAD_STORE_LANES,
-
-  /* An access in which each scalar element is loaded or stored
-     individually.  */
-  VMAT_ELEMENTWISE,
-
-  /* A hybrid of VMAT_CONTIGUOUS and VMAT_ELEMENTWISE, used for grouped
-     SLP accesses.  Each unrolled iteration uses a contiguous load
-     or store for the whole group, but the groups from separate iterations
-     are combined in the same way as for VMAT_ELEMENTWISE.  */
-  VMAT_STRIDED_SLP,
-
-  /* The access uses gather loads or scatter stores.  */
-  VMAT_GATHER_SCATTER
 };
 
 class dr_vec_info {
@@ -1889,7 +1897,7 @@ extern void dump_stmt_cost (FILE *, int, enum vect_cost_for_stmt,
 			    stmt_vec_info, slp_tree, tree, int, unsigned,
 			    enum vect_cost_model_location);
 
-/* Alias targetm.vectorize.add_stmt_cost.  */
+/* Dump and add costs.  */
 
 inline unsigned
 add_stmt_cost (vector_costs *costs, int count,
@@ -1915,28 +1923,11 @@ add_stmt_cost (vector_costs *costs, int count, enum vect_cost_for_stmt kind,
   return add_stmt_cost (costs, count, kind, NULL, NULL, NULL_TREE, 0, where);
 }
 
-/* Alias targetm.vectorize.add_stmt_cost.  */
-
 inline unsigned
 add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 {
   return add_stmt_cost (costs, i->count, i->kind, i->stmt_info, i->node,
 			i->vectype, i->misalign, i->where);
-}
-
-/* Alias targetm.vectorize.finish_cost.  */
-
-inline void
-finish_cost (vector_costs *costs, const vector_costs *scalar_costs,
-	     unsigned *prologue_cost, unsigned *body_cost,
-	     unsigned *epilogue_cost, unsigned *suggested_unroll_factor = NULL)
-{
-  costs->finish_cost (scalar_costs);
-  *prologue_cost = costs->prologue_cost ();
-  *body_cost = costs->body_cost ();
-  *epilogue_cost = costs->epilogue_cost ();
-  if (suggested_unroll_factor)
-    *suggested_unroll_factor = costs->suggested_unroll_factor ();
 }
 
 inline void
@@ -2346,6 +2337,23 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 			   STMT_VINFO_VECTYPE (stmt_info), misalign, where);
 }
 
+/* Overload of record_stmt_cost with VECTYPE derived from STMT_INFO and
+   SLP node specified.  */
+
+inline unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  slp_tree node,
+		  int misalign, enum vect_cost_model_location where)
+{
+  if (node)
+    return record_stmt_cost (body_cost_vec, count, kind, node,
+			     STMT_VINFO_VECTYPE (stmt_info), misalign, where);
+  else
+    return record_stmt_cost (body_cost_vec, count, kind, stmt_info,
+			     STMT_VINFO_VECTYPE (stmt_info), misalign, where);
+}
+
 extern void vect_finish_replace_stmt (vec_info *, stmt_vec_info, gimple *);
 extern void vect_finish_stmt_generation (vec_info *, stmt_vec_info, gimple *,
 					 gimple_stmt_iterator *);
@@ -2460,7 +2468,8 @@ extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 extern bool needs_fold_left_reduction_p (tree, code_helper);
 /* Drive for loop analysis stage.  */
-extern opt_loop_vec_info vect_analyze_loop (class loop *, vec_info_shared *);
+extern opt_loop_vec_info vect_analyze_loop (class loop *, gimple *,
+					    vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
@@ -2495,7 +2504,8 @@ struct vect_loop_form_info
   gcond *inner_loop_cond;
   edge loop_exit;
 };
-extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
+extern opt_result vect_analyze_loop_form (class loop *, gimple *,
+					  vect_loop_form_info *);
 extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
 					     const vect_loop_form_info *,
 					     loop_vec_info = nullptr);
@@ -2522,6 +2532,9 @@ extern bool vectorizable_phi (vec_info *, stmt_vec_info, gimple **, slp_tree,
 			      stmt_vector_for_cost *);
 extern bool vectorizable_recurr (loop_vec_info, stmt_vec_info,
 				  gimple **, slp_tree, stmt_vector_for_cost *);
+extern bool vectorizable_early_exit (vec_info *, stmt_vec_info,
+				     gimple_stmt_iterator *, gimple **,
+				     slp_tree, stmt_vector_for_cost *);
 extern bool vect_emulated_vector_p (tree);
 extern bool vect_can_vectorize_without_simd_p (tree_code);
 extern bool vect_can_vectorize_without_simd_p (code_helper);
@@ -2694,6 +2707,18 @@ inline bool
 vect_is_reduction (stmt_vec_info stmt_info)
 {
   return STMT_VINFO_REDUC_IDX (stmt_info) >= 0;
+}
+
+/* Returns the memory acccess type being used to vectorize the statement.  If
+   SLP this is read from NODE, otherwise it's read from the STMT_VINFO.  */
+
+inline vect_memory_access_type
+vect_mem_access_type (stmt_vec_info stmt_info, slp_tree node)
+{
+  if (node)
+    return SLP_TREE_MEMORY_ACCESS_TYPE (node);
+  else
+    return STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info);
 }
 
 /* If STMT_INFO describes a reduction, return the vect_reduction_type

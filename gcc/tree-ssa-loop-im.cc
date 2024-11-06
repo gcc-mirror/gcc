@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1674,7 +1675,7 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
       aor.max_size = saved_maxsize;
       if (*slot)
 	{
-	  if (!(*slot)->ref_canonical 
+	  if (!(*slot)->ref_canonical
 	      && !operand_equal_p (*mem, (*slot)->mem.ref, 0))
 	    {
 	      /* If we didn't yet canonicalize the hashtable ref (which
@@ -2057,7 +2058,7 @@ first_mem_ref_loc (class loop *loop, im_mem_ref *ref)
        MEM = lsm;	<-- (X)
 
   In case MEM and TMP_VAR are NULL the function will return the then
-  block so the caller can insert (X) and other related stmts. 
+  block so the caller can insert (X) and other related stmts.
 */
 
 static basic_block

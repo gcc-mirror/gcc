@@ -137,7 +137,7 @@ along with GCC; see the file COPYING3.  If not see
    do not use them unnecessarily in gthr-posix.h.  */
 #define GTHREAD_USE_WEAK 0
 
-/* Every program on cygwin links against cygwin1.dll which contains 
+/* Every program on cygwin links against cygwin1.dll which contains
    the pthread routines.  There is no need to explicitly link them
    and the -pthread flag is accepted only for compatibility.  */
 #undef GOMP_SELF_SPECS

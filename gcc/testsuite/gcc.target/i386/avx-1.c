@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2-512" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2-512 -mmovrs" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>

@@ -1,3 +1,216 @@
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* crtstuff.c: Remove trailing whitespace.
+	* libgcov.h: Likewise.
+	* config/alpha/crtfastmath.c: Likewise.
+	* config/alpha/vms-gcc_shell_handler.c: Likewise.
+	* config/alpha/vms-unwind.h: Likewise.
+	* config/pa/linux-atomic.c: Likewise.
+	* config/pa/linux-unwind.h: Likewise.
+	* config/pa/quadlib.c: Likewise.
+	* config/pa/fptr.c: Likewise.
+	* config/s390/32/_fixsfdi.c: Likewise.
+	* config/s390/32/_fixunssfdi.c: Likewise.
+	* config/s390/32/_fixunsdfdi.c: Likewise.
+	* config/c6x/pr-support.c: Likewise.
+	* config/lm32/_udivsi3.c: Likewise.
+	* config/lm32/libgcc_lm32.h: Likewise.
+	* config/lm32/_udivmodsi4.c: Likewise.
+	* config/lm32/_mulsi3.c: Likewise.
+	* config/lm32/_modsi3.c: Likewise.
+	* config/lm32/_umodsi3.c: Likewise.
+	* config/lm32/_divsi3.c: Likewise.
+	* config/darwin-crt3.c: Likewise.
+	* config/msp430/mpy.c: Likewise.
+	* config/ia64/tf-signs.c: Likewise.
+	* config/ia64/fde-vms.c: Likewise.
+	* config/ia64/unwind-ia64.c: Likewise.
+	* config/ia64/vms-unwind.h: Likewise.
+	* config/ia64/sfp-exceptions.c: Likewise.
+	* config/ia64/quadlib.c: Likewise.
+	* config/ia64/unwind-ia64.h: Likewise.
+	* config/rl78/vregs.h: Likewise.
+	* config/arm/bpabi.c: Likewise.
+	* config/arm/unwind-arm.c: Likewise.
+	* config/arm/pr-support.c: Likewise.
+	* config/arm/linux-atomic.c: Likewise.
+	* config/arm/bpabi-lib.h: Likewise.
+	* config/frv/frvend.c: Likewise.
+	* config/frv/cmovw.c: Likewise.
+	* config/frv/frvbegin.c: Likewise.
+	* config/frv/cmovd.c: Likewise.
+	* config/frv/cmovh.c: Likewise.
+	* config/aarch64/cpuinfo.c: Likewise.
+	* config/i386/crtfastmath.c: Likewise.
+	* config/i386/cygming-crtend.c: Likewise.
+	* config/i386/32/tf-signs.c: Likewise.
+	* config/i386/crtprec.c: Likewise.
+	* config/i386/sfp-exceptions.c: Likewise.
+	* config/i386/w32-unwind.h: Likewise.
+	* config/m32r/initfini.c: Likewise.
+	* config/sparc/crtfastmath.c: Likewise.
+	* config/gcn/amdgcn_veclib.h: Likewise.
+	* config/nios2/linux-atomic.c: Likewise.
+	* config/nios2/linux-unwind.h: Likewise.
+	* config/nios2/lib2-mul.c: Likewise.
+	* config/nios2/lib2-nios2.h: Likewise.
+	* config/xtensa/unwind-dw2-xtensa.c: Likewise.
+	* config/rs6000/darwin-fallback.c: Likewise.
+	* config/rs6000/ibm-ldouble.c: Likewise.
+	* config/rs6000/sfp-machine.h: Likewise.
+	* config/rs6000/darwin-asm.h: Likewise.
+	* config/rs6000/darwin-crt2.c: Likewise.
+	* config/rs6000/aix-unwind.h: Likewise.
+	* config/rs6000/sfp-exceptions.c: Likewise.
+	* config/gthr-vxworks.c: Likewise.
+	* config/riscv/atomic.c: Likewise.
+	* config/visium/memcpy.c: Likewise.
+	* config/darwin-crt-tm.c: Likewise.
+	* config/stormy16/lib2funcs.c: Likewise.
+	* config/arc/ieee-754/divtab-arc-sf.c: Likewise.
+	* config/arc/ieee-754/divtab-arc-df.c: Likewise.
+	* config/arc/initfini.c: Likewise.
+	* config/sol2/gmon.c: Likewise.
+	* config/microblaze/divsi3_table.c: Likewise.
+	* config/m68k/fpgnulib.c: Likewise.
+	* libgcov-driver.c: Likewise.
+	* unwind-dw2.c: Likewise.
+	* fp-bit.c: Likewise.
+	* dfp-bit.h: Likewise.
+	* dfp-bit.c: Likewise.
+	* libgcov-driver-system.c: Likewise.
+
+2024-10-24  David Malcolm  <dmalcolm@redhat.com>
+	    Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR other/116613
+	* libgcov-util.c: Add #define INCLUDE_MEMORY.
+
+2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/t-aarch64: Always use -Werror
+	-Wno-prio-ctor-dtor.
+
+2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/cpuinfo.c (__init_cpu_features_resolver): Add
+	prototype.
+	(__init_cpu_features): Likewise.
+
+2024-10-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/aarch64/lse.S: Undefine L() macro.
+
+2024-10-14  Yangyu Chen  <chenyangyu@isrc.iscas.ac.cn>
+
+	* config/riscv/feature_bits.c (__init_riscv_features_bits_linux):
+	Add detailed comments on processing implied extensions.
+
+2024-10-14  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/feature_bits.c: New.
+	* config/riscv/t-elf (LIB2ADD): Add feature_bits.c.
+
+2024-10-10  Sébastien Michelland  <sebastien.michelland@lcis.grenoble-inp.fr>
+
+	PR target/29845
+	* config.host (sh-*-elf*): Replace fdpbit with softfp.
+	* config/sh/sfp-machine.h: New file.
+
+2024-10-04  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* config/riscv/save-restore.S: Fix .cfi_offset for saving ra in
+	__riscv_save_[0-3] on ilp32e.
+
+2024-10-01  Tsung Chun Lin  <tclin914@gmail.com>
+
+	* config/riscv/save-restore.S: Fix .cfi_offset for
+	__riscv_save_[0-3] on RV32.
+
+2024-09-27  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64-unwind.h: Fix header path.
+
+2024-09-27  Mark Mentovai  <mark@mentovai.com>
+
+	PR target/116809
+	* config.host: Don't build legacy libgcc_s.1 on macOS 14.
+
+2024-09-27  Jim Lin  <jim@andestech.com>
+
+	* config/riscv/save-restore.S: Check with __riscv_abi_rve rather than
+	__riscv_32e.
+
+2024-09-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR libstdc++/115126
+	* gthr-posix.h (__GTHREAD_ALWAYS_INLINE): New macro.
+	(__GTHREAD_INLINE): New macro.
+	(__gthread_active): Convert from variable to (hidden) function.
+	(__gthread_active_p): Mark as __GTHREAD_INLINE instead of
+	static; make visibility("hidden") when it has a static local
+	variable.
+	(__gthread_trigger): Mark as __GTHREAD_INLINE instead of static.
+	(__gthread_create): Likewise.
+	(__gthread_join): Likewise.
+	(__gthread_detach): Likewise.
+	(__gthread_equal): Likewise.
+	(__gthread_self): Likewise.
+	(__gthread_yield): Likewise.
+	(__gthread_once): Likewise.
+	(__gthread_key_create): Likewise.
+	(__gthread_key_delete): Likewise.
+	(__gthread_getspecific): Likewise.
+	(__gthread_setspecific): Likewise.
+	(__gthread_mutex_init_function): Likewise.
+	(__gthread_mutex_destroy): Likewise.
+	(__gthread_mutex_lock): Likewise.
+	(__gthread_mutex_trylock): Likewise.
+	(__gthread_mutex_timedlock): Likewise.
+	(__gthread_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_init_function): Likewise.
+	(__gthread_recursive_mutex_lock): Likewise.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_timedlock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_destroy): Likewise.
+	(__gthread_cond_init_function): Likewise.
+	(__gthread_cond_broadcast): Likewise.
+	(__gthread_cond_signal): Likewise.
+	(__gthread_cond_wait): Likewise.
+	(__gthread_cond_timedwait): Likewise.
+	(__gthread_cond_wait_recursive): Likewise.
+	(__gthread_cond_destroy): Likewise.
+	(__gthread_rwlock_rdlock): Likewise.
+	(__gthread_rwlock_tryrdlock): Likewise.
+	(__gthread_rwlock_wrlock): Likewise.
+	(__gthread_rwlock_trywrlock): Likewise.
+	(__gthread_rwlock_unlock): Likewise.
+	* gthr-single.h: (__GTHREAD_ALWAYS_INLINE): New macro.
+	(__GTHREAD_INLINE): New macro.
+	(__gthread_active_p): Mark as __GTHREAD_INLINE instead of static.
+	(__gthread_once): Likewise.
+	(__gthread_key_create): Likewise.
+	(__gthread_key_delete): Likewise.
+	(__gthread_getspecific): Likewise.
+	(__gthread_setspecific): Likewise.
+	(__gthread_mutex_destroy): Likewise.
+	(__gthread_mutex_lock): Likewise.
+	(__gthread_mutex_trylock): Likewise.
+	(__gthread_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_lock): Likewise.
+	(__gthread_recursive_mutex_trylock): Likewise.
+	(__gthread_recursive_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_destroy): Likewise.
+
+2024-09-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/116809
+	* config.host: Build legacy libgcc_s.1 on hosts before macOS 15.
+	* config/i386/t-darwin: Remove reference to legacy libgcc_s.1
+	* config/rs6000/t-darwin: Likewise.
+	* config/t-darwin-libgccs1: New file.
+
 2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* config/aarch64/aarch64-asm.h (PACIASP): Replace SPARC CFI

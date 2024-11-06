@@ -101,16 +101,23 @@ public:
     return loc;
   }
 
-  label_text describe_state_change (const evdesc::state_change &change)
-    final override
+  bool
+  describe_state_change (pretty_printer &pp,
+			 const evdesc::state_change &change) final override
   {
     if (change.is_global_p ()
 	&& change.m_new_state == m_sm.m_released_gil)
-      return change.formatted_print ("releasing the GIL here");
+      {
+	pp_string (&pp, "releasing the GIL here");
+	return true;
+      }
     if (change.is_global_p ()
 	&& change.m_new_state == m_sm.get_start_state ())
-      return change.formatted_print ("acquiring the GIL here");
-    return label_text ();
+      {
+	pp_string (&pp, "acquiring the GIL here");
+	return true;
+      }
+    return false;
   }
 
   diagnostic_event::meaning
@@ -161,10 +168,14 @@ class double_save_thread : public gil_diagnostic
     return ctxt.warn ("nested usage of %qs", "Py_BEGIN_ALLOW_THREADS");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
-    return ev.formatted_print ("nested usage of %qs here",
-			       "Py_BEGIN_ALLOW_THREADS");
+    pp_printf (&pp,
+	       "nested usage of %qs here",
+	       "Py_BEGIN_ALLOW_THREADS");
+    return true;
   }
 
  private:
@@ -206,16 +217,19 @@ class fncall_without_gil : public gil_diagnostic
 			m_arg_idx + 1, m_callee_fndecl);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
     if (m_callee_fndecl)
-      return ev.formatted_print ("use of PyObject as argument %i of %qE here"
-				 " without the GIL",
-				 m_arg_idx + 1, m_callee_fndecl);
+      pp_printf (&pp,
+		 "use of PyObject as argument %i of %qE here without the GIL",
+		 m_arg_idx + 1, m_callee_fndecl);
     else
-      return ev.formatted_print ("use of PyObject as argument %i of call here"
-				 " without the GIL",
-				 m_arg_idx + 1, m_callee_fndecl);
+      pp_printf (&pp,
+		 "use of PyObject as argument %i of call here without the GIL",
+		 m_arg_idx + 1, m_callee_fndecl);
+    return true;
   }
 
  private:
@@ -247,10 +261,14 @@ class pyobject_usage_without_gil : public gil_diagnostic
     return ctxt.warn ("use of PyObject %qE without the GIL", m_expr);
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &ev) final override
   {
-    return ev.formatted_print ("PyObject %qE used here without the GIL",
-			       m_expr);
+    pp_printf (&pp,
+	       "PyObject %qE used here without the GIL",
+	       m_expr);
+    return true;
   }
 
  private:

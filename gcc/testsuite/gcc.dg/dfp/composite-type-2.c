@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -Wall -ftrack-macro-expansion=0" } */
+/* { dg-options "-std=gnu17 -O -Wall -ftrack-macro-expansion=0" } */
 
 /* C99 6.2.7: Compatible type and composite type.  */
 

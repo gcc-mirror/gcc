@@ -37,7 +37,9 @@
 #ifndef _GLIBCXX_NUMERIC_LIMITS
 #define _GLIBCXX_NUMERIC_LIMITS 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic" // Q suffix

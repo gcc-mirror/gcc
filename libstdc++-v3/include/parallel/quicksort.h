@@ -66,12 +66,15 @@ namespace __gnu_parallel
       _ValueType* __samples = static_cast<_ValueType*>
 	(::operator new(__num_samples * sizeof(_ValueType)));
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long" // LL literal
       for (_DifferenceType __s = 0; __s < __num_samples; ++__s)
         {
           const unsigned long long __index = static_cast<unsigned long long>
 	    (__s) * __n / __num_samples;
           ::new(&(__samples[__s])) _ValueType(__begin[__index]);
         }
+#pragma GCC diagnostic pop
 
       __gnu_sequential::sort(__samples, __samples + __num_samples, __comp);
 

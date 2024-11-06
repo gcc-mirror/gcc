@@ -24,7 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 union _FP_UNION_Q
 {
    __float128 flt;
-   struct 
+   struct
    {
       unsigned long frac0 : 64;
       unsigned long frac1 : 48;

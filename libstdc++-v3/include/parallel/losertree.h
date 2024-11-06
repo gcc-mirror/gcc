@@ -561,7 +561,7 @@ namespace __gnu_parallel
     };
 
   /** @brief Base class for unguarded _LoserTree implementation.
-   * 
+   *
    * The whole element is copied into the tree structure.
    *
    * No guarding is done, therefore not a single input sequence must

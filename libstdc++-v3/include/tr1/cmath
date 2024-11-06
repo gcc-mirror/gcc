@@ -29,7 +29,9 @@
 #ifndef _GLIBCXX_TR1_CMATH
 #define _GLIBCXX_TR1_CMATH 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // TR1
 
@@ -760,6 +762,9 @@ namespace tr1
     lgamma(_Tp __x)
     { return __builtin_lgamma(__x); }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlong-long"
+
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline long long
   llrint(float __x)
@@ -791,6 +796,7 @@ namespace tr1
 					   long long>::__type
     llround(_Tp __x)
     { return __builtin_llround(__x); }
+#pragma GCC diagnostic pop
 
 #ifndef __CORRECT_ISO_CPP11_MATH_H_PROTO_FP
   inline float

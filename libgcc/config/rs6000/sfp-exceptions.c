@@ -26,7 +26,7 @@
    emulation routines for IEEE 128-bit floating point on pre-ISA 3.0 machines
    without the IEEE 128-bit floating point support.  */
 
-#ifndef __NO_FPRS__ 
+#ifndef __NO_FPRS__
 
 void
 __sfp_handle_exceptions (int _fex)

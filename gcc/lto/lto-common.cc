@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1333,6 +1334,12 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
     if (TREE_STRING_LENGTH (t1) != TREE_STRING_LENGTH (t2)
 	|| memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
 		   TREE_STRING_LENGTH (t1)) != 0)
+      return false;
+
+  if (code == RAW_DATA_CST)
+    if (RAW_DATA_LENGTH (t1) != RAW_DATA_LENGTH (t2)
+	|| memcmp (RAW_DATA_POINTER (t1), RAW_DATA_POINTER (t2),
+		   RAW_DATA_LENGTH (t1)) != 0)
       return false;
 
   if (code == OMP_CLAUSE)

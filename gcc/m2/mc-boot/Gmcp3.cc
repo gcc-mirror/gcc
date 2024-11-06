@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING.  If not,
 see <https://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -264,1961 +265,1961 @@ static void Integer (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 static void Real (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FileUnit := DefinitionModule  | 
-               ImplementationOrProgramModule 
+   FileUnit := DefinitionModule  |
+               ImplementationOrProgramModule
 
    first  symbols:implementationtok, moduletok, definitiontok
-   
+
    cannot reachend
 */
 
 static void FileUnit (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProgramModule := 'MODULE' Ident 
+   ProgramModule := 'MODULE' Ident
                     % curmodule := lookupModule (curident)  %
-                    
+
                     % enterScope (curmodule)  %
-                    
+
                     % resetEnumPos (curmodule)  %
-                    [ Priority  ] ';' { Import  } Block 
-                    Ident 
+                    [ Priority  ] ';' { Import  } Block
+                    Ident
                     % checkEndName (curmodule, curident, 'program module')  %
-                    
+
                     % setConstExpComplete (curmodule)  %
-                    
+
                     % leaveScope  %
-                    '.' 
+                    '.'
 
    first  symbols:moduletok
-   
+
    cannot reachend
 */
 
 static void ProgramModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ImplementationModule := 'IMPLEMENTATION' 'MODULE' 
-                           Ident 
+   ImplementationModule := 'IMPLEMENTATION' 'MODULE'
+                           Ident
                            % curmodule := lookupImp (curident)  %
-                           
+
                            % enterScope (lookupDef (curident))  %
-                           
+
                            % enterScope (curmodule)  %
-                           
+
                            % resetEnumPos (curmodule)  %
-                           [ Priority  ] ';' { Import  } 
-                           Block Ident 
+                           [ Priority  ] ';' { Import  }
+                           Block Ident
                            % checkEndName (curmodule, curident, 'implementation module')  %
-                           
+
                            % setConstExpComplete (curmodule)  %
-                           
+
                            % leaveScope ; leaveScope  %
-                           '.' 
+                           '.'
 
    first  symbols:implementationtok
-   
+
    cannot reachend
 */
 
 static void ImplementationModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ImplementationOrProgramModule := ImplementationModule  | 
-                                    ProgramModule 
+   ImplementationOrProgramModule := ImplementationModule  |
+                                    ProgramModule
 
    first  symbols:moduletok, implementationtok
-   
+
    cannot reachend
 */
 
 static void ImplementationOrProgramModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Number := Integer  | Real 
+   Number := Integer  | Real
 
    first  symbols:realtok, integertok
-   
+
    cannot reachend
 */
 
 static void Number (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Qualident := Ident { '.' Ident  } 
+   Qualident := Ident { '.' Ident  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void Qualident (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstantDeclaration := 
+   ConstantDeclaration :=
                           % VAR d, e: node ;  %
-                          Ident 
+                          Ident
                           % d := lookupSym (curident)  %
-                          '=' ConstExpression 
+                          '=' ConstExpression
                           % e := pop ()  %
-                          
+
                           % assert (isConst (d))  %
-                          
+
                           % putConst (d, e)  %
-                          
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void ConstantDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstExpressionNop := SimpleConstExpr 
+   ConstExpressionNop := SimpleConstExpr
                          % VAR n: node ;  %
-                         [ Relation SimpleConstExpr  ] 
-                         
+                         [ Relation SimpleConstExpr  ]
+
                          % n := makeConstExp ()  %
-                         
+
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void ConstExpressionNop (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstExpression := 
+   ConstExpression :=
                       % VAR n: node ;  %
-                      
+
                       % n := push (makeConstExp ())  %
-                      SimpleConstExpr [ Relation SimpleConstExpr  ] 
+                      SimpleConstExpr [ Relation SimpleConstExpr  ]
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void ConstExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Relation := '='  | '#'  | '<>'  | '<'  | '<='  | 
-               '>'  | '>='  | 'IN' 
+   Relation := '='  | '#'  | '<>'  | '<'  | '<='  |
+               '>'  | '>='  | 'IN'
 
    first  symbols:intok, greaterequaltok, greatertok, lessequaltok, lesstok, lessgreatertok, hashtok, equaltok
-   
+
    cannot reachend
 */
 
 static void Relation (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SimpleConstExpr := UnaryOrConstTerm { AddOperator 
-                                         ConstTerm  } 
+   SimpleConstExpr := UnaryOrConstTerm { AddOperator
+                                         ConstTerm  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void SimpleConstExpr (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   UnaryOrConstTerm := '+' ConstTerm  | 
-                       '-' ConstTerm  | 
-                       ConstTerm 
+   UnaryOrConstTerm := '+' ConstTerm  |
+                       '-' ConstTerm  |
+                       ConstTerm
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void UnaryOrConstTerm (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AddOperator := '+'  | '-'  | 'OR' 
+   AddOperator := '+'  | '-'  | 'OR'
 
    first  symbols:ortok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void AddOperator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstTerm := ConstFactor { MulOperator ConstFactor  } 
+   ConstTerm := ConstFactor { MulOperator ConstFactor  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok
-   
+
    cannot reachend
 */
 
 static void ConstTerm (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 
-                  'REM'  | 'AND'  | '&' 
+   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  |
+                  'REM'  | 'AND'  | '&'
 
    first  symbols:ambersandtok, andtok, remtok, modtok, divtok, dividetok, timestok
-   
+
    cannot reachend
 */
 
 static void MulOperator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstFactor := Number  | ConstString  | 
-                  ConstSetOrQualidentOrFunction  | 
-                  '(' ConstExpressionNop ')'  | 
-                  'NOT' ConstFactor  | 
-                  ConstAttribute 
+   ConstFactor := Number  | ConstString  |
+                  ConstSetOrQualidentOrFunction  |
+                  '(' ConstExpressionNop ')'  |
+                  'NOT' ConstFactor  |
+                  ConstAttribute
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok
-   
+
    cannot reachend
 */
 
 static void ConstFactor (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstString := string 
+   ConstString := string
 
    first  symbols:stringtok
-   
+
    cannot reachend
 */
 
 static void ConstString (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ComponentElement := ConstExpressionNop [ '..' ConstExpressionNop  ] 
+   ComponentElement := ConstExpressionNop [ '..' ConstExpressionNop  ]
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void ComponentElement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ComponentValue := ComponentElement [ 'BY' ConstExpressionNop  ] 
+   ComponentValue := ComponentElement [ 'BY' ConstExpressionNop  ]
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void ComponentValue (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ArraySetRecordValue := ComponentValue { ',' ComponentValue  } 
+   ArraySetRecordValue := ComponentValue { ',' ComponentValue  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void ArraySetRecordValue (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Constructor := '{' [ ArraySetRecordValue  ] '}' 
+   Constructor := '{' [ ArraySetRecordValue  ] '}'
 
    first  symbols:lcbratok
-   
+
    cannot reachend
 */
 
 static void Constructor (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstSetOrQualidentOrFunction := Qualident [ Constructor  | 
-                                                ConstActualParameters  ]  | 
-                                    Constructor 
+   ConstSetOrQualidentOrFunction := Qualident [ Constructor  |
+                                                ConstActualParameters  ]  |
+                                    Constructor
 
    first  symbols:lcbratok, identtok
-   
+
    cannot reachend
 */
 
 static void ConstSetOrQualidentOrFunction (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstActualParameters := '(' [ ConstExpList  ] ')' 
+   ConstActualParameters := '(' [ ConstExpList  ] ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void ConstActualParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstExpList := ConstExpressionNop { ',' ConstExpressionNop  } 
+   ConstExpList := ConstExpressionNop { ',' ConstExpressionNop  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void ConstExpList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' 
-                     '(' '(' ConstAttributeExpression 
-                     ')' ')' 
+   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__'
+                     '(' '(' ConstAttributeExpression
+                     ')' ')'
 
    first  symbols:attributetok
-   
+
    cannot reachend
 */
 
 static void ConstAttribute (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ConstAttributeExpression := Ident  | '<' Qualident 
-                               ',' Ident '>' 
+   ConstAttributeExpression := Ident  | '<' Qualident
+                               ',' Ident '>'
 
    first  symbols:lesstok, identtok
-   
+
    cannot reachend
 */
 
 static void ConstAttributeExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ByteAlignment := '' 
+   ByteAlignment := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
 static void ByteAlignment (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   OptAlignmentExpression := [ AlignmentExpression  ] 
+   OptAlignmentExpression := [ AlignmentExpression  ]
 
    first  symbols:lparatok
-   
+
    reachend
 */
 
 static void OptAlignmentExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AlignmentExpression := '(' ConstExpressionNop ')' 
+   AlignmentExpression := '(' ConstExpressionNop ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void AlignmentExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Alignment := [ ByteAlignment  ] 
+   Alignment := [ ByteAlignment  ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
 static void Alignment (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   IdentList := Ident { ',' Ident  } 
+   IdentList := Ident { ',' Ident  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void IdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   PushIdentList := 
+   PushIdentList :=
                     % VAR n: node ;  %
-                    
+
                     % n := makeIdentList ()  %
-                    Ident 
+                    Ident
                     % checkDuplicate (putIdent (n, curident))  %
-                    { ',' Ident 
+                    { ',' Ident
                       % checkDuplicate (putIdent (n, curident))  %
-                       } 
+                       }
                     % n := push (n)  %
-                    
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void PushIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SubrangeType := 
+   SubrangeType :=
                    % VAR low, high: node ; d: CARDINAL ;  %
-                   '[' 
+                   '['
                    % d := depth ()  %
-                   ConstExpression 
+                   ConstExpression
                    % low := pop ()  %
-                   
+
                    % assert (d = depth ())  %
-                   '..' ConstExpression 
+                   '..' ConstExpression
                    % high := pop ()  %
-                   
+
                    % assert (d = depth ())  %
-                   
+
                    % typeExp := push (makeSubrange (low, high))  %
-                   
+
                    % assert (d = depth () - 1)  %
-                   ']' 
+                   ']'
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
 static void SubrangeType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ArrayType := 'ARRAY' 
+   ArrayType := 'ARRAY'
                 % VAR c: CARDINAL ; t, n: node ;  %
-                
+
                 % c := 0  %
-                SimpleType 
+                SimpleType
                 % INC (c)  %
-                { ',' SimpleType 
+                { ',' SimpleType
                   % INC (c)  %
-                   } 'OF' Type 
+                   } 'OF' Type
                 % n := push (makeIndexedArray (c, pop ()))  %
-                
+
 
    first  symbols:arraytok
-   
+
    cannot reachend
 */
 
 static void ArrayType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   RecordType := 'RECORD' 
+   RecordType := 'RECORD'
                  % VAR n: node ;  %
-                 
+
                  % n := push (makeRecord ())  %
-                 
+
                  % n := push (NIL)     no varient   %
-                 [ DefaultRecordAttributes  ] FieldListSequence 
-                 
+                 [ DefaultRecordAttributes  ] FieldListSequence
+
                  % assert (pop ()=NIL)  %
-                 'END' 
+                 'END'
 
    first  symbols:recordtok
-   
+
    cannot reachend
 */
 
 static void RecordType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefaultRecordAttributes := '' 
+   DefaultRecordAttributes := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
 static void DefaultRecordAttributes (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   RecordFieldPragma := [ ''  ] 
+   RecordFieldPragma := [ ''  ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
 static void RecordFieldPragma (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FieldPragmaExpression := Ident PragmaConstExpression 
+   FieldPragmaExpression := Ident PragmaConstExpression
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void FieldPragmaExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   PragmaConstExpression := [ '(' ConstExpressionNop 
-                              ')'  ] 
+   PragmaConstExpression := [ '(' ConstExpressionNop
+                              ')'  ]
 
    first  symbols:lparatok
-   
+
    reachend
 */
 
 static void PragmaConstExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AttributeExpression := Ident '(' ConstExpressionNop 
-                          ')' 
+   AttributeExpression := Ident '(' ConstExpressionNop
+                          ')'
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void AttributeExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FieldListSequence := FieldListStatement { ';' FieldListStatement  } 
+   FieldListSequence := FieldListStatement { ';' FieldListStatement  }
 
    first  symbols:casetok, identtok, semicolontok
-   
+
    reachend
 */
 
 static void FieldListSequence (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FieldListStatement := [ FieldList  ] 
+   FieldListStatement := [ FieldList  ]
 
    first  symbols:identtok, casetok
-   
+
    reachend
 */
 
 static void FieldListStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FieldList := 
+   FieldList :=
                 % VAR r, i, f, t, n, v, w: node ; d: CARDINAL ;  %
-                
+
                 % d := depth ()  %
-                
+
                 % v := pop () ; assert ((v=NIL) OR isVarient (v))  %
-                
+
                 % r := peep () ; assert (isRecord (r) OR isVarientField (r))  %
-                
+
                 % v := push (v)  %
-                
+
                 % assert (d=depth ())  %
-                
+
                 % assert (((v=NIL) AND isRecord (r)) OR ((v#NIL) AND isVarientField (r)))  %
-                PushIdentList ':' 
+                PushIdentList ':'
                 % assert (d=depth () - 1)  %
-                
+
                 % i := pop ()  %
-                Type 
+                Type
                 % assert (d=depth () - 1)  %
-                
+
                 % t := pop ()  %
-                RecordFieldPragma 
+                RecordFieldPragma
                 % assert (d=depth ())  %
-                
+
                 % r := addFieldsToRecord (r, v, i, t)  %
-                
+
                 % assert (d=depth ())  %
-                 | 
-                'CASE' 
+                 |
+                'CASE'
                 %  addRecordToList   %
-                
+
                 % d := depth ()  %
-                
+
                 % v := pop () ; assert ((v=NIL) OR isVarient (v))  %
-                
+
                 % r := peep () ; assert (isRecord (r) OR isVarientField (r))  %
-                
+
                 % v := push (v)  %
-                
+
                 % assert (((v=NIL) AND isRecord (r)) OR ((v#NIL) AND isRecordField (r)))  %
-                
+
                 % w := push (makeVarient (r))  %
-                
+
                 % assert (d = depth () - 1)  %
-                
+
                 %  addVarientToList   %
-                CaseTag 'OF' 
+                CaseTag 'OF'
                 % assert (d = depth () - 1)  %
-                Varient 
+                Varient
                 % assert (d = depth () - 1)  %
-                { '|' Varient 
+                { '|' Varient
                   % assert (d = depth () - 1)  %
-                   } 
+                   }
                 % w := peep () ; assert (isVarient (w))  %
-                
+
                 % assert (d = depth () - 1)  %
-                [ 'ELSE' FieldListSequence  ] 'END' 
-                
+                [ 'ELSE' FieldListSequence  ] 'END'
+
                 % w := pop () ; assert (isVarient (w))  %
-                
+
                 % assert (d=depth ())  %
-                
+
 
    first  symbols:casetok, identtok
-   
+
    cannot reachend
 */
 
 static void FieldList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   TagIdent := Ident  | 
+   TagIdent := Ident  |
                % curident := NulName  %
-               
+
 
    first  symbols:identtok
-   
+
    reachend
 */
 
 static void TagIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   CaseTag := 
+   CaseTag :=
               % VAR tagident: Name ; q, v, w, r: node ;  %
-              
+
               % w := pop () ; v := pop () ; r := peep () ; v := push (v) ; w := push (w)  %
-              
+
               % assert (isVarient (w))  %
-              
+
               % assert ((v=NIL) OR isVarient (v))  %
-              
+
               % assert (isRecord (r) OR isVarientField (r))  %
-              
+
               % assert (isVarient (push (pop ())))  %
-              TagIdent 
+              TagIdent
               % tagident := curident  %
-              ( ':' PushQualident 
+              ( ':' PushQualident
                 % q := pop ()  %
-                
+
                 % assert (isVarient (push (pop ())))  %
-                 | 
+                 |
                 % q := NIL  %
-                 ) 
+                 )
               % buildVarientSelector (r, w, tagident, q)  %
-              
+
 
    first  symbols:colontok, identtok
-   
+
    reachend
 */
 
 static void CaseTag (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Varient := 
+   Varient :=
               % VAR p, r, v, f: node ; d: CARDINAL ;  %
-              
+
               % d := depth ()  %
-              
+
               % assert (isVarient (peep ()))  %
-              [ 
+              [
                 % v := pop () ; assert (isVarient (v))  %
-                
+
                 % r := pop ()  %
-                
+
                 % p := peep ()  %
-                
+
                 % r := push (r)  %
-                
+
                 % f := push (buildVarientFieldRecord (v, p))  %
-                
+
                 % v := push (v)  %
-                VarientCaseLabelList ':' FieldListSequence 
-                
+                VarientCaseLabelList ':' FieldListSequence
+
                 % v := pop ()  %
-                
+
                 % f := pop ()  %
-                
+
                 % assert (isVarientField (f))  %
-                
+
                 % assert (isVarient (v))  %
-                
+
                 % v := push (v)  %
-                 ] 
+                 ]
               % assert (isVarient (peep ()))  %
-              
+
               % assert (d=depth ())  %
-              
+
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    reachend
 */
 
 static void Varient (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   VarientCaseLabelList := VarientCaseLabels { ',' 
-                                               VarientCaseLabels  } 
+   VarientCaseLabelList := VarientCaseLabels { ','
+                                               VarientCaseLabels  }
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void VarientCaseLabelList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   VarientCaseLabels := 
+   VarientCaseLabels :=
                         % VAR l, h: node ;  %
-                        
+
                         % h := NIL  %
-                        ConstExpression 
+                        ConstExpression
                         % l := pop ()  %
-                        [ '..' ConstExpression 
+                        [ '..' ConstExpression
                           % h := pop ()  %
-                           ] 
+                           ]
                         %  l, h  could be saved if necessary.    %
-                        
+
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void VarientCaseLabels (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SetType := ( 'SET'  | 'PACKEDSET'  ) 'OF' SimpleType 
-              
+   SetType := ( 'SET'  | 'PACKEDSET'  ) 'OF' SimpleType
+
               % VAR n: node ;  %
-              
+
               % n := push (makeSet (pop ()))  %
-              
+
 
    first  symbols:oftok, packedsettok, settok
-   
+
    cannot reachend
 */
 
 static void SetType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   PointerType := 'POINTER' 'TO' Type 
+   PointerType := 'POINTER' 'TO' Type
                   % VAR n: node ;  %
-                  
+
                   % n := push (makePointer (pop ()))  %
-                  
+
 
    first  symbols:pointertok
-   
+
    cannot reachend
 */
 
 static void PointerType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureType := 'PROCEDURE' 
+   ProcedureType := 'PROCEDURE'
                     % curproc := push (makeProcType ())  %
-                    [ FormalTypeList  ] 
+                    [ FormalTypeList  ]
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
 static void ProcedureType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FormalTypeList := '(' ( ')' FormalReturn  | 
-                           ProcedureParameters ')' 
-                           FormalReturn  ) 
+   FormalTypeList := '(' ( ')' FormalReturn  |
+                           ProcedureParameters ')'
+                           FormalReturn  )
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void FormalTypeList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FormalReturn := [ ':' OptReturnType  ] 
+   FormalReturn := [ ':' OptReturnType  ]
 
    first  symbols:colontok
-   
+
    reachend
 */
 
 static void FormalReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   OptReturnType := '[' PushQualident 
+   OptReturnType := '[' PushQualident
                     % putReturnType (curproc, pop ())  %
-                    
+
                     % putOptReturn (curproc)  %
-                    ']'  | PushQualident 
+                    ']'  | PushQualident
                     % putReturnType (curproc, pop ())  %
-                    
+
 
    first  symbols:identtok, lsbratok
-   
+
    cannot reachend
 */
 
 static void OptReturnType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureParameters := ProcedureParameter 
+   ProcedureParameters := ProcedureParameter
                           % addParameter (curproc, pop ())  %
-                          { ',' ProcedureParameter 
-                            
+                          { ',' ProcedureParameter
+
                             % addParameter (curproc, pop ())  %
-                             } 
+                             }
 
    first  symbols:identtok, arraytok, periodperiodperiodtok, vartok
-   
+
    cannot reachend
 */
 
 static void ProcedureParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureParameter := '...' 
+   ProcedureParameter := '...'
                          % VAR n: node ;  %
-                         
+
                          % n := push (makeVarargs ())  %
-                          | 'VAR' FormalType 
+                          | 'VAR' FormalType
                          % n := push (makeVarParameter (NIL, pop (), curproc, TRUE))  %
-                          | FormalType 
+                          | FormalType
                          % n := push (makeNonVarParameter (NIL, pop (), curproc, TRUE))  %
-                         
+
 
    first  symbols:identtok, arraytok, vartok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
 static void ProcedureParameter (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   VarIdent := 
+   VarIdent :=
                % VAR n, a: node ;  %
-               
+
                % n := pop ()  %
-               Ident 
+               Ident
                % checkDuplicate (putIdent (n, curident))  %
-               
+
                % n := push (n)  %
-               [ '[' ConstExpression 
+               [ '[' ConstExpression
                  % a := pop ()   could store, a, into, n.    %
-                 ']'  ] 
+                 ']'  ]
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void VarIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   VarIdentList := 
+   VarIdentList :=
                    % VAR n: node ;  %
-                   
+
                    % n := makeIdentList ()  %
-                   
+
                    % n := push (n)  %
-                   VarIdent { ',' VarIdent  } 
+                   VarIdent { ',' VarIdent  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void VarIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   VariableDeclaration := 
+   VariableDeclaration :=
                           % VAR v, d: node ;  %
-                          VarIdentList 
+                          VarIdentList
                           % v := pop ()  %
-                          ':' Type 
+                          ':' Type
                           % d := makeVarDecl (v, pop ())  %
-                          Alignment 
+                          Alignment
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void VariableDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Designator := Qualident { SubDesignator  } 
+   Designator := Qualident { SubDesignator  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void Designator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SubDesignator := '.' Ident  | '[' ArrayExpList ']'  | 
-                    '^' 
+   SubDesignator := '.' Ident  | '[' ArrayExpList ']'  |
+                    '^'
 
    first  symbols:uparrowtok, lsbratok, periodtok
-   
+
    cannot reachend
 */
 
 static void SubDesignator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ArrayExpList := Expression { ',' Expression  } 
+   ArrayExpList := Expression { ',' Expression  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void ArrayExpList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ExpList := Expression { ',' Expression  } 
+   ExpList := Expression { ',' Expression  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void ExpList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Expression := SimpleExpression [ Relation SimpleExpression  ] 
+   Expression := SimpleExpression [ Relation SimpleExpression  ]
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void Expression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SimpleExpression := UnaryOrTerm { AddOperator Term  } 
+   SimpleExpression := UnaryOrTerm { AddOperator Term  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void SimpleExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   UnaryOrTerm := '+' Term  | '-' Term  | 
-                  Term 
+   UnaryOrTerm := '+' Term  | '-' Term  |
+                  Term
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void UnaryOrTerm (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Term := Factor { MulOperator Factor  } 
+   Term := Factor { MulOperator Factor  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok
-   
+
    cannot reachend
 */
 
 static void Term (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Factor := Number  | string  | SetOrDesignatorOrFunction  | 
-             '(' Expression ')'  | 
-             'NOT' ( Factor  | ConstAttribute  ) 
+   Factor := Number  | string  | SetOrDesignatorOrFunction  |
+             '(' Expression ')'  |
+             'NOT' ( Factor  | ConstAttribute  )
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok
-   
+
    cannot reachend
 */
 
 static void Factor (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SetOrDesignatorOrFunction := Qualident [ Constructor  | 
-                                            SimpleDes 
-                                            [ ActualParameters  ]  ]  | 
-                                Constructor 
+   SetOrDesignatorOrFunction := Qualident [ Constructor  |
+                                            SimpleDes
+                                            [ ActualParameters  ]  ]  |
+                                Constructor
 
    first  symbols:lcbratok, identtok
-   
+
    cannot reachend
 */
 
 static void SetOrDesignatorOrFunction (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SimpleDes := { SubDesignator  } 
+   SimpleDes := { SubDesignator  }
 
    first  symbols:periodtok, lsbratok, uparrowtok
-   
+
    reachend
 */
 
 static void SimpleDes (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ActualParameters := '(' [ ExpList  ] ')' 
+   ActualParameters := '(' [ ExpList  ] ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void ActualParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ExitStatement := 'EXIT' 
+   ExitStatement := 'EXIT'
 
    first  symbols:exittok
-   
+
    cannot reachend
 */
 
 static void ExitStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ReturnStatement := 'RETURN' [ Expression  ] 
+   ReturnStatement := 'RETURN' [ Expression  ]
 
    first  symbols:returntok
-   
+
    cannot reachend
 */
 
 static void ReturnStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Statement := [ AssignmentOrProcedureCall  | 
-                  IfStatement  | CaseStatement  | 
-                  WhileStatement  | 
-                  RepeatStatement  | 
-                  LoopStatement  | ForStatement  | 
-                  WithStatement  | AsmStatement  | 
-                  ExitStatement  | ReturnStatement  | 
-                  RetryStatement  ] 
+   Statement := [ AssignmentOrProcedureCall  |
+                  IfStatement  | CaseStatement  |
+                  WhileStatement  |
+                  RepeatStatement  |
+                  LoopStatement  | ForStatement  |
+                  WithStatement  | AsmStatement  |
+                  ExitStatement  | ReturnStatement  |
+                  RetryStatement  ]
 
    first  symbols:retrytok, asmtok, withtok, fortok, looptok, repeattok, whiletok, casetok, iftok, identtok, returntok, exittok
-   
+
    reachend
 */
 
 static void Statement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   RetryStatement := 'RETRY' 
+   RetryStatement := 'RETRY'
 
    first  symbols:retrytok
-   
+
    cannot reachend
 */
 
 static void RetryStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AssignmentOrProcedureCall := Designator ( ':=' Expression  | 
-                                             ActualParameters  | 
-                                             
+   AssignmentOrProcedureCall := Designator ( ':=' Expression  |
+                                             ActualParameters  |
+
                                              %  epsilon   %
-                                              ) 
+                                              )
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void AssignmentOrProcedureCall (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   StatementSequence := Statement { ';' Statement  } 
+   StatementSequence := Statement { ';' Statement  }
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok
-   
+
    reachend
 */
 
 static void StatementSequence (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   IfStatement := 'IF' Expression 'THEN' StatementSequence 
-                  { 'ELSIF' Expression 'THEN' StatementSequence  } 
-                  [ 'ELSE' StatementSequence  ] 'END' 
+   IfStatement := 'IF' Expression 'THEN' StatementSequence
+                  { 'ELSIF' Expression 'THEN' StatementSequence  }
+                  [ 'ELSE' StatementSequence  ] 'END'
 
    first  symbols:iftok
-   
+
    cannot reachend
 */
 
 static void IfStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   CaseStatement := 'CASE' Expression 'OF' Case { '|' 
-                                                  Case  } 
-                    CaseEndStatement 
+   CaseStatement := 'CASE' Expression 'OF' Case { '|'
+                                                  Case  }
+                    CaseEndStatement
 
    first  symbols:casetok
-   
+
    cannot reachend
 */
 
 static void CaseStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   CaseEndStatement := 'END'  | 'ELSE' StatementSequence 
-                       'END' 
+   CaseEndStatement := 'END'  | 'ELSE' StatementSequence
+                       'END'
 
    first  symbols:elsetok, endtok
-   
+
    cannot reachend
 */
 
 static void CaseEndStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Case := [ CaseLabelList ':' StatementSequence  ] 
+   Case := [ CaseLabelList ':' StatementSequence  ]
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    reachend
 */
 
 static void Case (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   CaseLabelList := CaseLabels { ',' CaseLabels  } 
+   CaseLabelList := CaseLabels { ',' CaseLabels  }
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
 static void CaseLabelList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   CaseLabels := ConstExpressionNop [ '..' ConstExpressionNop  ] 
+   CaseLabels := ConstExpressionNop [ '..' ConstExpressionNop  ]
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
 static void CaseLabels (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   WhileStatement := 'WHILE' Expression 'DO' StatementSequence 
-                     'END' 
+   WhileStatement := 'WHILE' Expression 'DO' StatementSequence
+                     'END'
 
    first  symbols:whiletok
-   
+
    cannot reachend
 */
 
 static void WhileStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' 
-                      Expression 
+   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL'
+                      Expression
 
    first  symbols:repeattok
-   
+
    cannot reachend
 */
 
 static void RepeatStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ForStatement := 'FOR' Ident ':=' Expression 'TO' 
-                   Expression [ 'BY' ConstExpressionNop  ] 
-                   'DO' StatementSequence 'END' 
+   ForStatement := 'FOR' Ident ':=' Expression 'TO'
+                   Expression [ 'BY' ConstExpressionNop  ]
+                   'DO' StatementSequence 'END'
 
    first  symbols:fortok
-   
+
    cannot reachend
 */
 
 static void ForStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   LoopStatement := 'LOOP' StatementSequence 'END' 
+   LoopStatement := 'LOOP' StatementSequence 'END'
 
    first  symbols:looptok
-   
+
    cannot reachend
 */
 
 static void LoopStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   WithStatement := 'WITH' Designator 'DO' StatementSequence 
-                    'END' 
+   WithStatement := 'WITH' Designator 'DO' StatementSequence
+                    'END'
 
    first  symbols:withtok
-   
+
    cannot reachend
 */
 
 static void WithStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureDeclaration := ProcedureHeading ';' ProcedureBlock 
-                           Ident 
+   ProcedureDeclaration := ProcedureHeading ';' ProcedureBlock
+                           Ident
                            % leaveScope  %
-                           
+
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
 static void ProcedureDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureIdent := Ident 
+   ProcedureIdent := Ident
                      % curproc := lookupSym (curident)  %
-                     
+
                      % enterScope (curproc)  %
-                     
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void ProcedureIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefProcedureIdent := Ident 
+   DefProcedureIdent := Ident
                         % curproc := lookupSym (curident)  %
-                        
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void DefProcedureIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefineBuiltinProcedure := [ '__ATTRIBUTE__' '__BUILTIN__' 
-                               '(' '(' Ident ')' ')'  | 
-                               '__INLINE__'  ] 
+   DefineBuiltinProcedure := [ '__ATTRIBUTE__' '__BUILTIN__'
+                               '(' '(' Ident ')' ')'  |
+                               '__INLINE__'  ]
 
    first  symbols:inlinetok, attributetok
-   
+
    reachend
 */
 
 static void DefineBuiltinProcedure (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure 
-                       ( ProcedureIdent [ FormalParameters  ] 
-                         AttributeNoReturn  ) 
+   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure
+                       ( ProcedureIdent [ FormalParameters  ]
+                         AttributeNoReturn  )
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
 static void ProcedureHeading (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Builtin := [ '__BUILTIN__'  | '__INLINE__'  ] 
+   Builtin := [ '__BUILTIN__'  | '__INLINE__'  ]
 
    first  symbols:inlinetok, builtintok
-   
+
    reachend
 */
 
 static void Builtin (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefProcedureHeading := 'PROCEDURE' Builtin ( DefProcedureIdent 
-                                                [ DefFormalParameters  ] 
-                                                AttributeNoReturn  ) 
+   DefProcedureHeading := 'PROCEDURE' Builtin ( DefProcedureIdent
+                                                [ DefFormalParameters  ]
+                                                AttributeNoReturn  )
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
 static void DefProcedureHeading (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureBlock := { Declaration  } [ 'BEGIN' ProcedureBlockBody  ] 
-                     'END' 
+   ProcedureBlock := { Declaration  } [ 'BEGIN' ProcedureBlockBody  ]
+                     'END'
 
    first  symbols:proceduretok, moduletok, consttok, typetok, vartok, endtok, begintok
-   
+
    cannot reachend
 */
 
 static void ProcedureBlock (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Block := { Declaration  } InitialBlock FinalBlock 
-            'END' 
+   Block := { Declaration  } InitialBlock FinalBlock
+            'END'
 
    first  symbols:proceduretok, moduletok, finallytok, begintok, consttok, typetok, vartok, endtok
-   
+
    cannot reachend
 */
 
 static void Block (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   InitialBlock := [ 'BEGIN' InitialBlockBody  ] 
+   InitialBlock := [ 'BEGIN' InitialBlockBody  ]
 
    first  symbols:begintok
-   
+
    reachend
 */
 
 static void InitialBlock (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FinalBlock := [ 'FINALLY' FinalBlockBody  ] 
+   FinalBlock := [ 'FINALLY' FinalBlockBody  ]
 
    first  symbols:finallytok
-   
+
    reachend
 */
 
 static void FinalBlock (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   InitialBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+   InitialBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ]
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok, excepttok
-   
+
    reachend
 */
 
 static void InitialBlockBody (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FinalBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+   FinalBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ]
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok, excepttok
-   
+
    reachend
 */
 
 static void FinalBlockBody (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ProcedureBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+   ProcedureBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ]
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok, excepttok
-   
+
    reachend
 */
 
 static void ProcedureBlockBody (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   NormalPart := StatementSequence 
+   NormalPart := StatementSequence
 
    first  symbols:retrytok, asmtok, withtok, fortok, looptok, repeattok, whiletok, casetok, iftok, identtok, returntok, exittok, semicolontok
-   
+
    reachend
 */
 
 static void NormalPart (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ExceptionalPart := StatementSequence 
+   ExceptionalPart := StatementSequence
 
    first  symbols:retrytok, asmtok, withtok, fortok, looptok, repeattok, whiletok, casetok, iftok, identtok, returntok, exittok, semicolontok
-   
+
    reachend
 */
 
 static void ExceptionalPart (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Declaration := 'CONST' { ConstantDeclaration ';'  }  | 
-                  'TYPE' { TypeDeclaration  }  | 
-                  'VAR' { VariableDeclaration ';'  }  | 
-                  ProcedureDeclaration ';'  | 
-                  ModuleDeclaration ';' 
+   Declaration := 'CONST' { ConstantDeclaration ';'  }  |
+                  'TYPE' { TypeDeclaration  }  |
+                  'VAR' { VariableDeclaration ';'  }  |
+                  ProcedureDeclaration ';'  |
+                  ModuleDeclaration ';'
 
    first  symbols:moduletok, proceduretok, vartok, typetok, consttok
-   
+
    cannot reachend
 */
 
 static void Declaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefFormalParameters := '(' 
+   DefFormalParameters := '('
                           % paramEnter (curproc)  %
-                          [ DefMultiFPSection  ] ')' 
-                          
+                          [ DefMultiFPSection  ] ')'
+
                           % paramLeave (curproc)  %
-                          FormalReturn 
+                          FormalReturn
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void DefFormalParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefMultiFPSection := DefExtendedFP  | 
-                        FPSection [ ';' DefMultiFPSection  ] 
+   DefMultiFPSection := DefExtendedFP  |
+                        FPSection [ ';' DefMultiFPSection  ]
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
 static void DefMultiFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FormalParameters := '(' 
+   FormalParameters := '('
                        % paramEnter (curproc)  %
-                       [ MultiFPSection  ] ')' 
+                       [ MultiFPSection  ] ')'
                        % paramLeave (curproc)  %
-                       FormalReturn 
+                       FormalReturn
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void FormalParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AttributeNoReturn := [ NoReturn  | 
+   AttributeNoReturn := [ NoReturn  |
                           % setNoReturn (curproc, FALSE)  %
-                           ] 
+                           ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
 static void AttributeNoReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   NoReturn := '' 
+   NoReturn := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
 static void NoReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AttributeUnused := [ Unused  ] 
+   AttributeUnused := [ Unused  ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
 static void AttributeUnused (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Unused := '' 
+   Unused := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
 static void Unused (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   MultiFPSection := ExtendedFP  | FPSection [ ';' 
-                                               MultiFPSection  ] 
+   MultiFPSection := ExtendedFP  | FPSection [ ';'
+                                               MultiFPSection  ]
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
 static void MultiFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FPSection := NonVarFPSection  | 
-                VarFPSection 
+   FPSection := NonVarFPSection  |
+                VarFPSection
 
    first  symbols:vartok, identtok
-   
+
    cannot reachend
 */
 
 static void FPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefExtendedFP := DefOptArg  | '...' 
+   DefExtendedFP := DefOptArg  | '...'
                     % addParameter (curproc, makeVarargs ())  %
-                    
+
 
    first  symbols:lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
 static void DefExtendedFP (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ExtendedFP := OptArg  | '...' 
+   ExtendedFP := OptArg  | '...'
 
    first  symbols:lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
 static void ExtendedFP (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   VarFPSection := 'VAR' PushIdentList 
+   VarFPSection := 'VAR' PushIdentList
                    % VAR l, t: node ;  %
-                   ':' FormalType 
+                   ':' FormalType
                    % t := pop ()  %
-                   
+
                    % l := pop ()  %
-                   
+
                    % curisused := TRUE  %
-                   [ AttributeUnused  ] 
+                   [ AttributeUnused  ]
                    % addVarParameters (curproc, l, t, curisused)  %
-                   
+
 
    first  symbols:vartok
-   
+
    cannot reachend
 */
 
 static void VarFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   NonVarFPSection := PushIdentList 
+   NonVarFPSection := PushIdentList
                       % VAR l, t: node ;  %
-                      ':' FormalType 
+                      ':' FormalType
                       % t := pop ()  %
-                      
+
                       % l := pop ()  %
-                      
+
                       % curisused := TRUE  %
-                      [ AttributeUnused  ] 
+                      [ AttributeUnused  ]
                       % addNonVarParameters (curproc, l, t, curisused)  %
-                      
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void NonVarFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   OptArg := 
+   OptArg :=
              % VAR p, init, type: node ; id: Name ;  %
-             '[' Ident 
+             '[' Ident
              % id := curident  %
-             ':' FormalType 
+             ':' FormalType
              % type := pop ()  %
-             
+
              % init := NIL  %
-             [ '=' ConstExpression 
+             [ '=' ConstExpression
                % init := pop ()  %
-                ] ']' 
+                ] ']'
              % p := addOptParameter (curproc, id, type, init)  %
-             
+
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
 static void OptArg (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefOptArg := 
+   DefOptArg :=
                 % VAR p, init, type: node ; id: Name ;  %
-                '[' Ident 
+                '[' Ident
                 % id := curident  %
-                ':' FormalType 
+                ':' FormalType
                 % type := pop ()  %
-                '=' ConstExpression 
+                '=' ConstExpression
                 % init := pop ()  %
-                ']' 
+                ']'
                 % p := addOptParameter (curproc, id, type, init)  %
-                
+
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
 static void DefOptArg (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FormalType := 
+   FormalType :=
                  % VAR c: CARDINAL ;  %
-                 
+
                  % VAR n, a, s: node ;  %
-                 
+
                  % c := 0  %
-                 { 'ARRAY' 'OF' 
+                 { 'ARRAY' 'OF'
                    % INC (c)  %
-                    } PushQualident 
+                    } PushQualident
                  % pushNunbounded (c)  %
-                 
+
 
    first  symbols:identtok, arraytok
-   
+
    cannot reachend
 */
 
 static void FormalType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ModuleDeclaration := 'MODULE' Ident [ Priority  ] 
-                        ';' { Import  } [ Export  ] 
-                        Block Ident 
+   ModuleDeclaration := 'MODULE' Ident [ Priority  ]
+                        ';' { Import  } [ Export  ]
+                        Block Ident
 
    first  symbols:moduletok
-   
+
    cannot reachend
 */
 
 static void ModuleDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Priority := '[' ConstExpressionNop ']' 
+   Priority := '[' ConstExpressionNop ']'
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
 static void Priority (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
-                        'UNQUALIFIED' IdentList  | 
-                        IdentList  ) ';' 
+   Export := 'EXPORT' ( 'QUALIFIED' IdentList  |
+                        'UNQUALIFIED' IdentList  |
+                        IdentList  ) ';'
 
    first  symbols:exporttok
-   
+
    cannot reachend
 */
 
 static void Export (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FromIdentList := Ident 
+   FromIdentList := Ident
                     % importInto (frommodule, curident, curmodule)  %
-                    { ',' Ident 
+                    { ',' Ident
                       % importInto (frommodule, curident, curmodule)  %
-                       } 
+                       }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void FromIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   FromImport := 'FROM' Ident 
+   FromImport := 'FROM' Ident
                  % frommodule := lookupDef (curident)  %
-                 'IMPORT' FromIdentList ';' 
+                 'IMPORT' FromIdentList ';'
 
    first  symbols:fromtok
-   
+
    cannot reachend
 */
 
 static void FromImport (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   ImportModuleList := Ident { ',' Ident  } 
+   ImportModuleList := Ident { ',' Ident  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void ImportModuleList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   WithoutFromImport := 'IMPORT' ImportModuleList ';' 
+   WithoutFromImport := 'IMPORT' ImportModuleList ';'
 
    first  symbols:importtok
-   
+
    cannot reachend
 */
 
 static void WithoutFromImport (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Import := FromImport  | WithoutFromImport 
+   Import := FromImport  | WithoutFromImport
 
    first  symbols:importtok, fromtok
-   
+
    cannot reachend
 */
 
 static void Import (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' 
-                                               string  ] 
-                       Ident ';' 
+   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR'
+                                               string  ]
+                       Ident ';'
                        % curmodule := lookupDef (curident)  %
-                       
+
                        % enterScope (curmodule)  %
-                       
+
                        % resetEnumPos (curmodule)  %
-                       { Import  } [ Export  ] { Definition  } 
-                       'END' Ident '.' 
+                       { Import  } [ Export  ] { Definition  }
+                       'END' Ident '.'
                        % checkEndName (curmodule, curident, 'definition module')  %
-                       
+
                        % setConstExpComplete (curmodule)  %
-                       
+
                        % leaveScope  %
-                       
+
 
    first  symbols:definitiontok
-   
+
    cannot reachend
 */
 
 static void DefinitionModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   PushQualident := Ident 
+   PushQualident := Ident
                     % typeExp := push (lookupSym (curident))  %
-                    
+
                     % IF typeExp = NIL
                                     THEN
                                        metaError1 ('the symbol {%1k} is not visible in this scope (or any other nested scope)', curident)
                                     END  %
-                    [ '.' 
+                    [ '.'
                       % IF NOT isDef (typeExp)
                                       THEN
                         									    ErrorArray ('the first component of this qualident must be a definition module')
                                       END  %
-                      Ident 
+                      Ident
                       % typeExp := replace (lookupInScope (typeExp, curident)) ;
                         			                                                 IF typeExp=NIL
                                       THEN
                                          ErrorArray ('identifier not found in definition module')
                                       END  %
-                       ] 
+                       ]
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void PushQualident (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   OptSubrange := [ SubrangeType 
+   OptSubrange := [ SubrangeType
                     % VAR q, s: node ;  %
-                    
+
                     % s := pop ()  %
-                    
+
                     % q := pop ()  %
-                    
+
                     % putSubrangeType (s, q)  %
-                    
+
                     % typeExp := push (s)  %
-                     ] 
+                     ]
 
    first  symbols:lsbratok
-   
+
    reachend
 */
 
 static void OptSubrange (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   TypeEquiv := PushQualident OptSubrange 
+   TypeEquiv := PushQualident OptSubrange
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void TypeEquiv (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   EnumIdentList := 
+   EnumIdentList :=
                     % VAR f: node ;  %
-                    
+
                     % typeExp := push (makeEnum ())  %
-                    Ident 
+                    Ident
                     % f := makeEnumField (typeExp, curident)  %
-                    { ',' Ident 
+                    { ',' Ident
                       % f := makeEnumField (typeExp, curident)  %
-                       } 
+                       }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
 static void EnumIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Enumeration := '(' EnumIdentList ')' 
+   Enumeration := '(' EnumIdentList ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
 static void Enumeration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   SimpleType := 
+   SimpleType :=
                  % VAR d: CARDINAL ;  %
-                 
+
                  % d := depth ()  %
-                 ( TypeEquiv  | Enumeration  | 
-                   SubrangeType  ) 
+                 ( TypeEquiv  | Enumeration  |
+                   SubrangeType  )
                  % assert (d = depth () - 1)  %
-                 
+
 
    first  symbols:lsbratok, lparatok, identtok
-   
+
    cannot reachend
 */
 
 static void SimpleType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Type := SimpleType  | ArrayType  | RecordType  | 
-           SetType  | PointerType  | ProcedureType 
+   Type := SimpleType  | ArrayType  | RecordType  |
+           SetType  | PointerType  | ProcedureType
 
    first  symbols:proceduretok, pointertok, settok, packedsettok, oftok, recordtok, arraytok, identtok, lparatok, lsbratok
-   
+
    cannot reachend
 */
 
 static void Type (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   TypeDeclaration := { Ident 
+   TypeDeclaration := { Ident
                         % typeDes := lookupSym (curident)  %
-                        ( ';'  | '=' Type 
+                        ( ';'  | '=' Type
                           % putType (typeDes, pop ())  %
-                          Alignment ';'  )  } 
+                          Alignment ';'  )  }
 
    first  symbols:identtok
-   
+
    reachend
 */
 
 static void TypeDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   Definition := 'CONST' { ConstantDeclaration ';'  }  | 
-                 'TYPE' { TypeDeclaration  }  | 
-                 'VAR' { VariableDeclaration ';'  }  | 
-                 DefProcedureHeading ';' 
+   Definition := 'CONST' { ConstantDeclaration ';'  }  |
+                 'TYPE' { TypeDeclaration  }  |
+                 'VAR' { VariableDeclaration ';'  }  |
+                 DefProcedureHeading ';'
 
    first  symbols:proceduretok, vartok, typetok, consttok
-   
+
    cannot reachend
 */
 
 static void Definition (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands 
-                   ')' 
+   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands
+                   ')'
 
    first  symbols:asmtok
-   
+
    cannot reachend
 */
 
 static void AsmStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AsmOperands := string [ AsmOperandSpec  ] 
+   AsmOperands := string [ AsmOperandSpec  ]
 
    first  symbols:stringtok
-   
+
    cannot reachend
 */
 
 static void AsmOperands (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ 
-   ':' TrashList  ]  ]  ] 
+   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [
+   ':' TrashList  ]  ]  ]
 
    first  symbols:colontok
-   
+
    reachend
 */
 
 static void AsmOperandSpec (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AsmList := [ AsmElement  ] { ',' AsmElement  } 
+   AsmList := [ AsmElement  ] { ',' AsmElement  }
 
    first  symbols:lsbratok, stringtok, commatok
-   
+
    reachend
 */
 
 static void AsmList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   NamedOperand := '[' Ident ']' 
+   NamedOperand := '[' Ident ']'
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
 static void NamedOperand (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AsmOperandName := [ NamedOperand  ] 
+   AsmOperandName := [ NamedOperand  ]
 
    first  symbols:lsbratok
-   
+
    reachend
 */
 
 static void AsmOperandName (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   AsmElement := AsmOperandName string '(' Expression 
-                 ')' 
+   AsmElement := AsmOperandName string '(' Expression
+                 ')'
 
    first  symbols:stringtok, lsbratok
-   
+
    cannot reachend
 */
 
 static void AsmElement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
-   TrashList := [ string  ] { ',' string  } 
+   TrashList := [ string  ] { ',' string  }
 
    first  symbols:commatok, stringtok
-   
+
    reachend
 */
 
@@ -3312,7 +3313,7 @@ static void SyntaxError (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
     {
       mcPrintf_printf0 ((const char *) "\\nskipping token *** ", 21);
     }
-  /* 
+  /*
       yes the ORD(currenttoken) looks ugly, but it is *much* safer than
       using currenttoken<sometok as a change to the ordering of the
       token declarations below would cause this to break. Using ORD() we are
@@ -3524,11 +3525,11 @@ static void Real (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOf
 
 
 /*
-   FileUnit := DefinitionModule  | 
-               ImplementationOrProgramModule 
+   FileUnit := DefinitionModule  |
+               ImplementationOrProgramModule
 
    first  symbols:implementationtok, moduletok, definitiontok
-   
+
    cannot reachend
 */
 
@@ -3552,23 +3553,23 @@ static void FileUnit (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 
 
 /*
-   ProgramModule := 'MODULE' Ident 
+   ProgramModule := 'MODULE' Ident
                     % curmodule := lookupModule (curident)  %
-                    
+
                     % enterScope (curmodule)  %
-                    
+
                     % resetEnumPos (curmodule)  %
-                    [ Priority  ] ';' { Import  } Block 
-                    Ident 
+                    [ Priority  ] ';' { Import  } Block
+                    Ident
                     % checkEndName (curmodule, curident, 'program module')  %
-                    
+
                     % setConstExpComplete (curmodule)  %
-                    
+
                     % leaveScope  %
-                    '.' 
+                    '.'
 
    first  symbols:moduletok
-   
+
    cannot reachend
 */
 
@@ -3599,26 +3600,26 @@ static void ProgramModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   ImplementationModule := 'IMPLEMENTATION' 'MODULE' 
-                           Ident 
+   ImplementationModule := 'IMPLEMENTATION' 'MODULE'
+                           Ident
                            % curmodule := lookupImp (curident)  %
-                           
+
                            % enterScope (lookupDef (curident))  %
-                           
+
                            % enterScope (curmodule)  %
-                           
+
                            % resetEnumPos (curmodule)  %
-                           [ Priority  ] ';' { Import  } 
-                           Block Ident 
+                           [ Priority  ] ';' { Import  }
+                           Block Ident
                            % checkEndName (curmodule, curident, 'implementation module')  %
-                           
+
                            % setConstExpComplete (curmodule)  %
-                           
+
                            % leaveScope ; leaveScope  %
-                           '.' 
+                           '.'
 
    first  symbols:implementationtok
-   
+
    cannot reachend
 */
 
@@ -3652,11 +3653,11 @@ static void ImplementationModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stop
 
 
 /*
-   ImplementationOrProgramModule := ImplementationModule  | 
-                                    ProgramModule 
+   ImplementationOrProgramModule := ImplementationModule  |
+                                    ProgramModule
 
    first  symbols:moduletok, implementationtok
-   
+
    cannot reachend
 */
 
@@ -3680,10 +3681,10 @@ static void ImplementationOrProgramModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfS
 
 
 /*
-   Number := Integer  | Real 
+   Number := Integer  | Real
 
    first  symbols:realtok, integertok
-   
+
    cannot reachend
 */
 
@@ -3707,10 +3708,10 @@ static void Number (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 
 
 /*
-   Qualident := Ident { '.' Ident  } 
+   Qualident := Ident { '.' Ident  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -3727,20 +3728,20 @@ static void Qualident (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   ConstantDeclaration := 
+   ConstantDeclaration :=
                           % VAR d, e: node ;  %
-                          Ident 
+                          Ident
                           % d := lookupSym (curident)  %
-                          '=' ConstExpression 
+                          '=' ConstExpression
                           % e := pop ()  %
-                          
+
                           % assert (isConst (d))  %
-                          
+
                           % putConst (d, e)  %
-                          
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -3760,15 +3761,15 @@ static void ConstantDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   ConstExpressionNop := SimpleConstExpr 
+   ConstExpressionNop := SimpleConstExpr
                          % VAR n: node ;  %
-                         [ Relation SimpleConstExpr  ] 
-                         
+                         [ Relation SimpleConstExpr  ]
+
                          % n := makeConstExp ()  %
-                         
+
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -3787,14 +3788,14 @@ static void ConstExpressionNop (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopse
 
 
 /*
-   ConstExpression := 
+   ConstExpression :=
                       % VAR n: node ;  %
-                      
+
                       % n := push (makeConstExp ())  %
-                      SimpleConstExpr [ Relation SimpleConstExpr  ] 
+                      SimpleConstExpr [ Relation SimpleConstExpr  ]
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -3813,11 +3814,11 @@ static void ConstExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   Relation := '='  | '#'  | '<>'  | '<'  | '<='  | 
-               '>'  | '>='  | 'IN' 
+   Relation := '='  | '#'  | '<>'  | '<'  | '<='  |
+               '>'  | '>='  | 'IN'
 
    first  symbols:intok, greaterequaltok, greatertok, lessequaltok, lesstok, lessgreatertok, hashtok, equaltok
-   
+
    cannot reachend
 */
 
@@ -3871,11 +3872,11 @@ static void Relation (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 
 
 /*
-   SimpleConstExpr := UnaryOrConstTerm { AddOperator 
-                                         ConstTerm  } 
+   SimpleConstExpr := UnaryOrConstTerm { AddOperator
+                                         ConstTerm  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -3892,12 +3893,12 @@ static void SimpleConstExpr (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   UnaryOrConstTerm := '+' ConstTerm  | 
-                       '-' ConstTerm  | 
-                       ConstTerm 
+   UnaryOrConstTerm := '+' ConstTerm  |
+                       '-' ConstTerm  |
+                       ConstTerm
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -3928,10 +3929,10 @@ static void UnaryOrConstTerm (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   AddOperator := '+'  | '-'  | 'OR' 
+   AddOperator := '+'  | '-'  | 'OR'
 
    first  symbols:ortok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -3960,10 +3961,10 @@ static void AddOperator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   ConstTerm := ConstFactor { MulOperator ConstFactor  } 
+   ConstTerm := ConstFactor { MulOperator ConstFactor  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok
-   
+
    cannot reachend
 */
 
@@ -3980,11 +3981,11 @@ static void ConstTerm (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 
-                  'REM'  | 'AND'  | '&' 
+   MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  |
+                  'REM'  | 'AND'  | '&'
 
    first  symbols:ambersandtok, andtok, remtok, modtok, divtok, dividetok, timestok
-   
+
    cannot reachend
 */
 
@@ -4033,14 +4034,14 @@ static void MulOperator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   ConstFactor := Number  | ConstString  | 
-                  ConstSetOrQualidentOrFunction  | 
-                  '(' ConstExpressionNop ')'  | 
-                  'NOT' ConstFactor  | 
-                  ConstAttribute 
+   ConstFactor := Number  | ConstString  |
+                  ConstSetOrQualidentOrFunction  |
+                  '(' ConstExpressionNop ')'  |
+                  'NOT' ConstFactor  |
+                  ConstAttribute
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok
-   
+
    cannot reachend
 */
 
@@ -4087,10 +4088,10 @@ static void ConstFactor (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   ConstString := string 
+   ConstString := string
 
    first  symbols:stringtok
-   
+
    cannot reachend
 */
 
@@ -4101,10 +4102,10 @@ static void ConstString (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   ComponentElement := ConstExpressionNop [ '..' ConstExpressionNop  ] 
+   ComponentElement := ConstExpressionNop [ '..' ConstExpressionNop  ]
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -4120,10 +4121,10 @@ static void ComponentElement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   ComponentValue := ComponentElement [ 'BY' ConstExpressionNop  ] 
+   ComponentValue := ComponentElement [ 'BY' ConstExpressionNop  ]
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -4139,10 +4140,10 @@ static void ComponentValue (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   ArraySetRecordValue := ComponentValue { ',' ComponentValue  } 
+   ArraySetRecordValue := ComponentValue { ',' ComponentValue  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -4159,10 +4160,10 @@ static void ArraySetRecordValue (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   Constructor := '{' [ ArraySetRecordValue  ] '}' 
+   Constructor := '{' [ ArraySetRecordValue  ] '}'
 
    first  symbols:lcbratok
-   
+
    cannot reachend
 */
 
@@ -4178,12 +4179,12 @@ static void Constructor (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   ConstSetOrQualidentOrFunction := Qualident [ Constructor  | 
-                                                ConstActualParameters  ]  | 
-                                    Constructor 
+   ConstSetOrQualidentOrFunction := Qualident [ Constructor  |
+                                                ConstActualParameters  ]  |
+                                    Constructor
 
    first  symbols:lcbratok, identtok
-   
+
    cannot reachend
 */
 
@@ -4228,10 +4229,10 @@ static void ConstSetOrQualidentOrFunction (mcp3_SetOfStop0 stopset0, mcp3_SetOfS
 
 
 /*
-   ConstActualParameters := '(' [ ConstExpList  ] ')' 
+   ConstActualParameters := '(' [ ConstExpList  ] ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -4247,10 +4248,10 @@ static void ConstActualParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 sto
 
 
 /*
-   ConstExpList := ConstExpressionNop { ',' ConstExpressionNop  } 
+   ConstExpList := ConstExpressionNop { ',' ConstExpressionNop  }
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -4267,12 +4268,12 @@ static void ConstExpList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' 
-                     '(' '(' ConstAttributeExpression 
-                     ')' ')' 
+   ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__'
+                     '(' '(' ConstAttributeExpression
+                     ')' ')'
 
    first  symbols:attributetok
-   
+
    cannot reachend
 */
 
@@ -4289,11 +4290,11 @@ static void ConstAttribute (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   ConstAttributeExpression := Ident  | '<' Qualident 
-                               ',' Ident '>' 
+   ConstAttributeExpression := Ident  | '<' Qualident
+                               ',' Ident '>'
 
    first  symbols:lesstok, identtok
-   
+
    cannot reachend
 */
 
@@ -4321,10 +4322,10 @@ static void ConstAttributeExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 
 
 
 /*
-   ByteAlignment := '' 
+   ByteAlignment := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
@@ -4337,10 +4338,10 @@ static void ByteAlignment (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   OptAlignmentExpression := [ AlignmentExpression  ] 
+   OptAlignmentExpression := [ AlignmentExpression  ]
 
    first  symbols:lparatok
-   
+
    reachend
 */
 
@@ -4354,10 +4355,10 @@ static void OptAlignmentExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 st
 
 
 /*
-   AlignmentExpression := '(' ConstExpressionNop ')' 
+   AlignmentExpression := '(' ConstExpressionNop ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -4370,10 +4371,10 @@ static void AlignmentExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   Alignment := [ ByteAlignment  ] 
+   Alignment := [ ByteAlignment  ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
@@ -4387,10 +4388,10 @@ static void Alignment (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   IdentList := Ident { ',' Ident  } 
+   IdentList := Ident { ',' Ident  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -4407,20 +4408,20 @@ static void IdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   PushIdentList := 
+   PushIdentList :=
                     % VAR n: node ;  %
-                    
+
                     % n := makeIdentList ()  %
-                    Ident 
+                    Ident
                     % checkDuplicate (putIdent (n, curident))  %
-                    { ',' Ident 
+                    { ',' Ident
                       % checkDuplicate (putIdent (n, curident))  %
-                       } 
+                       }
                     % n := push (n)  %
-                    
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -4443,26 +4444,26 @@ static void PushIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   SubrangeType := 
+   SubrangeType :=
                    % VAR low, high: node ; d: CARDINAL ;  %
-                   '[' 
+                   '['
                    % d := depth ()  %
-                   ConstExpression 
+                   ConstExpression
                    % low := pop ()  %
-                   
+
                    % assert (d = depth ())  %
-                   '..' ConstExpression 
+                   '..' ConstExpression
                    % high := pop ()  %
-                   
+
                    % assert (d = depth ())  %
-                   
+
                    % typeExp := push (makeSubrange (low, high))  %
-                   
+
                    % assert (d = depth () - 1)  %
-                   ']' 
+                   ']'
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
@@ -4488,20 +4489,20 @@ static void SubrangeType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   ArrayType := 'ARRAY' 
+   ArrayType := 'ARRAY'
                 % VAR c: CARDINAL ; t, n: node ;  %
-                
+
                 % c := 0  %
-                SimpleType 
+                SimpleType
                 % INC (c)  %
-                { ',' SimpleType 
+                { ',' SimpleType
                   % INC (c)  %
-                   } 'OF' Type 
+                   } 'OF' Type
                 % n := push (makeIndexedArray (c, pop ()))  %
-                
+
 
    first  symbols:arraytok
-   
+
    cannot reachend
 */
 
@@ -4529,19 +4530,19 @@ static void ArrayType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   RecordType := 'RECORD' 
+   RecordType := 'RECORD'
                  % VAR n: node ;  %
-                 
+
                  % n := push (makeRecord ())  %
-                 
+
                  % n := push (NIL)     no varient   %
-                 [ DefaultRecordAttributes  ] FieldListSequence 
-                 
+                 [ DefaultRecordAttributes  ] FieldListSequence
+
                  % assert (pop ()=NIL)  %
-                 'END' 
+                 'END'
 
    first  symbols:recordtok
-   
+
    cannot reachend
 */
 
@@ -4563,10 +4564,10 @@ static void RecordType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   DefaultRecordAttributes := '' 
+   DefaultRecordAttributes := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
@@ -4579,10 +4580,10 @@ static void DefaultRecordAttributes (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 s
 
 
 /*
-   RecordFieldPragma := [ ''  ] 
+   RecordFieldPragma := [ ''  ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
@@ -4604,10 +4605,10 @@ static void RecordFieldPragma (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   FieldPragmaExpression := Ident PragmaConstExpression 
+   FieldPragmaExpression := Ident PragmaConstExpression
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -4619,11 +4620,11 @@ static void FieldPragmaExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 sto
 
 
 /*
-   PragmaConstExpression := [ '(' ConstExpressionNop 
-                              ')'  ] 
+   PragmaConstExpression := [ '(' ConstExpressionNop
+                              ')'  ]
 
    first  symbols:lparatok
-   
+
    reachend
 */
 
@@ -4639,11 +4640,11 @@ static void PragmaConstExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 sto
 
 
 /*
-   AttributeExpression := Ident '(' ConstExpressionNop 
-                          ')' 
+   AttributeExpression := Ident '(' ConstExpressionNop
+                          ')'
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -4657,10 +4658,10 @@ static void AttributeExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   FieldListSequence := FieldListStatement { ';' FieldListStatement  } 
+   FieldListSequence := FieldListStatement { ';' FieldListStatement  }
 
    first  symbols:casetok, identtok, semicolontok
-   
+
    reachend
 */
 
@@ -4677,10 +4678,10 @@ static void FieldListSequence (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   FieldListStatement := [ FieldList  ] 
+   FieldListStatement := [ FieldList  ]
 
    first  symbols:identtok, casetok
-   
+
    reachend
 */
 
@@ -4694,72 +4695,72 @@ static void FieldListStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopse
 
 
 /*
-   FieldList := 
+   FieldList :=
                 % VAR r, i, f, t, n, v, w: node ; d: CARDINAL ;  %
-                
+
                 % d := depth ()  %
-                
+
                 % v := pop () ; assert ((v=NIL) OR isVarient (v))  %
-                
+
                 % r := peep () ; assert (isRecord (r) OR isVarientField (r))  %
-                
+
                 % v := push (v)  %
-                
+
                 % assert (d=depth ())  %
-                
+
                 % assert (((v=NIL) AND isRecord (r)) OR ((v#NIL) AND isVarientField (r)))  %
-                PushIdentList ':' 
+                PushIdentList ':'
                 % assert (d=depth () - 1)  %
-                
+
                 % i := pop ()  %
-                Type 
+                Type
                 % assert (d=depth () - 1)  %
-                
+
                 % t := pop ()  %
-                RecordFieldPragma 
+                RecordFieldPragma
                 % assert (d=depth ())  %
-                
+
                 % r := addFieldsToRecord (r, v, i, t)  %
-                
+
                 % assert (d=depth ())  %
-                 | 
-                'CASE' 
+                 |
+                'CASE'
                 %  addRecordToList   %
-                
+
                 % d := depth ()  %
-                
+
                 % v := pop () ; assert ((v=NIL) OR isVarient (v))  %
-                
+
                 % r := peep () ; assert (isRecord (r) OR isVarientField (r))  %
-                
+
                 % v := push (v)  %
-                
+
                 % assert (((v=NIL) AND isRecord (r)) OR ((v#NIL) AND isRecordField (r)))  %
-                
+
                 % w := push (makeVarient (r))  %
-                
+
                 % assert (d = depth () - 1)  %
-                
+
                 %  addVarientToList   %
-                CaseTag 'OF' 
+                CaseTag 'OF'
                 % assert (d = depth () - 1)  %
-                Varient 
+                Varient
                 % assert (d = depth () - 1)  %
-                { '|' Varient 
+                { '|' Varient
                   % assert (d = depth () - 1)  %
-                   } 
+                   }
                 % w := peep () ; assert (isVarient (w))  %
-                
+
                 % assert (d = depth () - 1)  %
-                [ 'ELSE' FieldListSequence  ] 'END' 
-                
+                [ 'ELSE' FieldListSequence  ] 'END'
+
                 % w := pop () ; assert (isVarient (w))  %
-                
+
                 % assert (d=depth ())  %
-                
+
 
    first  symbols:casetok, identtok
-   
+
    cannot reachend
 */
 
@@ -4845,12 +4846,12 @@ static void FieldList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   TagIdent := Ident  | 
+   TagIdent := Ident  |
                % curident := NulName  %
-               
+
 
    first  symbols:identtok
-   
+
    reachend
 */
 
@@ -4868,32 +4869,32 @@ static void TagIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 
 
 /*
-   CaseTag := 
+   CaseTag :=
               % VAR tagident: Name ; q, v, w, r: node ;  %
-              
+
               % w := pop () ; v := pop () ; r := peep () ; v := push (v) ; w := push (w)  %
-              
+
               % assert (isVarient (w))  %
-              
+
               % assert ((v=NIL) OR isVarient (v))  %
-              
+
               % assert (isRecord (r) OR isVarientField (r))  %
-              
+
               % assert (isVarient (push (pop ())))  %
-              TagIdent 
+              TagIdent
               % tagident := curident  %
-              ( ':' PushQualident 
+              ( ':' PushQualident
                 % q := pop ()  %
-                
+
                 % assert (isVarient (push (pop ())))  %
-                 | 
+                 |
                 % q := NIL  %
-                 ) 
+                 )
               % buildVarientSelector (r, w, tagident, q)  %
-              
+
 
    first  symbols:colontok, identtok
-   
+
    reachend
 */
 
@@ -4932,43 +4933,43 @@ static void CaseTag (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 
 
 /*
-   Varient := 
+   Varient :=
               % VAR p, r, v, f: node ; d: CARDINAL ;  %
-              
+
               % d := depth ()  %
-              
+
               % assert (isVarient (peep ()))  %
-              [ 
+              [
                 % v := pop () ; assert (isVarient (v))  %
-                
+
                 % r := pop ()  %
-                
+
                 % p := peep ()  %
-                
+
                 % r := push (r)  %
-                
+
                 % f := push (buildVarientFieldRecord (v, p))  %
-                
+
                 % v := push (v)  %
-                VarientCaseLabelList ':' FieldListSequence 
-                
+                VarientCaseLabelList ':' FieldListSequence
+
                 % v := pop ()  %
-                
+
                 % f := pop ()  %
-                
+
                 % assert (isVarientField (f))  %
-                
+
                 % assert (isVarient (v))  %
-                
+
                 % v := push (v)  %
-                 ] 
+                 ]
               % assert (isVarient (peep ()))  %
-              
+
               % assert (d=depth ())  %
-              
+
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    reachend
 */
 
@@ -5006,11 +5007,11 @@ static void Varient (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 
 
 /*
-   VarientCaseLabelList := VarientCaseLabels { ',' 
-                                               VarientCaseLabels  } 
+   VarientCaseLabelList := VarientCaseLabels { ','
+                                               VarientCaseLabels  }
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -5027,20 +5028,20 @@ static void VarientCaseLabelList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stop
 
 
 /*
-   VarientCaseLabels := 
+   VarientCaseLabels :=
                         % VAR l, h: node ;  %
-                        
+
                         % h := NIL  %
-                        ConstExpression 
+                        ConstExpression
                         % l := pop ()  %
-                        [ '..' ConstExpression 
+                        [ '..' ConstExpression
                           % h := pop ()  %
-                           ] 
+                           ]
                         %  l, h  could be saved if necessary.    %
-                        
+
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -5062,15 +5063,15 @@ static void VarientCaseLabels (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   SetType := ( 'SET'  | 'PACKEDSET'  ) 'OF' SimpleType 
-              
+   SetType := ( 'SET'  | 'PACKEDSET'  ) 'OF' SimpleType
+
               % VAR n: node ;  %
-              
+
               % n := push (makeSet (pop ()))  %
-              
+
 
    first  symbols:oftok, packedsettok, settok
-   
+
    cannot reachend
 */
 
@@ -5099,14 +5100,14 @@ static void SetType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 
 
 /*
-   PointerType := 'POINTER' 'TO' Type 
+   PointerType := 'POINTER' 'TO' Type
                   % VAR n: node ;  %
-                  
+
                   % n := push (makePointer (pop ()))  %
-                  
+
 
    first  symbols:pointertok
-   
+
    cannot reachend
 */
 
@@ -5122,12 +5123,12 @@ static void PointerType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   ProcedureType := 'PROCEDURE' 
+   ProcedureType := 'PROCEDURE'
                     % curproc := push (makeProcType ())  %
-                    [ FormalTypeList  ] 
+                    [ FormalTypeList  ]
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
@@ -5143,12 +5144,12 @@ static void ProcedureType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   FormalTypeList := '(' ( ')' FormalReturn  | 
-                           ProcedureParameters ')' 
-                           FormalReturn  ) 
+   FormalTypeList := '(' ( ')' FormalReturn  |
+                           ProcedureParameters ')'
+                           FormalReturn  )
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -5176,10 +5177,10 @@ static void FormalTypeList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   FormalReturn := [ ':' OptReturnType  ] 
+   FormalReturn := [ ':' OptReturnType  ]
 
    first  symbols:colontok
-   
+
    reachend
 */
 
@@ -5194,16 +5195,16 @@ static void FormalReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   OptReturnType := '[' PushQualident 
+   OptReturnType := '[' PushQualident
                     % putReturnType (curproc, pop ())  %
-                    
+
                     % putOptReturn (curproc)  %
-                    ']'  | PushQualident 
+                    ']'  | PushQualident
                     % putReturnType (curproc, pop ())  %
-                    
+
 
    first  symbols:identtok, lsbratok
-   
+
    cannot reachend
 */
 
@@ -5232,15 +5233,15 @@ static void OptReturnType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   ProcedureParameters := ProcedureParameter 
+   ProcedureParameters := ProcedureParameter
                           % addParameter (curproc, pop ())  %
-                          { ',' ProcedureParameter 
-                            
+                          { ',' ProcedureParameter
+
                             % addParameter (curproc, pop ())  %
-                             } 
+                             }
 
    first  symbols:identtok, arraytok, periodperiodperiodtok, vartok
-   
+
    cannot reachend
 */
 
@@ -5259,18 +5260,18 @@ static void ProcedureParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   ProcedureParameter := '...' 
+   ProcedureParameter := '...'
                          % VAR n: node ;  %
-                         
+
                          % n := push (makeVarargs ())  %
-                          | 'VAR' FormalType 
+                          | 'VAR' FormalType
                          % n := push (makeVarParameter (NIL, pop (), curproc, TRUE))  %
-                          | FormalType 
+                          | FormalType
                          % n := push (makeNonVarParameter (NIL, pop (), curproc, TRUE))  %
-                         
+
 
    first  symbols:identtok, arraytok, vartok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
@@ -5305,20 +5306,20 @@ static void ProcedureParameter (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopse
 
 
 /*
-   VarIdent := 
+   VarIdent :=
                % VAR n, a: node ;  %
-               
+
                % n := pop ()  %
-               Ident 
+               Ident
                % checkDuplicate (putIdent (n, curident))  %
-               
+
                % n := push (n)  %
-               [ '[' ConstExpression 
+               [ '[' ConstExpression
                  % a := pop ()   could store, a, into, n.    %
-                 ']'  ] 
+                 ']'  ]
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -5342,16 +5343,16 @@ static void VarIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 
 
 /*
-   VarIdentList := 
+   VarIdentList :=
                    % VAR n: node ;  %
-                   
+
                    % n := makeIdentList ()  %
-                   
+
                    % n := push (n)  %
-                   VarIdent { ',' VarIdent  } 
+                   VarIdent { ',' VarIdent  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -5372,16 +5373,16 @@ static void VarIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   VariableDeclaration := 
+   VariableDeclaration :=
                           % VAR v, d: node ;  %
-                          VarIdentList 
+                          VarIdentList
                           % v := pop ()  %
-                          ':' Type 
+                          ':' Type
                           % d := makeVarDecl (v, pop ())  %
-                          Alignment 
+                          Alignment
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -5400,10 +5401,10 @@ static void VariableDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   Designator := Qualident { SubDesignator  } 
+   Designator := Qualident { SubDesignator  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -5419,11 +5420,11 @@ static void Designator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   SubDesignator := '.' Ident  | '[' ArrayExpList ']'  | 
-                    '^' 
+   SubDesignator := '.' Ident  | '[' ArrayExpList ']'  |
+                    '^'
 
    first  symbols:uparrowtok, lsbratok, periodtok
-   
+
    cannot reachend
 */
 
@@ -5455,10 +5456,10 @@ static void SubDesignator (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   ArrayExpList := Expression { ',' Expression  } 
+   ArrayExpList := Expression { ',' Expression  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -5475,10 +5476,10 @@ static void ArrayExpList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   ExpList := Expression { ',' Expression  } 
+   ExpList := Expression { ',' Expression  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -5495,10 +5496,10 @@ static void ExpList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 
 
 /*
-   Expression := SimpleExpression [ Relation SimpleExpression  ] 
+   Expression := SimpleExpression [ Relation SimpleExpression  ]
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -5514,10 +5515,10 @@ static void Expression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   SimpleExpression := UnaryOrTerm { AddOperator Term  } 
+   SimpleExpression := UnaryOrTerm { AddOperator Term  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -5534,11 +5535,11 @@ static void SimpleExpression (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   UnaryOrTerm := '+' Term  | '-' Term  | 
-                  Term 
+   UnaryOrTerm := '+' Term  | '-' Term  |
+                  Term
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -5569,10 +5570,10 @@ static void UnaryOrTerm (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   Term := Factor { MulOperator Factor  } 
+   Term := Factor { MulOperator Factor  }
 
    first  symbols:lcbratok, identtok, realtok, integertok, stringtok, lparatok, nottok
-   
+
    cannot reachend
 */
 
@@ -5589,12 +5590,12 @@ static void Term (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOf
 
 
 /*
-   Factor := Number  | string  | SetOrDesignatorOrFunction  | 
-             '(' Expression ')'  | 
-             'NOT' ( Factor  | ConstAttribute  ) 
+   Factor := Number  | string  | SetOrDesignatorOrFunction  |
+             '(' Expression ')'  |
+             'NOT' ( Factor  | ConstAttribute  )
 
    first  symbols:identtok, lcbratok, nottok, lparatok, stringtok, integertok, realtok
-   
+
    cannot reachend
 */
 
@@ -5649,13 +5650,13 @@ static void Factor (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 
 
 /*
-   SetOrDesignatorOrFunction := Qualident [ Constructor  | 
-                                            SimpleDes 
-                                            [ ActualParameters  ]  ]  | 
-                                Constructor 
+   SetOrDesignatorOrFunction := Qualident [ Constructor  |
+                                            SimpleDes
+                                            [ ActualParameters  ]  ]  |
+                                Constructor
 
    first  symbols:lcbratok, identtok
-   
+
    cannot reachend
 */
 
@@ -5704,10 +5705,10 @@ static void SetOrDesignatorOrFunction (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1
 
 
 /*
-   SimpleDes := { SubDesignator  } 
+   SimpleDes := { SubDesignator  }
 
    first  symbols:periodtok, lsbratok, uparrowtok
-   
+
    reachend
 */
 
@@ -5722,10 +5723,10 @@ static void SimpleDes (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   ActualParameters := '(' [ ExpList  ] ')' 
+   ActualParameters := '(' [ ExpList  ] ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -5741,10 +5742,10 @@ static void ActualParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   ExitStatement := 'EXIT' 
+   ExitStatement := 'EXIT'
 
    first  symbols:exittok
-   
+
    cannot reachend
 */
 
@@ -5755,10 +5756,10 @@ static void ExitStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   ReturnStatement := 'RETURN' [ Expression  ] 
+   ReturnStatement := 'RETURN' [ Expression  ]
 
    first  symbols:returntok
-   
+
    cannot reachend
 */
 
@@ -5773,17 +5774,17 @@ static void ReturnStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   Statement := [ AssignmentOrProcedureCall  | 
-                  IfStatement  | CaseStatement  | 
-                  WhileStatement  | 
-                  RepeatStatement  | 
-                  LoopStatement  | ForStatement  | 
-                  WithStatement  | AsmStatement  | 
-                  ExitStatement  | ReturnStatement  | 
-                  RetryStatement  ] 
+   Statement := [ AssignmentOrProcedureCall  |
+                  IfStatement  | CaseStatement  |
+                  WhileStatement  |
+                  RepeatStatement  |
+                  LoopStatement  | ForStatement  |
+                  WithStatement  | AsmStatement  |
+                  ExitStatement  | ReturnStatement  |
+                  RetryStatement  ]
 
    first  symbols:retrytok, asmtok, withtok, fortok, looptok, repeattok, whiletok, casetok, iftok, identtok, returntok, exittok
-   
+
    reachend
 */
 
@@ -5863,10 +5864,10 @@ static void Statement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   RetryStatement := 'RETRY' 
+   RetryStatement := 'RETRY'
 
    first  symbols:retrytok
-   
+
    cannot reachend
 */
 
@@ -5877,14 +5878,14 @@ static void RetryStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   AssignmentOrProcedureCall := Designator ( ':=' Expression  | 
-                                             ActualParameters  | 
-                                             
+   AssignmentOrProcedureCall := Designator ( ':=' Expression  |
+                                             ActualParameters  |
+
                                              %  epsilon   %
-                                              ) 
+                                              )
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -5906,10 +5907,10 @@ static void AssignmentOrProcedureCall (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1
 
 
 /*
-   StatementSequence := Statement { ';' Statement  } 
+   StatementSequence := Statement { ';' Statement  }
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok
-   
+
    reachend
 */
 
@@ -5926,12 +5927,12 @@ static void StatementSequence (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   IfStatement := 'IF' Expression 'THEN' StatementSequence 
-                  { 'ELSIF' Expression 'THEN' StatementSequence  } 
-                  [ 'ELSE' StatementSequence  ] 'END' 
+   IfStatement := 'IF' Expression 'THEN' StatementSequence
+                  { 'ELSIF' Expression 'THEN' StatementSequence  }
+                  [ 'ELSE' StatementSequence  ] 'END'
 
    first  symbols:iftok
-   
+
    cannot reachend
 */
 
@@ -5959,12 +5960,12 @@ static void IfStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   CaseStatement := 'CASE' Expression 'OF' Case { '|' 
-                                                  Case  } 
-                    CaseEndStatement 
+   CaseStatement := 'CASE' Expression 'OF' Case { '|'
+                                                  Case  }
+                    CaseEndStatement
 
    first  symbols:casetok
-   
+
    cannot reachend
 */
 
@@ -5985,11 +5986,11 @@ static void CaseStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   CaseEndStatement := 'END'  | 'ELSE' StatementSequence 
-                       'END' 
+   CaseEndStatement := 'END'  | 'ELSE' StatementSequence
+                       'END'
 
    first  symbols:elsetok, endtok
-   
+
    cannot reachend
 */
 
@@ -6015,10 +6016,10 @@ static void CaseEndStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   Case := [ CaseLabelList ':' StatementSequence  ] 
+   Case := [ CaseLabelList ':' StatementSequence  ]
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    reachend
 */
 
@@ -6034,10 +6035,10 @@ static void Case (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOf
 
 
 /*
-   CaseLabelList := CaseLabels { ',' CaseLabels  } 
+   CaseLabelList := CaseLabels { ',' CaseLabels  }
 
    first  symbols:attributetok, identtok, lcbratok, stringtok, nottok, lparatok, integertok, realtok, minustok, plustok
-   
+
    cannot reachend
 */
 
@@ -6054,10 +6055,10 @@ static void CaseLabelList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   CaseLabels := ConstExpressionNop [ '..' ConstExpressionNop  ] 
+   CaseLabels := ConstExpressionNop [ '..' ConstExpressionNop  ]
 
    first  symbols:stringtok, lcbratok, identtok, attributetok, realtok, integertok, lparatok, nottok, plustok, minustok
-   
+
    cannot reachend
 */
 
@@ -6073,11 +6074,11 @@ static void CaseLabels (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   WhileStatement := 'WHILE' Expression 'DO' StatementSequence 
-                     'END' 
+   WhileStatement := 'WHILE' Expression 'DO' StatementSequence
+                     'END'
 
    first  symbols:whiletok
-   
+
    cannot reachend
 */
 
@@ -6092,11 +6093,11 @@ static void WhileStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' 
-                      Expression 
+   RepeatStatement := 'REPEAT' StatementSequence 'UNTIL'
+                      Expression
 
    first  symbols:repeattok
-   
+
    cannot reachend
 */
 
@@ -6110,12 +6111,12 @@ static void RepeatStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   ForStatement := 'FOR' Ident ':=' Expression 'TO' 
-                   Expression [ 'BY' ConstExpressionNop  ] 
-                   'DO' StatementSequence 'END' 
+   ForStatement := 'FOR' Ident ':=' Expression 'TO'
+                   Expression [ 'BY' ConstExpressionNop  ]
+                   'DO' StatementSequence 'END'
 
    first  symbols:fortok
-   
+
    cannot reachend
 */
 
@@ -6139,10 +6140,10 @@ static void ForStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   LoopStatement := 'LOOP' StatementSequence 'END' 
+   LoopStatement := 'LOOP' StatementSequence 'END'
 
    first  symbols:looptok
-   
+
    cannot reachend
 */
 
@@ -6155,11 +6156,11 @@ static void LoopStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   WithStatement := 'WITH' Designator 'DO' StatementSequence 
-                    'END' 
+   WithStatement := 'WITH' Designator 'DO' StatementSequence
+                    'END'
 
    first  symbols:withtok
-   
+
    cannot reachend
 */
 
@@ -6174,13 +6175,13 @@ static void WithStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   ProcedureDeclaration := ProcedureHeading ';' ProcedureBlock 
-                           Ident 
+   ProcedureDeclaration := ProcedureHeading ';' ProcedureBlock
+                           Ident
                            % leaveScope  %
-                           
+
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
@@ -6195,14 +6196,14 @@ static void ProcedureDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stop
 
 
 /*
-   ProcedureIdent := Ident 
+   ProcedureIdent := Ident
                      % curproc := lookupSym (curident)  %
-                     
+
                      % enterScope (curproc)  %
-                     
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -6215,12 +6216,12 @@ static void ProcedureIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   DefProcedureIdent := Ident 
+   DefProcedureIdent := Ident
                         % curproc := lookupSym (curident)  %
-                        
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -6232,12 +6233,12 @@ static void DefProcedureIdent (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   DefineBuiltinProcedure := [ '__ATTRIBUTE__' '__BUILTIN__' 
-                               '(' '(' Ident ')' ')'  | 
-                               '__INLINE__'  ] 
+   DefineBuiltinProcedure := [ '__ATTRIBUTE__' '__BUILTIN__'
+                               '(' '(' Ident ')' ')'  |
+                               '__INLINE__'  ]
 
    first  symbols:inlinetok, attributetok
-   
+
    reachend
 */
 
@@ -6273,12 +6274,12 @@ static void DefineBuiltinProcedure (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 st
 
 
 /*
-   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure 
-                       ( ProcedureIdent [ FormalParameters  ] 
-                         AttributeNoReturn  ) 
+   ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure
+                       ( ProcedureIdent [ FormalParameters  ]
+                         AttributeNoReturn  )
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
@@ -6296,10 +6297,10 @@ static void ProcedureHeading (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   Builtin := [ '__BUILTIN__'  | '__INLINE__'  ] 
+   Builtin := [ '__BUILTIN__'  | '__INLINE__'  ]
 
    first  symbols:inlinetok, builtintok
-   
+
    reachend
 */
 
@@ -6329,12 +6330,12 @@ static void Builtin (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 
 
 /*
-   DefProcedureHeading := 'PROCEDURE' Builtin ( DefProcedureIdent 
-                                                [ DefFormalParameters  ] 
-                                                AttributeNoReturn  ) 
+   DefProcedureHeading := 'PROCEDURE' Builtin ( DefProcedureIdent
+                                                [ DefFormalParameters  ]
+                                                AttributeNoReturn  )
 
    first  symbols:proceduretok
-   
+
    cannot reachend
 */
 
@@ -6352,11 +6353,11 @@ static void DefProcedureHeading (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   ProcedureBlock := { Declaration  } [ 'BEGIN' ProcedureBlockBody  ] 
-                     'END' 
+   ProcedureBlock := { Declaration  } [ 'BEGIN' ProcedureBlockBody  ]
+                     'END'
 
    first  symbols:proceduretok, moduletok, consttok, typetok, vartok, endtok, begintok
-   
+
    cannot reachend
 */
 
@@ -6377,11 +6378,11 @@ static void ProcedureBlock (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   Block := { Declaration  } InitialBlock FinalBlock 
-            'END' 
+   Block := { Declaration  } InitialBlock FinalBlock
+            'END'
 
    first  symbols:proceduretok, moduletok, finallytok, begintok, consttok, typetok, vartok, endtok
-   
+
    cannot reachend
 */
 
@@ -6399,10 +6400,10 @@ static void Block (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetO
 
 
 /*
-   InitialBlock := [ 'BEGIN' InitialBlockBody  ] 
+   InitialBlock := [ 'BEGIN' InitialBlockBody  ]
 
    first  symbols:begintok
-   
+
    reachend
 */
 
@@ -6417,10 +6418,10 @@ static void InitialBlock (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   FinalBlock := [ 'FINALLY' FinalBlockBody  ] 
+   FinalBlock := [ 'FINALLY' FinalBlockBody  ]
 
    first  symbols:finallytok
-   
+
    reachend
 */
 
@@ -6435,10 +6436,10 @@ static void FinalBlock (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   InitialBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+   InitialBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ]
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok, excepttok
-   
+
    reachend
 */
 
@@ -6454,10 +6455,10 @@ static void InitialBlockBody (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   FinalBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+   FinalBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ]
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok, excepttok
-   
+
    reachend
 */
 
@@ -6473,10 +6474,10 @@ static void FinalBlockBody (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   ProcedureBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+   ProcedureBlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ]
 
    first  symbols:identtok, iftok, casetok, whiletok, repeattok, looptok, fortok, withtok, asmtok, retrytok, semicolontok, exittok, returntok, excepttok
-   
+
    reachend
 */
 
@@ -6492,10 +6493,10 @@ static void ProcedureBlockBody (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopse
 
 
 /*
-   NormalPart := StatementSequence 
+   NormalPart := StatementSequence
 
    first  symbols:retrytok, asmtok, withtok, fortok, looptok, repeattok, whiletok, casetok, iftok, identtok, returntok, exittok, semicolontok
-   
+
    reachend
 */
 
@@ -6506,10 +6507,10 @@ static void NormalPart (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   ExceptionalPart := StatementSequence 
+   ExceptionalPart := StatementSequence
 
    first  symbols:retrytok, asmtok, withtok, fortok, looptok, repeattok, whiletok, casetok, iftok, identtok, returntok, exittok, semicolontok
-   
+
    reachend
 */
 
@@ -6520,14 +6521,14 @@ static void ExceptionalPart (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   Declaration := 'CONST' { ConstantDeclaration ';'  }  | 
-                  'TYPE' { TypeDeclaration  }  | 
-                  'VAR' { VariableDeclaration ';'  }  | 
-                  ProcedureDeclaration ';'  | 
-                  ModuleDeclaration ';' 
+   Declaration := 'CONST' { ConstantDeclaration ';'  }  |
+                  'TYPE' { TypeDeclaration  }  |
+                  'VAR' { VariableDeclaration ';'  }  |
+                  ProcedureDeclaration ';'  |
+                  ModuleDeclaration ';'
 
    first  symbols:moduletok, proceduretok, vartok, typetok, consttok
-   
+
    cannot reachend
 */
 
@@ -6585,15 +6586,15 @@ static void Declaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   DefFormalParameters := '(' 
+   DefFormalParameters := '('
                           % paramEnter (curproc)  %
-                          [ DefMultiFPSection  ] ')' 
-                          
+                          [ DefMultiFPSection  ] ')'
+
                           % paramLeave (curproc)  %
-                          FormalReturn 
+                          FormalReturn
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -6612,11 +6613,11 @@ static void DefFormalParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stops
 
 
 /*
-   DefMultiFPSection := DefExtendedFP  | 
-                        FPSection [ ';' DefMultiFPSection  ] 
+   DefMultiFPSection := DefExtendedFP  |
+                        FPSection [ ';' DefMultiFPSection  ]
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
@@ -6645,14 +6646,14 @@ static void DefMultiFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   FormalParameters := '(' 
+   FormalParameters := '('
                        % paramEnter (curproc)  %
-                       [ MultiFPSection  ] ')' 
+                       [ MultiFPSection  ] ')'
                        % paramLeave (curproc)  %
-                       FormalReturn 
+                       FormalReturn
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -6671,12 +6672,12 @@ static void FormalParameters (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   AttributeNoReturn := [ NoReturn  | 
+   AttributeNoReturn := [ NoReturn  |
                           % setNoReturn (curproc, FALSE)  %
-                           ] 
+                           ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
@@ -6700,10 +6701,10 @@ static void AttributeNoReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   NoReturn := '' 
+   NoReturn := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
@@ -6718,10 +6719,10 @@ static void NoReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 
 
 /*
-   AttributeUnused := [ Unused  ] 
+   AttributeUnused := [ Unused  ]
 
    first  symbols:ldirectivetok
-   
+
    reachend
 */
 
@@ -6735,10 +6736,10 @@ static void AttributeUnused (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   Unused := '' 
+   Unused := ''
 
    first  symbols:ldirectivetok
-   
+
    cannot reachend
 */
 
@@ -6753,11 +6754,11 @@ static void Unused (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 
 
 /*
-   MultiFPSection := ExtendedFP  | FPSection [ ';' 
-                                               MultiFPSection  ] 
+   MultiFPSection := ExtendedFP  | FPSection [ ';'
+                                               MultiFPSection  ]
 
    first  symbols:identtok, vartok, lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
@@ -6786,11 +6787,11 @@ static void MultiFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   FPSection := NonVarFPSection  | 
-                VarFPSection 
+   FPSection := NonVarFPSection  |
+                VarFPSection
 
    first  symbols:vartok, identtok
-   
+
    cannot reachend
 */
 
@@ -6814,12 +6815,12 @@ static void FPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   DefExtendedFP := DefOptArg  | '...' 
+   DefExtendedFP := DefOptArg  | '...'
                     % addParameter (curproc, makeVarargs ())  %
-                    
+
 
    first  symbols:lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
@@ -6844,10 +6845,10 @@ static void DefExtendedFP (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   ExtendedFP := OptArg  | '...' 
+   ExtendedFP := OptArg  | '...'
 
    first  symbols:lsbratok, periodperiodperiodtok
-   
+
    cannot reachend
 */
 
@@ -6871,20 +6872,20 @@ static void ExtendedFP (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   VarFPSection := 'VAR' PushIdentList 
+   VarFPSection := 'VAR' PushIdentList
                    % VAR l, t: node ;  %
-                   ':' FormalType 
+                   ':' FormalType
                    % t := pop ()  %
-                   
+
                    % l := pop ()  %
-                   
+
                    % curisused := TRUE  %
-                   [ AttributeUnused  ] 
+                   [ AttributeUnused  ]
                    % addVarParameters (curproc, l, t, curisused)  %
-                   
+
 
    first  symbols:vartok
-   
+
    cannot reachend
 */
 
@@ -6909,20 +6910,20 @@ static void VarFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   NonVarFPSection := PushIdentList 
+   NonVarFPSection := PushIdentList
                       % VAR l, t: node ;  %
-                      ':' FormalType 
+                      ':' FormalType
                       % t := pop ()  %
-                      
+
                       % l := pop ()  %
-                      
+
                       % curisused := TRUE  %
-                      [ AttributeUnused  ] 
+                      [ AttributeUnused  ]
                       % addNonVarParameters (curproc, l, t, curisused)  %
-                      
+
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -6946,22 +6947,22 @@ static void NonVarFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   OptArg := 
+   OptArg :=
              % VAR p, init, type: node ; id: Name ;  %
-             '[' Ident 
+             '[' Ident
              % id := curident  %
-             ':' FormalType 
+             ':' FormalType
              % type := pop ()  %
-             
+
              % init := NIL  %
-             [ '=' ConstExpression 
+             [ '=' ConstExpression
                % init := pop ()  %
-                ] ']' 
+                ] ']'
              % p := addOptParameter (curproc, id, type, init)  %
-             
+
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
@@ -6991,20 +6992,20 @@ static void OptArg (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 
 
 /*
-   DefOptArg := 
+   DefOptArg :=
                 % VAR p, init, type: node ; id: Name ;  %
-                '[' Ident 
+                '[' Ident
                 % id := curident  %
-                ':' FormalType 
+                ':' FormalType
                 % type := pop ()  %
-                '=' ConstExpression 
+                '=' ConstExpression
                 % init := pop ()  %
-                ']' 
+                ']'
                 % p := addOptParameter (curproc, id, type, init)  %
-                
+
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
@@ -7030,20 +7031,20 @@ static void DefOptArg (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   FormalType := 
+   FormalType :=
                  % VAR c: CARDINAL ;  %
-                 
+
                  % VAR n, a, s: node ;  %
-                 
+
                  % c := 0  %
-                 { 'ARRAY' 'OF' 
+                 { 'ARRAY' 'OF'
                    % INC (c)  %
-                    } PushQualident 
+                    } PushQualident
                  % pushNunbounded (c)  %
-                 
+
 
    first  symbols:identtok, arraytok
-   
+
    cannot reachend
 */
 
@@ -7068,12 +7069,12 @@ static void FormalType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   ModuleDeclaration := 'MODULE' Ident [ Priority  ] 
-                        ';' { Import  } [ Export  ] 
-                        Block Ident 
+   ModuleDeclaration := 'MODULE' Ident [ Priority  ]
+                        ';' { Import  } [ Export  ]
+                        Block Ident
 
    first  symbols:moduletok
-   
+
    cannot reachend
 */
 
@@ -7101,10 +7102,10 @@ static void ModuleDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   Priority := '[' ConstExpressionNop ']' 
+   Priority := '[' ConstExpressionNop ']'
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
@@ -7117,12 +7118,12 @@ static void Priority (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 
 
 /*
-   Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
-                        'UNQUALIFIED' IdentList  | 
-                        IdentList  ) ';' 
+   Export := 'EXPORT' ( 'QUALIFIED' IdentList  |
+                        'UNQUALIFIED' IdentList  |
+                        IdentList  ) ';'
 
    first  symbols:exporttok
-   
+
    cannot reachend
 */
 
@@ -7155,14 +7156,14 @@ static void Export (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 
 
 /*
-   FromIdentList := Ident 
+   FromIdentList := Ident
                     % importInto (frommodule, curident, curmodule)  %
-                    { ',' Ident 
+                    { ',' Ident
                       % importInto (frommodule, curident, curmodule)  %
-                       } 
+                       }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -7181,12 +7182,12 @@ static void FromIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   FromImport := 'FROM' Ident 
+   FromImport := 'FROM' Ident
                  % frommodule := lookupDef (curident)  %
-                 'IMPORT' FromIdentList ';' 
+                 'IMPORT' FromIdentList ';'
 
    first  symbols:fromtok
-   
+
    cannot reachend
 */
 
@@ -7202,10 +7203,10 @@ static void FromImport (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   ImportModuleList := Ident { ',' Ident  } 
+   ImportModuleList := Ident { ',' Ident  }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -7222,10 +7223,10 @@ static void ImportModuleList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   WithoutFromImport := 'IMPORT' ImportModuleList ';' 
+   WithoutFromImport := 'IMPORT' ImportModuleList ';'
 
    first  symbols:importtok
-   
+
    cannot reachend
 */
 
@@ -7238,10 +7239,10 @@ static void WithoutFromImport (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
 
 
 /*
-   Import := FromImport  | WithoutFromImport 
+   Import := FromImport  | WithoutFromImport
 
    first  symbols:importtok, fromtok
-   
+
    cannot reachend
 */
 
@@ -7265,25 +7266,25 @@ static void Import (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 
 
 /*
-   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' 
-                                               string  ] 
-                       Ident ';' 
+   DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR'
+                                               string  ]
+                       Ident ';'
                        % curmodule := lookupDef (curident)  %
-                       
+
                        % enterScope (curmodule)  %
-                       
+
                        % resetEnumPos (curmodule)  %
-                       { Import  } [ Export  ] { Definition  } 
-                       'END' Ident '.' 
+                       { Import  } [ Export  ] { Definition  }
+                       'END' Ident '.'
                        % checkEndName (curmodule, curident, 'definition module')  %
-                       
+
                        % setConstExpComplete (curmodule)  %
-                       
+
                        % leaveScope  %
-                       
+
 
    first  symbols:definitiontok
-   
+
    cannot reachend
 */
 
@@ -7325,28 +7326,28 @@ static void DefinitionModule (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1
 
 
 /*
-   PushQualident := Ident 
+   PushQualident := Ident
                     % typeExp := push (lookupSym (curident))  %
-                    
+
                     % IF typeExp = NIL
                                     THEN
                                        metaError1 ('the symbol {%1k} is not visible in this scope (or any other nested scope)', curident)
                                     END  %
-                    [ '.' 
+                    [ '.'
                       % IF NOT isDef (typeExp)
                                       THEN
                         									    ErrorArray ('the first component of this qualident must be a definition module')
                                       END  %
-                      Ident 
+                      Ident
                       % typeExp := replace (lookupInScope (typeExp, curident)) ;
                         			                                                 IF typeExp=NIL
                                       THEN
                                          ErrorArray ('identifier not found in definition module')
                                       END  %
-                       ] 
+                       ]
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -7376,20 +7377,20 @@ static void PushQualident (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   OptSubrange := [ SubrangeType 
+   OptSubrange := [ SubrangeType
                     % VAR q, s: node ;  %
-                    
+
                     % s := pop ()  %
-                    
+
                     % q := pop ()  %
-                    
+
                     % putSubrangeType (s, q)  %
-                    
+
                     % typeExp := push (s)  %
-                     ] 
+                     ]
 
    first  symbols:lsbratok
-   
+
    reachend
 */
 
@@ -7410,10 +7411,10 @@ static void OptSubrange (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   TypeEquiv := PushQualident OptSubrange 
+   TypeEquiv := PushQualident OptSubrange
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -7425,18 +7426,18 @@ static void TypeEquiv (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
 
 
 /*
-   EnumIdentList := 
+   EnumIdentList :=
                     % VAR f: node ;  %
-                    
+
                     % typeExp := push (makeEnum ())  %
-                    Ident 
+                    Ident
                     % f := makeEnumField (typeExp, curident)  %
-                    { ',' Ident 
+                    { ',' Ident
                       % f := makeEnumField (typeExp, curident)  %
-                       } 
+                       }
 
    first  symbols:identtok
-   
+
    cannot reachend
 */
 
@@ -7458,10 +7459,10 @@ static void EnumIdentList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, m
 
 
 /*
-   Enumeration := '(' EnumIdentList ')' 
+   Enumeration := '(' EnumIdentList ')'
 
    first  symbols:lparatok
-   
+
    cannot reachend
 */
 
@@ -7474,17 +7475,17 @@ static void Enumeration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   SimpleType := 
+   SimpleType :=
                  % VAR d: CARDINAL ;  %
-                 
+
                  % d := depth ()  %
-                 ( TypeEquiv  | Enumeration  | 
-                   SubrangeType  ) 
+                 ( TypeEquiv  | Enumeration  |
+                   SubrangeType  )
                  % assert (d = depth () - 1)  %
-                 
+
 
    first  symbols:lsbratok, lparatok, identtok
-   
+
    cannot reachend
 */
 
@@ -7517,11 +7518,11 @@ static void SimpleType (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   Type := SimpleType  | ArrayType  | RecordType  | 
-           SetType  | PointerType  | ProcedureType 
+   Type := SimpleType  | ArrayType  | RecordType  |
+           SetType  | PointerType  | ProcedureType
 
    first  symbols:proceduretok, pointertok, settok, packedsettok, oftok, recordtok, arraytok, identtok, lparatok, lsbratok
-   
+
    cannot reachend
 */
 
@@ -7565,14 +7566,14 @@ static void Type (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOf
 
 
 /*
-   TypeDeclaration := { Ident 
+   TypeDeclaration := { Ident
                         % typeDes := lookupSym (curident)  %
-                        ( ';'  | '=' Type 
+                        ( ';'  | '=' Type
                           % putType (typeDes, pop ())  %
-                          Alignment ';'  )  } 
+                          Alignment ';'  )  }
 
    first  symbols:identtok
-   
+
    reachend
 */
 
@@ -7606,13 +7607,13 @@ static void TypeDeclaration (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
 
 
 /*
-   Definition := 'CONST' { ConstantDeclaration ';'  }  | 
-                 'TYPE' { TypeDeclaration  }  | 
-                 'VAR' { VariableDeclaration ';'  }  | 
-                 DefProcedureHeading ';' 
+   Definition := 'CONST' { ConstantDeclaration ';'  }  |
+                 'TYPE' { TypeDeclaration  }  |
+                 'VAR' { VariableDeclaration ';'  }  |
+                 DefProcedureHeading ';'
 
    first  symbols:proceduretok, vartok, typetok, consttok
-   
+
    cannot reachend
 */
 
@@ -7664,11 +7665,11 @@ static void Definition (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands 
-                   ')' 
+   AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands
+                   ')'
 
    first  symbols:asmtok
-   
+
    cannot reachend
 */
 
@@ -7686,10 +7687,10 @@ static void AsmStatement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   AsmOperands := string [ AsmOperandSpec  ] 
+   AsmOperands := string [ AsmOperandSpec  ]
 
    first  symbols:stringtok
-   
+
    cannot reachend
 */
 
@@ -7704,11 +7705,11 @@ static void AsmOperands (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp
 
 
 /*
-   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ 
-   ':' TrashList  ]  ]  ] 
+   AsmOperandSpec := [ ':' AsmList [ ':' AsmList [
+   ':' TrashList  ]  ]  ]
 
    first  symbols:colontok
-   
+
    reachend
 */
 
@@ -7733,10 +7734,10 @@ static void AsmOperandSpec (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   AsmList := [ AsmElement  ] { ',' AsmElement  } 
+   AsmList := [ AsmElement  ] { ',' AsmElement  }
 
    first  symbols:lsbratok, stringtok, commatok
-   
+
    reachend
 */
 
@@ -7756,10 +7757,10 @@ static void AsmList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Se
 
 
 /*
-   NamedOperand := '[' Ident ']' 
+   NamedOperand := '[' Ident ']'
 
    first  symbols:lsbratok
-   
+
    cannot reachend
 */
 
@@ -7772,10 +7773,10 @@ static void NamedOperand (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
 
 
 /*
-   AsmOperandName := [ NamedOperand  ] 
+   AsmOperandName := [ NamedOperand  ]
 
    first  symbols:lsbratok
-   
+
    reachend
 */
 
@@ -7789,11 +7790,11 @@ static void AsmOperandName (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, 
 
 
 /*
-   AsmElement := AsmOperandName string '(' Expression 
-                 ')' 
+   AsmElement := AsmOperandName string '(' Expression
+                 ')'
 
    first  symbols:stringtok, lsbratok
-   
+
    cannot reachend
 */
 
@@ -7808,10 +7809,10 @@ static void AsmElement (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3
 
 
 /*
-   TrashList := [ string  ] { ',' string  } 
+   TrashList := [ string  ] { ',' string  }
 
    first  symbols:commatok, stringtok
-   
+
    reachend
 */
 

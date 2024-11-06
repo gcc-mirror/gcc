@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -27,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "selftest.h"
+#include "make-unique.h"
 
 namespace {
 
@@ -213,10 +215,10 @@ gcc_urlifier::make_doc_url (const char *doc_url_suffix)
 
 } // anonymous namespace
 
-urlifier *
+std::unique_ptr<urlifier>
 make_gcc_urlifier (unsigned int lang_mask)
 {
-  return new gcc_urlifier (lang_mask);
+  return ::make_unique<gcc_urlifier> (lang_mask);
 }
 
 #if CHECKING_P

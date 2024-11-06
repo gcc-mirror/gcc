@@ -28,7 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 _Decimal64
 __bid_muldd3 (_Decimal64 x, _Decimal64 y) {
   union decimal64 ux, uy, res;
- 
+
   ux.d = x;
   uy.d = y;
   res.i = __bid64_mul (ux.i, uy.i);

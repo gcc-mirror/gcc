@@ -1,7 +1,7 @@
 /* PR rtl-optimization/38245 */
 /* { dg-do run } */
 /* { dg-additional-sources "pr38245-4.c" } */
-/* { dg-options "-O2" } */
+/* { dg-options "-std=gnu17 -O2" } */
 
 #include "pr38245-3.h"
 

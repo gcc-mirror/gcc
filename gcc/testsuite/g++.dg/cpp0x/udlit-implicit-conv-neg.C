@@ -2,21 +2,21 @@
 
 #include <cstdint>
 
-int operator"" _bar (long double);
+int operator ""_bar (long double);
 
-double operator"" _foo (long long unsigned);
+double operator ""_foo (long long unsigned);
 
 int i = 12_bar; // { dg-error "unable to find numeric literal operator|with|argument" }
 
 double d = 1.2_foo; // { dg-error "unable to find numeric literal operator|with|argument" }
 
-int operator"" _char(char);
+int operator ""_char(char);
 
-int operator"" _wchar_t(wchar_t);
+int operator ""_wchar_t(wchar_t);
 
-int operator"" _char16_t(char16_t);
+int operator ""_char16_t(char16_t);
 
-int operator"" _char32_t(char32_t);
+int operator ""_char32_t(char32_t);
 
 int cwcx = 'c'_wchar_t; // { dg-error "unable to find character literal operator|with|argument" }
 int cc16 = 'c'_char16_t; // { dg-error "unable to find character literal operator|with|argument" }
@@ -34,13 +34,13 @@ int c32c = U'c'_char; // { dg-error "unable to find character literal operator|w
 int c32wc = U'c'_wchar_t; // { dg-error "unable to find character literal operator|with|argument" }
 int c32c16 = U'c'_char16_t; // { dg-error "unable to find character literal operator|with|argument" }
 
-int operator"" _char_str(const char*, std::size_t);
+int operator ""_char_str(const char*, std::size_t);
 
-int operator"" _wchar_t_str(const wchar_t*, std::size_t);
+int operator ""_wchar_t_str(const wchar_t*, std::size_t);
 
-int operator"" _char16_t_str(const char16_t*, std::size_t);
+int operator ""_char16_t_str(const char16_t*, std::size_t);
 
-int operator"" _char32_t_str(const char32_t*, std::size_t);
+int operator ""_char32_t_str(const char32_t*, std::size_t);
 
 int strwstr = "str"_wchar_t_str; // { dg-error "unable to find string literal operator|with|arguments" }
 int strstr16 = "str"_char16_t_str; // { dg-error "unable to find string literal operator|with|arguments" }

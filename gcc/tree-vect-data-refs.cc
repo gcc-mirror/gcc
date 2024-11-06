@@ -3206,6 +3206,7 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
   if (loop_vinfo && integer_zerop (step))
     {
       DR_GROUP_FIRST_ELEMENT (stmt_info) = NULL;
+      DR_GROUP_NEXT_ELEMENT (stmt_info) = NULL;
       if (!nested_in_vect_loop_p (loop, stmt_info))
 	return DR_IS_READ (dr);
       /* Allow references with zero step for outer loops marked
@@ -3225,6 +3226,7 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
       /* Interleaved accesses are not yet supported within outer-loop
         vectorization for references in the inner-loop.  */
       DR_GROUP_FIRST_ELEMENT (stmt_info) = NULL;
+      DR_GROUP_NEXT_ELEMENT (stmt_info) = NULL;
 
       /* For the rest of the analysis we use the outer-loop step.  */
       step = STMT_VINFO_DR_STEP (stmt_info);
@@ -3247,6 +3249,7 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
 	{
 	  /* Mark that it is not interleaving.  */
 	  DR_GROUP_FIRST_ELEMENT (stmt_info) = NULL;
+	  DR_GROUP_NEXT_ELEMENT (stmt_info) = NULL;
 	  return true;
 	}
     }
@@ -3562,12 +3565,15 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	  DR_GROUP_NEXT_ELEMENT (lastinfo) = stmtinfo_b;
 	  lastinfo = stmtinfo_b;
 
-	  STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a)
-	    = !can_group_stmts_p (stmtinfo_a, stmtinfo_b, false);
+	  if (! STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
+	    {
+	      STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a)
+		= !can_group_stmts_p (stmtinfo_a, stmtinfo_b, false);
 
-	  if (dump_enabled_p () && STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Load suitable for SLP vectorization only.\n");
+	      if (dump_enabled_p () && STMT_VINFO_SLP_VECT_ONLY (stmtinfo_a))
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Load suitable for SLP vectorization only.\n");
+	    }
 
 	  if (init_b == init_prev
 	      && !to_fixup.add (DR_GROUP_FIRST_ELEMENT (stmtinfo_a))
@@ -3611,7 +3617,11 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	    {
 	      DR_GROUP_NEXT_ELEMENT (g) = DR_GROUP_NEXT_ELEMENT (next);
 	      if (!newgroup)
-		newgroup = next;
+		{
+		  newgroup = next;
+		  STMT_VINFO_SLP_VECT_ONLY (newgroup)
+		    = STMT_VINFO_SLP_VECT_ONLY (grp);
+		}
 	      else
 		DR_GROUP_NEXT_ELEMENT (ng) = next;
 	      ng = next;
@@ -7170,11 +7180,11 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	     same alignment, instead it depends on the SLP group size.  */
 	  if (loop_vinfo
 	      && STMT_SLP_TYPE (stmt_info)
-	      && (!STMT_VINFO_GROUPED_ACCESS (stmt_info)
-		  || !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-				  * (DR_GROUP_SIZE
-				       (DR_GROUP_FIRST_ELEMENT (stmt_info))),
-				  TYPE_VECTOR_SUBPARTS (vectype))))
+	      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	      && !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+			      * (DR_GROUP_SIZE
+				   (DR_GROUP_FIRST_ELEMENT (stmt_info))),
+			      TYPE_VECTOR_SUBPARTS (vectype)))
 	    ;
 	  else if (!loop_vinfo
 		   || (nested_in_vect_loop

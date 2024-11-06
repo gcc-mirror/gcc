@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -132,7 +133,7 @@ extern "C" void FpuIO_ReadReal (double *x)
   struct ReadReal__T1_a { char array[MaxLineLength+1]; };
   ReadReal__T1 a;
 
-  /* 
+  /*
 #undef GM2_DEBUG_FPUIO
 if defined(GM2_DEBUG_FPUIO)
 #  define InitString(X) InitStringDB(X, __FILE__, __LINE__)

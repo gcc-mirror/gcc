@@ -26,6 +26,8 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Debug;          use Debug;
+with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
@@ -1644,10 +1646,11 @@ package body Sem_Aggr is
       --  node as Expr, since there is no Expression and we need a Sloc for the
       --  error message.
 
-      procedure Resolve_Iterated_Component_Association
+      function Resolve_Iterated_Component_Association
         (N         : Node_Id;
-         Index_Typ : Entity_Id);
-      --  For AI12-061
+         Index_Typ : Entity_Id) return Boolean;
+      --  For AI12-061: resolves iterated component association N of Index_Typ.
+      --  Returns False if resolution fails.
 
       function Subtract (Val : Uint; To : Node_Id) return Node_Id;
       --  Creates a new expression node where Val is subtracted to expression
@@ -2108,12 +2111,13 @@ package body Sem_Aggr is
       -- Resolve_Iterated_Component_Association --
       --------------------------------------------
 
-      procedure Resolve_Iterated_Component_Association
+      function Resolve_Iterated_Component_Association
         (N         : Node_Id;
-         Index_Typ : Entity_Id)
+         Index_Typ : Entity_Id) return Boolean
       is
-         Loc : constant Source_Ptr := Sloc (N);
-         Id  : constant Entity_Id  := Defining_Identifier (N);
+         Loc  : constant Source_Ptr := Sloc (N);
+         Id   : constant Entity_Id  := Defining_Identifier (N);
+         Expr : constant Node_Id    := Expression (N);
 
          -----------------------
          -- Remove_References --
@@ -2143,7 +2147,6 @@ package body Sem_Aggr is
          Choice         : Node_Id;
          Resolution_OK  : Boolean;
          Scop           : Entity_Id;
-         Expr           : constant Node_Id := Expression (N);
 
       --  Start of processing for Resolve_Iterated_Component_Association
 
@@ -2215,10 +2218,6 @@ package body Sem_Aggr is
 
          Resolution_OK := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
 
-         if not Resolution_OK then
-            return;
-         end if;
-
          if Operating_Mode /= Check_Semantics then
             Remove_References (Expr);
             declare
@@ -2232,17 +2231,9 @@ package body Sem_Aggr is
             end;
          end if;
 
-         --  An iterated_component_association may appear in a nested
-         --  aggregate for a multidimensional structure: preserve the bounds
-         --  computed for the expression, as well as the anonymous array
-         --  type generated for it; both are needed during array expansion.
-
-         if Nkind (Expr) = N_Aggregate then
-            Set_Aggregate_Bounds (Expression (N), Aggregate_Bounds (Expr));
-            Set_Etype (Expression (N), Etype (Expr));
-         end if;
-
          End_Scope;
+
+         return Resolution_OK;
       end Resolve_Iterated_Component_Association;
 
       --------------
@@ -2667,7 +2658,11 @@ package body Sem_Aggr is
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Iterated_Component_Association then
-               Resolve_Iterated_Component_Association (Assoc, Index_Typ);
+               if not Resolve_Iterated_Component_Association
+                        (Assoc, Index_Typ)
+               then
+                  return Failure;
+               end if;
 
             elsif Nkind (Assoc) /= N_Component_Association then
                Error_Msg_N
@@ -4051,6 +4046,21 @@ package body Sem_Aggr is
         Empty_Subp, Add_Named_Subp, Add_Unnamed_Subp,
         New_Indexed_Subp, Assign_Indexed_Subp);
 
+      if Present (First (Expressions (N)))
+        and then Present (First (Component_Associations (N)))
+      then
+         if Debug_Flag_Underscore_DD then
+            Record_Mixed_Container_Aggregate_Error
+              (Aggr       => N,
+               Pos_Elem   => First (Expressions (N)),
+               Named_Elem => First (Component_Associations (N)));
+         else
+            Error_Msg_N
+              ("container aggregate cannot be both positional and named", N);
+         end if;
+         return;
+      end if;
+
       if Present (Add_Unnamed_Subp)
         and then No (New_Indexed_Subp)
         and then Present (Etype (Add_Unnamed_Subp))
@@ -4184,14 +4194,6 @@ package body Sem_Aggr is
             if Present (Component_Associations (N))
               and then not Is_Empty_List (Component_Associations (N))
             then
-               if Present (Expressions (N))
-                 and then not Is_Empty_List (Expressions (N))
-               then
-                  Error_Msg_N ("container aggregate cannot be "
-                    & "both positional and named", N);
-                  return;
-               end if;
-
                Comp := First (Component_Associations (N));
 
                while Present (Comp) loop

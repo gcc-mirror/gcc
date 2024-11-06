@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 /* ??? not all decl nodes are given the most useful possible
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -55,7 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
- 
+
 extern cpp_reader *parse_in;
 
 static tree start_objects (bool, unsigned, bool, bool);
@@ -2075,7 +2076,7 @@ coerce_new_type (tree type, location_t loc)
       if (TREE_PURPOSE (args))
 	{
 	  /* [basic.stc.dynamic.allocation]
-	     
+
 	     The first parameter shall not have an associated default
 	     argument.  */
 	  error_at (loc, "the first parameter of %<operator new%> cannot "
@@ -2433,7 +2434,7 @@ import_export_class (tree ctype)
        translation unit, then export the class; otherwise, import
        it.  */
       import_export = -1;
-  else if (TYPE_POLYMORPHIC_P (ctype))
+  else if (TYPE_CONTAINS_VPTR_P (ctype))
     {
       tree cdecl = TYPE_NAME (ctype);
       if (DECL_LANG_SPECIFIC (cdecl) && DECL_MODULE_ATTACH_P (cdecl))
@@ -2936,7 +2937,7 @@ determine_visibility (tree decl)
 	  if (DECL_VISIBILITY_SPECIFIED (fn))
 	    {
 	      DECL_VISIBILITY (decl) = DECL_VISIBILITY (fn);
-	      DECL_VISIBILITY_SPECIFIED (decl) = 
+	      DECL_VISIBILITY_SPECIFIED (decl) =
 		DECL_VISIBILITY_SPECIFIED (fn);
 	    }
 	  else
@@ -3016,7 +3017,7 @@ determine_visibility (tree decl)
 		      ? TYPE_ATTRIBUTES (TREE_TYPE (decl))
 		      : DECL_ATTRIBUTES (decl));
       tree attr = lookup_attribute ("visibility", attribs);
-      
+
       if (args != error_mark_node)
 	{
 	  tree pattern = DECL_TEMPLATE_RESULT (TI_TEMPLATE (tinfo));
@@ -3529,7 +3530,7 @@ import_export_decl (tree decl)
 	  class_type = type;
 	  import_export_class (type);
 	  if (CLASSTYPE_INTERFACE_KNOWN (type)
-	      && TYPE_POLYMORPHIC_P (type)
+	      && TYPE_CONTAINS_VPTR_P (type)
 	      && CLASSTYPE_INTERFACE_ONLY (type)
 	      /* If -fno-rtti was specified, then we cannot be sure
 		 that RTTI information will be emitted with the
@@ -4284,7 +4285,7 @@ finish_partial_init_fini_fn (tree body)
    to refer to a temporary variable that does not have its
    DECL_CONTEXT() properly set.  */
 
-static tree 
+static tree
 fix_temporary_vars_context_r (tree *node,
 			      int  * /*unused*/,
 			      void *ctx)
@@ -4318,7 +4319,7 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
   /* Make sure temporary variables in the initialiser all have
      their DECL_CONTEXT() set to a value different from NULL_TREE.
      This can happen when global variables initializers are built.
-     In that case, the DECL_CONTEXT() of the global variables _AND_ of all 
+     In that case, the DECL_CONTEXT() of the global variables _AND_ of all
      the temporary variables that might have been generated in the
      accompanying initializers is NULL_TREE, meaning the variables have been
      declared in the global namespace.
@@ -4379,7 +4380,7 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
 					  guard,
 					  /*noconvert=*/true,
 					  tf_warning_or_error);
-	  guard_cond = cp_build_binary_op (input_location, EQ_EXPR, guard_cond, 
+	  guard_cond = cp_build_binary_op (input_location, EQ_EXPR, guard_cond,
 					   integer_zero_node,
 					   tf_warning_or_error);
 	}
@@ -4720,8 +4721,8 @@ cpp_check (tree t, cpp_operation op)
 
 /* Collect source file references recursively, starting from NAMESPC.  */
 
-static void 
-collect_source_refs (tree namespc) 
+static void
+collect_source_refs (tree namespc)
 {
   /* Iterate over names in this name space.  */
   for (tree t = NAMESPACE_LEVEL (namespc)->names; t; t = TREE_CHAIN (t))
@@ -6127,19 +6128,13 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
      DECL_LANG_SPECIFIC set, and these are also the only decls that we
      might need special handling for.  */
   if (!VAR_OR_FUNCTION_DECL_P (decl)
-      || DECL_LANG_SPECIFIC (decl) == NULL
       || DECL_THUNK_P (decl))
-    {
-      if (!decl_dependent_p (decl)
-	  && !require_deduced_type (decl, complain))
-	return false;
-      return true;
-    }
+    return true;
 
   /* We only want to do this processing once.  We don't need to keep trying
      to instantiate inline templates, because unit-at-a-time will make sure
      we get them compiled before functions that want to inline them.  */
-  if (DECL_ODR_USED (decl))
+  if (DECL_LANG_SPECIFIC (decl) && DECL_ODR_USED (decl))
     return true;
 
   if (flag_concepts && TREE_CODE (decl) == FUNCTION_DECL
@@ -6166,6 +6161,13 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
       || (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
     maybe_instantiate_decl (decl);
+
+  if (!decl_dependent_p (decl)
+      && !require_deduced_type (decl, complain))
+    return false;
+
+  if (DECL_LANG_SPECIFIC (decl) == NULL)
+    return true;
 
   if (processing_template_decl || in_template_context)
     return true;

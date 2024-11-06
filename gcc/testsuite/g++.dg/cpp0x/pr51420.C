@@ -4,9 +4,9 @@
 void
 foo()
 {
-  float x = operator"" _F();  //  { dg-error  "13:'operator\"\"_F' was not declared in this scope" }
+  float x = operator ""_F();  //  { dg-error  "13:'operator\"\"_F' was not declared in this scope" }
   /* { dg-begin-multiline-output "" }
-   float x = operator"" _F();
+   float x = operator ""_F();
              ^~~~~~~~~~~~~
      { dg-end-multiline-output "" } */
 

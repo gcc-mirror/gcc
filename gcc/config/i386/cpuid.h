@@ -5,16 +5,16 @@
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 3, or (at your option) any
  * later version.
- * 
+ *
  * This file is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * Under Section 7 of GPL version 3, you are granted additional
  * permissions described in the GCC Runtime Library Exception, version
  * 3.1, as published by the Free Software Foundation.
- * 
+ *
  * You should have received a copy of the GNU General Public License and
  * a copy of the GCC Runtime Library Exception along with this program;
  * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
@@ -138,6 +138,7 @@
 #define bit_AMX_FP16    (1 << 21)
 #define bit_HRESET      (1 << 22)
 #define bit_AVXIFMA     (1 << 23)
+#define bit_MOVRS	(1 << 31)
 
 /* %edx */
 #define bit_AVXVNNIINT8 (1 << 4)
@@ -161,6 +162,14 @@
 /* %ebx */
 #define bit_AESKLE	( 1<<0 )
 #define bit_WIDEKL	( 1<<2 )
+
+/* AMX sub leaf (%eax == 0x1e, %ecx == 1) */
+/* %eax */
+#define bit_AMX_FP8	(1 << 4)
+#define bit_AMX_TRANSPOSE	(1 << 5)
+#define bit_AMX_TF32	(1 << 6)
+#define bit_AMX_AVX512  (1 << 7)
+#define bit_AMX_MOVRS	(1 << 8)
 
 /* AVX10 sub leaf (%eax == 0x24) */
 /* %ebx */

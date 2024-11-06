@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-loop-distribute-patterns -fdump-tree-ivopts" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fno-tree-loop-distribute-patterns -fdump-tree-ivopts" } */
 /* { dg-require-effective-target stdint_types } */
 
 #include "stdint.h"

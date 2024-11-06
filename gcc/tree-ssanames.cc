@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -501,6 +502,9 @@ get_nonzero_bits (const_tree name)
 {
   if (TREE_CODE (name) == INTEGER_CST)
     return wi::to_wide (name);
+
+  if (POLY_INT_CST_P (name))
+    return -known_alignment (wi::to_poly_wide (name));
 
   /* Use element_precision instead of TYPE_PRECISION so complex and
      vector types get a non-zero precision.  */

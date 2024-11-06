@@ -574,7 +574,7 @@ test9 (unsigned cond)
   if (__builtin_object_size (&p[-4], 2) != (cond ? 6 : 10))
     FAIL ();
 #else
-  if (__builtin_object_size (&p[-4], 2) != 0)
+  if (__builtin_object_size (&p[-4], 2) != 6)
     FAIL ();
 #endif
 
@@ -585,7 +585,7 @@ test9 (unsigned cond)
   if (__builtin_object_size (p, 2) != ((cond ? 2 : 6) + cond))
     FAIL ();
 #else
-  if (__builtin_object_size (p, 2) != 0)
+  if (__builtin_object_size (p, 2) != 2)
     FAIL ();
 #endif
 
@@ -598,7 +598,7 @@ test9 (unsigned cond)
       != sizeof (y) - __builtin_offsetof (struct A, c) - 8 + cond)
     FAIL ();
 #else
-  if (__builtin_object_size (p, 2) != 0)
+  if (__builtin_object_size (p, 2) != sizeof (y) - __builtin_offsetof (struct A, c) - 8)
     FAIL ();
 #endif
 }

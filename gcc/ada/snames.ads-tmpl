@@ -155,6 +155,7 @@ package Snames is
    Name_Disable_Controlled             : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
    Name_Exclusive_Functions            : constant Name_Id := N + $;
+   Name_External_Initialization        : constant Name_Id := N + $;
    Name_Finalizable                    : constant Name_Id := N + $;
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Ghost_Predicate                : constant Name_Id := N + $;
@@ -564,6 +565,7 @@ package Snames is
    Name_Export_Object                  : constant Name_Id := N + $; -- GNAT
    Name_Export_Procedure               : constant Name_Id := N + $; -- GNAT
    Name_Export_Valued_Procedure        : constant Name_Id := N + $; -- GNAT
+   Name_Extended_Access                : constant Name_Id := N + $; -- GNAT
    Name_Extensions_Visible             : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
@@ -679,6 +681,9 @@ package Snames is
    Name_Shared_Passive                 : constant Name_Id := N + $;
    Name_Side_Effects                   : constant Name_Id := N + $; -- GNAT
    Name_Simple_Storage_Pool_Type       : constant Name_Id := N + $; -- GNAT
+   Name_Simulate_Internal_Error        : constant Name_Id := N + $; -- GNAT
+   Name_Source_Reference               : constant Name_Id := N + $; -- GNAT
+   Name_Static_Elaboration_Desired     : constant Name_Id := N + $; -- GNAT
 
    --  Note: Storage_Size is not in this list because its name matches the name
    --  of the corresponding attribute. However, it is included in the
@@ -688,8 +693,6 @@ package Snames is
    --  Note: Storage_Unit is also omitted from the list because of a clash with
    --  an attribute name, and is treated similarly.
 
-   Name_Source_Reference               : constant Name_Id := N + $; -- GNAT
-   Name_Static_Elaboration_Desired     : constant Name_Id := N + $; -- GNAT
    Name_Stream_Convert                 : constant Name_Id := N + $; -- GNAT
    Name_Subprogram_Variant             : constant Name_Id := N + $; -- GNAT
    Name_Subtitle                       : constant Name_Id := N + $; -- GNAT
@@ -1868,6 +1871,7 @@ package Snames is
       Pragma_Export_Object,
       Pragma_Export_Procedure,
       Pragma_Export_Valued_Procedure,
+      Pragma_Extended_Access,
       Pragma_Extensions_Visible,
       Pragma_External,
       Pragma_Finalize_Storage_Only,
@@ -1951,6 +1955,7 @@ package Snames is
       Pragma_Shared_Passive,
       Pragma_Side_Effects,
       Pragma_Simple_Storage_Pool_Type,
+      Pragma_Simulate_Internal_Error,
       Pragma_Source_Reference,
       Pragma_Static_Elaboration_Desired,
       Pragma_Stream_Convert,

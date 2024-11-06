@@ -3765,7 +3765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Alloc>
   template<typename _Operation>
     [[__gnu__::__always_inline__]]
-    void
+    inline void
     basic_string<_CharT, _Traits, _Alloc>::
     __resize_and_overwrite(const size_type __n, _Operation __op)
     { resize_and_overwrite<_Operation&>(__n, __op); }
@@ -3800,7 +3800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(__gnu_cxx::__is_integer_nonstrict<decltype(__r)>::__value,
 		    "resize_and_overwrite operation must return an integer");
 #endif
-      _GLIBCXX_DEBUG_ASSERT(__r >= 0 && __r <= __n);
+      _GLIBCXX_DEBUG_ASSERT(__r >= 0 && size_type(__r) <= __n);
       __term._M_r = size_type(__r);
       if (__term._M_r > __n)
 	__builtin_unreachable();

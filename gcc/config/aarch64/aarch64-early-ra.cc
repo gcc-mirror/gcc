@@ -40,6 +40,7 @@
 
 #define INCLUDE_ALGORITHM
 #define INCLUDE_FUNCTIONAL
+#define INCLUDE_MEMORY
 #define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
@@ -3387,6 +3388,12 @@ early_ra::is_dead_insn (rtx_insn *insn)
       return false;
 
   if (side_effects_p (set))
+    return false;
+
+  /* If we can't delete dead exceptions and the insn throws,
+     then the instruction is not dead.  */
+  if (!cfun->can_delete_dead_exceptions
+      && !insn_nothrow_p (insn))
     return false;
 
   return true;

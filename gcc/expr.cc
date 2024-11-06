@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -76,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned, 
+static bool emit_block_move_via_pattern (rtx, rtx, rtx, unsigned, unsigned,
 					 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT, bool);
@@ -981,7 +982,7 @@ convert_float_to_wider_int (machine_mode mode, machine_mode fmode, rtx x)
 /* Variant of convert_modes for ABI parameter passing/return.
    Return an rtx for a value that would result from converting X from
    an integer mode IMODE to a narrower floating point mode MODE.  */
- 
+
 rtx
 convert_wider_int_to_float (machine_mode mode, machine_mode imode, rtx x)
 {
@@ -2221,7 +2222,7 @@ block_move_libcall_safe_for_call_parm (void)
 
 /* A subroutine of emit_block_move.  Expand a cpymem or movmem pattern;
    return true if successful.
-  
+
    X is the destination of the copy or move.
    Y is the source of the copy or move.
    SIZE is the size of the block to be moved.
@@ -6089,7 +6090,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  else if (GET_MODE (to_rtx) == VOIDmode)
 	    to_rtx = adjust_address (to_rtx, BLKmode, 0);
 	}
- 
+
       rtx stemp = NULL_RTX, old_to_rtx = NULL_RTX;
       if (offset != 0)
 	{
@@ -6776,7 +6777,7 @@ store_expr (tree exp, rtx target, int call_param_p,
 
   /* If TEMP is a VOIDmode constant and the mode of the type of EXP is not
      the same as that of TARGET, adjust the constant.  This is needed, for
-     example, in case it is a CONST_DOUBLE or CONST_WIDE_INT and we want 
+     example, in case it is a CONST_DOUBLE or CONST_WIDE_INT and we want
      only a word-sized value.  */
   if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
       && TREE_CODE (exp) != ERROR_MARK
@@ -6991,14 +6992,14 @@ count_type_elements (const_tree type, bool for_ctor_p)
     {
     case ARRAY_TYPE:
       {
-	tree nelts;
+	tree nelts_minus_one;
 
-	nelts = array_type_nelts (type);
-	if (nelts && tree_fits_uhwi_p (nelts))
+	nelts_minus_one = array_type_nelts_minus_one (type);
+	if (nelts_minus_one && tree_fits_uhwi_p (nelts_minus_one))
 	  {
 	    unsigned HOST_WIDE_INT n;
 
-	    n = tree_to_uhwi (nelts) + 1;
+	    n = tree_to_uhwi (nelts_minus_one) + 1;
 	    if (n == 0 || for_ctor_p)
 	      return n;
 	    else
@@ -7163,6 +7164,13 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  nz_elts += mult * TREE_STRING_LENGTH (value);
 	  unique_nz_elts += TREE_STRING_LENGTH (value);
 	  init_elts += mult * TREE_STRING_LENGTH (value);
+	  break;
+
+	case RAW_DATA_CST:
+	  nz_elts += mult * RAW_DATA_LENGTH (value);
+	  unique_nz_elts += RAW_DATA_LENGTH (value);
+	  init_elts += mult * RAW_DATA_LENGTH (value);
+	  num_fields += mult * (RAW_DATA_LENGTH (value) - 1);
 	  break;
 
 	case COMPLEX_CST:
@@ -9524,7 +9532,8 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
 		   EXPAND_NORMAL);
 
   if (TREE_CODE (treeop0) == SSA_NAME
-      && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison)))
+      && (srcstmt = get_def_for_expr_class (treeop0, tcc_comparison))
+      && !VECTOR_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (srcstmt))))
     {
       type = TREE_TYPE (gimple_assign_rhs1 (srcstmt));
       enum tree_code cmpcode = gimple_assign_rhs_code (srcstmt);
@@ -9534,7 +9543,8 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
       unsignedp = TYPE_UNSIGNED (type);
       comparison_code = convert_tree_comp_to_rtx (cmpcode, unsignedp);
     }
-  else if (COMPARISON_CLASS_P (treeop0))
+  else if (COMPARISON_CLASS_P (treeop0)
+	   && !VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (treeop0, 0))))
     {
       type = TREE_TYPE (TREE_OPERAND (treeop0, 0));
       enum tree_code cmpcode = TREE_CODE (treeop0);
@@ -9661,7 +9671,7 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf(dump_file, "positive division:%s unsigned cost: %u; "
-		  "signed cost: %u\n", was_tie ? "(needed tie breaker)":"",
+		  "signed cost: %u\n", was_tie ? "(needed tie breaker)" : "",
 		  uns_cost, sgn_cost);
 
       if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
@@ -11078,8 +11088,8 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 #undef REDUCE_BIT_FIELD
 
 
-/* Return TRUE if expression STMT is suitable for replacement.  
-   Never consider memory loads as replaceable, because those don't ever lead 
+/* Return TRUE if expression STMT is suitable for replacement.
+   Never consider memory loads as replaceable, because those don't ever lead
    into constant expressions.  */
 
 static bool
@@ -11823,7 +11833,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				      field, value)
 	      if (tree_int_cst_equal (field, index))
 		{
-		  if (!TREE_SIDE_EFFECTS (value))
+		  if (!TREE_SIDE_EFFECTS (value)
+		      && TREE_CODE (value) != RAW_DATA_CST)
 		    return expand_expr (fold (value), target, tmode, modifier);
 		  break;
 		}
@@ -11865,7 +11876,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					  field, value)
 		  if (tree_int_cst_equal (field, index))
 		    {
-		      if (TREE_SIDE_EFFECTS (value))
+		      if (TREE_SIDE_EFFECTS (value)
+			  || TREE_CODE (value) == RAW_DATA_CST)
 			break;
 
 		      if (TREE_CODE (value) == CONSTRUCTOR)
@@ -11882,8 +11894,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 			    break;
 			}
 
-		      return
-		        expand_expr (fold (value), target, tmode, modifier);
+		      return expand_expr (fold (value), target, tmode,
+					  modifier);
 		    }
 	      }
 	    else if (TREE_CODE (init) == STRING_CST)
@@ -12456,7 +12468,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
       if (!op0)
 	op0 = expand_expr_real (treeop0, NULL_RTX, VOIDmode, modifier,
-				NULL, inner_reference_p);
+				NULL, inner_reference_p || mode == BLKmode);
 
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))
@@ -12493,7 +12505,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
-      else if (reduce_bit_field)
+      else if (reduce_bit_field && mode != BLKmode)
 	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
 				  TYPE_UNSIGNED (type), NULL_RTX,
 				  mode, mode, false, NULL);
@@ -13921,7 +13933,7 @@ do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
 
 bool
 try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
-	       rtx table_label, rtx default_label, 
+	       rtx table_label, rtx default_label,
 	       profile_probability default_probability)
 {
   rtx index;

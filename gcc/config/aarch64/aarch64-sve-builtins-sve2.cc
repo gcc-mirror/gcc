@@ -81,12 +81,46 @@ unspec_sqrdcmlah (int rot)
 class svaba_impl : public function_base
 {
 public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    /* Fold to svabd if op1 is all zeros.  */
+    tree op1 = gimple_call_arg (f.call, 0);
+    if (!integer_zerop (op1))
+      return NULL;
+    function_instance instance ("svabd", functions::svabd,
+				shapes::binary_opt_n, f.mode_suffix_id,
+				f.type_suffix_ids, GROUP_none, PRED_x);
+    gcall *call = f.redirect_call (instance);
+    /* Add a ptrue as predicate, because unlike svaba, svabd is
+       predicated.  */
+    gimple_call_set_arg (call, 0, build_all_ones_cst (f.gp_type ()));
+    return call;
+  }
+
+public:
   rtx
   expand (function_expander &e) const override
   {
     rtx_code max_code = e.type_suffix (0).unsigned_p ? UMAX : SMAX;
     machine_mode mode = e.vector_mode (0);
     return e.use_exact_insn (code_for_aarch64_sve2_aba (max_code, mode));
+  }
+};
+
+class svxar_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    /* aarch64_sve2_xar represents this operation with a left-rotate RTX.
+       Convert the right-rotate amount from the intrinsic to fit this.  */
+    machine_mode mode = e.vector_mode (0);
+    HOST_WIDE_INT rot = GET_MODE_UNIT_BITSIZE (mode)
+			- INTVAL (e.args[2]);
+    e.args[2] = aarch64_simd_gen_const_vector_dup (mode, rot);
+    return e.use_exact_insn (code_for_aarch64_sve2_xar (mode));
   }
 };
 
@@ -234,7 +268,7 @@ public:
   }
 };
 
-class svpsel_impl : public function_base
+class svpsel_lane_impl : public function_base
 {
 public:
   rtx
@@ -418,6 +452,34 @@ public:
 class svsra_impl : public function_base
 {
 public:
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    /* Fold to svlsr/svasr if op1 is all zeros.  */
+    tree op1 = gimple_call_arg (f.call, 0);
+    if (!integer_zerop (op1))
+      return NULL;
+    function_instance instance ("svlsr", functions::svlsr,
+				shapes::binary_uint_opt_n, MODE_n,
+				f.type_suffix_ids, GROUP_none, PRED_x);
+    if (!f.type_suffix (0).unsigned_p)
+      {
+	instance.base_name = "svasr";
+	instance.base = functions::svasr;
+      }
+    gcall *call = f.redirect_call (instance);
+    /* Add a ptrue as predicate, because unlike svsra, svlsr/svasr are
+       predicated intrinsics.  */
+    gimple_call_set_arg (call, 0, build_all_ones_cst (f.gp_type ()));
+    /* For svsra, the shift amount (imm3) is uint64_t for all function types,
+       but for svlsr/svasr, imm3 has the same width as the function type.  */
+    tree imm3 = gimple_call_arg (f.call, 2);
+    tree imm3_prec = wide_int_to_tree (f.scalar_type (0),
+				       wi::to_widest (imm3));
+    gimple_call_set_arg (call, 2, imm3_prec);
+    return call;
+  }
+public:
   rtx
   expand (function_expander &e) const override
   {
@@ -545,6 +607,10 @@ FUNCTION (svaesd, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesd))
 FUNCTION (svaese, fixed_insn_function, (CODE_FOR_aarch64_sve2_aese))
 FUNCTION (svaesimc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesimc))
 FUNCTION (svaesmc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesmc))
+FUNCTION (svamax, cond_or_uncond_unspec_function,
+	  (UNSPEC_COND_FAMAX, UNSPEC_FAMAX))
+FUNCTION (svamin, cond_or_uncond_unspec_function,
+	  (UNSPEC_COND_FAMIN, UNSPEC_FAMIN))
 FUNCTION (svbcax, CODE_FOR_MODE0 (aarch64_sve2_bcax),)
 FUNCTION (svbdep, unspec_based_function, (UNSPEC_BDEP, UNSPEC_BDEP, -1))
 FUNCTION (svbext, unspec_based_function, (UNSPEC_BEXT, UNSPEC_BEXT, -1))
@@ -625,7 +691,7 @@ FUNCTION (svpmullb, unspec_based_function, (-1, UNSPEC_PMULLB, -1))
 FUNCTION (svpmullb_pair, unspec_based_function, (-1, UNSPEC_PMULLB_PAIR, -1))
 FUNCTION (svpmullt, unspec_based_function, (-1, UNSPEC_PMULLT, -1))
 FUNCTION (svpmullt_pair, unspec_based_function, (-1, UNSPEC_PMULLT_PAIR, -1))
-FUNCTION (svpsel, svpsel_impl,)
+FUNCTION (svpsel_lane, svpsel_lane_impl,)
 FUNCTION (svqabs, rtx_code_function, (SS_ABS, UNKNOWN, UNKNOWN))
 FUNCTION (svqcadd, svqcadd_impl,)
 FUNCTION (svqcvt, integer_conversion, (UNSPEC_SQCVT, UNSPEC_SQCVTU,
@@ -745,6 +811,6 @@ FUNCTION (svwhilege, while_comparison, (UNSPEC_WHILEGE, UNSPEC_WHILEHS))
 FUNCTION (svwhilegt, while_comparison, (UNSPEC_WHILEGT, UNSPEC_WHILEHI))
 FUNCTION (svwhilerw, svwhilerw_svwhilewr_impl, (UNSPEC_WHILERW))
 FUNCTION (svwhilewr, svwhilerw_svwhilewr_impl, (UNSPEC_WHILEWR))
-FUNCTION (svxar, CODE_FOR_MODE0 (aarch64_sve2_xar),)
+FUNCTION (svxar, svxar_impl,)
 
 } /* end namespace aarch64_sve */

@@ -44,9 +44,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _NameKey_H
 #define _NameKey_C
 
+#include "GNameKey.h"
 #   include "GSYSTEM.h"
 #   include "GStorage.h"
 #   include "GIndexing.h"
@@ -401,13 +401,13 @@ extern "C" void NameKey_GetKey (NameKey_Name key, char *a, unsigned int _a_high)
   higha = _a_high;
   while (((p != NULL) && (i <= higha)) && ((*p) != ASCII_nul))
     {
-      a[i] = (*p);
+      const_cast<char *>(a)[i] = (*p);
       p += 1;
       i += 1;
     }
   if (i <= higha)
     {
-      a[i] = ASCII_nul;
+      const_cast<char *>(a)[i] = ASCII_nul;
     }
 }
 

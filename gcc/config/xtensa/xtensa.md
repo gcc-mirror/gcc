@@ -1279,15 +1279,13 @@
 })
 
 (define_insn "movsi_internal"
-  [(set (match_operand:SI 0 "nonimmed_operand" "=D,D,D,a,U,D,R,R,a,q,a,a,W,a,*a,*A")
-	(match_operand:SI 1 "move_operand" "M,D,d,U,r,R,D,d,r,r,I,Y,i,T,*A,*r"))]
+  [(set (match_operand:SI 0 "nonimmed_operand" "=D,D,D,D,R,R,a,q,a,a,W,a,a,U,*a,*A")
+	(match_operand:SI 1 "move_operand" "M,D,d,R,D,d,r,r,I,Y,i,T,U,r,*A,*r"))]
   "xtensa_valid_move (SImode, operands)"
   "@
    movi.n\t%0, %x1
    mov.n\t%0, %1
    mov.n\t%0, %1
-   %v1l32i\t%0, %1
-   %v0s32i\t%1, %0
    %v1l32i.n\t%0, %1
    %v0s32i.n\t%1, %0
    %v0s32i.n\t%1, %0
@@ -1297,11 +1295,13 @@
    movi\t%0, %1
    const16\t%0, %t1\;const16\t%0, %b1
    %v1l32r\t%0, %1
+   %v1l32i\t%0, %1
+   %v0s32i\t%1, %0
    rsr\t%0, ACCLO
    wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,load,store,load,store,store,move,move,move,move,move,load,rsr,wsr")
+  [(set_attr "type"	"move,move,move,load,store,store,move,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"2,2,2,3,3,2,2,2,3,3,3,3,6,3,3,3")])
+   (set_attr "length"	"2,2,2,2,2,2,3,3,3,3,6,3,3,3,3,3")])
 
 (define_split
   [(set (match_operand:SHI 0 "register_operand")

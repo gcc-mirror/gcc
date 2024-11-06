@@ -20,13 +20,13 @@
    <http://www.gnu.org/licenses/>.  */
 
 extern int lm32_return_in_memory (tree type);
-extern void lm32_declare_object (FILE *stream, char *name, char *init_string, 
+extern void lm32_declare_object (FILE *stream, char *name, char *init_string,
                                  char *final_string, int size);
 extern void lm32_expand_prologue (void);
 extern void lm32_expand_epilogue (void);
 extern void lm32_print_operand (FILE *file, rtx op, int letter);
 extern void lm32_print_operand_address (FILE *file, rtx addr);
-extern HOST_WIDE_INT lm32_compute_initial_elimination_offset (int from, 
+extern HOST_WIDE_INT lm32_compute_initial_elimination_offset (int from,
                                                              int to);
 extern int lm32_can_use_return (void);
 extern rtx lm32_return_addr_rtx (int count, rtx frame);

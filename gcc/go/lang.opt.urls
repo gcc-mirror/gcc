@@ -10,7 +10,7 @@ UrlSuffix(gcc/Directory-Options.html#index-L) LangUrlSuffix_D(gdc/Directory-Opti
 ;   duplicate: 'gcc/Standard-Libraries.html#index-Wall-1'
 ;   duplicate: 'gcc/Warning-Options.html#index-Wall'
 Wall
-LangUrlSuffix_D(gdc/Warnings.html#index-Wall)
+LangUrlSuffix_D(gdc/Warnings.html#index-Wall) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wall)
 
 o
 UrlSuffix(gcc/Overall-Options.html#index-o)

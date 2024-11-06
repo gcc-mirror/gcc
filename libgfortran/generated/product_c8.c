@@ -29,13 +29,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined (HAVE_GFC_COMPLEX_8) && defined (HAVE_GFC_COMPLEX_8)
 
 
-extern void product_c8 (gfc_array_c8 * const restrict, 
+extern void product_c8 (gfc_array_c8 * const restrict,
 	gfc_array_c8 * const restrict, const index_type * const restrict);
 export_proto(product_c8);
 
 void
-product_c8 (gfc_array_c8 * const restrict retarray, 
-	gfc_array_c8 * const restrict array, 
+product_c8 (gfc_array_c8 * const restrict retarray,
+	gfc_array_c8 * const restrict array,
 	const index_type * const restrict pdim)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -188,15 +188,15 @@ product_c8 (gfc_array_c8 * const restrict retarray,
 }
 
 
-extern void mproduct_c8 (gfc_array_c8 * const restrict, 
+extern void mproduct_c8 (gfc_array_c8 * const restrict,
 	gfc_array_c8 * const restrict, const index_type * const restrict,
 	gfc_array_l1 * const restrict);
 export_proto(mproduct_c8);
 
 void
-mproduct_c8 (gfc_array_c8 * const restrict retarray, 
-	gfc_array_c8 * const restrict array, 
-	const index_type * const restrict pdim, 
+mproduct_c8 (gfc_array_c8 * const restrict retarray,
+	gfc_array_c8 * const restrict array,
+	const index_type * const restrict pdim,
 	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
@@ -378,15 +378,15 @@ mproduct_c8 (gfc_array_c8 * const restrict retarray,
 }
 
 
-extern void sproduct_c8 (gfc_array_c8 * const restrict, 
+extern void sproduct_c8 (gfc_array_c8 * const restrict,
 	gfc_array_c8 * const restrict, const index_type * const restrict,
 	GFC_LOGICAL_4 *);
 export_proto(sproduct_c8);
 
 void
-sproduct_c8 (gfc_array_c8 * const restrict retarray, 
-	gfc_array_c8 * const restrict array, 
-	const index_type * const restrict pdim, 
+sproduct_c8 (gfc_array_c8 * const restrict retarray,
+	gfc_array_c8 * const restrict array,
+	const index_type * const restrict pdim,
 	GFC_LOGICAL_4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];

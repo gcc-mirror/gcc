@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -190,7 +191,14 @@ check_locus_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 		  void *data ATTRIBUTE_UNUSED)
 {
   current_code = c;
-  if (c && *c && (((*c)->loc.nextc == NULL) || ((*c)->loc.lb == NULL)))
+  if (c
+      && *c
+      && (((*c)->loc.nextc == NULL)
+	  || ((*c)->loc.nextc == (gfc_char_t *) -1
+	      && (*c)->loc.u.location == UNKNOWN_LOCATION)
+	  || ((*c)->loc.nextc != (gfc_char_t *) -1
+	      && ((*c)->loc.u.lb == NULL))))
+
     gfc_warning_internal (0, "Inconsistent internal state: "
 			  "No location in statement");
 
@@ -206,7 +214,13 @@ check_locus_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 		  void *data ATTRIBUTE_UNUSED)
 {
 
-  if (e && *e && (((*e)->where.nextc == NULL || (*e)->where.lb == NULL)))
+  if (e
+      && *e
+      && (((*e)->where.nextc == NULL)
+	  || ((*e)->where.nextc == (gfc_char_t *) -1
+	      && (*e)->where.u.location == UNKNOWN_LOCATION)
+	  || ((*e)->where.nextc != (gfc_char_t *) -1
+	      && ((*e)->where.u.lb == NULL))))
     gfc_warning_internal (0, "Inconsistent internal state: "
 			  "No location in expression near %L",
 			  &((*current_code)->loc));
@@ -3352,7 +3366,7 @@ runtime_error_ne (gfc_expr *e1, gfc_expr *e2, const char *msg)
   gfc_code *c;
   gfc_actual_arglist *a1, *a2, *a3;
 
-  gcc_assert (e1->where.lb);
+  gcc_assert (GFC_LOCUS_IS_SET (e1->where));
   /* Build the call to runtime_error.  */
   c = XCNEW (gfc_code);
   c->op = EXEC_CALL;

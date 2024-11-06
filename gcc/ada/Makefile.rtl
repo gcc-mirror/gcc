@@ -120,8 +120,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-chlat9$(objext) \
   a-chtgbk$(objext) \
   a-chtgbo$(objext) \
-  a-chtgfk$(objext) \
-  a-chtgfo$(objext) \
   a-chtgke$(objext) \
   a-chtgop$(objext) \
   a-chzla1$(objext) \
@@ -1079,8 +1077,20 @@ GCC_SPEC_FILES=
 # $(strip STRING) removes leading and trailing spaces from STRING.
 # If what's left is null then it's a match.
 
+# Setup to make sure at most one match gets selected, useful for android
+# targets which are canonically configured with a linux-android target_os,
+# which would match filtering patterns such as linux% intended to match
+# only regular linux or linux64 variants.
+
+# The current set of selected pairs.  A new match remains allowed
+# as long as this isn't assigned a new value.
+SELECTED_PAIRS=PAIRS_NONE
+
 # PowerPC VxWorks6 and VxWorks7
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=powerpc-vxworks
 
   ifeq ($(strip $(filter-out powerpc64, $(target_cpu))),)
      ARCH_STR=ppc64
@@ -1189,9 +1199,13 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworks7%, $(target_cpu) $(targe
     GCC_SPEC_FILES+=vxworks-smp-$(ARCH_STR)-link.spec
   endif
 endif
+endif
 
 # x86/x86_64 VxWorks7
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks7%, $(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=x86-vxworks7
 
   LIBGNAT_TARGET_PAIRS= \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
@@ -1298,9 +1312,13 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks7%, $(target_cpu) $(target_vend
 
   GCC_SPEC_FILES+=vxworks7-$(X86CPU)-rtp-base-link.spec
 endif
+endif
 
 # ARM and Aarch64 VxWorks7
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out aarch64 arm wrs vxworks7%, $(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=arm-vxworks7
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__vxworks.ads \
@@ -1384,14 +1402,16 @@ ifeq ($(strip $(filter-out aarch64 arm wrs vxworks7%, $(target_cpu) $(target_ven
 
   GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
 endif
+endif
 
-# ARM android
-ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
+# ARM and AARCH64 Android
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
+ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os))),)
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__android.adb \
-  s-linux.ads<libgnarl/s-linux__android.ads \
   s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-osinte.ads<libgnarl/s-osinte__android.ads \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
@@ -1399,6 +1419,7 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
@@ -1406,16 +1427,42 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
-  EXTRA_LIBGNAT_OBJS+=sigtramp-armdroid.o
-  EXTRA_LIBGNAT_SRCS+=sigtramp.h
-  EH_MECHANISM=-arm
+
+  # ARM and aarch64 rely on different unwinding mechanisms, and as
+  # a 64bit target, aarch64 can also incorporate support for 128bit
+  # arithmetic.
+
+  ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
+     SELECTED_PAIRS=arm-android
+
+     EH_MECHANISM=-arm
+     LIBGNAT_TARGET_PAIRS += \
+       s-linux.ads<libgnarl/s-linux__android-arm.ads
+  else
+     SELECTED_PAIRS=aarch64-android
+
+     EH_MECHANISM=-gcc
+     LIBGNAT_TARGET_PAIRS += \
+       s-linux.ads<libgnarl/s-linux__android-aarch64.ads
+
+     LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+     EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
+  endif
+
+  EXTRA_LIBGNAT_OBJS+=sigtramp-android.o
+  EXTRA_LIBGNAT_SRCS+=sigtramp.h sigtramp-android-asm.h
   THREADSLIB =
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # ARM and AARCH64 QNX
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=arm-qnx
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__qnx.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -1460,9 +1507,14 @@ ifeq ($(strip $(filter-out arm aarch64 %qnx,$(target_cpu) $(target_os))),)
   THREADSLIB=
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # SPARC Solaris
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=sparc-solaris
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__solaris.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -1505,9 +1557,14 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # x86 and x86-64 Solaris
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86-solaris
+
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<libgnarl/a-intnam__solaris.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1559,9 +1616,14 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # x86 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
@@ -1611,9 +1673,14 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
 
   GNATLIBCFLAGS_FOR_GCCSJLJ+=-fno-omit-frame-pointer -momit-leaf-frame-pointer
 endif
+endif
 
 # x86 kfreebsd
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86-kfreebsd
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1642,9 +1709,14 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
   MISCLIB = -lutil
 endif
+endif
 
 # i[3456]86-pc-gnu i.e. GNU Hurd
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=x86-gnuhurd
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1670,9 +1742,14 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # x86-64 kfreebsd
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86_64-kfreebsd
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1699,18 +1776,21 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # aarch64 FreeBSD
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=aarch64-freebsd
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
-  s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
   s-osinte.adb<libgnarl/s-osinte__freebsd.adb \
-  s-osinte.ads<libgnarl/s-osinte__freebsd.ads \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
@@ -1721,7 +1801,21 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   $(GNATRTL_128BIT_PAIRS) \
   system.ads<libgnat/system-freebsd.ads
 
-  EXTRA_GNATRTL_NONTASKING_OBJS = $(GNATRTL_128BIT_OBJS)
+  # Morello CheriBSD
+  ifneq (,$(findstring morello,$(target_alias)))
+    LIBGNAT_TARGET_PAIRS += \
+    s-intman.adb<libgnarl/s-intman__cheribsd.adb \
+    s-osinte.ads<libgnarl/s-osinte__cheribsd.ads \
+    s-secsta.adb<libgnat/s-secsta__cheri.adb
+
+    EXTRA_GNATRTL_NONTASKING_OBJS += i-cheri.o i-cheri-exceptions.o
+  else
+    LIBGNAT_TARGET_PAIRS += \
+    s-intman.adb<libgnarl/s-intman__posix.adb \
+    s-osinte.ads<libgnarl/s-osinte__freebsd.ads
+  endif
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
 
   GNATLIB_SHARED = gnatlib-shared-dual
 
@@ -1731,9 +1825,14 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
   MISCLIB = -lutil
 endif
+endif
 
 # x86 FreeBSD
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86-freebsd
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1762,9 +1861,14 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
   MISCLIB = -lutil
 endif
+endif
 
 # x86-64 FreeBSD
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86_64-freebsd
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1795,9 +1899,14 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
   MISCLIB = -lutil
 endif
+endif
 
 # x86-64 DragonFly
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %86_64 dragonfly%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86_64-dragonfly
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__dragonfly.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1826,9 +1935,14 @@ ifeq ($(strip $(filter-out %86_64 dragonfly%,$(target_cpu) $(target_os))),)
   LIBRARY_VERSION := $(LIB_VERSION)
   MISCLIB = -lutil
 endif
+endif
 
 # S390 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=s390-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -1866,30 +1980,14 @@ ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
-
-# HP/PA HP-UX 10
-ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(target_os))),)
-  LIBGNAT_TARGET_PAIRS = \
-  a-intnam.ads<libgnarl/a-intnam__hpux.ads \
-  s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
-  s-interr.adb<libgnarl/s-interr__sigaction.adb \
-  s-intman.adb<libgnarl/s-intman__posix.adb \
-  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
-  s-osinte.adb<libgnarl/s-osinte__hpux-dce.adb \
-  s-osinte.ads<libgnarl/s-osinte__hpux-dce.ads \
-  s-parame.ads<libgnat/s-parame__hpux.ads \
-  s-oslock.ads<libgnat/s-oslock__posix.ads \
-  s-osprim.adb<libgnat/s-osprim__posix.adb \
-  s-taprop.adb<libgnarl/s-taprop__hpux-dce.adb \
-  s-taspri.ads<libgnarl/s-taspri__hpux-dce.ads \
-  s-tpopsp.adb<libgnarl/s-tpopsp__posix.adb \
-  system.ads<libgnat/system-hpux.ads
-
-  EH_MECHANISM=-gcc
 endif
 
 # HP/PA HP-UX 11
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=hppa-hpux11
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__hpux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1915,9 +2013,14 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(tar
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # IBM AIX
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=ibm-aix
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__aix.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -1952,9 +2055,14 @@ ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
 
   GMEM_LIB = gmemlib
 endif
+endif
 
 # LynxOS 178 and LynxOS 178 Elf
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
+
+  SELECTED_PAIRS=lynx178
+
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   LIBGNAT_TARGET_PAIRS = \
@@ -1989,9 +2097,14 @@ ifeq ($(strip $(filter-out lynxos178%,$(target_os))),)
 
   EH_MECHANISM=-gcc
 endif
+endif
 
 # RTEMS
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out rtems%,$(target_os))),)
+
+  SELECTED_PAIRS=rtems
+
   LIBGNAT_TARGET_PAIRS = \
   system.ads<libgnat/system-rtems.ads \
   a-intnam.ads<libgnarl/a-intnam__rtems.ads \
@@ -2033,6 +2146,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
        $(ATOMICS_BUILTINS_TARGET_PAIRS)
   endif
 endif
+endif
 
 # PikeOS
 ifeq ($(strip $(filter-out powerpc% %86 sysgo pikeos,$(target_cpu) $(target_vendor) $(target_os)))),)
@@ -2044,7 +2158,11 @@ ifeq ($(strip $(filter-out elf eabi eabispe,$(target_os))),)
   TOOLS_TARGET_PAIRS=indepsw.adb<indepsw-gnu.adb
 endif
 
+# gjgpp
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %djgpp,$(target_os))),)
+
+  SELECTED_PAIRS=djgpp
   GNATRTL_SOCKETS_OBJS =
 
   LIBGNAT_TARGET_PAIRS = \
@@ -2060,9 +2178,14 @@ ifeq ($(strip $(filter-out %djgpp,$(target_os))),)
 
   EH_MECHANISM=-gcc
 endif
+endif
 
 # Cygwin/Mingw32
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
+
+  SELECTED_PAIRS=cygming
+
   # Cygwin provides a full Posix environment, and so we use the default
   # versions g-socthi rather than the Windows-specific MinGW version.
   # Ideally we would use all the default versions for Cygwin and none
@@ -2147,9 +2270,14 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   soext = .dll
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # LoongArch Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out loongarch% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=loongarch-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2196,10 +2324,14 @@ ifeq ($(strip $(filter-out loongarch% linux%,$(target_cpu) $(target_os))),)
   GNATLIBCFLAGS += -mno-strict-align
   GNATLIBCFLAGS_FOR_C += -mno-strict-align
 endif
-
+endif
 
 # Mips Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=mips-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -2238,9 +2370,14 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # PowerPC and e500v2 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=powerpc-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2296,9 +2433,14 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # ARM linux, GNU eabi
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=arm-linux-gnueabi
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2328,9 +2470,14 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # AArch64 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=aarch64-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2371,9 +2518,14 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # SPARC Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=sparc-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -2416,9 +2568,14 @@ ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # HP/PA Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out hppa% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=hppa-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2444,9 +2601,14 @@ ifeq ($(strip $(filter-out hppa% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # M68K Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out m68k% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=m68k-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2472,9 +2634,14 @@ ifeq ($(strip $(filter-out m68k% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # SH4 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out sh4% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=sh4-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
@@ -2501,9 +2668,14 @@ ifeq ($(strip $(filter-out sh4% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # IA64 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=ia64-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2544,9 +2716,14 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # IA64 HP-UX
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(target_os))),)
+
+  SELECTED_PAIRS=ia64-hpux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__hpux.ads \
   s-dorepr.adb<libgnat/s-dorepr__fma.adb \
@@ -2577,9 +2754,14 @@ ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(targe
   SO_OPTS = -Wl,+h,
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # Alpha Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out alpha% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=alpha-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -2610,9 +2792,14 @@ ifeq ($(strip $(filter-out alpha% linux%,$(target_cpu) $(target_os))),)
   GNATLIB_SHARED=gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # x86-64 Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x86_64-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2656,8 +2843,14 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
 
   GNATLIBCFLAGS_FOR_GCCSJLJ+=-fno-omit-frame-pointer -momit-leaf-frame-pointer
 endif
+endif
 
+# x32-linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=x32-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2698,9 +2891,14 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # RISC-V Linux
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
+
+  SELECTED_PAIRS=riscv-linux
+
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
@@ -2740,9 +2938,14 @@ ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
+endif
 
 # Darwin (Mac OS X)
+ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out darwin%,$(target_os))),)
+
+  SELECTED_PAIRS=darwin
+
   SO_OPTS = -shared-libgcc
   LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<libgnarl/a-intnam__darwin.ads \
@@ -2858,6 +3061,7 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   soext = .dylib
   GCC_LINK_FLAGS=-static-libstdc++
 endif
+endif
 
 ifeq ($(EH_MECHANISM),-gcc)
   LIBGNAT_TARGET_PAIRS += \
@@ -2940,6 +3144,7 @@ ADA_EXCLUDE_SRCS =\
   g-allein.ads g-alleve.adb g-alleve.ads g-altcon.adb g-altcon.ads \
   g-altive.ads g-alveop.adb g-alveop.ads g-alvety.ads g-alvevi.ads \
   g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
+  i-cheri.ads i-cheri.adb i-cheri-exceptions.ads \
   i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
   s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
   s-stchop.ads s-stchop.adb \

@@ -1,7 +1,7 @@
 /* PR c/83656 - missing -Wbuiltin-declaration-mismatch on declaration
    without prototype
    { dg-do compile }
-   { dg-options "-Wall" } */
+   { dg-options "-std=gnu17 -Wall" } */
 
 typedef __SIZE_TYPE__ size_t;
 

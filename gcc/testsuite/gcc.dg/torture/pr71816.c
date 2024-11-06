@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 /* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch" } */
 
 void *ext2fs_resize_mem_p;

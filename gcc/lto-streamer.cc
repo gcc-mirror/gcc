@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -140,12 +141,12 @@ lto_get_section_name (int section_type, const char *name,
      Randomness would inhibit incremental LTO.  */
   if (section_type == LTO_section_opts || flag_ltrans)
     strcpy (post, "");
-  else if (f != NULL) 
+  else if (f != NULL)
     sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, f->id);
   else if (flag_wpa)
     strcpy (post, "");
   else
-    sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false)); 
+    sprintf (post, "." HOST_WIDE_INT_PRINT_HEX_PURE, get_random_seed (false));
   char *res = concat (section_name_prefix, sep, add, post, NULL);
   if (buffer)
     free (buffer);

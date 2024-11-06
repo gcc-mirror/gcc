@@ -1,6 +1,6 @@
 /* PR rtl-optimization/102627 */
 /* { dg-do run } */
-/* { dg-options "-O1" } */
+/* { dg-options "-std=gnu17 -O1" } */
 
 int a, f, l, m, q, c, d, g;
 long b, e;

@@ -55,13 +55,13 @@ extern void xstormy16_expand_andqi3 (rtx *);
 extern void xstormy16_split_cbranch (machine_mode, rtx, rtx, rtx);
 extern int  short_memory_operand (rtx, machine_mode);
 extern bool  nonimmediate_nonstack_operand (rtx, machine_mode);
-extern enum reg_class xstormy16_secondary_reload_class 
+extern enum reg_class xstormy16_secondary_reload_class
  (enum reg_class, machine_mode, rtx);
 extern void xstormy16_split_move (machine_mode, rtx, rtx);
 extern void xstormy16_expand_move (machine_mode, rtx, rtx);
-extern void xstormy16_expand_arith (machine_mode, enum rtx_code, 
+extern void xstormy16_expand_arith (machine_mode, enum rtx_code,
 				    rtx, rtx, rtx);
-extern const char * xstormy16_output_shift (machine_mode, enum rtx_code, 
+extern const char * xstormy16_output_shift (machine_mode, enum rtx_code,
 					    rtx, rtx, rtx);
 extern bool  xstormy16_below100_symbol (rtx, machine_mode);
 extern bool  xstormy16_splittable_below100_operand (rtx, machine_mode);

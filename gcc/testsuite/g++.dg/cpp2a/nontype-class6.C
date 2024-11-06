@@ -11,7 +11,7 @@ struct A {
   // auto operator<=> (const A&) = default;
 };
 
-template <A a> constexpr A operator "" _sh() { return a; }
+template <A a> constexpr A operator ""_sh() { return a; }
 
 constexpr auto a = "foo"_sh;
 static_assert (a.ar[0] == 'f');

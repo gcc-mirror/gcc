@@ -21,6 +21,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "bconfig.h"
 #include "system.h"
 #include "coretypes.h"
@@ -72,21 +73,666 @@ linemap_client_expand_location_to_spelling_point (const line_maps *set,
   return linemap_expand_location (set, map, loc);
 }
 
+#define DIAG_ARGMAX 30
+
+#define diag_integer_with_precision(FS, ARG, PREC, T, F) \
+  do								\
+    switch (PREC)						\
+      {								\
+      case 0:							\
+	fprintf (FS, "%" F, ARG.m_##T);				\
+	break;							\
+								\
+      case 1:							\
+	fprintf (FS, "%l" F, ARG.m_long_##T);			\
+	break;							\
+								\
+      case 2:							\
+	fprintf (FS, "%" HOST_LONG_LONG_FORMAT F,		\
+		 ARG.m_long_long_##T);				\
+	break;							\
+								\
+      case 3:							\
+	if (T (-1) < T (0))					\
+	  fprintf (FS, "%" GCC_PRISZ F,				\
+		   (fmt_size_t) ARG.m_ssize_t);			\
+	else							\
+	  fprintf (FS, "%" GCC_PRISZ F,				\
+		   (fmt_size_t) ARG.m_size_t);			\
+	break;							\
+								\
+      case 4:							\
+	if (T (-1) >= T (0))					\
+	  {							\
+	    unsigned long long a = ARG.m_ptrdiff_t;		\
+	    unsigned long long m = PTRDIFF_MAX;			\
+	    m = 2 * m + 1;					\
+	    fprintf (FS, "%" HOST_LONG_LONG_FORMAT F,		\
+		     a & m);					\
+	  }							\
+	else if (sizeof (ptrdiff_t) <= sizeof (int))		\
+	  fprintf (FS, "%" F, (int) ARG.m_ptrdiff_t);		\
+	else if (sizeof (ptrdiff_t) <= sizeof (long))		\
+	  fprintf (FS, "%l" F, (long) ARG.m_ptrdiff_t);		\
+	else							\
+	  fprintf (FS, "%" HOST_LONG_LONG_FORMAT F,		\
+		   (long long int) ARG.m_ptrdiff_t);		\
+	break;							\
+								\
+      default:							\
+	break;							\
+      }								\
+  while (0)
+
+/* This is a simplified version of pretty-print.cc (pp_format)
+   which emits the diagnostics to F stream directly.
+   It needs to support everything that libcpp needs in its diagnostics,
+   but doesn't have to bother with colors, UTF-8 quoting, URL pretty
+   printing, etc.  */
+#if GCC_VERSION >= 4001
+__attribute__((format (gcc_diag, 3, 0)))
+#endif
+static void
+diag_vfprintf (FILE *f, int err_no, const char *msg, va_list *ap)
+{
+  unsigned int curarg = 0;
+  bool any_numbered = false;
+  bool any_unnumbered = false;
+  enum arg_kind {
+    arg_kind_none,
+    arg_kind_int,
+    arg_kind_long_int,
+    arg_kind_long_long_int,
+    arg_kind_unsigned,
+    arg_kind_long_unsigned,
+    arg_kind_long_long_unsigned,
+    arg_kind_hwi,
+    arg_kind_uhwi,
+    arg_kind_size_t,
+    arg_kind_ssize_t,
+    arg_kind_ptrdiff_t,
+    arg_kind_cst_pchar,
+    arg_kind_pvoid,
+    arg_kind_double,
+    arg_kind_Z
+  };
+  union {
+    enum arg_kind m_kind;
+    int m_int;
+    long m_long_int;
+    long long m_long_long_int;
+    unsigned m_unsigned;
+    unsigned long m_long_unsigned;
+    unsigned long long m_long_long_unsigned;
+    HOST_WIDE_INT m_hwi;
+    unsigned HOST_WIDE_INT m_uhwi;
+    size_t m_size_t;
+    ssize_t m_ssize_t;
+    ptrdiff_t m_ptrdiff_t;
+    const char *m_cst_pchar;
+    void *m_pvoid;
+    double m_double;
+    struct { int *p; unsigned len; } m_Z;
+  } args[DIAG_ARGMAX];
+  memset (args, 0, sizeof (args));
+  for (const char *p = strchr (msg, '%'); p; p = strchr (p, '%'))
+    {
+      ++p;
+      switch (*p)
+	{
+	case '\0':
+	  gcc_unreachable ();
+	case '%':
+	case '<':
+	case '>':
+	case '\'':
+	case '}':
+	case 'R':
+	case 'm':
+	  /* These don't need any arguments.  */
+	  ++p;
+	  continue;
+	default:
+	  break;
+	}
+      unsigned argno;
+      if (ISDIGIT (*p))
+	{
+	  char *end;
+	  argno = strtoul (p, &end, 10) - 1;
+	  p = end;
+	  gcc_assert (*p == '$');
+	  p++;
+
+	  any_numbered = true;
+	  gcc_assert (!any_unnumbered);
+	}
+      else
+	{
+	  argno = curarg++;
+	  any_unnumbered = true;
+	  gcc_assert (!any_numbered);
+	}
+      gcc_assert (argno < DIAG_ARGMAX);
+      gcc_assert (args[argno].m_kind == arg_kind_none);
+      int precision = 0;
+      bool wide = false;
+      for (; *p; ++p)
+	{
+	  switch (*p)
+	    {
+	    case 'q':
+	    case '+':
+	    case '#':
+	      continue;
+	    case 'w':
+	      gcc_assert (!wide);
+	      wide = true;
+	      continue;
+	    case 'z':
+	      gcc_assert (!precision);
+	      precision = 3;
+	      continue;
+	    case 't':
+	      gcc_assert (!precision);
+	      precision = 4;
+	      continue;
+	    case 'l':
+	      gcc_assert (precision < 2);
+	      ++precision;
+	      continue;
+	    default:
+	      break;
+	    }
+	  break;
+	}
+      if (*p == '.')
+	{
+	  /* We handle '%.Ns' and '%.*s' or '%M$.*N$s'
+	     (where M == N + 1).  */
+	  ++p;
+	  if (ISDIGIT (*p))
+	    {
+	      while (ISDIGIT (*p))
+		++p;
+	      gcc_assert (*p == 's');
+	    }
+	  else
+	    {
+	      gcc_assert (*p == '*');
+	      ++p;
+	      if (ISDIGIT (*p))
+		{
+		  char *end;
+		  unsigned int argno2 = strtoul (p, &end, 10) - 1;
+		  p = end;
+		  gcc_assert (argno2 == argno - 1);
+		  gcc_assert (!any_unnumbered);
+		  gcc_assert (*p == '$');
+		  ++p;
+		  args[argno2].m_kind = arg_kind_int;
+		}
+	      else
+		{
+		  gcc_assert (!any_numbered);
+		  args[argno].m_kind = arg_kind_int;
+		  ++argno;
+		  ++curarg;
+		}
+	    }
+	  gcc_assert (*p == 's');
+	}
+      enum arg_kind kind = arg_kind_none;
+      switch (*p)
+	{
+	case 'r':
+	  kind = arg_kind_cst_pchar;
+	  break;
+	case 'c':
+	  kind = arg_kind_int;
+	  break;
+	case 'd':
+	case 'i':
+	  if (wide)
+	    kind = arg_kind_hwi;
+	  else
+	    switch (precision)
+	      {
+	      case 0:
+		kind = arg_kind_int;
+		break;
+	      case 1:
+		kind = arg_kind_long_int;
+		break;
+	      case 2:
+		kind = arg_kind_long_long_int;
+		break;
+	      case 3:
+		kind = arg_kind_ssize_t;
+		break;
+	      case 4:
+		kind = arg_kind_ptrdiff_t;
+		break;
+	      }
+	  break;
+	case 'o':
+	case 'u':
+	case 'x':
+	  if (wide)
+	    kind = arg_kind_uhwi;
+	  else
+	    switch (precision)
+	      {
+	      case 0:
+		kind = arg_kind_unsigned;
+		break;
+	      case 1:
+		kind = arg_kind_long_unsigned;
+		break;
+	      case 2:
+		kind = arg_kind_long_long_unsigned;
+		break;
+	      case 3:
+		kind = arg_kind_size_t;
+		break;
+	      case 4:
+		kind = arg_kind_ptrdiff_t;
+		break;
+	      }
+	  break;
+	case 's':
+	case '{':
+	  kind = arg_kind_cst_pchar;
+	  break;
+	case 'p':
+	  kind = arg_kind_pvoid;
+	  break;
+	case 'f':
+	  kind = arg_kind_double;
+	  break;
+	case 'Z':
+	  kind = arg_kind_Z;
+	  break;
+	case '@':
+	case 'e':
+	  /* These two are unhandled, hopefully libcpp doesn't use them.  */
+	default:
+	  gcc_unreachable ();
+	}
+      gcc_assert (kind != arg_kind_none);
+      args[argno].m_kind = kind;
+    }
+  for (int i = 0; i < DIAG_ARGMAX; ++i)
+    switch (args[i].m_kind)
+      {
+      case arg_kind_none:
+	for (++i; i < DIAG_ARGMAX; ++i)
+	  gcc_assert (args[i].m_kind == arg_kind_none);
+	break;
+      case arg_kind_int:
+	args[i].m_int = va_arg (*ap, int);
+	break;
+      case arg_kind_long_int:
+	args[i].m_long_int = va_arg (*ap, long);
+	break;
+      case arg_kind_long_long_int:
+	args[i].m_long_long_int = va_arg (*ap, long long);
+	break;
+      case arg_kind_unsigned:
+	args[i].m_unsigned = va_arg (*ap, unsigned);
+	break;
+      case arg_kind_long_unsigned:
+	args[i].m_long_unsigned = va_arg (*ap, unsigned long);
+	break;
+      case arg_kind_long_long_unsigned:
+	args[i].m_long_long_unsigned = va_arg (*ap, unsigned long long);
+	break;
+      case arg_kind_hwi:
+	args[i].m_hwi = va_arg (*ap, HOST_WIDE_INT);
+	break;
+      case arg_kind_uhwi:
+	args[i].m_uhwi = va_arg (*ap, unsigned HOST_WIDE_INT);
+	break;
+      case arg_kind_size_t:
+	args[i].m_size_t = va_arg (*ap, size_t);
+	break;
+      case arg_kind_ssize_t:
+	args[i].m_ssize_t = va_arg (*ap, ssize_t);
+	break;
+      case arg_kind_ptrdiff_t:
+	args[i].m_ptrdiff_t = va_arg (*ap, ptrdiff_t);
+	break;
+      case arg_kind_cst_pchar:
+	args[i].m_cst_pchar = va_arg (*ap, const char *);
+	break;
+      case arg_kind_pvoid:
+	args[i].m_pvoid = va_arg (*ap, void *);
+	break;
+      case arg_kind_double:
+	args[i].m_double = va_arg (*ap, double);
+	break;
+      case arg_kind_Z:
+	args[i].m_Z.p = va_arg (*ap, int *);
+	args[i].m_Z.len = va_arg (*ap, unsigned);
+	break;
+      default:
+	gcc_unreachable ();
+      }
+  curarg = 0;
+  const char *q = msg;
+  for (const char *p = strchr (msg, '%'); p; p = strchr (p, '%'))
+    {
+      if (q != p)
+	fprintf (f, "%.*s", (int) (p - q), q);
+      ++p;
+      q = p + 1;
+      switch (*p)
+	{
+	case '%':
+	  fputc ('%', f);
+	  ++p;
+	  continue;
+	case '<':
+	case '>':
+	case '\'':
+	  fputc ('\'', f);
+	  ++p;
+	  continue;
+	case '}':
+	case 'R':
+	  ++p;
+	  continue;
+	case 'm':
+	  fprintf (f, "%s", xstrerror (err_no));
+	  ++p;
+	  continue;
+	default:
+	  break;
+	}
+      unsigned argno;
+      if (ISDIGIT (*p))
+	{
+	  char *end;
+	  argno = strtoul (p, &end, 10) - 1;
+	  p = end;
+	  p++;
+	}
+      else
+	argno = curarg++;
+      int precision = 0;
+      bool quote = false;
+      bool wide = false;
+      for (; *p; ++p)
+	{
+	  switch (*p)
+	    {
+	    case 'q':
+	      gcc_assert (!quote);
+	      quote = true;
+	      fputc ('\'', f);
+	      continue;
+	    case '+':
+	    case '#':
+	      continue;
+	    case 'w':
+	      wide = true;
+	      continue;
+	    case 'z':
+	      precision = 3;
+	      continue;
+	    case 't':
+	      precision = 4;
+	      continue;
+	    case 'l':
+	      ++precision;
+	      continue;
+	    default:
+	      break;
+	    }
+	  break;
+	}
+      q = p + 1;
+      switch (*p)
+	{
+	case 'r':
+	  break;
+	case 'c':
+	  fputc (args[argno].m_int, f);
+	  break;
+	case 'd':
+	case 'i':
+	  if (wide)
+	    fprintf (f, HOST_WIDE_INT_PRINT_DEC, args[argno].m_hwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 int, "d");
+	  break;
+	case 'o':
+	  if (wide)
+	    fprintf (f, "%" HOST_WIDE_INT_PRINT "o", args[argno].m_uhwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 unsigned, "o");
+	  break;
+	case 'u':
+	  if (wide)
+	    fprintf (f, HOST_WIDE_INT_PRINT_UNSIGNED, args[argno].m_uhwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 unsigned, "u");
+	  break;
+	case 'x':
+	  if (wide)
+	    fprintf (f, HOST_WIDE_INT_PRINT_HEX, args[argno].m_uhwi);
+	  else
+	    diag_integer_with_precision (f, args[argno], precision,
+					 unsigned, "x");
+	  break;
+	case 's':
+	  fprintf (f, "%s", args[argno].m_cst_pchar);
+	  break;
+	case '.':
+	  {
+	    int n;
+	    const char *s;
+	    ++p;
+	    if (ISDIGIT (*p))
+	      {
+		char *end;
+		n = strtoul (p, &end, 10);
+		p = end;
+	      }
+	    else
+	      {
+		p = strchr (p, 's');
+		if (any_unnumbered)
+		  {
+		    n = args[argno].m_int;
+		    ++argno;
+		    ++curarg;
+		  }
+		else
+		  n = args[argno - 1].m_int;
+	      }
+	    q = p + 1;
+	    s = args[argno].m_cst_pchar;
+	    size_t len = n < 0 ? strlen (s) : strnlen (s, n);
+	    fprintf (f, "%.*s", (int) len, s);
+	    break;
+	  }
+	case '{':
+	  break;
+	case 'p':
+	  fprintf (f, "%p", args[argno].m_pvoid);
+	  break;
+	case 'f':
+	  fprintf (f, "%f", args[argno].m_double);
+	  break;
+	case 'Z':
+	  for (unsigned i = 0; i < args[argno].m_Z.len; ++i)
+	    {
+	      fprintf (f, "%i", args[argno].m_Z.p[i]);
+		if (i < args[argno].m_Z.len - 1)
+		  fprintf (f, ", ");
+	      }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      if (quote)
+	fputc ('\'', f);
+    }
+  fprintf (f, "%s", q);
+}
+
+#if defined(GENMATCH_SELFTESTS) && HAVE_DECL_FMEMOPEN
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+
+static void
+test_diag_vfprintf (const char *expected, const char *msg, ...)
+{
+  char buf[256];
+  va_list ap;
+  FILE *f = fmemopen (buf, 256, "w");
+  gcc_assert (f != NULL);
+  va_start (ap, msg);
+  diag_vfprintf (f, 0, msg, &ap);
+  va_end (ap);
+  fclose (f);
+  gcc_assert (strcmp (buf, expected) == 0);
+}
+
+#pragma GCC diagnostic pop
+
+static void
+genmatch_diag_selftests (void)
+{
+  /* Verify that plain text is passed through unchanged.  */
+  test_diag_vfprintf ("unformatted", "unformatted");
+
+  /* Verify various individual format codes, in the order listed in the
+     comment for pp_format above.  For each code, we append a second
+     argument with a known bit pattern (0x12345678), to ensure that we
+     are consuming arguments correctly.  */
+  test_diag_vfprintf ("-27 12345678", "%d %x", -27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%i %x", -5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%u %x", 10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%o %x", 15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%x %x", 0xcafebabe, 0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%ld %x", (long)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%li %x", (long)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%lu %x", (long)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%lo %x", (long)15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%lx %x", (long)0xcafebabe,
+		      0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%lld %x", (long long)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%lli %x", (long long)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%llu %x", (long long)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%llo %x", (long long)15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%llx %x", (long long)0xcafebabe,
+		      0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%wd %x", HOST_WIDE_INT_C (-27),
+		      0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%wi %x", HOST_WIDE_INT_C (-5),
+		      0x12345678);
+  test_diag_vfprintf ("10 12345678", "%wu %x", HOST_WIDE_INT_UC (10),
+		      0x12345678);
+  test_diag_vfprintf ("17 12345678", "%wo %x", HOST_WIDE_INT_C (15),
+		      0x12345678);
+  test_diag_vfprintf ("0xcafebabe 12345678", "%wx %x",
+		      HOST_WIDE_INT_C (0xcafebabe), 0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%zd %x", (ssize_t)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%zi %x", (ssize_t)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%zu %x", (size_t)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%zo %x", (size_t)15, 0x12345678);
+  test_diag_vfprintf ("cafebabe 12345678", "%zx %x", (size_t)0xcafebabe,
+		      0x12345678);
+  test_diag_vfprintf ("-27 12345678", "%td %x", (ptrdiff_t)-27, 0x12345678);
+  test_diag_vfprintf ("-5 12345678", "%ti %x", (ptrdiff_t)-5, 0x12345678);
+  test_diag_vfprintf ("10 12345678", "%tu %x", (ptrdiff_t)10, 0x12345678);
+  test_diag_vfprintf ("17 12345678", "%to %x", (ptrdiff_t)15, 0x12345678);
+  test_diag_vfprintf ("1afebabe 12345678", "%tx %x", (ptrdiff_t)0x1afebabe,
+		      0x12345678);
+  test_diag_vfprintf ("1.000000 12345678", "%f %x", 1.0, 0x12345678);
+  test_diag_vfprintf ("A 12345678", "%c %x", 'A', 0x12345678);
+  test_diag_vfprintf ("hello world 12345678", "%s %x", "hello world",
+		      0x12345678);
+
+  /* Not nul-terminated.  */
+  char arr[5] = { '1', '2', '3', '4', '5' };
+  test_diag_vfprintf ("123 12345678", "%.*s %x", 3, arr, 0x12345678);
+  test_diag_vfprintf ("1234 12345678", "%.*s %x", -1, "1234", 0x12345678);
+  test_diag_vfprintf ("12345 12345678", "%.*s %x", 7, "12345", 0x12345678);
+
+  /* We can't test for %p; the pointer is printed in an implementation-defined
+     manner.  */
+  test_diag_vfprintf ("normal colored normal 12345678",
+		      "normal %rcolored%R normal %x",
+		      "error", 0x12345678);
+
+  /* TODO:
+     %m: strerror(text->err_no) - does not consume a value *ap.  */
+  test_diag_vfprintf ("% 12345678", "%% %x", 0x12345678);
+  test_diag_vfprintf ("' 12345678", "%< %x", 0x12345678);
+  test_diag_vfprintf ("' 12345678", "%> %x", 0x12345678);
+  test_diag_vfprintf ("' 12345678", "%' %x", 0x12345678);
+  test_diag_vfprintf ("abc 12345678", "%.*s %x", 3, "abcdef", 0x12345678);
+  test_diag_vfprintf ("abc 12345678", "%.3s %x", "abcdef", 0x12345678);
+
+  /* Verify flag 'q'.  */
+  test_diag_vfprintf ("'foo' 12345678", "%qs %x", "foo", 0x12345678);
+
+  /* Verify %Z.  */
+  int v[] = { 1, 2, 3 }; 
+  test_diag_vfprintf ("1, 2, 3 12345678", "%Z %x", v, 3, 0x12345678);
+
+  int v2[] = { 0 }; 
+  test_diag_vfprintf ("0 12345678", "%Z %x", v2, 1, 0x12345678);
+
+  /* Verify that combinations work, along with unformatted text.  */
+  test_diag_vfprintf ("the quick brown fox jumps over the lazy dog",
+		      "the %s %s %s jumps over the %s %s",
+		      "quick", "brown", "fox", "lazy", "dog");
+  test_diag_vfprintf ("item 3 of 7", "item %i of %i", 3, 7);
+  test_diag_vfprintf ("problem with 'bar' at line 10",
+		      "problem with %qs at line %i", "bar", 10);
+
+  /* Verified numbered args.  */
+  test_diag_vfprintf ("foo: second bar: first",
+		      "foo: %2$s bar: %1$s", "first", "second");
+  test_diag_vfprintf ("foo: 1066 bar: 1776",
+		      "foo: %2$i bar: %1$i", 1776, 1066);
+  test_diag_vfprintf ("foo: second bar: 1776",
+		      "foo: %2$s bar: %1$i", 1776, "second");
+  test_diag_vfprintf ("foo: sec bar: 3360",
+		      "foo: %3$.*2$s bar: %1$o", 1776, 3, "second");
+  test_diag_vfprintf ("foo: seco bar: 3360",
+		      "foo: %2$.4s bar: %1$o", 1776, "second");
+}
+#else
+static void
+genmatch_diag_selftests (void)
+{
+}
+#endif
+
 static bool
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 5, 0)))
+__attribute__((format (gcc_diag, 5, 0)))
 #endif
 diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level errtype,
 	       enum cpp_warning_reason, rich_location *richloc,
 	       const char *msg, va_list *ap)
 {
   const line_map_ordinary *map;
+  int err_no = errno;
   location_t location = richloc->get_loc ();
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
   fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
 	   (errtype == CPP_DL_WARNING) ? "warning" : "error");
-  vfprintf (stderr, msg, *ap);
+  diag_vfprintf (stderr, err_no, msg, ap);
   fprintf (stderr, "\n");
   FILE *f = fopen (loc.file, "r");
   if (f)
@@ -119,7 +765,7 @@ notfound:
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 fatal_at (const cpp_token *tk, const char *msg, ...)
 {
@@ -132,7 +778,7 @@ fatal_at (const cpp_token *tk, const char *msg, ...)
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 fatal_at (location_t loc, const char *msg, ...)
 {
@@ -145,7 +791,7 @@ fatal_at (location_t loc, const char *msg, ...)
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 warning_at (const cpp_token *tk, const char *msg, ...)
 {
@@ -158,7 +804,7 @@ warning_at (const cpp_token *tk, const char *msg, ...)
 
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 2, 3)))
+__attribute__((format (gcc_diag, 2, 3)))
 #endif
 warning_at (location_t loc, const char *msg, ...)
 {
@@ -593,12 +1239,13 @@ is_a_helper <user_id *>::test (id_base *id)
    index of the first, otherwise return -1.  */
 
 static int
-commutative_op (id_base *id)
+commutative_op (id_base *id, bool compares_are_commutative = false)
 {
   if (operator_id *code = dyn_cast <operator_id *> (id))
     {
       if (commutative_tree_code (code->code)
-	  || commutative_ternary_tree_code (code->code))
+	  || commutative_ternary_tree_code (code->code)
+	  || (compares_are_commutative && comparison_code_p (code->code)))
 	return 0;
       return -1;
     }
@@ -606,9 +1253,12 @@ commutative_op (id_base *id)
     switch (fn->fn)
       {
       CASE_CFN_FMA:
+      CASE_CFN_HYPOT:
       case CFN_FMS:
       case CFN_FNMA:
       case CFN_FNMS:
+      case CFN_ADD_OVERFLOW:
+      case CFN_MUL_OVERFLOW:
 	return 0;
 
       case CFN_COND_ADD:
@@ -644,11 +1294,13 @@ commutative_op (id_base *id)
       }
   if (user_id *uid = dyn_cast<user_id *> (id))
     {
-      int res = commutative_op (uid->substitutes[0]);
+      int res = commutative_op (uid->substitutes[0],
+				compares_are_commutative);
       if (res < 0)
 	return -1;
       for (unsigned i = 1; i < uid->substitutes.length (); ++i)
-	if (res != commutative_op (uid->substitutes[i]))
+	if (res != commutative_op (uid->substitutes[i],
+				   compares_are_commutative))
 	  return -1;
       return res;
     }
@@ -1285,7 +1937,7 @@ lower_opt (operand *o, unsigned char grp, bool strip)
   return ne;
 }
 
-/* Determine whether O or its children uses the conditional operation 
+/* Determine whether O or its children uses the conditional operation
    group GRP.  */
 
 static bool
@@ -4099,7 +4751,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 
   fprintf (stderr, "%s decision tree has %u leafs, maximum depth %u and "
 	   "a total number of %u nodes\n",
-	   gimple ? "GIMPLE" : "GENERIC", 
+	   gimple ? "GIMPLE" : "GENERIC",
 	   root->num_leafs, root->max_level, root->total_size);
 
   /* First split out the transform part of equal leafs.  */
@@ -4520,7 +5172,7 @@ parser::eat_ident (const char *s)
   const cpp_token *token = peek ();
   const char *t = get_ident ();
   if (strcmp (s, t) != 0)
-    fatal_at (token, "expected '%s' got '%s'\n", s, t);
+    fatal_at (token, "expected %qs got %qs", s, t);
   return token;
 }
 
@@ -4588,7 +5240,7 @@ parser::parse_operation (unsigned char &opt_grp)
 	  alt_id = xstrdup (id);
 	  alt_id[strlen (id) - 1] = '\0';
 	  if (opt_grp == 1)
-	    fatal_at (id_tok, "use '%s?' here", alt_id);
+	    fatal_at (id_tok, "use %<%s?%> here", alt_id);
 	}
       else
 	opt_grp = 1;
@@ -4673,10 +5325,10 @@ parser::parse_expr ()
   if (token->type == CPP_XOR && !(token->flags & PREV_WHITE))
     {
       if (!parsing_match_operand)
-	fatal_at (token, "modifier '^' is only valid in a match expression");
+	fatal_at (token, "modifier %<^%> is only valid in a match expression");
 
       if (!(*e->operation == COND_EXPR))
-	fatal_at (token, "modifier '^' can only act on operation COND_EXPR");
+	fatal_at (token, "modifier %<^%> can only act on operation %<COND_EXPR%>");
 
       eat_token (CPP_XOR);
       e->match_phi = true;
@@ -4700,27 +5352,11 @@ parser::parse_expr ()
 		{
 		  if (*sp == 'c')
 		    {
-		      if (operator_id *o
-			    = dyn_cast<operator_id *> (e->operation))
-			{
-			  if (!commutative_tree_code (o->code)
-			      && !comparison_code_p (o->code))
-			    fatal_at (token, "operation is not commutative");
-			}
-		      else if (user_id *p = dyn_cast<user_id *> (e->operation))
-			for (unsigned i = 0;
-			     i < p->substitutes.length (); ++i)
-			  {
-			    if (operator_id *q
-				  = dyn_cast<operator_id *> (p->substitutes[i]))
-			      {
-				if (!commutative_tree_code (q->code)
-				    && !comparison_code_p (q->code))
-				  fatal_at (token, "operation %s is not "
-					    "commutative", q->id);
-			      }
-			  }
-		      is_commutative = true;
+		      if (commutative_op (e->operation, true) != -1)
+			is_commutative = true;
+		      else
+			fatal_at (token, "operation %s is not known "
+				  "commutative", e->operation->id);
 		    }
 		  else if (*sp == 'C')
 		    is_commutative = true;
@@ -5179,7 +5815,7 @@ parser::parse_for (location_t)
 	      else
 		fatal_at (token, "iterator cannot be used as operator-list");
 	    }
-	  else 
+	  else
 	    op->substitutes.safe_push (idb);
 	}
       op->nargs = arity;
@@ -5242,7 +5878,7 @@ parser::parse_for (location_t)
 void
 parser::parse_operator_list (location_t)
 {
-  const cpp_token *token = peek (); 
+  const cpp_token *token = peek ();
   const char *id = get_ident ();
 
   if (get_operator (id, true) != 0)
@@ -5250,13 +5886,13 @@ parser::parse_operator_list (location_t)
 
   user_id *op = new user_id (id, true);
   int arity = -1;
-  
+
   while ((token = peek_ident ()) != 0)
     {
-      token = peek (); 
+      token = peek ();
       const char *oper = get_ident ();
       id_base *idb = get_operator (oper, true);
-      
+
       if (idb == 0)
 	fatal_at (token, "no such operator '%s'", oper);
 
@@ -5391,7 +6027,7 @@ parser::parse_pattern ()
     {
       if (active_ifs.length () > 0
 	  || active_fors.length () > 0)
-	fatal_at (token, "define_predicates inside if or for is not supported");
+	fatal_at (token, "%<define_predicates%> inside if or for is not supported");
       parse_predicates (token->src_loc);
     }
   else if (strcmp (id, "define_operator_list") == 0)
@@ -5401,10 +6037,11 @@ parser::parse_pattern ()
 	fatal_at (token, "operator-list inside if or for is not supported");
       parse_operator_list (token->src_loc);
     }
+  else if (active_ifs.length () == 0 && active_fors.length () == 0)
+    fatal_at (token, "expected %<define_predicates%>, %<simplify%>, "
+		     "%<match%>, %<for%> or %<if%>");
   else
-    fatal_at (token, "expected %s'simplify', 'match', 'for' or 'if'",
-	      active_ifs.length () == 0 && active_fors.length () == 0
-	      ? "'define_predicates', " : "");
+    fatal_at (token, "expected %<simplify%>, %<match%>, %<for%> or %<if%>");
 
   eat_token (CPP_CLOSE_PAREN);
 }
@@ -5446,12 +6083,13 @@ parser::finish_match_operand (operand *op)
 	  if (cpts[i][j]->value_match)
 	    {
 	      if (value_match)
-		fatal_at (cpts[i][j]->location, "duplicate @@");
+		fatal_at (cpts[i][j]->location, "duplicate %s", "@@");
 	      value_match = cpts[i][j];
 	    }
 	}
       if (cpts[i].length () == 1 && value_match)
-	fatal_at (value_match->location, "@@ without a matching capture");
+	fatal_at (value_match->location,
+		  "%s without a matching capture", "@@");
       if (value_match)
 	{
 	  /* Duplicate prevailing capture with the existing ID, create
@@ -5576,6 +6214,8 @@ main (int argc, char **argv)
       return 1;
     }
 
+  genmatch_diag_selftests ();
+
   if (!s_include_file)
     s_include_file = s_header_file;
 
@@ -5600,8 +6240,8 @@ main (int argc, char **argv)
 
   if (!cpp_read_main_file (r, input))
     return 1;
-  cpp_define (r, gimple ? "GIMPLE=1": "GENERIC=1");
-  cpp_define (r, gimple ? "GENERIC=0": "GIMPLE=0");
+  cpp_define (r, gimple ? "GIMPLE=1" : "GENERIC=1");
+  cpp_define (r, gimple ? "GENERIC=0" : "GIMPLE=0");
 
   null_id = new id_base (id_base::NULL_ID, "null");
 

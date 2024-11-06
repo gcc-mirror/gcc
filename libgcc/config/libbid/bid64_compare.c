@@ -51,7 +51,7 @@ bid64_quiet_equal (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y, lcv;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -107,7 +107,7 @@ bid64_quiet_equal (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //    therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -171,7 +171,7 @@ bid64_quiet_greater (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, rather than equal : 
+  // if either number is NAN, the comparison is unordered, rather than equal :
   // return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -193,7 +193,7 @@ bid64_quiet_greater (UINT64 x,
       res = 0;
       BID_RETURN (res);
     } else {
-      // x is pos infinity, it is greater, unless y is positive 
+      // x is pos infinity, it is greater, unless y is positive
       // infinity => return y!=pos_infinity
       res = (((y & MASK_INF) != MASK_INF)
 	     || ((y & MASK_SIGN) == MASK_SIGN));
@@ -236,7 +236,7 @@ bid64_quiet_greater (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   //(+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //(ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore ignore the 
+  //(ZERO x 10^A == ZERO x 10^B) for any valid A, B => therefore ignore the
   // exponent field
   // (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -265,7 +265,7 @@ bid64_quiet_greater (UINT64 x,
     BID_RETURN (res);
   }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
   if (sig_x > sig_y && exp_x > exp_y) {
     res = ((x & MASK_SIGN) != MASK_SIGN);
@@ -309,7 +309,7 @@ bid64_quiet_greater (UINT64 x,
   // adjust the y significand upwards
   __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 			  mult_factor[exp_y - exp_x]);
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   //     (converse if negative)
   if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
     res = 0;
@@ -406,7 +406,7 @@ bid64_quiet_greater_equal (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //   therefore ignore the exponent field
   //  (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -465,7 +465,7 @@ bid64_quiet_greater_equal (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     // (converse if negative)
     res = (((sig_n_prime.w[1] == 0)
 	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) !=
@@ -480,7 +480,7 @@ bid64_quiet_greater_equal (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   // (converse if negative)
   res = (((sig_n_prime.w[1] > 0)
 	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) !=
@@ -509,7 +509,7 @@ bid64_quiet_greater_unordered (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, rather than equal : 
+  // if either number is NAN, the comparison is unordered, rather than equal :
   // return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -531,7 +531,7 @@ bid64_quiet_greater_unordered (UINT64 x,
       res = 0;
       BID_RETURN (res);
     } else {
-      // x is pos infinity, it is greater, unless y is positive infinity => 
+      // x is pos infinity, it is greater, unless y is positive infinity =>
       // return y!=pos_infinity
       res = (((y & MASK_INF) != MASK_INF)
 	     || ((y & MASK_SIGN) == MASK_SIGN));
@@ -574,7 +574,7 @@ bid64_quiet_greater_unordered (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   // therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -628,7 +628,7 @@ bid64_quiet_greater_unordered (UINT64 x,
     // otherwise adjust the x significand upwards
     __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 			    mult_factor[exp_x - exp_y]);
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       res = 0;
@@ -657,7 +657,7 @@ bid64_quiet_greater_unordered (UINT64 x,
 void
 bid64_quiet_less (int *pres, UINT64 * px,
 		  UINT64 *
-		  py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM) 
+		  py _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM)
 {
   UINT64 x = *px;
   UINT64 y = *py;
@@ -739,7 +739,7 @@ bid64_quiet_less (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //  therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -768,7 +768,7 @@ bid64_quiet_less (UINT64 x,
     BID_RETURN (res);
   }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
   if (sig_x > sig_y && exp_x >= exp_y) {
     res = ((x & MASK_SIGN) == MASK_SIGN);
@@ -799,7 +799,7 @@ bid64_quiet_less (UINT64 x,
       res = 0;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     // (converse if negative)
     res = (((sig_n_prime.w[1] == 0)
 	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
@@ -814,7 +814,7 @@ bid64_quiet_less (UINT64 x,
     res = 0;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   // (converse if negative)
   res = (((sig_n_prime.w[1] > 0)
 	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
@@ -843,7 +843,7 @@ bid64_quiet_less_equal (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, rather than equal : 
+  // if either number is NAN, the comparison is unordered, rather than equal :
   //     return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -865,7 +865,7 @@ bid64_quiet_less_equal (UINT64 x,
       res = 1;
       BID_RETURN (res);
     } else {
-      // x is pos infinity, it is greater, unless y is positive infinity => 
+      // x is pos infinity, it is greater, unless y is positive infinity =>
       // return y==pos_infinity
       res = !(((y & MASK_INF) != MASK_INF)
 	      || ((y & MASK_SIGN) == MASK_SIGN));
@@ -908,7 +908,7 @@ bid64_quiet_less_equal (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //     therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -967,7 +967,7 @@ bid64_quiet_less_equal (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     res = (((sig_n_prime.w[1] == 0)
 	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
@@ -982,7 +982,7 @@ bid64_quiet_less_equal (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   res = (((sig_n_prime.w[1] > 0)
 	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
@@ -1076,7 +1076,7 @@ bid64_quiet_less_unordered (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  // (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //     therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -1135,7 +1135,7 @@ bid64_quiet_less_unordered (UINT64 x,
       res = 0;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     res = (((sig_n_prime.w[1] == 0)
 	    && sig_n_prime.w[0] < sig_y) ^ ((x & MASK_SIGN) ==
@@ -1150,7 +1150,7 @@ bid64_quiet_less_unordered (UINT64 x,
     res = 0;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   res = (((sig_n_prime.w[1] > 0)
 	  || (sig_x < sig_n_prime.w[0])) ^ ((x & MASK_SIGN) ==
@@ -1178,7 +1178,7 @@ bid64_quiet_not_equal (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y, lcv;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 1
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -1236,7 +1236,7 @@ bid64_quiet_not_equal (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //        therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -1309,7 +1309,7 @@ bid64_quiet_not_greater (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   //   rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -1331,7 +1331,7 @@ bid64_quiet_not_greater (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // x is pos infinity, it is greater, unless y is positive 
+    // x is pos infinity, it is greater, unless y is positive
     // infinity => return y==pos_infinity
     else {
       res = !(((y & MASK_INF) != MASK_INF)
@@ -1378,9 +1378,9 @@ bid64_quiet_not_greater (UINT64 x,
 
   // ZERO (CASE4)
   // some properties:
-  // (+ZERO==-ZERO) => therefore ignore the sign, and neither 
+  // (+ZERO==-ZERO) => therefore ignore the sign, and neither
   //         number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //         therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -1444,7 +1444,7 @@ bid64_quiet_not_greater (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -1462,7 +1462,7 @@ bid64_quiet_not_greater (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -1563,9 +1563,9 @@ bid64_quiet_not_less (UINT64 x,
 
   // ZERO (CASE4)
   // some properties:
-  // (+ZERO==-ZERO) => therefore ignore the sign, and neither 
+  // (+ZERO==-ZERO) => therefore ignore the sign, and neither
   //        number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //        therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -1629,7 +1629,7 @@ bid64_quiet_not_less (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -1647,7 +1647,7 @@ bid64_quiet_not_less (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -1704,7 +1704,7 @@ bid64_quiet_unordered (UINT64 x,
   int res;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   //     rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     if ((x & MASK_SNAN) == MASK_SNAN || (y & MASK_SNAN) == MASK_SNAN) {
@@ -1739,7 +1739,7 @@ bid64_signaling_greater (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   //     rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     *pfpsf |= INVALID_EXCEPTION;	// set invalid exception if NaN
@@ -1759,7 +1759,7 @@ bid64_signaling_greater (UINT64 x,
       res = 0;
       BID_RETURN (res);
     }
-    // x is pos infinity, it is greater, 
+    // x is pos infinity, it is greater,
     // unless y is positive infinity => return y!=pos_infinity
     else {
       res = (((y & MASK_INF) != MASK_INF)
@@ -1807,7 +1807,7 @@ bid64_signaling_greater (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -1868,7 +1868,7 @@ bid64_signaling_greater (UINT64 x,
 			    mult_factor[exp_x - exp_y]);
 
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     //     (converse if negative)
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       res = 0;
@@ -1886,7 +1886,7 @@ bid64_signaling_greater (UINT64 x,
   __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 			  mult_factor[exp_y - exp_x]);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   //     (converse if negative)
   if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
     res = 0;
@@ -1990,7 +1990,7 @@ bid64_signaling_greater_equal (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -2054,7 +2054,7 @@ bid64_signaling_greater_equal (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -2072,7 +2072,7 @@ bid64_signaling_greater_equal (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -2103,7 +2103,7 @@ bid64_signaling_greater_unordered (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     *pfpsf |= INVALID_EXCEPTION;	// set invalid exception if NaN
@@ -2123,7 +2123,7 @@ bid64_signaling_greater_unordered (UINT64 x,
       res = 0;
       BID_RETURN (res);
     }
-    // x is pos infinity, it is greater, 
+    // x is pos infinity, it is greater,
     // unless y is positive infinity => return y!=pos_infinity
     else {
       res = (((y & MASK_INF) != MASK_INF)
@@ -2171,7 +2171,7 @@ bid64_signaling_greater_unordered (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -2231,7 +2231,7 @@ bid64_signaling_greater_unordered (UINT64 x,
     __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 			    mult_factor[exp_x - exp_y]);
 
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     //     (converse if negative)
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       res = 0;
@@ -2249,7 +2249,7 @@ bid64_signaling_greater_unordered (UINT64 x,
   __mul_64x64_to_128MACH (sig_n_prime, sig_y,
 			  mult_factor[exp_y - exp_x]);
 
-  // if postitive, return whichever significand is larger 
+  // if postitive, return whichever significand is larger
   //     (converse if negative)
   if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_x)) {
     res = 0;
@@ -2353,7 +2353,7 @@ bid64_signaling_less (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -2417,7 +2417,7 @@ bid64_signaling_less (UINT64 x,
       res = 0;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -2435,7 +2435,7 @@ bid64_signaling_less (UINT64 x,
     res = 0;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -2466,7 +2466,7 @@ bid64_signaling_less_equal (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     *pfpsf |= INVALID_EXCEPTION;	// set invalid exception if NaN
@@ -2486,7 +2486,7 @@ bid64_signaling_less_equal (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // x is pos infinity, it is greater, 
+    // x is pos infinity, it is greater,
     // unless y is positive infinity => return y==pos_infinity
     else {
       res = !(((y & MASK_INF) != MASK_INF)
@@ -2534,7 +2534,7 @@ bid64_signaling_less_equal (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -2598,7 +2598,7 @@ bid64_signaling_less_equal (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -2616,7 +2616,7 @@ bid64_signaling_less_equal (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -2716,7 +2716,7 @@ bid64_signaling_less_unordered (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -2780,7 +2780,7 @@ bid64_signaling_less_unordered (UINT64 x,
       res = 0;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -2798,7 +2798,7 @@ bid64_signaling_less_unordered (UINT64 x,
     res = 0;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -2829,7 +2829,7 @@ bid64_signaling_not_greater (UINT64 x,
   char x_is_zero = 0, y_is_zero = 0, non_canon_x, non_canon_y;
 
   // NaN (CASE1)
-  // if either number is NAN, the comparison is unordered, 
+  // if either number is NAN, the comparison is unordered,
   // rather than equal : return 0
   if (((x & MASK_NAN) == MASK_NAN) || ((y & MASK_NAN) == MASK_NAN)) {
     *pfpsf |= INVALID_EXCEPTION;	// set invalid exception if NaN
@@ -2849,7 +2849,7 @@ bid64_signaling_not_greater (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // x is pos infinity, it is greater, 
+    // x is pos infinity, it is greater,
     // unless y is positive infinity => return y==pos_infinity
     else {
       res = !(((y & MASK_INF) != MASK_INF)
@@ -2897,7 +2897,7 @@ bid64_signaling_not_greater (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -2961,7 +2961,7 @@ bid64_signaling_not_greater (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -2979,7 +2979,7 @@ bid64_signaling_not_greater (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)
@@ -3079,7 +3079,7 @@ bid64_signaling_not_less (UINT64 x,
   // ZERO (CASE4)
   // some properties:
   // (+ZERO==-ZERO) => therefore ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //      therefore ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (non_canon_x || sig_x == 0) {
@@ -3143,7 +3143,7 @@ bid64_signaling_not_less (UINT64 x,
       res = 1;
       BID_RETURN (res);
     }
-    // if postitive, return whichever significand abs is smaller 
+    // if postitive, return whichever significand abs is smaller
     //     (converse if negative)
     {
       res = (((sig_n_prime.w[1] == 0)
@@ -3161,7 +3161,7 @@ bid64_signaling_not_less (UINT64 x,
     res = 1;
     BID_RETURN (res);
   }
-  // if positive, return whichever significand abs is smaller 
+  // if positive, return whichever significand abs is smaller
   //     (converse if negative)
   {
     res = (((sig_n_prime.w[1] > 0)

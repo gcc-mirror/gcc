@@ -47,7 +47,7 @@ __pointer_catch (const __pbase_type_info *thrown_type,
       return !thrown_type->__pointee->__is_function_p ();
     }
 #endif
-  
+
   return __pbase_type_info::__pointer_catch (thrown_type, thr_obj, outer);
 }
 

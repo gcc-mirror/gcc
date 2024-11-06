@@ -194,7 +194,7 @@ bid64_to_int64_rnint (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = (C1 + 1/2 * 10^x) * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -223,7 +223,7 @@ bid64_to_int64_rnint (UINT64 x
       // check for midpoints
       if ((fstar.w[1] == 0) && fstar.w[0] &&
 	  (fstar.w[0] <= ten2mk128trunc[ind - 1].w[1])) {
-	// ten2mk128trunc[ind -1].w[1] is identical to 
+	// ten2mk128trunc[ind -1].w[1] is identical to
 	// ten2mk128[ind -1].w[1]
 	// the result is a midpoint; round to nearest
 	if (Cstar & 0x01) {	// Cstar is odd; MP in [EVEN, ODD]
@@ -243,8 +243,8 @@ bid64_to_int64_rnint (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -431,7 +431,7 @@ bid64_to_int64_xrnint (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = (C1 + 1/2 * 10^x) * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -464,7 +464,7 @@ bid64_to_int64_xrnint (UINT64 x
 	  // f* > 1/2 and the result may be exact
 	  tmp64 = fstar.w[0] - 0x8000000000000000ull;	// f* - 1/2
 	  if ((tmp64 > ten2mk128trunc[ind - 1].w[1])) {
-	    // ten2mk128trunc[ind -1].w[1] is identical to 
+	    // ten2mk128trunc[ind -1].w[1] is identical to
 	    // ten2mk128[ind -1].w[1]
 	    // set the inexact flag
 	    *pfpsf |= INEXACT_EXCEPTION;
@@ -480,7 +480,7 @@ bid64_to_int64_xrnint (UINT64 x
 	  // Calculate f2* - 1/2
 	  tmp64 = fstar.w[1] - onehalf128[ind - 1];
 	  if (tmp64 || fstar.w[0] > ten2mk128trunc[ind - 1].w[1]) {
-	    // ten2mk128trunc[ind -1].w[1] is identical to 
+	    // ten2mk128trunc[ind -1].w[1] is identical to
 	    // ten2mk128[ind -1].w[1]
 	    // set the inexact flag
 	    *pfpsf |= INEXACT_EXCEPTION;
@@ -496,7 +496,7 @@ bid64_to_int64_xrnint (UINT64 x
       // check for midpoints
       if ((fstar.w[1] == 0) && fstar.w[0] &&
 	  (fstar.w[0] <= ten2mk128trunc[ind - 1].w[1])) {
-	// ten2mk128trunc[ind -1].w[1] is identical to 
+	// ten2mk128trunc[ind -1].w[1] is identical to
 	// ten2mk128[ind -1].w[1]
 	// the result is a midpoint; round to nearest
 	if (Cstar & 0x01) {	// Cstar is odd; MP in [EVEN, ODD]
@@ -516,8 +516,8 @@ bid64_to_int64_xrnint (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -688,7 +688,7 @@ bid64_to_int64_floor (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = C1 * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -740,8 +740,8 @@ bid64_to_int64_floor (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -914,7 +914,7 @@ bid64_to_int64_xfloor (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = C1 * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -970,8 +970,8 @@ bid64_to_int64_xfloor (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -989,13 +989,13 @@ bid64_to_int64_xfloor (UINT64 x
 #if DECIMAL_CALL_BY_REFERENCE
 void
 bid64_to_int64_ceil (SINT64 * pres, UINT64 * px
-		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM) 
+		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM)
 {
   UINT64 x = *px;
 #else
 SINT64
 bid64_to_int64_ceil (UINT64 x
-		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM) 
+		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM)
 {
 #endif
   SINT64 res;
@@ -1142,7 +1142,7 @@ bid64_to_int64_ceil (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = C1 * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -1194,8 +1194,8 @@ bid64_to_int64_ceil (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -1368,7 +1368,7 @@ bid64_to_int64_xceil (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = C1 * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -1424,8 +1424,8 @@ bid64_to_int64_xceil (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -1590,7 +1590,7 @@ bid64_to_int64_int (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = C1 * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -1618,8 +1618,8 @@ bid64_to_int64_int (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -1637,13 +1637,13 @@ bid64_to_int64_int (UINT64 x
 #if DECIMAL_CALL_BY_REFERENCE
 void
 bid64_to_int64_xint (SINT64 * pres, UINT64 * px
-		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM) 
+		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM)
 {
   UINT64 x = *px;
 #else
 SINT64
 bid64_to_int64_xint (UINT64 x
-		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM) 
+		     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM _EXC_INFO_PARAM)
 {
 #endif
   SINT64 res;
@@ -1789,7 +1789,7 @@ bid64_to_int64_xint (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = C1 * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -1838,8 +1838,8 @@ bid64_to_int64_xint (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -2020,7 +2020,7 @@ bid64_to_int64_rninta (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = (C1 + 1/2 * 10^x) * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -2055,8 +2055,8 @@ bid64_to_int64_rninta (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];
@@ -2243,7 +2243,7 @@ bid64_to_int64_xrninta (UINT64 x
       // C* is actually floor(C*) in this case
       // C* and f* need shifting and masking, as shown by
       // shiftright128[] and maskhigh128[]
-      // 1 <= x <= 15 
+      // 1 <= x <= 15
       // kx = 10^(-x) = ten2mk64[ind - 1]
       // C* = (C1 + 1/2 * 10^x) * 10^(-x)
       // the approximation of 10^(-x) was rounded up to 54 bits
@@ -2276,7 +2276,7 @@ bid64_to_int64_xrninta (UINT64 x
 	  // f* > 1/2 and the result may be exact
 	  tmp64 = fstar.w[0] - 0x8000000000000000ull;	// f* - 1/2
 	  if ((tmp64 > ten2mk128trunc[ind - 1].w[1])) {
-	    // ten2mk128trunc[ind -1].w[1] is identical to 
+	    // ten2mk128trunc[ind -1].w[1] is identical to
 	    // ten2mk128[ind -1].w[1]
 	    // set the inexact flag
 	    *pfpsf |= INEXACT_EXCEPTION;
@@ -2292,7 +2292,7 @@ bid64_to_int64_xrninta (UINT64 x
 	  // Calculate f2* - 1/2
 	  tmp64 = fstar.w[1] - onehalf128[ind - 1];
 	  if (tmp64 || fstar.w[0] > ten2mk128trunc[ind - 1].w[1]) {
-	    // ten2mk128trunc[ind -1].w[1] is identical to 
+	    // ten2mk128trunc[ind -1].w[1] is identical to
 	    // ten2mk128[ind -1].w[1]
 	    // set the inexact flag
 	    *pfpsf |= INEXACT_EXCEPTION;
@@ -2316,8 +2316,8 @@ bid64_to_int64_xrninta (UINT64 x
       else
 	res = C1;
     } else {	// if (exp > 0) => 1 <= exp <= 18, 1 <= q <= 16, 2 <= q + exp <= 20
-      // (the upper limit of 20 on q + exp is due to the fact that 
-      // +/-C * 10^exp is guaranteed to fit in 64 bits) 
+      // (the upper limit of 20 on q + exp is due to the fact that
+      // +/-C * 10^exp is guaranteed to fit in 64 bits)
       // res = +/-C * 10^exp (exact)
       if (x_sign)
 	res = -C1 * ten2k64[exp];

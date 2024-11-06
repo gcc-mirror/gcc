@@ -34,7 +34,9 @@
 #ifndef _IOS_BASE_H
 #define _IOS_BASE_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <ext/atomicity.h>
 #include <bits/localefwd.h>
@@ -54,8 +56,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // as permitted (but not required) in the standard, in order to provide
   // better type safety in iostream calls.  A side effect is that in C++98
   // expressions involving them are not compile-time constants.
-  enum _Ios_Fmtflags 
-    { 
+  enum _Ios_Fmtflags
+    {
       _S_boolalpha 	= 1L << 0,
       _S_dec 		= 1L << 1,
       _S_fixed 		= 1L << 2,
@@ -123,7 +125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   enum __attribute__((__flag_enum__)) _Ios_Openmode
-    { 
+    {
       _S_app 		= 1L << 0,
       _S_ate 		= 1L << 1,
       _S_bin 		= 1L << 2,
@@ -175,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   enum _Ios_Iostate
-    { 
+    {
       _S_goodbit 		= 0,
       _S_badbit 		= 1L << 0,
       _S_eofbit 		= 1L << 1,
@@ -221,12 +223,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __a = __a ^ __b; }
 
 
-  enum _Ios_Seekdir 
-    { 
+  enum _Ios_Seekdir
+    {
       _S_beg = 0,
       _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
       _S_end = _GLIBCXX_STDIO_SEEK_END,
-      _S_ios_seekdir_end = 1L << 16 
+      _S_ios_seekdir_end = 1L << 16
     };
 
 #if __cplusplus >= 201103L
@@ -280,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   public:
 
-    /** 
+    /**
      *  @brief These are thrown to indicate problems with io.
      *  @ingroup exceptions
      *
@@ -609,7 +611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // 0 => OK to delete.
       int
-      _M_remove_reference() 
+      _M_remove_reference()
       {
         // Be race-detector-friendly.  For more info see bits/c++config.
         _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_refcount);
@@ -687,6 +689,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @brief  Access to format flags.
      *  @return  The format control flags for both input and output.
     */
+    _GLIBCXX_NODISCARD
     fmtflags
     flags() const
     { return _M_flags; }
@@ -757,6 +760,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  Be careful if you try to give a definition of @a precision here; see
      *  DR 189.
     */
+    _GLIBCXX_NODISCARD
     streamsize
     precision() const
     { return _M_precision; }
@@ -780,6 +784,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *
      *  <em>Minimum field width</em> refers to the number of characters.
     */
+    _GLIBCXX_NODISCARD
     streamsize
     width() const
     { return _M_width; }
@@ -831,6 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  returns @c loc.  Otherwise, it returns a copy of @c std::locale(),
      *  the global C++ locale.
     */
+    _GLIBCXX_NODISCARD
     locale
     getloc() const
     { return _M_ios_locale; }

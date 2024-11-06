@@ -55,7 +55,9 @@
 #ifndef _GLIBCXX_NUMERIC
 #define _GLIBCXX_NUMERIC 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h>

@@ -1840,6 +1840,9 @@ package body Sprint is
 
             Write_Char (';');
 
+         when N_External_Initializer =>
+            null;
+
          when N_Delta_Aggregate =>
             Write_Str_With_Col_Check_Sloc ("(");
             Sprint_Node (Expression (Node));

@@ -1,6 +1,7 @@
 /* PR tree-optimization/93820 */
 /* { dg-do run } */
 /* { dg-options "-O2 -fgimple" } */
+/* { dg-require-effective-target int32 } */
 
 typedef int v4si __attribute__((vector_size(4 * sizeof (int))));
 int a[10];

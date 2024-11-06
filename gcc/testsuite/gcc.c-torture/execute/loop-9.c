@@ -1,4 +1,5 @@
 /* Source: Neil Booth, from PR # 115.  */
+/* { dg-additional-options "-std=gnu17" } */
 
 int false()
 {

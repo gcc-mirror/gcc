@@ -44,7 +44,9 @@
 // if unwanted, to permit bits and other FTMs to depend on them for condtional
 // computation without exposing extra FTMs to user code.
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 
@@ -774,7 +776,12 @@
 #undef __glibcxx_want_shared_ptr_weak_type
 
 #if !defined(__cpp_lib_string_view)
-# if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_string_view 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_string_view)
+#   define __cpp_lib_string_view 202403L
+#  endif
+# elif (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_view 201803L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_string_view)
 #   define __cpp_lib_string_view 201803L
@@ -1390,9 +1397,9 @@
 
 #if !defined(__cpp_lib_constrained_equality)
 # if (__cplusplus >= 202002L) && (__glibcxx_three_way_comparison)
-#  define __glibcxx_constrained_equality 202403L
+#  define __glibcxx_constrained_equality 202411L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constrained_equality)
-#   define __cpp_lib_constrained_equality 202403L
+#   define __cpp_lib_constrained_equality 202411L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_constrained_equality) && defined(__glibcxx_want_constrained_equality) */
@@ -1997,6 +2004,16 @@
 # endif
 #endif /* !defined(__cpp_lib_fstream_native_handle) && defined(__glibcxx_want_fstream_native_handle) */
 #undef __glibcxx_want_fstream_native_handle
+
+#if !defined(__cpp_lib_is_virtual_base_of)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_is_virtual_base_of))
+#  define __glibcxx_is_virtual_base_of 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_is_virtual_base_of)
+#   define __cpp_lib_is_virtual_base_of 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_is_virtual_base_of) && defined(__glibcxx_want_is_virtual_base_of) */
+#undef __glibcxx_want_is_virtual_base_of
 
 #if !defined(__cpp_lib_ranges_concat)
 # if (__cplusplus >  202302L)

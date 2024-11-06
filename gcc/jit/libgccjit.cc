@@ -1870,6 +1870,23 @@ gcc_jit_global_set_initializer (gcc_jit_lvalue *global,
 
 /* Public entrypoint.  See description in libgccjit.h.
 
+   After error-checking, the real work is done by the
+   gcc::jit::recording::global::set_readonly method, in
+   jit-recording.cc.  */
+
+extern void
+gcc_jit_global_set_readonly (gcc_jit_lvalue *global)
+{
+  RETURN_IF_FAIL (global, NULL, NULL, "NULL global");
+  RETURN_IF_FAIL_PRINTF1 (global->is_global (), NULL, NULL,
+			       "lvalue \"%s\" not a global",
+			       global->get_debug_string ());
+
+  global->set_readonly ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
    After error-checking, this calls the trivial
    gcc::jit::recording::memento::as_object method (an lvalue is a
    memento), in jit-recording.h.  */
@@ -2542,6 +2559,42 @@ gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_convert_vector method in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_context_convert_vector (gcc_jit_context *ctxt,
+				gcc_jit_location *loc,
+				gcc_jit_rvalue *vector,
+				gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (vector, ctxt, loc, "NULL vector");
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+
+  gcc::jit::recording::vector_type *value_vec_type
+    = vector->get_type ()->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (value_vec_type, ctxt, loc,
+			       "%s is not a value of a vector type",
+			       vector->get_debug_string ());
+  gcc::jit::recording::vector_type *as_vec_type
+    = type->dyn_cast_vector_type ();
+  RETURN_NULL_IF_FAIL_PRINTF1 (as_vec_type, ctxt, loc,
+			       "%s is not a vector type",
+			       type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    as_vec_type->get_num_units () == value_vec_type->get_num_units (), ctxt,
+    loc, "%s should contain the same number of elements as %s",
+    vector->get_debug_string (), type->get_debug_string ());
+
+  return (gcc_jit_rvalue *)ctxt->new_convert_vector (loc, vector, type);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::memento::get_context method in
    jit-recording.h.  */
 
@@ -2880,6 +2933,11 @@ gcc_jit_block_add_assignment (gcc_jit_block *block,
     lvalue->get_type ()->get_debug_string (),
     rvalue->get_debug_string (),
     rvalue->get_type ()->get_debug_string ());
+  RETURN_IF_FAIL_PRINTF1 (
+    !lvalue->get_readonly (),
+    ctxt, loc,
+    "cannot assign to readonly variable: %s",
+    lvalue->get_debug_string ());
 
   gcc::jit::recording::statement *stmt = block->add_assignment (loc, lvalue, rvalue);
 

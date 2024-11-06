@@ -705,7 +705,7 @@ bb_top_order_cmp_r (const void *x, const void *y, void *loop)
 	      || _loop->get_bb_top_order_index(bb1->index)
 		 != _loop->get_bb_top_order_index(bb2->index));
 
-  return (_loop->get_bb_top_order_index(bb1->index) - 
+  return (_loop->get_bb_top_order_index(bb1->index) -
 	  _loop->get_bb_top_order_index(bb2->index));
 }
 
@@ -1373,7 +1373,7 @@ destroy_loop (class loop *loop)
 
 /* Generates code for PARTITION.  Return whether LOOP needs to be destroyed.  */
 
-static bool 
+static bool
 generate_code_for_partition (class loop *loop,
 			     partition *partition, bool copy_p,
 			     bool keep_lc_phis_p)
@@ -3552,7 +3552,7 @@ determine_reduction_stmt_1 (const loop_p loop, const basic_block *bbs)
       basic_block bb = bbs[i];
 
       for (gphi_iterator bsi = gsi_start_phis (bb); !gsi_end_p (bsi);
-	   gsi_next_nondebug (&bsi))
+	   gsi_next (&bsi))
 	{
 	  gphi *phi = bsi.phi ();
 	  if (virtual_operand_p (gimple_phi_result (phi)))
@@ -3565,8 +3565,8 @@ determine_reduction_stmt_1 (const loop_p loop, const basic_block *bbs)
 	    }
 	}
 
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next_nondebug (&bsi), ++ninsns)
+      for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb);
+	   !gsi_end_p (bsi); gsi_next_nondebug (&bsi), ++ninsns)
 	{
 	  /* Bail out early for loops which are unlikely to match.  */
 	  if (ninsns > 16)

@@ -452,7 +452,7 @@ C ObjC Alias(Wc11-c23-compat)
 Deprecated in favor of -Wc11-c23-compat.
 
 Wc23-c2y-compat
-C ObjC Var(warn_c23_c2y_compat) Init(-1) Warning
+C ObjC CPP(cpp_warn_c23_c2y_compat) CppReason(CPP_W_C23_C2Y_COMPAT) Var(warn_c23_c2y_compat) Init(-1) Warning
 Warn about features not present in ISO C23, but present in ISO C2Y.
 
 Wc90-c99-compat
@@ -664,6 +664,10 @@ C++ ObjC++ Var(warn_deprecated_enum_float_conv) Warning
 Warn about deprecated arithmetic conversions on operands where one is of enumeration
 type and the other is of a floating-point type.
 
+Wdeprecated-literal-operator
+C++ ObjC++ Var(warn_deprecated_literal_operator) Warning
+Warn about deprecated space between "" and suffix in a user-defined literal operator.
+
 Wdesignated-init
 C ObjC Var(warn_designated_init) Init(1) Warning
 Warn about positional initialization of structs requiring designated initializers.
@@ -828,6 +832,10 @@ Wglobal-module
 C++ ObjC++ Var(warn_global_module) Warning Init(1)
 Warn about the global module fragment not containing only preprocessing directives.
 
+Wheader-guard
+C ObjC C++ ObjC++ CPP(warn_header_guard) CppReason(CPP_W_HEADER_GUARD) Var(cpp_warn_header_guard) Init(0) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when #ifndef of a header guard is followed by #define of a different macro with the header guard macro not defined at the end of header.
+
 Wif-not-aligned
 C ObjC C++ ObjC++ Var(warn_if_not_aligned) Init(1) Warning
 Warn when the field in a struct is not aligned.
@@ -919,6 +927,25 @@ Warn about invalid UTF-8 characters.
 Wjump-misses-init
 C ObjC Var(warn_jump_misses_init) Warning LangEnabledby(C ObjC,Wc++-compat)
 Warn when a jump misses a variable initialization.
+
+Enum
+Name(warn_leading_whitespace_kind) Type(int) UnknownError(argument %qs to %<-Wleading-whitespace=%> not recognized)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(none) Value(0)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(spaces) Value(1)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(tabs) Value(2)
+
+EnumValue
+Enum(warn_leading_whitespace_kind) String(blanks) Value(3)
+
+Wleading-whitespace=
+C ObjC C++ ObjC++ CPP(cpp_warn_leading_whitespace) CppReason(CPP_W_LEADING_WHITESPACE) Enum(warn_leading_whitespace_kind) Joined RejectNegative Var(warn_leading_whitespace) Init(0) Warning
+Warn about leading whitespace style issues on lines except when in raw string literals.
 
 Wliteral-suffix
 C++ ObjC++ CPP(warn_literal_suffix) CppReason(CPP_W_LITERAL_SUFFIX) Var(cpp_warn_literal_suffix) Init(1) Warning
@@ -1206,6 +1233,10 @@ Wpragmas
 C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas.
 
+Wpragma-once-outside-header
+C ObjC C++ ObjC++ Var(warn_pragma_once_outside_header) CppReason(CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER) Init(1) Warning
+Warn about #pragma once outside of a header.
+
 Wprio-ctor-dtor
 C ObjC C++ ObjC++ Var(warn_prio_ctor_dtor) Init(1) Warning
 Warn if constructor or destructors with priorities from 0 to 100 are used.
@@ -1453,6 +1484,26 @@ Warn about features not present in traditional C.
 Wtraditional-conversion
 C ObjC Var(warn_traditional_conversion) Warning
 Warn of prototypes causing type conversions different from what would happen in the absence of prototype.
+
+Enum
+Name(warn_trailing_whitespace_kind) Type(int) UnknownError(argument %qs to %<-Wtrailing-whitespace=%> not recognized)
+
+EnumValue
+Enum(warn_trailing_whitespace_kind) String(none) Value(0)
+
+EnumValue
+Enum(warn_trailing_whitespace_kind) String(blanks) Value(1)
+
+EnumValue
+Enum(warn_trailing_whitespace_kind) String(any) Value(2)
+
+Wtrailing-whitespace=
+C ObjC C++ ObjC++ CPP(cpp_warn_trailing_whitespace) CppReason(CPP_W_TRAILING_WHITESPACE) Enum(warn_trailing_whitespace_kind) Joined RejectNegative Var(warn_trailing_whitespace) Init(0) Warning
+Warn about trailing whitespace on lines except when in raw string literals.
+
+Wtrailing-whitespace
+C ObjC C++ ObjC++ Alias(Wtrailing-whitespace=,blanks,none) Warning
+Warn about trailing whitespace on lines except when in raw string literals.   Equivalent to Wtrailing-whitespace=blanks when enabled or Wtrailing-whitespace=none when disabled.
 
 Wtrigraphs
 C ObjC C++ ObjC++ CPP(warn_trigraphs) CppReason(CPP_W_TRIGRAPHS) Var(cpp_warn_trigraphs) Init(2) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
@@ -2253,6 +2304,10 @@ fprintf-return-value
 C ObjC C++ ObjC++ LTO Optimization Var(flag_printf_return_value) Init(1)
 Treat known sprintf return values as constants.
 
+frange-for-ext-temps
+C++ ObjC++ Var(flag_range_for_ext_temps)
+Enable lifetime extension of range based for temporaries.
+
 freplace-objc-classes
 ObjC ObjC++ LTO Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime.
@@ -2547,11 +2602,11 @@ Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++2b
 C++ ObjC++ Alias(std=c++23) Undocumented
-Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2023 C++ standard (published in 2024; experimental and incomplete support).
 
 std=c++23
 C++ ObjC++
-Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2023 C++ standard (published in 2024; experimental and incomplete support).
 
 std=c++2c
 C++ ObjC++ Alias(std=c++26)
@@ -2579,7 +2634,7 @@ Conform to the ISO 2017 C standard (published in 2018).
 
 std=c23
 C ObjC
-Conform to the ISO 2023 C standard draft (expected to be published in 2024) (experimental and incomplete support).
+Conform to the ISO 2023 C standard draft (expected to be published in 2024).
 
 std=c2x
 C ObjC Alias(std=c23)
@@ -2649,11 +2704,11 @@ Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incom
 
 std=gnu++2b
 C++ ObjC++ Alias(std=gnu++23) Undocumented
-Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2023 C++ standard with GNU extensions (published in 2024; experimental and incomplete support).
 
 std=gnu++23
 C++ ObjC++
-Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2023 C++ standard with GNU extensions (published in 2024; experimental and incomplete support).
 
 std=gnu++2c
 C++ ObjC++ Alias(std=gnu++26)
@@ -2681,7 +2736,7 @@ Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
 
 std=gnu23
 C ObjC
-Conform to the ISO 2023 C standard draft (expected to be published in 2024) with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2023 C standard draft (expected to be published in 2024) with GNU extensions.
 
 std=gnu2x
 C ObjC Alias(std=gnu23)
@@ -2737,7 +2792,7 @@ Conform to the ISO 2017 C standard (published in 2018).
 
 std=iso9899:2024
 C ObjC Alias(std=c23)
-Conform to the ISO 2023 C standard draft (expected to be published in 2024) (experimental and incomplete support).
+Conform to the ISO 2023 C standard draft (expected to be published in 2024).
 
 stdlib=
 Driver C++ ObjC++ Common Condition(ENABLE_STDLIB_OPTION) Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)

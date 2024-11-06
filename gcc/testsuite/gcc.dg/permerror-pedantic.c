@@ -1,4 +1,4 @@
-/* { dg-options "-pedantic-errors" } */
+/* { dg-options "-std=gnu17 -pedantic-errors" } */
 
 /* Overview test for C permerrors.  This test should be kept in sync with the
    other permerror-* tests.  If new permerrors are added, test cases should be

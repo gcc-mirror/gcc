@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_ERASE_IF_H
 #define _GLIBCXX_ERASE_IF_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

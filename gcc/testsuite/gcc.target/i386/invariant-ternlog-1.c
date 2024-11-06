@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
 /* { dg-final { scan-assembler-times "vmovdqa" 4 } } */
-/* { dg-final { scan-assembler-times {vpternlog[^\n\r]*\(%rdx\)} 2 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times {vpternlog[^\n\r]*\(%(?:r|e)dx\)} 2 { target { ! ia32 } } } } */
 
 #include <immintrin.h>
 

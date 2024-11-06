@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -36,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "make-unique.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -688,7 +690,11 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 			maxval = TREE_OPERAND (maxval, 0);
 		    }
 
-		  expression (maxval);
+		  /* This covers unspecified bounds.  */
+		  if (TREE_CODE (maxval) == COMPOUND_EXPR)
+		    pp_string (this, "*");
+		  else
+		    expression (maxval);
 		}
 	    }
 	  else if (TYPE_SIZE (t))
@@ -1376,14 +1382,14 @@ c_pretty_printer::primary_expression (tree e)
       pp_c_ws_string (this, "__builtin_memcpy");
       pp_c_left_paren (this);
       pp_ampersand (this);
-      primary_expression (TREE_OPERAND (e, 0));
+      primary_expression (TARGET_EXPR_SLOT (e));
       pp_separate_with (this, ',');
       pp_ampersand (this);
-      initializer (TREE_OPERAND (e, 1));
-      if (TREE_OPERAND (e, 2))
+      initializer (TARGET_EXPR_INITIAL (e));
+      if (TARGET_EXPR_CLEANUP (e))
 	{
 	  pp_separate_with (this, ',');
-	  expression (TREE_OPERAND (e, 2));
+	  expression (TARGET_EXPR_CLEANUP (e));
 	}
       pp_c_right_paren (this);
       break;
@@ -2838,7 +2844,7 @@ c_pretty_printer::expression (tree e)
       break;
 
     case TARGET_EXPR:
-      postfix_expression (TREE_OPERAND (e, 1));
+      postfix_expression (TARGET_EXPR_INITIAL (e));
       break;
 
     case BIND_EXPR:
@@ -2943,8 +2949,23 @@ c_pretty_printer::statement (tree t)
 	    continue ;
 	    return expression(opt) ;  */
     case BREAK_STMT:
+      pp_string (this, "break");
+      if (BREAK_NAME (t))
+	{
+	  pp_space (this);
+	  pp_c_tree_decl_identifier (this, BREAK_NAME (t));
+	}
+      pp_c_semicolon (this);
+      pp_needs_newline (this) = true;
+      break;
+
     case CONTINUE_STMT:
-      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_string (this, "continue");
+      if (CONTINUE_NAME (t))
+	{
+	  pp_space (this);
+	  pp_c_tree_decl_identifier (this, CONTINUE_NAME (t));
+	}
       pp_c_semicolon (this);
       pp_needs_newline (this) = true;
       break;
@@ -2971,10 +2992,10 @@ c_pretty_printer::c_pretty_printer ()
 
 /* c_pretty_printer's implementation of pretty_printer::clone vfunc.  */
 
-pretty_printer *
+std::unique_ptr<pretty_printer>
 c_pretty_printer::clone () const
 {
-  return new c_pretty_printer (*this);
+  return ::make_unique<c_pretty_printer> (*this);
 }
 
 /* Print the tree T in full, on file FILE.  */

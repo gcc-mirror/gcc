@@ -103,17 +103,20 @@ public:
     return ctxt.warn ("infinite recursion");
   }
 
-  label_text describe_final_event (const evdesc::final_event &ev) final override
+  bool
+  describe_final_event (pretty_printer &pp,
+			const evdesc::final_event &) final override
   {
     const int frames_consumed = (m_new_entry_enode->get_stack_depth ()
 				 - m_prev_entry_enode->get_stack_depth ());
     if (frames_consumed > 1)
-      return ev.formatted_print
-	("apparently infinite chain of mutually-recursive function calls,"
-	 " consuming %i stack frames per recursion",
-	 frames_consumed);
+      pp_printf (&pp,
+		 "apparently infinite chain of mutually-recursive function"
+		 " calls, consuming %i stack frames per recursion",
+		 frames_consumed);
     else
-      return ev.formatted_print ("apparently infinite recursion");
+      pp_string (&pp, "apparently infinite recursion");
+    return true;
   }
 
   void
@@ -136,25 +139,26 @@ public:
       {
       }
 
-      label_text
-      get_desc (bool can_colorize) const final override
+      void
+      print_desc (pretty_printer &pp) const final override
       {
 	if (m_topmost)
 	  {
 	    if (m_pd.m_prev_entry_event
 		&& m_pd.m_prev_entry_event->get_id_ptr ()->known_p ())
-	      return make_label_text
-		(can_colorize,
-		 "recursive entry to %qE; previously entered at %@",
-		 m_effective_fndecl,
-		 m_pd.m_prev_entry_event->get_id_ptr ());
+	      pp_printf (&pp,
+			 "recursive entry to %qE; previously entered at %@",
+			 m_effective_fndecl,
+			 m_pd.m_prev_entry_event->get_id_ptr ());
 	    else
-	      return make_label_text (can_colorize, "recursive entry to %qE",
-				      m_effective_fndecl);
+	      pp_printf (&pp,
+			 "recursive entry to %qE",
+			 m_effective_fndecl);
 	  }
 	else
-	  return make_label_text (can_colorize, "initial entry to %qE",
-				  m_effective_fndecl);
+	  pp_printf (&pp,
+		     "initial entry to %qE",
+		     m_effective_fndecl);
       }
 
     private:

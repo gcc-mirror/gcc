@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fpermissive" } */
+/* { dg-additional-options "-std=gnu17 -fpermissive" } */
 
 void foo (), bar (), baz ();
 int main ()

@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-O2" }
+// { dg-options "-std=gnu17 -O2" }
 
 #include <stdint.h>
 #include <stdio.h>

@@ -30,7 +30,9 @@
 #ifndef _HASH_BYTES_H
 #define _HASH_BYTES_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 

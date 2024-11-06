@@ -51,7 +51,7 @@ test02()
     typedef std::array<int, len> array_type;
     array_type a;
 
-    VERIFY( a.size() == len );      // { dg-bogus "-Wmaybe-uninitialized"
+    VERIFY( a.size() == len );      // { dg-bogus "-Wmaybe-uninitialized" }
   }
 }
 

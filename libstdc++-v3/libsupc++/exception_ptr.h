@@ -8,12 +8,12 @@
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation; either version 3, or (at your option)
 // any later version.
-// 
+//
 // GCC is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // Under Section 7 of GPL version 3, you are granted additional
 // permissions described in the GCC Runtime Library Exception, version
 // 3.1, as published by the Free Software Foundation.
@@ -132,11 +132,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
       exception_ptr(__safe_bool) _GLIBCXX_USE_NOEXCEPT;
 #endif
 
-      exception_ptr& 
+      exception_ptr&
       operator=(const exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #if __cplusplus >= 201103L
-      exception_ptr& 
+      exception_ptr&
       operator=(exception_ptr&& __o) noexcept
       {
         exception_ptr(static_cast<exception_ptr&&>(__o)).swap(*this);
@@ -146,7 +146,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
       ~exception_ptr() _GLIBCXX_USE_NOEXCEPT;
 
-      void 
+      void
       swap(exception_ptr&) _GLIBCXX_USE_NOEXCEPT;
 
 #ifdef _GLIBCXX_EH_PTR_COMPAT

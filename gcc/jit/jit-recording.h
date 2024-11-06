@@ -230,6 +230,11 @@ public:
 		    rvalue *ptr,
 		    rvalue *index);
 
+  rvalue *
+  new_convert_vector (location *loc,
+		  rvalue *vector,
+		  type *type);
+
   case_ *
   new_case (rvalue *min_value,
 	    rvalue *max_value,
@@ -1284,6 +1289,16 @@ public:
 
   void add_string_attribute (gcc_jit_variable_attribute attribute, const char* value);
 
+  bool get_readonly () const
+  {
+    return m_readonly;
+  }
+
+  void set_readonly ()
+  {
+    m_readonly = true;
+  }
+
   virtual const char *access_as_lvalue (reproducer &r);
   virtual bool is_global () const { return false; }
   virtual bool is_local () const { return false; }
@@ -1300,6 +1315,7 @@ protected:
   unsigned m_alignment;
   std::vector<std::pair<gcc_jit_variable_attribute,
 	      std::string>> m_string_attributes;
+  bool m_readonly = false;
 };
 
 class param : public lvalue
@@ -1991,6 +2007,35 @@ private:
 private:
   rvalue *m_ptr;
   rvalue *m_index;
+};
+
+class convert_vector : public rvalue
+{
+public:
+  convert_vector (context *ctxt,
+		  location *loc,
+		  rvalue *vector,
+		  type *type)
+  : rvalue (ctxt, loc, type),
+    m_vector (vector),
+    m_type (type)
+  {}
+
+  void replay_into (replayer *r) final override;
+
+  void visit_children (rvalue_visitor *v) final override;
+
+private:
+  string * make_debug_string () final override;
+  void write_reproducer (reproducer &r) final override;
+  enum precedence get_precedence () const final override
+  {
+    return PRECEDENCE_POSTFIX;
+  }
+
+private:
+  rvalue *m_vector;
+  type *m_type;
 };
 
 class access_field_of_lvalue : public lvalue

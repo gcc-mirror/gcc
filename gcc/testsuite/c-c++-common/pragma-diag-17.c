@@ -1,5 +1,6 @@
 /* Test silencing the numeric constant extension pedwarns.  */
 /* { dg-options "-pedantic-errors" } */
+/* { dg-additional-options "-std=gnu17" { target c } } */
 /* { dg-additional-options -fext-numeric-literals { target c++14 } } */
 
 #pragma GCC diagnostic push

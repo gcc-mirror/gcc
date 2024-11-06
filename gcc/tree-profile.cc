@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Generate basic block profile instrumentation and auxiliary files.
    Tree-based version.  See profile.cc for overview.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

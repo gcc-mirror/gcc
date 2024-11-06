@@ -66,9 +66,9 @@ if ((x.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
 }
     // x is Infinity?
 if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
-  // check if y is Inf. 
+  // check if y is Inf.
   if (((y.w[1] & 0x7c00000000000000ull) == 0x7800000000000000ull))
-    // return NaN 
+    // return NaN
   {
 #ifdef SET_STATUS_FLAGS
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -79,7 +79,7 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
   }
   // y is NaN?
   if (((y.w[1] & 0x7c00000000000000ull) != 0x7c00000000000000ull))
-    // return NaN 
+    // return NaN
   {
     // return +/-Inf
     res.w[1] = ((x.w[1] ^ y.w[1]) & 0x8000000000000000ull) |
@@ -525,7 +525,7 @@ if ((x & NAN_MASK64) == NAN_MASK64) {
 if (((x) & 0x7800000000000000ull) == 0x7800000000000000ull) {
   // check if y is Inf.
   if ((((y) & 0x7c00000000000000ull) == 0x7800000000000000ull))
-    // return NaN 
+    // return NaN
   {
 #ifdef SET_STATUS_FLAGS
   __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -984,7 +984,7 @@ if ((x & NAN_MASK64) == NAN_MASK64) {
 if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
   // check if y is Inf.
   if (((y.w[1] & 0x7c00000000000000ull) == 0x7800000000000000ull))
-    // return NaN 
+    // return NaN
   {
 #ifdef SET_STATUS_FLAGS
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -1432,9 +1432,9 @@ if ((x.w[1] & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
 }
     // x is Infinity?
 if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
-  // check if y is Inf. 
+  // check if y is Inf.
   if (((y & 0x7c00000000000000ull) == 0x7800000000000000ull))
-    // return NaN 
+    // return NaN
   {
 #ifdef SET_STATUS_FLAGS
     __set_status_flags (pfpsf, INVALID_EXCEPTION);
@@ -1445,7 +1445,7 @@ if ((x.w[1] & 0x7800000000000000ull) == 0x7800000000000000ull) {
   }
   // y is NaN?
   if (((y & 0x7c00000000000000ull) != 0x7c00000000000000ull))
-    // return NaN 
+    // return NaN
   {
     // return +/-Inf
     res.w[1] = ((x.w[1] ^ y) & 0x8000000000000000ull) |

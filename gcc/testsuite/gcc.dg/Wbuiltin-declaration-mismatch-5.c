@@ -1,6 +1,6 @@
 /* PR testsuite/88098 - FAIL: gcc.dg/Wbuiltin-declaration-mismatch-4.c
    { dg-do compile }
-   { dg-options "-Wbuiltin-declaration-mismatch -fshort-enums" } */
+   { dg-options "-std=gnu17 -Wbuiltin-declaration-mismatch -fshort-enums" } */
 
 int abs ();
 double fabs ();     /* { dg-message "built-in .fabs. declared here" } */

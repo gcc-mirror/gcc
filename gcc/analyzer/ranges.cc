@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/constraint-manager.h"
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/ranges.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
@@ -100,7 +101,7 @@ symbolic_byte_offset::dump (bool simple) const
   pp_newline (&pp);
 }
 
-json::value *
+std::unique_ptr<json::value>
 symbolic_byte_offset::to_json () const
 {
   return m_num_bytes_sval->to_json ();
@@ -155,10 +156,10 @@ symbolic_byte_range::dump (bool simple, region_model_manager &mgr) const
   pp_newline (&pp);
 }
 
-json::value *
+std::unique_ptr<json::value>
 symbolic_byte_range::to_json () const
 {
-  json::object *obj = new json::object ();
+  auto obj = ::make_unique<json::object> ();
   obj->set ("start", m_start.to_json ());
   obj->set ("size", m_size.to_json ());
   return obj;

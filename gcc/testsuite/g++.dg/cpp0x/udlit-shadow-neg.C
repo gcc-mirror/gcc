@@ -2,43 +2,43 @@
 
 //  Test that the standard suffixes shadow any user-defined suffixes of the same name.
 long double
-operator"" L(long double x)  // { dg-warning "floating-point suffix|shadowed by implementation" }
+operator ""L(long double x)  // { dg-warning "floating-point suffix|shadowed by implementation" }
 { return x; }
 
 unsigned long long int
-operator"" ULL(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""ULL(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 long double
-operator"" l(long double x)  // { dg-warning "floating-point suffix|shadowed by implementation" }
+operator ""l(long double x)  // { dg-warning "floating-point suffix|shadowed by implementation" }
 { return x; }
 
 unsigned long long int
-operator"" ull(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""ull(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" uz(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""uz(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" zu(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""zu(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" Z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""Z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" UZ(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""UZ(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" ZU(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""ZU(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 //  Namespaces are no hiding place.
@@ -46,43 +46,43 @@ namespace Long
 {
 
 long double
-operator"" L(long double x)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""L(long double x)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return x; }
 
 unsigned long long int
-operator"" ULL(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""ULL(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 long double
-operator"" l(long double x)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""l(long double x)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return x; }
 
 unsigned long long int
-operator"" ull(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""ull(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" uz(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""uz(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" zu(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""zu(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" Z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""Z(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" UZ(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""UZ(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 unsigned long long int
-operator"" ZU(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
+operator ""ZU(unsigned long long int k)  // { dg-warning "integer suffix|shadowed by implementation" }
 { return k; }
 
 }

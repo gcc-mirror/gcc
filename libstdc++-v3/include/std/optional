@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_OPTIONAL
 #define _GLIBCXX_OPTIONAL 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #define __glibcxx_want_freestanding_optional
 #define __glibcxx_want_optional

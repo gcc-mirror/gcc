@@ -38,7 +38,9 @@
 
 // No include guards on this header...
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <assert.h>

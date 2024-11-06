@@ -79,15 +79,18 @@ package Ada.Strings.Wide_Unbounded is
 
    procedure Append
      (Source   : in out Unbounded_Wide_String;
-      New_Item : Unbounded_Wide_String);
+      New_Item : Unbounded_Wide_String)
+   with Inline => True;
 
    procedure Append
      (Source   : in out Unbounded_Wide_String;
-      New_Item : Wide_String);
+      New_Item : Wide_String)
+   with Inline => True;
 
    procedure Append
      (Source   : in out Unbounded_Wide_String;
-      New_Item : Wide_Character);
+      New_Item : Wide_Character)
+   with Inline => True;
 
    function "&"
      (Left  : Unbounded_Wide_String;

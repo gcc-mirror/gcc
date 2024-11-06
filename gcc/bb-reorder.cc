@@ -1207,7 +1207,7 @@ connect_traces (int n_traces, struct trace *traces)
 		  /* If dest has multiple predecessors, skip it.  We expect
 		     that one predecessor with smaller index connects with it
 		     later.  */
-		  if (count != 1) 
+		  if (count != 1)
 		    break;
 		}
 
@@ -3039,7 +3039,7 @@ pass_partition_blocks::execute (function *fun)
 
      Which means that the bb_has_eh_pred test in df_bb_refs_collect
      will *always* fail, because no edges can have been added to the
-     block yet.  Which of course means we don't add the right 
+     block yet.  Which of course means we don't add the right
      artificial refs, which means we fail df_verify (much) later.
 
      Cleanest solution would seem to make DF_DEFER_INSN_RESCAN imply

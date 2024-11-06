@@ -39,7 +39,9 @@ class test_diagnostic_context : public diagnostic_context
   /* Implementation of diagnostic_start_span_fn, hiding the
      real filename (to avoid printing the names of tempfiles).  */
   static void
-  start_span_cb (diagnostic_context *context, expanded_location exploc);
+  start_span_cb (const diagnostic_location_print_policy &,
+		 pretty_printer *,
+		 expanded_location exploc);
 
   /* Report a diagnostic to this context.  For a selftest, this
      should only be called on a context that uses a non-standard formatter
@@ -50,6 +52,8 @@ class test_diagnostic_context : public diagnostic_context
 	  const diagnostic_metadata *metadata,
 	  int option,
 	  const char * fmt, ...) ATTRIBUTE_GCC_DIAG(6,7);
+
+  const char *test_show_locus (rich_location &richloc);
 };
 
 } // namespace selftest

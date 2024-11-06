@@ -17,8 +17,8 @@ opSourceOver_premul(uint8_t* restrict Rrgba,
                     const uint8_t* restrict Drgba, int len)
 {
   Rrgba = __builtin_assume_aligned (Rrgba, __BIGGEST_ALIGNMENT__);
-  Srgba = __builtin_assume_aligned (Rrgba, __BIGGEST_ALIGNMENT__);
-  Drgba = __builtin_assume_aligned (Rrgba, __BIGGEST_ALIGNMENT__);
+  Srgba = __builtin_assume_aligned (Srgba, __BIGGEST_ALIGNMENT__);
+  Drgba = __builtin_assume_aligned (Drgba, __BIGGEST_ALIGNMENT__);
   int i = 0;
   for (; i < len*4; i += 4)
     {

@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This file contains various simple utilities to analyze the CFG.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

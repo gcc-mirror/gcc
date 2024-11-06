@@ -4,7 +4,9 @@
 /* { dg-add-options arm_v8_1m_mve } */
 
 #pragma GCC arm "arm_mve_types.h"
-int32x4_t h(void *p) { return __builtin_mve_vldrwq_sv4si(p); }
+#pragma GCC arm "arm_mve.h" false
+
+int32x4_t h(void *p) { return vldrwq_s32(p); }
 void g(int32x4_t);
 void f(int, int, int, short, int *p) {
   int *bias = p;

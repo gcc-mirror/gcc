@@ -22,7 +22,7 @@
 #define GCC_MCORE_H
 
 /* RBE: need to move these elsewhere.  */
-#undef	LIKE_PPC_ABI 
+#undef	LIKE_PPC_ABI
 #define	MCORE_STRUCT_ARGS
 /* RBE: end of "move elsewhere".  */
 
@@ -80,7 +80,7 @@
 #define TARGET_8ALIGN 1
 
 extern char * mcore_current_function_name;
- 
+
 /* Target machine storage Layout.  */
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  	\
@@ -136,7 +136,7 @@ extern char * mcore_current_function_name;
 /* Every structures size must be a multiple of 8 bits.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
 
-/* Look at the fundamental type that is used for a bit-field and use 
+/* Look at the fundamental type that is used for a bit-field and use
    that to impose alignment on the enclosing structure.
    struct s {int a:8}; should have same alignment as "int", not "char".  */
 #define	PCC_BITFIELD_TYPE_MATTERS	1
@@ -150,14 +150,14 @@ extern char * mcore_current_function_name;
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < FASTEST_ALIGNMENT ? FASTEST_ALIGNMENT : (ALIGN))
-     
+
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
 
 /* Standard register usage.  */
 
-/* Register allocation for our first guess 
+/* Register allocation for our first guess
 
 	r0		stack pointer
 	r1		scratch, target reg for xtrb?
@@ -333,7 +333,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    but prevents the compiler from extending the lifetime of these
    registers.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
- 
+
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  NO_REGS
 #define BASE_REG_CLASS	 GENERAL_REGS
@@ -369,7 +369,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
   mcore_secondary_reload_class (CLASS, MODE, X)
 
 /* Return the maximum number of consecutive registers
-   needed to represent mode MODE in a register of class CLASS. 
+   needed to represent mode MODE in a register of class CLASS.
 
    On MCore this is the size of MODE in words.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
@@ -434,9 +434,9 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define ROUND_ADVANCE(SIZE)	\
   ((SIZE + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Round a register number up to a proper boundary for an arg of mode 
-   MODE. 
-   
+/* Round a register number up to a proper boundary for an arg of mode
+   MODE.
+
    We round to an even reg for things larger than a word.  */
 #define ROUND_REG(X, MODE) 				\
   ((TARGET_8ALIGN 					\
@@ -486,7 +486,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_OK_FOR_INDEX_P(REGNO)   0
 
-/* Maximum number of registers that can appear in a valid memory 
+/* Maximum number of registers that can appear in a valid memory
    address.  */
 #define MAX_REGS_PER_ADDRESS 1
 
@@ -587,7 +587,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 	   reg_names[STACK_POINTER_REGNUM],		\
 	   (STACK_BOUNDARY / BITS_PER_UNIT))
 
-  
+
 /* Output a reference to a label.  */
 #undef  ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM, NAME)  \
@@ -614,8 +614,8 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
   	0 a call from src to dst
   	1 the call is special (e.g. dst is "unknown" or "alloca")
   	2 the call is special (e.g., the src is a table instead of routine)
-  
-   Frame sizes are augmented with timestamps to help later tools 
+
+   Frame sizes are augmented with timestamps to help later tools
    differentiate between static entities with same names in different
    files.  */
 extern long mcore_current_compilation_timestamp;
@@ -673,7 +673,7 @@ extern long mcore_current_compilation_timestamp;
 
 /* This says how to output an assembler line
    to define a global common symbol, with alignment information.  */
-/* XXX - for now we ignore the alignment.  */     
+/* XXX - for now we ignore the alignment.  */
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)	\
   do								\

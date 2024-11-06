@@ -1018,8 +1018,8 @@ emit_max_int (void)
 
   puts ("");
 
-  printf ("#define BITS_PER_UNIT (%d)\n", bits_per_unit); 
- 
+  printf ("#define BITS_PER_UNIT (%d)\n", bits_per_unit);
+
   if (max_bitsize_mode_any_int == 0)
     {
       for (max = 1, i = modes[MODE_INT]; i; i = i->next)

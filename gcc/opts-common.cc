@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
@@ -39,7 +40,7 @@ static void prune_options (struct cl_decoded_option **, unsigned int *);
    example, we want -gno-statement-frontiers to be taken as a negation
    of -gstatement-frontiers, but without catching the gno- prefix and
    signaling it's to be used for option remapping, it would end up
-   backtracked to g with no-statemnet-frontiers as the debug level.  */
+   backtracked to g with no-statement-frontiers as the debug level.  */
 
 static bool
 remapping_prefix_p (const struct cl_option *opt)
@@ -1026,7 +1027,7 @@ opts_concat (const char *first, ...)
    diagnostics or set state outside of these variables.  */
 
 void
-decode_cmdline_options_to_array (unsigned int argc, const char **argv, 
+decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 				 unsigned int lang_mask,
 				 struct cl_decoded_option **decoded_options,
 				 unsigned int *decoded_options_count)
@@ -1319,7 +1320,7 @@ handle_option (struct gcc_options *opts,
 					    handlers->target_option_override_hook))
 	  return false;
       }
-  
+
   return true;
 }
 
@@ -1735,21 +1736,21 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
     case CLVC_BIT_SET:
 	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
 	  {
-	    if (option->cl_host_wide_int) 
+	    if (option->cl_host_wide_int)
 	      *(HOST_WIDE_INT *) flag_var |= option->var_value;
-	    else 
+	    else
 	      *(int *) flag_var |= option->var_value;
 	  }
 	else
 	  {
-	    if (option->cl_host_wide_int) 
+	    if (option->cl_host_wide_int)
 	      *(HOST_WIDE_INT *) flag_var &= ~option->var_value;
-	    else 
+	    else
 	      *(int *) flag_var &= ~option->var_value;
 	  }
 	if (set_flag_var)
 	  {
-	    if (option->cl_host_wide_int) 
+	    if (option->cl_host_wide_int)
 	      *(HOST_WIDE_INT *) set_flag_var |= option->var_value;
 	    else
 	      *(int *) set_flag_var |= option->var_value;
@@ -1839,21 +1840,21 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 	  }
 
       case CLVC_EQUAL:
-	if (option->cl_host_wide_int) 
+	if (option->cl_host_wide_int)
 	  return *(HOST_WIDE_INT *) flag_var == option->var_value;
 	else
 	  return *(int *) flag_var == option->var_value;
 
       case CLVC_BIT_CLEAR:
-	if (option->cl_host_wide_int) 
+	if (option->cl_host_wide_int)
 	  return (*(HOST_WIDE_INT *) flag_var & option->var_value) == 0;
 	else
 	  return (*(int *) flag_var & option->var_value) == 0;
 
       case CLVC_BIT_SET:
-	if (option->cl_host_wide_int) 
+	if (option->cl_host_wide_int)
 	  return (*(HOST_WIDE_INT *) flag_var & option->var_value) != 0;
-	else 
+	else
 	  return (*(int *) flag_var & option->var_value) != 0;
 
       case CLVC_SIZE:
@@ -2156,7 +2157,8 @@ jobserver_info::disconnect ()
 {
   if (!pipe_path.empty ())
     {
-      gcc_assert (close (pipefd) == 0);
+      int res = close (pipefd);
+      gcc_assert (res == 0);
       pipefd = -1;
     }
 }
@@ -2181,5 +2183,6 @@ jobserver_info::return_token ()
 {
   int fd = pipe_path.empty () ? wfd : pipefd;
   char c = 'G';
-  gcc_assert (write (fd, &c, 1) == 1);
+  int res = write (fd, &c, 1);
+  gcc_assert (res == 1);
 }

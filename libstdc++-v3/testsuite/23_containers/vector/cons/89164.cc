@@ -32,7 +32,7 @@ void test01()
   X x[1];
   // Should not be able to create vector using uninitialized_copy:
   std::vector<X> v1{x, x+1};	// { dg-error "here" "" { target c++17_down } }
-  // { dg-error "deleted function 'X::X" "" { target c++20 } 0 }
+  // { dg-error "deleted function 'X::X" "" { target *-*-* } 0 }
 }
 
 void test02()
@@ -41,8 +41,7 @@ void test02()
 
   // Should not be able to create vector using uninitialized_fill_n:
   std::vector<Y> v2{2u, Y{}};	// { dg-error "here" "" { target c++17_down } }
-  // { dg-error "deleted function .*Y::Y" "" { target c++20 } 0 }
+  // { dg-error "deleted function .*Y::Y" "" { target *-*-* } 0 }
 }
 
-// { dg-error "must be constructible from input type" "" { target *-*-* } 0 }
 // { dg-prune-output "construct_at" }

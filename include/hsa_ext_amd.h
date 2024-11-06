@@ -683,7 +683,7 @@ typedef enum {
  * following its memory access model. The actual placement may vary or migrate
  * due to the system's NUMA policy and state, which is beyond the scope of
  * HSA APIs.
- */ 
+ */
 typedef struct hsa_amd_memory_pool_s {
   /**
    * Opaque handle.
@@ -758,7 +758,7 @@ typedef enum {
   HSA_AMD_MEMORY_POOL_INFO_RUNTIME_ALLOC_ALIGNMENT = 7,
   /**
   * This memory_pool can be made directly accessible by all the agents in the
-  * system (::hsa_amd_agent_memory_pool_get_info does not return 
+  * system (::hsa_amd_agent_memory_pool_get_info does not return
   * ::HSA_AMD_MEMORY_POOL_ACCESS_NEVER_ALLOWED for any agent). The type of this
   * attribute is bool.
   */

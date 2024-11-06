@@ -408,11 +408,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Function_Call, N_Subprogram_Call,
        (Sy (Name, Node_Id, Default_Empty),
         Sy (Parameter_Associations, List_Id, Default_No_List),
-        Sm (Is_Expanded_Build_In_Place_Call, Flag)));
+        Sm (Is_Expanded_Build_In_Place_Call, Flag),
+        Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Cc (N_Procedure_Call_Statement, N_Subprogram_Call,
        (Sy (Name, Node_Id, Default_Empty),
-        Sy (Parameter_Associations, List_Id, Default_No_List)));
+        Sy (Parameter_Associations, List_Id, Default_No_List),
+        Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Ab (N_Raise_xxx_Error, N_Subexpr);
 
@@ -460,6 +462,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Expression_With_Actions, N_Subexpr,
        (Sy (Actions, List_Id, Default_No_List),
         Sy (Expression, Node_Id, Default_Empty)));
+
+   Cc (N_External_Initializer, N_Subexpr,
+       (Sy (File_Index, Source_File_Index)));
 
    Cc (N_If_Expression, N_Subexpr,
        (Sy (Expressions, List_Id, Default_No_List),
@@ -830,16 +835,16 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sm (Corresponding_Spec, Node_Id),
         Sm (Was_Originally_Stub, Flag)));
 
-   Ab (N_Unit_Body, N_Proper_Body);
+   Ab (N_Lib_Unit_Body, N_Proper_Body);
 
-   Cc (N_Package_Body, N_Unit_Body,
+   Cc (N_Package_Body, N_Lib_Unit_Body,
        (Sy (Defining_Unit_Name, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
         Sy (At_End_Proc, Node_Id, Default_Empty),
         Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
-   Cc (N_Subprogram_Body, N_Unit_Body,
+   Cc (N_Subprogram_Body, N_Lib_Unit_Body,
        (Sy (Specification, Node_Id),
         Sy (Declarations, List_Id, Default_No_List),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
@@ -1673,7 +1678,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Elaborate_All_Present, Flag),
         Sm (Elaborate_Desirable, Flag),
         Sm (Elaborate_Present, Flag),
-        Sm (Implicit_With, Flag),
+        Sm (Is_Implicit_With, Flag),
         Sm (Library_Unit, Node_Id),
         Sm (Limited_View_Installed, Flag),
         Sm (Next_Implicit_With, Node_Id),
@@ -1786,5 +1791,21 @@ begin -- Gen_IL.Gen.Gen_Nodes
             (N_Case_Statement_Alternative,
              N_Variant));
    --  Nodes that can be alternatives in case contructs
+
+   Union (N_Lib_Unit_Declaration,
+          Children =>
+            (N_Package_Declaration,
+             N_Subprogram_Declaration,
+             N_Generic_Declaration,
+             N_Generic_Instantiation));
+   --  Nodes corresponding to the library_unit_declaration syntactic category
+
+   Union (N_Lib_Unit_Renaming_Declaration,
+          Children =>
+            (N_Package_Renaming_Declaration,
+             N_Subprogram_Renaming_Declaration,
+             N_Generic_Renaming_Declaration));
+   --  Nodes corresponding to the library_unit_renaming_declaration syntactic
+   --  category.
 
 end Gen_IL.Gen.Gen_Nodes;

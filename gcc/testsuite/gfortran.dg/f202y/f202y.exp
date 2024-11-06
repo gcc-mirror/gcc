@@ -1,0 +1,57 @@
+# Copyright (C) 2005-2024 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib gfortran-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+global gfortran_test_path
+global gfortran_aux_module_flags
+set gfortran_test_path $srcdir/$subdir
+set gfortran_aux_module_flags "-std=f202y"
+proc dg-compile-aux-modules { args } {
+    global gfortran_test_path
+    global gfortran_aux_module_flags
+    if { [llength $args] != 2 } {
+	error "dg-compile-aux-modules: needs one argument"
+	return
+    }
+
+    set level [info level]
+    if { [info procs dg-save-unknown] != [list] } {
+	rename dg-save-unknown dg-save-unknown-level-$level
+    }
+
+    dg-test $gfortran_test_path/[lindex $args 1] "" $gfortran_aux_module_flags
+    # cleanup-modules is intentionally not invoked here.
+
+    if { [info procs dg-save-unknown-level-$level] != [list] } {
+	rename dg-save-unknown-level-$level dg-save-unknown
+    }
+}
+
+# Main loop.
+gfortran-dg-runtest [lsort \
+       [find $srcdir/$subdir *.\[fF\]{,90,95,03,08} ] ] "-std=f202y" ""
+
+# All done.
+dg-finish

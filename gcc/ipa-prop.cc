@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -888,7 +889,7 @@ param_type_may_change_p (tree function, tree arg, gimple *call)
    callsite CALL) by looking for assignments to its virtual table pointer.  If
    it is, return true.  ARG is the object itself (not a pointer
    to it, unless dereferenced).  BASE is the base of the memory access as
-   returned by get_ref_base_and_extent, as is the offset. 
+   returned by get_ref_base_and_extent, as is the offset.
 
    This is helper function for detect_type_change and detect_type_change_ssa
    that does the heavy work which is usually unnecesary.  */
@@ -3481,7 +3482,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
     }
 }
 
-/* If TARGET is an addr_expr of a function declaration, make it the 
+/* If TARGET is an addr_expr of a function declaration, make it the
    (SPECULATIVE)destination of an indirect edge IE and return the edge.
    Otherwise, return NULL.  */
 
@@ -3545,7 +3546,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
     {
 
       /* We are better to ensure we can refer to it.
-	 In the case of static functions we are out of luck, since we already	
+	 In the case of static functions we are out of luck, since we already
 	 removed its body.  In the case of public functions we may or may
 	 not introduce the reference.  */
       if (!canonicalize_constructor_val (target, NULL)

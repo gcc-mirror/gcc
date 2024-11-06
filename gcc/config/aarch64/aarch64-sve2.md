@@ -1266,18 +1266,28 @@
 ;; - XAR
 ;; -------------------------------------------------------------------------
 
+;; Also allow the Advanced SIMD modes as the the SVE2 XAR instruction
+;; can handle more element sizes than the TARGET_SHA3 one from Advanced SIMD.
+;; Don't allow the V2DImode use here unless !TARGET_SHA3 as the Advanced SIMD
+;; version should be preferred when available as it is non-destructive on its
+;; input.
 (define_insn "@aarch64_sve2_xar<mode>"
-  [(set (match_operand:SVE_FULL_I 0 "register_operand")
-	(rotatert:SVE_FULL_I
-	  (xor:SVE_FULL_I
-	    (match_operand:SVE_FULL_I 1 "register_operand")
-	    (match_operand:SVE_FULL_I 2 "register_operand"))
-	  (match_operand:SVE_FULL_I 3 "aarch64_simd_rshift_imm")))]
-  "TARGET_SVE2"
-  {@ [ cons: =0 , 1  , 2 ; attrs: movprfx ]
-     [ w        , %0 , w ; *              ] xar\t%0.<Vetype>, %0.<Vetype>, %2.<Vetype>, #%3
-     [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;xar\t%0.<Vetype>, %0.<Vetype>, %2.<Vetype>, #%3
+  [(set (match_operand:SVE_ASIMD_FULL_I 0 "register_operand" "=w,?&w")
+	(rotate:SVE_ASIMD_FULL_I
+	  (xor:SVE_ASIMD_FULL_I
+	    (match_operand:SVE_ASIMD_FULL_I 1 "register_operand" "%0,w")
+	    (match_operand:SVE_ASIMD_FULL_I 2 "register_operand" "w,w"))
+	  (match_operand:SVE_ASIMD_FULL_I 3 "aarch64_simd_lshift_imm")))]
+  "TARGET_SVE2 && !(<MODE>mode == V2DImode && TARGET_SHA3)"
+  {
+    operands[3]
+      = GEN_INT (GET_MODE_UNIT_BITSIZE (<MODE>mode)
+		 - INTVAL (unwrap_const_vec_duplicate (operands[3])));
+    if (which_alternative == 0)
+      return "xar\t%Z0.<Vetype>, %Z0.<Vetype>, %Z2.<Vetype>, #%3";
+    return "movprfx\t%Z0, %Z1\;xar\t%Z0.<Vetype>, %Z0.<Vetype>, %Z2.<Vetype>, #%3";
   }
+  [(set_attr "movprfx" "*,yes")]
 )
 
 ;; -------------------------------------------------------------------------
@@ -2021,7 +2031,7 @@
 )
 
 ;; Two-way dot-product.
-(define_insn "@aarch64_sve_<sur>dotvnx4sivnx8hi"
+(define_insn "<sur>dot_prodvnx4sivnx8hi"
   [(set (match_operand:VNx4SI 0 "register_operand")
 	(plus:VNx4SI
 	  (unspec:VNx4SI
@@ -2465,6 +2475,43 @@
     operands[5] = CONSTM1_RTX (<VPRED>mode);
   }
   [(set_attr "movprfx" "yes")]
+)
+
+;; -------------------------------------------------------------------------
+;; -- [FP] Absolute maximum and minimum
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FAMAX
+;; - FAMIN
+;; -------------------------------------------------------------------------
+;; Predicated floating-point absolute maximum and minimum.
+(define_insn_and_rewrite "*aarch64_pred_faminmax_fused"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	   (unspec:SVE_FULL_F
+	     [(match_operand 5)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	     UNSPEC_COND_FABS)
+	   (unspec:SVE_FULL_F
+	     [(match_operand 6)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 3 "register_operand")]
+	     UNSPEC_COND_FABS)]
+	  SVE_COND_SMAXMIN))]
+  "TARGET_SVE_FAMINMAX"
+  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
+     [ w        , Upl , %0 , w ; *              ] <faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+     [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  }
+  "&& (!rtx_equal_p (operands[1], operands[5])
+       || !rtx_equal_p (operands[1], operands[6]))"
+  {
+    operands[5] = copy_rtx (operands[1]);
+    operands[6] = copy_rtx (operands[1]);
+  }
 )
 
 ;; =========================================================================

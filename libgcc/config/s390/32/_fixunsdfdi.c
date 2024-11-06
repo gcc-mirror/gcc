@@ -74,7 +74,7 @@ __fixunsdfdi (double a1)
 
     /* Negative.  */
     if (SIGN (dl1))
-      { 
+      {
 	/* Value is <= -1.0
 	   C99 Annex F.4 requires an "invalid" exception to be thrown.  */
 	if (EXPD (dl1) >= EXPONENT_BIAS)

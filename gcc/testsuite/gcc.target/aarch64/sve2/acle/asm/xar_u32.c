@@ -70,7 +70,11 @@ TEST_UNIFORM_Z (xar_2_u32_untied, svuint32_t,
 
 /*
 ** xar_32_u32_tied1:
-**	xar	z0\.s, z0\.s, z1\.s, #32
+** (
+**	eor	z0\.d, z1\.d, z0\.d
+** |
+**	eor	z0\.d, z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (xar_32_u32_tied1, svuint32_t,
@@ -79,7 +83,11 @@ TEST_UNIFORM_Z (xar_32_u32_tied1, svuint32_t,
 
 /*
 ** xar_32_u32_tied2:
-**	xar	z0\.s, z0\.s, z1\.s, #32
+** (
+**	eor	z0\.d, z1\.d, z0\.d
+** |
+**	eor	z0\.d, z0\.d, z1\.d
+** )
 **	ret
 */
 TEST_UNIFORM_Z (xar_32_u32_tied2, svuint32_t,
@@ -89,11 +97,9 @@ TEST_UNIFORM_Z (xar_32_u32_tied2, svuint32_t,
 /*
 ** xar_32_u32_untied:
 ** (
-**	movprfx	z0, z1
-**	xar	z0\.s, z0\.s, z2\.s, #32
+**	eor	z0\.d, z1\.d, z2\.d
 ** |
-**	movprfx	z0, z2
-**	xar	z0\.s, z0\.s, z1\.s, #32
+**	eor	z0\.d, z2\.d, z1\.d
 ** )
 **	ret
 */

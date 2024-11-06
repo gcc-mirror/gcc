@@ -77,7 +77,7 @@ __do_upcast (const __class_type_info *dst, const void *obj_ptr,
 {
   if (__class_type_info::__do_upcast (dst, obj_ptr, result))
     return true;
-  
+
   return __base_type->__do_upcast (dst, obj_ptr, result);
 }
 

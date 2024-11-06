@@ -172,3 +172,24 @@ proc igrep { args } {
     }
     return $grep_out
 }
+
+# If the code has any "open" statements for numbered units, make sure
+# no corresponding output file remains.  Redundant remove operations
+# are ok, but duplicate removals look sloppy, so track for uniqueness.
+proc fortran-delete-unit-files { src } {  
+    set openpat {open *\( *(?:unit *= *)?([0-9]+)}
+    set openmatches [igrep $src $openpat]
+    if {![string match "" $openmatches]} {
+	# verbose -log "Found \"$openmatches\""
+	set deleted_units {}
+	foreach openmatch $openmatches {
+	    regexp -nocase -- "$openpat" $openmatch match unit
+	    if {[lsearch $deleted_units $unit] < 0} {
+		set rmfile "fort.$unit"
+		verbose -log "Deleting $rmfile"
+		remote_file target delete "fort.$unit"
+		lappend deleted_units $unit
+	    }
+	}
+    }
+}

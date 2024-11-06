@@ -2934,9 +2934,7 @@ package body Contracts is
                --  Wrappers of class-wide pre/postconditions reference the
                --  parent primitive that has the inherited contract.
 
-               if Is_Wrapper (Subp_Id)
-                 and then Present (LSP_Subprogram (Subp_Id))
-               then
+               if Is_LSP_Wrapper (Subp_Id) then
                   Subp_Id := LSP_Subprogram (Subp_Id);
                end if;
 
@@ -4602,9 +4600,7 @@ package body Contracts is
                --  parent primitive that has the inherited contract and help
                --  us to climb fast.
 
-               if Is_Wrapper (Subp_Id)
-                 and then Present (LSP_Subprogram (Subp_Id))
-               then
+               if Is_LSP_Wrapper (Subp_Id) then
                   Subp_Id := LSP_Subprogram (Subp_Id);
                end if;
 

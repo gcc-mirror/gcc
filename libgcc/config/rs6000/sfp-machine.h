@@ -137,7 +137,7 @@ void __sfp_handle_exceptions (int);
    respective FP_EX_* bit.  Note, the ISA labels bits from msb to lsb,
    so 22 ISA bits above is 22 bits below when counted from the lsb.  */
 # define FP_TRAPPING_EXCEPTIONS ((_fpscr.i << 22) & FP_EX_ALL)
-  
+
 # define FP_RND_NEAREST	0x0
 # define FP_RND_ZERO	0x1
 # define FP_RND_PINF	0x2
@@ -147,7 +147,7 @@ void __sfp_handle_exceptions (int);
 # define _FP_DECL_EX \
   union { unsigned long long i; double d; } _fpscr __attribute__ ((unused)) = \
         { .i = FP_RND_NEAREST }
-  
+
 #define FP_INIT_ROUNDMODE			\
   do {						\
     __asm__ __volatile__ ("mffs %0"		\

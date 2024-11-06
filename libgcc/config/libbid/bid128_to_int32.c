@@ -24,7 +24,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "bid_internal.h"
 
 /*****************************************************************************
- *  BID128_to_int32_rnint 
+ *  BID128_to_int32_rnint
  ****************************************************************************/
 
 BID128_FUNCTION_ARG1_NORND_CUSTOMRESTYPE (int, bid128_to_int32_rnint, x)

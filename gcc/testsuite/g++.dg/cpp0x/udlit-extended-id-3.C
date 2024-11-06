@@ -14,4 +14,5 @@ const char *x = "hbar"_ħ; // { dg-bogus "poisoned" }
    syntax has been deprecated for C++23.  */
 #pragma GCC poison _ħ2
 const char * operator "" _ħ2 (const char *, size_t); // { dg-bogus "poisoned" "" { xfail *-*-*} }
+// { dg-warning "space" "" { target c++23 } .-1 }
 const char *x2 = "hbar2"_ħ2; // { dg-bogus "poisoned" }

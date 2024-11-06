@@ -1,6 +1,6 @@
 /* Target machine subroutines for Altera Nios II.
    Copyright (C) 2012-2024 Free Software Foundation, Inc.
-   Contributed by Jonah Graham (jgraham@altera.com), 
+   Contributed by Jonah Graham (jgraham@altera.com),
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
 
@@ -343,7 +343,7 @@ static bool
 nios2_fpu_compare_enabled (enum rtx_code cond, machine_mode mode)
 {
   if (mode == SFmode)
-    switch (cond) 
+    switch (cond)
       {
       case EQ: return N2FPU_OP_ENABLED_P (fcmpeqs);
       case NE: return N2FPU_OP_ENABLED_P (fcmpnes);
@@ -354,7 +354,7 @@ nios2_fpu_compare_enabled (enum rtx_code cond, machine_mode mode)
       default: break;
       }
   else if (mode == DFmode)
-    switch (cond) 
+    switch (cond)
       {
       case EQ: return N2FPU_OP_ENABLED_P (fcmpeqd);
       case NE: return N2FPU_OP_ENABLED_P (fcmpned);
@@ -388,7 +388,7 @@ nios2_compute_frame_layout (void)
 
   if (cfun->machine->initialized)
     return cfun->machine->total_size;
-  
+
   /* Calculate space needed for gp registers.  */
   save_reg_size = 0;
   for (regno = 0; regno <= LAST_GP_REG; regno++)
@@ -434,7 +434,7 @@ nios2_compute_frame_layout (void)
     {
       unsigned i;
       unsigned r;
-      
+
       for (i = 0; (r = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM; i++)
 	if (!(save_mask & (1 << r)))
 	  {
@@ -552,7 +552,7 @@ nios2_create_cfa_notes (rtx_insn *insn, bool epilogue_p)
 #define TEMP_REG_NUM 8
 
 /* Emit conditional trap for checking stack limit.  SIZE is the number of
-   additional bytes required.  
+   additional bytes required.
 
    GDB prologue analysis depends on this generating a direct comparison
    to the SP register, so the adjustment to add SIZE needs to be done on
@@ -995,7 +995,7 @@ nios2_set_return_address (rtx address, rtx scratch)
     {
       unsigned offset = cfun->machine->save_reg_size - 4;
       rtx base;
-      
+
       if (frame_pointer_needed)
 	base = hard_frame_pointer_rtx;
       else
@@ -1080,7 +1080,7 @@ static bool
 prologue_saved_reg_p (unsigned regno)
 {
   gcc_assert (GP_REG_P (regno));
-  
+
   if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return true;
 
@@ -1135,7 +1135,7 @@ nios2_initial_elimination_offset (int from, int to)
        by the offset from the frame pointer to the stack pointer.  */
   if (to == HARD_FRAME_POINTER_REGNUM)
     offset -= (cfun->machine->save_regs_offset
-	       + cfun->machine->fp_save_offset); 
+	       + cfun->machine->fp_save_offset);
 
   return offset;
 }
@@ -1390,13 +1390,13 @@ nios2_option_override (void)
   /* Process -mgprel-sec= and -m0rel-sec=.  */
   if (nios2_gprel_sec)
     {
-      if (regcomp (&nios2_gprel_sec_regex, nios2_gprel_sec, 
+      if (regcomp (&nios2_gprel_sec_regex, nios2_gprel_sec,
 		   REG_EXTENDED | REG_NOSUB))
 	error ("%<-mgprel-sec=%> argument is not a valid regular expression");
     }
   if (nios2_r0rel_sec)
     {
-      if (regcomp (&nios2_r0rel_sec_regex, nios2_r0rel_sec, 
+      if (regcomp (&nios2_r0rel_sec_regex, nios2_r0rel_sec,
 		   REG_EXTENDED | REG_NOSUB))
 	error ("%<-mr0rel-sec=%> argument is not a valid regular expression");
     }
@@ -1533,7 +1533,7 @@ nios2_rtx_costs (rtx x, machine_mode mode,
 	    *total = COSTS_N_INSNS (5);  /* Guess?  */
 	  else if (speed)
 	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
-	  else 
+	  else
 	    *total = COSTS_N_INSNS (1);
 	  if (TARGET_HAS_MULX && GET_MODE (x) == DImode)
 	    {
@@ -1557,7 +1557,7 @@ nios2_rtx_costs (rtx x, machine_mode mode,
 	    *total = COSTS_N_INSNS (5);  /* Guess?  */
 	  else if (speed)
 	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
-	  else 
+	  else
 	    *total = COSTS_N_INSNS (1);
           return false;
         }
@@ -1569,11 +1569,11 @@ nios2_rtx_costs (rtx x, machine_mode mode,
         {
 	  if (!speed)
 	    *total = COSTS_N_INSNS (1);
-	  else 
+	  else
 	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
           return false;
         }
-	
+
       case ZERO_EXTRACT:
 	if (TARGET_HAS_BMX)
 	  {
@@ -1639,7 +1639,7 @@ nios2_call_tls_get_addr (rtx ti)
   rtx ret = gen_rtx_REG (Pmode, FIRST_RETVAL_REGNO);
   rtx fn;
   rtx_insn *insn;
-  
+
   if (!nios2_tls_symbol)
     nios2_tls_symbol = init_one_libfunc ("__tls_get_addr");
 
@@ -2005,7 +2005,7 @@ nios2_validate_compare (machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
     }
     else if (!reg_or_0_operand (*op2, mode))
       *op2 = force_reg (mode, *op2);
-    
+
  check_rebuild_cmp:
   if (code == GT || code == GTU || code == LE || code == LEU)
     {
@@ -2057,7 +2057,7 @@ nios2_symbolic_constant_p (rtx x)
   return false;
 }
 
-/* Return true if X is an expression of the form 
+/* Return true if X is an expression of the form
    (PLUS reg large_constant).  */
 static bool
 nios2_plus_large_constant_p (rtx x)
@@ -2134,7 +2134,7 @@ nios2_valid_addr_expr_p (rtx base, rtx offset, bool strict_p)
 	  && nios2_regno_ok_for_base_p (REGNO (base), strict_p)
 	  && (offset == NULL_RTX
 	      || nios2_valid_addr_offset_p (offset)
-	      || (nios2_large_constant_allowed () 
+	      || (nios2_large_constant_allowed ()
 		  && nios2_symbolic_constant_p (offset))
 	      || nios2_unspec_reloc_p (offset)));
 }
@@ -2159,7 +2159,7 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx operand,
 
       /* Else, fall through.  */
     case LABEL_REF:
-      if (nios2_large_constant_allowed () 
+      if (nios2_large_constant_allowed ()
 	  && nios2_symbolic_constant_p (operand))
 	return true;
       return false;
@@ -2182,7 +2182,7 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx operand,
         rtx op0 = XEXP (operand, 0);
         rtx op1 = XEXP (operand, 1);
 
-	if (nios2_valid_addr_expr_p (op0, op1, strict_p) 
+	if (nios2_valid_addr_expr_p (op0, op1, strict_p)
 	    || nios2_valid_addr_expr_p (op1, op0, strict_p))
 	  return true;
       }
@@ -2192,7 +2192,7 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx operand,
 	 This requires a 16-bit relocation and isn't valid with R2
 	 io-variant load/stores.  */
     case LO_SUM:
-      if (TARGET_ARCH_R2 
+      if (TARGET_ARCH_R2
 	  && (TARGET_BYPASS_CACHE || TARGET_BYPASS_CACHE_VOLATILE))
 	return false;
       else
@@ -2216,18 +2216,18 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED, rtx operand,
    the (plus reg symbolic_constant) and (plus reg (const ...)) forms
    but giving (plus reg symbol_ref) address modes the same cost as those
    that don't require splitting.  Also, from a theoretical point of view:
-   - This is in line with the recommendation in the GCC internals 
+   - This is in line with the recommendation in the GCC internals
      documentation to make address forms involving multiple
-     registers more expensive than single-register forms.  
-   - OTOH it still encourages fwprop1 to propagate constants into 
+     registers more expensive than single-register forms.
+   - OTOH it still encourages fwprop1 to propagate constants into
      address expressions more aggressively.
    - We should discourage splitting (symbol + offset) into hi/lo pairs
      to allow CSE'ing the symbol when it's used with more than one offset,
      but not so heavily as to avoid this addressing mode at all.  */
 static int
-nios2_address_cost (rtx address, 
+nios2_address_cost (rtx address,
 		    machine_mode mode ATTRIBUTE_UNUSED,
-		    addr_space_t as ATTRIBUTE_UNUSED, 
+		    addr_space_t as ATTRIBUTE_UNUSED,
 		    bool speed ATTRIBUTE_UNUSED)
 {
   if (nios2_plus_large_constant_p (address))
@@ -2258,7 +2258,7 @@ nios2_large_constant_memory_operand_p (rtx x)
 }
 
 
-/* Return true if X is something that needs to be split into a 
+/* Return true if X is something that needs to be split into a
    high/lo_sum pair.  */
 bool
 nios2_large_constant_p (rtx x)
@@ -2269,8 +2269,8 @@ nios2_large_constant_p (rtx x)
 }
 
 /* Given an RTX X that satisfies nios2_large_constant_p, split it into
-   high and lo_sum parts using TEMP as a scratch register.  Emit the high 
-   instruction and return the lo_sum expression.  
+   high and lo_sum parts using TEMP as a scratch register.  Emit the high
+   instruction and return the lo_sum expression.
    Also handle special cases involving constant integers.  */
 rtx
 nios2_split_large_constant (rtx x, rtx temp)
@@ -2293,7 +2293,7 @@ nios2_split_large_constant (rtx x, rtx temp)
 	  return gen_rtx_PLUS (Pmode, temp, gen_int_mode (low, Pmode));
 	}
     }
-  
+
   emit_insn (gen_rtx_SET (temp, gen_rtx_HIGH (Pmode, copy_rtx (x))));
   return gen_rtx_LO_SUM (Pmode, temp, copy_rtx (x));
 }
@@ -2317,7 +2317,7 @@ nios2_split_plus_large_constant (rtx op0, rtx op1)
 }
 
 /* Given a MEM OP with an address that includes a splittable symbol or
-   other large constant, emit some instructions to do the split and 
+   other large constant, emit some instructions to do the split and
    return a new MEM.  */
 rtx
 nios2_split_large_constant_memory_operand (rtx op)
@@ -2341,7 +2341,7 @@ nios2_small_section_name_p (const char *section)
 	  || startswith (section, ".sbss.")
 	  || strcmp (section, ".sdata") == 0
 	  || startswith (section, ".sdata.")
-	  || (nios2_gprel_sec 
+	  || (nios2_gprel_sec
 	      && regexec (&nios2_gprel_sec_regex, section, 0, NULL, 0) == 0));
 }
 
@@ -2349,7 +2349,7 @@ nios2_small_section_name_p (const char *section)
 static bool
 nios2_r0rel_section_name_p (const char *section)
 {
-  return (nios2_r0rel_sec 
+  return (nios2_r0rel_sec
 	  && regexec (&nios2_r0rel_sec_regex, section, 0, NULL, 0) == 0);
 }
 
@@ -2591,7 +2591,7 @@ nios2_legitimize_constant_address (rtx addr)
     base = nios2_legitimize_tls_address (base);
   else if (flag_pic)
     base = nios2_load_pic_address (base, UNSPEC_PIC_SYM, NULL_RTX);
-  else if (!nios2_large_constant_allowed () 
+  else if (!nios2_large_constant_allowed ()
 	   && nios2_symbolic_constant_p (addr))
     return nios2_split_large_constant (addr, gen_reg_rtx (Pmode));
   else if (CONST_INT_P (addr))
@@ -2625,7 +2625,7 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 			  machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx op0, op1;
-  
+
   if (CONSTANT_P (x))
     return nios2_legitimize_constant_address (x);
 
@@ -2749,15 +2749,15 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	    }
 	}
       else if (gprel_constant_p (from) || r0rel_constant_p (from))
-	/* Handled directly by movsi_internal as gp + offset 
+	/* Handled directly by movsi_internal as gp + offset
 	   or r0 + offset.  */
 	;
       else if (nios2_large_constant_p (from))
 	/* This case covers either a regular symbol reference or an UNSPEC
-	   representing a 32-bit offset.  We split the former 
+	   representing a 32-bit offset.  We split the former
 	   only conditionally and the latter always.  */
 	{
-	  if (!nios2_large_constant_allowed () 
+	  if (!nios2_large_constant_allowed ()
 	      || nios2_large_unspec_reloc_p (from))
 	    {
 	      rtx lo = nios2_split_large_constant (from, to);
@@ -2767,7 +2767,7 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	      return true;
 	    }
 	}
-      else 
+      else
 	/* This is a TLS or PIC symbol.  */
 	{
 	  from = nios2_legitimize_constant_address (from);
@@ -2839,7 +2839,7 @@ nios2_print_operand_punct_valid_p (unsigned char code)
      z: prints the third register immediate operand in assembly
         instructions.  Outputs const0_rtx as the 'zero' register
 	instead of '0'.
-	
+
      y: same as 'z', but for specifically for logical instructions,
         where the processing for immediates are slightly different.
 
@@ -3292,7 +3292,7 @@ nios2_fpu_insn_asm (enum n2fpu_code code)
   static char buf[256];
   const char *op1, *op2, *op3;
   int ln = 256, n = 0;
-  
+
   int N = N2FPU_N (code);
   int num_operands = N2FPU (code).num_operands;
   const char *insn_name = N2FPU_NAME (code);
@@ -3384,7 +3384,7 @@ nios2_fpu_insn_asm (enum n2fpu_code code)
 static rtx
 nios2_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 {
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   rtx return_rtx = NULL_RTX;
 
   if (cum->regs_used < NUM_ARG_REGS)
@@ -3400,7 +3400,7 @@ nios2_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 static int
 nios2_arg_partial_bytes (cumulative_args_t cum_v, const function_arg_info &arg)
 {
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   HOST_WIDE_INT param_size = arg.promoted_size_in_bytes ();
   gcc_assert (param_size >= 0);
 
@@ -3420,7 +3420,7 @@ static void
 nios2_function_arg_advance (cumulative_args_t cum_v,
 			    const function_arg_info &arg)
 {
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   HOST_WIDE_INT param_size = arg.promoted_size_in_bytes ();
   gcc_assert (param_size >= 0);
 
@@ -3517,7 +3517,7 @@ nios2_setup_incoming_varargs (cumulative_args_t cum_v,
 			      const function_arg_info &arg,
 			      int *pretend_size, int second_time)
 {
-  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v); 
+  CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS local_cum;
   cumulative_args_t local_cum_v = pack_cumulative_args (&local_cum);
   int regs_to_push;
@@ -3838,8 +3838,8 @@ nios2_expand_builtin_insn (const struct nios2_builtin_desc *d, int n,
   else
     {
       error ("invalid argument to built-in function %s", d->name);
-      return has_target_p ? gen_reg_rtx (ops[0].mode) : const0_rtx;	  
-    } 
+      return has_target_p ? gen_reg_rtx (ops[0].mode) : const0_rtx;
+    }
 }
 
 /* Expand ldio/stio and ldex/ldsex/stex/stsex form load-store
@@ -3954,7 +3954,7 @@ nios2_expand_cache_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   mem = gen_rtx_MEM (SImode, addr);
 
   create_input_operand (&ops[0], mem, SImode);
- 
+
   return nios2_expand_builtin_insn (d, 1, ops, false);
 }
 
@@ -3968,7 +3968,7 @@ nios2_expand_wrpie_builtin (tree exp, rtx target,
   val = expand_normal (CALL_EXPR_ARG (exp, 0));
   create_input_operand (&ops[1], val, SImode);
   create_output_operand (&ops[0], target, SImode);
- 
+
   return nios2_expand_builtin_insn (d, 2, ops, true);
 }
 
@@ -3982,10 +3982,10 @@ nios2_expand_eni_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   if (INTVAL (imm) != 0 && INTVAL (imm) != 1)
     {
       error ("the ENI instruction operand must be either 0 or 1");
-      return const0_rtx;      
+      return const0_rtx;
     }
   create_integer_operand (&ops[0], INTVAL (imm));
- 
+
   return nios2_expand_builtin_insn (d, 1, ops, false);
 }
 
@@ -4307,7 +4307,7 @@ nios2_valid_target_attribute_rec (tree args)
 			  if (ISSPACE (*t))
 			    continue;
 			  if (!ISDIGIT (*t))
-			    {			 
+			    {
 			      error ("%<custom-%s=%> argument should be "
 				     "a non-negative integer", N2FPU_NAME (code));
 			      return false;
@@ -4323,7 +4323,7 @@ nios2_valid_target_attribute_rec (tree args)
 		  error ("%<custom-%s=%> is not recognized as FPU instruction",
 			 argstr + 7);
 		  return false;
-		}		
+		}
 	    }
 	  else
 	    {
@@ -4683,7 +4683,7 @@ static bool nios2_add_insn_narrow[] = {
   false, false};
 
 /* Function to classify kinds of add instruction patterns.  */
-static enum nios2_add_insn_kind 
+static enum nios2_add_insn_kind
 nios2_add_insn_classify (rtx_insn *insn ATTRIBUTE_UNUSED,
 			 rtx lhs, rtx rhs1, rtx rhs2)
 {
@@ -5039,7 +5039,7 @@ ldstwm_operation_p (rtx op, bool load_p)
 {
   int start, i, end = XVECLEN (op, 0) - 1, last_regno = -1;
   unsigned int regset = 0;
-  rtx base_reg, offset;  
+  rtx base_reg, offset;
   rtx first_elt = XVECEXP (op, 0, 0);
   bool inc_p = true;
   bool wb_p = base_reg_adjustment_p (first_elt, &base_reg, &offset);
@@ -5413,7 +5413,7 @@ nios2_reorg (void)
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
   label_align = XCNEWVEC (unsigned char, max_labelno - min_labelno + 1);
-  
+
   /* Iterate on inserting alignment and adjusting branch lengths until
      no more changes.  */
   while (changed)
@@ -5464,7 +5464,7 @@ nios2_adjust_reg_alloc_order (void)
   const int cdx_reg_alloc_order[] =
     {
       /* Call-clobbered GPRs within CDX 3-bit encoded range.  */
-      2, 3, 4, 5, 6, 7, 
+      2, 3, 4, 5, 6, 7,
       /* Call-saved GPRs within CDX 3-bit encoded range.  */
       16, 17,
       /* Other call-clobbered GPRs.  */

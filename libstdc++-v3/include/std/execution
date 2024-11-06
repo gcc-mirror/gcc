@@ -25,7 +25,9 @@
 #ifndef _GLIBCXX_EXECUTION
 #define _GLIBCXX_EXECUTION 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/requires_hosted.h> // execution policies are hosted only
 

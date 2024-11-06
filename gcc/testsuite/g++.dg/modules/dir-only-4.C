@@ -2,7 +2,7 @@
 // { dg-module-cmi !foo }
 module;
 #define foo baz
-export module foo;
+export module foo; // { dg-error "module name 'foo' cannot be an object-like macro" }
 
 class import {};
 

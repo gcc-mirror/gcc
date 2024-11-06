@@ -237,6 +237,7 @@
 	  || (TARGET_68881
 	      && (!standard_68881_constant_p (op)
 		  || reload_in_progress
+		  || lra_in_progress
 		  || reload_completed)));
 })
 

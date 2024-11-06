@@ -50,29 +50,17 @@ struct interesting_t
 
 namespace evdesc {
 
-struct event_desc
-{
-  event_desc (bool colorize) : m_colorize (colorize) {}
-
-  label_text formatted_print (const char *fmt, ...) const
-    ATTRIBUTE_GCC_DIAG(2,3);
-
-  bool m_colorize;
-};
-
 /* For use by pending_diagnostic::describe_state_change.  */
 
-struct state_change : public event_desc
+struct state_change
 {
-  state_change (bool colorize,
-		tree expr,
+  state_change (tree expr,
 		tree origin,
 		state_machine::state_t old_state,
 		state_machine::state_t new_state,
 		diagnostic_event_id_t event_id,
 		const state_change_event &event)
-  : event_desc (colorize),
-    m_expr (expr), m_origin (origin),
+  : m_expr (expr), m_origin (origin),
     m_old_state (old_state), m_new_state (new_state),
     m_event_id (event_id), m_event (event)
   {}
@@ -89,13 +77,11 @@ struct state_change : public event_desc
 
 /* For use by pending_diagnostic::describe_call_with_state.  */
 
-struct call_with_state : public event_desc
+struct call_with_state
 {
-  call_with_state (bool colorize,
-		   tree caller_fndecl, tree callee_fndecl,
+  call_with_state (tree caller_fndecl, tree callee_fndecl,
 		   tree expr, state_machine::state_t state)
-  : event_desc (colorize),
-    m_caller_fndecl (caller_fndecl),
+  : m_caller_fndecl (caller_fndecl),
     m_callee_fndecl (callee_fndecl),
     m_expr (expr),
     m_state (state)
@@ -110,13 +96,11 @@ struct call_with_state : public event_desc
 
 /* For use by pending_diagnostic::describe_return_of_state.  */
 
-struct return_of_state : public event_desc
+struct return_of_state
 {
-  return_of_state (bool colorize,
-		   tree caller_fndecl, tree callee_fndecl,
+  return_of_state (tree caller_fndecl, tree callee_fndecl,
 		   state_machine::state_t state)
-  : event_desc (colorize),
-    m_caller_fndecl (caller_fndecl),
+  : m_caller_fndecl (caller_fndecl),
     m_callee_fndecl (callee_fndecl),
     m_state (state)
   {
@@ -129,13 +113,11 @@ struct return_of_state : public event_desc
 
 /* For use by pending_diagnostic::describe_final_event.  */
 
-struct final_event : public event_desc
+struct final_event
 {
-  final_event (bool colorize,
-	       tree expr, state_machine::state_t state,
+  final_event (tree expr, state_machine::state_t state,
 	       const warning_event &event)
-  : event_desc (colorize),
-    m_expr (expr), m_state (state), m_event (event)
+  : m_expr (expr), m_state (state), m_event (event)
   {}
 
   tree m_expr;
@@ -266,12 +248,16 @@ class pending_diagnostic
      - "freed here"
      - "use after free here"
      Note how in both cases the first event is a "free": the best
-     description to use depends on the diagnostic.  */
+     description to use depends on the diagnostic.
 
-  virtual label_text describe_state_change (const evdesc::state_change &)
+     Print the description to PP and return true,
+     or do nothing and return false.  */
+
+  virtual bool describe_state_change (pretty_printer &,
+				      const evdesc::state_change &)
   {
     /* Default no-op implementation.  */
-    return label_text ();
+    return false;
   }
 
   /* Vfunc for implementing diagnostic_event::get_meaning for
@@ -291,10 +277,11 @@ class pending_diagnostic
      to make it clearer how the freed value moves from caller to
      callee.  */
 
-  virtual label_text describe_call_with_state (const evdesc::call_with_state &)
+  virtual bool describe_call_with_state (pretty_printer &,
+					 const evdesc::call_with_state &)
   {
     /* Default no-op implementation.  */
-    return label_text ();
+    return false;
   }
 
   /* Precision-of-wording vfunc for describing an interprocedural return
@@ -306,10 +293,11 @@ class pending_diagnostic
      to make it clearer how the unchecked value moves from callee
      back to caller.  */
 
-  virtual label_text describe_return_of_state (const evdesc::return_of_state &)
+  virtual bool describe_return_of_state (pretty_printer &,
+					 const evdesc::return_of_state &)
   {
     /* Default no-op implementation.  */
-    return label_text ();
+    return false;
   }
 
   /* Precision-of-wording vfunc for describing the final event within a
@@ -320,10 +308,11 @@ class pending_diagnostic
      and a use-after-free might use
       - "use after 'free' here; memory was freed at (2)".  */
 
-  virtual label_text describe_final_event (const evdesc::final_event &)
+  virtual bool describe_final_event (pretty_printer &,
+				     const evdesc::final_event &)
   {
     /* Default no-op implementation.  */
-    return label_text ();
+    return false;
   }
 
   /* End of precision-of-wording vfuncs.  */

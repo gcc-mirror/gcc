@@ -47,15 +47,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *   Note: assume invalid encodings are not passed to this function
  *
  * Round a number C with q decimal digits, represented as a binary integer
- * to q - x digits. Six different routines are provided for different values 
- * of q. The maximum value of q used in the library is q = 3 * P - 1 where 
- * P = 16 or P = 34 (so q <= 111 decimal digits). 
+ * to q - x digits. Six different routines are provided for different values
+ * of q. The maximum value of q used in the library is q = 3 * P - 1 where
+ * P = 16 or P = 34 (so q <= 111 decimal digits).
  * The partitioning is based on the following, where Kx is the scaled
  * integer representing the value of 10^(-x) rounded up to a number of bits
  * sufficient to ensure correct rounding:
  *
  * --------------------------------------------------------------------------
- * q    x           max. value of  a            max number      min. number 
+ * q    x           max. value of  a            max number      min. number
  *                                              of bits in C    of bits in Kx
  * --------------------------------------------------------------------------
  *
@@ -99,7 +99,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  *                        GROUP 6: 384 bits
  *                        round384_97_115 ()
  *
- * 97   [1,96]      10^97 - 1 < 2^322.23        323             324 
+ * 97   [1,96]      10^97 - 1 < 2^322.23        323             324
  * ...  ...         ...                         ...             ...
  * 115  [1,114]     10^115 - 1 < 2^382.03       383             384
  *
@@ -126,7 +126,7 @@ round64_2_18 (int q,
   int ind;
 
   // Note:
-  //    In round128_2_18() positive numbers with 2 <= q <= 18 will be 
+  //    In round128_2_18() positive numbers with 2 <= q <= 18 will be
   //    rounded to nearest only for 1 <= x <= 3:
   //     x = 1 or x = 2 when q = 17
   //     x = 2 or x = 3 when q = 18
@@ -229,7 +229,7 @@ round128_19_38 (int q,
   int ind;
 
   // Note:
-  //    In round128_19_38() positive numbers with 19 <= q <= 38 will be 
+  //    In round128_19_38() positive numbers with 19 <= q <= 38 will be
   //    rounded to nearest only for 1 <= x <= 23:
   //     x = 3 or x = 4 when q = 19
   //     x = 4 or x = 5 when q = 20
@@ -249,11 +249,11 @@ round128_19_38 (int q,
   // round a number C with q decimal digits, 19 <= q <= 38
   // to q - x digits, 1 <= x <= 37
   // C = C + 1/2 * 10^x where the result C fits in 128 bits
-  // (because the largest value is 99999999999999999999999999999999999999 + 
+  // (because the largest value is 99999999999999999999999999999999999999 +
   // 5000000000000000000000000000000000000 =
   // 0x4efe43b0c573e7e68a043d8fffffffff, which fits is 127 bits)
 
-  ind = x - 1;	// 0 <= ind <= 36 
+  ind = x - 1;	// 0 <= ind <= 36
   if (ind <= 18) {	// if 0 <= ind <= 18
     tmp64 = C.w[0];
     C.w[0] = C.w[0] + midpoint64[ind];
@@ -275,7 +275,7 @@ round128_19_38 (int q,
   // Cstar = P256 >> Ex
   // fstar = low Ex bits of P256
   shift = Ex128m128[ind];	// in [2, 63] but have to consider two cases
-  if (ind <= 18) {	// if 0 <= ind <= 18 
+  if (ind <= 18) {	// if 0 <= ind <= 18
     Cstar.w[0] = (P256.w[2] >> shift) | (P256.w[3] << (64 - shift));
     Cstar.w[1] = (P256.w[3] >> shift);
     fstar.w[0] = P256.w[0];
@@ -410,7 +410,7 @@ round192_39_57 (int q,
   int ind;
 
   // Note:
-  //    In round192_39_57() positive numbers with 39 <= q <= 57 will be 
+  //    In round192_39_57() positive numbers with 39 <= q <= 57 will be
   //    rounded to nearest only for 5 <= x <= 42:
   //     x = 23 or x = 24 or x = 5 or x = 6 when q = 39
   //     x = 24 or x = 25 or x = 6 or x = 7 when q = 40
@@ -478,7 +478,7 @@ round192_39_57 (int q,
   // Cstar = P384 >> Ex
   // fstar = low Ex bits of P384
   shift = Ex192m192[ind];	// in [1, 63] but have to consider three cases
-  if (ind <= 18) {	// if 0 <= ind <= 18 
+  if (ind <= 18) {	// if 0 <= ind <= 18
     Cstar.w[2] = (P384.w[5] >> shift);
     Cstar.w[1] = (P384.w[5] << (64 - shift)) | (P384.w[4] >> shift);
     Cstar.w[0] = (P384.w[4] << (64 - shift)) | (P384.w[3] >> shift);
@@ -676,7 +676,7 @@ round256_58_76 (int q,
   int ind;
 
   // Note:
-  //    In round256_58_76() positive numbers with 58 <= q <= 76 will be 
+  //    In round256_58_76() positive numbers with 58 <= q <= 76 will be
   //    rounded to nearest only for 24 <= x <= 61:
   //     x = 42 or x = 43 or x = 24 or x = 25 when q = 58
   //     x = 43 or x = 44 or x = 25 or x = 26 when q = 59
@@ -695,7 +695,7 @@ round256_58_76 (int q,
   // (because the largest value is 9999999999999999999999999999999999999999
   //     999999999999999999999999999999999999 + 500000000000000000000000000
   //     000000000000000000000000000000000000000000000000 =
-  //     0x1736ca15d27a56cae15cf0e7b403d1f2bd6ebb0a50dc83ffffffffffffffffff, 
+  //     0x1736ca15d27a56cae15cf0e7b403d1f2bd6ebb0a50dc83ffffffffffffffffff,
   // which fits in 253 bits)
   ind = x - 1;	// 0 <= ind <= 74
   if (ind <= 18) {	// if 0 <= ind <= 18
@@ -790,7 +790,7 @@ round256_58_76 (int q,
   // Cstar = P512 >> Ex
   // fstar = low Ex bits of P512
   shift = Ex256m256[ind];	// in [0, 63] but have to consider four cases
-  if (ind <= 18) {	// if 0 <= ind <= 18 
+  if (ind <= 18) {	// if 0 <= ind <= 18
     Cstar.w[3] = (P512.w[7] >> shift);
     Cstar.w[2] = (P512.w[7] << (64 - shift)) | (P512.w[6] >> shift);
     Cstar.w[1] = (P512.w[6] << (64 - shift)) | (P512.w[5] >> shift);

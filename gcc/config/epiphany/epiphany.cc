@@ -830,7 +830,7 @@ epiphany_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  return false;
 	}
 
-	
+
     case SET:
       {
 	rtx src = SET_SRC (x);

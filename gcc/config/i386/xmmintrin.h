@@ -38,6 +38,7 @@ enum _mm_hint
 {
   _MM_HINT_IT0 = 19,
   _MM_HINT_IT1 = 18,
+  _MM_HINT_RST2 = 9,
   /* _MM_HINT_ET is _MM_HINT_T with set 3rd bit.  */
   _MM_HINT_ET0 = 7,
   _MM_HINT_T0 = 3,
@@ -52,12 +53,12 @@ enum _mm_hint
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_prefetch (const void *__P, enum _mm_hint __I)
 {
-  __builtin_ia32_prefetch (__P, (__I & 0x4) >> 2,
+  __builtin_ia32_prefetch (__P, (__I & 0xC) >> 2,
 			   __I & 0x3, (__I & 0x10) >> 4);
 }
 #else
 #define _mm_prefetch(P, I) \
-  __builtin_ia32_prefetch ((P), ((I) & 0x4) >> 2, ((I) & 0x3), ((I) & 0x10) >> 4)
+  __builtin_ia32_prefetch ((P), ((I) & 0xC) >> 2, ((I) & 0x3), ((I) & 0x10) >> 4)
 #endif
 
 #ifndef __SSE__

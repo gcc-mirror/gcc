@@ -232,7 +232,7 @@ allocate_filename_struct (struct gcov_filename *gf)
   /* Get file name relocation prefix.  Non-absolute values are ignored. */
   gcov_prefix = getenv("GCOV_PREFIX");
   prefix_length = gcov_prefix ? strlen (gcov_prefix) : 0;
-  
+
   /* Remove an unnecessary trailing '/' */
   if (prefix_length && IS_DIR_SEPARATOR (gcov_prefix[prefix_length - 1]))
     prefix_length--;

@@ -79,15 +79,18 @@ package Ada.Strings.Wide_Wide_Unbounded is
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item : Unbounded_Wide_Wide_String);
+      New_Item : Unbounded_Wide_Wide_String)
+   with Inline => True;
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item : Wide_Wide_String);
+      New_Item : Wide_Wide_String)
+   with Inline => True;
 
    procedure Append
      (Source   : in out Unbounded_Wide_Wide_String;
-      New_Item : Wide_Wide_Character);
+      New_Item : Wide_Wide_Character)
+   with Inline => True;
 
    function "&"
      (Left  : Unbounded_Wide_Wide_String;
@@ -111,7 +114,8 @@ package Ada.Strings.Wide_Wide_Unbounded is
 
    function Element
      (Source : Unbounded_Wide_Wide_String;
-      Index  : Positive) return Wide_Wide_Character;
+      Index  : Positive) return Wide_Wide_Character
+   with Inline => True;
 
    procedure Replace_Element
      (Source : in out Unbounded_Wide_Wide_String;

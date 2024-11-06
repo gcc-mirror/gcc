@@ -151,6 +151,27 @@ test07()
   auto d2 = std::views::repeat(std::make_unique<int>(5), 4) | std::views::drop(2);
 }
 
+void
+test08()
+{
+  // LWG 4053 - Unary call to std::views::repeat does not decay the argument
+  using type = ranges::repeat_view<const char*>;
+  using type = decltype(views::repeat("foo", std::unreachable_sentinel));
+  using type = decltype(views::repeat(+"foo", std::unreachable_sentinel));
+  using type = decltype(views::repeat("foo"));
+  using type = decltype(views::repeat(+"foo"));
+}
+
+void
+test09()
+{
+  // LWG 4054 - Repeating a repeat_view should repeat the view
+  auto v = views::repeat(views::repeat(5));
+  using type = decltype(v);
+  using type = ranges::repeat_view<ranges::repeat_view<int>>;
+  VERIFY( v[0][0] == 5 );
+}
+
 int
 main()
 {
@@ -161,4 +182,6 @@ main()
   test05();
   test06();
   test07();
+  test08();
+  test09();
 }

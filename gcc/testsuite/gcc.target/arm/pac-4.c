@@ -5,6 +5,6 @@
 
 #include "pac.h"
 
-/* { dg-final { scan-assembler-not "\tbti\t" } } */
+/* { dg-final { scan-assembler-not "\tbti" } } */
 /* { dg-final { scan-assembler-not "\tpac\t" } } */
 /* { dg-final { scan-assembler-not "\tpacbti\t" } } */

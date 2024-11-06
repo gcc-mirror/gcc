@@ -5429,17 +5429,22 @@ package body Exp_Ch3 is
       if not Is_Bit_Packed_Array (Typ) then
          if No (Init_Proc (Base)) then
 
-            --  If this is an anonymous array created for a declaration with
-            --  an initial value, its init_proc will never be called. The
+            --  If this is an anonymous array built for an object declaration
+            --  with an initial value, its Init_Proc will never be called. The
             --  initial value itself may have been expanded into assignments,
-            --  in which case the object declaration is carries the
-            --  No_Initialization flag.
+            --  in which case the declaration has the No_Initialization flag.
+            --  The exception is when the initial value is a 2-pass aggregate,
+            --  because the special expansion used for it creates a temporary
+            --  that needs a fully-fledged initialization.
 
             if Is_Itype (Base)
               and then Nkind (Associated_Node_For_Itype (Base)) =
                                                     N_Object_Declaration
               and then
-                (Present (Expression (Associated_Node_For_Itype (Base)))
+                ((Present (Expression (Associated_Node_For_Itype (Base)))
+                    and then not
+                      Is_Two_Pass_Aggregate
+                        (Expression (Associated_Node_For_Itype (Base))))
                   or else No_Initialization (Associated_Node_For_Itype (Base)))
             then
                null;

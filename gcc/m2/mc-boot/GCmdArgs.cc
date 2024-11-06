@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -303,7 +304,7 @@ extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLin
     {
       ArgNo += 1;
     }
-  /* 
+  /*
    IF ArgNo>0
    THEN
       DEC(ArgNo)

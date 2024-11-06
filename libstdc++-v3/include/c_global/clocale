@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CLOCALE
 #define _GLIBCXX_CLOCALE 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <locale.h>

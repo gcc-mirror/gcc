@@ -39,7 +39,7 @@ integer :: a,b,c(n),d(5),e(2)
 !$omp allocate(   e ) allocator( omp_high_bw_mem_alloc )
 
 !saved vars
-integer, save :: k,l,m(5),r(2)  ! { dg-error "Sorry, !.OMP allocate for variable 'k' at .1. with SAVE attribute not yet implemented" }
+integer, save :: k,l,m(5),r(2)
 !$omp allocate(k)  align(16) , allocator (omp_large_cap_mem_alloc)
 !$omp allocate ( l ) allocator (omp_large_cap_mem_alloc) , align ( 32)
 !$omp allocate (m) align( 128 ),allocator( omp_high_bw_mem_alloc )
@@ -47,8 +47,8 @@ integer, save :: k,l,m(5),r(2)  ! { dg-error "Sorry, !.OMP allocate for variable
 
 !common /block/
 integer :: q,x,y(2),z(5)
-common /com1/ q,x
-common /com2/ y,z
+common /com1/ q,x  ! { dg-error "Sorry, !.OMP allocate for COMMON block variable 'com1' at .1. not supported" }
+common /com2/ y,z  ! { dg-error "Sorry, !.OMP allocate for COMMON block variable 'com2' at .1. not supported" }
 !$omp allocate ( / com1/) align( 128 ) allocator( omp_high_bw_mem_alloc )
 !$omp allocate(/com2 / ) allocator( omp_high_bw_mem_alloc )
 end

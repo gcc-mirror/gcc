@@ -590,6 +590,12 @@ begin
       when Pragma_Source_File_Name
          | Pragma_Source_File_Name_Project
       =>
+         if Debug_Flag_Underscore_MM then
+            --  -gnatd_M is causes the compiler to ignore source file name
+            --  pragmas. It's used for reduced reproducer generation.
+            return Pragma_Node;
+         end if;
+
          Source_File_Name : declare
             Unam  : Unit_Name_Type;
             Expr1 : Node_Id;
@@ -1436,6 +1442,7 @@ begin
          | Pragma_Export_Procedure
          | Pragma_Export_Valued_Procedure
          | Pragma_Extend_System
+         | Pragma_Extended_Access
          | Pragma_Extensions_Visible
          | Pragma_External
          | Pragma_External_Name_Casing
@@ -1556,6 +1563,7 @@ begin
          | Pragma_Short_Circuit_And_Or
          | Pragma_Short_Descriptors
          | Pragma_Simple_Storage_Pool_Type
+         | Pragma_Simulate_Internal_Error
          | Pragma_Static_Elaboration_Desired
          | Pragma_Storage_Size
          | Pragma_Storage_Unit

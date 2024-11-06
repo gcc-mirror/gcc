@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -56,7 +57,7 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, co
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets 
+                 It interprets
  as carriage return, linefeed.
 */
 
@@ -121,7 +122,7 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, co
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets 
+                 It interprets
  as carriage return, linefeed.
 */
 

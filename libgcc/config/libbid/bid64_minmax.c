@@ -68,7 +68,7 @@ bid64_minnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 	// non-canonical
 	x = (x & MASK_SIGN) | ((x & MASK_BINARY_EXPONENT2) << 2);
       }	// else canonical
-    }	// else canonical 
+    }	// else canonical
   }
 
   // check for non-canonical y
@@ -164,9 +164,9 @@ bid64_minnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 
   // ZERO (CASE4)
   // some properties:
-  //    (+ZERO == -ZERO) => therefore 
+  //    (+ZERO == -ZERO) => therefore
   //        ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //        ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (sig_x == 0) {
@@ -197,7 +197,7 @@ bid64_minnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
   }
   // REDUNDANT REPRESENTATIONS (CASE6)
 
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
   if (sig_x > sig_y && exp_x >= exp_y) {
     res = ((x & MASK_SIGN) != MASK_SIGN) ? y : x;
@@ -223,7 +223,7 @@ bid64_minnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
     // otherwise adjust the x significand upwards
     __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 			    mult_factor[exp_x - exp_y]);
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       res = y;
@@ -287,7 +287,7 @@ bid64_minnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 	// non-canonical
 	x = (x & MASK_SIGN) | ((x & MASK_BINARY_EXPONENT2) << 2);
       }	// else canonical
-    }	// else canonical 
+    }	// else canonical
   }
 
   // check for non-canonical y
@@ -377,9 +377,9 @@ bid64_minnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 
   // ZERO (CASE4)
   // some properties:
-  //    (+ZERO == -ZERO) => therefore 
+  //    (+ZERO == -ZERO) => therefore
   //        ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //        ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (sig_x == 0) {
@@ -391,7 +391,7 @@ bid64_minnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
     BID_RETURN (res);
   }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
   if (sig_x > sig_y && exp_x >= exp_y) {
     res = y;
@@ -416,14 +416,14 @@ bid64_minnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
     // otherwise adjust the x significand upwards
     __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 			    mult_factor[exp_x - exp_y]);
-    // now, sig_n_prime has: sig_x * 10^(exp_x-exp_y), this is 
+    // now, sig_n_prime has: sig_x * 10^(exp_x-exp_y), this is
     // the compensated signif.
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       // two numbers are equal, return minNum(x,y)
       res = ((y & MASK_SIGN) == MASK_SIGN) ? y : x;
       BID_RETURN (res);
     }
-    // now, if compensated_x (sig_n_prime) is greater than y, return y,  
+    // now, if compensated_x (sig_n_prime) is greater than y, return y,
     // otherwise return x
     res = ((sig_n_prime.w[1] != 0) || sig_n_prime.w[0] > sig_y) ? y : x;
     BID_RETURN (res);
@@ -479,7 +479,7 @@ bid64_maxnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 	// non-canonical
 	x = (x & MASK_SIGN) | ((x & MASK_BINARY_EXPONENT2) << 2);
       }	// else canonical
-    }	// else canonical 
+    }	// else canonical
   }
 
   // check for non-canonical y
@@ -540,7 +540,7 @@ bid64_maxnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
   // INFINITY (CASE3)
   if ((x & MASK_INF) == MASK_INF) {
     // if x is neg infinity, there is no way it is greater than y, return y
-    // x is pos infinity, it is greater, unless y is positive infinity => 
+    // x is pos infinity, it is greater, unless y is positive infinity =>
     // return y!=pos_infinity
     if (((x & MASK_SIGN) == MASK_SIGN)) {
       res = y;
@@ -576,9 +576,9 @@ bid64_maxnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 
   // ZERO (CASE4)
   // some properties:
-  //    (+ZERO == -ZERO) => therefore 
+  //    (+ZERO == -ZERO) => therefore
   //        ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //        ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (sig_x == 0) {
@@ -609,7 +609,7 @@ bid64_maxnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
   }
   // REDUNDANT REPRESENTATIONS (CASE6)
 
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   //     it is clear what needs to be done
   if (sig_x > sig_y && exp_x >= exp_y) {
     res = ((x & MASK_SIGN) != MASK_SIGN) ? x : y;
@@ -635,7 +635,7 @@ bid64_maxnum (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
     // otherwise adjust the x significand upwards
     __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 			    mult_factor[exp_x - exp_y]);
-    // if postitive, return whichever significand is larger 
+    // if postitive, return whichever significand is larger
     // (converse if negative)
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       res = y;
@@ -698,7 +698,7 @@ bid64_maxnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 	// non-canonical
 	x = (x & MASK_SIGN) | ((x & MASK_BINARY_EXPONENT2) << 2);
       }	// else canonical
-    }	// else canonical 
+    }	// else canonical
   }
 
   // check for non-canonical y
@@ -788,9 +788,9 @@ bid64_maxnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
 
   // ZERO (CASE4)
   // some properties:
-  //    (+ZERO == -ZERO) => therefore 
+  //    (+ZERO == -ZERO) => therefore
   //        ignore the sign, and neither number is greater
-  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B => 
+  //    (ZERO x 10^A == ZERO x 10^B) for any valid A, B =>
   //        ignore the exponent field
   //    (Any non-canonical # is considered 0)
   if (sig_x == 0) {
@@ -802,7 +802,7 @@ bid64_maxnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
     BID_RETURN (res);
   }
   // REDUNDANT REPRESENTATIONS (CASE6)
-  // if both components are either bigger or smaller, 
+  // if both components are either bigger or smaller,
   // it is clear what needs to be done
   if (sig_x > sig_y && exp_x >= exp_y) {
     res = x;
@@ -827,14 +827,14 @@ bid64_maxnum_mag (UINT64 x, UINT64 y _EXC_FLAGS_PARAM) {
     // otherwise adjust the x significand upwards
     __mul_64x64_to_128MACH (sig_n_prime, sig_x,
 			    mult_factor[exp_x - exp_y]);
-    // now, sig_n_prime has: sig_x * 10^(exp_x-exp_y), 
+    // now, sig_n_prime has: sig_x * 10^(exp_x-exp_y),
     // this is the compensated signif.
     if (sig_n_prime.w[1] == 0 && (sig_n_prime.w[0] == sig_y)) {
       // two numbers are equal, return maxNum(x,y)
       res = ((y & MASK_SIGN) == MASK_SIGN) ? x : y;
       BID_RETURN (res);
     }
-    // now, if compensated_x (sig_n_prime) is greater than y return y,  
+    // now, if compensated_x (sig_n_prime) is greater than y return y,
     // otherwise return x
     res = ((sig_n_prime.w[1] != 0) || sig_n_prime.w[0] > sig_y) ? x : y;
     BID_RETURN (res);

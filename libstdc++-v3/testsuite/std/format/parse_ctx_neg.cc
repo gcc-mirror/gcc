@@ -1,4 +1,5 @@
 // { dg-do compile { target c++26 } }
+// { dg-skip-if "" { *-*-* } { "-fno-char8_t" } }
 
 #include <format>
 

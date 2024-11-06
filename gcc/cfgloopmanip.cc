@@ -171,7 +171,7 @@ fix_loop_placement (class loop *loop, bool *irred_invalidated)
    successors we consider edges coming out of the loops.
 
    If the changes may invalidate the information about irreducible regions,
-   IRRED_INVALIDATED is set to true.  
+   IRRED_INVALIDATED is set to true.
 
    If LOOP_CLOSED_SSA_INVLIDATED is non-zero then all basic blocks with
    changed loop_father are collected there. */
@@ -1110,7 +1110,7 @@ duplicate_loop (class loop *loop, class loop *target, class loop *after)
   class loop *cloop;
   cloop = alloc_loop ();
   place_new_loop (cfun, cloop);
- 
+
   copy_loop_info (loop, cloop);
 
   /* Mark the new loop as copy of LOOP.  */

@@ -53,7 +53,7 @@ class diagnostic_client_data_hooks
    for use in the compiler (i.e. with knowledge of "tree", access to
    langhooks, etc).  */
 
-extern diagnostic_client_data_hooks *make_compiler_data_hooks ();
+extern std::unique_ptr<diagnostic_client_data_hooks> make_compiler_data_hooks ();
 
 class diagnostic_client_plugin_info;
 

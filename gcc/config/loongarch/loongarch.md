@@ -3496,12 +3496,22 @@
   DONE;
 })
 
+(define_mode_attr mode_size [(DI "8") (SI "4")])
+
 (define_insn "@tablejump<mode>"
   [(set (pc)
 	(match_operand:P 0 "register_operand" "e"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "jr\t%0"
+  {
+    return TARGET_ANNOTATE_TABLEJUMP
+      ? "1:jr\t%0\n\t"
+	".pushsection\t.discard.tablejump_annotate\n\t"
+	"\t.<mode_size>byte\t1b\n\t"
+	"\t.<mode_size>byte\t%1\n\t"
+	".popsection"
+      : "jr\t%0";
+  }
   [(set_attr "type" "jump")
    (set_attr "mode" "none")])
 

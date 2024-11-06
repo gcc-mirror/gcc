@@ -551,6 +551,18 @@ END BuildProcedureHeading ;
 
 
 (*
+   EndBuildForward -
+*)
+
+PROCEDURE EndBuildForward ;
+BEGIN
+   PopN (2) ;
+   EndScope ;
+   M2Error.LeaveErrorScope
+END EndBuildForward ;
+
+
+(*
    BuildSubrange - Builds a Subrange type Symbol.
 
 

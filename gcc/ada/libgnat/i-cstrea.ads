@@ -235,9 +235,9 @@ package Interfaces.C_Streams is
    --                   In this mode we are eventually using the system-wide
    --                   translation if activated.
    --    Text         : Text encoding activated
+   --    U8text       : Unicode UTF-8 encoding
    --    Wtext        : Unicode mode
    --    U16text      : Unicode UTF-16 encoding
-   --    U8text       : Unicode UTF-8 encoding
    --
    --  This encoding is system dependent and only used on Windows systems.
    --

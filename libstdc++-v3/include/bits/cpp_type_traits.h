@@ -32,7 +32,9 @@
 #ifndef _CPP_TYPE_TRAITS_H
 #define _CPP_TYPE_TRAITS_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <bits/version.h>
@@ -412,7 +414,7 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_byte // C++ >= 17
   enum class byte : unsigned char;
 
   template<>
@@ -431,8 +433,6 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __true_type __type;
     };
 #endif
-
-  template<typename> struct iterator_traits;
 
   // A type that is safe for use with memcpy, memmove, memcmp etc.
   template<typename _Tp>
@@ -457,15 +457,132 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       enum { __value = 0 };
     };
 
+  // Allow memcpy when source and destination are pointers to the same type.
   template<typename _Tp>
     struct __memcpyable<_Tp*, _Tp*>
     : __is_nonvolatile_trivially_copyable<_Tp>
     { };
 
+  // Source pointer can be const.
   template<typename _Tp>
     struct __memcpyable<_Tp*, const _Tp*>
     : __is_nonvolatile_trivially_copyable<_Tp>
     { };
+
+  template<typename _Tp> struct __memcpyable_integer;
+
+  // For heterogeneous types, allow memcpy between equal-sized integers.
+  // N.B. we cannot do the same for equal-sized enums, they're not assignable.
+  // We cannot do it for pointers, because derived-to-base can adjust offset.
+  template<typename _Tp, typename _Up>
+    struct __memcpyable<_Tp*, _Up*>
+    {
+      enum {
+	__value = __memcpyable_integer<_Tp>::__width != 0
+		    && ((int)__memcpyable_integer<_Tp>::__width
+			  == (int)__memcpyable_integer<_Up>::__width)
+      };
+    };
+
+  // Specialization for const U* because __is_integer<const U> is never true.
+  template<typename _Tp, typename _Up>
+    struct __memcpyable<_Tp*, const _Up*>
+    : __memcpyable<_Tp*, _Up*>
+    { };
+
+  template<typename _Tp>
+    struct __memcpyable_integer
+    {
+      enum {
+	__width = __is_integer<_Tp>::__value ? (sizeof(_Tp) * __CHAR_BIT__) : 0
+      };
+    };
+
+  // Cannot memcpy volatile memory.
+  template<typename _Tp>
+    struct __memcpyable_integer<volatile _Tp>
+    { enum { __width = 0 }; };
+
+  // Specializations for __intNN types with padding bits.
+#if defined __GLIBCXX_TYPE_INT_N_0 && __GLIBCXX_BITSIZE_INT_N_0 % __CHAR_BIT__
+  __extension__
+  template<>
+    struct __memcpyable_integer<__GLIBCXX_TYPE_INT_N_0>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_0 }; };
+  __extension__
+  template<>
+    struct __memcpyable_integer<unsigned __GLIBCXX_TYPE_INT_N_0>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_0 }; };
+#endif
+#if defined __GLIBCXX_TYPE_INT_N_1 && __GLIBCXX_BITSIZE_INT_N_1 % __CHAR_BIT__
+  __extension__
+  template<>
+    struct __memcpyable_integer<__GLIBCXX_TYPE_INT_N_1>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_1 }; };
+  __extension__
+  template<>
+    struct __memcpyable_integer<unsigned __GLIBCXX_TYPE_INT_N_1>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_1 }; };
+#endif
+#if defined __GLIBCXX_TYPE_INT_N_2 && __GLIBCXX_BITSIZE_INT_N_2 % __CHAR_BIT__
+  __extension__
+  template<>
+    struct __memcpyable_integer<__GLIBCXX_TYPE_INT_N_2>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_2 }; };
+  __extension__
+  template<>
+    struct __memcpyable_integer<unsigned __GLIBCXX_TYPE_INT_N_2>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_2 }; };
+#endif
+#if defined __GLIBCXX_TYPE_INT_N_3 && __GLIBCXX_BITSIZE_INT_N_3 % __CHAR_BIT__
+  __extension__
+  template<>
+    struct __memcpyable_integer<__GLIBCXX_TYPE_INT_N_3>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_3 }; };
+  __extension__
+  template<>
+    struct __memcpyable_integer<unsigned __GLIBCXX_TYPE_INT_N_3>
+    { enum { __width = __GLIBCXX_BITSIZE_INT_N_3 }; };
+#endif
+
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+  // In strict modes __is_integer<__int128> is false,
+  // but we want to allow memcpy between signed/unsigned __int128.
+  __extension__
+  template<>
+    struct __memcpyable_integer<__int128> { enum { __width = 128 }; };
+  __extension__
+  template<>
+    struct __memcpyable_integer<unsigned __int128> { enum { __width = 128 }; };
+#endif
+
+#if _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 && _GLIBCXX_LDOUBLE_IS_IEEE_BINARY64
+  template<>
+    struct __memcpyable<double*, long double*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<long double*, double*> { enum { __value = true }; };
+#endif
+
+#if defined(__STDCPP_FLOAT32_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+  template<>
+    struct __memcpyable<_Float32*, float*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<float*, _Float32*> { enum { __value = true }; };
+#endif
+
+#if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+  template<>
+    struct __memcpyable<_Float64*, double*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<double*, _Float64*> { enum { __value = true }; };
+#endif
+
+#if defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
+  template<>
+    struct __memcpyable<_Float128*, long double*> { enum { __value = true }; };
+  template<>
+    struct __memcpyable<long double*, _Float128*> { enum { __value = true }; };
+#endif
 
   // Whether two iterator types can be used with memcmp.
   // This trait only says it's well-formed to use memcmp, not that it

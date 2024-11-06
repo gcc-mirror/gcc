@@ -39,7 +39,9 @@
 #ifndef _GLIBCXX_CSTDDEF
 #define _GLIBCXX_CSTDDEF 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 #include <stddef.h>

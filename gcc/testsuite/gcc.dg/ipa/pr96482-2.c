@@ -1,6 +1,6 @@
 /* PR ipa/96482 */
 /* { dg-do compile } */
-/* { dg-options "-O2"  } */
+/* { dg-options "-std=gnu17 -O2"  } */
 
 int i2c_transfer();
 void _dev_err();

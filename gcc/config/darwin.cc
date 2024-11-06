@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2403,7 +2404,7 @@ darwin_asm_declare_object_name (FILE *file,
 #ifdef DEBUG_DARWIN_MEM_ALLOCATORS
 fprintf (file, "# dadon: %s %s (%llu, %u) local %d weak %d"
 	       " stat %d com %d pub %d t-const %d t-ro %d init %lx\n",
-	xname, (TREE_CODE (decl) == VAR_DECL?"var":"const"),
+	xname, TREE_CODE (decl) == VAR_DECL ? "var" : "const",
 	(unsigned long long)size, DECL_ALIGN (decl), local_def,
 	DECL_WEAK (decl), TREE_STATIC (decl), DECL_COMMON (decl),
 	TREE_PUBLIC (decl), TREE_CONSTANT (decl), TREE_READONLY (decl),
@@ -2641,7 +2642,7 @@ darwin_emit_common (FILE *fp, const char *name,
   fputs ("\t.comm\t", fp);
   assemble_name (fp, name);
   fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED,
-	   emit_aligned_common?size:rounded);
+	   emit_aligned_common ? size : rounded);
   if (l2align && emit_aligned_common)
     fprintf (fp, ",%u", l2align);
   fputs ("\n", fp);

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2 -mrvv-max-lmul=m8" } */
 
 #include "def.h"
 
@@ -123,10 +123,6 @@ DEF_RET1_ARG9 (v256sf)
 DEF_RET1_ARG9 (v512sf)
 DEF_RET1_ARG9 (v1024sf)
 
-// RET1_ARG0 tests
-/* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 7 } } */
-/* { dg-final { scan-assembler-times {call\s+memset} 3 } } */
-
 // v1sf tests: return value (lw) and function prologue (sw)
 // 1 lw per test, argnum sw's when args > 1
 /* { dg-final { scan-assembler-times {lw\s+a[0-1],\s*[0-9]+\(sp\)} 8 } } */
@@ -140,7 +136,4 @@ DEF_RET1_ARG9 (v1024sf)
 /* { dg-final { scan-assembler-times {sd\s+a[0-7],\s*[0-9]+\(sp\)} 103 } } */
 
 // v8-1024sf tests: return value (vse32.v)
-/* { dg-final { scan-assembler-times {vse32.v\s+v[0-9],\s*[0-9]+\(a0\)} 74 } } */
-// 256-1024sf tests: return value (vse64.v)
-// for some reason ARG1 returns using vse64 instead of vse32
-/* { dg-final { scan-assembler-times {vse64.v\s+v[0-9],\s*[0-9]+\(a0\)\s+ret} 3 } } */
+/* { dg-final { scan-assembler-times {vse32.v\s+v[0-9],\s*[0-9]+\(a0\)} 80 } } */

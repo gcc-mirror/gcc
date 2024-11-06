@@ -43,7 +43,7 @@ namespace __gnu_parallel
   struct __generic_find_selector
   { };
 
-  /** 
+  /**
    *  @brief Test predicate on a single element, used for std::find()
    *  and std::find_if ().
    */
@@ -56,7 +56,7 @@ namespace __gnu_parallel
      */
     template<typename _RAIter1, typename _RAIter2,
              typename _Pred>
-      bool 
+      bool
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       { return __pred(*__i1); }
 
@@ -68,7 +68,7 @@ namespace __gnu_parallel
      */
     template<typename _RAIter1, typename _RAIter2,
              typename _Pred>
-      std::pair<_RAIter1, _RAIter2> 
+      std::pair<_RAIter1, _RAIter2>
       _M_sequential_algorithm(_RAIter1 __begin1,
                            _RAIter1 __end1,
                            _RAIter2 __begin2, _Pred __pred)
@@ -86,7 +86,7 @@ namespace __gnu_parallel
      */
     template<typename _RAIter1, typename _RAIter2,
              typename _Pred>
-      bool 
+      bool
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       {
         // Passed end iterator is one short.
@@ -118,24 +118,24 @@ namespace __gnu_parallel
   /** @brief Test inverted predicate on a single element. */
   struct __mismatch_selector : public __generic_find_selector
   {
-    /** 
+    /**
      *  @brief Test on one position.
      *  @param __i1 _Iterator on first sequence.
      *  @param __i2 _Iterator on second sequence (unused).
-     *  @param __pred Find predicate. 
+     *  @param __pred Find predicate.
      */
     template<typename _RAIter1, typename _RAIter2,
              typename _Pred>
-      bool 
+      bool
       operator()(_RAIter1 __i1, _RAIter2 __i2, _Pred __pred)
       { return !__pred(*__i1, *__i2); }
 
-    /** 
+    /**
      *  @brief Corresponding sequential algorithm on a sequence.
      *  @param __begin1 Begin iterator of first sequence.
      *  @param __end1 End iterator of first sequence.
      *  @param __begin2 Begin iterator of second sequence.
-     *  @param __pred Find predicate. 
+     *  @param __pred Find predicate.
      */
     template<typename _RAIter1, typename _RAIter2,
              typename _Pred>

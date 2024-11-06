@@ -144,4 +144,12 @@ PROCEDURE ForeachIndiceInIndexDo (i: Index; p: IndexProcedure) ;
 PROCEDURE IsEmpty (i: Index) : BOOLEAN ;
 
 
+(*
+   FindIndice - returns the indice containing a.
+                It returns zero if a is not found in array i.
+*)
+
+PROCEDURE FindIndice (i: Index; a: ADDRESS) : CARDINAL ;
+
+
 END Indexing.

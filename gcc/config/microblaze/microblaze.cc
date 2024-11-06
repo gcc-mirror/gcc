@@ -65,8 +65,8 @@ An invalid address.
 
 ADDRESS_REG
 
-A natural register or a register + const_int offset address.  
-The register satisfies microblaze_valid_base_register_p and the 
+A natural register or a register + const_int offset address.
+The register satisfies microblaze_valid_base_register_p and the
 offset is a const_arith_operand.
 
 ADDRESS_REG_INDEX
@@ -99,7 +99,7 @@ enum microblaze_address_type
 /* Classifies symbols
 
 SYMBOL_TYPE_GENERAL
-        
+
 A general symbol.  */
 enum microblaze_symbol_type
 {
@@ -120,7 +120,7 @@ enum tls_reloc {
 struct microblaze_address_info
 {
   enum microblaze_address_type type;
-  rtx regA; 	/* Contains valid values on ADDRESS_REG, ADDRESS_REG_INDEX, 
+  rtx regA; 	/* Contains valid values on ADDRESS_REG, ADDRESS_REG_INDEX,
      		   ADDRESS_SYMBOLIC.  */
   rtx regB; 	/* Contains valid values on ADDRESS_REG_INDEX.  */
   rtx offset; 	/* Contains valid values on ADDRESS_CONST_INT and ADDRESS_REG.  */
@@ -143,7 +143,7 @@ struct GTY(()) microblaze_frame_info {
   int initialized;		/* != 0 if frame size already calculated.  */
   int num_gp;			/* number of gp registers saved.  */
   long insns_len;		/* length of insns.  */
-  int alloc_stack;		/* Flag to indicate if the current function 
+  int alloc_stack;		/* Flag to indicate if the current function
 				   must not create stack space. (As an optimization).  */
 };
 
@@ -158,18 +158,18 @@ static GTY(()) int microblaze_sched_use_dfa = 0;
    data area takes 2 instructions).  */
 int microblaze_section_threshold = -1;
 
-/* Prevent scheduling potentially exception causing instructions in 
+/* Prevent scheduling potentially exception causing instructions in
    delay slots.  -mcpu=v3.00.a or v4.00.a turns this on.  */
 int microblaze_no_unsafe_delay;
 
 /* Set to one if the targeted core has the CLZ insn.  */
 int microblaze_has_clz = 0;
 
-/* Which CPU pipeline do we use. We haven't really standardized on a CPU 
-   version having only a particular type of pipeline. There can still be 
-   options on the CPU to scale pipeline features up or down. :( 
-   Bad Presentation (??), so we let the MD file rely on the value of 
-   this variable instead Making PIPE_5 the default. It should be backward 
+/* Which CPU pipeline do we use. We haven't really standardized on a CPU
+   version having only a particular type of pipeline. There can still be
+   options on the CPU to scale pipeline features up or down. :(
+   Bad Presentation (??), so we let the MD file rely on the value of
+   this variable instead Making PIPE_5 the default. It should be backward
    optimal with PIPE_3 MicroBlazes.  */
 enum pipeline_type microblaze_pipe = MICROBLAZE_PIPE_5;
 
@@ -210,7 +210,7 @@ enum reg_class microblaze_regno_to_class[] =
 };
 
 /* MicroBlaze specific machine attributes.
-   interrupt_handler - Interrupt handler attribute to add interrupt prologue 
+   interrupt_handler - Interrupt handler attribute to add interrupt prologue
 		       and epilogue and use appropriate interrupt return.
    save_volatiles    - Similar to interrupt handler, but use normal return.  */
 int interrupt_handler;
@@ -719,8 +719,8 @@ get_base_reg (rtx x)
                                                   const_int
    ADDRESS_REG_INDEX           %0        %1       NULL        NULL
 
-   ADDRESS_SYMBOLIC            r0 /      NULL     NULL        symbol    
-                           sda_base_reg 
+   ADDRESS_SYMBOLIC            r0 /      NULL     NULL        symbol
+                           sda_base_reg
 
    ADDRESS_CONST_INT           r0       NULL      const       NULL
 
@@ -1005,7 +1005,7 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       result = gen_rtx_PLUS (Pmode, ptr_reg, constant);
       if (SMALL_INT (constant))
 	return result;
-      /* Otherwise we fall through so the code below will fix the 
+      /* Otherwise we fall through so the code below will fix the
          constant.  */
       xinsn = result;
     }
@@ -1363,7 +1363,7 @@ microblaze_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 	      *total -= 2;
 	  }
 	else
-	  /* Double the worst cost of shifts when there is no barrel shifter and 
+	  /* Double the worst cost of shifts when there is no barrel shifter and
 	     the shift amount is in a reg.  */
 	  *total = COSTS_N_INSNS (32 * 4);
 	return true;
@@ -1498,7 +1498,7 @@ microblaze_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
   return COSTS_N_INSNS (microblaze_address_insns (addr, GET_MODE (addr)));
 }
 
-/* Return nonzero if X is an address which needs a temporary register when 
+/* Return nonzero if X is an address which needs a temporary register when
    reloaded while generating PIC code.  */
 
 int
@@ -1680,7 +1680,7 @@ function_arg_partial_bytes (cumulative_args_t cum_v,
   return 0;
 }
 
-/*  Convert a version number of the form "vX.YY.Z" to an integer encoding 
+/*  Convert a version number of the form "vX.YY.Z" to an integer encoding
     for easier range comparison.  */
 static int
 microblaze_version_to_int (const char *version)
@@ -1794,7 +1794,7 @@ microblaze_option_override (void)
     }
   else
     {
-      /* We agree to use 5 pipe-stage model even on area optimized 3 
+      /* We agree to use 5 pipe-stage model even on area optimized 3
          pipe-stage variants.  */
 #if 0
       microblaze_select_flags &= ~(MICROBLAZE_MASK_NO_UNSAFE_DELAY);
@@ -1807,7 +1807,7 @@ microblaze_option_override (void)
 	  || MICROBLAZE_VERSION_COMPARE (microblaze_select_cpu,
 					 "v5.00.c") == 0)
 	{
-	  /* Pattern compares are to be turned on by default only when 
+	  /* Pattern compares are to be turned on by default only when
  	     compiling for MB v5.00.'z'.  */
 	  target_flags |= MASK_PATTERN_COMPARE;
 	}
@@ -2039,7 +2039,7 @@ microblaze_must_save_register (int regno)
 
   if (microblaze_is_interrupt_variant ())
     {
-      if (df_regs_ever_live_p (regno) 
+      if (df_regs_ever_live_p (regno)
 	  || regno == MB_ABI_MSR_SAVE_REG
 	  || ((interrupt_handler || fast_interrupt)
               && (regno == MB_ABI_ASM_TEMP_REGNUM
@@ -2109,7 +2109,7 @@ microblaze_must_save_register (int regno)
 */
 
 static HOST_WIDE_INT
-compute_frame_size (HOST_WIDE_INT size)	
+compute_frame_size (HOST_WIDE_INT size)
 {
   int regno;
   HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up.  */
@@ -2207,7 +2207,7 @@ microblaze_can_eliminate (const int from, const int to)
 }
 
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame
-   pointer or argument pointer or the return address pointer.  TO is either 
+   pointer or argument pointer or the return address pointer.  TO is either
    the stack pointer or hard frame pointer.  */
 
 HOST_WIDE_INT
@@ -2240,7 +2240,7 @@ microblaze_initial_elimination_offset (int from, int to)
 }
 
 /* Print operands using format code.
- 
+
    The MicroBlaze specific codes are:
 
    'X'  X is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
@@ -2267,7 +2267,7 @@ microblaze_initial_elimination_offset (int from, int to)
    'j'  Print low word of const_double (int or float) value as hex
    's'  Print -1 if operand is negative, 0 if positive (sign extend)
    '@'	Print the name of the temporary register (rMB_ABI_ASM_TEMP_REGNUM).
-   '#'	Print nop if the delay slot of a branch is not filled. 
+   '#'	Print nop if the delay slot of a branch is not filled.
 */
 
 void
@@ -2463,7 +2463,7 @@ print_operand (FILE * file, rtx op, int letter)
 	  val[1] = INTVAL (op) & 0x00000000ffffffffLL;
 	  if (val[0] == 0 && val[1] < 0)
 	    val[0] = -1;
-	    
+
         }
       fprintf (file, "0x%8.8lx", (letter == 'h') ? val[0] : val[1]);
     }
@@ -2543,19 +2543,19 @@ print_operand (FILE * file, rtx op, int letter)
    reference whose address is ADDR.  ADDR is an RTL expression.
 
    Possible address classifications and output formats are,
-   
+
    ADDRESS_REG                  "%0, r0"
 
    ADDRESS_REG with non-zero    "%0, <addr_const>"
-   offset       
+   offset
 
-   ADDRESS_REG_INDEX            "rA, RB"    
+   ADDRESS_REG_INDEX            "rA, RB"
                                 (if rA is r0, rA and rB are swapped)
 
    ADDRESS_CONST_INT            "r0, <addr_const>"
 
-   ADDRESS_SYMBOLIC             "rBase, <addr_const>"   
-                                (rBase is a base register suitable for the 
+   ADDRESS_SYMBOLIC             "rBase, <addr_const>"
+                                (rBase is a base register suitable for the
 				 symbol's type)
 */
 
@@ -2576,7 +2576,7 @@ print_operand_address (FILE * file, rtx addr)
       break;
     case ADDRESS_REG_INDEX:
       if (REGNO (info.regA) == 0)
-	/* Make rB == r0 instead of rA == r0. This helps reduce read port 
+	/* Make rB == r0 instead of rA == r0. This helps reduce read port
            congestion.  */
 	fprintf (file, "%s,%s", reg_names[REGNO (info.regB)],
 		 reg_names[REGNO (info.regA)]);
@@ -2641,7 +2641,7 @@ print_operand_address (FILE * file, rtx addr)
 }
 
 /* Emit either a label, .comm, or .lcomm directive, and mark that the symbol
-   is used, so that we don't emit an .extern for it in 
+   is used, so that we don't emit an .extern for it in
    microblaze_asm_file_end.  */
 
 void
@@ -2649,7 +2649,7 @@ microblaze_declare_object (FILE * stream, const char *name,
 			   const char *section, const char *fmt, int size)
 {
 
-  fputs (section, stream);	
+  fputs (section, stream);
   assemble_name (stream, name);
   fprintf (stream, fmt, size);
 }
@@ -2662,7 +2662,7 @@ microblaze_declare_object (FILE * stream, const char *name,
 
 #define BITSET_P(VALUE,BIT) (((VALUE) & (1L << (BIT))) != 0)
 
-/* Save or restore instructions based on whether this is the prologue or 
+/* Save or restore instructions based on whether this is the prologue or
    epilogue.  prologue is 1 for the prologue.  */
 static void
 save_restore_insns (int prologue)
@@ -2892,7 +2892,7 @@ microblaze_expand_prologue (void)
       && !cfun->returns_pcc_struct)
     {
       tree type = build_pointer_type (fntype);
-      tree function_result_decl = build_decl (BUILTINS_LOCATION, PARM_DECL, 
+      tree function_result_decl = build_decl (BUILTINS_LOCATION, PARM_DECL,
 					      NULL_TREE, type);
 
       DECL_ARG_TYPE (function_result_decl) = type;
@@ -3108,7 +3108,7 @@ microblaze_expand_epilogue (void)
   rtx reg_rtx;
   rtx mem_rtx;
 
-  /* In case of interrupt handlers use addki instead of addi for changing the 
+  /* In case of interrupt handlers use addki instead of addi for changing the
      stack pointer value.  */
 
   if (microblaze_can_use_return_insn ())
@@ -3121,9 +3121,9 @@ microblaze_expand_epilogue (void)
 
   if (fsiz > 0)
     {
-      /* Restore SUB_RETURN_ADDR_REGNUM at first. This is to prevent the 
-         sequence of load-followed by a use (in rtsd) in every prologue. Saves 
-         a load-use stall cycle  :)   This is also important to handle alloca. 
+      /* Restore SUB_RETURN_ADDR_REGNUM at first. This is to prevent the
+         sequence of load-followed by a use (in rtsd) in every prologue. Saves
+         a load-use stall cycle  :)   This is also important to handle alloca.
          (See comments for if (frame_pointer_needed) below.  */
 
       if (!crtl->is_leaf || interrupt_handler)
@@ -3138,11 +3138,11 @@ microblaze_expand_epilogue (void)
 	  emit_move_insn (reg_rtx, mem_rtx);
 	}
 
-      /* It is important that this is done after we restore the return address 
-         register (above).  When alloca is used, we want to restore the 
-	 sub-routine return address only from the current stack top and not 
-	 from the frame pointer (which we restore below). (frame_pointer + 0) 
-	 might have been over-written since alloca allocates memory on the 
+      /* It is important that this is done after we restore the return address
+         register (above).  When alloca is used, we want to restore the
+	 sub-routine return address only from the current stack top and not
+	 from the frame pointer (which we restore below). (frame_pointer + 0)
+	 might have been over-written since alloca allocates memory on the
 	 current stack.  */
       if (frame_pointer_needed)
 	emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
@@ -3186,8 +3186,8 @@ microblaze_can_use_return_insn (void)
 /* Implement TARGET_SECONDARY_RELOAD.  */
 
 static reg_class_t
-microblaze_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED, 
-			     reg_class_t rclass, machine_mode mode ATTRIBUTE_UNUSED, 
+microblaze_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
+			     reg_class_t rclass, machine_mode mode ATTRIBUTE_UNUSED,
 			     secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
   if (rclass == ST_REGS)
@@ -3263,7 +3263,7 @@ microblaze_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
     case SECCAT_RODATA_MERGE_STR:
     case SECCAT_RODATA_MERGE_STR_INIT:
       /* MB binutils have various issues with mergeable string sections and
-         relaxation/relocation. Currently, turning mergeable sections 
+         relaxation/relocation. Currently, turning mergeable sections
          into regular readonly sections.  */
 
       return readonly_data_section;
@@ -3274,7 +3274,7 @@ microblaze_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 
 /*
   Encode info about sections into the RTL based on a symbol's declaration.
-  The default definition of this hook, default_encode_section_info in 
+  The default definition of this hook, default_encode_section_info in
   `varasm.cc', sets a number of commonly-useful bits in SYMBOL_REF_FLAGS. */
 
 static void
@@ -3521,7 +3521,7 @@ microblaze_eh_return (rtx op0)
    If the string size is below the threshold, put it into .sdata2.
    If the front-end is done, we must be being called from toplev.cc.
    In that case, do nothing.  */
-void 
+void
 microblaze_asm_output_ident (const char *string)
 {
   const char *section_asm_op;
@@ -3695,7 +3695,7 @@ microblaze_expand_divide (rtx operands[])
 {
   /* Table lookup software divides. Works for all (nr/dr) where (0 <= nr,dr <= 15).  */
 
-  rtx regt1 = gen_reg_rtx (SImode); 
+  rtx regt1 = gen_reg_rtx (SImode);
   rtx reg18 = gen_rtx_REG (SImode, R_TMP);
   rtx regqi = gen_reg_rtx (QImode);
   rtx_code_label *div_label = gen_label_rtx ();
@@ -3707,9 +3707,9 @@ microblaze_expand_divide (rtx operands[])
 
   insn = emit_insn (gen_iorsi3 (regt1, operands[1], operands[2]));
   cjump = emit_jump_insn_after (gen_cbranchsi4 (
-					gen_rtx_GTU (SImode, regt1, GEN_INT (15)), 
+					gen_rtx_GTU (SImode, regt1, GEN_INT (15)),
 					regt1, GEN_INT (15), div_label), insn);
-  LABEL_NUSES (div_label) = 1; 
+  LABEL_NUSES (div_label) = 1;
   JUMP_LABEL (cjump) = div_label;
   emit_insn (gen_rtx_CLOBBER (SImode, reg18));
 
@@ -3718,21 +3718,21 @@ microblaze_expand_divide (rtx operands[])
   mem_rtx = gen_rtx_MEM (QImode,
                             gen_rtx_PLUS (Pmode, regt1, div_table_rtx));
 
-  insn = emit_insn (gen_movqi (regqi, mem_rtx)); 
+  insn = emit_insn (gen_movqi (regqi, mem_rtx));
   insn = emit_insn (gen_movsi (operands[0], gen_rtx_SUBREG (SImode, regqi, 0)));
-  jump = emit_jump_insn_after (gen_jump (div_end_label), insn); 
+  jump = emit_jump_insn_after (gen_jump (div_end_label), insn);
   JUMP_LABEL (jump) = div_end_label;
-  LABEL_NUSES (div_end_label) = 1; 
+  LABEL_NUSES (div_end_label) = 1;
   emit_barrier ();
 
   emit_label (div_label);
-  ret = emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "__divsi3"), 
+  ret = emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "__divsi3"),
 				 operands[0], LCT_NORMAL,
 				 GET_MODE (operands[0]),
 				 operands[1], GET_MODE (operands[1]),
 				 operands[2], GET_MODE (operands[2]));
   if (ret != operands[0])
-                emit_move_insn (operands[0], ret);    
+                emit_move_insn (operands[0], ret);
 
   emit_label (div_end_label);
   emit_insn (gen_blockage ());
@@ -4014,7 +4014,7 @@ microblaze_starting_frame_offset (void)
 #define TARGET_LEGITIMIZE_ADDRESS 	microblaze_legitimize_address
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
-#define TARGET_LEGITIMATE_ADDRESS_P 	microblaze_legitimate_address_p 
+#define TARGET_LEGITIMATE_ADDRESS_P 	microblaze_legitimate_address_p
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED	microblaze_frame_pointer_required
@@ -4029,7 +4029,7 @@ microblaze_starting_frame_offset (void)
 #define TARGET_PROMOTE_FUNCTION_MODE 	default_promote_function_mode_always_promote
 
 #undef TARGET_FUNCTION_VALUE
-#define TARGET_FUNCTION_VALUE		microblaze_function_value 
+#define TARGET_FUNCTION_VALUE		microblaze_function_value
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD		microblaze_secondary_reload
@@ -4047,7 +4047,7 @@ microblaze_starting_frame_offset (void)
 #define TARGET_ASM_INIT_SECTIONS	microblaze_elf_asm_init_sections
 
 #undef  TARGET_OPTION_OVERRIDE
-#define TARGET_OPTION_OVERRIDE		microblaze_option_override 
+#define TARGET_OPTION_OVERRIDE		microblaze_option_override
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P microblaze_legitimate_constant_p

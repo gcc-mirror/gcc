@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -843,7 +844,7 @@ encode_field_decl (tree field_decl)
   encode_field (field_decl,
 		obstack_object_size (&util_obstack),
 		OBJC_ENCODE_DONT_INLINE_DEFS);
-  
+
   /* Null terminate string.  */
   obstack_1grow (&util_obstack, 0);
 

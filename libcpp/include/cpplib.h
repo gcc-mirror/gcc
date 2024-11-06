@@ -144,6 +144,8 @@ class rich_location;
   TK(STRING32_USERDEF,	LITERAL) /* U"string"_suffix - C++11 */		\
   TK(UTF8STRING_USERDEF,LITERAL) /* u8"string"_suffix - C++11 */	\
 									\
+  TK(EMBED,		LITERAL) /* #embed - C23 */			\
+									\
   TK(COMMENT,		LITERAL) /* Only if output comments.  */	\
 				 /* SPELL_LITERAL happens to DTRT.  */	\
   TK(MACRO_ARG,		NONE)	 /* Macro argument.  */			\
@@ -202,6 +204,9 @@ struct GTY(()) cpp_string {
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.cc.  */
 #define COLON_SCOPE	PURE_ZERO /* Adjacent colons in C < 23.  */
+#define NO_DOT_COLON	PURE_ZERO /* Set on CPP_NAME tokens whose expansion
+				     shouldn't start with CPP_DOT or CPP_COLON
+				     after optional CPP_PADDING.  */
 #define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
 #define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
 				    operator, or before this token
@@ -264,7 +269,7 @@ struct GTY(()) cpp_token {
   {
     /* An identifier.  */
     struct cpp_identifier GTY ((tag ("CPP_TOKEN_FLD_NODE"))) node;
-	 
+
     /* Inherit padding from this token.  */
     cpp_token * GTY ((tag ("CPP_TOKEN_FLD_SOURCE"))) source;
 
@@ -323,7 +328,7 @@ enum cpp_normalize_level {
   normalized_none
 };
 
-enum cpp_main_search 
+enum cpp_main_search
 {
   CMS_none,    /* A regular source file.  */
   CMS_header,  /* Is a directly-specified header file (eg PCH or
@@ -435,6 +440,10 @@ struct cpp_options
   /* Different -Wimplicit-fallthrough= levels.  */
   unsigned char cpp_warn_implicit_fallthrough;
 
+  /* Nonzero means warn about a define of a different macro right after
+     #ifndef/#if !defined header guard directive.  */
+  unsigned char warn_header_guard;
+
   /* Nonzero means we should look for header.gcc files that remap file
      names.  */
   unsigned char remap;
@@ -471,7 +480,7 @@ struct cpp_options
   /* Nonzero means we're looking at already preprocessed code, so don't
      bother trying to do macro expansion and whatnot.  */
   unsigned char preprocessed;
-  
+
   /* Nonzero means we are going to emit debugging logs during
      preprocessing.  */
   unsigned char debug;
@@ -542,6 +551,12 @@ struct cpp_options
   /* Nonzero for C++23 delimited escape sequences.  */
   unsigned char delimited_escape_seqs;
 
+  /* Nonzero for C++23 named universal character escape sequences.  */
+  unsigned char named_uc_escape_seqs;
+
+  /* Nonzero for C2Y 0o prefixed octal integer constants.  */
+  unsigned char octal_constants;
+
   /* Nonzero for 'true' and 'false' in #if expressions.  */
   unsigned char true_false;
 
@@ -573,6 +588,9 @@ struct cpp_options
   /* True if warn about differences between C11 and C23.  */
   signed char cpp_warn_c11_c23_compat;
 
+  /* True if warn about differences between C23 and C2Y.  */
+  signed char cpp_warn_c23_c2y_compat;
+
   /* True if warn about differences between C++98 and C++11.  */
   bool cpp_warn_cxx11_compat;
 
@@ -593,6 +611,15 @@ struct cpp_options
 
   /* True if -finput-charset= option has been used explicitly.  */
   bool cpp_input_charset_explicit;
+
+  /* -Wleading-whitespace= value.  */
+  unsigned char cpp_warn_leading_whitespace;
+
+  /* -Wtrailing-whitespace= value.  */
+  unsigned char cpp_warn_trailing_whitespace;
+
+  /* -ftabstop= value.  */
+  unsigned int cpp_tabstop;
 
   /* Dependency generation.  */
   struct
@@ -649,6 +676,13 @@ struct cpp_options
   cpp_main_search main_search : 8;
 };
 
+#if GCC_VERSION >= 3005
+#define ATTRIBUTE_CPP_PPDIAG(m, n) \
+  __attribute__ ((__format__ (__gcc_diag__, m , n))) ATTRIBUTE_NONNULL(m)
+#else
+#define ATTRIBUTE_CPP_PPDIAG(m, n) ATTRIBUTE_NONNULL(m)
+#endif
+
 /* Diagnostic levels.  To get a diagnostic without associating a
    position in the translation unit with it, use cpp_error_with_line
    with a line number of zero.  */
@@ -700,6 +734,7 @@ enum cpp_warning_reason {
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
   CPP_W_C11_C23_COMPAT,
+  CPP_W_C23_C2Y_COMPAT,
   CPP_W_CXX11_COMPAT,
   CPP_W_CXX20_COMPAT,
   CPP_W_CXX14_EXTENSIONS,
@@ -709,7 +744,11 @@ enum cpp_warning_reason {
   CPP_W_EXPANSION_TO_DEFINED,
   CPP_W_BIDIRECTIONAL,
   CPP_W_INVALID_UTF8,
-  CPP_W_UNICODE
+  CPP_W_UNICODE,
+  CPP_W_HEADER_GUARD,
+  CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER,
+  CPP_W_LEADING_WHITESPACE,
+  CPP_W_TRAILING_WHITESPACE
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
@@ -754,7 +793,7 @@ struct cpp_callbacks
 		      enum cpp_warning_reason,
 		      rich_location *,
 		      const char *, va_list *)
-       ATTRIBUTE_FPTR_PRINTF(5,0);
+       ATTRIBUTE_CPP_PPDIAG (5,0);
 
   /* Callbacks for when a macro is expanded, or tested (whether
      defined or not at the time) in #ifdef, #ifndef or "defined".  */
@@ -838,7 +877,7 @@ struct cpp_dir
   /* Is this a user-supplied directory? */
   bool user_supplied_p;
 
-  /* The canonicalized NAME as determined by lrealpath.  This field 
+  /* The canonicalized NAME as determined by lrealpath.  This field
      is only used by hosts that lack reliable inode numbers.  */
   char *canonical_name;
 
@@ -868,7 +907,7 @@ enum cpp_macro_kind {
 /* Each macro definition is recorded in a cpp_macro structure.
    Variadic macros cannot occur with traditional cpp.  */
 struct GTY(()) cpp_macro {
-  union cpp_parm_u 
+  union cpp_parm_u
   {
     /* Parameters, if any.  If parameter names use extended identifiers,
        the original spelling of those identifiers, not the canonical
@@ -1209,7 +1248,7 @@ inline location_t cpp_macro_definition_location (cpp_hashnode *node)
   return macro ? macro->line : 0;
 }
 /* Return an idempotent time stamp (possibly from SOURCE_DATE_EPOCH).  */
-enum class CPP_time_kind 
+enum class CPP_time_kind
 {
   FIXED = -1,	/* Fixed time via source epoch.  */
   DYNAMIC = -2,	/* Dynamic via time(2).  */
@@ -1244,7 +1283,7 @@ extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);
    The text is the same as the command line argument.  */
 extern void cpp_define (cpp_reader *, const char *);
 extern void cpp_define_unused (cpp_reader *, const char *);
-extern void cpp_define_formatted (cpp_reader *pfile, 
+extern void cpp_define_formatted (cpp_reader *pfile,
 				  const char *fmt, ...) ATTRIBUTE_PRINTF_2;
 extern void cpp_define_formatted_unused (cpp_reader *pfile,
 					 const char *fmt,
@@ -1351,24 +1390,24 @@ cpp_num cpp_num_sign_extend (cpp_num, size_t);
 /* Output a diagnostic of some kind.  */
 extern bool cpp_error (cpp_reader *, enum cpp_diagnostic_level,
 		       const char *msgid, ...)
-  ATTRIBUTE_PRINTF_3;
+  ATTRIBUTE_CPP_PPDIAG (3, 4);
 extern bool cpp_warning (cpp_reader *, enum cpp_warning_reason,
 			 const char *msgid, ...)
-  ATTRIBUTE_PRINTF_3;
+  ATTRIBUTE_CPP_PPDIAG (3, 4);
 extern bool cpp_pedwarning (cpp_reader *, enum cpp_warning_reason,
 			    const char *msgid, ...)
-  ATTRIBUTE_PRINTF_3;
+  ATTRIBUTE_CPP_PPDIAG (3, 4);
 extern bool cpp_warning_syshdr (cpp_reader *, enum cpp_warning_reason reason,
 				const char *msgid, ...)
-  ATTRIBUTE_PRINTF_3;
+  ATTRIBUTE_CPP_PPDIAG (3, 4);
 
 /* As their counterparts above, but use RICHLOC.  */
 extern bool cpp_warning_at (cpp_reader *, enum cpp_warning_reason,
 			    rich_location *richloc, const char *msgid, ...)
-  ATTRIBUTE_PRINTF_4;
+  ATTRIBUTE_CPP_PPDIAG (4, 5);
 extern bool cpp_pedwarning_at (cpp_reader *, enum cpp_warning_reason,
 			       rich_location *richloc, const char *msgid, ...)
-  ATTRIBUTE_PRINTF_4;
+  ATTRIBUTE_CPP_PPDIAG (4, 5);
 
 /* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
@@ -1385,27 +1424,27 @@ extern bool cpp_errno_filename (cpp_reader *, enum cpp_diagnostic_level,
 extern bool cpp_error_with_line (cpp_reader *, enum cpp_diagnostic_level,
 				 location_t, unsigned,
 				 const char *msgid, ...)
-  ATTRIBUTE_PRINTF_5;
+  ATTRIBUTE_CPP_PPDIAG (5, 6);
 extern bool cpp_warning_with_line (cpp_reader *, enum cpp_warning_reason,
 				   location_t, unsigned,
 				   const char *msgid, ...)
-  ATTRIBUTE_PRINTF_5;
+  ATTRIBUTE_CPP_PPDIAG (5, 6);
 extern bool cpp_pedwarning_with_line (cpp_reader *, enum cpp_warning_reason,
 				      location_t, unsigned,
 				      const char *msgid, ...)
-  ATTRIBUTE_PRINTF_5;
+  ATTRIBUTE_CPP_PPDIAG (5, 6);
 extern bool cpp_warning_with_line_syshdr (cpp_reader *, enum cpp_warning_reason,
 					  location_t, unsigned,
 					  const char *msgid, ...)
-  ATTRIBUTE_PRINTF_5;
+  ATTRIBUTE_CPP_PPDIAG (5, 6);
 
 extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
 			  location_t src_loc, const char *msgid, ...)
-  ATTRIBUTE_PRINTF_4;
+  ATTRIBUTE_CPP_PPDIAG (4, 5);
 
 extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
 			  rich_location *richloc, const char *msgid, ...)
-  ATTRIBUTE_PRINTF_4;
+  ATTRIBUTE_CPP_PPDIAG (4, 5);
 
 /* In lex.cc */
 extern int cpp_ideq (const cpp_token *, const char *);
@@ -1648,5 +1687,18 @@ enum cpp_xid_property {
 };
 
 unsigned int cpp_check_xid_property (cppchar_t c);
+
+/* In errors.cc */
+
+/* RAII class to suppress CPP diagnostics in the current scope.  */
+class cpp_auto_suppress_diagnostics
+{
+ public:
+  explicit cpp_auto_suppress_diagnostics (cpp_reader *pfile);
+  ~cpp_auto_suppress_diagnostics ();
+ private:
+  cpp_reader *const m_pfile;
+  const decltype (cpp_callbacks::diagnostic) m_cb;
+};
 
 #endif /* ! LIBCPP_CPPLIB_H */

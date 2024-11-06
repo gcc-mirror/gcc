@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-additional-sources "pr66655_1.cc" } */
+/* { dg-additional-sources "pr66655_1.C" } */
 
 #include "pr66655.h"
 

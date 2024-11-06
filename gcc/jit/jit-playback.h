@@ -130,7 +130,8 @@ public:
 	      const char *name,
 	      enum global_var_flags flags,
 	      const std::vector<std::pair<gcc_jit_variable_attribute,
-					  std::string>> &attributes);
+					  std::string>> &attributes,
+	      bool readonly);
 
   lvalue *
   new_global_initialized (location *loc,
@@ -144,7 +145,8 @@ public:
 			  const std::vector<std::pair<
 					    gcc_jit_variable_attribute,
 					    std::string>>
-					    &attributes);
+					    &attributes,
+			  bool readonly);
 
   rvalue *
   new_ctor (location *log,
@@ -220,6 +222,11 @@ public:
 		    rvalue *ptr,
 		    rvalue *index);
 
+  rvalue *
+  convert_vector (location *loc,
+		  rvalue *vector,
+		  type *type);
+
   void
   set_str_option (enum gcc_jit_str_option opt,
 		  const char *value);
@@ -276,7 +283,7 @@ public:
   get_first_error () const;
 
   void
-  add_diagnostic (diagnostic_context *context,
+  add_diagnostic (const char *text,
 		  const diagnostic_info &diagnostic);
 
   void
@@ -337,7 +344,8 @@ private:
 		   const char *name,
 		   enum global_var_flags flags,
 		   const std::vector<std::pair<gcc_jit_variable_attribute,
-					       std::string>> &attributes);
+					       std::string>> &attributes,
+		   bool readonly);
   lvalue *
   global_finalize_lvalue (tree inner);
 

@@ -132,6 +132,14 @@
 
 #include <amxcomplexintrin.h>
 
+#include <amxavx512intrin.h>
+
+#include <amxtf32intrin.h>
+
+#include <amxtransposeintrin.h>
+
+#include <amxfp8intrin.h>
+
 #include <prfchwintrin.h>
 
 #include <keylockerintrin.h>
@@ -162,4 +170,7 @@
 
 #include <avx10_2copyintrin.h>
 
+#include <movrsintrin.h>
+
+#include <amxmovrsintrin.h>
 #endif /* _IMMINTRIN_H_INCLUDED */

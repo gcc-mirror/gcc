@@ -68,3 +68,4 @@ int main(void)
 
   return 0;
 }
+// { dg-warning "invalid application of 'sizeof' to a void type" "" { target *-*-* } 0 }

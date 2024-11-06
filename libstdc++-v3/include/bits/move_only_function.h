@@ -30,7 +30,9 @@
 #ifndef _GLIBCXX_MOVE_ONLY_FUNCTION_H
 #define _GLIBCXX_MOVE_ONLY_FUNCTION_H 1
 
+#ifdef _GLIBCXX_SYSHDR
 #pragma GCC system_header
+#endif
 
 #include <bits/version.h>
 

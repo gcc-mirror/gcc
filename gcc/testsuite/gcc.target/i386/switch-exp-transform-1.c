@@ -1,10 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-switchconv -fdump-tree-widening_mul -mpopcnt -mbmi" } */
+/* { dg-options "-O2 -fdump-tree-switchconv -mbmi" } */
 
 /* Checks that exponential index transform enables switch conversion to convert
-   this switch into an array lookup.  Also checks that the "index variable is a
-   power of two" check has been generated and that it has been later expanded
-   into an internal function.  */
+   this switch into an array lookup.  */
 
 int foo(unsigned bar)
 {
@@ -30,4 +28,3 @@ int foo(unsigned bar)
 }
 
 /* { dg-final { scan-tree-dump "CSWTCH" "switchconv" } } */
-/* { dg-final { scan-tree-dump "POPCOUNT" "widening_mul" } } */

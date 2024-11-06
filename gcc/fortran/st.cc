@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    GENERIC tree structures and from there to executable code for a
    target.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -334,6 +335,22 @@ gfc_free_association_list (gfc_association_list* assoc)
 {
   if (!assoc)
     return;
+
+  if (assoc->ar)
+    {
+      for (int i = 0; i < assoc->ar->dimen; i++)
+	{
+	  if (assoc->ar->start[i]
+	      && assoc->ar->start[i]->ts.type == BT_INTEGER)
+	    gfc_free_expr (assoc->ar->start[i]);
+	  if (assoc->ar->end[i]
+	      && assoc->ar->end[i]->ts.type == BT_INTEGER)
+	    gfc_free_expr (assoc->ar->end[i]);
+	  if (assoc->ar->stride[i]
+	      && assoc->ar->stride[i]->ts.type == BT_INTEGER)
+	    gfc_free_expr (assoc->ar->stride[i]);
+	}
+    }
 
   gfc_free_association_list (assoc->next);
   free (assoc);

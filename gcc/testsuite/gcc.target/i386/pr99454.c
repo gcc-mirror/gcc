@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -w" } */
+/* { dg-options "-std=gnu17 -O -w" } */
 
 struct skb_shared_info {
   short gso_size;

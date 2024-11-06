@@ -273,6 +273,10 @@ package body Exp_Attr is
    --  expansion. Typically used for rounding and truncation attributes that
    --  appear directly inside a conversion to integer.
 
+   function Is_User_Defined_Enumeration_Type (Typ : Entity_Id) return Boolean;
+   --  Returns True if Typ is a user-defined enumeration type, in the sense
+   --  that its literals are declared in the source.
+
    function Interunit_Ref_OK
      (Subp_Unit, Attr_Ref_Unit : Node_Id) return Boolean is
        (In_Same_Extended_Unit (Subp_Unit, Attr_Ref_Unit)
@@ -8107,7 +8111,10 @@ package body Exp_Attr is
              Expressions    => New_List (
                Make_Function_Call (Loc,
                  Name =>
-                   New_Occurrence_Of (RTE (RE_Wide_String_To_String), Loc),
+                   New_Occurrence_Of
+                     (RTE (if Is_User_Defined_Enumeration_Type (Typ)
+                           then RE_Enum_Wide_String_To_String
+                           else RE_Wide_String_To_String), Loc),
 
                  Parameter_Associations => New_List (
                    Relocate_Node (First (Exprs)),
@@ -8139,7 +8146,9 @@ package body Exp_Attr is
                Make_Function_Call (Loc,
                  Name                   =>
                    New_Occurrence_Of
-                     (RTE (RE_Wide_Wide_String_To_String), Loc),
+                     (RTE (if Is_User_Defined_Enumeration_Type (Typ)
+                           then RE_Enum_Wide_Wide_String_To_String
+                           else RE_Wide_Wide_String_To_String), Loc),
 
                  Parameter_Associations => New_List (
                    Relocate_Node (First (Exprs)),
@@ -9457,5 +9466,21 @@ package body Exp_Attr is
           or else Id = Attribute_Machine_Rounding
           or else Id = Attribute_Truncation;
    end Is_Inline_Floating_Point_Attribute;
+
+   --------------------------------------
+   -- Is_User_Defined_Enumeration_Type --
+   --------------------------------------
+
+   function Is_User_Defined_Enumeration_Type (Typ : Entity_Id) return Boolean
+   is
+      Rtyp : constant Entity_Id := Root_Type (Base_Type (Typ));
+
+   begin
+      return Is_Enumeration_Type (Rtyp)
+        and then Rtyp not in Standard_Boolean
+                           | Standard_Character
+                           | Standard_Wide_Character
+                           | Standard_Wide_Wide_Character;
+   end Is_User_Defined_Enumeration_Type;
 
 end Exp_Attr;

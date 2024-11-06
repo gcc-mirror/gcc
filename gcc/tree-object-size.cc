@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1501,8 +1502,7 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
     return false;
 
   /* Handle PTR + OFFSET here.  */
-  if (size_valid_p (op1, object_size_type)
-      && (TREE_CODE (op0) == SSA_NAME || TREE_CODE (op0) == ADDR_EXPR))
+  if ((TREE_CODE (op0) == SSA_NAME || TREE_CODE (op0) == ADDR_EXPR))
     {
       if (TREE_CODE (op0) == SSA_NAME)
 	{
@@ -1527,7 +1527,9 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
       if (size_unknown_p (bytes, 0))
 	;
       else if ((object_size_type & OST_DYNAMIC)
-	       || compare_tree_int (op1, offset_limit) <= 0)
+	       || bytes != wholesize
+	       || (size_valid_p (op1, object_size_type)
+		   && compare_tree_int (op1, offset_limit) <= 0))
 	bytes = size_for_offset (bytes, op1, wholesize);
       /* In the static case, with a negative offset, the best estimate for
 	 minimum size is size_unknown but for maximum size, the wholesize is a

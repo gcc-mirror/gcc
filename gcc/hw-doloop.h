@@ -101,7 +101,7 @@ struct GTY (()) hwloop_info_d
 
   /* The following values are collected before calling the target's optimize
      function and are not valid earlier.  */
-  
+
   /* Record information about control flow: whether the loop has calls
      or asm statements, whether it has edges that jump out of the loop,
      or edges that jump within the loop.  */

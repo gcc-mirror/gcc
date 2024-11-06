@@ -1,3 +1,35 @@
+2024-10-31  Mark Wielaard  <mark@klomp.org>
+
+	* safe-ctype.h: Change accidently to accidentally.
+
+2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* dyn-string.h: Remove trailing whitespace.
+	* libiberty.h: Likewise.
+	* xregex.h: Likewise.
+	* splay-tree.h: Likewise.
+	* partition.h: Likewise.
+	* plugin-api.h: Likewise.
+	* demangle.h: Likewise.
+	* vtv-change-permission.h: Likewise.
+	* fibheap.h: Likewise.
+	* hsa_ext_image.h: Likewise.
+	* hashtab.h: Likewise.
+	* libcollector.h: Likewise.
+	* sort.h: Likewise.
+	* symcat.h: Likewise.
+	* hsa_ext_amd.h: Likewise.
+
+2024-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (GOMP_OMP_PREDEF_ALLOC_MAX,
+	GOMP_OMPX_PREDEF_ALLOC_MIN, GOMP_OMPX_PREDEF_ALLOC_MAX,
+	GOMP_OMP_PREDEF_ALLOC_THREADS): New defines.
+
+2024-09-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (GOMP_REQUIRES_SELF_MAPS): #define.
+
 2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* dwarf2.h (enum dwarf_call_frame_info): specify underlying

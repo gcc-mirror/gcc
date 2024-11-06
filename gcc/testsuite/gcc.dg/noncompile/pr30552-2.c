@@ -5,7 +5,7 @@
  * internal compiler error.  */
 
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-old-style-definition" } */
 
 int main()
 {
