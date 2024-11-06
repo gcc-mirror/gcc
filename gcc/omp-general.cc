@@ -1005,7 +1005,7 @@ omp_max_vf (bool offload)
       for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
 	{
 	  if (startswith (c, "amdgcn"))
-	    return ordered_max (64, omp_max_vf (false));
+	    return ordered_max (poly_uint64 (64), omp_max_vf (false));
 	  else if ((c = strchr (c, ':')))
 	    c++;
 	}
