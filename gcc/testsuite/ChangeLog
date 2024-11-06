@@ -1,3 +1,12 @@
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117158
+	* g++.dg/cpp1z/eval-order13.C: New test.
+	* g++.dg/parse/crash77.C: New test.
+
 2024-11-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/117398

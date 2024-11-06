@@ -1,3 +1,12 @@
+2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117158
+	* typeck.cc (cp_build_array_ref): Only wrap array expression
+	into a SAVE_EXPR at template instantiation time.
+
 2024-09-17  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
