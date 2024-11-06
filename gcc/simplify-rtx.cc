@@ -1842,6 +1842,28 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	      & ~GET_MODE_MASK (op_mode)) == 0)
 	return SUBREG_REG (op);
 
+      /* Trying to optimize:
+	 (zero_extend:M (subreg:N (not:M (X:M)))) ->
+	 (xor:M (zero_extend:M (subreg:N (X:M)), mask))
+	 where the mask is GET_MODE_MASK (N).
+	 For the cases when X:M doesn't have any non-zero bits
+	 outside of mode N, (zero_extend:M (subreg:N (X:M))
+	 will be simplified to just (X:M)
+	 and whole optimization will be -> (xor:M (X:M, mask)).  */
+      if (SUBREG_P (op)
+	  && GET_CODE (XEXP (op, 0)) == NOT
+	  && GET_MODE (XEXP (op, 0)) == mode
+	  && subreg_lowpart_p (op)
+	  && GET_MODE_SIZE (GET_MODE (op)).is_constant ()
+	  && (nonzero_bits (XEXP (XEXP (op, 0), 0), mode)
+	      & ~GET_MODE_MASK (mode)) == 0)
+      {
+	const uint64_t mask = GET_MODE_MASK (GET_MODE (op));
+	return simplify_gen_binary (XOR, mode,
+				    XEXP (XEXP (op, 0), 0),
+				    gen_int_mode (mask, mode));
+      }
+
 #if defined(POINTERS_EXTEND_UNSIGNED)
       /* As we do not know which address space the pointer is referring to,
 	 we can do this only if the target does not support different pointer
