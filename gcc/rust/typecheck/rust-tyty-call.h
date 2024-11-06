@@ -73,14 +73,12 @@ private:
   TypeCheckCallExpr (HIR::CallExpr &c, TyTy::VariantDef &variant,
 		     Resolver::TypeCheckContext *context)
     : resolved (new TyTy::ErrorType (c.get_mappings ().get_hirid ())), call (c),
-      variant (variant), context (context),
-      mappings (Analysis::Mappings::get ())
+      variant (variant), mappings (Analysis::Mappings::get ())
   {}
 
   BaseType *resolved;
   HIR::CallExpr &call;
   TyTy::VariantDef &variant;
-  Resolver::TypeCheckContext *context;
   Analysis::Mappings &mappings;
 };
 
