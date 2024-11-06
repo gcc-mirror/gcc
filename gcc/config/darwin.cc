@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct GTY(()) cdtor_record {
   rtx symbol;
   int priority;		/* [con/de]structor priority */
-  int position;		/* original position */
+  unsigned position;	/* original position */
 } cdtor_record;
 
 static GTY(()) vec<cdtor_record, va_gc> *ctors = NULL;
