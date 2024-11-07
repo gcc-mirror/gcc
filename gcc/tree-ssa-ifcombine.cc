@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "attribs.h"
 #include "asan.h"
+#include "bitmap.h"
 
 #ifndef LOGICAL_OP_NON_SHORT_CIRCUIT
 #define LOGICAL_OP_NON_SHORT_CIRCUIT \
@@ -461,17 +462,57 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
     }
 }
 
-/* Replace the conditions in INNER_COND with COND.
-   Replace OUTER_COND with a constant.  */
+/* Set NAME's bit in USED if OUTER dominates it.  */
+
+static void
+ifcombine_mark_ssa_name (bitmap used, tree name, basic_block outer)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (name))
+    return;
+
+  gimple *def = SSA_NAME_DEF_STMT (name);
+  basic_block bb = gimple_bb (def);
+  if (!dominated_by_p (CDI_DOMINATORS, bb, outer))
+    return;
+
+  bitmap_set_bit (used, SSA_NAME_VERSION (name));
+}
+
+/* Data structure passed to ifcombine_mark_ssa_name.  */
+struct ifcombine_mark_ssa_name_t
+{
+  /* SSA_NAMEs that have been referenced.  */
+  bitmap used;
+  /* Dominating block of DEFs that might need moving.  */
+  basic_block outer;
+};
+
+/* Mark in DATA->used any SSA_NAMEs used in *t.  */
+
+static tree
+ifcombine_mark_ssa_name_walk (tree *t, int *, void *data_)
+{
+  ifcombine_mark_ssa_name_t *data = (ifcombine_mark_ssa_name_t *)data_;
+
+  if (*t && TREE_CODE (*t) == SSA_NAME)
+    ifcombine_mark_ssa_name (data->used, *t, data->outer);
+
+  return NULL;
+}
+
+/* Replace the conditions in INNER_COND and OUTER_COND with COND and COND2.
+   COND and COND2 are computed for insertion at INNER_COND, with OUTER_COND
+   replaced with a constant, but if there are intervening blocks, it's best to
+   adjust COND for insertion at OUTER_COND, placing COND2 at INNER_COND.  */
 
 static bool
 ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 			gcond *outer_cond, bool outer_inv,
 			tree cond, bool must_canon, tree cond2)
 {
-  bool result_inv = inner_inv;
-
-  gcc_checking_assert (!cond2);
+  bool outer_p = cond2 || (single_pred (gimple_bb (inner_cond))
+			   != gimple_bb (outer_cond));
+  bool result_inv = outer_p ? outer_inv : inner_inv;
 
   if (result_inv)
     cond = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
@@ -481,6 +522,130 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
   else if (must_canon)
     return false;
 
+  if (outer_p)
+    {
+      {
+	auto_bitmap used;
+	basic_block outer_bb = gimple_bb (outer_cond);
+
+	bitmap_tree_view (used);
+
+	/* Mark SSA DEFs that are referenced by cond and may thus need to be
+	   moved to outer.  */
+	{
+	  ifcombine_mark_ssa_name_t data = { used, outer_bb };
+	  walk_tree (&cond, ifcombine_mark_ssa_name_walk, &data, NULL);
+	}
+
+	if (!bitmap_empty_p (used))
+	  {
+	    /* Iterate up from inner_cond, moving DEFs identified as used by
+	       cond, and marking USEs in the DEFs for moving as well.  */
+	    gimple_stmt_iterator gsins = gsi_for_stmt (outer_cond);
+	    for (basic_block bb = gimple_bb (inner_cond);
+		 bb != outer_bb; bb = single_pred (bb))
+	      {
+		for (gimple_stmt_iterator gsitr = gsi_last_bb (bb);
+		     !gsi_end_p (gsitr); gsi_prev (&gsitr))
+		  {
+		    gimple *stmt = gsi_stmt (gsitr);
+		    bool move = false;
+		    tree t;
+		    ssa_op_iter it;
+
+		    FOR_EACH_SSA_TREE_OPERAND (t, stmt, it, SSA_OP_DEF)
+		      if (bitmap_bit_p (used, SSA_NAME_VERSION (t)))
+			{
+			  move = true;
+			  break;
+			}
+
+		    if (!move)
+		      continue;
+
+		    /* Mark uses in STMT before moving it.  */
+		    FOR_EACH_SSA_TREE_OPERAND (t, stmt, it, SSA_OP_USE)
+		      ifcombine_mark_ssa_name (used, t, outer_bb);
+
+		    gsi_move_before (&gsitr, &gsins, GSI_NEW_STMT);
+		  }
+
+		/* Surprisingly, there may be PHI nodes in single-predecessor
+		   bocks, as in pr50682.C.  Fortunately, since they can't
+		   involve back edges, there won't be references to parallel
+		   nodes that we'd have to pay special attention to to keep
+		   them parallel.  We can't move the PHI nodes, but we can turn
+		   them into assignments.  */
+		for (gphi_iterator gsi = gsi_start_phis (bb);
+		     !gsi_end_p (gsi);)
+		  {
+		    gphi *phi = gsi.phi ();
+
+		    gcc_assert (gimple_phi_num_args (phi) == 1);
+		    tree def = gimple_phi_result (phi);
+
+		    if (!bitmap_bit_p (used, SSA_NAME_VERSION (def)))
+		      {
+			gsi_next (&gsi);
+			continue;
+		      }
+
+		    /* Mark uses in STMT before moving it.  */
+		    use_operand_p use_p;
+		    ssa_op_iter it;
+		    FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
+		      ifcombine_mark_ssa_name (used, USE_FROM_PTR (use_p),
+					       outer_bb);
+
+		    tree use = gimple_phi_arg_def (phi, 0);
+		    location_t loc = gimple_phi_arg_location (phi, 0);
+
+		    remove_phi_node (&gsi, false);
+
+		    gassign *a = gimple_build_assign (def, use);
+		    gimple_set_location (a, loc);
+		    gsi_insert_before (&gsins, a, GSI_NEW_STMT);
+		  }
+	      }
+	  }
+      }
+
+      if (!is_gimple_condexpr_for_cond (cond))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (outer_cond);
+	  cond = force_gimple_operand_gsi_1 (&gsi, cond,
+					     is_gimple_condexpr_for_cond,
+					     NULL, true, GSI_SAME_STMT);
+	}
+
+      /* Leave CFG optimization to cfg_cleanup.  */
+      gimple_cond_set_condition_from_tree (outer_cond, cond);
+      update_stmt (outer_cond);
+
+      if (cond2)
+	{
+	  if (inner_inv)
+	    cond2 = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (cond2), cond2);
+
+	  if (tree tcanon = canonicalize_cond_expr_cond (cond2))
+	    cond2 = tcanon;
+	  if (!is_gimple_condexpr_for_cond (cond2))
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (inner_cond);
+	      cond2 = force_gimple_operand_gsi_1 (&gsi, cond2,
+						  is_gimple_condexpr_for_cond,
+						  NULL, true, GSI_SAME_STMT);
+	    }
+	  gimple_cond_set_condition_from_tree (inner_cond, cond2);
+	}
+      else
+	gimple_cond_set_condition_from_tree (inner_cond,
+					     inner_inv
+					     ? boolean_false_node
+					     : boolean_true_node);
+      update_stmt (inner_cond);
+    }
+  else
     {
       if (!is_gimple_condexpr_for_cond (cond))
 	{
