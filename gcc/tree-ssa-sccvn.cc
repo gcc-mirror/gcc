@@ -6067,6 +6067,9 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		tree ops[2];
 		ops[0] = def;
 		ops[1] = sameval;
+		/* Canonicalize the operands order for eq below. */
+		if (tree_swap_operands_p (ops[0], ops[1]))
+		  std::swap (ops[0], ops[1]);
 		tree val = vn_nary_op_lookup_pieces (2, EQ_EXPR,
 						     boolean_type_node,
 						     ops, &vnresult);
@@ -7905,8 +7908,9 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
   if (!true_e && !false_e)
     return;
 
-  /* Canonicalize the comparison so the rhs are constants.  */
-  if (CONSTANT_CLASS_P (lhs))
+  /* Canonicalize the comparison if needed, putting
+     the constant in the rhs.  */
+  if (tree_swap_operands_p (lhs, rhs))
     {
       std::swap (lhs, rhs);
       code = swap_tree_comparison (code);
@@ -8145,7 +8149,15 @@ process_bb (rpo_elim &avail, basic_block bb,
 	  {
 	    tree lhs = vn_valueize (gimple_cond_lhs (last));
 	    tree rhs = vn_valueize (gimple_cond_rhs (last));
-	    tree val = gimple_simplify (gimple_cond_code (last),
+	    tree_code cmpcode = gimple_cond_code (last);
+	    /* Canonicalize the comparison if needed, putting
+	       the constant in the rhs.  */
+	    if (tree_swap_operands_p (lhs, rhs))
+	      {
+		std::swap (lhs, rhs);
+		cmpcode = swap_tree_comparison (cmpcode);
+	       }
+	    tree val = gimple_simplify (cmpcode,
 					boolean_type_node, lhs, rhs,
 					NULL, vn_valueize);
 	    /* If the condition didn't simplfy see if we have recorded
@@ -8156,7 +8168,7 @@ process_bb (rpo_elim &avail, basic_block bb,
 		tree ops[2];
 		ops[0] = lhs;
 		ops[1] = rhs;
-		val = vn_nary_op_lookup_pieces (2, gimple_cond_code (last),
+		val = vn_nary_op_lookup_pieces (2, cmpcode,
 						boolean_type_node, ops,
 						&vnresult);
 		/* Got back a ssa name, then try looking up `val != 0`
@@ -8193,14 +8205,13 @@ process_bb (rpo_elim &avail, basic_block bb,
 		   important as early cleanup.  */
 		edge true_e, false_e;
 		extract_true_false_edges_from_block (bb, &true_e, &false_e);
-		enum tree_code code = gimple_cond_code (last);
 		if ((do_region && bitmap_bit_p (exit_bbs, true_e->dest->index))
 		    || !can_track_predicate_on_edge (true_e))
 		  true_e = NULL;
 		if ((do_region && bitmap_bit_p (exit_bbs, false_e->dest->index))
 		    || !can_track_predicate_on_edge (false_e))
 		  false_e = NULL;
-		insert_predicates_for_cond (code, lhs, rhs, true_e, false_e);
+		insert_predicates_for_cond (cmpcode, lhs, rhs, true_e, false_e);
 	      }
 	    break;
 	  }
