@@ -5,7 +5,7 @@
 /* { dg-options "-fopenmp -O2 -fdump-tree-ompexp" } */
 
 /* Fix a max_vf size so we can scan for it.
-{ dg-additional-options "-msse2" { target { x86_64-*-* i?86-*-* } } } */
+{ dg-additional-options "-msse2 -mno-avx" { target { x86_64-*-* i?86-*-* } } } */
 
 #define N 1024
 int a[N], b[N], c[N];
