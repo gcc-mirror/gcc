@@ -161,6 +161,10 @@ package body Exp_Aggr is
    --  statement of variant part will usually be small and probably in near
    --  sorted order.
 
+   function UI_Are_In_Int_Range (Left, Right : Uint) return Boolean is
+     (UI_Is_In_Int_Range (Left) and then UI_Is_In_Int_Range (Right));
+   --  Return True if both Left and Right are in Int range
+
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
    ------------------------------------------------------
@@ -777,10 +781,7 @@ package body Exp_Aggr is
 
          --  Bounds must be in integer range, for later array construction
 
-         if not UI_Is_In_Int_Range (Lov)
-             or else
-            not UI_Is_In_Int_Range (Hiv)
-         then
+         if not UI_Are_In_Int_Range (Lov, Hiv) then
             return False;
          end if;
 
@@ -4504,13 +4505,13 @@ package body Exp_Aggr is
          --  present we can proceed since the bounds can be obtained from the
          --  aggregate.
 
-         if not Compile_Time_Known_Value (Blo) and then Others_Present
-         then
+         if not Compile_Time_Known_Value (Blo) and then Others_Present then
             return False;
          end if;
 
-         if not (UI_Is_In_Int_Range (Lov) and UI_Is_In_Int_Range (Hiv)) then
-            --  guard against raising C_E in UI_To_Int
+         --  Guard against raising C_E in UI_To_Int
+
+         if not UI_Are_In_Int_Range (Lov, Hiv) then
             return False;
          end if;
 
@@ -9100,17 +9101,15 @@ package body Exp_Aggr is
          end if;
 
          declare
-            Bounds_Vals : Range_Values;
+            Bounds_Vals : constant Range_Values :=
+              (First => Expr_Value (Bounds.First),
+               Last  => Expr_Value (Bounds.Last));
             --  Compile-time known values of bounds
+
          begin
-            --  Or are silly out of range of int bounds
+            --  Guard against raising C_E in UI_To_Int
 
-            Bounds_Vals.First := Expr_Value (Bounds.First);
-            Bounds_Vals.Last := Expr_Value (Bounds.Last);
-
-            if not UI_Is_In_Int_Range (Bounds_Vals.First)
-                 or else
-               not UI_Is_In_Int_Range (Bounds_Vals.Last)
+            if not UI_Are_In_Int_Range (Bounds_Vals.First, Bounds_Vals.Last)
             then
                return False;
             end if;
@@ -9494,6 +9493,12 @@ package body Exp_Aggr is
                end if;
 
                if not Aggr_Size_OK (N) then
+                  return False;
+               end if;
+
+               --  Guard against raising C_E in UI_To_Int
+
+               if not UI_Are_In_Int_Range (Intval (Lo), Intval (Hi)) then
                   return False;
                end if;
 
