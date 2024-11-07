@@ -654,6 +654,10 @@ static const attribute_spec riscv_gnu_attributes[] =
      types.  */
   {"riscv_rvv_vector_bits", 1, 1, false, true, false, true,
    riscv_handle_rvv_vector_bits_attribute, NULL},
+  /* This attribute is used to declare a function, forcing it to use the
+    standard vector calling convention variant. Syntax:
+    __attribute__((norelax)). */
+  {"norelax", 0, 0, true, false, false, false, NULL, NULL},
 };
 
 static const scoped_attribute_specs riscv_gnu_attribute_table  =
@@ -10051,24 +10055,31 @@ riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
   riscv_asm_output_variant_cc (stream, fndecl, name);
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_FUNCTION_LABEL (stream, name, fndecl);
-  if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
+  if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
+      || lookup_attribute ("norelax", DECL_ATTRIBUTES (fndecl)))
     {
       fprintf (stream, "\t.option push\n");
+      if (lookup_attribute ("norelax", DECL_ATTRIBUTES (fndecl)))
+	{
+	  fprintf (stream, "\t.option norelax\n");
+	}
+      if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
+	{
+	  struct cl_target_option *local_cl_target
+	    = TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (fndecl));
+	  struct cl_target_option *global_cl_target
+	    = TREE_TARGET_OPTION (target_option_default_node);
 
-      struct cl_target_option *local_cl_target =
-	TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (fndecl));
-      struct cl_target_option *global_cl_target =
-	TREE_TARGET_OPTION (target_option_default_node);
-
-      const char *local_arch_str = get_arch_str (local_cl_target);
-      const char *arch_str = local_arch_str != NULL
-	? local_arch_str
-	: riscv_arch_str (true).c_str ();
-      fprintf (stream, "\t.option arch, %s\n", arch_str);
-      const char *local_tune_str = get_tune_str (local_cl_target);
-      const char *global_tune_str = get_tune_str (global_cl_target);
-      if (strcmp (local_tune_str, global_tune_str) != 0)
-	fprintf (stream, "\t# tune = %s\n", local_tune_str);
+	  const char *local_arch_str = get_arch_str (local_cl_target);
+	  const char *arch_str = local_arch_str != NULL
+				   ? local_arch_str
+				   : riscv_arch_str (true).c_str ();
+	  fprintf (stream, "\t.option arch, %s\n", arch_str);
+	  const char *local_tune_str = get_tune_str (local_cl_target);
+	  const char *global_tune_str = get_tune_str (global_cl_target);
+	  if (strcmp (local_tune_str, global_tune_str) != 0)
+	    fprintf (stream, "\t# tune = %s\n", local_tune_str);
+	}
     }
 }
 
@@ -10078,7 +10089,8 @@ riscv_declare_function_size (FILE *stream, const char *name, tree fndecl)
   if (!flag_inhibit_size_directive)
     ASM_OUTPUT_MEASURED_SIZE (stream, name);
 
-  if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl))
+  if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
+      || lookup_attribute ("norelax", DECL_ATTRIBUTES (fndecl)))
     {
       fprintf (stream, "\t.option pop\n");
     }
