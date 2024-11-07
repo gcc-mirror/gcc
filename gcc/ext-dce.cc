@@ -1103,7 +1103,7 @@ const pass_data pass_data_ext_dce =
   RTL_PASS, /* type */
   "ext_dce", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  TV_EXT_DCE, /* tv_id */
   PROP_cfglayout, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
