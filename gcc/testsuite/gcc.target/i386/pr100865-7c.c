@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=skylake -mno-avx2" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 extern long long int array[64];
 

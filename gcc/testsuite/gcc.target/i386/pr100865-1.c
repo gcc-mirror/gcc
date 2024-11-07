@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 extern char *dst;
 

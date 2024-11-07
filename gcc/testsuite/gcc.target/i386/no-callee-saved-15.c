@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 typedef void (*fn_t) (void) __attribute__ ((no_callee_saved_registers));
 extern fn_t bar;

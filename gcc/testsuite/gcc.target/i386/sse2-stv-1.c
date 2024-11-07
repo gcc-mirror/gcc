@@ -1,5 +1,6 @@
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -msse2 -mno-stackrealign" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 unsigned long long a,b,c,d;
 
