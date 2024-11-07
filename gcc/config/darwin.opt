@@ -261,6 +261,12 @@ noseglinkedit
 Driver RejectNegative Negative(seglinkedit)
 (Obsolete) This is the default.
 
+ObjC
+Driver RejectNegative
+
+ObjC++
+Driver RejectNegative
+
 object
 Driver RejectNegative
 

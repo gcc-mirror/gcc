@@ -351,6 +351,16 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	    noexport_p = false;
 	  break;
 
+	case OPT_ObjC:
+	  (*decoded_options)[i].opt_index = OPT_x;
+	  (*decoded_options)[i].arg = "objective-c";
+	  break;
+
+	case OPT_ObjC__:
+	  (*decoded_options)[i].opt_index = OPT_x;
+	  (*decoded_options)[i].arg = "objective-c++";
+	  break;
+
 	default:
 	  break;
 	}
