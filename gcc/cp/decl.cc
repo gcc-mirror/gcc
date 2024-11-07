@@ -9405,6 +9405,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 static tree
 find_decomp_class_base (location_t loc, tree type, tree ret)
 {
+  if (LAMBDA_TYPE_P (type))
+    {
+      auto_diagnostic_group d;
+      error_at (loc, "cannot decompose lambda closure type %qT", type);
+      inform (location_of (type), "lambda declared here");
+      return error_mark_node;
+    }
+
   bool member_seen = false;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) != FIELD_DECL
@@ -9447,9 +9455,13 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
   for (binfo = TYPE_BINFO (type), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
+      auto_diagnostic_group d;
       tree t = find_decomp_class_base (loc, TREE_TYPE (base_binfo), ret);
       if (t == error_mark_node)
-	return error_mark_node;
+	{
+	  inform (location_of (type), "in base class of %qT", type);
+	  return error_mark_node;
+	}
       if (t != NULL_TREE && t != ret)
 	{
 	  if (ret == type)
@@ -9903,11 +9915,6 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
   else if (!CLASS_TYPE_P (type))
     {
       error_at (loc, "cannot decompose non-array non-class type %qT", type);
-      goto error_out;
-    }
-  else if (LAMBDA_TYPE_P (type))
-    {
-      error_at (loc, "cannot decompose lambda closure type %qT", type);
       goto error_out;
     }
   else if (processing_template_decl && complete_type (type) == error_mark_node)
