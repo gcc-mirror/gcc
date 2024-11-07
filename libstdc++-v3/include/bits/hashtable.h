@@ -596,28 +596,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (_M_bucket_count < __l_bkt_count)
 	  rehash(__l_bkt_count);
 
-	_ExtractKey __ex;
+	__hash_code __code;
+	size_type __bkt;
 	for (auto& __e : __l)
 	  {
-	    const key_type& __k = __ex(__e);
+	    const key_type& __k = _ExtractKey{}(__e);
 
 	    if constexpr (__unique_keys::value)
-	      if (this->size() <= __small_size_threshold())
-		{
-		  auto __it = _M_begin();
-		  for (; __it; __it = __it->_M_next())
-		    if (this->_M_key_equals(__k, *__it))
-		      break;
-		  if (__it)
-		    continue; // Found existing element with equivalent key
-		}
-
-	    __hash_code __code = this->_M_hash_code(__k);
-	    size_type __bkt = _M_bucket_index(__code);
-
-	    if constexpr (__unique_keys::value)
-	      if (_M_find_node(__bkt, __k, __code))
-		continue; // Found existing element with equivalent key
+	      {
+		if (auto __loc = _M_locate(__k))
+		  continue; // Found existing element with equivalent key
+		else
+		  {
+		    __code = __loc._M_hash_code;
+		    __bkt = __loc._M_bucket_index;
+		  }
+	      }
+	    else
+	      {
+		__code = this->_M_hash_code(__k);
+		__bkt = _M_bucket_index(__code);
+	      }
 
 	    _M_insert_unique_node(__bkt, __code, __roan(__e));
 	  }
@@ -809,10 +808,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_bucket_index(__hash_code __c) const
       { return __hash_code_base::_M_bucket_index(__c, _M_bucket_count); }
 
-      __node_base_ptr
-      _M_find_before_node(const key_type&);
-
       // Find and insert helper functions and types
+
       // Find the node before the one matching the criteria.
       __node_base_ptr
       _M_find_before_node(size_type, const key_type&, __hash_code) const;
@@ -821,12 +818,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__node_base_ptr
 	_M_find_before_node_tr(size_type, const _Kt&, __hash_code) const;
 
+      // A pointer to a particular node and/or a hash code and bucket index
+      // where such a node would be found in the container.
+      struct __location_type
+      {
+	// True if _M_node() is a valid node pointer.
+	explicit operator bool() const noexcept
+	{ return static_cast<bool>(_M_before); }
+
+	// An iterator that refers to the node, or end().
+	explicit operator iterator() const noexcept
+	{ return iterator(_M_node()); }
+
+	// A const_iterator that refers to the node, or cend().
+	explicit operator const_iterator() const noexcept
+	{ return const_iterator(_M_node()); }
+
+	// A pointer to the node, or null.
+	__node_ptr _M_node() const
+	{
+	  if (_M_before)
+	    return static_cast<__node_ptr>(_M_before->_M_nxt);
+	  return __node_ptr();
+	}
+
+	__node_base_ptr _M_before{}; // Must only be used to get _M_nxt
+	__hash_code _M_hash_code{};  // Only valid if _M_bucket_index != -1
+	size_type _M_bucket_index = size_type(-1);
+      };
+
+      // Adaptive lookup to find key, or which bucket it would be in.
+      // For a container smaller than the small size threshold use a linear
+      // search through the whole container, just testing for equality.
+      // Otherwise, calculate the hash code and bucket index for the key,
+      // and search in that bucket.
+      // The return value will have a pointer to the node _before_ the first
+      // node matching the key, if any such node exists. Returning the node
+      // before the desired one allows the result to be used for erasure.
+      // If no matching element is present, the hash code and bucket for the
+      // key will be set, allowing a new node to be inserted at that location.
+      // (The hash code and bucket might also be set when a node is found.)
+      // The _M_before pointer might point to _M_before_begin, so must not be
+      // cast to __node_ptr, and it must not be used to modify *_M_before
+      // except in non-const member functions, such as erase.
+      __location_type
+      _M_locate(const key_type& __k) const;
+
       __node_ptr
       _M_find_node(size_type __bkt, const key_type& __key,
 		   __hash_code __c) const
       {
-	__node_base_ptr __before_n = _M_find_before_node(__bkt, __key, __c);
-	if (__before_n)
+	if (__node_base_ptr __before_n = _M_find_before_node(__bkt, __key, __c))
 	  return static_cast<__node_ptr>(__before_n->_M_nxt);
 	return nullptr;
       }
@@ -836,8 +878,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_find_node_tr(size_type __bkt, const _Kt& __key,
 			__hash_code __c) const
 	{
-	  auto __before_n = _M_find_before_node_tr(__bkt, __key, __c);
-	  if (__before_n)
+	  if (auto __before_n = _M_find_before_node_tr(__bkt, __key, __c))
 	    return static_cast<__node_ptr>(__before_n->_M_nxt);
 	  return nullptr;
 	}
@@ -1004,10 +1045,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::pair<iterator, bool>
 	try_emplace(const_iterator, _KType&& __k, _Args&&... __args)
 	{
-	  auto __code = this->_M_hash_code(__k);
-	  std::size_t __bkt = _M_bucket_index(__code);
-	  if (auto __node = _M_find_node(__bkt, __k, __code))
-	    return { iterator(__node), false };
+	  __hash_code __code;
+	  size_type __bkt;
+	  if (auto __loc = _M_locate(__k))
+	    return { iterator(__loc), false };
+	  else
+	    {
+	      __code = __loc._M_hash_code;
+	      __bkt = __loc._M_bucket_index;
+	    }
 
 	  _Scoped_node __node {
 	    this,
@@ -1101,38 +1147,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    __glibcxx_assert(get_allocator() == __nh.get_allocator());
 
-	    __node_ptr __n = nullptr;
-	    const key_type& __k = __nh._M_key();
-	    const size_type __size = size();
-	    if (__size <= __small_size_threshold())
-	      {
-		for (__n = _M_begin(); __n; __n = __n->_M_next())
-		  if (this->_M_key_equals(__k, *__n))
-		    break;
-	      }
-
-	    __hash_code __code;
-	    size_type __bkt;
-	    if (!__n)
-	      {
-		__code = this->_M_hash_code(__k);
-		__bkt = _M_bucket_index(__code);
-		if (__size > __small_size_threshold())
-		  __n = _M_find_node(__bkt, __k, __code);
-	      }
-
-	    if (__n)
+	    if (auto __loc = _M_locate(__nh._M_key()))
 	      {
 		__ret.node = std::move(__nh);
-		__ret.position = iterator(__n);
+		__ret.position = iterator(__loc);
 		__ret.inserted = false;
 	      }
 	    else
 	      {
+		auto __code = __loc._M_hash_code;
+		auto __bkt = __loc._M_bucket_index;
 		__ret.position
-		  = _M_insert_unique_node(__bkt, __code, __nh._M_ptr);
-		__nh.release();
+		     = _M_insert_unique_node(__bkt, __code, __nh._M_ptr);
 		__ret.inserted = true;
+		__nh.release();
 	      }
 	  }
 	return __ret;
@@ -1218,7 +1246,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__glibcxx_assert(get_allocator() == __src.get_allocator());
 
-	auto __size = size();
 	auto __n_elt = __src.size();
 	size_type __first = 1;
 	// For a container of identical type we can use its private members.
@@ -1229,31 +1256,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __p = __p->_M_next();
 	    const auto& __node = *__p;
 	    const key_type& __k = _ExtractKey{}(__node._M_v());
-	    if (__size <= __small_size_threshold())
-	      {
-		auto __n = _M_begin();
-		for (; __n; __n = __n->_M_next())
-		  if (this->_M_key_equals(__k, *__n))
-		    break;
-		if (__n)
-		  continue;
-	      }
+	    auto __loc = _M_locate(__k);
+	    if (__loc)
+	      continue;
 
-	    __hash_code __code
-	      = _M_src_hash_code(__src.hash_function(), __k, __node);
-	    size_type __bkt = _M_bucket_index(__code);
-	    if (__size > __small_size_threshold())
-	      if (_M_find_node(__bkt, __k, __code) != nullptr)
-		continue;
-
-	    __hash_code __src_code = __src.hash_function()(__k);
-	    size_type __src_bkt = __src._M_bucket_index(__src_code);
+	    size_type __src_bkt
+	      = __src._M_bucket_index(__src.hash_function()(__k));
 	    auto __nh = __src._M_extract_node(__src_bkt, __prev);
-	    _M_insert_unique_node(__bkt, __code, __nh._M_ptr,
-				  __first * __n_elt + 1);
+	    _M_insert_unique_node(__loc._M_bucket_index, __loc._M_hash_code,
+				  __nh._M_ptr, __first * __n_elt + 1);
 	    __nh.release();
 	    __first = 0;
-	    ++__size;
 	    __p = __prev;
 	  }
       }
@@ -1267,7 +1280,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      node_type>, "Node types are compatible");
 	  __glibcxx_assert(get_allocator() == __src.get_allocator());
 
-	  auto __size = size();
 	  auto __n_elt = __src.size();
 	  size_type __first = 1;
 	  // For a compatible container we can only use the public API,
@@ -1277,29 +1289,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      --__n_elt;
 	      auto __pos = __i++;
 	      const key_type& __k = _ExtractKey{}(*__pos);
-	      if (__size <= __small_size_threshold())
-		{
-		  auto __n = _M_begin();
-		  for (; __n; __n = __n->_M_next())
-		    if (this->_M_key_equals(__k, *__n))
-		      break;
-		  if (__n)
-		    continue;
-		}
-
-	      __hash_code __code
-		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
-	      size_type __bkt = _M_bucket_index(__code);
-	      if (__size > __small_size_threshold())
-		if (_M_find_node(__bkt, __k, __code) != nullptr)
-		  continue;
+	      const auto __loc = _M_locate(__k);
+	      if (__loc)
+		continue;
 
 	      auto __nh = __src.extract(__pos);
-	      _M_insert_unique_node(__bkt, __code, __nh._M_ptr,
+	      _M_insert_unique_node(__loc._M_bucket_index,
+				    __loc._M_hash_code, __nh._M_ptr,
 				    __first * __n_elt + 1);
 	      __nh.release();
 	      __first = 0;
-	      ++__size;
 	    }
 	}
 
@@ -1864,19 +1863,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     find(const key_type& __k)
     -> iterator
-    {
-      if (size() <= __small_size_threshold())
-	{
-	  for (auto __it = _M_begin(); __it; __it = __it->_M_next())
-	    if (this->_M_key_equals(__k, *__it))
-	      return iterator(__it);
-	  return end();
-	}
-
-      __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __bkt = _M_bucket_index(__code);
-      return iterator(_M_find_node(__bkt, __k, __code));
-    }
+    { return iterator(_M_locate(__k)); }
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -1887,19 +1874,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     find(const key_type& __k) const
     -> const_iterator
-    {
-      if (size() <= __small_size_threshold())
-	{
-	  for (auto __it = _M_begin(); __it; __it = __it->_M_next())
-	    if (this->_M_key_equals(__k, *__it))
-	      return const_iterator(__it);
-	  return end();
-	}
-
-      __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __bkt = _M_bucket_index(__code);
-      return const_iterator(_M_find_node(__bkt, __k, __code));
-    }
+    { return const_iterator(_M_locate(__k)); }
 
 #if __cplusplus > 201703L
   template<typename _Key, typename _Value, typename _Alloc,
@@ -2162,35 +2137,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
-  // Find the node before the one whose key compares equal to k.
-  // Return nullptr if no node is found.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _Hash, typename _RangeHash, typename _Unused,
-	   typename _RehashPolicy, typename _Traits>
-    auto
-    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
-    _M_find_before_node(const key_type& __k)
-    -> __node_base_ptr
-    {
-      __node_base_ptr __prev_p = &_M_before_begin;
-      if (!__prev_p->_M_nxt)
-	return nullptr;
-
-      for (__node_ptr __p = static_cast<__node_ptr>(__prev_p->_M_nxt);
-	   __p != nullptr;
-	   __p = __p->_M_next())
-	{
-	  if (this->_M_key_equals(__k, *__p))
-	    return __prev_p;
-
-	  __prev_p = __p;
-	}
-
-      return nullptr;
-    }
-
   // Find the node before the one whose key compares equal to k in the bucket
   // bkt. Return nullptr if no node is found.
   template<typename _Key, typename _Value, typename _Alloc,
@@ -2259,6 +2205,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+    _M_locate(const key_type& __k) const
+    -> __location_type
+    {
+      __location_type __loc;
+      const auto __size = size();
+
+      if (__size <= __small_size_threshold())
+	{
+	  __loc._M_before = pointer_traits<__node_base_ptr>::
+	       pointer_to(const_cast<__node_base&>(_M_before_begin));
+	  while (__loc._M_before->_M_nxt)
+	    {
+	      if (this->_M_key_equals(__k, *__loc._M_node()))
+		return __loc;
+	      __loc._M_before = __loc._M_before->_M_nxt;
+	    }
+	  __loc._M_before = nullptr; // Didn't find it.
+	}
+
+      __loc._M_hash_code = this->_M_hash_code(__k);
+      __loc._M_bucket_index = _M_bucket_index(__loc._M_hash_code);
+
+      if (__size > __small_size_threshold())
+	__loc._M_before = _M_find_before_node(__loc._M_bucket_index, __k,
+					      __loc._M_hash_code);
+
+      return __loc;
+    }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
+    auto
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
     _M_get_previous_node(size_type __bkt, __node_ptr __n)
     -> __node_base_ptr
     {
@@ -2314,22 +2296,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __kp = std::__addressof(__key);
 	  }
 
-	const size_type __size = size();
-	if (__size <= __small_size_threshold())
+	if (auto __loc = _M_locate(*__kp))
+	  // There is already an equivalent node, no insertion.
+	  return { iterator(__loc), false };
+	else
 	  {
-	    for (auto __it = _M_begin(); __it; __it = __it->_M_next())
-	      if (this->_M_key_equals(*__kp, *__it))
-		// There is already an equivalent node, no insertion.
-		return { iterator(__it), false };
+	    __code = __loc._M_hash_code;
+	    __bkt = __loc._M_bucket_index;
 	  }
-
-	__code = this->_M_hash_code(*__kp);
-	__bkt = _M_bucket_index(__code);
-
-	if (__size > __small_size_threshold())
-	  if (__node_ptr __p = _M_find_node(__bkt, *__kp, __code))
-	    // There is already an equivalent node, no insertion.
-	    return { iterator(__p), false };
 
 	if (!__node._M_node)
 	  __node._M_node
@@ -2570,32 +2544,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase(const key_type& __k)
     -> size_type
     {
-      __node_base_ptr __prev_n;
-      __node_ptr __n;
-      std::size_t __bkt;
-      if (size() <= __small_size_threshold())
-	{
-	  __prev_n = _M_find_before_node(__k);
-	  if (!__prev_n)
-	    return 0;
+      auto __loc = _M_locate(__k);
+      if (!__loc)
+	return 0;
 
-	  // We found a matching node, erase it.
-	  __n = static_cast<__node_ptr>(__prev_n->_M_nxt);
-	  __bkt = _M_bucket_index(*__n);
-	}
-      else
-	{
-	  __hash_code __code = this->_M_hash_code(__k);
-	  __bkt = _M_bucket_index(__code);
-
-	  // Look for the node before the first matching node.
-	  __prev_n = _M_find_before_node(__bkt, __k, __code);
-	  if (!__prev_n)
-	    return 0;
-
-	  // We found a matching node, erase it.
-	  __n = static_cast<__node_ptr>(__prev_n->_M_nxt);
-	}
+      __node_base_ptr __prev_n = __loc._M_before;
+      __node_ptr __n = __loc._M_node();
+      auto __bkt = __loc._M_bucket_index;
+      if (__bkt == size_type(-1))
+	__bkt = _M_bucket_index(*__n);
 
       if constexpr (__unique_keys::value)
 	{
