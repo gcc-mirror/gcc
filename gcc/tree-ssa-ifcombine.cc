@@ -50,6 +50,21 @@ along with GCC; see the file COPYING3.  If not see
                 false) >= 2)
 #endif
 
+/* Return FALSE iff the COND_BB ends with a conditional whose result is not a
+   known constant.  */
+
+static bool
+known_succ_p (basic_block cond_bb)
+{
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (cond_bb));
+
+  if (!cond)
+    return true;
+
+  return (CONSTANT_CLASS_P (gimple_cond_lhs (cond))
+	  && CONSTANT_CLASS_P (gimple_cond_rhs (cond)));
+}
+
 /* This pass combines COND_EXPRs to simplify control flow.  It
    currently recognizes bit tests and comparisons in chains that
    represent logical and or logical or of two COND_EXPRs.
@@ -357,14 +372,28 @@ recognize_bits_test (gcond *cond, tree *name, tree *bits, bool inv)
 }
 
 
-/* Update profile after code in outer_cond_bb was adjusted so
-   outer_cond_bb has no condition.  */
+/* Update profile after code in either outer_cond_bb or inner_cond_bb was
+   adjusted so that it has no condition.  */
 
 static void
 update_profile_after_ifcombine (basic_block inner_cond_bb,
 			        basic_block outer_cond_bb)
 {
-  edge outer_to_inner = find_edge (outer_cond_bb, inner_cond_bb);
+  /* In the following we assume that inner_cond_bb has single predecessor.  */
+  gcc_assert (single_pred_p (inner_cond_bb));
+
+  basic_block outer_to_inner_bb = inner_cond_bb;
+  profile_probability prob = profile_probability::always ();
+  for (;;)
+    {
+      basic_block parent = single_pred (outer_to_inner_bb);
+      prob *= find_edge (parent, outer_to_inner_bb)->probability;
+      if (parent == outer_cond_bb)
+	break;
+      outer_to_inner_bb = parent;
+    }
+
+  edge outer_to_inner = find_edge (outer_cond_bb, outer_to_inner_bb);
   edge outer2 = (EDGE_SUCC (outer_cond_bb, 0) == outer_to_inner
 		 ? EDGE_SUCC (outer_cond_bb, 1)
 		 : EDGE_SUCC (outer_cond_bb, 0));
@@ -375,29 +404,61 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
     std::swap (inner_taken, inner_not_taken);
   gcc_assert (inner_taken->dest == outer2->dest);
 
-  /* In the following we assume that inner_cond_bb has single predecessor.  */
-  gcc_assert (single_pred_p (inner_cond_bb));
+  if (outer_to_inner_bb == inner_cond_bb
+      && known_succ_p (outer_cond_bb))
+    {
+      /* Path outer_cond_bb->(outer2) needs to be merged into path
+	 outer_cond_bb->(outer_to_inner)->inner_cond_bb->(inner_taken)
+	 and probability of inner_not_taken updated.  */
 
-  /* Path outer_cond_bb->(outer2) needs to be merged into path
-     outer_cond_bb->(outer_to_inner)->inner_cond_bb->(inner_taken)
-     and probability of inner_not_taken updated.  */
+      inner_cond_bb->count = outer_cond_bb->count;
 
-  inner_cond_bb->count = outer_cond_bb->count;
+      /* Handle special case where inner_taken probability is always. In this
+	 case we know that the overall outcome will be always as well, but
+	 combining probabilities will be conservative because it does not know
+	 that outer2->probability is inverse of
+	 outer_to_inner->probability.  */
+      if (inner_taken->probability == profile_probability::always ())
+	;
+      else
+	inner_taken->probability = outer2->probability
+	  + outer_to_inner->probability * inner_taken->probability;
+      inner_not_taken->probability = profile_probability::always ()
+	- inner_taken->probability;
 
-  /* Handle special case where inner_taken probability is always. In this case
-     we know that the overall outcome will be always as well, but combining
-     probabilities will be conservative because it does not know that
-     outer2->probability is inverse of outer_to_inner->probability.  */
-  if (inner_taken->probability == profile_probability::always ())
-    ;
+      outer_to_inner->probability = profile_probability::always ();
+      outer2->probability = profile_probability::never ();
+    }
+  else if (known_succ_p (inner_cond_bb))
+    {
+      /* Path inner_cond_bb->(inner_taken) needs to be merged into path
+	 outer_cond_bb->(outer2).  We've accumulated the probabilities from
+	 outer_cond_bb->(outer)->...->inner_cond_bb in prob, so we have to
+	 adjust that by inner_taken, and make inner unconditional.  */
+
+      prob *= inner_taken->probability;
+      outer2->probability += prob;
+      outer_to_inner->probability = profile_probability::always ()
+	- outer2->probability;
+
+      inner_taken->probability = profile_probability::never ();
+      inner_not_taken->probability = profile_probability::always ();
+    }
   else
-    inner_taken->probability = outer2->probability + outer_to_inner->probability
-			       * inner_taken->probability;
-  inner_not_taken->probability = profile_probability::always ()
-				 - inner_taken->probability;
+    {
+      /* We've moved part of the inner cond to outer, but we don't know the
+	 probabilities for each part, so estimate the effects by moving half of
+	 the odds of inner_taken to outer.  */
 
-  outer_to_inner->probability = profile_probability::always ();
-  outer2->probability = profile_probability::never ();
+      inner_taken->probability *= profile_probability::even ();
+      inner_not_taken->probability = profile_probability::always ()
+	- inner_taken->probability;
+
+      prob *= inner_taken->probability;
+      outer2->probability += prob;
+      outer_to_inner->probability = profile_probability::always ()
+	- outer2->probability;
+    }
 }
 
 /* Replace the conditions in INNER_COND with COND.
