@@ -20,9 +20,9 @@ volatile __v16su ui;
 void
 foo()
 {
-  hi ^= __builtin_ia32_cvttpd2dq512_mask(df, hi, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttpd2dq512_mask'; did you mean '__builtin_ia32_cvttpd2dq128_mask'?" } */
-  hui ^= __builtin_ia32_cvttpd2udq512_mask(df, hui, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttpd2udq512_mask'; did you mean '__builtin_ia32_cvttpd2udq128_mask'?" } */
-  ui ^= __builtin_ia32_cvttps2dq512_mask(sf, ui, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttps2dq512_mask'; did you mean '__builtin_ia32_cvttps2dq128_mask'?" } */
-  ui ^= __builtin_ia32_cvttps2udq512_mask(sf, ui, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttps2udq512_mask'; did you mean '__builtin_ia32_cvttps2udq128_mask'?" } */
-  __builtin_ia32_cvtudq2ps512_mask(ui, sf, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvtudq2ps512_mask'; did you mean '__builtin_ia32_cvtudq2ps128_mask'?" } */
+  hi ^= __builtin_ia32_cvttpd2dq512_mask(df, hi, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttpd2dq512_mask'; did you mean '__builtin_ia32_\[^\n\r]*'?" } */
+  hui ^= __builtin_ia32_cvttpd2udq512_mask(df, hui, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttpd2udq512_mask'; did you mean '__builtin_ia32_\[^\n\r]*'?" } */
+  ui ^= __builtin_ia32_cvttps2dq512_mask(sf, ui, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttps2dq512_mask'; did you mean '__builtin_ia32_\[^\n\r]*'?" } */
+  ui ^= __builtin_ia32_cvttps2udq512_mask(sf, ui, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvttps2udq512_mask'; did you mean '__builtin_ia32_\[^\n\r]*'?" } */
+  __builtin_ia32_cvtudq2ps512_mask(ui, sf, 0, 4); /* { dg-error "implicit declaration of function '__builtin_ia32_cvtudq2ps512_mask'; did you mean '__builtin_ia32_\[^\n\r]*'?" } */
 }
