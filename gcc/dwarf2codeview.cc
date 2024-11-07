@@ -1086,6 +1086,25 @@ enum cv_amd64_register {
   CV_AMD64_YMM15D3 = 687
 };
 
+/* This is enum BinaryAnnotationOpcode in Microsoft's cvinfo.h.  */
+
+enum binary_annotation_opcode {
+  ba_op_invalid,
+  ba_op_code_offset,
+  ba_op_change_code_offset_base,
+  ba_op_change_code_offset,
+  ba_op_change_code_length,
+  ba_op_change_file,
+  ba_op_change_line_offset,
+  ba_op_change_line_end_delta,
+  ba_op_change_range_kind,
+  ba_op_change_column_start,
+  ba_op_change_column_end_delta,
+  ba_op_change_code_offset_and_line_offset,
+  ba_op_change_code_length_and_code_offset,
+  ba_op_change_column_end
+};
+
 struct codeview_string
 {
   codeview_string *next;
@@ -1157,11 +1176,13 @@ struct codeview_inlinee_lines
 struct codeview_function
 {
   codeview_function *next;
+  codeview_function *htab_next;
   function *func;
   unsigned int end_label;
   codeview_line_block *blocks, *last_block;
   codeview_function *parent;
   unsigned int inline_block;
+  location_t inline_loc;
 };
 
 struct codeview_symbol
@@ -1445,6 +1466,16 @@ struct inlinee_lines_hasher : free_ptr_hash <struct codeview_inlinee_lines>
   }
 };
 
+struct cv_func_hasher : nofree_ptr_hash <struct codeview_function>
+{
+  typedef dw_die_ref compare_type;
+
+  static bool equal (const codeview_function *f, dw_die_ref die)
+  {
+    return lookup_decl_die (f->func->decl) == die;
+  }
+};
+
 static unsigned int line_label_num;
 static unsigned int func_label_num;
 static unsigned int sym_label_num;
@@ -1462,6 +1493,7 @@ static codeview_custom_type *custom_types, *last_custom_type;
 static codeview_deferred_type *deferred_types, *last_deferred_type;
 static hash_table<string_id_hasher> *string_id_htab;
 static hash_table<inlinee_lines_hasher> *inlinee_lines_htab;
+static hash_table<cv_func_hasher> *cv_func_htab;
 
 static uint32_t get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref);
 static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
@@ -1511,14 +1543,18 @@ get_file_id (const char *filename)
 static codeview_function *
 new_codeview_function (void)
 {
+  codeview_function **slot;
+  dw_die_ref die;
   codeview_function *f = (codeview_function *)
 			    xmalloc (sizeof (codeview_function));
 
   f->next = NULL;
+  f->htab_next = NULL;
   f->func = cfun;
   f->end_label = 0;
   f->blocks = f->last_block = NULL;
   f->inline_block = 0;
+  f->inline_loc = 0;
 
   if (!funcs)
     funcs = f;
@@ -1526,6 +1562,18 @@ new_codeview_function (void)
     last_func->next = f;
 
   last_func = f;
+
+  if (!cv_func_htab)
+    cv_func_htab = new hash_table<cv_func_hasher> (10);
+
+  die = lookup_decl_die (cfun->decl);
+
+  slot = cv_func_htab->find_slot_with_hash (die, htab_hash_pointer (die),
+					    INSERT);
+  if (*slot)
+    f->htab_next = *slot;
+
+  *slot = f;
 
   return f;
 }
@@ -1605,6 +1653,7 @@ codeview_begin_block (unsigned int line ATTRIBUTE_UNUSED,
 
       f->parent = cur_func;
       f->inline_block = blocknum;
+      f->inline_loc = locus;
 
       cur_func = f;
     }
@@ -1617,7 +1666,13 @@ void
 codeview_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int blocknum)
 {
   if (cur_func && cur_func->inline_block == blocknum)
-    cur_func = cur_func->parent;
+    {
+      /* If inlined function, add dummy source line at the end so we know how
+	 long the actual last line is.  */
+      codeview_source_line (0, "");
+
+      cur_func = cur_func->parent;
+    }
 }
 
 /* Adds string to the string table, returning its offset.  If already present,
@@ -3328,6 +3383,137 @@ write_optimized_static_local_vars (dw_die_ref die)
   while (c != first_child);
 }
 
+#ifdef HAVE_GAS_CV_UCOMP
+
+/* Given a DW_TAG_inlined_subroutine DIE within parent_func, return a pointer
+   to the corresponding codeview_function, which is used to map addresses
+   to line numbers.  */
+
+static codeview_function *
+find_line_function (dw_die_ref parent_func, dw_die_ref die)
+{
+  codeview_function **slot, *f;
+
+  if (!cv_func_htab)
+    return NULL;
+
+  slot = cv_func_htab->find_slot_with_hash (parent_func,
+					    htab_hash_pointer (parent_func),
+					    NO_INSERT);
+
+  if (!slot || !*slot)
+    return NULL;
+
+  f = *slot;
+
+  while (f)
+    {
+      expanded_location loc;
+      dwarf_file_data *call_file;
+
+      if (f->inline_block == 0)
+	{
+	  f = f->htab_next;
+	  continue;
+	}
+
+      loc = expand_location (f->inline_loc);
+
+      if ((unsigned) loc.line != get_AT_unsigned (die, DW_AT_call_line)
+	  || (unsigned) loc.column != get_AT_unsigned (die, DW_AT_call_column))
+	{
+	  f = f->htab_next;
+	  continue;
+	}
+
+      call_file = get_AT_file (die, DW_AT_call_file);
+
+      if (!call_file || strcmp (call_file->filename, loc.file))
+	{
+	  f = f->htab_next;
+	  continue;
+	}
+
+      return f;
+    }
+
+  return NULL;
+}
+
+/* Write the "binary annotations" for an S_INLINESITE symbol, which are how
+   CodeView represents line numbers within inlined functions.  This is
+   completely different to how line numbers are represented normally, and
+   requires assembler support for the .cv_ucomp and .cv_scomp pseudos.  */
+
+static void
+write_binary_annotations (codeview_function *line_func, uint32_t func_id)
+{
+  codeview_line_block *b;
+  codeview_inlinee_lines **slot, *il;
+  codeview_function *top_parent;
+  unsigned int line_no, label_num;
+
+  slot = inlinee_lines_htab->find_slot_with_hash (func_id, func_id, NO_INSERT);
+  if (!slot || !*slot)
+    return;
+
+  il = *slot;
+
+  line_no = il->starting_line;
+
+  top_parent = line_func;
+  while (top_parent->parent)
+    {
+      top_parent = top_parent->parent;
+    }
+
+  label_num = top_parent->blocks->lines->label_num;
+
+  b = line_func->blocks;
+  while (b)
+    {
+      codeview_line *l = b->lines;
+
+      while (l)
+	{
+	  if (!l->next && !b->next) /* last line (end of block) */
+	    {
+	      asm_fprintf (asm_out_file, "\t.cv_ucomp %u\n",
+		       ba_op_change_code_length);
+	      asm_fprintf (asm_out_file,
+		       "\t.cv_ucomp %L" LINE_LABEL "%u - %L" LINE_LABEL "%u\n",
+		       l->label_num, label_num);
+	    }
+	  else
+	    {
+	      if (l->line_no != line_no)
+		{
+		  asm_fprintf (asm_out_file, "\t.cv_ucomp %u\n",
+			       ba_op_change_line_offset);
+		  asm_fprintf (asm_out_file, "\t.cv_scomp %i\n",
+			       l->line_no - line_no);
+
+		  line_no = l->line_no;
+		}
+
+	      asm_fprintf (asm_out_file, "\t.cv_ucomp %u\n",
+			   ba_op_change_code_offset);
+	      asm_fprintf (asm_out_file,
+			"\t.cv_ucomp %L" LINE_LABEL "%u - %L" LINE_LABEL "%u\n",
+			l->label_num, label_num);
+	    }
+
+	  label_num = l->label_num;
+
+	  l = l->next;
+	}
+
+      b = b->next;
+    }
+}
+
+#endif
+
 /* Write an S_INLINESITE symbol, to record that a function has been inlined
    inside another function.  */
 
@@ -3337,6 +3523,7 @@ write_s_inlinesite (dw_die_ref parent_func, dw_die_ref die)
   unsigned int label_num = ++sym_label_num;
   dw_die_ref func;
   uint32_t func_id;
+  codeview_function *line_func;
 
   func = get_AT_ref (die, DW_AT_abstract_origin);
   if (!func)
@@ -3385,9 +3572,14 @@ write_s_inlinesite (dw_die_ref parent_func, dw_die_ref die)
   fprint_whex (asm_out_file, func_id);
   putc ('\n', asm_out_file);
 
-  /* FIXME: there now should follow some "binary annotations", recording how
-	    offsets in the function map to line numbers in the inlined function,
-	    but these require support in GAS.  */
+#ifdef HAVE_GAS_CV_UCOMP
+  line_func = find_line_function (parent_func, die);
+
+  if (line_func)
+    write_binary_annotations (line_func, func_id);
+#else
+  (void) line_func;
+#endif
 
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 
@@ -5027,6 +5219,9 @@ codeview_debug_finish (void)
 
   if (inlinee_lines_htab)
     delete inlinee_lines_htab;
+
+  if (cv_func_htab)
+    delete cv_func_htab;
 }
 
 /* Translate a DWARF base type (DW_TAG_base_type) into its CodeView
