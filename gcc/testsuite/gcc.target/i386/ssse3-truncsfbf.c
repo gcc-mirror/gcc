@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mssse3 -mno-avx512bf16 -mno-avxneconvert -O2" } */
+/* { dg-options "-mssse3 -mno-avx512bf16 -mno-avxneconvert -O2 -ffast-math" } */
 /* { dg-final { scan-assembler-times {(?n)pshufb} 2 { target { ! ia32 } } } } */
 
 typedef float v2sf __attribute__((vector_size(8)));

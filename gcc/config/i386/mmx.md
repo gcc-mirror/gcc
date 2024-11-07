@@ -2998,7 +2998,11 @@
   [(set (match_operand:V2BF 0 "register_operand")
 	(float_truncate:V2BF
 	  (match_operand:V2SF 1 "nonimmediate_operand")))]
-  "TARGET_SSSE3 && TARGET_MMX_WITH_SSE"
+  "TARGET_SSSE3 && TARGET_MMX_WITH_SSE
+  && !HONOR_NANS (BFmode) && !flag_rounding_math
+  && (flag_unsafe_math_optimizations
+      || TARGET_AVXNECONVERT
+      || (TARGET_AVX512BF16 && TARGET_AVX512VL))"
 {
   rtx op1 = gen_reg_rtx (V4SFmode);
   rtx op0 = gen_reg_rtx (V4BFmode);
@@ -3016,7 +3020,7 @@
   [(set (match_operand:V2SF 0 "register_operand")
 	(float_extend:V2SF
 	  (match_operand:V2BF 1 "nonimmediate_operand")))]
-  "TARGET_SSE2 && TARGET_MMX_WITH_SSE"
+  "TARGET_SSE2 && TARGET_MMX_WITH_SSE && !HONOR_NANS (BFmode)"
 {
   rtx op0 = gen_reg_rtx (V4SFmode);
   rtx op1 = gen_reg_rtx (V4BFmode);

@@ -30995,7 +30995,10 @@
   [(set (match_operand:V4BF 0 "register_operand")
 	  (float_truncate:V4BF
 	    (match_operand:V4SF 1 "nonimmediate_operand")))]
-  "TARGET_SSSE3"
+  "TARGET_SSSE3 && !HONOR_NANS (BFmode) && !flag_rounding_math
+   && (flag_unsafe_math_optimizations
+       || TARGET_AVXNECONVERT
+       || (TARGET_AVX512BF16 && TARGET_AVX512VL))"
 {
   if (!TARGET_AVXNECONVERT
       && !(TARGET_AVX512BF16 && TARGET_AVX512VL))
@@ -31088,7 +31091,10 @@
   [(set (match_operand:V8BF 0 "register_operand")
 	(float_truncate:V8BF
 	  (match_operand:V8SF 1 "nonimmediate_operand")))]
-  "TARGET_AVX2"
+  "TARGET_AVX2 && !HONOR_NANS (BFmode) && !flag_rounding_math
+   && (flag_unsafe_math_optimizations
+       || TARGET_AVXNECONVERT
+       || (TARGET_AVX512BF16 && TARGET_AVX512VL))"
 {
   if (!TARGET_AVXNECONVERT
       && !(TARGET_AVX512BF16 && TARGET_AVX512VL))
@@ -31114,7 +31120,9 @@
   [(set (match_operand:V16BF 0 "register_operand")
 	(float_truncate:V16BF
 	  (match_operand:V16SF 1 "nonimmediate_operand")))]
-  "TARGET_AVX512BW && TARGET_EVEX512"
+  "TARGET_AVX512BW && TARGET_EVEX512
+   && !HONOR_NANS (BFmode) && !flag_rounding_math
+   && (flag_unsafe_math_optimizations || TARGET_AVX512BF16)"
 {
   if (!TARGET_AVX512BF16)
     {
@@ -31127,7 +31135,7 @@
   [(set (match_operand:VF1_AVX512BW 0 "register_operand")
 	(float_extend:VF1_AVX512BW
 	  (match_operand:<sf_cvt_bf16> 1 "nonimmediate_operand")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2 && !HONOR_NANS (BFmode)"
 {
   ix86_expand_vector_bf2sf_with_vec_perm (operands[0], operands[1]);
   DONE;
