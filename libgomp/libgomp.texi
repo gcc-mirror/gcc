@@ -443,8 +443,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       of the @code{interop} construct @tab N @tab
 @item Invoke virtual member functions of C++ objects created on the host device
       on other devices @tab N @tab
-@item @code{iterator} and @code{mapper} as map-type modifier in @code{declare mapper}
-      @tab N @tab
+@item @code{mapper} as map-type modifier in @code{declare mapper} @tab N @tab
 @end multitable
 
 
@@ -668,7 +667,7 @@ specification in version 5.2.
 * Lock Routines::
 * Timing Routines::
 * Event Routine::
-@c * Interoperability Routines::
+* Interoperability Routines::
 * Memory Management Routines::
 @c * Tool Control Routine::
 * Environment Display Routine::
@@ -2211,8 +2210,9 @@ to the destination device's @var{dst} address shifted by @var{dst_offset}.
 Task dependence is expressed by passing an array of depend objects to
 @var{depobj_list}, where the number of array elements is passed as
 @var{depobj_count}; if the count is zero, the @var{depobj_list} argument is
-ignored.  The routine returns zero if the copying process has successfully
-been started and non-zero otherwise.
+ignored.  In C++ and Fortran, the @var{depobj_list} argument can also be
+omitted in that case.   The routine returns zero if the copying process has
+successfully been started and non-zero otherwise.
 
 Running this routine in a @code{target} region except on the initial device
 is not supported.
@@ -2332,7 +2332,8 @@ respectively.  The offset per dimension to the first element to be copied is
 given by the @var{dst_offset} and @var{src_offset} arguments.  Task dependence
 is expressed by passing an array of depend objects to @var{depobj_list}, where
 the number of array elements is passed as @var{depobj_count}; if the count is
-zero, the @var{depobj_list} argument is ignored.  The routine
+zero, the @var{depobj_list} argument is ignored.  In C++ and Fortran, the
+@var{depobj_list} argument can also be omitted in that case.  The routine
 returns zero on success and non-zero otherwise.
 
 The OpenMP specification only requires that @var{num_dims} up to three is
@@ -2961,21 +2962,311 @@ event handle that has already been fulfilled is also undefined.
 
 
 
-@c @node Interoperability Routines
-@c @section Interoperability Routines
-@c
-@c Routines to obtain properties from an @code{omp_interop_t} object.
-@c They have C linkage and do not throw exceptions.
-@c
-@c @menu
-@c * omp_get_num_interop_properties:: <fixme>
-@c * omp_get_interop_int:: <fixme>
-@c * omp_get_interop_ptr:: <fixme>
-@c * omp_get_interop_str:: <fixme>
-@c * omp_get_interop_name:: <fixme>
-@c * omp_get_interop_type_desc:: <fixme>
-@c * omp_get_interop_rc_desc:: <fixme>
-@c @end menu
+@node Interoperability Routines
+@section Interoperability Routines
+
+Routines to obtain properties from an object of OpenMP interop type.
+They have C linkage and do not throw exceptions.
+
+@menu
+* omp_get_num_interop_properties:: Get the number of implementation-specific properties
+* omp_get_interop_int:: Obtain integer-valued interoperability property
+* omp_get_interop_ptr:: Obtain pointer-valued interoperability property
+* omp_get_interop_str:: Obtain string-valued interoperability property
+* omp_get_interop_name:: Obtain the name of an interop_property value as string
+* omp_get_interop_type_desc:: Obtain type and description to an interop_property
+* omp_get_interop_rc_desc:: Obtain error string to an interop_rc error code
+@end menu
+
+
+
+@node omp_get_num_interop_properties
+@subsection @code{omp_get_num_interop_properties} -- Get the number of implementation-specific properties
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_num_interop_properties} function returns the number of
+implementation-defined interoperability properties available for the passed
+@var{interop}, extending the OpenMP-defined properties.  The available OpenMP
+interop_property-type values range from @code{omp_ipr_first} to the value
+returned by @code{omp_get_num_interop_properties} minus one.
+
+No implementation-defined properties are currently defined in GCC.
+
+@c Implementation remark: In GCC, the Fortran interface differs from the one shown
+@c below: the function has C binding, @var{interop} is passed by value and an
+@c integer of @code{c_int} kind is returned, which permits use of the same ABI as
+@c the C function.  This does not affect the usage of the function when GCC's
+@c @code{omp_lib} module or @code{omp_lib.h} header is used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_num_interop_properties(const omp_interop_t interop)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_num_interop_properties(interop)}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_interop_name}, @ref{omp_get_interop_type_desc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.1,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.1
+@end table
+
+
+
+@node omp_get_interop_int
+@subsection @code{omp_get_interop_int} -- Obtain integer-valued interoperability property
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_interop_int} function returns the integer value associated
+with the @var{property_id} interoperability property of the passed @var{interop}
+object.  The @var{ret_code} argument is optional, i.e. it can be omitted in C++
+and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
+@var{ret_code} (if present) is set to @code{omp_irc_success}.
+
+In GCC, the effect of running this routine in a @code{target} region that is not
+the initial device is unspecified.
+
+@c Implementation remark: In GCC, the Fortran interface differs from the one shown
+@c below: the function has C binding and @var{interop} and @var{property_id} are
+@c passed by value, which permits use of the same ABI as the C function.  This does
+@c not affect the usage of the function when GCC's @code{omp_lib} module or
+@c @code{omp_lib.h} header is used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{omp_intptr_t omp_get_interop_int(const omp_interop_t interop,
+                                   omp_interop_property_t property_id, int *ret_code)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer(c_intptr_t) function omp_get_interop_int(interop,
+                                   property_id, ret_code)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_intptr_t}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@item                   @tab @code{integer(omp_interop_property_kind) property_id}
+@item                   @tab @code{integer(omp_interop_rc_kind), optional, intent(out) :: ret_code}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_interop_ptr}, @ref{omp_get_interop_str}, @ref{omp_get_interop_rc_desc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.2,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.2
+@end table
+
+
+
+@node omp_get_interop_ptr
+@subsection @code{omp_get_interop_ptr} -- Obtain pointer-valued interoperability property
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_interop_int} function returns the pointer value associated with
+the @var{property_id} interoperability property of the passed @var{interop}
+object.  The @var{ret_code} argument is optional, i.e. it can be omitted in C++
+and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
+@var{ret_code} (if present) is set to @code{omp_irc_success}.
+
+In GCC, the effect of running this routine in a @code{target} region that is not
+the initial device is unspecified.
+
+@c Implementation remark: In GCC, the Fortran interface differs from the one shown
+@c below: the function has C binding and @var{interop} and @var{property_id} are
+@c passed by value, which permits use of the same ABI as the C function.  This does
+@c not affect the usage of the function when GCC's @code{omp_lib} module or
+@c @code{omp_lib.h} header is used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void *omp_get_interop_ptr(const omp_interop_t interop,
+                                   omp_interop_property_t property_id, int *ret_code)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function omp_get_interop_int(interop,
+                                   property_id, ret_code)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_ptr}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@item                   @tab @code{integer(omp_interop_property_kind) property_id}
+@item                   @tab @code{integer(omp_interop_rc_kind), optional, intent(out) :: ret_code}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_interop_int}, @ref{omp_get_interop_str}, @ref{omp_get_interop_rc_desc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.3,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.3
+@end table
+
+
+
+@node omp_get_interop_str
+@subsection @code{omp_get_interop_str} -- Obtain string-valued interoperability property
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_interop_str} function returns the string value associated with
+the @var{property_id} interoperability property of the passed @var{interop}
+object.  The @var{ret_code} argument is optional, i.e. it can be omitted in C++
+and Fortran or used with @code{NULL} as argument in C and C++.  If successful,
+@var{ret_code} (if present) is set to @code{omp_irc_success}.
+
+In GCC, the effect of running this routine in a @code{target} region that is not
+the initial device is unspecified.
+
+@c Implementation remark: In GCC, the Fortran interface differs from the one shown
+@c below: @var{interop} and @var{property_id} are passed by value.  This does not
+@c affect the usage of the function when GCC's @code{omp_lib} module or
+@c @code{omp_lib.h} header is used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{const char *omp_get_interop_str(const omp_interop_t interop,
+                                   omp_interop_property_t property_id, int *ret_code)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{character(:) function omp_get_interop_str(interop,
+                                   property_id, ret_code)}
+@item                   @tab @code{pointer :: omp_get_interop_str}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@item                   @tab @code{integer(omp_interop_property_kind) property_id}
+@item                   @tab @code{integer(omp_interop_rc_kind), optional, intent(out) :: ret_code}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_interop_int}, @ref{omp_get_interop_ptr}, @ref{omp_get_interop_rc_desc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.4,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.4
+@end table
+
+
+
+@node omp_get_interop_name
+@subsection @code{omp_get_interop_name} -- Obtain the name of an @code{interop_property} value as string
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_interop_name} function returns the name of the property
+itself as string; for the properties specified by the OpenMP specification,
+the name matches the name of the named constant with the @samp{omp_ipr_}
+prefix removed.
+
+@c Implementation remark: In GCC, the Fortran interface differs from the one shown
+@c below: @var{interop} and @var{property_id} are passed by value.  This does not
+@c affect the usage of the function when GCC's @code{omp_lib} module or
+@c @code{omp_lib.h} header is used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{const char *omp_get_interop_name(const omp_interop_t interop,
+                                   omp_interop_property_t property_id)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{character(:) function omp_get_interop_name(interop,
+                                   property_id)}
+@item                   @tab @code{pointer :: omp_get_interop_name}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@item                   @tab @code{integer(omp_interop_property_kind) property_id}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_num_interop_properties}, @ref{omp_get_interop_type_desc}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.5,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.5
+@end table
+
+
+
+@node omp_get_interop_type_desc
+@subsection @code{omp_get_interop_type_desc} -- Obtain type and description to an @code{interop_property}
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_interop_type_desc} function returns a string that describes in
+human-readable form the data type associated with the @var{property_id}
+interoperability property of the passed @var{interop} object.
+
+In GCC, this function returns the name of the C/C++ data type for this property
+or @samp{N/A} if this property is not available for the given foreign runtime.
+If @var{interop} is @code{omp_interop_none} or for invalid property values,
+a null pointer is returned. The effect of running this routine in a
+@code{target} region that is not the initial device is unspecified.
+
+@c Implementation remark: In GCC, the Fortran interface differs from the one shown
+@c below: @var{interop} and @var{property_id} are passed by value.  This does not
+@c affect the usage of the function when GCC's @code{omp_lib} module or
+@c @code{omp_lib.h} header is used.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{const char *omp_get_interop_type_desc(const omp_interop_t interop,
+                                   omp_interop_property_t property_id)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{character(:) function omp_get_interop_type_desc(interop,
+                                   property_id)}
+@item                   @tab @code{pointer :: omp_get_interop_type_desc}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@item                   @tab @code{integer(omp_interop_property_kind) property_id}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_num_interop_properties}, @ref{omp_get_interop_name}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.6,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.6
+@end table
+
+
+
+@node omp_get_interop_rc_desc
+@subsection @code{omp_get_interop_rc_desc} -- Obtain error string to an @code{interop_rc} error code
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_interop_rc_desc} function returns a string value describing
+the @var{ret_code} in human-readable form.
+
+The behavior is unspecified if value of @var{ret_code} was not set by an
+interoperability routine invoked for @var{interop}.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{const char *omp_get_interop_rc_desc(const omp_interop_t interop,
+                                   omp_interop_rc_t ret_code)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{character(:) function omp_get_interop_rc_desc(interop,
+                                   property_id, ret_code)}
+@item                   @tab @code{pointer :: omp_get_interop_rc_desc}
+@item                   @tab @code{integer(omp_interop_kind), intent(in) :: interop}
+@item                   @tab @code{integer (omp_interop_rc_kind) ret_code}
+@end multitable
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.12.7,
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 26.7
+@end table
+
+
 
 @node Memory Management Routines
 @section Memory Management Routines
