@@ -893,9 +893,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       pair<__node_ptr, __hash_code>
       _M_compute_hash_code(__node_ptr __hint, const key_type& __k) const;
 
-      // Insert node __n with hash code __code, in bucket __bkt if no
-      // rehash (assumes no element with same key already present).
+      // Insert node __n with hash code __code, in bucket __bkt (or another
+      // bucket if rehashing is needed).
+      // Assumes no element with equivalent key is already present.
       // Takes ownership of __n if insertion succeeds, throws otherwise.
+      // __n_elt is an estimated number of elements we expect to insert,
+      // used as a hint for rehashing when inserting a range.
       iterator
       _M_insert_unique_node(size_type __bkt, __hash_code,
 			    __node_ptr __n, size_type __n_elt = 1);
