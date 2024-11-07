@@ -400,6 +400,51 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
   outer2->probability = profile_probability::never ();
 }
 
+/* Replace the conditions in INNER_COND with COND.
+   Replace OUTER_COND with a constant.  */
+
+static bool
+ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
+			gcond *outer_cond, bool outer_inv,
+			tree cond, bool must_canon, tree cond2)
+{
+  bool result_inv = inner_inv;
+
+  gcc_checking_assert (!cond2);
+
+  if (result_inv)
+    cond = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
+
+  if (tree tcanon = canonicalize_cond_expr_cond (cond))
+    cond = tcanon;
+  else if (must_canon)
+    return false;
+
+    {
+      if (!is_gimple_condexpr_for_cond (cond))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (inner_cond);
+	  cond = force_gimple_operand_gsi_1 (&gsi, cond,
+					     is_gimple_condexpr_for_cond,
+					     NULL, true, GSI_SAME_STMT);
+	}
+      gimple_cond_set_condition_from_tree (inner_cond, cond);
+      update_stmt (inner_cond);
+
+      /* Leave CFG optimization to cfg_cleanup.  */
+      gimple_cond_set_condition_from_tree (outer_cond,
+					   outer_inv
+					   ? boolean_false_node
+					   : boolean_true_node);
+      update_stmt (outer_cond);
+    }
+
+  update_profile_after_ifcombine (gimple_bb (inner_cond),
+				  gimple_bb (outer_cond));
+
+  return true;
+}
+
 /* If-convert on a and pattern with a common else block.  The inner
    if is specified by its INNER_COND_BB, the outer by OUTER_COND_BB.
    inner_inv, outer_inv indicate whether the conditions are inverted.
@@ -409,7 +454,6 @@ static bool
 ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 		   basic_block outer_cond_bb, bool outer_inv)
 {
-  bool result_inv = inner_inv;
   gimple_stmt_iterator gsi;
   tree name1, name2, bit1, bit2, bits1, bits2;
 
@@ -447,26 +491,13 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       t2 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (name1), name1, t);
       t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
 				     true, GSI_SAME_STMT);
-      t = fold_build2 (result_inv ? NE_EXPR : EQ_EXPR,
-		       boolean_type_node, t2, t);
-      t = canonicalize_cond_expr_cond (t);
-      if (!t)
+
+      t = fold_build2 (EQ_EXPR, boolean_type_node, t2, t);
+
+      if (!ifcombine_replace_cond (inner_cond, inner_inv,
+				   outer_cond, outer_inv,
+				   t, true, NULL_TREE))
 	return false;
-      if (!is_gimple_condexpr_for_cond (t))
-	{
-	  gsi = gsi_for_stmt (inner_cond);
-	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
-					  NULL, true, GSI_SAME_STMT);
-	}
-      gimple_cond_set_condition_from_tree (inner_cond, t);
-      update_stmt (inner_cond);
-
-      /* Leave CFG optimization to cfg_cleanup.  */
-      gimple_cond_set_condition_from_tree (outer_cond,
-	outer_inv ? boolean_false_node : boolean_true_node);
-      update_stmt (outer_cond);
-
-      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{
@@ -486,9 +517,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
      In that case remove the outer test and change the inner one to
      test for name & (bits1 | bits2) != 0.  */
   else if (recognize_bits_test (inner_cond, &name1, &bits1, !inner_inv)
-      && recognize_bits_test (outer_cond, &name2, &bits2, !outer_inv))
+	   && recognize_bits_test (outer_cond, &name2, &bits2, !outer_inv))
     {
-      gimple_stmt_iterator gsi;
       tree t;
 
       if ((TREE_CODE (name1) == SSA_NAME
@@ -531,33 +561,14 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	  bits1 = fold_convert (TREE_TYPE (bits2), bits1);
 	}
 
-      /* Do it.  */
-      gsi = gsi_for_stmt (inner_cond);
       t = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (name1), bits1, bits2);
-      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-				    true, GSI_SAME_STMT);
       t = fold_build2 (BIT_AND_EXPR, TREE_TYPE (name1), name1, t);
-      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-				    true, GSI_SAME_STMT);
-      t = fold_build2 (result_inv ? NE_EXPR : EQ_EXPR, boolean_type_node, t,
+      t = fold_build2 (EQ_EXPR, boolean_type_node, t,
 		       build_int_cst (TREE_TYPE (t), 0));
-      t = canonicalize_cond_expr_cond (t);
-      if (!t)
+      if (!ifcombine_replace_cond (inner_cond, inner_inv,
+				   outer_cond, outer_inv,
+				   t, false, NULL_TREE))
 	return false;
-      if (!is_gimple_condexpr_for_cond (t))
-	{
-	  gsi = gsi_for_stmt (inner_cond);
-	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
-					  NULL, true, GSI_SAME_STMT);
-	}
-      gimple_cond_set_condition_from_tree (inner_cond, t);
-      update_stmt (inner_cond);
-
-      /* Leave CFG optimization to cfg_cleanup.  */
-      gimple_cond_set_condition_from_tree (outer_cond,
-	outer_inv ? boolean_false_node : boolean_true_node);
-      update_stmt (outer_cond);
-      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
 
       if (dump_file)
 	{
@@ -577,7 +588,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
   else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
 	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison)
     {
-      tree t;
+      tree t, ts = NULL_TREE;
       enum tree_code inner_cond_code = gimple_cond_code (inner_cond);
       enum tree_code outer_cond_code = gimple_cond_code (outer_cond);
 
@@ -603,7 +614,6 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 					    gimple_bb (outer_cond))))
 	{
 	  tree t1, t2;
-	  gimple_stmt_iterator gsi;
 	  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
 	  if (param_logical_op_non_short_circuit != -1)
 	    logical_op_non_short_circuit
@@ -625,39 +635,22 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 				gimple_cond_rhs (outer_cond));
 	  t = fold_build2_loc (gimple_location (inner_cond),
 			       TRUTH_AND_EXPR, boolean_type_node, t1, t2);
-	  if (result_inv)
-	    {
-	      t = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (t), t);
-	      result_inv = false;
-	    }
-	  gsi = gsi_for_stmt (inner_cond);
-	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
-					  NULL, true, GSI_SAME_STMT);
         }
-      if (result_inv)
-	t = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (t), t);
-      t = canonicalize_cond_expr_cond (t);
-      if (!t)
-	return false;
-      if (!is_gimple_condexpr_for_cond (t))
-	{
-	  gsi = gsi_for_stmt (inner_cond);
-	  t = force_gimple_operand_gsi_1 (&gsi, t, is_gimple_condexpr_for_cond,
-					  NULL, true, GSI_SAME_STMT);
-	}
-      gimple_cond_set_condition_from_tree (inner_cond, t);
-      update_stmt (inner_cond);
 
-      /* Leave CFG optimization to cfg_cleanup.  */
-      gimple_cond_set_condition_from_tree (outer_cond,
-	outer_inv ? boolean_false_node : boolean_true_node);
-      update_stmt (outer_cond);
-      update_profile_after_ifcombine (inner_cond_bb, outer_cond_bb);
+      if (!ifcombine_replace_cond (inner_cond, inner_inv,
+				   outer_cond, outer_inv,
+				   t, false, ts))
+	return false;
 
       if (dump_file)
 	{
 	  fprintf (dump_file, "optimizing two comparisons to ");
 	  print_generic_expr (dump_file, t);
+	  if (ts)
+	    {
+	      fprintf (dump_file, " and ");
+	      print_generic_expr (dump_file, ts);
+	    }
 	  fprintf (dump_file, "\n");
 	}
 
