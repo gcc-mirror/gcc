@@ -130,7 +130,7 @@ bb_no_side_effects_p (basic_block bb)
       enum tree_code rhs_code;
       if (gimple_has_side_effects (stmt)
 	  || gimple_could_trap_p (stmt)
-	  || gimple_vuse (stmt)
+	  || gimple_vdef (stmt)
 	  /* We need to rewrite stmts with undefined overflow to use
 	     unsigned arithmetic but cannot do so for signed division.  */
 	  || ((ass = dyn_cast <gassign *> (stmt))
