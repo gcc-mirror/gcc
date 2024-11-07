@@ -33,7 +33,7 @@
 
 #include <tuple>		// for std::tuple, std::forward_as_tuple
 #include <bits/functional_hash.h> // for __is_fast_hash
-#include <bits/stl_algobase.h>	// for std::min, std::is_permutation.
+#include <bits/stl_algobase.h>	// for std::min
 #include <bits/stl_pair.h>	// for std::pair
 #include <ext/aligned_buffer.h>	// for __gnu_cxx::__aligned_buffer
 #include <ext/alloc_traits.h>	// for std::__alloc_rebind
