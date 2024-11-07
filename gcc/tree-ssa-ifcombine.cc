@@ -509,6 +509,25 @@ ifcombine_mark_ssa_name_walk (tree *t, int *, void *data_)
   return NULL;
 }
 
+/* Rewrite a stmt, that presumably used to be guarded by conditions that could
+   avoid undefined overflow, into one that has well-defined overflow, so that
+   it won't invoke undefined behavior once the guarding conditions change.  */
+
+static inline void
+ifcombine_rewrite_to_defined_overflow (gimple_stmt_iterator gsi)
+{
+  gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi));
+  if (!ass)
+    return;
+  tree lhs = gimple_assign_lhs (ass);
+  if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+       || POINTER_TYPE_P (TREE_TYPE (lhs)))
+      && arith_code_with_undefined_signed_overflow
+      (gimple_assign_rhs_code (ass)))
+    rewrite_to_defined_overflow (&gsi);
+}
+
+
 /* Replace the conditions in INNER_COND and OUTER_COND with COND and COND2.
    COND and COND2 are computed for insertion at INNER_COND, with OUTER_COND
    replaced with a constant, but if there are intervening blocks, it's best to
@@ -519,6 +538,7 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 			gcond *outer_cond, bool outer_inv,
 			tree cond, bool must_canon, tree cond2)
 {
+  bool split_single_cond = false;
   /* Split cond into cond2 if they're contiguous.  ??? We might be able to
      handle ORIF as well, inverting both conditions, but it's not clear that
      this would be enough, and it never comes up.  */
@@ -528,11 +548,13 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
     {
       cond2 = TREE_OPERAND (cond, 1);
       cond = TREE_OPERAND (cond, 0);
+      split_single_cond = true;
     }
 
   bool outer_p = cond2 || (single_pred (gimple_bb (inner_cond))
 			   != gimple_bb (outer_cond));
   bool result_inv = outer_p ? outer_inv : inner_inv;
+  bool strictening_outer_cond = !split_single_cond && outer_p;
 
   if (result_inv)
     cond = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (cond), cond);
@@ -559,9 +581,11 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 
 	if (!bitmap_empty_p (used))
 	  {
+	    const int max_stmts = 6;
+	    auto_vec<gimple *, max_stmts> stmts;
+
 	    /* Iterate up from inner_cond, moving DEFs identified as used by
 	       cond, and marking USEs in the DEFs for moving as well.  */
-	    gimple_stmt_iterator gsins = gsi_for_stmt (outer_cond);
 	    for (basic_block bb = gimple_bb (inner_cond);
 		 bb != outer_bb; bb = single_pred (bb))
 	      {
@@ -583,11 +607,14 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 		    if (!move)
 		      continue;
 
+		    if (stmts.length () < max_stmts)
+		      stmts.quick_push (stmt);
+		    else
+		      return false;
+
 		    /* Mark uses in STMT before moving it.  */
 		    FOR_EACH_SSA_TREE_OPERAND (t, stmt, it, SSA_OP_USE)
 		      ifcombine_mark_ssa_name (used, t, outer_bb);
-
-		    gsi_move_before (&gsitr, &gsins, GSI_NEW_STMT);
 		  }
 
 		/* Surprisingly, there may be PHI nodes in single-predecessor
@@ -610,22 +637,59 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 			continue;
 		      }
 
+		    if (stmts.length () < max_stmts)
+		      stmts.quick_push (phi);
+		    else
+		      return false;
+
 		    /* Mark uses in STMT before moving it.  */
 		    use_operand_p use_p;
 		    ssa_op_iter it;
 		    FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
 		      ifcombine_mark_ssa_name (used, USE_FROM_PTR (use_p),
 					       outer_bb);
+		  }
+	      }
 
+	    /* ??? Test whether it makes sense to move STMTS.  */
+
+	    /* Move the STMTS that need moving.  From this point on, we're
+	       committing to the attempted ifcombine.  */
+	    gimple_stmt_iterator gsins = gsi_for_stmt (outer_cond);
+	    unsigned i;
+	    gimple *stmt;
+	    FOR_EACH_VEC_ELT (stmts, i, stmt)
+	      {
+		if (gphi *phi = dyn_cast <gphi *> (stmt))
+		  {
+		    tree def = gimple_phi_result (phi);
 		    tree use = gimple_phi_arg_def (phi, 0);
 		    location_t loc = gimple_phi_arg_location (phi, 0);
 
+		    gphi_iterator gsi = gsi_for_phi (phi);
 		    remove_phi_node (&gsi, false);
 
 		    gassign *a = gimple_build_assign (def, use);
 		    gimple_set_location (a, loc);
 		    gsi_insert_before (&gsins, a, GSI_NEW_STMT);
 		  }
+		else
+		  {
+		    gimple_stmt_iterator gsitr = gsi_for_stmt (stmt);
+		    gsi_move_before (&gsitr, &gsins, GSI_NEW_STMT);
+		  }
+	      }
+
+	    for (; gsi_stmt (gsins) != outer_cond; gsi_next (&gsins))
+	      {
+		/* Clear range info from all defs we've moved from under
+		   conditions.  */
+		tree t;
+		ssa_op_iter it;
+		FOR_EACH_SSA_TREE_OPERAND (t, gsi_stmt (gsins), it, SSA_OP_DEF)
+		  reset_flow_sensitive_info (t);
+		/* Avoid introducing undefined overflows while at that.  */
+		ifcombine_rewrite_to_defined_overflow (gsins);
 	      }
 	  }
       }
@@ -683,6 +747,27 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 					   ? boolean_false_node
 					   : boolean_true_node);
       update_stmt (outer_cond);
+    }
+
+  /* We're changing conditions that guard inner blocks, so reset flow sensitive
+     info and avoid introducing undefined behavior.  */
+  for (basic_block bb = gimple_bb (inner_cond), end = gimple_bb (outer_cond);
+       bb != end; bb = single_pred (bb))
+    {
+      /* Clear range info from all stmts in BB which is now guarded by
+	 different conditionals.  */
+      reset_flow_sensitive_info_in_bb (gimple_bb (inner_cond));
+
+      /* We only need to worry about introducing undefined behavior if we've
+	 relaxed the outer condition.  */
+      if (strictening_outer_cond)
+	continue;
+
+      /* Avoid introducing undefined behavior as we move stmts that used to be
+	 guarded by OUTER_COND.  */
+      for (gimple_stmt_iterator gsi = gsi_start_bb (gimple_bb (inner_cond));
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	ifcombine_rewrite_to_defined_overflow (gsi);
     }
 
   update_profile_after_ifcombine (gimple_bb (inner_cond),
@@ -1185,28 +1270,7 @@ pass_tree_ifcombine::execute (function *fun)
 
       if (safe_is_a <gcond *> (*gsi_last_bb (bb)))
 	if (tree_ssa_ifcombine_bb (bb))
-	  {
-	    /* Clear range info from all stmts in BB which is now executed
-	       conditional on a always true/false condition.  ??? When we
-	       combine noncontiguous blocks, do we need to adjust the
-	       intervening blocks as well?  If we leave outer conditions
-	       nonconstant, do we still need to modify them?  */
-	    reset_flow_sensitive_info_in_bb (bb);
-	    for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-		 gsi_next (&gsi))
-	      {
-		gassign *ass = dyn_cast <gassign *> (gsi_stmt (gsi));
-		if (!ass)
-		  continue;
-		tree lhs = gimple_assign_lhs (ass);
-		if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-		     || POINTER_TYPE_P (TREE_TYPE (lhs)))
-		    && arith_code_with_undefined_signed_overflow
-			 (gimple_assign_rhs_code (ass)))
-		  rewrite_to_defined_overflow (&gsi);
-	      }
-	    cfg_changed |= true;
-	  }
+	  cfg_changed |= true;
     }
 
   free (bbs);
