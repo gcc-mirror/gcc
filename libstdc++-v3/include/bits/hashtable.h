@@ -353,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Functor used to map hash code to bucket index must be"
 		    " noexcept");
 
-      // To compute bucket index we also need _ExtractKey be non-throwing.
+      // To compute bucket index we also need _ExtractKey to be non-throwing.
       static_assert(is_nothrow_default_constructible<_ExtractKey>::value,
 		    "_ExtractKey must be nothrow default constructible");
       static_assert(noexcept(
