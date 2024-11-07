@@ -10307,9 +10307,13 @@ riscv_override_options_internal (struct gcc_options *opts)
   const struct riscv_tune_info *cpu;
 
   /* The presence of the M extension implies that division instructions
-     are present, so include them unless explicitly disabled.  */
+     are present, so include them unless explicitly disabled.
+     Similarly, if the M extension is not available, then disable
+     division instructions, unless they are explicitly enabled.  */
   if (TARGET_MUL_OPTS_P (opts) && (target_flags_explicit & MASK_DIV) == 0)
     opts->x_target_flags |= MASK_DIV;
+  else if (!TARGET_MUL_OPTS_P (opts) && (target_flags_explicit & MASK_DIV) == 0)
+    opts->x_target_flags &= ~MASK_DIV;
   else if (!TARGET_MUL_OPTS_P (opts) && TARGET_DIV_OPTS_P (opts))
     error ("%<-mdiv%> requires %<-march%> to subsume the %<M%> extension");
 
