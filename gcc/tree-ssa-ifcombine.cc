@@ -402,14 +402,14 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 
 /* If-convert on a and pattern with a common else block.  The inner
    if is specified by its INNER_COND_BB, the outer by OUTER_COND_BB.
-   inner_inv, outer_inv and result_inv indicate whether the conditions
-   are inverted.
+   inner_inv, outer_inv indicate whether the conditions are inverted.
    Returns true if the edges to the common else basic-block were merged.  */
 
 static bool
 ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
-		   basic_block outer_cond_bb, bool outer_inv, bool result_inv)
+		   basic_block outer_cond_bb, bool outer_inv)
 {
+  bool result_inv = inner_inv;
   gimple_stmt_iterator gsi;
   tree name1, name2, bit1, bit2, bits1, bits2;
 
@@ -694,8 +694,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 	   <else_bb>
 	     ...
        */
-      return ifcombine_ifandif (inner_cond_bb, false, outer_cond_bb, false,
-				false);
+      return ifcombine_ifandif (inner_cond_bb, false, outer_cond_bb, false);
     }
 
   /* And a version where the outer condition is negated.  */
@@ -712,8 +711,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 	   <else_bb>
 	     ...
        */
-      return ifcombine_ifandif (inner_cond_bb, false, outer_cond_bb, true,
-				false);
+      return ifcombine_ifandif (inner_cond_bb, false, outer_cond_bb, true);
     }
 
   /* The || form is characterized by a common then_bb with the
@@ -732,8 +730,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 	   <then_bb>
 	     ...
        */
-      return ifcombine_ifandif (inner_cond_bb, true, outer_cond_bb, true,
-				true);
+      return ifcombine_ifandif (inner_cond_bb, true, outer_cond_bb, true);
     }
 
   /* And a version where the outer condition is negated.  */
@@ -749,8 +746,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 	   <then_bb>
 	     ...
        */
-      return ifcombine_ifandif (inner_cond_bb, true, outer_cond_bb, false,
-				true);
+      return ifcombine_ifandif (inner_cond_bb, true, outer_cond_bb, false);
     }
 
   return false;
