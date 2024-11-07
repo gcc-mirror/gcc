@@ -3620,7 +3620,9 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return optimize && optimize_function_for_speed_p (cfun);
+      return TARGET_ALIGN_TIGHT_LOOPS
+	     && optimize
+	     && optimize_function_for_speed_p (cfun);
     }
 
   unsigned int execute (function *) final override

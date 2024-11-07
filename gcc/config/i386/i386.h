@@ -466,6 +466,9 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_USE_RCR ix86_tune_features[X86_TUNE_USE_RCR]
 #define TARGET_SSE_MOVCC_USE_BLENDV \
 	ix86_tune_features[X86_TUNE_SSE_MOVCC_USE_BLENDV]
+#define TARGET_ALIGN_TIGHT_LOOPS \
+	 ix86_tune_features[X86_TUNE_ALIGN_TIGHT_LOOPS]
+
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {

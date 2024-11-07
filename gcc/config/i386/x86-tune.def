@@ -214,7 +214,7 @@ DEF_TUNE (X86_TUNE_SINGLE_POP, "single_pop", m_386 | m_486 | m_PENT
 DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop", m_PENT | m_LAKEMONT)
 
 /*****************************************************************************/
-/* Branch predictor tuning  		                                     */
+/* Branch predictor tuning and Front-end tuning  		                                     */
 /*****************************************************************************/
 
 /* X86_TUNE_PAD_SHORT_FUNCTION: Make every function to be at least 4
@@ -234,6 +234,10 @@ DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
 DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
 	  m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_GOLDMONT
 	  | m_GOLDMONT_PLUS | m_INTEL | m_ATHLON_K8 | m_AMDFAM10)
+
+/* X86_TUNE_ALIGN_TIGHT_LOOPS: if false, tight loops are not aligned. */
+DEF_TUNE (X86_TUNE_ALIGN_TIGHT_LOOPS, "align_tight_loops",
+	 ~(m_ZHAOXIN | m_CASCADELAKE | m_SKYLAKE_AVX512))
 
 /*****************************************************************************/
 /* Integer instruction selection tuning                                      */
