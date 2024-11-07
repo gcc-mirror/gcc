@@ -2305,33 +2305,47 @@ public:
       return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
 
     /* If one of the operands is all integer -1, fold to svneg.  */
-    tree pg = gimple_call_arg (f.call, 0);
-    tree negated_op = NULL;
-    if (integer_minus_onep (op2))
-      negated_op = op1;
-    else if (integer_minus_onep (op1))
-      negated_op = op2;
-    if (!f.type_suffix (0).unsigned_p && negated_op)
+    if (integer_minus_onep (op1) || integer_minus_onep (op2))
       {
-	function_instance instance ("svneg", functions::svneg, shapes::unary,
-				    MODE_none, f.type_suffix_ids, GROUP_none,
-				    f.pred, FPM_unused);
-	gcall *call = f.redirect_call (instance);
-	unsigned offset_index = 0;
-	if (f.pred == PRED_m)
+	auto mul_by_m1 = [](gimple_folder &f, tree lhs_conv,
+			    vec<tree> &args_conv) -> gimple *
 	  {
-	    offset_index = 1;
-	    gimple_call_set_arg (call, 0, op1);
-	  }
-	else
-	  gimple_set_num_ops (call, 5);
-	gimple_call_set_arg (call, offset_index, pg);
-	gimple_call_set_arg (call, offset_index + 1, negated_op);
-	return call;
+	    gcc_assert (lhs_conv && args_conv.length () == 3);
+	    tree pg = args_conv[0];
+	    tree op1 = args_conv[1];
+	    tree op2 = args_conv[2];
+	    tree negated_op = op1;
+	    if (integer_minus_onep (op1))
+	      negated_op = op2;
+	    type_suffix_pair signed_tsp =
+	      {find_type_suffix (TYPE_signed, f.type_suffix (0).element_bits),
+		f.type_suffix_ids[1]};
+	    function_instance instance ("svneg", functions::svneg,
+					shapes::unary, MODE_none, signed_tsp,
+					GROUP_none, f.pred, FPM_unused);
+	    gcall *call = f.redirect_call (instance);
+	    gimple_call_set_lhs (call, lhs_conv);
+	    unsigned offset = 0;
+	    if (f.pred == PRED_m)
+	      {
+		offset = 1;
+		gimple_call_set_arg (call, 0, op1);
+	      }
+	    else
+	      gimple_set_num_ops (call, 5);
+	    gimple_call_set_arg (call, offset, pg);
+	    gimple_call_set_arg (call, offset + 1, negated_op);
+	    return call;
+	  };
+	tree ty =
+	  get_vector_type (find_type_suffix (TYPE_signed,
+					     f.type_suffix (0).element_bits));
+	return f.convert_and_fold (ty, mul_by_m1);
       }
 
     /* If one of the operands is a uniform power of 2, fold to a left shift
        by immediate.  */
+    tree pg = gimple_call_arg (f.call, 0);
     tree op1_cst = uniform_integer_cst_p (op1);
     tree op2_cst = uniform_integer_cst_p (op2);
     tree shift_op1, shift_op2 = NULL;

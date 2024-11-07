@@ -649,6 +649,8 @@ public:
   gcall *redirect_call (const function_instance &);
   gimple *redirect_pred_x ();
   gimple *fold_pfalse ();
+  gimple *convert_and_fold (tree, gimple *(*) (gimple_folder &,
+					       tree, vec<tree> &));
 
   gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
@@ -892,6 +894,14 @@ tuple_type_field (tree type)
     if (TREE_CODE (field) == FIELD_DECL)
       return field;
   gcc_unreachable ();
+}
+
+/* Return the vector type associated with TYPE.  */
+inline tree
+get_vector_type (sve_type type)
+{
+  auto vector_type = type_suffixes[type.type].vector_type;
+  return acle_vector_types[type.num_vectors - 1][vector_type];
 }
 
 inline function_instance::

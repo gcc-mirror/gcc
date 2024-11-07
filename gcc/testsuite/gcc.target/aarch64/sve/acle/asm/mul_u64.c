@@ -183,13 +183,24 @@ TEST_UNIFORM_Z (mul_3_u64_m_untied, svuint64_t,
 
 /*
 ** mul_m1_u64_m:
-**	mov	(z[0-9]+)\.b, #-1
-**	mul	z0\.d, p0/m, z0\.d, \1\.d
+**	neg	z0\.d, p0/m, z0\.d
 **	ret
 */
 TEST_UNIFORM_Z (mul_m1_u64_m, svuint64_t,
 		z0 = svmul_n_u64_m (p0, z0, -1),
 		z0 = svmul_m (p0, z0, -1))
+
+/*
+** mul_m1r_u64_m:
+**	mov	(z[0-9]+)\.b, #-1
+**	mov	(z[0-9]+\.d), z0\.d
+**	movprfx	z0, \1
+**	neg	z0\.d, p0/m, \2
+**	ret
+*/
+TEST_UNIFORM_Z (mul_m1r_u64_m, svuint64_t,
+		z0 = svmul_u64_m (p0, svdup_u64 (-1), z0),
+		z0 = svmul_m (p0, svdup_u64 (-1), z0))
 
 /*
 ** mul_u64_z_tied1:
@@ -597,12 +608,21 @@ TEST_UNIFORM_Z (mul_255_u64_x, svuint64_t,
 
 /*
 ** mul_m1_u64_x:
-**	mul	z0\.d, z0\.d, #-1
+**	neg	z0\.d, p0/m, z0\.d
 **	ret
 */
 TEST_UNIFORM_Z (mul_m1_u64_x, svuint64_t,
 		z0 = svmul_n_u64_x (p0, z0, -1),
 		z0 = svmul_x (p0, z0, -1))
+
+/*
+** mul_m1r_u64_x:
+**	neg	z0\.d, p0/m, z0\.d
+**	ret
+*/
+TEST_UNIFORM_Z (mul_m1r_u64_x, svuint64_t,
+		z0 = svmul_u64_x (p0, svdup_u64 (-1), z0),
+		z0 = svmul_x (p0, svdup_u64 (-1), z0))
 
 /*
 ** mul_m127_u64_x:

@@ -174,8 +174,7 @@ TEST_UNIFORM_Z (mul_3_u8_m_untied, svuint8_t,
 
 /*
 ** mul_m1_u8_m:
-**	mov	(z[0-9]+)\.b, #-1
-**	mul	z0\.b, p0/m, z0\.b, \1\.b
+**	neg	z0\.b, p0/m, z0\.b
 **	ret
 */
 TEST_UNIFORM_Z (mul_m1_u8_m, svuint8_t,
@@ -559,7 +558,7 @@ TEST_UNIFORM_Z (mul_128_u8_x, svuint8_t,
 
 /*
 ** mul_255_u8_x:
-**	mul	z0\.b, z0\.b, #-1
+**	neg	z0\.b, p0/m, z0\.b
 **	ret
 */
 TEST_UNIFORM_Z (mul_255_u8_x, svuint8_t,
@@ -568,7 +567,7 @@ TEST_UNIFORM_Z (mul_255_u8_x, svuint8_t,
 
 /*
 ** mul_m1_u8_x:
-**	mul	z0\.b, z0\.b, #-1
+**	neg	z0\.b, p0/m, z0\.b
 **	ret
 */
 TEST_UNIFORM_Z (mul_m1_u8_x, svuint8_t,

@@ -1130,14 +1130,6 @@ num_vectors_to_group (unsigned int nvectors)
   gcc_unreachable ();
 }
 
-/* Return the vector type associated with TYPE.  */
-static tree
-get_vector_type (sve_type type)
-{
-  auto vector_type = type_suffixes[type.type].vector_type;
-  return acle_vector_types[type.num_vectors - 1][vector_type];
-}
-
 /* If FNDECL is an SVE builtin, return its function instance, otherwise
    return null.  */
 const function_instance *
@@ -3601,6 +3593,7 @@ gimple_folder::redirect_call (const function_instance &instance)
     return NULL;
 
   gimple_call_set_fndecl (call, rfn->decl);
+  gimple_call_set_fntype (call, TREE_TYPE (rfn->decl));
   return call;
 }
 
@@ -3673,6 +3666,46 @@ gimple_folder::fold_pfalse ()
 	return fold_to_stmt_vops (gimple_build_nop ());
     }
   return nullptr;
+}
+
+/* Convert the lhs and all non-boolean vector-type operands to TYPE.
+   Pass the converted variables to the callback FP, and finally convert the
+   result back to the original type. Add the necessary conversion statements.
+   Return the new call.  */
+gimple *
+gimple_folder::convert_and_fold (tree type,
+				 gimple *(*fp) (gimple_folder &,
+						tree, vec<tree> &))
+{
+  gcc_assert (VECTOR_TYPE_P (type)
+	      && TYPE_MODE (type) != VNx16BImode);
+  tree old_ty = TREE_TYPE (lhs);
+  gimple_seq stmts = NULL;
+  bool convert_lhs_p = !useless_type_conversion_p (type, old_ty);
+  tree lhs_conv = convert_lhs_p ? create_tmp_var (type) : lhs;
+  unsigned int num_args = gimple_call_num_args (call);
+  auto_vec<tree, 16> args_conv;
+  args_conv.safe_grow (num_args);
+  for (unsigned int i = 0; i < num_args; ++i)
+    {
+      tree op = gimple_call_arg (call, i);
+      tree op_ty = TREE_TYPE (op);
+      args_conv[i] =
+	(VECTOR_TYPE_P (op_ty)
+	 && TYPE_MODE (op_ty) != VNx16BImode
+	 && !useless_type_conversion_p (op_ty, type))
+	? gimple_build (&stmts, VIEW_CONVERT_EXPR, type, op) : op;
+    }
+
+  gimple *new_stmt = fp (*this, lhs_conv, args_conv);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  if (convert_lhs_p)
+    {
+      tree t = build1 (VIEW_CONVERT_EXPR, old_ty, lhs_conv);
+      gimple *g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, t);
+      gsi_insert_after (gsi, g, GSI_SAME_STMT);
+    }
+  return new_stmt;
 }
 
 /* Fold the call to constant VAL.  */
