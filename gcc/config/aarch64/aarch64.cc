@@ -410,6 +410,7 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 #include "tuning_models/neoversen2.h"
 #include "tuning_models/neoversev2.h"
 #include "tuning_models/a64fx.h"
+#include "tuning_models/fujitsu_monaka.h"
 
 /* Support for fine-grained override of the tuning structures.  */
 struct aarch64_tuning_override_function
