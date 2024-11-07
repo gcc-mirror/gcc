@@ -126,6 +126,124 @@ test05()
   VERIFY( c2.empty() );
 }
 
+void
+test07()
+{
+  test_type c1{ 1, 3, 5 };
+  test_type c2{ 2, 4, 6 };
+  const test_type c3 = c2;
+
+  c1.merge(c2);
+  VERIFY( c1.size() == 6 );
+  VERIFY( c2.empty() );
+  const test_type c4 = c1;
+
+  c2 = c3;
+  c1.clear();
+  c1.merge(std::move(c2));
+  VERIFY( c1 == c3 );
+  VERIFY( c2.empty() );
+
+  c2.merge(std::move(c1));
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c1);
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c2);
+  VERIFY( c2 == c3 );
+
+  auto c5 = c4;
+  c2.merge(c5);
+  VERIFY( c2.size() == 9 );
+  VERIFY( c5.empty() );
+
+  c5 = c4;
+  c5.emplace(9);
+  c2.merge(c5);
+  VERIFY( c2.size() == 16 );
+  VERIFY( c5.empty() );
+
+}
+
+void
+test08()
+{
+  test_type c1{ 1, 3, 5 };
+  std::unordered_set<int, hash, equal> c2{ 2, 4, 6 };
+  const auto c3 = c2;
+
+  c1.merge(c2);
+  VERIFY( c1.size() == 6 );
+  VERIFY( c2.empty() );
+  const test_type c4 = c1;
+
+  c2 = c3;
+  c1.clear();
+  c1.merge(std::move(c2));
+  VERIFY( c2.empty() );
+
+  c2.merge(std::move(c1));
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c1);
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c2);
+  VERIFY( c2 == c3 );
+}
+
+void
+test09()
+{
+  struct stateful_hash
+  {
+    size_t seed = 0;
+
+    auto operator()(const int& i) const noexcept
+    { return std::hash<int>()(i) + seed; }
+  };
+
+  using set_type = std::unordered_multiset<int, stateful_hash>;
+  set_type c1({ 1, 3, 5 }, 0, stateful_hash{1});
+  set_type c2({ 2, 4, 6 }, 0, stateful_hash{2});
+  const auto c3 = c2;
+
+  c1.merge(c2);
+  VERIFY( c1.size() == 6 );
+  VERIFY( c2.empty() );
+
+  c2 = c3;
+  c1.clear();
+  c1.merge(std::move(c2));
+  VERIFY( c1 == c3 );
+  VERIFY( c2.empty() );
+
+  c2.merge(std::move(c1));
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c1);
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c2);
+  VERIFY( c2 == c3 );
+
+  test_type c4{ -1, -3, -5 };
+  c2.merge(c4);
+  VERIFY( c2.size() == 6 );
+  VERIFY( c4.empty() );
+  auto c6 = c3;
+  c6.merge(c2);
+  VERIFY( c6.size() == 9 );
+  VERIFY( c2.size() == 0 );
+}
+
 int
 main()
 {
@@ -134,4 +252,7 @@ main()
   test03();
   test04();
   test05();
+  test07();
+  test08();
+  test09();
 }

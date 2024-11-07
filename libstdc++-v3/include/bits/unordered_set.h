@@ -602,6 +602,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	merge(unordered_set<_Value, _H2, _P2, _Alloc>& __source)
 	{
+	  if constexpr (is_same_v<_H2, _Hash> && is_same_v<_P2, _Pred>)
+	    if (std::__addressof(__source) == this) [[__unlikely__]]
+	      return;
+
 	  using _Merge_helper = _Hash_merge_helper<unordered_set, _H2, _P2>;
 	  _M_h._M_merge_unique(_Merge_helper::_S_get_table(__source));
 	}
@@ -609,7 +613,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _H2, typename _P2>
 	void
 	merge(unordered_set<_Value, _H2, _P2, _Alloc>&& __source)
-	{ merge(__source); }
+	{
+	  using _Merge_helper = _Hash_merge_helper<unordered_set, _H2, _P2>;
+	  _M_h._M_merge_unique(_Merge_helper::_S_get_table(__source));
+	}
 
       template<typename _H2, typename _P2>
 	void
@@ -1452,6 +1459,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	merge(unordered_multiset<_Value, _H2, _P2, _Alloc>& __source)
 	{
+	  if constexpr (is_same_v<_H2, _Hash> && is_same_v<_P2, _Pred>)
+	    if (std::__addressof(__source) == this) [[__unlikely__]]
+	      return;
+
 	  using _Merge_helper
 	    = _Hash_merge_helper<unordered_multiset, _H2, _P2>;
 	  _M_h._M_merge_multi(_Merge_helper::_S_get_table(__source));
@@ -1460,7 +1471,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _H2, typename _P2>
 	void
 	merge(unordered_multiset<_Value, _H2, _P2, _Alloc>&& __source)
-	{ merge(__source); }
+	{
+	  using _Merge_helper
+	    = _Hash_merge_helper<unordered_multiset, _H2, _P2>;
+	  _M_h._M_merge_multi(_Merge_helper::_S_get_table(__source));
+	}
 
       template<typename _H2, typename _P2>
 	void

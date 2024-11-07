@@ -1212,6 +1212,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __nh;
       }
 
+      /// Merge from another container of the same type.
+      void
+      _M_merge_unique(_Hashtable& __src)
+      {
+	__glibcxx_assert(get_allocator() == __src.get_allocator());
+
+	auto __size = size();
+	auto __n_elt = __src.size();
+	size_type __first = 1;
+	// For a container of identical type we can use its private members.
+	auto __p = static_cast<__node_ptr>(&__src._M_before_begin);
+	while (__n_elt--)
+	  {
+	    const auto __prev = __p;
+	    __p = __p->_M_next();
+	    const auto& __node = *__p;
+	    const key_type& __k = _ExtractKey{}(__node._M_v());
+	    if (__size <= __small_size_threshold())
+	      {
+		auto __n = _M_begin();
+		for (; __n; __n = __n->_M_next())
+		  if (this->_M_key_equals(__k, *__n))
+		    break;
+		if (__n)
+		  continue;
+	      }
+
+	    __hash_code __code
+	      = _M_src_hash_code(__src.hash_function(), __k, __node);
+	    size_type __bkt = _M_bucket_index(__code);
+	    if (__size > __small_size_threshold())
+	      if (_M_find_node(__bkt, __k, __code) != nullptr)
+		continue;
+
+	    __hash_code __src_code = __src.hash_function()(__k);
+	    size_type __src_bkt = __src._M_bucket_index(__src_code);
+	    auto __nh = __src._M_extract_node(__src_bkt, __prev);
+	    _M_insert_unique_node(__bkt, __code, __nh._M_ptr,
+				  __first * __n_elt + 1);
+	    __nh.release();
+	    __first = 0;
+	    ++__size;
+	    __p = __prev;
+	  }
+      }
+
       /// Merge from a compatible container into one with unique keys.
       template<typename _Compatible_Hashtable>
 	void
@@ -1221,45 +1267,67 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      node_type>, "Node types are compatible");
 	  __glibcxx_assert(get_allocator() == __src.get_allocator());
 
+	  auto __size = size();
 	  auto __n_elt = __src.size();
+	  size_type __first = 1;
+	  // For a compatible container we can only use the public API,
+	  // so cbegin(), cend(), hash_function(), and extract(iterator).
 	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
+	      --__n_elt;
 	      auto __pos = __i++;
-	      const size_type __size = size();
 	      const key_type& __k = _ExtractKey{}(*__pos);
 	      if (__size <= __small_size_threshold())
 		{
-		  bool __found = false;
-		  for (auto __n = _M_begin(); __n; __n = __n->_M_next())
+		  auto __n = _M_begin();
+		  for (; __n; __n = __n->_M_next())
 		    if (this->_M_key_equals(__k, *__n))
-		      {
-			__found = true;
-			break;
-		      }
-
-		  if (__found)
-		    {
-		      if (__n_elt != 1)
-			--__n_elt;
-		      continue;
-		    }
+		      break;
+		  if (__n)
+		    continue;
 		}
 
 	      __hash_code __code
 		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
 	      size_type __bkt = _M_bucket_index(__code);
-	      if (__size <= __small_size_threshold()
-		  || _M_find_node(__bkt, __k, __code) == nullptr)
-		{
-		  auto __nh = __src.extract(__pos);
-		  _M_insert_unique_node(__bkt, __code, __nh._M_ptr, __n_elt);
-		  __nh.release();
-		  __n_elt = 1;
-		}
-	      else if (__n_elt != 1)
-		--__n_elt;
+	      if (__size > __small_size_threshold())
+		if (_M_find_node(__bkt, __k, __code) != nullptr)
+		  continue;
+
+	      auto __nh = __src.extract(__pos);
+	      _M_insert_unique_node(__bkt, __code, __nh._M_ptr,
+				    __first * __n_elt + 1);
+	      __nh.release();
+	      __first = 0;
+	      ++__size;
 	    }
 	}
+
+      /// Merge from another container of the same type.
+      void
+      _M_merge_multi(_Hashtable& __src)
+      {
+	__glibcxx_assert(get_allocator() == __src.get_allocator());
+
+	if (__src.size() == 0) [[__unlikely__]]
+	  return;
+
+	__node_ptr __hint = nullptr;
+	this->reserve(size() + __src.size());
+	// For a container of identical type we can use its private members.
+	auto __prev = static_cast<__node_ptr>(&__src._M_before_begin);
+	do
+	  {
+	    const auto& __node = *__prev->_M_next();
+	    const key_type& __k = _ExtractKey{}(__node._M_v());
+	    __hash_code __code = this->_M_hash_code(__k);
+	    size_type __src_bkt = __src._M_bucket_index(__node);
+	    auto __nh = __src._M_extract_node(__src_bkt, __prev);
+	    __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
+	    __nh.release();
+	  }
+	while (__prev->_M_nxt != nullptr);
+      }
 
       /// Merge from a compatible container into one with equivalent keys.
       template<typename _Compatible_Hashtable>
@@ -1272,6 +1340,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	  __node_ptr __hint = nullptr;
 	  this->reserve(size() + __src.size());
+	  // For a compatible container we can only use the public API,
+	  // so cbegin(), cend(), hash_function(), and extract(iterator).
 	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
 	      auto __pos = __i++;
