@@ -418,7 +418,7 @@
 	   (match_operand:SI 3 "register_operand" "Ucj")
 	   (const_int BHSD_BITS)]
 	  UNSPEC_PSEL))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_STREAMING"
   "psel\t%0, %1, %2.<bits_etype>[%w3, 0]"
 )
 
@@ -432,7 +432,7 @@
 	     (match_operand:SI 4 "const_int_operand"))
 	   (const_int BHSD_BITS)]
 	  UNSPEC_PSEL))]
-  "TARGET_STREAMING_SME2
+  "TARGET_STREAMING
    && UINTVAL (operands[4]) < 128 / <BHSD_BITS>"
   "psel\t%0, %1, %2.<bits_etype>[%w3, %4]"
 )

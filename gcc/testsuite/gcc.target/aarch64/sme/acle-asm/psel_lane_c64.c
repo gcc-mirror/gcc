@@ -1,6 +1,6 @@
 /* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
 
-#include "test_sme2_acle.h"
+#include "test_sme_acle.h"
 
 /*
 ** psel_lane_p0_p2_p7_0:
