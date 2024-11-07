@@ -611,6 +611,9 @@ btf_ext_init (void)
 void
 btf_ext_output (void)
 {
+  if (!ctf_get_tu_ctfc ())
+    return;
+
   output_btfext_header ();
   output_btfext_func_info (btf_ext);
   if (TARGET_BPF_CORE)
