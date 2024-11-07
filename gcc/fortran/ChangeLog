@@ -1,3 +1,10 @@
+2024-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117434
+	* interface.cc (gfc_compare_actual_formal): Skip 'Expected a
+	procedure pointer error' if the formal argument typespec has an
+	interface and the type of the actual arg is BT_PROCEDURE.
+
 2024-11-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR fortran/117442

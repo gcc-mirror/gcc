@@ -1,3 +1,62 @@
+2024-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecations.
+	* doc/html/*: Regenerate.
+	* include/c_compatibility/complex.h (_GLIBCXX_COMPLEX_H): Move
+	include guard to start of file. Include <complex> directly
+	instead of <ccomplex>.
+	* include/c_compatibility/tgmath.h: Include <cmath> and
+	<complex> directly, instead of <ctgmath>.
+	* include/c_global/ccomplex: Add deprecated #warning for C++17
+	and #error for C++20 if _GLIBCXX_USE_DEPRECATED == 0.
+	* include/c_global/ciso646: Likewise.
+	* include/c_global/cstdalign: Likewise.
+	* include/c_global/cstdbool: Likewise.
+	* include/c_global/ctgmath: Likewise.
+	* include/c_std/ciso646: Likewise.
+	* include/precompiled/stdc++.h: Do not include ccomplex,
+	ciso646, cstdalign, cstdbool, or ctgmath in C++17 and later.
+	* testsuite/18_support/headers/cstdalign/macros.cc: Check for
+	warnings and errors for unsupported dialects.
+	* testsuite/18_support/headers/cstdbool/macros.cc: Likewise.
+	* testsuite/26_numerics/headers/ctgmath/complex.cc: Likewise.
+	* testsuite/27_io/objects/char/1.cc: Do not include <ciso646>.
+	* testsuite/27_io/objects/wchar_t/1.cc: Likewise.
+	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc: Removed.
+	* testsuite/18_support/headers/cstdalign/std_c++0x_neg.cc: Removed.
+	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc: Removed.
+	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc: Removed.
+	* testsuite/18_support/headers/ciso646/macros.cc: New test.
+	* testsuite/18_support/headers/ciso646/macros.h.cc: New test.
+	* testsuite/18_support/headers/cstdbool/macros.h.cc: New test.
+	* testsuite/26_numerics/headers/ccomplex/complex.cc: New test.
+	* testsuite/26_numerics/headers/ccomplex/complex.h.cc: New test.
+	* testsuite/26_numerics/headers/ctgmath/complex.h.cc: New test.
+	* testsuite/18_support/headers/cstdalign/macros.h.cc: New file.
+
+2024-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_compatibility/complex.h (_GLIBCXX_COMPLEX_H): Move
+	include guard to start of the header.
+	* include/c_global/ctgmath (_GLIBCXX_CTGMATH): Likewise.
+
+2024-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr_deref): New
+	function template.
+	(__shared_ptr_access, __shared_ptr_access<>): Use it.
+
+2024-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (fs::directory_iterator::operator*): Use
+	shared_ptr::operator* instead of shared_ptr::operator->.
+	(fs::recursive_directory_iterator::options): Likewise.
+	(fs::recursive_directory_iterator::depth): Likewise.
+	(fs::recursive_directory_iterator::recursion_pending): Likewise.
+	(fs::recursive_directory_iterator::operator*): Likewise.
+	(fs::recursive_directory_iterator::disable_recursion_pending):
+	Likewise.
+
 2024-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR testsuite/113710

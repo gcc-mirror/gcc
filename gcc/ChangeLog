@@ -1,3 +1,95 @@
+2024-11-06  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR rtl-optimization/112398
+	* simplify-rtx.cc (simplify_context::simplify_unary_operation_1):
+	Simplify ZERO_EXTEND (SUBREG (NOT X)) to XOR (X, GET_MODE_MASK(SUBREG))
+	when X doesn't have any non-zero bits outside of SUBREG mode.
+
+2024-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (cdtor_record): Make position unsigned.
+
+2024-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* omp-general.cc (omp_max_vf): Cast the constant to poly_uint64.
+
+2024-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* internal-fn.cc (expand_GOMP_MAX_VF): New function.
+	* internal-fn.def (GOMP_MAX_VF): New internal function.
+	* omp-expand.cc (omp_adjust_chunk_size): Emit IFN_GOMP_MAX_VF when
+	called in offload context, otherwise assume host context.
+	* omp-offload.cc (execute_omp_device_lower): Expand IFN_GOMP_MAX_VF.
+
+2024-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* omp-expand.cc (is_in_offload_region): New function.
+	(omp_adjust_chunk_size): Add pass-through "offload" parameter.
+	(get_ws_args_for): Likewise.
+	(determine_parallel_type): Use is_in_offload_region to adjust call to
+	get_ws_args_for.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+
+2024-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::loop_versioning): Set
+	omp_max_vf to offload == false.
+	* omp-expand.cc (omp_adjust_chunk_size): Likewise.
+	* omp-general.cc (omp_max_vf): Add "offload" parameter, and detect
+	amdgcn offload devices.
+	* omp-general.h (omp_max_vf): Likewise.
+	* omp-low.cc (lower_rec_simd_input_clauses): Pass offload state to
+	omp_max_vf.
+
+2024-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-assume.cc (assume_query::assume_query): Add debug output.
+	(assume_query::update_parms): Likewise.
+	(assume_query::calculate_phi): Likewise.
+	(assume_query::calculate_op): Likewise.  Also pick up any
+	merged path values.
+	(assume_query::calculate_stmt): Likewise.
+
+2024-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (class diagnostic_context): Fix typo in leading
+	comment.
+
+2024-11-06  Michal Jires  <mjires@suse.cz>
+
+	* ipa-prop.cc (write_ipcp_transformation_info): Disable
+	uneeded value propagation.
+	* lto-cgraph.cc (lto_symtab_encoder_encode): Default values.
+	(lto_symtab_encoder_always_inlined_p): New.
+	(lto_set_symtab_encoder_not_always_inlined): New.
+	(add_node_to): Set always inlined.
+	* lto-streamer.h (struct lto_encoder_entry): New field.
+	(lto_symtab_encoder_always_inlined_p): New.
+
+2024-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117439
+	* gimple-ssa-store-merging.cc
+	(imm_store_chain_info::coalesce_immediate_stores): Punt if merging of
+	any of the additional overlapping stores would result in growing the
+	bitregion size over param_store_merging_max_size.
+	(pass_store_merging::process_store): Terminate all aliasing chains
+	for stores with bitregion larger than param_store_merging_max_size.
+
+2024-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117439
+	* gimple-ssa-store-merging.cc (encode_tree_to_bitpos): For
+	empty_ctor_p use !sub_byte_op_p even if bitlen doesn't have an
+	integral mode.
+
+2024-11-06  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117304
+	* config/i386/i386-builtin.def: Add OPTION_MASK_ISA2_EVEX512 for some
+	AVX512 512-bits instructions.
+
 2024-11-05  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* match.pd (X != 0 ? X + ~0 : 0): Fix comment.

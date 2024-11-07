@@ -1,3 +1,54 @@
+2024-11-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx10_2-comibf-2.c: Require avx10_2 target.
+
+2024-11-06  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR rtl-optimization/112398
+	* gcc.target/riscv/pr112398.c: New test.
+
+2024-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.dg/gomp/max_vf-1.c: New test.
+
+2024-11-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63388
+	* g++.dg/analyzer/infinite-recursion-pr63388.C: New test.
+
+2024-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.old-deja/g++.other/headers1.C: Do not include ciso646 for
+	C++17 and later.
+
+2024-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117439
+	* g++.dg/opt/pr117439.C: New test.
+
+2024-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117434
+	* gfortran.dg/proc_ptr_54.f90: New test. This is temporarily
+	compile-only until one one seven four five five is fixed.
+	* gfortran.dg/proc_ptr_55.f90: New test.
+	* gfortran.dg/proc_ptr_56.f90: New test.
+
+2024-11-06  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117304
+	* gcc.target/i386/pr117304-1.c: New test.
+
+2024-11-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/avx10_2-512-movrs-1.c: Also scan (%e.x).
+	* gcc.target/i386/avx10_2-movrs-1.c: Likewise.
+	* gcc.target/i386/movrs-1.c: Likewise.
+
+2024-11-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/apx-ndd.c: Also scan (%edi).
+
 2024-11-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* gcc.target/arm/pr68620.c: Use effective-target arm_neon.
