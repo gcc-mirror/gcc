@@ -181,7 +181,7 @@ package Freeze is
 
    procedure Explode_Initialization_Compound_Statement (E : Entity_Id);
    --  If Initialization_Statements (E) is an N_Compound_Statement, insert its
-   --  actions in the enclosing list and reset the attribute.
+   --  actions at the appropriate point and clear the attribute.
 
    function Freeze_Entity
      (E                 : Entity_Id;

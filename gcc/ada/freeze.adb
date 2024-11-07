@@ -2461,7 +2461,15 @@ package body Freeze is
       if Present (Init_Stmts)
         and then Nkind (Init_Stmts) = N_Compound_Statement
       then
-         Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
+         --  If the entity has its freezing delayed, append the initialization
+         --  actions to its freeze actions. Otherwise insert them back at the
+         --  point where they have been generated.
+
+         if Has_Delayed_Freeze (E) then
+            Append_Freeze_Actions (E, Actions (Init_Stmts));
+         else
+            Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
+         end if;
 
          --  Note that we rewrite Init_Stmts into a NULL statement, rather than
          --  just removing it, because Freeze_All may rely on this particular
@@ -4519,7 +4527,6 @@ package body Freeze is
                    Expression => Expression (Decl)));
 
                Set_No_Initialization (Decl);
-               --  Set_Is_Frozen (E, False);
             end;
          end if;
 
@@ -6799,23 +6806,6 @@ package body Freeze is
               and then Within_Scope (Etype (E), Current_Scope)
             then
                Freeze_And_Append (Etype (E), N, Result);
-
-               --  For an object of an anonymous array type, aspects on the
-               --  object declaration apply to the type itself. This is the
-               --  case for Atomic_Components, Volatile_Components, and
-               --  Independent_Components. In these cases analysis of the
-               --  generated pragma will mark the anonymous types accordingly,
-               --  and the object itself does not require a freeze node.
-
-               if Ekind (E) = E_Variable
-                 and then Is_Itype (Etype (E))
-                 and then Is_Array_Type (Etype (E))
-                 and then Has_Delayed_Aspects (E)
-               then
-                  Set_Has_Delayed_Aspects (E, False);
-                  Set_Has_Delayed_Freeze  (E, False);
-                  Set_Freeze_Node (E, Empty);
-               end if;
             end if;
 
             --  Special processing for objects created by object declaration;
