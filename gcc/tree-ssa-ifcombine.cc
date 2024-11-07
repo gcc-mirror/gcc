@@ -519,6 +519,17 @@ ifcombine_replace_cond (gcond *inner_cond, bool inner_inv,
 			gcond *outer_cond, bool outer_inv,
 			tree cond, bool must_canon, tree cond2)
 {
+  /* Split cond into cond2 if they're contiguous.  ??? We might be able to
+     handle ORIF as well, inverting both conditions, but it's not clear that
+     this would be enough, and it never comes up.  */
+  if (!cond2
+      && TREE_CODE (cond) == TRUTH_ANDIF_EXPR
+      && single_pred (gimple_bb (inner_cond)) == gimple_bb (outer_cond))
+    {
+      cond2 = TREE_OPERAND (cond, 1);
+      cond = TREE_OPERAND (cond, 0);
+    }
+
   bool outer_p = cond2 || (single_pred (gimple_bb (inner_cond))
 			   != gimple_bb (outer_cond));
   bool result_inv = outer_p ? outer_inv : inner_inv;
