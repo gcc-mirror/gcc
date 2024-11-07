@@ -1117,7 +1117,7 @@
 	     UNSPEC_FMAXNM)
 	   (match_operand:SVE_FULL_F 3 "register_operand")]
 	  UNSPEC_FMINNM))]
-  "TARGET_STREAMING_SME"
+  "TARGET_STREAMING_SME2"
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
@@ -1137,7 +1137,7 @@
 	     UNSPEC_COND_FMAXNM)
 	   (match_operand:SVE_FULL_F 3 "register_operand")]
 	  UNSPEC_COND_FMINNM))]
-  "TARGET_STREAMING_SME"
+  "TARGET_STREAMING_SME2"
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] #
      [     ?&w,  w, w, w; yes           ] #
