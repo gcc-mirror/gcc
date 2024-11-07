@@ -86,25 +86,34 @@ known_succ_p (basic_block cond_bb)
    is left to CFG cleanup and DCE.  */
 
 
-/* Recognize a if-then-else CFG pattern starting to match with the
-   COND_BB basic-block containing the COND_EXPR.  The recognized
-   then end else blocks are stored to *THEN_BB and *ELSE_BB.  If
-   *THEN_BB and/or *ELSE_BB are already set, they are required to
-   match the then and else basic-blocks to make the pattern match.
-   Returns true if the pattern matched, false otherwise.  */
+/* Recognize a if-then-else CFG pattern starting to match with the COND_BB
+   basic-block containing the COND_EXPR.  If !SUCCS_ANY, the condition must not
+   resolve to a constant for a match.  Returns true if the pattern matched,
+   false otherwise.  In case of a !SUCCS_ANY match, the recognized then end
+   else blocks are stored to *THEN_BB and *ELSE_BB.  If *THEN_BB and/or
+   *ELSE_BB are already set, they are required to match the then and else
+   basic-blocks to make the pattern match.  If SUCCS_ANY, *THEN_BB and *ELSE_BB
+   will not be filled in, and they will be found to match even if reversed.  */
 
 static bool
 recognize_if_then_else (basic_block cond_bb,
-			basic_block *then_bb, basic_block *else_bb)
+			basic_block *then_bb, basic_block *else_bb,
+			bool succs_any = false)
 {
   edge t, e;
 
-  if (EDGE_COUNT (cond_bb->succs) != 2)
+  if (EDGE_COUNT (cond_bb->succs) != 2
+      || (!succs_any && known_succ_p (cond_bb)))
     return false;
 
   /* Find the then/else edges.  */
   t = EDGE_SUCC (cond_bb, 0);
   e = EDGE_SUCC (cond_bb, 1);
+
+  if (succs_any)
+    return ((t->dest == *then_bb && e->dest == *else_bb)
+	    || (t->dest == *else_bb && e->dest == *then_bb));
+
   if (!(t->flags & EDGE_TRUE_VALUE))
     std::swap (t, e);
   if (!(t->flags & EDGE_TRUE_VALUE)
@@ -889,19 +898,21 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 /* Helper function for tree_ssa_ifcombine_bb.  Recognize a CFG pattern and
    dispatch to the appropriate if-conversion helper for a particular
    set of INNER_COND_BB, OUTER_COND_BB, THEN_BB and ELSE_BB.
-   PHI_PRED_BB should be one of INNER_COND_BB, THEN_BB or ELSE_BB.  */
+   PHI_PRED_BB should be one of INNER_COND_BB, THEN_BB or ELSE_BB.
+   OUTER_SUCC_BB is the successor of OUTER_COND_BB on the path towards
+   INNER_COND_BB.  */
 
 static bool
 tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 			 basic_block then_bb, basic_block else_bb,
-			 basic_block phi_pred_bb)
+			 basic_block phi_pred_bb, basic_block outer_succ_bb)
 {
   /* The && form is characterized by a common else_bb with
      the two edges leading to it mergable.  The latter is
      guaranteed by matching PHI arguments in the else_bb and
      the inner cond_bb having no side-effects.  */
   if (phi_pred_bb != else_bb
-      && recognize_if_then_else (outer_cond_bb, &inner_cond_bb, &else_bb)
+      && recognize_if_then_else (outer_cond_bb, &outer_succ_bb, &else_bb)
       && same_phi_args_p (outer_cond_bb, phi_pred_bb, else_bb))
     {
       /* We have
@@ -918,7 +929,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 
   /* And a version where the outer condition is negated.  */
   if (phi_pred_bb != else_bb
-      && recognize_if_then_else (outer_cond_bb, &else_bb, &inner_cond_bb)
+      && recognize_if_then_else (outer_cond_bb, &else_bb, &outer_succ_bb)
       && same_phi_args_p (outer_cond_bb, phi_pred_bb, else_bb))
     {
       /* We have
@@ -938,7 +949,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
      by matching PHI arguments in the then_bb and the inner cond_bb
      having no side-effects.  */
   if (phi_pred_bb != then_bb
-      && recognize_if_then_else (outer_cond_bb, &then_bb, &inner_cond_bb)
+      && recognize_if_then_else (outer_cond_bb, &then_bb, &outer_succ_bb)
       && same_phi_args_p (outer_cond_bb, phi_pred_bb, then_bb))
     {
       /* We have
@@ -954,7 +965,7 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 
   /* And a version where the outer condition is negated.  */
   if (phi_pred_bb != then_bb
-      && recognize_if_then_else (outer_cond_bb, &inner_cond_bb, &then_bb)
+      && recognize_if_then_else (outer_cond_bb, &outer_succ_bb, &then_bb)
       && same_phi_args_p (outer_cond_bb, phi_pred_bb, then_bb))
     {
       /* We have
@@ -978,10 +989,11 @@ tree_ssa_ifcombine_bb_1 (basic_block inner_cond_bb, basic_block outer_cond_bb,
 static bool
 tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 {
+  bool ret = false;
   basic_block then_bb = NULL, else_bb = NULL;
 
   if (!recognize_if_then_else (inner_cond_bb, &then_bb, &else_bb))
-    return false;
+    return ret;
 
   /* Recognize && and || of two conditions with a common
      then/else block which entry edges we can merge.  That is:
@@ -990,17 +1002,62 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
      and
        if (a && b)
 	 ;
-     This requires a single predecessor of the inner cond_bb.  */
-  if (single_pred_p (inner_cond_bb)
-      && bb_no_side_effects_p (inner_cond_bb))
+     This requires a single predecessor of the inner cond_bb.
+
+     Look for an OUTER_COND_BBs to combine with INNER_COND_BB.  They need not
+     be contiguous, as long as inner and intervening blocks have no side
+     effects, and are either single-entry-single-exit or conditionals choosing
+     between the same EXIT_BB with the same PHI args, and the path leading to
+     INNER_COND_BB.  ??? We could potentially handle multi-block
+     single-entry-single-exit regions, but the loop below only deals with
+     single-entry-single-exit individual intervening blocks.  Larger regions
+     without side effects are presumably rare, so it's probably not worth the
+     effort.  */
+  for (basic_block bb = inner_cond_bb, outer_cond_bb, exit_bb = NULL;
+       single_pred_p (bb) && bb_no_side_effects_p (bb);
+       bb = outer_cond_bb)
     {
-      basic_block outer_cond_bb = single_pred (inner_cond_bb);
+      bool changed = false;
 
-      if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb,
-				   then_bb, else_bb, inner_cond_bb))
-	return true;
+      outer_cond_bb = single_pred (bb);
 
-      if (forwarder_block_to (else_bb, then_bb))
+      /* Skip blocks without conditions.  */
+      if (single_succ_p (outer_cond_bb))
+	continue;
+
+      /* When considering noncontiguous conditions, make sure that all
+	 non-final conditions lead to the same successor of the final
+	 condition, when not taking the path to inner_bb, so that we can
+	 combine C into A, both in A && (B && C), and in A || (B || C), but
+	 neither in A && (B || C), nor A || (B && C).  Say, if C goes to
+	 THEN_BB or ELSE_BB, then B must go to either of these, say X, besides
+	 C (whether C is then or else), and A must go to X and B (whether then
+	 or else).
+
+	 We test for this, while allowing intervening nonconditional blocks, by
+	 first taking note of which of the successors of the inner conditional
+	 block is the exit path taken by the first considered outer conditional
+	 block.
+
+	 Having identified and saved the exit block in EXIT_BB at the end of
+	 the loop, here we test that subsequent conditional blocks under
+	 consideration also use the exit block as a successor, besides the
+	 block that leads to inner_cond_bb, and that the edges to exit share
+	 the same phi values.  */
+      if (exit_bb
+	  && !recognize_if_then_else (outer_cond_bb, &bb, &exit_bb, true))
+	break;
+
+      /* After checking dests and phi args, we can also skip blocks whose
+	 conditions have been optimized down to a constant, without trying to
+	 combine them, but we must not skip the computation of EXIT_BB and the
+	 checking of same phi args.  */
+      if (known_succ_p (outer_cond_bb))
+	changed = false;
+      else if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb,
+					then_bb, else_bb, inner_cond_bb, bb))
+	changed = true;
+      else if (forwarder_block_to (else_bb, then_bb))
 	{
 	  /* Other possibilities for the && form, if else_bb is
 	     empty forwarder block to then_bb.  Compared to the above simpler
@@ -1009,8 +1066,8 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 	     For same_phi_args_p we look at equality of arguments between
 	     edge from outer_cond_bb and the forwarder block.  */
 	  if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb, else_bb,
-				       then_bb, else_bb))
-	    return true;
+				       then_bb, else_bb, bb))
+	    changed = true;
 	}
       else if (forwarder_block_to (then_bb, else_bb))
 	{
@@ -1021,12 +1078,46 @@ tree_ssa_ifcombine_bb (basic_block inner_cond_bb)
 	     For same_phi_args_p we look at equality of arguments between
 	     edge from outer_cond_bb and the forwarder block.  */
 	  if (tree_ssa_ifcombine_bb_1 (inner_cond_bb, outer_cond_bb, else_bb,
-				       then_bb, then_bb))
-	    return true;
+				       then_bb, then_bb, bb))
+	    changed = true;
 	}
+
+      if (changed)
+	ret = changed;
+
+      /* If the inner condition is gone, there's no point in attempting to
+	 combine it any further.  */
+      if (changed && known_succ_p (inner_cond_bb))
+	break;
+
+      /* Record the exit path taken by the outer condition.  */
+      if (!exit_bb)
+	{
+	  if (recognize_if_then_else (outer_cond_bb, &then_bb, &bb, true))
+	    exit_bb = then_bb;
+	  else if (recognize_if_then_else (outer_cond_bb, &bb, &else_bb, true))
+	    exit_bb = else_bb;
+	  else
+	    break;
+	}
+
+      /* Before trying an earlier block, make sure INNER_COND_BB and the
+	 current OUTER_COND_BB share the same PHI args at EXIT_BB.  We don't
+	 need to check if the latest attempt at combining succeeded, because
+	 that means we'll have already checked.  But we can't only check outer
+	 and inner, we have to check that all intervening blocks also get to
+	 exit with the same result, otherwise the transformation may change the
+	 final result.  Consider (a ? 0 : b ? 1 : c ? 0 : -1).  If we combine
+	 (a | c), yielding ((a | c) ? 0 : b ? 1 : [0 ? 0 :] -1), we'd get 0
+	 rather than 1 when (!a&&b).  And if we were to replace inner instead
+	 of outer, we'd get ([1 ? 0 :] b ? 1 : (a | c) ? 0 : -1), which would
+	 yield 1 rather than 0 when (a).  */
+      if (!changed
+	  && !same_phi_args_p (outer_cond_bb, inner_cond_bb, exit_bb))
+	break;
     }
 
-  return false;
+  return ret;
 }
 
 /* Main entry for the tree if-conversion pass.  */
@@ -1085,7 +1176,10 @@ pass_tree_ifcombine::execute (function *fun)
 	if (tree_ssa_ifcombine_bb (bb))
 	  {
 	    /* Clear range info from all stmts in BB which is now executed
-	       conditional on a always true/false condition.  */
+	       conditional on a always true/false condition.  ??? When we
+	       combine noncontiguous blocks, do we need to adjust the
+	       intervening blocks as well?  If we leave outer conditions
+	       nonconstant, do we still need to modify them?  */
 	    reset_flow_sensitive_info_in_bb (bb);
 	    for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 		 gsi_next (&gsi))
