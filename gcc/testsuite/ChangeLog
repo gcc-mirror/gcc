@@ -1,3 +1,35 @@
+2024-11-06  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2024-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/116371
+	* gcc.target/aarch64/sme2/acle-asm/psel_b16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_b32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_b64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_b8.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_c8.c: Renamed to....
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_b32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_b64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_b8.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c16.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c32.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c64.c,
+	gcc.target/aarch64/sme2/acle-asm/psel_lane_c8.c: ... These.
+
+2024-11-06  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-11-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117158
+	* g++.dg/cpp1z/eval-order13.C: New test.
+	* g++.dg/parse/crash77.C: New test.
+
 2024-11-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/101463
