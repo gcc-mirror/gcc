@@ -1669,6 +1669,7 @@ public:
   unsigned int outside_cost () const;
   unsigned int total_cost () const;
   unsigned int suggested_unroll_factor () const;
+  machine_mode suggested_epilogue_mode () const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -1691,6 +1692,10 @@ protected:
   /* The suggested unrolling factor determined at finish_cost.  */
   unsigned int m_suggested_unroll_factor;
 
+  /* The suggested mode to be used for a vectorized epilogue or VOIDmode,
+     determined at finish_cost.  */
+  machine_mode m_suggested_epilogue_mode;
+
   /* True if finish_cost has been called.  */
   bool m_finished;
 };
@@ -1704,6 +1709,7 @@ vector_costs::vector_costs (vec_info *vinfo, bool costing_for_scalar)
     m_costing_for_scalar (costing_for_scalar),
     m_costs (),
     m_suggested_unroll_factor(1),
+    m_suggested_epilogue_mode(VOIDmode),
     m_finished (false)
 {
 }
@@ -1759,6 +1765,15 @@ vector_costs::suggested_unroll_factor () const
 {
   gcc_checking_assert (m_finished);
   return m_suggested_unroll_factor;
+}
+
+/* Return the suggested epilogue mode.  */
+
+inline machine_mode
+vector_costs::suggested_epilogue_mode () const
+{
+  gcc_checking_assert (m_finished);
+  return m_suggested_epilogue_mode;
 }
 
 #define VECT_MAX_COST 1000
