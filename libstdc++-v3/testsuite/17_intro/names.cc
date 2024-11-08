@@ -138,6 +138,8 @@
 // <charconv> defines to_chars_result::ptr and to_chars_result::ec
 #define ec (
 #define ptr (
+// <map> and <unordered_map> define try_emplace
+#define try_emplace (
 #endif
 
 // These clash with newlib so don't use them.
