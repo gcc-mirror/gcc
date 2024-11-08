@@ -12124,6 +12124,22 @@ package body Exp_Util is
          Init_Call := Initialization_Statements (Var);
          Set_Initialization_Statements (Var, Empty);
 
+         --  Note that we rewrite Init_Call into a null statement, rather than
+         --  just removing it, because Freeze_All may rely on this particular
+         --  node still being present in the enclosing list to know where to
+         --  stop freezing (see Explode_Initialization_Compound_Statement).
+
+         if Nkind (Init_Call) = N_Compound_Statement then
+            declare
+               Init_Actions : constant List_Id    := Actions (Init_Call);
+               Loc          : constant Source_Ptr := Sloc (Init_Call);
+
+            begin
+               Rewrite (Init_Call, Make_Null_Statement (Loc));
+               return Make_Compound_Statement (Loc, Init_Actions);
+            end;
+         end if;
+
       elsif not Has_Non_Null_Base_Init_Proc (Typ) then
 
          --  No init proc for the type, so obviously no call to be found

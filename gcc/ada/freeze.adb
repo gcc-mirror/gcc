@@ -2471,9 +2471,9 @@ package body Freeze is
             Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
          end if;
 
-         --  Note that we rewrite Init_Stmts into a NULL statement, rather than
+         --  Note that we rewrite Init_Stmts into a null statement, rather than
          --  just removing it, because Freeze_All may rely on this particular
-         --  Node_Id still being present in the enclosing list to know where to
+         --  node still being present in the enclosing list to know where to
          --  stop freezing.
 
          Rewrite (Init_Stmts, Make_Null_Statement (Sloc (Init_Stmts)));
