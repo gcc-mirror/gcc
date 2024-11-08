@@ -2,12 +2,12 @@
  * { dg-options "-std=gnu23 -O2" }
  */
 
-/* This test checks that an incompatible definition of
+/* This used to check that an incompatible definition of
  * a tagged type without tag can be assumed not to alias.  
- * and that this is exploited during optimization.  */
+ * and that this is exploited during optimization.  
+ * Because PR117490 we now check the opposite. */
 
 
-// not sure this is wise, but this was already like this before
 
 typedef struct { int x; } foo_t;
 
@@ -27,7 +27,7 @@ int main()
 {
 	foo_t y;
 
-	if (1 != test_foo(&y, &y))
+	if (2 != test_foo(&y, &y))
 		__builtin_abort();
 
 	return 0;

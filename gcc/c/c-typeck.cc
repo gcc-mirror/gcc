@@ -1812,7 +1812,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
   if (data->equiv && data->pointedto)
     return true;
 
-  if (!data->anon_field && NULL_TREE == TYPE_NAME (t1))
+  /* Different types without tag are incompatible except as an anonymous
+     field or when forming equivalence classes for TYPE_CANONICAL.  */
+  if (!data->anon_field && !data->equiv && NULL_TREE == TYPE_NAME (t1))
     return false;
 
   if (!data->anon_field && TYPE_STUB_DECL (t1) != TYPE_STUB_DECL (t2))
