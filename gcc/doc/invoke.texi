@@ -21324,7 +21324,8 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
-@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{grace},
+@samp{neoverse-n2}, @samp{neoverse-n3}, @samp{neoverse-v1}, @samp{neoverse-v2},
+@samp{neoverse-v3}, @samp{neoverse-v3ae}, @samp{grace},
 @samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
@@ -21338,9 +21339,10 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x1c}, @samp{cortex-x2},
-@samp{cortex-x3}, @samp{cortex-x4}, @samp{cortex-a510}, @samp{cortex-a520},
-@samp{cortex-a710}, @samp{cortex-a715}, @samp{cortex-a720}, @samp{ampere1},
-@samp{ampere1a}, @samp{ampere1b}, @samp{cobalt-100} and @samp{native}.
+@samp{cortex-x3}, @samp{cortex-x4}, @samp{cortex-x925}, @samp{cortex-a510},
+@samp{cortex-a520}, @samp{cortex-a710}, @samp{cortex-a715}, @samp{cortex-a720},
+@samp{cortex-a725}, @samp{ampere1}, @samp{ampere1a}, @samp{ampere1b},
+@samp{cobalt-100} and @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
