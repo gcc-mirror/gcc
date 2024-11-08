@@ -2,7 +2,7 @@
 
 #include <arm_sme.h>
 
-#pragma GCC target "+sme2"
+#pragma GCC target "+nosme2"
 
 #define TEST(TYPE)							\
   TYPE									\
@@ -21,8 +21,4 @@ TEST(svfloat16_t)
 TEST(svfloat32_t)
 TEST(svfloat64_t)
 
-/* { dg-final { scan-assembler-times {\tfclamp\tz0\.h, z1\.h, z2\.h\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tfclamp\tz0\.s, z1\.s, z2\.s\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tfclamp\tz0\.d, z1\.d, z2\.d\n} 2 } } */
-
-/* { dg-final { scan-assembler-not {\tmovprfx\t} } } */
+/* { dg-final { scan-assembler-not {\tfclamp\t} } } */
