@@ -289,7 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * The object's conversion state will persist between conversions.
        */
       wstring_convert(_Codecvt* __pcvt, state_type __state)
-      : _M_cvt(__pcvt, "wstring_convert"),
+      : _M_cvt(__pcvt, "std::wstring_convert"),
 	_M_state(__state), _M_with_cvtstate(true)
       { }
 
@@ -428,7 +428,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       explicit
       wbuffer_convert(streambuf* __bytebuf, _Codecvt* __pcvt = new _Codecvt,
 		      state_type __state = state_type())
-      : _M_buf(__bytebuf), _M_cvt(__pcvt, "wbuffer_convert"),
+      : _M_buf(__bytebuf), _M_cvt(__pcvt, "std::wbuffer_convert"),
 	_M_state(__state), _M_always_noconv(_M_cvt->always_noconv())
       {
 	if (_M_buf)
