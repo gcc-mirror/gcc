@@ -11009,6 +11009,7 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	  /* Long 14-bit displacements always okay for these cases.  */
 	  if (INT14_OK_STRICT
 	      || reload_completed
+	      || (reload_in_progress && !strict)
 	      || mode == QImode
 	      || mode == HImode)
 	    return true;
