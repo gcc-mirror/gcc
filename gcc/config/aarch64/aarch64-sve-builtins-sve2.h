@@ -100,7 +100,7 @@ namespace aarch64_sve
     extern const function_base *const svmullt_lane;
     extern const function_base *const svnbsl;
     extern const function_base *const svnmatch;
-    extern const function_base *const svpext;
+    extern const function_base *const svpext_lane;
     extern const function_base *const svpmul;
     extern const function_base *const svpmullb;
     extern const function_base *const svpmullb_pair;
