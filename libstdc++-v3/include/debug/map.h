@@ -344,7 +344,7 @@ namespace __debug
 	}
 
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_map_try_emplace // C++ >= 17 && HOSTED
       template <typename... _Args>
         pair<iterator, bool>
         try_emplace(const key_type& __k, _Args&&... __args)
