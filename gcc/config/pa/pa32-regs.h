@@ -187,10 +187,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    that includes the incoming arguments and the return value.  We specify a
    set with no overlaps so that we don't have to specify that the destination
    register is an early clobber in patterns using this mode.  Except for the
-   return value, the starting registers are odd.  For 128 and 256 bit modes,
-   we similarly specify non-overlapping sets of cpu registers.  However,
-   there aren't any patterns defined for modes larger than 64 bits at the
-   moment.
+   return value, the starting registers are odd.  Except for complex modes,
+   we don't allow modes larger than 64 bits in the general registers as there
+   are issues with copies, spills and SUBREG support.
 
    We limit the modes allowed in the floating point registers to the
    set of modes used in the machine definition.  In addition, we allow
@@ -217,15 +216,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      ? (VALID_FP_MODE_P (MODE)						\
 	&& (GET_MODE_SIZE (MODE) <= 4					\
 	    || (GET_MODE_SIZE (MODE) == 8 && ((REGNO) & 1) == 0)	\
-	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 3) == 0)	\
-	    || (GET_MODE_SIZE (MODE) == 32 && ((REGNO) & 7) == 0)))	\
+	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 3) == 0)))	\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
       || (GET_MODE_SIZE (MODE) == 2 * UNITS_PER_WORD			\
 	  && ((((REGNO) & 1) == 1 && (REGNO) <= 25) || (REGNO) == 28))	\
       || (GET_MODE_SIZE (MODE) == 4 * UNITS_PER_WORD			\
-	  && ((REGNO) & 3) == 3 && (REGNO) <= 23)			\
-      || (GET_MODE_SIZE (MODE) == 8 * UNITS_PER_WORD			\
-	  && ((REGNO) & 7) == 3 && (REGNO) <= 19)))
+	  && COMPLEX_MODE_P (MODE)					\
+	  && ((REGNO) & 3) == 3 && (REGNO) <= 23)))
 
 /* How to renumber registers for gdb.
 
