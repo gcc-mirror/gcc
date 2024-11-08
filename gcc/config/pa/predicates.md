@@ -285,7 +285,7 @@
       return false;
 
     default:
-      return (INTVAL (op) % GET_MODE_SIZE (mode)) == 0;
+      return (INTVAL (op) & (GET_MODE_SIZE (mode) - 1)) == 0;
     }
 
   return false;
