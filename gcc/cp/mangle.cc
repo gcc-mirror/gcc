@@ -3799,7 +3799,7 @@ write_expression (tree expr)
 	 equivalent.
 
 	 So just use the closure type mangling.  */
-      write_string ("tl");
+      write_char ('L');
       write_type (LAMBDA_EXPR_CLOSURE (expr));
       write_char ('E');
     }

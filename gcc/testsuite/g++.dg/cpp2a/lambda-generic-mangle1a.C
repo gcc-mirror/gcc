@@ -7,4 +7,4 @@ struct C {
   void f(decltype([](T, auto) { return 0; })) {}
 };
 void g() { C().f<int>({}); }
-// { dg-final { scan-assembler "_ZN1C1fIiEEvDTtlNS_UlT_T_E_EEE" } }
+// { dg-final { scan-assembler "_ZN1C1fIiEEvDTLNS_UlT_T_E_EEE" } }
