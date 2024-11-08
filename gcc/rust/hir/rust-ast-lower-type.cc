@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-lower-type.h"
+#include "optional.h"
 #include "rust-attribute-values.h"
 
 namespace Rust {
@@ -502,9 +503,9 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
 	}
     }
 
-  HIR::Type *type = param.has_type ()
-		      ? ASTLoweringType::translate (param.get_type ())
-		      : nullptr;
+  auto type = param.has_type () ? tl::optional (std::unique_ptr<HIR::Type> (
+		ASTLoweringType::translate (param.get_type ())))
+				: tl::nullopt;
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
@@ -514,8 +515,7 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
   translated
     = new HIR::TypeParam (mapping, param.get_type_representation (),
 			  param.get_locus (), std::move (type_param_bounds),
-			  std::unique_ptr<Type> (type),
-			  param.get_outer_attrs ());
+			  std::move (type), param.get_outer_attrs ());
 }
 
 HIR::TypeParamBound *

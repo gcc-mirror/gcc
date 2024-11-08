@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_ITEM_H
 #define RUST_HIR_ITEM_H
 
+#include "optional.h"
 #include "rust-abi.h"
 #include "rust-hir-stmt.h"
 #include "rust-common.h"
@@ -102,14 +103,13 @@ class TypeParam : public GenericParam
   std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
-  // bool has_type;
-  std::unique_ptr<Type> type;
+  tl::optional<std::unique_ptr<Type>> type;
 
   location_t locus;
 
 public:
   // Returns whether the type of the type param has been specified.
-  bool has_type () const { return type != nullptr; }
+  bool has_type () const { return type.has_value (); }
 
   // Returns whether the type param has type param bounds.
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
@@ -122,7 +122,7 @@ public:
 	     location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
-	     std::unique_ptr<Type> type = nullptr,
+	     tl::optional<std::unique_ptr<Type>> type = tl::nullopt,
 	     AST::AttrVec outer_attrs = std::vector<AST::Attribute> ());
 
   // Copy constructor uses clone
@@ -130,8 +130,10 @@ public:
 
   // Overloaded assignment operator to clone
   TypeParam &operator= (TypeParam const &other);
+
   // move constructors
   TypeParam (TypeParam &&other) = default;
+
   TypeParam &operator= (TypeParam &&other) = default;
 
   std::string as_string () const override;
@@ -144,8 +146,8 @@ public:
 
   Type &get_type ()
   {
-    rust_assert (type);
-    return *type;
+    rust_assert (*type);
+    return *type.value ();
   }
 
   Analysis::NodeMapping get_type_mappings () const;
