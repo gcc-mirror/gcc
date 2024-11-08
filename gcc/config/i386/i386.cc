@@ -25353,6 +25353,18 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
 	&& TARGET_AVX256_AVOID_VEC_PERM)
       m_costs[i] = INT_MAX;
 
+  /* When X86_TUNE_AVX512_TWO_EPILOGUES is enabled arrange for both
+     a AVX2 and a SSE epilogue for AVX512 vectorized loops.  */
+  if (loop_vinfo
+      && ix86_tune_features[X86_TUNE_AVX512_TWO_EPILOGUES])
+    {
+      if (GET_MODE_SIZE (loop_vinfo->vector_mode) == 64)
+	m_suggested_epilogue_mode = V32QImode;
+      else if (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+	       && GET_MODE_SIZE (loop_vinfo->vector_mode) == 32)
+	m_suggested_epilogue_mode = V16QImode;
+    }
+
   vector_costs::finish_cost (scalar_costs);
 }
 
