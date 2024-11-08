@@ -1937,7 +1937,7 @@ Enum(p2900_semantic) String(quick_enforce) Value(5)
 
 fcontract-evaluation-semantic=
 C++ Joined RejectNegative Enum(p2900_semantic) Var(flag_contract_evaluation_semantic) Init (3)
--fcontract-evaluation-semantic=[ignore,observe,enforce,quick_enforce]	Select the contract evaluation semantic (defaults to enforce).
+-fcontract-evaluation-semantic=[ignore|observe|enforce|quick_enforce]	Select the contract evaluation semantic (defaults to enforce).
 
 fcontract-disable-optimized-checks
 C++ Var(flag_contract_disable_optimized_checks) Init(0)
