@@ -7900,6 +7900,7 @@ insert_related_predicates_on_edge (enum tree_code code, tree *ops, edge pred_e)
 
 /* Insert on the TRUE_E true and FALSE_E false predicates
    derived from LHS CODE RHS.  */
+
 static void
 insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
 			    edge true_e, edge false_e)
@@ -7977,10 +7978,16 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
 	  tree nlhs;
 
 	  nlhs = vn_valueize (gimple_assign_rhs1 (def_stmt));
-	  insert_predicates_for_cond (EQ_EXPR, nlhs, rhs, e, nullptr);
+	  /* A valueization of the `a` might return the old lhs
+	     which is already handled above. */
+	  if (nlhs != lhs)
+	    insert_predicates_for_cond (EQ_EXPR, nlhs, rhs, e, nullptr);
 
+	  /* A valueization of the `b` might return the old lhs
+	     which is already handled above. */
 	  nlhs = vn_valueize (gimple_assign_rhs2 (def_stmt));
-	  insert_predicates_for_cond (EQ_EXPR, nlhs, rhs, e, nullptr);
+	  if (nlhs != lhs)
+	    insert_predicates_for_cond (EQ_EXPR, nlhs, rhs, e, nullptr);
 	}
     }
 }
