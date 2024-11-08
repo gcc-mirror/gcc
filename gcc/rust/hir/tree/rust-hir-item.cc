@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-item.h"
+#include "optional.h"
 
 namespace Rust {
 namespace HIR {
@@ -25,7 +26,7 @@ TypeParam::TypeParam (
   Analysis::NodeMapping mappings, Identifier type_representation,
   location_t locus,
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-  std::unique_ptr<Type>, AST::AttrVec outer_attrs)
+  tl::optional<std::unique_ptr<Type>> type, AST::AttrVec outer_attrs)
   : GenericParam (mappings), outer_attrs (std::move (outer_attrs)),
     type_representation (std::move (type_representation)),
     type_param_bounds (std::move (type_param_bounds)), type (std::move (type)),
@@ -37,8 +38,10 @@ TypeParam::TypeParam (TypeParam const &other)
     type_representation (other.type_representation), locus (other.locus)
 {
   // guard to prevent null pointer dereference
-  if (other.type != nullptr)
-    type = other.type->clone_type ();
+  if (other.has_type ())
+    type = {other.type.value ()->clone_type ()};
+  else
+    type = tl::nullopt;
 
   type_param_bounds.reserve (other.type_param_bounds.size ());
   for (const auto &e : other.type_param_bounds)
@@ -54,10 +57,10 @@ TypeParam::operator= (TypeParam const &other)
   mappings = other.mappings;
 
   // guard to prevent null pointer dereference
-  if (other.type != nullptr)
-    type = other.type->clone_type ();
+  if (other.has_type ())
+    type = {other.type.value ()->clone_type ()};
   else
-    type = nullptr;
+    type = tl::nullopt;
 
   type_param_bounds.reserve (other.type_param_bounds.size ());
   for (const auto &e : other.type_param_bounds)
@@ -69,8 +72,8 @@ TypeParam::operator= (TypeParam const &other)
 Analysis::NodeMapping
 TypeParam::get_type_mappings () const
 {
-  rust_assert (type != nullptr);
-  return type->get_mappings ();
+  rust_assert (type.has_value ());
+  return type.value ()->get_mappings ();
 }
 
 std::vector<std::unique_ptr<TypeParamBound>> &

@@ -2178,7 +2178,7 @@ TypeParam::as_string () const
     }
   else
     {
-      str += type->as_string ();
+      str += type.value ()->as_string ();
     }
 
   return str;
