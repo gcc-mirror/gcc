@@ -2274,7 +2274,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
      on nearby locations.  Or, even if it's a win over scalar code,
      it might not be a win over vectorizing at a lower VF, if that
      allows us to use contiguous accesses.  */
-  if (*memory_access_type == VMAT_ELEMENTWISE
+  if ((*memory_access_type == VMAT_ELEMENTWISE
+       || *memory_access_type == VMAT_STRIDED_SLP)
       && single_element_p
       && loop_vinfo
       && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,

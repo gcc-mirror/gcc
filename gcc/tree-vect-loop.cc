@@ -12295,6 +12295,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 	 refs that get_load_store_type classified as VMAT_GATHER_SCATTER.  */
       auto vstmt_vinfo = vect_stmt_to_vectorize (stmt_vinfo);
       if (STMT_VINFO_MEMORY_ACCESS_TYPE (vstmt_vinfo) == VMAT_GATHER_SCATTER
+	  || STMT_VINFO_STRIDED_P (vstmt_vinfo)
 	  || STMT_VINFO_GATHER_SCATTER_P (vstmt_vinfo))
 	{
 	  /* ???  As we copy epilogues from the main loop incremental
