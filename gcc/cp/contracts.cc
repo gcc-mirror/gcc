@@ -2323,7 +2323,24 @@ emit_contract_conditions (tree attrs, tree_code code)
 void
 emit_assertion (tree attr)
 {
+  /* Insert a std::observable () epoch marker.  */
+  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
+  releasing_vec vec;
+  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  finish_expr_stmt (fn);
+
   emit_contract_attr (attr);
+
+  contract_semantic semantic = get_contract_semantic (CONTRACT_STATEMENT (attr));
+
+  if (semantic == CCS_OBSERVE)
+    {
+      /* Insert a std::observable () epoch marker.  */
+      tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
+      releasing_vec vec;
+      fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+      finish_expr_stmt (fn);
+    }
 }
 
 /* Emit statements for precondition attributes.  */
