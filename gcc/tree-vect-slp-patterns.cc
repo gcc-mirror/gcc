@@ -221,9 +221,15 @@ linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
   perm_cache->put (root, retval);
 
   /* If it's a load node, then just read the load permute.  */
-  if (SLP_TREE_LOAD_PERMUTATION (root).exists ())
+  if (SLP_TREE_DEF_TYPE (root) == vect_internal_def
+      && SLP_TREE_CODE (root) != VEC_PERM_EXPR
+      && STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))
+      && DR_IS_READ (STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (root))))
     {
-      retval = is_linear_load_p (SLP_TREE_LOAD_PERMUTATION (root));
+      if (SLP_TREE_LOAD_PERMUTATION (root).exists ())
+	retval = is_linear_load_p (SLP_TREE_LOAD_PERMUTATION (root));
+      else
+	retval = PERM_EVENODD;
       perm_cache->put (root, retval);
       return retval;
     }
@@ -798,8 +804,8 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
 	return false;
     }
 
-  if (!SLP_TREE_LOAD_PERMUTATION (a).exists ()
-      || !SLP_TREE_LOAD_PERMUTATION (b).exists ())
+  if (!STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a))
+      || !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b)))
     {
       for (unsigned i = 0; i < gimple_num_args (a_stmt); i++)
 	{

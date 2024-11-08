@@ -2019,14 +2019,15 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    = STMT_VINFO_GROUPED_ACCESS (stmt_info)
 	      ? DR_GROUP_FIRST_ELEMENT (stmt_info) : stmt_info;
 	  bool any_permute = false;
-	  bool any_null = false;
 	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
 	    {
 	      int load_place;
 	      if (! load_info)
 		{
-		  load_place = j;
-		  any_null = true;
+		  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		    load_place = j;
+		  else
+		    load_place = 0;
 		}
 	      else if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 		load_place = vect_get_place_in_interleaving_chain
@@ -2036,11 +2037,6 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      gcc_assert (load_place != -1);
 	      any_permute |= load_place != j;
 	      load_permutation.quick_push (load_place);
-	    }
-	  if (any_null)
-	    {
-	      gcc_assert (!any_permute);
-	      load_permutation.release ();
 	    }
 
 	  if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
@@ -2096,6 +2092,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		     followed by 'node' being the desired final permutation.  */
 		  if (unperm_load)
 		    {
+		      gcc_assert
+			(!SLP_TREE_LOAD_PERMUTATION (unperm_load).exists ());
 		      lane_permutation_t lperm;
 		      lperm.create (group_size);
 		      for (unsigned j = 0; j < load_permutation.length (); ++j)
@@ -2116,6 +2114,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    }
 	  else
 	    {
+	      if (!any_permute
+		  && STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		  && group_size == DR_GROUP_SIZE (first_stmt_info))
+		load_permutation.release ();
 	      SLP_TREE_LOAD_PERMUTATION (node) = load_permutation;
 	      return node;
 	    }
@@ -2690,7 +2692,8 @@ out:
 	      tree op0;
 	      tree uniform_val = op0 = oprnd_info->ops[0];
 	      for (j = 1; j < oprnd_info->ops.length (); ++j)
-		if (!operand_equal_p (uniform_val, oprnd_info->ops[j]))
+		if (oprnd_info->ops[j]
+		    && !operand_equal_p (uniform_val, oprnd_info->ops[j]))
 		  {
 		    uniform_val = NULL_TREE;
 		    break;
@@ -4525,6 +4528,7 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 					 group_lanes,
 					 &max_nunits, matches, &limit,
 					 &tree_size, bst_map);
+      gcc_assert (!SLP_TREE_LOAD_PERMUTATION (l0).exists ());
 
       if (ld_lanes_lanes != 0)
 	{
