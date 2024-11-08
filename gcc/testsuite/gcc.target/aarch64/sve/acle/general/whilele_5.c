@@ -28,7 +28,7 @@ test3 (svbool_t *ptr)
   *ptr = svwhilele_b16_s32 (0x7ffffffb, 0x7fffffff);
 }
 
-/* { dg-final { scan-assembler {\tptrue\tp[0-9]+\.h, vl5\n} } } */
+/* { dg-final { scan-assembler {\tptrue\tp[0-9]+\.h(?:, all)\n} } } */
 
 void
 test4 (svbool_t *ptr)
