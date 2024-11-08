@@ -12530,16 +12530,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 						   arg01, arg1));
 	}
 
-      /* Two consecutive rotates adding up to the some integer
-	 multiple of the precision of the type can be ignored.  */
-      if (code == RROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST
-	  && TREE_CODE (arg0) == RROTATE_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
-	  && wi::umod_trunc (wi::to_wide (arg1)
-			     + wi::to_wide (TREE_OPERAND (arg0, 1)),
-			     prec) == 0)
-	return fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
-
       return NULL_TREE;
 
     case MIN_EXPR:
