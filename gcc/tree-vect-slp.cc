@@ -10568,13 +10568,15 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   /* Load-lanes permute.  This permute only acts as a forwarder to
      select the correct vector def of the load-lanes load which
      has the permuted vectors in its vector defs like
-     { v0, w0, r0, v1, w1, r1 ... } for a ld3.  */
+     { v0, w0, r0, v1, w1, r1 ... } for a ld3.  All costs are
+     accounted for in the costing for the actual load so we
+     return zero here.  */
   if (node->ldst_lanes)
     {
       gcc_assert (children.length () == 1);
       if (!gsi)
 	/* This is a trivial op always supported.  */
-	return 1;
+	return 0;
       slp_tree child = children[0];
       unsigned vec_idx = (SLP_TREE_LANE_PERMUTATION (node)[0].second
 			  / SLP_TREE_LANES (node));
@@ -10584,7 +10586,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  tree def = SLP_TREE_VEC_DEFS (child)[i * vec_num  + vec_idx];
 	  node->push_vec_def (def);
 	}
-      return 1;
+      return 0;
     }
 
   /* Set REPEATING_P to true if the permutations are cylical wrt UNPACK_FACTOR
