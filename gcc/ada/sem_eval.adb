@@ -2629,6 +2629,9 @@ package body Sem_Eval is
       Expr := First (Expressions (N));
       while Present (Expr) loop
          Check_Non_Static_Context (Expr);
+         if Kill_Range_Check (N) then
+            Set_Do_Range_Check (Expr, False);
+         end if;
          Next (Expr);
       end loop;
 
