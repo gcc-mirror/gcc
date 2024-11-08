@@ -9162,7 +9162,8 @@ vectorizable_store (vec_info *vinfo,
 		{
 		  if (loop_masks)
 		    final_mask = vect_get_loop_mask (loop_vinfo, gsi,
-						     loop_masks, ncopies,
+						     loop_masks,
+						     ncopies * vec_num,
 						     vectype, j);
 		  if (vec_mask)
 		    final_mask = prepare_vec_mask (loop_vinfo, mask_vectype,
@@ -9188,7 +9189,8 @@ vectorizable_store (vec_info *vinfo,
 		    {
 		      if (loop_lens)
 			final_len = vect_get_loop_len (loop_vinfo, gsi,
-						       loop_lens, ncopies,
+						       loop_lens,
+						       ncopies * vec_num,
 						       vectype, j, 1);
 		      else
 			final_len = size_int (TYPE_VECTOR_SUBPARTS (vectype));

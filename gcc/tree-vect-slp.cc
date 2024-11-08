@@ -512,7 +512,9 @@ static const int no_arg_map[] = { 0 };
 static const int arg0_map[] = { 1, 0 };
 static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
+static const int arg1_arg3_map[] = { 2, 1, 3 };
 static const int arg1_arg4_map[] = { 2, 1, 4 };
+static const int arg1_arg3_arg4_map[] = { 3, 1, 3, 4 };
 static const int arg3_arg2_map[] = { 2, 3, 2 };
 static const int op1_op0_map[] = { 2, 1, 0 };
 static const int off_map[] = { 1, -3 };
@@ -572,6 +574,13 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
 	  case IFN_MASK_GATHER_LOAD:
 	  case IFN_MASK_LEN_GATHER_LOAD:
 	    return arg1_arg4_map;
+
+	  case IFN_SCATTER_STORE:
+	    return arg1_arg3_map;
+
+	  case IFN_MASK_SCATTER_STORE:
+	  case IFN_MASK_LEN_SCATTER_STORE:
+	    return arg1_arg3_arg4_map;
 
 	  case IFN_MASK_STORE:
 	    return gather_scatter_p ? off_arg3_arg2_map : arg3_arg2_map;
@@ -1187,7 +1196,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  if (cfn == CFN_MASK_LOAD
 	      || cfn == CFN_GATHER_LOAD
 	      || cfn == CFN_MASK_GATHER_LOAD
-	      || cfn == CFN_MASK_LEN_GATHER_LOAD)
+	      || cfn == CFN_MASK_LEN_GATHER_LOAD
+	      || cfn == CFN_SCATTER_STORE
+	      || cfn == CFN_MASK_SCATTER_STORE
+	      || cfn == CFN_MASK_LEN_SCATTER_STORE)
 	    ldst_p = true;
 	  else if (cfn == CFN_MASK_STORE)
 	    {
@@ -1473,6 +1485,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      && rhs_code != CFN_GATHER_LOAD
 	      && rhs_code != CFN_MASK_GATHER_LOAD
 	      && rhs_code != CFN_MASK_LEN_GATHER_LOAD
+	      && rhs_code != CFN_SCATTER_STORE
+	      && rhs_code != CFN_MASK_SCATTER_STORE
+	      && rhs_code != CFN_MASK_LEN_SCATTER_STORE
 	      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 	      /* Not grouped loads are handled as externals for BB
 		 vectorization.  For loop vectorization we can handle
