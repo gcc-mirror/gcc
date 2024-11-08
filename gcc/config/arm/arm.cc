@@ -36100,9 +36100,57 @@ arm_get_mask_mode (machine_mode mode)
 }
 
 /* Helper function to determine whether SEQ represents a sequence of
+   instructions representing the vsel<cond> floating point instructions.
+   This is an heuristic to check whether the proposed optimisation is desired,
+   the choice has no consequence for correctness.  */
+static bool
+arm_is_vsel_fp_insn (rtx_insn *seq)
+{
+  rtx_insn *curr_insn = seq;
+  rtx set = NULL_RTX;
+  /* The pattern may start with a simple set with register operands.  Skip
+     through any of those.  */
+  while (curr_insn)
+    {
+      set = single_set (curr_insn);
+      if (!set
+	  || !REG_P (SET_DEST (set)))
+	return false;
+
+      if (!REG_P (SET_SRC (set)))
+	break;
+      curr_insn = NEXT_INSN (curr_insn);
+    }
+
+  if (!set)
+    return false;
+
+  /* The next instruction should be a compare.  */
+  if (!REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != COMPARE)
+    return false;
+
+  curr_insn = NEXT_INSN (curr_insn);
+  if (!curr_insn)
+    return false;
+
+  /* And the last instruction should be an IF_THEN_ELSE.  */
+  set = single_set (curr_insn);
+  if (!set
+      || !REG_P (SET_DEST (set))
+      || GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+    return false;
+
+  return !NEXT_INSN (curr_insn);
+}
+
+
+/* Helper function to determine whether SEQ represents a sequence of
    instructions representing the Armv8.1-M Mainline conditional arithmetic
    instructions: csinc, csneg and csinv. The cinc instruction is generated
-   using a different mechanism.  */
+   using a different mechanism.
+   This is an heuristic to check whether the proposed optimisation is desired,
+   the choice has no consequence for correctness.  */
 
 static bool
 arm_is_v81m_cond_insn (rtx_insn *seq)
@@ -36171,13 +36219,18 @@ arm_is_v81m_cond_insn (rtx_insn *seq)
    hook to only allow "noce" to generate the patterns that are profitable.  */
 
 bool
-arm_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *)
+arm_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 {
   if (!TARGET_COND_ARITH
       || reload_completed)
-    return true;
+    return default_noce_conversion_profitable_p (seq, if_info);
 
   if (arm_is_v81m_cond_insn (seq))
+    return true;
+
+  /* Look for vsel<cond> opportunities as we still want to codegen these for
+     Armv8.1-M Mainline targets.  */
+  if (arm_is_vsel_fp_insn (seq))
     return true;
 
   return false;
