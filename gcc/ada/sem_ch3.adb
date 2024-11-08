@@ -3874,17 +3874,6 @@ package body Sem_Ch3 is
       --  or a variant record type is encountered, Check_Restriction is called
       --  indicating the count is unknown.
 
-      function Delayed_Aspect_Present return Boolean;
-      --  If the declaration has an expression that is an aggregate, and it
-      --  has aspects that require delayed analysis, the resolution of the
-      --  aggregate must be deferred to the freeze point of the object. This
-      --  special processing was created for address clauses, but it must
-      --  also apply to address aspects. This must be done before the aspect
-      --  specifications are analyzed because we must handle the aggregate
-      --  before the analysis of the object declaration is complete.
-
-      --  Any other relevant delayed aspects on object declarations ???
-
       -----------------------------------
       -- Apply_External_Initialization --
       -----------------------------------
@@ -4326,35 +4315,6 @@ package body Sem_Ch3 is
          end if;
       end Count_Tasks;
 
-      ----------------------------
-      -- Delayed_Aspect_Present --
-      ----------------------------
-
-      function Delayed_Aspect_Present return Boolean is
-         A    : Node_Id;
-         A_Id : Aspect_Id;
-
-      begin
-         A := First (Aspect_Specifications (N));
-
-         while Present (A) loop
-            A_Id := Get_Aspect_Id (Chars (Identifier (A)));
-
-            if A_Id = Aspect_Address then
-
-               --  Set flag on object entity, for later processing at the
-               --  freeze point.
-
-               Set_Has_Delayed_Aspects (Id);
-               return True;
-            end if;
-
-            Next (A);
-         end loop;
-
-         return False;
-      end Delayed_Aspect_Present;
-
       --  Local variables
 
       Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
@@ -4667,50 +4627,22 @@ package body Sem_Ch3 is
 
          Set_Etype (Id, T);
 
-         --  If the expression is an aggregate we must look ahead to detect
-         --  the possible presence of an address clause, and defer resolution
-         --  and expansion of the aggregate to the freeze point of the entity.
+         --  If the expression is a formal that is a "subprogram pointer"
+         --  this is illegal in accessibility terms (see RM 3.10.2 (13.1/2)
+         --  and AARM 3.10.2 (13.b/2)). Add an explicit conversion to force
+         --  the corresponding check, as is done for assignments.
 
-         --  This is not always legal because the aggregate may contain other
-         --  references that need freezing, e.g. references to other entities
-         --  with address clauses. In any case, when compiling with -gnatI the
-         --  presence of the address clause must be ignored.
-
-         if Comes_From_Source (N)
-           and then Expander_Active
-           and then Nkind (E) = N_Aggregate
+         if Is_Entity_Name (E)
+           and then Present (Entity (E))
+           and then Is_Formal (Entity (E))
            and then
-             ((Present (Following_Address_Clause (N))
-                 and then not Ignore_Rep_Clauses)
-              or else Delayed_Aspect_Present)
+             Ekind (Etype (Entity (E))) = E_Anonymous_Access_Subprogram_Type
+           and then Ekind (T) /= E_Anonymous_Access_Subprogram_Type
          then
-            Set_Etype (E, T);
-
-            --  If the aggregate is limited it will be built in place, and its
-            --  expansion is deferred until the object declaration is expanded.
-
-            if Is_Limited_Type (T) then
-               Set_Expansion_Delayed (E);
-            end if;
-
-         else
-            --  If the expression is a formal that is a "subprogram pointer"
-            --  this is illegal in accessibility terms (see RM 3.10.2 (13.1/2)
-            --  and AARM 3.10.2 (13.b/2)). Add an explicit conversion to force
-            --  the corresponding check, as is done for assignments.
-
-            if Is_Entity_Name (E)
-              and then Present (Entity (E))
-              and then Is_Formal (Entity (E))
-              and then
-                Ekind (Etype (Entity (E))) = E_Anonymous_Access_Subprogram_Type
-              and then Ekind (T) /= E_Anonymous_Access_Subprogram_Type
-            then
-               Rewrite (E, Convert_To (T, Relocate_Node (E)));
-            end if;
-
-            Resolve (E, T);
+            Rewrite (E, Convert_To (T, Relocate_Node (E)));
          end if;
+
+         Resolve (E, T);
 
          --  No further action needed if E is a call to an inlined function
          --  which returns an unconstrained type and it has been expanded into

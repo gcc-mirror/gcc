@@ -32,7 +32,6 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
-with Expander;       use Expander;
 with Exp_Aggr;       use Exp_Aggr;
 with Exp_Atag;       use Exp_Atag;
 with Exp_Ch4;        use Exp_Ch4;
@@ -7701,27 +7700,12 @@ package body Exp_Ch3 is
 
          Expr_Q := Unqualify (Expr);
 
-         --  When we have the appropriate type of aggregate in the expression
-         --  (it has been determined during analysis of the aggregate by
-         --  setting the delay flag), let's perform in place assignment and
-         --  thus avoid creating a temporary.
+         --  When we have the appropriate kind of aggregate in the expression
+         --  (this has been determined during analysis of the aggregate by
+         --  setting the Expansion_Delayed flag), let's perform in place
+         --  assignment and thus avoid creating a temporary.
 
          if Is_Delayed_Aggregate (Expr_Q) then
-
-            --  An aggregate that must be built in place is not resolved and
-            --  expanded until the enclosing construct is expanded. This will
-            --  happen when the aggregate is limited and the declared object
-            --  has a following address clause. Resolution is done without
-            --  expansion because it will take place when the declaration
-            --  itself is expanded.
-
-            if Is_Limited_Type (Typ)
-              and then not Analyzed (Expr)
-            then
-               Expander_Mode_Save_And_Set (False);
-               Resolve (Expr, Typ);
-               Expander_Mode_Restore;
-            end if;
 
             --  For a special return object, the transformation must wait until
             --  after the object is turned into an allocator.

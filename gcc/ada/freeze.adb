@@ -11034,6 +11034,12 @@ package body Freeze is
          return;
       end if;
 
+      --  No warning if there is no default initialization
+
+      if No_Initialization (Declaration_Node (Ent)) then
+         return;
+      end if;
+
       --  We only give the warning for non-imported entities of a type for
       --  which a non-null base init proc is defined, or for objects of access
       --  types with implicit null initialization, or when Normalize_Scalars
