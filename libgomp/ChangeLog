@@ -1,3 +1,15 @@
+2024-11-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Technical Report 13): Remove 'iterator'
+	in 'map' clause of 'declare mapper' as it is already the list above.
+	(Interoperability Routines): Add.
+	(omp_target_memcpy_async, omp_target_memcpy_rect_async):
+	Document that depobj_list may be omitted in C++ and Fortran.
+
+2024-11-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/max_vf-1.c: Add -mno-avx.
+
 2024-11-06  Andrew Stubbs  <ams@baylibre.com>
 
 	* testsuite/libgomp.c/max_vf-1.c: New test.

@@ -1,3 +1,9 @@
+2024-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117317
+	* semantics.cc (emit_associated_thunks): Do nothing for
+	!DECL_INTERFACE_KNOWN && DECL_DEFER_OUTPUT fns.
+
 2024-11-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/116634

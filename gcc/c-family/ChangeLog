@@ -1,3 +1,11 @@
+2024-11-07  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* c-pragma.cc (struct pragma_pp_data): Use (struct internal_pragma_handler);
+	(c_register_pragma_1): Always register name and space for all pragmas.
+	(c_invoke_pragma_handler): Adapt.
+	(c_invoke_early_pragma_handler): Likewise.
+	(c_pp_invoke_early_pragma_handler): Likewise.
+
 2024-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (std=c++2b, std=c++23, std=gnu++2b, std=gnu++23): Adjust

@@ -1,3 +1,226 @@
+2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR target/117408
+	* config/arm/arm-mve-builtins.cc(handle_arm_mve_h): Detect if MVE
+	types is missing and if so, return error.
+
+2024-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-mem.cc (expand_assign_tm): Don't take address
+	of empty CONSTRUCTOR, instead use BUILT_IN_TM_MEMSET
+	to clear lhs in that case.  Formatting fixes.
+
+2024-11-09  Andi Kleen  <ak@gcc.gnu.org>
+
+	* config/i386/gcc-auto-profile: Regenerate.
+
+2024-11-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117238
+	* config/pa/pa64-regs.h (PA_HARD_REGNO_MODE_OK): Don't allow
+	mode size 32.
+
+2024-11-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/predicates.md (base14_operand): Use '&' operator
+	instead of '%' to check displacement alignment.
+
+2024-11-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117238
+	* config/pa/pa32-regs.h (PA_HARD_REGNO_MODE_OK): Don't allow
+	mode size 32.  Limit mode size 16 in general registers to
+	complex modes.
+
+2024-11-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117443
+	* config/pa/pa.cc (pa_legitimate_address_p): Allow any
+	14-bit displacement when reload is in progress and strict
+	is false.
+
+2024-11-08  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/116444
+	* config/arm/arm.cc (arm_noce_conversion_profitable_p): Call
+	default_noce_conversion_profitable_p when not dealing with the
+	armv8.1-m.main special case.
+	(arm_is_vsel_fp_insn): New function.
+
+2024-11-08  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a520ae,
+	cortex-a720ae, cortex-r82ae): Define new entries.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document A520AE, A720AE and R82AE CPUs.
+
+2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_psel<BHSD_BITS>)
+	(*aarch64_sve_psel<BHSD_BITS>_plus): Require TARGET_STREAMING
+	rather than TARGET_STREAMING_SME2.
+
+2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_fclamp<mode>)
+	(*aarch64_sve_fclamp<mode>_x): Require TARGET_STREAMING_SME2
+	rather than TARGET_STREAMING_SME.
+
+2024-11-07  David Faust  <david.faust@oracle.com>
+
+	PR target/117447
+	* config/bpf/btfext-out.cc (btf_ext_output): Bail if TU CTFC is null.
+
+2024-11-07  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_finalize): Check that hash maps are non-null before
+	emptying them.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/85605
+	* tree-ssa-ifcombine.cc (can_combine_bbs_with_short_circuit): New function.
+	(ifcombine_ifandif): Use can_combine_bbs_with_short_circuit
+	instead of checking if iterator is one before the last statement.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117414
+	* tree-ssa-sccvn.cc (process_bb): Lookup
+	`val != 0` if got back a ssa name when looking the comparison.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117414
+	* tree-ssa-sccvn.cc (insert_predicates_for_cond): Handle `(A CMP B) !=/== 0`.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117414
+	* tree-ssa-sccvn.cc (insert_predicates_for_cond): Canonicalize the comparison.
+	Don't insert anything if lhs is not a SSA_NAME. Handle `(a | b) !=/== 0`.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-sccvn.cc (insert_predicates_for_cond): New function, factored out from ...
+	(process_bb): Here.
+
+2024-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_check_gather_scatter): Refuse
+	to analyze DR_REF if from an epilogue that's not first.
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Add comment
+	how the substitution in DR_REF is broken.
+
+2024-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_loop_vec_info::main_loop_info): New.
+	(LOOP_VINFO_MAIN_LOOP_INFO): Likewise.
+	(_loop_vec_info::epilogue_vinfo): Change from epilogue_vinfos
+	from array to single element.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Initialize
+	main_loop_info and epilogue_vinfo.  Remove epilogue_vinfos
+	allocation.
+	(_loop_vec_info::~_loop_vec_info): Do not release epilogue_vinfos.
+	(vect_create_loop_vinfo): Rename parameter, set
+	LOOP_VINFO_MAIN_LOOP_INFO.
+	(vect_analyze_loop_1): Rename parameter.
+	(vect_analyze_loop_costing): Properly distinguish between
+	the main vector loop and the preceeding epilogue.
+	(vect_analyze_loop): Change for epilogue_vinfos no longer
+	being a vector.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Simplify and
+	thereby handle a vector epilogue of a vector epilogue.
+
+2024-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_loop_vec_info::drs_advanced_by): New.
+	(LOOP_VINFO_DRS_ADVANCED_BY): Likewise.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Initialize
+	drs_advanced_by.
+	(update_epilogue_loop_vinfo): Remember the DR advancement made.
+	(vect_transform_loop): Accumulate past advancements.
+
+2024-11-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Move
+	vect_analyze_loop_costing after check whether we can do
+	peeling.  Add check on LOOP_VINFO_PEELING_FOR_GAPS for
+	epilogues.
+
+2024-11-07  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* doc/md.texi: Add doc for mask_len_stried_load{store}.
+
+2024-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117467
+	* timevar.def (TV_EXT_DCE): New.
+	* ext-dce.cc (pass_data_ext_dce): Use TV_EXT_DCE.
+
+2024-11-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (cstorebf4): Use vcomsbf16 under
+	TARGET_AVX10_2_256 and -fno-trapping-math.
+	(cbranchbf4): Adjust formatting.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc
+	(ifcombine_rewrite_to_defined_overflow): New.
+	(ifcombine_replace_cond): Reject conds that would require
+	moving too many stmts.  Reset flow sensitive info and avoid
+	undefined behavior in moved stmts.  Reset flow sensitive info
+	in all inner blocks when the outer condition changes, and
+	avoid undefined behavior whenever the outer condition becomes
+	laxer, adapted and moved from...
+	(pass_tree_ifcombine::execute): ... here.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc (recognize_if_then_else): Support
+	relaxed then/else testing; require nondegenerate condition
+	otherwise.
+	(tree_ssa_ifcombine_bb_1): Add outer_succ_bb parm, use it
+	instead of inner_cond_bb.  Adjust callers.
+	(tree_ssa_ifcombine_bb): Loop over dominating outer blocks
+	eligible for ifcombine.
+	(pass_tree_ifcombine::execute): Noted potential need for
+	changes to the post-combine logic.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc: Include bitmap.h.
+	(ifcombine_mark_ssa_name): New.
+	(struct ifcombine_mark_ssa_name_t): New.
+	(ifcombine_mark_ssa_name_walk): New.
+	(ifcombine_replace_cond): Prepare to handle noncontiguous and
+	split-condition ifcombine.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc (known_succ_p): New.
+	(update_profile_after_ifcombine): Handle noncontiguous blocks.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc (ifcombine_replace_cond): Factor out
+	of...
+	(ifcombine_ifandif): ... this.  Leave it for the above to
+	gimplify and invert the condition.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Drop redundant
+	result_inv parm.  Adjust all callers.
+
+2024-11-07  xuli  <xuli1@eswincomputing.com>
+
+	* match.pd: Add the form1 of signed imm .SAT_ADD matching.
+	* tree-ssa-math-opts.cc (match_saturation_add): Add fold
+	convert	for const_int to the type of operand 0.
+
 2024-11-06  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 
 	PR rtl-optimization/112398

@@ -1,3 +1,64 @@
+2024-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* libsupc++/new (::operator new, ::operator new[]): Add malloc
+	attribute where missing.  Add alloc_align attribute when
+	std::align_val_t is present and where it was missing.  Formatting fix.
+
+2024-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable): Add 'inline' to some
+	one-line constructors.
+
+2024-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Insert_base::try_emplace):
+	Do not define for C++11 and C++14.
+	* include/debug/map.h (try_emplace): Use feature test macro.
+	* include/debug/unordered_map (try_emplace): Likewise.
+	* testsuite/17_intro/names.cc: Define try_emplace before C++17.
+
+2024-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (__distance_fw): Replace tag
+	dispatching with 'if constexpr'.
+
+2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_M_insert_unique_node): Improve
+	comment.
+
+2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115285
+	* include/bits/hashtable.h (_Hashtable::_S_forward_key): Remove.
+	(_Hashtable::_M_insert_unique_aux): Replace _S_forward_key with
+	a static_cast to a type defined using conditional_t.
+	(_Hashtable::_M_insert): Replace _ConvertToValueType with a
+	static_cast to a type defined using conditional_t.
+	* include/bits/hashtable_policy.h (_ConvertToValueType): Remove.
+	* testsuite/23_containers/unordered_map/insert/115285.cc: New test.
+	* testsuite/23_containers/unordered_set/insert/115285.cc: New test.
+	* testsuite/23_containers/unordered_set/96088.cc: Adjust
+	expected number of allocations.
+
+2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (__is_pair): Define for C++11 and
+	C++14 as well.
+
+2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable): Fix comment grammar.
+
+2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Add is_permutation to comment.
+	* include/bits/hashtable_policy.h: Remove it from comment.
+
+2024-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Fix spelling in comment.
+
 2024-11-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/evolution.xml: Document deprecations.

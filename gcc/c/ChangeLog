@@ -1,3 +1,36 @@
+2024-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116284
+	PR c/117391
+	* c-tree.h (c_type_unspecified_p): New inline function.
+	* c-typeck.cc (c_build_array_type_unspecified): New function.
+	(comptypes_interal): Remove useless code.
+	(composite_type_internal): Update.
+	* c-decl.cc (grokdeclarator): Revise.
+
+2024-11-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/117019
+	* c-parser.cc (c_parser_declaration_or_fndef): Adjust declaration.
+	(c_parser_external_declaration): Adjust a call to
+	c_parser_declaration_or_fndef.
+	(c_parser_declaration_or_fndef): New bool parameter.  Return a tree
+	instead of void.  Adjust for N3356.  Adjust a call to
+	c_parser_declaration_or_fndef.
+	(c_parser_compound_statement_nostart): Adjust calls to
+	c_parser_declaration_or_fndef.
+	(c_parser_selection_header): New.
+	(c_parser_paren_selection_header): New.
+	(c_parser_if_statement): Call c_parser_paren_selection_header
+	instead of c_parser_paren_condition.
+	(c_parser_switch_statement): Call c_parser_selection_header instead of
+	c_parser_expression.
+	(c_parser_for_statement): Adjust calls to c_parser_declaration_or_fndef.
+	(c_parser_objc_methodprotolist): Likewise.
+	(c_parser_oacc_routine): Likewise.
+	(c_parser_omp_loop_nest): Likewise.
+	(c_parser_omp_declare_simd): Likewise.
+
 2024-11-05  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR c/117445

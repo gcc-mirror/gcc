@@ -1,3 +1,197 @@
+2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR target/117408
+	* gcc.target/arm/mve/pr117408-1.c: New test.
+	* gcc.target/arm/mve/pr117408-2.c: Likewise.
+
+2024-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116284
+	PR c/117391
+	* gcc.dg/pr116284.c: New test.
+	* gcc.dg/pr117391.c: New test.
+
+2024-11-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/117019
+	* gcc.dg/c23-if-decls-1.c: New test.
+	* gcc.dg/c23-if-decls-2.c: New test.
+	* gcc.dg/c2y-if-decls-1.c: New test.
+	* gcc.dg/c2y-if-decls-2.c: New test.
+	* gcc.dg/c2y-if-decls-3.c: New test.
+	* gcc.dg/c2y-if-decls-4.c: New test.
+	* gcc.dg/c2y-if-decls-5.c: New test.
+	* gcc.dg/c2y-if-decls-6.c: New test.
+	* gcc.dg/c2y-if-decls-7.c: New test.
+	* gcc.dg/c2y-if-decls-8.c: New test.
+	* gcc.dg/c2y-if-decls-9.c: New test.
+	* gcc.dg/c2y-if-decls-10.c: New test.
+	* gcc.dg/c2y-if-decls-11.c: New test.
+	* gcc.dg/gnu2y-if-decls-1.c: New test.
+	* gcc.dg/gnu99-if-decls-1.c: New test.
+	* gcc.dg/gnu99-if-decls-2.c: New test.
+
+2024-11-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-77.c: Add x86_64-*-* and i?86-*-* to
+	the list of expected failing targets.
+
+2024-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117317
+	* g++.dg/cpp2a/pr117317-1.C: New test.
+	* g++.dg/cpp2a/pr117317-2.C: New test.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/epilog-1.c: Use check-function-bodies.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr68620.c: Use effective-target
+	arm_libc_fp_abi.
+	* lib/target-supports.exp: Define effective-target
+	arm_libc_fp_abi.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr40457-2.c: Add vst1.32 as an allowed
+	instruction.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/vect/pr84556.cc: Change from "dg-do run" with selector
+	to instead use dg-require-effective-target with the same
+	selector.
+
+2024-11-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-early-break_21.c: Remove disabling of
+	x86_64 and i?86.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.target/arm/mve/general-c++/nomve_fp_1.c: Use
+	effective-target arm_fp.
+
+2024-11-08  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_data.h: add data for vec sat_sub.
+	* gcc.target/riscv/rvv/autovec/vec_sat_arith.h: add unsigned imm vec sat_sub form1.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_imm-run-4.c: New test.
+
+2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/bfmlslb_f32.c: Replace bfmla*
+	with bfmls*
+
+2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b16.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b16.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b32.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b32.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b64.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b64.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b8.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b8.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c16.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c16.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c32.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c32.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c64.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c64.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c8.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c8.c: ...here.
+
+2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/clamp_3.c: Force sme2
+	* gcc.target/aarch64/sme/clamp_4.c: Likewise.
+	* gcc.target/aarch64/sme/clamp_5.c: New test.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/85605
+	* g++.dg/tree-ssa/ifcombine-ccmp-1.C: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-7.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-8.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-9.c: New test.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117414
+	* gcc.dg/tree-ssa/fre-predicated-4.c: New test.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117414
+	* gcc.dg/tree-ssa/fre-predicated-3.c: New test.
+
+2024-11-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117414
+	* gcc.dg/tree-ssa/fre-predicated-1.c: New test.
+	* gcc.dg/tree-ssa/fre-predicated-2.c: New test.
+
+2024-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116725
+	* gcc.target/i386/pr116725.c: Add dg-require-effective-target
+	avx512{dq,fp16,vl}.
+
+2024-11-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.dg/gomp/max_vf-1.c: Add -mno-avx.
+
+2024-11-07  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx10_2-comibf-3.c: New test.
+	* gcc.target/i386/avx10_2-comibf-4.c: Likewise.
+
+2024-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/pr117304-1.c: Modify regexp.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/no-callee-saved-13.c: Disable PIE on ia32.
+	* gcc.target/i386/no-callee-saved-14.c: Likewise.
+	* gcc.target/i386/no-callee-saved-15.c: Likewise.
+	* gcc.target/i386/no-callee-saved-17.c: Likewise.
+	* gcc.target/i386/pr100865-1.c: Likewise.
+	* gcc.target/i386/pr100865-7a.c: Likewise.
+	* gcc.target/i386/pr100865-7c.c: Likewise.
+	* gcc.target/i386/sse2-stv-1.c: Likewise.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr70321.c: Cope with non-bx get_pc_thunk.
+
+2024-11-07  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/sat_arith.h: Support signed
+	imm SAT_ADD form1.
+	* gcc.target/riscv/sat_s_add_imm-1-1.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-1.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-2-1.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-2.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-3-1.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-3.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-4.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-run-1.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-run-2.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-run-3.c: New test.
+	* gcc.target/riscv/sat_s_add_imm-run-4.c: New test.
+
 2024-11-06  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc.target/i386/avx10_2-comibf-2.c: Require avx10_2 target.

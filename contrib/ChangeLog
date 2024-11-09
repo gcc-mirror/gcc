@@ -1,3 +1,13 @@
+2024-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add 2
+	further commits.
+
+2024-11-09  Andi Kleen  <ak@gcc.gnu.org>
+
+	* gen_autofdo_event.py: Convert strings to raw.
+	Add fallback to using builtin perf event list.
+
 2024-10-09  René Rebe  <rene@exactcode.de>
 
 	* config-list.mk (LIST): no --enable-obsolete for ia64-linux.
