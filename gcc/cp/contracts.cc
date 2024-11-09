@@ -1266,8 +1266,8 @@ match_contract_conditions (location_t oldloc, tree old_attrs,
 		  "previously declared");
       inform (oldloc,
 	      new_attrs
-	      ? "original declaration with fewer contracts here"
-	      : "original declaration with more contracts here");
+	      ? "previous declaration with fewer contracts here"
+	      : "previous declaration with more contracts here");
       return false;
     }
 
@@ -2834,6 +2834,59 @@ finish_function_contracts (tree fndecl)
   }
 }
 
+void
+p2900_duplicate_contracts (location_t new_loc, tree new_contracts, tree newdecl,
+			   location_t old_loc, tree old_contracts, tree olddecl)
+{
+  if (new_contracts && !old_contracts)
+    {
+      auto_diagnostic_group d;
+      /* In P2900, virtual functions do not inherit the contracts.
+	 Also, if a function has contracts, they must appear on the
+	 first declaration */
+      error_at (new_loc, "declaration adds contracts to %q#D", olddecl);
+      inform (DECL_SOURCE_LOCATION (olddecl), "previous definition here");
+      remove_contract_attributes (newdecl);
+      return;
+    }
+
+  if (old_contracts && !new_contracts)
+    {
+      /* duplicate_decls () will overwrite (or merge) the attributes of
+	 old_decl with those of newdecl, so copy the contracts from old to
+	 new.  */
+      if (!DECL_ATTRIBUTES (newdecl))
+	{
+	  DECL_ATTRIBUTES (newdecl) = old_contracts;
+	  old_contracts = CONTRACT_CHAIN (olddecl);
+	}
+      for (; old_contracts; old_contracts = CONTRACT_CHAIN (olddecl))
+	DECL_ATTRIBUTES (newdecl)
+	  = attr_chainon (DECL_ATTRIBUTES (newdecl), old_contracts);
+      remove_contract_attributes (olddecl);
+      return;
+    }
+
+  /* So either they match or we should issue a diagnostic.  */
+  if (!match_contract_conditions (old_loc, old_contracts,
+				  new_loc, new_contracts, cmc_declaration))
+    {
+      /* We've issued a diagnostic - but because of the behaviour mentioned
+	 above, we need to copy the contracts from old -> new, otherwise any
+	 following comparisons and therefore diagnostics will be bogus.  */
+      remove_contract_attributes (newdecl);
+      if (!DECL_ATTRIBUTES (newdecl))
+	{
+	  DECL_ATTRIBUTES (newdecl) = old_contracts;
+	  old_contracts = CONTRACT_CHAIN (olddecl);
+	}
+      for (; old_contracts; old_contracts = CONTRACT_CHAIN (olddecl))
+	DECL_ATTRIBUTES (newdecl)
+	  = attr_chainon (DECL_ATTRIBUTES (newdecl), old_contracts);
+    }
+  remove_contract_attributes (olddecl);
+  return;
+}
 
 /* A subroutine of duplicate_decls. Diagnose issues in the redeclaration of
    guarded functions.  */
@@ -2855,6 +2908,13 @@ duplicate_contracts (tree newdecl, tree olddecl)
 
   location_t old_loc = DECL_SOURCE_LOCATION (olddecl);
   location_t new_loc = DECL_SOURCE_LOCATION (newdecl);
+
+  if (flag_contracts_nonattr)
+    {
+      p2900_duplicate_contracts (new_loc, new_contracts, newdecl,
+				 old_loc, old_contracts, olddecl);
+      return;
+    }
 
   /* If both declarations specify contracts, ensure they match.
 
@@ -2886,74 +2946,57 @@ duplicate_contracts (tree newdecl, tree olddecl)
 	   collapse it into olddecl, so stash away olddecl's contracts for
 	   later comparison.  */
 	defer_guarded_contract_match (olddecl, olddecl, old_contracts);
+      remove_contract_attributes (olddecl);
+      return;
     }
 
   /* Handle cases where contracts are omitted in one or the other
      declaration.  */
   if (old_contracts)
     {
+      gcc_checking_assert (!new_contracts);
       /* Contracts have been previously specified by are no omitted. The
 	 new declaration inherits the existing contracts. */
-      if (!new_contracts)
-	copy_contract_attributes (newdecl, olddecl);
+      copy_contract_attributes (newdecl, olddecl);
 
-      /* In all cases, remove existing contracts from OLDDECL to prevent the
-	 attribute merging function from adding excess contracts.  */
+      /* Remove existing contracts from OLDDECL to prevent the attribute
+	 merging function from adding excess contracts.  */
       remove_contract_attributes (olddecl);
     }
   else if (!old_contracts)
     {
+      gcc_checking_assert (new_contracts);
       /* We are adding contracts to a declaration.  */
-      if (new_contracts)
+      if (DECL_INITIAL (olddecl))
 	{
-	  if (flag_contracts_nonattr)
-	    {
-	      /* In P2900, the virtual functions do not inherit the contracts.
-	       * Also, if a function has contracts, they must appear on the
-	       * first declaration */
-	      error_at (new_loc,
-			"declaration adds contracts to %q#D",
-			olddecl);
-	      return;
-	    }
 	  /* We can't add to a previously defined function.  */
-	  if (DECL_INITIAL (olddecl))
-	    {
-	      auto_diagnostic_group d;
-	      error_at (new_loc, "cannot add contracts after definition");
-	      inform (DECL_SOURCE_LOCATION (olddecl), "original definition here");
-	      return;
-	    }
-	  else
-	    {
-	      /* We can't add to an unguarded virtual function declaration.  */
-	      if (DECL_VIRTUAL_P (olddecl) && new_contracts)
-		{
-		  auto_diagnostic_group d;
-		  error_at (new_loc, "cannot add contracts to a virtual function");
-		  inform (DECL_SOURCE_LOCATION (olddecl), "original declaration here");
-		  return;
-		}
-
-	      /* Depending on the "first declaration" rule, we may not be able
-		 to add contracts to a function after the fact.  */
-	      if (flag_contract_strict_declarations)
-		{
-		  warning_at (new_loc,
-			    OPT_fcontract_strict_declarations_,
-			    "declaration adds contracts to %q#D",
-			    olddecl);
-		}
-	    }
-
-	  /* Copy the contracts from NEWDECL to OLDDECL. We shouldn't need to
-	     remap them because NEWDECL's parameters will replace those of
-	     OLDDECL.  Remove the contracts from NEWDECL so they aren't
-	     cloned when merging.  */
-	  copy_contract_attributes (olddecl, newdecl);
-	  remove_contract_attributes (newdecl);
+	  auto_diagnostic_group d;
+	  error_at (new_loc, "cannot add contracts after definition");
+	  inform (DECL_SOURCE_LOCATION (olddecl), "original definition here");
+	  return;
 	}
-    }
+
+      /* We can't add to an unguarded virtual function declaration.  */
+      if (DECL_VIRTUAL_P (olddecl))
+	{
+	  auto_diagnostic_group d;
+	  error_at (new_loc, "cannot add contracts to a virtual function");
+	  inform (DECL_SOURCE_LOCATION (olddecl), "original declaration here");
+	  return;
+	}
+
+      /* Depending on the "first declaration" rule, we may not be able
+	 to add contracts to a function after the fact; NOTE the option
+	 cannot be used to gate here since it takes a string which always
+	 compares != 0.  */
+      if (flag_contract_strict_declarations)
+	warning_at (new_loc, 1, "declaration adds contracts to %q#D", olddecl);
+
+      /* The parent will copy or merge the contracts from NEWDECL to OLDDECL;
+	 the latter is empty so we need make no special action.  */
+    copy_contract_attributes (olddecl, newdecl);
+    remove_contract_attributes (newdecl);
+  }
 }
 
 
