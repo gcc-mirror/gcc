@@ -110,7 +110,7 @@ int main()
   contract_assert const((*pi)++); // ok, not deep const
 
   contract_assert const(i == 4 ? i : i ); // ok, no name clash
-  contract_assert mutable(i == 4 ? i : i ); // { dg-error "expected.* before .mutable." }
+  contract_assert mutable(i == 4 ? i : i ); // { dg-error {'mutable' contract modifier requires '-fcontracts-nonattr-mutable-keyword'} }
 
 
   return 0;

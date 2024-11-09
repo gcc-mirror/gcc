@@ -4,11 +4,11 @@
 
 
 struct X {
-  friend void fn0(X x) pre (x.a > 0) { }
+  friend void fn0(X x) [[ pre: x.a > 0 ]] { }
 
-  static void fns0(X x) pre ( x.a > 0 ) { }
-  static void fns1(X x) pre ( x.a > 0 );
-  static void fns2(X x) pre ( x.a > 0 );
+  static void fns0(X x) [[ pre: x.a > 0 ]] { }
+  static void fns1(X x) [[ pre: x.a > 0 ]];
+  static void fns2(X x) [[ pre: x.a > 0 ]] ;
 
   friend void fn(X &x) { x.a = -5; }
 
@@ -16,7 +16,7 @@ private:
   int a{10};
 };
 void X::fns1(X x) { }
-void X::fns2(X x) pre ( x.a > 0 ) { }
+void X::fns2(X x) [[ pre: x.a > 0 ]] { }
 
 int main(int, char**) {
   X x;
