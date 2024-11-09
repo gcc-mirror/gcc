@@ -24,7 +24,7 @@ void f2(int &i) pre const(i++); // { dg-error "increment of read-only location" 
 void f3(int *i) pre const(i++); // { dg-error "increment of read-only location" }
 void f4(int *i) pre const((*i)++); // ok, not deep const
 void f5(int *i) pre const(gi++); //  ok, non automatic storage
-void f6(int *i) pre const mutable(gi++); // { dg-error "cannot be both mutable and const" }
+void f6(int *i) pre const mutable(gi++); // { dg-error {cannot be both 'const' and 'mutable'} }
 void f7(int *i) pre const((*i)++) pre mutable((*i)++); // ok, not deep const
 void f8(int *i) pre const(gi++) pre mutable(gi++); //  ok, non automatic storage
 
@@ -44,8 +44,9 @@ struct S{
   void f(){
     contract_assert const(i++); // { dg-error "increment of member" }
     contract_assert const(mi++); // ok, mutable
-    contract_assert mutable const(i++); // { dg-error "cannot be both mutable and const" }
-    contract_assert mutable const(mi++); // { dg-error "cannot be both mutable and const" }
+    contract_assert mutable const(i++); // { dg-error {cannot be both 'const' and 'mutable'} }
+ // { dg-error {increment of member 'S::i' in read-only object} "" { target *-*-* } .-1 }
+    contract_assert mutable const(mi++); // { dg-error {cannot be both 'const' and 'mutable'} }
 
     contract_assert const(ri++); // ok, not deep const
     contract_assert const(rmi++); // ok, not deep const
@@ -62,13 +63,13 @@ struct S{
 
 template <class T> void perfect_forward(T&& t) pre const(++t) {} // { dg-error "increment of read-only" }
 
-template <class T> void perfect_forward2(T&& t) pre mutable const(++t) {} // { dg-error "cannot be both mutable and const" }
+template <class T> void perfect_forward2(T&& t) pre mutable const(++t) {} // { dg-error {cannot be both 'const' and 'mutable'} }
 
 struct S2
 {
   int i = 0;
   template <class Self> void perfect_forward(this Self&& self) pre const(++self.i) {} // { dg-error "increment of member.*in read-only object" }
-  template <class Self> void perfect_forward2(this Self&& self) pre const mutable(++self.i) {} // { dg-error "cannot be both mutable and const" }
+  template <class Self> void perfect_forward2(this Self&& self) pre const mutable(++self.i) {} // { dg-error {cannot be both 'const' and 'mutable'} }
 };
 
 void template_related_tests()
@@ -80,6 +81,7 @@ void template_related_tests()
   perfect_forward(ci);
   perfect_forward((const int&&) ci);
   perfect_forward2(666);
+// { dg-error {increment of read-only location} "" { target *-*-* } 66 }
   S2 s;
   const S2 cs;
   s.perfect_forward();
