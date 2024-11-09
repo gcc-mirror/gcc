@@ -534,7 +534,8 @@ GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     $(GM2-BOOT-O)
 
 m2_OBJS = $(GM2_C_OBJS) m2/gm2-gcc/rtegraph.o \
-	m2/gm2-compiler-boot/m2flex.o
+	m2/gm2-compiler-boot/m2flex.o \
+	$(BUILD-LIBS-BOOT) $(BUILD-COMPILER-BOOT) $(MC_LIBS)
 
 cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 	cp -p $< $@
