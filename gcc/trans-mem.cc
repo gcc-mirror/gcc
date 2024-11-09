@@ -2442,26 +2442,33 @@ expand_assign_tm (struct tm_region *region, gimple_stmt_iterator *gsi)
 	  gcall = gimple_build_assign (rtmp, rhs);
 	  gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
 	}
+      else if (TREE_CODE (rhs) == CONSTRUCTOR
+	       && CONSTRUCTOR_NELTS (rhs) == 0)
+	{
+	  /* Don't take address of an empty CONSTRUCTOR, it might not
+	     work for C++ non-POD constructors at all and otherwise
+	     would be inefficient.  Use tm memset to clear lhs.  */
+	  gcc_assert (!load_p && store_p);
+	  rhs_addr = integer_zero_node;
+	}
       else
 	rhs_addr = gimplify_addr (gsi, rhs);
 
       // Choose the appropriate memory transfer function.
-      if (load_p && store_p)
-	{
-	  // ??? Figure out if there's any possible overlap between
-	  // the LHS and the RHS and if not, use MEMCPY.
-	  copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMMOVE);
-	}
+      if (store_p
+	  && TREE_CODE (rhs) == CONSTRUCTOR
+	  && CONSTRUCTOR_NELTS (rhs) == 0)
+	copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMSET);
+      else if (load_p && store_p)
+	// ??? Figure out if there's any possible overlap between
+	// the LHS and the RHS and if not, use MEMCPY.
+	copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMMOVE);
       else if (load_p)
-	{
-	  // Note that the store is non-transactional and cannot overlap.
-	  copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMCPY_RTWN);
-	}
+	// Note that the store is non-transactional and cannot overlap.
+	copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMCPY_RTWN);
       else
-	{
-	  // Note that the load is non-transactional and cannot overlap.
-	  copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMCPY_RNWT);
-	}
+	// Note that the load is non-transactional and cannot overlap.
+	copy_fn = builtin_decl_explicit (BUILT_IN_TM_MEMCPY_RNWT);
 
       gcall = gimple_build_call (copy_fn, 3, lhs_addr, rhs_addr,
 				 TYPE_SIZE_UNIT (TREE_TYPE (lhs)));
