@@ -179,6 +179,11 @@
 
 2024-11-07  Alexandre Oliva  <oliva@adacore.com>
 
+	* tree-ssa-ifcombine.cc (ifcombine_replace_cond): Support
+	TRUTH_ANDIF cond exprs.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
 	* tree-ssa-ifcombine.cc (recognize_if_then_else): Support
 	relaxed then/else testing; require nondegenerate condition
 	otherwise.
@@ -214,6 +219,11 @@
 
 	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Drop redundant
 	result_inv parm.  Adjust all callers.
+
+2024-11-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* tree-ssa-ifcombine.cc (bb_no_side_effects_p): Allow vuses,
+	but not vdefs.
 
 2024-11-07  xuli  <xuli1@eswincomputing.com>
 
