@@ -3,23 +3,23 @@
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
 
 // OK if equivalent -- even through renames.
-int g0(int a) [[ pre: a > 0 ]];
-int g0(int a) [[ pre: a > 0 ]];
+int g0(int a)  pre ( a > 0 );
+int g0(int a)  pre ( a > 0 );
 
-int g0b(int a) [[ pre: a > 0 ]];
-int g0b(int b) [[ pre: b > 0 ]];
-int g0b(int c) [[ pre: c > 0 ]]
+int g0b(int a)  pre ( a > 0 );
+int g0b(int b)  pre ( b > 0 );
+int g0b(int c)  pre ( c > 0 )
 {
   return 0;
 }
 
 // OK if specified before.
-int g1(int a) [[ pre: a > 0 ]];
+int g1(int a)  pre ( a > 0 );
 int g1(int a);
 
 // not OK if specified after.
 int g2(int a);
-int g2(int a) [[ pre: a > 0 ]]; // { dg-error "declaration adds contracts" }
+int g2(int a)  pre ( a > 0 ); // { dg-error "declaration adds contracts" }
 
 
 // can add to non-virtual methods
@@ -29,7 +29,7 @@ struct G0
 };
 
 // not OK to add contracts at the point of definition.
-int G0::f(int a) [[ pre: a > 0 ]] // { dg-error "declaration adds contracts" }
+int G0::f(int a)  pre ( a > 0 ) // { dg-error "declaration adds contracts" }
 {
   return -a;
 }
@@ -40,7 +40,7 @@ struct G1
 };
 
 // not OK to redeclare functions and add constraints...
-int G1::f1(int a) [[ pre: a > 0 ]]; // { dg-error "declaration adds contracts" }
+int G1::f1(int a)  pre ( a > 0 ); // { dg-error "declaration adds contracts" }
 
 // ...and leave them off later.
 int G1::f1(int a)
@@ -48,34 +48,34 @@ int G1::f1(int a)
   return -a;
 }
 
-int f0(int a) [[ pre: a > 0 ]];
-int f0(int a) [[ pre: a > 0 ]] [[ pre: a > 10 ]]; // { dg-error "different number of contracts" }
+int f0(int a) pre ( a > 0 );
+int f0(int a) pre ( a > 0 )  pre ( a > 10 ); // { dg-error "different number of contracts" }
 
-int f1(int a) [[ pre: a > 0 ]] [[ pre: a > 10 ]];
-int f1(int a) [[ pre: a > 0 ]]; // { dg-error "different number of contracts" }
+int f1(int a) pre ( a > 0 ) pre ( a > 10 );
+int f1(int a) pre ( a > 0 ); // { dg-error "different number of contracts" }
 
-int f2(int a) [[ pre: a > 0 ]];
-int f2(int a) [[ pre: a < 0 ]]; // { dg-error "mismatched contract" }
+int f2(int a) pre ( a > 0 );
+int f2(int a) pre ( a < 0 ); // { dg-error "mismatched contract" }
 
 int f3(int a) { return a; }
-int f3(int a) [[ pre: a < 0 ]]; // { dg-error "adds contracts" }
+int f3(int a) pre ( a < 0 ); // { dg-error "adds contracts" }
 
 struct Base
 {
-  virtual int f(int a) [[ pre: a > 0 ]];
+  virtual int f(int a)  pre (a > 0 );
 };
 
 struct Child : Base
 {
-  int f(int a) [[ pre: a < 0 ]]; // ok, contracts are not inherited
+  int f(int a)  pre ( a < 0 ); // ok, contracts are not inherited
 };
 
 struct S1
 {
-  virtual int f(int a); // contracts are not inherited
+  virtual int f (int a); // contracts are not inherited
 };
 
-int S1::f(int a) [[ pre: a > 0 ]] // { dg-error "declaration adds contracts" }
+int S1::f(int a) pre ( a > 0 ) // { dg-error "declaration adds contracts" }
 {
   return -a;
 }
@@ -91,7 +91,7 @@ struct S3
   int f() { return 0; }
 };
 
-int S3::f() [[pre: true]]; // { dg-error "adds contracts" }
+int S3::f() pre (true); // { dg-error "adds contracts" }
 
 
 // The initial decl of a guarded member must appear inside the class.
@@ -100,7 +100,7 @@ struct S4
   int f(int a);
 };
 
-int S4::g(int a) [[ pre: a > 0 ]]; // { dg-error "no declaration matches" }
+int S4::g(int a) pre ( a > 0 ); // { dg-error "no declaration matches" }
 
 
 struct S5
@@ -110,7 +110,7 @@ struct S5
 };
 
 template<typename T>
-S5::S5(T a) [[ pre: a > 0 ]] // { dg-error "declaration adds contracts" }
+S5::S5(T a) pre ( a > 0 ) // { dg-error "declaration adds contracts" }
 {
 }
 
@@ -121,7 +121,7 @@ struct S6
 };
 
 template<typename T>
-S6::S6(T a) [[ pre: a > 0 ]]; // { dg-error "declaration adds contracts" }
+S6::S6(T a) pre ( a > 0 ); // { dg-error "declaration adds contracts" }
 
 template<typename T>
 S6::S6(T a)
@@ -129,16 +129,16 @@ S6::S6(T a)
 }
 
 int p0(const int n)
-  [[ post r: r > 0 && r == n ]]
-  [[ post r: r > 1 && r == n ]]
-  [[ post r: r > 2 && r == n ]]
-  [[ post r: r > 3 && r == n ]];
+   post ( r: r > 0 && r == n )
+   post ( r: r > 1 && r == n )
+   post ( r: r > 2 && r == n )
+   post ( r: r > 3 && r == n );
 
 int p0(const int z)
-  [[ post r: r > 0 && r == z ]]
-  [[ post r1: r1 > 1 && r1 == z ]]
-  [[ post r2: r2 > 2 && r2 == z ]]
-  [[ post r3: r3 > 3 && r3 == z ]]
+   post ( r: r > 0 && r == z )
+   post ( r1: r1 > 1 && r1 == z )
+   post ( r2: r2 > 2 && r2 == z )
+   post ( r3: r3 > 3 && r3 == z )
 {
   return z;
 }
