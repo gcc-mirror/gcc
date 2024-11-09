@@ -2750,8 +2750,9 @@ and @code{Z} descriptors, plus unformatted I/O.
 Here is a small, somewhat contrived example of their use:
 @smallexample
 program main
-  unsigned(kind=8) :: v
-  v = huge(v) - 32u_8
+  use iso_fortran_env, only : uint64
+  unsigned(kind=uint64) :: v
+  v = huge(v) - 32u_uint64
   print *,v
 end program main
 @end smallexample
@@ -2779,6 +2780,7 @@ The following intrinsics take unsigned arguments:
 @item @code{BIT_SIZE}, @pxref{BIT_SIZE}
 @item @code{BLE}, @pxref{BLE}
 @item @code{BLT}, @pxref{BLT}
+@item @code{CMPLX}, @pxref{CMPLX}
 @item @code{CSHIFT}, @pxref{CSHIFT}
 @item @code{DIGITS}, @pxref{DIGITS}
 @item @code{DOT_PRODUCT}, @pxref{DOT_PRODUCT}
@@ -2794,6 +2796,7 @@ The following intrinsics take unsigned arguments:
 @item @code{IBITS}, @pxref{IBITS}
 @item @code{IBSET}, @pxref{IBSET}
 @item @code{IEOR}, @pxref{IEOR}
+@item @code{INT}, @pxref{INT}
 @item @code{IOR}, @pxref{IOR}
 @item @code{IPARITY}, @pxref{IPARITY}
 @item @code{ISHFT}, @pxref{ISHFT}
@@ -2814,6 +2817,7 @@ The following intrinsics take unsigned arguments:
 @item @code{PRODUCT}, @pxref{PRODUCT}
 @item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
 @item @code{RANGE}, @pxref{RANGE}
+@item @code{REAL}, @pxref{REAL}
 @item @code{SHIFTA}, @pxref{SHIFTA}
 @item @code{SHIFTL}, @pxref{SHIFTL}
 @item @code{SHIFTR}, @pxref{SHIFTR}

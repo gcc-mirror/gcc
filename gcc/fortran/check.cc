@@ -2606,6 +2606,23 @@ gfc_check_complex (gfc_expr *x, gfc_expr *y)
   if (!boz_args_check (x, y))
     return false;
 
+  /* COMPLEX is an extension, we do not want UNSIGNED there.  */
+  if (x->ts.type == BT_UNSIGNED)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be "
+		 "UNSIGNED", gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &x->where);
+      return false;
+    }
+
+  if (y->ts.type == BT_UNSIGNED)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L shall not be "
+		 "UNSIGNED", gfc_current_intrinsic_arg[1]->name,
+		 gfc_current_intrinsic, &y->where);
+      return false;
+    }
+
   if (x->ts.type == BT_BOZ)
     {
       if (gfc_invalid_boz (G_("BOZ constant at %L cannot appear in the COMPLEX"

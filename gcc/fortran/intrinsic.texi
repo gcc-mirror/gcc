@@ -3626,7 +3626,8 @@ component.  If @var{Y} is not present then the imaginary component is set to
 0.0.  If @var{X} is complex then @var{Y} must not be present.
 
 @item @emph{Standard}:
-Fortran 77 and later
+Fortran 77 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{Class}:
 Elemental function
@@ -3637,9 +3638,9 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab The type may be @code{INTEGER}, @code{REAL},
-or @code{COMPLEX}.
+@code{COMPLEX} or @code{UNSIGNED}.
 @item @var{Y} @tab (Optional; only allowed if @var{X} is not
-@code{COMPLEX}.)  May be @code{INTEGER} or @code{REAL}.
+@code{COMPLEX}.)  May be @code{INTEGER}, @code{REAL} or @code{UNSIGNED}.
 @item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
@@ -8355,7 +8356,8 @@ Convert to integer type
 Fortran 77 and later, with boz-literal-constant Fortran 2008 and later.
 
 @item @emph{Class}:
-Elemental function
+Elemental function, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers}).
 
 @item @emph{Syntax}:
 @code{RESULT = INT(A [, KIND))}
@@ -8386,7 +8388,6 @@ If @var{A} is of type @code{COMPLEX}, rule B is applied to the real part of @var
 If @var{A} is of type @code{UNSIGNED} and @math{0 \leq A \leq}
 @code{HUGE(A)}, @code{INT(A) = A}.  Outside that range, the result
 is interpreted using two's complement.
-
 @end table
 
 @item @emph{Example}:
@@ -12287,7 +12288,10 @@ end program test_rank
 and its use is strongly discouraged.
 
 @item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 90 and later, has GNU extensions
+Fortran 77 and later, with @var{KIND} argument Fortran 90 and later,
+has GNU extensions.  Extension for @code{UNSIGNED} (@pxref{Unsigned
+integers}).
+
 
 @item @emph{Class}:
 Elemental function
@@ -12300,8 +12304,8 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be @code{INTEGER}, @code{REAL}, or
-@code{COMPLEX}.
+@item @var{A}    @tab Shall be @code{INTEGER}, @code{REAL},
+@code{COMPLEX} or @code{UNSIGNED}.
 @item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
@@ -12313,14 +12317,14 @@ the following rules:
 @table @asis
 @item (A)
 @code{REAL(A)} is converted to a default real type if @var{A} is an 
-integer or real variable.
+integer, real or unsigned variable.
 @item (B)
 @code{REAL(A)} is converted to a real type with the kind type parameter
 of @var{A} if @var{A} is a complex variable.
 @item (C)
 @code{REAL(A, KIND)} is converted to a real type with kind type
-parameter @var{KIND} if @var{A} is a complex, integer, or real
-variable.
+parameter @var{KIND} if @var{A} is a complex, integer, real
+or unsigned variable.
 @end table
 
 @item @emph{Example}:
