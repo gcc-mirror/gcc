@@ -4,7 +4,7 @@
 
 struct Base
 {
-  virtual int f(int a) pre ( a > 5 );
+  virtual int f(int a) [[ pre: a > 5 ]];
 };
 
 int Base::f(int a)
@@ -20,7 +20,7 @@ struct Child0 : Base
 // defined out of line, explicit override
 struct Child1 : Base
 {
-  virtual int f(int a) override pre ( a > 14 ) ;
+  virtual int f(int a) [[ pre: a > 14 ]] override;
 };
 
 int Child1::f(int a)
@@ -42,7 +42,7 @@ int Child2::f(int a)
 // defined inline, explicitly override
 struct Child3 : Base
 {
-  virtual int f(int a) override pre ( a > 0 ) 
+  virtual int f(int a) [[ pre: a > 0 ]] override
   {
     return a + 40;
   }
