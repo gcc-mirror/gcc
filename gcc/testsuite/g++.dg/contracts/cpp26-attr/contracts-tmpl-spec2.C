@@ -6,7 +6,7 @@
 // template specializations can have differing contracts
 template<typename T>
 int body(int a)
-  pre ( a > 0 )
+  [[ pre: a > 0 ]]
 {
   T t = a * 2.5;
   return t;
@@ -14,7 +14,7 @@ int body(int a)
 
 template<>
 int body<double>(int a)
-  pre ( a > 1 )
+  [[ pre: a > 1 ]]
 {
   double t = a * 3.3;
   return t;
@@ -22,65 +22,65 @@ int body<double>(int a)
 
 template<typename T>
 int none(int a)
-  pre ( a > 0 )
+  [[ pre: a > 0 ]]
 {
   return -a;
 }
 
 template<>
 int none<double>(int a)
-  pre ( a > 1 )
+  [[ pre: a > 1 ]]
 {
   return a - 100;
 }
 
 template<typename T>
 int arg0(T t)
-  pre ( t > 0 )
+  [[ pre: t > 0 ]]
 {
   return -t - 10;
 }
 
 template<>
 int arg0<double>(double t)
-  pre ( t > 1 )
+  [[ pre: t > 1 ]]
 {
   return -t + 10;
 }
 
 template<typename T>
 int arg1(int a, T t)
-  pre ( a > 0 )
-  pre ( t > 0 )
+  [[ pre: a > 0 ]]
+  [[ pre: t > 0 ]]
 {
   return -t * a;
 }
 
 template<>
 int arg1<double>(int a, double t)
-  pre ( a > 1 )
-  pre ( t > 1 )
+  [[ pre: a > 1 ]]
+  [[ pre: t > 1 ]]
 {
   return -t * a + 17;
 }
 
 template<typename T>
 T ret(int a)
-  pre ( a > 0 )
+  [[ pre: a > 0 ]]
 {
   return -a;
 }
 
 template<>
 double ret<double>(int a)
-  pre ( a > 1 )
+  [[ pre: a > 1 ]]
 {
   return -a * 3.3;
 }
 
 // template specializations can have no contracts
 template<typename T>
-int g1(T t) pre ( t > 0 )
+int g1(T t) [[ pre: t > 0 ]]
 {
   return (int)t;
 }
@@ -94,7 +94,7 @@ int g1<double>(double t)
 // template specializations can have no contracts in the first decl but add
 // them later
 template<typename T>
-int g2(T t) pre ( t > 0 )
+int g2(T t) [[ pre: t > 0 ]]
 {
   return (int)t;
 }
@@ -104,14 +104,14 @@ int g2<double>(double t);
 
 template<>
 int g2<double>(double t)
-  pre ( t < 0 )
+  [[ pre: t < 0 ]]
 {
   return (int)t;
 }
 
 template<>
 int g2<char>(char t)
-  pre ( t < 'c' )
+  [[ pre: t < 'c' ]]
 {
   return (int)t;
 }
@@ -121,8 +121,8 @@ template<typename T, typename S>
 struct G3
 {
   void f(T t, S s)
-    pre ( t > 0 )
-    pre ( s > 0 )
+    [[ pre: t > 0 ]]
+    [[ pre: s > 0 ]]
   {
     printf ("G3 general T S\n");
   }
@@ -131,21 +131,21 @@ struct G3
 template<typename S>
 struct G3<int, S>
 {
-  void f(int t, S s)  pre ( t > 1 )  pre ( s > 1 ) ;
+  void f(int t, S s)  [[ pre: t > 1 ]]  [[ pre: s > 1 ]] ;
 };
 
 template<typename S>
 void G3<int, S>::f(int t, S s)
-  pre ( t > 1 )
-  pre ( s > 1 )
+  [[ pre: t > 1 ]]
+  [[ pre: s > 1 ]]
 {
   printf ("G3 partial int S\n");
 }
 
 template<>
 void G3<int, double>::f(int t, double s)
-  pre ( t > 2 )
-  pre ( s > 2 )
+  [[ pre: t > 2 ]]
+  [[ pre: s > 2 ]]
 {
   printf ("G3 full int double\n");
 }
@@ -170,9 +170,9 @@ template<typename T, typename S>
 struct G4
 {
   G4(T t, S s)
-    pre ( t > 0 )
-    pre ( s > 0 )
-    post ( x > 0 )
+    [[ pre: t > 0 ]]
+    [[ pre: s > 0 ]]
+    [[ post: x > 0 ]]
   {
     printf ("G4 general T S\n");
     return;
@@ -184,9 +184,9 @@ template<typename S>
 struct G4<char, S>
 {
   G4(char t, S s)
-    pre ( t > 'c' )
-    pre ( s > 3 )
-    post ( x2 > 3 )
+    [[ pre: t > 'c' ]]
+    [[ pre: s > 3 ]]
+    [[ post: x2 > 3 ]]
   {
     printf ("G4 partial char S\n");
     return;
@@ -203,9 +203,9 @@ G4<double, double>::G4(double, double)
 
 template<>
 G4<double, char>::G4(double a, char b)
-  pre ( a > 0 )
-  pre ( b > 'b' )
-  post ( x > 1 )
+  [[ pre: a > 0 ]]
+  [[ pre: b > 'b' ]]
+  [[ post: x > 1 ]]
 {
   printf ("G4 full double char\n");
   return;
@@ -217,9 +217,9 @@ struct G5
 {
   template<typename P>
   void f(T t, S s, P r)
-    pre ( t > 0 )
-    pre ( s > 0 )
-    pre ( r > 0 )
+    [[ pre: t > 0 ]]
+    [[ pre: s > 0 ]]
+    [[ pre: r > 0 ]]
   {
     printf ("G5 gen T S, f gen R\n");
   }
@@ -230,9 +230,9 @@ struct G5<char, S>
 {
   template<typename R>
   void f(char x, S y, R z)
-    pre ( x > 'z' )
-    pre ( y > 1 )
-    pre ( z > 1 )
+    [[ pre: x > 'z' ]]
+    [[ pre: y > 1 ]]
+    [[ pre: z > 1 ]]
   {
     printf ("G5 partial char S, f gen R\n");
   }
@@ -241,9 +241,9 @@ struct G5<char, S>
 template<>
 template<typename Q>
 void G5<double, double>::f(double a, double b, Q c)
-  pre ( a > 2 )
-  pre ( b > 2 )
-  pre ( c > 2 )
+  [[ pre: a > 2 ]]
+  [[ pre: b > 2 ]]
+  [[ pre: c > 2 ]]
 {
   printf ("G5 full double double, f gen R\n");
 }
