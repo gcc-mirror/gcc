@@ -1833,7 +1833,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
 
 static cp_declarator *make_call_declarator
   (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier,
-   tree, tree, tree, tree, tree, location_t);
+   tree, tree, tree, tree, tree, tree, location_t);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree, tree);
 static cp_declarator *make_pointer_declarator
@@ -2019,6 +2019,7 @@ make_call_declarator (cp_declarator *target,
 		      tree exception_specification,
 		      tree late_return_type,
 		      tree requires_clause,
+		      tree contracts,
 		      tree std_attrs,
 		      location_t parens_loc)
 {
@@ -2034,6 +2035,7 @@ make_call_declarator (cp_declarator *target,
   declarator->u.function.exception_specification = exception_specification;
   declarator->u.function.late_return_type = late_return_type;
   declarator->u.function.requires_clause = requires_clause;
+  declarator->u.function.contracts = contracts;
   declarator->u.function.parens_loc = parens_loc;
   if (target)
     {
@@ -2972,9 +2974,20 @@ static tree cp_parser_yield_expression
 
 /* Contracts */
 
-static tree cp_parser_contract_specifier
+/* Modifiers allowed after a keyword but before the opening parens for the
+   condition.  */
+struct contract_modifier {
+  unsigned error_p   : 1;
+  unsigned const_p   : 1;
+  unsigned mutable_p : 1;
+};
+
+static contract_modifier cp_parser_function_contract_modifier_opt
   (cp_parser *);
-static tree cp_parser_contract_specifier_seq
+
+static tree cp_parser_function_contract_specifier
+  (cp_parser *);
+static tree cp_parser_function_contract_specifier_seq
   (cp_parser *);
 static void cp_parser_late_contract_condition
   (cp_parser *, tree, tree);
@@ -12495,12 +12508,15 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       return_type = cp_parser_trailing_type_id (parser);
     }
 
+  tree contracts = NULL_TREE;
+  if (flag_contracts_nonattr)
+    contracts = cp_parser_function_contract_specifier_seq (parser);
+
   /* Also allow GNU attributes at the very end of the declaration, the usual
      place for GNU attributes.  */
   if (cp_next_tokens_can_be_gnu_attribute_p (parser))
     gnu_attrs = chainon (gnu_attrs, cp_parser_gnu_attributes_opt (parser));
-
-  std_attrs = chainon (std_attrs, cp_parser_contract_specifier_seq(parser));
+  /* ??? should we accept std-attribute contracts here too? */
 
   if (has_param_list)
     {
@@ -12558,6 +12574,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       exception_spec,
 				       return_type,
 				       trailing_requires_clause,
+				       contracts,
 				       std_attrs,
 				       UNKNOWN_LOCATION);
 
@@ -13252,59 +13269,30 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	      cp_token *token = cp_lexer_consume_token (parser->lexer);
 	      location_t loc = token->location;
-	      matching_parens parens;
+	      contract_modifier modifier
+		= cp_parser_function_contract_modifier_opt (parser);
 
-	      bool mutable_p = false;
-	      bool const_p = false;
-	      
-	      for (cp_token *tok = cp_lexer_peek_token (parser->lexer);
-		   tok && (tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST);
-		   tok = cp_lexer_peek_token (parser->lexer))
-		{
-		  if (!flag_contracts_nonattr_mutable_keyword &&
-		      !flag_contracts_nonattr_const_keyword)
-		    break;
-		  if (tok->keyword == RID_CONST &&
-		      !flag_contracts_nonattr_const_keyword)
-		    break;
-		  if (tok->keyword == RID_MUTABLE &&
-		      !flag_contracts_nonattr_mutable_keyword)
-		    break;
-		  if (flag_contracts_nonattr_mutable_keyword)
-		    {
-		      if (tok && tok->keyword == RID_MUTABLE)
-			{
-			  mutable_p = true;
-			  cp_lexer_consume_token (parser->lexer);
-			  continue;
-			}
-		    }
-		  if (flag_contracts_nonattr_const_keyword)
-		    {
-		      if (tok && tok->keyword == RID_CONST)
-			{
-			  const_p = true;
-			  cp_lexer_consume_token (parser->lexer);
-			}
-		    }
-		}
-	      if (mutable_p && const_p)
-		error_at (loc, "contracts cannot be both mutable and const");
+	      matching_parens parens;
 	      parens.require_open (parser);
 	      /* Enable location wrappers when parsing contracts.  */
 	      auto suppression = make_temp_override (suppress_location_wrappers,
 						     0);
 
-	      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-	      if (mutable_p)
-		flag_contracts_nonattr_noconst = 1;
-	      if (flag_contracts_nonattr_const_keyword && !const_p)
-		flag_contracts_nonattr_noconst = 1;
+	      /* Do we have an override for const-ification?  */
+	      bool old_flag_contracts_nonattr_noconst
+		= flag_contracts_nonattr_noconst;
+	      if (!modifier.error_p
+		  && (modifier.mutable_p
+		      || (flag_contracts_nonattr_const_keyword
+			  && !modifier.const_p)))
+		flag_contracts_nonattr_noconst = true;
 
 	      /* if we have a current class object, constify it before processing
 	       *  the contract condition */
 	      tree current_class_ref_copy = current_class_ref;
-	      if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
+	      if (flag_contracts_nonattr
+		  && !flag_contracts_nonattr_noconst
+		  && current_class_ref)
 	        current_class_ref = view_as_const (current_class_ref);
 
 	      /* Parse the condition, ensuring that parameters or the return variable
@@ -13316,16 +13304,17 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      /* revert (any) constification of the current class object */
 	      current_class_ref = current_class_ref_copy;
 
-	      flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
+	      flag_contracts_nonattr_noconst
+		= old_flag_contracts_nonattr_noconst;
 
 	      parens.require_close (parser);
 	      /* Build the contract.  */
 	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
 					NULL_TREE /*result*/, condition, loc);
-	      if (contract != error_mark_node)
+	      if (contract != error_mark_node && !modifier.error_p)
 		{
-		  set_contract_mutable(contract, mutable_p);
-		  set_contract_const(contract, const_p);
+		  set_contract_mutable (contract, modifier.mutable_p);
+		  set_contract_const (contract, modifier.const_p);
 		}
 
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
@@ -13558,7 +13547,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 tree
 attr_chainon (tree attrs, tree attr)
 {
-  if (attrs == error_mark_node)
+  if (attrs && attrs == error_mark_node)
     return error_mark_node;
   if (attr == error_mark_node)
     return error_mark_node;
@@ -24793,7 +24782,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  cp_ref_qualifier ref_qual;
 		  tree exception_specification;
 		  tree late_return;
-		  tree attrs;
+		  tree std_attrs;
 		  bool memfn = (member_p || (pushed_scope
 					     && CLASS_TYPE_P (pushed_scope)));
 		  unsigned char local_variables_forbidden_p
@@ -24831,7 +24820,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		    = cp_parser_exception_specification_opt (parser,
 							     flags);
 
-		  attrs = cp_parser_std_attribute_spec_seq (parser);
+		  std_attrs = cp_parser_std_attribute_spec_seq (parser);
 
 		  cp_omp_declare_simd_data odsd;
 		  if ((flag_openmp || flag_openmp_simd)
@@ -24858,11 +24847,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  /* Parse the virt-specifier-seq.  */
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
 
+		  tree contracts = NULL_TREE;
 		  if (flag_contracts_nonattr)
-		    {
-		      tree cca_attrs = cp_parser_contract_specifier_seq (parser);
-		      attrs = attr_chainon(attrs, cca_attrs);
-		    }
+		    contracts = cp_parser_function_contract_specifier_seq (parser);
+		  /* ??? should we accept std-attr contracts here too? */
 
 		  location_t parens_loc = make_location (parens_start,
 							 parens_start,
@@ -24877,7 +24865,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     exception_specification,
 						     late_return,
 						     requires_clause,
-						     attrs,
+						     contracts,
+						     std_attrs,
 						     parens_loc);
 		  declarator->attributes = gnu_attrs;
 		  declarator->parameter_pack_p |= pack_expansion_p;
@@ -31552,70 +31541,31 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
   bool assertion_p = is_attribute_p ("assert", attribute);
   bool postcondition_p = is_attribute_p ("post", attribute);
 
-  matching_parens parens;
-
-  bool mutable_p = false;
-  bool const_p = false;
-
-  /* Parse the optional mode.  */
+  /* For C++20 contract attributes, parse the optional mode.  */
   tree mode = NULL_TREE;
   if (attr_mode)
     mode = cp_parser_contract_mode_opt (parser, postcondition_p);
 
+  /* For experimental modifiers on C++26 contracts.  */
+  contract_modifier modifier
+    = cp_parser_function_contract_modifier_opt (parser);
+
+  matching_parens parens;
+  if (flag_contracts_nonattr && !attr_mode)
+    parens.require_open (parser);
+
   /* Check for postcondition identifiers.  */
   cp_expr identifier;
-  if (attr_mode)
-    {
-      if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-	identifier = cp_parser_identifier (parser);
-      if (identifier == error_mark_node)
-      return error_mark_node;
-      cp_parser_require (parser, CPP_COLON, RT_COLON);
-    }
-  else
-    {
-      for (cp_token *tok = cp_lexer_peek_token (parser->lexer);
-	   tok && (tok->keyword == RID_MUTABLE || tok->keyword == RID_CONST);
-	   tok = cp_lexer_peek_token (parser->lexer))
-	{
-	  if (!flag_contracts_nonattr_mutable_keyword &&
-	      !flag_contracts_nonattr_const_keyword)
-	    break;
-	  if (tok->keyword == RID_CONST &&
-	      !flag_contracts_nonattr_const_keyword)
-	    break;
-	  if (tok->keyword == RID_MUTABLE &&
-	      !flag_contracts_nonattr_mutable_keyword)
-	    break;
-	  if (flag_contracts_nonattr_mutable_keyword)
-	    {
-	      if (tok && tok->keyword == RID_MUTABLE)
-		{
-		  mutable_p = true;
-		  cp_lexer_consume_token (parser->lexer);
-		  continue;
-		}
-	    }
-	  if (flag_contracts_nonattr_const_keyword)
-	    {
-	      if (tok && tok->keyword == RID_CONST)
-		{
-		  const_p = true;
-		  cp_lexer_consume_token (parser->lexer);
-		}
-	    }
-	}
-      if (mutable_p && const_p)
-	error_at (loc, "contracts cannot be both mutable and const");
-      parens.require_open (parser);
-      if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
-	identifier = cp_parser_identifier (parser);
-      if (identifier == error_mark_node)
-	return error_mark_node;
-      if (identifier)
-	cp_parser_require (parser, CPP_COLON, RT_COLON);
-    }
+  if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
+    identifier = cp_parser_identifier (parser);
+  if (identifier == error_mark_node)
+    return error_mark_node;
+
+  /* e.g. [[ pre assume: .... ]] or pre: (...) */
+  if (attr_mode || identifier)
+    cp_parser_require (parser, CPP_COLON, RT_COLON);
+
   /* Defer the parsing of pre/post contracts inside class definitions.  */
   tree contract;
   if (!assertion_p &&
@@ -31654,10 +31604,10 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* And its corresponding contract.  */
       contract = grok_contract (attribute, mode, identifier, condition, loc);
-      if (contract != error_mark_node)
+      if (contract != error_mark_node && !modifier.error_p)
 	{
-	  set_contract_mutable(contract, mutable_p);
-	  set_contract_mutable(contract, const_p);
+	  set_contract_mutable (contract, modifier.mutable_p);
+	  set_contract_const (contract, modifier.const_p);
 	}
     }
   else
@@ -31680,10 +31630,12 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       ++processing_contract_condition;
       if (postcondition_p)
 	++processing_contract_postcondition;
-      if (mutable_p)
-	flag_contracts_nonattr_noconst = 1;
-      if (flag_contracts_nonattr_const_keyword && !const_p)
-	flag_contracts_nonattr_noconst = 1;
+      /* Do we have an override for const-ification?  */
+      if (!modifier.error_p
+	  && (modifier.mutable_p
+	      || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
+	flag_contracts_nonattr_noconst = true;
+
       cp_expr condition = cp_parser_conditional_expression (parser);
       if (postcondition_p)
 	--processing_contract_postcondition;
@@ -31702,10 +31654,10 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* Build the contract.  */
       contract = grok_contract (attribute, mode, result, condition, loc);
-      if (contract != error_mark_node)
+      if (contract != error_mark_node && !modifier.error_p)
 	{
-	  set_contract_mutable(contract, mutable_p);
-	  set_contract_const(contract, const_p);
+	  set_contract_mutable (contract, modifier.mutable_p);
+	  set_contract_const (contract, modifier.const_p);
 	}
       /* Leave our temporary scope for the postcondition result.  */
       if (result)
@@ -31762,8 +31714,6 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   bool mutable_p = get_contract_mutable (contract);
   bool const_p = get_contract_const (contract);
-  if (mutable_p && const_p)
-    error_at (DECL_SOURCE_LOCATION (attribute), "contracts cannot be both mutable and const");
   bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
   if (flag_contracts_nonattr && flag_contracts_nonattr_mutable_keyword &&
       mutable_p)
@@ -31829,6 +31779,77 @@ void cp_parser_late_contract_condition (cp_parser *parser,
     }
 }
 
+static contract_modifier
+cp_parser_function_contract_modifier_opt (cp_parser * parser)
+{
+  if (!flag_contracts_nonattr)
+    return {};
+
+  contract_modifier mod{};
+  location_t first_const, first_mutable;
+
+  for (cp_token *tok = cp_lexer_peek_token (parser->lexer); tok;
+       tok = cp_lexer_peek_token (parser->lexer))
+    {
+      if (tok->type != CPP_KEYWORD)
+	break;
+
+      if (tok->keyword == RID_CONST)
+	{
+	  if (!flag_contracts_nonattr_const_keyword)
+	    {
+	      error_at (tok->location, "%qs contract modifier requires %qs",
+			"const", "-fcontracts-nonattr-const-keyword");
+	      mod.error_p = true;
+	    }
+	  else if (mod.const_p)
+	    {
+	      error_at (first_const, "duplicate %qs contract modifiers",
+			"const");
+	      mod.error_p = true;
+	    }
+	  else
+	    {
+	      first_const = tok->location;
+	      mod.const_p = true;
+	    }
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      else if (tok->keyword == RID_MUTABLE)
+	{
+	  if (!flag_contracts_nonattr_mutable_keyword)
+	    {
+	      error_at (tok->location, "%qs contract modifier requires %qs",
+			"mutable", "-fcontracts-nonattr-mutable-keyword");
+	      mod.error_p = true;
+	    }
+	  else if (mod.mutable_p)
+	    {
+	      error_at (first_mutable, "duplicate %qs contract modifiers",
+			"mutable");
+	      mod.error_p = true;
+	    }
+	  else
+	    {
+	      first_mutable = tok->location;
+	      mod.mutable_p = true;
+	    }
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      else
+	break; /* Some other keyword.  */
+    }
+  if (mod.const_p && mod.mutable_p)
+    {
+      error_at (first_const, "contract modifiers cannot be both %qs and %qs",
+		"const", "mutable");
+      mod.error_p = true;
+    }
+  return mod;
+}
+
 /* Parse a natural syntax contract specifier seq.
 
   function-contract-specifier :
@@ -31846,30 +31867,27 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
 */
 static tree
-cp_parser_contract_specifier (cp_parser *parser)
+cp_parser_function_contract_specifier (cp_parser *parser)
 {
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
   tree contract_name = NULL_TREE;
 
+  /* Look for the contextual keywords 'pre' and 'post' as an introducer.  */
   if (token->type == CPP_NAME)
-    {
-      contract_name = token->u.value;
-      contract_name = canonicalize_attr_name (contract_name);
-    }
+    contract_name = token->u.value;
 
-  // If we don't have a contract, return
-  if (!contract_name || !contract_attribute_p (contract_name))
-    {
-      return void_list_node;
-    }
+  if (!contract_name
+      || !(is_attribute_p ("pre", contract_name)
+	   || is_attribute_p ("post", contract_name)))
+    /* If we don't have a valid contract start, return a marker.  */
+    return void_list_node;
 
   // this does not currently handle attribute-specifier-seqopt for
   // a natural contract syntax.
   tree contract_attribute = cp_parser_contract_attribute_spec (parser,
 							       contract_name,
 							       false);
-
   return contract_attribute;
 }
 
@@ -31881,14 +31899,13 @@ pre and post conditions - contract_assert is handled separately.
       function-contract-specifier function-contract-specifier-seq
 */
 static tree
-cp_parser_contract_specifier_seq (cp_parser *parser)
+cp_parser_function_contract_specifier_seq (cp_parser *parser)
 {
   tree attr_specs = NULL_TREE;
-  tree attr_last = NULL_TREE;
 
   while (true)
     {
-      tree attr_spec = cp_parser_contract_specifier (parser);
+      tree attr_spec = cp_parser_function_contract_specifier (parser);
 
       // If there are no more contracts, bail.
       if (attr_spec == void_list_node)
@@ -31898,11 +31915,11 @@ cp_parser_contract_specifier_seq (cp_parser *parser)
       if (attr_spec == error_mark_node)
 	continue;
 
-      if (attr_last)
-	TREE_CHAIN (attr_last) = attr_spec;
+      /* Arrange to build the list in the correct order.  */
+      if (attr_specs)
+	attr_specs = attr_chainon (attr_spec, attr_specs);
       else
-	attr_specs = attr_last = attr_spec;
-      attr_last = tree_last (attr_last);
+	attr_specs = attr_spec;
     }
 
     return attr_specs;
