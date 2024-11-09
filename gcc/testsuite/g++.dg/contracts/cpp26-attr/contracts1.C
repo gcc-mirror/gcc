@@ -1,0 +1,108 @@
+// generic assert contract parsing checks
+//   check omitted, 'default', 'audit', and 'axiom' contract levels parse
+//   check that all concrete semantics parse
+//   check omitted, '%default' contract roles parse
+//   ensure that an invalid contract level 'invalid' errors
+//   ensure that a predicate referencing an undefined variable errors
+//   ensure that a missing colon after contract level errors
+//   ensure that an invalid contract role 'invalid' errors
+//   ensure that a missing colon after contract role errors
+// { dg-do compile }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
+
+static_assert (__cpp_contracts >= 201906);
+static_assert (__cpp_contracts_literal_semantics >= 201906);
+static_assert (__cpp_contracts_roles >= 201906);
+int f(int);
+int g1(int a) pre(f(a) > a)
+{
+	int r = a - f(a);
+	return 2 * r;
+}
+
+int g2(int a) [[pre: f(a) > a ]]
+{
+	int r = a - f(a);
+	return 2 * r;
+}
+
+int fun(int n)  pre (n > 0 );
+void fun2(int n)  pre  n > 0 ; // { dg-error  }
+void fun2(int n)  pre (: n > 0 ]]; // { dg-error  }
+int fun3(int n)  [[ pre : n > 0 ); // { dg-error "expected .]. before " }
+
+int main()
+{
+  int x;
+
+  [[assert: x >= 0]];
+  [[assert default: x < 0]];
+  [[assert audit: x == 0]];
+  [[assert axiom: x == 1]];
+
+  [[assert: x > 0 ? true : false]];
+  [[assert: x < 0 ? true : false]];
+
+  [[assert: x = 0]]; // { dg-error "expected .]. before .=. token" }
+
+  [[assert ignore: x >= 0]];
+  [[assert assume: x >= 0]];
+  [[assert check_never_continue: x >= 0]];
+  [[assert check_maybe_continue: x >= 0]];
+
+  [[assert %default: x >= 0]];
+  [[assert default %default: x < 0]];
+  [[assert audit %default: x == 0]];
+  [[assert axiom %default: x == 1]];
+
+  [[assert check_always_continue: x >= 0]]; // { dg-error "expected contract level" }
+  [[assert invalid: x == 0]]; // { dg-error "expected contract level" }
+  [[assert: y == 0]]; // { dg-error ".y. was not declared in this scope" }
+  [[assert default x == 0]]; // { dg-error "expected .:. before .x." }
+  [[assert %default x >= 0]]; // { dg-error "expected .:. before .x." }
+
+  [[assert %invalid: x >= 0]]; // TODO: optional warning?
+
+  return 0;
+}
+
+struct Baz
+{
+  void f(int x) pre(x = 0); // { dg-error "expected conditional-expression" }
+  void g(int x) pre(x, x); // { dg-error "expected conditional-expression" }
+  void h(const int x) post(x = 0); // { dg-error "expected conditional-expression" }
+  void i(const int x) post(x, x); // { dg-error "expected conditional-expression" }
+};
+		  
+void postcond(int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+
+struct PostCond {
+  void postcond(int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+  template<class T> void postcond2(T x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+};
+
+template <class T> void postcond3(T x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+
+void postcond4(const int y, int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+
+void postcond5(int y, const int x) post(x >= 0);
+
+template <typename T>
+struct Base
+{
+  virtual int f(const int a) pre( a  > 5 ) post( a > 7) { return a;};
+  int g(const int a) pre( a  > 5 ) post( a > 7) { return a;};
+  virtual int h(int a) pre( a  > 5 ) post( a > 7) { return a;}; // { dg-error "a value parameter used in a postcondition must be const" }
+  int i(int a) pre( a  > 5 ) post( a > 7) { return a;}; // { dg-error "a value parameter used in a postcondition must be const" }
+};
+
+
+void postcond6()
+{
+  Base<int> b;
+  b.f(6);
+  b.g(6);
+  b.h(6);
+  b.i(6);
+}
+		  
