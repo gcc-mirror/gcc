@@ -6688,6 +6688,8 @@ struct cp_declarator {
       tree late_return_type;
       /* The trailing requires-clause, if any.  */
       tree requires_clause;
+      /* The function-contract-specifier-seq, if any.  */
+      tree contracts;
       location_t parens_loc;
     } function;
     /* For arrays.  */

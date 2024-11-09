@@ -2483,10 +2483,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       /* Make sure the contracts are equivalent.  */
       duplicate_contracts (newdecl, olddecl);
 
-      /* Remove contracts from old_result so they aren't appended to
-	 old_result by the merge function.  */
-      remove_contract_attributes (old_result);
-
       DECL_ATTRIBUTES (old_result)
 	= (*targetm.merge_decl_attributes) (old_result, new_result);
 
@@ -14399,6 +14395,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 
 	    /* Actually apply the contract attributes to the declaration.  */
+	    if (flag_contracts_nonattr)
+	      returned_attrs = chainon (returned_attrs, declarator->u.function.contracts);
+	    /* Allow mixing std-attribute style and p2900 syntax.  */
 	    for (tree *p = &attrs; *p;)
 	      {
 		tree l = *p;
