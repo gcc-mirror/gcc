@@ -1632,7 +1632,7 @@ C ObjC C++ ObjC++ Var(warn_xor_used_as_pow) Warning Init(1)
 Warn about xor operators where it appears the user meant exponentiation.
 
 Wzero-as-null-pointer-constant
-C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
+C ObjC C++ ObjC++ Var(warn_zero_as_null_pointer_constant) Warning
 Warn when a literal '0' is used as null pointer.
 
 Wzero-length-bounds

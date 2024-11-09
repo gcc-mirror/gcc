@@ -4600,6 +4600,25 @@ parser_build_binary_op (location_t location, enum tree_code code,
 		"comparison with string literal results in unspecified "
 		"behavior");
 
+  if (warn_zero_as_null_pointer_constant
+      && c_inhibit_evaluation_warnings == 0
+      && TREE_CODE_CLASS (code) == tcc_comparison)
+    {
+      if ((TREE_CODE (type1) == POINTER_TYPE
+	   || TREE_CODE (type1) == NULLPTR_TYPE)
+	  && TREE_CODE (type2) == INTEGER_TYPE
+	  && null_pointer_constant_p (arg2.value))
+	warning_at (arg2.get_location(), OPT_Wzero_as_null_pointer_constant,
+		    "zero as null pointer constant");
+
+      if ((TREE_CODE (type2) == POINTER_TYPE
+	   || TREE_CODE (type2) == NULLPTR_TYPE)
+	  && TREE_CODE (type1) == INTEGER_TYPE
+	  && null_pointer_constant_p (arg1.value))
+	warning_at (arg1.get_location(), OPT_Wzero_as_null_pointer_constant,
+		    "zero as null pointer constant");
+    }
+
   if (warn_array_compare
       && TREE_CODE_CLASS (code) == tcc_comparison
       && TREE_CODE (type1) == ARRAY_TYPE
@@ -5963,6 +5982,20 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 		    ("different enum types in conditional is "
 		     "invalid in C++: %qT vs %qT"),
 		    t1, t2);
+    }
+
+  if (warn_zero_as_null_pointer_constant
+      && c_inhibit_evaluation_warnings == 0)
+    {
+      if ((code1 == POINTER_TYPE || code1 == NULLPTR_TYPE)
+	  && code2 == INTEGER_TYPE && null_pointer_constant_p (orig_op2))
+	warning_at (op2_loc, OPT_Wzero_as_null_pointer_constant,
+		    "zero as null pointer constant");
+
+      if ((code2 == POINTER_TYPE || code2 == NULLPTR_TYPE)
+	  && code1 == INTEGER_TYPE && null_pointer_constant_p (orig_op1))
+	warning_at (op1_loc, OPT_Wzero_as_null_pointer_constant,
+		    "zero as null pointer constant");
     }
 
   /* Quickly detect the usual case where op1 and op2 have the same type
@@ -8396,6 +8429,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	       || coder == NULLPTR_TYPE
 	       || coder == BITINT_TYPE))
     {
+      if (null_pointer_constant && c_inhibit_evaluation_warnings == 0
+	  && coder == INTEGER_TYPE)
+	warning_at (location, OPT_Wzero_as_null_pointer_constant,
+		    "zero as null pointer constant");
+
       /* An explicit constant 0 or type nullptr_t can convert to a pointer,
 	 or one that results from arithmetic, even including a cast to
 	 integer type.  */

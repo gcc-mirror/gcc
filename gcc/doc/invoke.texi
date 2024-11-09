@@ -4750,9 +4750,8 @@ Enabled by default with @option{-std=c++20}.  Before
 
 @opindex Wzero-as-null-pointer-constant
 @opindex Wno-zero-as-null-pointer-constant
-@item -Wzero-as-null-pointer-constant @r{(C++ and Objective-C++ only)}
-Warn when a literal @samp{0} is used as null pointer constant.  This can
-be useful to facilitate the conversion to @code{nullptr} in C++11.
+@item -Wzero-as-null-pointer-constant
+Warn when a literal @samp{0} is used as null pointer constant.
 
 @opindex Waligned-new
 @opindex Wno-aligned-new
