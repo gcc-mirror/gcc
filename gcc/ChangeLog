@@ -1,3 +1,101 @@
+2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR target/117408
+	* config/arm/arm-mve-builtins.cc(handle_arm_mve_h): Detect if MVE
+	types is missing and if so, return error.
+
+2024-11-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/predicates.md (base14_operand): Use '&' operator
+	instead of '%' to check displacement alignment.
+
+2024-11-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117443
+	* config/pa/pa.cc (pa_legitimate_address_p): Allow any
+	14-bit displacement when reload is in progress and strict
+	is false.
+
+2024-11-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a725, cortex-x925,
+	neoverse-n3, neoverse-v3, neoverse-v3ae): New.
+	* config/aarch64/aarch64-tune.md: Regenerate
+	* doc/invoke.texi: Document them.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_psel<BHSD_BITS>)
+	(*aarch64_sve_psel<BHSD_BITS>_plus): Require TARGET_STREAMING
+	rather than TARGET_STREAMING_SME2.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_fclamp<mode>)
+	(*aarch64_sve_fclamp<mode>_x): Require TARGET_STREAMING_SME2
+	rather than TARGET_STREAMING_SME.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116999
+	PR target/117045
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svwhilelx_impl::fold): Check for WHILELTs of the minimum value
+	and WHILELEs of the maximum value.  Fold them to all-false and
+	all-true respectively.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116629
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_builder::function_builder): Use direct overloads for LTO.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116371
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svpext): Rename to...
+	(svpext_lane): ...this.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svpext_impl): Rename
+	to...
+	(svpext_lane_impl): ...this and update instantiation accordingly.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svpext): Rename to...
+	(svpext_lane): ...this.
+
+2024-11-07  Yuta Mukai  <mukai.yuta@fujitsu.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add fujitsu-monaka.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.cc: Include fujitsu-monaka tuning model.
+	* doc/invoke.texi: Document -mcpu=fujitsu-monaka.
+	* config/aarch64/tuning_models/fujitsu_monaka.h: New file.
+
+2024-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2024-11-06  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117304
+	* config/i386/i386-builtin.def: Add OPTION_MASK_ISA2_EVEX512 for some
+	AVX512 512-bits instructions.
+
 2024-11-06  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

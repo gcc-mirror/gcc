@@ -1,3 +1,153 @@
+2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR target/117408
+	* gcc.target/arm/mve/pr117408-1.c: New test.
+	* gcc.target/arm/mve/pr117408-2.c: Likewise.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/bfmlslb_f32.c: Replace bfmla*
+	with bfmls*
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b16.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b16.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b32.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b32.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b64.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b64.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_b8.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_b8.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c16.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c16.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c32.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c32.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c64.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c64.c: ...here.
+	* gcc.target/aarch64/sme2/acle-asm/psel_lane_c8.c: Move to...
+	* gcc.target/aarch64/sme/acle-asm/psel_lane_c8.c: ...here.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-11-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/clamp_3.c: Force sme2
+	* gcc.target/aarch64/sme/clamp_4.c: Likewise.
+	* gcc.target/aarch64/sme/clamp_5.c: New test.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116999
+	PR target/117045
+	* gcc.target/aarch64/sve/acle/general/whilele_5.c: Fix bogus
+	expected result.
+	* gcc.target/aarch64/sve/acle/general/whilele_11.c: New test.
+	* gcc.target/aarch64/sve/acle/general/whilele_12.c: Likewise.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116629
+	* gcc.target/aarch64/sve/acle/general/pr106326_2.c: New test.
+
+2024-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-08-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116371
+	* gcc.target/aarch64/sme2/acle-asm/pext_c16.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c16_x2.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c32.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c32_x2.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c64.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c64_x2.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c8.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_c8_x2.c: Replace with...
+	* gcc.target/aarch64/sme2/acle-asm/pext_lane_c16.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c16_x2.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c32.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c32_x2.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c64.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c64_x2.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c8.c,
+	gcc.target/aarch64/sme2/acle-asm/pext_lane_c8_x2.c: ...these new tests,
+	testing for svpext_lane instead of svpext.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/epilog-1.c: Use check-function-bodies.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+		    Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/pr68620.c: Use effective-target
+	arm_libc_fp_abi.
+	* lib/target-supports.exp: Define effective-target
+	arm_libc_fp_abi.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr40457-2.c: Add vst1.32 as an allowed
+	instruction.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/vect/pr84556.cc: Change from "dg-do run" with selector
+	to instead use dg-require-effective-target with the same
+	selector.
+
+2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-11-08  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.target/arm/mve/general-c++/nomve_fp_1.c: Use
+	effective-target arm_fp.
+
+2024-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2024-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/pr117304-1.c: Modify regexp.
+
+2024-11-07  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2024-11-06  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117304
+	* gcc.target/i386/pr117304-1.c: New test.
+
 2024-11-06  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
