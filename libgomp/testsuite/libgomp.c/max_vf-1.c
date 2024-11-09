@@ -1,7 +1,7 @@
 /* Test that omp parallel simd schedule uses the correct max_vf for the
    host system, when target directives are present.  */
 
-/* { dg-require-effective-target offloading_enabled } */
+/* { dg-require-effective-target offload_target_any } */
 
 /* { dg-do link } */
 /* { dg-options "-fopenmp -O2 -fdump-tree-ompexp -foffload=-fdump-tree-optimized" } */
@@ -41,7 +41,7 @@ f3 (int *a, int *b, int *c)
 { dg-final { scan-tree-dump-times {__builtin_GOMP_parallel_loop_nonmonotonic_dynamic \(.*, D\.[0-9]*, 0\);} 1 "ompexp" { target { x86_64-*-* i?86-*-* } } } } */
 
 /* Test SIMD offload devices
-{ dg-final { scan-offload-tree-dump-times {__builtin_GOMP_parallel_loop_nonmonotonic_dynamic \(.*, 64, 0\);} 1 "optimized" { target { offload_gcn } } } } 
-{ dg-final { scan-offload-tree-dump-times {__builtin_GOMP_parallel_loop_nonmonotonic_dynamic \(.*, 7, 0\);} 1 "optimized" { target { offload_nvptx } } } } */
+{ dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump-times {__builtin_GOMP_parallel_loop_nonmonotonic_dynamic \(.*, 64, 0\);} 1 "optimized" { target offload_target_amdgcn } } }
+{ dg-final { only_for_offload_target nvptx-none scan-offload-tree-dump-times {__builtin_GOMP_parallel_loop_nonmonotonic_dynamic \(.*, 7, 0\);} 1 "optimized" { target offload_target_nvptx } } } */
 
 int main() {}
