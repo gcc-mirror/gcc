@@ -3976,8 +3976,10 @@ package body Checks is
    -------------------------------------
 
    --  Note: internally Disable/Enable_Atomic_Synchronization is implemented
-   --  using a bogus check called Atomic_Synchronization. This is to make it
-   --  more convenient to get exactly the same semantics as [Un]Suppress.
+   --  using a pseudo-check called _Atomic_Synchronization. This is to make it
+   --  more convenient to get the same placement and scope rules as
+   --  [Un]Suppress. The check name has a leading underscore to make
+   --  it reserved by the implementation.
 
    function Atomic_Synchronization_Disabled (E : Entity_Id) return Boolean is
    begin

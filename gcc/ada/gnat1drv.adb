@@ -654,10 +654,7 @@ procedure Gnat1drv is
          end if;
       end if;
 
-      --  Set default for atomic synchronization. As this synchronization
-      --  between atomic accesses can be expensive, and not typically needed
-      --  on some targets, an optional target parameter can turn the option
-      --  off. Note Atomic Synchronization is implemented as check.
+      --  Set default for atomic synchronization
 
       Suppress_Options.Suppress (Atomic_Synchronization) :=
         not Atomic_Sync_Default_On_Target;

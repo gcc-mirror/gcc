@@ -1662,18 +1662,20 @@ Syntax:
 
   pragma Disable_Atomic_Synchronization [(Entity)];
 
+  pragma Enable_Atomic_Synchronization [(Entity)];
 
 Ada requires that accesses (reads or writes) of an atomic variable be
 regarded as synchronization points in the case of multiple tasks.
 Particularly in the case of multi-processors this may require special
-handling, e.g. the generation of memory barriers. This capability may
-be turned off using this pragma in cases where it is known not to be
-required.
+handling, e.g. the generation of memory barriers. This synchronization
+is performed by default, but can be turned off using pragma
+``Disable_Atomic_Synchronization``.
+The ``Enable_Atomic_Synchronization`` pragma turns it back on.
 
-The placement and scope rules for this pragma are the same as those
-for ``pragma Suppress``. In particular it can be used as a
-configuration  pragma, or in a declaration sequence where it applies
-till the end of the scope. If an ``Entity`` argument is present,
+The placement and scope rules for these pragmas are the same as those
+for ``pragma Suppress``. In particular they can be used as
+configuration pragmas, or in a declaration sequence where they apply
+until the end of the scope. If an ``Entity`` argument is present,
 the action applies only to that entity.
 
 Pragma Dispatching_Domain
@@ -1903,21 +1905,8 @@ Syntax:
 
   pragma Enable_Atomic_Synchronization [(Entity)];
 
-
-Ada requires that accesses (reads or writes) of an atomic variable be
-regarded as synchronization points in the case of multiple tasks.
-Particularly in the case of multi-processors this may require special
-handling, e.g. the generation of memory barriers. This synchronization
-is performed by default, but can be turned off using
-``pragma Disable_Atomic_Synchronization``. The
-``Enable_Atomic_Synchronization`` pragma can be used to turn
-it back on.
-
-The placement and scope rules for this pragma are the same as those
-for ``pragma Unsuppress``. In particular it can be used as a
-configuration  pragma, or in a declaration sequence where it applies
-till the end of the scope. If an ``Entity`` argument is present,
-the action applies only to that entity.
+Reenables atomic synchronization; see ``pragma Disable_Atomic_Synchronization``
+for details.
 
 Pragma Exceptional_Cases
 ========================

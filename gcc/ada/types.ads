@@ -707,8 +707,7 @@ package Types is
    Tasking_Check              : constant := 28;
    Raise_Check                : constant := 29;
    --  Values used to represent individual predefined checks (including the
-   --  setting of Atomic_Synchronization, which is implemented internally using
-   --  a "check" whose name is Atomic_Synchronization).
+   --  pseudo-check _Atomic_Synchronization).
 
    All_Checks : constant := 30;
    --  Value used to represent All_Checks value

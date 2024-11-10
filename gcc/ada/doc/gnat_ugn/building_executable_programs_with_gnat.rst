@@ -5379,10 +5379,8 @@ switches refine this default behavior.
   execution if that assumption is wrong.
 
   The checks subject to suppression include all the checks defined by the Ada
-  standard, the additional implementation defined checks ``Alignment_Check``,
-  ``Duplicated_Tag_Check``, ``Predicate_Check``, ``Container_Checks``, ``Tampering_Check``,
-  and ``Validity_Check``, as well as any checks introduced using ``pragma Check_Name``.
-  Note that ``Atomic_Synchronization`` is not automatically suppressed by use of this option.
+  standard, as well as all implementation-defined checks,
+  including any checks introduced using ``pragma Check_Name``.
 
   If the code depends on certain checks being active, you can use
   pragma ``Unsuppress`` either as a configuration pragma or as

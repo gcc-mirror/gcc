@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 08, 2024
+GNAT Reference Manual , Nov 18, 2024
 
 AdaCore
 
@@ -3142,19 +3142,22 @@ Syntax:
 
 @example
 pragma Disable_Atomic_Synchronization [(Entity)];
+
+pragma Enable_Atomic_Synchronization [(Entity)];
 @end example
 
 Ada requires that accesses (reads or writes) of an atomic variable be
 regarded as synchronization points in the case of multiple tasks.
 Particularly in the case of multi-processors this may require special
-handling, e.g. the generation of memory barriers. This capability may
-be turned off using this pragma in cases where it is known not to be
-required.
+handling, e.g. the generation of memory barriers. This synchronization
+is performed by default, but can be turned off using pragma
+@code{Disable_Atomic_Synchronization}.
+The @code{Enable_Atomic_Synchronization} pragma turns it back on.
 
-The placement and scope rules for this pragma are the same as those
-for @code{pragma Suppress}. In particular it can be used as a
-configuration  pragma, or in a declaration sequence where it applies
-till the end of the scope. If an @code{Entity} argument is present,
+The placement and scope rules for these pragmas are the same as those
+for @code{pragma Suppress}. In particular they can be used as
+configuration pragmas, or in a declaration sequence where they apply
+until the end of the scope. If an @code{Entity} argument is present,
 the action applies only to that entity.
 
 @node Pragma Dispatching_Domain,Pragma Effective_Reads,Pragma Disable_Atomic_Synchronization,Implementation Defined Pragmas
@@ -3417,20 +3420,8 @@ Syntax:
 pragma Enable_Atomic_Synchronization [(Entity)];
 @end example
 
-Ada requires that accesses (reads or writes) of an atomic variable be
-regarded as synchronization points in the case of multiple tasks.
-Particularly in the case of multi-processors this may require special
-handling, e.g. the generation of memory barriers. This synchronization
-is performed by default, but can be turned off using
-@code{pragma Disable_Atomic_Synchronization}. The
-@code{Enable_Atomic_Synchronization} pragma can be used to turn
-it back on.
-
-The placement and scope rules for this pragma are the same as those
-for @code{pragma Unsuppress}. In particular it can be used as a
-configuration  pragma, or in a declaration sequence where it applies
-till the end of the scope. If an @code{Entity} argument is present,
-the action applies only to that entity.
+Reenables atomic synchronization; see @code{pragma Disable_Atomic_Synchronization}
+for details.
 
 @node Pragma Exceptional_Cases,Pragma Export_Function,Pragma Enable_Atomic_Synchronization,Implementation Defined Pragmas
 @anchor{gnat_rm/implementation_defined_pragmas pragma-exceptional-cases}@anchor{61}
@@ -16815,12 +16806,12 @@ via compiler switches such as “-gnata”.
 “Implementation-defined check names.  See 11.5(27).”
 @end itemize
 
-The implementation defined check names include Alignment_Check,
-Atomic_Synchronization, Container_Checks, Duplicated_Tag_Check,
-Predicate_Check, Raise_Check, Tampering_Check, and Validity_Check.
-In addition, a user program can add implementation-defined check
-names by means of the pragma Check_Name. See the description of
-pragma @code{Suppress} for full details.
+The implementation-defined check names include Alignment_Check,
+Container_Checks, Duplicated_Tag_Check, Predicate_Check,
+Raise_Check, Tampering_Check, and Validity_Check. In addition, a
+user program can add implementation-defined check names by means
+of the pragma Check_Name. See the description of pragma
+@code{Suppress} for details.
 
 
 @itemize *

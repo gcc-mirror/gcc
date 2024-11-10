@@ -9020,8 +9020,8 @@ package body Sem_Prag is
          Check_No_Identifiers;
          Check_At_Most_N_Arguments (1);
 
-         --  Modeled internally as
-         --    pragma Suppress/Unsuppress (Atomic_Synchronization [,Entity])
+         --  Implemented internally as
+         --    pragma Suppress/Unsuppress (_Atomic_Synchronization [,Entity])
 
          Rewrite (N,
            Make_Pragma (Loc,
@@ -9029,7 +9029,7 @@ package body Sem_Prag is
              Pragma_Argument_Associations => New_List (
                Make_Pragma_Argument_Association (Loc,
                  Expression =>
-                   Make_Identifier (Loc, Name_Atomic_Synchronization)))));
+                   Make_Identifier (Loc, Name_uAtomic_Synchronization)))));
 
          if Present (Arg1) then
             Append_To (Pragma_Argument_Associations (N), New_Copy (Arg1));
@@ -11416,23 +11416,16 @@ package body Sem_Prag is
                --  not a real check.
 
                for J in Scope_Suppress.Suppress'Range loop
-                  if J /= Elaboration_Check
-                       and then
-                     J /= Atomic_Synchronization
-                  then
+                  if J not in Elaboration_Check | Atomic_Synchronization then
                      Scope_Suppress.Suppress (J) := Suppress_Case;
                   end if;
                end loop;
 
             --  If not All_Checks, and predefined check, then set appropriate
             --  scope entry. Note that we will set Elaboration_Check if this
-            --  is explicitly specified. Atomic_Synchronization is allowed
-            --  only if internally generated and entity is atomic.
+            --  is explicitly specified.
 
-            elsif C in Predefined_Check_Id
-              and then (not Comes_From_Source (N)
-                         or else C /= Atomic_Synchronization)
-            then
+            elsif C in Predefined_Check_Id then
                Scope_Suppress.Suppress (C) := Suppress_Case;
             end if;
 

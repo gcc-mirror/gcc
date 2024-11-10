@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 08, 2024
+GNAT User's Guide for Native Platforms , Nov 18, 2024
 
 AdaCore
 
@@ -14249,10 +14249,8 @@ the condition being checked is true, which can result in erroneous
 execution if that assumption is wrong.
 
 The checks subject to suppression include all the checks defined by the Ada
-standard, the additional implementation defined checks @code{Alignment_Check},
-@code{Duplicated_Tag_Check}, @code{Predicate_Check}, @code{Container_Checks}, @code{Tampering_Check},
-and @code{Validity_Check}, as well as any checks introduced using @code{pragma Check_Name}.
-Note that @code{Atomic_Synchronization} is not automatically suppressed by use of this option.
+standard, as well as all implementation-defined checks,
+including any checks introduced using @code{pragma Check_Name}.
 
 If the code depends on certain checks being active, you can use
 pragma @code{Unsuppress} either as a configuration pragma or as
@@ -29841,8 +29839,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 @anchor{d2}@w{                              }
+@anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
 
 @c %**end of body
 @bye

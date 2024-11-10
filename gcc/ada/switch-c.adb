@@ -1154,9 +1154,7 @@ package body Switch.C is
                   --  check.
 
                   for J in Suppress_Options.Suppress'Range loop
-                     if J /= Elaboration_Check
-                          and then
-                        J /= Atomic_Synchronization
+                     if J not in Elaboration_Check | Atomic_Synchronization
                      then
                         Suppress_Options.Suppress (J) := True;
                      end if;

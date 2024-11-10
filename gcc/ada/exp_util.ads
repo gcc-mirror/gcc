@@ -182,9 +182,9 @@ package Exp_Util is
    --  N is a node for which atomic synchronization may be required (it is
    --  either an identifier, expanded name, or selected/indexed component or
    --  an explicit dereference). The caller has checked the basic conditions
-   --  (atomic variable appearing and Atomic_Sync not disabled). This function
-   --  checks if atomic synchronization is required and if so sets the flag
-   --  and if appropriate generates a warning (in -gnatw.n mode).
+   --  (atomic variable appearing and Atomic_Synchronization enabled). This
+   --  function checks if atomic synchronization is required and if so sets
+   --  the flag and (in -gnatw.n mode) generates a warning.
 
    procedure Adjust_Condition (N : Node_Id);
    --  The node N is an expression whose root-type is Boolean, and which
