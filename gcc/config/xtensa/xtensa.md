@@ -1109,17 +1109,17 @@
 		      (const_int 6)))])
 
 (define_insn_and_split "*extzvsi-1bit_addsubx"
-  [(set (match_operand:SI 0 "register_operand" "=a")
+  [(set (match_operand:SI 0 "register_operand" "=&a")
 	(match_operator:SI 5 "addsub_operator"
 		[(and:SI (match_operator:SI 6 "logical_shift_operator"
-				[(match_operand:SI 1 "register_operand" "r")
+				[(match_operand:SI 1 "register_operand" "r0")
 				 (match_operand:SI 3 "const_int_operand" "i")])
 			 (match_operand:SI 4 "const_int_operand" "i"))
 		 (match_operand:SI 2 "register_operand" "r")]))]
   "TARGET_ADDX
    && IN_RANGE (exact_log2 (INTVAL (operands[4])), 1, 3)"
   "#"
-  "&& 1"
+  "&& reload_completed"
   [(set (match_dup 0)
 	(zero_extract:SI (match_dup 1)
 			 (const_int 1)
