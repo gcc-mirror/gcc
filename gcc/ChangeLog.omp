@@ -3,6 +3,18 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx-sm.def: Add '52'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_52): Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_52'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx-sm.def: Add '37'.
 	* config/nvptx/nvptx-gen.h: Regenerate.
 	* config/nvptx/nvptx-gen.opt: Likewise.

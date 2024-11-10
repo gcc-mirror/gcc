@@ -79,7 +79,7 @@ march-map=sm_50
 Target RejectNegative Alias(misa=,sm_37)
 
 march-map=sm_52
-Target RejectNegative Alias(misa=,sm_37)
+Target RejectNegative Alias(misa=,sm_52)
 
 march-map=sm_53
 Target RejectNegative Alias(misa=,sm_53)
