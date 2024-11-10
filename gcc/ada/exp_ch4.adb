@@ -4989,17 +4989,13 @@ package body Exp_Ch4 is
    ------------------------------
 
    procedure Expand_N_Case_Expression (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
-      Par : constant Node_Id    := Parent (N);
-      Typ : constant Entity_Id  := Etype (N);
-
-      In_Predicate : constant Boolean :=
-        Ekind (Current_Scope) in E_Function | E_Procedure
-          and then Is_Predicate_Function (Current_Scope);
-      --  Flag set when the case expression appears within a predicate
+      Loc  : constant Source_Ptr := Sloc (N);
+      Par  : constant Node_Id    := Parent (N);
+      Scop : constant Entity_Id  := Current_Scope;
+      Typ  : constant Entity_Id  := Etype (N);
 
       Optimize_Return_Stmt : constant Boolean :=
-        Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
+        Nkind (Par) = N_Simple_Return_Statement;
       --  Small optimization: when the case expression appears in the context
       --  of a simple return statement, expand into
 
@@ -5012,8 +5008,7 @@ package body Exp_Ch4 is
       --    end case;
 
       --  This makes the expansion much easier when expressions are calls to
-      --  a BIP function. But do not perform it when the return statement is
-      --  within a predicate function, as this causes spurious errors.
+      --  build-in-place functions.
 
       function Is_Copy_Type (Typ : Entity_Id) return Boolean;
       --  Return True if we can copy objects of this type when expanding a case
@@ -5081,13 +5076,17 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  If the case expression is a predicate specification, and the type
-      --  to which it applies has a static predicate aspect, do not expand,
-      --  because it will be converted to the proper predicate form later.
+      --  If the case expression is a predicate specification, do not expand
+      --  because it will need to be recognized and converted to the canonical
+      --  predicate form later if it it happens to be static.
 
-      if In_Predicate
-        and then
-          Has_Static_Predicate_Aspect (Etype (First_Entity (Current_Scope)))
+      if Ekind (Scop) in E_Function | E_Procedure
+        and then Is_Predicate_Function (Scop)
+        and then Is_Entity_Name (Expression (N))
+        and then Entity (Expression (N)) = First_Entity (Scop)
+        and then (Is_Scalar_Type (Etype (Expression (N)))
+                   or else Is_String_Type (Etype (Expression (N))))
+        and then not Has_Dynamic_Predicate_Aspect (Etype (Expression (N)))
       then
          return;
       end if;
@@ -5471,13 +5470,8 @@ package body Exp_Ch4 is
       Par   : constant Node_Id    := Parent (N);
       Typ   : constant Entity_Id  := Etype (N);
 
-      In_Predicate : constant Boolean :=
-        Ekind (Current_Scope) in E_Function | E_Procedure
-          and then Is_Predicate_Function (Current_Scope);
-      --  Flag set when the if expression appears within a predicate
-
       Optimize_Return_Stmt : constant Boolean :=
-        Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
+        Nkind (Par) = N_Simple_Return_Statement;
       --  Small optimization: when the if expression appears in the context of
       --  a simple return statement, expand into
 
@@ -5488,8 +5482,7 @@ package body Exp_Ch4 is
       --    end if;
 
       --  This makes the expansion much easier when expressions are calls to
-      --  a BIP function. But do not perform it when the return statement is
-      --  within a predicate function, as this causes spurious errors.
+      --  build-in-place functions.
 
       Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
       --  Determine if we are dealing with a special case of a conditional
