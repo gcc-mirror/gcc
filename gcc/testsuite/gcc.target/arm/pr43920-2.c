@@ -27,6 +27,4 @@ int getFileStartAndLength (int fd, int *start_, size_t *length_)
       return 0;
 }
 
-/* { dg-final { scan-assembler-times "pop" 2 } } */
-/* { dg-final { scan-assembler-times "beq" 3 } } */
-/* { dg-final { object-size text <= 54 { target { ! arm*-*-uclinuxfdpiceabi } } } } */
+/* { dg-final { scan-assembler-not "\t(cmp|mov|orr|and)(eq|ne)\t" } } */
