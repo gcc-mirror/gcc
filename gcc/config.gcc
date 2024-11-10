@@ -5643,7 +5643,7 @@ case "${target}" in
 			case $nvptx_multilib in
 			#TODO 'sm_[...]' list per 'nvptx-sm.def'.
 			sm_30 | sm_35 | sm_37 \
-			| sm_53 \
+			| sm_52 | sm_53 \
 			| sm_70 | sm_75 \
 			| sm_80 )
 				TM_MULTILIB_CONFIG="$TM_MULTILIB_CONFIG $nvptx_multilib"

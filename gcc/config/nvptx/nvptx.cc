@@ -216,6 +216,7 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
     case PTX_ISA_SM35:
       return PTX_VERSION_3_1;
     case PTX_ISA_SM37:
+    case PTX_ISA_SM52:
       return PTX_VERSION_4_1;
     case PTX_ISA_SM53:
       return PTX_VERSION_4_2;
