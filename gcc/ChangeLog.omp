@@ -3,6 +3,18 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
+	'PTX_VERSION_4_1'.
+	* config/nvptx/nvptx.cc (ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h (TARGET_PTX_4_1): New.
+	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
+	'4.1' for 'PTX_VERSION_4_1'.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-mptx=4.1'.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx.h (TARGET_PTX_4_2): New.
 	* config/nvptx/nvptx.opt (Enum(ptx_version)): Add 'EnumValue'
 	'4.2' for 'PTX_VERSION_4_2'.

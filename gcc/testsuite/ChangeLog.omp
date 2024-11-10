@@ -3,6 +3,11 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/mptx=4.1.c: New.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/mptx=4.2.c: New.
 
 	Backported from trunk:

@@ -128,6 +128,9 @@ EnumValue
 Enum(ptx_version) String(3.1) Value(PTX_VERSION_3_1)
 
 EnumValue
+Enum(ptx_version) String(4.1) Value(PTX_VERSION_4_1)
+
+EnumValue
 Enum(ptx_version) String(4.2) Value(PTX_VERSION_4_2)
 
 EnumValue
