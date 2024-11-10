@@ -8427,7 +8427,7 @@ package body Checks is
            --  where the expression might not be evaluated, and the warning
            --  appear as extraneous noise.
 
-           and then not Within_Case_Or_If_Expression (N)
+           and then not Within_Conditional_Expression (N)
          then
             Apply_Compile_Time_Constraint_Error
               (N, "null value not allowed here??", CE_Access_Check_Failed);

@@ -1283,11 +1283,11 @@ package Exp_Util is
    --  when elaborating a contract for a subprogram, and when freezing a type
    --  extension to verify legality rules on inherited conditions.
 
-   function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
+   function Within_Conditional_Expression (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is immediately within a dependent
-   --  expression of a case or an if expression. The criterion is whether
+   --  expression of a conditional expression. The criterion is whether
    --  temporaries created by the actions attached to N need to outlive an
-   --  enclosing case or if expression.
+   --  enclosing conditional expression.
 
 private
    pragma Inline (Duplicate_Subexpr);

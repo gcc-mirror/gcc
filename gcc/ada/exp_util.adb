@@ -6702,7 +6702,7 @@ package body Exp_Util is
       --  then we need to insert at the appropriate (inner) location in
       --  the not as an action on Node_To_Be_Wrapped.
 
-      In_Cond_Expr : constant Boolean := Within_Case_Or_If_Expression (N);
+      In_Cond_Expr : constant Boolean := Within_Conditional_Expression (N);
 
    begin
       --  When the node is inside a case/if expression, the lifetime of any
@@ -14632,11 +14632,11 @@ package body Exp_Util is
       Map_Types (Parent_Type, Derived_Type);
    end Update_Primitives_Mapping;
 
-   ----------------------------------
-   -- Within_Case_Or_If_Expression --
-   ----------------------------------
+   -----------------------------------
+   -- Within_Conditional_Expression --
+   -----------------------------------
 
-   function Within_Case_Or_If_Expression (N : Node_Id) return Boolean is
+   function Within_Conditional_Expression (N : Node_Id) return Boolean is
       Nod : Node_Id;
       Par : Node_Id;
 
@@ -14680,7 +14680,7 @@ package body Exp_Util is
       end loop;
 
       return False;
-   end Within_Case_Or_If_Expression;
+   end Within_Conditional_Expression;
 
    ------------------------------
    -- Predicate_Check_In_Scope --
