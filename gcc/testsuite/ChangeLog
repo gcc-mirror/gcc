@@ -1,3 +1,13 @@
+2024-11-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/117492
+	* gcc.dg/torture/pr117492-1.c: New test.
+
+2024-11-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117496
+	* gcc.dg/torture/pr117496-1.c: New test.
+
 2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR target/117408

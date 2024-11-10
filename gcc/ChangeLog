@@ -1,3 +1,32 @@
+2024-11-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/117478
+	* config/darwin-driver.cc (darwin_driver_init): Handle ObjC/ObjC++
+	* config/darwin.opt: Add ObjC/ObjC++ as driver-only options.
+
+2024-11-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/117492
+	* fold-const.cc (fold_binary_loc): Remove `Two consecutive rotates adding up
+	to the some integer` simplifcation.
+
+2024-11-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117496
+	* tree-ssa-sccvn.cc (insert_predicates_for_cond): If the
+	valueization for the new lhs is the same as the old one,
+	don't recurse.
+
+2024-11-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-sccvn.cc (visit_phi): Swap the operands
+	before calling vn_nary_op_lookup_pieces if
+	tree_swap_operands_p returns true.
+	(insert_predicates_for_cond): Use tree_swap_operands_p
+	instead of checking for CONSTANT_CLASS_P.
+	(process_bb): Swap the comparison and operands
+	if tree_swap_operands_p returns true.
+
 2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR target/117408
