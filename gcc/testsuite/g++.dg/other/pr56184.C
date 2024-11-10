@@ -1,6 +1,9 @@
 /* { dg-do compile { target arm*-*-* } } */
-/* { dg-skip-if "incompatible options" { ! { arm_thumb1_ok || arm_thumb2_ok } } } */
-/* { dg-options "-fno-short-enums -O2 -mthumb -march=armv7-a -mfpu=neon -mfloat-abi=softfp -mtune=cortex-a9 -fno-section-anchors -Wno-return-type" } */
+/* { dg-require-effective-target arm_arch_v7a_neon_thumb_ok } */
+/* { dg-options "-fno-short-enums -O2 -fno-section-anchors -Wno-return-type" } */
+/* { dg-add-options arm_arch_v7a_neon_thumb } */
+/* { dg-additional-options "-mtune=cortex-a9" } */
+
 
 typedef unsigned int size_t;
 __extension__ typedef int __intptr_t;
