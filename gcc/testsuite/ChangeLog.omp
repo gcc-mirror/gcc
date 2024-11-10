@@ -1,5 +1,7 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/mptx=7.3.c: New.
+
 	* lib/target-supports.exp
 	(check_effective_target_nvptx_softstack): New.
 	(check_effective_target_alloca) [nvptx]: Use it.
