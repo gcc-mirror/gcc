@@ -1,6 +1,19 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/ptx31.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=3.1.c: ... this.
+	* gcc.target/nvptx/ptx60.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=6.0.c: ... this.
+	* gcc.target/nvptx/ptx63.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=6.3.c: ... this.
+	* gcc.target/nvptx/ptx70.c: Remove; expanded into...
+	* gcc.target/nvptx/mptx=7.0.c: ... this.
+	* gcc.target/nvptx/mptx=_.c: New.
+
+	Backported from trunk:
 	2024-09-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* gcc.target/nvptx/nvptx.exp
