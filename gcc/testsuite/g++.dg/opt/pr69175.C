@@ -1,7 +1,7 @@
 // PR target/69175
 // { dg-do compile }
 // { dg-options "-O2" }
-// { dg-additional-options "-march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -mthumb" { target { arm_hard_vfp_ok && arm_thumb2_ok } } }
+// { dg-additional-options "-mcpu=unset -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16 -mthumb" { target { arm_hard_vfp_ok && arm_thumb2_ok } } }
 
 struct A { A *c, *d; } a;
 struct B { A *e; A *f; void foo (); };
