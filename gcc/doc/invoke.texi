@@ -30070,9 +30070,13 @@ capable.  For instance, for @option{-march-map=sm_50} select
 
 @opindex mptx
 @item -mptx=@var{version-string}
-Generate code for the specified PTX ISA version (e.g.@: @samp{7.0}).
-Valid version strings include @samp{3.1}, @samp{6.0}, @samp{6.3}, and
-@samp{7.0}.  The default PTX ISA version is 6.0, unless a higher
+Generate code for the specified PTX ISA version.
+Valid version strings are
+@samp{3.1},
+@samp{4.2},
+@samp{6.0}, @samp{6.3},
+and @samp{7.0}.
+The default PTX ISA version is 6.0, unless a higher
 version is required for specified PTX ISA target architecture via
 option @option{-march=}.
 
