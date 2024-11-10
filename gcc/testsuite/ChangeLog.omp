@@ -3,6 +3,31 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/march-map.c: Remove; expanded into...
+	* gcc.target/nvptx/march-map=sm_50.c: ... this.
+	* gcc.target/nvptx/march-map=sm_30.c: New.
+	* gcc.target/nvptx/march-map=sm_32.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_35.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_37.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_52.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_53.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_60.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_61.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_70.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_72.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_75.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_80.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_86.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_87.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_89.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_90.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_90a.c: Likewise.
+	* gcc.target/nvptx/main.c: Remove.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/sm30.c: Remove; expanded into...
 	* gcc.target/nvptx/march=sm_30.c: ... this.
 	* gcc.target/nvptx/sm35.c: Remove; expanded into...
