@@ -267,6 +267,8 @@ ptx_version_to_string (enum ptx_version v)
       return "6.3";
     case PTX_VERSION_7_0:
       return "7.0";
+    case PTX_VERSION_7_3:
+      return "7.3";
     case PTX_VERSION_7_8:
       return "7.8";
     default:
@@ -291,6 +293,8 @@ ptx_version_to_number (enum ptx_version v, bool major_p)
       return major_p ? 6 : 3;
     case PTX_VERSION_7_0:
       return major_p ? 7 : 0;
+    case PTX_VERSION_7_3:
+      return major_p ? 7 : 3;
     case PTX_VERSION_7_8:
       return major_p ? 7 : 8;
     default:
