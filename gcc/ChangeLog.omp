@@ -3,6 +3,16 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Remove
+	'PTX_VERSION_3_0'.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm)
+	(default_ptx_version_option, ptx_version_to_string)
+	(ptx_version_to_number): Adjust.
+	* config/nvptx/nvptx.h: Comment.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config.gcc: nvptx: Support '--with-multilib-list'.
 	* config/nvptx/gen-multilib-matches.sh: Adjust.
 	* configure.ac: Likewise.
