@@ -78,13 +78,6 @@ with Warnsw;         use Warnsw;
 
 package body Exp_Aggr is
 
-   function Build_Assignment_With_Temporary
-     (Target : Node_Id;
-      Typ    : Entity_Id;
-      Source : Node_Id) return List_Id;
-   --  Returns a list of actions to assign Source to Target of type Typ using
-   --  an extra temporary, which can potentially be large.
-
    type Case_Bounds is record
      Choice_Lo   : Node_Id;
      Choice_Hi   : Node_Id;
@@ -1925,8 +1918,8 @@ package body Exp_Aggr is
    --  Start of processing for Build_Array_Aggr_Code
 
    begin
-      --  If the assignment can be done directly by the back end, then reset
-      --  the Set_Expansion_Delayed flag and do not expand further.
+      --  If the assignment can be done directly by the back end, then expand
+      --  into an assignment statement.
 
       if Present (Etype (N))
         and then Aggr_Assignment_OK_For_Backend (N)
@@ -1940,7 +1933,13 @@ package body Exp_Aggr is
                          (if Nkind (Into) = N_Unchecked_Type_Conversion
                           then Expression (Into)
                           else Into);
+
+            Temp : Node_Id;
+
          begin
+            --  Block any further processing of the aggregate by the front end
+
+            Set_Analyzed (New_Aggr);
             Set_Expansion_Delayed (New_Aggr, False);
 
             --  In the case where the target is the dereference of a prefix
@@ -1956,7 +1955,23 @@ package body Exp_Aggr is
                                  (Storage_Model_Object
                                    (Etype (Prefix (Target)))))
             then
-               return Build_Assignment_With_Temporary (Into, Typ, New_Aggr);
+               Temp := Build_Temporary_On_Secondary_Stack (Loc, Typ, New_Code);
+
+               Append_To (New_Code,
+                 Make_OK_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc)),
+                   Expression => New_Aggr));
+
+               Append_To (New_Code,
+                 Make_OK_Assignment_Statement (Loc,
+                   Name       => Target,
+                   Expression =>
+                     Make_Explicit_Dereference (Loc,
+                       Prefix => New_Occurrence_Of (Temp, Loc))));
+
+               return New_Code;
 
             else
                return New_List (
@@ -2158,42 +2173,6 @@ package body Exp_Aggr is
 
       return New_Code;
    end Build_Array_Aggr_Code;
-
-   -------------------------------------
-   -- Build_Assignment_With_Temporary --
-   -------------------------------------
-
-   function Build_Assignment_With_Temporary
-     (Target : Node_Id;
-      Typ    : Entity_Id;
-      Source : Node_Id) return List_Id
-   is
-      Loc : constant Source_Ptr := Sloc (Source);
-
-      Aggr_Code : List_Id;
-      Tmp       : Entity_Id;
-
-   begin
-      Aggr_Code := New_List;
-
-      Tmp := Build_Temporary_On_Secondary_Stack (Loc, Typ, Aggr_Code);
-
-      Append_To (Aggr_Code,
-        Make_OK_Assignment_Statement (Loc,
-          Name       =>
-            Make_Explicit_Dereference (Loc,
-              Prefix => New_Occurrence_Of (Tmp, Loc)),
-          Expression => Source));
-
-      Append_To (Aggr_Code,
-        Make_OK_Assignment_Statement (Loc,
-          Name       => Target,
-          Expression =>
-            Make_Explicit_Dereference (Loc,
-              Prefix => New_Occurrence_Of (Tmp, Loc))));
-
-      return Aggr_Code;
-   end Build_Assignment_With_Temporary;
 
    ----------------------------
    -- Build_Record_Aggr_Code --
