@@ -4657,6 +4657,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     @0
     @2)))
 
+/* min (a, b) op max (a, b) -> a op b */
+(for op (plus mult bit_and bit_xor bit_ior eq ne min max)
+ (simplify
+  (op:c (min:c @0 @1) (max @0 @1))
+   (if (!HONOR_NANS (@0))
+    (op @0 @1))))
+
 /* Simplify min (&var[off0], &var[off1]) etc. depending on whether
    the addresses are known to be less, equal or greater.  */
 (for minmax (min max)
