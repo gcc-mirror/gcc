@@ -7,10 +7,10 @@
 
 /*
 **stacktest1:
+**	umov	w0, v0.b\[0\]
 **	sub	sp, sp, #16
-**	and	w0, w0, 255
 **	strb	w0, \[sp, 15\]
-**	ldrb	w0, \[sp, 15\]
+**	ldr	b0, \[sp, 15\]
 **	add	sp, sp, 16
 **	ret
 */
