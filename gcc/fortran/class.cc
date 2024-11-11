@@ -1152,8 +1152,9 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
       gcc_assert (c);
 
-      /* Set scalar argument for storage_size.  */
-      gfc_get_symbol ("comp_byte_stride", sub_ns, &byte_stride);
+      /* Set scalar argument for storage_size. A leading underscore in
+	 the name prevents an unwanted finalization.  */
+      gfc_get_symbol ("_comp_byte_stride", sub_ns, &byte_stride);
       byte_stride->ts = e->ts;
       byte_stride->attr.flavor = FL_VARIABLE;
       byte_stride->attr.value = 1;
