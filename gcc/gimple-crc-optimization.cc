@@ -225,6 +225,11 @@ class crc_optimization {
   /* Returns phi statement which may hold the calculated CRC.  */
   gphi *get_output_phi ();
 
+  /* Attempts to optimize a CRC calculation loop by replacing it with a call to
+     an internal function (IFN_CRC or IFN_CRC_REV).
+     Returns true if replacement is succeeded, otherwise false.  */
+  bool optimize_crc_loop (gphi *output_crc);
+
  public:
   crc_optimization () : m_visited_stmts (BITMAP_ALLOC (NULL)),
 			m_crc_loop (nullptr), m_polynomial (0)
@@ -1207,6 +1212,73 @@ crc_optimization::get_output_phi ()
   return nullptr;
 }
 
+/* Attempts to optimize a CRC calculation loop by replacing it with a call to
+   an internal function (IFN_CRC or IFN_CRC_REV).
+   Returns true if replacement is succeeded, otherwise false.  */
+
+bool
+crc_optimization::optimize_crc_loop (gphi *output_crc)
+{
+  if (!output_crc)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Couldn't determine output CRC.\n");
+      return false;
+    }
+
+  if (!m_data_arg)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Data and CRC are xor-ed before for loop.  Initializing data "
+		 "with 0.\n");
+      /* Create a new variable for the data.
+       Determine the data's size with the loop iteration count.  */
+      unsigned HOST_WIDE_INT
+	data_size = tree_to_uhwi (m_crc_loop->nb_iterations) + 1;
+      tree type = build_nonstandard_integer_type (data_size, 1);
+     /* For the CRC calculation, it doesn't matter CRC is calculated for the
+	(CRC^data, 0) or (CRC, data).  */
+      m_data_arg = build_int_cstu (type, 0);
+    }
+
+  /* Build tree node for the polynomial from its constant value.  */
+  tree polynomial_arg = build_int_cstu (TREE_TYPE (m_crc_arg), m_polynomial);
+  gcc_assert (polynomial_arg);
+
+  internal_fn ifn;
+  if (m_is_bit_forward)
+    ifn = IFN_CRC;
+  else
+    ifn = IFN_CRC_REV;
+
+  tree phi_result = gimple_phi_result (output_crc);
+  location_t loc;
+  loc = EXPR_LOCATION (phi_result);
+
+  /* Add IFN call and write the return value in the phi_result.  */
+  gcall *call
+      = gimple_build_call_internal (ifn, 3,
+				    m_crc_arg,
+				    m_data_arg,
+				    polynomial_arg);
+
+  gimple_call_set_lhs (call, phi_result);
+  gimple_set_location (call, loc);
+  gimple_stmt_iterator si = gsi_start_bb (output_crc->bb);
+  gsi_insert_before (&si, call, GSI_SAME_STMT);
+
+  /* Remove phi statement, which was holding CRC result.  */
+  gimple_stmt_iterator tmp_gsi = gsi_for_stmt (output_crc);
+  remove_phi_node (&tmp_gsi, false);
+
+  /* Alter the exit condition of the loop to always exit.  */
+  gcond* loop_exit_cond = get_loop_exit_condition (m_crc_loop);
+  gimple_cond_make_false (loop_exit_cond);
+  update_stmt (loop_exit_cond);
+  return true;
+}
+
 unsigned int
 crc_optimization::execute (function *fun)
 {
@@ -1263,6 +1335,12 @@ crc_optimization::execute (function *fun)
 	  if (dump_file)
 	    fprintf (dump_file, "The loop with %d header BB index "
 				"calculates CRC!\n", m_crc_loop->header->index);
+
+	  if (!optimize_crc_loop (output_crc))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "Couldn't generate faster CRC code.\n");
+	    }
 	}
     }
   return 0;
