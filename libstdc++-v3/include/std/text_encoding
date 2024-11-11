@@ -575,7 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  && _M_rep[__n - 1]._M_id == _M_id) [[likely]]
 		 _M_rep += __n;
 	      else
-		*this == _Iterator{};
+		*this = _Iterator{};
 	    }
 	  else if (__n < 0)
 	    {
@@ -583,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    && _M_rep[__n]._M_id == _M_id) [[likely]]
 		 _M_rep += __n;
 	      else
-		*this == _Iterator{};
+		*this = _Iterator{};
 	    }
 	}
       if (__n != 0)
@@ -645,7 +645,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
-    friend class text_encoding;
+    friend struct text_encoding;
 
     constexpr explicit
     _Iterator(const _Rep* __r) noexcept
