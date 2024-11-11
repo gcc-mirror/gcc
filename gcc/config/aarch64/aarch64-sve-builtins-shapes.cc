@@ -994,11 +994,17 @@ struct store_scatter_base : public overloaded_base<0>
     mode_suffix_index mode;
     type_suffix_index type;
     if (!r.check_gp_argument (has_displacement_p ? 3 : 2, i, nargs)
-	|| (type = r.infer_sd_vector_type (nargs - 1)) == NUM_TYPE_SUFFIXES
+	|| (type = infer_vector_type (r, nargs - 1)) == NUM_TYPE_SUFFIXES
 	|| (mode = r.resolve_gather_address (i, type, false)) == MODE_none)
       return error_mark_node;
 
     return r.resolve_to (mode, type);
+  }
+
+  virtual type_suffix_index
+  infer_vector_type (function_resolver &r, unsigned int argno) const
+  {
+    return r.infer_sd_vector_type (argno);
   }
 };
 
