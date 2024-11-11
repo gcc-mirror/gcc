@@ -1998,10 +1998,12 @@ function_resolver::infer_64bit_scalar_integer_pair (unsigned int argno)
    corresponding type suffix.  Return that type suffix on success,
    otherwise report an error and return NUM_TYPE_SUFFIXES.
    GATHER_SCATTER_P is true if the function is a gather/scatter
-   operation, and so requires a pointer to 32-bit or 64-bit data.  */
+   operation.  RESTRICTIONS describes any additional restrictions
+   on the target type.  */
 type_suffix_index
 function_resolver::infer_pointer_type (unsigned int argno,
-				       bool gather_scatter_p)
+				       bool gather_scatter_p,
+				       target_type_restrictions restrictions)
 {
   tree actual = get_argument_type (argno);
   if (actual == error_mark_node)
@@ -2027,7 +2029,7 @@ function_resolver::infer_pointer_type (unsigned int argno,
       return NUM_TYPE_SUFFIXES;
     }
   unsigned int bits = type_suffixes[type].element_bits;
-  if (gather_scatter_p && bits != 32 && bits != 64)
+  if (restrictions == TARGET_32_64 && bits != 32 && bits != 64)
     {
       error_at (location, "passing %qT to argument %d of %qE, which"
 		" expects a pointer to 32-bit or 64-bit elements",

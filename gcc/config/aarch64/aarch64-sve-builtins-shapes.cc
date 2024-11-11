@@ -815,13 +815,21 @@ struct load_gather_sv_base : public overloaded_base<0>
     unsigned int i, nargs;
     mode_suffix_index mode;
     type_suffix_index type;
+    auto restrictions = get_target_type_restrictions (r);
     if (!r.check_gp_argument (2, i, nargs)
-	|| (type = r.infer_pointer_type (i, true)) == NUM_TYPE_SUFFIXES
+	|| (type = r.infer_pointer_type (i, true,
+					 restrictions)) == NUM_TYPE_SUFFIXES
 	|| (mode = r.resolve_sv_displacement (i + 1, type, true),
 	    mode == MODE_none))
       return error_mark_node;
 
     return r.resolve_to (mode, type);
+  }
+
+  virtual function_resolver::target_type_restrictions
+  get_target_type_restrictions (const function_instance &) const
+  {
+    return function_resolver::TARGET_32_64;
   }
 };
 

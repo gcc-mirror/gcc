@@ -488,6 +488,7 @@ public:
 class function_resolver : public function_call_info
 {
 public:
+  enum target_type_restrictions { TARGET_ANY, TARGET_32_64 };
   enum { SAME_SIZE = 256, HALF_SIZE, QUARTER_SIZE };
   static const type_class_index SAME_TYPE_CLASS = NUM_TYPE_CLASSES;
 
@@ -518,7 +519,8 @@ public:
   vector_type_index infer_predicate_type (unsigned int);
   type_suffix_index infer_integer_scalar_type (unsigned int);
   type_suffix_index infer_64bit_scalar_integer_pair (unsigned int);
-  type_suffix_index infer_pointer_type (unsigned int, bool = false);
+  type_suffix_index infer_pointer_type (unsigned int, bool = false,
+					target_type_restrictions = TARGET_ANY);
   sve_type infer_sve_type (unsigned int);
   sve_type infer_vector_or_tuple_type (unsigned int, unsigned int);
   type_suffix_index infer_vector_type (unsigned int);
