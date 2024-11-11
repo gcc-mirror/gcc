@@ -374,8 +374,8 @@ check_leading_kw_at_start (const S &segment, bool condition)
 template <Namespace N>
 template <typename S>
 tl::optional<typename std::vector<S>::const_iterator>
-ForeverStack<N>::find_starting_point (const std::vector<S> &segments,
-				      Node &starting_point)
+ForeverStack<N>::find_starting_point (
+  const std::vector<S> &segments, std::reference_wrapper<Node> &starting_point)
 {
   auto iterator = segments.begin ();
 
@@ -412,14 +412,15 @@ ForeverStack<N>::find_starting_point (const std::vector<S> &segments,
 	}
       if (seg.is_super_path_seg ())
 	{
-	  if (starting_point.is_root ())
+	  if (starting_point.get ().is_root ())
 	    {
 	      rust_error_at (seg.get_locus (), ErrorCode::E0433,
 			     "too many leading %<super%> keywords");
 	      return tl::nullopt;
 	    }
 
-	  starting_point = find_closest_module (starting_point.parent.value ());
+	  starting_point
+	    = find_closest_module (starting_point.get ().parent.value ());
 	  continue;
 	}
 
@@ -494,12 +495,12 @@ ForeverStack<N>::resolve_path (const std::vector<S> &segments)
   if (segments.size () == 1)
     return get (segments.back ().as_string ());
 
-  auto starting_point = cursor ();
+  std::reference_wrapper<Node> starting_point = cursor ();
 
   return find_starting_point (segments, starting_point)
     .and_then ([this, &segments, &starting_point] (
 		 typename std::vector<S>::const_iterator iterator) {
-      return resolve_segments (starting_point, segments, iterator);
+      return resolve_segments (starting_point.get (), segments, iterator);
     })
     .and_then ([&segments] (Node final_node) {
       return final_node.rib.get (segments.back ().as_string ());
