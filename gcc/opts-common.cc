@@ -1656,8 +1656,8 @@ read_cmdline_option (struct gcc_options *opts,
 
 void
 set_option (struct gcc_options *opts, struct gcc_options *opts_set,
-	    int opt_index, HOST_WIDE_INT value, const char *arg, int kind,
-	    location_t loc, diagnostic_context *dc,
+	    size_t opt_index, HOST_WIDE_INT value, const char *arg,
+	    int kind, location_t loc, diagnostic_context *dc,
 	    HOST_WIDE_INT mask /* = 0 */)
 {
   const struct cl_option *option = &cl_options[opt_index];

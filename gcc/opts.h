@@ -300,7 +300,7 @@ struct cl_deferred_option
      options.  */
   size_t opt_index;
   const char *arg;
-  int value;
+  HOST_WIDE_INT value;
 };
 
 /* Structure describing a single option-handling callback.  */
@@ -398,7 +398,7 @@ extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);
 extern void set_option (struct gcc_options *opts,
 			struct gcc_options *opts_set,
-			int opt_index, HOST_WIDE_INT value, const char *arg,
+			size_t opt_index, HOST_WIDE_INT value, const char *arg,
 			int kind, location_t loc, diagnostic_context *dc,
 			HOST_WIDE_INT = 0);
 extern void *option_flag_var (int opt_index, struct gcc_options *opts);
