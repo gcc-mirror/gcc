@@ -49,9 +49,9 @@ FROM M2Base IMPORT IsBaseType, Char, Cardinal, Integer, Real, LongReal, ShortRea
                    LongCard, ShortCard, LongInt, ShortInt, Boolean ;
 
 FROM SymbolTable IMPORT GetSymName, IsType, IsProcedure, IsConst, IsVar,
-                        GetType, GetNthParam, IsUnbounded, GetMode, ModeOfAddr,
-                        NoOfParam, IsConstString, IsConstLit, IsPointer,
-                        IsExported, ForeachExportedDo, IsUnboundedParam,
+                        GetType, GetNthParamAny, IsUnbounded, GetMode, ModeOfAddr,
+                        NoOfParamAny, IsConstString, IsConstLit, IsPointer,
+                        IsExported, ForeachExportedDo, IsUnboundedParamAny,
                         IsParameter, IsParameterUnbounded, IsParameterVar,
                         GetParameterShadowVar, GetReadQuads, GetWriteQuads,
                         NulSym ;
@@ -253,10 +253,10 @@ BEGIN
          solved := FALSE
       END
    END ;
-   p := NoOfParam(sym) ;
+   p := NoOfParamAny (sym) ;
    i := 1 ;
    WHILE i<=p DO
-      son := GetNthParam(sym, i) ;
+      son := GetNthParamAny(sym, i) ;
       IF TryDependents(son)
       THEN
          result := TRUE
@@ -686,11 +686,11 @@ VAR
    needComma: BOOLEAN ;
 BEGIN
    fprintf0(f, '/* Parameter: ') ;
-   p := NoOfParam(sym) ;
+   p := NoOfParamAny (sym) ;
    i := 1 ;
    needComma := FALSE ;
    WHILE i<=p DO
-      son := GetNthParam(sym, i) ;
+      son := GetNthParamAny(sym, i) ;
       IF IsParameterVar(son)
       THEN
          IF needComma
@@ -727,15 +727,15 @@ BEGIN
    fprintf0(f, ' ') ;
    DoName(sym) ;
    fprintf0(f, ' (') ;
-   p := NoOfParam(sym) ;
+   p := NoOfParamAny (sym) ;
    IF p=0
    THEN
       fprintf0(f, 'void') ;
    ELSE
       i := 1 ;
       WHILE i<=p DO
-         son := GetNthParam(sym, i) ;
-         IF IsUnboundedParam(sym, i)
+         son := GetNthParamAny(sym, i) ;
+         IF IsUnboundedParamAny (sym, i)
          THEN
             DoUnbounded(son)
          ELSE

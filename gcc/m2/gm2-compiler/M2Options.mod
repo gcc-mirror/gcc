@@ -1097,6 +1097,7 @@ END SetQuadDebugging ;
 
 (*
    SetCompilerDebugging - turn on internal compiler debugging.
+                          Enabled via the command line option -fd.
 *)
 
 PROCEDURE SetCompilerDebugging (value: BOOLEAN) ;

@@ -25,8 +25,6 @@ FROM SYSTEM IMPORT ADDRESS, WORD ;
 
 FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         PushVarSize,
-                        PushSumOfLocalVarSize,
-                        PushSumOfParamSize,
                         MakeConstLit,
                         RequestSym, FromModuleGetSym,
                         StartScope, EndScope, GetScope,
@@ -38,16 +36,16 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetLocalSym, GetVarWritten,
                         GetVarient, GetVarBackEndType, GetModuleCtors,
                         NoOfVariables,
-                        NoOfParam, GetParent, GetDimension, IsAModula2Type,
+                        NoOfParamAny, GetParent, GetDimension, IsAModula2Type,
                         IsModule, IsDefImp, IsType, IsModuleWithinProcedure,
                         IsConstString, GetString, GetStringLength,
                         IsConstStringCnul, IsConstStringM2nul,
                         IsConst, IsConstSet, IsProcedure, IsProcType,
-                        IsVar, IsVarParam, IsTemporary,
+                        IsVar, IsVarParamAny, IsTemporary,
                         IsEnumeration,
                         IsUnbounded, IsArray, IsSet, IsConstructor,
                         IsProcedureVariable,
-                        IsUnboundedParam,
+                        IsUnboundedParamAny,
                         IsRecordField, IsFieldVarient, IsVarient, IsRecord,
                         IsExportQualified,
                         IsExported,
@@ -64,7 +62,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         ForeachInnerModuleDo,
                         ForeachLocalSymDo,
 			GetLType,
-                        GetType, GetNth, GetNthParam,
+                        GetType, GetNth, GetNthParamAny,
                         SkipType, SkipTypeAndSubrange,
                         GetUnboundedHighOffset,
                         GetUnboundedAddressOffset,
@@ -79,6 +77,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         PutConst, PutConstSet, PutConstructor,
 			GetSType, GetTypeMode,
                         HasVarParameters, CopyConstString,
+                        GetVarDeclFullTok,
                         NulSym ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
@@ -91,7 +90,8 @@ FROM M2Debug IMPORT Assert ;
 FROM M2Error IMPORT InternalError, WriteFormat0, WriteFormat1, WriteFormat2, WarnStringAt ;
 
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
-                        MetaError1, MetaError2, MetaErrorStringT1 ;
+                        MetaError1, MetaError2, MetaErrorStringT1,
+                        MetaErrorDecl ;
 
 FROM M2Options IMPORT UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
@@ -101,7 +101,7 @@ FROM M2Options IMPORT UnboundedByReference, PedanticCast,
 FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
 FROM M2Quiet IMPORT qprintf0 ;
 
-FROM M2Base IMPORT MixTypes, NegateType, ActivationPointer, IsMathType,
+FROM M2Base IMPORT MixTypes, MixTypesDecl, NegateType, ActivationPointer, IsMathType,
                    IsRealType, IsComplexType, IsBaseType,
                    IsOrdinalType,
                    Cardinal, Char, Integer, IsTrunc,
@@ -379,6 +379,19 @@ VAR
                    Sym2 is the array type
 ------------------------------------------------------------------------------
 *)
+
+
+(*
+   ErrorMessageDecl - emit an error message together with declaration fragments of left
+                      and right if they are parameters or variables.
+*)
+
+PROCEDURE ErrorMessageDecl (tok: CARDINAL; message: ARRAY OF CHAR; left, right: CARDINAL) ;
+BEGIN
+   MetaErrorT2 (tok, message, left, right) ;
+   MetaErrorDecl (left) ;
+   MetaErrorDecl (right)
+END ErrorMessageDecl ;
 
 
 (*
@@ -1737,9 +1750,9 @@ VAR
 BEGIN
    InitList(trashed) ;
    i := 1 ;
-   p := NoOfParam(proc) ;
+   p := NoOfParamAny (proc) ;
    WHILE i<=p DO
-      sym := GetNthParam(proc, i) ;
+      sym := GetNthParamAny (proc, i) ;
       IF IsParameterWritten(proc, sym)
       THEN
          IF VerboseUnbounded
@@ -1757,9 +1770,9 @@ BEGIN
    END ;
    (* now see whether we need to copy any unbounded array parameters *)
    i := 1 ;
-   p := NoOfParam(proc) ;
+   p := NoOfParamAny (proc) ;
    WHILE i<=p DO
-      IF IsUnboundedParam(proc, i) AND (NOT IsVarParam(proc, i))
+      IF IsUnboundedParamAny (proc, i) AND (NOT IsVarParamAny (proc, i))
       THEN
          CheckUnboundedNonVarParameter (tokenno, trashed, proc, GetNth (proc, i))
       END ;
@@ -1812,7 +1825,7 @@ BEGIN
       IF IsProcedure (scope)
       THEN
          (* the parameters are stored as local variables.  *)
-         INC (i, NoOfParam (scope))
+         INC (i, NoOfParamAny (scope))
       END ;
       WHILE i <= n DO
          AutoInitVariable (location, GetNth (scope, i)) ;
@@ -2175,13 +2188,13 @@ VAR
    location   : location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
-   IF GetNthParam(op2, op1)=NulSym
+   IF GetNthParamAny (op2, op1)=NulSym
    THEN
       (* We reach here if the argument is being passed to a C vararg function.  *)
       RETURN( Mod2Gcc(op3) )
    ELSE
       OperandType := SkipType(GetType(op3)) ;
-      ParamType := SkipType(GetType(GetNthParam(op2, op1)))
+      ParamType := SkipType(GetType(GetNthParamAny (op2, op1)))
    END ;
    IF IsProcType(ParamType)
    THEN
@@ -2540,17 +2553,17 @@ BEGIN
    ELSE
       IF StrictTypeChecking
       THEN
-         IF (nth <= NoOfParam (procedure))
+         IF (nth <= NoOfParamAny (procedure))
          THEN
             compatible := ParameterTypeCompatible (parampos,
                                                    'parameter incompatibility when attempting to pass actual parameter {%2ad} to a {%kVAR} formal parameter {%3Ead} during call to procedure {%1ad}',
-                                                   procedure, GetNthParam (procedure, nth),
-                                                   parameter, nth, IsVarParam (procedure, nth))
+                                                   procedure, GetNthParamAny (procedure, nth),
+                                                   parameter, nth, IsVarParamAny (procedure, nth))
          END
       END ;
 
-      IF (nth <= NoOfParam (procedure)) AND
-         IsVarParam (procedure, nth) AND IsConst (parameter)
+      IF (nth <= NoOfParamAny (procedure)) AND
+         IsVarParamAny (procedure, nth) AND IsConst (parameter)
       THEN
          MetaErrorT1 (parampos,
                       'cannot pass a constant {%1Ead} as a VAR parameter', parameter)
@@ -3323,9 +3336,9 @@ BEGIN
       THEN
          IF NOT IsAssignmentCompatible (t1, t2)
          THEN
-            MetaErrorT2 (virtpos,
-                         'illegal assignment error between {%1Etad} and {%2tad}',
-                         des, expr) ;
+            ErrorMessageDecl (virtpos,
+                              'illegal assignment error between {%1Etad} and {%2tad}',
+                              des, expr) ;
 	    RETURN( FALSE )
          END
       END
@@ -3702,7 +3715,7 @@ BEGIN
    THEN
       RETURN Address
    ELSE
-      RETURN MixTypes (FindType (left), FindType (right), tokpos)
+      RETURN MixTypesDecl (left, right, FindType (left), FindType (right), tokpos)
    END
 END MixTypesBinary ;
 
@@ -3809,9 +3822,9 @@ BEGIN
          is bug free.  *)
       IF NOT IsExpressionCompatible (lefttype, righttype)
       THEN
-         MetaErrorT2 (subexprpos,
-                      'expression mismatch between {%1Etad} and {%2tad}',
-                      left, right) ;
+         ErrorMessageDecl (subexprpos,
+                           'expression mismatch between {%1Etad} and {%2tad}',
+                           left, right) ;
          NoChange := FALSE ;
          SubQuad (quad) ;
          p (des) ;
@@ -3877,9 +3890,9 @@ BEGIN
    (* Now fall though and compare the set element left against the type of set righttype.  *)
    IF NOT IsExpressionCompatible (lefttype, righttype)
    THEN
-      MetaErrorT2 (subexprpos,
-                   'the types used in expression {%1Etad} {%kIN} {%2tad} are incompatible',
-                   left, right) ;
+      ErrorMessageDecl (subexprpos,
+                        'the types used in expression {%1Etad} {%kIN} {%2tad} are incompatible',
+                        left, right) ;
       NoChange := FALSE ;
       SubQuad (quad) ;
       RETURN FALSE
@@ -5133,7 +5146,7 @@ BEGIN
       varproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, var, System)) ;
       leftproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, left, System)) ;
       rightproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, right, System)) ;
-      unbounded := Mod2Gcc(GetType(GetNthParam(FromModuleGetSym(CurrentQuadToken,
+      unbounded := Mod2Gcc(GetType(GetNthParamAny (FromModuleGetSym(CurrentQuadToken,
                                                                 var, System), 1))) ;
       PushValue(GetTypeMax(SkipType(GetType(op1)))) ;
       PushIntegerTree(BuildConvert(location, GetM2ZType(), PopIntegerTree(), FALSE)) ;
@@ -7089,7 +7102,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
@@ -7200,7 +7214,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (left)),
+                               ComparisonMixTypes (left, right,
+                                                   SkipType (GetType (left)),
                                                    SkipType (GetType (right)),
                                                    combined),
                                left, right) ;
@@ -7311,7 +7326,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
@@ -7423,7 +7439,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands(location,
                                tl, tr,
-                               ComparisonMixTypes (SkipType (GetType (left)),
+                               ComparisonMixTypes (left, right,
+                                                   SkipType (GetType (left)),
                                                    SkipType (GetType (right)),
                                                    combined),
                                left, right) ;
@@ -7555,7 +7572,7 @@ END CodeIfSetNotEqu ;
    ComparisonMixTypes -
 *)
 
-PROCEDURE ComparisonMixTypes (left, right: CARDINAL; tokpos: CARDINAL) : CARDINAL ;
+PROCEDURE ComparisonMixTypes (varleft, varright, left, right: CARDINAL; tokpos: CARDINAL) : CARDINAL ;
 BEGIN
    IF IsGenericSystemType (left)
    THEN
@@ -7564,7 +7581,7 @@ BEGIN
    THEN
       RETURN right
    ELSE
-      RETURN MixTypes (left, right, tokpos)
+      RETURN MixTypesDecl (varleft, varright, left, right, tokpos)
    END
 END ComparisonMixTypes ;
 
@@ -7610,7 +7627,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                left, right) ;
@@ -7663,7 +7681,8 @@ BEGIN
       ELSE
          ConvertBinaryOperands (location,
                                 tl, tr,
-                                ComparisonMixTypes (SkipType (GetType (left)),
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;

@@ -21,7 +21,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 IMPLEMENTATION MODULE M2Scaffold ;
 
-FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
+FROM SymbolTable IMPORT NulSym, ProcedureKind, MakeProcedure, PutFunction,
                         PutPublic, PutCtor, PutParam, IsProcedure,
                         MakeConstant, PutExtern, MakeArray, PutArray,
                         MakeSubrange, PutSubrange,
@@ -36,12 +36,14 @@ FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
                         GetModuleDefImportStatementList,
                         GetModuleModImportStatementList,
                         GetImportModule, GetImportStatementList,
-                        PutLibName ;
+                        PutLibName,
+                        PutProcedureDeclaredTok, PutProcedureParametersDefined,
+                        PutProcedureDefined ;
 
 FROM NameKey IMPORT NulName, Name, MakeKey, makekey, KeyToCharStar ;
 FROM M2Base IMPORT Integer, Cardinal ;
 FROM M2System IMPORT Address ;
-FROM M2LexBuf IMPORT GetTokenNo ;
+FROM M2LexBuf IMPORT GetTokenNo, BuiltinTokenNo ;
 FROM Assertion IMPORT Assert ;
 FROM Lists IMPORT List, InitList, IncludeItemIntoList, NoOfItemsInList, GetItemFromList, KillList, IsItemInList ;
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorStringT0 ;
@@ -573,7 +575,8 @@ BEGIN
       DeclareCtorGlobal (tokenno) ;
       DeclareModuleExtern (tokenno) ;
       linkFunction := MakeProcedure (tokenno, MakeKey ("_M2_link")) ;
-      PutMonoName (linkFunction, TRUE)
+      PutMonoName (linkFunction, TRUE) ;
+      PutProcedureDefined (linkFunction, ProperProcedure) ;
    ELSIF ScaffoldDynamic AND (NOT cflag)
    THEN
       MetaErrorT0 (tokenno,
@@ -582,8 +585,10 @@ BEGIN
 
    initFunction := MakeProcedure (tokenno, MakeKey ("_M2_init")) ;
    PutMonoName (initFunction, TRUE) ;
+   PutProcedureDefined (initFunction, ProperProcedure) ;
    finiFunction := MakeProcedure (tokenno, MakeKey ("_M2_fini")) ;
    PutMonoName (finiFunction, TRUE) ;
+   PutProcedureDefined (initFunction, ProperProcedure) ;
    IF SharedFlag
    THEN
       PutCtor (initFunction, TRUE) ;
@@ -595,9 +600,10 @@ BEGIN
       mainFunction := MakeProcedure (tokenno, MakeKey ("main")) ;
       PutMonoName (mainFunction, TRUE) ;
       StartScope (mainFunction) ;
-      PutFunction (mainFunction, Integer) ;
+      PutFunction (BuiltinTokenNo, mainFunction, ProperProcedure, Integer) ;
       DeclareArgEnvParams (tokenno, mainFunction) ;
       PutPublic (mainFunction, TRUE) ;
+      PutProcedureDefined (mainFunction, ProperProcedure) ;
       EndScope
    END
 END DeclareScaffoldFunctions ;
@@ -611,9 +617,11 @@ PROCEDURE DeclareArgEnvParams (tokno: CARDINAL; proc: CARDINAL) ;
 BEGIN
    Assert (IsProcedure (proc)) ;
    StartScope (proc) ;
-   Assert (PutParam (tokno, proc, 1, MakeKey ("argc"), Integer, FALSE, tokno)) ;
-   Assert (PutParam (tokno, proc, 2, MakeKey ("argv"), Address, FALSE, tokno)) ;
-   Assert (PutParam (tokno, proc, 3, MakeKey ("envp"), Address, FALSE, tokno)) ;
+   Assert (PutParam (tokno, proc, ProperProcedure, 1, MakeKey ("argc"), Integer, FALSE, tokno)) ;
+   Assert (PutParam (tokno, proc, ProperProcedure, 2, MakeKey ("argv"), Address, FALSE, tokno)) ;
+   Assert (PutParam (tokno, proc, ProperProcedure, 3, MakeKey ("envp"), Address, FALSE, tokno)) ;
+   PutProcedureParametersDefined (proc, ProperProcedure) ;
+   PutProcedureDeclaredTok (proc, ProperProcedure, tokno) ;
    EndScope
 END DeclareArgEnvParams ;
 

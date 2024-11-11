@@ -210,8 +210,8 @@ END TurnInterrupts ;
 
 PROCEDURE Finished (p: ADDRESS) ;
 BEGIN
-   Halt('process terminated illegally',
-        __FILE__, __FUNCTION__, __LINE__)
+   Halt ('process terminated illegally',
+         __FILE__, __FUNCTION__, __LINE__)
 END Finished ;
 
 

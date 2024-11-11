@@ -41,9 +41,9 @@ FROM StrLib IMPORT StrEqual ;
 FROM M2Debug IMPORT Assert ;
 
 FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType,
-                        SkipType, IsProcedure, NoOfParam, IsVarParam, GetNth,
-                        GetNthParam, IsProcType, IsVar, IsEnumeration, IsArray,
-                        GetDeclaredMod, IsSubrange, GetArraySubscript, IsConst,
+                        SkipType, IsProcedure, NoOfParamAny, IsVarParamAny, GetNth,
+                        GetNthParamAny, IsProcType, IsVar, IsEnumeration, IsArray,
+                        IsSubrange, GetArraySubscript, IsConst,
                         IsReallyPointer, IsPointer, IsParameter, ModeOfAddr,
                         GetMode, GetType, IsUnbounded, IsComposite, IsConstructor,
                         IsParameter, IsConstString, IsConstLitInternal, IsConstLit,
@@ -1058,7 +1058,7 @@ BEGIN
          result := checkPair (unknown, tinfo, lt, rt)
       END ;
 
-      IF NoOfParam (left) # NoOfParam (right)
+      IF NoOfParamAny (left) # NoOfParamAny (right)
       THEN
          IF tinfo^.format # NIL
          THEN
@@ -1067,11 +1067,11 @@ BEGIN
          RETURN return (false, tinfo, left, right)
       END ;
       i := 1 ;
-      n := NoOfParam (left) ;
+      n := NoOfParamAny (left) ;
       WHILE i <= n DO
-         IF IsVarParam (left, i) # IsVarParam (right, i)
+         IF IsVarParamAny (left, i) # IsVarParamAny (right, i)
          THEN
-            IF IsVarParam (left, i)
+            IF IsVarParamAny (left, i)
             THEN
                IF tinfo^.format # NIL
                THEN
@@ -1085,7 +1085,7 @@ BEGIN
             END ;
             RETURN return (false, tinfo, left, right)
          END ;
-         result := checkPair (result, tinfo, GetDType (GetNthParam (left, i)), GetDType (GetNthParam (right, i))) ;
+         result := checkPair (result, tinfo, GetDType (GetNthParamAny (left, i)), GetDType (GetNthParamAny (right, i))) ;
          INC (i)
       END
    END ;
@@ -1131,7 +1131,7 @@ BEGIN
          result := checkPair (result, tinfo, lt, rt)
       END ;
 
-      IF NoOfParam (left) # NoOfParam (right)
+      IF NoOfParamAny (left) # NoOfParamAny (right)
       THEN
          IF tinfo^.format # NIL
          THEN
@@ -1140,11 +1140,11 @@ BEGIN
          RETURN return (false, tinfo, left, right)
       END ;
       i := 1 ;
-      n := NoOfParam (left) ;
+      n := NoOfParamAny (left) ;
       WHILE i <= n DO
-         IF IsVarParam (left, i) # IsVarParam (right, i)
+         IF IsVarParamAny (left, i) # IsVarParamAny (right, i)
          THEN
-            IF IsVarParam (left, i)
+            IF IsVarParamAny (left, i)
             THEN
                IF tinfo^.format # NIL
                THEN
@@ -1158,7 +1158,7 @@ BEGIN
             END ;
             RETURN return (false, tinfo, left, right)
          END ;
-         result := checkPair (result, tinfo, GetDType (GetNthParam (left, i)), GetDType (GetNthParam (right, i))) ;
+         result := checkPair (result, tinfo, GetDType (GetNthParamAny (left, i)), GetDType (GetNthParamAny (right, i))) ;
          INC (i)
       END
    END ;

@@ -48,7 +48,6 @@ FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
 FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, InitStringChar, Mark ;
-FROM FormatStrings IMPORT Sprintf1 ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3 ;
 FROM M2Error IMPORT FlushErrors, InternalError ;
@@ -74,14 +73,16 @@ FROM Sets IMPORT Set, InitSet, KillSet,
 FROM M2BasicBlock IMPORT BasicBlock, InitBasicBlocks, KillBasicBlocks, ForeachBasicBlockDo ;
 
 FROM SymbolTable IMPORT NulSym,
-                        ModeOfAddr,
+                        ModeOfAddr, ProcedureKind,
+                        GetProcedureKindDesc,
+                        GetProcedureParametersDefined,
                         GetMode,
                         GetScope,
                         GetNth, SkipType, GetVarBackEndType,
 			GetSType, GetLType, GetDType,
                         MakeType, PutType, GetLowestType,
       	       	     	GetSubrange, PutSubrange, GetArraySubscript,
-      	       	     	NoOfParam, GetNthParam,
+      	       	     	NoOfParamAny, GetNthParamAny,
                         PushValue, PopValue, PopSize,
                         IsTemporary, IsUnbounded, IsPartialUnbounded,
                         IsEnumeration, IsVar,
@@ -94,7 +95,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsConst, IsConstSet, IsConstructor,
                         IsFieldEnumeration,
                         IsExported, IsImported,
-                        IsVarParam, IsRecordField, IsUnboundedParam,
+                        IsVarParamAny, IsRecordField, IsUnboundedParam,
                         IsValueSolved,
                         IsDefinitionForC, IsHiddenTypeDeclared,
                         IsInnerModule, IsUnknown,
@@ -104,15 +105,17 @@ FROM SymbolTable IMPORT NulSym,
                         IsError, IsHiddenType, IsVarHeap,
                         IsComponent, IsPublic, IsExtern, IsCtor,
                         IsImport, IsImportStatement, IsConstStringKnown,
+                        IsUnboundedParamAny,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
                         GetProcedureScope, GetProcedureQuads,
+                        NoOfParam, IsVarParam, GetNthParam, GetType,
                         IsRecordFieldAVarientTag, IsEmptyFieldVarient,
                         GetVarient, GetUnbounded, PutArrayLarge,
                         IsAModula2Type, UsesVarArgs,
                         GetSymName, GetParent,
                         GetDeclaredMod, GetVarBackEndType,
-                        GetProcedureBeginEnd, IsProcedureNoReturn,
+                        GetProcedureBeginEnd, IsProcedureAnyNoReturn,
                         GetString, GetStringLength, IsConstString,
                         IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
                         GetAlignment, IsDeclaredPacked, PutDeclaredPacked,
@@ -120,7 +123,7 @@ FROM SymbolTable IMPORT NulSym,
                         GetPackedEquivalent,
                         GetParameterShadowVar,
                         GetUnboundedRecordType,
-                        GetModuleCtors,
+                        GetModuleCtors, GetProcedureProcType,
                         MakeSubrange, MakeConstVar, MakeConstLit,
                         PutConst,
 			ForeachOAFamily, GetOAFamily,
@@ -2242,12 +2245,12 @@ VAR
 BEGIN
    IF IsProcedure(sym)
    THEN
-      p := NoOfParam(sym) ;
+      p := NoOfParamAny (sym) ;
       i := p ;
       WHILE i>0 DO
-         IF IsUnboundedParam(sym, i)
+         IF IsUnboundedParamAny (sym, i)
          THEN
-            param := GetNthParam(sym, i) ;
+            param := GetNthParamAny (sym, i) ;
             type := GetSType(param) ;
             TraverseDependants(type) ;
             IF GccKnowsAbout(type)
@@ -2278,12 +2281,12 @@ VAR
 BEGIN
    IF IsProcedure (sym)
    THEN
-      p := NoOfParam (sym) ;
+      p := NoOfParamAny (sym) ;
       i := p ;
       WHILE i>0 DO
-         IF IsUnboundedParam (sym, i)
+         IF IsUnboundedParamAny (sym, i)
          THEN
-            param := GetNthParam (sym, i)
+            param := GetNthParamAny (sym, i)
          ELSE
             param := GetNth (sym, i)
          END ;
@@ -2459,7 +2462,7 @@ VAR
    returnType,
    GccParam  : tree ;
    scope,
-   Son,
+   Variable,
    p, i      : CARDINAL ;
    b, e      : CARDINAL ;
    begin, end,
@@ -2468,30 +2471,30 @@ BEGIN
    IF (NOT GccKnowsAbout(Sym)) AND (NOT IsPseudoProcFunc(Sym))
    THEN
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
-      p := NoOfParam(Sym) ;
+      p := NoOfParamAny (Sym) ;
       i := p ;
       WHILE i>0 DO
-         (* note we dont use GetNthParam as we want the parameter that is seen by the procedure block
+         (* note we dont use GetNthParamAny as we want the parameter that is seen by the procedure block
             remember that this is treated exactly the same as a variable, just its position on
             the activation record is special (ie a parameter)
          *)
-         Son := GetNth(Sym, i) ;
-         location := TokenToLocation(GetDeclaredMod(Son)) ;
-         IF IsUnboundedParam(Sym, i)
+         Variable := GetNth(Sym, i) ;
+         location := TokenToLocation(GetDeclaredMod(Variable)) ;
+         IF IsUnboundedParamAny (Sym, i)
          THEN
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
                                                   FALSE)
          ELSE
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
-                                                  IsVarParam(Sym, i))
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
+                                                  IsVarParamAny (Sym, i))
          END ;
-         PreAddModGcc(Son, GccParam) ;
-         WatchRemoveList(Son, todolist) ;
-         WatchIncludeList(Son, fullydeclared) ;
+         PreAddModGcc(Variable, GccParam) ;
+         WatchRemoveList(Variable, todolist) ;
+         WatchIncludeList(Variable, fullydeclared) ;
          DEC(i)
       END ;
       GetProcedureBeginEnd(Sym, b, e) ;
@@ -2511,7 +2514,7 @@ BEGIN
                                                     IsExternalToWholeProgram(Sym),
                                                     IsProcedureGccNested(Sym),
                                                     IsExported(GetModuleWhereDeclared(Sym), Sym),
-                                                    IsProcedureNoReturn(Sym))) ;
+                                                    IsProcedureAnyNoReturn(Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)
@@ -2528,7 +2531,7 @@ VAR
    returnType,
    GccParam  : tree ;
    scope,
-   Son,
+   Variable,
    p, i      : CARDINAL ;
    b, e      : CARDINAL ;
    begin, end,
@@ -2545,30 +2548,30 @@ BEGIN
        IsExtern (Sym))
    THEN
       BuildStartFunctionDeclaration(UsesVarArgs(Sym)) ;
-      p := NoOfParam(Sym) ;
+      p := NoOfParamAny (Sym) ;
       i := p ;
       WHILE i>0 DO
-         (* Note we dont use GetNthParam as we want the parameter that is seen by
+         (* Note we dont use GetNthParamAny as we want the parameter that is seen by
             the procedure block remember that this is treated exactly the same as
             a variable, just its position on the activation record is special (ie
             a parameter).  *)
-         Son := GetNth(Sym, i) ;
-         location := TokenToLocation(GetDeclaredMod(Son)) ;
-         IF IsUnboundedParam(Sym, i)
+         Variable := GetNth(Sym, i) ;
+         location := TokenToLocation(GetDeclaredMod(Variable)) ;
+         IF IsUnboundedParamAny (Sym, i)
          THEN
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
                                                   FALSE)
          ELSE
             GccParam := BuildParameterDeclaration(location,
-                                                  KeyToCharStar(GetSymName(Son)),
-                                                  Mod2Gcc(GetLType(Son)),
-                                                  IsVarParam(Sym, i))
+                                                  KeyToCharStar(GetSymName(Variable)),
+                                                  Mod2Gcc(GetLType(Variable)),
+                                                  IsVarParamAny (Sym, i))
          END ;
-         PreAddModGcc(Son, GccParam) ;
-         WatchRemoveList(Son, todolist) ;
-         WatchIncludeList(Son, fullydeclared) ;
+         PreAddModGcc(Variable, GccParam) ;
+         WatchRemoveList(Variable, todolist) ;
+         WatchIncludeList(Variable, fullydeclared) ;
          DEC(i)
       END ;
       GetProcedureBeginEnd(Sym, b, e) ;
@@ -2589,7 +2592,7 @@ BEGIN
                                                       IsProcedureGccNested (Sym),
                                                       (* Exported from the module where it was declared.  *)
                                                       IsExported (GetModuleWhereDeclared (Sym), Sym) OR IsExtern (Sym),
-                                                      IsProcedureNoReturn(Sym))) ;
+                                                      IsProcedureAnyNoReturn(Sym))) ;
       PopBinding(scope) ;
       WatchRemoveList(Sym, todolist) ;
       WatchIncludeList(Sym, fullydeclared)
@@ -3511,14 +3514,14 @@ END DeclareVariableWholeProgram ;
 
 PROCEDURE DeclareGlobalVariablesWholeProgram (ModSym: CARDINAL) ;
 VAR
-   n, Son: CARDINAL ;
+   n, Variable: CARDINAL ;
 BEGIN
    n := 1 ;
-   Son := GetNth(ModSym, n) ;
-   WHILE Son#NulSym DO
-      DeclareVariableWholeProgram(ModSym, Son) ;
-      INC(n) ;
-      Son := GetNth(ModSym, n)
+   Variable := GetNth (ModSym, n) ;
+   WHILE Variable # NulSym DO
+      DeclareVariableWholeProgram (ModSym, Variable) ;
+      INC (n) ;
+      Variable := GetNth (ModSym, n)
    END ;
    ForeachInnerModuleDo(ModSym, DeclareGlobalVariablesWholeProgram)
 END DeclareGlobalVariablesWholeProgram ;
@@ -3531,14 +3534,14 @@ END DeclareGlobalVariablesWholeProgram ;
 
 PROCEDURE DeclareGlobalVariables (ModSym: CARDINAL) ;
 VAR
-   n, variable: CARDINAL ;
+   n, Variable: CARDINAL ;
 BEGIN
    n := 1 ;
-   variable := GetNth (ModSym, n) ;
-   WHILE variable # NulSym DO
-      DeclareVariable (ModSym, variable) ;
+   Variable := GetNth (ModSym, n) ;
+   WHILE Variable # NulSym DO
+      DeclareVariable (ModSym, Variable) ;
       INC (n) ;
-      variable := GetNth (ModSym, n)
+      Variable := GetNth (ModSym, n)
    END ;
    ForeachInnerModuleDo (ModSym, DeclareGlobalVariables)
 END DeclareGlobalVariables ;
@@ -3606,7 +3609,7 @@ PROCEDURE DeclareLocalVariables (procedure: CARDINAL) ;
 VAR
    i, var: CARDINAL ;
 BEGIN
-   i := NoOfParam (procedure) + 1 ;
+   i := NoOfParamAny (procedure) + 1 ;
    var := GetNth (procedure, i) ;
    WHILE var # NulSym DO
       Assert (procedure = GetScope (var)) ;
@@ -3784,7 +3787,7 @@ PROCEDURE IncludeGetNth (l: List; sym: CARDINAL) ;
 VAR
    i: CARDINAL ;
 BEGIN
-   fprintf0 (GetDumpFile (), ' ListOfSons [') ;
+   fprintf0 (GetDumpFile (), ' ListOfFields [') ;
    i := 1 ;
    WHILE GetNth (sym, i) # NulSym DO
       IF i>1
@@ -3996,12 +3999,83 @@ END PrintScope ;
 
 
 (*
+   PrintKind -
+*)
+
+PROCEDURE PrintKind (kind: ProcedureKind) ;
+VAR
+   s: String ;
+BEGIN
+   s := GetProcedureKindDesc (kind) ;
+   fprintf1 (GetDumpFile (), "%s", s) ;
+   s := KillString (s)
+END PrintKind ;
+
+
+(*
+   PrintProcedureParameters -
+*)
+
+PROCEDURE PrintProcedureParameters (sym: CARDINAL; kind: ProcedureKind) ;
+VAR
+   typeName,
+   paramName: Name ;
+   p, i, n,
+   type     : CARDINAL ;
+BEGIN
+   fprintf0 (GetDumpFile (), ' (') ;
+   n := NoOfParam (sym, kind) ;
+   i := 1 ;
+   WHILE i <= n DO
+      IF i > 1
+      THEN
+         fprintf0 (GetDumpFile (), '; ')
+      END ;
+      IF IsVarParam (sym, kind, i)
+      THEN
+         fprintf0 (GetDumpFile (), 'VAR ')
+      END ;
+      p := GetNthParam (sym, kind, i) ;
+      paramName := GetSymName (p) ;
+      type := GetType (p) ;
+      typeName := GetSymName (type) ;
+      IF IsUnboundedParam (sym, kind, i)
+      THEN
+         fprintf2 (GetDumpFile (), '%a: ARRAY OF %a', paramName, typeName)
+      ELSE
+         fprintf2 (GetDumpFile (), '%a: %a', paramName, typeName)
+      END ;
+      INC (i)
+   END ;
+   fprintf0 (GetDumpFile (), ')')
+END PrintProcedureParameters ;
+
+
+(*
+   PrintProcedureReturnType -
+*)
+
+PROCEDURE PrintProcedureReturnType (sym: CARDINAL) ;
+VAR
+   typeName: Name ;
+BEGIN
+   IF GetType (sym) # NulSym
+   THEN
+      typeName := GetSymName (GetType (sym)) ;
+      fprintf1 (GetDumpFile (), ' : %a', typeName)
+   END ;
+   fprintf0 (GetDumpFile (), ' ;')
+END PrintProcedureReturnType ;
+
+
+(*
    PrintProcedure -
 *)
 
 PROCEDURE PrintProcedure (sym: CARDINAL) ;
 VAR
-   n: Name ;
+   n   : Name ;
+   kind: ProcedureKind ;
 BEGIN
    n := GetSymName (sym) ;
    fprintf2 (GetDumpFile (), 'sym %d IsProcedure (%a)', sym, n);
@@ -4022,8 +4096,81 @@ BEGIN
    THEN
       fprintf0 (GetDumpFile (), ' ctor')
    END ;
-   PrintDeclared(sym)
+   PrintDeclared (sym) ;
+   fprintf0 (GetDumpFile (), '\n') ;
+   FOR kind := MIN (ProcedureKind) TO MAX (ProcedureKind) DO
+      fprintf0 (GetDumpFile (), 'parameters ') ;
+      PrintKind (kind) ;
+      IF GetProcedureParametersDefined (sym, kind)
+      THEN
+         fprintf0 (GetDumpFile (), ' defined') ;
+         PrintProcedureParameters (sym, kind) ;
+         PrintProcedureReturnType (sym)
+      ELSE
+         fprintf0 (GetDumpFile (), ' undefined')
+      END ;
+      fprintf0 (GetDumpFile (), '\n')
+   END ;
+   fprintf0 (GetDumpFile (), ' Associated proctype: ') ;
+   PrintProcType (GetProcedureProcType (sym))
 END PrintProcedure ;
+
+
+(*
+   PrintProcTypeParameters -
+*)
+
+PROCEDURE PrintProcTypeParameters (sym: CARDINAL) ;
+VAR
+   typeName : Name ;
+   p, i, n,
+   type     : CARDINAL ;
+BEGIN
+   fprintf0 (GetDumpFile (), ' (') ;
+   n := NoOfParam (sym, ProperProcedure) ;
+   i := 1 ;
+   WHILE i <= n DO
+      IF i > 1
+      THEN
+         fprintf0 (GetDumpFile (), '; ')
+      END ;
+      IF IsVarParam (sym, ProperProcedure, i)
+      THEN
+         fprintf0 (GetDumpFile (), 'VAR ')
+      END ;
+      p := GetNthParam (sym, ProperProcedure, i) ;
+      type := GetType (p) ;
+      typeName := GetSymName (type) ;
+      IF IsUnboundedParam (sym, ProperProcedure, i)
+      THEN
+         fprintf1 (GetDumpFile (), 'ARRAY OF %a', typeName)
+      ELSE
+         fprintf1 (GetDumpFile (), '%a', typeName)
+      END ;
+      INC (i)
+   END ;
+   fprintf0 (GetDumpFile (), ')')
+END PrintProcTypeParameters ;
+
+
+(*
+   PrintProcType -
+*)
+
+PROCEDURE PrintProcType (sym: CARDINAL) ;
+VAR
+   n: Name ;
+BEGIN
+   n := GetSymName (sym) ;
+   fprintf2 (GetDumpFile (), 'sym %d IsProcType (%a)', sym, n);
+   PrintScope (sym) ;
+   PrintDeclared (sym) ;
+   fprintf0 (GetDumpFile (), '\n') ;
+   fprintf0 (GetDumpFile (), 'parameters ') ;
+   PrintProcTypeParameters (sym) ;
+   PrintProcedureReturnType (sym) ;
+   fprintf0 (GetDumpFile (), '\n')
+END PrintProcType ;
 
 
 (*
@@ -4185,7 +4332,7 @@ BEGIN
       PrintDecl(sym)
    ELSIF IsProcType(sym)
    THEN
-      fprintf2 (GetDumpFile (), 'sym %d IsProcType (%a)', sym, n)
+      PrintProcType (sym)
    ELSIF IsVar(sym)
    THEN
       fprintf2 (GetDumpFile (), 'sym %d IsVar (%a) declared in ', sym, n) ;
@@ -5124,7 +5271,8 @@ END DeclareArray ;
 
 PROCEDURE DeclareProcType (Sym: CARDINAL) : tree ;
 VAR
-   i, p, Son,
+   i, p,
+   Parameter,
    ReturnType: CARDINAL ;
    func,
    GccParam  : tree ;
@@ -5133,20 +5281,20 @@ BEGIN
    ReturnType := GetSType(Sym) ;
    func := DoStartDeclaration(Sym, BuildStartFunctionType) ;
    InitFunctionTypeParameters ;
-   p := NoOfParam(Sym) ;
+   p := NoOfParamAny (Sym) ;
    i := p ;
-   WHILE i>0 DO
-      Son := GetNthParam(Sym, i) ;
-      location := TokenToLocation(GetDeclaredMod(Son)) ;
-      GccParam := BuildProcTypeParameterDeclaration(location, Mod2Gcc(GetSType(Son)), IsVarParam(Sym, i)) ;
-      PreAddModGcc(Son, GccParam) ;
+   WHILE i > 0 DO
+      Parameter := GetNthParamAny (Sym, i) ;
+      location := TokenToLocation (GetDeclaredMod (Parameter)) ;
+      GccParam := BuildProcTypeParameterDeclaration (location, Mod2Gcc (GetSType (Parameter)), IsVarParamAny (Sym, i)) ;
+      PreAddModGcc(Parameter, GccParam) ;
       DEC(i)
    END ;
-   IF ReturnType=NulSym
+   IF ReturnType = NulSym
    THEN
-      RETURN( BuildEndFunctionType(func, NIL, UsesVarArgs(Sym)) )
+      RETURN( BuildEndFunctionType (func, NIL, UsesVarArgs(Sym)) )
    ELSE
-      RETURN( BuildEndFunctionType(func, Mod2Gcc(ReturnType), UsesVarArgs(Sym)) )
+      RETURN( BuildEndFunctionType (func, Mod2Gcc(ReturnType), UsesVarArgs(Sym)) )
    END
 END DeclareProcType ;
 
@@ -6253,9 +6401,9 @@ BEGIN
    Assert(IsProcType(sym)) ;
    i := 1 ;
    ReturnType := GetSType(sym) ;
-   p := NoOfParam(sym) ;
+   p := NoOfParamAny (sym) ;
    WHILE i<=p DO
-      son := GetNthParam(sym, i) ;
+      son := GetNthParamAny (sym, i) ;
       ParamType := GetSType(son) ;
       IF NOT q(ParamType)
       THEN
@@ -6285,9 +6433,9 @@ BEGIN
    Assert(IsProcType(sym)) ;
    i := 1 ;
    ReturnType := GetSType(sym) ;
-   n := NoOfParam(sym) ;
+   n := NoOfParamAny (sym) ;
    WHILE i<=n DO
-      son := GetNthParam(sym, i) ;
+      son := GetNthParamAny (sym, i) ;
       ParamType := GetSType(son) ;
       p(ParamType) ;
       INC(i)
