@@ -231,12 +231,11 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_all_arith(S, D) \
   TYPES_all_float (S, D), TYPES_all_integer (S, D)
 
-/*     _bf16
-	_f16 _f32 _f64
-   _s8  _s16 _s32 _s64
-   _u8  _u16 _u32 _u64.  */
 #define TYPES_all_data(S, D) \
-  S (bf16), TYPES_all_arith (S, D)
+  TYPES_b_data (S, D), \
+  TYPES_h_data (S, D), \
+  TYPES_s_data (S, D), \
+  TYPES_d_data (S, D)
 
 /* _b only.  */
 #define TYPES_b(S, D) \
@@ -254,6 +253,11 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
    _u8.  */
 #define TYPES_b_integer(S, D) \
   S (s8), TYPES_b_unsigned (S, D)
+
+/* _s8
+   _u8.  */
+#define TYPES_b_data(S, D) \
+  TYPES_b_integer (S, D)
 
 /* _s8 _s16
    _u8 _u16.  */
@@ -277,12 +281,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_bhs_integer(S, D) \
   TYPES_bhs_signed (S, D), TYPES_bhs_unsigned (S, D)
 
-/*      _bf16
-	 _f16  _f32
-    _s8  _s16  _s32
-    _u8  _u16  _u32.  */
 #define TYPES_bhs_data(S, D) \
-  S (bf16), S (f16), S (f32), TYPES_bhs_integer (S, D)
+  TYPES_b_data (S, D), \
+  TYPES_h_data (S, D), \
+  TYPES_s_data (S, D)
 
 /* _s16_s8  _s32_s16  _s64_s32
    _u16_u8  _u32_u16  _u64_u32.  */
@@ -294,6 +296,13 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
    _u16.  */
 #define TYPES_h_integer(S, D) \
   S (s16), S (u16)
+
+/* _bf16
+   _f16
+   _s16
+   _u16.  */
+#define TYPES_h_data(S, D) \
+  S (bf16), S (f16), TYPES_h_integer (S, D)
 
 /* _s16 _s32.  */
 #define TYPES_hs_signed(S, D) \
@@ -308,12 +317,9 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_hs_float(S, D) \
   S (f16), S (f32)
 
-/* _bf16
-    _f16  _f32
-    _s16  _s32
-    _u16  _u32.  */
 #define TYPES_hs_data(S, D) \
-  S (bf16), S (f16), S (f32), TYPES_hs_integer (S, D)
+  TYPES_h_data (S, D), \
+  TYPES_s_data (S, D)
 
 /* _u16 _u64.  */
 #define TYPES_hd_unsigned(S, D) \
@@ -352,9 +358,16 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_s_unsigned(S, D) \
   S (u32)
 
-/* _s32 _u32.  */
+/* _s32
+   _u32.  */
 #define TYPES_s_integer(S, D) \
   TYPES_s_signed (S, D), TYPES_s_unsigned (S, D)
+
+/* _f32
+   _s32
+   _u32.  */
+#define TYPES_s_data(S, D) \
+  TYPES_s_float (S, D), TYPES_s_integer (S, D)
 
 /* _s32 _s64.  */
 #define TYPES_sd_signed(S, D) \
@@ -369,11 +382,9 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_sd_integer(S, D) \
   TYPES_sd_signed (S, D), TYPES_sd_unsigned (S, D)
 
-/* _f32 _f64
-   _s32 _s64
-   _u32 _u64.  */
 #define TYPES_sd_data(S, D) \
-  S (f32), S (f64), TYPES_sd_integer (S, D)
+  TYPES_s_data (S, D), \
+  TYPES_d_data (S, D)
 
 /* _f16 _f32 _f64
 	_s32 _s64
