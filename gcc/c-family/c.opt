@@ -1951,6 +1951,23 @@ fcontract-disable-check-epochs
 C++ Var(flag_contract_disable_check_epochs) Init(0)
 -fcontract-disable-epoch-checks	Disable insertion of epoch markers after each contract check.
 
+Enum
+Name(client_contract_check) Type(int)  UnknownError(unrecognized client contract check option %qs)
+
+EnumValue
+Enum(client_contract_check) String(none) Value(0)
+
+EnumValue
+Enum(client_contract_check) String(pre) Value(1)
+
+EnumValue
+Enum(client_contract_check) String(all) Value(2)
+
+
+fcontracts-nonattr-client-contracts
+C++ Joined RejectNegative Enum(client_contract_check) Var(flag_contract_nonattr_client_check) Init(0)
+-fcontracts-nonattr-client-check=[none|pre|all] Select which contracts will be checked on the client side for non virtual functions
+
 fcoroutines
 C++ LTO Var(flag_coroutines)
 Enable C++ coroutines (experimental).

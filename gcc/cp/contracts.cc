@@ -2969,7 +2969,7 @@ build_contract_wrapper_function (tree fndecl)
 					    wrapper_args);
 
 
-  /* this will create a member function because fndecl is a member function,
+  /* this will create a member function if fndecl is a member function,
     so we will need to adjust the type later   */
   tree wrapdecl
     = build_lang_decl_loc (loc, FUNCTION_DECL, get_identifier (name), wrapper_type);
@@ -3060,9 +3060,23 @@ set_contract_wrapper_function (tree decl, tree wrapper)
   decl_wrapper_fn->put (decl, wrapper);
 }
 
+bool should_contract_wrap_call(tree fndecl)
+{
+  if (!flag_contracts_nonattr
+        || !handle_contracts_p (fndecl))
+    return false;
+
+  // we always wrap virtual function calls
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl)
+      || (flag_contract_nonattr_client_check > 1))
+    return true;
+
+  return (flag_contract_nonattr_client_check
+      && has_active_preconditions (fndecl));
+}
 
 tree
-maybe_contract_wrap_new_method_call (tree fndecl, tree call)
+maybe_contract_wrap_call (tree fndecl, tree call)
 {
   /* We can be called from build_cxx_call without a known callee... */
   if (!fndecl)
@@ -3121,23 +3135,40 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 
 
   vec<tree, va_gc> * args = build_arg_list (wrapdecl);
-  tree *class_ptr = args->begin();
+
   tree fn;
-  gcc_assert (class_ptr);
 
-  tree t;
-  tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*class_ptr)),
-			  DECL_CONTEXT (fndecl),
-			  ba_any, NULL, tf_warning_or_error);
-  gcc_assert (binfo && binfo != error_mark_node);
+  // If this is a virtual member function, look up the virtual table
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl))
+    {
+      tree *class_ptr = args->begin();
+      gcc_assert (class_ptr);
 
-  *class_ptr = build_base_path (PLUS_EXPR, *class_ptr, binfo, 1,
-				tf_warning_or_error);
-  if (TREE_SIDE_EFFECTS (*class_ptr))
-    *class_ptr = save_expr (*class_ptr);
-  t = build_pointer_type (TREE_TYPE (fndecl));
-  fn = build_vfn_ref (*class_ptr, DECL_VINDEX (fndecl));
-  TREE_TYPE (fn) = t;
+      tree t;
+      tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*class_ptr)),
+    			  DECL_CONTEXT (fndecl),
+    			  ba_any, NULL, tf_warning_or_error);
+      gcc_assert (binfo && binfo != error_mark_node);
+
+      *class_ptr = build_base_path (PLUS_EXPR, *class_ptr, binfo, 1,
+    				tf_warning_or_error);
+      if (TREE_SIDE_EFFECTS (*class_ptr))
+        *class_ptr = save_expr (*class_ptr);
+      t = build_pointer_type (TREE_TYPE (fndecl));
+      fn = build_vfn_ref (*class_ptr, DECL_VINDEX (fndecl));
+      TREE_TYPE (fn) = t;
+    }
+  else
+    {
+      fn = build_addr_func (fn, tf_warning_or_error);
+      if (fn == error_mark_node)
+	return error_mark_node;
+
+      /* We're actually invoking the function.  (Immediate functions get an
+	 & when invoking it even though the user didn't use &.)  */
+      ADDR_EXPR_DENOTES_CALL_P (fn) = true;
+    }
+
 
 
   tree call = build_call_a (fn,
