@@ -735,6 +735,23 @@ struct binary_za_slice_opt_single_base : public overloaded_base<1>
   }
 };
 
+/* Base class for ext.  */
+struct ext_base : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,v0,su64", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (2, 1);
+  }
+};
+
 /* Base class for inc_dec and inc_dec_pat.  */
 struct inc_dec_base : public overloaded_base<0>
 {
@@ -2413,21 +2430,8 @@ SHAPE (dupq)
 
    where the final argument is an integer constant expression that when
    multiplied by the number of bytes in t0 is in the range [0, 255].  */
-struct ext_def : public overloaded_base<0>
+struct ext_def : public ext_base
 {
-  void
-  build (function_builder &b, const function_group_info &group) const override
-  {
-    b.add_overloaded_functions (group, MODE_none);
-    build_all (b, "v0,v0,v0,su64", group, MODE_none);
-  }
-
-  tree
-  resolve (function_resolver &r) const override
-  {
-    return r.resolve_uniform (2, 1);
-  }
-
   bool
   check (function_checker &c) const override
   {
