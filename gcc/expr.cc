@@ -14177,3 +14177,350 @@ int_expr_size (const_tree exp)
 
   return tree_to_shwi (size);
 }
+
+/* Calculate CRC for the initial CRC and given POLYNOMIAL.
+   CRC_BITS is CRC size.  */
+
+static unsigned HOST_WIDE_INT
+calculate_crc (unsigned HOST_WIDE_INT crc,
+	       unsigned HOST_WIDE_INT polynomial,
+	       unsigned short crc_bits)
+{
+  unsigned HOST_WIDE_INT msb = HOST_WIDE_INT_1U << (crc_bits - 1);
+  crc = crc << (crc_bits - 8);
+  for (short i = 8; i > 0; --i)
+    {
+      if (crc & msb)
+	crc = (crc << 1) ^ polynomial;
+      else
+	crc <<= 1;
+    }
+  /* Zero out bits in crc beyond the specified number of crc_bits.  */
+  if (crc_bits < sizeof (crc) * CHAR_BIT)
+    crc &= (HOST_WIDE_INT_1U << crc_bits) - 1;
+  return crc;
+}
+
+/* Assemble CRC table with 256 elements for the given POLYNOM and CRC_BITS with
+   given ID.
+   ID is the identifier of the table, the name of the table is unique,
+   contains CRC size and the polynomial.
+   POLYNOM is the polynomial used to calculate the CRC table's elements.
+   CRC_BITS is the size of CRC, may be 8, 16, ... . */
+
+rtx
+assemble_crc_table (tree id, unsigned HOST_WIDE_INT polynom,
+		    unsigned short crc_bits)
+{
+  unsigned table_el_n = 0x100;
+  tree ar = build_array_type (make_unsigned_type (crc_bits),
+			      build_index_type (size_int (table_el_n - 1)));
+  tree decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, id, ar);
+  SET_DECL_ASSEMBLER_NAME (decl, id);
+  DECL_ARTIFICIAL (decl) = 1;
+  rtx tab = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
+  TREE_ASM_WRITTEN (decl) = 0;
+
+  /* Initialize the table.  */
+  vec<tree, va_gc> *initial_values;
+  vec_alloc (initial_values, table_el_n);
+  for (size_t i = 0; i < table_el_n; ++i)
+    {
+      unsigned HOST_WIDE_INT crc = calculate_crc (i, polynom, crc_bits);
+      tree element = build_int_cstu (make_unsigned_type (crc_bits), crc);
+      vec_safe_push (initial_values, element);
+    }
+  DECL_INITIAL (decl) = build_constructor_from_vec (ar, initial_values);
+
+  TREE_READONLY (decl) = 1;
+  TREE_STATIC (decl) = 1;
+
+  if (TREE_PUBLIC (id))
+    {
+      TREE_PUBLIC (decl) = 1;
+      make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+    }
+
+  mark_decl_referenced (decl);
+  varpool_node::finalize_decl (decl);
+
+  return tab;
+}
+
+/* Generate CRC lookup table by calculating CRC for all possible
+   8-bit data values.  The table is stored with a specific name in the read-only
+   static data section.
+   POLYNOM is the polynomial used to calculate the CRC table's elements.
+   CRC_BITS is the size of CRC, may be 8, 16, ... .  */
+
+rtx
+generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
+{
+  gcc_assert (crc_bits <= 64);
+
+  /* Buf size - 24 letters + 6 '_'
+     + 20 numbers (2 for crc bit size + 2 for 0x + 16 for 64-bit polynomial)
+     + 1 for \0.  */
+  char buf[51];
+  sprintf (buf, "crc_table_for_crc_%u_polynomial_" HOST_WIDE_INT_PRINT_HEX,
+	   crc_bits, polynom);
+
+  tree id = maybe_get_identifier (buf);
+  if (id)
+    return gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
+
+  id = get_identifier (buf);
+  return assemble_crc_table (id, polynom, crc_bits);
+}
+
+/* Generate table-based CRC code for the given CRC, INPUT_DATA and the
+   POLYNOMIAL (without leading 1).
+
+   First, using POLYNOMIAL's value generates CRC table of 256 elements,
+   then generates the assembly for the following code,
+   where crc_bit_size and data_bit_size may be 8, 16, 32, 64, depending on CRC:
+
+     for (int i = 0; i < data_bit_size / 8; i++)
+       crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
+				    ^ (data >> (data_bit_size - (i + 1) * 8)
+				    & 0xFF))];
+
+   So to take values from the table, we need 8-bit data.
+   If input data size is not 8, then first we extract upper 8 bits,
+   then the other 8 bits, and so on.  */
+
+void
+calculate_table_based_CRC (rtx *crc, const rtx &input_data,
+			   const rtx &polynomial,
+			   machine_mode crc_mode, machine_mode data_mode)
+{
+  unsigned short crc_bit_size = GET_MODE_BITSIZE (crc_mode).to_constant ();
+  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
+  machine_mode mode = GET_MODE (*crc);
+  rtx tab = generate_crc_table (UINTVAL (polynomial), crc_bit_size);
+
+  for (unsigned short i = 0; i < data_size; i++)
+    {
+      /* crc >> (crc_bit_size - 8).  */
+      *crc = force_reg (crc_mode, *crc);
+      rtx op1 = expand_shift (RSHIFT_EXPR, mode, *crc, crc_bit_size - 8,
+			      NULL_RTX, 1);
+
+      /* data >> (8 * (GET_MODE_SIZE (data_mode).to_constant () - i - 1)).  */
+      unsigned range_8 = 8 * (data_size - i - 1);
+      rtx data = force_reg (data_mode, input_data);
+      data = expand_shift (RSHIFT_EXPR, mode, data, range_8, NULL_RTX, 1);
+
+      /* data >> (8 * (GET_MODE_SIZE (data_mode)
+					.to_constant () - i - 1)) & 0xFF.  */
+      rtx data_final = expand_and (mode, data,
+				   gen_int_mode (255, data_mode), NULL_RTX);
+
+      /* (crc >> (crc_bit_size - 8)) ^ data_8bit.  */
+      rtx in = expand_binop (mode, xor_optab, op1, data_final,
+			     NULL_RTX, 1, OPTAB_WIDEN);
+
+      /* ((crc >> (crc_bit_size - 8)) ^ data_8bit) & 0xFF.  */
+      rtx index = expand_and (mode, in, gen_int_mode (255, mode),
+			      NULL_RTX);
+      int log_crc_size = exact_log2 (GET_MODE_SIZE (crc_mode).to_constant ());
+      index = expand_shift (LSHIFT_EXPR, mode, index,
+			    log_crc_size, NULL_RTX, 0);
+
+      rtx addr = gen_reg_rtx (Pmode);
+      convert_move (addr, index, 1);
+      addr = expand_binop (Pmode, add_optab, addr, tab, NULL_RTX,
+			    0, OPTAB_DIRECT);
+
+      /* crc_table[(crc >> (crc_bit_size - 8)) ^ data_8bit]  */
+      rtx tab_el = validize_mem (gen_rtx_MEM (crc_mode, addr));
+
+      /* (crc << 8) if CRC is larger than 8, otherwise crc = 0.  */
+      rtx high = NULL_RTX;
+      if (crc_bit_size != 8)
+	high = expand_shift (LSHIFT_EXPR, mode, *crc, 8, NULL_RTX, 0);
+      else
+	high = gen_int_mode (0, mode);
+
+      /* crc = (crc << 8)
+	       ^ crc_table[(crc >> (crc_bit_size - 8)) ^ data_8bit];  */
+      *crc = expand_binop (mode, xor_optab, tab_el, high, NULL_RTX, 1,
+			   OPTAB_WIDEN);
+    }
+}
+
+/* Generate table-based CRC code for the given CRC, INPUT_DATA and the
+   POLYNOMIAL (without leading 1).
+
+   CRC is OP1, data is OP2 and the polynomial is OP3.
+   This must generate a CRC table and an assembly for the following code,
+   where crc_bit_size and data_bit_size may be 8, 16, 32, 64:
+   uint_crc_bit_size_t
+   crc_crc_bit_size (uint_crc_bit_size_t crc_init,
+		     uint_data_bit_size_t data, size_t size)
+   {
+     uint_crc_bit_size_t crc = crc_init;
+     for (int i = 0; i < data_bit_size / 8; i++)
+       crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
+				    ^ (data >> (data_bit_size - (i + 1) * 8)
+				    & 0xFF))];
+     return crc;
+   }  */
+
+void
+expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
+			machine_mode data_mode)
+{
+  gcc_assert (!CONST_INT_P (op0));
+  gcc_assert (CONST_INT_P (op3));
+  machine_mode crc_mode = GET_MODE (op0);
+  rtx crc = gen_reg_rtx (crc_mode);
+  convert_move (crc, op1, 0);
+  calculate_table_based_CRC (&crc, op2, op3, crc_mode, data_mode);
+  convert_move (op0, crc, 0);
+}
+
+/* Generate the common operation for reflecting values:
+   *OP = (*OP & AND1_VALUE) << SHIFT_VAL | (*OP & AND2_VALUE) >> SHIFT_VAL;  */
+
+void
+gen_common_operation_to_reflect (rtx *op,
+				 unsigned HOST_WIDE_INT and1_value,
+				 unsigned HOST_WIDE_INT and2_value,
+				 unsigned shift_val)
+{
+  rtx op1 = expand_and (GET_MODE (*op), *op,
+			gen_int_mode (and1_value, GET_MODE (*op)), NULL_RTX);
+  op1 = expand_shift (LSHIFT_EXPR, GET_MODE (*op), op1, shift_val, op1, 0);
+  rtx op2 = expand_and (GET_MODE (*op), *op,
+			gen_int_mode (and2_value, GET_MODE (*op)), NULL_RTX);
+  op2 = expand_shift (RSHIFT_EXPR, GET_MODE (*op), op2, shift_val, op2, 1);
+  *op = expand_binop (GET_MODE (*op), ior_optab, op1,
+		      op2, *op, 0, OPTAB_LIB_WIDEN);
+}
+
+/* Reflect 64-bit value for the 64-bit target.  */
+
+void
+reflect_64_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00000000FFFFFFFF),
+				   HOST_WIDE_INT_C (0xFFFFFFFF00000000), 32);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0000FFFF0000FFFF),
+				   HOST_WIDE_INT_C (0xFFFF0000FFFF0000), 16);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00FF00FF00FF00FF),
+				   HOST_WIDE_INT_C (0xFF00FF00FF00FF00), 8);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F0F0F0F0F0F0F0F),
+				   HOST_WIDE_INT_C (0xF0F0F0F0F0F0F0F0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x3333333333333333),
+				   HOST_WIDE_INT_C (0xCCCCCCCCCCCCCCCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x5555555555555555),
+				   HOST_WIDE_INT_C (0xAAAAAAAAAAAAAAAA), 1);
+}
+
+/* Reflect 32-bit value for the 32-bit target.  */
+
+void
+reflect_32_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0000FFFF),
+				  HOST_WIDE_INT_C (0xFFFF0000), 16);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00FF00FF),
+				  HOST_WIDE_INT_C (0xFF00FF00), 8);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F0F0F0F),
+				   HOST_WIDE_INT_C (0xF0F0F0F0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x33333333),
+				   HOST_WIDE_INT_C (0xCCCCCCCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x55555555),
+				   HOST_WIDE_INT_C (0xAAAAAAAA), 1);
+}
+
+/* Reflect 16-bit value for the 16-bit target.  */
+
+void
+reflect_16_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x00FF),
+				   HOST_WIDE_INT_C (0xFF00), 8);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F0F),
+				   HOST_WIDE_INT_C (0xF0F0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x3333),
+				   HOST_WIDE_INT_C (0xCCCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x5555),
+				   HOST_WIDE_INT_C (0xAAAA), 1);
+}
+
+/* Reflect 8-bit value for the 8-bit target.  */
+
+void
+reflect_8_bit_value (rtx *op)
+{
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x0F),
+				   HOST_WIDE_INT_C (0xF0), 4);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x33),
+				   HOST_WIDE_INT_C (0xCC), 2);
+  gen_common_operation_to_reflect (op, HOST_WIDE_INT_C (0x55),
+				   HOST_WIDE_INT_C (0xAA), 1);
+}
+
+/* Generate instruction sequence which reflects the value of the OP
+   using shift, and, or operations.  OP's mode may be less than word_mode.  */
+
+void
+generate_reflecting_code_standard (rtx *op)
+{
+  gcc_assert (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant ()  >= 8
+	      && GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () <= 64);
+
+  if (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () == 64)
+    reflect_64_bit_value (op);
+  else if (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () == 32)
+    reflect_32_bit_value (op);
+  else if (GET_MODE_BITSIZE (GET_MODE (*op)).to_constant () == 16)
+    reflect_16_bit_value (op);
+  else
+    reflect_8_bit_value (op);
+}
+
+/* Generate table-based reversed CRC code for the given CRC, INPUT_DATA and
+   the POLYNOMIAL (without leading 1).
+
+   CRC is OP1, data is OP2 and the polynomial is OP3.
+   This must generate CRC table and assembly for the following code,
+   where crc_bit_size and data_bit_size may be 8, 16, 32, 64:
+   uint_crc_bit_size_t
+   crc_crc_bit_size (uint_crc_bit_size_t crc_init,
+			   uint_data_bit_size_t data, size_t size)
+   {
+     reflect (crc_init)
+     uint_crc_bit_size_t crc = crc_init;
+     reflect (data);
+     for (int i = 0; i < data_bit_size / 8; i++)
+       crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
+			  ^ (data >> (data_bit_size - (i + 1) * 8) & 0xFF))];
+     reflect (crc);
+     return crc;
+   }  */
+
+void
+expand_reversed_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
+				 machine_mode data_mode,
+				 void (*gen_reflecting_code) (rtx *op))
+{
+  gcc_assert (!CONST_INT_P (op0));
+  gcc_assert (CONST_INT_P (op3));
+  machine_mode crc_mode = GET_MODE (op0);
+
+  rtx crc = gen_reg_rtx (crc_mode);
+  convert_move (crc, op1, 0);
+  gen_reflecting_code (&crc);
+
+  rtx data = gen_reg_rtx (data_mode);
+  convert_move (data, op2, 0);
+  gen_reflecting_code (&data);
+
+  calculate_table_based_CRC (&crc, data, op3, crc_mode, data_mode);
+
+  gen_reflecting_code (&crc);
+  convert_move (op0, crc, 0);
+}

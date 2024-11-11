@@ -8578,6 +8578,20 @@ Return 1 if operand 1 is a normal floating point number and 0
 otherwise.  @var{m} is a scalar floating point mode.  Operand 0
 has mode @code{SImode}, and operand 1 has mode @var{m}.
 
+@cindex @code{crc@var{m}@var{n}4} instruction pattern
+@item @samp{crc@var{m}@var{n}4}
+Calculate a bit-forward CRC using operands 1, 2 and 3,
+then store the result in operand 0.
+Operands 1 is the initial CRC, operands 2 is the data and operands 3 is the
+polynomial without leading 1.
+Operands 0, 1 and 3 have mode @var{n} and operand 2 has mode @var{m}, where
+both modes are integers.  The size of CRC to be calculated is determined by the
+mode; for example, if @var{n} is @code{HImode}, a CRC16 is calculated.
+
+@cindex @code{crc_rev@var{m}@var{n}4} instruction pattern
+@item @samp{crc_rev@var{m}@var{n}4}
+Similar to @samp{crc@var{m}@var{n}4}, but calculates a bit-reversed CRC.
+
 @end table
 
 @end ifset

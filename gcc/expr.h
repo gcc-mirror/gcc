@@ -377,4 +377,10 @@ extern rtx expr_size (tree);
 extern bool mem_ref_refers_to_non_mem_p (tree);
 extern bool non_mem_decl_p (tree);
 
+/* Generate table-based CRC.  */
+extern void generate_reflecting_code_standard (rtx *);
+extern void expand_crc_table_based (rtx, rtx, rtx, rtx, machine_mode);
+extern void expand_reversed_crc_table_based (rtx, rtx, rtx, rtx, machine_mode,
+					     void (*) (rtx *));
+
 #endif /* GCC_EXPR_H */
