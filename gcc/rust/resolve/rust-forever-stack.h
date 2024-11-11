@@ -416,7 +416,7 @@ public:
    * @param path An optional path if the Rib was created due to a "named"
    *        lexical scope, like a module's.
    */
-  void push (Rib rib, NodeId id, tl::optional<Identifier> path = {});
+  void push (Rib::Kind rib_kind, NodeId id, tl::optional<Identifier> path = {});
 
   /**
    * Pop the innermost Rib from the stack

@@ -103,13 +103,13 @@ NameResolutionContext::lookup (NodeId usage) const
 }
 
 void
-NameResolutionContext::scoped (Rib rib, NodeId id,
+NameResolutionContext::scoped (Rib::Kind rib_kind, NodeId id,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)
 {
-  values.push (rib, id, path);
-  types.push (rib, id, path);
-  macros.push (rib, id, path);
+  values.push (rib_kind, id, path);
+  types.push (rib_kind, id, path);
+  macros.push (rib_kind, id, path);
   // labels.push (rib, id);
 
   lambda ();
@@ -121,17 +121,18 @@ NameResolutionContext::scoped (Rib rib, NodeId id,
 }
 
 void
-NameResolutionContext::scoped (Rib rib, Namespace ns, NodeId scope_id,
+NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
+			       NodeId scope_id,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)
 {
   switch (ns)
     {
     case Namespace::Values:
-      values.push (rib, scope_id, path);
+      values.push (rib_kind, scope_id, path);
       break;
     case Namespace::Types:
-      types.push (rib, scope_id, path);
+      types.push (rib_kind, scope_id, path);
       break;
     case Namespace::Labels:
     case Namespace::Macros:
