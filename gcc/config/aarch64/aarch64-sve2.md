@@ -2213,7 +2213,7 @@
 	(unspec:VNx16QI_ONLY
 	  [(match_operand:VNx16SI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
 	  SVE_QCVTxN))]
-  "TARGET_SME2 && TARGET_STREAMING"
+  "TARGET_STREAMING_SME2"
   "<optab>\t%0.b, %1"
 )
 
@@ -2222,7 +2222,7 @@
 	(unspec:VNx8HI_ONLY
 	  [(match_operand:VNx8SI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
 	  SVE_QCVTxN))]
-  "TARGET_SME2 && TARGET_STREAMING"
+  "TARGET_STREAMING_SME2"
   "<optab>\t%0.h, %1"
 )
 
@@ -2231,7 +2231,7 @@
 	(unspec:VNx8HI_ONLY
 	  [(match_operand:VNx8DI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
 	  SVE_QCVTxN))]
-  "TARGET_SME2 && TARGET_STREAMING"
+  "TARGET_STREAMING_SME2"
   "<optab>\t%0.h, %1"
 )
 
