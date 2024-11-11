@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config.gcc [nvptx-*]: Switch default from '-march=sm_30' to
+	'-march=sm_52'.
+	* doc/install.texi (Nvidia PTX Options): Update.
+
+	Backported from trunk:
+	2024-12-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/gcn/gcn.cc (gcn_vec_constant): Fix 'real_from_integer'
 	usage.
 
