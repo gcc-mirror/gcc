@@ -1840,10 +1840,15 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
       gcc_assert (TREE_CODE (gnu_prefix) != TYPE_DECL);
 
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
+      /* We used to pass ATTR_ADDR_EXPR for Attr_Unrestricted_Access too, but
+	 the processing done in build_unary_op for it flattens the reference,
+	 in particular removes all intermediate (view) conversions, which may
+	 cause SUBSTITUTE_PLACEHOLDER_IN_EXPR to fail to substitute in the
+	 bounds of a fat pointer returned for Attr_Unrestricted_Access.  */
       gnu_result
-	= build_unary_op (((attribute == Attr_Address
-			    || attribute == Attr_Unrestricted_Access)
-			   && !Must_Be_Byte_Aligned (gnat_node))
+	= build_unary_op (attribute == Attr_Address
+			  && !Must_Be_Byte_Aligned (gnat_node)
 			  ? ATTR_ADDR_EXPR : ADDR_EXPR,
 			  gnu_result_type, gnu_prefix);
 
