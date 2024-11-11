@@ -4707,22 +4707,59 @@ invoke_set_current_function_hook (tree fndecl)
     }
 }
 
+/* Set cfun to NEW_CFUN and switch to the optimization and target options
+   associated with NEW_FNDECL.
+
+   FORCE says whether we should do the switch even if NEW_CFUN is the current
+   function, e.g. because there has been a change in optimization or target
+   options.  */
+
+static void
+set_function_decl (function *new_cfun, tree new_fndecl, bool force)
+{
+  if (cfun != new_cfun || force)
+    {
+      cfun = new_cfun;
+      invoke_set_current_function_hook (new_fndecl);
+      redirect_edge_var_map_empty ();
+    }
+}
+
 /* cfun should never be set directly; use this function.  */
 
 void
 set_cfun (struct function *new_cfun, bool force)
 {
-  if (cfun != new_cfun || force)
-    {
-      cfun = new_cfun;
-      invoke_set_current_function_hook (new_cfun ? new_cfun->decl : NULL_TREE);
-      redirect_edge_var_map_empty ();
-    }
+  set_function_decl (new_cfun, new_cfun ? new_cfun->decl : NULL_TREE, force);
 }
 
 /* Initialized with NOGC, making this poisonous to the garbage collector.  */
 
 static vec<function *> cfun_stack;
+
+/* Push the current cfun onto the stack, then switch to function NEW_CFUN
+   and FUNCTION_DECL NEW_FNDECL.  FORCE is as for set_function_decl.  */
+
+static void
+push_function_decl (function *new_cfun, tree new_fndecl, bool force)
+{
+  gcc_assert ((!cfun && !current_function_decl)
+	      || (cfun && current_function_decl == cfun->decl));
+  cfun_stack.safe_push (cfun);
+  current_function_decl = new_fndecl;
+  set_function_decl (new_cfun, new_fndecl, force);
+}
+
+/* Push the current cfun onto the stack and switch to function declaration
+   NEW_FNDECL, which might or might not have a function body.  FORCE is as for
+   set_function_decl.  */
+
+void
+push_function_decl (tree new_fndecl, bool force)
+{
+  force |= current_function_decl != new_fndecl;
+  push_function_decl (DECL_STRUCT_FUNCTION (new_fndecl), new_fndecl, force);
+}
 
 /* Push the current cfun onto the stack, and set cfun to new_cfun.  Also set
    current_function_decl accordingly.  */
@@ -4730,17 +4767,14 @@ static vec<function *> cfun_stack;
 void
 push_cfun (struct function *new_cfun)
 {
-  gcc_assert ((!cfun && !current_function_decl)
-	      || (cfun && current_function_decl == cfun->decl));
-  cfun_stack.safe_push (cfun);
-  current_function_decl = new_cfun ? new_cfun->decl : NULL_TREE;
-  set_cfun (new_cfun);
+  push_function_decl (new_cfun, new_cfun ? new_cfun->decl : NULL_TREE, false);
 }
 
-/* Pop cfun from the stack.  Also set current_function_decl accordingly.  */
+/* A common subroutine for pop_cfun and pop_function_decl.  FORCE is as
+   for set_function_decl.  */
 
-void
-pop_cfun (void)
+static void
+pop_cfun_1 (bool force)
 {
   struct function *new_cfun = cfun_stack.pop ();
   /* When in_dummy_function, we do have a cfun but current_function_decl is
@@ -4750,8 +4784,28 @@ pop_cfun (void)
   gcc_checking_assert (in_dummy_function
 		       || !cfun
 		       || current_function_decl == cfun->decl);
-  set_cfun (new_cfun);
+  set_cfun (new_cfun, force);
   current_function_decl = new_cfun ? new_cfun->decl : NULL_TREE;
+}
+
+/* Pop cfun from the stack.  Also set current_function_decl accordingly.  */
+
+void
+pop_cfun (void)
+{
+  pop_cfun_1 (false);
+}
+
+/* Undo push_function_decl.  */
+
+void
+pop_function_decl (void)
+{
+  /* If the previous cfun was null, the options should be reset to the
+     global set.  Checking the current cfun against the new (popped) cfun
+     wouldn't catch this if the current function decl has no function
+     struct.  */
+  pop_cfun_1 (!cfun_stack.last ());
 }
 
 /* Return value of funcdef and increase it.  */
