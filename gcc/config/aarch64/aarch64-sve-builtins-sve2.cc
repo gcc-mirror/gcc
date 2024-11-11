@@ -589,20 +589,20 @@ FUNCTION (svabalb, unspec_based_add_function, (UNSPEC_SABDLB,
 					       UNSPEC_UABDLB, -1))
 FUNCTION (svabalt, unspec_based_add_function, (UNSPEC_SABDLT,
 					       UNSPEC_UABDLT, -1))
+FUNCTION (svabdlb, unspec_based_function, (UNSPEC_SABDLB, UNSPEC_UABDLB, -1))
+FUNCTION (svabdlt, unspec_based_function, (UNSPEC_SABDLT, UNSPEC_UABDLT, -1))
+FUNCTION (svadalp, unspec_based_function, (UNSPEC_SADALP, UNSPEC_UADALP, -1))
 FUNCTION (svadclb, unspec_based_function, (-1, UNSPEC_ADCLB, -1))
 FUNCTION (svadclt, unspec_based_function, (-1, UNSPEC_ADCLT, -1))
 FUNCTION (svaddhnb, unspec_based_function, (UNSPEC_ADDHNB, UNSPEC_ADDHNB, -1))
 FUNCTION (svaddhnt, unspec_based_function, (UNSPEC_ADDHNT, UNSPEC_ADDHNT, -1))
-FUNCTION (svabdlb, unspec_based_function, (UNSPEC_SABDLB, UNSPEC_UABDLB, -1))
-FUNCTION (svabdlt, unspec_based_function, (UNSPEC_SABDLT, UNSPEC_UABDLT, -1))
-FUNCTION (svadalp, unspec_based_function, (UNSPEC_SADALP, UNSPEC_UADALP, -1))
 FUNCTION (svaddlb, unspec_based_function, (UNSPEC_SADDLB, UNSPEC_UADDLB, -1))
 FUNCTION (svaddlbt, unspec_based_function, (UNSPEC_SADDLBT, -1, -1))
 FUNCTION (svaddlt, unspec_based_function, (UNSPEC_SADDLT, UNSPEC_UADDLT, -1))
-FUNCTION (svaddwb, unspec_based_function, (UNSPEC_SADDWB, UNSPEC_UADDWB, -1))
-FUNCTION (svaddwt, unspec_based_function, (UNSPEC_SADDWT, UNSPEC_UADDWT, -1))
 FUNCTION (svaddp, unspec_based_pred_function, (UNSPEC_ADDP, UNSPEC_ADDP,
 					       UNSPEC_FADDP))
+FUNCTION (svaddwb, unspec_based_function, (UNSPEC_SADDWB, UNSPEC_UADDWB, -1))
+FUNCTION (svaddwt, unspec_based_function, (UNSPEC_SADDWT, UNSPEC_UADDWT, -1))
 FUNCTION (svaesd, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesd))
 FUNCTION (svaese, fixed_insn_function, (CODE_FOR_aarch64_sve2_aese))
 FUNCTION (svaesimc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesimc))
@@ -649,12 +649,12 @@ FUNCTION (svldnt1uh_gather, svldnt1_gather_extend_impl, (TYPE_SUFFIX_u16))
 FUNCTION (svldnt1uw_gather, svldnt1_gather_extend_impl, (TYPE_SUFFIX_u32))
 FUNCTION (svlogb, unspec_based_function, (-1, -1, UNSPEC_COND_FLOGB))
 FUNCTION (svmatch, svmatch_svnmatch_impl, (UNSPEC_MATCH))
+FUNCTION (svmaxnmp, unspec_based_pred_function, (-1, -1, UNSPEC_FMAXNMP))
 FUNCTION (svmaxp, unspec_based_pred_function, (UNSPEC_SMAXP, UNSPEC_UMAXP,
 					       UNSPEC_FMAXP))
-FUNCTION (svmaxnmp, unspec_based_pred_function, (-1, -1, UNSPEC_FMAXNMP))
+FUNCTION (svminnmp, unspec_based_pred_function, (-1, -1, UNSPEC_FMINNMP))
 FUNCTION (svminp, unspec_based_pred_function, (UNSPEC_SMINP, UNSPEC_UMINP,
 					       UNSPEC_FMINP))
-FUNCTION (svminnmp, unspec_based_pred_function, (-1, -1, UNSPEC_FMINNMP))
 FUNCTION (svmlalb, unspec_based_mla_function, (UNSPEC_SMULLB,
 					       UNSPEC_UMULLB, UNSPEC_FMLALB))
 FUNCTION (svmlalb_lane, unspec_based_mla_lane_function, (UNSPEC_SMULLB,
@@ -723,14 +723,14 @@ FUNCTION (svqdmullt_lane, unspec_based_lane_function, (UNSPEC_SQDMULLT,
 FUNCTION (svqneg, rtx_code_function, (SS_NEG, UNKNOWN, UNKNOWN))
 FUNCTION (svqrdcmlah, svqrdcmlah_impl,)
 FUNCTION (svqrdcmlah_lane, svqrdcmlah_lane_impl,)
-FUNCTION (svqrdmulh, unspec_based_function, (UNSPEC_SQRDMULH, -1, -1))
-FUNCTION (svqrdmulh_lane, unspec_based_lane_function, (UNSPEC_SQRDMULH,
-						       -1, -1))
 FUNCTION (svqrdmlah, unspec_based_function, (UNSPEC_SQRDMLAH, -1, -1))
 FUNCTION (svqrdmlah_lane, unspec_based_lane_function, (UNSPEC_SQRDMLAH,
 						       -1, -1))
 FUNCTION (svqrdmlsh, unspec_based_function, (UNSPEC_SQRDMLSH, -1, -1))
 FUNCTION (svqrdmlsh_lane, unspec_based_lane_function, (UNSPEC_SQRDMLSH,
+						       -1, -1))
+FUNCTION (svqrdmulh, unspec_based_function, (UNSPEC_SQRDMULH, -1, -1))
+FUNCTION (svqrdmulh_lane, unspec_based_lane_function, (UNSPEC_SQRDMULH,
 						       -1, -1))
 FUNCTION (svqrshl, svqrshl_impl,)
 FUNCTION (svqrshr, unspec_based_uncond_function, (UNSPEC_SQRSHR,
@@ -805,12 +805,12 @@ FUNCTION (svunpk, svunpk_impl,)
 FUNCTION (svuqadd, svuqadd_impl,)
 FUNCTION (svuzp, multireg_permute, (UNSPEC_UZP))
 FUNCTION (svuzpq, multireg_permute, (UNSPEC_UZPQ))
-FUNCTION (svzip, multireg_permute, (UNSPEC_ZIP))
-FUNCTION (svzipq, multireg_permute, (UNSPEC_ZIPQ))
 FUNCTION (svwhilege, while_comparison, (UNSPEC_WHILEGE, UNSPEC_WHILEHS))
 FUNCTION (svwhilegt, while_comparison, (UNSPEC_WHILEGT, UNSPEC_WHILEHI))
 FUNCTION (svwhilerw, svwhilerw_svwhilewr_impl, (UNSPEC_WHILERW))
 FUNCTION (svwhilewr, svwhilerw_svwhilewr_impl, (UNSPEC_WHILEWR))
 FUNCTION (svxar, svxar_impl,)
+FUNCTION (svzip, multireg_permute, (UNSPEC_ZIP))
+FUNCTION (svzipq, multireg_permute, (UNSPEC_ZIPQ))
 
 } /* end namespace aarch64_sve */

@@ -80,8 +80,10 @@ namespace aarch64_sve
     extern const function_base *const svldnt1uw_gather;
     extern const function_base *const svlogb;
     extern const function_base *const svmatch;
-    extern const function_base *const svmaxp;
     extern const function_base *const svmaxnmp;
+    extern const function_base *const svmaxp;
+    extern const function_base *const svminnmp;
+    extern const function_base *const svminp;
     extern const function_base *const svmlalb;
     extern const function_base *const svmlalb_lane;
     extern const function_base *const svmlalt;
@@ -90,8 +92,6 @@ namespace aarch64_sve
     extern const function_base *const svmlslb_lane;
     extern const function_base *const svmlslt;
     extern const function_base *const svmlslt_lane;
-    extern const function_base *const svminp;
-    extern const function_base *const svminnmp;
     extern const function_base *const svmovlb;
     extern const function_base *const svmovlt;
     extern const function_base *const svmullb;
@@ -130,12 +130,12 @@ namespace aarch64_sve
     extern const function_base *const svqneg;
     extern const function_base *const svqrdcmlah;
     extern const function_base *const svqrdcmlah_lane;
-    extern const function_base *const svqrdmulh;
-    extern const function_base *const svqrdmulh_lane;
     extern const function_base *const svqrdmlah;
     extern const function_base *const svqrdmlah_lane;
     extern const function_base *const svqrdmlsh;
     extern const function_base *const svqrdmlsh_lane;
+    extern const function_base *const svqrdmulh;
+    extern const function_base *const svqrdmulh_lane;
     extern const function_base *const svqrshl;
     extern const function_base *const svqrshr;
     extern const function_base *const svqrshrn;
@@ -198,13 +198,13 @@ namespace aarch64_sve
     extern const function_base *const svuqadd;
     extern const function_base *const svuzp;
     extern const function_base *const svuzpq;
-    extern const function_base *const svzip;
-    extern const function_base *const svzipq;
     extern const function_base *const svwhilege;
     extern const function_base *const svwhilegt;
     extern const function_base *const svwhilerw;
     extern const function_base *const svwhilewr;
     extern const function_base *const svxar;
+    extern const function_base *const svzip;
+    extern const function_base *const svzipq;
   }
 }
 
