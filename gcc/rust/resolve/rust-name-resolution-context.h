@@ -185,8 +185,8 @@ public:
    * function. This variant of the function enters a new scope in *all*
    * namespaces, while the second variant enters a scope in *one* namespace.
    *
-   * @param rib New `Rib` to create when entering this scope. A function `Rib`,
-   *        or an item `Rib`... etc
+   * @param rib_kind New `Rib` to create when entering this scope. A function
+   *        `Rib`, or an item `Rib`... etc
    * @param scope_id node ID of the scope we are entering, e.g the block's
    *        `NodeId`.
    * @param lambda Function to run within that scope
@@ -196,9 +196,10 @@ public:
    */
   // FIXME: Do we want to handle something in particular for expected within the
   // scoped lambda?
-  void scoped (Rib rib, NodeId scope_id, std::function<void (void)> lambda,
+  void scoped (Rib::Kind rib_kind, NodeId scope_id,
+	       std::function<void (void)> lambda,
 	       tl::optional<Identifier> path = {});
-  void scoped (Rib rib, Namespace ns, NodeId scope_id,
+  void scoped (Rib::Kind rib_kind, Namespace ns, NodeId scope_id,
 	       std::function<void (void)> lambda,
 	       tl::optional<Identifier> path = {});
 

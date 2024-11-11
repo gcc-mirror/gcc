@@ -52,9 +52,10 @@ ForeverStack<N>::Node::insert_child (Link link, Node child)
 
 template <Namespace N>
 void
-ForeverStack<N>::push (Rib rib, NodeId id, tl::optional<Identifier> path)
+ForeverStack<N>::push (Rib::Kind rib_kind, NodeId id,
+		       tl::optional<Identifier> path)
 {
-  push_inner (rib, Link (id, path));
+  push_inner (rib_kind, Link (id, path));
 }
 
 template <Namespace N>
