@@ -228,10 +228,6 @@ package Erroutc is
       --  True if this is a warning message which is to be treated as an error
       --  as a result of a match with a Warning_As_Error pragma.
 
-      Warn_Runtime_Raise : Boolean;
-      --  True if this a warning about a constraint error that will be raised
-      --  at runtime.
-
       Warn_Chr : String (1 .. 2);
       --  See Warning_Msg_Char
 

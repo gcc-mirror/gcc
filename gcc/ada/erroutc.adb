@@ -340,7 +340,6 @@ package body Erroutc is
       w ("  Col                = ", Int (E.Col));
       w ("  Kind               = ", E.Kind'Img);
       w ("  Warn_Err           = ", E.Warn_Err);
-      w ("  Warn_Runtime_Raise = ", E.Warn_Runtime_Raise);
       w ("  Warn_Chr           = '" & E.Warn_Chr & ''');
       w ("  Uncond             = ", E.Uncond);
       w ("  Msg_Cont           = ", E.Msg_Cont);

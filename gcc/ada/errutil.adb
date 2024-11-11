@@ -211,7 +211,6 @@ package body Errutil is
             Col                 => Get_Column_Number (Sptr),
             Compile_Time_Pragma => Is_Compile_Time_Msg,
             Warn_Err            => Warning_Mode = Treat_As_Error,
-            Warn_Runtime_Raise  => Is_Runtime_Raise,
             Warn_Chr            => Warning_Msg_Char,
             Uncond              => Is_Unconditional_Msg,
             Msg_Cont            => Continuation,

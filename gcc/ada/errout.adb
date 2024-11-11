@@ -1246,7 +1246,6 @@ package body Errout is
           Compile_Time_Pragma => Is_Compile_Time_Msg,
           Warn_Err            => False, -- reset below
           Warn_Chr            => Warning_Msg_Char,
-          Warn_Runtime_Raise  => Is_Runtime_Raise,
           Uncond              => Is_Unconditional_Msg,
           Msg_Cont            => Continuation,
           Deleted             => False,
@@ -1258,19 +1257,13 @@ package body Errout is
       Warn_Err :=
         Error_Msg_Kind in Warning | Style
         and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
-                  or else Warning_Treated_As_Error
-                            (Get_Warning_Tag (Cur_Msg)));
+                  or else Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg))
+                  or else Is_Runtime_Raise);
 
       --  Propagate Warn_Err to this message and preceding continuations.
-      --  Likewise, propagate Error_Msg_Kind and Is_Runtime_Raise, because the
-      --  current continued message could have been escalated from warning to
-      --  error.
 
       for J in reverse 1 .. Errors.Last loop
          Errors.Table (J).Warn_Err := Warn_Err;
-
-         Errors.Table (J).Kind := Error_Msg_Kind;
-         Errors.Table (J).Warn_Runtime_Raise := Is_Runtime_Raise;
 
          exit when not Errors.Table (J).Msg_Cont;
       end loop;
@@ -3587,28 +3580,13 @@ package body Errout is
                --  not remove style messages here. They are warning messages
                --  but not ones we want removed in this context.
 
-               and then (Errors.Table (E).Kind = Warning
-                           or else
-                         Errors.Table (E).Warn_Runtime_Raise)
+               and then Errors.Table (E).Kind = Warning
 
                --  Don't remove unconditional messages
 
                and then not Errors.Table (E).Uncond
             then
-               if Errors.Table (E).Kind = Warning then
-                  Warnings_Detected := Warnings_Detected - 1;
-               end if;
-
-               --  When warning about a runtime exception has been escalated
-               --  into error, the starting message has increased the total
-               --  errors counter, so here we decrease this counter.
-
-               if Errors.Table (E).Warn_Runtime_Raise
-                 and then not Errors.Table (E).Msg_Cont
-                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
-               then
-                  Total_Errors_Detected := Total_Errors_Detected - 1;
-               end if;
+               Warnings_Detected := Warnings_Detected - 1;
 
                return True;
 
@@ -4361,7 +4339,6 @@ package body Errout is
                   if Error_Msg_Kind = Warning
                     and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
                   then
-                     Error_Msg_Kind := Non_Serious_Error;
                      Is_Runtime_Raise := True;
                   end if;
 
