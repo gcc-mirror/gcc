@@ -1,3 +1,8 @@
+2024-11-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* cp-objcp-common.cc (cp_common_init_ts): Change TRAIT_EXPR from
+	TS_EXP to TS_TYPED.
+
 2024-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117317

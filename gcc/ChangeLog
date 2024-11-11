@@ -1,3 +1,8 @@
+2024-11-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Return
+	zero for the permute nodes part of load-lanes.
+
 2024-11-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/117478

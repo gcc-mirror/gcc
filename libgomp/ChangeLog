@@ -1,3 +1,8 @@
+2024-11-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/max_vf-1.c: Adjust.
+	* testsuite/libgomp.c/max_vf-2.c: Likewise.
+
 2024-11-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Technical Report 13): Remove 'iterator'
