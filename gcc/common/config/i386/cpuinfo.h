@@ -636,6 +636,22 @@ get_intel_cpu (struct __processor_model *cpu_model,
       default:
 	break;
       }
+  /* Parse family and model for family 0x13.  */
+  else if (cpu_model2->__cpu_family == 0x13)
+    switch (cpu_model2->__cpu_model)
+      {
+      case 0x00:
+      case 0x01:
+	/* Diamond Rapids.  */
+	cpu = "diamondrapids";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("diamondrapids");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_DIAMONDRAPIDS;
+	break;
+      default:
+	break;
+      }
 
   return cpu;
 }

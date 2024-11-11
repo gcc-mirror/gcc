@@ -26645,6 +26645,9 @@ Intel Core i7 Arrow Lake S CPU.
 @item pantherlake
 Intel Core i7 Panther Lake CPU.
 
+@item diamondrapids
+Intel Core i7 Diamond Rapids CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
