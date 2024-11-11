@@ -2769,7 +2769,7 @@
 
 (define_expand "ustrunc<mode><v_oct_trunc>2"
   [(match_operand:<V_OCT_TRUNC> 0 "register_operand")
-   (match_operand:VOEXTI         1 "register_operand")]
+   (match_operand:VOEXTI        1 "register_operand")]
   "TARGET_VECTOR"
   {
     riscv_vector::expand_vec_oct_ustrunc (operands[0], operands[1], <MODE>mode,
