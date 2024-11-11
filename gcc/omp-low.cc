@@ -15267,6 +15267,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (ref_to_array)
 		  x = fold_convert_loc (clause_loc, TREE_TYPE (new_var), x);
 		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
+		if (OMP_CLAUSE_MAP_POINTS_TO_READONLY (c) && VAR_P (x))
+		  VAR_POINTS_TO_READONLY (x) = 1;
 		if ((is_ref && !ref_to_array)
 		    || ref_to_ptr)
 		  {

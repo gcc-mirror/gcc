@@ -1905,6 +1905,10 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_MAP_READONLY(NODE) \
   TREE_READONLY (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
+/* Set if 'OMP_CLAUSE_DECL (NODE)' points to read-only memory.  */
+#define OMP_CLAUSE_MAP_POINTS_TO_READONLY(NODE) \
+  TREE_CONSTANT (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+
 /* Same as above, for use in OpenACC cache directives.  */
 #define OMP_CLAUSE__CACHE__READONLY(NODE) \
   TREE_READONLY (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__CACHE_))
@@ -3397,6 +3401,13 @@ extern void decl_fini_priority_insert (tree, priority_type);
 /* In a VAR_DECL, nonzero if this is a global variable for VOPs.  */
 #define VAR_DECL_IS_VIRTUAL_OPERAND(NODE) \
   (VAR_DECL_CHECK (NODE)->base.u.bits.saturating_flag)
+
+/* In a VAR_DECL, set for variables regarded as pointing to memory not written
+   to. SSA_NAME_POINTS_TO_READONLY_MEMORY gets set for SSA_NAMEs created from
+   such VAR_DECLs. Currently used by OpenACC 'readonly' modifier in copyin
+   clauses.  */
+#define VAR_POINTS_TO_READONLY(NODE) \
+  (TREE_CHECK (NODE, VAR_DECL)->decl_common.decl_not_flexarray)
 
 /* In a VAR_DECL, nonzero if this is a non-local frame structure.  */
 #define DECL_NONLOCAL_FRAME(NODE)  \

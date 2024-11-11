@@ -28,4 +28,4 @@ end subroutine foo
 end module test_module
 end program
 
-! { dg-final { scan-tree-dump-times "= \\*arg_\[0-9\]+\\(D\\);" 1 "fre1" } }
+! { dg-final { scan-tree-dump-times "= \\*arg_\[0-9\]+\\(D\\)\\(ptro\\);" 1 "fre1" } }

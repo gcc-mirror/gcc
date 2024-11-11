@@ -1026,6 +1026,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "map(");
       if (OMP_CLAUSE_MAP_READONLY (clause))
 	pp_string (pp, "readonly,");
+      if (OMP_CLAUSE_MAP_POINTS_TO_READONLY (clause))
+	pp_string (pp, "pt_readonly,");
       switch (OMP_CLAUSE_MAP_KIND (clause))
 	{
 	case GOMP_MAP_ALLOC:
@@ -3861,6 +3863,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	pp_string (pp, "(D)");
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (node))
 	pp_string (pp, "(ab)");
+      if (SSA_NAME_POINTS_TO_READONLY_MEMORY (node))
+	pp_string (pp, "(ptro)");
       break;
 
     case WITH_SIZE_EXPR:

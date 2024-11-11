@@ -3408,6 +3408,8 @@ gfc_trans_omp_array_section (stmtblock_t *block, toc_directive cd,
   ptr2 = fold_convert (ptrdiff_type_node, ptr2);
   OMP_CLAUSE_SIZE (node3) = fold_build2 (MINUS_EXPR, ptrdiff_type_node,
 					 ptr, ptr2);
+  if (n->u.map.readonly)
+    OMP_CLAUSE_MAP_POINTS_TO_READONLY (node3) = 1;
 }
 
 /* CLAUSES is a list of clauses resulting from an "omp declare mapper"

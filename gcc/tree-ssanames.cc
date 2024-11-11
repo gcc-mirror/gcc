@@ -403,6 +403,9 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
   else
     SSA_NAME_RANGE_INFO (t) = NULL;
 
+  if (VAR_P (var) && VAR_POINTS_TO_READONLY (var))
+    SSA_NAME_POINTS_TO_READONLY_MEMORY (t) = 1;
+
   SSA_NAME_IN_FREE_LIST (t) = 0;
   SSA_NAME_IS_DEFAULT_DEF (t) = 0;
   init_ssa_name_imm_use (t);
