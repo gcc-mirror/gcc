@@ -1256,7 +1256,11 @@ find_loop_guard (class loop *loop, vec<gimple *> &dbg_to_reset)
 	  guard_edge = NULL;
 	  goto end;
 	}
-      if (!empty_bb_without_guard_p (loop, bb, dbg_to_reset))
+      /* If any of the not skipped blocks has side-effects or defs with
+	 uses outside of the loop we cannot hoist the guard.  */
+      if (!dominated_by_p (CDI_DOMINATORS,
+			   bb, guard_edge == te ? fe->dest : te->dest)
+	  && !empty_bb_without_guard_p (loop, bb, dbg_to_reset))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
