@@ -1176,6 +1176,21 @@ aarch64_const_binop (enum tree_code code, tree arg1, tree arg2)
   return NULL_TREE;
 }
 
+/* Return the type that a vector base should have in a gather load or
+   scatter store involving vectors of type TYPE.  In an extending load,
+   TYPE is the result of the extension; in a truncating store, it is the
+   input to the truncation.
+
+   Index vectors have the same width as base vectors, but can be either
+   signed or unsigned.  */
+type_suffix_index
+function_shape::vector_base_type (type_suffix_index type) const
+{
+  unsigned int required_bits = type_suffixes[type].element_bits;
+  gcc_assert (required_bits == 32 || required_bits == 64);
+  return required_bits == 32 ? TYPE_SUFFIX_u32 : TYPE_SUFFIX_u64;
+}
+
 /* Return a hash code for a function_instance.  */
 hashval_t
 function_instance::hash () const
@@ -2750,7 +2765,8 @@ function_resolver::resolve_sv_displacement (unsigned int argno,
       return mode;
     }
 
-  unsigned int required_bits = type_suffixes[type].element_bits;
+  auto base_type = shape->vector_base_type (type);
+  unsigned int required_bits = type_suffixes[base_type].element_bits;
   if (required_bits == 32
       && displacement_units () == UNITS_elements
       && !lookup_form (MODE_s32index, type)
@@ -2900,11 +2916,7 @@ function_resolver::resolve_gather_address (unsigned int argno,
 	return MODE_none;
 
       /* Check whether the type is the right one.  */
-      unsigned int required_bits = type_suffixes[type].element_bits;
-      gcc_assert (required_bits == 32 || required_bits == 64);
-      type_suffix_index required_type = (required_bits == 32
-					 ? TYPE_SUFFIX_u32
-					 : TYPE_SUFFIX_u64);
+      auto required_type = shape->vector_base_type (type);
       if (required_type != base_type)
 	{
 	  error_at (location, "passing %qT to argument %d of %qE,"

@@ -784,6 +784,8 @@ public:
      more common than false, so provide a default definition.  */
   virtual bool explicit_group_suffix_p () const { return true; }
 
+  virtual type_suffix_index vector_base_type (type_suffix_index) const;
+
   /* Define all functions associated with the given group.  */
   virtual void build (function_builder &,
 		      const function_group_info &) const = 0;
