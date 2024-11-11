@@ -1213,6 +1213,8 @@ bool aarch64_validate_mtune (const char *, aarch64_cpu *);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 std::string aarch64_get_extension_string_for_isa_flags (aarch64_feature_flags,
 							aarch64_feature_flags);
+std::string aarch64_get_arch_string_for_assembler (aarch64_arch,
+						   aarch64_feature_flags);
 
 rtl_opt_pass *make_pass_aarch64_early_ra (gcc::context *);
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);

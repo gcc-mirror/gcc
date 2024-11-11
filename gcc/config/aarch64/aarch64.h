@@ -1474,7 +1474,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HAVE_LOCAL_CPU_DETECT
 # define EXTRA_SPEC_FUNCTIONS                                           \
   { "local_cpu_detect", host_detect_local_cpu },                        \
-  MCPU_TO_MARCH_SPEC_FUNCTIONS
+  AARCH64_BASE_SPEC_FUNCTIONS
 
 /* Rewrite -m{arch,cpu,tune}=native based on the host system information.
    When rewriting -march=native convert it into an -mcpu option if no other
@@ -1491,7 +1491,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
  { "tune", "%{!mcpu=*:%{!mtune=*:%{!march=native:-mtune=%(VALUE)}}}" },
 #else
 # define MCPU_MTUNE_NATIVE_SPECS ""
-# define EXTRA_SPEC_FUNCTIONS MCPU_TO_MARCH_SPEC_FUNCTIONS
+# define EXTRA_SPEC_FUNCTIONS AARCH64_BASE_SPEC_FUNCTIONS
 # define CONFIG_TUNE_SPEC                                                \
   {"tune", "%{!mcpu=*:%{!mtune=*:-mtune=%(VALUE)}}"},
 #endif
@@ -1506,18 +1506,21 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   {"cpu",  "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" },   \
   CONFIG_TUNE_SPEC
 
-#define MCPU_TO_MARCH_SPEC \
-   "%{!march=*:%{mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}}"
+#define MARCH_REWRITE_SPEC \
+   "%{march=*:-march=%:rewrite_march(%{march=*:%*});" \
+     "mcpu=*:-march=%:rewrite_mcpu(%{mcpu=*:%*})}"
 
+extern const char *aarch64_rewrite_march (int argc, const char **argv);
 extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 extern const char *is_host_cpu_not_armv8_base (int argc, const char **argv);
-#define MCPU_TO_MARCH_SPEC_FUNCTIONS		       \
+#define AARCH64_BASE_SPEC_FUNCTIONS		       \
+  { "rewrite_march", aarch64_rewrite_march },          \
   { "rewrite_mcpu",            aarch64_rewrite_mcpu }, \
   { "is_local_not_armv8_base", is_host_cpu_not_armv8_base },
 
 
 #define ASM_CPU_SPEC \
-   MCPU_TO_MARCH_SPEC
+   MARCH_REWRITE_SPEC
 
 #define EXTRA_SPECS						\
   { "asm_cpu_spec",		ASM_CPU_SPEC }

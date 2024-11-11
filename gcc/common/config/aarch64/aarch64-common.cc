@@ -690,6 +690,48 @@ aarch64_get_extension_string_for_isa_flags
   return outstr;
 }
 
+/* Generate an arch string to be passed to the assembler.  */
+
+std::string
+aarch64_get_arch_string_for_assembler (aarch64_arch arch,
+				       aarch64_feature_flags flags)
+{
+  const struct aarch64_arch_info *entry;
+  for (entry = all_architectures; entry->arch != aarch64_no_arch; entry++)
+    if (entry->arch == arch)
+	break;
+
+  std::string outstr = entry->name
+	+ aarch64_get_extension_string_for_isa_flags (flags, entry->flags);
+
+  return outstr;
+}
+
+/* Called by the driver to rewrite a name passed to the -march
+   argument in preparation to be passed to the assembler.  The
+   names passed from the commend line will be in ARGV, we want
+   to use the right-most argument, which should be in
+   ARGV[ARGC - 1].  ARGC should always be greater than 0.  */
+
+const char *
+aarch64_rewrite_march (int argc, const char **argv)
+{
+  gcc_assert (argc);
+  const char *name = argv[argc - 1];
+  aarch64_arch arch;
+  aarch64_feature_flags flags;
+
+  aarch64_validate_march (name, &arch, &flags);
+
+  std::string outstr = aarch64_get_arch_string_for_assembler (arch, flags);
+
+  /* We are going to memory leak here, nobody elsewhere
+     in the callchain is going to clean up after us.  The alternative is
+     to allocate a static buffer, and assert that it is big enough for our
+     modified string, which seems much worse!  */
+  return xstrdup (outstr.c_str ());
+}
+
 /* Attempt to rewrite NAME, which has been passed on the command line
    as a -mcpu option to an equivalent -march value.  If we can do so,
    return the new string, otherwise return an error.  */
@@ -733,7 +775,7 @@ aarch64_rewrite_selected_cpu (const char *name)
 	break;
     }
 
-  /* We couldn't find that proceesor name, or the processor name we
+  /* We couldn't find that processor name, or the processor name we
      found does not map to an architecture we understand.  */
   if (p_to_a->arch == aarch64_no_arch
       || a_to_an->arch == aarch64_no_arch)
@@ -742,9 +784,8 @@ aarch64_rewrite_selected_cpu (const char *name)
   aarch64_feature_flags extensions = p_to_a->flags;
   aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
-  std::string outstr = a_to_an->name
-	+ aarch64_get_extension_string_for_isa_flags (extensions,
-						      a_to_an->flags);
+  std::string outstr = aarch64_get_arch_string_for_assembler (a_to_an->arch,
+							      extensions);
 
   /* We are going to memory leak here, nobody elsewhere
      in the callchain is going to clean up after us.  The alternative is

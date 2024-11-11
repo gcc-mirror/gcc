@@ -24850,16 +24850,12 @@ aarch64_declare_function_name (FILE *stream, const char* name,
     targ_options = TREE_TARGET_OPTION (target_option_current_node);
   gcc_assert (targ_options);
 
-  const struct processor *this_arch
-    = aarch64_get_arch (targ_options->x_selected_arch);
-
   auto isa_flags = aarch64_get_asm_isa_flags (targ_options);
-  std::string extension
-    = aarch64_get_extension_string_for_isa_flags (isa_flags,
-						  this_arch->flags);
+  aarch64_arch arch = targ_options->x_selected_arch;
+  std::string to_print
+    = aarch64_get_arch_string_for_assembler (arch, isa_flags);
   /* Only update the assembler .arch string if it is distinct from the last
      such string we printed.  */
-  std::string to_print = this_arch->name + extension;
   if (to_print != aarch64_last_printed_arch_string)
     {
       asm_fprintf (asm_out_file, "\t.arch %s\n", to_print.c_str ());
@@ -24981,19 +24977,16 @@ aarch64_start_file (void)
   struct cl_target_option *default_options
     = TREE_TARGET_OPTION (target_option_default_node);
 
-  const struct processor *default_arch
-    = aarch64_get_arch (default_options->x_selected_arch);
+  aarch64_arch default_arch = default_options->x_selected_arch;
   auto default_isa_flags = aarch64_get_asm_isa_flags (default_options);
-  std::string extension
-    = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
-						  default_arch->flags);
+  std::string arch_string
+    = aarch64_get_arch_string_for_assembler (default_arch, default_isa_flags);
+  aarch64_last_printed_arch_string = arch_string;
+  aarch64_last_printed_tune_string = "";
+  asm_fprintf (asm_out_file, "\t.arch %s\n",
+	       arch_string.c_str ());
 
-   aarch64_last_printed_arch_string = default_arch->name + extension;
-   aarch64_last_printed_tune_string = "";
-   asm_fprintf (asm_out_file, "\t.arch %s\n",
-		aarch64_last_printed_arch_string.c_str ());
-
-   default_file_start ();
+  default_file_start ();
 }
 
 /* Emit load exclusive.  */
