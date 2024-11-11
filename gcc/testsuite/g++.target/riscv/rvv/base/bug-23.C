@@ -1,7 +1,6 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-options "-O2" } */
 
-#include<cstdalign>
 #include<cmath>
 #include<cstddef>
 #include<cstdint>
