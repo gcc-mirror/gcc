@@ -3086,32 +3086,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        || POINTER_TYPE_P (itype))
       && wi::eq_p (wi::to_wide (int_cst), wi::max_value (itype))))))
 
-/* Unsigned Saturation Add */
-/* SAT_ADD = usadd_left_part_1 | usadd_right_part_1, aka:
-   SAT_ADD = (X + Y) | -((X + Y) < X)  */
-(match (usadd_left_part_1 @0 @1)
- (plus:c @0 @1)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
 /* SAT_ADD = usadd_left_part_2 | usadd_right_part_2, aka:
    SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | (IMAGPART_EXPR <.ADD_OVERFLOW> != 0) */
 (match (usadd_left_part_2 @0 @1)
  (realpart (IFN_ADD_OVERFLOW:c @0 @1))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* SAT_ADD = usadd_left_part_1 | usadd_right_part_1, aka:
-   SAT_ADD = (X + Y) | -((type)(X + Y) < X)  */
-(match (usadd_right_part_1 @0 @1)
- (negate (convert (lt (plus:c @0 @1) @0)))
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
-
-/* SAT_ADD = usadd_left_part_1 | usadd_right_part_1, aka:
-   SAT_ADD = (X + Y) | -(X > (X + Y))  */
-(match (usadd_right_part_1 @0 @1)
- (negate (convert (gt @0 (plus:c @0 @1))))
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
@@ -3129,32 +3107,61 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
+(if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+ (match (usadd_overflow_mask @0 @1)
+  /* SAT_U_ADD = (X + Y) | -(X > (X + Y)).
+     Overflow_Mask = -(X > (X + Y)).  */
+  (negate (convert (gt @0 (plus:c @0 @1))))
+  (if (types_match (type, @0, @1))))
+ (match (usadd_overflow_mask @0 @1)
+  /* SAT_U_ADD = (X + Y) | -(X > (X + Y)).
+     Overflow_Mask = -((X + Y) < X).  */
+  (negate (convert (lt (plus:c @0 @1) @0)))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = (X + Y) | Overflow_Mask  */
+  (bit_ior:c (plus:c @0 @1) (usadd_overflow_mask @0 @1))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = (X + Y) >= X ? (X + Y) : -1  */
+  (cond^ (ge (plus:c@2 @0 @1) @0) @2 integer_minus_onep)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = (X + Y) < X ? -1 : (X + Y)  */
+  (cond^ (lt (plus:c@2 @0 @1) @0) integer_minus_onep @2)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = X <= (X + Y) ? (X + Y) : -1  */
+  (cond^ (le @0 (plus:c@2 @0 @1)) @2 integer_minus_onep)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = X > (X + Y) ? -1 : (X + Y)  */
+  (cond^ (gt @0 (plus:c@2 @0 @1)) integer_minus_onep @2)
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = (X + IMM) >= x ? (X + IMM) : -1  */
+  (plus (min @0 INTEGER_CST@2) INTEGER_CST@1)
+  (if (types_match (type, @0, @1))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     wide_int cst_1 = wi::to_wide (@1);
+     wide_int cst_2 = wi::to_wide (@2);
+     wide_int max = wi::mask (precision, false, precision);
+     wide_int sum = wi::add (cst_1, cst_2);
+    }
+    (if (wi::eq_p (max, sum)))))))
+
 /* We cannot merge or overload usadd_left_part_1 and usadd_left_part_2
    because the sub part of left_part_2 cannot work with right_part_1.
    For example, left_part_2 pattern focus one .ADD_OVERFLOW but the
    right_part_1 has nothing to do with .ADD_OVERFLOW.  */
-
-/* Unsigned saturation add, case 1 (branchless):
-   SAT_U_ADD = (X + Y) | - ((X + Y) < X) or
-   SAT_U_ADD = (X + Y) | - (X > (X + Y)).  */
-(match (unsigned_integer_sat_add @0 @1)
- (bit_ior:c (usadd_left_part_1 @0 @1) (usadd_right_part_1 @0 @1)))
 
 /* Unsigned saturation add, case 2 (branchless with .ADD_OVERFLOW):
    SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | -IMAGPART_EXPR <.ADD_OVERFLOW> or
    SAT_ADD = REALPART_EXPR <.ADD_OVERFLOW> | (IMAGPART_EXPR <.ADD_OVERFLOW> != 0) */
 (match (unsigned_integer_sat_add @0 @1)
  (bit_ior:c (usadd_left_part_2 @0 @1) (usadd_right_part_2 @0 @1)))
-
-/* Unsigned saturation add, case 3 (branch with ge):
-   SAT_U_ADD = (X + Y) >= x ? (X + Y) : -1.  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (ge (usadd_left_part_1@2 @0 @1) @0) @2 integer_minus_onep))
-
-/* Unsigned saturation add, case 4 (branch with lt):
-   SAT_U_ADD = (X + Y) < x ? -1 : (X + Y).  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (lt (usadd_left_part_1@2 @0 @1) @0) integer_minus_onep @2))
 
 /* Unsigned saturation add, case 5 (branch with eq .ADD_OVERFLOW):
    SAT_U_ADD = REALPART_EXPR <.ADD_OVERFLOW> == 0 ? .ADD_OVERFLOW : -1.  */
@@ -3167,32 +3174,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (unsigned_integer_sat_add @0 @1)
  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)
   integer_minus_onep (usadd_left_part_2 @0 @1)))
-
-/* Unsigned saturation add, case 7 (branch with le):
-   SAT_ADD = x <= (X + Y) ? (X + Y) : -1.  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (le @0 (usadd_left_part_1@2 @0 @1)) @2 integer_minus_onep))
-
-/* Unsigned saturation add, case 8 (branch with gt):
-   SAT_ADD = x > (X + Y) ? -1 : (X + Y).  */
-(match (unsigned_integer_sat_add @0 @1)
- (cond^ (gt @0 (usadd_left_part_1@2 @0 @1)) integer_minus_onep @2))
-
-/* Unsigned saturation add, case 9 (one op is imm):
-   SAT_U_ADD = (X + 3) >= x ? (X + 3) : -1.  */
-(match (unsigned_integer_sat_add @0 @1)
- (plus (min @0 INTEGER_CST@2) INTEGER_CST@1)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))
-  (with
-   {
-    unsigned precision = TYPE_PRECISION (type);
-    wide_int cst_1 = wi::to_wide (@1);
-    wide_int cst_2 = wi::to_wide (@2);
-    wide_int max = wi::mask (precision, false, precision);
-    wide_int sum = wi::add (cst_1, cst_2);
-   }
-   (if (wi::eq_p (max, sum))))))
 
 /* Unsigned saturation add, case 10 (one op is imm):
    SAT_U_ADD = __builtin_add_overflow (X, 3, &ret) == 0 ? ret : -1.  */
