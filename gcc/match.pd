@@ -5020,6 +5020,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			    build_int_cst (TREE_TYPE (@1),
 					   element_precision (type)), @1); }))
 
+/* a rrotate (32-b) -> a lrotate b */
+/* a lrotate (32-b) -> a rrotate b */
+(for rotate (lrotate rrotate)
+     orotate (rrotate lrotate)
+ (simplify
+  (rotate @0 (minus INTEGER_CST@1 @2))
+   (if (element_precision (TREE_TYPE (@0)) == wi::to_wide (@1))
+     (orotate @0 @2))))
+
 /* Turn (a OP c1) OP c2 into a OP (c1+c2).  */
 (for op (lrotate rrotate rshift lshift)
  (simplify
