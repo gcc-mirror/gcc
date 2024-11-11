@@ -4697,7 +4697,7 @@ handle_arm_sve_h (bool function_nulls_p)
       register_vector_type (type);
       if (type != VECTOR_TYPE_svcount_t)
 	for (unsigned int count = 2; count <= MAX_TUPLE_SIZE; ++count)
-	  if (type != VECTOR_TYPE_svbool_t || count == 2)
+	  if (type != VECTOR_TYPE_svbool_t || count == 2 || count == 4)
 	    register_tuple_type (count, type);
     }
 

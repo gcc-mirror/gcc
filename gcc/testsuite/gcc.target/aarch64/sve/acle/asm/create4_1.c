@@ -145,3 +145,13 @@ TEST_CREATE (create4_u64, svuint64x4_t, svuint64_t,
 TEST_CREATE (create4_f64, svfloat64x4_t, svfloat64_t,
 	     z0 = svcreate4_f64 (z5, z4, z7, z6),
 	     z0 = svcreate4 (z5, z4, z7, z6))
+
+/* This is awkward to code-generate, so don't match a particular output.  */
+TEST_CREATE_B (create4_b_0, svboolx4_t,
+	       p0_res = svcreate4_b (p0, p1, p2, p3),
+	       p0_res = svcreate4 (p0, p1, p2, p3))
+
+/* This is awkward to code-generate, so don't match a particular output.  */
+TEST_CREATE_B (create4_b_1, svboolx4_t,
+	       p0_res = svcreate4_b (p3, p2, p1, p0),
+	       p0_res = svcreate4 (p3, p2, p1, p0))

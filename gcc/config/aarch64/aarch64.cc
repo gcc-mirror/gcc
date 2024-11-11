@@ -969,7 +969,7 @@ pure_scalable_type_info::piece::get_rtx (unsigned int first_zr,
   if (num_zr > 0 && num_pr == 0)
     return gen_rtx_REG (mode, first_zr);
 
-  if (num_zr == 0 && num_pr <= 2)
+  if (num_zr == 0 && num_pr > 0)
     return gen_rtx_REG (mode, first_pr);
 
   gcc_unreachable ();
@@ -1684,6 +1684,7 @@ aarch64_classify_vector_mode (machine_mode mode, bool any_target_p = false)
       return (TARGET_FLOAT || any_target_p) ? VEC_ADVSIMD : 0;
 
     case E_VNx32BImode:
+    case E_VNx64BImode:
       return TARGET_SVE ? VEC_SVE_PRED | VEC_STRUCT : 0;
 
     default:
@@ -1815,13 +1816,15 @@ aarch64_array_mode (machine_mode mode, unsigned HOST_WIDE_INT nelems)
 {
   if (TARGET_SVE && GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
     {
-      /* Use VNx32BI for pairs of predicates, but explicitly reject giving
-	 a mode to other array sizes.  Using integer modes requires a round
-	 trip through memory and generates terrible code.  */
+      /* Use VNx32BI and VNx64BI for tuples of predicates, but explicitly
+	 reject giving a mode to other array sizes.  Using integer modes
+	 requires a round trip through memory and generates terrible code.  */
       if (nelems == 1)
 	return mode;
       if (mode == VNx16BImode && nelems == 2)
 	return VNx32BImode;
+      if (mode == VNx16BImode && nelems == 4)
+	return VNx64BImode;
       return BLKmode;
     }
 
@@ -2094,7 +2097,7 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
-      return mode == VNx32BImode ? 2 : 1;
+      return mode == VNx64BImode ? 4 : mode == VNx32BImode ? 2 : 1;
 
     case MOVEABLE_SYSREGS:
     case FFR_REGS:
@@ -3270,31 +3273,30 @@ aarch64_emit_binop (rtx dest, optab binoptab, rtx op0, rtx op1)
     emit_move_insn (dest, tmp);
 }
 
-/* Split a move from SRC to DST into two moves of mode SINGLE_MODE.  */
+/* Split a move from SRC to DST into multiple moves of mode SINGLE_MODE.  */
 
 void
-aarch64_split_double_move (rtx dst, rtx src, machine_mode single_mode)
+aarch64_split_move (rtx dst, rtx src, machine_mode single_mode)
 {
   machine_mode mode = GET_MODE (dst);
+  auto npieces = exact_div (GET_MODE_SIZE (mode),
+			    GET_MODE_SIZE (single_mode)).to_constant ();
+  auto_vec<rtx, 4> dst_pieces, src_pieces;
 
-  rtx dst0 = simplify_gen_subreg (single_mode, dst, mode, 0);
-  rtx dst1 = simplify_gen_subreg (single_mode, dst, mode,
-				  GET_MODE_SIZE (single_mode));
-  rtx src0 = simplify_gen_subreg (single_mode, src, mode, 0);
-  rtx src1 = simplify_gen_subreg (single_mode, src, mode,
-				  GET_MODE_SIZE (single_mode));
+  for (unsigned int i = 0; i < npieces; ++i)
+    {
+      auto off = i * GET_MODE_SIZE (single_mode);
+      dst_pieces.safe_push (simplify_gen_subreg (single_mode, dst, mode, off));
+      src_pieces.safe_push (simplify_gen_subreg (single_mode, src, mode, off));
+    }
 
   /* At most one pairing may overlap.  */
-  if (reg_overlap_mentioned_p (dst0, src1))
-    {
-      aarch64_emit_move (dst1, src1);
-      aarch64_emit_move (dst0, src0);
-    }
+  if (reg_overlap_mentioned_p (dst_pieces[0], src))
+    for (unsigned int i = npieces; i-- > 0;)
+      aarch64_emit_move (dst_pieces[i], src_pieces[i]);
   else
-    {
-      aarch64_emit_move (dst0, src0);
-      aarch64_emit_move (dst1, src1);
-    }
+    for (unsigned int i = 0; i < npieces; ++i)
+      aarch64_emit_move (dst_pieces[i], src_pieces[i]);
 }
 
 /* Split a 128-bit move operation into two 64-bit move operations,
@@ -3338,7 +3340,7 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 	}
     }
 
-  aarch64_split_double_move (dst, src, word_mode);
+  aarch64_split_move (dst, src, word_mode);
 }
 
 /* Return true if we should split a move from 128-bit value SRC
@@ -13172,7 +13174,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case PR_REGS:
     case PR_LO_REGS:
     case PR_HI_REGS:
-      return mode == VNx32BImode ? 2 : 1;
+      return mode == VNx64BImode ? 4 : mode == VNx32BImode ? 2 : 1;
 
     case MOVEABLE_SYSREGS:
     case STACK_REG:

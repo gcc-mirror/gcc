@@ -556,6 +556,8 @@
 ;; All SVE vector structure modes.
 (define_mode_iterator SVE_STRUCT [SVE_FULLx2 SVE_FULLx3 SVE_FULLx4])
 
+(define_mode_iterator SVE_STRUCT_BI [VNx32BI VNx64BI])
+
 ;; All SVE vector and structure modes.
 (define_mode_iterator SVE_ALL_STRUCT [SVE_ALL SVE_STRUCT])
 

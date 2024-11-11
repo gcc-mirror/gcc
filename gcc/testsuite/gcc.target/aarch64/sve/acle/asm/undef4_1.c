@@ -85,3 +85,10 @@ TEST_UNDEF (uint64, svuint64x4_t,
 */
 TEST_UNDEF (float64, svfloat64x4_t,
 	    z0 = svundef4_f64 ())
+
+/*
+** bools:
+**	ret
+*/
+TEST_UNDEF_B (bools, svboolx4_t,
+	      p0 = svundef4_b ())

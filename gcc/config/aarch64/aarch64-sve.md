@@ -1074,9 +1074,9 @@
 ;; ---- Moves of multiple predicates
 ;; -------------------------------------------------------------------------
 
-(define_insn_and_split "movvnx32bi"
-  [(set (match_operand:VNx32BI 0 "nonimmediate_operand")
-	(match_operand:VNx32BI 1 "aarch64_mov_operand"))]
+(define_insn_and_split "mov<mode>"
+  [(set (match_operand:SVE_STRUCT_BI 0 "nonimmediate_operand")
+	(match_operand:SVE_STRUCT_BI 1 "aarch64_mov_operand"))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   ]
      [ Upa      , Upa ] #
@@ -1086,7 +1086,7 @@
   "&& reload_completed"
   [(const_int 0)]
   {
-    aarch64_split_double_move (operands[0], operands[1], VNx16BImode);
+    aarch64_split_move (operands[0], operands[1], VNx16BImode);
     DONE;
   }
 )

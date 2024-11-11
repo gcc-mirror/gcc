@@ -543,6 +543,14 @@
     return z0;				\
   }
 
+#define TEST_UNDEF_B(NAME, TYPE, CODE)	\
+  PROTO (NAME, TYPE, (void))		\
+  {					\
+    TYPE p0;				\
+    CODE;				\
+    return p0;				\
+  }
+
 #define TEST_CREATE(NAME, TTYPE, ZTYPE, CODE1, CODE2)		\
   PROTO (NAME, TTYPE, (ZTYPE unused0, ZTYPE unused1,		\
 		       ZTYPE unused2, ZTYPE unused3,		\
