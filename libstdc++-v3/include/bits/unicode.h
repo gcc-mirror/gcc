@@ -377,7 +377,7 @@ namespace __unicode
 	      {
 		++_M_curr();
 		__to_incr = 2;
-		uint32_t __x = (__u & 0x3F) << 10 | __u2 & 0x3FF;
+		uint32_t __x = (__u & 0x3F) << 10 | (__u2 & 0x3FF);
 		uint32_t __w = (__u >> 6) & 0x1F;
 		__c = (__w + 1) << 16 | __x;
 	      }
