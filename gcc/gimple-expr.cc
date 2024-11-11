@@ -385,6 +385,8 @@ copy_var_decl (tree var, tree name, tree type)
   DECL_CONTEXT (copy) = DECL_CONTEXT (var);
   TREE_USED (copy) = 1;
   DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
+  if (VAR_P (var))
+    VAR_POINTS_TO_READONLY (copy) = VAR_POINTS_TO_READONLY (var);
   DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
   if (DECL_USER_ALIGN (var))
     {

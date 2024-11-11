@@ -80,16 +80,16 @@ end program main
 ! The front end turns OpenACC 'declare' into OpenACC 'data'.
 !   { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:\\*b\\) map\\(alloc:b.+ map\\(to:\\*c\\) map\\(alloc:c.+" 1 "original" } }
 !   { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:g\\) map\\(to:h\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc parallel map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc parallel map\\(readonly,to:a.+ map\\(alloc:a.+ map\\(readonly,to:b.+ map\\(alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc kernels map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc kernels map\\(readonly,to:a.+ map\\(alloc:a.+ map\\(readonly,to:b.+ map\\(alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc serial map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc serial map\\(readonly,to:a.+ map\\(alloc:a.+ map\\(readonly,to:b.+ map\\(alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:a.+ map\\(alloc:a.+ map\\(readonly,to:b.+ map\\(alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc enter data map\\(readonly,to:\\*.+ map\\(alloc:a.+ map\\(readonly,to:\\*.+ map\\(alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
-! { dg-final { scan-tree-dump-times "(?n)#pragma acc enter data map\\(readonly,to:a.+ map\\(alloc:a.+ map\\(readonly,to:b.+ map\\(alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc parallel map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc parallel map\\(readonly,to:a.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:b.+ map\\(pt_readonly,alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc kernels map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc kernels map\\(readonly,to:a.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:b.+ map\\(pt_readonly,alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc serial map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc serial map\\(readonly,to:a.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:b.+ map\\(pt_readonly,alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc data map\\(readonly,to:a.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:b.+ map\\(pt_readonly,alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc enter data map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:\\*.+ map\\(pt_readonly,alloc:b.+ map\\(to:\\*.+ map\\(alloc:c.+" 1 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)#pragma acc enter data map\\(readonly,to:a.+ map\\(pt_readonly,alloc:a.+ map\\(readonly,to:b.+ map\\(pt_readonly,alloc:b.+ map\\(to:c.+ map\\(alloc:c.+" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "(?n)#pragma acc cache \\(readonly:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parm.*data \\\[len: .+\\\]\\) \\(readonly:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parm.*data \\\[len: .+\\\]\\);" 8 "original" } }
 ! { dg-final { scan-tree-dump-times "(?n)#pragma acc cache \\(\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parm.*data \\\[len: .+\\\]\\);" 8 "original" } }
