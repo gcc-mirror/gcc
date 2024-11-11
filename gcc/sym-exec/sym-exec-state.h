@@ -276,6 +276,14 @@ class state {
   /* Make a copy of given bits.  */
   static vec<value_bit *> *make_copy (vec<value_bit *> *bits);
 
+  /* Create LFSR value for the reversed CRC.  */
+  static void create_reversed_lfsr (value &lfsr, const value &crc,
+				    const value &polynomial);
+
+  /* Create LFSR value for the forward CRC.  */
+  static void create_forward_lfsr (value &lfsr, const value &crc,
+				   const value &polynomial);
+
  public:
   /* Default constructor for state.  */
   state () = default;
@@ -407,6 +415,9 @@ class state {
 
   /* Returns status of last added condition.  */
   condition_status get_last_cond_status ();
+
+  /* Create LFSR value.  */
+  static value *create_lfsr (tree crc, value *polynomial, bool is_bit_forward);
 };
 
 

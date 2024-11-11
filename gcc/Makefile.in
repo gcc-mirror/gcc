@@ -1730,6 +1730,7 @@ OBJS = \
 	tree-iterator.o \
 	tree-logical-location.o \
 	tree-loop-distribution.o \
+	crc-verification.o \
 	gimple-crc-optimization.o \
 	sym-exec/sym-exec-expression.o \
 	sym-exec/sym-exec-state.o \

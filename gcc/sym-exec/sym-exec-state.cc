@@ -2065,6 +2065,55 @@ state::print_value (value *var)
 }
 
 
+/* Create LFSR value for the reversed CRC.  */
+
+void
+state::create_reversed_lfsr (value &lfsr, const value &crc,
+			     const value &polynomial)
+{
+  size_t size = polynomial.length ();
+
+  /* Determine values of all bits, except MSB.  */
+  for (size_t i = 0; i < size - 1; i++)
+  {
+    if (as_a<bit *> (polynomial[i])->get_val ())
+      lfsr.push (state::xor_two_bits (crc[i + 1], crc[0]));
+    else
+      lfsr.push (crc[i + 1]->copy ());
+  }
+
+  /* Determine value of MSB.  */
+  if (as_a<bit *> (polynomial[size - 1])->get_val ())
+    lfsr.push (crc[0]->copy ());
+  else
+    lfsr.push (new bit (0));
+}
+
+
+/* Create LFSR value for the forward CRC.  */
+
+void
+state::create_forward_lfsr (value &lfsr, const value &crc,
+			    const value &polynomial)
+{
+  size_t size = polynomial.length ();
+  /* Determine value of LSB.  */
+  if (as_a<bit *> (polynomial[0])->get_val ())
+    lfsr.push (crc[size - 1]->copy ());
+  else
+    lfsr.push (new bit (0));
+
+  /* Determine values of remaining bits.  */
+  for (size_t i = 1; i < size; i++)
+  {
+    if (as_a<bit *> (polynomial[i])->get_val ())
+      lfsr.push (state::xor_two_bits (crc[i - 1], crc[size - 1]));
+    else
+      lfsr.push (crc[i - 1]->copy ());
+  }
+}
+
+
 /* Get the last 1 bit index.  */
 
 size_t
@@ -2076,6 +2125,58 @@ last_set_bit (const value &polynomial)
 	return polynomial.length () - i - 1;
     }
   return 0;
+}
+
+
+/* Create LFSR value.  */
+
+value *
+state::create_lfsr (tree crc, value *polynomial, bool is_bit_forward)
+{
+  /* Check size compatibility․  */
+  unsigned HOST_WIDE_INT polynomial_length = polynomial->length ();
+  unsigned HOST_WIDE_INT crc_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (crc)));
+  if (crc_size < polynomial_length)
+  {
+    if (dump_file && (dump_flags & TDF_DETAILS))
+      fprintf (dump_file, "LFSR state creation: "
+			  "Polynomial doesn't fit into the crc.\n");
+
+    return nullptr;
+  }
+
+  /* Get the minimal byte size to keep the polynomial.
+     Ie, if the last 1 bit of the polynomial is at 6 index, size will be 8.  */
+  size_t required_polynomial_size = ((last_set_bit (*polynomial)/8) + 1) * 8;
+
+  /* Polynomial's length actually equals to the CRC variable's size.
+     Now we detect only those CRC calculation algorithms, where leading 1 of the
+     polynomial isn't kept.  */
+  if (required_polynomial_size == 0
+      || required_polynomial_size != polynomial_length)
+  {
+    if (dump_file && (dump_flags & TDF_DETAILS))
+      fprintf (dump_file, "Polynomial's all bits are zeros "
+			  "or the size of the polynomial is uncertain.\n");
+    return nullptr;
+  }
+
+  /* Create vector of symbolic bits for crc.  */
+  value crc_value (polynomial_length, TYPE_UNSIGNED (TREE_TYPE (crc)));
+
+  for (unsigned HOST_WIDE_INT i = 0; i < polynomial_length; i++)
+  crc_value.push (new symbolic_bit (i, crc));
+
+  /* create LFSR vector.  */
+  value *lfsr = new value (polynomial_length, TYPE_UNSIGNED (TREE_TYPE (crc)));
+
+  /* Calculate values for LFSR.  */
+  if (is_bit_forward)
+    create_forward_lfsr (*lfsr, crc_value, *polynomial);
+  else
+    create_reversed_lfsr (*lfsr, crc_value, *polynomial);
+
+  return lfsr;
 }
 
 

@@ -31,11 +31,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "crc-verification.h"
 
 class crc_optimization {
  private:
   /* Record of statements already seen.  */
   bitmap m_visited_stmts;
+
+  /* Input CRC of the loop.  */
+  tree m_crc_arg;
+
+  /* Input data of the loop.  */
+  tree m_data_arg;
 
   /* The statement doing shift 1 operation before/after xor operation.  */
   gimple *m_shift_stmt;
@@ -49,6 +56,9 @@ class crc_optimization {
 
   /* The loop, which probably calculates CRC.  */
   class loop *m_crc_loop;
+
+  /* Polynomial used in CRC calculation.  */
+  unsigned HOST_WIDE_INT m_polynomial;
 
   /* Depending on the value of M_IS_BIT_FORWARD, may be forward or reversed CRC.
      If M_IS_BIT_FORWARD, then it is bit-forward implementation,
@@ -67,6 +77,15 @@ class crc_optimization {
      being used in xor.
      Xor must be done under the condition of MSB/LSB being 1.  */
   bool loop_may_calculate_crc (class loop *loop);
+
+  /* Symbolically executes the loop and checks that LFSR and resulting states
+     match.
+     Returns true if it is verified that the loop calculates CRC.
+     Otherwise, return false.
+     OUTPUT_CRC is the phi statement which will hold the calculated CRC value
+     after the loop exit.  */
+  bool loop_calculates_crc (gphi *output_crc,
+			    std::pair<tree, value *> calc_polynom);
 
   /* Returns true if there is only two conditional blocks in the loop
      (one may be for the CRC bit check and the other for the loop counter).
@@ -182,9 +201,33 @@ class crc_optimization {
   /* Prints extracted details of CRC calculation.  */
   void dump_crc_information ();
 
+  /* Returns true if OUTPUT_CRC's result is the input of m_phi_for_crc.
+     Otherwise, returns false.  */
+  bool is_output_crc (gphi *output_crc);
+
+  /* Swaps m_phi_for_crc and m_phi_for_data if they are mixed.  */
+  void swap_crc_and_data_if_needed (gphi *output_crc);
+
+  /* Validates CRC and data arguments and
+   sets them for potential CRC loop replacement.
+
+   The function extracts the CRC and data arguments from PHI nodes and
+   performs several checks to ensure that the CRC and data are suitable for
+   replacing the CRC loop with a more efficient implementation.
+
+  Returns true if the arguments are valid and the loop replacement is possible,
+  false otherwise.  */
+  bool validate_crc_and_data ();
+
+  /* Convert polynomial to unsigned HOST_WIDE_INT.  */
+  void construct_constant_polynomial (value *polynomial);
+
+  /* Returns phi statement which may hold the calculated CRC.  */
+  gphi *get_output_phi ();
+
  public:
   crc_optimization () : m_visited_stmts (BITMAP_ALLOC (NULL)),
-			m_crc_loop (nullptr)
+			m_crc_loop (nullptr), m_polynomial (0)
   {
     set_initial_values ();
   }
@@ -708,6 +751,8 @@ crc_optimization::cond_depends_on_crc (auto_vec<gimple *>& stmts)
 void
 crc_optimization::set_initial_values ()
 {
+  m_crc_arg = nullptr;
+  m_data_arg = nullptr;
   m_shift_stmt = nullptr;
   m_phi_for_crc = nullptr;
   m_phi_for_data = nullptr;
@@ -936,6 +981,232 @@ crc_optimization::loop_may_calculate_crc (class loop *loop)
   return false;
 }
 
+/* Symbolically executes the loop and checks that LFSR and resulting states
+   match.
+   Returns true if it is verified that the loop calculates CRC.
+   Otherwise, return false.
+   OUTPUT_CRC is the phi statement which will hold the calculated CRC value
+   after the loop exit.  */
+
+bool
+crc_optimization::loop_calculates_crc (gphi *output_crc,
+				       std::pair<tree, value *> calc_polynom)
+{
+  /* Create LFSR state using extracted polynomial.  */
+  value * lfsr = state::create_lfsr (calc_polynom.first, calc_polynom.second,
+				     m_is_bit_forward);
+  if (!lfsr)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Couldn't create LFSR!\n");
+      return false;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nLFSR value is \n");
+      state::print_value (lfsr);
+    }
+
+  /* Execute the loop with symbolic values
+     (symbolic value is assigned to the variable when its value isn't known)
+     to keep states, for further comparison.  */
+  bool is_crc = true;
+  crc_symbolic_execution loop_executor (m_crc_loop, output_crc);
+  while (!loop_executor.is_last_iteration ())
+    {
+      if (!loop_executor.symb_execute_crc_loop ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "\nCRC verification didn't succeed "
+				"during symbolic execution!\n");
+	  is_crc = false;
+	  break;
+	}
+
+      /* Check whether LFSR and obtained states are same.  */
+      tree calculated_crc = PHI_ARG_DEF_FROM_EDGE (output_crc,
+						   single_exit (m_crc_loop));
+      if (!all_states_match_lfsr (lfsr, m_is_bit_forward, calculated_crc,
+				 loop_executor.get_final_states ()))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Returned state and LFSR differ.\n");
+	  is_crc = false;
+	  break;
+	}
+    }
+  delete lfsr;
+  return is_crc;
+}
+
+/* Returns true if OUTPUT_CRC's result is the input of M_PHI_FOR_CRC.
+  Otherwise, returns false.  */
+
+bool
+crc_optimization::is_output_crc (gphi *output_crc)
+{
+  tree crc_of_exit
+    = PHI_ARG_DEF_FROM_EDGE (output_crc, single_exit (m_crc_loop));
+  tree crc_of_latch
+    = PHI_ARG_DEF_FROM_EDGE (m_phi_for_crc, loop_latch_edge (m_crc_loop));
+  if (crc_of_exit == crc_of_latch)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Output CRC is ");
+	  print_gimple_expr (dump_file, (gimple *) output_crc, dump_flags);
+	  fprintf (dump_file, "\n");
+	}
+      return true;
+    }
+  else
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Output CRC and determined input CRC "
+			    "differ.\n");
+      return false;
+    }
+}
+
+/* Swaps M_PHI_FOR_CRC and M_PHI_FOR_DATA if they are mixed.  */
+
+void
+crc_optimization::swap_crc_and_data_if_needed (gphi *output_crc)
+{
+  tree crc_of_exit
+    = PHI_ARG_DEF_FROM_EDGE (output_crc, single_exit (m_crc_loop));
+  edge crc_loop_latch = loop_latch_edge (m_crc_loop);
+  if (crc_of_exit != PHI_ARG_DEF_FROM_EDGE (m_phi_for_crc, crc_loop_latch))
+    {
+      if (m_phi_for_data
+	  && crc_of_exit == PHI_ARG_DEF_FROM_EDGE (m_phi_for_data,
+						   crc_loop_latch))
+	{
+	  std::swap (m_phi_for_crc, m_phi_for_data);
+	}
+    }
+}
+
+/* Validates CRC and data arguments and
+   sets them for potential CRC loop replacement.
+
+   The function extracts the CRC and data arguments from PHI nodes and
+   performs several checks to ensure that the CRC and data are suitable for
+   replacing the CRC loop with a more efficient implementation.
+
+  Returns true if the arguments are valid and the loop replacement is possible,
+  false otherwise.  */
+
+bool crc_optimization::validate_crc_and_data ()
+{
+  /* Set m_crc_arg and check if fits in word_mode.  */
+  gcc_assert (m_phi_for_crc);
+  m_crc_arg = PHI_ARG_DEF_FROM_EDGE (m_phi_for_crc,
+				     loop_preheader_edge (m_crc_loop));
+  gcc_assert (m_crc_arg);
+
+  unsigned HOST_WIDE_INT
+  data_size = tree_to_uhwi (m_crc_loop->nb_iterations) + 1;
+  /* We don't support the case where data is larger than the CRC.  */
+  if (TYPE_PRECISION (TREE_TYPE (m_crc_arg)) < data_size)
+    return false;
+
+  /* Set m_data_arg if a PHI node for data exists,
+     and check its size against loop iterations.
+     This is the case when data and CRC are XOR-ed in the loop.  */
+  if (m_phi_for_data)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Data and CRC are xor-ed in the for loop.  Initializing data "
+		 "with its value.\n");
+      m_data_arg = PHI_ARG_DEF_FROM_EDGE (m_phi_for_data,
+					  loop_preheader_edge (m_crc_loop));
+      gcc_assert (m_data_arg);
+      if (TYPE_PRECISION (TREE_TYPE (m_data_arg)) != data_size)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Loop iteration number and data's size differ.\n");
+	  return false;
+	}
+	return true;
+    }
+  return true;
+}
+
+/* Convert polynomial to unsigned HOST_WIDE_INT.  */
+
+void
+crc_optimization::construct_constant_polynomial (value *polynomial)
+{
+  m_polynomial = 0;
+  for (unsigned i = 0; i < (*polynomial).length (); i++)
+    {
+      value_bit *const_bit;
+      if (m_is_bit_forward)
+	const_bit = (*polynomial)[(*polynomial).length () - 1 - i];
+      else
+	const_bit = (*polynomial)[i];
+      m_polynomial <<= 1;
+      m_polynomial ^= (as_a<bit *> (const_bit))->get_val () ? 1 : 0;
+    }
+}
+
+/* Returns phi statement which may hold the calculated CRC.  */
+
+gphi *
+crc_optimization::get_output_phi ()
+{
+  edge loop_exit = single_exit (m_crc_loop);
+  if (!loop_exit)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "The loop doesn't have single exit.\n");
+      return nullptr;
+    }
+  basic_block bb = loop_exit->dest;
+  gphi *output_crc = nullptr;
+  int phi_count = 0;
+
+  /* We are only interested in cases when there is only one phi at the
+   loop exit, and that phi can potentially represent the CRC.
+   If there are other phis present, it indicates that additional values are
+   being calculated within the loop that are used outside it.  */
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      tree phi_result = gimple_phi_result (gsi.phi ());
+
+      /* Don't consider virtual operands.  */
+      if (!virtual_operand_p (phi_result))
+	{
+	  if (phi_count < 1)
+	    {
+	      output_crc = gsi.phi ();
+	      phi_count++;
+	    }
+	  else
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "There is more than one output phi.\n");
+	      return nullptr;
+	    }
+	}
+    }
+
+  if (output_crc)
+    {
+      if (gimple_phi_num_args (output_crc) == 1)
+	return output_crc;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Couldn't determine output CRC.\n");
+  return nullptr;
+}
+
 unsigned int
 crc_optimization::execute (function *fun)
 {
@@ -951,7 +1222,48 @@ crc_optimization::execute (function *fun)
   for (auto loop: loop_list)
     {
       /* Perform initial checks to filter out non-CRCs.  */
-      loop_may_calculate_crc (loop);
+      if (loop_may_calculate_crc (loop))
+	{
+	  /* Get the phi which will hold the calculated CRC.  */
+	  gphi *output_crc = get_output_phi ();
+	  if (!output_crc)
+	    break;
+
+	  swap_crc_and_data_if_needed (output_crc);
+	  if (!is_output_crc (output_crc))
+	    break;
+	  if (!validate_crc_and_data ())
+	    break;
+
+	  edge loop_latch = loop_latch_edge (m_crc_loop);
+	  tree calced_crc = PHI_ARG_DEF_FROM_EDGE (m_phi_for_crc, loop_latch);
+	  crc_symbolic_execution execute_loop (m_crc_loop, nullptr);
+	  /* Execute the loop assigning specific values to CRC and data
+	     for extracting the polynomial.  */
+	  std::pair <tree, value *>
+	      calc_polynom = execute_loop.extract_polynomial (m_phi_for_crc,
+							      m_phi_for_data,
+							      calced_crc,
+							      m_is_bit_forward);
+
+	  value *polynom_value = calc_polynom.second;
+	  /* Stop analysis if we couldn't get the polynomial's value.  */
+	  if (!polynom_value)
+	    break;
+
+	  /* Stop analysis in case optimize_size is specified
+	     and table-based would be generated.  This check is only needed for
+	     TARGET_CRC case, as polynomial's value isn't known in the
+	     beginning.  */
+	  construct_constant_polynomial (polynom_value);
+
+	  if (!loop_calculates_crc (output_crc, calc_polynom))
+	    break;
+
+	  if (dump_file)
+	    fprintf (dump_file, "The loop with %d header BB index "
+				"calculates CRC!\n", m_crc_loop->header->index);
+	}
     }
   return 0;
 }
