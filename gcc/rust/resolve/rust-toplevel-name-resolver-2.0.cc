@@ -241,13 +241,10 @@ TopLevel::visit (AST::BlockExpr &expr)
 void
 TopLevel::visit (AST::StaticItem &static_item)
 {
-  auto sub_vis
-    = [this, &static_item] () { static_item.get_expr ().accept_vis (*this); };
-
-  ctx.scoped (Rib::Kind::Item, static_item.get_node_id (), sub_vis);
-
-  insert_or_error_out (static_item.get_identifier ().as_string (), static_item,
+  insert_or_error_out (static_item.get_identifier (), static_item,
 		       Namespace::Values);
+
+  DefaultResolver::visit (static_item);
 }
 
 void
