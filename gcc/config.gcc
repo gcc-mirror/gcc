@@ -4133,7 +4133,7 @@ if test x$with_arch = x ; then
       with_arch=mips2
       ;;
     nvptx-*)
-      with_arch=sm_30
+      with_arch=sm_52
       ;;
   esac
 
@@ -5596,7 +5596,7 @@ case "${target}" in
 	nvptx-*)
 		supported_defaults=arch
 
-		nvptx_multilibs_default=sm_30
+		nvptx_multilibs_default=sm_52
 
 		case "x${with_multilib_list}" in
 		x | xno)
