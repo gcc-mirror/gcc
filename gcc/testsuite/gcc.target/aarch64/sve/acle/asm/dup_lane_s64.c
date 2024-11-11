@@ -5,7 +5,7 @@
 /*
 ** dup_lane_x0_s64_tied1:
 **	mov	(z[0-9]+\.d), x0
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_ZX (dup_lane_x0_s64_tied1, svint64_t, uint64_t,
@@ -15,7 +15,7 @@ TEST_UNIFORM_ZX (dup_lane_x0_s64_tied1, svint64_t, uint64_t,
 /*
 ** dup_lane_x0_s64_untied:
 **	mov	(z[0-9]+\.d), x0
-**	tbl	z0\.d, z1\.d, \1
+**	tbl	z0\.d, {z1\.d}, \1
 **	ret
 */
 TEST_UNIFORM_ZX (dup_lane_x0_s64_untied, svint64_t, uint64_t,
@@ -52,7 +52,7 @@ TEST_UNIFORM_Z (dup_lane_7_s64, svint64_t,
 /*
 ** dup_lane_8_s64:
 **	mov	(z[0-9]+\.d), #8
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_8_s64, svint64_t,
@@ -62,7 +62,7 @@ TEST_UNIFORM_Z (dup_lane_8_s64, svint64_t,
 /*
 ** dup_lane_15_s64:
 **	mov	(z[0-9]+\.d), #15
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_15_s64, svint64_t,
@@ -72,7 +72,7 @@ TEST_UNIFORM_Z (dup_lane_15_s64, svint64_t,
 /*
 ** dup_lane_16_s64:
 **	mov	(z[0-9]+\.d), #16
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_16_s64, svint64_t,
@@ -82,7 +82,7 @@ TEST_UNIFORM_Z (dup_lane_16_s64, svint64_t,
 /*
 ** dup_lane_31_s64:
 **	mov	(z[0-9]+\.d), #31
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_31_s64, svint64_t,
@@ -92,7 +92,7 @@ TEST_UNIFORM_Z (dup_lane_31_s64, svint64_t,
 /*
 ** dup_lane_32_s64:
 **	mov	(z[0-9]+\.d), #32
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_32_s64, svint64_t,
@@ -102,7 +102,7 @@ TEST_UNIFORM_Z (dup_lane_32_s64, svint64_t,
 /*
 ** dup_lane_63_s64:
 **	mov	(z[0-9]+\.d), #63
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_63_s64, svint64_t,
@@ -112,7 +112,7 @@ TEST_UNIFORM_Z (dup_lane_63_s64, svint64_t,
 /*
 ** dup_lane_64_s64:
 **	mov	(z[0-9]+\.d), #64
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_64_s64, svint64_t,
@@ -122,7 +122,7 @@ TEST_UNIFORM_Z (dup_lane_64_s64, svint64_t,
 /*
 ** dup_lane_255_s64:
 **	mov	(z[0-9]+\.d), #255
-**	tbl	z0\.d, z0\.d, \1
+**	tbl	z0\.d, {z0\.d}, \1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_255_s64, svint64_t,

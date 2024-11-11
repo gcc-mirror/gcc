@@ -25,7 +25,7 @@ VEC_PERM (vnx2df, vnx2di)
 VEC_PERM (vnx4sf, vnx4si)
 VEC_PERM (vnx8hf, vnx8hi)
 
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.s, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.h, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
-/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.b, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.d, {z[0-9]+\.d}, z[0-9]+\.d\n} 2 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.s, {z[0-9]+\.s}, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.h, {z[0-9]+\.h}, z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\ttbl\tz[0-9]+\.b, {z[0-9]+\.b}, z[0-9]+\.b\n} 1 } } */

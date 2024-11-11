@@ -9040,7 +9040,7 @@
 	   (match_operand:<V_INT_EQUIV> 2 "register_operand" "w")]
 	  UNSPEC_TBL))]
   "TARGET_SVE"
-  "tbl\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
+  "tbl\t%0.<Vetype>, {%1.<Vetype>}, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------

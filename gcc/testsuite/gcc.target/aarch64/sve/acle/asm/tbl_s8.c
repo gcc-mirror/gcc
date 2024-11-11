@@ -4,7 +4,7 @@
 
 /*
 ** tbl_s8_tied1:
-**	tbl	z0\.b, z0\.b, z4\.b
+**	tbl	z0\.b, {z0\.b}, z4\.b
 **	ret
 */
 TEST_DUAL_Z (tbl_s8_tied1, svint8_t, svuint8_t,
@@ -13,7 +13,7 @@ TEST_DUAL_Z (tbl_s8_tied1, svint8_t, svuint8_t,
 
 /*
 ** tbl_s8_tied2:
-**	tbl	z0\.b, z4\.b, z0\.b
+**	tbl	z0\.b, {z4\.b}, z0\.b
 **	ret
 */
 TEST_DUAL_Z_REV (tbl_s8_tied2, svint8_t, svuint8_t,
@@ -22,7 +22,7 @@ TEST_DUAL_Z_REV (tbl_s8_tied2, svint8_t, svuint8_t,
 
 /*
 ** tbl_s8_untied:
-**	tbl	z0\.b, z1\.b, z4\.b
+**	tbl	z0\.b, {z1\.b}, z4\.b
 **	ret
 */
 TEST_DUAL_Z (tbl_s8_untied, svint8_t, svuint8_t,

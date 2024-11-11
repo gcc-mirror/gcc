@@ -4,7 +4,7 @@
 
 /*
 ** tbl_f32_tied1:
-**	tbl	z0\.s, z0\.s, z4\.s
+**	tbl	z0\.s, {z0\.s}, z4\.s
 **	ret
 */
 TEST_DUAL_Z (tbl_f32_tied1, svfloat32_t, svuint32_t,
@@ -13,7 +13,7 @@ TEST_DUAL_Z (tbl_f32_tied1, svfloat32_t, svuint32_t,
 
 /*
 ** tbl_f32_tied2:
-**	tbl	z0\.s, z4\.s, z0\.s
+**	tbl	z0\.s, {z4\.s}, z0\.s
 **	ret
 */
 TEST_DUAL_Z_REV (tbl_f32_tied2, svfloat32_t, svuint32_t,
@@ -22,7 +22,7 @@ TEST_DUAL_Z_REV (tbl_f32_tied2, svfloat32_t, svuint32_t,
 
 /*
 ** tbl_f32_untied:
-**	tbl	z0\.s, z1\.s, z4\.s
+**	tbl	z0\.s, {z1\.s}, z4\.s
 **	ret
 */
 TEST_DUAL_Z (tbl_f32_untied, svfloat32_t, svuint32_t,

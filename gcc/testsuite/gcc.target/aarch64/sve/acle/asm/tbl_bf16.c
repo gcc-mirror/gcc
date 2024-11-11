@@ -4,7 +4,7 @@
 
 /*
 ** tbl_bf16_tied1:
-**	tbl	z0\.h, z0\.h, z4\.h
+**	tbl	z0\.h, {z0\.h}, z4\.h
 **	ret
 */
 TEST_DUAL_Z (tbl_bf16_tied1, svbfloat16_t, svuint16_t,
@@ -13,7 +13,7 @@ TEST_DUAL_Z (tbl_bf16_tied1, svbfloat16_t, svuint16_t,
 
 /*
 ** tbl_bf16_tied2:
-**	tbl	z0\.h, z4\.h, z0\.h
+**	tbl	z0\.h, {z4\.h}, z0\.h
 **	ret
 */
 TEST_DUAL_Z_REV (tbl_bf16_tied2, svbfloat16_t, svuint16_t,
@@ -22,7 +22,7 @@ TEST_DUAL_Z_REV (tbl_bf16_tied2, svbfloat16_t, svuint16_t,
 
 /*
 ** tbl_bf16_untied:
-**	tbl	z0\.h, z1\.h, z4\.h
+**	tbl	z0\.h, {z1\.h}, z4\.h
 **	ret
 */
 TEST_DUAL_Z (tbl_bf16_untied, svbfloat16_t, svuint16_t,
