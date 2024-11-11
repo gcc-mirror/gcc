@@ -33,7 +33,6 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
-with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch7;        use Exp_Ch7;
 with Exp_Disp;       use Exp_Disp;
 with Exp_Pakd;       use Exp_Pakd;
@@ -767,16 +766,23 @@ package body Freeze is
             Append_Freeze_Action (E,
               Make_Assignment_Statement (Sloc (Decl),
                 Name       => Lhs,
-                Expression => Expression (Decl)));
+                Expression => Init));
 
             Set_No_Initialization (Decl);
 
             --  If the object is tagged, check whether the tag must be
             --  reassigned explicitly.
 
-            Tag_Assign := Make_Tag_Assignment (Decl);
-            if Present (Tag_Assign) then
-               Append_Freeze_Action (E, Tag_Assign);
+            if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
+               Tag_Assign :=
+                 Make_Tag_Assignment_From_Type
+                   (Sloc (Decl),
+                    New_Occurrence_Of (E, Sloc (Decl)),
+                    Underlying_Type (Typ));
+
+               if Present (Tag_Assign) then
+                  Append_Freeze_Action (E, Tag_Assign);
+               end if;
             end if;
          end if;
       end if;
