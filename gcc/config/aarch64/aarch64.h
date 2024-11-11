@@ -490,6 +490,10 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
    functions, since streaming mode itself implies SME.  */
 #define TARGET_SVE2p1_OR_SME (TARGET_SVE2p1 || TARGET_STREAMING)
 
+#define TARGET_SVE2p1_OR_SME2 \
+  ((TARGET_SVE2p1 || TARGET_STREAMING) \
+   && (TARGET_SME2 || TARGET_NON_STREAMING))
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

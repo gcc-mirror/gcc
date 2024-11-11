@@ -1,0 +1,57 @@
+/* { dg-do assemble { target aarch64_asm_sve2p1_ok } } */
+/* { dg-do compile { target { ! aarch64_asm_sve2p1_ok } } } */
+/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
+
+#include "test_sve_acle.h"
+
+#pragma GCC target "+sve2p1"
+#ifdef STREAMING_COMPATIBLE
+#pragma GCC target "+sme2"
+#endif
+
+/*
+** qcvtn_z0_z0:
+**	sqcvtn	z0\.h, {z0\.s - z1\.s}
+**	ret
+*/
+TEST_X2_NARROW (qcvtn_z0_z0, svint32x2_t, svint16_t,
+		z0_res = svqcvtn_s16_s32_x2 (z0),
+		z0_res = svqcvtn_s16 (z0))
+
+/*
+** qcvtn_z0_z6:
+**	sqcvtn	z0\.h, {z6\.s - z7\.s}
+**	ret
+*/
+TEST_X2_NARROW (qcvtn_z0_z6, svint32x2_t, svint16_t,
+		z0_res = svqcvtn_s16_s32_x2 (z6),
+		z0_res = svqcvtn_s16 (z6))
+
+/*
+** qcvtn_z0_z29:
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	sqcvtn	z0\.h, [^\n]+
+**	ret
+*/
+TEST_X2_NARROW (qcvtn_z0_z29, svint32x2_t, svint16_t,
+		z0_res = svqcvtn_s16_s32_x2 (z29),
+		z0_res = svqcvtn_s16 (z29))
+
+/*
+** qcvtn_z5_z0:
+**	sqcvtn	z5\.h, {z0\.s - z1\.s}
+**	ret
+*/
+TEST_X2_NARROW (qcvtn_z5_z0, svint32x2_t, svint16_t,
+		z5 = svqcvtn_s16_s32_x2 (z0),
+		z5 = svqcvtn_s16 (z0))
+
+/*
+** qcvtn_z22_z16:
+**	sqcvtn	z22\.h, {z16\.s - z17\.s}
+**	ret
+*/
+TEST_X2_NARROW (qcvtn_z22_z16, svint32x2_t, svint16_t,
+		z22 = svqcvtn_s16_s32_x2 (z16),
+		z22 = svqcvtn_s16 (z16))

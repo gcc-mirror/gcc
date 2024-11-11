@@ -140,7 +140,7 @@
 	  [(match_operand:VNx16BI 2 "register_operand" "Uph")
 	   (match_operand:SVE_FULLx24 1 "memory_operand" "m")]
 	  LD1_COUNT))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "<optab><Vesize>\t%0, %K2/z, %1"
   [(set_attr "stride_type" "ld1_consecutive")]
 )
@@ -276,7 +276,7 @@
 	   (match_operand:SVE_FULLx24 1 "aligned_register_operand" "Uw<vector_count>")
 	   (match_dup 0)]
 	  ST1_COUNT))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "<optab><Vesize>\t%1, %K2, %0"
   [(set_attr "stride_type" "st1_consecutive")]
 )
@@ -370,7 +370,7 @@
 (define_insn "@aarch64_sve_ptrue_c<BHSD_BITS>"
   [(set (match_operand:VNx16BI 0 "register_operand" "=Uph")
 	(unspec:VNx16BI [(const_int BHSD_BITS)] UNSPEC_PTRUE_C))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "ptrue\t%K0.<bits_etype>"
 )
 
@@ -388,7 +388,7 @@
 	   (match_operand:DI 2 "const_int_operand")
 	   (const_int BHSD_BITS)]
 	  UNSPEC_PEXT))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "pext\t%0.<bits_etype>, %K1[%2]"
 )
 
@@ -399,7 +399,7 @@
 	   (match_operand:DI 2 "const_int_operand")
 	   (const_int BHSD_BITS)]
 	  UNSPEC_PEXTx2))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "pext\t{%S0.<bits_etype>, %T0.<bits_etype>}, %K1[%2]"
 )
 
@@ -451,7 +451,7 @@
 	   (match_operand:DI 2 "const_int_operand")
 	   (const_int BHSD_BITS)]
 	  UNSPEC_CNTP_C))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "cntp\t%x0, %K1.<bits_etype>, vlx%2"
 )
 
@@ -1117,7 +1117,7 @@
 	     UNSPEC_FMAXNM)
 	   (match_operand:SVE_FULL_F 3 "register_operand")]
 	  UNSPEC_FMINNM))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
@@ -1137,7 +1137,7 @@
 	     UNSPEC_COND_FMAXNM)
 	   (match_operand:SVE_FULL_F 3 "register_operand")]
 	  UNSPEC_COND_FMINNM))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] #
      [     ?&w,  w, w, w; yes           ] #
@@ -2039,7 +2039,7 @@
 	     (match_operand:VNx8HI 2 "register_operand")]
 	    DOTPROD)
 	  (match_operand:VNx4SI 3 "register_operand")))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , w , w , 0 ; *              ] <sur>dot\t%0.s, %1.h, %2.h
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %3\;<sur>dot\t%0.s, %1.h, %2.h
@@ -2137,7 +2137,7 @@
 	     (match_operand:VNx8HF 2 "register_operand")]
 	    UNSPEC_FDOT)
 	  (match_operand:VNx4SF 3 "register_operand")))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , w , w , 0 ; *              ] fdot\t%0.s, %1.h, %2.h
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %3\;fdot\t%0.s, %1.h, %2.h
@@ -2155,7 +2155,7 @@
 	       UNSPEC_SVE_LANE_SELECT)]
 	    UNSPEC_FDOT)
 	  (match_operand:VNx4SF 4 "register_operand")))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   {@ [ cons: =0 , 1 , 2 , 4 ; attrs: movprfx ]
      [ w        , w , y , 0 ; *              ] fdot\t%0.s, %1.h, %2.h[%3]
      [ ?&w      , w , y , w ; yes            ] movprfx\t%0, %4\;fdot\t%0.s, %1.h, %2.h[%3]
@@ -2222,7 +2222,7 @@
 	(unspec:VNx8HI_ONLY
 	  [(match_operand:VNx8SI_ONLY 1 "aligned_register_operand" "Uw<vector_count>")]
 	  SVE_QCVTxN))]
-  "TARGET_STREAMING_SME2"
+  ""
   "<optab>\t%0.h, %1"
 )
 
@@ -2336,6 +2336,14 @@
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Multi-vector narrowing right shifts
 ;; -------------------------------------------------------------------------
+;; Includes:
+;; - SQRSHR
+;; - SQRSHRN
+;; - SQRSHRU
+;; - SQRSHRUN
+;; - UQRSHR
+;; - UQRSHRN
+;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sve_<sve_int_op><mode>"
   [(set (match_operand:<VNARROW> 0 "register_operand" "=w")
@@ -2343,7 +2351,7 @@
 	  [(match_operand:SVE_FULL_SIx2_SDIx4 1 "register_operand" "Uw<vector_count>")
 	   (match_operand:DI 2 "const_int_operand")]
 	  SVE2_INT_SHIFT_IMM_NARROWxN))]
-  "TARGET_STREAMING_SME2"
+  "(<MODE>mode == VNx8SImode || TARGET_STREAMING_SME2)"
   "<sve_int_op>\t%0.<Ventype>, %1, #%2"
 )
 
@@ -3145,7 +3153,7 @@
 	   (const_int BHSD_BITS)]
 	  SVE_WHILE_ORDER))
    (clobber (reg:CC_NZC CC_REGNUM))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "while<cmp_op>\t{%S0.<bits_etype>, %T0.<bits_etype>}, %x1, %x2"
 )
 
@@ -3159,7 +3167,7 @@
 	   (match_operand:DI 3 "const_int_operand")]
 	  SVE_WHILE_ORDER))
    (clobber (reg:CC_NZC CC_REGNUM))]
-  "TARGET_STREAMING_SME2"
+  "TARGET_SVE2p1_OR_SME2"
   "while<cmp_op>\t%K0.<bits_etype>, %x1, %x2, vlx%3"
 )
 

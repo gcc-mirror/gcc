@@ -1062,8 +1062,9 @@ is_stride_candidate (rtx_insn *insn)
     return false;
 
   auto stride_type = get_attr_stride_type (insn);
-  return (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
-	  || stride_type == STRIDE_TYPE_ST1_CONSECUTIVE);
+  return (TARGET_STREAMING_SME2
+	  && (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
+	      || stride_type == STRIDE_TYPE_ST1_CONSECUTIVE));
 }
 
 // Go through the constraints of INSN, which has already been extracted,
@@ -3213,9 +3214,9 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
   auto stride_type = get_attr_stride_type (insn);
   rtx pat = PATTERN (insn);
   rtx op;
-  if (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
+  if (TARGET_STREAMING_SME2 && stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
     op = SET_DEST (pat);
-  else if (stride_type == STRIDE_TYPE_ST1_CONSECUTIVE)
+  else if (TARGET_STREAMING_SME2 && stride_type == STRIDE_TYPE_ST1_CONSECUTIVE)
     op = XVECEXP (SET_SRC (pat), 0, 1);
   else
     return false;
