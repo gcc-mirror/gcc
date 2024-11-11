@@ -1731,6 +1731,9 @@ OBJS = \
 	tree-logical-location.o \
 	tree-loop-distribution.o \
 	gimple-crc-optimization.o \
+	sym-exec/sym-exec-expression.o \
+	sym-exec/sym-exec-state.o \
+	sym-exec/sym-exec-condition.o \
 	tree-nested.o \
 	tree-nrv.o \
 	tree-object-size.o \
