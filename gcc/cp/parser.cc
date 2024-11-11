@@ -7733,6 +7733,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
     case RID_BUILTIN_ASSOC_BARRIER:
+    case RID_BUILTIN_OPERATOR_NEW:
+    case RID_BUILTIN_OPERATOR_DELETE:
       {
 	vec<tree, va_gc> *vec;
 
@@ -7816,6 +7818,39 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		postfix_expression
 		  = build_x_shufflevector (loc, vec, tf_warning_or_error);
+	      }
+	    break;
+
+	  case RID_BUILTIN_OPERATOR_NEW:
+	  case RID_BUILTIN_OPERATOR_DELETE:
+	    tree fn;
+	    fn = ovl_op_identifier (keyword == RID_BUILTIN_OPERATOR_NEW
+				    ? NEW_EXPR : DELETE_EXPR);
+	    fn = lookup_qualified_name (global_namespace, fn);
+	    postfix_expression = finish_call_expr (fn, &vec, true, false,
+						   tf_warning_or_error);
+	    if (postfix_expression != error_mark_node)
+	      {
+		tree call = extract_call_expr (postfix_expression);
+		fn = cp_get_callee_fndecl_nofold (call);
+		if (fn ? !DECL_IS_REPLACEABLE_OPERATOR (fn)
+		       : !processing_template_decl)
+		  {
+		    auto_diagnostic_group d;
+		    if (keyword == RID_BUILTIN_OPERATOR_NEW)
+		      error_at (loc, "call to %<__builtin_operator_new%> "
+				     "does not select replaceable global "
+				     "allocation function");
+		    else 
+		      error_at (loc, "call to %<__builtin_operator_delete%> "
+				     "does not select replaceable global "
+				     "deallocation function");
+		    if (fn)
+		      inform (DECL_SOURCE_LOCATION (fn),
+			      "selected function declared here");
+		  }
+		else if (call && TREE_CODE (call) == CALL_EXPR)
+		  CALL_FROM_NEW_OR_DELETE_P (call) = 1;
 	      }
 	    break;
 

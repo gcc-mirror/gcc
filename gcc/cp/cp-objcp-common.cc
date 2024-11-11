@@ -545,10 +545,10 @@ identifier_global_tag (tree name)
   return ret;
 }
 
-/* Returns true if NAME refers to a built-in function or function-like
-   operator.  */
+/* Returns non-zero (result of __has_builtin) if NAME refers to a built-in
+   function or function-like operator.  */
 
-bool
+int
 names_builtin_p (const char *name)
 {
   tree id = get_identifier (name);
@@ -556,23 +556,23 @@ names_builtin_p (const char *name)
     {
       if (TREE_CODE (binding) == FUNCTION_DECL
 	  && DECL_IS_UNDECLARED_BUILTIN (binding))
-	return true;
+	return 1;
 
       /* Handle the case when an overload for a  built-in name exists.  */
       if (TREE_CODE (binding) != OVERLOAD)
-	return false;
+	return 0;
 
       for (ovl_iterator it (binding); it; ++it)
 	{
 	  tree decl = *it;
 	  if (DECL_IS_UNDECLARED_BUILTIN (decl))
-	    return true;
+	    return 1;
 	}
     }
 
   /* Check for built-in traits.  */
   if (IDENTIFIER_TRAIT_P (id))
-    return true;
+    return 1;
 
   /* Also detect common reserved C++ words that aren't strictly built-in
      functions.  */
@@ -587,12 +587,15 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
-      return true;
+      return 1;
+    case RID_BUILTIN_OPERATOR_NEW:
+    case RID_BUILTIN_OPERATOR_DELETE:
+      return 201802L;
     default:
       break;
     }
 
-  return false;
+  return 0;
 }
 
 /* Register c++-specific dumps.  */

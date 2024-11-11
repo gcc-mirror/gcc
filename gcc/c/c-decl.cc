@@ -11750,10 +11750,10 @@ identifier_global_tag (tree t)
   return NULL_TREE;
 }
 
-/* Returns true if NAME refers to a built-in function or function-like
-   operator.  */
+/* Returns non-zero (result of __has_builtin) if NAME refers to a built-in
+   function or function-like operator.  */
 
-bool
+int
 names_builtin_p (const char *name)
 {
   tree id = get_identifier (name);
@@ -11774,12 +11774,12 @@ names_builtin_p (const char *name)
     case RID_CHOOSE_EXPR:
     case RID_OFFSETOF:
     case RID_TYPES_COMPATIBLE_P:
-      return true;
+      return 1;
     default:
       break;
     }
 
-  return false;
+  return 0;
 }
 
 /* In C, the only C-linkage public declaration is at file scope.  */

@@ -21242,6 +21242,30 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		  else if (TREE_CODE (call) == AGGR_INIT_EXPR)
 		    AGGR_INIT_EXPR_MUST_TAIL (call) = mtc;
 		}
+	    if (CALL_FROM_NEW_OR_DELETE_P (t))
+	      {
+		tree call = extract_call_expr (ret);
+		tree fn = cp_get_callee_fndecl_nofold (call);
+		if (fn ? !DECL_IS_REPLACEABLE_OPERATOR (fn)
+		       : !processing_template_decl)
+		  {
+		    auto_diagnostic_group d;
+		    location_t loc = cp_expr_loc_or_input_loc (t);
+		    if (!fn || IDENTIFIER_NEW_OP_P (DECL_NAME (fn)))
+		      error_at (loc, "call to %<__builtin_operator_new%> "
+				     "does not select replaceable global "
+				     "allocation function");
+		    else 
+		      error_at (loc, "call to %<__builtin_operator_delete%> "
+				     "does not select replaceable global "
+				     "deallocation function");
+		    if (fn)
+		      inform (DECL_SOURCE_LOCATION (fn),
+			      "selected function declared here");
+		  }
+		else if (call && TREE_CODE (call) == CALL_EXPR)
+		  CALL_FROM_NEW_OR_DELETE_P (call) = 1;
+	      }
 	    if (warning_suppressed_p (t, OPT_Wpessimizing_move))
 	      /* This also suppresses -Wredundant-move.  */
 	      suppress_warning (ret, OPT_Wpessimizing_move);

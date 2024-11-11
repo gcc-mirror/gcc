@@ -90,6 +90,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * x86 specific memory model extensions for transactional memory:: x86 memory models.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
+* New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -14312,6 +14313,33 @@ format string @var{fmt}.  If the compiler is able to optimize them to
 @code{fputc} etc.@: functions, it does, otherwise the checking function
 is called and the @var{flag} argument passed to it.
 @enddefbuiltin
+
+@node New/Delete Builtins
+@section Built-in functions for C++ allocations and deallocations
+@findex __builtin_operator_new
+@findex __builtin_operator_delete
+Calling these C++ built-in functions is similar to calling
+@code{::operator new} or @code{::operator delete} with the same arguments,
+except that it is an error if the selected @code{::operator new} or
+@code{::operator delete} overload is not a replaceable global operator
+and for optimization purposes calls to pairs of these functions can be
+omitted if access to the allocation is optimized out, or could be replaced
+with implementation provided buffer on the stack, or multiple allocation
+calls can be merged into a single allocation.  In C++ such optimizations
+are normally allowed just for calls to such replaceable global operators
+from @code{new} and @code{delete} expressions.
+
+@smallexample
+void foo () @{
+  int *a = new int;
+  delete a; // This pair of allocation/deallocation operators can be omitted
+	    // or replaced with int _temp; int *a = &_temp; etc.@:
+  void *b = ::operator new (32);
+  ::operator delete (b); // This one cannnot.
+  void *c = __builtin_operator_new (32);
+  __builtin_operator_delete (c); // This one can.
+@}
+@end smallexample
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
