@@ -1022,6 +1022,9 @@ UrlSuffix(gcc/Developer-Options.html#index-fopt-info)
 fsave-optimization-record
 UrlSuffix(gcc/Developer-Options.html#index-fsave-optimization-record)
 
+foptimize-crc
+UrlSuffix(gcc/Optimize-Options.html#index-foptimize-crc)
+
 foptimize-sibling-calls
 UrlSuffix(gcc/Optimize-Options.html#index-foptimize-sibling-calls)
 

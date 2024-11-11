@@ -1730,6 +1730,7 @@ OBJS = \
 	tree-iterator.o \
 	tree-logical-location.o \
 	tree-loop-distribution.o \
+	gimple-crc-optimization.o \
 	tree-nested.o \
 	tree-nrv.o \
 	tree-object-size.o \

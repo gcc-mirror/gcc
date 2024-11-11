@@ -605,7 +605,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-peephole2  -fno-printf-return-value  -fno-sched-interblock
 -fno-sched-spec  -fno-signed-zeros
 -fno-toplevel-reorder  -fno-trapping-math  -fno-zero-initialized-in-bss
--fomit-frame-pointer  -foptimize-sibling-calls
+-fomit-frame-pointer  -foptimize-crc  -foptimize-sibling-calls
 -fpartial-inlining  -fpeel-loops  -fpredictive-commoning
 -fprefetch-loop-arrays
 -fprofile-correction
@@ -12687,6 +12687,7 @@ also turns on the following optimization flags:
 -fipa-ra  -fipa-sra  -fipa-vrp
 -fisolate-erroneous-paths-dereference
 -flra-remat
+-foptimize-crc
 -foptimize-sibling-calls
 -foptimize-strlen
 -fpartial-inlining
@@ -12859,6 +12860,19 @@ is used in all functions.  Several targets always omit the frame pointer in
 leaf functions.
 
 Enabled by default at @option{-O1} and higher.
+
+@opindex foptimize-crc
+@item -foptimize-crc
+Detect loops calculating CRC (performing polynomial long division) and
+replace them with a faster implementation.  Detect 8, 16, 32, and 64 bit CRC,
+with a constant polynomial without the leading 1 bit,
+for both bit-forward and bit-reversed cases.
+If the target supports a CRC instruction and the polynomial used in the source
+code matches the polynomial used in the CRC instruction, generate that CRC
+instruction.  Otherwise, if the target supports a carry-less-multiplication
+instruction, generate CRC using it; otherwise generate table-based CRC.
+
+Enabled by default at @option{-O2} and higher.
 
 @opindex foptimize-sibling-calls
 @item -foptimize-sibling-calls

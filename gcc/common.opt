@@ -2422,6 +2422,16 @@ fsave-optimization-record
 Common Var(flag_save_optimization_record) Optimization
 Write a SRCFILE.opt-record.json file detailing what optimizations were performed.
 
+foptimize-crc
+Common Var(flag_optimize_crc) Optimization
+Detect loops calculating CRC and replace with faster implementation.
+If the target supports CRC instruction and the CRC loop uses the same
+polynomial as the one used in the CRC instruction, directly replace with the
+corresponding CRC instruction.
+Otherwise, if the target supports carry-less-multiplication instruction,
+generate CRC using it.
+If neither case applies, generate table-based CRC.
+
 foptimize-register-move
 Common Ignore
 Does nothing. Preserved for backward compatibility.
