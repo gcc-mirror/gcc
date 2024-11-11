@@ -30,57 +30,14 @@
 #pragma GCC push_options
 #pragma GCC target ("+nothing+simd")
 
-#include <arm_private_fp8.h>
-#pragma GCC aarch64 "arm_neon.h"
-
 #include <stdint.h>
+#include <arm_private_fp8.h>
+#include <arm_private_neon_types.h>
+
+#pragma GCC aarch64 "arm_neon.h"
 
 #define __AARCH64_UINT64_C(__C) ((uint64_t) __C)
 #define __AARCH64_INT64_C(__C) ((int64_t) __C)
-
-typedef __Int8x8_t int8x8_t;
-typedef __Int16x4_t int16x4_t;
-typedef __Int32x2_t int32x2_t;
-typedef __Int64x1_t int64x1_t;
-typedef __Float16x4_t float16x4_t;
-typedef __Float32x2_t float32x2_t;
-typedef __Poly8x8_t poly8x8_t;
-typedef __Poly16x4_t poly16x4_t;
-typedef __Uint8x8_t uint8x8_t;
-typedef __Uint16x4_t uint16x4_t;
-typedef __Uint32x2_t uint32x2_t;
-typedef __Float64x1_t float64x1_t;
-typedef __Uint64x1_t uint64x1_t;
-typedef __Int8x16_t int8x16_t;
-typedef __Int16x8_t int16x8_t;
-typedef __Int32x4_t int32x4_t;
-typedef __Int64x2_t int64x2_t;
-typedef __Float16x8_t float16x8_t;
-typedef __Float32x4_t float32x4_t;
-typedef __Float64x2_t float64x2_t;
-typedef __Poly8x16_t poly8x16_t;
-typedef __Poly16x8_t poly16x8_t;
-typedef __Poly64x2_t poly64x2_t;
-typedef __Poly64x1_t poly64x1_t;
-typedef __Uint8x16_t uint8x16_t;
-typedef __Uint16x8_t uint16x8_t;
-typedef __Uint32x4_t uint32x4_t;
-typedef __Uint64x2_t uint64x2_t;
-
-typedef __Poly8_t poly8_t;
-typedef __Poly16_t poly16_t;
-typedef __Poly64_t poly64_t;
-typedef __Poly128_t poly128_t;
-
-typedef __Mfloat8x8_t mfloat8x8_t;
-typedef __Mfloat8x16_t mfloat8x16_t;
-
-typedef __fp16 float16_t;
-typedef float float32_t;
-typedef double float64_t;
-
-typedef __Bfloat16x4_t bfloat16x4_t;
-typedef __Bfloat16x8_t bfloat16x8_t;
 
 /* __aarch64_vdup_lane internal macros.  */
 #define __aarch64_vdup_lane_any(__size, __q, __a, __b) \
