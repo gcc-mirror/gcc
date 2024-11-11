@@ -956,7 +956,8 @@ public:
       return e.use_exact_insn (code_for_aarch64_sve_dup_lane (mode));
 
     /* Treat svdup_lane as if it were svtbl_n.  */
-    return e.use_exact_insn (code_for_aarch64_sve_tbl (e.vector_mode (0)));
+    return e.use_exact_insn (code_for_aarch64_sve (UNSPEC_TBL,
+						   e.vector_mode (0)));
   }
 };
 
@@ -2897,16 +2898,6 @@ public:
   }
 };
 
-class svtbl_impl : public permute
-{
-public:
-  rtx
-  expand (function_expander &e) const override
-  {
-    return e.use_exact_insn (code_for_aarch64_sve_tbl (e.vector_mode (0)));
-  }
-};
-
 /* Implements svtrn1 and svtrn2.  */
 class svtrn_impl : public binary_permute
 {
@@ -3432,7 +3423,8 @@ FUNCTION (svsub, svsub_impl,)
 FUNCTION (svsubr, rtx_code_function_rotated, (MINUS, MINUS, UNSPEC_COND_FSUB))
 FUNCTION (svsudot, svusdot_impl, (true))
 FUNCTION (svsudot_lane, svdotprod_lane_impl, (UNSPEC_SUDOT, -1, -1))
-FUNCTION (svtbl, svtbl_impl,)
+FUNCTION (svtbl, quiet<unspec_based_uncond_function>, (UNSPEC_TBL, UNSPEC_TBL,
+						       UNSPEC_TBL))
 FUNCTION (svtmad, CODE_FOR_MODE0 (aarch64_sve_tmad),)
 FUNCTION (svtrn1, svtrn_impl, (0))
 FUNCTION (svtrn1q, unspec_based_function, (UNSPEC_TRN1Q, UNSPEC_TRN1Q,

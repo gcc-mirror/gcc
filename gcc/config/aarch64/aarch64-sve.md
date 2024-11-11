@@ -9018,6 +9018,7 @@
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - TBL
+;; - TBLQ (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 (define_expand "vec_perm<mode>"
@@ -9033,14 +9034,14 @@
   }
 )
 
-(define_insn "@aarch64_sve_tbl<mode>"
+(define_insn "@aarch64_sve_<perm_insn><mode>"
   [(set (match_operand:SVE_FULL 0 "register_operand" "=w")
 	(unspec:SVE_FULL
 	  [(match_operand:SVE_FULL 1 "register_operand" "w")
 	   (match_operand:<V_INT_EQUIV> 2 "register_operand" "w")]
-	  UNSPEC_TBL))]
+	  SVE_TBL))]
   "TARGET_SVE"
-  "tbl\t%0.<Vetype>, {%1.<Vetype>}, %2.<Vetype>"
+  "<perm_insn>\t%0.<Vetype>, {%1.<Vetype>}, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -9129,9 +9130,13 @@
 ;; - TRN1
 ;; - TRN2
 ;; - UZP1
+;; - UZPQ1 (SVE2p1)
 ;; - UZP2
+;; - UZPQ2 (SVE2p1)
 ;; - ZIP1
+;; - ZIPQ1 (SVE2p1)
 ;; - ZIP2
+;; - ZIPQ2 (SVE2p1)
 ;; -------------------------------------------------------------------------
 
 ;; Like EXT, but start at the first active element.
@@ -9156,7 +9161,7 @@
 	(unspec:SVE_ALL
 	  [(match_operand:SVE_ALL 1 "register_operand" "w")
 	   (match_operand:SVE_ALL 2 "register_operand" "w")]
-	  PERMUTE))]
+	  SVE_PERMUTE))]
   "TARGET_SVE"
   "<perm_insn>\t%0.<Vctype>, %1.<Vctype>, %2.<Vctype>"
 )

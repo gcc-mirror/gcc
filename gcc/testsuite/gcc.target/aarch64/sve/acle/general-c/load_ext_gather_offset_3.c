@@ -11,7 +11,7 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
     svint32_t s32, svuint32_t u32, svfloat32_t f32,
     svint64_t s64, svuint64_t u64, svfloat64_t f64, struct s s)
 {
-  svld1sb_gather_offset (pg, s8_ptr, s64); /* { dg-error {implicit declaration of function 'svld1sb_gather_offset'; did you mean 'svld1_gather_offset'} } */
+  svld1sb_gather_offset (pg, s8_ptr, s64); /* { dg-error {implicit declaration of function 'svld1sb_gather_offset'; did you mean 'svld1q?_gather_offset'} } */
   svld1sb_gather_offset_s64 (pg, s8_ptr); /* { dg-error {too few arguments to function 'svld1sb_gather_offset_s64'} } */
   svld1sb_gather_offset_s64 (pg, s8_ptr, s64, 0); /* { dg-error {too many arguments to function 'svld1sb_gather_offset_s64'} } */
   svld1sb_gather_offset_s64 (pg, s16_ptr, s64); /* { dg-error {passing argument 2 of 'svld1sb_gather_s64offset_s64' from incompatible pointer type} } */

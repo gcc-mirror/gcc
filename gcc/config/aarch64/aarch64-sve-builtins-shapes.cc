@@ -735,7 +735,7 @@ struct binary_za_slice_opt_single_base : public overloaded_base<1>
   }
 };
 
-/* Base class for ext.  */
+/* Base class for ext and extq.  */
 struct ext_base : public overloaded_base<0>
 {
   void
@@ -847,6 +847,22 @@ struct load_gather_sv_base : public overloaded_base<0>
   get_target_type_restrictions (const function_instance &) const
   {
     return function_resolver::TARGET_32_64;
+  }
+};
+
+/* Base class for load_gather64_sv_index and load_gather64_sv_offset.  */
+struct load_gather64_sv_base : public load_gather_sv_base
+{
+  type_suffix_index
+  vector_base_type (type_suffix_index) const override
+  {
+    return TYPE_SUFFIX_u64;
+  }
+
+  function_resolver::target_type_restrictions
+  get_target_type_restrictions (const function_instance &) const override
+  {
+    return function_resolver::TARGET_ANY;
   }
 };
 
@@ -1030,6 +1046,22 @@ struct store_scatter_base : public overloaded_base<0>
   infer_vector_type (function_resolver &r, unsigned int argno) const
   {
     return r.infer_sd_vector_type (argno);
+  }
+};
+
+/* Base class for store_scatter64_index and store_scatter64_offset.  */
+struct store_scatter64_base : public store_scatter_base
+{
+  type_suffix_index
+  vector_base_type (type_suffix_index) const override
+  {
+    return TYPE_SUFFIX_u64;
+  }
+
+  type_suffix_index
+  infer_vector_type (function_resolver &r, unsigned int argno) const override
+  {
+    return r.infer_vector_type (argno);
   }
 };
 
@@ -2441,6 +2473,21 @@ struct ext_def : public ext_base
 };
 SHAPE (ext)
 
+/* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0>_t, uint64_t)
+
+   where the final argument is an integer constant expression that when
+   multiplied by the number of bytes in t0 is in the range [0, 15].  */
+struct extq_def : public ext_base
+{
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bytes = c.type_suffix (0).element_bytes;
+    return c.require_immediate_range (2, 0, 16 / bytes - 1);
+  }
+};
+SHAPE (extq)
+
 /* svboolx<g>_t svfoo_t0_g(sv<t0>_t, sv<t0>_t, uint32_t).  */
 struct extract_pred_def : public nonoverloaded_base
 {
@@ -2992,6 +3039,75 @@ struct load_gather_vs_def : public overloaded_base<1>
 };
 SHAPE (load_gather_vs)
 
+/* sv<t0>_t svfoo_[s64]index[_t0](const <t0>_t *, svint64_t)
+   sv<t0>_t svfoo_[u64]index[_t0](const <t0>_t *, svuint64_t).  */
+struct load_gather64_sv_index_def : public load_gather64_sv_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_index);
+    build_all (b, "t0,al,d", group, MODE_s64index);
+    build_all (b, "t0,al,d", group, MODE_u64index);
+  }
+};
+SHAPE (load_gather64_sv_index)
+
+/* sv<t0>_t svfoo_[s64]offset[_t0](const <t0>_t *, svint64_t)
+   sv<t0>_t svfoo_[u64]offset[_t0](const <t0>_t *, svuint64_t).  */
+struct load_gather64_sv_offset_def : public load_gather64_sv_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_offset);
+    build_all (b, "t0,al,d", group, MODE_s64offset);
+    build_all (b, "t0,al,d", group, MODE_u64offset);
+  }
+};
+SHAPE (load_gather64_sv_offset)
+
+/* sv<t0>_t svfoo[_u64base]_index_t0(svuint64_t, int64_t).  */
+struct load_gather64_vs_index_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    build_all (b, "t0,b,ss64", group, MODE_u64base_index, true);
+  }
+
+  tree
+  resolve (function_resolver &) const override
+  {
+    /* The short name just makes the base vector mode implicit;
+       no resolution is needed.  */
+    gcc_unreachable ();
+  }
+};
+SHAPE (load_gather64_vs_index)
+
+/* sv<t0>_t svfoo[_u64base]_t0(svuint64_t)
+
+   sv<t0>_t svfoo[_u64base]_offset_t0(svuint64_t, int64_t).  */
+struct load_gather64_vs_offset_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    build_all (b, "t0,b", group, MODE_u64base, true);
+    build_all (b, "t0,b,ss64", group, MODE_u64base_offset, true);
+  }
+
+  tree
+  resolve (function_resolver &) const override
+  {
+    /* The short name just makes the base vector mode implicit;
+       no resolution is needed.  */
+    gcc_unreachable ();
+  }
+};
+SHAPE (load_gather64_vs_offset)
+
 /* sv<t0>_t svfoo[_t0](const <t0>_t *)
 
    The only difference from "load" is that this shape has no vnum form.  */
@@ -3043,6 +3159,92 @@ struct pattern_pred_def : public nonoverloaded_base
   }
 };
 SHAPE (pattern_pred)
+
+/* svbool_t svfoo[_t0](sv<t0>_t).  */
+struct pmov_from_vector_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "vp,v0", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (1);
+  }
+};
+SHAPE (pmov_from_vector)
+
+/* svbool_t svfoo[_t0](sv<t0>_t, uint64_t)
+
+   where the final argument is an integer constant expression in the
+   range [0, sizeof (<t0>_t) - 1].  */
+struct pmov_from_vector_lane_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "vp,v0,su64", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (1, 1);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bytes = c.type_suffix (0).element_bytes;
+    return c.require_immediate_range (1, 0, bytes - 1);
+  }
+};
+SHAPE (pmov_from_vector_lane)
+
+/* sv<t0>_t svfoo_t0(uint64_t)
+
+   where the final argument is an integer constant expression in the
+   range [1, sizeof (<t0>_t) - 1].  */
+struct pmov_to_vector_lane_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,su64", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    type_suffix_index type;
+    gcc_assert (r.pred == PRED_m);
+    if (!r.check_num_arguments (3)
+	|| (type = r.infer_vector_type (0)) == NUM_TYPE_SUFFIXES
+	|| !r.require_vector_type (1, VECTOR_TYPE_svbool_t)
+	|| !r.require_integer_immediate (2))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    unsigned int bytes = c.type_suffix (0).element_bytes;
+    /* 1 to account for the vector argument.
+
+       ??? This should probably be folded into function_checker::m_base_arg,
+       but it doesn't currently have the necessary information.  */
+    return c.require_immediate_range (1, 1, bytes - 1);
+  }
+};
+SHAPE (pmov_to_vector_lane)
 
 /* void svfoo(const void *, svprfop)
    void svfoo_vnum(const void *, int64_t, svprfop).  */
@@ -3214,6 +3416,24 @@ struct reduction_def : public overloaded_base<0>
   }
 };
 SHAPE (reduction)
+
+/* <t0>xN_t svfoo[_t0](sv<t0>_t).  */
+struct reduction_neonq_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "Q0,v0", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (1);
+  }
+};
+SHAPE (reduction_neonq)
 
 /* int64_t svfoo[_t0](sv<t0>_t)  (for signed t0)
    uint64_t svfoo[_t0](sv<t0>_t)  (for unsigned t0)
@@ -3611,6 +3831,44 @@ struct store_scatter_offset_restricted_def : public store_scatter_base
   }
 };
 SHAPE (store_scatter_offset_restricted)
+
+/* void svfoo_[s64]index[_t0](<t0>_t *, svint64_t, sv<t0>_t)
+   void svfoo_[u64]index[_t0](<t0>_t *, svuint64_t, sv<t0>_t)
+
+   void svfoo[_u64base]_index[_t0](svuint64_t, int64_t, sv<t0>_t).  */
+struct store_scatter64_index_def : public store_scatter64_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_index);
+    build_all (b, "_,as,d,t0", group, MODE_s64index);
+    build_all (b, "_,as,d,t0", group, MODE_u64index);
+    build_all (b, "_,b,ss64,t0", group, MODE_u64base_index);
+  }
+};
+SHAPE (store_scatter64_index)
+
+/* void svfoo_[s64]offset[_t0](<t0>_t *, svint64_t, sv<t0>_t)
+   void svfoo_[u64]offset[_t0](<t0>_t *, svuint64_t, sv<t0>_t)
+
+   void svfoo[_u64base_t0](svuint64_t, sv<t0>_t)
+
+   void svfoo[_u64base]_offset[_t0](svuint64_t, int64_t, sv<t0>_t).  */
+struct store_scatter64_offset_def : public store_scatter64_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    b.add_overloaded_functions (group, MODE_offset);
+    build_all (b, "_,as,d,t0", group, MODE_s64offset);
+    build_all (b, "_,as,d,t0", group, MODE_u64offset);
+    build_all (b, "_,b,t0", group, MODE_u64base);
+    build_all (b, "_,b,ss64,t0", group, MODE_u64base_offset);
+  }
+};
+SHAPE (store_scatter64_offset)
 
 /* void svfoo_t0(uint64_t, uint32_t, svbool_t, void *)
    void svfoo_vnum_t0(uint64_t, uint32_t, svbool_t, void *, int64_t)
@@ -4364,6 +4622,33 @@ struct unary_convertxn_def : public unary_convert_def
   }
 };
 SHAPE (unary_convertxn)
+
+/* sv<t0>_t svfoo_<t0>(sv<t0>_t, uint64_t)
+
+   where the final argument is an integer constant expression in the
+   range [0, 16 / sizeof (<t0>_t) - 1].  */
+struct unary_lane_def : public overloaded_base<0>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,v0,su64", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    return r.resolve_uniform (1, 1);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_lane_index (1, 0);
+  }
+};
+SHAPE (unary_lane)
 
 /* sv<t0>_t svfoo[_t0](sv<t0:half>_t).  */
 struct unary_long_def : public overloaded_base<0>

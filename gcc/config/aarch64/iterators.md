@@ -734,7 +734,9 @@
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
+    UNSPEC_TBLQ		; Used in vector permute patterns.
     UNSPEC_TBX		; Used in vector permute patterns.
+    UNSPEC_TBXQ		; Used in vector permute patterns.
     UNSPEC_CONCAT	; Used in vector permute patterns.
 
     ;; The following permute unspecs are generated directly by
@@ -1071,14 +1073,43 @@
     UNSPEC_FAMIN       ; Used in aarch64-simd.md.
 
     ;; All used in aarch64-sve2.md
+    UNSPEC_ADDQV
+    UNSPEC_ANDQV
+    UNSPEC_DUPQ
+    UNSPEC_EORQV
+    UNSPEC_EXTQ
+    UNSPEC_FADDQV
+    UNSPEC_FMAXQV
+    UNSPEC_FMAXNMQV
+    UNSPEC_FMINQV
+    UNSPEC_FMINNMQV
     UNSPEC_FCVTN
     UNSPEC_FDOT
+    UNSPEC_LD1_EXTENDQ
+    UNSPEC_LD1Q_GATHER
+    UNSPEC_LDNQ
+    UNSPEC_ORQV
+    UNSPEC_PMOV_PACK
+    UNSPEC_PMOV_PACK_LANE
+    UNSPEC_PMOV_UNPACK
+    UNSPEC_PMOV_UNPACK_LANE
+    UNSPEC_SMAXQV
+    UNSPEC_SMINQV
     UNSPEC_SQCVT
     UNSPEC_SQCVTN
     UNSPEC_SQCVTU
     UNSPEC_SQCVTUN
+    UNSPEC_ST1_TRUNCQ
+    UNSPEC_ST1Q_SCATTER
+    UNSPEC_STNQ
+    UNSPEC_UMAXQV
+    UNSPEC_UMINQV
     UNSPEC_UQCVT
     UNSPEC_UQCVTN
+    UNSPEC_UZPQ1
+    UNSPEC_UZPQ2
+    UNSPEC_ZIPQ1
+    UNSPEC_ZIPQ2
 
     ;; All used in aarch64-sme.md
     UNSPEC_SME_ADD
@@ -1326,7 +1357,11 @@
 			 (V4x16QI "16b") (V4x8HI "8h")
 			 (V4x4SI "4s") (V4x2DI "2d")
 			 (V4x8HF "8h") (V4x4SF "4s")
-			 (V4x2DF "2d") (V4x8BF "8h")])
+			 (V4x2DF "2d") (V4x8BF "8h")
+			 (VNx16QI "16b") (VNx8HI "8h")
+			 (VNx4SI "4s") (VNx2DI "2d")
+			 (VNx8HF "8h") (VNx4SF "4s")
+			 (VNx2DF "2d") (VNx8BF "8h")])
 
 ;; Map mode to type used in widening multiplies.
 (define_mode_attr Vcondtype [(V4HI "4h") (V8HI "4h") (V2SI "2s") (V4SI "2s")])
@@ -1994,7 +2029,22 @@
 			   (V4x4HF "V") (V4x8HF "V")
 			   (V4x2SF "V") (V4x4SF "V")
 			   (V4x1DF "V") (V4x2DF "V")
-			   (V4x4BF "V") (V4x8BF "V")])
+			   (V4x4BF "V") (V4x8BF "V")
+
+			   (VNx32QI "T") (VNx16HI "T")
+			   (VNx8SI  "T") (VNx4DI  "T")
+			   (VNx16BF "T") (VNx16HF "T")
+			   (VNx8SF  "T") (VNx4DF "T")
+
+			   (VNx48QI "U") (VNx24HI "U")
+			   (VNx12SI "U") (VNx6DI  "U")
+			   (VNx24BF "U") (VNx24HF "U")
+			   (VNx12SF "U") (VNx6DF "U")
+
+			   (VNx64QI "V") (VNx32HI "V")
+			   (VNx16SI "V") (VNx8DI  "V")
+			   (VNx32BF "V") (VNx32HF "V")
+			   (VNx16SF "V") (VNx8DF "V")])
 
 ;; This is both the number of Q-Registers needed to hold the corresponding
 ;; opaque large integer mode, and the number of elements touched by the
@@ -2338,6 +2388,21 @@
 			   (VNx4SI "VNx8SI") (VNx4SF "VNx8SF")
 			   (VNx2DI "VNx4DI") (VNx2DF "VNx4DF")])
 
+(define_mode_attr VNxTI [(VNx32QI "VNx2TI") (VNx16HI "VNx2TI")
+			 (VNx8SI  "VNx2TI") (VNx4DI  "VNx2TI")
+			 (VNx16BF "VNx2TI") (VNx16HF "VNx2TI")
+			 (VNx8SF  "VNx2TI") (VNx4DF "VNx2TI")
+
+			 (VNx48QI "VNx3TI") (VNx24HI "VNx3TI")
+			 (VNx12SI "VNx3TI") (VNx6DI  "VNx3TI")
+			 (VNx24BF "VNx3TI") (VNx24HF "VNx3TI")
+			 (VNx12SF "VNx3TI") (VNx6DF "VNx3TI")
+
+			 (VNx64QI "VNx4TI") (VNx32HI "VNx4TI")
+			 (VNx16SI "VNx4TI") (VNx8DI  "VNx4TI")
+			 (VNx32BF "VNx4TI") (VNx32HF "VNx4TI")
+			 (VNx16SF "VNx4TI") (VNx8DF "VNx4TI")])
+
 ;; The Advanced SIMD modes of popcount corresponding to scalar modes.
 (define_mode_attr VEC_POP_MODE [(QI "V8QI") (HI "V4HI")
 				(SI "V2SI") (DI "V1DI")])
@@ -2447,6 +2512,9 @@
 			       (VNx16BF "Uw2") (VNx16HF "Uw2")
 			       (VNx64QI "Uw4") (VNx32HI "Uw4")
 			       (VNx32BF "Uw4") (VNx32HF "Uw4")])
+
+(define_mode_attr LD1_EXTENDQ_MEM [(VNx4SI "VNx1SI") (VNx4SF "VNx1SI")
+				   (VNx2DI "VNx1DI") (VNx2DF "VNx1DI")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
@@ -2973,6 +3041,21 @@
 			      UNSPEC_TRN1 UNSPEC_TRN2
 			      UNSPEC_UZP1 UNSPEC_UZP2])
 
+(define_int_iterator SVE_PERMUTE
+  [PERMUTE
+   (UNSPEC_UZPQ1 "TARGET_SVE2p1 && TARGET_NON_STREAMING")
+   (UNSPEC_UZPQ2 "TARGET_SVE2p1 && TARGET_NON_STREAMING")
+   (UNSPEC_ZIPQ1 "TARGET_SVE2p1 && TARGET_NON_STREAMING")
+   (UNSPEC_ZIPQ2 "TARGET_SVE2p1 && TARGET_NON_STREAMING")])
+
+(define_int_iterator SVE_TBL
+  [UNSPEC_TBL
+   (UNSPEC_TBLQ "TARGET_SVE2p1 && TARGET_NON_STREAMING")])
+
+(define_int_iterator SVE_TBX
+  [UNSPEC_TBX
+   (UNSPEC_TBXQ "TARGET_SVE2p1 && TARGET_NON_STREAMING")])
+
 (define_int_iterator PERMUTEQ [UNSPEC_ZIP1Q UNSPEC_ZIP2Q
 			       UNSPEC_TRN1Q UNSPEC_TRN2Q
 			       UNSPEC_UZP1Q UNSPEC_UZP2Q])
@@ -3072,11 +3155,26 @@
 					UNSPEC_UMINV
 					UNSPEC_XORV])
 
+(define_int_iterator SVE_INT_REDUCTION_128 [UNSPEC_ADDQV
+					    UNSPEC_ANDQV
+					    UNSPEC_EORQV
+					    UNSPEC_ORQV
+					    UNSPEC_SMAXQV
+					    UNSPEC_SMINQV
+					    UNSPEC_UMAXQV
+					    UNSPEC_UMINQV])
+
 (define_int_iterator SVE_FP_REDUCTION [UNSPEC_FADDV
 				       UNSPEC_FMAXV
 				       UNSPEC_FMAXNMV
 				       UNSPEC_FMINV
 				       UNSPEC_FMINNMV])
+
+(define_int_iterator SVE_FP_REDUCTION_128 [UNSPEC_FADDQV
+					   UNSPEC_FMAXQV
+					   UNSPEC_FMAXNMQV
+					   UNSPEC_FMINQV
+					   UNSPEC_FMINNMQV])
 
 (define_int_iterator SVE_COND_FP_UNARY [UNSPEC_COND_FABS
 					UNSPEC_COND_FNEG
@@ -3629,6 +3727,8 @@
 			(UNSPEC_UMINV "umin")
 			(UNSPEC_SMAXV "smax")
 			(UNSPEC_SMINV "smin")
+			(UNSPEC_ADDQV "addqv")
+			(UNSPEC_ANDQV "andqv")
 			(UNSPEC_CADD90 "cadd90")
 			(UNSPEC_CADD270 "cadd270")
 			(UNSPEC_CDOT "cdot")
@@ -3639,9 +3739,15 @@
 			(UNSPEC_CMLA90 "cmla90")
 			(UNSPEC_CMLA180 "cmla180")
 			(UNSPEC_CMLA270 "cmla270")
+			(UNSPEC_EORQV "eorqv")
 			(UNSPEC_FADDV "plus")
+			(UNSPEC_FADDQV "faddqv")
+			(UNSPEC_FMAXQV "fmaxqv")
+			(UNSPEC_FMAXNMQV "fmaxnmqv")
 			(UNSPEC_FMAXNMV "smax")
 			(UNSPEC_FMAXV "smax_nan")
+			(UNSPEC_FMINQV "fminqv")
+			(UNSPEC_FMINNMQV "fminnmqv")
 			(UNSPEC_FMINNMV "smin")
 			(UNSPEC_FMINV "smin_nan")
 		        (UNSPEC_SMUL_HIGHPART "smulh")
@@ -3657,11 +3763,16 @@
 			(UNSPEC_FTSSEL "ftssel")
 			(UNSPEC_LD1_COUNT "ld1")
 			(UNSPEC_LDNT1_COUNT "ldnt1")
+			(UNSPEC_ORQV "orqv")
 			(UNSPEC_PMULLB "pmullb")
 			(UNSPEC_PMULLB_PAIR "pmullb_pair")
 			(UNSPEC_PMULLT "pmullt")
 			(UNSPEC_PMULLT_PAIR "pmullt_pair")
 			(UNSPEC_SMATMUL "smatmul")
+			(UNSPEC_SMAXQV "smaxqv")
+			(UNSPEC_SMINQV "sminqv")
+			(UNSPEC_UMAXQV "umaxqv")
+			(UNSPEC_UMINQV "uminqv")
 			(UNSPEC_UZP "uzp")
 			(UNSPEC_UZPQ "uzpq")
 			(UNSPEC_ZIP "zip")
@@ -3955,12 +4066,16 @@
 
 (define_int_attr perm_insn [(UNSPEC_ZIP1 "zip1") (UNSPEC_ZIP2 "zip2")
 			    (UNSPEC_ZIP1Q "zip1") (UNSPEC_ZIP2Q "zip2")
+			    (UNSPEC_ZIPQ1 "zipq1") (UNSPEC_ZIPQ2 "zipq2")
 			    (UNSPEC_TRN1 "trn1") (UNSPEC_TRN2 "trn2")
 			    (UNSPEC_TRN1Q "trn1") (UNSPEC_TRN2Q "trn2")
 			    (UNSPEC_UZP1 "uzp1") (UNSPEC_UZP2 "uzp2")
 			    (UNSPEC_UZP1Q "uzp1") (UNSPEC_UZP2Q "uzp2")
+			    (UNSPEC_UZPQ1 "uzpq1") (UNSPEC_UZPQ2 "uzpq2")
 			    (UNSPEC_UZP "uzp") (UNSPEC_UZPQ "uzp")
-			    (UNSPEC_ZIP "zip") (UNSPEC_ZIPQ "zip")])
+			    (UNSPEC_ZIP "zip") (UNSPEC_ZIPQ "zip")
+			    (UNSPEC_TBL "tbl") (UNSPEC_TBLQ "tblq")
+			    (UNSPEC_TBX "tbx") (UNSPEC_TBXQ "tbxq")])
 
 ; op code for REV instructions (size within which elements are reversed).
 (define_int_attr rev_op [(UNSPEC_REV64 "64") (UNSPEC_REV32 "32")

@@ -334,6 +334,11 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_hsd_integer(S, D) \
   TYPES_hsd_signed (S, D), S (u16), S (u32), S (u64)
 
+#define TYPES_hsd_data(S, D) \
+  TYPES_h_data (S, D), \
+  TYPES_s_data (S, D), \
+  TYPES_d_data (S, D)
+
 /* _f32.  */
 #define TYPES_s_float(S, D) \
   S (f32)
@@ -742,12 +747,14 @@ DEF_SVE_TYPES_ARRAY (hs_data);
 DEF_SVE_TYPES_ARRAY (hd_unsigned);
 DEF_SVE_TYPES_ARRAY (hsd_signed);
 DEF_SVE_TYPES_ARRAY (hsd_integer);
+DEF_SVE_TYPES_ARRAY (hsd_data);
 DEF_SVE_TYPES_ARRAY (s_float);
 DEF_SVE_TYPES_ARRAY (s_float_hsd_integer);
 DEF_SVE_TYPES_ARRAY (s_float_sd_integer);
 DEF_SVE_TYPES_ARRAY (s_signed);
 DEF_SVE_TYPES_ARRAY (s_unsigned);
 DEF_SVE_TYPES_ARRAY (s_integer);
+DEF_SVE_TYPES_ARRAY (s_data);
 DEF_SVE_TYPES_ARRAY (sd_signed);
 DEF_SVE_TYPES_ARRAY (sd_unsigned);
 DEF_SVE_TYPES_ARRAY (sd_integer);
@@ -2036,6 +2043,15 @@ function_resolver::infer_pointer_type (unsigned int argno,
 		actual, argno + 1, fndecl);
       return NUM_TYPE_SUFFIXES;
     }
+  if (displacement_units () == UNITS_elements && bits == 8)
+    {
+      error_at (location, "passing %qT to argument %d of %qE, which"
+		" expects the data to be 16 bits or wider",
+		actual, argno + 1, fndecl);
+      inform (location, "use the %<offset%> rather than %<index%> form"
+	      " for 8-bit data");
+      return NUM_TYPE_SUFFIXES;
+    }
 
   return type;
 }
@@ -2827,7 +2843,8 @@ function_resolver::resolve_sv_displacement (unsigned int argno,
 	}
     }
 
-  if (type_suffix_ids[0] == NUM_TYPE_SUFFIXES)
+  if (type_suffix_ids[0] == NUM_TYPE_SUFFIXES
+      && shape->vector_base_type (TYPE_SUFFIX_u32) == TYPE_SUFFIX_u32)
     {
       /* TYPE has been inferred rather than specified by the user,
 	 so mention it in the error messages.  */

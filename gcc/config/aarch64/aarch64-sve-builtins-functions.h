@@ -600,7 +600,7 @@ public:
     tree perm_type = build_vector_type (ssizetype, nelts);
     return gimple_build_assign (f.lhs, VEC_PERM_EXPR,
 				gimple_call_arg (f.call, 0),
-				gimple_call_arg (f.call, nargs - 1),
+				gimple_call_arg (f.call, nargs == 1 ? 0 : 1),
 				vec_perm_indices_to_tree (perm_type, indices));
   }
 };

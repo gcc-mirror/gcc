@@ -128,6 +128,7 @@ namespace aarch64_sve
     extern const function_shape *const dupq;
     extern const function_shape *const dup_neonq;
     extern const function_shape *const ext;
+    extern const function_shape *const extq;
     extern const function_shape *const extract_pred;
     extern const function_shape *const fold_left;
     extern const function_shape *const get;
@@ -152,12 +153,19 @@ namespace aarch64_sve
     extern const function_shape *const load_gather_sv;
     extern const function_shape *const load_gather_sv_restricted;
     extern const function_shape *const load_gather_vs;
+    extern const function_shape *const load_gather64_sv_index;
+    extern const function_shape *const load_gather64_sv_offset;
+    extern const function_shape *const load_gather64_vs_index;
+    extern const function_shape *const load_gather64_vs_offset;
     extern const function_shape *const load_replicate;
     extern const function_shape *const load_za;
     extern const function_shape *const luti2_lane_zt;
     extern const function_shape *const luti4_lane_zt;
     extern const function_shape *const mmla;
     extern const function_shape *const pattern_pred;
+    extern const function_shape *const pmov_from_vector;
+    extern const function_shape *const pmov_from_vector_lane;
+    extern const function_shape *const pmov_to_vector_lane;
     extern const function_shape *const prefetch;
     extern const function_shape *const prefetch_gather_index;
     extern const function_shape *const prefetch_gather_offset;
@@ -167,6 +175,7 @@ namespace aarch64_sve
     extern const function_shape *const read_za_m;
     extern const function_shape *const read_za_slice;
     extern const function_shape *const reduction;
+    extern const function_shape *const reduction_neonq;
     extern const function_shape *const reduction_wide;
     extern const function_shape *const reinterpret;
     extern const function_shape *const select_pred;
@@ -186,6 +195,8 @@ namespace aarch64_sve
     extern const function_shape *const store_scatter_index_restricted;
     extern const function_shape *const store_scatter_offset;
     extern const function_shape *const store_scatter_offset_restricted;
+    extern const function_shape *const store_scatter64_index;
+    extern const function_shape *const store_scatter64_offset;
     extern const function_shape *const store_za;
     extern const function_shape *const storexn;
     extern const function_shape *const str_za;
@@ -218,6 +229,7 @@ namespace aarch64_sve
     extern const function_shape *const unary_convert;
     extern const function_shape *const unary_convert_narrowt;
     extern const function_shape *const unary_convertxn;
+    extern const function_shape *const unary_lane;
     extern const function_shape *const unary_long;
     extern const function_shape *const unary_n;
     extern const function_shape *const unary_narrowb;
