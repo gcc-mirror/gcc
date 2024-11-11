@@ -7281,6 +7281,7 @@ extern tree build_offset_ref			(tree, tree, bool,
 extern tree throw_bad_array_new_length		(void);
 extern bool type_has_new_extended_alignment	(tree);
 extern unsigned malloc_alignment		(void);
+extern bool std_placement_new_fn_p		(tree);
 extern tree build_new_constexpr_heap_type	(tree, tree, tree);
 extern tree build_new				(location_t,
 						 vec<tree, va_gc> **, tree,
