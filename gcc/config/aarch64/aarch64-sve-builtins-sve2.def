@@ -220,7 +220,7 @@ DEF_SVE_FUNCTION (svsm4e, binary, s_unsigned, none)
 DEF_SVE_FUNCTION (svsm4ekey, binary, s_unsigned, none)
 #undef REQUIRED_EXTENSIONS
 
-#define REQUIRED_EXTENSIONS streaming_only (0)
+#define REQUIRED_EXTENSIONS sve_and_sme (AARCH64_FL_SVE2p1, 0)
 DEF_SVE_FUNCTION (svclamp, clamp, all_integer, none)
 DEF_SVE_FUNCTION (svpsel_lane, select_pred, all_pred_count, none)
 DEF_SVE_FUNCTION (svrevd, unary, all_data, mxz)

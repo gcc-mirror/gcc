@@ -418,7 +418,7 @@
 	   (match_operand:SI 3 "register_operand" "Ucj")
 	   (const_int BHSD_BITS)]
 	  UNSPEC_PSEL))]
-  "TARGET_STREAMING"
+  "TARGET_SVE2p1_OR_SME"
   "psel\t%0, %1, %2.<bits_etype>[%w3, 0]"
 )
 
@@ -432,7 +432,7 @@
 	     (match_operand:SI 4 "const_int_operand"))
 	   (const_int BHSD_BITS)]
 	  UNSPEC_PSEL))]
-  "TARGET_STREAMING
+  "TARGET_SVE2p1_OR_SME
    && UINTVAL (operands[4]) < 128 / <BHSD_BITS>"
   "psel\t%0, %1, %2.<bits_etype>[%w3, %4]"
 )
@@ -560,7 +560,7 @@
 	    (match_operand:SVE_FULL_I 1 "register_operand")
 	    (match_operand:SVE_FULL_I 2 "register_operand"))
 	  (match_operand:SVE_FULL_I 3 "register_operand")))]
-  "TARGET_STREAMING"
+  "TARGET_SVE2p1_OR_SME"
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] <su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;<su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
@@ -580,7 +580,7 @@
 	       UNSPEC_PRED_X)
 	     (match_operand:SVE_FULL_I 3 "register_operand"))]
 	  UNSPEC_PRED_X))]
-  "TARGET_STREAMING"
+  "TARGET_SVE2p1_OR_SME"
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] #
      [     ?&w,  w, w, w; yes           ] #
@@ -3182,7 +3182,7 @@
 	     [(match_operand:SVE_FULL 2 "register_operand")]
 	     UNSPEC_REVD_ONLY)]
 	  UNSPEC_PRED_X))]
-  "TARGET_STREAMING"
+  "TARGET_SVE2p1_OR_SME"
   {@ [ cons: =0 , 1   , 2 ; attrs: movprfx ]
      [ w        , Upl , 0 ; *              ] revd\t%0.q, %1/m, %2.q
      [ ?&w      , Upl , w ; yes            ] movprfx\t%0, %2\;revd\t%0.q, %1/m, %2.q
@@ -3198,7 +3198,7 @@
 	     UNSPEC_REVD_ONLY)
 	   (match_operand:SVE_FULL 3 "register_operand")]
 	  UNSPEC_SEL))]
-  "TARGET_STREAMING"
+  "TARGET_SVE2p1_OR_SME"
   {@ [ cons: =0 , 1   , 2 , 3  ; attrs: movprfx ]
      [ w        , Upl , w , 0  ; *              ] revd\t%0.q, %1/m, %2.q
      [ ?&w      , Upl , w , w  ; yes            ] movprfx\t%0, %3\;revd\t%0.q, %1/m, %2.q

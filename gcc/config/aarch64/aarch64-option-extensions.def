@@ -192,6 +192,8 @@ AARCH64_OPT_EXTENSION("sve2-sm4", SVE2_SM4, (SVE2, SM4), (), (), "svesm4")
 
 AARCH64_FMV_FEATURE("sve2-sm4", SVE_SM4, (SVE2_SM4))
 
+AARCH64_OPT_EXTENSION("sve2p1", SVE2p1, (SVE2), (), (), "")
+
 AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, SVE2), (), (), "sme")
 
 AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")

@@ -12135,6 +12135,16 @@ foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
     }]
 }
 
+proc check_effective_target_aarch64_asm_sve2p1_ok { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_sve2p1_assembler object {
+	    __asm__ (".arch_extension sve2p1; ld1w {z0.q},p7/z,[x0]");
+	} "-march=armv8-a+sve2p1"]
+    } else {
+	return 0
+    }
+}
+
 proc check_effective_target_aarch64_small { } {
     if { [istarget aarch64*-*-*] } {
 	return [check_no_compiler_messages aarch64_small object {
