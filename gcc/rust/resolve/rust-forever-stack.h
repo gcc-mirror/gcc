@@ -614,7 +614,8 @@ private:
 
   template <typename S>
   tl::optional<SegIterator<S>>
-  find_starting_point (const std::vector<S> &segments, Node &starting_point);
+  find_starting_point (const std::vector<S> &segments,
+		       std::reference_wrapper<Node> &starting_point);
 
   template <typename S>
   tl::optional<Node &> resolve_segments (Node &starting_point,
