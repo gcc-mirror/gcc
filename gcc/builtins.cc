@@ -2225,7 +2225,28 @@ associated_internal_fn (built_in_function fn, tree return_type)
       if (REAL_MODE_FORMAT (TYPE_MODE (return_type))->b == 2)
 	return IFN_LDEXP;
       return IFN_LAST;
-
+    case BUILT_IN_CRC8_DATA8:
+    case BUILT_IN_CRC16_DATA8:
+    case BUILT_IN_CRC16_DATA16:
+    case BUILT_IN_CRC32_DATA8:
+    case BUILT_IN_CRC32_DATA16:
+    case BUILT_IN_CRC32_DATA32:
+    case BUILT_IN_CRC64_DATA8:
+    case BUILT_IN_CRC64_DATA16:
+    case BUILT_IN_CRC64_DATA32:
+    case BUILT_IN_CRC64_DATA64:
+      return IFN_CRC;
+    case BUILT_IN_REV_CRC8_DATA8:
+    case BUILT_IN_REV_CRC16_DATA8:
+    case BUILT_IN_REV_CRC16_DATA16:
+    case BUILT_IN_REV_CRC32_DATA8:
+    case BUILT_IN_REV_CRC32_DATA16:
+    case BUILT_IN_REV_CRC32_DATA32:
+    case BUILT_IN_REV_CRC64_DATA8:
+    case BUILT_IN_REV_CRC64_DATA16:
+    case BUILT_IN_REV_CRC64_DATA32:
+    case BUILT_IN_REV_CRC64_DATA64:
+      return IFN_CRC_REV;
     default:
       return IFN_LAST;
     }
@@ -7763,6 +7784,35 @@ expand_speculation_safe_value (machine_mode mode, tree exp, rtx target,
   return targetm.speculation_safe_value (mode, target, val, failsafe);
 }
 
+/* Expand CRC* or REV_CRC* built-ins.  */
+
+rtx
+expand_builtin_crc_table_based (internal_fn fn, scalar_mode crc_mode,
+				scalar_mode data_mode, machine_mode mode,
+				tree exp, rtx target)
+{
+  tree rhs1 = CALL_EXPR_ARG (exp, 0); // crc
+  tree rhs2 = CALL_EXPR_ARG (exp, 1); // data
+  tree rhs3 = CALL_EXPR_ARG (exp, 2); // polynomial
+
+  if (!target || mode == VOIDmode)
+    target = gen_reg_rtx (crc_mode);
+
+  rtx op1 = expand_normal (rhs1);
+  rtx op2 = expand_normal (rhs2);
+  gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
+  rtx op3 = gen_int_mode (TREE_INT_CST_LOW (rhs3), crc_mode);
+
+  if (fn == IFN_CRC)
+    expand_crc_table_based (target, op1, op2, op3, data_mode);
+  else
+    /* If it's IFN_CRC_REV generate bit-reversed CRC.  */
+    expand_reversed_crc_table_based (target, op1, op2, op3,
+				     data_mode,
+				     generate_reflecting_code_standard);
+  return target;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -8942,6 +8992,66 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       mode = get_builtin_sync_mode (fcode - BUILT_IN_SPECULATION_SAFE_VALUE_1);
       return expand_speculation_safe_value (mode, exp, target, ignore);
 
+    case BUILT_IN_CRC8_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC, QImode, QImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC16_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC, HImode, QImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC16_DATA16:
+      return expand_builtin_crc_table_based (IFN_CRC, HImode, HImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC32_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC, SImode, QImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC32_DATA16:
+      return expand_builtin_crc_table_based (IFN_CRC, SImode, HImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC32_DATA32:
+      return expand_builtin_crc_table_based (IFN_CRC, SImode, SImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC64_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC, DImode, QImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC64_DATA16:
+      return expand_builtin_crc_table_based (IFN_CRC, DImode, HImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC64_DATA32:
+      return expand_builtin_crc_table_based (IFN_CRC, DImode, SImode, mode,
+					       exp, target);
+    case BUILT_IN_CRC64_DATA64:
+      return expand_builtin_crc_table_based (IFN_CRC, DImode, DImode, mode,
+					       exp, target);
+    case BUILT_IN_REV_CRC8_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, QImode, QImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC16_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, HImode, QImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC16_DATA16:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, HImode, HImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC32_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, SImode, QImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC32_DATA16:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, SImode, HImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC32_DATA32:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, SImode, SImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC64_DATA8:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, DImode, QImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC64_DATA16:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, DImode, HImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC64_DATA32:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, DImode, SImode,
+					       mode, exp, target);
+    case BUILT_IN_REV_CRC64_DATA64:
+      return expand_builtin_crc_table_based (IFN_CRC_REV, DImode, DImode,
+					       mode, exp, target);
     default:	/* just do library call, if unknown builtin */
       break;
     }

@@ -133,6 +133,9 @@ extern void expand_builtin_trap (void);
 extern void expand_ifn_atomic_bit_test_and (gcall *);
 extern void expand_ifn_atomic_compare_exchange (gcall *);
 extern void expand_ifn_atomic_op_fetch_cmp_0 (gcall *);
+extern rtx expand_builtin_crc_table_based (internal_fn, scalar_mode,
+					   scalar_mode, machine_mode,
+					   tree, rtx);
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
