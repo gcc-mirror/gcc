@@ -1340,37 +1340,14 @@ package body Errout is
          --  from the parser recovering. In full errors mode, we don't do this
          --  deletion, but otherwise such messages are discarded at this stage.
 
-         if Prev_Msg /= No_Error_Msg
-           and then Errors.Table (Prev_Msg).Line = Errors.Table (Cur_Msg).Line
-           and then Errors.Table (Prev_Msg).Sfile
-                    = Errors.Table (Cur_Msg).Sfile
-           and then Compiler_State = Parsing
+         if Compiler_State = Parsing
            and then not All_Errors_Mode
+           and then Is_Redundant_Error_Message (Prev_Msg, Cur_Msg)
          then
-            --  Don't delete unconditional messages and at this stage, don't
-            --  delete continuation lines; we attempted to delete those earlier
-            --  if the parent message was deleted.
+            pragma Assert (not Continuation);
 
-            if not Errors.Table (Cur_Msg).Uncond and then not Continuation then
-               --  Don't delete if prev msg is warning and new msg is an error.
-               --  This is because we don't want a real error masked by a
-               --  warning. In all other cases (that is parse errors for the
-               --  same line that are not unconditional) we do delete the
-               --  message. This helps to avoid junk extra messages from
-               --  cascaded parsing errors
-
-               if Errors.Table (Prev_Msg).Kind not in Warning | Style
-                 or else Errors.Table (Cur_Msg).Kind in Warning | Style
-               then
-                  --  All tests passed, delete the message by simply returning
-                  --  without any further processing.
-
-                  pragma Assert (not Continuation);
-
-                  Last_Killed := True;
-                  return;
-               end if;
-            end if;
+            Last_Killed := True;
+            return;
          end if;
 
          --  Come here if message is to be inserted in the error chain

@@ -441,6 +441,43 @@ package body Erroutc is
       end case;
    end Increase_Error_Msg_Count;
 
+   --------------------------------
+   -- Is_Redundant_Error_Message --
+   --------------------------------
+
+   function Is_Redundant_Error_Message
+     (Prev_Msg : Error_Msg_Id; Cur_Msg : Error_Msg_Id) return Boolean is
+
+   begin
+      return
+        Prev_Msg /= No_Error_Msg
+
+        --  Error messages are posted on the same line
+
+        and then Errors.Table (Prev_Msg).Line = Errors.Table (Cur_Msg).Line
+        and then Errors.Table (Prev_Msg).Sfile = Errors.Table (Cur_Msg).Sfile
+
+        --  Do not consider unconditional messages to be redundant right now
+        --  They may be removed later.
+
+        and then not Errors.Table (Cur_Msg).Uncond
+
+        --  Do not consider continuation messages as they are removed with
+        --  their parent later on.
+
+        and then not Errors.Table (Cur_Msg).Msg_Cont
+
+        --  Don't delete if prev msg is warning and new msg is an error.
+        --  This is because we don't want a real error masked by a
+        --  warning. In all other cases (that is parse errors for the
+        --  same line that are not unconditional) we do delete the
+        --  message. This helps to avoid junk extra messages from
+        --  cascaded parsing errors
+
+        and then (Errors.Table (Prev_Msg).Kind not in Warning | Style
+                  or else Errors.Table (Cur_Msg).Kind in Warning | Style);
+   end Is_Redundant_Error_Message;
+
    --------------------
    -- Has_Switch_Tag --
    --------------------

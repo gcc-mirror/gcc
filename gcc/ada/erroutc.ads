@@ -481,6 +481,11 @@ package Erroutc is
    procedure Increase_Error_Msg_Count (E : Error_Msg_Object);
    --  Increase the error count for the given kind of error message
 
+   function Is_Redundant_Error_Message
+     (Prev_Msg : Error_Msg_Id; Cur_Msg : Error_Msg_Id) return Boolean;
+   --  Check if the Cur_Msg can be removed if it was issued at the same line as
+   --  the Prev_Msg.
+
    function Matches (S : String; P : String) return Boolean;
    --  Returns true if the String S matches the pattern P, which can contain
    --  wildcard chars (*). The entire pattern must match the entire string.
