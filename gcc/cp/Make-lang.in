@@ -232,8 +232,9 @@ c++.srcinfo:
 c++.srcextra:
 
 c++.tags: force
-	cd $(srcdir)/cp; $(ETAGS) -o TAGS.sub *.cc *.h --language=none \
-	  --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
+	cd $(srcdir)/cp; $(ETAGS) -o TAGS.sub *.cc *.h \
+	  ../../libcody/*.cc ../../c++tools/*.cc \
+	  --language=none --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' cp-tree.def; \
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 c++.man: doc/g++.1
