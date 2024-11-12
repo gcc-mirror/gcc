@@ -42,7 +42,8 @@ enum ptx_version
   PTX_VERSION_4_2,
   PTX_VERSION_6_0,
   PTX_VERSION_6_3,
-  PTX_VERSION_7_0
+  PTX_VERSION_7_0,
+  PTX_VERSION_7_8
 };
 
 #endif
