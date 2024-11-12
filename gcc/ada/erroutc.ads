@@ -576,6 +576,9 @@ package Erroutc is
    procedure Set_Msg_Insertion_Code;
    --  Handle error code insertion ([] insertion character)
 
+   procedure Set_Msg_Insertion_Column;
+   --  Handle column number insertion (@ insertion character)
+
    procedure Set_Msg_Insertion_File_Name;
    --  Handle file name insertion (left brace insertion character)
 

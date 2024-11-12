@@ -32,7 +32,6 @@ with Output;   use Output;
 with Scans;    use Scans;
 with Sinput;   use Sinput;
 with Stringt;  use Stringt;
-with Stylesw;  use Stylesw;
 
 package body Errutil is
 
@@ -57,9 +56,6 @@ package body Errutil is
    --  number, as described above for Output_Line_Number. The Errs parameter
    --  indicates if there are errors attached to the line, which forces
    --  listing on, even in the presence of pragma List (Off).
-
-   procedure Set_Msg_Insertion_Column;
-   --  Handle column number insertion (@ insertion character)
 
    procedure Set_Msg_Text (Text : String; Flag : Source_Ptr);
    --  Add a sequence of characters to the current message. The characters may
@@ -495,6 +491,7 @@ package body Errutil is
          if Warnings_Detected >= Maximum_Messages then
             Set_Standard_Error;
             Write_Line ("maximum number of warnings detected");
+
             Warning_Mode := Suppress;
          end if;
 
@@ -604,18 +601,6 @@ package body Errutil is
    begin
       Errors_Must_Be_Ignored := To;
    end Set_Ignore_Errors;
-
-   ------------------------------
-   -- Set_Msg_Insertion_Column --
-   ------------------------------
-
-   procedure Set_Msg_Insertion_Column is
-   begin
-      if RM_Column_Check then
-         Set_Msg_Str (" in column ");
-         Set_Msg_Int (Int (Error_Msg_Col) + 1);
-      end if;
-   end Set_Msg_Insertion_Column;
 
    ------------------
    -- Set_Msg_Text --

@@ -42,6 +42,7 @@ with Sinfo.Nodes;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
+with Stylesw;  use Stylesw;
 with Targparm;
 with Uintp;    use Uintp;
 with Widechar; use Widechar;
@@ -1329,6 +1330,18 @@ package body Erroutc is
          Code_Rest := Code_Rest - Code_Digit * P10 (Code_Len - J);
       end loop;
    end Set_Msg_Insertion_Code;
+
+   ------------------------------
+   -- Set_Msg_Insertion_Column --
+   ------------------------------
+
+   procedure Set_Msg_Insertion_Column is
+   begin
+      if RM_Column_Check then
+         Set_Msg_Str (" in column ");
+         Set_Msg_Int (Int (Error_Msg_Col) + 1);
+      end if;
+   end Set_Msg_Insertion_Column;
 
    ---------------------------------
    -- Set_Msg_Insertion_File_Name --

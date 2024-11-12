@@ -52,7 +52,6 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
-with Stylesw;        use Stylesw;
 with System.OS_Lib;
 with Uname;          use Uname;
 with Warnsw;
@@ -142,9 +141,6 @@ package body Errout is
    --  Subsidiary to First_Sloc and Last_Sloc. Returns True iff parentheses
    --  around node N are required by the Ada syntax, e.g. when N is an
    --  expression of a qualified expression.
-
-   procedure Set_Msg_Insertion_Column;
-   --  Handle column number insertion (@ insertion character)
 
    procedure Set_Msg_Insertion_Node;
    --  Handle node (name from node) insertion (& insertion character)
@@ -3775,18 +3771,6 @@ package body Errout is
    begin
       Errors_Must_Be_Ignored := To;
    end Set_Ignore_Errors;
-
-   ------------------------------
-   -- Set_Msg_Insertion_Column --
-   ------------------------------
-
-   procedure Set_Msg_Insertion_Column is
-   begin
-      if RM_Column_Check then
-         Set_Msg_Str (" in column ");
-         Set_Msg_Int (Int (Error_Msg_Col) + 1);
-      end if;
-   end Set_Msg_Insertion_Column;
 
    ----------------------------
    -- Set_Msg_Insertion_Node --
