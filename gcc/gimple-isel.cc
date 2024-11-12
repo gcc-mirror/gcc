@@ -160,16 +160,11 @@ gimple_expand_vec_set_extract_expr (struct function *fun,
    function based on type of selected expansion.  */
 
 static gimple *
-gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
-			     hash_map<tree, unsigned int> *vec_cond_ssa_name_uses)
+gimple_expand_vec_cond_expr (gimple_stmt_iterator *gsi)
 {
-  tree lhs, op0a = NULL_TREE, op0b = NULL_TREE;
+  tree lhs, op0a = NULL_TREE;
   enum tree_code code;
   enum tree_code tcode;
-  machine_mode cmp_op_mode;
-  bool unsignedp;
-  enum insn_code icode;
-  imm_use_iterator imm_iter;
 
   /* Only consider code == GIMPLE_ASSIGN.  */
   gassign *stmt = dyn_cast<gassign *> (gsi_stmt (*gsi));
@@ -209,36 +204,18 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
   gcc_assert (!COMPARISON_CLASS_P (op0));
   if (TREE_CODE (op0) == SSA_NAME)
     {
-      unsigned int used_vec_cond_exprs = 0;
-      unsigned int *slot = vec_cond_ssa_name_uses->get (op0);
-      if (slot)
-	used_vec_cond_exprs = *slot;
-      else
-	{
-	  gimple *use_stmt;
-	  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, op0)
-	    {
-	      gassign *assign = dyn_cast<gassign *> (use_stmt);
-	      if (assign != NULL
-		  && gimple_assign_rhs_code (assign) == VEC_COND_EXPR
-		  && gimple_assign_rhs1 (assign) == op0)
-		used_vec_cond_exprs++;
-	    }
-	  vec_cond_ssa_name_uses->put (op0, used_vec_cond_exprs);
-	}
-
       gassign *def_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (op0));
       if (def_stmt)
 	{
 	  tcode = gimple_assign_rhs_code (def_stmt);
 	  op0a = gimple_assign_rhs1 (def_stmt);
-	  op0b = gimple_assign_rhs2 (def_stmt);
 
 	  tree op0_type = TREE_TYPE (op0);
 	  tree op0a_type = TREE_TYPE (op0a);
 	  if (TREE_CODE_CLASS (tcode) == tcc_comparison)
 	    can_compute_op0 = expand_vec_cmp_expr_p (op0a_type, op0_type,
 						     tcode);
+	  gcc_assert (can_compute_op0);
 
 	  if (can_compute_op0
 	      && TYPE_MODE (TREE_TYPE (lhs)) == TYPE_MODE (TREE_TYPE (op0)))
@@ -311,88 +288,13 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 						     new_op);
 		}
 	    }
-
-	  /* When the compare has EH we do not want to forward it when
-	     it has multiple uses and in general because of the complication
-	     with EH redirection.  */
-	  if (stmt_can_throw_internal (fun, def_stmt))
-	    tcode = TREE_CODE (op0);
-
-	  /* If we can compute op0 and have multiple uses, keep the SSA
-	     name and use vcond_mask.  */
-	  else if (can_compute_op0
-		   && used_vec_cond_exprs >= 2
-		   && (get_vcond_mask_icode (mode, TYPE_MODE (op0_type))
-		       != CODE_FOR_nothing))
-	    tcode = TREE_CODE (op0);
-	}
-      else
-	tcode = TREE_CODE (op0);
-    }
-  else
-    tcode = TREE_CODE (op0);
-
-  if (TREE_CODE_CLASS (tcode) != tcc_comparison)
-    {
-      gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
-      if (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
-	  != CODE_FOR_nothing)
-	return gimple_build_call_internal (IFN_VCOND_MASK, 3, op0, op1, op2);
-      /* Fake op0 < 0.  */
-      else
-	{
-	  gcc_assert (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (op0)))
-		      == MODE_VECTOR_INT);
-	  op0a = op0;
-	  op0b = build_zero_cst (TREE_TYPE (op0));
-	  tcode = LT_EXPR;
 	}
     }
-  cmp_op_mode = TYPE_MODE (TREE_TYPE (op0a));
-  unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
 
-  gcc_assert (known_eq (GET_MODE_NUNITS (mode),
-			GET_MODE_NUNITS (cmp_op_mode)));
-
-  icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
-  /* Some targets do not have vcondeq and only vcond with NE/EQ
-     but not vcondu, so make sure to also try vcond here as
-     vcond_icode_p would canonicalize the optab query to.  */
-  if (icode == CODE_FOR_nothing
-      && (tcode == NE_EXPR || tcode == EQ_EXPR)
-      && ((icode = get_vcond_icode (mode, cmp_op_mode, !unsignedp))
-	  != CODE_FOR_nothing))
-    unsignedp = !unsignedp;
-  if (icode == CODE_FOR_nothing)
-    {
-      if (tcode == LT_EXPR
-	  && op0a == op0)
-	{
-	  /* A VEC_COND_EXPR condition could be folded from EQ_EXPR/NE_EXPR
-	     into a constant when only get_vcond_eq_icode is supported.
-	     Try changing it to NE_EXPR.  */
-	  tcode = NE_EXPR;
-	}
-      if ((tcode == EQ_EXPR || tcode == NE_EXPR)
-	  && direct_internal_fn_supported_p (IFN_VCONDEQ, TREE_TYPE (lhs),
-					     TREE_TYPE (op0a),
-					     OPTIMIZE_FOR_BOTH))
-	{
-	  tree tcode_tree = build_int_cst (integer_type_node, tcode);
-	  return gimple_build_call_internal (IFN_VCONDEQ, 5, op0a, op0b, op1,
-					     op2, tcode_tree);
-	}
-
-      gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0))
-		  && can_compute_op0
-		  && (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
-		      != CODE_FOR_nothing));
-      return gimple_build_call_internal (IFN_VCOND_MASK, 3, op0, op1, op2);
-    }
-
-  tree tcode_tree = build_int_cst (integer_type_node, tcode);
-  return gimple_build_call_internal (unsignedp ? IFN_VCONDU : IFN_VCOND,
-				     5, op0a, op0b, op1, op2, tcode_tree);
+  gcc_assert (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (op0)));
+  gcc_assert (get_vcond_mask_icode (mode, TYPE_MODE (TREE_TYPE (op0)))
+	      != CODE_FOR_nothing);
+  return gimple_build_call_internal (IFN_VCOND_MASK, 3, op0, op1, op2);
 }
 
 /* Duplicate COND_EXPR condition defs of STMT located in BB when they are
@@ -488,8 +390,6 @@ pass_gimple_isel::execute (struct function *fun)
 {
   gimple_stmt_iterator gsi;
   basic_block bb;
-  hash_map<tree, unsigned int> vec_cond_ssa_name_uses;
-  auto_bitmap dce_ssa_names;
   bool cfg_changed = false;
 
   FOR_EACH_BB_FN (bb, fun)
@@ -498,8 +398,7 @@ pass_gimple_isel::execute (struct function *fun)
 	{
 	  /* Pre-expand VEC_COND_EXPRs to .VCOND* internal function
 	     calls mapping to supported optabs.  */
-	  gimple *g = gimple_expand_vec_cond_expr (fun, &gsi,
-						   &vec_cond_ssa_name_uses);
+	  gimple *g = gimple_expand_vec_cond_expr (&gsi);
 	  if (g != NULL)
 	    {
 	      tree lhs = gimple_assign_lhs (gsi_stmt (gsi));
@@ -521,12 +420,6 @@ pass_gimple_isel::execute (struct function *fun)
 	    maybe_duplicate_comparison (stmt, bb);
 	}
     }
-
-  for (auto it = vec_cond_ssa_name_uses.begin ();
-       it != vec_cond_ssa_name_uses.end (); ++it)
-    bitmap_set_bit (dce_ssa_names, SSA_NAME_VERSION ((*it).first));
-
-  simple_dce_from_worklist (dce_ssa_names);
 
   return cfg_changed ? TODO_cleanup_cfg : 0;
 }
