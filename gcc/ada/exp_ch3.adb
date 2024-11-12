@@ -8155,7 +8155,9 @@ package body Exp_Ch3 is
             Tag_Assign := Make_Tag_Assignment (N);
 
             if Present (Tag_Assign) then
-               if Present (Following_Address_Clause (N)) then
+               if Present (Following_Address_Clause (N))
+                 or else Has_Aspect (Def_Id, Aspect_Address)
+               then
                   Ensure_Freeze_Node (Def_Id);
                elsif not Special_Ret_Obj then
                   Insert_Action_After (Init_After, Tag_Assign);

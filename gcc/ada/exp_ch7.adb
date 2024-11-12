@@ -27,6 +27,7 @@
 --    - controlled types
 --    - transient scopes
 
+with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Einfo;          use Einfo;
@@ -2799,10 +2800,16 @@ package body Exp_Ch7 is
 
          if Ekind (Obj_Id) in E_Constant | E_Variable then
 
+            --  The object has delayed freezing. The Master_Node insertion
+            --  point is after the freeze node.
+
+            if Has_Delayed_Freeze (Obj_Id) then
+               Master_Node_Ins := Freeze_Node (Obj_Id);
+
             --  The object is initialized by an aggregate. The Master_Node
             --  insertion point is after the last aggregate assignment.
 
-            if Present (Last_Aggregate_Assignment (Obj_Id)) then
+            elsif Present (Last_Aggregate_Assignment (Obj_Id)) then
                Master_Node_Ins := Last_Aggregate_Assignment (Obj_Id);
 
             --  The object is initialized by a build-in-place function call.
@@ -5371,6 +5378,7 @@ package body Exp_Ch7 is
       First_Obj    : Node_Id;
       Last_Obj     : Node_Id;
       Mark_Id      : Entity_Id;
+      Marker       : Node_Id;
       Target       : Node_Id;
 
    --  Start of processing for Insert_Actions_In_Scope_Around
@@ -5402,9 +5410,6 @@ package body Exp_Ch7 is
          Target := N;
       end if;
 
-      First_Obj := Target;
-      Last_Obj  := Target;
-
       --  Add all actions associated with a transient scope into the main tree.
       --  There are several scenarios here:
 
@@ -5415,18 +5420,26 @@ package body Exp_Ch7 is
 
       --    3)                   Target ........ Last_Obj
 
-      --  Flag declarations are inserted before the first object
+      --  Declarations are inserted before the target
 
       if Present (Act_Before) then
          First_Obj := First (Act_Before);
          Insert_List_Before (Target, Act_Before);
+      else
+         First_Obj := Target;
       end if;
 
-      --  Finalization calls are inserted after the last object
+      --  Set a marker on the next statement
+
+      Marker := Next (Target);
+
+      --  Finalization calls are inserted after the target
 
       if Present (Act_After) then
          Last_Obj := Last (Act_After);
          Insert_List_After (Target, Act_After);
+      else
+         Last_Obj := Target;
       end if;
 
       --  Mark and release the secondary stack when the context warrants it
@@ -5455,6 +5468,33 @@ package body Exp_Ch7 is
            (First_Object => First_Obj,
             Last_Object  => Last_Obj,
             Related_Node => Target);
+      end if;
+
+      --  If the target is the declaration of an object with an address clause
+      --  or aspect, move all the statements that have been inserted after it
+      --  into its Initialization_Statements list, so they can be inserted into
+      --  its freeze actions later.
+
+      if Nkind (Target) = N_Object_Declaration
+        and then (Present (Following_Address_Clause (Target))
+                   or else
+                  Has_Aspect (Defining_Identifier (Target), Aspect_Address))
+        and then Next (Target) /= Marker
+      then
+         declare
+            Obj_Id : constant Entity_Id := Defining_Identifier (Target);
+            Stmts  : constant List_Id   := New_List;
+
+         begin
+            while Next (Target) /= Marker loop
+               Append_To (Stmts, Remove_Next (Target));
+            end loop;
+
+            pragma Assert (No (Initialization_Statements (Obj_Id)));
+
+            Set_Initialization_Statements
+              (Obj_Id, Make_Compound_Statement (Loc, Actions => Stmts));
+         end;
       end if;
 
       --  Reset the action lists

@@ -635,11 +635,12 @@ package body Freeze is
    procedure Check_Address_Clause (E : Entity_Id) is
       Addr       : constant Node_Id   := Address_Clause (E);
       Typ        : constant Entity_Id := Etype (E);
-      Decl       : Node_Id;
-      Expr       : Node_Id;
-      Init       : Node_Id;
-      Lhs        : Node_Id;
-      Tag_Assign : Node_Id;
+
+      Assign : Node_Id;
+      Decl   : Node_Id;
+      Expr   : Node_Id;
+      Init   : Node_Id;
+      Lhs    : Node_Id;
 
    begin
       if Present (Addr) then
@@ -759,31 +760,30 @@ package body Freeze is
             Lhs := New_Occurrence_Of (E, Sloc (Decl));
             Set_Assignment_OK (Lhs);
 
+            Assign :=
+              Make_Assignment_Statement (Sloc (Decl),
+                Name       => Lhs,
+                Expression => Init);
+
+            Set_No_Initialization (Decl);
+
+            --  If the initialization expression is an aggregate, we do not
+            --  adjust after the assignment but, in either case, we do not
+            --  finalize before since the object is now uninitialized. Note
+            --  that Make_Tag_Ctrl_Assignment will also automatically insert
+            --  the tag assignment in the tagged case.
+
+            if Nkind (Unqualify (Init)) = N_Aggregate then
+               Set_No_Ctrl_Actions (Assign);
+            else
+               Set_No_Finalize_Actions (Assign);
+            end if;
+
             --  Move initialization to freeze actions, once the object has
             --  been frozen and the address clause alignment check has been
             --  performed.
 
-            Append_Freeze_Action (E,
-              Make_Assignment_Statement (Sloc (Decl),
-                Name       => Lhs,
-                Expression => Init));
-
-            Set_No_Initialization (Decl);
-
-            --  If the object is tagged, check whether the tag must be
-            --  reassigned explicitly.
-
-            if Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
-               Tag_Assign :=
-                 Make_Tag_Assignment_From_Type
-                   (Sloc (Decl),
-                    New_Occurrence_Of (E, Sloc (Decl)),
-                    Underlying_Type (Typ));
-
-               if Present (Tag_Assign) then
-                  Append_Freeze_Action (E, Tag_Assign);
-               end if;
-            end if;
+            Append_Freeze_Action (E, Assign);
          end if;
       end if;
    end Check_Address_Clause;
