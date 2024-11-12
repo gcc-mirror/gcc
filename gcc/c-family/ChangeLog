@@ -1,3 +1,15 @@
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fmodules with same effect as -fmodules-ts.
+
+2024-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_BUILTIN_OPERATOR_NEW
+	and RID_BUILTIN_OPERATOR_DELETE.
+	(names_builtin_p): Change return type from bool to int.
+	* c-common.cc (c_common_reswords): Add __builtin_operator_new
+	and __builtin_operator_delete.
+
 2024-11-07  Paul Iannetta  <piannetta@kalrayinc.com>
 
 	* c-pragma.cc (struct pragma_pp_data): Use (struct internal_pragma_handler);

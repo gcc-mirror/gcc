@@ -1,3 +1,23 @@
+2024-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wstring_convert, wbuffer_convert):
+	Adjust strings passed to exception constructors.
+
+2024-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117520
+	* include/std/text_encoding (aliases_view:_Iterator::operator+=):
+	Fix typos that caused == to be used instead of =.
+	(aliases_view::_Iterator): Fix friend declaration.
+	* testsuite/std/text_encoding/members.cc: Adjust expected
+	behaviour of invalid subscript. Add tests for other erroneous
+	operations on iterators.
+
+2024-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Utf_iterator::_M_read_utf16): Add
+	parentheses.
+
 2024-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* libsupc++/new (::operator new, ::operator new[]): Add malloc

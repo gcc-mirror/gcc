@@ -1,3 +1,13 @@
+2024-11-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/pr109062.c: Update dg-output
+	to also accept GOMP_SPINCOUNT = 1 for x86-64.
+
+2024-11-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (isa_matches_agent): Mention the device number
+	and ROCR_VISIBLE_DEVICES when reporting an ISA mismatch error.
+
 2024-11-10  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c/max_vf-1.c: Adjust.

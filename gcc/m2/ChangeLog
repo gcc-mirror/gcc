@@ -1,3 +1,292 @@
+2024-11-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Base.def (MixTypes): Rename parameters.
+	(MixTypesDecl): New procedure function.
+	* gm2-compiler/M2Base.mod (BuildOrdFunctions): Add
+	DefProcedure parameter to PutFunction.
+	(BuildTruncFunctions): Ditto.
+	(BuildFloatFunctions): Ditto.
+	(BuildIntFunctions): Ditto.
+	(InitBaseFunctions): Ditto.
+	(MixTypesDecl): New procedure function.
+	(MixTypes): Reimplement.
+	* gm2-compiler/M2Check.mod (checkProcType): Replace
+	NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(checkProcedureProcType): Ditto.
+	* gm2-compiler/M2Error.def: Remove unnecessary export qualified list.
+	* gm2-compiler/M2GCCDeclare.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(DeclareProcedureToGccWholeProgram): Rename son to
+	Variable.
+	(DeclareProcedureToGccSeparateProgram): Ditto.
+	(PrintKind): New procedure.
+	(PrintProcedureParameters): Ditto.
+	(PrintProcedureReturnType): Ditto.
+	(PrintProcedure): Reimplement.
+	(PrintProcTypeParameters): New procedure.
+	(PrintProcType): Ditto.
+	(DeclareProcType): Rename Son to Parameter.
+	* gm2-compiler/M2GenGCC.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(ErrorMessageDecl): New procedure.
+	(checkIncorrectMeta): Replace call to MetaErrorT2 with
+	ErrorMessageDecl.
+	(ComparisonMixTypes): Add varleft and varright parameters.
+	Adjust all callers of ComparisonMixTypes.
+	* gm2-compiler/M2MetaError.def (MetaErrorDecl): New procedure.
+	* gm2-compiler/M2MetaError.mod (MetaErrorDecl): New procedure.
+	* gm2-compiler/M2Options.def (SetXCode): Add -fd flag description
+	to comment.
+	* gm2-compiler/M2Options.mod (SetXCode): Add -fd flag description
+	to comment.
+	* gm2-compiler/M2Quads.mod (CheckBreak): New procedure.
+	Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	(FailParameter): Reimplement using GetVarDeclFullTok.
+	Generate message for formal parameter, actual parameter and
+	declaration of actual parameter.
+	(WarnParameter): Ditto.
+	(CheckBuildFunction): Reimplement error message using MetaErrorT1.
+	* gm2-compiler/M2Range.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	* gm2-compiler/M2Scaffold.mod (DeclareScaffoldFunctions): Call
+	PutProcedureDefined after every procedure declaration.
+	(DeclareArgEnvParams): Add ProperProcedure parameter to PutParam.
+	* gm2-compiler/M2Size.mod (MakeSize): Add DefProcedure parameter
+	to PutFunction.
+	* gm2-compiler/M2Swig.mod: Replace NoOfParam with NoOfParamAny.
+	Replace IsVarParam with IsVarParamAny.
+	* gm2-compiler/M2SymInit.mod: Ditto.
+	* gm2-compiler/M2System.mod (InitSystem): Add DefProcedure
+	parameter to PutFunction.
+	* gm2-compiler/P1SymBuild.mod (StartBuildProcedure): Reimplement.
+	(EndBuildProcedure): Ditto.
+	(EndBuildForward): Ditto.
+	* gm2-compiler/P2Build.bnf (BuildProcedureDefinedByForward):
+	Remove.
+	(BuildProcedureDefinedByProper): Ditto.
+	(ForwardDeclaration): Remove BuildProcedureDefinedByForward.
+	(BuildNoReturnAttribute): Remove parameter.
+	* gm2-compiler/P2SymBuild.def (BuildNoReturnAttribute): Remove
+	parameter.
+	(BuildProcedureDefinedByForward): Remove.
+	(BuildProcedureDefinedByProper): Ditto.
+	* gm2-compiler/P2SymBuild.mod (Import): Remove
+	AreParametersDefinedInDefinition,
+	AreParametersDefinedInImplementation,
+	AreProcedureParametersDefined,
+	ParametersDefinedInDefinition,
+	ParametersDefinedInImplementation,
+	GetProcedureDeclaredDefinition,
+	GetProcedureDeclaredForward,
+	GetProcedureDeclaredProper,
+	GetParametersDefinedByForward,
+	GetParametersDefinedByProper and
+	PutProcedureNoReturn.
+	Add PutProcedureParametersDefined,
+	GetProcedureParametersDefined,
+	GetProcedureKindDesc,
+	GetProcedureDeclaredTok,
+	GetProcedureKind,
+	GetReturnTypeTok,
+	SetReturnOptional,
+	IsReturnOptional,
+	PutProcedureNoReturn and
+	PutProcedureDefined.
+	(Debug): New procedure.
+	(P2StartBuildDefModule): Space formatting.
+	(BuildVariable): Reimplement to record full declaration.
+	(StartBuildProcedure): Reimplement using token to determine
+	the kind of procedure.
+	(BuildProcedureHeading): Ditto.
+	(BuildFPSection): Ditto.
+	(BuildVarArgs): Ditto.
+	(BuildOptArg): Ditto.
+	(BuildProcedureDefinedByForward): Remove.
+	(BuildProcedureDefinedByProper): Ditto.
+	(BuildFormalParameterSection): Reimplement so that the
+	quad stack is unchanged.
+	(CheckFormalParameterSection): Ditto.
+	(RemoveFPParameters): New procedure.
+	(ParameterError): Reimplement.
+	(StartBuildFormalParameters): Add annotation.
+	(ParameterMismatch): Reimplement.
+	(EndBuildFormalParameters): Reimplement to check against
+	all procedure kinds.
+	(GetSourceDesc): Remove.
+	(GetCurSrcDesc): Ditto.
+	(GetDeclared): Ditto.
+	(ReturnTypeMismatch): Reimplement.
+	(BuildFunction): Ditto.
+	(BuildOptFunction): Ditto.
+	(CheckOptFunction): New procedure.
+	(BuildNoReturnAttribute): Remove parameter and obtain
+	procedure symbol from quad stack.
+	(CheckProcedureReturn): New procedure.
+	* gm2-compiler/P3SymBuild.mod (BuildOptArgInitializer):
+	Preserve ProcSym tok on the quad stack.
+	Add Assert.
+	* gm2-compiler/PCSymBuild.mod (fixupProcedureType): Replace
+	NoOfParam with NoOfParamAny.
+	* gm2-compiler/SymbolTable.def (GetNthParam): Add ProcedureKind
+	parameter.
+	(PutFunction): Ditto.
+	(PutOptFunction): Ditto.
+	(IsReturnOptional): Ditto.
+	(PutParam): Ditto.
+	(PutVarParam): Ditto.
+	(PutParamName): Ditto.
+	(PutProcedureNoReturn): Ditto.
+	(IsProcedureNoReturn): Ditto.
+	(IsVarParam): Ditto.
+	(IsUnboundedParam): Ditto.
+	(NoOfParam): Ditto.
+	(ForeachLocalSymDo): Ditto.
+	(GetProcedureKind): Ditto.
+	(GetProcedureDeclaredTok): Ditto.
+	(PutProcedureDeclaredTok): Ditto.
+	(GetReturnTypeTok): Ditto.
+	(PutReturnTypeTok): Ditto.
+	(PutParametersDefinedByForward): New procedure.
+	(PutProcedureParametersDefined): Ditto.
+	(PutProcedureDefined): Ditto.
+	(GetParametersDefinedByProper): Ditto.
+	(GetProcedureDeclaredForward): Ditto.
+	(GetProcedureDeclaredProper): Ditto.
+	(PutProcedureDeclaredProper): Ditto.
+	(GetProcedureDeclaredDefinition): Ditto.
+	(PutProcedureDeclaredDefinition): Ditto.
+	(GetProcedureDefined): Ditto.
+	(PutUseOptArg): Ditto.
+	(UsesOptArg): Ditto.
+	(PutOptArgInit): Ditto.
+	(SetReturnOptional): Ditto.
+	(UsesOptArgAny): Ditto.
+	(GetProcedureKindDesc): Ditto.
+	(IsReturnOptionalAny): New procedure function.
+	(GetNthParamAny): Ditto.
+	(NoOfParamAny): Ditto.
+	(IsProcedureAnyNoReturn): Ditto.
+	(AreParametersDefinedInImplementation): Remove.
+	(ParametersDefinedInImplementation): Ditto.
+	(AreParametersDefinedInDefinition): Ditto.
+	(AreProcedureParametersDefined): Ditto.
+	(ParametersDefinedInDefinition): Ditto.
+	(ProcedureParametersDefined): Ditto.
+	(PutParametersDefinedByProper): Ditto.
+	(PutProcedureDeclaredForward): Ditto.
+	(GetParametersDefinedByForward): Ditto.
+	(GetProcedureParametersDefined): Ditto.
+	(PushOffset): Ditto.
+	(PopSize): Ditto.
+	(PushParamSize): Ditto.
+	(PushSumOfLocalVarSize): Ditto.
+	(PushSumOfParamSize): Ditto.
+	(PopOffset): Ditto.
+	(PopSumOfParamSize): Ditto.
+	* gm2-compiler/SymbolTable.mod (MakeProcedure): Reimplement.
+	(PutProcedureNoReturn): Add ProcedureKind parameter.
+	(GetNthParam): Ditto.
+	(PutFunction): Ditto.
+	(PutOptFunction): Ditto.
+	(IsReturnOptional): Ditto.
+	(MakeVariableForParam): Ditto.
+	(PutParam): Ditto.
+	(PutVarParam): Ditto.
+	(PutParamName): Ditto.
+	(AddParameter): Ditto.
+	(IsVarParam): Ditto.
+	(IsVarParamAny): Ditto.
+	(NoOfParam): Ditto.
+	(HasVarParameters): Ditto.
+	(IsUnboundedParam): Ditto.
+	(PutUseVarArgs): Ditto.
+	(UsesVarArgs): Ditto.
+	(PutUseOptArg): Ditto.
+	(UsesOptArg): Ditto.
+	(UsesOptArgAny): Ditto.
+	(PutOptArgInit): Ditto.
+	(IsProcedure): Ditto.
+	(IsPointer): Ditto.
+	(IsRecord): Ditto.
+	(IsArray): Ditto.
+	(IsEnumeration): Ditto.
+	(IsUnbounded): Ditto.
+	(IsSet): Ditto.
+	(IsSetPacked): Ditto.
+	(CheckUnbounded): Ditto.
+	(IsOAFamily): Ditto.
+	(IsModuleWithinProcedure): Ditto.
+	(GetDeclaredDef): Ditto.
+	(GetDeclaredMod): Ditto.
+	(GetDeclaredFor): Ditto.
+	(GetProcedureDeclaredForward): Ditto.
+	(GetProcedureKind): Ditto.
+	(PutProcedureDeclaredForward): Ditto.
+	(GetProcedureDeclaredTok): Ditto.
+	(GetProcedureDeclaredProper): Ditto.
+	(PutProcedureDeclaredTok): Ditto.
+	(PutProcedureDeclaredProper): Ditto.
+	(GetReturnTypeTok): Ditto.
+	(GetProcedureDeclaredDefinition): Ditto.
+	(PutReturnTypeTok): Ditto.
+	(PutProcedureDeclaredDefinition): Ditto.
+	(GetProcedureKindDesc): Ditto.
+	(IsProcedureVariable): Ditto.
+	(IsAModula2Type): Ditto.
+	(GetParam): Ditto.
+	(ProcedureParametersDefined): Ditto.
+	(AreParametersDefinedInImplementation): Remove.
+	(AreParametersDefinedInDefinition): Ditto.
+	(AreProcedureParametersDefined): Ditto.
+	(IsSizeSolved): Ditto.
+	(IsOffsetSolved): Ditto.
+	(IsValueSolved): Ditto.
+	(IsSumOfParamSizeSolved): Ditto.
+	(PushSize): Ditto.
+	(PushOffset): Ditto.
+	(PopSize): Ditto.
+	(PushValue): Ditto.
+	(PushParamSize): Ditto.
+	(PushSumOfLocalVarSize): Ditto.
+	(PushSumOfParamSize): Ditto.
+	(PushVarSize): Ditto.
+	(PopValue): Ditto.
+	(PopSize): Ditto.
+	(PopOffset): Ditto.
+	(PopSumOfParamSize): Ditto.
+	(PutParametersDefinedByForward): New procedure.
+	(PutProcedureParametersDefined): Ditto.
+	(PutProcedureDefined): Ditto.
+	(GetParametersDefinedByProper): Ditto.
+	(GetProcedureDeclaredForward): Ditto.
+	(GetProcedureDeclaredProper): Ditto.
+	(PutProcedureDeclaredProper): Ditto.
+	(GetProcedureDeclaredDefinition): Ditto.
+	(PutProcedureDeclaredDefinition): Ditto.
+	(GetProcedureDefined): Ditto.
+	(PutUseOptArg): Ditto.
+	(UsesOptArg): Ditto.
+	(PutOptArgInit): Ditto.
+	(SetReturnOptional): Ditto.
+	(UsesOptArgAny): Ditto.
+	(GetProcedureKindDesc): Ditto.
+	(PutParametersDefinedByProper): Ditto.
+	(GetParametersDefinedByProper): Ditto.
+	(IsReturnOptionalAny): New procedure function.
+	(IsProcedureAnyDefaultBoolean): Ditto.
+	(IsProcedureAnyBoolean): Ditto.
+	(IsProcedureAnyNoReturn): Ditto.
+	(GetNthParamAny): Ditto.
+	(NoOfParamAny): Ditto.
+	(IsProcedureAnyNoReturn): Ditto.
+	(GetProcedureKind): Ditto.
+	(IsVarParamAny): Ditto.
+	(IsUnboundedParamAny): Ditto.
+	(ForeachParamSymDo): New comment.
+	* gm2-libs-coroutines/SYSTEM.mod: Reformat.
+
 2024-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (m2_OBJS): Add $(BUILD-LIBS-BOOT),

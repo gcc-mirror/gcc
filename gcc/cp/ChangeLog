@@ -1,3 +1,37 @@
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in: Also collect tags from libcody and c++tools.
+
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* lang-specs.h: Check fmodules* instead of fmodules-ts.
+
+2024-11-11  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117463
+	* constexpr.cc (cxx_placement_new_fn): Implement in terms of
+	std_placement_new_fn_p.
+	* cp-tree.h (std_placement_new_fn_p): Declare.
+	* init.cc (std_placement_new_fn_p): Add missing checks to ensure
+	that fndecl is a non-replaceable ::operator new.
+
+2024-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_postfix_expression): Handle
+	RID_BUILTIN_OPERATOR_NEW and RID_BUILTIN_OPERATOR_DELETE.
+	* cp-objcp-common.cc (names_builtin_p): Change return type from
+	bool to int, adjust return statments.  Handle
+	RID_BUILTIN_OPERATOR_NEW and RID_BUILTIN_OPERATOR_DELETE.
+	* pt.cc (tsubst_expr) <case CALL_EXPR>: Handle
+	CALL_FROM_NEW_OR_DELETE_P.
+
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct ptrmem_cst): Change tree_common to tree_typed.
+	(struct tree_trait_expr): Likewise.
+	(struct tree_static_assert): Change tree_common to tree_base.
+	(struct tree_argument_pack_select): Likewise.
+
 2024-11-10  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* cp-objcp-common.cc (cp_common_init_ts): Change TRAIT_EXPR from

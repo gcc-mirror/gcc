@@ -1,3 +1,381 @@
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Rename -fmodules-ts to -fmodules.
+
+2024-11-11  Jason Merrill  <jason@redhat.com>
+
+	* opts.h (cl_deferred_option::value): Change to HOST_WIDE_INT.
+	(set_option): Change opt_index parm to size_t.
+	* opts-common.cc (set_option): Likewise.
+
+2024-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (New/Delete Builtins): Document
+	__builtin_operator_new and __builtin_operator_delete.
+
+2024-11-11  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_vfp_is_call_or_return_candidate): use fp registers to
+	return svmfloat8_t parameters.
+
+2024-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (arg1_arg3_map): New.
+	(arg1_arg3_arg4_map): Likewise.
+	(vect_get_operand_map): Handle IFN_SCATTER_STORE,
+	IFN_MASK_SCATTER_STORE and IFN_MASK_LEN_SCATTER_STORE.
+	(vect_build_slp_tree_1): Likewise.
+	* tree-vect-stmts.cc (vectorizable_store): For SLP masked
+	gather/scatter record the mask with proper number of copies.
+	* tree-vect-loop.cc (vectorizable_recurr): Avoid costing
+	the initial value construction in the prologue twice with SLP.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Handle
+	__ARM_FEATURE_SVE2p1.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-modes.def (VNx1SI, VNx1DI): New modes.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdup_lane_impl::expand): Update generation of TBL instruction.
+	(svtbl_impl): Delete.
+	(svtbl): Use unspec_based_uncond_function instead.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(permute::fold_permute): Handle trailing immediate arguments.
+	* config/aarch64/aarch64-sve-builtins-shapes.h (extq): Declare.
+	(load_gather64_sv_index, load_gather64_sv_offset): Likewise.
+	(load_gather64_vs_index, load_gather64_vs_offset): Likewise.
+	(pmov_from_vector, pmov_from_vector_lane, pmov_to_vector_lane)
+	(reduction_neonq, store_scatter64_index, store_scatter64_offset)
+	(unary_lane): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(load_gather64_sv_base, store_scatter64_base): New classes.
+	(extq_def, ext): New shape.
+	(load_gather64_sv_index_def, load_gather64_sv_index): Likewise.
+	(load_gather64_sv_offset_def, load_gather64_sv_offset): Likewise.
+	(load_gather64_vs_index_def, load_gather64_vs_index): Likewise.
+	(load_gather64_vs_offset_def, load_gather64_vs_offset): Likewise.
+	(pmov_from_vector_def, pmov_from_vector): Likewise.
+	(pmov_from_vector_lane_def, pmov_from_vector_lane): Likewise.
+	(pmov_to_vector_lane_def, pmov_to_vector_lane): Likewise.
+	(reduction_neonq_def, reduction_neonq): Likewise.
+	(store_scatter64_index_def, store_scatter64_index): Likewise.
+	(store_scatter64_offset_def, store_scatter64_offset): Likewise.
+	(unary_lane_def, unary_lane): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svaddqv, svandqv)
+	(svdup_laneq, sveorqv, svextq, svld1q_gather, svld1udq, svld1uwq)
+	(svld2q, svld3q, svld4q, svmaxnmqv, svmaxqv, svminnmqv, svminqv)
+	(svorqv, svpmov, svpmov_lane, svst1qd, svst1q_scatter, svst1wq)
+	(svst2q, svst3q, svst4q, svtblq, svtbx, svtbxq, svuzpq1, svuzpq2)
+	(svzipq1, svzipq2): Declare.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (ld1uxq_st1xq_base)
+	(ld234q_st234q_base, svdup_laneq_impl, svextq_impl): New classes.
+	(svld1q_gather_impl, svld1uxq_impl, svld234q_impl): Likewise.
+	(svpmov_impl, svpmov_lane_impl, svst1q_scatter_impl): Likewise.
+	(svst1xq_impl, svst234q_impl, svuzpq_impl, svzipq_impl): Likewise.
+	(svaddqv, svandqv, svdup_laneq, sveorqv, svextq, svld1q_gather)
+	(svld1udq, svld1uwq, svld2q, svld3q, svld4q, svmaxnmqv, svmaxqv)
+	(svminnmqv, svminqv, svorqv, svpmov, svpmov_lane, svst1qd)
+	(svst1q_scatter, svst1wq, svst2q, svst3q, svst4q, svtblq, svtbx)
+	(svtbxq, svuzpq1, svuzpq2, svzipq1, svzipq2): New function entries.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svaddqv, svandqv)
+	(svdup_laneq, sveorqv, svextq, svld2q, svld3q, svld4q, svmaxnmqv)
+	(svmaxqv, svminnmqv, svminqv, svorqv, svpmov, svpmov_lanes, vst2q)
+	(svst3q, svst4q, svtblq, svtbxq, svuzpq1, svuzpq2, svzipq1, svzipq2)
+	(svld1q_gather, svld1udq, svld1uwq, svst1dq, svst1q_scatter)
+	(svst1wq): New function definitions.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_hsd_data)
+	(hsd_data, s_data): New type lists.
+	(function_resolver::infer_pointer_type): Give a specific error about
+	passing a pointer to 8-bit elements to an _index function.
+	(function_resolver::resolve_sv_displacement): Check whether the
+	function allows 32-bit bases.
+	* config/aarch64/iterators.md (UNSPEC_TBLQ, UNSPEC_TBXQ): New unspecs.
+	(UNSPEC_ADDQV, UNSPEC_ANDQV, UNSPEC_DUPQ, UNSPEC_EORQV, UNSPEC_EXTQ)
+	(UNSPEC_FADDQV, UNSPEC_FMAXQV, UNSPEC_FMAXNMQV, UNSPEC_FMINQV)
+	(UNSPEC_FMINNMQV, UNSPEC_LD1_EXTENDQ, UNSPEC_LD1Q_GATHER): Likewise.
+	(UNSPEC_LDNQ, UNSPEC_ORQV, UNSPEC_PMOV_PACK, UNSPEC_PMOV_PACK_LANE)
+	(UNSPEC_PMOV_UNPACK, UNSPEC_PMOV_UNPACK_LANE, UNSPEC_SMAXQV): Likewise.
+	(UNSPEC_SMINQV, UNSPEC_ST1_TRUNCQ, UNSPEC_ST1Q_SCATTER, UNSPEC_STNQ)
+	(UNSPEC_UMAXQV, UNSPEC_UMINQV, UNSPEC_UZPQ1, UNSPEC_UZPQ2): Likewise.
+	(UNSPEC_ZIPQ1, UNSPEC_ZIPQ2): Likewise.
+	(Vtype): Handle single-vector SVE modes.
+	(Vendreg): Handle SVE structure modes.
+	(VNxTI, LD1_EXTENDQ_MEM): New mode attributes.
+	(SVE_PERMUTE, SVE_TBL, SVE_TBX): New int iterators.
+	(SVE_INT_REDUCTION_128, SVE_FP_REDUCTION_128): Likewise.
+	(optab): Handle the new SVE2.1 reductions.
+	(perm_insn): Handle the new SVE2.1 permutations.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_sve_tbl<mode>): Generalize to...
+	(@aarch64_sve_<SVE_TBL:perm_insn><mode>): ...this.
+	(@aarch64_sve_<PERMUTE:perm_insn><mode>): Generalize to...
+	(@aarch64_sve_<SVE_PERMUTE:perm_insn><mode>): ...this.
+	* config/aarch64/aarch64-sve2.md (@aarch64_pmov_to_<mode>)
+	(@aarch64_pmov_lane_to_<mode>, @aarch64_pmov_from_<mode>)
+	(@aarch64_pmov_lane_from_<mode>, @aarch64_sve_ld1_extendq<mode>)
+	(@aarch64_sve_ldnq<mode>, aarch64_gather_ld1q): New patterns.
+	(@aarch64_sve_st1_truncq<mode>, @aarch64_sve_stnq<mode>): Likewise.
+	(aarch64_scatter_st1q, @aarch64_pred_reduc_<optab>_<mode>): Likewise.
+	(@aarch64_sve_dupq<mode>, @aarch64_sve_extq<mode>): Likewise.
+	(@aarch64_sve2_tbx<mode>): Generalize to...
+	(@aarch64_sve_<SVE_TBX:perm_insn><mode>): ...this.
+	* config/aarch64/aarch64.cc
+	(aarch64_classify_vector_memory_mode): New function.
+	(aarch64_regmode_natural_size): Use it.
+	(aarch64_classify_index): Likewise.
+	(aarch64_classify_address): Likewise.
+	(aarch64_print_address_internal): Likewise.
+	(aarch64_evpc_hvla): New function.
+	(aarch64_expand_vec_perm_const_1): Use it.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SVE2p1_OR_SME2): New macro.
+	* config/aarch64/aarch64-early-ra.cc
+	(is_stride_candidate): Require TARGET_STREAMING_SME2
+	(early_ra::maybe_convert_to_strided_access): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Mark instructions
+	that are common to both SVE2p1 and SME2.
+	* config/aarch64/aarch64-sve.md
+	(@aarch64_<sur>dot_prod_lane<SVE_FULL_SDI:mode><SVE_FULL_BHI:mode>):
+	Test TARGET_SVE2p1_OR_SME2 instead of TARGET_STREAMING_SME2.
+	(@aarch64_sve_<sve_fp_op>vnx4sf): Move TARGET_SVE_BF16 condition
+	into SVE_BFLOAT_TERNARY_LONG.
+	(@aarch64_sve_<sve_fp_op>_lanevnx4sf): Likewise
+	SVE_BFLOAT_TERNARY_LONG_LANE.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_<LD1_COUNT:optab><mode>): Require TARGET_SVE2p1_OR_SME2
+	instead of TARGET_STREAMING_SME2.
+	(@aarch64_<ST1_COUNT:optab><mode>): Likewise.
+	(@aarch64_sve_ptrue_c<BHSD_BITS>): Likewise.
+	(@aarch64_sve_pext<BHSD_BITS>): Likewise.
+	(@aarch64_sve_pext<BHSD_BITS>x2): Likewise.
+	(@aarch64_sve_cntp_c<BHSD_BITS>): Likewise.
+	(@aarch64_sve_fclamp<mode>): Likewise.
+	(*aarch64_sve_fclamp<mode>_x): Likewise.
+	(<sur>dot_prodvnx4sivnx8hi): Likewise.
+	(aarch64_sve_fdotvnx4sfvnx8hf): Likewise.
+	(aarch64_fdot_prod_lanevnx4sfvnx8hf): Likewise.
+	(@aarch64_sve_while<while_optab_cmp>_b<BHSD_BITS>_x2): Likewise.
+	(@aarch64_sve_while<while_optab_cmp>_c<BHSD_BITS>): Likewise.
+	(@aarch64_sve_<optab><VNx8HI_ONLY:mode><VNx8SI_ONLY:mode>): Move
+	TARGET_STREAMING_SME2 condition into SVE_QCVTxN.
+	(@aarch64_sve_<sve_int_op><mode>): Likewise
+	SVE2_INT_SHIFT_IMM_NARROWxN, but also require TARGET_STREAMING_SME2
+	for the 4-register forms.
+	* config/aarch64/iterators.md (SVE_BFLOAT_TERNARY_LONG): Require
+	TARGET_SVE2p1_OR_SME2 rather than TARGET_STREAMING_SME2 for
+	UNSPEC_BFMLSLB and UNSPEC_BFMLSLT.  Require TARGET_SVE_BF16
+	for the others.
+	(SVE_BFLOAT_TERNARY_LONG_LANE): Likewise.
+	(SVE2_INT_SHIFT_IMM_NARROWxN): Require TARGET_SVE2p1_OR_SME2 for
+	the interleaving forms and TARGET_STREAMING_SME2 for the rest.
+	(SVE_QCVTxN): Likewise.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (sve2p1): New extension.
+	* doc/invoke.texi (sve2p1): Document it.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Mark instructions
+	that are common to both SVE2p1 and SME.
+	* config/aarch64/aarch64.h (TARGET_SVE2p1): New macro.
+	(TARGET_SVE2p1_OR_SME): Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_psel<BHSD_BITS>): Require TARGET_SVE2p1_OR_SME
+	instead of TARGET_STREAMING.
+	(*aarch64_sve_psel<BHSD_BITS>_plus): Likewise.
+	(@aarch64_sve_<su>clamp<mode>): Likewise.
+	(*aarch64_sve_<su>clamp<mode>_x): Likewise.
+	(@aarch64_pred_<optab><mode>): Likewise.
+	(@cond_<optab><mode>): Likewise.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config.gcc (extra_headers): Add arm_private_neon_types.h.
+	* config/aarch64/arm_private_neon_types.h: New file, split out
+	from...
+	* config/aarch64/arm_neon.h: ...here.
+	* config/aarch64/arm_sve.h: Include arm_private_neon_types.h
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-modes.def (VNx64BI): New mode.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_split_double_move): Generalize to...
+	(aarch64_split_move): ...this.
+	* config/aarch64/aarch64-sve-builtins-base.def (svcreate4, svget4)
+	(svset4, svundef4): Add bool variants.
+	* config/aarch64/aarch64-sve-builtins.cc (handle_arm_sve_h): Add
+	svboolx4_t.
+	* config/aarch64/iterators.md (SVE_STRUCT_BI): New mode iterator.
+	* config/aarch64/aarch64-sve.md (movvnx32bi): Generalize to...
+	(mov<SVE_STRUCT_BI:mode>): ...this.
+	* config/aarch64/aarch64.cc
+	(pure_scalable_type_info::piece::get_rtx): Allow num_prs to be 4.
+	(aarch64_classify_vector_mode): Handle VNx64BI.
+	(aarch64_hard_regno_nregs): Likewise.
+	(aarch64_class_max_nregs): Likewise.
+	(aarch64_array_mode): Use VNx64BI for arrays of 4 svbool_ts.
+	(aarch64_split_double_move): Generalize to...
+	(aarch64_split_move): ...this.
+	(aarch64_split_128bit_move): Update call accordingly.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Sort entries
+	alphabetically.
+	* config/aarch64/aarch64-sve-builtins-sve2.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Likewise.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (ext_base): New base
+	class, extracted from...
+	(ext_def): ...here.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_resolver::target_type_restrictions): New enum.
+	(function_resolver::infer_pointer_type): Add an extra argument
+	that specifies what the target type can be.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::infer_pointer_type): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(load_gather_sv_base::get_target_type_restrictions): New virtual
+	member function.
+	(load_gather_sv_base::resolve): Use it.  Update call to
+	infer_pointer_type.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(store_scatter_base::infer_vector_type): New virtual member function.
+	(store_scatter_base::resolve): Use it.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_shape::vector_base_type): New member function.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_shape::vector_base_type): Likewise.
+	(function_resolver::resolve_sv_displacement): Use it.
+	(function_resolver::resolve_gather_address): Likewise.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_tbl<mode>): Wrap
+	the second operand in braces.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_all_data): Redefine
+	in terms of single-size *_data definitions.
+	(TYPES_bhs_data, TYPES_hs_data, TYPES_sd_data): Likewise.
+	(TYPES_b_data, TYPES_h_data, TYPES_s_data): New macros.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SME): Expand comment.
+	(TARGET_STREAMING_SME): Delete.
+	* config/aarch64/aarch64-sme.md: Use TARGET_STREAMING instead of
+	TARGET_STREAMING_SME.
+	* config/aarch64/aarch64-sve2.md: Likewise.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sme.md: Use TARGET_STREAMING_SME2
+	instead of separate TARGET_STREAMING and TARGET_SME2 tests.
+	* config/aarch64/aarch64-sve2.md: Likewise.
+	* config/aarch64/iterators.md: Likewise.
+
+2024-11-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* function.h (push_function_decl, pop_function_decl): Declare.
+	* function.cc (set_function_decl): New function, extracted from...
+	(set_cfun): ...here.
+	(push_function_decl): New function, extracted from...
+	(push_cfun): ...here.
+	(pop_cfun_1): New function, extracted from...
+	(pop_cfun): ...here.
+	(pop_function_decl): New function.
+
+2024-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117510
+	* tree-ssa-loop-unswitch.cc (find_loop_guard): Only check
+	not skipped blocks for side-effects.
+
+2024-11-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md: Fix indent format issue.
+
+2024-11-11  Sam James  <sam@gentoo.org>
+
+	PR other/116948
+	* doc/install.texi (Building a native compiler): Document UBSAN_OPTIONS.
+
+2024-11-11  Sam James  <sam@gentoo.org>
+
+	PR other/116948
+	* doc/install.texi (Building a native compiler): Mention bootstrap-ubsan.
+
+2024-11-11  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*extzvsi-1bit_addsubx):
+	Add '&' to the destination register constraint to indicate that
+	it is 'earlyclobber', append '0' to the first source register
+	constraint to indicate that it can be the same as the destination
+	register, and change the split condition from 1 to reload_completed
+	so that the insn will be split only after RA in order to obtain
+	allocated registers that satisfy the above constraints.
+
+2024-11-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Diamond Rapids.
+	* common/config/i386/i386-common.cc (processor_name):
+	Add Diamond Rapids.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h (enum processor_types):
+	Add INTEL_COREI7_DIAMONDRAPIDS.
+	* config.gcc: Add -march=diamondrapids.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Handle
+	diamondrapids.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Ditto.
+	* config/i386/i386-options.cc (processor_cost_table): Ditto.
+	(m_DIAMONDRAPIDS): New.
+	(m_CORE_AVX512): Add diamondrapids.
+	* config/i386/i386.h (enum processor_type): Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2024-11-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add new model
+	number for Arrow Lake.
+
+2024-11-11  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (truncsf2bf2): Add !flag_rounding_math
+	to the condition, require flag_unsafe_math_optimizations when
+	native instruction is not available.
+	* config/i386/mmx.md: (truncv2sfv2bf2): Ditto.
+	(extendv2bfv2sf2): Add !HONOR_NANS (BFmode) to the condition.
+	* config/i386/sse.md: (truncv4sfv4sf2): Add
+	!flag_rounding_math to the condition, require
+	flag_unsafe_math_optimizations when native instruction is not
+	available.
+	(truncv8sfv8bf2): Ditto.
+	(truncv16sfv16bf2): Ditto.
+	(extendv4bfv4sf2): Add !HONOR_NANS (BFmode) to the condition.
+	(extendv8bfv8sf2): Ditto.
+	(extendv16bfv16sf2): Ditto.
+
 2024-11-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Return
