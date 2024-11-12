@@ -255,7 +255,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     struct _List_iterator
     {
-      typedef _List_iterator<_Tp>		_Self;
       typedef _List_node<_Tp>			_Node;
 
       typedef ptrdiff_t				difference_type;
@@ -271,7 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _List_iterator(__detail::_List_node_base* __x) _GLIBCXX_NOEXCEPT
       : _M_node(__x) { }
 
-      _Self
+      _List_iterator
       _M_const_cast() const _GLIBCXX_NOEXCEPT
       { return *this; }
 
@@ -286,45 +285,47 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator->() const _GLIBCXX_NOEXCEPT
       { return static_cast<_Node*>(_M_node)->_M_valptr(); }
 
-      _Self&
+      _List_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _M_node->_M_next;
 	return *this;
       }
 
-      _Self
+      _List_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_List_iterator __tmp = *this;
 	_M_node = _M_node->_M_next;
 	return __tmp;
       }
 
-      _Self&
+      _List_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _M_node->_M_prev;
 	return *this;
       }
 
-      _Self
+      _List_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_List_iterator __tmp = *this;
 	_M_node = _M_node->_M_prev;
 	return __tmp;
       }
 
       _GLIBCXX_NODISCARD
       friend bool
-      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator==(const _List_iterator& __x,
+		 const _List_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
 #if __cpp_impl_three_way_comparison < 201907L
       _GLIBCXX_NODISCARD
       friend bool
-      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator!=(const _List_iterator& __x,
+		 const _List_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
 #endif
 
@@ -340,7 +341,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp>
     struct _List_const_iterator
     {
-      typedef _List_const_iterator<_Tp>		_Self;
       typedef const _List_node<_Tp>		_Node;
       typedef _List_iterator<_Tp>		iterator;
 
@@ -376,45 +376,47 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator->() const _GLIBCXX_NOEXCEPT
       { return static_cast<_Node*>(_M_node)->_M_valptr(); }
 
-      _Self&
+      _List_const_iterator&
       operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _M_node->_M_next;
 	return *this;
       }
 
-      _Self
+      _List_const_iterator
       operator++(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_List_const_iterator __tmp = *this;
 	_M_node = _M_node->_M_next;
 	return __tmp;
       }
 
-      _Self&
+      _List_const_iterator&
       operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _M_node->_M_prev;
 	return *this;
       }
 
-      _Self
+      _List_const_iterator
       operator--(int) _GLIBCXX_NOEXCEPT
       {
-	_Self __tmp = *this;
+	_List_const_iterator __tmp = *this;
 	_M_node = _M_node->_M_prev;
 	return __tmp;
       }
 
       _GLIBCXX_NODISCARD
       friend bool
-      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator==(const _List_const_iterator& __x,
+		 const _List_const_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node == __y._M_node; }
 
 #if __cpp_impl_three_way_comparison < 201907L
       _GLIBCXX_NODISCARD
       friend bool
-      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      operator!=(const _List_const_iterator& __x,
+		 const _List_const_iterator& __y) _GLIBCXX_NOEXCEPT
       { return __x._M_node != __y._M_node; }
 #endif
 
