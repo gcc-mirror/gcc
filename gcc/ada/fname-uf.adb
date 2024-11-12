@@ -324,7 +324,7 @@ package body Fname.UF is
                   declare
                      Is_Predef : constant Boolean :=
                        Is_Predefined_Unit_Name
-                         (+Unit_Buf, Renamings_Included => True);
+                         (Uname, Renamings_Included => True);
 
                      Buf : Bounded_String;
                   begin

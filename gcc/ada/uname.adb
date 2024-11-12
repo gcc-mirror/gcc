@@ -42,6 +42,15 @@ package body Uname is
    --  True if Prefix is at the beginning of X. For example,
    --  Has_Prefix("a-filename.ads", Prefix => "a-") is True.
 
+   function Encoded_Library_Unit_Name (N : Unit_Name_Type) return String;
+   --  Returns the name of the library unit N as a string without a %s or %b
+   --  suffix.
+
+   function Is_Predefined_Unit_Name
+     (Name : String; Renamings_Included : Boolean := True) return Boolean;
+   --  Same as Fname.Is_Predefined_File_Name, except it works with the name of
+   --  the unit, rather than the file name.
+
    -------------------
    -- Get_Body_Name --
    -------------------
@@ -55,6 +64,16 @@ package body Uname is
       return Name_Find (Buffer);
    end Get_Body_Name;
 
+   -------------------------------
+   -- Encoded_Library_Unit_Name --
+   -------------------------------
+
+   function Encoded_Library_Unit_Name (N : Unit_Name_Type) return String is
+      S : constant String := Get_Name_String (N);
+   begin
+      return S (S'First .. S'Last - 2);
+   end Encoded_Library_Unit_Name;
+
    -----------------------------------
    -- Get_External_Unit_Name_String --
    -----------------------------------
@@ -64,10 +83,8 @@ package body Uname is
       Newlen : Natural;
 
    begin
-      --  Get unit name and eliminate trailing %s or %b
-
-      Get_Name_String (N);
-      Name_Len := Name_Len - 2;
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (Encoded_Library_Unit_Name (N));
 
       --  Find number of components
 
@@ -489,21 +506,22 @@ package body Uname is
    ---------------------------
 
    function Is_Internal_Unit_Name
-     (Name               : String;
-      Renamings_Included : Boolean := True) return Boolean
+     (Name : Unit_Name_Type; Renamings_Included : Boolean := True)
+      return Boolean
    is
       Gnat : constant String := "gnat";
 
+      Lib_Unit_Name : constant String := Encoded_Library_Unit_Name (Name);
    begin
-      if Name = Gnat then
+      if Lib_Unit_Name = Gnat then
          return True;
       end if;
 
-      if Has_Prefix (Name, Prefix => Gnat & ".") then
+      if Has_Prefix (Lib_Unit_Name, Prefix => Gnat & ".") then
          return True;
       end if;
 
-      return Is_Predefined_Unit_Name (Name, Renamings_Included);
+      return Is_Predefined_Unit_Name (Lib_Unit_Name, Renamings_Included);
    end Is_Internal_Unit_Name;
 
    -----------------------------
@@ -511,13 +529,20 @@ package body Uname is
    -----------------------------
 
    function Is_Predefined_Unit_Name
-     (Name               : String;
-      Renamings_Included : Boolean := True) return Boolean
+     (Name : Unit_Name_Type; Renamings_Included : Boolean := True)
+      return Boolean is
+   begin
+      return
+        Is_Predefined_Unit_Name
+          (Encoded_Library_Unit_Name (Name), Renamings_Included);
+   end Is_Predefined_Unit_Name;
+
+   function Is_Predefined_Unit_Name
+     (Name : String; Renamings_Included : Boolean := True) return Boolean
    is
       Ada        : constant String := "ada";
       Interfaces : constant String := "interfaces";
       System     : constant String := "system";
-
    begin
       if Name in Ada | Interfaces | System then
          return True;
@@ -536,14 +561,16 @@ package body Uname is
 
       --  The following are the predefined renamings
 
-      return Name in "calendar"
-        | "machine_code"
-        | "unchecked_conversion"
-        | "unchecked_deallocation"
-        | "direct_io"
-        | "io_exceptions"
-        | "sequential_io"
-        | "text_io";
+      return
+        Name in
+          "calendar"
+          | "machine_code"
+          | "unchecked_conversion"
+          | "unchecked_deallocation"
+          | "direct_io"
+          | "io_exceptions"
+          | "sequential_io"
+          | "text_io";
    end Is_Predefined_Unit_Name;
 
    ------------------

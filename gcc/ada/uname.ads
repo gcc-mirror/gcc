@@ -126,14 +126,14 @@ package Uname is
    --  body or a spec).
 
    function Is_Internal_Unit_Name
-     (Name               : String;
-      Renamings_Included : Boolean := True) return Boolean;
+     (Name : Unit_Name_Type; Renamings_Included : Boolean := True)
+      return Boolean;
    --  Same as Fname.Is_Internal_File_Name, except it works with the name of
    --  the unit, rather than the file name.
 
    function Is_Predefined_Unit_Name
-     (Name               : String;
-      Renamings_Included : Boolean := True) return Boolean;
+     (Name : Unit_Name_Type; Renamings_Included : Boolean := True)
+      return Boolean;
    --  Same as Fname.Is_Predefined_File_Name, except it works with the name of
    --  the unit, rather than the file name.
 
