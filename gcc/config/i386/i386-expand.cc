@@ -11250,6 +11250,54 @@ fixup_modeless_constant (rtx x, machine_mode mode)
   return x;
 }
 
+/* Expand the outgoing argument ARG to extract unsigned char and short
+   integer constants suitable for the predicates and the instruction
+   templates which expect the unsigned expanded value.  */
+
+static rtx
+ix86_expand_unsigned_small_int_cst_argument (tree arg)
+{
+  /* When passing 0xff as an unsigned char function argument with the
+     C frontend promotion, expand_normal gets
+
+     <integer_cst 0x7fffe6aa23a8 type <integer_type 0x7fffe98225e8 int> constant 255>
+
+     and returns the rtx value using the sign-extended representation:
+
+     (const_int 255 [0xff])
+
+     Without the C frontend promotion, expand_normal gets
+
+     <integer_cst 0x7fffe9824018 type <integer_type 0x7fffe9822348 unsigned char > constant 255>
+
+     and returns
+
+     (const_int -1 [0xffffffffffffffff])
+
+     which doesn't work with the predicates nor the instruction templates
+     which expect the unsigned expanded value.  Extract the unsigned char
+     and short integer constants to return
+
+     (const_int 255 [0xff])
+
+     so that the expanded value is always unsigned, without the C frontend
+     promotion.  */
+
+  if (TREE_CODE (arg) == INTEGER_CST)
+    {
+      tree type = TREE_TYPE (arg);
+      if (INTEGRAL_TYPE_P (type)
+	  && TYPE_UNSIGNED (type)
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+	{
+	  HOST_WIDE_INT cst = TREE_INT_CST_LOW (arg);
+	  return GEN_INT (cst);
+	}
+    }
+
+  return expand_normal (arg);
+}
+
 /* Subroutine of ix86_expand_builtin to take care of insns with
    variable number of operands.  */
 
@@ -12148,7 +12196,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
   for (i = 0; i < nargs; i++)
     {
       tree arg = CALL_EXPR_ARG (exp, i);
-      rtx op = expand_normal (arg);
+      rtx op = ix86_expand_unsigned_small_int_cst_argument (arg);
       machine_mode mode = insn_p->operand[i + 1].mode;
       /* Need to fixup modeless constant before testing predicate.  */
       op = fixup_modeless_constant (op, mode);
@@ -12843,7 +12891,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
   for (i = 0; i < nargs; i++)
     {
       tree arg = CALL_EXPR_ARG (exp, i);
-      rtx op = expand_normal (arg);
+      rtx op = ix86_expand_unsigned_small_int_cst_argument (arg);
       machine_mode mode = insn_p->operand[i + 1].mode;
       bool match = insn_p->operand[i + 1].predicate (op, mode);
 
@@ -13328,7 +13376,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       machine_mode mode = insn_p->operand[i + 1].mode;
 
       arg = CALL_EXPR_ARG (exp, i + arg_adjust);
-      op = expand_normal (arg);
+      op = ix86_expand_unsigned_small_int_cst_argument (arg);
 
       if (i == memory)
 	{
@@ -15472,7 +15520,7 @@ rdseed_step:
       op0 = expand_normal (arg0);
       op1 = expand_normal (arg1);
       op2 = expand_normal (arg2);
-      op3 = expand_normal (arg3);
+      op3 = ix86_expand_unsigned_small_int_cst_argument (arg3);
       op4 = expand_normal (arg4);
       /* Note the arg order is different from the operand order.  */
       mode0 = insn_data[icode].operand[1].mode;
@@ -15687,7 +15735,7 @@ rdseed_step:
       arg3 = CALL_EXPR_ARG (exp, 3);
       arg4 = CALL_EXPR_ARG (exp, 4);
       op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
+      op1 = ix86_expand_unsigned_small_int_cst_argument (arg1);
       op2 = expand_normal (arg2);
       op3 = expand_normal (arg3);
       op4 = expand_normal (arg4);
