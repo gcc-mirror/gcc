@@ -16,6 +16,13 @@ f35 (void)
 
 __attribute__ ((noipa))
 int
+f37 (void)
+{
+  return 37;
+}
+
+__attribute__ ((noipa))
+int
 f53 (void)
 {
   return 53;
@@ -44,6 +51,7 @@ f80 (void)
 
 #pragma omp declare variant (f30) match (device={isa("sm_30")})
 #pragma omp declare variant (f35) match (device={isa("sm_35")})
+#pragma omp declare variant (f37) match (device={isa("sm_37")})
 #pragma omp declare variant (f53) match (device={isa("sm_53")})
 #pragma omp declare variant (f70) match (device={isa("sm_70")})
 #pragma omp declare variant (f75) match (device={isa("sm_75")})
