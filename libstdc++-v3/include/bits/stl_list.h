@@ -105,22 +105,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_unhook() _GLIBCXX_USE_NOEXCEPT;
     };
 
-    /// The %list node header.
-    struct _List_node_header : public _List_node_base
+    struct _List_size
     {
 #if _GLIBCXX_USE_CXX11_ABI
-      std::size_t _M_size;
+      // Store the size here so that std::list::size() is fast.
+      size_t _M_size;
 #endif
+    };
 
+
+    /// The %list node header.
+    struct _List_node_header : public _List_node_base, _List_size
+    {
       _List_node_header() _GLIBCXX_NOEXCEPT
       { _M_init(); }
 
 #if __cplusplus >= 201103L
       _List_node_header(_List_node_header&& __x) noexcept
-      : _List_node_base{ __x._M_next, __x._M_prev }
-# if _GLIBCXX_USE_CXX11_ABI
-      , _M_size(__x._M_size)
-# endif
+      : _List_node_base(__x), _List_size(__x)
       {
 	if (__x._M_base()->_M_next == __x._M_base())
 	  this->_M_next = this->_M_prev = this;
@@ -143,9 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __node->_M_next = __xnode->_M_next;
 	    __node->_M_prev = __xnode->_M_prev;
 	    __node->_M_next->_M_prev = __node->_M_prev->_M_next = __node;
-# if _GLIBCXX_USE_CXX11_ABI
-	    _M_size = __x._M_size;
-# endif
+	    _List_size::operator=(__x);
 	    __x._M_init();
 	  }
       }
@@ -155,9 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_init() _GLIBCXX_NOEXCEPT
       {
 	this->_M_next = this->_M_prev = this;
-#if _GLIBCXX_USE_CXX11_ABI
-	this->_M_size = 0;
-#endif
+	_List_size::operator=(_List_size());
       }
 
     private:
@@ -437,21 +435,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	rebind<_List_node<_Tp> >::other _Node_alloc_type;
       typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
 
-#if !_GLIBCXX_INLINE_VERSION
-      static size_t
-      _S_distance(const __detail::_List_node_base* __first,
-		  const __detail::_List_node_base* __last)
-      {
-	size_t __n = 0;
-	while (__first != __last)
-	  {
-	    __first = __first->_M_next;
-	    ++__n;
-	  }
-	return __n;
-      }
-#endif
-
       struct _List_impl
       : public _Node_alloc_type
       {
@@ -489,33 +472,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void _M_inc_size(size_t __n) { _M_impl._M_node._M_size += __n; }
 
       void _M_dec_size(size_t __n) { _M_impl._M_node._M_size -= __n; }
-
-# if !_GLIBCXX_INLINE_VERSION
-      size_t
-      _M_distance(const __detail::_List_node_base* __first,
-		  const __detail::_List_node_base* __last) const
-      { return _S_distance(__first, __last); }
-
-      // return the stored size
-      size_t _M_node_count() const { return _M_get_size(); }
-# endif
 #else
       // dummy implementations used when the size is not stored
       size_t _M_get_size() const { return 0; }
       void _M_set_size(size_t) { }
       void _M_inc_size(size_t) { }
       void _M_dec_size(size_t) { }
-
-# if !_GLIBCXX_INLINE_VERSION
-      size_t _M_distance(const void*, const void*) const { return 0; }
-
-      // count the number of nodes
-      size_t _M_node_count() const
-      {
-	return _S_distance(_M_impl._M_node._M_next,
-			   std::__addressof(_M_impl._M_node));
-      }
-# endif
 #endif
 
       typename _Node_alloc_traits::pointer
@@ -550,16 +512,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201103L
       _List_base(_List_base&&) = default;
 
-# if !_GLIBCXX_INLINE_VERSION
-      _List_base(_List_base&& __x, _Node_alloc_type&& __a)
-      : _M_impl(std::move(__a))
-      {
-	if (__x._M_get_Node_allocator() == _M_get_Node_allocator())
-	  _M_move_nodes(std::move(__x));
-	// else caller must move individual elements.
-      }
-# endif
-
       // Used when allocator is_always_equal.
       _List_base(_Node_alloc_type&& __a, _List_base&& __x)
       : _M_impl(std::move(__a), std::move(__x._M_impl))
@@ -585,6 +537,57 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_init() _GLIBCXX_NOEXCEPT
       { this->_M_impl._M_node._M_init(); }
+
+#if !_GLIBCXX_INLINE_VERSION
+      // XXX GLIBCXX_ABI Deprecated
+      // These members are unused by std::list now, but we keep them here
+      // so that an explicit instantiation of std::list will define them.
+      // This ensures that explicit instantiations still define these symbols,
+      // so that explicit instantiation declarations of std::list that were
+      // compiled with old versions of GCC can still find these old symbols.
+
+# if __cplusplus >= 201103L
+      _List_base(_List_base&& __x, _Node_alloc_type&& __a)
+      : _M_impl(std::move(__a))
+      {
+	if (__x._M_get_Node_allocator() == _M_get_Node_allocator())
+	  _M_move_nodes(std::move(__x));
+	// else caller must move individual elements.
+      }
+# endif
+
+      static size_t
+      _S_distance(const __detail::_List_node_base* __first,
+		  const __detail::_List_node_base* __last)
+      {
+	size_t __n = 0;
+	while (__first != __last)
+	  {
+	    __first = __first->_M_next;
+	    ++__n;
+	  }
+	return __n;
+      }
+
+#if _GLIBCXX_USE_CXX11_ABI
+      size_t
+      _M_distance(const __detail::_List_node_base* __first,
+		  const __detail::_List_node_base* __last) const
+      { return _S_distance(__first, __last); }
+
+      // return the stored size
+      size_t _M_node_count() const { return _M_get_size(); }
+#else
+      size_t _M_distance(const void*, const void*) const { return 0; }
+
+      // count the number of nodes
+      size_t _M_node_count() const
+      {
+	return _S_distance(_M_impl._M_node._M_next,
+			   std::__addressof(_M_impl._M_node));
+      }
+#endif
+#endif // ! INLINE_VERSION
     };
 
   /**
@@ -720,27 +723,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  __guard = nullptr;
 	  return __p;
 	}
-#endif
-
-#if _GLIBCXX_USE_CXX11_ABI
-      static size_t
-      _S_distance(const_iterator __first, const_iterator __last)
-      { return std::distance(__first, __last); }
-
-      // return the stored size
-      size_t
-      _M_node_count() const
-      { return this->_M_get_size(); }
-#else
-      // dummy implementations used when the size is not stored
-      static size_t
-      _S_distance(const_iterator, const_iterator)
-      { return 0; }
-
-      // count the number of nodes
-      size_t
-      _M_node_count() const
-      { return std::distance(begin(), end()); }
 #endif
 
     public:
@@ -1216,7 +1198,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return _M_node_count(); }
+      {
+#if _GLIBCXX_USE_CXX11_ABI
+	return this->_M_get_size(); // return the stored size
+#else
+	return std::distance(begin(), end()); // count the number of nodes
+#endif
+      }
 
       /**  Returns the size() of the largest possible %list.  */
       _GLIBCXX_NODISCARD
@@ -1810,9 +1798,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    if (this != std::__addressof(__x))
 	      _M_check_equal_allocators(__x);
 
-	    size_t __n = _S_distance(__first, __last);
+#if _GLIBCXX_USE_CXX11_ABI
+	    size_t __n = std::distance(__first, __last);
 	    this->_M_inc_size(__n);
 	    __x._M_dec_size(__n);
+#endif
 
 	    this->_M_transfer(__position._M_const_cast(),
 			      __first._M_const_cast(),
@@ -2175,6 +2165,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       { explicit _Finalize_merge(list&, list&, const iterator&) { } };
 #endif
 
+#if !_GLIBCXX_INLINE_VERSION
+      // XXX GLIBCXX_ABI Deprecated
+      // These members are unused by std::list now, but we keep them here
+      // so that an explicit instantiation of std::list will define them.
+      // This ensures that any objects or libraries compiled against old
+      // versions of GCC will still be able to use the symbols.
+
+#if _GLIBCXX_USE_CXX11_ABI
+      static size_t
+      _S_distance(const_iterator __first, const_iterator __last)
+      { return std::distance(__first, __last); }
+
+      size_t
+      _M_node_count() const
+      { return this->_M_get_size(); }
+#else
+      static size_t
+      _S_distance(const_iterator, const_iterator)
+      { return 0; }
+
+      size_t
+      _M_node_count() const
+      { return std::distance(begin(), end()); }
+#endif
+#endif // ! INLINE_VERSION
     };
 
 #if __cpp_deduction_guides >= 201606
