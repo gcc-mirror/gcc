@@ -705,4 +705,7 @@ package Erroutc is
    --  given by Warning_As_Error pragmas, as stored in the Warnings_As_Errors
    --  table.
 
+   procedure Write_Error_Summary;
+   --  Write error summary
+
 end Erroutc;
