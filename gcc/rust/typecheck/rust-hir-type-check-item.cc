@@ -724,6 +724,14 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
     }
 
   TyTy::BaseType *self = TypeCheckType::Resolve (impl_block.get_type ().get ());
+  if (self->is<TyTy::ErrorType> ())
+    {
+      // we cannot check for unconstrained type arguments when the Self type is
+      // not resolved it will just add extra errors that dont help as well as
+      // the case where this could just be a recursive type query that should
+      // fail and will work later on anyway
+      return {substitutions, region_constraints};
+    }
 
   // inherit the bounds
   if (!specified_bound.is_error ())

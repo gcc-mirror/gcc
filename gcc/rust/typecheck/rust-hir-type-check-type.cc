@@ -426,11 +426,8 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       if (!query_type (ref, &lookup))
 	{
 	  if (is_root)
-	    {
-	      rust_error_at (seg->get_locus (),
-			     "failed to resolve root segment");
-	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
-	    }
+	    return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
+
 	  return root_tyty;
 	}
 
