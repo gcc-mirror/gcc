@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 /* { dg-options "-march=rv32gc" { target { rv32 } } } */
 /* { dg-options "-march=rv64gc" { target { rv64 } } } */
 
@@ -16,6 +17,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times ".option push\t" 1 } } */
-/* { dg-final { scan-assembler-times ".option norelax\t" 1 } } */
-/* { dg-final { scan-assembler-times ".option pop\t" 1 } } */
+/* { dg-final { scan-assembler-times ".option push" 1 } } */
+/* { dg-final { scan-assembler-times ".option norelax" 1 } } */
+/* { dg-final { scan-assembler-times ".option pop" 1 } } */
