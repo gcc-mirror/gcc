@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 18, 2024
+GNAT User's Guide for Native Platforms , Nov 26, 2024
 
 AdaCore
 
@@ -3228,8 +3228,8 @@ in the unit. Used by some tools to provide cross-reference information.
 @end itemize
 
 For a full detailed description of the format of the @code{ALI} file,
-see the source of the body of unit @code{Lib.Writ}, contained in file
-@code{lib-writ.adb} in the GNAT compiler sources.
+see the source of the spec of unit @code{Lib.Writ}, contained in file
+@code{lib-writ.ads} in the GNAT compiler sources.
 
 @node Binding an Ada Program,GNAT and Libraries,The Ada Library Information Files,The GNAT Compilation Model
 @anchor{gnat_ugn/the_gnat_compilation_model binding-an-ada-program}@anchor{2a}@anchor{gnat_ugn/the_gnat_compilation_model id34}@anchor{68}
@@ -29839,8 +29839,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d2}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d2}@w{                              }
 
 @c %**end of body
 @bye

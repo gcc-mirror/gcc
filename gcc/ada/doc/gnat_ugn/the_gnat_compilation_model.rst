@@ -1751,8 +1751,8 @@ The following information is contained in that file:
   in the unit. Used by some tools to provide cross-reference information.
 
 For a full detailed description of the format of the :file:`ALI` file,
-see the source of the body of unit ``Lib.Writ``, contained in file
-:file:`lib-writ.adb` in the GNAT compiler sources.
+see the source of the spec of unit ``Lib.Writ``, contained in file
+:file:`lib-writ.ads` in the GNAT compiler sources.
 
 
 .. _Binding_an_Ada_Program:
