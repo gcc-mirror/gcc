@@ -1154,8 +1154,8 @@ UrlSuffix(gcc/Optimize-Options.html#index-fkeep-inline-dllexport)
 flax-vector-conversions
 UrlSuffix(gcc/C-Dialect-Options.html#index-flax-vector-conversions)
 
-fmodules-ts
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodules-ts)
+fmodules
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodules)
 
 fmodule-header
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodule-header)
