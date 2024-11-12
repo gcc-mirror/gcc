@@ -10656,15 +10656,9 @@ package body Sem_Util is
 
    function Get_Library_Unit_Name (Decl_Node : Node_Id) return String_Id is
       Unit_Name_Id : constant Unit_Name_Type := Get_Unit_Name (Decl_Node);
-      Buf : Bounded_String;
+      Buf          : Bounded_String;
    begin
-      Get_Unit_Name_String (Buf, Unit_Name_Id);
-
-      --  Remove the last seven characters (" (spec)" or " (body)")
-
-      Buf.Length := Buf.Length - 7;
-      pragma Assert (Buf.Chars (Buf.Length + 1) = ' ');
-
+      Get_Unit_Name_String (Buf, Unit_Name_Id, Suffix => False);
       return String_From_Name_Buffer (Buf);
    end Get_Library_Unit_Name;
 
