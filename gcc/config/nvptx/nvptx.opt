@@ -112,13 +112,13 @@ march-map=sm_87
 Target RejectNegative Alias(misa=,sm_80)
 
 march-map=sm_89
-Target RejectNegative Alias(misa=,sm_80)
+Target RejectNegative Alias(misa=,sm_89)
 
 march-map=sm_90
-Target RejectNegative Alias(misa=,sm_80)
+Target RejectNegative Alias(misa=,sm_89)
 
 march-map=sm_90a
-Target RejectNegative Alias(misa=,sm_80)
+Target RejectNegative Alias(misa=,sm_89)
 
 Enum
 Name(ptx_version) Type(enum ptx_version)

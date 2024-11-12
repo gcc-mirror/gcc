@@ -3,6 +3,14 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/march-map=sm_89.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_90.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_90a.c: Likewise.
+	* gcc.target/nvptx/march=sm_89.c: New.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/mptx=7.8.c: New.
 
 	Backported from trunk:

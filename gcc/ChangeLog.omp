@@ -3,6 +3,19 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx-sm.def: Add '89'.
+	* config/nvptx/nvptx-gen.h: Regenerate.
+	* config/nvptx/nvptx-gen.opt: Likewise.
+	* config/nvptx/nvptx.cc (first_ptx_version_supporting_sm): Adjust.
+	* config/nvptx/nvptx.opt (-march-map=sm_89, -march-map=sm_90)
+	(march-map=sm_90a): Likewise.
+	* config.gcc: Likewise.
+	* doc/invoke.texi (Nvidia PTX Options): Document '-march=sm_89'.
+	* config/nvptx/gen-multilib-matches-tests: Extend.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
 	'PTX_VERSION_7_8'.
 	* config/nvptx/nvptx.cc (ptx_version_to_string)

@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* testsuite/libgomp.c/declare-variant-3-sm89.c: New.
+	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
+
+	Backported from trunk:
+	2024-12-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* testsuite/libgomp.c/declare-variant-3-sm52.c: New.
 	* testsuite/libgomp.c/declare-variant-3.h: Adjust.
 
