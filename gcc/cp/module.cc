@@ -15166,9 +15166,10 @@ module_state_config::get_dialect ()
 		      flag_exceptions ? "" : "/no-exceptions",
 		      flag_rtti ? "" : "/no-rtti",
 		      flag_new_inheriting_ctors ? "" : "/old-inheriting-ctors",
-		      /* C++ 20 implies concepts.  */
+		      /* C++ 20 implies concepts and coroutines.  */
 		      cxx_dialect < cxx20 && flag_concepts ? "/concepts" : "",
-		      flag_coroutines ? "/coroutines" : "",
+		      (cxx_dialect < cxx20 && flag_coroutines
+		       ? "/coroutines" : ""),
 		      flag_module_implicit_inline ? "/implicit-inline" : "",
 		      flag_contracts ? "/contracts" : "",
 		      NULL);
