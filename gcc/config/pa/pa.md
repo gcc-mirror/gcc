@@ -9551,7 +9551,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  (pc)))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))
-   (clobber (match_scratch:SI 4 "=X,r,r"))]
+   (clobber (match_scratch:SI 4 "=X,r,&r"))]
   ""
   "* return pa_output_dbra (operands, insn, which_alternative); "
 ;; Do not expect to understand this the first time through.
