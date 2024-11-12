@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-tree.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "cfgloop.h"
+#include "tree-vectorizer.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "internal-fn.h"
@@ -184,6 +186,25 @@ along with GCC; see the file COPYING3.  If not see
 
    This will (of course) be extended as other needs arise.  */
 
+/* Data structure that contains simplifiable vectorized permute sequences.
+   See recognise_vec_perm_simplify_seq () for a description of the sequence.  */
+
+struct _vec_perm_simplify_seq
+{
+  /* Defining stmts of vectors in the sequence.  */
+  gassign *v_1_stmt;
+  gassign *v_2_stmt;
+  gassign *v_x_stmt;
+  gassign *v_y_stmt;
+  /* Final permute statment.  */
+  gassign *stmt;
+  /* New selector indices for stmt.  */
+  tree new_sel;
+  /* Elements of each vector and selector.  */
+  unsigned int nelts;
+};
+typedef struct _vec_perm_simplify_seq *vec_perm_simplify_seq;
+
 static bool forward_propagate_addr_expr (tree, tree, bool);
 
 /* Set to true if we delete dead edges during the optimization.  */
@@ -224,7 +245,6 @@ fwprop_invalidate_lattice (tree name)
       && SSA_NAME_VERSION (name) < lattice.length ())
     lattice[SSA_NAME_VERSION (name)] = NULL_TREE;
 }
-
 
 /* Get the statement we can propagate from into NAME skipping
    trivial copies.  Returns the statement which defines the
@@ -3460,6 +3480,546 @@ fwprop_ssa_val (tree name)
   return name;
 }
 
+/* Get an index map from the provided vector permute selector
+   and return the number of unique indices.
+   E.g.: { 1, 3, 1, 3 } -> <0, 1, 0, 1>, 2
+	 { 0, 2, 0, 2 } -> <0, 1, 0, 1>, 2
+	 { 3, 2, 1, 0 } -> <0, 1, 2, 3>, 4.  */
+
+static unsigned int
+get_vect_selector_index_map (tree sel, vec<unsigned int> *index_map)
+{
+  gcc_assert (VECTOR_CST_NELTS (sel).is_constant ());
+  unsigned int nelts = VECTOR_CST_NELTS (sel).to_constant ();
+  unsigned int n = 0;
+
+  for (unsigned int i = 0; i < nelts; i++)
+    {
+      /* Extract the i-th value from the selector.  */
+      tree sel_cst_tree = VECTOR_CST_ELT (sel, i);
+      unsigned int sel_cst = TREE_INT_CST_LOW (sel_cst_tree);
+
+      unsigned int j = 0;
+      for (; j <= i; j++)
+	{
+	  tree prev_sel_cst_tree = VECTOR_CST_ELT (sel, j);
+	  unsigned int prev_sel_cst
+	    = TREE_INT_CST_LOW (prev_sel_cst_tree);
+	  if (prev_sel_cst == sel_cst)
+	    break;
+	}
+      index_map->quick_push (j);
+      n += (i == j) ? 1 : 0;
+    }
+
+  return n;
+}
+
+/* Search for opportunities to free half of the lanes in the following pattern:
+
+     v_in = {e0, e1, e2, e3}
+     v_1 = VEC_PERM <v_in, v_in, {0, 2, 0, 2}>
+     // v_1 = {e0, e2, e0, e2}
+     v_2 = VEC_PERM <v_in, v_in, {1, 3, 1, 3}>
+     // v_2 = {e1, e3, e1, e3}
+
+     v_x = v_1 + v_2
+     // v_x = {e0+e1, e2+e3, e0+e1, e2+e3}
+     v_y = v_1 - v_2
+     // v_y = {e0-e1, e2-e3, e0-e1, e2-e3}
+
+     v_out = VEC_PERM <v_x, v_y, {0, 1, 6, 7}>
+     // v_out = {e0+e1, e2+e3, e0-e1, e2-e3}
+
+   The last statement could be simplified to:
+     v_out' = VEC_PERM <v_x, v_y, {0, 1, 4, 5}>
+     // v_out' = {e0+e1, e2+e3, e0-e1, e2-e3}
+
+   Characteristic properties:
+   - v_1 and v_2 are created from the same input vector v_in and introduce the
+     lane duplication (in the selection operand) that we can eliminate.
+   - v_x and v_y are results from lane-preserving operations that use v_1 and
+     v_2 as inputs.
+   - v_out is created by selecting from duplicated lanes.  */
+
+static bool
+recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
+{
+  gcc_checking_assert (stmt);
+  gcc_checking_assert (gimple_assign_rhs_code (stmt) == VEC_PERM_EXPR);
+  basic_block bb = gimple_bb (stmt);
+
+  /* Decompose the final vec permute statement.  */
+  tree v_x = gimple_assign_rhs1 (stmt);
+  tree v_y = gimple_assign_rhs2 (stmt);
+  tree sel = gimple_assign_rhs3 (stmt);
+
+  if (!VECTOR_CST_NELTS (sel).is_constant ()
+      || TREE_CODE (v_x) != SSA_NAME
+      || TREE_CODE (v_y) != SSA_NAME
+      || !has_single_use (v_x)
+      || !has_single_use (v_y))
+    return false;
+
+  unsigned int nelts = VECTOR_CST_NELTS (sel).to_constant ();
+
+  /* Lookup the definition of v_x and v_y.  */
+  gassign *v_x_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (v_x));
+  gassign *v_y_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (v_y));
+  if (!v_x_stmt || gimple_bb (v_x_stmt) != bb
+      || !v_y_stmt || gimple_bb (v_y_stmt) != bb)
+    return false;
+
+  /* Check the operations that define v_x and v_y.  */
+  if (TREE_CODE_CLASS (gimple_assign_rhs_code (v_x_stmt)) != tcc_binary
+      || TREE_CODE_CLASS (gimple_assign_rhs_code (v_y_stmt)) != tcc_binary)
+    return false;
+
+  tree v_x_1 = gimple_assign_rhs1 (v_x_stmt);
+  tree v_x_2 = gimple_assign_rhs2 (v_x_stmt);
+  tree v_y_1 = gimple_assign_rhs1 (v_y_stmt);
+  tree v_y_2 = gimple_assign_rhs2 (v_y_stmt);
+
+  if (v_x_stmt == v_y_stmt
+      || TREE_CODE (v_x_1) != SSA_NAME
+      || TREE_CODE (v_x_2) != SSA_NAME
+      || num_imm_uses (v_x_1) != 2
+      || num_imm_uses (v_x_2) != 2)
+    return false;
+
+  if (v_x_1 != v_y_1 || v_x_2 != v_y_2)
+    {
+      /* Allow operands of commutative operators to swap.  */
+      if (commutative_tree_code (gimple_assign_rhs_code (v_x_stmt)))
+	{
+	  /* Keep v_x_1 the first operand for non-commutative operators.  */
+	  v_x_1 = gimple_assign_rhs2 (v_x_stmt);
+	  v_x_2 = gimple_assign_rhs1 (v_x_stmt);
+	  if (v_x_1 != v_y_1 || v_x_2 != v_y_2)
+	    return false;
+	}
+      else if (commutative_tree_code (gimple_assign_rhs_code (v_y_stmt)))
+	{
+	  if (v_x_1 != v_y_2 || v_x_2 != v_y_1)
+	    return false;
+	}
+      else
+	return false;
+    }
+  gassign *v_1_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (v_x_1));
+  gassign *v_2_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (v_x_2));
+  if (!v_1_stmt || gimple_bb (v_1_stmt) != bb
+      || !v_2_stmt || gimple_bb (v_2_stmt) != bb)
+    return false;
+
+  if (gimple_assign_rhs_code (v_1_stmt) != VEC_PERM_EXPR
+      || gimple_assign_rhs_code (v_2_stmt) != VEC_PERM_EXPR)
+    return false;
+
+  /* Decompose initial VEC_PERM_EXPRs.  */
+  tree v_in = gimple_assign_rhs1 (v_1_stmt);
+  tree v_1_sel = gimple_assign_rhs3 (v_1_stmt);
+  tree v_2_sel = gimple_assign_rhs3 (v_2_stmt);
+  if (v_in != gimple_assign_rhs2 (v_1_stmt)
+      || v_in != gimple_assign_rhs1 (v_2_stmt)
+      || v_in != gimple_assign_rhs2 (v_2_stmt))
+    return false;
+
+  if (!VECTOR_CST_NELTS (v_1_sel).is_constant ()
+      || !VECTOR_CST_NELTS (v_2_sel).is_constant ())
+    return false;
+
+  if (nelts != VECTOR_CST_NELTS (v_1_sel).to_constant ()
+      || nelts != VECTOR_CST_NELTS (v_2_sel).to_constant ())
+    return false;
+
+  /* Now check permutation selection operands.  */
+  auto_vec<unsigned int> v_1_lane_map, v_2_lane_map;
+  v_1_lane_map.reserve (nelts);
+  v_2_lane_map.reserve (nelts);
+  unsigned int v_1_lanes, v_2_lanes;
+  v_1_lanes = get_vect_selector_index_map (v_1_sel, &v_1_lane_map);
+  v_2_lanes = get_vect_selector_index_map (v_2_sel, &v_2_lane_map);
+
+  /* Check if we could free up half of the lanes.  */
+  if (v_1_lanes != v_2_lanes || v_1_lanes > (nelts / 2))
+    return false;
+
+  /* Create the new selector.  */
+  vec_perm_builder new_sel_perm (nelts, nelts, 1);
+  for (unsigned int i = 0; i < nelts; i++)
+    {
+      /* Extract the i-th value from the selector.  */
+      tree sel_cst_tree = VECTOR_CST_ELT (sel, i);
+      unsigned int sel_cst = TREE_INT_CST_LOW (sel_cst_tree);
+
+      unsigned int j;
+      if (sel_cst < nelts)
+	j = v_1_lane_map[sel_cst];
+      else
+	j = v_2_lane_map[sel_cst - nelts] + nelts;
+
+      new_sel_perm.quick_push (j);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "%u", j);
+	  if (i != (nelts -1))
+	    fprintf (dump_file, ", ");
+	}
+    }
+
+  vec_perm_indices new_indices (new_sel_perm, 2, nelts);
+  tree vectype = TREE_TYPE (gimple_assign_lhs (stmt));
+  machine_mode vmode = TYPE_MODE (vectype);
+  if (!can_vec_perm_const_p (vmode, vmode, new_indices, false))
+      return false;
+
+  *seq = XNEW (struct _vec_perm_simplify_seq);
+  (*seq)->stmt = stmt;
+  (*seq)->v_1_stmt = v_1_stmt;
+  (*seq)->v_2_stmt = v_2_stmt;
+  (*seq)->v_x_stmt = v_x_stmt;
+  (*seq)->v_y_stmt = v_y_stmt;
+  (*seq)->nelts = nelts;
+  (*seq)->new_sel = vect_gen_perm_mask_checked (vectype, new_indices);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Found vec perm simplify sequence ending with: ");
+      print_gimple_stmt (dump_file, stmt, 0);
+    }
+
+  return true;
+}
+
+/* Reduce the lane consumption of a simplifiable vec perm sequence.  */
+
+static void
+narrow_vec_perm_simplify_seq (const vec_perm_simplify_seq &seq)
+{
+  gassign *stmt = seq->stmt;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Old stmt: ");
+      print_gimple_stmt (dump_file, stmt, 0);
+    }
+
+  /* Update the last VEC_PERM statement.  */
+  gimple_assign_set_rhs3 (stmt, seq->new_sel);
+  update_stmt (stmt);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "New stmt: ");
+      print_gimple_stmt (dump_file, stmt, 0);
+    }
+}
+
+/* Test if we can blend two simplifiable vec permute sequences.
+   NEED_SWAP will be set, if sequences must be swapped for blending.  */
+
+static bool
+can_blend_vec_perm_simplify_seqs_p (vec_perm_simplify_seq seq1,
+				    vec_perm_simplify_seq seq2,
+				    bool *need_swap)
+{
+  unsigned int nelts = seq1->nelts;
+  basic_block bb = gimple_bb (seq1->stmt);
+
+  gcc_assert (gimple_bb (seq2->stmt) == bb);
+
+  /* BBs and number of elements must be equal.  */
+  if (gimple_bb (seq2->stmt) != bb || seq2->nelts != nelts)
+    return false;
+
+  /* We need vectors of the same type.  */
+  if (TREE_TYPE (gimple_assign_lhs (seq1->stmt))
+      != TREE_TYPE (gimple_assign_lhs (seq2->stmt)))
+    return false;
+
+  /* We require isomorphic operators.  */
+  if (((gimple_assign_rhs_code (seq1->v_x_stmt)
+	!= gimple_assign_rhs_code (seq2->v_x_stmt))
+       || (gimple_assign_rhs_code (seq1->v_y_stmt)
+	   != gimple_assign_rhs_code (seq2->v_y_stmt))))
+    return false;
+
+  /* We cannot have any dependencies between the sequences.
+
+     For merging, we will reuse seq1->v_1_stmt and seq1->v_2_stmt.
+     seq1's v_in is defined before these statements, but we need
+     to check if seq2's v_in is defined before them as well.
+
+     Further, we will reuse seq2->stmt.  We need to ensure that
+     seq1->v_x_stmt and seq1->v_y_stmt are before it.
+
+     Note, that we don't need to check the BBs here, because all
+     statements of both sequences have to be in the same BB.
+     */
+
+  tree seq2_v_in = gimple_assign_rhs1 (seq2->v_1_stmt);
+  if (TREE_CODE (seq2_v_in) != SSA_NAME)
+    return false;
+
+  gassign *seq2_v_in_stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (seq2_v_in));
+  if (!seq2_v_in_stmt || gimple_bb (seq2_v_in_stmt) != bb
+      || (gimple_uid (seq2_v_in_stmt) > gimple_uid (seq1->v_1_stmt))
+      || (gimple_uid (seq1->v_x_stmt) > gimple_uid (seq2->stmt))
+      || (gimple_uid (seq1->v_y_stmt) > gimple_uid (seq2->stmt)))
+    {
+      tree seq1_v_in = gimple_assign_rhs1 (seq1->v_1_stmt);
+      if (TREE_CODE (seq1_v_in) != SSA_NAME)
+	return false;
+
+      gassign *seq1_v_in_stmt
+	= dyn_cast<gassign *> (SSA_NAME_DEF_STMT (seq1_v_in));
+      /* Let's try to see if we succeed when swapping the sequences.  */
+      if (!seq1_v_in_stmt || gimple_bb (seq1_v_in_stmt)
+	  || (gimple_uid (seq1_v_in_stmt) > gimple_uid (seq2->v_1_stmt))
+	  || (gimple_uid (seq2->v_x_stmt) > gimple_uid (seq1->stmt))
+	  || (gimple_uid (seq2->v_y_stmt) > gimple_uid (seq1->stmt)))
+	return false;
+      *need_swap = true;
+    }
+  else
+    *need_swap = false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Found vec perm simplify sequence pair.\n");
+
+  return true;
+}
+
+/* Calculate the permutations for blending the two given vec permute
+   sequences.  This may fail if the resulting permutation is not
+   supported.  */
+
+static bool
+calc_perm_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
+				  vec_perm_simplify_seq seq2,
+				  vec_perm_indices *seq2_stmt_indices,
+				  vec_perm_indices *seq1_v_1_stmt_indices,
+				  vec_perm_indices *seq1_v_2_stmt_indices)
+{
+  unsigned int i;
+  unsigned int nelts = seq1->nelts;
+  auto_vec<int> lane_assignment;
+  lane_assignment.create (2 * nelts);
+
+  /* Mark all lanes as free.  */
+  lane_assignment.quick_grow_cleared (2 * nelts);
+
+  /* Reserve lanes for seq1.  */
+  for (i = 0; i < nelts; i++)
+    {
+      unsigned int l = TREE_INT_CST_LOW (VECTOR_CST_ELT (seq1->new_sel, i));
+      lane_assignment[l] = 1;
+    }
+
+  /* Reserve lanes for seq2 and calculate selector for seq2->stmt.  */
+  vec_perm_builder seq2_stmt_sel_perm (nelts, nelts, 1);
+  for (i = 0; i < nelts; i++)
+    {
+      unsigned int l = TREE_INT_CST_LOW (VECTOR_CST_ELT (seq2->new_sel, i));
+      while (lane_assignment[l] != 0)
+	l++;
+      lane_assignment[l] = 2;
+      seq2_stmt_sel_perm.quick_push (l);
+    }
+
+  seq2_stmt_indices->new_vector (seq2_stmt_sel_perm, 2, nelts);
+  tree vectype = TREE_TYPE (gimple_assign_lhs (seq2->stmt));
+  machine_mode vmode = TYPE_MODE (vectype);
+  if (!can_vec_perm_const_p (vmode, vmode, *seq2_stmt_indices, false))
+    return false;
+
+  /* Calculate selectors for seq1->v_1_stmt and seq1->v_2_stmt.  */
+  vec_perm_builder seq1_v_1_stmt_sel_perm (nelts, nelts, 1);
+  vec_perm_builder seq1_v_2_stmt_sel_perm (nelts, nelts, 1);
+  for (i = 0; i < nelts; i++)
+    {
+      bool use_seq1 = lane_assignment[i] == 1;
+      tree s1 = gimple_assign_rhs3 (use_seq1 ? seq1->v_1_stmt
+					     : seq2->v_1_stmt);
+      tree s2 = gimple_assign_rhs3 (use_seq1 ? seq1->v_2_stmt
+					     : seq2->v_2_stmt);
+      unsigned int l1 = TREE_INT_CST_LOW (VECTOR_CST_ELT (s1, i)) % nelts;
+      unsigned int l2 = TREE_INT_CST_LOW (VECTOR_CST_ELT (s2, i)) % nelts;
+
+      seq1_v_1_stmt_sel_perm.quick_push (l1 + (use_seq1 ? 0 : nelts));
+      seq1_v_2_stmt_sel_perm.quick_push (l2 + (use_seq1 ? 0 : nelts));
+    }
+
+  seq1_v_1_stmt_indices->new_vector (seq1_v_1_stmt_sel_perm, 2, nelts);
+  vectype = TREE_TYPE (gimple_assign_lhs (seq1->v_1_stmt));
+  vmode = TYPE_MODE (vectype);
+  if (!can_vec_perm_const_p (vmode, vmode, *seq1_v_1_stmt_indices, false))
+    return false;
+
+  seq1_v_2_stmt_indices->new_vector (seq1_v_2_stmt_sel_perm, 2, nelts);
+  vectype = TREE_TYPE (gimple_assign_lhs (seq1->v_2_stmt));
+  vmode = TYPE_MODE (vectype);
+  if (!can_vec_perm_const_p (vmode, vmode, *seq1_v_2_stmt_indices, false))
+    return false;
+
+  return true;
+}
+
+/* Blend the two given simplifiable vec permute sequences using the
+   given permutations.  */
+
+static void
+blend_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
+			      vec_perm_simplify_seq seq2,
+			      const vec_perm_indices &seq2_stmt_indices,
+			      const vec_perm_indices &seq1_v_1_stmt_indices,
+			      const vec_perm_indices &seq1_v_2_stmt_indices)
+{
+  /* We don't need to adjust seq1->stmt because its lanes consumption
+     was already narrowed before entering this function.  */
+
+  /* Adjust seq2->stmt: copy RHS1/RHS2 from seq1->stmt and set new sel.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Old stmt: ");
+      print_gimple_stmt (dump_file, seq2->stmt, 0);
+    }
+
+  gimple_assign_set_rhs1 (seq2->stmt, gimple_assign_rhs1 (seq1->stmt));
+  gimple_assign_set_rhs2 (seq2->stmt, gimple_assign_rhs2 (seq1->stmt));
+  tree vectype = TREE_TYPE (gimple_assign_lhs (seq2->stmt));
+  tree sel = vect_gen_perm_mask_checked (vectype, seq2_stmt_indices);
+  gimple_assign_set_rhs3 (seq2->stmt, sel);
+  update_stmt (seq2->stmt);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "New stmt: ");
+      print_gimple_stmt (dump_file, seq2->stmt, 0);
+    }
+
+  /* Adjust seq1->v_1_stmt: copy RHS2 from seq2->v_1_stmt and set new sel.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Old stmt: ");
+      print_gimple_stmt (dump_file, seq1->v_1_stmt, 0);
+    }
+
+  gimple_assign_set_rhs2 (seq1->v_1_stmt, gimple_assign_rhs1 (seq2->v_1_stmt));
+  vectype = TREE_TYPE (gimple_assign_lhs (seq1->v_1_stmt));
+  sel = vect_gen_perm_mask_checked (vectype, seq1_v_1_stmt_indices);
+  gimple_assign_set_rhs3 (seq1->v_1_stmt, sel);
+  update_stmt (seq1->v_1_stmt);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "New stmt: ");
+      print_gimple_stmt (dump_file, seq1->v_1_stmt, 0);
+    }
+
+  /* Adjust seq1->v_2_stmt: copy RHS2 from seq2->v_2_stmt and set new sel.  */
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Old stmt: ");
+      print_gimple_stmt (dump_file, seq1->v_2_stmt, 0);
+    }
+
+  gimple_assign_set_rhs2 (seq1->v_2_stmt, gimple_assign_rhs1 (seq2->v_2_stmt));
+  vectype = TREE_TYPE (gimple_assign_lhs (seq1->v_2_stmt));
+  sel = vect_gen_perm_mask_checked (vectype, seq1_v_2_stmt_indices);
+  gimple_assign_set_rhs3 (seq1->v_2_stmt, sel);
+  update_stmt (seq1->v_2_stmt);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "New stmt: ");
+      print_gimple_stmt (dump_file, seq1->v_2_stmt, 0);
+    }
+
+  /* At this point, we have four unmodified seq2 stmts, which will be
+     eliminated by DCE.  */
+
+  if (dump_file)
+    fprintf (dump_file, "Vec perm simplify sequences have been blended.\n\n");
+}
+
+/* Try to blend narrowed vec_perm_simplify_seqs pairwise.
+   The provided list will be empty after this call.  */
+
+static void
+process_vec_perm_simplify_seq_list (vec<vec_perm_simplify_seq> *l)
+{
+  unsigned int i, j;
+  vec_perm_simplify_seq seq1, seq2;
+
+  if (l->is_empty ())
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Processing %u vec perm simplify sequences.\n",
+	     l->length ());
+
+  FOR_EACH_VEC_ELT (*l, i, seq1)
+    {
+      if (i + 1 < l->length ())
+	{
+	  FOR_EACH_VEC_ELT_FROM (*l, j, seq2, i + 1)
+	    {
+	      bool swap = false;
+	      if (can_blend_vec_perm_simplify_seqs_p (seq1, seq2, &swap))
+		{
+		  vec_perm_indices seq2_stmt_indices;
+		  vec_perm_indices seq1_v_1_stmt_indices;
+		  vec_perm_indices seq1_v_2_stmt_indices;
+		  if (calc_perm_vec_perm_simplify_seqs (swap ? seq2 : seq1,
+							swap ? seq1 : seq2,
+							&seq2_stmt_indices,
+							&seq1_v_1_stmt_indices,
+							&seq1_v_2_stmt_indices))
+		    {
+		      /* Narrow lane usage.  */
+		      narrow_vec_perm_simplify_seq (seq1);
+		      narrow_vec_perm_simplify_seq (seq2);
+
+		      /* Blend sequences.  */
+		      blend_vec_perm_simplify_seqs (swap ? seq2 : seq1,
+						    swap ? seq1 : seq2,
+						    seq2_stmt_indices,
+						    seq1_v_1_stmt_indices,
+						    seq1_v_2_stmt_indices);
+
+		      /* We can use unordered_remove as we break the loop.  */
+		      l->unordered_remove (j);
+		      XDELETE (seq2);
+		      break;
+		    }
+		}
+	    }
+	}
+
+      /* We don't need to call l->remove for seq1.  */
+      XDELETE (seq1);
+    }
+
+  l->truncate (0);
+}
+
+static void
+append_vec_perm_simplify_seq_list (vec<vec_perm_simplify_seq> *l,
+				   const vec_perm_simplify_seq &seq)
+{
+  /* If no space on list left, then process the list.  */
+  if (!l->space (1))
+      process_vec_perm_simplify_seq_list (l);
+
+  l->quick_push (seq);
+}
+
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
@@ -3526,6 +4086,7 @@ pass_forwprop::execute (function *fun)
   auto_bitmap simple_dce_worklist;
   auto_bitmap need_ab_cleanup;
   to_purge = BITMAP_ALLOC (NULL);
+  auto_vec<vec_perm_simplify_seq, 8> vec_perm_simplify_seq_list;
   for (int i = 0; i < postorder_num; ++i)
     {
       gimple_stmt_iterator gsi;
@@ -3605,14 +4166,18 @@ pass_forwprop::execute (function *fun)
 
       /* Apply forward propagation to all stmts in the basic-block.
 	 Note we update GSI within the loop as necessary.  */
+      unsigned int uid = 1;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  tree lhs, rhs;
 	  enum tree_code code;
 
+	  gimple_set_uid (stmt, uid++);
+
 	  if (!is_gimple_assign (stmt))
 	    {
+	      process_vec_perm_simplify_seq_list (&vec_perm_simplify_seq_list);
 	      gsi_next (&gsi);
 	      continue;
 	    }
@@ -3620,9 +4185,11 @@ pass_forwprop::execute (function *fun)
 	  lhs = gimple_assign_lhs (stmt);
 	  rhs = gimple_assign_rhs1 (stmt);
 	  code = gimple_assign_rhs_code (stmt);
+
 	  if (TREE_CODE (lhs) != SSA_NAME
 	      || has_zero_uses (lhs))
 	    {
+	      process_vec_perm_simplify_seq_list (&vec_perm_simplify_seq_list);
 	      gsi_next (&gsi);
 	      continue;
 	    }
@@ -3901,9 +4468,24 @@ pass_forwprop::execute (function *fun)
 	      else
 		gsi_next (&gsi);
 	    }
+	  else if (code == VEC_PERM_EXPR)
+	    {
+	      /* Find vectorized sequences, where we can reduce the lane
+		 utilization.  The narrowing will be donw later and only
+		 if we find a pair of sequences that can be blended.  */
+	      gassign *assign = dyn_cast <gassign *> (stmt);
+	      vec_perm_simplify_seq seq;
+	      if (recognise_vec_perm_simplify_seq (assign, &seq))
+		append_vec_perm_simplify_seq_list (&vec_perm_simplify_seq_list,
+						   seq);
+
+	      gsi_next (&gsi);
+	  }
 	  else
 	    gsi_next (&gsi);
 	}
+
+      process_vec_perm_simplify_seq_list (&vec_perm_simplify_seq_list);
 
       /* Combine stmts with the stmts defining their operands.
 	 Note we update GSI within the loop as necessary.  */
