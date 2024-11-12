@@ -330,7 +330,7 @@ extern tree invalidate_contract			(tree);
 extern void update_late_contract		(tree, tree, tree);
 extern tree splice_out_contracts		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
-extern void copy_and_remap_contracts		(tree, tree, bool);
+extern void copy_and_remap_contracts		(tree, tree, bool, bool);
 extern void start_function_contracts		(tree);
 extern void maybe_apply_function_contracts	(tree);
 extern void finish_function_contracts		(tree);

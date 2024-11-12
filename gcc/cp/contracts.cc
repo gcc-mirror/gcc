@@ -2702,6 +2702,51 @@ maybe_apply_function_contracts (tree fndecl)
   /* The DECL_SAVED_TREE stmt list will be popped by our caller.  */
 }
 
+/* Replace any contract attributes on SOURCE with a copy where any
+   references to SOURCE's PARM_DECLs have been rewritten to the corresponding
+   PARM_DECL in DEST.  If remap_result is true, result identifier is
+   also re-mapped. C++20 version used this function to remap contracts on
+   virtual functions from base class to derived class. In such a case
+   postcondition identified wasn't remapped. Caller side wrapper functions
+   need to remap the result identifier.
+   I remap_post is false, postconditions are dropped from the destination. */
+
+void
+copy_and_remap_contracts (tree dest, tree source, bool remap_result = true, bool remap_post = true )
+{
+  tree last = NULL_TREE, contract_attrs = NULL_TREE;
+  for (tree a = DECL_CONTRACTS (source);
+      a != NULL_TREE;
+      a = CONTRACT_CHAIN (a))
+    {
+      if (!remap_post && (TREE_CODE (CONTRACT_STATEMENT (a)) == POSTCONDITION_STMT))
+	continue;
+
+      tree c = copy_node (a);
+      TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
+					copy_node (CONTRACT_STATEMENT (c)));
+
+      remap_contract (source, dest, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
+
+      if ( remap_result && (TREE_CODE (CONTRACT_STATEMENT (c)) == POSTCONDITION_STMT))
+	{
+	  tree oldvar = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (c));
+	  if (oldvar)
+	      DECL_CONTEXT (oldvar) = dest;
+	}
+
+      CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
+	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
+
+      chainon (last, c);
+      last = c;
+      if (!contract_attrs)
+	contract_attrs = c;
+    }
+
+  set_decl_contracts (dest, contract_attrs);
+}
+
 /* Finish up the pre & post function definitions for a guarded FNDECL,
    and compile those functions all the way to assembler language output.  */
 
@@ -2764,7 +2809,12 @@ finish_function_contracts (tree fndecl)
   /* Check if we need to update wrapper function contracts. */
   tree wrapdecl = get_contract_wrapper_function (fndecl);
   if (wrapdecl){
-      copy_and_remap_contracts (wrapdecl, fndecl, true);
+      /* we copy postconditions on virtual function wrapper calls or if
+       postcondition checks are enabled on the caller side.   */
+      bool copy_post = (flag_contract_nonattr_client_check > 1) ||
+          ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl)));
+
+      copy_and_remap_contracts (wrapdecl, fndecl, true, copy_post);
   }
 }
 
@@ -2890,51 +2940,12 @@ duplicate_contracts (tree newdecl, tree olddecl)
     }
 }
 
-/* Replace the any contract attributes on SOURCE with a copy where any
-   references to SOURCE's PARM_DECLs have been rewritten to the corresponding
-   PARM_DECL in DEST.  If remap_post is true, result identifier is
-   also re-mapped. C++20 version used this function to remap contracts on
-   virtual functions from base class to derived class. In such a case
-   postcondition identified wasn't remapped. Caller side wrapper functions
-   need to remap the result idnetifier. */
 
-void
-copy_and_remap_contracts (tree dest, tree source, bool remap_post = true)
-{
-  tree last = NULL_TREE, contract_attrs = NULL_TREE;
-  for (tree a = DECL_CONTRACTS (source);
-      a != NULL_TREE;
-      a = CONTRACT_CHAIN (a))
-    {
-      tree c = copy_node (a);
-      TREE_VALUE (c) = build_tree_list (TREE_PURPOSE (TREE_VALUE (c)),
-					copy_node (CONTRACT_STATEMENT (c)));
-
-      remap_contract (source, dest, CONTRACT_STATEMENT (c), /*duplicate_p=*/true);
-
-      if ( remap_post && (TREE_CODE (CONTRACT_STATEMENT (c)) == POSTCONDITION_STMT))
-	{
-	  tree oldvar = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (c));
-	  if (oldvar)
-	      DECL_CONTEXT (oldvar) = dest;
-	}
-
-      CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
-	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
-
-      chainon (last, c);
-      last = c;
-      if (!contract_attrs)
-	contract_attrs = c;
-    }
-
-  set_decl_contracts (dest, contract_attrs);
-}
 
 /* Build a declaration for the contract wrapper of a caller FNDECL.  */
 
 static tree
-build_contract_wrapper_function (tree fndecl)
+build_contract_wrapper_function (tree fndecl, bool check_post)
 {
   if (TREE_TYPE (fndecl) == error_mark_node)
     return error_mark_node;
@@ -2953,7 +2964,7 @@ build_contract_wrapper_function (tree fndecl)
 					    wrapper_args);
 
 
-  /* this will create a member function because fndecl is a member function,
+  /* this will create a member function if fndecl is a member function,
     so we will need to adjust the type later   */
   tree wrapdecl
     = build_lang_decl_loc (loc, FUNCTION_DECL, get_identifier (name), wrapper_type);
@@ -2998,10 +3009,8 @@ build_contract_wrapper_function (tree fndecl)
   /* Copy any alignment the user added.  */
   DECL_USER_ALIGN (wrapdecl) = DECL_USER_ALIGN (fndecl);
 
-  /* Apply attributes from the original fn.
-   TODO : we can probably skip this step if function needs
-   instantiating as it will be done as a part of instantiation. */
-  copy_and_remap_contracts (wrapdecl, fndecl);
+  /* Apply contracts from the original fn. */
+  copy_and_remap_contracts (wrapdecl, fndecl, true, check_post);
 
   /* Make this function internal  */
   TREE_PUBLIC (wrapdecl) = false;
@@ -3044,9 +3053,27 @@ set_contract_wrapper_function (tree decl, tree wrapper)
   decl_wrapper_fn->put (decl, wrapper);
 }
 
+/* Checks if a contract check wrapper is needed for fndecl.  */
+
+bool should_contract_wrap_call(tree fndecl)
+{
+  if (!flag_contracts_nonattr || !handle_contracts_p (fndecl))
+    return false;
+
+  // we always wrap virtual function calls
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl)
+      || (flag_contract_nonattr_client_check > 1))
+    return true;
+
+  return ((flag_contract_nonattr_client_check > 0)
+      && has_active_preconditions (fndecl));
+}
+
+/* Possibly replace call with a call to a wrapper function which
+will do the contracts check required around a call to fndecl */
 
 tree
-maybe_contract_wrap_new_method_call (tree fndecl, tree call)
+maybe_contract_wrap_call (tree fndecl, tree call)
 {
   /* We can be called from build_cxx_call without a known callee... */
   if (!fndecl)
@@ -3056,23 +3083,25 @@ maybe_contract_wrap_new_method_call (tree fndecl, tree call)
     return error_mark_node;
 
   /* We only need to wrap the function if it's a virtual function  */
-  if (!flag_contracts_nonattr
-      || !handle_contracts_p (fndecl)
-      || !DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
-      || !DECL_VIRTUAL_P (fndecl))
+  if (!should_contract_wrap_call(fndecl))
     return call;
+
+  /* we check postconditions on vitual function wrapper calls or if
+   postcondition checks are enabled on the caller side.   */
+  bool check_post = (flag_contract_nonattr_client_check > 1) ||
+      (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl));
 
   bool do_pre = has_active_preconditions (fndecl);
   bool do_post = has_active_postconditions (fndecl);
 
   /* We should not have reached here with nothing to do... */
-  gcc_checking_assert (do_pre || do_post);
+  gcc_checking_assert (do_pre || (check_post && do_post));
 
   /* build the declaration of the wrapper if we need to */
   tree wrapdecl = get_contract_wrapper_function (fndecl);
 
   if (!wrapdecl){
-      wrapdecl = build_contract_wrapper_function (fndecl);
+      wrapdecl = build_contract_wrapper_function (fndecl, check_post);
       wrapdecl = pushdecl_top_level (wrapdecl);
       set_contract_wrapper_function (fndecl, wrapdecl);
   }
@@ -3105,24 +3134,29 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 
 
   vec<tree, va_gc> * args = build_arg_list (wrapdecl);
-  tree *class_ptr = args->begin();
-  tree fn;
-  gcc_assert (class_ptr);
 
-  tree t;
-  tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*class_ptr)),
-			  DECL_CONTEXT (fndecl),
-			  ba_any, NULL, tf_warning_or_error);
-  gcc_assert (binfo && binfo != error_mark_node);
+  tree fn = fndecl;
 
-  *class_ptr = build_base_path (PLUS_EXPR, *class_ptr, binfo, 1,
-				tf_warning_or_error);
-  if (TREE_SIDE_EFFECTS (*class_ptr))
-    *class_ptr = save_expr (*class_ptr);
-  t = build_pointer_type (TREE_TYPE (fndecl));
-  fn = build_vfn_ref (*class_ptr, DECL_VINDEX (fndecl));
-  TREE_TYPE (fn) = t;
+  // If this is a virtual member function, look up the virtual table
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl))
+    {
+      tree *class_ptr = args->begin();
+      gcc_assert (class_ptr);
 
+      tree t;
+      tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*class_ptr)),
+				DECL_CONTEXT (fndecl),
+				ba_any, NULL, tf_warning_or_error);
+      gcc_assert (binfo && binfo != error_mark_node);
+
+      *class_ptr = build_base_path (PLUS_EXPR, *class_ptr, binfo, 1,
+    				tf_warning_or_error);
+      if (TREE_SIDE_EFFECTS (*class_ptr))
+	*class_ptr = save_expr (*class_ptr);
+      t = build_pointer_type (TREE_TYPE (fndecl));
+      fn = build_vfn_ref (*class_ptr, DECL_VINDEX (fndecl));
+      TREE_TYPE (fn) = t;
+    }
 
   tree call = build_call_a (fn,
 			    args->length (),
