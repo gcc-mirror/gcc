@@ -5642,7 +5642,7 @@ case "${target}" in
 		for nvptx_multilib in $nvptx_multilibs; do
 			case $nvptx_multilib in
 			#TODO 'sm_[...]' list per 'nvptx-sm.def'.
-			sm_30 | sm_35 \
+			sm_30 | sm_35 | sm_37 \
 			| sm_53 \
 			| sm_70 | sm_75 \
 			| sm_80 )
