@@ -3146,13 +3146,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (unsigned_integer_sat_add @0 @1)
  (bit_ior:c (usadd_left_part_2 @0 @1) (usadd_right_part_2 @0 @1)))
 
-/* Simplify SAT_U_ADD to the cheap form
-   From: SAT_U_ADD = (X + Y) >= x ? (X + Y) : -1.
-   To:   SAT_U_ADD = (X + Y) | - ((X + Y) < X).  */
-(simplify (cond (ge (plus:c@2 @0 @1) @0) @2 integer_minus_onep)
- (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))
-  (bit_ior @2 (negate (convert (lt @2 @0))))))
+/* Unsigned saturation add, case 3 (branch with ge):
+   SAT_U_ADD = (X + Y) >= x ? (X + Y) : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (ge (usadd_left_part_1@2 @0 @1) @0) @2 integer_minus_onep))
 
 /* Unsigned saturation add, case 4 (branch with lt):
    SAT_U_ADD = (X + Y) < x ? -1 : (X + Y).  */
