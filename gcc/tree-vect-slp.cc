@@ -4402,7 +4402,8 @@ vllp_cmp (const void *a_, const void *b_)
 static void
 vect_lower_load_permutations (loop_vec_info loop_vinfo,
 			      scalar_stmts_to_slp_tree_map_t *bst_map,
-			      const array_slice<slp_tree> &loads)
+			      const array_slice<slp_tree> &loads,
+			      bool force_single_lane)
 {
   /* We at this point want to lower without a fixed VF or vector
      size in mind which means we cannot actually compute whether we
@@ -4494,7 +4495,8 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	 extracting it from the larger load.
 	 ???  Long-term some of the lowering should move to where
 	 the vector types involved are fixed.  */
-      if (ld_lanes_lanes == 0
+      if (!force_single_lane
+	  && ld_lanes_lanes == 0
 	  && contiguous
 	  && (SLP_TREE_LANES (load) > 1 || loads.size () == 1)
 	  && pow2p_hwi (SLP_TREE_LANES (load))
@@ -4668,7 +4670,8 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 
 static void
 vect_lower_load_permutations (loop_vec_info loop_vinfo,
-			      scalar_stmts_to_slp_tree_map_t *bst_map)
+			      scalar_stmts_to_slp_tree_map_t *bst_map,
+			      bool force_single_lane)
 {
   /* Gather and sort loads across all instances.  */
   hash_set<slp_tree> visited;
@@ -4696,14 +4699,16 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
       if (STMT_VINFO_GROUPED_ACCESS (a0))
 	vect_lower_load_permutations (loop_vinfo, bst_map,
 				      make_array_slice (&loads[firsti],
-							i - firsti));
+							i - firsti),
+				      force_single_lane);
       firsti = i;
     }
   if (firsti < loads.length ()
       && STMT_VINFO_GROUPED_ACCESS (SLP_TREE_SCALAR_STMTS (loads[firsti])[0]))
     vect_lower_load_permutations (loop_vinfo, bst_map,
 				  make_array_slice (&loads[firsti],
-						    loads.length () - firsti));
+						    loads.length () - firsti),
+				  force_single_lane);
 }
 
 /* Check if there are stmts in the loop can be vectorized using SLP.  Build SLP
@@ -5097,7 +5102,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
      like schemes.  */
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
-      vect_lower_load_permutations (loop_vinfo, bst_map);
+      vect_lower_load_permutations (loop_vinfo, bst_map, force_single_lane);
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
