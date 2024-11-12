@@ -1,5 +1,10 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/65181
+	* config/nvptx/nvptx.cc (default_ptx_version_option): For
+	'-march=sm_52' and higher, default at least to '-mptx=7.3'.
+	* doc/invoke.texi (Nvidia PTX Options): Update '-mptx=[...]'.
+
 	* config/nvptx/nvptx-opts.h (enum ptx_version): Add
 	'PTX_VERSION_7_3'.
 	* config/nvptx/nvptx.cc (ptx_version_to_string)

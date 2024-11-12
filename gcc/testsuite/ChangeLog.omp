@@ -1,5 +1,24 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/65181
+	* gcc.target/nvptx/march-map=sm_52.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_53.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_60.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_61.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_62.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_70.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_72.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_75.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_80.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_86.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_87.c: Likewise.
+	* gcc.target/nvptx/march=sm_52.c: Likewise.
+	* gcc.target/nvptx/march=sm_53.c: Likewise.
+	* gcc.target/nvptx/march=sm_70.c: Likewise.
+	* gcc.target/nvptx/march=sm_75.c: Likewise.
+	* gcc.target/nvptx/march=sm_80.c: Likewise.
+	* gcc.target/nvptx/mptx=_.c: Use '-march=sm_89'.
+
 	* gcc.target/nvptx/mptx=7.3.c: New.
 
 	* lib/target-supports.exp
