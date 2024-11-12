@@ -226,6 +226,8 @@ first_ptx_version_supporting_sm (enum ptx_isa sm)
       return PTX_VERSION_6_3;
     case PTX_ISA_SM80:
       return PTX_VERSION_7_0;
+    case PTX_ISA_SM89:
+      return PTX_VERSION_7_8;
     default:
       gcc_unreachable ();
     }

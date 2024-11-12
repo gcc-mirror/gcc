@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options {-march-map=sm_90a -mptx=_} } */
+/* { dg-options {-march=sm_89 -mptx=_} } */
 /* { dg-additional-options -save-temps } */
 /* { dg-final { scan-assembler-times {(?n)^	\.version	7\.8$} 1 } } */
 /* { dg-final { scan-assembler-times {(?n)^	\.target	sm_89$} 1 } } */
