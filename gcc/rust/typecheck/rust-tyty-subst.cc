@@ -634,8 +634,6 @@ SubstitutionRef::get_mappings_from_generic_args (
 	      if (resolved == nullptr
 		  || resolved->get_kind () == TyTy::TypeKind::ERROR)
 		{
-		  rust_error_at (binding.get_locus (),
-				 "failed to resolve type arguments");
 		  return SubstitutionArgumentMappings::error ();
 		}
 
@@ -701,7 +699,6 @@ SubstitutionRef::get_mappings_from_generic_args (
       BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
       if (resolved == nullptr || resolved->get_kind () == TyTy::TypeKind::ERROR)
 	{
-	  rust_error_at (args.get_locus (), "failed to resolve type arguments");
 	  return SubstitutionArgumentMappings::error ();
 	}
 
