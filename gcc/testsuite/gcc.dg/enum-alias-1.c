@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
-enum E { E1 = -1, E2 = 0, E3 = 1 };
+enum E { E1 = -1, E2 = 0, E3 = 1, MAX = __INT_MAX__ };
 
 typedef int A;
 typedef enum E B;
