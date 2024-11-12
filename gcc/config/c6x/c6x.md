@@ -365,12 +365,14 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop")
+  "nop"
+  [(set_attr "dest_regfile" "unknown")])
 
 (define_insn "nop_count"
   [(unspec [(match_operand 0 "const_int_operand" "n")] UNSPEC_NOP)]
   ""
-  "%|%.\\tnop\\t%0")
+  "%|%.\\tnop\\t%0"
+  [(set_attr "dest_regfile" "unknown")])
 
 ;; -------------------------------------------------------------------------
 ;; Move instructions
