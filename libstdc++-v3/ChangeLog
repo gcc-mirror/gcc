@@ -1,3 +1,14 @@
+2024-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Insert_base::try_emplace):
+	Do not define for C++11 and C++14.
+	* include/debug/map.h (try_emplace): Use feature test macro.
+	* include/debug/unordered_map (try_emplace): Likewise.
+	* testsuite/17_intro/names.cc: Define try_emplace before C++17.
+
 2024-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
