@@ -6620,9 +6620,13 @@ do_namespace_alias (tree alias, tree name_space)
   DECL_EXTERNAL (alias) = 1;
   DECL_CONTEXT (alias) = FROB_CONTEXT (current_scope ());
   TREE_PUBLIC (alias) = TREE_PUBLIC (DECL_CONTEXT (alias));
-  set_originating_module (alias);
 
-  pushdecl (alias);
+  alias = pushdecl (alias);
+
+  if (!DECL_P (alias) || !DECL_NAMESPACE_ALIAS (alias))
+    return;
+
+  set_originating_module (alias);
 
   /* Emit debug info for namespace alias.  */
   if (!building_stmt_list_p ())
