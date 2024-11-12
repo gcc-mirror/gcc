@@ -1480,8 +1480,15 @@ private:
   max_sew_overlap_and_next_ratio_valid_for_prev_sew_p (const vsetvl_info &prev,
 						       const vsetvl_info &next)
   {
-    return next_ratio_valid_for_prev_sew_p (prev, next)
-	   && max_sew_overlap_p (prev, next);
+    if (next_ratio_valid_for_prev_sew_p (prev, next)
+	&& max_sew_overlap_p (prev, next))
+      {
+	if (next.get_sew () < prev.get_sew ()
+	    && (!next.get_ta () || !next.get_ma ()))
+	  return false;
+	return true;
+      }
+    return false;
   }
   inline bool
   sew_le_and_next_sew_le_prev_max_sew_and_ratio_eq_p (const vsetvl_info &prev,
