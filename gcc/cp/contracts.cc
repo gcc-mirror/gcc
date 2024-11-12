@@ -2272,6 +2272,18 @@ build_contract_check (tree contract)
   return cc_bind;
 }
 
+/* Insert a BUILT_IN_OBSERVABLE epoch marker.  */
+
+static void
+emit_builtin_observable ()
+{
+  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
+  releasing_vec vec;
+  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
+  finish_expr_stmt (fn);
+
+}
+
 /* Add the contract statement CONTRACT to the current block if valid.  */
 
 static bool
@@ -2324,10 +2336,7 @@ void
 emit_assertion (tree attr)
 {
   /* Insert a std::observable () epoch marker.  */
-  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
-  releasing_vec vec;
-  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-  finish_expr_stmt (fn);
+  emit_builtin_observable();
 
   emit_contract_attr (attr);
 
@@ -2336,10 +2345,7 @@ emit_assertion (tree attr)
   if (semantic == CCS_OBSERVE)
     {
       /* Insert a std::observable () epoch marker.  */
-      tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
-      releasing_vec vec;
-      fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-      finish_expr_stmt (fn);
+      emit_builtin_observable();
     }
 }
 
@@ -2379,10 +2385,7 @@ remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
 	  if (flag_contract_disable_check_epochs)
 	    continue;
 	  /* Insert a std::observable () epoch marker.  */
-	  tree fn = builtin_decl_explicit (BUILT_IN_OBSERVABLE);
-	  releasing_vec vec;
-	  fn = finish_call_expr (fn, &vec, false, false, tf_warning_or_error);
-	  finish_expr_stmt (fn);
+	  emit_builtin_observable();
 	}
     }
 }
