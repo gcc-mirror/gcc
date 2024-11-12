@@ -1618,6 +1618,7 @@ package Rtsfind is
 
      RE_Adjust_Storage_Size,             -- System.Parameters
      RE_Default_Stack_Size,              -- System.Parameters
+     RE_Minimum_Stack_Size,              -- System.Parameters
      RE_Size_Type,                       -- System.Parameters
      RE_Unspecified_Size,                -- System.Parameters
 
@@ -3274,6 +3275,7 @@ package Rtsfind is
 
      RE_Adjust_Storage_Size              => System_Parameters,
      RE_Default_Stack_Size               => System_Parameters,
+     RE_Minimum_Stack_Size               => System_Parameters,
      RE_Size_Type                        => System_Parameters,
      RE_Unspecified_Size                 => System_Parameters,
 

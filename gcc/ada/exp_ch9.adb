@@ -11945,6 +11945,35 @@ package body Exp_Ch9 is
                else
                   Task_Size := New_Copy_Tree (Expr_N);
                end if;
+
+               --  On targets with a preallocated task stack the minimum stack
+               --  size is defined in System.Parameters. Since we do not have
+               --  access to the value of that definition here we replace the
+               --  static task size with the static expression
+               --  Size_Type'Max (Task_Size, Minimum_Stack_Size).
+               --  The compiler will evaluate this expression and replace the
+               --  task size with the Minimum_Stack_Size if needed. It is
+               --  important for this expression to be static to avoid
+               --  introducing implicit heap allocations that would break code
+               --  with the No_Implicit_Heap_Allocations restriction.
+               --  On some runtimes the allocation of the minimum stack size is
+               --  ensured by a call to Adjust_Storage_Size. We cannot use this
+               --  function here as it is not static and evaluated at runtime.
+               --  Note: This expression may not appear in the expanded code
+               --  as the compiler evaluates this expression before code
+               --  generation.
+
+               Task_Size :=
+                 Convert_To
+                   (RTE (RE_Storage_Offset),
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Max,
+                      Prefix         =>
+                        New_Occurrence_Of
+                          (RTE (RE_Size_Type), Loc), Expressions => New_List (
+                             Convert_To (RTE (RE_Size_Type), Task_Size),
+                             New_Occurrence_Of (RTE (RE_Minimum_Stack_Size),
+                               Loc))));
             end;
 
          else
