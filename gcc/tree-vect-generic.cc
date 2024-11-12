@@ -765,8 +765,10 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 					      type, cur_op);
 		}
 	    }
+	  tree mask_type = truth_type_for (type);
 	  if (addend == NULL_TREE
-	      && expand_vec_cond_expr_p (type, type, LT_EXPR))
+	      && expand_vec_cmp_expr_p (type, mask_type, LT_EXPR)
+	      && expand_vec_cond_expr_p (type, mask_type))
 	    {
 	      tree zero, cst, mask_type, mask;
 	      gimple *stmt, *cond;
