@@ -2825,7 +2825,12 @@ finish_function_contracts (tree fndecl)
   /* Check if we need to update wrapper function contracts. */
   tree wrapdecl = get_contract_wrapper_function (fndecl);
   if (wrapdecl){
-      copy_and_remap_contracts (wrapdecl, fndecl, true, true);
+      /* we copy postconditions on virtual function wrapper calls or if
+       postcondition checks are enabled on the caller side.   */
+      bool copy_post = (flag_contract_nonattr_client_check > 1) ||
+          ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl)));
+
+      copy_and_remap_contracts (wrapdecl, fndecl, true, copy_post);
   }
 }
 
@@ -3146,7 +3151,7 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
 
   vec<tree, va_gc> * args = build_arg_list (wrapdecl);
 
-  tree fn;
+  tree fn = fndecl;
 
   // If this is a virtual member function, look up the virtual table
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl))
@@ -3168,18 +3173,6 @@ bool define_contract_wrapper_func(const tree& fndecl, const tree& wrapdecl, void
       fn = build_vfn_ref (*class_ptr, DECL_VINDEX (fndecl));
       TREE_TYPE (fn) = t;
     }
-  else
-    {
-      fn = build_addr_func (fn, tf_warning_or_error);
-      if (fn == error_mark_node)
-	return error_mark_node;
-
-      /* We're actually invoking the function.  (Immediate functions get an
-	 & when invoking it even though the user didn't use &.)  */
-      ADDR_EXPR_DENOTES_CALL_P (fn) = true;
-    }
-
-
 
   tree call = build_call_a (fn,
 			    args->length (),
