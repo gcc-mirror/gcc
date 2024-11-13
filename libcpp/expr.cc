@@ -911,8 +911,25 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 
  syntax_ok:
   if (result & CPP_N_IMAGINARY)
-    cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location, 0,
-			      "imaginary constants are a GCC extension");
+    {
+      if (CPP_OPTION (pfile, cplusplus) || (result & CPP_N_FLOATING) == 0)
+	cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location, 0,
+				  "imaginary constants are a GCC extension");
+      else
+	{
+	  bool warned = false;
+	  if (!CPP_OPTION (pfile, imaginary_constants) && CPP_PEDANTIC (pfile))
+	    warned
+	      = cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+					  virtual_location, 0,
+					  "imaginary constants are a C2Y "
+					  "feature or GCC extension");
+	  if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
+	    cpp_warning_with_line (pfile, CPP_W_C23_C2Y_COMPAT,
+				   virtual_location, 0,
+				   "imaginary constants are a C2Y feature");
+	}
+    }
   if (radix == 2)
     {
       bool warned = false;

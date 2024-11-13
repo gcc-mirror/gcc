@@ -524,6 +524,9 @@ struct cpp_options
   /* Nonzero for C++ 2014 Standard binary constants.  */
   unsigned char binary_constants;
 
+  /* Nonzero for C2Y imaginary (floating) constants.  */
+  unsigned char imaginary_constants;
+
   /* Nonzero for C++ 2014 Standard digit separators.  */
   unsigned char digit_separators;
 

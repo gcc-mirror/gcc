@@ -15,5 +15,5 @@ bar2 ()
 
 __complex__ bar3 () /* { dg-error "ISO C does not support plain .complex. meaning .double complex." } */
 {
-  return _Complex_I; /* { dg-error "imaginary constants are a GCC extension" } */
+  return _Complex_I; /* { dg-error "imaginary constants are a C2Y feature or GCC extension" } */
 }
