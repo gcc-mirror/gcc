@@ -13594,6 +13594,7 @@ vect_analyze_stmt (vec_info *vinfo,
   if (!bb_vinfo
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
       && STMT_VINFO_TYPE (stmt_info) != lc_phi_info_type
+      && (!node || !node->ldst_lanes || SLP_TREE_CODE (node) == VEC_PERM_EXPR)
       && !can_vectorize_live_stmts (as_a <loop_vec_info> (vinfo),
 				    stmt_info, node, node_instance,
 				    false, cost_vec))
@@ -13756,7 +13757,10 @@ vect_transform_stmt (vec_info *vinfo,
   if (!slp_node && vec_stmt)
     gcc_assert (STMT_VINFO_VEC_STMTS (stmt_info).exists ());
 
-  if (STMT_VINFO_TYPE (stmt_info) != store_vec_info_type)
+  if (STMT_VINFO_TYPE (stmt_info) != store_vec_info_type
+      && (!slp_node
+	  || !slp_node->ldst_lanes
+	  || SLP_TREE_CODE (slp_node) == VEC_PERM_EXPR))
     {
       /* Handle stmts whose DEF is used outside the loop-nest that is
 	 being vectorized.  */
