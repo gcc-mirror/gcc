@@ -31786,7 +31786,8 @@ cp_parser_function_contract_modifier_opt (cp_parser * parser)
     return {};
 
   contract_modifier mod{};
-  location_t first_const, first_mutable;
+  location_t first_const = UNKNOWN_LOCATION;
+  location_t first_mutable = UNKNOWN_LOCATION;
 
   for (cp_token *tok = cp_lexer_peek_token (parser->lexer); tok;
        tok = cp_lexer_peek_token (parser->lexer))
