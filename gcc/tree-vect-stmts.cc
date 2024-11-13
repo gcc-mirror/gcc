@@ -2277,6 +2277,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
   if ((*memory_access_type == VMAT_ELEMENTWISE
        || *memory_access_type == VMAT_STRIDED_SLP)
       && single_element_p
+      && (!slp_node || SLP_TREE_LANES (slp_node) == 1)
       && loop_vinfo
       && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
 					     masked_p, gs_info))
