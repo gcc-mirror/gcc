@@ -11800,6 +11800,17 @@ resolve_ptr_fcn_assign (gfc_code **code, gfc_namespace *ns)
   tmp_ptr_expr->symtree->n.sym->attr.allocatable = 0;
   tmp_ptr_expr->where = (*code)->loc;
 
+  /* A new charlen is required to ensure that the variable string length
+     is different to that of the original lhs for deferred results.  */
+  if (s->result->ts.deferred && tmp_ptr_expr->ts.type == BT_CHARACTER)
+    {
+      tmp_ptr_expr->ts.u.cl = gfc_get_charlen();
+      tmp_ptr_expr->ts.deferred = 1;
+      tmp_ptr_expr->ts.u.cl->next = gfc_current_ns->cl_list;
+      gfc_current_ns->cl_list = tmp_ptr_expr->ts.u.cl;
+      tmp_ptr_expr->symtree->n.sym->ts.u.cl = tmp_ptr_expr->ts.u.cl;
+    }
+
   this_code = build_assignment (EXEC_ASSIGN,
 				tmp_ptr_expr, (*code)->expr2,
 				NULL, NULL, (*code)->loc);
