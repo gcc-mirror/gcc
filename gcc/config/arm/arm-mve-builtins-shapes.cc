@@ -205,7 +205,7 @@ parse_type (const function_instance &instance, const char *&format)
       type_suffix_index suffix = parse_element_type (instance, format);
       vector_type_index vector_type = type_suffixes[suffix].vector_type;
       unsigned int num_vectors = instance.vectors_per_tuple ();
-      return acle_vector_types[num_vectors - 1][vector_type];
+      return acle_vector_types[num_vectors >> 1][vector_type];
     }
 
   if (ch == 'v')

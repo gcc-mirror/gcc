@@ -38,6 +38,7 @@
 #include "gimple-iterator.h"
 #include "explow.h"
 #include "emit-rtl.h"
+#include "stor-layout.h"
 #include "langhooks.h"
 #include "stringpool.h"
 #include "attribs.h"
@@ -462,6 +463,48 @@ register_vector_type (vector_type_index type)
   acle_vector_types[0][type] = vectype;
 }
 
+/* Return a structure type that contains a single field of type FIELD_TYPE.
+   The field is called __val, but that's an internal detail rather than
+   an exposed part of the API.  */
+static tree
+wrap_type_in_struct (tree field_type)
+{
+  tree field = build_decl (input_location, FIELD_DECL,
+			   get_identifier ("__val"), field_type);
+  tree struct_type = lang_hooks.types.make_type (RECORD_TYPE);
+  DECL_FIELD_CONTEXT (field) = struct_type;
+  TYPE_FIELDS (struct_type) = field;
+  layout_type (struct_type);
+  return struct_type;
+}
+
+/* Register a built-in TYPE_DECL called NAME for TYPE.  This is used/needed
+   when TYPE is a structure type.  */
+static void
+register_type_decl (tree type, const char *name)
+{
+  tree decl = build_decl (input_location, TYPE_DECL,
+			  get_identifier (name), type);
+  TYPE_NAME (type) = decl;
+  TYPE_STUB_DECL (type) = decl;
+  lang_hooks.decls.pushdecl (decl);
+  /* ??? Undo the effect of set_underlying_type for C.  The C frontend
+     doesn't recognize DECL as a built-in because (as intended) the decl has
+     a real location instead of BUILTINS_LOCATION.  The frontend therefore
+     treats the decl like a normal C "typedef struct foo foo;", expecting
+     the type for tag "struct foo" to have a dummy unnamed TYPE_DECL instead
+     of the named one we attached above.  It then sets DECL_ORIGINAL_TYPE
+     on the supposedly unnamed decl, creating a circularity that upsets
+     dwarf2out.
+
+     We don't want to follow the normal C model and create "struct foo"
+     tags for tuple types since (a) the types are supposed to be opaque
+     and (b) they couldn't be defined as a real struct anyway.  Treating
+     the TYPE_DECLs as "typedef struct foo foo;" without creating
+     "struct foo" would lead to confusing error messages.  */
+  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+}
+
 /* Register tuple types of element type TYPE under their arm_mve_types.h
    names.  */
 static void
@@ -479,7 +522,7 @@ register_builtin_tuple_types (vector_type_index type)
     {
       for (unsigned int num_vectors = 2; num_vectors <= 4; num_vectors += 2)
 	acle_vector_types[num_vectors >> 1][type] = void_type_node;
-    return;
+      return;
     }
 
   const char *vector_type_name = info->acle_name;
@@ -492,15 +535,16 @@ register_builtin_tuple_types (vector_type_index type)
 
       tree vectype = acle_vector_types[0][type];
       tree arrtype = build_array_type_nelts (vectype, num_vectors);
-      gcc_assert (TYPE_MODE_RAW (arrtype) == TYPE_MODE (arrtype));
-      tree field = build_decl (input_location, FIELD_DECL,
-			       get_identifier ("val"), arrtype);
+      gcc_assert (TYPE_MODE_RAW (arrtype) == TYPE_MODE (arrtype)
+		  && TYPE_ALIGN (arrtype) == 64);
 
-      tree t = lang_hooks.types.simulate_record_decl (input_location, buffer,
-						      make_array_slice (&field,
-									1));
-      gcc_assert (TYPE_MODE_RAW (t) == TYPE_MODE (t));
-      acle_vector_types[num_vectors >> 1][type] = TREE_TYPE (t);
+      tree tuple_type = wrap_type_in_struct (arrtype);
+      gcc_assert (TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
+		  && TYPE_ALIGN (tuple_type) == 64);
+
+      register_type_decl (tuple_type, buffer);
+
+      acle_vector_types[num_vectors >> 1][type] = tuple_type;
     }
 }
 
@@ -1293,7 +1337,7 @@ function_resolver::infer_vector_or_tuple_type (unsigned int argno,
 	tree type = acle_vector_types[size_i][type_i];
 	if (type && matches_type_p (type, actual))
 	  {
-	    if (size_i + 1 == num_vectors)
+	    if (size_i == (num_vectors >> 1))
 	      return type_suffix_index (suffix_i);
 
 	    if (num_vectors == 1)
@@ -1332,6 +1376,16 @@ type_suffix_index
 function_resolver::infer_vector_type (unsigned int argno)
 {
   return infer_vector_or_tuple_type (argno, 1);
+}
+
+/* If the function operates on tuples of vectors, require argument ARGNO to be
+   a tuple with the appropriate number of vectors, otherwise require it to be a
+   single vector.  Return the associated type suffix on success.  Report an
+   error and return NUM_TYPE_SUFFIXES on failure.  */
+type_suffix_index
+function_resolver::infer_tuple_type (unsigned int argno)
+{
+  return infer_vector_or_tuple_type (argno, vectors_per_tuple ());
 }
 
 /* Require argument ARGNO to be a vector or scalar argument.  Return true
