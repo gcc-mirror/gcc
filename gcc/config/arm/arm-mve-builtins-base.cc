@@ -1100,6 +1100,73 @@ public:
   }
 };
 
+
+/* Implements vst2 and vst4.  */
+class vst24_impl : public full_width_access
+{
+public:
+  using full_width_access::full_width_access;
+
+  unsigned int
+  call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode;
+    switch (vectors_per_tuple ())
+      {
+      case 2:
+	icode = code_for_mve_vst2q (e.vector_mode (0));
+	break;
+
+      case 4:
+	icode = code_for_mve_vst4q (e.vector_mode (0));
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+    return e.use_contiguous_store_insn (icode);
+  }
+};
+
+/* Implements vld2 and vld4.  */
+class vld24_impl : public full_width_access
+{
+public:
+  using full_width_access::full_width_access;
+
+  unsigned int
+  call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode;
+    switch (vectors_per_tuple ())
+      {
+      case 2:
+	icode = code_for_mve_vld2q (e.vector_mode (0));
+	break;
+
+      case 4:
+	icode = code_for_mve_vld4q (e.vector_mode (0));
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+    return e.use_contiguous_load_insn (icode);
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -1326,6 +1393,8 @@ FUNCTION (vfmsq, unspec_mve_function_exact_insn, (-1, -1, VFMSQ_F, -1, -1, -1, -
 FUNCTION_WITH_M_N_NO_F (vhaddq, VHADDQ)
 FUNCTION_WITH_M_N_NO_F (vhsubq, VHSUBQ)
 FUNCTION (vld1q, vld1_impl,)
+FUNCTION (vld2q, vld24_impl, (2))
+FUNCTION (vld4q, vld24_impl, (4))
 FUNCTION (vldrbq, vldrq_impl, (TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
 FUNCTION (vldrbq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s8, TYPE_SUFFIX_u8))
 FUNCTION (vldrdq_gather, vldrq_gather_impl, (false, TYPE_SUFFIX_s64, TYPE_SUFFIX_u64, NUM_TYPE_SUFFIXES))
@@ -1458,6 +1527,8 @@ FUNCTION_ONLY_N_NO_F (vshrq, VSHRQ)
 FUNCTION_ONLY_N_NO_F (vsliq, VSLIQ)
 FUNCTION_ONLY_N_NO_F (vsriq, VSRIQ)
 FUNCTION (vst1q, vst1_impl,)
+FUNCTION (vst2q, vst24_impl, (2))
+FUNCTION (vst4q, vst24_impl, (4))
 FUNCTION (vstrbq, vstrq_impl, (QImode, opt_scalar_mode ()))
 FUNCTION (vstrbq_scatter, vstrq_scatter_impl, (false, QImode, opt_scalar_mode ()))
 FUNCTION (vstrdq_scatter, vstrq_scatter_impl, (false, DImode, opt_scalar_mode ()))

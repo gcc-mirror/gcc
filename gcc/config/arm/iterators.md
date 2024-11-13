@@ -139,7 +139,18 @@
 
 ;; Opaque structure types wider than TImode.
 (define_mode_iterator VSTRUCT [(EI "!TARGET_HAVE_MVE") OI
-			       (CI "!TARGET_HAVE_MVE") XI])
+			       (CI "!TARGET_HAVE_MVE") XI
+			       (V2x16QI "TARGET_HAVE_MVE")
+			       (V2x8HI "TARGET_HAVE_MVE")
+			       (V2x4SI "TARGET_HAVE_MVE")
+			       (V2x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V2x4SF "TARGET_HAVE_MVE_FLOAT")
+			       (V4x16QI "TARGET_HAVE_MVE")
+			       (V4x8HI "TARGET_HAVE_MVE")
+			       (V4x4SI "TARGET_HAVE_MVE")
+			       (V4x8HF "TARGET_HAVE_MVE_FLOAT")
+			       (V4x4SF "TARGET_HAVE_MVE_FLOAT")
+			       ])
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
@@ -285,6 +296,29 @@
 (define_mode_iterator MVE_7_HI [HI V16BI V8BI V4BI V2QI])
 (define_mode_iterator MVE_V8HF [V8HF])
 (define_mode_iterator MVE_V16QI [V16QI])
+
+(define_mode_attr MVE_VLD2_VST2 [(V16QI "V2x16QI")
+				 (V8HI "V2x8HI")
+				 (V4SI "V2x4SI")
+				 (V8HF "V2x8HF")
+				 (V4SF "V2x4SF")])
+(define_mode_attr MVE_vld2_vst2 [(V16QI "v2x16qi")
+				 (V8HI "v2x8hi")
+				 (V4SI "v2x4si")
+				 (V8HF "v2x8hf")
+				 (V4SF "v2x4sf")])
+
+(define_mode_attr MVE_VLD4_VST4 [(V16QI "V4x16QI")
+				 (V8HI "V4x8HI")
+				 (V4SI "V4x4SI")
+				 (V8HF "V4x8HF")
+				 (V4SF "V4x4SF")])
+
+(define_mode_attr MVE_vld4_vst4 [(V16QI "v4x16qi")
+				 (V8HI "v4x8hi")
+				 (V4SI "v4x4si")
+				 (V8HF "v4x8hf")
+				 (V4SF "v4x4sf")])
 
 ;; Types for MVE truncating stores and widening loads
 (define_mode_iterator MVE_w_narrow_TYPE [V8QI V4QI V4HI])

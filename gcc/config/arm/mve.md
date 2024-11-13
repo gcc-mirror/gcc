@@ -110,13 +110,14 @@
 ;;
 ;; [vst4q])
 ;;
-(define_insn "mve_vst4q<mode>"
-  [(set (match_operand:XI 0 "mve_struct_operand" "=Ug")
-	(unspec:XI [(match_operand:XI 1 "s_register_operand" "w")
-		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_insn "@mve_vst4q<mode>"
+  [(set (match_operand:<MVE_VLD4_VST4> 0 "mve_struct_operand" "=Ug")
+	(unspec:<MVE_VLD4_VST4>
+		[(match_operand:<MVE_VLD4_VST4> 1 "s_register_operand" "w")
+		 (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VST4Q))
   ]
-  "TARGET_HAVE_MVE"
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD4_VST4>mode))"
 {
    rtx ops[6];
    int regno = REGNO (operands[1]);
@@ -4061,14 +4062,14 @@
 ;;
 ;; [vst2q])
 ;;
-(define_insn "mve_vst2q<mode>"
-  [(set (match_operand:OI 0 "mve_struct_operand" "=Ug")
-	(unspec:OI [(match_operand:OI 1 "s_register_operand" "w")
-		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_insn "@mve_vst2q<mode>"
+  [(set (match_operand:<MVE_VLD2_VST2> 0 "mve_struct_operand" "=Ug")
+	(unspec:<MVE_VLD2_VST2>
+		[(match_operand:<MVE_VLD2_VST2> 1 "s_register_operand" "w")
+		 (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VST2Q))
   ]
-  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
-   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD2_VST2>mode))"
 {
    rtx ops[4];
    int regno = REGNO (operands[1]);
@@ -4089,14 +4090,14 @@
 ;;
 ;; [vld2q])
 ;;
-(define_insn "mve_vld2q<mode>"
-  [(set (match_operand:OI 0 "s_register_operand" "=w")
-	(unspec:OI [(match_operand:OI 1 "mve_struct_operand" "Ug")
-		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_insn "@mve_vld2q<mode>"
+  [(set (match_operand:<MVE_VLD2_VST2> 0 "s_register_operand" "=w")
+	(unspec:<MVE_VLD2_VST2>
+		[(match_operand:<MVE_VLD2_VST2> 1 "mve_struct_operand" "Ug")
+		 (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VLD2Q))
   ]
-  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
-   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD2_VST2>mode))"
 {
    rtx ops[4];
    int regno = REGNO (operands[0]);
@@ -4117,14 +4118,14 @@
 ;;
 ;; [vld4q])
 ;;
-(define_insn "mve_vld4q<mode>"
-  [(set (match_operand:XI 0 "s_register_operand" "=w")
-	(unspec:XI [(match_operand:XI 1 "mve_struct_operand" "Ug")
-		    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_insn "@mve_vld4q<mode>"
+  [(set (match_operand:<MVE_VLD4_VST4> 0 "s_register_operand" "=w")
+	(unspec:<MVE_VLD4_VST4>
+		[(match_operand:<MVE_VLD4_VST4> 1 "mve_struct_operand" "Ug")
+		 (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 	 VLD4Q))
   ]
-  "(TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
-   || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD4_VST4>mode))"
 {
    rtx ops[6];
    int regno = REGNO (operands[0]);

@@ -421,12 +421,21 @@
         (unspec:OI [(match_operand:OI 1 "neon_struct_operand")
                     (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
 		   UNSPEC_VLD2))]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vld2<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vld2q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vld2<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V2xYYY modes instead of OI
+(define_expand "vec_load_lanes<MVE_vld2_vst2><mode>"
+  [(set (match_operand:<MVE_VLD2_VST2> 0 "s_register_operand")
+        (unspec:<MVE_VLD2_VST2> [(match_operand:<MVE_VLD2_VST2> 1 "neon_struct_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_VLD2))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD2_VST2>mode))"
+{
+  emit_insn (gen_mve_vld2q<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -435,12 +444,21 @@
 	(unspec:OI [(match_operand:OI 1 "s_register_operand")
                     (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
                    UNSPEC_VST2))]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vst2<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vst2q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vst2<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V2xYYY modes instead of OI
+(define_expand "vec_store_lanes<MVE_vld2_vst2><mode>"
+  [(set (match_operand:<MVE_VLD2_VST2> 0 "neon_struct_operand")
+	(unspec:<MVE_VLD2_VST2> [(match_operand:<MVE_VLD2_VST2> 1 "s_register_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST2))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD2_VST2>mode))"
+{
+  emit_insn (gen_mve_vst2q<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -448,12 +466,21 @@
   [(match_operand:XI 0 "s_register_operand")
    (match_operand:XI 1 "neon_struct_operand")
    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vld4<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vld4q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vld4<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V4xYYY modes instead of XI
+(define_expand "vec_load_lanes<MVE_vld4_vst4><mode>"
+  [(set (match_operand:<MVE_VLD4_VST4> 0 "s_register_operand")
+        (unspec:<MVE_VLD4_VST4> [(match_operand:<MVE_VLD4_VST4> 1 "neon_struct_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_VLD4))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD4_VST4>mode))"
+{
+  emit_insn (gen_mve_vld4q<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -461,12 +488,21 @@
   [(match_operand:XI 0 "neon_struct_operand")
    (match_operand:XI 1 "s_register_operand")
    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_NEON || TARGET_HAVE_MVE"
+  "TARGET_NEON"
 {
-  if (TARGET_NEON)
-    emit_insn (gen_neon_vst4<mode> (operands[0], operands[1]));
-  else
-    emit_insn (gen_mve_vst4q<mode> (operands[0], operands[1]));
+  emit_insn (gen_neon_vst4<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+;;; On MVE we use V4xYYY modes instead of XI
+(define_expand "vec_store_lanes<MVE_vld4_vst4><mode>"
+  [(set (match_operand:<MVE_VLD4_VST4> 0 "neon_struct_operand")
+	(unspec:<MVE_VLD4_VST4> [(match_operand:<MVE_VLD4_VST4> 1 "s_register_operand")
+                    (unspec:MVE_VLD_ST [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST4))]
+  "(TARGET_HAVE_MVE && VALID_MVE_STRUCT_MODE (<MVE_VLD4_VST4>mode))"
+{
+  emit_insn (gen_mve_vst4q<mode> (operands[0], operands[1]));
   DONE;
 })
 

@@ -535,11 +535,13 @@ register_builtin_tuple_types (vector_type_index type)
 
       tree vectype = acle_vector_types[0][type];
       tree arrtype = build_array_type_nelts (vectype, num_vectors);
-      gcc_assert (TYPE_MODE_RAW (arrtype) == TYPE_MODE (arrtype)
+      gcc_assert (VECTOR_MODE_P (TYPE_MODE (arrtype))
+		  && TYPE_MODE_RAW (arrtype) == TYPE_MODE (arrtype)
 		  && TYPE_ALIGN (arrtype) == 64);
 
       tree tuple_type = wrap_type_in_struct (arrtype);
-      gcc_assert (TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
+      gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
+		  && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type)
 		  && TYPE_ALIGN (tuple_type) == 64);
 
       register_type_decl (tuple_type, buffer);

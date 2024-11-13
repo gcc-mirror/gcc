@@ -18,7 +18,6 @@
     along with GCC; see the file COPYING3.  If not see
     <http://www.gnu.org/licenses/>.  */
 
-VAR5 (STORE1, vst4q, v16qi, v8hi, v4si, v8hf, v4sf)
 VAR2 (UNOP_NONE_NONE, vrndxq_f, v8hf, v4sf)
 VAR2 (UNOP_NONE_NONE, vrndq_f, v8hf, v4sf)
 VAR2 (UNOP_NONE_NONE, vrndpq_f, v8hf, v4sf)
@@ -679,9 +678,6 @@ VAR1 (QUADOP_NONE_NONE_NONE_NONE_PRED, vsbciq_m_s, v4si)
 VAR1 (QUADOP_UNONE_UNONE_UNONE_UNONE_PRED, vsbciq_m_u, v4si)
 VAR1 (QUADOP_NONE_NONE_NONE_NONE_PRED, vsbcq_m_s, v4si)
 VAR1 (QUADOP_UNONE_UNONE_UNONE_UNONE_PRED, vsbcq_m_u, v4si)
-VAR5 (STORE1, vst2q, v16qi, v8hi, v4si, v8hf, v4sf)
-VAR5 (LOAD1, vld4q, v16qi, v8hi, v4si, v8hf, v4sf)
-VAR5 (LOAD1, vld2q, v16qi, v8hi, v4si, v8hf, v4sf)
 VAR1 (ASRL, sqrshr_,si)
 VAR1 (ASRL, sqrshrl_sat64_,di)
 VAR1 (ASRL, sqrshrl_sat48_,di)

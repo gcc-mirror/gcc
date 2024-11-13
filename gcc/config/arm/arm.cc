@@ -278,6 +278,7 @@ static rtx_insn *arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
 static bool xscale_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
 static bool fa726te_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
+static opt_machine_mode arm_array_mode (machine_mode, unsigned HOST_WIDE_INT);
 static bool arm_array_mode_supported_p (machine_mode,
 					unsigned HOST_WIDE_INT);
 static machine_mode arm_preferred_simd_mode (scalar_mode);
@@ -515,6 +516,8 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 #define TARGET_SHIFT_TRUNCATION_MASK arm_shift_truncation_mask
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
+#undef TARGET_ARRAY_MODE
+#define TARGET_ARRAY_MODE arm_array_mode
 #undef TARGET_ARRAY_MODE_SUPPORTED_P
 #define TARGET_ARRAY_MODE_SUPPORTED_P arm_array_mode_supported_p
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
@@ -20774,7 +20777,9 @@ output_move_neon (rtx *operands)
 	      || NEON_REGNO_OK_FOR_QUAD (regno));
   gcc_assert (VALID_NEON_DREG_MODE (mode)
 	      || VALID_NEON_QREG_MODE (mode)
-	      || VALID_NEON_STRUCT_MODE (mode));
+	      || VALID_NEON_STRUCT_MODE (mode)
+	      || (TARGET_HAVE_MVE
+		  && VALID_MVE_STRUCT_MODE (mode)));
   gcc_assert (MEM_P (mem));
 
   addr = XEXP (mem, 0);
@@ -24949,7 +24954,8 @@ arm_print_operand_address (FILE *stream, machine_mode mode, rtx x)
 			 REGNO (XEXP (x, 0)),
 			 GET_CODE (x) == PRE_DEC ? "-" : "",
 			 GET_MODE_SIZE (mode));
-	  else if (TARGET_HAVE_MVE && (mode == OImode || mode == XImode))
+	  else if (TARGET_HAVE_MVE
+		   && VALID_MVE_STRUCT_MODE (mode))
 	    asm_fprintf (stream, "[%r]!", REGNO (XEXP (x,0)));
 	  else
 	    asm_fprintf (stream, "[%r], #%s%d", REGNO (XEXP (x, 0)),
@@ -25839,7 +25845,17 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
      if (TARGET_HAVE_MVE)
        return ((VALID_MVE_MODE (mode) && NEON_REGNO_OK_FOR_QUAD (regno))
 	       || (mode == OImode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
-	       || (mode == XImode && NEON_REGNO_OK_FOR_NREGS (regno, 8)));
+	       || (mode == V2x16QImode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
+	       || (mode == V2x8HImode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
+	       || (mode == V2x4SImode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
+	       || (mode == V2x8HFmode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
+	       || (mode == V2x4SFmode && NEON_REGNO_OK_FOR_NREGS (regno, 4))
+	       || (mode == XImode && NEON_REGNO_OK_FOR_NREGS (regno, 8))
+	       || (mode == V4x16QImode && NEON_REGNO_OK_FOR_NREGS (regno, 8))
+	       || (mode == V4x8HImode && NEON_REGNO_OK_FOR_NREGS (regno, 8))
+	       || (mode == V4x4SImode && NEON_REGNO_OK_FOR_NREGS (regno, 8))
+	       || (mode == V4x8HFmode && NEON_REGNO_OK_FOR_NREGS (regno, 8))
+	       || (mode == V4x4SFmode && NEON_REGNO_OK_FOR_NREGS (regno, 8)));
 
       return false;
     }
@@ -29783,6 +29799,27 @@ arm_vector_mode_supported_p (machine_mode mode)
     return true;
 
   return false;
+}
+
+/* Implements target hook array_mode.  */
+static opt_machine_mode
+arm_array_mode (machine_mode mode, unsigned HOST_WIDE_INT nelems)
+{
+  if (TARGET_HAVE_MVE
+      /* MVE accepts only tuples of 2 or 4 vectors.  */
+      && (nelems == 2
+	  || nelems == 4))
+    {
+      machine_mode struct_mode;
+      FOR_EACH_MODE_IN_CLASS (struct_mode, GET_MODE_CLASS (mode))
+	{
+	  if (GET_MODE_INNER (struct_mode) == GET_MODE_INNER (mode)
+	      && known_eq (GET_MODE_NUNITS (struct_mode),
+			   GET_MODE_NUNITS (mode) * nelems))
+	    return struct_mode;
+	}
+    }
+  return opt_machine_mode ();
 }
 
 /* Implements target hook array_mode_supported_p.  */
