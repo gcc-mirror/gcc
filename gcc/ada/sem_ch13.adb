@@ -1903,6 +1903,10 @@ package body Sem_Ch13 is
                      if Nkind (N) = N_Object_Declaration
                        and then Present (Expression (N))
                      then
+                        Error_Msg_Sloc := Sloc (Defining_Identifier (N));
+                        Error_Msg_N
+                          ("no initialization allowed for declaration of& #",
+                           Defining_Identifier (N));
                         Error_Msg_N
                           ("imported entities cannot be initialized "
                            & "(RM B.1(24))", Expression (N));
