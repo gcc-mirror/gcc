@@ -452,6 +452,9 @@
 ;; All fully-packed SVE floating-point vector modes.
 (define_mode_iterator SVE_FULL_F [VNx8HF VNx4SF VNx2DF])
 
+;; Fully-packed SVE floating-point vector modes and their scalar equivalents.
+(define_mode_iterator SVE_FULL_F_SCALAR [SVE_FULL_F GPF_HF])
+
 ;; Fully-packed SVE integer vector modes that have 8-bit or 16-bit elements.
 (define_mode_iterator SVE_FULL_BHI [VNx16QI VNx8HI])
 
@@ -2354,7 +2357,8 @@
 			 (VNx8DI "VNx2BI") (VNx8DF "VNx2BI")
 			 (V8QI "VNx8BI") (V16QI "VNx16BI")
 			 (V4HI "VNx4BI") (V8HI "VNx8BI") (V2SI "VNx2BI")
-			 (V4SI "VNx4BI") (V2DI "VNx2BI") (V1DI "VNx2BI")])
+			 (V4SI "VNx4BI") (V2DI "VNx2BI") (V1DI "VNx2BI")
+			 (HF "VNx8BI") (SF "VNx4BI") (DF "VNx2BI")])
 
 ;; ...and again in lower case.
 (define_mode_attr vpred [(VNx16QI "vnx16bi") (VNx8QI "vnx8bi")

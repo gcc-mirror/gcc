@@ -5088,6 +5088,21 @@
 ;; - FTSSEL
 ;; -------------------------------------------------------------------------
 
+(define_expand "ldexp<mode>3"
+ [(set (match_operand:GPF_HF 0 "register_operand")
+       (unspec:GPF_HF
+	 [(match_dup 3)
+	  (const_int SVE_STRICT_GP)
+	  (match_operand:GPF_HF 1 "register_operand")
+	  (match_operand:<V_INT_EQUIV> 2 "register_operand")]
+	 UNSPEC_COND_FSCALE))]
+ "TARGET_SVE"
+ {
+   operands[3] = aarch64_ptrue_reg (<VPRED>mode,
+				    GET_MODE_UNIT_SIZE (<MODE>mode));
+ }
+)
+
 ;; Unpredicated floating-point binary operations that take an integer as
 ;; their second operand.
 (define_insn "@aarch64_sve_<optab><mode>"
@@ -5103,17 +5118,17 @@
 ;; Predicated floating-point binary operations that take an integer
 ;; as their second operand.
 (define_insn "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_FULL_F_SCALAR 0 "register_operand")
+	(unspec:SVE_FULL_F_SCALAR
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
-	   (match_operand:SVE_FULL_F 2 "register_operand")
+	   (match_operand:SVE_FULL_F_SCALAR 2 "register_operand")
 	   (match_operand:<V_INT_EQUIV> 3 "register_operand")]
 	  SVE_COND_FP_BINARY_INT))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2 , 3 ; attrs: movprfx ]
-     [ w        , Upl , 0 , w ; *              ] <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
-     [ ?&w      , Upl , w , w ; yes            ] movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+     [ w        , Upl , 0 , w ; *              ] <sve_fp_op>\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, %Z3.<Vetype>
+     [ ?&w      , Upl , w , w ; yes            ] movprfx\t%Z0, %Z2\;<sve_fp_op>\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, %Z3.<Vetype>
   }
 )
 
