@@ -4511,6 +4511,17 @@ baselink_for_fns (tree fns)
   return build_baselink (conv_path, access_path, fns, /*optype=*/NULL_TREE);
 }
 
+/* Returns true iff we are currently parsing a lambda-declarator.  */
+
+static bool
+parsing_lambda_declarator ()
+{
+  cp_binding_level *b = current_binding_level;
+  while (b->kind == sk_template_parms || b->kind == sk_function_parms)
+    b = b->level_chain;
+  return b->kind == sk_lambda;
+}
+
 /* Returns true iff DECL is a variable from a function outside
    the current one.  */
 
@@ -4525,7 +4536,15 @@ outer_var_p (tree decl)
 	  /* Don't get confused by temporaries.  */
 	  && DECL_NAME (decl)
 	  && (DECL_CONTEXT (decl) != current_function_decl
-	      || parsing_nsdmi ()));
+	      || parsing_nsdmi ()
+	      /* Also consider captures as outer vars if we are in
+		 decltype in a lambda declarator as in:
+		   auto l = [j=0]() -> decltype((j)) { ... }
+		 for the sake of finish_decltype_type.
+
+		 (Similar issue also affects non-lambdas, but vexing parse
+		 makes it more difficult to handle than lambdas.)  */
+	      || parsing_lambda_declarator ()));
 }
 
 /* As above, but also checks that DECL is automatic.  */
@@ -4571,7 +4590,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   if (!mark_used (decl, complain))
     return error_mark_node;
 
-  if (parsing_nsdmi ())
+  if (parsing_nsdmi () || parsing_lambda_declarator ())
     containing_function = NULL_TREE;
 
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
@@ -12941,9 +12960,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else
     {
-      if (outer_automatic_var_p (STRIP_REFERENCE_REF (expr))
-	  && current_function_decl
-	  && LAMBDA_FUNCTION_P (current_function_decl))
+      tree decl = STRIP_REFERENCE_REF (expr);
+      tree lam = current_lambda_expr ();
+      if (lam && outer_automatic_var_p (decl))
 	{
 	  /* [expr.prim.id.unqual]/3: If naming the entity from outside of an
 	     unevaluated operand within S would refer to an entity captured by
@@ -12960,8 +12979,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	     local variable inside decltype, not just decltype((x)) (PR83167).
 	     And we don't handle nested lambdas properly, where we need to
 	     consider the outer lambdas as well (PR112926). */
-	  tree decl = STRIP_REFERENCE_REF (expr);
-	  tree lam = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (current_function_decl));
 	  tree cap = lookup_name (DECL_NAME (decl), LOOK_where::BLOCK,
 				  LOOK_want::HIDDEN_LAMBDA);
 
@@ -12977,17 +12994,28 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 
 	  if (type && !TYPE_REF_P (type))
 	    {
-	      tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
-	      if (WILDCARD_TYPE_P (non_reference (obtype)))
-		/* We don't know what the eventual obtype quals will be.  */
-		goto dependent;
-	      auto direct_type = [](tree t){
-		  if (INDIRECT_TYPE_P (t))
-		    return TREE_TYPE (t);
-		  return t;
-	       };
-	      int const quals = cp_type_quals (type)
-			      | cp_type_quals (direct_type (obtype));
+	      int quals;
+	      if (current_function_decl
+		  && LAMBDA_FUNCTION_P (current_function_decl)
+		  && DECL_XOBJ_MEMBER_FUNCTION_P (current_function_decl))
+		{
+		  tree obtype = TREE_TYPE (DECL_ARGUMENTS (current_function_decl));
+		  if (WILDCARD_TYPE_P (non_reference (obtype)))
+		    /* We don't know what the eventual obtype quals will be.  */
+		    goto dependent;
+		  auto direct_type = [](tree t){
+		      if (INDIRECT_TYPE_P (t))
+			return TREE_TYPE (t);
+		      return t;
+		   };
+		  quals = (cp_type_quals (type)
+			   | cp_type_quals (direct_type (obtype)));
+		}
+	      else
+		/* We are in the parameter clause, trailing return type, or
+		   the requires clause and have no relevant c_f_decl yet.  */
+		quals = (LAMBDA_EXPR_CONST_QUAL_P (lam)
+			 ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
 	      type = cp_build_qualified_type (type, quals);
 	      type = build_reference_type (type);
 	    }

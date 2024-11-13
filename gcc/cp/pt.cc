@@ -20590,6 +20590,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   tree fntype = static_fn_type (oldfn);
 
+  begin_scope (sk_lambda, NULL_TREE);
+
+  /* Like in cp_parser_lambda_expression, we need to bring the captures
+     into the lambda scope.  */
+  tree ns = decl_namespace_context (type);
+  push_nested_namespace (ns);
+  push_nested_class (type);
+  tree dummy_fco = maybe_add_dummy_lambda_op (r);
+  pop_nested_class ();
+  pop_nested_namespace (ns);
+  push_capture_proxies (r, /*early_p=*/true);
+
   tree saved_ctp = current_template_parms;
   if (oldtmpl)
     {
@@ -20602,6 +20614,10 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       current_template_parms = saved_ctp;
       --processing_template_decl;
     }
+
+  /* We are about to create the real operator(), so get rid of the old one.  */
+  if (dummy_fco)
+    remove_dummy_lambda_op (dummy_fco, r);
 
   if (fntype == error_mark_node)
     r = error_mark_node;
@@ -20635,6 +20651,10 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       /* The body of a lambda-expression is not a subexpression of the
 	 enclosing expression.  */
       cp_evaluated ev;
+
+      /* Now we're done with the parameter-declaration-clause, and should
+	 assume "const" unless "mutable" was present.  */
+      LAMBDA_EXPR_CONST_QUAL_P (r) = LAMBDA_EXPR_CONST_QUAL_P (t);
 
       bool nested = cfun;
       if (nested)
@@ -20704,6 +20724,7 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     }
 
 out:
+  pop_bindings_and_leave_scope ();
   finish_struct (type, /*attr*/NULL_TREE);
 
   insert_pending_capture_proxies ();

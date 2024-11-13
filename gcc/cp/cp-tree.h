@@ -476,6 +476,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (in ATOMIC_CONSTR)
       STATIC_INIT_DECOMP_BASE_P (in the TREE_LIST for {static,tls}_aggregates)
       MUST_NOT_THROW_THROW_P (in MUST_NOT_THROW_EXPR)
+      LAMBDA_EXPR_CONST_QUAL_P (in LAMBDA_EXPR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -1556,6 +1557,13 @@ enum cp_lambda_default_capture_mode_type {
 /* True iff this lambda was created for a consteval block.  */
 #define LAMBDA_EXPR_CONSTEVAL_BLOCK_P(NODE) \
   TREE_LANG_FLAG_0 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True if we should add "const" when figuring out the type of an entity
+   in a lambda.  This is false in the parameter-declaration-clause of
+   a lambda; after that, it will remain false if the mutable keyword is
+   present.  */
+#define LAMBDA_EXPR_CONST_QUAL_P(NODE) \
+  TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
@@ -7797,6 +7805,8 @@ extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
 extern tree attr_chainon (tree, tree);
+extern tree maybe_add_dummy_lambda_op (tree);
+extern void remove_dummy_lambda_op (tree, tree);
 
 /* in pt.cc */
 extern tree canonical_type_parameter		(tree);
@@ -8326,6 +8336,7 @@ extern void record_lambda_scope			(tree lambda);
 extern void record_lambda_scope_discriminator	(tree lambda);
 extern void record_lambda_scope_sig_discriminator (tree lambda, tree fn);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
+extern void push_capture_proxies		(tree, bool = false);
 extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);
 extern tree lambda_regenerating_args		(tree);

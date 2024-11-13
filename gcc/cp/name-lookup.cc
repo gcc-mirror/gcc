@@ -3351,8 +3351,11 @@ check_local_shadow (tree decl)
 	}
       /* Don't complain if it's from an enclosing function.  */
       else if (DECL_CONTEXT (old) == current_function_decl
-	       && TREE_CODE (decl) != PARM_DECL
-	       && TREE_CODE (old) == PARM_DECL)
+	       && ((TREE_CODE (decl) != PARM_DECL
+		    && TREE_CODE (old) == PARM_DECL)
+		   /* We should also give an error for
+		       [x=1]{ int x; }  */
+		   || is_capture_proxy (old)))
 	{
 	  /* Go to where the parms should be and see if we find
 	     them there.  */
@@ -4638,7 +4641,8 @@ cp_binding_level_descriptor (cp_binding_level *scope)
     "template-parameter-scope",
     "template-explicit-spec-scope",
     "transaction-scope",
-    "openmp-scope"
+    "openmp-scope",
+    "lambda-scope"
   };
   static_assert (ARRAY_SIZE (scope_kind_names) == sk_count,
 		 "must keep names aligned with scope_kind enum");
@@ -4730,6 +4734,7 @@ begin_scope (scope_kind kind, tree entity)
     case sk_transaction:
     case sk_omp:
     case sk_stmt_expr:
+    case sk_lambda:
       scope->keep = keep_next_level_flag;
       break;
 

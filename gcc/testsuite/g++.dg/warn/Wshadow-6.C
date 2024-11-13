@@ -33,8 +33,8 @@ void f2(struct S i, int j) {
 
 void f3(int i) {
  [=]{
-   int j = i;			// { dg-message "shadowed declaration" }
-   int i;			// { dg-warning "shadows a lambda capture" }
+   int j = i;			// { dg-message "previously declared here" }
+   int i;			// { dg-error "shadows a parameter" }
    i = 1;
  };
 }
@@ -42,8 +42,8 @@ void f3(int i) {
 template <class T>
 void f4(int i) {
  [=]{
-   int j = i;			// { dg-message "shadowed declaration" }
-   int i;			// { dg-warning "shadows a " }
+   int j = i;			// { dg-message "previously declared here" }
+   int i;			// { dg-error "shadows a parameter" }
    i = 1;
  };
 }

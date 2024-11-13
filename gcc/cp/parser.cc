@@ -11887,6 +11887,10 @@ cp_parser_lambda_expression (cp_parser* parser,
     if (cp_parser_start_tentative_firewall (parser))
       start = token;
 
+    /* A lambda scope starts immediately after the lambda-introducer of E
+       and extends to the end of the compound-statement of E.  */
+    begin_scope (sk_lambda, NULL_TREE);
+
     ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr,
 					   consteval_block_p);
 
@@ -11908,6 +11912,8 @@ cp_parser_lambda_expression (cp_parser* parser,
     if (ok)
       maybe_add_lambda_conv_op (type);
 
+    /* Leave the lambda scope.  */
+    pop_bindings_and_leave_scope ();
     finish_struct (type, /*attributes=*/NULL_TREE);
 
     in_expansion_stmt = save_in_expansion_stmt;
@@ -12299,6 +12305,13 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr,
   clear_decl_specs (&lambda_specs);
   /* A lambda op() is const unless explicitly 'mutable'.  */
   cp_cv_quals quals = TYPE_QUAL_CONST;
+  /* Don't add "const" to entities in the parameter-declaration-clause.  */
+  LAMBDA_EXPR_CONST_QUAL_P (lambda_expr) = false;
+
+  /* Inject the captures into the lambda scope as they may be used in the
+     declarator and we have to be able to look them up.  */
+  tree dummy_fco = maybe_add_dummy_lambda_op (lambda_expr);
+  push_capture_proxies (lambda_expr, /*early_p=*/true);
 
   /* The template-parameter-list is optional, but must begin with
      an opening angle if present.  */
@@ -12489,6 +12502,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr,
 	}
     }
 
+  /* Now we're done with the parameter-declaration-clause, and should
+     assume "const" unless "mutable" was present.  */
+  LAMBDA_EXPR_CONST_QUAL_P (lambda_expr) = quals == TYPE_QUAL_CONST;
+
   tx_qual = cp_parser_tx_qualifier_opt (parser);
   if (omitted_parms_loc && tx_qual)
     {
@@ -12545,6 +12562,10 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr,
          trailing-return-type in case of decltype.  */
       pop_bindings_and_leave_scope ();
     }
+
+  /* We are about to create the real operator(), so get rid of the old one.  */
+  if (dummy_fco)
+    remove_dummy_lambda_op (dummy_fco, lambda_expr);
 
   /* Create the function call operator.
 
@@ -12623,6 +12644,79 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr,
 
     return (fco != error_mark_node);
   }
+}
+
+/* Create a fake operator() for a lambda.  We do this so that we can
+   build_capture_proxy even before start_lambda_function.  */
+
+static tree
+make_dummy_lambda_op ()
+{
+  cp_decl_specifier_seq return_type_specs;
+  cp_cv_quals quals = TYPE_UNQUALIFIED;
+
+  clear_decl_specs (&return_type_specs);
+  return_type_specs.type = make_auto ();
+
+  void *p = obstack_alloc (&declarator_obstack, 0);
+
+  cp_declarator *declarator = make_id_declarator (NULL_TREE,
+						  call_op_identifier,
+						  sfk_none,
+						  input_location);
+
+  declarator = make_call_declarator (declarator, void_list_node, quals,
+				     VIRT_SPEC_UNSPECIFIED,
+				     REF_QUAL_NONE, NULL_TREE,
+				     NULL_TREE, NULL_TREE, NULL_TREE,
+				     NULL_TREE, UNKNOWN_LOCATION);
+
+  tree fco = grokmethod (&return_type_specs, declarator, NULL_TREE);
+  obstack_free (&declarator_obstack, p);
+
+  return fco;
+}
+
+/* We need to push early capture proxies (for parsing the lambda-declarator),
+   and we may need a dummy operator() to be able to build the proxies.
+   LAMBDA_EXPR is the lambda we are building the captures for.  */
+
+tree
+maybe_add_dummy_lambda_op (tree lambda_expr)
+{
+  /* If there are no captures, we don't need this.  */
+  if (!LAMBDA_EXPR_CAPTURE_LIST (lambda_expr))
+    return NULL_TREE;
+
+  tree fco = make_dummy_lambda_op ();
+  if (fco != error_mark_node)
+    finish_member_declaration (fco);
+
+  return fco;
+}
+
+/* Remove the dummy operator() DUMMY_FCO we built for parsing the
+   lambda-declarator of LAMBDA_EXPR.  */
+
+void
+remove_dummy_lambda_op (tree dummy_fco, tree lambda_expr)
+{
+  tree type = TREE_TYPE (lambda_expr);
+  if (TYPE_FIELDS (type) == dummy_fco)
+    {
+      /* Stitch out the dummy operator().  */
+      TYPE_FIELDS (type) = DECL_CHAIN (TYPE_FIELDS (type));
+      /* And clear the member vector as well.  */
+      auto *member_vec = CLASSTYPE_MEMBER_VEC (type);
+      gcc_assert (member_vec->length () == 1);
+      member_vec->truncate (0);
+    }
+  /* Class templates will have the dummy operator() stashed here too.  */
+  tree &list = CLASSTYPE_DECL_LIST (type);
+  if (list && TREE_VALUE (list) == dummy_fco)
+    list = TREE_CHAIN (list);
+  /* ??? We can't ggc_free dummy_fco yet.  There's still a binding in the
+     closure to it, and the captures have it as their DECL_CONTEXT.  */
 }
 
 /* Parse the body of a lambda expression, which is simply

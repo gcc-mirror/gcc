@@ -409,10 +409,11 @@ lambda_proxy_type (tree ref)
 
 /* MEMBER is a capture field in a lambda closure class.  Now that we're
    inside the operator(), build a placeholder var for future lookups and
-   debugging.  */
+   debugging.  But if EARLY_P is true, we do not have the real operator()
+   yet and we have to proceed differently.  */
 
-static tree
-build_capture_proxy (tree member, tree init)
+tree
+build_capture_proxy (tree member, tree init, bool early_p)
 {
   tree var, object, fn, closure, name, lam, type;
 
@@ -503,11 +504,19 @@ build_capture_proxy (tree member, tree init)
 
   if (name == this_identifier)
     {
+      if (early_p)
+	return var;
       gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (lam) == member);
       LAMBDA_EXPR_THIS_CAPTURE (lam) = var;
     }
 
-  if (fn == current_function_decl)
+  if (early_p)
+    {
+      gcc_checking_assert (current_binding_level->kind == sk_lambda);
+      /* insert_capture_proxy below wouldn't push into the lambda scope.  */
+      pushdecl (var);
+    }
+  else if (fn == current_function_decl)
     insert_capture_proxy (var);
   else
     vec_safe_push (LAMBDA_EXPR_PENDING_PROXIES (lam), var);
@@ -727,7 +736,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
     = tree_cons (listmem, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
 
   if (LAMBDA_EXPR_CLOSURE (lambda))
-    return build_capture_proxy (member, initializer);
+    return build_capture_proxy (member, initializer, /*early_p=*/false);
   /* For explicit captures we haven't started the function yet, so we wait
      and build the proxy from cp_parser_lambda_body.  */
   LAMBDA_CAPTURE_EXPLICIT_P (LAMBDA_EXPR_CAPTURE_LIST (lambda)) = true;
@@ -980,10 +989,14 @@ resolvable_dummy_lambda (tree object)
   tree type = TYPE_MAIN_VARIANT (TREE_TYPE (object));
   gcc_assert (!TYPE_PTR_P (type));
 
+  tree fn;
   if (type != current_class_type
       && current_class_type
       && LAMBDA_TYPE_P (current_class_type)
-      && lambda_function (current_class_type)
+      && (fn = lambda_function (current_class_type))
+      /* Even dummy lambdas have an operator() since P2036, but the
+	 dummy operator() doesn't have this set.  */
+      && DECL_LAMBDA_FUNCTION_P (fn)
       && DERIVED_FROM_P (type, nonlambda_method_basetype()))
     return CLASSTYPE_LAMBDA_EXPR (current_class_type);
 
@@ -1784,6 +1797,17 @@ record_lambda_scope_sig_discriminator (tree lambda, tree fn)
   LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda) = sig->count++;
 }
 
+/* Push the proxies for any explicit captures in LAMBDA_EXPR.
+   If EARLY_P, we do not have the real operator() yet.  */
+
+void
+push_capture_proxies (tree lambda_expr, bool early_p)
+{
+  for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr); cap;
+       cap = TREE_CHAIN (cap))
+    build_capture_proxy (TREE_PURPOSE (cap), TREE_VALUE (cap), early_p);
+}
+
 tree
 start_lambda_function (tree fco, tree lambda_expr)
 {
@@ -1796,9 +1820,7 @@ start_lambda_function (tree fco, tree lambda_expr)
   tree body = begin_function_body ();
 
   /* Push the proxies for any explicit captures.  */
-  for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr); cap;
-       cap = TREE_CHAIN (cap))
-    build_capture_proxy (TREE_PURPOSE (cap), TREE_VALUE (cap));
+  push_capture_proxies (lambda_expr);
 
   return body;
 }

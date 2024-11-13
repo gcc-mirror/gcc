@@ -11,7 +11,7 @@ void f() {
     decltype((x)) y2 = y1;      // y2 has type float const&
     decltype(r) r1 = y1;        // r1 has type float&
     decltype((r)) r2 = y2;      // r2 has type float const&
-    return y2;                  // { dg-bogus "'float&' to 'const float'" "" { xfail *-*-* } }
+    return y2;                  // { dg-bogus "'float&' to 'const float'" }
   };
 
   [=](decltype((x)) y) {
