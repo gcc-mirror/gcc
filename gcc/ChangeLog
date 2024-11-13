@@ -1,3 +1,160 @@
+2024-11-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-11-06  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR rtl-optimization/112398
+	* simplify-rtx.cc (simplify_context::simplify_unary_operation_1):
+	Simplify ZERO_EXTEND (SUBREG (NOT X)) to XOR (X, GET_MODE_MASK(SUBREG))
+	when X doesn't have any non-zero bits outside of SUBREG mode.
+
+2024-11-12  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-10-25  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Remove unsigned branch form 3 for SAT_ADD, and
+	add simplify to branchless instead.
+
+2024-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/117503
+	* Makefile.in (GCC_FOR_SELFTESTS): Set GCC_COLORS=.
+
+2024-11-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (decrement_and_branch_until_zero): Fix
+	constraint.
+
+2024-11-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/tuning_models/cortexx925.h (cortexx925_addrcost_table): Remove.
+	* config/aarch64/tuning_models/neoversen1.h: Use generic_armv8_a_addrcost_table.
+	* config/aarch64/tuning_models/neoversen2.h (neoversen2_addrcost_table): Remove.
+	* config/aarch64/tuning_models/neoversen3.h (neoversen3_addrcost_table): Remove.
+	* config/aarch64/tuning_models/neoversev2.h (neoversev2_addrcost_table): Remove.
+	* config/aarch64/tuning_models/neoversev3.h (neoversev3_addrcost_table): Remove.
+	* config/aarch64/tuning_models/neoversev3ae.h (neoversev3ae_addrcost_table): Remove.
+
+2024-11-12  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSE_BASE): New define.
+	(AARCH64_FUSE_MOVK): Likewise.
+	* config/aarch64/tuning_models/a64fx.h: Update.
+	* config/aarch64/tuning_models/ampere1.h: Likewise.
+	* config/aarch64/tuning_models/ampere1a.h: Likewise.
+	* config/aarch64/tuning_models/ampere1b.h: Likewise.
+	* config/aarch64/tuning_models/cortexa35.h: Likewise.
+	* config/aarch64/tuning_models/cortexa53.h: Likewise.
+	* config/aarch64/tuning_models/cortexa57.h: Likewise.
+	* config/aarch64/tuning_models/cortexa72.h: Likewise.
+	* config/aarch64/tuning_models/cortexa73.h: Likewise.
+	* config/aarch64/tuning_models/cortexx925.h: Likewise.
+	* config/aarch64/tuning_models/exynosm1.h: Likewise.
+	* config/aarch64/tuning_models/fujitsu_monaka.h: Likewise.
+	* config/aarch64/tuning_models/generic.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv8_a.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Likewise.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Likewise.
+	* config/aarch64/tuning_models/neoversen1.h: Likewise.
+	* config/aarch64/tuning_models/neoversen2.h: Likewise.
+	* config/aarch64/tuning_models/neoversen3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev1.h: Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+	* config/aarch64/tuning_models/qdf24xx.h: Likewise.
+	* config/aarch64/tuning_models/saphira.h: Likewise.
+	* config/aarch64/tuning_models/thunderx2t99.h: Likewise.
+	* config/aarch64/tuning_models/thunderx3t110.h: Likewise.
+	* config/aarch64/tuning_models/tsv110.h: Likewise.
+
+2024-11-12  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_declare_function_name): Add new
+	attribute.
+
+2024-11-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/vector.md (pred_mul_plus<mode>_undef): Drop alternatives
+	where output doesn't have to match input.
+	(pred_madd<mode>, pred_macc<mode>): Likewise.
+	(pred_madd<mode>_scalar, pred_macc<mode>_scalar): Likewise.
+	(pred_madd<mode>_exended_scalar): Likewise.
+	(pred_macc<mode>_exended_scalar): Likewise.
+	(pred_minus_mul<mode>_undef): Likewise.
+	(pred_nmsub<mode>, pred_nmsac<mode>): Likewise.
+	(pred_nmsub<mode>_scalar, pred_nmsac<mode>_scalar): Likewise.
+	(pred_nmsub<mode>_exended_scalar): Likewise.
+	(pred_nmsac<mode>_exended_scalar): Likewise.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116973
+	* tree-vect-slp.cc (vect_lower_load_permutations): Add
+	force_single_lane parameter.  Disable heuristic that keeps
+	some load-permutations.
+	(vect_analyze_slp): Pass force_single_lane to
+	vect_lower_load_permutations.
+
+2024-11-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/c6x/c6x.md (nop, nop_count): Add explicit
+	"dest_regfile" attribute setting.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117417
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Avoid
+	decomposing BIT_FIELD_REF complex load.
+
+2024-11-12  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* rtlanal.cc (set_noop_p): Validate subreg constraints before checking
+	for overlapping regs using simplify_subreg_regno.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost): Set
+	m_suggested_epilogue_mode according to X86_TUNE_AVX512_TWO_EPILOGUES.
+	* config/i386/x86-tune.def (X86_TUNE_AVX512_TWO_EPILOGUES): Add.
+	Enable for znver4 and znver5.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vector_costs::suggested_epilogue_mode): New.
+	(vector_costs::m_suggested_epilogue_mode): Likewise.
+	(vector_costs::vector_costs): Initialize m_suggested_epilogue_mode.
+	* tree-vect-loop.cc (vect_analyze_loop): Honor the target
+	suggested prefered epilogue mode and support vector epilogues
+	of vector epilogues if requested.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117484
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Handle gaps in
+	mask discovery.  Fix condition to release the load permutation.
+	(vect_lower_load_permutations): Assert we get no load
+	permutation for the unpermuted node.
+	* tree-vect-slp-patterns.cc (linear_loads_p): Properly identify
+	loads (without permutation).
+	(compatible_complex_nodes_p): Likewise.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117502
+	* tree-vect-stmts.cc (get_group_load_store_type): Also consider
+	VMAT_STRIDED_SLP when checking to use gather/scatter for
+	single-element interleaving access.
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): STMT_VINFO_STRIDED_P
+	can be classified as VMAT_GATHER_SCATTER, so update DR_REF for
+	those as well.
+
+2024-11-12  Soumya AR  <soumyaa@nvidia.com>
+
+	* match.pd: Fold logN(x) CMP CST -> x CMP expN(CST)
+	and expN(x) CMP CST -> x CMP logN(CST)
+
 2024-11-11  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi: Rename -fmodules-ts to -fmodules.

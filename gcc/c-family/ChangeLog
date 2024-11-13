@@ -1,3 +1,7 @@
+2024-11-12  Jason Merrill  <jason@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
 2024-11-11  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -fmodules with same effect as -fmodules-ts.

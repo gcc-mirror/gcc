@@ -1,3 +1,87 @@
+2024-11-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-11-13  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR rtl-optimization/112398
+	* gcc.target/riscv/pr112398.c: New test.
+
+2024-11-12  Yangyu Chen  <cyy@cyyself.name>
+
+	* gcc.target/riscv/target-attr-norelax.c: Fix testcase.
+
+2024-11-12  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-11-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u16.c: New test.
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u32.c: New test.
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u64.c: New test.
+	* gcc.dg/tree-ssa/sat_u_add-simplify-1-u8.c: New test.
+
+2024-11-12  Edwin Lu  <ewlu@rivosinc.com>
+
+	* g++.target/riscv/rvv/base/bug-10.C: Remove cstdalign header.
+	* g++.target/riscv/rvv/base/bug-11.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-12.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-13.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-14.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-15.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-16.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-17.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-2.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-23.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-3.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-4.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-5.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-6.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-7.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-8.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-9.C: Ditto.
+
+2024-11-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/96945
+	* g++.dg/tree-ssa/pr96945.C: New test.
+
+2024-11-12  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR tree-optimization/112376
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update expectation.
+
+2024-11-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test helper macro.
+	* gcc.target/riscv/sat_s_add-run-5.c: Take form 2 for run test.
+	* gcc.target/riscv/sat_s_add-run-6.c: Ditto.
+	* gcc.target/riscv/sat_s_add-run-7.c: Ditto.
+	* gcc.target/riscv/sat_s_add-run-8.c: Ditto.
+
+2024-11-12  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/target-attr-norelax.c: New file.
+
+2024-11-12  Kito Cheng  <kito.cheng@sifive.com>
+
+	* c-c++-common/ubsan/builtin-1.c: Update test case due to
+	sanitizer has change the error message.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117417
+	* gcc.dg/torture/pr117417.c: New testcase.
+
+2024-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117484
+	* gcc.dg/vect/pr117484-1.c: New testcase.
+	* gcc.dg/vect/pr117484-2.c: Likewise.
+
+2024-11-12  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.dg/tree-ssa/log_exp.c: New test.
+
 2024-11-11  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/117463

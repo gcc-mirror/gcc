@@ -1,3 +1,832 @@
+2024-11-12  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/Makefile.in: Remove extra 'with'.
+
+2024-11-12  squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Build_Assignment): Add condition to fetch corresponding
+	record types for concurrent tagged types.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Two_Pass_Aggregate_Expansion): Use a type sized
+	from the index type to compute the length.  Simplify and remove
+	useless calls to New_Copy_Tree for this computation.
+
+2024-11-12  Pat Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/a-dynpri.ads: Add design annotations.
+	* libgnarl/a-reatim.ads: Likewise.
+	* libgnarl/a-synbar.ads: Likewise.
+	* libgnarl/a-taside.ads: Likewise.
+	* libgnarl/s-tarest.ads: Likewise.
+	* libgnarl/s-tasinf.ads: Likewise.
+	* libgnarl/s-taspri__posix.ads: Likewise.
+	* libgnarl/s-tpobmu.ads: Likewise.
+	* libgnat/a-assert.ads: Likewise.
+	* libgnat/a-comlin.ads: Likewise.
+	* libgnat/a-nbnbig.ads: Likewise.
+	* libgnat/a-nubinu.ads: Likewise.
+	* libgnat/a-numeri.ads: Likewise.
+	* libgnat/a-unccon.ads: Likewise.
+	* libgnat/a-uncdea.ads: Likewise.
+	* libgnat/ada.ads: Likewise.
+	* libgnat/g-debuti.ads: Likewise.
+	* libgnat/g-sestin.ads: Likewise.
+	* libgnat/g-souinf.ads: Likewise.
+	* libgnat/gnat.ads: Likewise.
+	* libgnat/i-cexten.ads: Likewise.
+	* libgnat/i-cexten__128.ads: Likewise.
+	* libgnat/i-cstrin.adb: Likewise.
+	* libgnat/i-cstrin.ads: Likewise.
+	* libgnat/interfac__2020.ads: Likewise.
+	* libgnat/machcode.ads: Likewise.
+	* libgnat/s-addope.ads: Likewise.
+	* libgnat/s-aridou.ads: Likewise.
+	* libgnat/s-arit32.ads: Likewise.
+	* libgnat/s-arit64.ads: Likewise.
+	* libgnat/s-assert.ads: Likewise.
+	* libgnat/s-atacco.ads: Likewise.
+	* libgnat/s-atocou.ads: Likewise.
+	* libgnat/s-atocou__builtin.adb: Likewise.
+	* libgnat/s-atopri.ads: Likewise.
+	* libgnat/s-bitops.ads: Likewise.
+	* libgnat/s-boarop.ads: Likewise.
+	* libgnat/s-bytswa.ads: Likewise.
+	* libgnat/s-carsi8.ads: Likewise.
+	* libgnat/s-carun8.ads: Likewise.
+	* libgnat/s-casi16.ads: Likewise.
+	* libgnat/s-casi32.ads: Likewise.
+	* libgnat/s-casi64.ads: Likewise.
+	* libgnat/s-caun16.ads: Likewise.
+	* libgnat/s-caun32.ads: Likewise.
+	* libgnat/s-caun64.ads: Likewise.
+	* libgnat/s-exnint.ads: Likewise.
+	* libgnat/s-exnllf.ads: Likewise.
+	* libgnat/s-exnlli.ads: Likewise.
+	* libgnat/s-expint.ads: Likewise.
+	* libgnat/s-explli.ads: Likewise.
+	* libgnat/s-expllu.ads: Likewise.
+	* libgnat/s-expmod.ads: Likewise.
+	* libgnat/s-exponn.ads: Likewise.
+	* libgnat/s-expont.ads: Likewise.
+	* libgnat/s-exponu.ads: Likewise.
+	* libgnat/s-expuns.ads: Likewise.
+	* libgnat/s-fatflt.ads: Likewise.
+	* libgnat/s-fatgen.ads: Likewise.
+	* libgnat/s-fatlfl.ads: Likewise.
+	* libgnat/s-fatllf.ads: Likewise.
+	* libgnat/s-flocon.ads: Likewise.
+	* libgnat/s-geveop.ads: Likewise.
+	* libgnat/s-imageb.ads: Likewise.
+	* libgnat/s-imaged.ads: Likewise.
+	* libgnat/s-imagef.ads: Likewise.
+	* libgnat/s-imagei.ads: Likewise.
+	* libgnat/s-imagen.ads: Likewise.
+	* libgnat/s-imageu.ads: Likewise.
+	* libgnat/s-imagew.ads: Likewise.
+	* libgnat/s-imde128.ads: Likewise.
+	* libgnat/s-imde32.ads: Likewise.
+	* libgnat/s-imde64.ads: Likewise.
+	* libgnat/s-imen16.ads: Likewise.
+	* libgnat/s-imen32.ads: Likewise.
+	* libgnat/s-imenu8.ads: Likewise.
+	* libgnat/s-imfi32.ads: Likewise.
+	* libgnat/s-imfi64.ads: Likewise.
+	* libgnat/s-imgbiu.ads: Likewise.
+	* libgnat/s-imgboo.ads: Likewise.
+	* libgnat/s-imgcha.ads: Likewise.
+	* libgnat/s-imgint.ads: Likewise.
+	* libgnat/s-imgllb.ads: Likewise.
+	* libgnat/s-imglli.ads: Likewise.
+	* libgnat/s-imgllu.ads: Likewise.
+	* libgnat/s-imgllw.ads: Likewise.
+	* libgnat/s-imgrea.ads: Likewise.
+	* libgnat/s-imguns.ads: Likewise.
+	* libgnat/s-imguti.ads: Likewise.
+	* libgnat/s-imgwiu.ads: Likewise.
+	* libgnat/s-maccod.ads: Likewise.
+	* libgnat/s-multip.ads: Likewise.
+	* libgnat/s-pack03.ads: Likewise.
+	* libgnat/s-pack05.ads: Likewise.
+	* libgnat/s-pack06.ads: Likewise.
+	* libgnat/s-pack07.ads: Likewise.
+	* libgnat/s-pack09.ads: Likewise.
+	* libgnat/s-pack10.ads: Likewise.
+	* libgnat/s-pack100.ads: Likewise.
+	* libgnat/s-pack101.ads: Likewise.
+	* libgnat/s-pack102.ads: Likewise.
+	* libgnat/s-pack103.ads: Likewise.
+	* libgnat/s-pack104.ads: Likewise.
+	* libgnat/s-pack105.ads: Likewise.
+	* libgnat/s-pack106.ads: Likewise.
+	* libgnat/s-pack107.ads: Likewise.
+	* libgnat/s-pack108.ads: Likewise.
+	* libgnat/s-pack109.ads: Likewise.
+	* libgnat/s-pack11.ads: Likewise.
+	* libgnat/s-pack110.ads: Likewise.
+	* libgnat/s-pack111.ads: Likewise.
+	* libgnat/s-pack112.ads: Likewise.
+	* libgnat/s-pack113.ads: Likewise.
+	* libgnat/s-pack114.ads: Likewise.
+	* libgnat/s-pack115.ads: Likewise.
+	* libgnat/s-pack116.ads: Likewise.
+	* libgnat/s-pack117.ads: Likewise.
+	* libgnat/s-pack118.ads: Likewise.
+	* libgnat/s-pack119.ads: Likewise.
+	* libgnat/s-pack12.ads: Likewise.
+	* libgnat/s-pack120.ads: Likewise.
+	* libgnat/s-pack121.ads: Likewise.
+	* libgnat/s-pack122.ads: Likewise.
+	* libgnat/s-pack123.ads: Likewise.
+	* libgnat/s-pack124.ads: Likewise.
+	* libgnat/s-pack125.ads: Likewise.
+	* libgnat/s-pack126.ads: Likewise.
+	* libgnat/s-pack127.ads: Likewise.
+	* libgnat/s-pack13.ads: Likewise.
+	* libgnat/s-pack14.ads: Likewise.
+	* libgnat/s-pack15.ads: Likewise.
+	* libgnat/s-pack17.ads: Likewise.
+	* libgnat/s-pack18.ads: Likewise.
+	* libgnat/s-pack19.ads: Likewise.
+	* libgnat/s-pack20.ads: Likewise.
+	* libgnat/s-pack21.ads: Likewise.
+	* libgnat/s-pack22.ads: Likewise.
+	* libgnat/s-pack23.ads: Likewise.
+	* libgnat/s-pack24.ads: Likewise.
+	* libgnat/s-pack25.ads: Likewise.
+	* libgnat/s-pack26.ads: Likewise.
+	* libgnat/s-pack27.ads: Likewise.
+	* libgnat/s-pack28.ads: Likewise.
+	* libgnat/s-pack29.ads: Likewise.
+	* libgnat/s-pack30.ads: Likewise.
+	* libgnat/s-pack31.ads: Likewise.
+	* libgnat/s-pack33.ads: Likewise.
+	* libgnat/s-pack34.ads: Likewise.
+	* libgnat/s-pack35.ads: Likewise.
+	* libgnat/s-pack36.ads: Likewise.
+	* libgnat/s-pack37.ads: Likewise.
+	* libgnat/s-pack38.ads: Likewise.
+	* libgnat/s-pack39.ads: Likewise.
+	* libgnat/s-pack40.ads: Likewise.
+	* libgnat/s-pack41.ads: Likewise.
+	* libgnat/s-pack42.ads: Likewise.
+	* libgnat/s-pack43.ads: Likewise.
+	* libgnat/s-pack44.ads: Likewise.
+	* libgnat/s-pack45.ads: Likewise.
+	* libgnat/s-pack46.ads: Likewise.
+	* libgnat/s-pack47.ads: Likewise.
+	* libgnat/s-pack48.ads: Likewise.
+	* libgnat/s-pack49.ads: Likewise.
+	* libgnat/s-pack50.ads: Likewise.
+	* libgnat/s-pack51.ads: Likewise.
+	* libgnat/s-pack52.ads: Likewise.
+	* libgnat/s-pack53.ads: Likewise.
+	* libgnat/s-pack54.ads: Likewise.
+	* libgnat/s-pack55.ads: Likewise.
+	* libgnat/s-pack56.ads: Likewise.
+	* libgnat/s-pack57.ads: Likewise.
+	* libgnat/s-pack58.ads: Likewise.
+	* libgnat/s-pack59.ads: Likewise.
+	* libgnat/s-pack60.ads: Likewise.
+	* libgnat/s-pack61.ads: Likewise.
+	* libgnat/s-pack62.ads: Likewise.
+	* libgnat/s-pack63.ads: Likewise.
+	* libgnat/s-pack65.ads: Likewise.
+	* libgnat/s-pack66.ads: Likewise.
+	* libgnat/s-pack67.ads: Likewise.
+	* libgnat/s-pack68.ads: Likewise.
+	* libgnat/s-pack69.ads: Likewise.
+	* libgnat/s-pack70.ads: Likewise.
+	* libgnat/s-pack71.ads: Likewise.
+	* libgnat/s-pack72.ads: Likewise.
+	* libgnat/s-pack73.ads: Likewise.
+	* libgnat/s-pack74.ads: Likewise.
+	* libgnat/s-pack75.ads: Likewise.
+	* libgnat/s-pack76.ads: Likewise.
+	* libgnat/s-pack77.ads: Likewise.
+	* libgnat/s-pack78.ads: Likewise.
+	* libgnat/s-pack79.ads: Likewise.
+	* libgnat/s-pack80.ads: Likewise.
+	* libgnat/s-pack81.ads: Likewise.
+	* libgnat/s-pack82.ads: Likewise.
+	* libgnat/s-pack83.ads: Likewise.
+	* libgnat/s-pack84.ads: Likewise.
+	* libgnat/s-pack85.ads: Likewise.
+	* libgnat/s-pack86.ads: Likewise.
+	* libgnat/s-pack87.ads: Likewise.
+	* libgnat/s-pack88.ads: Likewise.
+	* libgnat/s-pack89.ads: Likewise.
+	* libgnat/s-pack90.ads: Likewise.
+	* libgnat/s-pack91.ads: Likewise.
+	* libgnat/s-pack92.ads: Likewise.
+	* libgnat/s-pack93.ads: Likewise.
+	* libgnat/s-pack94.ads: Likewise.
+	* libgnat/s-pack95.ads: Likewise.
+	* libgnat/s-pack96.ads: Likewise.
+	* libgnat/s-pack97.ads: Likewise.
+	* libgnat/s-pack98.ads: Likewise.
+	* libgnat/s-pack99.ads: Likewise.
+	* libgnat/s-parame.ads: Likewise.
+	* libgnat/s-rident.ads: Likewise.
+	* libgnat/s-spark.ads: Likewise.
+	* libgnat/s-spcuop.ads: Likewise.
+	* libgnat/s-stoele.ads: Likewise.
+	* libgnat/s-traent.ads: Likewise.
+	* libgnat/s-unstyp.ads: Likewise.
+	* libgnat/s-vaispe.ads: Likewise.
+	* libgnat/s-valspe.ads: Likewise.
+	* libgnat/s-vauspe.ads: Likewise.
+	* libgnat/s-veboop.ads: Likewise.
+	* libgnat/s-vector.ads: Likewise.
+	* libgnat/s-vs_int.ads: Likewise.
+	* libgnat/s-vs_lli.ads: Likewise.
+	* libgnat/s-vs_llu.ads: Likewise.
+	* libgnat/s-vs_uns.ads: Likewise.
+	* libgnat/s-vsllli.ads: Likewise.
+	* libgnat/text_io.ads: Likewise.
+	* libgnat/unchconv.ads: Likewise.
+	* libgnat/unchdeal.ads: Likewise.
+	* s-pack.ads.tmpl: Likewise.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-pack.adb.tmpl: Add '7' suffix to all existing constructs and
+	add variants with suffixes ranging from '0' to '6'.
+	(Get_@@): Dereference the address as a record object whose accessed
+	component is always the last.
+	(GetU_@@): Likewise.
+	(Set_@@): Likewise.
+	(SetU_@@): Likewise.
+	* libgnat/s-pack03.adb: Regenerate.
+	* libgnat/s-pack05.adb: Likewise.
+	* libgnat/s-pack06.adb: Likewise.
+	* libgnat/s-pack07.adb: Likewise.
+	* libgnat/s-pack09.adb: Likewise.
+	* libgnat/s-pack10.adb: Likewise.
+	* libgnat/s-pack100.adb: Likewise.
+	* libgnat/s-pack101.adb: Likewise.
+	* libgnat/s-pack102.adb: Likewise.
+	* libgnat/s-pack103.adb: Likewise.
+	* libgnat/s-pack104.adb: Likewise.
+	* libgnat/s-pack105.adb: Likewise.
+	* libgnat/s-pack106.adb: Likewise.
+	* libgnat/s-pack107.adb: Likewise.
+	* libgnat/s-pack108.adb: Likewise.
+	* libgnat/s-pack109.adb: Likewise.
+	* libgnat/s-pack11.adb: Likewise.
+	* libgnat/s-pack110.adb: Likewise.
+	* libgnat/s-pack111.adb: Likewise.
+	* libgnat/s-pack112.adb: Likewise.
+	* libgnat/s-pack113.adb: Likewise.
+	* libgnat/s-pack114.adb: Likewise.
+	* libgnat/s-pack115.adb: Likewise.
+	* libgnat/s-pack116.adb: Likewise.
+	* libgnat/s-pack117.adb: Likewise.
+	* libgnat/s-pack118.adb: Likewise.
+	* libgnat/s-pack119.adb: Likewise.
+	* libgnat/s-pack12.adb: Likewise.
+	* libgnat/s-pack120.adb: Likewise.
+	* libgnat/s-pack121.adb: Likewise.
+	* libgnat/s-pack122.adb: Likewise.
+	* libgnat/s-pack123.adb: Likewise.
+	* libgnat/s-pack124.adb: Likewise.
+	* libgnat/s-pack125.adb: Likewise.
+	* libgnat/s-pack126.adb: Likewise.
+	* libgnat/s-pack127.adb: Likewise.
+	* libgnat/s-pack13.adb: Likewise.
+	* libgnat/s-pack14.adb: Likewise.
+	* libgnat/s-pack15.adb: Likewise.
+	* libgnat/s-pack17.adb: Likewise.
+	* libgnat/s-pack18.adb: Likewise.
+	* libgnat/s-pack19.adb: Likewise.
+	* libgnat/s-pack20.adb: Likewise.
+	* libgnat/s-pack21.adb: Likewise.
+	* libgnat/s-pack22.adb: Likewise.
+	* libgnat/s-pack23.adb: Likewise.
+	* libgnat/s-pack24.adb: Likewise.
+	* libgnat/s-pack25.adb: Likewise.
+	* libgnat/s-pack26.adb: Likewise.
+	* libgnat/s-pack27.adb: Likewise.
+	* libgnat/s-pack28.adb: Likewise.
+	* libgnat/s-pack29.adb: Likewise.
+	* libgnat/s-pack30.adb: Likewise.
+	* libgnat/s-pack31.adb: Likewise.
+	* libgnat/s-pack33.adb: Likewise.
+	* libgnat/s-pack34.adb: Likewise.
+	* libgnat/s-pack35.adb: Likewise.
+	* libgnat/s-pack36.adb: Likewise.
+	* libgnat/s-pack37.adb: Likewise.
+	* libgnat/s-pack38.adb: Likewise.
+	* libgnat/s-pack39.adb: Likewise.
+	* libgnat/s-pack40.adb: Likewise.
+	* libgnat/s-pack41.adb: Likewise.
+	* libgnat/s-pack42.adb: Likewise.
+	* libgnat/s-pack43.adb: Likewise.
+	* libgnat/s-pack44.adb: Likewise.
+	* libgnat/s-pack45.adb: Likewise.
+	* libgnat/s-pack46.adb: Likewise.
+	* libgnat/s-pack47.adb: Likewise.
+	* libgnat/s-pack48.adb: Likewise.
+	* libgnat/s-pack49.adb: Likewise.
+	* libgnat/s-pack50.adb: Likewise.
+	* libgnat/s-pack51.adb: Likewise.
+	* libgnat/s-pack52.adb: Likewise.
+	* libgnat/s-pack53.adb: Likewise.
+	* libgnat/s-pack54.adb: Likewise.
+	* libgnat/s-pack55.adb: Likewise.
+	* libgnat/s-pack56.adb: Likewise.
+	* libgnat/s-pack57.adb: Likewise.
+	* libgnat/s-pack58.adb: Likewise.
+	* libgnat/s-pack59.adb: Likewise.
+	* libgnat/s-pack60.adb: Likewise.
+	* libgnat/s-pack61.adb: Likewise.
+	* libgnat/s-pack62.adb: Likewise.
+	* libgnat/s-pack63.adb: Likewise.
+	* libgnat/s-pack65.adb: Likewise.
+	* libgnat/s-pack66.adb: Likewise.
+	* libgnat/s-pack67.adb: Likewise.
+	* libgnat/s-pack68.adb: Likewise.
+	* libgnat/s-pack69.adb: Likewise.
+	* libgnat/s-pack70.adb: Likewise.
+	* libgnat/s-pack71.adb: Likewise.
+	* libgnat/s-pack72.adb: Likewise.
+	* libgnat/s-pack73.adb: Likewise.
+	* libgnat/s-pack74.adb: Likewise.
+	* libgnat/s-pack75.adb: Likewise.
+	* libgnat/s-pack76.adb: Likewise.
+	* libgnat/s-pack77.adb: Likewise.
+	* libgnat/s-pack78.adb: Likewise.
+	* libgnat/s-pack79.adb: Likewise.
+	* libgnat/s-pack80.adb: Likewise.
+	* libgnat/s-pack81.adb: Likewise.
+	* libgnat/s-pack82.adb: Likewise.
+	* libgnat/s-pack83.adb: Likewise.
+	* libgnat/s-pack84.adb: Likewise.
+	* libgnat/s-pack85.adb: Likewise.
+	* libgnat/s-pack86.adb: Likewise.
+	* libgnat/s-pack87.adb: Likewise.
+	* libgnat/s-pack88.adb: Likewise.
+	* libgnat/s-pack89.adb: Likewise.
+	* libgnat/s-pack90.adb: Likewise.
+	* libgnat/s-pack91.adb: Likewise.
+	* libgnat/s-pack92.adb: Likewise.
+	* libgnat/s-pack93.adb: Likewise.
+	* libgnat/s-pack94.adb: Likewise.
+	* libgnat/s-pack95.adb: Likewise.
+	* libgnat/s-pack96.adb: Likewise.
+	* libgnat/s-pack97.adb: Likewise.
+	* libgnat/s-pack98.adb: Likewise.
+	* libgnat/s-pack99.adb: Likewise.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114127
+	* sem_aggr.adb (Is_Null_Aggregate): Replace test on Ada_Version
+	with test on Nkind.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code.Gen_Assign): Do not call
+	Checks_Off on the newly built N_Indexed_Component node but instead
+	set Kill_Range_Check on it.
+	* exp_ch4.ads (Expand_N_Unchecked_Expression): Delete.
+	* exp_ch4.adb (Expand_N_Indexed_Component): Remove handling of
+	N_Unchecked_Expression.
+	(Expand_N_Unchecked_Expression): Delete.
+	(Expand_N_Unchecked_Type_Conversion): Propagate the Assignment_OK
+	flag and rewrite the node manually.
+	* exp_util.adb (Insert_Actions): Remove handling of
+	N_Unchecked_Expression.
+	(Side_Effect_Free): Likewise.
+	* expander.adb (Expand): Likewise.
+	* gen_il-gen-gen_nodes.adb (N_Indexed_Component): Add flag
+	Kill_Range_Check for the purpose of semantics.
+	(N_Unchecked_Expression): Delete.
+	* gen_il-internals.ads (Type_Frequency): Remove entry for
+	N_Unchecked_Expression.
+	* gen_il-types.ads (Opt_Type_Enum): Remove N_Unchecked_Expression.
+	* pprint.adb (Expression_Image): Remove handling of
+	N_Unchecked_Expression.
+	* sem.adb (Analyze): Likewise.
+	* sem_ch4.ads (Analyze_Unchecked_Expression): Delete.
+	* sem_ch4.adb (Analyze_Unchecked_Expression): Likewise.
+	* sem_res.adb (Resolve_Unchecked_Expression): Likewise.
+	(Resolve): Remove handling of N_Unchecked_Expression.
+	(Resolve_Indexed_Component): Do not call Apply_Scalar_Range_Check
+	on the expressions if Kill_Range_Check is set on the node.
+	* sem_util.adb (Is_Non_Preelaborable_Construct): Remove handling of
+	N_Unchecked_Expression.
+	* sinfo.ads (Kill_Range_Check): Document it for N_Indexed_Component.
+	(Unchecked Expression): Delete specification.
+	* sprint.adb (Sprint_Node_Actual): Remove handling of
+	N_Unchecked_Expression.
+	* tbuild.ads (Checks_Off): Delete.
+	* tbuild.adb (Checks_Off): Likewise.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112979
+	* sem_ch8.adb (Find_Selected_Component): Try to recognize the
+	object operation notation only if the selector is a subprogram.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113037
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Invariant>: Reject types
+	that are derived from formal private types.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112821
+	* scans.ads (Token_Type): Remove Tok_Left_Bracket from Namext.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114300
+	* exp_ch7.adb (Attach_Object_To_Master_Node): Propagate the
+	Is_Ignored_Ghost_Entity flag from the finalization procedure.
+	(Build_Finalizer.Process_Declarations): Move up the test on
+	Is_Ignored_Ghost_Entity.
+	* exp_util.adb (Requires_Cleanup_Actions): Likewise.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/55725
+	* exp_ch6.adb (Add_Collection_Actual_To_Build_In_Place_Call): Be
+	prepared for no collection if the access type is anonymous.
+	* exp_ch7.adb (Build_Anonymous_Collection): Return early for the
+	anonymous access result type of a library function.
+
+2024-11-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Make_Variant_Comparison): Accept new types in
+	expansion.
+	* rtsfind.adb (Get_Unit_Name): Support SPARK.Big_Integers.
+	* rtsfind.ads (RTU_Id, RE_Id, RE_Unit_Table): Support new type
+	and its enclosing unit.
+	* sem_prag.adb (Analyze_Pragma): Support new type in pragma
+	Loop_Variant.
+	(Analyze_Subprogram_Variant_In_Decl_Part): Support new type in
+	aspect Subprogram_Variant.
+
+2024-11-12  Viljar Indus  <indus@adacore.com>
+
+	* libgnarl/s-interr__vxworks.ads (new): A VXWorks specific
+	version of the file where Register_Interrupt_Handler is marked
+	with the Obsolescent pragma.
+	* libgnarl/s-interr__vxworks.adb: Remove pragma Obsoloescent
+	that had no effect.
+	* Makefile.rtl: Add entries for using the
+	libgnarl/s-interr__vxworks.ads file.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113868
+	* par-ch6.adb (P_Subprogram) <Scan_Body_Or_Expression_Function>:
+	Add delta aggregate alongside the other forms of aggregates.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): In the case of an others
+	choice with a box, do not call Resolve_Aggr_Exp and give the error
+	for a multidimensional array directly.
+	(Resolve_Aggr_Expr): Remove bypasses for above case.
+
+2024-11-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* frontend.adb (Frontend): Move call to Fmap.Initialize ...
+	* gnat1drv.adb (Gnat1drv): ... here. Look up Fmap when loading System.
+	* par-prag.adb (Prag): Allow pragma Source_File_Name for System when
+	it confirms an existing mapping.
+
+2024-11-12  Richard Kenner  <kenner@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Fix minor
+	markup errors.
+	* doc/gnat_ugn/gnat_utility_programs.rst: Likewise.
+	* gnat_ugn.texi: Regenerate.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-pack.adb.tmpl: Add "with System.Address_To_Access_Conversions".
+	(Cluster_Ref): Delete.
+	(AAC): New instance of System.Address_To_Access_Conversions.
+	(Rev_Cluster_Ref): Delete.
+	(Rev_ACC): New instance of System.Address_To_Access_Conversions.
+	(ClusterU_Ref): Delete.
+	(AACU): New instance of System.Address_To_Access_Conversions.
+	(Rev_ClusterU_Ref): Delete.
+	(Rev_ACCU): New instance of System.Address_To_Access_Conversions.
+	(Get_@@): Use a direct address-to-access conversion.
+	(GetU_@@): Likewise.
+	(Set_@@): Likewise.
+	(SetU_@@): Likewise.
+	* libgnat/s-pack03.adb: Regenerate.
+	* libgnat/s-pack05.adb: Likewise.
+	* libgnat/s-pack06.adb: Likewise.
+	* libgnat/s-pack07.adb: Likewise.
+	* libgnat/s-pack09.adb: Likewise.
+	* libgnat/s-pack10.adb: Likewise.
+	* libgnat/s-pack100.adb: Likewise.
+	* libgnat/s-pack101.adb: Likewise.
+	* libgnat/s-pack102.adb: Likewise.
+	* libgnat/s-pack103.adb: Likewise.
+	* libgnat/s-pack104.adb: Likewise.
+	* libgnat/s-pack105.adb: Likewise.
+	* libgnat/s-pack106.adb: Likewise.
+	* libgnat/s-pack107.adb: Likewise.
+	* libgnat/s-pack108.adb: Likewise.
+	* libgnat/s-pack109.adb: Likewise.
+	* libgnat/s-pack11.adb: Likewise.
+	* libgnat/s-pack110.adb: Likewise.
+	* libgnat/s-pack111.adb: Likewise.
+	* libgnat/s-pack112.adb: Likewise.
+	* libgnat/s-pack113.adb: Likewise.
+	* libgnat/s-pack114.adb: Likewise.
+	* libgnat/s-pack115.adb: Likewise.
+	* libgnat/s-pack116.adb: Likewise.
+	* libgnat/s-pack117.adb: Likewise.
+	* libgnat/s-pack118.adb: Likewise.
+	* libgnat/s-pack119.adb: Likewise.
+	* libgnat/s-pack12.adb: Likewise.
+	* libgnat/s-pack120.adb: Likewise.
+	* libgnat/s-pack121.adb: Likewise.
+	* libgnat/s-pack122.adb: Likewise.
+	* libgnat/s-pack123.adb: Likewise.
+	* libgnat/s-pack124.adb: Likewise.
+	* libgnat/s-pack125.adb: Likewise.
+	* libgnat/s-pack126.adb: Likewise.
+	* libgnat/s-pack127.adb: Likewise.
+	* libgnat/s-pack13.adb: Likewise.
+	* libgnat/s-pack14.adb: Likewise.
+	* libgnat/s-pack15.adb: Likewise.
+	* libgnat/s-pack17.adb: Likewise.
+	* libgnat/s-pack18.adb: Likewise.
+	* libgnat/s-pack19.adb: Likewise.
+	* libgnat/s-pack20.adb: Likewise.
+	* libgnat/s-pack21.adb: Likewise.
+	* libgnat/s-pack22.adb: Likewise.
+	* libgnat/s-pack23.adb: Likewise.
+	* libgnat/s-pack24.adb: Likewise.
+	* libgnat/s-pack25.adb: Likewise.
+	* libgnat/s-pack26.adb: Likewise.
+	* libgnat/s-pack27.adb: Likewise.
+	* libgnat/s-pack28.adb: Likewise.
+	* libgnat/s-pack29.adb: Likewise.
+	* libgnat/s-pack30.adb: Likewise.
+	* libgnat/s-pack31.adb: Likewise.
+	* libgnat/s-pack33.adb: Likewise.
+	* libgnat/s-pack34.adb: Likewise.
+	* libgnat/s-pack35.adb: Likewise.
+	* libgnat/s-pack36.adb: Likewise.
+	* libgnat/s-pack37.adb: Likewise.
+	* libgnat/s-pack38.adb: Likewise.
+	* libgnat/s-pack39.adb: Likewise.
+	* libgnat/s-pack40.adb: Likewise.
+	* libgnat/s-pack41.adb: Likewise.
+	* libgnat/s-pack42.adb: Likewise.
+	* libgnat/s-pack43.adb: Likewise.
+	* libgnat/s-pack44.adb: Likewise.
+	* libgnat/s-pack45.adb: Likewise.
+	* libgnat/s-pack46.adb: Likewise.
+	* libgnat/s-pack47.adb: Likewise.
+	* libgnat/s-pack48.adb: Likewise.
+	* libgnat/s-pack49.adb: Likewise.
+	* libgnat/s-pack50.adb: Likewise.
+	* libgnat/s-pack51.adb: Likewise.
+	* libgnat/s-pack52.adb: Likewise.
+	* libgnat/s-pack53.adb: Likewise.
+	* libgnat/s-pack54.adb: Likewise.
+	* libgnat/s-pack55.adb: Likewise.
+	* libgnat/s-pack56.adb: Likewise.
+	* libgnat/s-pack57.adb: Likewise.
+	* libgnat/s-pack58.adb: Likewise.
+	* libgnat/s-pack59.adb: Likewise.
+	* libgnat/s-pack60.adb: Likewise.
+	* libgnat/s-pack61.adb: Likewise.
+	* libgnat/s-pack62.adb: Likewise.
+	* libgnat/s-pack63.adb: Likewise.
+	* libgnat/s-pack65.adb: Likewise.
+	* libgnat/s-pack66.adb: Likewise.
+	* libgnat/s-pack67.adb: Likewise.
+	* libgnat/s-pack68.adb: Likewise.
+	* libgnat/s-pack69.adb: Likewise.
+	* libgnat/s-pack70.adb: Likewise.
+	* libgnat/s-pack71.adb: Likewise.
+	* libgnat/s-pack72.adb: Likewise.
+	* libgnat/s-pack73.adb: Likewise.
+	* libgnat/s-pack74.adb: Likewise.
+	* libgnat/s-pack75.adb: Likewise.
+	* libgnat/s-pack76.adb: Likewise.
+	* libgnat/s-pack77.adb: Likewise.
+	* libgnat/s-pack78.adb: Likewise.
+	* libgnat/s-pack79.adb: Likewise.
+	* libgnat/s-pack80.adb: Likewise.
+	* libgnat/s-pack81.adb: Likewise.
+	* libgnat/s-pack82.adb: Likewise.
+	* libgnat/s-pack83.adb: Likewise.
+	* libgnat/s-pack84.adb: Likewise.
+	* libgnat/s-pack85.adb: Likewise.
+	* libgnat/s-pack86.adb: Likewise.
+	* libgnat/s-pack87.adb: Likewise.
+	* libgnat/s-pack88.adb: Likewise.
+	* libgnat/s-pack89.adb: Likewise.
+	* libgnat/s-pack90.adb: Likewise.
+	* libgnat/s-pack91.adb: Likewise.
+	* libgnat/s-pack92.adb: Likewise.
+	* libgnat/s-pack93.adb: Likewise.
+	* libgnat/s-pack94.adb: Likewise.
+	* libgnat/s-pack95.adb: Likewise.
+	* libgnat/s-pack96.adb: Likewise.
+	* libgnat/s-pack97.adb: Likewise.
+	* libgnat/s-pack98.adb: Likewise.
+	* libgnat/s-pack99.adb: Likewise.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads (Assignment_OK): Remove obsolete ??? comment.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Range_Checks_Suppressed): Remove test on the
+	Kill_Range_Checks flag.
+	* einfo.ads (Kill_Range_Checks): Delete.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Kill_Range_Checks.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Likewise.
+	* sem_ch3.adb (Record_Type_Declaration): Do not set the
+	Kill_Range_Checks flag.
+	* sem_util.adb (Denotes_Discriminant): In a default expression,
+	also return True for a discriminal.
+
+2024-11-12  Steve Baird  <baird@adacore.com>
+
+	* prep.adb (Expression): Improve error message text when an
+	implicitly-defined Boolean-valued symbol is used in a context that
+	requires an integer value.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Is_Build_In_Place_Aggregate_Return): Directly test
+	the node and remove dead code for extended return statements.
+
+2024-11-12  Johannes Kliemann  <kliemann@adacore.com>
+
+	* Makefile.rtl: Use libgnat/s-parame__aarch64-linux.adb for
+	s-parame.adb on aarch64-linux.
+	* libgnat/s-parame__aarch64-linux.adb: Add file.
+
+2024-11-12  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/the_implementation_of_standard_i_o.rst
+	(Shared Files): Add trailing period.
+	* libgnat/s-ficobl.ads (AFCB): Reflect new behavior in comment.
+	* libgnat/s-fileio.adb (Open): Detect inconsistent sharing,
+	just like we do in System.File_IO.Reset.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-11-12  squirek  <squirek@adacore.com>
+
+	* accessibility.adb (Type_Access_Level): Add handling for
+	subprogram aliases.
+
+2024-11-12  squirek  <squirek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Add special runtime check
+	generation for mutably tagged objects.
+
+2024-11-12  Douglas B Rupp  <rupp@adacore.com>
+
+	* libgnat/a-calcon.adb (To_Ada_Time) (To_Duration)
+	(To_Struct_Timespec) (To_Unix_Time): Mark as obsolescent.
+	(To_Ada_Time_64) (To_Duration_64) (To_Struct_Timespec_64)
+	(To_Unix_Time_64): New.
+	* libgnat/a-calcon.ads (To_Ada_Time) (To_Duration)
+	(To_Struct_Timespec) (To_Unix_Time): Mark as obsolescent.
+	(To_Ada_Time_64) (To_Duration_64) (To_Struct_Timespec_64)
+	(To_Unix_Time_64): New.
+	* libgnat/a-calend.adb (To_Ada_Time) (To_Duration)
+	(To_Struct_Timespec) (To_Unix_Time): Mark as obsolescent.
+	(To_Ada_Time_64) (To_Duration_64) (To_Struct_Timespec_64)
+	(To_Unix_Time_64): New.
+	* libgnat/a-calend.ads (To_Ada_Time) (To_Duration)
+	(To_Struct_Timespec) (To_Unix_Time): Mark as obsolescent.
+	(To_Ada_Time_64) (To_Duration_64) (To_Struct_Timespec_64)
+	(To_Unix_Time_64): New.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117018
+	* exp_aggr.adb (Build_Array_Aggr_Code): Do not expect the
+	Loop_Actions field to be already present on association nodes.
+	* exp_util.adb (Insert_Actions): For association nodes, insert
+	into the Loop_Actions field only if it is already present.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Add Iterated parameter.
+	(Resolve_Aggregate): Adjust calls to Resolve_Array_Aggregate.
+	(Resolve_Aggr_Expr): Add Iterated_Elmt defaulted parameter and
+	a default for Single_Elmt.  Adjust call to Resolve_Array_Aggregate.
+	Preanalyze a copy of the expression in an iteration context.
+	(Resolve_Iterated_Component_Association): Pass Iterated_Elmt as
+	True to Resolve_Aggr_Expr and remove processing of Loop_Actions.
+	Do not check incorrect use of dynamically tagged expression in
+	an iteration context.
+	(Resolve_Iterated_Association): Use Copy_Separate_Tree instead of
+	New_Copy_Tree and set the Parent field of the result.
+	(Resolve_Delta_Array_Aggregate): Likewise.  Only preanalyze the
+	copy instead of analyzing it.
+
+2024-11-12  Richard Kenner  <kenner@adacore.com>
+
+	* doc/gnat_ugn/about_this_guide.rst: Add information about GNAT LLVM.
+	Be consistent about spelling of "back end".
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Likewise.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Be consistent about
+	spelling of "back end".
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Likewise.
+	* gnat_ugn.texi: Regenerate.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* mdll.adb (Build_Dynamic_Library): Fix indentation.
+
+2024-11-12  Pascal Obry  <obry@adacore.com>
+
+	* mdll.adb: Use the same procedure to create relocatable or non
+	relocatable DLL. The only difference is wether the base address is
+	passed to the final linker. If no base-address is given the DLL is
+	relocatable.
+
+2024-11-12  squirek  <squirek@adacore.com>
+
+	* inline.adb (In_Main_Unit_Or_Subunit): Use Other_Comp_Unit instead of
+	Spec_Or_Body_Lib_Unit.
+	(Must_Inline): Use Other_Comp_Unit instead of Spec_Or_Body_Lib_Unit.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Is_Build_In_Place_Aggregate_Return): Also return
+	True for functions returning on the secondary stack or returning
+	a by-reference type if the back end exposes its return slot.
+	(Expand_Array_Aggregate): Call Is_Build_In_Place_Aggregate_Return
+	to spot aggregates to be built in place.
+	* exp_ch3.adb (Make_Allocator_For_Return): Add missing condition
+	in assertion pragma deduced from Expand_Subtype_From_Expr.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Rewrite the statement
+	as an extended return statement if the expression is an aggregate
+	whose expansion is delayed.  Properly relocate the expression in
+	this case.
+	* sem_ch6.adb: Add clauses for Exp_Aggr.
+	(Analyze_Function_Return): Do not apply the predicate check to an
+	aggregate whose expansion is delayed.  Extended the processing of
+	case expressions to all conditional expressions.
+
+2024-11-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gnat2.gpr: New file.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Delta_Array_Aggregate): Move declaration.
+	(Expand_Delta_Record_Aggregate): Likewise.
+	(Expand_Container_Aggregate): Likewise.  Move implementation to
+	Build_Container_Aggr_Code.  Implement built-in-place expansion
+	for object declarations and allocators.
+	(Build_Container_Aggr_Code): New function containing most of the
+	code of the original Expand_Container_Aggregate.  Do not build a
+	temporary for the size calculation.  Minor formatting tweaks.
+	(Expand_N_Aggregate): Add comment.
+	* exp_ch4.adb (Expand_Allocator_Expression): Detect the case of
+	a container aggregate as qualified expression.  Do not apply the
+	predicate check on entry in this case and rewrite the allocator.
+	* exp_ch7.adb (Build_Finalizer.Process_Object_Declaration): Deal
+	with Last_Aggregate_Assignment first to compute the attachment
+	point (as already done in Attach_Object_To_Master_Node).
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aux.ads (Has_Unconstrained_Elements): Delete.
+	* sem_aux.adb (Has_Unconstrained_Elements): Likewise.
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove obsolete code.
+
+2024-11-12  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem.adb (Process_Bodies_In_Context): check that Spec's unit is
+	an N_Lib_Unit_Declaration_Id.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Make Act_Rhs a constant and
+	do not recompute it, as well as R_Type, when there is a change of
+	representation.  Move comment about the RHS from here to...
+	(Expand_N_Assignment_Statement): ...here.
+
+2024-11-12  Marc Poulhiès  <poulhies@adacore.com>
+
+	* xspack.py: New
+	* s-pack.ads.tmpl: New.
+	* s-pack.adb.tmpl: New.
+
 2024-11-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Recognize null
