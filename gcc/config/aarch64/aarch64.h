@@ -494,6 +494,12 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
   ((TARGET_SVE2p1 || TARGET_STREAMING) \
    && (TARGET_SME2 || TARGET_NON_STREAMING))
 
+/* fp8 dot product instructions are enabled through +fp8dot2.  */
+#define TARGET_FP8DOT2 AARCH64_HAVE_ISA (FP8DOT2)
+
+/* fp8 dot product instructions are enabled through +fp8dot4.  */
+#define TARGET_FP8DOT4 AARCH64_HAVE_ISA (FP8DOT4)
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

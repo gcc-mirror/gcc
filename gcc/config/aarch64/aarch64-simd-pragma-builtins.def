@@ -20,20 +20,33 @@
 
 
 #undef ENTRY_BINARY
-#define ENTRY_BINARY(N, T0, T1, T2, U)		\
-  ENTRY (N, binary, T0, T1, T2, none, false, U)
+#define ENTRY_BINARY(N, T0, T1, T2, U)			\
+  ENTRY (N, binary, T0, T1, T2, none, none, false, U)
 
 #undef ENTRY_BINARY_FPM
-#define ENTRY_BINARY_FPM(N, T0, T1, T2, U)	\
-  ENTRY (N, binary, T0, T1, T2, none, true, U)
+#define ENTRY_BINARY_FPM(N, T0, T1, T2, U)		\
+  ENTRY (N, binary, T0, T1, T2, none, none, true, U)
 
 #undef ENTRY_TERNARY_FPM
-#define ENTRY_TERNARY_FPM(N, T0, T1, T2, T3, U) \
-  ENTRY (N, ternary, T0, T1, T2, T3, true, U)
+#define ENTRY_TERNARY_FPM(N, T0, T1, T2, T3, U)		\
+  ENTRY (N, ternary, T0, T1, T2, T3, none, true, U)
+
+#undef ENTRY_TERNARY_FPM_LANE
+#define ENTRY_TERNARY_FPM_LANE(N, T0, T1, T2, T3, U)	\
+  ENTRY (N, quaternary, T0, T1, T2, T3, s32_index, true, U)
 
 #undef ENTRY_UNARY_FPM
-#define ENTRY_UNARY_FPM(N, T0, T1, U) \
-  ENTRY (N, unary, T0, T1, none, none, true, U)
+#define ENTRY_UNARY_FPM(N, T0, T1, U)			\
+  ENTRY (N, unary, T0, T1, none, none, none, true, U)
+
+#undef ENTRY_VDOT_FPM
+#define ENTRY_VDOT_FPM(T, U)						\
+  ENTRY_TERNARY_FPM (vdot_##T##_mf8_fpm, T, T, f8, f8, U)		\
+  ENTRY_TERNARY_FPM (vdotq_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U)	\
+  ENTRY_TERNARY_FPM_LANE (vdot_lane_##T##_mf8_fpm, T, T, f8, f8, U)	\
+  ENTRY_TERNARY_FPM_LANE (vdot_laneq_##T##_mf8_fpm, T, T, f8, f8q, U)	\
+  ENTRY_TERNARY_FPM_LANE (vdotq_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8, U) \
+  ENTRY_TERNARY_FPM_LANE (vdotq_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U)
 
 #undef ENTRY_VHSDF
 #define ENTRY_VHSDF(NAME, UNSPEC) \
@@ -82,4 +95,14 @@ ENTRY_TERNARY_FPM (vcvt_high_mf8_f32_fpm, f8q, f8, f32q, f32q, UNSPEC_VCVT_HIGH)
 // fpm scaling
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8)
 ENTRY_VHSDF_VHSDI (vscale, UNSPEC_FSCALE)
+#undef REQUIRED_EXTENSIONS
+
+// fpm dot2 product
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT2)
+ENTRY_VDOT_FPM (f16, UNSPEC_VDOT2)
+#undef REQUIRED_EXTENSIONS
+
+// fpm dot4 product
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT4)
+ENTRY_VDOT_FPM (f32, UNSPEC_VDOT4)
 #undef REQUIRED_EXTENSIONS

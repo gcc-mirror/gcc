@@ -780,7 +780,7 @@ typedef struct
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
 
 #undef ENTRY
-#define ENTRY(N, S, M0, M1, M2, M3, USES_FPMR, U)	\
+#define ENTRY(N, S, M0, M1, M2, M3, M4, USES_FPMR, U)	\
   AARCH64_##N,
 
 enum aarch64_builtins
@@ -1590,9 +1590,10 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 
 enum class aarch64_builtin_signatures
 {
+  unary,
   binary,
   ternary,
-  unary,
+  quaternary,
 };
 
 namespace {
@@ -1617,6 +1618,7 @@ namespace simd_types {
   constexpr simd_type s16q { V8HImode, qualifier_none };
   constexpr simd_type u16q { V8HImode, qualifier_unsigned };
 
+  constexpr simd_type s32_index { SImode, qualifier_lane_index };
   constexpr simd_type s32 { V2SImode, qualifier_none };
   constexpr simd_type s32q { V4SImode, qualifier_none };
 
@@ -1642,10 +1644,10 @@ namespace simd_types {
 }
 
 #undef ENTRY
-#define ENTRY(N, S, T0, T1, T2, T3, USES_FPMR, U)		      \
+#define ENTRY(N, S, T0, T1, T2, T3, T4, USES_FPMR, U)		      \
   {#N, aarch64_builtin_signatures::S, simd_types::T0, simd_types::T1, \
-      simd_types::T2, simd_types::T3, U, USES_FPMR,		      \
-      aarch64_required_extensions::REQUIRED_EXTENSIONS},
+      simd_types::T2, simd_types::T3, simd_types::T4, U,	      \
+      USES_FPMR, aarch64_required_extensions::REQUIRED_EXTENSIONS},
 
 /* Initialize pragma builtins.  */
 
@@ -1653,7 +1655,7 @@ struct aarch64_pragma_builtins_data
 {
   const char *name;
   aarch64_builtin_signatures signature;
-  simd_type types[4];
+  simd_type types[5];
   int unspec;
   bool uses_fpmr;
   aarch64_required_extensions required_extensions;
@@ -1672,6 +1674,8 @@ aarch64_get_number_of_args (const aarch64_pragma_builtins_data &builtin_data)
     return 2;
   else if (builtin_data.signature == aarch64_builtin_signatures::ternary)
     return 3;
+  else if (builtin_data.signature == aarch64_builtin_signatures::quaternary)
+    return 4;
   else
     // No other signature supported.
     gcc_unreachable ();
@@ -2504,6 +2508,72 @@ aarch64_general_required_extensions (unsigned int code)
   return ext::streaming_compatible (0);
 }
 
+namespace function_checker {
+
+void
+require_integer_constant (location_t location, tree arg)
+{
+  if (TREE_CODE (arg) != INTEGER_CST)
+    {
+      error_at (location, "Constant-type integer argument expected");
+      return;
+    }
+}
+
+void
+require_immediate_range (location_t location, tree arg, HOST_WIDE_INT min,
+			 HOST_WIDE_INT max)
+{
+  if (wi::to_widest (arg) < min || wi::to_widest (arg) > max)
+    {
+      error_at (location, "lane out of range %wd - %wd", min, max);
+      return;
+    }
+}
+
+/* Validates indexing into a vector using the index's size and the instruction,
+   where instruction is represented by the unspec.
+   This only works for intrinsics declared using pragmas in
+   aarch64-simd-pragma-builtins.def.  */
+
+void
+check_simd_lane_bounds (location_t location, const aarch64_pragma_builtins_data
+			*builtin_data, tree *args)
+{
+  if (builtin_data == NULL)
+    // Don't check for functions that are not declared in
+    // aarch64-simd-pragma-builtins.def.
+    return;
+
+  auto nargs = aarch64_get_number_of_args (*builtin_data);
+  switch (builtin_data->unspec)
+    {
+    case UNSPEC_VDOT2:
+    case UNSPEC_VDOT4:
+      {
+	if (builtin_data->types[nargs].qualifiers != qualifier_lane_index)
+	  break;
+
+	auto index_arg = args[nargs - 1];
+	require_integer_constant (location, index_arg);
+
+	auto vector_to_index_mode = builtin_data->types[nargs - 1].mode;
+	int vector_to_index_mode_size
+	  = GET_MODE_NUNITS (vector_to_index_mode).to_constant ();
+
+	auto low = 0;
+	int high
+	  = builtin_data->unspec == UNSPEC_VDOT2
+	  ? vector_to_index_mode_size / 2 - 1
+	  : vector_to_index_mode_size / 4 - 1;
+	require_immediate_range (location, index_arg, low, high);
+	break;
+      }
+    }
+}
+
+};
+
 bool
 aarch64_general_check_builtin_call (location_t location, vec<location_t>,
 				    unsigned int code, tree fndecl,
@@ -2514,6 +2584,9 @@ aarch64_general_check_builtin_call (location_t location, vec<location_t>,
   auto required_extensions = aarch64_general_required_extensions (code);
   if (!aarch64_check_required_extensions (location, decl, required_extensions))
     return false;
+
+  auto builtin_data = aarch64_get_pragma_builtin (code);
+  function_checker::check_simd_lane_bounds (location, builtin_data, args);
 
   switch (code)
     {
@@ -3474,6 +3547,28 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 				builtin_data->types[1].mode,
 				builtin_data->types[2].mode,
 				builtin_data->types[3].mode);
+      expand_insn (icode, nargs + 1, ops);
+      break;
+
+    case UNSPEC_VDOT2:
+    case UNSPEC_VDOT4:
+      if (builtin_data->signature == aarch64_builtin_signatures::ternary)
+	icode = code_for_aarch64 (builtin_data->unspec,
+				  builtin_data->types[0].mode,
+				  builtin_data->types[1].mode,
+				  builtin_data->types[2].mode,
+				  builtin_data->types[3].mode);
+      else if
+	(builtin_data->signature == aarch64_builtin_signatures::quaternary)
+	icode = code_for_aarch64 (builtin_data->unspec,
+				  builtin_data->types[0].mode,
+				  builtin_data->types[1].mode,
+				  builtin_data->types[2].mode,
+				  builtin_data->types[3].mode,
+				  builtin_data->types[4].mode);
+      else
+	gcc_unreachable ();
+
       expand_insn (icode, nargs + 1, ops);
       break;
 

@@ -163,6 +163,10 @@
 
 ;; Advanced SIMD Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
+
+(define_mode_iterator VHF [(V4HF "TARGET_SIMD_F16INST")
+			   (V8HF "TARGET_SIMD_F16INST")])
+
 (define_mode_iterator VHSDF [(V4HF "TARGET_SIMD_F16INST")
 			     (V8HF "TARGET_SIMD_F16INST")
 			     V2SF V4SF V2DF])
@@ -321,6 +325,7 @@
 
 ;; All byte modes.
 (define_mode_iterator VB [V8QI V16QI])
+(define_mode_iterator VB2 [VB])
 
 ;; 1 and 2 lane DI and DF modes.
 (define_mode_iterator V12DIF [V1DI V1DF V2DI V2DF])
@@ -764,6 +769,8 @@
     UNSPEC_VCVT2	; Used in aarch64-simd.md.
     UNSPEC_VCVT2_HIGH	; Used in aarch64-simd.md.
     UNSPEC_VCVT2_LOW	; Used in aarch64-simd.md.
+    UNSPEC_VDOT2 	; Used in aarch64-simd.md.
+    UNSPEC_VDOT4	; Used in aarch64-simd.md.
     UNSPEC_TBL		; Used in vector permute patterns.
     UNSPEC_TBLQ		; Used in vector permute patterns.
     UNSPEC_TBX		; Used in vector permute patterns.
@@ -2490,6 +2497,11 @@
 			    (VNx8BF ".h") (VNx16BF "") (VNx32BF "")
 			    (VNx8HF ".h") (VNx16HF "") (VNx32HF "")
 			    (VNx8HI ".h") (VNx16HI "") (VNx32HI "")])
+
+
+;; Lane index suffix for fp8 vdot operations depends on the output mode
+(define_mode_attr Vdotlanetype [(V4HF "2b") (V8HF "2b")
+				(V2SF "4b") (V4SF "4b")])
 
 ;; The number of bytes controlled by a predicate
 (define_mode_attr data_bytes [(VNx16BI "1") (VNx8BI "2")
@@ -4720,7 +4732,12 @@
    (UNSPEC_VCVT2_HIGH "f2cvtl2")
    (UNSPEC_VCVT2_LOW "f2cvtl")])
 
+(define_int_iterator FPM_VDOT2_UNS [UNSPEC_VDOT2])
+(define_int_iterator FPM_VDOT4_UNS [UNSPEC_VDOT4])
+
 (define_int_attr fpm_uns_op
   [(UNSPEC_FSCALE "fscale")
    (UNSPEC_VCVT "fcvtn")
-   (UNSPEC_VCVT_HIGH "fcvtn2")])
+   (UNSPEC_VCVT_HIGH "fcvtn2")
+   (UNSPEC_VDOT2 "fdot")
+   (UNSPEC_VDOT4 "fdot")])

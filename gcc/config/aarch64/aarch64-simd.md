@@ -10097,3 +10097,61 @@
   "TARGET_FP8"
   "<fpm_uns_op>\t%0.<VHSDF:Vtype>, %1.<VHSDF:Vtype>, %2.<VHSDI:Vtype>"
 )
+
+;; fpm vdot2 instructions.
+(define_insn
+  "@aarch64_<fpm_uns_op><VHF:mode><VHF:mode><VB:mode><VB:mode>"
+  [(set (match_operand:VHF 0 "register_operand" "=w")
+	(unspec:VHF
+	 [(match_operand:VHF 1 "register_operand" "w")
+	  (match_operand:VB 2 "register_operand" "w")
+	  (match_operand:VB 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_VDOT2_UNS))]
+  "TARGET_FP8DOT2"
+  "<fpm_uns_op>\t%1.<VHF:Vtype>, %2.<VB:Vtype>, %3.<VB:Vtype>"
+)
+
+;; fpm vdot2 instructions with lane.
+(define_insn
+  "@aarch64_<fpm_uns_op><VHF:mode><VHF:mode><VB:mode><VB2:mode><SI_ONLY:mode>"
+  [(set (match_operand:VHF 0 "register_operand" "=w")
+	(unspec:VHF
+	 [(match_operand:VHF 1 "register_operand" "w")
+	  (match_operand:VB 2 "register_operand" "w")
+	  (match_operand:VB2 3 "register_operand" "w")
+	  (match_operand:SI_ONLY 4 "const_int_operand" "n")
+	  (reg:DI FPM_REGNUM)]
+	FPM_VDOT2_UNS))]
+  "TARGET_FP8DOT2"
+  "<fpm_uns_op>\t%1.<VHF:Vtype>, %2.<VB:Vtype>, %3.<VHF:Vdotlanetype>[%4]"
+)
+
+;; fpm vdot4 instructions.
+(define_insn
+  "@aarch64_<fpm_uns_op><VDQSF:mode><VDQSF:mode><VB:mode><VB:mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(unspec:VDQSF
+	 [(match_operand:VDQSF 1 "register_operand" "w")
+	  (match_operand:VB 2 "register_operand" "w")
+	  (match_operand:VB 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_VDOT4_UNS))]
+  "TARGET_FP8DOT4"
+  "<fpm_uns_op>\t%1.<VDQSF:Vtype>, %2.<VB:Vtype>, %3.<VB:Vtype>"
+)
+
+;; fpm vdot4 instructions with lane.
+(define_insn
+  "@aarch64_<fpm_uns_op><VDQSF:mode><VDQSF:mode><VB:mode><VB2:mode><SI_ONLY:mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(unspec:VDQSF
+	 [(match_operand:VDQSF 1 "register_operand" "w")
+	  (match_operand:VB 2 "register_operand" "w")
+	  (match_operand:VB2 3 "register_operand" "w")
+	  (match_operand:SI_ONLY 4 "const_int_operand" "n")
+	  (reg:DI FPM_REGNUM)]
+	FPM_VDOT4_UNS))]
+  "TARGET_FP8DOT4"
+  "<fpm_uns_op>\t%1.<VDQSF:Vtype>, %2.<VB:Vtype>, %3.<VDQSF:Vdotlanetype>[%4]"
+)
