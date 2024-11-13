@@ -38,6 +38,9 @@ TESTS_FILE="testsuite_files_performance"
 
 echo CXX is $CXX
 
+
+echo "=== $(date -u) ===" >> $BUILD_DIR/testsuite/libstdc++-performance.sum
+
 for NAME in `cat $TESTS_FILE`
 do
   RUN=true
