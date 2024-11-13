@@ -1,3 +1,16 @@
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/117328
+	* exp_aggr.adb (Two_Pass_Aggregate_Expansion): Use a type sized
+	from the index type to compute the length.  Simplify and remove
+	useless calls to New_Copy_Tree for this computation.
+
+2024-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113868
+	* par-ch6.adb (P_Subprogram) <Scan_Body_Or_Expression_Function>:
+	Add delta aggregate alongside the other forms of aggregates.
+
 2024-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113036

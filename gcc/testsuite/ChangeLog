@@ -1,3 +1,8 @@
+2024-11-12  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR tree-optimization/112376
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update expectation.
+
 2024-11-09  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:

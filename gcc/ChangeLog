@@ -1,3 +1,8 @@
+2024-11-12  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (decrement_and_branch_until_zero): Fix
+	constraint.
+
 2024-11-11  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* common/config/i386/cpuinfo.h (get_intel_cpu): Add new model
