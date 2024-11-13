@@ -99,9 +99,9 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
   /* The following decimal float suffixes, from TR 24732:2009, TS
      18661-2:2015 and C23, are supported:
 
-     df, DF - _Decimal32.
-     dd, DD - _Decimal64.
-     dl, DL - _Decimal128.
+     df, DF, d32, D32 - _Decimal32.
+     dd, DD, d64, D64 - _Decimal64.
+     dl, DL, d128, D128 - _Decimal128.
 
      The dN and DN suffixes for _DecimalN, and dNx and DNx for
      _DecimalNx, defined in TS 18661-3:2015, are not supported.
@@ -253,7 +253,18 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	      break;
 	    }
 	  return 0;
-	case 'd': case 'D': d++; break;
+	case 'd': case 'D':
+	  if (!CPP_OPTION (pfile, cplusplus) && orig_s == s && len > 1)
+	    {
+	      if (s[1] == '3' && s[2] == '2' && len == 2)
+		return CPP_N_DFLOAT | CPP_N_SMALL;
+	      if (s[1] == '6' && s[2] == '4' && len == 2)
+		return CPP_N_DFLOAT | CPP_N_MEDIUM;
+	      if (s[1] == '1' && s[2] == '2' && len == 3 && s[3] == '8')
+		return CPP_N_DFLOAT | CPP_N_LARGE;
+	    }
+	  d++;
+	  break;
 	case 'l': case 'L': l++; break;
 	case 'w': case 'W': w++; break;
 	case 'q': case 'Q': q++; break;

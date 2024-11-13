@@ -1347,7 +1347,12 @@ interpret_float (const cpp_token *token, unsigned int flags,
   if (flags & CPP_N_USERDEF)
     copylen -= strlen (suffix);
   else if (flags & CPP_N_DFLOAT)
-    copylen -= 2;
+    {
+      if (ISDIGIT (token->val.str.text[copylen - 1]))
+	copylen -= (flags & CPP_N_LARGE) ? 4 : 3;
+      else
+	copylen -= 2;
+    }
   else
     {
       if ((flags & CPP_N_WIDTH) != CPP_N_MEDIUM)
