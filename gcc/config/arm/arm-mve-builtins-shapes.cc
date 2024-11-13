@@ -1701,7 +1701,7 @@ struct store_def : public overloaded_base<0>
 	 bool preserve_user_namespace) const override
   {
     b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
-    build_all (b, "_,as,v0", group, MODE_none, preserve_user_namespace);
+    build_all (b, "_,as,t0", group, MODE_none, preserve_user_namespace);
   }
 
   tree
@@ -1713,7 +1713,7 @@ struct store_def : public overloaded_base<0>
     type_suffix_index type;
     if (!r.check_gp_argument (2, i, nargs)
 	|| !r.require_pointer_type (0)
-	|| (type = r.infer_vector_type (1)) == NUM_TYPE_SUFFIXES)
+	|| (type = r.infer_tuple_type (1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type);
