@@ -33,6 +33,12 @@
 (define_register_constraint "l" "JALR_REGS"
   "@internal")
 
+(define_register_constraint "cr" "RVC_GR_REGS"
+  "RVC general purpose register (x8-x15).")
+
+(define_register_constraint "cf" "TARGET_HARD_FLOAT ? RVC_FP_REGS : (TARGET_ZFINX ? RVC_GR_REGS : NO_REGS)"
+  "RVC floating-point registers (f8-f15), if available, reuse GPR as FPR when use zfinx.")
+
 ;; General constraints
 
 (define_constraint "I"

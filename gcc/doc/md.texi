@@ -3660,6 +3660,13 @@ A vector register, excluding v0 (if available).
 @item vm
 A vector register, only v0 (if available).
 
+@item cr
+RVC general purpose register (x8-x15).
+
+@item cf
+RVC floating-point registers (f8-f15), if available, reuse GPR as FPR when use
+zfinx.
+
 @end table
 
 @item RX---@file{config/rx/constraints.md}
