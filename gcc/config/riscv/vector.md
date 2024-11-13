@@ -1175,7 +1175,7 @@
        - We can not leave it to TARGET_SECONDARY_RELOAD since it happens
 	 before spilling. The clobber scratch is used by spilling fractional
 	 registers in IRA/LRA so it's too early.  */
-  if (TARGET_XTHEADVECTOR)
+  if (TARGET_XTHEADVECTOR && reg_or_mem_operand (operands[1], <MODE>mode))
     {
       emit_insn (gen_pred_th_whole_mov (<MODE>mode, operands[0], operands[1],
 					RVV_VLMAX, GEN_INT(riscv_vector::VLMAX)));
@@ -1238,7 +1238,7 @@
 	(match_operand:VB 1 "general_operand"))]
   "TARGET_VECTOR"
 {
-  if (TARGET_XTHEADVECTOR)
+  if (TARGET_XTHEADVECTOR && reg_or_mem_operand (operands[1], <MODE>mode))
     {
       emit_insn (gen_pred_th_whole_mov (<MODE>mode, operands[0], operands[1],
 					RVV_VLMAX, GEN_INT(riscv_vector::VLMAX)));
