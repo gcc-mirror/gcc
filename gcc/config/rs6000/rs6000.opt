@@ -300,6 +300,10 @@ mfull-toc
 Target
 Put everything in the regular TOC.
 
+msplit-patch-nops
+Target Var(TARGET_SPLIT_PATCH_NOPS) Init(0)
+Emit NOPs before global and after local entry point for -fpatchable-function-entry.
+
 mvrsave
 Target Var(TARGET_ALTIVEC_VRSAVE) Save
 Generate VRSAVE instructions when generating AltiVec code.

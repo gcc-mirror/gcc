@@ -1320,6 +1320,7 @@ See RS/6000 and PowerPC Options.
 -mtraceback=@var{traceback_type}
 -maix-struct-return  -msvr4-struct-return
 -mabi=@var{abi-type}  -msecure-plt  -mbss-plt
+-msplit-patch-nops
 -mlongcall  -mno-longcall  -mpltseq  -mno-pltseq
 -mblock-move-inline-limit=@var{num}
 -mblock-compare-inline-limit=@var{num}
@@ -18805,11 +18806,12 @@ If @code{N=0}, no pad location is recorded.
 The NOP instructions are inserted at---and maybe before, depending on
 @var{M}---the function entry address, even before the prologue.  On
 PowerPC with the ELFv2 ABI, for a function with dual entry points,
-the local entry point is this function entry address.
+the local entry point is this function entry address by default.  See
+the @option{-msplit-patch-nops} option to change this.
 
 The maximum value of @var{N} and @var{M} is 65535.  On PowerPC with the
 ELFv2 ABI, for a function with dual entry points, the supported values
-for @var{M} are 0, 2, 6 and 14.
+for @var{M} are 0, 2, 6 and 14 when not using @option{-msplit-patch-nops}.
 @end table
 
 
@@ -31848,6 +31850,17 @@ fills in, and
 requires @code{.plt} and @code{.got}
 sections that are both writable and executable.
 This is a PowerPC 32-bit SYSV ABI option.
+
+@opindex msplit-patch-nops
+@item -msplit-patch-nops
+When adding NOPs for a patchable area via the
+@option{-fpatchable-function-entry} option emit the ``before'' NOPs in front
+of the global entry point and the ``after'' NOPs after the local entry point.
+This makes the sequence of NOPs not consecutive when a global entry point
+is generated.  Without this option the NOPs are emitted directly before and
+after the local entry point, making them consecutive but moving global and
+local entry point further apart.  If only a single entry point is generated
+this option has no effect.
 
 @opindex misel
 @opindex mno-isel
