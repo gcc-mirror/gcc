@@ -1604,13 +1604,17 @@ add_overloaded_function (const function_instance &instance,
   char *name = get_name (instance, true);
   tree id = get_identifier (name);
   if (registered_function **map_value = name_map->get (id))
-    gcc_assert ((*map_value)->instance == instance
-		&& (required_extensions.sm_off == 0
-		    || ((*map_value)->required_extensions.sm_off
-			& ~required_extensions.sm_off) == 0)
-		&& (required_extensions.sm_on == 0
-		    || ((*map_value)->required_extensions.sm_on
-			& ~required_extensions.sm_on) == 0));
+    {
+      auto &dst_extensions = (*map_value)->required_extensions;
+      /* Make sure that any streaming and streaming-compatible attributes
+	 on the function type are still correct.  (It might not matter if
+	 they aren't, so this could be relaxed in future if we're sure that
+	 it's safe.)  */
+      gcc_assert ((*map_value)->instance == instance
+		  && (dst_extensions.sm_off || !required_extensions.sm_off)
+		  && (dst_extensions.sm_on || !required_extensions.sm_on));
+      dst_extensions = dst_extensions.common_denominator (required_extensions);
+    }
   else
     {
       registered_function &rfn

@@ -759,6 +759,19 @@ struct aarch64_required_extensions
 	     sm_on ? sm_on | flags : 0 };
   }
 
+  /* Return a requirement that is as restrictive as possible while still being
+     no more restrictive than THIS and no more restrictive than OTHER.  */
+  inline CONSTEXPR aarch64_required_extensions
+  common_denominator (const aarch64_required_extensions &other)
+  {
+    return { sm_off && other.sm_off
+	     ? sm_off & other.sm_off
+	     : sm_off | other.sm_off,
+	     sm_on && other.sm_on
+	     ? sm_on & other.sm_on
+	     : sm_on | other.sm_on };
+  }
+
   /* Require non-streaming mode and the features in FLAGS.  */
   static inline CONSTEXPR aarch64_required_extensions
   nonstreaming_only (aarch64_feature_flags flags)

@@ -932,16 +932,10 @@ struct mmla_def : public overloaded_base<0>
   build (function_builder &b, const function_group_info &group) const override
   {
     b.add_overloaded_functions (group, MODE_none);
-    /* svmmla is distributed over several extensions.  Allow the common
-       denominator to define the overloaded svmmla function without
-       defining any specific versions.  */
-    if (group.types[0][0] != NUM_TYPE_SUFFIXES)
-      {
-	if (type_suffixes[group.types[0][0]].float_p)
-	  build_all (b, "v0,v0,v0,v0", group, MODE_none);
-	else
-	  build_all (b, "v0,v0,vq0,vq0", group, MODE_none);
-      }
+    if (type_suffixes[group.types[0][0]].float_p)
+      build_all (b, "v0,v0,v0,v0", group, MODE_none);
+    else
+      build_all (b, "v0,v0,vq0,vq0", group, MODE_none);
   }
 
   tree
