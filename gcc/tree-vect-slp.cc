@@ -3200,7 +3200,8 @@ debug (slp_instance instance)
 /* Mark the tree rooted at NODE with PURE_SLP.  */
 
 static void
-vect_mark_slp_stmts (slp_tree node, hash_set<slp_tree> &visited)
+vect_mark_slp_stmts (vec_info *vinfo, slp_tree node,
+		     hash_set<slp_tree> &visited)
 {
   int i;
   stmt_vec_info stmt_info;
@@ -3214,18 +3215,40 @@ vect_mark_slp_stmts (slp_tree node, hash_set<slp_tree> &visited)
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     if (stmt_info)
-      STMT_SLP_TYPE (stmt_info) = pure_slp;
+      {
+	STMT_SLP_TYPE (stmt_info) = pure_slp;
+	/* ???  For .MASK_LOAD and .MASK_STORE detected as load/store-lanes
+	   when there is the mask_conversion pattern applied we have lost the
+	   alternate lanes of the uniform mask which nevertheless
+	   have separate pattern defs.  To not confuse hybrid
+	   analysis we mark those as covered as well here.  */
+	if (node->ldst_lanes)
+	  if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))
+	    if (gimple_call_internal_p (call, IFN_MASK_LOAD)
+		|| gimple_call_internal_p (call, IFN_MASK_STORE))
+	      {
+		tree mask = gimple_call_arg (call,
+					     internal_fn_mask_index
+					     (gimple_call_internal_fn (call)));
+		if (TREE_CODE (mask) == SSA_NAME)
+		  if (stmt_vec_info mask_info = vinfo->lookup_def (mask))
+		    {
+		      mask_info = vect_stmt_to_vectorize (mask_info);
+		      STMT_SLP_TYPE (mask_info) = pure_slp;
+		    }
+	      }
+      }
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (child)
-      vect_mark_slp_stmts (child, visited);
+      vect_mark_slp_stmts (vinfo, child, visited);
 }
 
 static void
-vect_mark_slp_stmts (slp_tree node)
+vect_mark_slp_stmts (vec_info *vinfo, slp_tree node)
 {
   hash_set<slp_tree> visited;
-  vect_mark_slp_stmts (node, visited);
+  vect_mark_slp_stmts (vinfo, node, visited);
 }
 
 /* Mark the statements of the tree rooted at NODE as relevant (vect_used).  */
@@ -7407,7 +7430,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
       /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts.  Later we
 	 call vect_detect_hybrid_slp () to find stmts that need hybrid SLP and
 	 loop-based vectorization.  Such stmts will be marked as HYBRID.  */
-      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance));
+      vect_mark_slp_stmts (loop_vinfo, SLP_INSTANCE_TREE (instance));
       decided_to_slp++;
     }
 
@@ -9341,7 +9364,7 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
 
       /* Mark all the statements that we want to vectorize as pure SLP and
 	 relevant.  */
-      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance));
+      vect_mark_slp_stmts (bb_vinfo, SLP_INSTANCE_TREE (instance));
       vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
       unsigned j;
       stmt_vec_info root;
