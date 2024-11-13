@@ -167,7 +167,10 @@ void test_lists_resource_per_thread()
   auto run_test = [&mx] (std::pmr::memory_resource* memres,
 			 __gnu_test::time_counter* timers)
   {
-    std::lock_guard<std::mutex>{mx};  // block until the mutex can be locked
+    {
+      // block until the mutex can be locked
+      std::lock_guard<std::mutex> wait_for_gate_to_be_unlocked{mx};
+    }
     populate_lists(memres, timers);
   };
 
@@ -239,7 +242,10 @@ void test_lists_shared_resource()
   auto run_test = [&mx] (std::pmr::memory_resource* memres,
 			 __gnu_test::time_counter* timers)
   {
-    std::lock_guard<std::mutex>{mx};  // block until the mutex can be locked
+    {
+      // block until the mutex can be locked
+      std::lock_guard<std::mutex> wait_for_gate_to_be_unlocked{mx};
+    }
     populate_lists(memres, timers);
   };
 
@@ -307,7 +313,10 @@ void test_cross_thread_dealloc()
   [&, num_threads] (std::pmr::memory_resource* memres, int i, bool with_exit)
   {
     std::size_t counter = 0;
-    std::lock_guard<std::mutex>{mx};
+    {
+      // block until the mutex can be locked
+      std::lock_guard<std::mutex> wait_for_gate_to_be_unlocked{mx};
+    }
     // Fill this thread's buffer with allocations:
     for (X& x : allocs[i])
     {
