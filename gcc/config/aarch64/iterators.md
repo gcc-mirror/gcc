@@ -722,6 +722,10 @@
     UNSPEC_FMINNMV	; Used in aarch64-simd.md.
     UNSPEC_FMINV	; Used in aarch64-simd.md.
     UNSPEC_FADDV	; Used in aarch64-simd.md.
+    UNSPEC_FMLALLBB	; Used in aarch64-simd.md.
+    UNSPEC_FMLALLBT	; Used in aarch64-simd.md.
+    UNSPEC_FMLALLTB	; Used in aarch64-simd.md.
+    UNSPEC_FMLALLTT	; Used in aarch64-simd.md.
     UNSPEC_FNEG		; Used in aarch64-simd.md.
     UNSPEC_FSCALE	; Used in aarch64-simd.md.
     UNSPEC_ADDV		; Used in aarch64-simd.md.
@@ -4735,9 +4739,23 @@
 (define_int_iterator FPM_VDOT2_UNS [UNSPEC_VDOT2])
 (define_int_iterator FPM_VDOT4_UNS [UNSPEC_VDOT4])
 
+(define_int_iterator FPM_FMA_UNS
+  [UNSPEC_FMLALB
+   UNSPEC_FMLALT
+   UNSPEC_FMLALLBB
+   UNSPEC_FMLALLBT
+   UNSPEC_FMLALLTB
+   UNSPEC_FMLALLTT])
+
 (define_int_attr fpm_uns_op
   [(UNSPEC_FSCALE "fscale")
    (UNSPEC_VCVT "fcvtn")
    (UNSPEC_VCVT_HIGH "fcvtn2")
+   (UNSPEC_FMLALB "fmlalb")
+   (UNSPEC_FMLALT "fmlalt")
+   (UNSPEC_FMLALLBB "fmlallbb")
+   (UNSPEC_FMLALLBT "fmlallbt")
+   (UNSPEC_FMLALLTB "fmlalltb")
+   (UNSPEC_FMLALLTT "fmlalltt")
    (UNSPEC_VDOT2 "fdot")
    (UNSPEC_VDOT4 "fdot")])

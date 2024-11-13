@@ -240,6 +240,8 @@ AARCH64_OPT_EXTENSION("fp8dot2", FP8DOT2, (SIMD), (), (), "fp8dot2")
 
 AARCH64_OPT_EXTENSION("fp8dot4", FP8DOT4, (SIMD), (), (), "fp8dot4")
 
+AARCH64_OPT_EXTENSION("fp8fma", FP8FMA, (SIMD), (), (), "fp8fma")
+
 AARCH64_OPT_EXTENSION("faminmax", FAMINMAX, (SIMD), (), (), "faminmax")
 
 #undef AARCH64_OPT_FMV_EXTENSION

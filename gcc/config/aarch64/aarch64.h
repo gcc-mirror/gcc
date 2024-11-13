@@ -500,6 +500,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* fp8 dot product instructions are enabled through +fp8dot4.  */
 #define TARGET_FP8DOT4 AARCH64_HAVE_ISA (FP8DOT4)
 
+/* fp8 multiply-add instructions are enabled through +fp8fma.  */
+#define TARGET_FP8FMA AARCH64_HAVE_ISA (FP8FMA)
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

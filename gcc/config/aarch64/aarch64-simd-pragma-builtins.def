@@ -48,6 +48,12 @@
   ENTRY_TERNARY_FPM_LANE (vdotq_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8, U) \
   ENTRY_TERNARY_FPM_LANE (vdotq_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U)
 
+#undef ENTRY_FMA_FPM
+#define ENTRY_FMA_FPM(N, T, U)						\
+  ENTRY_TERNARY_FPM (N##_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U)	\
+  ENTRY_TERNARY_FPM_LANE (N##_lane_##T##_mf8_fpm, T##q, T##q, f8q, f8, U) \
+  ENTRY_TERNARY_FPM_LANE (N##_laneq_##T##_mf8_fpm, T##q, T##q, f8q, f8q, U)
+
 #undef ENTRY_VHSDF
 #define ENTRY_VHSDF(NAME, UNSPEC) \
   ENTRY_BINARY (NAME##_f16, f16, f16, f16, UNSPEC)		\
@@ -105,4 +111,14 @@ ENTRY_VDOT_FPM (f16, UNSPEC_VDOT2)
 // fpm dot4 product
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8DOT4)
 ENTRY_VDOT_FPM (f32, UNSPEC_VDOT4)
+#undef REQUIRED_EXTENSIONS
+
+// fp8 multiply-add
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FP8FMA)
+ENTRY_FMA_FPM (vmlalbq, f16, UNSPEC_FMLALB)
+ENTRY_FMA_FPM (vmlaltq, f16, UNSPEC_FMLALT)
+ENTRY_FMA_FPM (vmlallbbq, f32, UNSPEC_FMLALLBB)
+ENTRY_FMA_FPM (vmlallbtq, f32, UNSPEC_FMLALLBT)
+ENTRY_FMA_FPM (vmlalltbq, f32, UNSPEC_FMLALLTB)
+ENTRY_FMA_FPM (vmlallttq, f32, UNSPEC_FMLALLTT)
 #undef REQUIRED_EXTENSIONS

@@ -21811,6 +21811,8 @@ Enable the fp8 (8-bit floating point) extension.
 Enable the fp8dot2 (8-bit floating point dot product) extension.
 @item fp8dot4
 Enable the fp8dot4 (8-bit floating point dot product) extension.
+@item fp8fma
+Enable the fp8fma (8-bit floating point multiply-add) extension.
 @item faminmax
 Enable the Floating Point Absolute Maximum/Minimum extension.
 

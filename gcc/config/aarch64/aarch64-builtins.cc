@@ -2562,10 +2562,26 @@ check_simd_lane_bounds (location_t location, const aarch64_pragma_builtins_data
 	  = GET_MODE_NUNITS (vector_to_index_mode).to_constant ();
 
 	auto low = 0;
-	int high
-	  = builtin_data->unspec == UNSPEC_VDOT2
-	  ? vector_to_index_mode_size / 2 - 1
-	  : vector_to_index_mode_size / 4 - 1;
+	int high;
+	switch (builtin_data->unspec)
+	  {
+	  case UNSPEC_VDOT2:
+	    high = vector_to_index_mode_size / 2 - 1;
+	    break;
+	  case UNSPEC_VDOT4:
+	    high = vector_to_index_mode_size / 4 - 1;
+	    break;
+	  case UNSPEC_FMLALB:
+	  case UNSPEC_FMLALT:
+	  case UNSPEC_FMLALLBB:
+	  case UNSPEC_FMLALLBT:
+	  case UNSPEC_FMLALLTB:
+	  case UNSPEC_FMLALLTT:
+	    high = vector_to_index_mode_size - 1;
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
 	require_immediate_range (location, index_arg, low, high);
 	break;
       }
@@ -3552,6 +3568,12 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 
     case UNSPEC_VDOT2:
     case UNSPEC_VDOT4:
+    case UNSPEC_FMLALB:
+    case UNSPEC_FMLALT:
+    case UNSPEC_FMLALLBB:
+    case UNSPEC_FMLALLBT:
+    case UNSPEC_FMLALLTB:
+    case UNSPEC_FMLALLTT:
       if (builtin_data->signature == aarch64_builtin_signatures::ternary)
 	icode = code_for_aarch64 (builtin_data->unspec,
 				  builtin_data->types[0].mode,

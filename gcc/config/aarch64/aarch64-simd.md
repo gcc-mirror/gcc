@@ -10155,3 +10155,32 @@
   "TARGET_FP8DOT4"
   "<fpm_uns_op>\t%1.<VDQSF:Vtype>, %2.<VB:Vtype>, %3.<VDQSF:Vdotlanetype>[%4]"
 )
+
+;; fpm fma instructions.
+(define_insn
+  "@aarch64_<fpm_uns_op><VQ_HSF:mode><VQ_HSF:mode><V16QI_ONLY:mode><V16QI_ONLY:mode>"
+  [(set (match_operand:VQ_HSF 0 "register_operand" "=w")
+	(unspec:VQ_HSF
+	 [(match_operand:VQ_HSF 1 "register_operand" "w")
+	  (match_operand:V16QI_ONLY 2 "register_operand" "w")
+	  (match_operand:V16QI_ONLY 3 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	FPM_FMA_UNS))]
+  "TARGET_FP8FMA"
+  "<fpm_uns_op>\t%1.<VQ_HSF:Vtype>, %2.<V16QI_ONLY:Vtype>, %3.<V16QI_ONLY:Vtype>"
+)
+
+;; fpm fma instructions with lane.
+(define_insn
+  "@aarch64_<fpm_uns_op><VQ_HSF:mode><VQ_HSF:mode><V16QI_ONLY:mode><VB:mode><SI_ONLY:mode>"
+  [(set (match_operand:VQ_HSF 0 "register_operand" "=w")
+	(unspec:VQ_HSF
+	 [(match_operand:VQ_HSF 1 "register_operand" "w")
+	  (match_operand:V16QI_ONLY 2 "register_operand" "w")
+	  (match_operand:VB 3 "register_operand" "w")
+	  (match_operand:SI_ONLY 4 "const_int_operand" "n")
+	  (reg:DI FPM_REGNUM)]
+	FPM_FMA_UNS))]
+  "TARGET_FP8FMA"
+  "<fpm_uns_op>\t%1.<VQ_HSF:Vtype>, %2.<V16QI_ONLY:Vtype>, %3.b[%4]"
+)
