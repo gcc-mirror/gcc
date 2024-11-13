@@ -167,7 +167,7 @@ class diagnostic_event
   {
   }
 
-  label_text get_desc () const;
+  label_text get_desc (pretty_printer &ref_pp) const;
 };
 
 /* Abstract base class representing a thread of execution within

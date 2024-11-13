@@ -119,8 +119,10 @@ test_intraprocedural_path (pretty_printer *event_pp)
   ASSERT_TRUE (path.generated_p ());
   ASSERT_EQ (path.num_threads (), 1);
   ASSERT_FALSE (path.interprocedural_p ());
-  ASSERT_STREQ (path.get_event (0).get_desc ().get (), "first `free'");
-  ASSERT_STREQ (path.get_event (1).get_desc ().get (), "double `free'");
+  ASSERT_STREQ (path.get_event (0).get_desc (*event_pp).get (),
+		"first `free'");
+  ASSERT_STREQ (path.get_event (1).get_desc (*event_pp).get (),
+		"double `free'");
 }
 
 /* Implementation of diagnostic_option_manager for which all

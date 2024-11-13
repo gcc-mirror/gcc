@@ -136,7 +136,7 @@ checker_path::debug () const
   int i;
   FOR_EACH_VEC_ELT (m_events, i, e)
     {
-      label_text event_desc (e->get_desc ());
+      label_text event_desc (e->get_desc (*global_dc->get_reference_printer ()));
       fprintf (stderr,
 	       "[%i]: %s \"%s\"\n",
 	       i,
