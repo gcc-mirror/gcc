@@ -8485,6 +8485,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& real_isfinite (TREE_REAL_CST_PTR (@0)))
     (exps (plus (mult (logs @0) @1) @2)))))
 
+ /* Simplify powi (powof2, i) to ldexp (1, i * log2 (powof2)). */
+ (simplify
+  (POWI REAL_CST@0 @1)
+  (with { HOST_WIDE_INT tmp = 0; }
+   (if (real_isinteger (&TREE_REAL_CST (@0), &tmp)
+	&& tmp > 0 && pow2p_hwi (tmp))
+    (LDEXP { build_one_cst (type); }
+       (mult @1 {build_int_cst (integer_type_node,
+	     exact_log2 (tmp)); })))))
+
+ /* Simplify powof2 * ldexp (x, i) to ldexp (x, i + log2 (powof2)) */
+ (simplify
+  (mult:c REAL_CST@0 (LDEXP @1 @2))
+  (with { HOST_WIDE_INT tmp = 0; }
+   (if (real_isinteger (&TREE_REAL_CST (@0), &tmp)
+	&& tmp > 0 && pow2p_hwi (tmp))
+    (LDEXP @1 (plus {build_int_cst (integer_type_node,
+	     exact_log2 (tmp)); } @2)))))
+
+ /* Simplify a * ldexp (1., i) to ldexp (a, i). */
+ (simplify
+  (mult:c @0 (LDEXP REAL_CST@1 @2))
+  (if (real_equal (TREE_REAL_CST_PTR (@1), &dconst1))
+   (LDEXP @0 @2)))
+
  (for sqrts (SQRT)
       cbrts (CBRT)
       pows (POW)
