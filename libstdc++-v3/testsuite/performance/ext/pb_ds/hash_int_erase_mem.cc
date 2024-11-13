@@ -45,8 +45,11 @@
 #include <vector>
 #include <functional>
 
-struct int_hash : public std::unary_function<int, int>
+struct int_hash
 {
+  typedef int result_type;
+  typedef int argument_type;
+
   inline int
   operator()(int i) const
   { return i; }
