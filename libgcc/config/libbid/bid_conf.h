@@ -842,9 +842,9 @@ extern BID_THREAD _IDEC_excepthandling _IDEC_glbexcepthandling;
 
 #if BID_BIG_ENDIAN
 #define COPY_ARG_REF(arg_name) \
-       UINT128 arg_name={ pbid_##arg_name->w[1], pbid_##arg_name->w[0]};
+       UINT128 arg_name={ { pbid_##arg_name->w[1], pbid_##arg_name->w[0] }};
 #define COPY_ARG_VAL(arg_name) \
-       UINT128 arg_name={ bid_##arg_name.w[1], bid_##arg_name.w[0]};
+       UINT128 arg_name={ { bid_##arg_name.w[1], bid_##arg_name.w[0] }};
 #else
 #define COPY_ARG_REF(arg_name) \
        UINT128 arg_name=*pbid_##arg_name;
