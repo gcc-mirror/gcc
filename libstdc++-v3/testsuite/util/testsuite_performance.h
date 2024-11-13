@@ -33,6 +33,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cxxabi.h>
+#include <ext/atomicity.h>
 #include <testsuite_common_types.h>
 
 #if defined (__linux__) || defined (__GLIBC__)
@@ -226,10 +227,8 @@ namespace __gnu_test
 
     std::ofstream out(name, std::ios_base::app);
 
-#ifdef __GTHREADS
-    if (__gthread_active_p())
+    if (!__gnu_cxx::__is_single_threaded())
       testname.append("-thread");
-#endif
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;
@@ -256,10 +255,8 @@ namespace __gnu_test
 
     std::ofstream out(name, std::ios_base::app);
 
-#ifdef __GTHREADS
-    if (__gthread_active_p ())
+    if (!__gnu_cxx::__is_single_threaded ())
       testname.append("-thread");
-#endif
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;
