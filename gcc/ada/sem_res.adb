@@ -13803,7 +13803,7 @@ package body Sem_Res is
       Report_Errs : Boolean := True) return Boolean
    is
       Target_Type  : constant Entity_Id := Base_Type (Target);
-      Opnd_Type    : Entity_Id          := Etype (Operand);
+      Opnd_Type    : Entity_Id;
       Inc_Ancestor : Entity_Id;
 
       function Conversion_Check
@@ -14270,14 +14270,10 @@ package body Sem_Res is
    begin
       Check_Parameterless_Call (Operand);
 
-      if Is_Overloaded (Operand) then
-         if Is_Ambiguous_Operand (Operand) then
-            return False;
-         end if;
-
-         --  The Etype may have been updated by Is_Ambiguous_Operand
-
-         Opnd_Type := Etype (Operand);
+      if Is_Overloaded (Operand)
+        and then Is_Ambiguous_Operand (Operand)
+      then
+         return False;
       end if;
 
       --  When we encounter a class-wide equivalent type used to represent
@@ -14285,7 +14281,7 @@ package body Sem_Res is
       --  at the class-wide mutably tagged type instead.
 
       Opnd_Type :=
-        Get_Corresponding_Mutably_Tagged_Type_If_Present (Opnd_Type);
+        Get_Corresponding_Mutably_Tagged_Type_If_Present (Etype (Operand));
 
       --  Deal with conversion of integer type to address if the pragma
       --  Allow_Integer_Address is in effect. We convert the conversion to
