@@ -60,6 +60,8 @@ with Uintp;          use Uintp;
 with Validsw;        use Validsw;
 with Warnsw;         use Warnsw;
 
+with System.Case_Util; use System.Case_Util;
+
 package body Exp_Prag is
 
    -----------------------
@@ -2157,24 +2159,73 @@ package body Exp_Prag is
          --  Import a C++ convention
 
          declare
+            procedure Check_Class_Suffix;
+            --  Check whether the External Name string designated by
+            --  Name, declared below, ends with "'class" and, if so,
+            --  set Lang_Id accordingly, and drop the suffix from Name
+            --  and from Rtti_Name.
+
             Loc          : constant Source_Ptr := Sloc (N);
-            Rtti_Name    : constant Node_Id    := Arg_N (N, 3);
             Dum          : constant Entity_Id  := Make_Temporary (Loc, 'D');
+            Lang_Id      : Character  := 'C';
+            Rtti_Name    : Node_Id    := Arg_N (N, 3);
+            Name         : String_Id  := Strval (Get_Pragma_Arg (Rtti_Name));
             Exdata       : List_Id;
             Lang_Char    : Node_Id;
             Foreign_Data : Node_Id;
 
+            ------------------------
+            -- Check_Class_Suffix --
+            ------------------------
+
+            procedure Check_Class_Suffix is
+               Attr : constant String := "'class";
+               J : Nat := String_Length (Name);
+            begin
+               --  We can't end with "'class" if there's no room for it
+
+               if J < Attr'Length then
+                  return;
+               end if;
+
+               --  Check that we end with "'class", ignoring case.
+               --  Return if we don't.
+
+               for K in reverse 1 .. Attr'Length loop
+                  if To_Lower (Get_Character (Get_String_Char (Name, J)))
+                    /= Attr (K)
+                  then
+                     return;
+                  end if;
+                  J := J - 1;
+               end loop;
+
+               --  Build a new string without the pseudo attribute.
+               --  Change Lang_Id to use base-type matching.
+
+               Start_String;
+               for I in 1 .. J loop
+                  Store_String_Char (Get_String_Char (Name, I));
+               end loop;
+               Name := End_String;
+               Rtti_Name := Make_String_Literal (Sloc (Rtti_Name),
+                                                 Strval => Name);
+               Lang_Id := 'B';
+            end Check_Class_Suffix;
+
          begin
+            Check_Class_Suffix;
+
             Exdata := Component_Associations (Expression (Parent (Def_Id)));
 
             Lang_Char := Next (First (Exdata));
 
-            --  Change the one-character language designator to 'C'
+            --  Change the one-character language designator to Lang_Id
 
             Rewrite (Expression (Lang_Char),
               Make_Character_Literal (Loc,
                 Chars              => Name_uC,
-                Char_Literal_Value => UI_From_CC (Get_Char_Code ('C'))));
+                Char_Literal_Value => UI_From_CC (Get_Char_Code (Lang_Id))));
             Analyze (Expression (Lang_Char));
 
             --  Change the value of Foreign_Data

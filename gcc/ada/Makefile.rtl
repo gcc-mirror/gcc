@@ -419,6 +419,9 @@ GNATRTL_NONTASKING_OBJS= \
   g-comlin$(objext) \
   g-comver$(objext) \
   g-crc32$(objext) \
+  g-cpp$(objext) \
+  g-cppstd$(objext) \
+  g-cstyin$(objext) \
   g-ctrl_c$(objext) \
   g-curexc$(objext) \
   g-debpoo$(objext) \

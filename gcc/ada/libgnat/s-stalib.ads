@@ -105,7 +105,8 @@ package System.Standard_Library is
       Lang : aliased Character;
       --  A character indicating the language raising the exception.
       --  Set to "A" for exceptions defined by an Ada program.
-      --  Set to "C" for imported C++ exceptions.
+      --  Set to "B" for imported C++ exceptions with base type matching.
+      --  Set to "C" for imported C++ exceptions with exact type matching.
 
       Name_Length : aliased Natural;
       --  Length of fully expanded name of exception

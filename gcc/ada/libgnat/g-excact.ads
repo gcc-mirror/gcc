@@ -91,6 +91,13 @@ package GNAT.Exception_Actions is
    --  Note: All non-predefined exceptions will return Null_Id for programs
    --  compiled with pragma Restrictions (No_Exception_Registration).
 
+   type Exception_Languages is (EL_Unknown, EL_Ada, EL_Cpp);
+   --  Return type for Exception_Language.
+
+   function Exception_Language
+     (E : Exception_Occurrence) return Exception_Languages;
+   --  Return the language from which the exception originates.
+
    function Is_Foreign_Exception (E : Exception_Occurrence) return Boolean;
    --  Tell whether the exception occurrence E represents a foreign exception,
    --  such as one raised in C++ and caught by a when others choice in Ada.

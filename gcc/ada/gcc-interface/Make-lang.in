@@ -513,6 +513,10 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/a-numeri.o	\
  ada/libgnat/ada.o	\
  ada/libgnat/g-byorma.o	\
+ ada/libgnat/g-cpp.o	\
+ ada/libgnat/g-cppexc.o	\
+ ada/libgnat/g-cppstd.o	\
+ ada/libgnat/g-cstyin.o	\
  ada/libgnat/g-heasor.o	\
  ada/libgnat/g-htable.o	\
  ada/libgnat/g-spchge.o	\
@@ -520,6 +524,7 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/g-table.o	\
  ada/libgnat/g-u3spch.o	\
  ada/libgnat/i-c.o	\
+ ada/libgnat/i-cstrin.o	\
  ada/libgnat/interfac.o	\
  ada/libgnat/s-addope.o	\
  ada/libgnat/s-addima.o \
@@ -692,9 +697,14 @@ GNATBIND_OBJS +=  \
  ada/libgnat/a-numeri.o   \
  ada/libgnat/ada.o        \
  ada/libgnat/g-byorma.o   \
+ ada/libgnat/g-cpp.o      \
+ ada/libgnat/g-cppexc.o   \
+ ada/libgnat/g-cppstd.o   \
+ ada/libgnat/g-cstyin.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
  ada/libgnat/i-c.o	      \
+ ada/libgnat/i-cstrin.o   \
  ada/libgnat/interfac.o   \
  ada/libgnat/s-addope.o   \
  ada/libgnat/s-assert.o   \
