@@ -35944,25 +35944,52 @@ all of the reciprocal approximations, except for square root.
 
 @opindex mveclibabi
 @item -mveclibabi=@var{type}
-Specifies the ABI type to use for vectorizing intrinsics using an
-external library.  Supported values for @var{type} are @samp{svml}
-for the Intel short
-vector math library and @samp{acml} for the AMD math core library.
+Specifies the ABI type to use for vectorizing intrinsics using an external
+library.  Supported values for @var{type} are @samp{svml} for the Intel short
+vector math library, @samp{aocl} for the math library (LibM) from AMD
+Optimizing CPU Libraries (AOCL) and @samp{acml} for the end-of-life AMD core
+math library (to which AOCL-LibM is the successor).
 To use this option, both @option{-ftree-vectorize} and
 @option{-funsafe-math-optimizations} have to be enabled, and an SVML or ACML
 ABI-compatible library must be specified at link time.
 
-GCC currently emits calls to @code{vmldExp2},
-@code{vmldLn2}, @code{vmldLog102}, @code{vmldPow2},
-@code{vmldTanh2}, @code{vmldTan2}, @code{vmldAtan2}, @code{vmldAtanh2},
-@code{vmldCbrt2}, @code{vmldSinh2}, @code{vmldSin2}, @code{vmldAsinh2},
-@code{vmldAsin2}, @code{vmldCosh2}, @code{vmldCos2}, @code{vmldAcosh2},
-@code{vmldAcos2}, @code{vmlsExp4}, @code{vmlsLn4},
-@code{vmlsLog104}, @code{vmlsPow4}, @code{vmlsTanh4}, @code{vmlsTan4},
-@code{vmlsAtan4}, @code{vmlsAtanh4}, @code{vmlsCbrt4}, @code{vmlsSinh4},
-@code{vmlsSin4}, @code{vmlsAsinh4}, @code{vmlsAsin4}, @code{vmlsCosh4},
-@code{vmlsCos4}, @code{vmlsAcosh4} and @code{vmlsAcos4} for corresponding
-function type when @option{-mveclibabi=svml} is used, and @code{__vrd2_sin},
+GCC currently emits calls to @code{vmldExp2}, @code{vmldLn2},
+@code{vmldLog102}, @code{vmldPow2}, @code{vmldTanh2}, @code{vmldTan2},
+@code{vmldAtan2}, @code{vmldAtanh2}, @code{vmldCbrt2}, @code{vmldSinh2},
+@code{vmldSin2}, @code{vmldAsinh2}, @code{vmldAsin2}, @code{vmldCosh2},
+@code{vmldCos2}, @code{vmldAcosh2}, @code{vmldAcos2}, @code{vmlsExp4},
+@code{vmlsLn4}, @code{vmlsLog104}, @code{vmlsPow4}, @code{vmlsTanh4},
+@code{vmlsTan4}, @code{vmlsAtan4}, @code{vmlsAtanh4}, @code{vmlsCbrt4},
+@code{vmlsSinh4}, @code{vmlsSin4}, @code{vmlsAsinh4}, @code{vmlsAsin4},
+@code{vmlsCosh4}, @code{vmlsCos4}, @code{vmlsAcosh4} and @code{vmlsAcos4} for
+corresponding function type when @option{-mveclibabi=svml} is used,
+@code{amd_vrs4_acosf}, @code{amd_vrs16_acosf}, @code{amd_vrd8_asin},
+@code{amd_vrs4_asinf}, @code{amd_vrs8_asinf}, @code{amd_vrs16_asinf},
+@code{amd_vrd2_atan}, @code{amd_vrd8_atan}, @code{amd_vrs4_atanf},
+@code{amd_vrs8_atanf}, @code{amd_vrs16_atanf}, @code{amd_vrd2_cos},
+@code{amd_vrd4_cos}, @code{amd_vrd8_cos}, @code{amd_vrs4_cosf},
+@code{amd_vrs8_cosf}, @code{amd_vrs16_cosf}, @code{amd_vrs4_coshf},
+@code{amd_vrs8_coshf}, @code{amd_vrd2_erf}, @code{amd_vrd4_erf},
+@code{amd_vrd8_erf}, @code{amd_vrs4_erff}, @code{amd_vrs8_erff},
+@code{amd_vrs16_erff}, @code{amd_vrd2_exp}, @code{amd_vrd4_exp},
+@code{amd_vrd8_exp}, @code{amd_vrs4_expf}, @code{amd_vrs8_expf},
+@code{amd_vrs16_expf}, @code{amd_vrd2_exp10}, @code{amd_vrs4_exp10f},
+@code{amd_vrd2_exp2}, @code{amd_vrd4_exp2}, @code{amd_vrd8_exp2},
+@code{amd_vrs4_exp2f}, @code{amd_vrs8_exp2f}, @code{amd_vrs16_exp2f},
+@code{amd_vrs4_expm1f}, @code{amd_vrd2_log}, @code{amd_vrd4_log},
+@code{amd_vrd8_log}, @code{amd_vrs4_logf}, @code{amd_vrs8_logf},
+@code{amd_vrs16_logf}, @code{amd_vrd2_log10}, @code{amd_vrs4_log10f},
+@code{amd_vrs8_log10f}, @code{amd_vrs16_log10f}, @code{amd_vrd2_log1p},
+@code{amd_vrs4_log1pf}, @code{amd_vrd2_log2}, @code{amd_vrd4_log2},
+@code{amd_vrd8_log2}, @code{amd_vrs4_log2f}, @code{amd_vrs8_log2f},
+@code{amd_vrs16_log2f}, @code{amd_vrd2_pow}, @code{amd_vrd4_pow},
+@code{amd_vrd8_pow}, @code{amd_vrs4_powf}, @code{amd_vrs8_powf},
+@code{amd_vrs16_powf}, @code{amd_vrd2_sin}, @code{amd_vrd4_sin},
+@code{amd_vrd8_sin}, @code{amd_vrs4_sinf}, @code{amd_vrs8_sinf},
+@code{amd_vrs16_sinf}, @code{amd_vrd2_tan}, @code{amd_vrd4_tan},
+@code{amd_vrd8_tan}, @code{amd_vrs16_tanf}, @code{amd_vrs4_tanhf},
+@code{amd_vrs8_tanhf}, @code{amd_vrs16_tanhf} for the corresponding function
+type when @option{-mveclibabi=aocl} is used, and @code{__vrd2_sin},
 @code{__vrd2_cos}, @code{__vrd2_exp}, @code{__vrd2_log}, @code{__vrd2_log2},
 @code{__vrd2_log10}, @code{__vrs4_sinf}, @code{__vrs4_cosf},
 @code{__vrs4_expf}, @code{__vrs4_logf}, @code{__vrs4_log2f},

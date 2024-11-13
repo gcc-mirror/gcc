@@ -2877,6 +2877,10 @@ ix86_option_override_internal (bool main_args_p,
 	ix86_veclib_handler = &ix86_veclibabi_acml;
 	break;
 
+      case ix86_veclibabi_type_aocl:
+	ix86_veclib_handler = &ix86_veclibabi_aocl;
+	break;
+
       default:
 	gcc_unreachable ();
       }

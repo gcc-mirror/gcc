@@ -588,6 +588,9 @@ Enum(ix86_veclibabi) String(svml) Value(ix86_veclibabi_type_svml)
 EnumValue
 Enum(ix86_veclibabi) String(acml) Value(ix86_veclibabi_type_acml)
 
+EnumValue
+Enum(ix86_veclibabi) String(aocl) Value(ix86_veclibabi_type_aocl)
+
 mvect8-ret-in-mem
 Target Mask(VECT8_RETURNS) Save
 Return 8-byte vectors in memory.

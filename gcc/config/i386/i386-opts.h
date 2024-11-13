@@ -87,7 +87,8 @@ enum asm_dialect {
 enum ix86_veclibabi {
   ix86_veclibabi_type_none,
   ix86_veclibabi_type_svml,
-  ix86_veclibabi_type_acml
+  ix86_veclibabi_type_acml,
+  ix86_veclibabi_type_aocl
 };
 
 enum stack_protector_guard {
