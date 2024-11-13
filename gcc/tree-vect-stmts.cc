@@ -2093,7 +2093,6 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	      if (SLP_TREE_LANES (slp_node) == 1)
 		{
 		  *memory_access_type = VMAT_ELEMENTWISE;
-		  overrun_p = false;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "single-element interleaving not supported "
@@ -2110,7 +2109,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		}
 	    }
 
-	  overrun_p = loop_vinfo && gap != 0;
+	  overrun_p = (loop_vinfo && gap != 0
+		       && *memory_access_type != VMAT_ELEMENTWISE);
 	  if (overrun_p && vls_type != VLS_LOAD)
 	    {
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
