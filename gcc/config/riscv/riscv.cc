@@ -4023,7 +4023,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case LO_SUM:
-      *total = set_src_cost (XEXP (x, 0), mode, speed);
+      *total = (set_src_cost (XEXP (x, 0), mode, speed)
+		+ set_src_cost (XEXP (x, 1), mode, speed));
       return true;
 
     case LT:
