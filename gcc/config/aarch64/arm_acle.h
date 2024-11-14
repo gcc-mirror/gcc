@@ -201,6 +201,15 @@ __chkfeat (uint64_t __feat)
   return __builtin_aarch64_chkfeat (__feat) ^ __feat;
 }
 
+#define __gcspr() \
+  __builtin_aarch64_gcspr ()
+
+#define __gcspopm() \
+  __builtin_aarch64_gcspopm ()
+
+#define __gcsss(__stack) \
+  __builtin_aarch64_gcsss (__stack)
+
 #pragma GCC pop_options
 
 
