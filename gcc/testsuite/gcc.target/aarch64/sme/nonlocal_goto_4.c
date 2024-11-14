@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "-O2 -fno-schedule-insns -fno-schedule-insns2 -mbranch-protection=none" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 void run(void (*)());
