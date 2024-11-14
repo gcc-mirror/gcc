@@ -1169,7 +1169,7 @@ flive-patching=
 UrlSuffix(gcc/Optimize-Options.html#index-flive-patching)
 
 fallocation-dce
-UrlSuffix(gcc/Optimize-Options.html#index-fno-allocation-dce)
+UrlSuffix(gcc/Optimize-Options.html#index-fallocation-dce)
 
 flive-range-shrinkage
 UrlSuffix(gcc/Optimize-Options.html#index-flive-range-shrinkage)
