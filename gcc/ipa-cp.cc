@@ -225,7 +225,17 @@ values_equal_for_ipcp_p (tree x, tree y)
     return operand_equal_p (x, y, 0);
 }
 
-/* Print V which is extracted from a value in a lattice to F.  */
+/* Print V which is extracted from a value in a lattice to F.  This overloaded
+   function is used to print tree constants.  */
+
+static void
+print_ipcp_constant_value (FILE * f, tree v)
+{
+  ipa_print_constant_value (f, v);
+}
+
+/* Print V which is extracted from a value in a lattice to F.  This overloaded
+   function is used to print constant polymorphic call contexts.  */
 
 static void
 print_ipcp_constant_value (FILE * f, ipa_polymorphic_call_context v)

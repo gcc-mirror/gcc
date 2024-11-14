@@ -1179,6 +1179,7 @@ ipcp_get_transformation_summary (cgraph_node *node)
 
 /* Function formal parameters related computations.  */
 void ipa_initialize_node_params (struct cgraph_node *node);
+void ipa_print_constant_value (FILE *f, tree val);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					vec<cgraph_edge *> *new_edges);
 

@@ -413,7 +413,7 @@ ipa_initialize_node_params (struct cgraph_node *node)
 
 /* Print VAL which is extracted from a jump function to F.  */
 
-static void
+void
 ipa_print_constant_value (FILE *f, tree val)
 {
   print_generic_expr (f, val);
