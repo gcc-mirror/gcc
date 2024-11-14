@@ -863,6 +863,7 @@ static const attribute_spec aarch64_gnu_attributes[] =
        affects_type_identity, handler, exclude } */
   { "aarch64_vector_pcs", 0, 0, false, true,  true,  true,
 			  handle_aarch64_vector_pcs_attribute, NULL },
+  { "indirect_return",    0, 0, false, true, true, true, NULL, NULL },
   { "arm_sve_vector_bits", 1, 1, false, true,  false, true,
 			  aarch64_sve::handle_arm_sve_vector_bits_attribute,
 			  NULL },
@@ -2508,15 +2509,22 @@ aarch64_reg_save_mode (unsigned int regno)
   gcc_unreachable ();
 }
 
-/* Given the ISA mode on entry to a callee and the ABI of the callee,
-   return the CONST_INT that should be placed in an UNSPEC_CALLEE_ABI rtx.  */
+/* Return the CONST_INT that should be placed in an UNSPEC_CALLEE_ABI rtx.
+   This value encodes the following information:
+    - the ISA mode on entry to a callee (ISA_MODE)
+    - the ABI of the callee (PCS_VARIANT)
+    - whether the callee has an indirect_return
+      attribute (INDIRECT_RETURN).  */
 
 rtx
-aarch64_gen_callee_cookie (aarch64_isa_mode isa_mode, arm_pcs pcs_variant)
+aarch64_gen_callee_cookie (aarch64_isa_mode isa_mode, arm_pcs pcs_variant,
+			   bool indirect_return)
 {
-  return gen_int_mode ((unsigned int) isa_mode
-		       | (unsigned int) pcs_variant << AARCH64_NUM_ISA_MODES,
-		       DImode);
+  unsigned int im = (unsigned int) isa_mode;
+  unsigned int ir = (indirect_return ? 1 : 0) << AARCH64_NUM_ISA_MODES;
+  unsigned int pv = (unsigned int) pcs_variant
+		     << (AARCH64_NUM_ABI_ATTRIBUTES + AARCH64_NUM_ISA_MODES);
+  return gen_int_mode (im | ir | pv, DImode);
 }
 
 /* COOKIE is a CONST_INT from an UNSPEC_CALLEE_ABI rtx.  Return the
@@ -2525,7 +2533,8 @@ aarch64_gen_callee_cookie (aarch64_isa_mode isa_mode, arm_pcs pcs_variant)
 static const predefined_function_abi &
 aarch64_callee_abi (rtx cookie)
 {
-  return function_abis[UINTVAL (cookie) >> AARCH64_NUM_ISA_MODES];
+  return function_abis[UINTVAL (cookie)
+	 >> (AARCH64_NUM_ABI_ATTRIBUTES + AARCH64_NUM_ISA_MODES)];
 }
 
 /* COOKIE is a CONST_INT from an UNSPEC_CALLEE_ABI rtx.  Return the
@@ -2536,6 +2545,15 @@ static aarch64_isa_mode
 aarch64_callee_isa_mode (rtx cookie)
 {
   return UINTVAL (cookie) & ((1 << AARCH64_NUM_ISA_MODES) - 1);
+}
+
+/* COOKIE is a CONST_INT from an UNSPEC_CALLEE_ABI rtx.  Return
+   whether function was marked with an indirect_return attribute.  */
+
+static bool
+aarch64_callee_indirect_return (rtx cookie)
+{
+  return ((UINTVAL (cookie) >> AARCH64_NUM_ISA_MODES) & 1) == 1;
 }
 
 /* INSN is a call instruction.  Return the CONST_INT stored in its
@@ -2550,6 +2568,16 @@ aarch64_insn_callee_cookie (const rtx_insn *insn)
   gcc_assert (GET_CODE (unspec) == UNSPEC
 	      && XINT (unspec, 1) == UNSPEC_CALLEE_ABI);
   return XVECEXP (unspec, 0, 0);
+}
+
+/* INSN is a call instruction.  Return true if the callee has an
+   indirect_return attribute.  */
+
+bool
+aarch_fun_is_indirect_return (rtx_insn *insn)
+{
+  rtx cookie = aarch64_insn_callee_cookie (insn);
+  return aarch64_callee_indirect_return (cookie);
 }
 
 /* Implement TARGET_INSN_CALLEE_ABI.  */
@@ -6489,6 +6517,14 @@ aarch64_function_ok_for_sibcall (tree, tree exp)
     if (bool (aarch64_cfun_shared_flags (state))
 	!= bool (aarch64_fntype_shared_flags (fntype, state)))
       return false;
+
+  /* BTI J is needed where indirect_return functions may return
+     if bti is enabled there.  */
+  if (lookup_attribute ("indirect_return", TYPE_ATTRIBUTES (fntype))
+      && !lookup_attribute ("indirect_return",
+			    TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl))))
+    return false;
+
   return true;
 }
 
@@ -7318,7 +7354,8 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   if (arg.end_marker_p ())
     {
       rtx abi_cookie = aarch64_gen_callee_cookie (pcum->isa_mode,
-						  pcum->pcs_variant);
+						  pcum->pcs_variant,
+						  pcum->indirect_return);
       rtx sme_mode_switch_args = aarch64_finish_sme_mode_switch_args (pcum);
       rtx shared_za_flags = gen_int_mode (pcum->shared_za_flags, SImode);
       rtx shared_zt0_flags = gen_int_mode (pcum->shared_zt0_flags, SImode);
@@ -7350,11 +7387,14 @@ aarch64_init_cumulative_args (CUMULATIVE_ARGS *pcum,
     {
       pcum->pcs_variant = (arm_pcs) fntype_abi (fntype).id ();
       pcum->isa_mode = aarch64_fntype_isa_mode (fntype);
+      pcum->indirect_return = lookup_attribute ("indirect_return",
+						TYPE_ATTRIBUTES (fntype));
     }
   else
     {
       pcum->pcs_variant = ARM_PCS_AAPCS64;
       pcum->isa_mode = AARCH64_DEFAULT_ISA_MODE;
+      pcum->indirect_return = false;
     }
   pcum->aapcs_reg = NULL_RTX;
   pcum->aapcs_arg_processed = false;
@@ -10257,7 +10297,9 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
   auto isa_mode = aarch64_fntype_isa_mode (TREE_TYPE (function));
   auto pcs_variant = arm_pcs (fndecl_abi (function).id ());
-  rtx callee_abi = aarch64_gen_callee_cookie (isa_mode, pcs_variant);
+  bool ir = lookup_attribute ("indirect_return",
+			      TYPE_ATTRIBUTES (TREE_TYPE (function)));
+  rtx callee_abi = aarch64_gen_callee_cookie (isa_mode, pcs_variant, ir);
   insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, callee_abi));
   SIBLING_CALL_P (insn) = 1;
 
@@ -29419,6 +29461,8 @@ aarch64_comp_type_attributes (const_tree type1, const_tree type2)
   };
 
   if (!check_attr ("gnu", "aarch64_vector_pcs"))
+    return 0;
+  if (!check_attr ("gnu", "indirect_return"))
     return 0;
   if (!check_attr ("gnu", "Advanced SIMD type"))
     return 0;

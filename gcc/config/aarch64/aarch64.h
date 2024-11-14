@@ -1142,6 +1142,7 @@ typedef struct
 {
   enum arm_pcs pcs_variant;
   aarch64_isa_mode isa_mode;
+  bool indirect_return;		/* Whether function is marked with indirect_return attribute.  */
   int aapcs_arg_processed;	/* No need to lay out this argument again.  */
   int aapcs_ncrn;		/* Next Core register number.  */
   int aapcs_nextncrn;		/* Next next core register number.  */

@@ -48,6 +48,7 @@ extern bool aarch_bti_j_insn_p (rtx_insn *);
 extern bool aarch_pac_insn_p (rtx);
 extern rtx aarch_gen_bti_c (void);
 extern rtx aarch_gen_bti_j (void);
+extern bool aarch_fun_is_indirect_return (rtx_insn *);
 
 /* RTX cost table definitions.  These are used when tuning for speed rather
    than for size and should reflect the _additional_ cost over the cost

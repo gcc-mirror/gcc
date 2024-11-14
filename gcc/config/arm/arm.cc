@@ -33492,6 +33492,15 @@ aarch_gen_bti_j (void)
   return gen_bti_nop ();
 }
 
+/* For AArch32, we always return false because indirect_return attribute
+   is only supported on AArch64 targets.  */
+
+bool
+aarch_fun_is_indirect_return (rtx_insn *)
+{
+  return false;
+}
+
 /* Implement TARGET_SCHED_CAN_SPECULATE_INSN.  Return true if INSN can be
    scheduled for speculative execution.  Reject the long-running division
    and square-root instructions.  */

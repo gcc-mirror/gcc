@@ -25,6 +25,8 @@
 #ifndef USED_FOR_TARGET
 #include "bbitmap.h"
 
+constexpr unsigned int AARCH64_NUM_ABI_ATTRIBUTES = 1;
+
 typedef uint64_t aarch64_isa_mode;
 
 constexpr unsigned int AARCH64_NUM_ISA_MODES = (0

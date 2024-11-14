@@ -92,6 +92,22 @@ const pass_data pass_data_insert_bti =
   0, /* todo_flags_finish.  */
 };
 
+/* Decide if BTI J is needed after a call instruction.  */
+static bool
+call_needs_bti_j (rtx_insn *insn)
+{
+  /* Call returns twice, one of which may be indirect.  */
+  if (find_reg_note (insn, REG_SETJMP, NULL))
+    return true;
+
+  /* Tail call does not return.  */
+  if (SIBLING_CALL_P (insn))
+    return false;
+
+  /* Check if the function is marked to return indirectly.  */
+  return aarch_fun_is_indirect_return (insn);
+}
+
 /* Insert the BTI instruction.  */
 /* This is implemented as a late RTL pass that runs before branch
    shortening and does the following.  */
@@ -147,10 +163,9 @@ rest_of_insert_bti (void)
 		}
 	    }
 
-	  /* Also look for calls to setjmp () which would be marked with
-	     REG_SETJMP note and put a BTI J after.  This is where longjump ()
-	     will return.  */
-	  if (CALL_P (insn) && (find_reg_note (insn, REG_SETJMP, NULL)))
+	  /* Also look for calls that may return indirectly, such as setjmp,
+	     and put a BTI J after them.  */
+	  if (CALL_P (insn) && call_needs_bti_j (insn))
 	    {
 	      bti_insn = aarch_gen_bti_j ();
 	      emit_insn_after (bti_insn, insn);
