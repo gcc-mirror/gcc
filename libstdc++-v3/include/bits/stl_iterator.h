@@ -1030,7 +1030,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef std::iterator_traits<_Iterator>		__traits_type;
 
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L && ! defined __glibcxx_concepts
       template<typename _Iter>
 	using __convertible_from
 	  = std::__enable_if_t<std::is_convertible<_Iter, _Iterator>::value>;
@@ -1060,7 +1060,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Allow iterator to const_iterator conversion
 #if __cplusplus >= 201103L
+# ifdef __glibcxx_concepts
+      template<typename _Iter> requires std::is_convertible_v<_Iter, _Iterator>
+# else
       template<typename _Iter, typename = __convertible_from<_Iter>>
+# endif
 	[[__gnu__::__always_inline__]]
 	constexpr
 	__normal_iterator(const __normal_iterator<_Iter, _Container>& __i)
