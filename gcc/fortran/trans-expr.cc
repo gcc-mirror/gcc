@@ -6378,6 +6378,76 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 }
 
 
+/* Helper function for the handling of NULL() actual arguments associated with
+   non-optional dummy variables.  Argument parmse should already be set up.  */
+static void
+conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
+{
+  gcc_assert (fsym && !fsym->attr.optional);
+
+  /* Obtain the character length for a NULL() actual with a character
+     MOLD argument.  Otherwise substitute a suitable dummy length.
+     Here we handle only non-optional dummies of non-bind(c) procedures.  */
+  if (fsym->ts.type == BT_CHARACTER)
+    {
+      if (e->ts.type == BT_CHARACTER
+	  && e->symtree->n.sym->ts.type == BT_CHARACTER)
+	{
+	  /* MOLD is present.  Substitute a temporary character NULL pointer.
+	     For an assumed-rank dummy we need a descriptor that passes the
+	     correct rank.  */
+	  if (fsym->as && fsym->as->type == AS_ASSUMED_RANK)
+	    {
+	      tree rank;
+	      tree tmp = parmse->expr;
+	      tmp = gfc_conv_scalar_to_descriptor (parmse, tmp, fsym->attr);
+	      rank = gfc_conv_descriptor_rank (tmp);
+	      gfc_add_modify (&parmse->pre, rank,
+			      build_int_cst (TREE_TYPE (rank), e->rank));
+	      parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
+	    }
+	  else
+	    {
+	      tree tmp = gfc_create_var (TREE_TYPE (parmse->expr), "null");
+	      gfc_add_modify (&parmse->pre, tmp,
+			      build_zero_cst (TREE_TYPE (tmp)));
+	      parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
+	    }
+
+	  /* Ensure that a usable length is available.  */
+	  if (parmse->string_length == NULL_TREE)
+	    {
+	      gfc_typespec *ts = &e->symtree->n.sym->ts;
+
+	      if (ts->u.cl->length != NULL
+		  && ts->u.cl->length->expr_type == EXPR_CONSTANT)
+		gfc_conv_const_charlen (ts->u.cl);
+
+	      if (ts->u.cl->backend_decl)
+		parmse->string_length = ts->u.cl->backend_decl;
+	    }
+	}
+      else if (e->ts.type == BT_UNKNOWN && parmse->string_length == NULL_TREE)
+	{
+	  /* MOLD is not present.  Pass length of associated dummy character
+	     argument if constant, or zero.  */
+	  if (fsym->ts.u.cl->length != NULL
+	      && fsym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	    {
+	      gfc_conv_const_charlen (fsym->ts.u.cl);
+	      parmse->string_length = fsym->ts.u.cl->backend_decl;
+	    }
+	  else
+	    {
+	      parmse->string_length = gfc_create_var (gfc_charlen_type_node,
+						      "slen");
+	      gfc_add_modify (&parmse->pre, parmse->string_length,
+			      build_zero_cst (gfc_charlen_type_node));
+	    }
+	}
+    }
+}
+
 
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
@@ -7542,6 +7612,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_conv_const_charlen (e->symtree->n.sym->ts.u.cl);
 	      parmse.string_length = e->symtree->n.sym->ts.u.cl->backend_decl;
 	    }
+
+	  /* Obtain the character length for a NULL() actual with a character
+	     MOLD argument.  Otherwise substitute a suitable dummy length.
+	     Here we handle non-optional dummies of non-bind(c) procedures.  */
+	  if (e->expr_type == EXPR_NULL
+	      && fsym->ts.type == BT_CHARACTER
+	      && !fsym->attr.optional
+	      && !(sym->attr.is_bind_c && is_CFI_desc (fsym, NULL)))
+	    conv_null_actual (&parmse, e, fsym);
 	}
 
       /* If any actual argument of the procedure is allocatable and passed
