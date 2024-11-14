@@ -178,6 +178,9 @@ aarch64_demangle_return_addr (struct _Unwind_Context *context,
   return addr;
 }
 
+/* GCS enable flag for chkfeat instruction.  */
+#define CHKFEAT_GCS 1
+
 /* SME runtime function local to libgcc, streaming compatible
    and preserves more registers than the base PCS requires, but
    we don't rely on that here.  */
@@ -185,12 +188,66 @@ __attribute__ ((visibility ("hidden")))
 void __libgcc_arm_za_disable (void);
 
 /* Disable the SME ZA state in case an unwound frame used the ZA
-   lazy saving scheme.  */
+   lazy saving scheme. And unwind the GCS for EH.  */
 #undef _Unwind_Frames_Extra
 #define _Unwind_Frames_Extra(x)				\
   do							\
     {							\
       __libgcc_arm_za_disable ();			\
+      if (__builtin_aarch64_chkfeat (CHKFEAT_GCS) == 0)	\
+	{						\
+	  for (_Unwind_Word n = (x); n != 0; n--)	\
+	    __builtin_aarch64_gcspopm ();		\
+	}						\
+    }							\
+  while (0)
+
+/* On signal entry the OS places a token on the GCS that can be used to
+   verify the integrity of the GCS pointer on signal return.  It also
+   places the signal handler return address (the restorer that calls the
+   signal return syscall) on the GCS so the handler can return.
+   Because of this token, each stack frame visited during unwinding has
+   exactly one corresponding entry on the GCS, so the frame count is
+   the number of entries that will have to be popped at EH return time.
+
+   Note: This depends on the GCS signal ABI of the OS.
+
+   When unwinding across a stack frame for each frame the corresponding
+   entry is checked on the GCS against the computed return address from
+   the normal stack.  If they don't match then _URC_FATAL_PHASE2_ERROR
+   is returned.  This check is omitted if
+
+   1. GCS is disabled. Note: asynchronous GCS disable is supported here
+      if GCSPR and the GCS remains readable.
+   2. Non-catchable exception where exception_class == 0.  Note: the
+      pthread cancellation implementation in glibc sets exception_class
+      to 0 when the unwinder is used for cancellation cleanup handling,
+      so this allows the GCS to get out of sync during cancellation.
+      This weakens security but avoids an ABI break in glibc.
+   3. Zero return address which marks the outermost stack frame.
+   4. Signal stack frame, the GCS entry is an OS specific token then
+      with the top bit set.
+ */
+#undef _Unwind_Frames_Increment
+#define _Unwind_Frames_Increment(exc, context, frames)	\
+  do							\
+    {							\
+      frames++;						\
+      if (__builtin_aarch64_chkfeat (CHKFEAT_GCS) != 0	\
+	  || exc->exception_class == 0			\
+	  || _Unwind_GetIP (context) == 0)		\
+	break;						\
+      const _Unwind_Word *gcs = __builtin_aarch64_gcspr (); \
+      if (_Unwind_IsSignalFrame (context))		\
+	{						\
+	  if (gcs[frames] >> 63 == 0)			\
+	    return _URC_FATAL_PHASE2_ERROR;		\
+	}						\
+      else						\
+	{						\
+	  if (gcs[frames] != _Unwind_GetIP (context))	\
+	    return _URC_FATAL_PHASE2_ERROR;		\
+	}						\
     }							\
   while (0)
 
