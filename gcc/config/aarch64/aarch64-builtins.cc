@@ -876,6 +876,8 @@ enum aarch64_builtins
   AARCH64_PLDX,
   AARCH64_PLI,
   AARCH64_PLIX,
+  /* Armv8.9-A / Armv9.4-A builtins.  */
+  AARCH64_BUILTIN_CHKFEAT,
   AARCH64_BUILTIN_MAX
 };
 
@@ -2279,6 +2281,12 @@ aarch64_general_init_builtins (void)
   if (!TARGET_ILP32)
     aarch64_init_pauth_hint_builtins ();
 
+  tree ftype_chkfeat
+    = build_function_type_list (uint64_type_node, uint64_type_node, NULL);
+  aarch64_builtin_decls[AARCH64_BUILTIN_CHKFEAT]
+    = aarch64_general_add_builtin ("__builtin_aarch64_chkfeat", ftype_chkfeat,
+				   AARCH64_BUILTIN_CHKFEAT);
+
   if (in_lto_p)
     handle_arm_acle_h ();
 }
@@ -3498,6 +3506,15 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_PLIX:
       aarch64_expand_prefetch_builtin (exp, fcode);
       return target;
+
+    case AARCH64_BUILTIN_CHKFEAT:
+      {
+	rtx x16_reg = gen_rtx_REG (DImode, R16_REGNUM);
+	op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	emit_move_insn (x16_reg, op0);
+	expand_insn (CODE_FOR_aarch64_chkfeat, 0, 0);
+	return copy_to_reg (x16_reg);
+      }
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)
