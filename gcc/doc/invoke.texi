@@ -520,12 +520,12 @@ Objective-C and Objective-C++ Dialects}.
 }
 
 @item C and Objective-C-only Warning Options
-@gccoptlist{-Wbad-function-cast  -Wmissing-declarations
--Wmissing-parameter-type -Wdeclaration-missing-parameter-type
--Wmissing-prototypes -Wmissing-variable-declarations
--Wnested-externs -Wold-style-declaration  -Wold-style-definition
--Wstrict-prototypes  -Wtraditional  -Wtraditional-conversion
--Wdeclaration-after-statement  -Wpointer-sign}
+@gccoptlist{-Wbad-function-cast -Wmissing-declarations
+-Wmissing-parameter-name -Wmissing-parameter-type
+-Wdeclaration-missing-parameter-type -Wmissing-prototypes
+-Wmissing-variable-declarations -Wnested-externs -Wold-style-declaration
+-Wold-style-definition -Wstrict-prototypes -Wtraditional
+-Wtraditional-conversion -Wdeclaration-after-statement -Wpointer-sign}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program}.
@@ -6370,6 +6370,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wimplicit-fallthrough=3
 -Wmaybe-uninitialized
 -Wmissing-field-initializers
+-Wmissing-parameter-name @r{(C/ObjC only)}
 -Wmissing-parameter-type @r{(C/ObjC only)}
 -Wold-style-declaration @r{(C/ObjC only)}
 -Woverride-init @r{(C/ObjC only)}
@@ -10047,6 +10048,18 @@ even if there is a previous prototype.  A definition using @samp{()}
 is not considered an old-style definition in C23 mode, because it is
 equivalent to @samp{(void)} in that case, but is considered an
 old-style definition for older standards.
+
+@opindex Wmissing-parameter-name
+@opindex Wno-missing-parameter-name
+@item -Wmissing-parameter-name @r{(C and Objective-C only)}
+Warn if a function definition omits a parameter name, specifying only
+its type.  This can be used to document that a parameter is unused
+in the definition.  It is part of C23 and later dialects of C,
+and available as a GCC extension in all other dialects.
+
+This warning is also enabled by @option{-Wc11-c23-compat}.  It is turned
+into an error if building for a C version before C23 by
+@option{-pedantic-errors}.
 
 @opindex Wmissing-parameter-type
 @opindex Wno-missing-parameter-type

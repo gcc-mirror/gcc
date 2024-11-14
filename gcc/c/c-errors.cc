@@ -71,7 +71,10 @@ pedwarn_c23 (location_t location,
    otherwise issue warning MSGID if -Wc11-c23-compat is specified.
    This function is supposed to be used for matters that are allowed in
    ISO C23 but not supported in ISO C11, thus we explicitly don't pedwarn
-   when C23 is specified.  */
+   when C23 is specified.
+
+   Additionally, warn if OPTION_ID is not OPT_Wpedantic nor
+   OPT_Wc11_c23_compat.  */
 
 bool
 pedwarn_c11 (location_t location,
@@ -84,14 +87,18 @@ pedwarn_c11 (location_t location,
   rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
-  /* If desired, issue the C11/C23 compat warning, which is more specific
-     than -pedantic.  */
-  if (warn_c11_c23_compat > 0)
+  /* If desired, issue the C11/C23 compat warning, which is more specific than
+     -pedantic, or the warning specified by option_id.  */
+  if (warn_c11_c23_compat > 0 || (option_id.m_idx != OPT_Wpedantic
+				  && option_id.m_idx != OPT_Wc11_c23_compat))
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
 			   (pedantic && !flag_isoc23)
 			   ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_id = OPT_Wc11_c23_compat;
+      if (option_id == OPT_Wpedantic)
+	diagnostic.option_id = OPT_Wc11_c23_compat;
+      else
+	diagnostic.option_id = option_id;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
   /* -Wno-c11-c23-compat suppresses even the pedwarns.  */

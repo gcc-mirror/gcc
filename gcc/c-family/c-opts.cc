@@ -986,6 +986,13 @@ c_common_post_options (const char **pfilename)
   if (warn_shift_overflow == -1)
     warn_shift_overflow = cxx_dialect >= cxx11 || flag_isoc99;
 
+  /* -Wmissing-parameter-name is enabled by -pedantic before C23,
+     and for -Wc11-c23-compat.  */
+  if (warn_missing_parameter_name == -1)
+    warn_missing_parameter_name
+      = ((pedantic && !flag_isoc23 && warn_c11_c23_compat != 0)
+	 || warn_c11_c23_compat > 0);
+
   /* -Wshift-negative-value is enabled by -Wextra in C99 and C++11 to C++17
      modes.  */
   if (warn_shift_negative_value == -1)

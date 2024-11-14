@@ -1026,6 +1026,10 @@ Wmissing-include-dirs
 C ObjC C++ ObjC++ CPP(warn_missing_include_dirs) CppReason(CPP_W_MISSING_INCLUDE_DIRS) Var(cpp_warn_missing_include_dirs) Init(0) Warning
 Warn about user-specified include directories that do not exist.
 
+Wmissing-parameter-name
+C ObjC Var(warn_missing_parameter_name) Init(-1) Warning
+Warn about function definitions omitting parameter names.
+
 Wmissing-parameter-type
 C ObjC Var(warn_missing_parameter_type) Warning EnabledBy(Wextra)
 Warn about function parameters declared without a type specifier in K&R-style functions.
