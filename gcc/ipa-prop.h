@@ -1248,6 +1248,8 @@ void ipa_push_agg_values_from_jfunc (ipa_node_params *info, cgraph_node *node,
 				     unsigned dst_index,
 				     vec<ipa_argagg_value> *res);
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
+void ipa_dump_jump_function (FILE *f, ipa_jump_func *jfunc,
+			     class ipa_polymorphic_call_context *ctx = NULL);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
 bool ipcp_get_parm_bits (tree, tree *, widest_int *);
