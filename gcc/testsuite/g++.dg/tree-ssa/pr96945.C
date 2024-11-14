@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-// { dg-options "-O1 -fdump-tree-optimized -std=c++14" }
+// { dg-do compile { target c++14 } }
+// { dg-options "-O1 -fdump-tree-optimized" }
 #include <vector>
 struct c {
     c() = default;
