@@ -1,3 +1,48 @@
+2024-11-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_69.f90: Remove the test that produces a
+	variable string length because the optimized count depends on
+	the platform. This is tested in associate_70.f90.
+
+2024-11-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_69.f90: Activate commented out tests.
+	* gfortran.dg/associate_70.f90: Test correct functioning of
+	references in associate_69.f90 tests.
+
+2024-11-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_70.f90: New test.
+
+2024-11-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/115700
+	* gfortran.dg/associate_69.f90: New test.
+
+2024-11-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/cmpccxadd-1b.c: Change to dg-warning.
+
+2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117418
+	* gcc.target/i386/pr117418-1.c: New test.
+
 2024-11-06  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:

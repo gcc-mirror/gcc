@@ -1,3 +1,12 @@
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101228
+	* include/pstl/parallel_backend_tbb.h (TBB_SUPPRESS_DEPRECATED_MESSAGES):
+	Define before including <tbb/task.h> then undef afterwards.
+
 2024-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
