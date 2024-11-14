@@ -537,6 +537,11 @@ spill_pseudos (void)
 		      break;
 		    }
 		}
+	      if (GET_CODE (PATTERN (insn)) == CLOBBER)
+		/* This is a CLOBBER insn with pseudo spilled to memory.
+		   Mark it for removing it later together with LRA temporary
+		   CLOBBER insns.  */
+		LRA_TEMP_CLOBBER_P (PATTERN (insn)) = 1;
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
 			 "Changing spilled pseudos to memory in insn #%u\n",
