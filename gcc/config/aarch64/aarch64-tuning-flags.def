@@ -50,4 +50,7 @@ AARCH64_EXTRA_TUNING_OPTION ("fully_pipelined_fma", FULLY_PIPELINED_FMA)
    rather than re-use an input predicate register.  */
 AARCH64_EXTRA_TUNING_OPTION ("avoid_pred_rmw", AVOID_PRED_RMW)
 
+/* Baseline tuning settings suitable for all modern cores.  */
+#define AARCH64_EXTRA_TUNE_BASE (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND)
+
 #undef AARCH64_EXTRA_TUNING_OPTION
