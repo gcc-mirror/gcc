@@ -381,6 +381,7 @@
     UNSPECV_BTI_C		; Represent BTI c.
     UNSPECV_BTI_J		; Represent BTI j.
     UNSPECV_BTI_JC		; Represent BTI jc.
+    UNSPECV_CHKFEAT		; Represent CHKFEAT X16.
     UNSPECV_TSTART		; Represent transaction start.
     UNSPECV_TCOMMIT		; Represent transaction commit.
     UNSPECV_TCANCEL		; Represent transaction cancel.
@@ -8307,6 +8308,14 @@
 		   UNSPEC_RESTORE_NZCV))]
   ""
   "msr\tnzcv, %0"
+)
+
+;; CHKFEAT instruction
+(define_insn "aarch64_chkfeat"
+  [(set (reg:DI R16_REGNUM)
+        (unspec_volatile:DI [(reg:DI R16_REGNUM)] UNSPECV_CHKFEAT))]
+  ""
+  "hint\\t40 // chkfeat x16"
 )
 
 ;; AdvSIMD Stuff
