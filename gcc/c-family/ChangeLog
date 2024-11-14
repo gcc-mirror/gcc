@@ -1,3 +1,13 @@
+2024-11-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117059
+	* c.opt (Wzero-as-null-pointer-constant): Enable for C and ObjC.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.cc (interpret_float): Subtract 3 or 4 from copylen
+	rather than 2 if last character of CPP_N_DFLOAT is a digit.
+
 2024-11-12  Jason Merrill  <jason@redhat.com>
 
 	* c.opt.urls: Regenerate.

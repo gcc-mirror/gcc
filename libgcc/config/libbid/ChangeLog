@@ -1,3 +1,9 @@
+2024-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR libgcc/117537
+	* bid_conf.h (COPY_ARG_REF): Fix initializer.
+	(COPY_ARG_VAL): Likewise.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* _le_td.c: Remove trailing whitespace.

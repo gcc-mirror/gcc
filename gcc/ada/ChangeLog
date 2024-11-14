@@ -1,3 +1,74 @@
+2024-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (elaborate_expression_2): Do not divide and
+	multiply back if the alignment factor is already explicit.
+
+2024-11-14  Steve Baird  <baird@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Aggregate): The rule about
+	discriminant dependent component references in choices applies to
+	both array and record delta aggregates, so check for violations in
+	Resolve_Delta_Aggregate. Call a new procedure,
+	Check_For_Bad_Dd_Component_Choice, for each choice.
+	(Resolve_Delta_Record_Aggregate): Call a new procedure,
+	Check_For_Bad_Overlap, for each pair of choices.
+
+2024-11-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* bindgen.adb (Gen_Elab_Calls): Tweak test.
+	(Gen_Elab_Externals): Likewise.
+
+2024-11-14  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-strmap.adb: Add assert to regain proofs.
+	* libgnat/a-strsup.adb: Likewise.
+	* libgnat/s-aridou.adb: Add assertions to regain proofs.
+	* libgnat/s-arit32.adb: Use Exceptional_Cases to specify Raise.
+	* libgnat/s-arit64.adb: Use Round_Quatient from Impl instead of
+	redefining it.
+	* libgnat/s-arit64.ads: Likewise.
+	* libgnat/s-expmod.adb: Regain proof of lemma.
+	* libgnat/s-exponn.adb: Likewise.
+	* libgnat/s-expont.adb: Likewise.
+	* libgnat/s-imgboo.adb: Add local lemma to regain proof.
+	* libgnat/s-valuti.ads: Add Always_Terminates on Bad_Value.
+
+2024-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-imagef.ads (Image_Fixed): Adjust outdated sentence.
+
+2024-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Record_Hole_Check): Deal consistently with the base
+	type throughout the processing.  Return if its declaration is not a
+	full type declaration.  Assert that its record definition is either
+	a derived type definition or a record definition.  If the type has a
+	private declaration that does not specify unknown discriminants, use
+	it as the source of discriminant specifications, if any.
+	(Check_Component_List): Process every N_Discriminant_Specification
+	but assert that its defining identifier is really a discriminant.
+
+2024-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-aridou.ads (Add_With_Ovflo_Check): Adjust description.
+	(Subtract_With_Ovflo_Check): Likewise.
+	(Multiply_With_Ovflo_Check): Likewise.
+	(Scaled_Divide): Likewise.
+	(Double_Divide): Likewise.
+	* libgnat/s-arit64.ads (Multiply_With_Ovflo_Check64): Likewise.
+	* libgnat/s-arit128.ads (Multiply_With_Ovflo_Check128): Likewise.
+
+2024-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112524
+	PR ada/113781
+	* par-ch4.adb (P_Primary) <Tok_For>: Give an error about missing
+	parentheses in the (purported) iterated component case too.
+	(P_Unparen_Cond_Expr_Etc): Likewise.
+	* sem.adb (Analyze): Raise PE on N_Iterated_Component_Association.
+	* sem_util.ads (Diagnose_Iterated_Component_Association): Delete.
+	* sem_util.adb (Diagnose_Iterated_Component_Association): Likewise.
+
 2024-11-12  Marc Poulhiès  <poulhies@adacore.com>
 
 	* gcc-interface/Makefile.in: Remove extra 'with'.

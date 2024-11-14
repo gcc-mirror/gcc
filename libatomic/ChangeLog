@@ -1,3 +1,9 @@
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/linux/aarch64/atomic_16.S (FEATURE_1_GCS): Define.
+	(GCS_FLAG): Define if GCS is enabled.
+	(GNU_PROPERTY): Add GCS_FLAG.
+
 2024-09-02  Alex Coplan  <alex.coplan@arm.com>
 
 	* testsuite/lib/libatomic.exp: Load scanltrans.exp instead of

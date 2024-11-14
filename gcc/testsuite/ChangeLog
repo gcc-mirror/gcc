@@ -1,3 +1,431 @@
+2024-11-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/namespace-7_a.C: New test.
+	* g++.dg/modules/namespace-7_b.C: New test.
+
+2024-11-14  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* gcc.target/aarch64/gcs-nonlocal-3.c: New test.
+	* gcc.target/aarch64/sme/nonlocal_goto_4.c: Update.
+	* gcc.target/aarch64/sme/nonlocal_goto_5.c: Update.
+	* gcc.target/aarch64/sme/nonlocal_goto_6.c: Update.
+
+2024-11-14  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* g++.target/aarch64/return_address_sign_ab_exception.C: Update.
+	* gcc.target/aarch64/eh_return.c: Update.
+
+2024-11-14  Richard Ball  <richard.ball@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* gcc.target/aarch64/indirect_return-1.c: New test.
+	* gcc.target/aarch64/indirect_return-2.c: New test.
+	* gcc.target/aarch64/indirect_return-3.c: New test.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Add gcs specific
+	tests.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_1.c: GCS test.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/gcs-nonlocal-1.c: New test.
+	* gcc.target/aarch64/gcs-nonlocal-1-track-speculation.c: New test.
+	* gcc.target/aarch64/gcs-nonlocal-2.c: New test.
+	* gcc.target/aarch64/gcs-nonlocal-2-track-speculation.c: New test.
+	* gcc.target/aarch64/gcs-nonlocal-1.h: New header file.
+	* gcc.target/aarch64/gcs-nonlocal-2.h: New header file.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* gcc.target/aarch64/acle/gcs-1.c: New test.
+	* gcc.target/aarch64/gcspopm-1.c: New test.
+	* gcc.target/aarch64/gcspr-1.c: New test.
+	* gcc.target/aarch64/gcsss-1.c: New test.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/chkfeat-1.c: New test.
+	* gcc.target/aarch64/chkfeat-1.c: New test.
+	* gcc.target/aarch64/chkfeat-2.c: New test.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Add branch-protection
+	tests.
+
+2024-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/dce-1.C: New test.
+
+2024-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/cdce3.C: Disable allocation dce.
+	* g++.dg/tree-ssa/pr19476-1.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-2.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-3.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-4.C: Likewise.
+	* gcc.dg/analyzer/pr101837.c: Disable malloc dce.
+	* gcc.dg/tree-ssa/pr19831-3.c: Update.
+	* gfortran.dg/pr68078.f90: Disable malloc DCE.
+
+2024-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipcp-agg-1.c: Add a scan dump for a constant value in
+	the latice dump.
+
+2024-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/110819
+	PR tree-optimization/116868
+	PR tree-optimization/58483
+	* g++.dg/tree-ssa/pr96945.C: cleanup
+	* g++.dg/tree-ssa/pr110819.C: New test.
+	* g++.dg/tree-ssa/pr116868.C: New test.
+	* g++.dg/tree-ssa/pr58483.C: New test.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117567
+	* gcc.dg/torture/pr117567.c: New testcase.
+
+2024-11-14  Eikansh Gupta  <quic_eikagupt@quicinc.com>
+
+	PR tree-optimization/109906
+	* gcc.dg/tree-ssa/pr109906.c: New test.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117556
+	PR tree-optimization/117553
+	* gcc.dg/vect/vect-live-slp-3.c: Expect us to SLP even for
+	VLA vectors (in single-lane mode).
+
+2024-11-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_s_add-2.c: Move to...
+	* gcc.target/riscv/sat_s_add-1-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-3.c: Move to...
+	* gcc.target/riscv/sat_s_add-1-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-4.c: Move to...
+	* gcc.target/riscv/sat_s_add-1-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-1.c: Move to...
+	* gcc.target/riscv/sat_s_add-1-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-6.c: Move to...
+	* gcc.target/riscv/sat_s_add-2-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-7.c: Move to...
+	* gcc.target/riscv/sat_s_add-2-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-8.c: Move to...
+	* gcc.target/riscv/sat_s_add-2-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-5.c: Move to...
+	* gcc.target/riscv/sat_s_add-2-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-10.c: Move to...
+	* gcc.target/riscv/sat_s_add-3-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-11.c: Move to...
+	* gcc.target/riscv/sat_s_add-3-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-12.c: Move to...
+	* gcc.target/riscv/sat_s_add-3-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-9.c: Move to...
+	* gcc.target/riscv/sat_s_add-3-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-14.c: Move to...
+	* gcc.target/riscv/sat_s_add-4-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-15.c: Move to...
+	* gcc.target/riscv/sat_s_add-4-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-16.c: Move to...
+	* gcc.target/riscv/sat_s_add-4-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-13.c: Move to...
+	* gcc.target/riscv/sat_s_add-4-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-2.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-1-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-3.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-1-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-4.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-1-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-1.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-1-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-6.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-2-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-7.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-2-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-8.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-2-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-5.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-2-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-10.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-3-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-11.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-3-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-12.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-3-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-9.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-3-i8.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-14.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-4-i16.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-15.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-4-i32.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-16.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-4-i64.c: ...here.
+	* gcc.target/riscv/sat_s_add-run-13.c: Move to...
+	* gcc.target/riscv/sat_s_add-run-4-i8.c: ...here.
+	* gcc.target/riscv/sat_u_add-2.c: Move to...
+	* gcc.target/riscv/sat_u_add-1-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-3.c: Move to...
+	* gcc.target/riscv/sat_u_add-1-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-4.c: Move to...
+	* gcc.target/riscv/sat_u_add-1-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-1.c: Move to...
+	* gcc.target/riscv/sat_u_add-1-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-6.c: Move to...
+	* gcc.target/riscv/sat_u_add-2-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-7.c: Move to...
+	* gcc.target/riscv/sat_u_add-2-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-8.c: Move to...
+	* gcc.target/riscv/sat_u_add-2-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-5.c: Move to...
+	* gcc.target/riscv/sat_u_add-2-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-10.c: Move to...
+	* gcc.target/riscv/sat_u_add-3-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-11.c: Move to...
+	* gcc.target/riscv/sat_u_add-3-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-12.c: Move to...
+	* gcc.target/riscv/sat_u_add-3-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-9.c: Move to...
+	* gcc.target/riscv/sat_u_add-3-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-14.c: Move to...
+	* gcc.target/riscv/sat_u_add-4-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-15.c: Move to...
+	* gcc.target/riscv/sat_u_add-4-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-16.c: Move to...
+	* gcc.target/riscv/sat_u_add-4-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-13.c: Move to...
+	* gcc.target/riscv/sat_u_add-4-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-18.c: Move to...
+	* gcc.target/riscv/sat_u_add-5-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-19.c: Move to...
+	* gcc.target/riscv/sat_u_add-5-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-20.c: Move to...
+	* gcc.target/riscv/sat_u_add-5-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-17.c: Move to...
+	* gcc.target/riscv/sat_u_add-5-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-22.c: Move to...
+	* gcc.target/riscv/sat_u_add-6-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-23.c: Move to...
+	* gcc.target/riscv/sat_u_add-6-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-24.c: Move to...
+	* gcc.target/riscv/sat_u_add-6-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-21.c: Move to...
+	* gcc.target/riscv/sat_u_add-6-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-2.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-1-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-3.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-1-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-4.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-1-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-1.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-1-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-6.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-2-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-7.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-2-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-8.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-2-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-5.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-2-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-10.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-3-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-11.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-3-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-12.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-3-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-9.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-3-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-14.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-4-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-15.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-4-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-16.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-4-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-13.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-4-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-18.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-5-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-19.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-5-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-20.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-5-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-17.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-5-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-22.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-6-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-23.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-6-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-24.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-6-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add-run-21.c: Move to...
+	* gcc.target/riscv/sat_u_add-run-6-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-2.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-1-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-3.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-1-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-4.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-1-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-1.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-1-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-6.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-2-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-7.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-2-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-8.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-2-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-5.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-2-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-10.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-3-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-11.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-3-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-12.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-3-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-9.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-3-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-14.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-4-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-15.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-4-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-16.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-4-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-13.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-4-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-2.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-1-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-3.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-1-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-4.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-1-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-1.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-1-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-6.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-2-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-7.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-2-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-8.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-2-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-5.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-2-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-10.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-3-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-11.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-3-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-12.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-3-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-9.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-3-u8.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-14.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-4-u16.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-15.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-4-u32.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-16.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-4-u64.c: ...here.
+	* gcc.target/riscv/sat_u_add_imm-run-13.c: Move to...
+	* gcc.target/riscv/sat_u_add_imm-run-4-u8.c: ...here.
+
+2024-11-14  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/117495
+	* gcc.target/i386/pr117495.c: New test.
+
+2024-11-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116591
+	* gcc.target/riscv/rvv/xtheadvector/pr116591.c: New test.
+
+2024-11-13  Filip Kastl  <fkastl@suse.cz>
+
+	PR target/56504
+	* gcc.target/i386/vectorize-aocl1.c: New test.
+
+2024-11-13  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/57492
+	* gcc.dg/tree-ssa/ldexp.c: New test.
+	* gcc.dg/tree-ssa/pow-to-ldexp.c: New test.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* g++.target/riscv/mv-symbols1.C: New test.
+	* g++.target/riscv/mv-symbols2.C: New test.
+	* g++.target/riscv/mv-symbols3.C: New test.
+	* g++.target/riscv/mv-symbols4.C: New test.
+	* g++.target/riscv/mv-symbols5.C: New test.
+	* g++.target/riscv/mvc-symbols1.C: New test.
+	* g++.target/riscv/mvc-symbols2.C: New test.
+	* g++.target/riscv/mvc-symbols3.C: New test.
+	* g++.target/riscv/mvc-symbols4.C: New test.
+
+2024-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105054
+	* gfortran.dg/ptr_func_assign_6.f08: New test.
+
+2024-11-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117059
+	* gcc.dg/Wzero-as-null-pointer-constant.c: New test.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/dfp/c11-constants-3.c: New test.
+	* gcc.dg/dfp/c11-constants-4.c: New test.
+	* gcc.dg/dfp/c23-constants-3.c: New test.
+	* gcc.dg/dfp/c23-constants-4.c: New test.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117029
+	* gcc.dg/cpp/pr7263-3.c: Adjust expected diagnostic wording.
+	* gcc.dg/c23-imaginary-constants-1.c: New test.
+	* gcc.dg/c23-imaginary-constants-2.c: New test.
+	* gcc.dg/c23-imaginary-constants-3.c: New test.
+	* gcc.dg/c23-imaginary-constants-4.c: New test.
+	* gcc.dg/c23-imaginary-constants-5.c: New test.
+	* gcc.dg/c23-imaginary-constants-6.c: New test.
+	* gcc.dg/c23-imaginary-constants-7.c: New test.
+	* gcc.dg/c23-imaginary-constants-8.c: New test.
+	* gcc.dg/c23-imaginary-constants-9.c: New test.
+	* gcc.dg/c23-imaginary-constants-10.c: New test.
+	* gcc.dg/c2y-imaginary-constants-1.c: New test.
+	* gcc.dg/c2y-imaginary-constants-2.c: New test.
+	* gcc.dg/c2y-imaginary-constants-3.c: New test.
+	* gcc.dg/c2y-imaginary-constants-4.c: New test.
+	* gcc.dg/c2y-imaginary-constants-5.c: New test.
+	* gcc.dg/c2y-imaginary-constants-6.c: New test.
+	* gcc.dg/c2y-imaginary-constants-7.c: New test.
+	* gcc.dg/c2y-imaginary-constants-8.c: New test.
+	* gcc.dg/c2y-imaginary-constants-9.c: New test.
+	* gcc.dg/c2y-imaginary-constants-10.c: New test.
+	* gcc.dg/c2y-imaginary-constants-11.c: New test.
+	* gcc.dg/c2y-imaginary-constants-12.c: New test.
+
+2024-11-13  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/sve/fscale.c: New test.
+
+2024-11-13  xuli  <xuli1@eswincomputing.com>
+
+	PR target/117483
+	* gcc.target/riscv/pr117483.c: New test.
+
+2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117418
+	* gcc.target/i386/pr117418-1.c: New test.
+
 2024-11-13  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

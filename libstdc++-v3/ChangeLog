@@ -1,3 +1,270 @@
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_NODISCARD): Expand for C++11
+	and C++14.
+	* testsuite/22_locale/locale/cons/12438.cc: Adjust dg-warning to
+	expect nodiscard warnings for C++11 and C++14 as well.
+	* testsuite/22_locale/locale/operations/2.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/1_neg.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/2_neg.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/3_neg.cc: Likewise.
+	* testsuite/25_algorithms/find_first_of/concept_check_1.cc:
+	Likewise.
+	* testsuite/25_algorithms/is_permutation/2.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/71545.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/33613.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/irreflexive.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/partitioned_pred_neg.cc: Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/25_algorithms/search/78346.cc: Likewise.
+	* testsuite/25_algorithms/search_n/58358.cc: Likewise.
+	* testsuite/25_algorithms/unique/1.cc: Likewise.
+	* testsuite/25_algorithms/unique/11480.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/33613.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/partitioned_pred_neg.cc: Likewise.
+	* testsuite/27_io/ios_base/types/fmtflags/bitmask_operators.cc:
+	Likewise.
+	* testsuite/27_io/ios_base/types/iostate/bitmask_operators.cc:
+	Likewise.
+	* testsuite/27_io/ios_base/types/openmode/bitmask_operators.cc:
+	Likewise.
+	* testsuite/ext/concept_checks.cc: Likewise.
+	* testsuite/ext/is_heap/47709.cc: Likewise.
+	* testsuite/ext/is_sorted/cxx0x.cc: Likewise.
+
+2024-11-14  Jason Merrill  <jason@redhat.com>
+
+	* include/precompiled/stdc++.h: <coroutine> is C++20.
+
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (operator+): Add constraint to
+	move_iterator operator.
+	* testsuite/24_iterators/move_iterator/rel_ops_c++20.cc:
+
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (__normal_iterator): Replace
+	enable_if constraint with requires-clause.
+
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h: Make use of feature test macros
+	more consistent. Improve doxygen comments.
+
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117560
+	* include/bits/fs_dir.h (enable_borrowed_range, enable_view):
+	Define specializations for directory iterators, as per LWG 3480.
+	* testsuite/27_io/filesystem/iterators/lwg3480.cc: New test.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document removal of nested types
+	from std::hash specializations.
+	* doc/html/manual/api.html: Regenerate.
+	* include/bits/functional_hash.h (__hash_base): Remove
+	deprecated nested types for C++20.
+	(__hash_empty_base): Define new class template.
+	(__is_hash_enabled_for): Define new variable template.
+	(__poison_hash): Remove.
+	(__hash_not_enabled): Define new class template.
+	(__hash_enum): Remove partial specialization for non-enums.
+	(hash): Derive from __hash_not_enabled for non-enums, instead of
+	__hash_enum.
+	* include/bits/unique_ptr.h (__uniq_ptr_hash): Derive from
+	__hash_base. Conditionally derive from __hash_empty_base.
+	(__uniq_ptr_hash<>): Remove disabled specialization.
+	(hash): Do not derive from __hash_base unconditionally.
+	Conditionally derive from either __uniq_ptr_hash or
+	__hash_not_enabled.
+	* include/std/optional (__optional_hash_call_base): Remove.
+	(__optional_hash): Define new class template.
+	(hash): Derive from either
+	(hash): Conditionally derive from either __optional_hash or
+	__hash_not_enabled. Remove nested typedefs.
+	* include/std/variant (_Base_dedup): Replace __poison_hash with
+	__hash_empty_base.
+	(__variant_hash_call_base_impl): Remove.
+	(__variant_hash): Define new class template.
+	(hash): Conditionally derive from either __variant_hash or
+	__hash_not_enabled. Remove nested typedefs.
+	* testsuite/20_util/optional/hash.cc: Check whether nested types
+	are present.
+	* testsuite/20_util/variant/hash.cc: Likewise.
+	* testsuite/20_util/optional/hash_abi.cc: New test.
+	* testsuite/20_util/unique_ptr/hash/abi.cc: New test.
+	* testsuite/20_util/unique_ptr/hash/types.cc: New test.
+	* testsuite/20_util/variant/hash_abi.cc: New test.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (__location_type): New struct.
+	(_M_locate): New member function.
+	(_M_find_before_node(const key_type&)): Remove.
+	(_M_find_node): Move variable initialization into condition.
+	(_M_find_node_tr): Likewise.
+	(operator=(initializer_list<T>), try_emplace, _M_reinsert_node)
+	(_M_merge_unique, find, erase(const key_type&)): Use _M_locate
+	for lookup.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_M_merge_unique): Add overload for
+	merging from same type.
+	(_M_merge_unique<Compatible>): Simplify size tracking. Add
+	comment.
+	(_M_merge_multi): Add overload for merging from same type.
+	(_M_merge_multi<Compatible>): Add comment.
+	* include/bits/unordered_map.h (unordered_map::merge): Check for
+	self-merge in the lvalue overload. Call _M_merge_unique directly
+	for the rvalue overload.
+	(unordered_multimap::merge): Likewise.
+	* include/bits/unordered_set.h (unordered_set::merge): Likewise.
+	(unordered_multiset::merge): Likewise.
+	* testsuite/23_containers/unordered_map/modifiers/merge.cc:
+	Add more tests.
+	* testsuite/23_containers/unordered_multimap/modifiers/merge.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/merge.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/modifiers/merge.cc:
+	Likewise.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_Hashtable_base::_S_equals):
+	Remove.
+	(_Hashtable_base::_S_node_equals): Remove.
+	(_Hashtable_base::_M_key_equals_tr): Fix inaccurate
+	static_assert string.
+	(_Hashtable_base::_M_equals, _Hashtable_base::_M_equals_tr): Use
+	'if constexpr' instead of _S_equals.
+	(_Hashtable_base::_M_node_equals): Use 'if constexpr' instead of
+	_S_node_equals.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable): Remove _Equality base
+	class.
+	(_Hashtable::_M_equal): Define equality comparison here instead
+	of in _Equality::_M_equal.
+	* include/bits/hashtable_policy.h (_Equality): Remove.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable): Remove inheritance from
+	__detail::_Insert and move its members into _Hashtable.
+	* include/bits/hashtable_policy.h (__detail::_Insert): Remove.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (operator=(const _Hashtable&)): Use
+	RAII instead of try-catch.
+	(_M_assign(_Ht&&, _NodeGenerator&)): Likewise.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::__fwd_value_for):
+	Remove.
+	(_Hashtable::_M_assign): Use static_cast instead of
+	__fwd_value_for.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable): Remove typedefs for
+	node generators.
+	(_Hashtable::_M_assign(_Ht&&)): Add new overload.
+	(_Hashtable::operator=(initializer_list<value_type>)): Add local
+	typedef for node generator.
+	(_Hashtable::_M_assign_elements): Likewise.
+	(_Hashtable::operator=(const _Hashtable&)): Use new _M_assign
+	overload.
+	(_Hashtable(const _Hashtable&)): Likewise.
+	(_Hashtable(const _Hashtable&, const allocator_type&)):
+	Likewise.
+	(_Hashtable(_Hashtable&&, __node_alloc_type&&, false_type)):
+	Likewise.
+	* include/bits/hashtable_policy.h (_Insert): Remove typedef for
+	node generator.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::_M_erase): Remove
+	overloads for erasing by key, moving logic to ...
+	(_Hashtable::erase): ... here.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115285
+	* include/bits/hashtable.h (_Hashtable::_M_emplace): Replace
+	with _M_emplace_uniq and _M_emplace_multi.
+	(_Hashtable::_S_forward_key, _Hashtable::_M_insert_unique)
+	(_Hashtable::_M_insert_unique_aux, _Hashtable::_M_insert):
+	Remove.
+	* include/bits/hashtable_policy.h (_ConvertToValueType):
+	Remove.
+	(_Insert_base::_M_insert_range): Remove overload for unique keys
+	and rename overload for non-unique keys to ...
+	(_Insert_base::_M_insert_range_multi): ... this.
+	(_Insert_base::insert): Call _M_emplace_uniq or _M_emplace_multi
+	instead of _M_insert.  Add insert overloads from _Insert.
+	(_Insert_base): Rename to _Insert.
+	(_Insert): Remove
+	* testsuite/23_containers/unordered_map/96088.cc: Adjust
+	expected number of allocations.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_ReuseOrAllocNode::operator()):
+	Replace parameter pack with a single parameter. Assign to
+	existing value when possible.
+	* testsuite/23_containers/unordered_multiset/allocator/move_assign.cc:
+	Adjust expected count of operations.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc:
+	Likewise.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (operator=(initializer_list)):
+	Refactor to not use _M_insert_range.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (time_counter): Add
+	comment about times.
+	(time_counter::system_time): Use correct split value.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/check_performance: Add timestamp to output file at
+	start of run.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h: Use
+	__gnu_cxx::__is_single_threaded instead of __gthread_active_p().
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/ext/pb_ds/hash_int_erase_mem.cc: Replace
+	std::unary_function with result_type and argument_type typedefs.
+	* testsuite/util/performance/assoc/multimap_common_type.hpp:
+	Likewise.
+
+2024-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/20_util/memory_resource/pools.cc: Fix
+	-Wunused-value warnings about unnamed std::lock_guard objects.
+
 2024-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wstring_convert, wbuffer_convert):

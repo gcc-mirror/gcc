@@ -1,3 +1,14 @@
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-asm.h (FEATURE_1_GCS): Define.
+	(GCS_FLAG): Define if GCS is enabled.
+	(GNU_PROPERTY): Add GCS_FLAG.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (_Unwind_Frames_Extra): Update.
+	(_Unwind_Frames_Increment): Define.
+
 2024-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* crtstuff.c: Remove trailing whitespace.

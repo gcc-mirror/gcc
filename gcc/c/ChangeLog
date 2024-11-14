@@ -1,3 +1,10 @@
+2024-11-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117059
+	* c-typeck.cc (parse_build_binary_op): Add warning.
+	(build_conditional_expr): Add warning.
+	(convert_for_assignment): Add warning.
+
 2024-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.cc (names_builtin_p): Change return type from

@@ -1,3 +1,406 @@
+2024-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt.urls: Fix.
+
+2024-11-14  Richard Ball  <richard.ball@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* doc/extend.texi: Add AArch64 docs for indirect_return
+	attribute.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+	    Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_gnu_attributes): Add
+	indirect_return.
+	(aarch64_gen_callee_cookie): Use indirect_return attribute.
+	(aarch64_callee_indirect_return): New.
+	(aarch_fun_is_indirect_return): New.
+	(aarch64_function_ok_for_sibcall): Disallow tail calls if caller
+	is non-indirect_return but callee is indirect_return.
+	(aarch64_function_arg): Add indirect_return to cookie.
+	(aarch64_init_cumulative_args): Record indirect_return in
+	CUMULATIVE_ARGS.
+	(aarch64_comp_type_attributes): Check indirect_return attribute.
+	(aarch64_output_mi_thunk): Add indirect_return to cookie.
+	* config/aarch64/aarch64.h (CUMULATIVE_ARGS): Add new field
+	indirect_return.
+	* config/aarch64/aarch64.md (tlsdesc_small_<mode>): Update.
+	* config/aarch64/aarch64-opts.h (AARCH64_NUM_ABI_ATTRIBUTES): New.
+	* config/aarch64/aarch64-protos.h (aarch64_gen_callee_cookie): Update.
+	* config/arm/aarch-bti-insert.cc (call_needs_bti_j): New.
+	(rest_of_insert_bti): Use call_needs_bti_j.
+	* config/arm/aarch-common-protos.h
+	(aarch_fun_is_indirect_return): New.
+	* config/arm/arm.cc
+	(aarch_fun_is_indirect_return): New.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.cc (GNU_PROPERTY_AARCH64_FEATURE_1_GCS):
+	Define.
+	(aarch64_file_end_indicate_exec_stack): Set GCS property bit.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	macros for GCS.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.h (STACK_SAVEAREA_MODE): Make space for gcs.
+	* config/aarch64/aarch64.md (save_stack_nonlocal): New.
+	(restore_stack_nonlocal): New.
+	* tree-nested.cc (get_nl_goto_field): Updated.
+
+2024-11-14  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/arm_acle.h (__gcspr): New.
+	(__gcspopm): New.
+	(__gcsss): New.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (enum aarch64_builtins): Add
+	AARCH64_BUILTIN_GCSPR, AARCH64_BUILTIN_GCSPOPM, AARCH64_BUILTIN_GCSSS.
+	(aarch64_init_gcs_builtins): New.
+	(aarch64_general_init_builtins): Call aarch64_init_gcs_builtins.
+	(aarch64_expand_gcs_builtin): New.
+	(aarch64_general_expand_builtin): Call aarch64_expand_gcs_builtin.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_load_gcspr): New.
+	(aarch64_gcspopm): New.
+	(aarch64_gcspopm_xzr): New.
+	(aarch64_gcsss1): New.
+	(aarch64_gcsss2): New.
+	Co-authored-by: Richard Sandiford <richard.sandiford@arm.com>
+
+2024-11-14  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* config/aarch64/arm_acle.h (__chkfeat): New.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (enum aarch64_builtins):
+	Define AARCH64_BUILTIN_CHKFEAT.
+	(aarch64_general_init_builtins): Handle chkfeat.
+	(aarch64_general_expand_builtin): Handle chkfeat.
+	Co-authored-by: Richard Sandiford <richard.sandiford@arm.com>
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_chkfeat): New.
+
+2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch_gcs_enabled): Declare.
+	* config/aarch64/aarch64.cc (aarch_gcs_enabled): Define.
+	(aarch_handle_no_branch_protection): Handle gcs.
+	(aarch_handle_standard_branch_protection): Handle gcs.
+	(aarch_handle_gcs_protection): New.
+	* config/aarch64/aarch64.opt: Add aarch_enable_gcs.
+	* configure: Regenerate.
+	* configure.ac: Handle gcs in --enable-standard-branch-protection.
+	* doc/invoke.texi: Document -mbranch-protection=gcs.
+
+2024-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/117370
+	* common.opt: Add -fmalloc-dce.
+	* common.opt.urls: Update.
+	* doc/invoke.texi: Document it; also add missing -flifetime-dse entry.
+	* tree-ssa-dce.cc (is_removable_allocation_p): Break out from
+	...
+	(mark_stmt_if_obviously_necessary): ... here; also check that
+	operator new satisfies gimple_call_from_new_or_delete.
+	(checks_return_value_of_removable_allocation_p): New Function.
+	(mark_all_reaching_defs_necessary_1): add missing case for
+	STRDUP and STRNDUP
+	(propagate_necessity): Use is_removable_allocation_p and
+	checks_return_value_of_removable_allocation_p.
+	(eliminate_unnecessary_stmts): Update conditionals that use
+	removed allocation; use is_removable_allocation_p.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Do not
+	exempt cpart_size == cnunits from failing.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Add missing
+	braces.
+
+2024-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_dump_jump_function): Declare.
+	* ipa-prop.cc (ipa_dump_jump_function): New function.
+	(ipa_print_node_jump_functions_for_edge): Move printing of
+	individual jump functions to the new function.
+
+2024-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_print_constant_value): Declare.
+	* ipa-prop.cc (ipa_print_constant_value): Make public.
+	* ipa-cp.cc (print_ipcp_constant_value): Re-add this overloaded
+	function for printing tree constants.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-generic.cc (expand_vector_divmod): Query vector
+	comparison and vec_cond_mask capability.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_condition): Refactor
+	target support check.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117567
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Handle not present
+	lanes when doing re-association.
+
+2024-11-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* cfgexpand.cc (add_scope_conflicts): Return right away
+	if there are only one stack variable.
+
+2024-11-14  Eikansh Gupta  <quic_eikagupt@quicinc.com>
+
+	PR tree-optimization/109906
+	* match.pd (a rrotate (32-b) -> a lrotate b): New pattern
+	(a lrotate (32-b) -> a rrotate b): New pattern
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): For
+	VMAT_ELEMENTWISE there's no overrun.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117554
+	* tree-vect-stmts.cc (get_group_load_store_type): We can
+	use gather/scatter only for a single-lane single element group
+	access.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117559
+	* tree-vect-slp.cc (vect_mark_slp_stmts): Pass in vinfo,
+	mark all mask defs of a load/store-lane .MASK_LOAD/STORE
+	as pure.
+	(vect_make_slp_decision): Adjust.
+	(vect_slp_analyze_bb_1): Likewise.
+
+2024-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117556
+	PR tree-optimization/117553
+	* tree-vect-stmts.cc (vect_analyze_stmt): Do not analyze
+	the SLP load-lanes node for live lanes, but only the
+	permute node.
+	(vect_transform_stmt): Likewise for the transform.
+
+2024-11-14  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/117495
+	* config/i386/i386.md (cstorebf4): Use ix86_fp_comparison_operator
+	and calls ix86_expand_setcc directly.
+
+2024-11-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116591
+	* config/riscv/vector.md: Add restriction to call pred_th_whole_mov.
+
+2024-11-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_required_extensions::common_denominator): New member
+	function.
+	* config/aarch64/aarch64-sve-builtins-base.def: Remove zero-variant
+	entry for mmla.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (mmla_def): Remove
+	support for it.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_builder::add_overloaded): Relax the assert for duplicate
+	definitions and instead calculate the common denominator of all
+	requirements.
+
+2024-11-13  Filip Kastl  <fkastl@suse.cz>
+
+	PR target/56504
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Add ix86_veclibabi_type_aocl case.
+	* config/i386/i386-options.h (ix86_veclibabi_aocl): Add extern
+	ix86_veclibabi_aocl().
+	* config/i386/i386-opts.h (enum ix86_veclibabi): Add
+	ix86_veclibabi_type_aocl into the ix86_veclibabi enum.
+	* config/i386/i386.cc (ix86_veclibabi_aocl): New function.
+	* config/i386/i386.opt: Add the 'aocl' type.
+	* doc/invoke.texi: Document -mveclibabi=aocl.
+
+2024-11-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117525
+	* config/pa/pa.md (fix_truncsfsi2): Remove inner `fix:SF`.
+	(fix_truncdfsi2, fix_truncsfdi2, fix_truncdfdi2,
+	fixuns_truncsfsi2, fixuns_truncdfsi2, fixuns_truncsfdi2,
+	fixuns_truncdfdi2): Likewise.
+
+2024-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path.cc (diagnostic_event::get_desc): Add param
+	"ref_pp" and use instead of global_dc.
+	(class path_label): Likewise, adding field m_ref_pp.
+	(event_range::event_range): Add param "ref_pp" and pass to
+	m_path_label.
+	(path_summary::path_summary): Add param "ref_pp" and pass to
+	event_range ctor.
+	(diagnostic_text_output_format::print_path): Pass *pp to
+	path_summary ctor.
+	(selftest::test_empty_path): Pass *event_pp to pass_summary ctor.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	* diagnostic-path.h (diagnostic_event::get_desc): Add param
+	"ref_pp".
+	* lazy-diagnostic-path.cc (selftest::test_intraprocedural_path):
+	Pass *event_pp to get_desc.
+	* simple-diagnostic-path.cc (selftest::test_intraprocedural_path):
+	Likewise.
+
+2024-11-13  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/57492
+	* match.pd: Added patterns to fold calls to pow to ldexp and optimize
+	specific ldexp calls.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv.cc (add_condition_to_bb): New function.
+	(dispatch_function_versions): New function.
+	(get_suffixed_assembler_name): New function.
+	(make_resolver_func): New function.
+	(riscv_generate_version_dispatcher_body): New function.
+	(riscv_get_function_versions_dispatcher): New function.
+	(TARGET_GENERATE_VERSION_DISPATCHER_BODY): Implement it.
+	(TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): Implement it.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv.cc
+	(riscv_mangle_decl_assembler_name): New function.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): Define.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv.cc
+	(parse_features_for_version): New function.
+	(compare_fmv_features): New function.
+	(riscv_compare_version_priority): New function.
+	(riscv_common_function_versions): New function.
+	(TARGET_COMPARE_VERSION_PRIORITY): Implement it.
+	(TARGET_OPTION_FUNCTION_VERSIONS): Implement it.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv-protos.h
+	(riscv_process_target_attr): Remove as it is not used.
+	(riscv_option_valid_version_attribute_p): Declare.
+	(riscv_process_target_version_attr): Declare.
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attrs): Renamed from riscv_attributes.
+	(riscv_target_version_attrs): New attributes for target_version.
+	(riscv_process_one_target_attr): New arguments to select attrs.
+	(riscv_process_target_attr): Likewise.
+	(riscv_option_valid_attribute_p): Likewise.
+	(riscv_process_target_version_attr): New function.
+	(riscv_option_valid_version_attribute_p): New function.
+	* config/riscv/riscv.cc
+	(TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P): Implement it.
+	* config/riscv/riscv.h (TARGET_HAS_FMV_TARGET_ATTRIBUTE): Define
+	it to 0 to use "target_version" for function versioning.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* common/config/riscv/riscv-common.cc
+	(RISCV_EXT_BITMASK): New macro.
+	(struct riscv_ext_bitmask_table_t): New struct.
+	(riscv_minimal_hwprobe_feature_bits): New function.
+	* common/config/riscv/riscv-ext-bitmask.def: New file.
+	* config/riscv/riscv-subset.h (GCC_RISCV_SUBSET_H): Include
+	riscv-feature-bits.h.
+	(riscv_minimal_hwprobe_feature_bits): Declare the function.
+	* config/riscv/riscv-feature-bits.h: New file.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::handle_priority): New function.
+	(riscv_target_attr_parser::update_settings): Update priority
+	attribute.
+	* config/riscv/riscv.opt: Add TargetVariable riscv_fmv_priority.
+
+2024-11-13  Yangyu Chen  <cyy@cyyself.name>
+
+	* defaults.h (TARGET_CLONES_ATTR_SEPARATOR): Define new macro.
+	* multiple_target.cc (get_attr_str): Use
+	TARGET_CLONES_ATTR_SEPARATOR to separate attributes.
+	(separate_attrs): Likewise.
+	(expand_target_clones): Likewise.
+	* attribs.cc (attr_strcmp): Likewise.
+	(sorted_attr_string): Likewise.
+	* tree.cc (get_target_clone_attr_len): Likewise.
+	* config/riscv/riscv.h (TARGET_CLONES_ATTR_SEPARATOR): Define
+	TARGET_CLONES_ATTR_SEPARATOR for RISC-V.
+	* doc/tm.texi: Document TARGET_CLONES_ATTR_SEPARATOR.
+	* doc/tm.texi.in: Likewise.
+
+2024-11-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117059
+	* doc/invoke.texi (Wzero-as-null-pointer-constant): Adapt
+	description.
+
+2024-11-13  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/111733
+	* config/aarch64/aarch64-sve.md
+	(ldexp<mode>3): Added a new pattern to match ldexp calls with scalar
+	floating modes and expand to the existing pattern for FSCALE.
+	* config/aarch64/iterators.md:
+	(SVE_FULL_F_SCALAR): Added an iterator to match all FP SVE modes as well
+	as their scalar equivalents.
+	(VPRED): Extended the attribute to handle GPF_HF modes.
+	* internal-fn.def (LDEXP): Changed macro to incorporate ldexpf16.
+
+2024-11-13  xuli  <xuli1@eswincomputing.com>
+
+	PR target/117483
+	* config/riscv/riscv-vsetvl.cc: Fix bug.
+
+2024-11-13  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Correct costing of LO_SUM
+	expressions.
+
+2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117418
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Convert
+	pointer's mode according to Pmode.
+
 2024-11-13  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

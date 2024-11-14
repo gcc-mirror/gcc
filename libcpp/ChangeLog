@@ -1,3 +1,20 @@
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (interpret_float_suffix): Handle d32 and D32 suffixes
+	for C like df, d64 and D64 like dd and d128 and D128 like
+	dl.
+
+2024-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117029
+	* include/cpplib.h (struct cpp_options): Add imaginary_constants
+	member.
+	* init.cc (struct lang_flags): Add imaginary_constants bitfield.
+	(lang_defaults): Add column for imaginary_constants.
+	(cpp_set_lang): Copy over imaginary_constants.
+	* expr.cc (cpp_classify_number): Diagnose CPP_N_IMAGINARY
+	non-CPP_N_FLOATING constants differently for C.
+
 2024-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114461

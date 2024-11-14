@@ -1,3 +1,13 @@
+2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add
+	another ignored commit.
+
+2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add 2
+	further commits.
+
 2024-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py (ignored_commits): Add 2

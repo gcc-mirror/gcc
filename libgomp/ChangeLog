@@ -1,3 +1,9 @@
+2024-11-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Change TR13 to
+	OpenMP 6.0, now released. Fix a typo in the omp_target_memset_async
+	routine name.
+
 2024-11-11  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c-c++-common/pr109062.c: Update dg-output

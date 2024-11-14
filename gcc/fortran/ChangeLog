@@ -1,3 +1,10 @@
+2024-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105054
+	* resolve.cc (get_temp_from_expr): If the pointer function has
+	a deferred character length, generate a new deferred charlen
+	for the temporary.
+
 2024-11-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/109345

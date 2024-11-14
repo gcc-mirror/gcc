@@ -1,3 +1,11 @@
+2024-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.cc (checker_path::debug): Explicitly use
+	global_dc's reference printer.
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_interproc_events): Likewise.
+	(diagnostic_manager::prune_system_headers): Likewise.
+
 2024-11-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.cc: Include "make-unique.h".  Convert "to_json"

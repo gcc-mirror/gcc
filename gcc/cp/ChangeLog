@@ -1,3 +1,13 @@
+2024-11-14  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (do_namespace_alias): set_originating_module after
+	pushdecl.
+
+2024-11-14  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state_config::get_dialect): Expect coroutines in
+	C++20.
+
 2024-11-11  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in: Also collect tags from libcody and c++tools.
