@@ -1395,7 +1395,10 @@
     gcc_assert (ok_p);
     DONE;
   }
-  [(set_attr "type" "vmov")]
+  [(set_attr "type" "vlde,vste,vmov")
+   (set_attr "mode" "<MODE>")
+   (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
+   (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))]
 )
 
 (define_expand "mov<mode>"
@@ -1442,7 +1445,10 @@
     }
   DONE;
 }
-  [(set_attr "type" "vmov")]
+  [(set_attr "type" "vlde,vste,vmov")
+   (set_attr "mode" "<VLS_AVL_REG:MODE>")
+   (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
+   (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))]
 )
 
 (define_insn "*mov<mode>_vls"
