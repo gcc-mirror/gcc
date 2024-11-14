@@ -1204,8 +1204,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return { __n, this->_M_node_allocator() };
       }
 
-      // Only use the possibly cached node's hash code if its hash function
-      // _H2 matches _Hash and is stateless. Otherwise recompute it using _Hash.
+      // Hash code for node __src_n with key __k, using this->hash_function().
+      // Will use a hash code cached in the node if safe to do so. This is
+      // for use in _M_merge_multi where the node comes from another container
+      // with a hash function that might not match this->hash_function().
       template<typename _H2>
 	__hash_code
 	_M_src_hash_code(const _H2&, const key_type& __k,
@@ -1213,6 +1215,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if constexpr (std::is_same_v<_H2, _Hash>)
 	    if constexpr (std::is_empty_v<_Hash>)
+	      // If the node has a cached hash code, it's OK to use it.
 	      return this->_M_hash_code(__src_n);
 
 	  return this->_M_hash_code(__k);
@@ -1246,28 +1249,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__glibcxx_assert(get_allocator() == __src.get_allocator());
 
+	using _PTr = pointer_traits<__node_base_ptr>;
+
 	auto __n_elt = __src.size();
 	size_type __first = 1;
-	// For a container of identical type we can use its private members.
-	auto __p = static_cast<__node_ptr>(&__src._M_before_begin);
+	// For a container of identical type we can use its private members,
+	// __src._M_before_begin, __src._M_bucket_index etc.
+	auto __prev = _PTr::pointer_to(__src._M_before_begin);
 	while (__n_elt--)
 	  {
-	    const auto __prev = __p;
-	    __p = __p->_M_next();
-	    const auto& __node = *__p;
+	    const auto __next = __prev->_M_nxt;
+	    const auto& __node = static_cast<__node_type&>(*__next);
 	    const key_type& __k = _ExtractKey{}(__node._M_v());
-	    auto __loc = _M_locate(__k);
+	    const auto __loc = _M_locate(__k);
 	    if (__loc)
-	      continue;
+	      {
+		__prev = __next;
+		continue;
+	      }
 
-	    size_type __src_bkt
-	      = __src._M_bucket_index(__src.hash_function()(__k));
+	    auto __src_bkt = __src._M_bucket_index(__node);
 	    auto __nh = __src._M_extract_node(__src_bkt, __prev);
 	    _M_insert_unique_node(__loc._M_bucket_index, __loc._M_hash_code,
 				  __nh._M_ptr, __first * __n_elt + 1);
 	    __nh.release();
 	    __first = 0;
-	    __p = __prev;
 	  }
       }
 
@@ -1311,15 +1317,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__src.size() == 0) [[__unlikely__]]
 	  return;
 
+	using _PTr = pointer_traits<__node_base_ptr>;
+
 	__node_ptr __hint = nullptr;
 	this->reserve(size() + __src.size());
-	// For a container of identical type we can use its private members.
-	auto __prev = static_cast<__node_ptr>(&__src._M_before_begin);
+	// For a container of identical type we can use its private members,
+	// __src._M_before_begin, __src._M_bucket_index etc.
+	auto __prev = _PTr::pointer_to(__src._M_before_begin);
 	do
 	  {
-	    const auto& __node = *__prev->_M_next();
+	    const auto& __node = static_cast<__node_type&>(*__prev->_M_nxt);
 	    const key_type& __k = _ExtractKey{}(__node._M_v());
-	    __hash_code __code = this->_M_hash_code(__k);
+	    // Hash code from this->hash_function():
+	    auto __code = _M_src_hash_code(__src.hash_function(), __k, __node);
+	    // Bucket index in __src, using code from __src.hash_function():
 	    size_type __src_bkt = __src._M_bucket_index(__node);
 	    auto __nh = __src._M_extract_node(__src_bkt, __prev);
 	    __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
