@@ -1,6 +1,19 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-inline" } */
 
+/* With BTI enabled, this test would crash with SIGILL, Illegal instruction.
+   The 2nd argument of __builtin_eh_return is expected to be an EH handler
+   within a function, rather than a separate function.
+   The current implementation of __builtin_eh_return in AArch64 backend emits a
+   jump instead of branching with LR.
+   The prologue of the handler (i.e. continuation) starts with "bti c" (vs.
+   "bti jc") which is a landing pad type prohibiting jumps, hence the exception
+   at runtime.
+   The current behavior of __builtin_eh_return is considered correct.
+   Consequently, the default option -mbranch-protection=standard needs to be
+   overridden to remove BTI.  */
+/* { dg-additional-options "-mbranch-protection=pac-ret+leaf+gcs" { target { default_branch_protection } } } */
+
 #include <stdlib.h>
 #include <stdio.h>
 
