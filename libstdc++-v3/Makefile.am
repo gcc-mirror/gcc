@@ -34,11 +34,11 @@ ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
 # Testsuite/check forwarding targets.
 check-%:
-	cd testsuite && $(MAKE) $@
+	$(MAKE) -C testsuite $@
 
 # Documentation forwarding targets.
 doc-%:
-	cd doc && $(MAKE) $@
+	$(MAKE) -C doc $@
 
 # Documentation conditionals for output.
 if BUILD_XML
