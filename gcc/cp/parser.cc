@@ -12964,6 +12964,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      'contract_assert' */
 	      if (std_attrs == error_mark_node)
 		 std_attrs = NULL_TREE;
+	      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+		cp_parser_error (parser, "expected semicolon");
 	    }
 	  else
 	    error_at (
@@ -13164,8 +13166,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
       if (cp_contract_assertion_p (std_attrs))
 	{
 	  /* Add the assertion as a statement in the current block.  */
-	  gcc_assert (!statement || statement == error_mark_node);
-	  emit_assertion (std_attrs);
+	  if (statement)
+	    error_at (statement_location,
+	   		"contract assertion on a non empty statement");
+	  else
+	    emit_assertion (std_attrs);
 	  std_attrs = NULL_TREE;
 	}
     }
