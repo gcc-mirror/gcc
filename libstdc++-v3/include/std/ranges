@@ -4551,11 +4551,13 @@ namespace views::__adaptor
     inline constexpr bool enable_borrowed_range<elements_view<_Tp, _Nm>>
       = enable_borrowed_range<_Tp>;
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3563. keys_view example is broken
   template<typename _Range>
-    using keys_view = elements_view<views::all_t<_Range>, 0>;
+    using keys_view = elements_view<_Range, 0>;
 
   template<typename _Range>
-    using values_view = elements_view<views::all_t<_Range>, 1>;
+    using values_view = elements_view<_Range, 1>;
 
   namespace views
   {
