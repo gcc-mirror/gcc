@@ -1,3 +1,11 @@
+2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117418
+	* gcc.target/i386/pr117418-1.c: New test.
+
 2024-11-05  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
