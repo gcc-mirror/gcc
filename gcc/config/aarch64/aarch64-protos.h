@@ -1219,4 +1219,6 @@ extern void aarch64_adjust_reg_alloc_order ();
 bool aarch64_optimize_mode_switching (aarch64_mode_entity);
 void aarch64_restore_za (rtx);
 
+extern bool aarch64_gcs_enabled ();
+
 #endif /* GCC_AARCH64_PROTOS_H */

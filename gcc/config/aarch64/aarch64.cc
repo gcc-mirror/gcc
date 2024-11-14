@@ -8562,6 +8562,13 @@ aarch_bti_j_insn_p (rtx_insn *insn)
   return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_BTI_J;
 }
 
+/* Return TRUE if Guarded Control Stack is enabled.  */
+bool
+aarch64_gcs_enabled (void)
+{
+  return (aarch64_enable_gcs == 1);
+}
+
 /* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
 bool
 aarch_pac_insn_p (rtx x)
@@ -18981,6 +18988,7 @@ aarch64_handle_no_branch_protection (void)
 {
   aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
   aarch_enable_bti = 0;
+  aarch64_enable_gcs = 0;
 }
 
 static void
@@ -18989,6 +18997,7 @@ aarch64_handle_standard_branch_protection (void)
   aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
   aarch64_ra_sign_key = AARCH64_KEY_A;
   aarch_enable_bti = 1;
+  aarch64_enable_gcs = 1;
 }
 
 static void
@@ -19015,6 +19024,11 @@ aarch64_handle_bti_protection (void)
 {
   aarch_enable_bti = 1;
 }
+static void
+aarch64_handle_gcs_protection (void)
+{
+  aarch64_enable_gcs = 1;
+}
 
 static const struct aarch_branch_protect_type aarch64_pac_ret_subtypes[] = {
   { "leaf", false, aarch64_handle_pac_ret_leaf, NULL, 0 },
@@ -19029,6 +19043,7 @@ static const struct aarch_branch_protect_type aarch64_branch_protect_types[] =
   { "pac-ret", false, aarch64_handle_pac_ret_protection,
     aarch64_pac_ret_subtypes, ARRAY_SIZE (aarch64_pac_ret_subtypes) },
   { "bti", false, aarch64_handle_bti_protection, NULL, 0 },
+  { "gcs", false, aarch64_handle_gcs_protection, NULL, 0 },
   { NULL, false, NULL, NULL, 0 }
 };
 
@@ -19125,6 +19140,15 @@ aarch64_override_options (void)
       aarch_enable_bti = 1;
 #else
       aarch_enable_bti = 0;
+#endif
+    }
+
+  if (aarch64_enable_gcs == 2)
+    {
+#ifdef TARGET_ENABLE_GCS
+      aarch64_enable_gcs = 1;
+#else
+      aarch64_enable_gcs = 0;
 #endif
     }
 

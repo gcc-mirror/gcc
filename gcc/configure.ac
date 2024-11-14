@@ -4402,14 +4402,14 @@ case "$target" in
     AC_ARG_ENABLE(standard-branch-protection,
     [
 AS_HELP_STRING([--enable-standard-branch-protection],
-        [enable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+        [enable Branch Target Identification Mechanism, Return Address Signing, and Guarded Control Stack by default for AArch64])
 AS_HELP_STRING([--disable-standard-branch-protection],
-        [disable Branch Target Identification Mechanism and Return Address Signing by default for AArch64])
+        [disable Branch Target Identification Mechanism, Return Address Signing, and Guarded Control Stack by default for AArch64])
     ],
       [
         case $enableval in
           yes)
-            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1"
+            tm_defines="${tm_defines} TARGET_ENABLE_BTI=1 TARGET_ENABLE_PAC_RET=1 TARGET_ENABLE_GCS=1"
             ;;
           no)
             ;;

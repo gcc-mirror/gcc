@@ -814,7 +814,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpc-relative-literal-loads
 -msign-return-address=@var{scope}
 -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
-+@var{b-key}]|@var{bti}
++@var{b-key}]|@var{bti}|@var{gcs}
 -mharden-sls=@var{opts}
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}
 -moverride=@var{string}  -mverbose-cost-dump
@@ -21607,7 +21607,7 @@ default value is @samp{none}. This option has been deprecated by
 -mbranch-protection.
 
 @opindex mbranch-protection
-@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}+@var{b-key}]|@var{bti}
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}+@var{b-key}]|@var{bti}|@var{gcs}
 Select the branch protection features to use.
 @samp{none} is the default and turns off all types of branch protection.
 @samp{standard} turns on all types of branch protection features.  If a feature
@@ -21620,6 +21620,7 @@ argument @samp{leaf} can be used to extend the signing to include leaf
 functions.  The optional argument @samp{b-key} can be used to sign the functions
 with the B-key instead of the A-key.
 @samp{bti} turns on branch target identification mechanism.
+@samp{gcs} turns on guarded control stack compatible code generation.
 
 @opindex mharden-sls
 @item -mharden-sls=@var{opts}

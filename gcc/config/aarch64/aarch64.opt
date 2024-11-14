@@ -46,6 +46,9 @@ TargetVariable
 unsigned aarch_enable_bti = 2
 
 TargetVariable
+unsigned aarch64_enable_gcs = 2
+
+TargetVariable
 enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A
 
 ; The TLS dialect names to use with -mtls-dialect.
