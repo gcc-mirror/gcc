@@ -6833,6 +6833,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
    'S'	Print shift-index of single-bit mask OP.
    'T'	Print shift-index of inverted single-bit mask OP.
    '~'	Print w if TARGET_64BIT is true; otherwise not print anything.
+   'N'  Print register encoding as integer (0-31).
 
    Note please keep this list and the list in riscv.md in sync.  */
 
@@ -7077,6 +7078,28 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	gcc_assert (imm <= 63);
 	rtx newop = GEN_INT (imm);
 	output_addr_const (file, newop);
+	break;
+      }
+    case 'N':
+      {
+	if (!REG_P(op))
+	  {
+	    output_operand_lossage ("modifier 'N' require register operand");
+	    break;
+	  }
+
+	unsigned regno = REGNO (op);
+	unsigned offset = 0;
+	if (IN_RANGE (regno, GP_REG_FIRST, GP_REG_LAST))
+	  offset = GP_REG_FIRST;
+	else if (IN_RANGE (regno, FP_REG_FIRST, FP_REG_LAST))
+	  offset = FP_REG_FIRST;
+	else if (IN_RANGE (regno, V_REG_FIRST, V_REG_LAST))
+	  offset = V_REG_FIRST;
+	else
+	  output_operand_lossage ("invalid register number for 'N' modifie");
+
+	asm_fprintf (file, "%u", (regno - offset));
 	break;
       }
     default:

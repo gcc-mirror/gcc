@@ -12594,6 +12594,7 @@ The list below describes the supported modifiers and their effects for RISC-V.
 @headitem Modifier @tab Description
 @item @code{z} @tab Print ''@code{zero}'' instead of 0 if the operand is an immediate with a value of zero.
 @item @code{i} @tab Print the character ''@code{i}'' if the operand is an immediate.
+@item @code{N} @tab Print the register encoding as integer (0 - 31).
 @end multitable
 
 @anchor{shOperandmodifiers}
