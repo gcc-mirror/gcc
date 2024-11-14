@@ -439,8 +439,11 @@ namespace ranges
 	     __detail::__make_unsigned_like_t<range_difference_t<_Rng>>)
       -> subrange<iterator_t<_Rng>, sentinel_t<_Rng>, subrange_kind::sized>;
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3589. The const lvalue reference overload of get for subrange does not
+  // constrain I to be copyable when N == 0
   template<size_t _Num, class _It, class _Sent, subrange_kind _Kind>
-    requires (_Num < 2)
+    requires ((_Num == 0 && copyable<_It>) || _Num == 1)
     constexpr auto
     get(const subrange<_It, _Sent, _Kind>& __r)
     {
