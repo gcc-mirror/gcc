@@ -2195,7 +2195,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	      unsigned HOST_WIDE_INT cnunits, cvf, cremain, cpart_size;
 	      if (!nunits.is_constant (&cnunits)
 		  || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
-		  || (((cremain = group_size * cvf - gap % cnunits), true)
+		  || (((cremain = (group_size * cvf - gap) % cnunits), true)
 		      && ((cpart_size = (1 << ceil_log2 (cremain))) != cnunits)
 		      && (cremain + group_size < cpart_size
 			  || vector_vector_composition_type
