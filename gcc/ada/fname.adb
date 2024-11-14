@@ -141,6 +141,8 @@ package body Fname is
       if Fname'Length > 12
         and then Fname (Fname'First .. Fname'First + 1) /= "i-"
         and then Fname (Fname'First .. Fname'First + 1) /= "s-"
+        and then not Has_Prefix (Fname, "system-")
+        and then not Has_Prefix (Fname, "interfac__")
       then
          return False;
       end if;
@@ -151,23 +153,24 @@ package body Fname is
 
       --  Definitely predefined if prefix is a- i- or s-
 
-      if Fname'Length >= 2 then
-         declare
-            S : String renames Fname (Fname'First .. Fname'First + 1);
-         begin
-            if S = "a-" or else S = "i-" or else S = "s-" then
-               return True;
-            end if;
-         end;
-      end if;
+      pragma Assert (Fname'Length >= 2);
+      declare
+         S : String renames Fname (Fname'First .. Fname'First + 1);
+      begin
+         if S = "a-" or else S = "i-" or else S = "s-" then
+            return True;
+         end if;
+      end;
 
       --  We include the "." in the prefixes below, so we don't match (e.g.)
       --  adamant.ads. So the first line matches "ada.ads", "ada.adb", and
       --  "ada.ali". But that's not necessary if they have 8 characters.
 
       if Has_Prefix (Fname, "ada.")             --  Ada
-        or else Has_Prefix (Fname, "interfac")  --  Interfaces
+        or else Fname = "interfac.ads"
+        or else Has_Prefix (Fname, "interfac__")
         or else Has_Prefix (Fname, "system.a")  --  System
+        or else Has_Prefix (Fname, "system-")   --  System with platform suffix
       then
          return True;
       end if;
