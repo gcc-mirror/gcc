@@ -10,6 +10,6 @@ long long e, f;
 void extern
 cmpccxadd_test(void)
 {
-  b = _cmpccxadd_epi32 (a, b, c, _CMPCCX_O); /* { dg-error "incompatible pointer type" } */
-  e = _cmpccxadd_epi64 (d, e, f, _CMPCCX_O); /* { dg-error "incompatible pointer type" } */
+  b = _cmpccxadd_epi32 (a, b, c, _CMPCCX_O); /* { dg-warning "incompatible pointer type" } */
+  e = _cmpccxadd_epi64 (d, e, f, _CMPCCX_O); /* { dg-warning "incompatible pointer type" } */
 }
