@@ -169,7 +169,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 5.0:: Feature completion status to 5.0 specification
 * OpenMP 5.1:: Feature completion status to 5.1 specification
 * OpenMP 5.2:: Feature completion status to 5.2 specification
-* OpenMP Technical Report 13:: Feature completion status to third 6.0 preview
+* OpenMP 6.0:: Feature completion status to 6.0 specification
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -447,10 +447,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @end multitable
 
 
-@node OpenMP Technical Report 13
-@section OpenMP Technical Report 13
-
-Technical Report (TR) 13 is the third preview for OpenMP 6.0.
+@node OpenMP 6.0
+@section OpenMP 6.0
 
 @unnumberedsubsec New features listed in Appendix B of the OpenMP specification
 @multitable @columnfractions .60 .10 .25
@@ -596,7 +594,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
 @item @code{omp_get_device_num_teams}, @code{omp_set_device_num_teams},
       @code{omp_get_device_teams_thread_limit}, and
       @code{omp_set_device_teams_thread_limit} routines @tab N @tab
-@item @code{omp_target_memset} and @code{omp_target_memset_rect_async} routines
+@item @code{omp_target_memset} and @code{omp_target_memset_async} routines
       @tab N @tab
 @item Fortran version of the interop runtime routines @tab N @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
@@ -632,7 +630,7 @@ Technical Report (TR) 13 is the third preview for OpenMP 6.0.
       @tab N @tab
 @end multitable
 
-@unnumberedsubsec Other new TR 13 features
+@unnumberedsubsec Other new OpenMP 6.0 features
 @multitable @columnfractions .60 .10 .25
 @item Multi-word directives now use underscore by default @tab N @tab
 @item Relaxed Fortran restrictions to the @code{aligned} clause @tab N @tab
