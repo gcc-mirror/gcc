@@ -9872,6 +9872,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       hashval_t hash = c_struct_hasher::hash (t);
 
       gcc_checking_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
+      gcc_checking_assert (!TYPE_NAME (t)
+			   || TREE_CODE (TYPE_NAME (t)) == IDENTIFIER_NODE);
+
       tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
       if (*e)
 	TYPE_CANONICAL (t) = *e;

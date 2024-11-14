@@ -576,6 +576,21 @@ c_build_functype_attribute_variant (tree ntype, tree otype, tree attrs)
 
 }
 
+/* Given a type which could be a typedef name, make sure to return the
+   original type.  */
+static const_tree
+c_type_original (const_tree t)
+{
+  /* It may even be a typedef of a typedef...
+     In the case of compiler-created builtin structs the TYPE_DECL
+     may be a dummy, with no DECL_ORIGINAL_TYPE.  Don't fault.  */
+  while (TYPE_NAME (t)
+	 && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
+	 && DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
+    t = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
+  return t;
+}
+
 
 /* Return the composite type of two compatible types.
 
@@ -728,8 +743,11 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
     case UNION_TYPE:
       if (flag_isoc23 && !comptypes_same_p (t1, t2))
 	{
+	  /* Go to the original type to get the right tag.  */
+	  tree tag = TYPE_NAME (c_type_original (const_cast<tree> (t1)));
+
 	  gcc_checking_assert (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2));
-	  gcc_checking_assert (!TYPE_NAME (t1) || comptypes (t1, t2));
+	  gcc_checking_assert (!tag || comptypes (t1, t2));
 
 	  /* If a composite type for these two types is already under
 	     construction, return it.  */
@@ -742,7 +760,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 
 	  tree n = make_node (code1);
 	  SET_TYPE_STRUCTURAL_EQUALITY (n);
-	  TYPE_NAME (n) = TYPE_NAME (t1);
+	  TYPE_NAME (n) = tag;
 
 	  struct composite_cache cache2 = { t1, t2, n, cache };
 	  cache = &cache2;
@@ -1781,19 +1799,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 
   /* We have to verify that the tags of the types are the same.  This
      is harder than it looks because this may be a typedef, so we have
-     to go look at the original type.  It may even be a typedef of a
-     typedef...
-     In the case of compiler-created builtin structs the TYPE_DECL
-     may be a dummy, with no DECL_ORIGINAL_TYPE.  Don't fault.  */
-  while (TYPE_NAME (t1)
-	 && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
-	 && DECL_ORIGINAL_TYPE (TYPE_NAME (t1)))
-    t1 = DECL_ORIGINAL_TYPE (TYPE_NAME (t1));
-
-  while (TYPE_NAME (t2)
-	 && TREE_CODE (TYPE_NAME (t2)) == TYPE_DECL
-	 && DECL_ORIGINAL_TYPE (TYPE_NAME (t2)))
-    t2 = DECL_ORIGINAL_TYPE (TYPE_NAME (t2));
+     to go look at the original type.  */
+  t1 = c_type_original (t1);
+  t2 = c_type_original (t2);
 
   if (TYPE_NAME (t1) != TYPE_NAME (t2))
     return false;
