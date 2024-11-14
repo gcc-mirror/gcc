@@ -148,6 +148,19 @@ test07()
   b == e;
 }
 
+void
+test08()
+{
+  // LWG 3563 - keys_view example is broken
+  std::pair<int, int> x[] = {{1,2},{3,4}};
+  auto v = ranges::keys_view{views::all(x)};
+  auto w = ranges::values_view{views::all(x)};
+  using ty1 = decltype(v);
+  using ty1 = ranges::elements_view<views::all_t<decltype((x))>, 0>;
+  using ty2 = decltype(w);
+  using ty2 = ranges::elements_view<views::all_t<decltype((x))>, 1>;
+}
+
 int
 main()
 {
@@ -158,4 +171,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }
