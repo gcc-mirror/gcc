@@ -4761,6 +4761,16 @@ Enable or disable calls to out-of-line helpers to implement atomic operations.
 This corresponds to the behavior of the command-line options
 @option{-moutline-atomics} and @option{-mno-outline-atomics}.
 
+@cindex @code{indirect_return} function attribute, AArch64
+@item indirect_return
+The @code{indirect_return} attribute can be applied to a function type
+to indicate that the function may return via an indirect branch instead
+of via a normal return instruction.  For example, this can be true of
+functions that implement manual context switching between user space
+threads, such as the POSIX @code{swapcontext} function.  This attribute
+adds a @code{BTI J} instruction when BTI is enabled e.g. via
+@option{-mbranch-protection}.
+
 @end table
 
 The above target attributes can be specified as follows:
