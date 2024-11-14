@@ -585,7 +585,7 @@ Objective-C and Objective-C++ Dialects}.
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
 -fipa-reference  -fipa-reference-addressable
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm}
--flate-combine-instructions  -flive-patching=@var{level}
+-flate-combine-instructions -flifetime-dse -flive-patching=@var{level}
 -fira-region=@var{region}  -fira-hoist-pressure
 -fira-loop-pressure  -fno-ira-share-save-slots
 -fno-ira-share-spill-slots
@@ -595,7 +595,7 @@ Objective-C and Objective-C++ Dialects}.
 -floop-block  -floop-interchange  -floop-strip-mine
 -floop-unroll-and-jam  -floop-nest-optimize
 -floop-parallelize-all  -flra-remat  -flto  -flto-compression-level
--flto-partition=@var{alg}  -fmerge-all-constants
+-flto-partition=@var{alg}  -fmalloc-dce -fmerge-all-constants
 -fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves
 -fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg
 -fno-defer-pop  -fno-fp-int-builtin-inexact  -fno-function-cse
@@ -14567,8 +14567,12 @@ affected by @option{-flimit-function-alignment}
 
 
 @opindex fno-allocation-dce
+@opindex fallocation-dce
 @item -fno-allocation-dce
-Do not remove unused C++ allocations in dead code elimination.
+Do not remove unused C++ allocations (using operator @code{new} and operator @code{delete})
+in dead code elimination.
+
+See also @option{-fmalloc-dce}.
 
 @opindex fallow-store-data-races
 @item -fallow-store-data-races
@@ -15440,6 +15444,18 @@ complete loop peeling (i.e.@: complete removal of loops with small constant
 number of iterations).
 
 Enabled by @option{-O3}, @option{-fprofile-use}, and @option{-fauto-profile}.
+
+@opindex fno-malloc-dce
+@opindex fmalloc-dce
+@item -fmalloc-dce
+Control whether @code{malloc} (and its variants such as @code{calloc} or
+@code{strdup}),  can be optimized away provided its return value is only used
+as a parameter of @code{free} call or compared with @code{NULL}.  If
+@option{-fmalloc-dce=1} is used, only calls to @code{free} are allowed while
+with @option{-fmalloc-dce=2} also comparsions with @code{NULL} pointer are
+considered safe to remove.
+
+The default is @option{-fmalloc-dce=2}.  See also @option{-fallocation-dce}. 
 
 @opindex fmove-loop-invariants
 @item -fmove-loop-invariants

@@ -947,6 +947,12 @@ UrlSuffix(gcc/Optimize-Options.html#index-fmath-errno)
 fmax-errors=
 UrlSuffix(gcc/Warning-Options.html#index-fmax-errors) LangUrlSuffix_D(gdc/Warnings.html#index-fmax-errors)
 
+fmalloc-dce
+UrlSuffix(gcc/Optimize-Options.html#index-fmalloc-dce)
+
+fmalloc-dce=
+UrlSuffix(gcc/Optimize-Options.html#index-fmalloc-dce)
+
 fmem-report
 UrlSuffix(gcc/Developer-Options.html#index-fmem-report)
 

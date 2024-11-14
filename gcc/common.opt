@@ -2282,6 +2282,13 @@ fmax-errors=
 Common Joined RejectNegative UInteger Var(flag_max_errors)
 -fmax-errors=<number>	Maximum number of errors to report.
 
+fmalloc-dce
+Common Var(flag_malloc_dce,2) Init(2) Optimization
+Allow removal of malloc and free pairs when allocated block is unused.
+
+fmalloc-dce=
+Common Joined RejectNegative UInteger Var(flag_malloc_dse) Optimization IntegerRange(0, 2)
+
 fmem-report
 Common Var(mem_report)
 Report on permanent memory allocation.

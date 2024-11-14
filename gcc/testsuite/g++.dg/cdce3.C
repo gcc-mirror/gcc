@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target c99_runtime } */
-/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -lm" } */
+/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -lm -fno-allocation-dce" } */
 /* { dg-additional-options "-DLARGE_LONG_DOUBLE" { target large_long_double } } */
 /* { dg-additional-options "-DGNU_EXTENSION" { target pow10 } } */
 /* { dg-add-options ieee } */

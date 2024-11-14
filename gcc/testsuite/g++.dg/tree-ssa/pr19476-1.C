@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-dom2 -fdelete-null-pointer-checks" } */
+/* { dg-options "-O -fdump-tree-dom2 -fdelete-null-pointer-checks -fno-allocation-dce" } */
 /* { dg-skip-if "" keeps_null_pointer_checks } */
 
 // See pr19476-5.C for a version without including <new>.
