@@ -91,12 +91,18 @@
 #if __ARM_FEATURE_PAC_DEFAULT != 1
 #error Foo
 #endif
+#ifndef __ARM_FEATURE_GCS_DEFAULT
+#error Foo
+#endif
 
 #pragma GCC target ("branch-protection=none")
 #ifdef __ARM_FEATURE_BTI_DEFAULT
 #error Foo
 #endif
 #ifdef __ARM_FEATURE_PAC_DEFAULT
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_GCS_DEFAULT
 #error Foo
 #endif
 
@@ -117,6 +123,9 @@
 #ifdef __ARM_FEATURE_PAC_DEFAULT
 #error Foo
 #endif
+#ifdef __ARM_FEATURE_GCS_DEFAULT
+#error Foo
+#endif
 
 #pragma GCC target "branch-protection=pac-ret"
 #ifdef __ARM_FEATURE_BTI_DEFAULT
@@ -131,5 +140,31 @@
 #error Foo
 #endif
 #if __ARM_FEATURE_PAC_DEFAULT != 6
+#error Foo
+#endif
+
+#pragma GCC target "branch-protection=gcs"
+#ifdef __ARM_FEATURE_BTI_DEFAULT
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_PAC_DEFAULT
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_GCS_DEFAULT
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv8.8-a+gcs"
+#ifndef __ARM_FEATURE_GCS
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv8.8-a+nogcs"
+#ifdef __ARM_FEATURE_GCS
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv8.8-a"
+#ifdef __ARM_FEATURE_GCS
 #error Foo
 #endif
