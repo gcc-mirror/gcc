@@ -1640,6 +1640,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     }
 
 #if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
   // 4-iterator version of std::equal<It1, It2> for use in C++11.
   template<typename _II1, typename _II2>
     _GLIBCXX20_CONSTEXPR
@@ -1650,20 +1653,20 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       using _Cat1 = typename iterator_traits<_II1>::iterator_category;
       using _Cat2 = typename iterator_traits<_II2>::iterator_category;
       using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
-      if (_RAIters())
+      if constexpr (_RAIters::value)
 	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
+	  if ((__last1 - __first1) != (__last2 - __first2))
 	    return false;
 	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2);
 	}
-
-      for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, (void)++__first2)
-	if (!(*__first1 == *__first2))
-	  return false;
-      return __first1 == __last1 && __first2 == __last2;
+      else
+	{
+	  for (; __first1 != __last1 && __first2 != __last2;
+	       ++__first1, (void)++__first2)
+	    if (!(*__first1 == *__first2))
+	      return false;
+	  return __first1 == __last1 && __first2 == __last2;
+	}
     }
 
   // 4-iterator version of std::equal<It1, It2, BinaryPred> for use in C++11.
@@ -1677,22 +1680,23 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       using _Cat1 = typename iterator_traits<_II1>::iterator_category;
       using _Cat2 = typename iterator_traits<_II2>::iterator_category;
       using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
-      if (_RAIters())
+      if constexpr (_RAIters::value)
 	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
+	  if ((__last1 - __first1) != (__last2 - __first2))
 	    return false;
 	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2,
 				       __binary_pred);
 	}
-
-      for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, (void)++__first2)
-	if (!bool(__binary_pred(*__first1, *__first2)))
-	  return false;
-      return __first1 == __last1 && __first2 == __last2;
+      else
+	{
+	  for (; __first1 != __last1 && __first2 != __last2;
+	       ++__first1, (void)++__first2)
+	    if (!bool(__binary_pred(*__first1, *__first2)))
+	      return false;
+	  return __first1 == __last1 && __first2 == __last2;
+	}
     }
+#pragma GCC diagnostic pop
 #endif // C++11
 
 #ifdef __glibcxx_robust_nonmodifying_seq_ops // C++ >= 14

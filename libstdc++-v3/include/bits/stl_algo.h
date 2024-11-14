@@ -3471,6 +3471,8 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     }
 
 #if __cplusplus > 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _ForwardIterator1, typename _ForwardIterator2,
 	   typename _BinaryPredicate>
     _GLIBCXX20_CONSTEXPR
@@ -3485,12 +3487,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	= typename iterator_traits<_ForwardIterator2>::iterator_category;
       using _It1_is_RA = is_same<_Cat1, random_access_iterator_tag>;
       using _It2_is_RA = is_same<_Cat2, random_access_iterator_tag>;
-      constexpr bool __ra_iters = _It1_is_RA() && _It2_is_RA();
-      if (__ra_iters)
+      constexpr bool __ra_iters = __and_<_It1_is_RA, _It2_is_RA>::value;
+      if constexpr (__ra_iters)
 	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
+	  if ((__last1 - __first1) != (__last2 - __first2))
 	    return false;
 	}
 
@@ -3501,7 +3501,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	if (!__pred(__first1, __first2))
 	  break;
 
-      if (__ra_iters)
+      if constexpr (__ra_iters)
 	{
 	  if (__first1 == __last1)
 	    return true;
@@ -3532,6 +3532,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	}
       return true;
     }
+#pragma GCC diagnostic pop
 
   /**
    *  @brief  Checks whether a permutaion of the second sequence is equal

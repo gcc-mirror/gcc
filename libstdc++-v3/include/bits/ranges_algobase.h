@@ -172,6 +172,13 @@ namespace ranges
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const
       {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 3560. ranges::equal [...] should short-circuit for sized_ranges
+	if constexpr (sized_range<_Range1>)
+	  if constexpr (sized_range<_Range2>)
+	    if (ranges::distance(__r1) != ranges::distance(__r2))
+	      return false;
+
 	return (*this)(ranges::begin(__r1), ranges::end(__r1),
 		       ranges::begin(__r2), ranges::end(__r2),
 		       std::move(__pred),
