@@ -29544,6 +29544,7 @@ aarch64_can_tag_addresses ()
 #define GNU_PROPERTY_AARCH64_FEATURE_1_AND	0xc0000000
 #define GNU_PROPERTY_AARCH64_FEATURE_1_BTI	(1U << 0)
 #define GNU_PROPERTY_AARCH64_FEATURE_1_PAC	(1U << 1)
+#define GNU_PROPERTY_AARCH64_FEATURE_1_GCS	(1U << 2)
 void
 aarch64_file_end_indicate_exec_stack ()
 {
@@ -29555,6 +29556,9 @@ aarch64_file_end_indicate_exec_stack ()
 
   if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
+
+  if (aarch64_gcs_enabled ())
+    feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_GCS;
 
   if (feature_1_and)
     {
@@ -29587,6 +29591,7 @@ aarch64_file_end_indicate_exec_stack ()
       assemble_align (POINTER_SIZE);
     }
 }
+#undef GNU_PROPERTY_AARCH64_FEATURE_1_GCS
 #undef GNU_PROPERTY_AARCH64_FEATURE_1_PAC
 #undef GNU_PROPERTY_AARCH64_FEATURE_1_BTI
 #undef GNU_PROPERTY_AARCH64_FEATURE_1_AND
