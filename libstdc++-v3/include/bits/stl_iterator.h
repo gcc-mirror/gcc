@@ -1736,6 +1736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR bool
     operator==(const move_iterator<_Iterator>& __x,
 	       const move_iterator<_Iterator>& __y)
+    // N.B. No contraints, x.base() == y.base() is always well-formed.
     { return __x.base() == __y.base(); }
 
 #if __cpp_lib_three_way_comparison
@@ -1796,6 +1797,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _GLIBCXX17_CONSTEXPR move_iterator<_Iterator>
     operator+(typename move_iterator<_Iterator>::difference_type __n,
 	      const move_iterator<_Iterator>& __x)
+#ifdef __glibcxx_concepts
+    requires requires { { __x.base() + __n } -> same_as<_Iterator>; }
+#endif
     { return __x + __n; }
 
   template<typename _Iterator>
