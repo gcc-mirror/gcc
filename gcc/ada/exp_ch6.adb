@@ -5356,6 +5356,13 @@ package body Exp_Ch6 is
          return;
       end if;
 
+      --  Avoid expansions to catch an error when the function call is on the
+      --  left-hand side of an assignment.
+
+      if Nkind (Par) = N_Assignment_Statement and then N = Name (Par) then
+         return;
+      end if;
+
       --  Resolution is now finished, make sure we don't start analysis again
       --  because of the duplication.
 
