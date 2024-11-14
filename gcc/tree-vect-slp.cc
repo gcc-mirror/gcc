@@ -2217,6 +2217,17 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       bool hard_fail = true;
       for (unsigned lane = 0; lane < group_size; ++lane)
 	{
+	  if (!stmts[lane])
+	    {
+	      /* ???  Below we require lane zero is present.  */
+	      if (lane == 0)
+		{
+		  hard_fail = false;
+		  break;
+		}
+	      chains.quick_push (vNULL);
+	      continue;
+	    }
 	  /* For each lane linearize the addition/subtraction (or other
 	     uniform associatable operation) expression tree.  */
 	  gimple *op_stmt = NULL, *other_op_stmt = NULL;
@@ -2270,10 +2281,13 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			       get_tree_code_name (code));
 	      for (unsigned lane = 0; lane < group_size; ++lane)
 		{
-		  for (unsigned opnum = 0; opnum < chain_len; ++opnum)
-		    dump_printf (MSG_NOTE, "%s %T ",
-				 get_tree_code_name (chains[lane][opnum].code),
-				 chains[lane][opnum].op);
+		  if (!stmts[lane])
+		    dump_printf (MSG_NOTE, "--");
+		  else
+		    for (unsigned opnum = 0; opnum < chain_len; ++opnum)
+		      dump_printf (MSG_NOTE, "%s %T ",
+				   get_tree_code_name (chains[lane][opnum].code),
+				   chains[lane][opnum].op);
 		  dump_printf (MSG_NOTE, "\n");
 		}
 	    }
@@ -2283,7 +2297,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      vect_def_type dt = chains[0][n].dt;
 	      unsigned lane;
 	      for (lane = 0; lane < group_size; ++lane)
-		if (chains[lane][n].dt != dt)
+		if (stmts[lane] && chains[lane][n].dt != dt)
 		  {
 		    if (dt == vect_constant_def
 			&& chains[lane][n].dt == vect_external_def)
@@ -2322,7 +2336,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  vec<tree> ops;
 		  ops.create (group_size);
 		  for (lane = 0; lane < group_size; ++lane)
-		    ops.quick_push (chains[lane][n].op);
+		    if (stmts[lane])
+		      ops.quick_push (chains[lane][n].op);
+		    else
+		      ops.quick_push (NULL_TREE);
 		  slp_tree child = vect_create_new_slp_node (ops);
 		  SLP_TREE_DEF_TYPE (child) = dt;
 		  children.safe_push (child);
@@ -2352,8 +2369,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    {
 		      op_stmts.truncate (0);
 		      for (lane = 0; lane < group_size; ++lane)
-			op_stmts.quick_push
-			  (vinfo->lookup_def (chains[lane][n].op));
+			if (stmts[lane])
+			  op_stmts.quick_push
+			    (vinfo->lookup_def (chains[lane][n].op));
+			else
+			  op_stmts.quick_push (NULL);
 		      child = vect_build_slp_tree (vinfo, op_stmts,
 						   group_size, &this_max_nunits,
 						   matches, limit,
@@ -2407,14 +2427,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    }
 	  /* 3. build SLP nodes to combine the chain.  */
 	  for (unsigned lane = 0; lane < group_size; ++lane)
-	    if (chains[lane][0].code != code)
+	    if (stmts[lane] && chains[lane][0].code != code)
 	      {
 		/* See if there's any alternate all-PLUS entry.  */
 		unsigned n;
 		for (n = 1; n < chain_len; ++n)
 		  {
 		    for (lane = 0; lane < group_size; ++lane)
-		      if (chains[lane][n].code != code)
+		      if (stmts[lane] && chains[lane][n].code != code)
 			break;
 		    if (lane == group_size)
 		      break;
@@ -2424,7 +2444,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    /* Swap that in at first position.  */
 		    std::swap (children[0], children[n]);
 		    for (lane = 0; lane < group_size; ++lane)
-		      std::swap (chains[lane][0], chains[lane][n]);
+		      if (stmts[lane])
+			std::swap (chains[lane][0], chains[lane][n]);
 		  }
 		else
 		  {
@@ -2442,13 +2463,17 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 				       "operand\n");
 		    chain_len++;
 		    for (lane = 0; lane < group_size; ++lane)
-		      chains[lane].safe_insert
-			(0, chain_op_t (code, vect_constant_def, NULL_TREE));
+		      if (stmts[lane])
+			chains[lane].safe_insert
+			  (0, chain_op_t (code, vect_constant_def, NULL_TREE));
 		    vec<tree> zero_ops;
 		    zero_ops.create (group_size);
 		    zero_ops.quick_push (build_zero_cst (TREE_TYPE (vectype)));
 		    for (lane = 1; lane < group_size; ++lane)
-		      zero_ops.quick_push (zero_ops[0]);
+		      if (stmts[lane])
+			zero_ops.quick_push (zero_ops[0]);
+		      else
+			zero_ops.quick_push (NULL_TREE);
 		    slp_tree zero = vect_create_new_slp_node (zero_ops);
 		    SLP_TREE_DEF_TYPE (zero) = vect_constant_def;
 		    children.safe_insert (0, zero);
@@ -2461,7 +2486,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	      slp_tree op1 = children[i];
 	      bool this_two_op = false;
 	      for (unsigned lane = 0; lane < group_size; ++lane)
-		if (chains[lane][i].code != chains[0][i].code)
+		if (stmts[lane] && chains[lane][i].code != chains[0][i].code)
 		  {
 		    this_two_op = true;
 		    break;
