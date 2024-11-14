@@ -3576,10 +3576,11 @@ package body Exp_Aggr is
    ---------------------------------
 
    procedure Convert_Aggr_In_Object_Decl (N : Node_Id) is
-      Obj  : constant Entity_Id  := Defining_Identifier (N);
-      Aggr : constant Node_Id    := Unqualify (Expression (N));
-      Loc  : constant Source_Ptr := Sloc (Aggr);
-      Typ  : constant Entity_Id  := Etype (Aggr);
+      Obj    : constant Entity_Id  := Defining_Identifier (N);
+      Aggr   : constant Node_Id    := Unqualify (Expression (N));
+      Loc    : constant Source_Ptr := Sloc (Aggr);
+      Typ    : constant Entity_Id  := Etype (Aggr);
+      Marker : constant Node_Id    := Next (N);
 
       function Discriminants_Ok return Boolean;
       --  If the object's subtype is constrained, the discriminants in the
@@ -3651,11 +3652,10 @@ package body Exp_Aggr is
 
       --  Local variables
 
-      Has_Transient_Scope : Boolean;
-      Occ                 : Node_Id;
-      Param               : Node_Id;
-      Stmt                : Node_Id;
-      Stmts               : List_Id;
+      Occ   : Node_Id;
+      Param : Node_Id;
+      Stmt  : Node_Id;
+      Stmts : List_Id;
 
    --  Start of processing for Convert_Aggr_In_Object_Decl
 
@@ -3685,39 +3685,14 @@ package body Exp_Aggr is
         and then Ekind (Current_Scope) /= E_Return_Statement
         and then not Is_Limited_Type (Typ)
       then
-         Establish_Transient_Scope (Aggr, Manage_Sec_Stack => False);
-         Has_Transient_Scope := True;
-      else
-         Has_Transient_Scope := False;
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       Occ := New_Occurrence_Of (Obj, Loc);
       Set_Assignment_OK (Occ);
       Stmts := Late_Expansion (Aggr, Typ, Occ);
 
-      --  If Obj is already frozen or if N is wrapped in a transient scope,
-      --  Stmts do not need to be saved in Initialization_Statements since
-      --  there is no freezing issue.
-
-      if Is_Frozen (Obj) or else Has_Transient_Scope then
-         Insert_Actions_After (N, Stmts);
-
-      else
-         Stmt := Make_Compound_Statement (Sloc (N), Actions => Stmts);
-         Insert_Action_After (N, Stmt);
-
-         --  Insert_Action_After may freeze Obj in which case we should
-         --  remove the compound statement just created and simply insert
-         --  Stmts after N.
-
-         if Is_Frozen (Obj) then
-            Remove (Stmt);
-            Insert_Actions_After (N, Stmts);
-
-         else
-            Set_Initialization_Statements (Obj, Stmt);
-         end if;
-      end if;
+      Insert_Actions_After (N, Stmts);
 
       --  If Typ has controlled components and a call to a Slice_Assign
       --  procedure is part of the initialization statements, then we
@@ -3752,6 +3727,15 @@ package body Exp_Aggr is
       Set_No_Initialization (N);
 
       Initialize_Discriminants (N, Typ);
+
+      --  Park the generated statements if the declaration requires it and is
+      --  not the node that is wrapped in a transient scope.
+
+      if Needs_Initialization_Statements (N)
+        and then not (Scope_Is_Transient and then N = Node_To_Be_Wrapped)
+      then
+         Move_To_Initialization_Statements (N, Marker);
+      end if;
    end Convert_Aggr_In_Object_Decl;
 
    ------------------------

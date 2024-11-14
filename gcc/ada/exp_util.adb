@@ -11558,6 +11558,27 @@ package body Exp_Util is
       return True;
    end May_Generate_Large_Temp;
 
+   ---------------------------------------
+   -- Move_To_Initialization_Statements --
+   ---------------------------------------
+
+   procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id) is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+      Stmts  : constant List_Id   := New_List;
+      Stmt   : constant Node_Id   :=
+                 Make_Compound_Statement (Sloc (Decl), Actions => Stmts);
+
+   begin
+      while Next (Decl) /= Stop loop
+         Append_To (Stmts, Remove_Next (Decl));
+      end loop;
+
+      pragma Assert (No (Initialization_Statements (Obj_Id)));
+
+      Insert_After (Decl, Stmt);
+      Set_Initialization_Statements (Obj_Id, Stmt);
+   end Move_To_Initialization_Statements;
+
    --------------------------------
    -- Name_Of_Controlled_Prim_Op --
    --------------------------------
@@ -11662,6 +11683,22 @@ package body Exp_Util is
          return True;
       end if;
    end Needs_Constant_Address;
+
+   -------------------------------------
+   -- Needs_Initialization_Statements --
+   -------------------------------------
+
+   function Needs_Initialization_Statements (Decl : Node_Id) return Boolean is
+      Obj_Id : constant Entity_Id := Defining_Identifier (Decl);
+
+   begin
+      --  See the documentation of Initialization_Statements in Einfo
+
+      return Comes_From_Source (Decl)
+        and then (Has_Aspect (Obj_Id, Aspect_Address)
+                   or else Present (Following_Address_Clause (Decl))
+                   or else Init_Or_Norm_Scalars);
+   end Needs_Initialization_Statements;
 
    ----------------------------
    -- New_Class_Wide_Subtype --
