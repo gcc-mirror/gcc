@@ -92,14 +92,14 @@
 #include <span>
 #include <source_location>
 #include <version>
+#if __cpp_impl_coroutine
+# include <coroutine>
+#endif
 #endif
 
 #if __cplusplus > 202002L
 #include <expected>
 #include <stdatomic.h>
-#if __cpp_impl_coroutine
-# include <coroutine>
-#endif
 #endif
 
 #if _GLIBCXX_HOSTED
