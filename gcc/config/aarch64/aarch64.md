@@ -1199,6 +1199,88 @@
 		      (const_int 1)))]
 )
 
+(define_expand "save_stack_nonlocal"
+  [(set (match_operand 0 "memory_operand")
+        (match_operand 1 "register_operand"))]
+  ""
+{
+  rtx stack_slot = adjust_address (operands[0], Pmode, 0);
+  emit_move_insn (stack_slot, operands[1]);
+
+  if (aarch64_gcs_enabled ())
+    {
+      /* Save GCS with code like
+		mov     x16, 1
+		chkfeat x16
+		tbnz    x16, 0, .L_done
+		mrs     tmp, gcspr_el0
+		str     tmp, [%0, 8]
+	.L_done:  */
+
+      rtx done_label = gen_label_rtx ();
+      rtx r16 = gen_rtx_REG (DImode, R16_REGNUM);
+      emit_move_insn (r16, const1_rtx);
+      emit_insn (gen_aarch64_chkfeat ());
+      emit_insn (gen_tbranch_neqi3 (r16, const0_rtx, done_label));
+      rtx gcs_slot = adjust_address (operands[0], Pmode, GET_MODE_SIZE (Pmode));
+      rtx gcs = gen_reg_rtx (Pmode);
+      emit_insn (gen_aarch64_load_gcspr (gcs));
+      emit_move_insn (gcs_slot, gcs);
+      emit_label (done_label);
+    }
+  DONE;
+})
+
+(define_expand "restore_stack_nonlocal"
+  [(set (match_operand 0 "register_operand" "")
+	(match_operand 1 "memory_operand" ""))]
+  ""
+{
+  rtx stack_slot = adjust_address (operands[1], Pmode, 0);
+  emit_move_insn (operands[0], stack_slot);
+
+  if (aarch64_gcs_enabled ())
+    {
+      /* Restore GCS with code like
+		mov     x16, 1
+		chkfeat x16
+		tbnz    x16, 0, .L_done
+		ldr     tmp1, [%1, 8]
+		mrs     tmp2, gcspr_el0
+		subs    tmp2, tmp1, tmp2
+		b.eq    .L_done
+	.L_loop:
+		gcspopm
+		subs    tmp2, tmp2, 8
+		b.ne    .L_loop
+	.L_done:  */
+
+      rtx loop_label = gen_label_rtx ();
+      rtx done_label = gen_label_rtx ();
+      rtx r16 = gen_rtx_REG (DImode, R16_REGNUM);
+      emit_move_insn (r16, const1_rtx);
+      emit_insn (gen_aarch64_chkfeat ());
+      emit_insn (gen_tbranch_neqi3 (r16, const0_rtx, done_label));
+      rtx gcs_slot = adjust_address (operands[1], Pmode, GET_MODE_SIZE (Pmode));
+      rtx gcs_old = gen_reg_rtx (Pmode);
+      emit_move_insn (gcs_old, gcs_slot);
+      rtx gcs_now = gen_reg_rtx (Pmode);
+      emit_insn (gen_aarch64_load_gcspr (gcs_now));
+      emit_insn (gen_subdi3_compare1 (gcs_now, gcs_old, gcs_now));
+      rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
+      rtx cmp_rtx = gen_rtx_fmt_ee (EQ, DImode, cc_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, done_label));
+      emit_label (loop_label);
+      emit_insn (gen_aarch64_gcspopm_xzr ());
+      emit_insn (gen_adddi3_compare0 (gcs_now, gcs_now, GEN_INT (-8)));
+      cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
+      cmp_rtx = gen_rtx_fmt_ee (NE, DImode, cc_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, loop_label));
+      emit_label (done_label);
+    }
+  DONE;
+})
+
 ;; -------------------------------------------------------------------
 ;; Subroutine calls and sibcalls
 ;; -------------------------------------------------------------------
