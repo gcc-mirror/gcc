@@ -248,6 +248,9 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_PAUTH, "__ARM_FEATURE_PAUTH", pfile);
   aarch64_def_or_undef (TARGET_BTI, "__ARM_FEATURE_BTI", pfile);
+  aarch64_def_or_undef (aarch64_gcs_enabled (),
+			"__ARM_FEATURE_GCS_DEFAULT", pfile);
+  aarch64_def_or_undef (TARGET_GCS, "__ARM_FEATURE_GCS", pfile);
   aarch64_def_or_undef (TARGET_I8MM, "__ARM_FEATURE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_BF16_SIMD,
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
