@@ -6,4 +6,5 @@ void f();
 int main ()
 {
   [[assert: true]] f(); // { dg-error "assertions must be followed by" }
+  // { dg-error "contract assertion on a non empty statement" "" {target *-*-* } .-1 }
 }
