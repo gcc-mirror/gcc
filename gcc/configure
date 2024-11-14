@@ -1780,11 +1780,13 @@ Optional Features:
                           Use nano version formatted IO
 
   --enable-standard-branch-protection
-                          enable Branch Target Identification Mechanism and
-                          Return Address Signing by default for AArch64
+                          enable Branch Target Identification Mechanism,
+                          Return Address Signing, and Guarded Control Stack by
+                          default for AArch64
   --disable-standard-branch-protection
-                          disable Branch Target Identification Mechanism and
-                          Return Address Signing by default for AArch64
+                          disable Branch Target Identification Mechanism,
+                          Return Address Signing, and Guarded Control Stack by
+                          default for AArch64
 
 
   --enable-fix-cortex-a53-835769
@@ -21454,7 +21456,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21457 "configure"
+#line 21459 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21560,7 +21562,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21563 "configure"
+#line 21565 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
