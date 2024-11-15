@@ -16010,7 +16010,7 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
 }
 
 /* Emit vector compare for operands OP0 and OP1 using code RCODE.
-   DMODE is expected destination mode. This is a recursive function.  */
+   DMODE is expected destination mode.  */
 
 static rtx
 rs6000_emit_vector_compare (enum rtx_code rcode,
@@ -16019,7 +16019,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 {
   gcc_assert (VECTOR_UNIT_ALTIVEC_OR_VSX_P (dmode));
   gcc_assert (GET_MODE (op0) == GET_MODE (op1));
-  rtx mask;
+  rtx mask = gen_reg_rtx (dmode);
 
   /* In vector.md, we support all kinds of vector float point
      comparison operators in a comparison rtl pattern, we can
@@ -16028,7 +16028,6 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
      of raising invalid exception.  */
   if (GET_MODE_CLASS (dmode) == MODE_VECTOR_FLOAT)
     {
-      mask = gen_reg_rtx (dmode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
       return mask;
     }
@@ -16037,11 +16036,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
      have direct hardware instructions, just emit it directly
      here.  */
   if (rcode == EQ || rcode == GT || rcode == GTU)
-    {
-      mask = gen_reg_rtx (dmode);
-      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
-      return mask;
-    }
+    emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
   else if (rcode == LT || rcode == LTU)
     {
       /* lt{,u}(a,b) = gt{,u}(b,a)  */
@@ -16049,76 +16044,28 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       std::swap (op0, op1);
       mask = gen_reg_rtx (dmode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
-      return mask;
     }
-  else if (rcode == NE)
+  else if (rcode == NE || rcode == LE || rcode == LEU)
     {
-      /* ne(a,b) = ~eq(a,b)  */
+      /* ne(a,b) = ~eq(a,b); le{,u}(a,b) = ~gt{,u}(a,b)  */
+      enum rtx_code code = reverse_condition (rcode);
       mask = gen_reg_rtx (dmode);
-      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (EQ, dmode, op0, op1)));
+      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
       enum insn_code nor_code = optab_handler (one_cmpl_optab, dmode);
       gcc_assert (nor_code != CODE_FOR_nothing);
       emit_insn (GEN_FCN (nor_code) (mask, mask));
-      return mask;
+    } else {
+      /* ge{,u}(a,b) = ~gt{,u}(b,a)  */
+      gcc_assert (rcode == GE || rcode == GEU);
+      enum rtx_code code = rcode == GE ? GT : GTU;
+      mask = gen_reg_rtx (dmode);
+      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
+      enum insn_code nor_code = optab_handler (one_cmpl_optab, dmode);
+      gcc_assert (nor_code != CODE_FOR_nothing);
+      emit_insn (GEN_FCN (nor_code) (mask, mask));
     }
 
-  switch (rcode)
-    {
-    case GE:
-    case GEU:
-    case LE:
-    case LEU:
-      /* Try GT/GTU/LT/LTU OR EQ */
-      {
-	rtx c_rtx, eq_rtx;
-	enum insn_code ior_code;
-	enum rtx_code new_code;
-
-	switch (rcode)
-	  {
-	  case  GE:
-	    new_code = GT;
-	    break;
-
-	  case GEU:
-	    new_code = GTU;
-	    break;
-
-	  case LE:
-	    new_code = LT;
-	    break;
-
-	  case LEU:
-	    new_code = LTU;
-	    break;
-
-	  default:
-	    gcc_unreachable ();
-	  }
-
-	ior_code = optab_handler (ior_optab, dmode);
-	if (ior_code == CODE_FOR_nothing)
-	  return NULL_RTX;
-
-	c_rtx = rs6000_emit_vector_compare (new_code, op0, op1, dmode);
-	if (!c_rtx)
-	  return NULL_RTX;
-
-	eq_rtx = rs6000_emit_vector_compare (EQ, op0, op1, dmode);
-	if (!eq_rtx)
-	  return NULL_RTX;
-
-	mask = gen_reg_rtx (dmode);
-	emit_insn (GEN_FCN (ior_code) (mask, c_rtx, eq_rtx));
-	return mask;
-      }
-      break;
-    default:
-      return NULL_RTX;
-    }
-
-  /* You only get two chances.  */
-  return NULL_RTX;
+  return mask;
 }
 
 /* Emit vector conditional expression.  DEST is destination. OP_TRUE and
