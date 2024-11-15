@@ -35,6 +35,11 @@ void test01()
 
   std::allocator<_List_node<int> > a;
   VERIFY( l.max_size() == __gnu_test::max_size(a) );
+
+#if _GLIBCXX_LIST_USE_ALLOC_PTR
+  std::allocator<std::__list::_Node<int*>> b;
+  VERIFY( __gnu_test::max_size(b) == __gnu_test::max_size(a) );
+#endif
 }
 
 int main()
