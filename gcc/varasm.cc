@@ -355,17 +355,20 @@ get_section (const char *name, unsigned int flags, tree decl,
 	      && decl != sect->named.decl)
 	    {
 	      if (decl != NULL && DECL_P (decl))
-		error ("%+qD causes a section type conflict with %qD",
-		       decl, sect->named.decl);
+		error ("%+qD causes a section type conflict with %qD"
+		       " in section %qs",
+		       decl, sect->named.decl, name);
 	      else
-		error ("section type conflict with %qD", sect->named.decl);
+		error ("section type conflict with %qD in section %qs",
+		       sect->named.decl, name);
 	      inform (DECL_SOURCE_LOCATION (sect->named.decl),
 		      "%qD was declared here", sect->named.decl);
 	    }
 	  else if (decl != NULL && DECL_P (decl))
-	    error ("%+qD causes a section type conflict", decl);
+	    error ("%+qD causes a section type conflict for section %qs",
+		   decl, name);
 	  else
-	    error ("section type conflict");
+	    error ("section type conflict for section %qs", name);
 	  /* Make sure we don't error about one section multiple times.  */
 	  sect->common.flags |= SECTION_OVERRIDE;
 	}
