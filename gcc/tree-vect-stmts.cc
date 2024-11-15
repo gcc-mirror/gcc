@@ -2086,8 +2086,9 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	     at least create very sub-optimal code in that case (and
 	     blow up memory, see PR65518).  */
 	  if (loop_vinfo
-	      && *memory_access_type == VMAT_CONTIGUOUS
 	      && single_element_p
+	      && (*memory_access_type == VMAT_CONTIGUOUS
+		  || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	      && maybe_gt (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
 	    {
 	      if (SLP_TREE_LANES (slp_node) == 1)
