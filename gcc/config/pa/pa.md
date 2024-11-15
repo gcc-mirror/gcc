@@ -4596,7 +4596,7 @@
    && REGNO (operands[0]) != REGNO (operands[3])
    && REGNO (operands[1]) != REGNO (operands[3])
    && base14_operand (operands[2], E_SImode)"
-  [(set (match_dup 3) (mem:SF (plus:DI (match_dup 1) (match_dup 2))))
+  [(set (match_dup 3) (mem:SF (plus:SI (match_dup 1) (match_dup 2))))
    (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))]
   "")
 
@@ -4612,7 +4612,7 @@
    && GENERAL_REGNO_P (REGNO (operands[3]))
    && REGNO (operands[0]) == REGNO (operands[3])
    && base14_operand (operands[2], E_SImode)"
-  [(set (match_dup 3) (mem:SF (plus:DI (match_dup 1) (match_dup 2))))]
+  [(set (match_dup 3) (mem:SF (plus:SI (match_dup 1) (match_dup 2))))]
   "")
 
 (define_peephole2
