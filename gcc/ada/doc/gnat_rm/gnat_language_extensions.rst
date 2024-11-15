@@ -1720,6 +1720,6 @@ Example:
 
 - mandatory ``Path``: the path the compiler uses to access the binary resource.
 
-``Path`` is resolved according to the same rules the compiler uses for loading the source files.
+If ``Path`` is a relative path, it is interpreted relatively to the directory of the file that contains the aspect specification.
 
 .. attention:: The maximum size of loaded files is limited to 2\ :sup:`31` bytes.
