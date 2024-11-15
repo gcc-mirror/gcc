@@ -392,6 +392,157 @@ not contain any imports, macro definitions or macro invocations. You can look at
 this pass's documentation for more details on this resolution process.
 
 **/
+
+/**
+ * Intended for use by ForeverStack to store Nodes
+ * Unlike ForeverStack, does not store a cursor reference
+ * Intended to make path resolution in multiple namespaces simpler
+ **/
+class ForeverStackStore
+{
+public:
+  ForeverStackStore (NodeId crate_id) : root (Rib::Kind::Normal, crate_id)
+  {
+    rust_assert (root.is_root ());
+    rust_assert (root.is_leaf ());
+  }
+
+private:
+  /**
+   * A link between two Nodes in our trie data structure. This class represents
+   * the edges of the graph
+   */
+  class Link
+  {
+  public:
+    Link (NodeId id, tl::optional<Identifier> path) : id (id), path (path) {}
+
+    bool compare (const Link &other) const { return id < other.id; }
+
+    NodeId id;
+    tl::optional<Identifier> path;
+  };
+
+  /* Link comparison class, which we use in a Node's `children` map */
+  class LinkCmp
+  {
+  public:
+    bool operator() (const Link &lhs, const Link &rhs) const
+    {
+      return lhs.compare (rhs);
+    }
+  };
+
+public:
+  class Node;
+
+  struct DfsResult
+  {
+    Node &first;
+    std::string second;
+  };
+
+  struct ConstDfsResult
+  {
+    const Node &first;
+    std::string second;
+  };
+
+  /* Should we keep going upon seeing a Rib? */
+  enum class KeepGoing
+  {
+    Yes,
+    No,
+  };
+
+  class Node
+  {
+  private:
+    friend class ForeverStackStore::ForeverStackStore;
+
+    Node (Rib::Kind rib_kind, NodeId id, tl::optional<Node &> parent)
+      : value_rib (rib_kind), type_rib (rib_kind), label_rib (rib_kind),
+	macro_rib (rib_kind), id (id), parent (parent)
+    {}
+    Node (Rib::Kind rib_kind, NodeId id) : Node (rib_kind, id, tl::nullopt) {}
+    Node (Rib::Kind rib_kind, NodeId id, Node &parent)
+      : Node (rib_kind, id, tl::optional<Node &> (parent))
+    {}
+
+  public:
+    Node (const Node &) = default;
+    Node (Node &&) = default;
+    Node &operator= (const Node &) = delete;
+    Node &operator= (Node &&) = default;
+
+    bool is_root () const;
+    bool is_leaf () const;
+
+    NodeId get_id () const;
+
+    Node &insert_child (NodeId id, tl::optional<Identifier> path,
+			Rib::Kind kind);
+
+    tl::optional<Node &> get_child (const Identifier &path);
+    tl::optional<const Node &> get_child (const Identifier &path) const;
+
+    tl::optional<Node &> get_parent ();
+    tl::optional<const Node &> get_parent () const;
+
+    // finds the identifier, if any, used to link
+    // this node's parent to this node
+    tl::optional<const Identifier &> get_parent_path () const;
+
+    Rib &get_rib (Namespace ns);
+    const Rib &get_rib (Namespace ns) const;
+
+    tl::expected<NodeId, DuplicateNameError> insert (const Identifier &name,
+						     NodeId node, Namespace ns);
+    tl::expected<NodeId, DuplicateNameError>
+    insert_shadowable (const Identifier &name, NodeId node, Namespace ns);
+    tl::expected<NodeId, DuplicateNameError>
+    insert_globbed (const Identifier &name, NodeId node, Namespace ns);
+
+    void reverse_iter (std::function<KeepGoing (Node &)> lambda);
+    void reverse_iter (std::function<KeepGoing (const Node &)> lambda) const;
+
+    void child_iter (std::function<KeepGoing (
+		       NodeId, tl::optional<const Identifier &>, Node &)>
+		       lambda);
+    void child_iter (std::function<KeepGoing (
+		       NodeId, tl::optional<const Identifier &>, const Node &)>
+		       lambda) const;
+
+    Node &find_closest_module ();
+    const Node &find_closest_module () const;
+
+    tl::optional<Node &> dfs_node (NodeId to_find);
+    tl::optional<const Node &> dfs_node (NodeId to_find) const;
+
+  private:
+    // per-namespace ribs
+    Rib value_rib;
+    Rib type_rib;
+    Rib label_rib;
+    Rib macro_rib;
+    // all linked nodes
+    std::map<Link, Node, LinkCmp> children;
+
+    NodeId id; // The node id of the Node's scope
+
+    tl::optional<Node &> parent; // `None` only if the node is a root
+  };
+
+  Node &get_root ();
+  const Node &get_root () const;
+
+  tl::optional<Node &> get_node (NodeId node_id);
+  tl::optional<const Node &> get_node (NodeId node_id) const;
+
+private:
+  Node root;
+};
+
 template <Namespace N> class ForeverStack
 {
 public:
