@@ -4558,8 +4558,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				     false, definition, false);
 
 	  if (gnu_type != orig_type && !gnu_decl)
-	    create_type_decl (gnu_entity_name, orig_type, true, debug_info_p,
-			      gnat_entity);
+	    create_type_decl (gnu_entity_name, orig_type, artificial_p,
+			      debug_info_p, gnat_entity);
 	}
 
       /* Now set the RM size of the type.  We cannot do it before padding
