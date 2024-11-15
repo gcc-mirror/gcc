@@ -16049,20 +16049,18 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
      comparison operators in a comparison rtl pattern, we can
      just emit the comparison rtx insn directly here.  Besides,
      we should have a centralized place to handle the possibility
-     of raising invalid exception.  As the first step, only check
-     operators EQ/GT/GE/UNORDERED/ORDERED/LTGT/UNEQ for now, they
-     are handled equivalently as before.
+     of raising invalid exception.  For EQ/GT/GE/UNORDERED/
+     ORDERED/LTGT/UNEQ, they are handled equivalently as before;
+     for NE/UNLE/UNLT, they are handled with reversed code
+     and inverting, it's the same as before.
 
      FIXME: Handle the remaining vector float comparison operators
      here.  */
   if (GET_MODE_CLASS (dmode) == MODE_VECTOR_FLOAT
-      && (rcode == EQ
-	  || rcode == GT
-	  || rcode == GE
-	  || rcode == UNORDERED
-	  || rcode == ORDERED
-	  || rcode == LTGT
-	  || rcode == UNEQ))
+      && rcode != LT
+      && rcode != LE
+      && rcode != UNGE
+      && rcode != UNGT)
     {
       mask = gen_reg_rtx (dmode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
@@ -16090,8 +16088,6 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       try_again = true;
       break;
     case NE:
-    case UNLE:
-    case UNLT:
     case UNGE:
     case UNGT:
       /* Invert condition and try again.
