@@ -16009,30 +16009,6 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
   return string;
 }
 
-/* Return insn for VSX or Altivec comparisons.  */
-
-static rtx
-rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
-{
-  machine_mode mode = GET_MODE (op0);
-  gcc_assert (GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT);
-
-  switch (code)
-    {
-    default:
-      break;
-
-    case EQ:
-    case GT:
-    case GTU:
-      rtx mask = gen_reg_rtx (mode);
-      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, mode, op0, op1)));
-      return mask;
-    }
-
-  return NULL_RTX;
-}
-
 /* Emit vector compare for operands OP0 and OP1 using code RCODE.
    DMODE is expected destination mode. This is a recursive function.  */
 
@@ -16057,10 +16033,15 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       return mask;
     }
 
-  /* See if the comparison works as is.  */
-  mask = rs6000_emit_vector_compare_inner (rcode, op0, op1);
-  if (mask)
-    return mask;
+  /* For any of vector integer comparison operators for which we
+     have direct hardware instructions, just emit it directly
+     here.  */
+  if (rcode == EQ || rcode == GT || rcode == GTU)
+    {
+      mask = gen_reg_rtx (dmode);
+      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
+      return mask;
+    }
 
   bool swap_operands = false;
   bool try_again = false;
