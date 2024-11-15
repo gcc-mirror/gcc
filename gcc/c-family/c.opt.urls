@@ -550,6 +550,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wmissing-format-attribute)
 Wmissing-include-dirs
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-include-dirs)
 
+Wmissing-parameter-name
+UrlSuffix(gcc/Warning-Options.html#index-Wmissing-parameter-name)
+
 Wmissing-parameter-type
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-parameter-type)
 
