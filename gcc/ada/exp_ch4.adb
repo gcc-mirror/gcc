@@ -5101,8 +5101,10 @@ package body Exp_Ch4 is
       --       Target : Typ;
       --       case X is
       --          when A =>
+      --             <<actions>>
       --             Target := AX;
       --          when B =>
+      --             <<actions>>
       --             Target := BX;
       --          ...
       --       end case;
@@ -5110,12 +5112,14 @@ package body Exp_Ch4 is
 
       --  In all other cases expand into
 
-      --       type Ptr_Typ is access all Typ;
+      --       type Ptr_Typ is not null access all Typ;
       --       Target : Ptr_Typ;
       --       case X is
       --          when A =>
+      --             <<actions>>
       --             Target := AX'Unrestricted_Access;
       --          when B =>
+      --             <<actions>>
       --             Target := BX'Unrestricted_Access;
       --          ...
       --       end case;
@@ -5124,9 +5128,6 @@ package body Exp_Ch4 is
 
       --  This approach avoids extra copies of potentially large objects. It
       --  also allows handling of values of limited or unconstrained types.
-      --  Note that we do the copy also for constrained, nonlimited types
-      --  when minimizing expressions with actions (e.g. when generating C
-      --  code) since it allows us to do the optimization below in more cases.
 
       Case_Stmt :=
         Make_Case_Statement (Loc,
@@ -5141,16 +5142,21 @@ package body Exp_Ch4 is
       Set_From_Conditional_Expression (Case_Stmt);
       Acts := New_List;
 
+      --  No need for Target_Typ in the case of statements
+
+      if Optimize_Assignment_Stmt or else Optimize_Return_Stmt then
+         null;
+
       --  Scalar/Copy case
 
-      if Is_Copy_Type (Typ) then
+      elsif Is_Copy_Type (Typ) then
          Target_Typ := Typ;
 
       --  Otherwise create an access type to handle the general case using
       --  'Unrestricted_Access.
 
       --  Generate:
-      --    type Ptr_Typ is access all Typ;
+      --    type Ptr_Typ is not null access all Typ;
 
       else
          Target_Typ := Make_Temporary (Loc, 'P');
@@ -5160,8 +5166,9 @@ package body Exp_Ch4 is
              Defining_Identifier => Target_Typ,
              Type_Definition     =>
                Make_Access_To_Object_Definition (Loc,
-                 All_Present        => True,
-                 Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
+                 All_Present            => True,
+                 Null_Exclusion_Present => True,
+                 Subtype_Indication     => New_Occurrence_Of (Typ, Loc))));
       end if;
 
       --  Create the declaration of the target which captures the value of the
@@ -5190,8 +5197,9 @@ package body Exp_Ch4 is
       Alt := First (Alternatives (N));
       while Present (Alt) loop
          declare
-            Alt_Expr : Node_Id             := Relocate_Node (Expression (Alt));
-            Alt_Loc  : constant Source_Ptr := Sloc (Alt_Expr);
+            Alt_Loc  : constant Source_Ptr := Sloc (Expression (Alt));
+
+            Alt_Expr : Node_Id := Relocate_Node (Expression (Alt));
             LHS      : Node_Id;
             Stmts    : List_Id;
 
@@ -5516,11 +5524,11 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Actions : List_Id;
+      Actions  : List_Id;
       Decl     : Node_Id;
       Expr     : Node_Id;
+      If_Stmt  : Node_Id;
       New_Else : Node_Id;
-      New_If   : Node_Id;
       New_N    : Node_Id;
       New_Then : Node_Id;
 
@@ -5585,53 +5593,42 @@ package body Exp_Ch4 is
       --  expression, and Sem_Elab circuitry removing it repeatedly.
 
       if Compile_Time_Known_Value (Cond) then
-         declare
-            function Fold_Known_Value (Cond : Node_Id) return Boolean;
-            --  Fold at compile time. Assumes condition known. Return True if
-            --  folding occurred, meaning we're done.
+         if Is_True (Expr_Value (Cond)) then
+            Expr    := Relocate_Node (Thenx);
+            Actions := Then_Actions (N);
+         else
+            Expr    := Relocate_Node (Elsex);
+            Actions := Else_Actions (N);
+         end if;
 
-            ----------------------
-            -- Fold_Known_Value --
-            ----------------------
+         --  When the "then" or "else" expressions involve controlled function
+         --  calls, generated temporaries are chained on the corresponding list
+         --  of actions. These temporaries need to be finalized after the if
+         --  expression is evaluated.
 
-            function Fold_Known_Value (Cond : Node_Id) return Boolean is
-            begin
-               if Is_True (Expr_Value (Cond)) then
-                  Expr    := Thenx;
-                  Actions := Then_Actions (N);
-               else
-                  Expr    := Elsex;
-                  Actions := Else_Actions (N);
-               end if;
+         Process_Transients_In_Expression (N, Actions);
 
-               Remove (Expr);
+         --  If the expression is itself a conditional expression whose
+         --  expansion has been delayed, analyze it again and expand it.
 
-               if Present (Actions) then
-                  Rewrite (N,
-                    Make_Expression_With_Actions (Loc,
-                      Expression => Relocate_Node (Expr),
-                      Actions    => Actions));
-                  Analyze_And_Resolve (N, Typ);
+         if Is_Delayed_Conditional_Expression (Expr) then
+            Set_Analyzed (Expr, False);
+         end if;
 
-               else
-                  Rewrite (N, Relocate_Node (Expr));
-               end if;
+         Insert_Actions (N, Actions);
+         Rewrite (N, Expr);
+         Analyze_And_Resolve (N, Typ);
 
-               --  Note that the result is never static (legitimate cases of
-               --  static if expressions were folded in Sem_Eval).
+         --  Note that the result is never static (legitimate cases of
+         --  static if expressions were folded in Sem_Eval).
 
-               Set_Is_Static_Expression (N, False);
-               return True;
-            end Fold_Known_Value;
+         Set_Is_Static_Expression (N, False);
+         return;
 
-         begin
-            if Fold_Known_Value (Cond) then
-               return;
-            end if;
-         end;
-      end if;
+      --  Build an if statement assigning each dependent expression to the
+      --  target separately. The (main) use case is aggregate elaboration.
 
-      if Optimize_Assignment_Stmt then
+      elsif Optimize_Assignment_Stmt then
          Remove_Side_Effects (Name (Par), Name_Req => True);
 
          --  When the "then" or "else" expressions involve controlled function
@@ -5665,7 +5662,7 @@ package body Exp_Ch4 is
             Set_Analyzed (Expression (New_Else), False);
          end if;
 
-         New_If :=
+         If_Stmt :=
            Make_Implicit_If_Statement (N,
              Condition       => Relocate_Node (Cond),
              Then_Statements => New_List (New_Then),
@@ -5676,7 +5673,10 @@ package body Exp_Ch4 is
          --  to prevent the premature finalization of controlled objects
          --  found within the if statement.
 
-         Set_From_Conditional_Expression (New_If);
+         Set_From_Conditional_Expression (If_Stmt);
+
+      --  Build an if statement returning each dependent expression from the
+      --  function separately. The main use case is expression function.
 
       elsif Optimize_Return_Stmt then
          --  When the "then" or "else" expressions involve controlled function
@@ -5705,7 +5705,7 @@ package body Exp_Ch4 is
             Set_Analyzed (New_Else, False);
          end if;
 
-         New_If :=
+         If_Stmt :=
            Make_Implicit_If_Statement (N,
              Condition       => Relocate_Node (Cond),
              Then_Statements => New_List (
@@ -5720,94 +5720,7 @@ package body Exp_Ch4 is
          --  to prevent the premature finalization of controlled objects
          --  found within the if statement.
 
-         Set_From_Conditional_Expression (New_If);
-
-      --  If the type is by reference, then we expand as follows to avoid the
-      --  possibility of improper copying.
-
-      --      type Ptr is access all Typ;
-      --      Cnn : Ptr;
-      --      if cond then
-      --         <<then actions>>
-      --         Cnn := then-expr'Unrestricted_Access;
-      --      else
-      --         <<else actions>>
-      --         Cnn := else-expr'Unrestricted_Access;
-      --      end if;
-
-      --  and replace the if expression by a reference to Cnn.all.
-
-      elsif Is_By_Reference_Type (Typ) then
-         --  When the "then" or "else" expressions involve controlled function
-         --  calls, generated temporaries are chained on the corresponding list
-         --  of actions. These temporaries need to be finalized after the if
-         --  expression is evaluated.
-
-         Process_Transients_In_Expression (N, Then_Actions (N));
-         Process_Transients_In_Expression (N, Else_Actions (N));
-
-         declare
-            Cnn     : constant Entity_Id := Make_Temporary (Loc, 'C', N);
-            Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
-
-         begin
-            --  Generate:
-            --    type Ann is access all Typ;
-
-            Insert_Action (N,
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ptr_Typ,
-                Type_Definition     =>
-                  Make_Access_To_Object_Definition (Loc,
-                    All_Present        => True,
-                    Subtype_Indication => New_Occurrence_Of (Typ, Loc))));
-
-            --  Generate:
-            --    Cnn : Ann;
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
-            Set_No_Initialization (Decl);
-
-            --  Generate:
-            --    if Cond then
-            --       Cnn := <Thenx>'Unrestricted_Access;
-            --    else
-            --       Cnn := <Elsex>'Unrestricted_Access;
-            --    end if;
-
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Thenx),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                    Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => Relocate_Node (Thenx),
-                        Attribute_Name => Name_Unrestricted_Access))),
-
-                Else_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Elsex),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                    Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix         => Relocate_Node (Elsex),
-                        Attribute_Name => Name_Unrestricted_Access))));
-
-            --  Preserve the original context for which the if statement is
-            --  being generated. This is needed by the finalization machinery
-            --  to prevent the premature finalization of controlled objects
-            --  found within the if statement.
-
-            Set_From_Conditional_Expression (New_If);
-
-            New_N :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Occurrence_Of (Cnn, Loc));
-         end;
+         Set_From_Conditional_Expression (If_Stmt);
 
       --  If the result is a unidimensional unconstrained array but the two
       --  dependent expressions have constrained subtypes with known bounds,
@@ -5838,6 +5751,7 @@ package body Exp_Ch4 is
       elsif Is_Array_Type (Typ)
         and then Number_Dimensions (Typ) = 1
         and then not Is_Constrained (Typ)
+        and then not Is_By_Reference_Type (Typ)
         and then Is_Constrained (Etype (Thenx))
         and then Compile_Time_Known_Bounds (Etype (Thenx))
         and then
@@ -6038,7 +5952,7 @@ package body Exp_Ch4 is
 
             Set_Suppress_Assignment_Checks (Last (Else_List));
 
-            New_If :=
+            If_Stmt :=
               Make_Implicit_If_Statement (N,
                 Condition       => Duplicate_Subexpr (Cond),
                 Then_Statements => Then_List,
@@ -6052,38 +5966,94 @@ package body Exp_Ch4 is
                   High_Bound => Build_New_Bound (Then_Hi, Else_Hi, Slice_Hi)));
          end;
 
-      --  If the result is an unconstrained array and the if expression is in a
-      --  context other than the initializing expression of the declaration of
-      --  an object, then we pull out the if expression as follows:
+      --  If the type is by reference or else not definite, then we expand as
+      --  follows to avoid the possibility of improper copying.
 
-      --     Cnn : constant typ := if-expression
+      --      type Ptr_Typ is not null access all Typ;
+      --      Target : Ptr;
+      --      if cond then
+      --         <<then actions>>
+      --         Target := then-expr'Unrestricted_Access;
+      --      else
+      --         <<else actions>>
+      --         Target := else-expr'Unrestricted_Access;
+      --      end if;
 
-      --  and then replace the if expression with an occurrence of Cnn. This
-      --  avoids the need in the back end to create on-the-fly variable length
-      --  temporaries (which it cannot do!)
+      --  and replace the if expression by a reference to Target.all.
 
-      --  Note that the test for being in an object declaration avoids doing an
-      --  unnecessary expansion, and also avoids infinite recursion.
-
-      elsif Is_Array_Type (Typ)
-        and then not Is_Constrained (Typ)
-        and then not (Nkind (Par) = N_Object_Declaration
-                       and then Expression (Par) = N)
+      elsif Is_By_Reference_Type (Typ)
+        or else not Is_Definite_Subtype (Typ)
       then
+         --  When the "then" or "else" expressions involve controlled function
+         --  calls, generated temporaries are chained on the corresponding list
+         --  of actions. These temporaries need to be finalized after the if
+         --  expression is evaluated.
+
+         Process_Transients_In_Expression (N, Then_Actions (N));
+         Process_Transients_In_Expression (N, Else_Actions (N));
+
          declare
-            Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
+            Ptr_Typ : constant Entity_Id := Make_Temporary (Loc, 'A');
+            Target  : constant Entity_Id := Make_Temporary (Loc, 'C', N);
 
          begin
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression          => Relocate_Node (N),
-                Has_Init_Expression => True));
+            --  Generate:
+            --    type Ptr_Typ is not null access all Typ;
 
-            Rewrite (N, New_Occurrence_Of (Cnn, Loc));
-            return;
+            Insert_Action (N,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ptr_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present            => True,
+                    Null_Exclusion_Present => True,
+                    Subtype_Indication     => New_Occurrence_Of (Typ, Loc))));
+
+            --  Generate:
+            --    Target : Ptr_Typ;
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Target,
+                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
+            Set_No_Initialization (Decl);
+
+            --  Generate:
+            --    if Cond then
+            --       Target := <Thenx>'Unrestricted_Access;
+            --    else
+            --       Target := <Elsex>'Unrestricted_Access;
+            --    end if;
+
+            If_Stmt :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Thenx),
+                    Name       => New_Occurrence_Of (Target, Sloc (Thenx)),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Relocate_Node (Thenx),
+                        Attribute_Name => Name_Unrestricted_Access))),
+
+                Else_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Elsex),
+                    Name       => New_Occurrence_Of (Target, Sloc (Elsex)),
+                    Expression =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => Relocate_Node (Elsex),
+                        Attribute_Name => Name_Unrestricted_Access))));
+
+            --  Preserve the original context for which the if statement is
+            --  being generated. This is needed by the finalization machinery
+            --  to prevent the premature finalization of controlled objects
+            --  found within the if statement.
+
+            Set_From_Conditional_Expression (If_Stmt);
+
+            New_N :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Target, Loc));
          end;
 
       --  For other types, we only need to expand if there are other actions
@@ -6149,7 +6119,7 @@ package body Exp_Ch4 is
                --       Cnn := <Elsex>;
                --    end if;
 
-               New_If :=
+               If_Stmt :=
                  Make_Implicit_If_Statement (N,
                    Condition       => Relocate_Node (Cond),
                    Then_Statements => New_List (
@@ -6161,7 +6131,7 @@ package body Exp_Ch4 is
                      Make_Assignment_Statement (Sloc (Elsex),
                        Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
                        Expression => Relocate_Node (Elsex))));
-               Append_To (Acts, New_If);
+               Append_To (Acts, If_Stmt);
 
                --  Generate:
                --    do
@@ -6232,31 +6202,31 @@ package body Exp_Ch4 is
       --  correspond to what is being evaluated.
 
       if Present (Par) and then Nkind (Par) = N_If_Statement then
-         Set_Sloc (New_If, Sloc (Par));
+         Set_Sloc (If_Stmt, Sloc (Par));
          Set_Sloc (Par, Loc);
       end if;
 
       --  Move Then_Actions and Else_Actions, if any, to the new if statement
 
       if Present (Then_Actions (N)) then
-         Prepend_List (Then_Actions (N), Then_Statements (New_If));
+         Prepend_List (Then_Actions (N), Then_Statements (If_Stmt));
       end if;
 
       if Present (Else_Actions (N)) then
-         Prepend_List (Else_Actions (N), Else_Statements (New_If));
+         Prepend_List (Else_Actions (N), Else_Statements (If_Stmt));
       end if;
 
       --  Rewrite the parent statement as an if statement
 
       if Optimize_Assignment_Stmt or else Optimize_Return_Stmt then
-         Rewrite (Par, New_If);
+         Rewrite (Par, If_Stmt);
          Analyze (Par);
 
       --  Otherwise rewrite the if expression itself
 
       else
          Insert_Action (N, Decl);
-         Insert_Action (N, New_If);
+         Insert_Action (N, If_Stmt);
          Rewrite (N, New_N);
          Analyze_And_Resolve (N, Typ);
       end if;
