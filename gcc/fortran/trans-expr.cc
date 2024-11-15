@@ -9740,6 +9740,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr (&se, expr);
 	  size = size_of_string_in_bytes (cm->ts.kind, se.string_length);
+	  size = fold_convert (size_type_node, size);
 	  tmp = build_call_expr_loc (input_location,
 				     builtin_decl_explicit (BUILT_IN_MALLOC),
 				     1, size);
