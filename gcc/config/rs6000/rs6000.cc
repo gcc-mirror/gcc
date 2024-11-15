@@ -16052,15 +16052,15 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
      of raising invalid exception.  For EQ/GT/GE/UNORDERED/
      ORDERED/LTGT/UNEQ, they are handled equivalently as before;
      for NE/UNLE/UNLT, they are handled with reversed code
-     and inverting, it's the same as before.
+     and inverting, it's the same as before; for LE/UNGT, they
+     are handled with LE ior EQ previously, emitting directly
+     here will make use of GE later, it's slightly better;
 
      FIXME: Handle the remaining vector float comparison operators
      here.  */
   if (GET_MODE_CLASS (dmode) == MODE_VECTOR_FLOAT
       && rcode != LT
-      && rcode != LE
-      && rcode != UNGE
-      && rcode != UNGT)
+      && rcode != UNGE)
     {
       mask = gen_reg_rtx (dmode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
@@ -16089,7 +16089,6 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       break;
     case NE:
     case UNGE:
-    case UNGT:
       /* Invert condition and try again.
 	 e.g., A != B becomes ~(A==B).  */
       {
