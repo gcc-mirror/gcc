@@ -11226,11 +11226,18 @@ riscv_gpr_save_operation_p (rtx op)
 static unsigned HOST_WIDE_INT
 riscv_asan_shadow_offset (void)
 {
-  /* We only have libsanitizer support for RV64 at present.
+  /* This number must match ASAN_SHADOW_OFFSET_CONST in the file
+     libsanitizer/asan/asan_mapping.h, we use 0 here because RV64
+     using dynamic shadow offset, and RV32 isn't support yet.  */
+  return 0;
+}
 
-     This number must match ASAN_SHADOW_OFFSET_CONST in the file
-     libsanitizer/asan/asan_mapping.h.  */
-  return TARGET_64BIT ? HOST_WIDE_INT_UC (0xd55550000) : 0;
+/* Implement TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P.  */
+
+static bool
+riscv_asan_dynamic_shadow_offset_p (void)
+{
+  return TARGET_64BIT;
 }
 
 /* Implement TARGET_MANGLE_TYPE.  */
@@ -13763,6 +13770,9 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset
+
+#undef TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P
+#define TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P riscv_asan_dynamic_shadow_offset_p
 
 #ifdef TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
