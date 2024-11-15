@@ -648,6 +648,7 @@ public:
 
   gcall *redirect_call (const function_instance &);
   gimple *redirect_pred_x ();
+  gimple *fold_pfalse ();
 
   gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
@@ -655,6 +656,8 @@ public:
   gimple *fold_to_vl_pred (unsigned int);
   gimple *fold_const_binary (enum tree_code);
   gimple *fold_active_lanes_to (tree);
+  gimple *fold_call_to (tree);
+  gimple *fold_to_stmt_vops (gimple *);
 
   gimple *fold ();
 
@@ -848,6 +851,7 @@ extern tree acle_svprfop;
 
 bool vector_cst_all_same (tree, unsigned int);
 bool is_ptrue (tree, unsigned int);
+bool is_pfalse (tree);
 const function_instance *lookup_fndecl (tree);
 
 /* Try to find a mode with the given mode_suffix_info fields.  Return the
