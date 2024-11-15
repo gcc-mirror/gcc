@@ -16051,29 +16051,19 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
       return mask;
     }
+  else if (rcode == NE)
+    {
+      /* ne(a,b) = ~eq(a,b)  */
+      mask = gen_reg_rtx (dmode);
+      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (EQ, dmode, op0, op1)));
+      enum insn_code nor_code = optab_handler (one_cmpl_optab, dmode);
+      gcc_assert (nor_code != CODE_FOR_nothing);
+      emit_insn (GEN_FCN (nor_code) (mask, mask));
+      return mask;
+    }
 
   switch (rcode)
     {
-    case NE:
-      /* Invert condition and try again.
-	 e.g., A != B becomes ~(A==B).  */
-      {
-	enum insn_code nor_code;
-	rtx mask2;
-
-	nor_code = optab_handler (one_cmpl_optab, dmode);
-	if (nor_code == CODE_FOR_nothing)
-	  return NULL_RTX;
-
-	mask2 = rs6000_emit_vector_compare (EQ, op0, op1, dmode);
-	if (!mask2)
-	  return NULL_RTX;
-
-	mask = gen_reg_rtx (dmode);
-	emit_insn (GEN_FCN (nor_code) (mask, mask2));
-	return mask;
-      }
-      break;
     case GE:
     case GEU:
     case LE:
