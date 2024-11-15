@@ -1693,7 +1693,8 @@ process_options ()
 
   if ((flag_sanitize & SANITIZE_USER_ADDRESS)
       && ((targetm.asan_shadow_offset == NULL)
-	  || (targetm.asan_shadow_offset () == 0)))
+	  || ((targetm.asan_shadow_offset () == 0)
+	      && !targetm.asan_dynamic_shadow_offset_p ())))
     {
       warning_at (UNKNOWN_LOCATION, 0,
 		  "%<-fsanitize=address%> not supported for this target");

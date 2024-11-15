@@ -8046,6 +8046,8 @@ and the associated definitions of those functions.
 
 @hook TARGET_ASAN_SHADOW_OFFSET
 
+@hook TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P
+
 @hook TARGET_MEMMODEL_CHECK
 
 @hook TARGET_ATOMIC_TEST_AND_SET_TRUEVAL

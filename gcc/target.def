@@ -4700,9 +4700,15 @@ DEFHOOK
  "Return the offset bitwise ored into shifted address to get corresponding\n\
 Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not\n\
 supported by the target.  May return 0 if Address Sanitizer is not supported\n\
-by a subtarget.",
+or using dynamic shadow offset by a subtarget.",
  unsigned HOST_WIDE_INT, (void),
  NULL)
+
+DEFHOOK
+(asan_dynamic_shadow_offset_p,
+ "Return true if asan should use dynamic shadow offset.",
+ bool, (void),
+ hook_bool_void_false)
 
 /* Functions relating to calls - argument passing, returns, etc.  */
 /* Members of struct call have no special macro prefix.  */

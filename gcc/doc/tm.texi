@@ -12619,7 +12619,11 @@ is zero, which disables this optimization.
 Return the offset bitwise ored into shifted address to get corresponding
 Address Sanitizer shadow memory address.  NULL if Address Sanitizer is not
 supported by the target.  May return 0 if Address Sanitizer is not supported
-by a subtarget.
+or using dynamic shadow offset by a subtarget.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_ASAN_DYNAMIC_SHADOW_OFFSET_P (void)
+Return true if asan should use dynamic shadow offset.
 @end deftypefn
 
 @deftypefn {Target Hook} {unsigned HOST_WIDE_INT} TARGET_MEMMODEL_CHECK (unsigned HOST_WIDE_INT @var{val})

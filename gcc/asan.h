@@ -35,6 +35,9 @@ extern bool asan_expand_poison_ifn (gimple_stmt_iterator *, bool *,
 				    hash_map<tree, tree> &);
 extern rtx asan_memfn_rtl (tree);
 
+extern void
+asan_maybe_insert_dynamic_shadow_at_function_entry (function *);
+
 extern void hwasan_record_frame_init ();
 extern void hwasan_record_stack_var (rtx, rtx, poly_int64, poly_int64);
 extern void hwasan_emit_prologue ();

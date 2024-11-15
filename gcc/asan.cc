@@ -457,6 +457,13 @@ asan_shadow_offset ()
   return asan_shadow_offset_value;
 }
 
+static bool
+asan_dynamic_shadow_offset_p ()
+{
+  return (asan_shadow_offset_value == 0)
+	 && targetm.asan_dynamic_shadow_offset_p ();
+}
+
 /* Returns Asan shadow offset has been set.  */
 bool
 asan_shadow_offset_set_p ()
@@ -472,6 +479,55 @@ static GTY(()) tree shadow_ptr_types[3];
 
 /* Decl for __asan_option_detect_stack_use_after_return.  */
 static GTY(()) tree asan_detect_stack_use_after_return;
+
+static GTY (()) tree asan_shadow_memory_dynamic_address;
+
+/* Local copy for the asan_shadow_memory_dynamic_address within the
+   function.  */
+static GTY (()) tree asan_local_shadow_memory_dynamic_address;
+
+static tree
+get_asan_shadow_memory_dynamic_address_decl ()
+{
+  if (asan_shadow_memory_dynamic_address == NULL_TREE)
+    {
+      tree id, decl;
+      id = get_identifier ("__asan_shadow_memory_dynamic_address");
+      decl
+	= build_decl (BUILTINS_LOCATION, VAR_DECL, id, pointer_sized_int_node);
+      SET_DECL_ASSEMBLER_NAME (decl, id);
+      TREE_ADDRESSABLE (decl) = 1;
+      DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
+      DECL_EXTERNAL (decl) = 1;
+      TREE_STATIC (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      TREE_USED (decl) = 1;
+      asan_shadow_memory_dynamic_address = decl;
+    }
+
+  return asan_shadow_memory_dynamic_address;
+}
+
+void
+asan_maybe_insert_dynamic_shadow_at_function_entry (function *fun)
+{
+  asan_local_shadow_memory_dynamic_address = NULL_TREE;
+  if (!asan_dynamic_shadow_offset_p ())
+    return;
+
+  gimple *g;
+
+  tree lhs = create_tmp_var (pointer_sized_int_node,
+			     "__local_asan_shadow_memory_dynamic_address");
+
+  g = gimple_build_assign (lhs, get_asan_shadow_memory_dynamic_address_decl ());
+  gimple_set_location (g, fun->function_start_locus);
+  edge e = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  gsi_insert_on_edge_immediate (e, g);
+
+  asan_local_shadow_memory_dynamic_address = lhs;
+}
 
 /* Hashtable support for memory references used by gimple
    statements.  */
@@ -2033,10 +2089,21 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   shadow_base = expand_binop (Pmode, lshr_optab, base,
 			      gen_int_shift_amount (Pmode, ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
-  shadow_base
-    = plus_constant (Pmode, shadow_base,
-		     asan_shadow_offset ()
-		     + (base_align_bias >> ASAN_SHADOW_SHIFT));
+  if (asan_dynamic_shadow_offset_p ())
+    {
+      ret = expand_normal (get_asan_shadow_memory_dynamic_address_decl ());
+      shadow_base
+	= expand_simple_binop (Pmode, PLUS, shadow_base, ret, NULL_RTX,
+			       /* unsignedp = */ 1, OPTAB_WIDEN);
+      shadow_base = plus_constant (Pmode, shadow_base,
+				   (base_align_bias >> ASAN_SHADOW_SHIFT));
+    }
+  else
+    {
+      shadow_base = plus_constant (Pmode, shadow_base,
+				   asan_shadow_offset ()
+				     + (base_align_bias >> ASAN_SHADOW_SHIFT));
+    }
   gcc_assert (asan_shadow_set != -1
 	      && (ASAN_RED_ZONE_SIZE >> ASAN_SHADOW_SHIFT) == 4);
   shadow_mem = gen_rtx_MEM (SImode, shadow_base);
@@ -2558,7 +2625,10 @@ build_shadow_mem_access (gimple_stmt_iterator *gsi, location_t location,
   gimple_set_location (g, location);
   gsi_insert_after (gsi, g, GSI_NEW_STMT);
 
-  t = build_int_cst (uintptr_type, asan_shadow_offset ());
+  if (asan_dynamic_shadow_offset_p ())
+    t = asan_local_shadow_memory_dynamic_address;
+  else
+    t = build_int_cst (uintptr_type, asan_shadow_offset ());
   g = gimple_build_assign (make_ssa_name (uintptr_type), PLUS_EXPR,
 			   gimple_assign_lhs (g), t);
   gimple_set_location (g, location);
