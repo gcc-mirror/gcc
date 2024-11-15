@@ -16015,6 +16015,7 @@ static rtx
 rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
 {
   machine_mode mode = GET_MODE (op0);
+  gcc_assert (GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT);
 
   switch (code)
     {
@@ -16024,7 +16025,6 @@ rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
     case EQ:
     case GT:
     case GTU:
-      gcc_assert (GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT);
       rtx mask = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, mode, op0, op1)));
       return mask;
@@ -16049,18 +16049,8 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
      comparison operators in a comparison rtl pattern, we can
      just emit the comparison rtx insn directly here.  Besides,
      we should have a centralized place to handle the possibility
-     of raising invalid exception.  For EQ/GT/GE/UNORDERED/
-     ORDERED/LTGT/UNEQ, they are handled equivalently as before;
-     for NE/UNLE/UNLT, they are handled with reversed code
-     and inverting, it's the same as before; for LE/UNGT, they
-     are handled with LE ior EQ previously, emitting directly
-     here will make use of GE later, it's slightly better;
-
-     FIXME: Handle the remaining vector float comparison operators
-     here.  */
-  if (GET_MODE_CLASS (dmode) == MODE_VECTOR_FLOAT
-      && rcode != LT
-      && rcode != UNGE)
+     of raising invalid exception.  */
+  if (GET_MODE_CLASS (dmode) == MODE_VECTOR_FLOAT)
     {
       mask = gen_reg_rtx (dmode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
@@ -16088,23 +16078,17 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       try_again = true;
       break;
     case NE:
-    case UNGE:
       /* Invert condition and try again.
 	 e.g., A != B becomes ~(A==B).  */
       {
-	enum rtx_code rev_code;
 	enum insn_code nor_code;
 	rtx mask2;
-
-	rev_code = reverse_condition_maybe_unordered (rcode);
-	if (rev_code == UNKNOWN)
-	  return NULL_RTX;
 
 	nor_code = optab_handler (one_cmpl_optab, dmode);
 	if (nor_code == CODE_FOR_nothing)
 	  return NULL_RTX;
 
-	mask2 = rs6000_emit_vector_compare (rev_code, op0, op1, dmode);
+	mask2 = rs6000_emit_vector_compare (EQ, op0, op1, dmode);
 	if (!mask2)
 	  return NULL_RTX;
 
