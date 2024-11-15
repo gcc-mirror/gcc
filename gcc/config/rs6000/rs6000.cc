@@ -16042,22 +16042,18 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
       return mask;
     }
-
-  bool swap_operands = false;
-  bool try_again = false;
+  else if (rcode == LT || rcode == LTU)
+    {
+      /* lt{,u}(a,b) = gt{,u}(b,a)  */
+      enum rtx_code code = swap_condition (rcode);
+      std::swap (op0, op1);
+      mask = gen_reg_rtx (dmode);
+      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
+      return mask;
+    }
 
   switch (rcode)
     {
-    case LT:
-      rcode = GT;
-      swap_operands = true;
-      try_again = true;
-      break;
-    case LTU:
-      rcode = GTU;
-      swap_operands = true;
-      try_again = true;
-      break;
     case NE:
       /* Invert condition and try again.
 	 e.g., A != B becomes ~(A==B).  */
@@ -16129,16 +16125,6 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       break;
     default:
       return NULL_RTX;
-    }
-
-  if (try_again)
-    {
-      if (swap_operands)
-	std::swap (op0, op1);
-
-      mask = rs6000_emit_vector_compare (rcode, op0, op1, dmode);
-      if (mask)
-	return mask;
     }
 
   /* You only get two chances.  */
