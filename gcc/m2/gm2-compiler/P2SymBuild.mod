@@ -153,7 +153,7 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
                    CompilingProgramModule ;
 
 FROM M2Const IMPORT constType ;
-FROM M2Students IMPORT CheckForVariableThatLooksLikeKeyword ;
+FROM M2Students IMPORT CheckVariableAgainstKeyword ;
 IMPORT M2Error ;
 
 
@@ -1177,7 +1177,7 @@ BEGIN
    PopT (n) ;
    i := 1 ;
    WHILE i <= n DO
-      CheckForVariableThatLooksLikeKeyword (OperandT (n+1-i)) ;
+      CheckVariableAgainstKeyword (OperandT (n+1-i)) ;
       tok := OperandTok (n+1-i) ;
       Var := MakeVar (tok, OperandT (n+1-i)) ;
       AtAddress := OperandA (n+1-i) ;

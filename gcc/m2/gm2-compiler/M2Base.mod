@@ -1997,8 +1997,8 @@ BEGIN
 
    no        :  MetaErrorT2 (NearTok, 'type incompatibility between {%1asd} and {%2asd}',
                              leftType, rightType) ;
-                MetaErrorDecl (left) ;
-                MetaErrorDecl (right) ;
+                MetaErrorDecl (left, TRUE) ;
+                MetaErrorDecl (right, TRUE) ;
                 FlushErrors  (* unrecoverable at present *) |
    warnfirst,
    first     :  RETURN( leftType ) |
@@ -2018,7 +2018,10 @@ END MixMetaTypes ;
 
 PROCEDURE IsUserType (type: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN IsType (type) AND (NOT IsBaseType (type)) AND (NOT IsSystemType (type))
+   RETURN IsType (type) AND
+          (NOT IsBaseType (type)) AND
+          (NOT IsSystemType (type)) AND
+          (type # ZType)
 END IsUserType ;
 
 
@@ -2111,6 +2114,12 @@ BEGIN
    ELSIF IsUserType (rightType)
    THEN
       RETURN( MixTypes(leftType, GetType(rightType), NearTok) )
+   ELSIF leftType = ZType
+   THEN
+      RETURN rightType
+   ELSIF rightType = ZType
+   THEN
+      RETURN leftType
    ELSIF (leftType=GetLowestType(leftType)) AND (rightType=GetLowestType(rightType))
    THEN
       RETURN( MixMetaTypes (left, right, leftType, rightType, NearTok) )

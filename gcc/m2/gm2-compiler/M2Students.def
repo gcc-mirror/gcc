@@ -31,15 +31,15 @@ DEFINITION MODULE M2Students ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 FROM NameKey IMPORT Name ;
-EXPORT QUALIFIED StudentVariableCheck, CheckForVariableThatLooksLikeKeyword ;
+EXPORT QUALIFIED StudentVariableCheck, CheckVariableAgainstKeyword ;
 
 
 (*
-   CheckForVariableThatLooksLikeKeyword - checks for a identifier that looks the same
-                                          as a keyword except for its case.
+   CheckVariableAgainstKeyword - checks for a identifier that looks the same
+                                 as a keyword except for its case.
 *)
 
-PROCEDURE CheckForVariableThatLooksLikeKeyword (name: Name) ;
+PROCEDURE CheckVariableAgainstKeyword (name: Name) ;
 
 
 (*

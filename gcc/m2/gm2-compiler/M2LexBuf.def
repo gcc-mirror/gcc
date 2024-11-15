@@ -185,8 +185,12 @@ PROCEDURE GetFileName () : String ;
 
 
 (*
-   MakeVirtualTok - creates and return a new tokenno which is created from
-                    tokenno caret, left and right.
+   MakeVirtualTok - providing caret, left, right are associated with a source file
+                    and exist on the same src line then
+                    create and return a new tokenno which is created from
+                    tokenno left and right.  Otherwise return caret.
+                    If caret is UnknownTokenNo then it is replaced with left or right
+                    in sequence to avoid an UnknownTokenNo.
 *)
 
 PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
@@ -194,7 +198,8 @@ PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
 
 (*
    MakeVirtual2Tok - creates and return a new tokenno which is created from
-                     two tokens left and right.
+                     two tokens left and right.  It tries to avoid UnknownTokenNo
+                     and will fall back to left or right if necessary.
 *)
 
 PROCEDURE MakeVirtual2Tok (left, right: CARDINAL) : CARDINAL ;

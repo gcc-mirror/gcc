@@ -175,10 +175,11 @@ PROCEDURE MetaString4 (m: String; s1, s2, s3, s4: CARDINAL) : String ;
 
 (*
    MetaErrorDecl - if sym is a variable or parameter then generate a
-                   declaration error message.
+                   declaration error or warning message.  If error is
+                   FALSE then a warning is issued.
 *)
 
-PROCEDURE MetaErrorDecl (sym: CARDINAL) ;
+PROCEDURE MetaErrorDecl (sym: CARDINAL; error: BOOLEAN) ;
 
 
 END M2MetaError.
