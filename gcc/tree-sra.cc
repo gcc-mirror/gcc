@@ -1392,9 +1392,16 @@ scan_function (void)
 	      break;
 
 	    case GIMPLE_CALL:
-	      for (i = 0; i < gimple_call_num_args (stmt); i++)
-		ret |= build_access_from_expr (gimple_call_arg (stmt, i),
-					       stmt, false);
+	      if (gimple_call_flags (stmt) & ECF_RETURNS_TWICE)
+		{
+		  for (i = 0; i < gimple_call_num_args (stmt); i++)
+		    disqualify_base_of_expr (gimple_call_arg (stmt, i),
+					     "Passed to a returns_twice call.");
+		}
+	      else
+		for (i = 0; i < gimple_call_num_args (stmt); i++)
+		  ret |= build_access_from_expr (gimple_call_arg (stmt, i),
+						 stmt, false);
 
 	      t = gimple_call_lhs (stmt);
 	      if (t && !disqualify_if_bad_bb_terminating_stmt (stmt, t, NULL))
