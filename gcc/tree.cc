@@ -9698,6 +9698,11 @@ build_common_tree_nodes (bool signed_char)
       TYPE_PRECISION (dfloat128_type_node) = DECIMAL128_TYPE_SIZE;
       SET_TYPE_MODE (dfloat128_type_node, TDmode);
       layout_type (dfloat128_type_node);
+
+      dfloat64x_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (dfloat64x_type_node) = DECIMAL128_TYPE_SIZE;
+      SET_TYPE_MODE (dfloat64x_type_node, TDmode);
+      layout_type (dfloat64x_type_node);
     }
 
   complex_integer_type_node = build_complex_type (integer_type_node, true);

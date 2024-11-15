@@ -102,9 +102,7 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
      df, DF, d32, D32 - _Decimal32.
      dd, DD, d64, D64 - _Decimal64.
      dl, DL, d128, D128 - _Decimal128.
-
-     The dN and DN suffixes for _DecimalN, and dNx and DNx for
-     _DecimalNx, defined in TS 18661-3:2015, are not supported.
+     d64x, D64x - _Decimal64x.
 
      Fixed-point suffixes, from TR 18037:2008, are supported.  They
      consist of three parts, in order:
@@ -258,8 +256,13 @@ interpret_float_suffix (cpp_reader *pfile, const uchar *s, size_t len)
 	    {
 	      if (s[1] == '3' && s[2] == '2' && len == 2)
 		return CPP_N_DFLOAT | CPP_N_SMALL;
-	      if (s[1] == '6' && s[2] == '4' && len == 2)
-		return CPP_N_DFLOAT | CPP_N_MEDIUM;
+	      if (s[1] == '6' && s[2] == '4')
+		{
+		  if (len == 2)
+		    return CPP_N_DFLOAT | CPP_N_MEDIUM;
+		  if (len == 3 && s[3] == 'x')
+		    return CPP_N_DFLOAT | CPP_N_FLOATNX;
+		}
 	      if (s[1] == '1' && s[2] == '2' && len == 3 && s[3] == '8')
 		return CPP_N_DFLOAT | CPP_N_LARGE;
 	    }

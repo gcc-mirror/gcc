@@ -1323,6 +1323,9 @@ c_cpp_builtins (cpp_reader *pfile)
 					      dfloat64_type_node);
       builtin_define_decimal_float_constants ("DEC128", "DL",
 					      dfloat128_type_node);
+      if (dfloat64x_type_node)
+	builtin_define_decimal_float_constants ("DEC64X", "D64x",
+						dfloat64x_type_node);
     }
 
   /* For fixed-point fibt, ibit, max, min, and epsilon.  */

@@ -12119,6 +12119,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<long%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<long%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else
 		{
 		  specs->long_p = true;
@@ -12184,6 +12188,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<short%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<short%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else
 		{
 		  specs->short_p = true;
@@ -12235,6 +12243,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
 			  ("both %<signed%> and %<_Decimal128%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<signed%> and %<_Decimal64x%> in "
 			   "declaration specifiers"));
 	      else
 		{
@@ -12288,6 +12300,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		error_at (loc,
 			  ("both %<unsigned%> and %<_Decimal128%> in "
 			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<unsigned%> and %<_Decimal64x%> in "
+			   "declaration specifiers"));
 	      else
 		{
 		  specs->unsigned_p = true;
@@ -12326,6 +12342,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
 			  ("both %<complex%> and %<_Decimal128%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<complex%> and %<_Decimal64x%> in "
 			   "declaration specifiers"));
 	      else if (specs->typespec_word == cts_fract)
 		error_at (loc,
@@ -12407,6 +12427,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      else if (specs->typespec_word == cts_dfloat128)
 		error_at (loc,
 			  ("both %<_Sat%> and %<_Decimal128%> in "
+			   "declaration specifiers"));
+	      else if (specs->typespec_word == cts_dfloat64x)
+		error_at (loc,
+			  ("both %<_Sat%> and %<_Decimal64x%> in "
 			   "declaration specifiers"));
 	      else if (specs->complex_p)
 		error_at (loc,
@@ -12733,14 +12757,17 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_DFLOAT32:
 	    case RID_DFLOAT64:
 	    case RID_DFLOAT128:
+	    case RID_DFLOAT64X:
 	      {
 		const char *str;
 		if (i == RID_DFLOAT32)
 		  str = "_Decimal32";
 		else if (i == RID_DFLOAT64)
 		  str = "_Decimal64";
-		else
+		else if (i == RID_DFLOAT128)
 		  str = "_Decimal128";
+		else
+		  str = "_Decimal64x";
 		if (specs->long_long_p)
 		  error_at (loc,
 			    ("both %<long long%> and %qs in "
@@ -12780,8 +12807,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 		  specs->typespec_word = cts_dfloat32;
 		else if (i == RID_DFLOAT64)
 		  specs->typespec_word = cts_dfloat64;
-		else
+		else if (i == RID_DFLOAT128)
 		  specs->typespec_word = cts_dfloat128;
+		else
+		  specs->typespec_word = cts_dfloat64x;
 		specs->locations[cdw_typespec] = loc;
 	      }
 	      if (!targetm.decimal_float_supported_p ())
@@ -13350,6 +13379,7 @@ finish_declspecs (struct c_declspecs *specs)
     case cts_dfloat32:
     case cts_dfloat64:
     case cts_dfloat128:
+    case cts_dfloat64x:
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p && !specs->complex_p);
       if (!targetm.decimal_float_supported_p ())
@@ -13358,8 +13388,10 @@ finish_declspecs (struct c_declspecs *specs)
 	specs->type = dfloat32_type_node;
       else if (specs->typespec_word == cts_dfloat64)
 	specs->type = dfloat64_type_node;
-      else
+      else if (specs->typespec_word == cts_dfloat128)
 	specs->type = dfloat128_type_node;
+      else
+	specs->type = dfloat64x_type_node;
       break;
     case cts_fract:
       gcc_assert (!specs->complex_p);

@@ -781,6 +781,7 @@ enum tree_index : unsigned {
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
   TI_DFLOAT128_TYPE,
+  TI_DFLOAT64X_TYPE,
 
   TI_VOID_LIST_NODE,
 

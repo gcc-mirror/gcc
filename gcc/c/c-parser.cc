@@ -597,6 +597,7 @@ c_keyword_starts_typename (enum rid keyword)
     case RID_DFLOAT32:
     case RID_DFLOAT64:
     case RID_DFLOAT128:
+    case RID_DFLOAT64X:
     CASE_RID_FLOATN_NX:
     case RID_BOOL:
     case RID_BITINT:
@@ -801,6 +802,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_DFLOAT32:
 	case RID_DFLOAT64:
 	case RID_DFLOAT128:
+	case RID_DFLOAT64X:
 	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
 	case RID_BITINT:
@@ -3505,6 +3507,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	case RID_DFLOAT32:
 	case RID_DFLOAT64:
 	case RID_DFLOAT128:
+	case RID_DFLOAT64X:
 	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
 	case RID_FRACT:
@@ -5229,6 +5232,7 @@ c_parser_gnu_attribute_any_word (c_parser *parser)
 	case RID_DFLOAT32:
 	case RID_DFLOAT64:
 	case RID_DFLOAT128:
+	case RID_DFLOAT64X:
 	CASE_RID_FLOATN_NX:
 	case RID_BOOL:
 	case RID_BITINT:
@@ -11897,6 +11901,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    bool arg_binary = all_binary;
 	    bool arg_int_decimal = all_decimal;
 	    bool arg_int_floatnx = false;
+	    bool arg_int_decimalx = false;
 	    for (unsigned int j = 1; j <= nargs; j++)
 	      {
 		if (parm_kind[j] == tgmath_fixed)
@@ -12001,6 +12006,8 @@ c_parser_postfix_expression (c_parser *parser)
 			arg_int_floatnx = true;
 			break;
 		      }
+		if (rtype == dfloat64x_type_node)
+		  arg_int_decimalx = true;
 	      }
 	    tree arg_real = NULL_TREE;
 	    for (unsigned int j = 1; j <= nargs; j++)
@@ -12012,10 +12019,12 @@ c_parser_postfix_expression (c_parser *parser)
 		if (TREE_CODE (type) == COMPLEX_TYPE)
 		  type = TREE_TYPE (type);
 		if (INTEGRAL_TYPE_P (type))
-		  type = (arg_int_decimal
-			  ? dfloat64_type_node
+		  type = (arg_int_decimalx
+			  ? dfloat64x_type_node
 			  : arg_int_floatnx
 			  ? float32x_type_node
+			  : arg_int_decimal
+			  ? dfloat64_type_node
 			  : double_type_node);
 		if (arg_real == NULL_TREE)
 		  arg_real = type;
@@ -13173,6 +13182,7 @@ warn_for_abs (location_t loc, tree fndecl, tree arg)
     case BUILT_IN_FABSD32:
     case BUILT_IN_FABSD64:
     case BUILT_IN_FABSD128:
+    case BUILT_IN_FABSD64X:
       if (!DECIMAL_FLOAT_TYPE_P (atype))
 	{
 	  if (INTEGRAL_TYPE_P (atype))

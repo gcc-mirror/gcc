@@ -602,6 +602,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* __STDC_WANT_IEC_60559_DFP_EXT__ || C23.  */
 
+#ifdef __STDC_WANT_IEC_60559_TYPES_EXT__
+#undef DEC64X_MANT_DIG
+#define DEC64X_MANT_DIG	__DEC64X_MANT_DIG__
+#undef DEC64X_MIN_EXP
+#define DEC64X_MIN_EXP	__DEC64X_MIN_EXP__
+#undef DEC64X_MAX_EXP
+#define DEC64X_MAX_EXP	__DEC64X_MAX_EXP__
+#undef DEC64X_MAX
+#define DEC64X_MAX   __DEC64X_MAX__
+#undef DEC64X_EPSILON
+#define DEC64X_EPSILON	__DEC64X_EPSILON__
+#undef DEC64X_MIN
+#define DEC64X_MIN	__DEC64X_MIN__
+#undef DEC64X_TRUE_MIN
+#define DEC64X_TRUE_MIN      __DEC64X_SUBNORMAL_MIN__
+#endif /* __STDC_WANT_IEC_60559_TYPES_EXT__ */
+
 #if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
 
 /* Infinity in type _Decimal32.  */
@@ -619,6 +636,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEC64_SNAN	(__builtin_nansd64 (""))
 #undef DEC128_SNAN
 #define DEC128_SNAN	(__builtin_nansd128 (""))
+#ifdef __STDC_WANT_IEC_60559_TYPES_EXT__
+#undef DEC64X_SNAN
+#define DEC64X_SNAN	(__builtin_nansd64x (""))
+#endif /* __STDC_WANT_IEC_60559_TYPES_EXT__ */
 
 #endif /* C23 */
 

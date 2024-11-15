@@ -1350,6 +1350,7 @@ fold_const_call (combined_fn fn, tree type, tree arg)
     case CFN_BUILT_IN_NAND32:
     case CFN_BUILT_IN_NAND64:
     case CFN_BUILT_IN_NAND128:
+    case CFN_BUILT_IN_NAND64X:
       return fold_const_builtin_nan (type, arg, true);
 
     CASE_CFN_NANS:
@@ -1358,6 +1359,7 @@ fold_const_call (combined_fn fn, tree type, tree arg)
     case CFN_BUILT_IN_NANSD32:
     case CFN_BUILT_IN_NANSD64:
     case CFN_BUILT_IN_NANSD128:
+    case CFN_BUILT_IN_NANSD64X:
       return fold_const_builtin_nan (type, arg, false);
 
     case CFN_REDUC_PLUS:

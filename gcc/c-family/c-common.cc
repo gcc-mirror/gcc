@@ -100,7 +100,8 @@ machine_mode c_default_pointer_mode = VOIDmode;
 
 	tree dfloat32_type_node;
 	tree dfloat64_type_node;
-	tree_dfloat128_type_node;
+	tree dfloat128_type_node;
+	tree dfloat64x_type_node; 
 
 	tree intQI_type_node;
 	tree intHI_type_node;
@@ -407,6 +408,7 @@ const struct c_common_resword c_common_reswords[] =
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY },
   { "_Decimal128",      RID_DFLOAT128, D_CONLY },
+  { "_Decimal64x",      RID_DFLOAT64X, D_CONLY },
   { "_Fract",           RID_FRACT,     D_CONLY | D_EXT },
   { "_Accum",           RID_ACCUM,     D_CONLY | D_EXT },
   { "_Sat",             RID_SAT,       D_CONLY | D_EXT },
@@ -4480,6 +4482,7 @@ c_common_nodes_and_builtins (void)
       record_builtin_type (RID_DFLOAT32, NULL, dfloat32_type_node);
       record_builtin_type (RID_DFLOAT64, NULL, dfloat64_type_node);
       record_builtin_type (RID_DFLOAT128, NULL, dfloat128_type_node);
+      record_builtin_type (RID_DFLOAT64X, NULL, dfloat64x_type_node);
     }
 
   if (targetm.fixed_point_supported_p ())

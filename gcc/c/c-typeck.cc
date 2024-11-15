@@ -1158,6 +1158,11 @@ c_common_type (tree t1, tree t2)
       if (TYPE_MAIN_VARIANT (t1) == dfloat128_type_node
 	  || TYPE_MAIN_VARIANT (t2) == dfloat128_type_node)
 	return dfloat128_type_node;
+      /* And prefer _Decimal128 over _Decimal64x which has in GCC's
+	 implementation the same mode.  */
+      else if (TYPE_MAIN_VARIANT (t1) == dfloat64x_type_node
+	       || TYPE_MAIN_VARIANT (t2) == dfloat64x_type_node)
+	return dfloat64x_type_node;
       else if (TYPE_MAIN_VARIANT (t1) == dfloat64_type_node
 	       || TYPE_MAIN_VARIANT (t2) == dfloat64_type_node)
 	return dfloat64_type_node;

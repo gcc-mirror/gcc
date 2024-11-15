@@ -1235,6 +1235,8 @@ interpret_float (const cpp_token *token, unsigned int flags,
       type = dfloat128_type_node;
     else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
       type = dfloat32_type_node;
+    else if ((flags & CPP_N_FLOATNX) != 0)
+      type = dfloat64x_type_node;
     else
       type = dfloat64_type_node;
   else
@@ -1350,6 +1352,8 @@ interpret_float (const cpp_token *token, unsigned int flags,
     {
       if (ISDIGIT (token->val.str.text[copylen - 1]))
 	copylen -= (flags & CPP_N_LARGE) ? 4 : 3;
+      else if ((flags & CPP_N_FLOATNX) != 0)
+	copylen -= 4;
       else
 	copylen -= 2;
     }

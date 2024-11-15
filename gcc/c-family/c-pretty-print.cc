@@ -1159,6 +1159,8 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
     pp_string (pp, "dd");
   else if (TREE_TYPE (r) == dfloat32_type_node)
     pp_string (pp, "df");
+  else if (TREE_TYPE (r) == dfloat64x_type_node)
+    pp_string (pp, "d64x");
   else if (TREE_TYPE (r) != double_type_node)
     for (int i = 0; i < NUM_FLOATN_NX_TYPES; i++)
       if (TREE_TYPE (r) == FLOATN_NX_TYPE_NODE (i))
