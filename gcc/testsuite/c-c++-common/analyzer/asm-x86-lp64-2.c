@@ -3,10 +3,6 @@
 
 /* Adapted from Linux x86: page_ref_dec_and_test.c (GPL-2.0).  */
 
-#ifndef __cplusplus 
-  typedef _Bool bool;
-#endif
-
 typedef struct {
   int counter;
 } atomic_t;

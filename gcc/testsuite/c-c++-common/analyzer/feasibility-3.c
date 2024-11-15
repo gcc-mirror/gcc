@@ -6,9 +6,6 @@
 /* Types.  */
 
 typedef unsigned char u8;
-#ifndef __cplusplus
-typedef _Bool bool;
-#endif
 typedef unsigned int gfp_t;
 
 struct file;

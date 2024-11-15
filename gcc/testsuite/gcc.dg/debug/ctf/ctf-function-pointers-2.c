@@ -4,7 +4,7 @@
    different function pointer types.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O0 -gctf -dA" } */
+/* { dg-options "-O0 -gctf -dA -std=gnu17" } */
 /* { dg-final { scan-assembler-times "\[\t \]0x16000001\[\t \]+\[^\n\]*ctt_info" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"rcu_callback_t.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"func.0\"\[\t \]+\[^\n\]*ctf_string" 1 } } */

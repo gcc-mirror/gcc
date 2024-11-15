@@ -261,8 +261,8 @@ c_common_init_options (unsigned int decoded_options_count,
 
   if (c_language == clk_c)
     {
-      /* The default for C is gnu17.  */
-      set_std_c17 (false /* ISO */);
+      /* The default for C is gnu23.  */
+      set_std_c23 (false /* ISO */);
 
       /* If preprocessing assembly language, accept any of the C-family
 	 front end options since the driver may pass them through.  */

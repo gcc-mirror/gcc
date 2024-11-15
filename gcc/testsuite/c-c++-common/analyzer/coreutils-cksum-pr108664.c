@@ -8,10 +8,6 @@ typedef unsigned int __uint32_t;
 typedef unsigned long int __uintmax_t;
 typedef struct _IO_FILE FILE;
 
-#ifndef __cplusplus
-  typedef _Bool bool;
-#endif
-
 extern size_t
 fread_unlocked(void* __restrict __ptr,
                size_t __size,

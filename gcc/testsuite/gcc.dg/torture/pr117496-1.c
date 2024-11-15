@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-std=gnu17" } */
 
 
 /* PR tree-optimization/117496 */

@@ -11,7 +11,6 @@
 typedef __CHAR16_TYPE__ char16_t;
 typedef __CHAR32_TYPE__ char32_t;
 #elif !__cplusplus
-typedef _Bool           bool;
 typedef __CHAR16_TYPE__ char16_t;
 typedef __CHAR32_TYPE__ char32_t;
 typedef __WCHAR_TYPE__  wchar_t;

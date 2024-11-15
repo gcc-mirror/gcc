@@ -8,10 +8,6 @@
 /* Adapted from various files in the Linux kernel, all of which have:  */
 /* SPDX-License-Identifier: GPL-2.0 */
 
-typedef _Bool			bool;
-#define true 1
-#define false 0
-
 typedef struct {
 	int counter;
 } atomic_t;
