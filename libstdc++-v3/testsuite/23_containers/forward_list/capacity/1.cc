@@ -36,13 +36,18 @@ test01()
   VERIFY(fld.empty() == true);
 
 #ifdef _GLIBCXX_DEBUG
-  using std::_GLIBCXX_STD_C::_Fwd_list_node;
+  namespace C = std::_GLIBCXX_STD_C;
 #else
-  using std::_Fwd_list_node;
+  namespace C = std;
 #endif
 
-  std::allocator<_Fwd_list_node<double> > a;
+  std::allocator<C::_Fwd_list_node<double>> a;
   VERIFY( fld.max_size() == __gnu_test::max_size(a) );
+
+#if _GLIBCXX_FWDLIST_USE_ALLOC_PTR
+  std::allocator<C::__fwdlist::_Node<double*>> b;
+  VERIFY( __gnu_test::max_size(b) == __gnu_test::max_size(a) );
+#endif
 }
 
 int
