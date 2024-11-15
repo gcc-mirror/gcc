@@ -47,6 +47,7 @@
 #include "tree-nested.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "attribs.h"
 
 /* Summary of nested functions.  */
 static function_summary <nested_function_info *>
@@ -908,7 +909,11 @@ walk_all_functions (walk_stmt_fn callback_stmt, walk_tree_fn callback_op,
    add a VIEW_CONVERT_EXPR to each such operand for each call to the nested
    function.  The former is not practical.  The latter would still require
    detecting this case to know when to add the conversions.  So, for now at
-   least, we don't inline such an enclosing function.
+   least, we don't inline such an enclosing function.  A similar issue
+   applies if the nested function has a variably modified return type, and
+   is not inlined, but the enclosing function is inlined and so the type of
+   the return slot as used in the enclosing function is remapped, so also
+   avoid inlining in that case.
 
    We have to do that check recursively, so here return indicating whether
    FNDECL has such a nested function.  ORIG_FN is the function we were
@@ -929,6 +934,9 @@ check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
   for (cgn = first_nested_function (cgn); cgn;
        cgn = next_nested_function (cgn))
     {
+      if (variably_modified_type_p (TREE_TYPE (TREE_TYPE (cgn->decl)),
+				    orig_fndecl))
+	return true;
       for (arg = DECL_ARGUMENTS (cgn->decl); arg; arg = DECL_CHAIN (arg))
 	if (variably_modified_type_p (TREE_TYPE (arg), orig_fndecl))
 	  return true;
@@ -967,7 +975,13 @@ create_nesting_tree (struct cgraph_node *cgn)
   /* See discussion at check_for_nested_with_variably_modified for a
      discussion of why this has to be here.  */
   if (check_for_nested_with_variably_modified (info->context, info->context))
-    DECL_UNINLINABLE (info->context) = true;
+    {
+      DECL_UNINLINABLE (info->context) = true;
+      tree attrs = DECL_ATTRIBUTES (info->context);
+      if (lookup_attribute ("noclone", attrs) == NULL)
+	DECL_ATTRIBUTES (info->context)
+	  = tree_cons (get_identifier ("noclone"), NULL, attrs);
+    }
 
   return info;
 }
