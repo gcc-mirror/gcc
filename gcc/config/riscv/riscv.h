@@ -191,7 +191,7 @@ ASM_MISA_SPEC
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY \
-  (((TARGET_RVC || TARGET_ZCA) && !TARGET_ZICFILP) ? 16 : 32)
+  (((TARGET_RVC || TARGET_ZCA) && !is_zicfilp_p ()) ? 16 : 32)
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
@@ -415,7 +415,7 @@ ASM_MISA_SPEC
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM \
-  ((TARGET_ZICFILP) ? (GP_TEMP_FIRST + 23) : (GP_TEMP_FIRST + 2))
+  ((is_zicfilp_p ()) ? (GP_TEMP_FIRST + 23) : (GP_TEMP_FIRST + 2))
 
 /* Registers used as temporaries in prologue/epilogue code.
 
@@ -827,7 +827,7 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
 
 /* Trampolines are a block of code followed by two pointers.  */
 
-#define TRAMPOLINE_CODE_SIZE ((TARGET_ZICFILP) ? 24 : 16)
+#define TRAMPOLINE_CODE_SIZE ((is_zicfilp_p ()) ? 24 : 16)
 
 #define TRAMPOLINE_SIZE		\
   ((Pmode == SImode)		\
@@ -1196,6 +1196,8 @@ extern poly_int64 riscv_v_adjust_nunits (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_nunits (machine_mode, bool, int, int);
 extern poly_int64 riscv_v_adjust_precision (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
+extern bool is_zicfiss_p ();
+extern bool is_zicfilp_p ();
 extern bool need_shadow_stack_push_pop_p ();
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))

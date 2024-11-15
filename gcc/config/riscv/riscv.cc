@@ -6682,7 +6682,7 @@ riscv_legitimize_call_address (rtx addr)
       rtx reg = RISCV_CALL_ADDRESS_TEMP (Pmode);
       riscv_emit_move (reg, addr);
 
-      if (TARGET_ZICFILP)
+      if (is_zicfilp_p ())
 	{
 	  rtx sw_guarded = RISCV_CALL_ADDRESS_LPAD (Pmode);
 	  emit_insn (gen_set_guarded (Pmode, reg));
@@ -6692,7 +6692,7 @@ riscv_legitimize_call_address (rtx addr)
       return reg;
     }
 
-  if (TARGET_ZICFILP && REG_P (addr))
+  if (is_zicfilp_p () && REG_P (addr))
     emit_insn (gen_set_lpl (Pmode, const0_rtx));
 
   return addr;
@@ -7508,7 +7508,7 @@ riscv_save_reg_p (unsigned int regno)
       if (regno == GP_REGNUM || regno == THREAD_POINTER_REGNUM)
 	return false;
 
-      if (regno == RETURN_ADDR_REGNUM && TARGET_ZICFISS)
+      if (regno == RETURN_ADDR_REGNUM && is_zicfiss_p ())
 	return true;
 
       /* We must save every register used in this function.  If this is not a
@@ -10340,10 +10340,10 @@ riscv_file_end ()
   long GNU_PROPERTY_RISCV_FEATURE_1_AND  = 0;
   unsigned long feature_1_and = 0;
 
-  if (TARGET_ZICFISS)
+  if (is_zicfilp_p ())
     feature_1_and |= 0x1 << 0;
 
-  if (TARGET_ZICFILP)
+  if (is_zicfiss_p ())
     feature_1_and |= 0x1 << 1;
 
   if (feature_1_and)
@@ -10403,7 +10403,7 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Mark the end of the (empty) prologue.  */
   emit_note (NOTE_INSN_PROLOGUE_END);
 
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     emit_insn(gen_lpad (const0_rtx));
 
   /* Determine if we can use a sibcall to call FUNCTION directly.  */
@@ -10630,6 +10630,20 @@ riscv_override_options_internal (struct gcc_options *opts)
 
   /* Convert -march and -mrvv-vector-bits to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_chunks (opts);
+
+  if (opts->x_flag_cf_protection != CF_NONE)
+    {
+      if ((opts->x_flag_cf_protection & CF_RETURN) == CF_RETURN
+	  && !TARGET_ZICFISS)
+	error ("%<-fcf-protection%> is not compatible with this target");
+
+      if ((opts->x_flag_cf_protection & CF_BRANCH) == CF_BRANCH
+	  && !TARGET_ZICFILP)
+	error ("%<-fcf-protection%> is not compatible with this target");
+
+      opts->x_flag_cf_protection
+      = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    }
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -10924,7 +10938,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   /* Work out the offsets of the pointers from the start of the
      trampoline code.  */
-  if (!TARGET_ZICFILP)
+  if (!is_zicfilp_p ())
     gcc_assert (ARRAY_SIZE (trampoline) * 4 == TRAMPOLINE_CODE_SIZE);
   else
     gcc_assert (ARRAY_SIZE (trampoline_cfi) * 4 == TRAMPOLINE_CODE_SIZE);
@@ -10952,7 +10966,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       unsigned insn_count = 0;
 
       /* Insert lpad, if zicfilp is enabled.  */
-      if (TARGET_ZICFILP)
+      if (is_zicfilp_p ())
 	{
 	  unsigned HOST_WIDE_INT lpad_code;
 	  lpad_code = OPCODE_AUIPC | (0 << SHIFT_RD) | (lp_value << IMM_BITS);
@@ -11014,7 +11028,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       insn_count++;
 
       /* For zicfilp only, insert lui t2, 1, because use jr t0.  */
-      if (TARGET_ZICFILP)
+      if (is_zicfilp_p ())
 	{
 	  unsigned HOST_WIDE_INT set_lpl_code;
 	  set_lpl_code  = OPCODE_LUI
@@ -11044,7 +11058,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       static_chain_offset = TRAMPOLINE_CODE_SIZE;
       target_function_offset = static_chain_offset + GET_MODE_SIZE (ptr_mode);
 
-      if (!TARGET_ZICFILP)
+      if (!is_zicfilp_p ())
 	{
 	  /* auipc   t2, 0
 	     l[wd]   t0, (target_function_offset)(t2)
@@ -13959,9 +13973,25 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
   riscv_emit_move (operands[0], gen_lowpart (crc_mode, a0));
 }
 
+bool is_zicfiss_p ()
+{
+  if (TARGET_ZICFISS && (flag_cf_protection & CF_RETURN))
+    return true;
+
+  return false;
+}
+
+bool is_zicfilp_p ()
+{
+  if (TARGET_ZICFILP && (flag_cf_protection & CF_BRANCH))
+    return true;
+
+  return false;
+}
+
 bool need_shadow_stack_push_pop_p ()
 {
-  return TARGET_ZICFISS && riscv_save_return_addr_reg_p ();
+  return is_zicfiss_p () && riscv_save_return_addr_reg_p ();
 }
 
 /* Initialize the GCC target structure.  */

@@ -1,5 +1,5 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-O2 -march=rv64gc_zicfiss -mabi=lp64d" } */
+/* { dg-options "-O2 -march=rv64gc_zicfiss -mabi=lp64d -fcf-protection=return" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 struct ad {
   void *ae;

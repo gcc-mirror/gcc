@@ -223,6 +223,15 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
 
+  if (TARGET_ZICFISS && ((flag_cf_protection & CF_RETURN) == CF_RETURN))
+    builtin_define ("__riscv_shadow_stack");
+
+  if (TARGET_ZICFILP && ((flag_cf_protection & CF_BRANCH) == CF_BRANCH))
+    {
+      builtin_define ("__riscv_landing_pad");
+      builtin_define ("__riscv_landing_pad_unlabeled");
+    }
+
   const riscv_subset_list *subset_list = riscv_cmdline_subset_list ();
   if (!subset_list)
     return;

@@ -3711,11 +3711,11 @@
   [(set (pc) (match_operand 0 "register_operand"))]
   ""
 {
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     emit_insn (gen_set_lpl (Pmode, const0_rtx));
 
   operands[0] = force_reg (Pmode, operands[0]);
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     emit_use (gen_rtx_REG (Pmode, T2_REGNUM));
 
   if (Pmode == SImode)
@@ -3743,7 +3743,7 @@
 					 gen_rtx_LABEL_REF (Pmode, operands[1]),
 					 NULL_RTX, 0, OPTAB_DIRECT);
 
-  if (TARGET_ZICFILP)
+  if (is_zicfilp_p ())
     {
       rtx t2 = RISCV_CALL_ADDRESS_LPAD (GET_MODE (operands[0]));
       emit_move_insn (t2, operands[0]);
@@ -3766,7 +3766,7 @@
 (define_insn "tablejump<mode>"
   [(set (pc) (match_operand:GPR 0 "register_operand" "l"))
    (use (label_ref (match_operand 1 "" "")))]
-  "!TARGET_ZICFILP"
+  "!is_zicfilp_p ()"
   "jr\t%0"
   [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
@@ -3774,7 +3774,7 @@
 (define_insn "tablejump_cfi<mode>"
   [(set (pc) (reg:GPR T2_REGNUM))
    (use (label_ref (match_operand 0 "")))]
-  "TARGET_ZICFILP"
+  "is_zicfilp_p ()"
   "jr\tt2"
   [(set_attr "type" "jalr")
    (set_attr "mode" "none")])
