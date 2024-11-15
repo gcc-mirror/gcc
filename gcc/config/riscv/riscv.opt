@@ -253,6 +253,8 @@ Mask(ZICCLSM)     Var(riscv_zi_subext)
 
 Mask(ZICCRSE)     Var(riscv_zi_subext)
 
+Mask(ZICFISS)     Var(riscv_zi_subext)
+
 TargetVariable
 int riscv_za_subext
 

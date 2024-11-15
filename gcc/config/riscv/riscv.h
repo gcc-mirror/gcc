@@ -1189,6 +1189,7 @@ extern poly_int64 riscv_v_adjust_nunits (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_nunits (machine_mode, bool, int, int);
 extern poly_int64 riscv_v_adjust_precision (enum machine_mode, int);
 extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
+extern bool need_shadow_stack_push_pop_p ();
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))
 #define BYTES_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk))

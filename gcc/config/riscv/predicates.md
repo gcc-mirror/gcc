@@ -679,3 +679,9 @@
   return (riscv_symbolic_constant_p (op, &type)
          && type == SYMBOL_PCREL);
 })
+
+;; Shadow stack operands only allow x1, x5 registers
+(define_predicate "x1x5_operand"
+  (and (match_operand 0 "register_operand")
+       (match_test "REGNO (op) == RETURN_ADDR_REGNUM
+		    || REGNO (op) == T0_REGNUM")))

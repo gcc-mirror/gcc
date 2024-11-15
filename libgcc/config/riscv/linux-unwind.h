@@ -19,6 +19,11 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+/* Unwind shadow stack.  */
+#if defined(__riscv_zicfiss)
+# include "config/riscv/shadow-stack-unwind.h"
+#endif
+
 #ifndef inhibit_libc
 
 #include <signal.h>

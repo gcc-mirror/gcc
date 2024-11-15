@@ -7496,6 +7496,9 @@ riscv_save_reg_p (unsigned int regno)
       if (regno == GP_REGNUM || regno == THREAD_POINTER_REGNUM)
 	return false;
 
+      if (regno == RETURN_ADDR_REGNUM && TARGET_ZICFISS)
+	return true;
+
       /* We must save every register used in this function.  If this is not a
 	 leaf function, then we must save all temporary registers.  */
       if (df_regs_ever_live_p (regno)
@@ -8049,7 +8052,7 @@ riscv_is_eh_return_data_register (unsigned int regno)
 
 static void
 riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
-			  bool epilogue, bool maybe_eh_return)
+			  bool epilogue, bool maybe_eh_return, bool sibcall_p)
 {
   HOST_WIDE_INT offset, first_fp_offset;
   unsigned int regno, num_masked_fp = 0;
@@ -8135,7 +8138,14 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
 	    }
 	}
 
-      riscv_save_restore_reg (word_mode, regno, offset, fn);
+      if (need_shadow_stack_push_pop_p () && epilogue && !sibcall_p
+	  && !(maybe_eh_return && crtl->calls_eh_return)
+	  && (regno == RETURN_ADDR_REGNUM)
+	  && !cfun->machine->interrupt_handler_p)
+	riscv_save_restore_reg (word_mode, RISCV_PROLOGUE_TEMP_REGNUM,
+				offset, fn);
+      else
+	riscv_save_restore_reg (word_mode, regno, offset, fn);
     }
 
   /* This loop must iterate over the same space as its companion in
@@ -8729,6 +8739,9 @@ riscv_expand_prologue (void)
   if (cfun->machine->naked_p)
     return;
 
+  if (need_shadow_stack_push_pop_p ())
+    emit_insn (gen_sspush (Pmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM)));
+
   /* prefer multi-push to save-restore libcall.  */
   if (riscv_use_multi_push (frame))
     {
@@ -8772,7 +8785,7 @@ riscv_expand_prologue (void)
 	    = get_multi_push_fpr_mask (multi_push_additional / UNITS_PER_WORD);
 	  frame->fmask &= mask_fprs_push;
 	  riscv_for_each_saved_reg (remaining_size, riscv_save_reg, false,
-				    false);
+				    false, false);
 	  frame->fmask = fmask & ~mask_fprs_push; /* mask for the rest FPRs.  */
 	}
     }
@@ -8823,7 +8836,8 @@ riscv_expand_prologue (void)
 				GEN_INT (-step1));
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
-      riscv_for_each_saved_reg (remaining_size, riscv_save_reg, false, false);
+      riscv_for_each_saved_reg (remaining_size, riscv_save_reg,
+				false, false, false);
     }
 
   /* Undo the above fib.  */
@@ -8985,6 +8999,7 @@ riscv_expand_epilogue (int style)
     = use_multi_pop ? frame->multi_push_adj_base + frame->multi_push_adj_addi
 		    : 0;
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
+  rtx t0 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP_REGNUM);
   unsigned th_int_mask = 0;
   rtx insn;
 
@@ -9194,7 +9209,8 @@ riscv_expand_epilogue (int style)
   riscv_for_each_saved_v_reg (step2, riscv_restore_reg, false);
   riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size
 			      - multipop_size,
-			    riscv_restore_reg, true, style == EXCEPTION_RETURN);
+			    riscv_restore_reg, true, style == EXCEPTION_RETURN,
+			    style == SIBCALL_RETURN);
 
   if (th_int_mask && TH_INT_INTERRUPT (cfun))
     {
@@ -9234,7 +9250,8 @@ riscv_expand_epilogue (int style)
 	riscv_for_each_saved_reg (frame->total_size - libcall_size
 				    - multipop_size,
 				  riscv_restore_reg, true,
-				  style == EXCEPTION_RETURN);
+				  style == EXCEPTION_RETURN, false);
+
       /* Undo the above fib.  */
       frame->mask = mask;
       frame->fmask = fmask;
@@ -9259,6 +9276,17 @@ riscv_expand_epilogue (int style)
     emit_insn (gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
 			      EH_RETURN_STACKADJ_RTX));
 
+  if (need_shadow_stack_push_pop_p ()
+      && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return))
+    {
+      if (BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
+	  && style != SIBCALL_RETURN
+	  && !cfun->machine->interrupt_handler_p)
+	emit_insn (gen_sspopchk (Pmode, t0));
+      else
+	emit_insn (gen_sspopchk (Pmode, ra));
+    }
+
   /* Return from interrupt.  */
   if (cfun->machine->interrupt_handler_p)
     {
@@ -9276,7 +9304,15 @@ riscv_expand_epilogue (int style)
 	emit_jump_insn (gen_riscv_uret ());
     }
   else if (style != SIBCALL_RETURN)
-    emit_jump_insn (gen_simple_return_internal (ra));
+    {
+      if (need_shadow_stack_push_pop_p ()
+	  && !((style == EXCEPTION_RETURN) && crtl->calls_eh_return)
+	  && BITSET_P (cfun->machine->frame.mask, RETURN_ADDR_REGNUM)
+	  && !cfun->machine->interrupt_handler_p)
+	emit_jump_insn (gen_simple_return_internal (t0));
+      else
+	emit_jump_insn (gen_simple_return_internal (ra));
+    }
 }
 
 /* Implement EPILOGUE_USES.  */
@@ -9473,7 +9509,8 @@ bool
 riscv_can_use_return_insn (void)
 {
   return (reload_completed && known_eq (cfun->machine->frame.total_size, 0)
-	  && ! cfun->machine->interrupt_handler_p);
+	  && ! cfun->machine->interrupt_handler_p
+	  && ! need_shadow_stack_push_pop_p ());
 }
 
 /* Given that there exists at least one variable that is set (produced)
@@ -13783,6 +13820,11 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
     }
 
   riscv_emit_move (operands[0], gen_lowpart (crc_mode, a0));
+}
+
+bool need_shadow_stack_push_pop_p ()
+{
+  return TARGET_ZICFISS && riscv_save_return_addr_reg_p ();
 }
 
 /* Initialize the GCC target structure.  */
