@@ -5514,6 +5514,8 @@ package body Exp_Ch7 is
       Obj_Ref : Node_Id;
       Obj_Typ : Entity_Id) return Node_Id
    is
+      Utyp : constant Entity_Id := Underlying_Type (Obj_Typ);
+
       Obj_Addr : Node_Id;
 
    begin
@@ -5529,13 +5531,13 @@ package body Exp_Ch7 is
       --  but the address of the object is still that of its elements,
       --  so we need to shift it.
 
-      if Is_Array_Type (Obj_Typ)
-        and then not Is_Constrained (First_Subtype (Obj_Typ))
+      if Is_Array_Type (Utyp)
+        and then not Is_Constrained (First_Subtype (Utyp))
       then
          --  Shift the address from the start of the elements to the
          --  start of the dope vector:
 
-         --    V - (Obj_Typ'Descriptor_Size / Storage_Unit)
+         --    V - (Utyp'Descriptor_Size / Storage_Unit)
 
          Obj_Addr :=
            Make_Function_Call (Loc,
@@ -5552,7 +5554,7 @@ package body Exp_Ch7 is
                Make_Op_Divide (Loc,
                  Left_Opnd  =>
                    Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Obj_Typ, Loc),
+                     Prefix         => New_Occurrence_Of (Utyp, Loc),
                      Attribute_Name => Name_Descriptor_Size),
                  Right_Opnd =>
                    Make_Integer_Literal (Loc, System_Storage_Unit))));
