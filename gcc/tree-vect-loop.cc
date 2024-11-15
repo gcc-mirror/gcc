@@ -1059,6 +1059,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
+    must_use_partial_vectors_p (false),
     using_partial_vectors_p (false),
     using_decrementing_iv_p (false),
     using_select_vl_p (false),
@@ -2679,7 +2680,10 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
   LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
   LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
   if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-      && need_peeling_or_partial_vectors_p)
+      && LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo))
+    LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+  else if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	   && need_peeling_or_partial_vectors_p)
     {
       /* For partial-vector-usage=1, try to push the handling of partial
 	 vectors to the epilogue, with the main loop continuing to operate
@@ -2701,6 +2705,12 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
       else
 	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
     }
+
+  if (LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
+    return opt_result::failure_at (vect_location,
+				   "not vectorized: loop needs but cannot "
+				   "use partial vectors\n");
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -3387,6 +3397,7 @@ again:
   LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo) = 0;
   LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
     = saved_can_use_partial_vectors_p;
+  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
   LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
   if (loop_vinfo->scan_map)
     loop_vinfo->scan_map->empty ();

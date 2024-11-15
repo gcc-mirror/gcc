@@ -2202,11 +2202,25 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			       (vectype, cnunits / cpart_size,
 				&half_vtype) == NULL_TREE)))
 		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "peeling for gaps insufficient for "
-				     "access\n");
-		  return false;
+		  /* If all fails we can still resort to niter masking, so
+		     enforce the use of partial vectors.  */
+		  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+					 "peeling for gaps insufficient for "
+					 "access unless using partial "
+					 "vectors\n");
+		      LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+		    }
+		  else
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+					 "peeling for gaps insufficient for "
+					 "access\n");
+		      return false;
+		    }
 		}
 	    }
 	}

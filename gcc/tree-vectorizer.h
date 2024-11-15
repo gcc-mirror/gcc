@@ -913,6 +913,9 @@ public:
      fewer than VF scalars.  */
   bool can_use_partial_vectors_p;
 
+  /* Records whether we must use niter masking for correctness reasons.  */
+  bool must_use_partial_vectors_p;
+
   /* True if we've decided to use partially-populated vectors, so that
      the vector loop can handle fewer than VF scalars.  */
   bool using_partial_vectors_p;
@@ -1051,6 +1054,7 @@ public:
 #define LOOP_VINFO_VERSIONING_THRESHOLD(L) (L)->versioning_threshold
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P(L) (L)->can_use_partial_vectors_p
+#define LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P(L) (L)->must_use_partial_vectors_p
 #define LOOP_VINFO_USING_PARTIAL_VECTORS_P(L) (L)->using_partial_vectors_p
 #define LOOP_VINFO_USING_DECREMENTING_IV_P(L) (L)->using_decrementing_iv_p
 #define LOOP_VINFO_USING_SELECT_VL_P(L) (L)->using_select_vl_p
