@@ -42,6 +42,7 @@
 #include <bits/allocator.h>
 #include <ext/alloc_traits.h>
 #include <ext/aligned_buffer.h>
+#include <debug/assertions.h>
 #if __glibcxx_ranges_to_container // C++ >= 23
 # include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
 # include <bits/ranges_util.h> // ranges::subrange
@@ -950,6 +951,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       reference
       front()
       {
+	__glibcxx_requires_nonempty();
 	_Node* __front = static_cast<_Node*>(this->_M_impl._M_head._M_next);
 	return *__front->_M_valptr();
       }
@@ -962,6 +964,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_reference
       front() const
       {
+	__glibcxx_requires_nonempty();
 	_Node* __front = static_cast<_Node*>(this->_M_impl._M_head._M_next);
 	return *__front->_M_valptr();
       }

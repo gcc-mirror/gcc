@@ -59,6 +59,7 @@
 
 #include <bits/concept_check.h>
 #include <ext/alloc_traits.h>
+#include <debug/assertions.h>
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <bits/allocated_ptr.h>
@@ -1271,7 +1272,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD
       reference
       front() _GLIBCXX_NOEXCEPT
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the first
@@ -1280,7 +1284,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NODISCARD
       const_reference
       front() const _GLIBCXX_NOEXCEPT
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       /**
        *  Returns a read/write reference to the data at the last element
@@ -1290,6 +1297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       reference
       back() _GLIBCXX_NOEXCEPT
       {
+	__glibcxx_requires_nonempty();
 	iterator __tmp = end();
 	--__tmp;
 	return *__tmp;
@@ -1303,6 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       const_reference
       back() const _GLIBCXX_NOEXCEPT
       {
+	__glibcxx_requires_nonempty();
 	const_iterator __tmp = end();
 	--__tmp;
 	return *__tmp;
