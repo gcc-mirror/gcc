@@ -1591,6 +1591,66 @@ m2/gm2-compiler-boot/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-compiler/%.def $(MCDEPS)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(MC) -o=$@ $(srcdir)/m2/gm2-compiler/$*.def
 
+m2/gm2-compiler-boot/P0SyntaxCheck.c: m2/gm2-compiler-boot/P0SyntaxCheck.mod $(MCDEPS)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(MC) -o=m2/gm2-compiler-boot/P0SyntaxCheck.c m2/gm2-compiler-boot/P0SyntaxCheck.mod
+
+m2/gm2-compiler-boot/P0SyntaxCheck.o: m2/gm2-compiler-boot/P0SyntaxCheck.c $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/P0SyntaxCheck.c -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-compiler-boot/P1Build.c: m2/gm2-compiler-boot/P1Build.mod $(MCDEPS)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(MC) -o=m2/gm2-compiler-boot/P1Build.c m2/gm2-compiler-boot/P1Build.mod
+
+m2/gm2-compiler-boot/P1Build.o: m2/gm2-compiler-boot/P1Build.c $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/P1Build.c -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-compiler-boot/P2Build.c: m2/gm2-compiler-boot/P2Build.mod $(MCDEPS)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(MC) -o=m2/gm2-compiler-boot/P2Build.c m2/gm2-compiler-boot/P2Build.mod
+
+m2/gm2-compiler-boot/P2Build.o: m2/gm2-compiler-boot/P2Build.c $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/P2Build.c -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-compiler-boot/P3Build.c: m2/gm2-compiler-boot/P3Build.mod $(MCDEPS)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(MC) -o=m2/gm2-compiler-boot/P3Build.c m2/gm2-compiler-boot/P3Build.mod
+
+m2/gm2-compiler-boot/P3Build.o: m2/gm2-compiler-boot/P3Build.c $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/P3Build.c -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-compiler-boot/PCBuild.c: m2/gm2-compiler-boot/PCBuild.mod $(MCDEPS)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(MC) -o=m2/gm2-compiler-boot/PCBuild.c m2/gm2-compiler-boot/PCBuild.mod
+
+m2/gm2-compiler-boot/PCBuild.o: m2/gm2-compiler-boot/PCBuild.c $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/PCBuild.c -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-compiler-boot/PHBuild.c: m2/gm2-compiler-boot/PHBuild.mod $(MCDEPS)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(MC) -o=m2/gm2-compiler-boot/PHBuild.c m2/gm2-compiler-boot/PHBuild.mod
+
+m2/gm2-compiler-boot/PHBuild.o: m2/gm2-compiler-boot/PHBuild.c $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
+            $(GM2_BOOT_INCLUDES) $(MCINCLUDES) $(INCLUDES) m2/gm2-compiler-boot/PHBuild.c -o $@
+	$(POSTCOMPILE)
+
 m2/gm2-compiler-boot/m2flex.o: m2/gm2-compiler/m2flex.c $(BUILD-BOOT-H) $(TIMEVAR_H) \
         $(BUILD-LIBS-BOOT-H) m2/gm2-compiler-boot/$(SRC_PREFIX)NameKey.h \
         $(CONFIG_H) m2/gm2config.h $(TARGET_H) $(PLUGIN_HEADERS)
