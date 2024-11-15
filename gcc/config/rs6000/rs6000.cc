@@ -16014,7 +16014,6 @@ output_cbranch (rtx op, const char *label, int reversed, rtx_insn *insn)
 static rtx
 rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
 {
-  rtx mask;
   machine_mode mode = GET_MODE (op0);
 
   switch (code)
@@ -16022,19 +16021,11 @@ rs6000_emit_vector_compare_inner (enum rtx_code code, rtx op0, rtx op1)
     default:
       break;
 
-    case GE:
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	return NULL_RTX;
-      /* FALLTHRU */
-
     case EQ:
     case GT:
     case GTU:
-    case ORDERED:
-    case UNORDERED:
-    case UNEQ:
-    case LTGT:
-      mask = gen_reg_rtx (mode);
+      gcc_assert (GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT);
+      rtx mask = gen_reg_rtx (mode);
       emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, mode, op0, op1)));
       return mask;
     }
@@ -16050,17 +16041,41 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 			    rtx op0, rtx op1,
 			    machine_mode dmode)
 {
-  rtx mask;
-  bool swap_operands = false;
-  bool try_again = false;
-
   gcc_assert (VECTOR_UNIT_ALTIVEC_OR_VSX_P (dmode));
   gcc_assert (GET_MODE (op0) == GET_MODE (op1));
+  rtx mask;
+
+  /* In vector.md, we support all kinds of vector float point
+     comparison operators in a comparison rtl pattern, we can
+     just emit the comparison rtx insn directly here.  Besides,
+     we should have a centralized place to handle the possibility
+     of raising invalid exception.  As the first step, only check
+     operators EQ/GT/GE/UNORDERED/ORDERED/LTGT/UNEQ for now, they
+     are handled equivalently as before.
+
+     FIXME: Handle the remaining vector float comparison operators
+     here.  */
+  if (GET_MODE_CLASS (dmode) == MODE_VECTOR_FLOAT
+      && (rcode == EQ
+	  || rcode == GT
+	  || rcode == GE
+	  || rcode == UNORDERED
+	  || rcode == ORDERED
+	  || rcode == LTGT
+	  || rcode == UNEQ))
+    {
+      mask = gen_reg_rtx (dmode);
+      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
+      return mask;
+    }
 
   /* See if the comparison works as is.  */
   mask = rs6000_emit_vector_compare_inner (rcode, op0, op1);
   if (mask)
     return mask;
+
+  bool swap_operands = false;
+  bool try_again = false;
 
   switch (rcode)
     {
@@ -16161,7 +16176,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       if (swap_operands)
 	std::swap (op0, op1);
 
-      mask = rs6000_emit_vector_compare_inner (rcode, op0, op1);
+      mask = rs6000_emit_vector_compare (rcode, op0, op1, dmode);
       if (mask)
 	return mask;
     }
