@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64d -O3 -fdump-rtl-expand-details" } */
+/* { dg-options "-march=rv64gc -mabi=lp64d -fdump-rtl-expand-details" } */
 
 #include "sat_arith.h"
 
