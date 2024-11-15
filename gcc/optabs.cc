@@ -4364,22 +4364,6 @@ can_vec_cmp_compare_p (enum rtx_code code, machine_mode value_mode,
   return insn_predicate_matches_p (icode, 1, code, mask_mode, value_mode);
 }
 
-/* Return whether the backend can emit a vector comparison (vcond/vcondu) for
-   code CODE, comparing operands of mode CMP_OP_MODE and producing a result
-   with VALUE_MODE.  */
-
-bool
-can_vcond_compare_p (enum rtx_code code, machine_mode value_mode,
-		     machine_mode cmp_op_mode)
-{
-  enum insn_code icode
-      = get_vcond_icode (value_mode, cmp_op_mode, unsigned_optab_p (code));
-  if (icode == CODE_FOR_nothing)
-    return false;
-
-  return insn_predicate_matches_p (icode, 3, code, value_mode, cmp_op_mode);
-}
-
 /* Return whether the backend can emit vector set instructions for inserting
    element into vector at variable index position.  */
 

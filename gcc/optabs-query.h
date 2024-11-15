@@ -108,20 +108,6 @@ get_vec_cmp_eq_icode (machine_mode vmode, machine_mode mask_mode)
   return convert_optab_handler (vec_cmpeq_optab, vmode, mask_mode);
 }
 
-/* Return insn code for a conditional operator with a comparison in
-   mode CMODE, unsigned if UNS is true, resulting in a value of mode VMODE.  */
-
-inline enum insn_code
-get_vcond_icode (machine_mode vmode, machine_mode cmode, bool uns)
-{
-  enum insn_code icode = CODE_FOR_nothing;
-  if (uns)
-    icode = convert_optab_handler (vcondu_optab, vmode, cmode);
-  else
-    icode = convert_optab_handler (vcond_optab, vmode, cmode);
-  return icode;
-}
-
 /* Return insn code for a conditional operator with a mask mode
    MMODE resulting in a value of mode VMODE.  */
 
@@ -129,15 +115,6 @@ inline enum insn_code
 get_vcond_mask_icode (machine_mode vmode, machine_mode mmode)
 {
   return convert_optab_handler (vcond_mask_optab, vmode, mmode);
-}
-
-/* Return insn code for a conditional operator with a comparison in
-   mode CMODE (only EQ/NE), resulting in a value of mode VMODE.  */
-
-inline enum insn_code
-get_vcond_eq_icode (machine_mode vmode, machine_mode cmode)
-{
-  return convert_optab_handler (vcondeq_optab, vmode, cmode);
 }
 
 /* Enumerates the possible extraction_insn operations.  */

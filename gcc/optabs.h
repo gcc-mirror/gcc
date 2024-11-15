@@ -262,11 +262,6 @@ extern bool can_compare_p (enum rtx_code, machine_mode,
    with MASK_MODE.  */
 extern bool can_vec_cmp_compare_p (enum rtx_code, machine_mode, machine_mode);
 
-/* Return whether the backend can emit a vector comparison (vcond/vcondu) for
-   code CODE, comparing operands of mode CMP_OP_MODE and producing a result
-   with VALUE_MODE.  */
-extern bool can_vcond_compare_p (enum rtx_code, machine_mode, machine_mode);
-
 /* Return whether the backend can emit vector set instructions for inserting
    element into vector at variable index position.  */
 extern bool can_vec_set_var_idx_p (machine_mode);
