@@ -16032,34 +16032,54 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
       return mask;
     }
 
-  /* For any of vector integer comparison operators for which we
-     have direct hardware instructions, just emit it directly
-     here.  */
-  if (rcode == EQ || rcode == GT || rcode == GTU)
-    emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (rcode, dmode, op0, op1)));
-  else if (rcode == LT || rcode == LTU)
+  bool swap_operands = false;
+  bool need_invert = false;
+  enum rtx_code code = rcode;
+
+  switch (rcode)
     {
+    case EQ:
+    case GT:
+    case GTU:
+      /* Emit directly with native hardware insn.  */
+      break;
+    case LT:
+    case LTU:
       /* lt{,u}(a,b) = gt{,u}(b,a)  */
-      enum rtx_code code = swap_condition (rcode);
-      std::swap (op0, op1);
-      mask = gen_reg_rtx (dmode);
-      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
-    }
-  else if (rcode == NE || rcode == LE || rcode == LEU)
-    {
+      code = swap_condition (rcode);
+      swap_operands = true;
+      break;
+    case NE:
+    case LE:
+    case LEU:
       /* ne(a,b) = ~eq(a,b); le{,u}(a,b) = ~gt{,u}(a,b)  */
-      enum rtx_code code = reverse_condition (rcode);
-      mask = gen_reg_rtx (dmode);
-      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
-      enum insn_code nor_code = optab_handler (one_cmpl_optab, dmode);
-      gcc_assert (nor_code != CODE_FOR_nothing);
-      emit_insn (GEN_FCN (nor_code) (mask, mask));
-    } else {
-      /* ge{,u}(a,b) = ~gt{,u}(b,a)  */
-      gcc_assert (rcode == GE || rcode == GEU);
-      enum rtx_code code = rcode == GE ? GT : GTU;
-      mask = gen_reg_rtx (dmode);
-      emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
+      code = reverse_condition (rcode);
+      need_invert = true;
+      break;
+    case GE:
+      /* ge(a,b) = ~gt(b,a)  */
+      code = GT;
+      swap_operands = true;
+      need_invert = true;
+      break;
+    case GEU:
+      /* geu(a,b) = ~gtu(b,a)  */
+      code = GTU;
+      swap_operands = true;
+      need_invert = true;
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+
+  if (swap_operands)
+    std::swap (op0, op1);
+
+  emit_insn (gen_rtx_SET (mask, gen_rtx_fmt_ee (code, dmode, op0, op1)));
+
+  if (need_invert)
+    {
       enum insn_code nor_code = optab_handler (one_cmpl_optab, dmode);
       gcc_assert (nor_code != CODE_FOR_nothing);
       emit_insn (GEN_FCN (nor_code) (mask, mask));
