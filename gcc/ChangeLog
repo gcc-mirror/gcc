@@ -1,3 +1,28 @@
+2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/vector.md (mov<mode> pattern/splitter): Fix type and
+	other attributes.
+	(mov<VLS_AVL_REG:mode><P:mode>_lra): Likewise.
+
+2024-11-14  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2024-11-14  Denis Chertykov  <chertykov@gmail.com>
+
+	PR rtl-optimization/117191
+	* lra-spills.cc (spill_pseudos): Mark a CLOBBER insn with pseudo
+	spilled to memory for removing it later together with LRA temporary
+	CLOBBER insns.
+
+2024-11-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/114985
+	* ipa-cp.cc (ipa_vr_intersect_with_arith_jfunc): New function.
+	(ipa_value_range_from_jfunc): Move the common functionality to the
+	above new function, adjust the rest so that it works with it well.
+	(propagate_vr_across_jump_function): Likewise.
+
 2024-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* common.opt.urls: Fix.

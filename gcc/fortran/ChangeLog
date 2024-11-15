@@ -1,3 +1,11 @@
+2024-11-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104819
+	* trans-expr.cc (conv_null_actual): Helper function to handle
+	passing of NULL() to non-optional dummy arguments of non-bind(c)
+	procedures.
+	(gfc_conv_procedure_call): Use it for character dummies.
+
 2024-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/105054

@@ -1,3 +1,32 @@
+2024-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (list::emplace_back): Fix indentation.
+
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__is_permutation_fn::operator()):
+	Short-circuit for sized ranges with different sizes, as per LWG
+	3560.
+	* include/bits/ranges_algobase.h (__equal_fn::operator()):
+	Likewise.
+	* include/bits/stl_algo.h (__is_permutation): Use if-constexpr
+	for random access iterator branches.
+	* include/bits/stl_algobase.h (__equal4): Likewise.
+	* testsuite/25_algorithms/equal/lwg3560.cc: New test.
+	* testsuite/25_algorithms/is_permutation/lwg3560.cc: New test.
+
+2024-11-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (keys_view): Adjust as per LWG 3563.
+	(values_view): Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc (test08): New test.
+
+2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::begin): Fix constraint,
+	as per LWG 3589.
+	* testsuite/std/ranges/subrange/lwg3589.cc: New test.
+
 2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_NODISCARD): Expand for C++11
