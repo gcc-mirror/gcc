@@ -1207,7 +1207,7 @@ Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRange(0, 1
 Enable loop vectorization of floating point inductions.
 
 -param=vect-force-slp=
-Common Joined UInteger Var(param_vect_force_slp) Init(0) IntegerRange(0, 1) Param Optimization
+Common Joined UInteger Var(param_vect_force_slp) Init(1) IntegerRange(0, 1) Param Optimization
 Force the use of SLP when vectorizing, fail if not possible.
 
 -param=vrp-block-limit=
