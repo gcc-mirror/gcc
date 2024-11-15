@@ -39,5 +39,17 @@ dg-init
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
 
+# Saturation alu
+foreach opt {
+  {-O2}
+  {-O3}
+  {-Ofast}
+  {-Os}
+  {-Oz}
+} {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/sat/*.\[cS\]]] \
+    "$opt" ""
+}
+
 # All done.
 dg-finish
