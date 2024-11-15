@@ -1045,15 +1045,17 @@ nonlambda_method_basetype (void)
     }
 }
 
-/* Like current_scope, but looking through lambdas.  */
+/* Like current_scope, but looking through lambdas.  If ONLY_SKIP_CLOSURES_P,
+   only look through closure types.  */
 
 tree
-current_nonlambda_scope (void)
+current_nonlambda_scope (bool only_skip_closures_p/*=false*/)
 {
   tree scope = current_scope ();
   for (;;)
     {
-      if (TREE_CODE (scope) == FUNCTION_DECL
+      if (!only_skip_closures_p
+	  && TREE_CODE (scope) == FUNCTION_DECL
 	  && LAMBDA_FUNCTION_P (scope))
 	{
 	  scope = CP_TYPE_CONTEXT (DECL_CONTEXT (scope));
