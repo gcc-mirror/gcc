@@ -291,7 +291,10 @@ enum lc_reason
 
    To further see how location_t works in practice, see the
    worked example in libcpp/location-example.txt.  */
-typedef unsigned int location_t;
+
+/* A 64-bit type to represent a location.  We only use 63 of the 64 bits, so
+   that two location_t can be safely subtracted and stored in an int64_t.  */
+typedef uint64_t location_t;
 typedef int64_t location_diff_t;
 
 /* Sometimes we need a type that has the same size as location_t but that does
@@ -302,24 +305,31 @@ typedef location_t line_map_uint_t;
 /* Do not track column numbers higher than this one.  As a result, the
    range of column_bits is [12, 18] (or 0 if column numbers are
    disabled).  */
-const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
+const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 31) - 1;
 
 /* Do not pack ranges if locations get higher than this.
    If you change this, update:
      gcc.dg/plugin/location-overflow-test-*.c.  */
-const location_t LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES = 0x50000000;
+const location_t LINE_MAP_MAX_LOCATION_WITH_PACKED_RANGES
+  = location_t (0x50000000) << 31;
 
 /* Do not track column numbers if locations get higher than this.
    If you change this, update:
      gcc.dg/plugin/location-overflow-test-*.c.  */
-const location_t LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
+const location_t LINE_MAP_MAX_LOCATION_WITH_COLS
+  = location_t (0x60000000) << 31;
 
-/* Highest possible source location encoded within an ordinary map.  */
-const location_t LINE_MAP_MAX_LOCATION = 0x70000000;
+/* Highest possible source location encoded within an ordinary map.  Higher
+   values up to MAX_LOCATION_T represent macro virtual locations.  */
+const location_t LINE_MAP_MAX_LOCATION = location_t (0x70000000) << 31;
+
+/* This is the highest possible source location encoded within an
+   ordinary or macro map.  */
+const location_t MAX_LOCATION_T = location_t (-1) >> 2;
 
 /* This is the number of range bits suggested to enable, if range tracking is
    desired.  */
-const int line_map_suggested_range_bits = 5;
+const int line_map_suggested_range_bits = 7;
 
 /* A range of source locations.
 
@@ -397,7 +407,7 @@ typedef size_t (*line_map_round_alloc_size_func) (size_t);
 struct GTY((tag ("0"), desc ("MAP_ORDINARY_P (&%h) ? 1 : 2"))) line_map {
   location_t start_location;
 
-  /* Size and alignment is (usually) 4 bytes.  */
+  /* Size is 8 bytes; alignment 4 or 8 depending on the arch.  */
 };
 
 /* An ordinary line map encodes physical source locations. Those
@@ -413,7 +423,7 @@ struct GTY((tag ("0"), desc ("MAP_ORDINARY_P (&%h) ? 1 : 2"))) line_map {
 
    The highest possible source location is MAX_LOCATION_T.  */
 struct GTY((tag ("1"))) line_map_ordinary : public line_map {
-  /* Base class is 4 bytes.  */
+  /* Base class is 8 bytes.  */
 
   /* 4 bytes of integers, each 1 byte for easy extraction/insertion.  */
 
@@ -445,9 +455,7 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
      +-------------------------+-----------------------+-------------------+ */
   unsigned int m_range_bits : 8;
 
-  /* Pointer alignment boundary on both 32 and 64-bit systems.  */
-
-  const char *to_file;
+  /* 32-bit int even in 64-bit mode.  */
   linenum_type to_line;
 
   /* Location from whence this line map was included.  For regular
@@ -456,12 +464,11 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
      within a map.  */
   location_t included_from;
 
-  /* Size is 20 or 24 bytes, no padding  */
-};
+  /* Pointer alignment boundary, whether 32-bit or 64-bit mode.  */
+  const char *to_file;
 
-/* This is the highest possible source location encoded within an
-   ordinary or macro map.  */
-const location_t MAX_LOCATION_T = 0x7FFFFFFF;
+  /* Size is 28 (32) bytes for 32-bit (64-bit) arch.  */
+};
 
 struct cpp_hashnode;
 
@@ -480,7 +487,7 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
     return m_expansion;
   }
 
-  /* Base is 4 bytes.  */
+  /* Base is 8 bytes.  */
 
   /* The number of tokens inside the replacement-list of MACRO.  */
   unsigned int n_tokens;
@@ -556,7 +563,10 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
      if we are in a nested expansion context not.  */
   location_t m_expansion;
 
-  /* Size is 20 or 32 (4 bytes padding on 64-bit).  */
+  /* Size is one of the following:
+     32-bit system: 28 or 32 bytes, depending whether a uint64_t requires
+		    4- or 8-byte alignment.
+     64-bit arch: 40 bytes.  */
 };
 
 #if CHECKING_P && (GCC_VERSION >= 2007)
@@ -783,7 +793,7 @@ struct htab;
 
    The new adhoc_loc uses the highest bit as the enabling bit, i.e. if the
    highest bit is 1, then the number is adhoc_loc. Otherwise, it serves as
-   the original location. Once identified as the adhoc_loc, the lower 31
+   the original location.  Once identified as the adhoc_loc, the lower 62
    bits of the integer is used to index the location_adhoc_data array,
    in which the locus and associated data is stored.  */
 

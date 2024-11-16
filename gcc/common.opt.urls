@@ -721,9 +721,6 @@ UrlSuffix(gcc/Optimize-Options.html#index-fgraphite-identity)
 fhoist-adjacent-loads
 UrlSuffix(gcc/Optimize-Options.html#index-fhoist-adjacent-loads)
 
-flarge-source-files
-UrlSuffix(gcc/Preprocessor-Options.html#index-flarge-source-files)
-
 flate-combine-instructions
 UrlSuffix(gcc/Optimize-Options.html#index-flate-combine-instructions)
 

@@ -259,23 +259,26 @@ struct GTY((desc ("gimple_statement_structure (&%h)"), tag ("GSS_BASE"),
      in there.  */
   unsigned int subcode		: 16;
 
-  /* UID of this statement.  This is used by passes that want to
-     assign IDs to statements.  It must be assigned and used by each
-     pass.  By default it should be assumed to contain garbage.  */
+  /* UID of this statement.  This is used by passes that want to assign IDs
+     to statements.  It must be assigned and used by each pass.  By default
+     it should be assumed to contain garbage.  */
   unsigned uid;
 
   /* [ WORD 2 ]
+     Number of operands in this tuple.  */
+  unsigned num_ops;
+
+  /* Unused 32 bits padding on 64-bit hosts.  */
+
+  /* [ WORD 3 ]
      Locus information for debug info.  */
   location_t location;
 
-  /* Number of operands in this tuple.  */
-  unsigned num_ops;
-
-  /* [ WORD 3 ]
+  /* [ WORD 4 ]
      Basic block holding this statement.  */
   basic_block bb;
 
-  /* [ WORD 4-5 ]
+  /* [ WORD 5-6 ]
      Linked lists of gimple statements.  The next pointers form
      a NULL terminated list, the prev pointers are a cyclic list.
      A gimple statement is hence also a double-ended list of
@@ -479,7 +482,7 @@ struct GTY((tag("GSS_PHI")))
   /* [ WORD 8 ]  */
   tree result;
 
-  /* [ WORD 9 ]  */
+  /* [ WORD 9-14 ]  */
   struct phi_arg_d GTY ((length ("%h.nargs"))) args[1];
 };
 

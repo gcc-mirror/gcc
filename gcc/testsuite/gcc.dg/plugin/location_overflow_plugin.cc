@@ -84,6 +84,11 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!base_location)
     error_at (UNKNOWN_LOCATION, "missing plugin argument");
 
+  /* With 64-bit locations, the thresholds are larger, so shift the base
+     location argument accordingly.  */
+  gcc_assert (sizeof (location_t) == sizeof (uint64_t));
+  base_location = 1 + ((base_location - 1) << 31);
+
   register_callback (plugin_info->base_name,
 		     PLUGIN_PRAGMAS,
 		     on_pragma_registration,

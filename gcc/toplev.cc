@@ -1765,9 +1765,6 @@ process_options ()
     hash_table_sanitize_eq_limit
       = param_hash_table_verification_limit;
 
-  if (flag_large_source_files)
-    line_table->default_range_bits = 0;
-
   diagnose_options (&global_options, &global_options_set, UNKNOWN_LOCATION);
 
   /* Please don't change global_options after this point, those changes won't

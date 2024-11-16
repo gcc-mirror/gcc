@@ -1808,9 +1808,8 @@ Common Undocumented Var(flag_keep_gc_roots_live) Optimization
 ; Always keep a pointer to a live memory block
 
 flarge-source-files
-Common Var(flag_large_source_files) Init(0)
-Improve GCC's ability to track column numbers in large source files,
-at the expense of slower compilation.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 flate-combine-instructions
 Common Var(flag_late_combine_instructions) Optimization Init(0)
