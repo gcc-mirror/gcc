@@ -7,7 +7,7 @@
 /* { dg-final { scan-assembler-not "rotl" } } */
 /* { dg-final { scan-assembler-not "and" } } */
 
-typedef char bool;
+typedef char mybool;
 
 int
 test_00 (int* a, int* b)
@@ -16,7 +16,7 @@ test_00 (int* a, int* b)
   int r = 0;
   for (i = 0; i < 16; ++i)
     {
-      bool t = a[i] == b[i];
+      mybool t = a[i] == b[i];
       r = (r << 1) | t;
     }
   return r;
@@ -29,7 +29,7 @@ test_01 (int* a, int* b)
   int r = 0;
   for (i = 0; i < 16; ++i)
     {
-      bool t = a[i] == b[i];
+      mybool t = a[i] == b[i];
       r = (r << 2) | t;
     }
   return r;
@@ -42,20 +42,20 @@ test_02 (int* a, int* b)
   int r = 0;
   for (i = 0; i < 16; ++i)
     {
-      bool t = a[i] == b[i];
+      mybool t = a[i] == b[i];
       r = (r << 3) | t;
     }
   return r;
 }
 
 int
-test_03 (const bool* a)
+test_03 (const mybool* a)
 {
   int i;
   int r = 0;
   for (i = 0; i < 16; ++i)
     {
-      bool t = a[i];
+      mybool t = a[i];
       r = (r << 1) | (t & 1);
     }
   return r;
