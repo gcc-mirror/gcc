@@ -3925,6 +3925,7 @@ mio_expr (gfc_expr **ep)
       switch (e->ts.type)
 	{
 	case BT_INTEGER:
+	case BT_UNSIGNED:
 	  mio_gmp_integer (&e->value.integer);
 	  break;
 
