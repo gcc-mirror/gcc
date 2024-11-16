@@ -337,6 +337,8 @@ static unsigned stack_vars_alloc;
 static unsigned stack_vars_num;
 static hash_map<tree, unsigned> *decl_to_stack_part;
 
+#define INVALID_STACK_INDEX ((unsigned)-1)
+
 /* Conflict bitmaps go on this obstack.  This allows us to destroy
    all of them in one big sweep.  */
 static bitmap_obstack stack_var_bitmap_obstack;
@@ -525,6 +527,27 @@ stack_var_conflict_p (unsigned x, unsigned y)
   return bitmap_bit_p (a->conflicts, y);
 }
 
+/* Returns the DECL's index into the stack_vars array.
+   If the DECL does not exist return INVALID_STACK_INDEX.  */
+static unsigned
+decl_stack_index (tree decl)
+{
+  if (!decl)
+    return INVALID_STACK_INDEX;
+  if (!DECL_P (decl))
+    return INVALID_STACK_INDEX;
+  if (DECL_RTL_IF_SET (decl) != pc_rtx)
+    return INVALID_STACK_INDEX;
+  unsigned *v = decl_to_stack_part->get (decl);
+  if (!v)
+    return INVALID_STACK_INDEX;
+
+  unsigned indx = *v;
+  gcc_checking_assert (indx != INVALID_STACK_INDEX);
+  gcc_checking_assert (indx < stack_vars_num);
+  return indx;
+}
+
 /* Callback for walk_stmt_ops.  If OP is a decl touched by add_stack_var
    enter its partition number into bitmap DATA.  */
 
@@ -533,14 +556,9 @@ visit_op (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
-  if (op
-      && DECL_P (op)
-      && DECL_RTL_IF_SET (op) == pc_rtx)
-    {
-      unsigned *v = decl_to_stack_part->get (op);
-      if (v)
-	bitmap_set_bit (active, *v);
-    }
+  unsigned idx = decl_stack_index (op);
+  if (idx != INVALID_STACK_INDEX)
+    bitmap_set_bit (active, idx);
   return false;
 }
 
@@ -553,20 +571,15 @@ visit_conflict (gimple *, tree op, tree, void *data)
 {
   bitmap active = (bitmap)data;
   op = get_base_address (op);
-  if (op
-      && DECL_P (op)
-      && DECL_RTL_IF_SET (op) == pc_rtx)
+  unsigned num = decl_stack_index (op);
+  if (num != INVALID_STACK_INDEX
+      && bitmap_set_bit (active, num))
     {
-      unsigned *v = decl_to_stack_part->get (op);
-      if (v && bitmap_set_bit (active, *v))
-	{
-	  unsigned num = *v;
-	  bitmap_iterator bi;
-	  unsigned i;
-	  gcc_assert (num < stack_vars_num);
-	  EXECUTE_IF_SET_IN_BITMAP (active, 0, i, bi)
-	    add_stack_var_conflict (num, i);
-	}
+      bitmap_iterator bi;
+      unsigned i;
+      gcc_assert (num < stack_vars_num);
+      EXECUTE_IF_SET_IN_BITMAP (active, 0, i, bi)
+	add_stack_var_conflict (num, i);
     }
   return false;
 }
@@ -638,15 +651,14 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
       if (gimple_clobber_p (stmt))
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
-	  unsigned *v;
 	  /* Handle only plain var clobbers.
 	     Nested functions lowering and C++ front-end inserts clobbers
 	     which are not just plain variables.  */
 	  if (!VAR_P (lhs))
 	    continue;
-	  if (DECL_RTL_IF_SET (lhs) == pc_rtx
-	      && (v = decl_to_stack_part->get (lhs)))
-	    bitmap_clear_bit (work, *v);
+	  unsigned indx = decl_stack_index (lhs);
+	  if (indx != INVALID_STACK_INDEX)
+	    bitmap_clear_bit (work, indx);
 	}
       else if (!is_gimple_debug (stmt))
 	{
