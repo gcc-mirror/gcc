@@ -18,7 +18,7 @@
 
 // 1
 // template definition
-export template <class T>  // { dg-warning "" } 
+export template <class T>  // { dg-message "export" }
 bool templ_one(T a) {
    if (a > 0)
      return true;
@@ -41,15 +41,15 @@ public:
   template <class T2> bool compare_ge(T2 test);
 };
 
-export template <class T> // { dg-warning "" } 
+export template <class T> // { dg-message "export" }
 const bool X_one<T>::is_specialized = false;
 
-export template <class T> // { dg-warning "" } 
+export template <class T> // { dg-message "export" }
 unsigned short X_one<T>::ret_id() {
   return id;
 }
 
-export template <class T2> // { dg-warning "" } 
+export template <class T2> // { dg-message "export" }
 bool compare_ge(T2 test) {
   if (test > type) // { dg-error "" } .*
     return true;

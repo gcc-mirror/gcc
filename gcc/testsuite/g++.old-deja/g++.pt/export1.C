@@ -15,4 +15,4 @@ return 0;
 }
 
 template <class T> class Y;
-export template <class T> class X;  // { dg-warning "" } export not implemented
+export template <class T> class X;  // { dg-message "export" } export not implemented

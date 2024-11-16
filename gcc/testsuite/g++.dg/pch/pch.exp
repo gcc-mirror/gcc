@@ -31,7 +31,7 @@ set old_dg_do_what_default "${dg-do-what-default}"
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
     # We don't try to use the loop-optimizing options, since they are highly
     # unlikely to make any difference to PCH.
-    dg-pch $subdir $test [list "-g" "-O2 -g" "-O2"] ".H"
+    dg-flags-pch $subdir $test "-fno-modules" [list "-g" "-O2 -g" "-O2"] ".H"
 }
 
 set dg-do-what-default "$old_dg_do_what_default"
