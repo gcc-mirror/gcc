@@ -3798,11 +3798,13 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
   return true;
 }
 
-/* Recognize the pattern that can be shuffled by vec_extract and slide1up
-   approach.  */
+/* Recognize patterns like [3 4 5 6] where we combine the last element
+   of the first vector and the first n - 1 elements of the second vector.
+   This can be implemented by slides or by extracting and re-inserting
+   (slide1up) the first vector's last element.  */
 
 static bool
-shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
+shuffle_off_by_one_patterns (struct expand_vec_perm_d *d)
 {
   poly_int64 nunits = GET_MODE_NUNITS (d->vmode);
 
@@ -3820,17 +3822,39 @@ shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  /* Extract the last element of the first vector.  */
-  scalar_mode smode = GET_MODE_INNER (d->vmode);
-  rtx tmp = gen_reg_rtx (smode);
-  emit_vec_extract (tmp, d->op0, gen_int_mode (nunits - 1, Pmode));
+  int scalar_cost = riscv_register_move_cost (d->vmode, V_REGS, GR_REGS)
+    + riscv_register_move_cost (d->vmode, GR_REGS, V_REGS) + 2;
+  int slide_cost = 2;
 
-  /* Insert the scalar into element 0.  */
-  unsigned int unspec
-    = FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
-  insn_code icode = code_for_pred_slide (unspec, d->vmode);
-  rtx ops[] = {d->target, d->op1, tmp};
-  emit_vlmax_insn (icode, BINARY_OP, ops);
+  if (slide_cost < scalar_cost)
+    {
+      /* This variant should always be preferable because we just need two
+	 slides.  The extract-variant also requires two slides but additionally
+	 pays the latency for register-file crossing.  */
+      rtx tmp = gen_reg_rtx (d->vmode);
+      rtx ops[] = {tmp, d->op1, gen_int_mode (1, Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, d->vmode);
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+
+      rtx ops2[] = {d->target, tmp, d->op0, gen_int_mode (nunits - 1, Pmode)};
+      icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, d->vmode);
+      emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops2, gen_int_mode (1, Pmode));
+    }
+  else
+    {
+      /* Extract the last element of the first vector.  */
+      scalar_mode smode = GET_MODE_INNER (d->vmode);
+      rtx tmp = gen_reg_rtx (smode);
+      emit_vec_extract (tmp, d->op0, gen_int_mode (nunits - 1, Pmode));
+
+      /* Insert the scalar into element 0.  */
+      unsigned int unspec
+	= FLOAT_MODE_P (d->vmode) ? UNSPEC_VFSLIDE1UP : UNSPEC_VSLIDE1UP;
+      insn_code icode = code_for_pred_slide (unspec, d->vmode);
+      rtx ops[] = {d->target, d->op1, tmp};
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+    }
+
   return true;
 }
 
@@ -3962,7 +3986,7 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	    return true;
 	  if (shuffle_bswap_pattern (d))
 	    return true;
-	  if (shuffle_extract_and_slide1up_patterns (d))
+	  if (shuffle_off_by_one_patterns (d))
 	    return true;
 	  if (shuffle_series_patterns (d))
 	    return true;

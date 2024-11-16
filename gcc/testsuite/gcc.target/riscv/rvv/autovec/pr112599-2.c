@@ -48,4 +48,4 @@ foo(void)
 }
 
 /* { dg-final { scan-assembler-not {vrgather} } } */
-/* { dg-final { scan-assembler-times {vslide1up\.vx} 1 } } */
+/* { dg-final { scan-assembler {vslide} } } */

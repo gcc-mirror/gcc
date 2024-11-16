@@ -9509,13 +9509,29 @@ riscv_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 
 /* Implement TARGET_REGISTER_MOVE_COST.  */
 
-static int
+int
 riscv_register_move_cost (machine_mode mode,
 			  reg_class_t from, reg_class_t to)
 {
   if ((from == FP_REGS && to == GR_REGS) ||
       (from == GR_REGS && to == FP_REGS))
     return tune_param->fmv_cost;
+
+  if (from == V_REGS)
+    {
+      if (to == GR_REGS)
+	return get_vector_costs ()->regmove->VR2GR;
+      else if (to == FP_REGS)
+	return get_vector_costs ()->regmove->VR2FR;
+    }
+
+  if (to == V_REGS)
+    {
+      if (from == GR_REGS)
+	return get_vector_costs ()->regmove->GR2VR;
+      else if (from == FP_REGS)
+	return get_vector_costs ()->regmove->FR2VR;
+    }
 
   return riscv_secondary_memory_needed (mode, from, to) ? 8 : 2;
 }
