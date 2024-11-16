@@ -95,7 +95,6 @@ preprocess_file (cpp_reader *pfile)
       if (flag_modules)
 	{
 	  /* For macros from imported headers we need directives_only_cb.  */
-	  cpp_get_options (pfile)->directives_only = true;
 	  scan_translation_unit_directives_only (pfile);
 	}
       else
