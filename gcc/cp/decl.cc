@@ -4851,6 +4851,131 @@ initialize_predefined_identifiers (void)
     }
 }
 
+/* Build a specific variant of operator new.  */
+
+static void
+cxx_build_operator_new (tree newtype)
+{
+  tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
+  DECL_IS_MALLOC (opnew) = 1;
+  DECL_SET_IS_OPERATOR_NEW (opnew, true);
+  DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
+  opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
+  DECL_IS_MALLOC (opnew) = 1;
+  DECL_SET_IS_OPERATOR_NEW (opnew, true);
+  DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
+}
+
+/* Build a specific variant of operator delete.  */
+
+static void
+cxx_build_operator_delete (tree deltype)
+{
+  tree opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+  DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+  DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
+  opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+  DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+  DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
+}
+
+/* Declare all variants of operator new and delete.  */
+
+static void
+cxx_init_operator_new_delete_decls (void)
+{
+  tree newattrs, extvisattr;
+  tree newtype, deltype;
+  tree ptr_ftype_sizetype;
+  tree new_eh_spec;
+  tree void_ftype_ptr = build_function_type_list (void_type_node,
+						  ptr_type_node, NULL_TREE);
+  void_ftype_ptr
+    = build_exception_variant (void_ftype_ptr, empty_except_spec);
+
+  ptr_ftype_sizetype
+    = build_function_type_list (ptr_type_node, size_type_node, NULL_TREE);
+  if (cxx_dialect == cxx98)
+    {
+      tree bad_alloc_id;
+      tree bad_alloc_type_node;
+      tree bad_alloc_decl;
+
+      push_nested_namespace (std_node);
+      bad_alloc_id = get_identifier ("bad_alloc");
+      bad_alloc_type_node = make_class_type (RECORD_TYPE);
+      TYPE_CONTEXT (bad_alloc_type_node) = current_namespace;
+      bad_alloc_decl
+	= create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
+      DECL_CONTEXT (bad_alloc_decl) = current_namespace;
+      pop_nested_namespace (std_node);
+
+      new_eh_spec
+	= add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1);
+    }
+  else
+    new_eh_spec = noexcept_false_spec;
+
+  extvisattr = build_tree_list (get_identifier ("externally_visible"),
+				NULL_TREE);
+  newattrs = tree_cons (get_identifier ("alloc_size"),
+			build_tree_list (NULL_TREE, integer_one_node),
+			extvisattr);
+  newtype = cp_build_type_attribute_variant (ptr_ftype_sizetype, newattrs);
+  newtype = build_exception_variant (newtype, new_eh_spec);
+  deltype = cp_build_type_attribute_variant (void_ftype_ptr, extvisattr);
+  deltype = build_exception_variant (deltype, empty_except_spec);
+  cxx_build_operator_new (newtype);
+  cxx_build_operator_delete (deltype);
+  if (flag_sized_deallocation)
+    {
+      /* Also push the sized deallocation variants:
+	   void operator delete(void*, std::size_t) throw();
+	   void operator delete[](void*, std::size_t) throw();  */
+      tree void_ftype_ptr_size
+	= build_function_type_list (void_type_node, ptr_type_node,
+				    size_type_node, NULL_TREE);
+      deltype = cp_build_type_attribute_variant (void_ftype_ptr_size,
+						 extvisattr);
+      deltype = build_exception_variant (deltype, empty_except_spec);
+      cxx_build_operator_delete (deltype);
+    }
+
+  if (aligned_new_threshold)
+    {
+      push_nested_namespace (std_node);
+      tree align_id = get_identifier ("align_val_t");
+      align_type_node = start_enum (align_id, NULL_TREE, size_type_node,
+				    NULL_TREE, /*scoped*/true, NULL);
+      pop_nested_namespace (std_node);
+
+      /* operator new (size_t, align_val_t); */
+      newtype = build_function_type_list (ptr_type_node, size_type_node,
+					  align_type_node, NULL_TREE);
+      newtype = cp_build_type_attribute_variant (newtype, newattrs);
+      newtype = build_exception_variant (newtype, new_eh_spec);
+      cxx_build_operator_new (newtype);
+
+      /* operator delete (void *, align_val_t); */
+      deltype = build_function_type_list (void_type_node, ptr_type_node,
+					  align_type_node, NULL_TREE);
+      deltype = cp_build_type_attribute_variant (deltype, extvisattr);
+      deltype = build_exception_variant (deltype, empty_except_spec);
+      cxx_build_operator_delete (deltype);
+
+      if (flag_sized_deallocation)
+	{
+	  /* operator delete (void *, size_t, align_val_t); */
+	  deltype = build_function_type_list (void_type_node, ptr_type_node,
+					      size_type_node, align_type_node,
+					      NULL_TREE);
+	  deltype = cp_build_type_attribute_variant (deltype, extvisattr);
+	  deltype = build_exception_variant (deltype, empty_except_spec);
+	  cxx_build_operator_delete (deltype);
+	}
+    }
+}
+
 /* Create the predefined scalar types of C,
    and some nodes representing standard constants (0, 1, (void *)0).
    Initialize the global binding level.
@@ -4860,7 +4985,6 @@ void
 cxx_init_decl_processing (void)
 {
   tree void_ftype;
-  tree void_ftype_ptr;
 
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();
@@ -4963,10 +5087,6 @@ cxx_init_decl_processing (void)
 
   vtt_parm_type = build_pointer_type (const_ptr_type_node);
   void_ftype = build_function_type_list (void_type_node, NULL_TREE);
-  void_ftype_ptr = build_function_type_list (void_type_node,
-					     ptr_type_node, NULL_TREE);
-  void_ftype_ptr
-    = build_exception_variant (void_ftype_ptr, empty_except_spec);
 
   /* Create the conversion operator marker.  This operator's DECL_NAME
      is in the identifier table, so we can use identifier equality to
@@ -5036,136 +5156,14 @@ cxx_init_decl_processing (void)
   if (aligned_new_threshold == 1)
     aligned_new_threshold = malloc_alignment () / BITS_PER_UNIT;
 
-  {
-    tree newattrs, extvisattr;
-    tree newtype, deltype;
-    tree ptr_ftype_sizetype;
-    tree new_eh_spec;
+  /* Ensure attribs.cc is initialized.  */
+  init_attributes ();
+  cxx_init_operator_new_delete_decls ();
 
-    ptr_ftype_sizetype
-      = build_function_type_list (ptr_type_node, size_type_node, NULL_TREE);
-    if (cxx_dialect == cxx98)
-      {
-	tree bad_alloc_id;
-	tree bad_alloc_type_node;
-	tree bad_alloc_decl;
-
-	push_nested_namespace (std_node);
-	bad_alloc_id = get_identifier ("bad_alloc");
-	bad_alloc_type_node = make_class_type (RECORD_TYPE);
-	TYPE_CONTEXT (bad_alloc_type_node) = current_namespace;
-	bad_alloc_decl
-	  = create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
-	DECL_CONTEXT (bad_alloc_decl) = current_namespace;
-	pop_nested_namespace (std_node);
-
-	new_eh_spec
-	  = add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1);
-      }
-    else
-      new_eh_spec = noexcept_false_spec;
-
-    /* Ensure attribs.cc is initialized.  */
-    init_attributes ();
-
-    extvisattr = build_tree_list (get_identifier ("externally_visible"),
-				  NULL_TREE);
-    newattrs = tree_cons (get_identifier ("alloc_size"),
-			  build_tree_list (NULL_TREE, integer_one_node),
-			  extvisattr);
-    newtype = cp_build_type_attribute_variant (ptr_ftype_sizetype, newattrs);
-    newtype = build_exception_variant (newtype, new_eh_spec);
-    deltype = cp_build_type_attribute_variant (void_ftype_ptr, extvisattr);
-    deltype = build_exception_variant (deltype, empty_except_spec);
-    tree opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
-    DECL_IS_MALLOC (opnew) = 1;
-    DECL_SET_IS_OPERATOR_NEW (opnew, true);
-    DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
-    opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
-    DECL_IS_MALLOC (opnew) = 1;
-    DECL_SET_IS_OPERATOR_NEW (opnew, true);
-    DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
-    tree opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
-    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-    if (flag_sized_deallocation)
-      {
-	/* Also push the sized deallocation variants:
-	     void operator delete(void*, std::size_t) throw();
-	     void operator delete[](void*, std::size_t) throw();  */
-	tree void_ftype_ptr_size
-	  = build_function_type_list (void_type_node, ptr_type_node,
-				      size_type_node, NULL_TREE);
-	deltype = cp_build_type_attribute_variant (void_ftype_ptr_size,
-						   extvisattr);
-	deltype = build_exception_variant (deltype, empty_except_spec);
-	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
-	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-      }
-
-    if (aligned_new_threshold)
-      {
-	push_nested_namespace (std_node);
-	tree align_id = get_identifier ("align_val_t");
-	align_type_node = start_enum (align_id, NULL_TREE, size_type_node,
-				      NULL_TREE, /*scoped*/true, NULL);
-	pop_nested_namespace (std_node);
-
-	/* operator new (size_t, align_val_t); */
-	newtype = build_function_type_list (ptr_type_node, size_type_node,
-					    align_type_node, NULL_TREE);
-	newtype = cp_build_type_attribute_variant (newtype, newattrs);
-	newtype = build_exception_variant (newtype, new_eh_spec);
-	opnew = push_cp_library_fn (NEW_EXPR, newtype, 0);
-	DECL_IS_MALLOC (opnew) = 1;
-	DECL_SET_IS_OPERATOR_NEW (opnew, true);
-	DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
-	opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
-	DECL_IS_MALLOC (opnew) = 1;
-	DECL_SET_IS_OPERATOR_NEW (opnew, true);
-	DECL_IS_REPLACEABLE_OPERATOR (opnew) = 1;
-
-	/* operator delete (void *, align_val_t); */
-	deltype = build_function_type_list (void_type_node, ptr_type_node,
-					    align_type_node, NULL_TREE);
-	deltype = cp_build_type_attribute_variant (deltype, extvisattr);
-	deltype = build_exception_variant (deltype, empty_except_spec);
-	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
-	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-	DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-
-	if (flag_sized_deallocation)
-	  {
-	    /* operator delete (void *, size_t, align_val_t); */
-	    deltype = build_function_type_list (void_type_node, ptr_type_node,
-						size_type_node, align_type_node,
-						NULL_TREE);
-	    deltype = cp_build_type_attribute_variant (deltype, extvisattr);
-	    deltype = build_exception_variant (deltype, empty_except_spec);
-	    opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-	    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-	    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
-	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
-	    DECL_IS_REPLACEABLE_OPERATOR (opdel) = 1;
-	  }
-      }
-
-    /* C++-specific nullptr initialization.  */
-    if (abi_version_at_least (9))
-      SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
-    record_builtin_type (RID_MAX, "decltype(nullptr)", nullptr_type_node);
-  }
+  /* C++-specific nullptr initialization.  */
+  if (abi_version_at_least (9))
+    SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
+  record_builtin_type (RID_MAX, "decltype(nullptr)", nullptr_type_node);
 
   if (! supports_one_only ())
     flag_weak = 0;
