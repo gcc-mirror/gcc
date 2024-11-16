@@ -2201,10 +2201,13 @@ proc check_effective_target_riscv_v_misalign_ok { } {
     return 0
 }
 
+# Deduce the string for the RISC-V architecture targeted by the compiler
+# under test.  Also take into account the global compiler flags passed
+# by testsuite.
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i m a f d q c b v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha zacas } {
+    foreach ext { i e m a f d q c b v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha zacas } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"
@@ -12056,12 +12059,16 @@ proc check_vect_support_and_set_flags { } {
 	    if [check_effective_target_riscv_v_misalign_ok] {
 		lappend DEFAULT_VECTCFLAGS "-mno-vector-strict-align"
 	    }
-	} else {
+	} elseif [check_effective_target_riscv_v_ok] {
 	    foreach item [add_options_for_riscv_v ""] {
 		lappend DEFAULT_VECTCFLAGS $item
 	    }
 	    set dg-do-what-default compile
-	}
+	} else {
+	    # Current architecture cannot support vectors (e.g. the
+	    # dependent D extension is missing).
+	    return 0
+        }
     } elseif [istarget loongarch*-*-*] {
       # Set the default vectorization option to "-mlsx" due to the problem
       # of non-aligned memory access when using 256-bit vectorization.
