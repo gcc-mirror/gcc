@@ -69,6 +69,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
 #include "tree-ssa.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 static struct stmt_stats
 {
@@ -998,24 +1000,6 @@ propagate_necessity (bool aggressive)
 	      tree callee = gimple_call_fndecl (call);
 	      unsigned i;
 
-	      /* Calls to functions that are merely acting as barriers
-		 or that only store to memory do not make any previous
-		 stores necessary.  */
-	      if (callee != NULL_TREE
-		  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
-		  && (DECL_FUNCTION_CODE (callee) == BUILT_IN_MEMSET
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_MEMSET_CHK
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_MALLOC
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ALIGNED_ALLOC
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_CALLOC
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_FREE
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_END
-		      || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee))
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ASSUME_ALIGNED))
-		continue;
-
 	      if (callee != NULL_TREE
 		  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
 		      || DECL_IS_OPERATOR_DELETE_P (callee))
@@ -1025,9 +1009,9 @@ propagate_necessity (bool aggressive)
 	      if (is_removable_cxa_atexit_call (call))
 		continue;
 
+	      bool all_refs = false;
 	      /* Calls implicitly load from memory, their arguments
 	         in addition may explicitly perform memory loads.  */
-	      mark_all_reaching_defs_necessary (call);
 	      for (i = 0; i < gimple_call_num_args (call); ++i)
 		{
 		  tree arg = gimple_call_arg (call, i);
@@ -1038,7 +1022,13 @@ propagate_necessity (bool aggressive)
 		    arg = TREE_OPERAND (arg, 0);
 		  if (!ref_may_be_aliased (arg))
 		    mark_aliased_reaching_defs_necessary (call, arg);
+		  else
+		    all_refs = true;
 		}
+
+	      if (!all_refs && ipa_modref_callee_reads_no_memory_p (call))
+		continue;
+	      mark_all_reaching_defs_necessary (call);
 	    }
 	  else if (gimple_assign_single_p (stmt))
 	    {

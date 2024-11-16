@@ -5600,4 +5600,36 @@ ipa_modref_cc_finalize ()
   escape_summaries = NULL;
 }
 
+/* Return true if call is known to perform no memory reads.  */
+
+bool
+ipa_modref_callee_reads_no_memory_p (gcall *call)
+{
+  if (gimple_call_flags (call) & ECF_CONST)
+    return true;
+  attr_fnspec fnspec = gimple_call_fnspec (call);
+  if (fnspec.known_p ()
+      && !fnspec.global_memory_read_p ())
+    {
+      bool found = false;
+      for (unsigned int i = 0; i < gimple_call_num_args (call) && !found; i++)
+	if (!POINTER_TYPE_P (TREE_TYPE (gimple_call_arg (call, i))))
+	  ;
+      else if (!fnspec.arg_specified_p (i)
+	       || fnspec.arg_maybe_read_p (i))
+	  found = true;
+      if (!found)
+	return true;
+    }
+
+  /* For interposed calls we can not be sure that the other, semantically
+     equivalent body, will not perform some redundant load from memory
+     that may become undefined if we optimize out some stores.  */
+  bool interposed;
+  modref_summary *sum = get_modref_function_summary (call, &interposed);
+  if (sum && !interposed && !sum->global_memory_read && !sum->loads)
+    return true;
+  return false;
+}
+
 #include "gt-ipa-modref.h"
