@@ -206,11 +206,17 @@ range_query::destroy_gori ()
   m_gori= &default_gori;
 }
 
+// Create an infer oracle using Q as the default range query if needed.
+// if DO_SEARCH is true, use immediate uses to scan alluses of a NAME the first
+// time it is queried.  This is primarily for passes which operate in the
+// on-demand model where earlier uses may not have been seen.
+// VRP and DOM walk passes set this to FALSE as they will walk all statements
+// in order.
 void
-range_query::create_infer_oracle (bool do_search)
+range_query::create_infer_oracle (range_query *q, bool do_search)
 {
   gcc_checking_assert (m_infer == &default_infer_oracle);
-  m_infer = new infer_range_manager (do_search);
+  m_infer = new infer_range_manager (do_search, q);
   gcc_checking_assert (m_infer);
 }
 
