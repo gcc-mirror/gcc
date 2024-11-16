@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc -O2 -mabi=lp64" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-long foo ()
+long foo (long a, long b)
 __attribute__((target("cpu=sifive-e20")))
 __attribute__((target("cpu=sifive-u74")));
 

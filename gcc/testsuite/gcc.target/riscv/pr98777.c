@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fstrict-aliasing" } */
+/* { dg-options "-fstrict-aliasing -std=gnu17" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 typedef struct {

@@ -13,9 +13,7 @@ int yabba = 1;
 
 
 int
-f (a, b)
-     unsigned char a;
-     unsigned long b;
+f (unsigned char a, unsigned long b)
 {
   long i, j, p, q, r, s;
 

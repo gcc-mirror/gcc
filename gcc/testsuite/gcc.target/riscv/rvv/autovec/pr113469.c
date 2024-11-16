@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32d -O3 -fno-vect-cost-model" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32d -O3 -fno-vect-cost-model -std=gnu17" } */
 
 struct a {
  int b;

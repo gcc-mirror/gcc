@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc -O2 -mabi=lp64" } */
 
 
-long foo() __attribute__((target("tune=xyz-cpu"))); /* { dg-error "unknown TUNE" } */
+long foo(long a, long b) __attribute__((target("tune=xyz-cpu"))); /* { dg-error "unknown TUNE" } */
 long foo(long a, long b){
   return a + (b * 2);
 }

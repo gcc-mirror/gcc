@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gc -O2 -mabi=lp64" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-long foo ()
+long foo (long a, long b)
 __attribute__((target("arch=rv64gc_zbb")))
 __attribute__((target("arch=rv64gc_zba")));
 

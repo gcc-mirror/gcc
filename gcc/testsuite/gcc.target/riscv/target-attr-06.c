@@ -11,7 +11,7 @@
 **   sh1add\s*a0,a1,a0
 **   ...
 */
-long foo ()
+long foo (long a, long b)
 __attribute__((target("cpu=sifive-u74;tune=sifive-5-series;arch=rv64gc_zba")));
 long foo (long a, long b)
 {

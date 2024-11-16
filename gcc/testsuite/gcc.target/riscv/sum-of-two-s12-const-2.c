@@ -6,7 +6,7 @@
 /* { dg-options { -march=rv64gcv -mabi=lp64d -O2 } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "O1" "-Og" "-Os" "-Oz" } } */
 
-int a() {
+int a(char x[]) {
   char b[4096];
   if (a(b))
     a(b);

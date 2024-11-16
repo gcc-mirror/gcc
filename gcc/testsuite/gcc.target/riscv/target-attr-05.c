@@ -11,7 +11,7 @@
 **   sh1add\s*a0,a1,a0
 **   ...
 */
-long foo () __attribute__((target("cpu=sifive-u74;arch=rv64gc_zba")));
+long foo (long a, long b) __attribute__((target("cpu=sifive-u74;arch=rv64gc_zba")));
 long foo (long a, long b)
 {
   return a + (b * 2);
