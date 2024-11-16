@@ -257,7 +257,8 @@ BEGIN
       RETURN( doValueReal(str) )
    ELSE
       EXCEPTIONS.RAISE(realConv, ORD(invalid),
-                       'LongConv.' + __FUNCTION__ + ': real number is invalid')
+                       'LongConv.' + __FUNCTION__ + ': real number is invalid') ;
+      RETURN 0.0
    END
 END ValueReal ;
 

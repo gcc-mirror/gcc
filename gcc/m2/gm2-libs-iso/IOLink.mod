@@ -284,7 +284,8 @@ BEGIN
          RETURN( RTio.GetDevicePtr(cid) )
       ELSE
          EXCEPTIONS.RAISE(iolink, ORD(IOChan.wrongDevice),
-                          'IOLink.DeviceTablePtrValue: channel does belong to device')
+                          'IOLink.DeviceTablePtrValue: channel does belong to device') ;
+         RETURN NIL
       END
    END
 END DeviceTablePtrValue ;
