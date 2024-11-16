@@ -1,3 +1,7 @@
+2024-11-15  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/tree-ssa/pr117142.c: New test.
+
 2024-11-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

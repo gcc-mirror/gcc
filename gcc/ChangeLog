@@ -1,3 +1,14 @@
+2024-11-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117564
+	* config/pa/pa.md: Fix typos in 32-bit SFmode peephole2 patterns.
+
+2024-11-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117142
+	* tree-sra.cc (scan_function): Disqualify any candidate passed to
+	a function returning twice.
+
 2024-11-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/117525
