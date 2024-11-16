@@ -63,7 +63,7 @@ typedef struct BigStruct{
   int8_t xx;
 }  BigStruct;
 
-extern void foobar();
+extern void foobar(const char *fmt, ...);
 
 void
 test_large_fn (uint8_t ui8_1, int8_t si8_1, uint16_t ui16_1, int16_t si16_1,
