@@ -95,12 +95,16 @@ typedef __INT64_TYPE__ int64_t;
 typedef __INT32_TYPE__ int32_t;
 typedef __INT16_TYPE__ int16_t;
 typedef __INT8_TYPE__  int8_t;
-typedef _Bool bool;
-#define false 0
-#define true  1
 #define INT8_MIN  (-1 - __INT8_MAX__)
 #define INT16_MAX __INT16_MAX__
 #define NULL ((void*) 0)
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+/* bool, true and false are keywords.  */
+#else
+#define bool  _Bool
+#define true  1
+#define false 0
+#endif /* C23 ? */
 #endif /* IN_LIBGCC2 */
 
 #include "asm-defs.h"
