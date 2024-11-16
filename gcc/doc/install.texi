@@ -4222,30 +4222,6 @@ result, it's not possible to switch linkers in the middle of a GCC build.
 This has been reported to sometimes occur in unified builds of binutils
 and GCC@.
 
-A recent linker patch must be installed for the correct operation of
-GCC 3.3 and later.  @code{PHSS_26559} and @code{PHSS_24304} are the
-oldest linker patches that are known to work.  They are for HP-UX
-11.00 and 11.11, respectively.  @code{PHSS_24303}, the companion to
-@code{PHSS_24304}, might be usable but it hasn't been tested.  These
-patches have been superseded.  Consult the HP patch database to obtain
-the currently recommended linker patch for your system.
-
-The patches are necessary for the support of weak symbols on the
-32-bit port, and for the running of initializers and finalizers.  Weak
-symbols are implemented using SOM secondary definition symbols.  Prior
-to HP-UX 11, there are bugs in the linker support for secondary symbols.
-The patches correct a problem of linker core dumps creating shared
-libraries containing secondary symbols, as well as various other
-linking issues involving secondary symbols.
-
-GCC 3.3 uses the ELF DT_INIT_ARRAY and DT_FINI_ARRAY capabilities to
-run initializers and finalizers on the 64-bit port.  The 32-bit port
-uses the linker @option{+init} and @option{+fini} options for the same
-purpose.  The patches correct various problems with the +init/+fini
-options, including program core dumps.  Binutils 2.14 corrects a
-problem on the 64-bit port resulting from HP's non-standard use of
-the .init and .fini sections for array initializers and finalizers.
-
 Only the HP linker is supported for the @samp{hppa64-hp-hpux11*} target.
 
 At this time, the GNU linker does not support the creation of long
