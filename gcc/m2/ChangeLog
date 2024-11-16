@@ -1,3 +1,71 @@
+2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2-compiler/M2Base.mod (MixMetaTypes): Add parameter TRUE to
+	MetaErrorDecl.
+	(IsUserType): Test against ZType.
+	(MixTypesDecl): Test for ZType.
+	* gm2-compiler/M2GenGCC.mod (ErrorMessageDecl): Add parameter TRUE to
+	MetaErrorDecl.
+	(CodeLastForIterator): New procedure.
+	(FoldLastForIterator): Ditto.
+	(PerformLastForIterator): Ditto.
+	(CodeStatement): Add case clause for LastForIteratorOp.
+	(ErrorMessageDecl): Add iserror parameter.
+	Call MetaErrorDecl with iserror parameter.
+	(checkIncorrectMeta): Call MetaErrorDecl with TRUE parameter.
+	(CheckBinaryExpressionTypes): Ditto.
+	(CheckElementSetTypes): Ditto.
+	* gm2-compiler/M2LexBuf.def (MakeVirtualTok): Update comment
+	detailing the fall back when UnknownTokenNo is encountered.
+	(MakeVirtual2Tok): Ditto.
+	* gm2-compiler/M2LexBuf.mod (MakeVirtualTok): Check against
+	UnknownTokenNo.
+	(MakeVirtual2Tok): Ditto.
+	* gm2-compiler/M2MetaError.def (MetaErrorDecl): Add error parameter.
+	* gm2-compiler/M2MetaError.mod (MetaErrorDecl): Add error
+	parameter.
+	Issue warning if error is FALSE.
+	* gm2-compiler/M2Quads.def (QuadOperator): Add LastForIteratorOp.
+	* gm2-compiler/M2Quads.mod (AddQuadInformation): New case clause
+	LastForIteratorOp.
+	(CheckAddTuple2Read): New procedure.
+	(BuildForLoopToRangeCheck): Remove.
+	(ForLoopLastIteratorVariable): Ditto.
+	(ForLoopLastIteratorConstant): Ditto.
+	(ForLoopLastIterator): Reimplement.
+	(BuildForToByDo): Remove ByType from call to ForLoopLastIterator.
+	(WriteQuad): New case clause LastForIteratorOp.
+	(WriteOperator): Ditto.
+	* gm2-compiler/M2Students.def
+	(CheckForVariableThatLooksLikeKeyword): Replace with ...
+	(CheckVariableAgainstKeyword): ... this.
+	* gm2-compiler/M2Students.mod
+	(CheckForVariableThatLooksLikeKeyword): Replace with ...
+	(CheckVariableAgainstKeyword): ... this.
+	* gm2-compiler/M2SymInit.mod (CheckLastForIterator): New
+	procedure.
+	(CheckReadBeforeInitQuad): New case clause to call
+	CheckLastForIterator.
+	* gm2-compiler/P2SymBuild.mod: Replace
+	CheckForVariableThatLooksLikeKeyword with CheckVariableAgainstKeyword.
+
+2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/gm2-compiler-boot/P0SyntaxCheck.c):
+	New rule.
+	(m2/gm2-compiler-boot/P0SyntaxCheck.o): Ditto.
+	(m2/gm2-compiler-boot/P1Build.c): Ditto.
+	(m2/gm2-compiler-boot/P1Build.o): Ditto.
+	(m2/gm2-compiler-boot/P2Build.c): Ditto.
+	(m2/gm2-compiler-boot/P2Build.o): Ditto.
+	(m2/gm2-compiler-boot/P3Build.c): Ditto.
+	(m2/gm2-compiler-boot/P3Build.o): Ditto.
+	(m2/gm2-compiler-boot/PCBuild.c): Ditto.
+	(m2/gm2-compiler-boot/PCBuild.o): Ditto.
+	(m2/gm2-compiler-boot/PHBuild.c): Ditto.
+	(m2/gm2-compiler-boot/PHBuild.o): Ditto.
+
 2024-11-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2Base.def (MixTypes): Rename parameters.

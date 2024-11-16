@@ -1,3 +1,26 @@
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* c-decl.cc (store_parm_decls_newstyle): Use
+	OPT_Wmissing_parameter_name for missing parameter name
+	warning.
+	* c-errors.cc (pedwarn_c11): Enable fine-grained warning
+	control via the option_id argument.
+
+2024-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-tree.h (enum c_typespec_keyword): Add cts_dfloat64x and adjust
+	comment.
+	* c-parser.cc (c_keyword_starts_typename, c_token_starts_declspecs,
+	c_parser_declspecs, c_parser_gnu_attribute_any_word): Handle
+	RID_DFLOAT64X.
+	(c_parser_postfix_expression): Handle _Decimal64x arguments in
+	__builtin_tgmath.
+	(warn_for_abs): Handle BUILT_IN_FABSD64X.
+	* c-decl.cc (declspecs_add_type): Handle cts_dfloat64x and
+	RID_DFLOAT64X.
+	(finish_declspecs): Handle cts_dfloat64x.
+	* c-typeck.cc (c_common_type): Handle dfloat64x_type_node.
+
 2024-11-13  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/117059

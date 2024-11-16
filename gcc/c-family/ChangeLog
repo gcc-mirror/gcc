@@ -1,3 +1,30 @@
+2024-11-15  Joseph Myers  <josmyers@redhat.com>
+
+	* c-opts.cc (c_common_init_options): Default to C23.
+
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* c-opts.cc (c_common_post_options): Initialize
+	warn_missing_parameter_name.
+	* c.opt (Wmissing-parameter-name): New.
+
+2024-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (enum rid): Add RID_DFLOAT64X.
+	* c-common.cc (c_global_trees): Fix comment typo.  Add
+	dfloat64x_type_node.
+	(c_common_nodes_and_builtins): Handle RID_DFLOAT64X.
+	* c-cppbuiltin.cc (c_cpp_builtins): Call
+	builtin_define_decimal_float_constants also for dfloat64x_type_node
+	if non-NULL.
+	* c-lex.cc (interpret_float): Handle d64x suffixes.
+	* c-pretty-print.cc (pp_c_floating_constant): Print d64x suffixes
+	on dfloat64x_type_node typed constants.
+
 2024-11-13  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/117059

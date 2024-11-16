@@ -1,3 +1,8 @@
+2024-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (interpret_float_suffix): Handle d64x and D64x
+	suffixes, adjust comment.
+
 2024-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.cc (interpret_float_suffix): Handle d32 and D32 suffixes

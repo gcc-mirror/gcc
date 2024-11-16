@@ -1,3 +1,140 @@
+2024-11-15  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/invoke.texi (-std=gnu17, -std=gnu23): Document -std=gnu23 as
+	default for C code.
+
+2024-11-15  Jennifer Schmitz  <jschmitz@nvidia.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117093
+	* match.pd: Extend
+	(bit_insert @0 (BIT_FIELD_REF@2 @1 @rsize @rpos) @ipos) to allow
+	type differences between @0 and @1 due to view converts.
+
+2024-11-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117564
+	* config/pa/pa.md: Fix typos in 32-bit SFmode peephole2 patterns.
+
+2024-11-15  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/117164
+	* tree-nested.cc: Include "attribs.h".
+	(check_for_nested_with_variably_modified): Also return true for
+	variably modified return type.
+	(create_nesting_tree): If check_for_nested_with_variably_modified
+	returns true, also add noclone attribute.
+
+2024-11-15  Richard Biener  <rguenther@suse.de>
+
+	* optabs-query.h (get_vcond_icode): Remove.
+	(get_vcond_eq_icode): Likewise.
+	* optabs-tree.h (expand_vec_cond_expr_p): Remove code
+	argument.
+	* optabs-tree.cc (expand_vec_cond_expr_p): Likewise.
+	(vcond_icode_p): Remove.
+	(vcond_eq_icode_p): Likewise.
+	* optabs.h (can_vcond_compare_p): Remove.
+	* optabs.cc (can_vcond_compare_p): Likewise.
+
+2024-11-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): If not
+	simplifying or lowering, always expand to .VCOND_MASK.
+	(pass_gimple_isel::execute): Simplify.
+
+2024-11-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-generic.cc (expand_vector_comparison): Lower
+	vector comparisons that we cannot trivially expand.  Remove
+	code dealing with uses in VEC_COND_EXPRs.
+	(expand_vector_condition): Lower vector conditions that we
+	cannot trivially expand.  Remove code dealing with comparison
+	mask definitions.
+	(expand_vector_operation): Drop dce_ssa_names.
+	(expand_vector_operations_1): Likewise.
+
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/invoke.texi: Document Wmissing-parameter-name.
+
+2024-11-15  Florian Weimer  <fweimer@redhat.com>
+
+	* varasm.cc (get_section): Include name of section in
+	diagnostic messages.
+
+2024-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum tree_index): Add TI_DFLOAT64X_TYPE.
+	* tree.h (dfloat64x_type_node): Define.
+	* tree.cc (build_common_tree_nodes): Initialize dfloat64x_type_node.
+	* builtin-types.def (BT_DFLOAT64X): New DEF_PRIMITIVE_TYPE.
+	(BT_FN_DFLOAT64X): New DEF_FUNCTION_TYPE_0.
+	(BT_FN_DFLOAT64X_CONST_STRING, BT_FN_DFLOAT64X_DFLOAT64X): New
+	DEF_FUNCTION_TYPE_1.
+	* builtins.def (BUILT_IN_FABSD64X, BUILT_IN_INFD64X, BUILT_IN_NAND64X,
+	BUILT_IN_NANSD64X): New builtins.
+	* builtins.cc (expand_builtin): Handle BUILT_IN_FABSD64X.
+	(fold_builtin_0): Handle BUILT_IN_INFD64X.
+	(fold_builtin_1): Handle BUILT_IN_FABSD64X.
+	* fold-const-call.cc (fold_const_call): Handle CFN_BUILT_IN_NAND64X
+	and CFN_BUILT_IN_NANSD64X.
+	* ginclude/float.h (DEC64X_MANT_DIG, DEC64X_MIN_EXP, DEC64X_MAX_EXP,
+	DEC64X_MAX, DEC64X_EPSILON, DEC64X_MIN, DEC64X_TRUE_MIN,
+	DEC64X_SNAN): Redefine.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare): Refactor the
+	handlings of vector integer comparison.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare): Refine the
+	handlings for operators GE/GEU/LE/LEU.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare): Refactor the
+	handlings for operator NE.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare): Refine the
+	handlings for operators LT and LTU.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare_inner): Remove.
+	(rs6000_emit_vector_compare): Emit rtx comparison for operators EQ/
+	GT/GTU directly.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare_inner): Emit rtx
+	comparison for operators LT/UNGE of MODE_VECTOR_FLOAT directly.
+	(rs6000_emit_vector_compare): Move assertion of no MODE_VECTOR_FLOAT to
+	function beginning.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare): Emit rtx
+	comparison for operators LE/UNGT of MODE_VECTOR_FLOAT directly.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare): Emit rtx
+	comparison for operators NE/UNLE/UNLT of MODE_VECTOR_FLOAT directly.
+
+2024-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_vector_compare_inner): Move
+	MODE_VECTOR_FLOAT handlings out.
+	(rs6000_emit_vector_compare): Emit rtx comparison for operators EQ/GT/
+	GE/UNORDERED/ORDERED/UNEQ/LTGT of MODE_VECTOR_FLOAT directly, and
+	adjust one call site of rs6000_emit_vector_compare_inner to
+	rs6000_emit_vector_compare.
+
 2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/vector.md (mov<mode> pattern/splitter): Fix type and
