@@ -2673,6 +2673,7 @@ NAME (TYPE x, int m)
 #define isfinite(x)	__builtin_isfinite (x)
 #define isinf(x)	__builtin_isinf (x)
 
+#undef INFINITY
 #define INFINITY	CONCAT2(__builtin_huge_val, CEXT) ()
 #define I		1i
 
