@@ -36,7 +36,7 @@ proc ${tool}_maybe_build_wrapper { filename args } {
 	# passed to turn off all warnings.
 	unset_currtarget_info wrap_compile_flags
 	set_currtarget_info wrap_compile_flags \
-	    "$saved_wrap_compile_flags -w $flags"
+	    "$saved_wrap_compile_flags -std=gnu17 -w $flags"
 	set result [build_wrapper $filename]
 	unset_currtarget_info wrap_compile_flags
 	set_currtarget_info wrap_compile_flags "$saved_wrap_compile_flags"
