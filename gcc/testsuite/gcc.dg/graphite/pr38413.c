@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fgraphite-identity" } */
+/* { dg-options "-O2 -fgraphite-identity -Wno-old-style-definition" } */
 
 static int qsz;
 
