@@ -728,7 +728,7 @@ vars_ssa_cache::operator() (tree name)
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
   if (!POINTER_TYPE_P (TREE_TYPE (name))
-      && !INTEGRAL_TYPE_P (TREE_TYPE (name)))
+      && !ANY_INTEGRAL_TYPE_P (TREE_TYPE (name)))
     return empty;
 
   if (exists (name))
@@ -758,7 +758,7 @@ vars_ssa_cache::operator() (tree name)
 	continue;
 
       if (!POINTER_TYPE_P (TREE_TYPE (use))
-	  && !INTEGRAL_TYPE_P (TREE_TYPE (use)))
+	  && !ANY_INTEGRAL_TYPE_P (TREE_TYPE (use)))
 	continue;
 
       /* Mark the old ssa name needs to be update from the use. */
@@ -772,10 +772,22 @@ vars_ssa_cache::operator() (tree name)
 	 so we don't go into an infinite loop for some phi nodes with loops.  */
       create (use);
 
+      gimple *g = SSA_NAME_DEF_STMT (use);
+ 
+      /* CONSTRUCTOR here is always a vector initialization,
+	 walk each element too. */
+      if (gimple_assign_single_p (g)
+	  && TREE_CODE (gimple_assign_rhs1 (g)) == CONSTRUCTOR)
+	{
+	  tree ctr = gimple_assign_rhs1 (g);
+	  unsigned i;
+	  tree elm;
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctr), i, elm)
+	    work_list.safe_push (std::make_pair (elm, use));
+	}
       /* For assignments, walk each operand for possible addresses.
 	 For PHI nodes, walk each argument. */
-      gimple *g = SSA_NAME_DEF_STMT (use);
-      if (gassign *a = dyn_cast <gassign *> (g))
+      else if (gassign *a = dyn_cast <gassign *> (g))
 	{
 	  /* operand 0 is the lhs. */
 	  for (unsigned i = 1; i < gimple_num_ops (g); i++)
