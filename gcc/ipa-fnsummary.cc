@@ -2674,6 +2674,169 @@ points_to_possible_sra_candidate_p (tree t)
   return false;
 }
 
+/* Return true if BB only calls builtin_unreachable.
+   We skip empty basic blocks, debug statements, clobbers and predicts.
+   CACHE is used to memoize already analyzed blocks.  */
+
+static bool
+builtin_unreachable_bb_p (basic_block bb, vec<unsigned char> &cache)
+{
+  if (cache[bb->index])
+    return cache[bb->index] - 1;
+  gimple_stmt_iterator si;
+  auto_vec <basic_block, 4> visited_bbs;
+  bool ret = false;
+  while (true)
+    {
+      bool empty_bb = true;
+      visited_bbs.safe_push (bb);
+      cache[bb->index] = 3;
+      for (si = gsi_start_nondebug_bb (bb);
+	   !gsi_end_p (si) && empty_bb;
+	   gsi_next_nondebug (&si))
+	{
+	  if (gimple_code (gsi_stmt (si)) != GIMPLE_PREDICT
+	      && !gimple_clobber_p (gsi_stmt (si))
+	      && !gimple_nop_p (gsi_stmt (si)))
+	    {
+	      empty_bb = false;
+	      break;
+	    }
+	}
+      if (!empty_bb)
+	break;
+      else
+	bb = single_succ_edge (bb)->dest;
+      if (cache[bb->index])
+	{
+	  ret = cache[bb->index] == 3 ? false : cache[bb->index] - 1;
+	  goto done;
+	}
+    }
+  if (gimple_call_builtin_p (gsi_stmt (si), BUILT_IN_UNREACHABLE)
+      || gimple_call_builtin_p (gsi_stmt (si), BUILT_IN_UNREACHABLE_TRAP))
+    ret = true;
+done:
+  for (basic_block vbb:visited_bbs)
+    cache[vbb->index] = (unsigned char)ret + 1;
+  return ret;
+}
+
+static bool
+guards_builtin_unreachable (basic_block bb, vec<unsigned char> &cache)
+{
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (builtin_unreachable_bb_p (e->dest, cache))
+      {
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file,
+		   "BB %i ends with conditional guarding __builtin_unreachable;"
+		   " conditinal is unnecesary\n", bb->index);
+	return true;
+      }
+  return false;
+}
+
+#define STMT_NECESSARY GF_PLF_1
+
+/* If STMT is not already marked necessary, mark it, and add it to the
+   worklist if ADD_TO_WORKLIST is true.  */
+
+static inline void
+mark_stmt_necessary (gimple *stmt, auto_vec<gimple *> &worklist)
+{
+  gcc_assert (stmt);
+
+  if (gimple_plf (stmt, STMT_NECESSARY))
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Marking useful stmt: ");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+  gimple_set_plf (stmt, STMT_NECESSARY, true);
+  worklist.safe_push (stmt);
+}
+
+/* Mark the statement defining operand OP as necessary.  */
+
+static inline void
+mark_operand_necessary (tree op, auto_vec<gimple *> &worklist)
+{
+  gimple *stmt = SSA_NAME_DEF_STMT (op);
+  if (gimple_nop_p (stmt))
+    return;
+  mark_stmt_necessary (stmt, worklist);
+}
+
+/* Mark all statements that will remain in the body after optimizing out
+   conditionals guarding __builtin_unreachable which we keep to preserve
+   value ranges.  */
+
+static void
+find_necessary_statements (struct cgraph_node *node)
+{
+  struct function *my_function = DECL_STRUCT_FUNCTION (node->decl);
+  auto_vec<unsigned char, 10> cache;
+  basic_block bb;
+  auto_vec<gimple *> worklist;
+
+  cache.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  /* Mark all obviously necessary statements.  */
+  FOR_EACH_BB_FN (bb, my_function)
+    {
+      for (gimple_stmt_iterator gsi = gsi_start_phis (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	gimple_set_plf (gsi_stmt (gsi), STMT_NECESSARY, false);
+
+      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
+	   gsi_next_nondebug (&bsi))
+	{
+	  gimple *stmt = gsi_stmt (bsi);
+
+	  gimple_set_plf (stmt, STMT_NECESSARY, false);
+	  if (gimple_has_side_effects (stmt)
+	      || (is_ctrl_stmt (stmt)
+		  && (gimple_code (stmt) != GIMPLE_COND
+		      || !guards_builtin_unreachable (bb, cache)))
+	      || gimple_store_p (stmt))
+	    mark_stmt_necessary (stmt, worklist);
+	}
+    }
+  while (worklist.length () > 0)
+    {
+      gimple *stmt = worklist.pop ();
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "processing: ");
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	for (unsigned int k = 0; k < gimple_phi_num_args (stmt); k++)
+	  {
+	    tree arg = PHI_ARG_DEF (stmt, k);
+
+	    if (TREE_CODE (arg) == SSA_NAME)
+	      mark_operand_necessary (arg, worklist);
+	  }
+      else
+	{
+	  ssa_op_iter iter;
+	  tree use;
+
+	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
+	    mark_operand_necessary (use, worklist);
+	}
+    }
+}
+
 /* Analyze function body for NODE.
    EARLY indicates run from early optimization pipeline.  */
 
@@ -2718,7 +2881,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       calculate_dominance_info (CDI_DOMINATORS);
       calculate_dominance_info (CDI_POST_DOMINATORS);
       if (!early)
-        loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+	loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
       else
 	{
 	  ipa_check_create_node_params ();
@@ -2765,6 +2928,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 
   if (fbi.info)
     compute_bb_predicates (&fbi, node, info, params_summary);
+  find_necessary_statements (node);
   const profile_count entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   order = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   nblocks = pre_and_rev_post_order_compute (NULL, order, false);
@@ -2830,6 +2994,21 @@ analyze_function_body (struct cgraph_node *node, bool early)
 	   !gsi_end_p (bsi); gsi_next_nondebug (&bsi))
 	{
 	  gimple *stmt = gsi_stmt (bsi);
+	  if (!gimple_plf (stmt, STMT_NECESSARY))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "  skipping unnecesary stmt ");
+		  print_gimple_stmt (dump_file, stmt, 0);
+		}
+	      /* TODO: const calls used only to produce values for
+		 builtion_unreachable guards should not be accounted.  However
+		 we still want to inline them and this does does not work well
+		 with the cost model.  For now account them as usual.  */
+	      if (!is_gimple_call (stmt)
+		  || gimple_call_internal_p (stmt))
+		continue;
+	    }
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
 	  int this_time = estimate_num_insns (stmt, &eni_time_weights);
 	  int prob;
