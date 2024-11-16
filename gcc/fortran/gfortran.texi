@@ -2773,6 +2773,8 @@ formatted and unformatted I/O.  For formatted I/O, the @code{B},
 values and values which would overflow are rejected with
 @code{-pedantic}.
 
+@code{SELECT CASE} is supported for unsigned integers.
+
 The following intrinsics take unsigned arguments:
 @itemize @bullet
 @item @code{BGE}, @pxref{BGE}
