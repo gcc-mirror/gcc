@@ -49,8 +49,7 @@ static unsigned int lineno;
 #define LINELEN 80
 
 static void
-get_line(buf)
-     struct line *buf;
+get_line(struct line *buf)
 {
   char *data = buf->data;
   size_t alloc = buf->alloced;
@@ -134,12 +133,8 @@ protect_end (const char * s)
 }
 
 static void
-fail (lineno, opts, in, out, exp)
-     int lineno;
-     const char *opts;
-     const char *in;
-     const char *out;
-     const char *exp;
+fail (int lineno, const char *opts, const char *in,
+      const char *out, const char *exp)
 {
   printf ("\
 FAIL at line %d, options %s:\n\
@@ -170,9 +165,7 @@ exp: %s\n",
 */
 
 int
-main(argc, argv)
-     int argc;
-     char **argv;
+main(int argc, char **argv)
 {
   enum demangling_styles style = auto_demangling;
   int no_params;
