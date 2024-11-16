@@ -769,8 +769,8 @@ avr_is_casesi_sequence (basic_block bb, rtx_insn *insn, rtx_insn *insns[5])
 
   // Assert on the anatomy of xinsn's operands we are going to work with.
 
-  gcc_assert (recog_data.n_operands == 11);
-  gcc_assert (recog_data.n_dups == 4);
+  gcc_assert (recog_data.n_operands == 12);
+  gcc_assert (recog_data.n_dups == 3);
 
   if (dump_file)
     {
@@ -789,7 +789,7 @@ avr_is_casesi_sequence (basic_block bb, rtx_insn *insn, rtx_insn *insns[5])
    operands of INSNS as extracted by insn_extract from pattern
    casesi_<mode>_sequence:
 
-      $0: SImode reg switch value as result of $9.
+      $0: SImode reg switch value as result of $10.
       $1: Negative of smallest index in switch.
       $2: Number of entries in switch.
       $3: Label to table.
@@ -798,9 +798,10 @@ avr_is_casesi_sequence (basic_block bb, rtx_insn *insn, rtx_insn *insns[5])
       $6: 3-byte PC: subreg:HI ($5) + label_ref ($3)
 	  2-byte PC: subreg:HI ($5)
       $7: HI reg index into table (Z or pseudo)
-      $8: R24 or const0_rtx (to be clobbered)
-      $9: Extension to SImode of an 8-bit or 16-bit integer register $10.
-      $10: QImode or HImode register input of $9.
+      $8: Z or scratch:HI (to be clobbered)
+      $9: R24 or const0_rtx (to be clobbered)
+      $10: Extension to SImode of an 8-bit or 16-bit integer register $11.
+      $11: QImode or HImode register input of $10.
 
    Try to optimize this sequence, i.e. use the original HImode / QImode
    switch value instead of SImode.  */
@@ -809,11 +810,11 @@ static void
 avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
 {
   // Original mode of the switch value; this is QImode or HImode.
-  machine_mode mode = GET_MODE (xop[10]);
+  machine_mode mode = GET_MODE (xop[11]);
 
   // How the original switch value was extended to SImode; this is
   // SIGN_EXTEND or ZERO_EXTEND.
-  rtx_code code = GET_CODE (xop[9]);
+  rtx_code code = GET_CODE (xop[10]);
 
   // Lower index, upper index (plus one) and range of case calues.
   HOST_WIDE_INT low_idx = -INTVAL (xop[1]);
@@ -857,7 +858,7 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
 
   start_sequence();
 
-  rtx reg = copy_to_mode_reg (mode, xop[10]);
+  rtx reg = copy_to_mode_reg (mode, xop[11]);
 
   rtx (*gen_add)(rtx,rtx,rtx) = QImode == mode ? gen_addqi3 : gen_addhi3;
   rtx (*gen_cbranch)(rtx,rtx,rtx,rtx)
@@ -967,7 +968,7 @@ avr_casei_sequence_check_operands (rtx *xop)
 
   if (AVR_HAVE_EIJMP_EICALL
       // The last clobber op of the tablejump.
-      && xop[8] == all_regs_rtx[REG_24])
+      && xop[9] == all_regs_rtx[REG_24])
     {
       // $6 is: (subreg:SI ($5) 0)
       sub_5 = xop[6];
@@ -980,7 +981,7 @@ avr_casei_sequence_check_operands (rtx *xop)
       && LABEL_REF == GET_CODE (XEXP (xop[6], 1))
       && rtx_equal_p (xop[3], XEXP (XEXP (xop[6], 1), 0))
       // The last clobber op of the tablejump.
-      && xop[8] == const0_rtx)
+      && xop[9] == const0_rtx)
     {
       sub_5 = XEXP (xop[6], 0);
     }
