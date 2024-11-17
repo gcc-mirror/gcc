@@ -10750,6 +10750,24 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	}
     }
 
+  /* Optionally warn about C23 compatibility.  */
+  if (warn_deprecated_non_prototype
+      && old_decl != NULL_TREE
+      && TREE_CODE (oldtype) == FUNCTION_TYPE
+      && !TYPE_ARG_TYPES (oldtype)
+      && !TYPE_NO_NAMED_ARGS_STDARG_P (oldtype)
+      && (TYPE_ARG_TYPES (newtype)
+	  && TREE_VALUE (TYPE_ARG_TYPES (newtype)) != void_type_node))
+    {
+      bool warned = warning_at (loc, OPT_Wdeprecated_non_prototype,
+				"ISO C23 does not allow defining"
+				" parameters for function %qE declared"
+				" without parameters",
+				decl1);
+      if (warned)
+	inform (DECL_SOURCE_LOCATION (old_decl), "declared here");
+    }
+
   /* Optionally warn of old-fashioned def with no previous prototype.  */
   if (warn_strict_prototypes
       && old_decl != error_mark_node

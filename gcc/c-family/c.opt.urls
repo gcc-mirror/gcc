@@ -307,6 +307,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-enum-float-conv
 Wdeprecated-literal-operator
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-literal-operator)
 
+Wdeprecated-non-prototype
+UrlSuffix(gcc/Warning-Options.html#index-Wdeprecated-non-prototype)
+
 Wdesignated-init
 UrlSuffix(gcc/Warning-Options.html#index-Wdesignated-init)
 

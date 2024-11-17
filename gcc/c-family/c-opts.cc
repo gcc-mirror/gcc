@@ -1006,6 +1006,9 @@ c_common_post_options (const char **pfilename)
       = ((pedantic && !flag_isoc23 && warn_c11_c23_compat != 0)
 	 || warn_c11_c23_compat > 0);
 
+  if (warn_deprecated_non_prototype == -1)
+    warn_deprecated_non_prototype = warn_c11_c23_compat > 0;
+
   /* -Wshift-negative-value is enabled by -Wextra in C99 and C++11 to C++17
      modes.  */
   if (warn_shift_negative_value == -1)

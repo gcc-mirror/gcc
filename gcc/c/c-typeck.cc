@@ -3813,7 +3813,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */
 
-  nargs = convert_arguments (loc, arg_loc, TYPE_ARG_TYPES (fntype), params,
+  nargs = convert_arguments (loc, arg_loc, fntype, params,
 			     origtypes, function, fundecl);
   if (nargs < 0)
     return error_mark_node;
@@ -4108,9 +4108,9 @@ convert_argument (location_t ploc, tree function, tree fundecl,
 }
 
 /* Convert the argument expressions in the vector VALUES
-   to the types in the list TYPELIST.
+   to the types in the list TYPE_ARG_TYPES (FNTYPE).
 
-   If TYPELIST is exhausted, or when an element has NULL as its type,
+   If the list is exhausted, or when an element has NULL as its type,
    perform the default conversions.
 
    ORIGTYPES is the original types of the expressions in VALUES.  This
@@ -4129,10 +4129,11 @@ convert_argument (location_t ploc, tree function, tree fundecl,
    failure.  */
 
 static int
-convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
+convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 		   vec<tree, va_gc> *values, vec<tree, va_gc> *origtypes,
 		   tree function, tree fundecl)
 {
+  tree typelist = TYPE_ARG_TYPES (fntype);
   unsigned int parmnum;
   bool error_args = false;
   const bool type_generic = fundecl
@@ -4263,6 +4264,23 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 			  "expecting %d", function, parmnum))
 	    inform_declaration (fundecl);
 	  builtin_typetail = NULL_TREE;
+	}
+
+      if (!typetail && parmnum == 0 && !TYPE_NO_NAMED_ARGS_STDARG_P (fntype))
+	{
+	  bool warned;
+	  if (selector)
+	    warned = warning_at (loc, OPT_Wdeprecated_non_prototype,
+				 "ISO C23 does not allow arguments"
+				 " for method %qE declared without parameters",
+				 function);
+	  else
+	    warned = warning_at (loc, OPT_Wdeprecated_non_prototype,
+				 "ISO C23 does not allow arguments"
+				 " for function %qE declared without parameters",
+				 function);
+	  if (warned)
+	    inform_declaration (fundecl);
 	}
 
       if (selector && argnum > 2)

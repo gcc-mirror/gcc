@@ -520,7 +520,7 @@ Objective-C and Objective-C++ Dialects}.
 }
 
 @item C and Objective-C-only Warning Options
-@gccoptlist{-Wbad-function-cast -Wmissing-declarations
+@gccoptlist{-Wbad-function-cast -Wdeprecated-non-prototype -Wmissing-declarations
 -Wmissing-parameter-name -Wmissing-parameter-type
 -Wdeclaration-missing-parameter-type -Wmissing-prototypes
 -Wmissing-variable-declarations -Wnested-externs -Wold-style-declaration
@@ -10049,6 +10049,16 @@ even if there is a previous prototype.  A definition using @samp{()}
 is not considered an old-style definition in C23 mode, because it is
 equivalent to @samp{(void)} in that case, but is considered an
 old-style definition for older standards.
+
+@opindex Wdeprecated-non-prototype
+@opindex Wno-deprecated-non-prototype
+@item -Wdeprecated-non-prototype @r{(C and Objective-C only)}
+Warn if a function declarated with an empty parameter list @samp{()} is
+called with one or more arguments, or if a function definition with one
+or more parameters is encountered after such a declaration.  Both cases
+are errors in C23 and later dialects  of C.
+
+This warning is also enabled by @option{-Wc11-c23-compat}.
 
 @opindex Wmissing-parameter-name
 @opindex Wno-missing-parameter-name
