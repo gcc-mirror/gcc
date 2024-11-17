@@ -1304,6 +1304,12 @@ UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-f
 frtti
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-rtti) LangUrlSuffix_D(gdc/Runtime-Options.html#index-fno-rtti)
 
+fsearch-include-path
+UrlSuffix(gcc/Preprocessor-Options.html#index-fsearch-include-path)
+
+fsearch-include-path=
+UrlSuffix(gcc/Preprocessor-Options.html#index-fsearch-include-path)
+
 ; skipping UrlSuffix for 'fshort-enums' due to multiple URLs:
 ;   duplicate: 'gcc/Code-Gen-Options.html#index-fshort-enums'
 ;   duplicate: 'gcc/Non-bugs.html#index-fshort-enums-3'
