@@ -264,8 +264,6 @@ OP_AND_FETCH_WORD (and,   , &)
 OP_AND_FETCH_WORD (xor,   , ^)
 OP_AND_FETCH_WORD (nand, ~, &)
 
-typedef unsigned char bool;
-
 #define COMPARE_AND_SWAP_2(TYPE, WIDTH, INDEX)				\
   TYPE HIDDEN								\
   __sync_val_compare_and_swap_##WIDTH (volatile void *ptr, TYPE oldval,	\
