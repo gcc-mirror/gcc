@@ -1,3 +1,8 @@
+2024-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/117624
+	* libgcc2.c (INFINITY): Add #undef before #define.
+
 2024-11-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/aarch64/aarch64-asm.h (FEATURE_1_GCS): Define.

@@ -1,3 +1,20 @@
+2024-11-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109066
+	* resolve.cc (generate_component_assignments): If the temporary
+	for 'var' is a pointer and 'expr' is neither a constant or
+	a variable, change its attribute from pointer to allocatable.
+	This avoids assignment to a temporary point that has neither
+	been allocated or associated.
+
+2024-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Document that SELECT CASE works for UNSIGNED.
+
+2024-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* module.cc (mio_expr): Handle BT_UNSIGNED.
+
 2024-11-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* trans-expr.cc (gfc_trans_subcomponent_assign): Fix type of malloc

@@ -1,3 +1,10 @@
+2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.cc (cxx_build_operator_new): Break out from ...
+	(cxx_build_operator_delete): Break out from ...
+	(cxx_init_operator_new_delete_decls): Break out from ...
+	(cxx_init_decl_processing): ... here.
+
 2024-11-14  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.cc (do_namespace_alias): set_originating_module after

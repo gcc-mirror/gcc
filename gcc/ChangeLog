@@ -1,3 +1,92 @@
+2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.cc (ipa_modref_callee_reads_no_memory_p): New function.
+	* ipa-modref.h (ipa_modref_callee_reads_no_memory_p): Declare
+	* tree-ssa-dce.cc (propagate_necessity): Use it.
+
+2024-11-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115275
+	* match.pd (umax(a,b) ==/!= 0): New pattern.
+
+2024-11-16  Eikansh Gupta  <quic_eikagupt@quicinc.com>
+
+	PR tree-optimization/109401
+	* match.pd (min(a,b) op max(a,b) -> a op b): New pattern.
+
+2024-11-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/116781
+	* config/avr/avr.md (*tablejump_split, *tablejump): Add
+	operand 2 as a "scratch_operand" instead of a match_dup.
+	(casesi): Adjust expander operands accordingly.  Use a scratch:HI
+	when the jump address is not clobbered.  This is the case for a
+	2-byte PC + has no JMP instruction.  In all the other cases, the
+	affected operand is REG_Z (reg:HI 30).
+	(casesi_<mode>_sequence): Adjust matcher to new anatomy.
+	* config/avr/avr-passes.cc (avr_is_casesi_sequence)
+	(avr_is_casesi_sequence, avr_optimize_casesi)
+	(avr_casei_sequence_check_operands): Adjust to new anatomy.
+
+2024-11-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117500
+	* config/avr/avr.cc (avr_print_operand) [code = 'i']: Use
+	output_operand_lossage on bad operands instead of fatal_insn.
+
+2024-11-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Add a peephole2 that improves bit operations
+	with a lower register and a constant.
+
+2024-11-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <hppa*-hp-hpux11>: Remove references
+	to HP/UX linker patch from 2004 and Binutils 2.14.
+
+2024-11-16  Richard Biener  <rguenther@suse.de>
+
+	* params.opt (vect-force-slp): Default to 1.
+
+2024-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117606
+	* tree-vect-stmts.cc (get_group_load_store_type): For single
+	element interleaving also fall back to VMAT_ELEMENTWISE if
+	a left-over permutation isn't supported.
+
+2024-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117605
+	* tree-vect-stmts.cc (get_group_load_store_type): Also
+	apply group size limit for single-element interleaving
+	to VMAT_CONTIGUOUS_REVERSE.
+
+2024-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117558
+	* tree-vectorizer.h (_loop_vec_info::must_use_partial_vectors_p): New.
+	(LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P): Likewise.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Initialize
+	must_use_partial_vectors_p.
+	(vect_determine_partial_vectors_and_peeling): Enforce it.
+	(vect_analyze_loop_2): Reset before restarting.
+	* tree-vect-stmts.cc (get_group_load_store_type): When peeling
+	a single gap iteration cannot be determined safe statically
+	enforce the use of partial vectors.
+
+2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/109442
+	* ipa-fnsummary.cc (builtin_unreachable_bb_p): New function.
+	(guards_builtin_unreachable): New function.
+	(STMT_NECESSARY): New macro.
+	(mark_stmt_necessary): New function.
+	(mark_operand_necessary): New function.
+	(find_necessary_statements): New function.
+	(analyze_function_body): Use it.
+
 2024-11-15  Joseph Myers  <josmyers@redhat.com>
 
 	* doc/invoke.texi (-std=gnu17, -std=gnu23): Document -std=gnu23 as

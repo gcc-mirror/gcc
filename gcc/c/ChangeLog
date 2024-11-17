@@ -1,3 +1,10 @@
+2024-11-16  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117548
+	* c-decl.cc (finish_struct): Add checking assertion.
+	* c-typeck.cc (c_type_original): New function.
+	(composite_types_internal): Get tag from original type.
+
 2024-11-15  Florian Weimer  <fweimer@redhat.com>
 
 	* c-decl.cc (store_parm_decls_newstyle): Use

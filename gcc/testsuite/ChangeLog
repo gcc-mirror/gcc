@@ -1,3 +1,219 @@
+2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr109442.C: New file.
+
+2024-11-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115275
+	* g++.dg/tree-ssa/pr115275.C: New test.
+	* gcc.dg/tree-ssa/max_eqne-1.c: New test.
+	* gcc.dg/tree-ssa/max_eqne-2.c: New test.
+
+2024-11-16  Eikansh Gupta  <quic_eikagupt@quicinc.com>
+
+	PR tree-optimization/109401
+	* gcc.dg/tree-ssa/pr109401.c: New test.
+	* gcc.dg/tree-ssa/pr109401-1.c: New test.
+
+2024-11-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/cmo-32.c: Pass in -std=gnu17.
+	* gcc.target/riscv/cmo-64.c: Likewise.
+	* gcc.target/riscv/pr98777.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/pr115214.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/pr113469.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/pr111391-1.c: Fix prototype for c23.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-1.c: Likewise.
+	* gcc.target/riscv/sum-of-two-s12-const-2.c: Likewise.
+	* gcc.target/riscv/target-attr-01.c: Likewise.
+	* gcc.target/riscv/target-attr-02.c: Likewise.
+	* gcc.target/riscv/target-attr-03.c: Likewise.
+	* gcc.target/riscv/target-attr-04.c: Likewise.
+	* gcc.target/riscv/target-attr-05.c: Likewise.
+	* gcc.target/riscv/target-attr-06.c: Likewise.
+	* gcc.target/riscv/target-attr-07.c: Likewise.
+	* gcc.target/riscv/target-attr-08.c: Likewise.
+	* gcc.target/riscv/target-attr-09.c: Likewise.
+	* gcc.target/riscv/target-attr-10.c: Likewise.
+	* gcc.target/riscv/target-attr-11.c: Likewise.
+	* gcc.target/riscv/target-attr-12.c: Likewise.
+	* gcc.target/riscv/target-attr-13.c: Likewise.
+	* gcc.target/riscv/target-attr-14.c: Likewise.
+	* gcc.target/riscv/target-attr-15.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-01.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-02.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-03.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-04.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-05.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-06.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-07.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-08.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-09.c: Likewise.
+	* gcc.target/riscv/target-attr-bad-10.c: Likewise.
+
+2024-11-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/arc/add_n-combine.c: Pass in -std=gnu17.
+
+2024-11-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109066
+	* gfortran.dg/defined_assignment_12.f90: New test.
+
+2024-11-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/sh/pr51244-15.c: Use "mybool" rather than "bool".
+	* gcc.target/sh/pr52933-1.c: Similarly.
+	* gcc.target/sh/pr54089-1.c: Similarly.
+	* gcc.target/sh/pr54089-7.c: Similarly.
+	* gcc.target/sh/pr54089-8.c: Similarly.
+	* gcc.target/sh/pr54089-9.c: Similarly.
+	* gcc.target/sh/pr64366.c: Use -std=gnu17.
+
+2024-11-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* lib/wrapper.exp (${tool}_maybe_build_wrapper): Pass -std=gnu17 flag
+	to build testglue wrapper.
+
+2024-11-16  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/pr64366.c (foobar): Provide full function
+	delaration.
+
+2024-11-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_42.f90: New test.
+
+2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/fnsummary-1.c: New test.
+
+2024-11-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/error25.C: Adjust export diagnostic.
+	* g++.old-deja/g++.benjamin/tem05.C: Likewise.
+	* g++.old-deja/g++.pt/export1.C: Likewise.
+	* g++.dg/pch/pch.exp: Specify -fno-modules.
+
+2024-11-16  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117548
+	* gcc.dg/pr117548.c: New test.
+
+2024-11-16  Sam James  <sam@gentoo.org>
+
+	* gcc.target/i386/pr66891.c: Pass -std=gnu17.
+
+2024-11-16  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/graphite/id-15.c: Pass -Wno-old-style-definition.
+	* gcc.dg/graphite/pr38413.c: Ditto.
+	* gcc.dg/graphite/pr38510.c: Ditto.
+
+2024-11-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_u_sub-1-u16.c: Remove flto dg-skip
+	workaround and -O3 option.
+	* gcc.target/riscv/sat/sat_u_sub-1-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-1-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-1-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-10-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-10-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-10-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-10-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-11-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-11-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-11-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-11-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-12-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-12-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-12-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-12-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-2-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-2-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-2-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-2-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-3-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-3-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-3-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-3-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-4-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-4-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-4-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-4-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-5-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-5-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-5-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-5-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-6-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-6-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-6-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-6-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-7-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-7-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-7-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-7-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-8-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-8-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-8-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-8-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-9-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-9-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-9-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub-9-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u16-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u16-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u16-3.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u16-4.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u32-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u32-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u32-3.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u32-4.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u64-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u64-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u8-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u8-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u8-3.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u8-4.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-1-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u16-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u16-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u16-3.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u32-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u32-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u32-3.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u64-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u8-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u8-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u8-3.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-2-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u16-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u16-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u32-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u32-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u8-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u8-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-3-u8.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u16-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u16-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u16.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u32-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u32-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u32.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u64.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u8-1.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u8-2.c: Ditto.
+	* gcc.target/riscv/sat/sat_u_sub_imm-4-u8.c: Ditto.
+
 2024-11-15  Joseph Myers  <josmyers@redhat.com>
 
 	* c-c++-common/analyzer/asm-x86-dyndbg-2.c,

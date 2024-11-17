@@ -1,3 +1,10 @@
+2024-11-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* testsuite/test-demangle.c (get_line): Change K&R style
+	definition into ANSI C90 definitions.
+	(fail): Likewise.
+	(main): Likewise.
+
 2024-10-31  Mark Wielaard  <mark@klomp.org>
 
 	* cplus-dem.c: Change preceeded to preceded.

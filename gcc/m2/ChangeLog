@@ -1,3 +1,19 @@
+2024-11-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117555
+	* gm2-libs-iso/EXCEPTIONS.mod (CurrentNumber): Add return
+	statement.
+	* gm2-libs-iso/IOChan.mod (ReadResult): Ditto.
+	(CurrentFlags): Ditto.
+	(DeviceError): Ditto.
+	* gm2-libs-iso/IOLink.mod (DeviceTablePtrValue): Ditto.
+	* gm2-libs-iso/LongConv.mod (ValueReal): Ditto.
+	* gm2-libs/M2RTS.mod (Halt): Add noreturn attribute.
+	Add exit (1).
+	(HaltC): Add exit (1).
+	* pge-boot/GM2RTS.cc (M2RTS_Halt): Add exit (1).
+	(M2RTS_HaltC): Ditto.
+
 2024-11-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117371

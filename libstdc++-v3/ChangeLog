@@ -1,3 +1,8 @@
+2024-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.am: Use $(MAKE) -C dir instead of cd dir && $(MAKE).
+	* Makefile.in: Regenerate.
+
 2024-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_list.h (list::emplace_back): Fix indentation.
