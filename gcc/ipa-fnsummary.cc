@@ -2804,7 +2804,8 @@ find_necessary_statements (struct cgraph_node *node)
 	      || (is_ctrl_stmt (stmt)
 		  && (gimple_code (stmt) != GIMPLE_COND
 		      || !guards_builtin_unreachable (bb, cache)))
-	      || gimple_store_p (stmt))
+	      || gimple_store_p (stmt)
+	      || gimple_code (stmt) == GIMPLE_ASM)
 	    mark_stmt_necessary (stmt, worklist);
 	}
     }
