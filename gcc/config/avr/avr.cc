@@ -251,7 +251,7 @@ avr_tolower (char *lo, const char *up)
    byte at which the chunk starts.  N must be an integral multiple
    of the mode size.  */
 
-static rtx
+rtx
 avr_chunk (machine_mode mode, rtx x, int n)
 {
   gcc_assert (n % GET_MODE_SIZE (mode) == 0);
@@ -262,7 +262,7 @@ avr_chunk (machine_mode mode, rtx x, int n)
 
 /* Return the N-th byte of X as an rtx.  */
 
-static rtx
+rtx
 avr_byte (rtx x, int n)
 {
   return avr_chunk (QImode, x, n);
@@ -271,7 +271,7 @@ avr_byte (rtx x, int n)
 
 /* Return the sub-word of X starting at byte number N.  */
 
-static rtx
+rtx
 avr_word (rtx x, int n)
 {
   return avr_chunk (HImode, x, n);
@@ -280,7 +280,7 @@ avr_word (rtx x, int n)
 
 /* Return the N-th byte of compile-time constant X as an int8_t.  */
 
-static int8_t
+int8_t
 avr_int8 (rtx x, int n)
 {
   gcc_assert (CONST_INT_P (x) || CONST_FIXED_P (x) || CONST_DOUBLE_P (x));
@@ -290,7 +290,7 @@ avr_int8 (rtx x, int n)
 
 /* Return the N-th byte of compile-time constant X as an uint8_t.  */
 
-static uint8_t
+uint8_t
 avr_uint8 (rtx x, int n)
 {
   return (uint8_t) avr_int8 (x, n);
@@ -300,7 +300,7 @@ avr_uint8 (rtx x, int n)
 /* Return the sub-word of compile-time constant X that starts
    at byte N as an int16_t.  */
 
-static int16_t
+int16_t
 avr_int16 (rtx x, int n)
 {
   gcc_assert (CONST_INT_P (x) || CONST_FIXED_P (x) || CONST_DOUBLE_P (x));
@@ -311,7 +311,7 @@ avr_int16 (rtx x, int n)
 /* Return the sub-word of compile-time constant X that starts
    at byte N as an uint16_t.  */
 
-static uint16_t
+uint16_t
 avr_uint16 (rtx x, int n)
 {
   return (uint16_t) avr_int16 (x, n);
@@ -519,7 +519,7 @@ avr_option_override (void)
     opt_pass *extra_peephole2
       = g->get_passes ()->get_pass_peephole2 ()->clone ();
     register_pass_info peep2_2_info
-      = { extra_peephole2, "peephole2", 1, PASS_POS_INSERT_AFTER };
+      = { extra_peephole2, "avr-fuse-move", 1, PASS_POS_INSERT_AFTER };
 
     register_pass (&peep2_2_info);
   }
@@ -3674,7 +3674,7 @@ avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
    Load ld register with any value        : NONE
    Anything else:                         : CLOBBER  */
 
-static void
+void
 output_reload_in_const (rtx *op, rtx clobber_reg, int *len, bool clear_p)
 {
   rtx src = op[1];
@@ -5823,6 +5823,155 @@ out_movhi_mr_r (rtx_insn *insn, rtx op[], int *plen)
 }
 
 
+/* Output code for the "set_some" insn that sets some QImode GPRs.
+   $0 is a parallel; for its layout see the description of the next function.
+   $0[5] ... $0[8] are SETs of QImode registers to const_int values.  All
+      of them are bytes in the register described by $3 and $4.  SET $0[5]
+      is mandatory, but all the following ones are optional.
+   $1 is a QImode scratch d-register or const0_rtx.
+   $2 is the known 8-bit value held in $1 before the insn starts.  When the
+      code below clobbers $1, then it must restore $1 to $2 at the end.
+   $3 The register number of a GPR.
+   $4 The modesize of $3 in 1...4.
+   PLEN == 0:  Output instructions.
+   PLEN != 0:  Set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_set_some (rtx_insn *insn, rtx *xop, int *plen)
+{
+  const int vlen = XVECLEN (xop[0], 0);
+  const int sets_start = 5;
+  gcc_assert (vlen > sets_start);
+
+  if (plen)
+    *plen = 0;
+
+  rtx op[4];
+  rtx &dest = op[0], &src = op[1], &scratch = op[2], &oldval = op[3];
+  scratch = REG_P (xop[1]) ? xop[1] : NULL_RTX;
+  oldval = NULL_RTX;
+
+  /* There are 3 ways to get a scratch, starting withe the most preferred ones:
+     1) avr_find_unused_d_reg() need not to be restored, and it takes care
+	of fixed regs.  This is an unlikely case, e.g. with -fno-peephole2.
+     2) "set_some" provides a scratch register with a known content.
+	This scratch need not be saved but has to be restored to its value.
+     3) A last resort approach saves and restores some upper register.
+     Notice that "set_some" will only be emit when avr-fuse-move is fed
+     with mov insn(s) that don't have a scratch reg but need one;
+     hence "set_some" won't have a scratch reg at its disposal, either.  */
+
+  bool knows_way_p = false;
+
+  for (int i = sets_start; i < vlen; ++i)
+    {
+      rtx xset = XVECEXP (xop[0], 0, i);
+
+      gcc_assert (GET_CODE (xset) == SET
+		  && REG_P (dest = XEXP (xset, 0))
+		  && CONST_INT_P (src = XEXP (xset, 1)));
+
+      if (src == const0_rtx)
+	avr_asm_len ("clr %0", op, plen, 1);
+      else if (src == const1_rtx)
+	avr_asm_len ("clr %0" CR_TAB
+		     "inc %0", op, plen, 2);
+      else if (src == constm1_rtx)
+	avr_asm_len ("clr %0" CR_TAB
+		     "dec %0", op, plen, 2);
+      else
+	{
+	  if (! knows_way_p)
+	    {
+	      knows_way_p = true;
+
+	      static const machine_mode size_to_mode[4 + 1] =
+		{
+		  VOIDmode, QImode, HImode, PSImode, SImode
+		};
+
+	      const int ex_regno = INTVAL (xop[3]);
+	      const int ex_modesize = INTVAL (xop[4]);
+	      rtx exclude = gen_rtx_REG (size_to_mode[ex_modesize], ex_regno);
+	      rtx dreg = avr_find_unused_d_reg (insn, exclude);
+
+	      if (dreg)
+		{
+		  // Way 1
+		  scratch = dreg;
+		  oldval = NULL_RTX;
+		}
+	      else if (scratch)
+		{
+		  // Way 2
+		  if (! reg_unused_after (insn, scratch))
+		    oldval = xop[2];
+		}
+	      else
+		{
+		  // Way 3
+		  scratch = all_regs_rtx[REG_24];
+		  oldval = tmp_reg_rtx;
+		  avr_asm_len ("mov %3,%2", op, plen, 1);
+		}
+	    } // decide about way
+
+	  avr_asm_len ("ldi %2,%1" CR_TAB
+		       "mov %0,%2", op, plen, 2);
+	} // needs a scratch
+    } // for $0[5] ... $0[8].
+
+  if (oldval)
+    avr_asm_len (REG_P (oldval)
+		 ? "mov %2,%3"
+		 : "ldi %2,%3", op, plen, 1);
+  return "";
+}
+
+
+/* Implements the `set_some_operation' predicate.
+   PARA is a parallel with the following elements:
+   [0] is a USE of an 8-bit scratch d-register or const0_rtx.
+   [1] is the known value held in [0].  When [0] is used as a scratch,
+       then its value has to be restored to [1] after the respective insn.
+   [2] is the regno of a GPR, and
+   [3] is the mode size of that GPR.  All SETs [5]... of PARA will set
+       bytes of that GPR, but in many cases not all of them.
+   [4]  In a clobber of REG_CC.
+   [5] [6] [7] [8]  SETs of an 8-bit register to a const_int value, where
+       all destinations are sub-bytes of [2].  Element [5] is mandatory,
+       and the following elements are optional.  */
+
+bool
+avr_set_some_operation (rtx para)
+{
+  const int sets_start = 5;
+  const int n_sets = XVECLEN (para, 0) - sets_start;
+
+  if (! IN_RANGE (n_sets, 1, 4))
+    return false;
+
+  if (GET_CODE (XVECEXP (para, 0, 4)) != CLOBBER
+      || GET_CODE (XVECEXP (para, 0, 0)) != USE
+      || GET_CODE (XVECEXP (para, 0, 1)) != USE
+      || GET_CODE (XVECEXP (para, 0, 2)) != USE
+      || GET_CODE (XVECEXP (para, 0, 3)) != USE)
+    return false;
+
+  for (int i = sets_start; i < XVECLEN (para, 0); ++i)
+    {
+      rtx xset = XVECEXP (para, 0, i);
+      if (! xset
+	  || GET_CODE (xset) != SET
+	  || ! register_operand (XEXP (xset, 0), QImode)
+	  || ! const_int_operand (XEXP (xset, 1), QImode))
+	return false;
+    }
+
+  return true;
+}
+
+
 /* Implement `TARGET_FRAME_POINTER_REQUIRED'.  */
 /* Return 1 if frame pointer for current function required.  */
 
@@ -6652,9 +6801,9 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int *len)
 
 	case 7:
 	  *len = 3;
-	  return ("ror %0" CR_TAB
-		  "clr %0" CR_TAB
-		  "ror %0");
+	  return ("bst %1,0" CR_TAB
+		  "clr %0"   CR_TAB
+		  "bld %0,7");
 	}
     }
   else if (CONSTANT_P (operands[2]))
@@ -7077,74 +7226,48 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *len)
   return "";
 }
 
-/* 8bit arithmetic shift right  ((signed char)x >> i) */
+/* 8-bit arithmetic shift right  (int8_t) x >> i.  */
 
 const char *
-ashrqi3_out (rtx_insn *insn, rtx operands[], int *len)
+ashrqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
-      int k;
+      if (plen)
+	*plen = 0;
 
-      if (!len)
-	len = &k;
+      const int offs = INTVAL (operands[2]);
 
-      switch (INTVAL (operands[2]))
+      if (IN_RANGE (offs, 0, 5))
 	{
-	case 1:
-	  *len = 1;
-	  return "asr %0";
-
-	case 2:
-	  *len = 2;
-	  return ("asr %0" CR_TAB
-		  "asr %0");
-
-	case 3:
-	  *len = 3;
-	  return ("asr %0" CR_TAB
-		  "asr %0" CR_TAB
-		  "asr %0");
-
-	case 4:
-	  *len = 4;
-	  return ("asr %0" CR_TAB
-		  "asr %0" CR_TAB
-		  "asr %0" CR_TAB
-		  "asr %0");
-
-	case 5:
-	  *len = 5;
-	  return ("asr %0" CR_TAB
-		  "asr %0" CR_TAB
-		  "asr %0" CR_TAB
-		  "asr %0" CR_TAB
-		  "asr %0");
-
-	case 6:
-	  *len = 4;
-	  return ("bst %0,6"  CR_TAB
-		  "lsl %0"    CR_TAB
-		  "sbc %0,%0" CR_TAB
-		  "bld %0,0");
-
-	default:
-	  if (INTVAL (operands[2]) < 8)
-	    break;
-
-	  /* fall through */
-
-	case 7:
-	  *len = 2;
-	  return ("lsl %0" CR_TAB
-		  "sbc %0,%0");
+	  for (int i = 0; i < offs; ++i)
+	    avr_asm_len ("asr %0", operands, plen, 1);
+	  return "";
+	}
+      else if (offs == 6)
+	{
+	  return avr_asm_len ("bst %0,6"  CR_TAB
+			      "lsl %0"    CR_TAB
+			      "sbc %0,%0" CR_TAB
+			      "bld %0,0", operands, plen, 4);
+	}
+      else if (offs >= 7)
+	{
+	  rtx xop[2] = { operands[0], operands[1] };
+	  if (! reg_unused_after (insn, xop[1]))
+	    {
+	      avr_asm_len ("mov %0,%1", xop, plen, 1);
+	      xop[1] = xop[0];
+	    }
+	  return avr_asm_len ("lsl %1" CR_TAB
+			      "sbc %0,%0", xop, plen, 2);
 	}
     }
   else if (CONSTANT_P (operands[2]))
     fatal_insn ("internal compiler error.  Incorrect shift:", insn);
 
   out_shift_with_cnt ("asr %0",
-		      insn, operands, len, 1);
+		      insn, operands, plen, 1);
   return "";
 }
 
@@ -9359,7 +9482,7 @@ avr_out_insert_notbit (rtx_insn *insn, rtx op[], int *plen)
    -  <Shift> is any of: ASHIFT, LSHIFTRT, ASHIFTRT.
    -  The result depends on XOP[1].
    or  XOP[0] = XOP[1] & XOP[2]  where
-   -  XOP[0] and XOP[1] have the same mode which is one of: HI, PSI, SI.
+   -  XOP[0] and XOP[1] have the same mode which is one of: QI, HI, PSI, SI.
    -  XOP[2] is an exact const_int power of 2.
    Returns "".
    PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
@@ -10449,6 +10572,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_EXTR_NOT: avr_out_extr_not (insn, op, &len); break;
     case ADJUST_LEN_EXTR: avr_out_extr (insn, op, &len); break;
     case ADJUST_LEN_INSV: avr_out_insv (insn, op, &len); break;
+    case ADJUST_LEN_SET_SOME: avr_out_set_some (insn, op, &len); break;
 
     case ADJUST_LEN_PLUS: avr_out_plus (insn, op, &len); break;
     case ADJUST_LEN_PLUS_EXT: avr_out_plus_ext (insn, op, &len); break;
@@ -12080,8 +12204,6 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1,
 					      speed);
 	    }
-	  else if (IN_RANGE (INTVAL (XEXP (x, 1)), -63, 63))
-	    *total = COSTS_N_INSNS (1);
 	  else
 	    *total = COSTS_N_INSNS (2);
 	  break;
@@ -12093,8 +12215,6 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1,
 					      speed);
 	    }
-	  else if (IN_RANGE (INTVAL (XEXP (x, 1)), -63, 63))
-	    *total = COSTS_N_INSNS (2);
 	  else
 	    *total = COSTS_N_INSNS (3);
 	  break;
@@ -12106,8 +12226,6 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1,
 					      speed);
 	    }
-	  else if (IN_RANGE (INTVAL (XEXP (x, 1)), -63, 63))
-	    *total = COSTS_N_INSNS (1);
 	  else
 	    *total = COSTS_N_INSNS (4);
 	  break;

@@ -131,6 +131,14 @@ mfract-convert-truncate
 Target Mask(FRACT_CONV_TRUNC)
 Allow to use truncation instead of rounding towards zero for fractional fixed-point types.
 
+mfuse-move
+Target Alias(mfuse-move=, 23, 0) Optimization
+Optimization. Run a post-reload pass that tweaks move instructions.
+
+mfuse-move=
+Target Joined RejectNegative UInteger Var(avr_fuse_move) Init(0) Optimization IntegerRange(0, 23)
+-mfuse-move=<0,23>	Optimization. Run a post-reload pass that tweaks move instructions.
+
 mabsdata
 Target Mask(ABSDATA)
 Assume that all data in static storage can be accessed by LDS / STS instructions.  This option is only useful for reduced Tiny devices like ATtiny40.

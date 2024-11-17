@@ -178,6 +178,11 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const0_operand")))
 
+;; Returns true if OP is either the constant zero or an upper register.
+(define_predicate "dreg_or_0_operand"
+  (ior (match_operand 0 "d_register_operand")
+       (match_operand 0 "const0_operand")))
+
 ;; Returns 1 if OP is a SYMBOL_REF.
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
@@ -374,3 +379,7 @@
   (ior (match_code "const_fixed")
        (match_code "const_double")
        (match_operand 0 "immediate_operand")))
+
+(define_predicate "set_some_operation"
+  (and (match_code "parallel")
+       (match_test "avr_set_some_operation (op)")))

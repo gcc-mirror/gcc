@@ -898,7 +898,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
--mbranch-cost=@var{cost}  -mfuse-add=@var{level}
+-mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}
 -mn_flash=@var{size}  -mno-interrupts
@@ -24087,6 +24087,18 @@ Optimize indirect memory accesses on reduced Tiny devices.
 The default uses @code{@var{level}=1} for optimizations @option{-Og}
 and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
 Valid values for @var{level} are @code{0}, @code{1} and @code{2}.
+
+@opindex mfuse-move
+@item -mfuse-move
+@itemx -mno-fuse-move
+@itemx -mfuse-move=@var{level}
+Run a post reload optimization pass that tries to fuse move instructions
+and to split multi-byte instructions into 8-bit operations.
+The default uses @code{@var{level}=3} for optimization @option{-O1},
+and @code{@var{level}=23} for higher optimizations.
+Valid values for @var{level} are in the range @code{0} @dots{} @code{23}
+which is a 3:2:2:2 mixed radix value.  Each digit controls some
+aspect of the optimization.
 
 @opindex mdouble
 @opindex mlong-double

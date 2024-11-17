@@ -188,6 +188,11 @@
   (and (match_code "const_int")
        (match_test "avr_popcount_each_byte (op, 4, (1<<0) | (1<<1) | (1<<8))")))
 
+(define_constraint "Cb1"
+  "Constant 1-byte integer that has exactly 1 bit set."
+  (and (match_code "const_int")
+       (match_test "single_one_operand (op, QImode)")))
+
 (define_constraint "Cb2"
   "Constant 2-byte integer that has exactly 1 bit set."
   (and (match_code "const_int")

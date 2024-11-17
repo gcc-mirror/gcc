@@ -19,6 +19,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_ARRAY
 #define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
@@ -41,6 +42,3183 @@
 #include "cfgrtl.h"
 #include "context.h"
 #include "tree-pass.h"
+#include "insn-attr.h"
+
+
+#define CONST_INT_OR_FIXED_P(X) (CONST_INT_P (X) || CONST_FIXED_P (X))
+
+#define FIRST_GPR (AVR_TINY ? REG_18 : REG_2)
+
+namespace
+{
+
+/////////////////////////////////////////////////////////////////////////////
+// Before we start with the very code, introduce some helpers that are
+// quite generic, though up to now only avr-fuse-add makes use of them.
+
+/* Get the next / previous NONDEBUG_INSN_P after INSN in basic block BB.
+   This assumes we are in CFG layout mode so that BLOCK_FOR_INSN()
+   can be used.  */
+
+static rtx_insn *
+next_nondebug_insn_bb (basic_block bb, rtx_insn *insn, bool forward = true)
+{
+  while (insn)
+    {
+      insn = forward ? NEXT_INSN (insn) : PREV_INSN (insn);
+
+      if (insn && NONDEBUG_INSN_P (insn))
+	return BLOCK_FOR_INSN (insn) == bb ? insn : nullptr;
+    }
+
+  return insn;
+}
+
+static rtx_insn *
+prev_nondebug_insn_bb (basic_block bb, rtx_insn *insn)
+{
+  return next_nondebug_insn_bb (bb, insn, false);
+}
+
+
+/* Like `single_set' with the addition that it sets REGNO_SCRATCH when the
+   insn is a single_set with a QImode scratch register.  When the insn has
+   no QImode scratch or just a scratch:QI, then set REGNO_SCRATCH = 0.
+   The assumption is that the function is only used after the splits for
+   REG_CC so that the pattern is a parallel with 2 elements (INSN has no
+   scratch operand), or 3 elements (INSN does have a scratch operand).  */
+
+static rtx
+single_set_with_scratch (rtx_insn *insn, int &regno_scratch)
+{
+  regno_scratch = 0;
+
+  if (! INSN_P (insn))
+    return NULL_RTX;
+
+  rtx set, clo, reg, pat = PATTERN (insn);
+
+  // Search for SET + CLOBBER(QI) + CLOBBER(CC).
+  if (GET_CODE (pat) == PARALLEL
+      && XVECLEN (pat, 0) == 3
+      && GET_CODE (set = XVECEXP (pat, 0, 0)) == SET
+      // At this pass, all insn are endowed with clobber(CC).
+      && GET_CODE (clo = XVECEXP (pat, 0, 2)) == CLOBBER
+      && GET_MODE (XEXP (clo, 0)) == CCmode
+      && GET_CODE (clo = XVECEXP (pat, 0, 1)) == CLOBBER
+      && REG_P (reg = XEXP (clo, 0))
+      && GET_MODE (reg) == QImode)
+    {
+      regno_scratch = REGNO (reg);
+      return set;
+    }
+
+  return single_set (insn);
+}
+
+// Emit pattern PAT, and ICE when the insn is not valid / not recognized.
+
+static rtx_insn *
+emit_valid_insn (rtx pat)
+{
+  rtx_insn *insn = emit_insn (pat);
+
+  if (! valid_insn_p (insn))  // Also runs recog().
+    fatal_insn ("emit unrecognizable insn", insn);
+
+  return insn;
+}
+
+// Emit a single_set with an optional scratch operand.  This function
+// asserts that the new insn is valid and recognized.
+
+static rtx_insn *
+emit_valid_move_clobbercc (rtx dest, rtx src, rtx scratch = NULL_RTX)
+{
+  rtx pat = scratch
+    ? gen_gen_move_clobbercc_scratch (dest, src, scratch)
+    : gen_gen_move_clobbercc (dest, src);
+
+  return emit_valid_insn (pat);
+}
+
+// One bit for each GRP in REG_0 ... REG_31.
+using gprmask_t = uint32_t;
+
+// True when this is a valid GPR number for ordinary code, e.g.
+// registers wider than 2 bytes have to start at an exven regno.
+// TMP_REG and ZERO_REG are not considered valid, even though
+// the C source can use register vars with them.
+static inline bool
+gpr_regno_p (int regno, int n_bytes = 1)
+{
+  return (IN_RANGE (regno, FIRST_GPR, REG_32 - n_bytes)
+	  // Size in { 1, 2, 3, 4, 8 } bytes.
+	  && ((1u << n_bytes) & 0x11e)
+	  // Registers >= 2 bytes start at an even regno.
+	  && (n_bytes == 1 || regno % 2 == 0));
+}
+
+// There are cases where the C source defines local reg vars
+// for R1 etc.  The assumption is that this is handled before
+// calling this function, e.g. by skipping code when a register
+// overlaps with a fixed register.
+static inline gprmask_t
+regmask (int regno, int size)
+{
+  gcc_checking_assert (gpr_regno_p (regno, size));
+  gprmask_t bits = (1u << size) - 1;
+
+  return bits << regno;
+}
+
+// Mask for hard register X that's some GPR, including fixed regs like R0.
+static gprmask_t
+regmask (rtx x)
+{
+  gcc_assert (REG_P (x));
+  gprmask_t bits = (1u << GET_MODE_SIZE (GET_MODE (x))) - 1;
+
+  return bits << REGNO (x);
+}
+
+
+// Whether X has bits in the range [B0 ... B1]
+static inline bool
+has_bits_in (gprmask_t x, int b0, int b1)
+{
+  if (b0 > b1 || b0 > 31 || b1 < 0)
+    return false;
+
+  const gprmask_t m = (2u << (b1 - b0)) - 1;
+  return x & (m << b0);
+}
+
+
+template<typename T>
+T bad_case ()
+{
+  gcc_unreachable ();
+}
+
+#define select false ? bad_case
+
+
+namespace AVRasm
+{
+  // Returns true when we a scratch reg is needed in order to get
+  // (siged or unsigned) 8-bit value VAL in some GPR.
+  // When it's about costs rather than the sheer requirement for a
+  // scratch, see also AVRasm::constant_cost.
+  static inline bool ldi_needs_scratch (int regno, int val)
+  {
+    return regno < REG_16 && IN_RANGE (val & 0xff, 2, 254);
+  }
+
+  // Return a byte value x >= 0 such that  x <code> y == x for all y, or -1.
+  static inline int neutral_val (rtx_code code)
+  {
+    return select<int>()
+      : code == AND ? 0xff
+      : code == IOR ? 0x00
+      : code == XOR ? 0x00
+      : code == PLUS ? 0
+      : -1;
+  }
+
+  // When there exists a value x such that the image of the function
+  //   y -> y <code> x  has order 1, then return that x.  Else return -1.
+  static inline int image1_val (rtx_code code)
+  {
+    return select<int>()
+      : code == AND ? 0x00
+      : code == IOR ? 0xff
+      : -1;
+  }
+
+  // Cost of 8-bit binary operation  x o= VAL  provided a scratch is
+  // available as needed.
+  static int constant_cost (rtx_code code, int regno, uint8_t val)
+  {
+    bool needs_scratch_p = select<bool>()
+      : code == PLUS ? regno < REG_16 && val != 1 && val != 0xff
+      : code == XOR ? val != 0xff && (regno < REG_16 || val != 0x80)
+      : code == IOR ? regno < REG_16
+      : code == AND ? regno < REG_16 && val != 0
+      : code == SET ? regno < REG_16 && val != 0
+      : bad_case<bool> ();
+
+    return val == AVRasm::neutral_val (code)
+      ? 0
+      : 1 + needs_scratch_p;
+  }
+}; // AVRasm
+
+
+// Returns the mode mask for a mode size of SIZE bytes.
+static uint64_t size_to_mask (int size)
+{
+  return ((uint64_t) 2 << (8 * size - 1)) - 1;
+}
+
+// Return the scalar int mode for a modesize of 1, 2, 3, 4 or 8 bytes.
+static machine_mode size_to_mode (int size)
+{
+  return select<machine_mode>()
+    : size == 1 ? QImode
+    : size == 2 ? HImode
+    : size == 3 ? PSImode
+    : size == 4 ? SImode
+    : size == 8 ? DImode
+    : bad_case<machine_mode> ();
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Optimize moves after reload: -mfuse-move=<0,23>
+
+/* The purpose of this pass is to perform optimizations after reload
+   like the following ones:
+
+   Without optimization		     |	 With optimization
+   ====================		     |	 =================
+
+   long long fn_zero (void)	    (1)
+   {
+      return 0;
+   }
+
+   ldi r18, 0	  ;  movqi_insn	     |	 ldi r18, 0	;  movqi_insn
+   ldi r19, 0	  ;  movqi_insn	     |	 ldi r19, 0	;  movqi_insn
+   ldi r20, 0	  ;  movqi_insn	     |	 movw r20, r18	;  *movhi
+   ldi r21, 0	  ;  movqi_insn	     |
+   ldi r22, 0	  ;  movqi_insn	     |	 movw r22, r18	;  *movhi
+   ldi r23, 0	  ;  movqi_insn	     |
+   ldi r24, 0	  ;  movqi_insn	     |	 movw r24, r18	;  *movhi
+   ldi r25, 0	  ;  movqi_insn	     |
+   ret				     |	 ret
+
+   int fn_eq0 (char c)		    (2)
+   {
+       return c == 0;
+   }
+
+   mov r18, r24	   ;  movqi_insn     |	 mov r18, r24	;  movqi_insn
+   ldi r24, 1	   ;  *movhi	     |	 ldi r24, 1	;  *movhi
+   ldi r25, 0			     |	 ldi r25, 0
+   cp  r18, ZERO   ;  cmpqi3	     |	 cpse r18, ZERO ;  peephole
+   breq .+4	   ;  branch	     |
+   ldi r24, 0	   ;  *movhi	     |	 ldi r24, 0	;  movqi_insn
+   ldi r25, 0			     |
+   ret				     |	 ret
+
+   int a, b;			    (3)
+
+   void fn_store_ab (void)
+   {
+       a = 1;
+       b = -1;
+   }
+
+   ldi r24, 1	   ;  *movhi	     |	ldi r24, 1	 ;  *movhi
+   ldi r25, 0			     |	ldi r25, 0
+   sts a+1, r25	   ;  *movhi	     |	sts a+1, r25	 ;  *movhi
+   sts a,   r24			     |	sts a,	 r24
+   ldi r24, -1	   ;  *movhi	     |	sbiw r24, 2	 ;  *addhi3
+   ldi r25, -1			     |
+   sts b+1, r25	   ;  *movhi	     |	sts b+1, r25	 ;  *movhi
+   sts b,   r24			     |	sts b,	 r24
+   ret				     |	ret
+
+   unsigned fn_crc (unsigned x, unsigned y)   (4)
+   {
+       for (char i = 8; i--; x <<= 1)
+	   y ^= (x ^ y) & 0x80 ? 79U : 0U;
+       return y;
+   }
+
+   movw r18, r24   ;  *movhi	     |	movw r18, r24	 ;  *movhi
+   movw r24, r22   ;  *movhi	     |	movw r24, r22	 ;  *movhi
+   ldi	r22, 8	   ;  movqi_insn     |	ldi  r22, 8	 ;  movqi_insn
+  .L13:				     | .L13:
+   movw r30, r18   ;  *movhi	     |	movw r30, r18	 ;  *movhi
+   eor	r30, r24   ;  *xorqi3	     |	eor  r30, r24	 ;  *xorqi3
+   eor	r31, r25   ;  *xorqi3	     |	eor  r31, r25	 ;  *xorqi3
+   mov	r20, r30   ;  *andhi3	     |	mov  r20, r30	 ;  *andqi3
+   andi r20, 1<<7		     |	andi r20, 1<<7
+   clr	r21			     |
+   sbrs r30, 7	   ;  *sbrx_branchhi |	sbrc r30, 7	 ;  *sbrx_branchhi
+   rjmp .+4			     |
+   ldi	r20, 79	   ;  movqi_insn     |	ldi  r20, 79	 ;  movqi_insn
+   ldi	r21, 0	   ;  movqi_insn     |
+   eor	r24, r20   ;  *xorqi3	     |	eor r24, r20	 ;  *xorqi3
+   eor	r25, r21   ;  *xorqi3	     |
+   lsl	r18	   ;  *ashlhi3_const |	lsl  r18	 ;  *ashlhi3_const
+   rol	r19			     |	rol  r19
+   subi r22, 1	   ;  *op8.for.cczn.p|	subi r22, 1	 ;  *op8.for.cczn.plus
+   brne .L13	   ;  branch_ZN	     |	brne .L13	 ;  branch_ZN
+   ret				     |	ret
+
+   #define SPDR (*(uint8_t volatile*) 0x2c)     (5)
+
+   void fn_PR49807 (long big)
+   {
+       SPDR = big >> 24;
+       SPDR = big >> 16;
+       SPDR = big >> 8;
+       SPDR = big;
+   }
+
+   movw r20, r22   ;  *movhi	     |	movw r20, r22	 ;  *movhi
+   movw r22, r24   ;  *movhi	     |	movw r22, r24	 ;  *movhi
+   mov	r24, r23   ;  *ashrsi3_const |
+   clr	r27			     |
+   sbrc r24,7			     |
+   com	r27			     |
+   mov	r25, r27		     |
+   mov	r26, r27		     |
+   out	0xc, r24   ;  movqi_insn     |	out 0xc, r23	 ;  movqi_insn
+   movw r24, r22   ;  *ashrsi3_const |
+   clr	r27			     |
+   sbrc r25, 7			     |
+   com	r27			     |
+   mov	r26, r27		     |
+   out	0xc, r24   ;  movqi_insn     |	out 0xc, r24	 ;  movqi_insn
+   clr	r27	   ;  *ashrsi3_const |
+   sbrc r23, 7			     |
+   dec	r27			     |
+   mov	r26, r23		     |
+   mov	r25, r22		     |
+   mov	r24, r21		     |
+   out	0xc, r24   ;  movqi_insn     |	out 0xc, r21	 ;  movqi_insn
+   out	0xc, r20   ;  movqi_insn     |	out 0xc, r20	 ;  movqi_insn
+   ret				     |	ret
+
+   The insns of each basic block are traversed from first to last.
+   Each insn is optimized on its own, or may be fused with the
+   previous insn like in example (1).
+      As the insns are traversed, memento_t keeps track of known values
+   held in the GPRs (general purpse registers) R2 ... R31 by simulating
+   the effect of the current insn in memento_t.apply_insn().
+      The basic blocks are traversed in reverse post order so as to
+   maximize the chance that GPRs from all preceding blocks are known,
+   which is the case in example (2).  The traversal of the basic block
+   is performed by bbinfo_t.optimize_one_function().
+      bbinfo_t.optimize_one_block() traverses the insns of a BB and tries
+   the following optimizations:
+
+   bbinfo_t::try_fuse_p
+      Try to fuse two 8-bit insns to one MOVW like in (1).
+
+   bbinfo_t::try_simplify_p
+      Only perform the simplest optimizations that don't impede the
+      traceability of the generated code, which are:
+      - Transform operations like  Rn = Rn=0 ^ Rm  to  Rn = Rm.
+      - Remove insns that are no-ops like  Rn = Rn ^ Rm=0.
+
+   bbinfo_t::try_bin_arg1_p
+      In insns like  EOR Rn, arg1  where arg1 is known or is a reg that
+      dies in the insn, *and* there is a different register Rm that's
+      known to contain the same value, then arg1 is replaced with Rm.
+
+   bbinfo_t::try_split_ldi_p
+      Tries to simplify loads of constants like in examples (1), (2) and (3).
+      It may use arithmetic instructions like AND with registers that
+      are holding known values when this is profitable.
+
+   bbinfo_t::try_split_any_p
+      Split all insns where the operation can be performed on individual
+      bytes, like andsi3.  In example (4) the andhi3 can be optimized
+      to an andqi3.
+*/
+
+
+// A basic block with additional information like the GPR state.
+// The main entry point for the pass.  Runs various strategies
+// like try_fuse, try_simplify, try_bin_arg1, try_split_ldi, try_split_any
+// depending on -mfuse-add=<0,11>.
+struct bbinfo_t;
+
+// Additional insn information on a  REG = non-memory  single_set insn
+// for quick access.  Only valid when the m_size member is non-zero.
+struct insninfo_t;
+
+// Helper classes with data needed by the try_xxx optimizers.
+struct optimize_data_t;
+struct insn_optimize_data_t;
+
+// Records which GPRs R0 ... R31 are holding a known value,
+// and which values these are.
+struct memento_t;
+
+// Abstract Interpretation of expressions.
+// absint_val_t represents an 8-bit value that equals the content of
+//    some GPR, or equals some known value (or both, or none of them).
+// absint_byte_t represents an 8-bit entity that is equivalent to
+//    an absint_val_t, or is equivalent to some (unary or binary) operation
+//    on absint_val_t's like NOT, AND, IOR, XOR that operate bit-wise (and
+//    hence also byte-wise).
+// absint_t represents an array of absint_byte_t's.  When some insn is applied
+//    to a GPR state, then memento_t.apply_insn() represents the RHS of
+//    a single_set as an absint_t, and then applies that result to the GPRs.
+//    For example, in  int y = x << 8  the representation is  x = [r25; r24]
+//    and  RHS = [r24; 00].
+struct absint_val_t;
+class absint_byte_t;
+struct absint_t;
+
+// A ply_t is a potential step towards an optimal sequence to load a constant
+// value into a multi-byte register.  A ply_t loosely relates to one AVR
+// instruction, but it may also represent a sequence of instructions.
+// For example, loading a constant into a lower register when no sratch reg
+// is available may take up to 4 instructions.  There is no 1:1 correspondence
+// to insns, either.
+//    try_split_ldi determines the best sequence of ply_t's by means of a
+// brute-force search with tree pruning:  It's much too complicated to
+// construct a good sequence directly, but there are many conditions that
+// good sequence will satisfy, implemented in bbinfo_t::find_plies.
+struct ply_t;
+struct plies_t;
+
+// The maximal number of ply_t's in any conceivable optimal solution
+// that is better than what a vanilla mov<mode> generates.
+// This is 6 for modes <= 4 and 8 for modes == 8.
+static constexpr int N_BEST_PLYS = 8;
+
+#define FUSE_MOVE_MAX_MODESIZE 8
+
+#include "avr-passes-fuse-move.h"
+
+// Static members.
+
+gprmask_t memento_t::fixed_regs_mask;
+
+// Statistics.
+int ply_t::n_ply_ts;
+int ply_t::max_n_ply_ts;
+int plies_t::max_n_plies;
+
+bbinfo_t *bbinfo_t::bb_info;
+int bbinfo_t::tick;
+bbinfo_t::find_plies_data_t *bbinfo_t::fpd;
+
+// Which optimizations should be performed.
+bool bbinfo_t::try_fuse_p;
+bool bbinfo_t::try_bin_arg1_p;
+bool bbinfo_t::try_split_ldi_p;
+bool bbinfo_t::try_split_any_p;
+bool bbinfo_t::try_simplify_p;
+bool bbinfo_t::use_arith_p;
+bool bbinfo_t::use_set_some_p;
+
+
+// Abstract Interpretation of expressions.
+// A bunch of absint_byte_t's.
+
+struct absint_t
+{
+  static constexpr int eq_size = FUSE_MOVE_MAX_MODESIZE;
+  std::array<absint_byte_t, eq_size> eq;
+
+  rtx xexp = NULL_RTX;
+  rtx xexp_new = NULL_RTX;
+
+  absint_byte_t &operator[] (int i)
+  {
+    gcc_assert (IN_RANGE (i, 0, absint_t::eq_size - 1));
+    return eq[i];
+  }
+
+  const absint_byte_t &operator[] (int i) const
+  {
+    gcc_assert (IN_RANGE (i, 0, absint_t::eq_size - 1));
+    return eq[i];
+  }
+
+  absint_t () {}
+
+  absint_t (rtx xold)
+    : xexp(xold)
+  {}
+
+  absint_t (rtx xold, rtx xnew, int n_bytes)
+    : xexp(xold), xexp_new(xnew)
+  {
+    gcc_assert (n_bytes <= eq_size);
+    if (xnew)
+      for (int i = 0; i < n_bytes; ++i)
+	eq[i].learn_val8 (avr_uint8 (xnew, i));
+  }
+
+  // CODE != UNKNOWN: Maximal index of a byte with code CODE, or -1.
+  // CODE == UNKNOWN: Maximal index of a byte with known CODE, or -1.
+  int max_knows (rtx_code code = UNKNOWN) const
+  {
+    for (int i = eq_size - 1; i >= 0; --i)
+      if ((code == UNKNOWN && ! eq[i].can (UNKNOWN))
+	  || (code != UNKNOWN && eq[i].can (code)))
+	return i;
+    return -1;
+  }
+
+  // CODE != UNKNOWN: Maximal i such that all bytes < i have code CODE.
+  // CODE == UNKNOWN: Maximal i such that all bytes < i have code != UNKNOWN.
+  int end_knows (rtx_code code = UNKNOWN) const
+  {
+    for (int i = 0; i < eq_size; ++i)
+      if ((code == UNKNOWN && eq[i].can (UNKNOWN))
+	  || (code != UNKNOWN && ! eq[i].can (code)))
+	return i;
+    return eq_size;
+  }
+
+  // Number of bytes for which there is usable information.
+  int popcount () const
+  {
+    int pop = 0;
+    for (int i = 0; i < eq_size; ++i)
+      pop += ! eq[i].can (UNKNOWN);
+    return pop;
+  }
+
+  // Get the value under the assumption that all eq[].val8 are known.
+  uint64_t get_value (int n_bytes, bool strict = true) const
+  {
+    gcc_assert (IN_RANGE (n_bytes, 1, eq_size));
+    gcc_assert (! strict || end_knows (CONST_INT) >= n_bytes);
+
+    uint64_t val = 0;
+    for (int i = n_bytes - 1; i >= 0; --i)
+      val = 256 * val + eq[i].val8 (strict);
+    return val;
+  }
+
+  // Get n-byte value as a const_int, or NULL_RTX when (partially) unknown.
+  rtx get_value_as_const_int (int n_bytes) const
+  {
+    gcc_checking_assert (gpr_regno_p (REG_24, n_bytes));
+
+    if (end_knows (CONST_INT) < n_bytes)
+      return NULL_RTX;
+
+    const uint64_t val = get_value (n_bytes);
+    const machine_mode mode = size_to_mode (n_bytes);
+
+    return gen_int_mode (val, mode);
+  }
+
+  // Find a 16-bit register that contains the same value like held
+  // in positions I1 and I2 (if any).  Return 0 when nothing appropriate
+  // for a MOVW is found.
+  int reg16_with_value (int i1, int i2, const memento_t &memo) const
+  {
+    if (i1 == (i2 ^ 1))
+      {
+	const int lo8 = eq[i1 & ~1].val8 (false);
+	const int hi8 = eq[i1 | 1].val8 (false);
+	if (lo8 >= 0 && hi8 >= 0)
+	  return memo.reg16_with_value (lo8, hi8, 0);
+      }
+    return 0;
+  }
+
+  // When X is a REG rtx with a known content as of MEMO, then return
+  // the respective value as a constant for mode MODE.
+  // If X is NULL_RTX, or not a REG, or not known, then return NULL_RTX.
+  static rtx maybe_fold (rtx x, const memento_t &memo)
+  {
+    int n_bytes;
+
+    if (x != NULL_RTX
+	&& REG_P (x)
+	&& (n_bytes = GET_MODE_SIZE (GET_MODE (x))) <= FUSE_MOVE_MAX_MODESIZE
+	&& gpr_regno_p (REGNO (x), n_bytes))
+      {
+	rtx xval = memo.get_value_as_const_int (REGNO (x), n_bytes);
+	if (xval)
+	  return avr_chunk (GET_MODE (x), xval, 0);
+      }
+
+    return NULL_RTX;
+  }
+
+  // Try to conclude about the bytes that comprise X.  DEST_MODE is the
+  // context mode that is used when X is CONST_INT and has VOIDmode.
+  static absint_t explore (rtx x, const memento_t &memo,
+			   machine_mode dest_mode = VOIDmode)
+  {
+    const rtx_code code = GET_CODE (x);
+    bool worth_dumping = dump_file && (dump_flags & TDF_FOLDING);
+
+    const machine_mode mode = GET_MODE (x) == VOIDmode
+      ? dest_mode
+      : GET_MODE (x);
+
+    const int n_bytes = mode == VOIDmode && CONST_INT_P (x)
+      ? absint_t::eq_size
+      : GET_MODE_SIZE (mode);
+
+    if (! IN_RANGE (n_bytes, 1, absint_t::eq_size))
+      return absint_t (x);
+
+    // Eat our own dog food as produced by try_plit_ldi.
+
+    rtx xop0 = BINARY_P (x) || UNARY_P (x) ? XEXP (x, 0) : NULL_RTX;
+    rtx xval0 = xop0 && CONST_INT_OR_FIXED_P (xop0)
+      ? xop0
+      : absint_t::maybe_fold (xop0, memo);
+
+    if (UNARY_P (x)
+	&& REG_P (xop0)
+	&& GET_MODE (xop0) == mode
+	&& xval0)
+      {
+	rtx y = simplify_unary_operation (code, mode, xval0, mode);
+	if (y && CONST_INT_OR_FIXED_P (y))
+	  return absint_t (x, y, n_bytes);
+      }
+
+    rtx xop1 = BINARY_P (x) ? XEXP (x, 1) : NULL_RTX;
+    rtx xval1 = xop1 && CONST_INT_OR_FIXED_P (xop1)
+      ? xop1
+      : absint_t::maybe_fold (xop1, memo);
+
+    if (BINARY_P (x)
+	&& xval0 && xval1)
+      {
+	rtx y = simplify_binary_operation (code, mode, xval0, xval1);
+	if (y && CONST_INT_OR_FIXED_P (y))
+	  return absint_t (x, y, n_bytes);
+      }
+
+    // No fold to a constant value was found:
+    // Look at the individual bytes more closely.
+
+    absint_t ai (x);
+
+    switch (code)
+      {
+      default:
+	worth_dumping = false;
+	break;
+
+      case REG:
+	if (END_REGNO (x) <= REG_32
+	    && ! (regmask (x) & memento_t::fixed_regs_mask))
+	  for (unsigned r = REGNO (x); r < END_REGNO (x); ++r)
+	    {
+	      ai[r - REGNO (x)].learn_regno (r);
+	      if (memo.knows (r))
+		ai[r - REGNO (x)].learn_val8 (memo.value (r));
+	    }
+	break;
+
+      CASE_CONST_UNIQUE:
+	ai = absint_t (x, x, n_bytes);
+	break;
+
+      case ASHIFT:
+      case ASHIFTRT:
+      case LSHIFTRT:
+      case ROTATE:
+      case ROTATERT:
+	if ((CONST_INT_P (xop1) && INTVAL (xop1) >= 8)
+	    // DImode shift offsets for transparent calls are shipped in R16.
+	    || n_bytes == 8)
+	  ai = explore_shift (x, memo);
+	break;
+
+      case AND:
+      case IOR:
+      case XOR:
+	{
+	  const absint_t ai0 = absint_t::explore (xop0, memo, mode);
+	  const absint_t ai1 = absint_t::explore (xop1, memo, mode);
+	  for (int i = 0; i < n_bytes; ++i)
+	    ai[i] = absint_byte_t (code, ai0[i], ai1[i]);
+	}
+	break;
+
+      case NOT:
+	{
+	  const absint_t ai0 = absint_t::explore (xop0, memo);
+	  for (int i = 0; i < n_bytes; ++i)
+	    ai[i] = absint_byte_t (NOT, ai0[i]);
+	}
+	break;
+
+      case ZERO_EXTEND:
+      case SIGN_EXTEND:
+	{
+	  const absint_t ai0 = absint_t::explore (xop0, memo);
+	  const int ai0_size = GET_MODE_SIZE (GET_MODE (xop0));
+	  const absint_byte_t b_signs = ai0[ai0_size - 1].get_signs (code);
+	  for (int i = 0; i < n_bytes; ++i)
+	    ai[i] = i < ai0_size ? ai0[i] : b_signs;
+	}
+	break;
+
+      case PLUS:
+      case MINUS:
+	if (SCALAR_INT_MODE_P (mode)
+	    || ALL_SCALAR_FIXED_POINT_MODE_P (mode))
+	  {
+	    const absint_t ai0 = absint_t::explore (xop0, memo, mode);
+	    const absint_t ai1 = absint_t::explore (xop1, memo, mode);
+	    if (code == MINUS)
+	      for (int i = 0; i < n_bytes && ai1[i].val8 (false) == 0; ++i)
+		ai[i] = ai0[i];
+
+	    if (code == PLUS)
+	      for (int i = 0; i < n_bytes; ++i)
+		{
+		  if (ai0[i].val8 (false) == 0)
+		    ai[i] = ai1[i];
+		  else if (ai1[i].val8 (false) == 0)
+		    ai[i] = ai0[i];
+		  else
+		    {
+		      ai[i] = absint_byte_t (code, ai0[i], ai1[i]);
+		      break;
+		    }
+		}
+
+	    if (code == PLUS
+		&& GET_CODE (xop0) == ZERO_EXTEND
+		&& CONST_INT_P (xop1))
+	      {
+		rtx exop = XEXP (xop0, 0);
+		int exsize = GET_MODE_SIZE (GET_MODE (exop));
+		rtx lo_xop1 = avr_chunk (GET_MODE (exop), xop1, 0);
+		if (lo_xop1 == const0_rtx)
+		  for (int i = exsize; i < n_bytes; ++i)
+		    ai[i] = ai1[i];
+	      }
+	  }
+	break; // PLUS, MINUS
+
+      case MULT:
+	if (GET_MODE (xop0) == mode
+	    && SCALAR_INT_MODE_P (mode))
+	  {
+	    // The constant may be located in xop0's zero_extend...
+	    const absint_t ai0 = absint_t::explore (xop0, memo, mode);
+	    const absint_t ai1 = absint_t::explore (xop1, memo, mode);
+	    const int end0 = ai0.end_knows (CONST_INT);
+	    const int end1 = ai1.end_knows (CONST_INT);
+	    const uint64_t mul0 = end0 > 0 ? ai0.get_value (end0) : 1;
+	    const uint64_t mul1 = end1 > 0 ? ai1.get_value (end1) : 1;
+	    // Shifting in off/8 zero bytes from the right.
+	    const int off = mul0 * mul1 != 0 ? ctz_hwi (mul0 * mul1) : 0;
+	    for (int i = 0; i < off / 8; ++i)
+	      ai[i].learn_val8 (0);
+	  }
+	break; // MULT
+
+      case BSWAP:
+	if (GET_MODE (xop0) == mode)
+	  {
+	    const absint_t ai0 = absint_t::explore (xop0, memo);
+	    for (int i = 0; i < n_bytes; ++i)
+	      ai[i] = ai0[n_bytes - 1 - i];
+	  }
+	break;
+      } // switch code
+
+    if (worth_dumping)
+      {
+	avr_dump (";; AI.explore %C:%m ", code, mode);
+	ai.dump ();
+      }
+
+    for (int i = 0; i < n_bytes; ++i)
+      gcc_assert (ai[i].check ());
+
+    return ai;
+  }
+
+  // Helper for the method above.
+  static absint_t explore_shift (rtx x, const memento_t &memo)
+  {
+    absint_t ai (x);
+
+    const rtx_code code = GET_CODE (x);
+    const machine_mode mode = GET_MODE (x);
+    const int n_bytes = GET_MODE_SIZE (mode);
+
+    if (! BINARY_P (x))
+      return ai;
+
+    rtx xop0 = XEXP (x, 0);
+    rtx xop1 = XEXP (x, 1);
+
+    // Look at shift offsets of DImode more closely;
+    // they are in R16 for __lshrdi3 etc.  Patch xop1 on success.
+    if (n_bytes == 8
+	&& ! CONST_INT_P (xop1)
+	&& GET_MODE (xop0) == mode)
+      {
+	const int n_off = GET_MODE_SIZE (GET_MODE (xop1));
+	const absint_t aoff = absint_t::explore (xop1, memo);
+	xop1 = aoff.get_value_as_const_int (n_off);
+      }
+
+    if (! xop1
+	|| GET_MODE (xop0) != mode
+	|| ! IN_RANGE (n_bytes, 1, FUSE_MOVE_MAX_MODESIZE)
+	|| ! CONST_INT_P (xop1)
+	|| ! IN_RANGE (INTVAL (xop1), 8, 8 * n_bytes - 1))
+      return ai;
+
+    const int off = INTVAL (xop1);
+    const absint_t ai0 = absint_t::explore (xop0, memo);
+
+    switch (GET_CODE (x))
+      {
+      default:
+	break;
+
+      case ASHIFT:
+	// Shifting in 0x00's from the right.
+	for (int i = 0; i < off / 8; ++i)
+	  ai[i].learn_val8 (0);
+	break;
+
+      case LSHIFTRT:
+      case ASHIFTRT:
+	{
+	  // Shifting in 0x00's or signs from the left.
+	  absint_byte_t b_signs = ai0[n_bytes - 1].get_signs (GET_CODE (x));
+	  for (int i = n_bytes - off / 8; i < n_bytes; ++i)
+	    ai[i] = b_signs;
+	  if (off == 8 * n_bytes - 1)
+	    if (code == ASHIFTRT)
+	      ai[0] = b_signs;
+	}
+	break;
+      }
+
+    if (off % 8 != 0
+	|| ai0.popcount () == 0)
+      return ai;
+
+    // For shift offsets that are a multiple of 8, record the
+    // action on the constituent bytes.
+
+    // Bytes are moving left by this offset (or zero for "none").
+    const int boffL = select<int>()
+      : code == ROTATE || code == ASHIFT ? off / 8
+      : code == ROTATERT ? n_bytes - off / 8
+      : 0;
+
+    // Bytes are moving right by this offset (or zero for "none").
+    const int boffR = select<int>()
+      : code == ROTATERT || code == ASHIFTRT || code == LSHIFTRT ? off / 8
+      : code == ROTATE ? n_bytes - off / 8
+      : 0;
+
+    if (dump_flags & TDF_FOLDING)
+      {
+	avr_dump (";; AI.explore_shift %C:%m ", code, mode);
+	if (boffL)
+	  avr_dump ("<< %d%s", 8 * boffL, boffL && boffR ? ", " : "");
+	if (boffR)
+	  avr_dump (">> %d", 8 * boffR);
+	avr_dump ("\n");
+      }
+
+    if (boffL)
+      for (int i = 0; i < n_bytes - boffL; ++i)
+	ai[i + boffL] = ai0[i];
+
+    if (boffR)
+      for (int i = boffR; i < n_bytes; ++i)
+	ai[i - boffR] = ai0[i];
+
+    return ai;
+  }
+
+  void dump (const char *msg = nullptr, FILE *f = dump_file) const
+  {
+    if (f)
+      dump (NULL_RTX, msg, f);
+  }
+
+  void dump (rtx dest, const char *msg = nullptr, FILE *f = dump_file) const
+  {
+    if (f)
+      {
+	int regno = dest && REG_P (dest) ? REGNO (dest) : 0;
+
+	msg = msg && msg[0] ? msg : "AI=[%s]\n";
+	const char *const xs = strstr (msg, "%s");
+	gcc_assert (xs);
+
+	fprintf (f, "%.*s", (int) (xs - msg), msg);
+	for (int i = max_knows (); i >= 0; --i)
+	  {
+	    const int sub_regno = eq[i].regno (false /*nonstrict*/);
+	    const bool nop = regno &&  sub_regno == regno + i;
+	    eq[i].dump (nop ? "%s=nop" : "%s", f);
+	    fprintf (f, "%s", i ? "; " : xs + strlen ("%s"));
+	  }
+      }
+  }
+}; // absint_t
+
+
+// Information for a REG = non-memory single_set.
+
+struct insninfo_t
+{
+  // This is an insn that sets the m_size bytes of m_regno to either
+  // - A compile time constant m_isrc (m_code = CONST_INT), or
+  // - The contents of register number m_rsrc (m_code = REG).
+  int m_size;
+  int m_regno;
+  int m_rsrc;
+  rtx_code m_code;
+  uint64_t m_isrc;
+  rtx_insn *m_insn;
+  rtx m_set = NULL_RTX;
+  rtx m_src = NULL_RTX;
+  int m_scratch = 0; // 0 or the register number of a QImode scratch.
+  rtx_code m_old_code = UNKNOWN;
+
+  // Knowledge about the bytes of the SET_SRC:  A byte may have a known
+  // value, may be known to equal some register (e.g. with BSWAP),
+  // or both, or may be unknown.
+  absint_t m_ai;
+
+  // May be set for binary operations.
+  absint_byte_t m_new_src;
+
+  bool init1 (insn_optimize_data_t &, int max_size, const char *purpose);
+
+  // Upper bound for the cost (in words) of a move<mode> insn that
+  // performs a REG = CONST_XXX = .m_isrc move of modesize .m_size.
+  int cost () const;
+  bool combine (const insninfo_t &prev, const insninfo_t &curr);
+  int emit_insn () const;
+
+  bool needs_scratch () const
+  {
+    gcc_assert (m_code == CONST_INT);
+
+    for (int i = 0; i < m_size; ++i)
+      if (AVRasm::ldi_needs_scratch (m_regno, m_isrc >> (8 * i)))
+	return true;
+
+    return false;
+  }
+
+  int hamming (const memento_t &memo) const
+  {
+    gcc_assert (m_code == CONST_INT);
+
+    int h = 0;
+    for (int i = 0; i < m_size; ++i)
+      h += ! memo.have_value (m_regno + i, 1, 0xff & (m_isrc >> (8 * i)));
+
+    return h;
+  }
+
+  // Upper bound for the number of ply_t's of a solution, given Hamming
+  // distance of HAMM (-1 for unknown).
+  int n_best_plys (int hamm = -1) const
+  {
+    gcc_assert (m_code == CONST_INT);
+
+    if (m_size == 8)
+      return (hamm >= 0 ? hamm : m_size);
+    else if (hamm <= 4)
+      return (hamm >= 0 ? hamm : m_size)
+	// The following terms is the max number of MOVWs with a
+	// Hamming difference of less than 2.
+	+ (AVR_HAVE_MOVW && m_regno < REG_14) * m_size / 2
+	+ (AVR_HAVE_MOVW && m_regno == REG_14) * std::max (0, m_size - 2)
+	- (AVR_HAVE_MOVW && hamm == 4 && (uint32_t) m_isrc % 0x10001 == 0);
+    else
+      gcc_unreachable ();
+  }
+}; // insninfo_t
+
+
+struct insn_optimize_data_t
+{
+  // Known values held in GPRs prior to the action of .insn / .ii,
+  memento_t &regs;
+  rtx_insn *insn;
+  insninfo_t ii;
+  bool unused;
+
+  insn_optimize_data_t () = delete;
+
+  insn_optimize_data_t (memento_t &memo)
+    : regs(memo)
+  {}
+}; // insn_optimize_data_t
+
+struct optimize_data_t
+{
+  insn_optimize_data_t prev;
+  insn_optimize_data_t curr;
+
+  // Number >= 0 of new insns that replace the curr insn and maybe also the
+  // prev insn.  -1 when no replacement has been found.
+  int n_new_insns = -1;
+
+  // .prev will be removed provided we have (potentially zero) new insns.
+  bool delete_prev_p = false;
+
+  // Ignore these GPRs when comparing the simulation results of
+  // old and new insn sequences.  Usually some scratch reg(s).
+  gprmask_t ignore_mask = 0;
+
+  optimize_data_t () = delete;
+
+  optimize_data_t (memento_t &prev_regs, memento_t &curr_regs)
+    : prev(prev_regs), curr(curr_regs)
+  {}
+
+  bool try_fuse (bbinfo_t *);
+  bool try_bin_arg1 (bbinfo_t *);
+  bool try_simplify (bbinfo_t *);
+  bool try_split_ldi (bbinfo_t *);
+  bool try_split_any (bbinfo_t *);
+  bool fail (const char *reason);
+  bool emit_signs (int r_sign, gprmask_t);
+  void emit_move_mask (int dest, int src, int n_bytes, gprmask_t &);
+  rtx_insn *emit_sequence (basic_block, rtx_insn *);
+  bool get_2ary_operands (rtx_code &, const absint_byte_t &,
+			  insn_optimize_data_t &, int r_dest,
+			  absint_val_t &, absint_val_t &, int &ex_cost);
+  rtx_insn *emit_and_apply_move (memento_t &, rtx dest, rtx src);
+
+  // M2 is the state of GPRs as the sequence starts; M1 is the state one before.
+  static void apply_sequence (const std::vector<rtx_insn *> &insns,
+			      memento_t &m1, memento_t &m2)
+  {
+    gcc_assert (insns.size () >= 1);
+
+    for (auto &i : insns)
+      {
+	m1 = m2;
+	m2.apply_insn (i, false);
+      }
+  }
+}; // optimize_data_t
+
+
+// Emit INSNS before .curr.insn, replacing .curr.insn and also .prev.insn when
+// .delete_prev_p is on.  Adjusts .curr.regs and .prev.regs accordingly.
+rtx_insn *
+optimize_data_t::emit_sequence (basic_block bb, rtx_insn *insns)
+{
+  gcc_assert (n_new_insns >= 0);
+
+  // The old insns will be replaced by and simulated...
+  const std::vector<rtx_insn *> old_insns = delete_prev_p
+    ? std::vector<rtx_insn *> { prev.insn, curr.insn }
+    : std::vector<rtx_insn *> { curr.insn };
+
+  // ...against the new insns.
+  std::vector<rtx_insn *> new_insns;
+  for (rtx_insn *i = insns; i; i = NEXT_INSN (i))
+    new_insns.push_back (i);
+
+  rtx_insn *new_curr_insn;
+
+  memento_t &m1 = prev.regs;
+  memento_t &m2 = curr.regs;
+
+  if (new_insns.empty ())
+    {
+      if (delete_prev_p)
+	{
+	  m2 = m1;
+	  m1.known = 0;
+	  new_curr_insn = prev_nondebug_insn_bb (bb, prev.insn);
+	}
+      else
+	new_curr_insn = prev.insn;
+    }
+  else
+    {
+      // We are going to emit at least one new insn.  Simulate the effect of
+      // the new sequence and compare it against the effect of the old one.
+      // Both effects must be the same (modulo scratch regs).
+
+      memento_t n1 = m1;
+      memento_t n2 = m2;
+
+      if (delete_prev_p)
+	{
+	  m2 = m1, m1.known = 0;
+	  n2 = n1, n1.known = 0;
+	}
+
+      avr_dump (";; Applying new route...\n");
+      optimize_data_t::apply_sequence (new_insns, n1, n2);
+
+      avr_dump (";; Applying old route...\n");
+      optimize_data_t::apply_sequence (old_insns, m1, m2);
+      avr_dump ("\n");
+
+      if (! m2.equals (n2, ignore_mask))
+	{
+	  // When we come here, then
+	  // - We have a genuine bug, and/or
+	  // - We did produce insns that are opaque to absint_t's explore().
+	  avr_dump ("INCOMPLETE APPLICATION:\n");
+	  m2.dump ("regs old route=%s\n\n");
+	  n2.dump ("regs new route=%s\n\n");
+	  avr_dump ("The new insns are:\n%L", insns);
+
+	  fatal_insn ("incomplete application of insn", insns);
+	}
+
+      // Use N1 and N2 as the new GPR states.  Even though they are equal
+      // modulo ignore_mask, N2 may know more about GPRs when it doesn't
+      // clobber the scratch reg.
+      m1 = n1;
+      m2 = n2;
+
+      emit_insn_before (insns, curr.insn);
+
+      new_curr_insn = new_insns.back ();
+    }
+
+  if (delete_prev_p)
+    SET_INSN_DELETED (prev.insn);
+
+  SET_INSN_DELETED (curr.insn);
+
+  return new_curr_insn;
+}
+
+
+const pass_data avr_pass_data_fuse_move =
+{
+  RTL_PASS,	 // type
+  "",		 // name (will be patched)
+  OPTGROUP_NONE, // optinfo_flags
+  TV_MACH_DEP,	 // tv_id
+  0,		 // properties_required
+  0,		 // properties_provided
+  0,		 // properties_destroyed
+  0,		 // todo_flags_start
+  TODO_df_finish | TODO_df_verify // todo_flags_finish
+};
+
+
+class avr_pass_fuse_move : public rtl_opt_pass
+{
+public:
+  avr_pass_fuse_move (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_fuse_move, ctxt)
+  {
+    this->name = name;
+  }
+
+  unsigned int execute (function *func) final override
+  {
+    if (optimize > 0 && avr_fuse_move > 0)
+      {
+	df_note_add_problem ();
+	df_analyze ();
+
+	bbinfo_t::optimize_one_function (func);
+      }
+
+    return 0;
+  }
+}; // avr_pass_fuse_move
+
+
+// Append PLY to .plies[].  A SET or BLD ply may start a new sequence of
+// SETs or BLDs and gets assigned the overhead of the sequence like for an
+// initial SET or CLT instruction.  A SET ply my be added in two flavours:
+// One that starts a sequence of single_sets, and one that represents the
+// payload of a set_some insn.  MEMO is the GPR state prior to PLY.
+void
+plies_t::add (ply_t ply, const ply_t *prev, const memento_t &memo,
+	      bool maybe_set_some)
+{
+  if (ply.code == SET)
+    {
+      if (prev && prev->code == SET)
+	{
+	  // Proceed with the SET sequence flavour.
+	  ply.in_set_some = prev->in_set_some;
+
+	  if (ply.in_set_some)
+	    ply.scratch = 0;
+	  else if (! ply.scratch && ply.needs_scratch ())
+	    ply.cost += 2;
+	}
+      else
+	{
+	  // The 1st SET in a sequence.  May use set_some to set
+	  // all bytes in one insn, or a bunch of single_sets.
+
+	  // Route1: Bunch of single_sets.
+	  const int ply_cost = ply.cost;
+	  if (! ply.scratch && ply.needs_scratch ())
+	    ply.cost += 2;
+	  ply.in_set_some = false;
+
+	  add (ply);
+
+	  if (maybe_set_some)
+	    {
+	      // Route 2: One set_some: The 1st SET gets all the overhead.
+	      ply.scratch = 0;
+	      ply.cost = ply_cost + 1 + ! memo.known_dregno ();
+	      ply.in_set_some = true;
+	    }
+	}
+    } // SET
+  else if (ply.is_bld ())
+    {
+      // The first BLD in a series of BLDs gets the extra costs
+      // for the SET / CLT that precedes the BLDs.
+      ply.cost += ! ply.is_same_bld (prev);
+    }
+
+  add (ply);
+}
+
+
+// Emit insns for .plies[] and return the number of emitted insns.
+// The emitted insns represent the effect of II with MEMO, which
+// is the GPR knowledge before II is executed.
+int
+plies_t::emit_insns (const insninfo_t &ii, const memento_t &memo) const
+{
+  int n_insns = 0;
+
+  for (int i = 0; i < n_plies; ++i)
+    {
+      const ply_t &p = plies[i];
+
+      // SETs and BLDs are dumped by their emit_xxxs().
+      if (p.code != SET && ! p.is_bld ())
+	p.dump ();
+
+      rtx src1 = NULL_RTX;
+      rtx src2 = NULL_RTX;
+      rtx dest = NULL_RTX;
+      rtx xscratch = NULL_RTX;
+      rtx_code code = p.code;
+
+      switch (p.code)
+	{
+	default:
+	  avr_dump ("\n\n;; Bad ply_t:\n");
+	  p.dump (i + 1);
+	  gcc_unreachable ();
+	  break;
+
+	case REG: // *movhi = MOVW; movqi_insn = MOV
+	  dest = gen_rtx_REG (p.size == 1 ? QImode : HImode, p.regno);
+	  src1 = gen_rtx_REG (p.size == 1 ? QImode : HImode, p.arg);
+	  break;
+
+	case SET: // movqi_insn = LDI, CLR; set_some = (LDI + MOV) ** size.
+	  i += emit_sets (ii, n_insns, memo, i) - 1;
+	  continue;
+
+	case MOD: // *ior<mode>3, *and<mode>3 = SET + BLD... / CLT + BLD...
+	  i += emit_blds (ii, n_insns, i) - 1;
+	  continue;
+
+	case MINUS: // *subqi3 = SUB
+	case PLUS:  // *addqi3 = ADD
+	case AND: // *andqi3 = AND
+	case IOR: // *iorqi3 = OR
+	case XOR: // *xorqi3 = EOR
+	  dest = gen_rtx_REG (QImode, p.regno);
+	  src2 = gen_rtx_REG (QImode, p.arg);
+	  break;
+
+	case PRE_INC: // *addqi3 = INC
+	case PRE_DEC: // *addqi3 = DEC
+	  code = PLUS;
+	  dest = gen_rtx_REG (QImode, p.regno);
+	  src2 = p.code == PRE_INC ? const1_rtx : constm1_rtx;
+	  break;
+
+	case NEG: // *negqi2 = NEG
+	case NOT: // *one_cmplqi2 = COM
+	  dest = gen_rtx_REG (QImode, p.regno);
+	  src1 = dest;
+	  break;
+
+	case ROTATE:   // *rotlqi3 = SWAP
+	case ASHIFT:   // *ashlqi3 = LSL
+	case ASHIFTRT: // *ashrqi3 = ASR
+	case LSHIFTRT: // *lshrqi3 = LSR
+	  dest = gen_rtx_REG (QImode, p.regno);
+	  src2 = GEN_INT (code == ROTATE ? 4 : 1);
+	  break;
+
+	case SS_PLUS: // *addhi3 = ADIW, SBIW
+	  code = PLUS;
+	  dest = gen_rtx_REG (HImode, p.regno);
+	  src2 = gen_int_mode (p.arg, HImode);
+	  break;
+	} // switch p.code
+
+      gcc_assert (dest && (! src1) + (! src2) == 1);
+
+      rtx src = code == REG || code == SET
+	? src1
+	: (src2
+	   ? gen_rtx_fmt_ee (code, GET_MODE (dest), dest, src2)
+	   : gen_rtx_fmt_e (code, GET_MODE (dest), src1));
+
+      emit_valid_move_clobbercc (dest, src, xscratch);
+      n_insns += 1;
+    }
+
+  return n_insns;
+}
+
+
+// Helper for .emit_insns().  Emit an ior<mode>3 or and<mode>3 insns
+// that's equivalent to a sequence of contiguous BLDs starting at
+// .plies[ISTART].  Updates N_INSNS according to the number of insns emitted
+// and returns the number of consumed plys in .plies[].
+int
+plies_t::emit_blds (const insninfo_t &ii, int &n_insns, int istart) const
+{
+  const ply_t &first = plies[istart];
+
+  gcc_assert (ii.m_size <= 4);
+  gcc_assert (first.is_bld ());
+
+  const rtx_code code = first.is_setbld () ? IOR : AND;
+  const machine_mode mode = size_to_mode (ii.m_size);
+
+  // Determine mask and number of BLDs.
+
+  uint32_t mask = 0;
+  int n_blds = 0;
+
+  for (int i = istart; i < n_plies; ++i, ++n_blds)
+    {
+      const ply_t &p = plies[i];
+      if (! p.is_bld () || ! p.is_same_bld (& first))
+	break;
+
+      // For AND, work on the 1-complement of the mask,
+      // i.e. 1's specify which bits to clear.
+      uint8_t mask8 = code == IOR ? p.arg : ~p.arg;
+      mask |= mask8 << (8 * (p.regno - ii.m_regno));
+    }
+
+  mask = GET_MODE_MASK (mode) & (code == IOR ? mask : ~mask);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, ";; emit_blds[%d...%d] R%d[%d]%s=%0*x\n",
+	       istart, istart + n_blds - 1, ii.m_regno, ii.m_size,
+	       code == IOR ? "|" : "&", 2 * ii.m_size, (int) mask);
+    }
+
+  for (int i = 0; i < n_blds; ++i)
+    plies[i + istart].dump ();
+
+  rtx dest = gen_rtx_REG (mode, ii.m_regno);
+  rtx src = gen_rtx_fmt_ee (code, mode, dest, gen_int_mode (mask, mode));
+  rtx xscratch = mode == QImode ? NULL_RTX : gen_rtx_SCRATCH (QImode);
+
+  emit_valid_move_clobbercc (dest, src, xscratch);
+  n_insns += 1;
+
+  return n_blds;
+}
+
+
+// Emit insns for a contiguous sequence of SET ply_t's starting at
+// .plies[ISTART].  Advances N_INSNS by the number of emitted insns.
+// MEMO ist the state of the GPRs before II es executed, where II
+// represents the insn under optimization.
+// The emitted insns are "movqi_insn" or "*reload_inqi"
+// when .plies[ISTART].in_set_some is not set, and one "set_some" insn
+// when .plies[ISTART].in_set_some is set.
+int
+plies_t::emit_sets (const insninfo_t &ii, int &n_insns, const memento_t &memo,
+		    int istart) const
+{
+  gcc_assert (plies[istart].code == SET);
+
+  const bool in_set_some = plies[istart].in_set_some;
+
+  // Some d-regno that holds a compile-time constant, or 0.
+  const int known_dregno = memo.known_dregno ();
+
+  // Determine number of contiguous SETs,
+  // and sort them in ps[] such that smaller regnos come first.
+
+  const ply_t *ps[FUSE_MOVE_MAX_MODESIZE];
+  int n_sets = 0;
+
+  for (int i = istart; i < n_plies && plies[i].code == SET; ++i)
+    ps[n_sets++] = & plies[i];
+
+  if (dump_file)
+    {
+      fprintf (dump_file, ";; emit_sets[%d...%d] R%d[%d]=%0*" PRIx64,
+	       istart, istart + n_sets - 1, ii.m_regno, ii.m_size,
+	       2 * ii.m_size, ii.m_isrc);
+      fprintf (dump_file, ", scratch=%s%d", "R" + ! ii.m_scratch, ii.m_scratch);
+      fprintf (dump_file, ", known_dreg=%s%d, set_some=%d\n",
+	       "R" + ! known_dregno, known_dregno, in_set_some);
+    }
+
+  for (int i = 0; i < n_sets; ++i)
+    ps[i]->dump ();
+
+  // Sort.  This is most useful on regs like (reg:SI REG_14).
+  for (int i = 0; i < n_sets - 1; ++i)
+    for (int j = i + 1; j < n_sets; ++j)
+      if (ps[i]->regno > ps[j]->regno)
+	std::swap (ps[i], ps[j]);
+
+  // Prepare operands.
+  rtx dst[FUSE_MOVE_MAX_MODESIZE];
+  rtx src[FUSE_MOVE_MAX_MODESIZE];
+  for (int i = 0; i < n_sets; ++i)
+    {
+      dst[i] = gen_rtx_REG (QImode, ps[i]->regno);
+      src[i] = gen_int_mode (ps[i]->arg, QImode);
+    }
+
+  if (in_set_some)
+    {
+      // Emit a "set_some" insn that sets all of the collected 8-bit SETs.
+      // This is a parallel with n_sets QImode SETs as payload.
+
+      gcc_assert (! known_dregno || memo.knows (known_dregno));
+
+      // A scratch reg...
+      rtx op1 = known_dregno
+	? gen_rtx_REG (QImode, known_dregno)
+	: const0_rtx;
+      // ...with a known content, so it can be restored without saving.
+      rtx op2 = known_dregno
+	? gen_int_mode (memo.values[known_dregno], QImode)
+	: const0_rtx;
+      // Target register envelope.
+      rtx op3 = GEN_INT (ii.m_regno);
+      rtx op4 = GEN_INT (ii.m_size);
+
+      // Payload.
+      for (int i = 0; i < n_sets; ++i)
+	dst[i] = gen_rtx_SET (dst[i], src[i]);
+
+      rtvec vec = gen_rtvec (5 + n_sets,
+			     gen_rtx_USE (VOIDmode, op1),
+			     gen_rtx_USE (VOIDmode, op2),
+			     gen_rtx_USE (VOIDmode, op3),
+			     gen_rtx_USE (VOIDmode, op4),
+			     gen_rtx_CLOBBER (VOIDmode, cc_reg_rtx),
+			     dst[0], dst[1], dst[2], dst[3]);
+      rtx pattern = gen_rtx_PARALLEL (VOIDmode, vec);
+
+      emit_valid_insn (pattern);
+      n_insns += 1;
+    }
+  else
+    {
+      // Emit a bunch of movqi_insn / *reload_inqi insns.
+
+      for (int i = 0; i < n_sets; ++i)
+	if (ii.m_scratch
+	    && AVRasm::constant_cost (SET, ps[i]->regno, ps[i]->arg) > 1)
+	  {
+	    rtx scratch = gen_rtx_REG (QImode, ii.m_scratch);
+	    bool use_reload_inqi = true;
+	    if (use_reload_inqi)
+	      {
+		emit_valid_move_clobbercc (dst[i], src[i], scratch);
+		n_insns += 1;
+	      }
+	    else
+	      {
+		emit_valid_move_clobbercc (scratch, src[i]);
+		emit_valid_move_clobbercc (dst[i], scratch);
+		n_insns += 2;
+	      }
+	  }
+	else
+	  {
+	    emit_valid_move_clobbercc (dst[i], src[i]);
+	    n_insns += 1;
+	  }
+    }
+
+  return n_sets;
+}
+
+
+// Try to find an operation such that  Y = op (X).
+// Shifts and rotates are regarded as unary operaions with
+// an implied 2nd operand.
+static rtx_code
+find_arith (uint8_t y, uint8_t x)
+{
+#define RETIF(ex, code) y == (0xff & (ex)) ? code
+  return select<rtx_code>()
+    : RETIF (x + 1, PRE_INC)
+    : RETIF (x - 1, PRE_DEC)
+    : RETIF ((x << 4) | (x >> 4), ROTATE)
+    : RETIF (-x, NEG)
+    : RETIF (~x, NOT)
+    : RETIF (x >> 1, LSHIFTRT)
+    : RETIF (x << 1, ASHIFT)
+    : RETIF ((x >> 1) | (x & 0x80), ASHIFTRT)
+    : UNKNOWN;
+#undef RETIF
+}
+
+
+// Try to find an operation such that  Z = X op X.
+static rtx_code
+find_arith2 (uint8_t z, uint8_t x, uint8_t y)
+{
+#define RETIF(ex, code) z == (0xff & (ex)) ? code
+  return select<rtx_code>()
+    : RETIF (x + y, PLUS)
+    : RETIF (x - y, MINUS)
+    : RETIF (x & y, AND)
+    : RETIF (x | y, IOR)
+    : RETIF (x ^ y, XOR)
+    : UNKNOWN;
+#undef RETIF
+}
+
+
+// Add plies to .plies[] that represent a MOVW, but only ones that reduce the
+// Hamming distance from REGNO[SIZE] to VAL by exactly DHAMM.
+void
+plies_t::add_plies_movw (int regno, int size, uint64_t val,
+			 int dhamm, const memento_t &memo)
+{
+  if (! AVR_HAVE_MOVW || size < 2)
+    return;
+
+  for (int i = 0; i < size - 1; i += 2)
+    {
+      // MOVW that sets less than 2 regs to the target value is
+      // not needed for the upper regs.
+      if (dhamm != 2 && regno + i >= REG_16)
+	continue;
+
+      const uint16_t val16 = val >> (8 * i);
+      const uint8_t lo8 = val16;
+      const uint8_t hi8 = val16 >> 8;
+
+      // When one of the target bytes is already as expected, then
+      // no MOVW is needed for an optimal sequence.
+      if (memo.have_value (regno + i, 1, lo8)
+	  || memo.have_value (regno + i + 1, 1, hi8))
+	continue;
+
+      const int h_old = memo.hamming (regno + i, 2, val16);
+
+      // Record MOVWs that reduce the Hamming distance by DHAMM as requested.
+      for (int j = FIRST_GPR; j < REG_32; j += 2)
+	if (j != regno + i
+	    && memo.knows (j, 2))
+	  {
+	    const int h_new = memo.hamming (j, 2, val16);
+	    if (h_new == h_old - dhamm)
+	      add (ply_t { regno + i, 2, REG, j, 1, dhamm });
+	  }
+    }
+}
+
+
+// Set PS to plys that reduce the Hamming distance from II.m_regno to
+// compile-time constant II.m_isrc by 2, 1 or 0.  PREV is NULL or points
+// to a previous ply_t.  MEMO is the GPR state after PREV and prior to the
+// added plys.
+void
+bbinfo_t::get_plies (plies_t &ps, const insninfo_t &ii, const memento_t &memo,
+		     const ply_t *prev)
+{
+  ps.reset ();
+
+  fpd->n_get_plies += 1;
+
+  const bool maybe_set_some = (bbinfo_t::use_set_some_p && ii.needs_scratch ());
+
+  // Start with cheap plies, then continue to more expensive ones.
+  const int regno = ii.m_regno;
+  const int size = ii.m_size;
+  const uint64_t val = ii.m_isrc;
+
+  // Find MOVW with a Hamming delta of 2.
+  ps.add_plies_movw (regno, size, val, 2, memo);
+
+  // Find ADIW / SBIW
+  if (AVR_HAVE_ADIW && size >= 2)
+    for (int i = 0; i < size - 1; i += 2)
+      if (regno + i >= REG_24
+	  && memo.knows (regno + i, 2))
+	{
+	  const int16_t value16 = memo[regno + i] + 256 * memo[regno + i + 1];
+	  const int16_t lo16 = val >> (8 * i);
+	  const int16_t delta = lo16 - value16;
+	  const uint8_t lo8 = val >> (8 * i);
+	  const uint8_t hi8 = val >> (8 * i + 8);
+	  if (IN_RANGE (delta, -63, 63)
+	      && lo8 != memo[regno + i]
+	      && hi8 != memo[regno + i + 1])
+	    {
+	      ps.add (ply_t { regno + i, 2, SS_PLUS, delta, 1, 2 });
+	    }
+	}
+
+  // Find 1-reg plies.  In an optimal sequence, each 1-reg ply will decrease
+  // the Hamming distance.  Thus we only have to consider plies that set
+  // one of the target bytes to the target value VAL.  Start with the
+  // high registers since that is the canonical order when two plies commute.
+
+  for (int i = size - 1; i >= 0; --i)
+    {
+      const uint8_t val8 = val >> (8 * i);
+
+      // Nothing to do for this byte when its value is already as desired.
+      if (memo.have_value (regno + i, 1, val8))
+	continue;
+
+      // LDI or CLR.
+      if (regno + i >= REG_16 || val8 == 0)
+	ps.add (ply_t { regno + i, 1, SET, val8, 1 }, prev, memo,
+		maybe_set_some);
+
+      // We only may need to MOV non-zero values since there is CLR,
+      // and only when there is no LDI.
+      if (val8 != 0
+	  && regno + i < REG_16)
+	{
+	  // MOV where the source register is one of the target regs.
+	  for (int j = 0; j < size; ++j)
+	    if (j != i)
+	      if (memo.have_value (regno + j, 1, val8))
+		ps.add (ply_t { regno + i, 1, REG, regno + j, 1 });
+
+	  // MOV where the source register is not a target reg.
+	  // FIXME: ticks.
+	  for (int j = FIRST_GPR; j < REG_32; ++j)
+	    if (! IN_RANGE (j, regno, regno + size - 1))
+	      if (memo.have_value (j, 1, val8))
+		ps.add (ply_t { regno + i, 1, REG, j, 1 });
+
+	  // LDI + MOV.
+	  if (regno + i < REG_16 && val8 != 0)
+	    {
+	      ply_t p { regno + i, 1, SET, val8, 2 };
+	      p.scratch = ii.m_scratch;
+	      ps.add (p, prev, memo, maybe_set_some);
+	    }
+	}
+    }
+
+  // Arithmetic like INC, DEC or ASHIFT.
+  for (int i = size - 1; i >= 0; --i)
+    if (bbinfo_t::use_arith_p
+	&& regno + i < REG_16
+	&& memo.knows (regno + i))
+      {
+	const uint8_t y = val >> (8 * i);
+	const uint8_t x = memo[regno + i];
+	rtx_code code;
+
+	if (y == 0 || y == x)
+	  continue;
+
+	// INC, DEC, SWAP, LSL, NEG, ...
+	if (UNKNOWN != (code = find_arith (y, x)))
+	  {
+	    ps.add (ply_t { regno + i, 1, code, x /* dummy */, 1 });
+	    continue;
+	  }
+
+	// ADD, AND, ...
+	for (int r = FIRST_GPR; r < REG_32; ++r)
+	  if (r != regno + i
+	      && memo.knows (r)
+	      && memo[r] != 0
+	      && UNKNOWN != (code = find_arith2 (y, x, memo[r])))
+	    {
+	      ps.add (ply_t { regno + i, 1, code, r, 1 });
+	    }
+
+	if (size < 2 || size > 4)
+	  continue;
+
+	// SET + BLD
+	if ((x & y) == x && popcount_hwi (x ^ y) == 1)
+	  ps.add (ply_t { regno + i, 1, MOD, x ^ y, 1 },
+		  prev, memo, maybe_set_some);
+
+	// CLT + BLD
+	if ((x & y) == y && popcount_hwi (x ^ y) == 1)
+	  ps.add (ply_t { regno + i, 1, MOD, x ^ y ^ 0xff, 1 },
+		  prev, memo, maybe_set_some);
+      }
+
+  if (bbinfo_t::use_arith_p
+      // For 8-byte values, don't use ply_t's with only a partial reduction
+      // of the hamming distance.
+      && size <= 4)
+    {
+      // Find MOVW with a Hamming delta of 1, then 0.
+      ps.add_plies_movw (regno, size, val, 1, memo);
+      ps.add_plies_movw (regno, size, val, 0, memo);
+    }
+
+  plies_t::max_n_plies = std::max (plies_t::max_n_plies, ps.n_plies);
+}
+
+
+// Try to combine two 8-bit insns PREV and CURR that (effectively)
+// are REG = CONST_INT to one 16-bit such insn.  Returns true on success.
+bool
+insninfo_t::combine (const insninfo_t &prev, const insninfo_t &curr)
+{
+  if (prev.m_size == 1 && curr.m_size == 1
+      && prev.m_regno == (1 ^ curr.m_regno)
+      && curr.m_code == CONST_INT
+      && prev.m_code == CONST_INT)
+    {
+      m_regno = curr.m_regno & ~1;
+      m_code = CONST_INT;
+      m_size = 2;
+      m_scratch = std::max (curr.m_scratch, prev.m_scratch);
+      m_isrc = m_regno == prev.m_regno
+	? (uint8_t) prev.m_isrc + 256 * (uint8_t) curr.m_isrc
+	: (uint8_t) curr.m_isrc + 256 * (uint8_t) prev.m_isrc;
+
+      return true;
+    }
+
+  return false;
+}
+
+
+// Return the cost (in terms of words) of the respective mov<mode> insn.
+// This can be used as an upper bound for the ply_t's cost.
+int
+insninfo_t::cost () const
+{
+  if (m_code != CONST_INT)
+    return m_size;
+
+  if (m_regno >= REG_16 || m_isrc == 0)
+    return m_size
+      // MOVW can save one instruction.
+      - (AVR_HAVE_MOVW && m_size == 4 && (uint32_t) m_isrc % 0x10001 == 0);
+
+  // LDI + MOV to a lower reg.
+  if (m_scratch && m_size == 1)
+    return 2;
+
+  if (m_size == 8)
+    {
+      int len = m_size;
+      for (int i = 0; i < m_size; ++i)
+	len += m_regno + i < REG_16 && (0xff & (m_isrc >> (8 * i))) != 0;
+      return len;
+    }
+
+  // All other cases are complicated.  Ask the output oracle.
+  const machine_mode mode = size_to_mode (m_size);
+  rtx xscratch = m_scratch ? all_regs_rtx[m_scratch] : NULL_RTX;
+  rtx xop[] = { gen_rtx_REG (mode, m_regno), gen_int_mode (m_isrc, mode) };
+  int len;
+  if (m_size == 4)
+    output_reload_insisf (xop, xscratch, &len);
+  else
+    output_reload_in_const (xop, xscratch, &len, false);
+
+  return len;
+}
+
+// Emit the according REG = REG-or-CONST_INT insn.  Returns 1 or aborts
+// when the insn is not of that form.
+int
+insninfo_t::emit_insn () const
+{
+  int n_insns = 0;
+
+  machine_mode mode = size_to_mode (m_size);
+  rtx xsrc = NULL_RTX;
+  rtx xscratch = NULL_RTX;
+
+  gcc_assert (m_size > 0);
+
+  switch (m_code)
+    {
+    default:
+      gcc_unreachable();
+
+    case CONST_INT:
+      xsrc = gen_int_mode (m_isrc, mode);
+      if (m_scratch && m_regno < REG_16)
+	xscratch = gen_rtx_REG (QImode, m_scratch);
+      break;
+
+    case REG:
+      gcc_assert (gpr_regno_p (m_rsrc, m_size));
+      if (m_regno != m_rsrc)
+	xsrc = gen_rtx_REG (mode, m_rsrc);
+      break;
+    }
+
+  if (xsrc)
+    {
+      rtx dest = gen_rtx_REG (mode, m_regno);
+      emit_valid_move_clobbercc (dest, xsrc, xscratch);
+      n_insns += 1;
+    }
+
+  return n_insns;
+}
+
+
+// Entering a basic block means combining known register values from
+// all incoming BBs.
+void
+bbinfo_t::enter ()
+{
+  avr_dump ("\n;; Entering [bb %d]\n", bb->index);
+
+  gcc_assert (! done);
+
+  edge e;
+  edge_iterator ei;
+  gprmask_t pred_known_mask = ~0u;
+  bbinfo_t *bbi = nullptr;
+
+  // A quick iteration over all predecessors / incoming edges to reveal
+  // whether this BB is worth a closer look.
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      basic_block pred = e->src;
+      bbi = & bb_info[pred->index];
+
+      pred_known_mask &= bbi->regs.known;
+
+      if (dump_file)
+	{
+	  avr_dump (";; [bb %d] <- [bb %d] ", e->dest->index, e->src->index);
+	  if (bbi->done)
+	    bbi->regs.dump ();
+	  else
+	    avr_dump (" (unknown)\n");
+	}
+    }
+
+  // Only if all predecessors have already been handled, we can
+  // have known values as we are entering the current BB.
+  if (pred_known_mask != 0
+      && bbi != nullptr)
+    {
+      // Initialize current BB info from BI, an arbitrary predecessor.
+
+      regs = bbi->regs;
+
+      // Coalesce the output values from all predecessing BBs.  At the
+      // start of the current BB, a value is only known if it is known
+      // in *all* predecessors and *all* these values are the same.
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  regs.coalesce (bb_info[e->src->index].regs);
+	}
+    }
+
+  if (dump_file)
+    {
+      avr_dump (";; [bb %d] known at start: ", bb->index);
+      if (regs.known)
+	regs.dump ();
+      else
+	avr_dump (" (none)\n");
+      avr_dump ("\n");
+    }
+}
+
+
+void
+bbinfo_t::leave ()
+{
+  done = true;
+
+  if (dump_file)
+    fprintf (dump_file, ";; Leaving [bb %d]\n\n", bb->index);
+}
+
+
+/* Initialize according to INSN which is a 1-byte single_set that's
+   (effectively) a reg = reg or reg = const move.  INSN may be the result
+   of the current pass's optimization, e.g. something like INC R2 where R2
+   has a known content.  MEMO is the state prior to INSN.  Only CONST
+   cases are recorded; plus cases that are non-trivial for example when
+   an XOR decays to a move.  */
+
+bool
+insninfo_t::init1 (insn_optimize_data_t &iod, int max_size,
+		   const char *purpose = "")
+{
+  m_size = 0;
+  m_insn = iod.insn;
+  m_old_code = UNKNOWN;
+  iod.unused = false;
+
+  if (! iod.insn
+      || ! (m_set = single_set_with_scratch (iod.insn, m_scratch)))
+    return false;
+
+  rtx dest = SET_DEST (m_set);
+  machine_mode mode = GET_MODE (dest);
+  const int n_bytes = GET_MODE_SIZE (mode);
+  max_size = std::min (max_size, FUSE_MOVE_MAX_MODESIZE);
+
+  if (! REG_P (dest)
+      || END_REGNO (dest) > REG_32
+      || n_bytes > max_size)
+    return false;
+
+  // Omit insns that (explicitly) touch fixed GPRs in any way.
+  using elt0_getter_HRS = elt0_getter<HARD_REG_SET, HARD_REG_ELT_TYPE>;
+  HARD_REG_SET hregs;
+  CLEAR_HARD_REG_SET (hregs);
+  find_all_hard_regs (PATTERN (iod.insn), & hregs);
+  if (memento_t::fixed_regs_mask & (gprmask_t) elt0_getter_HRS::get (hregs))
+    {
+      avr_dump (";; %sinit1 has fixed GPRs\n", purpose);
+      return false;
+    }
+
+  if ((iod.unused = find_reg_note (iod.insn, REG_UNUSED, dest)))
+    return false;
+
+  m_src = SET_SRC (m_set);
+  m_regno = REGNO (dest);
+  const rtx_code src_code = GET_CODE (m_src);
+
+  m_ai = absint_t::explore (m_src, iod.regs, mode);
+
+  if (m_ai.popcount ())
+    {
+      if (m_ai.end_knows (CONST_INT) >= n_bytes)
+	{
+	  m_code = CONST_INT;
+	  m_old_code = CONSTANT_P (m_src) ? UNKNOWN : src_code;
+	  m_isrc = m_ai.get_value (n_bytes);
+	  m_size = n_bytes;
+	}
+      else if (! REG_P (m_src)
+	       && n_bytes == 1
+	       && m_ai.end_knows (REG) >= n_bytes)
+	{
+	  m_code = REG;
+	  m_old_code = src_code;
+	  m_rsrc = m_ai[0].regno ();
+	  m_size = n_bytes;
+	}
+      else if (n_bytes == 1)
+	{
+	  absint_byte_t &aib = m_new_src;
+	  aib = m_ai[0].find_alternative_binary (iod.regs);
+
+	  if (aib.arity () == 2
+	      && aib.arg (0).regno == m_regno)
+	    {
+	      m_old_code = src_code;
+	      m_code = aib.get_code ();
+	      m_size = n_bytes;
+	    }
+	}
+      else if (n_bytes >= 2
+	       && m_ai.end_knows (VALUE) >= n_bytes)
+	{
+	  m_code = src_code;
+	  m_size = n_bytes;
+	}
+
+      if (dump_file && m_size != 0)
+	{
+	  avr_dump (";; %sinit1 (%C", purpose,
+		    m_old_code ? m_old_code : m_code);
+	  if (m_old_code)
+	    avr_dump ("-> %C", m_code);
+	  avr_dump (") insn %d to R%d[%d] := %C:%m = ", INSN_UID (iod.insn),
+		    m_regno, n_bytes, src_code, mode);
+
+	  m_ai.dump (dest);
+
+	  if (dump_flags & TDF_FOLDING)
+	    avr_dump ("\n");
+	}
+    }
+
+  return m_size != 0;
+}
+
+
+// The private worker for .apply_insn().
+void
+memento_t::apply_insn1 (rtx_insn *insn, bool unused)
+{
+  gcc_assert (NONDEBUG_INSN_P (insn));
+
+  if (INSN_CODE (insn) == CODE_FOR_set_some)
+    {
+      // This insn only sets some selected bytes of register $3 of
+      // modesize $4.  If non-0, then $1 is a QImode scratch d-reg with
+      // a known value of $2.
+
+      const auto &xop = recog_data.operand;
+      extract_insn (insn);
+      gcc_assert (recog_data.n_operands == 7);
+      gcc_assert (set_some_operation (xop[0], VOIDmode));
+
+      const rtx &xscratch = xop[1];
+      const rtx &xscratch_value = xop[2];
+      const int sets_start = 5;
+
+      for (int i = sets_start; i < XVECLEN (xop[0], 0); ++i)
+	{
+	  rtx xset = XVECEXP (xop[0], 0, i);
+	  avr_dump (";; set_some %r = %r\n", XEXP (xset, 0), XEXP (xset, 1));
+	  set_values (XEXP (xset, 0), XEXP (xset, 1));
+	}
+
+      if (REG_P (xscratch))
+	{
+	  avr_dump (";; set_some %r = %r restore\n", xscratch, xscratch_value);
+	  set_values (xscratch, xscratch_value);
+	}
+
+      return;
+    } // CODE_FOR_set_some
+
+  memento_t mold = *this;
+
+  // When insn changes a register in whatever way, set it to "unknown".
+
+  HARD_REG_SET rset;
+  find_all_hard_reg_sets (insn, &rset, true /* implicit */);
+  known &= ~rset;
+
+  rtx set = single_set (insn);
+  rtx dest;
+
+  if (! set
+      || ! REG_P (dest = SET_DEST (set))
+      || END_REGNO (dest) > REG_32
+      || (regmask (dest) & memento_t::fixed_regs_mask))
+    return;
+
+  rtx src = SET_SRC (set);
+  const rtx_code src_code = GET_CODE (src);
+  const machine_mode mode = GET_MODE (dest);
+  const int n_bytes = GET_MODE_SIZE (mode);
+
+  // Insns that are too complicated or have a poor yield.
+  // Just record which regs are clobberd / changed.
+  if (n_bytes > FUSE_MOVE_MAX_MODESIZE
+      || MEM_P (src)
+      || (REG_P (src) && END_REGNO (src) > REG_32))
+    {
+      // Comparisons may clobber the compared reg when it is unused after.
+      if (src_code == COMPARE
+	  && REG_P (XEXP (src, 0))
+	  && CONSTANT_P (XEXP (src, 1)))
+	{
+	  rtx reg = XEXP (src, 0);
+	  for (unsigned r = REGNO (reg); r < END_REGNO (reg); ++r)
+	    set_unknown (r);
+	}
+      return;
+    }
+
+  if (unused)
+    return;
+
+  // Simulate the effect of some selected insns that are likely to produce
+  // or propagate known values.
+
+  // Get an abstract representation of src.  Bytes may be unknown,
+  // known to equal some 8-bit compile-time constant (CTC) value,
+  // or are known to equal some 8-bit register.
+  // TODO: Currently, only the ai[].val8 knowledge ist used.
+  //       What's the best way to make use of ai[].regno ?
+
+  absint_t ai = absint_t::explore (src, mold, mode);
+
+  if (ai.popcount ())
+    {
+      avr_dump (";; apply_insn %d R%d[%d] := %C:%m = ", INSN_UID (insn),
+		REGNO (dest), n_bytes, src_code, mode);
+      ai.dump ();
+
+      for (int i = 0; i < n_bytes; ++i)
+	if (ai[i].can (CONST_INT))
+	  set_value (i + REGNO (dest), ai[i].val8 ());
+    }
+}
+
+
+void
+memento_t::apply (const ply_t &p)
+{
+  if (p.is_movw ())
+    {
+      copy_value (p.regno, p.arg);
+      copy_value (p.regno + 1, p.arg + 1);
+    }
+  else if (p.is_adiw ())
+    {
+      int val = p.arg + values[p.regno] + 256 * values[1 + p.regno];
+      set_value (p.regno, val);
+      set_value (p.regno + 1, val >> 8);
+    }
+  else if (p.size == 1)
+    {
+      int x = values[p.regno];
+      int y = values[p.arg];
+
+      switch (p.code)
+	{
+	default:
+	  gcc_unreachable ();
+	  break;
+
+	case REG:
+	  copy_value (p.regno, p.arg);
+	  break;
+
+	case SET:
+	  set_value (p.regno, p.arg);
+	  if (p.scratch >= REG_16)
+	    set_unknown (p.scratch);
+	  break;
+
+	case MOD: // BLD
+	  gcc_assert (knows (p.regno));
+	  if (popcount_hwi (p.arg) == 1)
+	    values[p.regno] |= p.arg;
+	  else if (popcount_hwi (p.arg) == 7)
+	    values[p.regno] &= p.arg;
+	  else
+	    gcc_unreachable ();
+	  break;
+
+#define DO_ARITH(n_args, code, expr)					\
+	  case code:							\
+	    gcc_assert (knows (p.regno));				\
+	    if (n_args == 2)						\
+	      gcc_assert (knows (p.arg));				\
+	    set_value (p.regno, expr);					\
+	    break
+
+	  DO_ARITH (1, NEG, -x);
+	  DO_ARITH (1, NOT, ~x);
+	  DO_ARITH (1, PRE_INC, x + 1);
+	  DO_ARITH (1, PRE_DEC, x - 1);
+	  DO_ARITH (1, ROTATE, (x << 4) | (x >> 4));
+	  DO_ARITH (1, ASHIFT, x << 1);
+	  DO_ARITH (1, LSHIFTRT, x >> 1);
+	  DO_ARITH (1, ASHIFTRT, (x >> 1) | (x & 0x80));
+
+	  DO_ARITH (2, AND, x & y);
+	  DO_ARITH (2, IOR, x | y);
+	  DO_ARITH (2, XOR, x ^ y);
+	  DO_ARITH (2, PLUS, x + y);
+	  DO_ARITH (2, MINUS, x - y);
+#undef DO_ARITH
+	}
+    } // size == 1
+  else
+    gcc_unreachable ();
+}
+
+
+// Try to find a sequence of ply_t's that represent a II.m_regno = II.m_isrc
+// insn that sets a reg to a compile-time constant, and that is more
+// efficient than just a move insn.  (When try_split_any_p is on, then
+// solutions that perform equal to a move insn are also allowed).
+// MEMO0 is the GPR state before II runs.  A solution has been found
+// when .fpd->solution has at least one entry.  LEN specifies the
+// depth of recursion, which works on the LEN-th ply_t.
+void
+bbinfo_t::find_plies (int len, const insninfo_t &ii, const memento_t &memo0)
+{
+  if (len > fpd->n_best_plys)
+    return;
+
+  memento_t memo = memo0;
+  bool ply_applied_p = false;
+
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  const bool extra = dump_file && (dump_flags & TDF_FOLDING);
+
+  if (extra)
+    {
+      fprintf (dump_file, ";; #%d (HAM=%d): get_plies R%d[%d] = ", len,
+	       ii.hamming (fpd->regs0), ii.m_regno, ii.m_size);
+      fprintf (dump_file, "0x%0*" PRIx64 "\n",
+	       2 * ii.m_size, ii.m_isrc & size_to_mask (ii.m_size));
+    }
+
+  plies_t &ps = fpd->plies[len - 1];
+
+  const ply_t *const prev = len >= 2 ? fpd->ply_stack[len - 2] : nullptr;
+  const ply_t *const prev2 = len >= 3 ? fpd->ply_stack[len - 3] : nullptr;
+
+  bbinfo_t::get_plies (ps, ii, memo0, prev);
+
+#define NEXT(reason)					\
+  do {							\
+    if (extra)						\
+      fprintf (dump_file, ";; cont=%s\n", reason);	\
+    goto next;						\
+  } while (0)
+
+  for (int ip = 0; ip < ps.n_plies; ++ip)
+    {
+      const ply_t &p = ps.plies[ip];
+
+      fpd->ply_stack[len - 1] = &p;
+
+      if (0)
+	next: continue;
+
+      if (extra)
+	ply_t::dump_plys (dump_file, len, 1, fpd->ply_stack + len - 1, memo0);
+
+      // A MOVW with a Hamming distance of < 2 requires more plys.
+      if (p.is_movw () && len + (2 - p.dhamming) > fpd->n_best_plys)
+	NEXT ("movw.plys");
+
+      if (len >= 2)
+	{
+	  // Destroying (parts of) the results of the previous ply
+	  // won't yield an optimal sequence.
+	  if (p.overrides (prev))
+	    NEXT ("overrides");
+
+	  // When two plys are independent of each other, then only
+	  // investigate sequences that operate on the higher reg first.
+	  // This canonicalization reduces the number of candidates,
+	  if (p.commutes_with (prev, ii.m_scratch)
+	      && p.regno > prev->regno)
+	    NEXT ("noncanonic");
+
+	  // Two subsequent BLDs touching the same register.
+	  if (p.is_bld ()
+	      && prev->is_bld ()
+	      && p.changes_result_of (prev))
+	    NEXT ("2bld");
+
+	  // When there is a BLD, then at least 2 of the same kind
+	  // shall occur in a row.
+	  if (prev->is_bld ()
+	      && ! p.is_bld ()
+	      && (len == 2
+		  || (prev->is_setbld () && ! prev2->is_setbld ())
+		  || (prev->is_cltbld () && ! prev2->is_cltbld ())))
+	    NEXT ("1bld");
+	}
+
+      // The hamming delta of a MOVW may be less than 2, namely 0 or 1.
+      // When the latter is the case, then a reasonable sequence must
+      // modify the result of the MOVW.
+      if (len >= 2
+	  && prev->is_movw ()
+	  && prev->dhamming == 1
+	  && ! p.changes_result_of (prev))
+	NEXT ("movw.dh=1");
+
+      if (len >= 3
+	  && prev2->is_movw ()
+	  && prev2->dhamming == 0
+	  && ! p.changes_result_of (prev2))
+	NEXT ("movw.dh=0");
+
+      // When setting an n-byte destination, then at most n/2 MOVWs
+      // will occur in an optimal sequence.
+      int n_movw = 0;
+      for (int i = 0; i < len; ++i)
+	n_movw += fpd->ply_stack[i]->is_movw ();
+      if (n_movw > ii.m_size / 2)
+	NEXT ("movws");
+
+      if (ply_applied_p)
+	memo = memo0;
+
+      memo.apply (p);
+
+      ply_applied_p = true;
+
+      // Calculate the cost of the sequence we have so far.  Scale by some
+      // factor so that we can express that ADIW is more expensive than MOVW
+      // because it is slower, but without defeating MOVW.
+      const int SCALE = 4;
+
+      int penal = 0;
+      int cost = SCALE * 0;
+
+      bool movw_p = 0;
+      for (int i = 0; i < len; ++i)
+	{
+	  bool adiw_p = fpd->ply_stack[i]->is_adiw ();
+	  cost += SCALE * fpd->ply_stack[i]->cost + adiw_p;
+	  penal += adiw_p;
+	  movw_p |= fpd->ply_stack[i]->is_movw ();
+	}
+      penal += movw_p;
+
+      const int hamm = ii.hamming (memo);
+
+      // The current Hamming distance yields a lower bound of how many
+      // plys are still required.  Consider that future cost already now.
+      int future_cost = AVR_HAVE_MOVW || (AVR_HAVE_ADIW && ii.m_regno >= REG_22)
+	? (1 + hamm) / 2
+	: hamm;
+
+      // Similarly, when MOVW doesn't decrease the Hamming distance by 2,
+      // then we know that at least 2 - dhamming plys must follow in the
+      // future.  (MOVW + ADIW will not occur.)
+      if (p.is_movw ())
+	future_cost = std::max (future_cost, 2 - p.dhamming);
+
+      if (extra && future_cost)
+	avr_dump (";; future cost = %d, dh=%d\n", future_cost, hamm);
+
+      cost += SCALE * future_cost;
+
+      bool profitable = (cost < SCALE * fpd->max_ply_cost
+			 || (bbinfo_t::try_split_any_p
+			     && cost / SCALE <= fpd->max_ply_cost
+			     && cost / SCALE == fpd->movmode_cost));
+      if (! profitable)
+	{
+	  if (extra)
+	    avr_dump (";; cont=cost %d+%d/%d\n", cost / SCALE, penal, SCALE);
+	  continue;
+	}
+
+      if (hamm)
+	{
+	  // Go down that rabbit hole.
+	  gcc_assert (ply_applied_p);
+	  bbinfo_t::find_plies (1 + len, ii, memo);
+	  continue;
+	}
+
+      // Found a solution that's better than everything so far.
+
+      // Reduce the upper cost bound according to the found solution.
+      // No future solution will be more expensive.
+      fpd->max_ply_cost = cost / SCALE;
+
+      fpd->solution = plies_t (len, fpd->ply_stack);
+
+      if (dump_file)
+	{
+	  avr_dump (";; #%d FOUND COST = %d%s\n", len, cost / SCALE,
+		    penal ? " with penalty" : "");
+	  ply_t::dump_plys (dump_file, 0, len, fpd->ply_stack, fpd->regs0);
+	  if (extra)
+	    avr_dump (";; END\n");
+	}
+    } // for ply_t's
+
+#undef NEXT
+}
+
+
+// Run .find_plies() and return true when .fpd->solution is a sequence of ply_t's
+// that represents II, a REG = CONST insn.  MEMO is the GPR state prior to II.
+bool
+bbinfo_t::run_find_plies (const insninfo_t &ii, const memento_t &memo) const
+{
+  fpd->solution.reset ();
+  fpd->regs0 = memo;
+  fpd->n_get_plies = 0;
+
+  const int hamm = ii.hamming (memo);
+
+  if (hamm == 0)
+    {
+      avr_dump (";; Found redundant insn %d\n", INSN_UID (ii.m_insn));
+      return true;
+    }
+
+  // Upper bound (in words) for any solution that's better than mov<mode>.
+  // Will be decreased by find plies as it finds better solutions.
+  fpd->movmode_cost = ii.cost ();
+  fpd->max_ply_cost = fpd->movmode_cost;
+
+  // With a non-zero Hamming distance, this insn will require at least one
+  // instruction.  When the upper bound for required instructions is that
+  // small, then the current insn is good enough.
+  if (fpd->max_ply_cost <= 1)
+    return false;
+
+  fpd->n_best_plys = ii.n_best_plys (hamm);
+  gcc_assert (fpd->n_best_plys <= N_BEST_PLYS);
+
+  if (dump_file)
+    {
+      const uint64_t mask = size_to_mask (ii.m_size);
+      fprintf (dump_file, ";; find_plies R%d[%d] = 0x%0*" PRIx64,
+	       ii.m_regno, ii.m_size, 2 * ii.m_size, ii.m_isrc & mask);
+      if (ii.m_scratch)
+	fprintf (dump_file, ", scratch=r%d", ii.m_scratch);
+      memo.dump ("\n;; regs%s\n");
+    }
+
+  avr_dump (";; mov<mode> cost = %d\n", fpd->max_ply_cost);
+  avr_dump (";; max plys = %d\n", fpd->n_best_plys);
+  ply_t::n_ply_ts = 0;
+
+  find_plies (1, ii, memo);
+
+  avr_dump (";; get_plies called %d times\n", fpd->n_get_plies);
+  avr_dump (";; n_ply_ts = %d\n", ply_t::n_ply_ts);
+  ply_t::max_n_ply_ts = std::max (ply_t::max_n_ply_ts, ply_t::n_ply_ts);
+
+  return fpd->solution.n_plies != 0;
+}
+
+
+// Try to fuse two 1-byte insns .prev and .curr to one 2-byte insn (MOVW).
+// Returns true on success, and sets .n_new_insns, .ignore_mask etc.
+bool
+optimize_data_t::try_fuse (bbinfo_t *bbi)
+{
+  insninfo_t comb;
+
+  if (! prev.ii.m_size
+      || ! curr.ii.m_size
+      || ! comb.combine (prev.ii, curr.ii))
+    return false;
+
+  avr_dump (";; Working on fuse of insn %d + insn %d = 0x%04x\n",
+	    INSN_UID (prev.insn), INSN_UID (curr.insn),
+	    (unsigned) comb.m_isrc);
+
+  bool found = bbi->run_find_plies (comb, prev.regs);
+  if (found)
+    {
+      avr_dump (";; Found fuse of insns %d and %d\n",
+		INSN_UID (prev.insn), INSN_UID (curr.insn));
+
+      n_new_insns = bbinfo_t::fpd->solution.emit_insns (comb, prev.regs);
+      delete_prev_p = true;
+
+      if (prev.ii.m_scratch)
+	ignore_mask |= regmask (prev.ii.m_scratch, 1);
+      if (curr.ii.m_scratch)
+	ignore_mask |= regmask (curr.ii.m_scratch, 1);
+      ignore_mask &= ~regmask (comb.m_regno, comb.m_size);
+    }
+
+  return found;
+}
+
+
+// Try to replace an arithmetic 1-byte insn by a reg-reg move.
+// Returns true on success, and sets .n_new_insns etc.
+bool
+optimize_data_t::try_simplify (bbinfo_t *)
+{
+  if (curr.ii.m_size == 1
+      && curr.ii.m_old_code != REG
+      && curr.ii.m_code == REG)
+    {
+      avr_dump (";; Found simplify of insn %d\n", INSN_UID (curr.insn));
+
+      n_new_insns = curr.ii.emit_insn ();
+
+      return true;
+    }
+
+  return false;
+}
+
+
+// Try to replace XEXP (*, 1) of a binary operation by a cheaper expression.
+// Returns true on success; sets .n_new_insns, .ignore_mask, .delete_prev_p.
+bool
+optimize_data_t::try_bin_arg1 (bbinfo_t *)
+{
+  if (curr.ii.m_size != 1
+      || curr.ii.m_new_src.arity () != 2
+      || curr.unused)
+    return false;
+
+  avr_dump (";; Working on bin_arg1 insn %d\n", INSN_UID (curr.insn));
+
+  gcc_assert (curr.ii.m_src && BINARY_P (curr.ii.m_src));
+  rtx xarg1_old = XEXP (curr.ii.m_src, 1);
+
+  const absint_byte_t &aib = curr.ii.m_new_src;
+  const absint_val_t &arg0 = aib.arg (0);
+  const absint_val_t &arg1 = aib.arg (1);
+  const absint_val_t &arg1_old = curr.ii.m_ai[0].arg (1);
+
+  rtx src = NULL_RTX;
+
+  if (CONSTANT_P (xarg1_old))
+    {
+      // Sometimes, we allow expensive constants as 2nd operand like
+      // in  R2 += 2  which produces two INCs.  When we have the
+      // constant handy in a reg, then use that instead of the constant.
+      const rtx_code code = aib.get_code ();
+      gcc_assert (arg1.val8 == (INTVAL (xarg1_old) & 0xff));
+
+      if (AVRasm::constant_cost (code, arg0.regno, arg1.val8) > 1)
+	  src = aib.to_rtx ();
+    }
+  else if (REG_P (xarg1_old)
+	   && dead_or_set_p (curr.insn, xarg1_old))
+    {
+      src = aib.to_rtx ();
+
+      // The 2nd operand is a reg with a known content that dies
+      // at the current insn.  Chances are high that the register
+      // holds a reload value only used by the current insn.
+      if (prev.ii.m_size == 1
+	  && rtx_equal_p (xarg1_old, SET_DEST (prev.ii.m_set))
+	  && CONSTANT_P (prev.ii.m_src))
+	{
+	  avr_dump (";; Found dying reload insn %d\n", INSN_UID (prev.insn));
+
+	  delete_prev_p = true;
+	  ignore_mask = regmask (arg1_old.regno, 1);
+	}
+    }
+
+  if (src)
+    {
+      rtx dest = SET_DEST (curr.ii.m_set);
+
+      avr_dump (";; Found bin_arg1 for insn %d: ", INSN_UID (curr.insn));
+      avr_dump ("%C:%m %r", curr.ii.m_code, GET_MODE (dest), xarg1_old);
+      aib.dump (" = %s\n");
+
+      emit_valid_move_clobbercc (dest, src);
+      n_new_insns = 1;
+    }
+
+  return src != NULL_RTX;
+}
+
+
+// Try to replace a REG = CONST insn by a cheaper sequence.
+// Returns true on success, and sets .n_new_insns, .ignore_mask etc.
+bool
+optimize_data_t::try_split_ldi (bbinfo_t *bbi)
+{
+  if (! curr.ii.m_size
+      || curr.unused
+      || curr.ii.m_code != CONST_INT
+      || (! bbinfo_t::try_split_any_p
+	  // Finding plys will only ever succeed when there are
+	  // regs with a known value.
+	  && ! (curr.regs.known
+		|| (AVR_HAVE_MOVW
+		    && curr.ii.m_regno < REG_16 && curr.ii.m_size == 4))))
+    return false;
+
+  avr_dump (";; Working on split_ldi insn %d\n", INSN_UID (curr.insn));
+
+  bool found = bbi->run_find_plies (curr.ii, curr.regs);
+  if (found)
+    {
+      avr_dump (";; Found split for ldi insn %d\n", INSN_UID (curr.insn));
+
+      n_new_insns = bbinfo_t::fpd->solution.emit_insns (curr.ii, curr.regs);
+
+      if (curr.ii.m_scratch)
+	ignore_mask = regmask (curr.ii.m_scratch, 1);
+    }
+
+  return found;
+}
+
+
+// Helper for try_split_any().
+bool
+optimize_data_t::fail (const char *reason)
+{
+  n_new_insns = -1;
+
+  if (dump_file)
+    fprintf (dump_file, ";; Giving up split_any: %s\n", reason);
+
+  return false;
+}
+
+
+// Helper for try_split_any().
+rtx_insn *
+optimize_data_t::emit_and_apply_move (memento_t &memo, rtx dest, rtx src)
+{
+  rtx_insn *insn = emit_valid_move_clobbercc (dest, src);
+  n_new_insns += 1;
+  memo.apply_insn (insn, false);
+
+  return insn;
+}
+
+
+// Set X0 and X1 so that they are operands valid for a andqi3, iorqi3, xorqi3
+// or addqi3 insn with destination R_DEST.  The method loads X1 to
+// a scratch reg as needed and records the GPR effect in IOD.regs.
+// EXTRA_COST are extra costs in units of words of insns that cost more
+// than one instruction.  This is a helper for try_split_any().
+bool
+optimize_data_t
+    ::get_2ary_operands (rtx_code &code, const absint_byte_t &aib,
+			 insn_optimize_data_t &iod, int r_dest,
+			 absint_val_t &x0, absint_val_t &x1, int &extra_cost)
+{
+  if (code != IOR && code != AND && code != XOR && code != PLUS)
+    return fail ("2ary: unknown code");
+
+  x0 = aib.arg (0);
+  x1 = aib.arg (1);
+
+  if (! x0.knows_regno ()
+      || x1.clueless ())
+    return fail ("2ary: clueless");
+
+  int val8 = x1.val8;
+  int val8_cost = val8 < 0 ? 100 : AVRasm::constant_cost (code, r_dest, val8);
+
+  if (x0.regno == r_dest
+      && (x1.knows_regno ()
+	  || val8_cost <= 1))
+    {
+      if (code == XOR
+	  && val8 == 0x80
+	  && x0.regno >= REG_16)
+	{
+	  // xorxi3 can only "r,0,r".
+	  // x0 ^ 0x80  <=>  x0 - 0x80.
+	  x1.regno = 0;
+	  code = MINUS;
+	}
+      return true;
+    }
+
+  const bool and_1_bit = code == AND && popcount_hwi (val8) == 1;
+  // andqi3 has a "r,r,Cb1" alternative where Cb1 has exactly 1 bit set.
+  // This can accommodate bytes of higher AND Cb<N> alternatives.
+  if (x0.regno != r_dest)
+    {
+      if (and_1_bit)
+	{
+	  extra_cost += 1 + (r_dest < REG_16);
+	  return true;
+	}
+      else if (x1.regno == r_dest)
+	{
+	  std::swap (x0, x1);
+	  return true;
+	}
+      return fail ("2ary is a 3-operand insn");
+    }
+
+  // Now we have:
+  // 1)  r_dest = x0.regno, and
+  // 2)  x1 is val8, and
+  // 3)  x1 costs 2.
+
+  const bool needs_scratch_p = select<bool>()
+    : code == XOR ? true
+    : code == AND ? popcount_hwi (val8) != 7
+    : code == IOR ? popcount_hwi (val8) != 1
+    : code == PLUS ? IN_RANGE (val8, 3, 0xff - 3)
+    : bad_case<bool> ();
+
+  const int r_val8 = iod.regs.regno_with_value (val8, 0 /* excludes: none */);
+  if (r_val8)
+    {
+      // Found a reg that already holds the constant.
+      x1.val8 = -1;
+      x1.regno = r_val8;
+      return true;
+    }
+  else if (iod.ii.m_scratch)
+    {
+      // Using the insn's scratch reg.
+      rtx xdst = gen_rtx_REG (QImode, iod.ii.m_scratch);
+      rtx xsrc = gen_int_mode (x1.val8, QImode);
+      emit_and_apply_move (iod.regs, xdst, xsrc);
+
+      x1.regno = iod.ii.m_scratch;
+      x1.val8 = -1;
+
+      return true;
+    }
+  else if (! needs_scratch_p)
+    {
+      // Some constants (1 and -1) can be loaded without a scratch.
+      extra_cost += 1;
+      return true;
+    }
+  else if (and_1_bit)
+    {
+      // This can always fall back to BST + CLR + BLD, but may be cheaper.
+      extra_cost += 1 + (r_dest < REG_16);
+      return true;
+    }
+
+  return fail ("2ary: expensive constant");
+}
+
+
+static inline bool
+any_shift_p (rtx_code code)
+{
+  return code == LSHIFTRT || code == ASHIFTRT || code == ASHIFT;
+}
+
+// Try to split .curr into a sequence of 1-byte insns.
+// Returns true on success.  Sets .n_new_insns and .ignore_mask.
+bool
+optimize_data_t::try_split_any (bbinfo_t *)
+{
+  if (curr.ii.m_size < 2
+      // Constants are split by split_ldi.
+      || CONSTANT_P (curr.ii.m_src)
+      // Splitting requires knowledge about what to do with each byte.
+      || curr.ii.m_ai.end_knows (VALUE) < curr.ii.m_size)
+    return false;
+
+  avr_dump (";; Working on split_any %C:%m insn %d\n", curr.ii.m_code,
+	    GET_MODE (SET_DEST (curr.ii.m_set)), INSN_UID (curr.insn));
+
+  const insninfo_t &ii = curr.ii;
+  const int n_bytes = ii.m_size;
+  int extra_cost = 0;
+  int binop_cost = -1;
+
+  // For plain AND, IOR, XOR get the current cost in units of words.
+  if (BINARY_P (curr.ii.m_src))
+    {
+      const rtx_code code = curr.ii.m_code;
+      if ((code == IOR || code == AND || code == XOR)
+	  && REG_P (XEXP (curr.ii.m_src, 0))
+	  && CONSTANT_P (XEXP (curr.ii.m_src, 1)))
+	{
+	  binop_cost = get_attr_length (curr.insn);
+	  avr_dump (";; Competing against %C:%m cost = %d\n", code,
+		    GET_MODE (curr.ii.m_src), binop_cost);
+	}
+    }
+
+  // Step 1: Work out conflicts and which sign extends to perform.
+
+  const gprmask_t regs_dest = regmask (ii.m_regno, n_bytes);
+  int r_sign = 0;
+  gprmask_t regs_signs = 0;
+  bool has_lsl = false;
+  bool has_lsr = false;
+
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      const absint_byte_t &aib = ii.m_ai[i];
+      const int r_dest = ii.m_regno + i;
+      const gprmask_t regs_src = aib.reg_mask ();
+
+      // When only regs to the right are used, or only regs to the left
+      // are used, then there's no conflict like it is arising for rotates.
+      // For now, only implement conflict-free splits.
+      has_lsl |= has_bits_in (regs_src & regs_dest, 0, r_dest - 1);
+      has_lsr |= has_bits_in (regs_src & regs_dest, r_dest + 1, 31);
+      if (has_lsl && has_lsr)
+	return fail ("has both << and >>");
+
+      if (aib.get_code () == SIGN_EXTEND)
+	{
+	  const absint_val_t x0 = aib.arg (0);
+	  if (! r_sign)
+	    r_sign = x0.regno;
+	  else if (r_sign != x0.regno)
+	    return fail ("too many signs");
+
+	  // Signs are handled below after all the other bytes.
+	  regs_signs |= regmask (r_dest, 1);
+	}
+    }
+
+  // Step 2: Work on the individual bytes and emit according insns.
+
+  n_new_insns = 0;
+  memento_t memo = curr.regs;
+
+  const int step = has_lsl ? -1 : 1;
+  const int istart = step == 1 ? 0 : n_bytes - 1;
+  const int iend = step == 1 ? n_bytes : -1;
+
+  for (int i = istart; i != iend; i += step)
+    {
+      const absint_byte_t &aib = ii.m_ai[i];
+      const int r_dest = ii.m_regno + i;
+      rtx_code code = aib.get_code ();
+      rtx xsrc = NULL_RTX;
+      rtx xdest = gen_rtx_REG (QImode, r_dest);
+
+      if (code == SET)
+	{
+	  const int r_src = aib.regno (false);
+	  const int val8 = aib.val8 (false);
+	  int r16;
+
+	  // A no-op...
+	  if (r_dest == r_src)
+	    continue;
+	  // ...or an existing 16-bit constant...
+	  else if (AVR_HAVE_MOVW
+		   && i + step != iend
+		   // Next is not a no-op.
+		   && ii.m_ai[i + step].regno (false) != r_dest + step
+		   // Eligible for MOVW.
+		   && r_dest + step == (r_dest ^ 1)
+		   && r_dest % 2 == i % 2
+		   && (r16 = ii.m_ai.reg16_with_value (i, i + step, memo)))
+	    {
+	      xdest = gen_rtx_REG (HImode, r_dest & ~1);
+	      xsrc = gen_rtx_REG (HImode, r16);
+	      i += step;
+	    }
+	  // ...or a cheap constant...
+	  else if (val8 >= 0
+		   && AVRasm::constant_cost (SET, r_dest, val8) <= 1)
+	    xsrc = gen_int_mode (val8, QImode);
+	  // ...or a reg-reg move...
+	  else if (r_src)
+	    xsrc = gen_rtx_REG (QImode, r_src);
+	  // ...or a costly constant that already exists in some reg...
+	  else if (memo.regno_with_value (val8, 0 /* excludes: none */))
+	    xsrc = gen_rtx_REG (QImode, memo.regno_with_value (val8, 0));
+	  // ...or a costly constant loaded into curr.insn's scratch reg...
+	  else if (ii.m_scratch)
+	    {
+	      rtx xscratch = gen_rtx_REG (QImode, ii.m_scratch);
+	      rtx xval8 = gen_int_mode (val8, QImode);
+	      emit_and_apply_move (memo, xscratch, xval8);
+	      xsrc = xscratch;
+	    }
+	  // ...or a costly constant (1 or -1) that doesn't need a scratch.
+	  else if (! AVRasm::ldi_needs_scratch (r_dest, val8))
+	    {
+	      extra_cost += 1;
+	      xsrc = gen_int_mode (val8, QImode);
+	    }
+	  else
+	    return fail ("expensive val8");
+	} // SET
+      else if (aib.arity () == 1)
+	{
+	  if (aib.get_code () == SIGN_EXTEND)
+	    // Signs are handled after all the others.
+	    continue;
+	  else
+	    {
+	      const absint_val_t x0 = aib.arg (0);
+	      rtx xop0 = gen_rtx_REG (QImode, x0.regno);
+	      xsrc = gen_rtx_fmt_e (code, QImode, xop0);
+	    }
+	} // unary
+      else if (aib.arity () == 2)
+	{
+	  absint_val_t x0;
+	  absint_val_t x1;
+	  insn_optimize_data_t iod (memo);
+	  iod.ii = curr.ii;
+
+	  if (! get_2ary_operands (code, aib, iod, r_dest, x0, x1, extra_cost))
+	    return false;
+	  rtx xop0 = gen_rtx_REG (QImode, x0.regno);
+	  rtx xop1 = x1.knows_val8 ()
+	    ? gen_int_mode (x1.val8, QImode)
+	    : gen_rtx_REG (QImode, x1.regno);
+
+	  xsrc = gen_rtx_fmt_ee (code, QImode, xop0, xop1);
+	} // binary
+
+      if (! xsrc)
+	return fail ("no source found");
+
+      if (r_sign
+	  && (regmask (xdest) & regmask (r_sign, 1)))
+	return fail ("clobbered r_sign");
+
+      emit_and_apply_move (memo, xdest, xsrc);
+    }
+
+  // Step 3: Emit insns for sign extend.
+  // No more need to track memo beyond this point.
+
+  if (! emit_signs (r_sign, regs_signs))
+    return false;
+
+  if (binop_cost >= 0)
+    {
+      avr_dump (";; Expected cost: %d + %d\n", n_new_insns, extra_cost);
+      if (n_new_insns + extra_cost > binop_cost)
+	return fail ("too expensive");
+    }
+
+  if (ii.m_scratch)
+    ignore_mask = regmask (ii.m_scratch, 1);
+
+  return true;
+}
+
+
+// A helper for try_split_any() above.
+// Emit sign extends from R_MSB.7 to all regs in REGS_SIGNS.
+bool
+optimize_data_t::emit_signs (const int r_msb, gprmask_t regs_signs)
+{
+  if (! regs_signs)
+    return true;
+  else if (! r_msb)
+    return fail ("fatal: no r_msb given");
+
+  // Pick an arbitrary reg from the sign destinations when the source
+  // isn't one of the signs.
+  const int r_signs = regs_signs & regmask (r_msb, 1)
+    ? r_msb
+    : ctz_hwi (regs_signs);
+
+  // Set all bits in r_signs according to the sign of r_msb using the
+  // r,r,C07 alternative of ashrqi3.
+  rtx xsrc = gen_rtx_fmt_ee (ASHIFTRT, QImode,
+			     gen_rtx_REG (QImode, r_msb), GEN_INT (7));
+  emit_valid_move_clobbercc (gen_rtx_REG (QImode, r_signs), xsrc);
+  regs_signs &= ~regmask (r_signs, 1);
+
+  // Set up a 16-bit sign register if possible.
+  int r16_signs = 0;
+  if (regs_signs & regmask (r_signs ^ 1, 1))
+    {
+      emit_move_mask (r_signs ^ 1, r_signs, 1, regs_signs);
+      r16_signs = r_signs & ~1;
+    }
+
+  // Handle all 16-bit signs regs provided MOVW.
+  if (AVR_HAVE_MOVW)
+    for (int r = FIRST_GPR; r < REG_32; r += 2)
+      {
+	const gprmask_t m = regmask (r, 2);
+	if ((m & regs_signs) == m)
+	  {
+	    if (r16_signs)
+	      emit_move_mask (r, r16_signs, 2, regs_signs);
+	    else
+	      {
+		emit_move_mask (r + 0, r_signs, 1, regs_signs);
+		emit_move_mask (r + 1, r_signs, 1, regs_signs);
+		r16_signs = r;
+	      }
+	  }
+      }
+
+  // Handle all remaining signs.
+  while (regs_signs)
+    emit_move_mask (ctz_hwi (regs_signs), r_signs, 1, regs_signs);
+
+  return true;
+}
+
+// Helper for the method above.  Move N_BYTES registers from R_SRC to R_DST,
+// keeping track of which regs are still to be done in MASK.
+void
+optimize_data_t::emit_move_mask (int r_dst, int r_src, int n_bytes,
+				 gprmask_t &mask)
+{
+  const gprmask_t mask_dst = regmask (r_dst, n_bytes);
+  const gprmask_t mask_src = regmask (r_src, n_bytes);
+  gcc_assert ((mask_dst & mask) == mask_dst);
+  gcc_assert ((mask_src & mask) == 0);
+  rtx xdst = gen_rtx_REG (size_to_mode (n_bytes), r_dst);
+  rtx xsrc = gen_rtx_REG (size_to_mode (n_bytes), r_src);
+  emit_valid_move_clobbercc (xdst, xsrc);
+  n_new_insns += 1;
+  mask &= ~mask_dst;
+}
+
+
+void
+bbinfo_t::optimize_one_block (bool &changed)
+{
+  memento_t prev_regs;
+
+  rtx_insn *insn = next_nondebug_insn_bb (bb, BB_HEAD (bb));
+
+  for (rtx_insn *next_insn; insn; insn = next_insn)
+    {
+      next_insn = next_nondebug_insn_bb (bb, insn);
+
+      avr_dump ("\n;; Working on insn %d\n%r\n\n", INSN_UID (insn), insn);
+
+      optimize_data_t od (prev_regs, regs);
+
+      od.prev.insn = prev_nondebug_insn_bb (bb, insn);
+      od.curr.insn = insn;
+
+      od.prev.ii.init1 (od.prev, 1, "IIprev ");
+      od.curr.ii.init1 (od.curr, 8, "IIcurr ");
+
+      start_sequence ();
+
+      bool found = ((bbinfo_t::try_fuse_p && od.try_fuse (this))
+		    || (bbinfo_t::try_bin_arg1_p && od.try_bin_arg1 (this))
+		    || (bbinfo_t::try_simplify_p && od.try_simplify (this))
+		    || (bbinfo_t::try_split_ldi_p && od.try_split_ldi (this))
+		    || (bbinfo_t::try_split_any_p && od.try_split_any (this)));
+
+      rtx_insn *new_insns = get_insns ();
+      end_sequence ();
+
+      gcc_assert (found == (od.n_new_insns >= 0));
+
+      ++tick;
+
+      // This insn will become the previous one in the next loop iteration.
+      // Just used in dumps.
+      rtx_insn *new_curr_insn;
+
+      if (! found)
+	{
+	  // Nothing changed.
+	  avr_dump (";; Keeping old route.\n");
+	  gcc_assert (! od.delete_prev_p);
+
+	  prev_regs = regs;
+	  regs.apply_insn (insn, false);
+
+	  new_curr_insn = insn;
+	}
+      else
+	{
+	  // We have new_insns.
+	  changed = true;
+
+	  if (dump_file)
+	    {
+	      avr_dump ("\n;; EMIT %d new insn%s replacing ",
+			od.n_new_insns, "s" + (od.n_new_insns == 1));
+	      if (od.delete_prev_p)
+		avr_dump ("insn %d and ", INSN_UID (od.prev.insn));
+	      avr_dump ("insn %d, delete_prev=%d:\n%L\n", INSN_UID (insn),
+			od.delete_prev_p, new_insns);
+	    }
+
+	  new_curr_insn = od.emit_sequence (bb, new_insns);
+	} // found
+
+      if (dump_file && new_curr_insn)
+	{
+	  avr_dump ("\n");
+
+	  const int d = regs.distance_to (prev_regs);
+	  if (d || new_curr_insn != insn)
+	    avr_dump (";; %d regs changed state:\n", d);
+
+	  if (new_curr_insn != insn)
+	    {
+	      avr_dump (";; Befor insn %d", INSN_UID (new_curr_insn));
+	      prev_regs.dump ();
+	    }
+
+	  avr_dump (";; After insn %d", INSN_UID (new_curr_insn));
+	  regs.dump ();
+	}
+    } // for BB insns
+}
+
+
+void
+bbinfo_t::optimize_one_function (function *func)
+{
+  bbinfo_t::fpd = XNEW (bbinfo_t::find_plies_data_t);
+  bbinfo_t::bb_info = XCNEWVEC (bbinfo_t, last_basic_block_for_fn (func));
+  int *post_order = XNEWVEC (int, n_basic_blocks_for_fn (func));
+
+  plies_t::max_n_plies = 0;
+
+  using elt0_getter_HRS = elt0_getter<HARD_REG_SET, HARD_REG_ELT_TYPE>;
+  memento_t::fixed_regs_mask = (gprmask_t) elt0_getter_HRS::get (fixed_reg_set);
+
+  // Option -mfuse-move=<0,23> provides a 3:2:2:2 mixed radix value:
+  // -mfuse-move= 0 1 2 3 4 5 6 7 8 9 10 1 2 3 4 5 6 7 8 9 20 1 2 3  Digit
+  // fuse           1   1   1   1   1    1   1   1   1   1    1   1      0
+  // bin_arg1         1 1     1 1      1 1     1 1     1 1      1 1      1
+  // split_any            1 1 1 1          1 1 1 1          1 1 1 1      2
+  // split_ldi                    1 1  1 1 1 1 1 1 1 1 1 1  1 1 1 1      3
+  // use arith                                     1 1 1 1  1 1 1 1      3
+
+  // Which optimization(s) to perform.
+  bbinfo_t::try_fuse_p = avr_fuse_move & 0x1;      // Digit 0 in [0, 1].
+  bbinfo_t::try_bin_arg1_p = avr_fuse_move & 0x2;  // Digit 1 in [0, 1].
+  bbinfo_t::try_split_any_p = avr_fuse_move & 0x4; // Digit 2 in [0, 1].
+  bbinfo_t::try_split_ldi_p = avr_fuse_move >> 3;       // Digit 3 in [0, 2].
+  bbinfo_t::use_arith_p = (avr_fuse_move >> 3) >= 2;    // Digit 3 in [0, 2].
+  bbinfo_t::use_set_some_p = bbinfo_t::try_split_ldi_p; // Digit 3 in [0, 2].
+  bbinfo_t::try_simplify_p = avr_fuse_move != 0;
+
+  // Topologically sort BBs from last to first.
+
+  const int n_post_order = post_order_compute (post_order, false, false);
+  bool changed = false;
+
+  // Traverse the BBs from first to last in order to increase the chance
+  // that register values from all incoming edges are known.
+
+  for (int n = n_post_order - 1; n >= 0; --n)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (func, post_order[n]);
+
+      bbinfo_t::bb_info[bb->index].bb = bb;
+      bbinfo_t::bb_info[bb->index].enter ();
+      bbinfo_t::bb_info[bb->index].optimize_one_block (changed);
+      bbinfo_t::bb_info[bb->index].leave ();
+    }
+
+  if (plies_t::max_n_plies)
+    avr_dump (";; max_n_plies=%d\n", (int) plies_t::max_n_plies);
+
+  if (changed)
+    {
+      df_note_add_problem ();
+      df_analyze ();
+    }
+
+  XDELETEVEC (post_order);
+  XDELETEVEC (bbinfo_t::bb_info);
+  XDELETE (bbinfo_t::fpd);
+}
+
+} // anonymous namespace
+
 
 namespace
 {
@@ -1937,4 +5115,12 @@ rtl_opt_pass *
 make_avr_pass_recompute_notes (gcc::context *ctxt)
 {
   return new avr_pass_recompute_notes (ctxt, "avr-notes-free-cfg");
+}
+
+// Optimize moves after reload.
+
+rtl_opt_pass *
+make_avr_pass_fuse_move (gcc::context *ctxt)
+{
+  return new avr_pass_fuse_move (ctxt, "avr-fuse-move");
 }

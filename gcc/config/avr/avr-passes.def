@@ -93,3 +93,14 @@ INSERT_PASS_AFTER (pass_expand, 1, avr_pass_casesi);
    Hence, run a mini pass right before split2 which introduces REG_CC.  */
 
 INSERT_PASS_BEFORE (pass_split_after_reload, 1, avr_pass_ifelse);
+
+/* A post reload pass that tracks known values held in registers
+   and performs optimizations based on that knowledge.
+   It also splits non-memory insns that can be represented in
+   terms of byte operations.
+
+   It runs between the two instances of the RTL peephole pass because
+   -  The RTL peepholer may provide a scratch reg for *reload_in<mode>.
+   -  The RTL peepholer may optimize insns involving lower registers.  */
+
+INSERT_PASS_AFTER (pass_peephole2, 1, avr_pass_fuse_move);

@@ -77,6 +77,10 @@ avr_log_t avr_log;
 /* The worker function implementing the %-codes */
 static void avr_log_vadump (FILE*, const char*, va_list);
 
+/* Forward to fprintf for convenience.  Return the number of consumed format
+   chars after a %-code, or 0 if unrecognized and nothing consumed.  */
+static int avr_forward_to_printf (FILE*, const char*, va_list);
+
 /* Wrapper for avr_log_vadump.  If STREAM is NULL we are called by avr_dump,
    i.e. output to dump_file if available.  The 2nd argument is __FUNCTION__.
    The 3rd argument is the format string. */
@@ -155,14 +159,6 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
 		else
 		  print_node_brief (file, "", t, 3);
 	      }
-	      break;
-
-	    case 'd':
-	      fprintf (file, "%d", va_arg (ap, int));
-	      break;
-
-	    case 'x':
-	      fprintf (file, "%x", va_arg (ap, int));
 	      break;
 
 	    case 'b':
@@ -258,11 +254,18 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
 	      abort();
 
 	    default:
-	      /* Unknown %-code: Stop printing */
-
-	      fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
-	      fmt = "";
-
+	      int n_used = avr_forward_to_printf (file, fmt - 1, ap);
+	      if (n_used > 0)
+		{
+		  // "-1" due to "*fmt++" above.
+		  fmt += n_used - 1;
+		}
+	      else
+		{
+		  // Unknown %-code: Stop printing.
+		  fprintf (file, "??? %%%c ???%s\n", *(fmt-1), fmt);
+		  fmt = "";
+		}
 	      break;
 	    }
 	  break; /* % */
@@ -270,6 +273,63 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
     }
 
   fflush (file);
+}
+
+
+#define IS_INTC(c) (c == 'd' || c == 'x' || c == 'X')
+
+// Consume FMTs like:  %x  %4x  %04x  %*x  %0*x
+// and similar for 'd' or 'ld' or 'X' instead of 'x'.
+
+static int
+avr_forward_to_printf (FILE *file, const char* const fmt, va_list ap)
+{
+  const char *p = fmt;
+  bool len_p = false;
+
+  // Optional fill
+  p += p[0] == '0' || p[0] == ' ';
+
+  // optional length
+  if (p[0] >= '1' && p[0] <= '9')
+    ++p;
+  else if (p[0] == '*')
+    ++p, len_p = true;
+
+  // Type
+  const bool long_p = p[0] == 'l';
+
+  if (IS_INTC (p[0])
+      || (long_p && IS_INTC (p[1])))
+    {
+      p += 1 + long_p;
+
+      const int n_used = (int) (p - fmt);
+
+      char xfm[10] = { '%' };
+      memcpy (xfm + 1, fmt, n_used);
+      xfm[1 + n_used] = '\0';
+
+      if (len_p)
+	{
+	  const int len = va_arg (ap, int);
+	  if (long_p)
+	    fprintf (file, xfm, len, va_arg (ap, long));
+	  else
+	    fprintf (file, xfm, len, va_arg (ap, int));
+	}
+      else
+	{
+	  if (long_p)
+	    fprintf (file, xfm, va_arg (ap, long));
+	  else
+	    fprintf (file, xfm, va_arg (ap, int));
+	}
+
+      return n_used;
+    }
+
+  return 0;
 }
 
 
