@@ -336,15 +336,13 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & ECF_CONST)
-    return ((!side_effects || !nondeterministic)
-	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
   else
     kills.release ();
   if (ecf_flags & ECF_PURE)
-    return ((!side_effects || !nondeterministic)
-	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
 
@@ -409,15 +407,13 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
-    return ((!side_effects || !nondeterministic)
-	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
   else
     kills.release ();
   if (ecf_flags & ECF_PURE)
-    return ((!side_effects || !nondeterministic)
-	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
 
@@ -794,12 +790,24 @@ namespace {
 /* Return true if ECF flags says that nondeterminism can be ignored.  */
 
 static bool
-ignore_nondeterminism_p (tree caller, int flags)
+ignore_nondeterminism_p (tree caller, int flags, tree callee_fntype)
 {
-  if (flags & (ECF_CONST | ECF_PURE))
+  int caller_flags = flags_from_decl_or_type (caller);
+  if ((flags | caller_flags) & (ECF_CONST | ECF_PURE))
     return true;
   if ((flags & (ECF_NORETURN | ECF_NOTHROW)) == (ECF_NORETURN | ECF_NOTHROW)
       || (!opt_for_fn (caller, flag_exceptions) && (flags & ECF_NORETURN)))
+    return true;
+  /* C language defines unsequenced and reproducible functions
+     to be deterministic.  */
+  if (lookup_attribute ("unsequenced", TYPE_ATTRIBUTES (TREE_TYPE (caller)))
+      || lookup_attribute ("reproducible",
+			   TYPE_ATTRIBUTES (TREE_TYPE (caller))))
+    return true;
+  if (callee_fntype
+      && (lookup_attribute ("unsequenced", TYPE_ATTRIBUTES (callee_fntype))
+	  || lookup_attribute ("reproducible",
+			       TYPE_ATTRIBUTES (callee_fntype))))
     return true;
   return false;
 }
@@ -1151,7 +1159,8 @@ modref_access_analysis::record_access_lto (modref_records_lto *tt, ao_ref *ref,
 bool
 modref_access_analysis::record_access_p (tree expr)
 {
-  if (TREE_THIS_VOLATILE (expr))
+  if (TREE_THIS_VOLATILE (expr)
+      && !ignore_nondeterminism_p (current_function_decl, 0, NULL))
     {
       if (dump_file)
 	fprintf (dump_file, " (volatile; marking nondeterministic) ");
@@ -1288,7 +1297,8 @@ modref_access_analysis::merge_call_side_effects
 	  changed = true;
 	}
       if (!m_summary->nondeterministic && callee_summary->nondeterministic
-	  && !ignore_nondeterminism_p (current_function_decl, flags))
+	  && !ignore_nondeterminism_p (current_function_decl, flags,
+				       gimple_call_fntype (call)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " - merging nondeterministic.\n");
@@ -1455,6 +1465,7 @@ modref_access_analysis::get_access_for_fnspec (gcall *call, attr_fnspec &fnspec,
     }
   return a;
 }
+
 /* Apply side effects of call STMT to CUR_SUMMARY using FNSPEC.
    If IGNORE_STORES is true ignore them.
    Return false if no useful summary can be produced.   */
@@ -1472,7 +1483,8 @@ modref_access_analysis::process_fnspec (gcall *call)
 	  && stmt_could_throw_p (cfun, call)))
     {
       set_side_effects ();
-      if (!ignore_nondeterminism_p (current_function_decl, flags))
+      if (!ignore_nondeterminism_p (current_function_decl, flags,
+				    gimple_call_fntype (call)))
 	set_nondeterministic ();
     }
 
@@ -1625,13 +1637,7 @@ modref_access_analysis::analyze_call (gcall *stmt)
       if (dump_file)
 	fprintf (dump_file, gimple_call_internal_p (stmt)
 		 ? " - Internal call" : " - Indirect call.\n");
-      if (flags & ECF_NOVOPS)
-        {
-	  set_side_effects ();
-	  set_nondeterministic ();
-        }
-      else
-	process_fnspec (stmt);
+      process_fnspec (stmt);
       return;
     }
   /* We only need to handle internal calls in IPA mode.  */
@@ -1800,7 +1806,8 @@ modref_access_analysis::analyze_stmt (gimple *stmt, bool always_executed)
   switch (gimple_code (stmt))
    {
    case GIMPLE_ASM:
-      if (gimple_asm_volatile_p (as_a <gasm *> (stmt)))
+      if (gimple_asm_volatile_p (as_a <gasm *> (stmt))
+	  && !ignore_nondeterminism_p (current_function_decl, 0, NULL))
 	set_nondeterministic ();
       if (cfun->can_throw_non_call_exceptions
 	  && stmt_could_throw_p (cfun, stmt))
@@ -4592,17 +4599,20 @@ propagate_unknown_call (cgraph_node *node,
 	  cur_summary_lto->side_effects = true;
 	  changed = true;
 	}
-      if (cur_summary && !cur_summary->nondeterministic
-	  && !ignore_nondeterminism_p (node->decl, ecf_flags))
+      if (!ignore_nondeterminism_p (node->decl, ecf_flags,
+				    e->callee ? TREE_TYPE (e->callee->decl)
+					      : NULL_TREE))
 	{
-	  cur_summary->nondeterministic = true;
-	  changed = true;
-	}
-      if (cur_summary_lto && !cur_summary_lto->nondeterministic
-	  && !ignore_nondeterminism_p (node->decl, ecf_flags))
-	{
-	  cur_summary_lto->nondeterministic = true;
-	  changed = true;
+	  if (cur_summary && !cur_summary->nondeterministic)
+	    {
+	      cur_summary->nondeterministic = true;
+	      changed = true;
+	    }
+	  if (cur_summary_lto && !cur_summary_lto->nondeterministic)
+	    {
+	      cur_summary_lto->nondeterministic = true;
+	      changed = true;
+	    }
 	}
     }
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
@@ -4869,14 +4879,18 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		}
 	      if (callee_summary && !cur_summary->nondeterministic
 		  && callee_summary->nondeterministic
-		  && !ignore_nondeterminism_p (cur->decl, flags))
+		  && !ignore_nondeterminism_p
+			  (cur->decl, flags,
+			   TREE_TYPE (callee_edge->callee->decl)))
 		{
 		  cur_summary->nondeterministic = true;
 		  changed = true;
 		}
 	      if (callee_summary_lto && !cur_summary_lto->nondeterministic
 		  && callee_summary_lto->nondeterministic
-		  && !ignore_nondeterminism_p (cur->decl, flags))
+		  && !ignore_nondeterminism_p
+			  (cur->decl, flags,
+			   TREE_TYPE (callee_edge->callee->decl)))
 		{
 		  cur_summary_lto->nondeterministic = true;
 		  changed = true;
@@ -5358,20 +5372,22 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
   if (!(flags & (ECF_CONST | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE))
     {
+      bool set_nondeterministic
+	      = !ignore_nondeterminism_p
+		      (edge->caller->decl, flags,
+		       TREE_TYPE (edge->callee->decl));
       if (to_info)
 	{
 	  if (!callee_info || callee_info->side_effects)
 	    to_info->side_effects = true;
-	  if ((!callee_info || callee_info->nondeterministic)
-	      && !ignore_nondeterminism_p (edge->caller->decl, flags))
+	  if (set_nondeterministic)
 	    to_info->nondeterministic = true;
 	}
       if (to_info_lto)
 	{
 	  if (!callee_info_lto || callee_info_lto->side_effects)
 	    to_info_lto->side_effects = true;
-	  if ((!callee_info_lto || callee_info_lto->nondeterministic)
-	      && !ignore_nondeterminism_p (edge->caller->decl, flags))
+	  if (set_nondeterministic)
 	    to_info_lto->nondeterministic = true;
 	}
      }
