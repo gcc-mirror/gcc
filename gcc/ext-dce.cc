@@ -941,6 +941,38 @@ ext_dce_process_bb (basic_block bb)
     }
 }
 
+/* SUBREG_PROMOTED_VAR_P is set by the gimple->rtl optimizers and
+   is usually helpful.  However, in some cases setting the value when
+   it not strictly needed can cause this pass to miss optimizations.
+
+   Specifically consider (set (mem) (subreg (reg))).  If set in that
+   case it will cause more bit groups to be live for REG than would
+   be strictly necessary which in turn can inhibit extension removal.
+
+   So do a pass over the IL wiping the SUBREG_PROMOTED_VAR_P when it
+   is obviously not needed.  */
+
+static void
+maybe_clear_subreg_promoted_p (void)
+{
+  for (rtx_insn *insn = get_insns(); insn; insn = NEXT_INSN (insn))
+    {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+
+      rtx set = single_set (insn);
+      if (!set)
+	continue;
+
+      /* There may be other cases where we should clear, but for
+	 now, this is the only known case where it causes problems.  */
+      if (MEM_P (SET_DEST (set)) && SUBREG_P (SET_SRC (set))
+        && GET_MODE (SET_DEST (set)) <= GET_MODE (SUBREG_REG (SET_SRC (set))))
+	SUBREG_PROMOTED_VAR_P (SET_SRC (set)) = 0;
+    }
+}
+
+
 /* We optimize away sign/zero extensions in this pass and replace
    them with SUBREGs indicating certain bits are don't cares.
 
@@ -1077,6 +1109,9 @@ static bool ext_dce_rd_confluence_n (edge) { return true; }
 void
 ext_dce_execute (void)
 {
+  /* Some settings of SUBREG_PROMOTED_VAR_P are actively harmful
+     to this pass.  Clear it for those cases.  */
+  maybe_clear_subreg_promoted_p ();
   df_analyze ();
   ext_dce_init ();
 
