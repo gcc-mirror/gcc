@@ -2268,6 +2268,16 @@ package body Exp_Aggr is
       --  If default expression of a component mentions a discriminant of the
       --  type, it must be rewritten as the discriminant of the target object.
 
+      generic
+         with function Process (N : Node_Id) return Traverse_Result is <>;
+      procedure Traverse_Proc_For_Aggregate (N : Node_Id);
+      pragma Inline (Traverse_Proc_For_Aggregate);
+      --  This extends Traverse_Proc from Atree by looking into the Actions
+      --  list of conditional expressions, which are semantic fields and not
+      --  syntactic ones like the Actions of an N_Expression_With_Actions.
+      --  This makes it possible to delay the expansion of these conditional
+      --  expressions when they appear within the aggregate.
+
       ---------------------------------
       -- Ancestor_Discriminant_Value --
       ---------------------------------
@@ -2825,11 +2835,78 @@ package body Exp_Aggr is
          return OK;
       end Rewrite_Discriminant;
 
+      ---------------------------------
+      -- Traverse_Proc_For_Aggregate --
+      ---------------------------------
+
+      procedure Traverse_Proc_For_Aggregate (N : Node_Id) is
+
+         function Process_For_Aggregate (N : Node_Id) return Traverse_Result;
+         --  Call Process on N and on the nodes in the Actions list of N if
+         --  it is a conditional expression.
+
+         procedure Traverse_Node is new Traverse_Proc (Process_For_Aggregate);
+         --  Call Process_For_Aggregate on the subtree rooted at N
+
+         ---------------------------
+         -- Process_For_Aggregate --
+         ---------------------------
+
+         function Process_For_Aggregate (N : Node_Id) return Traverse_Result is
+
+            procedure Traverse_List (L : List_Id);
+            pragma Inline (Traverse_List);
+            --  Call Traverse_Node on the nodes of list L
+
+            --------------------
+            -- Traverse_List --
+            --------------------
+
+            procedure Traverse_List (L : List_Id) is
+               N : Node_Id := First (L);
+
+            begin
+               while Present (N) loop
+                  Traverse_Node (N);
+                  Next (N);
+               end loop;
+            end Traverse_List;
+
+            --  Local variables
+
+            Alt     : Node_Id;
+            Discard : Traverse_Final_Result;
+            pragma Unreferenced (Discard);
+
+         --  Start of processing for Process_For_Aggregate
+
+         begin
+            Discard := Process (N);
+
+            if Nkind (N) = N_Case_Expression then
+               Alt := First (Alternatives (N));
+               while Present (Alt) loop
+                  Traverse_List (Actions (Alt));
+                  Next (Alt);
+               end loop;
+
+            elsif Nkind (N) = N_If_Expression then
+               Traverse_List (Then_Actions (N));
+               Traverse_List (Else_Actions (N));
+            end if;
+
+            return OK;
+         end Process_For_Aggregate;
+
+      begin
+         Traverse_Node (N);
+      end Traverse_Proc_For_Aggregate;
+
       procedure Replace_Discriminants is
-        new Traverse_Proc (Rewrite_Discriminant);
+        new Traverse_Proc_For_Aggregate (Rewrite_Discriminant);
 
       procedure Replace_Self_Reference is
-        new Traverse_Proc (Replace_Type);
+        new Traverse_Proc_For_Aggregate (Replace_Type);
 
    --  Start of processing for Build_Record_Aggr_Code
 
@@ -4131,16 +4208,13 @@ package body Exp_Aggr is
       if
          --  Internal aggregates (transformed when expanding the parent),
          --  excluding container aggregates as these are transformed into
-         --  subprogram calls later. So far aggregates with self-references
-         --  are not supported if they appear in a conditional expression.
+         --  subprogram calls later.
 
          (Nkind (Parent_Node) = N_Component_Association
-           and then not Is_Container_Aggregate (Parent (Parent_Node))
-           and then not (In_Cond_Expr and then Has_Self_Reference (N)))
+           and then not Is_Container_Aggregate (Parent (Parent_Node)))
 
          or else (Nkind (Parent_Node) in N_Aggregate | N_Extension_Aggregate
-                   and then not Is_Container_Aggregate (Parent_Node)
-                   and then not (In_Cond_Expr and then Has_Self_Reference (N)))
+                   and then not Is_Container_Aggregate (Parent_Node))
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 
