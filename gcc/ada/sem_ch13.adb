@@ -2868,11 +2868,12 @@ package body Sem_Ch13 is
                   --  For non-Boolean aspects, if the expression has the form
                   --  of an integer literal, then do not delay, since we know
                   --  the value cannot change. This optimization catches most
-                  --  rep clause cases.
+                  --  rep clause cases. Likewise for a string literal.
 
                   elsif A_Id not in Boolean_Aspects
                     and then Present (Expr)
-                    and then Nkind (Expr) = N_Integer_Literal
+                    and then
+                      Nkind (Expr) in N_Integer_Literal | N_String_Literal
                   then
                      Delay_Required := False;
 

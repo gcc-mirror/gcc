@@ -11700,7 +11700,7 @@ package body Exp_Util is
       --  See the documentation of Initialization_Statements in Einfo
 
       return Comes_From_Source (Decl)
-        and then (Has_Aspect (Obj_Id, Aspect_Address)
+        and then (Has_Delayed_Aspects (Obj_Id)
                    or else Present (Following_Address_Clause (Decl))
                    or else Init_Or_Norm_Scalars);
    end Needs_Initialization_Statements;

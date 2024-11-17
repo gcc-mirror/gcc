@@ -98,8 +98,7 @@ package body Freeze is
 
    procedure Check_Address_Clause (E : Entity_Id);
    --  Apply legality checks to address clauses for object declarations,
-   --  at the point the object is frozen. Also ensure any initialization is
-   --  performed only after the object has been frozen.
+   --  at the point the object is frozen.
 
    procedure Check_Component_Storage_Order
      (Encl_Type        : Entity_Id;
@@ -636,11 +635,9 @@ package body Freeze is
       Addr       : constant Node_Id   := Address_Clause (E);
       Typ        : constant Entity_Id := Etype (E);
 
-      Assign : Node_Id;
-      Decl   : Node_Id;
-      Expr   : Node_Id;
-      Init   : Node_Id;
-      Lhs    : Node_Id;
+      Decl : Node_Id;
+      Expr : Node_Id;
+      Init : Node_Id;
 
    begin
       if Present (Addr) then
@@ -743,47 +740,6 @@ package body Freeze is
                      Decl, O_Ent);
                end if;
             end;
-         end if;
-
-         --  Remove side effects from initial expression, except in the case of
-         --  limited build-in-place calls and aggregates, which have their own
-         --  expansion elsewhere. This exception is necessary to avoid copying
-         --  limited objects.
-
-         if Present (Init)
-           and then not Is_Inherently_Limited_Type (Typ)
-         then
-            --  Capture initialization value at point of declaration, and make
-            --  explicit assignment legal, because object may be a constant.
-
-            Remove_Side_Effects (Init);
-            Lhs := New_Occurrence_Of (E, Sloc (Decl));
-            Set_Assignment_OK (Lhs);
-
-            Assign :=
-              Make_Assignment_Statement (Sloc (Decl),
-                Name       => Lhs,
-                Expression => Init);
-
-            Set_No_Initialization (Decl);
-
-            --  If the initialization expression is an aggregate, we do not
-            --  adjust after the assignment but, in either case, we do not
-            --  finalize before since the object is now uninitialized. Note
-            --  that Make_Tag_Ctrl_Assignment will also automatically insert
-            --  the tag assignment in the tagged case.
-
-            if Nkind (Unqualify (Init)) = N_Aggregate then
-               Set_No_Ctrl_Actions (Assign);
-            else
-               Set_No_Finalize_Actions (Assign);
-            end if;
-
-            --  Move initialization to freeze actions, once the object has
-            --  been frozen and the address clause alignment check has been
-            --  performed.
-
-            Append_Freeze_Action (E, Assign);
          end if;
       end if;
    end Check_Address_Clause;
@@ -4229,6 +4185,8 @@ package body Freeze is
       -------------------------------
 
       procedure Freeze_Object_Declaration (E : Entity_Id) is
+         Decl : constant Node_Id := Declaration_Node (E);
+
          procedure Check_Large_Modular_Array (Typ : Entity_Id);
          --  Check that the size of array type Typ can be computed without
          --  overflow, and generates a Storage_Error otherwise. This is only
@@ -4307,11 +4265,11 @@ package body Freeze is
                                   Make_Itype_Reference (Obj_Loc);
                   begin
                      Set_Itype (Ref_Node, Etype (E));
-                     Insert_Action (Declaration_Node (E), Ref_Node);
+                     Insert_Action (Decl, Ref_Node);
                   end;
                end if;
 
-               Insert_Action (Declaration_Node (E),
+               Insert_Action (Decl,
                  Make_Raise_Storage_Error (Obj_Loc,
                    Condition =>
                      Make_Op_Ge (Obj_Loc,
@@ -4494,45 +4452,63 @@ package body Freeze is
          --  checks to freeze time since pragma Import inhibits default
          --  initialization and thus pragma Import affects these checks.
 
-         Validate_Object_Declaration (Declaration_Node (E));
+         Validate_Object_Declaration (Decl);
 
-         --  If there is an address clause, check that it is valid and if need
-         --  be move initialization to the freeze node.
+         --  If there is an address clause, check that it is valid
 
          Check_Address_Clause (E);
 
-         --  Similar processing is needed for aspects that may affect object
-         --  layout, like Address, if there is an initialization expression.
-         --  We don't do this if there is a pragma Linker_Section, because it
-         --  would prevent the back end from statically initializing the
-         --  object; we don't want elaboration code in that case.
+         --  If the object has an address clause or a delayed aspect, remove
+         --  the side effects from initial expression, except in the case of
+         --  limited build-in-place calls and aggregates, which have their own
+         --  expansion elsewhere. This exception is necessary to avoid copying
+         --  limited objects.
 
-         if Has_Delayed_Aspects (E)
-           and then Expander_Active
-           and then Is_Array_Type (Typ)
-           and then Present (Expression (Declaration_Node (E)))
-           and then No (Linker_Section_Pragma (E))
+         if Expander_Active
+           and then
+             (Present (Address_Clause (E)) or else Has_Delayed_Aspects (E))
+           and then Present (Expression (Decl))
+           and then not No_Initialization (Decl)
+           and then not Is_Inherently_Limited_Type (Typ)
          then
             declare
-               Decl : constant Node_Id := Declaration_Node (E);
+               Init : constant Node_Id := Expression (Decl);
                Lhs  : constant Node_Id := New_Occurrence_Of (E, Loc);
+
+               Assign : Node_Id;
 
             begin
                --  Capture initialization value at point of declaration, and
                --  make explicit assignment legal, because object may be a
                --  constant.
 
-               Remove_Side_Effects (Expression (Decl));
+               Remove_Side_Effects (Init);
                Set_Assignment_OK (Lhs);
 
-               --  Move initialization to freeze actions
-
-               Append_Freeze_Action (E,
-                 Make_Assignment_Statement (Loc,
+               Assign :=
+                 Make_Assignment_Statement (Sloc (Decl),
                    Name       => Lhs,
-                   Expression => Expression (Decl)));
+                   Expression => Init);
 
                Set_No_Initialization (Decl);
+
+               --  If the initialization expression is an aggregate, we do not
+               --  adjust after the assignment but, in either case, we do not
+               --  finalize before since the object is now uninitialized. Note
+               --  that Make_Tag_Ctrl_Assignment will also automatically insert
+               --  the tag assignment in the tagged case.
+
+               if Nkind (Unqualify (Init)) = N_Aggregate then
+                  Set_No_Ctrl_Actions (Assign);
+               else
+                  Set_No_Finalize_Actions (Assign);
+               end if;
+
+               --  Move initialization to freeze actions, once the object has
+               --  been frozen and the address clause alignment check has been
+               --  performed.
+
+               Append_Freeze_Action (E, Assign);
             end;
          end if;
 
@@ -4574,8 +4550,7 @@ package body Freeze is
             null;
 
          elsif Has_Default_Initialization (E) then
-            Check_Restriction
-              (No_Default_Initialization, Declaration_Node (E));
+            Check_Restriction (No_Default_Initialization, Decl);
          end if;
 
          --  Ensure that a variable subject to pragma Thread_Local_Storage
