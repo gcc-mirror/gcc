@@ -1,3 +1,12 @@
+2024-11-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-11-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117500
+	* config/avr/avr.cc (avr_print_operand) [code = 'i']: Use
+	output_operand_lossage on bad operands instead of fatal_insn.
+
 2024-11-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/117564
