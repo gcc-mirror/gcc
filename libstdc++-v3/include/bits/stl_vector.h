@@ -1114,7 +1114,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return size_type(this->_M_impl._M_finish - this->_M_impl._M_start); }
+      {
+	ptrdiff_t __dif = this->_M_impl._M_finish - this->_M_impl._M_start;
+	if (__dif < 0)
+	   __builtin_unreachable ();
+	return size_type(__dif);
+      }
 
       /**  Returns the size() of the largest possible %vector.  */
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
@@ -1201,8 +1206,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_type
       capacity() const _GLIBCXX_NOEXCEPT
       {
-	return size_type(this->_M_impl._M_end_of_storage
-			   - this->_M_impl._M_start);
+	ptrdiff_t __dif = this->_M_impl._M_end_of_storage
+			  - this->_M_impl._M_start;
+	if (__dif < 0)
+	   __builtin_unreachable ();
+	return size_type(__dif);
       }
 
       /**

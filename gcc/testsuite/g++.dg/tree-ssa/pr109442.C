@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-O1 -fdump-tree-optimized" }
+// { dg-options "-O2 -fdump-tree-optimized" }
 #include <vector>
 #define T int
 T vat1(std::vector<T> v1) {
