@@ -46,7 +46,6 @@ _txnal_runtime_error_get_msg(void* e);
 #define _GLIBCXX_DEFINE_STDEXCEPT_COPY_OPS 1
 #define __cow_string __cow_stringxxx
 #include <stdexcept>
-#include <system_error>
 #undef __cow_string
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -168,14 +167,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   static_assert(alignof(__cow_string) == alignof(std::string),
                 "alignof(std::string) has changed");
 #endif
-
-  // Return error_category::message() as an SSO string
-  __sso_string
-  error_category::_M_message(int i) const
-  {
-    string msg = this->message(i);
-    return {msg.c_str(), msg.length()};
-  }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

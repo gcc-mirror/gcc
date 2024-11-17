@@ -69,6 +69,7 @@ sources = \
 	codecvt.cc \
 	condition_variable.cc \
 	cow-stdexcept.cc \
+	cow-system_error.cc \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
