@@ -474,7 +474,7 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
   }
 
   if (e1->expr_type != e2->expr_type)
-    return -3;
+    return -2;
 
   switch (e1->expr_type)
     {

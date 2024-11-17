@@ -6393,6 +6393,7 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
   gfc_symtree *newsym = NULL;
   symbol_attribute caf_attr;
   gfc_actual_arglist *param_list;
+  tree ts_string_length = NULL_TREE;
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
@@ -6741,6 +6742,7 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	  gfc_init_se (&se_sz, NULL);
 	  gfc_conv_expr (&se_sz, sz);
 	  gfc_free_expr (sz);
+	  ts_string_length = fold_convert (gfc_charlen_type_node, se_sz.expr);
 	  tmp = gfc_get_char_type (code->ext.alloc.ts.kind);
 	  tmp = TYPE_SIZE_UNIT (tmp);
 	  tmp = fold_convert (TREE_TYPE (se_sz.expr), tmp);
@@ -6950,6 +6952,15 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	}
       else
 	tmp = expr3_esize;
+
+      /* Create runtime check for ALLOCATE of character with type-spec.  */
+      if (expr->ts.type == BT_CHARACTER && !expr->ts.deferred
+	  && ts_string_length
+	  && se.string_length)
+	gfc_trans_same_strlen_check ("ALLOCATE with type-spec",
+				     &al->expr->where,
+				     ts_string_length, se.string_length,
+				     &block);
 
       gfc_omp_namelist *omp_alloc_item = NULL;
       if (omp_allocate)

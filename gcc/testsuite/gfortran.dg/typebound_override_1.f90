@@ -21,9 +21,9 @@ module m
    contains
      procedure, nopass :: a => a2  ! { dg-error "Character length mismatch in function result" }
      procedure, nopass :: b => b2  ! { dg-error "Rank mismatch in function result" }
-     procedure, nopass :: c => c2  ! FIXME: dg-warning "Possible character length mismatch" 
+     procedure, nopass :: c => c2  ! FIXME: dg-warning "Possible character length mismatch"
      procedure, nopass :: d => d2  ! valid, check for commutativity (+,*)
-     procedure, nopass :: e => e2  ! { dg-error "Character length mismatch in function result" }
+     procedure, nopass :: e => e2  ! { dg-error "declared with a constant character length" }
   end type
 
 contains

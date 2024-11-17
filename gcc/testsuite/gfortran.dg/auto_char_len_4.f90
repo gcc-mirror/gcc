@@ -13,26 +13,37 @@ FUNCTION a()
 END FUNCTION a
 
 SUBROUTINE s(n)
-  CHARACTER(LEN=n), EXTERNAL :: a  ! { dg-error "Character length mismatch" }
-  CHARACTER(LEN=n), EXTERNAL :: d  ! { dg-error "Character length mismatch" }
+  CHARACTER(LEN=n), EXTERNAL :: a  ! { dg-error "declared with a constant character length" }
+  CHARACTER(LEN=n), EXTERNAL :: d  ! { dg-error "declared with a constant character length" }
   interface
     function b (m)                ! This is OK
-      CHARACTER(LEN=m) :: b
       integer :: m
+      CHARACTER(LEN=m) :: b
     end function b
+    function e (m)              ! { dg-warning "Possible character length mismatch" }
+      integer :: m
+      CHARACTER(LEN=m) :: e
+    end function e
   end interface
   write(6,*) a()
   write(6,*) b(n)
   write(6,*) c()
   write(6,*) d()
+  write(6,*) e(n)
 contains
-    function c ()                ! This is OK
-      CHARACTER(LEN=n):: c
-      c = ""
-    end function c
+  function c ()                ! This is OK
+    CHARACTER(LEN=n):: c
+    c = ""
+  end function c
 END SUBROUTINE s
 
 FUNCTION d()
   CHARACTER(len=99) :: d
   d = ''
 END FUNCTION d
+
+function e(k)                   ! { dg-warning "Possible character length mismatch" }
+  integer :: k
+  character(len=k+1-1) :: e
+  e = ''
+end function e
