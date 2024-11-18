@@ -5943,7 +5943,12 @@ cp_handle_deprecated_or_unavailable (tree decl, tsubst_flags_t complain)
 	}
     }
   else
-    warned = warn_deprecated_use (decl, NULL_TREE);
+    {
+      if (!warning_suppressed_at (input_location,
+				  OPT_Wdeprecated_declarations))
+	warned = warn_deprecated_use (decl, NULL_TREE);
+      suppress_warning_at (input_location, OPT_Wdeprecated_declarations);
+    }
 
   return warned;
 }

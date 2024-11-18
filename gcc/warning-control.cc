@@ -262,7 +262,7 @@ copy_warning (gimple *to, const gimple *from)
 bool has_warning_spec (const_tree t)
 {
   const location_t loc = get_location (t);
-  return !RESERVED_LOCATION_P (loc) && !get_no_warning_bit (t);
+  return !RESERVED_LOCATION_P (loc) && get_no_warning_bit (t);
 }
 
 /* Retrieve warning dispostion bitmap for tree streaming.  */

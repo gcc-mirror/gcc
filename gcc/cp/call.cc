@@ -10004,6 +10004,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       SET_EXPR_LOCATION (expr, input_location);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
+      if (TREE_DEPRECATED (fn)
+	  && warning_suppressed_at (input_location,
+				    OPT_Wdeprecated_declarations))
+	/* Make the expr consistent with the location.  */
+	TREE_NO_WARNING (expr) = true;
       if (immediate_invocation_p (fn))
 	{
 	  tree obj_arg = NULL_TREE, exprimm = expr;
@@ -10703,6 +10708,14 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree c = extract_call_expr (call);
       if (TREE_CODE (c) == CALL_EXPR)
 	suppress_warning (c /* Suppress all warnings.  */);
+    }
+  else if (TREE_DEPRECATED (fn)
+	   && warning_suppressed_at (input_location,
+				     OPT_Wdeprecated_declarations))
+    {
+      tree c = extract_call_expr (call);
+      if (TREE_CODE (c) == CALL_EXPR)
+	TREE_NO_WARNING (c) = true;
     }
 
   return call;
