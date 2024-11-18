@@ -1,6 +1,13 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-11-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_construct): In
+	case of an error, call GOMP_PLUGIN_fatal not ..._error; use NULL
+	not false in return.
+
+	Backported from trunk:
 	2024-08-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c-c++-common/target-link-2.c: Reset variable
