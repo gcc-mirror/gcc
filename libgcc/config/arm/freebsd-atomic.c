@@ -127,8 +127,6 @@ __sync_val_compare_and_swap_##N (TYPE *mem, TYPE expected,		\
         return (old);							\
 }
 
-typedef unsigned char bool;
-
 #define SYNC_BOOL_CAS_N(N, TYPE)                                        \
 bool HIDDEN								\
 __sync_bool_compare_and_swap_##N (TYPE *ptr, TYPE oldval,		\

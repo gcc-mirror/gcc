@@ -249,8 +249,6 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 SUBWORD_VAL_CAS (short,       2)
 SUBWORD_VAL_CAS (signed char, 1)
 
-typedef unsigned char bool;
-
 bool HIDDEN
 __sync_bool_compare_and_swap_4 (int *ptr, int oldval, int newval)
 {

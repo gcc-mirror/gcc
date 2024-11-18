@@ -141,8 +141,6 @@ __sync_val_compare_and_swap_8 (long long *ptr, long long oldval,
     }
 }
 
-typedef unsigned char bool;
-
 bool HIDDEN
 __sync_bool_compare_and_swap_8 (long long *ptr, long long oldval,
 				 long long newval)
