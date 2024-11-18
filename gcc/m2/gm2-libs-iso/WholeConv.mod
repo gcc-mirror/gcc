@@ -196,7 +196,8 @@ BEGIN
       RETURN( v )
    ELSE
       EXCEPTIONS.RAISE(wholeConv, ORD(invalidSigned),
-                       'WholeConv.' + __FUNCTION__ + ': signed number is invalid')
+                       'WholeConv.' + __FUNCTION__ + ': signed number is invalid') ;
+      RETURN 0
    END
 END ValueInt ;
 
@@ -333,7 +334,8 @@ BEGIN
       RETURN( value )
    ELSE
       EXCEPTIONS.RAISE(wholeConv, ORD(invalidUnsigned),
-                       'WholeConv:' + __FUNCTION__ + ': unsigned number is invalid')
+                       'WholeConv:' + __FUNCTION__ + ': unsigned number is invalid') ;
+      RETURN 0
    END
 END ValueCard ;
 
