@@ -160,6 +160,9 @@ private:
   // as a multi-register vector operand in some other non-move instruction.
   static constexpr unsigned int HAS_FLEXIBLE_STRIDE = 1U << 10;
   static constexpr unsigned int HAS_FIXED_STRIDE = 1U << 11;
+  //
+  // Whether we have decided not to allocate the pseudo register.
+  static constexpr unsigned int IGNORE_REG = 1U << 12;
 
   // Flags that should be propagated across moves between pseudo registers.
   static constexpr unsigned int PSEUDO_COPY_FLAGS = ~(HAS_FLEXIBLE_STRIDE
@@ -500,6 +503,7 @@ private:
 
   void process_region ();
   bool is_dead_insn (rtx_insn *);
+  bool could_split_region_here ();
   void process_block (basic_block, bool);
   void process_blocks ();
 
@@ -1227,7 +1231,9 @@ early_ra::fpr_preference (unsigned int regno)
 {
   auto mode = m_pseudo_regs[regno].mode;
   auto flags = m_pseudo_regs[regno].flags;
-  if (mode == VOIDmode || !targetm.hard_regno_mode_ok (V0_REGNUM, mode))
+  if (flags & IGNORE_REG)
+    return -4;
+  else if (mode == VOIDmode || !targetm.hard_regno_mode_ok (V0_REGNUM, mode))
     return -3;
   else if (flags & HAS_FLEXIBLE_STRIDE)
     return 3;
@@ -1932,19 +1938,34 @@ early_ra::record_constraints (rtx_insn *insn)
       });
     }
 
-  // Record if there is an output operand that is never earlyclobber and never
-  // matched to an input.  See the comment below for how this is used.
   rtx dest_op = NULL_RTX;
   for (int opno = 0; opno < recog_data.n_operands; ++opno)
     {
+      rtx op = recog_data.operand[opno];
       auto op_mask = operand_mask (1) << opno;
+      // Record if there is an output operand that is "independent" of the
+      // inputs, in the sense that it is never earlyclobber and is never
+      // matched to an input.  See the comment below for how this is used.
       if (recog_data.operand_type[opno] == OP_OUT
 	  && (earlyclobber_operands & op_mask) == 0
 	  && (matched_operands & op_mask) == 0)
 	{
-	  dest_op = recog_data.operand[opno];
+	  dest_op = op;
 	  break;
 	}
+      // We sometimes decide not to allocate pseudos even if they meet
+      // the normal FPR preference criteria; see the setters of IGNORE_REG
+      // for details.  However, the premise is that we should only ignore
+      // definitions of such pseudos if they are independent of the other
+      // operands in the instruction.
+      else if (recog_data.operand_type[opno] != OP_IN
+	       && REG_P (op)
+	       && !HARD_REGISTER_P (op)
+	       && (m_pseudo_regs[REGNO (op)].flags & IGNORE_REG) != 0)
+	record_allocation_failure ([&](){
+	  fprintf (dump_file, "ignored register r%d depends on input operands",
+		   REGNO (op));
+	});
     }
 
   for (int opno = 0; opno < recog_data.n_operands; ++opno)
@@ -3488,6 +3509,35 @@ early_ra::is_dead_insn (rtx_insn *insn)
   return true;
 }
 
+// Return true if we could split a single-block region into two regions
+// at the current program point.  This is true if the block up to this
+// point is worth treating as an independent region and if no registers
+// that would affect the allocation are currently live.
+inline bool
+early_ra::could_split_region_here ()
+{
+  return (m_accurate_live_ranges
+	  && bitmap_empty_p (m_live_allocnos)
+	  && m_live_fprs == 0
+	  && !m_allocnos.is_empty ());
+}
+
+// Return true if any of the pseudos defined by INSN are also defined
+// elsewhere.
+static bool
+defines_multi_def_pseudo (rtx_insn *insn)
+{
+  df_ref ref;
+
+  FOR_EACH_INSN_DEF (ref, insn)
+    {
+      unsigned int regno = DF_REF_REGNO (ref);
+      if (!HARD_REGISTER_NUM_P (regno) && DF_REG_DEF_COUNT (regno) > 1)
+	return true;
+    }
+  return false;
+}
+
 // Build up information about block BB.  IS_ISOLATED is true if the
 // block is not part of a larger region.
 void
@@ -3559,6 +3609,50 @@ early_ra::process_block (basic_block bb, bool is_isolated)
       else
 	{
 	  record_insn_defs (insn);
+
+	  // If we've decided not to allocate the current region, and if
+	  // all relevant registers are now dead, consider splitting the
+	  // block into two regions at this point.
+	  //
+	  // This is useful when a sequence of vector code ends in a
+	  // vector-to-scalar-integer operation.  We wouldn't normally
+	  // want to allocate the scalar integer, since IRA is much better
+	  // at handling cross-file moves.  But if nothing of relevance is
+	  // live between the death of the final vector and the birth of the
+	  // scalar integer, we can try to split the region at that point.
+	  // We'd then allocate the vector input and leave the real RA
+	  // to handle the scalar output.
+	  if (is_isolated
+	      && !m_allocation_successful
+	      && could_split_region_here ()
+	      && !defines_multi_def_pseudo (insn))
+	    {
+	      // Mark that we've deliberately chosen to leave the output
+	      // pseudos to the real RA.
+	      df_ref ref;
+	      FOR_EACH_INSN_DEF (ref, insn)
+		{
+		  unsigned int regno = DF_REF_REGNO (ref);
+		  if (!HARD_REGISTER_NUM_P (regno))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file, "Ignoring register r%d\n", regno);
+		      m_pseudo_regs[regno].flags |= IGNORE_REG;
+		      bitmap_clear_bit (m_fpr_pseudos, regno);
+		    }
+		}
+
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "\nStarting new region at insn %d\n",
+			 INSN_UID (insn));
+
+	      // Start a new region and replay the definitions.  The replay
+	      // is needed if the instruction sets a hard FP register.
+	      start_new_region ();
+	      record_insn_defs (insn);
+	      start_insn = insn;
+	    }
+
 	  if (auto *call_insn = dyn_cast<rtx_call_insn *> (insn))
 	    record_insn_call (call_insn);
 	  record_insn_uses (insn);
@@ -3574,11 +3668,7 @@ early_ra::process_block (basic_block bb, bool is_isolated)
 
       // See whether we have a complete region, with no remaining live
       // allocnos.
-      if (is_isolated
-	  && m_accurate_live_ranges
-	  && bitmap_empty_p (m_live_allocnos)
-	  && m_live_fprs == 0
-	  && !m_allocnos.is_empty ())
+      if (is_isolated && could_split_region_here ())
 	{
 	  rtx_insn *prev_insn = PREV_INSN (insn);
 	  if (m_allocation_successful)
