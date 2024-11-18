@@ -4799,9 +4799,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    MAX (A, B) != 0 -> (A|B) != 0 iff unsigned.  */
 (for cmp (eq ne)
  (simplify
-  (cmp (max @0 @1) integer_zerop@2)
+  (cmp (max @0 @1) integer_zerop)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
-   (cmp (bit_ior @0 @1) @2))))
+   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+    (cmp (bit_ior (convert:utype @0) (convert:utype @1))
+         { build_zero_cst (utype); } )))))
 
 /* Undo fancy ways of writing max/min or other ?: expressions, like
    a - ((a - b) & -(a < b))  and  a - (a - b) * (a < b) into (a < b) ? b : a.
