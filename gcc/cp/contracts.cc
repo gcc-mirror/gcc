@@ -179,7 +179,7 @@ lookup_concrete_semantic (const char *name)
   if (strcmp (name, "ignore") == 0)
     return CCS_IGNORE;
   if (strcmp (name, "assume") == 0)
-    return CCS_ASSUME;
+    return flag_contracts_nonattr ? CCS_IGNORE : CCS_ASSUME;
   if (strcmp (name, "check_never_continue") == 0
       || strcmp (name, "never") == 0
       || strcmp (name, "abort") == 0)
@@ -650,17 +650,20 @@ check_postcondition_result (tree decl, tree type, location_t loc)
 void
 rebuild_postconditions (tree decl)
 {
+  if (!decl || decl == error_mark_node)
+    return;
+
   tree type = TREE_TYPE (TREE_TYPE (decl));
   tree attributes = DECL_CONTRACTS (decl);
 
-  for (; attributes ; attributes = TREE_CHAIN (attributes))
+  for (; attributes ; attributes = CONTRACT_CHAIN (attributes))
     {
-      if (!cxx_contract_attribute_p (attributes))
-	continue;
       tree contract = TREE_VALUE (TREE_VALUE (attributes));
       if (TREE_CODE (contract) != POSTCONDITION_STMT)
 	continue;
       tree condition = CONTRACT_CONDITION (contract);
+      if (!condition || condition == error_mark_node)
+	continue;
 
       /* If any conditions are deferred, they're all deferred.  Note that
 	 we don't have to instantiate postconditions in that case because
@@ -1195,7 +1198,11 @@ check_for_mismatched_contracts (tree old_attr, tree new_attr,
 
   /* A deferred contract tentatively matches.  */
   if (CONTRACT_CONDITION_DEFERRED_P (new_contract))
-    return false;
+    {
+      /* If one is deferred, the other better be.  */
+//      gcc_checking_assert (CONTRACT_CONDITION_DEFERRED_P (old_contract));
+      return false;
+    }
 
   /* Compare the conditions of the contracts.  We fold immediately to avoid
      issues comparing contracts on overrides that use parameters -- see
@@ -3120,7 +3127,7 @@ bool should_contract_wrap_call(tree fndecl)
     return false;
 
   // we always wrap virtual function calls
-  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl)
+  if ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl))
       || (flag_contract_nonattr_client_check > 1))
     return true;
 
