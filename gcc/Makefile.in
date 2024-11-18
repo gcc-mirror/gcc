@@ -436,6 +436,8 @@ endif
 
 enable_host_shared = @enable_host_shared@
 
+enable_libdiagnostics = @enable_libdiagnostics@
+
 enable_as_accelerator = @enable_as_accelerator@
 
 CPPLIB = ../libcpp/libcpp.a
@@ -618,6 +620,9 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
+ifeq (@enable_libdiagnostics@,yes)
+lang_checks += check-libdiagnostics
+endif
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt $(srcdir)/analyzer/analyzer.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -1880,6 +1885,10 @@ endif
 # compilation or not.
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
+ifeq (@enable_libdiagnostics@,yes)
+ALL_HOST_OBJS += $(libdiagnostics_OBJS)
+endif
+
 BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER)
 
@@ -2186,7 +2195,7 @@ all.cross: native gcc-cross$(exeext) cpp$(exeext) specs \
 	libgcc-support lang.all.cross doc selftest @GENINSRC@ srcextra
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
-	libgcc-support lang.start.encap @GENINSRC@ srcextra
+	libgcc-support lang.start.encap @LIBDIAGNOSTICS@ @GENINSRC@ srcextra
 # These can't be made until after GCC can run.
 rest.encap: lang.rest.encap
 # This is what is made with the host's compiler
@@ -2274,6 +2283,129 @@ cpp$(exeext): $(GCC_OBJS) c-family/cppspec.o libcommon-target.a $(LIBDEPS) \
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
 	  c-family/cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+
+libdiagnostics_OBJS = libdiagnostics.o \
+	libcommon.a
+
+# libdiagnostics
+
+LIBDIAGNOSTICS_VERSION_NUM = 0
+LIBDIAGNOSTICS_MINOR_NUM = 0
+LIBDIAGNOSTICS_RELEASE_NUM = 1
+
+ifneq (,$(findstring mingw,$(target)))
+LIBDIAGNOSTICS_FILENAME = libdiagnostics-$(LIBDIAGNOSTICS_VERSION_NUM).dll
+LIBDIAGNOSTICS_IMPORT_LIB = libdiagnostics.dll.a
+
+libdiagnostics: $(LIBDIAGNOSTICS_FILENAME)
+
+else
+
+ifneq (,$(findstring darwin,$(host)))
+
+LIBDIAGNOSTICS_AGE = 1
+LIBDIAGNOSTICS_BASENAME = libdiagnostics
+
+LIBDIAGNOSTICS_SONAME = \
+  ${libdir}/$(LIBDIAGNOSTICS_BASENAME).$(LIBDIAGNOSTICS_VERSION_NUM).dylib
+LIBDIAGNOSTICS_FILENAME = $(LIBDIAGNOSTICS_BASENAME).$(LIBDIAGNOSTICS_VERSION_NUM).dylib
+LIBDIAGNOSTICS_LINKER_NAME = $(LIBDIAGNOSTICS_BASENAME).dylib
+
+# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
+# LD_SONAME_OPTION depending if configure found them, using $(if)
+# We have to define a LIBDIAGNOSTICS_COMMA here, otherwise the commas in the "true"
+# result are treated as separators by the $(if).
+LIBDIAGNOSTICS_COMMA := ,
+LIBDIAGNOSTICS_VERSION_SCRIPT_OPTION = \
+	$(if $(LD_VERSION_SCRIPT_OPTION),\
+	  -Wl$(LIBDIAGNOSTICS_COMMA)$(LD_VERSION_SCRIPT_OPTION)$(LIBDIAGNOSTICS_COMMA)$(srcdir)/libdiagnostics.map)
+
+LIBDIAGNOSTICS_SONAME_OPTION = \
+	$(if $(LD_SONAME_OPTION), \
+	     -Wl$(LIBDIAGNOSTICS_COMMA)$(LD_SONAME_OPTION)$(LIBDIAGNOSTICS_COMMA)$(LIBDIAGNOSTICS_SONAME))
+
+LIBDIAGNOSTICS_SONAME_SYMLINK = $(LIBDIAGNOSTICS_FILENAME)
+LIBDIAGNOSTICS_LINKER_NAME_SYMLINK = $(LIBDIAGNOSTICS_LINKER_NAME)
+
+libdiagnostics: $(LIBDIAGNOSTICS_FILENAME) \
+	$(LIBDIAGNOSTICS_SYMLINK) \
+	$(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK)
+
+else
+
+LIBDIAGNOSTICS_LINKER_NAME = libdiagnostics.so
+LIBDIAGNOSTICS_SONAME = $(LIBDIAGNOSTICS_LINKER_NAME).$(LIBDIAGNOSTICS_VERSION_NUM)
+LIBDIAGNOSTICS_FILENAME = \
+  $(LIBDIAGNOSTICS_SONAME).$(LIBDIAGNOSTICS_MINOR_NUM).$(LIBDIAGNOSTICS_RELEASE_NUM)
+
+LIBDIAGNOSTICS_LINKER_NAME_SYMLINK = $(LIBDIAGNOSTICS_LINKER_NAME)
+LIBDIAGNOSTICS_SONAME_SYMLINK = $(LIBDIAGNOSTICS_SONAME)
+
+# Conditionalize the use of the LD_VERSION_SCRIPT_OPTION and
+# LD_SONAME_OPTION depending if configure found them, using $(if)
+# We have to define a LIBDIAGNOSTICS_COMMA here, otherwise the commas in the "true"
+# result are treated as separators by the $(if).
+LIBDIAGNOSTICS_COMMA := ,
+LIBDIAGNOSTICS_VERSION_SCRIPT_OPTION = \
+	$(if $(LD_VERSION_SCRIPT_OPTION),\
+	  -Wl$(LIBDIAGNOSTICS_COMMA)$(LD_VERSION_SCRIPT_OPTION)$(LIBDIAGNOSTICS_COMMA)$(srcdir)/libdiagnostics.map)
+
+LIBDIAGNOSTICS_SONAME_OPTION = \
+	$(if $(LD_SONAME_OPTION), \
+	     -Wl$(LIBDIAGNOSTICS_COMMA)$(LD_SONAME_OPTION)$(LIBDIAGNOSTICS_COMMA)$(LIBDIAGNOSTICS_SONAME))
+
+libdiagnostics: $(LIBDIAGNOSTICS_FILENAME) \
+	$(LIBDIAGNOSTICS_SYMLINK) \
+	$(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK)
+
+endif
+endif
+
+libdiagnostics.serial = $(LIBDIAGNOSTICS_FILENAME)
+
+# Tell GNU make to ignore these if they exist.
+.PHONY: libdiagnostics
+
+ifneq (,$(findstring mingw,$(target)))
+# Create import library
+LIBDIAGNOSTICS_EXTRA_OPTS = -Wl,--out-implib,$(LIBDIAGNOSTICS_IMPORT_LIB)
+else
+
+ifneq (,$(findstring darwin,$(host)))
+# TODO : Construct a Darwin-style symbol export file.
+LIBDIAGNOSTICS_EXTRA_OPTS = -Wl,-compatibility_version,$(LIBDIAGNOSTICS_VERSION_NUM) \
+	-Wl,-current_version,$(LIBDIAGNOSTICS_VERSION_NUM).$(LIBDIAGNOSTICS_MINOR_NUM).$(LIBDIAGNOSTICS_AGE) \
+	$(LIBDIAGNOSTICS_VERSION_SCRIPT_OPTION) \
+	$(LIBDIAGNOSTICS_SONAME_OPTION)
+else
+
+LIBDIAGNOSTICS_EXTRA_OPTS = $(LIBDIAGNOSTICS_VERSION_SCRIPT_OPTION) \
+	$(LIBDIAGNOSTICS_SONAME_OPTION)
+endif
+endif
+
+$(LIBDIAGNOSTICS_FILENAME): $(libdiagnostics_OBJS) $(CPPLIB) $(EXTRA_GCC_LIBS) $(LIBS) \
+	$(LIBDEPS) $(srcdir)/libdiagnostics.map
+	@$(call LINK_PROGRESS,$(INDEX.libdiagnostics),start)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
+	     $(libdiagnostics_OBJS) \
+	     $(CPPLIB) $(EXTRA_GCC_LIBS) $(LIBS) \
+	     $(LIBDIAGNOSTICS_EXTRA_OPTS)
+	@$(call LINK_PROGRESS,$(INDEX.libdiagnostics),end)
+
+# Create symlinks when not building for Windows
+ifeq (,$(findstring mingw,$(target)))
+
+ifeq (,$(findstring darwin,$(host)))
+# but only one level for Darwin, version info is embedded.
+$(LIBDIAGNOSTICS_SONAME_SYMLINK): $(LIBDIAGNOSTICS_FILENAME)
+	ln -sf $(LIBDIAGNOSTICS_FILENAME) $(LIBDIAGNOSTICS_SONAME_SYMLINK)
+endif
+
+$(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK): $(LIBDIAGNOSTICS_SONAME_SYMLINK)
+	ln -sf $(LIBDIAGNOSTICS_SONAME_SYMLINK) $(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK)
+endif
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
@@ -3816,6 +3948,10 @@ ifeq ($(enable_plugin),yes)
 install: install-plugin
 endif
 
+ifeq ($(enable_libdiagnostics),yes)
+install: install-libdiagnostics
+endif
+
 install-strip: override INSTALL_PROGRAM = $(INSTALL_STRIP_PROGRAM)
 ifneq ($(STRIP),)
 install-strip: STRIPPROG = $(STRIP)
@@ -3991,6 +4127,47 @@ install-driver: installdirs xgcc$(exeext)
 	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi; \
 	fi
+
+libdiagnostics.install-headers: installdirs
+	$(INSTALL_DATA) $(srcdir)/libdiagnostics.h \
+	  $(DESTDIR)$(includedir)/libdiagnostics.h
+	$(INSTALL_DATA) $(srcdir)/libdiagnostics++.h \
+	  $(DESTDIR)$(includedir)/libdiagnostics++.h
+
+ifneq (,$(findstring mingw,$(target)))
+libdiagnostics.install-common: installdirs libdiagnostics.install-headers
+# Install import library
+	$(INSTALL_PROGRAM) $(LIBDIAGNOSTICS_IMPORT_LIB) \
+	  $(DESTDIR)$(libdir)/$(LIBDIAGNOSTICS_IMPORT_LIB)
+# Install DLL file
+	$(INSTALL_PROGRAM) $(LIBDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(bindir)/$(LIBDIAGNOSTICS_FILENAME)
+
+else
+ifneq (,$(findstring darwin,$(host)))
+# but only one level for Darwin
+
+libdiagnostics.install-common: installdirs libdiagnostics.install-headers
+	$(INSTALL_PROGRAM) $(LIBDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBDIAGNOSTICS_FILENAME)
+	ln -sf \
+	  $(LIBDIAGNOSTICS_SONAME_SYMLINK)\
+	  $(DESTDIR)$(libdir)/$(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK)
+
+else
+libdiagnostics.install-common: installdirs libdiagnostics.install-headers
+	$(INSTALL_PROGRAM) $(LIBDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBDIAGNOSTICS_FILENAME)
+	ln -sf \
+	  $(LIBDIAGNOSTICS_FILENAME) \
+	  $(DESTDIR)$(libdir)/$(LIBDIAGNOSTICS_SONAME_SYMLINK)
+	ln -sf \
+	  $(LIBDIAGNOSTICS_SONAME_SYMLINK)\
+	  $(DESTDIR)$(libdir)/$(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK)
+endif
+endif
+
+install-libdiagnostics: libdiagnostics.install-common
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir

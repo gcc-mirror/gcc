@@ -691,6 +691,7 @@ extra_host_libiberty_configure_flags
 stage1_languages
 host_libs_picflag
 CRAB1_LIBS
+enable_libdiagnostics
 PICFLAG
 host_shared
 gcc_host_pie
@@ -844,6 +845,7 @@ enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
 enable_host_pie
 enable_host_shared
+enable_libdiagnostics
 enable_stage1_languages
 enable_objc_gc
 with_target_bdw_gc
@@ -1578,6 +1580,7 @@ Optional Features:
                           plugins [none]
   --enable-host-pie       build position independent host executables
   --enable-host-shared    build host code as shared libraries
+  --enable-libdiagnostics build libdiagnostics shared library
   --enable-stage1-languages[=all]
                           choose additional languages to build during stage1.
                           Mostly useful for compiler development
@@ -9600,6 +9603,45 @@ elif test x$host_pie = xyes; then
 else
   PICFLAG=
 fi
+
+
+
+
+# Check for libdiagnostics support.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable libdiagnostics" >&5
+$as_echo_n "checking whether to enable libdiagnostics... " >&6; }
+# Check whether --enable-libdiagnostics was given.
+if test "${enable_libdiagnostics+set}" = set; then :
+  enableval=$enable_libdiagnostics; enable_libdiagnostics=$enableval
+else
+  enable_libdiagnostics=no
+fi
+
+
+if test x$enable_libdiagnostics = xyes; then
+  # Disable libdiagnostics if -enable-host-shared not specified
+  # but not if building for Mingw. All code in Windows
+  # is position independent code (PIC).
+  case $target in
+     *mingw*) ;;
+     *)
+       if test x$host_shared != xyes; then
+	 as_fn_error $? "
+Enabling libdiagnostics requires --enable-host-shared.
+
+--enable-host-shared typically slows the rest of the compiler down by
+a few %, so you must explicitly enable it.
+
+If you want to build both libdiagnostics and the regular compiler, it is often
+best to do this via two separate configure/builds, in separate
+directories, to avoid imposing the performance cost of
+--enable-host-shared on the regular compiler." "$LINENO" 5
+       fi
+       ;;
+   esac
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libdiagnostics" >&5
+$as_echo "$enable_libdiagnostics" >&6; }
 
 
 

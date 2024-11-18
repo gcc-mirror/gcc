@@ -1231,6 +1231,13 @@ virtual calls in verifiable mode at all.  However the libvtv library will
 still be built (see @option{--disable-libvtv} to turn off building libvtv).
 @option{--disable-vtable-verify} is the default.
 
+@item --enable-libdiagnostics
+Specify whether to build @code{libdiagnostics}, a shared library exposing
+GCC's diagnostics capabilities via a C API, and a C++ wrapper API adding
+``syntactic sugar''.
+
+This option requires @option{--enable-host-shared} on non-Windows hosts.
+
 @item --disable-gcov
 Specify that the run-time library used for coverage analysis
 and associated host tools should not be built.

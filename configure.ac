@@ -2044,6 +2044,41 @@ fi
 
 AC_SUBST(PICFLAG)
 
+
+# Check for libdiagnostics support.
+AC_MSG_CHECKING([whether to enable libdiagnostics])
+AC_ARG_ENABLE(libdiagnostics,
+[AS_HELP_STRING([--enable-libdiagnostics],
+		[build libdiagnostics shared library])],
+enable_libdiagnostics=$enableval,
+enable_libdiagnostics=no)
+
+if test x$enable_libdiagnostics = xyes; then
+  # Disable libdiagnostics if -enable-host-shared not specified
+  # but not if building for Mingw. All code in Windows
+  # is position independent code (PIC).
+  case $target in
+     *mingw*) ;;
+     *)
+       if test x$host_shared != xyes; then
+	 AC_MSG_ERROR([
+Enabling libdiagnostics requires --enable-host-shared.
+
+--enable-host-shared typically slows the rest of the compiler down by
+a few %, so you must explicitly enable it.
+
+If you want to build both libdiagnostics and the regular compiler, it is often
+best to do this via two separate configure/builds, in separate
+directories, to avoid imposing the performance cost of
+--enable-host-shared on the regular compiler.])
+       fi
+       ;;
+   esac
+fi
+AC_MSG_RESULT($enable_libdiagnostics)
+AC_SUBST(enable_libdiagnostics)
+
+
 # Rust requires -ldl and -lpthread if you are using an old glibc that does not include them by
 # default, so we check for them here
 # We are doing the test here and not in the gcc/configure to be able to nicely disable the

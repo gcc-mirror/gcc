@@ -7380,6 +7380,9 @@ for language in $all_selected_languages
 do
 	check_languages="$check_languages check-$language"
 done
+if test x$enable_libdiagnostics = xyes; then
+	check_languages="$check_languages check-libdiagnostics"
+fi
 
 selftest_languages=
 for language in $all_selected_languages
@@ -7611,6 +7614,19 @@ AC_ARG_ENABLE(host-pie,
 [AS_HELP_STRING([--enable-host-pie],
 		[build host code as PIE])])
 AC_SUBST(enable_host_pie)
+
+AC_ARG_ENABLE(libdiagnostics,
+[AS_HELP_STRING([--enable-libdiagnostics],
+		[build libdiagnostics shared library])])
+AC_SUBST(enable_libdiagnostics)
+
+if test "$enable_libdiagnostics" = "yes"; then
+  LIBDIAGNOSTICS='libdiagnostics'
+else
+  LIBDIAGNOSTICS=''
+fi
+AC_SUBST(LIBDIAGNOSTICS)
+
 
 # Enable --enable-host-bind-now
 AC_ARG_ENABLE(host-bind-now,
