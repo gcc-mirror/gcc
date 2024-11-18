@@ -595,8 +595,10 @@ nvptx_open_device (int n)
       GOMP_PLUGIN_debug (0, "Setting \"native\" GPU thread stack size"
 			 " ('CU_LIMIT_STACK_SIZE') to %u bytes\n",
 			 native_gpu_thread_stack_size);
-      CUDA_CALL (cuCtxSetLimit,
-		 CU_LIMIT_STACK_SIZE, (size_t) native_gpu_thread_stack_size);
+      CUDA_CALL_ERET (NULL,
+		      cuCtxSetLimit,
+		      CU_LIMIT_STACK_SIZE,
+		      (size_t) native_gpu_thread_stack_size);
     }
 
   /* OpenMP "soft stacks".  */
