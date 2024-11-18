@@ -273,6 +273,10 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	    # created or not.  If it was, dg.exp will try to run it.
 	    catch { remote_file build delete $output_file }
 	}
+	"replay-sarif" {
+	    set compile_type "none"
+	    set output_file ""
+	}
 	default {
 	    perror "$do_what: not a valid dg-do keyword"
 	    return ""

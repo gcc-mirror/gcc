@@ -1238,6 +1238,12 @@ GCC's diagnostics capabilities via a C API, and a C++ wrapper API adding
 
 This option requires @option{--enable-host-shared} on non-Windows hosts.
 
+This option also enables @code{sarif-replay}, a command-line tool for
+viewing @uref{https://sarif.info/,,SARIF files}.  @code{sarif-replay} takes
+one or more @code{.sarif} files as input and attempts to replay any
+diagnostics within them to stderr (via @code{libdiagnostics}) in the style
+of GCC's diagnostics.
+
 @item --disable-gcov
 Specify that the run-time library used for coverage analysis
 and associated host tools should not be built.

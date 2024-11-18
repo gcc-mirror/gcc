@@ -7381,7 +7381,7 @@ do
 	check_languages="$check_languages check-$language"
 done
 if test x$enable_libdiagnostics = xyes; then
-	check_languages="$check_languages check-libdiagnostics"
+	check_languages="$check_languages check-libdiagnostics check-sarif-replay"
 fi
 
 selftest_languages=
@@ -7621,7 +7621,7 @@ AC_ARG_ENABLE(libdiagnostics,
 AC_SUBST(enable_libdiagnostics)
 
 if test "$enable_libdiagnostics" = "yes"; then
-  LIBDIAGNOSTICS='libdiagnostics'
+  LIBDIAGNOSTICS='libdiagnostics sarif-replay'
 else
   LIBDIAGNOSTICS=''
 fi

@@ -1,0 +1,34 @@
+{"$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "FooScanner",
+                               "rules": []}},
+           "artifacts": [{"location": {"uri": "/this/does/not/exist/test.bas"},
+                          "sourceLanguage": "basic",
+                          "contents": {"text": "label: PRINT \"hello world!\"\n       GOTO label\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "error",
+                        "level": "error",
+                        "message": {"text": "'GOTO' is considered harmful"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "/this/does/not/exist/test.bas"},
+                                                            "region": {"startLine": 2,
+                                                                       "startColumn": 8,
+                                                                       "endColumn": 19},
+                                                            "contextRegion": {"startLine": 2,
+                                                                              "snippet": {"text": "       GOTO label\n"}}}}],
+                        "relatedLocations": [{"physicalLocation": {"artifactLocation": {"uri": "/this/does/not/exist/test.bas"},
+                                                                   "region": {"startLine": 1,
+                                                                              "startColumn": 1,
+                                                                              "endColumn": 6},
+                                                                   "contextRegion": {"startLine": 1,
+                                                                                     "snippet": {"text": "PRINT \"hello world!\";\n"}}},
+                                              "message": {"text": "this is the target of the 'GOTO'"}}]}]}]}
+
+/* { dg-begin-multiline-output "" }
+/this/does/not/exist/test.bas:2:8: error: 'GOTO' is considered harmful
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+/this/does/not/exist/test.bas:1:1: note: this is the target of the 'GOTO'
+   { dg-end-multiline-output "" } */
+
+// TODO: quote the source
+// TODO: trailing [error]

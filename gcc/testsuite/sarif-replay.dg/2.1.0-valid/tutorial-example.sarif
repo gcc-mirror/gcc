@@ -1,0 +1,117 @@
+/* Adapted from https://github.com/microsoft/sarif-tutorials
+   samples/bad-eval-with-code-flow.sarif.
+   which is licensed under the Creative Commons Attribution 4.0 International Public License
+   and/or the MIT License.  */
+
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "PythonScanner"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "PY2335",
+          "message": {
+            "text": "Use of tainted variable 'raw_input' in the insecure function 'eval'."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "bad-eval-with-code-flow.py"
+                },
+                "region": {
+                  "startLine": 10
+                }
+              }
+            }
+          ],
+          "codeFlows": [
+            {
+              "message": {
+                "text": "Tracing the path from user input to insecure usage."
+              },
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "bad-eval-with-code-flow.py"
+                          },
+                          "region": {
+                            "startLine": 5
+                          }
+                        }
+                      },
+                      "state": {
+                        "expr": {
+                          "text": "undef"
+                        }
+                      },
+                      "nestingLevel": 0
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "bad-eval-with-code-flow.py"
+                          },
+                          "region": {
+                            "startLine": 6
+                          }
+                        }
+                      },
+                      "state": {
+                        "expr": {
+                          "text": "42"
+                        }
+                      },
+                      "nestingLevel": 0
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "bad-eval-with-code-flow.py"
+                          },
+                          "region": {
+                            "startLine": 10
+                          }
+                        }
+                      },
+                      "state": {
+                        "raw_input": {
+                          "text": "42"
+                        }
+                      },
+                      "nestingLevel": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+/* { dg-begin-multiline-output "" }
+bad-eval-with-code-flow.py:10: warning: Use of tainted variable 'raw_input' in the insecure function 'eval'. [PY2335]
+  events 1-2
+    |
+    |
+    +--> event 3
+           |
+           |
+   { dg-end-multiline-output "" } */
+
+// TODO: show path even when we can't find the source
+// TODO: show path when we can find the source

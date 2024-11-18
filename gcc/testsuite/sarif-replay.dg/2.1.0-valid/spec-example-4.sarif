@@ -1,0 +1,766 @@
+/* Taken from SARIF v2.1.0, Appendix K.4: "Comprehensive SARIF file".  */
+
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "automationId": {
+        "guid": "BC650830-A9FE-44CB-8818-AD6C387279A0",
+        "id": "Nightly code scan/2018-10-08"
+      },
+      "baselineGuid": "0A106451-C9B1-4309-A7EE-06988B95F723",
+      "runAggregates": [
+        {
+          "id": "Build/14.0.1.2/Release/20160716-13:22:18",
+          "correlationGuid": "26F138B6-6014-4D3D-B174-6E1ACE9439F3"
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "CodeScanner",
+          "fullName": "CodeScanner 1.1 for Microsoft Windows (R) (en-US)",
+          "version": "2.1",
+          "semanticVersion": "2.1.0",
+          "dottedQuadFileVersion": "2.1.0.0",
+          "releaseDateUtc": "2019-03-17",
+          "organization": "Example Corporation",
+          "product": "Code Scanner",
+          "productSuite": "Code Quality Tools",
+          "shortDescription": {
+            "text": "A scanner for code."
+          },
+          "fullDescription": {
+            "text": "A really great scanner for all your code."
+          },
+          "properties": {
+            "copyright": "Copyright (c) 2017 by Example Corporation."
+          },
+          "globalMessageStrings": {
+            "variableDeclared": {
+              "text": "Variable \"{0}\" was declared here.",
+              "markdown": " Variable `{0}` was declared here."
+            }
+          },
+          "rules": [
+            {
+              "id": "C2001",
+              "deprecatedIds": [
+                "CA2000"
+              ],
+              "defaultConfiguration": {
+                "level": "error",
+                "rank": 95
+              },
+              "shortDescription": {
+                "text": "A variable was used without being initialized."
+              },
+              "fullDescription": {
+                "text": "A variable was used without being initialized. This can result in runtime errors such as null reference exceptions."
+              },
+              "messageStrings": {
+                "default": {
+                  "text": "Variable \"{0}\" was used without being initialized. It was declared [here]({1}).",
+                  "markdown": "Variable `{0}` was used without being initialized. It was declared [here]({1})."
+                }
+              }
+            }
+          ],
+          "notifications": [
+            {
+              "id": "start",
+              "shortDescription": {
+                "text": "The run started."
+              },
+              "messageStrings": {
+                "default": {
+                  "text": "Run started."
+                }
+              }
+            },
+            {
+              "id": "end",
+              "shortDescription": {
+                "text": "The run ended."
+              },
+              "messageStrings": {
+                "default": {
+                  "text": "Run ended."
+                }
+              }
+            }
+          ],
+          "language": "en-US"
+        },
+        "extensions": [
+          {
+            "name": "CodeScanner Security Rules",
+            "version": "3.1",
+            "rules": [
+              {
+                "id": "S0001",
+                "defaultConfiguration": {
+                  "level": "error"
+                },
+                "shortDescription": {
+                  "text": "Do not use weak cryptographic algorithms."
+                },
+                "messageStrings": {
+                  "default": {
+                    "text": "The cryptographic algorithm '{0}' should not be used."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "language": "en-US",
+      "versionControlProvenance": [
+        {
+          "repositoryUri": "https://github.com/example-corp/browser",
+          "revisionId": "5da53fbb2a0aaa12d648b73984acc9aac2e11c2a",
+          "mappedTo": {
+            "uriBaseId": "PROJECTROOT"
+          }
+        }
+      ],
+      "originalUriBaseIds": {
+        "PROJECTROOT": {
+          "uri": "file://build.example.com/work/"
+        },
+        "SRCROOT": {
+          "uri": " src/",
+          "uriBaseId": "PROJECTROOT"
+        },
+        "BINROOT": {
+          "uri": " bin/",
+          "uriBaseId": "PROJECTROOT"
+        }
+      },
+      "invocations": [
+        {
+          "commandLine": "CodeScanner @build/collections.rsp",
+          "responseFiles": [
+            {
+              "uri": "build/collections.rsp",
+              "uriBaseId": "SRCROOT",
+              "index": 0
+            }
+          ],
+          "startTimeUtc": "2016-07-16T14:18:25Z",
+          "endTimeUtc": "2016-07-16T14:19:01Z",
+          "machine": "BLD01",
+          "account": "buildAgent",
+          "processId": 1218,
+          "fileName": "/bin/tools/CodeScanner",
+          "workingDirectory": {
+            "uri": "file:///home/buildAgent/src"
+          },
+          "environmentVariables": {
+            "PATH": "/usr/local/bin:/bin:/bin/tools:/home/buildAgent/bin",
+            "HOME": "/home/buildAgent",
+            "TZ": "EST"
+          },
+          "toolConfigurationNotifications": [
+            {
+              "descriptor": {
+                "id": "UnknownRule"
+              },
+              "associatedRule": {
+                "ruleId": "ABC0001"
+              },
+              "level": "warning",
+              "message": {
+                "text": "Could not disable rule \"ABC0001\" because there is no rule with that id."
+              }
+            }
+          ],
+          "toolExecutionNotifications": [
+            {
+              "descriptor": {
+                "id": "CTN0001"
+              },
+              "level": "note",
+              "message": {
+                "text": "Run started."
+              }
+            },
+            {
+              "descriptor": {
+                "id": "CTN9999"
+              },
+              "associatedRule": {
+                "id": "C2001",
+                "index": 0
+              },
+              "level": "error",
+              "message": {
+                "text": "Exception evaluating rule \"C2001\". Rule disabled; run continues."
+              },
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "crypto/hash.cpp",
+                      "uriBaseId": "SRCROOT",
+                      "index": 4
+                    }
+                  }
+                }
+              ],
+              "threadId": 52,
+              "timeUtc": "2016-07-16T14:18:43.119Z",
+              "exception": {
+                "kind": "ExecutionEngine.RuleFailureException",
+                "message": "Unhandled exception during rule evaluation.",
+                "stack": {
+                  "frames": [
+                    {
+                      "location": {
+                        "message": {
+                          "text": "Exception thrown"
+                        },
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName":
+                              "Rules.SecureHashAlgorithmRule.Evaluate"
+                          }
+                        ],
+                        "physicalLocation": {
+                          "address": {
+                            "offset": 4244988
+                          }
+                        }
+                      },
+                      "module": "RuleLibrary",
+                      "threadId": 52
+                    },
+                    {
+                      "location": {
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName":
+                              "ExecutionEngine.Engine.EvaluateRule"
+                          }
+                        ],
+                        "physicalLocation": {
+                          "address": {
+                            "offset": 4245514
+                          }
+                        }
+                      },
+                      "module": "ExecutionEngine",
+                      "threadId": 52
+                    }
+                  ]
+                },
+                "innerExceptions": [
+                  {
+                    "kind": "System.ArgumentException",
+                    "message": "length is < 0"
+                  }
+                ]
+              }
+            },
+            {
+              "descriptor": {
+                "id": "CTN0002"
+              },
+              "level": "note",
+              "message": {
+                "text": "Run ended."
+              }
+            }
+          ],
+          "exitCode": 0,
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "build/collections.rsp",
+            "uriBaseId": "SRCROOT"
+          },
+          "mimeType": "text/plain",
+          "length": 81,
+          "contents": {
+            "text": "-input src/collections/*.cpp -log out/collections.sarif -rules all -disable C9999"
+          }
+        },
+        {
+          "location": {
+            "uri": "application/main.cpp",
+            "uriBaseId": "SRCROOT"
+          },
+          "sourceLanguage": "cplusplus",
+          "length": 1742,
+          "hashes": {
+            "sha-256": "cc8e6a99f3eff00adc649fee132ba80fe333ea5a"
+          }
+        },
+        {
+          "location": {
+            "uri": "collections/list.cpp",
+            "uriBaseId": "SRCROOT"
+          },
+          "sourceLanguage": "cplusplus",
+          "length": 980,
+          "hashes": {
+            "sha-256": "b13ce2678a8807ba0765ab94a0ecd394f869bc81"
+          }
+        },
+        {
+          "location": {
+            "uri": "collections/list.h",
+            "uriBaseId": "SRCROOT"
+          },
+          "sourceLanguage": "cplusplus",
+          "length": 24656,
+          "hashes": {
+            "sha-256": "849be119aaba4e9f88921a99e3036fb6c2a8144a"
+          }
+        },
+        {
+          "location": {
+            "uri": "crypto/hash.cpp",
+            "uriBaseId": "SRCROOT"
+          },
+          "sourceLanguage": "cplusplus",
+          "length": 1424,
+          "hashes": {
+            "sha-256": "3ffe2b77dz255cdf95f97d986d7a6ad8f287eaed"
+          }
+        },
+        {
+          "location": {
+            "uri": "app.zip",
+            "uriBaseId": "BINROOT"
+          },
+          "mimeType": "application/zip",
+          "length": 310450,
+          "hashes": {
+            "sha-256": "df18a5e74b6b46ddaa23ad7271ee2b7c5731cbe1"
+          }
+        },
+        {
+          "location": {
+            "uri": "/docs/intro.docx"
+          },
+          "mimeType":
+             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "parentIndex": 5,
+          "offset": 17522,
+          "length": 4050
+        }
+      ],
+      "logicalLocations": [
+        {
+          "name": "add",
+          "fullyQualifiedName": "collections::list::add",
+          "decoratedName": "?add@list@collections@@QAEXH@Z",
+          "kind": "function",
+          "parentIndex": 1
+        },
+        {
+          "name": "list",
+          "fullyQualifiedName": "collections::list",
+          "kind": "type",
+          "parentIndex": 2
+        },
+        {
+          "name": "collections",
+          "kind": "namespace"
+        },
+        {
+          "name": "add_core",
+          "fullyQualfiedName": "collections::list::add_core",
+          "decoratedName": "?add_core@list@collections@@QAEXH@Z",
+          "kind": "function",
+          "parentIndex": 1
+        },
+        {
+          "fullyQualifiedName": "main",
+          "kind": "function"
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "C2001",
+          "ruleIndex": 0,
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "id": "default",
+            "arguments": [
+              "ptr",
+              "0"
+            ]
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "status": "accepted"
+            }
+          ],
+          "baselineState": "unchanged",
+          "rank": 95,
+          "analysisTarget": {
+            "uri": "collections/list.cpp",
+            "uriBaseId": "SRCROOT",
+            "index": 2
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "collections/list.h",
+                  "uriBaseId": "SRCROOT",
+                  "index": 3
+                },
+                "region": {
+                  "startLine": 15,
+                  "startColumn": 9,
+                  "endLine": 15,
+                  "endColumn": 10,
+                  "charLength": 1,
+                  "charOffset": 254,
+                  "snippet": {
+                    "text": "add_core(ptr, offset, val);\n    return;"
+                  }
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "collections::list::add",
+                  "index": 0
+                }
+              ]
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 0,
+              "message": {
+                "id": "variableDeclared",
+                "arguments": [
+                  "ptr"
+                ]
+              },
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "collections/list.h",
+                  "uriBaseId": "SRCROOT",
+                  "index": 3
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 5
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "collections::list::add",
+                  "index": 0
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "message": {
+                "text": "Path from declaration to usage"
+              },
+ 
+              "threadFlows": [
+                {
+                  "id": "thread-52",
+                  "locations": [
+                    {
+                      "importance": "essential",
+                      "location": {
+                        "message": {
+                          "text": "Variable \"ptr\" declared.",
+                          "markdown": "Variable `ptr` declared."
+                        },
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri":"collections/list.h",
+                            "uriBaseId": "SRCROOT",
+                            "index": 3
+                          },
+                          "region": {
+                            "startLine": 15,
+                            "snippet": {
+                              "text": "int *ptr;"
+                            }
+                          }
+                        },
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName": "collections::list::add",
+                            "index": 0
+                          }
+                        ]
+                      },
+                      "module": "platform"
+                    },
+                    {
+                      "state": {
+                        "y": {
+                          "text": "2"
+                        },
+                        "z": {
+                          "text": "4"
+                        },
+                        "y + z": {
+                          "text": "6"
+                        },
+                        "q": {
+                          "text": "7"
+                        }
+                      },
+                      "importance": "unimportant",
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri":"collections/list.h",
+                            "uriBaseId": "SRCROOT",
+                            "index": 3
+                          },
+                          "region": {
+                            "startLine": 15,
+                            "snippet": {
+                             "text": "offset = (y + z) * q + 1;"
+                            }
+                          }
+                        },
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName": "collections::list::add",
+                            "index": 0
+                          }
+                        ],
+                        "annotations": [
+                          {
+                            "startLine": 15,
+                            "startColumn": 13,
+                            "endColumn": 19,
+                            "message": {
+                              "text": "(y + z) = 42",
+                              "markdown": "`(y + z) = 42`"
+                            }
+                          }
+                        ]
+                      },
+                      "module": "platform"
+                    },
+                    {
+                      "importance": "essential",
+                      "location": {
+                        "message": {
+                          "text": "Uninitialized variable \"ptr\" passed to method \"add_core\".",
+                          "markdown": "Uninitialized variable `ptr` passed to method `add_core`."
+                        },
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri":"collections/list.h",
+                            "uriBaseId": "SRCROOT",
+                            "index": 3
+                          },
+                          "region": {
+                            "startLine": 25,
+                            "snippet": {
+                              "text": "add_core(ptr, offset, val)"
+                            }
+                          }
+                        },
+                        "logicalLocations": [
+                          {
+                            "fullyQualifiedName": "collections::list::add",
+                            "index": 0
+                          }
+                        ]
+                      },
+                      "module": "platform"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "stacks": [
+            {
+              "message": {
+                "text": "Call stack resulting from usage of uninitialized variable."
+              },
+              "frames": [
+                {
+                  "location": {
+                    "message": {
+                      "text": "Exception thrown."
+                    },
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "collections/list.h",
+                        "uriBaseId": "SRCROOT",
+                        "index": 3
+                      },
+                      "region": {
+                        "startLine": 110,
+                        "startColumn": 15
+                      },
+                      "address": {
+                        "offset": 4229178
+                      }
+                    },
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "collections::list::add_core",
+                        "index": 0
+                      }
+                    ]
+                  },
+                  "module": "platform",
+                  "threadId": 52,
+                  "parameters": [ "null", "0", "14" ]
+                },
+                {
+                  "location": {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "collections/list.h",
+                        "uriBaseId": "SRCROOT",
+                        "index": 3
+                      },
+                      "region": {
+                        "startLine": 43,
+                        "startColumn": 15
+                      },
+                      "address": {
+                        "offset": 4229268
+                      }
+                    },
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "collections::list::add",
+                        "index": 0
+                      }
+                    ]
+                  },
+                  "module": "platform",
+                  "threadId": 52,
+                  "parameters": [ "14" ]
+                },
+                {
+                  "location": {
+                    "physicalLocation": {
+                      "artifactLocation": {
+                        "uri": "application/main.cpp",
+                        "uriBaseId": "SRCROOT",
+                        "index": 1
+                      },
+                      "region": {
+                        "startLine": 28,
+                        "startColumn": 9
+                      },
+                      "address": {
+                        "offset": 4229836
+                      }
+                    },
+                    "logicalLocations": [
+                      {
+                        "fullyQualifiedName": "main",
+                        "index": 4
+                      }
+                    ]
+                  },
+                  "module": "application",
+                  "threadId": 52
+                }
+              ]
+            }
+          ],
+          "addresses": [
+            {
+              "baseAddress": 4194304,
+              "fullyQualifiedName": "collections.dll",
+              "kind": "module",
+              "section": ".text"
+            },
+            {
+              "offset": 100,
+              "fullyQualifiedName": "collections.dll!collections::list::add",
+              "kind": "function",
+              "parentIndex": 0
+            },
+            {
+              "offset": 22,
+              "fullyQualifiedName": "collections.dll!collections::list::add+0x16",
+              "parentIndex": 1
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "Initialize the variable to null"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "collections/list.h",
+                    "uriBaseId": "SRCROOT",
+                    "index": 3
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "startLine": 42
+                      },
+                      "insertedContent": {
+                        "text": "A different line\n"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "hostedViewerUri":
+            "https://www.example.com/viewer/3918d370-c636-40d8-bf23-8c176043a2df",
+          "workItemUris": [
+            "https://github.com/example/project/issues/42",
+            "https://github.com/example/project/issues/54"
+          ],
+          "provenance": {
+            "firstDetectionTimeUtc": "2016-07-15T14:20:42Z",
+            "firstDetectionRunGuid": "8F62D8A0-C14F-4516-9959-1A663BA6FB99",
+            "lastDetectionTimeUtc": "2016-07-16T14:20:42Z",
+            "lastDetectionRunGuid": "BC650830-A9FE-44CB-8818-AD6C387279A0",
+            "invocationIndex": 0
+          }
+        }
+      ]
+    }
+  ]
+}
+
+/* { dg-begin-multiline-output "" }
+In function 'collections::list::add':
+collections/list.h:15:9: error: Variable "ptr" was used without being initialized. It was declared [here](0). [C2001]
+  event 1
+    |
+    |
+  event 2
+    |
+    |
+  event 3
+    |
+    |
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+collections/list.h:8:5: note: Variable "ptr" was declared here.
+   { dg-end-multiline-output "" } */
+
+// TODO: what's up with the events?

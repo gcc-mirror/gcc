@@ -1,0 +1,65 @@
+/* Taken from SARIF v2.1.0, Appendix K.3: "Minimal recommended SARIF log
+   file without source information".  */
+
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "BinaryScanner"
+        }
+      },
+      "artifact": [
+        {
+          "location": {
+            "uri": "bin/example",
+            "uriBaseId": "BINROOT"
+          }
+        }
+      ],
+      "logicalLocations": [
+        {
+          "name": "Example",
+          "kind": "namespace"
+        },
+        {
+          "name": "Worker",
+          "fullyQualifiedName": "Example.Worker",
+          "kind": "type",
+          "parentIndex": 0
+        },
+        {
+          "name": "DoWork",
+          "fullyQualifiedName": "Example.Worker.DoWork",
+          "kind": "function",
+          "parentIndex": 1
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "B6412",
+          "message": {
+            "text": "The insecure method \"Crypto.Sha1.Encrypt\" should not be used."
+          },
+          "level": "warning",
+          "locations": [
+            {
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Example.Worker.DoWork",
+                  "index": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+/* { dg-begin-multiline-output "" }
+In function 'Example.Worker.DoWork':
+BinaryScanner: warning: The insecure method "Crypto.Sha1.Encrypt" should not be used. [B6412]
+   { dg-end-multiline-output "" } */

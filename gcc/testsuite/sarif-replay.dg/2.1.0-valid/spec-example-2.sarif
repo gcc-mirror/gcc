@@ -1,0 +1,73 @@
+/* Taken from SARIF v2.1.0, Appendix K.2: "Minimal recommended SARIF log
+   file with source information".  */
+
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "CodeScanner",
+          "rules": [
+            {
+              "id": "C2001",
+              "fullDescription": {
+                "text": "A variable was used without being initialized. This can result in runtime errors such as null reference exceptions."
+              },
+              "messageStrings": {
+                "default": {
+                  "text": "Variable \"{0}\" was used without being initialized."
+                }
+              }
+            }
+          ]
+        }
+      },
+      "artifacts": [
+        {
+          "location": {
+            "uri": "src/collections/list.cpp",
+            "uriBaseId": "SRCROOT"
+          },
+          "sourceLanguage": "c"
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "C2001",
+          "ruleIndex": 0,
+          "message": {
+            "id": "default",
+            "arguments": [
+              "count"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/collections/list.cpp",
+                  "uriBaseId": "SRCROOT",
+                  "index": 0
+                },
+                "region": {
+                  "startLine": 15
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "collections::list::add"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+/* { dg-begin-multiline-output "" }
+In function 'collections::list::add':
+src/collections/list.cpp:15: warning: Variable "count" was used without being initialized. [C2001]
+   { dg-end-multiline-output "" } */

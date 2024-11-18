@@ -621,7 +621,7 @@ xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
 ifeq (@enable_libdiagnostics@,yes)
-lang_checks += check-libdiagnostics
+lang_checks += check-libdiagnostics check-sarif-replay
 endif
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt $(srcdir)/params.opt $(srcdir)/analyzer/analyzer.opt
 lang_specs_files=@lang_specs_files@
@@ -1297,6 +1297,8 @@ RUST_TARGET_OBJS=@rust_target_objs@
 # Object files for gcc many-languages driver.
 GCC_OBJS = gcc.o gcc-main.o ggc-none.o gcc-urlifier.o options-urls.o
 
+SARIF_REPLAY_OBJS = sarif-replay.o libsarifreplay.o
+
 c-family-warn = $(STRICT_WARN)
 
 # Language-specific object files shared by all C-family front ends.
@@ -1886,7 +1888,7 @@ endif
 ALL_HOST_OBJS = $(ALL_HOST_FRONTEND_OBJS) $(ALL_HOST_BACKEND_OBJS)
 
 ifeq (@enable_libdiagnostics@,yes)
-ALL_HOST_OBJS += $(libdiagnostics_OBJS)
+ALL_HOST_OBJS += $(libdiagnostics_OBJS) $(SARIF_REPLAY_OBJS)
 endif
 
 BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
@@ -2406,6 +2408,12 @@ endif
 $(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK): $(LIBDIAGNOSTICS_SONAME_SYMLINK)
 	ln -sf $(LIBDIAGNOSTICS_SONAME_SYMLINK) $(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK)
 endif
+
+# sarif-replay: a command-line tool that uses libdiagnostics to
+# replay SARIF files
+sarif-replay: $(SARIF_REPLAY_OBJS) $(LIBDIAGNOSTICS_FILENAME)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(SARIF_REPLAY_OBJS) $(LIBDIAGNOSTICS_FILENAME) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
@@ -4167,7 +4175,9 @@ libdiagnostics.install-common: installdirs libdiagnostics.install-headers
 endif
 endif
 
-install-libdiagnostics: libdiagnostics.install-common
+install-libdiagnostics: libdiagnostics.install-common sarif-replay
+	-rm -f $(DESTDIR)$(bindir)/sarif-replay
+	-$(INSTALL_PROGRAM) sarif-replay $(DESTDIR)$(bindir)/sarif-replay
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir

@@ -1,0 +1,6 @@
+[ null ] // { dg-error "expected a sarifLog object as the top-level value \\\[SARIF v2.1.0 §3.1\\\]" }
+
+/* { dg-begin-multiline-output "" }
+    1 | [ null ]
+      | ^~~~~~~~
+   { dg-end-multiline-output "" } */

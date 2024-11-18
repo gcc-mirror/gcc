@@ -1,0 +1,6 @@
+["foo", "bar" "baz"] /* { dg-error "expected ',' or '\]'; got string" } */
+
+/* { dg-begin-multiline-output "" }
+    1 | ["foo", "bar" "baz"]
+      |               ^~~~~
+   { dg-end-multiline-output "" } */

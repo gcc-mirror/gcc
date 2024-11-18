@@ -1,0 +1,7 @@
+{ "foo": "bar"
+  "baz": 42 } // { dg-error "expected ',' or '\}'; got string" }
+
+{ dg-begin-multiline-output "" }
+    2 |   "baz": 42 }
+      |   ^~~~~
+{ dg-end-multiline-output "" }

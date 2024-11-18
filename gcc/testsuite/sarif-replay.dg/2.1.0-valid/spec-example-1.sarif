@@ -1,0 +1,15 @@
+// Taken from SARIF v2.1.0, Appendix K.1: "Minimal valid SARIF log file"
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "CodeScanner"
+        }
+      },
+      "results": [
+      ]
+    }
+  ]
+}
