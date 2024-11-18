@@ -450,7 +450,9 @@ private:
   void record_copy (rtx, rtx, bool = false);
   void record_constraints (rtx_insn *);
   void record_artificial_refs (unsigned int);
-  void record_insn_refs (rtx_insn *);
+  void record_insn_defs (rtx_insn *);
+  void record_insn_call (rtx_call_insn *);
+  void record_insn_uses (rtx_insn *);
 
   bool consider_strong_copy_src_chain (allocno_info *);
   int strided_polarity_pref (allocno_info *, allocno_info *);
@@ -1936,13 +1938,13 @@ early_ra::record_artificial_refs (unsigned int flags)
   m_current_point += 1;
 }
 
-// Model the register references in INSN as part of a backwards walk.
+// Called as part of a backwards walk over a block.  Model the definitions
+// in INSN, excluding partial call clobbers.
 void
-early_ra::record_insn_refs (rtx_insn *insn)
+early_ra::record_insn_defs (rtx_insn *insn)
 {
   df_ref ref;
 
-  // Record all definitions, excluding partial call clobbers.
   FOR_EACH_INSN_DEF (ref, insn)
     if (IN_RANGE (DF_REF_REGNO (ref), V0_REGNUM, V31_REGNUM))
       record_fpr_def (DF_REF_REGNO (ref));
@@ -1959,19 +1961,28 @@ early_ra::record_insn_refs (rtx_insn *insn)
 	  }
       }
   m_current_point += 1;
+}
 
-  // Model the call made by a call insn as a separate phase in the
-  // evaluation of the insn.  Any partial call clobbers happen at that
-  // point, rather than in the definition or use phase of the insn.
-  if (auto *call_insn = dyn_cast<rtx_call_insn *> (insn))
-    {
-      function_abi abi = insn_callee_abi (call_insn);
-      m_call_points[abi.id ()].safe_push (m_current_point);
-      m_current_point += 1;
-    }
+// Called as part of a backwards walk over a block.  Model the call made
+// by INSN as a separate phase in the evaluation of the insn.  Any partial
+// call clobbers happen at that point, rather than in the definition or use
+// phase of the insn.
+void
+early_ra::record_insn_call (rtx_call_insn *insn)
+{
+  function_abi abi = insn_callee_abi (insn);
+  m_call_points[abi.id ()].safe_push (m_current_point);
+  m_current_point += 1;
+}
 
-  // Record all uses.  We can ignore READ_MODIFY_WRITE uses of plain subregs,
-  // since we track the FPR-sized parts of them individually.
+// Called as part of a backwards walk over a block.  Model the uses in INSN.
+// We can ignore READ_MODIFY_WRITE uses of plain subregs, since we track the
+// FPR-sized parts of them individually.
+void
+early_ra::record_insn_uses (rtx_insn *insn)
+{
+  df_ref ref;
+
   FOR_EACH_INSN_USE (ref, insn)
     if (IN_RANGE (DF_REF_REGNO (ref), V0_REGNUM, V31_REGNUM))
       record_fpr_use (DF_REF_REGNO (ref));
@@ -3470,7 +3481,10 @@ early_ra::process_block (basic_block bb, bool is_isolated)
 	}
       else
 	{
-	  record_insn_refs (insn);
+	  record_insn_defs (insn);
+	  if (auto *call_insn = dyn_cast<rtx_call_insn *> (insn))
+	    record_insn_call (call_insn);
+	  record_insn_uses (insn);
 	  rtx pat = PATTERN (insn);
 	  if (is_move_set (pat))
 	    record_copy (SET_DEST (pat), SET_SRC (pat), true);
