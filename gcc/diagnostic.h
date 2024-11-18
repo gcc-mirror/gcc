@@ -557,6 +557,9 @@ public:
   void begin_group ();
   void end_group ();
 
+  void push_nesting_level ();
+  void pop_nesting_level ();
+
   bool warning_enabled_at (location_t loc, diagnostic_option_id option_id);
 
   bool option_unspecified_p (diagnostic_option_id option_id) const
@@ -722,6 +725,13 @@ public:
 			  diagnostic_option_id, unsigned HOST_WIDE_INT,
 			  const char *, const char *, va_list *,
 			  diagnostic_t) ATTRIBUTE_GCC_DIAG(7,0);
+
+  int get_diagnostic_nesting_level () const
+  {
+    return m_diagnostic_groups.m_diagnostic_nesting_level;
+  }
+
+  char *build_indent_prefix () const;
 
   int
   pch_save (FILE *f)
@@ -933,7 +943,10 @@ private:
   /* Fields relating to diagnostic groups.  */
   struct {
     /* How many diagnostic_group instances are currently alive.  */
-    int m_nesting_depth;
+    int m_group_nesting_depth;
+
+    /* How many nesting levels have been pushed within this group.  */
+    int m_diagnostic_nesting_level;
 
     /* How many diagnostics have been emitted since the bottommost
        diagnostic_group was pushed.  */

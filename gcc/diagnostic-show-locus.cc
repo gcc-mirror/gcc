@@ -3323,6 +3323,9 @@ diagnostic_source_print_policy::print (pretty_printer &pp,
 void
 layout_printer::print (const diagnostic_source_print_policy &source_policy)
 {
+  diagnostic_prefixing_rule_t saved_rule = pp_prefixing_rule (&m_pp);
+  pp_prefixing_rule (&m_pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+
   if (get_options ().show_ruler_p)
     show_ruler (m_layout.m_x_offset_display + get_options ().max_width);
 
@@ -3359,6 +3362,8 @@ layout_printer::print (const diagnostic_source_print_policy &source_policy)
 
   if (auto effect_info = m_layout.m_effect_info)
     effect_info->m_trailing_out_edge_column = m_link_rhs_column;
+
+  pp_prefixing_rule (&m_pp) = saved_rule;
 }
 
 #if CHECKING_P

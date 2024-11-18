@@ -108,6 +108,12 @@ set plugin_test_list [list \
     { diagnostic_plugin_test_metadata.c \
 	  diagnostic-test-metadata.c \
 	  diagnostic-test-metadata-sarif.c } \
+    { diagnostic_plugin_test_nesting.c \
+	  diagnostic-test-nesting-text-plain.c \
+	  diagnostic-test-nesting-text-indented.c \
+	  diagnostic-test-nesting-text-indented-show-levels.c \
+	  diagnostic-test-nesting-text-indented-unicode.c \
+	  diagnostic-test-nesting-sarif.c } \
     { diagnostic_plugin_test_paths.c \
 	  diagnostic-test-paths-1.c \
 	  diagnostic-test-paths-2.c \

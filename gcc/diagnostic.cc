@@ -281,7 +281,8 @@ diagnostic_context::initialize (int n_opts)
   m_tabstop = 8;
   m_escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
   m_edit_context_ptr = nullptr;
-  m_diagnostic_groups.m_nesting_depth = 0;
+  m_diagnostic_groups.m_group_nesting_depth = 0;
+  m_diagnostic_groups.m_diagnostic_nesting_level = 0;
   m_diagnostic_groups.m_emission_count = 0;
   m_output_sinks.safe_push (new diagnostic_text_output_format (*this, true));
   m_set_locations_cb = nullptr;
@@ -384,7 +385,7 @@ diagnostic_context::finish ()
   /* We might be handling a fatal error.
      Close any active diagnostic groups, which may trigger flushing
      sinks.  */
-  while (m_diagnostic_groups.m_nesting_depth > 0)
+  while (m_diagnostic_groups.m_group_nesting_depth > 0)
     end_group ();
 
   set_diagnostic_buffer (nullptr);
@@ -1322,7 +1323,7 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   /* Every call to report_diagnostic should be within a
      begin_group/end_group pair so that output formats can reliably
      flush diagnostics with on_end_group when the topmost group is ended.  */
-  gcc_assert (m_diagnostic_groups.m_nesting_depth > 0);
+  gcc_assert (m_diagnostic_groups.m_group_nesting_depth > 0);
 
   /* Give preference to being able to inhibit warnings, before they
      get reclassified to something else.  */
@@ -1701,13 +1702,13 @@ fancy_abort (const char *file, int line, const char *function)
 void
 diagnostic_context::begin_group ()
 {
-  m_diagnostic_groups.m_nesting_depth++;
+  m_diagnostic_groups.m_group_nesting_depth++;
 }
 
 void
 diagnostic_context::end_group ()
 {
-  if (--m_diagnostic_groups.m_nesting_depth == 0)
+  if (--m_diagnostic_groups.m_group_nesting_depth == 0)
     {
       /* Handle the case where we've popped the final diagnostic group.
 	 If any diagnostics were emitted, give the context a chance
@@ -1717,6 +1718,18 @@ diagnostic_context::end_group ()
 	  sink->on_end_group ();
       m_diagnostic_groups.m_emission_count = 0;
     }
+}
+
+void
+diagnostic_context::push_nesting_level ()
+{
+  ++m_diagnostic_groups.m_diagnostic_nesting_level;
+}
+
+void
+diagnostic_context::pop_nesting_level ()
+{
+  --m_diagnostic_groups.m_diagnostic_nesting_level;
 }
 
 void
@@ -1824,7 +1837,11 @@ diagnostic_context::set_diagnostic_buffer (diagnostic_buffer *buffer)
   /* We don't allow changing buffering within a diagnostic group
      (to simplify handling of buffered diagnostics within the
      diagnostic_format implementations).  */
-  gcc_assert (m_diagnostic_groups.m_nesting_depth == 0);
+  gcc_assert (m_diagnostic_groups.m_group_nesting_depth == 0);
+
+  /* Likewise, for simplicity, we only allow changing buffers
+     at nesting level 0.  */
+  gcc_assert (m_diagnostic_groups.m_diagnostic_nesting_level == 0);
 
   m_diagnostic_buffer = buffer;
 

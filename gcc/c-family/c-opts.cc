@@ -176,7 +176,7 @@ c_diagnostic_text_finalizer (diagnostic_text_output_format &text_output,
 {
   pretty_printer *const pp = text_output.get_printer ();
   char *saved_prefix = pp_take_prefix (pp);
-  pp_set_prefix (pp, NULL);
+  pp_set_prefix (pp, text_output.build_indent_prefix (false));
   pp_newline (pp);
   diagnostic_show_locus (&text_output.get_context (),
 			 diagnostic->richloc, diagnostic->kind, pp);

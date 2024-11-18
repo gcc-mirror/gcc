@@ -576,3 +576,15 @@ auto_diagnostic_group::~auto_diagnostic_group ()
 {
   global_dc->end_group ();
 }
+
+/* class auto_diagnostic_nesting_level.  */
+
+auto_diagnostic_nesting_level::auto_diagnostic_nesting_level ()
+{
+  global_dc->push_nesting_level ();
+}
+
+auto_diagnostic_nesting_level::~auto_diagnostic_nesting_level ()
+{
+  global_dc->pop_nesting_level ();
+}

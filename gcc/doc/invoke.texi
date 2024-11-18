@@ -5937,6 +5937,9 @@ by @code{:} and one or more @var{KEY}=@var{VALUE} pairs, in this form:
 
 etc.
 
+Schemes, keys, or values with a name prefixed ``experimental'' may change
+or be removed without notice.
+
 @var{SCHEME} can be
 
 @table @gcctabopt
@@ -5951,6 +5954,21 @@ Supported keys are:
 @item color=@r{[}yes@r{|}no@r{]}
 Override colorization settings from @option{-fdiagnostics-color} for this
 text output.
+
+@item experimental-nesting=@r{[}yes@r{|}no@r{]}
+Enable an experimental mode that emphasizes hierarchical relationships
+within diagnostics messages, displaying location information on separate
+lines.
+
+@item experimental-nesting-show-locations=@r{[}yes@r{|}no@r{]}
+If @code{experimental-nesting=yes}, then by default locations are
+shown; set this key to @code{no} to disable printing such locations.
+This exists for use by GCC developers, for writing DejaGnu test cases.
+
+@item experimental-nesting-show-levels=@r{[}yes@r{|}no@r{]}
+This is a debugging option for use with @code{experimental-nesting=yes}.
+Set this key to @code{yes} to print explicit nesting levels in the output.
+This exists for use by GCC developers.
 
 @end table
 
