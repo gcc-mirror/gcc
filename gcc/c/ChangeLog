@@ -1,3 +1,14 @@
+2024-11-17  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/95445
+	* c-decl.cc (start_function): Warn about parameters
+	after parameter-less declaration.
+	* c-typeck.cc (build_function_call_vec): Pass fntype
+	to convert_arguments.
+	(convert_arguments): Change argument to fntype and
+	compute typelist.  Warn about parameter list mismatches
+	on first parameter.
+
 2024-11-16  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/117548

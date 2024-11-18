@@ -1,3 +1,11 @@
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_preprocess_options): Set directives_only here.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_preprocess_options): Don't override it.
+
 2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* decl.cc (cxx_build_operator_new): Break out from ...

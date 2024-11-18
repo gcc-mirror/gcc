@@ -1,3 +1,8 @@
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/106852
+	* relpath.sh: New file.
+
 2024-11-14  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc-changelog/git_update_version.py (ignored_commits): Add

@@ -1,3 +1,36 @@
+2024-11-17  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/95445
+	* doc/invoke.texi: Document -Wdeprecated-non-prototype.
+
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* doc/cppopts.texi: Document -fsearch-include-path.
+	* doc/invoke.texi: Mention it for modules.
+
+2024-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.cc (find_necessary_statements): ASM statements are
+	necessary.
+
+2024-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.cc (modref_summary::useful_p): const/pure implies
+	determinism.
+	(modref_summary_lto::useful_p): Likewise.
+	(ignore_nondeterminism_p): Add CALLEE_FNTYPE parameter; check for
+	reproducible/unsequenced
+	(modref_access_analysis::record_access_p): Use ignore_nondeterminism_p
+	when handling volatile accesses.
+	(modref_access_analysis::get_access_for_fnspec): Update.
+	(modref_access_analysis::process_fnspec): Cleanup handling of NOVOPS.
+	(modref_access_analysis::analyze_call): Use ignore_nondeterminism_p
+	when handling asm statements.
+	(modref_access_analysis::analyze_stmt): Update.
+	(propagate_unknown_call): Update.
+	(modref_propagate_in_scc): Update.
+	(ipa_merge_modref_summary_after_inlining): Update.
+
 2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-modref.cc (ipa_modref_callee_reads_no_memory_p): New function.

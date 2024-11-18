@@ -1,3 +1,16 @@
+2024-11-17  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/95445
+	* gcc.dg/Wdeprecated-non-prototype-1.c: New test.
+	* gcc.dg/Wdeprecated-non-prototype-2.c: New test.
+	* gcc.dg/Wdeprecated-non-prototype-3.c: New test.
+	* gcc.dg/Wdeprecated-non-prototype-4.c: New test.
+
+2024-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/109442
+	* g++.dg/tree-ssa/pr109442.C: New test.
+
 2024-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/pr109442.C: New file.

@@ -1,3 +1,8 @@
+2024-11-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/117627
+	* config/pa/linux-atomic.c: Remove typedef for bool type.
+
 2024-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/117624

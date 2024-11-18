@@ -1,3 +1,9 @@
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	* internal.h (search_path_head): Declare.
+	* files.cc (search_path_head): No longer static.
+	* init.cc (cpp_read_main_file): Use it.
+
 2024-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.cc (interpret_float_suffix): Handle d64x and D64x

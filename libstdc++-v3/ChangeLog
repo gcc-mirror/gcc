@@ -1,3 +1,32 @@
+2024-11-17  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/106852
+	* include/bits/version.def: Add __cpp_lib_modules.
+	* include/bits/version.h: Regenerate.
+	* src/c++23/Makefile.am: Add modules std and std.compat.
+	* src/c++23/Makefile.in: Regenerate.
+	* src/c++23/std-clib.cc.in: New file.
+	* src/c++23/std.cc.in: New file.
+	* src/c++23/std.compat.cc.in: New file.
+	* src/c++23/libstdc++.modules.json.in: New file.
+
+2024-11-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/intro.xml: Move a gcc.gnu.org link to https.
+	* doc/html/manual/license.html: Regenerate.
+
+2024-11-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/io.xml: Update link to Angelika Langer's book.
+	* doc/html/manual/streambufs.html: Regenerate.
+
+2024-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/109442
+	* include/bits/stl_vector.h: (vector::size(),
+	vector::capacity()): Add __builtin_unreachable call to announce
+	that size and capacity are non-negative.
+
 2024-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* Makefile.am: Use $(MAKE) -C dir instead of cd dir && $(MAKE).
