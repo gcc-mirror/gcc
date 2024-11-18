@@ -54,6 +54,7 @@ FROM M2Printf IMPORT printf0 ;
 FROM M2Debug IMPORT Assert ;
 
 FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, OperandT, PushTFA, Top, Annotate,
+                    OperandTok,
                     PushTFtok, PopTFtok, PushTFAtok, PopTtok, PushTtok,
                     StartBuildInit,
                     EndBuildInit,
@@ -783,8 +784,9 @@ ArrayType := "ARRAY"                                                       % VAR
                 SimpleType                                                 % BuildFieldArray ; %
               } "OF"                                                       % BuildNulName ; %
              Type                                                          % EndBuildArray ;
+                                                                             tok := OperandTok (1) ;
                                                                              PopNothing ;
-                                                                             PushTtok(arrayType, tok) %
+                                                                             PushTtok (arrayType, tok) %
            =:
 
 RecordType := "RECORD"                                                     % BuildRecord %

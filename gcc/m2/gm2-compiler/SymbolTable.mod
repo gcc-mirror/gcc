@@ -12397,20 +12397,20 @@ END GetDimension ;
 
 
 (*
-   PutArray - places a type symbol into an Array.
+   PutArray - places a type symbol into an arraysym.
 *)
 
-PROCEDURE PutArray (Sym, TypeSymbol: CARDINAL) ;
+PROCEDURE PutArray (arraysym, typesym: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(Sym) ;
+   pSym := GetPsym (arraysym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
       ErrorSym: |
       ArraySym: WITH Array DO
-                   Type := TypeSymbol (* The Array Type. ARRAY OF Type.      *)
+                   Type := typesym  (* The ARRAY OF typesym.  *)
                 END
       ELSE
          InternalError ('expecting an Array symbol')
