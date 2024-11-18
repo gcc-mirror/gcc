@@ -3646,7 +3646,7 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
       rtx mask = force_reg (word_mode, gen_int_mode (-65536, word_mode));
       rtx temp = gen_reg_rtx (word_mode);
       emit_insn (gen_extend_insn (temp,
-				  simplify_gen_subreg (HImode, src, mode, 0),
+				  gen_lowpart (HImode, src),
 				  word_mode, HImode, 1));
       if (word_mode == SImode)
 	emit_insn (gen_iorsi3 (temp, mask, temp));
