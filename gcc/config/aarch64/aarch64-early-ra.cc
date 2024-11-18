@@ -439,6 +439,9 @@ private:
 
   void start_new_region ();
 
+  template<typename T>
+  void record_live_range_failure (T);
+
   allocno_group_info *create_allocno_group (unsigned int, unsigned int);
   allocno_subgroup get_allocno_subgroup (rtx);
   void record_fpr_use (unsigned int);
@@ -550,6 +553,10 @@ private:
   // A mask of the FPRs that must be at least partially preserved by the
   // current function.
   unsigned int m_call_preserved_fprs;
+
+  // True if we have so far been able to track the live ranges of individual
+  // allocnos.
+  bool m_accurate_live_ranges;
 
   // True if we haven't yet failed to allocate the current region.
   bool m_allocation_successful;
@@ -1314,8 +1321,28 @@ early_ra::start_new_region ()
   m_dead_insns.truncate (0);
   m_allocated_fprs = 0;
   m_call_preserved_fprs = 0;
+  m_accurate_live_ranges = true;
   m_allocation_successful = true;
   m_current_region += 1;
+}
+
+// Record that we can no longer track the liveness of individual allocnos.
+// Call DUMP to dump the reason to a dump file.
+template<typename T>
+void
+early_ra::record_live_range_failure (T dump)
+{
+  if (!m_accurate_live_ranges)
+    return;
+
+  m_accurate_live_ranges = false;
+  m_allocation_successful = false;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Unable to track live ranges further: ");
+      dump ();
+      fprintf (dump_file, "\n");
+    }
 }
 
 // Create and return an allocno group of size SIZE for register REGNO.
@@ -1390,7 +1417,12 @@ early_ra::get_allocno_subgroup (rtx reg)
       if (!targetm.modes_tieable_p (GET_MODE (SUBREG_REG (reg)),
 				    GET_MODE (reg)))
 	{
-	  m_allocation_successful = false;
+	  record_live_range_failure ([&](){
+	    fprintf (dump_file, "cannot refer to r%d:%s in mode %s",
+		     REGNO (SUBREG_REG (reg)),
+		     GET_MODE_NAME (GET_MODE (SUBREG_REG (reg))),
+		     GET_MODE_NAME (GET_MODE (reg)));
+	  });
 	  return {};
 	}
 
@@ -1399,7 +1431,10 @@ early_ra::get_allocno_subgroup (rtx reg)
 		       SUBREG_BYTE (reg), GET_MODE (reg), &info);
       if (!info.representable_p)
 	{
-	  m_allocation_successful = false;
+	  record_live_range_failure ([&](){
+	    fprintf (dump_file, "subreg of r%d is invalid for V0",
+		     REGNO (SUBREG_REG (reg)));
+	  });
 	  return {};
 	}
 
