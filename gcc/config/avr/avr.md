@@ -5147,9 +5147,9 @@
    (set_attr "adjust_len" "ashlqi")])
 
 (define_insn_and_split "ashl<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r,r,r")
-        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
-                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r    ,r,r,r")
+        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r    ,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O C15,K,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
@@ -5159,15 +5159,15 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashl<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r,r,r")
-        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
-                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))
+  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r    ,r,r,r")
+        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r    ,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand" "r,L,P,O C15,K,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlhi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "6,0,2,2,4,10,10")
+  [(set_attr "length" "6,0,2,3,4,10,10")
    (set_attr "adjust_len" "ashlhi")])
 
 
@@ -5257,9 +5257,9 @@
 ;; "ashlsq3"  "ashlusq3"
 ;; "ashlsa3"  "ashlusa3"
 (define_insn_and_split "ashl<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r,r,r,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
-                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r    ,r,r,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r    ,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O C31,K,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
@@ -5269,15 +5269,15 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashl<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r,r,r,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
-                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r    ,r,r,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r    ,0,0,0")
+                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O C31,K,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlsi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "8,0,4,4,8,10,12")
+  [(set_attr "length" "8,0,4,5,8,10,12")
    (set_attr "adjust_len" "ashlsi")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
@@ -5354,10 +5354,10 @@
 ;; "*ashlhq3_const"  "*ashluhq3_const"
 ;; "*ashlha3_const"  "*ashluha3_const"
 (define_insn_and_split "*ashl<mode>3_const_split"
-  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r")
-        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r,0,0")
-                     (match_operand:QI 2 "const_int_operand"   "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3                               "=X,X,X,X,&d"))]
+  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r    ,r,r")
+        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r    ,0,0")
+                     (match_operand:QI 2 "const_int_operand"   "L,P,O C15,K,n")))
+   (clobber (match_scratch:QI 3                               "=X,X,X    ,X,&d"))]
   "reload_completed"
   "#"
   "&& reload_completed"
@@ -5368,10 +5368,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashl<mode>3_const"
-  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r,r,r")
-        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r,0,0")
-                     (match_operand:QI 2 "const_int_operand"   "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3                               "=X,X,X,X,&d"))
+  [(set (match_operand:ALL2 0 "register_operand"              "=r,r,r    ,r,r")
+        (ashift:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r    ,0,0")
+                     (match_operand:QI 2 "const_int_operand"   "L,P,O C15,K,n")))
+   (clobber (match_scratch:QI 3                               "=X,X,X    ,X,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -5397,10 +5397,10 @@
 ;; "*ashlsq3_const"  "*ashlusq3_const"
 ;; "*ashlsa3_const"  "*ashlusa3_const"
 (define_insn_and_split "*ashl<mode>3_const_split"
-  [(set (match_operand:ALL4 0 "register_operand"              "=r,r,r,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r,0")
-                     (match_operand:QI 2 "const_int_operand"   "L,P,O,n")))
-   (clobber (match_scratch:QI 3                               "=X,X,X,&d"))]
+  [(set (match_operand:ALL4 0 "register_operand"              "=r,r,r    ,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r    ,0")
+                     (match_operand:QI 2 "const_int_operand"   "L,P,O C31,n")))
+   (clobber (match_scratch:QI 3                               "=X,X,X    ,&d"))]
   "reload_completed"
   "#"
   "&& reload_completed"
@@ -5411,16 +5411,16 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashl<mode>3_const"
-  [(set (match_operand:ALL4 0 "register_operand"              "=r,r,r,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r,0")
-                     (match_operand:QI 2 "const_int_operand"   "L,P,O,n")))
-   (clobber (match_scratch:QI 3                               "=X,X,X,&d"))
+  [(set (match_operand:ALL4 0 "register_operand"              "=r,r,r    ,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r    ,0")
+                     (match_operand:QI 2 "const_int_operand"   "L,P,O C31,n")))
+   (clobber (match_scratch:QI 3                               "=X,X,X    ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlsi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "0,4,4,10")
+  [(set_attr "length" "0,4,5,10")
    (set_attr "adjust_len" "ashlsi")])
 
 (define_expand "ashlpsi3"
@@ -5451,10 +5451,10 @@
   })
 
 (define_insn_and_split "*ashlpsi3_split"
-  [(set (match_operand:PSI 0 "register_operand"             "=r,r,r,r")
-        (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r,0")
-                    (match_operand:QI 2 "nonmemory_operand"  "r,P,O,n")))
-   (clobber (match_scratch:QI 3                             "=X,X,X,&d"))]
+  [(set (match_operand:PSI 0 "register_operand"             "=r,r,r    ,r")
+        (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r    ,0")
+                    (match_operand:QI 2 "nonmemory_operand"  "r,P,O C23,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X    ,&d"))]
   ""
   "#"
   "&& reload_completed"
@@ -5465,10 +5465,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashlpsi3"
-  [(set (match_operand:PSI 0 "register_operand"             "=r,r,r,r")
-        (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r,0")
-                    (match_operand:QI 2 "nonmemory_operand"  "r,P,O,n")))
-   (clobber (match_scratch:QI 3                             "=X,X,X,&d"))
+  [(set (match_operand:PSI 0 "register_operand"             "=r,r,r    ,r")
+        (ashift:PSI (match_operand:PSI 1 "register_operand"  "0,0,r    ,0")
+                    (match_operand:QI 2 "nonmemory_operand"  "r,P,O C23,n")))
+   (clobber (match_scratch:QI 3                             "=X,X,X    ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -5509,34 +5509,34 @@
 ;; "ashrhq3"  "ashruhq3"
 ;; "ashrha3"  "ashruha3"
 (define_insn_and_split "ashr<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
-        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
-                       (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r    ,r,r,r")
+        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r    ,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand" "r,L,P,O C15,K,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
-  [(parallel [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
-                   (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
-                                  (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))
+  [(parallel [(set (match_dup 0)
+                   (ashiftrt:ALL2 (match_dup 1)
+                                  (match_dup 2)))
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashr<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r,r,r")
-        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r,0,0,0")
-                       (match_operand:QI 2 "nop_general_operand" "r,L,P,O,K,n,Qm")))
+  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r    ,r,r,r")
+        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,0,r    ,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand" "r,L,P,O C15,K,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashrhi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "6,0,2,4,4,10,10")
+  [(set_attr "length" "6,0,2,5,4,10,10")
    (set_attr "adjust_len" "ashrhi")])
 
 (define_insn_and_split "ashrpsi3"
-  [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r,r")
-        (ashiftrt:PSI (match_operand:PSI 1 "register_operand"    "0,0,0,r,0")
-                      (match_operand:QI 2 "nonmemory_operand"    "r,P,K,O,n")))
-   (clobber (match_scratch:QI 3                                 "=X,X,X,X,&d"))]
+  [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r    ,r")
+        (ashiftrt:PSI (match_operand:PSI 1 "register_operand"    "0,0,0,r    ,0")
+                      (match_operand:QI 2 "nonmemory_operand"    "r,P,K,O C23,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X,X    ,&d"))]
   ""
   "#"
   "&& reload_completed"
@@ -5547,10 +5547,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashrpsi3"
-  [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r,r")
-        (ashiftrt:PSI (match_operand:PSI 1 "register_operand"    "0,0,0,r,0")
-                      (match_operand:QI 2 "nonmemory_operand"    "r,P,K,O,n")))
-   (clobber (match_scratch:QI 3                                 "=X,X,X,X,&d"))
+  [(set (match_operand:PSI 0 "register_operand"                 "=r,r,r,r    ,r")
+        (ashiftrt:PSI (match_operand:PSI 1 "register_operand"    "0,0,0,r    ,0")
+                      (match_operand:QI 2 "nonmemory_operand"    "r,P,K,O C23,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X,X    ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -5562,9 +5562,9 @@
 ;; "ashrsq3"  "ashrusq3"
 ;; "ashrsa3"  "ashrusa3"
 (define_insn_and_split "ashr<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                  "=r,r,r,r,r,r,r")
-        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
-                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))]
+  [(set (match_operand:ALL4 0 "register_operand"                  "=r,r,r,r    ,r,r,r")
+        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r    ,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,O C31,K,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
@@ -5574,9 +5574,9 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashr<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                  "=r,r,r,r,r,r,r")
-        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r,0,0,0")
-                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,O,K,n,Qm")))
+  [(set (match_operand:ALL4 0 "register_operand"                  "=r,r,r,r    ,r,r,r")
+        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r    ,0,0,0")
+                       (match_operand:QI 2 "nop_general_operand"   "r,L,P,O C31,K,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -5604,10 +5604,10 @@
 ;; "*ashrhq3_const"  "*ashruhq3_const"
 ;; "*ashrha3_const"  "*ashruha3_const"
 (define_insn_and_split "*ashr<mode>3_const_split"
-  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r")
-        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r,0,0")
-                       (match_operand:QI 2 "const_int_operand"   "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3                                 "=X,X,X,X,&d"))]
+  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r    ,r,r")
+        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r    ,0,0")
+                       (match_operand:QI 2 "const_int_operand"   "L,P,O C15,K,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X    ,X,&d"))]
   "reload_completed"
   "#"
   "&& reload_completed"
@@ -5618,10 +5618,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashr<mode>3_const"
-  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r,r,r")
-        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r,0,0")
-                       (match_operand:QI 2 "const_int_operand"   "L,P,O,K,n")))
-   (clobber (match_scratch:QI 3                                 "=X,X,X,X,&d"))
+  [(set (match_operand:ALL2 0 "register_operand"                "=r,r,r    ,r,r")
+        (ashiftrt:ALL2 (match_operand:ALL2 1 "register_operand"  "0,0,r    ,0,0")
+                       (match_operand:QI 2 "const_int_operand"   "L,P,O C15,K,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X    ,X,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
@@ -5647,10 +5647,10 @@
 ;; "*ashrsq3_const"  "*ashrusq3_const"
 ;; "*ashrsa3_const"  "*ashrusa3_const"
 (define_insn_and_split "*ashr<mode>3_const_split"
-  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r")
-        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r,0")
-                       (match_operand:QI 2 "const_int_operand"   "L,P,O,n")))
-   (clobber (match_scratch:QI 3                                 "=X,X,X,&d"))]
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r    ,r")
+        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r    ,0")
+                       (match_operand:QI 2 "const_int_operand"   "L,P,O C31,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X    ,&d"))]
   "reload_completed"
   "#"
   "&& reload_completed"
@@ -5661,10 +5661,10 @@
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashr<mode>3_const"
-  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r")
-        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r,0")
-                       (match_operand:QI 2 "const_int_operand"   "L,P,O,n")))
-   (clobber (match_scratch:QI 3                                 "=X,X,X,&d"))
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r    ,r")
+        (ashiftrt:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r    ,0")
+                       (match_operand:QI 2 "const_int_operand"   "L,P,O C31,n")))
+   (clobber (match_scratch:QI 3                                 "=X,X,X    ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
