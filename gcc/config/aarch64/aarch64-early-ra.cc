@@ -3575,14 +3575,17 @@ early_ra::process_block (basic_block bb, bool is_isolated)
       // See whether we have a complete region, with no remaining live
       // allocnos.
       if (is_isolated
+	  && m_accurate_live_ranges
 	  && bitmap_empty_p (m_live_allocnos)
 	  && m_live_fprs == 0
-	  && m_allocation_successful
 	  && !m_allocnos.is_empty ())
 	{
 	  rtx_insn *prev_insn = PREV_INSN (insn);
-	  m_insn_ranges.safe_push ({ start_insn, prev_insn });
-	  process_region ();
+	  if (m_allocation_successful)
+	    {
+	      m_insn_ranges.safe_push ({ start_insn, prev_insn });
+	      process_region ();
+	    }
 	  start_new_region ();
 	  is_first = true;
 	  start_insn = prev_insn;
