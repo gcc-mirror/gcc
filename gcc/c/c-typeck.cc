@@ -8457,6 +8457,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     }
   else if (codel == POINTER_TYPE
 	   && (coder == INTEGER_TYPE
+	       || coder == ENUMERAL_TYPE
+	       || coder == BOOLEAN_TYPE
 	       || coder == NULLPTR_TYPE
 	       || coder == BITINT_TYPE))
     {
