@@ -240,6 +240,7 @@ extern void hash_set_tests_cc_tests ();
 extern void input_cc_tests ();
 extern void json_cc_tests ();
 extern void lazy_diagnostic_path_cc_tests ();
+extern void json_parser_cc_tests ();
 extern void optinfo_emit_json_cc_tests ();
 extern void opts_cc_tests ();
 extern void opts_diagnostic_cc_tests ();

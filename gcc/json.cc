@@ -383,7 +383,7 @@ namespace selftest {
 
 /* Verify that JV->print () prints EXPECTED_JSON.  */
 
-static void
+void
 assert_print_eq (const location &loc,
 		 const json::value &jv,
 		 bool formatted,
