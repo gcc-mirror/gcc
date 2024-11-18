@@ -529,7 +529,15 @@ BEGIN
       e2 := GetNth (tuple, 2) ;
       e1tree := Mod2Gcc (e1) ;
       e2tree := Mod2Gcc (e2) ;
-      IF CompareTrees (incrtree, GetIntegerZero (location)) > 0
+      IF CompareTrees (incrtree, GetIntegerZero (location)) = 0
+      THEN
+         MetaErrorT0 (lastpos,
+                      'the {%kFOR} loop step value must not be zero') ;
+         MetaErrorDecl (incr, TRUE) ;
+         NoChange := FALSE ;
+         SubQuad (quad) ;
+         success := FALSE
+      ELSIF CompareTrees (incrtree, GetIntegerZero (location)) > 0
       THEN
          (* If incr > 0 then LastIterator := ((e2-e1) DIV incr) * incr + e1.  *)
          expr := BuildSub (location, e2tree, e1tree, FALSE) ;
@@ -3537,9 +3545,9 @@ BEGIN
    IF StrictTypeChecking AND
       (NOT AssignmentTypeCompatible (virtpos, "", des, expr))
    THEN
-      MetaErrorT2 (virtpos,
-                   'assignment check caught mismatch between {%1Ead} and {%2ad}',
-                   des, expr)
+      ErrorMessageDecl (virtpos,
+                        'assignment check caught mismatch between {%1Ead} and {%2ad}',
+                        des, expr, TRUE)
    END ;
    IF IsConstString (expr) AND (NOT IsConstStringKnown (expr))
    THEN
@@ -3554,9 +3562,9 @@ BEGIN
       checkDeclare (des) ;
       IF NOT PrepareCopyString (becomespos, length, exprt, expr, SkipType (GetType (des)))
       THEN
-         MetaErrorT2 (virtpos,
-                      'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
-                      expr, des)
+         ErrorMessageDecl (virtpos,
+                           'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
+                           expr, des, TRUE)
       END ;
       AddStatement (location,
                     MaybeDebugBuiltinMemcpy (location,
@@ -3590,7 +3598,7 @@ BEGIN
                                          FoldConstBecomes (virtpos, des, expr))
             END
          ELSE
-            SubQuad (quad)  (* we don't want multiple errors for the quad.  *)
+            SubQuad (quad)  (* We don't want multiple errors for the quad.  *)
          END
       END
    END
