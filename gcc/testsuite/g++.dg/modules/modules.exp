@@ -36,7 +36,6 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-set MOD_STD_LIST { 17 2a 2b }
 
 dg-init
 
@@ -261,44 +260,16 @@ proc srcdir {} {
     return $testdir
 }
 
-# Return set of std options to iterate over, taken from g++-dg.exp & compat.exp
+# Return set of std options to iterate over.
 proc module-init { src } {
-    set tmp [dg-get-options $src]
-    set option_list {}
-    set have_std 0
-    set std_prefix "-std=c++"
+    set option_list [g++-std-flags $src]
     global extra_tool_flags
     set extra_tool_flags {}
-    global MOD_STD_LIST
 
-    foreach op $tmp {
-	switch [lindex $op 0] {
-	    "dg-options" {
-		set std_prefix "-std=gnu++"
-		if { [string match "*-std=*" [lindex $op 2]] } {
-		    set have_std 1
-		}
-		eval lappend extra_tool_flags [lindex $op 2]
-	    }
-	    "dg-additional-options" {
-		if { [string match "*-std=*" [lindex $op 2]] } {
-		    set have_std 1
-		}
-		eval lappend extra_tool_flags [lindex $op 2]
-	    }
-	}
-    }
-
-    if { $have_std } {
-	lappend option_list ""
-    } elseif { [string match "*xtreme*" $src] } {
+    if { [llength $option_list]
+	 && [string match "*xtreme*" $src] } {
 	# Only run the xtreme tests once.
-	set x [lindex $MOD_STD_LIST end]
-	lappend option_list "${std_prefix}$x"
-    } else {
-	foreach x $MOD_STD_LIST {
-	    lappend option_list "${std_prefix}$x"
-	}
+	set option_list [lrange [lsort $option_list] end end]
     }
 
     return $option_list
