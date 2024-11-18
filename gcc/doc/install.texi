@@ -1145,8 +1145,7 @@ whether you use the GNU assembler.  On any other system,
 @option{--with-gnu-as} has no effect.
 
 @itemize @bullet
-@item @samp{hppa1.0-@var{any}-@var{any}}
-@item @samp{hppa1.1-@var{any}-@var{any}}
+@item @samp{hppa*-@var{any}-@var{any}}
 @item @samp{*-*-solaris2.11}
 @end itemize
 
@@ -3676,13 +3675,6 @@ AIX 7.1)}.
 DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP}.
 
 @item
-HP-UX:
-@itemize
-@item
-@uref{http://hpux.connect.org.uk/,,HP-UX Porting Center};
-@end itemize
-
-@item
 macOS:
 @itemize
 @item
@@ -3773,9 +3765,9 @@ information have to.
 @item
 @uref{#h8300-hms,,h8300-hms}
 @item
-@uref{#hppa-hp-hpux,,hppa*-hp-hpux*}
+@uref{#hppa-x-linux,,hppa-*-linux}
 @item
-@uref{#hppa-hp-hpux11,,hppa*-hp-hpux11}
+@uref{#hppa64-hp-hpux11,,hppa64-hp-hpux11*}
 @item
 @uref{#x-x-linux-gnu,,*-*-linux-gnu}
 @item
@@ -4131,113 +4123,28 @@ Renesas H8/300 series of processors.
 @html
 <hr />
 @end html
-@anchor{hppa-hp-hpux}
-@heading hppa*-hp-hpux*
-We require using gas on all hppa platforms.  Version 2.19 or
-later is recommended.
+@anchor{hppa64-hp-hpux11}
+@heading hppa64-hp-hpux11*
+Only the 64-bit @samp{hppa} target is supported on HP-UX.  Support
+for 32-bit @samp{hppa} was discontinued in GCC 13.
+ 
+We require using gas on all hppa platforms.
 
 It may be helpful to configure GCC with the
 @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}} and
 @option{--with-as=@dots{}} options to ensure that GCC can find GAS@.
 
-There are two default scheduling models for instructions.  These are
-PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
-architecture specified for the target machine when configuring.
-PROCESSOR_8000 is the default.  PROCESSOR_7100LC is selected when
-the target is a @samp{hppa1*} machine.
+Only the HP linker is supported.  Thus, it is best to explicitly
+configure the target with the @option{--with-ld=@dots{}} option.
 
-The PROCESSOR_8000 model is not well suited to older processors.  Thus,
-it is important to completely specify the machine architecture when
-configuring if you want a model other than PROCESSOR_8000.  The macro
-TARGET_SCHED_DEFAULT can be defined in BOOT_CFLAGS if a different
-default scheduling model is desired.
+The DCE thread library is not supported, so @option{--enable-threads=dce}
+does not work.
 
-As of GCC 4.0, GCC uses the UNIX 95 namespace for HP-UX 10.10
-through 11.00, and the UNIX 98 namespace for HP-UX 11.11 and later.
-This namespace change might cause problems when bootstrapping with
-an earlier version of GCC or the HP compiler as essentially the same
-namespace is required for an entire build.  This problem can be avoided
-in a number of ways.  With HP cc, @env{UNIX_STD} can be set to @samp{95}
-or @samp{98}.  Another way is to add an appropriate set of predefines
-to @env{CC}.  The description for the @option{munix=} option contains
-a list of the predefines used with each standard.
+Currently, there are no precompiled binaries for 64-bit HP-UX.
 
-More specific information to @samp{hppa*-hp-hpux*} targets follows.
-
-@html
-<hr />
-@end html
-@anchor{hppa-hp-hpux11}
-@heading hppa*-hp-hpux11
-Refer to @uref{binaries.html,,binaries} for information about obtaining
-precompiled GCC binaries for HP-UX@.  Precompiled binaries must be obtained
-to build the Ada language as it cannot be bootstrapped using C@.  Ada is
-only available for the 32-bit PA-RISC runtime.
-
-Starting with GCC 3.4 an ISO C compiler is required to bootstrap.  The
-bundled compiler supports only traditional C; you will need either HP's
-unbundled compiler, or a binary distribution of GCC@.
-
-It is possible to build GCC 3.3 starting with the bundled HP compiler,
-but the process requires several steps.  GCC 3.3 can then be used to
-build later versions.
-
-There are several possible approaches to building the distribution.
-Binutils can be built first using the HP tools.  Then, the GCC
-distribution can be built.  The second approach is to build GCC
-first using the HP tools, then build binutils, then rebuild GCC@.
-There have been problems with various binary distributions, so it
-is best not to start from a binary distribution.
-
-On 64-bit capable systems, there are two distinct targets.  Different
-installation prefixes must be used if both are to be installed on
-the same system.  The @samp{hppa[1-2]*-hp-hpux11*} target generates code
-for the 32-bit PA-RISC runtime architecture and uses the HP linker.
-The @samp{hppa64-hp-hpux11*} target generates 64-bit code for the
-PA-RISC 2.0 architecture.
-
-The script config.guess now selects the target type based on the compiler
-detected during configuration.  You must define @env{PATH} or @env{CC} so
-that configure finds an appropriate compiler for the initial bootstrap.
-When @env{CC} is used, the definition should contain the options that are
-needed whenever @env{CC} is used.
-
-Specifically, options that determine the runtime architecture must be
-in @env{CC} to correctly select the target for the build.  It is also
-convenient to place many other compiler options in @env{CC}.  For example,
-@env{CC="cc -Ac +DA2.0W -Wp,-H16376 -D_CLASSIC_TYPES -D_HPUX_SOURCE"}
-can be used to bootstrap the GCC 3.3 branch with the HP compiler in
-64-bit K&R/bundled mode.  The @option{+DA2.0W} option will result in
-the automatic selection of the @samp{hppa64-hp-hpux11*} target.  The
-macro definition table of cpp needs to be increased for a successful
-build with the HP compiler.  _CLASSIC_TYPES and _HPUX_SOURCE need to
-be defined when building with the bundled compiler, or when using the
-@option{-Ac} option.  These defines aren't necessary with @option{-Ae}.
-
-It is best to explicitly configure the @samp{hppa64-hp-hpux11*} target
-with the @option{--with-ld=@dots{}} option.  This overrides the standard
-search for ld.  The two linkers supported on this target require different
-commands.  The default linker is determined during configuration.  As a
-result, it's not possible to switch linkers in the middle of a GCC build.
-This has been reported to sometimes occur in unified builds of binutils
-and GCC@.
-
-Only the HP linker is supported for the @samp{hppa64-hp-hpux11*} target.
-
-At this time, the GNU linker does not support the creation of long
-branch stubs.  As a result, it cannot successfully link binaries
-containing branch offsets larger than 8 megabytes.  In addition,
-there are problems linking shared libraries, linking executables
-with @option{-static}, and with dwarf2 unwind and exception support.
-It also doesn't provide stubs for internal calls to global functions
-in shared libraries, so these calls cannot be overloaded.
-
-The HP dynamic loader does not support GNU symbol versioning, so symbol
-versioning is not supported.  It may be necessary to disable symbol
-versioning with @option{--disable-symvers} when using GNU ld.
-
-POSIX threads are the default.  The optional DCE thread library is not
-supported, so @option{--enable-threads=dce} does not work.
+Binutils and other required tools can be built using the HP tools.
+Then, the GCC distribution can be built.  This is challenging due
+to the many dependencies.
 
 @html
 <hr />
