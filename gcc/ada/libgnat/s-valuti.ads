@@ -121,13 +121,12 @@ is
    --  string to be scanned starting at Ptr.all, and Max is the index of the
    --  last character in the string). Scan_Sign first scans out any initial
    --  blanks, raising Constraint_Error if the field is all blank. It then
-   --  checks for and skips an initial plus or minus, requiring a non-blank
-   --  character to follow (Constraint_Error is raised if plus or minus appears
-   --  at the end of the string or with a following blank). Minus is set True
-   --  if a minus sign was skipped, and False otherwise. On exit Ptr.all points
-   --  to the character after the sign, or to the first non-blank character
-   --  if no sign is present. Start is set to the point to the first non-blank
-   --  character (sign or digit after it).
+   --  checks for and skips an initial plus or minus (Constraint_Error is
+   --  raised if plus or minus appears at the end of the string). Minus is set
+   --  True if a minus sign was skipped, and False otherwise. On exit Ptr.all
+   --  points to the character after the sign, or to the first non-blank
+   --  character if no sign is present. Start is set to the point to the first
+   --  non-blank character.
    --
    --  Note: if Str is null, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence
