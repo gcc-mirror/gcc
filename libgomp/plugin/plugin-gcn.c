@@ -4388,7 +4388,9 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *),
   gcn_exec (kernel, devaddrs, dims, targ_mem_desc, true, aq);
 }
 
-/* Create a new asynchronous thread and queue for running future kernels.  */
+/* Create a new asynchronous thread and queue for running future kernels;
+   issues a fatal error if the queue cannot be created as all callers expect
+   that the queue exists.  */
 
 struct goacc_asyncqueue *
 GOMP_OFFLOAD_openacc_async_construct (int device)
@@ -4416,18 +4418,18 @@ GOMP_OFFLOAD_openacc_async_construct (int device)
 
   if (pthread_mutex_init (&aq->mutex, NULL))
     {
-      GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue mutex");
-      return false;
+      GOMP_PLUGIN_fatal ("Failed to initialize a GCN agent queue mutex");
+      return NULL;
     }
   if (pthread_cond_init (&aq->queue_cond_in, NULL))
     {
-      GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue cond");
-      return false;
+      GOMP_PLUGIN_fatal ("Failed to initialize a GCN agent queue cond");
+      return NULL;
     }
   if (pthread_cond_init (&aq->queue_cond_out, NULL))
     {
-      GOMP_PLUGIN_error ("Failed to initialize a GCN agent queue cond");
-      return false;
+      GOMP_PLUGIN_fatal ("Failed to initialize a GCN agent queue cond");
+      return NULL;
     }
 
   hsa_status_t status = hsa_fns.hsa_queue_create_fn (agent->id,
