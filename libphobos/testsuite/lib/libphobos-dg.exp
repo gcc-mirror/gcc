@@ -29,6 +29,7 @@ load_gcc_lib scanipa.exp
 load_gcc_lib torture-options.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib fortran-modules.exp
+load_gcc_lib dg-test-cleanup.exp
 load_gcc_lib gcc-dg.exp
 
 # Utility routines.

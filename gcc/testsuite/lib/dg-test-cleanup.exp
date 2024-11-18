@@ -1,0 +1,116 @@
+#   Copyright (C) 1997-2024 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# We need to make sure that additional_* are cleared out after every
+# test.  It is not enough to clear them out *before* the next test run
+# because gcc-target-compile gets run directly from some .exp files
+# (outside of any test).  (Those uses should eventually be eliminated.)
+
+# Because the DG framework doesn't provide a hook that is run at the
+# end of a test, we must replace dg-test with a wrapper.
+
+if { [info procs saved-dg-test] == [list] } {
+    rename dg-test saved-dg-test
+
+    # Helper function for cleanups that should happen after the call
+    # to the real dg-test, whether or not it returns normally, or
+    # fails with an error.
+    proc cleanup-after-saved-dg-test { } {
+	global additional_files
+	global additional_sources
+	global additional_sources_used
+	global additional_prunes
+	global compiler_conditional_xfail_data
+	global shouldfail
+	global expect_ice
+	global testname_with_flags
+	global set_target_env_var
+	global set_compiler_env_var
+	global saved_compiler_env_var
+	global keep_saved_temps_suffixes
+	global nn_line_numbers_enabled
+	global multiline_expected_outputs
+	global freeform_regexps
+	global save_linenr_varnames
+
+	set additional_files ""
+	set additional_sources ""
+	set additional_sources_used ""
+	set additional_prunes ""
+	set shouldfail 0
+	set expect_ice 0
+	if [info exists set_target_env_var] {
+	    unset set_target_env_var
+	}
+	if [info exists set_compiler_env_var] {
+	    restore-compiler-env-var
+	    unset set_compiler_env_var
+	    unset saved_compiler_env_var
+	}
+	if [info exists keep_saved_temps_suffixes] {
+	    unset keep_saved_temps_suffixes
+	}
+	unset_timeout_vars
+	if [info exists compiler_conditional_xfail_data] {
+	    unset compiler_conditional_xfail_data
+	}
+	if [info exists testname_with_flags] {
+	    unset testname_with_flags
+	}
+	set nn_line_numbers_enabled 0
+	set multiline_expected_outputs []
+	set freeform_regexps []
+
+	if { [info exists save_linenr_varnames] } {
+	    foreach varname $save_linenr_varnames {
+		# Cleanup varname
+		eval global $varname
+		eval unset $varname
+
+		# Cleanup varname_used, or generate defined-but-not-used
+		# warning.
+		set varname_used used_$varname
+		eval global $varname_used
+		eval set used [info exists $varname_used]
+		if { $used } {
+		    eval unset $varname_used
+		} else {
+		    regsub {^saved_linenr_} $varname "" org_varname
+		    warning "dg-line var $org_varname defined, but not used"
+		}
+	    }
+	    unset save_linenr_varnames
+	}
+
+	initialize_prune_notes
+    }
+
+    proc dg-test { args } {
+	global errorInfo
+
+	if { [ catch { eval saved-dg-test $args } errmsg ] } {
+	    set saved_info $errorInfo
+	    cleanup-after-saved-dg-test
+	    error $errmsg $saved_info
+	}
+	cleanup-after-saved-dg-test
+    }
+}
+
+proc initialize_prune_notes { } {
+    global prune_notes
+    set prune_notes 1
+}

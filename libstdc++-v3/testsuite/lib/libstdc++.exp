@@ -73,6 +73,7 @@ load_gcc_lib timeout.exp
 load_gcc_lib timeout-dg.exp
 load_gcc_lib wrapper.exp
 load_gcc_lib target-utils.exp
+load_gcc_lib dg-test-cleanup.exp
 
 # Useful for debugging.  Pass the name of a variable and the verbosity
 # threshold (number of -v's on the command line).
