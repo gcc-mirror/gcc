@@ -6966,7 +6966,7 @@ avr_out_ashlpsi3 (rtx_insn *insn, rtx *op, int *plen)
 	    int reg1 = REGNO (op[1]);
 
 	    if (reg0 + 2 != reg1)
-	      avr_asm_len ("mov %C0,%A0", op, plen, 1);
+	      avr_asm_len ("mov %C0,%A1", op, plen, 1);
 
 	    return avr_asm_len ("clr %B0"  CR_TAB
 				"clr %A0", op, plen, 2);
