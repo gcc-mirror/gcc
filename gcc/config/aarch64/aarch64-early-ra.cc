@@ -441,6 +441,8 @@ private:
 
   template<typename T>
   void record_live_range_failure (T);
+  template<typename T>
+  void record_allocation_failure (T);
 
   allocno_group_info *create_allocno_group (unsigned int, unsigned int);
   allocno_subgroup get_allocno_subgroup (rtx);
@@ -1345,6 +1347,24 @@ early_ra::record_live_range_failure (T dump)
     }
 }
 
+// Record that the allocation of the current region has filed.  Call DUMP to
+// dump the reason to a dump file.
+template<typename T>
+void
+early_ra::record_allocation_failure (T dump)
+{
+  if (!m_allocation_successful)
+    return;
+
+  m_allocation_successful = false;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Not allocating region: ");
+      dump ();
+      fprintf (dump_file, "\n");
+    }
+}
+
 // Create and return an allocno group of size SIZE for register REGNO.
 // REGNO can be INVALID_REGNUM if the group just exists to allow
 // other groups to be chained together, and does not have any new
@@ -1473,7 +1493,9 @@ early_ra::get_allocno_subgroup (rtx reg)
 	  || ((flags & ALLOWS_NONFPR)
 	      && !FLOAT_MODE_P (GET_MODE (reg))
 	      && !VECTOR_MODE_P (GET_MODE (reg))))
-	m_allocation_successful = false;
+	record_allocation_failure ([&](){
+	  fprintf (dump_file, "r%d has FPR and non-FPR references", regno);
+	});
 
       if (flags & ALLOWS_FPR8)
 	group->fpr_candidates &= 0xff;
@@ -1865,7 +1887,10 @@ early_ra::record_constraints (rtx_insn *insn)
 	  rtx op = recog_data.operand[opno];
 	  if (GET_CODE (op) == SCRATCH
 	      && reg_classes_intersect_p (op_alt[opno].cl, FP_REGS))
-	    m_allocation_successful = false;
+	    record_allocation_failure ([&](){
+	      fprintf (dump_file, "insn %d has FPR match_scratch",
+		       INSN_UID (insn));
+	    });
 
 	  // Record filter information, which applies to the first register
 	  // in the operand.
@@ -1892,7 +1917,10 @@ early_ra::record_constraints (rtx_insn *insn)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "       -- no match\n");
-      m_allocation_successful = false;
+      record_allocation_failure ([&](){
+	fprintf (dump_file, "no matching constraints for insn %d",
+		 INSN_UID (insn));
+      });
     }
 
   // Record if there is an output operand that is never earlyclobber and never
@@ -1920,7 +1948,10 @@ early_ra::record_constraints (rtx_insn *insn)
       // register, since we don't have IRA's ability to find an alternative.
       // It's better if earlier passes don't create this kind of situation.
       if (REG_P (op) && FP_REGNUM_P (REGNO (op)))
-	m_allocation_successful = false;
+	record_allocation_failure ([&](){
+	  fprintf (dump_file, "operand %d of insn %d refers directly to %s",
+		   opno, INSN_UID (insn), reg_names[REGNO (op)]);
+	});
 
       // Treat input operands as being earlyclobbered if an output is
       // sometimes earlyclobber and if the input never matches an output.
@@ -2903,7 +2934,9 @@ early_ra::allocate_colors ()
 
       if (best == INVALID_REGNUM)
 	{
-	  m_allocation_successful = false;
+	  record_allocation_failure ([&](){
+	    fprintf (dump_file, "no free register for color %d", color->id);
+	  });
 	  return;
 	}
 
