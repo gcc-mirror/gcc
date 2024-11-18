@@ -53,7 +53,7 @@ const pass_data pass_data_late_combine =
   RTL_PASS, // type
   "late_combine", // name
   OPTGROUP_NONE, // optinfo_flags
-  TV_NONE, // tv_id
+  TV_LATE_COMBINE, // tv_id
   0, // properties_required
   0, // properties_provided
   0, // properties_destroyed
