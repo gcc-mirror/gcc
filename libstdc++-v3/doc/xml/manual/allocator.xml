@@ -505,7 +505,7 @@
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.angelikalanger.com/Articles/C++Report/Allocators/Allocators.html">
+	      xlink:href="https://angelikalanger.com/Articles/C++Report/Allocators/Allocators.html">
       Allocator Types
 	</link>
       </title>
