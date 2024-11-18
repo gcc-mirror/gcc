@@ -1434,8 +1434,8 @@ early_ra::get_allocno_subgroup (rtx reg)
       if (!inner)
 	return {};
 
-      if (!targetm.modes_tieable_p (GET_MODE (SUBREG_REG (reg)),
-				    GET_MODE (reg)))
+      if (!targetm.can_change_mode_class (GET_MODE (SUBREG_REG (reg)),
+					  GET_MODE (reg), FP_REGS))
 	{
 	  record_live_range_failure ([&](){
 	    fprintf (dump_file, "cannot refer to r%d:%s in mode %s",
@@ -1445,6 +1445,15 @@ early_ra::get_allocno_subgroup (rtx reg)
 	  });
 	  return {};
 	}
+
+      if (!targetm.modes_tieable_p (GET_MODE (SUBREG_REG (reg)),
+				    GET_MODE (reg)))
+	record_allocation_failure ([&](){
+	    fprintf (dump_file, "r%d's mode %s is not tieable to mode %s",
+		     REGNO (SUBREG_REG (reg)),
+		     GET_MODE_NAME (GET_MODE (SUBREG_REG (reg))),
+		     GET_MODE_NAME (GET_MODE (reg)));
+	});
 
       subreg_info info;
       subreg_get_info (V0_REGNUM, GET_MODE (SUBREG_REG (reg)),
