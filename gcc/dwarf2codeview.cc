@@ -111,6 +111,7 @@ enum cv_leaf_type {
   LF_MEMBER = 0x150d,
   LF_STMEMBER = 0x150e,
   LF_METHOD = 0x150f,
+  LF_NESTTYPE = 0x1510,
   LF_ONEMETHOD = 0x1511,
   LF_FUNC_ID = 0x1601,
   LF_MFUNC_ID = 0x1602,
@@ -1249,6 +1250,11 @@ struct codeview_subtype
       uint32_t base_class_type;
       codeview_integer offset;
     } lf_bclass;
+    struct
+    {
+      uint32_t type;
+      char *name;
+    } lf_nesttype;
   };
 };
 
@@ -1432,6 +1438,7 @@ static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
 					      uint32_t this_type,
 					      int32_t this_adjustment);
 static void write_cv_padding (size_t padding);
+static void flush_deferred_types (void);
 
 /* Record new line number against the current function.  */
 
@@ -3904,6 +3911,40 @@ write_lf_fieldlist (codeview_custom_type *t)
 	  write_cv_padding (4 - (leaf_len % 4));
 	  break;
 
+	case LF_NESTTYPE:
+	  /* This is lf_nest_type in binutils and lfNestType in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_nest_type
+	    {
+	      uint16_t kind;
+	      uint16_t padding;
+	      uint32_t type;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_NESTTYPE);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, 0);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_nesttype.type);
+	  putc ('\n', asm_out_file);
+
+	  name_len = strlen (v->lf_nesttype.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_nesttype.name, name_len);
+
+	  leaf_len = 8 + name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_nesttype.name);
+	  break;
+
 	default:
 	  break;
 	}
@@ -4672,6 +4713,12 @@ codeview_debug_finish (void)
   write_source_files ();
   write_line_numbers ();
   write_codeview_symbols ();
+
+  /* If we reference a nested struct but not its parent, add_deferred_type
+     gets called if we create a forward reference for this, even though we've
+     already flushed this in codeview_debug_early_finish.  In this case we will
+     need to flush this list again.  */
+  flush_deferred_types ();
 
   if (custom_types)
     write_custom_types ();
@@ -5638,6 +5685,32 @@ is_templated_func (dw_die_ref die)
   return false;
 }
 
+/* Create a field list subtype that records that a struct has a nested type
+   contained within it.  */
+
+static void
+add_struct_nested_type (dw_die_ref c, codeview_subtype **el, size_t *el_len)
+{
+  const char *name = get_AT_string (c, DW_AT_name);
+  size_t name_len;
+
+  if (!name)
+    return;
+
+  name_len = strlen (name);
+
+  *el = (codeview_subtype *) xmalloc (sizeof (**el));
+  (*el)->next = NULL;
+  (*el)->kind = LF_NESTTYPE;
+  (*el)->lf_nesttype.type = get_type_num (c, true, false);
+  (*el)->lf_nesttype.name = xstrdup (name);
+
+  *el_len = 9 + name_len;
+
+  if (*el_len % 4)
+    *el_len += 4 - (*el_len % 4);
+}
+
 /* Process a DW_TAG_structure_type, DW_TAG_class_type, or DW_TAG_union_type
    DIE, add an LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS / LF_UNION type,
    and return the number of the latter.  */
@@ -5645,10 +5718,17 @@ is_templated_func (dw_die_ref die)
 static uint32_t
 get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 {
-  dw_die_ref first_child;
+  dw_die_ref parent, first_child;
   codeview_custom_type *ct;
   uint16_t num_members = 0;
   uint32_t last_type = 0;
+
+  parent = dw_get_die_parent(type);
+
+  if (parent && (dw_get_die_tag (parent) == DW_TAG_structure_type
+      || dw_get_die_tag (parent) == DW_TAG_class_type
+      || dw_get_die_tag (parent) == DW_TAG_union_type))
+    get_type_num (parent, true, false);
 
   if ((in_struct && get_AT_string (type, DW_AT_name))
       || get_AT_flag (type, DW_AT_declaration))
@@ -5767,6 +5847,13 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 
 	    case DW_TAG_inheritance:
 	      add_struct_inheritance (c, accessibility, &el, &el_len);
+	      break;
+
+	    case DW_TAG_structure_type:
+	    case DW_TAG_class_type:
+	    case DW_TAG_union_type:
+	    case DW_TAG_enumeration_type:
+	      add_struct_nested_type (c, &el, &el_len);
 	      break;
 
 	    default:
