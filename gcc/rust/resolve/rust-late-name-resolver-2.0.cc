@@ -263,6 +263,8 @@ Late::visit (AST::TypePath &type)
 		   Definition (resolved->get_node_id ()));
   else
     rust_unreachable ();
+
+  DefaultResolver::visit (type);
 }
 
 void
