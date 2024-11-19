@@ -127,8 +127,16 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 {
   NodeId ref_node_id = UNKNOWN_NODEID;
 
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (use_id))
+	ref_node_id = *id;
+    }
   // FIXME: Don't assert here - we might be dealing with a type
-  if (!resolver.lookup_resolved_name (use_id, &ref_node_id))
+  else if (!resolver.lookup_resolved_name (use_id, &ref_node_id))
     resolver.lookup_resolved_type (use_id, &ref_node_id);
 
   // FIXME: Assert here. For now, we return since this causes issues when

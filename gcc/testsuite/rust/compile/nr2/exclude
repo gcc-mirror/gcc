@@ -145,8 +145,6 @@ parse_complex_generic_application.rs
 parse_complex_generic_application2.rs
 path_as_generic_arg.rs
 pattern-struct.rs
-privacy1.rs
-privacy3.rs
 privacy4.rs
 privacy5.rs
 privacy8.rs
