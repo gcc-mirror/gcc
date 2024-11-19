@@ -1482,10 +1482,14 @@ aarch64_init_simd_builtin_functions (bool called_from_pragma)
 						      size_type_node,
 						      intSI_type_node,
 						      NULL);
+      /* aarch64_im_lane_boundsi should be leaf and nothrow as it
+	 is expanded as nop or will cause an user error.  */
+      tree attrs = aarch64_add_attribute ("nothrow", NULL_TREE);
+      attrs = aarch64_add_attribute ("leaf", attrs);
       aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_LANE_CHECK]
 	= aarch64_general_add_builtin ("__builtin_aarch64_im_lane_boundsi",
 				       lane_check_fpr,
-				       AARCH64_SIMD_BUILTIN_LANE_CHECK);
+				       AARCH64_SIMD_BUILTIN_LANE_CHECK, attrs);
     }
 
   for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
