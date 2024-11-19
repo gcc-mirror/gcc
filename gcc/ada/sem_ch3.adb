@@ -3906,15 +3906,22 @@ package body Sem_Ch3 is
          Set_Expression (N, Error);
          E := Error;
 
-         if Nkind (Def) /= N_String_Literal then
-            Error_Msg_N
-              ("External_Initialization aspect expects a string literal value",
-               Specification);
-            return;
-         end if;
+         case Is_OK_Static_Expression_Of_Type (Def, Standard_String) is
+            when Static =>
+               null;
+
+            when Not_Static =>
+               Error_Msg_N
+                 ("External_Initialization aspect expects a static string",
+                  Specification);
+               return;
+
+            when Invalid =>
+               return;
+         end case;
 
          if not (Is_String_Type (T)
-           or else Is_RTE (Base_Type (T), RE_Stream_Element_Array))
+                  or else Is_RTE (Base_Type (T), RE_Stream_Element_Array))
          then
             Error_Msg_N
               ("External_Initialization aspect can only be applied to objects "
@@ -3924,7 +3931,8 @@ package body Sem_Ch3 is
          end if;
 
          declare
-            S : constant String := Stringt.To_String (Strval (Def));
+            S : constant String :=
+              Stringt.To_String (Strval (Expr_Value_S (Def)));
          begin
             if System.OS_Lib.Is_Absolute_Path (S) then
                Data_Path := Name_Find (S);

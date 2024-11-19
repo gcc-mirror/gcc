@@ -6395,45 +6395,23 @@ package body Sem_Prag is
       ----------------------------------------
 
       procedure Check_Expr_Is_OK_Static_Expression
-        (Expr : Node_Id;
-         Typ  : Entity_Id := Empty)
-      is
+        (Expr : Node_Id; Typ : Entity_Id := Empty) is
       begin
-         if Present (Typ) then
-            Analyze_And_Resolve (Expr, Typ);
-         else
-            Analyze_And_Resolve (Expr);
-         end if;
+         case Is_OK_Static_Expression_Of_Type (Expr, Typ) is
+            when Static =>
+               null;
 
-         --  An expression cannot be considered static if its resolution failed
-         --  or if it's erroneous. Stop the analysis of the related pragma.
+            when Not_Static =>
+               Error_Msg_Name_1 := Pname;
+               Flag_Non_Static_Expr
+                 (Fix_Error
+                    ("argument for pragma% must be a static expression!"),
+                  Expr);
+               raise Pragma_Exit;
 
-         if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
-            raise Pragma_Exit;
-
-         elsif Is_OK_Static_Expression (Expr) then
-            return;
-
-         --  An interesting special case, if we have a string literal and we
-         --  are in Ada 83 mode, then we allow it even though it will not be
-         --  flagged as static. This allows the use of Ada 95 pragmas like
-         --  Import in Ada 83 mode. They will of course be flagged with
-         --  warnings as usual, but will not cause errors.
-
-         elsif Ada_Version = Ada_83
-           and then Nkind (Expr) = N_String_Literal
-         then
-            return;
-
-         --  Finally, we have a real error
-
-         else
-            Error_Msg_Name_1 := Pname;
-            Flag_Non_Static_Expr
-              (Fix_Error ("argument for pragma% must be a static expression!"),
-               Expr);
-            raise Pragma_Exit;
-         end if;
+            when Invalid =>
+               raise Pragma_Exit;
+         end case;
       end Check_Expr_Is_OK_Static_Expression;
 
       -------------------------

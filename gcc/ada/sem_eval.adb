@@ -5527,6 +5527,45 @@ package body Sem_Eval is
       return Is_Static_Expression (N) and then not Raises_Constraint_Error (N);
    end Is_OK_Static_Expression;
 
+   -------------------------------------
+   -- Is_OK_Static_Expression_Of_Type --
+   -------------------------------------
+
+   function Is_OK_Static_Expression_Of_Type
+     (Expr : Node_Id; Typ : Entity_Id := Empty) return Staticity is
+   begin
+      if Present (Typ) then
+         Analyze_And_Resolve (Expr, Typ);
+      else
+         Analyze_And_Resolve (Expr);
+      end if;
+
+      --  An expression cannot be considered static if its resolution
+      --  failed or if an error was flagged.
+
+      if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
+         return Invalid;
+      end if;
+
+      if Is_OK_Static_Expression (Expr) then
+         return Static;
+      end if;
+
+      --  An interesting special case, if we have a string literal and we
+      --  are in Ada 83 mode, then we allow it even though it will not be
+      --  flagged as static. This allows the use of Ada 95 pragmas like
+      --  Import in Ada 83 mode. They will of course be flagged with
+      --  warnings as usual, but will not cause errors.
+
+      if Ada_Version = Ada_83
+        and then Nkind (Expr) = N_String_Literal
+      then
+         return Static;
+      end if;
+
+      return Not_Static;
+   end Is_OK_Static_Expression_Of_Type;
+
    ------------------------
    -- Is_OK_Static_Range --
    ------------------------
