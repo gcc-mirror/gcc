@@ -920,7 +920,7 @@ avr_set_current_function (tree decl)
 
   /* Don't print the above diagnostics more than once.  */
 
-  cfun->machine->attributes_checked_p = 1;
+  cfun->machine->attributes_checked_p = true;
 }
 
 
@@ -973,7 +973,7 @@ static int
 avr_regs_to_save (HARD_REG_SET *set)
 {
   int count = 0;
-  int int_or_sig_p = cfun->machine->is_interrupt || cfun->machine->is_signal;
+  bool int_or_sig_p = cfun->machine->is_interrupt || cfun->machine->is_signal;
 
   if (set)
     CLEAR_HARD_REG_SET (*set);
@@ -1138,7 +1138,7 @@ avr_return_addr_rtx (int count, rtx tem)
   else
     r = gen_rtx_SYMBOL_REF (Pmode, ".L__stack_usage+1");
 
-  cfun->machine->use_L__stack_usage = 1;
+  cfun->machine->use_L__stack_usage = true;
 
   r = gen_rtx_PLUS (Pmode, tem, r);
   r = gen_frame_mem (Pmode, memory_address (Pmode, r));
@@ -1637,7 +1637,7 @@ avr_expand_prologue (void)
 	     ZERO_REG and TMP_REG and one additional, optional register for
 	     us in an optimal way.  This even scans through inline asm.  */
 
-	  cfun->machine->gasisr.yes = 1;
+	  cfun->machine->gasisr.yes = true;
 
 	  // The optional reg or TMP_REG if we don't need one.  If we need one,
 	  // remove that reg from SET so that it's not puhed / popped twice.
@@ -2992,13 +2992,13 @@ avr_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname,
 {
   cum->nregs = AVR_TINY ? 1 + REG_25 - REG_20 : 1 + REG_25 - REG_8;
   cum->regno = FIRST_CUM_REG;
-  cum->has_stack_args = 0;
+  cum->has_stack_args = false;
   if (!libname && stdarg_p (fntype))
     cum->nregs = 0;
 
   /* Assume the calle may be tail called */
 
-  cfun->machine->sibcall_fails = 0;
+  cfun->machine->sibcall_fails = false;
 }
 
 
@@ -3031,7 +3031,7 @@ avr_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   if (cum->nregs && bytes <= cum->nregs)
     return gen_rtx_REG (arg.mode, cum->regno - bytes);
 
-  cum->has_stack_args = 1;
+  cum->has_stack_args = true;
 
   return NULL_RTX;
 }
@@ -3065,7 +3065,7 @@ avr_function_arg_advance (cumulative_args_t cum_v, const function_arg_info &arg)
 	 pass &args_so_far, too.  At present, CUMULATIVE_ARGS is target
 	 dependent so that such an extension is not wanted.  */
 
-      cfun->machine->sibcall_fails = 1;
+      cfun->machine->sibcall_fails = true;
     }
 
   /* Test if all registers needed by the ABI are actually available.  If the
@@ -3306,7 +3306,7 @@ _reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
 
 /* Return nonzero if register REG dead after INSN.  */
 
-int
+bool
 reg_unused_after (rtx_insn *insn, rtx reg)
 {
   return (dead_or_set_p (insn, reg)
@@ -13212,17 +13212,17 @@ avr_function_value (const_tree type, const_tree /*fn_decl_or_type*/,
   return gen_rtx_REG (BLKmode, avr_ret_register () + 2 - offs);
 }
 
-int
+bool
 test_hard_reg_class (reg_class rclass, rtx x)
 {
   int regno = true_regnum (x);
   if (regno < 0)
-    return 0;
+    return false;
 
   if (TEST_HARD_REG_CLASS (rclass, regno))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 
@@ -13276,7 +13276,7 @@ avr_2word_insn_p (rtx_insn *insn)
 }
 
 
-int
+bool
 jump_over_one_insn_p (rtx_insn *insn, rtx dest)
 {
   int uid = INSN_UID (GET_CODE (dest) == LABEL_REF

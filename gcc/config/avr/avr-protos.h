@@ -127,10 +127,10 @@ extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
 extern const char* avr_out_lpm (rtx_insn *, rtx*, int*);
 extern const char* avr_out_cmp_lsr (rtx_insn *, rtx*, int*);
 extern void avr_maybe_cmp_lsr (rtx *);
-extern int reg_unused_after (rtx_insn *insn, rtx reg);
+extern bool reg_unused_after (rtx_insn *insn, rtx reg);
 extern int avr_jump_mode (rtx x, rtx_insn *insn, int = 0);
-extern int test_hard_reg_class (enum reg_class rclass, rtx x);
-extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
+extern bool test_hard_reg_class (enum reg_class rclass, rtx x);
+extern bool jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);

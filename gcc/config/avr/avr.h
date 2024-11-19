@@ -340,7 +340,7 @@ typedef struct avr_args
 
   /* Whether some of the arguments are passed on the stack,
      and hence an arg pointer is needed.  */
-  int has_stack_args;
+  bool has_stack_args;
 } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
@@ -553,7 +553,7 @@ extern const char *avr_no_devlib (int, const char**);
 struct GTY(()) machine_function
 {
   /* 'true' - if current function is a naked function.  */
-  int is_naked;
+  bool is_naked;
 
   /* 0 when no "interrupt" attribute is present.
      1 when an "interrupt" attribute without arguments is present (and
@@ -571,45 +571,45 @@ struct GTY(()) machine_function
 
   /* 'true' - if current function is a non-blocking interrupt service
      routine as specified by the "isr_noblock" attribute.  */
-  int is_noblock;
+  bool is_noblock;
 
   /* 'true' - if current function is a 'task' function
      as specified by the "OS_task" attribute.  */
-  int is_OS_task;
+  bool is_OS_task;
 
   /* 'true' - if current function is a 'main' function
      as specified by the "OS_main" attribute.  */
-  int is_OS_main;
+  bool is_OS_main;
 
   /* Current function stack size.  */
   int stack_usage;
 
   /* 'true' if a callee might be tail called */
-  int sibcall_fails;
+  bool sibcall_fails;
 
   /* 'true' if the above is_foo predicates are sanity-checked to avoid
      multiple diagnose for the same function.  */
-  int attributes_checked_p;
+  bool attributes_checked_p;
 
   /* 'true' - if current function shall not use '__gcc_isr' pseudo
      instructions as specified by the "no_gccisr" attribute.  */
-  int is_no_gccisr;
+  bool is_no_gccisr;
 
   /* Used for `__gcc_isr' pseudo instruction handling of
      non-naked ISR prologue / epilogue(s).  */
   struct
   {
     /* 'true' if this function actually uses "*gasisr" insns. */
-    int yes;
+    bool yes;
     /* 'true' if this function is allowed to use "*gasisr" insns. */
-    int maybe;
+    bool maybe;
     /* The register numer as printed by the Done chunk.  */
     int regno;
   } gasisr;
 
   /* 'true' if this function references .L__stack_usage like with
      __builtin_return_address.  */
-  int use_L__stack_usage;
+  bool use_L__stack_usage;
 };
 
 /* AVR does not round pushes, but the existence of this macro is
