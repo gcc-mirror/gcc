@@ -9,8 +9,10 @@
 void doTest1(void) {
   volatile char foo[10];
   memset((void *)foo, 1, 100);
+  asm volatile("# %0" : : "g"(foo));
 }
 void doTest2(void) {
   volatile char foo[10];
   memset((void *)foo, 1, 100);
+  asm volatile("# %0" : : "g"(foo));
 }
