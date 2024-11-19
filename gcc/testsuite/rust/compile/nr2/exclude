@@ -42,7 +42,6 @@ generics3.rs
 generics4.rs
 generics5.rs
 generics6.rs
-generics7.rs
 generics8.rs
 generics9.rs
 if_let_expr.rs
@@ -83,7 +82,6 @@ issue-2165.rs
 issue-2166.rs
 issue-2190-1.rs
 issue-2190-2.rs
-issue-2195.rs
 issue-2238.rs
 issue-2304.rs
 issue-2330.rs
