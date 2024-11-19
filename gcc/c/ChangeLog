@@ -1,3 +1,9 @@
+2024-11-18  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112556
+	* c-typeck.cc (convert_for_assignment): Allow conversion of
+	ENUMERAL_TYPE and BOOLEAN_TYPE null pointer constants to pointers.
+
 2024-11-17  Florian Weimer  <fweimer@redhat.com>
 
 	PR c/95445

@@ -1,3 +1,34 @@
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117555
+	* gm2-libs-iso/M2EXCEPTION.mod (M2Exception): Add missing
+	return statement.
+	* gm2-libs-iso/RealConv.mod (ValueReal): Ditto.
+	* gm2-libs-iso/RndFile.mod (StartPos): Ditto.
+	(EndPos): Ditto.
+	(NewPos): Ditto.
+	* gm2-libs-iso/ShortConv.mod (ValueReal): Ditto.
+	* gm2-libs-iso/WholeConv.mod (ValueInt): Ditto.
+	(ValueCard): Ditto.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117660
+	* gm2-compiler/P2Build.bnf (ArrayType): Update tok with the
+	composite token produced during array type declaration.
+	* gm2-compiler/P2SymBuild.mod (EndBuildArray): Create the
+	combinedtok and store it into the symbol table.
+	Also ensure combinedtok is pushed to the quad stack.
+	(BuildFieldArray): Preserve typetok.
+	* gm2-compiler/SymbolTable.def (PutArray): Rename parameters.
+	* gm2-compiler/SymbolTable.mod (PutArray): Rename parameters.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2-compiler/M2GenGCC.mod (PerformLastForIterator):
+	Add check for zero step value and issue an error message.
+
 2024-11-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117555

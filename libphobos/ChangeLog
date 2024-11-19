@@ -1,3 +1,8 @@
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libphobos-dg.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
 2024-09-02  Alex Coplan  <alex.coplan@arm.com>
 
 	* testsuite/lib/libphobos-dg.exp: Load scanltrans.exp instead of

@@ -1,3 +1,199 @@
+2024-11-18  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/112556
+	* gcc.dg/c11-null-pointer-constant-1.c,
+	gcc.dg/c23-null-pointer-constant-1.c: New tests.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/96032
+	* lib/gcc-dg.exp (gcc-dg-test-1): Add "replay-sarif".
+	* lib/sarif-replay-dg.exp: New file.
+	* lib/sarif-replay.exp: New file.
+	* sarif-replay.dg/2.1.0-invalid/3.1-not-an-object.sarif: New test.
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-malformed-placeholder.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-missing-arguments-for-placeholders.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-not-enough-arguments-for-placeholders.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-invalid/3.13.2-no-version.sarif: New test.
+	* sarif-replay.dg/2.1.0-invalid/3.13.2-version-not-a-string.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-invalid/3.13.4-bad-runs.sarif: New test.
+	* sarif-replay.dg/2.1.0-invalid/3.13.4-no-runs.sarif: New test.
+	* sarif-replay.dg/2.1.0-invalid/3.13.4-non-object-in-runs.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-invalid/3.27.10-bad-level.sarif: New test.
+	* sarif-replay.dg/2.1.0-unhandled/3.27.10-none-level.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/error-with-note.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/escaped-braces.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/null-runs.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/spec-example-1.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/spec-example-2.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/spec-example-3.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/spec-example-4.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/tutorial-example.sarif: New test.
+	* sarif-replay.dg/dg.exp: New script.
+	* sarif-replay.dg/malformed-json/array-missing-comma.sarif: New test.
+	* sarif-replay.dg/malformed-json/array-with-trailing-comma.sarif:
+	New test.
+	* sarif-replay.dg/malformed-json/bad-token.sarif: New test.
+	* sarif-replay.dg/malformed-json/object-missing-comma.sarif: New test.
+	* sarif-replay.dg/malformed-json/object-with-trailing-comma.sarif:
+	New test.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* libdiagnostics.dg/libdiagnostics.exp: New, adapted from jit.exp.
+	* libdiagnostics.dg/sarif.py: New.
+	* libdiagnostics.dg/test-dump.c: New test.
+	* libdiagnostics.dg/test-error-c.py: New test.
+	* libdiagnostics.dg/test-error-with-note-c.py: New test.
+	* libdiagnostics.dg/test-error-with-note.c: New test.
+	* libdiagnostics.dg/test-error-with-note.cc: New test.
+	* libdiagnostics.dg/test-error.c: New test.
+	* libdiagnostics.dg/test-error.cc: New test.
+	* libdiagnostics.dg/test-example-1.c: New test.
+	* libdiagnostics.dg/test-fix-it-hint-c.py: New test.
+	* libdiagnostics.dg/test-fix-it-hint.c: New test.
+	* libdiagnostics.dg/test-fix-it-hint.cc: New test.
+	* libdiagnostics.dg/test-helpers++.h: New test.
+	* libdiagnostics.dg/test-helpers.h: New test.
+	* libdiagnostics.dg/test-labelled-ranges.c: New test.
+	* libdiagnostics.dg/test-labelled-ranges.cc: New test.
+	* libdiagnostics.dg/test-labelled-ranges.py: New test.
+	* libdiagnostics.dg/test-logical-location-c.py: New test.
+	* libdiagnostics.dg/test-logical-location.c: New test.
+	* libdiagnostics.dg/test-metadata-c.py: New test.
+	* libdiagnostics.dg/test-metadata.c: New test.
+	* libdiagnostics.dg/test-multiple-lines-c.py: New test.
+	* libdiagnostics.dg/test-multiple-lines.c: New test.
+	* libdiagnostics.dg/test-no-column-c.py: New test.
+	* libdiagnostics.dg/test-no-column.c: New test.
+	* libdiagnostics.dg/test-no-diagnostics-c.py: New test.
+	* libdiagnostics.dg/test-no-diagnostics.c: New test.
+	* libdiagnostics.dg/test-note-with-fix-it-hint-c.py: New test.
+	* libdiagnostics.dg/test-note-with-fix-it-hint.c: New test.
+	* libdiagnostics.dg/test-text-sink-options.c: New test.
+	* libdiagnostics.dg/test-warning-c.py: New test.
+	* libdiagnostics.dg/test-warning-with-path-c.py: New test.
+	* libdiagnostics.dg/test-warning-with-path.c: New test.
+	* libdiagnostics.dg/test-warning.c: New test.
+	* libdiagnostics.dg/test-write-sarif-to-file-c.py: New test.
+	* libdiagnostics.dg/test-write-sarif-to-file.c: New test.
+	* libdiagnostics.dg/test-write-text-to-file.c: New test.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/dg-test-cleanup.exp: New file, from material moved from
+	lib/gcc-dg.exp.
+	* lib/gcc-dg.exp: Add load_lib of dg-test-cleanup.exp.
+	(cleanup-after-saved-dg-test): Move to lib/dg-test-cleanup.exp.
+	(dg-test): Likewise for override.
+	(initialize_prune_notes): Likewise.
+
+2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117357
+	* gcc.target/i386/pr117357.c: New test.
+
+2024-11-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR testsuite/117419
+	* gcc.dg/enum-alias-1.c: Add __INT_MAX__.
+	* gcc.dg/enum-alias-2.c: Likewise.
+	* gcc.dg/enum-alias-3.c: Likewise.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/early_ra_1.c: New test.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* gcc.dg/plugin/diagnostic-test-nesting-sarif.c: New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-sarif.py: New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented-show-levels.c:
+	New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented-unicode.c:
+	New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-indented.c: New test.
+	* gcc.dg/plugin/diagnostic-test-nesting-text-plain.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_nesting.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp: Add the above.
+
+2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/84211
+	* gcc.target/avr/torture/test-gprs.h: New file.
+	* gcc.target/avr/torture/pr84211-fuse-move-1.c: New test.
+	* gcc.target/avr/torture/pr84211-fuse-move-2.c: New test.
+
+2024-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/53357
+	* gfortran.dg/auto_char_len_4.f90: Adjust patterns.
+	* gfortran.dg/typebound_override_1.f90: Likewise.
+	* gfortran.dg/bounds_check_strlen_10.f90: New test.
+
+2024-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117594
+	* gcc.dg/vect/pr117594.c: New testcase.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117595
+	* gcc.target/riscv/pr117595.c: New test.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117660
+	* gm2/iso/fail/arraymismatch.mod: New test.
+
+2024-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117371
+	* gm2/iso/fail/forloopbyzero.mod: New test.
+
+2024-11-18  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/117093
+	* gcc.dg/tree-ssa/pr117093.c: Move to gcc.target/aarch64.
+	* gcc.target/aarch64/pr117093.c: New test.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/115336
+	PR middle-end/116059
+	* gcc.target/riscv/rvv/autovec/pr115336.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr116059.c: New test.
+
+2024-11-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117646
+	* gcc.dg/torture/minmaxneeqptr-1.c: New test.
+
+2024-11-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/dep-4.H: New test.
+
+2024-11-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/117494
+	* gcc.dg/vect/pr101145inf.c: Remove dg-do and replace
+	with dg-require-effective-target of signal.
+	* gcc.dg/vect/pr101145inf_1.c: Likewise.
+	* gcc.dg/vect/pr101145inf.inc: Rename main to main1
+	and mark as noinline.
+	Include tree-vect.h. Have main call check_vect and main1.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/ext-dce-1.c: New test.
+
 2024-11-17  Florian Weimer  <fweimer@redhat.com>
 
 	PR c/95445

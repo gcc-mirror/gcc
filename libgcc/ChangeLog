@@ -1,3 +1,18 @@
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117628
+	* config/arm/freebsd-atomic.c (bool): Remove unnecessary typedef.
+	* config/arm/linux-atomic-64bit.c: Likewise.
+	* config/arm/linux-atomic.c: Likewise.
+	* config/nds32/linux-atomic.c: Likewise.
+	* config/nios2/linux-atomic.c: Likewise.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117628
+	* config/csky/linux-atomic.c (bool): Remove unnecessary typedef.
+	* unwind-arm-common.inc (bool): Similarly.
+
 2024-11-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/117627

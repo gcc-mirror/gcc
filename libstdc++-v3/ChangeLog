@@ -1,3 +1,24 @@
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
+2024-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::_M_src_hash_code):
+	Improve comments.
+	(_Hashtable::_M_merge_unique(_Hashtable&)): Use pointer_traits
+	to get before-begin pointer. Only use static_cast on valid
+	nodes, not the before-begin pointer. Reuse a hash code cached in
+	the node when possible.
+	(_Hashtable::_M_merge_multi(_Hashtable&)): Likewise.
+
+2024-11-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Update reference to Angelika
+	Langer's article.
+	* doc/html/manual/memory.html: Regenerate.
+
 2024-11-17  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/106852

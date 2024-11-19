@@ -1,3 +1,467 @@
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/96032
+	* Makefile.in (lang_checks): If libdiagnostics is enabled, add
+	check-sarif-replay.
+	(SARIF_REPLAY_OBJS): New.
+	(ALL_HOST_OBJS): If libdiagnostics is enabled, add
+	$(SARIF_REPLAY_OBJS).
+	(sarif-replay): New.
+	(install-libdiagnostics): Add sarif-replay to deps, and install
+	it.
+	* configure: Regenerate.
+	* configure.ac (check_languages): If libdiagnostics is enabled,
+	add check-sarif-replay.
+	(LIBDIAGNOSTICS): If libdiagnostics is enabled, add sarif-replay.
+	* doc/install.texi (--enable-libdiagnostics): Note that it also
+	enables sarif-replay.
+	* libsarifreplay.cc: New file.
+	* libsarifreplay.h: New file.
+	* sarif-replay.cc: New file.
+	* sarif-spec-urls.def: New file.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add json-parsing.o.
+	* json-parsing.cc: New file.
+	* json-parsing.h: New file.
+	* json.cc (selftest::assert_print_eq): Remove "static".
+	* json.h (json::array::begin): New.
+	(json::array::end): New.
+	(json::array::length): New.
+	(json::array::get): New.
+	(is_a_helper <json::value *>::test): New.
+	(is_a_helper <const json::value *>::test): New.
+	(is_a_helper <json::object *>::test): New.
+	(is_a_helper <const json::object *>::test): New.
+	(is_a_helper <json::array *>::test): New.
+	(is_a_helper <const json::array *>::test): New.
+	(is_a_helper <json::float_number *>::test): New.
+	(is_a_helper <const json::float_number *>::test): New.
+	(is_a_helper <json::integer_number *>::test): New.
+	(is_a_helper <const json::integer_number *>::test): New.
+	(is_a_helper <json::string *>::test): New.
+	(is_a_helper <const json::string *>::test): New.
+	(selftest::assert_print_eq): New decl.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::json_parser_cc_tests.
+	* selftest.h (selftest::json_parser_cc_tests): New decl.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac (check_languages): Add check-libdiagnostics.
+	(--enable-libdiagnostics): New.
+	* configure: Regenerate.
+	* Makefile.in (enable_libdiagnostics): New.
+	(lang_checks): If libdiagnostics is enabled, add
+	check-libdiagnostics.
+	(ALL_HOST_OBJS): If libdiagnostics is enabled, add
+	$(libdiagnostics_OBJS).
+	(start.encap): Add LIBDIAGNOSTICS.
+	(libdiagnostics_OBJS): New.
+	(LIBDIAGNOSTICS_VERSION_NUM): New, adapted from code in
+	jit/Make-lang.in.
+	(LIBDIAGNOSTICS_MINOR_NUM): Likewise.
+	(LIBDIAGNOSTICS_RELEASE_NUM): Likewise.
+	(LIBDIAGNOSTICS_FILENAME): Likewise.
+	(LIBDIAGNOSTICS_IMPORT_LIB): Likewise.
+	(libdiagnostics): Likewise.
+	(LIBDIAGNOSTICS_AGE): Likewise.
+	(LIBDIAGNOSTICS_BASENAME): Likewise.
+	(LIBDIAGNOSTICS_SONAME): Likewise.
+	(LIBDIAGNOSTICS_LINKER_NAME): Likewise.
+	(LIBDIAGNOSTICS_COMMA): Likewise.
+	(LIBDIAGNOSTICS_VERSION_SCRIPT_OPTION): Likewise.
+	(LIBDIAGNOSTICS_SONAME_OPTION): Likewise.
+	(LIBDIAGNOSTICS_SONAME_SYMLINK): Likewise.
+	(LIBDIAGNOSTICS_LINKER_NAME_SYMLINK): Likewise.
+	(LIBDIAGNOSTICS_FILENAME): Likewise.
+	(libdiagnostics.serial): Likewise.
+	(LIBDIAGNOSTICS_EXTRA_OPTS): Likewise.
+	(install): If libdiagnostics is enabled, add
+	install-libdiagnostics.
+	(libdiagnostics.install-headers): New.
+	(libdiagnostics.install-common): New, adapted from code in
+	jit/Make-lang.in.
+	(install-libdiagnostics): New.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::get_location_text): Make public.
+	* doc/install.texi (--enable-libdiagnostics): New.
+	* doc/libdiagnostics/Makefile: New file.
+	* doc/libdiagnostics/conf.py: New file.
+	* doc/libdiagnostics/index.rst: New file.
+	* doc/libdiagnostics/make.bat: New file.
+	* doc/libdiagnostics/topics/diagnostic-manager.rst: New file.
+	* doc/libdiagnostics/topics/diagnostics.rst: New file.
+	* doc/libdiagnostics/topics/execution-paths.rst: New file.
+	* doc/libdiagnostics/topics/fix-it-hints.rst: New file.
+	* doc/libdiagnostics/topics/index.rst: New file.
+	* doc/libdiagnostics/topics/logical-locations.rst: New file.
+	* doc/libdiagnostics/topics/message-formatting.rst: New file.
+	* doc/libdiagnostics/topics/metadata.rst: New file.
+	* doc/libdiagnostics/topics/physical-locations.rst: New file.
+	* doc/libdiagnostics/topics/retrofitting.rst: New file.
+	* doc/libdiagnostics/topics/sarif.rst: New file.
+	* doc/libdiagnostics/topics/text-output.rst: New file.
+	* doc/libdiagnostics/topics/ux.rst: New file.
+	* doc/libdiagnostics/tutorial/01-hello-world.rst: New file.
+	* doc/libdiagnostics/tutorial/02-physical-locations.rst: New file.
+	* doc/libdiagnostics/tutorial/03-logical-locations.rst: New file.
+	* doc/libdiagnostics/tutorial/04-notes.rst: New file.
+	* doc/libdiagnostics/tutorial/05-warnings.rst: New file.
+	* doc/libdiagnostics/tutorial/06-fix-it-hints.rst: New file.
+	* doc/libdiagnostics/tutorial/07-execution-paths.rst: New file.
+	* doc/libdiagnostics/tutorial/index.rst: New file.
+	* libdiagnostics++.h: New file.
+	* libdiagnostics.cc: New file.
+	* libdiagnostics.h: New file.
+	* libdiagnostics.map: New file.
+	* doc/libdiagnostics/tutorial/example-1.png: New file.
+
+2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117357
+	* config/i386/i386.md (*rsqrtsf2_sse):
+	Also enable for !TARGET_SSE_MATH.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* timevar.def (TV_LATE_COMBINE): New timevar.
+	* late-combine.cc (pass_data_late_combine): Use it.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::IGNORE_REG): New flag.
+	(early_ra::fpr_preference): Handle it.
+	(early_ra::record_constraints): Fail the allocation if an
+	IGNORE_REG output operand is not independent of the inputs.
+	(defines_multi_def_pseudo): New function.
+	(early_ra::could_split_region_here): New member function, split
+	out from...
+	(early_ra::process_block): ...here.  Try splitting a block into
+	multiple regions between the definition and use phases of an
+	instruction.  Set IGNORE_REG on the output registers if we do so.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::process_block): Check m_accurate_live_ranges
+	rather than m_allocation_successful when deciding whether
+	to split a block into multiple regions.  Skip over subregions
+	that we decide not to allocate.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::get_allocno_subgroup): Split can_change_mode_class test
+	out from modes_tieable_p test and only invalidate the live range
+	information for the former.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::record_allocation_failure): New member function.
+	(early_ra::get_allocno_subgroup): Use it instead of setting
+	m_allocation_successful directly.
+	(early_ra::record_constraints): Likewise.
+	(early_ra::allocate_colors): Likewise.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::record_live_range_failure): New member function.
+	(early_ra::m_accurate_live_ranges): New member variable.
+	(early_ra::start_new_region): Set m_accurate_live_ranges to true.
+	(early_ra::get_allocno_subgroup): Use record_live_range_failure
+	to abort the allocation on invalid subregs.
+
+2024-11-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-early-ra.cc
+	(early_ra::record_insn_refs): Split into...
+	(early_ra::record_insn_defs, early_ra::record_insn_call)
+	(early_ra::record_insn_uses): ...this new functions.
+	(early_ra::process_block): Update accordingly.
+
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116253
+	* diagnostic-core.h (class auto_diagnostic_nesting_level): New.
+	* diagnostic-format-sarif.cc (class sarif_builder): Update leading
+	comment re nesting of diagnostics.
+	(sarif_result::on_nested_diagnostic): Add nestingLevel property.
+	* diagnostic-format-text.cc (on_report_diagnostic): If we're
+	showing nested diagnostics, then print changes of location on a
+	new line, indented, and update m_last_location.
+	(diagnostic_text_output_format::build_prefix): If m_show_nesting,
+	then potentially add indentation and a bullet point.
+	(get_bullet_point_unichar): New.
+	(use_unicode_p): New.
+	(diagnostic_text_output_format::build_indent_prefix): New.
+	* diagnostic-format-text.h
+	(diagnostic_text_output_format::diagnostic_text_output_format):
+	Initialize m_show_nesting and m_show_nesting_levels.
+	(diagnostic_text_output_format::build_indent_prefix): New decl.
+	(diagnostic_text_output_format::show_nesting_p): New accessor
+	(diagnostic_text_output_format::show_locations_in_nesting_p):
+	Likewise.
+	(diagnostic_text_output_format::set_show_nesting): New.
+	(diagnostic_text_output_format::set_show_locations_in_nesting):
+	New.
+	(diagnostic_text_output_format::set_show_nesting_levels): New.
+	(diagnostic_text_output_format::m_show_nesting): New field.
+	(diagnostic_text_output_format::m_show_locations_in_nesting): New
+	field.
+	(diagnostic_text_output_format::m_show_nesting_levels): New field.
+	* diagnostic-global-context.cc
+	(auto_diagnostic_nesting_level::auto_diagnostic_nesting_level):
+	New.
+	(auto_diagnostic_nesting_level::~auto_diagnostic_nesting_level):
+	New.
+	* diagnostic-show-locus.cc (layout_printer::print): Temporarily
+	set DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE.
+	* diagnostic.cc (diagnostic_context::initialize): Update for
+	renaming of m_nesting_depth to m_group_nesting_depth and
+	initialize m_diagnostic_nesting_level.
+	(diagnostic_context::finish): Update for renaming of
+	m_nesting_depth to m_group_nesting_depth.
+	(diagnostic_context::report_diagnostic): Likewise.
+	(diagnostic_context::begin_group): Likewise.
+	(diagnostic_context::end_group): Likewise.
+	(diagnostic_context::push_nesting_level): New.
+	(diagnostic_context::pop_nesting_level): New.
+	(diagnostic_context::set_diagnostic_buffer): Update for renaming
+	of m_nesting_depth to m_group_nesting_depth.  Assert that we don't
+	have nested diagnostics.
+	* diagnostic.h (diagnostic_context::push_nesting_level): New decl.
+	(diagnostic_context::pop_nesting_level): New decl.
+	(diagnostic_context::get_diagnostic_nesting_level): New accessor.
+	(diagnostic_context::build_indent_prefix): New decl.
+	(diagnostic_context::m_diagnostic_groups): Rename m_nesting_depth
+	to m_group_nesting_depth and add field m_diagnostic_nesting_level.
+	* doc/invoke.texi (fdiagnostics-add-output): Add note about
+	"experimental" schemes, keys, and values.  Add keys
+	"experimental-nesting", "experimental-nesting-show-locations",
+	and "experimental-nesting-show-levels" to text scheme.
+	* opts-diagnostic.cc (text_scheme_handler::make_sink): Add keys
+	"experimental-nesting", "experimental-nesting-show-locations",
+	and "experimental-nesting-show-levels".
+
+2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/84211
+	* doc/invoke.texi (AVR Options) [-mfuse-move]: Document new option.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table):
+	Set -mfuse-move= depending on optimization level.
+	* config/avr/avr.opt (-mfuse-move, -mfuse-move=): New options.
+	* config/avr/t-avr (avr-passes.o): Depend on avr-passes-fuse-move.h.
+	* config/avr/avr-passes-fuse-move.h: New file, used by avr-passes.cc.
+	* config/avr/avr-passes.def (avr_pass_fuse_move): Insert new pass.
+	* config/avr/avr-passes.cc (INCLUDE_ARRAY): Define it.
+	(insn-attr.h): Include it.
+	(avr_pass_data_fuse_move): New const pass_data.
+	(avr_pass_fuse_move): New public rtl_opt_pass class.
+	(make_avr_pass_fuse_move): New function.
+	(gprmask_t): New typedef.
+	(next_nondebug_insn_bb, prev_nondebug_insn_bb)
+	(single_set_with_scratch, size_to_mask, size_to_mode)
+	(emit_valid_insn, emit_valid_move_clobbercc)
+	(gpr_regno_p, regmask, has_bits_in)
+	(find_arith, find_arith2, any_shift_p): New local functions.
+	(AVRasm): New namespace.
+	(FUSE_MOVE_MAX_MODESIZE): New define.
+	(avr-passes-fuse-move.h): New include.
+	(memento_t, absint_t, absins_byte_t, absint_val_t)
+	(optimize_data_t, insn_optimizedata_t, find_plies_data_t)
+	(insninfo_t, bbinfo_t, ply_t, plies_t): New structs / classes.
+	* config/avr/avr-protos.h (avr_chunk, avr_byte, avr_word, avr_int8)
+	(avr_uint8, avr_int16, avr_uint16)
+	(avr_out_set_some, avr_set_some_operation)
+	(output_reload_in_const, make_avr_pass_fuse_move): New protos.
+	(avr_dump): Depend macro definition on GCC_DUMPFILE_H.
+	* config/avr/avr.cc (avr_option_override): Insert after
+	pass "avr-fuse-move" instead of after "peephole2".
+	(avr_chunk, avr_byte, avr_word, avr_int8, avr_uint8, avr_int16)
+	(avr_uint16, output_reload_in_const): Functions are no more static.
+	(avr_out_set_some, avr_set_some_operation): New functions.
+	(ashrqi3_out, ashlqi3_out) [offset=7]: Handle "r,r,C07" alternative.
+	(avr_out_insert_notbit): Comment also allows QImode.
+	(avr_adjust_insn_length) [ADJUST_LEN_SET_SOME]: Handle case.
+	* config/avr/avr.md (adjust_len) <set_some>: New attribute value.
+	(set_some): New insn.
+	(andqi3, *andqi3): Add "r,r,Cb1" alternative.
+	(ashrqi3, *ashrqi3 ashlqi3, *ashlqi3): Add a "r,r,C07" alternative.
+	(gen_move_clobbercc_scratch): New emit helper.
+	* config/avr/constraints.md (Cb1): New constraint.
+	* config/avr/predicates.md (dreg_or_0_operand, set_some_operation): New.
+	* config/avr/avr-log.cc (avr_forward_to_printf): New static func.
+	(avr_log_vadump): Use it to recognize more formats.
+
+2024-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117594
+	* tree-vect-loop.cc (vectorizable_live_operation_1): Pass
+	factor == 1 to vect_get_loop_len, insert generated stmts.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/117595
+	* config/riscv/sync.md (atomic_compare_and_swap<mode>): Use gen_lowpart
+	rather than simplify_gen_subreg.
+	* config/riscv/riscv.cc (riscv_legitimize_move): Similarly.
+
+2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117659
+	* config/avr/avr.cc (avr_out_ashlpsi3) [case 16]: Use %A1 as
+	input (instead of bogus %A0).
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Add VLS modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/115336
+	PR middle-end/116059
+	* config/riscv/autovec.md: Add else operand.
+	* config/riscv/predicates.md (maskload_else_operand): New
+	predicate.
+	* config/riscv/riscv-v.cc (get_else_operand): Remove static.
+	(expand_load_store): Use get_else_operand and adjust index.
+	(expand_gather_scatter): Ditto.
+	(expand_lanes_load_store): Ditto.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/i386/sse.md (maskload<mode><sseintvecmodelower>):
+	Call maskload<mode>..._1.
+	(maskload<mode><sseintvecmodelower>_1): Rename.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/gcn/predicates.md (maskload_else_operand): New
+	predicate.
+	* config/gcn/gcn-valu.md: Use new predicate.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc: Add else
+	handling.
+	* config/aarch64/aarch64-sve-builtins.cc (function_expander::use_contiguous_load_insn):
+	Ditto.
+	* config/aarch64/aarch64-sve-builtins.h: Add else operand to
+	contiguous load.
+	* config/aarch64/aarch64-sve.md (@aarch64_load<SVE_PRED_LOAD:pred_load>
+	_<ANY_EXTEND:optab><SVE_HSDI:mode><SVE_PARTIAL_I:mode>):
+	Split and add else operand.
+	(@aarch64_load_<ANY_EXTEND:optab><SVE_HSDI:mode><SVE_PARTIAL_I:mode>):
+	Ditto.
+	(*aarch64_load_<ANY_EXTEND:optab>_mov<SVE_HSDI:mode><SVE_PARTIAL_I:mode>):
+	Ditto.
+	* config/aarch64/aarch64-sve2.md: Ditto.
+	* config/aarch64/iterators.md: Remove unused iterators.
+	* config/aarch64/predicates.md (aarch64_maskload_else_operand):
+	Add zero else operand.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* optabs-query.cc (supports_vec_convert_optab_p): Return icode.
+	(get_supported_else_val): Return supported else value for
+	optab's operand at index.
+	(supports_vec_gather_load_p): Add else argument.
+	(supports_vec_scatter_store_p): Ditto.
+	* optabs-query.h (supports_vec_gather_load_p): Ditto.
+	(get_supported_else_val): Ditto.
+	* optabs-tree.cc (target_supports_mask_load_store_p): Ditto.
+	(can_vec_mask_load_store_p): Ditto.
+	(target_supports_len_load_store_p): Ditto.
+	(get_len_load_store_mode): Ditto.
+	* optabs-tree.h (target_supports_mask_load_store_p): Ditto.
+	(can_vec_mask_load_store_p): Ditto.
+	* tree-vect-data-refs.cc (vect_lanes_optab_supported_p): Ditto.
+	(vect_gather_scatter_fn_p): Ditto.
+	(vect_check_gather_scatter): Ditto.
+	(vect_load_lanes_supported): Ditto.
+	* tree-vect-patterns.cc (vect_recog_gather_scatter_pattern):
+	Ditto.
+	* tree-vect-slp.cc (vect_get_operand_map): Adjust indices for
+	else operand.
+	(vect_slp_analyze_node_operations): Skip undefined else operand.
+	* tree-vect-stmts.cc (exist_non_indexing_operands_for_use_p):
+	Add else operand handling.
+	(vect_get_vec_defs_for_operand): Handle undefined else operand.
+	(check_load_store_for_partial_vectors): Add else argument.
+	(vect_truncate_gather_scatter_offset): Ditto.
+	(vect_use_strided_gather_scatters_p): Ditto.
+	(get_group_load_store_type): Ditto.
+	(get_load_store_type): Ditto.
+	(vect_get_mask_load_else): Ditto.
+	(vect_get_else_val_from_tree): Ditto.
+	(vect_build_one_gather_load_call): Add zero else operand.
+	(vectorizable_load): Use else operand.
+	* tree-vectorizer.h (vect_gather_scatter_fn_p): Add else
+	argument.
+	(vect_load_lanes_supported): Ditto.
+	(vect_get_mask_load_else): Ditto.
+	(vect_get_else_val_from_tree): Ditto.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-if-conv.cc (predicate_load_or_store): Add zero else
+	operand and comment.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* internal-fn.cc (add_mask_and_len_args): Rename...
+	(add_mask_else_and_len_args): ...to this and add else handling.
+	(expand_partial_load_optab_fn): Use adjusted function.
+	(expand_partial_store_optab_fn): Ditto.
+	(expand_scatter_store_optab_fn): Ditto.
+	(expand_gather_load_optab_fn): Ditto.
+	(internal_fn_len_index): Add else handling.
+	(internal_fn_else_index): Ditto.
+	(internal_fn_mask_index): Ditto.
+	(get_supported_else_vals): New function.
+	(supported_else_val_p): New function.
+	(internal_gather_scatter_fn_supported_p): Add else operand.
+	* internal-fn.h (internal_gather_scatter_fn_supported_p): Define
+	else constants.
+	(MASK_LOAD_ELSE_ZERO): Ditto.
+	(MASK_LOAD_ELSE_M1): Ditto.
+	(MASK_LOAD_ELSE_UNDEFINED): Ditto.
+	(get_supported_else_vals): Declare.
+	(supported_else_val_p): Ditto.
+
+2024-11-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* doc/md.texi: Document masked load else operand.
+
+2024-11-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117646
+	* match.pd (`max<a,b>==0`): Add casts to `unsigned type`.
+
+2024-11-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ext-dce.cc (maybe_clear_subreg_promoted_p): New function.
+	(ext_dce_execute): Call it.
+
+2024-11-18  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.md (unaligned_store<mode>): Remove stray
+	`;;'.
+
+2024-11-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/69374
+	* doc/install.texi (Specific) <hppa*-hp-hpux11>: Update anchor
+	and heading to reflect removal of 32-bit hppa support on HP-UX.
+	Trim 32-bit related text.
+
 2024-11-17  Florian Weimer  <fweimer@redhat.com>
 
 	PR c/95445

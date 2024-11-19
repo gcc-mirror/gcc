@@ -1,3 +1,8 @@
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libitm.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
 2024-09-23  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* config/aarch64/sjlj.S: Replace SPARC CFI directive by

@@ -1,3 +1,20 @@
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/lib/libgomp.exp: Add
+	"load_gcc_lib dg-test-cleanup.exp".
+
+2024-11-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_async_construct): In
+	case of an error, call GOMP_PLUGIN_fatal not ..._error; use NULL
+	not false in return.
+
+2024-11-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/117626
+	* plugin/plugin-nvptx.c (nvptx_open_device): Use 'CUDA_CALL_ERET'
+	with 'NULL' as error return instead of 'CUDA_CALL' that returns false.
+
 2024-11-14  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Implementation Status): Change TR13 to

@@ -1,3 +1,9 @@
+2024-11-18  Jason Merrill  <jason@redhat.com>
+
+	* internal.h (_cpp_get_file_dir): Declare.
+	* files.cc (_cpp_get_file_dir): New fn.
+	* mkdeps.cc (make_write): Use it.
+
 2024-11-17  Jason Merrill  <jason@redhat.com>
 
 	* internal.h (search_path_head): Declare.

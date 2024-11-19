@@ -1,3 +1,8 @@
+2024-11-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* configure.ac (--enable-libdiagnostics): New.
+	* configure: Regenerate.
+
 2024-11-05  Nick Clifton  <nickc@redhat.com>
 
 	* configure.ac: Add sim to noconfigdirs for ARM targets.

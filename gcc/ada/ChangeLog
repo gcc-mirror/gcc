@@ -1,3 +1,133 @@
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Remove the test on
+	enclosing predicate function for the return optimization.
+	Rewrite it in the general case to catch all nondynamic predicates.
+	(Expand_N_If_Expression): Remove the test on enclosing predicate
+	function for the return optimization.
+
+2024-11-18  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst:
+	Remove Atomic_Synchronization.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Likewise.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: DRY.
+	Consolidate documentation of Disable/Enable_Atomic_Synchronization.
+	* checks.adb: Comment fix.
+	* exp_util.ads: Likewise.
+	* targparm.ads: Likewise.
+	* types.ads: Likewise.
+	* gnat1drv.adb: Likewise. DRY.
+	* sem_prag.adb (Process_Disable_Enable_Atomic_Sync):
+	Change name of Atomic_Synchronization to start with
+	underscore.
+	(Process_Suppress_Unsuppress): No need to check Comes_From_Source for
+	Atomic_Synchronization anymore; _Atomic_Synchronization can never
+	come from source. (Anyway, it shouldn't be ignored; it should be
+	an error.)
+	* snames.ads-tmpl (Atomic_Synchronization):
+	Change name to start with underscore.
+	* switch-c.adb (Scan_Front_End_Switches):
+	Minor cleanup: Use 'in'.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.adb (Eval_Indexed_Component): Clear Do_Range_Check on
+	the expressions if Kill_Range_Check is set on the node.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Remove_Init_Call): Rewrite a compound statement in
+	the Initialization_Statements of the variable as a null statement
+	instead of removing it.
+	* freeze.adb (Explode_Initialization_Compound_Statement): Small
+	comment tweaks.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (UI_Are_In_Int_Range): New predicate.
+	(Aggr_Size_OK): Use it.
+	(Flatten): Likewise.
+	(Packed_Array_Aggregate_Handled): Likewise.
+	(Static_Array_Aggregate): Likewise.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.ads (Explode_Initialization_Compound_Statement): Adjust the
+	description.
+	* freeze.adb (Explode_Initialization_Compound_Statement): If the
+	entity has its freezing delayed, append the initialization actions
+	to its freeze actions.
+	(Freeze_Object_Declaration): Remove commented out code.
+	(Freeze_Entity): Remove bypass for object of anonymous array type.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_sel.ads (Build_Abort_Block): Remove second parameter and
+	rename the third.
+	(Build_Abort_Block_Handler): Fix description.
+	* exp_sel.adb (Build_Abort_Block): Remove second parameter, rename
+	the third and adjust accordingly.
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): Fix the description
+	of the exception handler throughout.  Remove Abort_Block_Ent and
+	Hdle local variables.  Call Build_Abort_Block consistently to build
+	the abort block and adjust existing calls.
+
+2024-11-18  Steve Baird  <baird@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional.Flatten): Avoid raising
+	Constraint_Error in UI_To_Int by testing UI_Is_In_Int_Range first.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): Build the simple assignment
+	for the case of an aggregate that can be handled by the back end.
+	(Expand_Array_Aggregate): Adjust description of the processing.
+	Move handling of declaration case to STEP 4 and remove handling of
+	the case of an aggregate that can be processed by the back end.
+	(Late_Expansion): Likewise for the second part.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Deal with a delayed
+	aggregate synthesized for the default initialization, if any.
+	* sem_eval.adb (Eval_Indexed_Component): Bail out for the name of
+	an assignment statement.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (In_Place_Assign_OK): Remove handling of allocators
+	and call Must_Slide instead of implementing the check manually.
+	(Convert_To_Assignments): Adjust outdated comment.
+	(Expand_Array_Aggregate): Move handling of allocator case to STEP 3
+	and call Must_Slide directly for it.
+	(Must_Slide): Replace tests based on Is_OK_Static_Expression with
+	tests based on Compile_Time_Known_Value.
+
+2024-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_Array_Aggr_In_Allocator): Delete.
+	(Convert_Aggr_In_Allocator): Do not call above procedure.
+	(Late_Expansion): Deal with a target that is the dereference of a
+	prefix with a Storage_Model.  Remove an useless actual parameter
+	in the call to Build_Array_Aggr_Code.
+
+2024-11-18  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Add by default a null-exclusion
+	check on the prefix of the call when it is an access-type; it can
+	be disabled using -gnatd_P.
+	* debug.adb (gnatd_P): Update documentation.
+
+2024-11-18  squirek  <squirek@adacore.com>
+
+	* accessibility.adb (Accessibility_Level): Handle the Input attribute
+	case
+
+2024-11-18  Ronan Desplanques  <desplanques@adacore.com>
+
+	* frontend.adb (Frontend): tweak test for predefined main unit.
+
 2024-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.cc (elaborate_expression_2): Do not divide and

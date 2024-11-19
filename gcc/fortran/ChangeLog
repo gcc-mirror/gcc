@@ -1,3 +1,14 @@
+2024-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/53357
+	* dependency.cc (gfc_dep_compare_expr): Return correct result if
+	relationship of expressions could not be determined.
+	* interface.cc (gfc_check_result_characteristics): Implement error
+	messages if character function declations and references do not
+	agree, else emit warning in cases where a mismatch is suspected.
+	* trans-stmt.cc (gfc_trans_allocate): Implement a string length
+	check for -fcheck=bounds.
+
 2024-11-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/109066
