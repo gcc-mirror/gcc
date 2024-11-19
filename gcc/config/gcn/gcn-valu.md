@@ -4038,16 +4038,17 @@
     if (GET_MODE (addr) == <VnDI>mode)
       emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
 						     const0_rtx, const0_rtx,
+						     const0_rtx,
 						     gcn_gen_undef
 							(<MODE>mode),
-						     operands[0], exec));
+						     exec));
     else
       emit_insn (gen_gather<mode>_insn_2offsets_exec (operands[0], operands[1],
 						      addr, const0_rtx,
-						      const0_rtx,
+						      const0_rtx, const0_rtx,
 						      gcn_gen_undef
 							(<MODE>mode),
-						      operands[0], exec));
+						      exec));
     DONE;
   })
 
