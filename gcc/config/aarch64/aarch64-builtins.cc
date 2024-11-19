@@ -696,6 +696,7 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VREINTERPRET_BUILTINS \
   VREINTERPRETQ_BUILTINS
 
+/* Add fp8 here and in high */
 #define AARCH64_SIMD_VGET_LOW_BUILTINS \
   VGET_LOW_BUILTIN(f16) \
   VGET_LOW_BUILTIN(f32) \
@@ -1608,31 +1609,85 @@ namespace simd_types {
   constexpr simd_type f8 { V8QImode, qualifier_modal_float };
   constexpr simd_type f8q { V16QImode, qualifier_modal_float };
 
+  constexpr simd_type s8_scalar_const_ptr
+    { QImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type s8_scalar { QImode, qualifier_none };
   constexpr simd_type s8 { V8QImode, qualifier_none };
-  constexpr simd_type u8 { V8QImode, qualifier_unsigned };
   constexpr simd_type s8q { V16QImode, qualifier_none };
+  constexpr simd_type u8_scalar_const_ptr
+    { QImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type u8_scalar { QImode, qualifier_unsigned };
+  constexpr simd_type u8 { V8QImode, qualifier_unsigned };
   constexpr simd_type u8q { V16QImode, qualifier_unsigned };
 
+  constexpr simd_type s16_scalar_const_ptr
+    { HImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type s16_scalar { HImode, qualifier_none };
   constexpr simd_type s16 { V4HImode, qualifier_none };
+  constexpr simd_type u16_scalar_const_ptr
+    { HImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type u16_scalar { HImode, qualifier_unsigned };
   constexpr simd_type u16 { V4HImode, qualifier_unsigned };
   constexpr simd_type s16q { V8HImode, qualifier_none };
   constexpr simd_type u16q { V8HImode, qualifier_unsigned };
 
+  constexpr simd_type s32_scalar_const_ptr
+    { SImode, qualifier_const_pointer_map_mode };
   constexpr simd_type s32_index { SImode, qualifier_lane_index };
+  constexpr simd_type s32_scalar { SImode, qualifier_none };
   constexpr simd_type s32 { V2SImode, qualifier_none };
+  constexpr simd_type u32_scalar_const_ptr
+    { SImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type u32_scalar { SImode, qualifier_unsigned };
+  constexpr simd_type u32 { V2SImode, qualifier_unsigned };
   constexpr simd_type s32q { V4SImode, qualifier_none };
+  constexpr simd_type u32q { V4SImode, qualifier_unsigned };
 
+  constexpr simd_type s64_scalar_const_ptr
+    { DImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type s64_scalar { DImode, qualifier_none };
+  constexpr simd_type s64 { V1DImode, qualifier_none };
+  constexpr simd_type u64_scalar_const_ptr
+    { DImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type u64_scalar { DImode, qualifier_unsigned };
+  constexpr simd_type u64 { V1DImode, qualifier_unsigned };
   constexpr simd_type s64q { V2DImode, qualifier_none };
+  constexpr simd_type u64q { V2DImode, qualifier_unsigned };
 
+  constexpr simd_type p8_scalar_const_ptr
+    { QImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type p8_scalar { QImode, qualifier_poly };
   constexpr simd_type p8 { V8QImode, qualifier_poly };
   constexpr simd_type p8q { V16QImode, qualifier_poly };
+
+  constexpr simd_type p16_scalar_const_ptr
+    { HImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type p16_scalar { HImode, qualifier_poly };
   constexpr simd_type p16 { V4HImode, qualifier_poly };
   constexpr simd_type p16q { V8HImode, qualifier_poly };
 
+  constexpr simd_type p64_scalar_const_ptr
+    { DImode, qualifier_const_pointer_map_mode };
+  constexpr simd_type p64_scalar { DImode, qualifier_poly };
+  constexpr simd_type p64 { V1DImode, qualifier_poly };
+  constexpr simd_type p64q { V2DImode, qualifier_poly };
+
+  constexpr simd_type f16_scalar_const_ptr
+    { HFmode, qualifier_const_pointer_map_mode };
+  constexpr simd_type f16_scalar { HFmode, qualifier_none };
   constexpr simd_type f16 { V4HFmode, qualifier_none };
   constexpr simd_type f16q { V8HFmode, qualifier_none };
+
+  constexpr simd_type f32_scalar_const_ptr
+    { SFmode, qualifier_const_pointer_map_mode };
+  constexpr simd_type f32_scalar { SFmode, qualifier_none };
   constexpr simd_type f32 { V2SFmode, qualifier_none };
   constexpr simd_type f32q { V4SFmode, qualifier_none };
+
+  constexpr simd_type f64_scalar_const_ptr
+    { DFmode, qualifier_const_pointer_map_mode };
+  constexpr simd_type f64_scalar { DFmode, qualifier_none };
+  constexpr simd_type f64 { V1DFmode, qualifier_none };
   constexpr simd_type f64q { V2DFmode, qualifier_none };
 
   constexpr simd_type bf16 { V4BFmode, qualifier_none };
@@ -3592,8 +3647,87 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 	gcc_unreachable ();
 
       expand_insn (icode, nargs + 1, ops);
+      target = ops[0].value;
       break;
 
+    case UNSPEC_VCREATE:
+      target = force_lowpart_subreg (builtin_data->types[0].mode,
+				     expand_normal (CALL_EXPR_ARG (exp, 0)),
+				     DImode);
+      break;
+
+    case UNSPEC_VEC_COPY:
+      {
+	/* Need to do lane checks here. */
+	/* Also need to set indexes correctly here.  */
+	expand_operand vget_ops[3];
+	rtx vget_target;
+	auto vget_output_mode = GET_MODE_INNER (builtin_data->types[0].mode);
+	create_output_operand (&vget_ops[0], vget_target, vget_output_mode);
+	vget_ops[1] = ops[3];
+	vget_ops[2] = ops[4];
+	auto vget_icode = code_for_aarch64_get_lane (builtin_data->types[0].mode);
+	expand_insn (vget_icode, 3, vget_ops);
+	vget_target = vget_ops[0].value;
+
+	expand_operand vset_ops[4];
+	create_output_operand (&vset_ops[0],
+			       target,
+			       builtin_data->types[0].mode);
+	vset_ops[1] = vget_ops[0];
+	vset_ops[2] = ops[2];
+	vset_ops[3] = ops[1];
+	auto vset_icode = code_for_aarch64_simd_vec_set (builtin_data->types[0].mode);
+	expand_insn (vset_icode, 4, vset_ops);
+
+	target = vset_ops[0].value;	
+	break;
+      }
+
+    case UNSPEC_DUP:
+      target = expand_vector_broadcast (builtin_data->types[0].mode,
+					expand_normal (CALL_EXPR_ARG (exp, 0)));
+      break;
+
+    case UNSPEC_DUPB:
+      icode = code_for_aarch64_get_lane (builtin_data->types[1].mode);
+      expand_insn (icode, nargs + 1, ops);
+      target = ops[0].value;
+      break;
+
+    case UNSPEC_LD1:
+      {
+	if (builtin_data->types[0].mode == V1DFmode)
+	  target = expand_vector_broadcast (builtin_data->types[0].mode,
+					expand_normal (CALL_EXPR_ARG (exp, 0)));
+	else
+	  {
+	    icode = code_for_aarch64_ld1 (builtin_data->types[0].mode);
+	    auto input
+	      = convert_memory_address (Pmode,
+					expand_normal (CALL_EXPR_ARG (exp, 0)));
+	    create_input_operand (&ops[1], input, Pmode);
+	    expand_insn (icode, nargs + 1, ops);	    
+	  }
+	target = ops[0].value;
+	break;
+      }
+
+    case UNSPEC_DUP_LANE:
+      {
+	/* We need to do lane checks here.  */
+	auto lane = INTVAL (expand_normal (CALL_EXPR_ARG (exp, 1)));
+	auto vector_mode = builtin_data->types[1].mode;
+	auto nunits = GET_MODE_NUNITS (vector_mode).to_constant ();
+	create_input_operand(&ops[2],
+			     gen_int_mode ((ENDIAN_LANE_N (nunits, lane)),
+					   SImode),
+			     SImode);
+	icode = code_for_aarch64_dup_lane (builtin_data->types[0].mode);
+	expand_insn (icode, nargs + 1, ops);
+	target = ops[0].value;
+	break;
+      }
     default:
       gcc_unreachable ();
     }

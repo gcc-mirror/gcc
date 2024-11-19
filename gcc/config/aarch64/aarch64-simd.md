@@ -112,7 +112,7 @@
   }
 )
 
-(define_insn "aarch64_dup_lane<mode>"
+(define_insn "@aarch64_dup_lane<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(vec_duplicate:VALL_F16
 	  (vec_select:<VEL>
@@ -121,6 +121,7 @@
           )))]
   "TARGET_SIMD"
   {
+    /* TODO: Need to use ENDIAN_LANE_N this in existing intrinsics too. We still need the next line. */
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
     return "dup\\t%0.<Vtype>, %1.<Vetype>[%2]";
   }
@@ -1164,7 +1165,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "aarch64_simd_vec_set<mode>"
+(define_insn "@aarch64_simd_vec_set<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w,w,w")
 	(vec_merge:VALL_F16
 	    (vec_duplicate:VALL_F16
@@ -1178,9 +1179,9 @@
    switch (which_alternative)
      {
      case 0:
-	return "ins\\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
+	return "ins1\\t%0.<Vetype>[%p2], %1.<Vetype>[0]";
      case 1:
-	return "ins\\t%0.<Vetype>[%p2], %<vwcore>1";
+	return "ins2\\t%0.<Vetype>[%p2], %<vwcore>1";
      case 2:
         return "ld1\\t{%0.<Vetype>}[%p2], %1";
      default:
@@ -1190,7 +1191,7 @@
   [(set_attr "type" "neon_ins<q>, neon_from_gp<q>, neon_load1_one_lane<q>")]
 )
 
-(define_insn "aarch64_simd_vec_set_zero<mode>"
+(define_insn "@aarch64_simd_vec_set_zero<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w")
 	(vec_merge:VALL_F16
 	    (match_operand:VALL_F16 1 "aarch64_simd_imm_zero" "")
@@ -1200,7 +1201,7 @@
   {
     int elt = ENDIAN_LANE_N (<nunits>, exact_log2 (INTVAL (operands[2])));
     operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
-    return "ins\\t%0.<Vetype>[%p2], <vwcore>zr";
+    return "ins3\\t%0.<Vetype>[%p2], <vwcore>zr";
   }
 )
 
@@ -1220,7 +1221,7 @@
     operands[2] = GEN_INT (HOST_WIDE_INT_1 << elt);
     operands[4] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[4]));
 
-    return "ins\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
+    return "ins4\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
   }
   [(set_attr "type" "neon_ins<q>")]
 )
@@ -1242,7 +1243,7 @@
     operands[4] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode,
 					   INTVAL (operands[4]));
 
-    return "ins\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
+    return "ins5\t%0.<Vetype>[%p2], %3.<Vetype>[%4]";
   }
   [(set_attr "type" "neon_ins<q>")]
 )
@@ -4357,7 +4358,7 @@
 ;; RTL uses GCC vector extension indices throughout so flip only for assembly.
 ;; Extracting lane zero is split into a simple move when it is between SIMD
 ;; registers or a store.
-(define_insn_and_split "aarch64_get_lane<mode>"
+(define_insn_and_split "@aarch64_get_lane<mode>"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=?r, w, Utv")
 	(vec_select:<VEL>
 	  (match_operand:VALL_F16 1 "register_operand" "w, w, w")
@@ -8401,7 +8402,7 @@
   DONE;
 })
 
-(define_expand "aarch64_ld1<VALL_F16:mode>"
+(define_expand "@aarch64_ld1<VALL_F16:mode>"
  [(match_operand:VALL_F16 0 "register_operand")
   (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"

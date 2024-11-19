@@ -27,6 +27,10 @@
 #define ENTRY_BINARY_FPM(N, T0, T1, T2, U)		\
   ENTRY (N, binary, T0, T1, T2, none, none, true, U)
 
+#undef ENTRY_BINARY_TWO_LANES
+#define ENTRY_BINARY_TWO_LANES(N, T0, T1, T2, U)			\
+  ENTRY (N, quaternary, T0, T1, s32_index, T2, s32_index, false, U)
+
 #undef ENTRY_TERNARY_FPM
 #define ENTRY_TERNARY_FPM(N, T0, T1, T2, T3, U)		\
   ENTRY (N, ternary, T0, T1, T2, T3, none, true, U)
@@ -34,6 +38,14 @@
 #undef ENTRY_TERNARY_FPM_LANE
 #define ENTRY_TERNARY_FPM_LANE(N, T0, T1, T2, T3, U)	\
   ENTRY (N, quaternary, T0, T1, T2, T3, s32_index, true, U)
+
+#undef ENTRY_UNARY
+#define ENTRY_UNARY(N, T0, T1, U)		\
+  ENTRY (N, unary, T0, T1, none, none, none, false, U)
+
+#undef ENTRY_UNARY_LANE
+#define ENTRY_UNARY_LANE(N, T0, T1, U)			\
+  ENTRY_BINARY (N, T0, T1, s32_index, U)		\
 
 #undef ENTRY_UNARY_FPM
 #define ENTRY_UNARY_FPM(N, T0, T1, U)			\
@@ -69,6 +81,99 @@
   ENTRY_BINARY (NAME##_f32, f32, f32, s32, UNSPEC)	\
   ENTRY_BINARY (NAME##q_f32, f32q, f32q, s32q, UNSPEC)	\
   ENTRY_BINARY (NAME##q_f64, f64q, f64q, s64q, UNSPEC)
+
+#undef ENTRY_UNARY_N_VALL_F16_SCALAR
+#define ENTRY_UNARY_N_VALL_F16_SCALAR(NAME, UNSPEC)		\
+  ENTRY_UNARY (NAME##_n_p8, p8, p8_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_p8, p8q, p8_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_p16, p16, p16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_p16, p16q, p16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_p64, p64, p64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_p64, p64q, p64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_s8, s8, s8_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_s8, s8q, s8_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_s16, s16, s16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_s16, s16q, s16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_s32, s32, s32_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_s32, s32q, s32_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_s64, s64, s64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_s64, s64q, s64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_u8, u8, u8_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_u8, u8q, u8_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_u16, u16, u16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_u16, u16q, u16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_u32, u32, u32_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_u32, u32q, u32_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_u64, u64, u64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_u64, u64q, u64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_f16, f16, f16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_f16, f16q, f16_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_f32, f32, f32_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_f32, f32q, f32_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##_n_f64, f64, f64_scalar, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_n_f64, f64q, f64_scalar, UNSPEC)	\
+
+#undef ENTRY_UNARY_VALL_F16_CONST_PTR
+#define ENTRY_UNARY_VALL_F16_CONST_PTR(NAME, UNSPEC)		\
+  ENTRY_UNARY (NAME##_p8, p8, p8_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_p8, p8q, p8_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_p16, p16, p16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_p16, p16q, p16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_p64, p64, p64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_p64, p64q, p64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_s8, s8, s8_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_s8, s8q, s8_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_s16, s16, s16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_s16, s16q, s16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_s32, s32, s32_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_s32, s32q, s32_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_s64, s64, s64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_s64, s64q, s64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_u8, u8, u8_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_u8, u8q, u8_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_u16, u16, u16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_u16, u16q, u16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_u32, u32, u32_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_u32, u32q, u32_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_u64, u64, u64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_u64, u64q, u64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_f16, f16, f16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_f16, f16q, f16_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_f32, f32, f32_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_f32, f32q, f32_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##_f64, f64, f64_scalar_const_ptr, UNSPEC)	\
+  ENTRY_UNARY (NAME##q_f64, f64q, f64_scalar_const_ptr, UNSPEC)	\
+
+#undef ENTRY_UNARY_LANE_VALL_F16
+#define ENTRY_UNARY_LANE_VALL_F16(NAME, UNSPEC)				\
+  ENTRY_UNARY_LANE (NAME##_lane_p8, p8, p8, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_p8, p8, p8q, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_lane_p16, p16, p16, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_p16, p16, p16q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_p64, p64, p64, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_p64, p64, p64q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_s8, s8, s8, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_s8, s8, s8q, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_lane_s16, s16, s16, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_s16, s16, s16q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_s32, s32, s32, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_s32, s32, s32q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_s64, s64, s64, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_s64, s64, s64q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_u8, u8, u8, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_u8, u8, u8q, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_lane_u16, u16, u16, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_u16, u16, u16q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_u32, u32, u32, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_u32, u32, u32q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_u64, u64, u64, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_u64, u64, u64q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_f16, f16, f16, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_f16, f16, f16q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_f32, f32, f32, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_f32, f32, f32q, UNSPEC)		\
+  ENTRY_UNARY_LANE (NAME##_lane_f64, f64, f64, UNSPEC)			\
+  ENTRY_UNARY_LANE (NAME##_laneq_f64, f64, f64q, UNSPEC)		\
 
 // faminmax
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
@@ -121,4 +226,55 @@ ENTRY_FMA_FPM (vmlallbbq, f32, UNSPEC_FMLALLBB)
 ENTRY_FMA_FPM (vmlallbtq, f32, UNSPEC_FMLALLBT)
 ENTRY_FMA_FPM (vmlalltbq, f32, UNSPEC_FMLALLTB)
 ENTRY_FMA_FPM (vmlallttq, f32, UNSPEC_FMLALLTT)
+#undef REQUIRED_EXTENSIONS
+
+// dup
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+ENTRY_UNARY_N_VALL_F16_SCALAR (vdup, UNSPEC_DUP)
+ENTRY_UNARY_LANE_VALL_F16 (vdup, UNSPEC_DUP_LANE)
+#undef REQUIRED_EXTENSIONS
+
+// mov
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+ENTRY_UNARY_N_VALL_F16_SCALAR (vmov, UNSPEC_DUP)
+#undef REQUIRED_EXTENSIONS
+
+// vcreate
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+ENTRY_UNARY (vcreate_p8, p8, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_p16, p16, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_p64, p64, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_s8, s8, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_s16, s16, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_s32, s32, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_s64, s64, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_u8, u8, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_u16, u16, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_u32, u32, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_u64, u64, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_f16, f16, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_f32, f32, u64_scalar, UNSPEC_VCREATE)
+ENTRY_UNARY (vcreate_f64, f64, u64_scalar, UNSPEC_VCREATE)
+#undef REQUIRED_EXTENSIONS
+
+// vcopy_lane
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+ENTRY_BINARY_TWO_LANES (vcopy_lane_p8, p8, p8, p8, UNSPEC_VEC_COPY)
+ENTRY_BINARY_TWO_LANES (vcopy_lane_s8, s8, s8, s8, UNSPEC_VEC_COPY)
+ENTRY_BINARY_TWO_LANES (vcopy_lane_u8, u8, u8, u8, UNSPEC_VEC_COPY)
+#undef REQUIRED_EXTENSIONS
+
+// vdupb_lane
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+ENTRY_UNARY_LANE (vdupb_lane_s8, s8_scalar, s8, UNSPEC_DUPB)
+ENTRY_UNARY_LANE (vdupb_lane_u8, u8_scalar, u8, UNSPEC_DUPB)
+ENTRY_UNARY_LANE (vdupb_lane_p8, p8_scalar, p8, UNSPEC_DUPB)
+ENTRY_UNARY_LANE (vdupb_laneq_s8, s8_scalar, s8q, UNSPEC_DUPB)
+ENTRY_UNARY_LANE (vdupb_laneq_u8, u8_scalar, u8q, UNSPEC_DUPB)
+ENTRY_UNARY_LANE (vdupb_laneq_p8, p8_scalar, p8q, UNSPEC_DUPB)
+#undef REQUIRED_EXTENSIONS
+
+// ld1
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+ENTRY_UNARY_VALL_F16_CONST_PTR (vld1, UNSPEC_LD1)
 #undef REQUIRED_EXTENSIONS

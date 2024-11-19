@@ -715,6 +715,9 @@
     UNSPEC_ASHIFT_SIGNED	; Used in aarch-simd.md.
     UNSPEC_ASHIFT_UNSIGNED	; Used in aarch64-simd.md.
     UNSPEC_ABS		; Used in aarch64-simd.md.
+    UNSPEC_DUP		; Used in aarch64-simd.md.
+    UNSPEC_DUPB		; Used in aarch64-simd.md.
+    UNSPEC_DUP_LANE	; Used in aarch64-simd.md.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
@@ -765,6 +768,7 @@
     UNSPEC_SSHLL	; Used in aarch64-simd.md.
     UNSPEC_USHLL	; Used in aarch64-simd.md.
     UNSPEC_ADDP		; Used in aarch64-simd.md.
+    UNSPEC_VCREATE	; Used in aarch64-simd.md.
     UNSPEC_VCVT		; Used in aarch64-simd.md.
     UNSPEC_VCVT_HIGH	; Used in aarch64-simd.md.
     UNSPEC_VCVT1	; Used in aarch64-simd.md.
@@ -812,6 +816,7 @@
     UNSPEC_PMULL        ; Used in aarch64-simd.md.
     UNSPEC_PMULL2       ; Used in aarch64-simd.md.
     UNSPEC_REV_REGLIST  ; Used in aarch64-simd.md.
+    UNSPEC_VEC_COPY     ; Used in aarch64-simd.md.
     UNSPEC_VEC_SHR      ; Used in aarch64-simd.md.
     UNSPEC_SQRDMLAH     ; Used in aarch64-simd.md.
     UNSPEC_SQRDMLSH     ; Used in aarch64-simd.md.
