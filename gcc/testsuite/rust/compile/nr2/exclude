@@ -72,7 +72,6 @@ issue-2037.rs
 issue-2043.rs
 issue-2070.rs
 issue-2105.rs
-issue-2106.rs
 issue-2135.rs
 issue-2136-1.rs
 issue-2136-2.rs
@@ -88,10 +87,8 @@ issue-2330.rs
 issue-2375.rs
 issue-2478.rs
 issue-2479.rs
-issue-2514.rs
 issue-2723-1.rs
 issue-2723-2.rs
-issue-2772-1.rs
 issue-2772-2.rs
 issue-2775.rs
 issue-2747.rs
@@ -194,7 +191,6 @@ issue-3046.rs
 unknown-associated-item.rs
 issue-3030.rs
 issue-3035.rs
-issue-3082.rs
 issue-3139-1.rs
 issue-3139-2.rs
 issue-3139-3.rs

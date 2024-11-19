@@ -27,6 +27,10 @@
 #include "rust-hir-type-check-stmt.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-type-util.h"
+#include "rust-immutable-name-resolution-context.h"
+
+// for flag_name_resolution_2_0
+#include "options.h"
 
 namespace Rust {
 namespace Resolver {
@@ -1238,8 +1242,17 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
   // store the expected fntype
   context->insert_type (expr.get_method_name ().get_mappings (), lookup);
 
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+			Resolver2_0::Definition (resolved_node_id));
+    }
   // set up the resolved name on the path
-  if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+  else if (resolver->get_name_scope ().decl_was_declared_here (
+	     resolved_node_id))
     {
       resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
 				      resolved_node_id);
@@ -1821,8 +1834,19 @@ TypeCheckExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);
 
   // set up the resolved name on the path
-  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				  resolved_node_id);
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+			Resolver2_0::Definition (resolved_node_id));
+    }
+  else
+    {
+      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				      resolved_node_id);
+    }
 
   // return the result of the function back
   infered = function_ret_tyty;
@@ -1991,8 +2015,19 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   context->insert_operator_overload (expr.get_mappings ().get_hirid (), fn);
 
   // set up the resolved name on the path
-  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				  resolved_node_id);
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
+			Resolver2_0::Definition (resolved_node_id));
+    }
+  else
+    {
+      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				      resolved_node_id);
+    }
 
   // return the result of the function back
   *result = function_ret_tyty;
