@@ -13785,10 +13785,9 @@ package body Sem_Res is
 
             return True;
          end if;
-
-         Set_Etype (Operand, It1.Typ);
       end if;
 
+      Set_Etype (Operand, It1.Typ);
       return False;
    end Is_Ambiguous_Operand;
 
