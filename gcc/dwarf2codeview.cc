@@ -1147,6 +1147,8 @@ struct codeview_function
   function *func;
   unsigned int end_label;
   codeview_line_block *blocks, *last_block;
+  codeview_function *parent;
+  unsigned int inline_block;
 };
 
 struct codeview_symbol
@@ -1423,7 +1425,7 @@ static unsigned int num_files;
 static uint32_t string_offset = 1;
 static hash_table<string_hasher> *strings_htab;
 static codeview_string *strings, *last_string;
-static codeview_function *funcs, *last_func;
+static codeview_function *funcs, *last_func, *cur_func;
 static const char* last_filename;
 static uint32_t last_file_id;
 static codeview_symbol *sym, *last_sym;
@@ -1440,6 +1442,30 @@ static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
 static void write_cv_padding (size_t padding);
 static void flush_deferred_types (void);
 
+/* Allocate and initialize a codeview_function struct.  */
+
+static codeview_function *
+new_codeview_function (void)
+{
+  codeview_function *f = (codeview_function *)
+			    xmalloc (sizeof (codeview_function));
+
+  f->next = NULL;
+  f->func = cfun;
+  f->end_label = 0;
+  f->blocks = f->last_block = NULL;
+  f->inline_block = 0;
+
+  if (!funcs)
+    funcs = f;
+  else
+    last_func->next = f;
+
+  last_func = f;
+
+  return f;
+}
+
 /* Record new line number against the current function.  */
 
 void
@@ -1451,22 +1477,13 @@ codeview_source_line (unsigned int line_no, const char *filename)
 
   targetm.asm_out.internal_label (asm_out_file, LINE_LABEL, label_num);
 
-  if (!last_func || last_func->func != cfun)
+  if (!cur_func || cur_func->func != cfun)
     {
-      codeview_function *f = (codeview_function *)
-				xmalloc (sizeof (codeview_function));
+      codeview_function *f = new_codeview_function ();
 
-      f->next = NULL;
-      f->func = cfun;
-      f->end_label = 0;
-      f->blocks = f->last_block = NULL;
+      f->parent = NULL;
 
-      if (!funcs)
-	funcs = f;
-      else
-	last_func->next = f;
-
-      last_func = f;
+      cur_func = f;
     }
 
   if (filename != last_filename)
@@ -1491,7 +1508,7 @@ codeview_source_line (unsigned int line_no, const char *filename)
 	}
     }
 
-  if (!last_func->last_block || last_func->last_block->file_id != file_id)
+  if (!cur_func->last_block || cur_func->last_block->file_id != file_id)
     {
       codeview_line_block *b;
 
@@ -1502,16 +1519,16 @@ codeview_source_line (unsigned int line_no, const char *filename)
       b->num_lines = 0;
       b->lines = b->last_line = NULL;
 
-      if (!last_func->blocks)
-	last_func->blocks = b;
+      if (!cur_func->blocks)
+	cur_func->blocks = b;
       else
-	last_func->last_block->next = b;
+	cur_func->last_block->next = b;
 
-      last_func->last_block = b;
+      cur_func->last_block = b;
     }
 
-  if (last_func->last_block->last_line
-    && last_func->last_block->last_line->line_no == line_no)
+  if (cur_func->last_block->last_line
+    && cur_func->last_block->last_line->line_no == line_no)
     return;
 
   l = (codeview_line *) xmalloc (sizeof (codeview_line));
@@ -1520,13 +1537,45 @@ codeview_source_line (unsigned int line_no, const char *filename)
   l->line_no = line_no;
   l->label_num = label_num;
 
-  if (!last_func->last_block->lines)
-    last_func->last_block->lines = l;
+  if (!cur_func->last_block->lines)
+    cur_func->last_block->lines = l;
   else
-    last_func->last_block->last_line->next = l;
+    cur_func->last_block->last_line->next = l;
 
-  last_func->last_block->last_line = l;
-  last_func->last_block->num_lines++;
+  cur_func->last_block->last_line = l;
+  cur_func->last_block->num_lines++;
+}
+
+/* We have encountered the beginning of a lexical block.  If this is actually
+   an inlined function, allocate a new codeview_function for this.  */
+
+void
+codeview_begin_block (unsigned int line ATTRIBUTE_UNUSED,
+		      unsigned int blocknum, tree block)
+{
+  if (inlined_function_outer_scope_p (block))
+    {
+      location_t locus = BLOCK_SOURCE_LOCATION (block);
+      expanded_location s = expand_location (locus);
+      codeview_function *f = new_codeview_function ();
+
+      codeview_source_line (s.line, s.file);
+
+      f->parent = cur_func;
+      f->inline_block = blocknum;
+
+      cur_func = f;
+    }
+}
+
+/* We have encountered the end of a lexical block.  If this is the end of an
+   inlined function, change cur_func back to its parent.  */
+
+void
+codeview_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int blocknum)
+{
+  if (cur_func && cur_func->inline_block == blocknum)
+    cur_func = cur_func->parent;
 }
 
 /* Adds string to the string table, returning its offset.  If already present,
@@ -1729,11 +1778,19 @@ static void
 write_line_numbers (void)
 {
   unsigned int func_num = 0;
+  codeview_function *f = funcs;
 
-  while (funcs)
+  while (f)
     {
-      codeview_function *next = funcs->next;
+      codeview_function *next_func = f->next;
       unsigned int first_label_num;
+      codeview_line_block *b = f->blocks;
+
+      if (f->inline_block != 0)
+	{
+	  f = next_func;
+	  continue;
+	}
 
       fputs (integer_asm_op (4, false), asm_out_file);
       fprint_whex (asm_out_file, DEBUG_S_LINES);
@@ -1758,26 +1815,27 @@ write_line_numbers (void)
       */
 
       asm_fprintf (asm_out_file, "\t.secrel32\t%L" LINE_LABEL "%u\n",
-		   funcs->blocks->lines->label_num);
+		   b->lines->label_num);
       asm_fprintf (asm_out_file, "\t.secidx\t%L" LINE_LABEL "%u\n",
-		   funcs->blocks->lines->label_num);
+		   b->lines->label_num);
 
       /* flags */
       fputs (integer_asm_op (2, false), asm_out_file);
       fprint_whex (asm_out_file, 0);
       putc ('\n', asm_out_file);
 
-      first_label_num = funcs->blocks->lines->label_num;
+      first_label_num = b->lines->label_num;
 
       /* length */
       fputs (integer_asm_op (4, false), asm_out_file);
       asm_fprintf (asm_out_file,
 		   "%L" END_FUNC_LABEL "%u - %L" LINE_LABEL "%u\n",
-		   funcs->end_label, first_label_num);
+		   f->end_label, first_label_num);
 
-      while (funcs->blocks)
+      while (b)
 	{
-	  codeview_line_block *next = funcs->blocks->next;
+	  codeview_line_block *next_block = b->next;
+	  codeview_line *l = b->lines;
 
 	  /* Next comes the blocks, each block being a part of a function
 	     within the same source file (struct cv_lines_block in binutils or
@@ -1793,23 +1851,23 @@ write_line_numbers (void)
 
 	  /* file ID */
 	  fputs (integer_asm_op (4, false), asm_out_file);
-	  fprint_whex (asm_out_file, funcs->blocks->file_id);
+	  fprint_whex (asm_out_file, b->file_id);
 	  putc ('\n', asm_out_file);
 
 	  /* number of lines */
 	  fputs (integer_asm_op (4, false), asm_out_file);
-	  fprint_whex (asm_out_file, funcs->blocks->num_lines);
+	  fprint_whex (asm_out_file, b->num_lines);
 	  putc ('\n', asm_out_file);
 
 	  /* length of code block: (num_lines * sizeof (struct cv_line)) +
 	     sizeof (struct cv_lines_block) */
 	  fputs (integer_asm_op (4, false), asm_out_file);
-	  fprint_whex (asm_out_file, (funcs->blocks->num_lines * 0x8) + 0xc);
+	  fprint_whex (asm_out_file, (b->num_lines * 0x8) + 0xc);
 	  putc ('\n', asm_out_file);
 
-	  while (funcs->blocks->lines)
+	  while (l)
 	    {
-	      codeview_line *next = funcs->blocks->lines->next;
+	      codeview_line *next_line = l->next;
 
 	      /* Finally comes the line number information (struct cv_line in
 		 binutils or CV_Line_t in Microsoft's cvinfo.h):
@@ -1827,30 +1885,24 @@ write_line_numbers (void)
 	      fputs (integer_asm_op (4, false), asm_out_file);
 	      asm_fprintf (asm_out_file,
 			   "%L" LINE_LABEL "%u - %L" LINE_LABEL "%u\n",
-			   funcs->blocks->lines->label_num, first_label_num);
+			   l->label_num, first_label_num);
 
 	      fputs (integer_asm_op (4, false), asm_out_file);
 	      fprint_whex (asm_out_file,
 			   0x80000000
-			   | (funcs->blocks->lines->line_no & 0xffffff));
+			   | (l->line_no & 0xffffff));
 	      putc ('\n', asm_out_file);
 
-	      free (funcs->blocks->lines);
-
-	      funcs->blocks->lines = next;
+	      l = next_line;
 	    }
 
-	  free (funcs->blocks);
-
-	  funcs->blocks = next;
+	  b = next_block;
 	}
-
-      free (funcs);
 
       asm_fprintf (asm_out_file, "%LLcv_lines%u_end:\n", func_num);
       func_num++;
 
-      funcs = next;
+      f = next_func;
     }
 }
 
@@ -1862,29 +1914,20 @@ codeview_switch_text_section (void)
 {
   codeview_function *f;
 
-  if (last_func && last_func->end_label == 0)
+  if (cur_func && cur_func->end_label == 0)
     {
       unsigned int label_num = ++func_label_num;
 
       targetm.asm_out.internal_label (asm_out_file, END_FUNC_LABEL,
 				      label_num);
 
-      last_func->end_label = label_num;
+      cur_func->end_label = label_num;
     }
 
-  f = (codeview_function *) xmalloc (sizeof (codeview_function));
+  f = new_codeview_function ();
+  f->parent = cur_func ? cur_func->parent : NULL;
 
-  f->next = NULL;
-  f->func = cfun;
-  f->end_label = 0;
-  f->blocks = f->last_block = NULL;
-
-  if (!funcs)
-    funcs = f;
-  else
-    last_func->next = f;
-
-  last_func = f;
+  cur_func = f;
 }
 
 /* Mark the end of the current function.  */
@@ -1892,14 +1935,14 @@ codeview_switch_text_section (void)
 void
 codeview_end_epilogue (void)
 {
-  if (last_func && last_func->end_label == 0)
+  if (cur_func && cur_func->end_label == 0)
     {
       unsigned int label_num = ++func_label_num;
 
       targetm.asm_out.internal_label (asm_out_file, END_FUNC_LABEL,
 				      label_num);
 
-      last_func->end_label = label_num;
+      cur_func->end_label = label_num;
     }
 }
 
@@ -4722,6 +4765,30 @@ codeview_debug_finish (void)
 
   if (custom_types)
     write_custom_types ();
+
+  while (funcs)
+    {
+      codeview_function *next_func = funcs->next;
+
+      while (funcs->blocks)
+	{
+	  codeview_line_block *next_block = funcs->blocks->next;
+
+	  while (funcs->blocks->lines)
+	    {
+	      codeview_line *next_line = funcs->blocks->lines->next;
+
+	      free (funcs->blocks->lines);
+	      funcs->blocks->lines = next_line;
+	    }
+
+	  free (funcs->blocks);
+	  funcs->blocks = next_block;
+	}
+
+      free (funcs);
+      funcs = next_func;
+    }
 
   if (types_htab)
     delete types_htab;
