@@ -1,3 +1,12 @@
+2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117659
+	* config/avr/avr.cc (avr_out_ashlpsi3) [case 16]: Use %A1 as
+	input (instead of bogus %A0).
+
 2024-11-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/117525
