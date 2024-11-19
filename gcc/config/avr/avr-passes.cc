@@ -2116,7 +2116,7 @@ memento_t::apply_insn1 (rtx_insn *insn, bool unused)
 
   HARD_REG_SET rset;
   find_all_hard_reg_sets (insn, &rset, true /* implicit */);
-  known &= ~rset;
+  (*this) &= ~rset;
 
   rtx set = single_set (insn);
   rtx dest;
