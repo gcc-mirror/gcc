@@ -250,8 +250,12 @@ package body Exp_Aggr is
    -- Local Subprograms for Array Aggregate Expansion --
    -----------------------------------------------------
 
-   function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean;
-   --  Returns true if an aggregate assignment can be done by the back end
+   function Aggr_Assignment_OK_For_Backend
+     (N      : Node_Id;
+      Target : Node_Id := Empty) return Boolean;
+   --  Returns true if assignment of aggregate N can be done by the back end.
+   --  If Target is present, it is the left-hand side of the assignment; if it
+   --  is not, the assignment is the initialization of an object or allocator.
 
    function Aggr_Size_OK (N : Node_Id) return Boolean;
    --  Very large static aggregates present problems to the back-end, and are
@@ -371,8 +375,10 @@ package body Exp_Aggr is
    --  The ultimate goal is to generate a call to a fast memset routine
    --  specifically optimized for the target.
 
-   function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-
+   function Aggr_Assignment_OK_For_Backend
+     (N      : Node_Id;
+      Target : Node_Id := Empty) return Boolean
+   is
       function Is_OK_Aggregate (Aggr : Node_Id) return Boolean;
       --  Return true if Aggr is suitable for back-end assignment
 
@@ -422,9 +428,24 @@ package body Exp_Aggr is
    --  Start of processing for Aggr_Assignment_OK_For_Backend
 
    begin
+      --  CodePeer does not support this
+
+      if CodePeer_Mode then
+         return False;
+      end if;
+
       --  Back end doesn't know about <>
 
       if Has_Default_Init_Comps (N) then
+         return False;
+      end if;
+
+      --  Assignments to bit-aligned components or slices are not OK
+
+      if Present (Target)
+        and then (Possible_Bit_Aligned_Component (Target)
+                   or else Is_Possibly_Unaligned_Slice (Target))
+      then
          return False;
       end if;
 
@@ -1922,10 +1943,7 @@ package body Exp_Aggr is
       --  into an assignment statement.
 
       if Present (Etype (N))
-        and then Aggr_Assignment_OK_For_Backend (N)
-        and then not Possible_Bit_Aligned_Component (Into)
-        and then not Is_Possibly_Unaligned_Slice (Into)
-        and then not CodePeer_Mode
+        and then Aggr_Assignment_OK_For_Backend (N, Into)
       then
          declare
             New_Aggr : constant Node_Id := Relocate_Node (N);
@@ -6132,52 +6150,50 @@ package body Exp_Aggr is
          or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
                    and then not Is_Container_Aggregate (Parent_Node))
 
-         --  Allocator (see Convert_Aggr_In_Allocator)
+         --  Allocator (see Convert_Aggr_In_Allocator). Bit-packed array types
+         --  need specific processing and sliding cannot be done in place for
+         --  the time being.
 
          or else (Nkind (Parent_Node) = N_Allocator
-                   and then (Aggr_Assignment_OK_For_Backend (N)
-                              or else Is_Limited_Type (Typ)
-                              or else Needs_Finalization (Typ)
-                              or else (not Is_Bit_Packed_Array (Typ)
-                                        and then not
-                                          Must_Slide
-                                            (N,
-                                             Designated_Type
-                                               (Etype (Parent_Node)),
-                                             Typ))))
+                   and then
+                     (Aggr_Assignment_OK_For_Backend (N)
+                       or else Is_Limited_Type (Typ)
+                       or else Needs_Finalization (Typ)
+                       or else (not Is_Bit_Packed_Array (Typ)
+                                 and then not
+                                   Must_Slide
+                                     (N,
+                                      Designated_Type (Etype (Parent_Node)),
+                                      Typ))))
 
-         --  Object declaration (see Convert_Aggr_In_Object_Decl)
+         --  Object declaration (see Convert_Aggr_In_Object_Decl). Bit-packed
+         --  array types need specific processing and sliding cannot be done
+         --  in place for the time being.
 
          or else (Parent_Kind = N_Object_Declaration
-                   and then (Aggr_Assignment_OK_For_Backend (N)
-                              or else Is_Limited_Type (Typ)
-                              or else Needs_Finalization (Typ)
-                              or else Is_Special_Return_Object
-                                        (Defining_Identifier (Parent_Node))
-                              or else (not Is_Bit_Packed_Array (Typ)
-                                        and then not
-                                          Must_Slide
-                                            (N,
-                                             Etype
-                                               (Defining_Identifier
-                                                 (Parent_Node)),
-                                             Typ))))
+                   and then
+                     (Aggr_Assignment_OK_For_Backend (N)
+                       or else Is_Limited_Type (Typ)
+                       or else Needs_Finalization (Typ)
+                       or else Is_Special_Return_Object
+                                 (Defining_Identifier (Parent_Node))
+                       or else (not Is_Bit_Packed_Array (Typ)
+                                 and then not
+                                   Must_Slide
+                                     (N,
+                                      Etype
+                                        (Defining_Identifier (Parent_Node)),
+                                      Typ))))
 
          --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
          --  assignments in init procs are taken into account, as well those
          --  directly performed by the back end.
 
          or else (Parent_Kind = N_Assignment_Statement
-                   and then (Inside_Init_Proc
-                              or else
-                                (Aggr_Assignment_OK_For_Backend (N)
-                                  and then not
-                                    Possible_Bit_Aligned_Component
-                                      (Name (Parent_Node))
-                                  and then not
-                                    Is_Possibly_Unaligned_Slice
-                                      (Name (Parent_Node))
-                                  and then not CodePeer_Mode)))
+                   and then
+                     (Inside_Init_Proc
+                       or else
+                      Aggr_Assignment_OK_For_Backend (N, Name (Parent_Node))))
 
          --  Simple return statement, which will be handled in a build-in-place
          --  fashion and will ultimately be rewritten as an extended return.
