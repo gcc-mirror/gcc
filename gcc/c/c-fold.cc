@@ -410,7 +410,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 		    || TREE_CODE (TREE_TYPE (orig_op0)) == FIXED_POINT_TYPE)
 		   && compare_tree_int (op1,
 					TYPE_PRECISION (TREE_TYPE (orig_op0)))
-		      >= 0)
+		      >= 0
+		   && !warning_suppressed_p (expr, OPT_Wshift_count_overflow))
 	    warning_at (loc, OPT_Wshift_count_overflow,
 			(code == LSHIFT_EXPR
 			 ? G_("left shift count >= width of type")

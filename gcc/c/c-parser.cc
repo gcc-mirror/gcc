@@ -12638,8 +12638,38 @@ c_parser_postfix_expression (c_parser *parser)
 				       build_int_cst (utype, prec));
 		  }
 
-		expr.value = build2_loc (loc, code, TREE_TYPE (arg1), arg1,
-					 arg2);
+		/* The middle-end isn't prepared to handle {L,R}ROTATE_EXPR
+		   on types without mode precision, except for large/huge
+		   _BitInt types.  */
+		if (type_has_mode_precision_p (TREE_TYPE (arg1))
+		    || (TREE_CODE (TREE_TYPE (arg1)) == BITINT_TYPE
+			&& prec > MAX_FIXED_MODE_SIZE))
+		  expr.value = build2_loc (loc, code, TREE_TYPE (arg1), arg1,
+					   arg2);
+		else
+		  {
+		    arg2 = save_expr (arg2);
+		    tree t1 = build2_loc (loc, (code == LROTATE_EXPR
+						? LSHIFT_EXPR : RSHIFT_EXPR),
+					  TREE_TYPE (arg1), arg1, arg2);
+		    tree t2 = build2_loc (loc, MINUS_EXPR,
+					  TREE_TYPE (arg2),
+					  build_int_cst (TREE_TYPE (arg2),
+							 prec), arg2);
+		    t2 = build2_loc (loc, (code == LROTATE_EXPR
+					   ? RSHIFT_EXPR : LSHIFT_EXPR),
+				     TREE_TYPE (arg1), arg1, t2);
+		    suppress_warning (t2, OPT_Wshift_count_overflow);
+		    tree t3 = build2_loc (loc, BIT_IOR_EXPR,
+					  TREE_TYPE (arg1), t1, t2);
+		    tree t4 = build2_loc (loc, NE_EXPR, boolean_type_node,
+					  arg2,
+					  build_zero_cst (TREE_TYPE (arg2)));
+		    t4 = build2_loc (loc, COMPOUND_EXPR, boolean_type_node,
+				     arg1, t4);
+		    expr.value = build3_loc (loc, COND_EXPR,
+					     TREE_TYPE (arg1), t4, t3, arg1);
+		  }
 		if (instrument_expr)
 		  expr.value = build2_loc (loc, COMPOUND_EXPR,
 					   TREE_TYPE (expr.value),
