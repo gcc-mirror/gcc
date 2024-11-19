@@ -4799,7 +4799,7 @@ c_init_decl_processing (void)
 			boolean_type_node));
 
   /* C-specific nullptr initialization.  */
-  record_builtin_type (RID_MAX, "nullptr_t", nullptr_type_node);
+  record_builtin_type (RID_MAX, "typeof (nullptr)", nullptr_type_node);
   /* The size and alignment of nullptr_t is the same as for a pointer to
      character type.  */
   SET_TYPE_ALIGN (nullptr_type_node, GET_MODE_ALIGNMENT (ptr_mode));
