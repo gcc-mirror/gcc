@@ -2113,7 +2113,23 @@ compare_elmt_bitpos (const void *rt1, const void *rt2)
   const int ret
     = tree_int_cst_compare (bit_position (field1), bit_position (field2));
 
-  return ret ? ret : (int) (DECL_UID (field1) - DECL_UID (field2));
+  if (ret)
+    return ret;
+
+  /* The bit position can be the same if one of the fields has zero size.
+     In this case, if the other has nonzero size, put the former first to
+     match the layout done by components_to_record.  Otherwise, preserve
+     the order of the source code.  */
+
+  const bool field1_zero_size = integer_zerop (DECL_SIZE (field1));
+  const bool field2_zero_size = integer_zerop (DECL_SIZE (field2));
+
+  if (field1_zero_size && !field2_zero_size)
+    return -1;
+  else if (!field1_zero_size && field2_zero_size)
+    return 1;
+  else
+    return (int) (DECL_UID (field1) - DECL_UID (field2));
 }
 
 /* Return a CONSTRUCTOR of TYPE whose elements are V.  */
