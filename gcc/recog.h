@@ -202,6 +202,35 @@ inline insn_propagation::insn_propagation (rtx_insn *insn)
 {
 }
 
+/* An RAII class that temporarily undoes part of the current change group.
+   The sequence:
+
+     {
+       ...;
+       undo_recog_changes undo (NUM);
+       STMTS;
+     }
+
+   executes STMTS with all the changes numbered NUM and up temporarily
+   reverted.  STMTS must not try to add to the current change group.
+
+   Nested uses are supported, but each nested NUM must be no greater than
+   outer NUMs.  */
+
+class undo_recog_changes
+{
+public:
+  undo_recog_changes (int);
+  ~undo_recog_changes ();
+
+  static bool is_active () { return s_num_changes != 0; }
+
+private:
+  int m_old_num_changes;
+
+  static int s_num_changes;
+};
+
 extern void init_recog (void);
 extern void init_recog_no_volatile (void);
 extern bool check_asm_operands (rtx);
@@ -216,8 +245,6 @@ extern void confirm_change_group (void);
 extern bool apply_change_group (void);
 extern int num_validated_changes (void);
 extern void cancel_changes (int);
-extern void temporarily_undo_changes (int);
-extern void redo_changes (int);
 extern bool constrain_operands (int, alternative_mask);
 extern bool constrain_operands_cached (rtx_insn *, int);
 extern bool memory_address_addr_space_p (machine_mode, rtx, addr_space_t,
