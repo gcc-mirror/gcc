@@ -15,7 +15,7 @@ struct kernel_stat
  unsigned irqs[256];
 };
 extern struct kernel_stat per_cpu__kstat;
-void seq_printf ();
+void seq_printf (...);
 
 void show_stat(void)
 {
