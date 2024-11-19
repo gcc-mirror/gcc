@@ -8824,6 +8824,8 @@ package body Sem_Attr is
       --  unconstrained arrays. Furthermore, it is essential to fold this
       --  in the packed case, since otherwise the value will be incorrect.
       --  Moreover, the exact same reasoning can be applied to Alignment.
+      --  Likewise for the various size attributes, although folding will
+      --  never succeed for them with unconstrained arrays.
 
       elsif Id = Attribute_Atomic_Always_Lock_Free      or else
             Id = Attribute_Definite                     or else
@@ -8835,7 +8837,12 @@ package body Sem_Attr is
             Id = Attribute_Type_Class                   or else
             Id = Attribute_Unconstrained_Array          or else
             Id = Attribute_Component_Size               or else
-            Id = Attribute_Alignment
+            Id = Attribute_Alignment                    or else
+            Id = Attribute_Machine_Size                 or else
+            Id = Attribute_Object_Size                  or else
+            Id = Attribute_Size                         or else
+            Id = Attribute_VADS_Size                    or else
+            Id = Attribute_Value_Size
       then
          Static := False;
          Set_Is_Static_Expression (N, False);
