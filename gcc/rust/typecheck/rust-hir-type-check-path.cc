@@ -153,8 +153,20 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   bool fully_resolved = expr.get_segments ().size () <= 1;
   if (fully_resolved)
     {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      root_resolved_node_id);
+      if (flag_name_resolution_2_0)
+	{
+	  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+	  nr_ctx.map_usage (Resolver2_0::Usage (
+			      expr.get_mappings ().get_nodeid ()),
+			    Resolver2_0::Definition (root_resolved_node_id));
+	}
+      else
+	{
+	  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+					  root_resolved_node_id);
+	}
       context->insert_receiver (expr.get_mappings ().get_hirid (), root);
       return;
     }
@@ -491,8 +503,17 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
 
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      nr_ctx.map_usage (Resolver2_0::Usage (expr_mappings.get_nodeid ()),
+			Resolver2_0::Definition (resolved_node_id));
+    }
   // name scope first
-  if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+  else if (resolver->get_name_scope ().decl_was_declared_here (
+	     resolved_node_id))
     {
       resolver->insert_resolved_name (expr_mappings.get_nodeid (),
 				      resolved_node_id);

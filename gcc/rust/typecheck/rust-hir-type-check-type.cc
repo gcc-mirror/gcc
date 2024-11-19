@@ -111,12 +111,7 @@ TypeCheckType::visit (HIR::TupleType &tuple)
 {
   if (tuple.is_unit_type ())
     {
-      auto unit_node_id = resolver->get_unit_type_node_id ();
-      if (!context->lookup_builtin (unit_node_id, &translated))
-	{
-	  rust_error_at (tuple.get_locus (),
-			 "failed to lookup builtin unit type");
-	}
+      translated = TyTy::TupleType::get_unit_type ();
       return;
     }
 
@@ -176,9 +171,25 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     {
       // then this is just a normal path-in-expression
       NodeId root_resolved_node_id = UNKNOWN_NODEID;
-      bool ok = resolver->lookup_resolved_type (
-	qual_path_type.get_type ().get_mappings ().get_nodeid (),
-	&root_resolved_node_id);
+      bool ok = false;
+      if (flag_name_resolution_2_0)
+	{
+	  auto &nr_ctx
+	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+	  if (auto id = nr_ctx.lookup (
+		qual_path_type.get_type ().get_mappings ().get_nodeid ()))
+	    {
+	      root_resolved_node_id = *id;
+	      ok = true;
+	    }
+	}
+      else
+	{
+	  ok = resolver->lookup_resolved_type (
+	    qual_path_type.get_type ().get_mappings ().get_nodeid (),
+	    &root_resolved_node_id);
+	}
       rust_assert (ok);
 
       translated = resolve_segments (root_resolved_node_id,
@@ -323,8 +334,21 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   bool fully_resolved = path.get_segments ().empty ();
   if (fully_resolved)
     {
-      resolver->insert_resolved_type (path.get_mappings ().get_nodeid (),
-				      root_resolved_node_id);
+      if (flag_name_resolution_2_0)
+	{
+	  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+	  nr_ctx.map_usage (Resolver2_0::Usage (
+			      path.get_mappings ().get_nodeid ()),
+			    Resolver2_0::Definition (root_resolved_node_id));
+	}
+      else
+	{
+	  resolver->insert_resolved_type (path.get_mappings ().get_nodeid (),
+					  root_resolved_node_id);
+	}
+
       context->insert_receiver (path.get_mappings ().get_hirid (), root);
       return;
     }
@@ -595,33 +619,53 @@ TypeCheckType::resolve_segments (
   context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
 
-  // lookup if the name resolver was able to canonically resolve this or not
-  NodeId path_resolved_id = UNKNOWN_NODEID;
-  if (resolver->lookup_resolved_name (expr_mappings.get_nodeid (),
-				      &path_resolved_id))
+  if (flag_name_resolution_2_0)
     {
-      rust_assert (path_resolved_id == resolved_node_id);
-    }
-  // check the type scope
-  else if (resolver->lookup_resolved_type (expr_mappings.get_nodeid (),
-					   &path_resolved_id))
-    {
-      rust_assert (path_resolved_id == resolved_node_id);
+      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
+	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
+
+      auto old = nr_ctx.lookup (expr_mappings.get_nodeid ());
+      if (old.has_value ())
+	{
+	  rust_assert (*old == resolved_node_id);
+	}
+      else
+	{
+	  nr_ctx.map_usage (Resolver2_0::Usage (expr_mappings.get_nodeid ()),
+			    Resolver2_0::Definition (resolved_node_id));
+	}
     }
   else
     {
-      // name scope first
-      if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
+      // lookup if the name resolver was able to canonically resolve this or not
+      NodeId path_resolved_id = UNKNOWN_NODEID;
+      if (resolver->lookup_resolved_name (expr_mappings.get_nodeid (),
+					  &path_resolved_id))
 	{
-	  resolver->insert_resolved_name (expr_mappings.get_nodeid (),
-					  resolved_node_id);
+	  rust_assert (path_resolved_id == resolved_node_id);
 	}
       // check the type scope
-      else if (resolver->get_type_scope ().decl_was_declared_here (
-		 resolved_node_id))
+      else if (resolver->lookup_resolved_type (expr_mappings.get_nodeid (),
+					       &path_resolved_id))
 	{
-	  resolver->insert_resolved_type (expr_mappings.get_nodeid (),
-					  resolved_node_id);
+	  rust_assert (path_resolved_id == resolved_node_id);
+	}
+      else
+	{
+	  // name scope first
+	  if (resolver->get_name_scope ().decl_was_declared_here (
+		resolved_node_id))
+	    {
+	      resolver->insert_resolved_name (expr_mappings.get_nodeid (),
+					      resolved_node_id);
+	    }
+	  // check the type scope
+	  else if (resolver->get_type_scope ().decl_was_declared_here (
+		     resolved_node_id))
+	    {
+	      resolver->insert_resolved_type (expr_mappings.get_nodeid (),
+					      resolved_node_id);
+	    }
 	}
     }
 
@@ -990,7 +1034,23 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 
   // then lookup the reference_node_id
   NodeId ref_node_id = UNKNOWN_NODEID;
-  if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+  if (flag_name_resolution_2_0)
+    {
+      auto &nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      if (auto id = nr_ctx.lookup (ast_node_id))
+	ref_node_id = *id;
+    }
+  else
+    {
+      NodeId id = UNKNOWN_NODEID;
+
+      if (resolver->lookup_resolved_type (ast_node_id, &id))
+	ref_node_id = id;
+    }
+
+  if (ref_node_id == UNKNOWN_NODEID)
     {
       // FIXME
       rust_error_at (UNDEF_LOCATION,
