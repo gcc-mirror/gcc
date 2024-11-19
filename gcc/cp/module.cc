@@ -11919,7 +11919,8 @@ has_definition (tree decl)
 	       since there's no TU to emit them in otherwise.  */
 	    return true;
 
-	  if (!decl_maybe_constant_var_p (decl))
+	  if (!decl_maybe_constant_var_p (decl)
+	      && !DECL_INLINE_VAR_P (decl))
 	    return false;
 
 	  return true;
