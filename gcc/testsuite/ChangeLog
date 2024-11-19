@@ -1,3 +1,27 @@
+2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117357
+	* gcc.target/i386/pr117357.c: New test.
+
+2024-11-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2024-10-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/vect/pr116997.c: New test.
+
+2024-11-18  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/117418
+	* gcc.target/i386/pr117418-1.c: New test.
+
 2024-11-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
