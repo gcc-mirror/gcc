@@ -12449,6 +12449,7 @@ BEGIN
       ConstLitSym        : RETURN( ConstLit.Scope ) |
       ConstStringSym     : RETURN( ConstString.Scope ) |
       ConstVarSym        : RETURN( ConstVar.Scope ) |
+      UndefinedSym       : RETURN( NulSym ) |
       PartialUnboundedSym: InternalError ('should not be requesting the scope of a PartialUnbounded symbol')
 
       ELSE
