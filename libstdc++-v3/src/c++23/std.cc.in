@@ -494,8 +494,13 @@ export namespace std
 #endif
 #if __cpp_lib_ranges_fold
     using ranges::fold_left;
+    using ranges::fold_left_first;
+    using ranges::fold_left_first_with_iter;
     using ranges::fold_left_with_iter;
     using ranges::fold_right;
+    using ranges::fold_right_last;
+    using ranges::in_value_result;
+    using ranges::out_value_result;
 #endif
 #if __cpp_lib_ranges_find_last
     using ranges::find_last;
@@ -1572,10 +1577,14 @@ export namespace std
   using std::iter_reference_t;
   using std::iter_value_t;
   using std::iterator_traits;
-  namespace ranges
+  // _Cpo is an implementation detail we can't avoid exposing; if we do the
+  // using in ranges directly, it conflicts with any friend functions of the
+  // same name, which is why the customization points are in an inline
+  // namespace in the first place.
+  namespace ranges::inline _Cpo
   {
-    using std::ranges::iter_move;
-    using std::ranges::iter_swap;
+    using _Cpo::iter_move;
+    using _Cpo::iter_swap;
   }
   using std::advance;
   using std::bidirectional_iterator;
@@ -1678,6 +1687,15 @@ export namespace std
   using std::make_const_iterator;
   using std::make_const_sentinel;
 #endif
+}
+// FIXME these should be friends of __normal_iterator to avoid exporting
+// __gnu_cxx.
+export namespace __gnu_cxx
+{
+  using __gnu_cxx::operator==;
+  using __gnu_cxx::operator<=>;
+  using __gnu_cxx::operator+;
+  using __gnu_cxx::operator-;
 }
 
 // <latch>
@@ -2278,43 +2296,32 @@ export namespace std
   namespace views = ranges::views;
   using std::tuple_element;
   using std::tuple_size;
-#if __glibcxx_ranges_as_const // >= C++23
   namespace ranges
   {
+#if __glibcxx_ranges_as_const // >= C++23
     using ranges::constant_range;
     using ranges::const_iterator_t;
     using ranges::const_sentinel_t;
     using ranges::range_const_reference_t;
     using ranges::as_const_view;
     namespace views { using views::as_const; }
-  }
 #endif
 #ifdef __glibcxx_generator  // C++ >= 23 && __glibcxx_coroutine
-  namespace ranges
-  {
     using ranges::elements_of;
-  }
 #endif
 #ifdef __cpp_lib_ranges_as_rvalue // C++ >= 23
-  namespace ranges {
     using ranges::as_rvalue_view;
     namespace views { using views::as_rvalue; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_chunk // C++ >= 23
-  namespace ranges {
     using ranges::chunk_view;
     namespace views { using views::chunk; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_slide // C++ >= 23
-  namespace ranges {
     using ranges::slide_view;
     namespace views { using views::slide; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_zip // C++ >= 23
-  namespace ranges {
     using ranges::zip_view;
     using ranges::zip_transform_view;
     using ranges::adjacent_view;
@@ -2327,44 +2334,45 @@ export namespace std
       using views::pairwise;
       using views::pairwise_transform;
     }
-  }
 #endif
 #ifdef __cpp_lib_ranges_chunk_by // C++ >= 23
-  namespace ranges {
     using ranges::chunk_by_view;
     namespace views { using views::chunk_by; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_join_with // C++ >= 23
-  namespace ranges {
     using ranges::join_with_view;
     namespace views { using views::join_with; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_repeat // C++ >= 23
-  namespace ranges {
     using ranges::repeat_view;
     namespace views { using views::repeat; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_stride // C++ >= 23
-  namespace ranges {
     using ranges::stride_view;
     namespace views { using views::stride; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_cartesian_product // C++ >= 23
-  namespace ranges {
     using ranges::cartesian_product_view;
     namespace views { using views::cartesian_product; }
-  }
 #endif
 #ifdef __cpp_lib_ranges_enumerate // C++ >= 23
-  namespace ranges {
     using ranges::enumerate_view;
     namespace views { using views::enumerate; }
-  }
 #endif
+#if __cpp_lib_ranges_to_container // C++ >= 23
+    using ranges::to;
+#endif // __cpp_lib_ranges_to_container
+#if __cpp_lib_ranges_concat // C++ >= C++26
+    using ranges::concat_view;
+    namespace views { using views::concat; }
+#endif
+
+    // FIXME can we avoid this export using friends?
+    namespace views::__adaptor
+    {
+      using __adaptor::operator|;
+    }
+  }
 }
 
 // <ratio>
