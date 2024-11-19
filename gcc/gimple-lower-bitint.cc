@@ -2143,6 +2143,7 @@ bitint_large_huge::handle_stmt (gimple *stmt, tree idx)
 						idx),
 				gimple_assign_rhs2 (stmt), idx);
 	case SSA_NAME:
+	case PAREN_EXPR:
 	case INTEGER_CST:
 	  return handle_operand (gimple_assign_rhs1 (stmt), idx);
 	CASE_CONVERT:
@@ -5609,7 +5610,9 @@ bitint_large_huge::lower_stmt (gimple *stmt)
       || gimple_store_p (stmt)
       || gimple_assign_load_p (stmt)
       || eq_p
-      || mergeable_cast_p)
+      || mergeable_cast_p
+      || (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == PAREN_EXPR))
     {
       lhs = lower_mergeable_stmt (stmt, cmp_code, cmp_op1, cmp_op2);
       if (!eq_p)
