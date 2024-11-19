@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-fno-forward-propagate" } */
+/* { dg-require-effective-target int32plus } */
+
 int a, b;
 signed char c, e;
 unsigned char d;
