@@ -70,15 +70,17 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
   HIR::Pattern *variables
     = ASTLoweringPattern::translate (stmt.get_pattern (), true);
 
-  auto type
-    = stmt.has_type () ? tl::optional<std::unique_ptr<Type>> (
-	std::unique_ptr<Type> (ASTLoweringType::translate (stmt.get_type ())))
-		       : tl::nullopt;
-  auto init_expression
-    = stmt.has_init_expr ()
-	? tl::optional<std::unique_ptr<Expr>> (std::unique_ptr<HIR::Expr> (
-	  ASTLoweringExpr::translate (stmt.get_init_expr ())))
-	: tl::nullopt;
+  tl::optional<std::unique_ptr<Type>> type = tl::nullopt;
+
+  if (stmt.has_type ())
+    type
+      = std::unique_ptr<Type> (ASTLoweringType::translate (stmt.get_type ()));
+
+  tl::optional<std::unique_ptr<HIR::Expr>> init_expression = tl::nullopt;
+
+  if (stmt.has_init_expr ())
+    init_expression = std::unique_ptr<HIR::Expr> (
+      ASTLoweringExpr::translate (stmt.get_init_expr ()));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
