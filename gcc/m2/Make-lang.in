@@ -425,7 +425,7 @@ m2.install-info: installdirs
 	else true; fi
 	-if [ -f gm2$(exeext) ] && [ -f $(DESTDIR)$(infodir)/m2.info ]; then \
 	  if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	    install-info --dir-file=$(infodir)/dir $(DESTDIR)$(infodir)/m2.info; \
+	    install-info --dir-file=$(DESTDIR)$(infodir)/dir $(DESTDIR)$(infodir)/m2.info; \
 	  else true; fi; \
 	else true; fi
 
