@@ -55,7 +55,7 @@ package System.Img_Fixed_64 is
    --  Computes fixed_type'Image (V), where V is the integer value (in units of
    --  small) of an ordinary fixed point type with small Num/Den, and stores
    --  the result in S (1 .. P), updating P on return. The result is computed
-   --  according to the rules for image for fixed-point types (RM 3.5(34)).
+   --  according to the rules for image for fixed-point types (RM 4.10(14)).
    --  For0 and Aft0 are the values of the Fore and Aft attributes for the
    --  fixed point type whose mantissa type is Int64 and whose small is
    --  Num/Den. This function is used only for fixed point whose Small is an

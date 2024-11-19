@@ -120,7 +120,7 @@ package body System.Img_Char is
                Character'Val (16#9F#) => "APC"];
 
    begin
-      --  Control characters are represented by their names (RM 3.5(32))
+      --  Control characters are represented by their names (RM 4.10(12))
 
       if V in C0_Range then
          S (1 .. 3) := C0 (V);
@@ -152,7 +152,8 @@ package body System.Img_Char is
             end;
          end if;
 
-      --  Normal characters yield the character enclosed in quotes (RM 3.5(32))
+      --  Normal characters yield the character enclosed in quotes
+      --  (RM 4.10(12)).
 
       else
          S (1) := ''';
