@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-Ofast -fdump-tree-optimized" } */
+/* { dg-require-effective-target c99_runtime } */
 
 /* { dg-final { scan-tree-dump-times "__builtin_ldexp\ " 7 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_ldexpf\ " 7 "optimized" } } */
