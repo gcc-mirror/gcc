@@ -2286,9 +2286,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	else if constexpr (sizeof...(_Args) == 2)
 	  {
-	    pair<const _Args&...> __refs(__args...);
-	    if constexpr (__is_key_type<pair<_Args...>>)
+	    if constexpr (__is_key_type<pair<const _Args&...>>)
 	      {
+		pair<const _Args&...> __refs(__args...);
 		const auto& __key = _ExtractKey{}(__refs);
 		__kp = std::__addressof(__key);
 	      }
