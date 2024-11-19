@@ -121,7 +121,7 @@ foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/gather-scatter/*.\[cS\]]] \
     "" "$op"
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/strided/*.\[cS\]]] \
-    "" "$op"
+    "$op" ""
 }
 
 # All done.
