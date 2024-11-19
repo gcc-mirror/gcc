@@ -3597,6 +3597,7 @@ bitint_large_huge::lower_muldiv_stmt (tree obj, gimple *stmt)
       insert_before (g);
       break;
     case TRUNC_DIV_EXPR:
+    case EXACT_DIV_EXPR:
       g = gimple_build_call_internal (IFN_DIVMODBITINT, 8,
 				      lhs, build_int_cst (sitype, prec),
 				      null_pointer_node,
@@ -5560,6 +5561,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		return;
 	      case MULT_EXPR:
 	      case TRUNC_DIV_EXPR:
+	      case EXACT_DIV_EXPR:
 	      case TRUNC_MOD_EXPR:
 		lower_muldiv_stmt (lhs, g);
 		goto handled;
@@ -5694,6 +5696,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	return;
       case MULT_EXPR:
       case TRUNC_DIV_EXPR:
+      case EXACT_DIV_EXPR:
       case TRUNC_MOD_EXPR:
 	lower_muldiv_stmt (NULL_TREE, stmt);
 	return;
@@ -5740,6 +5743,7 @@ stmt_needs_operand_addr (gimple *stmt)
       {
       case MULT_EXPR:
       case TRUNC_DIV_EXPR:
+      case EXACT_DIV_EXPR:
       case TRUNC_MOD_EXPR:
       case FLOAT_EXPR:
 	return true;
@@ -5931,6 +5935,7 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 		{
 		case MULT_EXPR:
 		case TRUNC_DIV_EXPR:
+		case EXACT_DIV_EXPR:
 		case TRUNC_MOD_EXPR:
 		  muldiv_p = true;
 		default:
@@ -6174,6 +6179,7 @@ gimple_lower_bitint (void)
 		break;
 	      case MULT_EXPR:
 	      case TRUNC_DIV_EXPR:
+	      case EXACT_DIV_EXPR:
 	      case TRUNC_MOD_EXPR:
 		if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (s))
 		  {
@@ -6455,6 +6461,7 @@ gimple_lower_bitint (void)
 			switch (gimple_assign_rhs_code (use_stmt))
 			  {
 			  case TRUNC_DIV_EXPR:
+			  case EXACT_DIV_EXPR:
 			  case TRUNC_MOD_EXPR:
 			  case FLOAT_EXPR:
 			    /* For division, modulo and casts to floating
@@ -6568,6 +6575,7 @@ gimple_lower_bitint (void)
 		  case RSHIFT_EXPR:
 		  case MULT_EXPR:
 		  case TRUNC_DIV_EXPR:
+		  case EXACT_DIV_EXPR:
 		  case TRUNC_MOD_EXPR:
 		  case FIX_TRUNC_EXPR:
 		  case REALPART_EXPR:
