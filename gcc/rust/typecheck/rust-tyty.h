@@ -792,6 +792,11 @@ public:
 
   FnParam clone () const
   {
+    return FnParam (pattern->clone_pattern (), type->clone ());
+  }
+
+  FnParam monomorphized_clone () const
+  {
     return FnParam (pattern->clone_pattern (), type->monomorphized_clone ());
   }
 

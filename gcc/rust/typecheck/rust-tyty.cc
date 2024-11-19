@@ -597,7 +597,7 @@ BaseType::monomorphized_clone () const
     {
       std::vector<TyTy::FnParam> cloned_params;
       for (auto &p : fn->get_params ())
-	cloned_params.push_back (p.clone ());
+	cloned_params.push_back (p.monomorphized_clone ());
 
       BaseType *retty = fn->get_return_type ()->monomorphized_clone ();
       return new FnType (fn->get_ref (), fn->get_ty_ref (), fn->get_id (),
