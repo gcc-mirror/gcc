@@ -12505,7 +12505,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	op0 = convert_modes (mode, GET_MODE (op0), op0,
 			     TYPE_UNSIGNED (TREE_TYPE (treeop0)));
       /* If the output type is a bit-field type, do an extraction.  */
-      else if (reduce_bit_field && mode != BLKmode)
+      else if (reduce_bit_field
+	       && mode != BLKmode
+	       && (MEM_P (op0) || !COMPLEX_MODE_P (GET_MODE (op0))))
 	return extract_bit_field (op0, TYPE_PRECISION (type), 0,
 				  TYPE_UNSIGNED (type), NULL_RTX,
 				  mode, mode, false, NULL);
@@ -12529,6 +12531,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
 	  emit_move_insn (target, op0);
 	  op0 = target;
+
+	  if (reduce_bit_field && mode != BLKmode)
+	    return extract_bit_field (op0, TYPE_PRECISION (type), 0,
+				      TYPE_UNSIGNED (type), NULL_RTX,
+				      mode, mode, false, NULL);
 	}
 
       /* If OP0 is (now) a MEM, we need to deal with alignment issues.  If the
