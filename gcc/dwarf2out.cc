@@ -23408,6 +23408,11 @@ dwarf2out_abstract_function (tree decl)
   if (DECL_IGNORED_P (decl))
     return;
 
+#ifdef CODEVIEW_DEBUGGING_INFO
+  if (codeview_debuginfo_p ())
+    codeview_abstract_function (decl);
+#endif
+
   /* In LTO we're all set.  We already created abstract instances
      early and we want to avoid creating a concrete instance of that
      if we don't output it.  */

@@ -97,5 +97,6 @@ extern void codeview_end_epilogue (void);
 extern void codeview_debug_early_finish (dw_die_ref die);
 extern void codeview_begin_block (unsigned int, unsigned int, tree);
 extern void codeview_end_block (unsigned int, unsigned int);
+extern void codeview_abstract_function (tree);
 
 #endif /* GCC_DWARF2CODEVIEW_H */

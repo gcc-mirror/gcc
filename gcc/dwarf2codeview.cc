@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #define DEBUG_S_LINES		0xf2
 #define DEBUG_S_STRINGTABLE     0xf3
 #define DEBUG_S_FILECHKSMS      0xf4
+#define DEBUG_S_INLINEELINES	0xf6
 
 #define CHKSUM_TYPE_MD5		1
 
@@ -52,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CV_CFL_C		0x00
 #define CV_CFL_CXX		0x01
+
+#define CV_INLINEE_SOURCE_LINE_SIGNATURE	0x0
 
 #define FIRST_TYPE		0x1000
 
@@ -1141,6 +1144,14 @@ struct codeview_line_block
   codeview_line *lines, *last_line;
 };
 
+struct codeview_inlinee_lines
+{
+  codeview_inlinee_lines *next;
+  uint32_t func_id;
+  uint32_t file_id;
+  uint32_t starting_line;
+};
+
 struct codeview_function
 {
   codeview_function *next;
@@ -1417,6 +1428,21 @@ struct method_hasher : nofree_ptr_hash <struct codeview_method>
   }
 };
 
+struct inlinee_lines_hasher : free_ptr_hash <struct codeview_inlinee_lines>
+{
+  typedef uint32_t compare_type;
+
+  static hashval_t hash (const codeview_inlinee_lines *il)
+  {
+    return il->func_id;
+  }
+
+  static bool equal (const codeview_inlinee_lines *il, uint32_t func_id)
+  {
+    return il->func_id == func_id;
+  }
+};
+
 static unsigned int line_label_num;
 static unsigned int func_label_num;
 static unsigned int sym_label_num;
@@ -1429,10 +1455,11 @@ static codeview_function *funcs, *last_func, *cur_func;
 static const char* last_filename;
 static uint32_t last_file_id;
 static codeview_symbol *sym, *last_sym;
-static hash_table<die_hasher> *types_htab;
+static hash_table<die_hasher> *types_htab, *func_htab;
 static codeview_custom_type *custom_types, *last_custom_type;
 static codeview_deferred_type *deferred_types, *last_deferred_type;
 static hash_table<string_id_hasher> *string_id_htab;
+static hash_table<inlinee_lines_hasher> *inlinee_lines_htab;
 
 static uint32_t get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref);
 static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
@@ -1441,6 +1468,39 @@ static uint32_t get_type_num_subroutine_type (dw_die_ref type, bool in_struct,
 					      int32_t this_adjustment);
 static void write_cv_padding (size_t padding);
 static void flush_deferred_types (void);
+
+/* Return the file ID corresponding to a given source filename.  */
+
+static uint32_t
+get_file_id (const char *filename)
+{
+  codeview_source_file *sf = files;
+
+  if (filename == last_filename)
+    return last_file_id;
+
+  while (sf)
+    {
+      if (!strcmp (sf->filename, filename))
+	{
+	  uint32_t file_id;
+
+	  /* 0x18 is the size of the checksum entry for each file.
+	     0x6 bytes for the header, plus 0x10 bytes for the hash,
+	     then padded to a multiple of 4.  */
+
+	  file_id = sf->file_num * 0x18;
+	  last_filename = filename;
+	  last_file_id = file_id;
+
+	  return file_id;
+	}
+
+      sf = sf->next;
+    }
+
+  return 0;
+}
 
 /* Allocate and initialize a codeview_function struct.  */
 
@@ -1472,7 +1532,7 @@ void
 codeview_source_line (unsigned int line_no, const char *filename)
 {
   codeview_line *l;
-  uint32_t file_id = last_file_id;
+  uint32_t file_id = get_file_id (filename);
   unsigned int label_num = ++line_label_num;
 
   targetm.asm_out.internal_label (asm_out_file, LINE_LABEL, label_num);
@@ -1484,28 +1544,6 @@ codeview_source_line (unsigned int line_no, const char *filename)
       f->parent = NULL;
 
       cur_func = f;
-    }
-
-  if (filename != last_filename)
-    {
-      codeview_source_file *sf = files;
-
-      while (sf)
-	{
-	  if (!strcmp (sf->filename, filename))
-	    {
-	      /* 0x18 is the size of the checksum entry for each file.
-		 0x6 bytes for the header, plus 0x10 bytes for the hash,
-		 then padded to a multiple of 4.  */
-
-	      file_id = sf->file_num * 0x18;
-	      last_filename = filename;
-	      last_file_id = file_id;
-	      break;
-	    }
-
-	  sf = sf->next;
-	}
     }
 
   if (!cur_func->last_block || cur_func->last_block->file_id != file_id)
@@ -1904,6 +1942,66 @@ write_line_numbers (void)
 
       f = next_func;
     }
+}
+
+/* Write an entry in the S_INLINEELINES subsection of .debug$S.  */
+
+static int
+write_inlinee_lines_entry (codeview_inlinee_lines **slot,
+			   void *ctx ATTRIBUTE_UNUSED)
+{
+  codeview_inlinee_lines *il = *slot;
+
+  /* The inlinee lines data consists of a version uint32_t (0), followed by
+     an array of struct inlinee_source_line:
+
+      struct inlinee_source_line
+      {
+	  uint32_t function_id;
+	  uint32_t file_id;
+	  uint32_t line_no;
+      };
+
+    (see InlineeSourceLine in cvinfo.h)
+  */
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, il->func_id);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, il->file_id);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, il->starting_line);
+  putc ('\n', asm_out_file);
+
+  return 1;
+}
+
+/* Write the S_INLINEELINES subsection of .debug$S, which lists the filename
+   and line number for the start of each inlined function.  */
+
+static void
+write_inlinee_lines (void)
+{
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, DEBUG_S_INLINEELINES);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%LLcv_inlineelines_end - %LLcv_inlineelines_start\n");
+  asm_fprintf (asm_out_file, "%LLcv_inlineelines_start:\n");
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, CV_INLINEE_SOURCE_LINE_SIGNATURE);
+  putc ('\n', asm_out_file);
+
+  inlinee_lines_htab->traverse <void*, write_inlinee_lines_entry> (NULL);
+
+  asm_fprintf (asm_out_file, "%LLcv_inlineelines_end:\n");
 }
 
 /* Treat cold sections as separate functions, for the purposes of line
@@ -4755,6 +4853,10 @@ codeview_debug_finish (void)
   write_strings_table ();
   write_source_files ();
   write_line_numbers ();
+
+  if (inlinee_lines_htab)
+    write_inlinee_lines ();
+
   write_codeview_symbols ();
 
   /* If we reference a nested struct but not its parent, add_deferred_type
@@ -4793,8 +4895,14 @@ codeview_debug_finish (void)
   if (types_htab)
     delete types_htab;
 
+  if (func_htab)
+    delete func_htab;
+
   if (string_id_htab)
     delete string_id_htab;
+
+  if (inlinee_lines_htab)
+    delete inlinee_lines_htab;
 }
 
 /* Translate a DWARF base type (DW_TAG_base_type) into its CodeView
@@ -6714,20 +6822,29 @@ add_lf_mfunc_id (dw_die_ref die, const char *name)
   return ct->num;
 }
 
-/* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
-   symbol for this.  */
+/* Generate a new LF_FUNC_ID or LF_MFUNC_ID type for a DW_TAG_subprogram DIE
+   and return its number, or return the existing type number if already
+   present.  */
 
-static void
-add_function (dw_die_ref die)
+static uint32_t
+get_func_id (dw_die_ref die)
 {
   const char *name = get_AT_string (die, DW_AT_name);
-  uint32_t func_id_type;
-  codeview_symbol *s;
   dw_die_ref spec = get_AT_ref (die, DW_AT_specification);
   bool do_mfunc_id = false;
+  codeview_type **slot, *t;
+  uint32_t num;
 
   if (!name)
-    return;
+    return 0;
+
+  if (!func_htab)
+    func_htab = new hash_table<die_hasher> (10);
+
+  slot = func_htab->find_slot_with_hash (die, htab_hash_pointer (die), INSERT);
+
+  if (slot && *slot)
+    return (*slot)->num;
 
   if (spec && dw_get_die_parent (spec))
     {
@@ -6745,9 +6862,33 @@ add_function (dw_die_ref die)
     }
 
   if (do_mfunc_id)
-    func_id_type = add_lf_mfunc_id (die, name);
+    num = add_lf_mfunc_id (die, name);
   else
-    func_id_type = add_lf_func_id (die, name);
+    num = add_lf_func_id (die, name);
+
+  t = (codeview_type *) xmalloc (sizeof (codeview_type));
+
+  t->die = die;
+  t->num = num;
+  t->is_fwd_ref = false;
+
+  *slot = t;
+
+  return num;
+}
+
+/* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
+   symbol for this.  */
+
+static void
+add_function (dw_die_ref die)
+{
+  uint32_t func_id_type;
+  codeview_symbol *s;
+
+  func_id_type = get_func_id (die);
+  if (func_id_type == 0)
+    return;
 
   /* Add an S_GPROC32_ID / S_LPROC32_ID symbol.  */
 
@@ -6769,6 +6910,50 @@ add_function (dw_die_ref die)
     sym = s;
 
   last_sym = s;
+}
+
+/* If we have encountered a new inlined function, add this to
+   inlinee_lines_htab so that it can be output to the S_INLINEELINES subsection
+   of .debug$S.  */
+
+void
+codeview_abstract_function (tree decl)
+{
+  codeview_inlinee_lines *il, **slot;
+  dw_die_ref die;
+  uint32_t func_id;
+  struct dwarf_file_data *file;
+
+  if (!DECL_DECLARED_INLINE_P (decl))
+    return;
+
+  die = lookup_decl_die (decl);
+  if (!die)
+    return;
+
+  func_id = get_func_id (die);
+  if (func_id == 0)
+    return;
+
+  file = get_AT_file (die, DW_AT_decl_file);
+  if (!file)
+    return;
+
+  if (!inlinee_lines_htab)
+    inlinee_lines_htab = new hash_table<inlinee_lines_hasher> (10);
+
+  slot = inlinee_lines_htab->find_slot_with_hash (func_id, func_id, INSERT);
+  if (*slot)
+    return;
+
+  il = (codeview_inlinee_lines *) xmalloc (sizeof (codeview_inlinee_lines));
+
+  il->next = NULL;
+  il->func_id = func_id;
+  il->file_id = get_file_id (file->filename);
+  il->starting_line = get_AT_unsigned (die, DW_AT_decl_line);
+
+  *slot = il;
 }
 
 /* Loop through the DIEs that have been output for our TU, and add CodeView
