@@ -172,6 +172,8 @@ bool supports_vec_gather_load_p (machine_mode = E_VOIDmode,
 				 vec<int> * = nullptr);
 bool supports_vec_scatter_store_p (machine_mode = E_VOIDmode);
 bool can_vec_extract (machine_mode, machine_mode);
+bool can_open_code_p (optab, machine_mode);
+bool can_implement_p (optab, machine_mode);
 
 /* Version of find_widening_optab_handler_and_mode that operates on
    specific mode types.  */

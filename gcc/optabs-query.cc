@@ -781,3 +781,33 @@ can_vec_extract (machine_mode mode, machine_mode extr_mode)
   /* We assume we can pun mode to vmode and imode to extr_mode.  */
   return true;
 }
+
+/* Return true if we can implement OP for mode MODE directly, without resorting
+   to a libfunc.   This usually means that OP will be implemented inline.
+
+   Note that this function cannot tell whether the target pattern chooses to
+   use libfuncs internally.  */
+
+bool
+can_open_code_p (optab op, machine_mode mode)
+{
+  if (optab_handler (op, mode) != CODE_FOR_nothing)
+    return true;
+
+  if (op == umul_highpart_optab)
+    return can_mult_highpart_p (mode, true);
+
+  if (op == smul_highpart_optab)
+    return can_mult_highpart_p (mode, false);
+
+  return false;
+}
+
+/* Return true if we can implement OP for mode MODE in some way, either by
+   open-coding it or by calling a libfunc.  */
+
+bool
+can_implement_p (optab op, machine_mode mode)
+{
+  return can_open_code_p (op, mode) || optab_libfunc (op, mode);
+}

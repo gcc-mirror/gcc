@@ -504,8 +504,7 @@ target_supports_op_p (tree type, enum tree_code code,
 		      enum optab_subtype ot_subtype)
 {
   optab ot = optab_for_tree_code (code, type, ot_subtype);
-  return (ot != unknown_optab
-	  && optab_handler (ot, TYPE_MODE (type)) != CODE_FOR_nothing);
+  return ot != unknown_optab && can_implement_p (ot, TYPE_MODE (type));
 }
 
 /* Return true if the target has support for masked load/store.

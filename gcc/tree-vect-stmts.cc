@@ -6904,21 +6904,15 @@ vectorizable_operation (vec_info *vinfo,
   /* Supportable by target?  */
 
   vec_mode = TYPE_MODE (vectype);
-  if (code == MULT_HIGHPART_EXPR)
-    target_support_p = can_mult_highpart_p (vec_mode, TYPE_UNSIGNED (vectype));
-  else
+  optab = optab_for_tree_code (code, vectype, optab_default);
+  if (!optab)
     {
-      optab = optab_for_tree_code (code, vectype, optab_default);
-      if (!optab)
-	{
-          if (dump_enabled_p ())
-            dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "no optab.\n");
-	  return false;
-	}
-      target_support_p = (optab_handler (optab, vec_mode) != CODE_FOR_nothing
-			  || optab_libfunc (optab, vec_mode));
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "no optab.\n");
+      return false;
     }
+  target_support_p = can_implement_p (optab, vec_mode);
 
   bool using_emulated_vectors_p = vect_emulated_vector_p (vectype);
   if (!target_support_p || using_emulated_vectors_p)
