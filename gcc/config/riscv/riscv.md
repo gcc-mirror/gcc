@@ -3153,7 +3153,7 @@
 					     INTVAL (operands[3]))"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4) (lshiftrt:X (match_dup 1) (match_dup 7)))
+  [(set (match_dup 4) (ashiftrt:X (match_dup 1) (match_dup 7)))
    (set (match_dup 4) (and:X (match_dup 4) (match_dup 8)))
    (set (match_dup 5) (match_dup 9))
    (set (pc) (if_then_else (any_eq (match_dup 4) (match_dup 5))
