@@ -1,7 +1,7 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-mavx512bw -mavx512vl -mavx512dq -mapxf -O2" } */
 /* { dg-final { scan-assembler-times {(?n)kortest[bwqd]} 7 } } */
-/* { dg-final { scan-assembler-times {(?n)cmovn?c} 7 } } */
+/* { dg-final { scan-assembler-times {(?n)cmov([lq]\.)?n?c} 7 } } */
 
 #include <immintrin.h>
 
