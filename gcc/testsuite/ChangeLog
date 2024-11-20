@@ -1,3 +1,22 @@
+2024-11-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-05-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115164
+	* gm2/isolib/run/pass/testlowread.mod: New test.
+	* gm2/isolib/run/pass/testwritereal.mod: New test.
+
+2024-11-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-05-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115057
+	* gm2/isolib/run/pass/testrestline.mod: New test.
+	* gm2/isolib/run/pass/testrestline2.mod: New test.
+	* gm2/isolib/run/pass/testrestline3.mod: New test.
+
 2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
