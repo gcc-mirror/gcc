@@ -406,6 +406,32 @@ test8 (union F *f)
     FAIL ();
 }
 
+// PR117355
+#define STR "bbbbbbbbbbbbbbbbbbbbbbbbbbb"
+
+void
+__attribute__ ((noinline))
+test9 (void)
+{
+  char line[256];
+  const char *p = STR;
+  const char *q = p + sizeof (STR) - 1;
+
+  char *q1 = line;
+  for (const char *p1 = p; p1 < q;)
+    {
+      *q1++ = *p1++;
+
+      if (p1 < q && (*q1++ = *p1++) != '\0')
+	{
+	  if (__builtin_object_size (q1 - 2, 0) == 0)
+	    __builtin_abort ();
+	  if (__builtin_object_size (q1 - 2, 1) == 0)
+	    __builtin_abort ();
+	}
+    }
+}
+
 int
 main (void)
 {
@@ -430,5 +456,6 @@ main (void)
   union F f, *fp = &f;
   __asm ("" : "+r" (fp));
   test8 (fp);
+  test9 ();
   DONE ();
 }

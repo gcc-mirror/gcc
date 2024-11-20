@@ -344,7 +344,8 @@ init_offset_limit (void)
    be positive and hence, be within OFFSET_LIMIT for valid offsets.  */
 
 static tree
-size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE)
+size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE,
+		 bool strict = true)
 {
   gcc_checking_assert (types_compatible_p (TREE_TYPE (sz), sizetype));
 
@@ -377,9 +378,17 @@ size_for_offset (tree sz, tree offset, tree wholesize = NULL_TREE)
 	return sz;
 
       /* Negative or too large offset even after adjustment, cannot be within
-	 bounds of an object.  */
+	 bounds of an object.  The exception here is when the base object size
+	 has been overestimated (e.g. through PHI nodes or a COND_EXPR) and the
+	 adjusted offset remains negative.  If the caller wants to be
+	 permissive, return the base size.  */
       if (compare_tree_int (offset, offset_limit) > 0)
-	return size_zero_node;
+	{
+	  if (strict)
+	    return size_zero_node;
+	  else
+	    return sz;
+	}
     }
 
   return size_binop (MINUS_EXPR, size_binop (MAX_EXPR, sz, offset), offset);
@@ -1521,16 +1530,23 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 	  addr_object_size (osi, op0, object_size_type, &bytes, &wholesize);
 	}
 
+      bool pos_offset = (size_valid_p (op1, 0)
+			 && compare_tree_int (op1, offset_limit) <= 0);
+
       /* size_for_offset doesn't make sense for -1 size, but it does for size 0
 	 since the wholesize could be non-zero and a negative offset could give
 	 a non-zero size.  */
       if (size_unknown_p (bytes, 0))
 	;
+      /* In the static case, We want SIZE_FOR_OFFSET to go a bit easy on us if
+	 it sees a negative offset since BYTES could have been
+	 overestimated.  */
       else if ((object_size_type & OST_DYNAMIC)
 	       || bytes != wholesize
-	       || (size_valid_p (op1, object_size_type)
-		   && compare_tree_int (op1, offset_limit) <= 0))
-	bytes = size_for_offset (bytes, op1, wholesize);
+	       || pos_offset)
+	bytes = size_for_offset (bytes, op1, wholesize,
+				 ((object_size_type & OST_DYNAMIC)
+				  || pos_offset));
       /* In the static case, with a negative offset, the best estimate for
 	 minimum size is size_unknown but for maximum size, the wholesize is a
 	 better estimate than size_unknown.  */
