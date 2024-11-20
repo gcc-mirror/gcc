@@ -848,7 +848,7 @@
 	   (reg:DI SME_STATE_REGNUM)
 	   (match_operand:SI 0 "register_operand" "Uci")
 	   (match_operand:SVE_DIx24 1 "aligned_register_operand" "Uw<vector_count>")]
-	  UNSPEC_SME_READ))]
+	  UNSPEC_SME_WRITE))]
   "TARGET_STREAMING_SME2"
   "mova\tza.d[%w0, 0, vgx<vector_count>], %1"
 )
@@ -861,7 +861,7 @@
 	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
 		    (match_operand:SI 1 "const_0_to_7_operand"))
 	   (match_operand:SVE_DIx24 2 "aligned_register_operand" "Uw<vector_count>")]
-	  UNSPEC_SME_READ))]
+	  UNSPEC_SME_WRITE))]
   "TARGET_STREAMING_SME2"
   "mova\tza.d[%w0, %1, vgx<vector_count>], %2"
 )
