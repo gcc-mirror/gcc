@@ -335,3 +335,30 @@ DEF_SVE_FUNCTION_GS (svzipq, unaryxn, all_data, x24, none)
 DEF_SVE_FUNCTION (svamax, binary_opt_single_n, all_float, mxz)
 DEF_SVE_FUNCTION (svamin, binary_opt_single_n, all_float, mxz)
 #undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  sve_and_sme (AARCH64_FL_SVE2 | AARCH64_FL_SVE_B16B16, \
+	       AARCH64_FL_SME2 | AARCH64_FL_SVE_B16B16)
+DEF_SVE_FUNCTION (svadd, binary_opt_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svclamp, clamp, h_bfloat, none)
+DEF_SVE_FUNCTION (svmax, binary_opt_single_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svmaxnm, binary_opt_single_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svmla, ternary_opt_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svmla_lane, ternary_lane, h_bfloat, none)
+DEF_SVE_FUNCTION (svmls, ternary_opt_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svmls_lane, ternary_lane, h_bfloat, none)
+DEF_SVE_FUNCTION (svmin, binary_opt_single_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svminnm, binary_opt_single_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svmul, binary_opt_n, h_bfloat, mxz)
+DEF_SVE_FUNCTION (svmul_lane, binary_lane, h_bfloat, none)
+DEF_SVE_FUNCTION (svsub, binary_opt_n, h_bfloat, mxz)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  streaming_only (AARCH64_FL_SME2 | AARCH64_FL_SVE_B16B16)
+DEF_SVE_FUNCTION_GS (svclamp, clamp, h_bfloat, x24, none)
+DEF_SVE_FUNCTION_GS (svmax, binary_opt_single_n, h_bfloat, x24, none)
+DEF_SVE_FUNCTION_GS (svmaxnm, binary_opt_single_n, h_bfloat, x24, none)
+DEF_SVE_FUNCTION_GS (svmin, binary_opt_single_n, h_bfloat, x24, none)
+DEF_SVE_FUNCTION_GS (svminnm, binary_opt_single_n, h_bfloat, x24, none)
+#undef REQUIRED_EXTENSIONS

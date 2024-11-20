@@ -208,6 +208,9 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_SVE_MATMUL_FP32", pfile);
   aarch64_def_or_undef (TARGET_SVE_F64MM,
 			"__ARM_FEATURE_SVE_MATMUL_FP64", pfile);
+  aarch64_def_or_undef (AARCH64_HAVE_ISA (SVE_B16B16)
+			&& (TARGET_SVE2 || TARGET_SME2),
+			"__ARM_FEATURE_SVE_B16B16", pfile);
   aarch64_def_or_undef (TARGET_SVE2, "__ARM_FEATURE_SVE2", pfile);
   aarch64_def_or_undef (TARGET_SVE2_AES, "__ARM_FEATURE_SVE2_AES", pfile);
   aarch64_def_or_undef (TARGET_SVE2_BITPERM,

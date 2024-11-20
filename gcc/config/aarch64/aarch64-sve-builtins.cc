@@ -139,7 +139,7 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
     BITS / BITS_PER_UNIT, \
     TYPE_##CLASS == TYPE_signed || TYPE_##CLASS == TYPE_unsigned, \
     TYPE_##CLASS == TYPE_unsigned, \
-    TYPE_##CLASS == TYPE_float, \
+    TYPE_##CLASS == TYPE_float || TYPE_##CLASS == TYPE_bfloat, \
     TYPE_##CLASS != TYPE_bool, \
     TYPE_##CLASS == TYPE_bool, \
     false, \
@@ -291,6 +291,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_bhs_widen(S, D) \
   D (s16, s8), D (s32, s16), D (s64, s32), \
   D (u16, u8), D (u32, u16), D (u64, u32)
+
+/* _bf16.  */
+#define TYPES_h_bfloat(S, D) \
+  S (bf16)
 
 /* _s16
    _u16.  */
@@ -739,6 +743,7 @@ DEF_SVE_TYPES_ARRAY (bhs_integer);
 DEF_SVE_TYPES_ARRAY (bhs_data);
 DEF_SVE_TYPES_ARRAY (bhs_widen);
 DEF_SVE_TYPES_ARRAY (c);
+DEF_SVE_TYPES_ARRAY (h_bfloat);
 DEF_SVE_TYPES_ARRAY (h_integer);
 DEF_SVE_TYPES_ARRAY (hs_signed);
 DEF_SVE_TYPES_ARRAY (hs_integer);

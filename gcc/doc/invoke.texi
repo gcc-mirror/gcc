@@ -21868,6 +21868,9 @@ Enable the RCpc3 (Release Consistency) extension.
 Enable the fp8 (8-bit floating point) extension.
 @item faminmax
 Enable the Floating Point Absolute Maximum/Minimum extension.
+@item sve-b16b16
+Enable the SVE non-widening brain floating-point (@code{bf16}) extension.
+This only has an effect when @code{sve2} or @code{sme2} are also enabled.
 
 @end table
 

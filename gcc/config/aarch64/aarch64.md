@@ -514,11 +514,32 @@
     (const_string "yes")
     (const_string "no")))
 
+;; True if this a bfloat16 operation.  Only used for certain instructions.
+(define_attr "is_bf16" "false,true" (const_string "false"))
+
+;; True if this alternative uses an SVE instruction in which the operands
+;; are reversed.  This can happen for naturally commutative operations
+;; such as FADD, or when using things like FSUBR in preference to FSUB,
+;; or similarly when using things like FMAD in preference to FMLA.
+(define_attr "is_rev" "false,true" (const_string "false"))
+
+;; True if this operation supports is_rev-style instructions for bfloat16.
+(define_attr "supports_bf16_rev" "false,true" (const_string "false"))
+
+;; Selectively enable alternatives based on the mode of the operation.
+(define_attr "mode_enabled" "false,true"
+  (cond [(and (eq_attr "is_bf16" "true")
+	      (eq_attr "is_rev" "true")
+	      (eq_attr "supports_bf16_rev" "false"))
+	 (const_string "false")]
+	(const_string "true")))
+
 ;; Attribute that controls whether an alternative is enabled or not.
-;; Currently it is only used to disable alternatives which touch fp or simd
-;; registers when -mgeneral-regs-only is specified or to require a special
-;; architecture support.
-(define_attr "enabled" "no,yes" (attr "arch_enabled"))
+(define_attr "enabled" "no,yes"
+  (if_then_else (and (eq_attr "arch_enabled" "yes")
+		     (eq_attr "mode_enabled" "true"))
+		(const_string "yes")
+		(const_string "no")))
 
 ;; Attribute that specifies whether we are dealing with a branch to a
 ;; label that is far away, i.e. further away than the maximum/minimum

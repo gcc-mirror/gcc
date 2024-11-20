@@ -23007,7 +23007,8 @@ aarch64_sve_float_arith_immediate_p (rtx x, bool negate_p)
   rtx elt;
   REAL_VALUE_TYPE r;
 
-  if (!const_vec_duplicate_p (x, &elt)
+  if (GET_MODE_INNER (GET_MODE (x)) == BFmode
+      || !const_vec_duplicate_p (x, &elt)
       || !CONST_DOUBLE_P (elt))
     return false;
 
@@ -23031,7 +23032,8 @@ aarch64_sve_float_mul_immediate_p (rtx x)
 {
   rtx elt;
 
-  return (const_vec_duplicate_p (x, &elt)
+  return (GET_MODE_INNER (GET_MODE (x)) != BFmode
+	  && const_vec_duplicate_p (x, &elt)
 	  && CONST_DOUBLE_P (elt)
 	  && (real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconsthalf)
 	      || real_equal (CONST_DOUBLE_REAL_VALUE (elt), &dconst2)));

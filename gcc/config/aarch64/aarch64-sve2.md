@@ -56,6 +56,7 @@
 ;; ---- [INT] General binary arithmetic that maps to unspecs
 ;; ---- [INT] Saturating binary arithmetic
 ;; ---- [INT] Saturating left shifts
+;; ---- [FP] Non-widening bfloat16 arithmetic
 ;; ---- [FP] Clamp to minimum/maximum
 ;;
 ;; == Uniform ternary arithmnetic
@@ -1319,51 +1320,83 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- [FP] Non-widening bfloat16 arithmetic
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - BFADD
+;; - BFMAX
+;; - BFMAXNM
+;; - BFMIN
+;; - BFMINNM
+;; - BFMUL
+;; -------------------------------------------------------------------------
+
+;; Predicated B16B16 binary operations.
+(define_insn "@aarch64_pred_<optab><mode>"
+  [(set (match_operand:VNx8BF_ONLY 0 "register_operand")
+	(unspec:VNx8BF_ONLY
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (match_operand:SI 4 "aarch64_sve_gp_strictness")
+	   (match_operand:VNx8BF_ONLY 2 "register_operand")
+	   (match_operand:VNx8BF_ONLY 3 "register_operand")]
+	  SVE_COND_FP_BINARY_OPTAB))]
+  "TARGET_SSVE_B16B16 && <supports_bf16>"
+  {@ [ cons: =0 , 1   , 2 , 3 ; attrs: movprfx , is_rev ]
+     [ w        , Upl , 0 , w ; *    , *   ] <b><sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+     [ w        , Upl , w , 0 ; *   , true ] <b><sve_fp_op_rev>\t%0.<Vetype>, %1/m, %0.<Vetype>, %2.<Vetype>
+     [ ?&w      , Upl , w , w ; yes , *    ] movprfx\t%0, %2\;<b><sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  }
+  [(set_attr "is_bf16" "<is_bf16>")
+   (set_attr "supports_bf16_rev" "<supports_bf16_rev>")]
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [FP] Clamp to minimum/maximum
 ;; -------------------------------------------------------------------------
+;; - BFCLAMP (SVE_B16B16)
 ;; - FCLAMP
 ;; -------------------------------------------------------------------------
 
 ;; The minimum is applied after the maximum, which matters if the maximum
 ;; bound is (unexpectedly) less than the minimum bound.
 (define_insn "@aarch64_sve_fclamp<mode>"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
-	  [(unspec:SVE_FULL_F
-	     [(match_operand:SVE_FULL_F 1 "register_operand")
-	      (match_operand:SVE_FULL_F 2 "register_operand")]
+  [(set (match_operand:SVE_CLAMP_F 0 "register_operand")
+	(unspec:SVE_CLAMP_F
+	  [(unspec:SVE_CLAMP_F
+	     [(match_operand:SVE_CLAMP_F 1 "register_operand")
+	      (match_operand:SVE_CLAMP_F 2 "register_operand")]
 	     UNSPEC_FMAXNM)
-	   (match_operand:SVE_FULL_F 3 "register_operand")]
+	   (match_operand:SVE_CLAMP_F 3 "register_operand")]
 	  UNSPEC_FMINNM))]
-  "TARGET_SVE2p1_OR_SME2"
+  ""
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
-     [       w, %0, w, w; *             ] fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
-     [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+     [       w, %0, w, w; *             ] <b>fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+     [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;<b>fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
   }
 )
 
 (define_insn_and_split "*aarch64_sve_fclamp<mode>_x"
-  [(set (match_operand:SVE_FULL_F 0 "register_operand")
-	(unspec:SVE_FULL_F
+  [(set (match_operand:SVE_CLAMP_F 0 "register_operand")
+	(unspec:SVE_CLAMP_F
 	  [(match_operand 4)
 	   (const_int SVE_RELAXED_GP)
-	   (unspec:SVE_FULL_F
+	   (unspec:SVE_CLAMP_F
 	     [(match_operand 5)
 	      (const_int SVE_RELAXED_GP)
-	      (match_operand:SVE_FULL_F 1 "register_operand")
-	      (match_operand:SVE_FULL_F 2 "register_operand")]
+	      (match_operand:SVE_CLAMP_F 1 "register_operand")
+	      (match_operand:SVE_CLAMP_F 2 "register_operand")]
 	     UNSPEC_COND_FMAXNM)
-	   (match_operand:SVE_FULL_F 3 "register_operand")]
+	   (match_operand:SVE_CLAMP_F 3 "register_operand")]
 	  UNSPEC_COND_FMINNM))]
-  "TARGET_SVE2p1_OR_SME2"
+  ""
   {@ [cons: =0,  1, 2, 3; attrs: movprfx]
      [       w, %0, w, w; *             ] #
      [     ?&w,  w, w, w; yes           ] #
   }
   "&& true"
   [(set (match_dup 0)
-	(unspec:SVE_FULL_F
-	  [(unspec:SVE_FULL_F
+	(unspec:SVE_CLAMP_F
+	  [(unspec:SVE_CLAMP_F
 	     [(match_dup 1)
 	      (match_dup 2)]
 	     UNSPEC_FMAXNM)
@@ -1383,7 +1416,7 @@
 	     (match_operand:<VSINGLE> 3 "register_operand" "w"))]
 	  UNSPEC_FMINNM))]
   "TARGET_STREAMING_SME2"
-  "fclamp\t%0, %2.<Vetype>, %3.<Vetype>"
+  "<b>fclamp\t%0, %2.<Vetype>, %3.<Vetype>"
 )
 
 ;; =========================================================================
@@ -2290,7 +2323,7 @@
 	   (match_operand:SVE_Fx24 2 "aligned_register_operand" "Uw<vector_count>")]
 	  SVE_FP_BINARY_MULTI))]
   "TARGET_STREAMING_SME2"
-  "<maxmin_uns_op>\t%0, %0, %2"
+  "<b><maxmin_uns_op>\t%0, %0, %2"
 )
 
 (define_insn "@aarch64_sve_single_<maxmin_uns_op><mode>"
@@ -2301,7 +2334,7 @@
 	     (match_operand:<VSINGLE> 2 "register_operand" "x"))]
 	  SVE_FP_BINARY_MULTI))]
   "TARGET_STREAMING_SME2"
-  "<maxmin_uns_op>\t%0, %0, %2.<Vetype>"
+  "<b><maxmin_uns_op>\t%0, %0, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------

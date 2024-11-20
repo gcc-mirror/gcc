@@ -165,6 +165,9 @@ AARCH64_FMV_FEATURE("rpres", RPRES, ())
 
 AARCH64_OPT_FMV_EXTENSION("sve", SVE, (SIMD, F16), (), (), "sve")
 
+/* This specifically does not imply +sve.  */
+AARCH64_OPT_EXTENSION("sve-b16b16", SVE_B16B16, (), (), (), "")
+
 AARCH64_OPT_EXTENSION("f32mm", F32MM, (SVE), (), (), "f32mm")
 
 AARCH64_FMV_FEATURE("f32mm", SVE_F32MM, (F32MM))

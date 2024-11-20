@@ -84,6 +84,47 @@
 #error Foo
 #endif
 
+#pragma GCC target "+nothing+sve-b16b16"
+#ifdef __ARM_FEATURE_SVE_B16B16
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_SVE
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_SME
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+sve-b16b16+sve"
+#ifdef __ARM_FEATURE_SVE_B16B16
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SVE
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_SME
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+sve-b16b16+sve2"
+#ifndef __ARM_FEATURE_SVE_B16B16
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SVE
+#error Foo
+#endif
+#ifdef __ARM_FEATURE_SME
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+sve-b16b16+sme2"
+#ifndef __ARM_FEATURE_SVE_B16B16
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SME
+#error Foo
+#endif
+
 #pragma GCC target "branch-protection=standard"
 #ifndef __ARM_FEATURE_BTI_DEFAULT
 #error Foo

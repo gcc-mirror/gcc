@@ -455,6 +455,14 @@
 ;; Fully-packed SVE floating-point vector modes and their scalar equivalents.
 (define_mode_iterator SVE_FULL_F_SCALAR [SVE_FULL_F GPF_HF])
 
+(define_mode_iterator SVE_FULL_F_BF [(VNx8BF "TARGET_SSVE_B16B16") SVE_FULL_F])
+
+;; Modes for which (B)FCLAMP is supported.
+(define_mode_iterator SVE_CLAMP_F [(VNx8BF "TARGET_SSVE_B16B16")
+				   (VNx8HF "TARGET_SVE2p1_OR_SME2")
+				   (VNx4SF "TARGET_SVE2p1_OR_SME2")
+				   (VNx2DF "TARGET_SVE2p1_OR_SME2")])
+
 ;; Fully-packed SVE integer vector modes that have 8-bit or 16-bit elements.
 (define_mode_iterator SVE_FULL_BHI [VNx16QI VNx8HI])
 
@@ -643,7 +651,9 @@
 (define_mode_iterator SVE_Ix24 [VNx32QI VNx16HI VNx8SI VNx4DI
 				VNx64QI VNx32HI VNx16SI VNx8DI])
 
-(define_mode_iterator SVE_Fx24 [VNx16HF VNx8SF VNx4DF
+(define_mode_iterator SVE_Fx24 [(VNx16BF "TARGET_SSVE_B16B16")
+				(VNx32BF "TARGET_SSVE_B16B16")
+				VNx16HF VNx8SF VNx4DF
 				VNx32HF VNx16SF VNx8DF])
 
 (define_mode_iterator SVE_SFx24 [VNx8SF VNx16SF])
@@ -2481,7 +2491,8 @@
 ;; The constraint to use for an SVE [SU]DOT, FMUL, FMLA or FMLS lane index.
 (define_mode_attr sve_lane_con [(VNx8HI "y") (VNx4SI "y") (VNx2DI "x")
 							  (V2DI "x")
-				(VNx8HF "y") (VNx4SF "y") (VNx2DF "x")])
+				(VNx8BF "y") (VNx8HF "y")
+				(VNx4SF "y") (VNx2DF "x")])
 
 ;; The constraint to use for an SVE FCMLA lane index.
 (define_mode_attr sve_lane_pair_con [(VNx8HF "y") (VNx4SF "x")])
@@ -2491,8 +2502,13 @@
 				 (V2DI "vec") (DI "offset")])
 
 (define_mode_attr b [(VNx8BF "b") (VNx8HF "") (VNx4SF "") (VNx2DF "")
-		     (VNx16BF "b") (VNx16HF "")
-		     (VNx32BF "b") (VNx32HF "")])
+		     (VNx16BF "b") (VNx16HF "") (VNx8SF "") (VNx4DF "")
+		     (VNx32BF "b") (VNx32HF "") (VNx16SF "") (VNx8DF "")])
+
+(define_mode_attr is_bf16 [(VNx8BF "true")
+			   (VNx8HF "false")
+			   (VNx4SF "false")
+			   (VNx2DF "false")])
 
 (define_mode_attr aligned_operand [(VNx16QI "register_operand")
 				   (VNx8HI "register_operand")
@@ -4547,6 +4563,45 @@
 			      (UNSPEC_COND_FMLS "fmsb")
 			      (UNSPEC_COND_FNMLA "fnmad")
 			      (UNSPEC_COND_FNMLS "fnmsb")])
+
+(define_int_attr supports_bf16 [(UNSPEC_COND_FADD "true")
+				(UNSPEC_COND_FAMAX "false")
+				(UNSPEC_COND_FAMIN "false")
+				(UNSPEC_COND_FDIV "false")
+				(UNSPEC_COND_FMAX "true")
+				(UNSPEC_COND_FMAXNM "true")
+				(UNSPEC_COND_FMIN "true")
+				(UNSPEC_COND_FMINNM "true")
+				(UNSPEC_COND_FMLA "true")
+				(UNSPEC_COND_FMLS "true")
+				(UNSPEC_COND_FMUL "true")
+				(UNSPEC_COND_FMULX "false")
+				(UNSPEC_COND_FMULX "false")
+				(UNSPEC_COND_FNMLA "false")
+				(UNSPEC_COND_FNMLS "false")
+				(UNSPEC_COND_FSUB "true")
+				(UNSPEC_COND_SMAX "true")
+				(UNSPEC_COND_SMIN "true")])
+
+;; Differs from supports_bf16 only in UNSPEC_COND_FSUB.
+(define_int_attr supports_bf16_rev [(UNSPEC_COND_FADD "true")
+				    (UNSPEC_COND_FAMAX "false")
+				    (UNSPEC_COND_FAMIN "false")
+				    (UNSPEC_COND_FDIV "false")
+				    (UNSPEC_COND_FMAX "true")
+				    (UNSPEC_COND_FMAXNM "true")
+				    (UNSPEC_COND_FMIN "true")
+				    (UNSPEC_COND_FMINNM "true")
+				    (UNSPEC_COND_FMLA "true")
+				    (UNSPEC_COND_FMLS "true")
+				    (UNSPEC_COND_FMUL "true")
+				    (UNSPEC_COND_FMULX "false")
+				    (UNSPEC_COND_FMULX "false")
+				    (UNSPEC_COND_FNMLA "false")
+				    (UNSPEC_COND_FNMLS "false")
+				    (UNSPEC_COND_FSUB "false")
+				    (UNSPEC_COND_SMAX "true")
+				    (UNSPEC_COND_SMIN "true")])
 
 ;; The register constraint to use for the final operand in a binary BRK.
 (define_int_attr brk_reg_con [(UNSPEC_BRKN "0")
