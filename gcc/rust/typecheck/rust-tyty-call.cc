@@ -152,12 +152,11 @@ TypeCheckCallExpr::visit (FnType &type)
       if (i < type.num_params ())
 	{
 	  auto &fnparam = type.param_at (i);
-	  auto &fn_param_pattern = fnparam.get_pattern ();
 	  BaseType *param_ty = fnparam.get_type ();
 	  location_t param_locus
 	    = fnparam.has_pattern ()
-		? mappings.lookup_location (param_ty->get_ref ())
-		: fn_param_pattern.get_locus ();
+		? fnparam.get_pattern ().get_locus ()
+		: mappings.lookup_location (param_ty->get_ref ());
 
 	  HirId coercion_side_id = argument->get_mappings ().get_hirid ();
 	  auto resolved_argument_type
@@ -375,12 +374,11 @@ TypeCheckMethodCallExpr::check (FnType &type)
       location_t arg_locus = argument.get_locus ();
 
       auto &fnparam = type.param_at (i);
-      HIR::Pattern &fn_param_pattern = fnparam.get_pattern ();
       BaseType *param_ty = fnparam.get_type ();
       location_t param_locus
 	= fnparam.has_pattern ()
-	    ? mappings.lookup_location (param_ty->get_ref ())
-	    : fn_param_pattern.get_locus ();
+	    ? fnparam.get_pattern ().get_locus ()
+	    : mappings.lookup_location (param_ty->get_ref ());
 
       auto argument_expr_tyty = argument.get_argument_type ();
       HirId coercion_side_id = argument.get_mappings ().get_hirid ();
