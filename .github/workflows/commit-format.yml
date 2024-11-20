@@ -108,3 +108,33 @@ jobs:
           done < <(git rev-list --reverse "$rev_list" )
 
           exit $retval;
+
+  check-issue-reference:
+    runs-on: ubuntu-latest
+    continue-on-error: true # We do not want to block merge if it is a legitimate GCC bugzilla reference.
+    name: check-issue-reference
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check for issue number reference in commit messages
+        run: |
+          retval=0;
+          rev_list="origin/${{ github.event.pull_request.base.ref }}..${{ github.event.pull_request.head.sha }}"
+          for commit in $(git rev-list --reverse "$rev_list"); do
+            if [ "$(git log --format=%B -n 1 \"$commit\" | grep '#[0-9]*' | grep -v -i 'Rust-GCC/gccrs#[0-9]*' | wc -l)" -ne 0 ]; then
+              echo "$commit: KO"
+              retval=1
+            else
+              echo "$commit: OK"
+            fi
+          done;
+          if [ "$retval" -ne 0 ]; then
+            echo "Some raw issue references were found (eg. #4242)."
+            echo "You shall rewrite the faulty commit message with this format: Rust-GCC/gccrs#4242"
+            echo "You may ignore this CI step if it represents a valid GCC bugzilla or external repository reference instead."
+          fi
+          exit $retval;
