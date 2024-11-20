@@ -25,3 +25,15 @@ void n() {
   }
 }
 
+int a;
+void g2() {
+  long b;
+  while (a) {
+    char *c;
+    for (long d = b; d > 0; d -= 4) {
+      mve_pred16_t e = vctp32q(d);
+      int32x4_t f;
+      vstrbq_p_s32(c, f, e);
+    }
+  }
+}

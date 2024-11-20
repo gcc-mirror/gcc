@@ -35379,9 +35379,10 @@ arm_mve_dlstp_check_dec_counter (loop *loop, rtx_insn* vctp_insn,
     return NULL;
   else if (REG_P (condconst))
     {
-      basic_block pre_loop_bb = single_pred (loop_preheader_edge (loop)->src);
-      if (!pre_loop_bb)
+      basic_block preheader_b = loop_preheader_edge (loop)->src;
+      if (!single_pred_p (preheader_b))
 	return NULL;
+      basic_block pre_loop_bb = single_pred (preheader_b);
 
       rtx initial_compare = NULL_RTX;
       if (!(prev_nonnote_nondebug_insn_bb (BB_END (pre_loop_bb))
