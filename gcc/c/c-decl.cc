@@ -6514,9 +6514,14 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
     {
       int failure = complete_array_type (&TREE_TYPE (decl),
 					 DECL_INITIAL (decl), true);
-      /* If complete_array_type returns 3, it means that the
-         initial value of the compound literal is empty.  Allow it.  */
+      /* If complete_array_type returns 3, it means that the initial value of
+         the compound literal is empty.  Allow it with a pedwarn; in pre-C23
+         modes, the empty initializer itself has been diagnosed if pedantic so
+         does not need to be diagnosed again here.  */
       gcc_assert (failure == 0 || failure == 3);
+      if (failure == 3 && flag_isoc23)
+	pedwarn (loc, OPT_Wpedantic,
+		 "array of unknown size with empty initializer");
 
       type = TREE_TYPE (decl);
       TREE_TYPE (DECL_INITIAL (decl)) = type;
