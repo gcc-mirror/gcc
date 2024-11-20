@@ -1,3 +1,11 @@
+2024-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117357
+	* gcc.target/i386/pr117357.c: New test.
+
 2024-11-13  Hu, Lin1  <lin1.hu@intel.com>
 
 	Backported from master:

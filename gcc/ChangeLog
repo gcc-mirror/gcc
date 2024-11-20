@@ -1,3 +1,12 @@
+2024-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/117357
+	* config/i386/i386.md (*rsqrtsf2_sse):
+	Also enable for !TARGET_SSE_MATH.
+
 2024-11-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
