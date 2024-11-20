@@ -8401,6 +8401,13 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  if (!omp_context_selector_matches (ctx))
 	    return true;
 	  TREE_PURPOSE (TREE_VALUE (attr)) = variant;
+
+	  // Prepend adjust_args list to variant attributes
+	  tree adjust_args_list = TREE_CHAIN (TREE_CHAIN (chain));
+	  if (adjust_args_list != NULL_TREE)
+	    DECL_ATTRIBUTES (variant) = tree_cons (
+	      get_identifier ("omp declare variant variant adjust_args"),
+	      TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));
 	}
     }
   else if (!processing_template_decl)

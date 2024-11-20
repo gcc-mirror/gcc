@@ -7753,6 +7753,26 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  OMP_CLAUSE_FINAL_EXPR (c) = t;
 	  break;
 
+	case OMP_CLAUSE_NOCONTEXT:
+	  t = OMP_CLAUSE_NOCONTEXT_EXPR (c);
+	  t = maybe_convert_cond (t);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!processing_template_decl)
+	    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	  OMP_CLAUSE_NOCONTEXT_EXPR (c) = t;
+	  break;
+
+	case OMP_CLAUSE_NOVARIANTS:
+	  t = OMP_CLAUSE_NOVARIANTS_EXPR (c);
+	  t = maybe_convert_cond (t);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!processing_template_decl)
+	    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	  OMP_CLAUSE_NOVARIANTS_EXPR (c) = t;
+	  break;
+
 	case OMP_CLAUSE_GANG:
 	  /* Operand 1 is the gang static: argument.  */
 	  t = OMP_CLAUSE_OPERAND (c, 1);

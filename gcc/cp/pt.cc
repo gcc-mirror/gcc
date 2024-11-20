@@ -17799,6 +17799,16 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	    = tsubst_expr (OMP_CLAUSE_SIZES_LIST (oc), args, complain,
 			   in_decl);
 	  break;
+	case OMP_CLAUSE_NOCONTEXT:
+	  OMP_CLAUSE_NOCONTEXT_EXPR (nc)
+	    = tsubst_expr (OMP_CLAUSE_NOCONTEXT_EXPR (oc), args, complain,
+			   in_decl);
+	  break;
+	case OMP_CLAUSE_NOVARIANTS:
+	  OMP_CLAUSE_NOVARIANTS_EXPR (nc)
+	    = tsubst_expr (OMP_CLAUSE_NOVARIANTS_EXPR (oc), args, complain,
+			   in_decl);
+	  break;
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
@@ -19459,6 +19469,16 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       t = copy_node (t);
       OMP_BODY (t) = stmt;
+      add_stmt (t);
+      break;
+
+    case OMP_DISPATCH:
+      tmp = tsubst_omp_clauses (OMP_DISPATCH_CLAUSES (t), C_ORT_OMP, args,
+				complain, in_decl);
+      stmt = RECUR (OMP_DISPATCH_BODY (t));
+      t = copy_node (t);
+      OMP_DISPATCH_BODY (t) = stmt;
+      OMP_DISPATCH_CLAUSES (t) = tmp;
       add_stmt (t);
       break;
 
@@ -21203,6 +21223,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		  ret = build_assume_call (EXPR_LOCATION (t), arg);
 		  RETURN (ret);
 		}
+	      break;
+
+	    case IFN_GOMP_DISPATCH:
+	      ret = build_call_expr_internal_loc (EXPR_LOCATION (t),
+						  IFN_GOMP_DISPATCH,
+						  TREE_TYPE (call_args[0]), 1,
+						  call_args[0]);
+	      RETURN (ret);
 	      break;
 
 	    default:
