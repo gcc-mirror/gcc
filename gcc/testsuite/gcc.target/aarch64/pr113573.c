@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -std=gnu17" } */
 
 #pragma GCC aarch64 "arm_neon.h"
 typedef __Uint8x8_t uint8x8_t;

@@ -7,7 +7,7 @@ void shared_b ();
 void shared_b () [[arm::inout("za")]]; // { dg-error "conflicting types" }
 
 void shared_c () [[arm::inout("za")]];
-void shared_c () {} // Inherits attribute from declaration (confusingly).
+void shared_c () {} // { dg-error "conflicting types" }
 
 void shared_d ();
 void shared_d () [[arm::inout("za")]] {} // { dg-error "conflicting types" }
@@ -33,7 +33,7 @@ void preserved_b ();
 void preserved_b () [[arm::preserves("za")]]; // { dg-error "conflicting types" }
 
 void preserved_c () [[arm::preserves("za")]];
-void preserved_c () {} // Inherits attribute from declaration (confusingly).
+void preserved_c () {} // { dg-error "conflicting types" }
 
 void preserved_d ();
 void preserved_d () [[arm::preserves("za")]] {} // { dg-error "conflicting types" }
