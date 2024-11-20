@@ -6272,6 +6272,33 @@ gfc_build_intrinsic_call (gfc_namespace *ns, gfc_isym_id id, const char* name,
 }
 
 
+/* Check if a symbol referenced in a submodule is declared in the ancestor
+   module and not accessed by use-association, and that the submodule is a
+   descendant.  */
+
+static bool
+sym_is_from_ancestor (gfc_symbol *sym)
+{
+  const char dot[2] = ".";
+  /* Symbols take the form module.submodule_ or module.name_. */
+  char ancestor_module[2 * GFC_MAX_SYMBOL_LEN + 2];
+  char *ancestor;
+
+  if (sym == NULL
+      || sym->attr.use_assoc
+      || !sym->attr.used_in_submodule
+      || !sym->module
+      || !sym->ns->proc_name
+      || !sym->ns->proc_name->name)
+    return false;
+
+  memset (ancestor_module, '\0', sizeof (ancestor_module));
+  strcpy (ancestor_module, sym->ns->proc_name->name);
+  ancestor = strtok (ancestor_module, dot);
+  return strcmp (ancestor, sym->module) == 0;
+}
+
+
 /* Check if an expression may appear in a variable definition context
    (F2008, 16.6.7) or pointer association context (F2008, 16.6.8).
    This is called from the various places when resolving
@@ -6450,21 +6477,24 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
     }
 
   /* PROTECTED and use-associated.  */
-  if (sym->attr.is_protected && sym->attr.use_assoc && check_intentin)
+  if (sym->attr.is_protected
+      && (sym->attr.use_assoc
+	  || (sym->attr.used_in_submodule && !sym_is_from_ancestor (sym)))
+      && check_intentin)
     {
       if (pointer && is_pointer)
 	{
 	  if (context)
-	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a"
-		       " pointer association context (%s) at %L",
+	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a "
+		       "pointer association context (%s) at %L",
 		       sym->name, context, &e->where);
 	  return false;
 	}
       if (!pointer && !is_pointer)
 	{
 	  if (context)
-	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a"
-		       " variable definition context (%s) at %L",
+	    gfc_error ("Variable %qs is PROTECTED and cannot appear in a "
+		       "variable definition context (%s) at %L",
 		       sym->name, context, &e->where);
 	  return false;
 	}
