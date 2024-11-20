@@ -31,6 +31,7 @@
 #include "convert.h"
 #include "print-tree.h"
 #include "rust-system.h"
+#include <functional>
 
 namespace Rust {
 namespace Compile {
@@ -152,8 +153,9 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
     {
       auto lang_item_type
 	= LangItem::OperatorToLangItem (expr.get_expr_type ());
-      translated = resolve_operator_overload (lang_item_type, expr, lhs, rhs,
-					      expr.get_lhs (), expr.get_rhs ());
+      translated = resolve_operator_overload (
+	lang_item_type, expr, lhs, rhs, expr.get_lhs (),
+	tl::optional<std::reference_wrapper<HIR::Expr>> (expr.get_rhs ()));
       return;
     }
 
@@ -1476,10 +1478,9 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 }
 
 tree
-CompileExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
-					HIR::OperatorExprMeta expr, tree lhs,
-					tree rhs, HIR::Expr &lhs_expr,
-					tl::optional<HIR::Expr &> rhs_expr)
+CompileExpr::resolve_operator_overload (
+  LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr, tree lhs, tree rhs,
+  HIR::Expr &lhs_expr, tl::optional<std::reference_wrapper<HIR::Expr>> rhs_expr)
 {
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
