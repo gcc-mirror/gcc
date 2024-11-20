@@ -8,9 +8,9 @@ void f3 (void);
 void f4 (void);
 #pragma omp declare variant match(user={condition(0)})	/* { dg-error "expected '\\(' before 'match'" } */
 void f5 (void);
-#pragma omp declare variant (f1)	/* { dg-error "expected 'match' before end of line" } */
+#pragma omp declare variant (f1)	/* { dg-error "expected 'match' clause before end of line" } */
 void f6 (void);
-#pragma omp declare variant (f1) simd	/* { dg-error "expected 'match' before 'simd'" } */
+#pragma omp declare variant (f1) simd	/* { dg-error "expected 'match' clause before 'simd'" } */
 void f7 (void);
 #pragma omp declare variant (f1) match	/* { dg-error "expected '\\(' before end of line" } */
 void f8 (void);
