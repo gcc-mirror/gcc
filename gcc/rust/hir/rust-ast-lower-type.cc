@@ -503,9 +503,11 @@ ASTLowerGenericParam::visit (AST::TypeParam &param)
 	}
     }
 
-  auto type = param.has_type () ? tl::optional (std::unique_ptr<HIR::Type> (
-		ASTLoweringType::translate (param.get_type ())))
-				: tl::nullopt;
+  tl::optional<std::unique_ptr<HIR::Type>> type = tl::nullopt;
+  if (param.has_type ())
+    type
+      = tl::optional<std::unique_ptr<HIR::Type>> (std::unique_ptr<HIR::Type> (
+	ASTLoweringType::translate (param.get_type ())));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
