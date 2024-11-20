@@ -1,3 +1,11 @@
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/dispatch-1.c: New test.
+	* testsuite/libgomp.c-c++-common/dispatch-2.c: New test.
+
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

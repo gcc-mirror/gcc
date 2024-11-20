@@ -3,6 +3,26 @@
 	Backported from master:
 	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
+	* c-c++-common/gomp/declare-variant-2.c: Adjust dg-error directives.
+	* c-c++-common/gomp/adjust-args-1.c: New test.
+	* c-c++-common/gomp/adjust-args-2.c: New test.
+	* c-c++-common/gomp/declare-variant-dup-match-clause.c: New test.
+	* c-c++-common/gomp/dispatch-1.c: New test.
+	* c-c++-common/gomp/dispatch-2.c: New test.
+	* c-c++-common/gomp/dispatch-3.c: New test.
+	* c-c++-common/gomp/dispatch-4.c: New test.
+	* c-c++-common/gomp/dispatch-5.c: New test.
+	* c-c++-common/gomp/dispatch-6.c: New test.
+	* c-c++-common/gomp/dispatch-7.c: New test.
+	* c-c++-common/gomp/dispatch-8.c: New test.
+	* c-c++-common/gomp/dispatch-9.c: New test.
+	* c-c++-common/gomp/dispatch-10.c: New test.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
 	* g++.dg/gomp/adjust-args-1.C: New test.
 	* g++.dg/gomp/adjust-args-2.C: New test.
 	* g++.dg/gomp/adjust-args-3.C: New test.
