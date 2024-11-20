@@ -4569,6 +4569,8 @@ lookup_imported_hidden_friend (tree friend_tmpl)
       || !DECL_MODULE_IMPORT_P (inner))
     return NULL_TREE;
 
+  lazy_load_pendings (friend_tmpl);
+
   tree bind = get_mergeable_namespace_binding
     (current_namespace, DECL_NAME (inner), DECL_MODULE_ATTACH_P (inner));
   if (!bind)
