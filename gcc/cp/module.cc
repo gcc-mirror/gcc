@@ -16865,10 +16865,14 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
   bytes_out sec (to);
   sec.begin ();
 
+  hash_map<tree, unsigned> ns_map;
+
   for (unsigned ix = 0; ix != num; ix++)
     {
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
+
+      ns_map.put (ns, ix);
 
       /* This could be an anonymous namespace even for a named module,
 	 since we can still emit no-linkage decls.  */
@@ -16911,6 +16915,31 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	}
     }
 
+  /* Now write exported using-directives, as a sequence of 1-origin indices in
+     the spaces array (not entity indices): First the using namespace, then the
+     used namespaces.  And then a zero terminating the list.  :: is
+     represented as index -1.  */
+  auto emit_one_ns = [&](unsigned ix, tree ns) {
+    for (auto udir: NAMESPACE_LEVEL (ns)->using_directives)
+      {
+	if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
+	  continue;
+	tree ns2 = USING_DECL_DECLS (udir);
+	dump() && dump ("Writing using-directive in %N for %N",
+			ns, ns2);
+	sec.u (ix);
+	sec.u (*ns_map.get (ns2) + 1);
+      }
+  };
+  emit_one_ns (-1, global_namespace);
+  for (unsigned ix = 0; ix != num; ix++)
+    {
+      depset *b = spaces[ix];
+      tree ns = b->get_entity ();
+      emit_one_ns (ix + 1, ns);
+    }
+  sec.u (0);
+
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
   dump.outdent ();
 }
@@ -16928,6 +16957,8 @@ module_state::read_namespaces (unsigned num)
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
+
+  tree *ns_map = XALLOCAVEC (tree, num);
 
   for (unsigned ix = 0; ix != num; ix++)
     {
@@ -16990,6 +17021,8 @@ module_state::read_namespaces (unsigned num)
 	DECL_ATTRIBUTES (inner)
 	  = tree_cons (get_identifier ("abi_tag"), tags, DECL_ATTRIBUTES (inner));
 
+      ns_map[ix] = inner;
+
       /* Install the namespace.  */
       (*entity_ary)[entity_lwm + entity_index] = inner;
       if (DECL_MODULE_IMPORT_P (inner))
@@ -17004,6 +17037,44 @@ module_state::read_namespaces (unsigned num)
 	    *slot = entity_lwm + entity_index;
 	}
     }
+
+  /* Read the exported using-directives.  */
+  while (unsigned ix = sec.u ())
+    {
+      tree ns;
+      if (ix == (unsigned)-1)
+	ns = global_namespace;
+      else
+	{
+	  if (--ix >= num)
+	    {
+	      sec.set_overrun ();
+	      break;
+	    }
+	  ns = ns_map [ix];
+	}
+      unsigned ix2 = sec.u ();
+      if (--ix2 >= num)
+	{
+	  sec.set_overrun ();
+	  break;
+	}
+      tree ns2 = ns_map [ix2];
+      if (directness)
+	{
+	  dump() && dump ("Reading using-directive in %N for %N",
+			  ns, ns2);
+	  /* In an export import this will mark the using-directive as
+	     exported, so it will be emitted again.  */
+	  add_using_namespace (ns, ns2);
+	}
+      else
+	/* Ignore using-directives from indirect imports, we only want them
+	   from our own imports.  */
+	dump() && dump ("Ignoring using-directive in %N for %N",
+			ns, ns2);
+    }
+
   dump.outdent ();
   if (!sec.end (from ()))
     return false;

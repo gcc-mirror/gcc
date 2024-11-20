@@ -15827,7 +15827,13 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
 		      " must not be from header inclusion");
 	}
 
+      auto mk = module_kind;
+      if (exporting)
+	module_kind |= MK_EXPORTING;
+
       import_module (mod, token->location, exporting, attrs, parse_in);
+
+      module_kind = mk;
     }
 }
 
