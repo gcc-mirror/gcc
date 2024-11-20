@@ -829,7 +829,9 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 		HIR::TraitBound &b = static_cast<HIR::TraitBound &> (*bound);
 
 		TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
-		  b.get_path (), tl::optional (std::ref (*implicit_self_bound)),
+		  b.get_path (),
+		  tl::optional<std::reference_wrapper<HIR::Type>> (
+		    std::ref (*implicit_self_bound)),
 		  b.get_polarity ());
 		if (!predicate.is_error ())
 		  {
