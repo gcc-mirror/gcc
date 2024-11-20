@@ -6213,10 +6213,7 @@ vectorizable_assignment (vec_info *vinfo,
 bool
 vect_supportable_shift (vec_info *vinfo, enum tree_code code, tree scalar_type)
 {
-
-  machine_mode vec_mode;
   optab optab;
-  int icode;
   tree vectype;
 
   vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
@@ -6224,22 +6221,14 @@ vect_supportable_shift (vec_info *vinfo, enum tree_code code, tree scalar_type)
     return false;
 
   optab = optab_for_tree_code (code, vectype, optab_scalar);
-  if (!optab
-      || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
-    {
-      optab = optab_for_tree_code (code, vectype, optab_vector);
-      if (!optab
-          || (optab_handler (optab, TYPE_MODE (vectype))
-                      == CODE_FOR_nothing))
-        return false;
-    }
+  if (optab && can_implement_p (optab, TYPE_MODE (vectype)))
+    return true;
 
-  vec_mode = TYPE_MODE (vectype);
-  icode = (int) optab_handler (optab, vec_mode);
-  if (icode == CODE_FOR_nothing)
-    return false;
+  optab = optab_for_tree_code (code, vectype, optab_vector);
+  if (optab && can_implement_p (optab, TYPE_MODE (vectype)))
+    return true;
 
-  return true;
+  return false;
 }
 
 
@@ -6453,7 +6442,7 @@ vectorizable_shift (vec_info *vinfo,
     {
       optab = optab_for_tree_code (code, vectype, optab_scalar);
       if (optab
-          && optab_handler (optab, TYPE_MODE (vectype)) != CODE_FOR_nothing)
+          && can_implement_p (optab, TYPE_MODE (vectype)))
         {
           if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location,
@@ -6463,8 +6452,7 @@ vectorizable_shift (vec_info *vinfo,
         {
           optab = optab_for_tree_code (code, vectype, optab_vector);
           if (optab
-               && (optab_handler (optab, TYPE_MODE (vectype))
-                      != CODE_FOR_nothing))
+	      && can_implement_p (optab, TYPE_MODE (vectype)))
             {
 	      scalar_shift_arg = false;
 
@@ -7545,7 +7533,7 @@ scan_store_can_perm_p (tree vectype, tree init,
 
 	  if (whole_vector_shift_kind == scan_store_kind_perm)
 	    {
-	      if (optab_handler (vec_shl_optab, vec_mode) == CODE_FOR_nothing)
+	      if (!can_implement_p (vec_shl_optab, vec_mode))
 		return -1;
 	      whole_vector_shift_kind = scan_store_kind_lshift_zero;
 	      /* Whole vector shifts shift in zeros, so if init is all zero
@@ -7967,7 +7955,7 @@ check_scan_store (vec_info *vinfo, stmt_vec_info stmt_info, tree vectype,
        MEM <vector(8) int> [(int *)&D.2042] = _51;  */
   enum machine_mode vec_mode = TYPE_MODE (vectype);
   optab optab = optab_for_tree_code (code, vectype, optab_default);
-  if (!optab || optab_handler (optab, vec_mode) == CODE_FOR_nothing)
+  if (!optab || !can_implement_p (optab, vec_mode))
     goto fail;
 
   int units_log2 = scan_store_can_perm_p (vectype, *init);
@@ -8452,7 +8440,7 @@ vectorizable_store (vec_info *vinfo,
     {
       /* FORNOW. In some cases can vectorize even if data-type not supported
 	 (e.g. - array initialization with 0).  */
-      if (optab_handler (mov_optab, vec_mode) == CODE_FOR_nothing)
+      if (!can_implement_p (mov_optab, vec_mode))
 	return false;
     }
 
@@ -10232,7 +10220,7 @@ vectorizable_load (vec_info *vinfo,
 
   /* FORNOW. In some cases can vectorize even if data-type not supported
     (e.g. - data copies).  */
-  if (optab_handler (mov_optab, mode) == CODE_FOR_nothing)
+  if (!can_implement_p (mov_optab, mode))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -12694,14 +12682,14 @@ vectorizable_condition (vec_info *vinfo,
 	  optab optab;
 
 	  optab = optab_for_tree_code (bitop1, comp_vectype, optab_default);
-	  if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+	  if (!optab || !can_implement_p (optab, mode))
 	    return false;
 
 	  if (bitop2 != NOP_EXPR)
 	    {
 	      optab = optab_for_tree_code (bitop2, comp_vectype,
 					   optab_default);
-	      if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+	      if (!optab || !can_implement_p (optab, mode))
 		return false;
 	    }
 	}
@@ -13169,13 +13157,13 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 	  optab optab;
 
 	  optab = optab_for_tree_code (bitop1, vectype, optab_default);
-	  if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+	  if (!optab || !can_implement_p (optab, mode))
 	    return false;
 
 	  if (bitop2 != NOP_EXPR)
 	    {
 	      optab = optab_for_tree_code (bitop2, vectype, optab_default);
-	      if (!optab || optab_handler (optab, mode) == CODE_FOR_nothing)
+	      if (!optab || !can_implement_p (optab, mode))
 		return false;
 	    }
 	}

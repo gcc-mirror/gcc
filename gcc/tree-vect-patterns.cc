@@ -3830,7 +3830,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
      don't do anything here.  */
   optab1 = optab_for_tree_code (rhs_code, vectype, optab_vector);
   if (optab1
-      && optab_handler (optab1, TYPE_MODE (vectype)) != CODE_FOR_nothing)
+      && can_implement_p (optab1, TYPE_MODE (vectype)))
     {
      use_rotate:
       if (bswap16_p)
@@ -3862,7 +3862,7 @@ vect_recog_rotate_pattern (vec_info *vinfo,
     {
       optab2 = optab_for_tree_code (rhs_code, vectype, optab_scalar);
       if (optab2
-	  && optab_handler (optab2, TYPE_MODE (vectype)) != CODE_FOR_nothing)
+	  && can_implement_p (optab2, TYPE_MODE (vectype)))
 	goto use_rotate;
     }
 
@@ -3876,18 +3876,18 @@ vect_recog_rotate_pattern (vec_info *vinfo,
   optab1 = optab_for_tree_code (LSHIFT_EXPR, uvectype, optab_vector);
   optab2 = optab_for_tree_code (RSHIFT_EXPR, uvectype, optab_vector);
   if (!optab1
-      || optab_handler (optab1, TYPE_MODE (uvectype)) == CODE_FOR_nothing
+      || !can_implement_p (optab1, TYPE_MODE (uvectype))
       || !optab2
-      || optab_handler (optab2, TYPE_MODE (uvectype)) == CODE_FOR_nothing)
+      || !can_implement_p (optab2, TYPE_MODE (uvectype)))
     {
       if (! is_a <bb_vec_info> (vinfo) && dt == vect_internal_def)
 	return NULL;
       optab1 = optab_for_tree_code (LSHIFT_EXPR, uvectype, optab_scalar);
       optab2 = optab_for_tree_code (RSHIFT_EXPR, uvectype, optab_scalar);
       if (!optab1
-	  || optab_handler (optab1, TYPE_MODE (uvectype)) == CODE_FOR_nothing
+	  || !can_implement_p (optab1, TYPE_MODE (uvectype))
 	  || !optab2
-	  || optab_handler (optab2, TYPE_MODE (uvectype)) == CODE_FOR_nothing)
+	  || !can_implement_p (optab2, TYPE_MODE (uvectype)))
 	return NULL;
     }
 
@@ -4127,7 +4127,7 @@ target_has_vecop_for_code (tree_code code, tree vectype)
 {
   optab voptab = optab_for_tree_code (code, vectype, optab_vector);
   return voptab
-	 && optab_handler (voptab, TYPE_MODE (vectype)) != CODE_FOR_nothing;
+	 && can_implement_p (voptab, TYPE_MODE (vectype));
 }
 
 /* Verify that the target has optabs of VECTYPE to perform all the steps
@@ -4466,13 +4466,9 @@ vect_recog_mult_pattern (vec_info *vinfo,
   /* If the target can handle vectorized multiplication natively,
      don't attempt to optimize this.  */
   optab mul_optab = optab_for_tree_code (MULT_EXPR, vectype, optab_default);
-  if (mul_optab != unknown_optab)
-    {
-      machine_mode vec_mode = TYPE_MODE (vectype);
-      int icode = (int) optab_handler (mul_optab, vec_mode);
-      if (icode != CODE_FOR_nothing)
-       return NULL;
-    }
+  if (mul_optab != unknown_optab
+      && can_implement_p (mul_optab, TYPE_MODE (vectype)))
+    return NULL;
 
   pattern_stmt = vect_synth_mult_by_constant (vinfo,
 					      oprnd0, oprnd1, stmt_vinfo);
@@ -4838,13 +4834,9 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	 don't attempt to optimize this, since native division is likely
 	 to give smaller code.  */
       optab = optab_for_tree_code (rhs_code, vectype, optab_default);
-      if (optab != unknown_optab)
-	{
-	  machine_mode vec_mode = TYPE_MODE (vectype);
-	  int icode = (int) optab_handler (optab, vec_mode);
-	  if (icode != CODE_FOR_nothing)
-	    return NULL;
-	}
+      if (optab != unknown_optab
+	  && can_implement_p (optab, TYPE_MODE (vectype)))
+	return NULL;
     }
 
   prec = TYPE_PRECISION (itype);
