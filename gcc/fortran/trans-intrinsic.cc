@@ -5595,7 +5595,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     && maskexpr->symtree->n.sym->attr.optional;
   backexpr = back_arg->expr;
 
-  gfc_init_se (&backse, NULL);
+  gfc_init_se (&backse, nested_loop ? se : nullptr);
   if (backexpr == nullptr)
     back = logical_false_node;
   else if (maybe_absent_optional_variable (backexpr))
@@ -11886,10 +11886,13 @@ walk_inline_intrinsic_minmaxloc (gfc_ss *ss, gfc_expr *expr ATTRIBUTE_UNUSED)
   gfc_actual_arglist *array_arg = expr->value.function.actual;
   gfc_actual_arglist *dim_arg = array_arg->next;
   gfc_actual_arglist *mask_arg = dim_arg->next;
+  gfc_actual_arglist *kind_arg = mask_arg->next;
+  gfc_actual_arglist *back_arg = kind_arg->next;
 
   gfc_expr *array = array_arg->expr;
   gfc_expr *dim = dim_arg->expr;
   gfc_expr *mask = mask_arg->expr;
+  gfc_expr *back = back_arg->expr;
 
   if (dim == nullptr)
     return gfc_get_array_ss (ss, expr, 1, GFC_SS_INTRINSIC);
@@ -11917,7 +11920,21 @@ walk_inline_intrinsic_minmaxloc (gfc_ss *ss, gfc_expr *expr ATTRIBUTE_UNUSED)
      chain, "hiding" that dimension from the outer scalarization.  */
   int dim_val = mpz_get_si (dim->value.integer);
   gfc_ss *tail = nest_loop_dimension (tmp_ss, dim_val - 1);
-  tail->next = ss;
+
+  if (back && array->rank > 1)
+    {
+      /* If there are nested scalarization loops, include BACK in the
+	 scalarization chains to avoid evaluating it multiple times in a loop.
+	 Otherwise, prefer to handle it outside of scalarization.  */
+      gfc_ss *back_ss = gfc_get_scalar_ss (ss, back);
+      back_ss->info->type = GFC_SS_REFERENCE;
+      if (maybe_absent_optional_variable (back))
+	back_ss->info->can_be_null_ref = true;
+
+      tail->next = back_ss;
+    }
+  else
+    tail->next = ss;
 
   if (scalar_mask)
     {
