@@ -1752,6 +1752,7 @@ static void c_parser_omp_assumption_clauses (c_parser *, bool);
 static void c_parser_omp_allocate (c_parser *);
 static void c_parser_omp_assumes (c_parser *);
 static bool c_parser_omp_ordered (c_parser *, enum pragma_context, bool *);
+static tree c_parser_omp_dispatch (location_t, c_parser *);
 static void c_parser_oacc_routine (c_parser *, enum pragma_context);
 
 /* These Objective-C parser functions are only ever called when
@@ -15788,6 +15789,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	case 'n':
 	  if (!strcmp ("no_create", p))
 	    result = PRAGMA_OACC_CLAUSE_NO_CREATE;
+	  else if (!strcmp ("nocontext", p))
+	    result = PRAGMA_OMP_CLAUSE_NOCONTEXT;
 	  else if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
 	  else if (!strcmp ("nohost", p))
@@ -15796,6 +15799,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
 	  else if (!strcmp ("notinbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_NOTINBRANCH;
+	  else if (!strcmp ("novariants", p))
+	    result = PRAGMA_OMP_CLAUSE_NOVARIANTS;
 	  else if (!strcmp ("nowait", p))
 	    result = PRAGMA_OMP_CLAUSE_NOWAIT;
 	  else if (!strcmp ("num_gangs", p))
@@ -20063,6 +20068,60 @@ c_parser_omp_clause_partial (c_parser *parser, tree list)
   return c;
 }
 
+/* OpenMP 5.1
+   novariants ( scalar-expression ) */
+
+static tree
+c_parser_omp_clause_novariants (c_parser *parser, tree list)
+{
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+  tree t = convert_lvalue_to_rvalue (loc, expr, true, true).value;
+  t = c_objc_common_truthvalue_conversion (loc, t);
+  t = c_fully_fold (t, false, NULL);
+  parens.skip_until_found_close (parser);
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_NOVARIANTS, "novariants");
+
+  tree c = build_omp_clause (loc, OMP_CLAUSE_NOVARIANTS);
+  OMP_CLAUSE_NOVARIANTS_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  list = c;
+
+  return list;
+}
+
+/* OpenMP 5.1
+   nocontext ( scalar-expression ) */
+
+static tree
+c_parser_omp_clause_nocontext (c_parser *parser, tree list)
+{
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+  tree t = convert_lvalue_to_rvalue (loc, expr, true, true).value;
+  t = c_objc_common_truthvalue_conversion (loc, t);
+  t = c_fully_fold (t, false, NULL);
+  parens.skip_until_found_close (parser);
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_NOCONTEXT, "nocontext");
+
+  tree c = build_omp_clause (loc, OMP_CLAUSE_NOCONTEXT);
+  OMP_CLAUSE_NOCONTEXT_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+  list = c;
+
+  return list;
+}
+
 /* OpenMP 5.0:
    detach ( event-handle ) */
 
@@ -20681,6 +20740,14 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_PARTIAL:
 	  c_name = "partial";
 	  clauses = c_parser_omp_clause_partial (parser, clauses);
+	  break;
+	case PRAGMA_OMP_CLAUSE_NOVARIANTS:
+	  c_name = "novariants";
+	  clauses = c_parser_omp_clause_novariants (parser, clauses);
+	  break;
+	case PRAGMA_OMP_CLAUSE_NOCONTEXT:
+	  c_name = "nocontext";
+	  clauses = c_parser_omp_clause_nocontext (parser, clauses);
 	  break;
 	default:
 	  c_parser_error (parser, "expected an OpenMP clause");
@@ -24498,6 +24565,148 @@ c_parser_omp_scope (location_t loc, c_parser *parser, bool *if_p)
   return add_stmt (stmt);
 }
 
+/* Parse a function dispatch structured block:
+
+    lvalue-expression = target-call ( [expression-list] );
+    or
+    target-call ( [expression-list] );
+
+   Adapted from c_parser_expr_no_commas and c_parser_postfix_expression
+   (CPP_NAME/C_ID_ID) for the function name.
+*/
+static tree
+c_parser_omp_dispatch_body (c_parser *parser)
+{
+  struct c_expr lhs, rhs, ret;
+  location_t expr_loc = c_parser_peek_token (parser)->location;
+  source_range tok_range = c_parser_peek_token (parser)->get_range ();
+
+  lhs = c_parser_conditional_expression (parser, NULL, NULL);
+  if (TREE_CODE (lhs.value) == CALL_EXPR)
+    return lhs.value;
+
+  location_t op_location = c_parser_peek_token (parser)->location;
+  if (!c_parser_require (parser, CPP_EQ, "expected %<=%>"))
+    return error_mark_node;
+
+  /* Parse function name.  */
+  if (!c_parser_next_token_is (parser, CPP_NAME))
+    {
+      c_parser_error (parser, "expected a function name");
+      return error_mark_node;
+    }
+  expr_loc = c_parser_peek_token (parser)->location;
+  tree id = c_parser_peek_token (parser)->value;
+  c_parser_consume_token (parser);
+  if (!c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+    {
+      c_parser_error (parser, "expected a function name");
+      return error_mark_node;
+    }
+
+  rhs.value = build_external_ref (expr_loc, id, true, &rhs.original_type);
+  set_c_expr_source_range (&rhs, tok_range);
+
+  /* Parse argument list.  */
+  rhs = c_parser_postfix_expression_after_primary (
+    parser, EXPR_LOC_OR_LOC (rhs.value, expr_loc), rhs);
+  if (TREE_CODE (rhs.value) != CALL_EXPR)
+    {
+      error_at (EXPR_LOC_OR_LOC (rhs.value, expr_loc),
+		"expected target-function call");
+      return error_mark_node;
+    }
+
+  /* Build assignment. */
+  rhs = convert_lvalue_to_rvalue (expr_loc, rhs, true, true);
+  ret.value
+    = build_modify_expr (op_location, lhs.value, lhs.original_type, NOP_EXPR,
+			 expr_loc, rhs.value, rhs.original_type);
+  ret.m_decimal = 0;
+  set_c_expr_source_range (&ret, lhs.get_start (), rhs.get_finish ());
+  ret.original_code = MODIFY_EXPR;
+  ret.original_type = NULL;
+  return ret.value;
+}
+
+/* OpenMP 5.1:
+   # pragma omp dispatch dispatch-clause[optseq] new-line
+     expression-stmt
+
+   LOC is the location of the #pragma.
+*/
+
+#define OMP_DISPATCH_CLAUSE_MASK                                               \
+  ((OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)                             \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)                           \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOVARIANTS)                       \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOCONTEXT)                        \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)                    \
+   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
+
+static tree
+c_parser_omp_dispatch (location_t loc, c_parser *parser)
+{
+  tree stmt = make_node (OMP_DISPATCH);
+  SET_EXPR_LOCATION (stmt, loc);
+  TREE_TYPE (stmt) = void_type_node;
+
+  OMP_DISPATCH_CLAUSES (stmt)
+    = c_parser_omp_all_clauses (parser, OMP_DISPATCH_CLAUSE_MASK,
+				"#pragma omp dispatch");
+
+  // Extract depend clauses and create taskwait
+  tree depend_clauses = NULL_TREE;
+  tree *depend_clauses_ptr = &depend_clauses;
+  for (tree c = OMP_DISPATCH_CLAUSES (stmt); c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
+	{
+	  *depend_clauses_ptr = c;
+	  depend_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
+	}
+    }
+  if (depend_clauses != NULL_TREE)
+    {
+      tree stmt = make_node (OMP_TASK);
+      TREE_TYPE (stmt) = void_node;
+      OMP_TASK_CLAUSES (stmt) = depend_clauses;
+      OMP_TASK_BODY (stmt) = NULL_TREE;
+      SET_EXPR_LOCATION (stmt, loc);
+      add_stmt (stmt);
+    }
+
+  // Parse body as expression statement
+  loc = c_parser_peek_token (parser)->location;
+  tree dispatch_body = c_parser_omp_dispatch_body (parser);
+  if (dispatch_body == error_mark_node)
+    {
+      inform (loc, "%<#pragma omp dispatch%> must be followed by a function "
+		   "call with optional assignment");
+      c_parser_skip_to_end_of_block_or_statement (parser);
+      return NULL_TREE;
+    }
+
+  // Walk the tree to find the dispatch function call and wrap it into an IFN
+  gcc_assert (TREE_CODE (dispatch_body) == CALL_EXPR
+	      || TREE_CODE (dispatch_body) == MODIFY_EXPR);
+  tree *dispatch_call = TREE_CODE (dispatch_body) == MODIFY_EXPR
+			  ? &TREE_OPERAND (dispatch_body, 1)
+			  : &dispatch_body;
+  while (TREE_CODE (*dispatch_call) == FLOAT_EXPR
+	 || TREE_CODE (*dispatch_call) == CONVERT_EXPR
+	 || TREE_CODE (*dispatch_call) == NOP_EXPR)
+    dispatch_call = &TREE_OPERAND (*dispatch_call, 0);
+  *dispatch_call = build_call_expr_internal_loc (
+    loc, IFN_GOMP_DISPATCH,
+    TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (*dispatch_call))), 1, *dispatch_call);
+
+  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+  OMP_DISPATCH_BODY (stmt) = dispatch_body;
+
+  return add_stmt (stmt);
+}
+
 /* OpenMP 3.0:
    # pragma omp task task-clause[optseq] new-line
 
@@ -25478,6 +25687,10 @@ check_clauses:
 
    OpenMP 5.0:
    # pragma omp declare variant (identifier) match(context-selector) new-line
+
+   OpenMP 5.1
+   # pragma omp declare variant (identifier) match(context-selector) \
+      adjust_args(adjust-op:argument-list) new-line
    */
 
 #define OMP_DECLARE_SIMD_CLAUSE_MASK				\
@@ -25941,77 +26154,235 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
   parens.require_close (parser);
 
-  if (c_parser_next_token_is (parser, CPP_COMMA)
-      && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
-    c_parser_consume_token (parser);
+  vec<tree> adjust_args_list = vNULL;
+  bool has_match = false, has_adjust_args = false;
+  location_t adjust_args_loc = UNKNOWN_LOCATION;
+  tree need_device_ptr_list = make_node (TREE_LIST);
 
-  const char *clause = "";
-  location_t match_loc = c_parser_peek_token (parser)->location;
-  if (c_parser_next_token_is (parser, CPP_NAME))
-    clause = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
-  if (strcmp (clause, "match"))
+  do
     {
-      c_parser_error (parser, "expected %<match%>");
-      goto fail;
-    }
+      if (c_parser_next_token_is (parser, CPP_COMMA)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME)
+	c_parser_consume_token (parser);
 
-  c_parser_consume_token (parser);
+      const char *clause = "";
+      location_t match_loc = c_parser_peek_token (parser)->location;
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	clause = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
 
-  if (!parens.require_open (parser))
-    goto fail;
+      enum clause
+      {
+	match,
+	adjust_args
+      } ccode;
 
-  if (parms == NULL_TREE)
-    parms = error_mark_node;
-
-  tree ctx = c_parser_omp_context_selector_specification (parser, parms);
-  if (ctx == error_mark_node)
-    goto fail;
-  ctx = omp_check_context_selector (match_loc, ctx);
-  if (ctx != error_mark_node && variant != error_mark_node)
-    {
-      if (TREE_CODE (variant) != FUNCTION_DECL)
+      if (strcmp (clause, "match") == 0)
+	ccode = match;
+      else if (strcmp (clause, "adjust_args") == 0)
 	{
-	  error_at (token->location, "variant %qD is not a function", variant);
-	  variant = error_mark_node;
+	  ccode = adjust_args;
+	  adjust_args_loc = match_loc;
 	}
-      else if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
-					  OMP_TRAIT_CONSTRUCT_SIMD)
-	       && !comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
+      else
 	{
-	  error_at (token->location, "variant %qD and base %qD have "
-				     "incompatible types", variant, fndecl);
-	  variant = error_mark_node;
+	  c_parser_error (parser, "expected %<match%> clause");
+	  goto fail;
 	}
-      else if (fndecl_built_in_p (variant)
-	       && (strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
-			    "__builtin_", strlen ("__builtin_")) == 0
-		   || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
-			       "__sync_", strlen ("__sync_")) == 0
-		   || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
-			       "__atomic_", strlen ("__atomic_")) == 0))
+
+      c_parser_consume_token (parser);
+
+      if (!parens.require_open (parser))
+	goto fail;
+
+      if (parms == NULL_TREE)
+	parms = error_mark_node;
+
+      if (ccode == match)
 	{
-	  error_at (token->location, "variant %qD is a built-in", variant);
-	  variant = error_mark_node;
-	}
-      if (variant != error_mark_node)
-	{
-	  C_DECL_USED (variant) = 1;
-	  tree construct
-	    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
-	  omp_mark_declare_variant (match_loc, variant, construct);
-	  if (omp_context_selector_matches (ctx))
+	  if (has_match)
+	    error_at (match_loc, "too many %<match%> clauses");
+	  has_match = true;
+	  tree ctx
+	    = c_parser_omp_context_selector_specification (parser, parms);
+	  if (ctx == error_mark_node)
+	    goto fail;
+	  ctx = omp_check_context_selector (match_loc, ctx);
+	  if (ctx != error_mark_node && variant != error_mark_node)
 	    {
-	      tree attr
-		= tree_cons (get_identifier ("omp declare variant base"),
-			     build_tree_list (variant, ctx),
-			     DECL_ATTRIBUTES (fndecl));
-	      DECL_ATTRIBUTES (fndecl) = attr;
+	      if (TREE_CODE (variant) != FUNCTION_DECL)
+		{
+		  error_at (token->location, "variant %qD is not a function",
+			    variant);
+		  variant = error_mark_node;
+		}
+	      else if (fndecl_built_in_p (variant)
+		       && (strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
+				    "__builtin_", strlen ("__builtin_"))
+			     == 0
+			   || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
+				       "__sync_", strlen ("__sync_"))
+				== 0
+			   || strncmp (IDENTIFIER_POINTER (DECL_NAME (variant)),
+				       "__atomic_", strlen ("__atomic_"))
+				== 0))
+		{
+		  error_at (token->location, "variant %qD is a built-in",
+			    variant);
+		  variant = error_mark_node;
+		}
+	      else if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
+						  OMP_TRAIT_CONSTRUCT_SIMD))
+		{
+		  if (comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
+		    {
+		      if (TYPE_ARG_TYPES (TREE_TYPE (variant)) == NULL_TREE)
+			TYPE_ARG_TYPES (TREE_TYPE (variant))
+			  = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+		    }
+		  else
+		    {
+		      error_at (token->location,
+				"variant %qD and base %qD have "
+				"incompatible types",
+				variant, fndecl);
+		      variant = error_mark_node;
+		    }
+		}
+	      if (variant != error_mark_node)
+		{
+		  C_DECL_USED (variant) = 1;
+		  tree construct
+		    = omp_get_context_selector_list (ctx,
+						     OMP_TRAIT_SET_CONSTRUCT);
+		  omp_mark_declare_variant (match_loc, variant, construct);
+		  if (omp_context_selector_matches (ctx))
+		    {
+		      tree attr = tree_cons (get_identifier (
+					       "omp declare variant base"),
+					     build_tree_list (variant, ctx),
+					     DECL_ATTRIBUTES (fndecl));
+		      DECL_ATTRIBUTES (fndecl) = attr;
+		    }
+		}
+	    }
+	}
+      else if (ccode == adjust_args)
+	{
+	  has_adjust_args = true;
+	  if (c_parser_next_token_is (parser, CPP_NAME)
+	      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+	    {
+	      const char *p
+		= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	      if (strcmp (p, "need_device_ptr") == 0
+		  || strcmp (p, "nothing") == 0)
+		{
+		  c_parser_consume_token (parser); // need_device_ptr
+		  c_parser_consume_token (parser); // :
+
+		  location_t loc = c_parser_peek_token (parser)->location;
+		  tree list
+		    = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_ERROR,
+						  NULL_TREE);
+
+		  tree arg;
+		  if (variant != error_mark_node)
+		    for (tree c = list; c != NULL_TREE; c = TREE_CHAIN (c))
+		      {
+			tree decl = TREE_PURPOSE (c);
+			int idx;
+			for (arg = parms, idx = 0; arg != NULL;
+			     arg = TREE_CHAIN (arg), idx++)
+			  if (arg == decl)
+			    break;
+			if (arg == NULL_TREE)
+			  {
+			    error_at (loc, "%qD is not a function argument",
+				      decl);
+			    goto fail;
+			  }
+			if (adjust_args_list.contains (arg))
+			  {
+			    // TODO fix location
+			    error_at (loc, "%qD is specified more than once",
+				      decl);
+			    goto fail;
+			  }
+			if (strcmp (p, "need_device_ptr") == 0
+			    && TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
+			  {
+			    error_at (loc, "%qD is not of pointer type", decl);
+			    goto fail;
+			  }
+			adjust_args_list.safe_push (arg);
+			if (strcmp (p, "need_device_ptr") == 0)
+			  {
+			    need_device_ptr_list = chainon (
+			      need_device_ptr_list,
+			      build_tree_list (
+				NULL_TREE,
+				build_int_cst (
+				  integer_type_node,
+				  idx))); // Store 0-based argument index,
+					  // as in gimplify_call_expr
+			  }
+		      }
+		}
+	      else
+		{
+		  error_at (c_parser_peek_token (parser)->location,
+			    "expected %<nothing%> or %<need_device_ptr%>");
+		  goto fail;
+		}
+	    }
+	  else
+	    {
+	      error_at (c_parser_peek_token (parser)->location,
+			"expected %<nothing%> or %<need_device_ptr%> "
+			"followed by %<:%>");
+	      goto fail;
+	    }
+	}
+
+      parens.require_close (parser);
+  } while (c_parser_next_token_is_not (parser, CPP_PRAGMA_EOL));
+  c_parser_skip_to_pragma_eol (parser);
+
+  if (has_adjust_args)
+    {
+      if (!has_match)
+	{
+	  error_at (adjust_args_loc,
+		    "an %<adjust_args%> clause requires a %<match%> clause");
+	}
+      else
+	{
+	  tree attr = lookup_attribute ("omp declare variant base",
+					DECL_ATTRIBUTES (fndecl));
+	  if (attr != NULL_TREE)
+	    {
+	      tree ctx = TREE_VALUE (TREE_VALUE (attr));
+	      if (!omp_get_context_selector (ctx, OMP_TRAIT_SET_CONSTRUCT,
+					     OMP_TRAIT_CONSTRUCT_DISPATCH))
+		error_at (
+		  adjust_args_loc,
+		  "an %<adjust_args%> clause can only be specified if the "
+		  "%<dispatch%> selector of the %<construct%> selector set "
+		  "appears in the %<match%> clause");
 	    }
 	}
     }
 
-  parens.require_close (parser);
-  c_parser_skip_to_pragma_eol (parser);
+  if (TREE_CHAIN (need_device_ptr_list) != NULL_TREE
+      && variant != error_mark_node)
+    {
+      tree variant_decl = tree_strip_nop_conversions (variant);
+      DECL_ATTRIBUTES (variant_decl)
+	= tree_cons (get_identifier ("omp declare variant variant adjust_args"),
+		     build_tree_list (need_device_ptr_list,
+				      NULL_TREE /*need_device_addr */),
+		     DECL_ATTRIBUTES (variant_decl));
+    }
 }
 
 /* Finalize #pragma omp declare simd or #pragma omp declare variant
@@ -26831,7 +27202,6 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
   types.release ();
 }
 
-
 /* OpenMP 4.0
    #pragma omp declare simd declare-simd-clauses[optseq] new-line
    #pragma omp declare reduction (reduction-id : typename-list : expression) \
@@ -26839,7 +27209,11 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
    #pragma omp declare target new-line
 
    OpenMP 5.0
-   #pragma omp declare variant (identifier) match (context-selector)  */
+   #pragma omp declare variant (identifier) match (context-selector)
+
+   OpenMP 5.1
+   #pragma omp declare variant (identifier) match (context-selector) \
+      adjust_args(adjust-op:argument-list)  */
 
 static bool
 c_parser_omp_declare (c_parser *parser, enum pragma_context context)
@@ -27756,6 +28130,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       break;
     case PRAGMA_OMP_UNROLL:
       stmt = c_parser_omp_unroll (loc, parser, if_p);
+      break;
+    case PRAGMA_OMP_DISPATCH:
+      stmt = c_parser_omp_dispatch (loc, parser);
       break;
     default:
       gcc_unreachable ();

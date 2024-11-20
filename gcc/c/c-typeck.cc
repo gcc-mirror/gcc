@@ -16977,6 +16977,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_NOHOST:
 	case OMP_CLAUSE_INDIRECT:
+	case OMP_CLAUSE_NOVARIANTS:
+	case OMP_CLAUSE_NOCONTEXT:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 

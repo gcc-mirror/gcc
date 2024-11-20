@@ -4300,8 +4300,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_DECLARATIVE, false },
   { "depobj", nullptr, nullptr, PRAGMA_OMP_DEPOBJ,
     C_OMP_DIR_STANDALONE, false },
-  /* { "dispatch", nullptr, nullptr, PRAGMA_OMP_DISPATCH,
-    C_OMP_DIR_CONSTRUCT, false },  */
+  { "dispatch", nullptr, nullptr, PRAGMA_OMP_DISPATCH,
+    C_OMP_DIR_DECLARATIVE, false },
   { "distribute", nullptr, nullptr, PRAGMA_OMP_DISTRIBUTE,
     C_OMP_DIR_CONSTRUCT, true },
   { "end", "assumes", nullptr, PRAGMA_OMP_END,
