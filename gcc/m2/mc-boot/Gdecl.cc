@@ -46,11 +46,11 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 typedef unsigned int nameKey_Name;
 
 #   define nameKey_NulName 0
-typedef struct mcPretty_writeProc_p mcPretty_writeProc;
-
 typedef struct symbolKey__T8_r symbolKey__T8;
 
 typedef symbolKey__T8 *symbolKey_symbolTree;
+
+typedef struct mcPretty_writeProc_p mcPretty_writeProc;
 
 typedef struct mcPretty_writeLnProc_p mcPretty_writeLnProc;
 
@@ -61,12 +61,6 @@ extern FIO_File FIO_StdOut;
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
 #   define ASCII_tab ASCII_ht
-typedef struct alists__T13_r alists__T13;
-
-typedef alists__T13 *alists_alist;
-
-typedef struct alists__T14_a alists__T14;
-
 #   define ASCII_ht (char) 011
 #   define ASCII_lf ASCII_nl
 #   define ASCII_nl (char) 012
@@ -270,6 +264,10 @@ typedef struct decl_nodeProcedure_p decl_nodeProcedure;
 
 typedef struct decl_cnameT_r decl_cnameT;
 
+typedef struct decl__T15_r decl__T15;
+
+typedef decl__T15 *decl_group;
+
 #   define MaxBuf 127
 #   define maxNoOfElements 5
 typedef enum {decl_explist, decl_funccall, decl_exit, decl_return, decl_stmtseq, decl_comment, decl_halt, decl_new, decl_dispose, decl_inc, decl_dec, decl_incl, decl_excl, decl_length, decl_nil, decl_true, decl_false, decl_address, decl_loc, decl_byte, decl_word, decl_csizet, decl_cssizet, decl_char, decl_cardinal, decl_longcard, decl_shortcard, decl_integer, decl_longint, decl_shortint, decl_real, decl_longreal, decl_shortreal, decl_bitset, decl_boolean, decl_proc, decl_ztype, decl_rtype, decl_complex, decl_longcomplex, decl_shortcomplex, decl_type, decl_record, decl_varient, decl_var, decl_enumeration, decl_subrange, decl_array, decl_subscript, decl_string, decl_const, decl_literal, decl_varparam, decl_param, decl_varargs, decl_optarg, decl_pointer, decl_recordfield, decl_varientfield, decl_enumerationfield, decl_set, decl_proctype, decl_procedure, decl_def, decl_imp, decl_module, decl_loop, decl_while, decl_for, decl_repeat, decl_case, decl_caselabellist, decl_caselist, decl_range, decl_assignment, decl_if, decl_elsif, decl_constexp, decl_neg, decl_cast, decl_val, decl_plus, decl_sub, decl_div, decl_mod, decl_mult, decl_divide, decl_in, decl_adr, decl_size, decl_tsize, decl_ord, decl_float, decl_trunc, decl_chr, decl_abs, decl_cap, decl_high, decl_throw, decl_unreachable, decl_cmplx, decl_re, decl_im, decl_min, decl_max, decl_componentref, decl_pointerref, decl_arrayref, decl_deref, decl_equal, decl_notequal, decl_less, decl_greater, decl_greequal, decl_lessequal, decl_lsl, decl_lsr, decl_lor, decl_land, decl_lnot, decl_lxor, decl_and, decl_or, decl_not, decl_identlist, decl_vardecl, decl_setvalue} decl_nodeT;
@@ -298,13 +296,17 @@ typedef struct DynamicStrings_Contents_r DynamicStrings_Contents;
 
 typedef struct wlists__T9_r wlists__T9;
 
+typedef struct alists__T13_r alists__T13;
+
 typedef struct mcPretty__T12_r mcPretty__T12;
 
 typedef struct wlists__T10_a wlists__T10;
 
+typedef Indexing__T5 *Indexing_Index;
+
 typedef struct DynamicStrings__T7_a DynamicStrings__T7;
 
-typedef Indexing__T5 *Indexing_Index;
+typedef struct alists__T14_a alists__T14;
 
 typedef mcComment__T6 *mcComment_commentDesc;
 
@@ -314,10 +316,9 @@ typedef DynamicStrings_stringRecord *DynamicStrings_String;
 
 typedef wlists__T9 *wlists_wlist;
 
-typedef mcPretty__T12 *mcPretty_pretty;
+typedef alists__T13 *alists_alist;
 
-typedef void (*mcPretty_writeProc_t) (char);
-struct mcPretty_writeProc_p { mcPretty_writeProc_t proc; };
+typedef mcPretty__T12 *mcPretty_pretty;
 
 struct symbolKey__T8_r {
                          nameKey_Name name;
@@ -326,13 +327,15 @@ struct symbolKey__T8_r {
                          symbolKey_symbolTree right;
                        };
 
+typedef void (*mcPretty_writeProc_t) (char);
+struct mcPretty_writeProc_p { mcPretty_writeProc_t proc; };
+
 typedef void (*mcPretty_writeLnProc_t) (void);
 struct mcPretty_writeLnProc_p { mcPretty_writeLnProc_t proc; };
 
 typedef void (*symbolKey_performOperation_t) (void *);
 struct symbolKey_performOperation_p { symbolKey_performOperation_t proc; };
 
-struct alists__T14_a { void * array[MaxnoOfelements-1+1]; };
 typedef void (*Indexing_IndexProcedure_t) (void *);
 struct Indexing_IndexProcedure_p { Indexing_IndexProcedure_t proc; };
 
@@ -649,6 +652,13 @@ struct decl_cnameT_r {
                        bool init;
                      };
 
+struct decl__T15_r {
+                     alists_alist todoQ;
+                     alists_alist partialQ;
+                     alists_alist doneQ;
+                     decl_group next;
+                   };
+
 struct Indexing__T5_r {
                         void *ArrayStart;
                         unsigned int ArraySize;
@@ -668,12 +678,7 @@ struct mcComment__T6_r {
 
 struct wlists__T10_a { unsigned int array[maxNoOfElements-1+1]; };
 struct DynamicStrings__T7_a { char array[(MaxBuf-1)+1]; };
-struct alists__T13_r {
-                       unsigned int noOfelements;
-                       alists__T14 elements;
-                       alists_alist next;
-                     };
-
+struct alists__T14_a { void * array[MaxnoOfelements-1+1]; };
 struct decl_intrinsicT_r {
                            decl_node args;
                            unsigned int noArgs;
@@ -843,6 +848,12 @@ struct wlists__T9_r {
                       wlists_wlist next;
                     };
 
+struct alists__T13_r {
+                       unsigned int noOfelements;
+                       alists__T14 elements;
+                       alists_alist next;
+                     };
+
 struct mcPretty__T12_r {
                          mcPretty_writeProc write_;
                          mcPretty_writeLnProc writeln;
@@ -943,6 +954,8 @@ struct DynamicStrings_stringRecord_r {
                                        DynamicStrings_DebugInfo debug;
                                      };
 
+static decl_group freeGroup;
+static decl_group globalGroup;
 static FIO_File outputFile;
 static decl_language lang;
 static decl_node bitsperunitN;
@@ -1015,9 +1028,6 @@ static symbolKey_symbolTree defUniverse;
 static symbolKey_symbolTree baseSymbols;
 static decl_outputStates outputState;
 static mcPretty_pretty doP;
-static alists_alist todoQ;
-static alists_alist partialQ;
-static alists_alist doneQ;
 static bool mustVisitScope;
 static bool simplified;
 static unsigned int tempCount;
@@ -2584,11 +2594,24 @@ extern "C" int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned 
 
 /*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if, ch, is not found.  The search
+            is performed left to right.
 */
 
 extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned int o);
+
+/*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*/
+
+extern "C" int DynamicStrings_ReverseIndex (DynamicStrings_String s, char ch, int o);
 
 /*
    RemoveComment - assuming that, comment, is a comment delimiter
@@ -3252,6 +3275,12 @@ extern "C" void alists_foreachItemInListDo (alists_alist l, alists_performOperat
 extern "C" alists_alist alists_duplicateList (alists_alist l);
 
 /*
+   equalList - returns TRUE if left contains the same information as right.
+*/
+
+extern "C" bool alists_equalList (alists_alist left, alists_alist right);
+
+/*
    initList - creates a new wlist, l.
 */
 
@@ -3431,6 +3460,37 @@ static decl_node newNode (decl_nodeT k);
 */
 
 static void disposeNode (decl_node *n);
+
+/*
+   newGroup -
+*/
+
+static void newGroup (decl_group *g);
+
+/*
+   initGroup - returns a group which with all lists initialized.
+*/
+
+static decl_group initGroup (void);
+
+/*
+   killGroup - deallocate the group and place the group record into the freeGroup list.
+*/
+
+static void killGroup (decl_group *g);
+
+/*
+   dupGroup - If g is not NIL then destroy g.
+              Return a duplicate of GlobalGroup (not g).
+*/
+
+static decl_group dupGroup (decl_group g);
+
+/*
+   equalGroup - return TRUE if group left = right.
+*/
+
+static bool equalGroup (decl_group left, decl_group right);
 
 /*
    isLocal - returns TRUE if symbol, n, is locally declared in a procedure.
@@ -6215,7 +6275,8 @@ static void addEnumConst (decl_node n);
 static void populateTodo (decl_nodeProcedure p);
 
 /*
-   topologicallyOut -
+   topologicallyOut - keep trying to resolve the todoQ and partialQ
+                      until there is no change from the global group.
 */
 
 static void topologicallyOut (decl_nodeProcedure c, decl_nodeProcedure t, decl_nodeProcedure v, decl_nodeProcedure tp, decl_nodeProcedure pc, decl_nodeProcedure pt, decl_nodeProcedure pv);
@@ -6718,6 +6779,93 @@ static void disposeNode (decl_node *n)
 {
   Storage_DEALLOCATE ((void **) &(*n), sizeof (decl_nodeRec));
   (*n) = NULL;
+}
+
+
+/*
+   newGroup -
+*/
+
+static void newGroup (decl_group *g)
+{
+  if (freeGroup == NULL)
+    {
+      Storage_ALLOCATE ((void **) &(*g), sizeof (decl__T15));
+    }
+  else
+    {
+      (*g) = freeGroup;
+      freeGroup = freeGroup->next;
+    }
+}
+
+
+/*
+   initGroup - returns a group which with all lists initialized.
+*/
+
+static decl_group initGroup (void)
+{
+  decl_group g;
+
+  newGroup (&g);
+  g->todoQ = alists_initList ();
+  g->partialQ = alists_initList ();
+  g->doneQ = alists_initList ();
+  g->next = NULL;
+  return g;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   killGroup - deallocate the group and place the group record into the freeGroup list.
+*/
+
+static void killGroup (decl_group *g)
+{
+  alists_killList (&(*g)->todoQ);
+  alists_killList (&(*g)->partialQ);
+  alists_killList (&(*g)->doneQ);
+  (*g)->next = freeGroup;
+  freeGroup = (*g);
+}
+
+
+/*
+   dupGroup - If g is not NIL then destroy g.
+              Return a duplicate of GlobalGroup (not g).
+*/
+
+static decl_group dupGroup (decl_group g)
+{
+  if (g != NULL)
+    {
+      /* Kill old group.  */
+      killGroup (&g);
+    }
+  newGroup (&g);
+  /* Copy all lists.  */
+  g->todoQ = alists_duplicateList (globalGroup->todoQ);
+  g->partialQ = alists_duplicateList (globalGroup->partialQ);
+  g->doneQ = alists_duplicateList (globalGroup->doneQ);
+  g->next = NULL;
+  return g;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   equalGroup - return TRUE if group left = right.
+*/
+
+static bool equalGroup (decl_group left, decl_group right)
+{
+  return (left == right) || (((alists_equalList (left->todoQ, right->todoQ)) && (alists_equalList (left->partialQ, right->partialQ))) && (alists_equalList (left->doneQ, right->doneQ)));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
 }
 
 
@@ -9531,14 +9679,14 @@ static void doNothing (decl_node n)
 
 static void doConstC (decl_node n)
 {
-  if (! (alists_isItemInList (doneQ, reinterpret_cast<void *> (n))))
+  if (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n))))
     {
       mcPretty_print (doP, (const char *) "#   define ", 11);
       doFQNameC (doP, n);
       mcPretty_setNeedSpace (doP);
       doExprC (doP, n->constF.value);
       mcPretty_print (doP, (const char *) "\\n", 2);
-      alists_includeItemIntoList (doneQ, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast<void *> (n));
     }
 }
 
@@ -13554,12 +13702,12 @@ static void doPrototypeC (decl_node n)
 
 static void addTodo (decl_node n)
 {
-  if (((n != NULL) && (! (alists_isItemInList (partialQ, reinterpret_cast<void *> (n))))) && (! (alists_isItemInList (doneQ, reinterpret_cast<void *> (n)))))
+  if (((n != NULL) && (! (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (n))))) && (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n)))))
     {
       mcDebug_assert (! (decl_isVarient (n)));
       mcDebug_assert (! (decl_isVarientField (n)));
       mcDebug_assert (! (decl_isDef (n)));
-      alists_includeItemIntoList (todoQ, reinterpret_cast<void *> (n));
+      alists_includeItemIntoList (globalGroup->todoQ, reinterpret_cast<void *> (n));
     }
 }
 
@@ -17320,7 +17468,7 @@ static decl_dependentState allDependants (decl_node n)
 
 static decl_dependentState walkDependants (alists_alist l, decl_node n)
 {
-  if ((n == NULL) || (alists_isItemInList (doneQ, reinterpret_cast<void *> (n))))
+  if ((n == NULL) || (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n))))
     {
       return decl_completed;
     }
@@ -17349,11 +17497,11 @@ static decl_dependentState walkType (alists_alist l, decl_node n)
   decl_node t;
 
   t = decl_getType (n);
-  if (alists_isItemInList (doneQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t)))
     {
       return decl_completed;
     }
-  else if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
+  else if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
     {
       /* avoid dangling else.  */
       return decl_blocked;
@@ -17458,18 +17606,18 @@ static void dbq (decl_node n)
   if (mcOptions_getDebugTopological ())
     {
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
-      if (alists_isItemInList (todoQ, reinterpret_cast<void *> (n)))
+      if (alists_isItemInList (globalGroup->todoQ, reinterpret_cast<void *> (n)))
         {
           db ((const char *) "{T", 2, n);
           outText (doP, (const char *) "}", 1);
         }
-      else if (alists_isItemInList (partialQ, reinterpret_cast<void *> (n)))
+      else if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (n)))
         {
           /* avoid dangling else.  */
           db ((const char *) "{P", 2, n);
           outText (doP, (const char *) "}", 1);
         }
-      else if (alists_isItemInList (doneQ, reinterpret_cast<void *> (n)))
+      else if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n)))
         {
           /* avoid dangling else.  */
           db ((const char *) "{D", 2, n);
@@ -17577,7 +17725,7 @@ static decl_dependentState walkVarient (alists_alist l, decl_node n)
 
 static void queueBlocked (decl_node n)
 {
-  if (! ((alists_isItemInList (doneQ, reinterpret_cast<void *> (n))) || (alists_isItemInList (partialQ, reinterpret_cast<void *> (n)))))
+  if (! ((alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n))) || (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (n)))))
     {
       addTodo (n);
     }
@@ -17593,7 +17741,7 @@ static decl_dependentState walkVar (alists_alist l, decl_node n)
   decl_node t;
 
   t = decl_getType (n);
-  if (alists_isItemInList (doneQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t)))
     {
       return decl_completed;
     }
@@ -17700,7 +17848,7 @@ static decl_dependentState walkPointer (alists_alist l, decl_node n)
 
   /* if the type of, n, is done or partial then we can output pointer.  */
   t = decl_getType (n);
-  if ((alists_isItemInList (partialQ, reinterpret_cast<void *> (t))) || (alists_isItemInList (doneQ, reinterpret_cast<void *> (t))))
+  if ((alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t))) || (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t))))
     {
       /* pointer to partial can always generate a complete type.  */
       return decl_completed;
@@ -17720,7 +17868,7 @@ static decl_dependentState walkArray (alists_alist l, decl_node n)
   decl_dependentState s;
 
   /* an array can only be declared if its data type has already been emitted.  */
-  if (! (alists_isItemInList (doneQ, reinterpret_cast<void *> (n->arrayF.type))))
+  if (! (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (n->arrayF.type))))
     {
       s = walkDependants (l, n->arrayF.type);
       queueBlocked (n->arrayF.type);
@@ -17773,7 +17921,7 @@ static decl_dependentState walkVarParam (alists_alist l, decl_node n)
   decl_node t;
 
   t = decl_getType (n);
-  if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
     {
       /* parameter can be issued from a partial.  */
       return decl_completed;
@@ -17793,7 +17941,7 @@ static decl_dependentState walkParam (alists_alist l, decl_node n)
   decl_node t;
 
   t = decl_getType (n);
-  if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
     {
       /* parameter can be issued from a partial.  */
       return decl_completed;
@@ -17813,7 +17961,7 @@ static decl_dependentState walkOptarg (alists_alist l, decl_node n)
   decl_node t;
 
   t = decl_getType (n);
-  if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
     {
       /* parameter can be issued from a partial.  */
       return decl_completed;
@@ -17835,12 +17983,12 @@ static decl_dependentState walkRecordField (alists_alist l, decl_node n)
 
   mcDebug_assert (decl_isRecordField (n));
   t = decl_getType (n);
-  if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
     {
       dbs (decl_partial, n);
       return decl_partial;
     }
-  else if (alists_isItemInList (doneQ, reinterpret_cast<void *> (t)))
+  else if (alists_isItemInList (globalGroup->doneQ, reinterpret_cast<void *> (t)))
     {
       /* avoid dangling else.  */
       dbs (decl_completed, n);
@@ -17928,7 +18076,7 @@ static decl_dependentState walkProcType (alists_alist l, decl_node n)
   decl_node t;
 
   t = decl_getType (n);
-  if (alists_isItemInList (partialQ, reinterpret_cast<void *> (t)))
+  if (alists_isItemInList (globalGroup->partialQ, reinterpret_cast<void *> (t)))
     {}  /* empty.  */
   else
     {
@@ -18377,7 +18525,7 @@ static bool tryCompleteFromPartial (decl_node n, decl_nodeProcedure t)
 {
   if ((((decl_isType (n)) && ((decl_getType (n)) != NULL)) && (decl_isPointer (decl_getType (n)))) && ((allDependants (decl_getType (n))) == decl_completed))
     {
-      /* alists.includeItemIntoList (partialQ, getType (n)) ;  */
+      /* alists.includeItemIntoList (globalGroup^.partialQ, getType (n)) ;  */
       outputHiddenComplete (n);
       return true;
     }
@@ -19854,9 +20002,9 @@ static void dumpLists (void)
     {
       m = FormatStrings_Sprintf0 (DynamicStrings_InitString ((const char *) "\\n", 2));
       m = DynamicStrings_KillString (SFIO_WriteS (FIO_StdOut, m));
-      dumpQ ((const char *) "todo", 4, todoQ);
-      dumpQ ((const char *) "partial", 7, partialQ);
-      dumpQ ((const char *) "done", 4, doneQ);
+      dumpQ ((const char *) "todo", 4, globalGroup->todoQ);
+      dumpQ ((const char *) "partial", 7, globalGroup->partialQ);
+      dumpQ ((const char *) "done", 4, globalGroup->doneQ);
     }
 }
 
@@ -20011,21 +20159,21 @@ static void tryOutputTodo (decl_nodeProcedure c, decl_nodeProcedure t, decl_node
   decl_node d;
 
   i = 1;
-  n = alists_noOfItemsInList (todoQ);
+  n = alists_noOfItemsInList (globalGroup->todoQ);
   while (i <= n)
     {
-      d = static_cast<decl_node> (alists_getItemFromList (todoQ, i));
+      d = static_cast<decl_node> (alists_getItemFromList (globalGroup->todoQ, i));
       if (tryComplete (d, c, t, v))
         {
-          alists_removeItemFromList (todoQ, reinterpret_cast<void *> (d));
-          alists_includeItemIntoList (doneQ, reinterpret_cast<void *> (d));
+          alists_removeItemFromList (globalGroup->todoQ, reinterpret_cast<void *> (d));
+          alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast<void *> (d));
           i = 1;
         }
       else if (tryPartial (d, pt))
         {
           /* avoid dangling else.  */
-          alists_removeItemFromList (todoQ, reinterpret_cast<void *> (d));
-          alists_includeItemIntoList (partialQ, reinterpret_cast<void *> (d));
+          alists_removeItemFromList (globalGroup->todoQ, reinterpret_cast<void *> (d));
+          alists_includeItemIntoList (globalGroup->partialQ, reinterpret_cast<void *> (d));
           i = 1;
         }
       else
@@ -20033,7 +20181,7 @@ static void tryOutputTodo (decl_nodeProcedure c, decl_nodeProcedure t, decl_node
           /* avoid dangling else.  */
           i += 1;
         }
-      n = alists_noOfItemsInList (todoQ);
+      n = alists_noOfItemsInList (globalGroup->todoQ);
     }
 }
 
@@ -20049,14 +20197,14 @@ static void tryOutputPartial (decl_nodeProcedure t)
   decl_node d;
 
   i = 1;
-  n = alists_noOfItemsInList (partialQ);
+  n = alists_noOfItemsInList (globalGroup->partialQ);
   while (i <= n)
     {
-      d = static_cast<decl_node> (alists_getItemFromList (partialQ, i));
+      d = static_cast<decl_node> (alists_getItemFromList (globalGroup->partialQ, i));
       if (tryCompleteFromPartial (d, t))
         {
-          alists_removeItemFromList (partialQ, reinterpret_cast<void *> (d));
-          alists_includeItemIntoList (doneQ, reinterpret_cast<void *> (d));
+          alists_removeItemFromList (globalGroup->partialQ, reinterpret_cast<void *> (d));
+          alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast<void *> (d));
           i = 1;
           n -= 1;
         }
@@ -20105,8 +20253,8 @@ static void debugLists (void)
 {
   if (mcOptions_getDebugTopological ())
     {
-      debugList ((const char *) "todo", 4, todoQ);
-      debugList ((const char *) "partial", 7, partialQ);
+      debugList ((const char *) "todo", 4, globalGroup->todoQ);
+      debugList ((const char *) "partial", 7, globalGroup->partialQ);
     }
 }
 
@@ -20137,47 +20285,39 @@ static void populateTodo (decl_nodeProcedure p)
   unsigned int h;
   alists_alist l;
 
-  h = alists_noOfItemsInList (todoQ);
+  h = alists_noOfItemsInList (globalGroup->todoQ);
   i = 1;
   while (i <= h)
     {
-      n = static_cast<decl_node> (alists_getItemFromList (todoQ, i));
+      n = static_cast<decl_node> (alists_getItemFromList (globalGroup->todoQ, i));
       l = alists_initList ();
       visitNode (l, n, p);
       alists_killList (&l);
-      h = alists_noOfItemsInList (todoQ);
+      h = alists_noOfItemsInList (globalGroup->todoQ);
       i += 1;
     }
 }
 
 
 /*
-   topologicallyOut -
+   topologicallyOut - keep trying to resolve the todoQ and partialQ
+                      until there is no change from the global group.
 */
 
 static void topologicallyOut (decl_nodeProcedure c, decl_nodeProcedure t, decl_nodeProcedure v, decl_nodeProcedure tp, decl_nodeProcedure pc, decl_nodeProcedure pt, decl_nodeProcedure pv)
 {
-  unsigned int tol;
-  unsigned int pal;
-  unsigned int to;
-  unsigned int pa;
+  decl_group before;
 
   populateTodo ((decl_nodeProcedure) {(decl_nodeProcedure_t) addEnumConst});
-  tol = 0;
-  pal = 0;
-  to = alists_noOfItemsInList (todoQ);
-  pa = alists_noOfItemsInList (partialQ);
-  while ((tol != to) || (pal != pa))
-    {
-      dumpLists ();
-      tryOutputTodo (c, t, v, tp);
-      dumpLists ();
-      tryOutputPartial (pt);
-      tol = to;
-      pal = pa;
-      to = alists_noOfItemsInList (todoQ);
-      pa = alists_noOfItemsInList (partialQ);
-    }
+  before = NULL;
+  do {
+    before = dupGroup (before);  /* Get a copy of the globalGroup and free before.  */
+    dumpLists ();  /* Get a copy of the globalGroup and free before.  */
+    tryOutputTodo (c, t, v, tp);
+    dumpLists ();
+    tryOutputPartial (pt);
+  } while (! (equalGroup (before, globalGroup)));
+  killGroup (&before);
   dumpLists ();
   debugLists ();
 }
@@ -21414,7 +21554,7 @@ static void outM2 (mcPretty_pretty p, decl_node n)
 
 static void addDone (decl_node n)
 {
-  alists_includeItemIntoList (doneQ, reinterpret_cast<void *> (n));
+  alists_includeItemIntoList (globalGroup->doneQ, reinterpret_cast<void *> (n));
 }
 
 
@@ -21430,7 +21570,7 @@ static void addDoneDef (decl_node n)
       addDone (n);
       return ;
     }
-  if ((! (decl_isDef (n))) && ((decl_lookupImp (decl_getSymName (decl_getScope (n)))) == (decl_getMainModule ())))
+  if (false && ((decl_lookupImp (decl_getSymName (decl_getScope (n)))) == (decl_getMainModule ())))
     {
       mcMetaError_metaError1 ((const char *) "cyclic dependancy found between another module using {%1ad} from the definition module of the implementation main being compiled, use the --extended-opaque option to compile", 173, (const unsigned char *) &n, (sizeof (n)-1));
       mcError_flushErrors ();
@@ -22409,9 +22549,8 @@ static void init (void)
   lang = decl_ansiC;
   outputFile = FIO_StdOut;
   doP = mcPretty_initPretty ((mcPretty_writeProc) {(mcPretty_writeProc_t) write_}, (mcPretty_writeLnProc) {(mcPretty_writeLnProc_t) writeln});
-  todoQ = alists_initList ();
-  partialQ = alists_initList ();
-  doneQ = alists_initList ();
+  freeGroup = NULL;
+  globalGroup = initGroup ();
   modUniverse = symbolKey_initTree ();
   defUniverse = symbolKey_initTree ();
   modUniverseI = Indexing_InitIndex (1);

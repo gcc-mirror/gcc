@@ -194,11 +194,24 @@ EXTERN int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned int 
 
 /*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if ch is not found.  The search
+            is performed left to right.
 */
 
 EXTERN int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned int o);
+
+/*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*/
+
+EXTERN int DynamicStrings_ReverseIndex (DynamicStrings_String s, char ch, int o);
 
 /*
    RemoveComment - assuming that, comment, is a comment delimiter

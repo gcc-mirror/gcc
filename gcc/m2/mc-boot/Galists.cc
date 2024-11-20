@@ -138,6 +138,12 @@ extern "C" void alists_foreachItemInListDo (alists_alist l, alists_performOperat
 extern "C" alists_alist alists_duplicateList (alists_alist l);
 
 /*
+   equalList - returns TRUE if left contains the same information as right.
+*/
+
+extern "C" bool alists_equalList (alists_alist left, alists_alist right);
+
+/*
    removeItem - remove an element at index, i, from the alist data type.
 */
 
@@ -428,6 +434,43 @@ extern "C" alists_alist alists_duplicateList (alists_alist l)
       i += 1;
     }
   return m;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   equalList - returns TRUE if left contains the same information as right.
+*/
+
+extern "C" bool alists_equalList (alists_alist left, alists_alist right)
+{
+  unsigned int leftn;
+  unsigned int rightn;
+  unsigned int i;
+
+  leftn = alists_noOfItemsInList (left);
+  rightn = alists_noOfItemsInList (right);
+  if (leftn == rightn)
+    {
+      i = 1;
+      while (i <= leftn)
+        {
+          if (alists_isItemInList (right, alists_getItemFromList (left, i)))
+            {
+              i += 1;
+            }
+          else
+            {
+              return false;
+            }
+        }
+    }
+  else
+    {
+      return false;
+    }
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

@@ -505,6 +505,7 @@ MC_ARGS= --olang=c++ \
  $(MC_COPYRIGHT) \
  --gcc-config-system
 
+MC_EXTENDED_OPAQUE=--extended-opaque
 MCDEPS=m2/boot-bin/mc$(exeext)
 
 MC=m2/boot-bin/mc$(exeext) $(MC_ARGS)
@@ -1539,7 +1540,7 @@ m2/gm2-libs-boot/SysStorage.o: $(srcdir)/m2/gm2-libs/SysStorage.mod $(MCDEPS) $(
 
 m2/gm2-compiler-boot/M2GCCDeclare.o: $(srcdir)/m2/gm2-compiler/M2GCCDeclare.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
-	$(MC) --extended-opaque -o=m2/gm2-compiler-boot/M2GCCDeclare.c $<
+	$(MC) $(MC_EXTENDED_OPAQUE) -o=m2/gm2-compiler-boot/M2GCCDeclare.c $<
 	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
@@ -1548,7 +1549,7 @@ m2/gm2-compiler-boot/M2GCCDeclare.o: $(srcdir)/m2/gm2-compiler/M2GCCDeclare.mod 
 
 m2/gm2-compiler-boot/M2Error.o: $(srcdir)/m2/gm2-compiler/M2Error.mod $(MCDEPS) $(BUILD-BOOT-H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
-	$(MC) --extended-opaque -o=m2/gm2-compiler-boot/M2Error.c $<
+	$(MC) $(MC_EXTENDED_OPAQUE) -o=m2/gm2-compiler-boot/M2Error.c $<
 	$(COMPILER) $(CM2DEP) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(GM2GCC) \
             -I. -I$(srcdir)/../include -I$(srcdir) \
             -I. -Im2/gm2-libs-boot -Im2/gm2-compiler-boot \
