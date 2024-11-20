@@ -6150,21 +6150,18 @@ package body Exp_Aggr is
          or else (Parent_Kind in N_Aggregate | N_Extension_Aggregate
                    and then not Is_Container_Aggregate (Parent_Node))
 
-         --  Allocator (see Convert_Aggr_In_Allocator). Bit-packed array types
-         --  need specific processing and sliding cannot be done in place for
-         --  the time being.
+         --  Allocator (see Convert_Aggr_In_Allocator). Sliding cannot be done
+         --  in place for the time being.
 
          or else (Nkind (Parent_Node) = N_Allocator
                    and then
                      (Aggr_Assignment_OK_For_Backend (N)
                        or else Is_Limited_Type (Typ)
                        or else Needs_Finalization (Typ)
-                       or else (not Is_Bit_Packed_Array (Typ)
-                                 and then not
-                                   Must_Slide
+                       or else not Must_Slide
                                      (N,
                                       Designated_Type (Etype (Parent_Node)),
-                                      Typ))))
+                                      Typ)))
 
          --  Object declaration (see Convert_Aggr_In_Object_Decl). Bit-packed
          --  array types need specific processing and sliding cannot be done
