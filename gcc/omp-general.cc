@@ -1267,9 +1267,13 @@ struct omp_ts_info omp_ts_map[] =
      OMP_TRAIT_PROPERTY_CLAUSE_LIST,  false,
      NULL
    },
+   { "dispatch",
+     (1 << OMP_TRAIT_SET_CONSTRUCT),
+     OMP_TRAIT_PROPERTY_NONE,  false,
+     NULL
+   },
    { NULL, 0, OMP_TRAIT_PROPERTY_NONE, false, NULL }  /* OMP_TRAIT_LAST */
   };
-
 
 /* Return a name from PROP, a property in selectors accepting
    name lists.  */
