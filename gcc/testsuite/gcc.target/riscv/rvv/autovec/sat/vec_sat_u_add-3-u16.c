@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize -fdump-rtl-expand-details" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -ftree-vectorize -fdump-rtl-expand-details" } */
 
-#include "../vec_sat_arith.h"
+#include "vec_sat_arith.h"
 
 /*
 ** vec_sat_u_add_uint16_t_fmt_3:
