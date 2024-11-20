@@ -113,7 +113,7 @@ EXPORT(KillTimezone) (struct timezone *tv)
 
 /* InitTM - returns a newly created opaque type.  */
 
-#if defined(HAVE_STRUCT_TM) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_SYS_TIME_H) && defined(HAVE_MALLOC_H)
 extern "C" struct tm *
 EXPORT(InitTM) (void)
 {
