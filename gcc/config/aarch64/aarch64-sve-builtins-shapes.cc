@@ -2765,6 +2765,17 @@ struct inherent_za_def : public nonoverloaded_base
 };
 SHAPE (inherent_za)
 
+/* void svfoo_t0(uint64_t).  */
+struct inherent_za_slice_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    build_all (b, "_,su32", group, MODE_none);
+  }
+};
+SHAPE (inherent_za_slice)
+
 /* void svfoo_zt(uint64_t)
 
    where the argument must be zero.  */

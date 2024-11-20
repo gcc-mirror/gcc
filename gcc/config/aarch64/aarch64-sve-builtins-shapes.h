@@ -140,6 +140,7 @@ namespace aarch64_sve
     extern const function_shape *const inherent;
     extern const function_shape *const inherent_b;
     extern const function_shape *const inherent_za;
+    extern const function_shape *const inherent_za_slice;
     extern const function_shape *const inherent_zt;
     extern const function_shape *const inherent_mask_za;
     extern const function_shape *const ldr_zt;

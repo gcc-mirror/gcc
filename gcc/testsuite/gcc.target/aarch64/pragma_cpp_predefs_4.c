@@ -168,6 +168,17 @@
 #error Foo
 #endif
 
+#pragma GCC target "+nothing+sme2p1"
+#ifndef __ARM_FEATURE_SME
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SME2
+#error Foo
+#endif
+#ifndef __ARM_FEATURE_SME2p1
+#error Foo
+#endif
+
 #pragma GCC target "branch-protection=standard"
 #ifndef __ARM_FEATURE_BTI_DEFAULT
 #error Foo

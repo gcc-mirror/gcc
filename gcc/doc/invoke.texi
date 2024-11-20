@@ -21860,6 +21860,9 @@ and SVE_B16B16 instructions.
 @item sme-f16f16
 Enable the FEAT_SME_F16F16 extension to SME.  This also enables SME2
 instructions.
+@item sme2p1
+Enable the Scalable Matrix Extension version 2.1.  This also enables SME2
+instructions.
 @item lse128
 Enable the LSE128 128-bit atomic instructions extension.  This also
 enables LSE instructions.

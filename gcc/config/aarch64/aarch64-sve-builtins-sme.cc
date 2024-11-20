@@ -352,26 +352,30 @@ public:
   unsigned int m_bits;
 };
 
-class svread_za_impl : public function_base
+template<insn_code (*CODE) (machine_mode)>
+class svread_za_slice_base : public function_base
 {
 public:
-  unsigned int
-  call_properties (const function_instance &) const override
-  {
-    return CP_READ_ZA;
-  }
-
   rtx
   expand (function_expander &e) const override
   {
     machine_mode mode = e.vectors_per_tuple () == 4 ? VNx8DImode : VNx4DImode;
-    rtx res = e.use_exact_insn (code_for_aarch64_sme_read (mode));
+    rtx res = e.use_exact_insn (CODE (mode));
     return aarch64_sve_reinterpret (e.result_mode (), res);
   }
 };
 
+using svread_za_impl = add_call_properties
+  <svread_za_slice_base<code_for_aarch64_sme_read>, CP_READ_ZA>;
+
 using svread_za_tile_impl = add_call_properties<read_write_za_base,
 						CP_READ_ZA>;
+
+using svreadz_za_impl = add_call_properties
+  <svread_za_slice_base<code_for_aarch64_sme_readz>, CP_READ_ZA | CP_WRITE_ZA>;
+
+using svreadz_za_tile_impl = add_call_properties<read_write_za_base,
+						 CP_READ_ZA | CP_WRITE_ZA>;
 
 class svst1_za_impl : public store_za_base
 {
@@ -476,12 +480,48 @@ public:
   }
 };
 
+/* Return the mode iterator value that is used to represent a zeroing
+   of the ZA vectors described by GROUP.  */
+static machine_mode
+zero_slices_mode (group_suffix_index group)
+{
+  switch (group)
+    {
+    case GROUP_vg1x2:
+      return VNx8SImode;
+    case GROUP_vg1x4:
+      return VNx16SImode;
+
+    case GROUP_vg2x1:
+      return VNx8HImode;
+    case GROUP_vg2x2:
+      return VNx16HImode;
+    case GROUP_vg2x4:
+      return VNx32HImode;
+
+    case GROUP_vg4x1:
+      return VNx16QImode;
+    case GROUP_vg4x2:
+      return VNx32QImode;
+    case GROUP_vg4x4:
+      return VNx64QImode;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 class svzero_za_impl : public write_za<function_base>
 {
 public:
   rtx
-  expand (function_expander &) const override
+  expand (function_expander &e) const override
   {
+    if (e.args.length () == 1)
+      {
+	auto mode = zero_slices_mode (e.group_suffix_id);
+	return e.use_exact_insn (code_for_aarch64_sme_zero_za_slices (mode));
+      }
     emit_insn (gen_aarch64_sme_zero_za (gen_int_mode (0xff, SImode)));
     return const0_rtx;
   }
@@ -546,6 +586,9 @@ FUNCTION (svmops_za, sme_2mode_function, (UNSPEC_SME_SMOPS, UNSPEC_SME_UMOPS,
 FUNCTION (svread_za, svread_za_impl,)
 FUNCTION (svread_hor_za, svread_za_tile_impl, (UNSPEC_SME_READ_HOR))
 FUNCTION (svread_ver_za, svread_za_tile_impl, (UNSPEC_SME_READ_VER))
+FUNCTION (svreadz_za, svreadz_za_impl,)
+FUNCTION (svreadz_hor_za, svreadz_za_tile_impl, (UNSPEC_SME_READZ_HOR))
+FUNCTION (svreadz_ver_za, svreadz_za_tile_impl, (UNSPEC_SME_READZ_VER))
 FUNCTION (svst1_hor_za, svst1_za_impl, (UNSPEC_SME_ST1_HOR))
 FUNCTION (svst1_ver_za, svst1_za_impl, (UNSPEC_SME_ST1_VER))
 FUNCTION (svstr_za, svstr_za_impl, )
