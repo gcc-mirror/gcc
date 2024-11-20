@@ -507,6 +507,22 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_EXCLUSIVE:
       name = "exclusive";
       goto print_remap;
+    case OMP_CLAUSE_NOVARIANTS:
+      pp_string (pp, "novariants");
+      pp_left_paren (pp);
+      gcc_assert (OMP_CLAUSE_NOVARIANTS_EXPR (clause));
+      dump_generic_node (pp, OMP_CLAUSE_NOVARIANTS_EXPR (clause), spc, flags,
+			 false);
+      pp_right_paren (pp);
+      break;
+    case OMP_CLAUSE_NOCONTEXT:
+      pp_string (pp, "nocontext");
+      pp_left_paren (pp);
+      gcc_assert (OMP_CLAUSE_NOCONTEXT_EXPR (clause));
+      dump_generic_node (pp, OMP_CLAUSE_NOCONTEXT_EXPR (clause), spc, flags,
+			 false);
+      pp_right_paren (pp);
+      break;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
       goto print_remap;
@@ -3968,6 +3984,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OMP_SECTIONS:
       pp_string (pp, "#pragma omp sections");
       dump_omp_clauses (pp, OMP_SECTIONS_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_DISPATCH:
+      pp_string (pp, "#pragma omp dispatch");
+      dump_omp_clauses (pp, OMP_DISPATCH_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
     case OMP_SECTION:

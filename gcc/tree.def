@@ -1306,6 +1306,11 @@ DEFTREECODE (OMP_MASKED, "omp_masked", tcc_statement, 2)
    Operand 1: OMP_SCAN_CLAUSES: List of clauses.  */
 DEFTREECODE (OMP_SCAN, "omp_scan", tcc_statement, 2)
 
+/* OpenMP - #pragma omp dispatch [clause1 ... clauseN]
+   Operand 0: OMP_DISPATCH_BODY: Expression statement including a target call.
+   Operand 1: OMP_DISPATCH_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_DISPATCH, "omp_dispatch", tcc_statement, 2)
+
 /* OpenMP - #pragma omp section
    Operand 0: OMP_SECTION_BODY: Section body.  */
 DEFTREECODE (OMP_SECTION, "omp_section", tcc_statement, 1)

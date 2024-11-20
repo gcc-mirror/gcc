@@ -332,6 +332,8 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_IF_PRESENT */
   0, /* OMP_CLAUSE_FINALIZE */
   0, /* OMP_CLAUSE_NOHOST */
+  1, /* OMP_CLAUSE_NOVARIANTS */
+  1, /* OMP_CLAUSE_NOCONTEXT */
 };
 
 const char * const omp_clause_code_name[] =
@@ -428,6 +430,8 @@ const char * const omp_clause_code_name[] =
   "if_present",
   "finalize",
   "nohost",
+  "novariants",
+  "nocontext",
 };
 
 /* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric

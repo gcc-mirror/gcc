@@ -564,6 +564,13 @@ enum omp_clause_code {
 
   /* OpenACC clause: nohost.  */
   OMP_CLAUSE_NOHOST,
+
+  /* OpenMP clause: novariants (scalar-expression).  */
+  OMP_CLAUSE_NOVARIANTS,
+
+  /* OpenMP clause: nocontext (scalar-expression).  */
+  OMP_CLAUSE_NOCONTEXT,
+
 };
 
 #undef DEFTREESTRUCT
