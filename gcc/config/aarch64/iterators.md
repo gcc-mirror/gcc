@@ -2971,6 +2971,12 @@
 (define_code_attr inc_dec [(minus "dec") (ss_minus "sqdec") (us_minus "uqdec")
 			   (plus "inc") (ss_plus "sqinc") (us_plus "uqinc")])
 
+;; The predicated FP operation associated with each rtl code.  This is only
+;; useful for operations that have both predicated and unpredicated forms.
+(define_code_attr SVE_COND_FP [(plus "UNSPEC_COND_FADD")
+			       (minus "UNSPEC_COND_FSUB")
+			       (mult "UNSPEC_COND_FMUL")])
+
 ;; -------------------------------------------------------------------
 ;; Int Iterators.
 ;; -------------------------------------------------------------------
