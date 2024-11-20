@@ -2916,15 +2916,7 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
 	return true;
       tree arg = gimple_call_arg (stmt, i);
       tree type = TREE_VALUE (targs);
-      if (!useless_type_conversion_p (type, TREE_TYPE (arg))
-	  /* char/short integral arguments are promoted to int
-	     by several frontends if targetm.calls.promote_prototypes
-	     is true.  Allow such promotion too.  */
-	  && !(INTEGRAL_TYPE_P (type)
-	       && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
-	       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl))
-	       && useless_type_conversion_p (integer_type_node,
-					     TREE_TYPE (arg))))
+      if (!useless_type_conversion_p (type, TREE_TYPE (arg)))
 	return false;
       targs = TREE_CHAIN (targs);
     }

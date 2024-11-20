@@ -3286,30 +3286,6 @@ tree
 create_param_decl (tree name, tree type)
 {
   tree param_decl = build_decl (input_location, PARM_DECL, name, type);
-
-  /* Honor TARGET_PROMOTE_PROTOTYPES like the C compiler, as not doing so
-     can lead to various ABI violations.  */
-  if (targetm.calls.promote_prototypes (NULL_TREE)
-      && INTEGRAL_TYPE_P (type)
-      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-    {
-      /* We have to be careful about biased types here.  Make a subtype
-	 of integer_type_node with the proper biasing.  */
-      if (TREE_CODE (type) == INTEGER_TYPE
-	  && TYPE_BIASED_REPRESENTATION_P (type))
-	{
-	  tree subtype
-	    = make_unsigned_type (TYPE_PRECISION (integer_type_node));
-	  TREE_TYPE (subtype) = integer_type_node;
-	  TYPE_BIASED_REPRESENTATION_P (subtype) = 1;
-	  SET_TYPE_RM_MIN_VALUE (subtype, TYPE_MIN_VALUE (type));
-	  SET_TYPE_RM_MAX_VALUE (subtype, TYPE_MAX_VALUE (type));
-	  type = subtype;
-	}
-      else
-	type = integer_type_node;
-    }
-
   DECL_ARG_TYPE (param_decl) = type;
   return param_decl;
 }

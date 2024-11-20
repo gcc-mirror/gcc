@@ -5721,26 +5721,6 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && targetm.calls.promote_prototypes (TREE_TYPE (decl)))
-    {
-      struct c_declarator *ce = declarator;
-
-      if (ce->kind == cdk_pointer)
-	ce = declarator->declarator;
-      if (ce->kind == cdk_function)
-	{
-	  tree args = ce->u.arg_info->parms;
-	  for (; args; args = DECL_CHAIN (args))
-	    {
-	      tree type = TREE_TYPE (args);
-	      if (type && INTEGRAL_TYPE_P (type)
-		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-		DECL_ARG_TYPE (args) = c_type_promotes_to (type);
-	    }
-	}
-    }
-
-  if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
@@ -11179,13 +11159,6 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 		     useful for argument types like uid_t.  */
 		  DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
 
-		  if (targetm.calls.promote_prototypes (TREE_TYPE (current_function_decl))
-		      && INTEGRAL_TYPE_P (TREE_TYPE (parm))
-		      && (TYPE_PRECISION (TREE_TYPE (parm))
-			  < TYPE_PRECISION (integer_type_node)))
-		    DECL_ARG_TYPE (parm)
-		      = c_type_promotes_to (TREE_TYPE (parm));
-
 		  /* ??? Is it possible to get here with a
 		     built-in prototype or will it always have
 		     been diagnosed as conflicting with an
@@ -11412,19 +11385,6 @@ finish_function (location_t end_loc)
 
   if (c_dialect_objc ())
     objc_finish_function ();
-
-  if (TREE_CODE (fndecl) == FUNCTION_DECL
-      && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
-    {
-      tree args = DECL_ARGUMENTS (fndecl);
-      for (; args; args = DECL_CHAIN (args))
-	{
-	  tree type = TREE_TYPE (args);
-	  if (INTEGRAL_TYPE_P (type)
-	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	    DECL_ARG_TYPE (args) = c_type_promotes_to (type);
-	}
-    }
 
   if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
     BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;

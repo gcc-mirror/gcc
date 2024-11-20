@@ -4163,12 +4163,6 @@ convert_argument (location_t ploc, tree function, tree fundecl,
 					 val, origtype, ic_argpass,
 					 npc, fundecl, function,
 					 parmnum + 1, warnopt);
-
-  if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
-      && INTEGRAL_TYPE_P (type)
-      && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-    parmval = default_conversion (parmval);
-
   return parmval;
 }
 
@@ -6744,17 +6738,12 @@ c_safe_arg_type_equiv_p (tree t1, tree t2)
       && TREE_CODE (t2) == POINTER_TYPE)
     return true;
 
-  /* The signedness of the parameter matters only when an integral
-     type smaller than int is promoted to int, otherwise only the
-     precision of the parameter matters.
-     This check should make sure that the callee does not see
-     undefined values in argument registers.  */
+  /* Only the precision of the parameter matters.  This check should
+     make sure that the callee does not see undefined values in argument
+     registers.  */
   if (INTEGRAL_TYPE_P (t1)
       && INTEGRAL_TYPE_P (t2)
-      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
-      && (TYPE_UNSIGNED (t1) == TYPE_UNSIGNED (t2)
-	  || !targetm.calls.promote_prototypes (NULL_TREE)
-	  || TYPE_PRECISION (t1) >= TYPE_PRECISION (integer_type_node)))
+      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
     return true;
 
   return comptypes (t1, t2);

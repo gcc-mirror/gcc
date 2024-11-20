@@ -8770,20 +8770,6 @@ tree_builtin_call_types_compatible_p (const_tree call, tree fndecl)
 	      && POINTER_TYPE_P (TREE_TYPE (arg))
 	      && tree_nop_conversion_p (type, TREE_TYPE (arg)))
 	    continue;
-	  /* char/short integral arguments are promoted to int
-	     by several frontends if targetm.calls.promote_prototypes
-	     is true.  Allow such promotion too.  */
-	  if (INTEGRAL_TYPE_P (type)
-	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)
-	      && INTEGRAL_TYPE_P (TREE_TYPE (arg))
-	      && !TYPE_UNSIGNED (TREE_TYPE (arg))
-	      && targetm.calls.promote_prototypes (TREE_TYPE (fndecl))
-	      && (gimple_form
-		  ? useless_type_conversion_p (integer_type_node,
-					       TREE_TYPE (arg))
-		  : tree_nop_conversion_p (integer_type_node,
-					   TREE_TYPE (arg))))
-	    continue;
 	  return false;
 	}
     }

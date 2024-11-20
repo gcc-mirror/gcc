@@ -9707,11 +9707,6 @@ type_passed_as (tree type)
   /* Pass classes with copy ctors by invisible reference.  */
   if (TREE_ADDRESSABLE (type))
     type = build_reference_type (type);
-  else if (targetm.calls.promote_prototypes (NULL_TREE)
-	   && INTEGRAL_TYPE_P (type)
-	   && COMPLETE_TYPE_P (type)
-	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
-    type = integer_type_node;
 
   return type;
 }
@@ -9747,11 +9742,6 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   /* Pass classes with copy ctors by invisible reference.  */
   else if (TREE_ADDRESSABLE (type))
     val = build1 (ADDR_EXPR, build_reference_type (type), val);
-  else if (targetm.calls.promote_prototypes (NULL_TREE)
-	   && INTEGRAL_TYPE_P (type)
-	   && COMPLETE_TYPE_P (type)
-	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
-    val = cp_perform_integral_promotions (val, complain);
   if (complain & tf_warning)
     maybe_warn_parm_abi (type, cp_expr_loc_or_input_loc (val));
 
