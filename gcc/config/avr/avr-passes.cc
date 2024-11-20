@@ -49,6 +49,34 @@
 
 #define FIRST_GPR (AVR_TINY ? REG_18 : REG_2)
 
+
+// Emit pattern PAT, and ICE when the insn is not valid / not recognized.
+
+static rtx_insn *
+emit_valid_insn (rtx pat)
+{
+  rtx_insn *insn = emit_insn (pat);
+
+  if (! valid_insn_p (insn))  // Also runs recog().
+    fatal_insn ("emit unrecognizable insn", insn);
+
+  return insn;
+}
+
+// Emit a single_set with an optional scratch operand.  This function
+// asserts that the new insn is valid and recognized.
+
+static rtx_insn *
+emit_valid_move_clobbercc (rtx dest, rtx src, rtx scratch = NULL_RTX)
+{
+  rtx pat = scratch
+    ? gen_gen_move_clobbercc_scratch (dest, src, scratch)
+    : gen_gen_move_clobbercc (dest, src);
+
+  return emit_valid_insn (pat);
+}
+
+
 namespace
 {
 
@@ -116,31 +144,6 @@ single_set_with_scratch (rtx_insn *insn, int &regno_scratch)
   return single_set (insn);
 }
 
-// Emit pattern PAT, and ICE when the insn is not valid / not recognized.
-
-static rtx_insn *
-emit_valid_insn (rtx pat)
-{
-  rtx_insn *insn = emit_insn (pat);
-
-  if (! valid_insn_p (insn))  // Also runs recog().
-    fatal_insn ("emit unrecognizable insn", insn);
-
-  return insn;
-}
-
-// Emit a single_set with an optional scratch operand.  This function
-// asserts that the new insn is valid and recognized.
-
-static rtx_insn *
-emit_valid_move_clobbercc (rtx dest, rtx src, rtx scratch = NULL_RTX)
-{
-  rtx pat = scratch
-    ? gen_gen_move_clobbercc_scratch (dest, src, scratch)
-    : gen_gen_move_clobbercc (dest, src);
-
-  return emit_valid_insn (pat);
-}
 
 // One bit for each GRP in REG_0 ... REG_31.
 using gprmask_t = uint32_t;
@@ -4213,12 +4216,17 @@ public:
     return make_avr_pass_fuse_add (m_ctxt);
   }
 
-  bool gate (function *) final override
+  unsigned int execute (function *func) final override
   {
-    return optimize && avr_fuse_add > 0;
+    func->machine->n_avr_fuse_add_executed += 1;
+    n_avr_fuse_add_executed = func->machine->n_avr_fuse_add_executed;
+
+    if (optimize && avr_fuse_add > 0)
+      return execute1 (func);
+    return 0;
   }
 
-  unsigned int execute (function *) final override;
+  unsigned int execute1 (function *);
 
   struct Some_Insn
   {
@@ -4697,7 +4705,7 @@ avr_pass_fuse_add::fuse_mem_add (Mem_Insn &mem, Add_Insn &add)
    as  PRE_DEC + PRE_DEC  for two adjacent locations.  */
 
 unsigned int
-avr_pass_fuse_add::execute (function *func)
+avr_pass_fuse_add::execute1 (function *func)
 {
   df_note_add_problem ();
   df_analyze ();
@@ -4768,6 +4776,146 @@ avr_pass_fuse_add::execute (function *func)
   return 0;
 }
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Split insns after peephole2 / befor avr-fuse-move.
+static const pass_data avr_pass_data_split_after_peephole2 =
+{
+  RTL_PASS,	    // type
+  "",		    // name (will be patched)
+  OPTGROUP_NONE,    // optinfo_flags
+  TV_DF_SCAN,	    // tv_id
+  0,		    // properties_required
+  0,		    // properties_provided
+  0,		    // properties_destroyed
+  0,		    // todo_flags_start
+  0		    // todo_flags_finish
+};
+
+class avr_pass_split_after_peephole2 : public rtl_opt_pass
+{
+public:
+  avr_pass_split_after_peephole2 (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_split_after_peephole2, ctxt)
+  {
+    this->name = name;
+  }
+
+  unsigned int execute (function *) final override
+  {
+    if (avr_shift_is_3op ())
+      split_all_insns ();
+    return 0;
+  }
+
+}; // avr_pass_split_after_peephole2
+
+} // anonymous namespace
+
+
+/* Whether some shift insn alternatives are a 3-operand insn or a
+   2-operand insn.  This 3op alternatives allow the source and the
+   destination register of the shift to be different right from the
+   start, because the splitter will split the 3op shift into a 3op byte
+   shift and a 2op residual bit shift.
+   (When the residual shift has an offset of one less than the bitsize,
+   then the residual shift is also a 3op insn.  */
+
+bool
+avr_shift_is_3op ()
+{
+  // Don't split for OPTIMIZE_SIZE_MAX (-Oz).
+  // For OPTIMIZE_SIZE_BALANCED (-Os), we still split because
+  // the size overhead (if exists at all) is marginal.
+
+  return (avr_split_bit_shift
+	  && optimize > 0
+	  && avr_optimize_size_level () < OPTIMIZE_SIZE_MAX);
+}
+
+
+/* Implement constraints `C4a', `C4l' and `C4r'.
+   Whether we split an N_BYTES shift of code CODE in { ASHIFTRT,
+   LSHIFTRT, ASHIFT } into a byte shift and a residual bit shift.  */
+
+bool
+avr_split_shift_p (int n_bytes, int offset, rtx_code)
+{
+  gcc_assert (n_bytes == 4);
+
+  return (avr_shift_is_3op ()
+	  && offset % 8 != 0 && IN_RANGE (offset, 17, 30));
+}
+
+
+static void
+avr_emit_shift (rtx_code code, rtx dest, rtx src, int off, rtx scratch)
+{
+  machine_mode mode = GET_MODE (dest);
+  rtx shift;
+
+  if (off == GET_MODE_BITSIZE (mode) - 1)
+    {
+      shift = gen_rtx_fmt_ee (code, mode, src, GEN_INT (off));
+    }
+  else
+    {
+      if (REGNO (dest) != REGNO (src))
+	emit_valid_move_clobbercc (dest, src);
+      shift = gen_rtx_fmt_ee (code, mode, dest, GEN_INT (off));
+    }
+
+  emit_valid_move_clobbercc (dest, shift, scratch);
+}
+
+
+/* Worker for define_split that run when -msplit-bit-shift is on.
+   Split a shift of code CODE into a 3op byte shift and a residual bit shift.
+   Return 'true' when a split has been performed and insns have been emitted.
+   Otherwise, return 'false'.  */
+
+bool
+avr_split_shift (rtx xop[], rtx scratch, rtx_code code)
+{
+  scratch = scratch && REG_P (scratch) ? scratch : NULL_RTX;
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int ioff = INTVAL (xop[2]);
+
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dest)) == 4);
+
+  if (code == ASHIFT)
+    {
+      if (ioff >= 25)
+	{
+	  rtx dst8 = avr_byte (dest, 3);
+	  rtx src8 = avr_byte (src, 0);
+	  avr_emit_shift (code, dst8, src8, ioff % 8, NULL_RTX);
+	  emit_valid_move_clobbercc (avr_byte (dest, 2), const0_rtx);
+	  emit_valid_move_clobbercc (avr_word (dest, 0), const0_rtx);
+	  return true;
+	}
+      else if (ioff >= 17)
+	{
+	  rtx dst16 = avr_word (dest, 2);
+	  rtx src16 = avr_word (src, 0);
+	  avr_emit_shift (code, dst16, src16, ioff % 16, scratch);
+	  emit_valid_move_clobbercc (avr_word (dest, 0), const0_rtx);
+	  return true;
+	}
+      else
+	gcc_unreachable ();
+    }
+  else
+    gcc_unreachable ();
+
+  return false;
+}
+
+
+namespace
+{
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -5124,4 +5272,12 @@ rtl_opt_pass *
 make_avr_pass_fuse_move (gcc::context *ctxt)
 {
   return new avr_pass_fuse_move (ctxt, "avr-fuse-move");
+}
+
+// Split insns after peephole2 / befor avr-fuse-move.
+
+rtl_opt_pass *
+make_avr_pass_split_after_peephole2 (gcc::context *ctxt)
+{
+  return new avr_pass_split_after_peephole2 (ctxt, "avr-split-after-peephole2");
 }

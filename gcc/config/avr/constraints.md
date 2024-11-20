@@ -263,6 +263,22 @@
   (and (match_code "const_int,symbol_ref,const")
        (match_test "const_0mod256_operand (op, HImode)")))
 
+(define_constraint "C4a"
+  "A constant integer shift offset for a 4-byte ASHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (4, ival, ASHIFTRT)")))
+
+(define_constraint "C4r"
+  "A constant integer shift offset for a 4-byte LSHIFTRT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (4, ival, LSHIFTRT)")))
+
+(define_constraint "C4l"
+  "A constant integer shift offset for a 4-byte ASHIFT that's opt to being split."
+  (and (match_code "const_int")
+       (match_test "avr_split_shift_p (4, ival, ASHIFT)")))
+
+
 ;; CONST_FIXED is no element of 'n' so cook our own.
 ;; "i" or "s" would match but because the insn uses iterators that cover
 ;; INT_MODE, "i" or "s" is not always possible.

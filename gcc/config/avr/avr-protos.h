@@ -169,6 +169,13 @@ extern rtx cc_reg_rtx;
 extern rtx ccn_reg_rtx;
 extern rtx cczn_reg_rtx;
 
+extern int n_avr_fuse_add_executed;
+extern bool avr_shift_is_3op ();
+extern bool avr_split_shift_p (int n_bytes, int offset, rtx_code);
+extern bool avr_split_shift (rtx xop[], rtx xscratch, rtx_code);
+
+extern int avr_optimize_size_level ();
+
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE
@@ -188,6 +195,7 @@ extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_ifelse (gcc::context *);
+extern rtl_opt_pass *make_avr_pass_split_after_peephole2 (gcc::context *);
 #ifdef RTX_CODE
 extern bool avr_casei_sequence_check_operands (rtx *xop);
 extern bool avr_split_fake_addressing_move (rtx_insn *insn, rtx *operands);

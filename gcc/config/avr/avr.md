@@ -184,73 +184,75 @@
 ;; no_xmega: non-XMEGA core              xmega : XMEGA core
 ;; no_adiw:  ISA has no ADIW, SBIW       adiw  : ISA has ADIW, SBIW
 
+;; The following ISA attributes are actually not architecture specific,
+;; but depend on (optimization) options.  This is because the "enabled"
+;; attribut can't depend on more than one other attribute.  This means
+;; that 2op and 3op must work for all ISAs, and hence a 'flat' attribue
+;; scheme can be used (as opposed to a true cartesian product).
+
+;; 2op  : insn is a 2-operand insn       3op   : insn is a 3-operand insn
+
 (define_attr "isa"
   "mov,movw, rjmp,jmp, ijmp,eijmp, lpm,lpmx, elpm,elpmx, no_xmega,xmega,
    no_adiw,adiw,
+   2op,3op,
    standard"
   (const_string "standard"))
 
 (define_attr "enabled" ""
-  (cond [(eq_attr "isa" "standard")
-         (const_int 1)
+  (if_then_else
+   (ior (eq_attr "isa" "standard")
 
-         (and (eq_attr "isa" "mov")
-              (match_test "!AVR_HAVE_MOVW"))
-         (const_int 1)
+        (and (eq_attr "isa" "mov")
+             (match_test "!AVR_HAVE_MOVW"))
 
-         (and (eq_attr "isa" "movw")
-              (match_test "AVR_HAVE_MOVW"))
-         (const_int 1)
+        (and (eq_attr "isa" "movw")
+             (match_test "AVR_HAVE_MOVW"))
 
-         (and (eq_attr "isa" "rjmp")
-              (match_test "!AVR_HAVE_JMP_CALL"))
-         (const_int 1)
+        (and (eq_attr "isa" "rjmp")
+             (match_test "!AVR_HAVE_JMP_CALL"))
 
-         (and (eq_attr "isa" "jmp")
-              (match_test "AVR_HAVE_JMP_CALL"))
-         (const_int 1)
+        (and (eq_attr "isa" "jmp")
+             (match_test "AVR_HAVE_JMP_CALL"))
 
-         (and (eq_attr "isa" "ijmp")
-              (match_test "!AVR_HAVE_EIJMP_EICALL"))
-         (const_int 1)
+        (and (eq_attr "isa" "ijmp")
+             (match_test "!AVR_HAVE_EIJMP_EICALL"))
 
-         (and (eq_attr "isa" "eijmp")
-              (match_test "AVR_HAVE_EIJMP_EICALL"))
-         (const_int 1)
+        (and (eq_attr "isa" "eijmp")
+             (match_test "AVR_HAVE_EIJMP_EICALL"))
 
-         (and (eq_attr "isa" "lpm")
-              (match_test "!AVR_HAVE_LPMX"))
-         (const_int 1)
+        (and (eq_attr "isa" "lpm")
+             (match_test "!AVR_HAVE_LPMX"))
 
-         (and (eq_attr "isa" "lpmx")
-              (match_test "AVR_HAVE_LPMX"))
-         (const_int 1)
+        (and (eq_attr "isa" "lpmx")
+             (match_test "AVR_HAVE_LPMX"))
 
-         (and (eq_attr "isa" "elpm")
-              (match_test "AVR_HAVE_ELPM && !AVR_HAVE_ELPMX"))
-         (const_int 1)
+        (and (eq_attr "isa" "elpm")
+             (match_test "AVR_HAVE_ELPM && !AVR_HAVE_ELPMX"))
 
-         (and (eq_attr "isa" "elpmx")
-              (match_test "AVR_HAVE_ELPMX"))
-         (const_int 1)
+        (and (eq_attr "isa" "elpmx")
+             (match_test "AVR_HAVE_ELPMX"))
 
-         (and (eq_attr "isa" "xmega")
-              (match_test "AVR_XMEGA"))
-         (const_int 1)
+        (and (eq_attr "isa" "xmega")
+             (match_test "AVR_XMEGA"))
 
-         (and (eq_attr "isa" "no_xmega")
-              (match_test "!AVR_XMEGA"))
-         (const_int 1)
+        (and (eq_attr "isa" "no_xmega")
+             (match_test "!AVR_XMEGA"))
 
-         (and (eq_attr "isa" "adiw")
-              (match_test "AVR_HAVE_ADIW"))
-         (const_int 1)
+        (and (eq_attr "isa" "adiw")
+             (match_test "AVR_HAVE_ADIW"))
 
-         (and (eq_attr "isa" "no_adiw")
-              (match_test "!AVR_HAVE_ADIW"))
-         (const_int 1)
+        (and (eq_attr "isa" "no_adiw")
+             (match_test "!AVR_HAVE_ADIW"))
 
-         ] (const_int 0)))
+        (and (eq_attr "isa" "2op")
+             (match_test "!avr_shift_is_3op ()"))
+
+        (and (eq_attr "isa" "3op")
+             (match_test "avr_shift_is_3op ()"))
+        )
+   (const_int 1)
+   (const_int 0)))
 
 
 ;; Define mode iterators
@@ -5257,28 +5259,31 @@
 ;; "ashlsq3"  "ashlusq3"
 ;; "ashlsa3"  "ashlusa3"
 (define_insn_and_split "ashl<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r    ,r,r,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r    ,0,0,0")
-                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O C31,K,n,Qm")))]
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r  ,r        ,r  ,r  ,r,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0  ,r        ,0  ,r  ,0,0")
+                     (match_operand:QI 2 "nop_general_operand"   "r,LPK,O C15 C31,C4l,C4l,n,Qm")))]
   ""
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
                    (ashift:ALL4 (match_dup 1)
                                 (match_dup 2)))
-              (clobber (reg:CC REG_CC))])])
+              (clobber (reg:CC REG_CC))])]
+  ""
+  [(set_attr "isa" "*,*,*,2op,3op,*,*")])
 
 (define_insn "*ashl<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                "=r,r,r,r    ,r,r,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0,0,r    ,0,0,0")
-                     (match_operand:QI 2 "nop_general_operand"   "r,L,P,O C31,K,n,Qm")))
+  [(set (match_operand:ALL4 0 "register_operand"                "=r,r  ,r        ,r  ,r  ,r,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0,0  ,r        ,0  ,r  ,0,0")
+                     (match_operand:QI 2 "nop_general_operand"   "r,LPK,O C15 C31,C4l,C4l,n,Qm")))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlsi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "8,0,4,5,8,10,12")
-   (set_attr "adjust_len" "ashlsi")])
+  [(set_attr "length" "12")
+   (set_attr "adjust_len" "ashlsi")
+   (set_attr "isa" "*,*,*,2op,3op,*,*")])
 
 ;; Optimize if a scratch register from LD_REGS happens to be available.
 
@@ -5380,12 +5385,72 @@
   [(set_attr "length" "0,2,2,4,10")
    (set_attr "adjust_len" "ashlhi")])
 
+
+;; Split shift into a byte shift and a residual bit shift (without scratch)
+(define_split
+  [(parallel [(set (match_operand:ALL4 0 "register_operand")
+                   (ashift:ALL4 (match_operand:ALL4 1 "register_operand")
+                                (match_operand:QI 2 "const_int_operand")))
+              (clobber (reg:CC REG_CC))])]
+  "avr_split_bit_shift
+   && n_avr_fuse_add_executed >= 1
+   && satisfies_constraint_C4l (operands[2])"
+  [(parallel [(set (match_dup 0)
+                   (ashift:ALL4 (match_dup 1)
+                                (match_dup 3)))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (ashift:ALL4 (match_dup 0)
+                                (match_dup 4)))
+              (clobber (reg:CC REG_CC))])]
+  {
+    if (avr_split_shift (operands, NULL_RTX, ASHIFT))
+      DONE;
+    else if (REGNO (operands[0]) == REGNO (operands[1]))
+      FAIL;
+    int offset = INTVAL (operands[2]);
+    operands[3] = GEN_INT (offset & ~7);
+    operands[4] = GEN_INT (offset & 7);
+  })
+
+;; Split shift into a byte shift and a residual bit shift (with scratch)
+(define_split
+  [(parallel [(set (match_operand:ALL4 0 "register_operand")
+                   (ashift:ALL4 (match_operand:ALL4 1 "register_operand")
+                                (match_operand:QI 2 "const_int_operand")))
+              (clobber (match_operand:QI 3 "scratch_or_d_register_operand"))
+              (clobber (reg:CC REG_CC))])]
+  "avr_split_bit_shift
+   && n_avr_fuse_add_executed >= 1
+   && satisfies_constraint_C4l (operands[2])"
+  [(parallel [(set (match_dup 0)
+                   (ashift:ALL4 (match_dup 1)
+                                (match_dup 4)))
+              (clobber (reg:CC REG_CC))])
+   (parallel [(set (match_dup 0)
+                   (ashift:ALL4 (match_dup 0)
+                                (match_dup 5)))
+              (clobber (match_dup 3))
+              (clobber (reg:CC REG_CC))])]
+  {
+    if (avr_split_shift (operands, operands[3], ASHIFT))
+      DONE;
+    else if (REGNO (operands[0]) == REGNO (operands[1]))
+      FAIL;
+    int offset = INTVAL (operands[2]);
+    operands[4] = GEN_INT (offset & ~7);
+    operands[5] = GEN_INT (offset & 7);
+  })
+
+
 (define_peephole2
   [(match_scratch:QI 3 "d")
    (parallel [(set (match_operand:ALL4 0 "register_operand" "")
                    (ashift:ALL4 (match_operand:ALL4 1 "register_operand" "")
                                 (match_operand:QI 2 "const_int_operand" "")))
-              (clobber (reg:CC REG_CC))])]
+              (clobber (reg:CC REG_CC))])
+   ;; $3 must not overlap with the output of the insn above.
+   (match_dup 3)]
   ""
   [(parallel [(set (match_dup 0)
                    (ashift:ALL4 (match_dup 1)
@@ -5393,35 +5458,20 @@
               (clobber (match_dup 3))
               (clobber (reg:CC REG_CC))])])
 
-;; "*ashlsi3_const"
-;; "*ashlsq3_const"  "*ashlusq3_const"
-;; "*ashlsa3_const"  "*ashlusa3_const"
-(define_insn_and_split "*ashl<mode>3_const_split"
-  [(set (match_operand:ALL4 0 "register_operand"              "=r,r,r    ,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r    ,0")
-                     (match_operand:QI 2 "const_int_operand"   "L,P,O C31,n")))
-   (clobber (match_scratch:QI 3                               "=X,X,X    ,&d"))]
-  "reload_completed"
-  "#"
-  "&& reload_completed"
-  [(parallel [(set (match_dup 0)
-                   (ashift:ALL4 (match_dup 1)
-                                (match_dup 2)))
-              (clobber (match_dup 3))
-              (clobber (reg:CC REG_CC))])])
 
 (define_insn "*ashl<mode>3_const"
-  [(set (match_operand:ALL4 0 "register_operand"              "=r,r,r    ,r")
-        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"  "0,0,r    ,0")
-                     (match_operand:QI 2 "const_int_operand"   "L,P,O C31,n")))
-   (clobber (match_scratch:QI 3                               "=X,X,X    ,&d"))
+  [(set (match_operand:ALL4 0 "register_operand"                "=r ,r        ,r  ,r  ,r")
+        (ashift:ALL4 (match_operand:ALL4 1 "register_operand"    "0 ,r        ,0  ,r  ,0")
+                     (match_operand:QI 2 "const_int_operand"     "LP,O C15 C31,C4l,C4l,n")))
+   (clobber (match_operand:QI 3 "scratch_or_d_register_operand" "=X ,X        ,&d ,&d ,&d"))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   {
     return ashlsi3_out (insn, operands, NULL);
   }
-  [(set_attr "length" "0,4,5,10")
-   (set_attr "adjust_len" "ashlsi")])
+  [(set_attr "length" "10")
+   (set_attr "adjust_len" "ashlsi")
+   (set_attr "isa" "*,*,2op,3op,*")])
 
 (define_expand "ashlpsi3"
   [(parallel [(set (match_operand:PSI 0 "register_operand"             "")

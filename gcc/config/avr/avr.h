@@ -610,6 +610,12 @@ struct GTY(()) machine_function
   /* 'true' if this function references .L__stack_usage like with
      __builtin_return_address.  */
   bool use_L__stack_usage;
+
+  /* Counts how many times the execute() method of the avr-fuse-add
+     has been invoked.  The count is even increased when the optimization
+     itself is not run.  This purpose of this variable is to provide
+     information about where in the pass sequence we are.  */
+  int n_avr_fuse_add_executed;
 };
 
 /* AVR does not round pushes, but the existence of this macro is

@@ -229,6 +229,12 @@ bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
 bool avr_has_rodata_p = false;
 
+/* Counts how often pass avr-fuse-add has been executed.  Is is kept in
+   sync with cfun->machine->n_avr_fuse_add_executed and serves as an
+   insn condition for shift insn splitters.  */
+int n_avr_fuse_add_executed = 0;
+
+
 
 /* Transform UP into lowercase and write the result to LO.
    You must provide enough space for LO.  Return LO.  */
@@ -523,6 +529,14 @@ avr_option_override (void)
 
     register_pass (&peep2_2_info);
   }
+}
+
+
+int avr_optimize_size_level ()
+{
+  return cfun && cfun->decl
+    ? opt_for_fn (cfun->decl, optimize_size)
+    : optimize_size;
 }
 
 
@@ -823,8 +837,12 @@ avr_set_current_function (tree decl)
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
-      || ! cfun->machine
-      || cfun->machine->attributes_checked_p)
+      || ! cfun->machine)
+    return;
+
+  n_avr_fuse_add_executed = cfun->machine->n_avr_fuse_add_executed;
+
+  if (cfun->machine->attributes_checked_p)
     return;
 
   location_t loc = DECL_SOURCE_LOCATION (decl);
@@ -6590,7 +6608,7 @@ avr_out_cmp_ext (rtx xop[], rtx_code code, int *plen)
 
 
 /* Generate asm equivalent for various shifts.  This only handles cases
-   that are not already carefully hand-optimized in ?sh??i3_out.
+   that are not already carefully hand-optimized in ?sh<mode>3_out.
 
    OPERANDS[0] resp. %0 in TEMPL is the operand to be shifted.
    OPERANDS[2] is the shift count as CONST_INT, MEM or REG.
@@ -7042,6 +7060,7 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
     {
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
+      bool reg1_unused_after_p = reg_unused_after (insn, operands[1]);
 
       if (plen)
 	*plen = 0;
@@ -7070,6 +7089,30 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %B0,%A1"  CR_TAB
 			   "mov %C0,%B1"  CR_TAB
 			   "mov %D0,%C1", operands, plen, 4);
+	case 15:
+	  avr_asm_len (reg1_unused_after_p
+		       ? "lsr %C1"
+		       : "bst %C1,0", operands, plen, 1);
+	  if (reg0 + 2 != reg1)
+	    {
+	      if (AVR_HAVE_MOVW)
+		avr_asm_len ("movw %C0,%A1", operands, plen, 1);
+	      else
+		avr_asm_len ("mov %C0,%A1"  CR_TAB
+			     "mov %D0,%B1", operands, plen, 2);
+	    }
+	  return reg1_unused_after_p
+	    ? avr_asm_len ("clr %A0"  CR_TAB
+			   "clr %B0"  CR_TAB
+			   "ror %D0"  CR_TAB
+			   "ror %C0"  CR_TAB
+			   "ror %B0", operands, plen, 5)
+	    : avr_asm_len ("clr %A0"  CR_TAB
+			   "clr %B0"  CR_TAB
+			   "lsr %D0"  CR_TAB
+			   "ror %C0"  CR_TAB
+			   "ror %B0"  CR_TAB
+			   "bld %D0,7", operands, plen, 6);
 	case 16:
 	  if (reg0 + 2 == reg1)
 	    return avr_asm_len ("clr %B0"  CR_TAB
@@ -12392,8 +12435,13 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		break;
 	      case 1:
 	      case 8:
-	      case 16:
 		*total = COSTS_N_INSNS (4);
+		break;
+	      case 15:
+		*total = COSTS_N_INSNS (8 - AVR_HAVE_MOVW);
+		break;
+	      case 16:
+		*total = COSTS_N_INSNS (4 - AVR_HAVE_MOVW);
 		break;
 	      case 31:
 		*total = COSTS_N_INSNS (6);

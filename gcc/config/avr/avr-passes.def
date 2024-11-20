@@ -104,3 +104,10 @@ INSERT_PASS_BEFORE (pass_split_after_reload, 1, avr_pass_ifelse);
    -  The RTL peepholer may optimize insns involving lower registers.  */
 
 INSERT_PASS_AFTER (pass_peephole2, 1, avr_pass_fuse_move);
+
+  /* Run an instance of post-reload split prior to avr-fuse-move.
+     Purpose is to split 3-operand shift insns into a 3-operand shift
+     with a byte offset, and a 2-operand residual shift after
+	 RTL peepholes but prior to the avr-fuse-move pass.  */
+
+INSERT_PASS_AFTER (pass_peephole2, 1, avr_pass_split_after_peephole2);

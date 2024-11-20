@@ -65,7 +65,7 @@ public:
   void execute_early_local_passes ();
   unsigned int execute_pass_mode_switching ();
 
-  /* Various passes are manually cloned by epiphany. */
+  /* Various passes are manually cloned by avr and epiphany. */
   opt_pass *get_pass_split_all_insns () const {
     return pass_split_all_insns_1;
   }

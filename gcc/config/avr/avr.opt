@@ -94,6 +94,10 @@ maccumulate-args
 Target Mask(ACCUMULATE_OUTGOING_ARGS) Optimization
 Optimization. Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
 
+msplit-bit-shift
+Target Var(avr_split_bit_shift) Init(0) Optimization
+Optimization. Split shifts of 4-byte values into a byte shift and a residual bit shift.
+
 mstrict-X
 Target Var(avr_strict_X) Init(0) Optimization
 Optimization. When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
