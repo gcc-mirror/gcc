@@ -657,7 +657,7 @@ public:
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = {},
+	   RegionConstraints region_constraints = RegionConstraints{},
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ADT, ident, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
@@ -670,7 +670,7 @@ public:
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = {},
+	   RegionConstraints region_constraints = RegionConstraints{},
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
@@ -683,7 +683,7 @@ public:
 	   std::vector<SubstitutionParamMapping> subst_refs, ReprOptions repr,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = {},
+	   RegionConstraints region_constraints = RegionConstraints{},
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
