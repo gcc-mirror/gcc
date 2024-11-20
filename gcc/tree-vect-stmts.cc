@@ -2048,6 +2048,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
   unsigned int group_size;
   unsigned HOST_WIDE_INT gap;
   bool single_element_p;
+  poly_int64 neg_ldst_offset = 0;
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
@@ -2105,7 +2106,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		/* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
 		   only correct for single element "interleaving" SLP.  */
 		*memory_access_type = get_negative_load_store_type
-			     (vinfo, stmt_info, vectype, vls_type, 1, poffset);
+			     (vinfo, stmt_info, vectype, vls_type, 1,
+			      &neg_ldst_offset);
 	      else
 		{
 		  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
@@ -2374,6 +2376,10 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
       && vect_use_strided_gather_scatters_p (stmt_info, loop_vinfo,
 					     masked_p, gs_info, elsvals))
     *memory_access_type = VMAT_GATHER_SCATTER;
+
+  if (*memory_access_type == VMAT_CONTIGUOUS_DOWN
+      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
+    *poffset = neg_ldst_offset;
 
   if (*memory_access_type == VMAT_GATHER_SCATTER
       || *memory_access_type == VMAT_ELEMENTWISE
