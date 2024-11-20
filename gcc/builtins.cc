@@ -12583,6 +12583,8 @@ builtin_fnspec (tree callee)
 	 by its first argument.  */
       case BUILT_IN_POSIX_MEMALIGN:
 	return ".cOt";
+      case BUILT_IN_OMP_GET_MAPPED_PTR:
+	return ". R ";
 
       default:
 	return "";

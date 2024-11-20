@@ -746,6 +746,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_EH_MUST_NOT_THROW:
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SCOPE:
+    case GIMPLE_OMP_DISPATCH:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTIONS_SWITCH:
     case GIMPLE_OMP_SECTION:

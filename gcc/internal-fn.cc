@@ -689,6 +689,14 @@ expand_GOMP_SIMD_ORDERED_END (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* This should get expanded in gimplify_omp_dispatch.  */
+
+static void
+expand_GOMP_DISPATCH (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
 /* This should get expanded in the sanopt pass.  */
 
 static void

@@ -1680,6 +1680,12 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		   (s1, gimple_omp_scope_clauses (stmt));
 	  break;
 
+	case GIMPLE_OMP_DISPATCH:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy = gimple_build_omp_dispatch (s1,
+					    gimple_omp_dispatch_clauses (stmt));
+	  break;
+
 	case GIMPLE_OMP_TASKGROUP:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_taskgroup
@@ -4610,6 +4616,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_SCOPE:
+    case GIMPLE_OMP_DISPATCH:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_SCAN:

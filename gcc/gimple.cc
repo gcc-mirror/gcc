@@ -1239,6 +1239,21 @@ gimple_build_omp_scope (gimple_seq body, tree clauses)
   return p;
 }
 
+/* Build a GIMPLE_OMP_DISPATCH statement.
+
+   BODY is the target function call to be dispatched.
+   CLAUSES are any of the OMP dispatch construct's clauses.  */
+
+gimple *
+gimple_build_omp_dispatch (gimple_seq body, tree clauses)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_DISPATCH, 0);
+  gimple_omp_dispatch_set_clauses (p, clauses);
+  if (body)
+    gimple_omp_set_body (p, body);
+
+  return p;
+}
 
 /* Build a GIMPLE_OMP_TARGET statement.
 
@@ -2150,6 +2165,11 @@ gimple_copy (gimple *stmt)
 	case GIMPLE_OMP_SCOPE:
 	  t = unshare_expr (gimple_omp_scope_clauses (stmt));
 	  gimple_omp_scope_set_clauses (copy, t);
+	  goto copy_omp_body;
+
+	case GIMPLE_OMP_DISPATCH:
+	  t = unshare_expr (gimple_omp_dispatch_clauses (stmt));
+	  gimple_omp_dispatch_set_clauses (copy, t);
 	  goto copy_omp_body;
 
 	case GIMPLE_OMP_TARGET:
