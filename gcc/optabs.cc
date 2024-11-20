@@ -3101,48 +3101,37 @@ expand_ffs (scalar_int_mode mode, rtx op0, rtx target)
 }
 
 /* Expand a floating point absolute value or negation operation via a
-   logical operation on the sign bit.  */
+   logical operation on the sign bit.  MODE is the mode of the operands
+   and FMODE is the scalar inner mode.  */
 
 static rtx
-expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
-		   rtx op0, rtx target)
+expand_absneg_bit (rtx_code code, machine_mode mode,
+		   scalar_float_mode fmode, rtx op0, rtx target)
 {
-  const struct real_format *fmt;
   int bitpos, word, nwords, i;
+  machine_mode new_mode;
   scalar_int_mode imode;
   rtx temp;
   rtx_insn *insns;
 
-  /* The format has to have a simple sign bit.  */
-  fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL)
+  auto op = code == NEG ? neg_optab : abs_optab;
+  if (!get_absneg_bit_mode (op, mode, fmode, &bitpos).exists (&new_mode))
     return NULL_RTX;
 
-  bitpos = fmt->signbit_rw;
-  if (bitpos < 0)
-    return NULL_RTX;
-
-  /* Don't create negative zeros if the format doesn't support them.  */
-  if (code == NEG && !fmt->has_signed_zero)
-    return NULL_RTX;
-
-  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+  imode = as_a<scalar_int_mode> (GET_MODE_INNER (new_mode));
+  if (VECTOR_MODE_P (mode) || GET_MODE_SIZE (fmode) <= UNITS_PER_WORD)
     {
-      if (!int_mode_for_mode (mode).exists (&imode))
-	return NULL_RTX;
       word = 0;
       nwords = 1;
     }
   else
     {
-      imode = word_mode;
-
       if (FLOAT_WORDS_BIG_ENDIAN)
-	word = (GET_MODE_BITSIZE (mode) - bitpos) / BITS_PER_WORD;
+	word = (GET_MODE_BITSIZE (fmode) - bitpos) / BITS_PER_WORD;
       else
 	word = bitpos / BITS_PER_WORD;
       bitpos = bitpos % BITS_PER_WORD;
-      nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
+      nwords = (GET_MODE_BITSIZE (fmode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     }
 
   wide_int mask = wi::set_bit_in_zero (bitpos, GET_MODE_PRECISION (imode));
@@ -3184,11 +3173,13 @@ expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
     }
   else
     {
-      temp = expand_binop (imode, code == ABS ? and_optab : xor_optab,
-			   gen_lowpart (imode, op0),
-			   immed_wide_int_const (mask, imode),
-		           gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
-      target = force_lowpart_subreg (mode, temp, imode);
+      rtx mask_rtx = immed_wide_int_const (mask, imode);
+      if (VECTOR_MODE_P (new_mode))
+	mask_rtx = gen_const_vec_duplicate (new_mode, mask_rtx);
+      temp = expand_binop (new_mode, code == ABS ? and_optab : xor_optab,
+			   gen_lowpart (new_mode, op0), mask_rtx,
+			   gen_lowpart (new_mode, target), 1, OPTAB_LIB_WIDEN);
+      target = force_lowpart_subreg (mode, temp, new_mode);
 
       set_dst_reg_note (get_last_insn (), REG_EQUAL,
 			gen_rtx_fmt_e (code, mode, copy_rtx (op0)),
@@ -3478,9 +3469,9 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
   if (optab_to_code (unoptab) == NEG)
     {
       /* Try negating floating point values by flipping the sign bit.  */
-      if (is_a <scalar_float_mode> (mode, &float_mode))
+      if (is_a <scalar_float_mode> (GET_MODE_INNER (mode), &float_mode))
 	{
-	  temp = expand_absneg_bit (NEG, float_mode, op0, target);
+	  temp = expand_absneg_bit (NEG, mode, float_mode, op0, target);
 	  if (temp)
 	    return temp;
 	}
@@ -3698,9 +3689,9 @@ expand_abs_nojump (machine_mode mode, rtx op0, rtx target,
 
   /* For floating point modes, try clearing the sign bit.  */
   scalar_float_mode float_mode;
-  if (is_a <scalar_float_mode> (mode, &float_mode))
+  if (is_a <scalar_float_mode> (GET_MODE_INNER (mode), &float_mode))
     {
-      temp = expand_absneg_bit (ABS, float_mode, op0, target);
+      temp = expand_absneg_bit (ABS, mode, float_mode, op0, target);
       if (temp)
 	return temp;
     }

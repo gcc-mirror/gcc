@@ -268,6 +268,8 @@ public:
   ALWAYS_INLINE CONSTEXPR opt_mode (const T &m) : m_mode (m) {}
   template<typename U>
   ALWAYS_INLINE CONSTEXPR opt_mode (const U &m) : m_mode (T (m)) {}
+  template<typename U>
+  ALWAYS_INLINE CONSTEXPR opt_mode (const opt_mode<U> &);
   ALWAYS_INLINE CONSTEXPR opt_mode (from_int m) : m_mode (machine_mode (m)) {}
 
   machine_mode else_void () const;
@@ -284,6 +286,14 @@ public:
 private:
   machine_mode m_mode;
 };
+
+template<typename T>
+template<typename U>
+ALWAYS_INLINE CONSTEXPR
+opt_mode<T>::opt_mode (const opt_mode<U> &m)
+  : m_mode (m.exists () ? T (m.require ()) : E_VOIDmode)
+{
+}
 
 /* If the object contains a T, return its enum value, otherwise return
    E_VOIDmode.  */
